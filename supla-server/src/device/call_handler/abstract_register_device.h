@@ -19,28 +19,27 @@
 #ifndef SUPLA_CH_ABSTRACT_REGISTER_DEVICE_H_
 #define SUPLA_CH_ABSTRACT_REGISTER_DEVICE_H_
 
+#include "conn/call_handler/abstract_register_object.h"
 #include "db/abstract_db_access_provider.h"
 #include "device/abstract_device_dao.h"
 #include "proto.h"
+#include "srpc/abstract_srpc_adapter.h"
 
-class supla_ch_abstract_register_device {
- private:
-  bool authkey_auth(const char guid[SUPLA_GUID_SIZE],
-                    const char email[SUPLA_EMAIL_MAXSIZE],
-                    const char authkey[SUPLA_AUTHKEY_SIZE], int *user_id,
-                    supla_abstract_device_dao *dao);
-
+class supla_user;
+class supla_ch_abstract_register_device
+    : private supla_ch_abstract_register_object {
  protected:
-  char register_device(supla_abstract_db_access_provider *dba,
-                       supla_abstract_device_dao *dao,
-                       TDS_SuplaRegisterDevice_C *register_device_c,
-                       TDS_SuplaRegisterDevice_E *register_device_e,
-                       unsigned char proto_version);
+  char register_device(TDS_SuplaRegisterDevice_C *register_device_c,
+                       TDS_SuplaRegisterDevice_E *register_device_e);
 
-  virtual void set_flags(int flags) = 0;
-  virtual bool set_guid(const char GUID[SUPLA_GUID_SIZE]) = 0;
-  virtual bool set_authkey(const char AuthKey[SUPLA_AUTHKEY_SIZE]) = 0;
+  virtual supla_abstract_srpc_adapter *get_srpc_adapter(void) = 0;
+  virtual supla_abstract_db_access_provider *get_dba(void) = 0;
+  virtual supla_abstract_device_dao *get_dao(void) = 0;
   virtual int get_client_sd(void) = 0;
+  virtual int get_client_ipv4(void) = 0;
+  virtual unsigned char get_activity_timeout(void) = 0;
+
+  virtual void on_registraction_success(int device_id, bool channels_added) = 0;
 
  public:
   supla_ch_abstract_register_device(void);

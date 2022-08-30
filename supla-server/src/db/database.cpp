@@ -177,27 +177,6 @@ bool database::get_user_uniqueid(int UserID, char *id, bool longid) {
   return result;
 }
 
-int database::get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]) {
-  if (_mysql == NULL || strnlen(Email, SUPLA_EMAIL_MAXSIZE) == 0) return 0;
-
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_STRING;
-  pbind[0].buffer = (char *)Email;
-  pbind[0].buffer_length = strnlen(Email, SUPLA_EMAIL_MAXSIZE);
-
-  int UserID = 0;
-  MYSQL_STMT *stmt = NULL;
-
-  if (stmt_get_int((void **)&stmt, &UserID, NULL, NULL, NULL,
-                   "SELECT id FROM supla_user WHERE email = ?", pbind, 1)) {
-    return UserID;
-  }
-
-  return 0;
-}
-
 int database::get_user_id_by_suid(const char *suid) {
   if (_mysql == NULL || suid == NULL || suid[0] == 0) return 0;
 
@@ -270,49 +249,50 @@ bool database::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                             const char Email[SUPLA_EMAIL_MAXSIZE],
                             const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
                             bool Client, const char *sql) {
-  if (_mysql == NULL) {
-    return false;
-  }
+  /*
+if (_mysql == NULL) {
+return false;
+}
 
-  int ID = 0;
-  int _UserID = get_user_id_by_email(Email);
+int ID = 0;
+int _UserID = get_user_id_by_email(Email);
 
-  if (_UserID == 0) {
-    return false;
-  }
+if (_UserID == 0) {
+return false;
+}
 
-  ID = Client ? get_client_id(_UserID, GUID) : get_device_id(_UserID, GUID);
+ID = Client ? get_client_id(_UserID, GUID) : get_device_id(_UserID, GUID);
 
-  if (ID == 0) {
-    // Yes. When client/device not exists then is authorized
-    *UserID = _UserID;
-    return true;
-  }
+if (ID == 0) {
+// Yes. When client/device not exists then is authorized
+*UserID = _UserID;
+return true;
+}
 
-  bool is_null = false;
-  char AuthKeyHash[BCRYPT_HASH_MAXSIZE];
-  memset(AuthKeyHash, 0, BCRYPT_HASH_MAXSIZE);
+bool is_null = false;
+char AuthKeyHash[BCRYPT_HASH_MAXSIZE];
+memset(AuthKeyHash, 0, BCRYPT_HASH_MAXSIZE);
 
-  if (!get_authkey_hash(ID, AuthKeyHash, BCRYPT_HASH_MAXSIZE, &is_null, sql)) {
-    return false;
-  }
+if (!get_authkey_hash(ID, AuthKeyHash, BCRYPT_HASH_MAXSIZE, &is_null, sql)) {
+return false;
+}
 
-  if (is_null) {  // Yes. When is null then is authorized
-    *UserID = _UserID;
-    return true;
-  }
+if (is_null) {  // Yes. When is null then is authorized
+*UserID = _UserID;
+return true;
+}
 
-  char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE];
-  memset(AuthKeyHEX, 0, SUPLA_AUTHKEY_HEXSIZE);
+char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE];
+memset(AuthKeyHEX, 0, SUPLA_AUTHKEY_HEXSIZE);
 
-  st_authkey2hex(AuthKeyHEX, AuthKey);
+st_authkey2hex(AuthKeyHEX, AuthKey);
 
-  if (st_bcrypt_check(AuthKeyHEX, AuthKeyHash,
-                      strnlen(AuthKeyHash, BCRYPT_HASH_MAXSIZE))) {
-    *UserID = _UserID;
-    return true;
-  }
-
+if (st_bcrypt_check(AuthKeyHEX, AuthKeyHash,
+                strnlen(AuthKeyHash, BCRYPT_HASH_MAXSIZE))) {
+*UserID = _UserID;
+return true;
+}
+*/
   return false;
 }
 
@@ -322,14 +302,6 @@ bool database::client_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                                    int *UserID) {
   return authkey_auth(GUID, Email, AuthKey, UserID, true,
                       "SELECT auth_key FROM supla_client WHERE id = ?");
-}
-
-bool database::device_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                                   const char Email[SUPLA_EMAIL_MAXSIZE],
-                                   const char AuthKey[SUPLA_AUTHKEY_SIZE],
-                                   int *UserID) {
-  return authkey_auth(GUID, Email, AuthKey, UserID, false,
-                      "SELECT auth_key FROM supla_iodevice WHERE id = ?");
 }
 
 int database::get_device_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE],
@@ -361,17 +333,6 @@ int database::get_device_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE],
   return Result;
 }
 
-int database::get_device_id(int UserID, const char GUID[SUPLA_GUID_SIZE]) {
-  return get_device_client_id(UserID, GUID, false);
-}
-
-bool database::on_newdevice(int DeviceID) {
-  char sql[51];
-  snprintf(sql, sizeof(sql), "CALL `supla_on_newdevice`(%i)", DeviceID);
-
-  return query(sql, true) == 0;
-}
-
 bool database::on_newclient(int ClientID) {
   char sql[51];
   snprintf(sql, sizeof(sql), "CALL `supla_on_newclient`(%i)", ClientID);
@@ -379,271 +340,9 @@ bool database::on_newclient(int ClientID) {
   return query(sql, true) == 0;
 }
 
-bool database::on_channeladded(int DeviceID, int ChannelID) {
-  char sql[71];
-  snprintf(sql, sizeof(sql), "CALL `supla_on_channeladded`(%i, %i)", DeviceID,
-           ChannelID);
-
-  return query(sql, true) == 0;
-}
-
-int database::get_device_limit_left(int UserID) {
-  return get_int(UserID, 0,
-                 "SELECT IFNULL(limit_iodev, 0) - IFNULL(( SELECT COUNT(*) "
-                 "FROM supla_iodevice WHERE user_id = supla_user.id ), 0) FROM "
-                 "supla_user WHERE id = ?");
-}
-
 int database::get_device_count(int UserID) {
   return get_count(UserID,
                    "SELECT COUNT(*) FROM supla_iodevice WHERE user_id = ?");
-}
-
-int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
-                         const char *AuthKey, const char *Name,
-                         unsigned int ipv4, const char *softver,
-                         int proto_version, short ManufacturerID,
-                         short ProductID, int Flags, int UserID) {
-  int DeviceID = 0;
-
-  char *AuthKeyHashHEX = NULL;
-
-  MYSQL_BIND pbind[12];
-  memset(pbind, 0, sizeof(pbind));
-
-  char GUIDHEX[SUPLA_GUID_HEXSIZE];
-  st_guid2hex(GUIDHEX, GUID);
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&LocationID;
-
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&UserID;
-
-  pbind[2].buffer_type = MYSQL_TYPE_STRING;
-  pbind[2].buffer = (char *)GUIDHEX;
-  pbind[2].buffer_length = SUPLA_GUID_HEXSIZE - 1;
-
-  pbind[3].buffer_type = MYSQL_TYPE_STRING;
-  pbind[3].buffer = (char *)Name;
-  pbind[3].buffer_length = strnlen(Name, SUPLA_DEVICE_NAME_MAXSIZE);
-
-  pbind[4].buffer_type = MYSQL_TYPE_LONG;
-  pbind[4].buffer = (char *)&ipv4;
-  pbind[4].is_unsigned = true;
-
-  pbind[5].buffer_type = MYSQL_TYPE_STRING;
-  pbind[5].buffer = (char *)softver;
-  pbind[5].buffer_length = strnlen(softver, SUPLA_SOFTVER_MAXSIZE);
-
-  pbind[6].buffer_type = MYSQL_TYPE_LONG;
-  pbind[6].buffer = (char *)&proto_version;
-
-  pbind[7].buffer_type = MYSQL_TYPE_SHORT;
-  pbind[7].buffer = (char *)&ProductID;
-
-  pbind[8].buffer_type = MYSQL_TYPE_SHORT;
-  pbind[8].buffer = (char *)&ManufacturerID;
-
-  if (AuthKey == NULL) {
-    pbind[10].buffer_type = MYSQL_TYPE_NULL;
-
-    pbind[9].buffer_type = MYSQL_TYPE_LONG;
-    pbind[9].buffer = (char *)&LocationID;
-
-  } else {
-    AuthKeyHashHEX = st_get_authkey_hash_hex(AuthKey);
-
-    if (AuthKeyHashHEX == NULL) return 0;
-
-    pbind[10].buffer_type = MYSQL_TYPE_STRING;
-    pbind[10].buffer = (char *)AuthKeyHashHEX;
-    pbind[10].buffer_length = strnlen(AuthKeyHashHEX, BCRYPT_HASH_MAXSIZE * 2);
-
-    pbind[9].buffer_type = MYSQL_TYPE_NULL;
-  }
-
-  pbind[11].buffer_type = MYSQL_TYPE_LONG;
-  pbind[11].buffer = (char *)&Flags;
-
-  const char sql[] =
-      "CALL  "
-      "`supla_add_iodevice`(?,?,unhex(?),?,?,?,?,?,?,?,"
-      "unhex(?),?,@id)";
-
-  DeviceID = add_by_proc_call(sql, pbind, 12);
-
-  if (AuthKeyHashHEX) {
-    free(AuthKeyHashHEX);
-    AuthKeyHashHEX = NULL;
-  }
-
-  return DeviceID;
-}
-
-int database::update_device(int DeviceID, int OriginalLocationID,
-                            const char *AuthKey, const char *Name,
-                            unsigned int ipv4, const char *softver,
-                            int proto_version, int flags) {
-  char *AuthKeyHashHEX = NULL;
-
-  MYSQL_BIND pbind[8];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_STRING;
-  pbind[0].buffer = (char *)Name;
-  pbind[0].buffer_length = strnlen(Name, SUPLA_DEVICE_NAME_MAXSIZE);
-
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&ipv4;
-  pbind[1].is_unsigned = true;
-
-  pbind[2].buffer_type = MYSQL_TYPE_STRING;
-  pbind[2].buffer = (char *)softver;
-  pbind[2].buffer_length = strnlen(softver, SUPLA_SOFTVER_MAXSIZE);
-
-  pbind[3].buffer_type = MYSQL_TYPE_LONG;
-  pbind[3].buffer = (char *)&proto_version;
-
-  if (OriginalLocationID == 0) {
-    pbind[4].buffer_type = MYSQL_TYPE_NULL;
-
-  } else {
-    pbind[4].buffer_type = MYSQL_TYPE_LONG;
-    pbind[4].buffer = (char *)&OriginalLocationID;
-  }
-
-  if (AuthKey == NULL) {
-    pbind[5].buffer_type = MYSQL_TYPE_NULL;
-  } else {
-    AuthKeyHashHEX = st_get_authkey_hash_hex(AuthKey);
-
-    if (AuthKeyHashHEX == NULL) return 0;
-
-    pbind[5].buffer_type = MYSQL_TYPE_STRING;
-    pbind[5].buffer = (char *)AuthKeyHashHEX;
-    pbind[5].buffer_length = strnlen(AuthKeyHashHEX, BCRYPT_HASH_MAXSIZE * 2);
-  }
-
-  pbind[6].buffer_type = MYSQL_TYPE_LONG;
-  pbind[6].buffer = (char *)&DeviceID;
-
-  pbind[7].buffer_type = MYSQL_TYPE_LONG;
-  pbind[7].buffer = (char *)&flags;
-
-  const char sql[] =
-      "CALL "
-      "`supla_update_iodevice`(?,?,?,?,?,unhex(?),?,?)";
-
-  MYSQL_STMT *stmt = NULL;
-  if (!stmt_execute((void **)&stmt, sql, pbind, 8, true)) {
-    DeviceID = 0;
-  }
-
-  if (stmt != NULL) mysql_stmt_close(stmt);
-
-  if (AuthKeyHashHEX) {
-    free(AuthKeyHashHEX);
-    AuthKeyHashHEX = NULL;
-  }
-
-  return DeviceID;
-}
-
-int database::get_device_channel_count(int DeviceID) {
-  if (_mysql == NULL) return 0;
-
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&DeviceID;
-
-  MYSQL_STMT *stmt = NULL;
-  int count = 0;
-
-  stmt_get_int(
-      (void **)&stmt, &count, NULL, NULL, NULL,
-      "SELECT COUNT(*) FROM `supla_dev_channel` WHERE `iodevice_id` = ?", pbind,
-      1);
-
-  return count;
-}
-
-int database::get_device_channel(int DeviceID, int ChannelNumber, int *Type) {
-  if (_mysql == NULL) return 0;
-
-  MYSQL_BIND pbind[2];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&DeviceID;
-
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&ChannelNumber;
-
-  MYSQL_STMT *stmt = NULL;
-  int id = 0;
-  int _type;
-
-  if (Type == NULL) Type = &_type;
-
-  stmt_get_int((void **)&stmt, &id, Type, NULL, NULL,
-               "SELECT `id`, `type` FROM `supla_dev_channel` WHERE "
-               "`iodevice_id` = ? AND `channel_number` = ?",
-               pbind, 2);
-
-  return id;
-}
-
-int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
-                                 int Func, int Param1, int Param2, int FList,
-                                 int Flags, int UserID, bool *new_channel) {
-  MYSQL_BIND pbind[9];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&Type;
-
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&Func;
-
-  pbind[2].buffer_type = MYSQL_TYPE_LONG;
-  pbind[2].buffer = (char *)&Param1;
-
-  pbind[3].buffer_type = MYSQL_TYPE_LONG;
-  pbind[3].buffer = (char *)&Param2;
-
-  pbind[4].buffer_type = MYSQL_TYPE_LONG;
-  pbind[4].buffer = (char *)&UserID;
-
-  pbind[5].buffer_type = MYSQL_TYPE_LONG;
-  pbind[5].buffer = (char *)&ChannelNumber;
-
-  pbind[6].buffer_type = MYSQL_TYPE_LONG;
-  pbind[6].buffer = (char *)&DeviceID;
-
-  pbind[7].buffer_type = MYSQL_TYPE_LONG;
-  pbind[7].buffer = (char *)&FList;
-
-  pbind[8].buffer_type = MYSQL_TYPE_LONG;
-  pbind[8].buffer = (char *)&Flags;
-
-  {
-    const char sql[] = "CALL`supla_add_channel`(?,?,?,?,0,?,?,?,?,?)";
-
-    MYSQL_STMT *stmt = NULL;
-    if (!stmt_execute((void **)&stmt, sql, pbind, 9, true)) {
-      if (stmt != NULL) mysql_stmt_close(stmt);
-      return 0;
-    } else if (new_channel) {
-      *new_channel = true;
-    }
-
-    if (stmt != NULL) mysql_stmt_close(stmt);
-  }
-
-  return get_device_channel(DeviceID, ChannelNumber, NULL);
 }
 
 void database::get_device_channels(int UserID, int DeviceID,

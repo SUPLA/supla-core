@@ -48,17 +48,11 @@ void supla_abstract_connection_object::terminate(void) {
 
 void supla_abstract_connection_object::reconnect() { terminate(); }
 
-bool supla_abstract_connection_object::set_guid(
+void supla_abstract_connection_object::set_guid(
     const char guid[SUPLA_GUID_SIZE]) {
-  char _guid[SUPLA_GUID_SIZE] = {};
-
-  if (memcmp(_guid, guid, SUPLA_GUID_SIZE) == 0) return false;
-
   lck_lock(lck);
   memcpy(this->guid, guid, SUPLA_GUID_SIZE);
   lck_unlock(lck);
-
-  return true;
 }
 
 void supla_abstract_connection_object::get_guid(char guid[SUPLA_GUID_SIZE]) {
@@ -76,17 +70,11 @@ bool supla_abstract_connection_object::guid_equal(
   return result;
 }
 
-bool supla_abstract_connection_object::set_authkey(
+void supla_abstract_connection_object::set_authkey(
     const char authkey[SUPLA_AUTHKEY_SIZE]) {
-  char _authkey[SUPLA_AUTHKEY_SIZE] = {};
-
-  if (memcmp(_authkey, authkey, SUPLA_AUTHKEY_SIZE) == 0) return false;
-
   lck_lock(lck);
   memcpy(this->authkey, authkey, SUPLA_AUTHKEY_SIZE);
   lck_unlock(lck);
-
-  return true;
 }
 
 void supla_abstract_connection_object::get_authkey(

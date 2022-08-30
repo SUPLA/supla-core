@@ -107,3 +107,8 @@ _supla_int_t supla_srpc_adapter::sc_async_device_reconnect_request_result(
     TSC_DeviceReconnectRequestResult *result) {
   return srpc_sc_async_device_reconnect_request_result(get_srpc(), result);
 }
+
+_supla_int_t supla_srpc_adapter::sd_async_registerdevice_result(
+    TSD_SuplaRegisterDeviceResult *result) {
+  return srpc_sd_async_registerdevice_result(get_srpc(), result);
+}

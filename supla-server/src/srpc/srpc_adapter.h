@@ -94,6 +94,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sc_async_device_reconnect_request_result(
       TSC_DeviceReconnectRequestResult *result);
+
+  virtual _supla_int_t sd_async_registerdevice_result(
+      TSD_SuplaRegisterDeviceResult *result);
 };
 
 #endif /* SRPC_ADAPTER_H_ */

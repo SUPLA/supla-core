@@ -50,42 +50,22 @@ class database : public svrdb {
 
   bool get_user_uniqueid(int UserID, char *id, bool longid);
 
-  int get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]);
-
   int get_user_id_by_suid(const char *suid);
 
   bool client_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                            const char Email[SUPLA_EMAIL_MAXSIZE],
                            const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID);
-  bool device_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                           const char Email[SUPLA_EMAIL_MAXSIZE],
-                           const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID);
-
-  int add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
-                 const char *AuthKey, const char *Name, unsigned int ipv4,
-                 const char *softver, int proto_version, short ManufacturerID,
-                 short ProductID, int Flags, int UserID);
-
-  int update_device(int DeviceID, int OriginalLocationID, const char *AuthKey,
-                    const char *Name, unsigned int ipv4, const char *softver,
-                    int proto_version, int flags);
 
   int add_channel(int DeviceID, int ChannelNumber, int ChannelType);
-  int add_device_channel(int DeviceID, int ChannelNumber, int Type, int Func,
-                         int Param1, int Param2, int FList, int Flags,
-                         int UserID, bool *new_channel);
 
   int get_device_count(int UserID);
 
   int get_device_channel(int DeviceID, int ChannelNumber, int *Type);
-  int get_device_channel_count(int DeviceID);
   int get_device_channel_type(int DeviceID, int ChannelNumber);
   void get_device_channels(int UserID, int DeviceID,
                            supla_device_channels *channels);
 
-  bool on_newdevice(int DeviceID);
   bool on_newclient(int ClientID);
-  bool on_channeladded(int DeviceID, int ChannelID);
 
   int get_client_limit_left(int UserID);
   int get_client_count(int UserID);

@@ -41,8 +41,8 @@ class supla_abstract_connection_object {
   void *lck;
 
   // Thread safe start
-  bool set_guid(const char GUID[SUPLA_GUID_SIZE]);
-  bool set_authkey(const char AuthKey[SUPLA_AUTHKEY_SIZE]);
+  void set_guid(const char GUID[SUPLA_GUID_SIZE]);
+  void set_authkey(const char AuthKey[SUPLA_AUTHKEY_SIZE]);
   void set_id(int ID);
   void set_user(supla_user *user);
   void set_registered(bool registered);

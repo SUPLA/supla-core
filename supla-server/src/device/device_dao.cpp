@@ -19,9 +19,11 @@
 #include "device/device_dao.h"
 
 #include <mysql.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "log.h"
+#include "tools.h"
 
 supla_device_dao::supla_device_dao(supla_abstract_db_access_provider *dba)
     : supla_abstract_device_dao() {
@@ -29,10 +31,6 @@ supla_device_dao::supla_device_dao(supla_abstract_db_access_provider *dba)
 }
 
 supla_device_dao::~supla_device_dao() {}
-
-bool supla_device_dao::connecton_init(void) {
-  return !dba->is_connected() && dba->connect();
-}
 
 bool supla_device_dao::get_device_firmware_update_url(
     int device_id, TDS_FirmwareUpdateParams *params,
@@ -197,15 +195,16 @@ int supla_device_dao::get_location_id(int user_id, bool enabled) {
   MYSQL_BIND pbind[2] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&user_d;
+  pbind[0].buffer = (char *)&user_id;
 
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&_enabled;
 
-  if (!stmt_get_int((void **)&stmt, &Result, NULL, NULL, NULL,
-                    "SELECT id FROM `supla_location` WHERE user_id = ? AND "
-                    "enabled = ? LIMIT 1",
-                    pbind, 2)) {
+  if (!dba->stmt_get_int(
+          (void **)&stmt, &result, nullptr, nullptr, nullptr,
+          "SELECT id FROM `supla_location` WHERE user_id = ? AND "
+          "enabled = ? LIMIT 1",
+          pbind, 2)) {
     result = 0;
   }
 
@@ -221,9 +220,9 @@ int supla_device_dao::get_device_id(int user_id,
   int result = 0;
 
   char guidhex[SUPLA_GUID_HEXSIZE];
-  st_guid2hex(GUIDHEX, guid);
+  st_guid2hex(guidhex, guid);
 
-  MYSQL_BIND pbind[2] = 0;
+  MYSQL_BIND pbind[2] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&user_id;
@@ -232,8 +231,8 @@ int supla_device_dao::get_device_id(int user_id,
   pbind[1].buffer = (char *)guidhex;
   pbind[1].buffer_length = SUPLA_GUID_HEXSIZE - 1;
 
-  if (!stmt_get_int((void **)&stmt, &result, nullptr, nullptr, nullptr, query,
-                    pbind, 2)) {
+  if (!dba->stmt_get_int((void **)&stmt, &result, nullptr, nullptr, nullptr,
+                         query, pbind, 2)) {
     result = 0;
   }
 
@@ -243,7 +242,7 @@ int supla_device_dao::get_device_id(int user_id,
 bool supla_device_dao::get_device_reg_enabled(int user_id) {
   const char query[] =
       "SELECT COUNT(*) FROM `supla_user` WHERE id = ? AND iodevice_reg_enabled "
-      "IS NOT NULL AND iodevice_reg_enabled >= UTC_TIMESTAMP()";
+      "IS NOT nullptr AND iodevice_reg_enabled >= UTC_TIMESTAMP()";
 
   bool result = dba->get_count(user_id, query) > 0 ? true : false;
 
@@ -253,7 +252,7 @@ bool supla_device_dao::get_device_reg_enabled(int user_id) {
 int supla_device_dao::get_device_limit_left(int user_id) {
   return dba->get_int(
       user_id, 0,
-      "SELECT IFNULL(limit_client, 0) - IFNULL(( SELECT COUNT(*) "
+      "SELECT IFnullptr(limit_client, 0) - IFnullptr(( SELECT COUNT(*) "
       "FROM supla_client WHERE user_id = supla_user.id ), 0) FROM "
       "supla_user WHERE id = ?");
 }
@@ -269,7 +268,7 @@ int supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
   MYSQL_BIND pbind = {};
 
   pbind.buffer_type = MYSQL_TYPE_LONG;
-  pbind.buffer = (char *)&DeviceID;
+  pbind.buffer = (char *)&device_id;
 
   int _device_enabled = 0;
   int _original_location_id = 0;
@@ -278,13 +277,14 @@ int supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
 
   bool result = false;
 
-  if (stmt_execute((void **)&stmt,
-                   "SELECT CAST(d.`enabled` AS unsigned integer) `d_enabled`, "
-                   "IFNULL(d.original_location_id, 0), IFNULL(d.location_id, "
-                   "0), IFNULL(CAST(l.`enabled` AS unsigned integer), 0) "
-                   "`l_enabled` FROM supla_iodevice d LEFT JOIN supla_location "
-                   "l ON l.id = d.location_id WHERE d.id = ?",
-                   &pbind, 1, true)) {
+  if (dba->stmt_execute(
+          (void **)&stmt,
+          "SELECT CAST(d.`enabled` AS unsigned integer) `d_enabled`, "
+          "IFnullptr(d.original_location_id, 0), IFnullptr(d.location_id, "
+          "0), IFnullptr(CAST(l.`enabled` AS unsigned integer), 0) "
+          "`l_enabled` FROM supla_iodevice d LEFT JOIN supla_location "
+          "l ON l.id = d.location_id WHERE d.id = ?",
+          &pbind, 1, true)) {
     MYSQL_BIND rbind[4];
     memset(rbind, 0, sizeof(rbind));
 
@@ -320,4 +320,262 @@ int supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
   }
 
   return result ? device_id : 0;
+}
+
+int supla_device_dao::get_channel_id_and_type(int device_id, int channel_number,
+                                              int *type) {
+  MYSQL_BIND pbind[2] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&device_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&channel_number;
+
+  MYSQL_STMT *stmt = NULL;
+  int id = 0;
+  int _type;
+
+  if (type == NULL) type = &_type;
+
+  if (!dba->stmt_get_int((void **)&stmt, &id, type, NULL, NULL,
+                         "SELECT `id`, `type` FROM `supla_dev_channel` WHERE "
+                         "`iodevice_id` = ? AND `channel_number` = ?",
+                         pbind, 2)) {
+    id = 0;
+  }
+
+  return id;
+}
+
+int supla_device_dao::get_device_channel_count(int device_id) {
+  MYSQL_BIND pbind = {};
+
+  pbind.buffer_type = MYSQL_TYPE_LONG;
+  pbind.buffer = (char *)&device_id;
+
+  MYSQL_STMT *stmt = nullptr;
+  int count = 0;
+
+  dba->stmt_get_int(
+      (void **)&stmt, &count, NULL, NULL, NULL,
+      "SELECT COUNT(*) FROM `supla_dev_channel` WHERE `iodevice_id` = ?",
+      &pbind, 1);
+
+  return count;
+}
+
+int supla_device_dao::add_device(int location_id,
+                                 const char guid[SUPLA_GUID_SIZE],
+                                 const char *authkey, const char *name,
+                                 unsigned int ipv4, const char *softver,
+                                 int proto_version, short manufacturer_id,
+                                 short product_id, int flags, int user_id) {
+  int device_id = 0;
+
+  char *authkey_hash_hex = nullptr;
+
+  MYSQL_BIND pbind[12] = {};
+
+  char guid_hex[SUPLA_GUID_HEXSIZE] = {};
+  st_guid2hex(guid_hex, guid);
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&location_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = (char *)guid_hex;
+  pbind[2].buffer_length = SUPLA_GUID_HEXSIZE - 1;
+
+  pbind[3].buffer_type = MYSQL_TYPE_STRING;
+  pbind[3].buffer = (char *)name;
+  pbind[3].buffer_length = strnlen(name, SUPLA_DEVICE_NAME_MAXSIZE);
+
+  pbind[4].buffer_type = MYSQL_TYPE_LONG;
+  pbind[4].buffer = (char *)&ipv4;
+  pbind[4].is_unsigned = true;
+
+  pbind[5].buffer_type = MYSQL_TYPE_STRING;
+  pbind[5].buffer = (char *)softver;
+  pbind[5].buffer_length = strnlen(softver, SUPLA_SOFTVER_MAXSIZE);
+
+  pbind[6].buffer_type = MYSQL_TYPE_LONG;
+  pbind[6].buffer = (char *)&proto_version;
+
+  pbind[7].buffer_type = MYSQL_TYPE_SHORT;
+  pbind[7].buffer = (char *)&product_id;
+
+  pbind[8].buffer_type = MYSQL_TYPE_SHORT;
+  pbind[8].buffer = (char *)&manufacturer_id;
+
+  if (authkey == nullptr) {
+    pbind[10].buffer_type = MYSQL_TYPE_NULL;
+
+    pbind[9].buffer_type = MYSQL_TYPE_LONG;
+    pbind[9].buffer = (char *)&location_id;
+
+  } else {
+    authkey_hash_hex = st_get_authkey_hash_hex(authkey);
+
+    if (authkey_hash_hex == nullptr) return 0;
+
+    pbind[10].buffer_type = MYSQL_TYPE_STRING;
+    pbind[10].buffer = (char *)authkey_hash_hex;
+    pbind[10].buffer_length =
+        strnlen(authkey_hash_hex, BCRYPT_HASH_MAXSIZE * 2);
+
+    pbind[9].buffer_type = MYSQL_TYPE_NULL;
+  }
+
+  pbind[11].buffer_type = MYSQL_TYPE_LONG;
+  pbind[11].buffer = (char *)&flags;
+
+  const char sql[] =
+      "CALL  "
+      "`supla_add_iodevice`(?,?,unhex(?),?,?,?,?,?,?,?,"
+      "unhex(?),?,@id)";
+
+  device_id = dba->add_by_proc_call(sql, pbind, 12);
+
+  if (authkey_hash_hex) {
+    free(authkey_hash_hex);
+    authkey_hash_hex = nullptr;
+  }
+
+  return device_id;
+}
+
+int supla_device_dao::update_device(int device_id, int original_location_id,
+                                    const char *authkey, const char *name,
+                                    unsigned int ipv4, const char *softver,
+                                    int proto_version, int flags) {
+  char *authkey_hash_hex = nullptr;
+
+  MYSQL_BIND pbind[8] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_STRING;
+  pbind[0].buffer = (char *)name;
+  pbind[0].buffer_length = strnlen(name, SUPLA_DEVICE_NAME_MAXSIZE);
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&ipv4;
+  pbind[1].is_unsigned = true;
+
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = (char *)softver;
+  pbind[2].buffer_length = strnlen(softver, SUPLA_SOFTVER_MAXSIZE);
+
+  pbind[3].buffer_type = MYSQL_TYPE_LONG;
+  pbind[3].buffer = (char *)&proto_version;
+
+  if (original_location_id == 0) {
+    pbind[4].buffer_type = MYSQL_TYPE_NULL;
+
+  } else {
+    pbind[4].buffer_type = MYSQL_TYPE_LONG;
+    pbind[4].buffer = (char *)&original_location_id;
+  }
+
+  if (authkey == nullptr) {
+    pbind[5].buffer_type = MYSQL_TYPE_NULL;
+  } else {
+    authkey_hash_hex = st_get_authkey_hash_hex(authkey);
+
+    if (authkey_hash_hex == nullptr) return 0;
+
+    pbind[5].buffer_type = MYSQL_TYPE_STRING;
+    pbind[5].buffer = (char *)authkey_hash_hex;
+    pbind[5].buffer_length = strnlen(authkey_hash_hex, BCRYPT_HASH_MAXSIZE * 2);
+  }
+
+  pbind[6].buffer_type = MYSQL_TYPE_LONG;
+  pbind[6].buffer = (char *)&device_id;
+
+  pbind[7].buffer_type = MYSQL_TYPE_LONG;
+  pbind[7].buffer = (char *)&flags;
+
+  const char sql[] =
+      "CALL "
+      "`supla_update_iodevice`(?,?,?,?,?,unhex(?),?,?)";
+
+  MYSQL_STMT *stmt = nullptr;
+  if (!dba->stmt_execute((void **)&stmt, sql, pbind, 8, true)) {
+    device_id = 0;
+  }
+
+  if (stmt != nullptr) mysql_stmt_close(stmt);
+
+  if (authkey_hash_hex) {
+    free(authkey_hash_hex);
+    authkey_hash_hex = nullptr;
+  }
+
+  return device_id;
+}
+
+int supla_device_dao::add_channel(int device_id, int channel_number, int type,
+                                  int func, int param1, int param2, int flist,
+                                  int flags, int user_id, bool *new_channel) {
+  MYSQL_BIND pbind[9] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&type;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&func;
+
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&param1;
+
+  pbind[3].buffer_type = MYSQL_TYPE_LONG;
+  pbind[3].buffer = (char *)&param2;
+
+  pbind[4].buffer_type = MYSQL_TYPE_LONG;
+  pbind[4].buffer = (char *)&user_id;
+
+  pbind[5].buffer_type = MYSQL_TYPE_LONG;
+  pbind[5].buffer = (char *)&channel_number;
+
+  pbind[6].buffer_type = MYSQL_TYPE_LONG;
+  pbind[6].buffer = (char *)&device_id;
+
+  pbind[7].buffer_type = MYSQL_TYPE_LONG;
+  pbind[7].buffer = (char *)&flist;
+
+  pbind[8].buffer_type = MYSQL_TYPE_LONG;
+  pbind[8].buffer = (char *)&flags;
+
+  {
+    const char sql[] = "CALL`supla_add_channel`(?,?,?,?,0,?,?,?,?,?)";
+
+    MYSQL_STMT *stmt = NULL;
+    if (!dba->stmt_execute((void **)&stmt, sql, pbind, 9, true)) {
+      if (stmt != NULL) mysql_stmt_close(stmt);
+      return 0;
+    } else if (new_channel) {
+      *new_channel = true;
+    }
+
+    if (stmt != NULL) mysql_stmt_close(stmt);
+  }
+
+  return get_channel_id_and_type(device_id, channel_number, nullptr);
+}
+
+bool supla_device_dao::on_new_device(int device_id) {
+  char sql[51];
+  snprintf(sql, sizeof(sql), "CALL `supla_on_newdevice`(%i)", device_id);
+
+  return dba->query(sql, true) == 0;
+}
+
+bool supla_device_dao::on_channel_added(int device_id, int channel_id) {
+  char sql[71];
+  snprintf(sql, sizeof(sql), "CALL `supla_on_channeladded`(%i, %i)", device_id,
+           channel_id);
+
+  return dba->query(sql, true) == 0;
 }
