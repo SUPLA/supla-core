@@ -531,8 +531,6 @@ void supla_user::log_metrics(int min_interval_sec) {
     supla_user::metric_tv = now;
   }
 
-  supla_user *user = NULL;
-
   unsigned int client_count = 0;
   unsigned int client_trash = 0;
   unsigned int device_count = 0;
