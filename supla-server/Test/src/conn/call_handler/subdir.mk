@@ -4,18 +4,21 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/conn/call_handler/abstract_register_object.cpp \
 ../src/conn/call_handler/get_registration_enabled.cpp \
 ../src/conn/call_handler/get_user_localtime.cpp \
 ../src/conn/call_handler/ping_server.cpp \
 ../src/conn/call_handler/set_activity_timeout.cpp 
 
 CPP_DEPS += \
+./src/conn/call_handler/abstract_register_object.d \
 ./src/conn/call_handler/get_registration_enabled.d \
 ./src/conn/call_handler/get_user_localtime.d \
 ./src/conn/call_handler/ping_server.d \
 ./src/conn/call_handler/set_activity_timeout.d 
 
 OBJS += \
+./src/conn/call_handler/abstract_register_object.o \
 ./src/conn/call_handler/get_registration_enabled.o \
 ./src/conn/call_handler/get_user_localtime.o \
 ./src/conn/call_handler/ping_server.o \
@@ -34,7 +37,7 @@ src/conn/call_handler/%.o: ../src/conn/call_handler/%.cpp src/conn/call_handler/
 clean: clean-src-2f-conn-2f-call_handler
 
 clean-src-2f-conn-2f-call_handler:
-	-$(RM) ./src/conn/call_handler/get_registration_enabled.d ./src/conn/call_handler/get_registration_enabled.o ./src/conn/call_handler/get_user_localtime.d ./src/conn/call_handler/get_user_localtime.o ./src/conn/call_handler/ping_server.d ./src/conn/call_handler/ping_server.o ./src/conn/call_handler/set_activity_timeout.d ./src/conn/call_handler/set_activity_timeout.o
+	-$(RM) ./src/conn/call_handler/abstract_register_object.d ./src/conn/call_handler/abstract_register_object.o ./src/conn/call_handler/get_registration_enabled.d ./src/conn/call_handler/get_registration_enabled.o ./src/conn/call_handler/get_user_localtime.d ./src/conn/call_handler/get_user_localtime.o ./src/conn/call_handler/ping_server.d ./src/conn/call_handler/ping_server.o ./src/conn/call_handler/set_activity_timeout.d ./src/conn/call_handler/set_activity_timeout.o
 
 .PHONY: clean-src-2f-conn-2f-call_handler
 

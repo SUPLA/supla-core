@@ -52,6 +52,7 @@ src/test/asynctask \
 src/test/channeljsonconfig \
 src/test/client \
 src/test/conn \
+src/test/device \
 src/test/distributedobjects \
 src/test/doubles \
 src/test/doubles/actions \

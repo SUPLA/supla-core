@@ -32,10 +32,10 @@ void ConnectionObjectMock::set_id(int id) {
   supla_abstract_connection_object::set_id(id);
 }
 
-bool ConnectionObjectMock::set_guid(const char guid[SUPLA_GUID_SIZE]) {
-  return supla_abstract_connection_object::set_guid(guid);
+void ConnectionObjectMock::set_guid(const char guid[SUPLA_GUID_SIZE]) {
+  supla_abstract_connection_object::set_guid(guid);
 }
 
-bool ConnectionObjectMock::set_authkey(const char authkey[SUPLA_AUTHKEY_SIZE]) {
-  return supla_abstract_connection_object::set_authkey(authkey);
+void ConnectionObjectMock::set_authkey(const char authkey[SUPLA_AUTHKEY_SIZE]) {
+  supla_abstract_connection_object::set_authkey(authkey);
 }

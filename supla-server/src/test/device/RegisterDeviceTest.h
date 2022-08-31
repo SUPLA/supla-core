@@ -16,21 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CONNECTION_OBJECT_MOCK_H_
-#define CONNECTION_OBJECT_MOCK_H_
+#ifndef REGISTERDEVICETEST_H_
+#define REGISTERDEVICETEST_H_
 
-#include <gmock/gmock.h>
+#include "gtest/gtest.h"
 
-#include "conn/abstract_connection_object.h"
+namespace testing {
 
-class ConnectionObjectMock : public supla_abstract_connection_object {
+class RegisterDeviceTest : public Test {
  public:
-  explicit ConnectionObjectMock(supla_connection *connection);
-  virtual supla_abstract_srpc_call_handler_collection *
-  get_srpc_call_handler_collection(void);
-  void set_id(int id);
-  void set_guid(const char guid[SUPLA_GUID_SIZE]);
-  void set_authkey(const char authkey[SUPLA_AUTHKEY_SIZE]);
+  RegisterDeviceTest();
+  virtual ~RegisterDeviceTest();
 };
 
-#endif /* CONNECTION_OBJECT_MOCK_H_ */
+} /* namespace testing */
+
+#endif /* REGISTERDEVICETEST_H_ */
