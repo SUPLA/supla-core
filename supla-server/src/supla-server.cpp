@@ -124,7 +124,6 @@ int main(int argc, char *argv[]) {
   supla_asynctask_queue::global_instance();
   supla_asynctask_default_thread_pool::global_instance();
 
-  serverstatus::globalInstance();
   supla_user::init();
   supla_connection::init();
 
@@ -212,7 +211,6 @@ int main(int argc, char *argv[]) {
   sslcrypto_free();
 
   st_mainloop_free();  // Almost at the end
-  serverstatus::globalInstanceRelease();
   st_delpidfile(pidfile_path);
   svrcfg_free();
 
