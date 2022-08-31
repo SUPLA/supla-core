@@ -59,6 +59,7 @@ src/test/doubles/actions \
 src/test/doubles/asynctask \
 src/test/doubles/channeljsonconfig \
 src/test/doubles/conn \
+src/test/doubles/db \
 src/test/doubles/device \
 src/test/doubles/distributedobjects \
 src/test/doubles/integration/asynctask \

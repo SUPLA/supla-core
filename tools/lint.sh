@@ -36,6 +36,7 @@ cpplint --filter=-build/include ./supla-server/src/test/asynctask/*
 cpplint --filter=-build/include ./supla-server/src/test/channeljsonconfig/* 
 cpplint --filter=-build/include ./supla-server/src/test/client/* 
 cpplint --filter=-build/include ./supla-server/src/test/conn/* 
+cpplint --filter=-build/include ./supla-server/src/test/db/* 
 cpplint --filter=-build/include ./supla-server/src/test/device/* 
 cpplint --filter=-build/include ./supla-server/src/test/google/* 
 cpplint --filter=-build/include ./supla-server/src/test/http/* 

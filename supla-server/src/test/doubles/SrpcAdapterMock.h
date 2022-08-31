@@ -27,6 +27,7 @@ namespace testing {
 
 class SrpcAdapterMock : public supla_abstract_srpc_adapter {
  public:
+  SrpcAdapterMock(void);
   explicit SrpcAdapterMock(void *srpc);
   virtual ~SrpcAdapterMock(void);
   MOCK_METHOD1(set_proto_version, void(unsigned char version));

@@ -16,34 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef REGISTERDEVICETEST_H_
-#define REGISTERDEVICETEST_H_
-
-#include "doubles/SrpcAdapterMock.h"
-#include "doubles/db/DbAccessProviderMock.h"
 #include "doubles/device/DeviceDaoMock.h"
-#include "doubles/device/RegisterDeviceMock.h"
-#include "gtest/gtest.h"
 
 namespace testing {
+DeviceDaoMock::DeviceDaoMock(void) : supla_abstract_device_dao() {}
 
-class RegisterDeviceTest : public Test {
- protected:
-  SrpcAdapterMock srpcAdapter;
-  DbAccessProviderMock dba;
-  DeviceDaoMock dao;
-  RegisterDeviceMock rd;
+DeviceDaoMock::~DeviceDaoMock(void) {}
 
-  struct timeval setUpTime;
-  unsigned int msecFromSetUp(void);
+int DeviceDaoMock::add_device(int location_id, const char guid[SUPLA_GUID_SIZE],
+                              const char *authkey, const char *name,
+                              unsigned int ipv4, const char *softver,
+                              int proto_version, short manufacturer_id,
+                              short product_id, int flags, int user_id) {
+  add_device(location_id, guid, authkey, name, ipv4, softver, proto_version,
+             manufacturer_id, product_id, flags);
 
- public:
-  RegisterDeviceTest();
-  virtual ~RegisterDeviceTest();
-  virtual void SetUp();
-  virtual void TearDown();
-};
+  return add_device(user_id);
+}
 
-} /* namespace testing */
-
-#endif /* REGISTERDEVICETEST_H_ */
+}  // namespace testing

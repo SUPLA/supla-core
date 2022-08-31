@@ -27,17 +27,14 @@
 
 class supla_user;
 class supla_ch_abstract_register_device
-    : private supla_ch_abstract_register_object {
+    : protected supla_ch_abstract_register_object {
  protected:
   char register_device(TDS_SuplaRegisterDevice_C *register_device_c,
-                       TDS_SuplaRegisterDevice_E *register_device_e);
-
-  virtual supla_abstract_srpc_adapter *get_srpc_adapter(void) = 0;
-  virtual supla_abstract_db_access_provider *get_dba(void) = 0;
-  virtual supla_abstract_device_dao *get_dao(void) = 0;
-  virtual int get_client_sd(void) = 0;
-  virtual int get_client_ipv4(void) = 0;
-  virtual unsigned char get_activity_timeout(void) = 0;
+                       TDS_SuplaRegisterDevice_E *register_device_e,
+                       supla_abstract_srpc_adapter *srpc_adapter,
+                       supla_abstract_db_access_provider *dba,
+                       supla_abstract_device_dao *dao, int client_sd,
+                       int client_ipv4, unsigned char activity_timeout);
 
   virtual void on_registraction_success(int device_id, bool channels_added) = 0;
 

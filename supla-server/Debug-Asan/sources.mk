@@ -29,10 +29,14 @@ src/amazon \
 src/asynctask \
 src/channeljsonconfig \
 src/client \
+src/client/call_handler \
 src/conn \
+src/conn/call_handler \
 src/converter \
 src/crypt_blowfish \
+src/db \
 src/device \
+src/device/call_handler \
 src/distributedobjects \
 src/google \
 src/http \

@@ -16,34 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef REGISTERDEVICETEST_H_
-#define REGISTERDEVICETEST_H_
-
-#include "doubles/SrpcAdapterMock.h"
 #include "doubles/db/DbAccessProviderMock.h"
-#include "doubles/device/DeviceDaoMock.h"
-#include "doubles/device/RegisterDeviceMock.h"
-#include "gtest/gtest.h"
 
 namespace testing {
+DbAccessProviderMock::DbAccessProviderMock(void)
+    : supla_abstract_db_access_provider() {}
 
-class RegisterDeviceTest : public Test {
- protected:
-  SrpcAdapterMock srpcAdapter;
-  DbAccessProviderMock dba;
-  DeviceDaoMock dao;
-  RegisterDeviceMock rd;
+DbAccessProviderMock::~DbAccessProviderMock(void) {}
 
-  struct timeval setUpTime;
-  unsigned int msecFromSetUp(void);
-
- public:
-  RegisterDeviceTest();
-  virtual ~RegisterDeviceTest();
-  virtual void SetUp();
-  virtual void TearDown();
-};
-
-} /* namespace testing */
-
-#endif /* REGISTERDEVICETEST_H_ */
+}  // namespace testing

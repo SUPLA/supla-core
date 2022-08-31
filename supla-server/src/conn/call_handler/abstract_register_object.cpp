@@ -81,11 +81,11 @@ bool supla_ch_abstract_register_object::authkey_auth(
 bool supla_ch_abstract_register_object::is_valid_guid(
     char guid[SUPLA_GUID_SIZE]) {
   char _guid[SUPLA_GUID_SIZE] = {};
-  return memcmp(_guid, guid, SUPLA_GUID_SIZE) == 0;
+  return memcmp(_guid, guid, SUPLA_GUID_SIZE) != 0;
 }
 
 bool supla_ch_abstract_register_object::is_valid_authkey(
     char authkey[SUPLA_AUTHKEY_SIZE]) {
   char _authkey[SUPLA_AUTHKEY_SIZE] = {};
-  return memcmp(_authkey, authkey, SUPLA_AUTHKEY_SIZE) == 0;
+  return memcmp(_authkey, authkey, SUPLA_AUTHKEY_SIZE) != 0;
 }
