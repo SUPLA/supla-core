@@ -26,14 +26,14 @@ RegisterDeviceTest::~RegisterDeviceTest() {}
 
 void RegisterDeviceTest::SetUp() {
   Test::SetUp();
-  gettimeofday(&setUpTime, NULL);
+  gettimeofday(&setUpTime, nullptr);
 }
 
 void RegisterDeviceTest::TearDown() { Test::TearDown(); }
 
 unsigned int RegisterDeviceTest::msecFromSetUp(void) {
   struct timeval now = {};
-  gettimeofday(&now, NULL);
+  gettimeofday(&now, nullptr);
 
   return ((now.tv_sec * 1000000 + now.tv_usec) -
           (setUpTime.tv_sec * 1000000 + setUpTime.tv_usec)) /
@@ -53,8 +53,8 @@ TEST_F(RegisterDeviceTest, invalidGUID_c) {
         return 0;
       });
 
-  char result = rd.register_device(&register_device_c, NULL, &srpcAdapter, &dba,
-                                   &dao, 55, 4567, 20);
+  char result = rd.register_device(&register_device_c, nullptr, &srpcAdapter,
+                                   &dba, &dao, 55, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GT(msecFromSetUp(), 2000);
@@ -73,8 +73,30 @@ TEST_F(RegisterDeviceTest, invalidGUID_e) {
         return 0;
       });
 
-  char result = rd.register_device(NULL, &register_device_e, &srpcAdapter, &dba,
-                                   &dao, 55, 4567, 20);
+  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
+                                   &dba, &dao, 55, 4567, 20);
+
+  EXPECT_EQ(result, 0);
+  EXPECT_GT(msecFromSetUp(), 2000);
+}
+
+TEST_F(RegisterDeviceTest, invalidAuthkey) {
+  TDS_SuplaRegisterDevice_E register_device_e = {};
+
+  register_device_e.GUID[0] = 1;
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_AUTHKEY_ERROR, result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+
+  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
+                                   &dba, &dao, 55, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GT(msecFromSetUp(), 2000);
