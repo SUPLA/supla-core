@@ -26,24 +26,10 @@
 #include "supla-socket.h"
 
 // static
-serverstatus *serverstatus::_globalInstance = NULL;
+serverstatus serverstatus::_globalInstance;
 
 // static
-serverstatus *serverstatus::globalInstance(void) {
-  if (_globalInstance == NULL) {
-    _globalInstance = new serverstatus();
-  }
-
-  return _globalInstance;
-}
-
-// static
-void serverstatus::globalInstanceRelease(void) {
-  if (_globalInstance) {
-    delete _globalInstance;
-    _globalInstance = NULL;
-  }
-}
+serverstatus *serverstatus::globalInstance(void) { return &_globalInstance; }
 
 serverstatus::serverstatus(void) {
   lck = lck_init();
