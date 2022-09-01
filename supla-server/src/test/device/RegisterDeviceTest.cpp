@@ -102,4 +102,83 @@ TEST_F(RegisterDeviceTest, invalidAuthkey) {
   EXPECT_GT(msecFromSetUp(), 2000);
 }
 
+TEST_F(RegisterDeviceTest, dbConnectionFailed) {
+  TDS_SuplaRegisterDevice_E register_device_e = {};
+
+  register_device_e.GUID[0] = 1;
+  register_device_e.AuthKey[0] = 2;
+
+  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(false));
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE,
+                  result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+
+  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
+                                   &dba, &dao, 55, 4567, 20);
+
+  EXPECT_EQ(result, 0);
+  EXPECT_GT(msecFromSetUp(), 2000);
+}
+
+TEST_F(RegisterDeviceTest, locationAuthFailed) {
+  TDS_SuplaRegisterDevice_C register_device_c = {};
+
+  register_device_c.GUID[0] = 1;
+  register_device_c.LocationID = 123;
+  snprintf(register_device_c.LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+           "abcd");
+
+  EXPECT_CALL(dba, connect).Times(2).WillRepeatedly(Return(true));
+
+  EXPECT_CALL(dao, location_auth(123, StrEq("abcd"), NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce([](int location_id, char *location_pwd, int *user_id,
+                   bool *is_enabled) {
+        *user_id = 15;
+        *is_enabled = true;
+        return false;
+      });
+
+  EXPECT_CALL(dao, location_auth(345, StrEq("abcd"), NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce([](int location_id, char *location_pwd, int *user_id,
+                   bool *is_enabled) {
+        *user_id = 0;
+        *is_enabled = true;
+        return true;
+      });
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+      .Times(2)
+      .WillRepeatedly([](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+
+  char result = rd.register_device(&register_device_c, nullptr, &srpcAdapter,
+                                   &dba, &dao, 55, 4567, 20);
+
+  EXPECT_EQ(result, 0);
+  EXPECT_GT(msecFromSetUp(), 2000);
+
+  register_device_c.LocationID = 345;
+
+  result = rd.register_device(&register_device_c, nullptr, &srpcAdapter, &dba,
+                              &dao, 55, 4567, 20);
+
+  EXPECT_EQ(result, 0);
+  EXPECT_GT(msecFromSetUp(), 2000);
+}
+
 } /* namespace testing */
