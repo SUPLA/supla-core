@@ -28,7 +28,9 @@
 #include "log.h"
 
 supla_ch_abstract_register_device::supla_ch_abstract_register_device(void)
-    : supla_ch_abstract_register_object() {}
+    : supla_ch_abstract_register_object() {
+  hold_time_on_failure_usec = 2000000;
+}
 
 supla_ch_abstract_register_device::~supla_ch_abstract_register_device() {}
 
@@ -289,6 +291,8 @@ char supla_ch_abstract_register_device::register_device(
           }
         }
       }
+
+      dba->disconnect();
     }
   }
 
@@ -301,7 +305,7 @@ char supla_ch_abstract_register_device::register_device(
               (unsigned char)GUID[1], (unsigned char)GUID[2],
               (unsigned char)GUID[3]);
   } else {
-    usleep(2000000);
+    usleep(hold_time_on_failure_usec);
   }
 
   TSD_SuplaRegisterDeviceResult srdr;
@@ -312,4 +316,9 @@ char supla_ch_abstract_register_device::register_device(
   srpc_adapter->sd_async_registerdevice_result(&srdr);
 
   return result;
+}
+
+__useconds_t supla_ch_abstract_register_device::get_hold_time_on_failure_usec(
+    void) {
+  return hold_time_on_failure_usec;
 }

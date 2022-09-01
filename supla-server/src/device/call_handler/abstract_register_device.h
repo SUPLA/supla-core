@@ -29,6 +29,7 @@ class supla_user;
 class supla_ch_abstract_register_device
     : protected supla_ch_abstract_register_object {
  protected:
+  __useconds_t hold_time_on_failure_usec;
   char register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                        TDS_SuplaRegisterDevice_E *register_device_e,
                        supla_abstract_srpc_adapter *srpc_adapter,
@@ -41,6 +42,7 @@ class supla_ch_abstract_register_device
  public:
   supla_ch_abstract_register_device(void);
   virtual ~supla_ch_abstract_register_device();
+  __useconds_t get_hold_time_on_failure_usec(void);
 };
 
 #endif /* SUPLA_CH_ABSTRACT_REGISTER_DEVICE_H_*/
