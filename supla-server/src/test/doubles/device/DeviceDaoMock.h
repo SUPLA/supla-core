@@ -39,6 +39,9 @@ class DeviceDaoMock : public supla_abstract_device_dao {
 
   MOCK_METHOD2(get_location_id, int(int user_id, bool enabled));
 
+  MOCK_METHOD3(get_device_id,
+               bool(int user_id, const char guid[SUPLA_GUID_SIZE], int *id));
+
   MOCK_METHOD2(get_device_id,
                int(int user_id, const char guid[SUPLA_GUID_SIZE]));
 
@@ -69,8 +72,6 @@ class DeviceDaoMock : public supla_abstract_device_dao {
                      short manufacturer_id, short product_id, int flags));
 
   MOCK_METHOD1(add_device, int(int user_id));
-
-
 
   MOCK_METHOD8(update_device,
                int(int device_od, int original_location_id, const char *authkey,

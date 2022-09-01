@@ -211,13 +211,21 @@ int supla_device_dao::get_location_id(int user_id, bool enabled) {
   return result;
 }
 
-int supla_device_dao::get_device_id(int user_id,
-                                    const char guid[SUPLA_GUID_SIZE]) {
+bool supla_device_dao::get_device_id(int user_id,
+                                     const char guid[SUPLA_GUID_SIZE],
+                                     int *id) {
+  if (!id) {
+    return false;
+  }
+
+  // We intentionally use IFNULL(MIN (id), 0) so that the query result always
+  // contains one row. Otherwise, we assume that an error has occurred.
+
   const char query[] =
-      "SELECT id FROM supla_iodevice WHERE user_id = ? AND guid = unhex(?)";
+      "SELECT IFNULL(MIN(id), 0) FROM supla_iodevice WHERE user_id = ? AND "
+      "guid = unhex(?)";
 
   MYSQL_STMT *stmt = nullptr;
-  int result = 0;
 
   char guidhex[SUPLA_GUID_HEXSIZE];
   st_guid2hex(guidhex, guid);
@@ -231,12 +239,23 @@ int supla_device_dao::get_device_id(int user_id,
   pbind[1].buffer = (char *)guidhex;
   pbind[1].buffer_length = SUPLA_GUID_HEXSIZE - 1;
 
-  if (!dba->stmt_get_int((void **)&stmt, &result, nullptr, nullptr, nullptr,
-                         query, pbind, 2)) {
-    result = 0;
+  if (dba->stmt_get_int((void **)&stmt, id, nullptr, nullptr, nullptr, query,
+                        pbind, 2)) {
+    return true;
   }
 
-  return result;
+  *id = 0;
+  return false;
+}
+
+int supla_device_dao::get_device_id(int user_id,
+                                    const char guid[SUPLA_GUID_SIZE]) {
+  int result = 0;
+  if (get_device_id(user_id, guid, &result)) {
+    return result;
+  }
+
+  return 0;
 }
 
 bool supla_device_dao::get_device_reg_enabled(int user_id) {

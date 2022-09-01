@@ -39,6 +39,9 @@ class supla_device_dao : public supla_abstract_device_dao {
 
   virtual int get_location_id(int user_id, bool enabled);
 
+  virtual bool get_device_id(int user_id, const char guid[SUPLA_GUID_SIZE],
+                             int *id);
+
   virtual int get_device_id(int user_id, const char guid[SUPLA_GUID_SIZE]);
 
   virtual bool get_device_reg_enabled(int user_id);
