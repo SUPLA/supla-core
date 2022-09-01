@@ -46,6 +46,8 @@ class RegisterDeviceMock : public supla_ch_abstract_register_device {
                                       unsigned int buffer_size, bool *is_null));
   MOCK_METHOD2(on_registraction_success,
                void(int device_id, bool channels_added));
+
+  void set_hold_time_on_failure_usec(__useconds_t usec);
 };
 
 } /* namespace testing */

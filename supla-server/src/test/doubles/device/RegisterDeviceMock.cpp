@@ -35,4 +35,8 @@ char RegisterDeviceMock::register_device(
       client_ipv4, activity_timeout);
 }
 
+void RegisterDeviceMock::set_hold_time_on_failure_usec(__useconds_t usec) {
+  hold_time_on_failure_usec = usec;
+}
+
 }  // namespace testing
