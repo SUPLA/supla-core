@@ -27,17 +27,20 @@ RegisterDeviceTest::~RegisterDeviceTest() {}
 void RegisterDeviceTest::SetUp() {
   Test::SetUp();
   gettimeofday(&setUpTime, nullptr);
+
+  authkeyCache.set_cache_size_limit(0);
+  rd.set_hold_time_on_failure_usec(500000);
+  ON_CALL(rd, get_authkey_cache).WillByDefault(Return(&authkeyCache));
 }
 
 void RegisterDeviceTest::TearDown() { Test::TearDown(); }
 
-unsigned int RegisterDeviceTest::msecFromSetUp(void) {
+__useconds_t RegisterDeviceTest::usecFromSetUp(void) {
   struct timeval now = {};
   gettimeofday(&now, nullptr);
 
   return ((now.tv_sec * 1000000 + now.tv_usec) -
-          (setUpTime.tv_sec * 1000000 + setUpTime.tv_usec)) /
-         1000;
+          (setUpTime.tv_sec * 1000000 + setUpTime.tv_usec));
 }
 
 TEST_F(RegisterDeviceTest, invalidGUID_c) {
@@ -57,7 +60,7 @@ TEST_F(RegisterDeviceTest, invalidGUID_c) {
                                    &dba, &dao, 55, 4567, 20);
 
   EXPECT_EQ(result, 0);
-  EXPECT_GT(msecFromSetUp(), 2000);
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceTest, invalidGUID_e) {
@@ -77,7 +80,7 @@ TEST_F(RegisterDeviceTest, invalidGUID_e) {
                                    &dba, &dao, 55, 4567, 20);
 
   EXPECT_EQ(result, 0);
-  EXPECT_GT(msecFromSetUp(), 2000);
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceTest, invalidAuthkey) {
@@ -99,16 +102,17 @@ TEST_F(RegisterDeviceTest, invalidAuthkey) {
                                    &dba, &dao, 55, 4567, 20);
 
   EXPECT_EQ(result, 0);
-  EXPECT_GT(msecFromSetUp(), 2000);
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceTest, dbConnectionFailed) {
+TEST_F(RegisterDeviceTest, dbaConnectionFailed) {
   TDS_SuplaRegisterDevice_E register_device_e = {};
 
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(false));
+  EXPECT_CALL(dba, disconnect).Times(0);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
@@ -125,7 +129,7 @@ TEST_F(RegisterDeviceTest, dbConnectionFailed) {
                                    &dba, &dao, 55, 4567, 20);
 
   EXPECT_EQ(result, 0);
-  EXPECT_GT(msecFromSetUp(), 2000);
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceTest, locationAuthFailed) {
@@ -137,6 +141,8 @@ TEST_F(RegisterDeviceTest, locationAuthFailed) {
            "abcd");
 
   EXPECT_CALL(dba, connect).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(dba, disconnect).Times(2);
+  EXPECT_CALL(dba, start_transaction).Times(0);
 
   EXPECT_CALL(dao, location_auth(123, StrEq("abcd"), NotNull(), NotNull()))
       .Times(1)
@@ -170,7 +176,7 @@ TEST_F(RegisterDeviceTest, locationAuthFailed) {
                                    &dba, &dao, 55, 4567, 20);
 
   EXPECT_EQ(result, 0);
-  EXPECT_GT(msecFromSetUp(), 2000);
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 
   register_device_c.LocationID = 345;
 
@@ -178,10 +184,10 @@ TEST_F(RegisterDeviceTest, locationAuthFailed) {
                               &dao, 55, 4567, 20);
 
   EXPECT_EQ(result, 0);
-  EXPECT_GT(msecFromSetUp(), 2000);
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceTest, locationAuthSuccessButRegistrtionIsDisabled) {
+TEST_F(RegisterDeviceTest, locationAuthSuccessButRegistrtionDisabled) {
   TDS_SuplaRegisterDevice_C register_device_c = {};
 
   register_device_c.GUID[0] = 1;
@@ -206,6 +212,8 @@ TEST_F(RegisterDeviceTest, locationAuthSuccessButRegistrtionIsDisabled) {
 
   EXPECT_CALL(dba, rollback).Times(1);
 
+  EXPECT_CALL(dba, disconnect).Times(1);
+
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
       .WillRepeatedly([](TSD_SuplaRegisterDeviceResult *result) {
@@ -220,7 +228,75 @@ TEST_F(RegisterDeviceTest, locationAuthSuccessButRegistrtionIsDisabled) {
                                    &dba, &dao, 55, 4567, 20);
 
   EXPECT_EQ(result, 0);
-  EXPECT_GT(msecFromSetUp(), 2000);
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
+}
+
+TEST_F(RegisterDeviceTest, authkeyAuth_EmailNotFound) {
+  TDS_SuplaRegisterDevice_E register_device_e = {};
+
+  register_device_e.GUID[0] = 1;
+  register_device_e.AuthKey[0] = 2;
+
+  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+           "elon@spacex.com");
+
+  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, disconnect).Times(1);
+
+  EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
+      .Times(1)
+      .WillOnce(Return(0));
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+
+  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
+                                   &dba, &dao, 55, 4567, 20);
+
+  EXPECT_EQ(result, 0);
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
+}
+
+TEST_F(RegisterDeviceTest, authkeyAuth_GetObjectIdWithFail) {
+  TDS_SuplaRegisterDevice_E register_device_e = {};
+
+  register_device_e.GUID[0] = 1;
+  register_device_e.AuthKey[0] = 2;
+
+  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+           "elon@spacex.com");
+
+  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, disconnect).Times(1);
+
+  EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
+      .Times(1)
+      .WillOnce(Return(25));
+
+  EXPECT_CALL(rd, get_object_id(25, _, _)).Times(1).WillOnce(Return(false));
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+
+  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
+                                   &dba, &dao, 55, 4567, 20);
+
+  EXPECT_EQ(result, 0);
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 } /* namespace testing */

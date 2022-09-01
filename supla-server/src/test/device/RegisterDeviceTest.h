@@ -20,6 +20,7 @@
 #define REGISTERDEVICETEST_H_
 
 #include "doubles/SrpcAdapterMock.h"
+#include "doubles/conn/AuthkeyCacheStub.h"
 #include "doubles/db/DbAccessProviderMock.h"
 #include "doubles/device/DeviceDaoMock.h"
 #include "doubles/device/RegisterDeviceMock.h"
@@ -33,9 +34,10 @@ class RegisterDeviceTest : public Test {
   DbAccessProviderMock dba;
   DeviceDaoMock dao;
   RegisterDeviceMock rd;
+  AuthkeyCacheStub authkeyCache;
 
   struct timeval setUpTime;
-  unsigned int msecFromSetUp(void);
+  __useconds_t usecFromSetUp(void);
 
  public:
   RegisterDeviceTest();
