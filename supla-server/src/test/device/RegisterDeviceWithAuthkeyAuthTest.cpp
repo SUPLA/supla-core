@@ -341,7 +341,9 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, incorrectAuthKey) {
       .WillOnce(
           [](int id, char authkey_hash[BCRYPT_HASH_MAXSIZE], bool *is_null) {
             *is_null = false;
-            authkey_hash[0] = 2;
+            snprintf(
+                authkey_hash, BCRYPT_HASH_MAXSIZE, "%s",
+                "$2a$08$axDwSo52JOLB/hzHvpGAh.JkdmSezHyewYmIp3y3kKHZ3MzNcDyhG");
             return true;
           });
 
@@ -349,6 +351,58 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, incorrectAuthKey) {
       .Times(1)
       .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+
+  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
+                                   &dba, &dao, 55, 4567, 20);
+
+  EXPECT_EQ(result, 0);
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
+}
+
+TEST_F(RegisterDeviceWithAuthkeyAuthTest,
+       correctAuthKeyAndRegistrtionDisabled) {
+  TDS_SuplaRegisterDevice_E register_device_e = {};
+
+  register_device_e.GUID[0] = 1;
+  register_device_e.AuthKey[0] = 2;
+
+  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+           "elon@spacex.com");
+
+  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, disconnect).Times(1);
+
+  EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
+      .Times(1)
+      .WillOnce(Return(25));
+
+  EXPECT_CALL(rd, get_object_id(25, _, _))
+      .Times(1)
+      .WillOnce([](int user_id, const char guid[SUPLA_GUID_SIZE], int *id) {
+        *id = 55;
+        return true;
+      });
+
+  EXPECT_CALL(rd, get_authkey_hash(55, NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce(
+          [](int id, char authkey_hash[BCRYPT_HASH_MAXSIZE], bool *is_null) {
+            *is_null = false;
+            snprintf(
+                authkey_hash, BCRYPT_HASH_MAXSIZE, "%s",
+                "$2a$04$oo/qlYbeL.Gvk.1S.ZJL0eUkAgUizZ8.lqNqQXWD93mKfOxznaowO");
+            return true;
+          });
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_REGISTRATION_DISABLED, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
         EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
