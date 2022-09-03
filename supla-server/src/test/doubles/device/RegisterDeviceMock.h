@@ -42,8 +42,9 @@ class RegisterDeviceMock : public supla_ch_abstract_register_device {
                int(const char email[SUPLA_EMAIL_MAXSIZE]));
   MOCK_METHOD3(get_object_id,
                bool(int user_id, const char guid[SUPLA_GUID_SIZE], int *id));
-  MOCK_METHOD4(get_authkey_hash, bool(int id, char *buffer,
-                                      unsigned int buffer_size, bool *is_null));
+  MOCK_METHOD3(get_authkey_hash,
+               bool(int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
+                    bool *is_null));
   MOCK_METHOD2(on_registraction_success,
                void(int device_id, bool channels_added));
 

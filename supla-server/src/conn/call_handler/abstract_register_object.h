@@ -21,6 +21,7 @@
 
 #include "conn/authkey_cache.h"
 #include "proto.h"
+#include "tools.h"
 
 class supla_ch_abstract_register_object {
  protected:
@@ -35,7 +36,7 @@ class supla_ch_abstract_register_object {
   virtual int get_user_id_by_email(const char email[SUPLA_EMAIL_MAXSIZE]) = 0;
   virtual bool get_object_id(int user_id, const char guid[SUPLA_GUID_SIZE],
                              int *id) = 0;
-  virtual bool get_authkey_hash(int id, char *buffer, unsigned int buffer_size,
+  virtual bool get_authkey_hash(int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
                                 bool *is_null) = 0;
 
  public:

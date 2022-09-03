@@ -20,8 +20,6 @@
 
 #include <string.h>
 
-#include "tools.h"
-
 supla_ch_abstract_register_object::supla_ch_abstract_register_object(void) {}
 
 supla_ch_abstract_register_object::~supla_ch_abstract_register_object() {}
@@ -50,11 +48,9 @@ bool supla_ch_abstract_register_object::authkey_auth(
         }
 
         bool is_null = false;
-        char authkey_hash[BCRYPT_HASH_MAXSIZE];
-        memset(authkey_hash, 0, BCRYPT_HASH_MAXSIZE);
+        char authkey_hash[BCRYPT_HASH_MAXSIZE] = {};
 
-        if (!get_authkey_hash(id, authkey_hash, BCRYPT_HASH_MAXSIZE,
-                              &is_null)) {
+        if (!get_authkey_hash(id, authkey_hash, &is_null)) {
           return false;
         }
 

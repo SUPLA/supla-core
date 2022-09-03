@@ -16,31 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef REGISTERDEVICEWITHLOCATIONAUTHTEST_H_
+#define REGISTERDEVICEWITHLOCATIONAUTHTEST_H_
+
 #include "device/RegisterDeviceTest.h"
 
 namespace testing {
 
-RegisterDeviceTest::RegisterDeviceTest() : Test() {}
-
-RegisterDeviceTest::~RegisterDeviceTest() {}
-
-void RegisterDeviceTest::SetUp() {
-  Test::SetUp();
-  gettimeofday(&setUpTime, nullptr);
-
-  authkeyCache.set_cache_size_limit(0);
-  rd.set_hold_time_on_failure_usec(500000);
-  ON_CALL(rd, get_authkey_cache).WillByDefault(Return(&authkeyCache));
-}
-
-void RegisterDeviceTest::TearDown() { Test::TearDown(); }
-
-__useconds_t RegisterDeviceTest::usecFromSetUp(void) {
-  struct timeval now = {};
-  gettimeofday(&now, nullptr);
-
-  return ((now.tv_sec * 1000000 + now.tv_usec) -
-          (setUpTime.tv_sec * 1000000 + setUpTime.tv_usec));
-}
+class RegisterDeviceWithLocationAuthTest : public RegisterDeviceTest {
+ public:
+  RegisterDeviceWithLocationAuthTest();
+  virtual ~RegisterDeviceWithLocationAuthTest();
+};
 
 } /* namespace testing */
+
+#endif /* REGISTERDEVICEWITHLOCATIONAUTHTEST_H_ */
