@@ -170,6 +170,10 @@ char supla_ch_abstract_register_device::register_device(
                   LocationID, GUID, AuthKey, Name, client_ipv4, SoftVer,
                   srpc_adapter->get_proto_version(), ManufacturerID, ProductID,
                   DeviceFlags, UserID);
+
+              if (DeviceID == 0) {
+                dba->rollback();
+              }
             }
           }
         }
