@@ -114,4 +114,43 @@ TEST_F(RegisterDeviceEssentialTest, noLocationAvailable) {
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
+TEST_F(RegisterDeviceEssentialTest, failedToAddDevice) {
+  TDS_SuplaRegisterDevice_E register_device_e = {};
+
+  register_device_e.GUID[0] = 1;
+  register_device_e.AuthKey[0] = 2;
+
+  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+           "bill@microsoft.com");
+
+  EXPECT_CALL(dao, get_device_limit_left(55)).Times(1).WillOnce(Return(1));
+
+  EXPECT_CALL(dao, get_location_id(55, true)).Times(1).WillOnce(Return(123));
+
+  EXPECT_CALL(dao, add_device(_)).Times(1).WillOnce(Return(0));
+
+  EXPECT_CALL(dba, start_transaction).Times(1);
+
+  EXPECT_CALL(dba, rollback).Times(1);
+
+  EXPECT_CALL(dba, disconnect).Times(1);
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE,
+                  result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+
+  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
+                                   &dba, &dao, 55, 4567, 20);
+
+  EXPECT_EQ(result, 0);
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
+}
+
 } /* namespace testing */
