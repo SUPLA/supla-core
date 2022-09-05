@@ -39,7 +39,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, invalidGUID) {
       });
 
   char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 234, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -61,7 +61,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, invalidAuthkey) {
       });
 
   char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 234, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -88,7 +88,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, dbaConnectionFailed) {
       });
 
   char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 234, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -121,7 +121,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, emailNotFound) {
       });
 
   char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 234, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -156,7 +156,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, getObjectIdWithFail) {
       });
 
   char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 234, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -204,7 +204,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest,
       });
 
   char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 234, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -252,7 +252,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, getAuthKeyWithFail) {
       });
 
   char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 234, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -307,7 +307,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, missingKeyAndRegistrationDisabled) {
       });
 
   char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 234, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -358,7 +358,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, incorrectAuthKey) {
       });
 
   char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 234, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -410,7 +410,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest,
       });
 
   char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 234, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());

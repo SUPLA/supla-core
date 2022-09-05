@@ -39,7 +39,7 @@ TEST_F(RegisterDeviceWithLocationAuthTest, invalidGUID) {
       });
 
   char result = rd.register_device(&register_device_c, nullptr, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 456, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -86,7 +86,7 @@ TEST_F(RegisterDeviceWithLocationAuthTest, authFailed) {
       });
 
   char result = rd.register_device(&register_device_c, nullptr, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 456, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -138,7 +138,7 @@ TEST_F(RegisterDeviceWithLocationAuthTest, authSuccessAndRegistrationDisabled) {
       });
 
   char result = rd.register_device(&register_device_c, nullptr, &srpcAdapter,
-                                   &dba, &dao, 55, 4567, 20);
+                                   &dba, &dao, 456, 4567, 20);
 
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
