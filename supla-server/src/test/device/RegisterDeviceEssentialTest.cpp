@@ -335,4 +335,58 @@ TEST_F(RegisterDeviceEssentialTest, deviceHasLostItsLocation) {
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
+TEST_F(RegisterDeviceEssentialTest, locationConflict) {
+  TDS_SuplaRegisterDevice_C register_device_c = {};
+
+  register_device_c.GUID[0] = 1;
+  register_device_c.LocationID = 123;
+  snprintf(register_device_c.LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+           "abcd");
+
+  EXPECT_CALL(dba, connect).Times(1).WillRepeatedly(Return(true));
+
+  EXPECT_CALL(dao, location_auth(123, StrEq("abcd"), NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce([](int location_id, char *location_pwd, int *user_id,
+                   bool *is_enabled) {
+        *user_id = 15;
+        *is_enabled = true;
+        return true;
+      });
+
+  EXPECT_CALL(dba, start_transaction).Times(1);
+
+  EXPECT_CALL(
+      dao, get_device_variables(_, NotNull(), NotNull(), NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce([](int device_id, bool *device_enabled,
+                   int *original_location_id, int *location_id,
+                   bool *location_enabled) {
+        *location_id = 45;
+        *original_location_id = 46;
+        *location_enabled = true;
+        return 33;
+      });
+
+  EXPECT_CALL(dba, rollback).Times(1);
+
+  EXPECT_CALL(dba, disconnect).Times(1);
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+      .Times(1)
+      .WillRepeatedly([](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_LOCATION_CONFLICT, result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+
+  char result = rd.register_device(&register_device_c, nullptr, &srpcAdapter,
+                                   &dba, &dao, 456, 4567, 20);
+
+  EXPECT_EQ(result, 0);
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
+}
+
 } /* namespace testing */
