@@ -70,7 +70,7 @@ class supla_device_dao : public supla_abstract_device_dao {
 
   virtual int add_channel(int device_id, int channel_number, int type, int func,
                           int param1, int param2, int flist, int flags,
-                          int user_id, bool *new_channel);
+                          int user_id);
 
   virtual bool on_new_device(int device_id);
 

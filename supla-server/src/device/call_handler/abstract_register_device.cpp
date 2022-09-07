@@ -242,8 +242,6 @@ char supla_ch_abstract_register_device::register_device(
               }
 
               if (ChannelType == 0) {
-                bool new_channel = false;
-
                 int Param1 = 0;
                 int Param2 = 0;
                 supla_device_channel::getDefaults(Type, DefaultFunc, &Param1,
@@ -252,12 +250,12 @@ char supla_ch_abstract_register_device::register_device(
                 int ChannelID = dao->add_channel(
                     DeviceID, Number, Type, DefaultFunc, Param1, Param2,
                     supla_device_channel::funcListFilter(FuncList, Type),
-                    ChannelFlags, UserID, &new_channel);
+                    ChannelFlags, UserID);
 
                 if (ChannelID == 0) {
                   ChannelCount = -1;
                   break;
-                } else if (new_channel) {
+                } else {
                   channels_added = true;
                   dao->on_channel_added(DeviceID, ChannelID);
                 }
