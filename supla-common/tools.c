@@ -20,6 +20,7 @@
 
 #include "tools.h"
 
+#include <execinfo.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -55,6 +56,17 @@ void st_signal_handler(int sig) {
   if (st_eh != 0) eh_raise_event(st_eh);
 }
 
+void st_critical_signal_handler(int sig) {
+  void *array[20] = {};
+  size_t size = 0;
+
+  size = backtrace(array, 20);
+
+  fprintf(stderr, "Critical Error! Signal %d:\n", sig);
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  exit(1);
+}
+
 void st_hook_signals(void) {
   main_thread = pthread_self();
 
@@ -71,6 +83,11 @@ void st_hook_signals(void) {
   signal(SIGQUIT, st_signal_handler);
   signal(SIGPIPE, SIG_IGN);
 #endif /*__ANDROID__*/
+}
+
+void st_hook_critical_signals(void) {
+  signal(SIGSEGV, st_critical_signal_handler);
+  signal(SIGABRT, st_critical_signal_handler);
 }
 
 unsigned char st_file_exists(const char *fp) {

@@ -30,6 +30,10 @@
 #include "tools.h"
 
 int main(int argc, char *argv[]) {
+#if __DEBUG
+  st_hook_critical_signals();
+#endif
+
   void *queue_loop_t = NULL;
 
   // INIT BLOCK

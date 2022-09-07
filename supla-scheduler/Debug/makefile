@@ -56,7 +56,7 @@ main-build: supla-scheduler
 supla-scheduler: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++ -L/usr/include/mysql -pthread -lrt -o "supla-scheduler" $(OBJS) $(USER_OBJS) $(LIBS) -l$(LIBMYSQL)
+	g++ -L/usr/include/mysql -pthread -lrt -rdynamic -no-pie -o "supla-scheduler" $(OBJS) $(USER_OBJS) $(LIBS) -l$(LIBMYSQL)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
