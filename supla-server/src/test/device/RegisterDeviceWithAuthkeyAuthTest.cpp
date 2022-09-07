@@ -100,7 +100,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, emailNotFound) {
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -133,7 +133,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, getObjectIdWithFail) {
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -169,7 +169,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest,
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -216,7 +216,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, getAuthKeyWithFail) {
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -264,7 +264,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, missingKeyAndRegistrationDisabled) {
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -319,7 +319,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, incorrectAuthKey) {
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -371,7 +371,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest,
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));

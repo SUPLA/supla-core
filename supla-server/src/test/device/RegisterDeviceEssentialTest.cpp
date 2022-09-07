@@ -48,7 +48,7 @@ TEST_F(RegisterDeviceEssentialTest, deviceLimitExceded) {
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "bill@microsoft.com");
 
   EXPECT_CALL(dao, get_device_limit_left(55)).Times(1).WillOnce(Return(0));
@@ -82,7 +82,7 @@ TEST_F(RegisterDeviceEssentialTest, noLocationAvailable) {
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "bill@microsoft.com");
 
   EXPECT_CALL(dao, get_device_limit_left(55)).Times(1).WillOnce(Return(1));
@@ -120,7 +120,7 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddDevice) {
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "bill@microsoft.com");
 
   EXPECT_CALL(dao, get_device_limit_left(55)).Times(1).WillOnce(Return(1));
@@ -159,7 +159,7 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndIsDisabled) {
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -219,7 +219,7 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndLocationIsDisabled) {
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -280,7 +280,7 @@ TEST_F(RegisterDeviceEssentialTest, deviceHasLostItsLocation) {
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -388,5 +388,7 @@ TEST_F(RegisterDeviceEssentialTest, locationConflict) {
   EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
+
+
 
 } /* namespace testing */
