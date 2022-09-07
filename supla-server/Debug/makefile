@@ -74,7 +74,7 @@ main-build: supla-server
 supla-server: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	$(CXX) -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS) -lssl -l$(LIBMYSQL) -lcrypto
+	$(CXX) -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -rdynamic -no-pie -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS) -lssl -l$(LIBMYSQL) -lcrypto
 	@echo 'Finished building target: $@'
 	@echo ' '
 
