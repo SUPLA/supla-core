@@ -193,7 +193,7 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndIsDisabled) {
                    int *original_location_id, int *location_id,
                    bool *location_enabled) {
         *device_enabled = false;
-        return 33;
+        return device_id;
       });
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
@@ -253,7 +253,7 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndLocationIsDisabled) {
                    int *original_location_id, int *location_id,
                    bool *location_enabled) {
         *location_enabled = false;
-        return 33;
+        return device_id;
       });
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
@@ -315,7 +315,7 @@ TEST_F(RegisterDeviceEssentialTest, deviceHasLostItsLocation) {
                    bool *location_enabled) {
         *location_id = 0;
         *location_enabled = true;
-        return 33;
+        return device_id;
       });
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
@@ -356,6 +356,8 @@ TEST_F(RegisterDeviceEssentialTest, locationConflict) {
 
   EXPECT_CALL(dba, start_transaction).Times(1);
 
+  EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
+
   EXPECT_CALL(
       dao, get_device_variables(_, NotNull(), NotNull(), NotNull(), NotNull()))
       .Times(1)
@@ -365,7 +367,7 @@ TEST_F(RegisterDeviceEssentialTest, locationConflict) {
         *location_id = 45;
         *original_location_id = 46;
         *location_enabled = true;
-        return 33;
+        return device_id;
       });
 
   EXPECT_CALL(dba, rollback).Times(1);
