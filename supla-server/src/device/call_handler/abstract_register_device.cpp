@@ -288,7 +288,10 @@ char supla_ch_abstract_register_device::register_device(
 
             if (DeviceID != 0) {
               dba->commit();
+              resultcode = SUPLA_RESULTCODE_TRUE;
               on_registraction_success(DeviceID, channels_added);
+            } else {
+              dba->rollback();
             }
           }
         }

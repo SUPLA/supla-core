@@ -31,6 +31,8 @@ void RegisterDeviceTest::SetUp() {
   authkeyCache.set_cache_size_limit(0);
   rd.set_hold_time_on_failure_usec(500000);
   ON_CALL(rd, get_authkey_cache).WillByDefault(Return(&authkeyCache));
+  ON_CALL(srpcAdapter, get_proto_version)
+      .WillByDefault(Return(SUPLA_PROTO_VERSION));
 }
 
 void RegisterDeviceTest::TearDown() { Test::TearDown(); }
