@@ -939,7 +939,7 @@ TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
                                    &dba, &dao, 169, 4567, 20);
 
   EXPECT_EQ(result, 0);
-  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
+  EXPECT_LT(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 } /* namespace testing */
