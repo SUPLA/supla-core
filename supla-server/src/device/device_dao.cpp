@@ -276,11 +276,11 @@ int supla_device_dao::get_device_limit_left(int user_id) {
       "supla_user WHERE id = ?");
 }
 
-int supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
-                                           int *original_location_id,
-                                           int *location_id,
-                                           bool *location_enabled) {
-  if (device_id == 0) return 0;
+bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
+                                            int *original_location_id,
+                                            int *location_id,
+                                            bool *location_enabled) {
+  if (device_id == 0) return false;
 
   MYSQL_STMT *stmt = nullptr;
 
@@ -338,7 +338,7 @@ int supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
     mysql_stmt_close(stmt);
   }
 
-  return result ? device_id : 0;
+  return result;
 }
 
 int supla_device_dao::get_channel_id_and_type(int device_id, int channel_number,
@@ -467,11 +467,12 @@ int supla_device_dao::add_device(int location_id,
   return device_id;
 }
 
-int supla_device_dao::update_device(int device_id, int original_location_id,
-                                    const char *authkey, const char *name,
-                                    unsigned int ipv4, const char *softver,
-                                    int proto_version, int flags) {
+bool supla_device_dao::update_device(int device_id, int original_location_id,
+                                     const char *authkey, const char *name,
+                                     unsigned int ipv4, const char *softver,
+                                     int proto_version, int flags) {
   char *authkey_hash_hex = nullptr;
+  bool result = false;
 
   MYSQL_BIND pbind[8] = {};
 
@@ -521,8 +522,8 @@ int supla_device_dao::update_device(int device_id, int original_location_id,
       "`supla_update_iodevice`(?,?,?,?,?,unhex(?),?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  if (!dba->stmt_execute((void **)&stmt, sql, pbind, 8, true)) {
-    device_id = 0;
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 8, true)) {
+    result = true;
   }
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
@@ -532,7 +533,7 @@ int supla_device_dao::update_device(int device_id, int original_location_id,
     authkey_hash_hex = nullptr;
   }
 
-  return device_id;
+  return result;
 }
 
 int supla_device_dao::add_channel(int device_id, int channel_number, int type,

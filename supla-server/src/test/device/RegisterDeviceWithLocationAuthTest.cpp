@@ -38,10 +38,9 @@ TEST_F(RegisterDeviceWithLocationAuthTest, invalidGUID) {
         return 0;
       });
 
-  char result = rd.register_device(&register_device_c, nullptr, &srpcAdapter,
-                                   &dba, &dao, 456, 4567, 20);
+  rd.register_device(&register_device_c, nullptr, &srpcAdapter, &dba, &dao, 456,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -54,6 +53,7 @@ TEST_F(RegisterDeviceWithLocationAuthTest, authFailed) {
            "abcd");
 
   EXPECT_CALL(dba, connect).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(2).WillRepeatedly(Return(true));
   EXPECT_CALL(dba, disconnect).Times(2);
   EXPECT_CALL(dba, start_transaction).Times(0);
 
@@ -85,18 +85,16 @@ TEST_F(RegisterDeviceWithLocationAuthTest, authFailed) {
         return 0;
       });
 
-  char result = rd.register_device(&register_device_c, nullptr, &srpcAdapter,
-                                   &dba, &dao, 456, 4567, 20);
+  rd.register_device(&register_device_c, nullptr, &srpcAdapter, &dba, &dao, 456,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 
   register_device_c.LocationID = 345;
 
-  result = rd.register_device(&register_device_c, nullptr, &srpcAdapter, &dba,
-                              &dao, 55, 4567, 20);
+  rd.register_device(&register_device_c, nullptr, &srpcAdapter, &dba, &dao, 55,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -125,6 +123,7 @@ TEST_F(RegisterDeviceWithLocationAuthTest, authSuccessAndRegistrationDisabled) {
 
   EXPECT_CALL(dba, rollback).Times(1);
 
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
@@ -137,10 +136,9 @@ TEST_F(RegisterDeviceWithLocationAuthTest, authSuccessAndRegistrationDisabled) {
         return 0;
       });
 
-  char result = rd.register_device(&register_device_c, nullptr, &srpcAdapter,
-                                   &dba, &dao, 456, 4567, 20);
+  rd.register_device(&register_device_c, nullptr, &srpcAdapter, &dba, &dao, 456,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 

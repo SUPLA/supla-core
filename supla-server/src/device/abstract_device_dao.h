@@ -44,9 +44,9 @@ class supla_abstract_device_dao {
 
   virtual int get_device_limit_left(int user_id) = 0;
 
-  virtual int get_device_variables(int device_id, bool *device_enabled,
-                                   int *original_location_id, int *location_id,
-                                   bool *location_enabled) = 0;
+  virtual bool get_device_variables(int device_id, bool *device_enabled,
+                                    int *original_location_id, int *location_id,
+                                    bool *location_enabled) = 0;
 
   virtual int get_channel_id_and_type(int device_id, int channel_number,
                                       int *type) = 0;
@@ -59,10 +59,10 @@ class supla_abstract_device_dao {
                          int proto_version, short manufacturer_id,
                          short product_id, int flags, int user_id) = 0;
 
-  virtual int update_device(int device_od, int original_location_id,
-                            const char *authkey, const char *name,
-                            unsigned int ipv4, const char *softver,
-                            int proto_version, int flags) = 0;
+  virtual bool update_device(int device_od, int original_location_id,
+                             const char *authkey, const char *name,
+                             unsigned int ipv4, const char *softver,
+                             int proto_version, int flags) = 0;
 
   virtual int add_channel(int device_id, int channel_number, int type, int func,
                           int param1, int param2, int flist, int flags,

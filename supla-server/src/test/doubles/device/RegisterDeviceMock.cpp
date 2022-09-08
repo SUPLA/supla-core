@@ -24,13 +24,13 @@ RegisterDeviceMock::RegisterDeviceMock(void)
 
 RegisterDeviceMock::~RegisterDeviceMock(void) {}
 
-char RegisterDeviceMock::register_device(
+void RegisterDeviceMock::register_device(
     TDS_SuplaRegisterDevice_C *register_device_c,
     TDS_SuplaRegisterDevice_E *register_device_e,
     supla_abstract_srpc_adapter *srpc_adapter,
     supla_abstract_db_access_provider *dba, supla_abstract_device_dao *dao,
     int client_sd, int client_ipv4, unsigned char activity_timeout) {
-  return supla_ch_abstract_register_device::register_device(
+  supla_ch_abstract_register_device::register_device(
       register_device_c, register_device_e, srpc_adapter, dba, dao, client_sd,
       client_ipv4, activity_timeout);
 }

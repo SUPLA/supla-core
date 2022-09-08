@@ -38,10 +38,9 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, invalidGUID) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 234, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -60,10 +59,9 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, invalidAuthkey) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 234, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -74,6 +72,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, dbaConnectionFailed) {
   register_device_e.AuthKey[0] = 2;
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(false));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(false));
   EXPECT_CALL(dba, disconnect).Times(0);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
@@ -87,10 +86,9 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, dbaConnectionFailed) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 234, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -104,6 +102,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, emailNotFound) {
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -120,10 +119,9 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, emailNotFound) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 234, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -137,6 +135,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, getObjectIdWithFail) {
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -155,10 +154,9 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, getObjectIdWithFail) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 234, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -191,6 +189,8 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest,
 
   EXPECT_CALL(dba, rollback).Times(1);
 
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
+
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
@@ -203,10 +203,9 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest,
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 234, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -220,6 +219,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, getAuthKeyWithFail) {
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -251,10 +251,9 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, getAuthKeyWithFail) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 234, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -274,6 +273,8 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, missingKeyAndRegistrationDisabled) {
   EXPECT_CALL(dao, get_device_reg_enabled(25)).Times(1).WillOnce(Return(false));
 
   EXPECT_CALL(dba, rollback).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -306,10 +307,9 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, missingKeyAndRegistrationDisabled) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 234, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -323,6 +323,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, incorrectAuthKey) {
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -357,10 +358,9 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, incorrectAuthKey) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 234, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -375,6 +375,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest,
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -409,10 +410,9 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest,
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 234, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 

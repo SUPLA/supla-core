@@ -37,7 +37,9 @@ void RegisterDeviceEssentialTest::SetUp() {
             return true;
           });
 
-  ON_CALL(dba, connect).WillByDefault(Return(true));
+  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, disconnect).Times(1);
 
   ON_CALL(dao, get_device_reg_enabled).WillByDefault(Return(true));
 
@@ -59,8 +61,6 @@ TEST_F(RegisterDeviceEssentialTest, deviceLimitExceded) {
 
   EXPECT_CALL(dba, rollback).Times(1);
 
-  EXPECT_CALL(dba, disconnect).Times(1);
-
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
       .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
@@ -71,10 +71,9 @@ TEST_F(RegisterDeviceEssentialTest, deviceLimitExceded) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 169, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -97,8 +96,6 @@ TEST_F(RegisterDeviceEssentialTest, noLocationAvailable) {
 
   EXPECT_CALL(dba, rollback).Times(1);
 
-  EXPECT_CALL(dba, disconnect).Times(1);
-
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
       .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
@@ -109,10 +106,9 @@ TEST_F(RegisterDeviceEssentialTest, noLocationAvailable) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 169, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -135,8 +131,6 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddDevice) {
 
   EXPECT_CALL(dba, rollback).Times(1);
 
-  EXPECT_CALL(dba, disconnect).Times(1);
-
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
       .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
@@ -148,10 +142,9 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddDevice) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 169, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -163,9 +156,6 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndIsDisabled) {
 
   snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
-
-  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
       .Times(1)
@@ -195,7 +185,7 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndIsDisabled) {
                    int *original_location_id, int *location_id,
                    bool *location_enabled) {
         *device_enabled = false;
-        return device_id;
+        return true;
       });
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
@@ -208,10 +198,9 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndIsDisabled) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 169, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -223,9 +212,6 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndLocationIsDisabled) {
 
   snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
-
-  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
       .Times(1)
@@ -255,7 +241,7 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndLocationIsDisabled) {
                    int *original_location_id, int *location_id,
                    bool *location_enabled) {
         *location_enabled = false;
-        return device_id;
+        return true;
       });
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
@@ -268,10 +254,9 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndLocationIsDisabled) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 169, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -284,9 +269,6 @@ TEST_F(RegisterDeviceEssentialTest, deviceHasLostItsLocation) {
 
   snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
-
-  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
       .Times(1)
@@ -317,7 +299,7 @@ TEST_F(RegisterDeviceEssentialTest, deviceHasLostItsLocation) {
                    bool *location_enabled) {
         *location_id = 0;
         *location_enabled = true;
-        return device_id;
+        return true;
       });
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
@@ -330,10 +312,9 @@ TEST_F(RegisterDeviceEssentialTest, deviceHasLostItsLocation) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 169, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -344,8 +325,6 @@ TEST_F(RegisterDeviceEssentialTest, locationConflict) {
   register_device_c.LocationID = 123;
   snprintf(register_device_c.LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, "%s",
            "abcd");
-
-  EXPECT_CALL(dba, connect).Times(1).WillRepeatedly(Return(true));
 
   EXPECT_CALL(dao, location_auth(123, StrEq("abcd"), NotNull(), NotNull()))
       .Times(1)
@@ -369,12 +348,10 @@ TEST_F(RegisterDeviceEssentialTest, locationConflict) {
         *location_id = 45;
         *original_location_id = 46;
         *location_enabled = true;
-        return device_id;
+        return true;
       });
 
   EXPECT_CALL(dba, rollback).Times(1);
-
-  EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
@@ -386,10 +363,9 @@ TEST_F(RegisterDeviceEssentialTest, locationConflict) {
         return 0;
       });
 
-  char result = rd.register_device(&register_device_c, nullptr, &srpcAdapter,
-                                   &dba, &dao, 456, 4567, 20);
+  rd.register_device(&register_device_c, nullptr, &srpcAdapter, &dba, &dao, 456,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -401,9 +377,6 @@ TEST_F(RegisterDeviceEssentialTest, wrongNumberOfChannels) {
 
   snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
-
-  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
       .Times(1)
@@ -434,7 +407,7 @@ TEST_F(RegisterDeviceEssentialTest, wrongNumberOfChannels) {
                    bool *location_enabled) {
         *location_id = 155;
         *location_enabled = true;
-        return device_id;
+        return true;
       });
 
   EXPECT_CALL(dao, get_device_channel_count(55)).Times(1).WillOnce(Return(1));
@@ -449,10 +422,9 @@ TEST_F(RegisterDeviceEssentialTest, wrongNumberOfChannels) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 169, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -469,9 +441,6 @@ TEST_F(RegisterDeviceEssentialTest, channelTypeChanged) {
   snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
-  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(dba, disconnect).Times(1);
-
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
       .Times(1)
       .WillOnce(Return(25));
@@ -501,7 +470,7 @@ TEST_F(RegisterDeviceEssentialTest, channelTypeChanged) {
                    bool *location_enabled) {
         *location_id = 155;
         *location_enabled = true;
-        return device_id;
+        return true;
       });
 
   EXPECT_CALL(dao, get_device_channel_count(55)).Times(0);
@@ -530,10 +499,9 @@ TEST_F(RegisterDeviceEssentialTest, channelTypeChanged) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 169, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -557,8 +525,6 @@ TEST_F(RegisterDeviceEssentialTest,
   snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
-  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(dba, disconnect).Times(1);
   EXPECT_CALL(dba, start_transaction).Times(1);
   EXPECT_CALL(dba, rollback).Times(0);
   EXPECT_CALL(dba, commit).Times(1);
@@ -592,7 +558,7 @@ TEST_F(RegisterDeviceEssentialTest,
                    bool *location_enabled) {
         *location_id = 155;
         *location_enabled = true;
-        return device_id;
+        return true;
       });
 
   EXPECT_CALL(dao, get_device_channel_count(55)).Times(1).WillOnce(Return(2));
@@ -615,7 +581,7 @@ TEST_F(RegisterDeviceEssentialTest,
   EXPECT_CALL(dao, update_device(55, 0, NotNull(), StrEq("Torch Switch"), 4567,
                                  StrEq("22.09"), SUPLA_PROTO_VERSION, 778899))
       .Times(1)
-      .WillOnce(Return(55));
+      .WillOnce(Return(true));
 
   EXPECT_CALL(rd, on_registraction_success(55, false)).Times(1);
 
@@ -629,10 +595,9 @@ TEST_F(RegisterDeviceEssentialTest,
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 169, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_LT(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -656,8 +621,6 @@ TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
   snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
-  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(dba, disconnect).Times(1);
   EXPECT_CALL(dba, start_transaction).Times(1);
   EXPECT_CALL(dba, rollback).Times(0);
   EXPECT_CALL(dba, commit).Times(1);
@@ -691,7 +654,7 @@ TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
                    bool *location_enabled) {
         *location_id = 155;
         *location_enabled = true;
-        return device_id;
+        return true;
       });
 
   EXPECT_CALL(dao, get_device_channel_count(55)).Times(1).WillOnce(Return(2));
@@ -721,7 +684,7 @@ TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
   EXPECT_CALL(dao, update_device(55, 0, NotNull(), StrEq("Torch Switch"), 4567,
                                  StrEq("22.09"), SUPLA_PROTO_VERSION, 778899))
       .Times(1)
-      .WillOnce(Return(55));
+      .WillOnce(Return(true));
 
   EXPECT_CALL(rd, on_registraction_success(55, true)).Times(1);
 
@@ -735,10 +698,9 @@ TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 169, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_LT(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -762,8 +724,6 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddChannel) {
   snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
-  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(dba, disconnect).Times(1);
   EXPECT_CALL(dba, start_transaction).Times(1);
   EXPECT_CALL(dba, rollback).Times(1);
   EXPECT_CALL(dba, commit).Times(0);
@@ -797,7 +757,7 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddChannel) {
                    bool *location_enabled) {
         *location_id = 155;
         *location_enabled = true;
-        return device_id;
+        return true;
       });
 
   EXPECT_CALL(dao, get_device_channel_count).Times(0);
@@ -838,10 +798,9 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddChannel) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 169, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -867,8 +826,6 @@ TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
   snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
-  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(dba, disconnect).Times(1);
   EXPECT_CALL(dba, start_transaction).Times(1);
   EXPECT_CALL(dba, rollback).Times(0);
   EXPECT_CALL(dba, commit).Times(1);
@@ -888,7 +845,7 @@ TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
 
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(0));
 
-  EXPECT_CALL(dao, get_device_variables).Times(1).WillOnce(Return(0));
+  EXPECT_CALL(dao, get_device_variables).Times(0);
 
   EXPECT_CALL(dao, get_location_id(25, true)).Times(1).WillOnce(Return(88));
 
@@ -935,10 +892,9 @@ TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
         return 0;
       });
 
-  char result = rd.register_device(nullptr, &register_device_e, &srpcAdapter,
-                                   &dba, &dao, 169, 4567, 20);
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
 
-  EXPECT_EQ(result, 0);
   EXPECT_LT(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 

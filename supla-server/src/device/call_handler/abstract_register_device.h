@@ -28,9 +28,46 @@
 class supla_user;
 class supla_ch_abstract_register_device
     : protected supla_ch_abstract_register_object {
+ private:
+  char *guid;
+  char *authkey;
+  char *name;
+  char *softver;
+  unsigned char channel_count;
+  TDS_SuplaRegisterDevice_C *register_device_c;
+  TDS_SuplaRegisterDevice_E *register_device_e;
+  int location_id;
+  int device_flags;
+  short manufacturer_id;
+  short product_id;
+  int flags;
+  int device_id;
+
+  int user_id;
+  bool location_enabled;
+  bool new_device;
+  bool device_enabled;
+  bool channels_added;
+  int _location_id;
+  int _original_location_id;
+
+  bool should_rollback;
+
+  supla_abstract_srpc_adapter *srpc_adapter;
+  supla_abstract_db_access_provider *dba;
+  supla_abstract_device_dao *dao;
+  int client_sd;
+  int client_ipv4;
+  unsigned char activity_timeout;
+
+  void send_result(int resultcode);
+  bool device_auth(void);
+  bool add_device(void);
+  bool add_channels(void);
+
  protected:
   __useconds_t hold_time_on_failure_usec;
-  char register_device(TDS_SuplaRegisterDevice_C *register_device_c,
+  void register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                        TDS_SuplaRegisterDevice_E *register_device_e,
                        supla_abstract_srpc_adapter *srpc_adapter,
                        supla_abstract_db_access_provider *dba,

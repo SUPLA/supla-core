@@ -29,286 +29,58 @@
 
 supla_ch_abstract_register_device::supla_ch_abstract_register_device(void)
     : supla_ch_abstract_register_object() {
+  guid = nullptr;
+  authkey = nullptr;
+  name = nullptr;
+  softver = nullptr;
+  channel_count = 0;
+  register_device_e = nullptr;
+  location_id = 0;
+  device_flags = 0;
+  manufacturer_id = 0;
+  product_id = 0;
+  flags = 0;
+  device_id = 0;
+
+  user_id = 0;
+  location_enabled = false;
+  new_device = false;
+  device_enabled = true;
+  channels_added = false;
+  _location_id = 0;
+  _original_location_id = 0;
+
+  should_rollback = true;
+
+  srpc_adapter = nullptr;
+  dba = nullptr;
+  dao = nullptr;
+  client_sd = -1;
+  client_ipv4 = 0;
+  activity_timeout = 0;
+
   hold_time_on_failure_usec = 2000000;
 }
 
 supla_ch_abstract_register_device::~supla_ch_abstract_register_device() {}
 
-char supla_ch_abstract_register_device::register_device(
-    TDS_SuplaRegisterDevice_C *register_device_c,
-    TDS_SuplaRegisterDevice_E *register_device_e,
-    supla_abstract_srpc_adapter *srpc_adapter,
-    supla_abstract_db_access_provider *dba, supla_abstract_device_dao *dao,
-    int client_sd, int client_ipv4, unsigned char activity_timeout) {
-  int resultcode = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
-  char result = 0;
-
-  char *GUID = nullptr;
-  char *AuthKey = nullptr;
-  char *Name = nullptr;
-  char *SoftVer = nullptr;
-  unsigned char channel_count = 0;
-  TDS_SuplaDeviceChannel_B *dev_channels_b = nullptr;
-  TDS_SuplaDeviceChannel_C *dev_channels_c = nullptr;
-  int LocationID = 0;
-  int DeviceFlags = 0;
-  short ManufacturerID = 0;
-  short ProductID = 0;
-  int flags = 0;
-  int DeviceID = 0;
-
-  if (register_device_c != nullptr) {
-    GUID = register_device_c->GUID;
-    Name = register_device_c->Name;
-    SoftVer = register_device_c->SoftVer;
-    channel_count = register_device_c->channel_count;
-    dev_channels_b = register_device_c->channels;
-    LocationID = register_device_c->LocationID;
-  } else {
-    GUID = register_device_e->GUID;
-    AuthKey = register_device_e->AuthKey;
-    Name = register_device_e->Name;
-    SoftVer = register_device_e->SoftVer;
-    DeviceFlags = register_device_e->Flags;
-    channel_count = register_device_e->channel_count;
-    dev_channels_c = register_device_e->channels;
-    ManufacturerID = register_device_e->ManufacturerID;
-    ProductID = register_device_e->ProductID;
-    flags = register_device_e->Flags;
+void supla_ch_abstract_register_device::send_result(int resultcode) {
+  if (should_rollback) {
+    dba->rollback();
   }
 
-  if (!is_valid_guid(GUID)) {
-    resultcode = SUPLA_RESULTCODE_GUID_ERROR;
-
-  } else if (register_device_e != nullptr &&
-             !is_valid_authkey(register_device_e->AuthKey)) {
-    resultcode = SUPLA_RESULTCODE_AUTHKEY_ERROR;
-
-  } else {
-    supla_log(LOG_INFO,
-              "Device registration started. ClientSD: %i "
-              "Protocol Version: %i "
-              "ThreadID: %i GUID: %02X%02X%02X%02X",
-              client_sd, srpc_adapter->get_proto_version(),
-              syscall(__NR_gettid), (unsigned char)GUID[0],
-              (unsigned char)GUID[1], (unsigned char)GUID[2],
-              (unsigned char)GUID[3]);
-
-    if (dba->connect()) {
-      int UserID = 0;
-      bool LocationEnabled = false;
-      bool DeviceEnabled = true;
-      int _LocationID = 0;
-      int _OriginalLocationID = 0;
-      bool new_device = false;
-      bool channels_added = false;
-
-      if (register_device_c != nullptr &&
-          dao->location_auth(LocationID, register_device_c->LocationPWD,
-                             &UserID, &LocationEnabled) == false) {
-        resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
-
-      } else if (register_device_e != nullptr &&
-                 false == authkey_auth(GUID, register_device_e->Email, AuthKey,
-                                       &UserID)) {
-        resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
-
-        supla_log(LOG_INFO,
-                  "(AUTHKEY_AUTH) Bad device credentials. ClientSD: %i "
-                  "Protocol Version: %i "
-                  "ThreadID: %i GUID: %02X%02X%02X%02X",
-                  client_sd, srpc_adapter->get_proto_version(),
-                  syscall(__NR_gettid), (unsigned char)GUID[0],
-                  (unsigned char)GUID[1], (unsigned char)GUID[2],
-                  (unsigned char)GUID[3]);
-
-      } else if (UserID == 0) {
-        resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
-      } else {
-        if (strnlen(Name, SUPLA_DEVICE_NAME_MAXSIZE - 1) < 1) {
-          snprintf(Name, SUPLA_DEVICE_NAME_MAXSIZE, "unknown");
-        }
-
-        dba->start_transaction();
-
-        DeviceID = dao->get_device_variables(
-            dao->get_device_id(UserID, GUID), &DeviceEnabled,
-            &_OriginalLocationID, &_LocationID, &LocationEnabled);
-
-        if (LocationID == 0) LocationID = _LocationID;
-
-        if (DeviceID == 0) {
-          if (false == dao->get_device_reg_enabled(UserID)) {
-            dba->rollback();
-            resultcode = SUPLA_RESULTCODE_REGISTRATION_DISABLED;
-
-          } else if (dao->get_device_limit_left(UserID) <= 0) {
-            dba->rollback();
-            resultcode = SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED;
-
-          } else {
-            if (LocationID == 0 && register_device_e != nullptr) {
-              if ((LocationID = dao->get_location_id(UserID, true)) != 0) {
-                LocationEnabled = true;
-
-              } else if ((LocationID = dao->get_location_id(UserID, false)) !=
-                         0) {
-                LocationEnabled = false;
-
-              } else {
-                dba->rollback();
-                resultcode = SUPLA_RESULTCODE_NO_LOCATION_AVAILABLE;
-              }
-            }
-
-            if (LocationID != 0) {
-              new_device = true;
-
-              _LocationID = LocationID;
-
-              DeviceID = dao->add_device(
-                  LocationID, GUID, AuthKey, Name, client_ipv4, SoftVer,
-                  srpc_adapter->get_proto_version(), ManufacturerID, ProductID,
-                  DeviceFlags, UserID);
-
-              if (DeviceID == 0) {
-                dba->rollback();
-              }
-            }
-          }
-        }
-
-        if (DeviceID != 0) {
-          if (!DeviceEnabled) {
-            DeviceID = 0;
-            dba->rollback();
-            resultcode = SUPLA_RESULTCODE_DEVICE_DISABLED;
-
-          } else if (!LocationEnabled) {
-            DeviceID = 0;
-            dba->rollback();
-            resultcode = SUPLA_RESULTCODE_LOCATION_DISABLED;
-
-          } else if (LocationID == 0 || (LocationID != _LocationID &&
-                                         LocationID != _OriginalLocationID)) {
-            DeviceID = 0;
-            dba->rollback();
-            resultcode = SUPLA_RESULTCODE_LOCATION_CONFLICT;
-          }
-        }
-
-        if (DeviceID != 0) {
-          int ChannelCount = 0;
-          int ChannelType = 0;
-
-          for (int a = 0; a < SUPLA_CHANNELMAXCOUNT; a++)
-            if (a >= channel_count) {
-              break;
-            } else {
-              ChannelCount++;
-
-              unsigned char Number = 0;
-              _supla_int_t Type = 0;
-              _supla_int_t FuncList = 0;
-              _supla_int_t DefaultFunc = 0;
-              _supla_int_t ChannelFlags = 0;
-
-              if (dev_channels_b != nullptr) {
-                Number = dev_channels_b[a].Number;
-                Type = dev_channels_b[a].Type;
-                FuncList = dev_channels_b[a].FuncList;
-                DefaultFunc = dev_channels_b[a].Default;
-              } else {
-                Number = dev_channels_c[a].Number;
-                Type = dev_channels_c[a].Type;
-                FuncList = dev_channels_c[a].FuncList;
-                DefaultFunc = dev_channels_c[a].Default;
-                ChannelFlags = dev_channels_c[a].Flags;
-              }
-
-              if (Type == 0) {
-                break;
-              }
-
-              if (dao->get_channel_id_and_type(DeviceID, Number,
-                                               &ChannelType) == 0) {
-                ChannelType = 0;
-              }
-
-              if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
-                  DefaultFunc == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
-                // Issue #115
-                DefaultFunc = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
-              }
-
-              if (ChannelType == 0) {
-                int Param1 = 0;
-                int Param2 = 0;
-                supla_device_channel::getDefaults(Type, DefaultFunc, &Param1,
-                                                  &Param2);
-
-                int ChannelID = dao->add_channel(
-                    DeviceID, Number, Type, DefaultFunc, Param1, Param2,
-                    supla_device_channel::funcListFilter(FuncList, Type),
-                    ChannelFlags, UserID);
-
-                if (ChannelID == 0) {
-                  ChannelCount = -1;
-                  break;
-                } else {
-                  channels_added = true;
-                  dao->on_channel_added(DeviceID, ChannelID);
-                }
-
-              } else if (ChannelType != Type) {
-                ChannelCount = -1;
-                break;
-              }
-            }
-
-          if (ChannelCount == -1 ||
-              dao->get_device_channel_count(DeviceID) != ChannelCount) {
-            dba->rollback();
-            resultcode = SUPLA_RESULTCODE_CHANNEL_CONFLICT;
-
-          } else {
-            if (new_device) {
-              dao->on_new_device(DeviceID);
-            } else {
-              if (AuthKey != nullptr) {
-                _OriginalLocationID = 0;
-              } else {
-                if (LocationID == _LocationID) _OriginalLocationID = LocationID;
-              }
-
-              DeviceID = dao->update_device(
-                  DeviceID, _OriginalLocationID, AuthKey, Name, client_ipv4,
-                  SoftVer, srpc_adapter->get_proto_version(), flags);
-            }
-
-            if (DeviceID != 0) {
-              dba->commit();
-              resultcode = SUPLA_RESULTCODE_TRUE;
-              on_registraction_success(DeviceID, channels_added);
-            } else {
-              dba->rollback();
-            }
-          }
-        }
-      }
-
-      dba->disconnect();
-    }
+  if (dba->is_connected()) {
+    dba->disconnect();
   }
 
   if (resultcode == SUPLA_RESULTCODE_TRUE) {
     supla_log(LOG_INFO,
               "Device registered. ID: %i, ClientSD: %i Protocol Version: %i "
               "ThreadID: %i GUID: %02X%02X%02X%02X",
-              DeviceID, client_sd, srpc_adapter->get_proto_version(),
-              syscall(__NR_gettid), (unsigned char)GUID[0],
-              (unsigned char)GUID[1], (unsigned char)GUID[2],
-              (unsigned char)GUID[3]);
+              device_id, client_sd, srpc_adapter->get_proto_version(),
+              syscall(__NR_gettid), (unsigned char)guid[0],
+              (unsigned char)guid[1], (unsigned char)guid[2],
+              (unsigned char)guid[3]);
   } else {
     usleep(hold_time_on_failure_usec);
   }
@@ -319,8 +91,311 @@ char supla_ch_abstract_register_device::register_device(
   srdr.version_min = SUPLA_PROTO_VERSION_MIN;
   srdr.version = SUPLA_PROTO_VERSION;
   srpc_adapter->sd_async_registerdevice_result(&srdr);
+}
 
-  return result;
+bool supla_ch_abstract_register_device::device_auth(void) {
+  if (register_device_c != nullptr &&
+      dao->location_auth(location_id, register_device_c->LocationPWD, &user_id,
+                         &location_enabled) == false) {
+    send_result(SUPLA_RESULTCODE_BAD_CREDENTIALS);
+    return false;
+  };
+
+  if (register_device_e != nullptr &&
+      false ==
+          authkey_auth(guid, register_device_e->Email, authkey, &user_id)) {
+    supla_log(LOG_INFO,
+              "(AUTHKEY_AUTH) Bad device credentials. ClientSD: %i "
+              "Protocol Version: %i "
+              "ThreadID: %i GUID: %02X%02X%02X%02X",
+              client_sd, srpc_adapter->get_proto_version(),
+              syscall(__NR_gettid), (unsigned char)guid[0],
+              (unsigned char)guid[1], (unsigned char)guid[2],
+              (unsigned char)guid[3]);
+
+    send_result(SUPLA_RESULTCODE_BAD_CREDENTIALS);
+    return false;
+  };
+
+  if (user_id == 0) {
+    send_result(SUPLA_RESULTCODE_BAD_CREDENTIALS);
+    return false;
+  }
+
+  return true;
+}
+
+bool supla_ch_abstract_register_device::add_device(void) {
+  if (!dao->get_device_reg_enabled(user_id)) {
+    send_result(SUPLA_RESULTCODE_REGISTRATION_DISABLED);
+    return false;
+  }
+
+  if (dao->get_device_limit_left(user_id) <= 0) {
+    send_result(SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED);
+    return false;
+  }
+
+  if (location_id == 0 && register_device_e != nullptr) {
+    if ((location_id = dao->get_location_id(user_id, true)) != 0) {
+      location_enabled = true;
+
+    } else if ((location_id = dao->get_location_id(user_id, false)) != 0) {
+      location_enabled = false;
+
+    } else {
+      send_result(SUPLA_RESULTCODE_NO_LOCATION_AVAILABLE);
+      return false;
+    }
+  }
+
+  if (location_id != 0) {
+    new_device = true;
+
+    _location_id = location_id;
+
+    device_id =
+        dao->add_device(location_id, guid, authkey, name, client_ipv4, softver,
+                        srpc_adapter->get_proto_version(), manufacturer_id,
+                        product_id, device_flags, user_id);
+
+    if (device_id == 0) {
+      send_result(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE);
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool supla_ch_abstract_register_device::add_channels(void) {
+  int processed_count = 0;
+  int channel_type = 0;
+
+  TDS_SuplaDeviceChannel_B *dev_channels_b = nullptr;
+  TDS_SuplaDeviceChannel_C *dev_channels_c = nullptr;
+
+  if (register_device_c != nullptr) {
+    dev_channels_b = register_device_c->channels;
+  } else {
+    dev_channels_c = register_device_e->channels;
+  }
+
+  for (int a = 0; a < SUPLA_CHANNELMAXCOUNT; a++) {
+    if (a >= channel_count) {
+      break;
+    } else {
+      processed_count++;
+
+      unsigned char number = 0;
+      _supla_int_t type = 0;
+      _supla_int_t func_list = 0;
+      _supla_int_t default_func = 0;
+      _supla_int_t channel_flags = 0;
+
+      if (dev_channels_b != nullptr) {
+        number = dev_channels_b[a].Number;
+        type = dev_channels_b[a].Type;
+        func_list = dev_channels_b[a].FuncList;
+        default_func = dev_channels_b[a].Default;
+      } else {
+        number = dev_channels_c[a].Number;
+        type = dev_channels_c[a].Type;
+        func_list = dev_channels_c[a].FuncList;
+        default_func = dev_channels_c[a].Default;
+        channel_flags = dev_channels_c[a].Flags;
+      }
+
+      if (type == 0) {
+        break;
+      }
+
+      if (dao->get_channel_id_and_type(device_id, number, &channel_type) == 0) {
+        channel_type = 0;
+      }
+
+      if (type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+          default_func == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
+        // Issue #115
+        default_func = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
+      }
+
+      if (channel_type == 0) {
+        int Param1 = 0;
+        int Param2 = 0;
+        supla_device_channel::getDefaults(type, default_func, &Param1, &Param2);
+
+        int channel_id = dao->add_channel(
+            device_id, number, type, default_func, Param1, Param2,
+            supla_device_channel::funcListFilter(func_list, type),
+            channel_flags, user_id);
+
+        if (channel_id == 0) {
+          processed_count = -1;
+          break;
+        } else {
+          channels_added = true;
+          dao->on_channel_added(device_id, channel_id);
+        }
+
+      } else if (channel_type != type) {
+        processed_count = -1;
+        break;
+      }
+    }
+  }
+
+  if (processed_count == -1 ||
+      dao->get_device_channel_count(device_id) != processed_count) {
+    send_result(SUPLA_RESULTCODE_CHANNEL_CONFLICT);
+    return false;
+  }
+
+  return true;
+}
+
+void supla_ch_abstract_register_device::register_device(
+    TDS_SuplaRegisterDevice_C *register_device_c,
+    TDS_SuplaRegisterDevice_E *register_device_e,
+    supla_abstract_srpc_adapter *srpc_adapter,
+    supla_abstract_db_access_provider *dba, supla_abstract_device_dao *dao,
+    int client_sd, int client_ipv4, unsigned char activity_timeout) {
+  this->register_device_c = register_device_c;
+  this->register_device_e = register_device_e;
+  this->srpc_adapter = srpc_adapter;
+  this->dba = dba;
+  this->dao = dao;
+  this->client_sd = client_sd;
+  this->client_ipv4 = client_ipv4;
+  this->activity_timeout = activity_timeout;
+
+  user_id = 0;
+  location_enabled = false;
+  new_device = false;
+  device_enabled = true;
+  channels_added = false;
+  _location_id = 0;
+  _original_location_id = 0;
+
+  should_rollback = true;
+
+  if (register_device_c != nullptr) {
+    guid = register_device_c->GUID;
+    name = register_device_c->Name;
+    softver = register_device_c->SoftVer;
+    channel_count = register_device_c->channel_count;
+    location_id = register_device_c->LocationID;
+  } else {
+    guid = register_device_e->GUID;
+    authkey = register_device_e->AuthKey;
+    name = register_device_e->Name;
+    softver = register_device_e->SoftVer;
+    device_flags = register_device_e->Flags;
+    channel_count = register_device_e->channel_count;
+    manufacturer_id = register_device_e->ManufacturerID;
+    product_id = register_device_e->ProductID;
+    flags = register_device_e->Flags;
+  }
+
+  if (strnlen(name, SUPLA_DEVICE_NAME_MAXSIZE - 1) < 1) {
+    snprintf(name, SUPLA_DEVICE_NAME_MAXSIZE, "unknown");
+  }
+
+  if (!is_valid_guid(guid)) {
+    send_result(SUPLA_RESULTCODE_GUID_ERROR);
+    return;
+  }
+
+  if (register_device_e != nullptr &&
+      !is_valid_authkey(register_device_e->AuthKey)) {
+    send_result(SUPLA_RESULTCODE_AUTHKEY_ERROR);
+    return;
+  }
+
+  supla_log(LOG_INFO,
+            "Device registration started. ClientSD: %i "
+            "Protocol Version: %i "
+            "ThreadID: %i GUID: %02X%02X%02X%02X",
+            client_sd, srpc_adapter->get_proto_version(), syscall(__NR_gettid),
+            (unsigned char)guid[0], (unsigned char)guid[1],
+            (unsigned char)guid[2], (unsigned char)guid[3]);
+
+  if (!dba->connect()) {
+    send_result(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE);
+    return;
+  }
+
+  if (!device_auth()) {
+    return;
+  }
+
+  device_id = dao->get_device_id(user_id, guid);
+
+  if (device_id && !dao->get_device_variables(
+                       device_id, &device_enabled, &_original_location_id,
+                       &_location_id, &location_enabled)) {
+    supla_log(LOG_WARNING, "Unable to get variables for the device with id: %i",
+              device_id);
+    send_result(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE);
+    return;
+  }
+
+  if (location_id == 0) {
+    location_id = _location_id;
+  }
+
+  dba->start_transaction();
+
+  if (!device_id && !add_device()) {
+    return;
+  }
+
+  if (!device_enabled) {
+    send_result(SUPLA_RESULTCODE_DEVICE_DISABLED);
+    return;
+  }
+
+  if (!location_enabled) {
+    send_result(SUPLA_RESULTCODE_LOCATION_DISABLED);
+    return;
+  }
+
+  if (location_id == 0 ||
+      (location_id != _location_id && location_id != _original_location_id)) {
+    send_result(SUPLA_RESULTCODE_LOCATION_CONFLICT);
+    return;
+  }
+
+  if (!add_channels()) {
+    return;
+  }
+
+  if (new_device) {
+    dao->on_new_device(device_id);
+  } else {
+    if (authkey != nullptr) {
+      _original_location_id = 0;
+    } else {
+      if (location_id == _location_id) _original_location_id = location_id;
+    }
+
+    if (!dao->update_device(device_id, _original_location_id, authkey, name,
+                            client_ipv4, softver,
+                            srpc_adapter->get_proto_version(), flags)) {
+      send_result(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE);
+      return;
+    }
+  }
+
+  dba->commit();
+
+  should_rollback = false;
+
+  on_registraction_success(device_id, channels_added);
+
+  send_result(SUPLA_RESULTCODE_TRUE);
 }
 
 __useconds_t supla_ch_abstract_register_device::get_hold_time_on_failure_usec(

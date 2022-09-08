@@ -30,7 +30,7 @@ class RegisterDeviceMock : public supla_ch_abstract_register_device {
   RegisterDeviceMock(void);
   virtual ~RegisterDeviceMock(void);
 
-  char register_device(TDS_SuplaRegisterDevice_C *register_device_c,
+  void register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                        TDS_SuplaRegisterDevice_E *register_device_e,
                        supla_abstract_srpc_adapter *srpc_adapter,
                        supla_abstract_db_access_provider *dba,
