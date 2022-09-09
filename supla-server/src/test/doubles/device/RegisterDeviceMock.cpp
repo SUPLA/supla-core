@@ -40,4 +40,12 @@ void RegisterDeviceMock::set_hold_time_on_failure_usec(__useconds_t usec) {
   hold_time_on_failure_usec = usec;
 }
 
+bool RegisterDeviceMock::is_channel_added(void) {
+  return supla_ch_abstract_register_device::is_channel_added();
+}
+
+int RegisterDeviceMock::get_device_id() {
+  return supla_ch_abstract_register_device::get_device_id();
+}
+
 }  // namespace testing

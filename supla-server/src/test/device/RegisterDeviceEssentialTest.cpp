@@ -714,7 +714,7 @@ TEST_F(RegisterDeviceEssentialTest,
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(rd, on_registraction_success(55, false)).Times(1);
+  EXPECT_CALL(rd, on_registraction_success).Times(1);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
@@ -729,6 +729,8 @@ TEST_F(RegisterDeviceEssentialTest,
   rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
+  EXPECT_EQ(55, rd.get_device_id());
+  EXPECT_FALSE(rd.is_channel_added());
   EXPECT_LT(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -817,7 +819,7 @@ TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(rd, on_registraction_success(55, true)).Times(1);
+  EXPECT_CALL(rd, on_registraction_success).Times(1);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
@@ -832,6 +834,8 @@ TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
   rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
+  EXPECT_EQ(55, rd.get_device_id());
+  EXPECT_TRUE(rd.is_channel_added());
   EXPECT_LT(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
@@ -1011,7 +1015,7 @@ TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
   EXPECT_CALL(dao, on_new_device).Times(1);
   EXPECT_CALL(dao, update_device).Times(0);
 
-  EXPECT_CALL(rd, on_registraction_success(55, true)).Times(1);
+  EXPECT_CALL(rd, on_registraction_success).Times(1);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
@@ -1026,6 +1030,8 @@ TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
   rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
+  EXPECT_EQ(55, rd.get_device_id());
+  EXPECT_TRUE(rd.is_channel_added());
   EXPECT_LT(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 

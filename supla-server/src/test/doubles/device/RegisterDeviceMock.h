@@ -45,10 +45,11 @@ class RegisterDeviceMock : public supla_ch_abstract_register_device {
   MOCK_METHOD3(get_authkey_hash,
                bool(int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
                     bool *is_null));
-  MOCK_METHOD2(on_registraction_success,
-               void(int device_id, bool channels_added));
+  MOCK_METHOD0(on_registraction_success, void(void));
 
   void set_hold_time_on_failure_usec(__useconds_t usec);
+  bool is_channel_added(void);
+  int get_device_id();
 };
 
 } /* namespace testing */

@@ -49,7 +49,7 @@ supla_ch_abstract_register_device::supla_ch_abstract_register_device(void)
   location_enabled = false;
   new_device = false;
   device_enabled = true;
-  channels_added = false;
+  channel_added = false;
   _location_id = 0;
   _original_location_id = 0;
 
@@ -66,6 +66,12 @@ supla_ch_abstract_register_device::supla_ch_abstract_register_device(void)
 }
 
 supla_ch_abstract_register_device::~supla_ch_abstract_register_device() {}
+
+bool supla_ch_abstract_register_device::is_channel_added(void) {
+  return channel_added;
+}
+
+int supla_ch_abstract_register_device::get_device_id() { return device_id; }
 
 void supla_ch_abstract_register_device::send_result(int resultcode) {
   if (should_rollback) {
@@ -239,7 +245,7 @@ bool supla_ch_abstract_register_device::add_channels(void) {
           processed_count = -1;
           break;
         } else {
-          channels_added = true;
+          channel_added = true;
           dao->on_channel_added(device_id, channel_id);
         }
 
@@ -279,7 +285,7 @@ void supla_ch_abstract_register_device::register_device(
   location_enabled = false;
   new_device = false;
   device_enabled = true;
-  channels_added = false;
+  channel_added = false;
   _location_id = 0;
   _original_location_id = 0;
 
@@ -397,7 +403,7 @@ void supla_ch_abstract_register_device::register_device(
 
   should_rollback = false;
 
-  on_registraction_success(device_id, channels_added);
+  on_registraction_success();
 
   send_result(SUPLA_RESULTCODE_TRUE);
 }

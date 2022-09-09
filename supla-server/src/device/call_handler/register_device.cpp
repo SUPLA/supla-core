@@ -43,5 +43,4 @@ bool supla_ch_register_device::get_authkey_hash(
   return false;
 }
 
-void supla_ch_register_device::on_registraction_success(int device_id,
-                                                        bool channels_added) {}
+void supla_ch_register_device::on_registraction_success(void) {}

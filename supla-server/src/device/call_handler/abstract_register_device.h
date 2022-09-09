@@ -51,7 +51,7 @@ class supla_ch_abstract_register_device
   bool location_enabled;
   bool new_device;
   bool device_enabled;
-  bool channels_added;
+  bool channel_added;
   int _location_id;
   int _original_location_id;
 
@@ -79,7 +79,9 @@ class supla_ch_abstract_register_device
                        supla_abstract_device_dao *dao, int client_sd,
                        int client_ipv4, unsigned char activity_timeout);
 
-  virtual void on_registraction_success(int device_id, bool channels_added) = 0;
+  virtual void on_registraction_success(void) = 0;
+  bool is_channel_added(void);
+  int get_device_id();
 
  public:
   supla_ch_abstract_register_device(void);
