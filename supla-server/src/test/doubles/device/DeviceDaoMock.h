@@ -39,6 +39,10 @@ class DeviceDaoMock : public supla_abstract_device_dao {
 
   MOCK_METHOD2(get_location_id, int(int user_id, bool enabled));
 
+  MOCK_METHOD3(get_authkey_hash,
+               bool(int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
+                    bool *is_null));
+
   MOCK_METHOD3(get_device_id,
                bool(int user_id, const char guid[SUPLA_GUID_SIZE], int *id));
 

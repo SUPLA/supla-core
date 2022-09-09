@@ -26,6 +26,8 @@ class supla_abstract_connection_dao {
   supla_abstract_connection_dao();
   virtual ~supla_abstract_connection_dao();
 
+  virtual int get_user_id_by_email(const char email[SUPLA_EMAIL_MAXSIZE]) = 0;
+
   virtual bool get_reg_enabled(int user_id, unsigned int *client,
                                unsigned int *iodevice) = 0;
   virtual bool get_user_localtime(int user_id,

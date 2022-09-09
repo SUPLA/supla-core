@@ -60,6 +60,7 @@ class supla_ch_abstract_register_device
 
   supla_abstract_srpc_adapter *srpc_adapter;
   supla_abstract_db_access_provider *dba;
+  supla_abstract_connection_dao *conn_dao;
   supla_abstract_device_dao *device_dao;
   int client_sd;
   int client_ipv4;
@@ -77,6 +78,7 @@ class supla_ch_abstract_register_device
                        TDS_SuplaRegisterDevice_E *register_device_e,
                        supla_abstract_srpc_adapter *srpc_adapter,
                        supla_abstract_db_access_provider *dba,
+                       supla_abstract_connection_dao *conn_dao,
                        supla_abstract_device_dao *device_dao, int client_sd,
                        int client_ipv4, unsigned char activity_timeout);
 
@@ -84,6 +86,7 @@ class supla_ch_abstract_register_device
 
   supla_abstract_db_access_provider *get_dba(void);
   supla_abstract_device_dao *get_device_dao(void);
+  supla_abstract_connection_dao *get_conn_dao(void);
   std::weak_ptr<supla_device> get_device(void);
   bool is_channel_added(void);
   int get_user_id(void);

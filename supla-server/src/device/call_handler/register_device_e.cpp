@@ -23,6 +23,7 @@
 
 #include <memory>
 
+#include "conn/connection_dao.h"
 #include "db/db_access_provider.h"
 #include "device/device_dao.h"
 #include "log.h"
@@ -52,10 +53,11 @@ bool supla_ch_register_device_e::handle_call(
         0;
 
     supla_db_access_provider dba;
-    supla_device_dao dao(&dba);
+    supla_connection_dao conn_dao(&dba);
+    supla_device_dao device_dao(&dba);
 
     register_device(device, nullptr, rd->data.ds_register_device_e,
-                    srpc_adapter, &dba, &dao,
+                    srpc_adapter, &dba, &conn_dao, &device_dao,
                     device->get_connection()->get_client_sd(),
                     device->get_connection()->get_client_ipv4(),
                     device->get_connection()->get_activity_timeout());

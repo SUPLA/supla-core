@@ -57,6 +57,9 @@ class DbAccessProviderMock : public supla_abstract_db_access_provider {
 
   MOCK_METHOD1(stmt_close, void(void *_stmt));
 
+  MOCK_METHOD5(get_string, bool(int id, char *buffer, unsigned int buffer_size,
+                                bool *is_null, const char *sql));
+
   MOCK_METHOD3(get_int, int(int ID, int default_value, const char *sql));
 
   MOCK_METHOD2(get_count, int(int ID, const char *sql));

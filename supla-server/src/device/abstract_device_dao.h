@@ -20,6 +20,7 @@
 #define SUPLA_ABSTRACT_DEVICE_DAO_H_
 
 #include "proto.h"
+#include "tools.h"
 
 class supla_abstract_device_dao {
  public:
@@ -32,6 +33,9 @@ class supla_abstract_device_dao {
 
   virtual bool location_auth(int location_id, char *location_pwd, int *user_id,
                              bool *is_enabled) = 0;
+
+  virtual bool get_authkey_hash(int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
+                                bool *is_null) = 0;
 
   virtual int get_location_id(int user_id, bool enabled) = 0;
 

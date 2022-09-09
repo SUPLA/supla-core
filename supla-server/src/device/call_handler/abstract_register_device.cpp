@@ -57,6 +57,7 @@ supla_ch_abstract_register_device::supla_ch_abstract_register_device(void)
 
   srpc_adapter = nullptr;
   dba = nullptr;
+  conn_dao = nullptr;
   device_dao = nullptr;
   client_sd = -1;
   client_ipv4 = 0;
@@ -75,6 +76,11 @@ supla_abstract_db_access_provider *supla_ch_abstract_register_device::get_dba(
 supla_abstract_device_dao *supla_ch_abstract_register_device::get_device_dao(
     void) {
   return device_dao;
+}
+
+supla_abstract_connection_dao *supla_ch_abstract_register_device::get_conn_dao(
+    void) {
+  return conn_dao;
 }
 
 std::weak_ptr<supla_device> supla_ch_abstract_register_device::get_device(
@@ -298,13 +304,16 @@ void supla_ch_abstract_register_device::register_device(
     weak_ptr<supla_device> device, TDS_SuplaRegisterDevice_C *register_device_c,
     TDS_SuplaRegisterDevice_E *register_device_e,
     supla_abstract_srpc_adapter *srpc_adapter,
-    supla_abstract_db_access_provider *dba, supla_abstract_device_dao *dao,
-    int client_sd, int client_ipv4, unsigned char activity_timeout) {
+    supla_abstract_db_access_provider *dba,
+    supla_abstract_connection_dao *conn_dao,
+    supla_abstract_device_dao *device_dao, int client_sd, int client_ipv4,
+    unsigned char activity_timeout) {
   this->device = device;
   this->register_device_c = register_device_c;
   this->register_device_e = register_device_e;
   this->srpc_adapter = srpc_adapter;
   this->dba = dba;
+  this->conn_dao = conn_dao;
   this->device_dao = device_dao;
   this->client_sd = client_sd;
   this->client_ipv4 = client_ipv4;

@@ -68,6 +68,12 @@ void supla_db_access_provider::stmt_close(void *_stmt) {
   svrdb::stmt_close(_stmt);
 }
 
+bool supla_db_access_provider::get_string(int id, char *buffer,
+                                          unsigned int buffer_size,
+                                          bool *is_null, const char *sql) {
+  return svrdb::get_string(id, buffer, buffer_size, is_null, sql);
+}
+
 int supla_db_access_provider::get_int(int ID, int default_value,
                                       const char *sql) {
   return svrdb::get_int(ID, default_value, sql);

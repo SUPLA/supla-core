@@ -30,6 +30,8 @@ class supla_connection_dao : public supla_abstract_connection_dao {
   explicit supla_connection_dao(supla_abstract_db_access_provider *dba);
   virtual ~supla_connection_dao();
 
+  virtual int get_user_id_by_email(const char email[SUPLA_EMAIL_MAXSIZE]);
+
   virtual bool get_reg_enabled(int user_id, unsigned int *client,
                                unsigned int *iodevice);
 

@@ -187,6 +187,13 @@ bool supla_device_dao::location_auth(int location_id, char *location_pwd,
   return _ID != 0;
 }
 
+bool supla_device_dao::get_authkey_hash(int id,
+                                        char authkey_hash[BCRYPT_HASH_MAXSIZE],
+                                        bool *is_null) {
+  return dba->get_string(id, authkey_hash, BCRYPT_HASH_MAXSIZE, is_null,
+                         "SELECT auth_key FROM supla_iodevice WHERE id = ?");
+}
+
 int supla_device_dao::get_location_id(int user_id, bool enabled) {
   MYSQL_STMT *stmt = nullptr;
   int result = 0;

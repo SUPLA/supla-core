@@ -37,6 +37,9 @@ class supla_device_dao : public supla_abstract_device_dao {
   virtual bool location_auth(int location_id, char *location_pwd, int *user_id,
                              bool *is_enabled);
 
+  virtual bool get_authkey_hash(int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
+                                bool *is_null);
+
   virtual int get_location_id(int user_id, bool enabled);
 
   virtual bool get_device_id(int user_id, const char guid[SUPLA_GUID_SIZE],

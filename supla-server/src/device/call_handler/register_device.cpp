@@ -37,7 +37,7 @@ supla_authkey_cache *supla_ch_register_device::get_authkey_cache(void) {
 
 int supla_ch_register_device::get_user_id_by_email(
     const char email[SUPLA_EMAIL_MAXSIZE]) {
-  return 0;
+  return get_conn_dao()->get_user_id_by_email(email);
 }
 
 bool supla_ch_register_device::get_object_id(int user_id,
@@ -48,7 +48,7 @@ bool supla_ch_register_device::get_object_id(int user_id,
 
 bool supla_ch_register_device::get_authkey_hash(
     int id, char authkey_hash[BCRYPT_HASH_MAXSIZE], bool *is_null) {
-  return false;
+  return get_device_dao()->get_authkey_hash(id, authkey_hash, is_null);
 }
 
 void supla_ch_register_device::on_registraction_success(void) {

@@ -31,6 +31,8 @@ class dbcommon {
                     int *value4, const char *stmt_str, void *bind,
                     int bind_size, bool exec_errors = false);
   void stmt_close(void *_stmt);
+  bool get_string(int id, char *buffer, unsigned int buffer_size, bool *is_null,
+                  const char *sql);
   int get_int(int ID, int default_value, const char *sql);
   int get_count(int ID, const char *sql);
 

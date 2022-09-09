@@ -50,6 +50,9 @@ class supla_db_access_provider : public supla_abstract_db_access_provider,
 
   virtual void stmt_close(void *_stmt);
 
+  virtual bool get_string(int id, char *buffer, unsigned int buffer_size,
+                          bool *is_null, const char *sql);
+
   virtual int get_int(int ID, int default_value, const char *sql);
 
   virtual int get_count(int ID, const char *sql);

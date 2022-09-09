@@ -31,6 +31,41 @@ supla_connection_dao::supla_connection_dao(
 
 supla_connection_dao::~supla_connection_dao() {}
 
+int supla_connection_dao::get_user_id_by_email(
+    const char email[SUPLA_EMAIL_MAXSIZE]) {
+  if (email == nullptr || strnlen(email, SUPLA_EMAIL_MAXSIZE) == 0) {
+    return 0;
+  }
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return 0;
+  }
+
+  int result = 0;
+
+  MYSQL_BIND pbind = {};
+
+  pbind.buffer_type = MYSQL_TYPE_STRING;
+  pbind.buffer = (char *)email;
+  pbind.buffer_length = strnlen(email, SUPLA_EMAIL_MAXSIZE);
+
+  MYSQL_STMT *stmt = NULL;
+
+  if (!dba->stmt_get_int((void **)&stmt, &result, NULL, NULL, NULL,
+                         "SELECT id FROM supla_user WHERE email = ?", &pbind,
+                         1)) {
+    result = 0;
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
+}
+
 bool supla_connection_dao::get_reg_enabled(int user_id, unsigned int *client,
                                            unsigned int *iodevice) {
   if (user_id == 0) {
