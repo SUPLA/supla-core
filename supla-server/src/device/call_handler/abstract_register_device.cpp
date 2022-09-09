@@ -34,6 +34,7 @@ supla_ch_abstract_register_device::supla_ch_abstract_register_device(void)
   name = nullptr;
   softver = nullptr;
   channel_count = 0;
+  register_device_c = nullptr;
   register_device_e = nullptr;
   location_id = 0;
   device_flags = 0;
