@@ -33,7 +33,7 @@
 #include "device/call_handler/get_channel_config.h"
 #include "device/call_handler/get_channel_functions.h"
 #include "device/call_handler/get_firmware_update_url.h"
-#include "device/call_handler/register_device.h"
+#include "device/call_handler/register_device_a.h"
 #include "device/call_handler/register_device_b.h"
 #include "device/call_handler/register_device_c.h"
 #include "device/call_handler/register_device_d.h"
@@ -56,7 +56,7 @@ supla_device_call_handler_collection::supla_device_call_handler_collection(void)
   add_handler(new supla_ch_register_device_d);
   add_handler(new supla_ch_register_device_c);
   add_handler(new supla_ch_register_device_b);
-  add_handler(new supla_ch_register_device);
+  add_handler(new supla_ch_register_device_a);
 
   // common
   add_handler(new supla_ch_set_activity_timeout());
