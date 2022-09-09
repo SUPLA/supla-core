@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CH_REGISTER_DEVICE_H_
-#define SUPLA_CH_REGISTER_DEVICE_H_
+#ifndef SUPLA_CH_REGISTER_DEVICE_A_H_
+#define SUPLA_CH_REGISTER_DEVICE_A_H_
 
 #include "device/call_handler/abstract_device_srpc_call_handler.h"
 
@@ -32,4 +32,4 @@ class supla_ch_register_device_a
                            unsigned char proto_version);
 };
 
-#endif /* SUPLA_CH_REGISTER_DEVICE_H_*/
+#endif /* SUPLA_CH_REGISTER_DEVICE_A_H_*/
