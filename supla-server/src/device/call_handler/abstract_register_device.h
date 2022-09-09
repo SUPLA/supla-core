@@ -21,6 +21,7 @@
 
 #include <memory>
 
+#include "conn/abstract_connection_dao.h"
 #include "conn/call_handler/abstract_register_object.h"
 #include "db/abstract_db_access_provider.h"
 #include "device/abstract_device_dao.h"
@@ -59,7 +60,7 @@ class supla_ch_abstract_register_device
 
   supla_abstract_srpc_adapter *srpc_adapter;
   supla_abstract_db_access_provider *dba;
-  supla_abstract_device_dao *dao;
+  supla_abstract_device_dao *device_dao;
   int client_sd;
   int client_ipv4;
   unsigned char activity_timeout;
@@ -76,12 +77,21 @@ class supla_ch_abstract_register_device
                        TDS_SuplaRegisterDevice_E *register_device_e,
                        supla_abstract_srpc_adapter *srpc_adapter,
                        supla_abstract_db_access_provider *dba,
-                       supla_abstract_device_dao *dao, int client_sd,
+                       supla_abstract_device_dao *device_dao, int client_sd,
                        int client_ipv4, unsigned char activity_timeout);
 
   virtual void on_registraction_success(void) = 0;
+
+  supla_abstract_db_access_provider *get_dba(void);
+  supla_abstract_device_dao *get_device_dao(void);
+  std::weak_ptr<supla_device> get_device(void);
   bool is_channel_added(void);
-  int get_device_id();
+  int get_user_id(void);
+  int get_device_id(void);
+  int get_location_id(void);
+  int get_channel_count(void);
+  TDS_SuplaDeviceChannel_B *get_channels_b(void);
+  TDS_SuplaDeviceChannel_C *get_channels_c(void);
 
  public:
   supla_ch_abstract_register_device(void);

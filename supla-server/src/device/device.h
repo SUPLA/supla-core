@@ -29,16 +29,16 @@
 
 class supla_user;
 class supla_device_call_handler_collection;
+class supla_ch_register_device;
 class supla_device : public supla_abstract_connection_object {
  private:
   int flags;
   static supla_device_call_handler_collection call_handler_collection;
-
- protected:
   supla_device_channels *channels;
 
+ protected:
+  friend class supla_ch_register_device;
   void load_config(int UserID);
-  static char channels_clean_cnd(void *channel);
 
  public:
   explicit supla_device(supla_connection *connection);

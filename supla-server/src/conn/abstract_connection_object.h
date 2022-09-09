@@ -36,11 +36,12 @@ class supla_abstract_connection_object {
   int ID;
   supla_user *user;
   bool registered;
-
- protected:
   void *lck;
 
+ protected:
   // Thread safe start
+  void lock(void);
+  void unlock(void);
   void set_guid(const char GUID[SUPLA_GUID_SIZE]);
   void set_authkey(const char AuthKey[SUPLA_AUTHKEY_SIZE]);
   void set_id(int ID);

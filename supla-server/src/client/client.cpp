@@ -79,10 +79,10 @@ supla_client_channels *supla_client::get_channels(void) { return channels; }
 supla_client_channelgroups *supla_client::get_cgroups(void) { return cgroups; }
 
 void supla_client::setName(const char *name) {
-  lck_lock(lck);
+  lock();
   snprintf(this->name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", name);
   this->name[SUPLA_CLIENT_NAME_MAXSIZE - 1] = 0;
-  lck_unlock(lck);
+  unlock();
 }
 
 int supla_client::getName(char *buffer, int size) {
@@ -90,9 +90,9 @@ int supla_client::getName(char *buffer, int size) {
 
   buffer[0] = 0;
 
-  lck_lock(lck);
+  lock();
   snprintf(buffer, size, "%s", this->name);
-  lck_unlock(lck);
+  unlock();
 
   buffer[size - 1] = 0;
   return strnlen(buffer, size - 1);
@@ -103,16 +103,16 @@ void supla_client::setAccessID(int AccessID) { access_id = AccessID; }
 int supla_client::getAccessID(void) { return access_id; }
 
 void supla_client::revoke_superuser_authorization(void) {
-  lck_lock(lck);
+  lock();
   superuser_authorized = false;
-  lck_unlock(lck);
+  unlock();
 }
 
 bool supla_client::is_superuser_authorized(void) {
   bool result = false;
-  lck_lock(lck);
+  lock();
   result = superuser_authorized;
-  lck_unlock(lck);
+  unlock();
 
   return result;
 }
@@ -471,9 +471,9 @@ void supla_client::superuser_authorize(
 
   if (db->connect() == true) {
     if (db->superuser_authorization(UserID, Email, Password)) {
-      lck_lock(lck);
+      lock();
       superuser_authorized = true;
-      lck_unlock(lck);
+      unlock();
     }
   } else if (connection_failed) {
     *connection_failed = true;

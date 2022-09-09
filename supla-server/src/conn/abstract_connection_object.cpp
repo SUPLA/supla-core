@@ -40,74 +40,78 @@ supla_abstract_connection_object::~supla_abstract_connection_object() {
   lck_free(this->lck);
 }
 
+void supla_abstract_connection_object::lock(void) { lck_lock(lck); }
+
+void supla_abstract_connection_object::unlock(void) { lck_unlock(lck); }
+
 void supla_abstract_connection_object::terminate(void) {
-  lck_lock(lck);
+  lock();
   if (conn) conn->terminate();
-  lck_unlock(lck);
+  unlock();
 }
 
 void supla_abstract_connection_object::reconnect() { terminate(); }
 
 void supla_abstract_connection_object::set_guid(
     const char guid[SUPLA_GUID_SIZE]) {
-  lck_lock(lck);
+  lock();
   memcpy(this->guid, guid, SUPLA_GUID_SIZE);
-  lck_unlock(lck);
+  unlock();
 }
 
 void supla_abstract_connection_object::get_guid(char guid[SUPLA_GUID_SIZE]) {
-  lck_lock(lck);
+  lock();
   memcpy(guid, this->guid, SUPLA_GUID_SIZE);
-  lck_unlock(lck);
+  unlock();
 }
 
 bool supla_abstract_connection_object::guid_equal(
     const char guid[SUPLA_GUID_SIZE]) {
-  lck_lock(lck);
+  lock();
   bool result = memcmp(this->guid, guid, SUPLA_GUID_SIZE) == 0;
-  lck_unlock(lck);
+  unlock();
 
   return result;
 }
 
 void supla_abstract_connection_object::set_authkey(
     const char authkey[SUPLA_AUTHKEY_SIZE]) {
-  lck_lock(lck);
+  lock();
   memcpy(this->authkey, authkey, SUPLA_AUTHKEY_SIZE);
-  lck_unlock(lck);
+  unlock();
 }
 
 void supla_abstract_connection_object::get_authkey(
     char authkey[SUPLA_AUTHKEY_SIZE]) {
-  lck_lock(lck);
+  lock();
   memcpy(authkey, this->authkey, SUPLA_AUTHKEY_SIZE);
-  lck_unlock(lck);
+  unlock();
 }
 
 int supla_abstract_connection_object::get_id(void) {
-  lck_lock(lck);
+  lock();
   int result = ID;
-  lck_unlock(lck);
+  unlock();
 
   return result;
 }
 
 void supla_abstract_connection_object::set_id(int ID) {
-  lck_lock(lck);
+  lock();
   this->ID = ID;
-  lck_unlock(lck);
+  unlock();
 }
 
 void supla_abstract_connection_object::set_user(supla_user *user) {
-  lck_lock(lck);
+  lock();
   this->user = user;
-  lck_unlock(lck);
+  unlock();
 }
 
 supla_user *supla_abstract_connection_object::get_user(void) {
-  lck_lock(lck);
+  lock();
   supla_user *result = this->user;
-  lck_unlock(lck);
+  unlock();
 
   return result;
 }
@@ -121,15 +125,15 @@ int supla_abstract_connection_object::get_user_id(void) {
 }
 
 void supla_abstract_connection_object::set_registered(bool registered) {
-  lck_lock(lck);
+  lock();
   this->registered = registered;
-  lck_unlock(lck);
+  unlock();
 }
 
 bool supla_abstract_connection_object::is_registered(void) {
-  lck_lock(lck);
+  lock();
   bool result = registered;
-  lck_unlock(lck);
+  unlock();
 
   return result;
 }
@@ -144,9 +148,9 @@ supla_abstract_connection_object::get_shared_ptr(void) {
 }
 
 void supla_abstract_connection_object::update_last_activity_time(void) {
-  lck_lock(lck);
+  lock();
   gettimeofday(&last_activity_time, NULL);
-  lck_unlock(lck);
+  unlock();
 }
 
 int supla_abstract_connection_object::get_activity_delay(void) {
@@ -154,20 +158,20 @@ int supla_abstract_connection_object::get_activity_delay(void) {
   struct timeval now;
   gettimeofday(&now, NULL);
 
-  lck_lock(lck);
+  lock();
   result = now.tv_sec - last_activity_time.tv_sec;
-  lck_unlock(lck);
+  unlock();
 
   return result;
 }
 
 unsigned char supla_abstract_connection_object::get_protocol_version(void) {
   unsigned char result = 0;
-  lck_lock(lck);
+  lock();
   if (conn) {
     result = conn->get_protocol_version();
   }
-  lck_unlock(lck);
+  unlock();
   return result;
 }
 

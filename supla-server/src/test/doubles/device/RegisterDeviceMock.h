@@ -34,7 +34,7 @@ class RegisterDeviceMock : public supla_ch_abstract_register_device {
                        TDS_SuplaRegisterDevice_E *register_device_e,
                        supla_abstract_srpc_adapter *srpc_adapter,
                        supla_abstract_db_access_provider *dba,
-                       supla_abstract_device_dao *dao, int client_sd,
+                       supla_abstract_device_dao *device_dao, int client_sd,
                        int client_ipv4, unsigned char activity_timeout);
 
   MOCK_METHOD0(get_authkey_cache, supla_authkey_cache *(void));
