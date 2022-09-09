@@ -16,19 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <call_handler/register_device_e.h>
+#include "call_handler/register_device_e.h"
+
 #include <stdlib.h>
 #include <string.h>
 
 #include <memory>
 
+#include "db/db_access_provider.h"
+#include "device/device_dao.h"
 #include "log.h"
 #include "proto.h"
 
 using std::shared_ptr;
 
 supla_ch_register_device_e::supla_ch_register_device_e(void)
-    : supla_abstract_device_srpc_call_handler() {}
+    : supla_abstract_device_srpc_call_handler(), supla_ch_register_device() {}
 
 supla_ch_register_device_e::~supla_ch_register_device_e() {}
 
@@ -48,11 +51,14 @@ bool supla_ch_register_device_e::handle_call(
     rd->data.ds_register_device_e->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] =
         0;
 
-    // TODO(przemyslawzygmunt): Replace the old implementation with the new one
-    // if (device->register_device(nullptr, rd->data.ds_register_device_e,
-    //                             proto_version) == 1) {
-    //   set_registered(REG_DEVICE);
-    // }
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+
+    register_device(device, nullptr, rd->data.ds_register_device_e,
+                    srpc_adapter, &dba, &dao,
+                    device->get_connection()->get_client_sd(),
+                    device->get_connection()->get_client_ipv4(),
+                    device->get_connection()->get_activity_timeout());
   }
 
   return CH_HANDLED;

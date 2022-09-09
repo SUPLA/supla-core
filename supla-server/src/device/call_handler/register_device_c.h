@@ -20,9 +20,11 @@
 #define SUPLA_CH_REGISTER_DEVICE_C_H_
 
 #include "device/call_handler/abstract_device_srpc_call_handler.h"
+#include "device/call_handler/register_device.h"
 
 class supla_ch_register_device_c
-    : public supla_abstract_device_srpc_call_handler {
+    : public supla_abstract_device_srpc_call_handler,
+      private supla_ch_register_device {
  public:
   supla_ch_register_device_c(void);
   virtual ~supla_ch_register_device_c();

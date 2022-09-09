@@ -22,6 +22,8 @@
 
 #include <memory>
 
+#include "db/db_access_provider.h"
+#include "device/device_dao.h"
 #include "log.h"
 #include "proto.h"
 
@@ -49,11 +51,14 @@ bool supla_ch_register_device_c::handle_call(
     rd->data.ds_register_device_c->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] =
         0;
 
-    // TODO(przemyslawzygmunt): Replace the old implementation with the new one
-    // if (device->register_device(rd->data.ds_register_device_c, nullptr,
-    //                             proto_version) == 1) {
-    //   set_registered(REG_DEVICE);
-    // }
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+
+    register_device(device, rd->data.ds_register_device_c, nullptr,
+                    srpc_adapter, &dba, &dao,
+                    device->get_connection()->get_client_sd(),
+                    device->get_connection()->get_client_ipv4(),
+                    device->get_connection()->get_activity_timeout());
   }
 
   return CH_HANDLED;
