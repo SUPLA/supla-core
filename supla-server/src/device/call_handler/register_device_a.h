@@ -21,11 +21,11 @@
 
 #include "device/call_handler/abstract_device_srpc_call_handler.h"
 
-class supla_ch_register_device
+class supla_ch_register_device_a
     : public supla_abstract_device_srpc_call_handler {
  public:
-  supla_ch_register_device(void);
-  virtual ~supla_ch_register_device();
+  supla_ch_register_device_a(void);
+  virtual ~supla_ch_register_device_a();
   virtual bool handle_call(std::shared_ptr<supla_device> device,
                            supla_abstract_srpc_adapter* srpc_adapter,
                            TsrpcReceivedData* rd, unsigned int call_id,

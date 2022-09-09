@@ -16,6 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <call_handler/register_device_a.h>
 #include "device/call_handler/call_handler_collection.h"
 
 #include "conn/call_handler/get_registration_enabled.h"
@@ -33,7 +34,6 @@
 #include "device/call_handler/get_channel_config.h"
 #include "device/call_handler/get_channel_functions.h"
 #include "device/call_handler/get_firmware_update_url.h"
-#include "device/call_handler/register_device.h"
 #include "device/call_handler/register_device_b.h"
 #include "device/call_handler/register_device_c.h"
 #include "device/call_handler/register_device_d.h"
@@ -56,7 +56,7 @@ supla_device_call_handler_collection::supla_device_call_handler_collection(void)
   add_handler(new supla_ch_register_device_d);
   add_handler(new supla_ch_register_device_c);
   add_handler(new supla_ch_register_device_b);
-  add_handler(new supla_ch_register_device);
+  add_handler(new supla_ch_register_device_a);
 
   // common
   add_handler(new supla_ch_set_activity_timeout());
