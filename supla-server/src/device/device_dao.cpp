@@ -582,7 +582,7 @@ int supla_device_dao::add_channel(int device_id, int channel_number, int type,
     if (!dba->stmt_execute((void **)&stmt, sql, pbind, 9, true)) {
       if (stmt != NULL) mysql_stmt_close(stmt);
       return 0;
-    };
+    }
 
     if (stmt != NULL) mysql_stmt_close(stmt);
   }
