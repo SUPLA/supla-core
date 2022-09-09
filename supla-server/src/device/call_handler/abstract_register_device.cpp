@@ -27,6 +27,8 @@
 #include "device/devicechannel.h"
 #include "log.h"
 
+using std::weak_ptr;
+
 supla_ch_abstract_register_device::supla_ch_abstract_register_device(void)
     : supla_ch_abstract_register_object() {
   guid = nullptr;
@@ -258,11 +260,12 @@ bool supla_ch_abstract_register_device::add_channels(void) {
 }
 
 void supla_ch_abstract_register_device::register_device(
-    TDS_SuplaRegisterDevice_C *register_device_c,
+    weak_ptr<supla_device> device, TDS_SuplaRegisterDevice_C *register_device_c,
     TDS_SuplaRegisterDevice_E *register_device_e,
     supla_abstract_srpc_adapter *srpc_adapter,
     supla_abstract_db_access_provider *dba, supla_abstract_device_dao *dao,
     int client_sd, int client_ipv4, unsigned char activity_timeout) {
+  this->device = device;
   this->register_device_c = register_device_c;
   this->register_device_e = register_device_e;
   this->srpc_adapter = srpc_adapter;

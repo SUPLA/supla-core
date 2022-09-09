@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_ABSTRACT_REGISTER_DEVICE_H_
 #define SUPLA_CH_ABSTRACT_REGISTER_DEVICE_H_
 
+#include <memory>
+
 #include "conn/call_handler/abstract_register_object.h"
 #include "db/abstract_db_access_provider.h"
 #include "device/abstract_device_dao.h"
@@ -26,9 +28,11 @@
 #include "srpc/abstract_srpc_adapter.h"
 
 class supla_user;
+class supla_device;
 class supla_ch_abstract_register_device
     : protected supla_ch_abstract_register_object {
  private:
+  std::weak_ptr<supla_device> device;
   char *guid;
   char *authkey;
   char *name;
@@ -67,7 +71,8 @@ class supla_ch_abstract_register_device
 
  protected:
   __useconds_t hold_time_on_failure_usec;
-  void register_device(TDS_SuplaRegisterDevice_C *register_device_c,
+  void register_device(std::weak_ptr<supla_device> device,
+                       TDS_SuplaRegisterDevice_C *register_device_c,
                        TDS_SuplaRegisterDevice_E *register_device_e,
                        supla_abstract_srpc_adapter *srpc_adapter,
                        supla_abstract_db_access_provider *dba,

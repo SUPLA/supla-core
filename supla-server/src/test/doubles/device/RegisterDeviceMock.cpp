@@ -30,9 +30,10 @@ void RegisterDeviceMock::register_device(
     supla_abstract_srpc_adapter *srpc_adapter,
     supla_abstract_db_access_provider *dba, supla_abstract_device_dao *dao,
     int client_sd, int client_ipv4, unsigned char activity_timeout) {
+  std::weak_ptr<supla_device> device;
   supla_ch_abstract_register_device::register_device(
-      register_device_c, register_device_e, srpc_adapter, dba, dao, client_sd,
-      client_ipv4, activity_timeout);
+      device, register_device_c, register_device_e, srpc_adapter, dba, dao,
+      client_sd, client_ipv4, activity_timeout);
 }
 
 void RegisterDeviceMock::set_hold_time_on_failure_usec(__useconds_t usec) {
