@@ -55,6 +55,8 @@ void supla_ch_register_device::on_registraction_success(void) {
   shared_ptr<supla_device> device = get_device().lock();
 
   device->set_id(get_device_id());
+  device->set_guid(get_guid());
+  device->set_authkey(get_authkey());
   device->set_user(supla_user::find(get_user_id(), true));
   device->set_registered(true);
 

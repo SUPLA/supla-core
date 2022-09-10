@@ -21,12 +21,9 @@
 
 #include <memory>
 
-#include "conn/abstract_connection_dao.h"
 #include "conn/call_handler/abstract_register_object.h"
-#include "db/abstract_db_access_provider.h"
 #include "device/abstract_device_dao.h"
 #include "proto.h"
-#include "srpc/abstract_srpc_adapter.h"
 
 class supla_user;
 class supla_device;
@@ -34,10 +31,6 @@ class supla_ch_abstract_register_device
     : protected supla_ch_abstract_register_object {
  private:
   std::weak_ptr<supla_device> device;
-  char *guid;
-  char *authkey;
-  char *name;
-  char *softver;
   unsigned char channel_count;
   TDS_SuplaRegisterDevice_C *register_device_c;
   TDS_SuplaRegisterDevice_E *register_device_e;
@@ -48,7 +41,6 @@ class supla_ch_abstract_register_device
   int flags;
   int device_id;
 
-  int user_id;
   bool location_enabled;
   bool new_device;
   bool device_enabled;
@@ -56,15 +48,7 @@ class supla_ch_abstract_register_device
   int _location_id;
   int _original_location_id;
 
-  bool should_rollback;
-
-  supla_abstract_srpc_adapter *srpc_adapter;
-  supla_abstract_db_access_provider *dba;
-  supla_abstract_connection_dao *conn_dao;
   supla_abstract_device_dao *device_dao;
-  int client_sd;
-  int client_ipv4;
-  unsigned char activity_timeout;
 
   void send_result(int resultcode);
   bool device_auth(void);
@@ -72,7 +56,6 @@ class supla_ch_abstract_register_device
   bool add_channels(void);
 
  protected:
-  __useconds_t hold_time_on_failure_usec;
   void register_device(std::weak_ptr<supla_device> device,
                        TDS_SuplaRegisterDevice_C *register_device_c,
                        TDS_SuplaRegisterDevice_E *register_device_e,
@@ -84,12 +67,9 @@ class supla_ch_abstract_register_device
 
   virtual void on_registraction_success(void) = 0;
 
-  supla_abstract_db_access_provider *get_dba(void);
   supla_abstract_device_dao *get_device_dao(void);
-  supla_abstract_connection_dao *get_conn_dao(void);
   std::weak_ptr<supla_device> get_device(void);
   bool is_channel_added(void);
-  int get_user_id(void);
   int get_device_id(void);
   int get_location_id(void);
   int get_channel_count(void);
@@ -99,7 +79,6 @@ class supla_ch_abstract_register_device
  public:
   supla_ch_abstract_register_device(void);
   virtual ~supla_ch_abstract_register_device();
-  __useconds_t get_hold_time_on_failure_usec(void);
 };
 
 #endif /* SUPLA_CH_ABSTRACT_REGISTER_DEVICE_H_*/
