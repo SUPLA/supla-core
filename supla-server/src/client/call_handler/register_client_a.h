@@ -16,14 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CH_REGISTER_CLIENT_H_
-#define SUPLA_CH_REGISTER_CLIENT_H_
+#ifndef SUPLA_CH_REGISTER_CLIENT_A_H_
+#define SUPLA_CH_REGISTER_CLIENT_A_H_
 
 #include <memory>
 
 #include "client/call_handler/abstract_client_srpc_call_handler.h"
 
-class supla_ch_register_client
+class supla_ch_register_client_a
     : public supla_abstract_client_srpc_call_handler {
  protected:
   virtual bool handle_call(std::shared_ptr<supla_client> client,
@@ -32,8 +32,8 @@ class supla_ch_register_client
                            unsigned char proto_version);
 
  public:
-  supla_ch_register_client(void);
-  virtual ~supla_ch_register_client();
+  supla_ch_register_client_a(void);
+  virtual ~supla_ch_register_client_a();
 };
 
-#endif /* SUPLA_CH_REGISTER_CLIENT_H_*/
+#endif /* SUPLA_CH_REGISTER_CLIENT_A_H_*/

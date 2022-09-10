@@ -16,8 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "client/call_handler/register_client.h"
-
+#include <call_handler/register_client_a.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -29,12 +28,12 @@
 
 using std::shared_ptr;
 
-supla_ch_register_client::supla_ch_register_client(void)
+supla_ch_register_client_a::supla_ch_register_client_a(void)
     : supla_abstract_client_srpc_call_handler() {}
 
-supla_ch_register_client::~supla_ch_register_client() {}
+supla_ch_register_client_a::~supla_ch_register_client_a() {}
 
-bool supla_ch_register_client::handle_call(
+bool supla_ch_register_client_a::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_CS_CALL_REGISTER_CLIENT) {
