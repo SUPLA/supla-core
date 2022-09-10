@@ -38,7 +38,7 @@ void RegisterDeviceMock::register_device(
 }
 
 void RegisterDeviceMock::set_hold_time_on_failure_usec(__useconds_t usec) {
-  hold_time_on_failure_usec = usec;
+  supla_ch_abstract_register_device::set_hold_time_on_failure_usec(usec);
 }
 
 bool RegisterDeviceMock::is_channel_added(void) {

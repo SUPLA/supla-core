@@ -193,6 +193,11 @@ supla_abstract_connection_dao *supla_ch_abstract_register_object::get_conn_dao(
   return conn_dao;
 }
 
+void supla_ch_abstract_register_object::set_hold_time_on_failure_usec(
+    __useconds_t hold_time_on_failure_usec) {
+  this->hold_time_on_failure_usec = hold_time_on_failure_usec;
+}
+
 __useconds_t supla_ch_abstract_register_object::get_hold_time_on_failure_usec(
     void) {
   return hold_time_on_failure_usec;

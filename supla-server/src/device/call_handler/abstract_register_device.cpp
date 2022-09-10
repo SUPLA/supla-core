@@ -85,6 +85,17 @@ TDS_SuplaDeviceChannel_C *supla_ch_abstract_register_device::get_channels_c(
   return register_device_e ? register_device_e->channels : nullptr;
 }
 
+void supla_ch_abstract_register_device::set_hold_time_on_failure_usec(
+    __useconds_t hold_time_on_failure_usec) {
+  supla_ch_abstract_register_object::set_hold_time_on_failure_usec(
+      hold_time_on_failure_usec);
+}
+
+__useconds_t supla_ch_abstract_register_device::get_hold_time_on_failure_usec(
+    void) {
+  return supla_ch_abstract_register_object::get_hold_time_on_failure_usec();
+}
+
 void supla_ch_abstract_register_device::send_result(int resultcode) {
   if (get_should_rollback()) {
     get_dba()->rollback();

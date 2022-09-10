@@ -75,10 +75,12 @@ class supla_ch_abstract_register_device
   int get_channel_count(void);
   TDS_SuplaDeviceChannel_B *get_channels_b(void);
   TDS_SuplaDeviceChannel_C *get_channels_c(void);
+  void set_hold_time_on_failure_usec(__useconds_t hold_time_on_failure_usec);
 
  public:
   supla_ch_abstract_register_device(void);
   virtual ~supla_ch_abstract_register_device();
+  __useconds_t get_hold_time_on_failure_usec(void);
 };
 
 #endif /* SUPLA_CH_ABSTRACT_REGISTER_DEVICE_H_*/

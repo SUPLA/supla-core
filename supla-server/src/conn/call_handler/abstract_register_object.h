@@ -90,6 +90,8 @@ class supla_ch_abstract_register_object {
   void set_conn_dao(supla_abstract_connection_dao *conn_dao);
   supla_abstract_connection_dao *get_conn_dao(void);
 
+  void set_hold_time_on_failure_usec(__useconds_t hold_time_on_failure_usec);
+
  public:
   supla_ch_abstract_register_object(void);
   virtual ~supla_ch_abstract_register_object();
