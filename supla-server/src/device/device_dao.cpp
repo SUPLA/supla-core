@@ -155,7 +155,8 @@ bool supla_device_dao::get_device_firmware_update_url(
 
 bool supla_device_dao::location_auth(int location_id, char *location_pwd,
                                      int *user_id, bool *is_enabled) {
-  if (location_id == 0 || location_pwd == nullptr ||
+  if (location_id == 0 || location_pwd == nullptr || user_id == nullptr ||
+      is_enabled == nullptr ||
       strnlen(location_pwd, SUPLA_LOCATION_PWD_MAXSIZE) < 1)
     return false;
 
