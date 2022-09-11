@@ -117,17 +117,6 @@ bool supla_client::is_superuser_authorized(void) {
   return result;
 }
 
-bool supla_client::authkey_auth(const char guid[SUPLA_GUID_SIZE],
-                                const char email[SUPLA_EMAIL_MAXSIZE],
-                                const char authkey[SUPLA_AUTHKEY_SIZE],
-                                int *user_id, database *db) {
-  return supla_authkey_cache::get_global_instance().authkey_auth(
-      guid, email, authkey, user_id,
-      [guid, email, authkey, user_id, db]() -> bool {
-        return db->client_authkey_auth(guid, email, authkey, user_id);
-      });
-}
-
 void supla_client::update_device_channels(int LocationID, int DeviceID) {
   if (locations->location_exists(LocationID)) {
     channels->update_device_channels(DeviceID);

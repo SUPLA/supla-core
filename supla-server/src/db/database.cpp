@@ -76,18 +76,6 @@ bool database::auth(const char *query, int ID, char *PWD, int PWD_MAXSIZE,
   return __ID != 0;
 }
 
-bool database::accessid_auth(int AccessID, char *AccessIDpwd, int *UserID,
-                             bool *is_enabled, bool *is_active) {
-  if (AccessID == 0) return false;
-
-  return auth(
-      "SELECT id, user_id, enabled, is_now_active FROM "
-      "`supla_v_accessid_active` WHERE id = ? AND "
-      "password = ?",
-      AccessID, AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, UserID, is_enabled,
-      is_active);
-}
-
 char *database::get_user_email(int UserID) {
   char *result = NULL;
 
@@ -243,94 +231,6 @@ bool database::get_authkey_hash(int ID, char *buffer, unsigned int buffer_size,
   }
 
   return result;
-}
-
-bool database::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                            const char Email[SUPLA_EMAIL_MAXSIZE],
-                            const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
-                            bool Client, const char *sql) {
-  /*
-if (_mysql == NULL) {
-return false;
-}
-
-int ID = 0;
-int _UserID = get_user_id_by_email(Email);
-
-if (_UserID == 0) {
-return false;
-}
-
-ID = Client ? get_client_id(_UserID, GUID) : get_device_id(_UserID, GUID);
-
-if (ID == 0) {
-// Yes. When client/device not exists then is authorized
-*UserID = _UserID;
-return true;
-}
-
-bool is_null = false;
-char AuthKeyHash[BCRYPT_HASH_MAXSIZE];
-memset(AuthKeyHash, 0, BCRYPT_HASH_MAXSIZE);
-
-if (!get_authkey_hash(ID, AuthKeyHash, BCRYPT_HASH_MAXSIZE, &is_null, sql)) {
-return false;
-}
-
-if (is_null) {  // Yes. When is null then is authorized
-*UserID = _UserID;
-return true;
-}
-
-char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE];
-memset(AuthKeyHEX, 0, SUPLA_AUTHKEY_HEXSIZE);
-
-st_authkey2hex(AuthKeyHEX, AuthKey);
-
-if (st_bcrypt_check(AuthKeyHEX, AuthKeyHash,
-                strnlen(AuthKeyHash, BCRYPT_HASH_MAXSIZE))) {
-*UserID = _UserID;
-return true;
-}
-*/
-  return false;
-}
-
-bool database::client_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                                   const char Email[SUPLA_EMAIL_MAXSIZE],
-                                   const char AuthKey[SUPLA_AUTHKEY_SIZE],
-                                   int *UserID) {
-  return authkey_auth(GUID, Email, AuthKey, UserID, true,
-                      "SELECT auth_key FROM supla_client WHERE id = ?");
-}
-
-int database::get_device_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE],
-                                   bool client) {
-  MYSQL_STMT *stmt = NULL;
-  int Result = 0;
-
-  char GUIDHEX[SUPLA_GUID_HEXSIZE];
-  st_guid2hex(GUIDHEX, GUID);
-
-  MYSQL_BIND pbind[2];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&UserID;
-
-  pbind[1].buffer_type = MYSQL_TYPE_STRING;
-  pbind[1].buffer = (char *)GUIDHEX;
-  pbind[1].buffer_length = SUPLA_GUID_HEXSIZE - 1;
-
-  if (!stmt_get_int((void **)&stmt, &Result, NULL, NULL, NULL,
-                    client ? "SELECT id FROM supla_client WHERE user_id = ? "
-                             "AND guid = unhex(?)"
-                           : "SELECT id FROM supla_iodevice WHERE user_id = ? "
-                             "AND guid = unhex(?)",
-                    pbind, 2))
-    return 0;
-
-  return Result;
 }
 
 bool database::on_newclient(int ClientID) {
@@ -525,46 +425,6 @@ void database::get_device_channels(int UserID, int DeviceID,
   }
 }
 
-int database::get_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE]) {
-  return get_device_client_id(UserID, GUID, true);
-}
-
-int database::get_client(int ClientID, bool *client_enabled, int *access_id,
-                         bool *accessid_enabled, bool *accessid_active) {
-  if (_mysql == NULL || ClientID == 0) return 0;
-
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&ClientID;
-
-  int _client_enabled = 0;
-  int _access_id = 0;
-  int _accessid_enabled = 0;
-  int _accessid_active = 0;
-
-  MYSQL_STMT *stmt = NULL;
-
-  if (stmt_get_int(
-          (void **)&stmt, &_client_enabled, &_access_id, &_accessid_enabled,
-          &_accessid_active,
-          "SELECT CAST(c.`enabled` AS unsigned integer), IFNULL(c.access_id, "
-          "0), IFNULL(CAST(a.`enabled` AS unsigned integer), 0), "
-          "IFNULL(CAST(a.`is_now_active` AS unsigned integer), 0) FROM "
-          "supla_client c LEFT JOIN supla_v_accessid_active a ON a.id = "
-          "c.access_id WHERE c.id = ?",
-          pbind, 1)) {
-    *client_enabled = _client_enabled == 1;
-    *access_id = _access_id;
-    *accessid_enabled = _accessid_enabled == 1;
-    *accessid_active = _accessid_active == 1;
-    return ClientID;
-  }
-
-  return 0;
-}
-
 int database::get_client_count(int UserID) {
   return get_count(UserID,
                    "SELECT COUNT(*) FROM supla_client WHERE user_id = ?");
@@ -629,15 +489,6 @@ int database::get_client_access_id(int ClientID, bool *accessid_enabled,
   }
 
   return Result;
-}
-
-bool database::get_client_reg_enabled(int UserID) {
-  return get_count(UserID,
-                   "SELECT COUNT(*) FROM `supla_user` WHERE id = ? AND "
-                   "client_reg_enabled IS NOT NULL AND client_reg_enabled >= "
-                   "UTC_TIMESTAMP()") > 0
-             ? true
-             : false;
 }
 
 int database::add_client(int AccessID, const char *GUID, const char *AuthKey,

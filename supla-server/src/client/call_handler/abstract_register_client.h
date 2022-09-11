@@ -34,8 +34,6 @@ class supla_ch_abstract_register_client
     : protected supla_ch_abstract_register_object {
  private:
   std::weak_ptr<supla_client> client;
-
-  int access_id;
   supla_abstract_client_dao *client_dao;
 
  protected:
@@ -44,11 +42,16 @@ class supla_ch_abstract_register_client
                        supla_abstract_srpc_adapter *srpc_adapter,
                        supla_abstract_db_access_provider *dba,
                        supla_abstract_connection_dao *conn_dao,
-                       supla_abstract_client_dao *device_dao, int client_sd,
+                       supla_abstract_client_dao *client_dao, int client_sd,
                        int client_ipv4, unsigned char activity_timeout);
 
   std::weak_ptr<supla_client> get_client(void);
   supla_abstract_client_dao *get_client_dao(void);
+
+  virtual void superuser_authorize(
+      int user_id, const char email[SUPLA_EMAIL_MAXSIZE],
+      const char password[SUPLA_PASSWORD_MAXSIZE]) = 0;
+  virtual bool is_superuser_authorized(void) = 0;
 
  public:
   supla_ch_abstract_register_client(void);

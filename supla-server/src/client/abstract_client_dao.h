@@ -26,10 +26,23 @@ class supla_abstract_client_dao {
   supla_abstract_client_dao();
   virtual ~supla_abstract_client_dao();
 
+  virtual bool access_id_auth(int access_id, char *access_id_pwd, int *user_id,
+                              bool *is_enabled, bool *is_active) = 0;
+
   virtual bool oauth_get_token(TSC_OAuthToken *token, int user_id,
                                int access_id, bool *storage_connect_error) = 0;
   virtual bool set_reg_enabled(int user_id, int device_reg_time_sec,
                                int client_reg_time_sec) = 0;
+
+  virtual int get_client_id(int user_id, const char guid[SUPLA_GUID_SIZE]) = 0;
+
+  virtual int get_client_variables(int client_id, bool *client_enabled,
+                                   int *access_id, bool *accessid_enabled,
+                                   bool *accessid_active) = 0;
+
+  virtual bool get_client_reg_enabled(int user_id) = 0;
+
+  virtual int get_client_limit_left(int user_id) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_CLIENT_DAO_H_ */

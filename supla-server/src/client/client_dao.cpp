@@ -34,6 +34,45 @@ supla_client_dao::supla_client_dao(supla_abstract_db_access_provider *dba)
 
 supla_client_dao::~supla_client_dao() {}
 
+bool supla_client_dao::access_id_auth(int access_id, char *access_id_pwd,
+                                      int *user_id, bool *is_enabled,
+                                      bool *is_active) {
+  if (access_id_id == 0 || access_id_pwd == nullptr || user_id == nullptr ||
+      is_enabled == nullptr || is_active == nullptr ||
+      strnlen(access_id_pwd, SUPLA_ACCESSID_PWD_MAXSIZE) < 1)
+    return false;
+
+  MYSQL_BIND pbind[2] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&access_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_STRING;
+  pbind[1].buffer = (char *)access_id_pwd;
+  pbind[1].buffer_length = strnlen(access_id_pwd, SUPLA_LOCATION_PWD_MAXSIZE);
+
+  int _is_enabled = 0;
+  int _is_active = 0;
+
+  const char query[] =
+      "SELECT id, user_id, enabled, is_now_active FROM "
+      "`supla_v_accessid_active` WHERE id = ? AND password = ?";
+
+  int _ID = 0;
+  MYSQL_STMT *stmt = nullptr;
+  if (!dba->stmt_get_int((void **)&stmt, &_ID, user_id, &_is_enabled,
+                         &_is_active, query, pbind, 2)) {
+    _ID = 0;
+    _is_enabled = 0;
+    _is_active = 0;
+  }
+
+  *is_enabled = _is_enabled == 1;
+  *is_active = _is_active == 1;
+
+  return _ID != 0;
+}
+
 int supla_client_dao::oauth_add_client_id(void) {
   char random_id[51];
   char secret[51];
@@ -166,4 +205,106 @@ bool supla_client_dao::set_reg_enabled(int user_id, int device_reg_time_sec,
   }
 
   return result;
+}
+
+int supla_client_dao::get_client_id(int user_id,
+                                    const char guid[SUPLA_GUID_SIZE]) {}
+
+int supla_client_dao::get_client_variables(int client_id, bool *client_enabled,
+                                           int *access_id,
+                                           bool *accessid_enabled,
+                                           bool *accessid_active) {
+  if (client_id == 0) return 0;
+
+  MYSQL_BIND pbind = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&client_id;
+
+  int _client_enabled = 0;
+  int _access_id = 0;
+  int _accessid_enabled = 0;
+  int _accessid_active = 0;
+
+  MYSQL_STMT *stmt = NULL;
+
+  if (dba->stmt_get_int(
+          (void **)&stmt, &_client_enabled, &_access_id, &_accessid_enabled,
+          &_accessid_active,
+          "SELECT CAST(c.`enabled` AS unsigned integer), IFNULL(c.access_id, "
+          "0), IFNULL(CAST(a.`enabled` AS unsigned integer), 0), "
+          "IFNULL(CAST(a.`is_now_active` AS unsigned integer), 0) FROM "
+          "supla_client c LEFT JOIN supla_v_accessid_active a ON a.id = "
+          "c.access_id WHERE c.id = ?",
+          pbind, 1)) {
+    *client_enabled = _client_enabled == 1;
+    *access_id = _access_id;
+    *accessid_enabled = _accessid_enabled == 1;
+    *accessid_active = _accessid_active == 1;
+    return client_id;
+  }
+
+  return 0;
+}
+
+bool supla_client_dao::get_client_id(int user_id,
+                                     const char guid[SUPLA_GUID_SIZE],
+                                     int *id) {
+  if (!id) {
+    return false;
+  }
+
+  // We intentionally use IFNULL(MIN (id), 0) so that the query result always
+  // contains one row. Otherwise, we assume that an error has occurred.
+
+  const char query[] =
+      "SELECT IFNULL(MIN(id), 0) FROM supla_client WHERE user_id = ? AND "
+      "guid = unhex(?)";
+
+  MYSQL_STMT *stmt = nullptr;
+
+  char guidhex[SUPLA_GUID_HEXSIZE];
+  st_guid2hex(guidhex, guid);
+
+  MYSQL_BIND pbind[2] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&user_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_STRING;
+  pbind[1].buffer = (char *)guidhex;
+  pbind[1].buffer_length = SUPLA_GUID_HEXSIZE - 1;
+
+  if (dba->stmt_get_int((void **)&stmt, id, nullptr, nullptr, nullptr, query,
+                        pbind, 2)) {
+    return true;
+  }
+
+  *id = 0;
+  return false;
+}
+
+int supla_client_dao::get_client_id(int user_id,
+                                    const char guid[SUPLA_GUID_SIZE]) {
+  int result = 0;
+  if (get_client_id(user_id, guid, &result)) {
+    return result;
+  }
+
+  return 0;
+}
+
+bool supla_client_dao::get_client_reg_enabled(int user_id) {
+  const char query[] =
+      "SELECT COUNT(*) FROM `supla_user` WHERE id = ? AND client_reg_enabled "
+      "IS NOT NULL AND client_reg_enabled >= UTC_TIMESTAMP()";
+
+  return get_count(user_id, query) > 0 ? true : false;
+}
+
+int supla_client_dao::get_client_limit_left(int user_id) {
+  return get_int(user_id, 0,
+                 "SELECT IFNULL(limit_client, 0) - IFNULL(( SELECT COUNT(*) "
+                 "FROM supla_client WHERE user_id = supla_user.id ), 0) FROM "
+                 "supla_user WHERE id = ?");
 }
