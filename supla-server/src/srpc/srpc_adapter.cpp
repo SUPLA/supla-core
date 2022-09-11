@@ -112,3 +112,23 @@ _supla_int_t supla_srpc_adapter::sd_async_registerdevice_result(
     TSD_SuplaRegisterDeviceResult *result) {
   return srpc_sd_async_registerdevice_result(get_srpc(), result);
 }
+
+_supla_int_t supla_srpc_adapter::sc_async_registerclient_result(
+    TSC_SuplaRegisterClientResult *result) {
+  return srpc_sc_async_registerclient_result(get_srpc(), result);
+}
+
+_supla_int_t supla_srpc_adapter::sc_async_registerclient_result_b(
+    TSC_SuplaRegisterClientResult_B *result) {
+  return srpc_sc_async_registerclient_result_b(get_srpc(), result);
+}
+
+_supla_int_t supla_srpc_adapter::sc_async_registerclient_result_c(
+    TSC_SuplaRegisterClientResult_C *result) {
+  return srpc_sc_async_registerclient_result_c(get_srpc(), result);
+}
+
+_supla_int_t supla_srpc_adapter::sc_async_registerclient_result_d(
+    TSC_SuplaRegisterClientResult_D *result) {
+  return srpc_sc_async_registerclient_result_d(get_srpc(), result);
+}

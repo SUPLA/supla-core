@@ -19,6 +19,9 @@
 #include "client/call_handler/abstract_register_client.h"
 
 #include <string.h>
+#include <unistd.h>
+
+#include "log.h"
 
 using std::weak_ptr;
 
@@ -50,6 +53,7 @@ char supla_ch_abstract_register_client::register_client(
   int resultcode = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
   char result = 0;
   int access_id = 0;
+  int client_id = 0;
 
   set_srpc_adapter(srpc_adapter);
   set_dba(dba);
@@ -113,7 +117,7 @@ char supla_ch_abstract_register_client::register_client(
         // TODO(pzygmunt): move get_client_id higher, and get_client_variables
         // should return a bool. Do the same as in
         // supla_ch_abstract_register_device
-        int client_id = client_dao->get_client_variables(
+        client_id = client_dao->get_client_variables(
             client_dao->get_client_id(get_user_id(), get_guid()),
             &client_enabled, &_access_id, &_accessid_enabled,
             &_accessid_active);
@@ -145,43 +149,46 @@ char supla_ch_abstract_register_client::register_client(
 
           } else {
             if (access_id == 0 && register_client_d != nullptr &&
-                (db->get_client_count(get_user_id()) == 0 ||
+                (client_dao->get_client_count(get_user_id()) == 0 ||
                  is_superuser_authorized())) {
-              AccessID = db->get_access_id(UserID, true, true);
+              access_id = client_dao->get_access_id(get_user_id(), true, true);
 
-              if (AccessID > 0) {
+              if (access_id > 0) {
                 accessid_enabled = true;
                 accessid_active = true;
               } else {
                 accessid_enabled = false;
-                AccessID = db->get_access_id(UserID, false, true);
-                if (AccessID > 0) {
+                access_id =
+                    client_dao->get_access_id(get_user_id(), false, true);
+                if (access_id > 0) {
                   accessid_active = true;
                 } else {
                   accessid_active = false;
-                  AccessID = db->get_access_id(UserID, false, false);
+                  access_id =
+                      client_dao->get_access_id(get_user_id(), false, false);
                 }
               }
             }
 
-            ClientID = db->add_client(AccessID, GUID, AuthKey, Name,
-                                      get_connection()->get_client_ipv4(),
-                                      SoftVer, proto_version, UserID);
+            client_id = client_dao->add_client(
+                access_id, get_guid(), get_authkey(), get_name(),
+                get_client_ipv4(), get_softver(),
+                get_srpc_adapter()->get_proto_version(), get_user_id());
 
-            if (ClientID == 0) {
+            if (client_id == 0) {
               // something goes wrong
-              db->rollback();
+              dba->rollback();
 
             } else {
               client_enabled = true;
 
-              if (AccessID == 0) {
+              if (access_id == 0) {
                 _accessid_enabled = false;
                 _accessid_active = false;
-                AccessID = db->get_client_access_id(
-                    ClientID, &_accessid_enabled, &_accessid_active);
+                access_id = client_dao->get_client_access_id(
+                    client_id, &_accessid_enabled, &_accessid_active);
 
-                if (AccessID) {
+                if (access_id) {
                   if (_accessid_enabled) {
                     accessid_enabled = true;
                   }
@@ -193,47 +200,48 @@ char supla_ch_abstract_register_client::register_client(
             }
           }
 
-        } else if (_AccessID > 0 && register_client_d != nullptr) {
-          AccessID = _AccessID;
+        } else if (_access_id > 0 && register_client_d != nullptr) {
+          access_id = _access_id;
         }
 
-        if (ClientID != 0) {
+        if (client_id != 0) {
           if (!client_enabled) {
-            db->rollback();
+            dba->rollback();
             resultcode = SUPLA_RESULTCODE_CLIENT_DISABLED;
 
           } else {
             if (do_update) {
-              if (AccessID == 0 && pwd_is_set) {
+              if (access_id == 0 && pwd_is_set) {
                 if (!is_superuser_authorized()) {
-                  superuser_authorize(UserID, register_client_d->Email,
-                                      register_client_d->Password, nullptr);
+                  superuser_authorize(get_user_id(), register_client_d->Email,
+                                      register_client_d->Password);
                 }
 
                 if (is_superuser_authorized()) {
-                  AccessID = db->get_access_id(UserID, true, true);
+                  access_id =
+                      client_dao->get_access_id(get_user_id(), true, true);
 
-                  if (AccessID) {
+                  if (access_id) {
                     accessid_enabled = true;
                     accessid_active = true;
                   }
                 }
               }
 
-              if (false ==
-                  db->update_client(ClientID, AccessID, AuthKey, Name,
-                                    get_connection()->get_client_ipv4(),
-                                    SoftVer, proto_version)) {
+              if (false == client_dao->update_client(
+                               client_id, access_id, get_authkey(), get_name(),
+                               get_client_ipv4(), get_softver(),
+                               get_srpc_adapter()->get_proto_version())) {
                 // something goes wrong
-                ClientID = 0;
-                db->rollback();
+                client_id = 0;
+                dba->rollback();
               }
             }
 
-            if (ClientID) {
-              db->commit();
+            if (client_id) {
+              dba->commit();
 
-              if (AccessID == 0) {
+              if (access_id == 0) {
                 resultcode = pwd_is_set
                                  ? SUPLA_RESULTCODE_BAD_CREDENTIALS
                                  : SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED;
@@ -245,14 +253,7 @@ char supla_ch_abstract_register_client::register_client(
                 resultcode = SUPLA_RESULTCODE_ACCESSID_INACTIVE;
 
               } else {
-                set_id(ClientID);
-                setName(Name);
-                setAccessID(AccessID);
-
-                // Set the user before loading config
-                set_user(supla_user::add_client(get_shared_ptr(), UserID));
-
-                loadConfig();
+                on_registraction_success();
 
                 resultcode = SUPLA_RESULTCODE_TRUE;
                 result = 1;
@@ -267,57 +268,72 @@ char supla_ch_abstract_register_client::register_client(
 
   revoke_superuser_authorization();
 
-  if (proto_version >= 17) {
-    TSC_SuplaRegisterClientResult_C srcr = {};
+  struct timeval now;
+  gettimeofday(&now, nullptr);
+
+  if (get_srpc_adapter()->get_proto_version() >= 19) {
+    TSC_SuplaRegisterClientResult_D srcr = {};
     srcr.result_code = resultcode;
-    srcr.ClientID = get_id();
-    srcr.activity_timeout = get_connection()->get_activity_timeout();
+    srcr.ClientID = client_id;
+    srcr.activity_timeout = get_activity_timeout();
     srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
-    srcr.LocationCount = locations->count();
-    srcr.ChannelCount = channels->count();
-    srcr.ChannelGroupCount = cgroups->count();
-
-    struct timeval now;
-    gettimeofday(&now, nullptr);
+    srcr.LocationCount = get_location_count();
+    srcr.ChannelCount = get_channel_count();
+    srcr.ChannelGroupCount = get_channel_group_count();
+    srcr.SceneCount = get_scene_count();
     srcr.serverUnixTimestamp = now.tv_sec;
 
-    srpc_sc_async_registerclient_result_c(
-        get_connection()->get_srpc_adapter()->get_srpc(), &srcr);
-  } else if (proto_version >= 9) {
-    TSC_SuplaRegisterClientResult_B srcr = {};
+    get_srpc_adapter()->sc_async_registerclient_result_d(&srcr);
+  } else if (get_srpc_adapter()->get_proto_version() >= 17) {
+    TSC_SuplaRegisterClientResult_C srcr = {};
     srcr.result_code = resultcode;
-    srcr.ClientID = get_id();
-    srcr.activity_timeout = get_connection()->get_activity_timeout();
+    srcr.ClientID = client_id;
+    srcr.activity_timeout = get_activity_timeout();
     srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
-    srcr.LocationCount = locations->count();
-    srcr.ChannelCount = channels->count();
-    srcr.ChannelGroupCount = cgroups->count();
-    srpc_sc_async_registerclient_result_b(
-        get_connection()->get_srpc_adapter()->get_srpc(), &srcr);
+    srcr.LocationCount = get_location_count();
+    srcr.ChannelCount = get_channel_count();
+    srcr.ChannelGroupCount = get_channel_group_count();
+    srcr.serverUnixTimestamp = now.tv_sec;
+
+    get_srpc_adapter()->sc_async_registerclient_result_c(&srcr);
+  } else if (get_srpc_adapter()->get_proto_version() >= 9) {
+    TSC_SuplaRegisterClientResult_B srcr = {};
+    srcr.result_code = resultcode;
+    srcr.ClientID = client_id;
+    srcr.activity_timeout = get_activity_timeout();
+    srcr.version_min = SUPLA_PROTO_VERSION_MIN;
+    srcr.version = SUPLA_PROTO_VERSION;
+    srcr.LocationCount = get_location_count();
+    srcr.ChannelCount = get_channel_count();
+    srcr.ChannelGroupCount = get_channel_group_count();
+    get_srpc_adapter()->sc_async_registerclient_result_b(&srcr);
   } else {
     TSC_SuplaRegisterClientResult srcr = {};
     srcr.result_code = resultcode;
-    srcr.ClientID = get_id();
-    srcr.activity_timeout = get_connection()->get_activity_timeout();
+    srcr.ClientID = client_id;
+    srcr.activity_timeout = get_activity_timeout();
     srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
-    srcr.LocationCount = locations->count();
-    srcr.ChannelCount = channels->count();
-    srpc_sc_async_registerclient_result(
-        get_connection()->get_srpc_adapter()->get_srpc(), &srcr);
+    srcr.LocationCount = get_location_count();
+    srcr.ChannelCount = get_channel_count();
+    get_srpc_adapter()->sc_async_registerclient_result(&srcr);
   }
 
   // !After srpc_async_registerclient_result
   if (resultcode == SUPLA_RESULTCODE_TRUE) {
     remote_update_lists();
     supla_log(LOG_INFO, "Client registered. ClientSD: %i Protocol Version: %i",
-              get_connection()->get_client_sd(),
-              get_connection()->get_protocol_version());
+              get_client_sd(), get_srpc_adapter()->get_proto_version());
   } else {
-    usleep(2000000);
+    usleep(get_hold_time_on_failure_usec());
   }
 
   return result;
+}
+
+__useconds_t supla_ch_abstract_register_client::get_hold_time_on_failure_usec(
+    void) {
+  return supla_ch_abstract_register_object::get_hold_time_on_failure_usec();
 }

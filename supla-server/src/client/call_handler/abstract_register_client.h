@@ -51,7 +51,22 @@ class supla_ch_abstract_register_client
   virtual void superuser_authorize(
       int user_id, const char email[SUPLA_EMAIL_MAXSIZE],
       const char password[SUPLA_PASSWORD_MAXSIZE]) = 0;
+
   virtual bool is_superuser_authorized(void) = 0;
+
+  virtual void revoke_superuser_authorization(void) = 0;
+
+  virtual void on_registraction_success(void) = 0;
+
+  virtual int get_location_count(void) = 0;
+
+  virtual int get_channel_count(void) = 0;
+
+  virtual int get_channel_group_count(void) = 0;
+
+  virtual int get_scene_count(void) = 0;
+
+  virtual void remote_update_lists(void) = 0;
 
  public:
   supla_ch_abstract_register_client(void);

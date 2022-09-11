@@ -56,22 +56,6 @@ class database : public svrdb {
   void get_device_channels(int UserID, int DeviceID,
                            supla_device_channels *channels);
 
-  bool on_newclient(int ClientID);
-
-  int get_client_count(int UserID);
-
-  int get_access_id(int UserID, bool enabled, bool active);
-  int get_client_access_id(int ClientID, bool *accessid_enabled,
-                           bool *accessid_active);
-
-  int add_client(int AccessID, const char *GUID, const char *AuthKey,
-                 const char *Name, unsigned int ipv4, const char *softver,
-                 int proto_version, int UserID);
-
-  bool update_client(int ClientID, int AccessID, const char *AuthKey,
-                     const char *Name, unsigned int ipv4, const char *softver,
-                     int proto_version);
-
   void get_client_locations(int ClientID, supla_client_locations *locs);
   void get_client_channels(int ClientID, int *DeviceID,
                            supla_client_channels *channels);

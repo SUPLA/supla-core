@@ -80,6 +80,18 @@ class supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sd_async_registerdevice_result(
       TSD_SuplaRegisterDeviceResult *result) = 0;
+
+  virtual _supla_int_t sc_async_registerclient_result(
+      TSC_SuplaRegisterClientResult *result) = 0;
+
+  virtual _supla_int_t sc_async_registerclient_result_b(
+      TSC_SuplaRegisterClientResult_B *result) = 0;  // ver. >= 9
+
+  virtual _supla_int_t sc_async_registerclient_result_c(
+      TSC_SuplaRegisterClientResult_C *result) = 0;  // ver. >= 17
+
+  virtual _supla_int_t sc_async_registerclient_result_d(
+      TSC_SuplaRegisterClientResult_D *result) = 0;  // ver. >= 19
 };
 
 #endif /* ABSTRACT_SRPC_ADAPTER_H_ */

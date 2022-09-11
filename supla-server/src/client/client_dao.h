@@ -43,9 +43,12 @@ class supla_client_dao : public supla_abstract_client_dao {
                                int client_reg_time_sec);
 
   virtual bool get_client_id(int user_id, const char guid[SUPLA_GUID_SIZE],
-                             int *id) = 0;
+                             int *id);
 
   virtual int get_client_id(int user_id, const char guid[SUPLA_GUID_SIZE]);
+
+  virtual int get_client_access_id(int client_id, bool *accessid_enabled,
+                                   bool *accessid_active);
 
   virtual int get_client_variables(int client_id, bool *client_enabled,
                                    int *access_id, bool *accessid_enabled,
@@ -54,6 +57,20 @@ class supla_client_dao : public supla_abstract_client_dao {
   virtual bool get_client_reg_enabled(int user_id);
 
   virtual int get_client_limit_left(int user_id);
+
+  virtual int get_client_count(int user_id);
+
+  virtual int get_access_id(int user_id, bool enabled, bool active);
+
+  virtual int add_client(int access_id, const char *guid, const char *authkey,
+                         const char *name, unsigned int ipv4,
+                         const char *softver, int proto_version, int user_id);
+
+  virtual bool on_newclient(int client_id);
+
+  virtual bool update_client(int client_id, int access_id, const char *authkey,
+                             const char *name, unsigned int ipv4,
+                             const char *softver, int proto_version);
 };
 
 #endif /* SUPLA_CLIENT_DAO_H_ */
