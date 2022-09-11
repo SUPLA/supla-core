@@ -1102,6 +1102,15 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D:
+
+        if (srpc->sdp.data_size == sizeof(TSC_SuplaRegisterClientResult_D))
+          rd->data.sc_register_client_result_d =
+              (TSC_SuplaRegisterClientResult_D *)malloc(
+                  sizeof(TSC_SuplaRegisterClientResult_D));
+
+        break;
+
       case SUPLA_SC_CALL_LOCATION_UPDATE:
 
         if (srpc->sdp.data_size >=
@@ -1608,6 +1617,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
     case SUPLA_CS_CALL_EXECUTE_ACTION:
     case SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION:
     case SUPLA_SC_CALL_ACTION_EXECUTION_RESULT:
+    case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D:
       return 19;
   }
 
@@ -2093,24 +2103,30 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_registerclient_d(
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result(
-    void *_srpc, TSC_SuplaRegisterClientResult *registerclient_result) {
+    void *_srpc, TSC_SuplaRegisterClientResult *result) {
   return srpc_async_call(_srpc, SUPLA_SC_CALL_REGISTER_CLIENT_RESULT,
-                         (char *)registerclient_result,
-                         sizeof(TSC_SuplaRegisterClientResult));
+                         (char *)result, sizeof(TSC_SuplaRegisterClientResult));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_b(
-    void *_srpc, TSC_SuplaRegisterClientResult_B *registerclient_result) {
+    void *_srpc, TSC_SuplaRegisterClientResult_B *result) {
   return srpc_async_call(_srpc, SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B,
-                         (char *)registerclient_result,
+                         (char *)result,
                          sizeof(TSC_SuplaRegisterClientResult_B));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_c(
-    void *_srpc, TSC_SuplaRegisterClientResult_C *registerclient_result) {
+    void *_srpc, TSC_SuplaRegisterClientResult_C *result) {
   return srpc_async_call(_srpc, SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C,
-                         (char *)registerclient_result,
+                         (char *)result,
                          sizeof(TSC_SuplaRegisterClientResult_C));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_d(
+    void *_srpc, TSC_SuplaRegisterClientResult_D *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D,
+                         (char *)result,
+                         sizeof(TSC_SuplaRegisterClientResult_D));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH

@@ -78,6 +78,18 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
 
   MOCK_METHOD1(sd_async_registerdevice_result,
                _supla_int_t(TSD_SuplaRegisterDeviceResult *result));
+
+  MOCK_METHOD1(sc_async_registerclient_result,
+               _supla_int_t(TSC_SuplaRegisterClientResult *result));
+
+  MOCK_METHOD1(sc_async_registerclient_result_b,
+               _supla_int_t(TSC_SuplaRegisterClientResult_B *result));
+
+  MOCK_METHOD1(sc_async_registerclient_result_c,
+               _supla_int_t(TSC_SuplaRegisterClientResult_C *result));
+
+  MOCK_METHOD1(sc_async_registerclient_result_d,
+               _supla_int_t(TSC_SuplaRegisterClientResult_D *result));
 };
 
 } /* namespace testing */

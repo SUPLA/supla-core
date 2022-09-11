@@ -511,7 +511,8 @@ vector<int> SrpcTest::get_call_ids(int version) {
     case 19:
       return {SUPLA_CS_CALL_EXECUTE_ACTION,
               SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION,
-              SUPLA_SC_CALL_ACTION_EXECUTION_RESULT};
+              SUPLA_SC_CALL_ACTION_EXECUTION_RESULT,
+              SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D};
   }
 
   return {};
@@ -1985,6 +1986,12 @@ SRPC_CALL_BASIC_TEST(srpc_sc_async_registerclient_result_c,
                      SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C, 54,
                      sc_register_client_result_c);
 
+#if SUPLA_PROTO_VERSION >= 19
+SRPC_CALL_BASIC_TEST(srpc_sc_async_registerclient_result_d,
+                     TSC_SuplaRegisterClientResult_D,
+                     SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D, 50,
+                     sc_register_client_result_d);
+#endif /*SUPLA_PROTO_VERSION >= 19*/
 //---------------------------------------------------------
 // LOCATION UPDATE
 //---------------------------------------------------------

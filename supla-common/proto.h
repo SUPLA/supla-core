@@ -188,6 +188,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT 90
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B 92  // ver. >= 9
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C 94  // ver. >= 17
+#define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D 96  // ver. >= 19
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED 100
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B 102        // ver. >= 12
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C 103        // ver. >= 12
@@ -1261,6 +1262,22 @@ typedef struct {
   unsigned char version_min;
   unsigned _supla_int_t serverUnixTimestamp;  // current server time
 } TSC_SuplaRegisterClientResult_C;            // ver. >= 17
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t result_code;
+  _supla_int_t ClientID;
+  short LocationCount;
+  short ChannelCount;
+  short ChannelGroupCount;
+  short SceneCount;
+  _supla_int_t Flags;
+  unsigned char activity_timeout;
+  unsigned char version;
+  unsigned char version_min;
+  unsigned _supla_int_t serverUnixTimestamp;  // current server time
+} TSC_SuplaRegisterClientResult_D;            // ver. >= 19
 
 typedef struct {
   // client -> server
