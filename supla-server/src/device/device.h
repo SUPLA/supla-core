@@ -44,6 +44,8 @@ class supla_device : public supla_connection_object {
  public:
   explicit supla_device(supla_connection *connection);
   std::shared_ptr<supla_device> get_shared_ptr(void);
+  virtual bool is_sleeping_object(void);
+  virtual unsigned int get_time_to_wakeup_msec(void);
 
   static bool funclist_contains_function(int funcList, int func);
 

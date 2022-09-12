@@ -1039,15 +1039,37 @@ void supla_connection::execute(void *sthread) {
 
     } else {
       if (object->get_activity_delay() >= get_activity_timeout()) {
-        sthread_terminate(sthread);
-        supla_log(LOG_DEBUG, "Activity timeout %i, %i, %i", sthread,
-                  object->get_activity_delay(), registered);
+        if (object->is_sleeping_object()) {
+          supla_log(LOG_DEBUG, "Sleeping device %i", sthread);
+        } else {
+          sthread_terminate(sthread);
+          supla_log(LOG_DEBUG, "Activity timeout %i, %i, %i", sthread,
+                    object->get_activity_delay(), registered);
+        }
         break;
       }
     }
   }
 
+  ssocket_supla_socket_close(supla_socket);
+
   if (object != nullptr) {
+    if (object->is_sleeping_object()) {
+      unsigned int time_to_wakeup_msec = object->get_time_to_wakeup_msec();
+
+      if (time_to_wakeup_msec > 0) {
+        while (time_to_wakeup_msec > 0 && sthread_isterminated(sthread) == 0) {
+          if (time_to_wakeup_msec >= 1000) {
+            time_to_wakeup_msec -= 1000;
+            usleep(1000000);
+          } else {
+            usleep(time_to_wakeup_msec * 1000);
+            time_to_wakeup_msec = 0;
+          }
+        }
+      }
+    }
+
     weak_ptr<supla_connection_object> _object = object;
     object = nullptr;
 

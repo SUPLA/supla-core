@@ -27,6 +27,9 @@
 #include "svrcfg.h"
 #include "user.h"
 
+using std::shared_ptr;
+using std::weak_ptr;
+
 typedef struct {
   char guid[SUPLA_GUID_SIZE];
   char *email;
@@ -173,8 +176,8 @@ int supla_connection_object::get_user_id(void) {
 
 supla_connection *supla_connection_object::get_connection(void) { return conn; }
 
-std::shared_ptr<supla_connection_object>
-supla_connection_object::get_shared_ptr(void) {
+shared_ptr<supla_connection_object> supla_connection_object::get_shared_ptr(
+    void) {
   return conn ? conn->get_object() : nullptr;
 }
 
@@ -298,4 +301,10 @@ bool supla_connection_object::authkey_auth(
 
 unsigned _supla_int64_t supla_connection_object::wait_time_usec() {
   return 120000000;
+}
+
+bool supla_connection_object::is_sleeping_object(void) { return false; }
+
+unsigned int supla_connection_object::get_time_to_wakeup_msec(void) {
+  return 0;
 }
