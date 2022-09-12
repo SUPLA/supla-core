@@ -31,6 +31,8 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
  public:
   explicit SrpcAdapterMock(void *srpc);
   virtual ~SrpcAdapterMock(void);
+  MOCK_METHOD0(lock, void(void));
+  MOCK_METHOD0(unlock, void(void));
   MOCK_METHOD0(get_proto_version, char(void));
   MOCK_METHOD1(sc_async_scene_pack_update,
                _supla_int_t(TSC_SuplaScenePack *scene_pack));

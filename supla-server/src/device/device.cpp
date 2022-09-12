@@ -59,16 +59,15 @@ shared_ptr<supla_device> supla_device::get_shared_ptr(void) {
       supla_connection_object::get_shared_ptr());
 }
 
+void supla_device::on_previous_found(
+    shared_ptr<supla_connection_object> previous) {}
+
 bool supla_device::is_sleeping_object(void) {
   return channels->get_value_validity_time_left_msec() > 0;
 }
 
 unsigned int supla_device::get_time_to_wakeup_msec(void) {
-  unsigned int time = channels->get_value_validity_time_left_msec();
-  if (time > 0) {
-    return time + 1000;
-  }
-  return 0;
+  return channels->get_value_validity_time_left_msec();
 }
 
 // static

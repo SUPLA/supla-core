@@ -65,6 +65,10 @@ class supla_client : public supla_connection_object {
  public:
   explicit supla_client(supla_connection *connection);
   std::shared_ptr<supla_client> get_shared_ptr(void);
+  virtual void on_previous_found(
+      std::shared_ptr<supla_connection_object> previous);
+  virtual bool is_sleeping_object(void);
+  virtual unsigned int get_time_to_wakeup_msec(void);
 
   void iterate();
   unsigned _supla_int64_t wait_time_usec();

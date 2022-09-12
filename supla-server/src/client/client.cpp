@@ -64,6 +64,13 @@ shared_ptr<supla_client> supla_client::get_shared_ptr(void) {
       supla_connection_object::get_shared_ptr());
 }
 
+void supla_client::on_previous_found(
+    shared_ptr<supla_connection_object> previous) {}
+
+bool supla_client::is_sleeping_object(void) { return false; }
+
+unsigned int supla_client::get_time_to_wakeup_msec(void) { return 0; }
+
 void supla_client::setName(const char *name) {
   lck_lock(lck);
   snprintf(this->name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", name);

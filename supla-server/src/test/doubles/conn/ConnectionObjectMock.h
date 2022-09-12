@@ -35,6 +35,11 @@ class ConnectionObjectMock : public supla_connection_object {
                     const char Email[SUPLA_EMAIL_MAXSIZE],
                     const char AuthKey[SUPLA_AUTHKEY_SIZE]);
 
+  virtual void on_previous_found(
+      std::shared_ptr<supla_connection_object> previous);
+  virtual bool is_sleeping_object(void);
+  virtual unsigned int get_time_to_wakeup_msec(void);
+
   MOCK_METHOD5(db_authkey_auth, bool(const char guid[SUPLA_GUID_SIZE],
                                      const char email[SUPLA_EMAIL_MAXSIZE],
                                      const char authkey[SUPLA_AUTHKEY_SIZE],
