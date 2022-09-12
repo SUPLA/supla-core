@@ -41,6 +41,9 @@ class ClientDaoMock : public supla_abstract_client_dao {
   MOCK_METHOD3(oauth_get_token, bool(int user_id, int device_reg_time_sec,
                                      int client_reg_time_sec));
 
+  MOCK_METHOD3(set_reg_enabled, bool(int user_id, int device_reg_time_sec,
+                                     int client_reg_time_sec));
+
   MOCK_METHOD3(get_client_id,
                bool(int user_id, const char guid[SUPLA_GUID_SIZE], int *id));
 
