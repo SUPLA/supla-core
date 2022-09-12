@@ -32,7 +32,7 @@ class RegisterClientTest : public Test {
  protected:
   SrpcAdapterMock srpcAdapter;
   DbAccessProviderMock dba;
-  ClientDaoMock dao;
+  ClientDaoMock client_dao;
   RegisterClientMock rc;
   AuthkeyCacheStub authkeyCache;
 
