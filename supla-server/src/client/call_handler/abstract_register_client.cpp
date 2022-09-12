@@ -61,6 +61,7 @@ char supla_ch_abstract_register_client::register_client(
   this->client_dao = client_dao;
   set_client_sd(client_sd);
   set_client_ipv4(client_ipv4);
+  set_activity_timeout(activity_timeout);
 
   if (register_client_b != nullptr) {
     set_guid(register_client_b->GUID);
