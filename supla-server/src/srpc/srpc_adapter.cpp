@@ -25,9 +25,9 @@ supla_srpc_adapter::supla_srpc_adapter(void *srpc)
 
 supla_srpc_adapter::~supla_srpc_adapter() {}
 
-virtual void supla_srpc_adapter::lock(void) { srpc_lock(get_srpc()); }
+void supla_srpc_adapter::lock(void) { srpc_lock(get_srpc()); }
 
-virtual void supla_srpc_adapter::unlock(void) { srpc_unlock(get_srpc()); }
+void supla_srpc_adapter::unlock(void) { srpc_unlock(get_srpc()); }
 
 char supla_srpc_adapter::get_proto_version(void) {
   return srpc_get_proto_version(get_srpc());
