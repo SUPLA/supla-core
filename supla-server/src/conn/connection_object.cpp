@@ -79,13 +79,21 @@ supla_connection_object::supla_connection_object(supla_connection *conn) {
 
 supla_connection_object::~supla_connection_object() { lck_free(this->lck); }
 
+bool supla_connection_object::can_reconnect(void) { return true; }
+
 void supla_connection_object::terminate(void) {
   lck_lock(lck);
   if (conn) conn->terminate();
   lck_unlock(lck);
 }
 
-void supla_connection_object::reconnect() { terminate(); }
+bool supla_connection_object::reconnect() {
+  if (can_reconnect()) {
+    terminate();
+    return true;
+  }
+  return false;
+}
 
 bool supla_connection_object::set_guid(const char guid[SUPLA_GUID_SIZE]) {
   char _guid[SUPLA_GUID_SIZE] = {};

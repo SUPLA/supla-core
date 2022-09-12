@@ -138,14 +138,15 @@ int supla_connection_objects::count(void) {
   return result;
 }
 
-bool supla_connection_objects::terminate_all(void) {
+bool supla_connection_objects::reconnect_all(void) {
   vector<shared_ptr<supla_connection_object> > objects = get_all();
 
   bool result = false;
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
-    (*it)->terminate();
-    result = true;
+    if ((*it)->reconnect()) {
+      result = true;
+    }
   }
 
   return result;

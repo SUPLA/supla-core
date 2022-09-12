@@ -41,6 +41,8 @@ class supla_device : public supla_connection_object {
                        const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
                        database *db);
 
+  virtual bool can_reconnect(void);
+
  public:
   explicit supla_device(supla_connection *connection);
   std::shared_ptr<supla_device> get_shared_ptr(void);

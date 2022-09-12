@@ -57,6 +57,8 @@ class supla_connection_object {
                     const char authkey[SUPLA_AUTHKEY_SIZE], int *UserID,
                     database *db);
 
+  virtual bool can_reconnect(void);
+
  public:
   static void init(void);
   static void release_cache(void);
@@ -73,7 +75,7 @@ class supla_connection_object {
 
   // Thread safe start
   void terminate(void);
-  void reconnect(void);
+  bool reconnect(void);
 
   void get_guid(char guid[SUPLA_GUID_SIZE]);
   void get_authkey(char authkey[SUPLA_AUTHKEY_SIZE]);

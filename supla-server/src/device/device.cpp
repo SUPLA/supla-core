@@ -63,11 +63,17 @@ void supla_device::on_previous_found(
     shared_ptr<supla_connection_object> previous) {}
 
 bool supla_device::is_sleeping_object(void) {
-  return channels->get_value_validity_time_left_msec() > 0;
+  return (flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
+         channels->get_value_validity_time_left_msec() > 0;
 }
 
 unsigned int supla_device::get_time_to_wakeup_msec(void) {
   return channels->get_value_validity_time_left_msec();
+}
+
+bool supla_device::can_reconnect(void) {
+  return (flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) == 0 &&
+         supla_connection_object::can_reconnect();
 }
 
 // static
