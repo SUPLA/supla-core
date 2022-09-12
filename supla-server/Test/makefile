@@ -29,6 +29,7 @@ RM := rm -rf
 -include src/test/doubles/device/subdir.mk
 -include src/test/doubles/db/subdir.mk
 -include src/test/doubles/conn/subdir.mk
+-include src/test/doubles/client/subdir.mk
 -include src/test/doubles/channeljsonconfig/subdir.mk
 -include src/test/doubles/asynctask/subdir.mk
 -include src/test/doubles/actions/subdir.mk
