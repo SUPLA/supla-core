@@ -8,6 +8,7 @@ CPP_SRCS += \
 ../src/test/client/ClientSceneRemoteUpdateTest.cpp \
 ../src/test/client/ClientSceneTest.cpp \
 ../src/test/client/RegisterClientTest.cpp \
+../src/test/client/RegisterClientWithAccessIdAuthTest.cpp \
 ../src/test/client/RegisterClientWithEmailAuthTest.cpp 
 
 CPP_DEPS += \
@@ -15,6 +16,7 @@ CPP_DEPS += \
 ./src/test/client/ClientSceneRemoteUpdateTest.d \
 ./src/test/client/ClientSceneTest.d \
 ./src/test/client/RegisterClientTest.d \
+./src/test/client/RegisterClientWithAccessIdAuthTest.d \
 ./src/test/client/RegisterClientWithEmailAuthTest.d 
 
 OBJS += \
@@ -22,6 +24,7 @@ OBJS += \
 ./src/test/client/ClientSceneRemoteUpdateTest.o \
 ./src/test/client/ClientSceneTest.o \
 ./src/test/client/RegisterClientTest.o \
+./src/test/client/RegisterClientWithAccessIdAuthTest.o \
 ./src/test/client/RegisterClientWithEmailAuthTest.o 
 
 
@@ -37,7 +40,7 @@ src/test/client/%.o: ../src/test/client/%.cpp src/test/client/subdir.mk
 clean: clean-src-2f-test-2f-client
 
 clean-src-2f-test-2f-client:
-	-$(RM) ./src/test/client/ClientSceneChangeIndicatorTest.d ./src/test/client/ClientSceneChangeIndicatorTest.o ./src/test/client/ClientSceneRemoteUpdateTest.d ./src/test/client/ClientSceneRemoteUpdateTest.o ./src/test/client/ClientSceneTest.d ./src/test/client/ClientSceneTest.o ./src/test/client/RegisterClientTest.d ./src/test/client/RegisterClientTest.o ./src/test/client/RegisterClientWithEmailAuthTest.d ./src/test/client/RegisterClientWithEmailAuthTest.o
+	-$(RM) ./src/test/client/ClientSceneChangeIndicatorTest.d ./src/test/client/ClientSceneChangeIndicatorTest.o ./src/test/client/ClientSceneRemoteUpdateTest.d ./src/test/client/ClientSceneRemoteUpdateTest.o ./src/test/client/ClientSceneTest.d ./src/test/client/ClientSceneTest.o ./src/test/client/RegisterClientTest.d ./src/test/client/RegisterClientTest.o ./src/test/client/RegisterClientWithAccessIdAuthTest.d ./src/test/client/RegisterClientWithAccessIdAuthTest.o ./src/test/client/RegisterClientWithEmailAuthTest.d ./src/test/client/RegisterClientWithEmailAuthTest.o
 
 .PHONY: clean-src-2f-test-2f-client
 
