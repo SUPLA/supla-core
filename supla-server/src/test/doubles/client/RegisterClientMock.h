@@ -30,7 +30,7 @@ class RegisterClientMock : public supla_ch_abstract_register_client {
   RegisterClientMock(void);
   virtual ~RegisterClientMock(void);
 
-  void register_client(TCS_SuplaRegisterClient_B *register_client_b,
+  char register_client(TCS_SuplaRegisterClient_B *register_client_b,
                        TCS_SuplaRegisterClient_D *register_client_d,
                        supla_abstract_srpc_adapter *srpc_adapter,
                        supla_abstract_db_access_provider *dba,
