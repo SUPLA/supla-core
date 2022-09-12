@@ -1051,7 +1051,9 @@ void supla_connection::execute(void *sthread) {
     }
   }
 
+  srpc_lock(srpc());
   ssocket_supla_socket_close(supla_socket);
+  srpc_unlock(srpc());
 
   if (object != nullptr) {
     if (object->is_sleeping_object()) {

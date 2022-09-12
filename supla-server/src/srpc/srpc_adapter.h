@@ -49,6 +49,10 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
     }
   }
 
+  virtual void lock(void);
+
+  virtual void unlock(void);
+
   virtual char get_proto_version(void);
 
   virtual _supla_int_t sc_async_scene_pack_update(
