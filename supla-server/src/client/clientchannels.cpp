@@ -361,8 +361,16 @@ bool supla_client_channels::device_get_channel_state(
       shared_ptr<supla_device> device =
           getClient()->get_user()->get_devices()->get(DeviceID);
       if (device != nullptr) {
-        return device->get_channels()->get_channel_state(
-            supla_caller(ctClient, getClient()->get_id()), request);
+        TDSC_ChannelState state = {};
+        if (device->get_channels()->get_channel_state(request->ChannelID,
+                                                      &state)) {
+          getClient()->on_device_channel_state_result(request->ChannelID,
+                                                      &state);
+          return true;
+        } else {
+          return device->get_channels()->get_channel_state_async(
+              supla_caller(ctClient, getClient()->get_id()), request);
+        }
       }
     }
   }

@@ -73,6 +73,7 @@ supla_device_channel::supla_device_channel(
   this->value_valid_to.tv_usec = 0;
   this->json_config = NULL;
   this->logger_data = NULL;
+  this->state = nullptr;
 
   if (validity_time_sec > 0) {
     gettimeofday(&value_valid_to, NULL);
@@ -132,6 +133,10 @@ supla_device_channel::~supla_device_channel() {
     }
     delete logger_data;
     logger_data = NULL;
+  }
+
+  if (state) {
+    delete state;
   }
 }
 
@@ -1101,6 +1106,25 @@ unsigned int supla_device_channel::get_value_validity_time_left_msec(void) {
   }
 
   return 0;
+}
+
+void supla_device_channel::set_state(TDSC_ChannelState *state) {
+  if (value_valid_to.tv_sec || value_valid_to.tv_usec) {
+    if (this->state == nullptr) {
+      this->state = new TDSC_ChannelState();
+    }
+
+    *this->state = *state;
+  }
+}
+
+bool supla_device_channel::get_state(TDSC_ChannelState *state) {
+  if (this->state) {
+    *state = *this->state;
+    return true;
+  }
+
+  return false;
 }
 
 // ---------------------------------------------
@@ -2188,7 +2212,25 @@ bool supla_device_channels::calcfg_request(const supla_caller &caller,
   return result;
 }
 
-bool supla_device_channels::get_channel_state(
+void supla_device_channels::set_channel_state(int channel_id,
+                                              TDSC_ChannelState *state) {
+  access_channel(channel_id, [state](supla_device_channel *channel) -> void {
+    channel->set_state(state);
+  });
+}
+
+bool supla_device_channels::get_channel_state(int channel_id,
+                                              TDSC_ChannelState *state) {
+  bool result = false;
+  access_channel(channel_id,
+                 [state, &result](supla_device_channel *channel) -> void {
+                   result = channel->get_state(state);
+                 });
+
+  return result;
+}
+
+bool supla_device_channels::get_channel_state_async(
     const supla_caller &caller, TCSD_ChannelStateRequest *request) {
   if (request == NULL) {
     return false;
@@ -2207,6 +2249,7 @@ bool supla_device_channels::get_channel_state(
     drequest.ChannelNumber = channel->getNumber();
 
     srpc_csd_async_get_channel_state(get_srpc(), &drequest);
+
     result = true;
   }
 
