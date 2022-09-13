@@ -16,15 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <conn/abstract_connection_object.h>
+#include <conn/connection_object.h>
 #include <string.h>
 
 #include "lck.h"
 #include "svrcfg.h"
 #include "user.h"
 
-supla_abstract_connection_object::supla_abstract_connection_object(
-    supla_connection *conn) {
+supla_connection_object::supla_connection_object(supla_connection *conn) {
   this->user = NULL;
   this->conn = conn;
   this->lck = lck_init();
@@ -36,37 +35,33 @@ supla_abstract_connection_object::supla_abstract_connection_object(
   update_last_activity_time();  // last line / after lck_init
 }
 
-supla_abstract_connection_object::~supla_abstract_connection_object() {
-  lck_free(this->lck);
-}
+supla_connection_object::~supla_connection_object() { lck_free(this->lck); }
 
-void supla_abstract_connection_object::lock(void) { lck_lock(lck); }
+void supla_connection_object::lock(void) { lck_lock(lck); }
 
-void supla_abstract_connection_object::unlock(void) { lck_unlock(lck); }
+void supla_connection_object::unlock(void) { lck_unlock(lck); }
 
-void supla_abstract_connection_object::terminate(void) {
+void supla_connection_object::terminate(void) {
   lock();
   if (conn) conn->terminate();
   unlock();
 }
 
-void supla_abstract_connection_object::reconnect() { terminate(); }
+void supla_connection_object::reconnect() { terminate(); }
 
-void supla_abstract_connection_object::set_guid(
-    const char guid[SUPLA_GUID_SIZE]) {
+void supla_connection_object::set_guid(const char guid[SUPLA_GUID_SIZE]) {
   lock();
   memcpy(this->guid, guid, SUPLA_GUID_SIZE);
   unlock();
 }
 
-void supla_abstract_connection_object::get_guid(char guid[SUPLA_GUID_SIZE]) {
+void supla_connection_object::get_guid(char guid[SUPLA_GUID_SIZE]) {
   lock();
   memcpy(guid, this->guid, SUPLA_GUID_SIZE);
   unlock();
 }
 
-bool supla_abstract_connection_object::guid_equal(
-    const char guid[SUPLA_GUID_SIZE]) {
+bool supla_connection_object::guid_equal(const char guid[SUPLA_GUID_SIZE]) {
   lock();
   bool result = memcmp(this->guid, guid, SUPLA_GUID_SIZE) == 0;
   unlock();
@@ -74,21 +69,20 @@ bool supla_abstract_connection_object::guid_equal(
   return result;
 }
 
-void supla_abstract_connection_object::set_authkey(
+void supla_connection_object::set_authkey(
     const char authkey[SUPLA_AUTHKEY_SIZE]) {
   lock();
   memcpy(this->authkey, authkey, SUPLA_AUTHKEY_SIZE);
   unlock();
 }
 
-void supla_abstract_connection_object::get_authkey(
-    char authkey[SUPLA_AUTHKEY_SIZE]) {
+void supla_connection_object::get_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
   lock();
   memcpy(authkey, this->authkey, SUPLA_AUTHKEY_SIZE);
   unlock();
 }
 
-int supla_abstract_connection_object::get_id(void) {
+int supla_connection_object::get_id(void) {
   lock();
   int result = ID;
   unlock();
@@ -96,19 +90,19 @@ int supla_abstract_connection_object::get_id(void) {
   return result;
 }
 
-void supla_abstract_connection_object::set_id(int ID) {
+void supla_connection_object::set_id(int ID) {
   lock();
   this->ID = ID;
   unlock();
 }
 
-void supla_abstract_connection_object::set_user(supla_user *user) {
+void supla_connection_object::set_user(supla_user *user) {
   lock();
   this->user = user;
   unlock();
 }
 
-supla_user *supla_abstract_connection_object::get_user(void) {
+supla_user *supla_connection_object::get_user(void) {
   lock();
   supla_user *result = this->user;
   unlock();
@@ -116,7 +110,7 @@ supla_user *supla_abstract_connection_object::get_user(void) {
   return result;
 }
 
-int supla_abstract_connection_object::get_user_id(void) {
+int supla_connection_object::get_user_id(void) {
   supla_user *user = get_user();
 
   if (user != NULL) return user->getUserID();
@@ -124,13 +118,13 @@ int supla_abstract_connection_object::get_user_id(void) {
   return 0;
 }
 
-void supla_abstract_connection_object::set_registered(bool registered) {
+void supla_connection_object::set_registered(bool registered) {
   lock();
   this->registered = registered;
   unlock();
 }
 
-bool supla_abstract_connection_object::is_registered(void) {
+bool supla_connection_object::is_registered(void) {
   lock();
   bool result = registered;
   unlock();
@@ -138,22 +132,20 @@ bool supla_abstract_connection_object::is_registered(void) {
   return result;
 }
 
-supla_connection *supla_abstract_connection_object::get_connection(void) {
-  return conn;
-}
+supla_connection *supla_connection_object::get_connection(void) { return conn; }
 
-std::shared_ptr<supla_abstract_connection_object>
-supla_abstract_connection_object::get_shared_ptr(void) {
+std::shared_ptr<supla_connection_object>
+supla_connection_object::get_shared_ptr(void) {
   return conn ? conn->get_object() : nullptr;
 }
 
-void supla_abstract_connection_object::update_last_activity_time(void) {
+void supla_connection_object::update_last_activity_time(void) {
   lock();
   gettimeofday(&last_activity_time, NULL);
   unlock();
 }
 
-int supla_abstract_connection_object::get_activity_delay(void) {
+int supla_connection_object::get_activity_delay(void) {
   int result;
   struct timeval now;
   gettimeofday(&now, NULL);
@@ -165,7 +157,7 @@ int supla_abstract_connection_object::get_activity_delay(void) {
   return result;
 }
 
-unsigned char supla_abstract_connection_object::get_protocol_version(void) {
+unsigned char supla_connection_object::get_protocol_version(void) {
   unsigned char result = 0;
   lock();
   if (conn) {
@@ -175,6 +167,6 @@ unsigned char supla_abstract_connection_object::get_protocol_version(void) {
   return result;
 }
 
-unsigned _supla_int64_t supla_abstract_connection_object::wait_time_usec() {
+unsigned _supla_int64_t supla_connection_object::wait_time_usec() {
   return is_registered() ? 120000000 : 1000000;
 }
