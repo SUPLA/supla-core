@@ -415,14 +415,15 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
     delete db;
   }
 
-  if (resultcode == SUPLA_RESULTCODE_TRUE) {
+  if (resultcode == SUPLA_RESULTCODE_TRUE ||
+      resultcode == SUPLA_RESULTCODE_CFG_MODE_REQUESTED) {
     supla_log(LOG_INFO,
               "Device registered. ID: %i, ClientSD: %i Protocol Version: %i "
-              "ThreadID: %i GUID: %02X%02X%02X%02X",
+              "ThreadID: %i GUID: %02X%02X%02X%02X ResultCode: %i",
               get_id(), get_connection()->get_client_sd(),
               get_connection()->get_protocol_version(), syscall(__NR_gettid),
               (unsigned char)GUID[0], (unsigned char)GUID[1],
-              (unsigned char)GUID[2], (unsigned char)GUID[3]);
+              (unsigned char)GUID[2], (unsigned char)GUID[3], resultcode);
   } else {
     usleep(2000000);
   }
