@@ -1112,13 +1112,11 @@ unsigned int supla_device_channel::get_value_validity_time_left_msec(void) {
 }
 
 void supla_device_channel::set_state(TDSC_ChannelState *state) {
-  if (value_valid_to.tv_sec || value_valid_to.tv_usec) {
-    if (this->state == nullptr) {
-      this->state = new TDSC_ChannelState();
-    }
-
-    *this->state = *state;
+  if (this->state == nullptr) {
+    this->state = new TDSC_ChannelState();
   }
+
+  *this->state = *state;
 }
 
 bool supla_device_channel::get_state(TDSC_ChannelState *state) {
