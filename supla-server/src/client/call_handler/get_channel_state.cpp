@@ -45,8 +45,14 @@ bool supla_ch_get_channel_state::handle_call(
         shared_ptr<supla_device> device =
             client->get_user()->get_devices()->get(device_id);
         if (device != nullptr) {
-          return device->get_channels()->get_channel_state(
-              supla_caller(ctClient, client->get_id()), request);
+          TDSC_ChannelState state = {};
+          if (device->get_channels()->get_channel_state(request->ChannelID,
+                                                        &state)) {
+            client->on_device_channel_state_result(request->ChannelID, &state);
+          } else {
+            device->get_channels()->get_channel_state_async(
+                supla_caller(ctClient, client->get_id()), request);
+          }
         }
       }
     }
