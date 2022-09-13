@@ -109,11 +109,12 @@ void supla_ch_abstract_register_device::send_result(int resultcode) {
       resultcode == SUPLA_RESULTCODE_CFG_MODE_REQUESTED) {
     supla_log(LOG_INFO,
               "Device registered. ID: %i, ClientSD: %i Protocol Version: %i "
-              "ThreadID: %i GUID: %02X%02X%02X%02X",
+              "ThreadID: %i GUID: %02X%02X%02X%02X ResultCode: %i",
               device_id, get_client_sd(),
               get_srpc_adapter()->get_proto_version(), syscall(__NR_gettid),
               (unsigned char)get_guid()[0], (unsigned char)get_guid()[1],
-              (unsigned char)get_guid()[2], (unsigned char)get_guid()[3]);
+              (unsigned char)get_guid()[2], (unsigned char)get_guid()[3],
+              resultcode);
   } else {
     usleep(get_hold_time_on_failure_usec());
   }
