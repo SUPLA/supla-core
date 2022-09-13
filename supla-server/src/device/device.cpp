@@ -38,6 +38,7 @@ using std::shared_ptr;
 
 supla_device::supla_device(supla_connection *connection)
     : supla_connection_object(connection) {
+  this->entering_cfg_mode_in_progress = false;
   this->channels = new supla_device_channels(this);
   this->flags = 0;
 }
@@ -58,9 +59,6 @@ shared_ptr<supla_device> supla_device::get_shared_ptr(void) {
   return dynamic_pointer_cast<supla_device>(
       supla_connection_object::get_shared_ptr());
 }
-
-void supla_device::on_previous_found(
-    shared_ptr<supla_connection_object> previous) {}
 
 bool supla_device::is_sleeping_object(void) {
   return (flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
@@ -383,6 +381,15 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                                         channel_count);
 
               resultcode = SUPLA_RESULTCODE_TRUE;
+
+              if (flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) {
+                shared_ptr<supla_device> prev =
+                    get_user()->get_devices()->get(DeviceID);
+                if (prev != nullptr && prev->entering_cfg_mode_in_progress) {
+                  resultcode = SUPLA_RESULTCODE_CFG_MODE_REQUESTED;
+                }
+              }
+
               result = 1;
               supla_user::add_device(get_shared_ptr(), UserID);
               get_user()->get_clients()->update_device_channels(LocationID,
@@ -581,6 +588,10 @@ void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
 }
 
 void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
+  if (result->Command == SUPLA_CALCFG_CMD_ENTER_CFG_MODE) {
+    entering_cfg_mode_in_progress = false;
+    return;
+  }
   int ChannelID = channels->get_channel_id(result->ChannelNumber);
   if (ChannelID != 0) {
     if (result->DataSize >=
@@ -623,6 +634,8 @@ void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
 
 bool supla_device::enter_cfg_mode(void) {
   if (flags & SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE) {
+    entering_cfg_mode_in_progress = true;
+
     TSD_DeviceCalCfgRequest request = {};
 
     request.ChannelNumber = -1;

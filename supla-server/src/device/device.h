@@ -30,6 +30,7 @@ class supla_user;
 class supla_device : public supla_connection_object {
  private:
   int flags;
+  bool entering_cfg_mode_in_progress;
 
  protected:
   supla_device_channels *channels;
@@ -46,8 +47,6 @@ class supla_device : public supla_connection_object {
  public:
   explicit supla_device(supla_connection *connection);
   std::shared_ptr<supla_device> get_shared_ptr(void);
-  virtual void on_previous_found(
-      std::shared_ptr<supla_connection_object> previous);
   virtual bool is_sleeping_object(void);
   virtual unsigned int get_time_to_wakeup_msec(void);
 

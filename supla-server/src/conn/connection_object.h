@@ -68,8 +68,6 @@ class supla_connection_object {
   virtual unsigned _supla_int64_t wait_time_usec(void);
   supla_connection *get_connection(void);
   std::shared_ptr<supla_connection_object> get_shared_ptr(void);
-  virtual void on_previous_found(
-      std::shared_ptr<supla_connection_object> previous) = 0;
   virtual bool is_sleeping_object(void) = 0;
   virtual unsigned int get_time_to_wakeup_msec(void) = 0;
 

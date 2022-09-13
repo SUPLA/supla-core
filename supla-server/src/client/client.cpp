@@ -64,9 +64,6 @@ shared_ptr<supla_client> supla_client::get_shared_ptr(void) {
       supla_connection_object::get_shared_ptr());
 }
 
-void supla_client::on_previous_found(
-    shared_ptr<supla_connection_object> previous) {}
-
 bool supla_client::is_sleeping_object(void) { return false; }
 
 unsigned int supla_client::get_time_to_wakeup_msec(void) { return 0; }

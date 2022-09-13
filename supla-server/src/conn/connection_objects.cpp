@@ -89,10 +89,6 @@ bool supla_connection_objects::add(shared_ptr<supla_connection_object> obj) {
   }
 
   if (!ptr_exists) {
-    if (previous != nullptr) {
-      obj->on_previous_found(previous);
-    }
-
     objects.push_back(obj);
     result = true;
 

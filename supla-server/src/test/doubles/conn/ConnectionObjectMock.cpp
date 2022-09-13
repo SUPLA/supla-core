@@ -47,9 +47,6 @@ bool ConnectionObjectMock::set_authkey(const char authkey[SUPLA_AUTHKEY_SIZE]) {
   return supla_connection_object::set_authkey(authkey);
 }
 
-void ConnectionObjectMock::on_previous_found(
-    std::shared_ptr<supla_connection_object> previous) {}
-
 bool ConnectionObjectMock::is_sleeping_object(void) { return false; }
 
 unsigned int ConnectionObjectMock::get_time_to_wakeup_msec(void) { return 0; }
