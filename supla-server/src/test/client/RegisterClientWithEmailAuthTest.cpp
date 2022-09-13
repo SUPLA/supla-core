@@ -65,4 +65,31 @@ TEST_F(RegisterClientWithEmailAuthTest, invalidAuthkey) {
   EXPECT_GE(usecFromSetUp(), rc.get_hold_time_on_failure_usec());
 }
 
+TEST_F(RegisterClientWithEmailAuthTest, dbaConnectionFailed) {
+  TCS_SuplaRegisterClient_D register_client_d = {};
+
+  register_client_d.GUID[0] = 1;
+  register_client_d.AuthKey[0] = 2;
+
+  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(false));
+  EXPECT_CALL(dba, disconnect).Times(0);
+  EXPECT_CALL(rc, revoke_superuser_authorization).Times(1);
+
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+      .Times(1)
+      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE,
+                  result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+
+  rc.register_client(nullptr, &register_client_d, &srpcAdapter, &dba, nullptr,
+                     &client_dao, 234, 4567, 20);
+
+  EXPECT_GE(usecFromSetUp(), rc.get_hold_time_on_failure_usec());
+}
+
 } /* namespace testing */
