@@ -303,8 +303,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_DENY_CHANNEL_HAS_SCHEDULE 28              // ver. >= 12
 #define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE 29  // ver. >= 12
 #define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_ACTION_TRIGGER \
-  30                                           // ver. >= 16
-#define SUPLA_RESULTCODE_ACCESSID_INACTIVE 31  // ver. >= 17
+  30                                            // ver. >= 16
+#define SUPLA_RESULTCODE_ACCESSID_INACTIVE 31   // ver. >= 17
+#define SUPLA_RESULTCODE_CFG_MODE_REQUESTED 32  // ver. >= 18
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0         // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1       // ver. >= 10
