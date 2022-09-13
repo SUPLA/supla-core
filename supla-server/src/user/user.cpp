@@ -482,6 +482,8 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
   supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
+    user->get_devices()->terminate(DeviceID);
+
     supla_http_request_queue::getInstance()->onDeviceDeletedEvent(user, 0,
                                                                   caller);
 
@@ -688,11 +690,11 @@ void supla_user::reconnect(const supla_caller &caller, bool all_devices,
 
   bool any_terminated = false;
 
-  if (all_devices && devices->terminate_all()) {
+  if (all_devices && devices->reconnect_all()) {
     any_terminated = true;
   }
 
-  if (all_clients && clients->terminate_all()) {
+  if (all_clients && clients->reconnect_all()) {
     any_terminated = true;
   }
 

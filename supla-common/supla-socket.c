@@ -684,6 +684,10 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
 
   assert(ssd != NULL);
 
+  if (supla_socket->sfd == -1) {
+    return 0;
+  }
+
   if (ssd->secure == 1) {
 #ifdef NOSSL
     count = 0;
@@ -724,6 +728,10 @@ int ssocket_write(void *_ssd, void *_supla_socket, const void *buf, int count) {
                                    : (TSuplaSocket *)_supla_socket;
 
   assert(ssd != NULL);
+
+  if (supla_socket->sfd == -1) {
+    return -1;
+  }
 
 #if defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1
   if (count > 0) {

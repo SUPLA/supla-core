@@ -23,6 +23,9 @@
 #include "svrcfg.h"
 #include "user.h"
 
+using std::shared_ptr;
+using std::weak_ptr;
+
 supla_connection_object::supla_connection_object(supla_connection *conn) {
   this->user = NULL;
   this->conn = conn;
@@ -47,7 +50,13 @@ void supla_connection_object::terminate(void) {
   unlock();
 }
 
-void supla_connection_object::reconnect() { terminate(); }
+bool supla_connection_object::reconnect() {
+  if (can_reconnect()) {
+    terminate();
+    return true;
+  }
+  return false;
+}
 
 void supla_connection_object::set_guid(const char guid[SUPLA_GUID_SIZE]) {
   lock();
@@ -134,8 +143,8 @@ bool supla_connection_object::is_registered(void) {
 
 supla_connection *supla_connection_object::get_connection(void) { return conn; }
 
-std::shared_ptr<supla_connection_object>
-supla_connection_object::get_shared_ptr(void) {
+shared_ptr<supla_connection_object> supla_connection_object::get_shared_ptr(
+    void) {
   return conn ? conn->get_object() : nullptr;
 }
 

@@ -145,6 +145,14 @@ void *SRPC_ICACHE_FLASH srpc_init(TsrpcParams *params) {
   return srpc;
 }
 
+void SRPC_ICACHE_FLASH srpc_lock(void *_srpc) {
+  lck_lock(((Tsrpc *)_srpc)->lck);
+}
+
+void SRPC_ICACHE_FLASH srpc_unlock(void *_srpc) {
+  lck_unlock(((Tsrpc *)_srpc)->lck);
+}
+
 void SRPC_ICACHE_FLASH srpc_queue_free(Tsrpc_Queue *queue) {
   _supla_int_t a;
   for (a = 0; a < SRPC_QUEUE_SIZE; a++) {

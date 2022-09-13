@@ -45,6 +45,7 @@
 using std::function;
 using std::list;
 using std::map;
+using std::shared_ptr;
 
 supla_device_channel::supla_device_channel(
     supla_device *Device, int Id, int Number, int Type, int Func, int Param1,
@@ -635,7 +636,7 @@ void supla_device_channel::updateTimerState(void) {
   if (ts_ev->SenderID) {
     supla_user *user = getUser();
     if (user) {
-      std::shared_ptr<supla_client> client =
+      shared_ptr<supla_client> client =
           user->get_clients()->get(ts_ev->SenderID);
       if (client != nullptr) {
         client->getName(ts_ev->SenderName, SUPLA_SENDER_NAME_MAXSIZE);
@@ -1088,6 +1089,23 @@ void supla_device_channel::action_trigger(int actions) {
   }
 }
 
+unsigned int supla_device_channel::get_value_validity_time_left_msec(void) {
+  if (value_valid_to.tv_sec || value_valid_to.tv_usec) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    unsigned long long now_msec = (now.tv_sec * 1000 + now.tv_usec / 1000);
+    unsigned long long valid_to_msec =
+        (value_valid_to.tv_sec * 1000 + value_valid_to.tv_usec / 1000);
+
+    if (now_msec < valid_to_msec) {
+      return valid_to_msec - now_msec;
+    }
+  }
+
+  return 0;
+}
+
 // ---------------------------------------------
 // ---------------------------------------------
 // ---------------------------------------------
@@ -1148,6 +1166,19 @@ void supla_device_channels::access_channel(
     on_channel(channel);
   }
 
+  safe_array_unlock(arr);
+}
+
+void supla_device_channels::for_each_channel(
+    function<void(supla_device_channel *)> on_channel) {
+  safe_array_lock(arr);
+  for (int a = 0; a < safe_array_count(arr); a++) {
+    supla_device_channel *channel =
+        static_cast<supla_device_channel *>(safe_array_get(arr, a));
+    if (channel) {
+      on_channel(channel);
+    }
+  }
   safe_array_unlock(arr);
 }
 
@@ -2805,5 +2836,16 @@ channel_json_config *supla_device_channels::get_json_config(int ChannelID) {
     result = channel->getJSONConfig();
   });
 
+  return result;
+}
+
+unsigned int supla_device_channels::get_value_validity_time_left_msec(void) {
+  unsigned int result = 0;
+  for_each_channel([&result](supla_device_channel *channel) -> void {
+    unsigned int time = channel->get_value_validity_time_left_msec();
+    if (time > result) {
+      result = time;
+    }
+  });
   return result;
 }

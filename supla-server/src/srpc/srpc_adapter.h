@@ -49,6 +49,10 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
     }
   }
 
+  virtual void lock(void);
+
+  virtual void unlock(void);
+
   virtual void set_proto_version(unsigned char version);
   virtual unsigned char get_proto_version(void);
 

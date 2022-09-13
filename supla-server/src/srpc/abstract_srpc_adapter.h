@@ -29,6 +29,10 @@ class supla_abstract_srpc_adapter {
   explicit supla_abstract_srpc_adapter(void *srpc);
   virtual ~supla_abstract_srpc_adapter();
 
+  virtual void lock(void) = 0;
+
+  virtual void unlock(void) = 0;
+
   void *get_srpc(
       void);  // TODO(przemyslawzygmunt): Move to the protected access specifier
 

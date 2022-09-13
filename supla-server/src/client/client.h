@@ -65,6 +65,8 @@ class supla_client : public supla_abstract_connection_object {
   std::shared_ptr<supla_client> get_shared_ptr(void);
   supla_client_channels *get_channels(void);
   supla_client_channelgroups *get_cgroups(void);
+  virtual bool is_sleeping_object(void);
+  virtual unsigned int get_time_to_wakeup_msec(void);
 
   void iterate();
   unsigned _supla_int64_t wait_time_usec();

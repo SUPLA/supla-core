@@ -72,7 +72,7 @@ bool supla_connection_objects::add(
   int id = obj->get_id();
 
   bool ptr_exists = false;
-  shared_ptr<supla_abstract_connection_object> duplicate = nullptr;
+  shared_ptr<supla_connection_object> previous = nullptr;
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     shared_ptr<supla_abstract_connection_object> _obj = (*it).lock();
@@ -83,7 +83,7 @@ bool supla_connection_objects::add(
     } else if (_obj == obj) {
       ptr_exists = true;
     } else if (_obj->get_id() == id || _obj->guid_equal(guid)) {
-      duplicate = _obj;
+      previous = _obj;
       // remove from list (will be terminated)
       it = objects.erase(it);
       --it;
@@ -94,9 +94,9 @@ bool supla_connection_objects::add(
     objects.push_back(obj);
     result = true;
 
-    if (duplicate != nullptr) {
+    if (previous != nullptr) {
       // Terminate only after adding "obj" to the list
-      duplicate->terminate();
+      previous->terminate();
     }
   }
 
@@ -137,14 +137,15 @@ int supla_connection_objects::count(void) {
   return result;
 }
 
-bool supla_connection_objects::terminate_all(void) {
+bool supla_connection_objects::reconnect_all(void) {
   vector<shared_ptr<supla_abstract_connection_object> > objects = get_all();
 
   bool result = false;
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
-    (*it)->terminate();
-    result = true;
+    if ((*it)->reconnect()) {
+      result = true;
+    }
   }
 
   return result;

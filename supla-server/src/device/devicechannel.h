@@ -155,6 +155,7 @@ class supla_device_channel {
   channel_json_config *getJSONConfig(void);
   bool converValueToExtended(void);
   void action_trigger(int actions);
+  unsigned int get_value_validity_time_left_msec(void);
 };
 
 class supla_device;
@@ -174,6 +175,8 @@ class supla_device_channels {
   supla_device_channel *find_channel_by_number(int Number);
   void access_channel(int channel_id,
                       std::function<void(supla_device_channel *)> on_channel);
+
+  void for_each_channel(std::function<void(supla_device_channel *)> on_channel);
 
   std::list<int> mr_channel(int ChannelID, bool Master);
 
@@ -341,6 +344,7 @@ class supla_device_channels {
   void timer_arm(const supla_caller &caller, int ChannelID, int GroupID,
                  unsigned char EOL, unsigned char On, unsigned int DurationMS);
   channel_json_config *get_json_config(int ChannelID);
+  unsigned int get_value_validity_time_left_msec(void);
 };
 
 #endif /* DEVICECHANNEL_H_ */

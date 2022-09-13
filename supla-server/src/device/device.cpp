@@ -42,6 +42,7 @@ supla_device_call_handler_collection supla_device::call_handler_collection;
 
 supla_device::supla_device(supla_connection *connection)
     : supla_abstract_connection_object(connection) {
+  this->entering_cfg_mode_in_progress = false;
   this->channels = new supla_device_channels(this);
   this->flags = 0;
 }
@@ -66,6 +67,20 @@ supla_device::get_srpc_call_handler_collection(void) {
 shared_ptr<supla_device> supla_device::get_shared_ptr(void) {
   return dynamic_pointer_cast<supla_device>(
       supla_abstract_connection_object::get_shared_ptr());
+}
+
+bool supla_device::is_sleeping_object(void) {
+  return (flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
+         channels->get_value_validity_time_left_msec() > 0;
+}
+
+unsigned int supla_device::get_time_to_wakeup_msec(void) {
+  return channels->get_value_validity_time_left_msec();
+}
+
+bool supla_device::can_reconnect(void) {
+  return (flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) == 0 &&
+         supla_connection_object::can_reconnect();
 }
 
 // static
@@ -125,6 +140,8 @@ void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
 
 bool supla_device::enter_cfg_mode(void) {
   if (flags & SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE) {
+    entering_cfg_mode_in_progress = true;
+
     TSD_DeviceCalCfgRequest request = {};
 
     request.ChannelNumber = -1;

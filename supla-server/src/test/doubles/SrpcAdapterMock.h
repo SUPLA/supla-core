@@ -30,6 +30,8 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
   SrpcAdapterMock(void);
   explicit SrpcAdapterMock(void *srpc);
   virtual ~SrpcAdapterMock(void);
+  MOCK_METHOD0(lock, void(void));
+  MOCK_METHOD0(unlock, void(void));
   MOCK_METHOD1(set_proto_version, void(unsigned char version));
   MOCK_METHOD0(get_proto_version, unsigned char(void));
 

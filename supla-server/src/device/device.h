@@ -34,17 +34,24 @@ class supla_device : public supla_abstract_connection_object {
  private:
   int flags;
   static supla_device_call_handler_collection call_handler_collection;
+  bool entering_cfg_mode_in_progress;
+
+ protected:
   supla_device_channels *channels;
 
  protected:
   friend class supla_ch_register_device;
   void load_config(int UserID);
 
+  virtual bool can_reconnect(void);
+
  public:
   explicit supla_device(supla_connection *connection);
   virtual ~supla_device();
 
   std::shared_ptr<supla_device> get_shared_ptr(void);
+  virtual bool is_sleeping_object(void);
+  virtual unsigned int get_time_to_wakeup_msec(void);
   virtual supla_abstract_srpc_call_handler_collection *
   get_srpc_call_handler_collection(void);
   static bool funclist_contains_function(int funcList, int func);

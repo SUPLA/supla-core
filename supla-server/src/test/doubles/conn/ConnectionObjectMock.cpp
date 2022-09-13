@@ -39,3 +39,7 @@ void ConnectionObjectMock::set_guid(const char guid[SUPLA_GUID_SIZE]) {
 void ConnectionObjectMock::set_authkey(const char authkey[SUPLA_AUTHKEY_SIZE]) {
   supla_abstract_connection_object::set_authkey(authkey);
 }
+
+bool ConnectionObjectMock::is_sleeping_object(void) { return false; }
+
+unsigned int ConnectionObjectMock::get_time_to_wakeup_msec(void) { return 0; }

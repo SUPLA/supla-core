@@ -49,6 +49,8 @@ class supla_connection_object {
   void set_registered(bool registered);
   // Thread safe end
 
+  virtual bool can_reconnect(void);
+
  public:
   explicit supla_connection_object(supla_connection *conn);
   virtual ~supla_connection_object();
@@ -57,11 +59,13 @@ class supla_connection_object {
   std::shared_ptr<supla_connection_object> get_shared_ptr(void);
   virtual supla_abstract_srpc_call_handler_collection *
   get_srpc_call_handler_collection(void) = 0;
+  virtual bool is_sleeping_object(void) = 0;
+  virtual unsigned int get_time_to_wakeup_msec(void) = 0;
 
   // Thread safe start
   bool is_registered(void);
   void terminate(void);
-  void reconnect(void);
+  bool reconnect(void);
 
   void get_guid(char guid[SUPLA_GUID_SIZE]);
   void get_authkey(char authkey[SUPLA_AUTHKEY_SIZE]);

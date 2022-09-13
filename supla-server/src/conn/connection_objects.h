@@ -46,7 +46,7 @@ class supla_connection_objects {
   supla_connection_objects();
   virtual ~supla_connection_objects();
   int count(void);
-  bool terminate_all(void);
+  bool reconnect_all(void);
   bool terminate(int id);
   bool is_online(int id);
 };
