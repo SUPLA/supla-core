@@ -81,9 +81,6 @@ char supla_ch_abstract_register_client::register_client(
   } else if (register_client_d != nullptr && !is_valid_authkey()) {
     resultcode = SUPLA_RESULTCODE_AUTHKEY_ERROR;
 
-  } else if (register_client_b == nullptr && register_client_d == nullptr) {
-    resultcode = SUPLA_RESULTCODE_UNSUPORTED;
-
   } else {
     if (dba->connect() == true) {
       bool pwd_is_set = false;
