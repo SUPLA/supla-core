@@ -72,6 +72,7 @@ class supla_device_channel {
   bool Hidden;
   bool Offline;
   unsigned int Flags;
+  TDSC_ChannelState *state;
 
   char value[SUPLA_CHANNELVALUE_SIZE];
 
@@ -156,6 +157,8 @@ class supla_device_channel {
   bool converValueToExtended(void);
   void action_trigger(int actions);
   unsigned int get_value_validity_time_left_msec(void);
+  void set_state(TDSC_ChannelState *state);
+  bool get_state(TDSC_ChannelState *state);
 };
 
 class supla_device;
@@ -284,8 +287,12 @@ class supla_device_channels {
                       bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest_B *request);
 
-  bool get_channel_state(const supla_caller &caller,
-                         TCSD_ChannelStateRequest *request);
+  void set_channel_state(int channel_id, TDSC_ChannelState *state);
+
+  bool get_channel_state(int channel_id, TDSC_ChannelState *state);
+
+  bool get_channel_state_async(const supla_caller &caller,
+                               TCSD_ChannelStateRequest *request);
 
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
   void set_channel_function(int ChannelId, int Func);

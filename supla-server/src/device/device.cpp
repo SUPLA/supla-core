@@ -130,10 +130,16 @@ supla_device_channels *supla_device::get_channels(void) { return channels; }
 void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
   int ChannelID;
   if ((ChannelID = channels->get_channel_id(state->ChannelNumber)) != 0) {
-    std::shared_ptr<supla_client> client =
-        get_user()->get_clients()->get(state->ReceiverID);
-    if (client != nullptr) {
-      client->on_device_channel_state_result(ChannelID, state);
+    if (state->ReceiverID == 0) {
+      if (flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) {
+        channels->set_channel_state(ChannelID, state);
+      }
+    } else {
+      std::shared_ptr<supla_client> client =
+          get_user()->get_clients()->get(state->ReceiverID);
+      if (client != nullptr) {
+        client->on_device_channel_state_result(ChannelID, state);
+      }
     }
   }
 }
