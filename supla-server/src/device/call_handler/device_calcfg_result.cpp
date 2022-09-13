@@ -42,6 +42,12 @@ bool supla_ch_device_calcfg_result::handle_call(
     return CH_HANDLED;
   }
 
+  if (rd->data.ds_device_calcfg_result->Command ==
+      SUPLA_CALCFG_CMD_ENTER_CFG_MODE) {
+    device->entering_cfg_mode_in_progress = false;
+    return CH_HANDLED;
+  }
+
   int channel_id = device->get_channels()->get_channel_id(
       rd->data.ds_device_calcfg_result->ChannelNumber);
 

@@ -32,6 +32,7 @@ class supla_ch_register_device : public supla_ch_abstract_register_device {
   virtual bool get_authkey_hash(int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
                                 bool *is_null);
 
+  virtual bool is_prev_entering_cfg_mode(void);
   virtual void on_registraction_success(void);
 
  public:

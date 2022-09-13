@@ -65,6 +65,7 @@ class supla_ch_abstract_register_device
                        supla_abstract_device_dao *device_dao, int client_sd,
                        int client_ipv4, unsigned char activity_timeout);
 
+  virtual bool is_prev_entering_cfg_mode(void) = 0;
   virtual void on_registraction_success(void) = 0;
 
   supla_abstract_device_dao *get_device_dao(void);

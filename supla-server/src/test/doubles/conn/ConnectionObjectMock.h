@@ -31,6 +31,8 @@ class ConnectionObjectMock : public supla_abstract_connection_object {
   void set_id(int id);
   void set_guid(const char guid[SUPLA_GUID_SIZE]);
   void set_authkey(const char authkey[SUPLA_AUTHKEY_SIZE]);
+  virtual bool is_sleeping_object(void);
+  virtual unsigned int get_time_to_wakeup_msec(void);
 };
 
 #endif /* CONNECTION_OBJECT_MOCK_H_ */

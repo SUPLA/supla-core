@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CONNECTION_OBJECT_H_
-#define SUPLA_CONNECTION_OBJECT_H_
+#ifndef SUPLA_ABSTRACT_CONNECTION_OBJECT_H_
+#define SUPLA_ABSTRACT_CONNECTION_OBJECT_H_
 
 #include <memory>
 
@@ -27,7 +27,7 @@
 class supla_user;
 class database;
 class supla_abstract_srpc_call_handler_collection;
-class supla_connection_object {
+class supla_abstract_connection_object {
  private:
   struct timeval last_activity_time;
   char guid[SUPLA_GUID_SIZE];
@@ -52,11 +52,11 @@ class supla_connection_object {
   virtual bool can_reconnect(void);
 
  public:
-  explicit supla_connection_object(supla_connection *conn);
-  virtual ~supla_connection_object();
+  explicit supla_abstract_connection_object(supla_connection *conn);
+  virtual ~supla_abstract_connection_object();
   virtual unsigned _supla_int64_t wait_time_usec(void);
   supla_connection *get_connection(void);
-  std::shared_ptr<supla_connection_object> get_shared_ptr(void);
+  std::shared_ptr<supla_abstract_connection_object> get_shared_ptr(void);
   virtual supla_abstract_srpc_call_handler_collection *
   get_srpc_call_handler_collection(void) = 0;
   virtual bool is_sleeping_object(void) = 0;
@@ -79,4 +79,4 @@ class supla_connection_object {
   // Thread safe end
 };
 
-#endif /* SUPLA_CONNECTION_OBJECT_H_ */
+#endif /* SUPLA_ABSTRACT_CONNECTION_OBJECT_H_ */

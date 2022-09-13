@@ -352,17 +352,17 @@ void supla_connection::execute(void *sthread) {
           supla_log(LOG_DEBUG, "Sleeping device %i", sthread);
         } else {
           sthread_terminate(sthread);
-          supla_log(LOG_DEBUG, "Activity timeout %i, %i, %i", sthread,
-                    object->get_activity_delay(), registered);
+          supla_log(LOG_DEBUG, "Activity timeout %i, %i", sthread,
+                    object->get_activity_delay());
         }
         break;
       }
     }
   }
 
-  srpc_lock(srpc());
+  srpc_adapter->lock();
   ssocket_supla_socket_close(supla_socket);
-  srpc_unlock(srpc());
+  srpc_adapter->unlock();
 
   if (object != nullptr) {
     if (object->is_sleeping_object()) {

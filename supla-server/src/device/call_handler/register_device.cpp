@@ -51,6 +51,15 @@ bool supla_ch_register_device::get_authkey_hash(
   return get_device_dao()->get_authkey_hash(id, authkey_hash, is_null);
 }
 
+bool supla_ch_register_device::is_prev_entering_cfg_mode(void) {
+  supla_user *user = supla_user::find(get_user_id(), true);
+  if (user) {
+    shared_ptr<supla_device> prev = user->get_devices()->get(get_device_id());
+    return prev != nullptr && prev->entering_cfg_mode_in_progress;
+  }
+  return false;
+}
+
 void supla_ch_register_device::on_registraction_success(void) {
   shared_ptr<supla_device> device = get_device().lock();
 

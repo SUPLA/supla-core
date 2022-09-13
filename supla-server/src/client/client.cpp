@@ -75,10 +75,12 @@ shared_ptr<supla_client> supla_client::get_shared_ptr(void) {
 }
 
 supla_client_channels *supla_client::get_channels(void) { return channels; }
+
+supla_client_channelgroups *supla_client::get_cgroups(void) { return cgroups; }
+
 bool supla_client::is_sleeping_object(void) { return false; }
 
 unsigned int supla_client::get_time_to_wakeup_msec(void) { return 0; }
-supla_client_channelgroups *supla_client::get_cgroups(void) { return cgroups; }
 
 void supla_client::setName(const char *name) {
   lock();

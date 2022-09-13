@@ -72,7 +72,7 @@ bool supla_connection_objects::add(
   int id = obj->get_id();
 
   bool ptr_exists = false;
-  shared_ptr<supla_connection_object> previous = nullptr;
+  shared_ptr<supla_abstract_connection_object> previous = nullptr;
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     shared_ptr<supla_abstract_connection_object> _obj = (*it).lock();

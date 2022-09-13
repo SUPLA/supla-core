@@ -80,7 +80,7 @@ unsigned int supla_device::get_time_to_wakeup_msec(void) {
 
 bool supla_device::can_reconnect(void) {
   return (flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) == 0 &&
-         supla_connection_object::can_reconnect();
+         supla_abstract_connection_object::can_reconnect();
 }
 
 // static

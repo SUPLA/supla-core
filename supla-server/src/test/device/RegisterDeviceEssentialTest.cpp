@@ -636,6 +636,76 @@ TEST_F(RegisterDeviceEssentialTest, cantUdateDevice) {
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
+TEST_F(RegisterDeviceEssentialTest, cfgModeRequested) {
+  TDS_SuplaRegisterDevice_E register_device_e = {};
+
+  register_device_e.GUID[0] = 1;
+  register_device_e.AuthKey[0] = 2;
+  register_device_e.Flags = SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED;
+
+  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+           "cheops@giza.com");
+
+  snprintf(register_device_e.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
+
+  snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
+           "Torch Switch");
+
+  EXPECT_CALL(rd, get_user_id_by_email(StrEq("cheops@giza.com")))
+      .Times(1)
+      .WillOnce(Return(25));
+
+  EXPECT_CALL(rd, get_object_id(25, _, _))
+      .Times(1)
+      .WillOnce([](int user_id, const char guid[SUPLA_GUID_SIZE], int *id) {
+        *id = 55;
+        return true;
+      });
+
+  EXPECT_CALL(rd, get_authkey_hash(55, NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce(
+          [](int id, char authkey_hash[BCRYPT_HASH_MAXSIZE], bool *is_null) {
+            *is_null = true;
+            return true;
+          });
+
+  EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
+
+  EXPECT_CALL(
+      dao, get_device_variables(55, NotNull(), NotNull(), NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce([](int device_id, bool *device_enabled,
+                   int *original_location_id, int *location_id,
+                   bool *location_enabled) {
+        *location_id = 155;
+        *location_enabled = true;
+        return true;
+      });
+
+  EXPECT_CALL(dao, update_device).Times(1).WillOnce(Return(true));
+
+  EXPECT_CALL(rd, is_prev_entering_cfg_mode).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(rd, on_registraction_success).Times(1);
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_CFG_MODE_REQUESTED, result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+
+  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
+
+  EXPECT_EQ(55, rd.get_device_id());
+  EXPECT_FALSE(rd.is_channel_added());
+  EXPECT_LT(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
+}
+
 TEST_F(RegisterDeviceEssentialTest,
        successFullRegistrationWithExistingDeviceAndChannels) {
   TDS_SuplaRegisterDevice_E register_device_e = {};
@@ -646,7 +716,7 @@ TEST_F(RegisterDeviceEssentialTest,
 
   register_device_e.GUID[0] = 1;
   register_device_e.AuthKey[0] = 2;
-  register_device_e.Flags = 778899;
+  register_device_e.Flags = 778899 & ~SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED;
 
   snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "cheops@giza.com");
@@ -715,6 +785,7 @@ TEST_F(RegisterDeviceEssentialTest,
       .WillOnce(Return(true));
 
   EXPECT_CALL(rd, on_registraction_success).Times(1);
+  EXPECT_CALL(rd, is_prev_entering_cfg_mode).Times(0);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)

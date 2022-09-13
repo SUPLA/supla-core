@@ -105,7 +105,8 @@ void supla_ch_abstract_register_device::send_result(int resultcode) {
     get_dba()->disconnect();
   }
 
-  if (resultcode == SUPLA_RESULTCODE_TRUE) {
+  if (resultcode == SUPLA_RESULTCODE_TRUE ||
+      resultcode == SUPLA_RESULTCODE_CFG_MODE_REQUESTED) {
     supla_log(LOG_INFO,
               "Device registered. ID: %i, ClientSD: %i Protocol Version: %i "
               "ThreadID: %i GUID: %02X%02X%02X%02X",
@@ -427,7 +428,14 @@ void supla_ch_abstract_register_device::register_device(
 
   set_should_rollback(false);
 
+  int resultcode = SUPLA_RESULTCODE_TRUE;
+
+  if ((device_flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
+      is_prev_entering_cfg_mode()) {
+    resultcode = SUPLA_RESULTCODE_CFG_MODE_REQUESTED;
+  }
+
   on_registraction_success();
 
-  send_result(SUPLA_RESULTCODE_TRUE);
+  send_result(resultcode);
 }
