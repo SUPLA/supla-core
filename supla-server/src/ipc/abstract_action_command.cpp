@@ -75,8 +75,7 @@ void supla_abstract_action_command::on_command_match(const char *params) {
     sscanf(params, "%i,%i,%i,%i,%i", &user_id, &device_id, &channel_id,
            &source_device_id, &source_channel_id);
 
-    if (user_id && device_id && channel_id && source_device_id &&
-        source_channel_id) {
+    if (user_id && device_id && channel_id && source_channel_id) {
       bool result = action_copy(user_id, device_id, channel_id,
                                 source_device_id, source_channel_id);
       _send_result(result, channel_id);

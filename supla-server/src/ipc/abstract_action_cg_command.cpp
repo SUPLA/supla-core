@@ -77,7 +77,7 @@ void supla_abstract_action_cg_command::on_command_match(const char *params) {
     sscanf(params, "%i,%i,%i,%i", &user_id, &group_id, &source_device_id,
            &source_channel_id);
 
-    if (user_id && group_id && source_device_id && source_channel_id &&
+    if (user_id && group_id && source_channel_id &&
         (user = supla_user::find(user_id, false)) != NULL) {
       bool result =
           action_copy(user, group_id, source_device_id, source_channel_id);
