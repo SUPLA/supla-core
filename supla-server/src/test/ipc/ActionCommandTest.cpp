@@ -240,6 +240,14 @@ TEST_F(ActionCommandTest, CopyWithSuccess) {
   commandProcessingTest("ACTION-COPY:10,20,30,50,100\n", "OK:30\n");
 }
 
+TEST_F(ActionCommandTest, CopyWithSuccessWithoutSourceDeviceId) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_COPY);
+  cmd = &c;
+  EXPECT_CALL(c, action_copy(10, 20, 30, 0, 100)).WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-COPY:10,20,30,0,100\n", "OK:30\n");
+}
+
 TEST_F(ActionCommandTest, CopyWithFilure) {
   StrictMock<ActionCommandMock> c(socketAdapter, ACTION_COPY);
   cmd = &c;

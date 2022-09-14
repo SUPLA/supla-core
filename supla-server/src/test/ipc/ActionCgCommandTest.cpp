@@ -202,6 +202,14 @@ TEST_F(ActionCgCommandTest, CopyWithSuccess) {
   commandProcessingTest("ACTION-CG-COPY:10,30,50,100\n", "OK:30\n");
 }
 
+TEST_F(ActionCgCommandTest, CopyWithSuccessWithoidSourceDeviceId) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_COPY);
+  cmd = &c;
+  EXPECT_CALL(c, action_copy(user, 30, 0, 100)).WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-CG-COPY:10,30,0,100\n", "OK:30\n");
+}
+
 TEST_F(ActionCgCommandTest, CopyWithFilure) {
   StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_COPY);
   cmd = &c;
