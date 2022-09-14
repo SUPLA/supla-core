@@ -272,50 +272,67 @@ char supla_ch_abstract_register_client::register_client(
   if (get_srpc_adapter()->get_proto_version() >= 19) {
     TSC_SuplaRegisterClientResult_D srcr = {};
     srcr.result_code = resultcode;
-    srcr.ClientID = client_id;
     srcr.activity_timeout = get_activity_timeout();
     srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
-    srcr.LocationCount = get_location_count();
-    srcr.ChannelCount = get_channel_count();
-    srcr.ChannelGroupCount = get_channel_group_count();
-    srcr.SceneCount = get_scene_count();
     srcr.serverUnixTimestamp = now.tv_sec;
 
+    if (resultcode == SUPLA_RESULTCODE_TRUE) {
+      srcr.ClientID = client_id;
+      srcr.LocationCount = get_location_count();
+      srcr.ChannelCount = get_channel_count();
+      srcr.ChannelGroupCount = get_channel_group_count();
+      srcr.SceneCount = get_scene_count();
+    }
+
     get_srpc_adapter()->sc_async_registerclient_result_d(&srcr);
+
   } else if (get_srpc_adapter()->get_proto_version() >= 17) {
     TSC_SuplaRegisterClientResult_C srcr = {};
     srcr.result_code = resultcode;
-    srcr.ClientID = client_id;
     srcr.activity_timeout = get_activity_timeout();
     srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
-    srcr.LocationCount = get_location_count();
-    srcr.ChannelCount = get_channel_count();
-    srcr.ChannelGroupCount = get_channel_group_count();
     srcr.serverUnixTimestamp = now.tv_sec;
 
+    if (resultcode == SUPLA_RESULTCODE_TRUE) {
+      srcr.ClientID = client_id;
+      srcr.LocationCount = get_location_count();
+      srcr.ChannelCount = get_channel_count();
+      srcr.ChannelGroupCount = get_channel_group_count();
+    }
+
     get_srpc_adapter()->sc_async_registerclient_result_c(&srcr);
+
   } else if (get_srpc_adapter()->get_proto_version() >= 9) {
     TSC_SuplaRegisterClientResult_B srcr = {};
     srcr.result_code = resultcode;
-    srcr.ClientID = client_id;
     srcr.activity_timeout = get_activity_timeout();
     srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
-    srcr.LocationCount = get_location_count();
-    srcr.ChannelCount = get_channel_count();
-    srcr.ChannelGroupCount = get_channel_group_count();
+
+    if (resultcode == SUPLA_RESULTCODE_TRUE) {
+      srcr.ClientID = client_id;
+      srcr.LocationCount = get_location_count();
+      srcr.ChannelCount = get_channel_count();
+      srcr.ChannelGroupCount = get_channel_group_count();
+    }
+
     get_srpc_adapter()->sc_async_registerclient_result_b(&srcr);
+
   } else {
     TSC_SuplaRegisterClientResult srcr = {};
     srcr.result_code = resultcode;
-    srcr.ClientID = client_id;
     srcr.activity_timeout = get_activity_timeout();
     srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
-    srcr.LocationCount = get_location_count();
-    srcr.ChannelCount = get_channel_count();
+
+    if (resultcode == SUPLA_RESULTCODE_TRUE) {
+      srcr.ClientID = client_id;
+      srcr.LocationCount = get_location_count();
+      srcr.ChannelCount = get_channel_count();
+    }
+
     get_srpc_adapter()->sc_async_registerclient_result(&srcr);
   }
 
