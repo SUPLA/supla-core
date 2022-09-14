@@ -16,16 +16,16 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "device/RegisterDeviceWithAuthkeyAuthTest.h"
+#include <device/RegisterDeviceWithEmailAuthTest.h>
 
 namespace testing {
 
-RegisterDeviceWithAuthkeyAuthTest::RegisterDeviceWithAuthkeyAuthTest()
+RegisterDeviceWithEmailAuthTest::RegisterDeviceWithEmailAuthTest()
     : RegisterDeviceTest() {}
 
-RegisterDeviceWithAuthkeyAuthTest::~RegisterDeviceWithAuthkeyAuthTest() {}
+RegisterDeviceWithEmailAuthTest::~RegisterDeviceWithEmailAuthTest() {}
 
-TEST_F(RegisterDeviceWithAuthkeyAuthTest, invalidGUID) {
+TEST_F(RegisterDeviceWithEmailAuthTest, invalidGUID) {
   TDS_SuplaRegisterDevice_E register_device_e = {};
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
@@ -44,7 +44,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, invalidGUID) {
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceWithAuthkeyAuthTest, invalidAuthkey) {
+TEST_F(RegisterDeviceWithEmailAuthTest, invalidAuthkey) {
   TDS_SuplaRegisterDevice_E register_device_e = {};
 
   register_device_e.GUID[0] = 1;
@@ -65,7 +65,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, invalidAuthkey) {
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceWithAuthkeyAuthTest, dbaConnectionFailed) {
+TEST_F(RegisterDeviceWithEmailAuthTest, dbaConnectionFailed) {
   TDS_SuplaRegisterDevice_E register_device_e = {};
 
   register_device_e.GUID[0] = 1;
@@ -92,7 +92,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, dbaConnectionFailed) {
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceWithAuthkeyAuthTest, emailNotFound) {
+TEST_F(RegisterDeviceWithEmailAuthTest, emailNotFound) {
   TDS_SuplaRegisterDevice_E register_device_e = {};
 
   register_device_e.GUID[0] = 1;
@@ -125,7 +125,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, emailNotFound) {
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceWithAuthkeyAuthTest, getObjectIdWithFail) {
+TEST_F(RegisterDeviceWithEmailAuthTest, getObjectIdWithFail) {
   TDS_SuplaRegisterDevice_E register_device_e = {};
 
   register_device_e.GUID[0] = 1;
@@ -160,7 +160,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, getObjectIdWithFail) {
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceWithAuthkeyAuthTest,
+TEST_F(RegisterDeviceWithEmailAuthTest,
        deviceNotExistsAndRegistrationDisabled) {
   TDS_SuplaRegisterDevice_E register_device_e = {};
 
@@ -209,7 +209,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest,
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceWithAuthkeyAuthTest, getAuthKeyWithFail) {
+TEST_F(RegisterDeviceWithEmailAuthTest, getAuthKeyWithFail) {
   TDS_SuplaRegisterDevice_E register_device_e = {};
 
   register_device_e.GUID[0] = 1;
@@ -257,7 +257,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, getAuthKeyWithFail) {
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceWithAuthkeyAuthTest, missingKeyAndRegistrationDisabled) {
+TEST_F(RegisterDeviceWithEmailAuthTest, missingKeyAndRegistrationDisabled) {
   TDS_SuplaRegisterDevice_E register_device_e = {};
 
   register_device_e.GUID[0] = 1;
@@ -313,7 +313,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, missingKeyAndRegistrationDisabled) {
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceWithAuthkeyAuthTest, incorrectAuthKey) {
+TEST_F(RegisterDeviceWithEmailAuthTest, incorrectAuthKey) {
   TDS_SuplaRegisterDevice_E register_device_e = {};
 
   register_device_e.GUID[0] = 1;
@@ -364,7 +364,7 @@ TEST_F(RegisterDeviceWithAuthkeyAuthTest, incorrectAuthKey) {
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceWithAuthkeyAuthTest,
+TEST_F(RegisterDeviceWithEmailAuthTest,
        correctAuthKeyAndRegistrtionDisabled) {
   TDS_SuplaRegisterDevice_E register_device_e = {};
 

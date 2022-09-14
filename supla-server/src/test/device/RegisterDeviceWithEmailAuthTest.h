@@ -16,19 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef REGISTERDEVICEWITHAUTHEYAUTHTEST_H_
-#define REGISTERDEVICEWITHAUTHEYAUTHTEST_H_
+#ifndef REGISTERDEVICEWITHEMAILAUTHTEST_H_
+#define REGISTERDEVICEWITHEMAILAUTHTEST_H_
 
 #include "device/RegisterDeviceTest.h"
 
 namespace testing {
 
-class RegisterDeviceWithAuthkeyAuthTest : public RegisterDeviceTest {
+class RegisterDeviceWithEmailAuthTest : public RegisterDeviceTest {
  public:
-  RegisterDeviceWithAuthkeyAuthTest();
-  virtual ~RegisterDeviceWithAuthkeyAuthTest();
+  RegisterDeviceWithEmailAuthTest();
+  virtual ~RegisterDeviceWithEmailAuthTest();
 };
 
 } /* namespace testing */
 
-#endif /* REGISTERDEVICEWITHAUTHEYAUTHTEST_H_ */
+#endif /* REGISTERDEVICEWITHEMAILAUTHTEST_H_ */
