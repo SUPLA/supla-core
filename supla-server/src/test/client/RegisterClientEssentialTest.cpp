@@ -89,8 +89,6 @@ TEST_F(RegisterClientEssentialTest, clientLimitExceeded) {
 
   snprintf(register_client_d.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "nolan@atari.com");
-  snprintf(register_client_d.Password, SUPLA_PASSWORD_MAXSIZE, "%s",
-           "Bushnell.xyz");
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("nolan@atari.com")))
       .Times(1)
@@ -144,8 +142,6 @@ TEST_F(RegisterClientEssentialTest,
 
   snprintf(register_client_d.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "nolan@atari.com");
-  snprintf(register_client_d.Password, SUPLA_PASSWORD_MAXSIZE, "%s",
-           "Bushnell.xyz");
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("nolan@atari.com")))
       .Times(1)
@@ -216,8 +212,6 @@ TEST_F(RegisterClientEssentialTest,
 
   snprintf(register_client_d.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "nolan@atari.com");
-  snprintf(register_client_d.Password, SUPLA_PASSWORD_MAXSIZE, "%s",
-           "Bushnell.xyz");
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("nolan@atari.com")))
       .Times(1)
@@ -277,8 +271,6 @@ TEST_F(RegisterClientEssentialTest, failedToAddTheClient) {
 
   snprintf(register_client_d.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "nolan@atari.com");
-  snprintf(register_client_d.Password, SUPLA_PASSWORD_MAXSIZE, "%s",
-           "Bushnell.xyz");
   snprintf(register_client_d.Name, SUPLA_CLIENT_NAME_MAXSIZE, "%s",
            "Atari 800XL");
   snprintf(register_client_d.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "1.0");
@@ -399,7 +391,6 @@ TEST_F(RegisterClientEssentialTest,
 
   snprintf(register_client_d.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "nolan@atari.com");
-
   snprintf(register_client_d.Password, SUPLA_PASSWORD_MAXSIZE, "%s",
            "Bushnell.xyz");
 
@@ -459,9 +450,6 @@ TEST_F(RegisterClientEssentialTest,
 
   snprintf(register_client_d.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "nolan@atari.com");
-
-  snprintf(register_client_d.Password, SUPLA_PASSWORD_MAXSIZE, "%s",
-           "Bushnell.xyz");
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("nolan@atari.com")))
       .Times(1)
@@ -523,9 +511,6 @@ TEST_F(RegisterClientEssentialTest,
 
   snprintf(register_client_d.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "nolan@atari.com");
-
-  snprintf(register_client_d.Password, SUPLA_PASSWORD_MAXSIZE, "%s",
-           "Bushnell.xyz");
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("nolan@atari.com")))
       .Times(1)
@@ -590,9 +575,6 @@ TEST_F(RegisterClientEssentialTest, successfullyAddedClient) {
 
   snprintf(register_client_d.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "nolan@atari.com");
-
-  snprintf(register_client_d.Password, SUPLA_PASSWORD_MAXSIZE, "%s",
-           "Bushnell.xyz");
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("nolan@atari.com")))
       .Times(1)
@@ -660,9 +642,6 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndIsDisabled) {
 
   snprintf(register_client_d.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "nolan@atari.com");
-
-  snprintf(register_client_d.Password, SUPLA_PASSWORD_MAXSIZE, "%s",
-           "Bushnell.xyz");
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("nolan@atari.com")))
       .Times(1)
