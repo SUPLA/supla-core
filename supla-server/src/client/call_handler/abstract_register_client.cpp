@@ -222,6 +222,8 @@ char supla_ch_abstract_register_client::register_client(
                   if (access_id) {
                     accessid_enabled = true;
                     accessid_active = true;
+                  } else {
+                    pwd_is_set = false;
                   }
                 }
               }
