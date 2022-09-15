@@ -54,8 +54,8 @@ class ClientDaoMock : public supla_abstract_client_dao {
                                          bool *accessid_active));
 
   MOCK_METHOD5(get_client_variables,
-               int(int client_id, bool *client_enabled, int *access_id,
-                   bool *accessid_enabled, bool *accessid_active));
+               bool(int client_id, bool *client_enabled, int *access_id,
+                    bool *accessid_enabled, bool *accessid_active));
 
   MOCK_METHOD1(get_client_reg_enabled, bool(int user_id));
 

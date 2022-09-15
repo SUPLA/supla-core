@@ -50,9 +50,9 @@ class supla_client_dao : public supla_abstract_client_dao {
   virtual int get_client_access_id(int client_id, bool *accessid_enabled,
                                    bool *accessid_active);
 
-  virtual int get_client_variables(int client_id, bool *client_enabled,
-                                   int *access_id, bool *accessid_enabled,
-                                   bool *accessid_active);
+  virtual bool get_client_variables(int client_id, bool *client_enabled,
+                                    int *access_id, bool *accessid_enabled,
+                                    bool *accessid_active);
 
   virtual bool get_client_reg_enabled(int user_id);
 

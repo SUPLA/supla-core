@@ -207,11 +207,11 @@ bool supla_client_dao::set_reg_enabled(int user_id, int device_reg_time_sec,
   return result;
 }
 
-int supla_client_dao::get_client_variables(int client_id, bool *client_enabled,
-                                           int *access_id,
-                                           bool *accessid_enabled,
-                                           bool *accessid_active) {
-  if (client_id == 0) return 0;
+bool supla_client_dao::get_client_variables(int client_id, bool *client_enabled,
+                                            int *access_id,
+                                            bool *accessid_enabled,
+                                            bool *accessid_active) {
+  if (client_id == 0) return false;
 
   MYSQL_BIND pbind = {};
 
@@ -239,10 +239,10 @@ int supla_client_dao::get_client_variables(int client_id, bool *client_enabled,
     *access_id = _access_id;
     *accessid_enabled = _accessid_enabled == 1;
     *accessid_active = _accessid_active == 1;
-    return client_id;
+    return true;
   }
 
-  return 0;
+  return false;
 }
 
 bool supla_client_dao::get_client_id(int user_id,

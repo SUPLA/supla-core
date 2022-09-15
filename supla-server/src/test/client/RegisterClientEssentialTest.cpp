@@ -63,6 +63,8 @@ TEST_F(RegisterClientEssentialTest, incorrectSuperuserPassword) {
 
   EXPECT_CALL(dba, rollback).Times(1);
 
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
+
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
@@ -114,6 +116,8 @@ TEST_F(RegisterClientEssentialTest, clientLimitExceeded) {
       .WillOnce(Return(0));
 
   EXPECT_CALL(dba, rollback).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -184,6 +188,8 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(dba, rollback).Times(1);
 
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
+
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rc, revoke_superuser_authorization).Times(1);
@@ -245,6 +251,8 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(client_dao, get_access_id).Times(0);
 
   EXPECT_CALL(dba, rollback).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -308,6 +316,8 @@ TEST_F(RegisterClientEssentialTest, failedToAddTheClient) {
 
   EXPECT_CALL(dba, rollback).Times(1);
 
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
+
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
@@ -365,6 +375,8 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(dba, rollback).Times(0);
 
   EXPECT_CALL(dba, commit).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -424,6 +436,8 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(dba, rollback).Times(0);
 
   EXPECT_CALL(dba, commit).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -485,6 +499,8 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(dba, rollback).Times(0);
 
   EXPECT_CALL(dba, commit).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -550,6 +566,8 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(dba, rollback).Times(0);
 
   EXPECT_CALL(dba, commit).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -618,6 +636,8 @@ TEST_F(RegisterClientEssentialTest, successfullyAddedClient) {
 
   EXPECT_CALL(rc, on_registraction_success).Times(1);
 
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
+
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
@@ -678,12 +698,14 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndIsDisabled) {
       .WillOnce([](int client_id, bool *client_enabled, int *access_id,
                    bool *accessid_enabled, bool *accessid_active) {
         *client_enabled = false;
-        return client_id;
+        return true;
       });
 
   EXPECT_CALL(dba, rollback).Times(1);
 
   EXPECT_CALL(dba, commit).Times(0);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -745,7 +767,7 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsNotSet) {
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
                                                NotNull(), NotNull()))
       .Times(1)
-      .WillOnce(Return(987));
+      .WillOnce(Return(true));
 
   EXPECT_CALL(client_dao,
               update_client(987, 0, NotNull(), StrEq("Atari 800XL"), 4567,
@@ -756,6 +778,8 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsNotSet) {
   EXPECT_CALL(dba, rollback).Times(0);
 
   EXPECT_CALL(dba, commit).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -817,7 +841,7 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
                                                NotNull(), NotNull()))
       .Times(1)
-      .WillOnce(Return(987));
+      .WillOnce(Return(true));
 
   Sequence s1;
 
@@ -848,6 +872,8 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(dba, rollback).Times(0);
 
   EXPECT_CALL(dba, commit).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -911,7 +937,7 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
                                                NotNull(), NotNull()))
       .Times(1)
-      .WillOnce(Return(987));
+      .WillOnce(Return(true));
 
   EXPECT_CALL(rc, superuser_authorize).Times(1);
 
@@ -929,6 +955,8 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(dba, rollback).Times(0);
 
   EXPECT_CALL(dba, commit).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -990,7 +1018,7 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
                                                NotNull(), NotNull()))
       .Times(1)
-      .WillOnce(Return(987));
+      .WillOnce(Return(true));
 
   EXPECT_CALL(rc, superuser_authorize).Times(0);
 
@@ -1012,6 +1040,8 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(dba, commit).Times(1);
 
   EXPECT_CALL(rc, on_registraction_success).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -1075,7 +1105,7 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsDisabled) {
       .WillOnce([](int client_id, bool *client_enabled, int *access_id,
                    bool *accessid_enabled, bool *accessid_active) {
         *access_id = 777;
-        return client_id;
+        return true;
       });
 
   EXPECT_CALL(client_dao, update_client(987, 777, NotNull(), NotNull(), 4567,
@@ -1086,6 +1116,8 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsDisabled) {
   EXPECT_CALL(dba, rollback).Times(0);
 
   EXPECT_CALL(dba, commit).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
@@ -1148,7 +1180,7 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsInActive) {
                    bool *accessid_enabled, bool *accessid_active) {
         *accessid_enabled = true;
         *access_id = 777;
-        return client_id;
+        return true;
       });
 
   EXPECT_CALL(client_dao, update_client(987, 777, NotNull(), NotNull(), 4567,
@@ -1159,6 +1191,8 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsInActive) {
   EXPECT_CALL(dba, rollback).Times(0);
 
   EXPECT_CALL(dba, commit).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 

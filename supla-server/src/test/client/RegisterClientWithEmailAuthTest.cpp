@@ -72,6 +72,7 @@ TEST_F(RegisterClientWithEmailAuthTest, dbaConnectionFailed) {
   register_client_d.AuthKey[0] = 2;
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(false));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(false));
   EXPECT_CALL(dba, disconnect).Times(0);
   EXPECT_CALL(rc, revoke_superuser_authorization).Times(1);
 
@@ -102,6 +103,7 @@ TEST_F(RegisterClientWithEmailAuthTest, emailNotFound) {
            "maria@sklodowska-curie.p!");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("maria@sklodowska-curie.p!")))
@@ -134,6 +136,7 @@ TEST_F(RegisterClientWithEmailAuthTest, getObjectIdWithFail) {
            "maria@sklodowska-curie.pl");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("maria@sklodowska-curie.pl")))
@@ -189,6 +192,7 @@ TEST_F(RegisterClientWithEmailAuthTest,
 
   EXPECT_CALL(dba, rollback).Times(1);
 
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
@@ -217,6 +221,7 @@ TEST_F(RegisterClientWithEmailAuthTest, getAuthKeyWithFail) {
            "maria@sklodowska-curie.pl");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("maria@sklodowska-curie.pl")))
@@ -273,6 +278,8 @@ TEST_F(RegisterClientWithEmailAuthTest, missingKeyAndRegistrationDisabled) {
 
   EXPECT_CALL(dba, rollback).Times(1);
 
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
+
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("maria@sklodowska-curie.pl")))
@@ -320,6 +327,7 @@ TEST_F(RegisterClientWithEmailAuthTest, incorrectAuthKey) {
            "maria@sklodowska-curie.pl");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("maria@sklodowska-curie.pl")))
@@ -370,6 +378,7 @@ TEST_F(RegisterClientWithEmailAuthTest, correctAuthKeyAndRegistrtionDisabled) {
            "maria@sklodowska-curie.pl");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(rc, get_user_id_by_email(StrEq("maria@sklodowska-curie.pl")))

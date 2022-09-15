@@ -53,6 +53,7 @@ TEST_F(RegisterClientWithAccessIdAuthTest, authFailed) {
            "abcd");
 
   EXPECT_CALL(dba, connect).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(2).WillRepeatedly(Return(true));
   EXPECT_CALL(dba, disconnect).Times(2);
   EXPECT_CALL(dba, start_transaction).Times(0);
 
@@ -128,6 +129,8 @@ TEST_F(RegisterClientWithAccessIdAuthTest, authSuccessAndRegistrationDisabled) {
       .WillOnce(Return(false));
 
   EXPECT_CALL(dba, rollback).Times(1);
+
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
