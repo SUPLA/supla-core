@@ -186,6 +186,8 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
+  EXPECT_CALL(rc, revoke_superuser_authorization).Times(1);
+
   EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
       .Times(1)
       .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
@@ -849,6 +851,8 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
+  EXPECT_CALL(rc, revoke_superuser_authorization).Times(1);
+
   EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
       .Times(1)
       .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
@@ -1010,6 +1014,8 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(rc, on_registraction_success).Times(1);
 
   EXPECT_CALL(dba, disconnect).Times(1);
+
+  EXPECT_CALL(rc, revoke_superuser_authorization).Times(1);
 
   EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
       .Times(1)
