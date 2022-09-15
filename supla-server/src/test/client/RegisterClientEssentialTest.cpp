@@ -135,7 +135,8 @@ TEST_F(RegisterClientEssentialTest, clientLimitExceeded) {
   EXPECT_GE(usecFromSetUp(), rc.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterClientEssentialTest, getAccessIdWhenClientCountIsZero) {
+TEST_F(RegisterClientEssentialTest,
+       getAccessIdWhenClientCountIsGreaterThanZero) {
   TCS_SuplaRegisterClient_D register_client_d = {};
 
   register_client_d.GUID[0] = 1;
@@ -169,7 +170,9 @@ TEST_F(RegisterClientEssentialTest, getAccessIdWhenClientCountIsZero) {
       .Times(1)
       .WillOnce(Return(1));
 
-  EXPECT_CALL(client_dao, get_client_count(25)).Times(1).WillOnce(Return(0));
+  EXPECT_CALL(client_dao, get_client_count(25)).Times(1).WillOnce(Return(1));
+
+  EXPECT_CALL(rc, is_superuser_authorized).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(client_dao, get_access_id(25, true, true))
       .Times(1)
