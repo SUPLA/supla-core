@@ -333,4 +333,63 @@ TEST_F(RegisterClientEssentialTest, failedToAddTheClient) {
   EXPECT_GE(usecFromSetUp(), rc.get_hold_time_on_failure_usec());
 }
 
+TEST_F(RegisterClientEssentialTest,
+       successfullyAddedClientWithAnUnasignedAccessIDAndWithoutPassword) {
+  TCS_SuplaRegisterClient_D register_client_d = {};
+
+  register_client_d.GUID[0] = 1;
+  register_client_d.AuthKey[0] = 2;
+
+  snprintf(register_client_d.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+           "nolan@atari.com");
+
+  EXPECT_CALL(rc, get_user_id_by_email(StrEq("nolan@atari.com")))
+      .Times(1)
+      .WillOnce(Return(25));
+
+  EXPECT_CALL(rc, get_object_id(25, _, _))
+      .Times(1)
+      .WillOnce([](int user_id, const char guid[SUPLA_GUID_SIZE], int *id) {
+        *id = 0;
+        return true;
+      });
+
+  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+
+  EXPECT_CALL(dba, start_transaction).Times(1);
+
+  EXPECT_CALL(client_dao, get_client_reg_enabled(25))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(client_dao, get_client_limit_left(25))
+      .Times(1)
+      .WillOnce(Return(1));
+
+  EXPECT_CALL(client_dao, add_client).Times(1).WillOnce(Return(88));
+
+  EXPECT_CALL(dba, rollback).Times(0);
+
+  EXPECT_CALL(dba, commit).Times(1);
+
+  EXPECT_CALL(dba, disconnect).Times(1);
+
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+      .Times(1)
+      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED, result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+
+  rc.register_client(nullptr, &register_client_d, &srpcAdapter, &dba, nullptr,
+                     &client_dao, 234, 4567, 20);
+
+  EXPECT_GE(usecFromSetUp(), rc.get_hold_time_on_failure_usec());
+}
+
+
+
 } /* namespace testing */
