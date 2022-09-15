@@ -1007,6 +1007,8 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(dba, commit).Times(1);
 
+  EXPECT_CALL(rc, on_registraction_success).Times(1);
+
   EXPECT_CALL(dba, disconnect).Times(1);
 
   EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
