@@ -236,9 +236,9 @@ bool supla_client_dao::get_client_variables(int client_id, bool *client_enabled,
           (void **)&stmt, &_client_enabled, &_access_id, &_accessid_enabled,
           &_accessid_active,
           "SELECT CAST(c.`enabled` AS unsigned integer), "
-          "IFnullptr(c.access_id, "
-          "0), IFnullptr(CAST(a.`enabled` AS unsigned integer), 0), "
-          "IFnullptr(CAST(a.`is_now_active` AS unsigned integer), 0) FROM "
+          "IFNULL(c.access_id, "
+          "0), IFNULL(CAST(a.`enabled` AS unsigned integer), 0), "
+          "IFNULL(CAST(a.`is_now_active` AS unsigned integer), 0) FROM "
           "supla_client c LEFT JOIN supla_v_accessid_active a ON a.id = "
           "c.access_id WHERE c.id = ?",
           &pbind, 1)) {
@@ -345,7 +345,7 @@ bool supla_client_dao::get_client_reg_enabled(int user_id) {
 int supla_client_dao::get_client_limit_left(int user_id) {
   return dba->get_int(
       user_id, 0,
-      "SELECT IFnullptr(limit_client, 0) - IFnullptr(( SELECT COUNT(*) "
+      "SELECT IFNULL(limit_client, 0) - IFNULL(( SELECT COUNT(*) "
       "FROM supla_client WHERE user_id = supla_user.id ), 0) FROM "
       "supla_user WHERE id = ?");
 }

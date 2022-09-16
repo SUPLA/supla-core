@@ -277,7 +277,7 @@ bool supla_device_dao::get_device_reg_enabled(int user_id) {
 int supla_device_dao::get_device_limit_left(int user_id) {
   return dba->get_int(
       user_id, 0,
-      "SELECT IFnullptr(limit_client, 0) - IFnullptr(( SELECT COUNT(*) "
+      "SELECT IFNULL(limit_client, 0) - IFNULL(( SELECT COUNT(*) "
       "FROM supla_client WHERE user_id = supla_user.id ), 0) FROM "
       "supla_user WHERE id = ?");
 }
@@ -305,8 +305,8 @@ bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
   if (dba->stmt_execute(
           (void **)&stmt,
           "SELECT CAST(d.`enabled` AS unsigned integer) `d_enabled`, "
-          "IFnullptr(d.original_location_id, 0), IFnullptr(d.location_id, "
-          "0), IFnullptr(CAST(l.`enabled` AS unsigned integer), 0) "
+          "IFNULL(d.original_location_id, 0), IFNULL(d.location_id, "
+          "0), IFNULL(CAST(l.`enabled` AS unsigned integer), 0) "
           "`l_enabled` FROM supla_iodevice d LEFT JOIN supla_location "
           "l ON l.id = d.location_id WHERE d.id = ?",
           &pbind, 1, true)) {
