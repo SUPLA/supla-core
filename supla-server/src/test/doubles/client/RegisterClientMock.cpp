@@ -36,8 +36,9 @@ void RegisterClientMock::register_client(
     supla_abstract_connection_dao *conn_dao,
     supla_abstract_client_dao *client_dao, int client_sd, int client_ipv4,
     unsigned char activity_timeout) {
+  std::weak_ptr<supla_client> client;
   supla_ch_abstract_register_client::register_client(
-      register_client_b, register_client_d, srpc_adapter, dba, conn_dao,
+      client, register_client_b, register_client_d, srpc_adapter, dba, conn_dao,
       client_dao, client_sd, client_ipv4, activity_timeout);
 }
 

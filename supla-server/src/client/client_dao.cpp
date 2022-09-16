@@ -73,6 +73,13 @@ bool supla_client_dao::access_id_auth(int access_id, char *access_id_pwd,
   return _ID != 0;
 }
 
+bool supla_client_dao::get_authkey_hash(int id,
+                                        char authkey_hash[BCRYPT_HASH_MAXSIZE],
+                                        bool *is_null) {
+  return dba->get_string(id, authkey_hash, BCRYPT_HASH_MAXSIZE, is_null,
+                         "SELECT auth_key FROM supla_client WHERE id = ?");
+}
+
 int supla_client_dao::oauth_add_client_id(void) {
   char random_id[51];
   char secret[51];

@@ -20,6 +20,7 @@
 #define SUPLA_ABSTRACT_CLIENT_DAO_H_
 
 #include "proto.h"
+#include "tools.h"
 
 class supla_abstract_client_dao {
  public:
@@ -28,6 +29,9 @@ class supla_abstract_client_dao {
 
   virtual bool access_id_auth(int access_id, char *access_id_pwd, int *user_id,
                               bool *is_enabled, bool *is_active) = 0;
+
+  virtual bool get_authkey_hash(int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
+                                bool *is_null) = 0;
 
   virtual bool oauth_get_token(TSC_OAuthToken *token, int user_id,
                                int access_id, bool *storage_connect_error) = 0;

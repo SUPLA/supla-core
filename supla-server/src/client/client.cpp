@@ -74,9 +74,13 @@ shared_ptr<supla_client> supla_client::get_shared_ptr(void) {
       supla_abstract_connection_object::get_shared_ptr());
 }
 
+supla_client_locations *supla_client::get_locations(void) { return locations; }
+
 supla_client_channels *supla_client::get_channels(void) { return channels; }
 
 supla_client_channelgroups *supla_client::get_cgroups(void) { return cgroups; }
+
+supla_client_scenes *supla_client::get_scenes(void) { return scenes; }
 
 bool supla_client::is_sleeping_object(void) { return false; }
 

@@ -264,6 +264,7 @@ bool supla_ch_abstract_register_client::update_client(void) {
 }
 
 void supla_ch_abstract_register_client::register_client(
+    std::weak_ptr<supla_client> client,
     TCS_SuplaRegisterClient_B *register_client_b,
     TCS_SuplaRegisterClient_D *register_client_d,
     supla_abstract_srpc_adapter *srpc_adapter,
@@ -271,6 +272,7 @@ void supla_ch_abstract_register_client::register_client(
     supla_abstract_connection_dao *conn_dao,
     supla_abstract_client_dao *client_dao, int client_sd, int client_ipv4,
     unsigned char activity_timeout) {
+  this->client = client;
   this->register_client_b = register_client_b;
   this->register_client_d = register_client_d;
   access_id = 0;

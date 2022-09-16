@@ -36,6 +36,9 @@ class supla_client_dao : public supla_abstract_client_dao {
   virtual bool access_id_auth(int access_id, char *access_id_pwd, int *user_id,
                               bool *is_enabled, bool *is_active);
 
+  virtual bool get_authkey_hash(int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
+                                bool *is_null);
+
   virtual bool oauth_get_token(TSC_OAuthToken *token, int user_id,
                                int access_id, bool *storage_connect_error);
 

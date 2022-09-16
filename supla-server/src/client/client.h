@@ -34,6 +34,7 @@
 class supla_client_call_handler_collection;
 class supla_user;
 class supla_connection;
+class supla_ch_register_client;
 class supla_client : public supla_abstract_connection_object {
  private:
   char name[SUPLA_CLIENT_NAME_MAXSIZE];
@@ -41,15 +42,15 @@ class supla_client : public supla_abstract_connection_object {
   int access_id;
   static supla_client_call_handler_collection call_handler_collection;
   supla_db_access_provider dba;
-
- protected:
   supla_client_locations *locations;
   supla_client_channels *channels;
   supla_client_channelgroups *cgroups;
   supla_client_scenes *scenes;
-
   supla_client_scene_remote_updater *scene_remote_updater;
   supla_client_scene_dao *scene_dao;
+
+ protected:
+  friend class supla_ch_register_client;
 
   void loadIODevices(void);
   void loadConfig(void);
@@ -63,8 +64,10 @@ class supla_client : public supla_abstract_connection_object {
   virtual supla_abstract_srpc_call_handler_collection *
   get_srpc_call_handler_collection(void);
   std::shared_ptr<supla_client> get_shared_ptr(void);
+  supla_client_locations *get_locations(void);
   supla_client_channels *get_channels(void);
   supla_client_channelgroups *get_cgroups(void);
+  supla_client_scenes *get_scenes(void);
   virtual bool is_sleeping_object(void);
   virtual unsigned int get_time_to_wakeup_msec(void);
 

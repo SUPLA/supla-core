@@ -34,6 +34,10 @@ class ClientDaoMock : public supla_abstract_client_dao {
                bool(int access_id, char *access_id_pwd, int *user_id,
                     bool *is_enabled, bool *is_active));
 
+  MOCK_METHOD3(get_authkey_hash,
+               bool(int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
+                    bool *is_null));
+
   MOCK_METHOD4(oauth_get_token,
                bool(TSC_OAuthToken *token, int user_id, int access_id,
                     bool *storage_connect_error));

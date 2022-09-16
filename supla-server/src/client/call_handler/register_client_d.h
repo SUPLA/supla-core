@@ -22,9 +22,11 @@
 #include <memory>
 
 #include "client/call_handler/abstract_client_srpc_call_handler.h"
+#include "client/call_handler/register_client.h"
 
 class supla_ch_register_client_d
-    : public supla_abstract_client_srpc_call_handler {
+    : public supla_abstract_client_srpc_call_handler,
+      private supla_ch_register_client {
  protected:
   virtual bool handle_call(std::shared_ptr<supla_client> client,
                            supla_abstract_srpc_adapter* srpc_adapter,
