@@ -35,9 +35,19 @@ class supla_ch_abstract_register_client
  private:
   std::weak_ptr<supla_client> client;
   supla_abstract_client_dao *client_dao;
+  TCS_SuplaRegisterClient_B *register_client_b;
+  TCS_SuplaRegisterClient_D *register_client_d;
+  int access_id;
   int client_id;
+  bool accessid_enabled;
+  bool accessid_active;
+  bool client_enabled;
+  bool pwd_is_set;
 
   void send_result(int resultcode);
+  bool client_auth(void);
+  bool add_client(void);
+  bool update_client(void);
 
  protected:
   void register_client(TCS_SuplaRegisterClient_B *register_client_b,

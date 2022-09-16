@@ -28,7 +28,14 @@ using std::weak_ptr;
 supla_ch_abstract_register_client::supla_ch_abstract_register_client(void)
     : supla_ch_abstract_register_object() {
   client_dao = nullptr;
+  register_client_b = nullptr;
+  register_client_d = nullptr;
+  access_id = 0;
   client_id = 0;
+  accessid_enabled = false;
+  accessid_active = false;
+  client_enabled = true;
+  pwd_is_set = false;
 }
 
 supla_ch_abstract_register_client::~supla_ch_abstract_register_client() {}
@@ -134,6 +141,128 @@ void supla_ch_abstract_register_client::send_result(int resultcode) {
   }
 }
 
+bool supla_ch_abstract_register_client::client_auth(void) {
+  if (register_client_b != nullptr &&
+      false == client_dao->access_id_auth(
+                   access_id, register_client_b->AccessIDpwd, get_user_id_ptr(),
+                   &accessid_enabled, &accessid_active)) {
+    send_result(SUPLA_RESULTCODE_BAD_CREDENTIALS);
+    return false;
+  }
+
+  if (register_client_d != nullptr &&
+      !authkey_auth(get_guid(), register_client_d->Email, get_authkey(),
+                    get_user_id_ptr())) {
+    send_result(SUPLA_RESULTCODE_BAD_CREDENTIALS);
+    return false;
+  }
+
+  if (get_user_id() == 0) {
+    send_result(SUPLA_RESULTCODE_BAD_CREDENTIALS);
+    return false;
+  }
+
+  return true;
+}
+
+bool supla_ch_abstract_register_client::add_client(void) {
+  if (pwd_is_set) {
+    superuser_authorize(get_user_id(), register_client_d->Email,
+                        register_client_d->Password);
+  }
+
+  if (!client_dao->get_client_reg_enabled(get_user_id()) &&
+      !is_superuser_authorized()) {
+    send_result(pwd_is_set ? SUPLA_RESULTCODE_BAD_CREDENTIALS
+                           : SUPLA_RESULTCODE_REGISTRATION_DISABLED);
+    return false;
+  }
+
+  if (client_dao->get_client_limit_left(get_user_id()) <= 0) {
+    send_result(SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED);
+    return false;
+  }
+
+  if (access_id == 0 && register_client_d != nullptr &&
+      (client_dao->get_client_count(get_user_id()) == 0 ||
+       is_superuser_authorized())) {
+    access_id = client_dao->get_access_id(get_user_id(), true, true);
+
+    if (access_id > 0) {
+      accessid_enabled = true;
+      accessid_active = true;
+    } else {
+      accessid_enabled = false;
+      access_id = client_dao->get_access_id(get_user_id(), false, true);
+      if (access_id > 0) {
+        accessid_active = true;
+      } else {
+        accessid_active = false;
+        access_id = client_dao->get_access_id(get_user_id(), false, false);
+      }
+    }
+  }
+
+  client_id = client_dao->add_client(
+      access_id, get_guid(), get_authkey(), get_name(), get_client_ipv4(),
+      get_softver(), get_srpc_adapter()->get_proto_version(), get_user_id());
+
+  if (client_id == 0) {
+    // something goes wrong
+    send_result(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE);
+    return false;
+  } else {
+    client_enabled = true;
+
+    if (access_id == 0) {
+      bool _accessid_enabled = false;
+      bool _accessid_active = false;
+      access_id = client_dao->get_client_access_id(
+          client_id, &_accessid_enabled, &_accessid_active);
+
+      if (access_id) {
+        if (_accessid_enabled) {
+          accessid_enabled = true;
+        }
+        if (_accessid_active) {
+          accessid_active = true;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+bool supla_ch_abstract_register_client::update_client(void) {
+  if (access_id == 0 && pwd_is_set) {
+    if (!is_superuser_authorized()) {
+      superuser_authorize(get_user_id(), register_client_d->Email,
+                          register_client_d->Password);
+    }
+
+    if (is_superuser_authorized()) {
+      access_id = client_dao->get_access_id(get_user_id(), true, true);
+
+      if (access_id) {
+        accessid_enabled = true;
+        accessid_active = true;
+      } else {
+        pwd_is_set = false;
+      }
+    }
+  }
+
+  if (!client_dao->update_client(client_id, access_id, get_authkey(),
+                                 get_name(), get_client_ipv4(), get_softver(),
+                                 get_srpc_adapter()->get_proto_version())) {
+    send_result(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE);
+    return false;
+  }
+
+  return true;
+}
+
 void supla_ch_abstract_register_client::register_client(
     TCS_SuplaRegisterClient_B *register_client_b,
     TCS_SuplaRegisterClient_D *register_client_d,
@@ -142,9 +271,14 @@ void supla_ch_abstract_register_client::register_client(
     supla_abstract_connection_dao *conn_dao,
     supla_abstract_client_dao *client_dao, int client_sd, int client_ipv4,
     unsigned char activity_timeout) {
-  int resultcode = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
-  int access_id = 0;
+  this->register_client_b = register_client_b;
+  this->register_client_d = register_client_d;
+  access_id = 0;
   client_id = 0;
+  accessid_enabled = false;
+  accessid_active = false;
+  client_enabled = true;
+  pwd_is_set = false;
 
   set_srpc_adapter(srpc_adapter);
   set_dba(dba);
@@ -183,184 +317,77 @@ void supla_ch_abstract_register_client::register_client(
     return;
   }
 
-  bool pwd_is_set = false;
-  bool accessid_enabled = false;
-  bool accessid_active = false;
+  pwd_is_set = register_client_d != nullptr &&
+               strnlen(register_client_d->Password, SUPLA_PASSWORD_MAXSIZE) > 0;
 
-  if (register_client_b != nullptr &&
-      false == client_dao->access_id_auth(
-                   access_id, register_client_b->AccessIDpwd, get_user_id_ptr(),
-                   &accessid_enabled, &accessid_active)) {
-    send_result(SUPLA_RESULTCODE_BAD_CREDENTIALS);
-    return;
-  }
-
-  if (register_client_d != nullptr &&
-      false == authkey_auth(get_guid(), register_client_d->Email, get_authkey(),
-                            get_user_id_ptr())) {
-    send_result(SUPLA_RESULTCODE_BAD_CREDENTIALS);
-    return;
-  }
-
-  if (get_user_id() == 0) {
-    send_result(SUPLA_RESULTCODE_BAD_CREDENTIALS);
+  if (!client_auth()) {
     return;
   }
 
   _supla_int_t _access_id = access_id;
 
-  bool client_enabled = true;
-  bool do_update = true;
-  bool _accessid_enabled = false;
-  bool _accessid_active = false;
-
   client_id = client_dao->get_client_id(get_user_id(), get_guid());
 
-  if (client_id && !client_dao->get_client_variables(
-                       client_id, &client_enabled, &_access_id,
-                       &_accessid_enabled, &_accessid_active)) {
-    supla_log(LOG_WARNING, "Unable to get variables for the client with id: %i",
-              client_id);
-    send_result(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE);
-    return;
+  {
+    bool _accessid_enabled = false;
+    bool _accessid_active = false;
+
+    if (client_id && !client_dao->get_client_variables(
+                         client_id, &client_enabled, &_access_id,
+                         &_accessid_enabled, &_accessid_active)) {
+      supla_log(LOG_WARNING,
+                "Unable to get variables for the client with id: %i",
+                client_id);
+      send_result(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE);
+      return;
+    }
+
+    if (_accessid_enabled) accessid_enabled = true;
+    if (_accessid_active) accessid_active = true;
   }
 
   dba->start_transaction();
 
-  if (_accessid_enabled) accessid_enabled = true;
-  if (_accessid_active) accessid_active = true;
-
-  pwd_is_set = register_client_d != nullptr &&
-               strnlen(register_client_d->Password, SUPLA_PASSWORD_MAXSIZE) > 0;
-
   if (client_id == 0) {
-    do_update = false;
-
-    if (pwd_is_set) {
-      superuser_authorize(get_user_id(), register_client_d->Email,
-                          register_client_d->Password);
+    if (!add_client()) {
+      return;
+    }
+  } else {
+    if (_access_id > 0 && register_client_d != nullptr) {
+      access_id = _access_id;
     }
 
-    if (false == client_dao->get_client_reg_enabled(get_user_id()) &&
-        false == is_superuser_authorized()) {
-      resultcode = pwd_is_set ? SUPLA_RESULTCODE_BAD_CREDENTIALS
-                              : SUPLA_RESULTCODE_REGISTRATION_DISABLED;
-
-    } else if (client_dao->get_client_limit_left(get_user_id()) <= 0) {
-      resultcode = SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED;
-
-    } else {
-      if (access_id == 0 && register_client_d != nullptr &&
-          (client_dao->get_client_count(get_user_id()) == 0 ||
-           is_superuser_authorized())) {
-        access_id = client_dao->get_access_id(get_user_id(), true, true);
-
-        if (access_id > 0) {
-          accessid_enabled = true;
-          accessid_active = true;
-        } else {
-          accessid_enabled = false;
-          access_id = client_dao->get_access_id(get_user_id(), false, true);
-          if (access_id > 0) {
-            accessid_active = true;
-          } else {
-            accessid_active = false;
-            access_id = client_dao->get_access_id(get_user_id(), false, false);
-          }
-        }
-      }
-
-      client_id = client_dao->add_client(
-          access_id, get_guid(), get_authkey(), get_name(), get_client_ipv4(),
-          get_softver(), get_srpc_adapter()->get_proto_version(),
-          get_user_id());
-
-      if (client_id == 0) {
-        // something goes wrong
-
-      } else {
-        client_enabled = true;
-
-        if (access_id == 0) {
-          _accessid_enabled = false;
-          _accessid_active = false;
-          access_id = client_dao->get_client_access_id(
-              client_id, &_accessid_enabled, &_accessid_active);
-
-          if (access_id) {
-            if (_accessid_enabled) {
-              accessid_enabled = true;
-            }
-            if (_accessid_active) {
-              accessid_active = true;
-            }
-          }
-        }
-      }
-    }
-
-  } else if (_access_id > 0 && register_client_d != nullptr) {
-    access_id = _access_id;
-  }
-
-  if (client_id != 0) {
     if (!client_enabled) {
-      resultcode = SUPLA_RESULTCODE_CLIENT_DISABLED;
-
-    } else {
-      if (do_update) {
-        if (access_id == 0 && pwd_is_set) {
-          if (!is_superuser_authorized()) {
-            superuser_authorize(get_user_id(), register_client_d->Email,
-                                register_client_d->Password);
-          }
-
-          if (is_superuser_authorized()) {
-            access_id = client_dao->get_access_id(get_user_id(), true, true);
-
-            if (access_id) {
-              accessid_enabled = true;
-              accessid_active = true;
-            } else {
-              pwd_is_set = false;
-            }
-          }
-        }
-
-        if (false == client_dao->update_client(
-                         client_id, access_id, get_authkey(), get_name(),
-                         get_client_ipv4(), get_softver(),
-                         get_srpc_adapter()->get_proto_version())) {
-          // something goes wrong
-          client_id = 0;
-        }
-      }
-
-      if (client_id) {
-        dba->commit();
-
-        set_should_rollback(false);
-
-        if (access_id == 0) {
-          resultcode = pwd_is_set ? SUPLA_RESULTCODE_BAD_CREDENTIALS
-                                  : SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED;
-
-        } else if (!accessid_enabled) {
-          resultcode = SUPLA_RESULTCODE_ACCESSID_DISABLED;
-
-        } else if (!accessid_active) {
-          resultcode = SUPLA_RESULTCODE_ACCESSID_INACTIVE;
-
-        } else {
-          on_registraction_success();
-
-          resultcode = SUPLA_RESULTCODE_TRUE;
-        }
-      }
+      send_result(SUPLA_RESULTCODE_CLIENT_DISABLED);
+      return;
+    } else if (!update_client()) {
+      return;
     }
   }
 
-  send_result(resultcode);
+  dba->commit();
+
+  set_should_rollback(false);
+
+  if (access_id == 0) {
+    send_result(pwd_is_set ? SUPLA_RESULTCODE_BAD_CREDENTIALS
+                           : SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED);
+    return;
+  }
+
+  if (!accessid_enabled) {
+    send_result(SUPLA_RESULTCODE_ACCESSID_DISABLED);
+    return;
+  }
+
+  if (!accessid_active) {
+    send_result(SUPLA_RESULTCODE_ACCESSID_INACTIVE);
+    return;
+  }
+
+  on_registraction_success();
+
+  send_result(SUPLA_RESULTCODE_TRUE);
 }
 
 __useconds_t supla_ch_abstract_register_client::get_hold_time_on_failure_usec(
