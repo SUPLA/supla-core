@@ -51,13 +51,13 @@ std::weak_ptr<supla_client> supla_ch_abstract_register_client::get_client(
 }
 
 void supla_ch_abstract_register_client::send_result(int resultcode) {
-  if (get_should_rollback()) {
-    get_dba()->rollback();
-  }
-
   revoke_superuser_authorization();
 
   if (get_dba()->is_connected()) {
+    if (get_should_rollback()) {
+      get_dba()->rollback();
+    }
+
     get_dba()->disconnect();
   }
 

@@ -97,11 +97,11 @@ __useconds_t supla_ch_abstract_register_device::get_hold_time_on_failure_usec(
 }
 
 void supla_ch_abstract_register_device::send_result(int resultcode) {
-  if (get_should_rollback()) {
-    get_dba()->rollback();
-  }
-
   if (get_dba()->is_connected()) {
+    if (get_should_rollback()) {
+      get_dba()->rollback();
+    }
+
     get_dba()->disconnect();
   }
 
