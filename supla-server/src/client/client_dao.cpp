@@ -337,7 +337,7 @@ int supla_client_dao::get_client_access_id(int client_id,
 bool supla_client_dao::get_client_reg_enabled(int user_id) {
   const char query[] =
       "SELECT COUNT(*) FROM `supla_user` WHERE id = ? AND client_reg_enabled "
-      "IS NOT nullptr AND client_reg_enabled >= UTC_TIMESTAMP()";
+      "IS NOT NULL AND client_reg_enabled >= UTC_TIMESTAMP()";
 
   return dba->get_count(user_id, query) > 0 ? true : false;
 }

@@ -269,7 +269,7 @@ int supla_device_dao::get_device_id(int user_id,
 bool supla_device_dao::get_device_reg_enabled(int user_id) {
   const char query[] =
       "SELECT COUNT(*) FROM `supla_user` WHERE id = ? AND iodevice_reg_enabled "
-      "IS NOT nullptr AND iodevice_reg_enabled >= UTC_TIMESTAMP()";
+      "IS NOT NULL AND iodevice_reg_enabled >= UTC_TIMESTAMP()";
 
   return dba->get_count(user_id, query) > 0 ? true : false;
 }
