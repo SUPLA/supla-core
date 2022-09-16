@@ -56,9 +56,12 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
   virtual void set_proto_version(unsigned char version);
   virtual unsigned char get_proto_version(void);
 
-  _supla_int_t sdc_async_ping_server_result(void);
+  virtual _supla_int_t sdc_async_getversion_result(
+      char softver[SUPLA_SOFTVER_MAXSIZE]);
 
-  _supla_int_t dcs_async_set_activity_timeout_result(
+  virtual _supla_int_t sdc_async_ping_server_result(void);
+
+  virtual _supla_int_t dcs_async_set_activity_timeout_result(
       TSDC_SuplaSetActivityTimeoutResult *result);
 
   virtual _supla_int_t sdc_async_get_registration_enabled_result(

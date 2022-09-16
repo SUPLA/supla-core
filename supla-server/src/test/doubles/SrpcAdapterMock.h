@@ -35,6 +35,9 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
   MOCK_METHOD1(set_proto_version, void(unsigned char version));
   MOCK_METHOD0(get_proto_version, unsigned char(void));
 
+  MOCK_METHOD1(sdc_async_getversion_result,
+               _supla_int_t(char softver[SUPLA_SOFTVER_MAXSIZE]));
+
   MOCK_METHOD0(sdc_async_ping_server_result, _supla_int_t(void));
 
   MOCK_METHOD1(dcs_async_set_activity_timeout_result,

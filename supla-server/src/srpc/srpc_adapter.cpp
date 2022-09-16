@@ -37,6 +37,11 @@ unsigned char supla_srpc_adapter::get_proto_version(void) {
   return srpc_get_proto_version(get_srpc());
 }
 
+_supla_int_t supla_srpc_adapter::sdc_async_getversion_result(
+    char softver[SUPLA_SOFTVER_MAXSIZE]) {
+  return srpc_sdc_async_getversion_result(get_srpc(), softver);
+}
+
 _supla_int_t supla_srpc_adapter::sdc_async_ping_server_result(void) {
   return srpc_sdc_async_ping_server_result(get_srpc());
 }

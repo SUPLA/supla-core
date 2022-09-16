@@ -20,6 +20,7 @@
 
 #include "conn/call_handler/get_registration_enabled.h"
 #include "conn/call_handler/get_user_localtime.h"
+#include "conn/call_handler/get_version.h"
 #include "conn/call_handler/ping_server.h"
 #include "conn/call_handler/set_activity_timeout.h"
 #include "device/call_handler/action_trigger.h"
@@ -59,6 +60,7 @@ supla_device_call_handler_collection::supla_device_call_handler_collection(void)
   add_handler(new supla_ch_register_device_a);
 
   // common
+  add_handler(new supla_ch_get_version());
   add_handler(new supla_ch_set_activity_timeout());
   add_handler(new supla_ch_ping_server());
   add_handler(new supla_ch_get_user_localtime());

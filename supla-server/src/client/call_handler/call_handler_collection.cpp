@@ -16,8 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <call_handler/register_client_a.h>
 #include "client/call_handler/call_handler_collection.h"
+
+#include <call_handler/register_client_a.h>
 
 #include "client/call_handler/calcfg_request.h"
 #include "client/call_handler/calcfg_request_b.h"
@@ -41,6 +42,7 @@
 #include "client/call_handler/timer_arm.h"
 #include "conn/call_handler/get_registration_enabled.h"
 #include "conn/call_handler/get_user_localtime.h"
+#include "conn/call_handler/get_version.h"
 #include "conn/call_handler/ping_server.h"
 #include "conn/call_handler/set_activity_timeout.h"
 
@@ -69,6 +71,7 @@ supla_client_call_handler_collection::supla_client_call_handler_collection(void)
   add_handler(new supla_ch_register_client_a);
 
   // common
+  add_handler(new supla_ch_get_version());
   add_handler(new supla_ch_set_activity_timeout());
   add_handler(new supla_ch_ping_server());
   add_handler(new supla_ch_get_user_localtime());
