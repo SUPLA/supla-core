@@ -252,11 +252,11 @@ bool supla_client_dao::get_client_id(int user_id,
     return false;
   }
 
-  // We intentionally use IFnullptr(MIN (id), 0) so that the query result always
+  // We intentionally use IFNULL(MIN (id), 0) so that the query result always
   // contains one row. Otherwise, we assume that an error has occurred.
 
   const char query[] =
-      "SELECT IFnullptr(MIN(id), 0) FROM supla_client WHERE user_id = ? AND "
+      "SELECT IFNULL(MIN(id), 0) FROM supla_client WHERE user_id = ? AND "
       "guid = unhex(?)";
 
   MYSQL_STMT *stmt = nullptr;
