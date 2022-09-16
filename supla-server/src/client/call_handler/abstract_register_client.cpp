@@ -214,8 +214,6 @@ void supla_ch_abstract_register_client::register_client(
   bool _accessid_enabled = false;
   bool _accessid_active = false;
 
-  dba->start_transaction();
-
   client_id = client_dao->get_client_id(get_user_id(), get_guid());
 
   if (client_id && !client_dao->get_client_variables(
@@ -226,6 +224,8 @@ void supla_ch_abstract_register_client::register_client(
     send_result(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE);
     return;
   }
+
+  dba->start_transaction();
 
   if (_accessid_enabled) accessid_enabled = true;
   if (_accessid_active) accessid_active = true;
