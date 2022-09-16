@@ -34,6 +34,9 @@ class supla_abstract_client_dao {
   virtual bool set_reg_enabled(int user_id, int device_reg_time_sec,
                                int client_reg_time_sec) = 0;
 
+  virtual bool get_client_id(int user_id, const char guid[SUPLA_GUID_SIZE],
+                             int *id) = 0;
+
   virtual int get_client_id(int user_id, const char guid[SUPLA_GUID_SIZE]) = 0;
 
   virtual int get_client_access_id(int client_id, bool *accessid_enabled,
