@@ -138,19 +138,23 @@ bool supla_client_dao::oauth_get_token(TSC_OAuthToken *token, int user_id,
 
   memset(token, 0, sizeof(TSC_OAuthToken));
 
-  if (oauth_get_client_id(true) == 0 || svrcfg_oauth_url_base64 == nullptr ||
-      svrcfg_oauth_url_base64_len <= 0 ||
-      svrcfg_oauth_url_base64_len + CFG_OAUTH_TOKEN_SIZE + 2 >
-          SUPLA_OAUTH_TOKEN_MAXSIZE) {
-    return false;
-  }
-
   bool already_connected = dba->is_connected();
 
   if (!already_connected && !dba->connect()) {
     if (storage_connect_error) {
       *storage_connect_error = true;
     }
+    return false;
+  }
+
+  if (oauth_get_client_id(true) == 0 || svrcfg_oauth_url_base64 == nullptr ||
+      svrcfg_oauth_url_base64_len <= 0 ||
+      svrcfg_oauth_url_base64_len + CFG_OAUTH_TOKEN_SIZE + 2 >
+          SUPLA_OAUTH_TOKEN_MAXSIZE) {
+    if (!already_connected) {
+      dba->disconnect();
+    }
+
     return false;
   }
 
