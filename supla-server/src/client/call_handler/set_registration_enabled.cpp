@@ -48,10 +48,13 @@ bool supla_ch_set_registration_enabled::handle_call(
       supla_db_access_provider dba;
       supla_client_dao dao(&dba);
 
-      result.ResultCode = dao.set_reg_enabled(
+      bool success = dao.set_reg_enabled(
           client->get_user_id(),
           rd->data.cs_set_registration_enabled->IODeviceRegistrationTimeSec,
           rd->data.cs_set_registration_enabled->ClientRegistrationTimeSec);
+
+      result.ResultCode =
+          success ? SUPLA_RESULTCODE_TRUE : SUPLA_RESULTCODE_UNKNOWN_ERROR;
     } else {
       result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
     }
