@@ -65,6 +65,7 @@ typedef struct {
 #ifndef NOSSL
   SSL *ssl;
 #endif /*ifndef NOSSL*/
+  char fatal_error;
 } TSuplaSocket;
 
 typedef struct {
@@ -684,7 +685,7 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
 
   assert(ssd != NULL);
 
-  if (supla_socket->sfd == -1) {
+  if (supla_socket->sfd == -1 || supla_socket->fatal_error) {
     return 0;
   }
 
@@ -698,7 +699,12 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
     // SSL_get_error consumes quite a few CPU cycles.
     if (count < 0 &&
         SSL_get_error(supla_socket->ssl, count) != SSL_ERROR_WANT_READ) {
-      ssocket_ssl_error(supla_socket, count);
+      switch (ssocket_ssl_error(supla_socket, count)) {
+        case SSL_ERROR_SYSCALL:
+        case SSL_ERROR_SSL:
+          supla_socket->fatal_error = 1;
+          return 0;
+      }
     }
 #endif /*__DEBUG*/
 
@@ -729,7 +735,7 @@ int ssocket_write(void *_ssd, void *_supla_socket, const void *buf, int count) {
 
   assert(ssd != NULL);
 
-  if (supla_socket->sfd == -1) {
+  if (supla_socket->sfd == -1 || supla_socket->fatal_error) {
     return -1;
   }
 
@@ -747,7 +753,14 @@ int ssocket_write(void *_ssd, void *_supla_socket, const void *buf, int count) {
 #ifndef NOSSL
     count = SSL_write(supla_socket->ssl, buf, count);
 
-    if (count < 0) ssocket_ssl_error(supla_socket, count);
+    if (count < 0) {
+      switch (ssocket_ssl_error(supla_socket, count)) {
+        case SSL_ERROR_SYSCALL:
+        case SSL_ERROR_SSL:
+          supla_socket->fatal_error = 1;
+          return 0;
+      }
+    }
 #else
     return -1;
 #endif /*ifndef NOSSL*/
