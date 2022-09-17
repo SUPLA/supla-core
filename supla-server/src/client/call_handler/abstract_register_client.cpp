@@ -50,6 +50,10 @@ std::weak_ptr<supla_client> supla_ch_abstract_register_client::get_client(
   return client;
 }
 
+int supla_ch_abstract_register_client::get_client_id(void) { return client_id; }
+
+int supla_ch_abstract_register_client::get_access_id(void) { return access_id; }
+
 void supla_ch_abstract_register_client::send_result(int resultcode) {
   revoke_superuser_authorization();
 

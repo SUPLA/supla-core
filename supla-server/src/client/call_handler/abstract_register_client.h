@@ -61,6 +61,8 @@ class supla_ch_abstract_register_client
 
   std::weak_ptr<supla_client> get_client(void);
   supla_abstract_client_dao *get_client_dao(void);
+  int get_client_id(void);
+  int get_access_id(void);
 
   virtual void superuser_authorize(
       int user_id, const char email[SUPLA_EMAIL_MAXSIZE],

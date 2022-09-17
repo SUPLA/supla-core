@@ -53,11 +53,11 @@ class supla_client : public supla_abstract_connection_object {
   friend class supla_ch_register_client;
 
   void loadIODevices(void);
-  void loadConfig(void);
+  void load_config(void);
 
   void remote_update_lists(void);
-  void setName(const char *name);
-  void setAccessID(int AccessID);
+  void set_name(const char *name);
+  void set_access_id(int access_id);
 
  public:
   explicit supla_client(supla_connection *connection);

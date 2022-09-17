@@ -86,7 +86,7 @@ bool supla_client::is_sleeping_object(void) { return false; }
 
 unsigned int supla_client::get_time_to_wakeup_msec(void) { return 0; }
 
-void supla_client::setName(const char *name) {
+void supla_client::set_name(const char *name) {
   lock();
   snprintf(this->name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", name);
   this->name[SUPLA_CLIENT_NAME_MAXSIZE - 1] = 0;
@@ -106,7 +106,7 @@ int supla_client::getName(char *buffer, int size) {
   return strnlen(buffer, size - 1);
 }
 
-void supla_client::setAccessID(int AccessID) { access_id = AccessID; }
+void supla_client::set_access_id(int access_id) { this->access_id = access_id; }
 
 int supla_client::getAccessID(void) { return access_id; }
 
@@ -157,7 +157,7 @@ void supla_client::remote_update_lists(void) {
   if (scenes->update_remote()) return;
 }
 
-void supla_client::loadConfig(void) {
+void supla_client::load_config(void) {
   locations->load(get_id());
   channels->load();
   cgroups->load();

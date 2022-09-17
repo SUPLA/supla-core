@@ -20,6 +20,7 @@
 
 #include "client/client.h"
 #include "conn/authkey_cache.h"
+#include "user/user.h"
 
 using std::shared_ptr;
 
@@ -62,7 +63,18 @@ void supla_ch_register_client::revoke_superuser_authorization(void) {
   client->revoke_superuser_authorization();
 }
 
-void supla_ch_register_client::on_registraction_success(void) {}
+void supla_ch_register_client::on_registraction_success(void) {
+  shared_ptr<supla_client> client = get_client().lock();
+
+  client->set_id(get_client_id());
+  client->set_guid(get_guid());
+  client->set_authkey(get_authkey());
+  client->set_name(get_name());
+  client->set_access_id(get_access_id());
+  client->set_user(supla_user::find(get_user_id(), true));
+  client->load_config();
+  client->set_registered(true);
+}
 
 int supla_ch_register_client::get_location_count(void) {
   shared_ptr<supla_client> client = get_client().lock();
