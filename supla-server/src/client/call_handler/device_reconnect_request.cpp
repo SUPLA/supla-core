@@ -33,13 +33,13 @@ supla_ch_device_reconnect_request::supla_ch_device_reconnect_request(void)
 
 supla_ch_device_reconnect_request::~supla_ch_device_reconnect_request() {}
 
-bool supla_ch_device_reconnect_request::handle_call(
+bool supla_ch_device_reconnect_request::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST;
+}
+
+void supla_ch_device_reconnect_request::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.cs_device_reconnect_request != nullptr) {
     TSC_DeviceReconnectRequestResult result = {};
     result.ResultCode = SUPLA_RESULTCODE_FALSE;
@@ -58,6 +58,4 @@ bool supla_ch_device_reconnect_request::handle_call(
 
     srpc_adapter->sc_async_device_reconnect_request_result(&result);
   }
-
-  return CH_HANDLED;
 }

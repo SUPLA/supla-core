@@ -34,13 +34,13 @@ supla_ch_set_registration_enabled::supla_ch_set_registration_enabled(void)
 
 supla_ch_set_registration_enabled::~supla_ch_set_registration_enabled() {}
 
-bool supla_ch_set_registration_enabled::handle_call(
+bool supla_ch_set_registration_enabled::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_SET_REGISTRATION_ENABLED;
+}
+
+void supla_ch_set_registration_enabled::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_SET_REGISTRATION_ENABLED) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.cs_set_registration_enabled != NULL) {
     TSC_SetRegistrationEnabledResult result = {};
 
@@ -60,6 +60,4 @@ bool supla_ch_set_registration_enabled::handle_call(
     }
     srpc_adapter->sc_async_set_registration_enabled_result(&result);
   }
-
-  return CH_HANDLED;
 }

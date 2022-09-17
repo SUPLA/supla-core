@@ -31,13 +31,13 @@ supla_ch_calcfg_request_b::supla_ch_calcfg_request_b(void)
 
 supla_ch_calcfg_request_b::~supla_ch_calcfg_request_b() {}
 
-bool supla_ch_calcfg_request_b::handle_call(
+bool supla_ch_calcfg_request_b::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B;
+}
+
+void supla_ch_calcfg_request_b::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B) {
-    return CH_UNHANDLED;
-  }
-
   TCS_DeviceCalCfgRequest_B* request = rd->data.cs_device_calcfg_request_b;
 
   if (request != NULL) {
@@ -56,7 +56,7 @@ bool supla_ch_calcfg_request_b::handle_call(
       }
 
       if (device_id && channel_id) {
-        return client->get_user()->device_calcfg_request(
+        client->get_user()->device_calcfg_request(
             supla_caller(ctClient, client->get_id()), device_id, channel_id,
             request);
       }
@@ -69,6 +69,4 @@ bool supla_ch_calcfg_request_b::handle_call(
       }
     }
   }
-
-  return CH_HANDLED;
 }

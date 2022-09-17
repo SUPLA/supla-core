@@ -34,13 +34,13 @@ supla_ch_oauth_token_request::supla_ch_oauth_token_request(void)
 
 supla_ch_oauth_token_request::~supla_ch_oauth_token_request() {}
 
-bool supla_ch_oauth_token_request::handle_call(
+bool supla_ch_oauth_token_request::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST;
+}
+
+void supla_ch_oauth_token_request::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST) {
-    return CH_UNHANDLED;
-  }
-
   TSC_OAuthTokenRequestResult result = {};
 
   int access_id = client->getAccessID();
@@ -65,6 +65,4 @@ bool supla_ch_oauth_token_request::handle_call(
   }
 
   srpc_adapter->cs_async_oauth_token_request_result(&result);
-
-  return CH_HANDLED;
 }

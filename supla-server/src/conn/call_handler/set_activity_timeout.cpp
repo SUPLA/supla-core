@@ -36,15 +36,15 @@ supla_ch_set_activity_timeout::supla_ch_set_activity_timeout(void)
 
 supla_ch_set_activity_timeout::~supla_ch_set_activity_timeout() {}
 
-bool supla_ch_set_activity_timeout::handle_call(
+bool supla_ch_set_activity_timeout::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT;
+}
+
+void supla_ch_set_activity_timeout::handle_call(
     shared_ptr<supla_abstract_connection_object> object,
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT) {
-    return CH_UNHANDLED;
-  }
-
-  if (object->is_registered() && rd->data.dcs_set_activity_timeout != nullptr) {
+  if (rd->data.dcs_set_activity_timeout != nullptr) {
     if (rd->data.dcs_set_activity_timeout->activity_timeout <
         ACTIVITY_TIMEOUT_MIN)
       rd->data.dcs_set_activity_timeout->activity_timeout =
@@ -65,6 +65,4 @@ bool supla_ch_set_activity_timeout::handle_call(
 
     srpc_adapter->dcs_async_set_activity_timeout_result(&result);
   }
-
-  return CH_HANDLED;
 }

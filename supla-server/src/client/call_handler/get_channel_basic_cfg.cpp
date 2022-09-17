@@ -29,13 +29,13 @@ supla_ch_get_channel_basic_cfg::supla_ch_get_channel_basic_cfg(void)
 
 supla_ch_get_channel_basic_cfg::~supla_ch_get_channel_basic_cfg() {}
 
-bool supla_ch_get_channel_basic_cfg::handle_call(
+bool supla_ch_get_channel_basic_cfg::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG;
+}
+
+void supla_ch_get_channel_basic_cfg::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.cs_channel_basic_cfg_request != NULL) {
     TSC_ChannelBasicCfg basic_cfg = {};
 
@@ -51,6 +51,4 @@ bool supla_ch_get_channel_basic_cfg::handle_call(
       srpc_adapter->sc_async_channel_basic_cfg_result(&basic_cfg);
     }
   }
-
-  return CH_HANDLED;
 }

@@ -30,13 +30,13 @@ supla_ch_get_firmware_update_url::supla_ch_get_firmware_update_url(void)
 
 supla_ch_get_firmware_update_url::~supla_ch_get_firmware_update_url() {}
 
-bool supla_ch_get_firmware_update_url::handle_call(
+bool supla_ch_get_firmware_update_url::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL;
+}
+
+void supla_ch_get_firmware_update_url::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.ds_firmware_update_params != nullptr) {
     TSD_FirmwareUpdate_UrlResult result = {};
     supla_db_access_provider dba;
@@ -47,6 +47,4 @@ bool supla_ch_get_firmware_update_url::handle_call(
       srpc_adapter->sd_async_get_firmware_update_url_result(&result);
     }
   }
-
-  return CH_HANDLED;
 }

@@ -33,13 +33,14 @@ supla_ch_device_channel_extendedvalue_changed::
 supla_ch_device_channel_extendedvalue_changed::
     ~supla_ch_device_channel_extendedvalue_changed() {}
 
-bool supla_ch_device_channel_extendedvalue_changed::handle_call(
+bool supla_ch_device_channel_extendedvalue_changed::can_handle_call(
+    unsigned int call_id) {
+  return call_id == SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED;
+}
+
+void supla_ch_device_channel_extendedvalue_changed::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.ds_device_channel_extendedvalue != nullptr) {
     int channel_id = device->get_channels()->get_channel_id(
         rd->data.ds_device_channel_extendedvalue->ChannelNumber);
@@ -53,6 +54,4 @@ bool supla_ch_device_channel_extendedvalue_changed::handle_call(
           channel_id, true);
     }
   }
-
-  return CH_HANDLED;
 }

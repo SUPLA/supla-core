@@ -24,7 +24,7 @@
 class supla_ch_device_channel_value_changed
     : public supla_ch_abstract_device_channel_value_changed {
  protected:
-  virtual bool handle_call(std::shared_ptr<supla_device> device,
+  virtual void handle_call(std::shared_ptr<supla_device> device,
                            supla_abstract_srpc_adapter* srpc_adapter,
                            TsrpcReceivedData* rd, unsigned int call_id,
                            unsigned char proto_version);
@@ -32,6 +32,7 @@ class supla_ch_device_channel_value_changed
  public:
   supla_ch_device_channel_value_changed(void);
   virtual ~supla_ch_device_channel_value_changed();
+  virtual bool can_handle_call(unsigned int call_id);
 };
 
 #endif /* SUPLA_CH_DEVICE_CHANNEL_VALUE_CHANED_H_*/

@@ -33,17 +33,13 @@ supla_ch_ping_server::supla_ch_ping_server(void)
 
 supla_ch_ping_server::~supla_ch_ping_server() {}
 
-bool supla_ch_ping_server::handle_call(
+bool supla_ch_ping_server::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_DCS_CALL_PING_SERVER;
+}
+
+void supla_ch_ping_server::handle_call(
     shared_ptr<supla_abstract_connection_object> object,
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DCS_CALL_PING_SERVER) {
-    return CH_UNHANDLED;
-  }
-
-  if (object->is_registered()) {
-    srpc_adapter->sdc_async_ping_server_result();
-  }
-
-  return CH_HANDLED;
+  srpc_adapter->sdc_async_ping_server_result();
 }

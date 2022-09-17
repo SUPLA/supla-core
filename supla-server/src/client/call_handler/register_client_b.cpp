@@ -35,13 +35,17 @@ supla_ch_register_client_b::supla_ch_register_client_b(void)
 
 supla_ch_register_client_b::~supla_ch_register_client_b() {}
 
-bool supla_ch_register_client_b::handle_call(
+bool supla_ch_register_client_b::is_registration_required(void) {
+  return false;
+}
+
+bool supla_ch_register_client_b::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_REGISTER_CLIENT_B;
+}
+
+void supla_ch_register_client_b::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_REGISTER_CLIENT_B) {
-    return CH_UNHANDLED;
-  }
-
   supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_B");
 
   if (rd->data.cs_register_client_b != nullptr) {
@@ -62,6 +66,4 @@ bool supla_ch_register_client_b::handle_call(
                     client->get_connection()->get_client_ipv4(),
                     client->get_connection()->get_activity_timeout());
   }
-
-  return CH_HANDLED;
 }

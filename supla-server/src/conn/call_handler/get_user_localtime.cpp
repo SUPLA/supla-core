@@ -35,26 +35,22 @@ supla_ch_get_user_localtime::supla_ch_get_user_localtime(void)
 
 supla_ch_get_user_localtime::~supla_ch_get_user_localtime() {}
 
-bool supla_ch_get_user_localtime::handle_call(
+bool supla_ch_get_user_localtime::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_DCS_CALL_GET_USER_LOCALTIME;
+}
+
+void supla_ch_get_user_localtime::handle_call(
     shared_ptr<supla_abstract_connection_object> object,
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DCS_CALL_GET_USER_LOCALTIME) {
-    return CH_UNHANDLED;
+  TSDC_UserLocalTimeResult result = {};
+
+  supla_db_access_provider dba;
+  supla_connection_dao dao(&dba);
+
+  if (!dao.get_user_localtime(object->get_user_id(), &result)) {
+    memset(&result, 0, sizeof(TSDC_UserLocalTimeResult));
   }
 
-  if (object->is_registered()) {
-    TSDC_UserLocalTimeResult result = {};
-
-    supla_db_access_provider dba;
-    supla_connection_dao dao(&dba);
-
-    if (!dao.get_user_localtime(object->get_user_id(), &result)) {
-      memset(&result, 0, sizeof(TSDC_UserLocalTimeResult));
-    }
-
-    srpc_adapter->sdc_async_get_user_localtime_result(&result);
-  }
-
-  return CH_HANDLED;
+  srpc_adapter->sdc_async_get_user_localtime_result(&result);
 }

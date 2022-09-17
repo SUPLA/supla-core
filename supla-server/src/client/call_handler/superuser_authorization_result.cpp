@@ -31,13 +31,14 @@ supla_ch_superuser_authorization_result::
 supla_ch_superuser_authorization_result::
     ~supla_ch_superuser_authorization_result() {}
 
-bool supla_ch_superuser_authorization_result::handle_call(
+bool supla_ch_superuser_authorization_result::can_handle_call(
+    unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT;
+}
+
+void supla_ch_superuser_authorization_result::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT) {
-    return CH_UNHANDLED;
-  }
-
   TSC_SuperUserAuthorizationResult result = {};
 
   if (client->is_superuser_authorized()) {
@@ -47,6 +48,4 @@ bool supla_ch_superuser_authorization_result::handle_call(
   }
 
   srpc_adapter->sc_async_superuser_authorization_result(&result);
-
-  return CH_HANDLED;
 }

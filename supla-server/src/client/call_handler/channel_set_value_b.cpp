@@ -33,13 +33,13 @@ supla_ch_channel_set_value_b::supla_ch_channel_set_value_b(void)
 
 supla_ch_channel_set_value_b::~supla_ch_channel_set_value_b() {}
 
-bool supla_ch_channel_set_value_b::handle_call(
+bool supla_ch_channel_set_value_b::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_CHANNEL_SET_VALUE_B;
+}
+
+void supla_ch_channel_set_value_b::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_CHANNEL_SET_VALUE_B) {
-    return CH_UNHANDLED;
-  }
-
   supla_log(LOG_DEBUG, "SUPLA_CS_CALL_CHANNEL_SET_VALUE_B");
 
   if (rd->data.cs_channel_new_value_b != NULL &&
@@ -54,6 +54,4 @@ bool supla_ch_channel_set_value_b::handle_call(
           rd->data.cs_channel_new_value_b->value);
     }
   }
-
-  return CH_HANDLED;
 }

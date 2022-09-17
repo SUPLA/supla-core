@@ -25,7 +25,7 @@
 
 class supla_ch_set_value : public supla_abstract_client_srpc_call_handler {
  protected:
-  virtual bool handle_call(std::shared_ptr<supla_client> client,
+  virtual void handle_call(std::shared_ptr<supla_client> client,
                            supla_abstract_srpc_adapter* srpc_adapter,
                            TsrpcReceivedData* rd, unsigned int call_id,
                            unsigned char proto_version);
@@ -33,6 +33,7 @@ class supla_ch_set_value : public supla_abstract_client_srpc_call_handler {
  public:
   supla_ch_set_value(void);
   virtual ~supla_ch_set_value();
+  virtual bool can_handle_call(unsigned int call_id);
 };
 
 #endif /* SUPLA_CH_SET_VALUE_H_*/

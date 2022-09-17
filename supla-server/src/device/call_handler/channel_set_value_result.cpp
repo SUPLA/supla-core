@@ -33,28 +33,28 @@ supla_ch_channel_set_value_result::supla_ch_channel_set_value_result(void)
 
 supla_ch_channel_set_value_result::~supla_ch_channel_set_value_result() {}
 
-bool supla_ch_channel_set_value_result::handle_call(
+bool supla_ch_channel_set_value_result::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT;
+}
+
+void supla_ch_channel_set_value_result::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.ds_channel_new_value_result == nullptr) {
-    return CH_HANDLED;
+    return;
   }
 
   TDS_SuplaChannelNewValueResult* result = rd->data.ds_channel_new_value_result;
 
   if (result == nullptr || result->SenderID == 0) {
-    return CH_HANDLED;
+    return;
   }
 
   int channel_id =
       device->get_channels()->get_channel_id(result->ChannelNumber);
 
   if (channel_id == 0) {
-    return CH_HANDLED;
+    return;
   }
 
   int channel_type = device->get_channels()->get_channel_type(channel_id);
@@ -114,6 +114,4 @@ bool supla_ch_channel_set_value_result::handle_call(
 
     device->get_user()->get_clients()->call_event(&event);
   }
-
-  return CH_HANDLED;
 }

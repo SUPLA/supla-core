@@ -27,18 +27,18 @@ supla_ch_get_version::supla_ch_get_version(void)
 
 supla_ch_get_version::~supla_ch_get_version() {}
 
-bool supla_ch_get_version::handle_call(
+bool supla_ch_get_version::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_DCS_CALL_GETVERSION;
+}
+
+bool supla_ch_get_version::is_registration_required(void) { return false; }
+
+void supla_ch_get_version::handle_call(
     shared_ptr<supla_abstract_connection_object> object,
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DCS_CALL_GETVERSION) {
-    return CH_UNHANDLED;
-  }
-
   char softver[SUPLA_SOFTVER_MAXSIZE] = {};
 
   snprintf(softver, SUPLA_SOFTVER_MAXSIZE, SERVER_VERSION);
   srpc_adapter->sdc_async_getversion_result(softver);
-
-  return CH_HANDLED;
 }

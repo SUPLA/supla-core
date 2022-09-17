@@ -25,13 +25,17 @@
 class supla_ch_register_device_e
     : public supla_abstract_device_srpc_call_handler,
       private supla_ch_register_device {
- public:
-  supla_ch_register_device_e(void);
-  virtual ~supla_ch_register_device_e();
-  virtual bool handle_call(std::shared_ptr<supla_device> device,
+ protected:
+  virtual void handle_call(std::shared_ptr<supla_device> device,
                            supla_abstract_srpc_adapter* srpc_adapter,
                            TsrpcReceivedData* rd, unsigned int call_id,
                            unsigned char proto_version);
+
+ public:
+  supla_ch_register_device_e(void);
+  virtual ~supla_ch_register_device_e();
+  virtual bool is_registration_required(void);
+  virtual bool can_handle_call(unsigned int call_id);
 };
 
 #endif /* SUPLA_CH_REGISTER_DEVICE_E_H_*/

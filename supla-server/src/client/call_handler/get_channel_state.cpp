@@ -30,13 +30,13 @@ supla_ch_get_channel_state::supla_ch_get_channel_state(void)
 
 supla_ch_get_channel_state::~supla_ch_get_channel_state() {}
 
-bool supla_ch_get_channel_state::handle_call(
+bool supla_ch_get_channel_state::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CSD_CALL_GET_CHANNEL_STATE;
+}
+
+void supla_ch_get_channel_state::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CSD_CALL_GET_CHANNEL_STATE) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.csd_channel_state_request != NULL) {
     TCSD_ChannelStateRequest* request = rd->data.csd_channel_state_request;
     if (request->ChannelID) {
@@ -57,6 +57,4 @@ bool supla_ch_get_channel_state::handle_call(
       }
     }
   }
-
-  return CH_HANDLED;
 }

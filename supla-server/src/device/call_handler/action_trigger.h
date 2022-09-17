@@ -22,13 +22,16 @@
 #include "device/call_handler/abstract_device_srpc_call_handler.h"
 
 class supla_ch_action_trigger : public supla_abstract_device_srpc_call_handler {
- public:
-  supla_ch_action_trigger(void);
-  virtual ~supla_ch_action_trigger();
-  virtual bool handle_call(std::shared_ptr<supla_device> device,
+ protected:
+  virtual void handle_call(std::shared_ptr<supla_device> device,
                            supla_abstract_srpc_adapter* srpc_adapter,
                            TsrpcReceivedData* rd, unsigned int call_id,
                            unsigned char proto_version);
+
+ public:
+  supla_ch_action_trigger(void);
+  virtual ~supla_ch_action_trigger();
+  virtual bool can_handle_call(unsigned int call_id);
 };
 
 #endif /* SUPLA_CH_ACTION_TRIGGER_H_*/

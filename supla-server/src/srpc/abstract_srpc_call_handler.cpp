@@ -21,3 +21,7 @@
 supla_abstract_srpc_call_handler::supla_abstract_srpc_call_handler(void) {}
 
 supla_abstract_srpc_call_handler::~supla_abstract_srpc_call_handler() {}
+
+bool supla_abstract_srpc_call_handler::is_registration_required(void) {
+  return true;
+}

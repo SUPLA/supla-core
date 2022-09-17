@@ -32,13 +32,13 @@ supla_ch_calcfg_request::supla_ch_calcfg_request(void)
 
 supla_ch_calcfg_request::~supla_ch_calcfg_request() {}
 
-bool supla_ch_calcfg_request::handle_call(
+bool supla_ch_calcfg_request::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST;
+}
+
+void supla_ch_calcfg_request::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.cs_device_calcfg_request != NULL) {
     TCS_DeviceCalCfgRequest_B* cs_device_calcfg_request_b =
         (TCS_DeviceCalCfgRequest_B*)malloc(sizeof(TCS_DeviceCalCfgRequest_B));
@@ -61,10 +61,8 @@ bool supla_ch_calcfg_request::handle_call(
     rd->data.cs_device_calcfg_request = NULL;
     rd->data.cs_device_calcfg_request_b = cs_device_calcfg_request_b;
 
-    return client->get_srpc_call_handler_collection()->handle_call(
+    client->get_srpc_call_handler_collection()->handle_call(
         client, srpc_adapter, rd, SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B,
         proto_version);
   }
-
-  return CH_HANDLED;
 }

@@ -25,7 +25,7 @@
 class supla_abstract_device_srpc_call_handler
     : public supla_abstract_srpc_call_handler {
  protected:
-  virtual bool handle_call(std::shared_ptr<supla_device> client,
+  virtual void handle_call(std::shared_ptr<supla_device> client,
                            supla_abstract_srpc_adapter* srpc_adapter,
                            TsrpcReceivedData* rd, unsigned int call_id,
                            unsigned char proto_version) = 0;
@@ -33,7 +33,7 @@ class supla_abstract_device_srpc_call_handler
  public:
   supla_abstract_device_srpc_call_handler(void);
   virtual ~supla_abstract_device_srpc_call_handler();
-  virtual bool handle_call(
+  virtual void handle_call(
       std::shared_ptr<supla_abstract_connection_object> object,
       supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
       unsigned int call_id, unsigned char proto_version);

@@ -30,13 +30,13 @@ supla_ch_get_channel_functions::supla_ch_get_channel_functions(void)
 
 supla_ch_get_channel_functions::~supla_ch_get_channel_functions() {}
 
-bool supla_ch_get_channel_functions::handle_call(
+bool supla_ch_get_channel_functions::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS;
+}
+
+void supla_ch_get_channel_functions::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS) {
-    return CH_UNHANDLED;
-  }
-
   TSD_ChannelFunctions result = {};
   map<int, int> fncs = device->get_channels()->get_functions();
 
@@ -54,6 +54,4 @@ bool supla_ch_get_channel_functions::handle_call(
   }
 
   srpc_adapter->sd_async_get_channel_functions_result(&result);
-
-  return CH_HANDLED;
 }

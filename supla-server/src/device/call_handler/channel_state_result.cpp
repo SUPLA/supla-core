@@ -31,13 +31,13 @@ supla_ch_channel_state_result::supla_ch_channel_state_result(void)
 
 supla_ch_channel_state_result::~supla_ch_channel_state_result() {}
 
-bool supla_ch_channel_state_result::handle_call(
+bool supla_ch_channel_state_result::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_DSC_CALL_CHANNEL_STATE_RESULT;
+}
+
+void supla_ch_channel_state_result::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DSC_CALL_CHANNEL_STATE_RESULT) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.dsc_channel_state != nullptr) {
     int channel_id = device->get_channels()->get_channel_id(
         rd->data.dsc_channel_state->ChannelNumber);
@@ -50,6 +50,4 @@ bool supla_ch_channel_state_result::handle_call(
       }
     }
   }
-
-  return CH_HANDLED;
 }

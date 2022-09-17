@@ -31,18 +31,17 @@ supla_ch_device_channel_value_changed::supla_ch_device_channel_value_changed(
 supla_ch_device_channel_value_changed::
     ~supla_ch_device_channel_value_changed() {}
 
-bool supla_ch_device_channel_value_changed::handle_call(
+bool supla_ch_device_channel_value_changed::can_handle_call(
+    unsigned int call_id) {
+  return call_id == SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED;
+}
+
+void supla_ch_device_channel_value_changed::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.ds_device_channel_value != nullptr) {
     on_channel_value_changed(
         device, rd->data.ds_device_channel_value->ChannelNumber,
         rd->data.ds_device_channel_value->value, false, nullptr);
   }
-
-  return CH_HANDLED;
 }

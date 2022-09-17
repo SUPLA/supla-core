@@ -29,15 +29,13 @@ supla_ch_get_next::supla_ch_get_next(void)
 
 supla_ch_get_next::~supla_ch_get_next() {}
 
-bool supla_ch_get_next::handle_call(shared_ptr<supla_client> client,
+bool supla_ch_get_next::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_GET_NEXT;
+}
+
+void supla_ch_get_next::handle_call(shared_ptr<supla_client> client,
                                     supla_abstract_srpc_adapter* srpc_adapter,
                                     TsrpcReceivedData* rd, unsigned int call_id,
                                     unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_GET_NEXT) {
-    return CH_UNHANDLED;
-  }
-
   client->get_next();
-
-  return CH_HANDLED;
 }

@@ -29,15 +29,15 @@ supla_ch_timer_arm::supla_ch_timer_arm(void)
 
 supla_ch_timer_arm::~supla_ch_timer_arm() {}
 
-bool supla_ch_timer_arm::handle_call(shared_ptr<supla_client> client,
+bool supla_ch_timer_arm::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_TIMER_ARM;
+}
+
+void supla_ch_timer_arm::handle_call(shared_ptr<supla_client> client,
                                      supla_abstract_srpc_adapter* srpc_adapter,
                                      TsrpcReceivedData* rd,
                                      unsigned int call_id,
                                      unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_TIMER_ARM) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.cs_timer_arm_request != NULL) {
     TCS_TimerArmRequest* request = rd->data.cs_timer_arm_request;
 
@@ -48,6 +48,4 @@ bool supla_ch_timer_arm::handle_call(shared_ptr<supla_client> client,
               true, request->On, request->DurationMS);
         });
   }
-
-  return CH_HANDLED;
 }

@@ -29,16 +29,14 @@ supla_ch_action_trigger::supla_ch_action_trigger(void)
 
 supla_ch_action_trigger::~supla_ch_action_trigger() {}
 
-bool supla_ch_action_trigger::handle_call(
+bool supla_ch_action_trigger::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_DS_CALL_ACTIONTRIGGER;
+}
+
+void supla_ch_action_trigger::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DS_CALL_ACTIONTRIGGER) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.ds_action_trigger != nullptr) {
     device->get_channels()->action_trigger(rd->data.ds_action_trigger);
   }
-
-  return CH_HANDLED;
 }

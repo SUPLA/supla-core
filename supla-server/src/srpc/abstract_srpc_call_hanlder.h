@@ -23,14 +23,14 @@
 
 #include "conn/abstract_connection_object.h"
 
-#define CH_UNHANDLED false
-#define CH_HANDLED true
-
 class supla_abstract_srpc_call_handler {
  public:
   supla_abstract_srpc_call_handler(void);
   virtual ~supla_abstract_srpc_call_handler();
-  virtual bool handle_call(
+  virtual bool can_handle_call(unsigned int call_id) = 0;
+  virtual bool is_registration_required(void);
+
+  virtual void handle_call(
       std::shared_ptr<supla_abstract_connection_object> object,
       supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
       unsigned int call_id, unsigned char proto_version) = 0;

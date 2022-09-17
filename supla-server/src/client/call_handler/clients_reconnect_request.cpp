@@ -32,13 +32,13 @@ supla_ch_clients_reconnect_request::supla_ch_clients_reconnect_request(void)
 
 supla_ch_clients_reconnect_request::~supla_ch_clients_reconnect_request() {}
 
-bool supla_ch_clients_reconnect_request::handle_call(
+bool supla_ch_clients_reconnect_request::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST;
+}
+
+void supla_ch_clients_reconnect_request::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST) {
-    return CH_UNHANDLED;
-  }
-
   if (client->is_superuser_authorized()) {
     client->get_user()->reconnect(supla_caller(ctClient, client->get_id()),
                                   false, true);
@@ -47,6 +47,4 @@ bool supla_ch_clients_reconnect_request::handle_call(
     result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
     srpc_adapter->sc_async_clients_reconnect_request_result(&result);
   }
-
-  return CH_HANDLED;
 }

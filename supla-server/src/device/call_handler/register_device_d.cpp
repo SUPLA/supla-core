@@ -33,13 +33,17 @@ supla_ch_register_device_d::supla_ch_register_device_d(void)
 
 supla_ch_register_device_d::~supla_ch_register_device_d() {}
 
-bool supla_ch_register_device_d::handle_call(
+bool supla_ch_register_device_d::is_registration_required(void) {
+  return false;
+}
+
+bool supla_ch_register_device_d::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_DS_CALL_REGISTER_DEVICE_D;
+}
+
+void supla_ch_register_device_d::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DS_CALL_REGISTER_DEVICE_D) {
-    return CH_UNHANDLED;
-  }
-
   supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_D");
 
   if (rd->data.ds_register_device_d != nullptr) {
@@ -85,11 +89,9 @@ bool supla_ch_register_device_d::handle_call(
       free(rd->data.ds_register_device_d);
       rd->data.ds_register_device_e = register_device_e;
 
-      return device->get_srpc_call_handler_collection()->handle_call(
+      device->get_srpc_call_handler_collection()->handle_call(
           device, srpc_adapter, rd, SUPLA_DS_CALL_REGISTER_DEVICE_E,
           proto_version);
     }
   }
-
-  return CH_HANDLED;
 }

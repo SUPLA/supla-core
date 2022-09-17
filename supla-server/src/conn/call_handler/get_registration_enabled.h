@@ -26,7 +26,8 @@ class supla_ch_get_registration_enabled
  public:
   supla_ch_get_registration_enabled(void);
   virtual ~supla_ch_get_registration_enabled();
-  virtual bool handle_call(
+  virtual bool can_handle_call(unsigned int call_id);
+  virtual void handle_call(
       std::shared_ptr<supla_abstract_connection_object> object,
       supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
       unsigned int call_id, unsigned char proto_version);

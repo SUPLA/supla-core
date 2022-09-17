@@ -29,13 +29,13 @@ supla_ch_get_channel_config::supla_ch_get_channel_config(void)
 
 supla_ch_get_channel_config::~supla_ch_get_channel_config() {}
 
-bool supla_ch_get_channel_config::handle_call(
+bool supla_ch_get_channel_config::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_DS_CALL_GET_CHANNEL_CONFIG;
+}
+
+void supla_ch_get_channel_config::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DS_CALL_GET_CHANNEL_CONFIG) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.ds_get_channel_config_request != nullptr) {
     TSD_ChannelConfig config = {};
     bool result = device->get_channels()->get_channel_config(
@@ -47,6 +47,4 @@ bool supla_ch_get_channel_config::handle_call(
       srpc_adapter->sd_async_get_channel_config_result(&config);
     }
   }
-
-  return CH_HANDLED;
 }

@@ -28,14 +28,13 @@ supla_abstract_client_srpc_call_handler::
 supla_abstract_client_srpc_call_handler::
     ~supla_abstract_client_srpc_call_handler() {}
 
-bool supla_abstract_client_srpc_call_handler::handle_call(
+void supla_abstract_client_srpc_call_handler::handle_call(
     shared_ptr<supla_abstract_connection_object> object,
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
   shared_ptr<supla_client> client = dynamic_pointer_cast<supla_client>(object);
 
-  return client != nullptr &&
-                 handle_call(client, srpc_adapter, rd, call_id, proto_version)
-             ? CH_HANDLED
-             : CH_UNHANDLED;
+  if (client != nullptr) {
+    handle_call(client, srpc_adapter, rd, call_id, proto_version);
+  }
 }

@@ -31,13 +31,14 @@ supla_ch_superuser_authorization_request::
 supla_ch_superuser_authorization_request::
     ~supla_ch_superuser_authorization_request() {}
 
-bool supla_ch_superuser_authorization_request::handle_call(
+bool supla_ch_superuser_authorization_request::can_handle_call(
+    unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST;
+}
+
+void supla_ch_superuser_authorization_request::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.cs_superuser_authorization_request != NULL) {
     rd->data.cs_superuser_authorization_request
         ->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
@@ -63,6 +64,4 @@ bool supla_ch_superuser_authorization_request::handle_call(
 
     srpc_adapter->sc_async_superuser_authorization_result(&result);
   }
-
-  return CH_HANDLED;
 }

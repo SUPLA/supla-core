@@ -33,13 +33,13 @@ supla_ch_channel_set_value::supla_ch_channel_set_value(void)
 
 supla_ch_channel_set_value::~supla_ch_channel_set_value() {}
 
-bool supla_ch_channel_set_value::handle_call(
+bool supla_ch_channel_set_value::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_CHANNEL_SET_VALUE;
+}
+
+void supla_ch_channel_set_value::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_CHANNEL_SET_VALUE) {
-    return CH_UNHANDLED;
-  }
-
   supla_log(LOG_DEBUG, "SUPLA_CS_CALL_CHANNEL_SET_VALUE");
 
   if (rd->data.cs_channel_new_value != nullptr) {
@@ -57,10 +57,8 @@ bool supla_ch_channel_set_value::handle_call(
     free(rd->data.cs_channel_new_value);
     rd->data.cs_channel_new_value_b = cs_channel_new_value_b;
 
-    return client->get_srpc_call_handler_collection()->handle_call(
+    client->get_srpc_call_handler_collection()->handle_call(
         client, srpc_adapter, rd, SUPLA_CS_CALL_CHANNEL_SET_VALUE_B,
         proto_version);
   }
-
-  return CH_HANDLED;
 }

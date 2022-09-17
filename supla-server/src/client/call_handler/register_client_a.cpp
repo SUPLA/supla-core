@@ -33,13 +33,17 @@ supla_ch_register_client_a::supla_ch_register_client_a(void)
 
 supla_ch_register_client_a::~supla_ch_register_client_a() {}
 
-bool supla_ch_register_client_a::handle_call(
+bool supla_ch_register_client_a::is_registration_required(void) {
+  return false;
+}
+
+bool supla_ch_register_client_a::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_REGISTER_CLIENT;
+}
+
+void supla_ch_register_client_a::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_REGISTER_CLIENT) {
-    return CH_UNHANDLED;
-  }
-
   supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT");
 
   if (rd->data.cs_register_client != nullptr) {
@@ -63,11 +67,9 @@ bool supla_ch_register_client_a::handle_call(
       free(rd->data.cs_register_client);
       rd->data.cs_register_client_b = register_client_b;
 
-      return client->get_srpc_call_handler_collection()->handle_call(
+      client->get_srpc_call_handler_collection()->handle_call(
           client, srpc_adapter, rd, SUPLA_CS_CALL_REGISTER_CLIENT_B,
           proto_version);
     }
   }
-
-  return CH_HANDLED;
 }

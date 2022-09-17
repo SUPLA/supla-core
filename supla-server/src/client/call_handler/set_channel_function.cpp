@@ -30,17 +30,15 @@ supla_ch_set_channel_function::supla_ch_set_channel_function(void)
 
 supla_ch_set_channel_function::~supla_ch_set_channel_function() {}
 
-bool supla_ch_set_channel_function::handle_call(
+bool supla_ch_set_channel_function::can_handle_call(unsigned int call_id) {
+  return call_id == SUPLA_CS_CALL_SET_CHANNEL_FUNCTION;
+}
+
+void supla_ch_set_channel_function::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_CS_CALL_SET_CHANNEL_FUNCTION) {
-    return CH_UNHANDLED;
-  }
-
   if (rd->data.cs_set_channel_function != nullptr) {
     client->get_user()->set_channel_function(client,
                                              rd->data.cs_set_channel_function);
   }
-
-  return CH_HANDLED;
 }
