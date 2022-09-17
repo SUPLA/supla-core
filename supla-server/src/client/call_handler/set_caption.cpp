@@ -42,6 +42,8 @@ void supla_ch_set_caption::handle_call(
     if (rd->data.cs_set_caption->CaptionSize > 101U) {
       // ! The field in the database is limited to 100 characters !
       rd->data.cs_set_caption->CaptionSize = 101U;
+    } else if (rd->data.cs_set_caption->CaptionSize == 0) {
+      rd->data.cs_set_caption->CaptionSize = 1;
     }
 
     rd->data.cs_set_caption->Caption[rd->data.cs_set_caption->CaptionSize - 1] =
