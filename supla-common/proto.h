@@ -1151,7 +1151,7 @@ typedef struct {
   _supla_int_t SubjectType;
   unsigned _supla_int16_t ParamSize;
   char Param[SUPLA_ACTION_PARAM_MAXSIZE];
-} TCS_Action;  // ver. >= 18
+} TCS_Action;  // ver. >= 19
 
 typedef struct {
   _supla_int_t AccessID;
@@ -1160,19 +1160,19 @@ typedef struct {
   char AuthKey[SUPLA_AUTHKEY_SIZE];
   char GUID[SUPLA_GUID_SIZE];
   char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
-} TCS_ClientAuthorizationDetails;  // ver. >= 18
+} TCS_ClientAuthorizationDetails;  // ver. >= 19
 
 typedef struct {
   TCS_ClientAuthorizationDetails Auth;
   TCS_Action Action;
-} TCS_ActionWithAuth;  // ver. >= 18
+} TCS_ActionWithAuth;  // ver. >= 19
 
 typedef struct {
   _supla_int_t ActionId;
   _supla_int_t SubjectId;
   _supla_int_t SubjectType;
   _supla_int_t ResultCode;
-} TSC_ActionExecutionResult;  // ver. >= 18
+} TSC_ActionExecutionResult;  // ver. >= 19
 
 typedef struct {
   // client -> server
