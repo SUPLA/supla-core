@@ -74,6 +74,8 @@ void supla_ch_register_client::on_registraction_success(void) {
   client->set_user(supla_user::find(get_user_id(), true));
   client->load_config();
   client->set_registered(true);
+
+  supla_user::add_client(client->get_shared_ptr(), get_user_id());
 }
 
 int supla_ch_register_client::get_location_count(void) {
