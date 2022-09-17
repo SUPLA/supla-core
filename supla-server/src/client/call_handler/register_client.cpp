@@ -51,7 +51,10 @@ bool supla_ch_register_client::get_authkey_hash(
 
 void supla_ch_register_client::superuser_authorize(
     int user_id, const char email[SUPLA_EMAIL_MAXSIZE],
-    const char password[SUPLA_PASSWORD_MAXSIZE]) {}
+    const char password[SUPLA_PASSWORD_MAXSIZE]) {
+  shared_ptr<supla_client> client = get_client().lock();
+  return client->superuser_authorize(user_id, email, password, nullptr);
+}
 
 bool supla_ch_register_client::is_superuser_authorized(void) {
   shared_ptr<supla_client> client = get_client().lock();
