@@ -87,9 +87,11 @@ bool supla_abstract_connection_object::guid_equal(
 
 void supla_abstract_connection_object::set_authkey(
     const char authkey[SUPLA_AUTHKEY_SIZE]) {
-  lock();
-  memcpy(this->authkey, authkey, SUPLA_AUTHKEY_SIZE);
-  unlock();
+  if (authkey) {
+    lock();
+    memcpy(this->authkey, authkey, SUPLA_AUTHKEY_SIZE);
+    unlock();
+  }
 }
 
 void supla_abstract_connection_object::get_authkey(
