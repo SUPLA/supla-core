@@ -248,6 +248,10 @@ supla_connection::~supla_connection() {
   supla_log(LOG_DEBUG, "Connection Finished");
 }
 
+void supla_connection::on_object_registration_done(void) {
+  safe_array_remove(supla_connection::reg_pending_arr, this);
+}
+
 std::shared_ptr<supla_abstract_connection_object> supla_connection::get_object(
     void) {
   return object;

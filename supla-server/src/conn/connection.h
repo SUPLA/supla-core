@@ -79,8 +79,10 @@ class supla_connection {
   static void init(void);
   static void cleanup(void);
   static int registration_pending_count();
+
   void execute(void *sthread);
   void terminate(void);
+  void on_object_registration_done(void);
   virtual ~supla_connection();
 
   supla_abstract_srpc_adapter *get_srpc_adapter(void);
