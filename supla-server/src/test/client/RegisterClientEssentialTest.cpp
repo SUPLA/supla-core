@@ -67,9 +67,9 @@ TEST_F(RegisterClientEssentialTest, incorrectSuperuserPassword) {
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -121,9 +121,9 @@ TEST_F(RegisterClientEssentialTest, clientLimitExceeded) {
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -194,9 +194,9 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(rc, revoke_superuser_authorization).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE,
                   result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
@@ -256,9 +256,9 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE,
                   result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
@@ -320,9 +320,9 @@ TEST_F(RegisterClientEssentialTest, failedToAddTheClient) {
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE,
                   result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
@@ -380,9 +380,9 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -441,9 +441,9 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -504,9 +504,9 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_ACCESSID_DISABLED, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -571,9 +571,9 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_ACCESSID_INACTIVE, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -640,9 +640,9 @@ TEST_F(RegisterClientEssentialTest, successfullyAddedClient) {
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_TRUE, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -709,9 +709,9 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndIsDisabled) {
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_CLIENT_DISABLED, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -783,9 +783,9 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsNotSet) {
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -879,9 +879,9 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(rc, revoke_superuser_authorization).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -960,9 +960,9 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -1047,9 +1047,9 @@ TEST_F(RegisterClientEssentialTest,
 
   EXPECT_CALL(rc, revoke_superuser_authorization).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_TRUE, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -1121,9 +1121,9 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsDisabled) {
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_ACCESSID_DISABLED, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -1196,9 +1196,9 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsInActive) {
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_ACCESSID_INACTIVE, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -1253,9 +1253,9 @@ TEST_F(RegisterClientEssentialTest, gettingClientVariablesFailed) {
 
   EXPECT_CALL(dba, start_transaction).Times(0);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE,
                   result->result_code);
         EXPECT_EQ(20, result->activity_timeout);

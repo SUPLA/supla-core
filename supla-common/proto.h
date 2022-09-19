@@ -119,7 +119,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 18
+#define SUPLA_PROTO_VERSION 19
 #define SUPLA_PROTO_VERSION_MIN 1
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B

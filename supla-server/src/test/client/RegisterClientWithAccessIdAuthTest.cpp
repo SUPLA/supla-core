@@ -28,9 +28,9 @@ RegisterClientWithAccessIdAuthTest::~RegisterClientWithAccessIdAuthTest() {}
 TEST_F(RegisterClientWithAccessIdAuthTest, invalidGUID) {
   TCS_SuplaRegisterClient_B register_client_b = {};
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c)
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d)
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_GUID_ERROR, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -79,9 +79,9 @@ TEST_F(RegisterClientWithAccessIdAuthTest, authFailed) {
         return true;
       });
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(2)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -134,9 +134,9 @@ TEST_F(RegisterClientWithAccessIdAuthTest, authSuccessAndRegistrationDisabled) {
 
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_REGISTRATION_DISABLED, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);

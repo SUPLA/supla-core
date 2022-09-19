@@ -28,9 +28,9 @@ RegisterClientWithEmailAuthTest::~RegisterClientWithEmailAuthTest() {}
 TEST_F(RegisterClientWithEmailAuthTest, invalidGUID) {
   TCS_SuplaRegisterClient_D register_client_d = {};
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_GUID_ERROR, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -49,9 +49,9 @@ TEST_F(RegisterClientWithEmailAuthTest, invalidAuthkey) {
 
   register_client_d.GUID[0] = 1;
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_AUTHKEY_ERROR, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -76,9 +76,9 @@ TEST_F(RegisterClientWithEmailAuthTest, dbaConnectionFailed) {
   EXPECT_CALL(dba, disconnect).Times(0);
   EXPECT_CALL(rc, revoke_superuser_authorization).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE,
                   result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
@@ -110,9 +110,9 @@ TEST_F(RegisterClientWithEmailAuthTest, emailNotFound) {
       .Times(1)
       .WillOnce(Return(0));
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -145,9 +145,9 @@ TEST_F(RegisterClientWithEmailAuthTest, getObjectIdWithFail) {
 
   EXPECT_CALL(rc, get_object_id(25, _, _)).Times(1).WillOnce(Return(false));
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -195,9 +195,9 @@ TEST_F(RegisterClientWithEmailAuthTest,
   EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, disconnect).Times(1);
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_REGISTRATION_DISABLED, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -243,9 +243,9 @@ TEST_F(RegisterClientWithEmailAuthTest, getAuthKeyWithFail) {
             return false;
           });
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -301,9 +301,9 @@ TEST_F(RegisterClientWithEmailAuthTest, missingKeyAndRegistrationDisabled) {
             return true;
           });
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_REGISTRATION_DISABLED, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -352,9 +352,9 @@ TEST_F(RegisterClientWithEmailAuthTest, incorrectAuthKey) {
             return true;
           });
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
@@ -403,9 +403,9 @@ TEST_F(RegisterClientWithEmailAuthTest, correctAuthKeyAndRegistrtionDisabled) {
             return true;
           });
 
-  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_c(_))
+  EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
-      .WillOnce([](TSC_SuplaRegisterClientResult_C *result) {
+      .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_REGISTRATION_DISABLED, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
