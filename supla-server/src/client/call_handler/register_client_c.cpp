@@ -23,6 +23,7 @@
 
 #include <memory>
 
+#include "client/call_handler/register_client.h"
 #include "log.h"
 #include "proto.h"
 #include "srpc/abstract_srpc_call_hanlder_collection.h"
