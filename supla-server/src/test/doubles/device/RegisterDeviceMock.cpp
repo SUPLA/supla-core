@@ -20,7 +20,7 @@
 
 namespace testing {
 RegisterDeviceMock::RegisterDeviceMock(void)
-    : supla_ch_abstract_register_device() {}
+    : supla_abstract_register_device() {}
 
 RegisterDeviceMock::~RegisterDeviceMock(void) {}
 
@@ -38,11 +38,11 @@ void RegisterDeviceMock::register_device(
 }
 
 void RegisterDeviceMock::set_hold_time_on_failure_usec(__useconds_t usec) {
-  supla_ch_abstract_register_device::set_hold_time_on_failure_usec(usec);
+  supla_abstract_register_device::set_hold_time_on_failure_usec(usec);
 }
 
 bool RegisterDeviceMock::is_channel_added(void) {
-  return supla_ch_abstract_register_device::is_channel_added();
+  return supla_abstract_register_device::is_channel_added();
 }
 
 int RegisterDeviceMock::get_device_id() {
