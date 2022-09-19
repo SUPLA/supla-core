@@ -25,7 +25,7 @@
 
 namespace testing {
 
-class RegisterClientMock : public supla_ch_abstract_register_client {
+class RegisterClientMock : public supla_abstract_register_client {
  public:
   RegisterClientMock(void);
   virtual ~RegisterClientMock(void);

@@ -25,7 +25,7 @@
 
 namespace testing {
 
-class RegisterDeviceMock : public supla_ch_abstract_register_device {
+class RegisterDeviceMock : public supla_abstract_register_device {
  public:
   RegisterDeviceMock(void);
   virtual ~RegisterDeviceMock(void);
