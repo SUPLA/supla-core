@@ -39,13 +39,20 @@ bool supla_abstract_srpc_call_handler_collection::handle_call(
     std::shared_ptr<supla_abstract_connection_object> object,
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
+  supla_abstract_srpc_call_handler* handler = nullptr;
+
   for (auto it = handlers.cbegin(); it != handlers.cend(); ++it) {
     if ((*it)->can_handle_call(call_id)) {
-      if (!(*it)->is_registration_required() || object->is_registered()) {
-        (*it)->handle_call(object, srpc_adapter, rd, call_id, proto_version);
-      }
-      return true;
+      handler = *it;
+      break;
     }
+  }
+
+  if (handler) {
+    if (!handler->is_registration_required() || object->is_registered()) {
+      handler->handle_call(object, srpc_adapter, rd, call_id, proto_version);
+    }
+    return true;
   }
 
   return false;
