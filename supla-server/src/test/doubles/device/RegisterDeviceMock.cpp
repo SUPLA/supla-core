@@ -32,7 +32,7 @@ void RegisterDeviceMock::register_device(
     supla_abstract_device_dao *device_dao, int client_sd, int client_ipv4,
     unsigned char activity_timeout) {
   std::weak_ptr<supla_device> device;
-  supla_ch_abstract_register_device::register_device(
+  supla_abstract_register_device::register_device(
       device, register_device_c, register_device_e, srpc_adapter, dba, nullptr,
       device_dao, client_sd, client_ipv4, activity_timeout);
 }
@@ -46,7 +46,7 @@ bool RegisterDeviceMock::is_channel_added(void) {
 }
 
 int RegisterDeviceMock::get_device_id() {
-  return supla_ch_abstract_register_device::get_device_id();
+  return supla_abstract_register_device::get_device_id();
 }
 
 }  // namespace testing
