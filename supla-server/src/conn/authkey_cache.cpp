@@ -68,9 +68,8 @@ int supla_authkey_cache::get_cache_size_limit(void) {
   safe_array_lock(items);
   if (cache_size_limit == -1) {
     cache_size_limit = scfg_int(CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE);
-  } else {
-    result = cache_size_limit;
   }
+  result = cache_size_limit;
   safe_array_unlock(items);
 
   return result >= 0 ? result : 0;
