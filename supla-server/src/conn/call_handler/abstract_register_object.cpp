@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-supla_ch_abstract_register_object::supla_ch_abstract_register_object(void) {
+supla_abstract_register_object::supla_abstract_register_object(void) {
   guid = nullptr;
   authkey = nullptr;
   name = nullptr;
@@ -37,9 +37,9 @@ supla_ch_abstract_register_object::supla_ch_abstract_register_object(void) {
   hold_time_on_failure_usec = 2000000;
 }
 
-supla_ch_abstract_register_object::~supla_ch_abstract_register_object() {}
+supla_abstract_register_object::~supla_abstract_register_object() {}
 
-bool supla_ch_abstract_register_object::authkey_auth(
+bool supla_abstract_register_object::authkey_auth(
     const char guid[SUPLA_GUID_SIZE], const char email[SUPLA_EMAIL_MAXSIZE],
     const char authkey[SUPLA_AUTHKEY_SIZE], int *user_id) {
   return get_authkey_cache()->authkey_auth(
@@ -89,116 +89,116 @@ bool supla_ch_abstract_register_object::authkey_auth(
       });
 }
 
-bool supla_ch_abstract_register_object::is_valid_guid(void) {
+bool supla_abstract_register_object::is_valid_guid(void) {
   char _guid[SUPLA_GUID_SIZE] = {};
   return memcmp(_guid, guid, SUPLA_GUID_SIZE) != 0;
 }
 
-bool supla_ch_abstract_register_object::is_valid_authkey(void) {
+bool supla_abstract_register_object::is_valid_authkey(void) {
   char _authkey[SUPLA_AUTHKEY_SIZE] = {};
   return memcmp(_authkey, authkey, SUPLA_AUTHKEY_SIZE) != 0;
 }
 
-void supla_ch_abstract_register_object::set_guid(char *guid) {
+void supla_abstract_register_object::set_guid(char *guid) {
   this->guid = guid;
 }
 
-char *supla_ch_abstract_register_object::get_guid(void) { return guid; }
+char *supla_abstract_register_object::get_guid(void) { return guid; }
 
-void supla_ch_abstract_register_object::set_authkey(char *authkey) {
+void supla_abstract_register_object::set_authkey(char *authkey) {
   this->authkey = authkey;
 }
 
-char *supla_ch_abstract_register_object::get_authkey(void) { return authkey; }
+char *supla_abstract_register_object::get_authkey(void) { return authkey; }
 
-void supla_ch_abstract_register_object::set_name(char *name) {
+void supla_abstract_register_object::set_name(char *name) {
   this->name = name;
 }
 
-char *supla_ch_abstract_register_object::get_name(void) { return name; }
+char *supla_abstract_register_object::get_name(void) { return name; }
 
-void supla_ch_abstract_register_object::set_softver(char *softver) {
+void supla_abstract_register_object::set_softver(char *softver) {
   this->softver = softver;
 }
 
-char *supla_ch_abstract_register_object::get_softver(void) { return softver; }
+char *supla_abstract_register_object::get_softver(void) { return softver; }
 
-void supla_ch_abstract_register_object::set_client_sd(int client_sd) {
+void supla_abstract_register_object::set_client_sd(int client_sd) {
   this->client_sd = client_sd;
 }
 
-int supla_ch_abstract_register_object::get_client_sd(void) { return client_sd; }
+int supla_abstract_register_object::get_client_sd(void) { return client_sd; }
 
-void supla_ch_abstract_register_object::set_client_ipv4(int client_ipv4) {
+void supla_abstract_register_object::set_client_ipv4(int client_ipv4) {
   this->client_ipv4 = client_ipv4;
 }
 
-int supla_ch_abstract_register_object::get_client_ipv4(void) {
+int supla_abstract_register_object::get_client_ipv4(void) {
   return client_ipv4;
 }
 
-void supla_ch_abstract_register_object::set_activity_timeout(
+void supla_abstract_register_object::set_activity_timeout(
     unsigned char activity_timeout) {
   this->activity_timeout = activity_timeout;
 }
 
-unsigned char supla_ch_abstract_register_object::get_activity_timeout(void) {
+unsigned char supla_abstract_register_object::get_activity_timeout(void) {
   return activity_timeout;
 }
 
-void supla_ch_abstract_register_object::set_user_id(int user_id) {
+void supla_abstract_register_object::set_user_id(int user_id) {
   this->user_id = user_id;
 }
 
-int supla_ch_abstract_register_object::get_user_id() { return user_id; }
+int supla_abstract_register_object::get_user_id() { return user_id; }
 
-int *supla_ch_abstract_register_object::get_user_id_ptr() { return &user_id; }
+int *supla_abstract_register_object::get_user_id_ptr() { return &user_id; }
 
-void supla_ch_abstract_register_object::set_should_rollback(
+void supla_abstract_register_object::set_should_rollback(
     bool should_rollback) {
   this->should_rollback = should_rollback;
 }
 
-bool supla_ch_abstract_register_object::get_should_rollback(void) {
+bool supla_abstract_register_object::get_should_rollback(void) {
   return should_rollback;
 }
 
-void supla_ch_abstract_register_object::set_srpc_adapter(
+void supla_abstract_register_object::set_srpc_adapter(
     supla_abstract_srpc_adapter *srpc_adapter) {
   this->srpc_adapter = srpc_adapter;
 }
 
 supla_abstract_srpc_adapter *
-supla_ch_abstract_register_object::get_srpc_adapter(void) {
+supla_abstract_register_object::get_srpc_adapter(void) {
   return srpc_adapter;
 }
 
-void supla_ch_abstract_register_object::set_dba(
+void supla_abstract_register_object::set_dba(
     supla_abstract_db_access_provider *dba) {
   this->dba = dba;
 }
 
-supla_abstract_db_access_provider *supla_ch_abstract_register_object::get_dba(
+supla_abstract_db_access_provider *supla_abstract_register_object::get_dba(
     void) {
   return dba;
 }
 
-void supla_ch_abstract_register_object::set_conn_dao(
+void supla_abstract_register_object::set_conn_dao(
     supla_abstract_connection_dao *conn_dao) {
   this->conn_dao = conn_dao;
 }
 
-supla_abstract_connection_dao *supla_ch_abstract_register_object::get_conn_dao(
+supla_abstract_connection_dao *supla_abstract_register_object::get_conn_dao(
     void) {
   return conn_dao;
 }
 
-void supla_ch_abstract_register_object::set_hold_time_on_failure_usec(
+void supla_abstract_register_object::set_hold_time_on_failure_usec(
     __useconds_t hold_time_on_failure_usec) {
   this->hold_time_on_failure_usec = hold_time_on_failure_usec;
 }
 
-__useconds_t supla_ch_abstract_register_object::get_hold_time_on_failure_usec(
+__useconds_t supla_abstract_register_object::get_hold_time_on_failure_usec(
     void) {
   return hold_time_on_failure_usec;
 }

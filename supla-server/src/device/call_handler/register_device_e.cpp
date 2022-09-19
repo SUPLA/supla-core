@@ -23,16 +23,14 @@
 
 #include <memory>
 
-#include "conn/connection_dao.h"
-#include "db/db_access_provider.h"
-#include "device/device_dao.h"
+#include "device/call_handler/register_device.h"
 #include "log.h"
 #include "proto.h"
 
 using std::shared_ptr;
 
 supla_ch_register_device_e::supla_ch_register_device_e(void)
-    : supla_abstract_device_srpc_call_handler(), supla_ch_register_device() {}
+    : supla_abstract_device_srpc_call_handler() {}
 
 supla_ch_register_device_e::~supla_ch_register_device_e() {}
 
@@ -56,14 +54,12 @@ void supla_ch_register_device_e::handle_call(
     rd->data.ds_register_device_e->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] =
         0;
 
-    supla_db_access_provider dba;
-    supla_connection_dao conn_dao(&dba);
-    supla_device_dao device_dao(&dba);
+    supla_register_device regdev;
 
-    register_device(device, nullptr, rd->data.ds_register_device_e,
-                    srpc_adapter, &dba, &conn_dao, &device_dao,
-                    device->get_connection()->get_client_sd(),
-                    device->get_connection()->get_client_ipv4(),
-                    device->get_connection()->get_activity_timeout());
+    regdev.register_device(device, nullptr, rd->data.ds_register_device_e,
+                           srpc_adapter,
+                           device->get_connection()->get_client_sd(),
+                           device->get_connection()->get_client_ipv4(),
+                           device->get_connection()->get_activity_timeout());
   }
 }

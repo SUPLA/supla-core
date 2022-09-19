@@ -23,7 +23,7 @@
 
 class supla_user;
 class supla_device;
-class supla_ch_register_device : public supla_ch_abstract_register_device {
+class supla_register_device : public supla_abstract_register_device {
  protected:
   virtual supla_authkey_cache *get_authkey_cache(void);
   virtual int get_user_id_by_email(const char email[SUPLA_EMAIL_MAXSIZE]);
@@ -36,8 +36,14 @@ class supla_ch_register_device : public supla_ch_abstract_register_device {
   virtual void on_registraction_success(void);
 
  public:
-  supla_ch_register_device(void);
-  virtual ~supla_ch_register_device();
+  supla_register_device(void);
+  virtual ~supla_register_device();
+
+  void register_device(std::weak_ptr<supla_device> device,
+                       TDS_SuplaRegisterDevice_C *register_device_c,
+                       TDS_SuplaRegisterDevice_E *register_device_e,
+                       supla_abstract_srpc_adapter *srpc_adapter, int client_sd,
+                       int client_ipv4, unsigned char activity_timeout);
 };
 
 #endif /* SUPLA_CH_REGISTER_DEVICE_H_*/

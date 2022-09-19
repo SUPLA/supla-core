@@ -27,8 +27,8 @@
 
 class supla_user;
 class supla_device;
-class supla_ch_abstract_register_device
-    : protected supla_ch_abstract_register_object {
+class supla_abstract_register_device
+    : protected supla_abstract_register_object {
  private:
   std::weak_ptr<supla_device> device;
   unsigned char channel_count;
@@ -79,8 +79,8 @@ class supla_ch_abstract_register_device
   void set_hold_time_on_failure_usec(__useconds_t hold_time_on_failure_usec);
 
  public:
-  supla_ch_abstract_register_device(void);
-  virtual ~supla_ch_abstract_register_device();
+  supla_abstract_register_device(void);
+  virtual ~supla_abstract_register_device();
   __useconds_t get_hold_time_on_failure_usec(void);
 };
 

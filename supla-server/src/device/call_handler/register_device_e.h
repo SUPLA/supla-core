@@ -20,11 +20,9 @@
 #define SUPLA_CH_REGISTER_DEVICE_E_H_
 
 #include "device/call_handler/abstract_device_srpc_call_handler.h"
-#include "device/call_handler/register_device.h"
 
 class supla_ch_register_device_e
-    : public supla_abstract_device_srpc_call_handler,
-      private supla_ch_register_device {
+    : public supla_abstract_device_srpc_call_handler {
  protected:
   virtual void handle_call(std::shared_ptr<supla_device> device,
                            supla_abstract_srpc_adapter* srpc_adapter,

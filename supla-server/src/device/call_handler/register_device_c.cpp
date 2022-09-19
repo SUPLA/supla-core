@@ -57,14 +57,12 @@ void supla_ch_register_device_c::handle_call(
     rd->data.ds_register_device_c->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] =
         0;
 
-    supla_db_access_provider dba;
-    supla_connection_dao conn_dao(&dba);
-    supla_device_dao device_dao(&dba);
+    supla_register_device regdev;
 
-    register_device(device, rd->data.ds_register_device_c, nullptr,
-                    srpc_adapter, &dba, &conn_dao, &device_dao,
-                    device->get_connection()->get_client_sd(),
-                    device->get_connection()->get_client_ipv4(),
-                    device->get_connection()->get_activity_timeout());
+    regdev.register_device(device, rd->data.ds_register_device_c, nullptr,
+                           srpc_adapter,
+                           device->get_connection()->get_client_sd(),
+                           device->get_connection()->get_client_ipv4(),
+                           device->get_connection()->get_activity_timeout());
   }
 }

@@ -27,7 +27,7 @@
 #include "srpc/abstract_srpc_adapter.h"
 #include "tools.h"
 
-class supla_ch_abstract_register_object {
+class supla_abstract_register_object {
  private:
   char *guid;
   char *authkey;
@@ -93,8 +93,8 @@ class supla_ch_abstract_register_object {
   void set_hold_time_on_failure_usec(__useconds_t hold_time_on_failure_usec);
 
  public:
-  supla_ch_abstract_register_object(void);
-  virtual ~supla_ch_abstract_register_object();
+  supla_abstract_register_object(void);
+  virtual ~supla_abstract_register_object();
   __useconds_t get_hold_time_on_failure_usec(void);
 };
 

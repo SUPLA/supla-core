@@ -23,7 +23,7 @@
 
 #include "client/call_handler/abstract_register_client.h"
 
-class supla_ch_register_client : public supla_ch_abstract_register_client {
+class supla_register_client : public supla_abstract_register_client {
  protected:
   virtual supla_authkey_cache *get_authkey_cache(void);
   virtual int get_user_id_by_email(const char email[SUPLA_EMAIL_MAXSIZE]);
@@ -44,8 +44,14 @@ class supla_ch_register_client : public supla_ch_abstract_register_client {
   virtual void remote_update_lists(void);
 
  public:
-  supla_ch_register_client(void);
-  virtual ~supla_ch_register_client();
+  supla_register_client(void);
+  virtual ~supla_register_client();
+
+  void register_client(std::weak_ptr<supla_client> client,
+                       TCS_SuplaRegisterClient_B *register_client_b,
+                       TCS_SuplaRegisterClient_D *register_client_d,
+                       supla_abstract_srpc_adapter *srpc_adapter, int client_sd,
+                       int client_ipv4, unsigned char activity_timeout);
 };
 
 #endif /* SUPLA_CH_REGISTER_CLIENT_H_*/

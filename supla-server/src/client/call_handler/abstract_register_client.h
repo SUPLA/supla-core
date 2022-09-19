@@ -30,8 +30,8 @@
 
 class supla_user;
 class supla_client;
-class supla_ch_abstract_register_client
-    : protected supla_ch_abstract_register_object {
+class supla_abstract_register_client
+    : protected supla_abstract_register_object {
  private:
   std::weak_ptr<supla_client> client;
   supla_abstract_client_dao *client_dao;
@@ -85,8 +85,8 @@ class supla_ch_abstract_register_client
   virtual void remote_update_lists(void) = 0;
 
  public:
-  supla_ch_abstract_register_client(void);
-  virtual ~supla_ch_abstract_register_client();
+  supla_abstract_register_client(void);
+  virtual ~supla_abstract_register_client();
   __useconds_t get_hold_time_on_failure_usec(void);
 };
 

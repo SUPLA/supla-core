@@ -29,8 +29,8 @@
 
 using std::weak_ptr;
 
-supla_ch_abstract_register_device::supla_ch_abstract_register_device(void)
-    : supla_ch_abstract_register_object() {
+supla_abstract_register_device::supla_abstract_register_device(void)
+    : supla_abstract_register_object() {
   channel_count = 0;
   register_device_c = nullptr;
   register_device_e = nullptr;
@@ -51,52 +51,52 @@ supla_ch_abstract_register_device::supla_ch_abstract_register_device(void)
   device_dao = nullptr;
 }
 
-supla_ch_abstract_register_device::~supla_ch_abstract_register_device() {}
+supla_abstract_register_device::~supla_abstract_register_device() {}
 
-supla_abstract_device_dao *supla_ch_abstract_register_device::get_device_dao(
+supla_abstract_device_dao *supla_abstract_register_device::get_device_dao(
     void) {
   return device_dao;
 }
 
-std::weak_ptr<supla_device> supla_ch_abstract_register_device::get_device(
+std::weak_ptr<supla_device> supla_abstract_register_device::get_device(
     void) {
   return device;
 }
 
-bool supla_ch_abstract_register_device::is_channel_added(void) {
+bool supla_abstract_register_device::is_channel_added(void) {
   return channel_added;
 }
 
-int supla_ch_abstract_register_device::get_device_id() { return device_id; }
+int supla_abstract_register_device::get_device_id() { return device_id; }
 
-int supla_ch_abstract_register_device::get_location_id() { return location_id; }
+int supla_abstract_register_device::get_location_id() { return location_id; }
 
-int supla_ch_abstract_register_device::get_channel_count() {
+int supla_abstract_register_device::get_channel_count() {
   return channel_count;
 }
 
-TDS_SuplaDeviceChannel_B *supla_ch_abstract_register_device::get_channels_b(
+TDS_SuplaDeviceChannel_B *supla_abstract_register_device::get_channels_b(
     void) {
   return register_device_c ? register_device_c->channels : nullptr;
 }
 
-TDS_SuplaDeviceChannel_C *supla_ch_abstract_register_device::get_channels_c(
+TDS_SuplaDeviceChannel_C *supla_abstract_register_device::get_channels_c(
     void) {
   return register_device_e ? register_device_e->channels : nullptr;
 }
 
-void supla_ch_abstract_register_device::set_hold_time_on_failure_usec(
+void supla_abstract_register_device::set_hold_time_on_failure_usec(
     __useconds_t hold_time_on_failure_usec) {
-  supla_ch_abstract_register_object::set_hold_time_on_failure_usec(
+  supla_abstract_register_object::set_hold_time_on_failure_usec(
       hold_time_on_failure_usec);
 }
 
-__useconds_t supla_ch_abstract_register_device::get_hold_time_on_failure_usec(
+__useconds_t supla_abstract_register_device::get_hold_time_on_failure_usec(
     void) {
-  return supla_ch_abstract_register_object::get_hold_time_on_failure_usec();
+  return supla_abstract_register_object::get_hold_time_on_failure_usec();
 }
 
-void supla_ch_abstract_register_device::send_result(int resultcode) {
+void supla_abstract_register_device::send_result(int resultcode) {
   if (get_dba()->is_connected()) {
     if (get_should_rollback()) {
       get_dba()->rollback();
@@ -127,7 +127,7 @@ void supla_ch_abstract_register_device::send_result(int resultcode) {
   get_srpc_adapter()->sd_async_registerdevice_result(&srdr);
 }
 
-bool supla_ch_abstract_register_device::device_auth(void) {
+bool supla_abstract_register_device::device_auth(void) {
   if (register_device_c != nullptr &&
       device_dao->location_auth(location_id, register_device_c->LocationPWD,
                                 get_user_id_ptr(),
@@ -160,7 +160,7 @@ bool supla_ch_abstract_register_device::device_auth(void) {
   return true;
 }
 
-bool supla_ch_abstract_register_device::add_device(void) {
+bool supla_abstract_register_device::add_device(void) {
   if (!device_dao->get_device_reg_enabled(get_user_id())) {
     send_result(SUPLA_RESULTCODE_REGISTRATION_DISABLED);
     return false;
@@ -206,7 +206,7 @@ bool supla_ch_abstract_register_device::add_device(void) {
   return false;
 }
 
-bool supla_ch_abstract_register_device::add_channels(void) {
+bool supla_abstract_register_device::add_channels(void) {
   int processed_count = 0;
   int channel_type = 0;
 
@@ -287,7 +287,7 @@ bool supla_ch_abstract_register_device::add_channels(void) {
   return true;
 }
 
-void supla_ch_abstract_register_device::register_device(
+void supla_abstract_register_device::register_device(
     weak_ptr<supla_device> device, TDS_SuplaRegisterDevice_C *register_device_c,
     TDS_SuplaRegisterDevice_E *register_device_e,
     supla_abstract_srpc_adapter *srpc_adapter,

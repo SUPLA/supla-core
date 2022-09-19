@@ -23,8 +23,7 @@
 
 #include <memory>
 
-#include "client/client_dao.h"
-#include "conn/connection_dao.h"
+#include "client/call_handler/register_client.h"
 #include "log.h"
 #include "proto.h"
 
@@ -56,14 +55,12 @@ void supla_ch_register_client_d::handle_call(
     rd->data.cs_register_client_d->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] =
         0;
 
-    supla_db_access_provider dba;
-    supla_connection_dao conn_dao(&dba);
-    supla_client_dao client_dao(&dba);
+    supla_register_client regcli;
 
-    register_client(client, nullptr, rd->data.cs_register_client_d,
-                    srpc_adapter, &dba, &conn_dao, &client_dao,
-                    client->get_connection()->get_client_sd(),
-                    client->get_connection()->get_client_ipv4(),
-                    client->get_connection()->get_activity_timeout());
+    regcli.register_client(client, nullptr, rd->data.cs_register_client_d,
+                           srpc_adapter,
+                           client->get_connection()->get_client_sd(),
+                           client->get_connection()->get_client_ipv4(),
+                           client->get_connection()->get_activity_timeout());
   }
 }

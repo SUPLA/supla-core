@@ -29,7 +29,7 @@
 
 class supla_user;
 class supla_device_call_handler_collection;
-class supla_ch_register_device;
+class supla_register_device;
 class supla_ch_device_calcfg_result;
 class supla_device : public supla_abstract_connection_object {
  private:
@@ -38,7 +38,7 @@ class supla_device : public supla_abstract_connection_object {
   supla_device_channels *channels;
 
  protected:
-  friend class supla_ch_register_device;
+  friend class supla_register_device;
   friend class supla_ch_device_calcfg_result;
 
   bool entering_cfg_mode_in_progress;

@@ -26,7 +26,7 @@
 
 class supla_ch_register_client_a
     : public supla_abstract_client_srpc_call_handler,
-      private supla_ch_register_client {
+      private supla_register_client {
  protected:
   virtual void handle_call(std::shared_ptr<supla_client> client,
                            supla_abstract_srpc_adapter* srpc_adapter,

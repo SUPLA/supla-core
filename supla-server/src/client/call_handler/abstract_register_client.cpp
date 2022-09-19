@@ -25,8 +25,8 @@
 
 using std::weak_ptr;
 
-supla_ch_abstract_register_client::supla_ch_abstract_register_client(void)
-    : supla_ch_abstract_register_object() {
+supla_abstract_register_client::supla_abstract_register_client(void)
+    : supla_abstract_register_object() {
   client_dao = nullptr;
   register_client_b = nullptr;
   register_client_d = nullptr;
@@ -38,23 +38,23 @@ supla_ch_abstract_register_client::supla_ch_abstract_register_client(void)
   pwd_is_set = false;
 }
 
-supla_ch_abstract_register_client::~supla_ch_abstract_register_client() {}
+supla_abstract_register_client::~supla_abstract_register_client() {}
 
-supla_abstract_client_dao *supla_ch_abstract_register_client::get_client_dao(
+supla_abstract_client_dao *supla_abstract_register_client::get_client_dao(
     void) {
   return client_dao;
 }
 
-std::weak_ptr<supla_client> supla_ch_abstract_register_client::get_client(
+std::weak_ptr<supla_client> supla_abstract_register_client::get_client(
     void) {
   return client;
 }
 
-int supla_ch_abstract_register_client::get_client_id(void) { return client_id; }
+int supla_abstract_register_client::get_client_id(void) { return client_id; }
 
-int supla_ch_abstract_register_client::get_access_id(void) { return access_id; }
+int supla_abstract_register_client::get_access_id(void) { return access_id; }
 
-void supla_ch_abstract_register_client::send_result(int resultcode) {
+void supla_abstract_register_client::send_result(int resultcode) {
   revoke_superuser_authorization();
 
   if (get_dba()->is_connected()) {
@@ -145,7 +145,7 @@ void supla_ch_abstract_register_client::send_result(int resultcode) {
   }
 }
 
-bool supla_ch_abstract_register_client::client_auth(void) {
+bool supla_abstract_register_client::client_auth(void) {
   if (register_client_b != nullptr &&
       false == client_dao->access_id_auth(
                    access_id, register_client_b->AccessIDpwd, get_user_id_ptr(),
@@ -169,7 +169,7 @@ bool supla_ch_abstract_register_client::client_auth(void) {
   return true;
 }
 
-bool supla_ch_abstract_register_client::add_client(void) {
+bool supla_abstract_register_client::add_client(void) {
   if (pwd_is_set) {
     superuser_authorize(get_user_id(), register_client_d->Email,
                         register_client_d->Password);
@@ -238,7 +238,7 @@ bool supla_ch_abstract_register_client::add_client(void) {
   return true;
 }
 
-bool supla_ch_abstract_register_client::update_client(void) {
+bool supla_abstract_register_client::update_client(void) {
   if (access_id == 0 && pwd_is_set) {
     if (!is_superuser_authorized()) {
       superuser_authorize(get_user_id(), register_client_d->Email,
@@ -267,7 +267,7 @@ bool supla_ch_abstract_register_client::update_client(void) {
   return true;
 }
 
-void supla_ch_abstract_register_client::register_client(
+void supla_abstract_register_client::register_client(
     std::weak_ptr<supla_client> client,
     TCS_SuplaRegisterClient_B *register_client_b,
     TCS_SuplaRegisterClient_D *register_client_d,
@@ -396,7 +396,7 @@ void supla_ch_abstract_register_client::register_client(
   send_result(SUPLA_RESULTCODE_TRUE);
 }
 
-__useconds_t supla_ch_abstract_register_client::get_hold_time_on_failure_usec(
+__useconds_t supla_abstract_register_client::get_hold_time_on_failure_usec(
     void) {
-  return supla_ch_abstract_register_object::get_hold_time_on_failure_usec();
+  return supla_abstract_register_object::get_hold_time_on_failure_usec();
 }

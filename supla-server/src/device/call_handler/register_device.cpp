@@ -21,37 +21,40 @@
 #include <memory>
 
 #include "conn/authkey_cache.h"
+#include "conn/connection_dao.h"
+#include "db/db_access_provider.h"
 #include "device/device.h"
+#include "device/device_dao.h"
 #include "user/user.h"
 
 using std::shared_ptr;
 
-supla_ch_register_device::supla_ch_register_device(void)
-    : supla_ch_abstract_register_device() {}
+supla_register_device::supla_register_device(void)
+    : supla_abstract_register_device() {}
 
-supla_ch_register_device::~supla_ch_register_device() {}
+supla_register_device::~supla_register_device() {}
 
-supla_authkey_cache *supla_ch_register_device::get_authkey_cache(void) {
+supla_authkey_cache *supla_register_device::get_authkey_cache(void) {
   return &supla_authkey_cache::get_global_instance();
 }
 
-int supla_ch_register_device::get_user_id_by_email(
+int supla_register_device::get_user_id_by_email(
     const char email[SUPLA_EMAIL_MAXSIZE]) {
   return get_conn_dao()->get_user_id_by_email(email);
 }
 
-bool supla_ch_register_device::get_object_id(int user_id,
-                                             const char guid[SUPLA_GUID_SIZE],
-                                             int *id) {
+bool supla_register_device::get_object_id(int user_id,
+                                          const char guid[SUPLA_GUID_SIZE],
+                                          int *id) {
   return get_device_dao()->get_device_id(user_id, guid, id);
 }
 
-bool supla_ch_register_device::get_authkey_hash(
+bool supla_register_device::get_authkey_hash(
     int id, char authkey_hash[BCRYPT_HASH_MAXSIZE], bool *is_null) {
   return get_device_dao()->get_authkey_hash(id, authkey_hash, is_null);
 }
 
-bool supla_ch_register_device::is_prev_entering_cfg_mode(void) {
+bool supla_register_device::is_prev_entering_cfg_mode(void) {
   supla_user *user = supla_user::find(get_user_id(), true);
   if (user) {
     shared_ptr<supla_device> prev = user->get_devices()->get(get_device_id());
@@ -60,7 +63,7 @@ bool supla_ch_register_device::is_prev_entering_cfg_mode(void) {
   return false;
 }
 
-void supla_ch_register_device::on_registraction_success(void) {
+void supla_register_device::on_registraction_success(void) {
   shared_ptr<supla_device> device = get_device().lock();
 
   device->set_id(get_device_id());
@@ -89,4 +92,19 @@ void supla_ch_register_device::on_registraction_success(void) {
 
   device->get_user()->on_device_registered(
       get_device_id(), supla_caller(ctDevice, get_device_id()));
+}
+
+void supla_register_device::register_device(
+    std::weak_ptr<supla_device> device,
+    TDS_SuplaRegisterDevice_C *register_device_c,
+    TDS_SuplaRegisterDevice_E *register_device_e,
+    supla_abstract_srpc_adapter *srpc_adapter, int client_sd, int client_ipv4,
+    unsigned char activity_timeout) {
+  supla_db_access_provider dba;
+  supla_connection_dao conn_dao(&dba);
+  supla_device_dao device_dao(&dba);
+
+  supla_abstract_register_device::register_device(
+      device, register_device_c, register_device_e, srpc_adapter, &dba,
+      &conn_dao, &device_dao, client_sd, client_ipv4, activity_timeout);
 }

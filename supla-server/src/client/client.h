@@ -34,7 +34,7 @@
 class supla_client_call_handler_collection;
 class supla_user;
 class supla_connection;
-class supla_ch_register_client;
+class supla_register_client;
 class supla_client : public supla_abstract_connection_object {
  private:
   char name[SUPLA_CLIENT_NAME_MAXSIZE];
@@ -50,7 +50,7 @@ class supla_client : public supla_abstract_connection_object {
   supla_client_scene_dao *scene_dao;
 
  protected:
-  friend class supla_ch_register_client;
+  friend class supla_register_client;
 
   void loadIODevices(void);
   void load_config(void);

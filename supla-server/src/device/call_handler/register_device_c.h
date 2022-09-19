@@ -24,7 +24,7 @@
 
 class supla_ch_register_device_c
     : public supla_abstract_device_srpc_call_handler,
-      private supla_ch_register_device {
+      private supla_register_device {
  protected:
   virtual void handle_call(std::shared_ptr<supla_device> device,
                            supla_abstract_srpc_adapter* srpc_adapter,
