@@ -43,7 +43,7 @@ void supla_ch_abstract_device_channel_value_changed::on_channel_value_changed(
     bool offline, unsigned _supla_int_t *validity_time_sec) {
   int channel_id = device->get_channels()->get_channel_id(channel_number);
 
-  if (channel_number == 0) {
+  if (channel_id == 0) {
     return;
   }
 
