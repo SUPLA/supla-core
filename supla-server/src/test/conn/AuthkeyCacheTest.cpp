@@ -25,7 +25,7 @@ namespace testing {
 TEST_F(AuthkeyCacheTest, authkeyWithoutCache) {
   AuthkeyCacheStub cache;
 
-  EXPECT_EQ(0, cache.get_cache_size_limit());
+  EXPECT_EQ(2000, cache.get_cache_size_limit());
   EXPECT_EQ(0, cache.get_size());
 
   cache.set_cache_size_limit(0);
@@ -63,7 +63,7 @@ TEST_F(AuthkeyCacheTest, authkeyWithoutCache) {
 
 TEST_F(AuthkeyCacheTest, authkeyWithCache) {
   AuthkeyCacheStub cache;
-  EXPECT_EQ(0, cache.get_cache_size_limit());
+  EXPECT_EQ(2000, cache.get_cache_size_limit());
 
   cache.set_cache_size_limit(5);
   EXPECT_EQ(5, cache.get_cache_size_limit());
