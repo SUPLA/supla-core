@@ -50,7 +50,7 @@ void RegistrationIntegrationTest::beforeClientInit(TSuplaClientCfg *scc) {
 }
 
 void RegistrationIntegrationTest::onRegistered(
-    TSC_SuplaRegisterClientResult_C *result) {
+    TSC_SuplaRegisterClientResult_D *result) {
   IntegrationTest::onRegistered(result);
   ASSERT_EQ(expectedRegistrationErrorCode, 0);
 

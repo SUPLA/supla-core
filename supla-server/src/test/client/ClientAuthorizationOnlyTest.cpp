@@ -142,4 +142,7 @@ TEST_F(ClientAuthorizationOnlyTest, authWithAccessIdSuccessfull) {
   EXPECT_EQ(SUPLA_RESULTCODE_TRUE, rc.get_result_code());
 }
 
+
+,,,,, dokonczyc testy
+
 } /* namespace testing */

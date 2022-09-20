@@ -53,7 +53,7 @@ void integration_test_on_connerror(void *_suplaclient, void *instance,
 }
 
 void integration_test_on_registered(void *_suplaclient, void *instance,
-                                    TSC_SuplaRegisterClientResult_C *result) {
+                                    TSC_SuplaRegisterClientResult_D *result) {
   static_cast<IntegrationTest *>(instance)->onRegistered(result);
 }
 
@@ -299,7 +299,7 @@ void IntegrationTest::onDisconnected() {}
 
 void IntegrationTest::onConnectionError(int code) { ASSERT_TRUE(false); }
 
-void IntegrationTest::onRegistered(TSC_SuplaRegisterClientResult_C *result) {
+void IntegrationTest::onRegistered(TSC_SuplaRegisterClientResult_D *result) {
   ASSERT_FALSE(result == NULL);
   ASSERT_EQ(result->result_code, SUPLA_RESULTCODE_TRUE);
 }
