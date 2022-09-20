@@ -143,6 +143,5 @@ TEST_F(ClientAuthorizationOnlyTest, authWithAccessIdSuccessfull) {
 }
 
 
-,,,,, dokonczyc testy
 
 } /* namespace testing */
