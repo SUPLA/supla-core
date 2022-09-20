@@ -95,6 +95,9 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
 
   MOCK_METHOD1(sc_async_registerclient_result_d,
                _supla_int_t(TSC_SuplaRegisterClientResult_D *result));
+
+  MOCK_METHOD1(sc_async_action_execution_result,
+               _supla_int_t(TSC_ActionExecutionResult *result));
 };
 
 } /* namespace testing */

@@ -20,12 +20,14 @@
 
 #include <call_handler/register_client_a.h>
 
+#include "client/call_handler/auth_and_execute_action.h"
 #include "client/call_handler/calcfg_request.h"
 #include "client/call_handler/calcfg_request_b.h"
 #include "client/call_handler/channel_set_value.h"
 #include "client/call_handler/channel_set_value_b.h"
 #include "client/call_handler/clients_reconnect_request.h"
 #include "client/call_handler/device_reconnect_request.h"
+#include "client/call_handler/execute_action.h"
 #include "client/call_handler/get_channel_basic_cfg.h"
 #include "client/call_handler/get_channel_state.h"
 #include "client/call_handler/get_next.h"
@@ -51,6 +53,8 @@ supla_client_call_handler_collection::supla_client_call_handler_collection(void)
   add_handler(new supla_ch_set_value());
   add_handler(new supla_ch_channel_set_value_b());
   add_handler(new supla_ch_channel_set_value());
+  add_handler(new supla_ch_auth_and_execute_action());
+  add_handler(new supla_ch_execute_action());
   add_handler(new supla_ch_timer_arm());
   add_handler(new supla_ch_get_next());
   add_handler(new supla_ch_get_channel_state());

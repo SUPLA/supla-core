@@ -36,6 +36,10 @@ supla_abstract_register_client::supla_abstract_register_client(void)
   accessid_active = false;
   client_enabled = true;
   pwd_is_set = false;
+  restrict_to_authentication = false;
+  stay_connected = false;
+  dont_send_result = false;
+  resultcode = 0;
 }
 
 supla_abstract_register_client::~supla_abstract_register_client() {}
@@ -45,8 +49,7 @@ supla_abstract_client_dao *supla_abstract_register_client::get_client_dao(
   return client_dao;
 }
 
-std::weak_ptr<supla_client> supla_abstract_register_client::get_client(
-    void) {
+std::weak_ptr<supla_client> supla_abstract_register_client::get_client(void) {
   return client;
 }
 
@@ -55,6 +58,8 @@ int supla_abstract_register_client::get_client_id(void) { return client_id; }
 int supla_abstract_register_client::get_access_id(void) { return access_id; }
 
 void supla_abstract_register_client::send_result(int resultcode) {
+  this->resultcode = resultcode;
+
   revoke_superuser_authorization();
 
   if (get_dba()->is_connected()) {
@@ -62,7 +67,13 @@ void supla_abstract_register_client::send_result(int resultcode) {
       get_dba()->rollback();
     }
 
-    get_dba()->disconnect();
+    if (!stay_connected) {
+      get_dba()->disconnect();
+    }
+  }
+
+  if (dont_send_result) {
+    return;
   }
 
   struct timeval now;
@@ -285,6 +296,7 @@ void supla_abstract_register_client::register_client(
   accessid_active = false;
   client_enabled = true;
   pwd_is_set = false;
+  resultcode = 0;
 
   set_srpc_adapter(srpc_adapter);
   set_dba(dba);
@@ -323,7 +335,7 @@ void supla_abstract_register_client::register_client(
     return;
   }
 
-  pwd_is_set = register_client_d != nullptr &&
+  pwd_is_set = !restrict_to_authentication && register_client_d != nullptr &&
                strnlen(register_client_d->Password, SUPLA_PASSWORD_MAXSIZE) > 0;
 
   if (!client_auth()) {
@@ -352,9 +364,16 @@ void supla_abstract_register_client::register_client(
     if (_accessid_active) accessid_active = true;
   }
 
-  dba->start_transaction();
+  if (!restrict_to_authentication) {
+    dba->start_transaction();
+  }
 
   if (client_id == 0) {
+    if (restrict_to_authentication) {
+      send_result(SUPLA_RESULTCODE_CLIENT_NOT_EXISTS);
+      return;
+    }
+
     if (!add_client()) {
       return;
     }
@@ -366,14 +385,15 @@ void supla_abstract_register_client::register_client(
     if (!client_enabled) {
       send_result(SUPLA_RESULTCODE_CLIENT_DISABLED);
       return;
-    } else if (!update_client()) {
+    } else if (!restrict_to_authentication && !update_client()) {
       return;
     }
   }
 
-  dba->commit();
-
-  set_should_rollback(false);
+  if (!restrict_to_authentication) {
+    dba->commit();
+    set_should_rollback(false);
+  }
 
   if (access_id == 0) {
     send_result(pwd_is_set ? SUPLA_RESULTCODE_BAD_CREDENTIALS
@@ -391,12 +411,51 @@ void supla_abstract_register_client::register_client(
     return;
   }
 
-  on_registraction_success();
+  if (!restrict_to_authentication) {
+    on_registraction_success();
+  }
 
   send_result(SUPLA_RESULTCODE_TRUE);
+}
+
+void supla_abstract_register_client::authenticate(
+    std::weak_ptr<supla_client> client, TCS_ClientAuthorizationDetails *auth,
+    supla_abstract_srpc_adapter *srpc_adapter,
+    supla_abstract_db_access_provider *dba,
+    supla_abstract_connection_dao *conn_dao,
+    supla_abstract_client_dao *client_dao, bool stay_connected) {
+  this->stay_connected = stay_connected;
+  dont_send_result = true;
+  restrict_to_authentication = true;
+
+  TCS_SuplaRegisterClient_B register_client_b = {};
+  TCS_SuplaRegisterClient_D register_client_d = {};
+  bool email_auth = false;
+
+  if (auth->Email[0] != 0) {
+    memcpy(register_client_d.GUID, auth->GUID, SUPLA_GUID_SIZE);
+    memcpy(register_client_d.AuthKey, auth->AuthKey, SUPLA_AUTHKEY_SIZE);
+    memcpy(register_client_d.Email, auth->Email, SUPLA_EMAIL_MAXSIZE);
+    email_auth = true;
+  } else {
+    register_client_b.AccessID = auth->AccessID;
+    memcpy(register_client_b.GUID, auth->GUID, SUPLA_GUID_SIZE);
+    memcpy(register_client_b.AccessIDpwd, auth->AccessIDpwd,
+           SUPLA_ACCESSID_PWD_MAXSIZE);
+  }
+
+  register_client(client, email_auth ? nullptr : &register_client_b,
+                  email_auth ? &register_client_d : nullptr, srpc_adapter, dba,
+                  conn_dao, client_dao, 0, 0, 0);
+
+  this->stay_connected = false;
+  dont_send_result = false;
+  restrict_to_authentication = false;
 }
 
 __useconds_t supla_abstract_register_client::get_hold_time_on_failure_usec(
     void) {
   return supla_abstract_register_object::get_hold_time_on_failure_usec();
 }
+
+int supla_abstract_register_client::get_result_code(void) { return resultcode; }

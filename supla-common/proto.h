@@ -304,9 +304,13 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_DENY_CHANNEL_HAS_SCHEDULE 28              // ver. >= 12
 #define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE 29  // ver. >= 12
 #define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_ACTION_TRIGGER \
-  30                                            // ver. >= 16
-#define SUPLA_RESULTCODE_ACCESSID_INACTIVE 31   // ver. >= 17
-#define SUPLA_RESULTCODE_CFG_MODE_REQUESTED 32  // ver. >= 18
+  30                                              // ver. >= 16
+#define SUPLA_RESULTCODE_ACCESSID_INACTIVE 31     // ver. >= 17
+#define SUPLA_RESULTCODE_CFG_MODE_REQUESTED 32    // ver. >= 18
+#define SUPLA_RESULTCODE_ACTION_UNSUPPORTED 33    // ver. >= 19
+#define SUPLA_RESULTCODE_SUBJECT_NOT_FOUND 34     // ver. >= 19
+#define SUPLA_RESULTCODE_INCORRECT_PARAMETERS 35  // ver. >= 19
+#define SUPLA_RESULTCODE_CLIENT_NOT_EXISTS 36     // ver. >= 19
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0         // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1       // ver. >= 10
@@ -1119,8 +1123,8 @@ typedef struct {
 
 #define ACTION_SUBJECT_TYPE_UNKNOWN 0
 #define ACTION_SUBJECT_TYPE_CHANNEL 1
-#define ACTION_SUBJECT_TYPE_CHANNEL_GROUP 1
-#define ACTION_SUBJECT_TYPE_SCENE 2
+#define ACTION_SUBJECT_TYPE_CHANNEL_GROUP 2
+#define ACTION_SUBJECT_TYPE_SCENE 3
 
 #define ACTION_OPEN 10
 #define ACTION_CLOSE 20
@@ -1144,6 +1148,19 @@ typedef struct {
 #define ACTION_INTERRUPT_AND_EXECUTE 3002
 #define ACTION_COPY 10100
 #define ACTION_FORWARD_OUTSIDE 10000
+
+typedef struct {
+  char Percentage;
+  char Reserved[15];
+} TAction_RS_Parameters;  // ver. >= 19
+
+typedef struct {
+  char Brightness;
+  char ColorBrightness;
+  unsigned int Color;
+  char ColorRandom;
+  char Reserverd[9];
+} TAction_RGBW_Parameters;  // ver. >= 19
 
 typedef struct {
   _supla_int_t ActionId;

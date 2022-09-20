@@ -116,6 +116,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sc_async_registerclient_result_d(
       TSC_SuplaRegisterClientResult_D *result);  // ver. >= 19
+
+  virtual _supla_int_t sc_async_action_execution_result(
+      TSC_ActionExecutionResult *result);  // ver. >= 19
 };
 
 #endif /* SRPC_ADAPTER_H_ */

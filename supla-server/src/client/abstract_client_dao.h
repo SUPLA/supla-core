@@ -68,6 +68,12 @@ class supla_abstract_client_dao {
   virtual bool update_client(int client_id, int access_id, const char *authkey,
                              const char *name, unsigned int ipv4,
                              const char *softver, int proto_version) = 0;
+
+  virtual bool channel_exists(int client_id, int channel_id) = 0;
+
+  virtual bool channel_group_exists(int client_id, int channel_group_id) = 0;
+
+  virtual bool scene_exists(int client_id, int scene_id) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_CLIENT_DAO_H_ */

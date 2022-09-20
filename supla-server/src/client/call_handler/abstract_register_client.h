@@ -43,6 +43,10 @@ class supla_abstract_register_client
   bool accessid_active;
   bool client_enabled;
   bool pwd_is_set;
+  bool restrict_to_authentication;
+  bool stay_connected;
+  bool dont_send_result;
+  int resultcode;
 
   void send_result(int resultcode);
   bool client_auth(void);
@@ -50,15 +54,6 @@ class supla_abstract_register_client
   bool update_client(void);
 
  protected:
-  void register_client(std::weak_ptr<supla_client> client,
-                       TCS_SuplaRegisterClient_B *register_client_b,
-                       TCS_SuplaRegisterClient_D *register_client_d,
-                       supla_abstract_srpc_adapter *srpc_adapter,
-                       supla_abstract_db_access_provider *dba,
-                       supla_abstract_connection_dao *conn_dao,
-                       supla_abstract_client_dao *client_dao, int client_sd,
-                       int client_ipv4, unsigned char activity_timeout);
-
   std::weak_ptr<supla_client> get_client(void);
   supla_abstract_client_dao *get_client_dao(void);
   int get_client_id(void);
@@ -87,7 +82,26 @@ class supla_abstract_register_client
  public:
   supla_abstract_register_client(void);
   virtual ~supla_abstract_register_client();
+
+  void register_client(std::weak_ptr<supla_client> client,
+                       TCS_SuplaRegisterClient_B *register_client_b,
+                       TCS_SuplaRegisterClient_D *register_client_d,
+                       supla_abstract_srpc_adapter *srpc_adapter,
+                       supla_abstract_db_access_provider *dba,
+                       supla_abstract_connection_dao *conn_dao,
+                       supla_abstract_client_dao *client_dao, int client_sd,
+                       int client_ipv4, unsigned char activity_timeout);
+
+  void authenticate(std::weak_ptr<supla_client> client,
+                    TCS_ClientAuthorizationDetails *auth,
+                    supla_abstract_srpc_adapter *srpc_adapter,
+                    supla_abstract_db_access_provider *dba,
+                    supla_abstract_connection_dao *conn_dao,
+                    supla_abstract_client_dao *client_dao, bool stay_connected);
+
   __useconds_t get_hold_time_on_failure_usec(void);
+
+  int get_result_code(void);
 };
 
 #endif /* SUPLA_CH_ABSTRACT_REGISTER_DEVICE_H_*/

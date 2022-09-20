@@ -18,18 +18,15 @@
 
 #include "client/call_handler/execute_action.h"
 
-#include <string.h>
-
-#include <memory>
-
-#include "client.h"
-#include "log.h"
-#include "user.h"
+#include "actions/action_executor.h"
+#include "client/client.h"
+#include "client/clientchannelgroups.h"
+#include "client/clientchannels.h"
 
 using std::shared_ptr;
 
 supla_ch_execute_action::supla_ch_execute_action(void)
-    : supla_abstract_client_srpc_call_handler() {}
+    : supla_ch_abstract_execute_action() {}
 
 supla_ch_execute_action::~supla_ch_execute_action() {}
 
@@ -39,4 +36,23 @@ bool supla_ch_execute_action::can_handle_call(unsigned int call_id) {
 
 void supla_ch_execute_action::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
-    TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {}
+    TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
+  if (rd->data.cs_action == nullptr) {
+    return;
+  }
+
+  supla_action_executor aexec;
+  execute_action(
+      client->get_user_id(), client->get_id(), &aexec, rd->data.cs_action,
+      srpc_adapter, [&client](int subject_type, int subject_id) -> bool {
+        switch (subject_type) {
+          case ACTION_SUBJECT_TYPE_CHANNEL:
+            return client->get_channels()->channel_exists(subject_id);
+          case ACTION_SUBJECT_TYPE_CHANNEL_GROUP:
+            return client->get_cgroups()->groupExists(subject_id);
+          case ACTION_SUBJECT_TYPE_SCENE:
+            return client->get_scenes()->object_exists(subject_id);
+        }
+        return false;
+      });
+}

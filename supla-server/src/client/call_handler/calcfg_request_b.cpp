@@ -62,7 +62,7 @@ void supla_ch_calcfg_request_b::handle_call(
       }
 
     } else if (request->Target == SUPLA_TARGET_GROUP) {
-      if (client->get_cgroups()->groupExits(
+      if (client->get_cgroups()->groupExists(
               request->Id)) {  // Make sure the client has access to this group
         client->get_user()->get_channel_groups()->calcfg_request(
             supla_caller(ctClient, client->get_id()), request);

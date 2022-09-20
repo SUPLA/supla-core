@@ -108,6 +108,14 @@ void supla_register_client::remote_update_lists(void) {
   client->remote_update_lists();
 }
 
+int supla_register_client::get_client_id(void) {
+  return supla_abstract_register_client::get_client_id();
+}
+
+int supla_register_client::get_user_id(void) {
+  return supla_abstract_register_client::get_user_id();
+}
+
 void supla_register_client::register_client(
     std::weak_ptr<supla_client> client,
     TCS_SuplaRegisterClient_B *register_client_b,

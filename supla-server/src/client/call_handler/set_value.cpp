@@ -55,7 +55,7 @@ void supla_ch_set_value::handle_call(shared_ptr<supla_client> client,
       }
 
     } else if (rd->data.cs_new_value->Target == SUPLA_TARGET_GROUP) {
-      if (client->get_cgroups()->groupExits(
+      if (client->get_cgroups()->groupExists(
               rd->data.cs_new_value->Id)) {  // Make sure the client has
                                              // access to this group
         client->get_user()->get_channel_groups()->set_new_value(

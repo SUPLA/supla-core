@@ -141,3 +141,8 @@ _supla_int_t supla_srpc_adapter::sc_async_registerclient_result_d(
     TSC_SuplaRegisterClientResult_D *result) {
   return srpc_sc_async_registerclient_result_d(get_srpc(), result);
 }
+
+_supla_int_t supla_srpc_adapter::sc_async_action_execution_result(
+    TSC_ActionExecutionResult *result) {
+  return srpc_sc_async_action_execution_result(get_srpc(), result);
+}

@@ -115,7 +115,7 @@ supla_client_channelgroup *supla_client_channelgroups::findGroup(int Id) {
   return static_cast<supla_client_channelgroup *>(find(Id, master));
 }
 
-bool supla_client_channelgroups::groupExits(int Id) {
+bool supla_client_channelgroups::groupExists(int Id) {
   return findGroup(Id) != NULL;
 }
 

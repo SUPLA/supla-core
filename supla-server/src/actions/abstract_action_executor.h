@@ -68,6 +68,12 @@ class supla_abstract_action_executor {
                       abstract_action_config *config,
                       supla_abstract_value_getter *value_getter);
 
+  void execute_action(const supla_caller &caller, int user_id, int action_id,
+                      _subjectType_e subject_type, int subject_id,
+                      supla_abstract_value_getter *value_getter,
+                      char percentage, _action_config_rgbw_t *rgbw,
+                      int source_device_id, int source_channel_id, int cap);
+
   virtual void set_on(bool on) = 0;
   virtual void set_color(unsigned int color) = 0;
   virtual void set_brightness(char brightness) = 0;

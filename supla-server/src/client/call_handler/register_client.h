@@ -47,6 +47,9 @@ class supla_register_client : public supla_abstract_register_client {
   supla_register_client(void);
   virtual ~supla_register_client();
 
+  int get_client_id(void);
+  int get_user_id(void);
+
   void register_client(std::weak_ptr<supla_client> client,
                        TCS_SuplaRegisterClient_B *register_client_b,
                        TCS_SuplaRegisterClient_D *register_client_d,

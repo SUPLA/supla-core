@@ -529,3 +529,60 @@ bool supla_client_dao::update_client(int client_id, int access_id,
 
   return result;
 }
+
+bool supla_client_dao::exists(int client_id, int id, const char *query) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return false;
+  }
+
+  MYSQL_STMT *stmt = nullptr;
+  int result = 0;
+
+  MYSQL_BIND pbind[2] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&client_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&id;
+
+  if (!dba->stmt_get_int((void **)&stmt, &result, nullptr, nullptr, nullptr,
+                         query, pbind, 2)) {
+    result = 0;
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result > 0;
+}
+
+bool supla_client_dao::channel_exists(int client_id, int channel_id) {
+  const char query[] =
+      "SELECT id FROM supla_v_client_channel WHERE client_id = ? AND id = ? "
+      "LIMIT 1";
+
+  return exists(client_id, channel_id, query);
+}
+
+bool supla_client_dao::channel_group_exists(int client_id,
+                                            int channel_group_id) {
+  const char query[] =
+      "SELECT id FROM supla_v_client_channel_group WHERE client_id = ? AND id "
+      "= ? LIMIT 1";
+
+  return exists(client_id, channel_group_id, query);
+}
+
+bool supla_client_dao::scene_exists(int client_id, int scene_id) {
+  const char query[] =
+      "SELECT s.id FROM `supla_scene` s LEFT JOIN supla_rel_aidloc al ON "
+      "al.location_id = s.location_id LEFT JOIN supla_accessid a ON a.id = "
+      "al.access_id LEFT JOIN supla_client c ON c.access_id = al.access_id "
+      "WHERE s.enabled = 1 AND c.id = ? AND s.id = ? LIMIT 1";
+
+  return exists(client_id, scene_id, query);
+}

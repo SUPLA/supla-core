@@ -28,6 +28,7 @@ class supla_client_dao : public supla_abstract_client_dao {
 
   int oauth_add_client_id(void);
   int oauth_get_client_id(bool create);
+  bool exists(int client_id, int id, const char *query);
 
  public:
   explicit supla_client_dao(supla_abstract_db_access_provider *dba);
@@ -74,6 +75,12 @@ class supla_client_dao : public supla_abstract_client_dao {
   virtual bool update_client(int client_id, int access_id, const char *authkey,
                              const char *name, unsigned int ipv4,
                              const char *softver, int proto_version);
+
+  virtual bool channel_exists(int client_id, int channel_id);
+
+  virtual bool channel_group_exists(int client_id, int channel_group_id);
+
+  virtual bool scene_exists(int client_id, int scene_id);
 };
 
 #endif /* SUPLA_CLIENT_DAO_H_ */

@@ -99,19 +99,18 @@ shared_ptr<supla_device> supla_abstract_action_executor::get_device(void) {
 }
 
 void supla_abstract_action_executor::execute_action(
-    const supla_caller &caller, int user_id, abstract_action_config *config,
-    supla_abstract_value_getter *value_getter) {
-  int action_id = 0;
-  int subject_id = 0;
-
-  if (!config || (action_id = config->get_action_id()) == 0 ||
-      (subject_id = config->get_subject_id()) == 0) {
+    const supla_caller &caller, int user_id, int action_id,
+    _subjectType_e subject_type, int subject_id,
+    supla_abstract_value_getter *value_getter, char percentage,
+    _action_config_rgbw_t *rgbw, int source_device_id, int source_channel_id,
+    int cap) {
+  if (action_id == 0 || subject_id == 0) {
     return;
   }
 
   set_caller(caller);
 
-  switch (config->get_subject_type()) {
+  switch (subject_type) {
     case stChannel:
       set_channel_id(user_id, 0, subject_id);
       break;
@@ -150,7 +149,6 @@ void supla_abstract_action_executor::execute_action(
       break;
     case ACTION_SHUT_PARTIALLY:
     case ACTION_REVEAL_PARTIALLY: {
-      char percentage = config->get_percentage();
       if (percentage > -1) {
         if (action_id == ACTION_REVEAL_PARTIALLY) {
           percentage = 100 - percentage;
@@ -166,11 +164,11 @@ void supla_abstract_action_executor::execute_action(
       set_on(false);
       break;
     case ACTION_SET_RGBW_PARAMETERS: {
-      _action_config_rgbw_t rgbw = config->get_rgbw();
-      if (rgbw.brightness > -1 || rgbw.color_brightness > -1 || rgbw.color) {
-        set_rgbw(rgbw.color ? &rgbw.color : NULL,
-                 rgbw.color_brightness > -1 ? &rgbw.color_brightness : NULL,
-                 rgbw.brightness > -1 ? &rgbw.brightness : NULL, NULL);
+      if (rgbw && (rgbw->brightness > -1 || rgbw->color_brightness > -1 ||
+                   rgbw->color)) {
+        set_rgbw(rgbw->color ? &rgbw->color : NULL,
+                 rgbw->color_brightness > -1 ? &rgbw->color_brightness : NULL,
+                 rgbw->brightness > -1 ? &rgbw->brightness : NULL, NULL);
       }
     } break;
     case ACTION_OPEN_CLOSE:
@@ -192,13 +190,53 @@ void supla_abstract_action_executor::execute_action(
       toggle();
       break;
     case ACTION_COPY:
-      copy(value_getter, config->get_source_device_id(),
-           config->get_source_channel_id());
+      if (value_getter) {
+        copy(value_getter, source_device_id, source_channel_id);
+      }
       break;
     case ACTION_FORWARD_OUTSIDE:
-      forward_outside(config->get_cap());
+      forward_outside(cap);
       break;
   }
+}
+
+void supla_abstract_action_executor::execute_action(
+    const supla_caller &caller, int user_id, abstract_action_config *config,
+    supla_abstract_value_getter *value_getter) {
+  int action_id = 0;
+  int subject_id = 0;
+
+  if (!config || (action_id = config->get_action_id()) == 0 ||
+      (subject_id = config->get_subject_id()) == 0) {
+    return;
+  }
+
+  char percentage = 0;
+  _action_config_rgbw_t rgbw = {};
+  int source_device_id = 0;
+  int source_channel_id = 0;
+  int cap = 0;
+
+  switch (action_id) {
+    case ACTION_SHUT_PARTIALLY:
+    case ACTION_REVEAL_PARTIALLY:
+      percentage = config->get_percentage();
+      break;
+    case ACTION_SET_RGBW_PARAMETERS:
+      rgbw = config->get_rgbw();
+      break;
+    case ACTION_COPY:
+      source_device_id = config->get_source_device_id();
+      source_channel_id = config->get_source_channel_id();
+      break;
+    case ACTION_FORWARD_OUTSIDE:
+      cap = config->get_cap();
+      break;
+  }
+
+  execute_action(caller, user_id, action_id, config->get_subject_type(),
+                 subject_id, value_getter, percentage, &rgbw, source_device_id,
+                 source_channel_id, cap);
 }
 
 void supla_abstract_action_executor::execute_action(
