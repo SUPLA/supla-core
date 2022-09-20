@@ -135,7 +135,7 @@ void supla_client_set_registered(void *_suplaclient, char registered) {
 
 void supla_client_on_register_result(
     TSuplaClientData *scd,
-    TSC_SuplaRegisterClientResult_C *register_client_result) {
+    TSC_SuplaRegisterClientResult_D *register_client_result) {
   if (register_client_result->result_code == SUPLA_RESULTCODE_TRUE) {
     supla_client_set_registered(scd, 1);
 
@@ -823,17 +823,68 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
       /* no break between SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B and
        * SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C!!! */
       case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C:
-        if (rd.data.sc_register_client_result_c) {
+        if (rd.data.sc_register_client_result_c == NULL) {
+          break;
+        }
+
+        {
+          TSC_SuplaRegisterClientResult_D *sc_register_client_result_d =
+              (TSC_SuplaRegisterClientResult_D *)malloc(
+                  sizeof(TSC_SuplaRegisterClientResult_D));
+
+          if (sc_register_client_result_d == NULL) {
+            break;
+          } else {
+            sc_register_client_result_d->result_code =
+                rd.data.sc_register_client_result_c->result_code;
+
+            sc_register_client_result_d->ClientID =
+                rd.data.sc_register_client_result_c->ClientID;
+
+            sc_register_client_result_d->LocationCount =
+                rd.data.sc_register_client_result_c->LocationCount;
+
+            sc_register_client_result_d->ChannelCount =
+                rd.data.sc_register_client_result_c->ChannelCount;
+
+            sc_register_client_result_d->ChannelGroupCount =
+                rd.data.sc_register_client_result_c->ChannelGroupCount;
+            sc_register_client_result_d->Flags =
+                rd.data.sc_register_client_result_c->Flags;
+
+            sc_register_client_result_d->activity_timeout =
+                rd.data.sc_register_client_result_c->activity_timeout;
+
+            sc_register_client_result_d->version =
+                rd.data.sc_register_client_result_c->version;
+
+            sc_register_client_result_d->version_min =
+                rd.data.sc_register_client_result_c->version_min;
+
+            sc_register_client_result_d->serverUnixTimestamp =
+                rd.data.sc_register_client_result_c->serverUnixTimestamp;
+
+            sc_register_client_result_d->SceneCount = 0;
+
+            free(rd.data.sc_register_client_result_c);
+            rd.data.sc_register_client_result_d = sc_register_client_result_d;
+          }
+        }
+
+        /* no break between SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C and
+         * SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D!!! */
+      case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D:
+        if (rd.data.sc_register_client_result_d) {
           scd->server_time_diff = 0;
-          if (rd.data.sc_register_client_result_c->serverUnixTimestamp) {
+          if (rd.data.sc_register_client_result_d->serverUnixTimestamp) {
             struct timeval now;
             gettimeofday(&now, NULL);
             scd->server_time_diff =
                 now.tv_sec -
-                rd.data.sc_register_client_result_c->serverUnixTimestamp;
+                rd.data.sc_register_client_result_d->serverUnixTimestamp;
           }
           supla_client_on_register_result(scd,
-                                          rd.data.sc_register_client_result_c);
+                                          rd.data.sc_register_client_result_d);
         }
         break;
       case SUPLA_SC_CALL_LOCATION_UPDATE:

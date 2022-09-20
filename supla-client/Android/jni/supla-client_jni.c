@@ -434,7 +434,7 @@ void supla_android_client_cb_on_registering(void *_suplaclient,
 
 void supla_android_client_cb_on_registered(
     void *_suplaclient, void *user_data,
-    TSC_SuplaRegisterClientResult_C *result) {
+    TSC_SuplaRegisterClientResult_D *result) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
   jfieldID fid;
@@ -461,6 +461,9 @@ void supla_android_client_cb_on_registered(
 
     fid = supla_client_GetFieldID(env, creg, "ChannelGroupCount", "I");
     (*env)->SetIntField(env, reg, fid, result->ChannelGroupCount);
+
+    fid = supla_client_GetFieldID(env, creg, "SceneCount", "I");
+    (*env)->SetIntField(env, reg, fid, result->SceneCount);
 
     fid = supla_client_GetFieldID(env, creg, "Flags", "I");
     (*env)->SetIntField(env, reg, fid, result->Flags);

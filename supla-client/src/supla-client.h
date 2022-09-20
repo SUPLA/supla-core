@@ -30,7 +30,7 @@ typedef void (*_suplaclient_cb_on_versionerror)(void *_suplaclient,
 typedef void (*_suplaclient_cb_on_action)(void *_suplaclient, void *user_data);
 typedef void (*_suplaclient_cb_on_registered)(
     void *_suplaclient, void *user_data,
-    TSC_SuplaRegisterClientResult_C *result);
+    TSC_SuplaRegisterClientResult_D *result);
 typedef void (*_suplaclient_cb_on_error)(void *_suplaclient, void *user_data,
                                          int code);
 typedef void (*_suplaclient_cb_location_update)(void *_suplaclient,
