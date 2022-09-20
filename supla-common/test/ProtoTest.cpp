@@ -244,13 +244,19 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
   EXPECT_LE(sizeof(TAction_RGBW_Parameters),
             (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
-
 }
 
 TEST_F(ProtoTest, authorizationDetails) {
-	  TCS_SuplaRegisterClient_B register_client_b = {};
-	  TCS_SuplaRegisterClient_D register_client_d = {};
-	  TCS_ClientAuthorizationDetails auth;
+  TCS_SuplaRegisterClient_B register_client_b = {};
+  TCS_SuplaRegisterClient_D register_client_d = {};
+  TCS_ClientAuthorizationDetails auth;
+
+  EXPECT_EQ(sizeof(register_client_b.AccessIDpwd), sizeof(auth.AccessIDpwd));
+  EXPECT_EQ(sizeof(register_client_b.GUID), sizeof(auth.GUID));
+
+  EXPECT_EQ(sizeof(register_client_d.AuthKey), sizeof(auth.AuthKey));
+  EXPECT_EQ(sizeof(register_client_d.GUID), sizeof(auth.GUID));
+  EXPECT_EQ(sizeof(register_client_d.Email), sizeof(auth.Email));
 }
 
 TEST_F(ProtoTest, init) {
