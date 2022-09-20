@@ -4,6 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/client/ClientAuthorizationOnlyTest.cpp \
 ../src/test/client/ClientSceneChangeIndicatorTest.cpp \
 ../src/test/client/ClientSceneRemoteUpdateTest.cpp \
 ../src/test/client/ClientSceneTest.cpp \
@@ -14,6 +15,7 @@ CPP_SRCS += \
 ../src/test/client/RegisterClientWithEmailAuthTest.cpp 
 
 CPP_DEPS += \
+./src/test/client/ClientAuthorizationOnlyTest.d \
 ./src/test/client/ClientSceneChangeIndicatorTest.d \
 ./src/test/client/ClientSceneRemoteUpdateTest.d \
 ./src/test/client/ClientSceneTest.d \
@@ -24,6 +26,7 @@ CPP_DEPS += \
 ./src/test/client/RegisterClientWithEmailAuthTest.d 
 
 OBJS += \
+./src/test/client/ClientAuthorizationOnlyTest.o \
 ./src/test/client/ClientSceneChangeIndicatorTest.o \
 ./src/test/client/ClientSceneRemoteUpdateTest.o \
 ./src/test/client/ClientSceneTest.o \
@@ -46,7 +49,7 @@ src/test/client/%.o: ../src/test/client/%.cpp src/test/client/subdir.mk
 clean: clean-src-2f-test-2f-client
 
 clean-src-2f-test-2f-client:
-	-$(RM) ./src/test/client/ClientSceneChangeIndicatorTest.d ./src/test/client/ClientSceneChangeIndicatorTest.o ./src/test/client/ClientSceneRemoteUpdateTest.d ./src/test/client/ClientSceneRemoteUpdateTest.o ./src/test/client/ClientSceneTest.d ./src/test/client/ClientSceneTest.o ./src/test/client/RegisterClientEssentialTest.d ./src/test/client/RegisterClientEssentialTest.o ./src/test/client/RegisterClientProtocolVersionsTest.d ./src/test/client/RegisterClientProtocolVersionsTest.o ./src/test/client/RegisterClientTest.d ./src/test/client/RegisterClientTest.o ./src/test/client/RegisterClientWithAccessIdAuthTest.d ./src/test/client/RegisterClientWithAccessIdAuthTest.o ./src/test/client/RegisterClientWithEmailAuthTest.d ./src/test/client/RegisterClientWithEmailAuthTest.o
+	-$(RM) ./src/test/client/ClientAuthorizationOnlyTest.d ./src/test/client/ClientAuthorizationOnlyTest.o ./src/test/client/ClientSceneChangeIndicatorTest.d ./src/test/client/ClientSceneChangeIndicatorTest.o ./src/test/client/ClientSceneRemoteUpdateTest.d ./src/test/client/ClientSceneRemoteUpdateTest.o ./src/test/client/ClientSceneTest.d ./src/test/client/ClientSceneTest.o ./src/test/client/RegisterClientEssentialTest.d ./src/test/client/RegisterClientEssentialTest.o ./src/test/client/RegisterClientProtocolVersionsTest.d ./src/test/client/RegisterClientProtocolVersionsTest.o ./src/test/client/RegisterClientTest.d ./src/test/client/RegisterClientTest.o ./src/test/client/RegisterClientWithAccessIdAuthTest.d ./src/test/client/RegisterClientWithAccessIdAuthTest.o ./src/test/client/RegisterClientWithEmailAuthTest.d ./src/test/client/RegisterClientWithEmailAuthTest.o
 
 .PHONY: clean-src-2f-test-2f-client
 
