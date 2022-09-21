@@ -3734,7 +3734,7 @@ TEST_F(SrpcTest, call_scene_state_pack_update_with_full_size) {
 //---------------------------------------------------------
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_execute_action, TCS_Action,
-                                     SUPLA_CS_CALL_EXECUTE_ACTION, 37, 537,
+                                     SUPLA_CS_CALL_EXECUTE_ACTION, 34, 534,
                                      cs_action, SUPLA_ACTION_PARAM_MAXSIZE,
                                      Param, ParamSize);
 
@@ -3744,8 +3744,8 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_execute_action, TCS_Action,
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_execute_action_with_auth,
                                      TCS_ActionWithAuth,
-                                     SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION, 427,
-                                     927, cs_action_with_auth,
+                                     SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION, 424,
+                                     924, cs_action_with_auth,
                                      SUPLA_ACTION_PARAM_MAXSIZE, Action.Param,
                                      Action.ParamSize);
 

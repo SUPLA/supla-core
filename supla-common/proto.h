@@ -1165,7 +1165,7 @@ typedef struct {
 typedef struct {
   _supla_int_t ActionId;
   _supla_int_t SubjectId;
-  _supla_int_t SubjectType;
+  unsigned char SubjectType;
   unsigned _supla_int16_t ParamSize;
   char Param[SUPLA_ACTION_PARAM_MAXSIZE];
 } TCS_Action;  // ver. >= 19

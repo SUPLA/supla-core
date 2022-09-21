@@ -232,9 +232,9 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)220, sizeof(TSC_SuplaSceneState));
   EXPECT_EQ((unsigned int)4408, sizeof(TSC_SuplaSceneStatePack));
 
-  EXPECT_EQ((unsigned int)514, sizeof(TCS_Action));
+  EXPECT_EQ((unsigned int)511, sizeof(TCS_Action));
   EXPECT_EQ((unsigned int)390, sizeof(TCS_ClientAuthorizationDetails));
-  EXPECT_EQ((unsigned int)904, sizeof(TCS_ActionWithAuth));
+  EXPECT_EQ((unsigned int)901, sizeof(TCS_ActionWithAuth));
   EXPECT_EQ((unsigned int)16, sizeof(TSC_ActionExecutionResult));
 
   EXPECT_EQ((unsigned int)16, sizeof(TAction_RS_Parameters));
