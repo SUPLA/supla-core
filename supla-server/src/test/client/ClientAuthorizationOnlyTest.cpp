@@ -203,6 +203,21 @@ TEST_F(ClientAuthorizationOnlyTest, authWithEmailSuccessfull) {
             return true;
           });
 
+  EXPECT_CALL(client_dao, get_client_id(25, NotNull()))
+      .Times(1)
+      .WillOnce(Return(987));
+
+  EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
+                                               NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce([](int client_id, bool *client_enabled, int *access_id,
+                   bool *accessid_enabled, bool *accessid_active) {
+        *accessid_enabled = true;
+        *accessid_active = true;
+        *access_id = 75;
+        return true;
+      });
+
   rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
                   true);
 
