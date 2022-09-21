@@ -58,7 +58,6 @@ TEST_F(ClientAuthorizationOnlyTest, dbaConnectionFailed) {
   auth.AuthKey[0] = 2;
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(false));
-  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(false));
 
   rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
                   true);
@@ -104,6 +103,7 @@ TEST_F(ClientAuthorizationOnlyTest, authWithAccessIdSuccessfull) {
   snprintf(auth.AccessIDpwd, sizeof(auth.AccessIDpwd), "%s", "abcd");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(true));
   EXPECT_CALL(dba, start_transaction).Times(0);
   EXPECT_CALL(dba, rollback).Times(0);
   EXPECT_CALL(dba, commit).Times(0);
@@ -135,6 +135,73 @@ TEST_F(ClientAuthorizationOnlyTest, authWithAccessIdSuccessfull) {
         *accessid_active = true;
         return true;
       });
+
+  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
+                  true);
+
+  EXPECT_EQ(SUPLA_RESULTCODE_TRUE, rc.get_result_code());
+}
+
+TEST_F(ClientAuthorizationOnlyTest, authWithEmailFailed) {
+  shared_ptr<supla_client> client;
+  TCS_ClientAuthorizationDetails auth = {};
+
+  auth.GUID[0] = 1;
+  auth.AuthKey[0] = 2;
+  snprintf(auth.Email, sizeof(auth.Email), "%s", "ted@atari.com");
+
+  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+
+  EXPECT_CALL(rc, get_user_id_by_email(StrEq("ted@atari.com")))
+      .Times(1)
+      .WillOnce(Return(25));
+
+  EXPECT_CALL(rc, get_object_id(25, _, _))
+      .Times(1)
+      .WillOnce([](int user_id, const char guid[SUPLA_GUID_SIZE], int *id) {
+        *id = 55;
+        return true;
+      });
+
+  EXPECT_CALL(rc, get_authkey_hash(55, NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce([](int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
+                   bool *is_null) { return false; });
+
+  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
+                  true);
+
+  EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, rc.get_result_code());
+}
+
+TEST_F(ClientAuthorizationOnlyTest, authWithEmailSuccessfull) {
+  shared_ptr<supla_client> client;
+  TCS_ClientAuthorizationDetails auth = {};
+
+  auth.GUID[0] = 1;
+  auth.AuthKey[0] = 2;
+  snprintf(auth.Email, sizeof(auth.Email), "%s", "ted@atari.com");
+
+  EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
+
+  EXPECT_CALL(rc, get_user_id_by_email(StrEq("ted@atari.com")))
+      .Times(1)
+      .WillOnce(Return(25));
+
+  EXPECT_CALL(rc, get_object_id(25, _, _))
+      .Times(1)
+      .WillOnce([](int user_id, const char guid[SUPLA_GUID_SIZE], int *id) {
+        *id = 55;
+        return true;
+      });
+
+  EXPECT_CALL(rc, get_authkey_hash(55, NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce(
+          [](int id, char authkey_hash[BCRYPT_HASH_MAXSIZE], bool *is_null) {
+            *is_null = true;
+            return true;
+          });
 
   rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
                   true);
