@@ -1827,3 +1827,42 @@ char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
   lck_unlock(suplaclient->lck);
   return result;
 }
+
+char supla_client_execute_action(void *_suplaclient, int action_id,
+                                 TAction_RS_Parameters *rs_param,
+                                 TAction_RGBW_Parameters *rgbw_param,
+                                 unsigned char subject_type, int subject_id) {
+  TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
+  char result = 0;
+
+  lck_lock(suplaclient->lck);
+  if (supla_client_registered(_suplaclient) == 1) {
+    TCS_Action action = {};
+    action.ActionId = action_id;
+    action.SubjectType = subject_type;
+    action.SubjectId = subject_id;
+
+    switch (action_id) {
+      case ACTION_SHUT_PARTIALLY:
+      case ACTION_REVEAL_PARTIALLY:
+        if (rs_param) {
+          action.ParamSize = sizeof(TAction_RS_Parameters);
+          memcpy(action.Param, rs_param, action.ParamSize);
+        }
+        break;
+      case ACTION_SET_RGBW_PARAMETERS:
+        if (rgbw_param) {
+          action.ParamSize = sizeof(TAction_RGBW_Parameters);
+          memcpy(action.Param, rgbw_param, action.ParamSize);
+        }
+        break;
+    }
+
+    result = srpc_cs_async_execute_action(suplaclient->srpc, &action) ==
+                     SUPLA_RESULT_FALSE
+                 ? 0
+                 : 1;
+  }
+  lck_unlock(suplaclient->lck);
+  return result;
+}

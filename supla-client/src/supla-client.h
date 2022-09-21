@@ -262,6 +262,10 @@ char supla_client_set_dgf_transparency(void *_suplaclient, int channelID,
 int supla_client_get_time_diff(void *_suplaclient);
 char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
                             unsigned int durationMS);
+char supla_client_execute_action(void *_suplaclient, int action_id,
+                                 TAction_RS_Parameters *rs_param,
+                                 TAction_RGBW_Parameters *rgbw_param,
+                                 unsigned char subject_type, int subject_id);
 
 _supla_int_t srpc_evtool_value_get(TSuplaChannelExtendedValue *ev,
                                    unsigned short index,
