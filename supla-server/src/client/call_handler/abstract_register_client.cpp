@@ -306,7 +306,7 @@ void supla_abstract_register_client::register_client(
   set_client_ipv4(client_ipv4);
   set_activity_timeout(activity_timeout);
 
-  set_should_rollback(true);
+  set_should_rollback(false);
 
   if (register_client_b != nullptr) {
     set_guid(register_client_b->GUID);
@@ -365,6 +365,7 @@ void supla_abstract_register_client::register_client(
   }
 
   if (!restrict_to_authentication) {
+    set_should_rollback(true);
     dba->start_transaction();
   }
 
