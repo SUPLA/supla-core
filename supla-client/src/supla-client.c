@@ -699,6 +699,14 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
                 : 0);
       }
       break;
+    case SUPLA_SC_CALL_ACTION_EXECUTION_RESULT:
+      if (result->Result == SUPLA_CALCFG_RESULT_TRUE &&
+          result->DataSize == sizeof(TSC_ActionExecutionResult) &&
+          scd->cfg.cb_on_action_execution_result) {
+        scd->cfg.cb_on_action_execution_result(
+            scd, scd->cfg.user_data, (TSC_ActionExecutionResult *)result->Data);
+      }
+      break;
   }
 }
 
