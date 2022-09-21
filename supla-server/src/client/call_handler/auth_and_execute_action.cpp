@@ -38,7 +38,7 @@ bool supla_ch_auth_and_execute_action::can_handle_call(unsigned int call_id) {
 void supla_ch_auth_and_execute_action::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (rd->data.cs_action_with_auth == nullptr) {
+  if (rd->data.cs_action_with_auth == nullptr || client->is_registered()) {
     return;
   }
 
