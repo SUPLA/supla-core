@@ -117,6 +117,11 @@ void integration_test_on_oauth_token_request_result(
   static_cast<IntegrationTest *>(instance)->onOAuthTokenRequestResult(result);
 }
 
+void integration_test_on_action_execution_result(
+    void *_suplaclient, void *instance, TSC_ActionExecutionResult *result) {
+  static_cast<IntegrationTest *>(instance)->onActionExecutionResult(result);
+}
+
 // static
 void IntegrationTest::Init(int argc, char **argv) {
   const char kHelpMessage[] =
@@ -203,6 +208,8 @@ void IntegrationTest::clientInit() {
       &integration_test_on_set_registration_enabled_result;
   scc.cb_on_oauth_token_request_result =
       &integration_test_on_oauth_token_request_result;
+  scc.cb_on_action_execution_result =
+      &integration_test_on_action_execution_result;
 
   beforeClientInit(&scc);
   sclient = supla_client_init(&scc);
@@ -333,5 +340,8 @@ void IntegrationTest::onGetVersionResult(TSDC_SuplaGetVersionResult *result) {}
 
 void IntegrationTest::onOAuthTokenRequestResult(
     TSC_OAuthTokenRequestResult *result) {}
+
+void IntegrationTest::onActionExecutionResult(
+    TSC_ActionExecutionResult *result) {}
 
 } /* namespace testing */
