@@ -60,8 +60,8 @@ class supla_device : public supla_abstract_connection_object {
   static bool funclist_contains_function(int funcList, int func);
 
   supla_device_channels *get_channels(void);
+  int get_flags(void);
 
-  void on_channel_state_result(TDSC_ChannelState *state);
   bool enter_cfg_mode(void);
 };
 

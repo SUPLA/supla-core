@@ -127,24 +127,9 @@ void supla_device::load_config(int UserID) { channels->load(UserID, get_id()); }
 
 void supla_device::set_flags(int flags) { this->flags = flags; }
 
-supla_device_channels *supla_device::get_channels(void) { return channels; }
+int supla_device::get_flags(void) { return flags; }
 
-void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
-  int ChannelID;
-  if ((ChannelID = channels->get_channel_id(state->ChannelNumber)) != 0) {
-    if (state->ReceiverID == 0) {
-      if (flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) {
-        channels->set_channel_state(ChannelID, state);
-      }
-    } else {
-      std::shared_ptr<supla_client> client =
-          get_user()->get_clients()->get(state->ReceiverID);
-      if (client != nullptr) {
-        client->on_device_channel_state_result(ChannelID, state);
-      }
-    }
-  }
-}
+supla_device_channels *supla_device::get_channels(void) { return channels; }
 
 bool supla_device::enter_cfg_mode(void) {
   if (flags & SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE) {

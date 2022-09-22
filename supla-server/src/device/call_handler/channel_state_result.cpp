@@ -42,11 +42,19 @@ void supla_ch_channel_state_result::handle_call(
     int channel_id = device->get_channels()->get_channel_id(
         rd->data.dsc_channel_state->ChannelNumber);
     if (channel_id != 0) {
-      shared_ptr<supla_client> client = device->get_user()->get_clients()->get(
-          rd->data.dsc_channel_state->ReceiverID);
-      if (client != nullptr) {
-        client->on_device_channel_state_result(channel_id,
-                                               rd->data.dsc_channel_state);
+      if (rd->data.dsc_channel_state->ReceiverID == 0) {
+        if (device->get_flags() & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) {
+          device->get_channels()->set_channel_state(channel_id,
+                                                    rd->data.dsc_channel_state);
+        }
+      } else {
+        shared_ptr<supla_client> client =
+            device->get_user()->get_clients()->get(
+                rd->data.dsc_channel_state->ReceiverID);
+        if (client != nullptr) {
+          client->on_device_channel_state_result(channel_id,
+                                                 rd->data.dsc_channel_state);
+        }
       }
     }
   }
