@@ -699,13 +699,6 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
                 : 0);
       }
       break;
-    case SUPLA_SC_CALL_ACTION_EXECUTION_RESULT:
-      if (result->DataSize == sizeof(TSC_ActionExecutionResult) &&
-          scd->cfg.cb_on_action_execution_result) {
-        scd->cfg.cb_on_action_execution_result(
-            scd, scd->cfg.user_data, (TSC_ActionExecutionResult *)result->Data);
-      }
-      break;
   }
 }
 
@@ -1090,6 +1083,12 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           scd->cfg.cb_on_set_registration_enabled_result(
               scd, scd->cfg.user_data,
               rd.data.sc_set_registration_enabled_result);
+        }
+        break;
+      case SUPLA_SC_CALL_ACTION_EXECUTION_RESULT:
+        if (scd->cfg.cb_on_action_execution_result) {
+          scd->cfg.cb_on_action_execution_result(
+              scd, scd->cfg.user_data, rd.data.sc_action_execution_result);
         }
         break;
     }
