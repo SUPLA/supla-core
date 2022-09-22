@@ -22,7 +22,7 @@
 #include "client/client.h"
 #include "client/clientchannelgroups.h"
 #include "client/clientchannels.h"
-#include "log.h"
+
 using std::shared_ptr;
 
 supla_ch_execute_action::supla_ch_execute_action(void)
@@ -40,7 +40,7 @@ void supla_ch_execute_action::handle_call(
   if (rd->data.cs_action == nullptr) {
     return;
   }
-supla_log(LOG_DEBUG, "AAA");
+
   supla_action_executor aexec;
   execute_action(
       client->get_user_id(), client->get_id(), &aexec, rd->data.cs_action,
