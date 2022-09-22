@@ -95,4 +95,35 @@ TEST_F(ActionExecutionIntegrationTest, rollerShutterIncorrectParameters) {
   ASSERT_EQ(result.SubjectId, 303);
 }
 
+TEST_F(ActionExecutionIntegrationTest, shutPartiallyWithSuccess) {
+  TAction_RS_Parameters rs = {};
+  rs.Percentage = 10;
+
+  ASSERT_FALSE(sclient == NULL);
+  ASSERT_GT(
+      supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, &rs, nullptr,
+                                  ACTION_SUBJECT_TYPE_CHANNEL, 303),
+      0);
+  iterateUntilDefaultTimeout();
+
+  ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_TRUE);
+  ASSERT_EQ(result.ActionId, ACTION_SHUT_PARTIALLY);
+  ASSERT_EQ(result.SubjectType, ACTION_SUBJECT_TYPE_CHANNEL);
+  ASSERT_EQ(result.SubjectId, 303);
+}
+
+TEST_F(ActionExecutionIntegrationTest, rgbwIncorrectParameters) {
+  ASSERT_FALSE(sclient == NULL);
+  ASSERT_GT(
+      supla_client_execute_action(sclient, ACTION_SET_RGBW_PARAMETERS, nullptr,
+                                  nullptr, ACTION_SUBJECT_TYPE_CHANNEL, 170),
+      0);
+  iterateUntilDefaultTimeout();
+
+  ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
+  ASSERT_EQ(result.ActionId, ACTION_SET_RGBW_PARAMETERS);
+  ASSERT_EQ(result.SubjectType, ACTION_SUBJECT_TYPE_CHANNEL);
+  ASSERT_EQ(result.SubjectId, 170);
+}
+
 } /* namespace testing */
