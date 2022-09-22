@@ -80,4 +80,19 @@ TEST_F(ActionExecutionIntegrationTest, sceneNotFound) {
   ASSERT_EQ(result.SubjectType, ACTION_SUBJECT_TYPE_SCENE);
   ASSERT_EQ(result.SubjectId, 22667788);
 }
+
+TEST_F(ActionExecutionIntegrationTest, rollerShutterIncorrectParameters) {
+  ASSERT_FALSE(sclient == NULL);
+  ASSERT_GT(
+      supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, nullptr,
+                                  nullptr, ACTION_SUBJECT_TYPE_CHANNEL, 303),
+      0);
+  iterateUntilDefaultTimeout();
+
+  ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
+  ASSERT_EQ(result.ActionId, ACTION_SHUT_PARTIALLY);
+  ASSERT_EQ(result.SubjectType, ACTION_SUBJECT_TYPE_CHANNEL);
+  ASSERT_EQ(result.SubjectId, 303);
+}
+
 } /* namespace testing */
