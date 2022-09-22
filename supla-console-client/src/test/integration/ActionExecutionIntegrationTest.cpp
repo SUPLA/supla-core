@@ -126,4 +126,21 @@ TEST_F(ActionExecutionIntegrationTest, rgbwIncorrectParameters) {
   ASSERT_EQ(result.SubjectId, 170);
 }
 
+TEST_F(ActionExecutionIntegrationTest, setBrightnessWithSuccess) {
+  TAction_RGBW_Parameters rgbw = {};
+  rgbw.Brightness = 44;
+
+  ASSERT_FALSE(sclient == NULL);
+  ASSERT_GT(
+      supla_client_execute_action(sclient, ACTION_SET_RGBW_PARAMETERS, nullptr,
+                                  &rgbw, ACTION_SUBJECT_TYPE_CHANNEL, 170),
+      0);
+  iterateUntilDefaultTimeout();
+
+  ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_TRUE);
+  ASSERT_EQ(result.ActionId, ACTION_SET_RGBW_PARAMETERS);
+  ASSERT_EQ(result.SubjectType, ACTION_SUBJECT_TYPE_CHANNEL);
+  ASSERT_EQ(result.SubjectId, 170);
+}
+
 } /* namespace testing */
