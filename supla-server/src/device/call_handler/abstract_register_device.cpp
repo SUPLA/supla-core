@@ -38,7 +38,6 @@ supla_abstract_register_device::supla_abstract_register_device(void)
   device_flags = 0;
   manufacturer_id = 0;
   product_id = 0;
-  flags = 0;
   device_id = 0;
 
   location_enabled = false;
@@ -58,8 +57,7 @@ supla_abstract_device_dao *supla_abstract_register_device::get_device_dao(
   return device_dao;
 }
 
-std::weak_ptr<supla_device> supla_abstract_register_device::get_device(
-    void) {
+std::weak_ptr<supla_device> supla_abstract_register_device::get_device(void) {
   return device;
 }
 
@@ -69,19 +67,21 @@ bool supla_abstract_register_device::is_channel_added(void) {
 
 int supla_abstract_register_device::get_device_id() { return device_id; }
 
+int supla_abstract_register_device::get_device_flags(void) {
+  return device_flags;
+}
+
 int supla_abstract_register_device::get_location_id() { return location_id; }
 
 int supla_abstract_register_device::get_channel_count() {
   return channel_count;
 }
 
-TDS_SuplaDeviceChannel_B *supla_abstract_register_device::get_channels_b(
-    void) {
+TDS_SuplaDeviceChannel_B *supla_abstract_register_device::get_channels_b(void) {
   return register_device_c ? register_device_c->channels : nullptr;
 }
 
-TDS_SuplaDeviceChannel_C *supla_abstract_register_device::get_channels_c(
-    void) {
+TDS_SuplaDeviceChannel_C *supla_abstract_register_device::get_channels_c(void) {
   return register_device_e ? register_device_e->channels : nullptr;
 }
 
@@ -331,7 +331,6 @@ void supla_abstract_register_device::register_device(
     channel_count = register_device_e->channel_count;
     manufacturer_id = register_device_e->ManufacturerID;
     product_id = register_device_e->ProductID;
-    flags = register_device_e->Flags;
   }
 
   if (strnlen(get_name(), SUPLA_DEVICE_NAME_MAXSIZE - 1) < 1) {
@@ -419,7 +418,7 @@ void supla_abstract_register_device::register_device(
     if (!device_dao->update_device(
             device_id, _original_location_id, get_authkey(), get_name(),
             client_ipv4, get_softver(), get_srpc_adapter()->get_proto_version(),
-            flags)) {
+            device_flags)) {
       send_result(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE);
       return;
     }

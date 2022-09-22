@@ -125,6 +125,8 @@ bool supla_device::funclist_contains_function(int funcList, int func) {
 
 void supla_device::load_config(int UserID) { channels->load(UserID, get_id()); }
 
+void supla_device::set_flags(int flags) { this->flags = flags; }
+
 supla_device_channels *supla_device::get_channels(void) { return channels; }
 
 void supla_device::on_channel_state_result(TDSC_ChannelState *state) {

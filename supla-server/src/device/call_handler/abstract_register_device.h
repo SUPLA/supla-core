@@ -38,7 +38,6 @@ class supla_abstract_register_device
   int device_flags;
   short manufacturer_id;
   short product_id;
-  int flags;
   int device_id;
 
   bool location_enabled;
@@ -72,6 +71,7 @@ class supla_abstract_register_device
   std::weak_ptr<supla_device> get_device(void);
   bool is_channel_added(void);
   int get_device_id(void);
+  int get_device_flags(void);
   int get_location_id(void);
   int get_channel_count(void);
   TDS_SuplaDeviceChannel_B *get_channels_b(void);

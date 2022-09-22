@@ -70,6 +70,7 @@ void supla_register_device::on_registraction_success(void) {
   device->set_guid(get_guid());
   device->set_authkey(get_authkey());
   device->set_user(supla_user::find(get_user_id(), true));
+  device->set_flags(get_device_flags());
   device->set_registered(true);
 
   device->load_config(get_user_id());

@@ -44,6 +44,7 @@ class supla_device : public supla_abstract_connection_object {
   bool entering_cfg_mode_in_progress;
 
   void load_config(int UserID);
+  void set_flags(int flags);
 
   virtual bool can_reconnect(void);
 
