@@ -20,7 +20,9 @@
 
 #include "tools.h"
 
+#ifndef __ANDROID_API__
 #include <execinfo.h>
+#endif /*__ANDROID_API__*/
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -57,6 +59,7 @@ void st_signal_handler(int sig) {
 }
 
 void st_critical_signal_handler(int sig) {
+#ifndef __ANDROID_API__
   void *array[20] = {};
   size_t size = 0;
 
@@ -65,6 +68,7 @@ void st_critical_signal_handler(int sig) {
   fprintf(stderr, "Critical Error! Signal %d:\n", sig);
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   exit(1);
+#endif /*__ANDROID_API__*/
 }
 
 void st_hook_signals(void) {
@@ -86,8 +90,10 @@ void st_hook_signals(void) {
 }
 
 void st_hook_critical_signals(void) {
+#ifndef __ANDROID_API__
   signal(SIGSEGV, st_critical_signal_handler);
   signal(SIGABRT, st_critical_signal_handler);
+#endif /*__ANDROID_API__*/
 }
 
 unsigned char st_file_exists(const char *fp) {
