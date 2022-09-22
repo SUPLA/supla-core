@@ -40,7 +40,7 @@ void ActionExecutionIntegrationTest::onActionExecutionResult(
   cancelIteration();
 }
 
-TEST_F(ActionExecutionIntegrationTest, chanelNotFound) {
+TEST_F(ActionExecutionIntegrationTest, channelNotFound) {
   ASSERT_FALSE(sclient == NULL);
   ASSERT_GT(supla_client_execute_action(sclient, ACTION_OPEN, nullptr, nullptr,
                                         ACTION_SUBJECT_TYPE_CHANNEL, 55667788),
