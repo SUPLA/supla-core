@@ -19,7 +19,7 @@
 #include "client/call_handler/abstract_execute_action.h"
 
 #include "actions/action_executor.h"
-
+#include "log.h"
 using std::function;
 
 supla_ch_abstract_execute_action::supla_ch_abstract_execute_action(void)
@@ -35,7 +35,7 @@ void supla_ch_abstract_execute_action::send_result(
   result.SubjectId = action->SubjectId;
   result.SubjectType = action->SubjectType;
   result.ResultCode = resultcode;
-
+supla_log(LOG_DEBUG, "Result %i", result.ResultCode);
   srpc_adapter->sc_async_action_execution_result(&result);
 }
 
