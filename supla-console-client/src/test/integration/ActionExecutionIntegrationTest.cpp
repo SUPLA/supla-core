@@ -67,4 +67,17 @@ TEST_F(ActionExecutionIntegrationTest, channelGroupNotFound) {
   ASSERT_EQ(result.SubjectId, 11667788);
 }
 
+TEST_F(ActionExecutionIntegrationTest, sceneNotFound) {
+  ASSERT_FALSE(sclient == NULL);
+  ASSERT_GT(
+      supla_client_execute_action(sclient, ACTION_EXECUTE, nullptr, nullptr,
+                                  ACTION_SUBJECT_TYPE_SCENE, 22667788),
+      0);
+  iterateUntilDefaultTimeout();
+
+  ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_SUBJECT_NOT_FOUND);
+  ASSERT_EQ(result.ActionId, ACTION_EXECUTE);
+  ASSERT_EQ(result.SubjectType, ACTION_SUBJECT_TYPE_SCENE);
+  ASSERT_EQ(result.SubjectId, 22667788);
+}
 } /* namespace testing */
