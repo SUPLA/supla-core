@@ -21,6 +21,8 @@
 
 #include <jni.h>
 
+extern char log_tag[];
+
 typedef struct {
   void *_supla_client;
 
@@ -68,5 +70,11 @@ typedef struct {
 } TAndroidSuplaClient;
 
 void *supla_client_ptr(jlong _asc);
+
+jmethodID supla_android_GetMethodID(JNIEnv *env, jclass cls,
+                                    const char *method_name, const char *type);
+
+int supla_android_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
+                                const char *method_name, const char *type);
 
 #endif /*SUPLA_H_*/

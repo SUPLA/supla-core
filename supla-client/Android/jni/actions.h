@@ -27,7 +27,8 @@
 extern "C" {
 #endif
 
-void get_action_execution_call_params(jobject jparams, int *action_id,
+void get_action_execution_call_params(JNIEnv *env, jobject jparams,
+                                      int *action_id,
                                       TAction_RS_Parameters **rs_param,
                                       TAction_RGBW_Parameters **rgbw_param,
                                       int *subject_type, int *subject_id);

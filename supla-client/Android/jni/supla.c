@@ -18,7 +18,11 @@
 
 #include "supla.h"
 
+#include <android/log.h>
+
 #include "proto.h"
+
+char log_tag[] = "LibSuplaClient";
 
 void *supla_client_ptr(jlong _asc) {
 #ifdef _LP64
@@ -30,4 +34,23 @@ void *supla_client_ptr(jlong _asc) {
   if (asc) return asc->_supla_client;
 
   return NULL;
+}
+
+jmethodID supla_android_GetMethodID(JNIEnv *env, jclass cls,
+                                    const char *method_name, const char *type) {
+  jmethodID methodID = (*env)->GetMethodID(env, cls, method_name, type);
+
+  if (methodID == NULL) {
+    __android_log_print(ANDROID_LOG_ERROR, log_tag,
+                        "Unknown method name: %s type: %s", method_name, type);
+  }
+
+  return methodID;
+}
+
+int supla_android_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
+                                const char *method_name, const char *type) {
+  jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
+
+  return (*env)->CallIntMethod(env, obj, method_id);
 }

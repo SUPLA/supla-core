@@ -24,10 +24,45 @@
 #include "supla-client.h"
 #include "supla.h"
 
-void get_action_execution_call_params(jobject jparams, int *action_id,
+void convert_rs_parameters(JNIEnv *env, jobject jparams,
+                           TAction_RS_Parameters **rs_param) {}
+
+void convert_rgbw_parameters(JNIEnv *env, jobject jparams,
+                             TAction_RGBW_Parameters **rgbw_param) {}
+
+void get_action_execution_call_params(JNIEnv *env, jobject jparams,
+                                      int *action_id,
                                       TAction_RS_Parameters **rs_param,
                                       TAction_RGBW_Parameters **rgbw_param,
-                                      int *subject_type, int *subject_id) {}
+                                      int *subject_type, int *subject_id) {
+  jclass cls =
+      (*env)->FindClass(env, "org/supla/android/lib/actions/ActionParameters");
+
+  jclass rs_cls = (*env)->FindClass(
+      env, "org/supla/android/lib/actions/RollerShutterParameters");
+
+  if ((*env)->IsInstanceOf(env, jparams, rs_cls)) {
+    convert_rs_parameters(env, jparams, rs_param);
+    cls = rs_cls;
+  }
+
+  jclass rgbw_cls =
+      (*env)->FindClass(env, "org/supla/android/lib/actions/RgbwParameters");
+
+  if ((*env)->IsInstanceOf(env, jparams, rgbw_cls)) {
+    convert_rgbw_parameters(env, jparams, rgbw_param);
+    cls = rgbw_cls;
+  }
+
+  *action_id =
+      supla_android_CallIntMethod(env, cls, jparams, "getAction", "()I");
+
+  *subject_type =
+      supla_android_CallIntMethod(env, cls, jparams, "getSubjectType", "()I");
+
+  *subject_id =
+      supla_android_CallIntMethod(env, cls, jparams, "getSubjectId", "()I");
+}
 
 JNIEXPORT jboolean JNICALL
 Java_org_supla_android_lib_SuplaClient_scExecuteAction(JNIEnv *env,
@@ -43,7 +78,7 @@ Java_org_supla_android_lib_SuplaClient_scExecuteAction(JNIEnv *env,
     TAction_RS_Parameters *rs_param = NULL;
     TAction_RGBW_Parameters *rgbw_param = NULL;
 
-    get_action_execution_call_params(jparams, &action_id, &rs_param,
+    get_action_execution_call_params(env, jparams, &action_id, &rs_param,
                                      &rgbw_param, &subject_type, &subject_id);
 
     if (supla_client_execute_action(supla_client, action_id, rs_param,
