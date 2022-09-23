@@ -442,7 +442,11 @@ void PROTO_ICACHE_FLASH sproto__set_null_terminated_string(
     return;
   }
   if (src) {
+#if defined(ESP8266)
+    ets_snprintf(dest, max_size, "%s", src);
+#else
     snprintf(dest, max_size, "%s", src);
+#endif
     *dest_size = strnlen(dest, max_size - 1) + 1;
   } else {
     *dest_size = 1;
