@@ -408,7 +408,7 @@ TEST_F(ActionTriggerConfigTest, getColorBrightness) {
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
-      "\"channel\",\"action\":{\"id\":80,\"param\":{\"ColorBrightness\":15}}}}"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":15}}}}"
       "}");
 
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
@@ -420,14 +420,14 @@ TEST_F(ActionTriggerConfigTest, getColorBrightness) {
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
-      "\"channel\",\"action\":{\"id\":80,\"param\":{\"ColorBrightness\":110}}}"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":110}}}"
       "}}");
 
   EXPECT_EQ(config->get_rgbw().ColorBrightness, -1);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
-      "\"channel\",\"action\":{\"id\":80,\"param\":{\"ColorBrightness\":0}}}}"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":0}}}}"
       "}");
 
   EXPECT_EQ(config->get_rgbw().ColorBrightness, 0);
