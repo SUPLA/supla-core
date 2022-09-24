@@ -48,9 +48,32 @@ jmethodID supla_android_GetMethodID(JNIEnv *env, jclass cls,
   return methodID;
 }
 
-int supla_android_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
-                                const char *method_name, const char *type) {
+jlong supla_android_CallLongMethod(JNIEnv *env, jclass cls, jobject obj,
+                                   const char *method_name, const char *type) {
+  jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
+
+  return (*env)->CallLongMethod(env, obj, method_id);
+}
+
+jint supla_android_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
+                                 const char *method_name, const char *type) {
   jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
 
   return (*env)->CallIntMethod(env, obj, method_id);
+}
+
+jshort supla_android_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
+                                     const char *method_name,
+                                     const char *type) {
+  jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
+
+  return (*env)->CallShortMethod(env, obj, method_id);
+}
+
+jboolean supla_android_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
+                                         const char *method_name,
+                                         const char *type) {
+  jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
+
+  return (*env)->CallBooleanMethod(env, obj, method_id);
 }

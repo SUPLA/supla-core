@@ -24,12 +24,6 @@
 #include "supla-client.h"
 #include "supla.h"
 
-void convert_rs_parameters(JNIEnv *env, jobject jparams,
-                           TAction_RS_Parameters **rs_param) {}
-
-void convert_rgbw_parameters(JNIEnv *env, jobject jparams,
-                             TAction_RGBW_Parameters **rgbw_param) {}
-
 void get_action_execution_call_params(JNIEnv *env, jobject jparams,
                                       int *action_id,
                                       TAction_RS_Parameters **rs_param,
@@ -42,16 +36,35 @@ void get_action_execution_call_params(JNIEnv *env, jobject jparams,
       env, "org/supla/android/lib/actions/RollerShutterParameters");
 
   if ((*env)->IsInstanceOf(env, jparams, rs_cls)) {
-    convert_rs_parameters(env, jparams, rs_param);
     cls = rs_cls;
+    *rs_param = (TAction_RS_Parameters *)malloc(sizeof(TAction_RS_Parameters));
+
+    (*rs_param)->Percentage = supla_android_CallShortMethod(
+        env, cls, jparams, "getPercentage", "()S");
   }
 
   jclass rgbw_cls =
       (*env)->FindClass(env, "org/supla/android/lib/actions/RgbwParameters");
 
   if ((*env)->IsInstanceOf(env, jparams, rgbw_cls)) {
-    convert_rgbw_parameters(env, jparams, rgbw_param);
     cls = rgbw_cls;
+    *rgbw_param =
+        (TAction_RGBW_Parameters *)malloc(sizeof(TAction_RGBW_Parameters));
+
+    (*rgbw_param)->Brightness = supla_android_CallShortMethod(
+        env, cls, jparams, "getBrightness", "()S");
+    (*rgbw_param)->ColorBrightness = supla_android_CallShortMethod(
+        env, cls, jparams, "getColorBrightness", "()S");
+    (*rgbw_param)->Color =
+        supla_android_CallLongMethod(env, cls, jparams, "getColor", "()J");
+    (*rgbw_param)->ColorRandom = supla_android_CallBooleanMethod(
+                                     env, cls, jparams, "getColorRandom", "()Z")
+                                     ? 1
+                                     : 0;
+    (*rgbw_param)->OnOff =
+        supla_android_CallBooleanMethod(env, cls, jparams, "getOnOff", "()Z")
+            ? 1
+            : 0;
   }
 
   *action_id =
