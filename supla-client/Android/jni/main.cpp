@@ -249,7 +249,7 @@ void supla_android_client_stringobj2buffer(JNIEnv *env, jobject cfg, jclass jcs,
 void supla_android_client_bytearrobj2buffer(JNIEnv *env, jobject cfg,
                                             jclass jcs, const char *name,
                                             char *buff, int size) {
-  jfieldID fid = supla_client_GetFieldID(env, jcs, "clientGUID", "[B");
+  jfieldID fid = supla_client_GetFieldID(env, jcs, name, "[B");
   jbyteArray barr = (jbyteArray)env->GetObjectField(cfg, fid);
 
   if (size == env->GetArrayLength(barr)) {
