@@ -26,9 +26,9 @@ char log_tag[] = "LibSuplaClient";
 
 void *supla_client_ptr(jlong _asc) {
 #ifdef _LP64
-  TAndroidSuplaClient *asc = (void *)_asc;
+  TAndroidSuplaClient *asc = (TAndroidSuplaClient *)_asc;
 #else
-  TAndroidSuplaClient *asc = (void *)(int)_asc;
+  TAndroidSuplaClient *asc = (TAndroidSuplaClient *)(int)_asc;
 #endif
 
   if (asc) return asc->_supla_client;
@@ -38,7 +38,7 @@ void *supla_client_ptr(jlong _asc) {
 
 jmethodID supla_android_GetMethodID(JNIEnv *env, jclass cls,
                                     const char *method_name, const char *type) {
-  jmethodID methodID = (*env)->GetMethodID(env, cls, method_name, type);
+  jmethodID methodID = env->GetMethodID(cls, method_name, type);
 
   if (methodID == NULL) {
     __android_log_print(ANDROID_LOG_ERROR, log_tag,
@@ -52,14 +52,14 @@ jlong supla_android_CallLongMethod(JNIEnv *env, jclass cls, jobject obj,
                                    const char *method_name, const char *type) {
   jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
 
-  return (*env)->CallLongMethod(env, obj, method_id);
+  return env->CallLongMethod(obj, method_id);
 }
 
 jint supla_android_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
                                  const char *method_name, const char *type) {
   jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
 
-  return (*env)->CallIntMethod(env, obj, method_id);
+  return env->CallIntMethod(obj, method_id);
 }
 
 jshort supla_android_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
@@ -67,7 +67,7 @@ jshort supla_android_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
                                      const char *type) {
   jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
 
-  return (*env)->CallShortMethod(env, obj, method_id);
+  return env->CallShortMethod(obj, method_id);
 }
 
 jboolean supla_android_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
@@ -75,5 +75,5 @@ jboolean supla_android_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
                                          const char *type) {
   jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
 
-  return (*env)->CallBooleanMethod(env, obj, method_id);
+  return env->CallBooleanMethod(obj, method_id);
 }

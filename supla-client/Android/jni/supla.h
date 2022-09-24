@@ -74,6 +74,9 @@ void *supla_client_ptr(jlong _asc);
 jmethodID supla_android_GetMethodID(JNIEnv *env, jclass cls,
                                     const char *method_name, const char *type);
 
+jmethodID supla_android_GetMethodID(JNIEnv *env, jclass cls,
+                                    const char *method_name, const char *type);
+
 jlong supla_android_CallLongMethod(JNIEnv *env, jclass cls, jobject obj,
                                    const char *method_name, const char *type);
 

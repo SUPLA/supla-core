@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-void get_action_execution_call_params(JNIEnv *env, jobject jparams,
+void get_action_execution_call_params(JNIEnv *env, jobject action_params,
                                       int *action_id,
                                       TAction_RS_Parameters **rs_param,
                                       TAction_RGBW_Parameters **rgbw_param,
@@ -36,7 +36,7 @@ void get_action_execution_call_params(JNIEnv *env, jobject jparams,
 JNIEXPORT jboolean JNICALL
 Java_org_supla_android_lib_SuplaClient_scExecuteAction(JNIEnv *env,
                                                        jobject thiz, jlong _asc,
-                                                       jobject jparams);
+                                                       jobject action_params);
 
 #ifdef __cplusplus
 }

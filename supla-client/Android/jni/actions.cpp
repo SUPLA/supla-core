@@ -24,63 +24,63 @@
 #include "supla-client.h"
 #include "supla.h"
 
-void get_action_execution_call_params(JNIEnv *env, jobject jparams,
+void get_action_execution_call_params(JNIEnv *env, jobject action_params,
                                       int *action_id,
                                       TAction_RS_Parameters **rs_param,
                                       TAction_RGBW_Parameters **rgbw_param,
                                       int *subject_type, int *subject_id) {
-  jclass cls =
-      (*env)->FindClass(env, "org/supla/android/lib/actions/ActionParameters");
+  jclass cls = env->FindClass("org/supla/android/lib/actions/ActionParameters");
 
-  jclass rs_cls = (*env)->FindClass(
-      env, "org/supla/android/lib/actions/RollerShutterParameters");
+  jclass rs_cls = env->FindClass(
+      "org/supla/android/lib/actions/RollerShutterActionParameters");
 
-  if ((*env)->IsInstanceOf(env, jparams, rs_cls)) {
+  if (env->IsInstanceOf(action_params, rs_cls)) {
     cls = rs_cls;
     *rs_param = (TAction_RS_Parameters *)malloc(sizeof(TAction_RS_Parameters));
 
     (*rs_param)->Percentage = supla_android_CallShortMethod(
-        env, cls, jparams, "getPercentage", "()S");
+        env, cls, action_params, "getPercentage", "()S");
   }
 
   jclass rgbw_cls =
-      (*env)->FindClass(env, "org/supla/android/lib/actions/RgbwParameters");
+      env->FindClass("org/supla/android/lib/actions/RgbwActionParameters");
 
-  if ((*env)->IsInstanceOf(env, jparams, rgbw_cls)) {
+  if (env->IsInstanceOf(action_params, rgbw_cls)) {
     cls = rgbw_cls;
     *rgbw_param =
         (TAction_RGBW_Parameters *)malloc(sizeof(TAction_RGBW_Parameters));
 
     (*rgbw_param)->Brightness = supla_android_CallShortMethod(
-        env, cls, jparams, "getBrightness", "()S");
+        env, cls, action_params, "getBrightness", "()S");
     (*rgbw_param)->ColorBrightness = supla_android_CallShortMethod(
-        env, cls, jparams, "getColorBrightness", "()S");
-    (*rgbw_param)->Color =
-        supla_android_CallLongMethod(env, cls, jparams, "getColor", "()J");
-    (*rgbw_param)->ColorRandom = supla_android_CallBooleanMethod(
-                                     env, cls, jparams, "getColorRandom", "()Z")
-                                     ? 1
-                                     : 0;
-    (*rgbw_param)->OnOff =
-        supla_android_CallBooleanMethod(env, cls, jparams, "getOnOff", "()Z")
+        env, cls, action_params, "getColorBrightness", "()S");
+    (*rgbw_param)->Color = supla_android_CallLongMethod(env, cls, action_params,
+                                                        "getColor", "()J");
+    (*rgbw_param)->ColorRandom =
+        supla_android_CallBooleanMethod(env, cls, action_params,
+                                        "getColorRandom", "()Z")
             ? 1
             : 0;
+    (*rgbw_param)->OnOff = supla_android_CallBooleanMethod(
+                               env, cls, action_params, "getOnOff", "()Z")
+                               ? 1
+                               : 0;
   }
 
   *action_id =
-      supla_android_CallIntMethod(env, cls, jparams, "getAction", "()I");
+      supla_android_CallIntMethod(env, cls, action_params, "getAction", "()I");
 
-  *subject_type =
-      supla_android_CallIntMethod(env, cls, jparams, "getSubjectType", "()I");
+  *subject_type = supla_android_CallIntMethod(env, cls, action_params,
+                                              "getSubjectType", "()I");
 
-  *subject_id =
-      supla_android_CallIntMethod(env, cls, jparams, "getSubjectId", "()I");
+  *subject_id = supla_android_CallIntMethod(env, cls, action_params,
+                                            "getSubjectId", "()I");
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_supla_android_lib_SuplaClient_scExecuteAction(JNIEnv *env,
                                                        jobject thiz, jlong _asc,
-                                                       jobject jparams) {
+                                                       jobject action_params) {
   jboolean result = JNI_FALSE;
 
   void *supla_client = supla_client_ptr(_asc);
@@ -91,7 +91,7 @@ Java_org_supla_android_lib_SuplaClient_scExecuteAction(JNIEnv *env,
     TAction_RS_Parameters *rs_param = NULL;
     TAction_RGBW_Parameters *rgbw_param = NULL;
 
-    get_action_execution_call_params(env, jparams, &action_id, &rs_param,
+    get_action_execution_call_params(env, action_params, &action_id, &rs_param,
                                      &rgbw_param, &subject_type, &subject_id);
 
     if (supla_client_execute_action(supla_client, action_id, rs_param,
