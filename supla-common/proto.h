@@ -1156,11 +1156,12 @@ typedef struct {
 } TAction_RS_Parameters;  // ver. >= 19
 
 typedef struct {
-  char Brightness;
-  char ColorBrightness;
-  unsigned int Color;
+  char Brightness;       // -1 == Ignore
+  char ColorBrightness;  // -1 == Ignore
+  unsigned int Color;    // 0 == Ignore
   char ColorRandom;
-  char Reserverd[9];
+  char OnOff;
+  char Reserverd[8];
 } TAction_RGBW_Parameters;  // ver. >= 19
 
 typedef struct {

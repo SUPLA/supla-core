@@ -68,10 +68,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene1) {
       EXPECT_EQ(cfg->get_source_device_id(), 0);
       EXPECT_EQ(cfg->get_source_channel_id(), 0);
       EXPECT_EQ(cfg->get_percentage(), 0);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 0);
-      EXPECT_EQ(cfg->get_rgbw().color, 0U);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 0);
-      EXPECT_FALSE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 0);
+      EXPECT_EQ(cfg->get_rgbw().Color, 0U);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 0);
+      EXPECT_FALSE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
 
@@ -86,10 +86,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene1) {
       EXPECT_EQ(cfg->get_source_device_id(), 0);
       EXPECT_EQ(cfg->get_source_channel_id(), 0);
       EXPECT_EQ(cfg->get_percentage(), 0);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 0);
-      EXPECT_EQ(cfg->get_rgbw().color, 0U);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 0);
-      EXPECT_FALSE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 0);
+      EXPECT_EQ(cfg->get_rgbw().Color, 0U);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 0);
+      EXPECT_FALSE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
 
@@ -104,10 +104,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene1) {
       EXPECT_EQ(cfg->get_source_device_id(), 0);
       EXPECT_EQ(cfg->get_source_channel_id(), 0);
       EXPECT_EQ(cfg->get_percentage(), 0);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 10);
-      EXPECT_EQ(cfg->get_rgbw().color, 0U);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 0);
-      EXPECT_FALSE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 10);
+      EXPECT_EQ(cfg->get_rgbw().Color, 0U);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 0);
+      EXPECT_FALSE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
     delete operations;
@@ -130,10 +130,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene2) {
       EXPECT_EQ(cfg->get_source_device_id(), 0);
       EXPECT_EQ(cfg->get_source_channel_id(), 0);
       EXPECT_EQ(cfg->get_percentage(), 0);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 0);
-      EXPECT_EQ(cfg->get_rgbw().color, 0U);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 0);
-      EXPECT_FALSE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 0);
+      EXPECT_EQ(cfg->get_rgbw().Color, 0U);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 0);
+      EXPECT_FALSE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
 
@@ -148,10 +148,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene2) {
       EXPECT_EQ(cfg->get_source_device_id(), 0);
       EXPECT_EQ(cfg->get_source_channel_id(), 0);
       EXPECT_EQ(cfg->get_percentage(), 0);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 0);
-      EXPECT_EQ(cfg->get_rgbw().color, 0U);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 0);
-      EXPECT_FALSE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 0);
+      EXPECT_EQ(cfg->get_rgbw().Color, 0U);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 0);
+      EXPECT_FALSE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
     delete operations;
@@ -175,10 +175,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene3) {
       EXPECT_EQ(cfg->get_source_device_id(), 0);
       EXPECT_EQ(cfg->get_source_channel_id(), 0);
       EXPECT_EQ(cfg->get_percentage(), 0);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 0);
-      EXPECT_EQ(cfg->get_rgbw().color, 0U);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 0);
-      EXPECT_FALSE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 0);
+      EXPECT_EQ(cfg->get_rgbw().Color, 0U);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 0);
+      EXPECT_FALSE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
     operation = operations->pop();
@@ -192,10 +192,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene3) {
       EXPECT_EQ(cfg->get_source_device_id(), 0);
       EXPECT_EQ(cfg->get_source_channel_id(), 0);
       EXPECT_EQ(cfg->get_percentage(), 0);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 6);
-      EXPECT_EQ(cfg->get_rgbw().color, (unsigned int)0x0000FF);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 10);
-      EXPECT_FALSE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 6);
+      EXPECT_EQ(cfg->get_rgbw().Color, (unsigned int)0x0000FF);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 10);
+      EXPECT_FALSE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
     operation = operations->pop();
@@ -209,10 +209,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene3) {
       EXPECT_EQ(cfg->get_source_device_id(), 0);
       EXPECT_EQ(cfg->get_source_channel_id(), 0);
       EXPECT_EQ(cfg->get_percentage(), 0);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 0);
-      EXPECT_EQ(cfg->get_rgbw().color, 0U);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 0);
-      EXPECT_FALSE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 0);
+      EXPECT_EQ(cfg->get_rgbw().Color, 0U);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 0);
+      EXPECT_FALSE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
     delete operations;
@@ -236,10 +236,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene4) {
       EXPECT_EQ(cfg->get_source_device_id(), 73);
       EXPECT_EQ(cfg->get_source_channel_id(), 143);
       EXPECT_EQ(cfg->get_percentage(), 0);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 0);
-      EXPECT_EQ(cfg->get_rgbw().color, 0U);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 0);
-      EXPECT_FALSE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 0);
+      EXPECT_EQ(cfg->get_rgbw().Color, 0U);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 0);
+      EXPECT_FALSE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
     delete operations;
@@ -263,10 +263,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene5) {
       EXPECT_EQ(cfg->get_source_device_id(), 0);
       EXPECT_EQ(cfg->get_source_channel_id(), 0);
       EXPECT_EQ(cfg->get_percentage(), 15);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 0);
-      EXPECT_EQ(cfg->get_rgbw().color, 0U);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 0);
-      EXPECT_FALSE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 0);
+      EXPECT_EQ(cfg->get_rgbw().Color, 0U);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 0);
+      EXPECT_FALSE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
 
@@ -281,10 +281,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene5) {
       EXPECT_EQ(cfg->get_source_device_id(), 0);
       EXPECT_EQ(cfg->get_source_channel_id(), 0);
       EXPECT_EQ(cfg->get_percentage(), 25);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 0);
-      EXPECT_EQ(cfg->get_rgbw().color, 0U);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 0);
-      EXPECT_FALSE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 0);
+      EXPECT_EQ(cfg->get_rgbw().Color, 0U);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 0);
+      EXPECT_FALSE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
     delete operations;
@@ -308,10 +308,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene6) {
       EXPECT_EQ(cfg->get_source_device_id(), 0);
       EXPECT_EQ(cfg->get_source_channel_id(), 0);
       EXPECT_EQ(cfg->get_percentage(), 0);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 50);
-      EXPECT_EQ(cfg->get_rgbw().color, (unsigned int)0xFFFFFF);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 5);
-      EXPECT_FALSE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 50);
+      EXPECT_EQ(cfg->get_rgbw().Color, (unsigned int)0xFFFFFF);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 5);
+      EXPECT_FALSE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
 
@@ -326,10 +326,10 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene6) {
       EXPECT_EQ(cfg->get_source_device_id(), 0);
       EXPECT_EQ(cfg->get_source_channel_id(), 0);
       EXPECT_EQ(cfg->get_percentage(), 0);
-      EXPECT_EQ(cfg->get_rgbw().brightness, 20);
-      EXPECT_GT(cfg->get_rgbw().color, (unsigned int)0);
-      EXPECT_EQ(cfg->get_rgbw().color_brightness, 15);
-      EXPECT_TRUE(cfg->get_rgbw().color_random);
+      EXPECT_EQ(cfg->get_rgbw().Brightness, 20);
+      EXPECT_GT(cfg->get_rgbw().Color, (unsigned int)0);
+      EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 15);
+      EXPECT_TRUE(cfg->get_rgbw().ColorRandom);
       delete operation;
     }
     delete operations;

@@ -77,17 +77,17 @@ void supla_action_config::set_percentage(char percentage) {
   this->percentage = percentage;
 }
 
-_action_config_rgbw_t supla_action_config::get_rgbw(void) {
-  if (rgbw.color_random) {
+TAction_RGBW_Parameters supla_action_config::get_rgbw(void) {
+  if (rgbw.ColorRandom) {
     struct timeval now = {};
     gettimeofday(&now, NULL);
     unsigned int seed = now.tv_sec + now.tv_usec;
-    rgbw.color = st_hue2rgb(rand_r(&seed) % 360);
+    rgbw.Color = st_hue2rgb(rand_r(&seed) % 360);
   }
   return rgbw;
 }
 
-void supla_action_config::set_rgbw(_action_config_rgbw_t rgbw) {
+void supla_action_config::set_rgbw(TAction_RGBW_Parameters rgbw) {
   this->rgbw = rgbw;
 }
 
@@ -123,17 +123,17 @@ void supla_action_config::apply_json_params(const char *params) {
     set_source_device_id(item->valuedouble);
   }
 
-  _action_config_rgbw_t rgbw = {};
+  TAction_RGBW_Parameters rgbw = {};
   bool rgbw_changed = false;
 
   item = cJSON_GetObjectItem(root, "brightness");
   if (item && cJSON_IsNumber(item)) {
     if (item->valuedouble < 0) {
-      rgbw.brightness = 0;
+      rgbw.Brightness = 0;
     } else if (item->valuedouble > 100) {
-      rgbw.brightness = 100;
+      rgbw.Brightness = 100;
     } else {
-      rgbw.brightness = item->valuedouble;
+      rgbw.Brightness = item->valuedouble;
     }
 
     rgbw_changed = true;
@@ -142,11 +142,11 @@ void supla_action_config::apply_json_params(const char *params) {
   item = cJSON_GetObjectItem(root, "color_brightness");
   if (item && cJSON_IsNumber(item)) {
     if (item->valuedouble < 0) {
-      rgbw.color_brightness = 0;
+      rgbw.ColorBrightness = 0;
     } else if (item->valuedouble > 100) {
-      rgbw.color_brightness = 100;
+      rgbw.ColorBrightness = 100;
     } else {
-      rgbw.color_brightness = item->valuedouble;
+      rgbw.ColorBrightness = item->valuedouble;
     }
     rgbw_changed = true;
   }
@@ -154,14 +154,14 @@ void supla_action_config::apply_json_params(const char *params) {
   item = cJSON_GetObjectItem(root, "hue");
   if (item) {
     if (cJSON_IsNumber(item)) {
-      rgbw.color = st_hue2rgb(item->valuedouble);
+      rgbw.Color = st_hue2rgb(item->valuedouble);
       rgbw_changed = true;
     } else if (cJSON_IsString(item)) {
       if (strncasecmp(cJSON_GetStringValue(item), "random", 255) == 0) {
-        rgbw.color_random = true;
+        rgbw.ColorRandom = true;
         rgbw_changed = true;
       } else if (strncasecmp(cJSON_GetStringValue(item), "white", 255) == 0) {
-        rgbw.color = 0xFFFFFF;
+        rgbw.Color = 0xFFFFFF;
         rgbw_changed = true;
       }
     }

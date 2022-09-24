@@ -61,20 +61,21 @@ TEST_F(ActionConfigTest, percentage) {
 }
 
 TEST_F(ActionConfigTest, rgbw) {
-  _action_config_rgbw_t rgbw1 = {};
-  _action_config_rgbw_t rgbw2 = config.get_rgbw();
+  TAction_RGBW_Parameters rgbw1 = {};
+  TAction_RGBW_Parameters rgbw2 = config.get_rgbw();
 
-  EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(_action_config_rgbw_t)), 0);
+  EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 
-  rgbw1.brightness = 10;
-  rgbw1.color = 20;
-  rgbw1.color_brightness = 30;
-  rgbw1.color_random = false;
+  rgbw1.Brightness = 10;
+  rgbw1.Color = 20;
+  rgbw1.ColorBrightness = 30;
+  rgbw1.ColorRandom = false;
+  rgbw1.OnOff = true;
 
   config.set_rgbw(rgbw1);
   rgbw2 = config.get_rgbw();
 
-  EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(_action_config_rgbw_t)), 0);
+  EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 }
 
 TEST_F(ActionConfigTest, jsonPercentage) {
@@ -106,62 +107,62 @@ TEST_F(ActionConfigTest, jsonSourceDeviceId) {
 }
 
 TEST_F(ActionConfigTest, jsonRGBW) {
-  _action_config_rgbw_t rgbw1 = {};
-  _action_config_rgbw_t rgbw2 = config.get_rgbw();
+  TAction_RGBW_Parameters rgbw1 = {};
+  TAction_RGBW_Parameters rgbw2 = config.get_rgbw();
 
-  EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(_action_config_rgbw_t)), 0);
+  EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 
   config.apply_json_params(
       "{\"brightness\":32,\"hue\":244,\"color_brightness\":22}");
 
   rgbw2 = config.get_rgbw();
-  EXPECT_EQ(rgbw2.brightness, 32);
-  EXPECT_EQ(rgbw2.color, (unsigned int)0x1000FF);
-  EXPECT_EQ(rgbw2.color_brightness, 22);
-  EXPECT_FALSE(rgbw2.color_random);
+  EXPECT_EQ(rgbw2.Brightness, 32);
+  EXPECT_EQ(rgbw2.Color, (unsigned int)0x1000FF);
+  EXPECT_EQ(rgbw2.ColorBrightness, 22);
+  EXPECT_FALSE(rgbw2.ColorRandom);
 }
 
 TEST_F(ActionConfigTest, jsonRGBW_white) {
-  _action_config_rgbw_t rgbw1 = {};
-  _action_config_rgbw_t rgbw2 = config.get_rgbw();
+  TAction_RGBW_Parameters rgbw1 = {};
+  TAction_RGBW_Parameters rgbw2 = config.get_rgbw();
 
-  EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(_action_config_rgbw_t)), 0);
+  EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 
   config.apply_json_params(
       "{\"brightness\":32,\"hue\":\"white\",\"color_brightness\":22}");
 
   rgbw2 = config.get_rgbw();
-  EXPECT_EQ(rgbw2.brightness, 32);
-  EXPECT_EQ(rgbw2.color, (unsigned int)0xFFFFFF);
-  EXPECT_EQ(rgbw2.color_brightness, 22);
-  EXPECT_FALSE(rgbw2.color_random);
+  EXPECT_EQ(rgbw2.Brightness, 32);
+  EXPECT_EQ(rgbw2.Color, (unsigned int)0xFFFFFF);
+  EXPECT_EQ(rgbw2.ColorBrightness, 22);
+  EXPECT_FALSE(rgbw2.ColorRandom);
 }
 
 TEST_F(ActionConfigTest, jsonRGBW_random) {
-  _action_config_rgbw_t rgbw1 = {};
-  _action_config_rgbw_t rgbw2 = config.get_rgbw();
+  TAction_RGBW_Parameters rgbw1 = {};
+  TAction_RGBW_Parameters rgbw2 = config.get_rgbw();
 
-  EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(_action_config_rgbw_t)), 0);
+  EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 
   config.apply_json_params(
       "{\"brightness\":32,\"hue\":\"random\",\"color_brightness\":22}");
 
   rgbw2 = config.get_rgbw();
-  EXPECT_EQ(rgbw2.brightness, 32);
-  EXPECT_GT(rgbw2.color, (unsigned int)0);
-  EXPECT_EQ(rgbw2.color_brightness, 22);
-  EXPECT_TRUE(rgbw2.color_random);
+  EXPECT_EQ(rgbw2.Brightness, 32);
+  EXPECT_GT(rgbw2.Color, (unsigned int)0);
+  EXPECT_EQ(rgbw2.ColorBrightness, 22);
+  EXPECT_TRUE(rgbw2.ColorRandom);
 
   unsigned int color = 0;
 
   for (short n = 0; n < 10; n++) {
-    color = rgbw2.color;
+    color = rgbw2.Color;
 
     short a = 0;
     for (a = 0; a < 10; a++) {
       rgbw2 = config.get_rgbw();
       usleep(1000);
-      if (rgbw2.color != color) {
+      if (rgbw2.Color != color) {
         break;
       }
     }
@@ -183,19 +184,19 @@ TEST_F(ActionConfigTest, jsonMultipleParams) {
   config.apply_json_params("{\"sourceDeviceId\":1333}");
   EXPECT_EQ(config.get_source_device_id(), 1333);
 
-  _action_config_rgbw_t rgbw1 = {};
-  _action_config_rgbw_t rgbw2 = config.get_rgbw();
+  TAction_RGBW_Parameters rgbw1 = {};
+  TAction_RGBW_Parameters rgbw2 = config.get_rgbw();
 
-  EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(_action_config_rgbw_t)), 0);
+  EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 
   config.apply_json_params(
       "{\"brightness\":12,\"hue\":244,\"color_brightness\":23}");
 
   rgbw2 = config.get_rgbw();
-  EXPECT_EQ(rgbw2.brightness, 12);
-  EXPECT_EQ(rgbw2.color, (unsigned int)0x1000FF);
-  EXPECT_EQ(rgbw2.color_brightness, 23);
-  EXPECT_FALSE(rgbw2.color_random);
+  EXPECT_EQ(rgbw2.Brightness, 12);
+  EXPECT_EQ(rgbw2.Color, (unsigned int)0x1000FF);
+  EXPECT_EQ(rgbw2.ColorBrightness, 23);
+  EXPECT_FALSE(rgbw2.ColorRandom);
 }
 
 } /* namespace testing */

@@ -29,7 +29,7 @@ class supla_action_config : public abstract_action_config {
   int source_device_id;
   int source_channel_id;
   char percentage;
-  _action_config_rgbw_t rgbw;
+  TAction_RGBW_Parameters rgbw;
 
  public:
   supla_action_config(void);
@@ -53,8 +53,8 @@ class supla_action_config : public abstract_action_config {
   virtual char get_percentage(void);
   void set_percentage(char percentage);
 
-  virtual _action_config_rgbw_t get_rgbw(void);
-  void set_rgbw(_action_config_rgbw_t rgbw);
+  virtual TAction_RGBW_Parameters get_rgbw(void);
+  void set_rgbw(TAction_RGBW_Parameters rgbw);
 
   void apply_json_params(const char *param);
 };

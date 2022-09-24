@@ -21,13 +21,6 @@
 
 #include "proto.h"
 
-typedef struct {
-  char brightness;
-  char color_brightness;
-  unsigned int color;
-  bool color_random;
-} _action_config_rgbw_t;
-
 enum _subjectType_e { stUnknown, stChannel, stChannelGroup, stScene };
 
 class abstract_action_config {
@@ -43,7 +36,7 @@ class abstract_action_config {
   virtual int get_source_channel_id(void) = 0;
 
   virtual char get_percentage(void) = 0;
-  virtual _action_config_rgbw_t get_rgbw(void) = 0;
+  virtual TAction_RGBW_Parameters get_rgbw(void) = 0;
   virtual int get_cap(void);
 };
 

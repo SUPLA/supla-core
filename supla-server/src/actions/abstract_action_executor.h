@@ -71,7 +71,7 @@ class supla_abstract_action_executor {
   void execute_action(const supla_caller &caller, int user_id, int action_id,
                       _subjectType_e subject_type, int subject_id,
                       supla_abstract_value_getter *value_getter,
-                      char percentage, _action_config_rgbw_t *rgbw,
+                      char percentage, TAction_RGBW_Parameters *rgbw,
                       int source_device_id, int source_channel_id, int cap);
 
   virtual void set_on(bool on) = 0;

@@ -35,7 +35,7 @@ void supla_ch_abstract_execute_action::send_result(
   result.SubjectId = action->SubjectId;
   result.SubjectType = action->SubjectType;
   result.ResultCode = resultcode;
-supla_log(LOG_DEBUG, "Result %i", result.ResultCode);
+  supla_log(LOG_DEBUG, "Result %i", result.ResultCode);
   srpc_adapter->sc_async_action_execution_result(&result);
 }
 
@@ -52,7 +52,7 @@ void supla_ch_abstract_execute_action::execute_action(
 
   _subjectType_e subject_type = stUnknown;
   char percentage = 0;
-  _action_config_rgbw_t rgbw = {};
+  TAction_RGBW_Parameters rgbw = {};
 
   switch (action->SubjectType) {
     case ACTION_SUBJECT_TYPE_CHANNEL:
@@ -80,10 +80,11 @@ void supla_ch_abstract_execute_action::execute_action(
     case ACTION_SET_RGBW_PARAMETERS:
       if (action->ParamSize == sizeof(TAction_RGBW_Parameters)) {
         TAction_RGBW_Parameters* p = (TAction_RGBW_Parameters*)action->Param;
-        rgbw.brightness = p->Brightness;
-        rgbw.color = p->Color;
-        rgbw.color_brightness = p->ColorBrightness;
-        rgbw.color_random = p->ColorRandom;
+        rgbw.Brightness = p->Brightness;
+        rgbw.Color = p->Color;
+        rgbw.ColorBrightness = p->ColorBrightness;
+        rgbw.ColorRandom = p->ColorRandom;
+        rgbw.OnOff = p->OnOff;
       } else {
         send_result(action, srpc_adapter,
                     SUPLA_RESULTCODE_INCORRECT_PARAMETERS);

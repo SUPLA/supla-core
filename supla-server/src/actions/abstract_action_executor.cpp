@@ -102,7 +102,7 @@ void supla_abstract_action_executor::execute_action(
     const supla_caller &caller, int user_id, int action_id,
     _subjectType_e subject_type, int subject_id,
     supla_abstract_value_getter *value_getter, char percentage,
-    _action_config_rgbw_t *rgbw, int source_device_id, int source_channel_id,
+    TAction_RGBW_Parameters *rgbw, int source_device_id, int source_channel_id,
     int cap) {
   if (action_id == 0 || subject_id == 0) {
     return;
@@ -164,11 +164,12 @@ void supla_abstract_action_executor::execute_action(
       set_on(false);
       break;
     case ACTION_SET_RGBW_PARAMETERS: {
-      if (rgbw && (rgbw->brightness > -1 || rgbw->color_brightness > -1 ||
-                   rgbw->color)) {
-        set_rgbw(rgbw->color ? &rgbw->color : NULL,
-                 rgbw->color_brightness > -1 ? &rgbw->color_brightness : NULL,
-                 rgbw->brightness > -1 ? &rgbw->brightness : NULL, NULL);
+      if (rgbw && (rgbw->Brightness > -1 || rgbw->ColorBrightness > -1 ||
+                   rgbw->Color)) {
+        set_rgbw(rgbw->Color ? &rgbw->Color : NULL,
+                 rgbw->ColorBrightness > -1 ? &rgbw->ColorBrightness : NULL,
+                 rgbw->Brightness > -1 ? &rgbw->Brightness : NULL,
+                 rgbw->OnOff > -1 ? &rgbw->OnOff : NULL);
       }
     } break;
     case ACTION_OPEN_CLOSE:
@@ -212,7 +213,7 @@ void supla_abstract_action_executor::execute_action(
   }
 
   char percentage = 0;
-  _action_config_rgbw_t rgbw = {};
+  TAction_RGBW_Parameters rgbw = {};
   int source_device_id = 0;
   int source_channel_id = 0;
   int cap = 0;
