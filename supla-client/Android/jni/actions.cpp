@@ -67,14 +67,31 @@ void get_action_execution_call_params(JNIEnv *env, jobject action_params,
                                : 0;
   }
 
-  *action_id =
-      supla_android_CallIntMethod(env, cls, action_params, "getAction", "()I");
+  jclass action_id_cls =
+      env->FindClass("org/supla/android/lib/actions/ActionId");
 
-  *subject_type = supla_android_CallIntMethod(env, cls, action_params,
-                                              "getSubjectType", "()I");
+  jobject action_id_obj = supla_android_CallObjectMethod(
+      env, cls, action_params, "getAction",
+      "()Lorg/supla/android/lib/actions/ActionId;");
+
+  *action_id = supla_android_CallIntMethod(env, action_id_cls, action_id_obj,
+                                           "getValue", "()I");
+
+  jobject subject_type_obj = supla_android_CallObjectMethod(
+      env, cls, action_params, "getSubjectType",
+      "()Lorg/supla/android/lib/actions/SubjectType;");
+
+  jclass subject_type_cls =
+      env->FindClass("org/supla/android/lib/actions/SubjectType");
+
+  *subject_type = supla_android_CallIntMethod(
+      env, subject_type_cls, subject_type_obj, "getValue", "()I");
 
   *subject_id = supla_android_CallIntMethod(env, cls, action_params,
                                             "getSubjectId", "()I");
+
+  __android_log_print(ANDROID_LOG_DEBUG, log_tag, "Action ID: %i,%i,%i",
+                      *action_id, *subject_type, *subject_id);
 }
 
 JNIEXPORT jboolean JNICALL

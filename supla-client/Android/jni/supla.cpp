@@ -48,6 +48,14 @@ jmethodID supla_android_GetMethodID(JNIEnv *env, jclass cls,
   return methodID;
 }
 
+jobject supla_android_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                                       const char *method_name,
+                                       const char *type) {
+  jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
+
+  return env->CallObjectMethod(obj, method_id);
+}
+
 jlong supla_android_CallLongMethod(JNIEnv *env, jclass cls, jobject obj,
                                    const char *method_name, const char *type) {
   jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
