@@ -77,6 +77,10 @@ jmethodID supla_android_GetMethodID(JNIEnv *env, jclass cls,
 jmethodID supla_android_GetMethodID(JNIEnv *env, jclass cls,
                                     const char *method_name, const char *type);
 
+jobject supla_android_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                                       const char *method_name,
+                                       const char *type);
+
 jlong supla_android_CallLongMethod(JNIEnv *env, jclass cls, jobject obj,
                                    const char *method_name, const char *type);
 
