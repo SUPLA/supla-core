@@ -24,6 +24,7 @@ LOCAL_CFLAGS += -DUSE_DEPRECATED_EMEV_V1 -fPIC
 LOCAL_SRC_FILES := supla.cpp \
     main.cpp \
     actions.cpp \
+    singlecall.cpp \
     ../../src/cfg.c \
     ../../src/eh.c \
     ../../src/ini.c \
@@ -34,6 +35,7 @@ LOCAL_SRC_FILES := supla.cpp \
     ../../src/srpc.c \
     ../../src/sthread.c \
     ../../src/supla-client.c \
+    ../../src/suplasinglecall.cpp \
     ../../src/supla-socket.c \
     ../../src/tools.c \
 
