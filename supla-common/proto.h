@@ -717,7 +717,8 @@ typedef struct {
   char Name[SUPLA_DEVICE_NAME_MAXSIZE];  // UTF8
   char SoftVer[SUPLA_SOFTVER_MAXSIZE];
 
-  char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
+  char ServerName[SUPLA_SERVER_NAME_MAXSIZE];  // ServerName is equal to Server
+                                               // host name/IP
 
   unsigned char channel_count;
   TDS_SuplaDeviceChannel_B
