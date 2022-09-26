@@ -24,11 +24,11 @@
 #include "supla-client.h"
 #include "supla.h"
 
-void get_action_execution_call_params(JNIEnv *env, jobject action_params,
-                                      int *action_id,
-                                      TAction_RS_Parameters **rs_param,
-                                      TAction_RGBW_Parameters **rgbw_param,
-                                      int *subject_type, int *subject_id) {
+void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
+                                  int *action_id,
+                                  TAction_RS_Parameters **rs_param,
+                                  TAction_RGBW_Parameters **rgbw_param,
+                                  int *subject_type, int *subject_id) {
   jclass cls = env->FindClass("org/supla/android/lib/actions/ActionParameters");
 
   jclass rs_cls = env->FindClass(
@@ -108,8 +108,8 @@ Java_org_supla_android_lib_SuplaClient_scExecuteAction(JNIEnv *env,
     TAction_RS_Parameters *rs_param = NULL;
     TAction_RGBW_Parameters *rgbw_param = NULL;
 
-    get_action_execution_call_params(env, action_params, &action_id, &rs_param,
-                                     &rgbw_param, &subject_type, &subject_id);
+    getActionExecutionCallParams(env, action_params, &action_id, &rs_param,
+                                 &rgbw_param, &subject_type, &subject_id);
 
     if (supla_client_execute_action(supla_client, action_id, rs_param,
                                     rgbw_param, subject_type, subject_id) > 0) {
