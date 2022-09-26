@@ -238,7 +238,7 @@ void supla_stringobj2buffer(JNIEnv *env, jobject cfg, jclass jcs,
   jfieldID fid = supla_client_GetFieldID(env, jcs, name, "Ljava/lang/String;");
   jstring jstr = (jstring)env->GetObjectField(cfg, fid);
 
-  supla_get_string_utf_chars(env, jstr, buff, size);
+  supla_GetStringUtfChars(env, jstr, buff, size);
 }
 
 void supla_bytearrobj2buffer(JNIEnv *env, jobject cfg, jclass jcs,
@@ -246,7 +246,7 @@ void supla_bytearrobj2buffer(JNIEnv *env, jobject cfg, jclass jcs,
   jfieldID fid = supla_client_GetFieldID(env, jcs, name, "[B");
   jbyteArray barr = (jbyteArray)env->GetObjectField(cfg, fid);
 
-  supla_get_byte_array_elements(env, barr, buff, size);
+  supla_GetByteArrayElements(env, barr, buff, size);
 }
 
 unsigned char supla_shortobj2jshort(JNIEnv *env, jobject in, jshort *out) {
