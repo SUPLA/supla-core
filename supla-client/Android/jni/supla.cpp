@@ -37,8 +37,8 @@ void *supla_client_ptr(jlong _asc) {
   return NULL;
 }
 
-void supla_android_client_get_string_utf_chars(JNIEnv *env, jstring jstr,
-                                               char *buff, size_t size) {
+void supla_get_string_utf_chars(JNIEnv *env, jstring jstr, char *buff,
+                                size_t size) {
   const char *str = env->GetStringUTFChars(jstr, 0);
 
   if (str) {
@@ -56,8 +56,8 @@ void supla_android_client_get_string_utf_chars(JNIEnv *env, jstring jstr,
   }
 }
 
-void supla_android_client_get_byte_array_elements(JNIEnv *env, jbyteArray barr,
-                                                  char *buff, size_t size) {
+void supla_get_byte_array_elements(JNIEnv *env, jbyteArray barr, char *buff,
+                                   size_t size) {
   if (size == env->GetArrayLength(barr)) {
     jbyte *data = (jbyte *)env->GetByteArrayElements(barr, NULL);
     if (data) {
