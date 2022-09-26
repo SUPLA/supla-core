@@ -237,13 +237,9 @@ void supla_android_client_stringobj2buffer(JNIEnv *env, jobject cfg, jclass jcs,
                                            const char *name, char *buff,
                                            int size) {
   jfieldID fid = supla_client_GetFieldID(env, jcs, name, "Ljava/lang/String;");
-  jstring js_str = (jstring)env->GetObjectField(cfg, fid);
-  const char *str = env->GetStringUTFChars(js_str, 0);
+  jstring jstr = (jstring)env->GetObjectField(cfg, fid);
 
-  if (str) {
-    memcpy(buff, str, strlen(str) >= size ? size - 1 : strlen(str));
-    env->ReleaseStringUTFChars(js_str, str);
-  }
+  supla_android_client_get_string_utf_chars(env, jstr, buff, size);
 }
 
 void supla_android_client_bytearrobj2buffer(JNIEnv *env, jobject cfg,
@@ -252,13 +248,7 @@ void supla_android_client_bytearrobj2buffer(JNIEnv *env, jobject cfg,
   jfieldID fid = supla_client_GetFieldID(env, jcs, name, "[B");
   jbyteArray barr = (jbyteArray)env->GetObjectField(cfg, fid);
 
-  if (size == env->GetArrayLength(barr)) {
-    jbyte *data = (jbyte *)env->GetByteArrayElements(barr, NULL);
-    if (data) {
-      memcpy(buff, data, size);
-      env->ReleaseByteArrayElements(barr, data, 0);
-    }
-  }
+  supla_android_client_get_byte_array_elements(env, barr, buff, size);
 }
 
 unsigned char supla_android_client_shortobj2jshort(JNIEnv *env, jobject in,

@@ -19,6 +19,7 @@
 #include "supla.h"
 
 #include <android/log.h>
+#include <string.h>
 
 #include "proto.h"
 
@@ -34,6 +35,36 @@ void *supla_client_ptr(jlong _asc) {
   if (asc) return asc->_supla_client;
 
   return NULL;
+}
+
+void supla_android_client_get_string_utf_chars(JNIEnv *env, jstring jstr,
+                                               char *buff, size_t size) {
+  const char *str = env->GetStringUTFChars(jstr, 0);
+
+  if (str) {
+    size_t len = strnlen(str, size);
+    if (len > size - 1) {
+      len = size - 1;
+    }
+
+    memcpy(buff, str, len);
+    buff[size - 1] = 0;
+
+    env->ReleaseStringUTFChars(jstr, str);
+  } else {
+    memset(buff, 0, size);
+  }
+}
+
+void supla_android_client_get_byte_array_elements(JNIEnv *env, jbyteArray barr,
+                                                  char *buff, size_t size) {
+  if (size == env->GetArrayLength(barr)) {
+    jbyte *data = (jbyte *)env->GetByteArrayElements(barr, NULL);
+    if (data) {
+      memcpy(buff, data, size);
+      env->ReleaseByteArrayElements(barr, data, 0);
+    }
+  }
 }
 
 jobject supla_android_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,

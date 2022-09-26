@@ -71,6 +71,12 @@ typedef struct {
 
 void *supla_client_ptr(jlong _asc);
 
+void supla_android_client_get_string_utf_chars(JNIEnv *env, jstring jstr,
+                                               char *buff, size_t size);
+
+void supla_android_client_get_byte_array_elements(JNIEnv *env, jbyteArray barr,
+                                                  char *buff, size_t size);
+
 jobject supla_android_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                        const char *method_name,
                                        const char *type);
