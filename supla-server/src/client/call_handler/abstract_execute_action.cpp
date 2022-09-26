@@ -44,19 +44,6 @@ void supla_ch_abstract_execute_action::execute_action(
     TCS_Action* action, supla_abstract_srpc_adapter* srpc_adapter,
     function<bool(int subject_type, int subject_id)> subject_exists,
     function<bool(int channel_id)> is_channel_online) {
-  if (action->SubjectType == ACTION_SUBJECT_TYPE_UNKNOWN ||
-      action->SubjectId == 0 ||
-      !subject_exists(action->SubjectType, action->SubjectId)) {
-    send_result(action, srpc_adapter, SUPLA_RESULTCODE_SUBJECT_NOT_FOUND);
-    return;
-  }
-
-  if (action->SubjectType == ACTION_SUBJECT_TYPE_CHANNEL &&
-      !is_channel_online(action->SubjectId)) {
-    send_result(action, srpc_adapter, SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE);
-    return;
-  }
-
   _subjectType_e subject_type = stUnknown;
   char percentage = 0;
   TAction_RGBW_Parameters rgbw = {};
@@ -97,6 +84,19 @@ void supla_ch_abstract_execute_action::execute_action(
                     SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
       }
       break;
+  }
+
+  if (action->SubjectType == ACTION_SUBJECT_TYPE_UNKNOWN ||
+      action->SubjectId == 0 ||
+      !subject_exists(action->SubjectType, action->SubjectId)) {
+    send_result(action, srpc_adapter, SUPLA_RESULTCODE_SUBJECT_NOT_FOUND);
+    return;
+  }
+
+  if (action->SubjectType == ACTION_SUBJECT_TYPE_CHANNEL &&
+      !is_channel_online(action->SubjectId)) {
+    send_result(action, srpc_adapter, SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE);
+    return;
   }
 
   aexec->execute_action(supla_caller(ctClient, client_id), user_id,
