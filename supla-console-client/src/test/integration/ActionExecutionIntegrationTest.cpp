@@ -99,17 +99,21 @@ TEST_F(ActionExecutionIntegrationTest, shutPartiallyWithSuccess) {
   TAction_RS_Parameters rs = {};
   rs.Percentage = 10;
 
+  // The server version on the day of test preparation does not check group
+  // function. If starts checking, it will be necessary to add the appropriate
+  // group to the database before performing the test.
+
   ASSERT_FALSE(sclient == NULL);
   ASSERT_GT(
       supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, &rs, nullptr,
-                                  ACTION_SUBJECT_TYPE_CHANNEL, 303),
+                                  ACTION_SUBJECT_TYPE_CHANNEL_GROUP, 1),
       0);
   iterateUntilDefaultTimeout();
 
   ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_TRUE);
   ASSERT_EQ(result.ActionId, ACTION_SHUT_PARTIALLY);
-  ASSERT_EQ(result.SubjectType, ACTION_SUBJECT_TYPE_CHANNEL);
-  ASSERT_EQ(result.SubjectId, 303);
+  ASSERT_EQ(result.SubjectType, ACTION_SUBJECT_TYPE_CHANNEL_GROUP);
+  ASSERT_EQ(result.SubjectId, 1);
 }
 
 TEST_F(ActionExecutionIntegrationTest, rgbwIncorrectParameters) {
@@ -130,17 +134,42 @@ TEST_F(ActionExecutionIntegrationTest, setBrightnessWithSuccess) {
   TAction_RGBW_Parameters rgbw = {};
   rgbw.Brightness = 44;
 
+  // The server version on the day of test preparation does not check group
+  // function. If starts checking, it will be necessary to add the appropriate
+  // group to the database before performing the test.
+
   ASSERT_FALSE(sclient == NULL);
   ASSERT_GT(
       supla_client_execute_action(sclient, ACTION_SET_RGBW_PARAMETERS, nullptr,
-                                  &rgbw, ACTION_SUBJECT_TYPE_CHANNEL, 170),
+                                  &rgbw, ACTION_SUBJECT_TYPE_CHANNEL_GROUP, 1),
       0);
   iterateUntilDefaultTimeout();
 
   ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_TRUE);
   ASSERT_EQ(result.ActionId, ACTION_SET_RGBW_PARAMETERS);
+  ASSERT_EQ(result.SubjectType, ACTION_SUBJECT_TYPE_CHANNEL_GROUP);
+  ASSERT_EQ(result.SubjectId, 1);
+}
+
+TEST_F(ActionExecutionIntegrationTest, channelIsOffline) {
+  TAction_RS_Parameters rs = {};
+  rs.Percentage = 10;
+
+  // The server version on the day of test preparation does not check group
+  // function. If starts checking, it will be necessary to add the appropriate
+  // group to the database before performing the test.
+
+  ASSERT_FALSE(sclient == NULL);
+  ASSERT_GT(
+      supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, &rs, nullptr,
+                                  ACTION_SUBJECT_TYPE_CHANNEL, 303),
+      0);
+  iterateUntilDefaultTimeout();
+
+  ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE);
+  ASSERT_EQ(result.ActionId, ACTION_SHUT_PARTIALLY);
   ASSERT_EQ(result.SubjectType, ACTION_SUBJECT_TYPE_CHANNEL);
-  ASSERT_EQ(result.SubjectId, 170);
+  ASSERT_EQ(result.SubjectId, 303);
 }
 
 } /* namespace testing */
