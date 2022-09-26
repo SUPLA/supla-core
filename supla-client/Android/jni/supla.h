@@ -77,21 +77,19 @@ void supla_GetStringUtfChars(JNIEnv *env, jstring jstr, char *buff,
 void supla_GetByteArrayElements(JNIEnv *env, jbyteArray barr, char *buff,
                                 size_t size);
 
-jobject supla_android_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,
-                                       const char *method_name,
-                                       const char *type);
+jobject supla_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                               const char *method_name, const char *type);
 
-jlong supla_android_CallLongMethod(JNIEnv *env, jclass cls, jobject obj,
-                                   const char *method_name, const char *type);
+jlong supla_CallLongMethod(JNIEnv *env, jclass cls, jobject obj,
+                           const char *method_name, const char *type);
 
-jint supla_android_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
+jint supla_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
+                         const char *method_name, const char *type);
+
+jshort supla_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
+                             const char *method_name, const char *type);
+
+jboolean supla_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
                                  const char *method_name, const char *type);
-
-jshort supla_android_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
-                                     const char *method_name, const char *type);
-
-jboolean supla_android_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
-                                         const char *method_name,
-                                         const char *type);
 
 #endif /*SUPLA_H_*/

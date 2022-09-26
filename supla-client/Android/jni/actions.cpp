@@ -38,8 +38,8 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
     cls = rs_cls;
     *rs_param = (TAction_RS_Parameters *)malloc(sizeof(TAction_RS_Parameters));
 
-    (*rs_param)->Percentage = supla_android_CallShortMethod(
-        env, cls, action_params, "getPercentage", "()S");
+    (*rs_param)->Percentage =
+        supla_CallShortMethod(env, cls, action_params, "getPercentage", "()S");
   }
 
   jclass rgbw_cls =
@@ -50,45 +50,44 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
     *rgbw_param =
         (TAction_RGBW_Parameters *)malloc(sizeof(TAction_RGBW_Parameters));
 
-    (*rgbw_param)->Brightness = supla_android_CallShortMethod(
-        env, cls, action_params, "getBrightness", "()S");
-    (*rgbw_param)->ColorBrightness = supla_android_CallShortMethod(
+    (*rgbw_param)->Brightness =
+        supla_CallShortMethod(env, cls, action_params, "getBrightness", "()S");
+    (*rgbw_param)->ColorBrightness = supla_CallShortMethod(
         env, cls, action_params, "getColorBrightness", "()S");
-    (*rgbw_param)->Color = supla_android_CallLongMethod(env, cls, action_params,
-                                                        "getColor", "()J");
+    (*rgbw_param)->Color =
+        supla_CallLongMethod(env, cls, action_params, "getColor", "()J");
     (*rgbw_param)->ColorRandom =
-        supla_android_CallBooleanMethod(env, cls, action_params,
-                                        "getColorRandom", "()Z")
+        supla_CallBooleanMethod(env, cls, action_params, "getColorRandom",
+                                "()Z")
             ? 1
             : 0;
-    (*rgbw_param)->OnOff = supla_android_CallBooleanMethod(
-                               env, cls, action_params, "getOnOff", "()Z")
-                               ? 1
-                               : 0;
+    (*rgbw_param)->OnOff =
+        supla_CallBooleanMethod(env, cls, action_params, "getOnOff", "()Z") ? 1
+                                                                            : 0;
   }
 
   jclass action_id_cls =
       env->FindClass("org/supla/android/lib/actions/ActionId");
 
-  jobject action_id_obj = supla_android_CallObjectMethod(
-      env, cls, action_params, "getAction",
-      "()Lorg/supla/android/lib/actions/ActionId;");
+  jobject action_id_obj =
+      supla_CallObjectMethod(env, cls, action_params, "getAction",
+                             "()Lorg/supla/android/lib/actions/ActionId;");
 
-  *action_id = supla_android_CallIntMethod(env, action_id_cls, action_id_obj,
-                                           "getValue", "()I");
+  *action_id =
+      supla_CallIntMethod(env, action_id_cls, action_id_obj, "getValue", "()I");
 
-  jobject subject_type_obj = supla_android_CallObjectMethod(
-      env, cls, action_params, "getSubjectType",
-      "()Lorg/supla/android/lib/actions/SubjectType;");
+  jobject subject_type_obj =
+      supla_CallObjectMethod(env, cls, action_params, "getSubjectType",
+                             "()Lorg/supla/android/lib/actions/SubjectType;");
 
   jclass subject_type_cls =
       env->FindClass("org/supla/android/lib/actions/SubjectType");
 
-  *subject_type = supla_android_CallIntMethod(
-      env, subject_type_cls, subject_type_obj, "getValue", "()I");
+  *subject_type = supla_CallIntMethod(env, subject_type_cls, subject_type_obj,
+                                      "getValue", "()I");
 
-  *subject_id = supla_android_CallIntMethod(env, cls, action_params,
-                                            "getSubjectId", "()I");
+  *subject_id =
+      supla_CallIntMethod(env, cls, action_params, "getSubjectId", "()I");
 
   __android_log_print(ANDROID_LOG_DEBUG, log_tag, "Action ID: %i,%i,%i",
                       *action_id, *subject_type, *subject_id);

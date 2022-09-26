@@ -67,39 +67,36 @@ void supla_GetByteArrayElements(JNIEnv *env, jbyteArray barr, char *buff,
   }
 }
 
-jobject supla_android_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,
-                                       const char *method_name,
-                                       const char *type) {
+jobject supla_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                               const char *method_name, const char *type) {
   jmethodID method_id = env->GetMethodID(cls, method_name, type);
 
   return env->CallObjectMethod(obj, method_id);
 }
 
-jlong supla_android_CallLongMethod(JNIEnv *env, jclass cls, jobject obj,
-                                   const char *method_name, const char *type) {
+jlong supla_CallLongMethod(JNIEnv *env, jclass cls, jobject obj,
+                           const char *method_name, const char *type) {
   jmethodID method_id = env->GetMethodID(cls, method_name, type);
 
   return env->CallLongMethod(obj, method_id);
 }
 
-jint supla_android_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
-                                 const char *method_name, const char *type) {
+jint supla_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
+                         const char *method_name, const char *type) {
   jmethodID method_id = env->GetMethodID(cls, method_name, type);
 
   return env->CallIntMethod(obj, method_id);
 }
 
-jshort supla_android_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
-                                     const char *method_name,
-                                     const char *type) {
+jshort supla_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
+                             const char *method_name, const char *type) {
   jmethodID method_id = env->GetMethodID(cls, method_name, type);
 
   return env->CallShortMethod(obj, method_id);
 }
 
-jboolean supla_android_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
-                                         const char *method_name,
-                                         const char *type) {
+jboolean supla_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
+                                 const char *method_name, const char *type) {
   jmethodID method_id = env->GetMethodID(cls, method_name, type);
 
   return env->CallBooleanMethod(obj, method_id);
