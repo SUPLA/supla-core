@@ -44,7 +44,8 @@ void supla_ch_execute_action::handle_call(
   supla_action_executor aexec;
   execute_action(
       client->get_user_id(), client->get_id(), &aexec, rd->data.cs_action,
-      srpc_adapter, [&client](int subject_type, int subject_id) -> bool {
+      srpc_adapter,
+      [&client](int subject_type, int subject_id) -> bool {
         switch (subject_type) {
           case ACTION_SUBJECT_TYPE_CHANNEL:
             return client->get_channels()->channel_exists(subject_id);
@@ -52,6 +53,14 @@ void supla_ch_execute_action::handle_call(
             return client->get_cgroups()->groupExists(subject_id);
           case ACTION_SUBJECT_TYPE_SCENE:
             return client->get_scenes()->object_exists(subject_id);
+        }
+        return false;
+      },
+      [&client](int channel_id) -> bool {
+        shared_ptr<supla_device> device =
+            supla_user::get_device(client->get_user_id(), 0, channel_id);
+        if (device != nullptr) {
+          return device->get_channels()->is_channel_online(channel_id);
         }
         return false;
       });

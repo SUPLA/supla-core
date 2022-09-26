@@ -33,7 +33,8 @@ class supla_ch_abstract_execute_action
   void execute_action(
       int user_id, int client_id, supla_abstract_action_executor* aexec,
       TCS_Action* action, supla_abstract_srpc_adapter* srpc_adapter,
-      std::function<bool(int subject_type, int subject_id)> subject_exists);
+      std::function<bool(int subject_type, int subject_id)> subject_exists,
+      std::function<bool(int channel_id)> is_channel_online);
 
  public:
   supla_ch_abstract_execute_action(void);

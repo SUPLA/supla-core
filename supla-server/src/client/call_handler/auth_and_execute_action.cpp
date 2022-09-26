@@ -79,6 +79,14 @@ void supla_ch_auth_and_execute_action::handle_call(
             return client_dao.scene_exists(regcli.get_client_id(), subject_id);
         }
         return false;
+      },
+      [&regcli](int channel_id) -> bool {
+        shared_ptr<supla_device> device =
+            supla_user::get_device(regcli.get_user_id(), 0, channel_id);
+        if (device != nullptr) {
+          return device->get_channels()->is_channel_online(channel_id);
+        }
+        return false;
       });
 }
 

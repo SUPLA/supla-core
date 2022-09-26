@@ -42,11 +42,18 @@ void supla_ch_abstract_execute_action::send_result(
 void supla_ch_abstract_execute_action::execute_action(
     int user_id, int client_id, supla_abstract_action_executor* aexec,
     TCS_Action* action, supla_abstract_srpc_adapter* srpc_adapter,
-    function<bool(int subject_type, int subject_id)> subject_exists) {
+    function<bool(int subject_type, int subject_id)> subject_exists,
+    function<bool(int channel_id)> is_channel_online) {
   if (action->SubjectType == ACTION_SUBJECT_TYPE_UNKNOWN ||
       action->SubjectId == 0 ||
       !subject_exists(action->SubjectType, action->SubjectId)) {
     send_result(action, srpc_adapter, SUPLA_RESULTCODE_SUBJECT_NOT_FOUND);
+    return;
+  }
+
+  if (action->SubjectType == ACTION_SUBJECT_TYPE_CHANNEL &&
+      !is_channel_online(action->SubjectId)) {
+    send_result(action, srpc_adapter, SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE);
     return;
   }
 
