@@ -71,12 +71,6 @@ typedef struct {
 
 void *supla_client_ptr(jlong _asc);
 
-jmethodID supla_android_GetMethodID(JNIEnv *env, jclass cls,
-                                    const char *method_name, const char *type);
-
-jmethodID supla_android_GetMethodID(JNIEnv *env, jclass cls,
-                                    const char *method_name, const char *type);
-
 jobject supla_android_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                        const char *method_name,
                                        const char *type);

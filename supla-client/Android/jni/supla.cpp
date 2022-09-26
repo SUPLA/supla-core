@@ -36,36 +36,24 @@ void *supla_client_ptr(jlong _asc) {
   return NULL;
 }
 
-jmethodID supla_android_GetMethodID(JNIEnv *env, jclass cls,
-                                    const char *method_name, const char *type) {
-  jmethodID methodID = env->GetMethodID(cls, method_name, type);
-
-  if (methodID == NULL) {
-    __android_log_print(ANDROID_LOG_ERROR, log_tag,
-                        "Unknown method name: %s type: %s", method_name, type);
-  }
-
-  return methodID;
-}
-
 jobject supla_android_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                        const char *method_name,
                                        const char *type) {
-  jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
+  jmethodID method_id = env->GetMethodID(cls, method_name, type);
 
   return env->CallObjectMethod(obj, method_id);
 }
 
 jlong supla_android_CallLongMethod(JNIEnv *env, jclass cls, jobject obj,
                                    const char *method_name, const char *type) {
-  jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
+  jmethodID method_id = env->GetMethodID(cls, method_name, type);
 
   return env->CallLongMethod(obj, method_id);
 }
 
 jint supla_android_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
                                  const char *method_name, const char *type) {
-  jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
+  jmethodID method_id = env->GetMethodID(cls, method_name, type);
 
   return env->CallIntMethod(obj, method_id);
 }
@@ -73,7 +61,7 @@ jint supla_android_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
 jshort supla_android_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
                                      const char *method_name,
                                      const char *type) {
-  jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
+  jmethodID method_id = env->GetMethodID(cls, method_name, type);
 
   return env->CallShortMethod(obj, method_id);
 }
@@ -81,7 +69,7 @@ jshort supla_android_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
 jboolean supla_android_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
                                          const char *method_name,
                                          const char *type) {
-  jmethodID method_id = supla_android_GetMethodID(env, cls, method_name, type);
+  jmethodID method_id = env->GetMethodID(cls, method_name, type);
 
   return env->CallBooleanMethod(obj, method_id);
 }

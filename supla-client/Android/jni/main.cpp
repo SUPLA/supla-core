@@ -312,7 +312,7 @@ void supla_android_client_cb_on_versionerror(void *_suplaclient,
   if (asc->j_mid_on_versionerror) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaVersionError");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject rerr = env->NewObject(cls, methodID);
     jclass crerr = env->GetObjectClass(rerr);
 
@@ -345,7 +345,7 @@ void supla_android_client_cb_on_connerror(void *_suplaclient, void *user_data,
   if (asc->j_mid_on_connerror) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaConnError");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject cerr = env->NewObject(cls, methodID);
     jclass ccerr = env->GetObjectClass(cerr);
 
@@ -382,7 +382,7 @@ void supla_android_client_cb_on_registered(
   if (asc->j_mid_on_registered) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaRegisterResult");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject reg = env->NewObject(cls, methodID);
     jclass creg = env->GetObjectClass(reg);
 
@@ -429,7 +429,7 @@ void supla_android_client_cb_on_registererror(void *_suplaclient,
   if (asc->j_mid_on_registererror) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaRegisterError");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject rerr = env->NewObject(cls, methodID);
     jclass crerr = env->GetObjectClass(rerr);
 
@@ -450,7 +450,7 @@ void supla_android_client_cb_location_update(void *_suplaclient,
   if (asc->j_mid_location_update) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaLocation");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject loc = env->NewObject(cls, methodID);
     jclass cloc = env->GetObjectClass(loc);
 
@@ -475,7 +475,7 @@ jobject supla_android_client_channelvalue_to_jobject(
 
   jclass cls = env->FindClass("org/supla/android/lib/SuplaChannelValue");
 
-  jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+  jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
   jobject val = env->NewObject(cls, methodID);
   jclass cval = env->GetObjectClass(val);
 
@@ -513,7 +513,7 @@ void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
   if (asc->j_mid_channel_update) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaChannel");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject ch = env->NewObject(cls, methodID);
     jclass cch = env->GetObjectClass(ch);
 
@@ -580,7 +580,7 @@ void supla_android_client_cb_channel_value_update(
     jclass cls =
         env->FindClass("org/supla/android/lib/SuplaChannelValueUpdate");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject val = env->NewObject(cls, methodID);
     jclass cval = env->GetObjectClass(val);
 
@@ -610,8 +610,8 @@ void supla_android_client_channel_em_addsummary(
     TElectricityMeter_ExtendedValue_V2 *em_ev, jint phase) {
   jclass cls = env->FindClass(
       "org/supla/android/lib/SuplaChannelElectricityMeterValue$Summary");
-  jmethodID methodID = supla_android_GetMethodID(
-      env, cls, "<init>",
+  jmethodID methodID = env->GetMethodID(
+      cls, "<init>",
       "(Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;JJJJ)V");
 
   jobject sum_obj = env->NewObject(cls, methodID, parent,
@@ -634,8 +634,8 @@ void supla_android_client_channel_em_addmeasurement(
   jclass cls = env->FindClass(
 
       "org/supla/android/lib/SuplaChannelElectricityMeterValue$Measurement");
-  jmethodID methodID = supla_android_GetMethodID(
-      env, cls, "<init>",
+  jmethodID methodID = env->GetMethodID(
+      cls, "<init>",
       "(Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;IIIIIIII)V");
   jobject m_obj = env->NewObject(
       cls, methodID, parent, em_ev->m[midx].freq, em_ev->m[midx].voltage[phase],
@@ -665,8 +665,8 @@ jobject supla_android_client_channelelectricitymetervalue_to_jobject(
 
   jclass cls =
       env->FindClass("org/supla/android/lib/SuplaChannelElectricityMeterValue");
-  jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>",
-                                                 "(IIIILjava/lang/String;JJ)V");
+  jmethodID methodID =
+      env->GetMethodID(cls, "<init>", "(IIIILjava/lang/String;JJ)V");
   jobject val = env->NewObject(
       cls, methodID, em_ev->measured_values, em_ev->period, em_ev->total_cost,
       em_ev->price_per_unit, new_string_utf(env, currency),
@@ -690,8 +690,8 @@ jobject supla_android_client_impulsecountervalue_to_jobject(
     TSC_ImpulseCounter_ExtendedValue *ic_ev) {
   jclass cls =
       env->FindClass("org/supla/android/lib/SuplaChannelImpulseCounterValue");
-  jmethodID methodID = supla_android_GetMethodID(
-      env, cls, "<init>", "(IJJIILjava/lang/String;Ljava/lang/String;)V");
+  jmethodID methodID = env->GetMethodID(
+      cls, "<init>", "(IJJIILjava/lang/String;Ljava/lang/String;)V");
 
   char currency[4];
   memcpy(currency, ic_ev->currency, 3);
@@ -709,7 +709,7 @@ jobject supla_android_client_thermostatvalue_to_jobject(
     TAndroidSuplaClient *asc, JNIEnv *env, TThermostat_ExtendedValue *th_ev) {
   jclass cls =
       env->FindClass("org/supla/android/lib/SuplaChannelThermostatValue");
-  jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+  jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
 
   jobject m_obj = env->NewObject(cls, methodID);
   int a;
@@ -787,8 +787,7 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
                                                      JNIEnv *env,
                                                      TDSC_ChannelState *state) {
   jclass cls = env->FindClass("org/supla/android/lib/SuplaChannelState");
-  jmethodID methodID =
-      supla_android_GetMethodID(env, cls, "<init>", "(IIII[BBBBBBBIIBBII)V");
+  jmethodID methodID = env->GetMethodID(cls, "<init>", "(IIII[BBBBBBBIIBBII)V");
 
   jbyteArray mac = env->NewByteArray(6);
   env->SetByteArrayRegion(mac, 0, 6, (const jbyte *)state->MAC);
@@ -810,8 +809,8 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
 jobject supla_android_client_timerstate_to_jobject(
     TAndroidSuplaClient *asc, JNIEnv *env, TTimerState_ExtendedValue *state) {
   jclass cls = env->FindClass("org/supla/android/lib/SuplaTimerState");
-  jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>",
-                                                 "(J[BILjava/lang/String;)V");
+  jmethodID methodID =
+      env->GetMethodID(cls, "<init>", "(J[BILjava/lang/String;)V");
 
   supla_client_set_str(state->SenderName, &state->SenderNameSize,
                        SUPLA_SENDER_NAME_MAXSIZE);
@@ -934,7 +933,7 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
   jclass cls =
       env->FindClass("org/supla/android/lib/SuplaChannelExtendedValue");
 
-  jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+  jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
   jobject obj = env->NewObject(cls, methodID);
 
   int index = 0;
@@ -960,7 +959,7 @@ void supla_android_client_cb_channel_extendedvalue_update(
     jclass cls =
         env->FindClass("org/supla/android/lib/SuplaChannelExtendedValueUpdate");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject val = env->NewObject(cls, methodID);
     jclass cval = env->GetObjectClass(val);
 
@@ -988,7 +987,7 @@ void supla_android_client_cb_channelgroup_update(
   if (asc->j_mid_channelgroup_update) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaChannelGroup");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject chg = env->NewObject(cls, methodID);
     jclass cchg = env->GetObjectClass(chg);
 
@@ -1032,7 +1031,7 @@ void supla_android_client_cb_channelgroup_relation_update(
     jclass cls =
         env->FindClass("org/supla/android/lib/SuplaChannelGroupRelation");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject chg = env->NewObject(cls, methodID);
     jclass cchg = env->GetObjectClass(chg);
 
@@ -1057,8 +1056,8 @@ void supla_android_client_cb_scene_update(void *_suplaclient, void *user_data,
 
   if (asc->j_mid_scene_update) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaScene");
-    jmethodID methodID = supla_android_GetMethodID(
-        env, cls, "<init>", "(IIIILjava/lang/String;Z)V");
+    jmethodID methodID =
+        env->GetMethodID(cls, "<init>", "(IIIILjava/lang/String;Z)V");
     jobject scene_obj = env->NewObject(
         cls, methodID, scene->Id, scene->LocationId, scene->AltIcon,
         scene->UserIcon, new_string_utf(env, scene->Caption),
@@ -1076,8 +1075,8 @@ void supla_android_client_cb_scene_state_update(void *_suplaclient,
 
   if (asc->j_mid_scene_state_update) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaSceneState");
-    jmethodID methodID = supla_android_GetMethodID(
-        env, cls, "<init>", "(IJJILjava/lang/String;Z)V");
+    jmethodID methodID =
+        env->GetMethodID(cls, "<init>", "(IJJILjava/lang/String;Z)V");
     jobject state_obj = env->NewObject(
         cls, methodID, state->SceneId, state->MillisecondsFromStart,
         state->MillisecondsLeft, state->InitiatorId,
@@ -1096,8 +1095,8 @@ void supla_android_client_cb_on_oauth_token_request_result(
 
   if (asc->j_mid_on_oauth_token_request_result) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaOAuthToken");
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>",
-                                                   "(IILjava/lang/String;)V");
+    jmethodID methodID =
+        env->GetMethodID(cls, "<init>", "(IILjava/lang/String;)V");
     jobject token_obj = env->NewObject(
         cls, methodID, result->ResultCode, result->Token.ExpiresIn,
         new_string_utf(env, result->Token.Token));
@@ -1185,8 +1184,8 @@ void supla_android_client_cb_on_channel_basic_cfg(void *_suplaclient,
   }
 
   jclass cls = env->FindClass("org/supla/android/lib/SuplaChannelBasicCfg");
-  jmethodID methodID = supla_android_GetMethodID(
-      env, cls, "<init>",
+  jmethodID methodID = env->GetMethodID(
+      cls, "<init>",
       "(Ljava/lang/String;Ljava/lang/String;IIIIIIIIIILjava/lang/String;)V");
 
   jobject channel_basic_cfg_obj =
@@ -1278,7 +1277,7 @@ void supla_android_client_cb_on_event(void *_suplaclient, void *user_data,
   if (asc->j_mid_on_event) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaEvent");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject ev = env->NewObject(cls, methodID);
     jclass cev = env->GetObjectClass(ev);
 
@@ -1312,7 +1311,7 @@ void supla_android_client_cb_on_registration_enabled(
     jclass cls =
         env->FindClass("org/supla/android/lib/SuplaRegistrationEnabled");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject re = env->NewObject(cls, methodID);
     jclass cre = env->GetObjectClass(re);
 
@@ -1337,7 +1336,7 @@ void supla_android_client_cb_on_min_version_required(
     jclass cls =
         env->FindClass("org/supla/android/lib/SuplaMinVersionRequired");
 
-    jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "()V");
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
     jobject mv = env->NewObject(cls, methodID);
     jclass cmv = env->GetObjectClass(mv);
 
@@ -1372,8 +1371,8 @@ jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
                                                    JNIEnv *env,
                                                    TCalCfg_ZWave_Node *node) {
   jclass cls = env->FindClass("org/supla/android/lib/ZWaveNode");
-  jmethodID methodID = supla_android_GetMethodID(
-      env, cls, "<init>", "(SSILjava/lang/Integer;Ljava/lang/String;)V");
+  jmethodID methodID = env->GetMethodID(
+      cls, "<init>", "(SSILjava/lang/Integer;Ljava/lang/String;)V");
 
   jobject channelID =
       node->Flags & ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED
@@ -1392,7 +1391,7 @@ jobject supla_android_client_zwave_wake_up_settings_report_to_jobject(
     return NULL;
   }
   jclass cls = env->FindClass("org/supla/android/lib/ZWaveWakeUpSettings");
-  jmethodID methodID = supla_android_GetMethodID(env, cls, "<init>", "(IIII)V");
+  jmethodID methodID = env->GetMethodID(cls, "<init>", "(IIII)V");
 
   return env->NewObject(cls, methodID, (jint)report->MinimumSec,
                         (jint)report->MaximumSec, (jint)report->ValueSec,
@@ -1613,102 +1612,97 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
 
     jclass oclass = env->GetObjectClass(thiz);
 
-    _asc->j_mid_on_versionerror = supla_android_GetMethodID(
-        env, oclass, "onVersionError",
-        "(Lorg/supla/android/lib/SuplaVersionError;)V");
-    _asc->j_mid_on_connected =
-        supla_android_GetMethodID(env, oclass, "onConnected", "()V");
-    _asc->j_mid_on_connerror =
-        supla_android_GetMethodID(env, oclass, "onConnError",
-                                  "(Lorg/supla/android/lib/SuplaConnError;)V");
+    _asc->j_mid_on_versionerror =
+        env->GetMethodID(oclass, "onVersionError",
+                         "(Lorg/supla/android/lib/SuplaVersionError;)V");
+    _asc->j_mid_on_connected = env->GetMethodID(oclass, "onConnected", "()V");
+    _asc->j_mid_on_connerror = env->GetMethodID(
+        oclass, "onConnError", "(Lorg/supla/android/lib/SuplaConnError;)V");
     _asc->j_mid_on_disconnected =
-        supla_android_GetMethodID(env, oclass, "onDisconnected", "()V");
+        env->GetMethodID(oclass, "onDisconnected", "()V");
     _asc->j_mid_on_registering =
-        supla_android_GetMethodID(env, oclass, "onRegistering", "()V");
-    _asc->j_mid_on_registered = supla_android_GetMethodID(
-        env, oclass, "onRegistered",
-        "(Lorg/supla/android/lib/SuplaRegisterResult;)V");
-    _asc->j_mid_on_registererror = supla_android_GetMethodID(
-        env, oclass, "onRegisterError",
-        "(Lorg/supla/android/lib/SuplaRegisterError;)V");
-    _asc->j_mid_location_update =
-        supla_android_GetMethodID(env, oclass, "locationUpdate",
-                                  "(Lorg/supla/android/lib/SuplaLocation;)V");
-    _asc->j_mid_channel_update =
-        supla_android_GetMethodID(env, oclass, "channelUpdate",
-                                  "(Lorg/supla/android/lib/SuplaChannel;)V");
-    _asc->j_mid_channel_value_update = supla_android_GetMethodID(
-        env, oclass, "channelValueUpdate",
-        "(Lorg/supla/android/lib/SuplaChannelValueUpdate;)V");
-    _asc->j_mid_channel_extendedvalue_update = supla_android_GetMethodID(
-        env, oclass, "channelExtendedValueUpdate",
+        env->GetMethodID(oclass, "onRegistering", "()V");
+    _asc->j_mid_on_registered =
+        env->GetMethodID(oclass, "onRegistered",
+                         "(Lorg/supla/android/lib/SuplaRegisterResult;)V");
+    _asc->j_mid_on_registererror =
+        env->GetMethodID(oclass, "onRegisterError",
+                         "(Lorg/supla/android/lib/SuplaRegisterError;)V");
+    _asc->j_mid_location_update = env->GetMethodID(
+        oclass, "locationUpdate", "(Lorg/supla/android/lib/SuplaLocation;)V");
+    _asc->j_mid_channel_update = env->GetMethodID(
+        oclass, "channelUpdate", "(Lorg/supla/android/lib/SuplaChannel;)V");
+    _asc->j_mid_channel_value_update =
+        env->GetMethodID(oclass, "channelValueUpdate",
+                         "(Lorg/supla/android/lib/SuplaChannelValueUpdate;)V");
+    _asc->j_mid_channel_extendedvalue_update = env->GetMethodID(
+        oclass, "channelExtendedValueUpdate",
         "(Lorg/supla/android/lib/SuplaChannelExtendedValueUpdate;)V");
-    _asc->j_mid_on_event = supla_android_GetMethodID(
-        env, oclass, "onEvent", "(Lorg/supla/android/lib/SuplaEvent;)V");
-    _asc->j_mid_on_registration_enabled = supla_android_GetMethodID(
-        env, oclass, "onRegistrationEnabled",
-        "(Lorg/supla/android/lib/SuplaRegistrationEnabled;)V");
-    _asc->j_mid_on_min_version_required = supla_android_GetMethodID(
-        env, oclass, "onMinVersionRequired",
-        "(Lorg/supla/android/lib/SuplaMinVersionRequired;)V");
-    _asc->j_mid_channelgroup_update = supla_android_GetMethodID(
-        env, oclass, "channelGroupUpdate",
-        "(Lorg/supla/android/lib/SuplaChannelGroup;)V");
-    _asc->j_mid_channelgroup_relation_update = supla_android_GetMethodID(
-        env, oclass, "channelGroupRelationUpdate",
+    _asc->j_mid_on_event = env->GetMethodID(
+        oclass, "onEvent", "(Lorg/supla/android/lib/SuplaEvent;)V");
+    _asc->j_mid_on_registration_enabled =
+        env->GetMethodID(oclass, "onRegistrationEnabled",
+                         "(Lorg/supla/android/lib/SuplaRegistrationEnabled;)V");
+    _asc->j_mid_on_min_version_required =
+        env->GetMethodID(oclass, "onMinVersionRequired",
+                         "(Lorg/supla/android/lib/SuplaMinVersionRequired;)V");
+    _asc->j_mid_channelgroup_update =
+        env->GetMethodID(oclass, "channelGroupUpdate",
+                         "(Lorg/supla/android/lib/SuplaChannelGroup;)V");
+    _asc->j_mid_channelgroup_relation_update = env->GetMethodID(
+        oclass, "channelGroupRelationUpdate",
         "(Lorg/supla/android/lib/SuplaChannelGroupRelation;)V");
-    _asc->j_mid_scene_update = supla_android_GetMethodID(
-        env, oclass, "sceneUpdate", "(Lorg/supla/android/lib/SuplaScene;)V");
+    _asc->j_mid_scene_update = env->GetMethodID(
+        oclass, "sceneUpdate", "(Lorg/supla/android/lib/SuplaScene;)V");
     _asc->j_mid_scene_state_update =
-        supla_android_GetMethodID(env, oclass, "sceneStateUpdate",
-                                  "(Lorg/supla/android/lib/SuplaSceneState;)V");
+        env->GetMethodID(oclass, "sceneStateUpdate",
+                         "(Lorg/supla/android/lib/SuplaSceneState;)V");
     _asc->j_mid_on_oauth_token_request_result =
-        supla_android_GetMethodID(env, oclass, "onOAuthTokenRequestResult",
-                                  "(Lorg/supla/android/lib/SuplaOAuthToken;)V");
-    _asc->j_mid_on_superuser_authorization_result = supla_android_GetMethodID(
-        env, oclass, "onSuperUserAuthorizationResult", "(ZI)V");
-    _asc->j_mid_on_device_calcfg_result = supla_android_GetMethodID(
-        env, oclass, "onDeviceCalCfgResult", "(III[B)V");
-    _asc->j_mid_on_device_calcfg_progress_report = supla_android_GetMethodID(
-        env, oclass, "onDeviceCalCfgProgressReport", "(IIS)V");
-    _asc->j_mid_on_device_calcfg_debug_string = supla_android_GetMethodID(
-        env, oclass, "onDeviceCalCfgDebugString", "(Ljava/lang/String;)V");
-    _asc->j_mid_on_channel_state = supla_android_GetMethodID(
-        env, oclass, "onChannelState",
-        "(Lorg/supla/android/lib/SuplaChannelState;)V");
-    _asc->j_mid_on_channel_basic_cfg = supla_android_GetMethodID(
-        env, oclass, "onChannelBasicCfg",
-        "(Lorg/supla/android/lib/SuplaChannelBasicCfg;)V");
-    _asc->j_mid_on_channel_function_set_result = supla_android_GetMethodID(
-        env, oclass, "onChannelFunctionSetResult", "(III)V");
-    _asc->j_mid_on_channel_caption_set_result = supla_android_GetMethodID(
-        env, oclass, "onChannelCaptionSetResult", "(ILjava/lang/String;I)V");
-    _asc->j_mid_on_location_caption_set_result = supla_android_GetMethodID(
-        env, oclass, "onLocationCaptionSetResult", "(ILjava/lang/String;I)V");
-    _asc->j_mid_on_clients_reconnect_result = supla_android_GetMethodID(
-        env, oclass, "onClientsReconnectResult", "(I)V");
-    _asc->j_mid_on_set_registration_enabled_result = supla_android_GetMethodID(
-        env, oclass, "onSetRegistrationEnabledResult", "(I)V");
-    _asc->j_mid_on_zwave_reset_and_clear_result = supla_android_GetMethodID(
-        env, oclass, "onZWaveResetAndClearResult", "(I)V");
+        env->GetMethodID(oclass, "onOAuthTokenRequestResult",
+                         "(Lorg/supla/android/lib/SuplaOAuthToken;)V");
+    _asc->j_mid_on_superuser_authorization_result =
+        env->GetMethodID(oclass, "onSuperUserAuthorizationResult", "(ZI)V");
+    _asc->j_mid_on_device_calcfg_result =
+        env->GetMethodID(oclass, "onDeviceCalCfgResult", "(III[B)V");
+    _asc->j_mid_on_device_calcfg_progress_report =
+        env->GetMethodID(oclass, "onDeviceCalCfgProgressReport", "(IIS)V");
+    _asc->j_mid_on_device_calcfg_debug_string = env->GetMethodID(
+        oclass, "onDeviceCalCfgDebugString", "(Ljava/lang/String;)V");
+    _asc->j_mid_on_channel_state =
+        env->GetMethodID(oclass, "onChannelState",
+                         "(Lorg/supla/android/lib/SuplaChannelState;)V");
+    _asc->j_mid_on_channel_basic_cfg =
+        env->GetMethodID(oclass, "onChannelBasicCfg",
+                         "(Lorg/supla/android/lib/SuplaChannelBasicCfg;)V");
+    _asc->j_mid_on_channel_function_set_result =
+        env->GetMethodID(oclass, "onChannelFunctionSetResult", "(III)V");
+    _asc->j_mid_on_channel_caption_set_result = env->GetMethodID(
+        oclass, "onChannelCaptionSetResult", "(ILjava/lang/String;I)V");
+    _asc->j_mid_on_location_caption_set_result = env->GetMethodID(
+        oclass, "onLocationCaptionSetResult", "(ILjava/lang/String;I)V");
+    _asc->j_mid_on_clients_reconnect_result =
+        env->GetMethodID(oclass, "onClientsReconnectResult", "(I)V");
+    _asc->j_mid_on_set_registration_enabled_result =
+        env->GetMethodID(oclass, "onSetRegistrationEnabledResult", "(I)V");
+    _asc->j_mid_on_zwave_reset_and_clear_result =
+        env->GetMethodID(oclass, "onZWaveResetAndClearResult", "(I)V");
     _asc->j_mid_on_zwave_add_node_result =
-        supla_android_GetMethodID(env, oclass, "onZWaveAddNodeResult",
-                                  "(ILorg/supla/android/lib/ZWaveNode;)V");
-    _asc->j_mid_on_zwave_remove_node_result = supla_android_GetMethodID(
-        env, oclass, "onZWaveRemoveNodeResult", "(IS)V");
+        env->GetMethodID(oclass, "onZWaveAddNodeResult",
+                         "(ILorg/supla/android/lib/ZWaveNode;)V");
+    _asc->j_mid_on_zwave_remove_node_result =
+        env->GetMethodID(oclass, "onZWaveRemoveNodeResult", "(IS)V");
     _asc->j_mid_on_zwave_get_node_list_result =
-        supla_android_GetMethodID(env, oclass, "onZWaveGetNodeListResult",
-                                  "(ILorg/supla/android/lib/ZWaveNode;)V");
+        env->GetMethodID(oclass, "onZWaveGetNodeListResult",
+                         "(ILorg/supla/android/lib/ZWaveNode;)V");
     _asc->j_mid_on_zwave_get_assigned_node_id_result =
-        supla_android_GetMethodID(env, oclass, "onZWaveGetAssignedNodeIdResult",
-                                  "(IS)V");
-    _asc->j_mid_on_zwave_wake_up_settings_report = supla_android_GetMethodID(
-        env, oclass, "onZWaveWakeUpSettingsReport",
-        "(ILorg/supla/android/lib/ZWaveWakeUpSettings;)V");
-    _asc->j_mid_on_zwave_assign_node_id_result = supla_android_GetMethodID(
-        env, oclass, "onZWaveAssignNodeIdResult", "(IS)V");
-    _asc->j_mid_on_zwave_set_wake_up_time_result = supla_android_GetMethodID(
-        env, oclass, "onZWaveSetWakeUpTimeResult", "(I)V");
+        env->GetMethodID(oclass, "onZWaveGetAssignedNodeIdResult", "(IS)V");
+    _asc->j_mid_on_zwave_wake_up_settings_report =
+        env->GetMethodID(oclass, "onZWaveWakeUpSettingsReport",
+                         "(ILorg/supla/android/lib/ZWaveWakeUpSettings;)V");
+    _asc->j_mid_on_zwave_assign_node_id_result =
+        env->GetMethodID(oclass, "onZWaveAssignNodeIdResult", "(IS)V");
+    _asc->j_mid_on_zwave_set_wake_up_time_result =
+        env->GetMethodID(oclass, "onZWaveSetWakeUpTimeResult", "(I)V");
 
     sclient_cfg.user_data = _asc;
     sclient_cfg.cb_on_versionerror = supla_android_client_cb_on_versionerror;
@@ -2017,14 +2011,13 @@ Java_org_supla_android_lib_SuplaClient_scThermostatScheduleCfgRequest(
     jclass cls =
         env->FindClass("org/supla/android/lib/SuplaThermostatScheduleCfg");
 
-    jmethodID get_group_m_mid =
-        supla_android_GetMethodID(env, cls, "getGroupCount", "()I");
+    jmethodID get_group_m_mid = env->GetMethodID(cls, "getGroupCount", "()I");
     jmethodID get_group_value_type_m_mid =
-        supla_android_GetMethodID(env, cls, "getGroupHourValueType", "(I)I");
+        env->GetMethodID(cls, "getGroupHourValueType", "(I)I");
     jmethodID get_group_week_days_m_mid =
-        supla_android_GetMethodID(env, cls, "getGroupWeekDays", "(I)I");
+        env->GetMethodID(cls, "getGroupWeekDays", "(I)I");
     jmethodID get_group_hour_value_m_mid =
-        supla_android_GetMethodID(env, cls, "getGroupHourValue", "(IS)B");
+        env->GetMethodID(cls, "getGroupHourValue", "(IS)B");
 
     jint groupCount = env->CallIntMethod(cfg, get_group_m_mid);
 
