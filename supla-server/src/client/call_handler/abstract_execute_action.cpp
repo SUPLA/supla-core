@@ -35,7 +35,6 @@ void supla_ch_abstract_execute_action::send_result(
   result.SubjectId = action->SubjectId;
   result.SubjectType = action->SubjectType;
   result.ResultCode = resultcode;
-  supla_log(LOG_DEBUG, "Result %i", result.ResultCode);
   srpc_adapter->sc_async_action_execution_result(&result);
 }
 
