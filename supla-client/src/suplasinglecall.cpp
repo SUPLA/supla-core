@@ -190,7 +190,7 @@ int supla_single_call::make_call(
     if (time_usec >= RESPONSE_TIMEOUT_USEC) {
       break;
     }
-  };
+  }
 
   cleanup();
   return result;
