@@ -575,7 +575,7 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
 
     ssd->supla_socket.sfd = -1;
 
-    if (err) *err = SUPLA_RESULTCODE_CANTCONNECTTOHOST;
+    if (err) *err = SUPLA_RESULT_CANT_CONNECT_TO_HOST;
 
     supla_write_state_file(state_file, LOG_ERR, "Can't connect to host %s",
                            ssd->host == NULL ? "" : ssd->host);
