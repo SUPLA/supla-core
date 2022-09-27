@@ -310,6 +310,12 @@ bool supla_state_webhook_client::sendTemperatureAndHumidityReport(
   return false;
 }
 
+bool supla_state_webhook_client::sendStaircaseTimerReport(int channelId,
+                                                          bool on,
+                                                          bool connected) {
+  return sendOnReport("STAIRCASETIMER", channelId, on, connected);
+}
+
 bool supla_state_webhook_client::sendLightSwitchReport(int channelId, bool on,
                                                        bool connected) {
   return sendOnReport("LIGHTSWITCH", channelId, on, connected);

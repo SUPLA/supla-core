@@ -147,6 +147,7 @@ bool supla_state_webhook_request::isCallerAccepted(const supla_caller &caller,
               return true;
             case SUPLA_CHANNELFNC_POWERSWITCH:
             case SUPLA_CHANNELFNC_LIGHTSWITCH:
+            case SUPLA_CHANNELFNC_STAIRCASETIMER:
             case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
             case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
             case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
@@ -272,7 +273,10 @@ void supla_state_webhook_request::execute(void *sthread) {
       getClient()->sendLightSwitchReport(getChannelId(), value.hi,
                                          value.online);
       break;
-
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      getClient()->sendStaircaseTimerReport(getChannelId(), value.hi,
+                                            value.online);
+      break;
     case SUPLA_CHANNELFNC_THERMOMETER:
       getClient()->sendTemperatureReport(getChannelId(), value.temperature,
                                          value.online);
