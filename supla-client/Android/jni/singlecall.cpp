@@ -23,13 +23,20 @@
 #include "actions.h"
 #include "proto.h"
 #include "supla.h"
+#include "suplasinglecall.h"
 
-void throwResultException(JNIEnv *env, const char *message, int code) {
-  jclass cls =
-      env->FindClass("org/supla/android/lib/singlecall/ResultException");
+void throwException(JNIEnv *env, const char *class_path, int result) {
+  jclass cls = env->FindClass(class_path);
 
-  jmethodID init_mid =
-      env->GetMethodID(cls, "<init>", "(Ljava/lang/String;I)V");
+  jmethodID init_mid = env->GetMethodID(cls, "<init>", "(I)V");
+
+  jthrowable exception = (jthrowable)env->NewObject(cls, init_mid, result);
+  env->Throw(exception);
+}
+
+void throwResultException(JNIEnv *env, int result) {
+  throwException(env, "org/supla/android/lib/singlecall/ResultException",
+                 result);
 }
 
 void getDecryptedByteArrayField(JNIEnv *env, jobject context, jclass cls,
@@ -123,4 +130,13 @@ Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
   TCS_ClientAuthorizationDetails auth_details = {};
   int protocol_version = 0;
   get_auth_details(env, context, auth_info, &auth_details, &protocol_version);
+
+  TCS_Action action = {};
+  actionParamsToAction(env, action_params, &action);
+
+  supla_single_call single_call(&auth_details, protocol_version);
+  int result = single_call.execute_action(&action);
+  if (result != SUPLA_RESULTCODE_TRUE) {
+    throwResultException(env, result);
+  }
 }
