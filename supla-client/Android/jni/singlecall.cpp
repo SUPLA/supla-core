@@ -72,7 +72,7 @@ void get_auth_details(JNIEnv *env, jobject context, jobject auth_info,
     server = (jstring)supla_CallObjectMethod(
         env, cls, auth_info, "getServerForEmail", "()Ljava/lang/String;");
 
-    jstring email = server = (jstring)supla_CallObjectMethod(
+    jstring email = (jstring)supla_CallObjectMethod(
         env, cls, auth_info, "getEmailAddress", "()Ljava/lang/String;");
 
     supla_GetStringUtfChars(env, email, details->Email, sizeof(details->Email));
