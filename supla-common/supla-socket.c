@@ -547,7 +547,7 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
   }
 
   if (getaddrinfo(server, port, &hints, &res) != 0) {
-    if (err) *err = SUPLA_RESULTCODE_HOSTNOTFOUND;
+    if (err) *err = SUPLA_RESULT_HOST_NOT_FOUND;
 
     supla_write_state_file(state_file, LOG_ERR, "Host not found %s", server);
     return -1;

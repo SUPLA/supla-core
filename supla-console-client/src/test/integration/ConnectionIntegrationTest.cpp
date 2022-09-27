@@ -49,19 +49,19 @@ void ConnectionIntegrationTest::onConnectionError(int code) {
 
 TEST_F(ConnectionIntegrationTest, ConnectWithSSLToBadPort) {
   sslPort = 2010;
-  expectedCode = SUPLA_RESULTCODE_CANTCONNECTTOHOST;
+  expectedCode = SUPLA_RESULT_CANT_CONNECT_TO_HOST;
   iterateUntilDefaultTimeout();
 }
 
 TEST_F(ConnectionIntegrationTest, ConnectWithoutSSLToBadPort) {
   tcpPort = 2010;
   sslEnabled = false;
-  expectedCode = SUPLA_RESULTCODE_CANTCONNECTTOHOST;
+  expectedCode = SUPLA_RESULT_CANT_CONNECT_TO_HOST;
   iterateUntilDefaultTimeout();
 }
 
 TEST_F(ConnectionIntegrationTest, ConnectToNonexistentHost) {
-  expectedCode = SUPLA_RESULTCODE_HOSTNOTFOUND;
+  expectedCode = SUPLA_RESULT_HOST_NOT_FOUND;
   snprintf(host, sizeof(host), "nonexistent.domain");
   iterateUntilDefaultTimeout();
 }
