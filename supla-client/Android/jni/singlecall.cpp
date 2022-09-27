@@ -45,7 +45,8 @@ void getDecryptedByteArrayField(JNIEnv *env, jobject context, jclass cls,
 }
 
 void get_auth_details(JNIEnv *env, jobject context, jobject auth_info,
-                      TCS_ClientAuthorizationDetails *details) {
+                      TCS_ClientAuthorizationDetails *details,
+                      int *protocol_version) {
   jclass cls = env->FindClass("org/supla/android/profile/AuthInfo");
 
   getDecryptedByteArrayField(env, context, cls, auth_info, "getDecryptedGuid",
@@ -84,6 +85,9 @@ void get_auth_details(JNIEnv *env, jobject context, jobject auth_info,
 
   supla_GetStringUtfChars(env, server, details->ServerName,
                           sizeof(details->ServerName));
+
+  *protocol_version = supla_CallIntMethod(env, cls, auth_info,
+                                          "getPreferredProtocolVersion", "()I");
 }
 
 void actionParamsToAction(JNIEnv *env, jobject action_params,
@@ -117,5 +121,6 @@ Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
     JNIEnv *env, jobject thiz, jobject context, jobject auth_info,
     jobject action_params) {
   TCS_ClientAuthorizationDetails auth_details = {};
-  get_auth_details(env, context, auth_info, &auth_details);
+  int protocol_version = 0;
+  get_auth_details(env, context, auth_info, &auth_details, &protocol_version);
 }
