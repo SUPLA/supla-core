@@ -144,6 +144,21 @@ unsigned char ssocket_loadcertificates(SSL_CTX *ctx, const char *CertFile,
     return 0;
   }
 
+  X509 *x509 = SSL_CTX_get0_certificate(ctx);
+  const ASN1_TIME *notAfter = X509_getm_notAfter(x509);
+
+  int remaining_days = 0, remaining_seconds = 0;
+  ASN1_TIME_diff(&remaining_days, &remaining_seconds, NULL, notAfter);
+  if (remaining_days <= 60) {
+    if (remaining_days > 0 || remaining_seconds > 0) {
+      supla_log(LOG_WARNING,
+                "The SSL certificate is expiring. Days remaining: %i",
+                remaining_days);
+    } else {
+      supla_log(LOG_ERR, "SSL certificate expired!");
+    }
+  }
+
   return 1;
 }
 
