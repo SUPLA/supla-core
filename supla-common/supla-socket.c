@@ -65,7 +65,6 @@ typedef struct {
 #ifndef NOSSL
   SSL *ssl;
 #endif /*ifndef NOSSL*/
-  char fatal_error;
 } TSuplaSocket;
 
 typedef struct {
@@ -654,16 +653,12 @@ char ssocket_is_secure(void *_ssd) {
   return ((TSuplaSocketData *)_ssd)->secure == 1;
 }
 
-void ssocket_verify_ssl_error(void *_supla_socket, int ret) {
+void ssocket_log_ssl_error(void *_supla_socket, int ret) {
   TSuplaSocket *supla_socket = (TSuplaSocket *)_supla_socket;
 
   // SSL_get_error consumes quite a few CPU cycles.
   int32_t ssl_error = SSL_get_error(supla_socket->ssl, ret);
   if (ssl_error != SSL_ERROR_WANT_READ && ssl_error != SSL_ERROR_WANT_WRITE) {
-    if (ssl_error == SSL_ERROR_SSL) {
-      supla_socket->fatal_error = 1;
-    }
-
     switch (ssl_error) {
       case SSL_ERROR_NONE:
         supla_log(LOG_DEBUG, "SSL_ERROR_NONE");
@@ -698,7 +693,7 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
 
   assert(ssd != NULL);
 
-  if (supla_socket->sfd == -1 || supla_socket->fatal_error) {
+  if (supla_socket->sfd == -1) {
     return 0;
   }
 
@@ -708,12 +703,10 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
 #else
     count = SSL_read(supla_socket->ssl, buf, count);
 
-    if (count < 0) {
-      ssocket_verify_ssl_error(supla_socket, count);
-      if (supla_socket->fatal_error) {
-        return 0;
-      }
-    }
+    // Only for debug purposes
+    // if (count < 0) {
+    //  ssocket_log_ssl_error(supla_socket, count);
+    //}
 
 #endif /*ifdef NOSSL*/
 
@@ -742,7 +735,7 @@ int ssocket_write(void *_ssd, void *_supla_socket, const void *buf, int count) {
 
   assert(ssd != NULL);
 
-  if (supla_socket->sfd == -1 || supla_socket->fatal_error) {
+  if (supla_socket->sfd == -1) {
     return -1;
   }
 
@@ -760,12 +753,10 @@ int ssocket_write(void *_ssd, void *_supla_socket, const void *buf, int count) {
 #ifndef NOSSL
     count = SSL_write(supla_socket->ssl, buf, count);
 
-    if (count < 0) {
-      ssocket_verify_ssl_error(_supla_socket, count);
-      if (supla_socket->fatal_error) {
-        return -1;
-      }
-    }
+    // Only for debug purposes
+    // if (count < 0) {
+    //  ssocket_log_ssl_error(_supla_socket, count);
+    //}
 #else
     return -1;
 #endif /*ifndef NOSSL*/
