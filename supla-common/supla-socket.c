@@ -647,30 +647,30 @@ void ssocket_verify_ssl_error(void *_supla_socket, int ret) {
   if (ssl_error != SSL_ERROR_WANT_READ && ssl_error != SSL_ERROR_WANT_WRITE) {
     if (ssl_error == SSL_ERROR_SSL) {
       supla_socket->fatal_error = 1;
-    } else {
-      switch (ssl_error) {
-        case SSL_ERROR_NONE:
-          supla_log(LOG_DEBUG, "SSL_ERROR_NONE");
-          break;
-        case SSL_ERROR_SSL:
-          supla_log(LOG_DEBUG, "SSL_ERROR_SSL");
-          break;
-        case SSL_ERROR_WANT_X509_LOOKUP:
-          supla_log(LOG_DEBUG, "SSL_ERROR_WANT_X509_LOOKUP");
-          break;
-        case SSL_ERROR_SYSCALL:
-          supla_log(LOG_DEBUG, "SSL_ERROR_SYSCALL");
-          break;
-        case SSL_ERROR_ZERO_RETURN:
-          supla_log(LOG_DEBUG, "SSL_ERROR_ZERO_RETURN");
-          break;
-        case SSL_ERROR_WANT_CONNECT:
-          supla_log(LOG_DEBUG, "SSL_ERROR_WANT_CONNECT");
-          break;
-        case SSL_ERROR_WANT_ACCEPT:
-          supla_log(LOG_DEBUG, "SSL_ERROR_WANT_ACCEPT");
-          break;
-      }
+    }
+
+    switch (ssl_error) {
+      case SSL_ERROR_NONE:
+        supla_log(LOG_DEBUG, "SSL_ERROR_NONE");
+        break;
+      case SSL_ERROR_SSL:
+        supla_log(LOG_DEBUG, "SSL_ERROR_SSL");
+        break;
+      case SSL_ERROR_WANT_X509_LOOKUP:
+        supla_log(LOG_DEBUG, "SSL_ERROR_WANT_X509_LOOKUP");
+        break;
+      case SSL_ERROR_SYSCALL:
+        supla_log(LOG_DEBUG, "SSL_ERROR_SYSCALL");
+        break;
+      case SSL_ERROR_ZERO_RETURN:
+        supla_log(LOG_DEBUG, "SSL_ERROR_ZERO_RETURN");
+        break;
+      case SSL_ERROR_WANT_CONNECT:
+        supla_log(LOG_DEBUG, "SSL_ERROR_WANT_CONNECT");
+        break;
+      case SSL_ERROR_WANT_ACCEPT:
+        supla_log(LOG_DEBUG, "SSL_ERROR_WANT_ACCEPT");
+        break;
     }
   }
 }
