@@ -694,7 +694,10 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
     count = SSL_read(supla_socket->ssl, buf, count);
 
     if (count < 0) {
-      ssocket_varify_ssl_error(supla_socket, count);
+      ssocket_verify_ssl_error(supla_socket, count);
+      if (supla_socket->fatal_error) {
+        return 0;
+      }
     }
 
 #endif /*ifdef NOSSL*/
@@ -744,6 +747,9 @@ int ssocket_write(void *_ssd, void *_supla_socket, const void *buf, int count) {
 
     if (count < 0) {
       ssocket_verify_ssl_error(_supla_socket, count);
+      if (supla_socket->fatal_error) {
+        return -1;
+      }
     }
 #else
     return -1;
