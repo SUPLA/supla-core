@@ -174,44 +174,6 @@ void ssocket_showcerts(SSL *ssl) {
   }
 }
 
-int32_t ssocket_ssl_error(TSuplaSocket *supla_socket, int ret_code) {
-  int32_t ssl_error;
-
-  ssl_error = SSL_get_error(supla_socket->ssl, ret_code);
-
-  switch (ssl_error) {
-    case SSL_ERROR_NONE:
-      supla_log(LOG_DEBUG, "SSL_ERROR_NONE");
-      break;
-    case SSL_ERROR_SSL:
-      supla_log(LOG_DEBUG, "SSL_ERROR_SSL");
-      break;
-    case SSL_ERROR_WANT_READ:
-      supla_log(LOG_DEBUG, "SSL_ERROR_WANT_READ");
-      break;
-    case SSL_ERROR_WANT_WRITE:
-      supla_log(LOG_DEBUG, "SSL_ERROR_WANT_WRITE");
-      break;
-    case SSL_ERROR_WANT_X509_LOOKUP:
-      supla_log(LOG_DEBUG, "SSL_ERROR_WANT_X509_LOOKUP");
-      break;
-    case SSL_ERROR_SYSCALL:
-      supla_log(LOG_DEBUG, "SSL_ERROR_SYSCALL");
-      break;
-    case SSL_ERROR_ZERO_RETURN:
-      supla_log(LOG_DEBUG, "SSL_ERROR_ZERO_RETURN");
-      break;
-    case SSL_ERROR_WANT_CONNECT:
-      supla_log(LOG_DEBUG, "SSL_ERROR_WANT_CONNECT");
-      break;
-    case SSL_ERROR_WANT_ACCEPT:
-      supla_log(LOG_DEBUG, "SSL_ERROR_WANT_ACCEPT");
-      break;
-  }
-
-  return ssl_error;
-}
-
 SSL_CTX *ssocket_client_initctx(void) {
   SSL_METHOD *method;
   SSL_CTX *ctx;
@@ -677,6 +639,42 @@ char ssocket_is_secure(void *_ssd) {
   return ((TSuplaSocketData *)_ssd)->secure == 1;
 }
 
+void ssocket_verify_ssl_error(void *_supla_socket, int ret) {
+  TSuplaSocket *supla_socket = (TSuplaSocket *)_supla_socket;
+
+  // SSL_get_error consumes quite a few CPU cycles.
+  int32_t ssl_error = SSL_get_error(supla_socket->ssl, ret);
+  if (ssl_error != SSL_ERROR_WANT_READ && ssl_error != SSL_ERROR_WANT_WRITE) {
+    if (ssl_error == SSL_ERROR_SSL) {
+      supla_socket->fatal_error = 1;
+    } else {
+      switch (ssl_error) {
+        case SSL_ERROR_NONE:
+          supla_log(LOG_DEBUG, "SSL_ERROR_NONE");
+          break;
+        case SSL_ERROR_SSL:
+          supla_log(LOG_DEBUG, "SSL_ERROR_SSL");
+          break;
+        case SSL_ERROR_WANT_X509_LOOKUP:
+          supla_log(LOG_DEBUG, "SSL_ERROR_WANT_X509_LOOKUP");
+          break;
+        case SSL_ERROR_SYSCALL:
+          supla_log(LOG_DEBUG, "SSL_ERROR_SYSCALL");
+          break;
+        case SSL_ERROR_ZERO_RETURN:
+          supla_log(LOG_DEBUG, "SSL_ERROR_ZERO_RETURN");
+          break;
+        case SSL_ERROR_WANT_CONNECT:
+          supla_log(LOG_DEBUG, "SSL_ERROR_WANT_CONNECT");
+          break;
+        case SSL_ERROR_WANT_ACCEPT:
+          supla_log(LOG_DEBUG, "SSL_ERROR_WANT_ACCEPT");
+          break;
+      }
+    }
+  }
+}
+
 int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
   TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
   TSuplaSocket *supla_socket = _supla_socket == NULL
@@ -695,18 +693,9 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
 #else
     count = SSL_read(supla_socket->ssl, buf, count);
 
-#ifdef __DEBUG
-    // SSL_get_error consumes quite a few CPU cycles.
-    if (count < 0 &&
-        SSL_get_error(supla_socket->ssl, count) != SSL_ERROR_WANT_READ) {
-      switch (ssocket_ssl_error(supla_socket, count)) {
-        case SSL_ERROR_SYSCALL:
-        case SSL_ERROR_SSL:
-          supla_socket->fatal_error = 1;
-          return 0;
-      }
+    if (count < 0) {
+      ssocket_varify_ssl_error(supla_socket, count);
     }
-#endif /*__DEBUG*/
 
 #endif /*ifdef NOSSL*/
 
@@ -754,12 +743,7 @@ int ssocket_write(void *_ssd, void *_supla_socket, const void *buf, int count) {
     count = SSL_write(supla_socket->ssl, buf, count);
 
     if (count < 0) {
-      switch (ssocket_ssl_error(supla_socket, count)) {
-        case SSL_ERROR_SYSCALL:
-        case SSL_ERROR_SSL:
-          supla_socket->fatal_error = 1;
-          return 0;
-      }
+      ssocket_verify_ssl_error(_supla_socket, count);
     }
 #else
     return -1;
