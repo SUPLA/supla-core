@@ -276,4 +276,31 @@ TEST_F(ActionCommandTest, badParams) {
   commandProcessingTest("ACTION-OPEN:a,10,c\n", "UNKNOWN:0\n");
 }
 
+TEST_F(ActionCommandTest, ShutPartiallyWithDelta) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
+  cmd = &c;
+  EXPECT_CALL(c, action_shut(10, 20, 30, Pointee(Eq(35)), true))
+      .WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,1\n", "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, ShutPartiallyWithoutDelta) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
+  cmd = &c;
+  EXPECT_CALL(c, action_shut(10, 20, 30, Pointee(Eq(35)), false))
+      .WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,0\n", "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, ShutPartiallyWithFaulure) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
+  cmd = &c;
+  EXPECT_CALL(c, action_shut(10, 20, 30, Pointee(Eq(35)), false))
+      .WillOnce(Return(false));
+
+  commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,0\n", "FAIL:30\n");
+}
+
 } /* namespace testing */

@@ -101,7 +101,7 @@ shared_ptr<supla_device> supla_abstract_action_executor::get_device(void) {
 void supla_abstract_action_executor::execute_action(
     const supla_caller &caller, int user_id, int action_id,
     _subjectType_e subject_type, int subject_id,
-    supla_abstract_value_getter *value_getter, char percentage,
+    supla_abstract_value_getter *value_getter, TAction_RS_Parameters *rs,
     TAction_RGBW_Parameters *rgbw, int source_device_id, int source_channel_id,
     int cap) {
   if (action_id == 0 || subject_id == 0) {
@@ -133,7 +133,7 @@ void supla_abstract_action_executor::execute_action(
       close();
       break;
     case ACTION_SHUT:
-      shut(NULL);
+      shut(NULL, false);
       break;
     case ACTION_REVEAL:
       reveal();
@@ -149,12 +149,13 @@ void supla_abstract_action_executor::execute_action(
       break;
     case ACTION_SHUT_PARTIALLY:
     case ACTION_REVEAL_PARTIALLY: {
+      char percentage = rs->Percentage;
       if (percentage > -1) {
         if (action_id == ACTION_REVEAL_PARTIALLY) {
           percentage = 100 - percentage;
         }
 
-        shut(&percentage);
+        shut(&percentage, rs->Delta > 0);
       }
     } break;
     case ACTION_TURN_ON:
@@ -212,7 +213,7 @@ void supla_abstract_action_executor::execute_action(
     return;
   }
 
-  char percentage = 0;
+  TAction_RS_Parameters rs = {};
   TAction_RGBW_Parameters rgbw = {};
   int source_device_id = 0;
   int source_channel_id = 0;
@@ -221,7 +222,7 @@ void supla_abstract_action_executor::execute_action(
   switch (action_id) {
     case ACTION_SHUT_PARTIALLY:
     case ACTION_REVEAL_PARTIALLY:
-      percentage = config->get_percentage();
+      rs.Percentage = config->get_percentage();
       break;
     case ACTION_SET_RGBW_PARAMETERS:
       rgbw = config->get_rgbw();
@@ -236,7 +237,7 @@ void supla_abstract_action_executor::execute_action(
   }
 
   execute_action(caller, user_id, action_id, config->get_subject_type(),
-                 subject_id, value_getter, percentage, &rgbw, source_device_id,
+                 subject_id, value_getter, &rs, &rgbw, source_device_id,
                  source_channel_id, cap);
 }
 

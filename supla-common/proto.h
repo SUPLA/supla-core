@@ -1156,7 +1156,8 @@ typedef struct {
 
 typedef struct {
   char Percentage;
-  char Reserved[15];
+  char Delta;  // If delta> 0 then the Percentage variable is seen as delta.
+  char Reserved[14];
 } TAction_RS_Parameters;  // ver. >= 19
 
 typedef struct {

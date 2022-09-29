@@ -44,7 +44,7 @@ void supla_ch_abstract_execute_action::execute_action(
     function<bool(int subject_type, int subject_id)> subject_exists,
     function<bool(int channel_id)> is_channel_online) {
   _subjectType_e subject_type = stUnknown;
-  char percentage = 0;
+  TAction_RS_Parameters rs = {};
   TAction_RGBW_Parameters rgbw = {};
 
   switch (action->SubjectType) {
@@ -64,7 +64,8 @@ void supla_ch_abstract_execute_action::execute_action(
     case ACTION_REVEAL_PARTIALLY:
       if (action->ParamSize == sizeof(TAction_RS_Parameters)) {
         TAction_RS_Parameters* p = (TAction_RS_Parameters*)action->Param;
-        percentage = p->Percentage;
+        rs.Percentage = p->Percentage;
+        rs.Delta = p->Delta;
       } else {
         send_result(action, srpc_adapter,
                     SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
@@ -100,7 +101,7 @@ void supla_ch_abstract_execute_action::execute_action(
 
   aexec->execute_action(supla_caller(ctClient, client_id), user_id,
                         action->ActionId, subject_type, action->SubjectId,
-                        nullptr, percentage, &rgbw, 0, 0, 0);
+                        nullptr, &rs, &rgbw, 0, 0, 0);
 
   send_result(action, srpc_adapter, SUPLA_RESULTCODE_TRUE);
 }

@@ -103,18 +103,18 @@ void supla_action_executor::toggle(void) {
   });
 }
 
-void supla_action_executor::shut(const char *closingPercentage) {
-  execute_action(
-      [this, closingPercentage](supla_user_channelgroups *channel_groups,
-                                supla_device_channels *channels) -> void {
-        if (channel_groups) {
-          channel_groups->action_shut(get_caller(), get_group_id(),
-                                      closingPercentage);
-        } else {
-          channels->action_shut(get_caller(), get_channel_id(), 0, 0,
-                                closingPercentage);
-        }
-      });
+void supla_action_executor::shut(const char *closingPercentage, bool delta) {
+  execute_action([this, closingPercentage, delta](
+                     supla_user_channelgroups *channel_groups,
+                     supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_shut(get_caller(), get_group_id(),
+                                  closingPercentage, delta);
+    } else {
+      channels->action_shut(get_caller(), get_channel_id(), 0, 0,
+                            closingPercentage, delta);
+    }
+  });
 }
 
 void supla_action_executor::reveal(void) {

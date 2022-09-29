@@ -202,7 +202,7 @@ class supla_device_channels {
               unsigned char EOL, bool on, bool toggle);
   bool rs_action(const supla_caller &caller, int ChannelID, int GroupID,
                  unsigned char EOL, rsAction action,
-                 const char *closingPercentage);
+                 const char *closingPercentage, bool delta);
   bool action_open_close(const supla_caller &caller, int ChannelID, int GroupID,
                          unsigned char EOL, bool unknown, bool open,
                          bool cancelTasks = true);
@@ -320,7 +320,8 @@ class supla_device_channels {
   bool action_toggle(const supla_caller &caller, int ChannelID, int GroupID,
                      unsigned char EOL);
   bool action_shut(const supla_caller &caller, int ChannelID, int GroupID,
-                   unsigned char EOL, const char *closingPercentage);
+                   unsigned char EOL, const char *closingPercentage,
+                   bool action);
   bool action_reveal(const supla_caller &caller, int ChannelID, int GroupID,
                      unsigned char EOL);
   bool action_up(const supla_caller &caller, int ChannelID, int GroupID,

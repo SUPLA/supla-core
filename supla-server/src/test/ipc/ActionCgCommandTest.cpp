@@ -238,4 +238,31 @@ TEST_F(ActionCgCommandTest, badParams) {
   commandProcessingTest("ACTION-CG-OPEN:a,10\n", "UNKNOWN:0\n");
 }
 
+TEST_F(ActionCgCommandTest, ShutPartiallyWithDelta) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
+  cmd = &c;
+  EXPECT_CALL(c, action_shut(user, 30, Pointee(Eq(50)), true))
+      .WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,1\n", "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, ShutPartiallyWithoutDelta) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
+  cmd = &c;
+  EXPECT_CALL(c, action_shut(user, 30, Pointee(Eq(50)), false))
+      .WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,0\n", "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, ShutPartiallyWithFilure) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
+  cmd = &c;
+  EXPECT_CALL(c, action_shut(user, 30, Pointee(Eq(50)), false))
+      .WillOnce(Return(false));
+
+  commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,0\n", "FAIL:30\n");
+}
+
 } /* namespace testing */

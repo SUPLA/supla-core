@@ -55,6 +55,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   char color_brightness;
   char closing_percentage;
   char rgbw_on_off;
+  bool delta;
   std::list<struct timeval> times;
   void addTime(void);
 
@@ -70,7 +71,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
                         char *brightness, char *on_off);
   virtual void toggle(void);
-  virtual void shut(const char *closingPercentage);
+  virtual void shut(const char *closingPercentage, bool delta);
   virtual void reveal(void);
   virtual void up(void);
   virtual void down(void);
@@ -117,6 +118,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   char getBrightness(void);
   char getColorBrightness(void);
   char getRGBWOnOff(void);
+  bool getDelta(void);
   std::list<struct timeval> getTimes(void);
 };
 

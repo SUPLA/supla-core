@@ -2663,69 +2663,89 @@ bool supla_device_channels::action_toggle(const supla_caller &caller,
 bool supla_device_channels::rs_action(const supla_caller &caller, int ChannelID,
                                       int GroupID, unsigned char EOL,
                                       rsAction action,
-                                      const char *closingPercentage) {
+                                      const char *closingPercentage,
+                                      bool delta) {
   bool result = false;
-  access_channel(ChannelID,
-                 [&result, this, caller, GroupID, EOL, action,
-                  closingPercentage](supla_device_channel *channel) -> void {
-                   char v = -1;
+  access_channel(
+      ChannelID,
+      [&result, this, caller, GroupID, EOL, action, closingPercentage,
+       delta](supla_device_channel *channel) -> void {
+        char v = -1;
 
-                   switch (channel->getFunc()) {
-                     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-                     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+        switch (channel->getFunc()) {
+          case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+          case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
 
-                       switch (action) {
-                         case rsActionStop:
-                           v = 0;
-                           break;
-                         case rsActionDown:
-                           v = 1;
-                           break;
-                         case rsActionUp:
-                           v = 2;
-                           break;
-                         case rsActionDownOrStop:
-                           if (channel->getFlags() &
-                               SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
-                             v = 3;
-                           }
-                           break;
-                         case rsActionUpOrStop:
-                           if (channel->getFlags() &
-                               SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
-                             v = 4;
-                           }
-                           break;
-                         case rsActionStepByStep:
-                           if (channel->getFlags() &
-                               SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
-                             v = 5;
-                           }
-                           break;
-                         case rsActionShut:
-                           if (closingPercentage) {
-                             if (*closingPercentage > 100) {
-                               v = 110;
-                             } else if (*closingPercentage < 0) {
-                               v = 10;
-                             } else {
-                               v = *closingPercentage + 10;
-                             }
-                           } else {
-                             v = 110;
-                           }
-                           break;
-                         case rsActionReveal:
-                           v = 10;
-                           break;
-                       }
-                       if (v >= 0 && v <= 110) {
-                         result = set_device_channel_char_value(
-                             caller, channel, GroupID, EOL, v);
-                       }
-                       break;
-                   }
-                 });
+            switch (action) {
+              case rsActionStop:
+                v = 0;
+                break;
+              case rsActionDown:
+                v = 1;
+                break;
+              case rsActionUp:
+                v = 2;
+                break;
+              case rsActionDownOrStop:
+                if (channel->getFlags() &
+                    SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
+                  v = 3;
+                }
+                break;
+              case rsActionUpOrStop:
+                if (channel->getFlags() &
+                    SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
+                  v = 4;
+                }
+                break;
+              case rsActionStepByStep:
+                if (channel->getFlags() &
+                    SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
+                  v = 5;
+                }
+                break;
+              case rsActionShut:
+                if (closingPercentage) {
+                  int percentage = *closingPercentage;
+
+                  if (delta) {
+                    char current = 0;
+                    channel->getChar(&current);
+                    if (current > 100) {
+                      current = 100;
+                    } else if (current < 0) {
+                      current = 0;
+                    }
+
+                    if (*closingPercentage + current > 100) {
+                      percentage = 100;
+                    } else if (*closingPercentage + current < 0) {
+                      percentage = 0;
+                    }
+                  }
+
+                  if (percentage > 100) {
+                    v = 110;
+                  } else if (percentage < 0) {
+                    v = 10;
+                  } else {
+                    v = percentage + 10;
+                  }
+                } else {
+                  v = 110;
+                }
+                break;
+              case rsActionReveal:
+                v = 10;
+                break;
+            }
+            if (v >= 0 && v <= 110) {
+              result = set_device_channel_char_value(caller, channel, GroupID,
+                                                     EOL, v);
+            }
+            break;
+        }
+      });
 
   return result;
 }
@@ -2733,50 +2753,55 @@ bool supla_device_channels::rs_action(const supla_caller &caller, int ChannelID,
 bool supla_device_channels::action_shut(const supla_caller &caller,
                                         int ChannelID, int GroupID,
                                         unsigned char EOL,
-                                        const char *closingPercentage) {
+                                        const char *closingPercentage,
+                                        bool delta) {
   return rs_action(caller, ChannelID, GroupID, EOL, rsActionShut,
-                   closingPercentage);
+                   closingPercentage, delta);
 }
 
 bool supla_device_channels::action_reveal(const supla_caller &caller,
                                           int ChannelID, int GroupID,
                                           unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionReveal, NULL);
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionReveal, NULL,
+                   false);
 }
 
 bool supla_device_channels::action_stop(const supla_caller &caller,
                                         int ChannelID, int GroupID,
                                         unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionStop, NULL);
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionStop, NULL, false);
 }
 
 bool supla_device_channels::action_up(const supla_caller &caller, int ChannelID,
                                       int GroupID, unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionUp, NULL);
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionUp, NULL, false);
 }
 
 bool supla_device_channels::action_down(const supla_caller &caller,
                                         int ChannelID, int GroupID,
                                         unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionDown, NULL);
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionDown, NULL, false);
 }
 
 bool supla_device_channels::action_up_or_stop(const supla_caller &caller,
                                               int ChannelID, int GroupID,
                                               unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionUpOrStop, NULL);
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionUpOrStop, NULL,
+                   false);
 }
 
 bool supla_device_channels::action_down_or_stop(const supla_caller &caller,
                                                 int ChannelID, int GroupID,
                                                 unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionDownOrStop, NULL);
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionDownOrStop, NULL,
+                   false);
 }
 
 bool supla_device_channels::action_step_by_step(const supla_caller &caller,
                                                 int ChannelID, int GroupID,
                                                 unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionStepByStep, NULL);
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionStepByStep, NULL,
+                   false);
 }
 
 bool supla_device_channels::action_open_close(const supla_caller &caller,

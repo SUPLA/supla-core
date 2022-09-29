@@ -40,6 +40,9 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
 
     (*rs_param)->Percentage =
         supla_CallShortMethod(env, cls, action_params, "getPercentage", "()S");
+
+    (*rs_param)->Delta =
+        supla_CallBooleanMethod(env, cls, action_params, "getDelta", "()Z");
   }
 
   jclass rgbw_cls =
