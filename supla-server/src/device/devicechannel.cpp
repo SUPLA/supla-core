@@ -92,6 +92,8 @@ supla_device_channel::supla_device_channel(
     case SUPLA_CHANNELTYPE_RELAYHFD4:
     case SUPLA_CHANNELTYPE_RELAYG5LA1A:
     case SUPLA_CHANNELTYPE_2XRELAYG5LA1A:
+    case SUPLA_CHANNELTYPE_SENSORNC:
+    case SUPLA_CHANNELTYPE_SENSORNO:
       json_config = new channel_json_config(NULL);
       if (json_config) {
         json_config->set_properties(properties);
