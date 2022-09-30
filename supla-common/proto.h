@@ -262,8 +262,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_SCENE_PACK_UPDATE 900                   // ver. >= 18
 #define SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE 910             // ver. >= 18
 #define SUPLA_CS_CALL_EXECUTE_ACTION 1000                     // ver. >= 19
-#define SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION 1010            // ver. >= 19
+#define SUPLA_CS_CALL_EXECUTE_ACTION_WITH_AUTH 1010           // ver. >= 19
 #define SUPLA_SC_CALL_ACTION_EXECUTION_RESULT 1020            // ver. >= 19
+#define SUPLA_CS_CALL_GET_CHANNEL_VALUE_WITH_AUTH 1030        // ver. >= 19
+#define SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT 1040           // ver. >= 19
 
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
@@ -1197,6 +1199,20 @@ typedef struct {
   _supla_int_t SubjectType;
   _supla_int_t ResultCode;
 } TSC_ActionExecutionResult;  // ver. >= 19
+
+typedef struct {
+  // server -> client
+  _supla_int_t Id;
+  _supla_int_t Function;
+
+  TSuplaChannelValue_B Value;
+  TSuplaChannelExtendedValue ExtendedValue;  // Last variable in struct!
+} TSC_GetChannelValueResult;                 // ver. >= 19;
+
+typedef struct {
+  TCS_ClientAuthorizationDetails Auth;
+  _supla_int_t ChannelId;
+} TCS_GetChannelValueWithAuth;  // ver. >= 19
 
 typedef struct {
   // client -> server

@@ -146,3 +146,13 @@ _supla_int_t supla_srpc_adapter::sc_async_action_execution_result(
     TSC_ActionExecutionResult *result) {
   return srpc_sc_async_action_execution_result(get_srpc(), result);
 }
+
+_supla_int_t supla_srpc_adapter::cs_async_get_channel_value_with_auth(
+    TCS_GetChannelValueWithAuth *vwa) {
+  return srpc_cs_async_get_channel_value_with_auth(get_srpc(), vwa);
+}
+
+_supla_int_t supla_srpc_adapter::sc_async_get_channel_value_result(
+    TSC_GetChannelValueResult *result) {
+  return srpc_sc_async_get_channel_value_result(get_srpc(), result);
+}

@@ -172,6 +172,8 @@ union TsrpcDataPacketData {
   TCS_Action *cs_action;
   TCS_ActionWithAuth *cs_action_with_auth;
   TSC_ActionExecutionResult *sc_action_execution_result;
+  TCS_GetChannelValueWithAuth *cs_get_value_with_auth;
+  TSC_GetChannelValueResult *sc_get_value_result;
 };
 
 typedef struct {
@@ -408,6 +410,10 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_execute_action_with_auth(void *_srpc, TCS_ActionWithAuth *action);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_action_execution_result(
     void *_srpc, TSC_ActionExecutionResult *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_channel_value_with_auth(
+    void *_srpc, TCS_GetChannelValueWithAuth *vwa);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_get_channel_value_result(
+    void *_srpc, TSC_GetChannelValueResult *result);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS

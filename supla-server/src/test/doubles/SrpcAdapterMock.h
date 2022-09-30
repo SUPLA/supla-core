@@ -98,6 +98,12 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
 
   MOCK_METHOD1(sc_async_action_execution_result,
                _supla_int_t(TSC_ActionExecutionResult *result));
+
+  MOCK_METHOD1(cs_async_get_channel_value_with_auth,
+               _supla_int_t(TCS_GetChannelValueWithAuth *vwa));
+
+  MOCK_METHOD1(sc_async_get_channel_value_result,
+               _supla_int_t(TSC_GetChannelValueResult *result));
 };
 
 } /* namespace testing */

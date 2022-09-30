@@ -32,7 +32,7 @@ supla_ch_auth_and_execute_action::supla_ch_auth_and_execute_action(void)
 supla_ch_auth_and_execute_action::~supla_ch_auth_and_execute_action() {}
 
 bool supla_ch_auth_and_execute_action::can_handle_call(unsigned int call_id) {
-  return call_id == SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION;
+  return call_id == SUPLA_CS_CALL_EXECUTE_ACTION_WITH_AUTH;
 }
 
 void supla_ch_auth_and_execute_action::handle_call(

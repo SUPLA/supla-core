@@ -1456,7 +1456,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         }
         break;
 
-      case SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION:
+      case SUPLA_CS_CALL_EXECUTE_ACTION_WITH_AUTH:
         if (srpc->sdp.data_size >=
                 (sizeof(TCS_ActionWithAuth) - SUPLA_ACTION_PARAM_MAXSIZE) &&
             srpc->sdp.data_size <= sizeof(TCS_ActionWithAuth)) {
@@ -1472,6 +1472,22 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                   sizeof(TSC_ActionExecutionResult));
         break;
 
+      case SUPLA_CS_CALL_GET_CHANNEL_VALUE_WITH_AUTH:
+        if (srpc->sdp.data_size == sizeof(TCS_GetChannelValueWithAuth)) {
+          rd->data.cs_get_value_with_auth =
+              (TCS_GetChannelValueWithAuth *)malloc(
+                  sizeof(TCS_GetChannelValueWithAuth));
+        }
+        break;
+
+      case SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT:
+        if (srpc->sdp.data_size >= (sizeof(TSC_GetChannelValueResult) -
+                                    SUPLA_CHANNELEXTENDEDVALUE_SIZE) &&
+            srpc->sdp.data_size <= sizeof(TSC_GetChannelValueResult)) {
+          rd->data.sc_get_value_result = (TSC_GetChannelValueResult *)malloc(
+              sizeof(TSC_GetChannelValueResult));
+        }
+        break;
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
@@ -1623,9 +1639,11 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
     case SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE:
       return 18;
     case SUPLA_CS_CALL_EXECUTE_ACTION:
-    case SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION:
+    case SUPLA_CS_CALL_EXECUTE_ACTION_WITH_AUTH:
     case SUPLA_SC_CALL_ACTION_EXECUTION_RESULT:
     case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D:
+    case SUPLA_CS_CALL_GET_CHANNEL_VALUE_WITH_AUTH:
+    case SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT:
       return 19;
   }
 
@@ -2776,14 +2794,41 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_execute_action_with_auth(
 
   if (size > sizeof(TCS_ActionWithAuth)) return 0;
 
-  return srpc_async_call(_srpc, SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION,
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_EXECUTE_ACTION_WITH_AUTH,
                          (char *)action, size);
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_action_execution_result(
     void *_srpc, TSC_ActionExecutionResult *result) {
+  if (result == NULL) {
+    return 0;
+  }
   return srpc_async_call(_srpc, SUPLA_SC_CALL_ACTION_EXECUTION_RESULT,
                          (char *)result, sizeof(TSC_ActionExecutionResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_channel_value_with_auth(
+    void *_srpc, TCS_GetChannelValueWithAuth *vwa) {
+  if (vwa == NULL) {
+    return 0;
+  }
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_GET_CHANNEL_VALUE_WITH_AUTH,
+                         (char *)vwa, sizeof(TCS_GetChannelValueWithAuth));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_get_channel_value_result(
+    void *_srpc, TSC_GetChannelValueResult *result) {
+  if (result == NULL) {
+    return 0;
+  }
+  _supla_int_t size = sizeof(TSC_GetChannelValueResult) -
+                      SUPLA_CHANNELEXTENDEDVALUE_SIZE +
+                      result->ExtendedValue.size;
+
+  if (size > sizeof(TSC_GetChannelValueResult)) return 0;
+
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT,
+                         (char *)result, size);
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

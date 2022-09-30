@@ -510,9 +510,11 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE};
     case 19:
       return {SUPLA_CS_CALL_EXECUTE_ACTION,
-              SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION,
+              SUPLA_CS_CALL_EXECUTE_ACTION_WITH_AUTH,
               SUPLA_SC_CALL_ACTION_EXECUTION_RESULT,
-              SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D};
+              SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D,
+              SUPLA_CS_CALL_GET_CHANNEL_VALUE_WITH_AUTH,
+              SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT};
   }
 
   return {};
@@ -3728,7 +3730,6 @@ TEST_F(SrpcTest, call_scene_state_pack_update_with_full_size) {
   srpc = NULL;
 }
 
-#if SUPLA_PROTO_VERSION >= 19
 //---------------------------------------------------------
 // EXECUTE ACTION
 //---------------------------------------------------------
@@ -3739,13 +3740,13 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_execute_action, TCS_Action,
                                      Param, ParamSize);
 
 //---------------------------------------------------------
-// CLIENT AUTH AND EXECUTE ACTION
+// EXECUTE ACTION WITH AUTHORIZATION
 //---------------------------------------------------------
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_execute_action_with_auth,
                                      TCS_ActionWithAuth,
-                                     SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION, 424,
-                                     924, cs_action_with_auth,
+                                     SUPLA_CS_CALL_EXECUTE_ACTION_WITH_AUTH,
+                                     424, 924, cs_action_with_auth,
                                      SUPLA_ACTION_PARAM_MAXSIZE, Action.Param,
                                      Action.ParamSize);
 
@@ -3757,5 +3758,25 @@ SRPC_CALL_BASIC_TEST(srpc_sc_async_action_execution_result,
                      TSC_ActionExecutionResult,
                      SUPLA_SC_CALL_ACTION_EXECUTION_RESULT, 39,
                      sc_action_execution_result);
-#endif /*SUPLA_PROTO_VERSION >= 19*/
+
+//---------------------------------------------------------
+// GET CHANNEL VALUE WITH AUTHORIZATION
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_cs_async_get_channel_value_with_auth,
+                     TCS_GetChannelValueWithAuth,
+                     SUPLA_CS_CALL_GET_CHANNEL_VALUE_WITH_AUTH, 417,
+                     cs_get_value_with_auth);
+
+//---------------------------------------------------------
+// GET CHANNEL VALUE RESULT
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_get_channel_value_result,
+                                     TSC_GetChannelValueResult,
+                                     SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT, 53,
+                                     1077, sc_get_value_result,
+                                     SUPLA_CHANNELEXTENDEDVALUE_SIZE,
+                                     ExtendedValue.value, ExtendedValue.size);
+
 }  // namespace

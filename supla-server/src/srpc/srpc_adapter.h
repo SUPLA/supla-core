@@ -119,6 +119,12 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sc_async_action_execution_result(
       TSC_ActionExecutionResult *result);  // ver. >= 19
+
+  virtual _supla_int_t cs_async_get_channel_value_with_auth(
+      TCS_GetChannelValueWithAuth *vwa);  // ver. >= 19
+
+  virtual _supla_int_t sc_async_get_channel_value_result(
+      TSC_GetChannelValueResult *result);  // ver. >= 19
 };
 
 #endif /* SRPC_ADAPTER_H_ */

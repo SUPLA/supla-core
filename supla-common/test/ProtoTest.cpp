@@ -244,6 +244,9 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
   EXPECT_LE(sizeof(TAction_RGBW_Parameters),
             (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TSC_GetChannelValueResult), 1054);
+  EXPECT_EQ(sizeof(TCS_GetChannelValueWithAuth), 394);
 }
 
 TEST_F(ProtoTest, authorizationDetails) {
