@@ -8,21 +8,24 @@ CPP_SRCS += \
 ../src/test/channeljsonconfig/ChannelJSONConfigTest.cpp \
 ../src/test/channeljsonconfig/ControllingTheGateConfigTest.cpp \
 ../src/test/channeljsonconfig/ElectricityMeterConfigTest.cpp \
-../src/test/channeljsonconfig/ImpulseCounterConfigTest.cpp 
+../src/test/channeljsonconfig/ImpulseCounterConfigTest.cpp \
+../src/test/channeljsonconfig/OpeningSensorConfigTest.cpp 
 
 CPP_DEPS += \
 ./src/test/channeljsonconfig/ActionTriggerConfigTest.d \
 ./src/test/channeljsonconfig/ChannelJSONConfigTest.d \
 ./src/test/channeljsonconfig/ControllingTheGateConfigTest.d \
 ./src/test/channeljsonconfig/ElectricityMeterConfigTest.d \
-./src/test/channeljsonconfig/ImpulseCounterConfigTest.d 
+./src/test/channeljsonconfig/ImpulseCounterConfigTest.d \
+./src/test/channeljsonconfig/OpeningSensorConfigTest.d 
 
 OBJS += \
 ./src/test/channeljsonconfig/ActionTriggerConfigTest.o \
 ./src/test/channeljsonconfig/ChannelJSONConfigTest.o \
 ./src/test/channeljsonconfig/ControllingTheGateConfigTest.o \
 ./src/test/channeljsonconfig/ElectricityMeterConfigTest.o \
-./src/test/channeljsonconfig/ImpulseCounterConfigTest.o 
+./src/test/channeljsonconfig/ImpulseCounterConfigTest.o \
+./src/test/channeljsonconfig/OpeningSensorConfigTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -37,7 +40,7 @@ src/test/channeljsonconfig/%.o: ../src/test/channeljsonconfig/%.cpp src/test/cha
 clean: clean-src-2f-test-2f-channeljsonconfig
 
 clean-src-2f-test-2f-channeljsonconfig:
-	-$(RM) ./src/test/channeljsonconfig/ActionTriggerConfigTest.d ./src/test/channeljsonconfig/ActionTriggerConfigTest.o ./src/test/channeljsonconfig/ChannelJSONConfigTest.d ./src/test/channeljsonconfig/ChannelJSONConfigTest.o ./src/test/channeljsonconfig/ControllingTheGateConfigTest.d ./src/test/channeljsonconfig/ControllingTheGateConfigTest.o ./src/test/channeljsonconfig/ElectricityMeterConfigTest.d ./src/test/channeljsonconfig/ElectricityMeterConfigTest.o ./src/test/channeljsonconfig/ImpulseCounterConfigTest.d ./src/test/channeljsonconfig/ImpulseCounterConfigTest.o
+	-$(RM) ./src/test/channeljsonconfig/ActionTriggerConfigTest.d ./src/test/channeljsonconfig/ActionTriggerConfigTest.o ./src/test/channeljsonconfig/ChannelJSONConfigTest.d ./src/test/channeljsonconfig/ChannelJSONConfigTest.o ./src/test/channeljsonconfig/ControllingTheGateConfigTest.d ./src/test/channeljsonconfig/ControllingTheGateConfigTest.o ./src/test/channeljsonconfig/ElectricityMeterConfigTest.d ./src/test/channeljsonconfig/ElectricityMeterConfigTest.o ./src/test/channeljsonconfig/ImpulseCounterConfigTest.d ./src/test/channeljsonconfig/ImpulseCounterConfigTest.o ./src/test/channeljsonconfig/OpeningSensorConfigTest.d ./src/test/channeljsonconfig/OpeningSensorConfigTest.o
 
 .PHONY: clean-src-2f-test-2f-channeljsonconfig
 

@@ -31,6 +31,7 @@
 #include "channeljsonconfig/action_trigger_config.h"
 #include "channeljsonconfig/electricity_meter_config.h"
 #include "channeljsonconfig/impulse_counter_config.h"
+#include "channeljsonconfig/opening_sensor_config.h"
 #include "db/database.h"
 #include "device/channel_gate_value.h"
 #include "device/channel_onoff_value.h"
@@ -1621,6 +1622,37 @@ bool supla_device_channels::set_channel_value(
   if (channel->converValueToExtended()) {
     if (converted2extended) {
       *converted2extended = true;
+    }
+  }
+
+  if (result) {
+    switch (channel->getFunc()) {
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE: {
+        channel_json_config *root = channel->getJSONConfig();
+        opening_sensor_config *os_cfg = new opening_sensor_config(root);
+        if (os_cfg->get_retry_interrupt()) {
+          int related_channel_id = os_cfg->get_related_channel_id();
+          if (related_channel_id) {
+            char value[SUPLA_CHANNELVALUE_SIZE] = {};
+            channel->getValue(value);
+
+            safe_array_unlock(arr);
+
+            shared_ptr<supla_device> rel_device =
+                device->get_user()->get_device(device->get_user_id(), 0,
+                                               related_channel_id);
+            if (rel_device) {
+              supla_action_gate_openclose::cancel_tasks(
+                  rel_device->get_user_id(), rel_device->get_id(),
+                  related_channel_id, !value[0]);
+            }
+            safe_array_lock(arr);
+          }
+        }
+        delete os_cfg;
+        delete root;
+      } break;
     }
   }
 
