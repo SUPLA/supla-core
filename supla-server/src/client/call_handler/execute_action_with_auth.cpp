@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "client/call_handler/auth_and_execute_action.h"
+#include <call_handler/execute_action_with_auth.h>
 
 #include "actions/action_executor.h"
 #include "client/call_handler/register_client.h"
@@ -26,16 +26,16 @@
 
 using std::shared_ptr;
 
-supla_ch_auth_and_execute_action::supla_ch_auth_and_execute_action(void)
+supla_ch_execute_action_with_auth::supla_ch_execute_action_with_auth(void)
     : supla_ch_abstract_execute_action() {}
 
-supla_ch_auth_and_execute_action::~supla_ch_auth_and_execute_action() {}
+supla_ch_execute_action_with_auth::~supla_ch_execute_action_with_auth() {}
 
-bool supla_ch_auth_and_execute_action::can_handle_call(unsigned int call_id) {
+bool supla_ch_execute_action_with_auth::can_handle_call(unsigned int call_id) {
   return call_id == SUPLA_CS_CALL_EXECUTE_ACTION_WITH_AUTH;
 }
 
-void supla_ch_auth_and_execute_action::handle_call(
+void supla_ch_execute_action_with_auth::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (rd->data.cs_action_with_auth == nullptr || client->is_registered()) {
@@ -90,6 +90,6 @@ void supla_ch_auth_and_execute_action::handle_call(
       });
 }
 
-bool supla_ch_auth_and_execute_action::is_registration_required(void) {
+bool supla_ch_execute_action_with_auth::is_registration_required(void) {
   return false;
 }

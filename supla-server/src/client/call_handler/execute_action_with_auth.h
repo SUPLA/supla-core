@@ -16,14 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CH_AUTH_AND_EXECUTE_ACTION_H_
-#define SUPLA_CH_AUTH_AND_EXECUTE_ACTION_H_
+#ifndef SUPLA_CH_EXECUTE_ACTION_WITH_AUTH_H_
+#define SUPLA_CH_EXECUTE_ACTION_WITH_AUTH_H_
 
 #include <memory>
 
 #include "client/call_handler/abstract_execute_action.h"
 
-class supla_ch_auth_and_execute_action
+class supla_ch_execute_action_with_auth
     : public supla_ch_abstract_execute_action {
  protected:
   virtual void handle_call(std::shared_ptr<supla_client> client,
@@ -32,10 +32,10 @@ class supla_ch_auth_and_execute_action
                            unsigned char proto_version);
 
  public:
-  supla_ch_auth_and_execute_action(void);
-  virtual ~supla_ch_auth_and_execute_action();
+  supla_ch_execute_action_with_auth(void);
+  virtual ~supla_ch_execute_action_with_auth();
   virtual bool can_handle_call(unsigned int call_id);
   virtual bool is_registration_required(void);
 };
 
-#endif /* SUPLA_CH_AUTH_AND_EXECUTE_ACTION_H_*/
+#endif /* SUPLA_CH_EXECUTE_ACTION_WITH_AUTH_H_*/
