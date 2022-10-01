@@ -113,6 +113,9 @@ typedef void (*_suplaclient_cb_on_action_execution_result)(
     void *_suplaclient, void *user_data,
     TSC_ActionExecutionResult *sc_action_execution_result);
 
+typedef void (*_suplaclient_cb_on_get_channel_value_get_result)(
+    void *_suplaclient, void *user_data, TSC_GetChannelValueResult *result);
+
 typedef struct {
   char clientGUID[SUPLA_GUID_SIZE];
   char Name[SUPLA_CLIENT_NAME_MAXSIZE];  // UTF8
@@ -194,6 +197,8 @@ typedef struct {
       cb_on_zwave_wake_up_settings_report;
   _suplaclient_cb_on_zwave_basic_result cb_on_zwave_set_wake_up_time_result;
   _suplaclient_cb_on_action_execution_result cb_on_action_execution_result;
+  _suplaclient_cb_on_get_channel_value_get_result
+      cb_on_get_channel_value_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus

@@ -1091,6 +1091,12 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
               scd, scd->cfg.user_data, rd.data.sc_action_execution_result);
         }
         break;
+      case SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT:
+        if (scd->cfg.cb_on_get_channel_value_result) {
+          scd->cfg.cb_on_get_channel_value_result(scd, scd->cfg.user_data,
+                                                  rd.data.sc_get_value_result);
+        }
+        break;
     }
 
     srpc_rd_free(&rd);
