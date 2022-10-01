@@ -267,7 +267,8 @@ unsigned _supla_int_t supla_device_channel::getValueValidityTimeSec(void) {
   return 0;
 }
 
-bool supla_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {
+bool supla_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev,
+                                            bool em_update) {
   if (ev == NULL) {
     return false;
   }
@@ -278,7 +279,24 @@ bool supla_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {
   }
 
   memcpy(ev, extendedValue, sizeof(TSuplaChannelExtendedValue));
-  return true;
+
+  bool result = true;
+
+  if (em_update) {
+    switch (ev->type) {
+      case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2:
+        result = supla_channel_electricity_measurement::update_cev(
+            ev, getParam2(), getTextParam1());
+        break;
+      case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
+        result = supla_channel_ic_measurement::update_cev(
+            ev, getFunc(), getParam2(), getParam3(), getTextParam1(),
+            getTextParam2());
+        break;
+    }
+  }
+
+  return result;
 }
 
 void supla_device_channel::getDouble(double *Value) {
@@ -1248,7 +1266,8 @@ void supla_device_channels::load(int UserID, int DeviceID) {
 
 bool supla_device_channels::get_channel_value(
     int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE], char *online,
-    unsigned _supla_int_t *validity_time_sec, bool for_client) {
+    unsigned _supla_int_t *validity_time_sec, TSuplaChannelExtendedValue *ev,
+    int *function, bool for_client) {
   bool result = false;
 
   if (ChannelID) {
@@ -1263,6 +1282,14 @@ bool supla_device_channels::get_channel_value(
 
       if (validity_time_sec) {
         *validity_time_sec = channel->getValueValidityTimeSec();
+      }
+
+      if (function) {
+        *function = channel->getFunc();
+      }
+
+      if (ev) {
+        channel->getExtendedValue(ev, for_client);
       }
 
       if (for_client) {
@@ -1350,7 +1377,7 @@ bool supla_device_channels::get_channel_extendedvalue(
     supla_device_channel *channel = find_channel(ChannelID);
 
     if (channel) {
-      result = channel->getExtendedValue(value);
+      result = channel->getExtendedValue(value, false);
     }
 
     safe_array_unlock(arr);
@@ -1368,22 +1395,9 @@ bool supla_device_channels::get_channel_extendedvalue(
     supla_device_channel *channel = find_channel(ChannelID);
 
     if (channel) {
-      result = channel->getExtendedValue(&cev->value);
+      result = channel->getExtendedValue(&cev->value, true);
       if (result) {
         cev->Id = channel->getId();
-
-        switch (cev->value.type) {
-          case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2:
-            result = supla_channel_electricity_measurement::update_cev(
-                cev, channel->getParam2(), channel->getTextParam1());
-            break;
-          case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
-            result = supla_channel_ic_measurement::update_cev(
-                cev, channel->getFunc(), channel->getParam2(),
-                channel->getParam3(), channel->getTextParam1(),
-                channel->getTextParam2());
-            break;
-        }
       }
     }
 
@@ -2401,7 +2415,8 @@ bool supla_device_channels::get_channel_complex_value(
           memset(&cv, 0, sizeof(TSuplaChannelValue));
 
           if (user->get_channel_value(device->get_id(), ChannelID, cv.value,
-                                      cv.sub_value, NULL, NULL, NULL, false)) {
+                                      cv.sub_value, nullptr, nullptr, nullptr,
+                                      nullptr, nullptr, false)) {
             if (cv.sub_value[0] > 0) {
               value->hi = true;
             } else if ((value->function ==

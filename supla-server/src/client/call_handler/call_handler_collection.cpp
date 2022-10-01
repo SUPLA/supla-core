@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <call_handler/execute_action_with_auth.h>
 #include "client/call_handler/call_handler_collection.h"
 
+#include <call_handler/execute_action_with_auth.h>
 #include <call_handler/register_client_a.h>
 
 #include "client/call_handler/calcfg_request.h"
@@ -30,6 +30,7 @@
 #include "client/call_handler/execute_action.h"
 #include "client/call_handler/get_channel_basic_cfg.h"
 #include "client/call_handler/get_channel_state.h"
+#include "client/call_handler/get_channel_value_with_auth.h"
 #include "client/call_handler/get_next.h"
 #include "client/call_handler/oauth_token_request.h"
 #include "client/call_handler/register_client_b.h"
@@ -58,6 +59,7 @@ supla_client_call_handler_collection::supla_client_call_handler_collection(void)
   add_handler(new supla_ch_timer_arm());
   add_handler(new supla_ch_get_next());
   add_handler(new supla_ch_get_channel_state());
+  add_handler(new supla_ch_get_channel_value_with_auth());
   add_handler(new supla_ch_calcfg_request_b());
   add_handler(new supla_ch_calcfg_request());
   add_handler(new supla_ch_oauth_token_request());

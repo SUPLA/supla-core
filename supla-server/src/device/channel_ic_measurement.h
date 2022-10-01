@@ -51,8 +51,8 @@ class supla_channel_ic_measurement {
   unsigned _supla_int64_t getCalculatedValue(void);
 
   static void set_default_unit(int Func, char unit[9]);
-  static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Func,
-                         int Param2, int Param3, const char *TextParam1,
+  static bool update_cev(TSuplaChannelExtendedValue *ev, int Func, int Param2,
+                         int Param3, const char *TextParam1,
                          const char *TextParam2);
 
   static double get_calculated_d(_supla_int_t impulses_per_unit,

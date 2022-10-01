@@ -3756,7 +3756,7 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_execute_action_with_auth,
 
 SRPC_CALL_BASIC_TEST(srpc_sc_async_action_execution_result,
                      TSC_ActionExecutionResult,
-                     SUPLA_SC_CALL_ACTION_EXECUTION_RESULT, 39,
+                     SUPLA_SC_CALL_ACTION_EXECUTION_RESULT, 36,
                      sc_action_execution_result);
 
 //---------------------------------------------------------
@@ -3774,8 +3774,8 @@ SRPC_CALL_BASIC_TEST(srpc_cs_async_get_channel_value_with_auth,
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_get_channel_value_result,
                                      TSC_GetChannelValueResult,
-                                     SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT, 53,
-                                     1077, sc_get_value_result,
+                                     SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT, 54,
+                                     1078, sc_get_value_result,
                                      SUPLA_CHANNELEXTENDEDVALUE_SIZE,
                                      ExtendedValue.value, ExtendedValue.size);
 

@@ -217,7 +217,8 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue_B *value,
     unsigned _supla_int_t validity_time_sec = 0;
     result = client->get_user()->get_channel_value(
         DeviceId, getId(), value->value, value->sub_value,
-        &value->sub_value_type, online, &validity_time_sec, true);
+        &value->sub_value_type, nullptr, nullptr, online, &validity_time_sec,
+        true);
     if (result) {
       setValueValidityTimeSec(validity_time_sec);
     }

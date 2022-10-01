@@ -107,11 +107,12 @@ void supla_channel_ic_measurement::set_default_unit(int Func, char unit[9]) {
 }
 
 // static
-bool supla_channel_ic_measurement::update_cev(
-    TSC_SuplaChannelExtendedValue *cev, int Func, int Param2, int Param3,
-    const char *TextParam1, const char *TextParam2) {
+bool supla_channel_ic_measurement::update_cev(TSuplaChannelExtendedValue *ev,
+                                              int Func, int Param2, int Param3,
+                                              const char *TextParam1,
+                                              const char *TextParam2) {
   TSC_ImpulseCounter_ExtendedValue ic_ev;
-  if (srpc_evtool_v1_extended2icextended(&cev->value, &ic_ev)) {
+  if (srpc_evtool_v1_extended2icextended(ev, &ic_ev)) {
     ic_ev.calculated_value = 0;
     ic_ev.custom_unit[0] = 0;
     ic_ev.impulses_per_unit = 0;
@@ -136,7 +137,7 @@ bool supla_channel_ic_measurement::update_cev(
         supla_channel_ic_measurement::get_calculated_d(ic_ev.impulses_per_unit,
                                                        ic_ev.counter));
 
-    srpc_evtool_v1_icextended2extended(&ic_ev, &cev->value);
+    srpc_evtool_v1_icextended2extended(&ic_ev, ev);
     return true;
   }
   return false;

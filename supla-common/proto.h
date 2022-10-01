@@ -278,7 +278,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULT_FALSE 0
 #define SUPLA_RESULT_TRUE 1
 
-// SUPLA_RESULTCODE_ are sent in TSuplaDataPacket.data
+// SUPLA_RESULTCODE_ are sent in TSuplaDataPacket.data (unsigned char)
 #define SUPLA_RESULTCODE_NONE 0
 #define SUPLA_RESULTCODE_UNSUPORTED 1
 #define SUPLA_RESULTCODE_FALSE 2
@@ -1194,15 +1194,16 @@ typedef struct {
 } TCS_ActionWithAuth;  // ver. >= 19
 
 typedef struct {
+  unsigned char ResultCode;
   _supla_int_t ActionId;
   _supla_int_t SubjectId;
   _supla_int_t SubjectType;
-  _supla_int_t ResultCode;
 } TSC_ActionExecutionResult;  // ver. >= 19
 
 typedef struct {
   // server -> client
-  _supla_int_t Id;
+  unsigned char ResultCode;
+  _supla_int_t ChannelId;  // Alias SubjectId
   _supla_int_t Function;
 
   TSuplaChannelValue_B Value;

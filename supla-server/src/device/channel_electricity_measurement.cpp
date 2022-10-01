@@ -88,14 +88,14 @@ void supla_channel_electricity_measurement::set_costs(
 
 // static
 bool supla_channel_electricity_measurement::update_cev(
-    TSC_SuplaChannelExtendedValue *cev, int Param2, const char *TextParam1) {
-  if (cev->value.type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
+    TSuplaChannelExtendedValue *ev, int Param2, const char *TextParam1) {
+  if (ev->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
     TElectricityMeter_ExtendedValue_V2 em_ev;
-    if (srpc_evtool_v2_extended2emextended(&cev->value, &em_ev)) {
+    if (srpc_evtool_v2_extended2emextended(ev, &em_ev)) {
       supla_channel_electricity_measurement::set_costs(Param2, TextParam1,
                                                        &em_ev);
 
-      srpc_evtool_v2_emextended2extended(&em_ev, &cev->value);
+      srpc_evtool_v2_emextended2extended(&em_ev, ev);
       return true;
     }
   }
