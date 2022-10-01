@@ -227,3 +227,32 @@ int supla_single_call::execute_action(TCS_Action *action) {
 
   return make_call(call, process_response);
 }
+
+void supla_single_call::get_channel_value(int channel_id,
+                                          TSC_GetChannelValueResult *vresult) {
+  TCS_GetChannelValueWithAuth vwa = {};
+  vwa.ChannelId = channel_id;
+  memcpy(&vwa.Auth, &auth_details, sizeof(TCS_ClientAuthorizationDetails));
+
+  function<void(void)> call = [this, &vwa]() -> void {
+    srpc_cs_async_get_channel_value_with_auth(srpc, &vwa);
+  };
+
+  function<bool(int *result, TsrpcReceivedData *rd)> process_response =
+      [channel_id, &vresult](int *result, TsrpcReceivedData *rd) -> bool {
+    if (rd->call_id == SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT &&
+        rd->data.sc_get_value_result) {
+      TSC_GetChannelValueResult *r = rd->data.sc_get_value_result;
+
+      if (r->ChannelId == channel_id) {
+        *vresult = *r;
+        *result = r->ResultCode;
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  vresult->ResultCode = make_call(call, process_response);
+}

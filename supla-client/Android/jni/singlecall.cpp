@@ -51,9 +51,9 @@ void getDecryptedByteArrayField(JNIEnv *env, jobject context, jclass cls,
   supla_GetByteArrayElements(env, barr, buff, size);
 }
 
-void get_auth_details(JNIEnv *env, jobject context, jobject auth_info,
-                      TCS_ClientAuthorizationDetails *details,
-                      int *protocol_version) {
+void getAuthDetails(JNIEnv *env, jobject context, jobject auth_info,
+                    TCS_ClientAuthorizationDetails *details,
+                    int *protocol_version) {
   jclass cls = env->FindClass("org/supla/android/profile/AuthInfo");
 
   getDecryptedByteArrayField(env, context, cls, auth_info, "getDecryptedGuid",
@@ -123,13 +123,22 @@ void actionParamsToAction(JNIEnv *env, jobject action_params,
   }
 }
 
+jobject getChannelValueObject(JNIEnv *env) {}
+
+jobject getStateOfOpeningObject(JNIEnv *env, jboolean is_open) {}
+
+jobject getTemperatureAndHumidityObject(JNIEnv *env, int function,
+                                        char value[SUPLA_CHANNELVALUE_SIZE]) {}
+
+jobject getRollerShutterPositionObject(JNIEnv *env, jint position) {}
+
 extern "C" JNIEXPORT void JNICALL
 Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
     JNIEnv *env, jobject thiz, jobject context, jobject auth_info,
     jobject action_params) {
   TCS_ClientAuthorizationDetails auth_details = {};
   int protocol_version = 0;
-  get_auth_details(env, context, auth_info, &auth_details, &protocol_version);
+  getAuthDetails(env, context, auth_info, &auth_details, &protocol_version);
 
   TCS_Action action = {};
   actionParamsToAction(env, action_params, &action);
@@ -139,4 +148,53 @@ Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
   if (result != SUPLA_RESULTCODE_TRUE) {
     throwResultException(env, result);
   }
+}
+
+extern "C" JNIEXPORT jobject JNICALL
+Java_org_supla_android_lib_singlecall_SingleCall_getChannelValue(
+    JNIEnv *env, jobject thiz, jobject context, jobject auth_info,
+    jint channel_id) {
+  TCS_ClientAuthorizationDetails auth_details = {};
+  int protocol_version = 0;
+  getAuthDetails(env, context, auth_info, &auth_details, &protocol_version);
+
+  supla_single_call single_call(&auth_details, protocol_version);
+
+  TSC_GetChannelValueResult vresult = {};
+  single_call.get_channel_value(channel_id, &vresult);
+
+  if (vresult.ResultCode != SUPLA_RESULTCODE_TRUE) {
+    throwResultException(env, vresult.ResultCode);
+    return nullptr;
+  }
+
+  switch (vresult.Function) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      return getStateOfOpeningObject(env, vresult.Value.sub_value[0] > 0);
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+    case SUPLA_CHANNELFNC_MAILSENSOR:
+      return getStateOfOpeningObject(env, vresult.Value.value[0] > 0);
+    case SUPLA_CHANNELFNC_THERMOMETER:
+    case SUPLA_CHANNELFNC_HUMIDITY:
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+      return getTemperatureAndHumidityObject(env, vresult.Function,
+                                             vresult.Value.value);
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      return getRollerShutterPositionObject(env, vresult.Value.value[0]);
+  }
+
+  return getChannelValueObject(env);
 }
