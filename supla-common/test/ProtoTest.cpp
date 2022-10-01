@@ -235,7 +235,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)511, sizeof(TCS_Action));
   EXPECT_EQ((unsigned int)390, sizeof(TCS_ClientAuthorizationDetails));
   EXPECT_EQ((unsigned int)901, sizeof(TCS_ActionWithAuth));
-  EXPECT_EQ((unsigned int)16, sizeof(TSC_ActionExecutionResult));
+  EXPECT_EQ((unsigned int)13, sizeof(TSC_ActionExecutionResult));
 
   EXPECT_EQ((unsigned int)16, sizeof(TAction_RS_Parameters));
   EXPECT_EQ((unsigned int)16, sizeof(TAction_RGBW_Parameters));
