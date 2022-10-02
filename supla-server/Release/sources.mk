@@ -34,6 +34,7 @@ src/conn \
 src/conn/call_handler \
 src/converter \
 src/crypt_blowfish \
+src/datalogger \
 src/db \
 src/device \
 src/device/call_handler \

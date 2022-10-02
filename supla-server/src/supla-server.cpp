@@ -24,7 +24,7 @@
 #include "accept_loop.h"
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
-#include "datalogger.h"
+#include "datalogger/datalogger.h"
 #include "db/database.h"
 #include "http/httprequestqueue.h"
 #include "http/trivialhttps.h"
