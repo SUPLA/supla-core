@@ -231,7 +231,7 @@ Java_org_supla_android_lib_singlecall_SingleCall_getChannelValue(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-      return getStateOfOpeningObject(env, vresult.Value.sub_value[0] > 0);
+      return getStateOfOpeningObject(env, vresult.Value.sub_value[0] == 0);
       break;
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
@@ -242,7 +242,7 @@ Java_org_supla_android_lib_singlecall_SingleCall_getChannelValue(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
     case SUPLA_CHANNELFNC_MAILSENSOR:
-      return getStateOfOpeningObject(env, vresult.Value.value[0] > 0);
+      return getStateOfOpeningObject(env, vresult.Value.value[0] == 0);
     case SUPLA_CHANNELFNC_THERMOMETER:
     case SUPLA_CHANNELFNC_HUMIDITY:
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
