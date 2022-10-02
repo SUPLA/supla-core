@@ -101,3 +101,15 @@ jboolean supla_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
 
   return env->CallBooleanMethod(obj, method_id);
 }
+
+jobject supla_NewInt(JNIEnv *env, jint value) {
+  jclass cls = env->FindClass("java/lang/Integer");
+  jmethodID midInit = env->GetMethodID(cls, "<init>", "(I)V");
+  return env->NewObject(cls, midInit, value);
+}
+
+jobject supla_NewDouble(JNIEnv *env, jdouble value) {
+  jclass cls = env->FindClass("java/lang/Double");
+  jmethodID midInit = env->GetMethodID(cls, "<init>", "(D)V");
+  return env->NewObject(cls, midInit, value);
+}

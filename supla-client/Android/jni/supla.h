@@ -92,4 +92,8 @@ jshort supla_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
 jboolean supla_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
                                  const char *method_name, const char *type);
 
+jobject supla_NewInt(JNIEnv *env, jint value);
+
+jobject supla_NewDouble(JNIEnv *env, jdouble value);
+
 #endif /*SUPLA_H_*/

@@ -123,14 +123,72 @@ void actionParamsToAction(JNIEnv *env, jobject action_params,
   }
 }
 
-jobject getChannelValueObject(JNIEnv *env) {}
+jobject getChannelValueObject(JNIEnv *env) {
+  jclass cls = env->FindClass("org/supla/android/lib/singlecall/ChannelValue");
+  jmethodID methodID = env->GetMethodID(cls, "<init>", "()V");
 
-jobject getStateOfOpeningObject(JNIEnv *env, jboolean is_open) {}
+  return env->NewObject(cls, methodID);
+}
+
+jobject getStateOfOpeningObject(JNIEnv *env, jboolean is_open) {
+  jclass cls =
+      env->FindClass("org/supla/android/lib/singlecall/StateOfOpening");
+  jmethodID methodID = env->GetMethodID(cls, "<init>", "(Z)V");
+
+  return env->NewObject(cls, methodID, is_open);
+}
 
 jobject getTemperatureAndHumidityObject(JNIEnv *env, int function,
-                                        char value[SUPLA_CHANNELVALUE_SIZE]) {}
+                                        char value[SUPLA_CHANNELVALUE_SIZE]) {
+  jclass cls =
+      env->FindClass("org/supla/android/lib/singlecall/TemperatureAndHumidity");
+  jmethodID methodID = env->GetMethodID(
+      cls, "<init>", "(Ljava/lang/Double;Ljava/lang/Double;)V");
 
-jobject getRollerShutterPositionObject(JNIEnv *env, jint position) {}
+  double dtemp = -273;
+  double dhum = -1;
+
+  switch (function) {
+    case SUPLA_CHANNELFNC_THERMOMETER:
+      memcpy(&dtemp, value, sizeof(double));
+      break;
+    case SUPLA_CHANNELFNC_HUMIDITY:
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
+      int n = 0;
+      memcpy(&n, value, 4);
+      dtemp = n / 1000.00;
+
+      memcpy(&n, &value[4], 4);
+      dhum = n / 1000.00;
+    } break;
+  }
+
+  jobject temp = nullptr;
+  jobject hum = nullptr;
+
+  if (dtemp > -273) {
+    temp = supla_NewDouble(env, dtemp);
+  }
+
+  if (dhum >= 0 && dhum <= 100) {
+    hum = supla_NewDouble(env, dhum);
+  }
+
+  return env->NewObject(cls, methodID, temp, hum);
+}
+
+jobject getRollerShutterPositionObject(JNIEnv *env, jint position) {
+  jclass cls =
+      env->FindClass("org/supla/android/lib/singlecall/RollerShutterPosition");
+  jmethodID methodID =
+      env->GetMethodID(cls, "<init>", "(ILjava/lang/Integer;Z)V");
+
+  if (position >= 0) {
+    return env->NewObject(cls, methodID, supla_NewInt(env, position), false);
+  }
+
+  return env->NewObject(cls, methodID, nullptr, true);
+}
 
 extern "C" JNIEXPORT void JNICALL
 Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
