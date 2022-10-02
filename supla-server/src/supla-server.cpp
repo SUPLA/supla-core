@@ -140,19 +140,20 @@ int main(int argc, char *argv[]) {
   // INI ACCEPT LOOP
 
   if (ssd_ssl != NULL)
-    ssl_accept_loop_thread = sthread_simple_run(accept_loop, ssd_ssl, 0);
+    sthread_simple_run(accept_loop, ssd_ssl, 0, &ssl_accept_loop_thread);
 
   if (ssd_tcp != NULL)
-    tcp_accept_loop_thread = sthread_simple_run(accept_loop, ssd_tcp, 0);
+    sthread_simple_run(accept_loop, ssd_tcp, 0, &tcp_accept_loop_thread);
 
-  if (ipc) ipc_accept_loop_thread = sthread_simple_run(ipc_accept_loop, ipc, 0);
+  if (ipc) sthread_simple_run(ipc_accept_loop, ipc, 0, &ipc_accept_loop_thread);
 
   // DATA LOGGER
-  datalogger_loop_thread = sthread_simple_run(datalogger_loop, NULL, 0);
+  sthread_simple_run(datalogger_loop, NULL, 0, &datalogger_loop_thread);
 
   // HTTP EVENT QUEUE
-  http_request_queue_loop_thread =
-      sthread_simple_run(http_request_queue_loop, NULL, 0);
+
+  sthread_simple_run(http_request_queue_loop, NULL, 0,
+                     &http_request_queue_loop_thread);
 
   // MQTT
   supla_mqtt_client_suite::globalInstance()->start();

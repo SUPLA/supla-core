@@ -17,6 +17,7 @@
  */
 
 #include "mqtt_client.h"
+
 #include "log.h"
 #include "sthread.h"
 
@@ -102,7 +103,7 @@ bool supla_mqtt_client::publish(const char *topic_name, const void *message,
 
 void supla_mqtt_client::start(void) {
   if (sthread == NULL && settings && settings->isMQTTEnabled()) {
-    sthread = sthread_simple_run(supla_mqtt_client::job, this, 0);
+    sthread_simple_run(supla_mqtt_client::job, this, 0, &sthread);
   }
 }
 

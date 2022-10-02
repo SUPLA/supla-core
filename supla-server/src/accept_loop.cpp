@@ -81,7 +81,10 @@ void accept_loop(void *ssd, void *al_sthread) {
         stp.free_on_finish = 0;
         stp.initialize = NULL;
 
-        safe_array_add(connection_thread_arr, sthread_run(&stp));
+        void *sthread = nullptr;
+        sthread_run(&stp, &sthread);
+
+        safe_array_add(connection_thread_arr, sthread);
       } else {
         ssocket_supla_socket_free(supla_socket);
         supla_log(LOG_DEBUG, "Connection Dropped");
@@ -140,7 +143,10 @@ void ipc_accept_loop(void *ipc, void *ipc_al_sthread) {
       stp.free_on_finish = 0;
       stp.initialize = NULL;
 
-      safe_array_add(ipcctrl_thread_arr, sthread_run(&stp));
+      void *sthread = nullptr;
+      sthread_run(&stp, &sthread);
+
+      safe_array_add(ipcctrl_thread_arr, sthread);
     }
   }
 

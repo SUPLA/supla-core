@@ -17,10 +17,12 @@
  */
 
 #include "sthread.h"
+
 #include <pthread.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "lck.h"
 #include "log.h"
 
@@ -54,11 +56,12 @@ void *_sthread_run(void *ptr) {
   return 0;
 }
 
-void *sthread_run(Tsthread_params *sthread_params) {
-  Tsthread *sthread = malloc(sizeof(Tsthread));
+void sthread_run(Tsthread_params *sthread_params, void **_sthread) {
+  Tsthread *sthread = (Tsthread *)malloc(sizeof(Tsthread));
+  *_sthread = sthread;
   int r = -1;
 
-  if (sthread == NULL) return NULL;
+  if (sthread == NULL) return;
 
   memset(sthread, 0, sizeof(Tsthread));
 
@@ -69,13 +72,10 @@ void *sthread_run(Tsthread_params *sthread_params) {
       0) {
     supla_log(LOG_ERR, "Could not create a new thread. Error code: %i", r);
   }
-
-  return sthread;
 }
 
-
-void *sthread_simple_run(_func_sthread_execute execute, void *user_data,
-                         char free_on_finish) {
+void sthread_simple_run(_func_sthread_execute execute, void *user_data,
+                        char free_on_finish, void **sthread) {
   Tsthread_params p;
   p.user_data = user_data;
   p.free_on_finish = free_on_finish;
@@ -83,7 +83,7 @@ void *sthread_simple_run(_func_sthread_execute execute, void *user_data,
   p.finish = NULL;
   p.initialize = NULL;
 
-  return sthread_run(&p);
+  sthread_run(&p, sthread);
 }
 
 void sthread_wait(void *sthread) {
