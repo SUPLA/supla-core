@@ -181,7 +181,7 @@ jobject getRollerShutterPositionObject(JNIEnv *env, jint position) {
   jclass cls =
       env->FindClass("org/supla/android/lib/singlecall/RollerShutterPosition");
   jmethodID methodID =
-      env->GetMethodID(cls, "<init>", "(ILjava/lang/Integer;Z)V");
+      env->GetMethodID(cls, "<init>", "(Ljava/lang/Integer;Z)V");
 
   if (position >= 0) {
     return env->NewObject(cls, methodID, supla_NewInt(env, position), false);
@@ -219,10 +219,10 @@ Java_org_supla_android_lib_singlecall_SingleCall_getChannelValue(
   supla_single_call single_call(&auth_details, protocol_version);
 
   TSC_GetChannelValueResult vresult = {};
-  single_call.get_channel_value(channel_id, &vresult);
+  int r = single_call.get_channel_value(channel_id, &vresult);
 
-  if (vresult.ResultCode != SUPLA_RESULTCODE_TRUE) {
-    throwResultException(env, vresult.ResultCode);
+  if (r != SUPLA_RESULTCODE_TRUE) {
+    throwResultException(env, r);
     return nullptr;
   }
 

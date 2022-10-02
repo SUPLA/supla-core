@@ -20,6 +20,7 @@
 
 #include <string.h>
 
+#include "log.h"
 #include "proto.h"
 #include "supla-socket.h"
 
@@ -228,8 +229,8 @@ int supla_single_call::execute_action(TCS_Action *action) {
   return make_call(call, process_response);
 }
 
-void supla_single_call::get_channel_value(int channel_id,
-                                          TSC_GetChannelValueResult *vresult) {
+int supla_single_call::get_channel_value(int channel_id,
+                                         TSC_GetChannelValueResult *vresult) {
   TCS_GetChannelValueWithAuth vwa = {};
   vwa.ChannelId = channel_id;
   memcpy(&vwa.Auth, &auth_details, sizeof(TCS_ClientAuthorizationDetails));
@@ -254,5 +255,5 @@ void supla_single_call::get_channel_value(int channel_id,
     return false;
   };
 
-  vresult->ResultCode = make_call(call, process_response);
+  return make_call(call, process_response);
 }
