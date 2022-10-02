@@ -77,4 +77,21 @@ TEST_F(ControllingTheGateConfigTest, getNumberOfAttemptsToOpen) {
   delete config;
 }
 
+TEST_F(ControllingTheGateConfigTest, getRetryIntrrupt) {
+  controlling_the_gate_config *config = new controlling_the_gate_config();
+  ASSERT_TRUE(config != NULL);
+
+  EXPECT_FALSE(config->get_retry_interrupt());
+
+  config->set_user_config("{\"retryInterrupt\":false}");
+
+  EXPECT_FALSE(config->get_retry_interrupt());
+
+  config->set_user_config("{\"retryInterrupt\":true}");
+
+  EXPECT_TRUE(config->get_retry_interrupt());
+
+  delete config;
+}
+
 } /* namespace testing */

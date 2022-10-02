@@ -243,3 +243,27 @@ bool channel_json_config::equal(const char *str1, const char *str2) {
 bool channel_json_config::equal(cJSON *item, const char *str) {
   return item && equal(cJSON_GetStringValue(item), str);
 }
+
+int channel_json_config::get_int(const char *key) {
+  cJSON *root = get_user_root();
+  if (!root) {
+    return 0;
+  }
+
+  cJSON *value = cJSON_GetObjectItem(root, key);
+  if (value && cJSON_IsNumber(value)) {
+    return value->valueint;
+  }
+
+  return 0;
+}
+
+bool channel_json_config::get_bool(const char *key) {
+  cJSON *root = get_user_root();
+  if (!root) {
+    return false;
+  }
+
+  cJSON *value = cJSON_GetObjectItem(root, key);
+  return value && cJSON_IsBool(value) && cJSON_IsTrue(value);
+}

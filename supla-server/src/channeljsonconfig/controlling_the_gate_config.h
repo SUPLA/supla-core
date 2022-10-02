@@ -29,6 +29,7 @@ class controlling_the_gate_config : public channel_json_config {
  private:
   static const char number_of_attempts_to_open_key[];
   static const char number_of_attempts_to_close_key[];
+  static const char retry_interrupt_key[];
   int get_number_of_attempts(const char *key);
 
  protected:
@@ -37,6 +38,7 @@ class controlling_the_gate_config : public channel_json_config {
   controlling_the_gate_config(void);
   int get_number_of_attempts_to_open(void);
   int get_number_of_attempts_to_close(void);
+  bool get_retry_interrupt(void);
 };
 
 #endif /* CONTROLLINGTHEGATECONFIG_H_ */

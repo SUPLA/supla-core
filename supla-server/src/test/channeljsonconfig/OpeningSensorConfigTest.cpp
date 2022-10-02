@@ -28,23 +28,6 @@ OpeningSensorConfigTest::OpeningSensorConfigTest(void) {}
 
 OpeningSensorConfigTest::~OpeningSensorConfigTest(void) {}
 
-TEST_F(OpeningSensorConfigTest, getRetryIntrrupt) {
-  opening_sensor_config *config = new opening_sensor_config();
-  ASSERT_TRUE(config != NULL);
-
-  EXPECT_FALSE(config->get_retry_interrupt());
-
-  config->set_user_config("{\"retryInterrupt\":false}");
-
-  EXPECT_FALSE(config->get_retry_interrupt());
-
-  config->set_user_config("{\"retryInterrupt\":true}");
-
-  EXPECT_TRUE(config->get_retry_interrupt());
-
-  delete config;
-}
-
 TEST_F(OpeningSensorConfigTest, getRelatedChannelId) {
   opening_sensor_config *config = new opening_sensor_config();
   ASSERT_TRUE(config != NULL);

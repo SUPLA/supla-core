@@ -354,6 +354,8 @@ class supla_device_channels {
                  unsigned char EOL, unsigned char On, unsigned int DurationMS);
   channel_json_config *get_json_config(int ChannelID);
   unsigned int get_value_validity_time_left_msec(void);
+  void on_related_sensor_value_changed(int control_channel_id, int sensor_id,
+                                       bool is_open);
 };
 
 #endif /* DEVICECHANNEL_H_ */

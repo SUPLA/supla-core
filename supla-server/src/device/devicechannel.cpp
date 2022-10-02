@@ -29,9 +29,9 @@
 #include "actions/action_gate_openclose.h"
 #include "actions/action_trigger.h"
 #include "channeljsonconfig/action_trigger_config.h"
+#include "channeljsonconfig/controlling_the_gate_config.h"
 #include "channeljsonconfig/electricity_meter_config.h"
 #include "channeljsonconfig/impulse_counter_config.h"
-#include "channeljsonconfig/opening_sensor_config.h"
 #include "db/database.h"
 #include "device/channel_gate_value.h"
 #include "device/channel_onoff_value.h"
@@ -84,6 +84,8 @@ supla_device_channel::supla_device_channel(
 
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
+  bool load_json_config = false;
+
   switch (Type) {
     case SUPLA_CHANNELTYPE_ACTIONTRIGGER:
     case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
@@ -92,14 +94,23 @@ supla_device_channel::supla_device_channel(
     case SUPLA_CHANNELTYPE_RELAYHFD4:
     case SUPLA_CHANNELTYPE_RELAYG5LA1A:
     case SUPLA_CHANNELTYPE_2XRELAYG5LA1A:
-    case SUPLA_CHANNELTYPE_SENSORNC:
-    case SUPLA_CHANNELTYPE_SENSORNO:
-      json_config = new channel_json_config(NULL);
-      if (json_config) {
-        json_config->set_properties(properties);
-        json_config->set_user_config(user_config);
-      }
+      load_json_config = true;
       break;
+  }
+
+  switch (Func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      load_json_config = true;
+      break;
+  }
+
+  if (load_json_config) {
+    json_config = new channel_json_config(NULL);
+    if (json_config) {
+      json_config->set_properties(properties);
+      json_config->set_user_config(user_config);
+    }
   }
 
   if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER ||
@@ -1641,38 +1652,24 @@ bool supla_device_channels::set_channel_value(
     }
   }
 
+  safe_array_unlock(arr);
+
   if (result) {
     switch (channel->getFunc()) {
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE: {
-        channel_json_config *root = channel->getJSONConfig();
-        opening_sensor_config *os_cfg = new opening_sensor_config(root);
-        if (os_cfg->get_retry_interrupt()) {
-          int related_channel_id = os_cfg->get_related_channel_id();
-          if (related_channel_id) {
-            char value[SUPLA_CHANNELVALUE_SIZE] = {};
-            channel->getValue(value);
-
-            safe_array_unlock(arr);
-
-            shared_ptr<supla_device> rel_device =
-                device->get_user()->get_device(device->get_user_id(), 0,
-                                               related_channel_id);
-            if (rel_device) {
-              supla_action_gate_openclose::cancel_tasks(
-                  rel_device->get_user_id(), rel_device->get_id(),
-                  related_channel_id, !value[0]);
-            }
-            safe_array_lock(arr);
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+        if (channel->getParam1()) {
+          shared_ptr<supla_device> rel_device = device->get_user()->get_device(
+              device->get_user_id(), 0, channel->getParam1());
+          if (rel_device) {
+            rel_device->get_channels()->on_related_sensor_value_changed(
+                channel->getParam1(), channel->getId(), value[0] == 0);
           }
         }
-        delete os_cfg;
-        delete root;
-      } break;
+        break;
     }
   }
 
-  safe_array_unlock(arr);
   return result;
 }
 
@@ -2963,4 +2960,28 @@ unsigned int supla_device_channels::get_value_validity_time_left_msec(void) {
     }
   });
   return result;
+}
+
+void supla_device_channels::on_related_sensor_value_changed(
+    int control_channel_id, int sensor_id, bool is_open) {
+  channel_json_config *config = nullptr;
+  access_channel(control_channel_id,
+                 [&config](supla_device_channel *channel) -> void {
+                   switch (channel->getFunc()) {
+                     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+                     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+                       config = channel->getJSONConfig();
+                       break;
+                   }
+                 });
+
+  if (config) {
+    controlling_the_gate_config *gcfg = new controlling_the_gate_config(config);
+    if (gcfg->get_retry_interrupt()) {
+      supla_action_gate_openclose::cancel_tasks(
+          device->get_user_id(), device->get_id(), control_channel_id, is_open);
+    }
+    delete gcfg;
+    delete config;
+  }
 }

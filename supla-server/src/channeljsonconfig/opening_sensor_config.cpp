@@ -19,8 +19,6 @@
 #include "opening_sensor_config.h"
 
 // static
-const char opening_sensor_config::retry_interrupt_key[] = "retryInterrupt";
-// static
 const char opening_sensor_config::related_channel_id_key[] =
     "openingSensorChannelId";
 // static
@@ -33,34 +31,6 @@ opening_sensor_config::opening_sensor_config(void) : channel_json_config() {}
 
 opening_sensor_config::opening_sensor_config(channel_json_config *root)
     : channel_json_config(root) {}
-
-int opening_sensor_config::get_int(const char *key) {
-  cJSON *root = get_user_root();
-  if (!root) {
-    return 0;
-  }
-
-  cJSON *value = cJSON_GetObjectItem(root, key);
-  if (value && cJSON_IsNumber(value)) {
-    return value->valueint;
-  }
-
-  return 0;
-}
-
-bool opening_sensor_config::get_bool(const char *key) {
-  cJSON *root = get_user_root();
-  if (!root) {
-    return false;
-  }
-
-  cJSON *value = cJSON_GetObjectItem(root, key);
-  return value && cJSON_IsBool(value) && cJSON_IsTrue(value);
-}
-
-bool opening_sensor_config::get_retry_interrupt(void) {
-  return get_bool(retry_interrupt_key);
-}
 
 int opening_sensor_config::get_related_channel_id(void) {
   return get_int(related_channel_id_key);

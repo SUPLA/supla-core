@@ -27,19 +27,13 @@
 
 class opening_sensor_config : public channel_json_config {
  private:
-  static const char retry_interrupt_key[];
   static const char related_channel_id_key[];
   static const char related_secondary_channel_id_key[];
   static const char inverted_logic_key[];
 
-  int get_int(const char *key);
-  bool get_bool(const char *key);
-
- protected:
  public:
   explicit opening_sensor_config(channel_json_config *root);
   opening_sensor_config(void);
-  bool get_retry_interrupt(void);
   int get_related_channel_id(void);
   int get_related_secondary_channel_id(void);
   bool is_inverted_logic(void);
