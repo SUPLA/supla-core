@@ -73,18 +73,23 @@ void accept_loop(void *ssd, void *al_sthread) {
     if (ssocket_accept(ssd, &ipv4, &supla_socket) != 0 &&
         supla_socket != NULL) {
       if (supla_connection::is_connection_allowed(ipv4)) {
-        Tsthread_params stp;
+        supla_connection *conn = new supla_connection(ssd, supla_socket, ipv4);
+        if (ssocket_accept_ssl(ssd, supla_socket) == 1) {
+          Tsthread_params stp;
 
-        stp.execute = accept_loop_connection_execute;
-        stp.finish = accept_loop_connection_finish;
-        stp.user_data = new supla_connection(ssd, supla_socket, ipv4);
-        stp.free_on_finish = 0;
-        stp.initialize = NULL;
+          stp.execute = accept_loop_connection_execute;
+          stp.finish = accept_loop_connection_finish;
+          stp.user_data = conn;
+          stp.free_on_finish = 0;
+          stp.initialize = NULL;
 
-        void *sthread = nullptr;
-        sthread_run(&stp, &sthread);
+          void *sthread = nullptr;
+          sthread_run(&stp, &sthread);
 
-        safe_array_add(connection_thread_arr, sthread);
+          safe_array_add(connection_thread_arr, sthread);
+        } else {
+          delete conn;
+        }
       } else {
         ssocket_supla_socket_free(supla_socket);
         supla_log(LOG_DEBUG, "Connection Dropped");

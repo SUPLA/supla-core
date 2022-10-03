@@ -323,11 +323,6 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 void supla_connection::execute(void *sthread) {
   this->sthread = sthread;
 
-  if (ssocket_accept_ssl(ssd, supla_socket) != 1) {
-    sthread_terminate(sthread);
-    return;
-  }
-
   supla_log(LOG_DEBUG, "Connection Started %i, secure=%i", sthread,
             ssocket_is_secure(ssd));
 
