@@ -2977,7 +2977,7 @@ void supla_device_channels::on_related_sensor_value_changed(
 
   if (config) {
     controlling_the_gate_config *gcfg = new controlling_the_gate_config(config);
-    if (gcfg->get_retry_interrupt()) {
+    if (gcfg->is_active_state_verification_method_enabled()) {
       supla_action_gate_openclose::cancel_tasks(
           device->get_user_id(), device->get_id(), control_channel_id, is_open);
     }

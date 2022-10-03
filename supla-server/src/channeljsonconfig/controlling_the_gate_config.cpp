@@ -31,8 +31,8 @@ const char controlling_the_gate_config::number_of_attempts_to_close_key[] =
     "numberOfAttemptsToClose";
 
 // static
-const char controlling_the_gate_config::retry_interrupt_key[] =
-    "retryInterrupt";
+const char controlling_the_gate_config::state_verification_method_active_key[] =
+    "stateVerificationMethodActive";
 
 controlling_the_gate_config::controlling_the_gate_config(void)
     : channel_json_config() {}
@@ -65,6 +65,7 @@ int controlling_the_gate_config::get_number_of_attempts_to_close(void) {
   return get_number_of_attempts(number_of_attempts_to_close_key);
 }
 
-bool controlling_the_gate_config::get_retry_interrupt(void) {
-  return get_bool(retry_interrupt_key);
+bool controlling_the_gate_config::is_active_state_verification_method_enabled(
+    void) {
+  return get_bool(state_verification_method_active_key);
 }
