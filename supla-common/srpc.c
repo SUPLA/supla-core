@@ -322,12 +322,13 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
 #endif /*__EH_DISABLED*/
 
   // --------- IN ---------------
+  lck_lock(srpc->lck);
   _supla_int_t data_size = srpc->params.data_read(data_buffer, SRPC_BUFFER_SIZE,
                                                   srpc->params.user_params);
 
-  if (data_size == 0) return SUPLA_RESULT_FALSE;
-
-  lck_lock(srpc->lck);
+  if (data_size == 0) {
+	  return lck_unlock_r(srpc->lck, SUPLA_RESULT_FALSE);
+  }
 
   if (data_size > 0 &&
       SUPLA_RESULT_TRUE != (result = sproto_in_buffer_append(
@@ -396,9 +397,7 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
   data_size = sproto_pop_out_data(srpc->proto, data_buffer, SRPC_BUFFER_SIZE);
 
   if (data_size != 0) {
-    lck_unlock(srpc->lck);
     srpc->params.data_write(data_buffer, data_size, srpc->params.user_params);
-    lck_lock(srpc->lck);
   }
 
 #ifndef __EH_DISABLED
