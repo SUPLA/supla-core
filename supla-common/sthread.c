@@ -51,7 +51,11 @@ void *_sthread_run(void *ptr) {
   sthread->finished = 1;
   lck_unlock(sthread->lck);
 
-  if (sthread->params.free_on_finish) sthread_free(sthread);
+  if (sthread->params.free_on_finish) {
+    pthread_detach(sthread->_thread);
+    lck_free(sthread->lck);
+    free(sthread);
+  }
 
   return 0;
 }
@@ -119,6 +123,7 @@ void sthread_terminate(void *sthread) {
 }
 
 void sthread_free(void *sthread) {
+  pthread_join(((Tsthread *)sthread)->_thread, NULL);
   pthread_detach(((Tsthread *)sthread)->_thread);
   lck_free(((Tsthread *)sthread)->lck);
   free((Tsthread *)sthread);
