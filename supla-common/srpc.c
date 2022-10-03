@@ -327,7 +327,7 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
                                                   srpc->params.user_params);
 
   if (data_size == 0) {
-	  return lck_unlock_r(srpc->lck, SUPLA_RESULT_FALSE);
+    return lck_unlock_r(srpc->lck, SUPLA_RESULT_FALSE);
   }
 
   if (data_size > 0 &&
