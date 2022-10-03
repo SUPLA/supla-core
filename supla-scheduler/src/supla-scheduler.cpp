@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
   st_hook_signals();
 
   // INIT QUEUE LOOP
-  queue_loop_t = sthread_simple_run(queue_loop, NULL, 0);
+  sthread_simple_run(queue_loop, NULL, 0, &queue_loop_t);
 
   // MAIN LOOP
 
