@@ -36,7 +36,7 @@ supla_datalogger_agent::supla_datalogger_agent() {
   add(new supla_thermostat_logger());
 
   this->sthread = nullptr;
-  sthread_simple_run(loop, nullptr, 0, &sthread);
+  sthread_simple_run(loop, this, 0, &sthread);
 }
 
 supla_datalogger_agent::~supla_datalogger_agent() {
