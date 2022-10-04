@@ -369,6 +369,14 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
   return result;
 }
 
+void ssocket_ssl_new(void *_ssd, void *_supla_socket) {
+  TSuplaSocket *supla_socket = (TSuplaSocket *)_supla_socket;
+  TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
+  if (supla_socket && supla_socket->sfd != -1 && ssd && ssd->secure == 1) {
+    supla_socket->ssl = SSL_new(ssd->ctx);
+  }
+}
+
 char ssocket_accept_ssl(void *_ssd, void *_supla_socket) {
   TSuplaSocket *supla_socket = (TSuplaSocket *)_supla_socket;
 #ifndef NOSSL
@@ -386,7 +394,6 @@ char ssocket_accept_ssl(void *_ssd, void *_supla_socket) {
     if (n == -1) {
       supla_log(LOG_ERR, "SO_RCVTIMEO/%i", tv.tv_sec);
     } else {
-      supla_socket->ssl = SSL_new(ssd->ctx);
       SSL_set_fd(supla_socket->ssl, supla_socket->sfd);
     }
 

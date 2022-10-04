@@ -236,6 +236,8 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
   srpc_params.eh = eh;
   _srpc = srpc_init(&srpc_params);
   srpc_adapter = new supla_srpc_adapter(_srpc);
+
+  ssocket_ssl_new(ssd, supla_socket);
 }
 
 supla_connection::~supla_connection() {
