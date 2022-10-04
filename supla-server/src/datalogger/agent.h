@@ -29,21 +29,6 @@ class supla_datalogger_agent {
   void *sthread;
   std::vector<supla_abstract_datalogger *> loggers;
 
-  /*
-  database *db;
-  struct timeval now;
-  struct timeval temperature_tv;
-  struct timeval electricitymeter_tv;
-  struct timeval impulsecounter_tv;
-  struct timeval thermostat_tv;
-
-  void log_temperature();
-  void log_electricity_measurement(void);
-  void log_ic_measurement(void);
-  void log_thermostat_measurement(void);
-  bool dbinit(void);
-  */
-
   static void loop(void *agent, void *sthread);
   void loop(void *sthread);
 
