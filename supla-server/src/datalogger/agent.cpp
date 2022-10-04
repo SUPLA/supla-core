@@ -52,10 +52,10 @@ void supla_datalogger_agent::add(supla_abstract_datalogger *datalogger) {
 
 // static
 void supla_datalogger_agent::loop(void *agent, void *sthread) {
-  static_cast<supla_datalogger_agent *>(agent)->loop();
+  static_cast<supla_datalogger_agent *>(agent)->loop(sthread);
 }
 
-void supla_datalogger_agent::loop() {
+void supla_datalogger_agent::loop(void *sthread) {
   dbcommon::thread_init();
 
   struct timeval now = {};

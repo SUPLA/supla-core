@@ -45,7 +45,7 @@ class supla_datalogger_agent {
   */
 
   static void loop(void *agent, void *sthread);
-  void loop(void);
+  void loop(void *sthread);
 
  public:
   void add(supla_abstract_datalogger *datalogger);
