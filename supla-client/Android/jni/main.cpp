@@ -1212,6 +1212,20 @@ void supla_cb_on_location_caption_set_result(void *_suplaclient,
                       result->ResultCode);
 }
 
+void supla_cb_on_scene_caption_set_result(void *_suplaclient, void *user_data,
+                                          TSC_SetCaptionResult *result) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_scene_caption_set_result == NULL || result == NULL) {
+    return;
+  }
+
+  env->CallVoidMethod(asc->j_obj, asc->j_mid_on_scene_caption_set_result,
+                      result->ID, new_string_utf(env, result->Caption),
+                      result->ResultCode);
+}
+
 void supla_cb_on_clients_reconnect_result(
     void *_suplaclient, void *user_data,
     TSC_ClientsReconnectRequestResult *result) {
@@ -1646,6 +1660,8 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
         oclass, "onChannelCaptionSetResult", "(ILjava/lang/String;I)V");
     _asc->j_mid_on_location_caption_set_result = env->GetMethodID(
         oclass, "onLocationCaptionSetResult", "(ILjava/lang/String;I)V");
+    _asc->j_mid_on_scene_caption_set_result = env->GetMethodID(
+        oclass, "onSceneCaptionSetResult", "(ILjava/lang/String;I)V");
     _asc->j_mid_on_clients_reconnect_result =
         env->GetMethodID(oclass, "onClientsReconnectResult", "(I)V");
     _asc->j_mid_on_set_registration_enabled_result =
@@ -1708,6 +1724,8 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
         supla_cb_on_channel_caption_set_result;
     sclient_cfg.cb_on_location_caption_set_result =
         supla_cb_on_location_caption_set_result;
+    sclient_cfg.cb_on_scene_caption_set_result =
+        supla_cb_on_scene_caption_set_result;
     sclient_cfg.cb_on_clients_reconnect_request_result =
         supla_cb_on_clients_reconnect_result;
     sclient_cfg.cb_on_set_registration_enabled_result =
@@ -2066,6 +2084,8 @@ JNI_FUNCTION_II(scSetChannelFunction, supla_client_set_channel_function);
 JNI_FUNCTION_IString(scSetChannelCaption, supla_client_set_channel_caption);
 
 JNI_FUNCTION_IString(scSetLocationCaption, supla_client_set_location_caption);
+
+JNI_FUNCTION_IString(scSetSceneCaption, supla_client_set_scene_caption);
 
 JNI_FUNCTION_V(scReconnectAllClients, supla_client_reconnect_all_clients);
 

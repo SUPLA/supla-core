@@ -100,3 +100,9 @@ void supla_client_scenes::on_asynctask_finished(
     supla_abstract_asynctask *asynctask) {
   on_asynctask_started_finished(asynctask);
 }
+
+void supla_client_scenes::set_caption(int scene_id, const char *caption) {
+  access_object(scene_id, [caption](supla_dobject *object) -> void {
+    dynamic_cast<supla_client_scene *>(object)->set_caption(caption);
+  });
+}

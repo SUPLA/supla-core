@@ -98,3 +98,12 @@ void supla_user_clients::set_location_caption(int location_id, char *caption) {
                                                                   caption);
   }
 }
+
+void supla_user_clients::set_scene_caption(int scene_id, char *caption) {
+  vector<shared_ptr<supla_abstract_connection_object> > objects = get_all();
+
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    dynamic_pointer_cast<supla_client>(*it)->set_scene_caption(scene_id,
+                                                               caption);
+  }
+}

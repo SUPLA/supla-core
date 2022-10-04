@@ -177,6 +177,7 @@ typedef struct {
       cb_on_channel_function_set_result;
   _suplaclient_cb_on_caption_set_result cb_on_channel_caption_set_result;
   _suplaclient_cb_on_caption_set_result cb_on_location_caption_set_result;
+  _suplaclient_cb_on_caption_set_result cb_on_scene_caption_set_result;
   _suplaclient_cb_on_clients_reconnect_request_result
       cb_on_clients_reconnect_request_result;
   _suplaclient_cb_on_set_registration_enabled_result
@@ -250,6 +251,8 @@ char supla_client_set_channel_caption(void *_suplaclient, int ChannelID,
                                       const char *Caption);
 char supla_client_set_location_caption(void *_suplaclient, int LocationID,
                                        const char *Caption);
+char supla_client_set_scene_caption(void *_suplaclient, int SceneID,
+                                    const char *Caption);
 char supla_client_reconnect_all_clients(void *_suplaclient);
 char supla_client_set_registration_enabled(void *_suplaclient,
                                            int ioDeviceRegTimeSec,

@@ -386,6 +386,10 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_set_location_caption(void *_srpc, TCS_SetCaption *caption);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_location_caption_result(
     void *_srpc, TSC_SetCaptionResult *caption);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_scene_caption(
+    void *_srpc, TCS_SetCaption *caption);  // ver. >= 19
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_scene_caption_result(
+    void *_srpc, TSC_SetCaptionResult *caption);  // ver. >= 19
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_clients_reconnect_request(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_clients_reconnect_request_result(

@@ -166,9 +166,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
 #endif /*SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT*/
 
-#define SUPLA_SCENE_CAPTION_MAXSIZE 401     // ver. >= 18
-#define SUPLA_SCENE_PACK_MAXCOUNT 20        // ver. >= 18
-#define SUPLA_SCENE_STATE_PACK_MAXCOUNT 20  // ver. >= 18
+#define SUPLA_SCENE_CAPTION_MAXSIZE SUPLA_CAPTION_MAXSIZE  // ver. >= 18
+#define SUPLA_SCENE_PACK_MAXCOUNT 20                       // ver. >= 18
+#define SUPLA_SCENE_STATE_PACK_MAXCOUNT 20                 // ver. >= 18
 
 #define SUPLA_DCS_CALL_GETVERSION 10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT 20
@@ -266,6 +266,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_ACTION_EXECUTION_RESULT 1020            // ver. >= 19
 #define SUPLA_CS_CALL_GET_CHANNEL_VALUE_WITH_AUTH 1030        // ver. >= 19
 #define SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT 1040           // ver. >= 19
+#define SUPLA_CS_CALL_SET_SCENE_CAPTION 1045                  // ver. >= 19
+#define SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT 1055           // ver. >= 19
 
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7

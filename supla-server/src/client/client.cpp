@@ -257,18 +257,9 @@ void supla_client::set_location_caption(int LocationId, char *Caption) {
   locations->remote_update(get_connection()->get_srpc_adapter()->get_srpc());
 }
 
-void supla_client::set_caption_result(TSC_SetCaptionResult *result,
-                                      bool channel) {
-  if (result == NULL) {
-    return;
-  }
-  if (channel) {
-    srpc_sc_async_set_channel_caption_result(
-        get_connection()->get_srpc_adapter()->get_srpc(), result);
-  } else {
-    srpc_sc_async_set_location_caption_result(
-        get_connection()->get_srpc_adapter()->get_srpc(), result);
-  }
+void supla_client::set_scene_caption(int scene_id, char *caption) {
+  scenes->set_caption(scene_id, caption);
+  scenes->update_remote();
 }
 
 void supla_client::iterate() {

@@ -95,7 +95,7 @@ class supla_client : public supla_abstract_connection_object {
   void set_channel_function_result(TSC_SetChannelFunctionResult *result);
   void set_channel_caption(int ChannelId, char *Caption);
   void set_location_caption(int LocationId, char *Caption);
-  void set_caption_result(TSC_SetCaptionResult *result, bool channel);
+  void set_scene_caption(int scene_id, char *caption);
 
   virtual ~supla_client();
 };

@@ -56,6 +56,7 @@ typedef struct {
   jmethodID j_mid_on_channel_function_set_result;
   jmethodID j_mid_on_channel_caption_set_result;
   jmethodID j_mid_on_location_caption_set_result;
+  jmethodID j_mid_on_scene_caption_set_result;
   jmethodID j_mid_on_clients_reconnect_result;
   jmethodID j_mid_on_set_registration_enabled_result;
   jmethodID j_mid_on_zwave_reset_and_clear_result;

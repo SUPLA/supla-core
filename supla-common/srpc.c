@@ -1379,6 +1379,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
       case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
       case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
+      case SUPLA_CS_CALL_SET_SCENE_CAPTION:
         if (srpc->sdp.data_size >=
                 (sizeof(TCS_SetCaption) - SUPLA_CAPTION_MAXSIZE) &&
             srpc->sdp.data_size <= sizeof(TCS_SetCaption))
@@ -1388,6 +1389,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
       case SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT:
       case SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT:
+      case SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT:
         if (srpc->sdp.data_size >=
                 (sizeof(TSC_SetCaptionResult) - SUPLA_CAPTION_MAXSIZE) &&
             srpc->sdp.data_size <= sizeof(TSC_SetCaptionResult))
@@ -1643,6 +1645,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
     case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D:
     case SUPLA_CS_CALL_GET_CHANNEL_VALUE_WITH_AUTH:
     case SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT:
+    case SUPLA_CS_CALL_SET_SCENE_CAPTION:
+    case SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT:
       return 19;
   }
 
@@ -2625,6 +2629,18 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_location_caption_result(
     void *_srpc, TSC_SetCaptionResult *result) {
   return srpc_sc_async_set_caption_result(
       _srpc, result, SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_set_scene_caption(void *_srpc, TCS_SetCaption *caption) {
+  return srpc_cs_async_set_caption(_srpc, caption,
+                                   SUPLA_CS_CALL_SET_SCENE_CAPTION);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_scene_caption_result(
+    void *_srpc, TSC_SetCaptionResult *result) {
+  return srpc_sc_async_set_caption_result(
+      _srpc, result, SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT);
 }
 
 _supla_int_t SRPC_ICACHE_FLASH

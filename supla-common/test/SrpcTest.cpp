@@ -514,7 +514,9 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_SC_CALL_ACTION_EXECUTION_RESULT,
               SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D,
               SUPLA_CS_CALL_GET_CHANNEL_VALUE_WITH_AUTH,
-              SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT};
+              SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT,
+              SUPLA_CS_CALL_SET_SCENE_CAPTION,
+              SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT};
   }
 
   return {};
@@ -3455,6 +3457,21 @@ SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_location_caption_result,
                                   SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT, 32,
                                   433, sc_set_caption_result,
                                   SUPLA_LOCATION_CAPTION_MAXSIZE);
+
+//---------------------------------------------------------
+// SET SCENE CAPTION
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_scene_caption,
+                                  TCS_SetCaption,
+                                  SUPLA_CS_CALL_SET_SCENE_CAPTION, 31, 432,
+                                  cs_set_caption, SUPLA_SCENE_CAPTION_MAXSIZE);
+
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_scene_caption_result,
+                                  TSC_SetCaptionResult,
+                                  SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT, 32,
+                                  433, sc_set_caption_result,
+                                  SUPLA_SCENE_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
 // CLIENTS RECONNECT REQUEST

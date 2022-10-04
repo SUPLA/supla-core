@@ -32,16 +32,19 @@ supla_ch_set_caption::~supla_ch_set_caption() {}
 
 bool supla_ch_set_caption::can_handle_call(unsigned int call_id) {
   return call_id == SUPLA_CS_CALL_SET_CHANNEL_CAPTION ||
-         call_id == SUPLA_CS_CALL_SET_LOCATION_CAPTION;
+         call_id == SUPLA_CS_CALL_SET_LOCATION_CAPTION ||
+         call_id == SUPLA_CS_CALL_SET_SCENE_CAPTION;
 }
 
 void supla_ch_set_caption::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (rd->data.cs_set_caption != nullptr) {
-    if (rd->data.cs_set_caption->CaptionSize > 101U) {
-      // ! The field in the database is limited to 100 characters !
-      rd->data.cs_set_caption->CaptionSize = 101U;
+    unsigned int limit = SUPLA_CS_CALL_SET_SCENE_CAPTION ? 201U : 101U;
+
+    if (rd->data.cs_set_caption->CaptionSize > limit) {
+      // ! The field in the database is limited to 100/200 characters !
+      rd->data.cs_set_caption->CaptionSize = limit;
     } else if (rd->data.cs_set_caption->CaptionSize == 0) {
       rd->data.cs_set_caption->CaptionSize = 1;
     }
@@ -49,8 +52,6 @@ void supla_ch_set_caption::handle_call(
     rd->data.cs_set_caption->Caption[rd->data.cs_set_caption->CaptionSize - 1] =
         0;
 
-    client->get_user()->set_caption(
-        client, rd->data.cs_set_caption,
-        call_id == SUPLA_CS_CALL_SET_CHANNEL_CAPTION);
+    client->get_user()->set_caption(client, rd->data.cs_set_caption, call_id);
   }
 }

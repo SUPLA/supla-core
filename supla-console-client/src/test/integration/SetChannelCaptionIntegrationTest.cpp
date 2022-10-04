@@ -17,6 +17,7 @@
  */
 
 #include "SetChannelCaptionIntegrationTest.h"
+
 #include "log.h"
 
 namespace testing {
@@ -24,6 +25,7 @@ namespace testing {
 SetChannelCaptionIntegrationTest::SetChannelCaptionIntegrationTest() {
   expectedResultCode = 0;
   expectedChannelID = 0;
+  match = 0;
   memset(expectedCaption, 0, SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
@@ -46,8 +48,8 @@ void SetChannelCaptionIntegrationTest::channelMatch(
     }
   }
 
-  if (match & 0x1 &&
-      (match & 0x2 || expectedResultCode != SUPLA_RESULTCODE_TRUE)) {
+  if ((match & 0x1) &&
+      ((match & 0x2) || expectedResultCode != SUPLA_RESULTCODE_TRUE)) {
     cancelIteration();
   }
 }

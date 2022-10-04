@@ -249,6 +249,12 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ(sizeof(TCS_GetChannelValueWithAuth), 394);
 }
 
+TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {
+  EXPECT_EQ(SUPLA_CHANNEL_CAPTION_MAXSIZE, SUPLA_CAPTION_MAXSIZE);
+  EXPECT_EQ(SUPLA_LOCATION_CAPTION_MAXSIZE, SUPLA_CAPTION_MAXSIZE);
+  EXPECT_EQ(SUPLA_SCENE_CAPTION_MAXSIZE, SUPLA_CAPTION_MAXSIZE);
+}
+
 TEST_F(ProtoTest, authorizationDetails) {
   TCS_SuplaRegisterClient_B register_client_b = {};
   TCS_SuplaRegisterClient_D register_client_d = {};

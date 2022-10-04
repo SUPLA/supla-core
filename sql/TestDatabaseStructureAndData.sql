@@ -855,7 +855,7 @@ CREATE TABLE `supla_scene` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `location_id` int(11) NOT NULL,
-  `caption` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `caption` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `enabled` tinyint(1) NOT NULL,
   `user_icon_id` int(11) DEFAULT NULL,
   `alt_icon` tinyint(3) unsigned NOT NULL DEFAULT 0 COMMENT '(DC2Type:tinyint)',
@@ -1992,6 +1992,10 @@ DELIMITER ;;
 CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_set_location_caption`(IN `_user_id` INT, IN `_location_id` INT, IN `_caption` VARCHAR(100) CHARSET utf8mb4)
     NO SQL
 UPDATE supla_location SET caption = _caption WHERE id = _location_id AND user_id = _user_id ;;
+DELIMITER ;;
+CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_set_scene_caption`(IN `_user_id` INT, IN `_scene_id` INT, IN `_caption` VARCHAR(200) CHARSET utf8mb4)
+    NO SQL
+UPDATE supla_scene SET caption = _caption WHERE id = _scene_id AND user_id = _user_id ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;

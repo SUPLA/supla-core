@@ -881,7 +881,7 @@ void supla_user::set_channel_function(std::shared_ptr<supla_client> sender,
 }
 
 void supla_user::set_caption(std::shared_ptr<supla_client> sender,
-                             TCS_SetCaption *caption, bool channel) {
+                             TCS_SetCaption *caption, int call_id) {
   if (sender == nullptr || caption == NULL) {
     return;
   }
@@ -889,10 +889,10 @@ void supla_user::set_caption(std::shared_ptr<supla_client> sender,
   TSC_SetCaptionResult result;
   memset(&result, 0, sizeof(TSC_SetCaptionResult));
   result.ID = caption->ID;
-  memcpy(result.Caption, caption->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
+  memcpy(result.Caption, caption->Caption, SUPLA_CAPTION_MAXSIZE);
   result.CaptionSize = caption->CaptionSize;
-  if (result.CaptionSize > SUPLA_CHANNEL_CAPTION_MAXSIZE) {
-    result.CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
+  if (result.CaptionSize > SUPLA_CAPTION_MAXSIZE) {
+    result.CaptionSize = SUPLA_CAPTION_MAXSIZE;
   }
   result.ResultCode = SUPLA_RESULTCODE_UNKNOWN_ERROR;
 
@@ -903,7 +903,7 @@ void supla_user::set_caption(std::shared_ptr<supla_client> sender,
 
     if (db->connect()) {
       if (db->set_caption(getUserID(), caption->ID, caption->Caption,
-                          channel)) {
+                          call_id)) {
         result.ResultCode = SUPLA_RESULTCODE_TRUE;
       } else {
         result.ResultCode = SUPLA_RESULTCODE_UNKNOWN_ERROR;
@@ -914,15 +914,33 @@ void supla_user::set_caption(std::shared_ptr<supla_client> sender,
     delete db;
   }
 
+  void *srpc = sender->get_connection()->get_srpc_adapter()->get_srpc();
+
   if (result.ResultCode == SUPLA_RESULTCODE_TRUE) {
-    if (channel) {
-      clients->set_channel_caption(caption->ID, caption->Caption);
-    } else {
-      clients->set_location_caption(caption->ID, caption->Caption);
+    switch (call_id) {
+      case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
+        clients->set_channel_caption(caption->ID, caption->Caption);
+        break;
+      case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
+        clients->set_location_caption(caption->ID, caption->Caption);
+        break;
+      case SUPLA_CS_CALL_SET_SCENE_CAPTION:
+        clients->set_scene_caption(caption->ID, caption->Caption);
+        break;
     }
   }
 
-  sender->set_caption_result(&result, channel);
+  switch (call_id) {
+    case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
+      srpc_sc_async_set_channel_caption_result(srpc, &result);
+      break;
+    case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
+      srpc_sc_async_set_location_caption_result(srpc, &result);
+      break;
+    case SUPLA_CS_CALL_SET_SCENE_CAPTION:
+      srpc_sc_async_set_scene_caption_result(srpc, &result);
+      break;
+  }
 }
 
 supla_amazon_alexa_credentials *supla_user::amazonAlexaCredentials(void) {

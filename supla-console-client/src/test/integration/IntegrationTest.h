@@ -67,9 +67,11 @@ class IntegrationTest : public Test {
   virtual void onChannelFunctionSetResult(TSC_SetChannelFunctionResult *result);
   virtual void onChannelCaptionSetResult(TSC_SetCaptionResult *result);
   virtual void onLocationCaptionSetResult(TSC_SetCaptionResult *result);
+  virtual void onSceneCaptionSetResult(TSC_SetCaptionResult *result);
   virtual void onChannelBasicCfg(TSC_ChannelBasicCfg *cfg);
   virtual void channelUpdate(TSC_SuplaChannel_D *channel);
   virtual void locationUpdate(TSC_SuplaLocation *location);
+  virtual void sceneUpdate(TSC_SuplaScene *scene);
   virtual void onRegistrationEnabled(TSDC_RegistrationEnabled *reg_enabled);
   virtual void onSetRegistrationEnabledResult(
       TSC_SetRegistrationEnabledResult *result);

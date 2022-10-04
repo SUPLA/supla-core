@@ -214,7 +214,7 @@ void supla_client__set_str(char *str, unsigned short *size,
 void supla_client_location_update(TSuplaClientData *scd,
                                   TSC_SuplaLocation *location, char gn) {
   supla_client_set_str(location->Caption, &location->CaptionSize,
-                       SUPLA_LOCATION_CAPTION_MAXSIZE);
+                       SUPLA_CAPTION_MAXSIZE);
 
   if (scd->cfg.cb_location_update)
     scd->cfg.cb_location_update(scd, scd->cfg.user_data, location);
@@ -1054,6 +1054,7 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         break;
       case SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT:
       case SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT:
+      case SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT:
         if (rd.data.sc_set_caption_result) {
           supla_client_set_str(rd.data.sc_set_caption_result->Caption,
                                &rd.data.sc_set_caption_result->CaptionSize,
@@ -1066,6 +1067,10 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           } else if (rd.call_id == SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT &&
                      scd->cfg.cb_on_location_caption_set_result) {
             scd->cfg.cb_on_location_caption_set_result(
+                scd, scd->cfg.user_data, rd.data.sc_set_caption_result);
+          } else if (rd.call_id == SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT &&
+                     scd->cfg.cb_on_scene_caption_set_result) {
+            scd->cfg.cb_on_scene_caption_set_result(
                 scd, scd->cfg.user_data, rd.data.sc_set_caption_result);
           }
         }
@@ -1631,7 +1636,7 @@ char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
 }
 
 char supla_client_set_caption(void *_suplaclient, int ID, const char *Caption,
-                              char Channel) {
+                              int CallID) {
   TCS_SetCaption caption;
   memset(&caption, 0, sizeof(TCS_SetCaption));
 
@@ -1644,23 +1649,37 @@ char supla_client_set_caption(void *_suplaclient, int ID, const char *Caption,
     snprintf(caption.Caption, caption.CaptionSize, "%s", Caption);
   }
 
-  if (Channel) {
-    return srpc_cs_async_set_channel_caption(
-        ((TSuplaClientData *)_suplaclient)->srpc, &caption);
+  switch (CallID) {
+    case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
+      return srpc_cs_async_set_channel_caption(
+          ((TSuplaClientData *)_suplaclient)->srpc, &caption);
+    case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
+      return srpc_cs_async_set_location_caption(
+          ((TSuplaClientData *)_suplaclient)->srpc, &caption);
+    case SUPLA_CS_CALL_SET_SCENE_CAPTION:
+      return srpc_cs_async_set_scene_caption(
+          ((TSuplaClientData *)_suplaclient)->srpc, &caption);
   }
 
-  return srpc_cs_async_set_location_caption(
-      ((TSuplaClientData *)_suplaclient)->srpc, &caption);
+  return 0;
 }
 
 char supla_client_set_channel_caption(void *_suplaclient, int ChannelID,
                                       const char *Caption) {
-  return supla_client_set_caption(_suplaclient, ChannelID, Caption, 1);
+  return supla_client_set_caption(_suplaclient, ChannelID, Caption,
+                                  SUPLA_CS_CALL_SET_CHANNEL_CAPTION);
 }
 
 char supla_client_set_location_caption(void *_suplaclient, int LocationID,
                                        const char *Caption) {
-  return supla_client_set_caption(_suplaclient, LocationID, Caption, 0);
+  return supla_client_set_caption(_suplaclient, LocationID, Caption,
+                                  SUPLA_CS_CALL_SET_LOCATION_CAPTION);
+}
+
+char supla_client_set_scene_caption(void *_suplaclient, int SceneID,
+                                    const char *Caption) {
+  return supla_client_set_caption(_suplaclient, SceneID, Caption,
+                                  SUPLA_CS_CALL_SET_SCENE_CAPTION);
 }
 
 char supla_client_reconnect_all_clients(void *_suplaclient) {

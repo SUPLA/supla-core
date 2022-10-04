@@ -27,6 +27,7 @@ using std::string;
 SetLocationCaptionIntegrationTest::SetLocationCaptionIntegrationTest() {
   expectedResultCode = 0;
   expectedLocationID = 0;
+  match = 0;
   memset(expectedCaption, 0, SUPLA_LOCATION_CAPTION_MAXSIZE);
 }
 
