@@ -42,40 +42,6 @@
 #include "tools.h"
 #include "userchannelgroups.h"
 
-bool database::auth(const char *query, int ID, char *PWD, int PWD_MAXSIZE,
-                    int *UserID, bool *is_enabled, bool *is_active) {
-  if (_mysql == NULL || ID == 0 || strnlen(PWD, PWD_MAXSIZE) < 1) return false;
-
-  MYSQL_BIND pbind[2];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&ID;
-
-  pbind[1].buffer_type = MYSQL_TYPE_STRING;
-  pbind[1].buffer = (char *)PWD;
-  pbind[1].buffer_length = strnlen(PWD, PWD_MAXSIZE);
-
-  int _is_enabled = 0;
-  int _is_active = 0;
-
-  int __ID = 0;
-  MYSQL_STMT *stmt = NULL;
-  if (!stmt_get_int((void **)&stmt, &__ID, UserID, &_is_enabled,
-                    is_active ? &_is_active : NULL, query, pbind, 2)) {
-    __ID = 0;
-    _is_enabled = 0;
-    _is_active = 0;
-  }
-
-  *is_enabled = _is_enabled == 1;
-  if (is_active) {
-    *is_active = _is_active == 1;
-  }
-
-  return __ID != 0;
-}
-
 char *database::get_user_email(int UserID) {
   char *result = NULL;
 
@@ -185,57 +151,6 @@ int database::get_user_id_by_suid(const char *suid) {
   }
 
   return 0;
-}
-
-bool database::get_authkey_hash(int ID, char *buffer, unsigned int buffer_size,
-                                bool *is_null, const char *sql) {
-  MYSQL_STMT *stmt = NULL;
-
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&ID;
-
-  bool result = false;
-
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    my_bool _is_null = false;
-    unsigned long size = 0;
-
-    MYSQL_BIND rbind[1];
-    memset(rbind, 0, sizeof(rbind));
-
-    rbind[0].buffer_type = MYSQL_TYPE_STRING;
-    rbind[0].buffer = buffer;
-    rbind[0].buffer_length = buffer_size;
-    rbind[0].length = &size;
-    rbind[0].is_null = &_is_null;
-
-    if (mysql_stmt_bind_result(stmt, rbind)) {
-      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                mysql_stmt_error(stmt));
-    } else {
-      mysql_stmt_store_result(stmt);
-
-      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt) &&
-          buffer_size > size) {
-        buffer[size] = 0;
-        *is_null = _is_null > 0;
-
-        result = true;
-      }
-    }
-
-    mysql_stmt_close(stmt);
-  }
-
-  return result;
-}
-
-int database::get_device_count(int UserID) {
-  return get_count(UserID,
-                   "SELECT COUNT(*) FROM supla_iodevice WHERE user_id = ?");
 }
 
 void database::get_device_channels(int UserID, int DeviceID,

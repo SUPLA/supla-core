@@ -26,17 +26,6 @@
 #include "user.h"
 
 class database : public svrdb {
- private:
-  bool auth(const char *query, int ID, char *PWD, int PWD_MAXXSIZE, int *UserID,
-            bool *is_enabled, bool *is_active);
-  bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                    const char Email[SUPLA_EMAIL_MAXSIZE],
-                    const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
-                    bool Client, const char *sql);
-
-  bool get_authkey_hash(int ID, char *buffer, unsigned int buffer_size,
-                        bool *is_null, const char *sql);
-
  public:
   char *get_user_email(int UserID);
 
@@ -44,12 +33,6 @@ class database : public svrdb {
 
   int get_user_id_by_suid(const char *suid);
 
-  int add_channel(int DeviceID, int ChannelNumber, int ChannelType);
-
-  int get_device_count(int UserID);
-
-  int get_device_channel(int DeviceID, int ChannelNumber, int *Type);
-  int get_device_channel_type(int DeviceID, int ChannelNumber);
   void get_device_channels(int UserID, int DeviceID,
                            supla_device_channels *channels);
 
