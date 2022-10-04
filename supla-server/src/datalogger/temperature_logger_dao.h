@@ -16,25 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_THERMOSTAT_MEASUREMENT_H_
-#define CHANNEL_THERMOSTAT_MEASUREMENT_H_
+#ifndef TEMPERATURE_LOGGER_DAO_H_
+#define TEMPERATURE_LOGGER_DAO_H_
 
-class supla_channel_thermostat_measurement {
+#include <vector>
+
+#include "db/abstract_db_access_provider.h"
+#include "device/channel_temphum.h"
+#include "proto.h"
+
+class supla_temperature_logger_dao {
  private:
-  int ChannelId;
-  bool on;
-  double MeasuredTemperature;
-  double PresetTemperature;
+  supla_abstract_db_access_provider *dba;
 
  public:
-  supla_channel_thermostat_measurement(int ChannelId, bool on,
-                                       double MeasuredTemperature,
-                                       double PresetTemperature);
-
-  int getChannelId(void);
-  double getMeasuredTemperature(void);
-  double getPresetTemperature(void);
-  bool getOn(void);
+  supla_temperature_logger_dao(supla_abstract_db_access_provider *dba);
+  void add_temperature(int channel_id, double temperature);
+  void add_temperature_and_humidity(int channel_id, double temperature,
+                                    double humidity);
+  void load(int user_id, std::vector<supla_channel_temphum *> *result);
 };
 
-#endif /* CHANNEL_THERMOSTAT_MEASUREMENT_H_ */
+#endif /* TEMPERATURE_LOGGER_DAO_H_ */

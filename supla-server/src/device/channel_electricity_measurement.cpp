@@ -102,15 +102,3 @@ bool supla_channel_electricity_measurement::update_cev(
 
   return false;
 }
-
-// static
-char supla_channel_electricity_measurement::emarr_clean(void *ptr) {
-  delete (supla_channel_electricity_measurement *)ptr;
-  return 1;
-}
-
-// static
-void supla_channel_electricity_measurement::free(void *emarr) {
-  safe_array_clean(emarr, emarr_clean);
-  safe_array_free(emarr);
-}

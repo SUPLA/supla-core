@@ -27,7 +27,6 @@ class supla_channel_temphum {
   bool TempAndHumidity;
   double Temperature;
   double Humidity;
-  static char tarr_clean(void *ptr);
 
  public:
   supla_channel_temphum(bool TempAndHumidity, int ChannelId, double Temperature,
@@ -46,8 +45,6 @@ class supla_channel_temphum {
   void toValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   void assignValue(const char value[SUPLA_CHANNELVALUE_SIZE],
                    bool TempAndHumidity);
-
-  static void free(void *tarr);
 };
 
 #endif /* CHANNEL_TEMPHUM_H_ */

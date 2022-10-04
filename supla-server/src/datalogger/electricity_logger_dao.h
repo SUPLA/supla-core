@@ -16,25 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_THERMOSTAT_MEASUREMENT_H_
-#define CHANNEL_THERMOSTAT_MEASUREMENT_H_
+#ifndef ELECTRICITY_LOGGER_DAO_H_
+#define ELECTRICITY_LOGGER_DAO_H_
 
-class supla_channel_thermostat_measurement {
+#include "db/abstract_db_access_provider.h"
+#include "device/channel_electricity_measurement.h"
+#include "proto.h"
+
+class supla_electricity_logger_dao {
  private:
-  int ChannelId;
-  bool on;
-  double MeasuredTemperature;
-  double PresetTemperature;
+  supla_abstract_db_access_provider *dba;
+  void set_longlong(unsigned _supla_int64_t *v, void *pbind,
+                    bool *not_null_flag);
 
  public:
-  supla_channel_thermostat_measurement(int ChannelId, bool on,
-                                       double MeasuredTemperature,
-                                       double PresetTemperature);
-
-  int getChannelId(void);
-  double getMeasuredTemperature(void);
-  double getPresetTemperature(void);
-  bool getOn(void);
+  supla_electricity_logger_dao(supla_abstract_db_access_provider *dba);
+  void add(supla_channel_electricity_measurement *em);
 };
 
-#endif /* CHANNEL_THERMOSTAT_MEASUREMENT_H_ */
+#endif /* ELECTRICITY_LOGGER_DAO_H_ */

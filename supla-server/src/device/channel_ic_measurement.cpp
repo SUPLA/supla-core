@@ -175,15 +175,3 @@ void supla_channel_ic_measurement::get_cost_and_currency(
     *total_cost = (double)(Param2 * 0.01 * count);
   }
 }
-
-// static
-char supla_channel_ic_measurement::icarr_clean(void *ptr) {
-  delete (supla_channel_ic_measurement *)ptr;
-  return 1;
-}
-
-// static
-void supla_channel_ic_measurement::free(void *icarr) {
-  safe_array_clean(icarr, icarr_clean);
-  safe_array_free(icarr);
-}

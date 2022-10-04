@@ -16,25 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_THERMOSTAT_MEASUREMENT_H_
-#define CHANNEL_THERMOSTAT_MEASUREMENT_H_
+#include "datalogger/abstract_datalogger.h"
 
-class supla_channel_thermostat_measurement {
- private:
-  int ChannelId;
-  bool on;
-  double MeasuredTemperature;
-  double PresetTemperature;
+using std::vector;
 
- public:
-  supla_channel_thermostat_measurement(int ChannelId, bool on,
-                                       double MeasuredTemperature,
-                                       double PresetTemperature);
+supla_abstract_datalogger::supla_abstract_datalogger() {
+  last_log_time = {};
+  gettimeofday(&last_log_time, NULL);
+}
 
-  int getChannelId(void);
-  double getMeasuredTemperature(void);
-  double getPresetTemperature(void);
-  bool getOn(void);
-};
+supla_abstract_datalogger::~supla_abstract_datalogger() {}
 
-#endif /* CHANNEL_THERMOSTAT_MEASUREMENT_H_ */
+bool supla_abstract_datalogger::is_it_time(const struct timeval *now) {
+  return now->tv_sec - last_log_time.tv_sec >= log_interval_sec();
+}
+
+void supla_abstract_datalogger::log(const struct timeval *now,
+                                    const vector<supla_user *> *users,
+                                    supla_abstract_db_access_provider *dba) {
+  last_log_time = *now;
+  log(users, dba);
+}

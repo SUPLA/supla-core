@@ -16,25 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_THERMOSTAT_MEASUREMENT_H_
-#define CHANNEL_THERMOSTAT_MEASUREMENT_H_
+#ifndef TEMPERATURE_LOGGER_H_
+#define TEMPERATURE_LOGGER_H_
 
-class supla_channel_thermostat_measurement {
- private:
-  int ChannelId;
-  bool on;
-  double MeasuredTemperature;
-  double PresetTemperature;
+#include "datalogger/abstract_datalogger.h"
+
+class supla_temperature_logger : public supla_abstract_datalogger {
+ protected:
+  virtual unsigned int log_interval_sec(void);
+  virtual void log(const std::vector<supla_user *> *users,
+                   supla_abstract_db_access_provider *dba);
 
  public:
-  supla_channel_thermostat_measurement(int ChannelId, bool on,
-                                       double MeasuredTemperature,
-                                       double PresetTemperature);
-
-  int getChannelId(void);
-  double getMeasuredTemperature(void);
-  double getPresetTemperature(void);
-  bool getOn(void);
+  supla_temperature_logger();
+  virtual ~supla_temperature_logger();
 };
 
-#endif /* CHANNEL_THERMOSTAT_MEASUREMENT_H_ */
+#endif /* TEMPERATURE_LOGGER_H_ */

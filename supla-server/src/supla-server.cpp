@@ -24,7 +24,7 @@
 #include "accept_loop.h"
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
-#include "datalogger/datalogger.h"
+#include "datalogger/agent.h"
 #include "db/database.h"
 #include "http/httprequestqueue.h"
 #include "http/trivialhttps.h"
@@ -47,14 +47,14 @@ int main(int argc, char *argv[]) {
   st_hook_critical_signals();
 #endif
 
-  void *ssd_ssl = NULL;
-  void *ssd_tcp = NULL;
-  void *ipc = NULL;
-  void *tcp_accept_loop_thread = NULL;
-  void *ssl_accept_loop_thread = NULL;
-  void *ipc_accept_loop_thread = NULL;
-  void *datalogger_loop_thread = NULL;
-  void *http_request_queue_loop_thread = NULL;
+  void *ssd_ssl = nullptr;
+  void *ssd_tcp = nullptr;
+  void *ipc = nullptr;
+  void *tcp_accept_loop_thread = nullptr;
+  void *ssl_accept_loop_thread = nullptr;
+  void *ipc_accept_loop_thread = nullptr;
+  void *http_request_queue_loop_thread = nullptr;
+  supla_datalogger_agent *datalogger_agent = nullptr;
 
 #ifdef __LCK_DEBUG
   lck_debug_init();
@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
   if (ipc) sthread_simple_run(ipc_accept_loop, ipc, 0, &ipc_accept_loop_thread);
 
   // DATA LOGGER
-  sthread_simple_run(datalogger_loop, NULL, 0, &datalogger_loop_thread);
+  datalogger_agent = new supla_datalogger_agent();
 
   // HTTP EVENT QUEUE
 
@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
     ssocket_free(ssd_tcp);
   }
 
-  sthread_twf(datalogger_loop_thread);
+  delete datalogger_agent;
   sthread_twf(http_request_queue_loop_thread);
 
   supla_asynctask_queue::global_instance_release();  // before

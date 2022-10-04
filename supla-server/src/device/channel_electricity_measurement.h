@@ -31,8 +31,6 @@ class supla_channel_electricity_measurement {
   static void set_costs(int Param2, const char *TextParam1,
                         TElectricityMeter_ExtendedValue_V2 *em_ev);
 
-  static char emarr_clean(void *ptr);
-
  public:
   supla_channel_electricity_measurement(
       int ChannelId, TElectricityMeter_ExtendedValue_V2 *em_ev, int Param2,
@@ -44,7 +42,6 @@ class supla_channel_electricity_measurement {
 
   static bool update_cev(TSuplaChannelExtendedValue *ev, int Param2,
                          const char *TextParam1);
-  static void free(void *emarr);
 };
 
 #endif /* CHANNEL_ELECTRICITY_MEASUREMENT_H_ */

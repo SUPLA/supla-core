@@ -22,6 +22,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <vector>
 
 #include "caller.h"
 #include "channel_address.h"
@@ -276,13 +277,17 @@ class supla_device_channels {
   bool is_channel_online(int ChannelID);
   void load(int UserID, int DeviceID);
 
-  void get_temp_and_humidity(void *tarr);
-  void get_electricity_measurements(void *emarr, bool for_data_logger_purposes);
+  void get_temp_and_humidity(std::vector<supla_channel_temphum *> *result);
+  void get_electricity_measurements(
+      std::vector<supla_channel_electricity_measurement *> *result,
+      bool for_data_logger_purposes);
   supla_channel_electricity_measurement *get_electricity_measurement(
       int ChannelID);
-  void get_ic_measurements(void *icarr, bool for_data_logger_purposes);
+  void get_ic_measurements(std::vector<supla_channel_ic_measurement *> *result,
+                           bool for_data_logger_purposes);
   supla_channel_ic_measurement *get_ic_measurement(int ChannelID);
-  void get_thermostat_measurements(void *tharr);
+  void get_thermostat_measurements(
+      std::vector<supla_channel_thermostat_measurement *> *result);
 
   bool calcfg_request(const supla_caller &caller, int ChannelID,
                       bool SuperUserAuthorized,

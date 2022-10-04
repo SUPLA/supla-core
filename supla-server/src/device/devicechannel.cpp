@@ -47,6 +47,7 @@ using std::function;
 using std::list;
 using std::map;
 using std::shared_ptr;
+using std::vector;
 
 supla_device_channel::supla_device_channel(
     supla_device *Device, int Id, int Number, int Type, int Func, int Param1,
@@ -2046,7 +2047,8 @@ bool supla_device_channels::set_device_channel_rgbw_value(
   return result;
 }
 
-void supla_device_channels::get_temp_and_humidity(void *tarr) {
+void supla_device_channels::get_temp_and_humidity(
+    vector<supla_channel_temphum *> *result) {
   int a;
   safe_array_lock(arr);
 
@@ -2057,7 +2059,9 @@ void supla_device_channels::get_temp_and_humidity(void *tarr) {
     if (channel != NULL && !channel->isOffline()) {
       supla_channel_temphum *temphum = channel->getTempHum();
 
-      if (temphum != NULL) safe_array_add(tarr, temphum);
+      if (temphum != NULL) {
+        result->push_back(temphum);
+      }
     }
   }
 
@@ -2100,7 +2104,8 @@ bool supla_device_channels::get_channel_rgbw_value(int ChannelID, int *color,
 }
 
 void supla_device_channels::get_electricity_measurements(
-    void *emarr, bool for_data_logger_purposes) {
+    vector<supla_channel_electricity_measurement *> *result,
+    bool for_data_logger_purposes) {
   int a;
   safe_array_lock(arr);
 
@@ -2126,7 +2131,7 @@ void supla_device_channels::get_electricity_measurements(
       supla_channel_electricity_measurement *em =
           channel->getElectricityMeasurement(for_data_logger_purposes);
       if (em) {
-        safe_array_add(emarr, em);
+        result->push_back(em);
       } else {
         // TODO(anyone): Remove
         if (channel->getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER &&
@@ -2160,8 +2165,9 @@ supla_device_channels::get_electricity_measurement(int ChannelID) {
   return result;
 }
 
-void supla_device_channels::get_ic_measurements(void *icarr,
-                                                bool for_data_logger_purposes) {
+void supla_device_channels::get_ic_measurements(
+    vector<supla_channel_ic_measurement *> *result,
+    bool for_data_logger_purposes) {
   int a;
   safe_array_lock(arr);
 
@@ -2173,7 +2179,7 @@ void supla_device_channels::get_ic_measurements(void *icarr,
       supla_channel_ic_measurement *ic =
           channel->getImpulseCounterMeasurement(for_data_logger_purposes);
       if (ic) {
-        safe_array_add(icarr, ic);
+        result->push_back(ic);
       }
     }
   }
@@ -2181,7 +2187,8 @@ void supla_device_channels::get_ic_measurements(void *icarr,
   safe_array_unlock(arr);
 }
 
-void supla_device_channels::get_thermostat_measurements(void *tharr) {
+void supla_device_channels::get_thermostat_measurements(
+    vector<supla_channel_thermostat_measurement *> *result) {
   int a;
   safe_array_lock(arr);
 
@@ -2193,7 +2200,7 @@ void supla_device_channels::get_thermostat_measurements(void *tharr) {
       supla_channel_thermostat_measurement *th =
           channel->getThermostatMeasurement();
       if (th) {
-        safe_array_add(tharr, th);
+        result->push_back(th);
       }
     }
   }

@@ -37,9 +37,6 @@ class database : public svrdb {
   bool get_authkey_hash(int ID, char *buffer, unsigned int buffer_size,
                         bool *is_null, const char *sql);
 
-  void em_set_longlong(unsigned _supla_int64_t *v, void *pbind,
-                       bool *not_null_flag);
-
  public:
   char *get_user_email(int UserID);
 
@@ -67,14 +64,6 @@ class database : public svrdb {
 
   void get_client_channel_group_relations(int ClientID,
                                           supla_client_channelgroups *cgroups);
-
-  void add_temperature(int ChannelID, double temperature);
-  void add_temperature_and_humidity(int ChannelID, double temperature,
-                                    double humidity);
-
-  void add_electricity_measurement(supla_channel_electricity_measurement *em);
-  void add_impulses(supla_channel_ic_measurement *ic);
-  void add_thermostat_measurements(supla_channel_thermostat_measurement *th);
 
   bool superuser_authorization(int UserID,
                                const char email[SUPLA_EMAIL_MAXSIZE],
@@ -110,7 +99,6 @@ class database : public svrdb {
   bool get_channel_value(int channel_id, int user_id,
                          char value[SUPLA_CHANNELVALUE_SIZE],
                          unsigned _supla_int_t *validity_time_sec);
-  void load_temperatures_and_humidity(int UserID, void *tarr);
 
   void update_channel_properties(int channel_id, int user_id,
                                  const char *properties);
