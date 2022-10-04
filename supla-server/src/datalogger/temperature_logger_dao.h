@@ -30,7 +30,7 @@ class supla_temperature_logger_dao {
   supla_abstract_db_access_provider *dba;
 
  public:
-  supla_temperature_logger_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_temperature_logger_dao(supla_abstract_db_access_provider *dba);
   void add_temperature(int channel_id, double temperature);
   void add_temperature_and_humidity(int channel_id, double temperature,
                                     double humidity);

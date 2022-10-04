@@ -19,6 +19,8 @@
 #ifndef IMPULSE_LOGGER_H_
 #define IMPULSE_LOGGER_H_
 
+#include <vector>
+
 #include "datalogger/abstract_datalogger.h"
 
 class supla_impulse_logger : public supla_abstract_datalogger {

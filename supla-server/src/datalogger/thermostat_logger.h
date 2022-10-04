@@ -19,6 +19,8 @@
 #ifndef THERMOSTAT_LOGGER_H_
 #define THERMOSTAT_LOGGER_H_
 
+#include <vector>
+
 #include "datalogger/abstract_datalogger.h"
 
 class supla_thermostat_logger : public supla_abstract_datalogger {

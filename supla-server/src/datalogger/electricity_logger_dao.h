@@ -30,7 +30,7 @@ class supla_electricity_logger_dao {
                     bool *not_null_flag);
 
  public:
-  supla_electricity_logger_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_electricity_logger_dao(supla_abstract_db_access_provider *dba);
   void add(supla_channel_electricity_measurement *em);
 };
 

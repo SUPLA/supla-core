@@ -19,6 +19,8 @@
 #ifndef TEMPERATURE_LOGGER_H_
 #define TEMPERATURE_LOGGER_H_
 
+#include <vector>
+
 #include "datalogger/abstract_datalogger.h"
 
 class supla_temperature_logger : public supla_abstract_datalogger {

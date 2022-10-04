@@ -19,6 +19,8 @@
 #ifndef ELECTRICITY_LOGGER_H_
 #define ELECTRICITY_LOGGER_H_
 
+#include <vector>
+
 #include "datalogger/abstract_datalogger.h"
 
 class supla_electricity_logger : public supla_abstract_datalogger {

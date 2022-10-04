@@ -27,7 +27,7 @@ class supla_impulse_logger_dao {
   supla_abstract_db_access_provider *dba;
 
  public:
-  supla_impulse_logger_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_impulse_logger_dao(supla_abstract_db_access_provider *dba);
   void add(supla_channel_ic_measurement *ic);
 };
 

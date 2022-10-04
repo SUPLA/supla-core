@@ -27,7 +27,7 @@ class supla_thermostat_logger_dao {
   supla_abstract_db_access_provider *dba;
 
  public:
-  supla_thermostat_logger_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_thermostat_logger_dao(supla_abstract_db_access_provider *dba);
   void add(supla_channel_thermostat_measurement *th);
 };
 
