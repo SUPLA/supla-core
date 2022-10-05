@@ -40,7 +40,8 @@ void supla_ch_set_caption::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (rd->data.cs_set_caption != nullptr) {
-    unsigned int limit = call_id == SUPLA_CS_CALL_SET_SCENE_CAPTION ? 256U : 101U;
+    unsigned int limit =
+        call_id == SUPLA_CS_CALL_SET_SCENE_CAPTION ? 256U : 101U;
 
     if (rd->data.cs_set_caption->CaptionSize > limit) {
       // ! The field in the database is limited to 100/200 characters !
