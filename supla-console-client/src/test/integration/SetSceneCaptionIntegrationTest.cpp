@@ -144,14 +144,15 @@ TEST_F(SetSceneCaptionIntegrationTest, SetFewViarintsOfCaption) {
   const char LongCaption[] =
       "FullSizeCaption........................................................."
       "........................................................................"
-      "..................................................123456789";
+      "........................................................................"
+      ".................................123456789";
 
   snprintf(expectedCaption, SUPLA_SCENE_CAPTION_MAXSIZE, "%s", LongCaption);
 
   ASSERT_GT(
       supla_client_set_scene_caption(sclient, expectedSceneID, expectedCaption),
       0);
-  expectedCaption[200] = 0;
+  expectedCaption[255] = 0;
 
   iterateUntilDefaultTimeout();
   ASSERT_EQ(
@@ -159,7 +160,8 @@ TEST_F(SetSceneCaptionIntegrationTest, SetFewViarintsOfCaption) {
           .compare("caption\nFullSizeCaption..................................."
                    "..........................................................."
                    "..........................................................."
-                   "..........................123456\n"),
+                   "..........................................................."
+                   "......................123456\n"),
       0);
 }
 } /* namespace testing */
