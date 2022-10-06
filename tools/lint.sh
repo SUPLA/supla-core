@@ -34,6 +34,7 @@ cpplint ./supla-server/src/webhook/*
 cpplint --filter=-build/include ./supla-server/src/test/* 
 cpplint --filter=-build/include ./supla-server/src/test/actions/* 
 cpplint --filter=-build/include ./supla-server/src/test/alexa/* 
+cpplint --filter=-build/include ./supla-server/src/test/analyzer/* 
 cpplint --filter=-build/include ./supla-server/src/test/asynctask/* 
 cpplint --filter=-build/include ./supla-server/src/test/channeljsonconfig/* 
 cpplint --filter=-build/include ./supla-server/src/test/client/* 

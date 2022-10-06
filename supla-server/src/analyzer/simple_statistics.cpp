@@ -37,10 +37,11 @@ double supla_simple_statiscics::get_avg(void) { return avg; }
 
 unsigned int supla_simple_statiscics::get_sample_count(void) { return count; }
 
-void supla_simple_statiscics::update(double value) {
+void supla_simple_statiscics::add_sample(double value) {
   if (count == 0) {
     min = value;
     max = value;
+    gettimeofday(&first_update_time, nullptr);
   } else {
     if (value < min) {
       min = value;
@@ -54,25 +55,24 @@ void supla_simple_statiscics::update(double value) {
   avg = sum / count;
 }
 
-int supla_simple_statiscics::reset(void) {
-  int result = 0;
-
-  if (first_update_time.tv_sec || first_update_time.tv_usec) {
-    struct timeval now = {};
-    gettimeofday(&now, nullptr);
-
-    result =
-        ((now.tv_sec * 1000000 + now.tv_usec) -
-         (first_update_time.tv_sec * 1000000 + first_update_time.tv_usec)) /
-        1000000;
-  }
-
+void supla_simple_statiscics::reset(void) {
   min = 0;
   max = 0;
   avg = 0;
   sum = 0;
   count = 0;
   first_update_time = {};
+}
 
-  return result;
+unsigned int supla_simple_statiscics::get_total_time_msec(void) {
+  if (first_update_time.tv_sec || first_update_time.tv_usec) {
+    struct timeval now = {};
+    gettimeofday(&now, nullptr);
+
+    return ((now.tv_sec * 1000000 + now.tv_usec) -
+            (first_update_time.tv_sec * 1000000 + first_update_time.tv_usec)) /
+           1000;
+  }
+
+  return 0;
 }

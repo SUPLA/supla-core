@@ -16,29 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <sys/time.h>
+#ifndef VOLTAGE_ANALYZER_TEST_H_
+#define VOLTAGE_ANALYZER_TEST_H_
 
-#ifndef SIMPLE_STATISTICS_H_
-#define SIMPLE_STATISTICS_H_
-class supla_simple_statiscics {
- private:
-  double min;
-  double max;
-  double avg;
-  double sum;
-  unsigned int count;
-  struct timeval first_update_time;
+#include "analyzer/voltage_analyzer.h"
+#include "gtest/gtest.h"  // NOLINT
 
+namespace testing {
+
+class VoltageAnalyzerTest : public Test {
  public:
-  supla_simple_statiscics(void);
-  virtual ~supla_simple_statiscics(void);
-  double get_min(void);
-  double get_max(void);
-  double get_avg(void);
-  unsigned int get_sample_count(void);
-  virtual void add_sample(double value);
-  unsigned int get_total_time_msec(void);
-  virtual void reset(void);
+  supla_voltage_analyzer va;
 };
 
-#endif /*SIMPLE_STATISTICS_H_*/
+}  // namespace testing
+
+#endif /* VOLTAGE_ANALYZER_TEST_H_ */

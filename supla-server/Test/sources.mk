@@ -26,6 +26,7 @@ SUBDIRS := \
 src \
 src/actions \
 src/amazon \
+src/analyzer \
 src/asynctask \
 src/channeljsonconfig \
 src/client \
@@ -49,6 +50,7 @@ src/srpc \
 src/test \
 src/test/actions \
 src/test/alexa \
+src/test/analyzer \
 src/test/asynctask \
 src/test/channeljsonconfig \
 src/test/client \
