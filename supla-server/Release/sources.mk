@@ -26,6 +26,7 @@ SUBDIRS := \
 src \
 src/actions \
 src/amazon \
+src/analyzer \
 src/asynctask \
 src/channeljsonconfig \
 src/client \

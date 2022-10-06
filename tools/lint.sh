@@ -11,6 +11,7 @@ fi
 cpplint ./supla-server/src/* 
 cpplint --filter=-build/include_what_you_use ./supla-server/src/actions/* 
 cpplint ./supla-server/src/amazon/* 
+cpplint ./supla-server/src/analyzer/* 
 cpplint ./supla-server/src/asynctask/* 
 cpplint ./supla-server/src/channeljsonconfig/* 
 cpplint ./supla-server/src/client/* 
