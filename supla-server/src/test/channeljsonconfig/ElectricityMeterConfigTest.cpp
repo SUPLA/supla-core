@@ -717,9 +717,9 @@ TEST_F(ElectricityMeterConfigTest, upperVoltageThreshold) {
 
   EXPECT_EQ(config.get_upper_voltage_threshold(), 0);
 
-  config.set_user_config("{\"upperVoltageThreshold\":123.45}");
+  config.set_user_config("{\"upperVoltageThreshold\":268.45}");
 
-  EXPECT_EQ(config.get_upper_voltage_threshold(), 123.45);
+  EXPECT_EQ(config.get_upper_voltage_threshold(), 268.45);
 }
 
 TEST_F(ElectricityMeterConfigTest, lowerVoltageThreshold) {
@@ -730,9 +730,9 @@ TEST_F(ElectricityMeterConfigTest, lowerVoltageThreshold) {
 
   EXPECT_EQ(config.get_upper_voltage_threshold(), 0);
 
-  config.set_user_config("{\"lowerVoltageThreshold\":456.55}");
+  config.set_user_config("{\"lowerVoltageThreshold\":123.45}");
 
-  EXPECT_EQ(config.get_lower_voltage_threshold(), 456.55);
+  EXPECT_EQ(config.get_lower_voltage_threshold(), 123.45);
 }
 
 } /* namespace testing */

@@ -24,6 +24,7 @@
 #include <map>
 #include <vector>
 
+#include "analyzer/voltage_analyzers.h"
 #include "caller.h"
 #include "channel_address.h"
 #include "channel_electricity_measurement.h"
@@ -74,15 +75,12 @@ class supla_device_channel {
   bool Offline;
   unsigned int Flags;
   TDSC_ChannelState *state;
-
   char value[SUPLA_CHANNELVALUE_SIZE];
-
   struct timeval value_valid_to;  // during offline
   TSuplaChannelExtendedValue *extendedValue;
-
   channel_json_config *json_config;
-
   _logger_purpose_t *logger_data;
+  supla_voltage_analyzers voltage_analyzers;
 
   void db_set_properties(channel_json_config *config);
   void db_set_params(int Param1, int Param2, int Param3, int Param4);

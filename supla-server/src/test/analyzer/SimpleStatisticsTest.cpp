@@ -20,14 +20,6 @@
 
 namespace testing {
 
-TEST_F(SimpleStatisticsTest, channelIdGetterAndSetter) {
-  EXPECT_EQ(stat.get_channel_id(), 0);
-  stat.set_channel_id(89);
-  EXPECT_EQ(stat.get_channel_id(), 89);
-  stat.reset();
-  EXPECT_EQ(stat.get_channel_id(), 89);
-}
-
 TEST_F(SimpleStatisticsTest, min) {
   EXPECT_EQ(stat.get_min(), 0);
   EXPECT_EQ(stat.get_sample_count(), 0);

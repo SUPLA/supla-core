@@ -1,0 +1,99 @@
+/*
+ Copyright (C) AC SOFTWARE SP. Z O.O.
+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+#include "test/analyzer/VoltageAnalyzersTest.h"
+
+#include "srpc/srpc.h"
+
+namespace testing {
+
+TEST_F(VoltageAnalyzersTest, channelIdSetterAndGetter) {
+  EXPECT_EQ(vas.get_channel_id(), 0);
+  vas.set_channel_id(456);
+  EXPECT_EQ(vas.get_channel_id(), 456);
+}
+
+TEST_F(VoltageAnalyzersTest, onePhase) {
+  EXPECT_TRUE(vas.get_phase1() == nullptr);
+  EXPECT_TRUE(vas.get_phase2() == nullptr);
+  EXPECT_TRUE(vas.get_phase3() == nullptr);
+
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  em_ev.m_count = 1;
+  em_ev.m[0].voltage[0] = 31055;
+  em_ev.m[0].voltage[1] = 31555;
+  em_ev.m[0].voltage[2] = 32055;
+  em_ev.measured_values = EM_VAR_VOLTAGE;
+
+  TSuplaChannelExtendedValue ev = {};
+  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+
+  electricity_meter_config config;
+  config.set_user_config(
+      "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
+
+  vas.add_samples(SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
+                      SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED,
+                  &config, &ev);
+
+  ASSERT_TRUE(vas.get_phase1() != nullptr);
+  EXPECT_TRUE(vas.get_phase2() == nullptr);
+  EXPECT_TRUE(vas.get_phase3() == nullptr);
+
+  EXPECT_EQ(vas.get_phase1()->get_upper_counter(), 1);
+  EXPECT_EQ(vas.get_phase1()->get_max(), 310.55);
+}
+
+TEST_F(VoltageAnalyzersTest, threePhases) {
+  EXPECT_TRUE(vas.get_phase1() == nullptr);
+  EXPECT_TRUE(vas.get_phase2() == nullptr);
+  EXPECT_TRUE(vas.get_phase3() == nullptr);
+
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  em_ev.m_count = 1;
+  em_ev.m[0].voltage[0] = 31055;
+  em_ev.m[0].voltage[1] = 31555;
+  em_ev.m[0].voltage[2] = 32055;
+  em_ev.measured_values = EM_VAR_VOLTAGE;
+
+  TSuplaChannelExtendedValue ev = {};
+  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+
+  electricity_meter_config config;
+  config.set_user_config(
+      "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
+
+  vas.add_samples(0, &config, &ev);
+
+  ASSERT_TRUE(vas.get_phase1() != nullptr);
+  ASSERT_TRUE(vas.get_phase2() != nullptr);
+  ASSERT_TRUE(vas.get_phase3() != nullptr);
+
+  EXPECT_EQ(vas.get_phase1()->get_upper_counter(), 1);
+  EXPECT_EQ(vas.get_phase1()->get_max(), 310.55);
+
+  EXPECT_EQ(vas.get_phase2()->get_upper_counter(), 1);
+  EXPECT_EQ(vas.get_phase2()->get_max(), 315.55);
+
+  EXPECT_EQ(vas.get_phase3()->get_upper_counter(), 1);
+  EXPECT_EQ(vas.get_phase3()->get_max(), 320.55);
+}
+
+TEST_F(VoltageAnalyzersTest, noMeasurements) {}
+
+}  // namespace testing

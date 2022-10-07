@@ -742,6 +742,8 @@ void supla_device_channel::updateExtendedElectricityMeterValue(void) {
            sizeof(TSuplaChannelExtendedValue));
   }
 
+  voltage_analyzers.add_samples(getFlags(), config, extendedValue);
+
   delete config;
 }
 
