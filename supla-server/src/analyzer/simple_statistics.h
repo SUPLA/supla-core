@@ -22,6 +22,7 @@
 #define SIMPLE_STATISTICS_H_
 class supla_simple_statiscics {
  private:
+  int channel_id;
   double min;
   double max;
   double avg;
@@ -32,6 +33,8 @@ class supla_simple_statiscics {
  public:
   supla_simple_statiscics(void);
   virtual ~supla_simple_statiscics(void);
+  void set_channel_id(int channel_id);
+  int get_channel_id(void);
   double get_min(void);
   double get_max(void);
   double get_avg(void);

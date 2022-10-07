@@ -19,6 +19,7 @@
 #include "analyzer/simple_statistics.h"
 
 supla_simple_statiscics::supla_simple_statiscics() {
+  channel_id = 0;
   min = 0;
   max = 0;
   avg = 0;
@@ -28,6 +29,12 @@ supla_simple_statiscics::supla_simple_statiscics() {
 }
 
 supla_simple_statiscics::~supla_simple_statiscics(void) {}
+
+void supla_simple_statiscics::set_channel_id(int channel_id) {
+  this->channel_id = channel_id;
+}
+
+int supla_simple_statiscics::get_channel_id(void) { return this->channel_id; }
 
 double supla_simple_statiscics::get_min(void) { return min; }
 
