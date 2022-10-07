@@ -16,9 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "electricity_meter_config.h"
+
 #include <limits.h>
 
-#include "electricity_meter_config.h"
 #include "srpc/srpc.h"
 
 const _emc_map_t electricity_meter_config::map[] = {
@@ -41,6 +42,14 @@ const char electricity_meter_config::em_initial_values_key[] =
 
 // static
 const char electricity_meter_config::add_to_history_key[] = "addToHistory";
+
+// static
+const char electricity_meter_config::upper_voltage_threshold_key[] =
+    "upperVoltageThreshold";
+
+// static
+const char electricity_meter_config::lower_voltage_threshold_key[] =
+    "lowerVoltageThreshold";
 
 electricity_meter_config::electricity_meter_config(void)
     : channel_json_config() {}
@@ -139,13 +148,15 @@ bool electricity_meter_config::update_available_counters(
 }
 
 bool electricity_meter_config::should_be_added_to_history(void) {
-  cJSON *root = get_user_root();
-  if (!root) {
-    return 0;
-  }
+  return get_bool(add_to_history_key);
+}
 
-  cJSON *item = cJSON_GetObjectItem(root, add_to_history_key);
-  return item && cJSON_IsBool(item) && cJSON_IsTrue(item);
+double electricity_meter_config::get_upper_voltage_threshold(void) {
+  return get_double(upper_voltage_threshold_key);
+}
+
+double electricity_meter_config::get_lower_voltage_threshold(void) {
+  return get_double(lower_voltage_threshold_key);
 }
 
 _supla_int64_t electricity_meter_config::get_initial_value(int var) {

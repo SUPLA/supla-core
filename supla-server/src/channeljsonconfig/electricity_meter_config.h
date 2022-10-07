@@ -36,6 +36,8 @@ class electricity_meter_config : public channel_json_config {
   static const char counters_available_key[];
   static const char em_initial_values_key[];
   static const char add_to_history_key[];
+  static const char upper_voltage_threshold_key[];
+  static const char lower_voltage_threshold_key[];
 
  protected:
   virtual int get_map_size(void);
@@ -51,6 +53,8 @@ class electricity_meter_config : public channel_json_config {
   explicit electricity_meter_config(channel_json_config *root);
   electricity_meter_config(void);
   bool should_be_added_to_history(void);
+  double get_upper_voltage_threshold(void);
+  double get_lower_voltage_threshold(void);
   bool update_available_counters(int measured_values);
   bool update_available_counters(TSuplaChannelExtendedValue *ev);
   _supla_int64_t get_initial_value(int var);

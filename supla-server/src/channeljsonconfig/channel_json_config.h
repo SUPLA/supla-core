@@ -44,6 +44,7 @@ class channel_json_config {
   int json_to_key(cJSON *item);
   int get_int(const char *key);
   bool get_bool(const char *key);
+  double get_double(const char *key);
 
  public:
   explicit channel_json_config(const channel_json_config &json_config);

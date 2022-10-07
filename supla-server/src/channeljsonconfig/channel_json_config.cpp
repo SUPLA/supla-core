@@ -258,6 +258,20 @@ int channel_json_config::get_int(const char *key) {
   return 0;
 }
 
+double channel_json_config::get_double(const char *key) {
+  cJSON *root = get_user_root();
+  if (!root) {
+    return false;
+  }
+
+  cJSON *value = cJSON_GetObjectItem(root, key);
+  if (value && cJSON_IsNumber(value)) {
+    return value->valuedouble;
+  }
+
+  return 0;
+}
+
 bool channel_json_config::get_bool(const char *key) {
   cJSON *root = get_user_root();
   if (!root) {
