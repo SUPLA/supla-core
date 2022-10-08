@@ -13,7 +13,9 @@ CPP_SRCS += \
 ../src/datalogger/temperature_logger.cpp \
 ../src/datalogger/temperature_logger_dao.cpp \
 ../src/datalogger/thermostat_logger.cpp \
-../src/datalogger/thermostat_logger_dao.cpp 
+../src/datalogger/thermostat_logger_dao.cpp \
+../src/datalogger/voltage_threshold_logger.cpp \
+../src/datalogger/voltage_threshold_logger_dao.cpp 
 
 CPP_DEPS += \
 ./src/datalogger/abstract_datalogger.d \
@@ -25,7 +27,9 @@ CPP_DEPS += \
 ./src/datalogger/temperature_logger.d \
 ./src/datalogger/temperature_logger_dao.d \
 ./src/datalogger/thermostat_logger.d \
-./src/datalogger/thermostat_logger_dao.d 
+./src/datalogger/thermostat_logger_dao.d \
+./src/datalogger/voltage_threshold_logger.d \
+./src/datalogger/voltage_threshold_logger_dao.d 
 
 OBJS += \
 ./src/datalogger/abstract_datalogger.o \
@@ -37,7 +41,9 @@ OBJS += \
 ./src/datalogger/temperature_logger.o \
 ./src/datalogger/temperature_logger_dao.o \
 ./src/datalogger/thermostat_logger.o \
-./src/datalogger/thermostat_logger_dao.o 
+./src/datalogger/thermostat_logger_dao.o \
+./src/datalogger/voltage_threshold_logger.o \
+./src/datalogger/voltage_threshold_logger_dao.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -52,7 +58,7 @@ src/datalogger/%.o: ../src/datalogger/%.cpp src/datalogger/subdir.mk
 clean: clean-src-2f-datalogger
 
 clean-src-2f-datalogger:
-	-$(RM) ./src/datalogger/abstract_datalogger.d ./src/datalogger/abstract_datalogger.o ./src/datalogger/agent.d ./src/datalogger/agent.o ./src/datalogger/electricity_logger.d ./src/datalogger/electricity_logger.o ./src/datalogger/electricity_logger_dao.d ./src/datalogger/electricity_logger_dao.o ./src/datalogger/impulse_logger.d ./src/datalogger/impulse_logger.o ./src/datalogger/impulse_logger_dao.d ./src/datalogger/impulse_logger_dao.o ./src/datalogger/temperature_logger.d ./src/datalogger/temperature_logger.o ./src/datalogger/temperature_logger_dao.d ./src/datalogger/temperature_logger_dao.o ./src/datalogger/thermostat_logger.d ./src/datalogger/thermostat_logger.o ./src/datalogger/thermostat_logger_dao.d ./src/datalogger/thermostat_logger_dao.o
+	-$(RM) ./src/datalogger/abstract_datalogger.d ./src/datalogger/abstract_datalogger.o ./src/datalogger/agent.d ./src/datalogger/agent.o ./src/datalogger/electricity_logger.d ./src/datalogger/electricity_logger.o ./src/datalogger/electricity_logger_dao.d ./src/datalogger/electricity_logger_dao.o ./src/datalogger/impulse_logger.d ./src/datalogger/impulse_logger.o ./src/datalogger/impulse_logger_dao.d ./src/datalogger/impulse_logger_dao.o ./src/datalogger/temperature_logger.d ./src/datalogger/temperature_logger.o ./src/datalogger/temperature_logger_dao.d ./src/datalogger/temperature_logger_dao.o ./src/datalogger/thermostat_logger.d ./src/datalogger/thermostat_logger.o ./src/datalogger/thermostat_logger_dao.d ./src/datalogger/thermostat_logger_dao.o ./src/datalogger/voltage_threshold_logger.d ./src/datalogger/voltage_threshold_logger.o ./src/datalogger/voltage_threshold_logger_dao.d ./src/datalogger/voltage_threshold_logger_dao.o
 
 .PHONY: clean-src-2f-datalogger
 

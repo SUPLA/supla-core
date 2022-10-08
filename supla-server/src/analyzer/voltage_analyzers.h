@@ -35,6 +35,7 @@ class supla_voltage_analyzers {
 
  public:
   supla_voltage_analyzers(void);
+  supla_voltage_analyzers(const supla_voltage_analyzers &analyzers);  // NO LINT
   virtual ~supla_voltage_analyzers(void);
   void set_channel_id(int channel_id);
   int get_channel_id(void);
@@ -43,6 +44,8 @@ class supla_voltage_analyzers {
   supla_voltage_analyzer *get_phase3(void);
   void add_samples(int channel_flags, electricity_meter_config *config,
                    TSuplaChannelExtendedValue *extended_value);
+
+  supla_voltage_analyzers &operator=(const supla_voltage_analyzers &analyzers);
 };
 
 #endif /*VOLTAGE_ANALYZERS_H_*/

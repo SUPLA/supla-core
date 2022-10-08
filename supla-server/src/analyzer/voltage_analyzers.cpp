@@ -27,6 +27,15 @@ supla_voltage_analyzers::supla_voltage_analyzers() {
   phase3 = nullptr;
 }
 
+supla_voltage_analyzers::supla_voltage_analyzers(
+    const supla_voltage_analyzers &analyzers) {
+  channel_id = 0;
+  phase1 = nullptr;
+  phase2 = nullptr;
+  phase3 = nullptr;
+  *this = analyzers;
+}
+
 supla_voltage_analyzers::~supla_voltage_analyzers(void) {
   if (phase1) {
     delete phase1;
@@ -107,4 +116,47 @@ void supla_voltage_analyzers::add_samples(
                  em_ev.m[0].voltage[2] / 100.00, &phase3);
     }
   }
+}
+
+supla_voltage_analyzers &supla_voltage_analyzers::operator=(
+    const supla_voltage_analyzers &analyzers) {
+  channel_id = analyzers.channel_id;
+
+  if (phase1 && !analyzers.phase1) {
+    delete phase1;
+    phase1 = nullptr;
+  }
+
+  if (phase2 && !analyzers.phase2) {
+    delete phase2;
+    phase2 = nullptr;
+  }
+
+  if (phase3 && !analyzers.phase3) {
+    delete phase3;
+    phase3 = nullptr;
+  }
+
+  if (analyzers.phase1) {
+    if (!phase1) {
+      phase1 = new supla_voltage_analyzer();
+    }
+    *phase1 = *analyzers.phase1;
+  }
+
+  if (analyzers.phase2) {
+    if (!phase2) {
+      phase2 = new supla_voltage_analyzer();
+    }
+    *phase2 = *analyzers.phase2;
+  }
+
+  if (analyzers.phase3) {
+    if (!phase3) {
+      phase3 = new supla_voltage_analyzer();
+    }
+    *phase3 = *analyzers.phase3;
+  }
+
+  return *this;
 }

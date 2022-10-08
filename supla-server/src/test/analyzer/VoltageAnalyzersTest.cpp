@@ -155,4 +155,45 @@ TEST_F(VoltageAnalyzersTest, thresholdsAreNotSet) {
   ASSERT_TRUE(vas.get_phase2() == nullptr);
   ASSERT_TRUE(vas.get_phase3() == nullptr);
 }
+
+TEST_F(VoltageAnalyzersTest, assignmentOperator) {
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  em_ev.m_count = 1;
+  em_ev.m[0].voltage[0] = 31055;
+  em_ev.m[0].voltage[1] = 31555;
+  em_ev.m[0].voltage[2] = 32055;
+  em_ev.measured_values = EM_VAR_VOLTAGE;
+
+  TSuplaChannelExtendedValue ev = {};
+  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+
+  electricity_meter_config config;
+  config.set_user_config(
+      "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
+
+  vas.add_samples(0, &config, &ev);
+
+  ASSERT_TRUE(vas.get_phase1() != nullptr);
+  ASSERT_TRUE(vas.get_phase2() != nullptr);
+  ASSERT_TRUE(vas.get_phase3() != nullptr);
+
+  vas.set_channel_id(12345);
+
+  supla_voltage_analyzers vas2 = vas;
+
+  ASSERT_TRUE(vas2.get_phase1() != nullptr);
+  ASSERT_TRUE(vas2.get_phase2() != nullptr);
+  ASSERT_TRUE(vas2.get_phase3() != nullptr);
+
+  EXPECT_TRUE(vas2.get_phase1() != vas.get_phase1());
+  EXPECT_TRUE(vas2.get_phase2() != vas.get_phase2());
+  EXPECT_TRUE(vas2.get_phase3() != vas.get_phase3());
+
+  EXPECT_EQ(vas2.get_phase1()->get_max(), vas.get_phase1()->get_max());
+  EXPECT_EQ(vas2.get_phase2()->get_max(), vas.get_phase2()->get_max());
+  EXPECT_EQ(vas2.get_phase3()->get_max(), vas.get_phase3()->get_max());
+
+  EXPECT_EQ(vas2.get_channel_id(), vas.get_channel_id());
+}
+
 }  // namespace testing
