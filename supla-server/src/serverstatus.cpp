@@ -24,6 +24,7 @@
 #include "conn/connection.h"
 #include "lck.h"
 #include "supla-socket.h"
+#include "tools.h"
 
 // static
 serverstatus serverstatus::_globalInstance;
@@ -88,8 +89,8 @@ bool serverstatus::getStatus(char *buffer, size_t buffer_size) {
 
   lck_lock(lck);
   if (now.tv_sec - last_mainloop_heartbeat.tv_sec > 30) {
-    snprintf(buffer, buffer_size, "MAINLOOP_STUCK:%s:%i",
-             last_file ? last_file : "", last_line);
+    snprintf(buffer, buffer_size, "MAINLOOP_STUCK:%s:%i,%i",
+             last_file ? last_file : "", last_line, st_app_terminate);
 #ifdef __LCK_DEBUG
     main_loop_stuck = true;
 #endif /*__LCK_DEBUG*/
