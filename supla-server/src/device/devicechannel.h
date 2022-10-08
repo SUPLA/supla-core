@@ -158,6 +158,7 @@ class supla_device_channel {
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);
+  supla_voltage_analyzers &get_voltage_analyzers(void);
 };
 
 class supla_device;
@@ -175,10 +176,6 @@ class supla_device_channels {
 
   supla_device_channel *find_channel(int Id);
   supla_device_channel *find_channel_by_number(int Number);
-  void access_channel(int channel_id,
-                      std::function<void(supla_device_channel *)> on_channel);
-
-  void for_each_channel(std::function<void(supla_device_channel *)> on_channel);
 
   std::list<int> mr_channel(int ChannelID, bool Master);
 
@@ -209,6 +206,12 @@ class supla_device_channels {
  public:
   explicit supla_device_channels(supla_device *device);
   virtual ~supla_device_channels();
+
+  void access_channel(int channel_id,
+                      std::function<void(supla_device_channel *)> on_channel);
+
+  void for_each_channel(std::function<void(supla_device_channel *)> on_channel);
+
   void add_channel(int Id, int Number, int Type, int Func, int Param1,
                    int Param2, int Param3, int Param4, const char *TextParam1,
                    const char *TextParam2, const char *TextParam3, bool Hidden,

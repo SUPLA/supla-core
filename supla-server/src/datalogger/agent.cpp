@@ -24,6 +24,7 @@
 #include "datalogger/impulse_logger.h"
 #include "datalogger/temperature_logger.h"
 #include "datalogger/thermostat_logger.h"
+#include "datalogger/voltage_threshold_logger.h"
 #include "db/db_access_provider.h"
 #include "sthread.h"
 
@@ -34,6 +35,7 @@ supla_datalogger_agent::supla_datalogger_agent() {
   add(new supla_impulse_logger());
   add(new supla_temperature_logger());
   add(new supla_thermostat_logger());
+  add(new supla_voltage_threshold_logger());
 
   this->sthread = nullptr;
   sthread_simple_run(loop, this, 0, &sthread);

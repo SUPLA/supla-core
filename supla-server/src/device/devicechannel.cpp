@@ -1163,6 +1163,10 @@ bool supla_device_channel::get_state(TDSC_ChannelState *state) {
   return false;
 }
 
+supla_voltage_analyzers &supla_device_channel::get_voltage_analyzers(void) {
+  return voltage_analyzers;
+}
+
 // ---------------------------------------------
 // ---------------------------------------------
 // ---------------------------------------------
