@@ -45,6 +45,9 @@ class supla_voltage_analyzers {
   void add_samples(int channel_flags, electricity_meter_config *config,
                    TSuplaChannelExtendedValue *extended_value);
 
+  bool is_any_sample_over_threshold(void);
+  void reset(void);
+
   supla_voltage_analyzers &operator=(const supla_voltage_analyzers &analyzers);
 };
 

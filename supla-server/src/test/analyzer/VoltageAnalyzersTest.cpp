@@ -196,4 +196,72 @@ TEST_F(VoltageAnalyzersTest, assignmentOperator) {
   EXPECT_EQ(vas2.get_channel_id(), vas.get_channel_id());
 }
 
+TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
+  EXPECT_FALSE(vas.is_any_sample_over_threshold());
+
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  em_ev.m_count = 1;
+  em_ev.m[0].voltage[0] = 31055;
+  em_ev.m[0].voltage[1] = 20000;
+  em_ev.m[0].voltage[2] = 20000;
+  em_ev.measured_values = EM_VAR_VOLTAGE;
+
+  TSuplaChannelExtendedValue ev = {};
+  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+
+  electricity_meter_config config;
+  config.set_user_config(
+      "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
+
+  vas.add_samples(0, &config, &ev);
+
+  ASSERT_TRUE(vas.get_phase1() != nullptr);
+  ASSERT_TRUE(vas.get_phase2() != nullptr);
+  ASSERT_TRUE(vas.get_phase3() != nullptr);
+
+  EXPECT_EQ(vas.get_phase1()->get_upper_counter(), 1);
+  EXPECT_EQ(vas.get_phase2()->get_upper_counter(), 0);
+  EXPECT_EQ(vas.get_phase3()->get_upper_counter(), 0);
+
+  EXPECT_TRUE(vas.is_any_sample_over_threshold());
+  vas.reset();
+  EXPECT_FALSE(vas.is_any_sample_over_threshold());
+
+  em_ev.m[0].voltage[0] = 20000;
+  em_ev.m[0].voltage[1] = 31055;
+
+  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  vas.add_samples(0, &config, &ev);
+
+  ASSERT_TRUE(vas.get_phase1() != nullptr);
+  ASSERT_TRUE(vas.get_phase2() != nullptr);
+  ASSERT_TRUE(vas.get_phase3() != nullptr);
+
+  EXPECT_EQ(vas.get_phase1()->get_upper_counter(), 0);
+  EXPECT_EQ(vas.get_phase2()->get_upper_counter(), 1);
+  EXPECT_EQ(vas.get_phase3()->get_upper_counter(), 0);
+
+  EXPECT_TRUE(vas.is_any_sample_over_threshold());
+  vas.reset();
+  EXPECT_FALSE(vas.is_any_sample_over_threshold());
+
+  em_ev.m[0].voltage[1] = 20000;
+  em_ev.m[0].voltage[2] = 31055;
+
+  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  vas.add_samples(0, &config, &ev);
+
+  ASSERT_TRUE(vas.get_phase1() != nullptr);
+  ASSERT_TRUE(vas.get_phase2() != nullptr);
+  ASSERT_TRUE(vas.get_phase3() != nullptr);
+
+  EXPECT_EQ(vas.get_phase1()->get_upper_counter(), 0);
+  EXPECT_EQ(vas.get_phase2()->get_upper_counter(), 0);
+  EXPECT_EQ(vas.get_phase3()->get_upper_counter(), 1);
+
+  EXPECT_TRUE(vas.is_any_sample_over_threshold());
+  vas.reset();
+  EXPECT_FALSE(vas.is_any_sample_over_threshold());
+}
+
 }  // namespace testing
