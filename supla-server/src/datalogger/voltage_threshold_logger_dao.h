@@ -25,6 +25,7 @@
 class supla_voltage_threshold_logger_dao {
  private:
   supla_abstract_db_access_provider *dba;
+  void add(int channel_id, char phase, supla_voltage_analyzer *va);
 
  public:
   explicit supla_voltage_threshold_logger_dao(
