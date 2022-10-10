@@ -18,6 +18,8 @@
 
 #include "datalogger/voltage_threshold_logger.h"
 
+#include <memory>
+
 #include "datalogger/voltage_threshold_logger_dao.h"
 #include "device/devicechannel.h"
 #include "user/user.h"
