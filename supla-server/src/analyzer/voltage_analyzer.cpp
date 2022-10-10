@@ -21,10 +21,10 @@
 supla_voltage_analyzer::supla_voltage_analyzer() : supla_simple_statiscics() {
   lower_threshold = 0;
   upper_threshold = 0;
-  lower_counter = 0;
-  upper_counter = 0;
-  lower_time = {};
-  upper_time = {};
+  below_counter = 0;
+  above_counter = 0;
+  time_below = {};
+  time_above = {};
   total_msec_above = 0;
   total_msec_below = 0;
   max_msec_above = 0;
@@ -41,12 +41,12 @@ void supla_voltage_analyzer::set_upper_threshold(double upper_threshold) {
   this->upper_threshold = upper_threshold;
 }
 
-unsigned int supla_voltage_analyzer::get_lower_counter(void) {
-  return lower_counter;
+unsigned int supla_voltage_analyzer::get_below_counter(void) {
+  return below_counter;
 }
 
-unsigned int supla_voltage_analyzer::get_upper_counter(void) {
-  return upper_counter;
+unsigned int supla_voltage_analyzer::get_above_counter(void) {
+  return above_counter;
 }
 
 unsigned int supla_voltage_analyzer::time_diff(struct timeval *tv) {
@@ -60,29 +60,29 @@ unsigned int supla_voltage_analyzer::time_diff(struct timeval *tv) {
   return 0;
 }
 
-unsigned int supla_voltage_analyzer::upper_time_diff(void) {
-  return time_diff(&upper_time);
+unsigned int supla_voltage_analyzer::time_above_diff(void) {
+  return time_diff(&time_above);
 }
 
-unsigned int supla_voltage_analyzer::lower_time_diff(void) {
-  return time_diff(&lower_time);
+unsigned int supla_voltage_analyzer::time_below_diff(void) {
+  return time_diff(&time_below);
 }
 
 unsigned int supla_voltage_analyzer::get_total_msec_above(void) {
-  return total_msec_above + upper_time_diff();
+  return total_msec_above + time_above_diff();
 }
 
 unsigned int supla_voltage_analyzer::get_total_msec_below(void) {
-  return total_msec_below + lower_time_diff();
+  return total_msec_below + time_below_diff();
 }
 
 unsigned int supla_voltage_analyzer::get_max_msec_above(void) {
-  unsigned int t = upper_time_diff();
+  unsigned int t = time_above_diff();
   return t > max_msec_above ? t : max_msec_above;
 }
 
 unsigned int supla_voltage_analyzer::get_max_msec_below(void) {
-  unsigned int t = lower_time_diff();
+  unsigned int t = time_below_diff();
   return t > max_msec_below ? t : max_msec_below;
 }
 
@@ -91,13 +91,13 @@ void supla_voltage_analyzer::add_sample(double value) {
 
   if (upper_threshold) {
     if (value > upper_threshold) {
-      if (upper_time.tv_sec == 0 && upper_time.tv_usec == 0) {
-        gettimeofday(&upper_time, nullptr);
+      if (time_above.tv_sec == 0 && time_above.tv_usec == 0) {
+        gettimeofday(&time_above, nullptr);
       }
-      upper_counter++;
+      above_counter++;
     } else {
-      unsigned int msec_diff = upper_time_diff();
-      upper_time = {};
+      unsigned int msec_diff = time_above_diff();
+      time_above = {};
       total_msec_above += msec_diff;
       if (msec_diff > max_msec_above) {
         max_msec_above = msec_diff;
@@ -107,13 +107,13 @@ void supla_voltage_analyzer::add_sample(double value) {
 
   if (lower_threshold) {
     if (value < lower_threshold) {
-      if (lower_time.tv_sec == 0 && lower_time.tv_usec == 0) {
-        gettimeofday(&lower_time, nullptr);
+      if (time_below.tv_sec == 0 && time_below.tv_usec == 0) {
+        gettimeofday(&time_below, nullptr);
       }
-      lower_counter++;
+      below_counter++;
     } else {
-      unsigned int msec_diff = lower_time_diff();
-      lower_time = {};
+      unsigned int msec_diff = time_below_diff();
+      time_below = {};
       total_msec_below += msec_diff;
       if (msec_diff > max_msec_below) {
         max_msec_below = msec_diff;
@@ -123,10 +123,10 @@ void supla_voltage_analyzer::add_sample(double value) {
 }
 
 void supla_voltage_analyzer::reset(void) {
-  lower_counter = 0;
-  upper_counter = 0;
-  lower_time = {};
-  upper_time = {};
+  below_counter = 0;
+  above_counter = 0;
+  time_below = {};
+  time_above = {};
   total_msec_above = 0;
   total_msec_below = 0;
   max_msec_above = 0;

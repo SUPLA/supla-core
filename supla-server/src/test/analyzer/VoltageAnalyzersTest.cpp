@@ -55,7 +55,7 @@ TEST_F(VoltageAnalyzersTest, onePhase) {
   EXPECT_TRUE(vas.get_phase2() == nullptr);
   EXPECT_TRUE(vas.get_phase3() == nullptr);
 
-  EXPECT_EQ(vas.get_phase1()->get_upper_counter(), 1);
+  EXPECT_EQ(vas.get_phase1()->get_above_counter(), 1);
   EXPECT_EQ(vas.get_phase1()->get_max(), 310.55);
 }
 
@@ -84,13 +84,13 @@ TEST_F(VoltageAnalyzersTest, threePhases) {
   ASSERT_TRUE(vas.get_phase2() != nullptr);
   ASSERT_TRUE(vas.get_phase3() != nullptr);
 
-  EXPECT_EQ(vas.get_phase1()->get_upper_counter(), 1);
+  EXPECT_EQ(vas.get_phase1()->get_above_counter(), 1);
   EXPECT_EQ(vas.get_phase1()->get_max(), 310.55);
 
-  EXPECT_EQ(vas.get_phase2()->get_upper_counter(), 1);
+  EXPECT_EQ(vas.get_phase2()->get_above_counter(), 1);
   EXPECT_EQ(vas.get_phase2()->get_max(), 315.55);
 
-  EXPECT_EQ(vas.get_phase3()->get_upper_counter(), 1);
+  EXPECT_EQ(vas.get_phase3()->get_above_counter(), 1);
   EXPECT_EQ(vas.get_phase3()->get_max(), 320.55);
 }
 
@@ -219,9 +219,9 @@ TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   ASSERT_TRUE(vas.get_phase2() != nullptr);
   ASSERT_TRUE(vas.get_phase3() != nullptr);
 
-  EXPECT_EQ(vas.get_phase1()->get_upper_counter(), 1);
-  EXPECT_EQ(vas.get_phase2()->get_upper_counter(), 0);
-  EXPECT_EQ(vas.get_phase3()->get_upper_counter(), 0);
+  EXPECT_EQ(vas.get_phase1()->get_above_counter(), 1);
+  EXPECT_EQ(vas.get_phase2()->get_above_counter(), 0);
+  EXPECT_EQ(vas.get_phase3()->get_above_counter(), 0);
 
   EXPECT_TRUE(vas.is_any_sample_over_threshold());
   vas.reset();
@@ -237,9 +237,9 @@ TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   ASSERT_TRUE(vas.get_phase2() != nullptr);
   ASSERT_TRUE(vas.get_phase3() != nullptr);
 
-  EXPECT_EQ(vas.get_phase1()->get_upper_counter(), 0);
-  EXPECT_EQ(vas.get_phase2()->get_upper_counter(), 1);
-  EXPECT_EQ(vas.get_phase3()->get_upper_counter(), 0);
+  EXPECT_EQ(vas.get_phase1()->get_above_counter(), 0);
+  EXPECT_EQ(vas.get_phase2()->get_above_counter(), 1);
+  EXPECT_EQ(vas.get_phase3()->get_above_counter(), 0);
 
   EXPECT_TRUE(vas.is_any_sample_over_threshold());
   vas.reset();
@@ -255,9 +255,9 @@ TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   ASSERT_TRUE(vas.get_phase2() != nullptr);
   ASSERT_TRUE(vas.get_phase3() != nullptr);
 
-  EXPECT_EQ(vas.get_phase1()->get_upper_counter(), 0);
-  EXPECT_EQ(vas.get_phase2()->get_upper_counter(), 0);
-  EXPECT_EQ(vas.get_phase3()->get_upper_counter(), 1);
+  EXPECT_EQ(vas.get_phase1()->get_above_counter(), 0);
+  EXPECT_EQ(vas.get_phase2()->get_above_counter(), 0);
+  EXPECT_EQ(vas.get_phase3()->get_above_counter(), 1);
 
   EXPECT_TRUE(vas.is_any_sample_over_threshold());
   vas.reset();
