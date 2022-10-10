@@ -21,24 +21,24 @@
 namespace testing {
 
 TEST_F(VoltageAnalyzerTest, belowCounter) {
-  EXPECT_EQ(va.get_below_counter(), 0);
+  EXPECT_EQ(va.get_below_count(), 0);
   va.set_lower_threshold(1);
   va.add_sample(-1);
   va.add_sample(0);
   va.add_sample(1);
   va.add_sample(2);
-  EXPECT_EQ(va.get_below_counter(), 2);
+  EXPECT_EQ(va.get_below_count(), 2);
   EXPECT_EQ(va.get_sample_count(), 4);
 }
 
 TEST_F(VoltageAnalyzerTest, aboveCounter) {
-  EXPECT_EQ(va.get_above_counter(), 0);
+  EXPECT_EQ(va.get_above_count(), 0);
   va.set_upper_threshold(5);
   va.add_sample(-1);
   va.add_sample(2);
   va.add_sample(5);
   va.add_sample(10);
-  EXPECT_EQ(va.get_above_counter(), 1);
+  EXPECT_EQ(va.get_above_count(), 1);
   EXPECT_EQ(va.get_sample_count(), 4);
 }
 
@@ -95,15 +95,15 @@ TEST_F(VoltageAnalyzerTest, reset) {
   usleep(50000);
   va.add_sample(6);
   usleep(50000);
-  EXPECT_GT(va.get_below_counter(), 0);
-  EXPECT_GT(va.get_above_counter(), 0);
+  EXPECT_GT(va.get_below_count(), 0);
+  EXPECT_GT(va.get_above_count(), 0);
   EXPECT_GT(va.get_max_msec_above(), 0);
   EXPECT_GT(va.get_max_msec_below(), 0);
   EXPECT_GT(va.get_total_msec_above(), 0);
   EXPECT_GT(va.get_total_msec_below(), 0);
   va.reset();
-  EXPECT_EQ(va.get_below_counter(), 0);
-  EXPECT_EQ(va.get_above_counter(), 0);
+  EXPECT_EQ(va.get_below_count(), 0);
+  EXPECT_EQ(va.get_above_count(), 0);
   EXPECT_EQ(va.get_max_msec_above(), 0);
   EXPECT_EQ(va.get_max_msec_below(), 0);
   EXPECT_EQ(va.get_total_msec_above(), 0);

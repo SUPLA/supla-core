@@ -120,16 +120,16 @@ void supla_voltage_analyzers::add_samples(
 
 bool supla_voltage_analyzers::is_any_sample_over_threshold(void) {
   if (phase1 &&
-      (phase1->get_below_counter() > 0 || phase1->get_above_counter() > 0)) {
+      (phase1->get_below_count() > 0 || phase1->get_above_count() > 0)) {
     return true;
   }
 
   if (phase2 &&
-      (phase2->get_below_counter() > 0 || phase2->get_above_counter() > 0)) {
+      (phase2->get_below_count() > 0 || phase2->get_above_count() > 0)) {
     return true;
   }
   if (phase3 &&
-      (phase3->get_below_counter() > 0 || phase3->get_above_counter() > 0)) {
+      (phase3->get_below_count() > 0 || phase3->get_above_count() > 0)) {
     return true;
   }
 

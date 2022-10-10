@@ -25,8 +25,8 @@ class supla_voltage_analyzer : public supla_simple_statiscics {
  private:
   double lower_threshold;
   double upper_threshold;
-  unsigned int below_counter;
-  unsigned int above_counter;
+  unsigned int below_count;
+  unsigned int above_count;
   struct timeval time_below;
   struct timeval time_above;
   unsigned int total_msec_above;
@@ -44,8 +44,8 @@ class supla_voltage_analyzer : public supla_simple_statiscics {
   void set_lower_threshold(double lower_threshold);
   void set_upper_threshold(double upper_threshold);
 
-  unsigned int get_below_counter(void);
-  unsigned int get_above_counter(void);
+  unsigned int get_below_count(void);
+  unsigned int get_above_count(void);
   unsigned int get_total_msec_above(void);
   unsigned int get_total_msec_below(void);
   unsigned int get_max_msec_above(void);

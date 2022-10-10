@@ -28,15 +28,15 @@ supla_voltage_threshold_logger_dao::supla_voltage_threshold_logger_dao(
 
 void supla_voltage_threshold_logger_dao::add(int channel_id, char phase,
                                              supla_voltage_analyzer *va) {
-  if (!va || (va->get_below_counter() == 0 && va->get_above_counter() == 0)) {
+  if (!va || (va->get_below_count() == 0 && va->get_above_count() == 0)) {
     return;
   }
 
   MYSQL_BIND pbind[14] = {};
 
   int count_total = va->get_sample_count();
-  int count_above = va->get_above_counter();
-  int count_below = va->get_below_counter();
+  int count_above = va->get_above_count();
+  int count_below = va->get_below_count();
   int sec_total = va->get_total_time_msec() / 1000;
   int sec_above = va->get_total_msec_above() / 1000;
   int sec_below = va->get_total_msec_below() / 1000;
