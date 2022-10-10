@@ -108,7 +108,7 @@ SSL_CTX *ssocket_initserverctx(void) {
 
   OpenSSL_add_all_algorithms();
 
-  method = (SSL_METHOD *)SSLv23_server_method();
+  method = (SSL_METHOD *)TLS_server_method();
   ctx = SSL_CTX_new(method);
 
   if (ctx == NULL) ssocket_ssl_error_log();
@@ -193,7 +193,7 @@ SSL_CTX *ssocket_client_initctx(void) {
   SSL_CTX *ctx;
 
   OpenSSL_add_all_algorithms();
-  method = (SSL_METHOD *)TLSv1_2_client_method();
+  method = (SSL_METHOD *)TLS_client_method();
   ctx = SSL_CTX_new(method);
 
   if (ctx == NULL) ssocket_ssl_error_log();
@@ -417,8 +417,9 @@ char ssocket_accept_ssl(void *_ssd, void *_supla_socket) {
         ssocket_supla_socket_close(supla_socket);
       }
 
-      supla_log(LOG_INFO, "Cipher: %s, ClientSD: %i",
-                SSL_get_cipher(supla_socket->ssl), supla_socket->sfd);
+      supla_log(LOG_INFO, "Cipher: %s, SSL Version: %s, ClientSD: %i",
+                SSL_get_cipher(supla_socket->ssl),
+                SSL_get_version(supla_socket->ssl), supla_socket->sfd);
     }
   }
 
