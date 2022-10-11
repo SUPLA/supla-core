@@ -269,7 +269,9 @@ int supla_connection::socket_write(const void *buf, size_t count) {
 
 void supla_connection::catch_unhandled_call(unsigned int call_id) {
   unhandled_call_counter++;
-  supla_log(LOG_ERR, "Unhandled call %i/%i", call_id, unhandled_call_counter);
+  supla_log(LOG_ERR, "Unhandled call %i/%i. Registered: %s", call_id,
+            unhandled_call_counter,
+            object && object->is_registered() ? "yes" : "no");
 
   if (unhandled_call_counter >= UNHANDLED_CALL_MAXCOUNT) {
     supla_log(LOG_ERR, "The number of unhandled calls has been exceeded.");
