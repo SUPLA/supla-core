@@ -400,8 +400,8 @@ void supla_connection::execute(void *sthread) {
         deadlock_counter++;
         if (deadlock_counter == 100000) {
           supla_log(LOG_WARNING,
-                    "Too long waiting time to release the object! %x, %i",
-                    sthread, _object.use_count());
+                    "Too long waiting time to release the object! %x, %i, %i",
+                    sthread, _object.use_count(), st_app_terminate);
           break;
         }
       }
