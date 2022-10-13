@@ -69,6 +69,7 @@ void supla_ch_abstract_execute_action::execute_action(
       } else {
         send_result(action, srpc_adapter,
                     SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
+        return;
       }
       break;
     case ACTION_SET_RGBW_PARAMETERS:
@@ -82,6 +83,7 @@ void supla_ch_abstract_execute_action::execute_action(
       } else {
         send_result(action, srpc_adapter,
                     SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
+        return;
       }
       break;
   }
