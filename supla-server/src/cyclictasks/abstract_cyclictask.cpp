@@ -37,3 +37,7 @@ void supla_abstract_cyclictask::run(const struct timeval *now,
   last_run_time = *now;
   run(users, dba);
 }
+
+bool supla_abstract_cyclictask::db_access_needed(void) { return true; }
+
+bool supla_abstract_cyclictask::user_access_needed(void) { return true; }

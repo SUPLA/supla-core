@@ -31,15 +31,16 @@ class supla_abstract_cyclictask {
  protected:
   virtual unsigned int task_interval_sec(void) = 0;
   virtual void run(const std::vector<supla_user *> *users,
-                       supla_abstract_db_access_provider *dba) = 0;
+                   supla_abstract_db_access_provider *dba) = 0;
 
  public:
   supla_abstract_cyclictask();
   virtual ~supla_abstract_cyclictask();
+  virtual bool db_access_needed(void);
+  virtual bool user_access_needed(void);
   bool is_it_time(const struct timeval *now);
-  void run(const struct timeval *now,
-               const std::vector<supla_user *> *users,
-               supla_abstract_db_access_provider *dba);
+  void run(const struct timeval *now, const std::vector<supla_user *> *users,
+           supla_abstract_db_access_provider *dba);
 };
 
 #endif /* ABSTRACT_CYCLICTASK_H_ */

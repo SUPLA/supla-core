@@ -81,16 +81,28 @@ void supla_cyclictasks_agent::loop(void *sthread) {
     usleep(1000000);
 
     if (is_it_time) {
-      vector<supla_user *> users = supla_user::get_all_users();
+      vector<supla_user *> users;
       supla_db_access_provider dba;
-      if (dba.connect()) {
-        for (auto it = tasks.cbegin(); it != tasks.cend(); ++it) {
-          (*it)->run(&now, &users, &dba);
 
-          if (sthread_isterminated(sthread)) {
-            break;
+      for (auto it = tasks.cbegin(); it != tasks.cend(); ++it) {
+        if (sthread_isterminated(sthread)) {
+          break;
+        }
+
+        if ((*it)->db_access_needed() && !dba.is_connected() &&
+            !dba.connect()) {
+          continue;
+        }
+
+        if ((*it)->user_access_needed() && users.size() == 0) {
+          users = supla_user::get_all_users();
+          if (users.size() == 0) {
+            continue;
           }
         }
+
+        (*it)->run(&now, (*it)->user_access_needed() ? &users : nullptr,
+                   (*it)->db_access_needed() ? &dba : nullptr);
       }
     }
   }
