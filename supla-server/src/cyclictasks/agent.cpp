@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "datalogger/agent.h"
+#include "cyclictasks/agent.h"
 
 #include <unistd.h>
 
@@ -30,7 +30,7 @@
 
 using std::vector;
 
-supla_datalogger_agent::supla_datalogger_agent() {
+supla_cyclictasks_agent::supla_cyclictasks_agent() {
   add(new supla_electricity_logger());
   add(new supla_impulse_logger());
   add(new supla_temperature_logger());
@@ -41,23 +41,23 @@ supla_datalogger_agent::supla_datalogger_agent() {
   sthread_simple_run(loop, this, 0, &sthread);
 }
 
-supla_datalogger_agent::~supla_datalogger_agent() {
+supla_cyclictasks_agent::~supla_cyclictasks_agent() {
   sthread_twf(sthread);
-  for (auto it = loggers.cbegin(); it != loggers.cend(); ++it) {
+  for (auto it = tasks.cbegin(); it != tasks.cend(); ++it) {
     delete *it;
   }
 }
 
-void supla_datalogger_agent::add(supla_abstract_datalogger *datalogger) {
-  loggers.push_back(datalogger);
+void supla_cyclictasks_agent::add(supla_abstract_cyclictask *task) {
+  tasks.push_back(task);
 }
 
 // static
-void supla_datalogger_agent::loop(void *agent, void *sthread) {
-  static_cast<supla_datalogger_agent *>(agent)->loop(sthread);
+void supla_cyclictasks_agent::loop(void *agent, void *sthread) {
+  static_cast<supla_cyclictasks_agent *>(agent)->loop(sthread);
 }
 
-void supla_datalogger_agent::loop(void *sthread) {
+void supla_cyclictasks_agent::loop(void *sthread) {
   dbcommon::thread_init();
 
   struct timeval now = {};
@@ -67,7 +67,7 @@ void supla_datalogger_agent::loop(void *sthread) {
 
     bool is_it_time = false;
 
-    for (auto it = loggers.cbegin(); it != loggers.cend(); ++it) {
+    for (auto it = tasks.cbegin(); it != tasks.cend(); ++it) {
       if ((*it)->is_it_time(&now)) {
         is_it_time = true;
         break;
@@ -84,8 +84,8 @@ void supla_datalogger_agent::loop(void *sthread) {
       vector<supla_user *> users = supla_user::get_all_users();
       supla_db_access_provider dba;
       if (dba.connect()) {
-        for (auto it = loggers.cbegin(); it != loggers.cend(); ++it) {
-          (*it)->log(&now, &users, &dba);
+        for (auto it = tasks.cbegin(); it != tasks.cend(); ++it) {
+          (*it)->run(&now, &users, &dba);
 
           if (sthread_isterminated(sthread)) {
             break;

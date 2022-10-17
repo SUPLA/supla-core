@@ -28,13 +28,13 @@ using std::shared_ptr;
 using std::vector;
 
 supla_thermostat_logger::supla_thermostat_logger()
-    : supla_abstract_datalogger() {}
+    : supla_abstract_cyclictask() {}
 
 supla_thermostat_logger::~supla_thermostat_logger() {}
 
-unsigned int supla_thermostat_logger::log_interval_sec(void) { return 600; }
+unsigned int supla_thermostat_logger::task_interval_sec(void) { return 600; }
 
-void supla_thermostat_logger::log(const vector<supla_user *> *users,
+void supla_thermostat_logger::run(const vector<supla_user *> *users,
                                   supla_abstract_db_access_provider *dba) {
   std::vector<supla_channel_thermostat_measurement *> th;
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {

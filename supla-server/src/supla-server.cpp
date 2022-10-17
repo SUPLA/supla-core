@@ -24,7 +24,7 @@
 #include "accept_loop.h"
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
-#include "datalogger/agent.h"
+#include "cyclictasks/agent.h"
 #include "db/database.h"
 #include "http/httprequestqueue.h"
 #include "http/trivialhttps.h"
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
   void *ssl_accept_loop_thread = nullptr;
   void *ipc_accept_loop_thread = nullptr;
   void *http_request_queue_loop_thread = nullptr;
-  supla_datalogger_agent *datalogger_agent = nullptr;
+  supla_cyclictasks_agent *cyclictasks_agent = nullptr;
 
 #ifdef __LCK_DEBUG
   lck_debug_init();
@@ -147,8 +147,8 @@ int main(int argc, char *argv[]) {
 
   if (ipc) sthread_simple_run(ipc_accept_loop, ipc, 0, &ipc_accept_loop_thread);
 
-  // DATA LOGGER
-  datalogger_agent = new supla_datalogger_agent();
+  // CYCLIC TASKS
+  cyclictasks_agent = new supla_cyclictasks_agent();
 
   // HTTP EVENT QUEUE
 
@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
     ssocket_free(ssd_tcp);
   }
 
-  delete datalogger_agent;
+  delete cyclictasks_agent;
   sthread_twf(http_request_queue_loop_thread);
 
   supla_asynctask_queue::global_instance_release();  // before

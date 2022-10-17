@@ -35,6 +35,7 @@ src/conn \
 src/conn/call_handler \
 src/converter \
 src/crypt_blowfish \
+src/cyclictasks \
 src/datalogger \
 src/db \
 src/device \

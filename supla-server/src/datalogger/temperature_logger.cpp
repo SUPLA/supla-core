@@ -30,13 +30,13 @@ using std::shared_ptr;
 using std::vector;
 
 supla_temperature_logger::supla_temperature_logger()
-    : supla_abstract_datalogger() {}
+    : supla_abstract_cyclictask() {}
 
 supla_temperature_logger::~supla_temperature_logger() {}
 
-unsigned int supla_temperature_logger::log_interval_sec(void) { return 600; }
+unsigned int supla_temperature_logger::task_interval_sec(void) { return 600; }
 
-void supla_temperature_logger::log(const vector<supla_user *> *users,
+void supla_temperature_logger::run(const vector<supla_user *> *users,
                                    supla_abstract_db_access_provider *dba) {
   std::vector<supla_channel_temphum *> th;
 

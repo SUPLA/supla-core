@@ -21,12 +21,12 @@
 
 #include <vector>
 
-#include "datalogger/abstract_datalogger.h"
+#include "cyclictasks/abstract_cyclictask.h"
 
-class supla_voltage_threshold_logger : public supla_abstract_datalogger {
+class supla_voltage_threshold_logger : public supla_abstract_cyclictask {
  protected:
-  virtual unsigned int log_interval_sec(void);
-  virtual void log(const std::vector<supla_user *> *users,
+  virtual unsigned int task_interval_sec(void);
+  virtual void run(const std::vector<supla_user *> *users,
                    supla_abstract_db_access_provider *dba);
 
  public:

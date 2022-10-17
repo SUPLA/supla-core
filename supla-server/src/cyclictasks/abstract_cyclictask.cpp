@@ -16,29 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_DATALOGGER_H_
-#define ABSTRACT_DATALOGGER_H_
+#include "cyclictasks/abstract_cyclictask.h"
 
-#include <vector>
+using std::vector;
 
-#include "db/abstract_db_access_provider.h"
-#include "user/user.h"
+supla_abstract_cyclictask::supla_abstract_cyclictask() {
+  last_run_time = {};
+  gettimeofday(&last_run_time, NULL);
+}
 
-class supla_abstract_datalogger {
- private:
-  struct timeval last_log_time;
+supla_abstract_cyclictask::~supla_abstract_cyclictask() {}
 
- protected:
-  virtual unsigned int log_interval_sec(void) = 0;
-  virtual void log(const std::vector<supla_user *> *users,
-                   supla_abstract_db_access_provider *dba) = 0;
+bool supla_abstract_cyclictask::is_it_time(const struct timeval *now) {
+  return now->tv_sec - last_run_time.tv_sec >= task_interval_sec();
+}
 
- public:
-  supla_abstract_datalogger();
-  virtual ~supla_abstract_datalogger();
-  bool is_it_time(const struct timeval *now);
-  void log(const struct timeval *now, const std::vector<supla_user *> *users,
-           supla_abstract_db_access_provider *dba);
-};
-
-#endif /* ABSTRACT_DATALOGGER_H_ */
+void supla_abstract_cyclictask::run(const struct timeval *now,
+                                    const vector<supla_user *> *users,
+                                    supla_abstract_db_access_provider *dba) {
+  last_run_time = *now;
+  run(users, dba);
+}

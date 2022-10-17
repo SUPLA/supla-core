@@ -28,15 +28,15 @@ using std::shared_ptr;
 using std::vector;
 
 supla_voltage_threshold_logger::supla_voltage_threshold_logger()
-    : supla_abstract_datalogger() {}
+    : supla_abstract_cyclictask() {}
 
 supla_voltage_threshold_logger::~supla_voltage_threshold_logger() {}
 
-unsigned int supla_voltage_threshold_logger::log_interval_sec(void) {
+unsigned int supla_voltage_threshold_logger::task_interval_sec(void) {
   return 600;
 }
 
-void supla_voltage_threshold_logger::log(
+void supla_voltage_threshold_logger::run(
     const vector<supla_user *> *users, supla_abstract_db_access_provider *dba) {
   std::vector<supla_voltage_analyzers> vas;
 

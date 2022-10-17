@@ -16,26 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DATALOGGER_AGENT_H_
-#define DATALOGGER_AGENT_H_
+#ifndef ABSTRACT_CYCLICTASK_H_
+#define ABSTRACT_CYCLICTASK_H_
 
 #include <vector>
 
-#include "datalogger/abstract_datalogger.h"
-#include "db/database.h"
+#include "db/abstract_db_access_provider.h"
+#include "user/user.h"
 
-class supla_datalogger_agent {
+class supla_abstract_cyclictask {
  private:
-  void *sthread;
-  std::vector<supla_abstract_datalogger *> loggers;
+  struct timeval last_run_time;
 
-  static void loop(void *agent, void *sthread);
-  void loop(void *sthread);
+ protected:
+  virtual unsigned int task_interval_sec(void) = 0;
+  virtual void run(const std::vector<supla_user *> *users,
+                       supla_abstract_db_access_provider *dba) = 0;
 
  public:
-  void add(supla_abstract_datalogger *datalogger);
-  supla_datalogger_agent();
-  ~supla_datalogger_agent();
+  supla_abstract_cyclictask();
+  virtual ~supla_abstract_cyclictask();
+  bool is_it_time(const struct timeval *now);
+  void run(const struct timeval *now,
+               const std::vector<supla_user *> *users,
+               supla_abstract_db_access_provider *dba);
 };
 
-#endif /* DATALOGGER_AGENT_H_ */
+#endif /* ABSTRACT_CYCLICTASK_H_ */

@@ -16,24 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "datalogger/abstract_datalogger.h"
+#ifndef CYCLICTASKS_AGENT_H_
+#define CYCLICTASKS_AGENT_H_
 
-using std::vector;
+#include <cyclictasks/abstract_cyclictask.h>
 
-supla_abstract_datalogger::supla_abstract_datalogger() {
-  last_log_time = {};
-  gettimeofday(&last_log_time, NULL);
-}
+#include <vector>
 
-supla_abstract_datalogger::~supla_abstract_datalogger() {}
+#include "db/database.h"
 
-bool supla_abstract_datalogger::is_it_time(const struct timeval *now) {
-  return now->tv_sec - last_log_time.tv_sec >= log_interval_sec();
-}
+class supla_cyclictasks_agent {
+ private:
+  void *sthread;
+  std::vector<supla_abstract_cyclictask *> tasks;
 
-void supla_abstract_datalogger::log(const struct timeval *now,
-                                    const vector<supla_user *> *users,
-                                    supla_abstract_db_access_provider *dba) {
-  last_log_time = *now;
-  log(users, dba);
-}
+  static void loop(void *agent, void *sthread);
+  void loop(void *sthread);
+
+ public:
+  void add(supla_abstract_cyclictask *task);
+  supla_cyclictasks_agent();
+  ~supla_cyclictasks_agent();
+};
+
+#endif /* CYCLICTASKS_AGENT_H_ */

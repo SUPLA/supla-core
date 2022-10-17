@@ -27,13 +27,13 @@
 using std::shared_ptr;
 using std::vector;
 
-supla_impulse_logger::supla_impulse_logger() : supla_abstract_datalogger() {}
+supla_impulse_logger::supla_impulse_logger() : supla_abstract_cyclictask() {}
 
 supla_impulse_logger::~supla_impulse_logger() {}
 
-unsigned int supla_impulse_logger::log_interval_sec(void) { return 600; }
+unsigned int supla_impulse_logger::task_interval_sec(void) { return 600; }
 
-void supla_impulse_logger::log(const vector<supla_user *> *users,
+void supla_impulse_logger::run(const vector<supla_user *> *users,
                                supla_abstract_db_access_provider *dba) {
   vector<supla_channel_ic_measurement *> ic;
 

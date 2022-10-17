@@ -22,6 +22,7 @@ RM := rm -rf
 -include src/device/subdir.mk
 -include src/db/subdir.mk
 -include src/datalogger/subdir.mk
+-include src/cyclictasks/subdir.mk
 -include src/crypt_blowfish/subdir.mk
 -include src/converter/subdir.mk
 -include src/conn/call_handler/subdir.mk

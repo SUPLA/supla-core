@@ -19,6 +19,7 @@ cpplint ./supla-server/src/client/call_handler/*
 cpplint ./supla-server/src/conn/* 
 cpplint ./supla-server/src/conn/call_handler
 cpplint ./supla-server/src/db/* 
+cpplint ./supla-server/src/cyclictasks/* 
 cpplint ./supla-server/src/datalogger/* 
 cpplint ./supla-server/src/device/* 
 cpplint ./supla-server/src/device/call_handler* 
