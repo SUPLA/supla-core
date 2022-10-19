@@ -20,6 +20,7 @@
 
 #include <unistd.h>
 
+#include "cyclictasks/auto_gate_closing.h"
 #include "datalogger/electricity_logger.h"
 #include "datalogger/impulse_logger.h"
 #include "datalogger/temperature_logger.h"
@@ -36,6 +37,7 @@ supla_cyclictasks_agent::supla_cyclictasks_agent() {
   add(new supla_temperature_logger());
   add(new supla_thermostat_logger());
   add(new supla_voltage_threshold_logger());
+  add(new supla_auto_gate_closing());
 
   this->sthread = nullptr;
   sthread_simple_run(loop, this, 0, &sthread);
