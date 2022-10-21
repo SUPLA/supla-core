@@ -16,29 +16,34 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AUTO_GATE_CLOSING_H_
-#define AUTO_GATE_CLOSING_H_
+#ifndef AUTO_GATE_CLOSING_DAO_H_
+#define AUTO_GATE_CLOSING_DAO_H_
 
 #include <vector>
 
-#include "cyclictasks/abstract_cyclictask.h"
-#include "cyclictasks/auto_gate_closing_dao.h"
-#include "device/channel_gate_value.h"
+#include "db/abstract_db_access_provider.h"
 
-class supla_auto_gate_closing : public supla_abstract_cyclictask {
+#define ATTEMPT_RETRY_TIME_SEC 900
+
+class supla_auto_gate_closing_dao {
  private:
-  _gate_sensor_level_enum get_opening_sensor_level(
-      supla_auto_gate_closing_dao::item_t *item);
-
- protected:
-  virtual unsigned int task_interval_sec(void);
-  virtual void run(const std::vector<supla_user *> *users,
-                   supla_abstract_db_access_provider *dba);
-  virtual bool user_access_needed(void);
+  supla_abstract_db_access_provider *dba;
 
  public:
-  supla_auto_gate_closing();
-  virtual ~supla_auto_gate_closing();
+  typedef struct {
+    int user_id;
+    int device_id;
+    int channel_id;
+    int seconds_since_last_attempt;
+    bool seen_open;
+  } item_t;
+
+  explicit supla_auto_gate_closing_dao(supla_abstract_db_access_provider *dba);
+  virtual ~supla_auto_gate_closing_dao();
+  std::vector<item_t> get_all_active(void);
+  int mark_gate_open(int channel_id);
+  void mark_gate_closed(int channel_id);
+  void set_closing_attemtp(int channel_id);
 };
 
-#endif /* AUTO_GATE_CLOSING_H_ */
+#endif /* AUTO_GATE_CLOSING_DAO_H_ */

@@ -16,29 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AUTO_GATE_CLOSING_H_
-#define AUTO_GATE_CLOSING_H_
-
-#include <vector>
-
-#include "cyclictasks/abstract_cyclictask.h"
 #include "cyclictasks/auto_gate_closing_dao.h"
-#include "device/channel_gate_value.h"
 
-class supla_auto_gate_closing : public supla_abstract_cyclictask {
- private:
-  _gate_sensor_level_enum get_opening_sensor_level(
-      supla_auto_gate_closing_dao::item_t *item);
+#include <mysql.h>
 
- protected:
-  virtual unsigned int task_interval_sec(void);
-  virtual void run(const std::vector<supla_user *> *users,
-                   supla_abstract_db_access_provider *dba);
-  virtual bool user_access_needed(void);
+using std::vector;
 
- public:
-  supla_auto_gate_closing();
-  virtual ~supla_auto_gate_closing();
-};
+supla_auto_gate_closing_dao::supla_auto_gate_closing_dao(
+    supla_abstract_db_access_provider *dba) {
+  this->dba = dba;
+}
 
-#endif /* AUTO_GATE_CLOSING_H_ */
+supla_auto_gate_closing_dao::~supla_auto_gate_closing_dao() {}
+
+vector<supla_auto_gate_closing_dao::item_t>
+supla_auto_gate_closing_dao::get_all_active(void) {
+  vector<supla_auto_gate_closing_dao::item_t> result;
+
+  return result;
+}
+
+int supla_auto_gate_closing_dao::mark_gate_open(int channel_id) { return 0; }
+
+void supla_auto_gate_closing_dao::mark_gate_closed(int channel_id) {}
+
+void supla_auto_gate_closing_dao::set_closing_attemtp(int channel_id) {}

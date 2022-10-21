@@ -30,7 +30,8 @@ enum _callerType_e {
   ctAmazonAlexa,
   ctGoogleHome,
   ctActionTrigger,
-  ctScene
+  ctScene,
+  ctCyclicTask
 };
 
 class supla_caller {

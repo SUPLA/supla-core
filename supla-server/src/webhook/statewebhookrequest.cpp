@@ -116,6 +116,7 @@ bool supla_state_webhook_request::isCallerAccepted(const supla_caller &caller,
     case ctActionTrigger:
     case ctScene:
     case ctIPC:
+    case ctCyclicTask:
     case ctMQTT: {
       channel_complex_value value =
           getUser()->get_channel_complex_value(getChannelId());
