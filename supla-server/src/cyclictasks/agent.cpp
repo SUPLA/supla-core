@@ -91,8 +91,9 @@ void supla_cyclictasks_agent::loop(void *sthread) {
           break;
         }
 
-        if ((*it)->db_access_needed() && !dba.is_connected() &&
-            !dba.connect()) {
+        if (!(*it)->is_it_time(&now) ||
+            ((*it)->db_access_needed() && !dba.is_connected() &&
+             !dba.connect())) {
           continue;
         }
 
