@@ -20,6 +20,7 @@
 
 #include <memory>
 
+#include "datalogger/electricity_logger_dao.h"
 #include "device/device.h"
 #include "safearray.h"
 
@@ -46,8 +47,10 @@ void supla_electricity_logger::run(const vector<supla_user *> *users,
     }
   }
 
+  supla_electricity_logger_dao dao(dba);
+
   for (auto it = em.cbegin(); it != em.cend(); ++it) {
-    // db->add_electricity_measurement(*it);
+    dao.add(*it);
     delete *it;
   }
 }
