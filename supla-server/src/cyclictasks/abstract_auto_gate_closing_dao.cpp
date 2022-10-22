@@ -16,25 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "value_getter.h"
+#include "cyclictasks/abstract_auto_gate_closing_dao.h"
 
-#include <memory>
+#include <mysql.h>
 
-#include "device/device.h"
-#include "user/user.h"
+using std::vector;
 
-using std::shared_ptr;
-
-supla_channel_value *supla_value_getter::_get_value(int user_id, int device_id,
-                                                    int channel_id) {
-  shared_ptr<supla_device> device =
-      supla_user::get_device(user_id, device_id, channel_id);
-
-  if (device != nullptr) {
-    return device->get_channels()->get_channel_value(channel_id);
-  }
-
-  return NULL;
+supla_abstract_auto_gate_closing_dao::supla_abstract_auto_gate_closing_dao(
+    supla_abstract_db_access_provider *dba) {
+  this->dba = dba;
 }
 
-supla_value_getter::~supla_value_getter(void) {}
+supla_abstract_auto_gate_closing_dao::~supla_abstract_auto_gate_closing_dao() {}

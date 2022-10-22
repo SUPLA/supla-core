@@ -21,14 +21,18 @@
 
 #include <vector>
 
+#include "cyclictasks/abstract_auto_gate_closing_dao.h"
 #include "cyclictasks/abstract_cyclictask.h"
-#include "cyclictasks/auto_gate_closing_dao.h"
 #include "device/channel_gate_value.h"
+#include "device/value_getter.h"
 
 class supla_auto_gate_closing : public supla_abstract_cyclictask {
  private:
+  supla_abstract_auto_gate_closing_dao *dao;
+  supla_abstract_value_getter *value_getter;
+
   _gate_sensor_level_enum get_opening_sensor_level(
-      supla_auto_gate_closing_dao::item_t *item);
+      supla_abstract_auto_gate_closing_dao::item_t *item);
 
  protected:
   virtual unsigned int task_interval_sec(void);
@@ -37,7 +41,9 @@ class supla_auto_gate_closing : public supla_abstract_cyclictask {
   virtual bool user_access_needed(void);
 
  public:
-  supla_auto_gate_closing();
+  supla_auto_gate_closing(supla_abstract_auto_gate_closing_dao *dao,
+                          supla_abstract_value_getter *value_getter);
+  supla_auto_gate_closing(void);
   virtual ~supla_auto_gate_closing();
 };
 

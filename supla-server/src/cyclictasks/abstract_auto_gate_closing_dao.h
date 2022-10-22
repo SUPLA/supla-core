@@ -16,21 +16,35 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AUTO_GATE_CLOSING_DAO_H_
-#define AUTO_GATE_CLOSING_DAO_H_
+#ifndef ABSTRACT_AUTO_GATE_CLOSING_DAO_H_
+#define ABSTRACT_AUTO_GATE_CLOSING_DAO_H_
 
-#include "cyclictasks/abstract_auto_gate_closing_dao.h"
+#include <vector>
+
 #include "db/abstract_db_access_provider.h"
 
-class supla_auto_gate_closing_dao
-    : public supla_abstract_auto_gate_closing_dao {
+#define ATTEMPT_RETRY_TIME_SEC 900
+
+class supla_abstract_auto_gate_closing_dao {
+ private:
+  supla_abstract_db_access_provider *dba;
+
  public:
-  explicit supla_auto_gate_closing_dao(supla_abstract_db_access_provider *dba);
-  virtual ~supla_auto_gate_closing_dao();
-  virtual std::vector<item_t> get_all_active(void);
-  virtual int mark_gate_open(int channel_id);
-  virtual void mark_gate_closed(int channel_id);
-  virtual void set_closing_attemtp(int channel_id);
+  typedef struct {
+    int user_id;
+    int device_id;
+    int channel_id;
+    int seconds_since_last_attempt;
+    bool seen_open;
+  } item_t;
+
+  explicit supla_abstract_auto_gate_closing_dao(
+      supla_abstract_db_access_provider *dba);
+  virtual ~supla_abstract_auto_gate_closing_dao();
+  virtual std::vector<item_t> get_all_active(void) = 0;
+  virtual int mark_gate_open(int channel_id) = 0;
+  virtual void mark_gate_closed(int channel_id) = 0;
+  virtual void set_closing_attemtp(int channel_id) = 0;
 };
 
-#endif /* AUTO_GATE_CLOSING_DAO_H_ */
+#endif /* ABSTRACT_AUTO_GATE_CLOSING_DAO_H_ */

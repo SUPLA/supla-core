@@ -27,6 +27,7 @@ class supla_value_getter : public supla_abstract_value_getter {
                                           int channel_id);
 
  public:
+  virtual ~supla_value_getter(void);
 };
 
 #endif /* ABSTRACT_VALUE_GETTER_H_ */
