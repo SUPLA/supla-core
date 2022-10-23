@@ -19,6 +19,8 @@
 #ifndef AUTO_GATE_CLOSING_DAO_H_
 #define AUTO_GATE_CLOSING_DAO_H_
 
+#include <vector>
+
 #include "cyclictasks/abstract_auto_gate_closing_dao.h"
 #include "db/abstract_db_access_provider.h"
 
