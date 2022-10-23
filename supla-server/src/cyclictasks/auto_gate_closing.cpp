@@ -80,10 +80,6 @@ _gate_sensor_level_enum supla_auto_gate_closing::get_opening_sensor_level(
 
 void supla_auto_gate_closing::run(const vector<supla_user *> *users,
                                   supla_abstract_db_access_provider *dba) {
-  if (!dba->connect()) {
-    return;
-  }
-
   supla_abstract_auto_gate_closing_dao *internal_dao = nullptr;
   if (dao == nullptr) {
     internal_dao = new supla_auto_gate_closing_dao(dba);
