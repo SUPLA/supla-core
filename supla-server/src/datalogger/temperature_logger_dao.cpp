@@ -67,8 +67,8 @@ void supla_temperature_logger_dao::add_temperature_and_humidity(
   char buff2[20] = {};
   MYSQL_BIND pbind[3] = {};
 
-  snprintf(buff1, sizeof(buff1), "%04.3f", temperature);
-  snprintf(buff2, sizeof(buff2), "%04.3f", humidity);
+  snprintf(buff1, sizeof(buff1), "%04.4f", temperature);
+  snprintf(buff2, sizeof(buff2), "%04.4f", humidity);
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;

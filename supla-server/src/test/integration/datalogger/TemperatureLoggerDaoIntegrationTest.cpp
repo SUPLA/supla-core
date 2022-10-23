@@ -56,7 +56,7 @@ void TemperatureLoggerDaoIntegrationTest::TearDown() {
   Test::TearDown();
 }
 
-TEST_F(TemperatureLoggerDaoIntegrationTest, add) {
+TEST_F(TemperatureLoggerDaoIntegrationTest, addTemperature) {
   ASSERT_TRUE(dba->connect());
 
   string result;
@@ -64,7 +64,7 @@ TEST_F(TemperatureLoggerDaoIntegrationTest, add) {
 
   EXPECT_EQ(result, "count\n0\n");
 
-  dao->add_temperature(15, 22.35);
+  dao->add_temperature(15, 22.3567);
 
   result = "";
 
@@ -74,7 +74,28 @@ TEST_F(TemperatureLoggerDaoIntegrationTest, add) {
       "DATE_ADD(UTC_TIMESTAMP(), INTERVAL 2 SECOND)",
       &result);
 
-  EXPECT_EQ(result, "channel_id\ttemperature\n15\t22.3500\n");
+  EXPECT_EQ(result, "channel_id\ttemperature\n15\t22.3567\n");
+}
+
+TEST_F(TemperatureLoggerDaoIntegrationTest, addTemperatureAndHumidity) {
+  ASSERT_TRUE(dba->connect());
+
+  string result;
+  sqlQuery("SELECT count(*) as count FROM supla_temphumidity_log", &result);
+
+  EXPECT_EQ(result, "count\n0\n");
+
+  dao->add_temperature_and_humidity(17, 36.2341, 80.5671);
+  result = "";
+
+  sqlQuery(
+      "SELECT channel_id, temperature, humidity FROM supla_temphumidity_log "
+      "WHERE date >= DATE_ADD(UTC_TIMESTAMP(), INTERVAL -2 SECOND) AND date <= "
+      "DATE_ADD(UTC_TIMESTAMP(), INTERVAL 2 SECOND)",
+      &result);
+
+  EXPECT_EQ(result,
+            "channel_id\ttemperature\thumidity\n17\t36.2341\t80.5671\n");
 }
 
 } /* namespace testing */
