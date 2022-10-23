@@ -19,7 +19,7 @@
 #ifndef DBCOMMON_H_
 #define DBCOMMON_H_
 
-#define DB_VERSION "20221010103958"
+#define DB_VERSION "20221020225729"
 
 class dbcommon {
  protected:

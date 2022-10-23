@@ -106,7 +106,7 @@ CREATE TABLE `migration_versions` (
 
 LOCK TABLES `migration_versions` WRITE;
 /*!40000 ALTER TABLE `migration_versions` DISABLE KEYS */;
-INSERT INTO `migration_versions` VALUES ('20170101000000','2022-05-04 19:26:18'),('20170414101854','2022-05-04 19:26:19'),('20170612204116','2022-05-04 19:26:19'),('20170818114139','2022-05-04 19:26:20'),('20171013140904','2022-05-04 19:26:21'),('20171208222022','2022-05-04 19:26:21'),('20171210105120','2022-05-04 19:26:21'),('20180108224520','2022-05-04 19:26:21'),('20180113234138','2022-05-04 19:26:21'),('20180116184415','2022-05-04 19:26:21'),('20180203231115','2022-05-04 19:26:21'),('20180208145738','2022-05-04 19:26:21'),('20180224184251','2022-05-04 19:26:21'),('20180324222844','2022-05-04 19:26:21'),('20180326134725','2022-05-04 19:26:21'),('20180403175932','2022-05-04 19:26:21'),('20180403203101','2022-05-04 19:26:21'),('20180403211558','2022-05-04 19:26:21'),('20180411202101','2022-05-04 19:26:21'),('20180411203913','2022-05-04 19:26:21'),('20180416201401','2022-05-04 19:26:21'),('20180423121539','2022-05-04 19:26:21'),('20180507095139','2022-05-04 19:26:21'),('20180518131234','2022-05-04 19:26:22'),('20180707221458','2022-05-04 19:26:22'),('20180717094843','2022-05-04 19:26:22'),('20180723132652','2022-05-04 19:26:22'),('20180807083217','2022-05-04 19:26:22'),('20180812205513','2022-05-04 19:26:22'),('20180814155501','2022-05-04 19:26:22'),('20180914222230','2022-05-04 19:26:23'),('20181001221229','2022-05-04 19:26:23'),('20181007112610','2022-05-04 19:26:23'),('20181019115859','2022-05-04 19:26:23'),('20181024164957','2022-05-04 19:26:24'),('20181025171850','2022-05-04 19:26:24'),('20181026171557','2022-05-04 19:26:24'),('20181105144611','2022-05-04 19:26:24'),('20181126225634','2022-05-04 19:26:24'),('20181129170610','2022-05-04 19:26:24'),('20181129195431','2022-05-04 19:26:25'),('20181129231132','2022-05-04 19:26:25'),('20181204174603','2022-05-04 19:26:25'),('20181205092324','2022-05-04 19:26:25'),('20181222001450','2022-05-04 19:26:25'),('20190105130410','2022-05-04 19:26:25'),('20190117075805','2022-05-04 19:26:25'),('20190219184847','2022-05-04 19:26:25'),('20190325215115','2022-05-04 19:26:25'),('20190401151822','2022-05-04 19:26:25'),('20190720215803','2022-05-04 19:26:25'),('20190813232026','2022-05-04 19:26:25'),('20190815154016','2022-05-04 19:26:26'),('20191226160845','2022-05-04 19:26:26'),('20200108201101','2022-05-04 19:26:26'),('20200123235701','2022-05-04 19:26:26'),('20200124084227','2022-05-04 19:26:26'),('20200204170901','2022-05-04 19:26:26'),('20200210145902','2022-05-04 19:26:26'),('20200229122103','2022-05-04 19:26:26'),('20200322123636','2022-05-04 19:26:26'),('20200412183701','2022-05-04 19:26:26'),('20200414213205','2022-05-04 19:26:26'),('20200416225304','2022-05-04 19:26:26'),('20200419190150','2022-05-04 19:26:26'),('20200430113342','2022-05-04 19:26:27'),('20200514132030','2022-05-04 19:26:27'),('20200515102311','2022-05-04 19:26:27'),('20200518171230','2022-05-04 19:26:27'),('20200724155001','2022-05-04 19:26:27'),('20200807131101','2022-05-04 19:26:27'),('20200811141801','2022-05-04 19:26:27'),('20200813113801','2022-05-04 19:26:27'),('20200813133501','2022-05-04 19:26:27'),('20200911231401','2022-05-04 19:26:27'),('20201113112233','2022-05-04 19:26:27'),('20201213133718','2022-05-04 19:26:27'),('20201214102230','2022-05-04 19:26:27'),('20210105164727','2022-05-04 19:26:27'),('20210118124714','2022-05-04 19:26:27'),('20210228201414','2022-05-04 19:26:27'),('20210323095216','2022-05-04 19:26:27'),('20210419201821','2022-05-04 19:26:27'),('20210525104812','2022-05-04 19:26:27'),('20210915221319','2022-05-04 19:26:28'),('20210917203710','2022-05-04 19:26:28'),('20211005074509','2022-05-04 19:26:28'),('20211108120835','2022-05-04 19:26:28'),('20211123193415','2022-05-04 19:26:28'),('20211205215406','2022-05-04 19:26:28'),('20211218174444','2022-05-04 19:26:28'),('20220208164512','2022-05-04 19:26:28'),('20220222110707','2022-05-04 19:57:43'),('20220309061811','2022-05-04 19:57:43'),('20220309061812','2022-05-04 19:57:43'),('20220404100406','2022-07-19 21:40:53'),('20220718203129','2022-07-19 21:40:53'),('20220719210858','2022-07-19 21:40:53'),('20221010103958', '2022-10-20 18:02:00');
+INSERT INTO `migration_versions` VALUES ('20170101000000','2022-05-04 19:26:18'),('20170414101854','2022-05-04 19:26:19'),('20170612204116','2022-05-04 19:26:19'),('20170818114139','2022-05-04 19:26:20'),('20171013140904','2022-05-04 19:26:21'),('20171208222022','2022-05-04 19:26:21'),('20171210105120','2022-05-04 19:26:21'),('20180108224520','2022-05-04 19:26:21'),('20180113234138','2022-05-04 19:26:21'),('20180116184415','2022-05-04 19:26:21'),('20180203231115','2022-05-04 19:26:21'),('20180208145738','2022-05-04 19:26:21'),('20180224184251','2022-05-04 19:26:21'),('20180324222844','2022-05-04 19:26:21'),('20180326134725','2022-05-04 19:26:21'),('20180403175932','2022-05-04 19:26:21'),('20180403203101','2022-05-04 19:26:21'),('20180403211558','2022-05-04 19:26:21'),('20180411202101','2022-05-04 19:26:21'),('20180411203913','2022-05-04 19:26:21'),('20180416201401','2022-05-04 19:26:21'),('20180423121539','2022-05-04 19:26:21'),('20180507095139','2022-05-04 19:26:21'),('20180518131234','2022-05-04 19:26:22'),('20180707221458','2022-05-04 19:26:22'),('20180717094843','2022-05-04 19:26:22'),('20180723132652','2022-05-04 19:26:22'),('20180807083217','2022-05-04 19:26:22'),('20180812205513','2022-05-04 19:26:22'),('20180814155501','2022-05-04 19:26:22'),('20180914222230','2022-05-04 19:26:23'),('20181001221229','2022-05-04 19:26:23'),('20181007112610','2022-05-04 19:26:23'),('20181019115859','2022-05-04 19:26:23'),('20181024164957','2022-05-04 19:26:24'),('20181025171850','2022-05-04 19:26:24'),('20181026171557','2022-05-04 19:26:24'),('20181105144611','2022-05-04 19:26:24'),('20181126225634','2022-05-04 19:26:24'),('20181129170610','2022-05-04 19:26:24'),('20181129195431','2022-05-04 19:26:25'),('20181129231132','2022-05-04 19:26:25'),('20181204174603','2022-05-04 19:26:25'),('20181205092324','2022-05-04 19:26:25'),('20181222001450','2022-05-04 19:26:25'),('20190105130410','2022-05-04 19:26:25'),('20190117075805','2022-05-04 19:26:25'),('20190219184847','2022-05-04 19:26:25'),('20190325215115','2022-05-04 19:26:25'),('20190401151822','2022-05-04 19:26:25'),('20190720215803','2022-05-04 19:26:25'),('20190813232026','2022-05-04 19:26:25'),('20190815154016','2022-05-04 19:26:26'),('20191226160845','2022-05-04 19:26:26'),('20200108201101','2022-05-04 19:26:26'),('20200123235701','2022-05-04 19:26:26'),('20200124084227','2022-05-04 19:26:26'),('20200204170901','2022-05-04 19:26:26'),('20200210145902','2022-05-04 19:26:26'),('20200229122103','2022-05-04 19:26:26'),('20200322123636','2022-05-04 19:26:26'),('20200412183701','2022-05-04 19:26:26'),('20200414213205','2022-05-04 19:26:26'),('20200416225304','2022-05-04 19:26:26'),('20200419190150','2022-05-04 19:26:26'),('20200430113342','2022-05-04 19:26:27'),('20200514132030','2022-05-04 19:26:27'),('20200515102311','2022-05-04 19:26:27'),('20200518171230','2022-05-04 19:26:27'),('20200724155001','2022-05-04 19:26:27'),('20200807131101','2022-05-04 19:26:27'),('20200811141801','2022-05-04 19:26:27'),('20200813113801','2022-05-04 19:26:27'),('20200813133501','2022-05-04 19:26:27'),('20200911231401','2022-05-04 19:26:27'),('20201113112233','2022-05-04 19:26:27'),('20201213133718','2022-05-04 19:26:27'),('20201214102230','2022-05-04 19:26:27'),('20210105164727','2022-05-04 19:26:27'),('20210118124714','2022-05-04 19:26:27'),('20210228201414','2022-05-04 19:26:27'),('20210323095216','2022-05-04 19:26:27'),('20210419201821','2022-05-04 19:26:27'),('20210525104812','2022-05-04 19:26:27'),('20210915221319','2022-05-04 19:26:28'),('20210917203710','2022-05-04 19:26:28'),('20211005074509','2022-05-04 19:26:28'),('20211108120835','2022-05-04 19:26:28'),('20211123193415','2022-05-04 19:26:28'),('20211205215406','2022-05-04 19:26:28'),('20211218174444','2022-05-04 19:26:28'),('20220208164512','2022-05-04 19:26:28'),('20220222110707','2022-05-04 19:57:43'),('20220309061811','2022-05-04 19:57:43'),('20220309061812','2022-05-04 19:57:43'),('20220404100406','2022-07-19 21:40:53'),('20220718203129','2022-07-19 21:40:53'),('20220719210858','2022-07-19 21:40:53'),('20220929090847','2022-10-23 10:37:57'),('20221005003914','2022-10-23 10:37:57'),('20221010103958','2022-10-23 10:37:58'),('20221020225729','2022-10-23 10:53:42');
 /*!40000 ALTER TABLE `migration_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -205,6 +205,39 @@ LOCK TABLES `supla_audit` WRITE;
 /*!40000 ALTER TABLE `supla_audit` DISABLE KEYS */;
 INSERT INTO `supla_audit` VALUES (1,NULL,2,'2020-04-16 08:55:27',2457392666,'',0),(2,NULL,2,'2020-04-16 08:55:32',2457392666,'',0),(3,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),(4,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),(5,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),(6,NULL,2,'2020-04-16 08:55:46',2457392666,'',0),(7,NULL,2,'2020-04-16 14:05:47',2457392666,'test@supla.org',2),(8,NULL,7,'2020-04-16 14:06:28',NULL,'test@supla.org',1),(9,2,1,'2020-04-16 14:13:12',2457392666,'test@supla.org',NULL),(10,NULL,2,'2020-04-16 14:24:06',2457392666,'',0),(11,NULL,2,'2020-04-16 14:24:07',2457392666,'',0),(12,2,2,'2020-04-16 20:08:42',2457392666,'test@supla.org',2),(13,2,2,'2020-04-16 20:08:49',2457392666,'test@supla.org',2),(14,2,1,'2020-04-16 20:09:18',2457392666,'test@supla.org',NULL),(15,NULL,2,'2020-05-19 20:55:27',2457392666,'',0),(16,NULL,2,'2020-05-19 20:55:27',2457392666,'',0),(17,NULL,2,'2020-05-19 20:55:28',2457392666,'',0),(18,2,1,'2022-05-04 19:30:21',2457392666,'test@supla.org',NULL),(19,2,1,'2022-05-07 11:50:42',2457392666,'test@supla.org',NULL),(20,NULL,2,'2022-05-07 15:10:43',2457392666,'',0),(21,NULL,2,'2022-05-07 15:10:50',2457392666,'',0),(22,NULL,2,'2022-05-07 15:10:57',2457392666,'',0),(23,NULL,2,'2022-05-07 15:11:04',2457392666,'',0),(24,NULL,2,'2022-05-07 15:11:11',2457392666,'',0),(25,NULL,2,'2022-05-07 15:11:18',2457392666,'',0),(26,NULL,2,'2022-05-07 15:11:25',2457392666,'',0),(27,2,2,'2022-05-07 15:11:35',2457392666,'test@supla.org',2),(28,2,1,'2022-05-07 15:11:44',2457392666,'test@supla.org',NULL),(29,NULL,2,'2022-07-19 21:40:58',2457392666,'',0),(30,NULL,2,'2022-07-19 21:41:00',2457392666,'',0);
 /*!40000 ALTER TABLE `supla_audit` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `supla_auto_gate_closing`
+--
+
+DROP TABLE IF EXISTS `supla_auto_gate_closing`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `supla_auto_gate_closing` (
+  `channel_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `active_from` date DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
+  `active_to` date DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
+  `active_hours` varchar(768) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `max_time_open` int(11) NOT NULL,
+  `seconds_open` int(11) DEFAULT NULL,
+  `closing_attempt` datetime DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
+  `last_seen_open` datetime DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
+  PRIMARY KEY (`channel_id`),
+  KEY `IDX_E176CB9FA76ED395` (`user_id`),
+  CONSTRAINT `FK_E176CB9F72F5A1AA` FOREIGN KEY (`channel_id`) REFERENCES `supla_dev_channel` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_E176CB9FA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `supla_auto_gate_closing`
+--
+
+LOCK TABLES `supla_auto_gate_closing` WRITE;
+/*!40000 ALTER TABLE `supla_auto_gate_closing` DISABLE KEYS */;
+/*!40000 ALTER TABLE `supla_auto_gate_closing` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -453,6 +486,42 @@ LOCK TABLES `supla_em_log` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `supla_em_voltage_log`
+--
+
+DROP TABLE IF EXISTS `supla_em_voltage_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `supla_em_voltage_log` (
+  `channel_id` int(11) NOT NULL,
+  `date` datetime NOT NULL COMMENT '(DC2Type:stringdatetime)',
+  `phase_no` tinyint(4) NOT NULL COMMENT '(DC2Type:tinyint)',
+  `count_total` int(11) NOT NULL,
+  `count_above` int(11) NOT NULL,
+  `count_below` int(11) NOT NULL,
+  `sec_total` int(11) NOT NULL,
+  `sec_above` int(11) NOT NULL,
+  `sec_below` int(11) NOT NULL,
+  `max_sec_above` int(11) NOT NULL,
+  `max_sec_below` int(11) NOT NULL,
+  `min_voltage` decimal(7,2) NOT NULL,
+  `max_voltage` decimal(7,2) NOT NULL,
+  `avg_voltage` decimal(7,2) NOT NULL,
+  `measurement_time_sec` int(11) NOT NULL,
+  PRIMARY KEY (`channel_id`,`date`,`phase_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `supla_em_voltage_log`
+--
+
+LOCK TABLES `supla_em_voltage_log` WRITE;
+/*!40000 ALTER TABLE `supla_em_voltage_log` DISABLE KEYS */;
+/*!40000 ALTER TABLE `supla_em_voltage_log` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `supla_email_notifications`
 --
 
@@ -647,7 +716,6 @@ CREATE TABLE `supla_oauth_access_tokens` (
 
 LOCK TABLES `supla_oauth_access_tokens` WRITE;
 /*!40000 ALTER TABLE `supla_oauth_access_tokens` DISABLE KEYS */;
-INSERT INTO `supla_oauth_access_tokens` VALUES (7,1,2,'M2M3YjhlMzAyYmJkZWIxNWVkNTBjZjMyNWJhOGViNTY4MWJjMzFmNmI5NmIyNGYzN2IzNzA3NjNkYTUxMmQ4Mw.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1651955259,'channels_ea channelgroups_ea channels_files scenes_ea accessids_r accessids_rw account_r account_rw channels_r channels_rw channelgroups_r channelgroups_rw clientapps_r clientapps_rw directlinks_r directlinks_rw iodevices_r iodevices_rw locations_r locations_rw scenes_r scenes_rw schedules_r schedules_rw',NULL,NULL,NULL),(8,1,2,'NDVjMzBmZDJjOWVkNmM4OTE4N2IwNTBiMmVlOTYxMGU5ODUyODE1ZjMwNDI4YTQzYWEzMGYyMWQ2Yjg1OWM4MA.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1651955259,'channels_files',NULL,NULL,NULL),(9,1,2,'NTA0ODk1OWQ0MGI4N2YwNzcxOTBiOWRiOWI1MmI2ZDI0YjU5OTQ5MGMxYzliODkzYzMzYmJjOTAyYWM5YzJmMw.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1651965363,'channels_ea channelgroups_ea channels_files scenes_ea accessids_r accessids_rw account_r account_rw channels_r channels_rw channelgroups_r channelgroups_rw clientapps_r clientapps_rw directlinks_r directlinks_rw iodevices_r iodevices_rw locations_r locations_rw scenes_r scenes_rw schedules_r schedules_rw',NULL,NULL,NULL),(10,1,2,'ZWQ4NTM3ZTg3YTY5ODIxYzJiYjg3YzU1NDljNjM5ZWEyNTU0OGFlZWU0OWQyMDQ4YjQwZTQ2YTUzNTc4ODg4NQ.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1651965363,'channels_files',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `supla_oauth_access_tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -859,6 +927,7 @@ CREATE TABLE `supla_scene` (
   `enabled` tinyint(1) NOT NULL,
   `user_icon_id` int(11) DEFAULT NULL,
   `alt_icon` tinyint(3) unsigned NOT NULL DEFAULT 0 COMMENT '(DC2Type:tinyint)',
+  `estimated_execution_time` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `IDX_A4825857A76ED395` (`user_id`),
   KEY `IDX_A482585764D218E` (`location_id`),
@@ -875,7 +944,7 @@ CREATE TABLE `supla_scene` (
 
 LOCK TABLES `supla_scene` WRITE;
 /*!40000 ALTER TABLE `supla_scene` DISABLE KEYS */;
-INSERT INTO `supla_scene` VALUES (1,2,2,'Scene #1',1,NULL,0),(2,2,2,'Scene #2',1,NULL,0),(3,2,2,'Scene #3',1,NULL,0),(4,2,3,'Scene #4',1,NULL,0),(5,2,2,'Scene #5',1,NULL,0),(6,2,2,'Scene #6',1,NULL,0);
+INSERT INTO `supla_scene` VALUES (1,2,2,'Scene #1',1,NULL,0,1000),(2,2,2,'Scene #2',1,NULL,0,5000),(3,2,2,'Scene #3',1,NULL,0,0),(4,2,3,'Scene #4',1,NULL,0,0),(5,2,2,'Scene #5',1,NULL,0,0),(6,2,2,'Scene #6',1,NULL,0,5000);
 /*!40000 ALTER TABLE `supla_scene` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -895,6 +964,8 @@ CREATE TABLE `supla_scene_operation` (
   `action` int(11) NOT NULL,
   `action_param` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `delay_ms` int(11) NOT NULL DEFAULT 0,
+  `user_delay_ms` int(11) NOT NULL DEFAULT 0,
+  `wait_for_completion` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `IDX_64A50CF5E019BC26` (`owning_scene_id`),
   KEY `IDX_64A50CF572F5A1AA` (`channel_id`),
@@ -913,7 +984,7 @@ CREATE TABLE `supla_scene_operation` (
 
 LOCK TABLES `supla_scene_operation` WRITE;
 /*!40000 ALTER TABLE `supla_scene_operation` DISABLE KEYS */;
-INSERT INTO `supla_scene_operation` VALUES (17,1,140,NULL,NULL,60,NULL,0),(18,1,308,NULL,NULL,10,NULL,1000),(19,1,170,NULL,NULL,80,'{\"brightness\":10}',0),(20,2,142,NULL,NULL,60,NULL,0),(21,2,140,NULL,NULL,70,NULL,5000),(22,3,NULL,1,NULL,60,NULL,0),(23,3,171,NULL,NULL,80,'{\"brightness\":6,\"hue\":240,\"color_brightness\":10}',0),(24,3,NULL,NULL,1,3000,NULL,0),(26,5,173,NULL,NULL,50,'{\"percentage\":15}',0),(27,5,303,NULL,NULL,51,'{\"percentage\":25}',0),(28,6,171,NULL,NULL,80,'{\"brightness\":50,\"hue\":\"white\",\"color_brightness\":5}',0),(29,6,171,NULL,NULL,80,'{\"brightness\":20,\"hue\":\"random\",\"color_brightness\":15}',5000),(30,4,140,NULL,NULL,10100,'{\"sourceDeviceId\":73,\"sourceChannelId\":143}',0);
+INSERT INTO `supla_scene_operation` VALUES (17,1,140,NULL,NULL,60,NULL,0,0,0),(18,1,308,NULL,NULL,10,NULL,1000,1000,0),(19,1,170,NULL,NULL,80,'{\"brightness\":10}',0,0,0),(20,2,142,NULL,NULL,60,NULL,0,0,0),(21,2,140,NULL,NULL,70,NULL,5000,5000,0),(22,3,NULL,1,NULL,60,NULL,0,0,0),(23,3,171,NULL,NULL,80,'{\"brightness\":6,\"hue\":240,\"color_brightness\":10}',0,0,0),(24,3,NULL,NULL,1,3000,NULL,0,0,0),(26,5,173,NULL,NULL,50,'{\"percentage\":15}',0,0,0),(27,5,303,NULL,NULL,51,'{\"percentage\":25}',0,0,0),(28,6,171,NULL,NULL,80,'{\"brightness\":50,\"hue\":\"white\",\"color_brightness\":5}',0,0,0),(29,6,171,NULL,NULL,80,'{\"brightness\":20,\"hue\":\"random\",\"color_brightness\":15}',5000,5000,0),(30,4,140,NULL,NULL,10100,'{\"sourceDeviceId\":73,\"sourceChannelId\":143}',0,0,0);
 /*!40000 ALTER TABLE `supla_scene_operation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1226,6 +1297,26 @@ SET character_set_client = utf8;
 SET character_set_client = @saved_cs_client;
 
 --
+-- Temporary table structure for view `supla_v_auto_gate_closing`
+--
+
+DROP TABLE IF EXISTS `supla_v_auto_gate_closing`;
+/*!50001 DROP VIEW IF EXISTS `supla_v_auto_gate_closing`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `supla_v_auto_gate_closing` (
+  `user_id` tinyint NOT NULL,
+  `device_id` tinyint NOT NULL,
+  `channel_id` tinyint NOT NULL,
+  `is_now_active` tinyint NOT NULL,
+  `max_time_open` tinyint NOT NULL,
+  `seconds_open` tinyint NOT NULL,
+  `closing_attempt` tinyint NOT NULL,
+  `last_seen_open` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
 -- Temporary table structure for view `supla_v_client`
 --
 
@@ -1421,7 +1512,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP FUNCTION IF EXISTS `supla_is_access_id_now_active` */;
+/*!50003 DROP FUNCTION IF EXISTS `supla_is_now_active` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -1431,24 +1522,34 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` FUNCTION `supla_is_access_id_now_active`(`active_from` DATETIME, `active_to` DATETIME, `active_hours` VARCHAR(768), `user_timezone` VARCHAR(50)) RETURNS int(11)
+CREATE DEFINER=`supla`@`localhost` FUNCTION `supla_is_now_active`(
+    `active_from` DATETIME,
+    `active_to` DATETIME,
+    `active_hours` VARCHAR(768),
+    `user_timezone` VARCHAR(50)
+) RETURNS int(11)
 BEGIN
-            DECLARE res INT DEFAULT 1;
-
-            IF `active_from` IS NOT NULL THEN
-              SELECT (active_from <= UTC_TIMESTAMP) INTO res;
-            END IF;
-            
-            IF res = 1 AND `active_to` IS NOT NULL THEN
-              SELECT (active_to >= UTC_TIMESTAMP) INTO res;
-            END IF;
-
-            IF res = 1 AND `active_hours` IS NOT NULL THEN
-              SELECT (`active_hours` LIKE CONCAT('%,', supla_current_weekday_hour(`user_timezone`) ,',%') COLLATE utf8mb4_unicode_ci) INTO res;
-            END IF;
-        
-            RETURN res;
-        END ;;
+    DECLARE
+        res INT DEFAULT 1; IF `active_from` IS NOT NULL THEN
+    SELECT
+        (active_from <= UTC_TIMESTAMP)
+    INTO res;
+END IF; IF res = 1 AND `active_to` IS NOT NULL THEN
+SELECT
+    (active_to >= UTC_TIMESTAMP)
+INTO res;
+END IF; IF res = 1 AND `active_hours` IS NOT NULL THEN
+SELECT
+    (
+        `active_hours` LIKE CONCAT(
+            '%,',
+            supla_current_weekday_hour(`user_timezone`),
+            ',%'
+        ) COLLATE utf8mb4_unicode_ci
+    )
+INTO res;
+END IF; RETURN res;
+END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1597,6 +1698,44 @@ _phase2_fae, _phase2_rae, _phase2_fre, _phase2_rre, _phase3_fae, _phase3_rae, _p
 _fae_balanced, _rae_balanced);
 
 END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `supla_add_em_voltage_log_item` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_add_em_voltage_log_item`(
+                IN `_channel_id` INT(11), 
+                IN `_phase_no` TINYINT,
+                IN `_count_total` INT(11),
+                IN `_count_above` INT(11),
+                IN `_count_below` INT(11),
+                IN `_sec_total` INT(11),
+                IN `_sec_above` INT(11),
+                IN `_sec_below` INT(11),
+                IN `_max_sec_above` INT(11),
+                IN `_max_sec_below` INT(11),
+                IN `_min_voltage` NUMERIC(7,2),
+                IN `_max_voltage` NUMERIC(7,2),
+                IN `_avg_voltage` NUMERIC(7,2),
+                IN `_measurement_time_sec` INT(11)
+            )
+    NO SQL
+BEGIN
+
+            INSERT INTO `supla_em_voltage_log` (`date`,channel_id, phase_no, count_total, count_above, count_below, sec_total, sec_above, sec_below, max_sec_above, max_sec_below, min_voltage, max_voltage, avg_voltage, measurement_time_sec)
+                              VALUES (UTC_TIMESTAMP(),_channel_id,_phase_no,_count_total,_count_above,_count_below,_sec_total,_sec_above,_sec_below,_max_sec_above,_max_sec_below,_min_voltage,_max_voltage,_avg_voltage,_measurement_time_sec);
+
+            END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1772,6 +1911,74 @@ SET out_host = @var_host;
 SET out_port = @var_port;
 SET out_path = @var_path;
 
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `supla_mark_gate_closed` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_mark_gate_closed`(IN `_channel_id` INT)
+UPDATE
+    `supla_auto_gate_closing`
+SET
+    seconds_open = NULL,
+    closing_attempt = NULL,
+    last_seen_open = NULL
+WHERE
+    channel_id = _channel_id ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `supla_mark_gate_open` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_mark_gate_open`(IN `_channel_id` INT)
+BEGIN
+    -- We assume the server will mark open gates at least every minute.
+    UPDATE
+        `supla_auto_gate_closing`
+    SET
+        seconds_open = NULL,
+        closing_attempt = NULL,
+        last_seen_open = NULL
+    WHERE
+        channel_id = _channel_id AND last_seen_open IS NOT NULL AND TIMESTAMPDIFF(MINUTE, last_seen_open, UTC_TIMESTAMP()) >= 4;
+        
+    UPDATE
+        `supla_auto_gate_closing`
+    SET
+        seconds_open = IFNULL(seconds_open, 0) + IFNULL(
+            UNIX_TIMESTAMP(UTC_TIMESTAMP()) - UNIX_TIMESTAMP(last_seen_open),
+            0),
+            last_seen_open = UTC_TIMESTAMP()
+        WHERE
+            channel_id = _channel_id;
+      
+      SELECT
+            max_time_open - seconds_open AS `seconds_left`
+      FROM
+            `supla_auto_gate_closing`
+      WHERE
+             channel_id = _channel_id;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1979,6 +2186,28 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `supla_set_closing_attempt` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_set_closing_attempt`(IN `_channel_id` INT)
+UPDATE
+        `supla_auto_gate_closing`
+    SET
+        closing_attempt = UTC_TIMESTAMP()
+    WHERE
+        channel_id = _channel_id ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_set_location_caption` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1992,10 +2221,6 @@ DELIMITER ;;
 CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_set_location_caption`(IN `_user_id` INT, IN `_location_id` INT, IN `_caption` VARCHAR(100) CHARSET utf8mb4)
     NO SQL
 UPDATE supla_location SET caption = _caption WHERE id = _location_id AND user_id = _user_id ;;
-DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_set_scene_caption`(IN `_user_id` INT, IN `_scene_id` INT, IN `_caption` VARCHAR(255) CHARSET utf8mb4)
-    NO SQL
-UPDATE supla_scene SET caption = _caption WHERE id = _scene_id AND user_id = _user_id ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2014,6 +2239,24 @@ DELIMITER ;;
 CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_set_registration_enabled`(IN `user_id` INT, IN `iodevice_sec` INT, IN `client_sec` INT)
     NO SQL
 BEGIN IF iodevice_sec >= 0 THEN SET @date = NULL; IF iodevice_sec > 0 THEN SET @date = DATE_ADD(UTC_TIMESTAMP, INTERVAL iodevice_sec SECOND); END IF; UPDATE supla_user SET iodevice_reg_enabled = @date WHERE id = user_id; END IF; IF client_sec >= 0 THEN SET @date = NULL; IF client_sec > 0 THEN SET @date = DATE_ADD(UTC_TIMESTAMP, INTERVAL client_sec SECOND); END IF; UPDATE supla_user SET client_reg_enabled = @date WHERE id = user_id; END IF; END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `supla_set_scene_caption` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_set_scene_caption`(IN `_user_id` INT, IN `_scene_id` INT, IN `_caption` VARCHAR(255) CHARSET utf8mb4)
+    NO SQL
+UPDATE supla_scene SET caption = _caption WHERE id = _scene_id AND user_id = _user_id ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2268,7 +2511,26 @@ DELIMITER ;
 /*!50001 SET collation_connection      = utf8mb4_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`supla`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `supla_v_accessid_active` AS select `sa`.`id` AS `id`,`sa`.`user_id` AS `user_id`,`sa`.`password` AS `password`,`sa`.`caption` AS `caption`,`sa`.`enabled` AS `enabled`,`sa`.`active_from` AS `active_from`,`sa`.`active_to` AS `active_to`,`sa`.`active_hours` AS `active_hours`,`supla_is_access_id_now_active`(`sa`.`active_from`,`sa`.`active_to`,`sa`.`active_hours`,`su`.`timezone`) AS `is_now_active` from (`supla_accessid` `sa` join `supla_user` `su` on(`su`.`id` = `sa`.`user_id`)) */;
+/*!50001 VIEW `supla_v_accessid_active` AS select `sa`.`id` AS `id`,`sa`.`user_id` AS `user_id`,`sa`.`password` AS `password`,`sa`.`caption` AS `caption`,`sa`.`enabled` AS `enabled`,`sa`.`active_from` AS `active_from`,`sa`.`active_to` AS `active_to`,`sa`.`active_hours` AS `active_hours`,`supla_is_now_active`(`sa`.`active_from`,`sa`.`active_to`,`sa`.`active_hours`,`su`.`timezone`) AS `is_now_active` from (`supla_accessid` `sa` join `supla_user` `su` on(`su`.`id` = `sa`.`user_id`)) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `supla_v_auto_gate_closing`
+--
+
+/*!50001 DROP TABLE IF EXISTS `supla_v_auto_gate_closing`*/;
+/*!50001 DROP VIEW IF EXISTS `supla_v_auto_gate_closing`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`supla`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `supla_v_auto_gate_closing` AS select `c`.`user_id` AS `user_id`,`dc`.`iodevice_id` AS `device_id`,`c`.`channel_id` AS `channel_id`,`supla_is_now_active`(`c`.`active_from`,`c`.`active_to`,`c`.`active_hours`,`u`.`timezone`) AS `is_now_active`,`c`.`max_time_open` AS `max_time_open`,`c`.`seconds_open` AS `seconds_open`,`c`.`closing_attempt` AS `closing_attempt`,`c`.`last_seen_open` AS `last_seen_open` from ((`supla_auto_gate_closing` `c` join `supla_user` `u`) join `supla_dev_channel` `dc`) where `c`.`user_id` = `u`.`id` and `c`.`channel_id` = `dc`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -2434,4 +2696,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-07-19 23:41:26
+-- Dump completed on 2022-10-23 13:02:22
