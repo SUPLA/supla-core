@@ -5,15 +5,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.cpp \
-../src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.cpp 
+../src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.cpp \
+../src/test/integration/datalogger/TemperatureLoggerDaoIntegrationTest.cpp 
 
 CPP_DEPS += \
 ./src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.d \
-./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.d 
+./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.d \
+./src/test/integration/datalogger/TemperatureLoggerDaoIntegrationTest.d 
 
 OBJS += \
 ./src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.o \
-./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.o 
+./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.o \
+./src/test/integration/datalogger/TemperatureLoggerDaoIntegrationTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -28,7 +31,7 @@ src/test/integration/datalogger/%.o: ../src/test/integration/datalogger/%.cpp sr
 clean: clean-src-2f-test-2f-integration-2f-datalogger
 
 clean-src-2f-test-2f-integration-2f-datalogger:
-	-$(RM) ./src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.o
+	-$(RM) ./src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/TemperatureLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/TemperatureLoggerDaoIntegrationTest.o
 
 .PHONY: clean-src-2f-test-2f-integration-2f-datalogger
 
