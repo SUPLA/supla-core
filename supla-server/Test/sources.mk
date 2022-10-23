@@ -76,6 +76,7 @@ src/test/google \
 src/test/http \
 src/test/integration \
 src/test/integration/client \
+src/test/integration/datalogger \
 src/test/integration/mqtt \
 src/test/integration/scene \
 src/test/ipc \

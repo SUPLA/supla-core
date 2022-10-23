@@ -16,27 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef INTEGRATIONTEST_H_
-#define INTEGRATIONTEST_H_
+#ifndef ElectricityLoggerDaoTest_H_
+#define ElectricityLoggerDaoTest_H_
 
-#include <string>
-
-#include "gtest/gtest.h"
+#include "datalogger/electricity_logger_dao.h"
+#include "db/db_access_provider.h"
+#include "integration/IntegrationTest.h"
 
 namespace testing {
 
-class IntegrationTest {
- private:
+class ElectricityLoggerDaoIntegrationTest : public IntegrationTest,
+                                            public Test {
  protected:
-  void runSqlScript(const char *script);
-  void sqlQuery(const char *query, std::string *result);
-  void initTestDatabase();
+  supla_db_access_provider *dba;
+  supla_electricity_logger_dao *dao;
 
  public:
-  IntegrationTest();
-  virtual ~IntegrationTest();
+  ElectricityLoggerDaoIntegrationTest();
+  virtual ~ElectricityLoggerDaoIntegrationTest();
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
 } /* namespace testing */
 
-#endif /* INTEGRATIONTEST_H_ */
+#endif /* ElectricityLoggerDaoTest_H_ */
