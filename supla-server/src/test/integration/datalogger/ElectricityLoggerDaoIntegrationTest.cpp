@@ -34,6 +34,7 @@ ElectricityLoggerDaoIntegrationTest::~ElectricityLoggerDaoIntegrationTest() {}
 
 void ElectricityLoggerDaoIntegrationTest::SetUp() {
   dba = new supla_db_access_provider();
+  ASSERT_TRUE(dba != nullptr);
   dao = new supla_electricity_logger_dao(dba);
   ASSERT_TRUE(dao != nullptr);
 
