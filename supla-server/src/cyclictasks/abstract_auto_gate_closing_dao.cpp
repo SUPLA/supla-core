@@ -28,3 +28,8 @@ supla_abstract_auto_gate_closing_dao::supla_abstract_auto_gate_closing_dao(
 }
 
 supla_abstract_auto_gate_closing_dao::~supla_abstract_auto_gate_closing_dao() {}
+
+supla_abstract_db_access_provider *
+supla_abstract_auto_gate_closing_dao::get_dba(void) {
+  return dba;
+}

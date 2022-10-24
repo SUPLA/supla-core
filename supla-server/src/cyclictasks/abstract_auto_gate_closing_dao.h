@@ -29,6 +29,9 @@ class supla_abstract_auto_gate_closing_dao {
  private:
   supla_abstract_db_access_provider *dba;
 
+ protected:
+  supla_abstract_db_access_provider *get_dba(void);
+
  public:
   typedef struct {
     int user_id;

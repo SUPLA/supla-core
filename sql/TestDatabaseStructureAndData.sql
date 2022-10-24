@@ -2531,7 +2531,6 @@ DELIMITER ;
 /*!50001 SET character_set_results     = utf8mb4 */;
 /*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`pzygmunt`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `supla_v_auto_gate_closing` AS select `c`.`user_id` AS `user_id`,`c`.`enabled` AS `enabled`,`dc`.`iodevice_id` AS `device_id`,`c`.`channel_id` AS `channel_id`,`supla_is_now_active`(`c`.`active_from`,`c`.`active_to`,`c`.`active_hours`,`u`.`timezone`) AS `is_now_active`,`c`.`max_time_open` AS `max_time_open`,`c`.`seconds_open` AS `seconds_open`,`c`.`closing_attempt` AS `closing_attempt`,`c`.`last_seen_open` AS `last_seen_open` from ((`supla_auto_gate_closing` `c` join `supla_user` `u`) join `supla_dev_channel` `dc`) where `c`.`user_id` = `u`.`id` and `c`.`channel_id` = `dc`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
