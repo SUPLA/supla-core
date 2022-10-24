@@ -27,7 +27,7 @@ namespace testing {
 
 class AutoGateClosingDaoMock : public supla_abstract_auto_gate_closing_dao {
  public:
-  AutoGateClosingDaoMock(supla_abstract_db_access_provider *dba);
+  explicit AutoGateClosingDaoMock(supla_abstract_db_access_provider *dba);
   virtual ~AutoGateClosingDaoMock(void);
   MOCK_METHOD0(get_all_active, std::vector<item_t>(void));
   MOCK_METHOD1(mark_gate_open, int(int channel_id));
