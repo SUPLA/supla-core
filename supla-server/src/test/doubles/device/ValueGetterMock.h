@@ -16,23 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AUTO_GATE_CLOSING_DAO_H_
-#define AUTO_GATE_CLOSING_DAO_H_
+#ifndef VALUE_GETTER_MOCK_H_
+#define VALUE_GETTER_MOCK_H_
 
-#include <vector>
+#include <abstract_value_getter.h>
+#include <gmock/gmock.h>
 
-#include "cyclictasks/abstract_auto_gate_closing_dao.h"
-#include "db/abstract_db_access_provider.h"
+namespace testing {
 
-class supla_auto_gate_closing_dao
-    : public supla_abstract_auto_gate_closing_dao {
+class ValueGetterMock : public supla_abstract_value_getter {
+ protected:
  public:
-  explicit supla_auto_gate_closing_dao(supla_abstract_db_access_provider *dba);
-  virtual ~supla_auto_gate_closing_dao();
-  virtual std::vector<item_t> get_all_active(void);
-  virtual int mark_gate_open(int channel_id);
-  virtual void mark_gate_closed(int channel_id);
-  virtual void set_closing_attempt(int channel_id);
+  ValueGetterMock(void);
+  virtual ~ValueGetterMock(void);
+
+  MOCK_METHOD3(_get_value, supla_channel_value*(int user_id, int device_id,
+                                                int channel_id));
 };
 
-#endif /* AUTO_GATE_CLOSING_DAO_H_ */
+} /* namespace testing */
+
+#endif /* VALUE_GETTER_MOCK_H_ */

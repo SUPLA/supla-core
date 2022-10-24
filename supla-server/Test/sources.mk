@@ -56,6 +56,7 @@ src/test/asynctask \
 src/test/channeljsonconfig \
 src/test/client \
 src/test/conn \
+src/test/cyclictasks \
 src/test/device \
 src/test/distributedobjects \
 src/test/doubles \
@@ -64,6 +65,7 @@ src/test/doubles/asynctask \
 src/test/doubles/channeljsonconfig \
 src/test/doubles/client \
 src/test/doubles/conn \
+src/test/doubles/cyclictasks \
 src/test/doubles/db \
 src/test/doubles/device \
 src/test/doubles/distributedobjects \

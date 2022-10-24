@@ -109,7 +109,7 @@ void supla_auto_gate_closing_dao::mark_gate_closed(int channel_id) {
   get_dba()->query(sql, true);
 }
 
-void supla_auto_gate_closing_dao::set_closing_attemtp(int channel_id) {
+void supla_auto_gate_closing_dao::set_closing_attempt(int channel_id) {
   char sql[51];
   snprintf(sql, sizeof(sql), "CALL `supla_set_closing_attempt`(%i)",
            channel_id);

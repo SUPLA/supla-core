@@ -16,23 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AUTO_GATE_CLOSING_DAO_H_
-#define AUTO_GATE_CLOSING_DAO_H_
+#include "doubles/cyclictasks/AutoGateClosingMock.h"
 
-#include <vector>
+namespace testing {
 
-#include "cyclictasks/abstract_auto_gate_closing_dao.h"
-#include "db/abstract_db_access_provider.h"
+using std::vector;
 
-class supla_auto_gate_closing_dao
-    : public supla_abstract_auto_gate_closing_dao {
- public:
-  explicit supla_auto_gate_closing_dao(supla_abstract_db_access_provider *dba);
-  virtual ~supla_auto_gate_closing_dao();
-  virtual std::vector<item_t> get_all_active(void);
-  virtual int mark_gate_open(int channel_id);
-  virtual void mark_gate_closed(int channel_id);
-  virtual void set_closing_attempt(int channel_id);
-};
+AutoGateClosingMock::AutoGateClosingMock()
+    : supla_abstract_auto_gate_closing() {}
 
-#endif /* AUTO_GATE_CLOSING_DAO_H_ */
+AutoGateClosingMock::~AutoGateClosingMock(void) {}
+
+void AutoGateClosingMock::run(const vector<supla_user *> *users,
+                              supla_abstract_db_access_provider *dba) {
+  supla_abstract_auto_gate_closing::run(users, dba);
+}
+
+}  // namespace testing

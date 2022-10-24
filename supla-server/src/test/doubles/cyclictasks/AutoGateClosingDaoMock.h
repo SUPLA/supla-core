@@ -16,23 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AUTO_GATE_CLOSING_DAO_H_
-#define AUTO_GATE_CLOSING_DAO_H_
+#ifndef AUTO_GATE_CLOSING_DAO_MOCK_H_
+#define AUTO_GATE_CLOSING_DAO_MOCK_H_
 
-#include <vector>
+#include <gmock/gmock.h>
 
 #include "cyclictasks/abstract_auto_gate_closing_dao.h"
-#include "db/abstract_db_access_provider.h"
 
-class supla_auto_gate_closing_dao
-    : public supla_abstract_auto_gate_closing_dao {
+namespace testing {
+
+class AutoGateClosingDaoMock : public supla_abstract_auto_gate_closing_dao {
  public:
-  explicit supla_auto_gate_closing_dao(supla_abstract_db_access_provider *dba);
-  virtual ~supla_auto_gate_closing_dao();
-  virtual std::vector<item_t> get_all_active(void);
-  virtual int mark_gate_open(int channel_id);
-  virtual void mark_gate_closed(int channel_id);
-  virtual void set_closing_attempt(int channel_id);
+  AutoGateClosingDaoMock(supla_abstract_db_access_provider *dba);
+  virtual ~AutoGateClosingDaoMock(void);
+  MOCK_METHOD0(get_all_active, std::vector<item_t>(void));
+  MOCK_METHOD1(mark_gate_open, int(int channel_id));
+  MOCK_METHOD1(mark_gate_closed, void(int channel_id));
+  MOCK_METHOD1(set_closing_attempt, void(int channel_id));
 };
 
-#endif /* AUTO_GATE_CLOSING_DAO_H_ */
+} /* namespace testing */
+
+#endif /* AUTO_GATE_CLOSING_DAO_MOCK_H_ */

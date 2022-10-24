@@ -80,7 +80,7 @@ void supla_abstract_auto_gate_closing::run(
       int time_left = dao->mark_gate_open(it->channel_id);
       if (time_left <= 0 &&
           it->seconds_since_last_attempt >= ATTEMPT_RETRY_TIME_SEC) {
-        dao->set_closing_attemtp(it->channel_id);
+        dao->set_closing_attempt(it->channel_id);
         close_the_gate(it->user_id, it->device_id, it->channel_id);
       }
     }

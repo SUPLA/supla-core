@@ -178,7 +178,7 @@ TEST_F(AutoGateClosingDaoIntegrationTest, setClosingAttempt) {
   EXPECT_LE(i.seconds_since_last_attempt, 3);
   EXPECT_TRUE(i.seen_open);
 
-  dao->set_closing_attemtp(308);
+  dao->set_closing_attempt(308);
 
   result = dao->get_all_active();
 

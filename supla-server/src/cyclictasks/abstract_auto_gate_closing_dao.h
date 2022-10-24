@@ -47,7 +47,7 @@ class supla_abstract_auto_gate_closing_dao {
   virtual std::vector<item_t> get_all_active(void) = 0;
   virtual int mark_gate_open(int channel_id) = 0;
   virtual void mark_gate_closed(int channel_id) = 0;
-  virtual void set_closing_attemtp(int channel_id) = 0;
+  virtual void set_closing_attempt(int channel_id) = 0;
 };
 
 #endif /* ABSTRACT_AUTO_GATE_CLOSING_DAO_H_ */
