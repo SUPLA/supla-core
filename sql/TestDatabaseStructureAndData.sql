@@ -217,6 +217,7 @@ DROP TABLE IF EXISTS `supla_auto_gate_closing`;
 CREATE TABLE `supla_auto_gate_closing` (
   `channel_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT 0,
   `active_from` date DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
   `active_to` date DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
   `active_hours` varchar(768) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -1306,6 +1307,7 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `supla_v_auto_gate_closing` (
   `user_id` tinyint NOT NULL,
+  `enabled` tinyint NOT NULL,
   `device_id` tinyint NOT NULL,
   `channel_id` tinyint NOT NULL,
   `is_now_active` tinyint NOT NULL,
@@ -2527,10 +2529,10 @@ DELIMITER ;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
 /*!50001 SET character_set_client      = utf8mb4 */;
 /*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_general_ci */;
+/*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`supla`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `supla_v_auto_gate_closing` AS select `c`.`user_id` AS `user_id`,`dc`.`iodevice_id` AS `device_id`,`c`.`channel_id` AS `channel_id`,`supla_is_now_active`(`c`.`active_from`,`c`.`active_to`,`c`.`active_hours`,`u`.`timezone`) AS `is_now_active`,`c`.`max_time_open` AS `max_time_open`,`c`.`seconds_open` AS `seconds_open`,`c`.`closing_attempt` AS `closing_attempt`,`c`.`last_seen_open` AS `last_seen_open` from ((`supla_auto_gate_closing` `c` join `supla_user` `u`) join `supla_dev_channel` `dc`) where `c`.`user_id` = `u`.`id` and `c`.`channel_id` = `dc`.`id` */;
+/*!50013 DEFINER=`pzygmunt`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `supla_v_auto_gate_closing` AS select `c`.`user_id` AS `user_id`,`c`.`enabled` AS `enabled`,`dc`.`iodevice_id` AS `device_id`,`c`.`channel_id` AS `channel_id`,`supla_is_now_active`(`c`.`active_from`,`c`.`active_to`,`c`.`active_hours`,`u`.`timezone`) AS `is_now_active`,`c`.`max_time_open` AS `max_time_open`,`c`.`seconds_open` AS `seconds_open`,`c`.`closing_attempt` AS `closing_attempt`,`c`.`last_seen_open` AS `last_seen_open` from ((`supla_auto_gate_closing` `c` join `supla_user` `u`) join `supla_dev_channel` `dc`) where `c`.`user_id` = `u`.`id` and `c`.`channel_id` = `dc`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -2696,4 +2698,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-10-23 13:02:22
+-- Dump completed on 2022-10-24 10:59:12
