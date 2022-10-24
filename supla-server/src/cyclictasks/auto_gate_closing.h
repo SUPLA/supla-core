@@ -21,28 +21,18 @@
 
 #include <vector>
 
-#include "cyclictasks/abstract_auto_gate_closing_dao.h"
-#include "cyclictasks/abstract_cyclictask.h"
-#include "device/channel_gate_value.h"
-#include "device/value_getter.h"
+#include "cyclictasks/abstract_auto_gate_closing.h"
 
-class supla_auto_gate_closing : public supla_abstract_cyclictask {
- private:
-  supla_abstract_auto_gate_closing_dao *dao;
-  supla_abstract_value_getter *value_getter;
-
-  _gate_sensor_level_enum get_opening_sensor_level(
-      supla_abstract_auto_gate_closing_dao::item_t *item);
-
+class supla_auto_gate_closing : public supla_abstract_auto_gate_closing {
  protected:
-  virtual unsigned int task_interval_sec(void);
-  virtual void run(const std::vector<supla_user *> *users,
-                   supla_abstract_db_access_provider *dba);
-  virtual bool user_access_needed(void);
+  virtual supla_abstract_auto_gate_closing_dao *get_dao(
+      supla_abstract_db_access_provider *dba);
+  virtual void release_dao(supla_abstract_auto_gate_closing_dao *dao);
+  virtual supla_abstract_value_getter *get_value_getter(void);
+  virtual void release_value_getter(supla_abstract_value_getter *value_getter);
+  virtual void close_the_gate(int user_id, int device_id, int channel_id);
 
  public:
-  supla_auto_gate_closing(supla_abstract_auto_gate_closing_dao *dao,
-                          supla_abstract_value_getter *value_getter);
   supla_auto_gate_closing(void);
   virtual ~supla_auto_gate_closing();
 };

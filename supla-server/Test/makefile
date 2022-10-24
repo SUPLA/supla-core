@@ -30,6 +30,7 @@ RM := rm -rf
 -include src/test/doubles/distributedobjects/subdir.mk
 -include src/test/doubles/device/subdir.mk
 -include src/test/doubles/db/subdir.mk
+-include src/test/doubles/cyclictasks/subdir.mk
 -include src/test/doubles/conn/subdir.mk
 -include src/test/doubles/client/subdir.mk
 -include src/test/doubles/channeljsonconfig/subdir.mk
@@ -38,6 +39,7 @@ RM := rm -rf
 -include src/test/doubles/subdir.mk
 -include src/test/distributedobjects/subdir.mk
 -include src/test/device/subdir.mk
+-include src/test/cyclictasks/subdir.mk
 -include src/test/conn/subdir.mk
 -include src/test/client/subdir.mk
 -include src/test/channeljsonconfig/subdir.mk
