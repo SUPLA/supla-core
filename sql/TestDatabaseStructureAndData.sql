@@ -218,8 +218,8 @@ CREATE TABLE `supla_auto_gate_closing` (
   `channel_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `enabled` tinyint(1) NOT NULL DEFAULT 0,
-  `active_from` date DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
-  `active_to` date DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
+  `active_from` datetime DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
+  `active_to` datetime DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
   `active_hours` varchar(768) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `max_time_open` int(11) NOT NULL,
   `seconds_open` int(11) DEFAULT NULL,
@@ -1711,11 +1711,12 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_add_em_voltage_log_item`(
+                IN `_date` DATETIME, 
                 IN `_channel_id` INT(11), 
                 IN `_phase_no` TINYINT,
                 IN `_count_total` INT(11),
@@ -1735,7 +1736,7 @@ CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_add_em_voltage_log_item`(
 BEGIN
 
             INSERT INTO `supla_em_voltage_log` (`date`,channel_id, phase_no, count_total, count_above, count_below, sec_total, sec_above, sec_below, max_sec_above, max_sec_below, min_voltage, max_voltage, avg_voltage, measurement_time_sec)
-                              VALUES (UTC_TIMESTAMP(),_channel_id,_phase_no,_count_total,_count_above,_count_below,_sec_total,_sec_above,_sec_below,_max_sec_above,_max_sec_below,_min_voltage,_max_voltage,_avg_voltage,_measurement_time_sec);
+                              VALUES (_date,_channel_id,_phase_no,_count_total,_count_above,_count_below,_sec_total,_sec_above,_sec_below,_max_sec_above,_max_sec_below,_min_voltage,_max_voltage,_avg_voltage,_measurement_time_sec);
 
             END ;;
 DELIMITER ;
@@ -2531,6 +2532,7 @@ DELIMITER ;
 /*!50001 SET character_set_results     = utf8mb4 */;
 /*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`supla`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `supla_v_auto_gate_closing` AS select `c`.`user_id` AS `user_id`,`c`.`enabled` AS `enabled`,`dc`.`iodevice_id` AS `device_id`,`c`.`channel_id` AS `channel_id`,`supla_is_now_active`(`c`.`active_from`,`c`.`active_to`,`c`.`active_hours`,`u`.`timezone`) AS `is_now_active`,`c`.`max_time_open` AS `max_time_open`,`c`.`seconds_open` AS `seconds_open`,`c`.`closing_attempt` AS `closing_attempt`,`c`.`last_seen_open` AS `last_seen_open` from ((`supla_auto_gate_closing` `c` join `supla_user` `u`) join `supla_dev_channel` `dc`) where `c`.`user_id` = `u`.`id` and `c`.`channel_id` = `dc`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -2697,4 +2699,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-10-24 10:59:12
+-- Dump completed on 2022-10-25 16:35:51
