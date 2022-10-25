@@ -19,13 +19,17 @@
 #ifndef VOLTAGE_THRESHOLD_LOGGER_DAO_H_
 #define VOLTAGE_THRESHOLD_LOGGER_DAO_H_
 
+#include <mysql/mysql.h>
+
 #include "analyzer/voltage_analyzers.h"
 #include "db/abstract_db_access_provider.h"
 
 class supla_voltage_threshold_logger_dao {
  private:
   supla_abstract_db_access_provider *dba;
-  void add(int channel_id, char phase, supla_voltage_analyzer *va);
+  void add(MYSQL_TIME *time, int channel_id, char phase,
+           supla_voltage_analyzer *va);
+  bool get_utc_timestamp(MYSQL_TIME *time);
 
  public:
   explicit supla_voltage_threshold_logger_dao(
