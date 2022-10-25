@@ -93,8 +93,8 @@ void supla_voltage_analyzer::add_sample(double value) {
     if (value > upper_threshold) {
       if (time_above.tv_sec == 0 && time_above.tv_usec == 0) {
         gettimeofday(&time_above, nullptr);
+        above_count++;
       }
-      above_count++;
     } else {
       unsigned int msec_diff = time_above_diff();
       time_above = {};
@@ -109,8 +109,8 @@ void supla_voltage_analyzer::add_sample(double value) {
     if (value < lower_threshold) {
       if (time_below.tv_sec == 0 && time_below.tv_usec == 0) {
         gettimeofday(&time_below, nullptr);
+        below_count++;
       }
-      below_count++;
     } else {
       unsigned int msec_diff = time_below_diff();
       time_below = {};

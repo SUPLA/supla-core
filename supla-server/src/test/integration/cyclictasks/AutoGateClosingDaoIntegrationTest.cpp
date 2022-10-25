@@ -60,6 +60,15 @@ void AutoGateClosingDaoIntegrationTest::TearDown() {
 }
 
 TEST_F(AutoGateClosingDaoIntegrationTest, emptyList) {
+  ASSERT_TRUE(dba->connect());
+
+  vector<supla_abstract_auto_gate_closing_dao::item_t> result =
+      dao->get_all_active();
+
+  EXPECT_EQ(result.size(), 0);
+}
+
+TEST_F(AutoGateClosingDaoIntegrationTest, getAll) {
   runSqlScript("AddAutoGateClosingConfig.sql");
   ASSERT_TRUE(dba->connect());
 

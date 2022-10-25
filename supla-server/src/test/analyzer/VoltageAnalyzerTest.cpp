@@ -27,8 +27,13 @@ TEST_F(VoltageAnalyzerTest, belowCounter) {
   va.add_sample(0);
   va.add_sample(1);
   va.add_sample(2);
-  EXPECT_EQ(va.get_below_count(), 2);
+  EXPECT_EQ(va.get_below_count(), 1);
   EXPECT_EQ(va.get_sample_count(), 4);
+
+  va.add_sample(-2);
+  va.add_sample(-3);
+  EXPECT_EQ(va.get_below_count(), 2);
+  EXPECT_EQ(va.get_sample_count(), 6);
 }
 
 TEST_F(VoltageAnalyzerTest, aboveCounter) {
@@ -38,8 +43,16 @@ TEST_F(VoltageAnalyzerTest, aboveCounter) {
   va.add_sample(2);
   va.add_sample(5);
   va.add_sample(10);
+  va.add_sample(12);
   EXPECT_EQ(va.get_above_count(), 1);
-  EXPECT_EQ(va.get_sample_count(), 4);
+  EXPECT_EQ(va.get_sample_count(), 5);
+
+  va.add_sample(4);
+  va.add_sample(6);
+  va.add_sample(7);
+
+  EXPECT_EQ(va.get_above_count(), 2);
+  EXPECT_EQ(va.get_sample_count(), 8);
 }
 
 TEST_F(VoltageAnalyzerTest, timeAbove) {
