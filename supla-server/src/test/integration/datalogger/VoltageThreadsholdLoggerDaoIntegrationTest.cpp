@@ -111,13 +111,14 @@ TEST_F(VoltageThreadsholdLoggerDaoIntegrationTest, add) {
       "-2 SECOND) AND date <= DATE_ADD(UTC_TIMESTAMP(), INTERVAL 2 SECOND)",
       &result);
 
-  EXPECT_EQ(result,
-            "channel_id\tphase_no\tcount_total\tcount_above\tcount_below\tsec_"
-            "total\tsec_above\tsec_below\tmax_sec_above\tmax_sec_below\tmin_"
-            "voltage\tmax_voltage\tavg_voltage\tmeasurement_time_"
-            "sec\n234\t1\t4\t1\t1\t3\t2\t1\t2\t1\t10.51\t310.55\t160."
-            "53\t3\n234\t2\t4\t1\t1\t3\t2\t1\t2\t1\t15.52\t315.55\t165."
-            "53\t3\n234\t3\t4\t1\t1\t3\t2\t1\t2\t1\t20.53\t320.55\t170.54\t3\n");
+  EXPECT_EQ(
+      result,
+      "channel_id\tphase_no\tcount_total\tcount_above\tcount_below\tsec_"
+      "total\tsec_above\tsec_below\tmax_sec_above\tmax_sec_below\tmin_"
+      "voltage\tmax_voltage\tavg_voltage\tmeasurement_time_"
+      "sec\n234\t1\t4\t1\t1\t3\t2\t1\t2\t1\t10.51\t310.55\t160."
+      "53\t3\n234\t2\t4\t1\t1\t3\t2\t1\t2\t1\t15.52\t315.55\t165."
+      "53\t3\n234\t3\t4\t1\t1\t3\t2\t1\t2\t1\t20.53\t320.55\t170.54\t3\n");
 }
 
 } /* namespace testing */
