@@ -48,7 +48,7 @@ fi
 cd supla-console-client/Test
 make clean && make -j8 all
 
-vg_verify "./supla-console-client --sqldir ../../sql"
+vg_verify "./supla-console-client --sqldir ../../sql --gtest_shuffle"
 
 echo OK 
 exit 0
