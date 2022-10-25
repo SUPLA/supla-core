@@ -138,7 +138,7 @@ void supla_voltage_threshold_logger_dao::add(MYSQL_TIME *time, int channel_id,
       "CALL `supla_add_em_voltage_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 14, true);
+  dba->stmt_execute((void **)&stmt, sql, pbind, 15, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }
