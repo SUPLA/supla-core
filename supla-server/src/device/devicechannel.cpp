@@ -118,6 +118,8 @@ supla_device_channel::supla_device_channel(
       SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
     logger_data = new _logger_purpose_t();
   }
+
+  voltage_analyzers.set_channel_id(Id);
 }
 
 supla_device_channel::~supla_device_channel() {
