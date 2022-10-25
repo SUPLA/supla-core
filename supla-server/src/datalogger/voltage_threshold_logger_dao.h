@@ -19,7 +19,7 @@
 #ifndef VOLTAGE_THRESHOLD_LOGGER_DAO_H_
 #define VOLTAGE_THRESHOLD_LOGGER_DAO_H_
 
-#include <mysql/mysql.h>
+#include <mysql.h>
 
 #include "analyzer/voltage_analyzers.h"
 #include "db/abstract_db_access_provider.h"
