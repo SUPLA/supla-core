@@ -49,8 +49,8 @@ void supla_voltage_threshold_logger::run(
                                                           *channel) -> void {
         if (channel->get_voltage_analyzers().is_any_sample_over_threshold()) {
           vas.push_back(channel->get_voltage_analyzers());
-          channel->get_voltage_analyzers().reset();
         }
+        channel->get_voltage_analyzers().reset();
       });
     }
   }
