@@ -1495,16 +1495,16 @@ SET character_set_client = @saved_cs_client;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` FUNCTION `supla_current_weekday_hour`(`user_timezone` VARCHAR(50)) RETURNS varchar(3) CHARSET utf8mb4
+CREATE DEFINER=`pzygmunt`@`localhost` FUNCTION `supla_current_weekday_hour`(`user_timezone` VARCHAR(50)) RETURNS varchar(3) CHARSET utf8mb4
 BEGIN
             DECLARE current_weekday INT;
             DECLARE current_hour INT;
             DECLARE current_time_in_user_timezone DATETIME;
-            SELECT COALESCE(CONVERT_TZ(CURRENT_TIMESTAMP, 'UTC', `user_timezone`), UTC_TIMESTAMP) INTO current_time_in_user_timezone; 
+            SELECT IFNULL(CONVERT_TZ(UTC_TIMESTAMP, 'UTC', `user_timezone`), UTC_TIMESTAMP) INTO current_time_in_user_timezone; 
             SELECT (WEEKDAY(current_time_in_user_timezone) + 1) INTO current_weekday;
             SELECT HOUR(current_time_in_user_timezone) INTO current_hour;
             RETURN CONCAT(current_weekday, current_hour);
@@ -2699,4 +2699,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-10-25 16:35:51
+-- Dump completed on 2022-10-28 13:42:59
