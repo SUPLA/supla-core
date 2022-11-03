@@ -22,13 +22,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <memory>
+
 #include "client.h"
-#include "database.h"
+#include "db/database.h"
 #include "log.h"
 #include "proto.h"
 #include "safearray.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_client_channel::supla_client_channel(
     supla_client_channels *Container, int Id, int DeviceId, int LocationID,
@@ -209,11 +213,12 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue_B *value,
                                            char *online, supla_client *client) {
   bool result = false;
 
-  if (client && client->getUser()) {
+  if (client && client->get_user()) {
     unsigned _supla_int_t validity_time_sec = 0;
-    result = client->getUser()->get_channel_value(
+    result = client->get_user()->get_channel_value(
         DeviceId, getId(), value->value, value->sub_value,
-        &value->sub_value_type, online, &validity_time_sec, true);
+        &value->sub_value_type, nullptr, nullptr, online, &validity_time_sec,
+        true);
     if (result) {
       setValueValidityTimeSec(validity_time_sec);
     }
@@ -335,19 +340,19 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
 
   memset(cev, 0, sizeof(TSC_SuplaChannelExtendedValue));
 
-  if (client && client->getUser()) {
+  if (client && client->get_user()) {
     bool cev_exists = false;
 
     int ChannelId = getId();
-    supla_device *device = client->getUser()->get_device(DeviceId);
+    shared_ptr<supla_device> device =
+        client->get_user()->get_devices()->get(DeviceId);
 
-    if (device) {
+    if (device != nullptr) {
       cev_exists =
           device->get_channels()->get_channel_extendedvalue(ChannelId, cev);
-      device->releasePtr();
     }
 
-    device = NULL;
+    device = nullptr;
     ChannelId = 0;
 
     switch (getFunc()) {
@@ -362,13 +367,13 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     }
 
     if (ChannelId) {
-      device = client->getUser()->device_by_channelid(ChannelId);
+      device = client->get_user()->get_devices()->get(0, ChannelId);
 
-      if (device) {
+      if (device != nullptr) {
         TSC_SuplaChannelExtendedValue second_cev = {};
         if (device->get_channels()->get_channel_extendedvalue(ChannelId,
                                                               &second_cev)) {
-          if (client->getProtocolVersion() >= 17) {
+          if (client->get_protocol_version() >= 17) {
             srpc_evtool_value_add(&cev->value, &second_cev.value);
           } else {
             // For backward compatibility, overwrite cev->value
@@ -378,7 +383,6 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
 
           cev_exists = true;
         }
-        device->releasePtr();
       }
     }
 

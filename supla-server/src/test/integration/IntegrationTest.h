@@ -19,6 +19,8 @@
 #ifndef INTEGRATIONTEST_H_
 #define INTEGRATIONTEST_H_
 
+#include <string>
+
 #include "gtest/gtest.h"
 
 namespace testing {
@@ -27,6 +29,7 @@ class IntegrationTest {
  private:
  protected:
   void runSqlScript(const char *script);
+  void sqlQuery(const char *query, std::string *result);
   void initTestDatabase();
 
  public:

@@ -19,14 +19,15 @@
 #ifndef SUPLA_SCENE_OPERATIONS_DAO_H_
 #define SUPLA_SCENE_OPERATIONS_DAO_H_
 
+#include "db/abstract_db_access_provider.h"
 #include "scene/abstract_scene_operations_dao.h"
-#include "svrdb.h"
 
-class supla_scene_operations_dao : public supla_abstract_scene_operations_dao,
-                                   private svrdb {
+class supla_scene_operations_dao : public supla_abstract_scene_operations_dao {
  private:
+  supla_abstract_db_access_provider *dba;
+
  public:
-  supla_scene_operations_dao();
+  explicit supla_scene_operations_dao(supla_abstract_db_access_provider *dba);
   virtual ~supla_scene_operations_dao();
 
   virtual supla_scene_operations *get_scene_operations(int scene_id);

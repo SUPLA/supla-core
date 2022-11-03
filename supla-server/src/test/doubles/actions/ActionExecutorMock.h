@@ -19,7 +19,9 @@
 #ifndef ACTION_EXECUTOR_MOCK_H_
 #define ACTION_EXECUTOR_MOCK_H_
 
-#include <actions/abstract_action_executor.h>
+#include <memory>
+
+#include "actions/abstract_action_executor.h"
 
 namespace testing {
 
@@ -53,13 +55,14 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   char color_brightness;
   char closing_percentage;
   char rgbw_on_off;
+  bool delta;
   std::list<struct timeval> times;
   void addTime(void);
 
  public:
   ActionExecutorMock();
   virtual ~ActionExecutorMock();
-  void access_device(std::function<void(supla_device *device)> on_device);
+  std::shared_ptr<supla_device> get_device(void);
 
   virtual void set_on(bool on);
   virtual void set_color(unsigned int color);
@@ -68,7 +71,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
                         char *brightness, char *on_off);
   virtual void toggle(void);
-  virtual void shut(const char *closingPercentage);
+  virtual void shut(const char *closingPercentage, bool delta);
   virtual void reveal(void);
   virtual void up(void);
   virtual void down(void);
@@ -115,6 +118,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   char getBrightness(void);
   char getColorBrightness(void);
   char getRGBWOnOff(void);
+  bool getDelta(void);
   std::list<struct timeval> getTimes(void);
 };
 

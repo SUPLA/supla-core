@@ -59,6 +59,7 @@ bool supla_alexa_changereport_request::isCallerAccepted(
     case ctIPC:
     case ctMQTT:
     case ctScene:
+    case ctCyclicTask:
     case ctActionTrigger: {
       channel_complex_value value =
           getUser()->get_channel_complex_value(getChannelId());

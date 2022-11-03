@@ -20,7 +20,7 @@
 
 #include "distributedobjects/dobject_change_indicator.h"
 #include "doubles/distributedobjects/DObjectMock.h"
-#include "srpc_adapter.h"
+#include "srpc/srpc_adapter.h"
 
 namespace testing {
 

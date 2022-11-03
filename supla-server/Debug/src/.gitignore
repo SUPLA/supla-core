@@ -9,3 +9,9 @@
 /scene/
 /distributedobjects/
 /ipc/
+/srpc/
+/conn/
+/db/
+/datalogger/
+/analyzer/
+/cyclictasks/

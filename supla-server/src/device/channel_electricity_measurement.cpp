@@ -17,12 +17,12 @@
  */
 
 #include "channel_electricity_measurement.h"
-#include "channel_ic_measurement.h"
 
 #include <string.h>
 
+#include "channel_ic_measurement.h"
 #include "safearray.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 
 supla_channel_electricity_measurement::supla_channel_electricity_measurement(
     int ChannelId, TElectricityMeter_ExtendedValue_V2 *em_ev, int Param2,
@@ -88,29 +88,17 @@ void supla_channel_electricity_measurement::set_costs(
 
 // static
 bool supla_channel_electricity_measurement::update_cev(
-    TSC_SuplaChannelExtendedValue *cev, int Param2, const char *TextParam1) {
-  if (cev->value.type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
+    TSuplaChannelExtendedValue *ev, int Param2, const char *TextParam1) {
+  if (ev->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
     TElectricityMeter_ExtendedValue_V2 em_ev;
-    if (srpc_evtool_v2_extended2emextended(&cev->value, &em_ev)) {
+    if (srpc_evtool_v2_extended2emextended(ev, &em_ev)) {
       supla_channel_electricity_measurement::set_costs(Param2, TextParam1,
                                                        &em_ev);
 
-      srpc_evtool_v2_emextended2extended(&em_ev, &cev->value);
+      srpc_evtool_v2_emextended2extended(&em_ev, ev);
       return true;
     }
   }
 
   return false;
-}
-
-// static
-char supla_channel_electricity_measurement::emarr_clean(void *ptr) {
-  delete (supla_channel_electricity_measurement *)ptr;
-  return 1;
-}
-
-// static
-void supla_channel_electricity_measurement::free(void *emarr) {
-  safe_array_clean(emarr, emarr_clean);
-  safe_array_free(emarr);
 }

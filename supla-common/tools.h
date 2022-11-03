@@ -41,6 +41,7 @@ extern unsigned char st_app_terminate;
 
 unsigned char st_file_exists(const char *fp);
 void st_hook_signals(void);
+void st_hook_critical_signals(void);
 char st_try_fork(void);
 char st_set_ug_id(int uid, int gid);
 char st_setpidfile(char *pidfile_path);

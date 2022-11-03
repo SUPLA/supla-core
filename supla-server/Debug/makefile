@@ -10,6 +10,7 @@ RM := rm -rf
 -include sources.mk
 -include src/webhook/subdir.mk
 -include src/user/subdir.mk
+-include src/srpc/subdir.mk
 -include src/scene/subdir.mk
 -include src/mqtt/subdir.mk
 -include src/json/subdir.mk
@@ -17,12 +18,20 @@ RM := rm -rf
 -include src/http/subdir.mk
 -include src/google/subdir.mk
 -include src/distributedobjects/subdir.mk
+-include src/device/call_handler/subdir.mk
 -include src/device/subdir.mk
+-include src/db/subdir.mk
+-include src/datalogger/subdir.mk
+-include src/cyclictasks/subdir.mk
 -include src/crypt_blowfish/subdir.mk
 -include src/converter/subdir.mk
+-include src/conn/call_handler/subdir.mk
+-include src/conn/subdir.mk
+-include src/client/call_handler/subdir.mk
 -include src/client/subdir.mk
 -include src/channeljsonconfig/subdir.mk
 -include src/asynctask/subdir.mk
+-include src/analyzer/subdir.mk
 -include src/amazon/subdir.mk
 -include src/actions/subdir.mk
 -include src/subdir.mk
@@ -72,7 +81,7 @@ main-build: supla-server
 supla-server: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	$(CXX) -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS) -lssl -l$(LIBMYSQL) -lcrypto
+	$(CXX) -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -rdynamic -no-pie -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS) -lssl -l$(LIBMYSQL) -lcrypto
 	@echo 'Finished building target: $@'
 	@echo ' '
 

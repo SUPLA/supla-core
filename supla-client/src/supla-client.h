@@ -30,7 +30,7 @@ typedef void (*_suplaclient_cb_on_versionerror)(void *_suplaclient,
 typedef void (*_suplaclient_cb_on_action)(void *_suplaclient, void *user_data);
 typedef void (*_suplaclient_cb_on_registered)(
     void *_suplaclient, void *user_data,
-    TSC_SuplaRegisterClientResult_C *result);
+    TSC_SuplaRegisterClientResult_D *result);
 typedef void (*_suplaclient_cb_on_error)(void *_suplaclient, void *user_data,
                                          int code);
 typedef void (*_suplaclient_cb_location_update)(void *_suplaclient,
@@ -62,7 +62,7 @@ typedef void (*_suplaclient_cb_on_event)(void *_suplaclient, void *user_data,
 typedef void (*_suplaclient_cb_on_registration_enabled)(
     void *_suplaclient, void *user_data, TSDC_RegistrationEnabled *reg_enabled);
 typedef void (*_suplaclient_cb_on_min_version_required)(
-    void *_suplaclient, void *user_data, unsigned int call_type,
+    void *_suplaclient, void *user_data, unsigned int call_id,
     unsigned char min_version);
 typedef void (*_suplaclient_cb_on_oauth_token_request_result)(
     void *_suplaclient, void *user_data, TSC_OAuthTokenRequestResult *result);
@@ -104,6 +104,17 @@ typedef void (*_suplaclient_cb_on_zwave_result_with_node)(
 typedef void (*_suplaclient_cb_on_zwave_wake_up_settings_report)(
     void *_suplaclient, void *user_data, _supla_int_t result,
     TCalCfg_ZWave_WakeupSettingsReport *report);
+
+typedef void (*_suplaclient_cb_on_zwave_wake_up_settings_report)(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    TCalCfg_ZWave_WakeupSettingsReport *report);
+
+typedef void (*_suplaclient_cb_on_action_execution_result)(
+    void *_suplaclient, void *user_data,
+    TSC_ActionExecutionResult *sc_action_execution_result);
+
+typedef void (*_suplaclient_cb_on_get_channel_value_get_result)(
+    void *_suplaclient, void *user_data, TSC_GetChannelValueResult *result);
 
 typedef struct {
   char clientGUID[SUPLA_GUID_SIZE];
@@ -166,6 +177,7 @@ typedef struct {
       cb_on_channel_function_set_result;
   _suplaclient_cb_on_caption_set_result cb_on_channel_caption_set_result;
   _suplaclient_cb_on_caption_set_result cb_on_location_caption_set_result;
+  _suplaclient_cb_on_caption_set_result cb_on_scene_caption_set_result;
   _suplaclient_cb_on_clients_reconnect_request_result
       cb_on_clients_reconnect_request_result;
   _suplaclient_cb_on_set_registration_enabled_result
@@ -185,6 +197,9 @@ typedef struct {
   _suplaclient_cb_on_zwave_wake_up_settings_report
       cb_on_zwave_wake_up_settings_report;
   _suplaclient_cb_on_zwave_basic_result cb_on_zwave_set_wake_up_time_result;
+  _suplaclient_cb_on_action_execution_result cb_on_action_execution_result;
+  _suplaclient_cb_on_get_channel_value_get_result
+      cb_on_get_channel_value_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus
@@ -236,6 +251,8 @@ char supla_client_set_channel_caption(void *_suplaclient, int ChannelID,
                                       const char *Caption);
 char supla_client_set_location_caption(void *_suplaclient, int LocationID,
                                        const char *Caption);
+char supla_client_set_scene_caption(void *_suplaclient, int SceneID,
+                                    const char *Caption);
 char supla_client_reconnect_all_clients(void *_suplaclient);
 char supla_client_set_registration_enabled(void *_suplaclient,
                                            int ioDeviceRegTimeSec,
@@ -262,6 +279,10 @@ char supla_client_set_dgf_transparency(void *_suplaclient, int channelID,
 int supla_client_get_time_diff(void *_suplaclient);
 char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
                             unsigned int durationMS);
+char supla_client_execute_action(void *_suplaclient, int action_id,
+                                 TAction_RS_Parameters *rs_param,
+                                 TAction_RGBW_Parameters *rgbw_param,
+                                 unsigned char subject_type, int subject_id);
 
 _supla_int_t srpc_evtool_value_get(TSuplaChannelExtendedValue *ev,
                                    unsigned short index,

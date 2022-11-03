@@ -206,6 +206,7 @@ TEST_F(CallerClassTest, conversionToSenderId) {
   supla_caller c6(ctGoogleHome, 10);
   supla_caller c7(ctActionTrigger, 10);
   supla_caller c8(ctScene, 10);
+  supla_caller c9(ctCyclicTask, 10);
 
   EXPECT_EQ(c1.convert_to_sender_id(), 0);
   EXPECT_EQ(c2.convert_to_sender_id(), 0);
@@ -215,6 +216,7 @@ TEST_F(CallerClassTest, conversionToSenderId) {
   EXPECT_EQ(c6.convert_to_sender_id(), 0);
   EXPECT_EQ(c7.convert_to_sender_id(), 0);
   EXPECT_EQ(c8.convert_to_sender_id(), 0);
+  EXPECT_EQ(c9.convert_to_sender_id(), 0);
 }
 
 TEST_F(CallerClassTest, comparsionOperator) {

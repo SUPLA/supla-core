@@ -24,6 +24,7 @@ namespace testing {
 
 using std::function;
 using std::list;
+using std::shared_ptr;
 
 ActionExecutorMock::ActionExecutorMock() : supla_abstract_action_executor() {
   clear();
@@ -31,9 +32,8 @@ ActionExecutorMock::ActionExecutorMock() : supla_abstract_action_executor() {
 
 ActionExecutorMock::~ActionExecutorMock() {}
 
-void ActionExecutorMock::access_device(
-    function<void(supla_device *device)> on_device) {
-  supla_abstract_action_executor::access_device(on_device);
+shared_ptr<supla_device> ActionExecutorMock::get_device(void) {
+  return supla_abstract_action_executor::get_device();
 }
 
 void ActionExecutorMock::clear(void) {
@@ -65,6 +65,7 @@ void ActionExecutorMock::clear(void) {
   this->rgbw_counter = 0;
   this->forward_outside_counter = 0;
   this->rgbw_on_off = -1;
+  this->delta = false;
 }
 
 void ActionExecutorMock::addTime(void) {
@@ -126,12 +127,13 @@ void ActionExecutorMock::toggle(void) {
   toggle_counter++;
 }
 
-void ActionExecutorMock::shut(const char *closingPercentage) {
+void ActionExecutorMock::shut(const char *closingPercentage, bool delta) {
   addTime();
   shut_counter++;
   if (closingPercentage) {
     closing_percentage = *closingPercentage;
   }
+  this->delta = delta;
 }
 
 void ActionExecutorMock::reveal(void) {
@@ -280,6 +282,8 @@ char ActionExecutorMock::getBrightness(void) { return brightness; }
 char ActionExecutorMock::getColorBrightness(void) { return color_brightness; }
 
 char ActionExecutorMock::getRGBWOnOff(void) { return rgbw_on_off; }
+
+bool ActionExecutorMock::getDelta(void) { return delta; }
 
 int ActionExecutorMock::counterSetCount(void) {
   int result = 0;

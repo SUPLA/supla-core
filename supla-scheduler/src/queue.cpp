@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "queue.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,7 +27,6 @@
 #include "ipcclient.h"
 #include "lck.h"
 #include "log.h"
-#include "queue.h"
 #include "safearray.h"
 #include "schedulercfg.h"
 #include "sthread.h"
@@ -130,7 +131,9 @@ void queue::new_worker(void) {
   stp.free_on_finish = 0;
   stp.initialize = NULL;
 
-  safe_array_add(workers_thread_arr, sthread_run(&stp));
+  void *sthread = nullptr;
+  sthread_run(&stp, &sthread);
+  safe_array_add(workers_thread_arr, sthread);
 }
 
 void queue::raise_loop_event(void) { eh_raise_event(loop_eh); }

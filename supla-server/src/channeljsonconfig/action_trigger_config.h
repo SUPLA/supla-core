@@ -88,7 +88,7 @@ class action_trigger_config : public abstract_action_config,
   bool set_caps_that_disables_local_operation(unsigned int caps);
   unsigned int get_active_actions(void);
   virtual char get_percentage(void);
-  virtual _action_config_rgbw_t get_rgbw(void);
+  virtual TAction_RGBW_Parameters get_rgbw(void);
   virtual int get_cap(void);
   void set_active_cap(int cap);
   bool channel_exists(int channel_id);

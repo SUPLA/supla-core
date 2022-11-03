@@ -22,8 +22,9 @@
 
 namespace testing {
 
-DeviceStub::DeviceStub(serverconnection *svrconn) : supla_device(svrconn) {}
+DeviceStub::DeviceStub(supla_connection *connection)
+    : supla_device(connection) {}
 
-void DeviceStub::setID(int ID) { supla_device::setID(ID); }
+void DeviceStub::set_id(int id) { supla_device::set_id(id); }
 
 }  // namespace testing

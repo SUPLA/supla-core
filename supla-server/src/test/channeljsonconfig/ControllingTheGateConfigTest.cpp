@@ -77,4 +77,21 @@ TEST_F(ControllingTheGateConfigTest, getNumberOfAttemptsToOpen) {
   delete config;
 }
 
+TEST_F(ControllingTheGateConfigTest, isActiveStateVerificationModeEnabled) {
+  controlling_the_gate_config *config = new controlling_the_gate_config();
+  ASSERT_TRUE(config != NULL);
+
+  EXPECT_FALSE(config->is_active_state_verification_method_enabled());
+
+  config->set_user_config("{\"stateVerificationMethodActive\":false}");
+
+  EXPECT_FALSE(config->is_active_state_verification_method_enabled());
+
+  config->set_user_config("{\"stateVerificationMethodActive\":true}");
+
+  EXPECT_TRUE(config->is_active_state_verification_method_enabled());
+
+  delete config;
+}
+
 } /* namespace testing */

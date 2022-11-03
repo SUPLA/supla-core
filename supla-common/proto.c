@@ -365,14 +365,14 @@ void PROTO_ICACHE_FLASH sproto_sdp_free(TSuplaDataPacket *sdp) { free(sdp); }
 
 char PROTO_ICACHE_FLASH sproto_set_data(TSuplaDataPacket *sdp, char *data,
                                         unsigned _supla_int_t data_size,
-                                        unsigned _supla_int_t call_type) {
+                                        unsigned _supla_int_t call_id) {
   if (data_size > SUPLA_MAX_DATA_SIZE || (data_size > 0 && data == 0))
     return SUPLA_RESULT_FALSE;
 
   if (data_size > 0) memcpy(sdp->data, data, data_size);
 
   sdp->data_size = data_size;
-  sdp->call_type = call_type;
+  sdp->call_id = call_id;
   return SUPLA_RESULT_TRUE;
 }
 
@@ -442,7 +442,11 @@ void PROTO_ICACHE_FLASH sproto__set_null_terminated_string(
     return;
   }
   if (src) {
+#if defined(ESP8266)
+    ets_snprintf(dest, max_size, "%s", src);
+#else
     snprintf(dest, max_size, "%s", src);
+#endif
     *dest_size = strnlen(dest, max_size - 1) + 1;
   } else {
     *dest_size = 1;

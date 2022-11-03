@@ -20,7 +20,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <memory>
+
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_mqtt_state_message_provider::supla_mqtt_state_message_provider(void)
     : supla_mqtt_abstract_state_message_provider() {}
@@ -49,27 +53,26 @@ channel_complex_value *supla_mqtt_state_message_provider::_get_complex_value(
 
   return result;
 }
+
 supla_channel_electricity_measurement *
 supla_mqtt_state_message_provider::_get_electricity_measurement(void) {
-  supla_channel_electricity_measurement *result = NULL;
-  supla_user::access_device(
-      get_user_id(), get_device_id(), get_channel_id(),
-      [this, &result](supla_device *device) -> void {
-        result = device->get_channels()->get_electricity_measurement(
-            get_channel_id());
-      });
+  shared_ptr<supla_device> device =
+      supla_user::get_device(get_user_id(), get_device_id(), get_channel_id());
+  if (device != nullptr) {
+    return device->get_channels()->get_electricity_measurement(
+        get_channel_id());
+  }
 
-  return result;
+  return NULL;
 }
 
 supla_channel_ic_measurement *
 supla_mqtt_state_message_provider::_get_impulse_counter_measurement(void) {
-  supla_channel_ic_measurement *result = NULL;
-  supla_user::access_device(
-      get_user_id(), get_device_id(), get_channel_id(),
-      [this, &result](supla_device *device) -> void {
-        result = device->get_channels()->get_ic_measurement(get_channel_id());
-      });
+  shared_ptr<supla_device> device =
+      supla_user::get_device(get_user_id(), get_device_id(), get_channel_id());
+  if (device != nullptr) {
+    return device->get_channels()->get_ic_measurement(get_channel_id());
+  }
 
-  return result;
+  return NULL;
 }

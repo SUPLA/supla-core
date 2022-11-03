@@ -37,8 +37,11 @@ typedef struct {
   my_bool caption_is_null;
 } _supla_scene_row_t;
 
-supla_client_scene_dao::supla_client_scene_dao()
-    : supla_abstract_client_scene_dao(), svrdb() {}
+supla_client_scene_dao::supla_client_scene_dao(
+    supla_abstract_db_access_provider *dba)
+    : supla_abstract_client_scene_dao() {
+  this->dba = dba;
+}
 
 supla_client_scene_dao::~supla_client_scene_dao() {}
 
@@ -46,7 +49,9 @@ list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
     int user_id, int client_id) {
   list<supla_client_scene *> result;
 
-  if (!connect()) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
     return result;
   }
 
@@ -68,7 +73,7 @@ list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&client_id;
 
-  if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
     MYSQL_BIND rbind[5] = {};
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -101,8 +106,8 @@ list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
 
       if (mysql_stmt_num_rows(stmt) > 0) {
         while (!mysql_stmt_fetch(stmt)) {
-          set_terminating_byte(row.caption, sizeof(row.caption),
-                               row.caption_len, row.caption_is_null);
+          dba->set_terminating_byte(row.caption, sizeof(row.caption),
+                                    row.caption_len, row.caption_is_null);
 
           supla_client_scene *scene = new supla_client_scene(row.scene_id);
           if (scene) {
@@ -120,7 +125,9 @@ list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
     mysql_stmt_close(stmt);
   }
 
-  disconnect();
+  if (!already_connected) {
+    dba->disconnect();
+  }
 
   return result;
 }

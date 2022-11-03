@@ -21,29 +21,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "conn/connection.h"
 #include "lck.h"
-#include "serverconnection.h"
 #include "supla-socket.h"
+#include "tools.h"
 
 // static
-serverstatus *serverstatus::_globalInstance = NULL;
+serverstatus serverstatus::_globalInstance;
 
 // static
-serverstatus *serverstatus::globalInstance(void) {
-  if (_globalInstance == NULL) {
-    _globalInstance = new serverstatus();
-  }
-
-  return _globalInstance;
-}
-
-// static
-void serverstatus::globalInstanceRelease(void) {
-  if (_globalInstance) {
-    delete _globalInstance;
-    _globalInstance = NULL;
-  }
-}
+serverstatus *serverstatus::globalInstance(void) { return &_globalInstance; }
 
 serverstatus::serverstatus(void) {
   lck = lck_init();
@@ -91,7 +78,7 @@ bool serverstatus::getStatus(char *buffer, size_t buffer_size) {
     }
   }
 
-  if (serverconnection::conn_limit_exceeded_hard()) {
+  if (supla_connection::conn_limit_exceeded_hard()) {
     snprintf(buffer, buffer_size, "CONN_LIMIT_EXCEEDED");
     return false;
   }
@@ -102,8 +89,8 @@ bool serverstatus::getStatus(char *buffer, size_t buffer_size) {
 
   lck_lock(lck);
   if (now.tv_sec - last_mainloop_heartbeat.tv_sec > 30) {
-    snprintf(buffer, buffer_size, "MAINLOOP_STUCK:%s:%i",
-             last_file ? last_file : "", last_line);
+    snprintf(buffer, buffer_size, "MAINLOOP_STUCK:%s:%i,%i",
+             last_file ? last_file : "", last_line, st_app_terminate);
 #ifdef __LCK_DEBUG
     main_loop_stuck = true;
 #endif /*__LCK_DEBUG*/

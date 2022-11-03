@@ -18,7 +18,11 @@
 
 #include "ipc/get_rgbw_command.h"
 
+#include <memory>
+
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_get_rgbw_command::supla_get_rgbw_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
@@ -29,7 +33,11 @@ bool supla_get_rgbw_command::get_channel_rgbw_value(int user_id, int device_id,
                                                     char *color_brightness,
                                                     char *brightness,
                                                     char *on_off) {
-  return supla_user::get_channel_rgbw_value(user_id, device_id, channel_id,
-                                            color, color_brightness, brightness,
-                                            on_off);
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->get_channel_rgbw_value(
+        channel_id, color, color_brightness, brightness, on_off);
+  }
+  return false;
 }

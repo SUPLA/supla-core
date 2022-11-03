@@ -9,8 +9,6 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include src/subdir.mk
--include objects.mk
-
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C++_DEPS)),)
 -include $(C++_DEPS)
@@ -54,10 +52,10 @@ all: main-build
 main-build: supla-dev
 
 # Tool invocations
-supla-dev: $(OBJS) $(USER_OBJS) makefile objects.mk $(OPTIONAL_TOOL_DEPS)
+supla-dev: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++ -L$(SSLDIR)/lib -pthread -lrt -o "supla-dev" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L$(SSLDIR)/lib -pthread -lrt -o "supla-dev" $(OBJS) $(USER_OBJS) $(LIBS) -lssl -lcrypto
 	@echo 'Finished building target: $@'
 	@echo ' '
 

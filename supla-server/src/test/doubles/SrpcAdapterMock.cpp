@@ -22,6 +22,8 @@ namespace testing {
 SrpcAdapterMock::SrpcAdapterMock(void *srpc)
     : supla_abstract_srpc_adapter(srpc) {}
 
+SrpcAdapterMock::SrpcAdapterMock(void) : supla_abstract_srpc_adapter(nullptr) {}
+
 SrpcAdapterMock::~SrpcAdapterMock(void) {}
 
 }  // namespace testing

@@ -86,8 +86,9 @@ supla_alexa_client *supla_alexa_request::getClient(void) {
 bool supla_alexa_request::isCallerAccepted(const supla_caller &caller,
                                            bool verification) {
   supla_amazon_alexa_credentials *alexa = getUser()->amazonAlexaCredentials();
+
   return alexa && alexa->isAccessTokenExists() &&
-         getUser()->is_device_online(getDeviceId());
+         getUser()->get_devices()->is_online(getDeviceId());
 }
 
 bool supla_alexa_request::isEventTypeAccepted(event_type eventType,

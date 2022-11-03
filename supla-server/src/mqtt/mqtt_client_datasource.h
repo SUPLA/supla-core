@@ -23,7 +23,7 @@
 
 #include <list>
 
-#include "database.h"
+#include "db/database.h"
 #include "mqtt_client_library_adapter.h"
 #include "mqtt_client_settings.h"
 #include "mqtt_ds_context.h"

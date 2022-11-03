@@ -19,7 +19,7 @@
 #ifndef MQTT_MESSAGE_PROVIDER_H_
 #define MQTT_MESSAGE_PROVIDER_H_
 
-#include "database.h"
+#include "db/database.h"
 #include "mqtt_client_settings.h"
 
 #define MQTT_MAX_TOPIC_NAME_SIZE 32767

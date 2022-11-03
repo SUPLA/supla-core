@@ -26,8 +26,8 @@ namespace testing {
 class DeviceStub : public supla_device {
  protected:
  public:
-  explicit DeviceStub(serverconnection *svrconn);
-  void setID(int ID);
+  explicit DeviceStub(supla_connection *connection);
+  void set_id(int id);
 };
 
 } /* namespace testing */

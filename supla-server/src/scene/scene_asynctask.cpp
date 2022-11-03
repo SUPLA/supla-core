@@ -23,6 +23,7 @@
 
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
+#include "db/db_access_provider.h"
 #include "device/value_getter.h"
 #include "log.h"
 #include "scene/scene_operations_dao.h"
@@ -189,7 +190,8 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
       usleep(10000);
     }
 
-    supla_scene_operations_dao dao;
+    supla_db_access_provider dba;
+    supla_scene_operations_dao dao(&dba);
     supla_scene_operations *operations = dao.get_scene_operations(scene_id);
 
     if (operations && operations->count() == 0) {

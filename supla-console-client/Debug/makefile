@@ -10,8 +10,6 @@ RM := rm -rf
 -include sources.mk
 -include src/supla-client-lib/subdir.mk
 -include src/subdir.mk
--include objects.mk
-
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C++_DEPS)),)
 -include $(C++_DEPS)
@@ -55,10 +53,10 @@ all: main-build
 main-build: supla-console-client
 
 # Tool invocations
-supla-console-client: $(OBJS) $(USER_OBJS) makefile objects.mk $(OPTIONAL_TOOL_DEPS)
+supla-console-client: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++ -L$(SSLDIR)/lib -pthread -lrt -o "supla-console-client" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L$(SSLDIR)/lib -pthread -lrt -o "supla-console-client" $(OBJS) $(USER_OBJS) $(LIBS) -lcrypto -lssl
 	@echo 'Finished building target: $@'
 	@echo ' '
 

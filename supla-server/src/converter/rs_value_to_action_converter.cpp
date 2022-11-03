@@ -28,7 +28,7 @@ bool rs_value_to_action_converter::convert(
   if (rs_value && action_executor) {
     char position = rs_value->get_rs_value()->position;
     if (position >= 0 && position <= 100) {
-      action_executor->shut(&position);
+      action_executor->shut(&position, false);
     }
   }
   return false;

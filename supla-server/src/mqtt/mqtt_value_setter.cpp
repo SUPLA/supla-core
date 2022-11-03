@@ -87,7 +87,7 @@ void supla_mqtt_value_setter::action_toggle(void) {
 void supla_mqtt_value_setter::action_shut(const char *closingPercentage) {
   supla_action_executor *action = get_action_executor();
   if (action) {
-    action->shut(closingPercentage);
+    action->shut(closingPercentage, false);
   }
 }
 

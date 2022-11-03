@@ -17,11 +17,13 @@
  */
 
 #include "clientobjcontainer.h"
+
 #include <stdlib.h>  // NOLINT
-#include "../database.h"
-#include "../log.h"
-#include "../safearray.h"
+
 #include "client.h"
+#include "db/database.h"
+#include "log.h"
+#include "safearray.h"
 
 supla_client_objcontainer::supla_client_objcontainer(supla_client *client)
     : supla_objcontainer() {

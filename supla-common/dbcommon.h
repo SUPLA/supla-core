@@ -19,7 +19,7 @@
 #ifndef DBCOMMON_H_
 #define DBCOMMON_H_
 
-#define DB_VERSION "20220719210858"
+#define DB_VERSION "20221020225729"
 
 class dbcommon {
  protected:
@@ -31,6 +31,8 @@ class dbcommon {
                     int *value4, const char *stmt_str, void *bind,
                     int bind_size, bool exec_errors = false);
   void stmt_close(void *_stmt);
+  bool get_string(int id, char *buffer, unsigned int buffer_size, bool *is_null,
+                  const char *sql);
   int get_int(int ID, int default_value, const char *sql);
   int get_count(int ID, const char *sql);
 
@@ -46,6 +48,7 @@ class dbcommon {
   dbcommon();
   bool connect(int connection_timeout_sec);
   bool connect(void);
+  bool is_connected(void);
   void disconnect(void);
   virtual ~dbcommon();
 

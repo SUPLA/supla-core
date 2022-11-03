@@ -22,7 +22,8 @@
 
 #include "TestHelper.h"
 #include "channeljsonconfig/electricity_meter_config.h"
-#include "srpc.h"
+#include "log.h"
+#include "srpc/srpc.h"
 
 namespace testing {
 
@@ -706,6 +707,32 @@ TEST_F(ElectricityMeterConfigTest, addToHitorryFlagTest) {
   ASSERT_TRUE(config->should_be_added_to_history());
 
   delete config;
+}
+
+TEST_F(ElectricityMeterConfigTest, upperVoltageThreshold) {
+  electricity_meter_config config;
+  EXPECT_EQ(config.get_upper_voltage_threshold(), 0);
+
+  config.set_user_config("{\"upperVoltageThreshold\":null}");
+
+  EXPECT_EQ(config.get_upper_voltage_threshold(), 0);
+
+  config.set_user_config("{\"upperVoltageThreshold\":268.45}");
+
+  EXPECT_EQ(config.get_upper_voltage_threshold(), 268.45);
+}
+
+TEST_F(ElectricityMeterConfigTest, lowerVoltageThreshold) {
+  electricity_meter_config config;
+  EXPECT_EQ(config.get_lower_voltage_threshold(), 0);
+
+  config.set_user_config("{\"lowerVoltageThreshold\":null}");
+
+  EXPECT_EQ(config.get_upper_voltage_threshold(), 0);
+
+  config.set_user_config("{\"lowerVoltageThreshold\":123.45}");
+
+  EXPECT_EQ(config.get_lower_voltage_threshold(), 123.45);
 }
 
 } /* namespace testing */

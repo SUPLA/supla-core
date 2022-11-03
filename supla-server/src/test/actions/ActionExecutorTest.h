@@ -19,6 +19,8 @@
 #ifndef ACTIONEXECUTORTEST_H_
 #define ACTIONEXECUTORTEST_H_
 
+#include <memory>
+
 #include "doubles/actions/ActionExecutorMock.h"
 #include "doubles/device/DeviceStub.h"
 #include "gtest/gtest.h"  // NOLINT
@@ -28,7 +30,7 @@ namespace testing {
 class ActionExecutorTest : public Test {
  protected:
   ActionExecutorMock *aexec;
-  DeviceStub *device;
+  std::shared_ptr<DeviceStub> device;
 
  public:
   ActionExecutorTest(void);

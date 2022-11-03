@@ -11,3 +11,7 @@
 /distributedobjects/
 /client/
 /ipc/
+/conn/
+/device/
+/analyzer/
+/cyclictasks/

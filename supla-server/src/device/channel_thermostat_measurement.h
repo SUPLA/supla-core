@@ -25,7 +25,6 @@ class supla_channel_thermostat_measurement {
   bool on;
   double MeasuredTemperature;
   double PresetTemperature;
-  static char tharr_clean(void *ptr);
 
  public:
   supla_channel_thermostat_measurement(int ChannelId, bool on,
@@ -36,8 +35,6 @@ class supla_channel_thermostat_measurement {
   double getMeasuredTemperature(void);
   double getPresetTemperature(void);
   bool getOn(void);
-
-  static void free(void *icarr);
 };
 
 #endif /* CHANNEL_THERMOSTAT_MEASUREMENT_H_ */

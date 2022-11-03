@@ -38,6 +38,8 @@ class ActionCgCommandMock : public supla_abstract_action_cg_command {
   MOCK_METHOD2(action_step_by_step, bool(supla_user *user, int group_id));
   MOCK_METHOD4(action_copy, bool(supla_user *user, int group_id,
                                  int source_device_id, int source_channel_id));
+  MOCK_METHOD4(action_shut, bool(supla_user *user, int group_id,
+                                 const char *percentage, bool delta));
 };
 
 } /* namespace testing */

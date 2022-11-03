@@ -46,7 +46,6 @@ class supla_client_channels : public supla_client_objcontainer {
                                     e_objc_scope scope);
   int available_data_types_for_remote(e_objc_scope scope);
   void _load(database *db, e_objc_scope scope);
-  bool set_device_channel_new_value(int ChannelId, char *value);
 
  public:
   explicit supla_client_channels(supla_client *client);
@@ -56,18 +55,17 @@ class supla_client_channels : public supla_client_objcontainer {
       bool Extended = false);  // ChannelId == 0 - All channels
   bool channel_exists(int ChannelID);
 
-  bool set_device_channel_new_value(
-      TCS_SuplaChannelNewValue_B *channel_new_value);
-  bool set_device_channel_new_value(TCS_SuplaNewValue *new_value);
-  bool device_calcfg_request(TCS_DeviceCalCfgRequest_B *request);
-  bool device_get_channel_state(TCSD_ChannelStateRequest *request);
-  void get_channel_basic_cfg(void *srpc, TCS_ChannelBasicCfgRequest *request);
   void set_channel_function(void *srpc, int ChannelId, int Func);
   void set_channel_caption(void *srpc, int ChannelId, char *Caption);
   unsigned _supla_int64_t value_validity_time_usec(void);
   void update_expired(void *srpc);
 
-  void device_access(int ChannelID, std::function<void(supla_device *)> method);
+  void channel_access(int channel_id,
+                      std::function<void(supla_client_channel *)> on_channel);
+  void device_access(int channel_id,
+                     std::function<void(supla_device *)> method);
+  int get_device_id(int channel_id);
+  int get_any_channel_id_with_deviceid(int device_id);
 };
 
 #endif /* CLIENTCHANNELS_H_ */

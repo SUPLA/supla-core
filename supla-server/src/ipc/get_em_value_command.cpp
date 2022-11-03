@@ -18,8 +18,12 @@
 
 #include "ipc/get_em_value_command.h"
 
+#include <memory>
+
 #include "device.h"
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_get_em_value_command::supla_get_em_value_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
@@ -29,12 +33,11 @@ supla_channel_electricity_measurement *
 supla_get_em_value_command::get_electricity_measurement(int user_id,
                                                         int device_id,
                                                         int channel_id) {
-  supla_channel_electricity_measurement *em = NULL;
-  supla_user::access_device(
-      user_id, device_id, channel_id,
-      [&em, channel_id](supla_device *device) -> void {
-        em = device->get_channels()->get_electricity_measurement(channel_id);
-      });
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->get_electricity_measurement(channel_id);
+  }
 
-  return em;
+  return NULL;
 }

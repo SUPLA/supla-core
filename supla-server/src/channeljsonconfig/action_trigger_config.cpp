@@ -385,11 +385,12 @@ char action_trigger_config::get_percentage(void) {
   return result;
 }
 
-_action_config_rgbw_t action_trigger_config::get_rgbw(void) {
-  _action_config_rgbw_t result = {.brightness = -1,
-                                  .color_brightness = -1,
-                                  .color = 0,
-                                  .color_random = false};
+TAction_RGBW_Parameters action_trigger_config::get_rgbw(void) {
+  TAction_RGBW_Parameters result = {.Brightness = -1,
+                                    .ColorBrightness = -1,
+                                    .Color = 0,
+                                    .ColorRandom = false,
+                                    .OnOff = false};
   if (!active_cap) {
     return result;
   }
@@ -408,30 +409,30 @@ _action_config_rgbw_t action_trigger_config::get_rgbw(void) {
       cJSON *item = cJSON_GetObjectItem(param, "brightness");
       if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
           item->valueint <= 100) {
-        result.brightness = item->valueint;
+        result.Brightness = item->valueint;
       }
 
       item = cJSON_GetObjectItem(param, "color_brightness");
       if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
           item->valueint <= 100) {
-        result.color_brightness = item->valueint;
+        result.ColorBrightness = item->valueint;
       }
 
       item = cJSON_GetObjectItem(param, "hue");
       if (item) {
         if (cJSON_IsNumber(item)) {
-          result.color = st_hue2rgb(item->valuedouble);
+          result.Color = st_hue2rgb(item->valuedouble);
         } else if (equal(item, "white")) {
-          result.color = 0xFFFFFF;
+          result.Color = 0xFFFFFF;
         } else if (equal(item, "random")) {
-          while (!result.color) {
+          while (!result.Color) {
             struct timeval time = {};
             gettimeofday(&time, NULL);
             unsigned int seed = time.tv_sec + time.tv_usec;
-            result.color = st_hue2rgb(rand_r(&seed) % 360);
+            result.Color = st_hue2rgb(rand_r(&seed) % 360);
           }
 
-          result.color_random = true;
+          result.ColorRandom = true;
         }
       }
     }

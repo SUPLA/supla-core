@@ -87,3 +87,9 @@ bool supla_action_cg_command::action_copy(supla_user *user, int group_id,
   }
   return result;
 }
+
+bool supla_action_cg_command::action_shut(supla_user *user, int group_id,
+                                          const char *percentage, bool delta) {
+  return user->get_channel_groups()->action_shut(get_caller(), group_id,
+                                                 percentage, delta);
+}

@@ -24,7 +24,7 @@
 
 class serverstatus {
  private:
-  static serverstatus *_globalInstance;
+  static serverstatus _globalInstance;
   void *lck;
   char *last_file;
   int last_line;
@@ -32,7 +32,6 @@ class serverstatus {
 
  public:
   static serverstatus *globalInstance(void);
-  static void globalInstanceRelease(void);
   serverstatus(void);
   virtual ~serverstatus(void);
   void mainLoopHeartbeat(void);

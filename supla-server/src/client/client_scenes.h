@@ -43,6 +43,7 @@ class supla_client_scenes : public supla_dobjects,
   virtual ~supla_client_scenes();
 
   void load(int user_id, int client_id);
+  void set_caption(int scene_id, const char *caption);
 };
 
 #endif /* SUPLA_CLIENT_SCENES_H_ */

@@ -34,6 +34,12 @@ void IntegrationTest::runSqlScript(const char *script) {
                            scfg_string(CFG_MYSQL_DB), script);
 }
 
+void IntegrationTest::sqlQuery(const char *query, std::string *result) {
+  MySqlShell::sqlQuery(cfg_sql_dir, scfg_string(CFG_MYSQL_HOST),
+                       scfg_string(CFG_MYSQL_USER), scfg_string(CFG_MYSQL_DB),
+                       query, result);
+}
+
 void IntegrationTest::initTestDatabase() {
   MySqlShell::initTestDatabase(cfg_sql_dir, scfg_string(CFG_MYSQL_HOST),
                                scfg_string(CFG_MYSQL_USER),

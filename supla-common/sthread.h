@@ -35,9 +35,9 @@ typedef struct {
   char free_on_finish;
 } Tsthread_params;
 
-void *sthread_simple_run(_func_sthread_execute execute, void *user_data,
-                         char free_on_finish);
-void *sthread_run(Tsthread_params *sthread_params);
+void sthread_simple_run(_func_sthread_execute execute, void *user_data,
+                        char free_on_finish, void **sthread);
+void sthread_run(Tsthread_params *sthread_params, void **sthread);
 void sthread_wait(void *sthread);
 char sthread_isterminated(void *sthread);
 char sthread_isfinished(void *sthread);

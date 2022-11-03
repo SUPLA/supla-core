@@ -18,9 +18,13 @@
 
 #include "ipc/set_rgbw_command.h"
 
+#include <memory>
+
 #include "device.h"
 #include "http/httprequestqueue.h"
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_set_rgbw_command::supla_set_rgbw_command(
     supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color)
@@ -30,23 +34,19 @@ bool supla_set_rgbw_command::set_channel_rgbw_value(
     supla_user *user, int device_id, int channel_id, int color,
     char color_brightness, char brightness, char on_off,
     const char *alexa_correlation_token, const char *google_request_id) {
-  bool result = false;
-  user->access_device(
-      device_id, channel_id,
-      [&result, user, device_id, channel_id, color, color_brightness,
-       brightness, on_off, alexa_correlation_token, google_request_id,
-       this](supla_device *device) -> void {
-        // onChannelValueChangeEvent must be called before
-        // set_device_channel_char_value for the potential report to contain
-        // AlexaCorrelationToken / GoogleRequestId
-        supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-            user, device_id, channel_id, get_caller(), alexa_correlation_token,
-            google_request_id);
+  shared_ptr<supla_device> device =
+      user->get_devices()->get(device_id, channel_id);
+  if (device != nullptr) {
+    // set_device_channel_char_value for the potential report to contain
+    // AlexaCorrelationToken / GoogleRequestId
+    supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+        user, device_id, channel_id, get_caller(), alexa_correlation_token,
+        google_request_id);
 
-        result = device->get_channels()->set_device_channel_rgbw_value(
-            get_caller(), channel_id, 0, false, color, color_brightness,
-            brightness, on_off);
-      });
+    return device->get_channels()->set_device_channel_rgbw_value(
+        get_caller(), channel_id, 0, false, color, color_brightness, brightness,
+        on_off);
+  }
 
-  return result;
+  return false;
 }

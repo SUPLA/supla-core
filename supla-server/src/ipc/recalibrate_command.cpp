@@ -18,8 +18,12 @@
 
 #include "ipc/recalibrate_command.h"
 
+#include <memory>
+
 #include "device.h"
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_recalibrate_command::supla_recalibrate_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
@@ -27,14 +31,10 @@ supla_recalibrate_command::supla_recalibrate_command(
 
 bool supla_recalibrate_command::recalibrate(int user_id, int device_id,
                                             int channel_id) {
-  int result = false;
-
-  supla_user::access_device(
-      user_id, device_id, channel_id,
-      [&result, channel_id, this](supla_device *device) -> void {
-        result =
-            device->get_channels()->recalibrate(channel_id, get_caller(), true);
-      });
-
-  return result;
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->recalibrate(channel_id, get_caller(), true);
+  }
+  return false;
 }

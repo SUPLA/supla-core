@@ -19,7 +19,7 @@
 #ifndef H_SRPC_TEST_H_
 #define H_SRPC_TEST_H_
 
-#include "srpc.h"
+#include "srpc/srpc.h"
 
 class SrpcTest {
  public:

@@ -30,6 +30,7 @@ typedef void supla_socket_data;
 
 supla_socket_data *ssocket_server_init(const char cert[], const char key[],
                                        int port, unsigned char secure);
+void ssocket_ssl_new(void *_ssd, void *_supla_socket);
 char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket);
 char ssocket_accept_ssl(void *_ssd, void *_supla_socket);
 supla_socket_data *ssocket_client_init(const char host[], int port,

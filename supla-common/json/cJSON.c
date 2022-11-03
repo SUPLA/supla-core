@@ -65,12 +65,6 @@ typedef struct {
     const unsigned char *json;
     size_t position;
 } error;
-static error global_error = { NULL, 0 };
-
-CJSON_PUBLIC(const char *) cJSON_GetErrorPtr(void)
-{
-    return (const char*) (global_error.json + global_error.position);
-}
 
 CJSON_PUBLIC(char *) cJSON_GetStringValue(cJSON *item) {
     if (!cJSON_IsString(item)) {
@@ -997,14 +991,10 @@ static parse_buffer *skip_utf8_bom(parse_buffer * const buffer)
 }
 
 /* Parse an object - create a new root, and populate. */
-CJSON_PUBLIC(cJSON *) cJSON_ParseWithOpts(const char *value, const char **return_parse_end, cJSON_bool require_null_terminated)
+CJSON_PUBLIC(cJSON *) cJSON_ParseWithOpts(const char *value, const char **return_parse_end, cJSON_bool require_null_terminated, char **err_ptr)
 {
     parse_buffer buffer = { 0, 0, 0, 0, { 0, 0, 0 } };
     cJSON *item = NULL;
-
-    /* reset error position */
-    global_error.json = NULL;
-    global_error.position = 0;
 
     if (value == NULL)
     {
@@ -1050,9 +1040,9 @@ fail:
         cJSON_Delete(item);
     }
 
-    if (value != NULL)
+    if (value != NULL && err_ptr)
     {
-        error local_error;
+    	error local_error;
         local_error.json = (const unsigned char*)value;
         local_error.position = 0;
 
@@ -1070,7 +1060,7 @@ fail:
             *return_parse_end = (const char*)local_error.json + local_error.position;
         }
 
-        global_error = local_error;
+        *err_ptr = (char*)(local_error.json + local_error.position);
     }
 
     return NULL;
@@ -1079,7 +1069,7 @@ fail:
 /* Default options for cJSON_Parse */
 CJSON_PUBLIC(cJSON *) cJSON_Parse(const char *value)
 {
-    return cJSON_ParseWithOpts(value, 0, 0);
+    return cJSON_ParseWithOpts(value, 0, 0, NULL);
 }
 
 #define cjson_min(a, b) ((a < b) ? a : b)

@@ -4,25 +4,25 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/user/clientcontainer.cpp \
-../src/user/devicecontainer.cpp \
 ../src/user/user.cpp \
 ../src/user/userchannelgroup.cpp \
-../src/user/userchannelgroups.cpp 
+../src/user/userchannelgroups.cpp \
+../src/user/userclients.cpp \
+../src/user/userdevices.cpp 
 
 CPP_DEPS += \
-./src/user/clientcontainer.d \
-./src/user/devicecontainer.d \
 ./src/user/user.d \
 ./src/user/userchannelgroup.d \
-./src/user/userchannelgroups.d 
+./src/user/userchannelgroups.d \
+./src/user/userclients.d \
+./src/user/userdevices.d 
 
 OBJS += \
-./src/user/clientcontainer.o \
-./src/user/devicecontainer.o \
 ./src/user/user.o \
 ./src/user/userchannelgroup.o \
-./src/user/userchannelgroups.o 
+./src/user/userchannelgroups.o \
+./src/user/userclients.o \
+./src/user/userdevices.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -37,7 +37,7 @@ src/user/%.o: ../src/user/%.cpp src/user/subdir.mk
 clean: clean-src-2f-user
 
 clean-src-2f-user:
-	-$(RM) ./src/user/clientcontainer.d ./src/user/clientcontainer.o ./src/user/devicecontainer.d ./src/user/devicecontainer.o ./src/user/user.d ./src/user/user.o ./src/user/userchannelgroup.d ./src/user/userchannelgroup.o ./src/user/userchannelgroups.d ./src/user/userchannelgroups.o
+	-$(RM) ./src/user/user.d ./src/user/user.o ./src/user/userchannelgroup.d ./src/user/userchannelgroup.o ./src/user/userchannelgroups.d ./src/user/userchannelgroups.o ./src/user/userclients.d ./src/user/userclients.o ./src/user/userdevices.d ./src/user/userdevices.o
 
 .PHONY: clean-src-2f-user
 

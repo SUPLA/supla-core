@@ -26,12 +26,20 @@ SUBDIRS := \
 src \
 src/actions \
 src/amazon \
+src/analyzer \
 src/asynctask \
 src/channeljsonconfig \
 src/client \
+src/client/call_handler \
+src/conn \
+src/conn/call_handler \
 src/converter \
 src/crypt_blowfish \
+src/cyclictasks \
+src/datalogger \
+src/db \
 src/device \
+src/device/call_handler \
 src/distributedobjects \
 src/google \
 src/http \
@@ -39,6 +47,7 @@ src/ipc \
 src/json \
 src/mqtt \
 src/scene \
+src/srpc \
 src/user \
 src/webhook \
 

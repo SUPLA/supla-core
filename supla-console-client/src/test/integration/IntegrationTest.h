@@ -61,20 +61,23 @@ class IntegrationTest : public Test {
   virtual void onConnected();
   virtual void onDisconnected();
   virtual void onConnectionError(int code);
-  virtual void onRegistered(TSC_SuplaRegisterClientResult_C *result);
+  virtual void onRegistered(TSC_SuplaRegisterClientResult_D *result);
   virtual void onRegistrationError(int code);
   virtual void onSuperuserAuthorizationResult(bool authorized, int code);
   virtual void onChannelFunctionSetResult(TSC_SetChannelFunctionResult *result);
   virtual void onChannelCaptionSetResult(TSC_SetCaptionResult *result);
   virtual void onLocationCaptionSetResult(TSC_SetCaptionResult *result);
+  virtual void onSceneCaptionSetResult(TSC_SetCaptionResult *result);
   virtual void onChannelBasicCfg(TSC_ChannelBasicCfg *cfg);
   virtual void channelUpdate(TSC_SuplaChannel_D *channel);
   virtual void locationUpdate(TSC_SuplaLocation *location);
+  virtual void sceneUpdate(TSC_SuplaScene *scene);
   virtual void onRegistrationEnabled(TSDC_RegistrationEnabled *reg_enabled);
   virtual void onSetRegistrationEnabledResult(
       TSC_SetRegistrationEnabledResult *result);
   virtual void onGetVersionResult(TSDC_SuplaGetVersionResult *result);
   virtual void onOAuthTokenRequestResult(TSC_OAuthTokenRequestResult *result);
+  virtual void onActionExecutionResult(TSC_ActionExecutionResult *result);
 };
 
 } /* namespace testing */

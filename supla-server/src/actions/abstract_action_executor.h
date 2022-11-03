@@ -19,6 +19,8 @@
 #ifndef ABSTRACT_ACTION_EXECUTOR_H_
 #define ABSTRACT_ACTION_EXECUTOR_H_
 
+#include <memory>
+
 #include "abstract_action_config.h"
 #include "abstract_value_getter.h"
 #include "caller.h"
@@ -38,7 +40,7 @@ class supla_abstract_action_executor {
   void execute_action(
       std::function<void(supla_user_channelgroups *, supla_device_channels *)>
           f);
-  void access_device(std::function<void(supla_device *device)> on_device);
+  std::shared_ptr<supla_device> get_device(void);
   supla_user *get_user(void);
   supla_user_channelgroups *get_channel_groups(void);
   void set_unknown_subject_type(void);
@@ -66,6 +68,12 @@ class supla_abstract_action_executor {
                       abstract_action_config *config,
                       supla_abstract_value_getter *value_getter);
 
+  void execute_action(const supla_caller &caller, int user_id, int action_id,
+                      _subjectType_e subject_type, int subject_id,
+                      supla_abstract_value_getter *value_getter,
+                      TAction_RS_Parameters *rs, TAction_RGBW_Parameters *rgbw,
+                      int source_device_id, int source_channel_id, int cap);
+
   virtual void set_on(bool on) = 0;
   virtual void set_color(unsigned int color) = 0;
   virtual void set_brightness(char brightness) = 0;
@@ -73,7 +81,7 @@ class supla_abstract_action_executor {
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
                         char *brightness, char *on_off) = 0;
   virtual void toggle(void) = 0;
-  virtual void shut(const char *closingPercentage) = 0;
+  virtual void shut(const char *closingPercentage, bool delta) = 0;
   virtual void reveal(void) = 0;
   virtual void up(void) = 0;
   virtual void down(void) = 0;

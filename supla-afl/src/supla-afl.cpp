@@ -43,9 +43,9 @@ int supla_read(void *buf, int count, void *sc) {
 int supla_write(void *buf, int count, void *sc) { return count; }
 
 void supla_on_remote_call_received(void *_srpc, unsigned int rr_id,
-                                   unsigned int call_type, void *sc,
+                                   unsigned int call_id, void *sc,
                                    unsigned char proto_version) {
-  supla_log(LOG_DEBUG, "Call: %i, proto: %i, rr_id: %i", call_type,
+  supla_log(LOG_DEBUG, "Call: %i, proto: %i, rr_id: %i", call_id,
             proto_version, rr_id);
 
   TsrpcReceivedData rd;

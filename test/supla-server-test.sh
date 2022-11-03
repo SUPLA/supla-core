@@ -38,7 +38,7 @@ password=alkdmalsdaskdn
 client_id=NunYnx
 ENDOFCFG
 
-vg_verify "./supla-server --sqldir ../../sql"
+vg_verify "./supla-server --sqldir ../../sql --gtest_shuffle"
 
 echo OK 
 exit 0

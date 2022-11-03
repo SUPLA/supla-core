@@ -42,17 +42,3 @@ double supla_channel_thermostat_measurement::getPresetTemperature(void) {
 }
 
 bool supla_channel_thermostat_measurement::getOn(void) { return this->on; }
-
-// static
-char supla_channel_thermostat_measurement::tharr_clean(void *ptr) {
-  delete (supla_channel_thermostat_measurement *)ptr;
-  return 1;
-}
-
-// static
-void supla_channel_thermostat_measurement::free(void *tharr) {
-  safe_array_clean(tharr, tharr_clean);
-  safe_array_free(tharr);
-}
-
-//-----------------------------------------------------

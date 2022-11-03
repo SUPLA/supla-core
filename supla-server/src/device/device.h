@@ -19,48 +19,49 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
 
-#include <list>
+#include <conn/abstract_connection_object.h>
 
-#include "cdbase.h"
+#include <list>
+#include <memory>
+
 #include "commontypes.h"
 #include "devicechannel.h"
 
 class supla_user;
-class supla_device : public cdbase {
+class supla_device_call_handler_collection;
+class supla_register_device;
+class supla_ch_device_calcfg_result;
+class supla_device : public supla_abstract_connection_object {
  private:
   int flags;
-
- protected:
+  static supla_device_call_handler_collection call_handler_collection;
   supla_device_channels *channels;
 
+ protected:
+  friend class supla_register_device;
+  friend class supla_ch_device_calcfg_result;
+
+  bool entering_cfg_mode_in_progress;
+
   void load_config(int UserID);
-  static char channels_clean_cnd(void *channel);
-  bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                       const char Email[SUPLA_EMAIL_MAXSIZE],
-                       const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
-                       database *db);
+  void set_flags(int flags);
+
+  virtual bool can_reconnect(void);
 
  public:
-  explicit supla_device(serverconnection *svrconn);
-
-  static bool funclist_contains_function(int funcList, int func);
-
-  char register_device(TDS_SuplaRegisterDevice_C *register_device_c,
-                       TDS_SuplaRegisterDevice_E *register_device_e,
-                       unsigned char proto_version);
+  explicit supla_device(supla_connection *connection);
   virtual ~supla_device();
 
-  supla_device_channels *get_channels(void);
+  std::shared_ptr<supla_device> get_shared_ptr(void);
+  virtual bool is_sleeping_object(void);
+  virtual unsigned int get_time_to_wakeup_msec(void);
+  virtual supla_abstract_srpc_call_handler_collection *
+  get_srpc_call_handler_collection(void);
+  static bool funclist_contains_function(int funcList, int func);
 
-  void on_device_channel_value_changed(TDS_SuplaDeviceChannelValue *value,
-                                       TDS_SuplaDeviceChannelValue_B *value_b,
-                                       TDS_SuplaDeviceChannelValue_C *value_c);
-  void on_device_channel_extendedvalue_changed(
-      TDS_SuplaDeviceChannelExtendedValue *ev);
-  void on_channel_set_value_result(TDS_SuplaChannelNewValueResult *result);
-  void on_channel_state_result(TDSC_ChannelState *state);
-  void get_firmware_update_url(TDS_FirmwareUpdateParams *params);
-  void on_calcfg_result(TDS_DeviceCalCfgResult *result);
+  supla_device_channels *get_channels(void);
+  int get_flags(void);
+
   bool enter_cfg_mode(void);
 };
 

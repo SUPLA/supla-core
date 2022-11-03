@@ -17,6 +17,7 @@
  */
 
 #include "dbcommon.h"
+
 #include <mysql.h>
 #include <stdio.h>
 #include <string.h>
@@ -111,6 +112,8 @@ void dbcommon::disconnect(void) {
     _mysql = NULL;
   }
 }
+
+bool dbcommon::is_connected(void) { return _mysql != nullptr; }
 
 int dbcommon::query(const char *stmt_str, bool log_err) {
   int result = mysql_query((MYSQL *)_mysql, stmt_str);
@@ -257,6 +260,51 @@ int dbcommon::get_int(int ID, int default_value, const char *sql) {
     return default_value;
 
   return Result;
+}
+
+bool dbcommon::get_string(int id, char *buffer, unsigned int buffer_size,
+                          bool *is_null, const char *sql) {
+  MYSQL_STMT *stmt = NULL;
+
+  MYSQL_BIND pbind = {};
+
+  pbind.buffer_type = MYSQL_TYPE_LONG;
+  pbind.buffer = (char *)&id;
+
+  bool result = false;
+
+  if (stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
+    my_bool _is_null = false;
+    unsigned long size = 0;
+
+    MYSQL_BIND rbind[1];
+    memset(rbind, 0, sizeof(rbind));
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = buffer;
+    rbind[0].buffer_length = buffer_size;
+    rbind[0].length = &size;
+    rbind[0].is_null = &_is_null;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt) &&
+          buffer_size > size) {
+        buffer[size] = 0;
+        *is_null = _is_null > 0;
+
+        result = true;
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
 }
 
 int dbcommon::get_count(int ID, const char *sql) { return get_int(ID, 0, sql); }

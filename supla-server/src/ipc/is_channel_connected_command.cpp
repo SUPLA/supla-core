@@ -18,7 +18,11 @@
 
 #include "ipc/is_channel_connected_command.h"
 
+#include <memory>
+
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_is_channel_connected_command::supla_is_channel_connected_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
@@ -27,5 +31,10 @@ supla_is_channel_connected_command::supla_is_channel_connected_command(
 bool supla_is_channel_connected_command::is_channel_online(int user_id,
                                                            int device_id,
                                                            int channel_id) {
-  return supla_user::is_channel_online(user_id, device_id, channel_id);
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->is_channel_online(channel_id);
+  }
+  return false;
 }

@@ -33,8 +33,6 @@ class supla_channel_ic_measurement {
   unsigned _supla_int64_t counter;
   _supla_int64_t calculatedValue;
 
-  static char icarr_clean(void *ptr);
-
  public:
   supla_channel_ic_measurement(int ChannelId, int Func,
                                TDS_ImpulseCounter_Value *ic_val,
@@ -51,8 +49,8 @@ class supla_channel_ic_measurement {
   unsigned _supla_int64_t getCalculatedValue(void);
 
   static void set_default_unit(int Func, char unit[9]);
-  static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Func,
-                         int Param2, int Param3, const char *TextParam1,
+  static bool update_cev(TSuplaChannelExtendedValue *ev, int Func, int Param2,
+                         int Param3, const char *TextParam1,
                          const char *TextParam2);
 
   static double get_calculated_d(_supla_int_t impulses_per_unit,
@@ -62,7 +60,6 @@ class supla_channel_ic_measurement {
   static void get_cost_and_currency(const char *TextParam1, int Param2,
                                     char currency[3], _supla_int_t *total_cost,
                                     _supla_int_t *price_per_unit, double count);
-  static void free(void *icarr);
 };
 
 #endif /* CHANNEL_IC_MEASUREMENT_H_ */

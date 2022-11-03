@@ -23,7 +23,7 @@
 #include <cstddef>  // NOLINT
 #include <list>     // NOLINT
 
-#include "database.h"
+#include "db/database.h"
 #include "http/httprequest.h"
 #include "http/httprequestactiontriggerextraparams.h"
 #include "http/httprequestvoiceassistantextraparams.h"
@@ -152,7 +152,7 @@ void supla_http_request_queue::runThread(supla_http_request *request) {
     ptr->arr_thread = arr_thread;
     ptr->request = request;
 
-    ptr->sthread = sthread_run(&stp);
+    sthread_run(&stp, &ptr->sthread);
     safe_array_unlock(arr_thread);
 
     lck_lock(lck);

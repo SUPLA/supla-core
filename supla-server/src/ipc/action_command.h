@@ -35,6 +35,8 @@ class supla_action_command : public supla_abstract_action_command {
   virtual bool action_step_by_step(int user_id, int device_id, int channel_id);
   virtual bool action_copy(int user_id, int device_id, int channel_id,
                            int source_device_id, int source_channel_id);
+  virtual bool action_shut(int user_id, int device_id, int channel_id,
+                           const char *percentage, bool delta);
 
  public:
   explicit supla_action_command(

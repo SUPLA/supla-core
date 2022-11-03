@@ -184,6 +184,16 @@ void supla_action_gate_openclose::cancel_tasks(int user_id, int device_id,
 }
 
 // static
+void supla_action_gate_openclose::cancel_tasks(int user_id, int device_id,
+                                               int channel_id,
+                                               bool action_open) {
+  supla_action_gate_openclose_search_condition cnd(
+      NULL, user_id, device_id, channel_id, true, action_open);
+
+  supla_asynctask_queue::global_instance()->cancel_tasks(&cnd);
+}
+
+// static
 void supla_action_gate_openclose::open_close(const supla_caller &caller,
                                              int user_id, int device_id,
                                              int channel_id, bool open) {

@@ -89,6 +89,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)19, sizeof(TSC_SuplaRegisterClientResult));
   EXPECT_EQ((unsigned int)27, sizeof(TSC_SuplaRegisterClientResult_B));
   EXPECT_EQ((unsigned int)31, sizeof(TSC_SuplaRegisterClientResult_C));
+  EXPECT_EQ((unsigned int)27, sizeof(TSC_SuplaRegisterClientResult_D));
   EXPECT_EQ((unsigned int)9, sizeof(TCS_SuplaChannelNewValue));
   EXPECT_EQ((unsigned int)12, sizeof(TCS_SuplaChannelNewValue_B));
   EXPECT_EQ((unsigned int)13, sizeof(TCS_SuplaNewValue));
@@ -231,10 +232,40 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)220, sizeof(TSC_SuplaSceneState));
   EXPECT_EQ((unsigned int)4408, sizeof(TSC_SuplaSceneStatePack));
 
-  EXPECT_EQ((unsigned int)514, sizeof(TCS_Action));
+  EXPECT_EQ((unsigned int)511, sizeof(TCS_Action));
   EXPECT_EQ((unsigned int)390, sizeof(TCS_ClientAuthorizationDetails));
-  EXPECT_EQ((unsigned int)904, sizeof(TCS_ActionWithAuth));
-  EXPECT_EQ((unsigned int)16, sizeof(TSC_ActionExecutionResult));
+  EXPECT_EQ((unsigned int)901, sizeof(TCS_ActionWithAuth));
+  EXPECT_EQ((unsigned int)13, sizeof(TSC_ActionExecutionResult));
+
+  EXPECT_EQ((unsigned int)16, sizeof(TAction_RS_Parameters));
+  EXPECT_EQ((unsigned int)16, sizeof(TAction_RGBW_Parameters));
+
+  EXPECT_LE(sizeof(TAction_RS_Parameters),
+            (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
+  EXPECT_LE(sizeof(TAction_RGBW_Parameters),
+            (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TSC_GetChannelValueResult), 1055);
+  EXPECT_EQ(sizeof(TCS_GetChannelValueWithAuth), 394);
+}
+
+TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {
+  EXPECT_EQ(SUPLA_CHANNEL_CAPTION_MAXSIZE, SUPLA_CAPTION_MAXSIZE);
+  EXPECT_EQ(SUPLA_LOCATION_CAPTION_MAXSIZE, SUPLA_CAPTION_MAXSIZE);
+  EXPECT_EQ(SUPLA_SCENE_CAPTION_MAXSIZE, SUPLA_CAPTION_MAXSIZE);
+}
+
+TEST_F(ProtoTest, authorizationDetails) {
+  TCS_SuplaRegisterClient_B register_client_b = {};
+  TCS_SuplaRegisterClient_D register_client_d = {};
+  TCS_ClientAuthorizationDetails auth;
+
+  EXPECT_EQ(sizeof(register_client_b.AccessIDpwd), sizeof(auth.AccessIDpwd));
+  EXPECT_EQ(sizeof(register_client_b.GUID), sizeof(auth.GUID));
+
+  EXPECT_EQ(sizeof(register_client_d.AuthKey), sizeof(auth.AuthKey));
+  EXPECT_EQ(sizeof(register_client_d.GUID), sizeof(auth.GUID));
+  EXPECT_EQ(sizeof(register_client_d.Email), sizeof(auth.Email));
 }
 
 TEST_F(ProtoTest, init) {

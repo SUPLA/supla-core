@@ -26,5 +26,6 @@ supla_is_device_connected_command::supla_is_device_connected_command(
 
 bool supla_is_device_connected_command::is_device_online(int user_id,
                                                          int device_id) {
-  return supla_user::supla_user::is_device_online(user_id, device_id);
+  supla_user *user = supla_user::get_user(user_id);
+  return user && user->get_devices()->is_online(device_id);
 }

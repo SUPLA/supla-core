@@ -18,8 +18,12 @@
 
 #include "ipc/reset_counters_command.h"
 
+#include <memory>
+
 #include "device.h"
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_reset_counters_command::supla_reset_counters_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
@@ -27,13 +31,10 @@ supla_reset_counters_command::supla_reset_counters_command(
 
 bool supla_reset_counters_command::reset_counters(int user_id, int device_id,
                                                   int channel_id) {
-  int result = false;
-
-  supla_user::access_device(
-      user_id, device_id, channel_id,
-      [&result, channel_id](supla_device *device) -> void {
-        result = device->get_channels()->reset_counters(channel_id);
-      });
-
-  return result;
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->reset_counters(channel_id);
+  }
+  return false;
 }

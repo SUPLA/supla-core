@@ -20,7 +20,11 @@
 
 #include <string.h>
 
+#include <memory>
+
 #include "device/device.h"
+
+using std::shared_ptr;
 
 supla_channel_gate_value::supla_channel_gate_value(void)
     : supla_channel_value() {
@@ -66,30 +70,28 @@ void supla_channel_gate_value::set_partial_opening_sensor_level(
 
 _gate_sensor_level_enum supla_channel_gate_value::get_sensor_state(
     supla_user *user, int channel_id) {
-  _gate_sensor_level_enum result = gsl_unknown;
-
   if (user) {
-    user->access_device(
-        0, channel_id, [&result, channel_id](supla_device *device) -> void {
-          supla_device_channels *channels = device->get_channels();
+    shared_ptr<supla_device> device = user->get_devices()->get(0, channel_id);
+    if (device != nullptr) {
+      supla_device_channels *channels = device->get_channels();
 
-          if (channels->is_channel_online(channel_id)) {
-            int func = channels->get_channel_func(channel_id);
+      if (channels->is_channel_online(channel_id)) {
+        int func = channels->get_channel_func(channel_id);
 
-            switch (func) {
-              case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-              case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-                char v = 0;
-                if (channels->get_channel_char_value(channel_id, &v)) {
-                  result = v != 0 ? gsl_closed : gsl_open;
-                }
-                break;
+        switch (func) {
+          case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+          case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+            char v = 0;
+            if (channels->get_channel_char_value(channel_id, &v)) {
+              return v != 0 ? gsl_closed : gsl_open;
             }
-          }
-        });
+            break;
+        }
+      }
+    }
   }
 
-  return result;
+  return gsl_unknown;
 }
 
 void supla_channel_gate_value::update_sensors(

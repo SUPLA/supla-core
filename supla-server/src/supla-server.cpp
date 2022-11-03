@@ -24,17 +24,17 @@
 #include "accept_loop.h"
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
-#include "database.h"
-#include "datalogger.h"
+#include "cyclictasks/agent.h"
+#include "db/database.h"
 #include "http/httprequestqueue.h"
 #include "http/trivialhttps.h"
-#include "ipcsocket.h"
+#include "ipc/ipcsocket.h"
 #include "lck.h"
 #include "log.h"
 #include "mqtt_client_suite.h"
 #include "proto.h"
 #include "serverstatus.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 #include "sslcrypto.h"
 #include "sthread.h"
 #include "supla-socket.h"
@@ -43,14 +43,18 @@
 #include "user.h"
 
 int main(int argc, char *argv[]) {
-  void *ssd_ssl = NULL;
-  void *ssd_tcp = NULL;
-  void *ipc = NULL;
-  void *tcp_accept_loop_thread = NULL;
-  void *ssl_accept_loop_thread = NULL;
-  void *ipc_accept_loop_thread = NULL;
-  void *datalogger_loop_thread = NULL;
-  void *http_request_queue_loop_thread = NULL;
+#if __DEBUG
+  st_hook_critical_signals();
+#endif
+
+  void *ssd_ssl = nullptr;
+  void *ssd_tcp = nullptr;
+  void *ipc = nullptr;
+  void *tcp_accept_loop_thread = nullptr;
+  void *ssl_accept_loop_thread = nullptr;
+  void *ipc_accept_loop_thread = nullptr;
+  void *http_request_queue_loop_thread = nullptr;
+  supla_cyclictasks_agent *cyclictasks_agent = nullptr;
 
 #ifdef __LCK_DEBUG
   lck_debug_init();
@@ -124,9 +128,8 @@ int main(int argc, char *argv[]) {
   supla_asynctask_queue::global_instance();
   supla_asynctask_default_thread_pool::global_instance();
 
-  serverstatus::globalInstance();
   supla_user::init();
-  serverconnection::init();
+  supla_connection::init();
 
   st_setpidfile(pidfile_path);
   st_mainloop_init();
@@ -137,19 +140,20 @@ int main(int argc, char *argv[]) {
   // INI ACCEPT LOOP
 
   if (ssd_ssl != NULL)
-    ssl_accept_loop_thread = sthread_simple_run(accept_loop, ssd_ssl, 0);
+    sthread_simple_run(accept_loop, ssd_ssl, 0, &ssl_accept_loop_thread);
 
   if (ssd_tcp != NULL)
-    tcp_accept_loop_thread = sthread_simple_run(accept_loop, ssd_tcp, 0);
+    sthread_simple_run(accept_loop, ssd_tcp, 0, &tcp_accept_loop_thread);
 
-  if (ipc) ipc_accept_loop_thread = sthread_simple_run(ipc_accept_loop, ipc, 0);
+  if (ipc) sthread_simple_run(ipc_accept_loop, ipc, 0, &ipc_accept_loop_thread);
 
-  // DATA LOGGER
-  datalogger_loop_thread = sthread_simple_run(datalogger_loop, NULL, 0);
+  // CYCLIC TASKS
+  cyclictasks_agent = new supla_cyclictasks_agent();
 
   // HTTP EVENT QUEUE
-  http_request_queue_loop_thread =
-      sthread_simple_run(http_request_queue_loop, NULL, 0);
+
+  sthread_simple_run(http_request_queue_loop, NULL, 0,
+                     &http_request_queue_loop_thread);
 
   // MQTT
   supla_mqtt_client_suite::globalInstance()->start();
@@ -158,7 +162,7 @@ int main(int argc, char *argv[]) {
   while (st_app_terminate == 0) {
     st_mainloop_wait(1000000);
     serverstatus::globalInstance()->mainLoopHeartbeat();
-    serverconnection::log_limits();
+    supla_connection::log_limits();
     supla_user::log_metrics(3600);
     supla_http_request_queue::getInstance()->logMetrics(3600);
     supla_http_request_queue::getInstance()->logStuckWarning();
@@ -194,13 +198,13 @@ int main(int argc, char *argv[]) {
     ssocket_free(ssd_tcp);
   }
 
-  sthread_twf(datalogger_loop_thread);
+  delete cyclictasks_agent;
   sthread_twf(http_request_queue_loop_thread);
 
   supla_asynctask_queue::global_instance_release();  // before
                                                      // serverconnection_free()
 
-  serverconnection::serverconnection_free();
+  supla_connection::cleanup();
 
   // ! after serverconnection_free() and before user_free()
   supla_http_request_queue::queueFree();
@@ -212,7 +216,6 @@ int main(int argc, char *argv[]) {
   sslcrypto_free();
 
   st_mainloop_free();  // Almost at the end
-  serverstatus::globalInstanceRelease();
   st_delpidfile(pidfile_path);
   svrcfg_free();
 

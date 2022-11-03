@@ -111,15 +111,3 @@ void supla_channel_temphum::toValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
     memcpy(value, &this->Temperature, sizeof(double));
   }
 }
-
-// static
-char supla_channel_temphum::tarr_clean(void *ptr) {
-  delete (supla_channel_temphum *)ptr;
-  return 1;
-}
-
-// static
-void supla_channel_temphum::free(void *tarr) {
-  safe_array_clean(tarr, tarr_clean);
-  safe_array_free(tarr);
-}

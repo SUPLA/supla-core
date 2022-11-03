@@ -21,7 +21,10 @@
 
 #include <functional>
 #include <list>
+#include <map>
+#include <vector>
 
+#include "analyzer/voltage_analyzers.h"
 #include "caller.h"
 #include "channel_address.h"
 #include "channel_electricity_measurement.h"
@@ -71,15 +74,13 @@ class supla_device_channel {
   bool Hidden;
   bool Offline;
   unsigned int Flags;
-
+  TDSC_ChannelState *state;
   char value[SUPLA_CHANNELVALUE_SIZE];
-
   struct timeval value_valid_to;  // during offline
   TSuplaChannelExtendedValue *extendedValue;
-
   channel_json_config *json_config;
-
   _logger_purpose_t *logger_data;
+  supla_voltage_analyzers voltage_analyzers;
 
   void db_set_properties(channel_json_config *config);
   void db_set_params(int Param1, int Param2, int Param3, int Param4);
@@ -128,7 +129,7 @@ class supla_device_channel {
   bool setValue(const char value[SUPLA_CHANNELVALUE_SIZE],
                 const unsigned _supla_int_t *validity_time_sec,
                 bool *significantChange, unsigned char proto_version);
-  bool getExtendedValue(TSuplaChannelExtendedValue *ev);
+  bool getExtendedValue(TSuplaChannelExtendedValue *ev, bool em_update);
   void setExtendedValue(TSuplaChannelExtendedValue *ev);
   void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color,
                        char color_brightness, char brightness, char on_off);
@@ -138,7 +139,7 @@ class supla_device_channel {
   bool getRGBW(int *color, char *color_brightness, char *brightness,
                char *on_off);
   bool getValveValue(TValve_Value *Value);
-  void getConfig(TSD_ChannelConfig *config, unsigned char configType,
+  bool getConfig(TSD_ChannelConfig *config, unsigned char configType,
                  unsigned _supla_int_t flags);
   void setActionTriggerConfig(unsigned int capabilities, int relatedChannelId,
                               unsigned int disablesLocalOperation);
@@ -154,6 +155,10 @@ class supla_device_channel {
   channel_json_config *getJSONConfig(void);
   bool converValueToExtended(void);
   void action_trigger(int actions);
+  unsigned int get_value_validity_time_left_msec(void);
+  void set_state(TDSC_ChannelState *state);
+  bool get_state(TDSC_ChannelState *state);
+  supla_voltage_analyzers &get_voltage_analyzers(void);
 };
 
 class supla_device;
@@ -171,8 +176,6 @@ class supla_device_channels {
 
   supla_device_channel *find_channel(int Id);
   supla_device_channel *find_channel_by_number(int Number);
-  void access_channel(int channel_id,
-                      std::function<void(supla_device_channel *)> on_channel);
 
   std::list<int> mr_channel(int ChannelID, bool Master);
 
@@ -195,7 +198,7 @@ class supla_device_channels {
               unsigned char EOL, bool on, bool toggle);
   bool rs_action(const supla_caller &caller, int ChannelID, int GroupID,
                  unsigned char EOL, rsAction action,
-                 const char *closingPercentage);
+                 const char *closingPercentage, bool delta);
   bool action_open_close(const supla_caller &caller, int ChannelID, int GroupID,
                          unsigned char EOL, bool unknown, bool open,
                          bool cancelTasks = true);
@@ -203,6 +206,12 @@ class supla_device_channels {
  public:
   explicit supla_device_channels(supla_device *device);
   virtual ~supla_device_channels();
+
+  void access_channel(int channel_id,
+                      std::function<void(supla_device_channel *)> on_channel);
+
+  void for_each_channel(std::function<void(supla_device_channel *)> on_channel);
+
   void add_channel(int Id, int Number, int Type, int Func, int Param1,
                    int Param2, int Param3, int Param4, const char *TextParam1,
                    const char *TextParam2, const char *TextParam3, bool Hidden,
@@ -212,6 +221,7 @@ class supla_device_channels {
                    const char *user_config, const char *properties);
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
                          char *online, unsigned _supla_int_t *validity_time_sec,
+                         TSuplaChannelExtendedValue *ev, int *function,
                          bool for_client);
   supla_channel_value *get_channel_value(int ChannelID);
   bool get_channel_extendedvalue(int ChannelID,
@@ -268,25 +278,35 @@ class supla_device_channels {
   bool is_channel_online(int ChannelID);
   void load(int UserID, int DeviceID);
 
-  void get_temp_and_humidity(void *tarr);
-  void get_electricity_measurements(void *emarr, bool for_data_logger_purposes);
+  void get_temp_and_humidity(std::vector<supla_channel_temphum *> *result);
+  void get_electricity_measurements(
+      std::vector<supla_channel_electricity_measurement *> *result,
+      bool for_data_logger_purposes);
   supla_channel_electricity_measurement *get_electricity_measurement(
       int ChannelID);
-  void get_ic_measurements(void *icarr, bool for_data_logger_purposes);
+  void get_ic_measurements(std::vector<supla_channel_ic_measurement *> *result,
+                           bool for_data_logger_purposes);
   supla_channel_ic_measurement *get_ic_measurement(int ChannelID);
-  void get_thermostat_measurements(void *tharr);
+  void get_thermostat_measurements(
+      std::vector<supla_channel_thermostat_measurement *> *result);
 
   bool calcfg_request(const supla_caller &caller, int ChannelID,
                       bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest_B *request);
 
-  bool get_channel_state(const supla_caller &caller,
-                         TCSD_ChannelStateRequest *request);
+  void set_channel_state(int channel_id, TDSC_ChannelState *state);
+
+  bool get_channel_state(int channel_id, TDSC_ChannelState *state);
+
+  bool get_channel_state_async(const supla_caller &caller,
+                               TCSD_ChannelStateRequest *request);
 
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
   void set_channel_function(int ChannelId, int Func);
-  void get_functions_request(void);
-  void get_channel_config_request(TDS_GetChannelConfigRequest *request);
+  std::map<int, int> get_functions(void);
+  bool get_channel_config(unsigned char channel_number, unsigned char type,
+                          unsigned _supla_int_t flags,
+                          TSD_ChannelConfig *config);
   void action_trigger(TDS_ActionTrigger *at);
 
   bool set_on(const supla_caller &caller, int ChannelID, int GroupID,
@@ -307,7 +327,8 @@ class supla_device_channels {
   bool action_toggle(const supla_caller &caller, int ChannelID, int GroupID,
                      unsigned char EOL);
   bool action_shut(const supla_caller &caller, int ChannelID, int GroupID,
-                   unsigned char EOL, const char *closingPercentage);
+                   unsigned char EOL, const char *closingPercentage,
+                   bool action);
   bool action_reveal(const supla_caller &caller, int ChannelID, int GroupID,
                      unsigned char EOL);
   bool action_up(const supla_caller &caller, int ChannelID, int GroupID,
@@ -338,6 +359,9 @@ class supla_device_channels {
   void timer_arm(const supla_caller &caller, int ChannelID, int GroupID,
                  unsigned char EOL, unsigned char On, unsigned int DurationMS);
   channel_json_config *get_json_config(int ChannelID);
+  unsigned int get_value_validity_time_left_msec(void);
+  void on_related_sensor_value_changed(int control_channel_id, int sensor_id,
+                                       bool is_open);
 };
 
 #endif /* DEVICECHANNEL_H_ */

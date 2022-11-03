@@ -47,6 +47,8 @@ const string supla_abstract_action_command::get_command_name(void) {
       return "ACTION-DOWN-OR-STOP:";
     case ACTION_STEP_BY_STEP:
       return "ACTION-SBS:";
+    case ACTION_SHUT_PARTIALLY:
+      return "ACTION-SHUT-PARTIALLY:";
   }
   return "";
 }
@@ -65,6 +67,28 @@ void supla_abstract_action_command::on_command_match(const char *params) {
     return;
   }
 
+  if (action == ACTION_SHUT_PARTIALLY) {
+    int user_id = 0;
+    int device_id = 0;
+    int channel_id = 0;
+    int percentage = 0;
+    int delta = 0;
+
+    sscanf(params, "%i,%i,%i,%i,%i", &user_id, &device_id, &channel_id,
+           &percentage, &delta);
+
+    if (user_id && device_id && channel_id) {
+      char _percentage = percentage;
+      bool result =
+          action_shut(user_id, device_id, channel_id, &_percentage, delta > 0);
+      _send_result(result, channel_id);
+    } else {
+      send_result("UNKNOWN:", channel_id);
+    }
+
+    return;
+  }
+
   if (action == ACTION_COPY) {
     int user_id = 0;
     int device_id = 0;
@@ -75,8 +99,7 @@ void supla_abstract_action_command::on_command_match(const char *params) {
     sscanf(params, "%i,%i,%i,%i,%i", &user_id, &device_id, &channel_id,
            &source_device_id, &source_channel_id);
 
-    if (user_id && device_id && channel_id && source_device_id &&
-        source_channel_id) {
+    if (user_id && device_id && channel_id && source_channel_id) {
       bool result = action_copy(user_id, device_id, channel_id,
                                 source_device_id, source_channel_id);
       _send_result(result, channel_id);

@@ -43,6 +43,8 @@ class ActionCommandMock : public supla_abstract_action_command {
                bool(int user_id, int device_id, int channel_id));
   MOCK_METHOD5(action_copy, bool(int user_id, int device_id, int channel_id,
                                  int source_device_id, int source_channel_id));
+  MOCK_METHOD5(action_shut, bool(int user_id, int device_id, int channel_id,
+                                 const char *percentage, bool delta));
 };
 
 } /* namespace testing */

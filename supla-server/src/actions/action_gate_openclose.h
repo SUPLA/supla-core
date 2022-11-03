@@ -75,6 +75,8 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
   bool action_open(void);
 
   static void cancel_tasks(int user_id, int device_id, int channel_id);
+  static void cancel_tasks(int user_id, int device_id, int channel_id,
+                           bool action_open);
   static void open_close(const supla_caller &caller, int user_id, int device_id,
                          int channel_id, bool open);
 };

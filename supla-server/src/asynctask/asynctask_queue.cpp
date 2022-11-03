@@ -37,7 +37,8 @@ supla_asynctask_queue::supla_asynctask_queue(void) {
   this->observer_lck = lck_init();
   this->eh = eh_init();
   this->last_iterate_time_sec = 0;
-  this->thread = sthread_simple_run(loop, this, 0);
+  this->thread = nullptr;
+  sthread_simple_run(loop, this, 0, &this->thread);
 }
 
 supla_asynctask_queue::~supla_asynctask_queue(void) {

@@ -23,6 +23,8 @@
 #include "scene/scene_asynctask.h"
 #include "userchannelgroups.h"
 
+using std::shared_ptr;
+
 supla_action_executor::supla_action_executor(void)
     : supla_abstract_action_executor() {}
 
@@ -101,18 +103,18 @@ void supla_action_executor::toggle(void) {
   });
 }
 
-void supla_action_executor::shut(const char *closingPercentage) {
-  execute_action(
-      [this, closingPercentage](supla_user_channelgroups *channel_groups,
-                                supla_device_channels *channels) -> void {
-        if (channel_groups) {
-          channel_groups->action_shut(get_caller(), get_group_id(),
-                                      closingPercentage);
-        } else {
-          channels->action_shut(get_caller(), get_channel_id(), 0, 0,
-                                closingPercentage);
-        }
-      });
+void supla_action_executor::shut(const char *closingPercentage, bool delta) {
+  execute_action([this, closingPercentage, delta](
+                     supla_user_channelgroups *channel_groups,
+                     supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_shut(get_caller(), get_group_id(),
+                                  closingPercentage, delta);
+    } else {
+      channels->action_shut(get_caller(), get_channel_id(), 0, 0,
+                            closingPercentage, delta);
+    }
+  });
 }
 
 void supla_action_executor::reveal(void) {
@@ -261,12 +263,14 @@ void supla_action_executor::open_close_without_canceling_tasks() {
 void supla_action_executor::forward_outside(int cap) {
   // device_id can be set to 0 so better to use device-> getID () inside the
   // access_device method.
-  access_device([this, cap](supla_device *device) -> void {
+
+  shared_ptr<supla_device> device = get_device();
+  if (device != nullptr) {
     supla_mqtt_client_suite::globalInstance()->onActionsTriggered(
-        device->getUserID(), device->getID(), get_channel_id(), cap);
+        device->get_user_id(), device->get_id(), get_channel_id(), cap);
 
     supla_http_request_queue::getInstance()->onActionsTriggered(
-        get_caller(), device->getUser(), device->getID(), get_channel_id(),
+        get_caller(), device->get_user(), device->get_id(), get_channel_id(),
         cap);
-  });
+  }
 }

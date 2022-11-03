@@ -18,6 +18,8 @@
 
 #include "ipc/is_client_connected_command.h"
 
+#include <memory>
+
 #include "user.h"
 
 supla_is_client_connected_command::supla_is_client_connected_command(
@@ -26,5 +28,6 @@ supla_is_client_connected_command::supla_is_client_connected_command(
 
 bool supla_is_client_connected_command::is_client_online(int user_id,
                                                          int client_id) {
-  return supla_user::supla_user::is_client_online(user_id, client_id);
+  supla_user *user = supla_user::get_user(user_id);
+  return user && user->get_clients()->is_online(client_id);
 }

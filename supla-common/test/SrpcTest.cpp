@@ -269,7 +269,7 @@ class SrpcTest : public ::testing::Test {
   void srpcCallAllowed(int min_version, vector<int> call_ids);
 
   unsigned _supla_int_t cr_rr_id;
-  unsigned _supla_int_t cr_call_type;
+  unsigned _supla_int_t cr_call_id;
   unsigned char cr_proto_version;
   TsrpcReceivedData cr_rd;
 
@@ -284,7 +284,7 @@ class SrpcTest : public ::testing::Test {
   void SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize);
   void OnVersionError(unsigned char remote_version);
   void OnRemoteCallReceived(unsigned _supla_int_t rr_id,
-                            unsigned _supla_int_t call_type,
+                            unsigned _supla_int_t call_id,
                             unsigned char proto_version);
 };
 
@@ -302,11 +302,11 @@ void srpc_event_OnVersionError(void *_srpc, unsigned char remote_version,
 }
 
 void srpc_on_remote_call_received(void *_srpc, unsigned _supla_int_t rr_id,
-                                  unsigned _supla_int_t call_type,
+                                  unsigned _supla_int_t call_id,
                                   void *user_params,
                                   unsigned char proto_version) {
   return static_cast<SrpcTest *>(user_params)
-      ->OnRemoteCallReceived(rr_id, call_type, proto_version);
+      ->OnRemoteCallReceived(rr_id, call_id, proto_version);
 }
 
 void SrpcTest::SetUp() {
@@ -318,7 +318,7 @@ void SrpcTest::SetUp() {
   data_read_result = 0;
   data_write_result = 0;
   cr_rr_id = 0;
-  cr_call_type = 0;
+  cr_call_id = 0;
   cr_proto_version = 0;
   memset(&cr_rd, 0, sizeof(TsrpcReceivedData));
 
@@ -510,8 +510,13 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE};
     case 19:
       return {SUPLA_CS_CALL_EXECUTE_ACTION,
-              SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION,
-              SUPLA_SC_CALL_ACTION_EXECUTION_RESULT};
+              SUPLA_CS_CALL_EXECUTE_ACTION_WITH_AUTH,
+              SUPLA_SC_CALL_ACTION_EXECUTION_RESULT,
+              SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D,
+              SUPLA_CS_CALL_GET_CHANNEL_VALUE_WITH_AUTH,
+              SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT,
+              SUPLA_CS_CALL_SET_SCENE_CAPTION,
+              SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT};
   }
 
   return {};
@@ -618,10 +623,10 @@ void SrpcTest::OnVersionError(unsigned char remote_version) {
 }
 
 void SrpcTest::OnRemoteCallReceived(unsigned _supla_int_t rr_id,
-                                    unsigned _supla_int_t call_type,
+                                    unsigned _supla_int_t call_id,
                                     unsigned char proto_version) {
   cr_rr_id = rr_id;
-  cr_call_type = call_type;
+  cr_call_id = call_id;
   cr_proto_version = proto_version;
 }
 
@@ -781,7 +786,7 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
   data_read_result = data_write_size;
 
   if (ExpectedCallType == (unsigned int)-1) {
-    ((TSuplaDataPacket *)data_write)->call_type = (unsigned int)-1;
+    ((TSuplaDataPacket *)data_write)->call_id = (unsigned int)-1;
   }
 
   memcpy(data_read, data_write, data_write_size);
@@ -793,7 +798,7 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
   ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
 
   ASSERT_EQ((unsigned int)1, (unsigned int)cr_rr_id);
-  ASSERT_TRUE(ExpectedCallType == cr_call_type);
+  ASSERT_TRUE(ExpectedCallType == cr_call_id);
   ASSERT_EQ(SUPLA_PROTO_VERSION, cr_proto_version);
 
   if (ExpectedCallType == (unsigned int)-1) {
@@ -802,7 +807,7 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
     ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_getdata(srpc, &cr_rd, cr_rr_id));
   }
 
-  ASSERT_EQ(ExpectedCallType, cr_rd.call_type);
+  ASSERT_EQ(ExpectedCallType, cr_rd.call_id);
   ASSERT_EQ(cr_rr_id, cr_rd.rr_id);
 }
 
@@ -1985,6 +1990,12 @@ SRPC_CALL_BASIC_TEST(srpc_sc_async_registerclient_result_c,
                      SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C, 54,
                      sc_register_client_result_c);
 
+#if SUPLA_PROTO_VERSION >= 19
+SRPC_CALL_BASIC_TEST(srpc_sc_async_registerclient_result_d,
+                     TSC_SuplaRegisterClientResult_D,
+                     SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_D, 50,
+                     sc_register_client_result_d);
+#endif /*SUPLA_PROTO_VERSION >= 19*/
 //---------------------------------------------------------
 // LOCATION UPDATE
 //---------------------------------------------------------
@@ -3448,6 +3459,21 @@ SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_location_caption_result,
                                   SUPLA_LOCATION_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
+// SET SCENE CAPTION
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_scene_caption,
+                                  TCS_SetCaption,
+                                  SUPLA_CS_CALL_SET_SCENE_CAPTION, 31, 432,
+                                  cs_set_caption, SUPLA_SCENE_CAPTION_MAXSIZE);
+
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_scene_caption_result,
+                                  TSC_SetCaptionResult,
+                                  SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT, 32,
+                                  433, sc_set_caption_result,
+                                  SUPLA_SCENE_CAPTION_MAXSIZE);
+
+//---------------------------------------------------------
 // CLIENTS RECONNECT REQUEST
 //---------------------------------------------------------
 
@@ -3721,24 +3747,23 @@ TEST_F(SrpcTest, call_scene_state_pack_update_with_full_size) {
   srpc = NULL;
 }
 
-#if SUPLA_PROTO_VERSION >= 19
 //---------------------------------------------------------
 // EXECUTE ACTION
 //---------------------------------------------------------
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_execute_action, TCS_Action,
-                                     SUPLA_CS_CALL_EXECUTE_ACTION, 37, 537,
+                                     SUPLA_CS_CALL_EXECUTE_ACTION, 34, 534,
                                      cs_action, SUPLA_ACTION_PARAM_MAXSIZE,
                                      Param, ParamSize);
 
 //---------------------------------------------------------
-// CLIENT AUTH AND EXECUTE ACTION
+// EXECUTE ACTION WITH AUTHORIZATION
 //---------------------------------------------------------
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_execute_action_with_auth,
                                      TCS_ActionWithAuth,
-                                     SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION, 427,
-                                     927, cs_action_with_auth,
+                                     SUPLA_CS_CALL_EXECUTE_ACTION_WITH_AUTH,
+                                     424, 924, cs_action_with_auth,
                                      SUPLA_ACTION_PARAM_MAXSIZE, Action.Param,
                                      Action.ParamSize);
 
@@ -3748,7 +3773,27 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_execute_action_with_auth,
 
 SRPC_CALL_BASIC_TEST(srpc_sc_async_action_execution_result,
                      TSC_ActionExecutionResult,
-                     SUPLA_SC_CALL_ACTION_EXECUTION_RESULT, 39,
+                     SUPLA_SC_CALL_ACTION_EXECUTION_RESULT, 36,
                      sc_action_execution_result);
-#endif /*SUPLA_PROTO_VERSION >= 19*/
+
+//---------------------------------------------------------
+// GET CHANNEL VALUE WITH AUTHORIZATION
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_cs_async_get_channel_value_with_auth,
+                     TCS_GetChannelValueWithAuth,
+                     SUPLA_CS_CALL_GET_CHANNEL_VALUE_WITH_AUTH, 417,
+                     cs_get_value_with_auth);
+
+//---------------------------------------------------------
+// GET CHANNEL VALUE RESULT
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_get_channel_value_result,
+                                     TSC_GetChannelValueResult,
+                                     SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT, 54,
+                                     1078, sc_get_value_result,
+                                     SUPLA_CHANNELEXTENDEDVALUE_SIZE,
+                                     ExtendedValue.value, ExtendedValue.size);
+
 }  // namespace

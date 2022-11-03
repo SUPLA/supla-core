@@ -108,7 +108,8 @@ void supla_abstract_asynctask_thread_pool::execution_request(
     p.finish = _on_thread_finish;
     p.initialize = NULL;
 
-    void *thread = sthread_run(&p);
+    void *thread = nullptr;
+    sthread_run(&p, &thread);
     if (thread) {
       threads.push_back(thread);
       if (threads.size() > _highest_number_of_threads) {

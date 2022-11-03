@@ -49,7 +49,7 @@
 #define SRPC_ICACHE_FLASH
 #endif
 
-#if defined(__AVR__) || defined(ARDUINO) || defined (SUPLA_DEVICE)
+#if defined(__AVR__) || defined(ARDUINO) || defined(SUPLA_DEVICE)
 #define SRPC_EXCLUDE_CLIENT
 #define SRPC_WITHOUT_OUT_QUEUE
 #define SRPC_WITHOUT_IN_QUEUE
@@ -62,16 +62,16 @@ extern "C" {
 typedef _supla_int_t (*_func_srpc_DataRW)(void *buf, _supla_int_t count,
                                           void *user_params);
 typedef void (*_func_srpc_event_OnRemoteCallReceived)(
-    void *_srpc, unsigned _supla_int_t rr_id, unsigned _supla_int_t call_type,
+    void *_srpc, unsigned _supla_int_t rr_id, unsigned _supla_int_t call_id,
     void *user_params, unsigned char proto_version);
 typedef void (*_func_srpc_event_BeforeCall)(void *_srpc,
-                                            unsigned _supla_int_t call_type,
+                                            unsigned _supla_int_t call_id,
                                             void *user_params);
 typedef void (*_func_srpc_event_OnVersionError)(void *_srpc,
                                                 unsigned char remote_version,
                                                 void *user_params);
 typedef void (*_func_srpc_event_OnMinVersionRequired)(
-    void *_srpc, unsigned _supla_int_t call_type, unsigned char min_version,
+    void *_srpc, unsigned _supla_int_t call_id, unsigned char min_version,
     void *user_params);
 
 typedef struct {
@@ -107,6 +107,7 @@ union TsrpcDataPacketData {
   TSC_SuplaRegisterClientResult *sc_register_client_result;
   TSC_SuplaRegisterClientResult_B *sc_register_client_result_b;
   TSC_SuplaRegisterClientResult_C *sc_register_client_result_c;
+  TSC_SuplaRegisterClientResult_D *sc_register_client_result_d;
   TDS_SuplaDeviceChannelValue *ds_device_channel_value;
   TDS_SuplaDeviceChannelValue_B *ds_device_channel_value_b;
   TDS_SuplaDeviceChannelValue_C *ds_device_channel_value_c;
@@ -171,10 +172,12 @@ union TsrpcDataPacketData {
   TCS_Action *cs_action;
   TCS_ActionWithAuth *cs_action_with_auth;
   TSC_ActionExecutionResult *sc_action_execution_result;
+  TCS_GetChannelValueWithAuth *cs_get_value_with_auth;
+  TSC_GetChannelValueResult *sc_get_value_result;
 };
 
 typedef struct {
-  unsigned _supla_int_t call_type;
+  unsigned _supla_int_t call_id;
   unsigned _supla_int_t rr_id;
 
   union TsrpcDataPacketData data;
@@ -184,6 +187,9 @@ void SRPC_ICACHE_FLASH srpc_params_init(TsrpcParams *params);
 
 void *SRPC_ICACHE_FLASH srpc_init(TsrpcParams *params);
 void SRPC_ICACHE_FLASH srpc_free(void *_srpc);
+
+void SRPC_ICACHE_FLASH srpc_lock(void *_srpc);
+void SRPC_ICACHE_FLASH srpc_unlock(void *_srpc);
 
 char SRPC_ICACHE_FLASH srpc_input_dataexists(void *_srpc);
 char SRPC_ICACHE_FLASH srpc_output_dataexists(void *_srpc);
@@ -201,9 +207,9 @@ void SRPC_ICACHE_FLASH srpc_set_proto_version(void *_srpc,
                                               unsigned char version);
 
 unsigned char SRPC_ICACHE_FLASH
-srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type);
+srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id);
 unsigned char SRPC_ICACHE_FLASH
-srpc_call_allowed(void *_srpc, unsigned _supla_int_t call_type);
+srpc_call_allowed(void *_srpc, unsigned _supla_int_t call_id);
 
 // device/client <-> server
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_getversion(void *_srpc);
@@ -299,6 +305,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_b(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_c(
     void *_srpc,
     TSC_SuplaRegisterClientResult_C *registerclient_result);  // ver. >= 17
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_d(
+    void *_srpc,
+    TSC_SuplaRegisterClientResult_D *registerclient_result);  // ver. >= 19
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sc_async_location_update(void *_srpc, TSC_SuplaLocation *location);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_locationpack_update(
@@ -377,6 +386,10 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_set_location_caption(void *_srpc, TCS_SetCaption *caption);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_location_caption_result(
     void *_srpc, TSC_SetCaptionResult *caption);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_scene_caption(
+    void *_srpc, TCS_SetCaption *caption);  // ver. >= 19
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_scene_caption_result(
+    void *_srpc, TSC_SetCaptionResult *caption);  // ver. >= 19
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_clients_reconnect_request(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_clients_reconnect_request_result(
@@ -401,6 +414,10 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_execute_action_with_auth(void *_srpc, TCS_ActionWithAuth *action);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_action_execution_result(
     void *_srpc, TSC_ActionExecutionResult *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_channel_value_with_auth(
+    void *_srpc, TCS_GetChannelValueWithAuth *vwa);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_get_channel_value_result(
+    void *_srpc, TSC_GetChannelValueResult *result);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS
