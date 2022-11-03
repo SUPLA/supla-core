@@ -27,6 +27,11 @@ GetVersionIntegrationTest::GetVersionIntegrationTest() {
 
 GetVersionIntegrationTest::~GetVersionIntegrationTest() {}
 
+void GetVersionIntegrationTest::SetUp() {
+  IntegrationTest::SetUp();
+  initTestDatabase();
+}
+
 void GetVersionIntegrationTest::onConnected() {
   if (withoutRegistration) {
     cancelIteration();

@@ -32,6 +32,7 @@ class GetVersionIntegrationTest : public IntegrationTest {
  public:
   GetVersionIntegrationTest();
   virtual ~GetVersionIntegrationTest();
+  virtual void SetUp();
   virtual void onConnected();
   virtual void onRegistered(TSC_SuplaRegisterClientResult_D *result);
   virtual void onGetVersionResult(TSDC_SuplaGetVersionResult *result);
