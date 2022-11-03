@@ -18,6 +18,7 @@
 
 #include "client/client_dao.h"
 
+#include <ctype.h>
 #include <mysql.h>
 #include <stdio.h>
 #include <string.h>
