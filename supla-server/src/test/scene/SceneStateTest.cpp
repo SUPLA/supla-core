@@ -159,6 +159,13 @@ TEST_F(SceneStateTest, millisecondsFromStart) {
     supla_scene_state state(supla_caller(), now, 0);
     EXPECT_GE(state.get_milliseconds_from_start(), 1000U);
   }
+
+  now.tv_sec -= 86400;
+
+  {
+    supla_scene_state state(supla_caller(), now, 0);
+    EXPECT_GE(state.get_milliseconds_from_start(), 86401000U);
+  }
 }
 
 TEST_F(SceneStateTest, millisecondsLeft) {
@@ -179,6 +186,18 @@ TEST_F(SceneStateTest, millisecondsLeft) {
     supla_scene_state state(supla_caller(), now, 500);
     EXPECT_GE(state.get_milliseconds_left(), 100U);
     EXPECT_LE(state.get_milliseconds_left(), 500U);
+  }
+
+  {
+    supla_scene_state state(supla_caller(), now, 10800000);
+    EXPECT_GE(state.get_milliseconds_left(), 10799900U);
+    EXPECT_LE(state.get_milliseconds_left(), 10800000U);
+  }
+
+  {
+    supla_scene_state state(supla_caller(), now, 86400000);
+    EXPECT_GE(state.get_milliseconds_left(), 86399900U);
+    EXPECT_LE(state.get_milliseconds_left(), 86400000U);
   }
 
   now.tv_sec++;
