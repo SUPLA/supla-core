@@ -35,7 +35,7 @@ class supla_scene_operations {
   void push(supla_scene_operation *operation);
   supla_scene_operation *pop(void);
   unsigned int get_delay_ms(void);
-  unsigned int get_time_left_ms(void);
+  unsigned int get_total_delay_ms(void);
   supla_scene_operations *clone(void) const;
 };
 

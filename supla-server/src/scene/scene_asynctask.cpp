@@ -80,7 +80,7 @@ unsigned int supla_scene_asynctask::op_get_delay_ms(void) {
 
 unsigned int supla_scene_asynctask::op_get_time_left_ms(void) {
   lock();
-  int result = operations->get_time_left_ms();
+  int result = operations->get_total_delay_ms();
   unlock();
   return result;
 }

@@ -53,7 +53,7 @@ unsigned int supla_scene_operations::get_delay_ms(void) {
   return 0;
 }
 
-unsigned int supla_scene_operations::get_time_left_ms(void) {
+unsigned int supla_scene_operations::get_total_delay_ms(void) {
   unsigned int result = 0;
 
   for (auto it = operations.begin(); it != operations.end(); ++it) {

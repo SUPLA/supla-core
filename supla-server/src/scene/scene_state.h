@@ -32,7 +32,7 @@ class supla_scene_state {
   supla_scene_state(void);
   supla_scene_state(const supla_scene_state &state);
   supla_scene_state(const supla_caller &caller, struct timeval started_at,
-                    unsigned _supla_int_t millis_left);
+                    unsigned _supla_int_t total_delay_ms);
   virtual ~supla_scene_state();
 
   const supla_caller &get_caller(void) const;

@@ -33,12 +33,14 @@ supla_scene_state::supla_scene_state(const supla_scene_state &state) {
 
 supla_scene_state::supla_scene_state(const supla_caller &caller,
                                      struct timeval started_at,
-                                     unsigned _supla_int_t millis_left) {
+                                     unsigned _supla_int_t total_delay_ms) {
   this->started_at = started_at;
-  unsigned long long ending_at_usec =
-      started_at.tv_sec * 1000000 + started_at.tv_usec + millis_left * 1000;
-  this->ending_at.tv_sec = ending_at_usec / 1000000;
-  this->ending_at.tv_usec = ending_at_usec % 1000000;
+  unsigned long long ending_at_usec = started_at.tv_sec * 1000000UL +
+                                      started_at.tv_usec +
+                                      total_delay_ms * 1000UL;
+
+  this->ending_at.tv_sec = ending_at_usec / 1000000UL;
+  this->ending_at.tv_usec = ending_at_usec % 1000000UL;
   this->caller = caller;
 }
 
@@ -90,12 +92,12 @@ unsigned int supla_scene_state::get_milliseconds_from_start(void) const {
     struct timeval now = {};
     gettimeofday(&now, NULL);
 
-    unsigned long long now_usec = now.tv_sec * 1000000 + now.tv_usec;
+    unsigned long long now_usec = now.tv_sec * 1000000UL + now.tv_usec;
     unsigned long long started_at_usec =
-        started_at.tv_sec * 1000000 + started_at.tv_usec;
+        started_at.tv_sec * 1000000UL + started_at.tv_usec;
 
     if (now_usec >= started_at_usec) {
-      return (now_usec - started_at_usec) / 1000;
+      return (now_usec - started_at_usec) / 1000U;
     }
   }
 
@@ -107,12 +109,12 @@ unsigned int supla_scene_state::get_milliseconds_left(void) const {
     struct timeval now = {};
     gettimeofday(&now, NULL);
 
-    unsigned long long now_usec = now.tv_sec * 1000000 + now.tv_usec;
+    unsigned long long now_usec = now.tv_sec * 1000000UL + now.tv_usec;
     unsigned long long ending_at_usec =
-        ending_at.tv_sec * 1000000 + ending_at.tv_usec;
+        ending_at.tv_sec * 1000000UL + ending_at.tv_usec;
 
     if (now_usec < ending_at_usec) {
-      return (ending_at_usec - now_usec) / 1000;
+      return (ending_at_usec - now_usec) / 1000U;
     }
   }
 
