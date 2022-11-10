@@ -4,12 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/integration/scene/SceneDaoIntegrationTest.cpp \
 ../src/test/integration/scene/SceneOperationsDaoIntegrationTest.cpp 
 
 CPP_DEPS += \
+./src/test/integration/scene/SceneDaoIntegrationTest.d \
 ./src/test/integration/scene/SceneOperationsDaoIntegrationTest.d 
 
 OBJS += \
+./src/test/integration/scene/SceneDaoIntegrationTest.o \
 ./src/test/integration/scene/SceneOperationsDaoIntegrationTest.o 
 
 
@@ -25,7 +28,7 @@ src/test/integration/scene/%.o: ../src/test/integration/scene/%.cpp src/test/int
 clean: clean-src-2f-test-2f-integration-2f-scene
 
 clean-src-2f-test-2f-integration-2f-scene:
-	-$(RM) ./src/test/integration/scene/SceneOperationsDaoIntegrationTest.d ./src/test/integration/scene/SceneOperationsDaoIntegrationTest.o
+	-$(RM) ./src/test/integration/scene/SceneDaoIntegrationTest.d ./src/test/integration/scene/SceneDaoIntegrationTest.o ./src/test/integration/scene/SceneOperationsDaoIntegrationTest.d ./src/test/integration/scene/SceneOperationsDaoIntegrationTest.o
 
 .PHONY: clean-src-2f-test-2f-integration-2f-scene
 
