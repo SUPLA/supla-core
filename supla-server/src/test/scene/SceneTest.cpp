@@ -194,12 +194,18 @@ TEST_F(SceneTest, estamitedExecutionTime) {
   operations->push(op);
 
   supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 1, 2, 123456, queue, pool, action_executor,
+      supla_caller(ctIPC), 1, 2, 1234, queue, pool, action_executor,
       value_getter, operations, false);
   ASSERT_FALSE(scene == NULL);
 
-  WaitForState(scene, supla_asynctask_state::SUCCESS, 1500000);
-  EXPECT_EQ(scene->get_estimated_execution_time(), 123456);
+  WaitForState(scene, supla_asynctask_state::SUCCESS, 2000000);
+  EXPECT_EQ(scene->get_estimated_execution_time(), 1234);
+
+  struct timeval now = {};
+  gettimeofday(&now, NULL);
+
+  EXPECT_GE(TestHelper::timeDiffUs(now, scene->get_started_at()), 1234000UL);
+  EXPECT_LT(TestHelper::timeDiffUs(now, scene->get_started_at()), 1334000UL);
 }
 
 TEST_F(SceneTest, executeSceneInsideScene) {

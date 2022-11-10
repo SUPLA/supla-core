@@ -37,8 +37,8 @@ void TestHelper::printEscaped(const char *str) {
 // static
 unsigned long long TestHelper::timeDiffUs(const struct timeval &now,
                                           const struct timeval &then) {
-  return (now.tv_sec * 1000000 + now.tv_usec) -
-         (then.tv_sec * 1000000 + then.tv_usec);
+  return (now.tv_sec * 1000000UL + now.tv_usec) -
+         (then.tv_sec * 1000000UL + then.tv_usec);
 }
 
 // static
