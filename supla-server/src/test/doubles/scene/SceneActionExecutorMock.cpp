@@ -45,7 +45,7 @@ void SceneActionExecutorMock::execute(void) {
   if (get_scene_id() && queue && pool && action_executor,
       value_getter && operations) {
     last_executed_asynctask = new supla_scene_asynctask(
-        get_caller(), get_user_id(), get_scene_id(), queue, pool,
+        get_caller(), get_user_id(), get_scene_id(), 0, queue, pool,
         action_executor, value_getter, operations, false);
     operations = NULL;
   }

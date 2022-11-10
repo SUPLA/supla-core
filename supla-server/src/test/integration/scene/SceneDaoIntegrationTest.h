@@ -16,36 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "TestHelper.h"
+#ifndef SceneDaoTest_H_
+#define SceneDaoTest_H_
 
-#include <stdio.h>
-#include <string.h>
+#include "db/db_access_provider.h"
+#include "integration/IntegrationTest.h"
+#include "scene/scene_dao.h"
 
 namespace testing {
-// static
-void TestHelper::printEscaped(const char *str) {
-  size_t size = strlen(str);
 
-  for (size_t a = 0; a < size; a++) {
-    if (str[a] == '"' || str[a] == '\\') {
-      printf("\\");
-    }
-    printf("%c", str[a]);
-  }
-}
+class SceneDaoIntegrationTest : public IntegrationTest, public Test {
+ protected:
+  supla_db_access_provider *dba;
+  supla_scene_dao *dao;
 
-// static
-unsigned long long TestHelper::timeDiffUs(const struct timeval &now,
-                                          const struct timeval &then) {
-  return (now.tv_sec * 1000000UL + now.tv_usec) -
-         (then.tv_sec * 1000000UL + then.tv_usec);
-}
+ public:
+  SceneDaoIntegrationTest();
+  virtual ~SceneDaoIntegrationTest();
+  virtual void SetUp();
+  virtual void TearDown();
+};
 
-// static
-unsigned long long TestHelper::usecSince(const struct timeval &tv) {
-  struct timeval now = {};
-  gettimeofday(&now, NULL);
-  return timeDiffUs(now, tv);
-}
+} /* namespace testing */
 
-}  // namespace testing
+#endif /* SceneDaoTest_H_ */

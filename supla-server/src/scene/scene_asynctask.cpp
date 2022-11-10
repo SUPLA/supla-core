@@ -26,12 +26,14 @@
 #include "db/db_access_provider.h"
 #include "device/value_getter.h"
 #include "log.h"
+#include "scene/scene_dao.h"
 #include "scene/scene_operations_dao.h"
 #include "scene/scene_search_condition.h"
 
 supla_scene_asynctask::supla_scene_asynctask(
     const supla_caller &caller, int user_id, int scene_id,
-    supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
+    unsigned int estimated_execution_time, supla_asynctask_queue *queue,
+    supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_action_executor *action_executor,
     supla_abstract_value_getter *value_getter,
     supla_scene_operations *operations, bool release_immediately)
@@ -43,11 +45,12 @@ supla_scene_asynctask::supla_scene_asynctask(
   this->caller = caller;
   this->user_id = user_id;
   this->scene_id = scene_id;
+  this->estimated_execution_time = estimated_execution_time;
   this->action_executor = action_executor;
   this->value_getter = value_getter;
   this->operations = operations;
 
-  set_delay();
+  set_delay_usec(op_get_delay_ms() * 1000);
   set_waiting();
   set_observable();
 }
@@ -78,13 +81,6 @@ unsigned int supla_scene_asynctask::op_get_delay_ms(void) {
   return result;
 }
 
-unsigned int supla_scene_asynctask::op_get_time_left_ms(void) {
-  lock();
-  int result = operations->get_total_delay_ms();
-  unlock();
-  return result;
-}
-
 supla_scene_operation *supla_scene_asynctask::op_pop(void) {
   lock();
   supla_scene_operation *result = operations->pop();
@@ -100,10 +96,6 @@ int supla_scene_asynctask::op_count(void) {
   return result;
 }
 
-void supla_scene_asynctask::set_delay(void) {
-  set_delay_usec(op_get_delay_ms() * 1000);
-}
-
 const supla_caller &supla_scene_asynctask::get_caller(void) const {
   return caller;
 }
@@ -112,9 +104,13 @@ int supla_scene_asynctask::get_user_id(void) { return user_id; }
 
 int supla_scene_asynctask::get_scene_id(void) { return scene_id; }
 
+unsigned int supla_scene_asynctask::get_estimated_execution_time(void) {
+  return estimated_execution_time;
+}
+
 supla_scene_state supla_scene_asynctask::get_scene_state(void) {
   return supla_scene_state(caller, get_started_at(),
-                           is_finished() ? 0 : op_get_time_left_ms());
+                           is_finished() ? 0 : get_estimated_execution_time());
 }
 
 // static
@@ -157,9 +153,19 @@ bool supla_scene_asynctask::_execute(bool *execute_again) {
   } while (true);
 
   if (op_count()) {
-    set_delay();
+    set_delay_usec(op_get_delay_ms() * 1000);
     *execute_again = true;
     return false;
+  } else {
+    // The scene may have ended but the dependent scenes may still be going on,
+    // so we wait as long as defined by the state. If we do not do it, client
+    // applications will be notified about too early completion of the scene.
+    supla_scene_state state = get_scene_state();
+    if (state.get_milliseconds_left() > 100) {
+      *execute_again = true;
+      set_delay_usec(state.get_milliseconds_left() * 1000);
+      return false;
+    }
   }
 
   *execute_again = false;
@@ -191,8 +197,9 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
     }
 
     supla_db_access_provider dba;
-    supla_scene_operations_dao dao(&dba);
-    supla_scene_operations *operations = dao.get_scene_operations(scene_id);
+    supla_scene_dao scene_dao(&dba);
+    supla_scene_operations_dao op_dao(&dba);
+    supla_scene_operations *operations = op_dao.get_scene_operations(scene_id);
 
     if (operations && operations->count() == 0) {
       delete operations;
@@ -205,9 +212,10 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
       supla_action_executor *action_executor = new supla_action_executor();
       supla_value_getter *value_getter = new supla_value_getter();
 
-      new supla_scene_asynctask(caller, user_id, scene_id, queue, pool,
-                                action_executor, value_getter, operations,
-                                true);
+      new supla_scene_asynctask(
+          caller, user_id, scene_id,
+          scene_dao.get_estimated_execution_time(scene_id), queue, pool,
+          action_executor, value_getter, operations, true);
       return serOK;
     }
   }

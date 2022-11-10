@@ -31,13 +31,13 @@ supla_scene_state::supla_scene_state(const supla_scene_state &state) {
   *this = state;
 }
 
-supla_scene_state::supla_scene_state(const supla_caller &caller,
-                                     struct timeval started_at,
-                                     unsigned _supla_int_t total_delay_ms) {
+supla_scene_state::supla_scene_state(
+    const supla_caller &caller, struct timeval started_at,
+    unsigned _supla_int_t estimated_execution_time_ms) {
   this->started_at = started_at;
   unsigned long long ending_at_usec = started_at.tv_sec * 1000000UL +
                                       started_at.tv_usec +
-                                      total_delay_ms * 1000UL;
+                                      estimated_execution_time_ms * 1000UL;
 
   this->ending_at.tv_sec = ending_at_usec / 1000000UL;
   this->ending_at.tv_usec = ending_at_usec % 1000000UL;

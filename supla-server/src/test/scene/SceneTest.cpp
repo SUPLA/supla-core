@@ -66,7 +66,7 @@ TEST_F(SceneTest, executeEmptyScene) {
   EXPECT_EQ(operations->get_delay_ms(), 0);
 
   supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 1, 2, queue, pool, action_executor, value_getter,
+      supla_caller(ctIPC), 1, 2, 0, queue, pool, action_executor, value_getter,
       operations, false);
   ASSERT_FALSE(scene == NULL);
   WaitForState(scene, supla_asynctask_state::SUCCESS, 1000);
@@ -98,7 +98,7 @@ TEST_F(SceneTest, executeSceneWithoutDelay) {
   gettimeofday(&now, NULL);
 
   supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 1, 2, queue, pool, action_executor, value_getter,
+      supla_caller(ctIPC), 1, 2, 0, queue, pool, action_executor, value_getter,
       operations, false);
   ASSERT_FALSE(scene == NULL);
 
@@ -154,7 +154,7 @@ TEST_F(SceneTest, executeSceneWithDelayBetweenActions) {
   gettimeofday(&now, NULL);
 
   supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 1, 2, queue, pool, action_executor, value_getter,
+      supla_caller(ctIPC), 1, 2, 0, queue, pool, action_executor, value_getter,
       operations, false);
   ASSERT_FALSE(scene == NULL);
 
@@ -178,6 +178,34 @@ TEST_F(SceneTest, executeSceneWithDelayBetweenActions) {
   EXPECT_EQ(action_executor->getOffCounter(), 1);
   EXPECT_EQ(action_executor->getOpenCounter(), 1);
   EXPECT_EQ(action_executor->counterSetCount(), 3);
+}
+
+TEST_F(SceneTest, estamitedExecutionTime) {
+  supla_scene_operation *op = new supla_scene_operation();
+  ASSERT_FALSE(op == NULL);
+
+  supla_action_config action_config;
+  action_config.set_action_id(ACTION_TURN_ON);
+  action_config.set_subject_id(10);
+  action_config.set_subject_type(stChannel);
+
+  op->set_delay_ms(100);
+  op->set_action_config(action_config);
+  operations->push(op);
+
+  supla_scene_asynctask *scene = new supla_scene_asynctask(
+      supla_caller(ctIPC), 1, 2, 1234, queue, pool, action_executor,
+      value_getter, operations, false);
+  ASSERT_FALSE(scene == NULL);
+
+  WaitForState(scene, supla_asynctask_state::SUCCESS, 2000000);
+  EXPECT_EQ(scene->get_estimated_execution_time(), 1234);
+
+  struct timeval now = {};
+  gettimeofday(&now, NULL);
+
+  EXPECT_GE(TestHelper::timeDiffUs(now, scene->get_started_at()), 1234000UL);
+  EXPECT_LT(TestHelper::timeDiffUs(now, scene->get_started_at()), 1334000UL);
 }
 
 TEST_F(SceneTest, executeSceneInsideScene) {
@@ -218,8 +246,8 @@ TEST_F(SceneTest, executeSceneInsideScene) {
   // ----------------------------
 
   supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 2, 111, queue, pool, action_executor, value_getter,
-      operations, false);
+      supla_caller(ctIPC), 2, 111, 0, queue, pool, action_executor,
+      value_getter, operations, false);
   ASSERT_FALSE(scene == NULL);
 
   WaitForState(scene, supla_asynctask_state::SUCCESS, 1000);
@@ -268,8 +296,8 @@ TEST_F(SceneTest, infinityLoop) {
   // ----------------------------
 
   supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 2, 111, queue, pool, action_executor, value_getter,
-      operations, false);
+      supla_caller(ctIPC), 2, 111, 0, queue, pool, action_executor,
+      value_getter, operations, false);
   ASSERT_FALSE(scene == NULL);
 
   WaitForState(scene, supla_asynctask_state::SUCCESS, 1000);
@@ -382,8 +410,8 @@ TEST_F(SceneTest, interruptScene) {
   // ----------------------------
 
   supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 2, 111, queue, pool, action_executor, value_getter,
-      operations, false);
+      supla_caller(ctIPC), 2, 111, 0, queue, pool, action_executor,
+      value_getter, operations, false);
   ASSERT_FALSE(scene == NULL);
 
   supla_scene_search_condition cnd(2, 15, true);
