@@ -41,7 +41,7 @@ supla_auto_gate_closing_dao::get_all_active(void) {
       "closing_attempt, UTC_TIMESTAMP()), ?) AS `ssla`, CASE WHEN "
       "last_seen_open IS NULL THEN 0 ELSE 1 END AS `so` FROM "
       "supla_v_auto_gate_closing WHERE enabled = 1 AND is_now_active = 1 ORDER "
-      "BY user_id, device_id";
+      "BY user_id, device_id, channel_id";
 
   MYSQL_BIND pbind = {};
 
