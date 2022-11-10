@@ -50,7 +50,7 @@ supla_scene_asynctask::supla_scene_asynctask(
   this->value_getter = value_getter;
   this->operations = operations;
 
-  set_delay();
+  set_delay_usec(op_get_delay_ms() * 1000);
   set_waiting();
   set_observable();
 }
@@ -94,10 +94,6 @@ int supla_scene_asynctask::op_count(void) {
   int result = operations->count();
   unlock();
   return result;
-}
-
-void supla_scene_asynctask::set_delay(void) {
-  set_delay_usec(op_get_delay_ms() * 1000);
 }
 
 const supla_caller &supla_scene_asynctask::get_caller(void) const {
@@ -157,9 +153,19 @@ bool supla_scene_asynctask::_execute(bool *execute_again) {
   } while (true);
 
   if (op_count()) {
-    set_delay();
+    set_delay_usec(op_get_delay_ms() * 1000);
     *execute_again = true;
     return false;
+  } else {
+    // The scene may have ended but the dependent scenes may still be going on,
+    // so we wait as long as defined by the state. If we do not do it, client
+    // applications will be notified about too early completion of the scene.
+    supla_scene_state state = get_scene_state();
+    if (state.get_milliseconds_left() > 100) {
+      *execute_again = true;
+      set_delay_usec(state.get_milliseconds_left() * 1000);
+      return false;
+    }
   }
 
   *execute_again = false;

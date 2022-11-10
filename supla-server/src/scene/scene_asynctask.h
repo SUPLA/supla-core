@@ -37,7 +37,6 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
   supla_abstract_action_executor *action_executor;
   supla_abstract_value_getter *value_getter;
   supla_scene_operations *operations;
-  void set_delay(void);
   unsigned int op_get_delay_ms(void);
   supla_scene_operation *op_pop(void);
   int op_count(void);
