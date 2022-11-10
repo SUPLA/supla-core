@@ -43,7 +43,7 @@ TEST_F(SceneAccessTest, accessSuccessfully) {
   operations->push(op);
 
   supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 1, 2, queue, pool, action_executor, value_getter,
+      supla_caller(ctIPC), 1, 2, 0, queue, pool, action_executor, value_getter,
       operations, false);
   ASSERT_FALSE(scene == NULL);
 
