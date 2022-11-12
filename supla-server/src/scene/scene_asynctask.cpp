@@ -224,6 +224,20 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
 // static
 void supla_scene_asynctask::interrupt(supla_asynctask_queue *queue, int user_id,
                                       int scene_id) {
+  {
+    bool is_finished = true;
+    supla_scene_search_condition cnd(user_id, scene_id, false);
+    queue->access_task(
+        &cnd, [&is_finished](supla_abstract_asynctask *task) -> void {
+          is_finished =
+              dynamic_cast<supla_scene_asynctask *>(task)->is_finished();
+        });
+
+    if (is_finished) {
+      return;
+    }
+  }
+
   supla_scene_search_condition cnd(user_id, scene_id, true);
   queue->cancel_tasks(&cnd);
 }
