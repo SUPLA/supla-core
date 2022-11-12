@@ -51,6 +51,9 @@ const char electricity_meter_config::upper_voltage_threshold_key[] =
 const char electricity_meter_config::lower_voltage_threshold_key[] =
     "lowerVoltageThreshold";
 
+// static
+const char electricity_meter_config::disabled_phases_key[] = "disabledPhases";
+
 electricity_meter_config::electricity_meter_config(void)
     : channel_json_config() {}
 
@@ -157,6 +160,48 @@ double electricity_meter_config::get_upper_voltage_threshold(void) {
 
 double electricity_meter_config::get_lower_voltage_threshold(void) {
   return get_double(lower_voltage_threshold_key);
+}
+
+int electricity_meter_config::electricity_meter_config::get_channel_user_flags(
+    void) {
+  int flags = 0;
+  if (is_phase_disabled(1)) {
+    flags |= SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED;
+  }
+
+  if (is_phase_disabled(2)) {
+    flags |= SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
+  }
+
+  if (is_phase_disabled(3)) {
+    flags |= SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
+  }
+
+  return flags;
+}
+
+bool electricity_meter_config::is_phase_disabled(unsigned char phase) {
+  cJSON *root = get_user_root();
+  if (!root) {
+    return false;
+  }
+
+  cJSON *disabled = cJSON_GetObjectItem(root, disabled_phases_key);
+
+  if (!disabled || !cJSON_IsArray(disabled)) {
+    return false;
+  }
+
+  int asize = cJSON_GetArraySize(disabled);
+
+  for (int a = 0; a < asize; a++) {
+    cJSON *item = cJSON_GetArrayItem(disabled, a);
+    if (item && cJSON_IsNumber(item) && item->valueint == phase) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 _supla_int64_t electricity_meter_config::get_initial_value(int var) {

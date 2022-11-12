@@ -38,6 +38,7 @@ class electricity_meter_config : public channel_json_config {
   static const char add_to_history_key[];
   static const char upper_voltage_threshold_key[];
   static const char lower_voltage_threshold_key[];
+  static const char disabled_phases_key[];
 
  protected:
   virtual int get_map_size(void);
@@ -55,6 +56,8 @@ class electricity_meter_config : public channel_json_config {
   bool should_be_added_to_history(void);
   double get_upper_voltage_threshold(void);
   double get_lower_voltage_threshold(void);
+  bool is_phase_disabled(unsigned char phase);
+  int get_channel_user_flags(void);
   bool update_available_counters(int measured_values);
   bool update_available_counters(TSuplaChannelExtendedValue *ev);
   _supla_int64_t get_initial_value(int var);
