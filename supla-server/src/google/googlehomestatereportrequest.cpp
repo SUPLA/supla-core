@@ -123,6 +123,7 @@ bool supla_google_home_statereport_request::isCallerAccepted(
     case ctAmazonAlexa:
     case ctScene:
     case ctActionTrigger:
+    case ctCyclicTask:
       return isChannelFunctionAllowed();
     case ctUnknown:
       return false;
