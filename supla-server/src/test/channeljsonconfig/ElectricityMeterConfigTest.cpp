@@ -735,4 +735,66 @@ TEST_F(ElectricityMeterConfigTest, lowerVoltageThreshold) {
   EXPECT_EQ(config.get_lower_voltage_threshold(), 123.45);
 }
 
+TEST_F(ElectricityMeterConfigTest, disabledPhases) {
+  electricity_meter_config config;
+
+  EXPECT_FALSE(config.is_phase_disabled(1));
+  EXPECT_FALSE(config.is_phase_disabled(2));
+  EXPECT_FALSE(config.is_phase_disabled(3));
+  EXPECT_EQ(config.get_channel_user_flags(), 0);
+
+  config.set_user_config("{\"disabledPhases\":[5,6,4,0]}");
+
+  EXPECT_FALSE(config.is_phase_disabled(1));
+  EXPECT_FALSE(config.is_phase_disabled(2));
+  EXPECT_FALSE(config.is_phase_disabled(3));
+  EXPECT_EQ(config.get_channel_user_flags(), 0);
+
+  config.set_user_config("{\"disabledPhases\":[3]}");
+
+  EXPECT_FALSE(config.is_phase_disabled(1));
+  EXPECT_FALSE(config.is_phase_disabled(2));
+  EXPECT_TRUE(config.is_phase_disabled(3));
+  EXPECT_EQ(config.get_channel_user_flags(),
+            SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED);
+
+  config.set_user_config("{\"disabledPhases\":[5,6,2,0]}");
+
+  EXPECT_FALSE(config.is_phase_disabled(1));
+  EXPECT_TRUE(config.is_phase_disabled(2));
+  EXPECT_FALSE(config.is_phase_disabled(3));
+  EXPECT_EQ(config.get_channel_user_flags(),
+            SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED);
+
+  config.set_user_config("{\"disabledPhases\":[5,1]}");
+
+  EXPECT_TRUE(config.is_phase_disabled(1));
+  EXPECT_FALSE(config.is_phase_disabled(2));
+  EXPECT_FALSE(config.is_phase_disabled(3));
+  EXPECT_EQ(config.get_channel_user_flags(),
+            SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED);
+
+  config.set_user_config("{\"disabledPhases\":[1,2,3]}");
+
+  EXPECT_TRUE(config.is_phase_disabled(1));
+  EXPECT_TRUE(config.is_phase_disabled(2));
+  EXPECT_TRUE(config.is_phase_disabled(3));
+
+  EXPECT_EQ(config.get_channel_user_flags(),
+            SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
+                SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
+                SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED);
+
+  config.set_user_config("{\"disabledPhases\":[2,3,1]}");
+
+  EXPECT_TRUE(config.is_phase_disabled(1));
+  EXPECT_TRUE(config.is_phase_disabled(2));
+  EXPECT_TRUE(config.is_phase_disabled(3));
+
+  EXPECT_EQ(config.get_channel_user_flags(),
+            SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
+                SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
+                SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED);
+}
+
 } /* namespace testing */

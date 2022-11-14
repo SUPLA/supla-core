@@ -111,6 +111,12 @@ supla_device_channel::supla_device_channel(
     if (json_config) {
       json_config->set_properties(properties);
       json_config->set_user_config(user_config);
+      if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+        electricity_meter_config *config =
+            new electricity_meter_config(json_config);
+        this->Flags |= config->get_channel_user_flags();
+        delete config;
+      }
     }
   }
 
