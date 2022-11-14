@@ -269,13 +269,14 @@ int supla_connection::socket_write(const void *buf, size_t count) {
 
 void supla_connection::catch_unhandled_call(unsigned int call_id) {
   unhandled_call_counter++;
-  supla_log(
-      LOG_ERR,
-      "Unhandled call %i/%i. NonNullObj: %s Registered: %s. Id: %i. Device: %s",
-      call_id, unhandled_call_counter, object ? "Yes" : "No",
-      object && object->is_registered() ? "yes" : "no",
-      object ? object->get_id() : 0,
-      object && dynamic_pointer_cast<supla_device>(object) ? "yes" : "no");
+  supla_log(LOG_ERR,
+            "Unhandled call %i/%i. NonNullObj: %s Registered: %s. Id: %i. "
+            "Device: %s Terminated: %s",
+            call_id, unhandled_call_counter, object ? "Yes" : "No",
+            object && object->is_registered() ? "yes" : "no",
+            object ? object->get_id() : 0,
+            object && dynamic_pointer_cast<supla_device>(object) ? "yes" : "no",
+            sthread_isterminated(sthread) ? "yes" : "no");
 
   if (unhandled_call_counter >= UNHANDLED_CALL_MAXCOUNT) {
     supla_log(LOG_ERR, "The number of unhandled calls has been exceeded.");
