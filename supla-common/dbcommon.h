@@ -21,7 +21,14 @@
 
 #define DB_VERSION "20221020225729"
 
+#include <atomic>
+
 class dbcommon {
+ private:
+#ifdef __DEBUG
+  static std::atomic<int> conn_count;
+#endif /*__DEBUG*/
+
  protected:
   void *_mysql;
   int query(const char *stmt_str, bool log_err = false);

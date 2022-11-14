@@ -26,6 +26,12 @@
 #include "log.h"
 #include "tools.h"
 
+using std::atomic;
+
+#ifdef __DEBUG
+atomic<int> dbcommon::conn_count;
+#endif /*__DEBUG*/
+
 dbcommon::dbcommon() { _mysql = NULL; }
 
 dbcommon::~dbcommon() { disconnect(); }
@@ -65,8 +71,15 @@ bool dbcommon::connect(int connection_timeout_sec) {
       if (mysql_real_connect((MYSQL *)_mysql, cfg_get_host(), cfg_get_user(),
                              cfg_get_password(), cfg_get_database(),
                              cfg_get_port(), NULL, 0) == NULL) {
+#ifdef __DEBUG
+        supla_log(LOG_ERR,
+                  "Failed to connect to database. Conn count %i. Error: %s",
+                  conn_count.load(), mysql_error((MYSQL *)_mysql));
+#else
         supla_log(LOG_ERR, "Failed to connect to database: Error: %s",
                   mysql_error((MYSQL *)_mysql));
+#endif /*__DEBUG*/
+
         disconnect();
       } else {
         if (mysql_set_character_set((MYSQL *)_mysql, "utf8mb4")) {
@@ -77,6 +90,9 @@ bool dbcommon::connect(int connection_timeout_sec) {
 
         mysql_options((MYSQL *)_mysql, MYSQL_SET_CHARSET_NAME, "utf8mb4");
         connected = true;
+#ifdef __DEBUG
+        conn_count++;
+#endif /*__DEBUG*/
       }
     }
 
@@ -110,6 +126,9 @@ void dbcommon::disconnect(void) {
   if (_mysql != NULL) {
     mysql_close((MYSQL *)_mysql);
     _mysql = NULL;
+#ifdef __DEBUG
+    conn_count--;
+#endif /*__DEBUG*/
   }
 }
 
