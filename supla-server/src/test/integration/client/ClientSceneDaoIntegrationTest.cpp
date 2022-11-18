@@ -27,7 +27,8 @@ using std::list;
 
 ClientSceneDaoIntegrationTest::ClientSceneDaoIntegrationTest()
     : IntegrationTest(), Test() {
-  dao = NULL;
+  dao = nullptr;
+  dba = nullptr;
 }
 
 ClientSceneDaoIntegrationTest::~ClientSceneDaoIntegrationTest() {}
@@ -35,7 +36,7 @@ ClientSceneDaoIntegrationTest::~ClientSceneDaoIntegrationTest() {}
 void ClientSceneDaoIntegrationTest::SetUp() {
   dba = new supla_db_access_provider();
   dao = new supla_client_scene_dao(dba);
-  ASSERT_TRUE(dao != NULL);
+  ASSERT_TRUE(dao != nullptr);
 
   initTestDatabase();
   Test::SetUp();
@@ -44,12 +45,12 @@ void ClientSceneDaoIntegrationTest::SetUp() {
 void ClientSceneDaoIntegrationTest::TearDown() {
   if (dao) {
     delete dao;
-    dao = NULL;
+    dao = nullptr;
   }
 
   if (dba) {
     delete dba;
-    dba = NULL;
+    dba = nullptr;
   }
 
   Test::TearDown();
@@ -153,6 +154,25 @@ TEST_F(ClientSceneDaoIntegrationTest, disableAllScenesExceptOne) {
   EXPECT_EQ(scene->get_alt_icon_id(), 0);
   EXPECT_EQ(
       strncmp(scene->get_caption(), "Scene #3", SUPLA_SCENE_CAPTION_MAXSIZE),
+      0);
+
+  delete scene;
+}
+
+TEST_F(ClientSceneDaoIntegrationTest, hideAllScenesExceptOne) {
+  runSqlScript("HideAllScenesExceptOne.sql");
+
+  list<supla_client_scene *> scenes = dao->get_all_scenes(2, 1);
+
+  EXPECT_EQ(scenes.size(), 1U);
+
+  supla_client_scene *scene = scenes.front();
+  EXPECT_EQ(scene->get_id(), 2);
+  EXPECT_EQ(scene->get_user_icon_id(), 0);
+  EXPECT_EQ(scene->get_alt_icon_id(), 0);
+  EXPECT_EQ(scene->get_location_id(), 2);
+  EXPECT_EQ(
+      strncmp(scene->get_caption(), "Scene #2", SUPLA_SCENE_CAPTION_MAXSIZE),
       0);
 
   delete scene;
