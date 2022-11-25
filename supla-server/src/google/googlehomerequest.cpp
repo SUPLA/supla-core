@@ -82,14 +82,10 @@ supla_google_home_client *supla_google_home_request::getClient(void) {
   return result;
 }
 
-bool supla_google_home_request::isCallerAccepted(
-    const supla_caller &caller, bool verification) {
+bool supla_google_home_request::isCallerAccepted(const supla_caller &caller,
+                                                 bool verification) {
   supla_google_home_credentials *google_home_credentials =
       getUser()->googleHomeCredentials();
   return google_home_credentials &&
          google_home_credentials->isAccessTokenExists();
 }
-
-bool supla_google_home_request::isDeviceIdEqual(int DeviceId) { return true; }
-
-bool supla_google_home_request::isChannelIdEqual(int ChannelId) { return true; }

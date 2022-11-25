@@ -391,11 +391,11 @@ void supla_http_request_queue::createInTheCallerContext(
     return;
   }
 
-  user->getUserID()
+  int userId = user ? user->getUserID() : 0;
 
-      list<supla_http_request *>
-          requests = AbstractHttpRequestFactory::createInTheCallerContext(
-      user, deviceId, channelId, eventType, caller);
+  list<supla_http_request *> requests =
+      AbstractHttpRequestFactory::createInTheCallerContext(
+          user, deviceId, channelId, eventType, caller);
 
   for (auto it = requests.begin(); it != requests.end(); it++) {
     supla_http_request *request = *it;
@@ -408,6 +408,7 @@ void supla_http_request_queue::createInTheCallerContext(
       supla_http_request *existing =
           static_cast<supla_http_request *>(safe_array_get(arr_queue, a));
       if (existing && existing->getClassID() == ClassID &&
+          existing->getUserID() == userId &&
           existing->isDeviceIdEqual(deviceId) &&
           existing->isChannelIdEqual(channelId) &&
           !request->verifyExisting(existing)) {
