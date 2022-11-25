@@ -583,7 +583,7 @@ bool supla_client_dao::scene_exists(int client_id, int scene_id) {
       "SELECT s.id FROM `supla_scene` s LEFT JOIN supla_rel_aidloc al ON "
       "al.location_id = s.location_id LEFT JOIN supla_accessid a ON a.id = "
       "al.access_id LEFT JOIN supla_client c ON c.access_id = al.access_id "
-      "WHERE s.enabled = 1 AND c.id = ? AND s.id = ? LIMIT 1";
+      "WHERE s.enabled = 1 AND s.hidden = 0 AND c.id = ? AND s.id = ? LIMIT 1";
 
   return exists(client_id, scene_id, query);
 }

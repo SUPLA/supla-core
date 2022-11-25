@@ -28,10 +28,11 @@ class supla_google_home_sync_request : public supla_google_home_request {
                                  const supla_caller &Caller);
   virtual bool verifyExisting(supla_http_request *existing);
   virtual bool queueUp(void);
-  virtual bool isCallerAccepted(const supla_caller &caller,
-                                         bool verification);
+  virtual bool isCallerAccepted(const supla_caller &caller, bool verification);
   virtual bool isEventTypeAccepted(event_type eventType, bool verification);
   virtual void execute(void *sthread);
+  virtual bool isDeviceIdEqual(int DeviceId);
+  virtual bool isChannelIdEqual(int ChannelId);
 };
 
 #endif /* GOOGLEHOMESYNCREQUEST_H_ */

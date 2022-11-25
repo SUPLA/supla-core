@@ -188,7 +188,7 @@ supla_http_request *supla_http_request_queue::queuePop(void *q_sthread,
                   "CallerType: %i (%lu/%lu/%lu/%lu/%lu/%lu/%i)",
                   request->getUserID(), request->getDeviceId(),
                   request->getChannelId(), queueSize(), threadCount(),
-                  request->getCaller(), request->getTimeout(),
+                  request->getCaller().get_type(), request->getTimeout(),
                   request->getStartTime(), now->tv_sec,
                   request->getTouchTimeSec(), request->getTouchCount(),
                   last_iterate_time_sec, queue_offset);
@@ -391,6 +391,8 @@ void supla_http_request_queue::createInTheCallerContext(
     return;
   }
 
+  int userId = user ? user->getUserID() : 0;
+
   list<supla_http_request *> requests =
       AbstractHttpRequestFactory::createInTheCallerContext(
           user, deviceId, channelId, eventType, caller);
@@ -406,6 +408,7 @@ void supla_http_request_queue::createInTheCallerContext(
       supla_http_request *existing =
           static_cast<supla_http_request *>(safe_array_get(arr_queue, a));
       if (existing && existing->getClassID() == ClassID &&
+          existing->getUserID() == userId &&
           existing->isDeviceIdEqual(deviceId) &&
           existing->isChannelIdEqual(channelId) &&
           !request->verifyExisting(existing)) {

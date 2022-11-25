@@ -71,4 +71,12 @@ bool supla_google_home_sync_request::isEventTypeAccepted(event_type eventType,
   return false;
 }
 
+bool supla_google_home_sync_request::isDeviceIdEqual(int DeviceId) {
+  return true;
+}
+
+bool supla_google_home_sync_request::isChannelIdEqual(int ChannelId) {
+  return true;
+}
+
 REGISTER_HTTP_REQUEST_CLASS(supla_google_home_sync_request);

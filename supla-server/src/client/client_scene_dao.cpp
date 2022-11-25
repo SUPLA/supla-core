@@ -63,7 +63,7 @@ list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
       "`supla_scene` s LEFT JOIN supla_rel_aidloc al ON al.location_id = "
       "s.location_id LEFT JOIN supla_accessid a ON a.id = al.access_id LEFT "
       "JOIN supla_client c ON c.access_id = al.access_id WHERE s.user_id = ? "
-      "AND s.enabled = 1 AND c.id = ? GROUP BY s.id";
+      "AND s.enabled = 1 AND s.hidden = 0 AND c.id = ? GROUP BY s.id";
 
   MYSQL_BIND pbind[2] = {};
 

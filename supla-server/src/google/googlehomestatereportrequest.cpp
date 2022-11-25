@@ -94,6 +94,7 @@ bool supla_google_home_statereport_request::isChannelFunctionAllowed(void) {
   switch (value.function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
@@ -148,6 +149,7 @@ void supla_google_home_statereport_request::execute(void *sthread) {
       switch (value.function) {
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        case SUPLA_CHANNELFNC_STAIRCASETIMER:
           getClient()->addOnOffState(ChannelId, value.hi, value.online);
           content_exists = true;
           break;

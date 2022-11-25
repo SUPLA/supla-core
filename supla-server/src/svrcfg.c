@@ -68,7 +68,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(s_oauth, "access_token_lifetime", 300);
 
   char *s_http = "HTTP";
-  scfg_add_int_param(s_http, "thread_count_limit", 50);
+  scfg_add_int_param(s_http, "thread_count_limit", 150);
   scfg_add_int_param(s_http, "request_timeout", 5000);
 
   char *s_alexa = "ALEXA";

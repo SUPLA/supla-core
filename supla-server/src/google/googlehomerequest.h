@@ -42,8 +42,6 @@ class supla_google_home_request : public supla_http_request {
   virtual void terminate(void *sthread);
   virtual bool isCallerAccepted(const supla_caller &caller,
                                          bool verification);
-  virtual bool isDeviceIdEqual(int DeviceId);
-  virtual bool isChannelIdEqual(int ChannelId);
 };
 
 #endif /* GOOGLEHOMEREQUEST_H_ */
