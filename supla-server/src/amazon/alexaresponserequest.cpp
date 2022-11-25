@@ -48,12 +48,11 @@ bool supla_alexa_response_request::verifyExisting(
 }
 
 bool supla_alexa_response_request::queueUp(void) {
-  return getCaller() == ctAmazonAlexa &&
-         supla_alexa_request::queueUp();
+  return getCaller() == ctAmazonAlexa && supla_alexa_request::queueUp();
 }
 
-bool supla_alexa_response_request::isCallerAccepted(
-    const supla_caller &caller, bool verification) {
+bool supla_alexa_response_request::isCallerAccepted(const supla_caller &caller,
+                                                    bool verification) {
   if (!supla_alexa_request::isCallerAccepted(caller, verification)) {
     return false;
   }
@@ -64,6 +63,7 @@ bool supla_alexa_response_request::isCallerAccepted(
   switch (summary.function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
@@ -107,6 +107,7 @@ void supla_alexa_response_request::execute(void *sthread) {
   switch (value.function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
       getClient()->powerControllerSendResponse(correlationToken, getChannelId(),
                                                value.hi, value.online);
       break;

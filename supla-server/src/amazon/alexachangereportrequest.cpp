@@ -67,6 +67,7 @@ bool supla_alexa_changereport_request::isCallerAccepted(
       switch (value.function) {
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        case SUPLA_CHANNELFNC_STAIRCASETIMER:
         case SUPLA_CHANNELFNC_DIMMER:
         case SUPLA_CHANNELFNC_RGBLIGHTING:
         case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
@@ -97,6 +98,7 @@ void supla_alexa_changereport_request::execute(void *sthread) {
   switch (value.function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
       getClient()->sendPowerChangeReport(getCauseType(), getChannelId(),
                                          value.hi, value.online);
       break;
