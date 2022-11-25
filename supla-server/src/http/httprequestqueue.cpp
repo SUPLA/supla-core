@@ -188,7 +188,7 @@ supla_http_request *supla_http_request_queue::queuePop(void *q_sthread,
                   "CallerType: %i (%lu/%lu/%lu/%lu/%lu/%lu/%i)",
                   request->getUserID(), request->getDeviceId(),
                   request->getChannelId(), queueSize(), threadCount(),
-                  request->getCaller(), request->getTimeout(),
+                  request->getCaller().get_type(), request->getTimeout(),
                   request->getStartTime(), now->tv_sec,
                   request->getTouchTimeSec(), request->getTouchCount(),
                   last_iterate_time_sec, queue_offset);
@@ -391,9 +391,11 @@ void supla_http_request_queue::createInTheCallerContext(
     return;
   }
 
-  list<supla_http_request *> requests =
-      AbstractHttpRequestFactory::createInTheCallerContext(
-          user, deviceId, channelId, eventType, caller);
+  user->getUserID()
+
+      list<supla_http_request *>
+          requests = AbstractHttpRequestFactory::createInTheCallerContext(
+      user, deviceId, channelId, eventType, caller);
 
   for (auto it = requests.begin(); it != requests.end(); it++) {
     supla_http_request *request = *it;
