@@ -91,7 +91,7 @@ TEST_F(SceneObserverTest, startAndFinish) {
                    (now.tv_sec * 1000000 + now.tv_usec);
 
   EXPECT_GE(diff, 1200000);
-  EXPECT_LE(diff, 1300000);
+  EXPECT_LE(diff, 1400000);
 }
 
 TEST_F(SceneObserverTest, removeObserverBeforeTaskFinished) {
