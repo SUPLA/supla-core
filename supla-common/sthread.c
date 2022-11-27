@@ -48,10 +48,11 @@ void *_sthread_run(void *ptr) {
     sthread->params.finish(sthread->params.user_data, ptr);
 
   lck_lock(sthread->lck);
+  char free_on_finish = sthread->params.free_on_finish;
   sthread->finished = 1;
   lck_unlock(sthread->lck);
 
-  if (sthread->params.free_on_finish) sthread_free(sthread);
+  if (free_on_finish) sthread_free(sthread);
 
   return 0;
 }
