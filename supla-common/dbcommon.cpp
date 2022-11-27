@@ -79,8 +79,6 @@ bool dbcommon::connect(int connection_timeout_sec) {
         supla_log(LOG_ERR, "Failed to connect to database: Error: %s",
                   mysql_error((MYSQL *)_mysql));
 #endif /*__DEBUG*/
-
-        disconnect();
       } else {
         if (mysql_set_character_set((MYSQL *)_mysql, "utf8mb4")) {
           supla_log(LOG_ERR,
@@ -90,9 +88,6 @@ bool dbcommon::connect(int connection_timeout_sec) {
 
         mysql_options((MYSQL *)_mysql, MYSQL_SET_CHARSET_NAME, "utf8mb4");
         connected = true;
-#ifdef __DEBUG
-        conn_count++;
-#endif /*__DEBUG*/
       }
     }
 
@@ -109,11 +104,23 @@ bool dbcommon::connect(int connection_timeout_sec) {
   } while (!connected && connection_timeout_sec > 0 && !st_app_terminate &&
            tv.tv_sec - start_time.tv_sec < connection_timeout_sec);
 
+#ifdef __DEBUG
+  if (connected) {
+    conn_count++;
+  }
+#endif /*__DEBUG*/
+
   if (!connected) {
     supla_log(
         LOG_ERR,
         "MySQL - Failed to connect to database! Connection timeout %i sec.",
         connection_timeout_sec);
+
+    if (_mysql != NULL) {
+      mysql_close((MYSQL *)_mysql);
+      _mysql = NULL;
+    }
+
     return false;
   }
 
