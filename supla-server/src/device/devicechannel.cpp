@@ -1105,38 +1105,6 @@ bool supla_device_channel::converValueToExtended(void) {
   return result;
 }
 
-void supla_device_channel::action_trigger(int actions) {
-  supla_action_executor *aexec = new supla_action_executor();
-  action_trigger_config *at_config = new action_trigger_config(json_config);
-  supla_value_getter *value_getter = new supla_value_getter();
-
-  if (aexec && at_config && value_getter) {
-    at_config->set_channel_id_if_subject_not_set(getId());
-
-    supla_action_trigger *trigger =
-        new supla_action_trigger(aexec, at_config, value_getter);
-    if (trigger) {
-      trigger->execute_actions(getId(), getUserID(), actions);
-      delete trigger;
-    }
-  }
-
-  if (value_getter) {
-    delete value_getter;
-    value_getter = NULL;
-  }
-
-  if (aexec) {
-    delete aexec;
-    aexec = NULL;
-  }
-
-  if (at_config) {
-    delete at_config;
-    at_config = NULL;
-  }
-}
-
 unsigned int supla_device_channel::get_value_validity_time_left_msec(void) {
   if (value_valid_to.tv_sec || value_valid_to.tv_usec) {
     struct timeval now;
@@ -2528,14 +2496,56 @@ void supla_device_channels::action_trigger(TDS_ActionTrigger *at) {
     return;
   }
 
+  int channel_id = 0;
+  int user_id = 0;
+  channel_json_config *json_config = nullptr;
+
   safe_array_lock(arr);
 
   supla_device_channel *channel = find_channel_by_number(at->ChannelNumber);
   if (channel) {
-    channel->action_trigger(at->ActionTrigger);
+    channel_id = channel->getId();
+    user_id = channel->getUserID();
+    json_config = channel->getJSONConfig();
   }
 
   safe_array_unlock(arr);
+
+  if (channel_id) {
+    supla_action_executor *aexec = new supla_action_executor();
+    action_trigger_config *at_config = new action_trigger_config(json_config);
+    supla_value_getter *value_getter = new supla_value_getter();
+
+    if (aexec && at_config && value_getter) {
+      at_config->set_channel_id_if_subject_not_set(channel_id);
+
+      supla_action_trigger *trigger =
+          new supla_action_trigger(aexec, at_config, value_getter);
+      if (trigger) {
+        trigger->execute_actions(channel_id, user_id, at->ActionTrigger);
+        delete trigger;
+      }
+    }
+
+    if (value_getter) {
+      delete value_getter;
+      value_getter = nullptr;
+    }
+
+    if (aexec) {
+      delete aexec;
+      aexec = nullptr;
+    }
+
+    if (at_config) {
+      delete at_config;
+      at_config = nullptr;
+    }
+  }
+
+  if (json_config) {
+    delete json_config;
+  }
 }
 
 bool supla_device_channels::set_on(const supla_caller &caller, int ChannelID,

@@ -154,7 +154,6 @@ class supla_device_channel {
   supla_channel_thermostat_measurement *getThermostatMeasurement(void);
   channel_json_config *getJSONConfig(void);
   bool converValueToExtended(void);
-  void action_trigger(int actions);
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);
