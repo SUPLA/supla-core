@@ -35,33 +35,33 @@ void AsyncTaskBasicTest::SetUp() {
   }
 }
 
-TEST_F(AsyncTaskBasicTest, initWithNulls_1) {
-  ASSERT_DEATH(new AsyncTaskMock(NULL, NULL, 0, true),
-               "Assertion `queue' failed");
-}
-
-TEST_F(AsyncTaskBasicTest, initWithNulls_2) {
-  EXPECT_DEATH(new AsyncTaskMock(queue, NULL, 0, true),
-               "Assertion `pool' failed");
-}
-
 TEST_F(AsyncTaskBasicTest, correctInitialization_1) {
+  delete task;
   AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, true);
   ASSERT_TRUE(task != NULL);
 
   weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
+  EXPECT_TRUE(weak.expired());
+  task->set_waiting();
+
+  weak = queue->get_weak_ptr(task);
   EXPECT_FALSE(weak.expired());
   queue->remove_task(task);
   EXPECT_TRUE(weak.expired());
 }
 
 TEST_F(AsyncTaskBasicTest, correctInitialization_2) {
+  delete task;
   AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
   ASSERT_TRUE(task != NULL);
   EXPECT_EQ(task->get_priority(), 0);
   EXPECT_TRUE(task->release_immediately_after_execution());
 
   weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
+  EXPECT_TRUE(weak.expired());
+  task->set_waiting();
+
+  weak = queue->get_weak_ptr(task);
   EXPECT_FALSE(weak.expired());
   queue->remove_task(task);
   EXPECT_TRUE(weak.expired());
@@ -69,24 +69,37 @@ TEST_F(AsyncTaskBasicTest, correctInitialization_2) {
 
 TEST_F(AsyncTaskBasicTest, priorityCheck) {
   ASSERT_EQ(task->get_priority(), -123);
+  delete task;
 }
 
-TEST_F(AsyncTaskBasicTest, queueGetter) { ASSERT_EQ(task->get_queue(), queue); }
+TEST_F(AsyncTaskBasicTest, queueGetter) {
+  ASSERT_EQ(task->get_queue(), queue);
+  delete task;
+}
 
-TEST_F(AsyncTaskBasicTest, poolGetter) { ASSERT_EQ(task->get_pool(), pool); }
+TEST_F(AsyncTaskBasicTest, poolGetter) {
+  ASSERT_EQ(task->get_pool(), pool);
+  delete task;
+}
 
 TEST_F(AsyncTaskBasicTest, defaultState) {
   ASSERT_EQ(task->get_state(), supla_asynctask_state::INIT);
+  delete task;
 }
 
 TEST_F(AsyncTaskBasicTest, releaseFlag) {
   ASSERT_TRUE(task->release_immediately_after_execution());
+  delete task;
 
   AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, false);
   ASSERT_TRUE(task != NULL);
   ASSERT_FALSE(task->release_immediately_after_execution());
 
   weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
+  EXPECT_TRUE(weak.expired());
+  task->set_waiting();
+
+  weak = queue->get_weak_ptr(task);
   EXPECT_FALSE(weak.expired());
   queue->remove_task(task);
   EXPECT_TRUE(weak.expired());
@@ -103,6 +116,7 @@ TEST_F(AsyncTaskBasicTest, delay) {
   task->set_delay_usec(1);
   usleep(1000);
   ASSERT_LT(task->time_left_usec(NULL), -990);
+  delete task;
 }
 
 TEST_F(AsyncTaskBasicTest, timeout) {
@@ -111,6 +125,7 @@ TEST_F(AsyncTaskBasicTest, timeout) {
   ASSERT_EQ(task->get_timeout(), (unsigned long long)5000);
   task->set_timeout(0);
   ASSERT_EQ(task->get_timeout(), (unsigned long long)0);
+  delete task;
 }
 
 TEST_F(AsyncTaskBasicTest, cancel) {
@@ -119,6 +134,7 @@ TEST_F(AsyncTaskBasicTest, cancel) {
   task->cancel();
   ASSERT_EQ(task->get_state(), supla_asynctask_state::CANCELED);
   ASSERT_TRUE(task->is_finished());
+  delete task;
 }
 
 }  // namespace testing

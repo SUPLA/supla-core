@@ -100,7 +100,7 @@ void supla_action_gate_openclose::action_init(
   }
 
   action_executor->set_channel_id(user_id, device_id, channel_id);
-  set_waiting();
+  set_waiting();  // set_waiting should be called last in the constructor
 }
 
 supla_action_gate_openclose::~supla_action_gate_openclose(void) {

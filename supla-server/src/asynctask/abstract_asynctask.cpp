@@ -28,13 +28,11 @@ supla_abstract_asynctask::supla_abstract_asynctask(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     short priority, bool release_immediately) {
   init(queue, pool, priority, release_immediately);
-  queue->add_task(this);
 }
 
 supla_abstract_asynctask::supla_abstract_asynctask(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool) {
   init(queue, pool, 0, true);
-  queue->add_task(this);
 }
 
 void supla_abstract_asynctask::init(supla_asynctask_queue *queue,
@@ -54,8 +52,6 @@ void supla_abstract_asynctask::init(supla_asynctask_queue *queue,
   this->pool = pool;
   this->priority = priority;
   this->release_immediately = release_immediately;
-
-  gettimeofday(&started_at, NULL);
 }
 
 supla_abstract_asynctask::~supla_abstract_asynctask(void) {
@@ -169,12 +165,20 @@ long long supla_abstract_asynctask::time_left_usec(struct timeval *now) {
 }
 
 void supla_abstract_asynctask::set_waiting(void) {
+  bool init = false;
+
   lock();
   if (state == supla_asynctask_state::INIT) {
     state = supla_asynctask_state::WAITING;
+    init = true;
   }
   unlock();
-  queue->raise_event();
+
+  if (init) {
+    gettimeofday(&started_at, NULL);
+    queue->add_task(this);
+    queue->raise_event();
+  }
 }
 
 bool supla_abstract_asynctask::pick(void) {

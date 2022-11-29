@@ -51,8 +51,8 @@ supla_scene_asynctask::supla_scene_asynctask(
   this->operations = operations;
 
   set_delay_usec(op_get_delay_ms() * 1000);
-  set_waiting();
   set_observable();
+  set_waiting();  // set_waiting should be called last in the constructor
 }
 
 supla_scene_asynctask::~supla_scene_asynctask() {

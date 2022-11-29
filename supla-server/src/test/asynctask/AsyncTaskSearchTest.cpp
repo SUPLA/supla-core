@@ -58,7 +58,9 @@ TEST_F(AsyncTaskSearchTest, testsRelatedToSearchingForTasksInTheQueue) {
   int a;
 
   for (a = 0; a < 10; a++) {
-    new AsyncTaskMock(queue, pool, 0, false);
+    AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, false);
+    task->set_waiting();
+    task->set_delay_usec(1000000);
   }
 
   ChannelOrientedAsyncTaskMock *ctask = NULL;
@@ -67,10 +69,13 @@ TEST_F(AsyncTaskSearchTest, testsRelatedToSearchingForTasksInTheQueue) {
   for (a = 0; a < 10; a++) {
     ctask = new ChannelOrientedAsyncTaskMock(queue, pool, 0, false);
     ctask->set_channel_id(a + 1);
+    ctask->set_delay_usec(1000000);
+    ctask->set_waiting();
   }
 
   ctask_dup = new ChannelOrientedAsyncTaskMock(queue, pool, 0, false);
   ctask_dup->set_channel_id(ctask->get_channel_id());
+  ctask_dup->set_waiting();
 
   EXPECT_EQ(queue->total_count(), (unsigned int)21);
 
@@ -82,7 +87,7 @@ TEST_F(AsyncTaskSearchTest, testsRelatedToSearchingForTasksInTheQueue) {
 
   cnd->set_channels({ctask->get_channel_id()});
   EXPECT_TRUE(queue->get_task_state(&state, cnd));
-  EXPECT_EQ(state, supla_asynctask_state::INIT);
+  EXPECT_EQ(state, supla_asynctask_state::WAITING);
 
   ctask->set_delay_usec(5000000);
   ctask->set_waiting();
@@ -90,7 +95,7 @@ TEST_F(AsyncTaskSearchTest, testsRelatedToSearchingForTasksInTheQueue) {
   EXPECT_TRUE(queue->get_task_state(&state, cnd));
   EXPECT_EQ(state, supla_asynctask_state::WAITING);
 
-  EXPECT_EQ(ctask_dup->get_state(), supla_asynctask_state::INIT);
+  EXPECT_EQ(ctask_dup->get_state(), supla_asynctask_state::WAITING);
 
   queue->cancel_tasks(cnd);
   EXPECT_TRUE(queue->get_task_state(&state, cnd));

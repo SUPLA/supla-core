@@ -28,7 +28,7 @@ AsyncTaskMainTest::AsyncTaskMainTest(void) : AsyncTaskTest() {}
 
 AsyncTaskMainTest::~AsyncTaskMainTest(void) {}
 
-TEST_F(AsyncTaskMainTest, releaseQueueContainingUninitializedTask) {
+TEST_F(AsyncTaskMainTest, taskWithInitStatus) {
   ASSERT_EQ(queue->total_count(), (unsigned int)0);
   ASSERT_EQ(queue->waiting_count(), (unsigned int)0);
   ASSERT_FALSE(pool->is_terminated());
@@ -36,11 +36,12 @@ TEST_F(AsyncTaskMainTest, releaseQueueContainingUninitializedTask) {
   AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0, false);
   ASSERT_TRUE(task != NULL);
 
-  ASSERT_EQ(queue->total_count(), (unsigned int)1);
+  ASSERT_EQ(queue->total_count(), (unsigned int)0);
   ASSERT_EQ(queue->waiting_count(), (unsigned int)0);
   ASSERT_FALSE(pool->is_terminated());
   ASSERT_EQ(task->get_state(), supla_asynctask_state::INIT);
 
+  delete task;
   delete queue;
   queue = NULL;
 }
