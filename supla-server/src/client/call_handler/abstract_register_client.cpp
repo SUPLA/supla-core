@@ -21,8 +21,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "client/client.h"
 #include "log.h"
 
+using std::shared_ptr;
 using std::weak_ptr;
 
 supla_abstract_register_client::supla_abstract_register_client(void)
@@ -318,6 +320,14 @@ void supla_abstract_register_client::register_client(
     set_name(register_client_d->Name);
     set_authkey(register_client_d->AuthKey);
     set_softver(register_client_d->SoftVer);
+  }
+
+  {
+    shared_ptr<supla_client> _client = client.lock();
+    if (_client && _client->is_registered()) {
+      _client->terminate();
+      return;
+    }
   }
 
   if (!is_valid_guid()) {
