@@ -146,7 +146,7 @@ bool supla_device_dao::get_device_firmware_update_url(
     mysql_stmt_close(stmt);
   }
 
-  if (already_connected) {
+  if (!already_connected) {
     dba->disconnect();
   }
 
