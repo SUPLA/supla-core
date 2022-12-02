@@ -179,27 +179,27 @@ int main(int argc, char *argv[]) {
 
   if (ipc != NULL) {
     ipcsocket_close(ipc);
-    sthread_twf(ipc_accept_loop_thread);  // ! after ipcsocket_close and before
-                                          // ipcsocket_free !
+    sthread_twf(ipc_accept_loop_thread, true);  // ! after ipcsocket_close and
+                                                // before ipcsocket_free !
     ipcsocket_free(ipc);
   }
 
   if (ssd_ssl != NULL) {
     ssocket_close(ssd_ssl);
-    sthread_twf(ssl_accept_loop_thread);  // ! after ssocket_close and before
-                                          // ssocket_free !
+    sthread_twf(ssl_accept_loop_thread, true);  // ! after ssocket_close and
+                                                // before ssocket_free !
     ssocket_free(ssd_ssl);
   }
 
   if (ssd_tcp != NULL) {
     ssocket_close(ssd_tcp);
-    sthread_twf(tcp_accept_loop_thread);  // ! after ssocket_close and before
-                                          // ssocket_free !
+    sthread_twf(tcp_accept_loop_thread, true);  // ! after ssocket_close and
+                                                // before ssocket_free !
     ssocket_free(ssd_tcp);
   }
 
   delete cyclictasks_agent;
-  sthread_twf(http_request_queue_loop_thread);
+  sthread_twf(http_request_queue_loop_thread, true);
 
   supla_asynctask_queue::global_instance_release();  // before
                                                      // serverconnection_free()

@@ -247,7 +247,7 @@ void supla_abstract_asynctask_thread_pool::terminate(void) {
   terminated = true;
 
   for (auto it = threads.begin(); it != threads.end(); ++it) {
-    sthread_terminate(*it);
+    sthread_terminate(*it, true);
   }
 
   lck_unlock(lck);

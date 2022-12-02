@@ -16,8 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <ipc/on_scene_removed_command.h>
 #include "ipc/ipc_ctrl.h"
+
+#include <ipc/on_scene_removed_command.h>
 
 #include "sthread.h"
 
@@ -139,4 +140,4 @@ bool supla_ipc_ctrl::is_terminated(void) {
   return sthread_isterminated(sthread) != 0;
 }
 
-void supla_ipc_ctrl::terminate(void) { sthread_terminate(sthread); }
+void supla_ipc_ctrl::terminate(void) { sthread_terminate(sthread, true); }

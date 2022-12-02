@@ -44,7 +44,7 @@ supla_cyclictasks_agent::supla_cyclictasks_agent() {
 }
 
 supla_cyclictasks_agent::~supla_cyclictasks_agent() {
-  sthread_twf(sthread);
+  sthread_twf(sthread, true);
   for (auto it = tasks.cbegin(); it != tasks.cend(); ++it) {
     delete *it;
   }

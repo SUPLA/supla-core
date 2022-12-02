@@ -41,9 +41,9 @@ void sthread_run(Tsthread_params *sthread_params, void **sthread);
 void sthread_wait(void *sthread);
 char sthread_isterminated(void *sthread);
 char sthread_isfinished(void *sthread);
-void sthread_terminate(void *sthread);
+void sthread_terminate(void *sthread, char kill);
 void sthread_free(void *sthread);
-void sthread_twf(void *sthread);
+void sthread_twf(void *sthread, char kill);
 
 #ifdef __cplusplus
 }

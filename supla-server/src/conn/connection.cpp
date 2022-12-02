@@ -280,7 +280,7 @@ void supla_connection::catch_unhandled_call(unsigned int call_id) {
 
   if (unhandled_call_counter >= UNHANDLED_CALL_MAXCOUNT) {
     supla_log(LOG_ERR, "The number of unhandled calls has been exceeded.");
-    sthread_terminate(sthread);
+    terminate();
   }
 }
 
@@ -333,7 +333,7 @@ void supla_connection::execute(void *sthread) {
   this->sthread = sthread;
 
   if (ssocket_accept_ssl(ssd, supla_socket) != 1) {
-    sthread_terminate(sthread);
+    terminate();
     return;
   }
 
@@ -354,7 +354,7 @@ void supla_connection::execute(void *sthread) {
       gettimeofday(&now, nullptr);
 
       if (now.tv_sec - init_time.tv_sec >= REGISTER_WAIT_TIMEOUT) {
-        sthread_terminate(sthread);
+        terminate();
         supla_log(LOG_DEBUG, "Reg timeout", sthread);
         break;
       }
@@ -364,7 +364,7 @@ void supla_connection::execute(void *sthread) {
         if (object->is_sleeping_object()) {
           supla_log(LOG_DEBUG, "Sleeping device %i", sthread);
         } else {
-          sthread_terminate(sthread);
+          terminate();
           supla_log(LOG_DEBUG, "Activity timeout %i, %i", sthread,
                     object->get_activity_delay());
         }
@@ -414,7 +414,10 @@ void supla_connection::execute(void *sthread) {
   }
 }
 
-void supla_connection::terminate(void) { sthread_terminate(sthread); }
+void supla_connection::terminate(void) {
+  sthread_terminate(sthread, false);
+  eh_raise_event(eh);
+}
 
 unsigned int supla_connection::get_client_ipv4(void) { return client_ipv4; }
 

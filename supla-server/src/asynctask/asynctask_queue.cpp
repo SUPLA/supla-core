@@ -42,7 +42,7 @@ supla_asynctask_queue::supla_asynctask_queue(void) {
 }
 
 supla_asynctask_queue::~supla_asynctask_queue(void) {
-  sthread_twf(thread);
+  sthread_twf(thread, true);
   release_pools();
 
   lck_lock(lck);

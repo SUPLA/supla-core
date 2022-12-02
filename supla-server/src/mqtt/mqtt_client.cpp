@@ -109,9 +109,9 @@ void supla_mqtt_client::start(void) {
 
 void supla_mqtt_client::stop(void) {
   if (sthread != NULL) {
-    sthread_terminate(sthread);
+    sthread_terminate(sthread, true);
     library_adapter->raise_event();
-    sthread_twf(sthread);
+    sthread_twf(sthread, true);
     sthread = NULL;
   }
 }
