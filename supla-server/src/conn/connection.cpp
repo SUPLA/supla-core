@@ -398,17 +398,21 @@ void supla_connection::execute(void *sthread) {
     object = nullptr;
 
     {
-      unsigned long deadlock_counter = 0;
+      long deadlock_counter = 0;
 
       while (!_object.expired()) {
         usleep(deadlock_counter < 100000 ? 100 : 100000);
         deadlock_counter++;
         if (deadlock_counter == 100000) {
           supla_log(LOG_WARNING,
-                    "Too long waiting time to release the object! %x, %i, %i",
+                    "Too long waiting time to release the object! %p, %i, %i",
                     sthread, _object.use_count(), st_app_terminate);
-          break;
         }
+      }
+
+      if (deadlock_counter > 100000) {
+        supla_log(LOG_INFO, "The object has been released. %p, %lu, %i",
+                  sthread, deadlock_counter, st_app_terminate);
       }
     }
   }
