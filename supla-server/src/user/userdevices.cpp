@@ -21,6 +21,7 @@
 
 using std::dynamic_pointer_cast;
 using std::shared_ptr;
+using std::weak_ptr;
 using std::vector;
 
 supla_user_devices::supla_user_devices() : supla_connection_objects() {}
@@ -59,8 +60,8 @@ std::shared_ptr<supla_device> supla_user_devices::get(int device_id,
   return nullptr;
 }
 
-vector<shared_ptr<supla_device> > supla_user_devices::get_all(void) {
-  vector<shared_ptr<supla_device> > result;
+vector<weak_ptr<supla_device> > supla_user_devices::get_all(void) {
+  vector<weak_ptr<supla_device> > result;
 
   for_each([&result](shared_ptr<supla_abstract_connection_object> obj) -> bool {
     result.push_back(dynamic_pointer_cast<supla_device>(obj));
