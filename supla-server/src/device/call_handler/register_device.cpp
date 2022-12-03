@@ -117,6 +117,8 @@ void supla_register_device::register_device(
       device, register_device_c, register_device_e, srpc_adapter, &dba,
       &conn_dao, &device_dao, client_sd, client_ipv4, activity_timeout);
 
+  // Disconnect the database connection before calling
+  // on_object_registration_done()
   dba.disconnect();
 
   {

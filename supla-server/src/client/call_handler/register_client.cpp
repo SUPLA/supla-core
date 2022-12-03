@@ -138,6 +138,8 @@ void supla_register_client::register_client(
       client, register_client_b, register_client_d, srpc_adapter, &dba,
       &conn_dao, &client_dao, client_sd, client_ipv4, activity_timeout);
 
+  // Disconnect the database connection before calling
+  // on_object_registration_done()
   dba.disconnect();
 
   {
