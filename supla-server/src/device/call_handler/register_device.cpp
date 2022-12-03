@@ -108,4 +108,7 @@ void supla_register_device::register_device(
   supla_abstract_register_device::register_device(
       device, register_device_c, register_device_e, srpc_adapter, &dba,
       &conn_dao, &device_dao, client_sd, client_ipv4, activity_timeout);
+
+  dba.disconnect();
+  device.lock()->get_connection()->on_object_registration_done();
 }

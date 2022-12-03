@@ -141,7 +141,6 @@ void supla_abstract_connection_object::set_registered(bool registered) {
   lock();
   this->registered = registered;
   unlock();
-  conn->on_object_registration_done();
 }
 
 bool supla_abstract_connection_object::is_registered(void) {
