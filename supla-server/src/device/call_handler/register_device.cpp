@@ -101,6 +101,13 @@ void supla_register_device::register_device(
     TDS_SuplaRegisterDevice_E *register_device_e,
     supla_abstract_srpc_adapter *srpc_adapter, int client_sd, int client_ipv4,
     unsigned char activity_timeout) {
+  // If device != null then lock won't return null here either. device == null
+  // is only in unit tests
+  if (device && device.lock().is_registered()) {
+    device.lock().terminate();
+    return;
+  }
+
   supla_db_access_provider dba;
   supla_connection_dao conn_dao(&dba);
   supla_device_dao device_dao(&dba);
@@ -110,5 +117,9 @@ void supla_register_device::register_device(
       &conn_dao, &device_dao, client_sd, client_ipv4, activity_timeout);
 
   dba.disconnect();
-  device.lock()->get_connection()->on_object_registration_done();
+
+  if (device) {
+    // Lock will always be non-null here
+    device.lock()->get_connection()->on_object_registration_done();
+  }
 }

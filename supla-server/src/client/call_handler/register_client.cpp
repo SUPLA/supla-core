@@ -122,6 +122,13 @@ void supla_register_client::register_client(
     TCS_SuplaRegisterClient_D *register_client_d,
     supla_abstract_srpc_adapter *srpc_adapter, int client_sd, int client_ipv4,
     unsigned char activity_timeout) {
+  // If client != null then lock won't return null here either. client == null
+  // is only in unit tests
+  if (client && client.lock().is_registered()) {
+    client.lock().terminate();
+    return;
+  }
+
   supla_db_access_provider dba;
   supla_connection_dao conn_dao(&dba);
   supla_client_dao client_dao(&dba);
@@ -131,5 +138,9 @@ void supla_register_client::register_client(
       &conn_dao, &client_dao, client_sd, client_ipv4, activity_timeout);
 
   dba.disconnect();
-  client.lock()->get_connection()->on_object_registration_done();
+
+  if (client) {
+    // Lock will always be non-null here
+    client.lock()->get_connection()->on_object_registration_done();
+  }
 }

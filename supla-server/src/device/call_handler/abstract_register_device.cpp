@@ -339,14 +339,6 @@ void supla_abstract_register_device::register_device(
     snprintf(get_name(), SUPLA_DEVICE_NAME_MAXSIZE, "unknown");
   }
 
-  {
-    shared_ptr<supla_device> _device = device.lock();
-    if (_device->is_registered()) {
-      _device->terminate();
-      return;
-    }
-  }
-
   if (!is_valid_guid()) {
     send_result(SUPLA_RESULTCODE_GUID_ERROR);
     return;
