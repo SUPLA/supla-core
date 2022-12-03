@@ -324,7 +324,7 @@ void supla_abstract_register_client::register_client(
 
   {
     shared_ptr<supla_client> _client = client.lock();
-    if (_client && _client->is_registered()) {
+    if (_client->is_registered()) {
       _client->terminate();
       return;
     }

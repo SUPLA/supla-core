@@ -341,7 +341,7 @@ void supla_abstract_register_device::register_device(
 
   {
     shared_ptr<supla_device> _device = device.lock();
-    if (_device && _device->is_registered()) {
+    if (_device->is_registered()) {
       _device->terminate();
       return;
     }
