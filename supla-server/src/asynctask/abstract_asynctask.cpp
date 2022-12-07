@@ -70,10 +70,6 @@ void supla_abstract_asynctask::set_observable(void) {
     observable = true;
   }
   unlock();
-
-  if (!prev) {
-    queue->on_task_started(this);
-  }
 }
 
 bool supla_abstract_asynctask::is_observable(void) {
@@ -178,6 +174,7 @@ void supla_abstract_asynctask::set_waiting(void) {
     gettimeofday(&started_at, NULL);
     queue->add_task(this);
     queue->raise_event();
+    queue->on_task_started(this);
   }
 }
 
