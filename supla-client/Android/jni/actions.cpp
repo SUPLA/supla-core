@@ -58,7 +58,7 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
     (*rgbw_param)->ColorBrightness = supla_CallShortMethod(
         env, cls, action_params, "getColorBrightness", "()S");
     (*rgbw_param)->Color =
-        supla_CallLongMethod(env, cls, action_params, "getColor", "()J");
+        (jlong)supla_CallLongMethod(env, cls, action_params, "getColor", "()J");
     (*rgbw_param)->ColorRandom =
         supla_CallBooleanMethod(env, cls, action_params, "getColorRandom",
                                 "()Z")

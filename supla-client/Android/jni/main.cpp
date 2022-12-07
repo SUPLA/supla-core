@@ -593,11 +593,12 @@ void supla_channel_em_addsummary(TAndroidSuplaClient *asc, JNIEnv *env,
       cls, "<init>",
       "(Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;JJJJ)V");
 
-  jobject sum_obj = env->NewObject(cls, methodID, parent,
-                                   em_ev->total_forward_active_energy[phase],
-                                   em_ev->total_reverse_active_energy[phase],
-                                   em_ev->total_forward_reactive_energy[phase],
-                                   em_ev->total_reverse_reactive_energy[phase]);
+  jlong fae = em_ev->total_forward_active_energy[phase];
+  jlong rae = em_ev->total_reverse_active_energy[phase];
+  jlong fre = em_ev->total_forward_reactive_energy[phase];
+  jlong rre = em_ev->total_reverse_reactive_energy[phase];
+
+  jobject sum_obj = env->NewObject(cls, methodID, parent, fae, rae, fre, rre);
   jclass sum_class = env->GetObjectClass(sum_obj);
 
   jmethodID add_summary_mid = env->GetMethodID(
@@ -643,15 +644,16 @@ jobject supla_channelelectricitymetervalue_to_jobject(
   memcpy(currency, em_ev->currency, 3);
   currency[sizeof(currency) - 1] = 0;
 
+  jlong fae_b = em_ev->total_forward_active_energy_balanced;
+  jlong rae_b = em_ev->total_reverse_active_energy_balanced;
+
   jclass cls =
       env->FindClass("org/supla/android/lib/SuplaChannelElectricityMeterValue");
   jmethodID methodID =
       env->GetMethodID(cls, "<init>", "(IIIILjava/lang/String;JJ)V");
   jobject val = env->NewObject(
       cls, methodID, em_ev->measured_values, em_ev->period, em_ev->total_cost,
-      em_ev->price_per_unit, new_string_utf(env, currency),
-      em_ev->total_forward_active_energy_balanced,
-      em_ev->total_reverse_active_energy_balanced);
+      em_ev->price_per_unit, new_string_utf(env, currency), fae_b, rae_b);
   jclass cval = env->GetObjectClass(val);
 
   for (a = 0; a < 3; a++) {
@@ -678,8 +680,11 @@ jobject supla_impulsecountervalue_to_jobject(
 
   ic_ev->custom_unit[sizeof(ic_ev->custom_unit) - 1] = 0;
 
-  return env->NewObject(cls, methodID, ic_ev->impulses_per_unit, ic_ev->counter,
-                        ic_ev->calculated_value, ic_ev->total_cost,
+  jlong counter = ic_ev->counter;
+  jlong calculated_value = ic_ev->calculated_value;
+
+  return env->NewObject(cls, methodID, ic_ev->impulses_per_unit, counter,
+                        calculated_value, ic_ev->total_cost,
                         ic_ev->price_per_unit, new_string_utf(env, currency),
                         new_string_utf(env, ic_ev->custom_unit));
 }
@@ -797,10 +802,10 @@ jobject supla_timerstate_to_jobject(TAndroidSuplaClient *asc, JNIEnv *env,
   env->SetByteArrayRegion(arr, 0, SUPLA_CHANNELVALUE_SIZE,
                           (const jbyte *)state->TargetValue);
 
-  return env->NewObject(cls, methodID,
-                        (jlong)state->CountdownEndsAt +
-                            supla_client_get_time_diff(asc->_supla_client),
-                        arr, state->SenderID,
+  jlong countdownEndsAt = (jlong)state->CountdownEndsAt +
+                          supla_client_get_time_diff(asc->_supla_client);
+
+  return env->NewObject(cls, methodID, countdownEndsAt, arr, state->SenderID,
                         new_string_utf(env, state->SenderName));
 }
 
@@ -1049,10 +1054,13 @@ void supla_cb_scene_state_update(void *_suplaclient, void *user_data,
     jclass cls = env->FindClass("org/supla/android/lib/SuplaSceneState");
     jmethodID methodID =
         env->GetMethodID(cls, "<init>", "(IJJILjava/lang/String;Z)V");
+
+    jlong millisFromStart = state->MillisecondsFromStart;
+    jlong millisLeft = state->MillisecondsLeft;
+
     jobject state_obj = env->NewObject(
-        cls, methodID, state->SceneId, state->MillisecondsFromStart,
-        state->MillisecondsLeft, state->InitiatorId,
-        new_string_utf(env, state->InitiatorName),
+        cls, methodID, state->SceneId, millisFromStart, millisLeft,
+        state->InitiatorId, new_string_utf(env, state->InitiatorName),
         state->EOL == 1 ? JNI_TRUE : JNI_FALSE);
 
     supla_android_client(asc, asc->j_mid_scene_state_update, state_obj);
@@ -1273,8 +1281,9 @@ void supla_cb_on_event(void *_suplaclient, void *user_data,
     fid = supla_client_GetFieldID(env, cev, "ChannelID", "I");
     env->SetIntField(ev, fid, event->ChannelID);
 
+    jlong durationMS = event->DurationMS;
     fid = supla_client_GetFieldID(env, cev, "DurationMS", "J");
-    env->SetLongField(ev, fid, event->DurationMS);
+    env->SetLongField(ev, fid, durationMS);
 
     fid = supla_client_GetFieldID(env, cev, "SenderID", "I");
     env->SetIntField(ev, fid, event->SenderID);
@@ -1300,11 +1309,13 @@ void supla_cb_on_registration_enabled(void *_suplaclient, void *user_data,
     jobject re = env->NewObject(cls, methodID);
     jclass cre = env->GetObjectClass(re);
 
+    jlong clientTimestamp = reg_enabled->client_timestamp;
     fid = supla_client_GetFieldID(env, cre, "ClientTimestamp", "J");
-    env->SetLongField(re, fid, reg_enabled->client_timestamp);
+    env->SetLongField(re, fid, clientTimestamp);
 
+    jlong deviceTimestamp = reg_enabled->iodevice_timestamp;
     fid = supla_client_GetFieldID(env, cre, "IODeviceTimestamp", "J");
-    env->SetLongField(re, fid, reg_enabled->iodevice_timestamp);
+    env->SetLongField(re, fid, deviceTimestamp);
 
     supla_android_client(asc, asc->j_mid_on_registration_enabled, re);
   }
@@ -1325,8 +1336,9 @@ void supla_cb_on_min_version_required(void *_suplaclient, void *user_data,
     jobject mv = env->NewObject(cls, methodID);
     jclass cmv = env->GetObjectClass(mv);
 
+    jlong callId = call_id;
     fid = supla_client_GetFieldID(env, cmv, "CallType", "J");
-    env->SetLongField(mv, fid, call_id);
+    env->SetLongField(mv, fid, callId);
 
     fid = supla_client_GetFieldID(env, cmv, "MinVersion", "I");
     env->SetIntField(mv, fid, min_version);
