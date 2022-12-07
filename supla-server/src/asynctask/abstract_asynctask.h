@@ -53,7 +53,9 @@ class supla_abstract_asynctask {
   void unlock(void);
 
   // If set_waiting is called in the constructor of the child class, it should
-  // be called last because then the object is added to the queue
+  // be called last because then the object is added to the queue which may
+  // cause the queue to start reading the job before the object exits the
+  // constructor, which may result in a crash.
   void set_waiting(void);
 
   bool pick(void);
