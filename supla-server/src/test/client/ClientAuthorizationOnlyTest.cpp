@@ -21,6 +21,7 @@
 namespace testing {
 
 using std::shared_ptr;
+using std::string;
 
 ClientAuthorizationOnlyTest::ClientAuthorizationOnlyTest()
     : RegisterClientTest() {}
@@ -31,8 +32,8 @@ TEST_F(ClientAuthorizationOnlyTest, invalidGUID) {
   shared_ptr<supla_client> client;
   TCS_ClientAuthorizationDetails auth = {};
 
-  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
-                  true);
+  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao, true,
+                  nullptr);
 
   EXPECT_EQ(SUPLA_RESULTCODE_GUID_ERROR, rc.get_result_code());
 }
@@ -44,8 +45,8 @@ TEST_F(ClientAuthorizationOnlyTest, invalidAuthkey) {
   auth.GUID[0] = 1;
   snprintf(auth.Email, sizeof(auth.Email), "%s", "ted@atari.com");
 
-  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
-                  true);
+  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao, true,
+                  nullptr);
 
   EXPECT_EQ(SUPLA_RESULTCODE_AUTHKEY_ERROR, rc.get_result_code());
 }
@@ -59,8 +60,8 @@ TEST_F(ClientAuthorizationOnlyTest, dbaConnectionFailed) {
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(false));
 
-  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
-                  true);
+  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao, true,
+                  nullptr);
 
   EXPECT_EQ(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE, rc.get_result_code());
 }
@@ -87,8 +88,8 @@ TEST_F(ClientAuthorizationOnlyTest, authWithAccessIdFailed) {
         return false;
       });
 
-  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
-                  true);
+  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao, true,
+                  nullptr);
 
   EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, rc.get_result_code());
 }
@@ -127,19 +128,25 @@ TEST_F(ClientAuthorizationOnlyTest, authWithAccessIdSuccessfull) {
       .WillOnce(Return(987));
 
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
-                                               NotNull(), NotNull()))
+                                               NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int client_id, bool *client_enabled, int *access_id,
-                   bool *accessid_enabled, bool *accessid_active) {
+                   bool *accessid_enabled, bool *accessid_active,
+                   string *client_name) {
         *accessid_enabled = true;
         *accessid_active = true;
+
+        client_name->assign("Pixel Steve");
         return true;
       });
 
-  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
-                  true);
+  string previous_client_name;
+
+  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao, true,
+                  &previous_client_name);
 
   EXPECT_EQ(SUPLA_RESULTCODE_TRUE, rc.get_result_code());
+  EXPECT_EQ(previous_client_name, string("Pixel Steve"));
 }
 
 TEST_F(ClientAuthorizationOnlyTest, authWithEmailFailed) {
@@ -168,8 +175,8 @@ TEST_F(ClientAuthorizationOnlyTest, authWithEmailFailed) {
       .WillOnce([](int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
                    bool *is_null) { return false; });
 
-  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
-                  true);
+  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao, true,
+                  nullptr);
 
   EXPECT_EQ(SUPLA_RESULTCODE_BAD_CREDENTIALS, rc.get_result_code());
 }
@@ -208,18 +215,19 @@ TEST_F(ClientAuthorizationOnlyTest, authWithEmailSuccessfull) {
       .WillOnce(Return(987));
 
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
-                                               NotNull(), NotNull()))
+                                               NotNull(), NotNull(), IsNull()))
       .Times(1)
       .WillOnce([](int client_id, bool *client_enabled, int *access_id,
-                   bool *accessid_enabled, bool *accessid_active) {
+                   bool *accessid_enabled, bool *accessid_active,
+                   string *client_name) {
         *accessid_enabled = true;
         *accessid_active = true;
         *access_id = 75;
         return true;
       });
 
-  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
-                  true);
+  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao, true,
+                  nullptr);
 
   EXPECT_EQ(SUPLA_RESULTCODE_TRUE, rc.get_result_code());
 }
@@ -253,8 +261,8 @@ TEST_F(ClientAuthorizationOnlyTest, clientNotExists) {
             return true;
           });
 
-  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao,
-                  true);
+  rc.authenticate(client, &auth, &srpcAdapter, &dba, nullptr, &client_dao, true,
+                  nullptr);
 
   EXPECT_EQ(SUPLA_RESULTCODE_CLIENT_NOT_EXISTS, rc.get_result_code());
 }

@@ -24,9 +24,12 @@
 #include <string.h>
 #include <time.h>
 
+#include "log.h"
 #include "proto.h"
 #include "svrcfg.h"
 #include "tools.h"
+
+using std::string;
 
 supla_client_dao::supla_client_dao(supla_abstract_db_access_provider *dba)
     : supla_abstract_client_dao() {
@@ -222,8 +225,20 @@ bool supla_client_dao::set_reg_enabled(int user_id, int device_reg_time_sec,
 bool supla_client_dao::get_client_variables(int client_id, bool *client_enabled,
                                             int *access_id,
                                             bool *accessid_enabled,
-                                            bool *accessid_active) {
+                                            bool *accessid_active,
+                                            std::string *client_name) {
   if (client_id == 0) return false;
+
+  bool result = false;
+
+  MYSQL_STMT *stmt = nullptr;
+
+  const char sql[] =
+      "SELECT CAST(c.`enabled` AS unsigned integer), IFNULL(c.access_id, 0), "
+      "IFNULL(CAST(a.`enabled` AS unsigned integer), 0), "
+      "IFNULL(CAST(a.`is_now_active` AS unsigned integer), 0), c.name FROM "
+      "supla_client c LEFT JOIN supla_v_accessid_active a ON a.id = "
+      "c.access_id WHERE c.id = ?";
 
   MYSQL_BIND pbind = {};
 
@@ -234,27 +249,69 @@ bool supla_client_dao::get_client_variables(int client_id, bool *client_enabled,
   int _access_id = 0;
   int _accessid_enabled = 0;
   int _accessid_active = 0;
+  char *_client_name[SUPLA_CLIENT_NAME_MAXSIZE] = {};
+  my_bool _client_name_is_null = true;
+  unsigned long _client_name_len = 0;
 
-  MYSQL_STMT *stmt = nullptr;
+  if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
+    MYSQL_BIND rbind[5] = {};
 
-  if (dba->stmt_get_int(
-          (void **)&stmt, &_client_enabled, &_access_id, &_accessid_enabled,
-          &_accessid_active,
-          "SELECT CAST(c.`enabled` AS unsigned integer), "
-          "IFNULL(c.access_id, "
-          "0), IFNULL(CAST(a.`enabled` AS unsigned integer), 0), "
-          "IFNULL(CAST(a.`is_now_active` AS unsigned integer), 0) FROM "
-          "supla_client c LEFT JOIN supla_v_accessid_active a ON a.id = "
-          "c.access_id WHERE c.id = ?",
-          &pbind, 1)) {
-    *client_enabled = _client_enabled == 1;
-    *access_id = _access_id;
-    *accessid_enabled = _accessid_enabled == 1;
-    *accessid_active = _accessid_active == 1;
-    return true;
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)&_client_enabled;
+
+    rbind[1].buffer_type = MYSQL_TYPE_LONG;
+    rbind[1].buffer = (char *)&_access_id;
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&_accessid_enabled;
+
+    rbind[3].buffer_type = MYSQL_TYPE_LONG;
+    rbind[3].buffer = (char *)&_accessid_active;
+
+    rbind[4].buffer_type = MYSQL_TYPE_STRING;
+    rbind[4].buffer = _client_name;
+    rbind[4].buffer_length = sizeof(_client_name);
+    rbind[4].length = &_client_name_len;
+    rbind[4].is_null = &_client_name_is_null;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
+        if (client_enabled) {
+          *client_enabled = _client_enabled == 1;
+        }
+
+        if (access_id) {
+          *access_id = _access_id;
+        }
+
+        if (accessid_enabled) {
+          *accessid_enabled = _accessid_enabled == 1;
+        }
+
+        if (accessid_active) {
+          *accessid_active = _accessid_active == 1;
+        }
+
+        if (client_name) {
+          dba->set_terminating_byte((char *)_client_name, sizeof(_client_name),
+                                    _client_name_len, _client_name_is_null);
+
+          client_name->assign((char *)_client_name);
+        }
+
+        result = true;
+      }
+    }
+
+    mysql_stmt_close(stmt);
   }
 
-  return false;
+  return result;
 }
 
 bool supla_client_dao::get_client_id(int user_id,

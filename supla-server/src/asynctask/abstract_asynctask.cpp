@@ -65,7 +65,6 @@ void supla_abstract_asynctask::unlock(void) { lck_unlock(lck); }
 
 void supla_abstract_asynctask::set_observable(void) {
   lock();
-  bool prev = observable;
   if (!observable) {
     observable = true;
   }

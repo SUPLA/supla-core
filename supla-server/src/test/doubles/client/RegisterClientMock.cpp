@@ -39,7 +39,7 @@ void RegisterClientMock::register_client(
   std::weak_ptr<supla_client> client;
   supla_abstract_register_client::register_client(
       client, register_client_b, register_client_d, srpc_adapter, dba, conn_dao,
-      client_dao, client_sd, client_ipv4, activity_timeout);
+      client_dao, client_sd, client_ipv4, activity_timeout, nullptr);
 }
 
 }  // namespace testing

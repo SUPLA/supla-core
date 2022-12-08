@@ -20,6 +20,8 @@
 
 namespace testing {
 
+using std::string;
+
 RegisterClientEssentialTest::RegisterClientEssentialTest()
     : RegisterClientTest() {}
 
@@ -693,10 +695,11 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndIsDisabled) {
       .WillOnce(Return(987));
 
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
-                                               NotNull(), NotNull()))
+                                               NotNull(), NotNull(), IsNull()))
       .Times(1)
       .WillOnce([](int client_id, bool *client_enabled, int *access_id,
-                   bool *accessid_enabled, bool *accessid_active) {
+                   bool *accessid_enabled, bool *accessid_active,
+                   string *client_name) {
         *client_enabled = false;
         return true;
       });
@@ -765,7 +768,7 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsNotSet) {
       .WillOnce(Return(987));
 
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
-                                               NotNull(), NotNull()))
+                                               NotNull(), NotNull(), IsNull()))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -839,7 +842,7 @@ TEST_F(RegisterClientEssentialTest,
       .WillOnce(Return(987));
 
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
-                                               NotNull(), NotNull()))
+                                               NotNull(), NotNull(), IsNull()))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -935,7 +938,7 @@ TEST_F(RegisterClientEssentialTest,
       .WillOnce(Return(987));
 
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
-                                               NotNull(), NotNull()))
+                                               NotNull(), NotNull(), IsNull()))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -1016,7 +1019,7 @@ TEST_F(RegisterClientEssentialTest,
       .WillOnce(Return(987));
 
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
-                                               NotNull(), NotNull()))
+                                               NotNull(), NotNull(), IsNull()))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -1100,10 +1103,11 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsDisabled) {
       .WillOnce(Return(987));
 
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
-                                               NotNull(), NotNull()))
+                                               NotNull(), NotNull(), IsNull()))
       .Times(1)
       .WillOnce([](int client_id, bool *client_enabled, int *access_id,
-                   bool *accessid_enabled, bool *accessid_active) {
+                   bool *accessid_enabled, bool *accessid_active,
+                   string *client_name) {
         *access_id = 777;
         return true;
       });
@@ -1174,10 +1178,11 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsInActive) {
       .WillOnce(Return(987));
 
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
-                                               NotNull(), NotNull()))
+                                               NotNull(), NotNull(), IsNull()))
       .Times(1)
       .WillOnce([](int client_id, bool *client_enabled, int *access_id,
-                   bool *accessid_enabled, bool *accessid_active) {
+                   bool *accessid_enabled, bool *accessid_active,
+                   string *client_name) {
         *accessid_enabled = true;
         *access_id = 777;
         return true;
@@ -1247,7 +1252,7 @@ TEST_F(RegisterClientEssentialTest, gettingClientVariablesFailed) {
       .WillOnce(Return(987));
 
   EXPECT_CALL(client_dao, get_client_variables(987, NotNull(), NotNull(),
-                                               NotNull(), NotNull()))
+                                               NotNull(), NotNull(), IsNull()))
       .Times(1)
       .WillOnce(Return(false));
 
