@@ -239,7 +239,7 @@ void LOG_ICACHE_FLASH supla_vlog(int __pri, const char *message) {
     struct tm *now_tm = localtime(&now_time);
     char time_buf[64] = {};
 
-    strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", now_tm);
+    strftime(time_buf, sizeof(time_buf), "%H:%M:%S", now_tm);
 
     printf("[%s.%06ld] ", time_buf, now.tv_usec);
     printf("%s", message);
