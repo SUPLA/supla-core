@@ -20,6 +20,7 @@
 #define SUPLA_CH_ABSTRACT_EXECUTE_ACTION_H_
 
 #include <functional>
+#include <string>
 
 #include "actions/abstract_action_executor.h"
 #include "client/call_handler/abstract_client_srpc_call_handler.h"
