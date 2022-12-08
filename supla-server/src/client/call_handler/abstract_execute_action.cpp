@@ -102,7 +102,7 @@ void supla_ch_abstract_execute_action::execute_action(
     return;
   }
 
-  aexec->execute_action(supla_caller(ctClient, client_id), user_id,
+  aexec->execute_action(supla_caller(ctClient, client_id, client_name), user_id,
                         action->ActionId, subject_type, action->SubjectId,
                         nullptr, &rs, &rgbw, 0, 0, 0);
 
