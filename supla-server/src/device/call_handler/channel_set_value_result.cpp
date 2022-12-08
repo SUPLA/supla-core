@@ -69,7 +69,7 @@ void supla_ch_channel_set_value_result::handle_call(
     std::shared_ptr<supla_client> client =
         device->get_user()->get_clients()->get(result->SenderID);
     if (client != nullptr) {
-      client->getName(event.SenderName, SUPLA_SENDER_NAME_MAXSIZE);
+      client->get_name(event.SenderName, SUPLA_SENDER_NAME_MAXSIZE);
     }
 
     event.SenderNameSize =

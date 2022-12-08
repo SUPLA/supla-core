@@ -25,6 +25,7 @@
 #include "user/user.h"
 
 using std::shared_ptr;
+using std::string;
 
 supla_register_client::supla_register_client(void)
     : supla_abstract_register_client() {}
@@ -74,7 +75,7 @@ void supla_register_client::on_registraction_success(void) {
   client->set_id(get_client_id());
   client->set_guid(get_guid());
   client->set_authkey(get_authkey());
-  client->set_name(get_name());
+  client->set_name(get_name().c_str());
   client->set_access_id(get_access_id());
   client->set_user(supla_user::find(get_user_id(), true));
   client->load_config();
@@ -114,6 +115,10 @@ int supla_register_client::get_client_id(void) {
 
 int supla_register_client::get_user_id(void) {
   return supla_abstract_register_client::get_user_id();
+}
+
+string supla_register_client::get_name(void) {
+  return supla_abstract_register_client::get_name();
 }
 
 void supla_register_client::register_client(

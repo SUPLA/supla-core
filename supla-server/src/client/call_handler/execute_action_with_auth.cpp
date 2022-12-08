@@ -65,8 +65,8 @@ void supla_ch_execute_action_with_auth::handle_call(
 
   supla_action_executor aexec;
   execute_action(
-      regcli.get_user_id(), regcli.get_client_id(), &aexec, action,
-      srpc_adapter,
+      regcli.get_user_id(), regcli.get_client_id(), regcli.get_name(), &aexec,
+      action, srpc_adapter,
       [&client_dao, &regcli](int subject_type, int subject_id) -> bool {
         switch (subject_type) {
           case ACTION_SUBJECT_TYPE_CHANNEL:

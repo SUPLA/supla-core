@@ -22,6 +22,7 @@
 #include <conn/abstract_connection_object.h>
 
 #include <memory>
+#include <string>
 
 #include "client_scene_dao.h"
 #include "client_scene_remote_updater.h"
@@ -83,7 +84,8 @@ class supla_client : public supla_abstract_connection_object {
   void on_channel_value_changed(int DeviceId, int ChannelId = 0,
                                 bool Extended = false);
   void get_next(void);
-  int getName(char *buffer, int size);
+  int get_name(char *buffer, int size);
+  std::string get_name(void);
   int getAccessID(void);
 
   void call_event(TSC_SuplaEvent *event);

@@ -20,6 +20,7 @@
 #define SUPLA_CH_REGISTER_CLIENT_H_
 
 #include <memory>
+#include <string>
 
 #include "client/call_handler/abstract_register_client.h"
 
@@ -48,6 +49,8 @@ class supla_register_client : public supla_abstract_register_client {
   virtual ~supla_register_client();
 
   int get_client_id(void);
+  std::string get_name(void);
+
   int get_user_id(void);
 
   void register_client(std::weak_ptr<supla_client> client,

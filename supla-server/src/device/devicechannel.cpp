@@ -685,7 +685,7 @@ void supla_device_channel::updateTimerState(void) {
       shared_ptr<supla_client> client =
           user->get_clients()->get(ts_ev->SenderID);
       if (client != nullptr) {
-        client->getName(ts_ev->SenderName, SUPLA_SENDER_NAME_MAXSIZE);
+        client->get_name(ts_ev->SenderName, SUPLA_SENDER_NAME_MAXSIZE);
         ts_ev->SenderNameSize =
             strnlen(ts_ev->SenderName, SUPLA_SENDER_NAME_MAXSIZE) + 1;
       } else {
