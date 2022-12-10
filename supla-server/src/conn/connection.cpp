@@ -375,6 +375,10 @@ void supla_connection::execute(void *sthread) {
     }
   }
 
+  if (object != nullptr) {
+    object->connection_will_close();
+  }
+
   srpc_adapter->lock();
   ssocket_supla_socket_close(supla_socket);
   srpc_adapter->unlock();

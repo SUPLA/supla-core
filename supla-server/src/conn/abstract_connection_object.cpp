@@ -153,6 +153,8 @@ bool supla_abstract_connection_object::is_registered(void) {
 
 void supla_abstract_connection_object::iterate(void) {}
 
+void supla_abstract_connection_object::connection_will_close(void) {}
+
 supla_connection *supla_abstract_connection_object::get_connection(void) {
   return conn;
 }

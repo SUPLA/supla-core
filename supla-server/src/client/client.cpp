@@ -270,6 +270,11 @@ void supla_client::iterate() {
   channels->update_expired(get_connection()->get_srpc_adapter()->get_srpc());
 }
 
+void supla_client::connection_will_close(void) {
+  supla_abstract_connection_object::connection_will_close();
+  scenes->connection_will_close();
+}
+
 unsigned _supla_int64_t supla_client::wait_time_usec() {
   unsigned _supla_int64_t time = channels->value_validity_time_usec();
   if (time > 0 && time < 120000000) {
