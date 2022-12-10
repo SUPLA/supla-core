@@ -63,7 +63,9 @@ void st_critical_signal_handler(int sig) {
   void *array[20] = {};
   size_t count = 0;
 
-  supla_log(LOG_CRIT, "Critical Error! Signal %d:", sig);
+  supla_log(LOG_CRIT,
+            "Critical Error! Terminate: %i Signal %d:", st_app_terminate,
+            sig);
 
   count = backtrace(array, 20);
   char **symbols = backtrace_symbols(array, count);
