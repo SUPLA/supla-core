@@ -171,9 +171,10 @@ void supla_abstract_asynctask::set_waiting(void) {
 
   if (init) {
     gettimeofday(&started_at, NULL);
+    queue->on_task_started(this);
+    // Call on_task_started before adding to the queue
     queue->add_task(this);
     queue->raise_event();
-    queue->on_task_started(this);
   }
 }
 
