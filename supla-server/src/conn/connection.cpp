@@ -360,6 +360,8 @@ void supla_connection::execute(void *sthread) {
       }
 
     } else {
+      object->iterate();
+
       if (object->get_activity_delay() >= get_activity_timeout()) {
         if (object->is_sleeping_object()) {
           supla_log(LOG_DEBUG, "Sleeping device %i", sthread);

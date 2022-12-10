@@ -151,6 +151,8 @@ bool supla_abstract_connection_object::is_registered(void) {
   return result;
 }
 
+void supla_abstract_connection_object::iterate(void) {}
+
 supla_connection *supla_abstract_connection_object::get_connection(void) {
   return conn;
 }

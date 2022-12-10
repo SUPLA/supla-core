@@ -266,6 +266,7 @@ void supla_client::set_scene_caption(int scene_id, char *caption) {
 }
 
 void supla_client::iterate() {
+  supla_abstract_connection_object::iterate();
   channels->update_expired(get_connection()->get_srpc_adapter()->get_srpc());
 }
 

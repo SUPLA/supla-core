@@ -72,7 +72,7 @@ class supla_client : public supla_abstract_connection_object {
   virtual bool is_sleeping_object(void);
   virtual unsigned int get_time_to_wakeup_msec(void);
 
-  void iterate();
+  virtual void iterate();
   unsigned _supla_int64_t wait_time_usec();
 
   void superuser_authorize(int UserID, const char Email[SUPLA_EMAIL_MAXSIZE],
