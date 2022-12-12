@@ -204,7 +204,12 @@ bool electricity_meter_config::is_phase_disabled(unsigned char phase) {
   return false;
 }
 
-_supla_int64_t electricity_meter_config::get_initial_value(int var) {
+_supla_int64_t electricity_meter_config::get_initial_value(
+    int var, unsigned char phase, bool *initial_value_for_all_phases) {
+  if (initial_value_for_all_phases) {
+    *initial_value_for_all_phases = true;
+  }
+
   if (!key_exists(var) || (get_available_counters() & var) == 0) {
     return 0;
   }
@@ -218,26 +223,52 @@ _supla_int64_t electricity_meter_config::get_initial_value(int var) {
   if (initial_values) {
     cJSON *initial_value =
         cJSON_GetObjectItem(initial_values, string_with_key(var));
-    if (initial_value && cJSON_IsNumber(initial_value)) {
-      return 100000.0 * initial_value->valuedouble;
+    if (initial_value) {
+      if (cJSON_IsObject(initial_value)) {
+        if (initial_value_for_all_phases) {
+          *initial_value_for_all_phases = false;
+        }
+
+        char phase_key[4] = {};
+        snprintf(phase_key, sizeof(phase_key), "%i", phase);
+        cJSON *phase_initial_value =
+            cJSON_GetObjectItem(initial_value, phase_key);
+        if (phase_initial_value && cJSON_IsNumber(phase_initial_value)) {
+          return 100000.0 * phase_initial_value->valuedouble;
+        }
+      } else if (cJSON_IsNumber(initial_value)) {
+        return 100000.0 * initial_value->valuedouble;
+      }
     }
   }
 
   return 0;
 }
 
-void electricity_meter_config::add_initial_value(_supla_int64_t initial_value,
-                                                 unsigned char phase, int flags,
-                                                 unsigned _supla_int64_t *value,
-                                                 _supla_int64_t *substracted) {
-  if (phase > 3) {
-    return;
+_supla_int64_t electricity_meter_config::get_initial_value_for_all_phases(
+    int var) {
+  bool initial_value_for_all_phases = false;
+
+  _supla_int64_t initial_value =
+      get_initial_value(var, 1, &initial_value_for_all_phases);
+
+  if (!initial_value_for_all_phases) {
+    initial_value +=
+        get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 2, nullptr);
+
+    initial_value +=
+        get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 3, nullptr);
   }
 
-  if (phase == 0) {
-    phase = 1;
-    flags = SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
-            SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
+  return initial_value;
+}
+
+void electricity_meter_config::add_initial_value(
+    _supla_int64_t initial_value, bool initial_value_for_all_phases,
+    unsigned char phase, int flags, unsigned _supla_int64_t *value,
+    _supla_int64_t *substracted) {
+  if (phase < 1 || phase > 3) {
+    return;
   }
 
   unsigned _supla_int64_t left = -1 - *value;
@@ -268,10 +299,13 @@ void electricity_meter_config::add_initial_value(_supla_int64_t initial_value,
     phase_count--;
   }
 
-  _supla_int64_t addition = initial_value / phase_count;
+  _supla_int64_t addition = initial_value;
+  if (initial_value_for_all_phases) {
+    addition /= phase_count;
 
-  if (first_supported_phase == phase) {
-    addition += initial_value - (initial_value / phase_count * phase_count);
+    if (first_supported_phase == phase) {
+      addition += initial_value - (initial_value / phase_count * phase_count);
+    }
   }
 
   if (addition < 0) {
@@ -287,14 +321,26 @@ void electricity_meter_config::add_initial_value(_supla_int64_t initial_value,
 
 void electricity_meter_config::add_initial_value(
     int var, unsigned char phase, int flags, unsigned _supla_int64_t *value) {
-  _supla_int64_t initial_value = get_initial_value(var);
+  bool initial_value_for_all_phases = false;
+  _supla_int64_t initial_value =
+      get_initial_value(var, phase, &initial_value_for_all_phases);
   _supla_int64_t substracted = 0;
-  add_initial_value(initial_value, phase, flags, value, &substracted);
+  add_initial_value(initial_value, initial_value_for_all_phases, phase, flags,
+                    value, &substracted);
+}
+
+void electricity_meter_config::add_initial_value(
+    int var, unsigned _supla_int64_t *value) {
+  _supla_int64_t initial_value = get_initial_value_for_all_phases(var);
+  _supla_int64_t substracted = 0;
+  add_initial_value(initial_value, false, 1, 0, value, &substracted);
 }
 
 void electricity_meter_config::add_initial_value(
     int var, int flags, unsigned _supla_int64_t value[]) {
-  _supla_int64_t initial_value = get_initial_value(var);
+  bool initial_value_for_all_phases = false;
+  _supla_int64_t initial_value =
+      get_initial_value(var, 1, &initial_value_for_all_phases);
   _supla_int64_t substracted = 0;
   bool calculate = true;
 
@@ -317,14 +363,20 @@ void electricity_meter_config::add_initial_value(
 
     for (unsigned char phase = 1; phase <= 3; phase++) {
       unsigned _supla_int64_t before = value[phase - 1];
-      add_initial_value(initial_value, phase, flags, &value[phase - 1],
-                        &substracted);
+      add_initial_value(initial_value, initial_value_for_all_phases, phase,
+                        flags, &value[phase - 1], &substracted);
+
+      if (!initial_value_for_all_phases && phase < 3) {
+        initial_value = get_initial_value(var, phase + 1, nullptr);
+      }
+
       if (before != value[phase - 1]) {
         changed = true;  // Infinity loop prevention
       }
     }
 
-    if (changed && initial_value < 0 && initial_value < substracted &&
+    if (initial_value_for_all_phases && changed && initial_value < 0 &&
+        initial_value < substracted &&
         (value[0] > 0 || value[1] > 0 || value[2] > 0)) {
       initial_value -= substracted;
     } else {
@@ -351,10 +403,10 @@ void electricity_meter_config::add_initial_values(
   add_initial_value(EM_VAR_REVERSE_REACTIVE_ENERGY, flags,
                     em_ev->total_reverse_reactive_energy);
 
-  add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED, 0, 0,
+  add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED,
                     &em_ev->total_forward_active_energy_balanced);
 
-  add_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED, 0, 0,
+  add_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED,
                     &em_ev->total_reverse_active_energy_balanced);
 }
 
@@ -378,7 +430,7 @@ void electricity_meter_config::add_initial_value(
     TElectricityMeter_Value *value) {
   if (value) {
     _supla_int64_t initial_value =
-        get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY) / 1000;
+        get_initial_value_for_all_phases(EM_VAR_FORWARD_ACTIVE_ENERGY) / 1000;
 
     if (initial_value < 0) {
       if (initial_value * -1 > value->total_forward_active_energy) {
