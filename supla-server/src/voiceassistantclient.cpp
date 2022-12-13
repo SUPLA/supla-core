@@ -29,9 +29,8 @@ supla_voice_assistant_client::supla_voice_assistant_client(
     supla_webhook_basic_credentials *credentials)
     : supla_webhook_basic_client(credentials, true) {}
 
-char *supla_voice_assistant_client::getEndpointId(int subjectId,
-                                                  short subChannel,
-                                                  bool scene) {
+char *supla_voice_assistant_client::getEndpointId(int channelId,
+                                                  short subChannel) {
   char *result = NULL;
   const char *uuid = getCredentials()->getUser()->getShortUniqueID();
   if (!uuid) {
@@ -44,22 +43,14 @@ char *supla_voice_assistant_client::getEndpointId(int subjectId,
   if (endpointId) {
     if (subChannel) {
       snprintf(endpointId, endpointId_len, "%s-%i-%i", uuid ? uuid : "",
-               subjectId, subChannel);
-    } else if (scene) {
-      snprintf(endpointId, endpointId_len, "%s:scene-%i", uuid ? uuid : "",
-               subjectId);
+               channelId, subChannel);
     } else {
       snprintf(endpointId, endpointId_len, "%s-%i", uuid ? uuid : "",
-               subjectId);
+               channelId);
     }
 
     result = endpointId;
   }
 
   return result;
-}
-
-char *supla_voice_assistant_client::getEndpointId(int channelId,
-                                                  short subChannel) {
-  return getEndpointId(channelId, subChannel, false);
 }

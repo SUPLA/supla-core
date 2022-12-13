@@ -39,7 +39,7 @@ TEST_F(ExecuteSceneCommandTest, noData) {
 }
 
 TEST_F(ExecuteSceneCommandTest, executeWithSuccess) {
-  EXPECT_CALL(*cmd, execute(10, 20, IsNull())).WillOnce(Return(serOK));
+  EXPECT_CALL(*cmd, execute(10, 20)).WillOnce(Return(serOK));
 
   commandProcessingTest("EXECUTE-SCENE:10,20\n", "OK:20\n");
 }
@@ -67,14 +67,6 @@ TEST_F(ExecuteSceneCommandTest, paramsWithZeros) {
 TEST_F(ExecuteSceneCommandTest, badParams) {
   EXPECT_CALL(*cmd, execute).Times(0);
   commandProcessingTest("EXECUTE-SCENE:a,10\n", "UNKNOWN:0\n");
-}
-
-TEST_F(ExecuteSceneCommandTest, googleRequestId) {
-  EXPECT_CALL(*cmd, execute(10, 20, StrEq("RequestID")))
-      .WillOnce(Return(serOK));
-
-  commandProcessingTest("EXECUTE-SCENE:10,20,GOOGLE-REQUEST-ID=UmVxdWVzdElE\n",
-                        "OK:20\n");
 }
 
 } /* namespace testing */

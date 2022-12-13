@@ -27,8 +27,7 @@
 class supla_abstract_execute_scene_command : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual _sceneExecutionResult_e execute(int user_id, int scene_id,
-                                          const char *google_request_id) = 0;
+  virtual _sceneExecutionResult_e execute(int user_id, int scene_id) = 0;
 
  public:
   explicit supla_abstract_execute_scene_command(

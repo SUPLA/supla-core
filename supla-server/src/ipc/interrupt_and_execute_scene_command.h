@@ -26,8 +26,7 @@
 class supla_interrupt_and_execute_scene_command
     : public supla_abstract_interrupt_and_execute_scene_command {
  protected:
-  virtual bool interrupt_and_execute(int user_id, int scene_id,
-                                     const char *google_request_id);
+  virtual bool interrupt_and_execute(int user_id, int scene_id);
 
  public:
   explicit supla_interrupt_and_execute_scene_command(

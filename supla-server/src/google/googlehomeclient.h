@@ -20,17 +20,13 @@
 #define GOOGLEHOMECLIENT_H_
 
 #include <google/googlehomecredentials.h>
-
 #include <cstddef>
-
 #include "voiceassistantclient.h"
 
 class supla_google_home_client : public supla_voice_assistant_client {
  private:
   void *jsonStates;
-  bool endpointExists(const char *endpointId);
-  void *getStateSkeleton(int subjectId, short subChannel, bool scene,
-                         bool online);
+  bool channelExists(const char *endpointId);
   void *getStateSkeleton(int channelId, short subChannel, bool online);
   void *getHeader(const char requestId[]);
   bool post(void *json_data, int *resultCode);
@@ -48,7 +44,6 @@ class supla_google_home_client : public supla_voice_assistant_client {
   bool addOpenPercentState(int channelId, short openPercent, bool online);
   bool addRollerShutterState(int channelId, short shutPercentage, bool online);
   bool sendReportState(const char requestId[], int *resultCode = NULL);
-  bool addSceneState(int sceneId);
   bool requestSync(int *resultCode = NULL);
 };
 

@@ -39,7 +39,7 @@ TEST_F(InterruptSceneCommandTest, noData) {
 }
 
 TEST_F(InterruptSceneCommandTest, interruptWithSuccess) {
-  EXPECT_CALL(*cmd, interrupt(10, 20, IsNull()));
+  EXPECT_CALL(*cmd, interrupt(10, 20));
 
   commandProcessingTest("INTERRUPT-SCENE:10,20\n", "OK:20\n");
 }
@@ -57,13 +57,6 @@ TEST_F(InterruptSceneCommandTest, paramsWithZeros) {
 TEST_F(InterruptSceneCommandTest, badParams) {
   EXPECT_CALL(*cmd, interrupt).Times(0);
   commandProcessingTest("INTERRUPT-SCENE:a,10\n", "UNKNOWN:0\n");
-}
-
-TEST_F(InterruptSceneCommandTest, googleRequestId) {
-  EXPECT_CALL(*cmd, interrupt(10, 20, StrEq("RequestID")));
-
-  commandProcessingTest(
-      "INTERRUPT-SCENE:10,20,GOOGLE-REQUEST-ID=UmVxdWVzdElE\n", "OK:20\n");
 }
 
 } /* namespace testing */

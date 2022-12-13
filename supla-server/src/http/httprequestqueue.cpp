@@ -482,34 +482,6 @@ void supla_http_request_queue::onActionsTriggered(const supla_caller &caller,
       new supla_http_request_action_trigger_extra_params(actions));
 }
 
-void supla_http_request_queue::onSceneEvent(const supla_caller &caller,
-                                            int userId, int sceneId,
-                                            const char googleRequestId[],
-                                            bool interrupted) {
-  supla_user *user = supla_user::get_user(userId);
-  if (!user) {
-    return;
-  }
-
-  createInTheCallerContext(
-      user, 0, sceneId, interrupted ? ET_SCENE_INTERRUPTED : ET_SCENE_EXECUTED,
-      caller,
-      new supla_http_request_voice_assistant_extra_params(nullptr,
-                                                          googleRequestId));
-}
-
-void supla_http_request_queue::onSceneExecuted(const supla_caller &caller,
-                                               int userId, int sceneId,
-                                               const char googleRequestId[]) {
-  onSceneEvent(caller, userId, sceneId, googleRequestId, false);
-}
-
-void supla_http_request_queue::onSceneInterrupted(
-    const supla_caller &caller, int userId, int sceneId,
-    const char googleRequestId[]) {
-  onSceneEvent(caller, userId, sceneId, googleRequestId, true);
-}
-
 void http_request_queue_loop(void *ssd, void *q_sthread) {
   supla_http_request_queue::getInstance()->iterate(q_sthread);
 }

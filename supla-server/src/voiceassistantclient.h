@@ -26,7 +26,6 @@ class supla_voice_assistant_client : public supla_webhook_basic_client {
   explicit supla_voice_assistant_client(
       supla_webhook_basic_credentials *credentials);
 
-  char *getEndpointId(int subjectId, short subChannel, bool scene);
   char *getEndpointId(int channelId, short subChannel);
 };
 

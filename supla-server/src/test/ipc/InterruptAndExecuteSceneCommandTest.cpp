@@ -40,15 +40,13 @@ TEST_F(InterruptAndExecuteSceneCommandTest, noData) {
 }
 
 TEST_F(InterruptAndExecuteSceneCommandTest, interruptAndExecuteWithSuccess) {
-  EXPECT_CALL(*cmd, interrupt_and_execute(10, 20, IsNull()))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*cmd, interrupt_and_execute(10, 20)).WillOnce(Return(true));
 
   commandProcessingTest("INTERRUPT-AND-EXECUTE-SCENE:10,20\n", "OK:20\n");
 }
 
 TEST_F(InterruptAndExecuteSceneCommandTest, interruptAndExecuteWithFail) {
-  EXPECT_CALL(*cmd, interrupt_and_execute(10, 20, IsNull()))
-      .WillOnce(Return(false));
+  EXPECT_CALL(*cmd, interrupt_and_execute(10, 20)).WillOnce(Return(false));
 
   commandProcessingTest("INTERRUPT-AND-EXECUTE-SCENE:10,20\n", "UNKNOWN:20\n");
 }
@@ -66,15 +64,6 @@ TEST_F(InterruptAndExecuteSceneCommandTest, paramsWithZeros) {
 TEST_F(InterruptAndExecuteSceneCommandTest, badParams) {
   EXPECT_CALL(*cmd, interrupt_and_execute).Times(0);
   commandProcessingTest("INTERRUPT-AND-EXECUTE-SCENE:a,10\n", "UNKNOWN:0\n");
-}
-
-TEST_F(InterruptAndExecuteSceneCommandTest, googleRequestId) {
-  EXPECT_CALL(*cmd, interrupt_and_execute(10, 20, StrEq("RequestID")))
-      .WillOnce(Return(true));
-
-  commandProcessingTest(
-      "INTERRUPT-AND-EXECUTE-SCENE:10,20,GOOGLE-REQUEST-ID=UmVxdWVzdElE\n",
-      "OK:20\n");
 }
 
 } /* namespace testing */

@@ -18,23 +18,13 @@
 
 #include "ipc/execute_scene_command.h"
 
-#include "http/httprequestqueue.h"
-
 supla_execute_scene_command::supla_execute_scene_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_execute_scene_command(socket_adapter) {}
 
-_sceneExecutionResult_e supla_execute_scene_command::execute(
-    int user_id, int scene_id, const char *google_request_id) {
-  _sceneExecutionResult_e result = supla_scene_asynctask::execute(
-      supla_scene_asynctask::get_queue(), supla_scene_asynctask::get_pool(),
-      get_caller(), user_id, scene_id, false);
-
-  if (google_request_id) {
-    // For Google Home always confirm that the scene is being executed
-    supla_http_request_queue::getInstance()->onSceneExecuted(
-        get_caller(), user_id, scene_id, google_request_id);
-  }
-
-  return result;
+_sceneExecutionResult_e supla_execute_scene_command::execute(int user_id,
+                                                             int scene_id) {
+  return supla_scene_asynctask::execute(supla_scene_asynctask::get_queue(),
+                                        supla_scene_asynctask::get_pool(),
+                                        get_caller(), user_id, scene_id, false);
 }

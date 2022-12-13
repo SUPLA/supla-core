@@ -27,8 +27,7 @@ class supla_abstract_interrupt_and_execute_scene_command
     : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual bool interrupt_and_execute(int user_id, int scene_id,
-                                     const char *google_request_id) = 0;
+  virtual bool interrupt_and_execute(int user_id, int scene_id) = 0;
 
  public:
   explicit supla_abstract_interrupt_and_execute_scene_command(

@@ -18,20 +18,13 @@
 
 #include "ipc/interrupt_scene_command.h"
 
-#include "http/httprequestqueue.h"
 #include "scene/scene_asynctask.h"
 
 supla_interrupt_scene_command::supla_interrupt_scene_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_interrupt_scene_command(socket_adapter) {}
 
-void supla_interrupt_scene_command::interrupt(int user_id, int scene_id,
-                                              const char *google_request_id) {
-  supla_scene_asynctask::interrupt(supla_scene_asynctask::get_queue(), user_id,
-                                   scene_id);
-
-  if (google_request_id) {
-    supla_http_request_queue::getInstance()->onSceneInterrupted(
-        get_caller(), user_id, scene_id, google_request_id);
-  }
+void supla_interrupt_scene_command::interrupt(int user_id, int scene_id) {
+  return supla_scene_asynctask::interrupt(supla_scene_asynctask::get_queue(),
+                                          user_id, scene_id);
 }
