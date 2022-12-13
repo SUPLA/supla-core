@@ -221,7 +221,7 @@ TEST_F(GoogleHomeClientTest, sendFullReportState) {
   const char expectedRequest[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
       "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 487\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 520\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: "
       "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
       "\"payload\":{\"devices\":{\"states\":{\"qwerty-1\":{\"online\":true,"
@@ -231,7 +231,7 @@ TEST_F(GoogleHomeClientTest, sendFullReportState) {
       ",\"qwerty-4\":{\"online\":true,\"on\":true,\"brightness\":55},\"qwerty-"
       "5-2\":{\"online\":true,\"on\":true,\"brightness\":30},\"qwerty-6\":{"
       "\"online\":true,\"openPercent\":70},\"qwerty-7\":{\"online\":true,"
-      "\"openPercent\":70}}}}}";
+      "\"openPercent\":70},\"qwerty:scene-8\":{\"online\":true}}}}}";
 
   ASSERT_TRUE(client->addOnOffState(1, true, true));
   ASSERT_FALSE(client->addOnOffState(1, true, true));
@@ -247,8 +247,25 @@ TEST_F(GoogleHomeClientTest, sendFullReportState) {
   ASSERT_FALSE(client->addRollerShutterState(6, 45, true));
   ASSERT_TRUE(client->addOpenPercentState(7, 70, true));
   ASSERT_FALSE(client->addOpenPercentState(7, 55, true));
+  ASSERT_TRUE(client->addSceneState(8));
+  ASSERT_FALSE(client->addSceneState(8));
   ASSERT_TRUE(client->sendReportState("REQID"));
   ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest));
+}
+
+TEST_F(GoogleHomeClientTest, sceneReportState) {
+  const char expectedRequest1[] =
+      "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
+      "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 145\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: "
+      "close\r\n\r\n{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\","
+      "\"agentUserId\":\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{"
+      "\"qwerty:scene-10\":{\"online\":true}}}}}";
+
+  ASSERT_TRUE(client->addSceneState(10));
+  ASSERT_TRUE(client->sendReportState(NULL));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 }
 
 } /* namespace testing */

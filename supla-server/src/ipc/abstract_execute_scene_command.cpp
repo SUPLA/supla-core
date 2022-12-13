@@ -37,7 +37,8 @@ void supla_abstract_execute_scene_command::on_command_match(
     sscanf(params, "%i,%i", &user_id, &scene_id);
 
     if (user_id && scene_id) {
-      _sceneExecutionResult_e exec_result = execute(user_id, scene_id);
+      _sceneExecutionResult_e exec_result =
+          execute(user_id, scene_id, get_google_request_id());
       if (exec_result == serOK) {
         send_result("OK:", scene_id);
         return;

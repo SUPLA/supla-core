@@ -37,7 +37,7 @@ void supla_abstract_interrupt_scene_command::on_command_match(
     sscanf(params, "%i,%i", &user_id, &scene_id);
 
     if (user_id && scene_id) {
-      interrupt(user_id, scene_id);
+      interrupt(user_id, scene_id, get_google_request_id());
       send_result("OK:", scene_id);
       return;
     }

@@ -56,6 +56,8 @@ class supla_http_request_queue {
                                 const supla_caller &caller,
                                 supla_http_request_extra_params *extraParams);
   void recalculateTime(struct timeval *now);
+  void onSceneEvent(const supla_caller &caller, int userId, int sceneId,
+                    const char googleRequestId[], bool interrupted);
 
  public:
   static void init();
@@ -93,6 +95,12 @@ class supla_http_request_queue {
 
   void onActionsTriggered(const supla_caller &caller, supla_user *user,
                           int deviceId, int channelId, unsigned int actions);
+
+  void onSceneExecuted(const supla_caller &caller, int userId, int sceneId,
+                       const char googleRequestId[]);
+
+  void onSceneInterrupted(const supla_caller &caller, int userId, int sceneId,
+                          const char googleRequestId[]);
 };
 
 void http_request_queue_loop(void *ssd, void *q_sthread);

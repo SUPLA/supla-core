@@ -17,7 +17,9 @@
  */
 
 #include "google/googlehomeclient.h"
+
 #include <stdlib.h>
+
 #include "http/trivialhttps.h"
 #include "json/cJSON.h"
 #include "log.h"
@@ -110,18 +112,18 @@ bool supla_google_home_client::post(void *json_data, int *resultCode) {
   return result;
 }
 
-bool supla_google_home_client::channelExists(const char *endpointId) {
+bool supla_google_home_client::endpointExists(const char *endpointId) {
   return endpointId != NULL &&
          cJSON_GetObjectItem((cJSON *)jsonStates, endpointId) != NULL;
 }
 
-void *supla_google_home_client::getStateSkeleton(int channelId,
-                                                 short subChannel,
+void *supla_google_home_client::getStateSkeleton(int subjectId,
+                                                 short subChannel, bool scene,
                                                  bool online) {
   cJSON *state = NULL;
-  char *endpointId = getEndpointId(channelId, subChannel);
+  char *endpointId = getEndpointId(subjectId, subChannel, scene);
   if (endpointId) {
-    if (!channelExists(endpointId)) {
+    if (!endpointExists(endpointId)) {
       state = cJSON_CreateObject();
       if (state) {
         cJSON_AddBoolToObject(state, "online", online);
@@ -132,6 +134,12 @@ void *supla_google_home_client::getStateSkeleton(int channelId,
   }
 
   return state;
+}
+
+void *supla_google_home_client::getStateSkeleton(int channelId,
+                                                 short subChannel,
+                                                 bool online) {
+  return getStateSkeleton(channelId, subChannel, false, online);
 }
 
 bool supla_google_home_client::addOnOffState(int channelId, bool on,
@@ -196,6 +204,10 @@ bool supla_google_home_client::addRollerShutterState(int channelId,
                                                      bool online) {
   return addOpenPercentState(channelId, 100 - (online ? shutPercentage : 0),
                              online);
+}
+
+bool supla_google_home_client::addSceneState(int sceneId) {
+  return getStateSkeleton(sceneId, 0, true, true) != nullptr;
 }
 
 void *supla_google_home_client::getHeader(const char requestId[]) {

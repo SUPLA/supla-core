@@ -7,6 +7,7 @@ CPP_SRCS += \
 ../src/google/googlehomeclient.cpp \
 ../src/google/googlehomecredentials.cpp \
 ../src/google/googlehomerequest.cpp \
+../src/google/googlehomescenestatereportrequest.cpp \
 ../src/google/googlehomestatereportrequest.cpp \
 ../src/google/googlehomesyncrequest.cpp 
 
@@ -14,6 +15,7 @@ CPP_DEPS += \
 ./src/google/googlehomeclient.d \
 ./src/google/googlehomecredentials.d \
 ./src/google/googlehomerequest.d \
+./src/google/googlehomescenestatereportrequest.d \
 ./src/google/googlehomestatereportrequest.d \
 ./src/google/googlehomesyncrequest.d 
 
@@ -21,6 +23,7 @@ OBJS += \
 ./src/google/googlehomeclient.o \
 ./src/google/googlehomecredentials.o \
 ./src/google/googlehomerequest.o \
+./src/google/googlehomescenestatereportrequest.o \
 ./src/google/googlehomestatereportrequest.o \
 ./src/google/googlehomesyncrequest.o 
 
@@ -37,7 +40,7 @@ src/google/%.o: ../src/google/%.cpp src/google/subdir.mk
 clean: clean-src-2f-google
 
 clean-src-2f-google:
-	-$(RM) ./src/google/googlehomeclient.d ./src/google/googlehomeclient.o ./src/google/googlehomecredentials.d ./src/google/googlehomecredentials.o ./src/google/googlehomerequest.d ./src/google/googlehomerequest.o ./src/google/googlehomestatereportrequest.d ./src/google/googlehomestatereportrequest.o ./src/google/googlehomesyncrequest.d ./src/google/googlehomesyncrequest.o
+	-$(RM) ./src/google/googlehomeclient.d ./src/google/googlehomeclient.o ./src/google/googlehomecredentials.d ./src/google/googlehomecredentials.o ./src/google/googlehomerequest.d ./src/google/googlehomerequest.o ./src/google/googlehomescenestatereportrequest.d ./src/google/googlehomescenestatereportrequest.o ./src/google/googlehomestatereportrequest.d ./src/google/googlehomestatereportrequest.o ./src/google/googlehomesyncrequest.d ./src/google/googlehomesyncrequest.o
 
 .PHONY: clean-src-2f-google
 

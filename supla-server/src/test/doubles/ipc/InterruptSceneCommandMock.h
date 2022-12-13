@@ -31,7 +31,8 @@ class InterruptSceneCommandMock
   explicit InterruptSceneCommandMock(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  MOCK_METHOD2(interrupt, void(int user_id, int scene_id));
+  MOCK_METHOD3(interrupt,
+               void(int user_id, int scene_id, const char *google_request_id));
 };
 
 } /* namespace testing */
