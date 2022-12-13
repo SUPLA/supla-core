@@ -66,6 +66,8 @@ bool supla_google_home_sync_request::isEventTypeAccepted(event_type eventType,
       return true;
     case ET_CHANNEL_VALUE_CHANGED:
     case ET_ACTION_TRIGGERED:
+    case ET_SCENE_EXECUTED:
+    case ET_SCENE_INTERRUPTED:
       return false;
   }
   return false;
