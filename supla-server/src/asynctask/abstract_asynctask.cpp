@@ -187,7 +187,8 @@ bool supla_abstract_asynctask::pick(void) {
   return result;
 }
 
-void supla_abstract_asynctask::execute(void) {
+void supla_abstract_asynctask::execute(
+    supla_asynctask_thread_storage **storage) {
   lock();
   bool exec_allowed = state == supla_asynctask_state::PICKED;
   long long unsigned usec_after_timeout = 0;
@@ -211,7 +212,7 @@ void supla_abstract_asynctask::execute(void) {
 
   if (exec_allowed) {
     bool exec_again = false;
-    bool result = _execute(&exec_again);
+    bool result = _execute(&exec_again, storage);
 
     lock();
     if (state != supla_asynctask_state::CANCELED) {

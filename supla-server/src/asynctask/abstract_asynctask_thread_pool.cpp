@@ -157,11 +157,13 @@ void supla_abstract_asynctask_thread_pool::_execute(void *_pool,
 void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
   bool iterate = true;
 
+  supla_asynctask_thread_storage *storage = nullptr;
+
   do {
     shared_ptr<supla_abstract_asynctask> task = queue->pick(this);
 
     if (task) {
-      task->execute();
+      task->execute(&storage);
       lck_lock(lck);
       _exec_count++;
       lck_unlock(lck);
@@ -184,6 +186,10 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
         !sthread_isterminated(sthread) && threads.size() <= requests.size();
     lck_unlock(lck);
   } while (iterate);
+
+  if (storage) {
+    delete storage;
+  }
 }
 
 // static

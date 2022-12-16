@@ -41,7 +41,8 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
   bool get_closing_state(bool *is_closed);
 
  protected:
-  virtual bool _execute(bool *execute_again);
+  virtual bool _execute(bool *execute_again,
+                        supla_asynctask_thread_storage **storage);
 
  public:
   supla_action_gate_openclose(

@@ -127,7 +127,8 @@ bool supla_action_gate_openclose::get_closing_state(bool *is_closed) {
   return opening_sensor_level != gsl_unknown;
 }
 
-bool supla_action_gate_openclose::_execute(bool *execute_again) {
+bool supla_action_gate_openclose::_execute(
+    bool *execute_again, supla_asynctask_thread_storage **storage) {
   if (!value_getter || !action_executor) {
     return false;
   }

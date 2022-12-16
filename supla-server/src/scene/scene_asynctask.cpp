@@ -127,7 +127,8 @@ bool supla_scene_asynctask::get_scene_state(supla_asynctask_queue *queue,
   return success;
 }
 
-bool supla_scene_asynctask::_execute(bool *execute_again) {
+bool supla_scene_asynctask::_execute(bool *execute_again,
+                                     supla_asynctask_thread_storage **storage) {
   do {
     supla_scene_operation *operation = op_pop();
     if (operation) {
