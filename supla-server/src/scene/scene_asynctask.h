@@ -51,8 +51,7 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
                         supla_abstract_asynctask_thread_pool *pool,
                         supla_abstract_action_executor *action_executor,
                         supla_abstract_value_getter *value_getter,
-                        supla_scene_operations *operations,
-                        bool release_immediately);
+                        supla_scene_operations *operations);
   virtual ~supla_scene_asynctask();
   const supla_caller &get_caller(void) const;
   int get_user_id(void);

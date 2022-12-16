@@ -114,7 +114,8 @@ bool supla_asynctask_queue::task_exists(supla_abstract_asynctask *task) {
   return result;
 }
 
-void supla_asynctask_queue::add_task(supla_abstract_asynctask *task) {
+void supla_asynctask_queue::add_task(
+    shared_ptr<supla_abstract_asynctask> task) {
   assert(task->get_pool() != NULL);
   assert(pool_exists(task->get_pool()));
 
@@ -122,24 +123,24 @@ void supla_asynctask_queue::add_task(supla_abstract_asynctask *task) {
 
   for (auto it = tasks.begin(); it != tasks.end(); ++it) {
     if ((*it)->get_priority() < task->get_priority()) {
-      tasks.insert(it, shared_ptr<supla_abstract_asynctask>(task));
-      task = NULL;
+      tasks.insert(it, task);
+      task = nullptr;
       break;
     }
   }
 
   if (task) {
-    tasks.push_back(shared_ptr<supla_abstract_asynctask>(task));
+    tasks.push_back(task);
   }
   lck_unlock(lck);
-
   eh_raise_event(eh);
 }
 
-void supla_asynctask_queue::remove_task(supla_abstract_asynctask *task) {
+void supla_asynctask_queue::remove_task(
+    shared_ptr<supla_abstract_asynctask> task) {
   lck_lock(lck);
   for (auto it = tasks.begin(); it != tasks.end(); ++it) {
-    if (it->get() == task) {
+    if (*it == task) {
       tasks.erase(it);
       break;
     }
@@ -340,10 +341,7 @@ void supla_asynctask_queue::cancel_tasks(
 
   for (auto it = found.begin(); it != found.end(); ++it) {
     (*it)->cancel();
-
-    if ((*it)->release_immediately_after_execution()) {
-      remove_task(it->get());
-    }
+    remove_task(*it);
   }
   lck_unlock(lck);
 }
@@ -405,22 +403,6 @@ bool supla_asynctask_queue::access_task(
     on_task(task);
   }
   lck_unlock(lck);
-  return result;
-}
-
-weak_ptr<supla_abstract_asynctask> supla_asynctask_queue::get_weak_ptr(
-    supla_abstract_asynctask *task) {
-  weak_ptr<supla_abstract_asynctask> result;
-
-  lck_lock(lck);
-  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
-    if (it->get() == task) {
-      result = *it;
-      break;
-    }
-  }
-  lck_unlock(lck);
-
   return result;
 }
 

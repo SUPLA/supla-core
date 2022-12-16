@@ -33,7 +33,7 @@ class SceneActionExecutorMock : public ActionExecutorMock {
   SceneActionExecutorMock *action_executor;
   supla_abstract_value_getter *value_getter;
   supla_scene_operations *operations;
-  supla_abstract_asynctask *last_executed_asynctask;
+  std::shared_ptr<supla_abstract_asynctask> last_executed_asynctask;
 
  public:
   SceneActionExecutorMock();
@@ -45,7 +45,7 @@ class SceneActionExecutorMock : public ActionExecutorMock {
                             SceneActionExecutorMock *action_executor,
                             supla_abstract_value_getter *value_getter,
                             supla_scene_operations *operations);
-  supla_abstract_asynctask *get_last_executed_asynctask(void);
+  std::shared_ptr<supla_abstract_asynctask> get_last_executed_asynctask(void);
 };
 
 } /* namespace testing */

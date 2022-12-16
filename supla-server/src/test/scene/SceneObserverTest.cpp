@@ -20,6 +20,8 @@
 
 namespace testing {
 
+using std::shared_ptr;
+
 SceneObserverTest::~SceneObserverTest() {
   start_count = 0;
   finish_count = 0;
@@ -71,10 +73,10 @@ TEST_F(SceneObserverTest, startAndFinish) {
   EXPECT_EQ(start_count, 0);
   EXPECT_EQ(finish_count, 0);
 
-  supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 1, 2, 0, queue, pool, action_executor, value_getter,
-      operations, false);
-  ASSERT_FALSE(scene == NULL);
+  shared_ptr<supla_abstract_asynctask> scene =
+      (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 0, queue, pool,
+                                 action_executor, value_getter, operations))
+          ->start();
 
   EXPECT_EQ(start_count, 1);
   EXPECT_EQ(finish_count, 0);
@@ -103,10 +105,10 @@ TEST_F(SceneObserverTest, removeObserverBeforeTaskFinished) {
   EXPECT_EQ(start_count, 0);
   EXPECT_EQ(finish_count, 0);
 
-  supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 1, 2, 0, queue, pool, action_executor, value_getter,
-      operations, false);
-  ASSERT_FALSE(scene == NULL);
+  shared_ptr<supla_abstract_asynctask> scene =
+      (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 0, queue, pool,
+                                 action_executor, value_getter, operations))
+          ->start();
 
   EXPECT_EQ(start_count, 1);
   EXPECT_EQ(finish_count, 0);

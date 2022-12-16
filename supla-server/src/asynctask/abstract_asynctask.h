@@ -22,6 +22,7 @@
 #include <sys/time.h>
 
 #include <list>
+#include <memory>
 
 #include "asynctask_state.h"
 
@@ -40,10 +41,6 @@ class supla_abstract_asynctask {
   supla_asynctask_queue *queue;
   supla_abstract_asynctask_thread_pool *pool;
   int priority;
-  bool release_immediately;
-  void init(supla_asynctask_queue *queue,
-            supla_abstract_asynctask_thread_pool *pool, short priority,
-            bool release_immediately);
 
  protected:
   friend class supla_abstract_asynctask_thread_pool;
@@ -52,12 +49,6 @@ class supla_abstract_asynctask {
   void lock(void);
   void unlock(void);
 
-  // If set_waiting is called in the constructor of the child class, it should
-  // be called last because then the object is added to the queue which may
-  // cause the queue to start reading the job before the object exits the
-  // constructor, which may result in a crash.
-  void set_waiting(void);
-
   bool pick(void);
   virtual bool _execute(bool *execute_again) = 0;
   void execute(void);
@@ -65,16 +56,16 @@ class supla_abstract_asynctask {
                               // constructor. Calling it results in calling the
                               // on_asynctask_started method in the observer
   void on_task_finished(void);
+  virtual void on_timeout(long long unsigned usec_after_timeout);
 
  public:
   supla_abstract_asynctask(supla_asynctask_queue *queue,
-                           supla_abstract_asynctask_thread_pool *pool,
-                           short priority, bool release_immediately);
-  supla_abstract_asynctask(supla_asynctask_queue *queue,
                            supla_abstract_asynctask_thread_pool *pool);
   virtual ~supla_abstract_asynctask(void);
+  std::shared_ptr<supla_abstract_asynctask> start(void);
   supla_asynctask_queue *get_queue(void);
   supla_abstract_asynctask_thread_pool *get_pool(void);
+  void set_priority(short priority);  // Priority can only be set before start
   short get_priority(void);
   struct timeval get_started_at(void);
   long long time_left_usec(struct timeval *now);
@@ -86,7 +77,6 @@ class supla_abstract_asynctask {
   void cancel(void);
   bool is_finished(void);
   bool is_observable(void);
-  bool release_immediately_after_execution(void);
 };
 
 #endif /*ABSTRACT_ASYNCTASK_H_*/

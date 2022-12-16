@@ -30,9 +30,6 @@ class ChannelOrientedAsyncTaskMock : public AsyncTaskMock {
 
  public:
   ChannelOrientedAsyncTaskMock(supla_asynctask_queue *queue,
-                               supla_abstract_asynctask_thread_pool *pool,
-                               short priority, bool release_immediately);
-  ChannelOrientedAsyncTaskMock(supla_asynctask_queue *queue,
                                supla_abstract_asynctask_thread_pool *pool);
 
   void set_channel_id(int channel_id);

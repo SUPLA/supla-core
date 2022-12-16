@@ -17,23 +17,14 @@
  */
 
 #include "AsyncTaskMock.h"
-#include <unistd.h>
-#include "log.h"
 
-AsyncTaskMock::AsyncTaskMock(supla_asynctask_queue *queue,
-                             supla_abstract_asynctask_thread_pool *pool,
-                             short priority, bool release_immediately)
-    : supla_abstract_asynctask(queue, pool, priority, release_immediately) {
-  mock_init();
-}
+#include <unistd.h>
+
+#include "log.h"
 
 AsyncTaskMock::AsyncTaskMock(supla_asynctask_queue *queue,
                              supla_abstract_asynctask_thread_pool *pool)
     : supla_abstract_asynctask(queue, pool) {
-  mock_init();
-}
-
-void AsyncTaskMock::mock_init(void) {
   this->job_time_usec = 0;
   this->job_count_left = 1;
   this->_exec_count = 0;
@@ -96,10 +87,6 @@ void AsyncTaskMock::set_result(bool result) {
   unlock();
 }
 
-void AsyncTaskMock::set_waiting(void) {
-  supla_abstract_asynctask::set_waiting();
-}
-
 long long AsyncTaskMock::exec_delay_usec(void) {
   lock();
   long long result =
@@ -110,7 +97,7 @@ long long AsyncTaskMock::exec_delay_usec(void) {
   return result;
 }
 
-long long  AsyncTaskMock::exec_time_since(struct timeval *time) {
+long long AsyncTaskMock::exec_time_since(struct timeval *time) {
   lock();
   long long result =
       (time->tv_sec * (long long)1000000 + time->tv_usec) -

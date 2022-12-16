@@ -51,7 +51,7 @@ class supla_asynctask_queue {
   friend class supla_abstract_asynctask_thread_pool;
 
   bool task_exists(supla_abstract_asynctask *task);
-  void add_task(supla_abstract_asynctask *task);
+  void add_task(std::shared_ptr<supla_abstract_asynctask> task);
   bool pool_exists(supla_abstract_asynctask_thread_pool *pool);
   void register_pool(supla_abstract_asynctask_thread_pool *pool);
   void unregister_pool(supla_abstract_asynctask_thread_pool *pool);
@@ -81,9 +81,7 @@ class supla_asynctask_queue {
   void remove_observer(supla_abstract_asynctask_observer *observer);
   bool access_task(supla_abstract_asynctask_search_condition *cnd,
                    std::function<void(supla_abstract_asynctask *)> on_task);
-  std::weak_ptr<supla_abstract_asynctask> get_weak_ptr(
-      supla_abstract_asynctask *task);
-  void remove_task(supla_abstract_asynctask *task);
+  void remove_task(std::shared_ptr<supla_abstract_asynctask> task);
   void log_stuck_warning(void);
 };
 

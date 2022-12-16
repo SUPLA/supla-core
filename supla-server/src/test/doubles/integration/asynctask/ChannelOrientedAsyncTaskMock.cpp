@@ -19,11 +19,6 @@
 #include "ChannelOrientedAsyncTaskMock.h"
 
 ChannelOrientedAsyncTaskMock::ChannelOrientedAsyncTaskMock(
-    supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
-    short priority, bool release_immediately)
-    : AsyncTaskMock(queue, pool, priority, release_immediately) {}
-
-ChannelOrientedAsyncTaskMock::ChannelOrientedAsyncTaskMock(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool)
     : AsyncTaskMock(queue, pool) {}
 

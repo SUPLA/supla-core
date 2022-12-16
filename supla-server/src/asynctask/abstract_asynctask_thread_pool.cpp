@@ -166,8 +166,8 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
       _exec_count++;
       lck_unlock(lck);
 
-      if (task->is_finished() && task->release_immediately_after_execution()) {
-        queue->remove_task(task.get());
+      if (task->is_finished()) {
+        queue->remove_task(task);
       }
 
       remove_task(task.get());

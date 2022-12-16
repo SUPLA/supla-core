@@ -36,8 +36,8 @@ supla_scene_asynctask::supla_scene_asynctask(
     supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_action_executor *action_executor,
     supla_abstract_value_getter *value_getter,
-    supla_scene_operations *operations, bool release_immediately)
-    : supla_abstract_asynctask(queue, pool, 0, release_immediately) {
+    supla_scene_operations *operations)
+    : supla_abstract_asynctask(queue, pool) {
   assert(action_executor);
   assert(operations);
   assert(value_getter);
@@ -52,7 +52,6 @@ supla_scene_asynctask::supla_scene_asynctask(
 
   set_delay_usec(op_get_delay_ms() * 1000);
   set_observable();
-  set_waiting();  // set_waiting should be called last in the constructor
 }
 
 supla_scene_asynctask::~supla_scene_asynctask() {
@@ -212,10 +211,11 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
       supla_action_executor *action_executor = new supla_action_executor();
       supla_value_getter *value_getter = new supla_value_getter();
 
-      new supla_scene_asynctask(
+      supla_scene_asynctask *scene = new supla_scene_asynctask(
           caller, user_id, scene_id,
           scene_dao.get_estimated_execution_time(scene_id), queue, pool,
-          action_executor, value_getter, operations, true);
+          action_executor, value_getter, operations);
+      scene->start();
       return serOK;
     }
   }

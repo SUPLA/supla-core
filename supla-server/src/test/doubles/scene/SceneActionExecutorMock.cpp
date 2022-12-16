@@ -25,6 +25,8 @@
 
 namespace testing {
 
+using std::shared_ptr;
+
 SceneActionExecutorMock::SceneActionExecutorMock() : ActionExecutorMock() {
   this->queue = NULL;
   this->pool = NULL;
@@ -44,9 +46,11 @@ void SceneActionExecutorMock::execute(void) {
   ActionExecutorMock::execute();
   if (get_scene_id() && queue && pool && action_executor,
       value_getter && operations) {
-    last_executed_asynctask = new supla_scene_asynctask(
-        get_caller(), get_user_id(), get_scene_id(), 0, queue, pool,
-        action_executor, value_getter, operations, false);
+    last_executed_asynctask =
+        (new supla_scene_asynctask(get_caller(), get_user_id(), get_scene_id(),
+                                   0, queue, pool, action_executor,
+                                   value_getter, operations))
+            ->start();
     operations = NULL;
   }
 }
@@ -55,9 +59,11 @@ void SceneActionExecutorMock::open(void) {
   ActionExecutorMock::open();
 
   if (get_channel_id() && queue && pool && value_getter) {
-    last_executed_asynctask = new supla_action_gate_openclose(
-        get_caller(), queue, pool, 0, false, action_executor, value_getter,
-        NULL, get_user_id(), get_device_id(), get_channel_id(), 10000000, true);
+    last_executed_asynctask =
+        (new supla_action_gate_openclose(
+             get_caller(), queue, pool, action_executor, value_getter, NULL,
+             get_user_id(), get_device_id(), get_channel_id(), 10000000, true))
+            ->start();
   }
 }
 
@@ -77,8 +83,8 @@ void SceneActionExecutorMock::set_asynctask_params(
   this->operations = operations;
 }
 
-supla_abstract_asynctask *SceneActionExecutorMock::get_last_executed_asynctask(
-    void) {
+shared_ptr<supla_abstract_asynctask>
+SceneActionExecutorMock::get_last_executed_asynctask(void) {
   return last_executed_asynctask;
 }
 

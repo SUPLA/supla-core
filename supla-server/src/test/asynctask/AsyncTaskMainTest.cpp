@@ -22,6 +22,8 @@
 
 namespace testing {
 
+using std::dynamic_pointer_cast;
+using std::shared_ptr;
 using std::vector;
 
 AsyncTaskMainTest::AsyncTaskMainTest(void) : AsyncTaskTest() {}
@@ -29,19 +31,17 @@ AsyncTaskMainTest::AsyncTaskMainTest(void) : AsyncTaskTest() {}
 AsyncTaskMainTest::~AsyncTaskMainTest(void) {}
 
 TEST_F(AsyncTaskMainTest, taskWithInitStatus) {
-  ASSERT_EQ(queue->total_count(), (unsigned int)0);
-  ASSERT_EQ(queue->waiting_count(), (unsigned int)0);
+  EXPECT_EQ(queue->total_count(), (unsigned int)0);
+  EXPECT_EQ(queue->waiting_count(), (unsigned int)0);
   ASSERT_FALSE(pool->is_terminated());
 
-  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0, false);
-  ASSERT_TRUE(task != NULL);
-
-  ASSERT_EQ(queue->total_count(), (unsigned int)0);
-  ASSERT_EQ(queue->waiting_count(), (unsigned int)0);
-  ASSERT_FALSE(pool->is_terminated());
+  AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
   ASSERT_EQ(task->get_state(), supla_asynctask_state::INIT);
 
-  delete task;
+  shared_ptr<supla_abstract_asynctask> tshared = task->start();
+
+  ASSERT_NE(task->get_state(), supla_asynctask_state::INIT);
+
   delete queue;
   queue = NULL;
 }
@@ -50,15 +50,15 @@ TEST_F(AsyncTaskMainTest, runTaskWithoutDelay) {
   pool->set_thread_count_limit(10);
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
-  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0, false);
-  ASSERT_TRUE(task != NULL);
+
+  AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
   task->set_job_time_usec(500000);
   task->set_result(true);
-  task->set_waiting();
-  WaitForState(task, supla_asynctask_state::EXECUTING, 1000000);
+  shared_ptr<supla_abstract_asynctask> tshared = task->start();
+  WaitForState(tshared, supla_asynctask_state::EXECUTING, 1000000);
   EXPECT_EQ(pool->thread_count(), (unsigned int)1);
   EXPECT_EQ(pool->exec_count(), (unsigned int)0);
-  WaitForState(task, supla_asynctask_state::SUCCESS, 1000000);
+  WaitForState(tshared, supla_asynctask_state::SUCCESS, 1000000);
   EXPECT_LT(task->exec_delay_usec(), 200000);
   usleep(1000);
   EXPECT_EQ(pool->thread_count(), (unsigned int)0);
@@ -67,13 +67,13 @@ TEST_F(AsyncTaskMainTest, runTaskWithoutDelay) {
 }
 
 TEST_F(AsyncTaskMainTest, runTaskWithDelay) {
-  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0, false);
+  AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
   ASSERT_TRUE(task != NULL);
   task->set_job_time_usec(10000);
   task->set_delay_usec(1200000);
   task->set_result(true);
-  task->set_waiting();
-  WaitForState(task, supla_asynctask_state::SUCCESS, 2000000);
+  shared_ptr<supla_abstract_asynctask> tshared = task->start();
+  WaitForState(tshared, supla_asynctask_state::SUCCESS, 2000000);
   EXPECT_GT(task->exec_delay_usec(), 1200000);
   EXPECT_LT(task->exec_delay_usec(), 1500000);
 }
@@ -84,7 +84,7 @@ TEST_F(AsyncTaskMainTest, runMultipleTasks) {
     AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
     task->set_job_time_usec(100000);
     task->set_result(true);
-    task->set_waiting();
+    task->start();
   }
 
   WaitForExec(pool, 50, 5000000);
@@ -102,7 +102,7 @@ TEST_F(AsyncTaskMainTest, runMultipleTasksWithTwoPools) {
     AsyncTaskMock *task = new AsyncTaskMock(queue, a % 2 ? pool : pool2);
     task->set_job_time_usec(200000);
     task->set_result(true);
-    task->set_waiting();
+    task->start();
   }
 
   WaitForExec(pool, 50, 10000000);
@@ -116,16 +116,15 @@ TEST_F(AsyncTaskMainTest, priorityTest) {
   pool->set_thread_count_limit(1);
   pool->hold();
 
-  vector<AsyncTaskMock *> tasks;
+  vector<shared_ptr<supla_abstract_asynctask>> tasks;
   int a;
 
   for (a = 0; a < 100; a++) {
-    AsyncTaskMock *task = new AsyncTaskMock(queue, pool, a, false);
+    AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
+    task->set_priority(a);
     task->set_job_time_usec(100);
     task->set_result(true);
-    task->set_waiting();
-
-    tasks.push_back(task);
+    tasks.push_back(task->start());
   }
 
   pool->unhold();
@@ -135,24 +134,25 @@ TEST_F(AsyncTaskMainTest, priorityTest) {
   struct timeval now;
   gettimeofday(&now, NULL);
 
-  long long time_usec = tasks.back()->exec_time_since(&now);
+  long long time_usec =
+      dynamic_pointer_cast<AsyncTaskMock>(tasks.back())->exec_time_since(&now);
 
   for (auto it = tasks.rbegin() + 1; it != tasks.rend(); ++it) {
-    EXPECT_TRUE(time_usec > (*it)->exec_time_since(&now));
-    EXPECT_EQ((*it)->get_state(), supla_asynctask_state::SUCCESS);
-    time_usec = (*it)->exec_time_since(&now);
+    shared_ptr<AsyncTaskMock> t = dynamic_pointer_cast<AsyncTaskMock>(*it);
+    EXPECT_TRUE(time_usec > t->exec_time_since(&now));
+    EXPECT_EQ(t->get_state(), supla_asynctask_state::SUCCESS);
+    time_usec = t->exec_time_since(&now);
   }
 
   tasks.clear();
   pool->hold();
 
   for (a = 0; a < 100; a++) {
-    AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, false);
+    AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
     task->set_job_time_usec(100);
     task->set_result(true);
-    task->set_waiting();
 
-    tasks.push_back(task);
+    tasks.push_back(task->start());
   }
 
   pool->unhold();
@@ -160,28 +160,30 @@ TEST_F(AsyncTaskMainTest, priorityTest) {
   WaitForExec(pool, 200, 20000000);
   gettimeofday(&now, NULL);
 
-  time_usec = tasks.front()->exec_time_since(&now);
+  time_usec =
+      dynamic_pointer_cast<AsyncTaskMock>(tasks.front())->exec_time_since(&now);
 
   for (auto it = tasks.begin() + 1; it != tasks.end(); ++it) {
-    EXPECT_EQ((*it)->get_state(), supla_asynctask_state::SUCCESS);
-    EXPECT_TRUE(time_usec > (*it)->exec_time_since(&now));
-    time_usec = (*it)->exec_time_since(&now);
+    shared_ptr<AsyncTaskMock> t = dynamic_pointer_cast<AsyncTaskMock>(*it);
+    EXPECT_EQ(t->get_state(), supla_asynctask_state::SUCCESS);
+    EXPECT_TRUE(time_usec > t->exec_time_since(&now));
+    time_usec = t->exec_time_since(&now);
   }
 }
 
 TEST_F(AsyncTaskMainTest, taskWithSubTasks) {
-  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0, false);
+  AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
   ASSERT_TRUE(task != NULL);
   task->set_job_time_usec(500000);
   task->set_delay_usec(1000000);
   task->set_job_count_left(3);
   task->set_result(true);
-  task->set_waiting();
+  shared_ptr<supla_abstract_asynctask> tshared = task->start();
 
   for (unsigned int a = 1; a <= 3; a++) {
     supla_log(LOG_DEBUG, "SubTask: %i", a);
-    WaitForState(task, supla_asynctask_state::EXECUTING, 2000000);
-    WaitForState(task,
+    WaitForState(tshared, supla_asynctask_state::EXECUTING, 2000000);
+    WaitForState(tshared,
                  a == 3 ? supla_asynctask_state::SUCCESS
                         : supla_asynctask_state::WAITING,
                  2000000);

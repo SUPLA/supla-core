@@ -26,6 +26,7 @@
 
 namespace testing {
 
+using std::shared_ptr;
 using std::weak_ptr;
 
 ActionGateOpenCloseTest::ActionGateOpenCloseTest() : AsyncTaskTest() {}
@@ -61,22 +62,17 @@ void ActionGateOpenCloseTest::noActionRequired(bool open) {
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(
-      supla_caller(ctUnknown), queue, pool, 0, false, action_executor,
-      value_getter, NULL, 1, 2, 3, 5000000, open);
-
-  ASSERT_TRUE(task != NULL);
+      supla_caller(ctUnknown), queue, pool, action_executor, value_getter, NULL,
+      1, 2, 3, 5000000, open);
+  shared_ptr<supla_abstract_asynctask> tshared = task->start();
 
   WaitForExec(pool, 1, 1000000);
   usleep(100000);
   EXPECT_EQ(pool->exec_count(), (unsigned int)1);
-  EXPECT_EQ(queue->total_count(), (unsigned int)1);
+  EXPECT_EQ(queue->total_count(), (unsigned int)0);
   EXPECT_EQ(action_executor->counterSetCount(), 0);
   EXPECT_EQ(task->get_state(), supla_asynctask_state::SUCCESS);
-  weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
-  EXPECT_FALSE(weak.expired());
-  queue->remove_task(task);
-  EXPECT_EQ(queue->total_count(), (unsigned int)0);
-  EXPECT_TRUE(weak.expired());
+  EXPECT_EQ(tshared.use_count(), 1);
 }
 
 void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
@@ -112,10 +108,11 @@ void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(
-      supla_caller(ctUnknown), queue, pool, 0, false, action_executor,
-      value_getter, config_getter, 1, 2, 3, 2000000, open);
+      supla_caller(ctUnknown), queue, pool, action_executor, value_getter,
+      config_getter, 1, 2, 3, 2000000, open);
 
-  ASSERT_TRUE(task != NULL);
+  shared_ptr<supla_abstract_asynctask> tshared = task->start();
+
   WaitForExec(pool, 1, 500000);
 
   for (short a = 0; a < attemptCount; a++) {
@@ -132,13 +129,13 @@ void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
 
   if (success) {
     value_getter->setResult(open ? gsl_open : gsl_closed, gsl_unknown);
-    WaitForState(task, supla_asynctask_state::SUCCESS, 3000000);
+    WaitForState(tshared, supla_asynctask_state::SUCCESS, 3000000);
   } else {
-    WaitForState(task, supla_asynctask_state::FAILURE, 3000000);
+    WaitForState(tshared, supla_asynctask_state::FAILURE, 3000000);
   }
 
   EXPECT_EQ(pool->exec_count(), (unsigned int)attemptCount + 1);
-  EXPECT_EQ(queue->total_count(), (unsigned int)1);
+  EXPECT_EQ(queue->total_count(), (unsigned int)0);
 }
 
 void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
@@ -158,22 +155,18 @@ TEST_F(ActionGateOpenCloseTest, openWithDisconnectedSensor) {
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(
-      supla_caller(ctUnknown), queue, pool, 0, false, action_executor,
-      value_getter, NULL, 1, 2, 3, 5000000, true);
+      supla_caller(ctUnknown), queue, pool, action_executor, value_getter, NULL,
+      1, 2, 3, 5000000, true);
 
-  ASSERT_TRUE(task != NULL);
+  shared_ptr<supla_abstract_asynctask> tshared = task->start();
 
   WaitForExec(pool, 1, 1000000);
   usleep(100000);
   EXPECT_EQ(pool->exec_count(), (unsigned int)1);
-  EXPECT_EQ(queue->total_count(), (unsigned int)1);
+  EXPECT_EQ(queue->total_count(), (unsigned int)0);
   EXPECT_EQ(action_executor->counterSetCount(), 0);
   EXPECT_EQ(task->get_state(), supla_asynctask_state::FAILURE);
-  weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
-  EXPECT_FALSE(weak.expired());
-  queue->remove_task(task);
-  EXPECT_EQ(queue->total_count(), (unsigned int)0);
-  EXPECT_TRUE(weak.expired());
+  EXPECT_EQ(tshared.use_count(), 1);
 }
 
 TEST_F(ActionGateOpenCloseTest, openAlreadyOpened) { noActionRequired(true); }

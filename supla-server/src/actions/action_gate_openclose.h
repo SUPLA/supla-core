@@ -37,12 +37,7 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
   bool open;
   short attempt_count_left;
   unsigned int verification_delay_us;
-  void action_init(const supla_caller &caller,
-                   supla_abstract_action_executor *action_executor,
-                   supla_abstract_value_getter *value_getter,
-                   abstract_channel_json_config_getter *json_config_getter,
-                   int user_id, int device_id, int channel_id,
-                   unsigned int verification_delay_us, bool open);
+
   bool get_closing_state(bool *is_closed);
 
  protected:
@@ -53,15 +48,6 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
       const supla_caller &caller, supla_asynctask_queue *queue,
       supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_action_executor *action_executor,
-      supla_abstract_value_getter *value_getter,
-      abstract_channel_json_config_getter *json_config_getter, int user_id,
-      int device_id, int channel_id, unsigned int verification_delay_us,
-      bool open);
-
-  supla_action_gate_openclose(
-      const supla_caller &caller, supla_asynctask_queue *queue,
-      supla_abstract_asynctask_thread_pool *pool, short priority,
-      bool release_immediately, supla_abstract_action_executor *action_executor,
       supla_abstract_value_getter *value_getter,
       abstract_channel_json_config_getter *json_config_getter, int user_id,
       int device_id, int channel_id, unsigned int verification_delay_us,

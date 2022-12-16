@@ -22,6 +22,8 @@
 
 namespace testing {
 
+using std::shared_ptr;
+
 AsyncTaskTest::AsyncTaskTest(void) {
   queue = NULL;
   pool = NULL;
@@ -42,7 +44,7 @@ void AsyncTaskTest::TearDown() {
   }
 }
 
-void AsyncTaskTest::WaitForState(supla_abstract_asynctask *task,
+void AsyncTaskTest::WaitForState(shared_ptr<supla_abstract_asynctask> task,
                                  const supla_asynctask_state &expected,
                                  unsigned int usec) {
   if (!task) {
@@ -60,7 +62,11 @@ void AsyncTaskTest::WaitForState(supla_abstract_asynctask *task,
     usleep(100);
   }
 
-  ASSERT_EQ(last, expected);
+  EXPECT_TRUE(last == expected);
+  if (last != expected) {
+    supla_log(LOG_DEBUG, "last(%i) != expected(%i)", last.get_state(),
+              expected.get_state());
+  }
 }
 
 void AsyncTaskTest::WaitForExec(AsyncTaskThreadPoolMock *pool,
