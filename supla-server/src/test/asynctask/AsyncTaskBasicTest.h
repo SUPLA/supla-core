@@ -35,6 +35,7 @@ class AsyncTaskBasicTest : public AsyncTaskTest {
   AsyncTaskBasicTest();
   virtual ~AsyncTaskBasicTest();
   void SetUp();
+  void TearDown();
 };
 
 } /* namespace testing */

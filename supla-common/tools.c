@@ -61,12 +61,21 @@ void st_signal_handler(int sig) {
 void st_critical_signal_handler(int sig) {
 #ifndef __ANDROID_API__
   void *array[20] = {};
-  size_t size = 0;
+  size_t count = 0;
 
-  size = backtrace(array, 20);
+  supla_log(LOG_CRIT,
+            "Critical Error! Terminate: %i Signal %d:", st_app_terminate,
+            sig);
 
-  fprintf(stderr, "Critical Error! Signal %d:\n", sig);
-  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  count = backtrace(array, 20);
+  char **symbols = backtrace_symbols(array, count);
+
+  for (int i = 0; i < count; i++) {
+    supla_log(LOG_CRIT, "%s", symbols[i]);
+  }
+
+  free(symbols);
+
   exit(1);
 #endif /*__ANDROID_API__*/
 }

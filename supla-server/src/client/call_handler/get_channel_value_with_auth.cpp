@@ -58,7 +58,7 @@ void supla_ch_get_channel_value_with_auth::handle_call(
 
   supla_register_client regcli;
   regcli.authenticate(client, auth, srpc_adapter, &dba, &conn_dao, &client_dao,
-                      true);
+                      true, nullptr);
 
   TSC_GetChannelValueResult result = {};
   result.ChannelId = channel_id;

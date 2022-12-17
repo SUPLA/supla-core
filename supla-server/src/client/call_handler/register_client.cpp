@@ -25,6 +25,7 @@
 #include "user/user.h"
 
 using std::shared_ptr;
+using std::string;
 
 supla_register_client::supla_register_client(void)
     : supla_abstract_register_client() {}
@@ -74,7 +75,7 @@ void supla_register_client::on_registraction_success(void) {
   client->set_id(get_client_id());
   client->set_guid(get_guid());
   client->set_authkey(get_authkey());
-  client->set_name(get_name());
+  client->set_name(get_name().c_str());
   client->set_access_id(get_access_id());
   client->set_user(supla_user::find(get_user_id(), true));
   client->load_config();
@@ -116,17 +117,41 @@ int supla_register_client::get_user_id(void) {
   return supla_abstract_register_client::get_user_id();
 }
 
+string supla_register_client::get_name(void) {
+  return supla_abstract_register_client::get_name();
+}
+
 void supla_register_client::register_client(
     std::weak_ptr<supla_client> client,
     TCS_SuplaRegisterClient_B *register_client_b,
     TCS_SuplaRegisterClient_D *register_client_d,
     supla_abstract_srpc_adapter *srpc_adapter, int client_sd, int client_ipv4,
     unsigned char activity_timeout) {
+  {
+    shared_ptr<supla_client> _client = client.lock();
+    if (_client && _client->is_registered()) {
+      _client->terminate();
+      return;
+    }
+  }
+
   supla_db_access_provider dba;
   supla_connection_dao conn_dao(&dba);
   supla_client_dao client_dao(&dba);
 
   supla_abstract_register_client::register_client(
       client, register_client_b, register_client_d, srpc_adapter, &dba,
-      &conn_dao, &client_dao, client_sd, client_ipv4, activity_timeout);
+      &conn_dao, &client_dao, client_sd, client_ipv4, activity_timeout,
+      nullptr);
+
+  // Disconnect the database connection before calling
+  // on_object_registration_done()
+  dba.disconnect();
+
+  {
+    shared_ptr<supla_client> _client = client.lock();
+    if (_client) {
+      _client->get_connection()->on_object_registration_done();
+    }
+  }
 }

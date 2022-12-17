@@ -22,6 +22,7 @@
 #include <conn/abstract_connection_object.h>
 
 #include <memory>
+#include <string>
 
 #include "client_scene_dao.h"
 #include "client_scene_remote_updater.h"
@@ -71,7 +72,8 @@ class supla_client : public supla_abstract_connection_object {
   virtual bool is_sleeping_object(void);
   virtual unsigned int get_time_to_wakeup_msec(void);
 
-  void iterate();
+  virtual void iterate();
+  virtual void connection_will_close(void);
   unsigned _supla_int64_t wait_time_usec();
 
   void superuser_authorize(int UserID, const char Email[SUPLA_EMAIL_MAXSIZE],
@@ -83,7 +85,8 @@ class supla_client : public supla_abstract_connection_object {
   void on_channel_value_changed(int DeviceId, int ChannelId = 0,
                                 bool Extended = false);
   void get_next(void);
-  int getName(char *buffer, int size);
+  int get_name(char *buffer, int size);
+  std::string get_name(void);
   int getAccessID(void);
 
   void call_event(TSC_SuplaEvent *event);

@@ -106,3 +106,9 @@ void supla_client_scenes::set_caption(int scene_id, const char *caption) {
     dynamic_cast<supla_client_scene *>(object)->set_caption(caption);
   });
 }
+
+void supla_client_scenes::connection_will_close(void) {
+  if (queue) {
+    queue->remove_observer(this);
+  }
+}

@@ -40,29 +40,6 @@ supla_action_gate_openclose::supla_action_gate_openclose(
     int device_id, int channel_id, unsigned int verification_delay_us,
     bool open)
     : supla_abstract_asynctask(queue, pool) {
-  action_init(caller, action_executor, value_getter, json_config_getter,
-              user_id, device_id, channel_id, verification_delay_us, open);
-}
-
-supla_action_gate_openclose::supla_action_gate_openclose(
-    const supla_caller &caller, supla_asynctask_queue *queue,
-    supla_abstract_asynctask_thread_pool *pool, short priority,
-    bool release_immediately, supla_abstract_action_executor *action_executor,
-    supla_abstract_value_getter *value_getter,
-    abstract_channel_json_config_getter *json_config_getter, int user_id,
-    int device_id, int channel_id, unsigned int verification_delay_us,
-    bool open)
-    : supla_abstract_asynctask(queue, pool, priority, release_immediately) {
-  action_init(caller, action_executor, value_getter, json_config_getter,
-              user_id, device_id, channel_id, verification_delay_us, open);
-}
-
-void supla_action_gate_openclose::action_init(
-    const supla_caller &caller, supla_abstract_action_executor *action_executor,
-    supla_abstract_value_getter *value_getter,
-    abstract_channel_json_config_getter *json_config_getter, int user_id,
-    int device_id, int channel_id, unsigned int verification_delay_us,
-    bool open) {
   assert(action_executor);
   this->action_executor = action_executor;
   this->caller = caller;
@@ -100,7 +77,6 @@ void supla_action_gate_openclose::action_init(
   }
 
   action_executor->set_channel_id(user_id, device_id, channel_id);
-  set_waiting();
 }
 
 supla_action_gate_openclose::~supla_action_gate_openclose(void) {
@@ -151,7 +127,8 @@ bool supla_action_gate_openclose::get_closing_state(bool *is_closed) {
   return opening_sensor_level != gsl_unknown;
 }
 
-bool supla_action_gate_openclose::_execute(bool *execute_again) {
+bool supla_action_gate_openclose::_execute(
+    bool *execute_again, supla_asynctask_thread_storage **storage) {
   if (!value_getter || !action_executor) {
     return false;
   }
@@ -212,9 +189,10 @@ void supla_action_gate_openclose::open_close(const supla_caller &caller,
   supla_value_getter *value_getter = new supla_value_getter();
   channel_json_config_getter *config_getter = new channel_json_config_getter();
 
-  new supla_action_gate_openclose(
+  supla_action_gate_openclose *task = new supla_action_gate_openclose(
       caller, supla_asynctask_queue::global_instance(),
       supla_asynctask_default_thread_pool::global_instance(), action_executor,
       value_getter, config_getter, user_id, device_id, channel_id,
       VERIFICATION_DELAY_US, open);
+  task->start();
 }

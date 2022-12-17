@@ -26,6 +26,7 @@
 
 using std::shared_ptr;
 using std::vector;
+using std::weak_ptr;
 
 supla_voltage_threshold_logger::supla_voltage_threshold_logger()
     : supla_abstract_cyclictask() {}
@@ -41,17 +42,19 @@ void supla_voltage_threshold_logger::run(
   std::vector<supla_voltage_analyzers> vas;
 
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-    vector<shared_ptr<supla_device> > devices =
-        (*uit)->get_devices()->get_all();
+    vector<weak_ptr<supla_device> > devices = (*uit)->get_devices()->get_all();
 
     for (auto dit = devices.cbegin(); dit != devices.cend(); ++dit) {
-      (*dit)->get_channels()->for_each_channel([&vas](supla_device_channel
-                                                          *channel) -> void {
-        if (channel->get_voltage_analyzers().is_any_sample_over_threshold()) {
-          vas.push_back(channel->get_voltage_analyzers());
-        }
-        channel->get_voltage_analyzers().reset();
-      });
+      shared_ptr<supla_device> device = (*dit).lock();
+      if (device) {
+        device->get_channels()->for_each_channel([&vas](supla_device_channel
+                                                            *channel) -> void {
+          if (channel->get_voltage_analyzers().is_any_sample_over_threshold()) {
+            vas.push_back(channel->get_voltage_analyzers());
+          }
+          channel->get_voltage_analyzers().reset();
+        });
+      }
     }
   }
 

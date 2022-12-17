@@ -16,26 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ChannelOrientedAsyncTaskMock.h"
+#include "asynctask_thread_storage.h"
 
-ChannelOrientedAsyncTaskMock::ChannelOrientedAsyncTaskMock(
-    supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool)
-    : AsyncTaskMock(queue, pool) {}
+supla_asynctask_thread_storage::supla_asynctask_thread_storage(void) {}
 
-bool ChannelOrientedAsyncTaskMock::_execute(bool *execute_again) {
-  return true;
-}
-
-void ChannelOrientedAsyncTaskMock::set_channel_id(int channel_id) {
-  lock();
-  this->channel_id = channel_id;
-  unlock();
-}
-
-int ChannelOrientedAsyncTaskMock::get_channel_id(void) {
-  lock();
-  int result = channel_id;
-  unlock();
-
-  return result;
-}
+supla_asynctask_thread_storage::~supla_asynctask_thread_storage(void) {}

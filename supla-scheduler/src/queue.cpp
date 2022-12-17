@@ -41,7 +41,7 @@ char queue_loop_s_exec_arr_free(void *s_exec) {
 }
 
 char queue_loop_worker_thread_twt(void *worker_sthread) {
-  sthread_twf(worker_sthread);
+  sthread_twf(worker_sthread, true);
   return 1;
 }
 
@@ -271,7 +271,7 @@ void queue::loop(void) {
 
   safe_array_lock(workers_thread_arr);
   for (a = 0; a < safe_array_count(workers_thread_arr); a++) {
-    sthread_terminate(safe_array_get(workers_thread_arr, a));
+    sthread_terminate(safe_array_get(workers_thread_arr, a), true);
   }
   safe_array_unlock(workers_thread_arr);
 

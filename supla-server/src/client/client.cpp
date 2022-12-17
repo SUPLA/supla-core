@@ -36,6 +36,7 @@
 
 using std::dynamic_pointer_cast;
 using std::shared_ptr;
+using std::string;
 
 // static
 supla_client_call_handler_collection supla_client::call_handler_collection;
@@ -93,7 +94,7 @@ void supla_client::set_name(const char *name) {
   unlock();
 }
 
-int supla_client::getName(char *buffer, int size) {
+int supla_client::get_name(char *buffer, int size) {
   if (size < 1) return 0;
 
   buffer[0] = 0;
@@ -105,6 +106,8 @@ int supla_client::getName(char *buffer, int size) {
   buffer[size - 1] = 0;
   return strnlen(buffer, size - 1);
 }
+
+string supla_client::get_name(void) { return name; }
 
 void supla_client::set_access_id(int access_id) { this->access_id = access_id; }
 
@@ -263,7 +266,13 @@ void supla_client::set_scene_caption(int scene_id, char *caption) {
 }
 
 void supla_client::iterate() {
+  supla_abstract_connection_object::iterate();
   channels->update_expired(get_connection()->get_srpc_adapter()->get_srpc());
+}
+
+void supla_client::connection_will_close(void) {
+  supla_abstract_connection_object::connection_will_close();
+  scenes->connection_will_close();
 }
 
 unsigned _supla_int64_t supla_client::wait_time_usec() {

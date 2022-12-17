@@ -61,6 +61,8 @@ class supla_abstract_connection_object {
   get_srpc_call_handler_collection(void) = 0;
   virtual bool is_sleeping_object(void) = 0;
   virtual unsigned int get_time_to_wakeup_msec(void) = 0;
+  virtual void iterate(void);
+  virtual void connection_will_close(void);
 
   // Thread safe start
   bool is_registered(void);

@@ -24,9 +24,11 @@
 #include <unistd.h>
 
 #include "conn/authkey_cache.h"
+#include "device/device.h"
 #include "device/devicechannel.h"
 #include "log.h"
 
+using std::shared_ptr;
 using std::weak_ptr;
 
 supla_abstract_register_device::supla_abstract_register_device(void)

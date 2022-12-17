@@ -43,8 +43,8 @@ void supla_ch_execute_action::handle_call(
 
   supla_action_executor aexec;
   execute_action(
-      client->get_user_id(), client->get_id(), &aexec, rd->data.cs_action,
-      srpc_adapter,
+      client->get_user_id(), client->get_id(), client->get_name(), &aexec,
+      rd->data.cs_action, srpc_adapter,
       [&client](int subject_type, int subject_id) -> bool {
         switch (subject_type) {
           case ACTION_SUBJECT_TYPE_CHANNEL:

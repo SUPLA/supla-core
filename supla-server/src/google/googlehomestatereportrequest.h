@@ -22,12 +22,6 @@
 #include "google/googlehomerequest.h"
 
 class supla_google_home_statereport_request : public supla_google_home_request {
- private:
-  void *channel_arr;
-
- protected:
-  void addChannelId(int ChannelId);
-
  public:
   supla_google_home_statereport_request(supla_user *user, int ClassID,
                                         int DeviceId, int ChannelId,
@@ -38,8 +32,7 @@ class supla_google_home_statereport_request : public supla_google_home_request {
   bool isChannelFunctionAllowed(void);
   virtual bool verifyExisting(supla_http_request *existing);
   virtual bool queueUp(void);
-  virtual bool isCallerAccepted(const supla_caller &caller,
-                                         bool verification);
+  virtual bool isCallerAccepted(const supla_caller &caller, bool verification);
   virtual bool isEventTypeAccepted(event_type eventType, bool verification);
   virtual void execute(void *sthread);
 };

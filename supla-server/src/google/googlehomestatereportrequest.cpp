@@ -18,7 +18,6 @@
 
 #include "google/googlehomestatereportrequest.h"
 
-#include "http/httprequestvoiceassistantextraparams.h"
 #include "log.h"
 #include "safearray.h"
 #include "svrcfg.h"
@@ -29,34 +28,12 @@ supla_google_home_statereport_request::supla_google_home_statereport_request(
     event_type EventType, const supla_caller &Caller)
     : supla_google_home_request(user, ClassID, DeviceId, ChannelId, EventType,
                                 Caller) {
-  channel_arr = safe_array_init();
-  addChannelId(ChannelId);
   setDelay(1500000);  // 1.5 sec.
   setTimeout(scfg_int(CFG_GOOGLE_HOME_STATEREPORT_TIMEOUT) * 1000);
 }
 
 supla_google_home_statereport_request::~supla_google_home_statereport_request(
-    void) {
-  safe_array_free(channel_arr);
-}
-
-void supla_google_home_statereport_request::addChannelId(int ChannelId) {
-  safe_array_lock(channel_arr);
-  bool exists = false;
-
-  for (int a = 0; a < safe_array_count(channel_arr); a++) {
-    if ((long long)safe_array_get(channel_arr, a) == ChannelId) {
-      exists = true;
-      break;
-    }
-  }
-
-  if (!exists) {
-    safe_array_add(channel_arr, (void *)(long long)ChannelId);
-  }
-
-  safe_array_unlock(channel_arr);
-}
+    void) {}
 
 bool supla_google_home_statereport_request::queueUp(void) {
   return !duplicateExists && supla_google_home_request::queueUp();
@@ -65,23 +42,12 @@ bool supla_google_home_statereport_request::queueUp(void) {
 bool supla_google_home_statereport_request::verifyExisting(
     supla_http_request *existing) {
   duplicateExists = true;
-  static_cast<supla_google_home_statereport_request *>(existing)->addChannelId(
-      getChannelId());
 
   unsigned long long delayUs = 1000000;
 
-  accessExtraParams(
-      [existing, &delayUs](supla_http_request_extra_params *_params) -> void {
-        supla_http_request_voice_assistant_extra_params *params =
-            dynamic_cast<supla_http_request_voice_assistant_extra_params *>(
-                _params);
-        if (params && params->getGoogleRequestIdPtr()) {
-          existing->setExtraParams(
-              new supla_http_request_voice_assistant_extra_params(
-                  NULL, params->getGoogleRequestIdPtr()));
-          delayUs = 3000000;
-        }
-      });
+  if (set_google_home_request_id(existing)) {
+    delayUs = 3000000;
+  }
 
   existing->setDelay(delayUs);
   return true;
@@ -134,75 +100,47 @@ bool supla_google_home_statereport_request::isCallerAccepted(
 }
 
 void supla_google_home_statereport_request::execute(void *sthread) {
-  safe_array_lock(channel_arr);
-
   getClient()->clearStateReport();
-  int content_exists = false;
 
-  for (int a = 0; a < safe_array_count(channel_arr); a++) {
-    int ChannelId = (long long)safe_array_get(channel_arr, a);
+  channel_complex_value value =
+      getUser()->get_channel_complex_value(getChannelId());
 
-    channel_complex_value value =
-        getUser()->get_channel_complex_value(ChannelId);
-
-    if (!value.hidden_channel) {
-      switch (value.function) {
-        case SUPLA_CHANNELFNC_POWERSWITCH:
-        case SUPLA_CHANNELFNC_LIGHTSWITCH:
-        case SUPLA_CHANNELFNC_STAIRCASETIMER:
-          getClient()->addOnOffState(ChannelId, value.hi, value.online);
-          content_exists = true;
-          break;
-        case SUPLA_CHANNELFNC_DIMMER:
-          getClient()->addBrightnessState(ChannelId, value.brightness,
-                                          value.online, 0);
-          content_exists = true;
-          break;
-        case SUPLA_CHANNELFNC_RGBLIGHTING:
-          getClient()->addColorState(ChannelId, value.color,
-                                     value.color_brightness, value.online, 0);
-          content_exists = true;
-          break;
-        case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-          getClient()->addColorState(ChannelId, value.color,
-                                     value.color_brightness, value.online, 1);
-          getClient()->addBrightnessState(ChannelId, value.brightness,
-                                          value.online, 2);
-          content_exists = true;
-          break;
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-          getClient()->addRollerShutterState(ChannelId, value.shut,
-                                             value.online);
-          content_exists = true;
-          break;
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-          getClient()->addOpenPercentState(ChannelId, value.hi ? 0 : 100,
+  if (!value.hidden_channel) {
+    switch (value.function) {
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      case SUPLA_CHANNELFNC_STAIRCASETIMER:
+        getClient()->addOnOffState(getChannelId(), value.hi, value.online);
+        break;
+      case SUPLA_CHANNELFNC_DIMMER:
+        getClient()->addBrightnessState(getChannelId(), value.brightness,
+                                        value.online, 0);
+        break;
+      case SUPLA_CHANNELFNC_RGBLIGHTING:
+        getClient()->addColorState(getChannelId(), value.color,
+                                   value.color_brightness, value.online, 0);
+        break;
+      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+        getClient()->addColorState(getChannelId(), value.color,
+                                   value.color_brightness, value.online, 1);
+        getClient()->addBrightnessState(getChannelId(), value.brightness,
+                                        value.online, 2);
+        break;
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+        getClient()->addRollerShutterState(getChannelId(), value.shut,
                                            value.online);
-          content_exists = true;
-          break;
-      }
+        break;
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+        getClient()->addOpenPercentState(getChannelId(), value.hi ? 0 : 100,
+                                         value.online);
+        break;
+      default:
+        return;
     }
   }
 
-  safe_array_unlock(channel_arr);
-
-  if (content_exists) {
-    int resultCode = 0;
-
-    accessExtraParams(
-        [this, &resultCode](supla_http_request_extra_params *_params) -> void {
-          supla_http_request_voice_assistant_extra_params *params =
-              dynamic_cast<supla_http_request_voice_assistant_extra_params *>(
-                  _params);
-          getClient()->sendReportState(
-              params ? params->getGoogleRequestIdPtr() : NULL, &resultCode);
-        });
-
-    if (resultCode == 404) {
-      getUser()->googleHomeCredentials()->on_reportstate_404_error();
-    }
-  }
+  send_report_state();
 }
 
 bool supla_google_home_statereport_request::isEventTypeAccepted(

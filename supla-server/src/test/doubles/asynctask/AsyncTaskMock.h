@@ -20,6 +20,7 @@
 #define ASYNCTASK_MOCK_H_
 
 #include <sys/time.h>
+
 #include "abstract_asynctask.h"
 
 class AsyncTaskMock : public supla_abstract_asynctask {
@@ -32,15 +33,11 @@ class AsyncTaskMock : public supla_abstract_asynctask {
   struct timeval exec_time;
   int tag;
 
-  void mock_init(void);
-
  protected:
-  virtual bool _execute(bool *execute_again);
+  virtual bool _execute(bool *execute_again,
+                        supla_asynctask_thread_storage **storage);
 
  public:
-  AsyncTaskMock(supla_asynctask_queue *queue,
-                supla_abstract_asynctask_thread_pool *pool, short priority,
-                bool release_immediately);
   AsyncTaskMock(supla_asynctask_queue *queue,
                 supla_abstract_asynctask_thread_pool *pool);
   virtual ~AsyncTaskMock(void);
@@ -49,7 +46,6 @@ class AsyncTaskMock : public supla_abstract_asynctask {
   unsigned short get_job_count_left(void);
   void set_result(bool result);
   unsigned int exec_count(void);
-  void set_waiting(void);
   long long exec_delay_usec(void);
   long long exec_time_since(struct timeval *time);
   void set_retry_left(int retry_left);

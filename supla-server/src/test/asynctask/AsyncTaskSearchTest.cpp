@@ -24,6 +24,9 @@
 
 namespace testing {
 
+using std::shared_ptr;
+using std::vector;
+
 AsyncTaskSearchTest::AsyncTaskSearchTest(void) {
   queue = NULL;
   pool = NULL;
@@ -57,20 +60,28 @@ TEST_F(AsyncTaskSearchTest, testsRelatedToSearchingForTasksInTheQueue) {
 
   int a;
 
+  vector<shared_ptr<supla_abstract_asynctask>> tasks;
+
   for (a = 0; a < 10; a++) {
-    new AsyncTaskMock(queue, pool, 0, false);
+    AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
+    task->set_delay_usec(1000000);
+    tasks.push_back(task->start());
   }
 
   ChannelOrientedAsyncTaskMock *ctask = NULL;
   ChannelOrientedAsyncTaskMock *ctask_dup = NULL;
 
   for (a = 0; a < 10; a++) {
-    ctask = new ChannelOrientedAsyncTaskMock(queue, pool, 0, false);
+    ctask = new ChannelOrientedAsyncTaskMock(queue, pool);
     ctask->set_channel_id(a + 1);
+    ctask->set_delay_usec(1000000);
+    tasks.push_back(ctask->start());
   }
 
-  ctask_dup = new ChannelOrientedAsyncTaskMock(queue, pool, 0, false);
+  ctask_dup = new ChannelOrientedAsyncTaskMock(queue, pool);
   ctask_dup->set_channel_id(ctask->get_channel_id());
+  ctask_dup->set_delay_usec(1000000);
+  tasks.push_back(ctask_dup->start());
 
   EXPECT_EQ(queue->total_count(), (unsigned int)21);
 
@@ -82,26 +93,21 @@ TEST_F(AsyncTaskSearchTest, testsRelatedToSearchingForTasksInTheQueue) {
 
   cnd->set_channels({ctask->get_channel_id()});
   EXPECT_TRUE(queue->get_task_state(&state, cnd));
-  EXPECT_EQ(state, supla_asynctask_state::INIT);
-
-  ctask->set_delay_usec(5000000);
-  ctask->set_waiting();
-
-  EXPECT_TRUE(queue->get_task_state(&state, cnd));
   EXPECT_EQ(state, supla_asynctask_state::WAITING);
 
-  EXPECT_EQ(ctask_dup->get_state(), supla_asynctask_state::INIT);
+  EXPECT_EQ(ctask->get_state(), supla_asynctask_state::WAITING);
+  EXPECT_EQ(ctask_dup->get_state(), supla_asynctask_state::WAITING);
 
   queue->cancel_tasks(cnd);
-  EXPECT_TRUE(queue->get_task_state(&state, cnd));
-  EXPECT_EQ(state, supla_asynctask_state::CANCELED);
+
+  EXPECT_EQ(ctask->get_state(), supla_asynctask_state::CANCELED);
   EXPECT_EQ(ctask_dup->get_state(), supla_asynctask_state::CANCELED);
 
-  EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)2);
+  EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)0);
   cnd->set_channels({1, 2, 3, 4, 5, 700});
   EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)5);
   cnd->set_any_id(true);
-  EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)11);
+  EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)9);
 }
 
 }  // namespace testing

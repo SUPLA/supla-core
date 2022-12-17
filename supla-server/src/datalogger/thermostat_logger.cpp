@@ -26,6 +26,7 @@
 
 using std::shared_ptr;
 using std::vector;
+using std::weak_ptr;
 
 supla_thermostat_logger::supla_thermostat_logger()
     : supla_abstract_cyclictask() {}
@@ -38,11 +39,13 @@ void supla_thermostat_logger::run(const vector<supla_user *> *users,
                                   supla_abstract_db_access_provider *dba) {
   std::vector<supla_channel_thermostat_measurement *> th;
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-    vector<shared_ptr<supla_device> > devices =
-        (*uit)->get_devices()->get_all();
+    vector<weak_ptr<supla_device> > devices = (*uit)->get_devices()->get_all();
 
     for (auto dit = devices.cbegin(); dit != devices.cend(); ++dit) {
-      (*dit)->get_channels()->get_thermostat_measurements(&th);
+      shared_ptr<supla_device> device = (*dit).lock();
+      if (device) {
+        device->get_channels()->get_thermostat_measurements(&th);
+      }
     }
   }
 

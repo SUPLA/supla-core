@@ -16,7 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <call_handler/execute_action_with_auth.h>
+#include "call_handler/execute_action_with_auth.h"
+
+#include <string>
 
 #include "actions/action_executor.h"
 #include "client/call_handler/register_client.h"
@@ -25,6 +27,7 @@
 #include "conn/connection_dao.h"
 
 using std::shared_ptr;
+using std::string;
 
 supla_ch_execute_action_with_auth::supla_ch_execute_action_with_auth(void)
     : supla_ch_abstract_execute_action() {}
@@ -52,9 +55,11 @@ void supla_ch_execute_action_with_auth::handle_call(
   supla_client_dao client_dao(&dba);
   supla_connection_dao conn_dao(&dba);
 
+  string client_name;
+
   supla_register_client regcli;
   regcli.authenticate(client, auth, srpc_adapter, &dba, &conn_dao, &client_dao,
-                      true);
+                      true, &client_name);
 
   if (regcli.get_result_code() != SUPLA_RESULTCODE_TRUE) {
     send_result(action, srpc_adapter, regcli.get_result_code());
@@ -65,7 +70,7 @@ void supla_ch_execute_action_with_auth::handle_call(
 
   supla_action_executor aexec;
   execute_action(
-      regcli.get_user_id(), regcli.get_client_id(), &aexec, action,
+      regcli.get_user_id(), regcli.get_client_id(), client_name, &aexec, action,
       srpc_adapter,
       [&client_dao, &regcli](int subject_type, int subject_id) -> bool {
         switch (subject_type) {

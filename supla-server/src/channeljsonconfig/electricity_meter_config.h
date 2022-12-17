@@ -45,7 +45,8 @@ class electricity_meter_config : public channel_json_config {
   virtual int get_map_key(int index);
   virtual const char *get_map_str(int index);
   int get_available_counters(void);
-  void add_initial_value(_supla_int64_t initial_value, unsigned char phase,
+  void add_initial_value(_supla_int64_t initial_value,
+                         bool initial_value_for_all_phases, unsigned char phase,
                          int flags, unsigned _supla_int64_t *value,
                          _supla_int64_t *substracted);
   void add_initial_value(int var, int flags, unsigned _supla_int64_t value[]);
@@ -60,9 +61,13 @@ class electricity_meter_config : public channel_json_config {
   int get_channel_user_flags(void);
   bool update_available_counters(int measured_values);
   bool update_available_counters(TSuplaChannelExtendedValue *ev);
-  _supla_int64_t get_initial_value(int var);
+  _supla_int64_t get_initial_value(int var, unsigned char phase,
+                                   bool *initial_value_for_all_phases);
+  _supla_int64_t get_initial_value_for_all_phases(int var);
   void add_initial_value(int var, unsigned char phase, int flags,
                          unsigned _supla_int64_t *value);
+  void add_initial_value(int var, unsigned _supla_int64_t *value);
+
   void add_initial_values(int flags, TElectricityMeter_ExtendedValue_V2 *em_ev);
   void add_initial_values(int flags, TSuplaChannelExtendedValue *ev);
   void add_initial_value(TElectricityMeter_Value *value);

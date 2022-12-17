@@ -241,7 +241,7 @@ unsigned long long supla_http_request::getTouchCount(void) {
 
 void supla_http_request::terminate(void *sthread) {
   if (sthread) {
-    sthread_terminate(sthread);
+    sthread_terminate(sthread, true);
   }
 
   lck_lock(this->lck);

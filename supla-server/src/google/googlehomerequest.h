@@ -29,6 +29,8 @@ class supla_google_home_request : public supla_http_request {
 
  protected:
   bool duplicateExists;
+  bool set_google_home_request_id(supla_http_request *existing);
+  void send_report_state(void);
 
  public:
   supla_google_home_request(supla_user *user, int ClassID, int DeviceId,
@@ -40,8 +42,7 @@ class supla_google_home_request : public supla_http_request {
   virtual bool queueUp(void);
   virtual bool isCancelled(void *sthread);
   virtual void terminate(void *sthread);
-  virtual bool isCallerAccepted(const supla_caller &caller,
-                                         bool verification);
+  virtual bool isCallerAccepted(const supla_caller &caller, bool verification);
 };
 
 #endif /* GOOGLEHOMEREQUEST_H_ */

@@ -20,6 +20,7 @@
 #define SUPLA_CH_ABSTRACT_REGISTER_CLIENT_H_
 
 #include <memory>
+#include <string>
 
 #include "client/abstract_client_dao.h"
 #include "conn/abstract_connection_dao.h"
@@ -90,14 +91,16 @@ class supla_abstract_register_client
                        supla_abstract_db_access_provider *dba,
                        supla_abstract_connection_dao *conn_dao,
                        supla_abstract_client_dao *client_dao, int client_sd,
-                       int client_ipv4, unsigned char activity_timeout);
+                       int client_ipv4, unsigned char activity_timeout,
+                       std::string *previous_client_name);
 
   void authenticate(std::weak_ptr<supla_client> client,
                     TCS_ClientAuthorizationDetails *auth,
                     supla_abstract_srpc_adapter *srpc_adapter,
                     supla_abstract_db_access_provider *dba,
                     supla_abstract_connection_dao *conn_dao,
-                    supla_abstract_client_dao *client_dao, bool stay_connected);
+                    supla_abstract_client_dao *client_dao, bool stay_connected,
+                    std::string *previous_client_name);
 
   __useconds_t get_hold_time_on_failure_usec(void);
 

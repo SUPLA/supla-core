@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
   // RELEASE BLOCK
   supla_log(LOG_INFO, "Shutting down...");
 
-  sthread_twf(queue_loop_t);
+  sthread_twf(queue_loop_t, true);
 
   st_mainloop_free();
   st_delpidfile(pidfile_path);

@@ -19,6 +19,8 @@
 #ifndef SUPLA_CLIENT_DAO_H_
 #define SUPLA_CLIENT_DAO_H_
 
+#include <string>
+
 #include "client/abstract_client_dao.h"
 #include "db/abstract_db_access_provider.h"
 
@@ -56,7 +58,8 @@ class supla_client_dao : public supla_abstract_client_dao {
 
   virtual bool get_client_variables(int client_id, bool *client_enabled,
                                     int *access_id, bool *accessid_enabled,
-                                    bool *accessid_active);
+                                    bool *accessid_active,
+                                    std::string *client_name);
 
   virtual bool get_client_reg_enabled(int user_id);
 

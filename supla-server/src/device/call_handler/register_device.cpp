@@ -101,6 +101,14 @@ void supla_register_device::register_device(
     TDS_SuplaRegisterDevice_E *register_device_e,
     supla_abstract_srpc_adapter *srpc_adapter, int client_sd, int client_ipv4,
     unsigned char activity_timeout) {
+  {
+    shared_ptr<supla_device> _device = device.lock();
+    if (_device && _device->is_registered()) {
+      _device->terminate();
+      return;
+    }
+  }
+
   supla_db_access_provider dba;
   supla_connection_dao conn_dao(&dba);
   supla_device_dao device_dao(&dba);
@@ -108,4 +116,15 @@ void supla_register_device::register_device(
   supla_abstract_register_device::register_device(
       device, register_device_c, register_device_e, srpc_adapter, &dba,
       &conn_dao, &device_dao, client_sd, client_ipv4, activity_timeout);
+
+  // Disconnect the database connection before calling
+  // on_object_registration_done()
+  dba.disconnect();
+
+  {
+    shared_ptr<supla_device> _device = device.lock();
+    if (_device) {
+      _device->get_connection()->on_object_registration_done();
+    }
+  }
 }

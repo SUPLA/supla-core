@@ -157,17 +157,19 @@ void supla_abstract_asynctask_thread_pool::_execute(void *_pool,
 void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
   bool iterate = true;
 
+  supla_asynctask_thread_storage *storage = nullptr;
+
   do {
     shared_ptr<supla_abstract_asynctask> task = queue->pick(this);
 
     if (task) {
-      task->execute();
+      task->execute(&storage);
       lck_lock(lck);
       _exec_count++;
       lck_unlock(lck);
 
-      if (task->is_finished() && task->release_immediately_after_execution()) {
-        queue->remove_task(task.get());
+      if (task->is_finished()) {
+        queue->remove_task(task);
       }
 
       remove_task(task.get());
@@ -184,6 +186,10 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
         !sthread_isterminated(sthread) && threads.size() <= requests.size();
     lck_unlock(lck);
   } while (iterate);
+
+  if (storage) {
+    delete storage;
+  }
 }
 
 // static
@@ -247,7 +253,7 @@ void supla_abstract_asynctask_thread_pool::terminate(void) {
   terminated = true;
 
   for (auto it = threads.begin(); it != threads.end(); ++it) {
-    sthread_terminate(*it);
+    sthread_terminate(*it, true);
   }
 
   lck_unlock(lck);

@@ -57,7 +57,7 @@ char accept_loop_connection_thread_cnd(void *connection_sthread) {
 }
 
 char accept_loop_connection_thread_twt(void *connection_sthread) {
-  sthread_twf(connection_sthread);
+  sthread_twf(connection_sthread, true);
   return 1;
 }
 
@@ -120,7 +120,7 @@ char accept_loop_ipcctrl_thread_cnd(void *ipcctrl_sthread) {
 }
 
 char accept_loop_ipcctrl_thread_twt(void *ipcctrl_sthread) {
-  sthread_twf(ipcctrl_sthread);
+  sthread_twf(ipcctrl_sthread, true);
   return 1;
 }
 

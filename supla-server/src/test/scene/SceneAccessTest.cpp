@@ -22,6 +22,8 @@
 
 namespace testing {
 
+using std::shared_ptr;
+
 TEST_F(SceneAccessTest, accessNonExistent) {
   supla_scene_search_condition cnd(1, 2, false);
 
@@ -42,14 +44,14 @@ TEST_F(SceneAccessTest, accessSuccessfully) {
   op->set_delay_ms(500);
   operations->push(op);
 
-  supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 1, 2, 0, queue, pool, action_executor, value_getter,
-      operations, false);
-  ASSERT_FALSE(scene == NULL);
+  shared_ptr<supla_abstract_asynctask> scene =
+      (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 0, queue, pool,
+                                 action_executor, value_getter, operations))
+          ->start();
 
   bool result =
       queue->access_task(&cnd, [scene](supla_abstract_asynctask *task) -> void {
-        EXPECT_TRUE(scene == task);
+        EXPECT_TRUE(scene.get() == task);
       });
 
   EXPECT_TRUE(result);

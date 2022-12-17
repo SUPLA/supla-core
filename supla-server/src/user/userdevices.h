@@ -34,7 +34,7 @@ class supla_user_devices : public supla_connection_objects {
   std::shared_ptr<supla_device> get(int device_id);
   std::shared_ptr<supla_device> get(int device_id,
                                     int channel_id);  // device_id or channel_id
-  std::vector<std::shared_ptr<supla_device> > get_all(void);
+  std::vector<std::weak_ptr<supla_device> > get_all(void);
 };
 
 #endif /* USERDEVICES_H_ */

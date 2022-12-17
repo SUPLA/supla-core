@@ -30,7 +30,7 @@ class AsyncTaskTest : public Test {
  protected:
   supla_asynctask_queue *queue;
   AsyncTaskThreadPoolMock *pool;
-  void WaitForState(supla_abstract_asynctask *task,
+  void WaitForState(std::shared_ptr<supla_abstract_asynctask> task,
                     const supla_asynctask_state &expected, unsigned int usec);
   void WaitForExec(AsyncTaskThreadPoolMock *pool, unsigned int expected_count,
                    unsigned int usec);

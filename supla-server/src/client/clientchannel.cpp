@@ -39,9 +39,10 @@ supla_client_channel::supla_client_channel(
     int Type, int Func, int Param1, int Param2, int Param3, int Param4,
     char *TextParam1, char *TextParam2, char *TextParam3, const char *Caption,
     int AltIcon, int UserIcon, short ManufacturerID, short ProductID,
-    unsigned char ProtocolVersion, int Flags,
+    unsigned char ProtocolVersion, int Flags, int EmSubcFlags,
     const char value[SUPLA_CHANNELVALUE_SIZE],
-    unsigned _supla_int_t validity_time_sec)
+    unsigned _supla_int_t validity_time_sec, const char *user_config,
+    const char *em_subc_user_config)
     : supla_client_objcontainer_item(Container, Id, Caption) {
   this->DeviceId = DeviceId;
   this->LocationId = LocationID;
@@ -59,9 +60,23 @@ supla_client_channel::supla_client_channel(
   this->ManufacturerID = ManufacturerID;
   this->ProductID = ProductID;
   this->ProtocolVersion = ProtocolVersion;
-  this->Flags = Flags;
-  setValueValidityTimeSec(validity_time_sec);
+  this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED;
+  this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
+  this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
 
+  if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+    electricity_meter_config *config = new electricity_meter_config();
+
+    config->set_user_config(user_config);
+    this->Flags |= config->get_channel_user_flags();
+
+    config->set_user_config(em_subc_user_config);
+    this->Flags |= config->get_channel_user_flags();
+
+    delete config;
+  }
+
+  setValueValidityTimeSec(validity_time_sec);
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 }
 

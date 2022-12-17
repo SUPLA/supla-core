@@ -48,10 +48,11 @@ void *_sthread_run(void *ptr) {
     sthread->params.finish(sthread->params.user_data, ptr);
 
   lck_lock(sthread->lck);
+  char free_on_finish = sthread->params.free_on_finish;
   sthread->finished = 1;
   lck_unlock(sthread->lck);
 
-  if (sthread->params.free_on_finish) sthread_free(sthread);
+  if (free_on_finish) sthread_free(sthread);
 
   return 0;
 }
@@ -110,12 +111,14 @@ char sthread_isfinished(void *sthread) {
   return result;
 }
 
-void sthread_terminate(void *sthread) {
+void sthread_terminate(void *sthread, char kill) {
   lck_lock(((Tsthread *)sthread)->lck);
   ((Tsthread *)sthread)->terminated = 1;
   lck_unlock(((Tsthread *)sthread)->lck);
 
-  pthread_kill(((Tsthread *)sthread)->_thread, SIGINT);
+  if (kill) {
+    pthread_kill(((Tsthread *)sthread)->_thread, SIGINT);
+  }
 }
 
 void sthread_free(void *sthread) {
@@ -124,8 +127,8 @@ void sthread_free(void *sthread) {
   free((Tsthread *)sthread);
 }
 
-void sthread_twf(void *sthread) {
-  sthread_terminate(sthread);
+void sthread_twf(void *sthread, char kill) {
+  sthread_terminate(sthread, kill);
   sthread_wait(sthread);
   sthread_free(sthread);
 }

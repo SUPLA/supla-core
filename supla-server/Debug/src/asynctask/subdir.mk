@@ -10,7 +10,8 @@ CPP_SRCS += \
 ../src/asynctask/abstract_asynctask_thread_pool.cpp \
 ../src/asynctask/asynctask_default_thread_pool.cpp \
 ../src/asynctask/asynctask_queue.cpp \
-../src/asynctask/asynctask_state.cpp 
+../src/asynctask/asynctask_state.cpp \
+../src/asynctask/asynctask_thread_storage.cpp 
 
 CPP_DEPS += \
 ./src/asynctask/abstract_asynctask.d \
@@ -19,7 +20,8 @@ CPP_DEPS += \
 ./src/asynctask/abstract_asynctask_thread_pool.d \
 ./src/asynctask/asynctask_default_thread_pool.d \
 ./src/asynctask/asynctask_queue.d \
-./src/asynctask/asynctask_state.d 
+./src/asynctask/asynctask_state.d \
+./src/asynctask/asynctask_thread_storage.d 
 
 OBJS += \
 ./src/asynctask/abstract_asynctask.o \
@@ -28,7 +30,8 @@ OBJS += \
 ./src/asynctask/abstract_asynctask_thread_pool.o \
 ./src/asynctask/asynctask_default_thread_pool.o \
 ./src/asynctask/asynctask_queue.o \
-./src/asynctask/asynctask_state.o 
+./src/asynctask/asynctask_state.o \
+./src/asynctask/asynctask_thread_storage.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -43,7 +46,7 @@ src/asynctask/%.o: ../src/asynctask/%.cpp src/asynctask/subdir.mk
 clean: clean-src-2f-asynctask
 
 clean-src-2f-asynctask:
-	-$(RM) ./src/asynctask/abstract_asynctask.d ./src/asynctask/abstract_asynctask.o ./src/asynctask/abstract_asynctask_observer.d ./src/asynctask/abstract_asynctask_observer.o ./src/asynctask/abstract_asynctask_search_condition.d ./src/asynctask/abstract_asynctask_search_condition.o ./src/asynctask/abstract_asynctask_thread_pool.d ./src/asynctask/abstract_asynctask_thread_pool.o ./src/asynctask/asynctask_default_thread_pool.d ./src/asynctask/asynctask_default_thread_pool.o ./src/asynctask/asynctask_queue.d ./src/asynctask/asynctask_queue.o ./src/asynctask/asynctask_state.d ./src/asynctask/asynctask_state.o
+	-$(RM) ./src/asynctask/abstract_asynctask.d ./src/asynctask/abstract_asynctask.o ./src/asynctask/abstract_asynctask_observer.d ./src/asynctask/abstract_asynctask_observer.o ./src/asynctask/abstract_asynctask_search_condition.d ./src/asynctask/abstract_asynctask_search_condition.o ./src/asynctask/abstract_asynctask_thread_pool.d ./src/asynctask/abstract_asynctask_thread_pool.o ./src/asynctask/asynctask_default_thread_pool.d ./src/asynctask/asynctask_default_thread_pool.o ./src/asynctask/asynctask_queue.d ./src/asynctask/asynctask_queue.o ./src/asynctask/asynctask_state.d ./src/asynctask/asynctask_state.o ./src/asynctask/asynctask_thread_storage.d ./src/asynctask/asynctask_thread_storage.o
 
 .PHONY: clean-src-2f-asynctask
 

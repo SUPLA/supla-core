@@ -20,12 +20,15 @@
 
 #include "TestHelper.h"
 #include "actions/action_gate_openclose.h"
+#include "device/channel_gate_value.h"
 #include "log.h"  // NOLINT
 #include "scene/scene_search_condition.h"
 
 namespace testing {
 
+using std::dynamic_pointer_cast;
 using std::list;
+using std::shared_ptr;
 
 SceneTest::SceneTest() : AsyncTaskTest() {
   action_executor = NULL;
@@ -65,10 +68,11 @@ void SceneTest::SetUp() {
 TEST_F(SceneTest, executeEmptyScene) {
   EXPECT_EQ(operations->get_delay_ms(), 0);
 
-  supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 1, 2, 0, queue, pool, action_executor, value_getter,
-      operations, false);
-  ASSERT_FALSE(scene == NULL);
+  shared_ptr<supla_abstract_asynctask> scene =
+      (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 0, queue, pool,
+                                 action_executor, value_getter, operations))
+          ->start();
+
   WaitForState(scene, supla_asynctask_state::SUCCESS, 1000);
   WaitForExec(pool, 1, 1000);
 }
@@ -97,10 +101,10 @@ TEST_F(SceneTest, executeSceneWithoutDelay) {
   struct timeval now = {};
   gettimeofday(&now, NULL);
 
-  supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 1, 2, 0, queue, pool, action_executor, value_getter,
-      operations, false);
-  ASSERT_FALSE(scene == NULL);
+  shared_ptr<supla_abstract_asynctask> scene =
+      (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 0, queue, pool,
+                                 action_executor, value_getter, operations))
+          ->start();
 
   // Note that testing with Valgrind turned on increases the time between tasks
   // significantly.
@@ -153,10 +157,10 @@ TEST_F(SceneTest, executeSceneWithDelayBetweenActions) {
   struct timeval now = {};
   gettimeofday(&now, NULL);
 
-  supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 1, 2, 0, queue, pool, action_executor, value_getter,
-      operations, false);
-  ASSERT_FALSE(scene == NULL);
+  shared_ptr<supla_abstract_asynctask> scene =
+      (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 0, queue, pool,
+                                 action_executor, value_getter, operations))
+          ->start();
 
   // Note that testing with Valgrind turned on increases the time between tasks
   // significantly.
@@ -193,13 +197,16 @@ TEST_F(SceneTest, estamitedExecutionTime) {
   op->set_action_config(action_config);
   operations->push(op);
 
-  supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 1, 2, 1234, queue, pool, action_executor,
-      value_getter, operations, false);
-  ASSERT_FALSE(scene == NULL);
+  shared_ptr<supla_abstract_asynctask> scene =
+      (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 1234, queue, pool,
+                                 action_executor, value_getter, operations))
+          ->start();
 
   WaitForState(scene, supla_asynctask_state::SUCCESS, 2000000);
-  EXPECT_EQ(scene->get_estimated_execution_time(), 1234);
+
+  EXPECT_EQ(dynamic_pointer_cast<supla_scene_asynctask>(scene)
+                ->get_estimated_execution_time(),
+            1234);
 
   struct timeval now = {};
   gettimeofday(&now, NULL);
@@ -245,9 +252,10 @@ TEST_F(SceneTest, executeSceneInsideScene) {
                                         value_getter_s2, operations_s2);
   // ----------------------------
 
-  supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 2, 111, 0, queue, pool, action_executor,
-      value_getter, operations, false);
+  shared_ptr<supla_abstract_asynctask> scene =
+      (new supla_scene_asynctask(supla_caller(ctIPC), 2, 111, 0, queue, pool,
+                                 action_executor, value_getter, operations))
+          ->start();
   ASSERT_FALSE(scene == NULL);
 
   WaitForState(scene, supla_asynctask_state::SUCCESS, 1000);
@@ -295,10 +303,10 @@ TEST_F(SceneTest, infinityLoop) {
                                         value_getter_s2, operations_s2);
   // ----------------------------
 
-  supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 2, 111, 0, queue, pool, action_executor,
-      value_getter, operations, false);
-  ASSERT_FALSE(scene == NULL);
+  shared_ptr<supla_abstract_asynctask> scene =
+      (new supla_scene_asynctask(supla_caller(ctIPC), 2, 111, 0, queue, pool,
+                                 action_executor, value_getter, operations))
+          ->start();
 
   WaitForState(scene, supla_asynctask_state::SUCCESS, 1000);
   WaitForState(action_executor->get_last_executed_asynctask(),
@@ -403,16 +411,18 @@ TEST_F(SceneTest, interruptScene) {
 
   ValueGetterStub *value_getter_oc = new ValueGetterStub();
   ASSERT_FALSE(value_getter_oc == NULL);
+  value_getter_oc->setResult(
+      new supla_channel_gate_value(gsl_closed, gsl_closed));
 
   action_executor_s3->set_asynctask_params(queue, pool, action_executor_oc,
                                            value_getter_oc, NULL);
 
   // ----------------------------
 
-  supla_scene_asynctask *scene = new supla_scene_asynctask(
-      supla_caller(ctIPC), 2, 111, 0, queue, pool, action_executor,
-      value_getter, operations, false);
-  ASSERT_FALSE(scene == NULL);
+  shared_ptr<supla_abstract_asynctask> scene =
+      (new supla_scene_asynctask(supla_caller(ctIPC), 2, 111, 0, queue, pool,
+                                 action_executor, value_getter, operations))
+          ->start();
 
   supla_scene_search_condition cnd(2, 15, true);
 
@@ -436,7 +446,7 @@ TEST_F(SceneTest, interruptScene) {
   WaitForState(action_executor_s3->get_last_executed_asynctask(),
                supla_asynctask_state::CANCELED, 1000000);
 
-  ASSERT_TRUE(dynamic_cast<supla_action_gate_openclose *>(
+  ASSERT_TRUE(dynamic_pointer_cast<supla_action_gate_openclose>(
                   action_executor_s3->get_last_executed_asynctask()) != NULL);
 }
 

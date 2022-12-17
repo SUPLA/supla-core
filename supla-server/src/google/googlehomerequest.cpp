@@ -20,6 +20,7 @@
 
 #include <assert.h>
 
+#include "http/httprequestvoiceassistantextraparams.h"
 #include "lck.h"
 #include "sthread.h"
 #include "user/user.h"
@@ -65,6 +66,41 @@ void supla_google_home_request::terminate(void *sthread) {
 }
 
 bool supla_google_home_request::queueUp(void) { return true; }
+
+bool supla_google_home_request::set_google_home_request_id(
+    supla_http_request *existing) {
+  bool result = false;
+  accessExtraParams(
+      [existing, &result](supla_http_request_extra_params *_params) -> void {
+        supla_http_request_voice_assistant_extra_params *params =
+            dynamic_cast<supla_http_request_voice_assistant_extra_params *>(
+                _params);
+        if (params && params->getGoogleRequestIdPtr()) {
+          existing->setExtraParams(
+              new supla_http_request_voice_assistant_extra_params(
+                  NULL, params->getGoogleRequestIdPtr()));
+          result = true;
+        }
+      });
+  return result;
+}
+
+void supla_google_home_request::send_report_state(void) {
+  int resultCode = 0;
+
+  accessExtraParams(
+      [this, &resultCode](supla_http_request_extra_params *_params) -> void {
+        supla_http_request_voice_assistant_extra_params *params =
+            dynamic_cast<supla_http_request_voice_assistant_extra_params *>(
+                _params);
+        getClient()->sendReportState(
+            params ? params->getGoogleRequestIdPtr() : NULL, &resultCode);
+      });
+
+  if (resultCode == 404) {
+    getUser()->googleHomeCredentials()->on_reportstate_404_error();
+  }
+}
 
 supla_google_home_client *supla_google_home_request::getClient(void) {
   supla_google_home_credentials *google_home_credentials =

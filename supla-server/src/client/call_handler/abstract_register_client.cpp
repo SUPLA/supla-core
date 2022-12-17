@@ -21,8 +21,11 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "client/client.h"
 #include "log.h"
 
+using std::shared_ptr;
+using std::string;
 using std::weak_ptr;
 
 supla_abstract_register_client::supla_abstract_register_client(void)
@@ -49,7 +52,7 @@ supla_abstract_client_dao *supla_abstract_register_client::get_client_dao(
   return client_dao;
 }
 
-std::weak_ptr<supla_client> supla_abstract_register_client::get_client(void) {
+weak_ptr<supla_client> supla_abstract_register_client::get_client(void) {
   return client;
 }
 
@@ -279,14 +282,13 @@ bool supla_abstract_register_client::update_client(void) {
 }
 
 void supla_abstract_register_client::register_client(
-    std::weak_ptr<supla_client> client,
-    TCS_SuplaRegisterClient_B *register_client_b,
+    weak_ptr<supla_client> client, TCS_SuplaRegisterClient_B *register_client_b,
     TCS_SuplaRegisterClient_D *register_client_d,
     supla_abstract_srpc_adapter *srpc_adapter,
     supla_abstract_db_access_provider *dba,
     supla_abstract_connection_dao *conn_dao,
     supla_abstract_client_dao *client_dao, int client_sd, int client_ipv4,
-    unsigned char activity_timeout) {
+    unsigned char activity_timeout, string *previous_client_name) {
   this->client = client;
   this->register_client_b = register_client_b;
   this->register_client_d = register_client_d;
@@ -350,9 +352,10 @@ void supla_abstract_register_client::register_client(
     bool _accessid_enabled = false;
     bool _accessid_active = false;
 
-    if (client_id && !client_dao->get_client_variables(
-                         client_id, &client_enabled, &_access_id,
-                         &_accessid_enabled, &_accessid_active)) {
+    if (client_id &&
+        !client_dao->get_client_variables(
+            client_id, &client_enabled, &_access_id, &_accessid_enabled,
+            &_accessid_active, previous_client_name)) {
       supla_log(LOG_WARNING,
                 "Unable to get variables for the client with id: %i",
                 client_id);
@@ -420,11 +423,12 @@ void supla_abstract_register_client::register_client(
 }
 
 void supla_abstract_register_client::authenticate(
-    std::weak_ptr<supla_client> client, TCS_ClientAuthorizationDetails *auth,
+    weak_ptr<supla_client> client, TCS_ClientAuthorizationDetails *auth,
     supla_abstract_srpc_adapter *srpc_adapter,
     supla_abstract_db_access_provider *dba,
     supla_abstract_connection_dao *conn_dao,
-    supla_abstract_client_dao *client_dao, bool stay_connected) {
+    supla_abstract_client_dao *client_dao, bool stay_connected,
+    string *previous_client_name) {
   this->stay_connected = stay_connected;
   dont_send_result = true;
   restrict_to_authentication = true;
@@ -447,7 +451,7 @@ void supla_abstract_register_client::authenticate(
 
   register_client(client, email_auth ? nullptr : &register_client_b,
                   email_auth ? &register_client_d : nullptr, srpc_adapter, dba,
-                  conn_dao, client_dao, 0, 0, 0);
+                  conn_dao, client_dao, 0, 0, 0, previous_client_name);
 
   this->stay_connected = false;
   dont_send_result = false;

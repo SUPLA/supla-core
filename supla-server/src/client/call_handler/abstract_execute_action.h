@@ -20,6 +20,7 @@
 #define SUPLA_CH_ABSTRACT_EXECUTE_ACTION_H_
 
 #include <functional>
+#include <string>
 
 #include "actions/abstract_action_executor.h"
 #include "client/call_handler/abstract_client_srpc_call_handler.h"
@@ -31,8 +32,9 @@ class supla_ch_abstract_execute_action
   void send_result(TCS_Action* action,
                    supla_abstract_srpc_adapter* srpc_adapter, int resultcode);
   void execute_action(
-      int user_id, int client_id, supla_abstract_action_executor* aexec,
-      TCS_Action* action, supla_abstract_srpc_adapter* srpc_adapter,
+      int user_id, int client_id, const std::string& client_name,
+      supla_abstract_action_executor* aexec, TCS_Action* action,
+      supla_abstract_srpc_adapter* srpc_adapter,
       std::function<bool(int subject_type, int subject_id)> subject_exists,
       std::function<bool(int channel_id)> is_channel_online);
 

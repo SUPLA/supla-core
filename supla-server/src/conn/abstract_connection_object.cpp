@@ -141,7 +141,6 @@ void supla_abstract_connection_object::set_registered(bool registered) {
   lock();
   this->registered = registered;
   unlock();
-  conn->on_object_registration_done();
 }
 
 bool supla_abstract_connection_object::is_registered(void) {
@@ -151,6 +150,10 @@ bool supla_abstract_connection_object::is_registered(void) {
 
   return result;
 }
+
+void supla_abstract_connection_object::iterate(void) {}
+
+void supla_abstract_connection_object::connection_will_close(void) {}
 
 supla_connection *supla_abstract_connection_object::get_connection(void) {
   return conn;

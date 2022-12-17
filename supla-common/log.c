@@ -17,6 +17,7 @@
  */
 
 #include "log.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +26,7 @@
 #include <Windows.h>
 #include <wchar.h>
 #elif defined(ARDUINO)
-void serialPrintLn(const char*);
+void serialPrintLn(const char *);
 #elif defined(ESP_PLATFORM)
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include <esp_log.h>
@@ -37,6 +38,7 @@ static const char *SUPLA_TAG = "SUPLA";
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 #endif /*defined(_WIN32)*/
 
@@ -233,7 +235,14 @@ void LOG_ICACHE_FLASH supla_vlog(int __pri, const char *message) {
     }
 
     gettimeofday(&now, NULL);
-    printf("[%li.%li] ", (unsigned long)now.tv_sec, (unsigned long)now.tv_usec);
+    time_t now_time = now.tv_sec;
+    struct tm now_tm;
+    localtime_r(&now_time, &now_tm);
+    char time_buf[64] = {};
+
+    strftime(time_buf, sizeof(time_buf), "%H:%M:%S", &now_tm);
+
+    printf("[%s.%06ld] ", time_buf, now.tv_usec);
     printf("%s", message);
     printf("\n");
     fflush(stdout);
@@ -250,7 +259,7 @@ void LOG_ICACHE_FLASH supla_log(int __pri, const char *__fmt, ...) {
   int size = 0;
 
 #if defined(ESP8266) || defined(ARDUINO) || defined(_WIN32) || \
-  defined(SUPLA_DEVICE)
+    defined(SUPLA_DEVICE)
   if (__fmt == NULL) return;
 #else
   if (__fmt == NULL || (debug_mode == 0 && __pri == LOG_DEBUG)) return;
@@ -300,7 +309,7 @@ void LOG_ICACHE_FLASH supla_write_state_file(const char *file, int __pri,
   }
 
 #if !defined(ESP8266) && !defined(ARDUINO) && !defined(WIN32) && \
-  !defined(SUPLA_DEVICE)
+    !defined(SUPLA_DEVICE)
 
   int fd;
 
