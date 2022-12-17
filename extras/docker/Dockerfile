@@ -9,6 +9,7 @@ RUN cd /usr/src/ && \
     wget https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-3.5.3.tar.gz && \
     tar zxvf libressl-3.5.3.tar.gz && \
     cd libressl-3.5.3 && \
+    sed -ri 's/(\{ \global\:)/LIBRESSL \1/' configure && \
     ./configure --prefix /usr/src/libressl && \
     make all && \
     make install  
