@@ -60,6 +60,7 @@ supla_client_channel::supla_client_channel(
   this->ManufacturerID = ManufacturerID;
   this->ProductID = ProductID;
   this->ProtocolVersion = ProtocolVersion;
+  this->Flags = Flags;
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED;
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
