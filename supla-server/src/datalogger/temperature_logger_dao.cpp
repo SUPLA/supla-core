@@ -98,11 +98,15 @@ void supla_temperature_logger_dao::load(
   vector<supla_channel_temphum *> unique;
 
   MYSQL_STMT *stmt = nullptr;
+
+  // The lifetime of the measurement is artificially increased by 5 minutes to
+  // eliminate the problem of unavailability windows.
+  // https://forum.supla.org/viewtopic.php?p=139191#p139191
   const char sql[] =
       "SELECT c.id, c.func, v.value FROM `supla_dev_channel` c, "
       "`supla_dev_channel_value` v WHERE c.user_id = ? AND c.id = v.channel_id "
-      "AND v.valid_to >= UTC_TIMESTAMP() AND (c.func = ? OR c.func = ? OR "
-      "c.func = ?) GROUP BY c.id";
+      "AND v.valid_to >= DATE_ADD(UTC_TIMESTAMP(), INTERVAL -5 MINUTE) AND "
+      "(c.func = ? OR c.func = ? OR c.func = ?) GROUP BY c.id";
 
   int func1 = SUPLA_CHANNELFNC_THERMOMETER;
   int func2 = SUPLA_CHANNELFNC_HUMIDITY;
