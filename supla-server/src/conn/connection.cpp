@@ -44,7 +44,7 @@ using std::make_shared;
 using std::shared_ptr;
 using std::weak_ptr;
 
-#define REGISTER_WAIT_TIMEOUT 5
+#define REGISTER_WAIT_TIMEOUT 10
 #define REG_NONE 0
 #define REG_DEVICE 1
 #define REG_CLIENT 2
