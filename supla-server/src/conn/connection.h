@@ -41,7 +41,6 @@ class supla_connection {
   supla_abstract_srpc_adapter *srpc_adapter;
   void *sthread;
   TEventHandler *eh;
-  struct timeval init_time;
   unsigned char activity_timeout;
   int unhandled_call_counter;
 
