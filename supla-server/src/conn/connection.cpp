@@ -214,6 +214,7 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
                                    unsigned int client_ipv4) {
   safe_array_add(supla_connection::reg_pending_arr, this);
 
+  gettimeofday(&this->init_time, nullptr);
   this->client_ipv4 = client_ipv4;
   this->sthread = nullptr;
   this->object = nullptr;
@@ -336,9 +337,6 @@ void supla_connection::execute(void *sthread) {
     return;
   }
 
-  struct timeval start_time;
-  gettimeofday(&start_time, nullptr);
-
   supla_log(LOG_DEBUG, "Connection Started %i, secure=%i", sthread,
             ssocket_is_secure(ssd));
 
@@ -355,7 +353,7 @@ void supla_connection::execute(void *sthread) {
       struct timeval now;
       gettimeofday(&now, nullptr);
 
-      if (now.tv_sec - start_time.tv_sec >= REGISTER_WAIT_TIMEOUT) {
+      if (now.tv_sec - init_time.tv_sec >= REGISTER_WAIT_TIMEOUT) {
         terminate();
         supla_log(LOG_DEBUG, "Reg timeout %i", sthread);
         break;
