@@ -355,7 +355,7 @@ void supla_connection::execute(void *sthread) {
 
       if (now.tv_sec - init_time.tv_sec >= REGISTER_WAIT_TIMEOUT) {
         terminate();
-        supla_log(LOG_DEBUG, "Reg timeout", sthread);
+        supla_log(LOG_DEBUG, "Reg timeout %i", sthread);
         break;
       }
 
