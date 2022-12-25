@@ -58,7 +58,7 @@ void supla_GetStringUtfChars(JNIEnv *env, jstring jstr, char *buff,
 
 void supla_GetByteArrayElements(JNIEnv *env, jbyteArray barr, char *buff,
                                 size_t size) {
-  if (size == env->GetArrayLength(barr)) {
+  if (barr && size == env->GetArrayLength(barr)) {
     jbyte *data = (jbyte *)env->GetByteArrayElements(barr, NULL);
     if (data) {
       memcpy(buff, data, size);
