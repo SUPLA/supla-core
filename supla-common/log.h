@@ -33,7 +33,7 @@
 #endif /*LOG_ICACHE_FLASH*/
 
 #if defined(ESP8266) || defined(__AVR__) || defined(_WIN32) || \
-  defined(ESP32) || defined(SUPLA_DEVICE)
+  defined(ESP32) || defined(SUPLA_DEVICE) || defined(SUPLA_TEST)
 
 #define LOG_EMERG 0
 #define LOG_ALERT 1
