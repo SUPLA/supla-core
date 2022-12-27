@@ -134,6 +134,9 @@ void supla_vlog(int __pri, const char *message) {
 // variant for ESP8266 RTOS and ESP-IDF
 void supla_vlog(int __pri, const char *message) {
   switch (__pri) {
+    case LOG_VERBOSE:
+      ESP_LOGV(SUPLA_TAG, "%s", message);
+      break;
     case LOG_DEBUG:
       ESP_LOGD(SUPLA_TAG, "%s", message);
       break;
