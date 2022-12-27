@@ -40,38 +40,34 @@ void supla_electricity_logger_dao::set_longlong(unsigned _supla_int64_t *v,
 }
 
 void supla_electricity_logger_dao::add(
-    supla_channel_electricity_measurement *em) {
-  if (!em) {
+    int channel_id, TElectricityMeter_ExtendedValue_V2 *em_ev) {
+  if (!em_ev) {
     return;
   }
 
   MYSQL_BIND pbind[15] = {};
 
-  int ChannelID = em->getChannelId();
-  TElectricityMeter_ExtendedValue_V2 em_ev;
-  em->getMeasurement(&em_ev);
-
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&ChannelID;
+  pbind[0].buffer = (char *)&channel_id;
 
   int n = 0;
   bool not_null = false;
   for (int a = 0; a < 3; a++) {
-    set_longlong(&em_ev.total_forward_active_energy[a], &pbind[1 + n],
+    set_longlong(&em_ev->total_forward_active_energy[a], &pbind[1 + n],
                  &not_null);
-    set_longlong(&em_ev.total_reverse_active_energy[a], &pbind[2 + n],
+    set_longlong(&em_ev->total_reverse_active_energy[a], &pbind[2 + n],
                  &not_null);
-    set_longlong(&em_ev.total_forward_reactive_energy[a], &pbind[3 + n],
+    set_longlong(&em_ev->total_forward_reactive_energy[a], &pbind[3 + n],
                  &not_null);
-    set_longlong(&em_ev.total_reverse_reactive_energy[a], &pbind[4 + n],
+    set_longlong(&em_ev->total_reverse_reactive_energy[a], &pbind[4 + n],
                  &not_null);
 
     n += 4;
   }
 
-  set_longlong(&em_ev.total_forward_active_energy_balanced, &pbind[13],
+  set_longlong(&em_ev->total_forward_active_energy_balanced, &pbind[13],
                &not_null);
-  set_longlong(&em_ev.total_reverse_active_energy_balanced, &pbind[14],
+  set_longlong(&em_ev->total_reverse_active_energy_balanced, &pbind[14],
                &not_null);
 
   if (!not_null) {

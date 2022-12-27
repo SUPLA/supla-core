@@ -44,7 +44,7 @@ using std::make_shared;
 using std::shared_ptr;
 using std::weak_ptr;
 
-#define REGISTER_WAIT_TIMEOUT 5
+#define REGISTER_WAIT_TIMEOUT 10
 #define REG_NONE 0
 #define REG_DEVICE 1
 #define REG_CLIENT 2
@@ -355,7 +355,7 @@ void supla_connection::execute(void *sthread) {
 
       if (now.tv_sec - init_time.tv_sec >= REGISTER_WAIT_TIMEOUT) {
         terminate();
-        supla_log(LOG_DEBUG, "Reg timeout", sthread);
+        supla_log(LOG_DEBUG, "Reg timeout %i", sthread);
         break;
       }
 

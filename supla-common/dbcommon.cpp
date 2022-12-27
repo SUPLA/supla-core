@@ -198,8 +198,8 @@ bool dbcommon::stmt_execute(void **_stmt, const char *stmt_str, void *bind,
     if (err == false) {
       if (mysql_stmt_execute(stmt) != 0) {
         if (exec_errors)
-          supla_log(LOG_ERR, "MySQL - execute error: %s",
-                    mysql_stmt_error(stmt));
+          supla_log(LOG_ERR, "MySQL - execute error: %s. %s",
+                    mysql_stmt_error(stmt), stmt_str);
 
       } else {
         *_stmt = stmt;

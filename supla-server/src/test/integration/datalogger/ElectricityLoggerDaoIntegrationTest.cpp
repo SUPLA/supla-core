@@ -82,9 +82,7 @@ TEST_F(ElectricityLoggerDaoIntegrationTest, add) {
   em_ev.total_forward_active_energy_balanced = 13;
   em_ev.total_reverse_active_energy_balanced = 14;
 
-  supla_channel_electricity_measurement em(10, &em_ev, 0, nullptr);
-
-  dao->add(&em);
+  dao->add(10, &em_ev);
 
   result = "";
 

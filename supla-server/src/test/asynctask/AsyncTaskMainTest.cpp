@@ -187,7 +187,9 @@ TEST_F(AsyncTaskMainTest, taskWithSubTasks) {
                  a == 3 ? supla_asynctask_state::SUCCESS
                         : supla_asynctask_state::WAITING,
                  2000000);
+    usleep(100000);
     EXPECT_EQ(task->exec_count(), a);
+    usleep(100000);
     EXPECT_EQ(pool->exec_count(), a);
   }
 }

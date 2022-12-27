@@ -52,7 +52,9 @@ void supla_impulse_logger::run(const vector<supla_user *> *users,
   supla_impulse_logger_dao dao(dba);
 
   for (auto it = ic.cbegin(); it != ic.cend(); ++it) {
-    dao.add(*it);
+    if ((*it)->getCounter()) {
+      dao.add(*it);
+    }
     delete *it;
   }
 }
