@@ -41,7 +41,7 @@ void exit_fail() {
 int main(int argc, char* argv[]) {
 // INIT BLOCK
 #ifndef __SINGLE_THREAD
-  void* ipc_accept_loop_t = NULL;
+  void* ipc_accept_loop_thread = NULL;
   void* ipc = NULL;
 #endif
 
@@ -100,10 +100,12 @@ int main(int argc, char* argv[]) {
 
   void* dconn = devconnection_start();
 
-// ACCEPT LOOP
+  // ACCEPT LOOP
 
 #ifndef __SINGLE_THREAD
-  if (ipc) ipc_accept_loop_t = sthread_simple_run(ipc_accept_loop, ipc, 0);
+  if (ipc) {
+    sthread_simple_run(ipc_accept_loop, ipc, 0, &ipc_accept_loop_thread);
+  }
 #endif
 
   // MAIN LOOP
@@ -112,13 +114,13 @@ int main(int argc, char* argv[]) {
     st_mainloop_wait(1000000);
   }
 
-// RELEASE BLOCK
+  // RELEASE BLOCK
 
 #ifndef __SINGLE_THREAD
   if (ipc != NULL) {
     ipcsocket_close(ipc);
-    sthread_twf(ipc_accept_loop_t);  // ! after ipcsocket_close and before
-                                     // ipcsocket_free !
+    sthread_twf(ipc_accept_loop_thread, 1);  // ! after ipcsocket_close and
+                                             // before ipcsocket_free !
     ipcsocket_free(ipc);
   }
 #endif

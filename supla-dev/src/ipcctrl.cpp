@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "ipcctrl.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -23,7 +25,6 @@
 #include <unistd.h>
 
 #include "channel-io.h"
-#include "ipcctrl.h"
 #include "log.h"
 #include "sthread.h"
 
@@ -114,14 +115,14 @@ void svr_ipcctrl::execute(void *sthread) {
       }
 
     } else {
-      sthread_terminate(sthread);
+      sthread_terminate(sthread, 1);
     }
 
     struct timeval now;
     gettimeofday(&now, NULL);
 
     if (now.tv_sec - last_action.tv_sec >= 5) {
-      sthread_terminate(sthread);
+      sthread_terminate(sthread, 1);
       break;
     }
   }
