@@ -928,6 +928,9 @@ void supla_user::set_caption(std::shared_ptr<supla_client> sender,
         clients->set_scene_caption(caption->ID, caption->Caption);
         break;
     }
+
+    supla_http_request_queue::getInstance()->onGoogleHomeSyncNeededEvent(
+        this, supla_caller(ctClient, sender->get_id()));
   }
 
   switch (call_id) {
