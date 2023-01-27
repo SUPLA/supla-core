@@ -16,46 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "webhook/statewebhookrequest.h"
+#include "webhook/statewebhookrequest2.h"
 
-#include <assert.h>
-
-#include <list>
-#include <memory>
-
-#include "device/device.h"
-#include "device/devicechannel.h"
-#include "http/httprequestactiontriggerextraparams.h"
-#include "lck.h"
-#include "sthread.h"
-#include "user/user.h"
-#include "webhook/statewebhookcredentials.h"
-
-using std::list;
-using std::shared_ptr;
-
-supla_state_webhook_request::supla_state_webhook_request(
-    supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    event_type EventType, const supla_caller &Caller)
-    : supla_http_request(user, ClassID, DeviceId, ChannelId, EventType,
-                         Caller) {
-  client = NULL;
-  delayTime = 500000;
-  duplicateExists = false;
-  lck = lck_init();
+supla_state_webhook_request2::supla_state_webhook_request2(
+    const supla_caller &caller, supla_user *user, int device_id, int channel_id,
+    event_type et, int actions, supla_asynctask_queue *queue,
+    supla_abstract_asynctask_thread_pool *pool)
+    : supla_asynctask_http_request(caller, user, device_id, channel_id, et,
+                                   queue, pool) {
+  this->actions = actions;
 }
 
-supla_state_webhook_request::~supla_state_webhook_request() {
-  lck_lock(lck);
-  if (client) {
-    delete client;
-    client = NULL;
+supla_state_webhook_request2::~supla_state_webhook_request2(void) {}
+
+bool supla_state_webhook_request2::make_request(
+    supla_abstract_curl_adapter *curl_adapter) {
+  if (!get_user()->stateWebhookCredentials()->isAccessTokenExists()) {
+    return false;
   }
-  lck_unlock(lck);
-
-  lck_free(lck);
 }
 
+/*
 bool supla_state_webhook_request::isCancelled(void *sthread) {
   if (sthread_isterminated(sthread)) {
     return true;
@@ -97,7 +78,6 @@ bool supla_state_webhook_request::verifyExisting(supla_http_request *existing) {
   return true;
 }
 
-bool supla_state_webhook_request::queueUp(void) { return !duplicateExists; }
 
 bool supla_state_webhook_request::isCallerAccepted(const supla_caller &caller,
                                                    bool verification) {
@@ -387,17 +367,8 @@ void supla_state_webhook_request::execute(void *sthread) {
   }
 }
 
-void supla_state_webhook_request::terminate(void *sthread) {
-  lck_lock(lck);
-  if (client) {
-    client->terminate();
-  }
-  lck_unlock(lck);
-  supla_http_request::terminate(sthread);
-}
 
-void supla_state_webhook_request::requestWillBeAdded(void) {
-  setDelay(delayTime);
-}
 
-// REGISTER_HTTP_REQUEST_CLASS(supla_state_webhook_request);
+
+REGISTER_HTTP_REQUEST_CLASS(supla_state_webhook_request);
+*/

@@ -128,7 +128,7 @@ bool supla_action_gate_openclose::get_closing_state(bool *is_closed) {
 }
 
 bool supla_action_gate_openclose::_execute(
-    bool *execute_again, supla_asynctask_thread_storage **storage) {
+    bool *execute_again, supla_asynctask_thread_bucket *bucket) {
   if (!value_getter || !action_executor) {
     return false;
   }

@@ -15,9 +15,25 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+#ifndef WEBHOOK_STATEWEBHOOKREQUEST2_H_
+#define WEBHOOK_STATEWEBHOOKREQUEST2_H_
 
-#include "asynctask_thread_storage.h"
+#include <http/asynctask_http_request.h>
 
-supla_asynctask_thread_storage::supla_asynctask_thread_storage(void) {}
+class supla_state_webhook_request2 : public supla_asynctask_http_request {
+ private:
+  int actions;
 
-supla_asynctask_thread_storage::~supla_asynctask_thread_storage(void) {}
+ protected:
+  virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
+
+ public:
+  supla_state_webhook_request2(const supla_caller &caller, supla_user *user,
+                               int device_id, int channel_id, event_type et,
+                               int actions, supla_asynctask_queue *queue,
+                               supla_abstract_asynctask_thread_pool *pool);
+
+  virtual ~supla_state_webhook_request2(void);
+};
+
+#endif /* WEBHOOK_STATEWEBHOOKREQUEST2_H_ */

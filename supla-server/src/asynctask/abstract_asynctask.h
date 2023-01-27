@@ -25,7 +25,7 @@
 #include <memory>
 
 #include "asynctask_state.h"
-#include "asynctask_thread_storage.h"
+#include "asynctask_thread_bucket.h"
 
 class supla_asynctask_queue;
 class supla_abstract_asynctask_thread_pool;
@@ -52,8 +52,8 @@ class supla_abstract_asynctask {
 
   bool pick(void);
   virtual bool _execute(bool *execute_again,
-                        supla_asynctask_thread_storage **storage) = 0;
-  void execute(supla_asynctask_thread_storage **storage);
+                        supla_asynctask_thread_bucket *bucket) = 0;
+  void execute(supla_asynctask_thread_bucket *bucket);
   void set_observable(void);  // This method should only be called in the
                               // constructor. Calling it results in calling the
                               // on_asynctask_started method in the observer

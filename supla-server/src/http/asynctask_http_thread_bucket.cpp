@@ -16,13 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ASYNCTASK_THREAD_STORAGE_H_
-#define ASYNCTASK_THREAD_STORAGE_H_
+#include "http/asynctask_http_thread_bucket.h"
 
-class supla_asynctask_thread_storage {
- public:
-  supla_asynctask_thread_storage(void);
-  virtual ~supla_asynctask_thread_storage(void);
-};
+supla_asynctask_http_thread_bucket::supla_asynctask_http_thread_bucket(
+    supla_abstract_curl_adapter *curl_adapter)
+    : supla_asynctask_thread_bucket() {
+  this->curl_adapter = curl_adapter;
+}
 
-#endif /*ASYNCTASK_THREAD_STORAGE_H_*/
+supla_asynctask_http_thread_bucket::~supla_asynctask_http_thread_bucket(void) {}
+
+supla_abstract_curl_adapter *supla_asynctask_http_thread_bucket::get_adapter(
+    void) {
+  return curl_adapter;
+}

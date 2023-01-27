@@ -148,6 +148,11 @@ void supla_abstract_asynctask_thread_pool::remove_task(
   lck_unlock(lck);
 }
 
+supla_asynctask_thread_bucket *supla_abstract_asynctask_thread_pool::get_bucket(
+    void) {
+  return nullptr;
+}
+
 // static
 void supla_abstract_asynctask_thread_pool::_execute(void *_pool,
                                                     void *sthread) {
@@ -157,13 +162,13 @@ void supla_abstract_asynctask_thread_pool::_execute(void *_pool,
 void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
   bool iterate = true;
 
-  supla_asynctask_thread_storage *storage = nullptr;
+  supla_asynctask_thread_bucket *bucket = get_bucket();
 
   do {
     shared_ptr<supla_abstract_asynctask> task = queue->pick(this);
 
     if (task) {
-      task->execute(&storage);
+      task->execute(bucket);
       lck_lock(lck);
       _exec_count++;
       lck_unlock(lck);
@@ -187,8 +192,8 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
     lck_unlock(lck);
   } while (iterate);
 
-  if (storage) {
-    delete storage;
+  if (bucket) {
+    delete bucket;
   }
 }
 

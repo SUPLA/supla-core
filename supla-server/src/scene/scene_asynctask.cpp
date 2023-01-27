@@ -128,7 +128,7 @@ bool supla_scene_asynctask::get_scene_state(supla_asynctask_queue *queue,
 }
 
 bool supla_scene_asynctask::_execute(bool *execute_again,
-                                     supla_asynctask_thread_storage **storage) {
+                                     supla_asynctask_thread_bucket *bucket) {
   do {
     supla_scene_operation *operation = op_pop();
     if (operation) {

@@ -39,7 +39,7 @@ AsyncTaskMock::AsyncTaskMock(supla_asynctask_queue *queue,
 AsyncTaskMock::~AsyncTaskMock(void) {}
 
 bool AsyncTaskMock::_execute(bool *execute_again,
-                             supla_asynctask_thread_storage **storage) {
+                             supla_asynctask_thread_bucket *bucket) {
   lock();
   _exec_count++;
   gettimeofday(&this->exec_time, NULL);

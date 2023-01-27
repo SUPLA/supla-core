@@ -42,7 +42,7 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
   int op_count(void);
 
  protected:
-  bool _execute(bool *execute_again, supla_asynctask_thread_storage **storage);
+  bool _execute(bool *execute_again, supla_asynctask_thread_bucket *bucket);
 
  public:
   supla_scene_asynctask(const supla_caller &caller, int user_id, int scene_id,

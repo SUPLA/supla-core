@@ -35,7 +35,7 @@ class AsyncTaskMock : public supla_abstract_asynctask {
 
  protected:
   virtual bool _execute(bool *execute_again,
-                        supla_asynctask_thread_storage **storage);
+                        supla_asynctask_thread_bucket *bucket);
 
  public:
   AsyncTaskMock(supla_asynctask_queue *queue,
