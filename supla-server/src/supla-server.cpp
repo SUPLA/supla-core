@@ -19,6 +19,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/prctl.h>
 #include <sys/resource.h>
 
 #include "accept_loop.h"
@@ -44,7 +45,8 @@
 
 int main(int argc, char *argv[]) {
 #if __DEBUG
-  st_hook_critical_signals();
+// We give up capturing critical signals in favor of coredump.
+// st_hook_critical_signals();
 #endif
 
   void *ssd_ssl = nullptr;
@@ -123,6 +125,10 @@ int main(int argc, char *argv[]) {
   if (0 == st_set_ug_id(scfg_getuid(CFG_UID), scfg_getgid(CFG_GID))) {
     goto exit_fail;
   }
+
+#if __DEBUG
+  prctl(PR_SET_DUMPABLE, 1);
+#endif /*__DEBUG*/
 
   // ASYNCTASK QUEUE
   supla_asynctask_queue::global_instance();
