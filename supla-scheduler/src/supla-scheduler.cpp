@@ -19,6 +19,7 @@
 #include <pthread.h>  // NOLINT
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/prctl.h>
 #include <unistd.h>
 
 #include "database.h"
@@ -31,7 +32,8 @@
 
 int main(int argc, char *argv[]) {
 #if __DEBUG
-  st_hook_critical_signals();
+  // We give up capturing critical signals in favor of coredump.
+  // st_hook_critical_signals();
 #endif
 
   void *queue_loop_t = NULL;
@@ -68,6 +70,10 @@ int main(int argc, char *argv[]) {
   if (0 == st_set_ug_id(scfg_getuid(CFG_UID), scfg_getgid(CFG_GID))) {
     goto exit_fail;
   }
+
+#if __DEBUG
+  prctl(PR_SET_DUMPABLE, 1);
+#endif /*__DEBUG*/
 
   st_setpidfile(pidfile_path);
   st_mainloop_init();
