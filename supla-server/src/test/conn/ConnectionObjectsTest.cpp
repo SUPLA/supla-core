@@ -29,6 +29,7 @@ namespace testing {
 using std::make_shared;
 using std::shared_ptr;
 using std::vector;
+using std::weak_ptr;
 
 TEST_F(ConnectionObjectsTest, forEach) {
   char guid[SUPLA_GUID_SIZE] = {};
@@ -61,40 +62,36 @@ TEST_F(ConnectionObjectsTest, forEach) {
   EXPECT_EQ(2, objects.count());
 
   short counter = 0;
-  objects.for_each(
-      [&counter, cd1, cd2,
-       cd3](std::shared_ptr<supla_abstract_connection_object> obj) -> bool {
-        if (obj == cd1) {
-          counter++;
-        }
-        if (obj == cd2) {
-          counter++;
-        }
-        if (obj == cd3) {
-          counter++;
-        }
-        return true;
-      });
+  objects.for_each([&counter, cd1, cd2, cd3](
+                       std::shared_ptr<supla_abstract_connection_object> obj,
+                       bool *will_continue) -> void {
+    if (obj == cd1) {
+      counter++;
+    }
+    if (obj == cd2) {
+      counter++;
+    }
+    if (obj == cd3) {
+      counter++;
+    }
+  });
 
   EXPECT_EQ(2, counter);
 
   counter = 0;
-  objects.for_each(
-      [&counter, cd1, cd2,
-       cd3](std::shared_ptr<supla_abstract_connection_object> obj) -> bool {
-        counter++;
-        return true;
-      });
+  objects.for_each([&counter, cd1, cd2, cd3](
+                       std::shared_ptr<supla_abstract_connection_object> obj,
+                       bool *will_continue) -> void { counter++; });
 
   EXPECT_EQ(2, counter);
 
   counter = 0;
-  objects.for_each(
-      [&counter, cd1, cd2,
-       cd3](std::shared_ptr<supla_abstract_connection_object> obj) -> bool {
-        counter++;
-        return false;
-      });
+  objects.for_each([&counter, cd1, cd2, cd3](
+                       std::shared_ptr<supla_abstract_connection_object> obj,
+                       bool *will_continue) -> void {
+    counter++;
+    *will_continue = false;
+  });
 
   EXPECT_EQ(1, counter);
 }
@@ -128,17 +125,18 @@ TEST_F(ConnectionObjectsTest, getAll) {
 
   short counter = 0;
 
-  vector<shared_ptr<supla_abstract_connection_object> > _objects =
+  vector<weak_ptr<supla_abstract_connection_object> > _objects =
       objects.get_all();
 
   for (auto it = _objects.begin(); it != _objects.end(); ++it) {
-    if (*it == cd1) {
+    shared_ptr<supla_abstract_connection_object> obj = it->lock();
+    if (obj == cd1) {
       counter++;
     }
-    if (*it == cd2) {
+    if (obj == cd2) {
       counter++;
     }
-    if (*it == cd3) {
+    if (obj == cd3) {
       counter++;
     }
   }

@@ -19,6 +19,7 @@
 #ifndef USERCLIENTS_H_
 #define USERCLIENTS_H_
 
+#include <functional>
 #include <list>
 #include <memory>
 
@@ -27,6 +28,11 @@
 #include "conn/connection_objects.h"
 
 class supla_user_clients : public supla_connection_objects {
+ private:
+  void for_each(std::function<void(std::shared_ptr<supla_client> client,
+                                   bool *will_continue)>
+                    on_client);
+
  public:
   supla_user_clients();
   virtual ~supla_user_clients();

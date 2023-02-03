@@ -39,14 +39,10 @@ void supla_impulse_logger::run(const vector<supla_user *> *users,
   vector<supla_channel_ic_measurement *> ic;
 
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-    vector<weak_ptr<supla_device> > devices = (*uit)->get_devices()->get_all();
-
-    for (auto dit = devices.cbegin(); dit != devices.cend(); ++dit) {
-      shared_ptr<supla_device> device = (*dit).lock();
-      if (device) {
-        device->get_channels()->get_ic_measurements(&ic, true);
-      }
-    }
+    (*uit)->get_devices()->for_each(
+        [&ic](shared_ptr<supla_device> device, bool *will_continue) -> void {
+          device->get_channels()->get_ic_measurements(&ic, true);
+        });
   }
 
   supla_impulse_logger_dao dao(dba);

@@ -44,14 +44,10 @@ void supla_temperature_logger::run(const vector<supla_user *> *users,
   supla_temperature_logger_dao dao(dba);
 
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-    vector<weak_ptr<supla_device> > devices = (*uit)->get_devices()->get_all();
-
-    for (auto dit = devices.cbegin(); dit != devices.cend(); ++dit) {
-      shared_ptr<supla_device> device = (*dit).lock();
-      if (device) {
-        device->get_channels()->get_temp_and_humidity(&th);
-      }
-    }
+    (*uit)->get_devices()->for_each(
+        [&th](shared_ptr<supla_device> device, bool *will_continue) -> void {
+          device->get_channels()->get_temp_and_humidity(&th);
+        });
 
     dao.load((*uit)->getUserID(), &th);
   }

@@ -28,9 +28,10 @@ class ConnectionObjectsMock : public supla_connection_objects {
   virtual ~ConnectionObjectsMock();
 
   void for_each(
-      std::function<bool(std::shared_ptr<supla_abstract_connection_object> obj)>
+      std::function<void(std::shared_ptr<supla_abstract_connection_object> obj,
+                         bool *will_continue)>
           on_object);
-  std::vector<std::shared_ptr<supla_abstract_connection_object> > get_all(void);
+  std::vector<std::weak_ptr<supla_abstract_connection_object> > get_all(void);
   bool add(std::shared_ptr<supla_abstract_connection_object> obj);
   std::shared_ptr<supla_abstract_connection_object> get(int id);
 };
