@@ -144,7 +144,16 @@ TEST_F(ConnectionObjectsTest, getAll) {
   }
 
   EXPECT_EQ(2, counter);
-  EXPECT_EQ(2, _objects.size());
+  EXPECT_EQ(3, _objects.size());
+
+  shared_ptr<ConnectionObjectMock> cd4 =
+      make_shared<ConnectionObjectMock>(nullptr);
+
+  // Cd2 should be removed when adding, so the number of objects should still be
+  // 3
+  objects.add(cd4);
+  _objects = objects.get_all();
+  EXPECT_EQ(3, _objects.size());
 }
 
 TEST_F(ConnectionObjectsTest, add) {
