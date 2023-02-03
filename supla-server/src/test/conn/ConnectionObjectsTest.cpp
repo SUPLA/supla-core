@@ -130,14 +130,16 @@ TEST_F(ConnectionObjectsTest, getAll) {
 
   for (auto it = _objects.begin(); it != _objects.end(); ++it) {
     shared_ptr<supla_abstract_connection_object> obj = it->lock();
-    if (obj == cd1) {
-      counter++;
-    }
-    if (obj == cd2) {
-      counter++;
-    }
-    if (obj == cd3) {
-      counter++;
+    if (obj != nullptr) {
+      if (obj == cd1) {
+        counter++;
+      }
+      if (obj == cd2) {
+        counter++;
+      }
+      if (obj == cd3) {
+        counter++;
+      }
     }
   }
 
