@@ -16,7 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "webhook/statewebhookrequest2.h"
+#include "webhook/state_webhook_request2.h"
+
+#include "webhook/state_webhook_client2.h"
 
 supla_state_webhook_request2::supla_state_webhook_request2(
     const supla_caller &caller, supla_user *user, int device_id, int channel_id,
@@ -34,6 +36,104 @@ bool supla_state_webhook_request2::make_request(
   if (!get_user()->stateWebhookCredentials()->isAccessTokenExists()) {
     return false;
   }
+
+  channel_complex_value value =
+      get_user()->get_channel_complex_value(get_channel_id());
+
+  supla_state_webhook_client2 client(get_channel_id(), value.online,
+                                     curl_adapter);
+
+  switch (value.function) {
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+      return client.power_switch_report(value.hi);
+
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      return client.light_switch_report(value.hi);
+
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      return client.staircase_timer_report(value.hi);
+
+    case SUPLA_CHANNELFNC_THERMOMETER:
+      return client.temperature_report(value.temperature);
+
+    case SUPLA_CHANNELFNC_HUMIDITY:
+      return client.humidity_report(value.humidity);
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+      return client.temperature_and_humidity_report(value.temperature,
+                                                    value.humidity);
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+      return client.gateway_opening_sensor_report(value.hi);
+
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+      return client.gate_opening_sensor_report(value.hi);
+
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+      return client.garage_door_opening_sensor_report(value.hi);
+
+    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+      return client.noniquid_sensor_report(value.hi);
+
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+      return client.door_opening_sensor_report(value.hi);
+
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+      return client.roller_shutter_opening_sensor_report(value.hi);
+
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+      return client.roof_window_opening_sensor_report(value.hi);
+
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+      return client.window_opening_sensor_report(value.hi);
+
+    case SUPLA_CHANNELFNC_MAILSENSOR:
+      return client.mail_sensor_report(value.hi);
+
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      return client.roller_shutter_report(value.shut);
+
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      return client.roof_window_report(value.shut);
+
+    case SUPLA_CHANNELFNC_WINDSENSOR:
+      return client.wind_sensor_report(value.wind);
+
+    case SUPLA_CHANNELFNC_PRESSURESENSOR:
+      return client.pressure_sensor_report(value.pressure);
+
+    case SUPLA_CHANNELFNC_RAINSENSOR:
+      return client.rain_sensor_report(value.rain);
+
+    case SUPLA_CHANNELFNC_WEIGHTSENSOR:
+      return client.weight_sensor_report(value.weight);
+
+    case SUPLA_CHANNELFNC_DISTANCESENSOR:
+      return client.distance_sensor_report(value.distance);
+
+    case SUPLA_CHANNELFNC_DEPTHSENSOR:
+      return client.depth_sensor_report(value.depth);
+
+    case SUPLA_CHANNELFNC_DIMMER:
+      return client.dimmer_report(value.brightness, value.on_off);
+
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      return client.dimmer_and_rgb_report(value.color, value.color_brightness,
+                                          value.brightness, value.on_off);
+
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+      return client.rgb_report(value.color, value.color_brightness,
+                               value.on_off);
+  }
+
+  switch (value.channel_type) {
+    case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
+      electricityMeterChannelType(&value);
+      break;
+    case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
+      impulseCounterChannelType(&value);
+      break;
+  }
+
+  return false;
 }
 
 /*

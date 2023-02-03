@@ -15,8 +15,8 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-#ifndef WEBHOOK_STATEWEBHOOKREQUEST2_H_
-#define WEBHOOK_STATEWEBHOOKREQUEST2_H_
+#ifndef WEBHOOK_STATE_WEBHOOK_REQUEST2_H_
+#define WEBHOOK_STATE_WEBHOOK_REQUEST2_H_
 
 #include <http/asynctask_http_request.h>
 
@@ -36,4 +36,4 @@ class supla_state_webhook_request2 : public supla_asynctask_http_request {
   virtual ~supla_state_webhook_request2(void);
 };
 
-#endif /* WEBHOOK_STATEWEBHOOKREQUEST2_H_ */
+#endif /* WEBHOOK_STATE_WEBHOOK_REQUEST2_H_ */
