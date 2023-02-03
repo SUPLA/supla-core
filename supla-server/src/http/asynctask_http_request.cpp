@@ -53,7 +53,10 @@ bool supla_asynctask_http_request::_execute(
   supla_asynctask_http_thread_bucket *ht_bucket = nullptr;
   if (bucket) {
     ht_bucket = dynamic_cast<supla_asynctask_http_thread_bucket *>(bucket);
+    if (ht_bucket && ht_bucket->get_adapter()) {
+      return make_request(ht_bucket->get_adapter());
+    }
   }
 
-  return make_request(ht_bucket ? ht_bucket->get_adapter() : nullptr);
+  return false;
 }
