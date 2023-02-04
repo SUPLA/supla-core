@@ -25,7 +25,7 @@
 #include <memory>
 
 #include "commontypes.h"
-#include "devicechannel.h"
+#include "device/devicechannels.h"
 
 class supla_user;
 class supla_device_call_handler_collection;
