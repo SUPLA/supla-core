@@ -27,4 +27,8 @@ DeviceStub::DeviceStub(supla_connection *connection)
 
 void DeviceStub::set_id(int id) { supla_device::set_id(id); }
 
+void DeviceStub::set_channels(supla_device_channels *channels) {
+  supla_device::set_channels(channels);
+}
+
 }  // namespace testing
