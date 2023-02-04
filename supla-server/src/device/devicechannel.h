@@ -59,101 +59,102 @@ typedef struct {
 
 class supla_device_channel {
  private:
-  supla_device *Device;
-  int Id;
-  unsigned char Number;
-  int Type;
-  int Func;
-  int Param1;
-  int Param2;
-  int Param3;
-  int Param4;
-  char *TextParam1;
-  char *TextParam2;
-  char *TextParam3;
-  bool Hidden;
-  bool Offline;
-  unsigned int Flags;
+  supla_device *device;
+  int id;
+  unsigned char number;
+  int type;
+  int func;
+  int param1;
+  int param2;
+  int param3;
+  int param4;
+  char *text_param1;
+  char *text_param2;
+  char *text_param3;
+  bool hidden;
+  bool offline;
+  unsigned int flags;
   TDSC_ChannelState *state;
   char value[SUPLA_CHANNELVALUE_SIZE];
   struct timeval value_valid_to;  // during offline
-  TSuplaChannelExtendedValue *extendedValue;
+  TSuplaChannelExtendedValue *extended_value;
   channel_json_config *json_config;
   _logger_purpose_t *logger_data;
   supla_voltage_analyzers voltage_analyzers;
 
   void db_set_properties(channel_json_config *config);
-  void db_set_params(int Param1, int Param2, int Param3, int Param4);
-  void updateTimerState(void);
-  void updateExtendedElectricityMeterValue(void);
+  void db_set_params(int param1, int param2, int param3, int param4);
+  void update_timer_state(void);
+  void update_extended_electricity_meter_value(void);
 
  public:
-  supla_device_channel(supla_device *Device, int Id, int Number, int Type,
-                       int Func, int Param1, int Param2, int Param3, int Param4,
-                       const char *TextParam1, const char *TextParam2,
-                       const char *TextParam3, bool Hidden, unsigned int Flags,
+  supla_device_channel(supla_device *device, int id, int number, int type,
+                       int func, int param1, int param2, int param3, int param4,
+                       const char *text_param1, const char *text_param2,
+                       const char *text_param3, bool hidden, unsigned int flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
                        unsigned _supla_int_t validity_time_sec,
                        const char *user_config, const char *properties);
   virtual ~supla_device_channel();
 
-  static void getDefaults(int Type, int Func, int *Param1, int *Param2);
-  static int funcListFilter(int FuncList, int Type);
+  static void get_defaults(int type, int func, int *param1, int *param2);
+  static int func_list_filter(int func_list, int type);
 
-  int getId(void);
-  int getNumber(void);
-  int getUserID(void);
-  supla_user *getUser();
-  supla_device *getDevice();
-  int getFunc(void);
-  void setFunc(int Func);
-  int getType(void);
-  int getParam1(void);
-  int getParam2(void);
-  int getParam3(void);
-  int getParam4(void);
-  const char *getTextParam1(void);
-  const char *getTextParam2(void);
-  const char *getTextParam3(void);
-  bool getHidden(void);
-  unsigned int getFlags();
-  void addFlags(unsigned int flags);
-  bool isOffline(void);
-  bool setOffline(bool Offline);
-  bool isValueWritable(void);
-  bool isCharValueWritable(void);
-  bool isRgbwValueWritable(void);
-  unsigned int getValueDuration(void);
-  unsigned _supla_int_t getValueValidityTimeSec(void);
-  void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
-  bool setValue(const char value[SUPLA_CHANNELVALUE_SIZE],
-                const unsigned _supla_int_t *validity_time_sec,
-                bool *significantChange, unsigned char proto_version);
-  bool getExtendedValue(TSuplaChannelExtendedValue *ev, bool em_update);
-  void setExtendedValue(TSuplaChannelExtendedValue *ev);
-  void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color,
-                       char color_brightness, char brightness, char on_off);
-  void assignCharValue(char value[SUPLA_CHANNELVALUE_SIZE], char cvalue);
-  void getDouble(double *Value);
-  void getChar(char *Value);
-  bool getRGBW(int *color, char *color_brightness, char *brightness,
-               char *on_off);
-  bool getValveValue(TValve_Value *Value);
-  bool getConfig(TSD_ChannelConfig *config, unsigned char configType,
-                 unsigned _supla_int_t flags);
-  void setActionTriggerConfig(unsigned int capabilities, int relatedChannelId,
-                              unsigned int disablesLocalOperation);
+  int get_id(void);
+  int get_number(void);
+  int get_user_id(void);
+  supla_user *get_user();
+  supla_device *get_device();
+  int get_func(void);
+  void set_func(int func);
+  int get_type(void);
+  int get_param1(void);
+  int get_param2(void);
+  int get_param3(void);
+  int get_param4(void);
+  const char *get_text_param1(void);
+  const char *get_text_param2(void);
+  const char *get_text_param3(void);
+  bool is_hidden(void);
+  unsigned int get_flags();
+  void add_flags(unsigned int flags);
+  bool is_offline(void);
+  bool set_offline(bool Offline);
+  bool is_value_writable(void);
+  bool is_char_value_writable(void);
+  bool is_rgbw_value_writable(void);
+  unsigned int get_value_duration(void);
+  unsigned _supla_int_t get_value_validity_time_sec(void);
+  void get_value(char value[SUPLA_CHANNELVALUE_SIZE]);
+  bool set_value(const char value[SUPLA_CHANNELVALUE_SIZE],
+                 const unsigned _supla_int_t *validity_time_sec,
+                 bool *significantChange, unsigned char proto_version);
+  bool get_extended_value(TSuplaChannelExtendedValue *ev, bool em_update);
+  void set_extended_value(TSuplaChannelExtendedValue *ev);
+  void assign_rgbw_value(char value[SUPLA_CHANNELVALUE_SIZE], int color,
+                         char color_brightness, char brightness, char on_off);
+  void assign_char_value(char value[SUPLA_CHANNELVALUE_SIZE], char cvalue);
+  void get_double(double *value);
+  void get_char(char *value);
+  bool get_rgbw(int *color, char *color_brightness, char *brightness,
+                char *on_off);
+  bool get_valve_value(TValve_Value *value);
+  bool get_config(TSD_ChannelConfig *config, unsigned char config_type,
+                  unsigned _supla_int_t flags);
+  void set_action_trigger_config(unsigned int capabilities,
+                                 int related_channel_id,
+                                 unsigned int disables_local_operation);
 
   std::list<int> master_channel(void);
   std::list<int> related_channel(void);
-  supla_channel_temphum *getTempHum(void);
-  supla_channel_electricity_measurement *getElectricityMeasurement(
+  supla_channel_temphum *get_temp_hum(void);
+  supla_channel_electricity_measurement *get_electricity_measurement(
       bool for_data_logger_purposes);
-  supla_channel_ic_measurement *getImpulseCounterMeasurement(
+  supla_channel_ic_measurement *get_impulse_counter_measurement(
       bool for_data_logger_purposes);
-  supla_channel_thermostat_measurement *getThermostatMeasurement(void);
-  channel_json_config *getJSONConfig(void);
-  bool converValueToExtended(void);
+  supla_channel_thermostat_measurement *get_thermostat_measurement(void);
+  channel_json_config *get_json_config(void);
+  bool conver_value_to_extended(void);
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);
