@@ -19,9 +19,13 @@
 #ifndef SUPLA_ABSTRACT_DEVICE_DAO_H_
 #define SUPLA_ABSTRACT_DEVICE_DAO_H_
 
+#include <vector>
+
 #include "proto.h"
 #include "tools.h"
 
+class supla_device;
+class supla_device_channel;
 class supla_abstract_device_dao {
  public:
   supla_abstract_device_dao();
@@ -75,6 +79,10 @@ class supla_abstract_device_dao {
   virtual bool on_new_device(int device_id) = 0;
 
   virtual bool on_channel_added(int device_id, int channel_id) = 0;
+
+  // Perhaps this method should be added to the repository
+  virtual std::vector<supla_device_channel *> get_channels(
+      supla_device *device) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_DEVICE_DAO_H_ */

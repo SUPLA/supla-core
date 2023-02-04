@@ -33,9 +33,6 @@ class database : public svrdb {
 
   int get_user_id_by_suid(const char *suid);
 
-  void get_device_channels(int UserID, int DeviceID,
-                           supla_device_channels *channels);
-
   void get_client_locations(int ClientID, supla_client_locations *locs);
   void get_client_channels(int ClientID, int *DeviceID,
                            supla_client_channels *channels);

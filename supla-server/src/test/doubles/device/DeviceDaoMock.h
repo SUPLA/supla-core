@@ -89,6 +89,9 @@ class DeviceDaoMock : public supla_abstract_device_dao {
   MOCK_METHOD1(on_new_device, bool(int device_id));
 
   MOCK_METHOD2(on_channel_added, bool(int device_id, int channel_id));
+
+  MOCK_METHOD1(get_channels,
+               std::vector<supla_device_channel *>(supla_device *device));
 };
 
 } /* namespace testing */
