@@ -39,14 +39,10 @@ void supla_thermostat_logger::run(const vector<supla_user *> *users,
                                   supla_abstract_db_access_provider *dba) {
   std::vector<supla_channel_thermostat_measurement *> th;
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-    vector<weak_ptr<supla_device> > devices = (*uit)->get_devices()->get_all();
-
-    for (auto dit = devices.cbegin(); dit != devices.cend(); ++dit) {
-      shared_ptr<supla_device> device = (*dit).lock();
-      if (device) {
-        device->get_channels()->get_thermostat_measurements(&th);
-      }
-    }
+    (*uit)->get_devices()->for_each(
+        [&th](shared_ptr<supla_device> device, bool *will_continue) -> void {
+          device->get_channels()->get_thermostat_measurements(&th);
+        });
   }
 
   supla_thermostat_logger_dao dao(dba);

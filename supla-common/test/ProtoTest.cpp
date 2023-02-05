@@ -281,6 +281,8 @@ TEST_F(ProtoTest, littleEndian) {
   ASSERT_EQ(67305985, *(int *)i);
 }
 
+TEST_F(ProtoTest, sizeOfShort) { ASSERT_EQ((unsigned int)2, sizeof(short)); }
+
 TEST_F(ProtoTest, set_version) {
   void *sproto = sproto_init();
   ASSERT_FALSE(sproto == NULL);

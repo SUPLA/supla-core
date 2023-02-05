@@ -28,6 +28,7 @@ class DeviceStub : public supla_device {
  public:
   explicit DeviceStub(supla_connection *connection);
   void set_id(int id);
+  void set_channels(supla_device_channels *channels);
 };
 
 } /* namespace testing */

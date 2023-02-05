@@ -18,68 +18,53 @@
 
 #include "devicechannel.h"
 
-#include <actions/action_executor.h>
 #include <assert.h>
-#include <math.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include <memory>
 
-#include "actions/action_gate_openclose.h"
-#include "actions/action_trigger.h"
 #include "channeljsonconfig/action_trigger_config.h"
-#include "channeljsonconfig/controlling_the_gate_config.h"
-#include "channeljsonconfig/electricity_meter_config.h"
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "db/database.h"
-#include "device/channel_gate_value.h"
-#include "device/channel_onoff_value.h"
-#include "device/channel_rgbw_value.h"
-#include "device/channel_rs_value.h"
-#include "device/value_getter.h"
-#include "log.h"
-#include "safearray.h"
-#include "srpc/srpc.h"
+#include "device.h"
+#include "lck.h"
 #include "user/user.h"
 
-using std::function;
 using std::list;
-using std::map;
 using std::shared_ptr;
-using std::vector;
 
 supla_device_channel::supla_device_channel(
-    supla_device *Device, int Id, int Number, int Type, int Func, int Param1,
-    int Param2, int Param3, int Param4, const char *TextParam1,
-    const char *TextParam2, const char *TextParam3, bool Hidden,
-    unsigned int Flags, const char value[SUPLA_CHANNELVALUE_SIZE],
+    supla_device *device, int id, int number, int type, int func, int param1,
+    int param2, int param3, int param4, const char *text_param1,
+    const char *text_param2, const char *text_param3, bool hidden,
+    unsigned int flags, const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec, const char *user_config,
-    const char *properties) {
-  this->Id = Id;
-  this->Number = Number;
-  this->Device = Device;
-  this->Type = Type;
-  this->Func = Func;
-  this->Param1 = Param1;
-  this->Param2 = Param2;
-  this->Param3 = Param3;
-  this->Param4 = Param4;
-  this->TextParam1 = TextParam1 ? strndup(TextParam1, 255) : NULL;
-  this->TextParam2 = TextParam2 ? strndup(TextParam2, 255) : NULL;
-  this->TextParam3 = TextParam3 ? strndup(TextParam3, 255) : NULL;
-  this->Hidden = Hidden;
-  this->Flags = Flags;
-  this->Offline = Flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION;
-  this->extendedValue = NULL;
+    const char *properties)
+    : id(id),
+      number(number),
+      type(type),
+      param2(param2),
+      param3(param3),
+      param4(param4),
+      hidden(hidden) {
+  lck = lck_init();
+  this->device = device;
+  this->func = func;
+  this->param1 = param1;
+  this->text_param1 = text_param1 ? strndup(text_param1, 255) : nullptr;
+  this->text_param2 = text_param2 ? strndup(text_param2, 255) : nullptr;
+  this->text_param3 = text_param3 ? strndup(text_param3, 255) : nullptr;
+  this->flags = flags;
+  this->offline = flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION;
+  this->extended_value = nullptr;
   this->value_valid_to.tv_sec = 0;
   this->value_valid_to.tv_usec = 0;
-  this->json_config = NULL;
-  this->logger_data = NULL;
+  this->json_config = nullptr;
+  this->logger_data = nullptr;
   this->state = nullptr;
 
   if (validity_time_sec > 0) {
-    gettimeofday(&value_valid_to, NULL);
+    gettimeofday(&value_valid_to, nullptr);
     value_valid_to.tv_sec += validity_time_sec;
   }
 
@@ -87,7 +72,7 @@ supla_device_channel::supla_device_channel(
 
   bool load_json_config = false;
 
-  switch (Type) {
+  switch (type) {
     case SUPLA_CHANNELTYPE_ACTIONTRIGGER:
     case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
     case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
@@ -99,7 +84,7 @@ supla_device_channel::supla_device_channel(
       break;
   }
 
-  switch (Func) {
+  switch (get_func()) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       load_json_config = true;
@@ -107,43 +92,43 @@ supla_device_channel::supla_device_channel(
   }
 
   if (load_json_config) {
-    json_config = new channel_json_config(NULL);
+    json_config = new channel_json_config(nullptr);
     if (json_config) {
       json_config->set_properties(properties);
       json_config->set_user_config(user_config);
-      if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+      if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
         electricity_meter_config *config =
             new electricity_meter_config(json_config);
-        this->Flags |= config->get_channel_user_flags();
+        this->flags |= config->get_channel_user_flags();
         delete config;
       }
     }
   }
 
-  if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER ||
+  if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER ||
       SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
     logger_data = new _logger_purpose_t();
   }
 
-  voltage_analyzers.set_channel_id(Id);
+  voltage_analyzers.set_channel_id(id);
 }
 
 supla_device_channel::~supla_device_channel() {
-  setExtendedValue(NULL);
+  set_extended_value(nullptr);
 
-  if (this->TextParam1) {
-    free(this->TextParam1);
-    this->TextParam1 = NULL;
+  if (this->text_param1) {
+    free(this->text_param1);
+    this->text_param1 = nullptr;
   }
 
-  if (this->TextParam2) {
-    free(this->TextParam2);
-    this->TextParam2 = NULL;
+  if (this->text_param2) {
+    free(this->text_param2);
+    this->text_param2 = nullptr;
   }
 
-  if (this->TextParam3) {
-    free(this->TextParam3);
-    this->TextParam3 = NULL;
+  if (this->text_param3) {
+    free(this->text_param3);
+    this->text_param3 = nullptr;
   }
 
   if (json_config) {
@@ -151,181 +136,227 @@ supla_device_channel::~supla_device_channel() {
   }
 
   if (logger_data) {
-    if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER &&
+    if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER &&
         logger_data->extendedValue) {
       delete logger_data->extendedValue;
     }
     delete logger_data;
-    logger_data = NULL;
+    logger_data = nullptr;
   }
 
   if (state) {
     delete state;
   }
+
+  lck_free(lck);
 }
 
 // static
-void supla_device_channel::getDefaults(int Type, int Func, int *Param1,
-                                       int *Param2) {
-  *Param1 = 0;
-  *Param2 = 0;
+void supla_device_channel::get_defaults(int type, int func, int *param1,
+                                        int *param2) {
+  *param1 = 0;
+  *param2 = 0;
 
-  if (Type == SUPLA_CHANNELTYPE_DIGIGLASS) {
-    *Param1 = 7;
-    *Param2 = 60;  // 1:00
+  if (type == SUPLA_CHANNELTYPE_DIGIGLASS) {
+    *param1 = 7;
+    *param2 = 60;  // 1:00
   }
 }
 
 // static
-int supla_device_channel::funcListFilter(int FuncList, int Type) {
-  switch (Type) {
+int supla_device_channel::func_list_filter(int func_list, int type) {
+  switch (type) {
     case SUPLA_CHANNELTYPE_ACTIONTRIGGER:
-      FuncList = 0;
+      func_list = 0;
       break;
   }
 
-  return FuncList;
+  return func_list;
 }
 
-int supla_device_channel::getId(void) { return Id; }
+void supla_device_channel::lock(void) { lck_lock(lck); }
 
-int supla_device_channel::getNumber(void) { return Number; }
+void supla_device_channel::unlock(void) { lck_unlock(lck); }
 
-int supla_device_channel::getFunc(void) { return Func; }
+int supla_device_channel::get_id(void) { return id; }
 
-supla_device *supla_device_channel::getDevice() { return Device; }
+int supla_device_channel::get_number(void) { return number; }
 
-supla_user *supla_device_channel::getUser(void) {
-  return Device ? Device->get_user() : NULL;
+int supla_device_channel::get_func(void) {
+  lock();
+  int result = func;
+  unlock();
+  return result;
 }
 
-int supla_device_channel::getUserID(void) {
-  supla_user *User = getUser();
-  if (User) {
-    return User->getUserID();
+supla_device *supla_device_channel::get_device() { return device; }
+
+supla_user *supla_device_channel::get_user(void) {
+  return device ? device->get_user() : nullptr;
+}
+
+int supla_device_channel::get_user_id(void) {
+  supla_user *user = get_user();
+  if (user) {
+    return user->getUserID();
   }
 
   return 0;
 }
 
-void supla_device_channel::setFunc(int Func) { this->Func = Func; }
+void supla_device_channel::set_func(int func) {
+  lock();
+  this->func = func;
+  unlock();
+}
 
-int supla_device_channel::getType(void) { return Type; }
+int supla_device_channel::get_type(void) { return type; }
 
-int supla_device_channel::getParam1(void) { return Param1; }
+int supla_device_channel::get_param1(void) {
+  lock();
+  int result = param1;
+  unlock();
+  return result;
+}
 
-int supla_device_channel::getParam2(void) { return Param2; }
+int supla_device_channel::get_param2(void) { return param2; }
 
-int supla_device_channel::getParam3(void) { return Param3; }
+int supla_device_channel::get_param3(void) { return param3; }
 
-int supla_device_channel::getParam4(void) { return Param4; }
+int supla_device_channel::get_param4(void) { return param4; }
 
-bool supla_device_channel::getHidden(void) { return Hidden; }
+bool supla_device_channel::is_hidden(void) { return hidden; }
 
-unsigned int supla_device_channel::getFlags() { return Flags; }
+unsigned int supla_device_channel::get_flags() {
+  lock();
+  int result = flags;
+  unlock();
+  return result;
+}
 
-void supla_device_channel::addFlags(unsigned int flags) {
-  if ((this->Flags | flags) != this->Flags) {
-    this->Flags = flags;
+void supla_device_channel::add_flags(unsigned int flags) {
+  unsigned int current_flags = get_flags();
+  if ((current_flags | flags) != current_flags) {
+    current_flags |= flags;
+    lock();
+    this->flags = current_flags;
+    unlock();
 
     database *db = new database();
 
     if (db) {
       if (db->connect() == true) {
-        db->update_channel_flags(getId(), getUserID(), Flags);
+        db->update_channel_flags(get_id(), get_user_id(), current_flags);
       }
       delete db;
-      db = NULL;
+      db = nullptr;
     }
   }
 }
 
-const char *supla_device_channel::getTextParam1(void) { return TextParam1; }
+const char *supla_device_channel::get_text_param1(void) { return text_param1; }
 
-const char *supla_device_channel::getTextParam2(void) { return TextParam2; }
+const char *supla_device_channel::get_text_param2(void) { return text_param2; }
 
-const char *supla_device_channel::getTextParam3(void) { return TextParam3; }
+const char *supla_device_channel::get_text_param3(void) { return text_param3; }
 
-bool supla_device_channel::isOffline(void) {
-  if (Offline && (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec)) {
+bool supla_device_channel::is_offline(void) {
+  bool result = offline;
+  lock();
+  if (offline && (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec)) {
     struct timeval now;
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
 
-    return (now.tv_sec * 1000000 + now.tv_usec) -
-                       (value_valid_to.tv_sec * 1000000 +
-                        value_valid_to.tv_usec) >
-                   0
-               ? true
-               : false;
+    result =
+        (now.tv_sec * 1000000 + now.tv_usec) -
+                    (value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec) >
+                0
+            ? true
+            : false;
   }
-
-  return Offline;
-}
-
-bool supla_device_channel::setOffline(bool Offline) {
-  if (this->Offline != Offline) {
-    this->Offline = Offline;
-    return true;
-  }
-  return false;
-}
-
-void supla_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
-  memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
-}
-
-unsigned _supla_int_t supla_device_channel::getValueValidityTimeSec(void) {
-  if (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec) {
-    struct timeval now;
-    gettimeofday(&now, NULL);
-
-    if (now.tv_sec < value_valid_to.tv_sec) {
-      return value_valid_to.tv_sec - now.tv_sec;
-    }
-  }
-
-  return 0;
-}
-
-bool supla_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev,
-                                            bool em_update) {
-  if (ev == NULL) {
-    return false;
-  }
-
-  if (extendedValue == NULL) {
-    memset(ev, 0, sizeof(TSuplaChannelExtendedValue));
-    return false;
-  }
-
-  memcpy(ev, extendedValue, sizeof(TSuplaChannelExtendedValue));
-
-  bool result = true;
-
-  if (em_update) {
-    switch (ev->type) {
-      case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2:
-        result = supla_channel_electricity_measurement::update_cev(
-            ev, getParam2(), getTextParam1());
-        break;
-      case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
-        result = supla_channel_ic_measurement::update_cev(
-            ev, getFunc(), getParam2(), getParam3(), getTextParam1(),
-            getTextParam2());
-        break;
-    }
-  }
+  unlock();
 
   return result;
 }
 
-void supla_device_channel::getDouble(double *Value) {
-  if (Value == NULL) return;
+bool supla_device_channel::set_offline(bool offline) {
+  bool result = false;
+  lock();
+  if (this->offline != offline) {
+    this->offline = offline;
+    result = true;
+  }
+  unlock();
+  return result;
+}
 
-  switch (Type) {
+void supla_device_channel::get_value(char value[SUPLA_CHANNELVALUE_SIZE]) {
+  lock();
+  memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
+  unlock();
+}
+
+unsigned _supla_int_t supla_device_channel::get_value_validity_time_sec(void) {
+  unsigned _supla_int_t result = 0;
+  lock();
+  if (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec) {
+    struct timeval now;
+    gettimeofday(&now, nullptr);
+
+    if (now.tv_sec < value_valid_to.tv_sec) {
+      result = value_valid_to.tv_sec - now.tv_sec;
+    }
+  }
+  unlock();
+  return result;
+}
+
+bool supla_device_channel::get_extended_value(TSuplaChannelExtendedValue *ev,
+                                              bool em_update) {
+  if (ev == nullptr) {
+    return false;
+  }
+
+  lock();
+
+  bool result = true;
+
+  if (extended_value == nullptr) {
+    memset(ev, 0, sizeof(TSuplaChannelExtendedValue));
+    result = false;
+  } else {
+    memcpy(ev, extended_value, sizeof(TSuplaChannelExtendedValue));
+
+    if (em_update) {
+      switch (ev->type) {
+        case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2:
+          result = supla_channel_electricity_measurement::update_cev(
+              ev, get_param2(), get_text_param1());
+          break;
+        case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
+          result = supla_channel_ic_measurement::update_cev(
+              ev, get_func(), get_param2(), get_param3(), get_text_param1(),
+              get_text_param2());
+          break;
+      }
+    }
+  }
+
+  unlock();
+
+  return result;
+}
+
+void supla_device_channel::get_double(double *value) {
+  if (value == nullptr) return;
+
+  char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  get_value(current_value);
+
+  switch (type) {
     case SUPLA_CHANNELTYPE_SENSORNO:
     case SUPLA_CHANNELTYPE_SENSORNC:
-      *Value = this->value[0] == 1 ? 1 : 0;
+      *value = current_value[0] == 1 ? 1 : 0;
       break;
     case SUPLA_CHANNELTYPE_THERMOMETER:
     case SUPLA_CHANNELTYPE_THERMOMETERDS18B20:
@@ -334,43 +365,50 @@ void supla_device_channel::getDouble(double *Value) {
     case SUPLA_CHANNELTYPE_PRESSURESENSOR:
     case SUPLA_CHANNELTYPE_RAINSENSOR:
     case SUPLA_CHANNELTYPE_WEIGHTSENSOR:
-      memcpy(Value, this->value, sizeof(double));
+      memcpy(value, current_value, sizeof(double));
       break;
     default:
-      *Value = 0;
+      *value = 0;
   }
 }
 
-void supla_device_channel::getChar(char *Value) {
-  if (Value == NULL) return;
-  switch (Func) {
+void supla_device_channel::get_char(char *value) {
+  if (value == nullptr) return;
+
+  char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  get_value(current_value);
+
+  switch (get_func()) {
     case SUPLA_CHANNELFNC_THERMOSTAT:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
-      TThermostat_Value *tv = (TThermostat_Value *)this->value;
-      *Value = tv->IsOn;
+      TThermostat_Value *tv = (TThermostat_Value *)current_value;
+      *value = tv->IsOn;
     } break;
     default:
-      *Value = this->value[0];
+      *value = current_value[0];
       break;
   }
 }
 
-bool supla_device_channel::getRGBW(int *color, char *color_brightness,
-                                   char *brightness, char *on_off) {
-  if (color != NULL) *color = 0;
+bool supla_device_channel::get_rgbw(int *color, char *color_brightness,
+                                    char *brightness, char *on_off) {
+  if (color != nullptr) *color = 0;
 
-  if (color_brightness != NULL) *color_brightness = 0;
+  if (color_brightness != nullptr) *color_brightness = 0;
 
-  if (brightness != NULL) *brightness = 0;
+  if (brightness != nullptr) *brightness = 0;
 
-  if (on_off != NULL) *on_off = 0;
+  if (on_off != nullptr) *on_off = 0;
 
   bool result = false;
 
-  if (Type == SUPLA_CHANNELTYPE_DIMMER ||
-      Type == SUPLA_CHANNELTYPE_DIMMERANDRGBLED) {
-    if (brightness != NULL) {
-      *brightness = this->value[0];
+  char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  get_value(current_value);
+
+  if (type == SUPLA_CHANNELTYPE_DIMMER ||
+      type == SUPLA_CHANNELTYPE_DIMMERANDRGBLED) {
+    if (brightness != nullptr) {
+      *brightness = current_value[0];
 
       if (*brightness < 0 || *brightness > 100) *brightness = 0;
     }
@@ -378,25 +416,25 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness,
     result = true;
   }
 
-  if (Type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER ||
-      Type == SUPLA_CHANNELTYPE_DIMMERANDRGBLED) {
-    if (color_brightness != NULL) {
-      *color_brightness = this->value[1];
+  if (type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER ||
+      type == SUPLA_CHANNELTYPE_DIMMERANDRGBLED) {
+    if (color_brightness != nullptr) {
+      *color_brightness = current_value[1];
 
       if (*color_brightness < 0 || *color_brightness > 100)
         *color_brightness = 0;
     }
 
-    if (color != NULL) {
+    if (color != nullptr) {
       *color = 0;
 
-      *color = this->value[4] & 0xFF;
+      *color = current_value[4] & 0xFF;
       (*color) <<= 8;
 
-      *color |= this->value[3] & 0xFF;
+      *color |= current_value[3] & 0xFF;
       (*color) <<= 8;
 
-      (*color) |= this->value[2] & 0xFF;
+      (*color) |= current_value[2] & 0xFF;
     }
 
     result = true;
@@ -405,35 +443,39 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness,
   return result;
 }
 
-bool supla_device_channel::getValveValue(TValve_Value *Value) {
-  if (Value == NULL) return false;
-  switch (Func) {
+bool supla_device_channel::get_valve_value(TValve_Value *value) {
+  if (value == nullptr) return false;
+  switch (get_func()) {
     case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
-    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
-      memcpy(Value, this->value, sizeof(TValve_Value));
+    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE: {
+      char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
+      get_value(current_value);
+      memcpy(value, current_value, sizeof(TValve_Value));
+    }
+
       return true;
   }
 
   return false;
 }
 
-bool supla_device_channel::getConfig(TSD_ChannelConfig *config,
-                                     unsigned char configType,
-                                     unsigned _supla_int_t flags) {
-  if (configType != SUPLA_CONFIG_TYPE_DEFAULT || flags != 0) {
+bool supla_device_channel::get_config(TSD_ChannelConfig *config,
+                                      unsigned char config_type,
+                                      unsigned _supla_int_t flags) {
+  if (config_type != SUPLA_CONFIG_TYPE_DEFAULT || flags != 0) {
     return false;
   }
 
   memset(config, 0, sizeof(TSD_ChannelConfig));
-  config->Func = getFunc();
-  config->ChannelNumber = getNumber();
+  config->Func = get_func();
+  config->ChannelNumber = get_number();
 
   switch (config->Func) {
     case SUPLA_CHANNELFNC_STAIRCASETIMER: {
       config->ConfigSize = sizeof(TSD_ChannelConfig_StaircaseTimer);
       TSD_ChannelConfig_StaircaseTimer *cfg =
           (TSD_ChannelConfig_StaircaseTimer *)config->Config;
-      cfg->TimeMS = getParam1() * 100;
+      cfg->TimeMS = get_param1() * 100;
     } break;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
@@ -441,8 +483,8 @@ bool supla_device_channel::getConfig(TSD_ChannelConfig *config,
       config->ConfigSize = sizeof(TSD_ChannelConfig_Rollershutter);
       TSD_ChannelConfig_Rollershutter *cfg =
           (TSD_ChannelConfig_Rollershutter *)config->Config;
-      cfg->OpeningTimeMS = getParam1() * 100;
-      cfg->ClosingTimeMS = getParam3() * 100;
+      cfg->OpeningTimeMS = get_param1() * 100;
+      cfg->ClosingTimeMS = get_param3() * 100;
     } break;
 
     case SUPLA_CHANNELFNC_ACTIONTRIGGER: {
@@ -450,12 +492,14 @@ bool supla_device_channel::getConfig(TSD_ChannelConfig *config,
       TSD_ChannelConfig_ActionTrigger *cfg =
           (TSD_ChannelConfig_ActionTrigger *)config->Config;
       cfg->ActiveActions = 0;
+      lock();
       action_trigger_config *at_config = new action_trigger_config(json_config);
       if (at_config) {
         cfg->ActiveActions = at_config->get_active_actions();
         delete at_config;
-        at_config = NULL;
+        at_config = nullptr;
       }
+      unlock();
     } break;
   }
 
@@ -469,82 +513,86 @@ void supla_device_channel::db_set_properties(channel_json_config *config) {
     if (db->connect() == true) {
       char *cfg_string = config->get_properties();
 
-      db->update_channel_properties(getId(), getUserID(), cfg_string);
+      db->update_channel_properties(get_id(), get_user_id(), cfg_string);
 
       if (cfg_string) {
         free(cfg_string);
-        cfg_string = NULL;
+        cfg_string = nullptr;
       }
     }
     delete db;
-    db = NULL;
+    db = nullptr;
   }
 }
 
-void supla_device_channel::db_set_params(int Param1, int Param2, int Param3,
-                                         int Param4) {
+void supla_device_channel::db_set_params(int param1, int param2, int param3,
+                                         int param4) {
   database *db = new database();
 
   if (db) {
     if (db->connect() == true) {
-      db->update_channel_params(getId(), getUserID(), Param1, Param2, Param3,
-                                Param4);
+      db->update_channel_params(get_id(), get_user_id(), param1, param2, param3,
+                                param4);
     }
     delete db;
-    db = NULL;
+    db = nullptr;
   }
 }
 
-void supla_device_channel::setActionTriggerConfig(
-    unsigned int capabilities, int relatedChannelId,
-    unsigned int disablesLocalOperation) {
-  if (Type != SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
+void supla_device_channel::set_action_trigger_config(
+    unsigned int capabilities, int related_channel_id,
+    unsigned int disables_local_operation) {
+  if (type != SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
     return;
   }
 
+  lock();
   action_trigger_config *at_config = new action_trigger_config(json_config);
-  if (!at_config) {
-    return;
-  }
+  if (at_config) {
+    if (!json_config) {
+      json_config = at_config;
+    }
 
-  if (!json_config) {
-    json_config = at_config;
-  }
+    bool at_config_changed = at_config->set_capabilities(capabilities);
 
-  bool at_config_changed = at_config->set_capabilities(capabilities);
+    if (at_config->set_caps_that_disables_local_operation(
+            disables_local_operation)) {
+      at_config_changed = true;
+    }
 
-  if (at_config->set_caps_that_disables_local_operation(
-          disablesLocalOperation)) {
-    at_config_changed = true;
-  }
+    if (at_config_changed) {
+      db_set_properties(at_config);
+    }
 
-  if (at_config_changed) {
-    db_set_properties(at_config);
-  }
+    if (related_channel_id != get_param1()) {
+      lock();
+      param1 = related_channel_id;
+      unlock();
+      db_set_params(related_channel_id, param2, param3, param4);
+    }
 
-  if (relatedChannelId != Param1) {
-    Param1 = relatedChannelId;
-    db_set_params(Param1, Param2, Param3, Param4);
+    if (at_config != json_config) {
+      delete at_config;
+      at_config = nullptr;
+    }
   }
-
-  if (at_config != json_config) {
-    delete at_config;
-    at_config = NULL;
-  }
+  unlock();
 }
 
-bool supla_device_channel::setValue(
+bool supla_device_channel::set_value(
     const char value[SUPLA_CHANNELVALUE_SIZE],
-    const unsigned _supla_int_t *validity_time_sec, bool *significantChange,
+    const unsigned _supla_int_t *validity_time_sec, bool *significant_change,
     unsigned char proto_version) {
-  if (validity_time_sec == NULL &&
+  lock();
+  if (validity_time_sec == nullptr &&
       (value_valid_to.tv_usec || value_valid_to.tv_sec)) {
     struct timeval now;
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
 
     if ((value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec) -
             (now.tv_sec * 1000000 + now.tv_usec) >
         0) {
+      unlock();
       return false;
     }
 
@@ -552,38 +600,39 @@ bool supla_device_channel::setValue(
     value_valid_to.tv_usec = 0;
   }
 
-  char old_value[SUPLA_CHANNELVALUE_SIZE];  // Because of
-                                            // TempHum->toValue(this->value)
-                                            // and this->value[0] =
-                                            // this->value[0]...
+  char old_value[SUPLA_CHANNELVALUE_SIZE] =
+      {};  // Because of
+           // TempHum->toValue(current_value)
+           // and current_value[0] =
+           // current_value[0]...
 
-  supla_channel_temphum *OldTempHum = getTempHum();
-  supla_channel_temphum *TempHum = NULL;
+  supla_channel_temphum *old_temp_hum = get_temp_hum();
+  supla_channel_temphum *temp_hum = nullptr;
 
   memcpy(old_value, this->value, SUPLA_CHANNELVALUE_SIZE);
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
-  if (Func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER ||
-      Func == SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW) {
+  if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER ||
+      func == SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW) {
     TDSC_RollerShutterValue *rs_val = (TDSC_RollerShutterValue *)this->value;
-    rs_val->bottom_position = Param4;
-  } else if ((Func == SUPLA_CHANNELFNC_POWERSWITCH ||
-              Func == SUPLA_CHANNELFNC_LIGHTSWITCH ||
-              Func == SUPLA_CHANNELFNC_STAIRCASETIMER) &&
+    rs_val->bottom_position = param4;
+  } else if ((func == SUPLA_CHANNELFNC_POWERSWITCH ||
+              func == SUPLA_CHANNELFNC_LIGHTSWITCH ||
+              func == SUPLA_CHANNELFNC_STAIRCASETIMER) &&
              proto_version < 15) {
     // https://forum.supla.org/viewtopic.php?f=6&t=8861
     for (short a = 1; a < SUPLA_CHANNELVALUE_SIZE; a++) {
       this->value[a] = 0;
     }
-  } else if (Type == SUPLA_CHANNELTYPE_DIGIGLASS) {
+  } else if (type == SUPLA_CHANNELTYPE_DIGIGLASS) {
     TDigiglass_Value *dgf_val = (TDigiglass_Value *)this->value;
-    dgf_val->sectionCount = Param1;
-  } else if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+    dgf_val->sectionCount = param1;
+  } else if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
     electricity_meter_config *config =
         new electricity_meter_config(json_config);
     config->add_initial_value((TElectricityMeter_Value *)this->value);
     delete config;
-  } else if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+  } else if (type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
     impulse_counter_config *config = new impulse_counter_config(json_config);
 
     if (logger_data && !config->should_be_added_to_history()) {
@@ -597,90 +646,99 @@ bool supla_device_channel::setValue(
     }
 
     delete config;
-  } else if (Type == SUPLA_CHANNELTYPE_SENSORNC) {
+  } else if (type == SUPLA_CHANNELTYPE_SENSORNC) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
   } else {
-    TempHum = getTempHum();
+    temp_hum = get_temp_hum();
 
-    if (TempHum) {
-      if ((Param2 != 0 || Param3 != 0)) {
-        if (Param2 != 0) {
-          TempHum->setTemperature(TempHum->getTemperature() +
-                                  (Param2 / 100.00));
+    if (temp_hum) {
+      if ((param2 != 0 || param3 != 0)) {
+        if (param2 != 0) {
+          temp_hum->setTemperature(temp_hum->getTemperature() +
+                                   (param2 / 100.00));
         }
 
-        if (Param3 != 0) {
-          TempHum->setHumidity(TempHum->getHumidity() + (Param3 / 100.00));
+        if (param3 != 0) {
+          temp_hum->setHumidity(temp_hum->getHumidity() + (param3 / 100.00));
         }
 
-        TempHum->toValue(this->value);
+        temp_hum->toValue(this->value);
       }
     }
   }
 
-  if (Param3 == 1 && (Type == SUPLA_CHANNELTYPE_SENSORNC ||
-                      Type == SUPLA_CHANNELTYPE_SENSORNO)) {
+  if (param3 == 1 && (type == SUPLA_CHANNELTYPE_SENSORNC ||
+                      type == SUPLA_CHANNELTYPE_SENSORNO)) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
   }
 
   if (validity_time_sec) {
-    gettimeofday(&value_valid_to, NULL);
+    gettimeofday(&value_valid_to, nullptr);
     value_valid_to.tv_sec += (*validity_time_sec);
+  }
 
+  bool differ = memcmp(this->value, old_value, SUPLA_CHANNELVALUE_SIZE) != 0;
+
+  if (significant_change) {
+    if (temp_hum || old_temp_hum) {
+      *significant_change = (temp_hum && !old_temp_hum) ||
+                            (!temp_hum && old_temp_hum) ||
+                            ((int)(temp_hum->getHumidity() * 100) !=
+                                 (int)(old_temp_hum->getHumidity() * 100) ||
+                             (int)(temp_hum->getTemperature() * 100) !=
+                                 (int)(old_temp_hum->getTemperature() * 100));
+    } else {
+      *significant_change = differ;
+    }
+  }
+
+  if (temp_hum) {
+    delete temp_hum;
+    temp_hum = nullptr;
+  }
+
+  if (old_temp_hum) {
+    delete old_temp_hum;
+    old_temp_hum = nullptr;
+  }
+
+  unlock();
+
+  if (validity_time_sec) {
     database *db = new database();
 
     if (db->connect() == true) {
-      db->update_channel_value(getId(), getUserID(), value, *validity_time_sec);
+      char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
+      get_value(current_value);
+      db->update_channel_value(get_id(), get_user_id(), value,
+                               *validity_time_sec);
     }
 
     delete db;
   }
 
-  bool differ = memcmp(this->value, old_value, SUPLA_CHANNELVALUE_SIZE) != 0;
-
-  if (significantChange) {
-    if (TempHum || OldTempHum) {
-      *significantChange = (TempHum && !OldTempHum) ||
-                           (!TempHum && OldTempHum) ||
-                           ((int)(TempHum->getHumidity() * 100) !=
-                                (int)(OldTempHum->getHumidity() * 100) ||
-                            (int)(TempHum->getTemperature() * 100) !=
-                                (int)(OldTempHum->getTemperature() * 100));
-    } else {
-      *significantChange = differ;
-    }
-  }
-
-  if (TempHum) {
-    delete TempHum;
-    TempHum = NULL;
-  }
-
-  if (OldTempHum) {
-    delete OldTempHum;
-    OldTempHum = NULL;
-  }
-
   return differ;
 }
 
-void supla_device_channel::updateTimerState(void) {
-  TTimerState_ExtendedValue *ts_ev = NULL;
+void supla_device_channel::update_timer_state(void) {
+  TTimerState_ExtendedValue *ts_ev = nullptr;
 
-  if (extendedValue->type == EV_TYPE_TIMER_STATE_V1) {
-    ts_ev = (TTimerState_ExtendedValue *)extendedValue->value;
-  } else if (extendedValue->type == EV_TYPE_CHANNEL_AND_TIMER_STATE_V1) {
+  lock();
+  if (extended_value->type == EV_TYPE_TIMER_STATE_V1) {
+    ts_ev = (TTimerState_ExtendedValue *)extended_value->value;
+  } else if (extended_value->type == EV_TYPE_CHANNEL_AND_TIMER_STATE_V1) {
     TChannelAndTimerState_ExtendedValue *cats =
-        (TChannelAndTimerState_ExtendedValue *)extendedValue->value;
+        (TChannelAndTimerState_ExtendedValue *)extended_value->value;
     ts_ev = &cats->Timer;
   }
+  unlock();
 
-  if (ts_ev == NULL) {
+  if (ts_ev == nullptr) {
     return;
   }
 
   if (ts_ev->SenderID) {
-    supla_user *user = getUser();
+    supla_user *user = get_user();
     if (user) {
       shared_ptr<supla_client> client =
           user->get_clients()->get(ts_ev->SenderID);
@@ -698,7 +756,7 @@ void supla_device_channel::updateTimerState(void) {
 
   if (ts_ev->RemainingTimeMs > 0) {
     struct timeval now;
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
 
     unsigned _supla_int64_t time =
         now.tv_sec * (unsigned _supla_int64_t)1000000 + now.tv_usec;
@@ -710,25 +768,27 @@ void supla_device_channel::updateTimerState(void) {
   }
 }
 
-void supla_device_channel::updateExtendedElectricityMeterValue(void) {
-  if (Type != SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+void supla_device_channel::update_extended_electricity_meter_value(void) {
+  if (type != SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
     return;
   }
 
+  lock();
+
   TElectricityMeter_ExtendedValue em_ev_v1 = {};
-  if (srpc_evtool_v1_extended2emextended(extendedValue, &em_ev_v1)) {
+  if (srpc_evtool_v1_extended2emextended(extended_value, &em_ev_v1)) {
     TElectricityMeter_ExtendedValue_V2 em_ev_v2 = {};
 
     if (!srpc_evtool_emev_v1to2(&em_ev_v1, &em_ev_v2) ||
-        !srpc_evtool_v2_emextended2extended(&em_ev_v2, extendedValue)) {
-      delete extendedValue;
-      extendedValue = NULL;
+        !srpc_evtool_v2_emextended2extended(&em_ev_v2, extended_value)) {
+      delete extended_value;
+      extended_value = nullptr;
     }
   }
 
   electricity_meter_config *config = new electricity_meter_config(json_config);
 
-  if (config->update_available_counters(extendedValue)) {
+  if (config->update_available_counters(extended_value)) {
     db_set_properties(config);
   }
 
@@ -738,52 +798,58 @@ void supla_device_channel::updateExtendedElectricityMeterValue(void) {
 
   if (logger_data && logger_data->extendedValue &&
       !config->should_be_added_to_history()) {
-    memcpy(logger_data->extendedValue, extendedValue,
+    memcpy(logger_data->extendedValue, extended_value,
            sizeof(TSuplaChannelExtendedValue));
   }
 
-  config->add_initial_values(Flags, extendedValue);
+  config->add_initial_values(flags, extended_value);
 
   if (logger_data && logger_data->extendedValue &&
       config->should_be_added_to_history()) {
-    memcpy(logger_data->extendedValue, extendedValue,
+    memcpy(logger_data->extendedValue, extended_value,
            sizeof(TSuplaChannelExtendedValue));
   }
 
-  voltage_analyzers.add_samples(getFlags(), config, extendedValue);
+  voltage_analyzers.add_samples(get_flags(), config, extended_value);
 
   delete config;
+
+  unlock();
 }
 
-void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
-  if (ev == NULL) {
-    if (extendedValue != NULL) {
-      delete extendedValue;
-      extendedValue = NULL;
+void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
+  lock();
+  if (ev == nullptr) {
+    if (extended_value != nullptr) {
+      delete extended_value;
+      extended_value = nullptr;
     }
   } else {
-    if (extendedValue == NULL) {
-      extendedValue = new TSuplaChannelExtendedValue;
+    if (extended_value == nullptr) {
+      extended_value = new TSuplaChannelExtendedValue;
     }
-    memcpy(extendedValue, ev, sizeof(TSuplaChannelExtendedValue));
+    memcpy(extended_value, ev, sizeof(TSuplaChannelExtendedValue));
 
-    updateExtendedElectricityMeterValue();
-    updateTimerState();
+    update_extended_electricity_meter_value();
+    update_timer_state();
   }
+  unlock();
 }
 
-void supla_device_channel::assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE],
-                                           int color, char color_brightness,
-                                           char brightness, char on_off) {
-  if (Func == SUPLA_CHANNELFNC_DIMMER ||
-      Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
+void supla_device_channel::assign_rgbw_value(
+    char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness,
+    char brightness, char on_off) {
+  int func = get_func();
+
+  if (func == SUPLA_CHANNELFNC_DIMMER ||
+      func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (brightness < 0 || brightness > 100) brightness = 0;
 
     value[0] = brightness;
   }
 
-  if (Func == SUPLA_CHANNELFNC_RGBLIGHTING ||
-      Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
+  if (func == SUPLA_CHANNELFNC_RGBLIGHTING ||
+      func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (color_brightness < 0 || color_brightness > 100) color_brightness = 0;
 
     value[1] = color_brightness;
@@ -795,14 +861,8 @@ void supla_device_channel::assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE],
   value[5] = on_off;
 }
 
-void supla_device_channel::assignCharValue(char value[SUPLA_CHANNELVALUE_SIZE],
-                                           char cvalue) {
-  memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
-  value[0] = cvalue;
-}
-
-bool supla_device_channel::isValueWritable(void) {
-  switch (Func) {
+bool supla_device_channel::is_value_writable(void) {
+  switch (get_func()) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
@@ -825,8 +885,8 @@ bool supla_device_channel::isValueWritable(void) {
   return false;
 }
 
-bool supla_device_channel::isCharValueWritable(void) {
-  switch (Func) {
+bool supla_device_channel::is_char_value_writable(void) {
+  switch (get_func()) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
@@ -846,8 +906,8 @@ bool supla_device_channel::isCharValueWritable(void) {
   return false;
 }
 
-bool supla_device_channel::isRgbwValueWritable(void) {
-  switch (Func) {
+bool supla_device_channel::is_rgbw_value_writable(void) {
+  switch (get_func()) {
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
@@ -859,26 +919,24 @@ bool supla_device_channel::isRgbwValueWritable(void) {
   return 0;
 }
 
-unsigned int supla_device_channel::getValueDuration(void) {
-  assert(sizeof(int) == 4 && sizeof(short) == 2);
-
-  switch (Func) {
+unsigned int supla_device_channel::get_value_duration(void) {
+  switch (get_func()) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-      return Param1;
+      return get_param1();
 
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      return Param1 * 100;
+      return get_param1() * 100;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW: {
       unsigned int result = 0;
 
-      result = (unsigned short)Param1;
+      result = (unsigned short)get_param1();
       result <<= 16;
-      result |= (unsigned short)Param3;
+      result |= (unsigned short)param3;
 
       return result;
     }
@@ -894,7 +952,7 @@ list<int> supla_device_channel::related_channel(void) {
   // channel!!!
   // See supla_user::get_channel_value
 
-  switch (Func) {
+  switch (get_func()) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
@@ -907,26 +965,25 @@ list<int> supla_device_channel::related_channel(void) {
       // 2nd Param3
 
       // Always add Param2
-      result.push_back(Param2);
+      result.push_back(param2);
 
-      if (Param3) {
-        result.push_back(Param3);
+      if (param3) {
+        result.push_back(param3);
       }
 
       break;
     case SUPLA_CHANNELFNC_POWERSWITCH:
-    case SUPLA_CHANNELFNC_LIGHTSWITCH:
-
-      if (Param1) {
-        result.push_back(Param1);
+    case SUPLA_CHANNELFNC_LIGHTSWITCH: {
+      int param1 = get_param1();
+      if (param1) {
+        result.push_back(param1);
       }
-
-      break;
+    } break;
 
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
 
-      if (Param2) {
-        result.push_back(Param2);
+      if (param2) {
+        result.push_back(param2);
       }
 
       break;
@@ -938,31 +995,31 @@ list<int> supla_device_channel::related_channel(void) {
 list<int> supla_device_channel::master_channel(void) {
   list<int> result;
 
-  switch (Func) {
+  switch (get_func()) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW: {
+      int param1 = get_param1();
 
-      if (Param1) {
-        result.push_back(Param1);
+      if (param1) {
+        result.push_back(param1);
       }
 
-      if (Param2) {
-        result.push_back(Param2);
+      if (param2) {
+        result.push_back(param2);
       }
-
-      break;
+    } break;
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
 
-      if (Param4) {
-        result.push_back(Param4);
+      if (param4) {
+        result.push_back(param4);
       }
 
       break;
@@ -971,117 +1028,134 @@ list<int> supla_device_channel::master_channel(void) {
   return result;
 }
 
-supla_channel_temphum *supla_device_channel::getTempHum(void) {
-  supla_channel_temphum *result = NULL;
+supla_channel_temphum *supla_device_channel::get_temp_hum(void) {
+  supla_channel_temphum *result = nullptr;
 
-  if ((getType() == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
-       getType() == SUPLA_CHANNELTYPE_THERMOMETER) &&
-      getFunc() == SUPLA_CHANNELFNC_THERMOMETER) {
-    result = new supla_channel_temphum(false, getId(), value);
+  int func = get_func();
+  char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
 
-  } else if ((getType() == SUPLA_CHANNELTYPE_DHT11 ||
-              getType() == SUPLA_CHANNELTYPE_DHT22 ||
-              getType() == SUPLA_CHANNELTYPE_DHT21 ||
-              getType() == SUPLA_CHANNELTYPE_AM2301 ||
-              getType() == SUPLA_CHANNELTYPE_AM2302 ||
-              getType() == SUPLA_CHANNELTYPE_HUMIDITYSENSOR ||
-              getType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR ||
-              getType() == SUPLA_CHANNELTYPE_BRIDGE) &&
-             (getFunc() == SUPLA_CHANNELFNC_THERMOMETER ||
-              getFunc() == SUPLA_CHANNELFNC_HUMIDITY ||
-              getFunc() == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
-    result = new supla_channel_temphum(true, getId(), value);
+  if ((get_type() == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
+       get_type() == SUPLA_CHANNELTYPE_THERMOMETER) &&
+      func == SUPLA_CHANNELFNC_THERMOMETER) {
+    get_value(current_value);
+    result = new supla_channel_temphum(false, get_id(), current_value);
+
+  } else if ((get_type() == SUPLA_CHANNELTYPE_DHT11 ||
+              get_type() == SUPLA_CHANNELTYPE_DHT22 ||
+              get_type() == SUPLA_CHANNELTYPE_DHT21 ||
+              get_type() == SUPLA_CHANNELTYPE_AM2301 ||
+              get_type() == SUPLA_CHANNELTYPE_AM2302 ||
+              get_type() == SUPLA_CHANNELTYPE_HUMIDITYSENSOR ||
+              get_type() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR ||
+              get_type() == SUPLA_CHANNELTYPE_BRIDGE) &&
+             (func == SUPLA_CHANNELFNC_THERMOMETER ||
+              func == SUPLA_CHANNELFNC_HUMIDITY ||
+              func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
+    get_value(current_value);
+    result = new supla_channel_temphum(true, get_id(), current_value);
   }
 
   return result;
 }
 
 supla_channel_electricity_measurement *
-supla_device_channel::getElectricityMeasurement(bool for_data_logger_purposes) {
-  if (getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
+supla_device_channel::get_electricity_measurement(
+    bool for_data_logger_purposes) {
+  supla_channel_electricity_measurement *result = nullptr;
+
+  lock();
+  if (get_func() == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
     TSuplaChannelExtendedValue *ev =
         for_data_logger_purposes
-            ? (logger_data ? logger_data->extendedValue : NULL)
-            : extendedValue;
+            ? (logger_data ? logger_data->extendedValue : nullptr)
+            : extended_value;
 
     if (ev && ev->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
       TElectricityMeter_ExtendedValue_V2 em_ev;
 
       if (srpc_evtool_v2_extended2emextended(ev, &em_ev) == 1) {
-        return new supla_channel_electricity_measurement(getId(), &em_ev,
-                                                         Param2, TextParam1);
+        result = new supla_channel_electricity_measurement(get_id(), &em_ev,
+                                                           param2, text_param1);
       }
     }
   }
+  unlock();
 
-  return NULL;
+  return result;
 }
 
 supla_channel_ic_measurement *
-supla_device_channel::getImpulseCounterMeasurement(
+supla_device_channel::get_impulse_counter_measurement(
     bool for_data_logger_purposes) {
-  switch (getFunc()) {
+  int func = get_func();
+  switch (func) {
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER: {
-      TDS_ImpulseCounter_Value *ic_val = NULL;
-      char value[SUPLA_CHANNELVALUE_SIZE];
+      TDS_ImpulseCounter_Value *ic_val = nullptr;
+      char value[SUPLA_CHANNELVALUE_SIZE] = {};
 
       if (for_data_logger_purposes) {
-        ic_val =
-            logger_data ? (TDS_ImpulseCounter_Value *)logger_data->value : NULL;
+        lock();
+        ic_val = logger_data ? (TDS_ImpulseCounter_Value *)logger_data->value
+                             : nullptr;
+        unlock();
       } else {
-        getValue(value);
+        get_value(value);
         ic_val = (TDS_ImpulseCounter_Value *)value;
       }
 
       if (ic_val) {
         return new supla_channel_ic_measurement(
-            getId(), Func, ic_val, TextParam1, TextParam2, Param2, Param3);
+            get_id(), func, ic_val, text_param1, text_param2, param2, param3);
       }
 
       break;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 supla_channel_thermostat_measurement *
-supla_device_channel::getThermostatMeasurement(void) {
-  switch (getType()) {
+supla_device_channel::get_thermostat_measurement(void) {
+  switch (get_type()) {
     case SUPLA_CHANNELTYPE_THERMOSTAT:
     case SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS:
-      switch (getFunc()) {
+      switch (get_func()) {
         case SUPLA_CHANNELFNC_THERMOSTAT:
         case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
           char value[SUPLA_CHANNELVALUE_SIZE];
-          getValue(value);
+          get_value(value);
           TThermostat_Value *th_val = (TThermostat_Value *)value;
 
           return new supla_channel_thermostat_measurement(
-              getId(), th_val->IsOn > 0, th_val->MeasuredTemperature * 0.01,
+              get_id(), th_val->IsOn > 0, th_val->MeasuredTemperature * 0.01,
               th_val->PresetTemperature * 0.01);
         }
       }
       break;
   }
 
-  return NULL;
+  return nullptr;
 }
 
-channel_json_config *supla_device_channel::getJSONConfig(void) {
+channel_json_config *supla_device_channel::get_json_config(void) {
+  channel_json_config *result = nullptr;
+
+  lock();
   if (json_config) {
-    return new channel_json_config(json_config, true);
+    result = new channel_json_config(json_config, true);
   }
+  unlock();
 
-  return NULL;
+  return result;
 }
 
-bool supla_device_channel::converValueToExtended(void) {
+bool supla_device_channel::conver_value_to_extended(void) {
   bool result = false;
 
-  switch (getFunc()) {
+  switch (get_func()) {
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
@@ -1091,14 +1165,14 @@ bool supla_device_channel::converValueToExtended(void) {
       TSC_ImpulseCounter_ExtendedValue ic_ev;
       memset(&ic_ev, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
 
-      getValue(value);
+      get_value(value);
 
       TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
       ic_ev.counter = ic_val->counter;
 
       srpc_evtool_v1_icextended2extended(&ic_ev, &ev);
 
-      setExtendedValue(&ev);
+      set_extended_value(&ev);
       result = true;
       break;
   }
@@ -1106,1913 +1180,50 @@ bool supla_device_channel::converValueToExtended(void) {
 }
 
 unsigned int supla_device_channel::get_value_validity_time_left_msec(void) {
+  unsigned int result = 0;
+  lock();
   if (value_valid_to.tv_sec || value_valid_to.tv_usec) {
     struct timeval now;
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
 
     unsigned long long now_msec = (now.tv_sec * 1000 + now.tv_usec / 1000);
     unsigned long long valid_to_msec =
         (value_valid_to.tv_sec * 1000 + value_valid_to.tv_usec / 1000);
 
     if (now_msec < valid_to_msec) {
-      return valid_to_msec - now_msec;
+      result = valid_to_msec - now_msec;
     }
   }
 
-  return 0;
+  unlock();
+  return result;
 }
 
 void supla_device_channel::set_state(TDSC_ChannelState *state) {
+  lock();
   if (this->state == nullptr) {
     this->state = new TDSC_ChannelState();
   }
 
   *this->state = *state;
+  unlock();
 }
 
 bool supla_device_channel::get_state(TDSC_ChannelState *state) {
+  bool result = false;
+  lock();
   if (this->state) {
     *state = *this->state;
-    return true;
-  }
-
-  return false;
-}
-
-supla_voltage_analyzers &supla_device_channel::get_voltage_analyzers(void) {
-  return voltage_analyzers;
-}
-
-// ---------------------------------------------
-// ---------------------------------------------
-// ---------------------------------------------
-
-supla_device_channels::supla_device_channels(supla_device *device) {
-  this->device = device;
-  this->arr = safe_array_init();
-}
-
-supla_device_channels::~supla_device_channels() {
-  arr_clean();
-  safe_array_free(arr);
-}
-
-char supla_device_channels::arr_findcmp(void *ptr, void *id) {
-  return ((supla_device_channel *)ptr)->getId() == *((int *)id) ? 1 : 0;
-}
-
-char supla_device_channels::arr_findncmp(void *ptr, void *n) {
-  return ((supla_device_channel *)ptr)->getNumber() == *((int *)n) ? 1 : 0;
-}
-
-char supla_device_channels::arr_delcnd(void *ptr) {
-  delete (supla_device_channel *)ptr;
-  return 1;
-}
-
-void supla_device_channels::arr_clean(void) {
-  safe_array_lock(arr);
-  safe_array_clean(arr, arr_delcnd);
-  safe_array_unlock(arr);
-}
-
-void *supla_device_channels::get_srpc(void) {
-  if (device && device->get_connection()) {
-    return device->get_connection()->get_srpc_adapter()->get_srpc();
-  }
-
-  return NULL;
-}
-
-supla_device_channel *supla_device_channels::find_channel(int Id) {
-  return (supla_device_channel *)safe_array_findcnd(arr, arr_findcmp, &Id);
-}
-
-supla_device_channel *supla_device_channels::find_channel_by_number(
-    int Number) {
-  return (supla_device_channel *)safe_array_findcnd(arr, arr_findncmp, &Number);
-}
-
-void supla_device_channels::access_channel(
-    int channel_id, function<void(supla_device_channel *)> on_channel) {
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(channel_id);
-
-  if (channel) {
-    on_channel(channel);
-  }
-
-  safe_array_unlock(arr);
-}
-
-void supla_device_channels::for_each_channel(
-    function<void(supla_device_channel *)> on_channel) {
-  safe_array_lock(arr);
-  for (int a = 0; a < safe_array_count(arr); a++) {
-    supla_device_channel *channel =
-        static_cast<supla_device_channel *>(safe_array_get(arr, a));
-    if (channel) {
-      on_channel(channel);
-    }
-  }
-  safe_array_unlock(arr);
-}
-
-void supla_device_channels::add_channel(
-    int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3,
-    int Param4, const char *TextParam1, const char *TextParam2,
-    const char *TextParam3, bool Hidden, unsigned int Flags,
-    const char value[SUPLA_CHANNELVALUE_SIZE],
-    unsigned _supla_int_t validity_time_sec, const char *user_config,
-    const char *properties) {
-  safe_array_lock(arr);
-
-  if (find_channel(Id) == 0) {
-    supla_device_channel *c = new supla_device_channel(
-        device, Id, Number, Type, Func, Param1, Param2, Param3, Param4,
-        TextParam1, TextParam2, TextParam3, Hidden, Flags, value,
-        validity_time_sec, user_config, properties);
-
-    if (c != NULL && safe_array_add(arr, c) == -1) {
-      delete c;
-      c = NULL;
-    }
-  }
-
-  safe_array_unlock(arr);
-}
-
-void supla_device_channels::load(int UserID, int DeviceID) {
-  database *db = new database();
-
-  if (db->connect() == true) {
-    safe_array_lock(arr);
-    arr_clean();
-
-    db->get_device_channels(UserID, DeviceID, this);
-
-    safe_array_unlock(arr);
-  }
-
-  delete db;
-}
-
-bool supla_device_channels::get_channel_value(
-    int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE], char *online,
-    unsigned _supla_int_t *validity_time_sec, TSuplaChannelExtendedValue *ev,
-    int *function, bool for_client) {
-  bool result = false;
-
-  if (ChannelID) {
-    safe_array_lock(arr);
-    supla_device_channel *channel = find_channel(ChannelID);
-
-    if (channel) {
-      channel->getValue(value);
-      if (online) {
-        *online = channel->isOffline() ? 0 : 1;
-      }
-
-      if (validity_time_sec) {
-        *validity_time_sec = channel->getValueValidityTimeSec();
-      }
-
-      if (function) {
-        *function = channel->getFunc();
-      }
-
-      if (ev) {
-        channel->getExtendedValue(ev, for_client);
-      }
-
-      if (for_client) {
-        switch (channel->getFunc()) {
-          case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-          case SUPLA_CHANNELFNC_IC_GAS_METER:
-          case SUPLA_CHANNELFNC_IC_WATER_METER:
-          case SUPLA_CHANNELFNC_IC_HEAT_METER: {
-            TDS_ImpulseCounter_Value ds;
-            memcpy(&ds, value, sizeof(TDS_ImpulseCounter_Value));
-            memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
-
-            TSC_ImpulseCounter_Value sc;
-            sc.calculated_value =
-                supla_channel_ic_measurement::get_calculated_i(
-                    channel->getParam3(), ds.counter);
-
-            memcpy(value, &sc, sizeof(TSC_ImpulseCounter_Value));
-            break;
-          }
-        }
-      }
-
-      result = true;
-    }
-
-    safe_array_unlock(arr);
-  }
-
-  return result;
-}
-
-supla_channel_value *supla_device_channels::get_channel_value(int ChannelID) {
-  char value[SUPLA_CHANNELVALUE_SIZE] = {};
-  int func = 0;
-  int param2 = 0;
-  int param3 = 0;
-
-  access_channel(
-      ChannelID,
-      [&value, &func, &param2, &param3](supla_device_channel *channel) -> void {
-        func = channel->getFunc();
-        param2 = channel->getParam2();
-        param3 = channel->getParam3();
-        channel->getValue(value);
-      });
-
-  if (!func) {
-    return NULL;
-  }
-
-  switch (func) {
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      return new supla_channel_rs_value(value);
-
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR: {
-      supla_channel_gate_value *gate_value =
-          new supla_channel_gate_value(value);
-
-      gate_value->update_sensors(device->get_user(), param2, param3);
-      return gate_value;
-    }
-    case SUPLA_CHANNELFNC_LIGHTSWITCH:
-    case SUPLA_CHANNELFNC_POWERSWITCH:
-    case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      return new supla_channel_onoff_value(value);
-
-    case SUPLA_CHANNELFNC_DIMMER:
-    case SUPLA_CHANNELFNC_RGBLIGHTING:
-    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-      return new supla_channel_rgbw_value(value);
-  }
-
-  return new supla_channel_value(value);
-}
-
-bool supla_device_channels::get_channel_extendedvalue(
-    int ChannelID, TSuplaChannelExtendedValue *value) {
-  bool result = false;
-
-  if (ChannelID) {
-    safe_array_lock(arr);
-    supla_device_channel *channel = find_channel(ChannelID);
-
-    if (channel) {
-      result = channel->getExtendedValue(value, false);
-    }
-
-    safe_array_unlock(arr);
-  }
-
-  return result;
-}
-
-bool supla_device_channels::get_channel_extendedvalue(
-    int ChannelID, TSC_SuplaChannelExtendedValue *cev) {
-  bool result = false;
-
-  if (ChannelID) {
-    safe_array_lock(arr);
-    supla_device_channel *channel = find_channel(ChannelID);
-
-    if (channel) {
-      result = channel->getExtendedValue(&cev->value, true);
-      if (result) {
-        cev->Id = channel->getId();
-      }
-    }
-
-    safe_array_unlock(arr);
-  }
-
-  return result;
-}
-
-bool supla_device_channels::get_channel_double_value(int ChannelID,
-                                                     double *Value) {
-  bool result = false;
-
-  if (ChannelID) {
-    safe_array_lock(arr);
-    supla_device_channel *channel = find_channel(ChannelID);
-
-    if (channel) {
-      channel->getDouble(Value);
-      result = true;
-    }
-
-    safe_array_unlock(arr);
-  }
-
-  return result;
-}
-
-supla_channel_temphum *
-supla_device_channels::get_channel_temp_and_humidity_value(int ChannelID) {
-  supla_channel_temphum *result = NULL;
-
-  if (ChannelID) {
-    safe_array_lock(arr);
-    supla_device_channel *channel = find_channel(ChannelID);
-
-    if (channel) {
-      result = channel->getTempHum();
-    }
-
-    safe_array_unlock(arr);
-  }
-
-  return result;
-}
-
-bool supla_device_channels::get_channel_temperature_value(int ChannelID,
-                                                          double *Value) {
-  supla_channel_temphum *result =
-      get_channel_temp_and_humidity_value(ChannelID);
-  if (result) {
-    *Value = result->getTemperature();
-    delete result;
-    return true;
-  }
-
-  return false;
-}
-
-bool supla_device_channels::get_channel_humidity_value(int ChannelID,
-                                                       double *Value) {
-  supla_channel_temphum *result =
-      get_channel_temp_and_humidity_value(ChannelID);
-  if (result) {
-    if (result->isTempAndHumidity() == 1) {
-      *Value = result->getHumidity();
-      delete result;
-      return true;
-
-    } else {
-      delete result;
-    }
-  }
-
-  return false;
-}
-
-bool supla_device_channels::get_channel_char_value(int ChannelID, char *Value) {
-  bool result = false;
-
-  if (ChannelID) {
-    safe_array_lock(arr);
-    supla_device_channel *channel = find_channel(ChannelID);
-
-    if (channel) {
-      channel->getChar(Value);
-      result = true;
-    }
-
-    safe_array_unlock(arr);
-  }
-
-  return result;
-}
-
-bool supla_device_channels::get_channel_valve_value(int ChannelID,
-                                                    TValve_Value *Value) {
-  bool result = false;
-
-  if (ChannelID) {
-    safe_array_lock(arr);
-    supla_device_channel *channel = find_channel(ChannelID);
-
-    result = channel && channel->getValveValue(Value);
-
-    safe_array_unlock(arr);
-  }
-
-  return result;
-}
-
-bool supla_device_channels::get_dgf_transparency(int ChannelID,
-                                                 unsigned short *mask) {
-  bool result = false;
-
-  if (mask && ChannelID) {
-    safe_array_lock(arr);
-    supla_device_channel *channel = find_channel(ChannelID);
-
-    if (channel &&
-        (channel->getFunc() == SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL ||
-         channel->getFunc() == SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL)) {
-      char value[SUPLA_CHANNELVALUE_SIZE];
-      channel->getValue(value);
-      TDigiglass_Value *dgf_val = (TDigiglass_Value *)value;
-      *mask = dgf_val->mask;
-      result = true;
-    }
-
-    safe_array_unlock(arr);
-  }
-
-  return result;
-}
-
-bool supla_device_channels::get_relay_value(int ChannelID,
-                                            TRelayChannel_Value *relay_value) {
-  bool result = false;
-
-  if (relay_value && ChannelID) {
-    safe_array_lock(arr);
-    supla_device_channel *channel = find_channel(ChannelID);
-
-    if (channel && (channel->getFunc() == SUPLA_CHANNELFNC_POWERSWITCH ||
-                    channel->getFunc() == SUPLA_CHANNELFNC_LIGHTSWITCH ||
-                    channel->getFunc() == SUPLA_CHANNELFNC_STAIRCASETIMER)) {
-      char value[SUPLA_CHANNELVALUE_SIZE];
-      channel->getValue(value);
-      memcpy(relay_value, value, sizeof(TRelayChannel_Value));
-      result = true;
-    }
-
-    safe_array_unlock(arr);
-  }
-
-  return result;
-}
-
-bool supla_device_channels::reset_counters(int ChannelID) {
-  bool result = false;
-
-  if (ChannelID) {
-    safe_array_lock(arr);
-    supla_device_channel *channel = find_channel(ChannelID);
-
-    if (channel &&
-        (channel->getFlags() & SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS)) {
-      TSD_DeviceCalCfgRequest request = {};
-
-      request.ChannelNumber = channel->getNumber();
-      request.Command = SUPLA_CALCFG_CMD_RESET_COUNTERS;
-      request.SuperUserAuthorized = true;
-
-      srpc_sd_async_device_calcfg_request(get_srpc(), &request);
-      result = true;
-    }
-
-    safe_array_unlock(arr);
-  }
-
-  return result;
-}
-
-bool supla_device_channels::recalibrate(int ChannelID,
-                                        const supla_caller &caller,
-                                        bool SuperUserAuthorized) {
-  bool result = false;
-
-  if (ChannelID) {
-    safe_array_lock(arr);
-    supla_device_channel *channel = find_channel(ChannelID);
-
-    if (channel &&
-        (channel->getFlags() & SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE)) {
-      TSD_DeviceCalCfgRequest request = {};
-
-      request.ChannelNumber = channel->getNumber();
-      request.Command = SUPLA_CALCFG_CMD_RECALIBRATE;
-      request.SenderID = caller.convert_to_sender_id();
-      request.SuperUserAuthorized = SuperUserAuthorized;
-
-      TCalCfg_RollerShutterSettings *settings =
-          (TCalCfg_RollerShutterSettings *)request.Data;
-      request.DataSize = sizeof(TCalCfg_RollerShutterSettings);
-      request.DataType = SUPLA_CALCFG_DATATYPE_RS_SETTINGS;
-
-      settings->FullOpeningTimeMS = channel->getParam1() * 100;
-      settings->FullClosingTimeMS = channel->getParam3() * 100;
-
-      srpc_sd_async_device_calcfg_request(get_srpc(), &request);
-      result = true;
-    }
-
-    safe_array_unlock(arr);
-  }
-
-  return result;
-}
-
-bool supla_device_channels::set_channel_value(
-    supla_device_channel *channel, char value[SUPLA_CHANNELVALUE_SIZE],
-    bool *converted2extended, const unsigned _supla_int_t *validity_time_sec,
-    bool *significantChange) {
-  if (!channel) return false;
-  bool result = false;
-
-  if (converted2extended) {
-    *converted2extended = false;
-  }
-
-  unsigned char proto_version = srpc_get_proto_version(get_srpc());
-
-  safe_array_lock(arr);
-
-  result = channel->setValue(value, validity_time_sec, significantChange,
-                             proto_version);
-
-  if (channel->converValueToExtended()) {
-    if (converted2extended) {
-      *converted2extended = true;
-    }
-  }
-
-  safe_array_unlock(arr);
-
-  if (result) {
-    switch (channel->getFunc()) {
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-        if (channel->getParam1()) {
-          shared_ptr<supla_device> rel_device = device->get_user()->get_device(
-              device->get_user_id(), 0, channel->getParam1());
-          if (rel_device) {
-            rel_device->get_channels()->on_related_sensor_value_changed(
-                channel->getParam1(), channel->getId(), value[0] == 0);
-          }
-        }
-        break;
-    }
-  }
-
-  return result;
-}
-
-bool supla_device_channels::set_channel_value(
-    int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
-    bool *converted2extended, const unsigned _supla_int_t *validity_time_sec,
-    bool *significantChange) {
-  return ChannelID &&
-         set_channel_value(find_channel(ChannelID), value, converted2extended,
-                           validity_time_sec, significantChange);
-}
-
-bool supla_device_channels::set_channel_offline(int ChannelID, bool Offline) {
-  if (ChannelID == 0) return false;
-  bool result = false;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel) {
-    result = channel->setOffline(Offline);
-  }
-
-  safe_array_unlock(arr);
-  return result;
-}
-
-void supla_device_channels::set_channel_extendedvalue(
-    int ChannelID, TSuplaChannelExtendedValue *ev) {
-  if (ChannelID == 0) return;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel) channel->setExtendedValue(ev);
-
-  safe_array_unlock(arr);
-}
-
-unsigned int supla_device_channels::get_channel_value_duration(int ChannelID) {
-  if (ChannelID == 0) return 0;
-
-  int Duration = 0;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel) Duration = channel->getValueDuration();
-
-  safe_array_unlock(arr);
-
-  return Duration;
-}
-
-int supla_device_channels::get_channel_func(int ChannelID) {
-  if (ChannelID == 0) return 0;
-
-  int Func = 0;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel) Func = channel->getFunc();
-
-  safe_array_unlock(arr);
-
-  return Func;
-}
-
-int supla_device_channels::get_channel_type(int ChannelID) {
-  if (ChannelID == 0) return 0;
-
-  int Type = 0;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel) Type = channel->getType();
-
-  safe_array_unlock(arr);
-
-  return Type;
-}
-
-list<int> supla_device_channels::mr_channel(int ChannelID, bool Master) {
-  list<int> result;
-  if (ChannelID == 0) return result;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel)
-    result = Master ? channel->master_channel() : channel->related_channel();
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-list<int> supla_device_channels::master_channel(int ChannelID) {
-  return mr_channel(ChannelID, true);
-}
-
-list<int> supla_device_channels::related_channel(int ChannelID) {
-  return mr_channel(ChannelID, false);
-}
-
-bool supla_device_channels::channel_exists(int ChannelID) {
-  bool result = false;
-
-  safe_array_lock(arr);
-
-  if (find_channel(ChannelID) != NULL) result = true;
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-bool supla_device_channels::is_channel_online(int ChannelID) {
-  bool result = false;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel) {
-    result = !channel->isOffline();
-  }
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-void supla_device_channels::update_channels(
-    TDS_SuplaDeviceChannel_B *schannel_b, TDS_SuplaDeviceChannel_C *schannel_c,
-    int count) {
-  for (int a = 0; a < count; a++) {
-    int type = 0;
-    char *value = NULL;
-    unsigned char number = 0;
-    unsigned int actionTriggerCaps = 0;
-    unsigned int flags = 0;
-    TActionTriggerProperties atProps = {};
-
-    if (schannel_b != NULL) {
-      type = schannel_b[a].Type;
-      value = schannel_b[a].value;
-      number = schannel_b[a].Number;
-    } else {
-      type = schannel_c[a].Type;
-      value = schannel_c[a].value;
-      number = schannel_c[a].Number;
-      actionTriggerCaps = schannel_c[a].ActionTriggerCaps;
-      atProps = schannel_c[a].actionTriggerProperties;
-      flags = schannel_c[a].Flags;
-    }
-
-    int channelId = get_channel_id(number);
-
-    safe_array_lock(arr);
-
-    supla_device_channel *channel = find_channel(channelId);
-
-    if (channel) {
-      set_channel_value(channelId, value, NULL, 0, NULL);
-
-      channel->addFlags(flags);
-
-      if (type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
-        int actionTriggerRelatedChannelId = 0;
-        if (atProps.relatedChannelNumber > 0) {
-          actionTriggerRelatedChannelId =
-              get_channel_id(atProps.relatedChannelNumber - 1);
-        }
-        channel->setActionTriggerConfig(actionTriggerCaps,
-                                        actionTriggerRelatedChannelId,
-                                        atProps.disablesLocalOperation);
-      }
-    }
-
-    safe_array_unlock(arr);
-  }
-}
-
-void supla_device_channels::on_device_registered(
-    supla_user *user, int DeviceId, TDS_SuplaDeviceChannel_B *schannel_b,
-    TDS_SuplaDeviceChannel_C *schannel_c, int count) {
-  int ChannelId = 0;
-
-  for (int a = 0; a < count; a++) {
-    if (schannel_b != NULL) {
-      ChannelId = get_channel_id(schannel_b[a].Number);
-    } else {
-      ChannelId = get_channel_id(schannel_c[a].Number);
-    }
-
-    if (ChannelId > 0) {
-      user->on_channel_become_online(DeviceId, ChannelId);
-    }
-  }
-}
-
-int supla_device_channels::get_channel_id(unsigned char ChannelNumber) {
-  int result = 0;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel_by_number(ChannelNumber);
-
-  if (channel) result = channel->getId();
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-void supla_device_channels::async_set_channel_value(
-    supla_device_channel *channel, const supla_caller &caller, int GroupID,
-    unsigned char EOL, const char value[SUPLA_CHANNELVALUE_SIZE],
-    unsigned int durationMS, bool cancelTasks) {
-  if (cancelTasks) {
-    switch (channel->getFunc()) {
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-        supla_action_gate_openclose::cancel_tasks(
-            device->get_user_id(), device->get_id(), channel->getId());
-        break;
-    }
-  }
-
-  if (GroupID && srpc_get_proto_version(get_srpc()) >= 13) {
-    TSD_SuplaChannelGroupNewValue s;
-    memset(&s, 0, sizeof(TSD_SuplaChannelGroupNewValue));
-
-    s.ChannelNumber = channel->getNumber();
-    s.DurationMS = durationMS;
-    s.SenderID = caller.convert_to_sender_id();
-    s.GroupID = GroupID;
-    s.EOL = EOL;
-    memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
-
-    srpc_sd_async_set_channelgroup_value(get_srpc(), &s);
-  } else {
-    TSD_SuplaChannelNewValue s;
-    memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));
-
-    s.ChannelNumber = channel->getNumber();
-    s.DurationMS = durationMS;
-    s.SenderID = GroupID ? 0 : caller.convert_to_sender_id();
-    memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
-
-    srpc_sd_async_set_channel_value(get_srpc(), &s);
-  }
-}
-
-void supla_device_channels::async_set_channel_value(
-    supla_device_channel *channel, const supla_caller &caller, int GroupID,
-    unsigned char EOL, const char value[SUPLA_CHANNELVALUE_SIZE],
-    bool cancelTasks) {
-  async_set_channel_value(channel, caller, GroupID, EOL, value,
-                          channel->getValueDuration(), cancelTasks);
-}
-
-void supla_device_channels::set_device_channel_value(
-    const supla_caller &caller, int ChannelID, int GroupID, unsigned char EOL,
-    const char value[SUPLA_CHANNELVALUE_SIZE]) {
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel && channel->isValueWritable()) {
-    async_set_channel_value(channel, caller, GroupID, EOL, value);
-  }
-
-  safe_array_unlock(arr);
-}
-
-bool supla_device_channels::set_device_channel_char_value(
-    const supla_caller &caller, supla_device_channel *channel, int GroupID,
-    unsigned char EOL, const char value, bool cancelTasks) {
-  bool result = false;
-
-  if (channel) {
-    if (channel->isRgbwValueWritable()) {
-      int color = 0;
-      char color_brightness = 0;
-      char brightness = 0;
-      char on_off = 0;
-
-      if (channel->getRGBW(&color, &color_brightness, &brightness, &on_off)) {
-        if (value > 0) {
-          color_brightness = 100;
-          brightness = 100;
-        } else {
-          color_brightness = 0;
-          brightness = 0;
-        }
-
-        on_off = RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF;
-
-        result = set_device_channel_rgbw_value(
-            caller, channel->getId(), GroupID, EOL, color, color_brightness,
-            brightness, on_off);
-      }
-    } else if (channel->isCharValueWritable()) {
-      char v[SUPLA_CHANNELVALUE_SIZE];
-      memset(v, 0, SUPLA_CHANNELVALUE_SIZE);
-      channel->assignCharValue(v, value);
-
-      async_set_channel_value(channel, caller, GroupID, EOL, v, cancelTasks);
-
-      result = true;
-    }
-  }
-
-  return result;
-}
-
-bool supla_device_channels::set_device_channel_char_value(
-    const supla_caller &caller, int ChannelID, int GroupID, unsigned char EOL,
-    const char value) {
-  safe_array_lock(arr);
-
-  bool result = set_device_channel_char_value(caller, find_channel(ChannelID),
-                                              GroupID, EOL, value);
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-bool supla_device_channels::set_device_channel_rgbw_value(
-    const supla_caller &caller, int ChannelID, int GroupID, unsigned char EOL,
-    int color, char color_brightness, char brightness, char on_off) {
-  bool result = false;
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel && channel->isRgbwValueWritable()) {
-    char v[SUPLA_CHANNELVALUE_SIZE];
-    memset(v, 0, SUPLA_CHANNELVALUE_SIZE);
-
-    if (on_off) {
-      char mask = 0;
-      if (channel->getFunc() == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
-        mask = RGBW_COLOR_ONOFF | RGBW_BRIGHTNESS_ONOFF;
-      } else if (channel->getFunc() == SUPLA_CHANNELFNC_DIMMER) {
-        mask = RGBW_BRIGHTNESS_ONOFF;
-      } else if (channel->getFunc() == SUPLA_CHANNELFNC_RGBLIGHTING) {
-        mask = RGBW_COLOR_ONOFF;
-      }
-
-      on_off = mask & on_off;
-    }
-
-    channel->assignRgbwValue(v, color, color_brightness, brightness, on_off);
-
-    async_set_channel_value(channel, caller, GroupID, EOL, v);
-
     result = true;
   }
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-void supla_device_channels::get_temp_and_humidity(
-    vector<supla_channel_temphum *> *result) {
-  int a;
-  safe_array_lock(arr);
-
-  for (a = 0; a < safe_array_count(arr); a++) {
-    supla_device_channel *channel =
-        (supla_device_channel *)safe_array_get(arr, a);
-
-    if (channel != NULL && !channel->isOffline()) {
-      supla_channel_temphum *temphum = channel->getTempHum();
-
-      if (temphum != NULL) {
-        result->push_back(temphum);
-      }
-    }
-  }
-
-  safe_array_unlock(arr);
-}
-
-bool supla_device_channels::get_channel_rgbw_value(int ChannelID, int *color,
-                                                   char *color_brightness,
-                                                   char *brightness,
-                                                   char *on_off) {
-  bool result = false;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel != NULL) {
-    int _color = 0;
-    char _color_brightness = 0;
-    char _brightness = 0;
-    char _on_off = 0;
-
-    result =
-        channel->getRGBW(&_color, &_color_brightness, &_brightness, &_on_off);
-
-    if (result == true) {
-      if (color != NULL) *color = _color;
-
-      if (color_brightness) *color_brightness = _color_brightness;
-
-      if (brightness != NULL) *brightness = _brightness;
-
-      if (on_off != NULL) *on_off = _on_off;
-    }
-  }
-
-  safe_array_unlock(arr);
+  unlock();
 
   return result;
 }
 
-void supla_device_channels::get_electricity_measurements(
-    vector<supla_channel_electricity_measurement *> *result,
-    bool for_data_logger_purposes) {
-  int a;
-  safe_array_lock(arr);
-
-  // TODO(anyone): Remove
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  // ---
-
-  for (a = 0; a < safe_array_count(arr); a++) {
-    supla_device_channel *channel =
-        (supla_device_channel *)safe_array_get(arr, a);
-
-    // TODO(anyone): Remove
-    if (channel->getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
-      if (channel->isOffline()) {
-        supla_log(LOG_WARNING, "Electricity Meter is offline. Channel Id: %i",
-                  channel->getId());
-      }
-    }
-    // ----
-
-    if (channel != NULL && !channel->isOffline()) {
-      supla_channel_electricity_measurement *em =
-          channel->getElectricityMeasurement(for_data_logger_purposes);
-      if (em) {
-        result->push_back(em);
-      } else {
-        // TODO(anyone): Remove
-        if (channel->getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER &&
-            channel->isOffline()) {
-          supla_log(LOG_WARNING,
-                    "No electricity meter data available. Channel Id: %i",
-                    channel->getId());
-        }
-        // ----
-      }
-    }
-  }
-
-  safe_array_unlock(arr);
-}
-
-supla_channel_electricity_measurement *
-supla_device_channels::get_electricity_measurement(int ChannelID) {
-  supla_channel_electricity_measurement *result = NULL;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel != NULL) {
-    result = channel->getElectricityMeasurement(false);
-  }
-
-  safe_array_unlock(arr);
-
+supla_voltage_analyzers supla_device_channel::get_voltage_analyzers(void) {
+  lock();
+  supla_voltage_analyzers result = voltage_analyzers;
+  unlock();
   return result;
-}
-
-void supla_device_channels::get_ic_measurements(
-    vector<supla_channel_ic_measurement *> *result,
-    bool for_data_logger_purposes) {
-  int a;
-  safe_array_lock(arr);
-
-  for (a = 0; a < safe_array_count(arr); a++) {
-    supla_device_channel *channel =
-        (supla_device_channel *)safe_array_get(arr, a);
-
-    if (channel != NULL && !channel->isOffline()) {
-      supla_channel_ic_measurement *ic =
-          channel->getImpulseCounterMeasurement(for_data_logger_purposes);
-      if (ic) {
-        result->push_back(ic);
-      }
-    }
-  }
-
-  safe_array_unlock(arr);
-}
-
-void supla_device_channels::get_thermostat_measurements(
-    vector<supla_channel_thermostat_measurement *> *result) {
-  int a;
-  safe_array_lock(arr);
-
-  for (a = 0; a < safe_array_count(arr); a++) {
-    supla_device_channel *channel =
-        (supla_device_channel *)safe_array_get(arr, a);
-
-    if (channel != NULL && !channel->isOffline()) {
-      supla_channel_thermostat_measurement *th =
-          channel->getThermostatMeasurement();
-      if (th) {
-        result->push_back(th);
-      }
-    }
-  }
-
-  safe_array_unlock(arr);
-}
-
-supla_channel_ic_measurement *supla_device_channels::get_ic_measurement(
-    int ChannelID) {
-  supla_channel_ic_measurement *result = NULL;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel != NULL) {
-    result = channel->getImpulseCounterMeasurement(false);
-  }
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-bool supla_device_channels::calcfg_request(const supla_caller &caller,
-                                           int ChannelID,
-                                           bool SuperUserAuthorized,
-                                           TCS_DeviceCalCfgRequest_B *request) {
-  if (request == NULL) {
-    return false;
-  }
-
-  if (request->Command == SUPLA_CALCFG_CMD_RECALIBRATE) {
-    return recalibrate(ChannelID, caller, SuperUserAuthorized);
-  }
-
-  bool result = false;
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel) {
-    TSD_DeviceCalCfgRequest drequest;
-    memset(&drequest, 0, sizeof(TSD_DeviceCalCfgRequest));
-
-    drequest.SenderID = caller.convert_to_sender_id();
-    drequest.ChannelNumber = channel->getNumber();
-    drequest.Command = request->Command;
-    drequest.SuperUserAuthorized = SuperUserAuthorized;
-    drequest.DataType = request->DataType;
-    drequest.DataSize = request->DataSize > SUPLA_CALCFG_DATA_MAXSIZE
-                            ? SUPLA_CALCFG_DATA_MAXSIZE
-                            : request->DataSize;
-    memcpy(drequest.Data, request->Data, SUPLA_CALCFG_DATA_MAXSIZE);
-
-    srpc_sd_async_device_calcfg_request(get_srpc(), &drequest);
-    result = true;
-  }
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-void supla_device_channels::set_channel_state(int channel_id,
-                                              TDSC_ChannelState *state) {
-  access_channel(channel_id, [state](supla_device_channel *channel) -> void {
-    channel->set_state(state);
-  });
-}
-
-bool supla_device_channels::get_channel_state(int channel_id,
-                                              TDSC_ChannelState *state) {
-  bool result = false;
-  access_channel(channel_id,
-                 [state, &result](supla_device_channel *channel) -> void {
-                   result = channel->get_state(state);
-                 });
-
-  return result;
-}
-
-bool supla_device_channels::get_channel_state_async(
-    const supla_caller &caller, TCSD_ChannelStateRequest *request) {
-  if (request == NULL) {
-    return false;
-  }
-
-  bool result = false;
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(request->ChannelID);
-
-  if (channel) {
-    TCSD_ChannelStateRequest drequest;
-    memcpy(&drequest, request, sizeof(TCSD_ChannelStateRequest));
-
-    drequest.SenderID = caller.convert_to_sender_id();
-    drequest.ChannelNumber = channel->getNumber();
-
-    srpc_csd_async_get_channel_state(get_srpc(), &drequest);
-
-    result = true;
-  }
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-bool supla_device_channels::get_channel_complex_value(
-    channel_complex_value *value, int ChannelID) {
-  bool result = false;
-
-  memset(value, 0, sizeof(channel_complex_value));
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel) {
-    value->online = !channel->isOffline();
-    value->hidden_channel = channel->getHidden();
-    value->function = channel->getFunc();
-    value->channel_type = channel->getType();
-    value->channel_flags = channel->getFlags();
-
-    switch (value->function) {
-      case SUPLA_CHANNELFNC_THERMOMETER:
-      case SUPLA_CHANNELFNC_HUMIDITY:
-      case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
-        supla_channel_temphum *tempHum = channel->getTempHum();
-        if (tempHum) {
-          value->temperature = tempHum->getTemperature();
-          value->humidity = tempHum->getHumidity();
-          delete tempHum;
-        }
-      } break;
-
-      case SUPLA_CHANNELFNC_WINDSENSOR:
-        channel->getDouble(&value->wind);
-        break;
-      case SUPLA_CHANNELFNC_PRESSURESENSOR:
-        channel->getDouble(&value->pressure);
-        break;
-      case SUPLA_CHANNELFNC_RAINSENSOR:
-        channel->getDouble(&value->rain);
-        break;
-      case SUPLA_CHANNELFNC_WEIGHTSENSOR:
-        channel->getDouble(&value->weight);
-        break;
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
-      case SUPLA_CHANNELFNC_MAILSENSOR:
-      case SUPLA_CHANNELFNC_NOLIQUIDSENSOR: {
-        char cv[SUPLA_CHANNELVALUE_SIZE];
-        channel->getChar(cv);
-        value->hi = cv[0] > 0;
-      } break;
-
-      case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
-        TRelayChannel_Value relay_value = {};
-        if (get_relay_value(ChannelID, &relay_value)) {
-          value->hi = relay_value.hi > 0;
-          value->overcurrent_relay_off =
-              relay_value.flags & SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF;
-        }
-      } break;
-
-      case SUPLA_CHANNELFNC_DIMMER:
-      case SUPLA_CHANNELFNC_RGBLIGHTING:
-      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-        channel->getRGBW(&value->color, &value->color_brightness,
-                         &value->brightness, &value->on_off);
-        break;
-
-      case SUPLA_CHANNELFNC_DEPTHSENSOR:
-        channel->getDouble(&value->depth);
-        break;
-      case SUPLA_CHANNELFNC_DISTANCESENSOR:
-        channel->getDouble(&value->distance);
-        break;
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR: {
-        switch (value->function) {
-          case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-          case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-            char cv[SUPLA_CHANNELVALUE_SIZE];
-            channel->getChar(cv);
-            value->shut = cv[0];
-            break;
-        }
-
-        // TODO(anyone): This should be better implemented. Right now, that's
-        // spaghetti code
-        value->hi = false;
-        value->partially_closed = false;
-
-        safe_array_unlock(arr);  // Unlock the array to avoid thread deadlock.
-                                 // Do not refer to the channel from here.
-
-        supla_user *user = supla_user::find(device->get_user_id(), false);
-        if (user) {
-          TSuplaChannelValue cv;
-          memset(&cv, 0, sizeof(TSuplaChannelValue));
-
-          if (user->get_channel_value(device->get_id(), ChannelID, cv.value,
-                                      cv.sub_value, nullptr, nullptr, nullptr,
-                                      nullptr, nullptr, false)) {
-            if (cv.sub_value[0] > 0) {
-              value->hi = true;
-            } else if ((value->function ==
-                            SUPLA_CHANNELFNC_CONTROLLINGTHEGATE ||
-                        value->function ==
-                            SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR) &&
-                       cv.sub_value[1] > 0 && cv.sub_value[0] == 0) {
-              value->partially_closed = true;
-            }
-          }
-        }
-      }
-        return true;
-      case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
-      case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
-        channel->getValveValue(&value->valve_value);
-        break;
-    }
-    result = true;
-  }
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-list<int> supla_device_channels::get_channel_ids(void) {
-  list<int> result;
-  safe_array_lock(arr);
-  for (int a = 0; a < safe_array_count(arr); a++) {
-    supla_device_channel *channel =
-        static_cast<supla_device_channel *>(safe_array_get(arr, a));
-    if (channel) {
-      result.push_back(channel->getId());
-    }
-  }
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-void supla_device_channels::set_channel_function(int ChannelId, int Func) {
-  supla_device_channel *channel = find_channel(ChannelId);
-
-  if (channel) {
-    channel->setFunc(Func);
-  }
-}
-
-map<int, int> supla_device_channels::get_functions(void) {
-  map<int, int> result;
-
-  safe_array_lock(arr);
-  for (int a = 0; a < safe_array_count(arr); a++) {
-    supla_device_channel *channel =
-        static_cast<supla_device_channel *>(safe_array_get(arr, a));
-    if (channel) {
-      result.insert({channel->getNumber(), channel->getFunc()});
-    }
-  }
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-bool supla_device_channels::get_channel_config(unsigned char channel_number,
-                                               unsigned char type,
-                                               unsigned _supla_int_t flags,
-                                               TSD_ChannelConfig *config) {
-  if (config == nullptr) {
-    return false;
-  }
-
-  bool result = false;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel_by_number(channel_number);
-
-  if (channel) {
-    result = channel->getConfig(config, type, flags);
-  }
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-void supla_device_channels::action_trigger(TDS_ActionTrigger *at) {
-  if (!at) {
-    return;
-  }
-
-  int channel_id = 0;
-  int user_id = 0;
-  channel_json_config *json_config = nullptr;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel_by_number(at->ChannelNumber);
-  if (channel) {
-    channel_id = channel->getId();
-    user_id = channel->getUserID();
-    json_config = channel->getJSONConfig();
-  }
-
-  safe_array_unlock(arr);
-
-  if (channel_id) {
-    supla_action_executor *aexec = new supla_action_executor();
-    action_trigger_config *at_config = new action_trigger_config(json_config);
-    supla_value_getter *value_getter = new supla_value_getter();
-
-    if (aexec && at_config && value_getter) {
-      at_config->set_channel_id_if_subject_not_set(channel_id);
-
-      supla_action_trigger *trigger =
-          new supla_action_trigger(aexec, at_config, value_getter);
-      if (trigger) {
-        trigger->execute_actions(channel_id, user_id, at->ActionTrigger);
-        delete trigger;
-      }
-    }
-
-    if (value_getter) {
-      delete value_getter;
-      value_getter = nullptr;
-    }
-
-    if (aexec) {
-      delete aexec;
-      aexec = nullptr;
-    }
-
-    if (at_config) {
-      delete at_config;
-      at_config = nullptr;
-    }
-  }
-
-  if (json_config) {
-    delete json_config;
-  }
-}
-
-bool supla_device_channels::set_on(const supla_caller &caller, int ChannelID,
-                                   int GroupID, unsigned char EOL, bool on,
-                                   bool toggle) {
-  safe_array_lock(arr);
-
-  bool result = false;
-  supla_device_channel *channel = find_channel(ChannelID);
-  if (channel) {
-    switch (channel->getFunc()) {
-      case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      case SUPLA_CHANNELFNC_THERMOSTAT:
-      case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
-        char c = on ? 1 : 0;
-        if (toggle) {
-          channel->getChar(&c);
-          c = c ? 0 : 1;
-        }
-        result =
-            set_device_channel_char_value(caller, channel, GroupID, EOL, c);
-        break;
-      }
-
-      case SUPLA_CHANNELFNC_DIMMER:
-      case SUPLA_CHANNELFNC_RGBLIGHTING:
-      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
-        int color = 0;
-        char color_brightness = 0;
-        char brightness = 0;
-        char on_off = 0;
-
-        if (channel->getRGBW(&color, &color_brightness, &brightness, &on_off)) {
-          if (toggle) {
-            if (!color_brightness && !brightness) {
-              color_brightness = 100;
-              brightness = 100;
-            } else {
-              color_brightness = 0;
-              brightness = 0;
-            }
-          } else {
-            color_brightness = on ? 100 : 0;
-            brightness = on ? 100 : 0;
-          }
-
-          on_off = RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF;
-
-          result = set_device_channel_rgbw_value(
-              caller, channel->getId(), GroupID, EOL, color, color_brightness,
-              brightness, on_off);
-        }
-        break;
-      }
-    }
-  }
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-bool supla_device_channels::is_on(int ChannelID) {
-  bool result = false;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-  if (channel) {
-    switch (channel->getFunc()) {
-      case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      case SUPLA_CHANNELFNC_THERMOSTAT:
-      case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
-        char c = 0;
-        channel->getChar(&c);
-        result = c;
-        break;
-      }
-
-      case SUPLA_CHANNELFNC_DIMMER:
-      case SUPLA_CHANNELFNC_RGBLIGHTING:
-      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
-        int color = 0;
-        char color_brightness = 0;
-        char brightness = 0;
-        char on_off = 0;
-
-        if (channel->getRGBW(&color, &color_brightness, &brightness, &on_off)) {
-          result = color_brightness > 0 || brightness > 0;
-        }
-        break;
-      }
-    }
-  }
-
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-bool supla_device_channels::set_on(const supla_caller &caller, int ChannelID,
-                                   int GroupID, unsigned char EOL, bool on) {
-  return set_on(caller, ChannelID, GroupID, EOL, on, false);
-}
-
-bool supla_device_channels::set_rgbw(const supla_caller &caller, int ChannelID,
-                                     int GroupID, unsigned char EOL,
-                                     unsigned int *color,
-                                     char *color_brightness, char *brightness,
-                                     char *on_off) {
-  safe_array_lock(arr);
-
-  bool result = false;
-  supla_device_channel *channel = find_channel(ChannelID);
-  if (channel && channel->isRgbwValueWritable()) {
-    int _color = 0;
-    char _color_brightness = 0;
-    char _brightness = 0;
-    char _on_off = 0;
-
-    if (channel->getRGBW(&_color, &_color_brightness, &_brightness, &_on_off)) {
-      result = set_device_channel_rgbw_value(
-          caller, ChannelID, GroupID, EOL, color ? *color : _color,
-          color_brightness ? *color_brightness : _color_brightness,
-          brightness ? *brightness : _brightness, on_off ? *on_off : 0);
-    }
-  }
-
-  safe_array_unlock(arr);
-  return result;
-}
-
-bool supla_device_channels::set_color(const supla_caller &caller, int ChannelID,
-                                      int GroupID, unsigned char EOL,
-                                      unsigned int color) {
-  return set_rgbw(caller, ChannelID, GroupID, EOL, &color, NULL, NULL, NULL);
-}
-
-bool supla_device_channels::set_color_brightness(const supla_caller &caller,
-                                                 int ChannelID, int GroupID,
-                                                 unsigned char EOL,
-                                                 char brightness) {
-  return set_rgbw(caller, ChannelID, GroupID, EOL, NULL, &brightness, NULL,
-                  NULL);
-}
-
-bool supla_device_channels::set_brightness(const supla_caller &caller,
-                                           int ChannelID, int GroupID,
-                                           unsigned char EOL, char brightness) {
-  return set_rgbw(caller, ChannelID, GroupID, EOL, NULL, NULL, &brightness,
-                  NULL);
-}
-
-bool supla_device_channels::set_dgf_transparency(const supla_caller &caller,
-                                                 int ChannelID,
-                                                 unsigned short activeBits,
-                                                 unsigned short mask) {
-  safe_array_lock(arr);
-
-  bool result = false;
-  supla_device_channel *channel = find_channel(ChannelID);
-  if (channel && (channel->getFunc() == SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL ||
-                  channel->getFunc() == SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL)) {
-    unsigned short scope = (unsigned short)(pow(2, channel->getParam1()) - 1);
-    activeBits &= scope;
-    mask &= scope;
-
-    char value[SUPLA_CHANNELVALUE_SIZE];
-    memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
-
-    TCSD_Digiglass_NewValue *new_value = (TCSD_Digiglass_NewValue *)value;
-    new_value->active_bits = activeBits;
-    new_value->mask = mask;
-    async_set_channel_value(channel, caller, 0, 0, value);
-    result = true;
-  }
-
-  safe_array_unlock(arr);
-  return result;
-}
-
-bool supla_device_channels::action_toggle(const supla_caller &caller,
-                                          int ChannelID, int GroupID,
-                                          unsigned char EOL) {
-  return set_on(caller, ChannelID, GroupID, EOL, false, true);
-}
-
-bool supla_device_channels::rs_action(const supla_caller &caller, int ChannelID,
-                                      int GroupID, unsigned char EOL,
-                                      rsAction action,
-                                      const char *closingPercentage,
-                                      bool delta) {
-  bool result = false;
-  access_channel(
-      ChannelID,
-      [&result, this, caller, GroupID, EOL, action, closingPercentage,
-       delta](supla_device_channel *channel) -> void {
-        char v = -1;
-
-        switch (channel->getFunc()) {
-          case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-          case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-
-            switch (action) {
-              case rsActionStop:
-                v = 0;
-                break;
-              case rsActionDown:
-                v = 1;
-                break;
-              case rsActionUp:
-                v = 2;
-                break;
-              case rsActionDownOrStop:
-                if (channel->getFlags() &
-                    SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
-                  v = 3;
-                }
-                break;
-              case rsActionUpOrStop:
-                if (channel->getFlags() &
-                    SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
-                  v = 4;
-                }
-                break;
-              case rsActionStepByStep:
-                if (channel->getFlags() &
-                    SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
-                  v = 5;
-                }
-                break;
-              case rsActionShut:
-                if (closingPercentage) {
-                  int percentage = *closingPercentage;
-
-                  if (delta) {
-                    char current = 0;
-                    channel->getChar(&current);
-                    if (current > 100) {
-                      current = 100;
-                    } else if (current < 0) {
-                      current = 0;
-                    }
-
-                    if (*closingPercentage + current > 100) {
-                      percentage = 100;
-                    } else if (*closingPercentage + current < 0) {
-                      percentage = 0;
-                    }
-                  }
-
-                  if (percentage > 100) {
-                    v = 110;
-                  } else if (percentage < 0) {
-                    v = 10;
-                  } else {
-                    v = percentage + 10;
-                  }
-                } else {
-                  v = 110;
-                }
-                break;
-              case rsActionReveal:
-                v = 10;
-                break;
-            }
-            if (v >= 0 && v <= 110) {
-              result = set_device_channel_char_value(caller, channel, GroupID,
-                                                     EOL, v);
-            }
-            break;
-        }
-      });
-
-  return result;
-}
-
-bool supla_device_channels::action_shut(const supla_caller &caller,
-                                        int ChannelID, int GroupID,
-                                        unsigned char EOL,
-                                        const char *closingPercentage,
-                                        bool delta) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionShut,
-                   closingPercentage, delta);
-}
-
-bool supla_device_channels::action_reveal(const supla_caller &caller,
-                                          int ChannelID, int GroupID,
-                                          unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionReveal, NULL,
-                   false);
-}
-
-bool supla_device_channels::action_stop(const supla_caller &caller,
-                                        int ChannelID, int GroupID,
-                                        unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionStop, NULL, false);
-}
-
-bool supla_device_channels::action_up(const supla_caller &caller, int ChannelID,
-                                      int GroupID, unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionUp, NULL, false);
-}
-
-bool supla_device_channels::action_down(const supla_caller &caller,
-                                        int ChannelID, int GroupID,
-                                        unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionDown, NULL, false);
-}
-
-bool supla_device_channels::action_up_or_stop(const supla_caller &caller,
-                                              int ChannelID, int GroupID,
-                                              unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionUpOrStop, NULL,
-                   false);
-}
-
-bool supla_device_channels::action_down_or_stop(const supla_caller &caller,
-                                                int ChannelID, int GroupID,
-                                                unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionDownOrStop, NULL,
-                   false);
-}
-
-bool supla_device_channels::action_step_by_step(const supla_caller &caller,
-                                                int ChannelID, int GroupID,
-                                                unsigned char EOL) {
-  return rs_action(caller, ChannelID, GroupID, EOL, rsActionStepByStep, NULL,
-                   false);
-}
-
-bool supla_device_channels::action_open_close(const supla_caller &caller,
-                                              int ChannelID, int GroupID,
-                                              unsigned char EOL, bool unknown,
-                                              bool open, bool cancelTasks) {
-  safe_array_lock(arr);
-
-  bool result = false;
-  supla_device_channel *channel = find_channel(ChannelID);
-  if (channel && channel->isCharValueWritable()) {
-    if (unknown) {
-      // You don't know whether you are opening or closing
-      switch (channel->getFunc()) {
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-          result = set_device_channel_char_value(caller, channel, GroupID, EOL,
-                                                 1, cancelTasks);
-          break;
-      }
-    } else {
-      switch (channel->getFunc()) {
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR: {
-          supla_action_gate_openclose::open_close(caller, device->get_user_id(),
-                                                  device->get_id(),
-                                                  channel->getId(), open);
-          result = true;
-        } break;
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-          result = set_device_channel_char_value(caller, channel, GroupID, EOL,
-                                                 1, cancelTasks);
-          break;
-      }
-    }
-  }
-
-  safe_array_unlock(arr);
-  return result;
-}
-
-bool supla_device_channels::action_open(const supla_caller &caller,
-                                        int ChannelID, int GroupID,
-                                        unsigned char EOL) {
-  return action_open_close(caller, ChannelID, GroupID, EOL, false, true);
-}
-
-bool supla_device_channels::action_close(const supla_caller &caller,
-                                         int ChannelID, int GroupID,
-                                         unsigned char EOL) {
-  return action_open_close(caller, ChannelID, GroupID, EOL, false, false);
-}
-
-bool supla_device_channels::action_close(const supla_caller &caller,
-                                         int ChannelID) {
-  return action_open_close(caller, ChannelID, 0, 0, false, false);
-}
-
-bool supla_device_channels::action_open_close(const supla_caller &caller,
-                                              int ChannelID, int GroupID,
-                                              unsigned char EOL) {
-  return action_open_close(caller, ChannelID, GroupID, EOL, true, false);
-}
-
-bool supla_device_channels::action_open_close_without_canceling_tasks(
-    const supla_caller &caller, int ChannelID, int GroupID, unsigned char EOL) {
-  return action_open_close(caller, ChannelID, GroupID, EOL, true, false, false);
-}
-
-void supla_device_channels::timer_arm(const supla_caller &caller, int ChannelID,
-                                      int GroupID, unsigned char EOL,
-                                      unsigned char On,
-                                      unsigned int DurationMS) {
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
-
-  if (channel) {
-    switch (channel->getFunc()) {
-      case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
-        char value[SUPLA_CHANNELVALUE_SIZE] = {};
-        value[0] = On ? 1 : 0;
-        async_set_channel_value(channel, caller, GroupID, EOL, value,
-                                DurationMS);
-      }
-    }
-  }
-
-  safe_array_unlock(arr);
-}
-
-channel_json_config *supla_device_channels::get_json_config(int ChannelID) {
-  channel_json_config *result = NULL;
-  access_channel(ChannelID, [&result](supla_device_channel *channel) -> void {
-    result = channel->getJSONConfig();
-  });
-
-  return result;
-}
-
-unsigned int supla_device_channels::get_value_validity_time_left_msec(void) {
-  unsigned int result = 0;
-  for_each_channel([&result](supla_device_channel *channel) -> void {
-    unsigned int time = channel->get_value_validity_time_left_msec();
-    if (time > result) {
-      result = time;
-    }
-  });
-  return result;
-}
-
-void supla_device_channels::on_related_sensor_value_changed(
-    int control_channel_id, int sensor_id, bool is_open) {
-  channel_json_config *config = nullptr;
-  access_channel(control_channel_id,
-                 [&config](supla_device_channel *channel) -> void {
-                   switch (channel->getFunc()) {
-                     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-                     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-                       config = channel->getJSONConfig();
-                       break;
-                   }
-                 });
-
-  if (config) {
-    controlling_the_gate_config *gcfg = new controlling_the_gate_config(config);
-    if (gcfg->is_active_state_verification_method_enabled()) {
-      supla_action_gate_openclose::cancel_tasks(
-          device->get_user_id(), device->get_id(), control_channel_id, is_open);
-    }
-    delete gcfg;
-    delete config;
-  }
 }

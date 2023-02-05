@@ -71,14 +71,15 @@ void supla_register_device::on_registraction_success(void) {
   device->set_authkey(get_authkey());
   device->set_user(supla_user::find(get_user_id(), true));
   device->set_flags(get_device_flags());
+
+  supla_device_channels *channels = new supla_device_channels(
+      get_device_dao(), device.get(), get_channels_b(), get_channels_c(),
+      get_channel_count());
+  device->set_channels(channels);
+
   device->set_registered(true);
 
-  device->load_config(get_user_id());
-
-  device->get_channels()->update_channels(get_channels_b(), get_channels_c(),
-                                          get_channel_count());
-
-  supla_user::add_device(device->get_shared_ptr(), get_user_id());
+  supla_user::add_device(device, get_user_id());
   device->get_user()->get_clients()->update_device_channels(get_location_id(),
                                                             get_device_id());
 

@@ -25,7 +25,7 @@
 #include <memory>
 
 #include "commontypes.h"
-#include "devicechannel.h"
+#include "device/devicechannels.h"
 
 class supla_user;
 class supla_device_call_handler_collection;
@@ -43,8 +43,8 @@ class supla_device : public supla_abstract_connection_object {
 
   bool entering_cfg_mode_in_progress;
 
-  void load_config(int UserID);
   void set_flags(int flags);
+  void set_channels(supla_device_channels *channels);
 
   virtual bool can_reconnect(void);
 
