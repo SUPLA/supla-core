@@ -59,19 +59,20 @@ typedef struct {
 
 class supla_device_channel {
  private:
+  void *lck;
   supla_device *device;
-  int id;
-  unsigned char number;
-  int type;
+  const int id;
+  const unsigned char number;
+  const int type;
   int func;
   int param1;
-  int param2;
-  int param3;
-  int param4;
+  const int param2;
+  const int param3;
+  const int param4;
   char *text_param1;
   char *text_param2;
   char *text_param3;
-  bool hidden;
+  const bool hidden;
   bool offline;
   unsigned int flags;
   TDSC_ChannelState *state;
@@ -100,6 +101,8 @@ class supla_device_channel {
   static void get_defaults(int type, int func, int *param1, int *param2);
   static int func_list_filter(int func_list, int type);
 
+  void lock(void);
+  void unlock(void);
   int get_id(void);
   int get_number(void);
   int get_user_id(void);
@@ -133,7 +136,6 @@ class supla_device_channel {
   void set_extended_value(TSuplaChannelExtendedValue *ev);
   void assign_rgbw_value(char value[SUPLA_CHANNELVALUE_SIZE], int color,
                          char color_brightness, char brightness, char on_off);
-  void assign_char_value(char value[SUPLA_CHANNELVALUE_SIZE], char cvalue);
   void get_double(double *value);
   void get_char(char *value);
   bool get_rgbw(int *color, char *color_brightness, char *brightness,
@@ -158,7 +160,7 @@ class supla_device_channel {
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);
-  supla_voltage_analyzers &get_voltage_analyzers(void);
+  supla_voltage_analyzers get_voltage_analyzers(void);
 };
 
 #endif /* DEVICECHANNEL_H_ */

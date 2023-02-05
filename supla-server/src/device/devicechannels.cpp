@@ -649,9 +649,9 @@ bool supla_device_channels::set_device_channel_char_value(
             brightness, on_off);
       }
     } else if (channel->is_char_value_writable()) {
-      char v[SUPLA_CHANNELVALUE_SIZE];
-      memset(v, 0, SUPLA_CHANNELVALUE_SIZE);
-      channel->assign_char_value(v, value);
+      char v[SUPLA_CHANNELVALUE_SIZE] = {};
+      channel->get_value(v);
+      v[0] = value;
 
       async_set_channel_value(channel, caller, group_id, eol, v, cancel_tasks);
 
