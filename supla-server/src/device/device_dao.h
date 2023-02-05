@@ -19,6 +19,8 @@
 #ifndef SUPLA_DEVICE_DAO_H_
 #define SUPLA_DEVICE_DAO_H_
 
+#include <vector>
+
 #include "db/abstract_db_access_provider.h"
 #include "device/abstract_device_dao.h"
 

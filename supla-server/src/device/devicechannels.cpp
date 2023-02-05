@@ -21,6 +21,8 @@
 #include <math.h>
 #include <string.h>
 
+#include <memory>
+
 #include "actions/action_gate_openclose.h"
 #include "actions/action_trigger.h"
 #include "channel_gate_value.h"

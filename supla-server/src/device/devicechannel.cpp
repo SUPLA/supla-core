@@ -21,6 +21,8 @@
 #include <assert.h>
 #include <string.h>
 
+#include <memory>
+
 #include "channeljsonconfig/action_trigger_config.h"
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "db/database.h"

@@ -19,6 +19,8 @@
 #ifndef DEVICECHANNELS_H_
 #define DEVICECHANNELS_H_
 
+#include <list>
+#include <map>
 #include <vector>
 
 #include "device/abstract_device_dao.h"
