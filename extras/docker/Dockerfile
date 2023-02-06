@@ -1,4 +1,4 @@
-FROM debian:11.3
+FROM debian:11.6
 
 RUN apt-get update 
 RUN apt-get upgrade -y
