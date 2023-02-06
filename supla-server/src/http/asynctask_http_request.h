@@ -19,9 +19,13 @@
 #ifndef HTTP_ASYNCTASK_HTTP_REQUEST_H_
 #define HTTP_ASYNCTASK_HTTP_REQUEST_H_
 
+#include <functional>
+#include <memory>
+
 #include "asynctask/abstract_asynctask.h"
 #include "caller.h"
 #include "commontypes.h"
+#include "device/device.h"
 #include "http/abstract_curl_adapter.h"
 #include "user/user.h"
 
@@ -39,6 +43,8 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
   int get_device_id(void);
   int get_channel_id(void);
   event_type get_event_type(void);
+  void access_device(
+      std::function<void(std::shared_ptr<supla_device>)> on_device);
   virtual bool _execute(bool *execute_again,
                         supla_asynctask_thread_bucket *bucket);
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter) = 0;

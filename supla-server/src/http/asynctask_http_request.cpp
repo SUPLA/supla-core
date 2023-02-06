@@ -21,6 +21,9 @@
 #include "http/asynctask_http_thread_bucket.h"
 #include "svrcfg.h"
 
+using std::function;
+using std::shared_ptr;
+
 supla_asynctask_http_request::supla_asynctask_http_request(
     const supla_caller &caller, supla_user *user, int device_id, int channel_id,
     event_type et, supla_asynctask_queue *queue,
@@ -45,6 +48,16 @@ supla_user *supla_asynctask_http_request::get_user(void) { return user; }
 int supla_asynctask_http_request::get_device_id(void) { return device_id; }
 
 int supla_asynctask_http_request::get_channel_id(void) { return channel_id; }
+
+void supla_asynctask_http_request::access_device(
+    function<void(shared_ptr<supla_device>)> on_device) {
+  shared_ptr<supla_device> device =
+      get_user()->get_devices()->get(get_device_id(), get_channel_id());
+  if (device != nullptr) {
+    on_device(device);
+    device = nullptr;
+  }
+}
 
 event_type supla_asynctask_http_request::get_event_type(void) { return et; }
 

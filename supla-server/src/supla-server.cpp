@@ -16,6 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <curl/curl.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,6 +58,8 @@ int main(int argc, char *argv[]) {
   void *ipc_accept_loop_thread = nullptr;
   void *http_request_queue_loop_thread = nullptr;
   supla_cyclictasks_agent *cyclictasks_agent = nullptr;
+
+  curl_global_init(CURL_GLOBAL_ALL);
 
 #ifdef __LCK_DEBUG
   lck_debug_init();
@@ -224,6 +227,7 @@ int main(int argc, char *argv[]) {
   st_mainloop_free();  // Almost at the end
   st_delpidfile(pidfile_path);
   svrcfg_free();
+  curl_global_cleanup();
 
   {
     char dt[64];
@@ -237,5 +241,7 @@ exit_fail:
   ssocket_free(ssd_ssl);
   ssocket_free(ssd_tcp);
   svrcfg_free();
+  curl_global_cleanup();
+
   exit(EXIT_FAILURE);
 }
