@@ -117,41 +117,37 @@ shared_ptr<supla_abstract_connection_object> supla_connection_objects::get(
   }
 
   shared_ptr<supla_abstract_connection_object> result;
-  vector<shared_ptr<supla_abstract_connection_object>> dont_release;
-
-  lock();
-  dont_release.reserve(objects.size());
+  vector<weak_ptr<supla_abstract_connection_object>> objects =
+      get_all();  // We don't want to use lock() / unlock() so that if an object
+                  // is freed it won't happen during the lock. That's why we
+                  // make a copy of the list.
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     shared_ptr<supla_abstract_connection_object> _obj = (*it).lock();
 
-    if (_obj != nullptr) {
-      if (_obj->get_id() == id) {
-        result = _obj;
-        break;
-      } else {
-        // We don't want the object to accidentally get freed between lock() and
-        // unlock()
-        dont_release.push_back(_obj);
-      }
+    if (_obj != nullptr && _obj->get_id() == id) {
+      result = _obj;
+      break;
     }
   }
-  unlock();
-
-  dont_release.clear();
 
   return result;
 }
 
 int supla_connection_objects::count(void) {
   int result = 0;
-  lock();
+
+  vector<weak_ptr<supla_abstract_connection_object>> objects =
+      get_all();  // We don't want to use lock() / unlock() so that if an object
+                  // is freed it won't happen during the lock. That's why we
+                  // make a copy of the list.
+
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     if (!(*it).expired()) {
       result++;
     }
   }
-  unlock();
+
   return result;
 }
 
