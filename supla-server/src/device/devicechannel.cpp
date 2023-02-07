@@ -1221,9 +1221,18 @@ bool supla_device_channel::get_state(TDSC_ChannelState *state) {
   return result;
 }
 
-supla_voltage_analyzers supla_device_channel::get_voltage_analyzers(void) {
+bool supla_device_channel::get_voltage_analyzers_with_any_sample_over_threshold(
+    supla_voltage_analyzers *voltage_analyzers, bool reset) {
+  bool result = false;
   lock();
-  supla_voltage_analyzers result = voltage_analyzers;
+  if (this->voltage_analyzers.is_any_sample_over_threshold()) {
+    *voltage_analyzers = this->voltage_analyzers;
+    if (reset) {
+      this->voltage_analyzers.reset();
+    }
+    result = true;
+  }
+
   unlock();
   return result;
 }

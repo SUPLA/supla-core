@@ -44,13 +44,15 @@ void supla_voltage_threshold_logger::run(
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
     (*uit)->get_devices()->for_each([&vas](shared_ptr<supla_device> device,
                                            bool *will_continue) -> void {
-      device->get_channels()->for_each_channel([&vas](supla_device_channel
-                                                          *channel) -> void {
-        if (channel->get_voltage_analyzers().is_any_sample_over_threshold()) {
-          vas.push_back(channel->get_voltage_analyzers());
-        }
-        channel->get_voltage_analyzers().reset();
-      });
+      device->get_channels()->for_each_channel(
+          [&vas](supla_device_channel *channel) -> void {
+            supla_voltage_analyzers voltage_analyzers;
+
+            if (channel->get_voltage_analyzers_with_any_sample_over_threshold(
+                    &voltage_analyzers, true)) {
+              vas.push_back(voltage_analyzers);
+            }
+          });
     });
   }
 

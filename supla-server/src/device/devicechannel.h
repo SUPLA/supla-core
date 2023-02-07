@@ -160,7 +160,8 @@ class supla_device_channel {
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);
-  supla_voltage_analyzers get_voltage_analyzers(void);
+  bool get_voltage_analyzers_with_any_sample_over_threshold(
+      supla_voltage_analyzers *voltage_analyzers, bool reset);
 };
 
 #endif /* DEVICECHANNEL_H_ */
