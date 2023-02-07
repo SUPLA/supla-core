@@ -413,10 +413,12 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
 
 void supla_client_channel::mark_for_remote_update(int mark) {
   supla_client_objcontainer_item::mark_for_remote_update(mark);
+  lock();
   mark = marked_for_remote_update();
   if ((mark & OI_REMOTEUPDATE_DATA1) && (mark & OI_REMOTEUPDATE_DATA2)) {
     unmark_for_remote_update(OI_REMOTEUPDATE_DATA2);
   }
+  unlock();
 }
 
 bool supla_client_channel::get_basic_cfg(TSC_ChannelBasicCfg *basic_cfg) {

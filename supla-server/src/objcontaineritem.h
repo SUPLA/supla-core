@@ -33,7 +33,12 @@ class supla_objcontainer_item {
   supla_objcontainer *Container;
   int Id;
   int RemoteUpdateMark;
+  void *lck;
+
  protected:
+  void lock(void);
+  void unlock(void);
+
  public:
   supla_objcontainer_item(supla_objcontainer *Container, int Id);
   virtual ~supla_objcontainer_item(void);
