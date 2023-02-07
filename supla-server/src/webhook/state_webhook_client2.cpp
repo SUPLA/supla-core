@@ -19,15 +19,43 @@
 #include <webhook/state_webhook_client2.h>
 
 supla_state_webhook_client2::supla_state_webhook_client2(
-    int channel_id, supla_abstract_curl_adapter *curl_adapter) {
+    int channel_id, supla_abstract_curl_adapter *curl_adapter,
+    supla_abstract_state_webhook_credentials *credentials) {
   this->channel_id = channel_id;
   this->online = false;
   this->curl_adapter = curl_adapter;
+  this->credentials = credentials;
+
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  this->timestamp = now.tv_sec;
 }
 
 void supla_state_webhook_client2::set_online(bool online) {
   this->online = online;
 }
+
+void supla_state_webhook_client2::set_timestamp(__time_t timestamp) {
+  this->timestamp = timestamp;
+}
+
+cJSON *supla_state_webhook_client2::get_header(const char *function) {
+  cJSON *header = cJSON_CreateObject();
+  if (header) {
+    cJSON_AddStringToObject(header, "userShortUniqueId",
+                            credentials->get_user_short_unique_id());
+
+    cJSON_AddNumberToObject(header, "channelId", channel_id);
+
+    cJSON_AddStringToObject(header, "channelFunction", function);
+
+    cJSON_AddNumberToObject(header, "timestamp", timestamp);
+  }
+
+  return header;
+}
+
+bool supla_state_webhook_client2::send_report(cJSON *json) {}
 
 bool supla_state_webhook_client2::power_switch_report(bool on) {}
 
@@ -96,4 +124,75 @@ bool supla_state_webhook_client2::impulse_counter_water_measurement_report(
 bool supla_state_webhook_client2::impulse_counter_heat_measurement_report(
     supla_channel_ic_measurement *icm) {}
 bool supla_state_webhook_client2::triggered_actions_report(
-    unsigned int actions) {}
+    unsigned int actions) {
+  if (!actions) {
+    return false;
+  }
+
+  cJSON *root = get_header("ACTION_TRIGGER");
+  if (root) {
+    cJSON *json_actions = cJSON_CreateArray();
+    if (json_actions) {
+      unsigned int bit = 1;
+      for (unsigned int a = 0; a < sizeof(actions) * 8; a++) {
+        cJSON *item = NULL;
+
+        if (actions & bit) {
+          switch (bit) {
+            case SUPLA_ACTION_CAP_TURN_ON:
+              item = cJSON_CreateString("TURN_ON");
+              break;
+            case SUPLA_ACTION_CAP_TURN_OFF:
+              item = cJSON_CreateString("TURN_OFF");
+              break;
+            case SUPLA_ACTION_CAP_TOGGLE_x1:
+              item = cJSON_CreateString("TOGGLE_X1");
+              break;
+            case SUPLA_ACTION_CAP_TOGGLE_x2:
+              item = cJSON_CreateString("TOGGLE_X2");
+              break;
+            case SUPLA_ACTION_CAP_TOGGLE_x3:
+              item = cJSON_CreateString("TOGGLE_X3");
+              break;
+            case SUPLA_ACTION_CAP_TOGGLE_x4:
+              item = cJSON_CreateString("TOGGLE_X4");
+              break;
+            case SUPLA_ACTION_CAP_TOGGLE_x5:
+              item = cJSON_CreateString("TOGGLE_X5");
+              break;
+            case SUPLA_ACTION_CAP_HOLD:
+              item = cJSON_CreateString("HOLD");
+              break;
+            case SUPLA_ACTION_CAP_SHORT_PRESS_x1:
+              item = cJSON_CreateString("PRESS_X1");
+              break;
+            case SUPLA_ACTION_CAP_SHORT_PRESS_x2:
+              item = cJSON_CreateString("PRESS_X2");
+              break;
+            case SUPLA_ACTION_CAP_SHORT_PRESS_x3:
+              item = cJSON_CreateString("PRESS_X3");
+              break;
+            case SUPLA_ACTION_CAP_SHORT_PRESS_x4:
+              item = cJSON_CreateString("PRESS_X4");
+              break;
+            case SUPLA_ACTION_CAP_SHORT_PRESS_x5:
+              item = cJSON_CreateString("PRESS_X5");
+              break;
+          }
+
+          if (item) {
+            cJSON_AddItemToArray(json_actions, item);
+          }
+        }
+        bit <<= 1;
+      }
+
+      cJSON_AddItemToObject(root, "triggered_actions", json_actions);
+      return send_report(root);
+    } else {
+      cJSON_Delete(root);
+    }
+  }
+
+  return false;
+}

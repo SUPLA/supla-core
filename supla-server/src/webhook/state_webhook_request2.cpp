@@ -39,7 +39,7 @@ bool supla_state_webhook_request2::make_request(
     return false;
   }
 
-  supla_state_webhook_client2 client(get_channel_id(), curl_adapter);
+  supla_state_webhook_client2 client(get_channel_id(), curl_adapter, nullptr);
 
   if (get_event_type() == ET_ACTION_TRIGGERED) {
     return client.triggered_actions_report(actions);

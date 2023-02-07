@@ -22,18 +22,26 @@
 #include "channel_ic_measurement.h"
 #include "device/channel_electricity_measurement.h"
 #include "http/abstract_curl_adapter.h"
+#include "json/cJSON.h"
+#include "webhook/abstract_state_webhook_credentials.h"
 
 class supla_state_webhook_client2 {
  private:
   int channel_id;
   bool online;
+  __time_t timestamp;
   supla_abstract_curl_adapter *curl_adapter;
+  supla_abstract_state_webhook_credentials *credentials;
+  bool send_report(cJSON *json);
+  cJSON *get_header(const char *function);
 
  public:
   explicit supla_state_webhook_client2(
-      int channel_id, supla_abstract_curl_adapter *curl_adapter);
+      int channel_id, supla_abstract_curl_adapter *curl_adapter,
+      supla_abstract_state_webhook_credentials *credentials);
 
   void set_online(bool online);
+  void set_timestamp(__time_t timestamp);
   bool power_switch_report(bool on);
   bool light_switch_report(bool on);
   bool staircase_timer_report(bool on);
