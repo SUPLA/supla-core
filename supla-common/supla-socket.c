@@ -582,7 +582,7 @@ void *ssocket_client_init(const char host[], int port, unsigned char secure) {
 
   if (ssd == NULL) return NULL;
 
-  supla_log(LOG_INFO, "SSL version: %s", OPENSSL_VERSION_TEXT);
+  supla_log(LOG_INFO, "SSL version: %s", OpenSSL_version(OPENSSL_VERSION));
 
   memset(ssd, 0, sizeof(TSuplaSocketData));
 
