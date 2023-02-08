@@ -7,6 +7,7 @@ CPP_SRCS += \
 ../src/http/abstract_curl_adapter.cpp \
 ../src/http/asynctask_http_request.cpp \
 ../src/http/asynctask_http_thread_bucket.cpp \
+../src/http/curl_adapter.cpp \
 ../src/http/httprequest.cpp \
 ../src/http/httprequestactiontriggerextraparams.cpp \
 ../src/http/httprequestextraparams.cpp \
@@ -20,6 +21,7 @@ CPP_DEPS += \
 ./src/http/abstract_curl_adapter.d \
 ./src/http/asynctask_http_request.d \
 ./src/http/asynctask_http_thread_bucket.d \
+./src/http/curl_adapter.d \
 ./src/http/httprequest.d \
 ./src/http/httprequestactiontriggerextraparams.d \
 ./src/http/httprequestextraparams.d \
@@ -33,6 +35,7 @@ OBJS += \
 ./src/http/abstract_curl_adapter.o \
 ./src/http/asynctask_http_request.o \
 ./src/http/asynctask_http_thread_bucket.o \
+./src/http/curl_adapter.o \
 ./src/http/httprequest.o \
 ./src/http/httprequestactiontriggerextraparams.o \
 ./src/http/httprequestextraparams.o \
@@ -55,7 +58,7 @@ src/http/%.o: ../src/http/%.cpp src/http/subdir.mk
 clean: clean-src-2f-http
 
 clean-src-2f-http:
-	-$(RM) ./src/http/abstract_curl_adapter.d ./src/http/abstract_curl_adapter.o ./src/http/asynctask_http_request.d ./src/http/asynctask_http_request.o ./src/http/asynctask_http_thread_bucket.d ./src/http/asynctask_http_thread_bucket.o ./src/http/httprequest.d ./src/http/httprequest.o ./src/http/httprequestactiontriggerextraparams.d ./src/http/httprequestactiontriggerextraparams.o ./src/http/httprequestextraparams.d ./src/http/httprequestextraparams.o ./src/http/httprequestqueue.d ./src/http/httprequestqueue.o ./src/http/httprequestvoiceassistantextraparams.d ./src/http/httprequestvoiceassistantextraparams.o ./src/http/trivialhttp.d ./src/http/trivialhttp.o ./src/http/trivialhttpfactory.d ./src/http/trivialhttpfactory.o ./src/http/trivialhttps.d ./src/http/trivialhttps.o
+	-$(RM) ./src/http/abstract_curl_adapter.d ./src/http/abstract_curl_adapter.o ./src/http/asynctask_http_request.d ./src/http/asynctask_http_request.o ./src/http/asynctask_http_thread_bucket.d ./src/http/asynctask_http_thread_bucket.o ./src/http/curl_adapter.d ./src/http/curl_adapter.o ./src/http/httprequest.d ./src/http/httprequest.o ./src/http/httprequestactiontriggerextraparams.d ./src/http/httprequestactiontriggerextraparams.o ./src/http/httprequestextraparams.d ./src/http/httprequestextraparams.o ./src/http/httprequestqueue.d ./src/http/httprequestqueue.o ./src/http/httprequestvoiceassistantextraparams.d ./src/http/httprequestvoiceassistantextraparams.o ./src/http/trivialhttp.d ./src/http/trivialhttp.o ./src/http/trivialhttpfactory.d ./src/http/trivialhttpfactory.o ./src/http/trivialhttps.d ./src/http/trivialhttps.o
 
 .PHONY: clean-src-2f-http
 
