@@ -37,7 +37,7 @@ supla_channel_value *supla_value_getter::_get_value(int user_id, int device_id,
     device->get_channels()->access_channel(
         channel_id,
         [&result, &func, &online](supla_device_channel *channel) -> void {
-          result = channel->get_channel_value();
+          result = channel->get_channel_value<supla_channel_value>(false);
           if (func) {
             *func = channel->get_func();
           }

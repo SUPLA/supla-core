@@ -37,8 +37,8 @@ bool supla_get_valve_value_command::get_channel_valve_value(
 
   if (device != nullptr) {
     supla_channel_valve_value *vv =
-        supla_channel_value::get<supla_channel_valve_value>(
-            device->get_channels()->get_channel_value(channel_id));
+        device->get_channels()->get_channel_value<supla_channel_valve_value>(
+            channel_id);
     if (vv) {
       vv->get_valve_value(value);
       delete vv;
