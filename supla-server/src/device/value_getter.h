@@ -23,8 +23,9 @@
 
 class supla_value_getter : public supla_abstract_value_getter {
  protected:
-  virtual supla_channel_value* _get_value(int user_id, int device_id,
-                                          int channel_id);
+  virtual supla_channel_value *_get_value(int user_id, int device_id,
+                                          int channel_id, int *func,
+                                          bool *online);
 
  public:
   virtual ~supla_value_getter(void);

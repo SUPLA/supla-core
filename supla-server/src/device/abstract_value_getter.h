@@ -30,7 +30,8 @@ class supla_abstract_value_getter {
 
  protected:
   virtual supla_channel_value* _get_value(int user_id, int device_id,
-                                          int channel_id) = 0;
+                                          int channel_id, int* func,
+                                          bool* online) = 0;
 
  public:
   supla_abstract_value_getter();
@@ -38,7 +39,11 @@ class supla_abstract_value_getter {
   virtual ~supla_abstract_value_getter();
 
   supla_channel_value* get_value(void);
+  supla_channel_value* get_value(int* func, bool* online);
   supla_channel_value* get_value(int user_id, int device_id, int channel_id);
+  supla_channel_value* get_value(int user_id, int device_id, int channel_id,
+                                 int* func, bool* online);
+
   int get_user_id(void);
   int get_device_id(void);
   int get_channel_id(void);
