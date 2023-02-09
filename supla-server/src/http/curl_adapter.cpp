@@ -46,7 +46,7 @@ size_t supla_curl_adapter::write_callback(void *contents, size_t size,
 
 void supla_curl_adapter::reset(void) {
   curl_easy_reset(curl);
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+
   if (header) {
     curl_slist_free_all(header);
     header = nullptr;
@@ -69,6 +69,10 @@ void supla_curl_adapter::set_opt_verbose(bool on) {
   curl_easy_setopt(curl, CURLOPT_VERBOSE, on ? 1L : 0L);
 }
 
+void supla_curl_adapter::set_opt_custom_request(const char *method) {
+  curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
+}
+
 bool supla_curl_adapter::append_header(const char *string) {
   struct curl_slist *new_header = curl_slist_append(header, string);
 
@@ -86,6 +90,8 @@ bool supla_curl_adapter::perform(void) {
   }
 
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "supla-server");
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
+                   supla_curl_adapter::write_callback);
 
   return CURLE_OK == curl_easy_perform(curl);
 }

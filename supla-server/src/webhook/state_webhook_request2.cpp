@@ -48,7 +48,7 @@ bool supla_state_webhook_request2::make_request(
   channel_complex_value value =
       get_user()->get_channel_complex_value(get_channel_id());
 
-  client.set_online(value.online);
+  client.set_channel_connected(value.online);
 
   bool result = false;
 

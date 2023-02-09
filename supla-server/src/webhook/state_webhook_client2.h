@@ -28,19 +28,35 @@
 class supla_state_webhook_client2 {
  private:
   int channel_id;
-  bool online;
+  bool channel_connected;
   __time_t timestamp;
   supla_abstract_curl_adapter *curl_adapter;
   supla_abstract_state_webhook_credentials *credentials;
-  bool send_report(cJSON *json);
   cJSON *get_header(const char *function);
+  void refresh_token(void);
+  bool perform_post_request(const char *fields, int *http_result_code);
+  bool send_report(const char *json_string);
+  bool send_report(cJSON *json);
+  bool report_with_bool(const char *function, const char *name, bool _true);
+  bool report_with_number(const char *function, const char *name,
+                          double number);
+  bool value_report(const char *function, double number);
+  bool on_report(const char *function, bool on);
+  bool hi_report(const char *function, bool hi);
+  bool shut_report(const char *function, char shut);
+  bool temperature_and_humidity_report(const char *function,
+                                       double *temperature, double *humidity);
+  bool dimmer_and_rgb_report(const char *function, int *color,
+                             char *color_brightness, char *brightness, char on);
+  bool impulse_counter_measurement_report(const char *function,
+                                          supla_channel_ic_measurement *icm);
 
  public:
   explicit supla_state_webhook_client2(
       int channel_id, supla_abstract_curl_adapter *curl_adapter,
       supla_abstract_state_webhook_credentials *credentials);
 
-  void set_online(bool online);
+  void set_channel_connected(bool connected);
   void set_timestamp(__time_t timestamp);
   bool power_switch_report(bool on);
   bool light_switch_report(bool on);

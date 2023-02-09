@@ -19,11 +19,25 @@
 #ifndef ABSTRACT_STATE_WEBHOOK_CREDENTIALS_H_
 #define ABSTRACT_STATE_WEBHOOK_CREDENTIALS_H_
 
+#include <string>
+
 class supla_abstract_state_webhook_credentials {
  public:
   supla_abstract_state_webhook_credentials(void);
   virtual ~supla_abstract_state_webhook_credentials(void);
+  virtual void refresh_lock(void) = 0;
+  virtual void refresh_unlock(void) = 0;
   virtual const char *get_user_short_unique_id(void) = 0;
+  virtual std::string get_url(void) = 0;
+  virtual std::string get_access_token(void) = 0;
+  virtual std::string get_refresh_token(void) = 0;
+  virtual bool is_access_token_exists(void) = 0;
+  virtual bool is_refresh_token_exists(void) = 0;
+  virtual int expires_in(void) = 0;
+  virtual struct timeval get_set_time(void) = 0;
+  virtual void update(const char *access_token, const char *refresh_token,
+                      int expires_in) = 0;
+  virtual void remove(void) = 0;
 };
 
 #endif /* ABSTRACT_STATE_WEBHOOK_CREDENTIALS_H_ */

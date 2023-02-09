@@ -39,6 +39,7 @@ class supla_curl_adapter : public supla_abstract_curl_adapter {
   virtual void set_opt_post_fields(const char *fields);
   virtual void set_opt_write_data(std::string *data);
   virtual void set_opt_verbose(bool on);
+  virtual void set_opt_custom_request(const char *method);
   virtual bool append_header(const char *string);
   virtual bool perform(void);
 
