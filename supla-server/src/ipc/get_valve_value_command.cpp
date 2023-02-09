@@ -20,6 +20,7 @@
 
 #include <memory>
 
+#include "device/channel_valve_value.h"
 #include "user.h"
 
 using std::shared_ptr;
@@ -32,8 +33,17 @@ bool supla_get_valve_value_command::get_channel_valve_value(
     int user_id, int device_id, int channel_id, TValve_Value *value) {
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
+  bool result = false;
+
   if (device != nullptr) {
-    return device->get_channels()->get_channel_valve_value(channel_id, value);
+    supla_channel_valve_value *vv =
+        supla_channel_value::get<supla_channel_valve_value>(
+            device->get_channels()->get_channel_value(channel_id));
+    if (vv) {
+      vv->get_valve_value(value);
+      delete vv;
+      result = true;
+    }
   }
-  return false;
+  return result;
 }
