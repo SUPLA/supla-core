@@ -20,6 +20,7 @@
 
 #include <memory>
 
+#include "device/channel_rgbw_value.h"
 #include "user.h"
 
 using std::shared_ptr;
@@ -33,11 +34,21 @@ bool supla_get_rgbw_command::get_channel_rgbw_value(int user_id, int device_id,
                                                     char *color_brightness,
                                                     char *brightness,
                                                     char *on_off) {
+  bool result = false;
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    return device->get_channels()->get_channel_rgbw_value(
-        channel_id, color, color_brightness, brightness, on_off);
+    supla_channel_rgbw_value *value =
+        supla_channel_value::get<supla_channel_rgbw_value>(
+            device->get_channels()->get_channel_value(channel_id));
+    if (value) {
+      value->get_rgbw(color, color_brightness, brightness);
+      if (on_off) {
+        *on_off = 0;
+      }
+      delete value;
+      result = true;
+    }
   }
-  return false;
+  return result;
 }
