@@ -20,7 +20,9 @@
 
 #include <string.h>
 
-supla_channel_value::supla_channel_value(void) {}
+supla_channel_value::supla_channel_value(void) {
+  memset(this->native_value, 0, SUPLA_CHANNELVALUE_SIZE);
+}
 
 supla_channel_value::supla_channel_value(
     char native_value[SUPLA_CHANNELVALUE_SIZE]) {

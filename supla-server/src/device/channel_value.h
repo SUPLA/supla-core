@@ -31,6 +31,22 @@ class supla_channel_value {
   virtual ~supla_channel_value(void);
   void get_native_value(char native_value[SUPLA_CHANNELVALUE_SIZE]);
   void set_native_value(char native_value[SUPLA_CHANNELVALUE_SIZE]);
+
+  template <typename T>
+  static T *get(supla_channel_value *value);
 };
+
+template <typename T>
+T *supla_channel_value::get(supla_channel_value *value) {
+  if (value) {
+    T *result = dynamic_cast<T *>(value);
+    if (!result) {
+      delete value;
+    }
+    return result;
+  }
+
+  return nullptr;
+}
 
 #endif /*CHANNEL_VALUE_H_*/
