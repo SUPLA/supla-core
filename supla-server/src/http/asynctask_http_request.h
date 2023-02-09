@@ -25,35 +25,37 @@
 #include "asynctask/abstract_asynctask.h"
 #include "caller.h"
 #include "commontypes.h"
-#include "device/device.h"
+#include "device/abstract_value_getter.h"
 #include "http/abstract_curl_adapter.h"
-#include "user/user.h"
 
 class supla_asynctask_http_request : public supla_abstract_asynctask {
  private:
   supla_caller caller;
-  supla_user *user;
+  int user_id;
   int device_id;
   int channel_id;
   event_type et;
+  supla_abstract_value_getter *value_getter;
 
  protected:
   const supla_caller &get_caller(void);
-  supla_user *get_user(void);
+  int get_user_id(void);
   int get_device_id(void);
   int get_channel_id(void);
   event_type get_event_type(void);
-  void access_device(
-      std::function<void(std::shared_ptr<supla_device>)> on_device);
+  supla_abstract_value_getter *get_value_getter(void);
+  supla_channel_value *get_channel_value(int *func, bool *online);
+
   virtual bool _execute(bool *execute_again,
                         supla_asynctask_thread_bucket *bucket);
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter) = 0;
 
  public:
-  supla_asynctask_http_request(const supla_caller &caller, supla_user *user,
+  supla_asynctask_http_request(const supla_caller &caller, int user_id,
                                int device_id, int channel_id, event_type et,
                                supla_asynctask_queue *queue,
-                               supla_abstract_asynctask_thread_pool *pool);
+                               supla_abstract_asynctask_thread_pool *pool,
+                               supla_abstract_value_getter *value_getter);
 
   virtual ~supla_asynctask_http_request(void);
 };
