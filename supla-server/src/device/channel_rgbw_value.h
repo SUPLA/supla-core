@@ -27,6 +27,7 @@ class supla_channel_rgbw_value : public supla_channel_value {
   explicit supla_channel_rgbw_value(TRGBW_Value *rgbw);
   void set_rgbw(TRGBW_Value *rgbw);
   void get_rgbw(TRGBW_Value *rgbw);
+  void get_rgbw(int *color, char *color_brightness, char *brightness);
   unsigned int get_color(void);
   void set_color(unsigned int color);
   char get_brightness(void);

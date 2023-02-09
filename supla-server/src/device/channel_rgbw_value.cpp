@@ -41,6 +41,21 @@ void supla_channel_rgbw_value::get_rgbw(TRGBW_Value *rgbw) {
   }
 }
 
+void supla_channel_rgbw_value::get_rgbw(int *color, char *color_brightness,
+                                        char *brightness) {
+  if (color) {
+    *color = get_color();
+  }
+
+  if (color_brightness) {
+    *color_brightness = get_color_brightness();
+  }
+
+  if (brightness) {
+    *brightness = get_brightness();
+  }
+}
+
 unsigned int supla_channel_rgbw_value::get_color(void) {
   unsigned int color = 0;
   TRGBW_Value *rgbw = (TRGBW_Value *)native_value;
