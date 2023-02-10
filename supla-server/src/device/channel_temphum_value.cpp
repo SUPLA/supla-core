@@ -21,13 +21,22 @@
 #include <string.h>
 
 supla_channel_temphum_value::supla_channel_temphum_value(
-    bool temperature_only, char native_value[SUPLA_CHANNELVALUE_SIZE])
+    bool with_humidity, char native_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(native_value) {
-  this->temperature_only = temperature_only;
+  this->with_humidity = with_humidity;
+}
+
+supla_channel_temphum_value::supla_channel_temphum_value(bool temperature_only,
+                                                         double temperature,
+                                                         double humidity)
+    : supla_channel_value() {
+  this->with_humidity = with_humidity;
+  set_temperature(temperature);
+  set_humidity(humidity);
 }
 
 double supla_channel_temphum_value::get_temperature(void) {
-  if (temperature_only) {
+  if (!with_humidity) {
     double result = 0;
     memcpy(&result, native_value, sizeof(double));
     return result;
@@ -39,7 +48,7 @@ double supla_channel_temphum_value::get_temperature(void) {
 }
 
 double supla_channel_temphum_value::get_humidity(void) {
-  if (temperature_only) {
+  if (!with_humidity) {
     return -1;
   }
   int n = 0;
@@ -52,16 +61,16 @@ void supla_channel_temphum_value::set_temperature(double temperature) {
     temperature = -273;
   }
 
-  if (temperature_only) {
-    memcpy(native_value, &temperature, sizeof(double));
-  } else {
+  if (with_humidity) {
     int n = temperature * 1000;
     memcpy(native_value, &n, 4);
+  } else {
+    memcpy(native_value, &temperature, sizeof(double));
   }
 }
 
 void supla_channel_temphum_value::set_humidity(double humidity) {
-  if (!temperature_only) {
+  if (with_humidity) {
     if (humidity < -1 || humidity > 100) {
       humidity = -1;
     }

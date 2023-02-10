@@ -44,9 +44,10 @@ TEST_F(AutoGateClosingTest, unknownGateState) {
     return result;
   });
 
-  EXPECT_CALL(valueGetter, _get_value(1, 2, 3))
+  EXPECT_CALL(valueGetter, _get_value(1, 2, 3, IsNull(), IsNull()))
       .Times(1)
-      .WillOnce([](int user_id, int device_id, int channel_id) {
+      .WillOnce([](int user_id, int device_id, int channel_id, int *func,
+                   bool *online) {
         return new supla_channel_gate_value(gsl_unknown, gsl_unknown);
       });
 
@@ -74,9 +75,10 @@ TEST_F(AutoGateClosingTest, stillClosed) {
     return result;
   });
 
-  EXPECT_CALL(valueGetter, _get_value(1, 2, 3))
+  EXPECT_CALL(valueGetter, _get_value(1, 2, 3, IsNull(), IsNull()))
       .Times(1)
-      .WillOnce([](int user_id, int device_id, int channel_id) {
+      .WillOnce([](int user_id, int device_id, int channel_id, int *func,
+                   bool *online) {
         return new supla_channel_gate_value(gsl_closed, gsl_unknown);
       });
 
@@ -104,9 +106,10 @@ TEST_F(AutoGateClosingTest, closeSuccessfully) {
     return result;
   });
 
-  EXPECT_CALL(valueGetter, _get_value(1, 2, 3))
+  EXPECT_CALL(valueGetter, _get_value(1, 2, 3, IsNull(), IsNull()))
       .Times(1)
-      .WillOnce([](int user_id, int device_id, int channel_id) {
+      .WillOnce([](int user_id, int device_id, int channel_id, int *func,
+                   bool *online) {
         return new supla_channel_gate_value(gsl_closed, gsl_unknown);
       });
 
@@ -154,9 +157,10 @@ TEST_F(AutoGateClosingTest, closeAttempt) {
     return result;
   });
 
-  EXPECT_CALL(valueGetter, _get_value(1, 2, 3))
+  EXPECT_CALL(valueGetter, _get_value(1, 2, 3, IsNull(), IsNull()))
       .Times(3)
-      .WillRepeatedly([](int user_id, int device_id, int channel_id) {
+      .WillRepeatedly([](int user_id, int device_id, int channel_id, int *func,
+                         bool *online) {
         return new supla_channel_gate_value(gsl_open, gsl_unknown);
       });
 

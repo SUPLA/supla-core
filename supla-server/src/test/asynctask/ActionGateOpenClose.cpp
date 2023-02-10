@@ -21,7 +21,7 @@
 #include "actions/action_gate_openclose.h"
 #include "device/channel_gate_value.h"
 #include "doubles/channeljsonconfig/ChannelJSONConfigGetterStub.h"
-#include "doubles/device/GateValueGetterStub.h"
+#include "doubles/device/ValueGetterMock.h"
 #include "log.h"
 
 namespace testing {
@@ -53,10 +53,13 @@ void ActionGateOpenCloseTest::noActionRequired(bool open) {
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 
-  GateValueGetterStub *value_getter = new GateValueGetterStub();
+  ValueGetterMock *value_getter = new ValueGetterMock();
   ASSERT_TRUE(value_getter != NULL);
 
-  value_getter->setResult(open ? gsl_open : gsl_closed, gsl_unknown);
+  EXPECT_CALL(*value_getter, _get_value)
+      .Times(1)
+      .WillOnce(Return(new supla_channel_gate_value(
+          open ? gsl_open : gsl_closed, gsl_unknown)));
 
   ActionExecutorMock *action_executor = new ActionExecutorMock();
   EXPECT_TRUE(action_executor != NULL);
@@ -81,10 +84,15 @@ void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 
-  GateValueGetterStub *value_getter = new GateValueGetterStub();
+  ValueGetterMock *value_getter = new ValueGetterMock();
   ASSERT_TRUE(value_getter != NULL);
 
-  value_getter->setResult(open ? gsl_closed : gsl_open, gsl_unknown);
+  EXPECT_CALL(*value_getter, _get_value)
+      .WillRepeatedly([open](int user_id, int device_id, int channel_id,
+                             int *func, bool *online) {
+        return new supla_channel_gate_value(open ? gsl_closed : gsl_open,
+                                            gsl_unknown);
+      });
 
   ChannelJSONConfigGetterStub *config_getter =
       new ChannelJSONConfigGetterStub();
@@ -128,7 +136,11 @@ void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
   }
 
   if (success) {
-    value_getter->setResult(open ? gsl_open : gsl_closed, gsl_unknown);
+    EXPECT_CALL(*value_getter, _get_value)
+        .Times(1)
+        .WillOnce(Return(new supla_channel_gate_value(
+            open ? gsl_open : gsl_closed, gsl_unknown)));
+
     WaitForState(tshared, supla_asynctask_state::SUCCESS, 3000000);
   } else {
     WaitForState(tshared, supla_asynctask_state::FAILURE, 3000000);
@@ -148,7 +160,7 @@ TEST_F(ActionGateOpenCloseTest, openWithDisconnectedSensor) {
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 
-  GateValueGetterStub *value_getter = new GateValueGetterStub();
+  ValueGetterMock *value_getter = new ValueGetterMock();
   ASSERT_TRUE(value_getter != NULL);
 
   ActionExecutorMock *action_executor = new ActionExecutorMock();

@@ -23,11 +23,13 @@
 
 class supla_channel_temphum_value : public supla_channel_value {
  private:
-  bool temperature_only;
+  bool with_humidity;
 
  public:
-  supla_channel_temphum_value(bool temperature_only,
+  supla_channel_temphum_value(bool with_humidity,
                               char native_value[SUPLA_CHANNELVALUE_SIZE]);
+  supla_channel_temphum_value(bool with_humidity, double temperature,
+                              double humidity);
 
   double get_temperature(void);
   double get_humidity(void);

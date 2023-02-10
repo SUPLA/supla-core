@@ -30,8 +30,9 @@ class ValueGetterMock : public supla_abstract_value_getter {
   ValueGetterMock(void);
   virtual ~ValueGetterMock(void);
 
-  MOCK_METHOD3(_get_value, supla_channel_value*(int user_id, int device_id,
-                                                int channel_id));
+  MOCK_METHOD5(_get_value,
+               supla_channel_value *(int user_id, int device_id, int channel_id,
+                                     int *func, bool *online));
 };
 
 } /* namespace testing */

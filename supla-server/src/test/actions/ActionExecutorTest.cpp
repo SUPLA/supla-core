@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <doubles/device/ValueGetterMock.h>
 #include "ActionExecutorTest.h"
 
 #include "actions/action_config.h"
 #include "device/devicechannels.h"
 #include "doubles/device/DeviceDaoMock.h"
-#include "doubles/device/ValueGetterStub.h"
 #include "user/user.h"
 
 namespace testing {
@@ -139,7 +139,7 @@ TEST_F(ActionExecutorTest, executeScene) {
   config.set_subject_type(stScene);
   config.set_action_id(ACTION_EXECUTE);
 
-  ValueGetterStub value_getter;
+  ValueGetterMock value_getter;
 
   aexec->execute_action(supla_caller(ctIPC), 12345, &config, &value_getter);
 
@@ -155,7 +155,7 @@ TEST_F(ActionExecutorTest, interruptAndExecuteScene) {
   config.set_subject_type(stScene);
   config.set_action_id(ACTION_INTERRUPT_AND_EXECUTE);
 
-  ValueGetterStub value_getter;
+  ValueGetterMock value_getter;
 
   aexec->execute_action(supla_caller(ctIPC), 12345, &config, &value_getter);
 
@@ -171,7 +171,7 @@ TEST_F(ActionExecutorTest, interruptScene) {
   config.set_subject_type(stScene);
   config.set_action_id(ACTION_STOP);
 
-  ValueGetterStub value_getter;
+  ValueGetterMock value_getter;
 
   aexec->execute_action(supla_caller(ctIPC), 12345, &config, &value_getter);
 

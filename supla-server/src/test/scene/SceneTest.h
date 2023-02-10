@@ -19,9 +19,9 @@
 #ifndef SCENETEST_H_
 #define SCENETEST_H_
 
+#include <doubles/device/ValueGetterMock.h>
 #include <scene/scene_asynctask.h>
 #include "asynctask/AsyncTaskTest.h"
-#include "doubles/device/ValueGetterStub.h"
 #include "doubles/scene/SceneActionExecutorMock.h"
 #include "gtest/gtest.h"
 
@@ -31,7 +31,7 @@ class SceneTest : public AsyncTaskTest {
  private:
  protected:
   SceneActionExecutorMock *action_executor;
-  ValueGetterStub *value_getter;
+  ValueGetterMock *value_getter;
   supla_scene_operations *operations;
 
  public:

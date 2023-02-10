@@ -17,6 +17,7 @@
  */
 
 #include "DeviceChannelTest.h"
+
 #include "devicechannel.h"  // NOLINT
 #include "gtest/gtest.h"
 
@@ -27,29 +28,23 @@ class DeviceChannelTest : public ::testing::Test {
 };
 
 TEST_F(DeviceChannelTest, TemperatureHumidityClass) {
-  supla_channel_temphum *TempHum =
-      new supla_channel_temphum(true, 111, 36.6, 88);
+  supla_channel_temphum_value *TempHum =
+      new supla_channel_temphum_value(true, 36.6, 88);
   ASSERT_FALSE(TempHum == NULL);
-  ASSERT_TRUE(TempHum->isTempAndHumidity());
-  ASSERT_EQ(111, TempHum->getChannelId());
-  ASSERT_EQ(36.6, TempHum->getTemperature());
-  ASSERT_EQ(88, TempHum->getHumidity());
+  ASSERT_EQ(36.6, TempHum->get_temperature());
+  ASSERT_EQ(88, TempHum->get_humidity());
   delete TempHum;
 
-  TempHum = new supla_channel_temphum(true, 200, -300, -10);
+  TempHum = new supla_channel_temphum_value(true, -300, -10);
   ASSERT_FALSE(TempHum == NULL);
-  ASSERT_TRUE(TempHum->isTempAndHumidity());
-  ASSERT_EQ(200, TempHum->getChannelId());
-  ASSERT_EQ(-273, TempHum->getTemperature());
-  ASSERT_EQ(-1, TempHum->getHumidity());
+  ASSERT_EQ(-273, TempHum->get_temperature());
+  ASSERT_EQ(-1, TempHum->get_humidity());
   delete TempHum;
 
-  TempHum = new supla_channel_temphum(true, 200, 1001, 101);
+  TempHum = new supla_channel_temphum_value(true, 1001, 101);
   ASSERT_FALSE(TempHum == NULL);
-  ASSERT_TRUE(TempHum->isTempAndHumidity());
-  ASSERT_EQ(200, TempHum->getChannelId());
-  ASSERT_EQ(-273, TempHum->getTemperature());
-  ASSERT_EQ(-1, TempHum->getHumidity());
+  ASSERT_EQ(-273, TempHum->get_temperature());
+  ASSERT_EQ(-1, TempHum->get_humidity());
   delete TempHum;
 
   char value1[SUPLA_CHANNELVALUE_SIZE];
@@ -66,14 +61,12 @@ TEST_F(DeviceChannelTest, TemperatureHumidityClass) {
   n = 88800;
   memcpy(&value1[4], &n, 4);
 
-  TempHum = new supla_channel_temphum(true, 202, value1);
+  TempHum = new supla_channel_temphum_value(true, value1);
   ASSERT_FALSE(TempHum == NULL);
-  ASSERT_TRUE(TempHum->isTempAndHumidity());
-  ASSERT_EQ(202, TempHum->getChannelId());
-  ASSERT_EQ(36.6, TempHum->getTemperature());
-  ASSERT_EQ(88.8, TempHum->getHumidity());
+  ASSERT_EQ(36.6, TempHum->get_temperature());
+  ASSERT_EQ(88.8, TempHum->get_humidity());
 
-  TempHum->toValue(value2);
+  TempHum->get_native_value(value2);
   ASSERT_EQ(0, memcmp(value1, value2, SUPLA_CHANNELVALUE_SIZE));
 
   delete TempHum;
@@ -85,13 +78,12 @@ TEST_F(DeviceChannelTest, TemperatureHumidityClass) {
 
   memcpy(value1, &temp, sizeof(double));
 
-  TempHum = new supla_channel_temphum(false, 203, value1);
+  TempHum = new supla_channel_temphum_value(false, value1);
   ASSERT_FALSE(TempHum == NULL);
-  ASSERT_FALSE(TempHum->isTempAndHumidity());
-  ASSERT_EQ(203, TempHum->getChannelId());
-  ASSERT_EQ(36.6, TempHum->getTemperature());
+  ASSERT_EQ(36.6, TempHum->get_temperature());
+  ASSERT_EQ(-1, TempHum->get_humidity());
 
-  TempHum->toValue(value2);
+  TempHum->get_native_value(value2);
   ASSERT_EQ(0, memcmp(value1, value2, SUPLA_CHANNELVALUE_SIZE));
 
   delete TempHum;

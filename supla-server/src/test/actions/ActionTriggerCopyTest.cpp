@@ -57,20 +57,23 @@ TEST_F(ActionTriggerCopyTest, empty) {
 }
 
 TEST_F(ActionTriggerCopyTest, gate) {
-  value_getter->setResult(
-      new supla_channel_gate_value(gsl_unknown, gsl_unknown));
+  EXPECT_CALL(*value_getter, _get_value)
+      .Times(1)
+      .WillOnce(Return(new supla_channel_gate_value(gsl_unknown, gsl_unknown)));
 
   at->execute_actions(1, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 0);
 
-  value_getter->setResult(
-      new supla_channel_gate_value(gsl_unknown, gsl_closed));
+  EXPECT_CALL(*value_getter, _get_value)
+      .Times(1)
+      .WillOnce(Return(new supla_channel_gate_value(gsl_unknown, gsl_closed)));
 
   at->execute_actions(1, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 0);
 
-  value_getter->setResult(
-      new supla_channel_gate_value(gsl_closed, gsl_unknown));
+  EXPECT_CALL(*value_getter, _get_value)
+      .Times(1)
+      .WillOnce(Return(new supla_channel_gate_value(gsl_closed, gsl_unknown)));
 
   at->execute_actions(77, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
@@ -83,7 +86,9 @@ TEST_F(ActionTriggerCopyTest, gate) {
   EXPECT_EQ(value_getter->get_channel_id(), 46868);
   EXPECT_EQ(value_getter->get_user_id(), 1);
 
-  value_getter->setResult(new supla_channel_gate_value(gsl_open, gsl_unknown));
+  EXPECT_CALL(*value_getter, _get_value)
+      .Times(1)
+      .WillOnce(Return(new supla_channel_gate_value(gsl_open, gsl_unknown)));
 
   at->execute_actions(22, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 2);
@@ -93,7 +98,13 @@ TEST_F(ActionTriggerCopyTest, gate) {
 
 TEST_F(ActionTriggerCopyTest, rollerShutter) {
   TDSC_RollerShutterValue rsval = {};
-  value_getter->setResult(new supla_channel_rs_value(&rsval));
+
+  EXPECT_CALL(*value_getter, _get_value)
+      .Times(4)
+      .WillRepeatedly([&rsval](int user_id, int device_id, int channel_id,
+                               int *func, bool *online) {
+        return new supla_channel_rs_value(&rsval);
+      });
 
   at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
@@ -107,7 +118,6 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   EXPECT_EQ(value_getter->get_user_id(), 1);
 
   rsval.position = -1;
-  value_getter->setResult(new supla_channel_rs_value(&rsval));
 
   at->execute_actions(6, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
@@ -115,7 +125,6 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 6));
 
   rsval.position = 45;
-  value_getter->setResult(new supla_channel_rs_value(&rsval));
 
   at->execute_actions(7, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
@@ -130,7 +139,6 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
       "455,\"action\":{\"id\":10100,\"param\":{\"sourceChannelId\":68}}}}}");
 
   rsval.position = 80;
-  value_getter->setResult(new supla_channel_rs_value(&rsval));
 
   at->execute_actions(8, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(value_getter->get_channel_id(), 68);
@@ -144,7 +152,9 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
 }
 
 TEST_F(ActionTriggerCopyTest, onOff) {
-  value_getter->setResult(new supla_channel_onoff_value(true));
+  EXPECT_CALL(*value_getter, _get_value)
+      .Times(1)
+      .WillOnce(Return(new supla_channel_onoff_value(true)));
 
   at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
@@ -157,7 +167,9 @@ TEST_F(ActionTriggerCopyTest, onOff) {
   EXPECT_EQ(value_getter->get_channel_id(), 46868);
   EXPECT_EQ(value_getter->get_user_id(), 1);
 
-  value_getter->setResult(new supla_channel_onoff_value(false));
+  EXPECT_CALL(*value_getter, _get_value)
+      .Times(1)
+      .WillOnce(Return(new supla_channel_onoff_value(false)));
 
   at->execute_actions(1, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 2);
@@ -167,7 +179,13 @@ TEST_F(ActionTriggerCopyTest, onOff) {
 
 TEST_F(ActionTriggerCopyTest, rgbw) {
   TRGBW_Value rgbw = {};
-  value_getter->setResult(new supla_channel_rgbw_value(&rgbw));
+
+  EXPECT_CALL(*value_getter, _get_value)
+      .Times(4)
+      .WillRepeatedly([&rgbw](int user_id, int device_id, int channel_id,
+                              int *func, bool *online) {
+        return new supla_channel_rgbw_value(&rgbw);
+      });
 
   at->execute_actions(1, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
@@ -188,8 +206,6 @@ TEST_F(ActionTriggerCopyTest, rgbw) {
   rgbw.B = 0xCC;
   rgbw.colorBrightness = 50;
 
-  value_getter->setResult(new supla_channel_rgbw_value(&rgbw));
-
   at->execute_actions(2, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getRGBWCounter(), 2);
@@ -205,8 +221,6 @@ TEST_F(ActionTriggerCopyTest, rgbw) {
   rgbw.colorBrightness = 0;
   rgbw.brightness = 15;
 
-  value_getter->setResult(new supla_channel_rgbw_value(&rgbw));
-
   at->execute_actions(3, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getRGBWCounter(), 3);
@@ -221,8 +235,6 @@ TEST_F(ActionTriggerCopyTest, rgbw) {
   rgbw.B = 0xC3;
   rgbw.colorBrightness = 25;
   rgbw.brightness = 15;
-
-  value_getter->setResult(new supla_channel_rgbw_value(&rgbw));
 
   at->execute_actions(4, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);

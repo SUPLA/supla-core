@@ -37,7 +37,7 @@ void ActionTriggerTest::SetUp() {
   aexec = new ActionExecutorMock();
   EXPECT_TRUE(aexec != NULL);
 
-  value_getter = new ValueGetterStub();
+  value_getter = new ValueGetterMock();
   EXPECT_TRUE(value_getter != NULL);
 
   at = new supla_action_trigger(aexec, at_config, value_getter);

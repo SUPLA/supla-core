@@ -46,7 +46,7 @@ void SceneTest::SetUp() {
   action_executor = new SceneActionExecutorMock();
   ASSERT_FALSE(action_executor == NULL);
 
-  value_getter = new ValueGetterStub();
+  value_getter = new ValueGetterMock();
   if (!value_getter) {
     delete action_executor;
     action_executor = NULL;
@@ -233,7 +233,7 @@ TEST_F(SceneTest, executeSceneInsideScene) {
   supla_scene_operations *operations_s2 = new supla_scene_operations();
   ASSERT_FALSE(operations_s2 == NULL);
 
-  ValueGetterStub *value_getter_s2 = new ValueGetterStub();
+  ValueGetterMock *value_getter_s2 = new ValueGetterMock();
   ASSERT_FALSE(value_getter_s2 == NULL);
 
   SceneActionExecutorMock *action_executor_s2 = new SceneActionExecutorMock();
@@ -288,7 +288,7 @@ TEST_F(SceneTest, infinityLoop) {
   supla_scene_operations *operations_s2 = new supla_scene_operations();
   ASSERT_FALSE(operations_s2 == NULL);
 
-  ValueGetterStub *value_getter_s2 = new ValueGetterStub();
+  ValueGetterMock *value_getter_s2 = new ValueGetterMock();
   ASSERT_FALSE(value_getter_s2 == NULL);
 
   SceneActionExecutorMock *action_executor_s2 = new SceneActionExecutorMock();
@@ -345,7 +345,7 @@ TEST_F(SceneTest, interruptScene) {
   supla_scene_operations *operations_s2 = new supla_scene_operations();
   ASSERT_FALSE(operations_s2 == NULL);
 
-  ValueGetterStub *value_getter_s2 = new ValueGetterStub();
+  ValueGetterMock *value_getter_s2 = new ValueGetterMock();
   ASSERT_FALSE(value_getter_s2 == NULL);
 
   SceneActionExecutorMock *action_executor_s2 = new SceneActionExecutorMock();
@@ -377,7 +377,7 @@ TEST_F(SceneTest, interruptScene) {
   supla_scene_operations *operations_s3 = new supla_scene_operations();
   ASSERT_FALSE(operations_s3 == NULL);
 
-  ValueGetterStub *value_getter_s3 = new ValueGetterStub();
+  ValueGetterMock *value_getter_s3 = new ValueGetterMock();
   ASSERT_FALSE(value_getter_s3 == NULL);
 
   SceneActionExecutorMock *action_executor_s3 = new SceneActionExecutorMock();
@@ -409,10 +409,12 @@ TEST_F(SceneTest, interruptScene) {
   SceneActionExecutorMock *action_executor_oc = new SceneActionExecutorMock();
   ASSERT_FALSE(action_executor_oc == NULL);
 
-  ValueGetterStub *value_getter_oc = new ValueGetterStub();
+  ValueGetterMock *value_getter_oc = new ValueGetterMock();
   ASSERT_FALSE(value_getter_oc == NULL);
-  value_getter_oc->setResult(
-      new supla_channel_gate_value(gsl_closed, gsl_closed));
+
+  EXPECT_CALL(*value_getter_oc, _get_value)
+      .Times(1)
+      .WillOnce(Return(new supla_channel_gate_value(gsl_closed, gsl_closed)));
 
   action_executor_s3->set_asynctask_params(queue, pool, action_executor_oc,
                                            value_getter_oc, NULL);

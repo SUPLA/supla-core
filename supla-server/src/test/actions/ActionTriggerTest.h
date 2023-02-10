@@ -20,10 +20,10 @@
 #define ACTIONTRIGGERTEST_H_
 
 #include <doubles/actions/ActionExecutorMock.h>
+#include <doubles/device/ValueGetterMock.h>
 
 #include "actions/action_trigger.h"
 #include "channeljsonconfig/action_trigger_config.h"
-#include "doubles/device/ValueGetterStub.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
@@ -33,7 +33,7 @@ class ActionTriggerTest : public Test {
   supla_action_trigger *at;
   action_trigger_config *at_config;
   ActionExecutorMock *aexec;
-  ValueGetterStub *value_getter;
+  ValueGetterMock *value_getter;
 
  public:
   ActionTriggerTest(void);
