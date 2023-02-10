@@ -16,13 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef H_DEVICECHANNEL_TEST_H_
-#define H_DEVICECHANNEL_TEST_H_
+#ifndef H_CHANNEL_TEMPHUM_VALUE_TEST_H_
+#define H_CHANNEL_TEMPHUM_VALUE_TEST_H_
 
-class DeviceChannelTest {
+class ChannelTempHumValueTest {
  public:
-  virtual ~DeviceChannelTest();
-  DeviceChannelTest();
+  virtual ~ChannelTempHumValueTest();
+  ChannelTempHumValueTest();
 };
 
-#endif /*H_DEVICECHANNEL_TEST_H_*/
+#endif /*H_CHANNEL_TEMPHUM_VALUE_TEST_H_*/
