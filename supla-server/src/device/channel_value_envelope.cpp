@@ -29,3 +29,9 @@ supla_channel_value_envelope::~supla_channel_value_envelope(void) {
     delete value;
   }
 }
+
+int supla_channel_value_envelope::get_channel_id(void) { return channel_id; }
+
+supla_channel_value *supla_channel_value_envelope::get_value(void) {
+  return value;
+}
