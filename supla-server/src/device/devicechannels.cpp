@@ -538,7 +538,7 @@ bool supla_device_channels::set_device_channel_char_value(
       char on_off = 0;
 
       supla_channel_rgbw_value *rgbw_value =
-          channel->get_channel_value<supla_channel_rgbw_value>();
+          channel->get_value<supla_channel_rgbw_value>();
       if (rgbw_value) {
         rgbw_value->get_rgbw(&color, &color_brightness, &brightness);
         delete rgbw_value;
@@ -657,8 +657,7 @@ void supla_device_channels::get_channel_values(
     vector<supla_channel_value_envelope *> *result,
     function<bool(supla_channel_value *)> filter) {
   for (auto it = channels.rbegin(); it != channels.rend(); ++it) {
-    supla_channel_value *value =
-        (*it)->get_channel_value<supla_channel_value>();
+    supla_channel_value *value = (*it)->get_value<supla_channel_value>();
     if (value) {
       if (filter(value)) {
         result->push_back(
@@ -764,7 +763,7 @@ bool supla_device_channels::get_channel_complex_value(
       case SUPLA_CHANNELFNC_HUMIDITY:
       case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
         supla_channel_temphum_value *temphum =
-            channel->get_channel_value<supla_channel_temphum_value>();
+            channel->get_value<supla_channel_temphum_value>();
         if (temphum) {
           value->temperature = temphum->get_temperature();
           value->humidity = temphum->get_humidity();
@@ -813,7 +812,7 @@ bool supla_device_channels::get_channel_complex_value(
       case SUPLA_CHANNELFNC_RGBLIGHTING:
       case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
         supla_channel_rgbw_value *rgbw_value =
-            channel->get_channel_value<supla_channel_rgbw_value>();
+            channel->get_value<supla_channel_rgbw_value>();
         if (rgbw_value) {
           rgbw_value->get_rgbw(&value->color, &value->color_brightness,
                                &value->brightness);
@@ -871,7 +870,7 @@ bool supla_device_channels::get_channel_complex_value(
       case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
       case SUPLA_CHANNELFNC_VALVE_PERCENTAGE: {
         supla_channel_valve_value *vv =
-            channel->get_channel_value<supla_channel_valve_value>();
+            channel->get_value<supla_channel_valve_value>();
         if (vv) {
           vv->get_valve_value(&value->valve_value);
           delete vv;
@@ -1015,7 +1014,7 @@ bool supla_device_channels::set_on(const supla_caller &caller, int channel_id,
         char on_off = 0;
 
         supla_channel_rgbw_value *rgbw_value =
-            channel->get_channel_value<supla_channel_rgbw_value>();
+            channel->get_value<supla_channel_rgbw_value>();
         if (rgbw_value) {
           rgbw_value->get_rgbw(&color, &color_brightness, &brightness);
           delete rgbw_value;
@@ -1072,7 +1071,7 @@ bool supla_device_channels::is_on(int channel_id) {
         char brightness = 0;
 
         supla_channel_rgbw_value *rgbw_value =
-            channel->get_channel_value<supla_channel_rgbw_value>();
+            channel->get_value<supla_channel_rgbw_value>();
         if (rgbw_value) {
           rgbw_value->get_rgbw(&color, &color_brightness, &brightness);
           delete rgbw_value;
@@ -1104,7 +1103,7 @@ bool supla_device_channels::set_rgbw(const supla_caller &caller, int channel_id,
     char _brightness = 0;
 
     supla_channel_rgbw_value *rgbw_value =
-        channel->get_channel_value<supla_channel_rgbw_value>();
+        channel->get_value<supla_channel_rgbw_value>();
     if (rgbw_value) {
       rgbw_value->get_rgbw(&_color, &_color_brightness, &_brightness);
       delete rgbw_value;

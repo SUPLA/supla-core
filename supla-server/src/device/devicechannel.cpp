@@ -544,7 +544,7 @@ bool supla_device_channel::set_value(
            // current_value[0]...
 
   supla_channel_temphum_value *old_temp_hum =
-      get_channel_value<supla_channel_temphum_value>();
+      get_value<supla_channel_temphum_value>();
   supla_channel_temphum_value *temp_hum = nullptr;
 
   memcpy(old_value, this->value, SUPLA_CHANNELVALUE_SIZE);
@@ -587,7 +587,7 @@ bool supla_device_channel::set_value(
   } else if (type == SUPLA_CHANNELTYPE_SENSORNC) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
   } else {
-    temp_hum = get_channel_value<supla_channel_temphum_value>();
+    temp_hum = get_value<supla_channel_temphum_value>();
 
     if (temp_hum) {
       if ((param2 != 0 || param3 != 0)) {
@@ -1142,7 +1142,7 @@ bool supla_device_channel::get_voltage_analyzers_with_any_sample_over_threshold(
   return result;
 }
 
-supla_channel_value *supla_device_channel::_get_channel_value(void) {
+supla_channel_value *supla_device_channel::_get_value(void) {
   if (!get_func()) {
     return nullptr;
   }

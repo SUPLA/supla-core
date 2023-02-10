@@ -57,14 +57,19 @@ void supla_temperature_logger::run(const vector<supla_user *> *users,
   }
 
   for (auto it = env.cbegin(); it != env.cend(); ++it) {
-    supla_channel_temphum_value *th = (*it)->get_value();
-    if (th->is_humidity_available()) {
-      if (th->get_temperature() > -273 || th->get_humidity() > -1) {
-        dao.add_temperature_and_humidity(
-            (*it)->get_channel_id(), th->get_temperature(), th->get_humidity());
+    supla_channel_temphum_value *th =
+        dynamic_cast<supla_channel_temphum_value *>((*it)->get_value());
+
+    if (th) {
+      if (th->is_humidity_available()) {
+        if (th->get_temperature() > -273 || th->get_humidity() > -1) {
+          dao.add_temperature_and_humidity((*it)->get_channel_id(),
+                                           th->get_temperature(),
+                                           th->get_humidity());
+        }
+      } else if (th->get_temperature() > -273) {
+        dao.add_temperature((*it)->get_channel_id(), th->get_temperature());
       }
-    } else if (th->get_temperature() > -273) {
-      dao.add_temperature((*it)->get_channel_id(), th->get_temperature());
     }
 
     delete *it;

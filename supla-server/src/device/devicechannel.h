@@ -88,7 +88,7 @@ class supla_device_channel {
   void db_set_params(int param1, int param2, int param3, int param4);
   void update_timer_state(void);
   void update_extended_electricity_meter_value(void);
-  supla_channel_value *_get_channel_value(void);
+  supla_channel_value *_get_value(void);
 
  public:
   supla_device_channel(supla_device *device, int id, int number, int type,
@@ -162,12 +162,12 @@ class supla_device_channel {
       supla_voltage_analyzers *voltage_analyzers, bool reset);
 
   template <typename T>
-  T *get_channel_value(void);
+  T *get_value(void);
 };
 
 template <typename T>
-T *supla_device_channel::get_channel_value(void) {
-  supla_channel_value *value = _get_channel_value();
+T *supla_device_channel::get_value(void) {
+  supla_channel_value *value = _get_value();
   if (value) {
     T *expected = dynamic_cast<T *>(value);
     if (!expected) {

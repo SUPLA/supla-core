@@ -224,7 +224,7 @@ T *supla_device_channels::get_channel_value(int channel_id) {
   supla_device_channel *channel = find_channel(channel_id);
 
   if (channel) {
-    return channel->get_channel_value<T>();
+    return channel->get_value<T>();
   }
   return nullptr;
 }
