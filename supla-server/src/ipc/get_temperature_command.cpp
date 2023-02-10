@@ -20,6 +20,7 @@
 
 #include <memory>
 
+#include "device/channel_temphum_value.h"
 #include "user.h"
 
 using std::shared_ptr;
@@ -33,8 +34,15 @@ bool supla_get_temperature_command::get_channel_temperature_value(
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    return device->get_channels()->get_channel_temperature_value(channel_id,
-                                                                 value);
+    supla_channel_temphum_value *temphum =
+        device->get_channels()->get_channel_value<supla_channel_temphum_value>(
+            channel_id);
+    if (temphum) {
+      *value = temphum->get_temperature();
+
+      delete temphum;
+      return true;
+    }
   }
   return false;
 }

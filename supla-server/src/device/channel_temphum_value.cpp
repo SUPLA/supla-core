@@ -21,6 +21,15 @@
 #include <string.h>
 
 supla_channel_temphum_value::supla_channel_temphum_value(
+    int channel_type, int func, char native_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_channel_value(native_value) {
+  this->with_humidity =
+      !((channel_type == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
+         channel_type == SUPLA_CHANNELTYPE_THERMOMETER) &&
+        func == SUPLA_CHANNELFNC_THERMOMETER);
+}
+
+supla_channel_temphum_value::supla_channel_temphum_value(
     bool with_humidity, char native_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(native_value) {
   this->with_humidity = with_humidity;

@@ -19,6 +19,8 @@
 #ifndef DEVICECHANNEL_H_
 #define DEVICECHANNEL_H_
 
+#include <channel_temphum_value.h>
+
 #include <functional>
 #include <list>
 #include <map>
@@ -29,7 +31,6 @@
 #include "channel_address.h"
 #include "channel_electricity_measurement.h"
 #include "channel_ic_measurement.h"
-#include "channel_temphum.h"
 #include "channel_thermostat_measurement.h"
 #include "channel_value.h"
 #include "commontypes.h"
@@ -87,6 +88,7 @@ class supla_device_channel {
   void db_set_params(int param1, int param2, int param3, int param4);
   void update_timer_state(void);
   void update_extended_electricity_meter_value(void);
+  supla_channel_value *_get_channel_value(void);
 
  public:
   supla_device_channel(supla_device *device, int id, int number, int type,
@@ -138,9 +140,6 @@ class supla_device_channel {
                          char color_brightness, char brightness, char on_off);
   void get_double(double *value);
   void get_char(char *value);
-  bool get_rgbw(int *color, char *color_brightness, char *brightness,
-                char *on_off);
-  bool get_valve_value(TValve_Value *value);
   bool get_config(TSD_ChannelConfig *config, unsigned char config_type,
                   unsigned _supla_int_t flags);
   void set_action_trigger_config(unsigned int capabilities,
@@ -149,7 +148,6 @@ class supla_device_channel {
 
   std::list<int> master_channel(void);
   std::list<int> related_channel(void);
-  supla_channel_temphum *get_temp_hum(void);
   supla_channel_electricity_measurement *get_electricity_measurement(
       bool for_data_logger_purposes);
   supla_channel_ic_measurement *get_impulse_counter_measurement(
@@ -162,6 +160,22 @@ class supla_device_channel {
   bool get_state(TDSC_ChannelState *state);
   bool get_voltage_analyzers_with_any_sample_over_threshold(
       supla_voltage_analyzers *voltage_analyzers, bool reset);
+
+  template <typename T>
+  T *get_channel_value(void);
 };
+
+template <typename T>
+T *supla_device_channel::get_channel_value(void) {
+  supla_channel_value *value = _get_channel_value();
+  if (value) {
+    T *expected = dynamic_cast<T *>(value);
+    if (!expected) {
+      delete value;
+    }
+    return expected;
+  }
+  return nullptr;
+}
 
 #endif /* DEVICECHANNEL_H_ */

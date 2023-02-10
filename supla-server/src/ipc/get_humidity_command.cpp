@@ -32,11 +32,21 @@ bool supla_get_humidity_command::get_channel_humidity_value(int user_id,
                                                             int device_id,
                                                             int channel_id,
                                                             double *value) {
+  bool result = false;
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    return device->get_channels()->get_channel_humidity_value(channel_id,
-                                                              value);
+    supla_channel_temphum_value *temphum =
+        device->get_channels()->get_channel_value<supla_channel_temphum_value>(
+            channel_id);
+    if (temphum) {
+      if (temphum->is_humidity_available()) {
+        *value = temphum->get_humidity();
+        result = true;
+      }
+
+      delete temphum;
+    }
   }
-  return false;
+  return result;
 }

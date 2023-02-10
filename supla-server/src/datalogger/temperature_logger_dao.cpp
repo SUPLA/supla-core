@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "device/channel_temphum_value.h"
 #include "log.h"
 
 using std::vector;
@@ -90,16 +91,16 @@ void supla_temperature_logger_dao::add_temperature_and_humidity(
 }
 
 void supla_temperature_logger_dao::load(
-    int user_id, std::vector<supla_channel_temphum *> *result) {
+    int user_id, std::vector<supla_channel_value_envelope *> *result) {
   if (result == nullptr || user_id == 0) {
     return;
   }
 
-  vector<supla_channel_temphum *> unique;
+  vector<supla_channel_value_envelope *> unique;
 
   MYSQL_STMT *stmt = nullptr;
   const char sql[] =
-      "SELECT c.id, c.func, v.value FROM `supla_dev_channel` c, "
+      "SELECT c.id, c.type, c.func, v.value FROM `supla_dev_channel` c, "
       "`supla_dev_channel_value` v WHERE c.user_id = ? AND c.id = v.channel_id "
       "AND v.valid_to >= UTC_TIMESTAMP() AND (c.func = ? OR c.func = ? OR "
       "c.func = ?) GROUP BY c.id";
@@ -123,21 +124,26 @@ void supla_temperature_logger_dao::load(
   pbind[3].buffer = (char *)&func3;
 
   if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
-    MYSQL_BIND rbind[3] = {};
+    MYSQL_BIND rbind[4] = {};
     char value[SUPLA_CHANNELVALUE_SIZE] = {};
-    int channelID = 0;
+    int channel_id = 0;
+    int type = 0;
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
-    rbind[0].buffer = (char *)&channelID;
+    rbind[0].buffer = (char *)&channel_id;
     rbind[0].buffer_length = sizeof(int);
 
     rbind[1].buffer_type = MYSQL_TYPE_LONG;
-    rbind[1].buffer = (char *)&func1;
+    rbind[1].buffer = (char *)&type;
     rbind[1].buffer_length = sizeof(int);
 
-    rbind[2].buffer_type = MYSQL_TYPE_BLOB;
-    rbind[2].buffer = value;
-    rbind[2].buffer_length = SUPLA_CHANNELVALUE_SIZE;
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&func1;
+    rbind[2].buffer_length = sizeof(int);
+
+    rbind[3].buffer_type = MYSQL_TYPE_BLOB;
+    rbind[3].buffer = value;
+    rbind[3].buffer_length = SUPLA_CHANNELVALUE_SIZE;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -147,21 +153,21 @@ void supla_temperature_logger_dao::load(
 
       if (mysql_stmt_num_rows(stmt) > 0) {
         while (!mysql_stmt_fetch(stmt)) {
-          supla_channel_temphum *sct = NULL;
+          supla_channel_value_envelope *env = nullptr;
 
           for (auto it = result->cbegin(); it != result->cend(); ++it) {
-            sct = *it;
-
-            if (sct != nullptr && sct->getChannelId() == channelID) {
+            if (env != nullptr && env->get_channel_id() == channel_id) {
               break;
             } else {
-              sct = nullptr;
+              env = nullptr;
             }
           }
 
-          if (sct == nullptr) {
-            sct = new supla_channel_temphum(channelID, func1, value);
-            unique.push_back(sct);
+          if (env == nullptr) {
+            env = new supla_channel_value_envelope(
+                channel_id,
+                new supla_channel_temphum_value(type, func1, value));
+            unique.push_back(env);
           }
 
           memset(value, 0, SUPLA_CHANNELVALUE_SIZE);

@@ -16,25 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef TEMPERATURE_LOGGER_DAO_H_
-#define TEMPERATURE_LOGGER_DAO_H_
+#ifndef CHANNEL_VALUE_ENVELOPE_H_
+#define CHANNEL_VALUE_ENVELOPE_H_
 
-#include <vector>
+#include "device/channel_value.h"
 
-#include "db/abstract_db_access_provider.h"
-#include "device/channel_value_envelope.h"
-#include "proto.h"
-
-class supla_temperature_logger_dao {
+class supla_channel_value_envelope {
  private:
-  supla_abstract_db_access_provider *dba;
+  int channel_id;
+  supla_channel_value *value;
 
  public:
-  explicit supla_temperature_logger_dao(supla_abstract_db_access_provider *dba);
-  void add_temperature(int channel_id, double temperature);
-  void add_temperature_and_humidity(int channel_id, double temperature,
-                                    double humidity);
-  void load(int user_id, std::vector<supla_channel_value_envelope *> *result);
+  supla_channel_value_envelope(int channel_id, supla_channel_value *value);
+  virtual ~supla_channel_value_envelope(void);
+  int get_channel_id(void);
+  supla_channel_value *get_value(void);
 };
 
-#endif /* TEMPERATURE_LOGGER_DAO_H_ */
+#endif /*CHANNEL_VALUE_ENVELOPE_H_*/

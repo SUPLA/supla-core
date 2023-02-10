@@ -31,11 +31,15 @@ supla_get_icm_value_command::supla_get_icm_value_command(
 
 supla_channel_ic_measurement *supla_get_icm_value_command::get_ic_measurement(
     int user_id, int device_id, int channel_id) {
+  supla_channel_ic_measurement *result = nullptr;
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    return device->get_channels()->get_ic_measurement(channel_id);
+    device->get_channels()->access_channel(
+        channel_id, [&result](supla_device_channel *channel) -> void {
+          result = channel->get_impulse_counter_measurement(false);
+        });
   }
 
-  return NULL;
+  return result;
 }

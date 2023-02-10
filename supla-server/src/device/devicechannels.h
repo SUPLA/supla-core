@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "device/abstract_device_dao.h"
+#include "device/channel_value_envelope.h"
 #include "device/devicechannel.h"
 
 class supla_device;
@@ -81,19 +82,12 @@ class supla_device_channels {
                          char *online, unsigned _supla_int_t *validity_time_sec,
                          TSuplaChannelExtendedValue *ev, int *function,
                          bool for_client);
-  supla_channel_value *get_channel_value(int channel_id);
   bool get_channel_extendedvalue(int channel_id,
                                  TSuplaChannelExtendedValue *value);
   bool get_channel_extendedvalue(int channel_id,
                                  TSC_SuplaChannelExtendedValue *cev);
   bool get_channel_double_value(int channel_id, double *value);
-  supla_channel_temphum *get_channel_temp_and_humidity_value(int channel_id);
-  bool get_channel_temperature_value(int channel_id, double *value);
-  bool get_channel_humidity_value(int channel_id, double *value);
   bool get_channel_char_value(int channel_id, char *value);
-  bool get_channel_rgbw_value(int channel_id, int *color,
-                              char *color_brightness, char *brightness,
-                              char *on_off);
 
   unsigned int get_channel_value_duration(int channel_id);
   int get_channel_func(int channel_id);
@@ -125,7 +119,7 @@ class supla_device_channels {
                                      int group_id, unsigned char eol, int color,
                                      char color_brightness, char brightness,
                                      char on_off);
-  bool get_channel_valve_value(int channel_id, TValve_Value *value);
+
   bool get_dgf_transparency(int channel_id, unsigned short *mask);
 
   std::list<int> master_channel(int channel_id);
@@ -134,18 +128,6 @@ class supla_device_channels {
   int get_channel_id(unsigned char channel_number);
   bool channel_exists(int channel_id);
   bool is_channel_online(int channel_id);
-
-  void get_temp_and_humidity(std::vector<supla_channel_temphum *> *result);
-  void get_electricity_measurements(
-      std::vector<supla_channel_electricity_measurement *> *result,
-      bool for_data_logger_purposes);
-  supla_channel_electricity_measurement *get_electricity_measurement(
-      int channel_id);
-  void get_ic_measurements(std::vector<supla_channel_ic_measurement *> *result,
-                           bool for_data_logger_purposes);
-  supla_channel_ic_measurement *get_ic_measurement(int channel_id);
-  void get_thermostat_measurements(
-      std::vector<supla_channel_thermostat_measurement *> *result);
 
   bool calcfg_request(const supla_caller &caller, int channel_id,
                       bool superuser_authorized,
@@ -219,6 +201,32 @@ class supla_device_channels {
   unsigned int get_value_validity_time_left_msec(void);
   void on_related_sensor_value_changed(int control_channel_id, int sensor_id,
                                        bool is_open);
+
+  void get_electricity_measurements(
+      std::vector<supla_channel_electricity_measurement *> *result,
+      bool for_data_logger_purposes);
+
+  void get_thermostat_measurements(
+      std::vector<supla_channel_thermostat_measurement *> *result);
+
+  void get_ic_measurements(std::vector<supla_channel_ic_measurement *> *result,
+                           bool for_data_logger_purposes);
+
+  void get_channel_values(std::vector<supla_channel_value_envelope *> *result,
+                          std::function<bool(supla_channel_value *)> filter);
+
+  template <typename T>
+  T *get_channel_value(int channel_id);
 };
+
+template <typename T>
+T *supla_device_channels::get_channel_value(int channel_id) {
+  supla_device_channel *channel = find_channel(channel_id);
+
+  if (channel) {
+    return channel->get_channel_value<T>();
+  }
+  return nullptr;
+}
 
 #endif /* DEVICECHANNELS_H_ */

@@ -56,23 +56,30 @@ channel_complex_value *supla_mqtt_state_message_provider::_get_complex_value(
 
 supla_channel_electricity_measurement *
 supla_mqtt_state_message_provider::_get_electricity_measurement(void) {
+  supla_channel_electricity_measurement *result = nullptr;
   shared_ptr<supla_device> device =
       supla_user::get_device(get_user_id(), get_device_id(), get_channel_id());
   if (device != nullptr) {
-    return device->get_channels()->get_electricity_measurement(
-        get_channel_id());
+    device->get_channels()->access_channel(
+        get_channel_id(), [&result](supla_device_channel *channel) -> void {
+          result = channel->get_electricity_measurement(false);
+        });
   }
 
-  return NULL;
+  return result;
 }
 
 supla_channel_ic_measurement *
 supla_mqtt_state_message_provider::_get_impulse_counter_measurement(void) {
+  supla_channel_ic_measurement *result = nullptr;
   shared_ptr<supla_device> device =
       supla_user::get_device(get_user_id(), get_device_id(), get_channel_id());
   if (device != nullptr) {
-    return device->get_channels()->get_ic_measurement(get_channel_id());
+    device->get_channels()->access_channel(
+        get_channel_id(), [&result](supla_device_channel *channel) -> void {
+          result = channel->get_impulse_counter_measurement(false);
+        });
   }
 
-  return NULL;
+  return result;
 }

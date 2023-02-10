@@ -23,6 +23,12 @@
 
 #include <memory>
 
+#include "channel_gate_value.h"
+#include "channel_onoff_value.h"
+#include "channel_rgbw_value.h"
+#include "channel_rs_value.h"
+#include "channel_temphum_value.h"
+#include "channel_valve_value.h"
 #include "channeljsonconfig/action_trigger_config.h"
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "db/database.h"
@@ -390,75 +396,6 @@ void supla_device_channel::get_char(char *value) {
   }
 }
 
-bool supla_device_channel::get_rgbw(int *color, char *color_brightness,
-                                    char *brightness, char *on_off) {
-  if (color != nullptr) *color = 0;
-
-  if (color_brightness != nullptr) *color_brightness = 0;
-
-  if (brightness != nullptr) *brightness = 0;
-
-  if (on_off != nullptr) *on_off = 0;
-
-  bool result = false;
-
-  char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
-  get_value(current_value);
-
-  if (type == SUPLA_CHANNELTYPE_DIMMER ||
-      type == SUPLA_CHANNELTYPE_DIMMERANDRGBLED) {
-    if (brightness != nullptr) {
-      *brightness = current_value[0];
-
-      if (*brightness < 0 || *brightness > 100) *brightness = 0;
-    }
-
-    result = true;
-  }
-
-  if (type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER ||
-      type == SUPLA_CHANNELTYPE_DIMMERANDRGBLED) {
-    if (color_brightness != nullptr) {
-      *color_brightness = current_value[1];
-
-      if (*color_brightness < 0 || *color_brightness > 100)
-        *color_brightness = 0;
-    }
-
-    if (color != nullptr) {
-      *color = 0;
-
-      *color = current_value[4] & 0xFF;
-      (*color) <<= 8;
-
-      *color |= current_value[3] & 0xFF;
-      (*color) <<= 8;
-
-      (*color) |= current_value[2] & 0xFF;
-    }
-
-    result = true;
-  }
-
-  return result;
-}
-
-bool supla_device_channel::get_valve_value(TValve_Value *value) {
-  if (value == nullptr) return false;
-  switch (get_func()) {
-    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
-    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE: {
-      char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
-      get_value(current_value);
-      memcpy(value, current_value, sizeof(TValve_Value));
-    }
-
-      return true;
-  }
-
-  return false;
-}
-
 bool supla_device_channel::get_config(TSD_ChannelConfig *config,
                                       unsigned char config_type,
                                       unsigned _supla_int_t flags) {
@@ -606,8 +543,9 @@ bool supla_device_channel::set_value(
            // and current_value[0] =
            // current_value[0]...
 
-  supla_channel_temphum *old_temp_hum = get_temp_hum();
-  supla_channel_temphum *temp_hum = nullptr;
+  supla_channel_temphum_value *old_temp_hum =
+      get_channel_value<supla_channel_temphum_value>();
+  supla_channel_temphum_value *temp_hum = nullptr;
 
   memcpy(old_value, this->value, SUPLA_CHANNELVALUE_SIZE);
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
@@ -649,20 +587,20 @@ bool supla_device_channel::set_value(
   } else if (type == SUPLA_CHANNELTYPE_SENSORNC) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
   } else {
-    temp_hum = get_temp_hum();
+    temp_hum = get_channel_value<supla_channel_temphum_value>();
 
     if (temp_hum) {
       if ((param2 != 0 || param3 != 0)) {
         if (param2 != 0) {
-          temp_hum->setTemperature(temp_hum->getTemperature() +
-                                   (param2 / 100.00));
+          temp_hum->set_temperature(temp_hum->get_temperature() +
+                                    (param2 / 100.00));
         }
 
         if (param3 != 0) {
-          temp_hum->setHumidity(temp_hum->getHumidity() + (param3 / 100.00));
+          temp_hum->set_humidity(temp_hum->get_humidity() + (param3 / 100.00));
         }
 
-        temp_hum->toValue(this->value);
+        temp_hum->get_native_value(this->value);
       }
     }
   }
@@ -681,12 +619,9 @@ bool supla_device_channel::set_value(
 
   if (significant_change) {
     if (temp_hum || old_temp_hum) {
-      *significant_change = (temp_hum && !old_temp_hum) ||
-                            (!temp_hum && old_temp_hum) ||
-                            ((int)(temp_hum->getHumidity() * 100) !=
-                                 (int)(old_temp_hum->getHumidity() * 100) ||
-                             (int)(temp_hum->getTemperature() * 100) !=
-                                 (int)(old_temp_hum->getTemperature() * 100));
+      *significant_change = supla_channel_temphum_value::significant_change(
+          old_temp_hum, temp_hum);
+
     } else {
       *significant_change = differ;
     }
@@ -1028,36 +963,6 @@ list<int> supla_device_channel::master_channel(void) {
   return result;
 }
 
-supla_channel_temphum *supla_device_channel::get_temp_hum(void) {
-  supla_channel_temphum *result = nullptr;
-
-  int func = get_func();
-  char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
-
-  if ((get_type() == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
-       get_type() == SUPLA_CHANNELTYPE_THERMOMETER) &&
-      func == SUPLA_CHANNELFNC_THERMOMETER) {
-    get_value(current_value);
-    result = new supla_channel_temphum(false, get_id(), current_value);
-
-  } else if ((get_type() == SUPLA_CHANNELTYPE_DHT11 ||
-              get_type() == SUPLA_CHANNELTYPE_DHT22 ||
-              get_type() == SUPLA_CHANNELTYPE_DHT21 ||
-              get_type() == SUPLA_CHANNELTYPE_AM2301 ||
-              get_type() == SUPLA_CHANNELTYPE_AM2302 ||
-              get_type() == SUPLA_CHANNELTYPE_HUMIDITYSENSOR ||
-              get_type() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR ||
-              get_type() == SUPLA_CHANNELTYPE_BRIDGE) &&
-             (func == SUPLA_CHANNELFNC_THERMOMETER ||
-              func == SUPLA_CHANNELFNC_HUMIDITY ||
-              func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
-    get_value(current_value);
-    result = new supla_channel_temphum(true, get_id(), current_value);
-  }
-
-  return result;
-}
-
 supla_channel_electricity_measurement *
 supla_device_channel::get_electricity_measurement(
     bool for_data_logger_purposes) {
@@ -1235,4 +1140,48 @@ bool supla_device_channel::get_voltage_analyzers_with_any_sample_over_threshold(
 
   unlock();
   return result;
+}
+
+supla_channel_value *supla_device_channel::_get_channel_value(void) {
+  if (!get_func()) {
+    return nullptr;
+  }
+
+  char value[SUPLA_CHANNELVALUE_SIZE] = {};
+  get_value(value);
+
+  switch (get_func()) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      return new supla_channel_rs_value(value);
+
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR: {
+      supla_channel_gate_value *gate_value =
+          new supla_channel_gate_value(value);
+
+      gate_value->update_sensors(get_device()->get_user(), get_param2(),
+                                 get_param3());
+      return gate_value;
+    }
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      return new supla_channel_onoff_value(value);
+
+    case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      return new supla_channel_rgbw_value(value);
+
+    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
+      return new supla_channel_valve_value(value);
+    case SUPLA_CHANNELFNC_THERMOMETER:
+    case SUPLA_CHANNELFNC_HUMIDITY:
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+      return new supla_channel_temphum_value(get_type(), get_func(), value);
+  }
+
+  return new supla_channel_value(value);
 }
