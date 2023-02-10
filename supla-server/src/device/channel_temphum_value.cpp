@@ -26,13 +26,17 @@ supla_channel_temphum_value::supla_channel_temphum_value(
   this->with_humidity = with_humidity;
 }
 
-supla_channel_temphum_value::supla_channel_temphum_value(bool temperature_only,
+supla_channel_temphum_value::supla_channel_temphum_value(bool with_humidity,
                                                          double temperature,
                                                          double humidity)
     : supla_channel_value() {
   this->with_humidity = with_humidity;
   set_temperature(temperature);
   set_humidity(humidity);
+}
+
+bool supla_channel_temphum_value::is_humidity_available(void) {
+  return with_humidity;
 }
 
 double supla_channel_temphum_value::get_temperature(void) {

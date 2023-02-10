@@ -31,6 +31,7 @@ class supla_channel_temphum_value : public supla_channel_value {
   supla_channel_temphum_value(bool with_humidity, double temperature,
                               double humidity);
 
+  bool is_humidity_available(void);
   double get_temperature(void);
   double get_humidity(void);
   void set_temperature(double temperature);
