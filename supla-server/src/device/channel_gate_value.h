@@ -45,6 +45,7 @@ class supla_channel_gate_value : public supla_channel_value {
 
   void update_sensors(supla_user *user, int opening_sensor_channel_id,
                       int partial_opening_sensor_channel_id);
+  bool is_relay_hi(void);
 };
 
 #endif /*CHANNEL_GATE_VALUE_H_*/

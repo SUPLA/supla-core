@@ -41,11 +41,10 @@ supla_channel_gate_value::supla_channel_gate_value(
 
 supla_channel_gate_value::supla_channel_gate_value(
     _gate_sensor_level_enum opening_sensor_level,
-    _gate_sensor_level_enum partial_opening_sensor_level) {
+    _gate_sensor_level_enum partial_opening_sensor_level)
+    : supla_channel_value() {
   this->opening_sensor_level = opening_sensor_level;
   this->partial_opening_sensor_level = partial_opening_sensor_level;
-
-  memset(raw_value, 0, SUPLA_CHANNELVALUE_SIZE);
 }
 
 _gate_sensor_level_enum supla_channel_gate_value::get_opening_sensor_level(
@@ -101,3 +100,5 @@ void supla_channel_gate_value::update_sensors(
   partial_opening_sensor_level =
       get_sensor_state(user, partial_opening_sensor_channel_id);
 }
+
+bool supla_channel_gate_value::is_relay_hi(void) { return raw_value[0] > 0; }
