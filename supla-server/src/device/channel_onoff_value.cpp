@@ -21,13 +21,11 @@
 #include <string.h>
 
 supla_channel_onoff_value::supla_channel_onoff_value(
-    char native_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(native_value) {}
+    char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_channel_value(raw_value) {}
 
 supla_channel_onoff_value::supla_channel_onoff_value(bool on) { set_on(on); }
 
-void supla_channel_onoff_value::set_on(bool on) {
-  native_value[0] = on ? 1 : 0;
-}
+void supla_channel_onoff_value::set_on(bool on) { raw_value[0] = on ? 1 : 0; }
 
-bool supla_channel_onoff_value::is_on(void) { return native_value[0]; }
+bool supla_channel_onoff_value::is_on(void) { return raw_value[0]; }

@@ -21,8 +21,8 @@
 #include <string.h>
 
 supla_channel_rgbw_value::supla_channel_rgbw_value(
-    char native_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(native_value) {}
+    char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_channel_value(raw_value) {}
 
 supla_channel_rgbw_value::supla_channel_rgbw_value(TRGBW_Value *rgbw)
     : supla_channel_value() {
@@ -31,13 +31,13 @@ supla_channel_rgbw_value::supla_channel_rgbw_value(TRGBW_Value *rgbw)
 
 void supla_channel_rgbw_value::set_rgbw(TRGBW_Value *rgbw) {
   if (rgbw) {
-    memcpy(native_value, rgbw, sizeof(TRGBW_Value));
+    memcpy(raw_value, rgbw, sizeof(TRGBW_Value));
   }
 }
 
 void supla_channel_rgbw_value::get_rgbw(TRGBW_Value *rgbw) {
   if (rgbw) {
-    memcpy(rgbw, native_value, sizeof(TRGBW_Value));
+    memcpy(rgbw, raw_value, sizeof(TRGBW_Value));
   }
 }
 
@@ -58,7 +58,7 @@ void supla_channel_rgbw_value::get_rgbw(int *color, char *color_brightness,
 
 unsigned int supla_channel_rgbw_value::get_color(void) {
   unsigned int color = 0;
-  TRGBW_Value *rgbw = (TRGBW_Value *)native_value;
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
   color = ((unsigned int)rgbw->R << 16) & 0x00FF0000;
   color |= ((unsigned int)rgbw->G << 8) & 0x0000FF00;
   color |= ((unsigned int)rgbw->B) & 0x000000FF;
@@ -66,7 +66,7 @@ unsigned int supla_channel_rgbw_value::get_color(void) {
 }
 
 void supla_channel_rgbw_value::set_color(unsigned int color) {
-  TRGBW_Value *rgbw = (TRGBW_Value *)native_value;
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
   rgbw->B = color & 0xFF;
   color >>= 8;
   rgbw->G = color & 0xFF;
@@ -75,21 +75,21 @@ void supla_channel_rgbw_value::set_color(unsigned int color) {
 }
 
 char supla_channel_rgbw_value::get_brightness(void) {
-  TRGBW_Value *rgbw = (TRGBW_Value *)native_value;
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
   return rgbw->brightness;
 }
 
 void supla_channel_rgbw_value::set_brightness(char brightness) {
-  TRGBW_Value *rgbw = (TRGBW_Value *)native_value;
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
   rgbw->brightness = brightness;
 }
 
 char supla_channel_rgbw_value::get_color_brightness(void) {
-  TRGBW_Value *rgbw = (TRGBW_Value *)native_value;
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
   return rgbw->colorBrightness;
 }
 
 void supla_channel_rgbw_value::set_color_brightness(char brightness) {
-  TRGBW_Value *rgbw = (TRGBW_Value *)native_value;
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
   rgbw->colorBrightness = brightness;
 }

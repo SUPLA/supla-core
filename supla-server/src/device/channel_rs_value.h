@@ -23,7 +23,7 @@
 
 class supla_channel_rs_value : public supla_channel_value {
  public:
-  explicit supla_channel_rs_value(char native_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_rs_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_rs_value(TDSC_RollerShutterValue *value);
   const TDSC_RollerShutterValue *get_rs_value(void);
   void set_rs_value(TDSC_RollerShutterValue *value);

@@ -21,22 +21,22 @@
 #include <string.h>
 
 supla_channel_valve_value::supla_channel_valve_value(
-    char native_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(native_value) {}
+    char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_channel_value(raw_value) {}
 
 supla_channel_valve_value::supla_channel_valve_value(TValve_Value *value) {
-  memcpy(native_value, value, sizeof(TValve_Value));
+  memcpy(raw_value, value, sizeof(TValve_Value));
 }
 
 void supla_channel_valve_value::get_valve_value(TValve_Value *value) {
-  memcpy(value, native_value, sizeof(TValve_Value));
+  memcpy(value, raw_value, sizeof(TValve_Value));
 }
 
 const TValve_Value *supla_channel_valve_value::get_valve_value(void) {
-  return (TValve_Value *)native_value;
+  return (TValve_Value *)raw_value;
 }
 
 void supla_channel_valve_value::set_valve_value(TValve_Value *value) {
-  memset(native_value, 0, sizeof(native_value));
-  memcpy(native_value, value, sizeof(TValve_Value));
+  memset(raw_value, 0, sizeof(raw_value));
+  memcpy(raw_value, value, sizeof(TValve_Value));
 }

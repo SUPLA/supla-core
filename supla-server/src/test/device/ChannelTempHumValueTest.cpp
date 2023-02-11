@@ -78,7 +78,7 @@ TEST_F(ChannelTempHumValueTest, nativeValue) {
   EXPECT_EQ(88.8, tempHum1.get_humidity());
   EXPECT_TRUE(tempHum1.is_humidity_available());
 
-  tempHum1.get_native_value(value2);
+  tempHum1.get_raw_value(value2);
   ASSERT_EQ(0, memcmp(value1, value2, SUPLA_CHANNELVALUE_SIZE));
 
   memset(value1, 0, SUPLA_CHANNELVALUE_SIZE);
@@ -94,7 +94,7 @@ TEST_F(ChannelTempHumValueTest, nativeValue) {
   EXPECT_EQ(-1, tempHum2.get_humidity());
   EXPECT_FALSE(tempHum2.is_humidity_available());
 
-  tempHum2.get_native_value(value2);
+  tempHum2.get_raw_value(value2);
   EXPECT_EQ(0, memcmp(value1, value2, SUPLA_CHANNELVALUE_SIZE));
 }
 }  // namespace

@@ -23,8 +23,7 @@
 
 class supla_channel_onoff_value : public supla_channel_value {
  public:
-  explicit supla_channel_onoff_value(
-      char native_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_onoff_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_onoff_value(bool on);
   void set_on(bool on);
   bool is_on(void);

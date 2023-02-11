@@ -600,7 +600,7 @@ bool supla_device_channel::set_value(
           temp_hum->set_humidity(temp_hum->get_humidity() + (param3 / 100.00));
         }
 
-        temp_hum->get_native_value(this->value);
+        temp_hum->get_raw_value(this->value);
       }
     }
   }

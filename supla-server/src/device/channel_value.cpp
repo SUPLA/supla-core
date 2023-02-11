@@ -21,22 +21,22 @@
 #include <string.h>
 
 supla_channel_value::supla_channel_value(void) {
-  memset(this->native_value, 0, SUPLA_CHANNELVALUE_SIZE);
+  memset(this->raw_value, 0, SUPLA_CHANNELVALUE_SIZE);
 }
 
 supla_channel_value::supla_channel_value(
-    char native_value[SUPLA_CHANNELVALUE_SIZE]) {
-  memcpy(this->native_value, native_value, SUPLA_CHANNELVALUE_SIZE);
+    char raw_value[SUPLA_CHANNELVALUE_SIZE]) {
+  memcpy(this->raw_value, raw_value, SUPLA_CHANNELVALUE_SIZE);
 }
 
 supla_channel_value::~supla_channel_value(void) {}
 
-void supla_channel_value::get_native_value(
-    char native_value[SUPLA_CHANNELVALUE_SIZE]) {
-  memcpy(native_value, this->native_value, SUPLA_CHANNELVALUE_SIZE);
+void supla_channel_value::get_raw_value(
+    char raw_value[SUPLA_CHANNELVALUE_SIZE]) {
+  memcpy(raw_value, this->raw_value, SUPLA_CHANNELVALUE_SIZE);
 }
 
-void supla_channel_value::set_native_value(
-    char native_value[SUPLA_CHANNELVALUE_SIZE]) {
-  memcpy(this->native_value, native_value, SUPLA_CHANNELVALUE_SIZE);
+void supla_channel_value::set_raw_value(
+    char raw_value[SUPLA_CHANNELVALUE_SIZE]) {
+  memcpy(this->raw_value, raw_value, SUPLA_CHANNELVALUE_SIZE);
 }

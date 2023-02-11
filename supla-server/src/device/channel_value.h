@@ -23,14 +23,14 @@
 
 class supla_channel_value {
  protected:
-  char native_value[SUPLA_CHANNELVALUE_SIZE];
+  char raw_value[SUPLA_CHANNELVALUE_SIZE];
 
  public:
   supla_channel_value(void);
-  explicit supla_channel_value(char native_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   virtual ~supla_channel_value(void);
-  void get_native_value(char native_value[SUPLA_CHANNELVALUE_SIZE]);
-  void set_native_value(char native_value[SUPLA_CHANNELVALUE_SIZE]);
+  void get_raw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  void set_raw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
 };
 
 #endif /*CHANNEL_VALUE_H_*/

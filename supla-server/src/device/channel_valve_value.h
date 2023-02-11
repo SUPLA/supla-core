@@ -23,8 +23,7 @@
 
 class supla_channel_valve_value : public supla_channel_value {
  public:
-  explicit supla_channel_valve_value(
-      char native_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_valve_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_valve_value(TValve_Value *value);
   const TValve_Value *get_valve_value(void);
   void get_valve_value(TValve_Value *value);

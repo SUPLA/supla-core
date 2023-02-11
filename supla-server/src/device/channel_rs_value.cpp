@@ -21,18 +21,18 @@
 #include <string.h>
 
 supla_channel_rs_value::supla_channel_rs_value(
-    char native_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(native_value) {}
+    char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_channel_value(raw_value) {}
 
 supla_channel_rs_value::supla_channel_rs_value(TDSC_RollerShutterValue *value) {
-  memcpy(native_value, value, sizeof(TDSC_RollerShutterValue));
+  memcpy(raw_value, value, sizeof(TDSC_RollerShutterValue));
 }
 
 const TDSC_RollerShutterValue *supla_channel_rs_value::get_rs_value(void) {
-  return (TDSC_RollerShutterValue *)native_value;
+  return (TDSC_RollerShutterValue *)raw_value;
 }
 
 void supla_channel_rs_value::set_rs_value(TDSC_RollerShutterValue *value) {
-  memset(native_value, 0, sizeof(native_value));
-  memcpy(native_value, value, sizeof(TDSC_RollerShutterValue));
+  memset(raw_value, 0, sizeof(raw_value));
+  memcpy(raw_value, value, sizeof(TDSC_RollerShutterValue));
 }
