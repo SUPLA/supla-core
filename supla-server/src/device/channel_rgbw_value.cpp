@@ -20,6 +20,9 @@
 
 #include <string.h>
 
+supla_channel_rgbw_value::supla_channel_rgbw_value(void)
+    : supla_channel_value(raw_value) {}
+
 supla_channel_rgbw_value::supla_channel_rgbw_value(
     char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {}

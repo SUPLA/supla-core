@@ -23,6 +23,7 @@
 
 class supla_channel_rgbw_value : public supla_channel_value {
  public:
+  supla_channel_rgbw_value(void);
   explicit supla_channel_rgbw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_rgbw_value(TRGBW_Value *rgbw);
   void set_rgbw(TRGBW_Value *rgbw);
