@@ -31,6 +31,12 @@ class ChannelOnOffValueTest : public ::testing::Test {
 TEST_F(ChannelOnOffValueTest, voidConstructor) {
   supla_channel_onoff_value v;
   EXPECT_FALSE(v.is_on());
+
+  char raw_value1[SUPLA_CHANNELVALUE_SIZE] = {};
+  v.get_raw_value(raw_value1);
+  char raw_value2[SUPLA_CHANNELVALUE_SIZE] = {};
+
+  EXPECT_EQ(memcmp(raw_value1, raw_value2, SUPLA_CHANNELVALUE_SIZE), 0);
 }
 
 TEST_F(ChannelOnOffValueTest, rawDataConstructor) {
