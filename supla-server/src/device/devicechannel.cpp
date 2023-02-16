@@ -1132,12 +1132,12 @@ bool supla_device_channel::get_voltage_analyzers_with_any_sample_over_threshold(
   lock();
   if (this->voltage_analyzers.is_any_sample_over_threshold()) {
     *voltage_analyzers = this->voltage_analyzers;
-    if (reset) {
-      this->voltage_analyzers.reset();
-    }
     result = true;
   }
 
+  if (reset) {
+    this->voltage_analyzers.reset();
+  }
   unlock();
   return result;
 }
