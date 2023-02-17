@@ -16,24 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "channel_rs_value.h"
+#ifndef CHANNEL_RS_VALUE_TEST_H_
+#define CHANNEL_RS_VALUE_TEST_H_
 
-#include <string.h>
+#include "gtest/gtest.h"
 
-supla_channel_rs_value::supla_channel_rs_value(
-    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+namespace testing {
 
-supla_channel_rs_value::supla_channel_rs_value(
-    const TDSC_RollerShutterValue *value) {
-  memcpy(raw_value, value, sizeof(TDSC_RollerShutterValue));
-}
+class ChannelRsValueTest : public Test {
+ public:
+};
 
-const TDSC_RollerShutterValue *supla_channel_rs_value::get_rs_value(void) {
-  return (TDSC_RollerShutterValue *)raw_value;
-}
+}  // namespace testing
 
-void supla_channel_rs_value::set_rs_value(TDSC_RollerShutterValue *value) {
-  memset(raw_value, 0, sizeof(raw_value));
-  memcpy(raw_value, value, sizeof(TDSC_RollerShutterValue));
-}
+#endif /*CHANNEL_RS_VALUE_TEST_H_*/

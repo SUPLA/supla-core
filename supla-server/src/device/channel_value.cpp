@@ -25,7 +25,7 @@ supla_channel_value::supla_channel_value(void) {
 }
 
 supla_channel_value::supla_channel_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE]) {
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(this->raw_value, raw_value, SUPLA_CHANNELVALUE_SIZE);
 }
 

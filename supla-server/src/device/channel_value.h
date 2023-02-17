@@ -27,7 +27,7 @@ class supla_channel_value {
 
  public:
   supla_channel_value(void);
-  explicit supla_channel_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_value(const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   virtual ~supla_channel_value(void);
   void get_raw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   void set_raw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);

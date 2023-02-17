@@ -16,24 +16,34 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "channel_rs_value.h"
+#include <device/ChannelRsValueTest.h>
 
-#include <string.h>
+#include "device/channel_rs_value.h"
 
-supla_channel_rs_value::supla_channel_rs_value(
-    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+namespace testing {
 
-supla_channel_rs_value::supla_channel_rs_value(
-    const TDSC_RollerShutterValue *value) {
-  memcpy(raw_value, value, sizeof(TDSC_RollerShutterValue));
+TEST_F(ChannelRsValueTest, setterAndGetter) {
+  TDSC_RollerShutterValue value = {};
+
+  value.bottom_position = 1;
+  value.flags = 2;
+  value.position = 3;
+
+  supla_channel_rs_value v1(&value);
+  EXPECT_EQ(memcmp(v1.get_rs_value(), &value, sizeof(TDSC_RollerShutterValue)),
+            0);
+
+  supla_channel_rs_value v2(v1.get_rs_value());
+
+  EXPECT_EQ(memcmp(v2.get_rs_value(), v1.get_rs_value(),
+                   sizeof(TDSC_RollerShutterValue)),
+            0);
+
+  value.position = 50;
+  v2.set_rs_value(&value);
+  value.position = 100;
+
+  EXPECT_EQ(v2.get_rs_value()->position, 50);
 }
 
-const TDSC_RollerShutterValue *supla_channel_rs_value::get_rs_value(void) {
-  return (TDSC_RollerShutterValue *)raw_value;
-}
-
-void supla_channel_rs_value::set_rs_value(TDSC_RollerShutterValue *value) {
-  memset(raw_value, 0, sizeof(raw_value));
-  memcpy(raw_value, value, sizeof(TDSC_RollerShutterValue));
-}
+}  // namespace testing
