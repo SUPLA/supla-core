@@ -23,10 +23,8 @@
 
 namespace testing {
 
-class ChannelTempHumValueTest {
+class ChannelTempHumValueTest : public Test {
  public:
-  virtual ~ChannelTempHumValueTest();
-  ChannelTempHumValueTest();
 };
 
 }  // namespace testing
