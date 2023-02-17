@@ -48,7 +48,10 @@ void supla_thermostat_logger::run(const vector<supla_user *> *users,
   supla_thermostat_logger_dao dao(dba);
 
   for (auto it = th.cbegin(); it != th.cend(); ++it) {
-    dao.add(*it);
+    if ((*it)->getMeasuredTemperature() > -273) {
+      dao.add(*it);
+    }
+
     delete *it;
   }
 }
