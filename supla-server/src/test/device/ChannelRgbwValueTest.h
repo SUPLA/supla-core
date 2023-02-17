@@ -23,7 +23,7 @@
 
 namespace testing {
 
-class ChannelRgbwValueTest {
+class ChannelRgbwValueTest : public Test {
  public:
 };
 
