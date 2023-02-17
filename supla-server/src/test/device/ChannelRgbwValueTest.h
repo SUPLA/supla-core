@@ -19,10 +19,14 @@
 #ifndef CHANNEL_RGBW_VALUE_TEST_H_
 #define CHANNEL_RGBW_VALUE_TEST_H_
 
+#include "gtest/gtest.h"
+
+namespace testing {
+
 class ChannelRgbwValueTest {
  public:
-  virtual ~ChannelRgbwValueTest();
-  ChannelRgbwValueTest();
 };
+
+}  // namespace testing
 
 #endif /*CHANNEL_RGBW_VALUE_TEST_H_*/

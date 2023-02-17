@@ -20,13 +20,8 @@
 
 #include "device/channel_onoff_value.h"
 #include "devicechannel.h"  // NOLINT
-#include "gtest/gtest.h"
 
-namespace {
-
-class ChannelOnOffValueTest : public ::testing::Test {
- protected:
-};
+namespace testing {
 
 TEST_F(ChannelOnOffValueTest, voidConstructor) {
   supla_channel_onoff_value v;
@@ -60,4 +55,4 @@ TEST_F(ChannelOnOffValueTest, setterAndGetter) {
   EXPECT_EQ(raw_value[0], 1);
 }
 
-}  // namespace
+}  // namespace testing

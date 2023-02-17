@@ -20,13 +20,8 @@
 
 #include "device/channel_rgbw_value.h"
 #include "devicechannel.h"  // NOLINT
-#include "gtest/gtest.h"
 
-namespace {
-
-class ChannelRgbwValueTest : public ::testing::Test {
- protected:
-};
+namespace testing {
 
 TEST_F(ChannelRgbwValueTest, voidConstructor) {
   char raw_value1[SUPLA_CHANNELVALUE_SIZE] = {};
@@ -148,4 +143,4 @@ TEST_F(ChannelRgbwValueTest, gettersAndSetters) {
   EXPECT_EQ(v2.get_color(), 0x112233);
 }
 
-}  // namespace
+}  // namespace testing

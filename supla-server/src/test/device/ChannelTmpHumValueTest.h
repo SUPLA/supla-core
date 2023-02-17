@@ -19,10 +19,16 @@
 #ifndef H_CHANNEL_TEMPHUM_VALUE_TEST_H_
 #define H_CHANNEL_TEMPHUM_VALUE_TEST_H_
 
+#include "gtest/gtest.h"
+
+namespace testing {
+
 class ChannelTempHumValueTest {
  public:
   virtual ~ChannelTempHumValueTest();
   ChannelTempHumValueTest();
 };
+
+}  // namespace testing
 
 #endif /*H_CHANNEL_TEMPHUM_VALUE_TEST_H_*/

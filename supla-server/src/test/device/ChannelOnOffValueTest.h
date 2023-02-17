@@ -19,10 +19,14 @@
 #ifndef CHANNEL_ONOFF_VALUE_TEST_H_
 #define CHANNEL_ONOFF_VALUE_TEST_H_
 
-class ChannelOnOffValueTest {
+#include "gtest/gtest.h"
+
+namespace testing {
+
+class ChannelOnOffValueTest : public Test {
  public:
-  virtual ~ChannelOnOffValueTest();
-  ChannelOnOffValueTest();
 };
+
+}  // namespace testing
 
 #endif /*CHANNEL_ONOFF_VALUE_TEST_H_*/

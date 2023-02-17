@@ -19,13 +19,8 @@
 #include <device/ChannelTmpHumValueTest.h>
 
 #include "devicechannel.h"  // NOLINT
-#include "gtest/gtest.h"
 
-namespace {
-
-class ChannelTempHumValueTest : public ::testing::Test {
- protected:
-};
+namespace testing {
 
 TEST_F(ChannelTempHumValueTest, temperatureAndHumidity) {
   supla_channel_temphum_value tempHum(true, 36.6, 88);
@@ -97,4 +92,4 @@ TEST_F(ChannelTempHumValueTest, nativeValue) {
   tempHum2.get_raw_value(value2);
   EXPECT_EQ(0, memcmp(value1, value2, SUPLA_CHANNELVALUE_SIZE));
 }
-}  // namespace
+}  // namespace testing

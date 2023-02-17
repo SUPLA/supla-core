@@ -20,13 +20,8 @@
 
 #include "device/channel_gate_value.h"
 #include "devicechannel.h"  // NOLINT
-#include "gtest/gtest.h"
 
-namespace {
-
-class ChannelGateValueTest : public ::testing::Test {
- protected:
-};
+namespace testing {
 
 TEST_F(ChannelGateValueTest, voidConstructor) {
   supla_channel_gate_value v;
@@ -76,4 +71,4 @@ TEST_F(ChannelGateValueTest, partialOpeningSensorGetterSetter) {
   EXPECT_EQ(v.get_partial_opening_sensor_level(), gsl_closed);
 }
 
-}  // namespace
+}  // namespace testing

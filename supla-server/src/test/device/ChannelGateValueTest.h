@@ -19,10 +19,14 @@
 #ifndef CHANNEL_GATE_VALUE_TEST_H_
 #define CHANNEL_GATE_VALUE_TEST_H_
 
-class ChannelGateValueTest {
+#include "gtest/gtest.h"
+
+namespace testing {
+
+class ChannelGateValueTest : public Test {
  public:
-  virtual ~ChannelGateValueTest();
-  ChannelGateValueTest();
 };
+
+}  // namespace testing
 
 #endif /*CHANNEL_GATE_VALUE_TEST_H_*/
