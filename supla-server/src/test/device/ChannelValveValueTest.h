@@ -16,20 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_VALVE_VALUE_H_
-#define CHANNEL_VALVE_VALUE_H_
+#ifndef CHANNEL_VALVE_VALUE_TEST_H_
+#define CHANNEL_VALVE_VALUE_TEST_H_
 
-#include "device/channel_value.h"
+#include "gtest/gtest.h"
 
-class supla_channel_valve_value : public supla_channel_value {
+namespace testing {
+
+class ChannelValveValueTest : public Test {
  public:
-  supla_channel_valve_value();
-  explicit supla_channel_valve_value(
-      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  explicit supla_channel_valve_value(const TValve_Value *value);
-  const TValve_Value *get_valve_value(void);
-  void get_valve_value(TValve_Value *value);
-  void set_valve_value(TValve_Value *value);
 };
 
-#endif /*CHANNEL_VALVE_VALUE_H_*/
+}  // namespace testing
+
+#endif /*CHANNEL_VALVE_VALUE_TEST_H_*/

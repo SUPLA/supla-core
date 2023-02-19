@@ -20,11 +20,15 @@
 
 #include <string.h>
 
+supla_channel_valve_value::supla_channel_valve_value()
+    : supla_channel_value() {}
+
 supla_channel_valve_value::supla_channel_valve_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {}
 
-supla_channel_valve_value::supla_channel_valve_value(TValve_Value *value) {
+supla_channel_valve_value::supla_channel_valve_value(
+    const TValve_Value *value) {
   memcpy(raw_value, value, sizeof(TValve_Value));
 }
 
