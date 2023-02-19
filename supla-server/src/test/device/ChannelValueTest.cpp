@@ -60,7 +60,7 @@ TEST_F(ChannelValueTest, setterAndGetter) {
 
   v.get_raw_value(raw_value2);
 
-  for (char a = 0; a < SUPLA_CHANNELVALUE_SIZE; a++) {
+  for (unsigned char a = 0; a < SUPLA_CHANNELVALUE_SIZE; a++) {
     EXPECT_EQ(raw_value2[a], a);
   }
 }
