@@ -27,8 +27,11 @@ supla_channel_onoff_value::supla_channel_onoff_value(
     char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {}
 
-supla_channel_onoff_value::supla_channel_onoff_value(bool on) { set_on(on); }
+supla_channel_onoff_value::supla_channel_onoff_value(bool on)
+    : supla_channel_value() {
+  set_on(on);
+}
 
 void supla_channel_onoff_value::set_on(bool on) { raw_value[0] = on ? 1 : 0; }
 
-bool supla_channel_onoff_value::is_on(void) { return raw_value[0]; }
+bool supla_channel_onoff_value::is_on(void) { return raw_value[0] > 0; }
