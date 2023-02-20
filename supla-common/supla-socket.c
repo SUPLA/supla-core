@@ -716,6 +716,16 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
     //  ssocket_log_ssl_error(supla_socket, count);
     //}
 
+#ifndef __SUPLA_SERVER
+    if (count < 0) {
+      int32_t ssl_error = SSL_get_error(supla_socket->ssl, count);
+      if (ssl_error == SSL_ERROR_SYSCALL || ssl_error == SSL_ERROR_SSL) {
+        return 0;
+      }
+    }
+
+#endif
+
 #endif /*ifdef NOSSL*/
 
   } else {
