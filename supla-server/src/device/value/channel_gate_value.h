@@ -19,7 +19,7 @@
 #ifndef CHANNEL_GATE_VALUE_H_
 #define CHANNEL_GATE_VALUE_H_
 
-#include "device/channel_value.h"
+#include "device/value/channel_value.h"
 #include "user/user.h"
 
 enum _gate_sensor_level_enum { gsl_unknown, gsl_closed, gsl_open };

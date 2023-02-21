@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "device/channel_temphum_value.h"
+#include "device/value/channel_temphum_value.h"
 #include "log.h"
 
 using std::vector;

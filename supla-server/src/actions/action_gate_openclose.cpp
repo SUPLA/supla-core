@@ -26,7 +26,7 @@
 #include "asynctask/asynctask_queue.h"
 #include "channeljsonconfig/channel_json_config_getter.h"
 #include "channeljsonconfig/controlling_the_gate_config.h"
-#include "device/channel_gate_value.h"
+#include "device/value/channel_gate_value.h"
 #include "device/value_getter.h"
 
 #define VERIFICATION_DELAY_US 60000000

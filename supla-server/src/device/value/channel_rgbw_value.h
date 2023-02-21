@@ -16,19 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_BINARY_SENSOR_VALUE_H_
-#define CHANNEL_BINARY_SENSOR_VALUE_H_
+#ifndef CHANNEL_RGBW_VALUE_H_
+#define CHANNEL_RGBW_VALUE_H_
 
-#include "device/channel_value.h"
+#include "device/value/channel_value.h"
 
-class supla_channel_binary_sensor_value : public supla_channel_value {
+class supla_channel_rgbw_value : public supla_channel_value {
  public:
-  supla_channel_binary_sensor_value(void);
-  explicit supla_channel_binary_sensor_value(
-      char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  explicit supla_channel_binary_sensor_value(bool hi);
-  void set_hi(bool hi);
-  bool is_hi(void);
+  supla_channel_rgbw_value(void);
+  explicit supla_channel_rgbw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_rgbw_value(TRGBW_Value *rgbw);
+  void set_rgbw(TRGBW_Value *rgbw);
+  void get_rgbw(TRGBW_Value *rgbw);
+  void get_rgbw(int *color, char *color_brightness, char *brightness);
+  unsigned int get_color(void);
+  void set_color(unsigned int color);
+  char get_brightness(void);
+  void set_brightness(char brightness);
+  char get_color_brightness(void);
+  void set_color_brightness(char brightness);
 };
 
-#endif /*CHANNEL_BINARY_SENSOR_VALUE_H_*/
+#endif /*CHANNEL_RGBW_VALUE_H_*/

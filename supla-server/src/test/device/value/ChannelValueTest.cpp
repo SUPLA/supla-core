@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <device/ChannelValueTest.h>
+#include "ChannelValueTest.h"
 
-#include "device/channel_value.h"
+#include "device/value/channel_value.h"
 
 namespace testing {
 

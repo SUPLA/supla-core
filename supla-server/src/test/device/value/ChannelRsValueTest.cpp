@@ -16,18 +16,34 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_ONOFF_VALUE_H_
-#define CHANNEL_ONOFF_VALUE_H_
+#include "ChannelRsValueTest.h"
 
-#include "device/channel_value.h"
+#include "device/value/channel_rs_value.h"
 
-class supla_channel_onoff_value : public supla_channel_value {
- public:
-  supla_channel_onoff_value(void);
-  explicit supla_channel_onoff_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  explicit supla_channel_onoff_value(bool on);
-  void set_on(bool on);
-  bool is_on(void);
-};
+namespace testing {
 
-#endif /*CHANNEL_ONOFF_VALUE_H_*/
+TEST_F(ChannelRsValueTest, setterAndGetter) {
+  TDSC_RollerShutterValue value = {};
+
+  value.bottom_position = 1;
+  value.flags = 2;
+  value.position = 3;
+
+  supla_channel_rs_value v1(&value);
+  EXPECT_EQ(memcmp(v1.get_rs_value(), &value, sizeof(TDSC_RollerShutterValue)),
+            0);
+
+  supla_channel_rs_value v2(v1.get_rs_value());
+
+  EXPECT_EQ(memcmp(v2.get_rs_value(), v1.get_rs_value(),
+                   sizeof(TDSC_RollerShutterValue)),
+            0);
+
+  value.position = 50;
+  v2.set_rs_value(&value);
+  value.position = 100;
+
+  EXPECT_EQ(v2.get_rs_value()->position, 50);
+}
+
+}  // namespace testing

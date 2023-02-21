@@ -16,18 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_RS_VALUE_H_
-#define CHANNEL_RS_VALUE_H_
+#ifndef CHANNEL_BINARY_SENSOR_VALUE_H_
+#define CHANNEL_BINARY_SENSOR_VALUE_H_
 
-#include "device/channel_value.h"
+#include "device/value/channel_value.h"
 
-class supla_channel_rs_value : public supla_channel_value {
+class supla_channel_binary_sensor_value : public supla_channel_value {
  public:
-  explicit supla_channel_rs_value(
-      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  explicit supla_channel_rs_value(const TDSC_RollerShutterValue *value);
-  const TDSC_RollerShutterValue *get_rs_value(void);
-  void set_rs_value(TDSC_RollerShutterValue *value);
+  supla_channel_binary_sensor_value(void);
+  explicit supla_channel_binary_sensor_value(
+      char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_binary_sensor_value(bool hi);
+  void set_hi(bool hi);
+  bool is_hi(void);
 };
 
-#endif /*CHANNEL_RS_VALUE_H_*/
+#endif /*CHANNEL_BINARY_SENSOR_VALUE_H_*/

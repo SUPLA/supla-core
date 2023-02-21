@@ -17,7 +17,7 @@
  */
 #include "converter/gate_value_to_action_converter.h"
 
-#include "device/channel_gate_value.h"
+#include "device/value/channel_gate_value.h"
 
 bool gate_value_to_action_converter::convert(
     supla_channel_value *value,

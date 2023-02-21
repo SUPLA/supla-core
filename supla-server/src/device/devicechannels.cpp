@@ -25,11 +25,11 @@
 
 #include "actions/action_gate_openclose.h"
 #include "actions/action_trigger.h"
-#include "channel_rgbw_value.h"
-#include "channel_valve_value.h"
 #include "channeljsonconfig/controlling_the_gate_config.h"
 #include "db/database.h"
 #include "device.h"
+#include "device/value/channel_rgbw_value.h"
+#include "device/value/channel_valve_value.h"
 #include "log.h"
 #include "value_getter.h"
 

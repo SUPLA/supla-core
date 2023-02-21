@@ -19,7 +19,7 @@
 #ifndef ABSTRACT_VALUE_GETTER_H_
 #define ABSTRACT_VALUE_GETTER_H_
 
-#include "device/channel_value.h"
+#include "device/value/channel_value.h"
 #include "proto.h"
 
 class supla_abstract_value_getter {

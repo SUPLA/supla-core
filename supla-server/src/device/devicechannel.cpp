@@ -23,16 +23,16 @@
 
 #include <memory>
 
-#include "channel_gate_value.h"
-#include "channel_onoff_value.h"
-#include "channel_rgbw_value.h"
-#include "channel_rs_value.h"
-#include "channel_temphum_value.h"
-#include "channel_valve_value.h"
 #include "channeljsonconfig/action_trigger_config.h"
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "db/database.h"
 #include "device.h"
+#include "device/value/channel_gate_value.h"
+#include "device/value/channel_onoff_value.h"
+#include "device/value/channel_rgbw_value.h"
+#include "device/value/channel_rs_value.h"
+#include "device/value/channel_temphum_value.h"
+#include "device/value/channel_valve_value.h"
 #include "lck.h"
 #include "user/user.h"
 

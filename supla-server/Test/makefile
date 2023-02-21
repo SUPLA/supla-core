@@ -27,6 +27,7 @@ RM := rm -rf
 -include src/test/doubles/ipc/subdir.mk
 -include src/test/doubles/integration/mqtt/subdir.mk
 -include src/test/doubles/integration/asynctask/subdir.mk
+-include src/test/doubles/http/subdir.mk
 -include src/test/doubles/distributedobjects/subdir.mk
 -include src/test/doubles/device/subdir.mk
 -include src/test/doubles/db/subdir.mk
@@ -38,6 +39,7 @@ RM := rm -rf
 -include src/test/doubles/actions/subdir.mk
 -include src/test/doubles/subdir.mk
 -include src/test/distributedobjects/subdir.mk
+-include src/test/device/value/subdir.mk
 -include src/test/device/subdir.mk
 -include src/test/cyclictasks/subdir.mk
 -include src/test/conn/subdir.mk
@@ -56,6 +58,7 @@ RM := rm -rf
 -include src/http/subdir.mk
 -include src/google/subdir.mk
 -include src/distributedobjects/subdir.mk
+-include src/device/value/subdir.mk
 -include src/device/call_handler/subdir.mk
 -include src/device/subdir.mk
 -include src/db/subdir.mk

@@ -23,7 +23,7 @@
 
 #include "cyclictasks/abstract_auto_gate_closing_dao.h"
 #include "cyclictasks/abstract_cyclictask.h"
-#include "device/channel_gate_value.h"
+#include "device/value/channel_gate_value.h"
 #include "device/value_getter.h"
 
 class supla_abstract_auto_gate_closing : public supla_abstract_cyclictask {

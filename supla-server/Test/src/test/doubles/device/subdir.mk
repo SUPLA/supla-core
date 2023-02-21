@@ -6,26 +6,20 @@
 CPP_SRCS += \
 ../src/test/doubles/device/DeviceDaoMock.cpp \
 ../src/test/doubles/device/DeviceStub.cpp \
-../src/test/doubles/device/GateValueGetterStub.cpp \
 ../src/test/doubles/device/RegisterDeviceMock.cpp \
-../src/test/doubles/device/ValueGetterMock.cpp \
-../src/test/doubles/device/ValueGetterStub.cpp 
+../src/test/doubles/device/ValueGetterMock.cpp 
 
 CPP_DEPS += \
 ./src/test/doubles/device/DeviceDaoMock.d \
 ./src/test/doubles/device/DeviceStub.d \
-./src/test/doubles/device/GateValueGetterStub.d \
 ./src/test/doubles/device/RegisterDeviceMock.d \
-./src/test/doubles/device/ValueGetterMock.d \
-./src/test/doubles/device/ValueGetterStub.d 
+./src/test/doubles/device/ValueGetterMock.d 
 
 OBJS += \
 ./src/test/doubles/device/DeviceDaoMock.o \
 ./src/test/doubles/device/DeviceStub.o \
-./src/test/doubles/device/GateValueGetterStub.o \
 ./src/test/doubles/device/RegisterDeviceMock.o \
-./src/test/doubles/device/ValueGetterMock.o \
-./src/test/doubles/device/ValueGetterStub.o 
+./src/test/doubles/device/ValueGetterMock.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -40,7 +34,7 @@ src/test/doubles/device/%.o: ../src/test/doubles/device/%.cpp src/test/doubles/d
 clean: clean-src-2f-test-2f-doubles-2f-device
 
 clean-src-2f-test-2f-doubles-2f-device:
-	-$(RM) ./src/test/doubles/device/DeviceDaoMock.d ./src/test/doubles/device/DeviceDaoMock.o ./src/test/doubles/device/DeviceStub.d ./src/test/doubles/device/DeviceStub.o ./src/test/doubles/device/GateValueGetterStub.d ./src/test/doubles/device/GateValueGetterStub.o ./src/test/doubles/device/RegisterDeviceMock.d ./src/test/doubles/device/RegisterDeviceMock.o ./src/test/doubles/device/ValueGetterMock.d ./src/test/doubles/device/ValueGetterMock.o ./src/test/doubles/device/ValueGetterStub.d ./src/test/doubles/device/ValueGetterStub.o
+	-$(RM) ./src/test/doubles/device/DeviceDaoMock.d ./src/test/doubles/device/DeviceDaoMock.o ./src/test/doubles/device/DeviceStub.d ./src/test/doubles/device/DeviceStub.o ./src/test/doubles/device/RegisterDeviceMock.d ./src/test/doubles/device/RegisterDeviceMock.o ./src/test/doubles/device/ValueGetterMock.d ./src/test/doubles/device/ValueGetterMock.o
 
 .PHONY: clean-src-2f-test-2f-doubles-2f-device
 

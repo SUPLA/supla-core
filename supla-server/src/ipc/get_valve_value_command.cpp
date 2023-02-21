@@ -20,7 +20,7 @@
 
 #include <memory>
 
-#include "device/channel_valve_value.h"
+#include "device/value/channel_valve_value.h"
 #include "user.h"
 
 using std::shared_ptr;

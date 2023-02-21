@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "db/abstract_db_access_provider.h"
-#include "device/channel_value_envelope.h"
+#include "device/value/channel_value_envelope.h"
 #include "proto.h"
 
 class supla_temperature_logger_dao {

@@ -19,8 +19,6 @@
 #ifndef DEVICECHANNEL_H_
 #define DEVICECHANNEL_H_
 
-#include <channel_temphum_value.h>
-
 #include <functional>
 #include <list>
 #include <map>
@@ -32,8 +30,9 @@
 #include "channel_electricity_measurement.h"
 #include "channel_ic_measurement.h"
 #include "channel_thermostat_measurement.h"
-#include "channel_value.h"
 #include "commontypes.h"
+#include "device/value/channel_temphum_value.h"
+#include "device/value/channel_value.h"
 #include "proto.h"
 
 class supla_user;

@@ -18,10 +18,10 @@
 
 #include "ActionTriggerCopyTest.h"
 
-#include "device/channel_gate_value.h"
-#include "device/channel_onoff_value.h"
-#include "device/channel_rgbw_value.h"
-#include "device/channel_rs_value.h"
+#include "device/value/channel_gate_value.h"
+#include "device/value/channel_onoff_value.h"
+#include "device/value/channel_rgbw_value.h"
+#include "device/value/channel_rs_value.h"
 #include "proto.h"
 
 namespace testing {

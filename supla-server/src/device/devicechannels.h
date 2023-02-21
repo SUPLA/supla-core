@@ -24,8 +24,8 @@
 #include <vector>
 
 #include "device/abstract_device_dao.h"
-#include "device/channel_value_envelope.h"
 #include "device/devicechannel.h"
+#include "device/value/channel_value_envelope.h"
 
 class supla_device;
 class supla_device_channels {

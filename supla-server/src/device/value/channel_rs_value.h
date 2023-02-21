@@ -16,34 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <device/ChannelRsValueTest.h>
+#ifndef CHANNEL_RS_VALUE_H_
+#define CHANNEL_RS_VALUE_H_
 
-#include "device/channel_rs_value.h"
+#include "device/value/channel_value.h"
 
-namespace testing {
+class supla_channel_rs_value : public supla_channel_value {
+ public:
+  explicit supla_channel_rs_value(
+      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_rs_value(const TDSC_RollerShutterValue *value);
+  const TDSC_RollerShutterValue *get_rs_value(void);
+  void set_rs_value(TDSC_RollerShutterValue *value);
+};
 
-TEST_F(ChannelRsValueTest, setterAndGetter) {
-  TDSC_RollerShutterValue value = {};
-
-  value.bottom_position = 1;
-  value.flags = 2;
-  value.position = 3;
-
-  supla_channel_rs_value v1(&value);
-  EXPECT_EQ(memcmp(v1.get_rs_value(), &value, sizeof(TDSC_RollerShutterValue)),
-            0);
-
-  supla_channel_rs_value v2(v1.get_rs_value());
-
-  EXPECT_EQ(memcmp(v2.get_rs_value(), v1.get_rs_value(),
-                   sizeof(TDSC_RollerShutterValue)),
-            0);
-
-  value.position = 50;
-  v2.set_rs_value(&value);
-  value.position = 100;
-
-  EXPECT_EQ(v2.get_rs_value()->position, 50);
-}
-
-}  // namespace testing
+#endif /*CHANNEL_RS_VALUE_H_*/

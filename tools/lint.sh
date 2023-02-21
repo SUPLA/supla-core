@@ -22,6 +22,7 @@ cpplint ./supla-server/src/db/*
 cpplint ./supla-server/src/cyclictasks/* 
 cpplint ./supla-server/src/datalogger/* 
 cpplint ./supla-server/src/device/* 
+cpplint ./supla-server/src/device/value/* 
 cpplint ./supla-server/src/device/call_handler* 
 cpplint ./supla-server/src/distributedobjects/* 
 cpplint ./supla-server/src/google/* 
@@ -43,6 +44,7 @@ cpplint --filter=-build/include ./supla-server/src/test/conn/*
 cpplint --filter=-build/include ./supla-server/src/test/cyclictasks/* 
 cpplint --filter=-build/include ./supla-server/src/test/db/* 
 cpplint --filter=-build/include ./supla-server/src/test/device/* 
+cpplint --filter=-build/include ./supla-server/src/test/device/value/* 
 cpplint --filter=-build/include ./supla-server/src/test/google/* 
 cpplint --filter=-build/include ./supla-server/src/test/http/* 
 cpplint --filter=-build/include ./supla-server/src/test/mqtt/* 
@@ -55,12 +57,14 @@ cpplint --filter=-build/include ./supla-server/src/test/doubles/client/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/conn/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/cyclictasks/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/distributedobjects/* 
+cpplint --filter=-build/include ./supla-server/src/test/doubles/http/* 
 cpplint --filter=-build/include ./supla-server/src/test/doubles/device/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/mqtt/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/scene/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/integration/asynctask/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/integration/mqtt/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/ipc/*
+cpplint --filter=-build/include ./supla-server/src/test/doubles/webhook/*
 cpplint --filter=-build/include ./supla-server/src/test/actions/* 
 cpplint --filter=-build/include ./supla-server/src/test/actions/* 
 cpplint --filter=-build/include ./supla-server/src/test/asynctask/* 

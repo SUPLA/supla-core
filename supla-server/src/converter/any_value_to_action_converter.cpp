@@ -22,10 +22,10 @@
 #include "converter/onoff_value_to_action_converter.h"
 #include "converter/rgbw_value_to_action_converter.h"
 #include "converter/rs_value_to_action_converter.h"
-#include "device/channel_gate_value.h"
-#include "device/channel_onoff_value.h"
-#include "device/channel_rgbw_value.h"
-#include "device/channel_rs_value.h"
+#include "device/value/channel_gate_value.h"
+#include "device/value/channel_onoff_value.h"
+#include "device/value/channel_rgbw_value.h"
+#include "device/value/channel_rs_value.h"
 
 any_value_to_action_converter::any_value_to_action_converter() {}
 

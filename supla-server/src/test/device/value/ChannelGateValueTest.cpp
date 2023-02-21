@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <device/ChannelGateValueTest.h>
+#include <device/value/ChannelGateValueTest.h>
 
-#include "device/channel_gate_value.h"
+#include "device/value/channel_gate_value.h"
 #include "devicechannel.h"  // NOLINT
 
 namespace testing {

@@ -40,6 +40,7 @@ src/datalogger \
 src/db \
 src/device \
 src/device/call_handler \
+src/device/value \
 src/distributedobjects \
 src/google \
 src/http \
@@ -58,6 +59,7 @@ src/test/client \
 src/test/conn \
 src/test/cyclictasks \
 src/test/device \
+src/test/device/value \
 src/test/distributedobjects \
 src/test/doubles \
 src/test/doubles/actions \
@@ -69,6 +71,7 @@ src/test/doubles/cyclictasks \
 src/test/doubles/db \
 src/test/doubles/device \
 src/test/doubles/distributedobjects \
+src/test/doubles/http \
 src/test/doubles/integration/asynctask \
 src/test/doubles/integration/mqtt \
 src/test/doubles/ipc \

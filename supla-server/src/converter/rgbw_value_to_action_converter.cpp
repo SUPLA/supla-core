@@ -17,7 +17,7 @@
  */
 #include "converter/rgbw_value_to_action_converter.h"
 
-#include "device/channel_rgbw_value.h"
+#include "device/value/channel_rgbw_value.h"
 #include "proto.h"
 
 bool rgbw_value_to_action_converter::convert(

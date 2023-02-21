@@ -17,7 +17,7 @@
  */
 #include "converter/rs_value_to_action_converter.h"
 
-#include "device/channel_rs_value.h"
+#include "device/value/channel_rs_value.h"
 
 bool rs_value_to_action_converter::convert(
     supla_channel_value *value,

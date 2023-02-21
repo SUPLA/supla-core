@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <device/ChannelTmpHumValueTest.h>
+#include "ChannelTempHumValueTest.h"
 
-#include "devicechannel.h"  // NOLINT
+#include "device/value/channel_temphum_value.h"
 
 namespace testing {
 

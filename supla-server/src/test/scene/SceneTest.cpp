@@ -20,7 +20,7 @@
 
 #include "TestHelper.h"
 #include "actions/action_gate_openclose.h"
-#include "device/channel_gate_value.h"
+#include "device/value/channel_gate_value.h"
 #include "log.h"  // NOLINT
 #include "scene/scene_search_condition.h"
 

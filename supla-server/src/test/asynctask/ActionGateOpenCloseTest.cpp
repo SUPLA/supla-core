@@ -16,10 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <asynctask/ActionGateOpenCloseTest.h>
+#include "ActionGateOpenCloseTest.h"
 
 #include "actions/action_gate_openclose.h"
-#include "device/channel_gate_value.h"
+#include "device/value/channel_gate_value.h"
 #include "doubles/channeljsonconfig/ChannelJSONConfigGetterStub.h"
 #include "doubles/device/ValueGetterMock.h"
 #include "log.h"
