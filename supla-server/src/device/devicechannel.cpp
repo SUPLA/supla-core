@@ -27,6 +27,8 @@
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "db/database.h"
 #include "device.h"
+#include "device/value/channel_binary_sensor_value.h"
+#include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
@@ -1181,6 +1183,24 @@ supla_channel_value *supla_device_channel::_get_value(void) {
     case SUPLA_CHANNELFNC_HUMIDITY:
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
       return new supla_channel_temphum_value(get_type(), get_func(), value);
+
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+    case SUPLA_CHANNELFNC_MAILSENSOR:
+    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+      return new supla_channel_binary_sensor_value(value);
+
+    case SUPLA_CHANNELTYPE_DISTANCESENSOR:
+    case SUPLA_CHANNELTYPE_WINDSENSOR:
+    case SUPLA_CHANNELTYPE_PRESSURESENSOR:
+    case SUPLA_CHANNELTYPE_RAINSENSOR:
+    case SUPLA_CHANNELTYPE_WEIGHTSENSOR:
+      return new supla_channel_floating_point_sensor_value(value);
   }
 
   return new supla_channel_value(value);

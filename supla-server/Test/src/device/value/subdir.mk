@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/device/value/channel_binary_sensor_value.cpp \
+../src/device/value/channel_floating_point_sensor_value.cpp \
 ../src/device/value/channel_gate_value.cpp \
 ../src/device/value/channel_onoff_value.cpp \
 ../src/device/value/channel_rgbw_value.cpp \
@@ -16,6 +17,7 @@ CPP_SRCS += \
 
 CPP_DEPS += \
 ./src/device/value/channel_binary_sensor_value.d \
+./src/device/value/channel_floating_point_sensor_value.d \
 ./src/device/value/channel_gate_value.d \
 ./src/device/value/channel_onoff_value.d \
 ./src/device/value/channel_rgbw_value.d \
@@ -27,6 +29,7 @@ CPP_DEPS += \
 
 OBJS += \
 ./src/device/value/channel_binary_sensor_value.o \
+./src/device/value/channel_floating_point_sensor_value.o \
 ./src/device/value/channel_gate_value.o \
 ./src/device/value/channel_onoff_value.o \
 ./src/device/value/channel_rgbw_value.o \
@@ -49,7 +52,7 @@ src/device/value/%.o: ../src/device/value/%.cpp src/device/value/subdir.mk
 clean: clean-src-2f-device-2f-value
 
 clean-src-2f-device-2f-value:
-	-$(RM) ./src/device/value/channel_binary_sensor_value.d ./src/device/value/channel_binary_sensor_value.o ./src/device/value/channel_gate_value.d ./src/device/value/channel_gate_value.o ./src/device/value/channel_onoff_value.d ./src/device/value/channel_onoff_value.o ./src/device/value/channel_rgbw_value.d ./src/device/value/channel_rgbw_value.o ./src/device/value/channel_rs_value.d ./src/device/value/channel_rs_value.o ./src/device/value/channel_temphum_value.d ./src/device/value/channel_temphum_value.o ./src/device/value/channel_value.d ./src/device/value/channel_value.o ./src/device/value/channel_value_envelope.d ./src/device/value/channel_value_envelope.o ./src/device/value/channel_valve_value.d ./src/device/value/channel_valve_value.o
+	-$(RM) ./src/device/value/channel_binary_sensor_value.d ./src/device/value/channel_binary_sensor_value.o ./src/device/value/channel_floating_point_sensor_value.d ./src/device/value/channel_floating_point_sensor_value.o ./src/device/value/channel_gate_value.d ./src/device/value/channel_gate_value.o ./src/device/value/channel_onoff_value.d ./src/device/value/channel_onoff_value.o ./src/device/value/channel_rgbw_value.d ./src/device/value/channel_rgbw_value.o ./src/device/value/channel_rs_value.d ./src/device/value/channel_rs_value.o ./src/device/value/channel_temphum_value.d ./src/device/value/channel_temphum_value.o ./src/device/value/channel_value.d ./src/device/value/channel_value.o ./src/device/value/channel_value_envelope.d ./src/device/value/channel_value_envelope.o ./src/device/value/channel_valve_value.d ./src/device/value/channel_valve_value.o
 
 .PHONY: clean-src-2f-device-2f-value
 
