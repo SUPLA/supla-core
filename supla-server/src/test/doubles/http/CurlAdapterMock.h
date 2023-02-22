@@ -29,7 +29,7 @@ class CurlAdapterMock : public supla_abstract_curl_adapter {
  private:
  protected:
  public:
-  explicit CurlAdapterMock(void);
+  CurlAdapterMock(void);
   virtual ~CurlAdapterMock(void);
 
   MOCK_METHOD0(reset, void(void));

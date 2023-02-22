@@ -21,6 +21,8 @@
 
 #include <curl/curl.h>
 
+#include <string>
+
 #include "http/abstract_curl_adapter.h"
 
 class supla_curl_adapter : public supla_abstract_curl_adapter {
