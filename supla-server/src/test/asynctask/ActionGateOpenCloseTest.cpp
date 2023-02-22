@@ -21,7 +21,7 @@
 #include "actions/action_gate_openclose.h"
 #include "device/value/channel_gate_value.h"
 #include "doubles/channeljsonconfig/ChannelJSONConfigGetterStub.h"
-#include "doubles/device/ValueGetterMock.h"
+#include "doubles/device/ChannelPropertyGetterMock.h"
 #include "log.h"
 
 namespace testing {
@@ -53,10 +53,10 @@ void ActionGateOpenCloseTest::noActionRequired(bool open) {
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 
-  ValueGetterMock *value_getter = new ValueGetterMock();
-  ASSERT_TRUE(value_getter != NULL);
+  ChannelPropertyGetterMock *property_getter = new ChannelPropertyGetterMock();
+  ASSERT_TRUE(property_getter != NULL);
 
-  EXPECT_CALL(*value_getter, _get_value)
+  EXPECT_CALL(*property_getter, _get_value)
       .Times(1)
       .WillOnce(Return(new supla_channel_gate_value(
           open ? gsl_open : gsl_closed, gsl_unknown)));
@@ -65,8 +65,8 @@ void ActionGateOpenCloseTest::noActionRequired(bool open) {
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(
-      supla_caller(ctUnknown), queue, pool, action_executor, value_getter, NULL,
-      1, 2, 3, 5000000, open);
+      supla_caller(ctUnknown), queue, pool, action_executor, property_getter,
+      NULL, 1, 2, 3, 5000000, open);
   shared_ptr<supla_abstract_asynctask> tshared = task->start();
 
   WaitForExec(pool, 1, 1000000);
@@ -84,10 +84,10 @@ void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 
-  ValueGetterMock *value_getter = new ValueGetterMock();
-  ASSERT_TRUE(value_getter != NULL);
+  ChannelPropertyGetterMock *property_getter = new ChannelPropertyGetterMock();
+  ASSERT_TRUE(property_getter != NULL);
 
-  EXPECT_CALL(*value_getter, _get_value)
+  EXPECT_CALL(*property_getter, _get_value)
       .WillRepeatedly([open](int user_id, int device_id, int channel_id,
                              int *func, bool *online) {
         return new supla_channel_gate_value(open ? gsl_closed : gsl_open,
@@ -116,7 +116,7 @@ void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(
-      supla_caller(ctUnknown), queue, pool, action_executor, value_getter,
+      supla_caller(ctUnknown), queue, pool, action_executor, property_getter,
       config_getter, 1, 2, 3, 2000000, open);
 
   shared_ptr<supla_abstract_asynctask> tshared = task->start();
@@ -136,7 +136,7 @@ void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
   }
 
   if (success) {
-    EXPECT_CALL(*value_getter, _get_value)
+    EXPECT_CALL(*property_getter, _get_value)
         .Times(1)
         .WillOnce(Return(new supla_channel_gate_value(
             open ? gsl_open : gsl_closed, gsl_unknown)));
@@ -160,15 +160,15 @@ TEST_F(ActionGateOpenCloseTest, openWithDisconnectedSensor) {
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 
-  ValueGetterMock *value_getter = new ValueGetterMock();
-  ASSERT_TRUE(value_getter != NULL);
+  ChannelPropertyGetterMock *property_getter = new ChannelPropertyGetterMock();
+  ASSERT_TRUE(property_getter != NULL);
 
   ActionExecutorMock *action_executor = new ActionExecutorMock();
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(
-      supla_caller(ctUnknown), queue, pool, action_executor, value_getter, NULL,
-      1, 2, 3, 5000000, true);
+      supla_caller(ctUnknown), queue, pool, action_executor, property_getter,
+      NULL, 1, 2, 3, 5000000, true);
 
   shared_ptr<supla_abstract_asynctask> tshared = task->start();
 

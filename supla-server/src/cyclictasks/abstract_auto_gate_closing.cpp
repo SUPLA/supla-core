@@ -40,12 +40,13 @@ supla_abstract_auto_gate_closing::get_opening_sensor_level(
     supla_abstract_auto_gate_closing_dao::item_t *item) {
   _gate_sensor_level_enum opening_sensor_level = gsl_unknown;
 
-  supla_abstract_value_getter *value_getter = get_value_getter();
+  supla_abstract_channel_property_getter *property_getter =
+      get_property_getter();
 
-  supla_channel_value *value =
-      value_getter->get_value(item->user_id, item->device_id, item->channel_id);
+  supla_channel_value *value = property_getter->get_value(
+      item->user_id, item->device_id, item->channel_id);
 
-  release_value_getter(value_getter);
+  release_property_getter(property_getter);
 
   if (value) {
     supla_channel_gate_value *gate_value =

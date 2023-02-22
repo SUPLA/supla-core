@@ -22,10 +22,10 @@
 
 supla_action_trigger::supla_action_trigger(
     supla_abstract_action_executor *aexec, action_trigger_config *config,
-    supla_abstract_value_getter *value_getter) {
+    supla_abstract_channel_property_getter *property_getter) {
   this->aexec = aexec;
   this->config = config;
-  this->value_getter = value_getter;
+  this->property_getter = property_getter;
 }
 
 supla_action_trigger::~supla_action_trigger(void) {}
@@ -46,6 +46,6 @@ void supla_action_trigger::execute_actions(int at_channel_id, int user_id,
 
     config->set_active_cap(cap);
     aexec->execute_action(supla_caller(ctActionTrigger, at_channel_id), user_id,
-                          config, value_getter);
+                          config, property_getter);
   }
 }

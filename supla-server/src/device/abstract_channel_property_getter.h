@@ -16,13 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_VALUE_GETTER_H_
-#define ABSTRACT_VALUE_GETTER_H_
+#ifndef ABSTRACT_PROPERTY_GETTER_H_
+#define ABSTRACT_PROPERTY_GETTER_H_
 
 #include "device/value/channel_value.h"
 #include "proto.h"
 
-class supla_abstract_value_getter {
+class supla_abstract_channel_property_getter {
  private:
   int user_id;
   int device_id;
@@ -34,9 +34,10 @@ class supla_abstract_value_getter {
                                           bool* online) = 0;
 
  public:
-  supla_abstract_value_getter();
-  supla_abstract_value_getter(int user_id, int device_id, int channel_id);
-  virtual ~supla_abstract_value_getter();
+  supla_abstract_channel_property_getter();
+  supla_abstract_channel_property_getter(int user_id, int device_id,
+                                         int channel_id);
+  virtual ~supla_abstract_channel_property_getter();
 
   supla_channel_value* get_value(void);
   supla_channel_value* get_value(int* func, bool* online);
@@ -49,4 +50,4 @@ class supla_abstract_value_getter {
   int get_channel_id(void);
 };
 
-#endif /* ABSTRACT_VALUE_GETTER_H_ */
+#endif /* ABSTRACT_PROPERTY_GETTER_H_ */

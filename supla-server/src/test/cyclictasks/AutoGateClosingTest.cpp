@@ -31,7 +31,7 @@ void AutoGateClosingTest::TearDown() { delete dao; }
 
 TEST_F(AutoGateClosingTest, unknownGateState) {
   EXPECT_CALL(agc, get_dao).Times(1).WillOnce(Return(dao));
-  EXPECT_CALL(agc, get_value_getter).Times(1).WillOnce(Return(&valueGetter));
+  EXPECT_CALL(agc, get_property_getter).Times(1).WillOnce(Return(&valueGetter));
   EXPECT_CALL(*dao, get_all_active).Times(1).WillOnce([](void) {
     supla_abstract_auto_gate_closing_dao::item_t i;
     i.user_id = 1;
@@ -62,7 +62,7 @@ TEST_F(AutoGateClosingTest, unknownGateState) {
 
 TEST_F(AutoGateClosingTest, stillClosed) {
   EXPECT_CALL(agc, get_dao).Times(1).WillOnce(Return(dao));
-  EXPECT_CALL(agc, get_value_getter).Times(1).WillOnce(Return(&valueGetter));
+  EXPECT_CALL(agc, get_property_getter).Times(1).WillOnce(Return(&valueGetter));
   EXPECT_CALL(*dao, get_all_active).Times(1).WillOnce([](void) {
     supla_abstract_auto_gate_closing_dao::item_t i;
     i.user_id = 1;
@@ -93,7 +93,7 @@ TEST_F(AutoGateClosingTest, stillClosed) {
 
 TEST_F(AutoGateClosingTest, closeSuccessfully) {
   EXPECT_CALL(agc, get_dao).Times(1).WillOnce(Return(dao));
-  EXPECT_CALL(agc, get_value_getter).Times(1).WillOnce(Return(&valueGetter));
+  EXPECT_CALL(agc, get_property_getter).Times(1).WillOnce(Return(&valueGetter));
   EXPECT_CALL(*dao, get_all_active).Times(1).WillOnce([](void) {
     supla_abstract_auto_gate_closing_dao::item_t i;
     i.user_id = 1;
@@ -124,7 +124,7 @@ TEST_F(AutoGateClosingTest, closeSuccessfully) {
 
 TEST_F(AutoGateClosingTest, closeAttempt) {
   EXPECT_CALL(agc, get_dao).Times(3).WillRepeatedly(Return(dao));
-  EXPECT_CALL(agc, get_value_getter)
+  EXPECT_CALL(agc, get_property_getter)
       .Times(3)
       .WillRepeatedly(Return(&valueGetter));
 

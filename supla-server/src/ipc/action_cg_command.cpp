@@ -19,7 +19,7 @@
 #include "ipc/action_cg_command.h"
 
 #include "actions/action_executor.h"
-#include "device/value_getter.h"
+#include "device/channel_property_getter.h"
 #include "user.h"
 #include "user/userchannelgroups.h"
 
@@ -74,12 +74,14 @@ bool supla_action_cg_command::action_copy(supla_user *user, int group_id,
   if (action_executor) {
     action_executor->set_group_id(user->getUserID(), group_id);
 
-    supla_value_getter *value_getter = new supla_value_getter();
-    if (value_getter) {
-      action_executor->copy(value_getter, source_device_id, source_channel_id);
+    supla_cahnnel_property_getter *property_getter =
+        new supla_cahnnel_property_getter();
+    if (property_getter) {
+      action_executor->copy(property_getter, source_device_id,
+                            source_channel_id);
       result = true;
-      delete value_getter;
-      value_getter = NULL;
+      delete property_getter;
+      property_getter = NULL;
     }
 
     delete action_executor;

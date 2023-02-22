@@ -20,7 +20,7 @@
 #define ANY_VALUE_TO_ACTION_CONVERTER_H_
 
 #include "actions/abstract_action_executor.h"
-#include "device/abstract_value_getter.h"
+#include "device/abstract_channel_property_getter.h"
 
 class any_value_to_action_converter {
  public:

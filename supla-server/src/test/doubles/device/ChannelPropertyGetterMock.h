@@ -19,16 +19,18 @@
 #ifndef VALUE_GETTER_MOCK_H_
 #define VALUE_GETTER_MOCK_H_
 
-#include <abstract_value_getter.h>
 #include <gmock/gmock.h>
+
+#include "device/abstract_channel_property_getter.h"
 
 namespace testing {
 
-class ValueGetterMock : public supla_abstract_value_getter {
+class ChannelPropertyGetterMock
+    : public supla_abstract_channel_property_getter {
  protected:
  public:
-  ValueGetterMock(void);
-  virtual ~ValueGetterMock(void);
+  ChannelPropertyGetterMock(void);
+  virtual ~ChannelPropertyGetterMock(void);
 
   MOCK_METHOD5(_get_value,
                supla_channel_value *(int user_id, int device_id, int channel_id,

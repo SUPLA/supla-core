@@ -19,11 +19,11 @@
 #ifndef SCENETEST_H_
 #define SCENETEST_H_
 
-#include <doubles/device/ValueGetterMock.h>
-#include <scene/scene_asynctask.h>
 #include "asynctask/AsyncTaskTest.h"
+#include "doubles/device/ChannelPropertyGetterMock.h"
 #include "doubles/scene/SceneActionExecutorMock.h"
 #include "gtest/gtest.h"
+#include "scene/scene_asynctask.h"
 
 namespace testing {
 
@@ -31,7 +31,7 @@ class SceneTest : public AsyncTaskTest {
  private:
  protected:
   SceneActionExecutorMock *action_executor;
-  ValueGetterMock *value_getter;
+  ChannelPropertyGetterMock *property_getter;
   supla_scene_operations *operations;
 
  public:

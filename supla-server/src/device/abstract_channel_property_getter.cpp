@@ -16,27 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "abstract_value_getter.h"
+#include "device/abstract_channel_property_getter.h"
 
 #include <string.h>
 
-supla_abstract_value_getter::supla_abstract_value_getter() {
+supla_abstract_channel_property_getter::
+    supla_abstract_channel_property_getter() {
   this->user_id = 0;
   this->device_id = 0;
   this->channel_id = 0;
 }
-supla_abstract_value_getter::supla_abstract_value_getter(int user_id,
-                                                         int device_id,
-                                                         int channel_id) {
+supla_abstract_channel_property_getter::supla_abstract_channel_property_getter(
+    int user_id, int device_id, int channel_id) {
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
 }
 
-supla_abstract_value_getter::~supla_abstract_value_getter() {}
+supla_abstract_channel_property_getter::
+    ~supla_abstract_channel_property_getter() {}
 
-supla_channel_value* supla_abstract_value_getter::get_value(int* func,
-                                                            bool* online) {
+supla_channel_value* supla_abstract_channel_property_getter::get_value(
+    int* func, bool* online) {
   if (!user_id || (!device_id && !channel_id)) {
     return nullptr;
   }
@@ -44,11 +45,11 @@ supla_channel_value* supla_abstract_value_getter::get_value(int* func,
   return _get_value(user_id, device_id, channel_id, func, online);
 }
 
-supla_channel_value* supla_abstract_value_getter::get_value(void) {
+supla_channel_value* supla_abstract_channel_property_getter::get_value(void) {
   return get_value(nullptr, nullptr);
 }
 
-supla_channel_value* supla_abstract_value_getter::get_value(
+supla_channel_value* supla_abstract_channel_property_getter::get_value(
     int user_id, int device_id, int channel_id, int* func, bool* online) {
   this->user_id = user_id;
   this->device_id = device_id;
@@ -57,14 +58,19 @@ supla_channel_value* supla_abstract_value_getter::get_value(
   return get_value(func, online);
 }
 
-supla_channel_value* supla_abstract_value_getter::get_value(int user_id,
-                                                            int device_id,
-                                                            int channel_id) {
+supla_channel_value* supla_abstract_channel_property_getter::get_value(
+    int user_id, int device_id, int channel_id) {
   return get_value(user_id, device_id, channel_id, nullptr, nullptr);
 }
 
-int supla_abstract_value_getter::get_user_id(void) { return user_id; }
+int supla_abstract_channel_property_getter::get_user_id(void) {
+  return user_id;
+}
 
-int supla_abstract_value_getter::get_device_id(void) { return device_id; }
+int supla_abstract_channel_property_getter::get_device_id(void) {
+  return device_id;
+}
 
-int supla_abstract_value_getter::get_channel_id(void) { return channel_id; }
+int supla_abstract_channel_property_getter::get_channel_id(void) {
+  return channel_id;
+}

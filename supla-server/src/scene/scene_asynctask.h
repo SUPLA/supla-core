@@ -35,7 +35,7 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
   int scene_id;
   unsigned int estimated_execution_time;
   supla_abstract_action_executor *action_executor;
-  supla_abstract_value_getter *value_getter;
+  supla_abstract_channel_property_getter *property_getter;
   supla_scene_operations *operations;
   unsigned int op_get_delay_ms(void);
   supla_scene_operation *op_pop(void);
@@ -50,7 +50,7 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
                         supla_asynctask_queue *queue,
                         supla_abstract_asynctask_thread_pool *pool,
                         supla_abstract_action_executor *action_executor,
-                        supla_abstract_value_getter *value_getter,
+                        supla_abstract_channel_property_getter *property_getter,
                         supla_scene_operations *operations);
   virtual ~supla_scene_asynctask();
   const supla_caller &get_caller(void) const;

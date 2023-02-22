@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "value_getter.h"
+#include "device/channel_property_getter.h"
 
 #include <memory>
 
@@ -25,9 +25,8 @@
 
 using std::shared_ptr;
 
-supla_channel_value *supla_value_getter::_get_value(int user_id, int device_id,
-                                                    int channel_id, int *func,
-                                                    bool *online) {
+supla_channel_value *supla_cahnnel_property_getter::_get_value(
+    int user_id, int device_id, int channel_id, int *func, bool *online) {
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
 
@@ -50,4 +49,4 @@ supla_channel_value *supla_value_getter::_get_value(int user_id, int device_id,
   return result;
 }
 
-supla_value_getter::~supla_value_getter(void) {}
+supla_cahnnel_property_getter::~supla_cahnnel_property_getter(void) {}

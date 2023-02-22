@@ -16,19 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VALUE_GETTER_H_
-#define VALUE_GETTER_H_
+#ifndef PROPERTY_GETTER_H_
+#define PROPERTY_GETTER_H_
 
-#include <abstract_value_getter.h>
+#include "device/abstract_channel_property_getter.h"
 
-class supla_value_getter : public supla_abstract_value_getter {
+class supla_cahnnel_property_getter
+    : public supla_abstract_channel_property_getter {
  protected:
   virtual supla_channel_value *_get_value(int user_id, int device_id,
                                           int channel_id, int *func,
                                           bool *online);
 
  public:
-  virtual ~supla_value_getter(void);
+  virtual ~supla_cahnnel_property_getter(void);
 };
 
-#endif /* ABSTRACT_VALUE_GETTER_H_ */
+#endif /*PROPERTY_GETTER_H_*/

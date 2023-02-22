@@ -57,21 +57,21 @@ TEST_F(ActionTriggerCopyTest, empty) {
 }
 
 TEST_F(ActionTriggerCopyTest, gate) {
-  EXPECT_CALL(*value_getter, _get_value)
+  EXPECT_CALL(*property_getter, _get_value)
       .Times(1)
       .WillOnce(Return(new supla_channel_gate_value(gsl_unknown, gsl_unknown)));
 
   at->execute_actions(1, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 0);
 
-  EXPECT_CALL(*value_getter, _get_value)
+  EXPECT_CALL(*property_getter, _get_value)
       .Times(1)
       .WillOnce(Return(new supla_channel_gate_value(gsl_unknown, gsl_closed)));
 
   at->execute_actions(1, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 0);
 
-  EXPECT_CALL(*value_getter, _get_value)
+  EXPECT_CALL(*property_getter, _get_value)
       .Times(1)
       .WillOnce(Return(new supla_channel_gate_value(gsl_closed, gsl_unknown)));
 
@@ -82,11 +82,11 @@ TEST_F(ActionTriggerCopyTest, gate) {
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 77));
-  EXPECT_EQ(value_getter->get_device_id(), 66);
-  EXPECT_EQ(value_getter->get_channel_id(), 46868);
-  EXPECT_EQ(value_getter->get_user_id(), 1);
+  EXPECT_EQ(property_getter->get_device_id(), 66);
+  EXPECT_EQ(property_getter->get_channel_id(), 46868);
+  EXPECT_EQ(property_getter->get_user_id(), 1);
 
-  EXPECT_CALL(*value_getter, _get_value)
+  EXPECT_CALL(*property_getter, _get_value)
       .Times(1)
       .WillOnce(Return(new supla_channel_gate_value(gsl_open, gsl_unknown)));
 
@@ -99,7 +99,7 @@ TEST_F(ActionTriggerCopyTest, gate) {
 TEST_F(ActionTriggerCopyTest, rollerShutter) {
   TDSC_RollerShutterValue rsval = {};
 
-  EXPECT_CALL(*value_getter, _get_value)
+  EXPECT_CALL(*property_getter, _get_value)
       .Times(4)
       .WillRepeatedly([&rsval](int user_id, int device_id, int channel_id,
                                int *func, bool *online) {
@@ -113,9 +113,9 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
-  EXPECT_EQ(value_getter->get_device_id(), 66);
-  EXPECT_EQ(value_getter->get_channel_id(), 46868);
-  EXPECT_EQ(value_getter->get_user_id(), 1);
+  EXPECT_EQ(property_getter->get_device_id(), 66);
+  EXPECT_EQ(property_getter->get_channel_id(), 46868);
+  EXPECT_EQ(property_getter->get_user_id(), 1);
 
   rsval.position = -1;
 
@@ -141,18 +141,18 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   rsval.position = 80;
 
   at->execute_actions(8, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(value_getter->get_channel_id(), 68);
+  EXPECT_EQ(property_getter->get_channel_id(), 68);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 3);
   EXPECT_EQ(aexec->getClosingPercentage(), 80);
-  EXPECT_EQ(value_getter->get_device_id(), 0);
+  EXPECT_EQ(property_getter->get_device_id(), 0);
   EXPECT_EQ(aexec->get_channel_id(), 455);
   EXPECT_EQ(aexec->get_group_id(), 0);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 8));
 }
 
 TEST_F(ActionTriggerCopyTest, onOff) {
-  EXPECT_CALL(*value_getter, _get_value)
+  EXPECT_CALL(*property_getter, _get_value)
       .Times(1)
       .WillOnce(Return(new supla_channel_onoff_value(true)));
 
@@ -163,11 +163,11 @@ TEST_F(ActionTriggerCopyTest, onOff) {
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
-  EXPECT_EQ(value_getter->get_device_id(), 66);
-  EXPECT_EQ(value_getter->get_channel_id(), 46868);
-  EXPECT_EQ(value_getter->get_user_id(), 1);
+  EXPECT_EQ(property_getter->get_device_id(), 66);
+  EXPECT_EQ(property_getter->get_channel_id(), 46868);
+  EXPECT_EQ(property_getter->get_user_id(), 1);
 
-  EXPECT_CALL(*value_getter, _get_value)
+  EXPECT_CALL(*property_getter, _get_value)
       .Times(1)
       .WillOnce(Return(new supla_channel_onoff_value(false)));
 
@@ -180,7 +180,7 @@ TEST_F(ActionTriggerCopyTest, onOff) {
 TEST_F(ActionTriggerCopyTest, rgbw) {
   TRGBW_Value rgbw = {};
 
-  EXPECT_CALL(*value_getter, _get_value)
+  EXPECT_CALL(*property_getter, _get_value)
       .Times(4)
       .WillRepeatedly([&rgbw](int user_id, int device_id, int channel_id,
                               int *func, bool *online) {
@@ -197,9 +197,9 @@ TEST_F(ActionTriggerCopyTest, rgbw) {
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 1));
-  EXPECT_EQ(value_getter->get_device_id(), 66);
-  EXPECT_EQ(value_getter->get_channel_id(), 46868);
-  EXPECT_EQ(value_getter->get_user_id(), 1);
+  EXPECT_EQ(property_getter->get_device_id(), 66);
+  EXPECT_EQ(property_getter->get_channel_id(), 46868);
+  EXPECT_EQ(property_getter->get_user_id(), 1);
 
   rgbw.R = 0xAA;
   rgbw.G = 0xBB;

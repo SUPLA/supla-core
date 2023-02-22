@@ -32,7 +32,7 @@ using std::shared_ptr;
 
 SceneTest::SceneTest() : AsyncTaskTest() {
   action_executor = NULL;
-  value_getter = NULL;
+  property_getter = NULL;
   operations = NULL;
 }
 
@@ -46,20 +46,20 @@ void SceneTest::SetUp() {
   action_executor = new SceneActionExecutorMock();
   ASSERT_FALSE(action_executor == NULL);
 
-  value_getter = new ValueGetterMock();
-  if (!value_getter) {
+  property_getter = new ChannelPropertyGetterMock();
+  if (!property_getter) {
     delete action_executor;
     action_executor = NULL;
   }
-  ASSERT_FALSE(value_getter == NULL);
+  ASSERT_FALSE(property_getter == NULL);
 
   operations = new supla_scene_operations();
   if (!operations) {
     delete action_executor;
     action_executor = NULL;
 
-    delete value_getter;
-    value_getter = NULL;
+    delete property_getter;
+    property_getter = NULL;
   }
 
   ASSERT_FALSE(operations == NULL);
@@ -70,7 +70,7 @@ TEST_F(SceneTest, executeEmptyScene) {
 
   shared_ptr<supla_abstract_asynctask> scene =
       (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 0, queue, pool,
-                                 action_executor, value_getter, operations))
+                                 action_executor, property_getter, operations))
           ->start();
 
   WaitForState(scene, supla_asynctask_state::SUCCESS, 1000);
@@ -103,7 +103,7 @@ TEST_F(SceneTest, executeSceneWithoutDelay) {
 
   shared_ptr<supla_abstract_asynctask> scene =
       (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 0, queue, pool,
-                                 action_executor, value_getter, operations))
+                                 action_executor, property_getter, operations))
           ->start();
 
   // Note that testing with Valgrind turned on increases the time between tasks
@@ -159,7 +159,7 @@ TEST_F(SceneTest, executeSceneWithDelayBetweenActions) {
 
   shared_ptr<supla_abstract_asynctask> scene =
       (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 0, queue, pool,
-                                 action_executor, value_getter, operations))
+                                 action_executor, property_getter, operations))
           ->start();
 
   // Note that testing with Valgrind turned on increases the time between tasks
@@ -199,7 +199,7 @@ TEST_F(SceneTest, estamitedExecutionTime) {
 
   shared_ptr<supla_abstract_asynctask> scene =
       (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 1234, queue, pool,
-                                 action_executor, value_getter, operations))
+                                 action_executor, property_getter, operations))
           ->start();
 
   WaitForState(scene, supla_asynctask_state::SUCCESS, 2000000);
@@ -233,8 +233,8 @@ TEST_F(SceneTest, executeSceneInsideScene) {
   supla_scene_operations *operations_s2 = new supla_scene_operations();
   ASSERT_FALSE(operations_s2 == NULL);
 
-  ValueGetterMock *value_getter_s2 = new ValueGetterMock();
-  ASSERT_FALSE(value_getter_s2 == NULL);
+  ChannelPropertyGetterMock *property_getter_s2 = new ChannelPropertyGetterMock();
+  ASSERT_FALSE(property_getter_s2 == NULL);
 
   SceneActionExecutorMock *action_executor_s2 = new SceneActionExecutorMock();
 
@@ -249,12 +249,12 @@ TEST_F(SceneTest, executeSceneInsideScene) {
   operations_s2->push(op);
 
   action_executor->set_asynctask_params(queue, pool, action_executor_s2,
-                                        value_getter_s2, operations_s2);
+                                        property_getter_s2, operations_s2);
   // ----------------------------
 
   shared_ptr<supla_abstract_asynctask> scene =
       (new supla_scene_asynctask(supla_caller(ctIPC), 2, 111, 0, queue, pool,
-                                 action_executor, value_getter, operations))
+                                 action_executor, property_getter, operations))
           ->start();
   ASSERT_FALSE(scene == NULL);
 
@@ -288,8 +288,8 @@ TEST_F(SceneTest, infinityLoop) {
   supla_scene_operations *operations_s2 = new supla_scene_operations();
   ASSERT_FALSE(operations_s2 == NULL);
 
-  ValueGetterMock *value_getter_s2 = new ValueGetterMock();
-  ASSERT_FALSE(value_getter_s2 == NULL);
+  ChannelPropertyGetterMock *property_getter_s2 = new ChannelPropertyGetterMock();
+  ASSERT_FALSE(property_getter_s2 == NULL);
 
   SceneActionExecutorMock *action_executor_s2 = new SceneActionExecutorMock();
 
@@ -300,12 +300,12 @@ TEST_F(SceneTest, infinityLoop) {
   operations_s2->push(op);
 
   action_executor->set_asynctask_params(queue, pool, action_executor_s2,
-                                        value_getter_s2, operations_s2);
+                                        property_getter_s2, operations_s2);
   // ----------------------------
 
   shared_ptr<supla_abstract_asynctask> scene =
       (new supla_scene_asynctask(supla_caller(ctIPC), 2, 111, 0, queue, pool,
-                                 action_executor, value_getter, operations))
+                                 action_executor, property_getter, operations))
           ->start();
 
   WaitForState(scene, supla_asynctask_state::SUCCESS, 1000);
@@ -345,8 +345,8 @@ TEST_F(SceneTest, interruptScene) {
   supla_scene_operations *operations_s2 = new supla_scene_operations();
   ASSERT_FALSE(operations_s2 == NULL);
 
-  ValueGetterMock *value_getter_s2 = new ValueGetterMock();
-  ASSERT_FALSE(value_getter_s2 == NULL);
+  ChannelPropertyGetterMock *property_getter_s2 = new ChannelPropertyGetterMock();
+  ASSERT_FALSE(property_getter_s2 == NULL);
 
   SceneActionExecutorMock *action_executor_s2 = new SceneActionExecutorMock();
   ASSERT_FALSE(action_executor_s2 == NULL);
@@ -370,15 +370,15 @@ TEST_F(SceneTest, interruptScene) {
   operations_s2->push(op);
 
   action_executor->set_asynctask_params(queue, pool, action_executor_s2,
-                                        value_getter_s2, operations_s2);
+                                        property_getter_s2, operations_s2);
   // ----------------------------
 
   // Parameters for the third scene
   supla_scene_operations *operations_s3 = new supla_scene_operations();
   ASSERT_FALSE(operations_s3 == NULL);
 
-  ValueGetterMock *value_getter_s3 = new ValueGetterMock();
-  ASSERT_FALSE(value_getter_s3 == NULL);
+  ChannelPropertyGetterMock *property_getter_s3 = new ChannelPropertyGetterMock();
+  ASSERT_FALSE(property_getter_s3 == NULL);
 
   SceneActionExecutorMock *action_executor_s3 = new SceneActionExecutorMock();
   ASSERT_FALSE(action_executor_s3 == NULL);
@@ -402,28 +402,28 @@ TEST_F(SceneTest, interruptScene) {
   operations_s3->push(op);
 
   action_executor_s2->set_asynctask_params(queue, pool, action_executor_s3,
-                                           value_getter_s3, operations_s3);
+                                           property_getter_s3, operations_s3);
 
   // Parameters for the Open / Close action
 
   SceneActionExecutorMock *action_executor_oc = new SceneActionExecutorMock();
   ASSERT_FALSE(action_executor_oc == NULL);
 
-  ValueGetterMock *value_getter_oc = new ValueGetterMock();
-  ASSERT_FALSE(value_getter_oc == NULL);
+  ChannelPropertyGetterMock *property_getter_oc = new ChannelPropertyGetterMock();
+  ASSERT_FALSE(property_getter_oc == NULL);
 
-  EXPECT_CALL(*value_getter_oc, _get_value)
+  EXPECT_CALL(*property_getter_oc, _get_value)
       .Times(1)
       .WillOnce(Return(new supla_channel_gate_value(gsl_closed, gsl_closed)));
 
   action_executor_s3->set_asynctask_params(queue, pool, action_executor_oc,
-                                           value_getter_oc, NULL);
+                                           property_getter_oc, NULL);
 
   // ----------------------------
 
   shared_ptr<supla_abstract_asynctask> scene =
       (new supla_scene_asynctask(supla_caller(ctIPC), 2, 111, 0, queue, pool,
-                                 action_executor, value_getter, operations))
+                                 action_executor, property_getter, operations))
           ->start();
 
   supla_scene_search_condition cnd(2, 15, true);

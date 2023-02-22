@@ -21,14 +21,14 @@
 
 #include "doubles/cyclictasks/AutoGateClosingDaoMock.h"
 #include "doubles/cyclictasks/AutoGateClosingMock.h"
-#include "doubles/device/ValueGetterMock.h"
+#include "doubles/device/ChannelPropertyGetterMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
 
 class AutoGateClosingTest : public Test {
  protected:
-  ValueGetterMock valueGetter;
+  ChannelPropertyGetterMock valueGetter;
   AutoGateClosingDaoMock *dao;
   AutoGateClosingMock agc;
 

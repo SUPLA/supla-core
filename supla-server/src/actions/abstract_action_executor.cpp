@@ -101,9 +101,9 @@ shared_ptr<supla_device> supla_abstract_action_executor::get_device(void) {
 void supla_abstract_action_executor::execute_action(
     const supla_caller &caller, int user_id, int action_id,
     _subjectType_e subject_type, int subject_id,
-    supla_abstract_value_getter *value_getter, TAction_RS_Parameters *rs,
-    TAction_RGBW_Parameters *rgbw, int source_device_id, int source_channel_id,
-    int cap) {
+    supla_abstract_channel_property_getter *property_getter,
+    TAction_RS_Parameters *rs, TAction_RGBW_Parameters *rgbw,
+    int source_device_id, int source_channel_id, int cap) {
   if (action_id == 0 || subject_id == 0) {
     return;
   }
@@ -192,8 +192,8 @@ void supla_abstract_action_executor::execute_action(
       toggle();
       break;
     case ACTION_COPY:
-      if (value_getter) {
-        copy(value_getter, source_device_id, source_channel_id);
+      if (property_getter) {
+        copy(property_getter, source_device_id, source_channel_id);
       }
       break;
     case ACTION_FORWARD_OUTSIDE:
@@ -204,7 +204,7 @@ void supla_abstract_action_executor::execute_action(
 
 void supla_abstract_action_executor::execute_action(
     const supla_caller &caller, int user_id, abstract_action_config *config,
-    supla_abstract_value_getter *value_getter) {
+    supla_abstract_channel_property_getter *property_getter) {
   int action_id = 0;
   int subject_id = 0;
 
@@ -237,7 +237,7 @@ void supla_abstract_action_executor::execute_action(
   }
 
   execute_action(caller, user_id, action_id, config->get_subject_type(),
-                 subject_id, value_getter, &rs, &rgbw, source_device_id,
+                 subject_id, property_getter, &rs, &rgbw, source_device_id,
                  source_channel_id, cap);
 }
 
@@ -288,12 +288,12 @@ int supla_abstract_action_executor::get_scene_id(void) {
 }
 
 void supla_abstract_action_executor::copy(
-    supla_abstract_value_getter *value_getter, int source_device_id,
-    int source_channel_id) {
-  if (value_getter) {
+    supla_abstract_channel_property_getter *property_getter,
+    int source_device_id, int source_channel_id) {
+  if (property_getter) {
     supla_channel_value *value = NULL;
-    if ((value = value_getter->get_value(get_user_id(), source_device_id,
-                                         source_channel_id))) {
+    if ((value = property_getter->get_value(get_user_id(), source_device_id,
+                                            source_channel_id))) {
       any_value_to_action_converter *converter =
           new any_value_to_action_converter();
       if (converter) {

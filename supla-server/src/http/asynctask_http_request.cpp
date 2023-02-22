@@ -28,20 +28,20 @@ supla_asynctask_http_request::supla_asynctask_http_request(
     const supla_caller &caller, int user_id, int device_id, int channel_id,
     event_type et, supla_asynctask_queue *queue,
     supla_abstract_asynctask_thread_pool *pool,
-    supla_abstract_value_getter *value_getter)
+    supla_abstract_channel_property_getter *property_getter)
     : supla_abstract_asynctask(queue, pool) {
   this->caller = caller;
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
   this->et = et;
-  this->value_getter = value_getter;
+  this->property_getter = property_getter;
   set_timeout(scfg_int(CFG_HTTP_REQUEST_TIMEOUT) * 1000);
 }
 
 supla_asynctask_http_request::~supla_asynctask_http_request(void) {
-  if (value_getter) {
-    delete value_getter;
+  if (property_getter) {
+    delete property_getter;
   }
 }
 
@@ -57,9 +57,9 @@ int supla_asynctask_http_request::get_channel_id(void) { return channel_id; }
 
 event_type supla_asynctask_http_request::get_event_type(void) { return et; }
 
-supla_abstract_value_getter *supla_asynctask_http_request::get_value_getter(
-    void) {
-  return value_getter;
+supla_abstract_channel_property_getter *
+supla_asynctask_http_request::get_property_getter(void) {
+  return property_getter;
 }
 
 supla_channel_value *supla_asynctask_http_request::get_channel_value(
@@ -72,9 +72,9 @@ supla_channel_value *supla_asynctask_http_request::get_channel_value(
     *online = false;
   }
 
-  if (value_getter) {
-    return value_getter->get_value(user_id, device_id, channel_id, func,
-                                   online);
+  if (property_getter) {
+    return property_getter->get_value(user_id, device_id, channel_id, func,
+                                      online);
   }
 
   return nullptr;

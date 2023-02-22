@@ -22,7 +22,7 @@
 
 #include "actions/action_gate_openclose.h"
 #include "cyclictasks/auto_gate_closing_dao.h"
-#include "device/value_getter.h"
+#include "device/channel_property_getter.h"
 
 using std::vector;
 
@@ -41,13 +41,14 @@ void supla_auto_gate_closing::release_dao(
   delete dao;
 }
 
-supla_abstract_value_getter *supla_auto_gate_closing::get_value_getter(void) {
-  return new supla_value_getter();
+supla_abstract_channel_property_getter *
+supla_auto_gate_closing::get_property_getter(void) {
+  return new supla_cahnnel_property_getter();
 }
 
-void supla_auto_gate_closing::release_value_getter(
-    supla_abstract_value_getter *value_getter) {
-  delete value_getter;
+void supla_auto_gate_closing::release_property_getter(
+    supla_abstract_channel_property_getter *property_getter) {
+  delete property_getter;
 }
 
 void supla_auto_gate_closing::close_the_gate(int user_id, int device_id,

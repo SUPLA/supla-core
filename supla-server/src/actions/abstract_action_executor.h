@@ -22,9 +22,9 @@
 #include <memory>
 
 #include "abstract_action_config.h"
-#include "abstract_value_getter.h"
 #include "caller.h"
 #include "device.h"
+#include "device/abstract_channel_property_getter.h"
 #include "user.h"
 
 class supla_user_channelgroups;
@@ -66,11 +66,11 @@ class supla_abstract_action_executor {
 
   void execute_action(const supla_caller &caller, int user_id,
                       abstract_action_config *config,
-                      supla_abstract_value_getter *value_getter);
+                      supla_abstract_channel_property_getter *property_getter);
 
   void execute_action(const supla_caller &caller, int user_id, int action_id,
                       _subjectType_e subject_type, int subject_id,
-                      supla_abstract_value_getter *value_getter,
+                      supla_abstract_channel_property_getter *property_getter,
                       TAction_RS_Parameters *rs, TAction_RGBW_Parameters *rgbw,
                       int source_device_id, int source_channel_id, int cap);
 
@@ -97,8 +97,8 @@ class supla_abstract_action_executor {
   virtual void open_close(void) = 0;
   virtual void open_close_without_canceling_tasks(void) = 0;
   virtual void forward_outside(int cap) = 0;
-  void copy(supla_abstract_value_getter *value_getter, int source_device_id,
-            int source_channel_id);
+  void copy(supla_abstract_channel_property_getter *property_getter,
+            int source_device_id, int source_channel_id);
 };
 
 #endif /*ABSTRACT_ACTION_EXECUTOR_H_*/

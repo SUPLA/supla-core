@@ -22,7 +22,7 @@
 
 #include "actions/action_executor.h"
 #include "device.h"
-#include "device/value_getter.h"
+#include "device/channel_property_getter.h"
 #include "http/httprequestqueue.h"
 #include "user.h"
 
@@ -122,12 +122,14 @@ bool supla_action_command::action_copy(int user_id, int device_id,
   if (action_executor) {
     action_executor->set_channel_id(user_id, device_id, channel_id);
 
-    supla_value_getter *value_getter = new supla_value_getter();
-    if (value_getter) {
-      action_executor->copy(value_getter, source_device_id, source_channel_id);
+    supla_cahnnel_property_getter *property_getter =
+        new supla_cahnnel_property_getter();
+    if (property_getter) {
+      action_executor->copy(property_getter, source_device_id,
+                            source_channel_id);
       result = true;
-      delete value_getter;
-      value_getter = NULL;
+      delete property_getter;
+      property_getter = NULL;
     }
 
     delete action_executor;

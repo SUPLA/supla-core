@@ -19,17 +19,16 @@
 #ifndef ACTION_OPENCLOSE_H_
 #define ACTION_OPENCLOSE_H_
 
-#include <actions/action_executor.h>
-#include <channeljsonconfig/abstract_channel_json_config_getter.h>
-
-#include "abstract_value_getter.h"
+#include "actions/action_executor.h"
 #include "asynctask/abstract_asynctask.h"
 #include "caller.h"
+#include "channeljsonconfig/abstract_channel_json_config_getter.h"
+#include "device/abstract_channel_property_getter.h"
 
 class supla_action_gate_openclose : public supla_abstract_asynctask {
  private:
   supla_abstract_action_executor *action_executor;
-  supla_abstract_value_getter *value_getter;
+  supla_abstract_channel_property_getter *property_getter;
   supla_caller caller;
   int user_id;
   int device_id;
@@ -49,7 +48,7 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
       const supla_caller &caller, supla_asynctask_queue *queue,
       supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_action_executor *action_executor,
-      supla_abstract_value_getter *value_getter,
+      supla_abstract_channel_property_getter *property_getter,
       abstract_channel_json_config_getter *json_config_getter, int user_id,
       int device_id, int channel_id, unsigned int verification_delay_us,
       bool open);

@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "device/devicechannels.h"
+#include "devicechannels.h"
 
 #include <math.h>
 #include <string.h>
@@ -28,10 +28,10 @@
 #include "channeljsonconfig/controlling_the_gate_config.h"
 #include "db/database.h"
 #include "device.h"
+#include "device/channel_property_getter.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_valve_value.h"
 #include "log.h"
-#include "value_getter.h"
 
 using std::function;
 using std::list;
@@ -949,22 +949,23 @@ void supla_device_channels::action_trigger(TDS_ActionTrigger *at) {
   if (channel_id) {
     supla_action_executor *aexec = new supla_action_executor();
     action_trigger_config *at_config = new action_trigger_config(json_config);
-    supla_value_getter *value_getter = new supla_value_getter();
+    supla_cahnnel_property_getter *property_getter =
+        new supla_cahnnel_property_getter();
 
-    if (aexec && at_config && value_getter) {
+    if (aexec && at_config && property_getter) {
       at_config->set_channel_id_if_subject_not_set(channel_id);
 
       supla_action_trigger *trigger =
-          new supla_action_trigger(aexec, at_config, value_getter);
+          new supla_action_trigger(aexec, at_config, property_getter);
       if (trigger) {
         trigger->execute_actions(channel_id, user_id, at->ActionTrigger);
         delete trigger;
       }
     }
 
-    if (value_getter) {
-      delete value_getter;
-      value_getter = nullptr;
+    if (property_getter) {
+      delete property_getter;
+      property_getter = nullptr;
     }
 
     if (aexec) {

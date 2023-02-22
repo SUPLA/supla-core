@@ -16,14 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ValueGetterMock.h"
+#include "doubles/device/ChannelPropertyGetterMock.h"
 
 #include <string.h>
 
 namespace testing {
 
-ValueGetterMock::ValueGetterMock(void) : supla_abstract_value_getter() {}
+ChannelPropertyGetterMock::ChannelPropertyGetterMock(void)
+    : supla_abstract_channel_property_getter() {}
 
-ValueGetterMock::~ValueGetterMock(void) {}
+ChannelPropertyGetterMock::~ChannelPropertyGetterMock(void) {}
 
 }  // namespace testing
