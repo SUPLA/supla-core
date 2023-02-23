@@ -19,6 +19,7 @@
 #ifndef ABSTRACT_STATE_WEBHOOK_CREDENTIALS_H_
 #define ABSTRACT_STATE_WEBHOOK_CREDENTIALS_H_
 
+#include <list>
 #include <string>
 
 class supla_abstract_state_webhook_credentials {
@@ -38,6 +39,7 @@ class supla_abstract_state_webhook_credentials {
   virtual void update(const char *access_token, const char *refresh_token,
                       int expires_in) = 0;
   virtual void remove(void) = 0;
+  virtual std::list<int> get_function_ids(void) = 0;
 };
 
 #endif /* ABSTRACT_STATE_WEBHOOK_CREDENTIALS_H_ */
