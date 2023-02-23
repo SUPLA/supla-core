@@ -51,6 +51,22 @@ supla_channel_value *supla_cahnnel_property_getter::_get_value(
   return result;
 }
 
+int supla_cahnnel_property_getter::_get_func(int user_id, int device_id,
+                                             int channel_id) {
+  int result = 0;
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+
+  if (device != nullptr) {
+    device->get_channels()->access_channel(
+        channel_id, [&result](supla_device_channel *channel) -> void {
+          result = channel->get_func();
+        });
+  };
+
+  return result;
+}
+
 supla_channel_electricity_measurement *
 supla_cahnnel_property_getter::_get_electricity_measurement(int user_id,
                                                             int device_id,

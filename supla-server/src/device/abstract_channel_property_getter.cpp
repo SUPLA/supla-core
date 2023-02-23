@@ -63,6 +63,18 @@ supla_channel_value* supla_abstract_channel_property_getter::get_value(
   return get_value(user_id, device_id, channel_id, nullptr, nullptr);
 }
 
+int supla_abstract_channel_property_getter::get_func(void) {
+  return _get_func(user_id, device_id, channel_id);
+}
+
+int supla_abstract_channel_property_getter::get_func(int user_id, int device_id,
+                                                     int channel_id) {
+  this->user_id = user_id;
+  this->device_id = device_id;
+  this->channel_id = channel_id;
+  return get_func();
+}
+
 supla_channel_electricity_measurement*
 supla_abstract_channel_property_getter::get_electricity_measurement(void) {
   return _get_electricity_measurement(user_id, device_id, channel_id);

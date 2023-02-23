@@ -36,11 +36,11 @@ class ChannelPropertyGetterMock
   MOCK_METHOD5(_get_value,
                supla_channel_value *(int user_id, int device_id, int channel_id,
                                      int *func, bool *online));
+  MOCK_METHOD3(_get_func, int(int user_id, int device_id, int channel_id));
   MOCK_METHOD3(_get_electricity_measurement,
                supla_channel_electricity_measurement *(int user_id,
                                                        int device_id,
                                                        int channel_id));
-
   MOCK_METHOD3(_get_ic_measurement,
                supla_channel_ic_measurement *(int user_id, int device_id,
                                               int channel_id));

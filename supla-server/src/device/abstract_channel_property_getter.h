@@ -34,6 +34,7 @@ class supla_abstract_channel_property_getter {
   virtual supla_channel_value* _get_value(int user_id, int device_id,
                                           int channel_id, int* func,
                                           bool* online) = 0;
+  virtual int _get_func(int user_id, int device_id, int channel_id) = 0;
   virtual supla_channel_electricity_measurement* _get_electricity_measurement(
       int user_id, int device_id, int channel_id) = 0;
   virtual supla_channel_ic_measurement* _get_ic_measurement(int user_id,
@@ -51,6 +52,9 @@ class supla_abstract_channel_property_getter {
   supla_channel_value* get_value(int user_id, int device_id, int channel_id);
   supla_channel_value* get_value(int user_id, int device_id, int channel_id,
                                  int* func, bool* online);
+
+  int get_func(void);
+  int get_func(int user_id, int device_id, int channel_id);
 
   supla_channel_electricity_measurement* get_electricity_measurement(void);
   supla_channel_electricity_measurement* get_electricity_measurement(
