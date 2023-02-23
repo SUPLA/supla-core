@@ -16,19 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "doubles/device/ChannelPropertyGetterMock.h"
+#ifndef CHANNEL_PROPERTY_GETTER_TEST_H_
+#define CHANNEL_PROPERTY_GETTER_TEST_H_
 
-#include <string.h>
+#include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
 
-ChannelPropertyGetterMock::ChannelPropertyGetterMock(void)
-    : supla_abstract_channel_property_getter() {}
+class ChannelPropertyGetterTest : public Test {
+ public:
+};
 
-ChannelPropertyGetterMock::ChannelPropertyGetterMock(int user_id, int device_id,
-                                                     int channel_id)
-    : supla_abstract_channel_property_getter(user_id, device_id, channel_id) {}
+} /* namespace testing */
 
-ChannelPropertyGetterMock::~ChannelPropertyGetterMock(void) {}
-
-}  // namespace testing
+#endif /* CHANNEL_PROPERTY_GETTER_TEST_H_ */

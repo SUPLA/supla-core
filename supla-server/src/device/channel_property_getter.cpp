@@ -25,6 +25,8 @@
 
 using std::shared_ptr;
 
+supla_cahnnel_property_getter::~supla_cahnnel_property_getter(void) {}
+
 supla_channel_value *supla_cahnnel_property_getter::_get_value(
     int user_id, int device_id, int channel_id, int *func, bool *online) {
   shared_ptr<supla_device> device =
@@ -49,4 +51,39 @@ supla_channel_value *supla_cahnnel_property_getter::_get_value(
   return result;
 }
 
-supla_cahnnel_property_getter::~supla_cahnnel_property_getter(void) {}
+supla_channel_electricity_measurement *
+supla_cahnnel_property_getter::_get_electricity_measurement(int user_id,
+                                                            int device_id,
+                                                            int channel_id) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+
+  supla_channel_electricity_measurement *result = nullptr;
+
+  if (device != nullptr) {
+    device->get_channels()->access_channel(
+        channel_id, [&result](supla_device_channel *channel) -> void {
+          result = channel->get_electricity_measurement(false);
+        });
+  }
+
+  return result;
+}
+
+supla_channel_ic_measurement *
+supla_cahnnel_property_getter::_get_ic_measurement(int user_id, int device_id,
+                                                   int channel_id) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+
+  supla_channel_ic_measurement *result = nullptr;
+
+  if (device != nullptr) {
+    device->get_channels()->access_channel(
+        channel_id, [&result](supla_device_channel *channel) -> void {
+          result = channel->get_impulse_counter_measurement(false);
+        });
+  }
+
+  return result;
+}
