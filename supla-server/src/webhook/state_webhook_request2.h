@@ -18,20 +18,24 @@
 #ifndef WEBHOOK_STATE_WEBHOOK_REQUEST2_H_
 #define WEBHOOK_STATE_WEBHOOK_REQUEST2_H_
 
-#include <http/asynctask_http_request.h>
+#include "http/asynctask_http_request.h"
+#include "webhook/abstract_state_webhook_credentials.h"
 
 class supla_state_webhook_request2 : public supla_asynctask_http_request {
  private:
   int actions;
+  supla_abstract_state_webhook_credentials *credentials;
 
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
 
  public:
-  supla_state_webhook_request2(const supla_caller &caller, supla_user *user,
-                               int device_id, int channel_id, event_type et,
-                               int actions, supla_asynctask_queue *queue,
-                               supla_abstract_asynctask_thread_pool *pool);
+  supla_state_webhook_request2(
+      const supla_caller &caller, int user_id, int device_id, int channel_id,
+      event_type et, int actions, supla_asynctask_queue *queue,
+      supla_abstract_asynctask_thread_pool *pool,
+      supla_abstract_channel_property_getter *property_getter,
+      supla_abstract_state_webhook_credentials *credentials);
 
   virtual ~supla_state_webhook_request2(void);
 };

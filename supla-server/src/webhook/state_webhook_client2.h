@@ -21,6 +21,7 @@
 
 #include "channel_ic_measurement.h"
 #include "device/channel_electricity_measurement.h"
+#include "device/value/channel_value.h"
 #include "http/abstract_curl_adapter.h"
 #include "json/cJSON.h"
 #include "webhook/abstract_state_webhook_credentials.h"
@@ -32,22 +33,21 @@ class supla_state_webhook_client2 {
   __time_t timestamp;
   supla_abstract_curl_adapter *curl_adapter;
   supla_abstract_state_webhook_credentials *credentials;
+  supla_channel_value *channel_value;
+
   cJSON *get_header(const char *function);
   void refresh_token(void);
   bool perform_post_request(const char *fields, int *http_result_code);
   bool send_report(const char *json_string);
   bool send_report(cJSON *json);
   bool report_with_bool(const char *function, const char *name, bool _true);
-  bool report_with_number(const char *function, const char *name,
-                          double number);
-  bool value_report(const char *function, double number);
-  bool on_report(const char *function, bool on);
-  bool hi_report(const char *function, bool hi);
-  bool shut_report(const char *function, char shut);
-  bool temperature_and_humidity_report(const char *function,
-                                       double *temperature, double *humidity);
-  bool dimmer_and_rgb_report(const char *function, int *color,
-                             char *color_brightness, char *brightness, char on);
+  bool report_with_number(const char *function, const char *name);
+  bool on_report(const char *function);
+  bool hi_report(const char *function);
+  bool shut_report(const char *function);
+  bool temperature_and_humidity_report(const char *function, bool temperature,
+                                       bool humidity);
+  bool dimmer_and_rgb_report(const char *function, bool rgb, bool white);
   bool impulse_counter_measurement_report(const char *function,
                                           supla_channel_ic_measurement *icm);
 
@@ -58,33 +58,34 @@ class supla_state_webhook_client2 {
 
   void set_channel_connected(bool connected);
   void set_timestamp(__time_t timestamp);
-  bool power_switch_report(bool on);
-  bool light_switch_report(bool on);
-  bool staircase_timer_report(bool on);
-  bool temperature_report(double temperature);
-  bool humidity_report(double humidity);
-  bool temperature_and_humidity_report(double temperature, double humidity);
-  bool gateway_opening_sensor_report(bool hi);
-  bool gate_opening_sensor_report(bool hi);
-  bool garage_door_opening_sensor_report(bool hi);
-  bool noliquid_sensor_report(bool hi);
-  bool door_opening_sensor_report(bool hi);
-  bool roller_shutter_opening_sensor_report(bool hi);
-  bool roof_window_opening_sensor_report(bool hi);
-  bool window_opening_sensor_report(bool hi);
-  bool mail_sensor_report(bool hi);
-  bool roller_shutter_report(char shut);
-  bool roof_window_report(char shut);
-  bool wind_sensor_report(double value);
-  bool pressure_sensor_report(double value);
-  bool rain_sensor_report(double value);
-  bool weight_sensor_report(double value);
-  bool distance_sensor_report(double distance);
-  bool depth_sensor_report(double depth);
-  bool dimmer_report(char brightness, char on);
-  bool dimmer_and_rgb_report(int color, char color_brightness, char brightness,
-                             char on);
-  bool rgb_report(int color, char color_brightness, char on);
+  void set_channel_value(supla_channel_value *channel_value);
+
+  bool power_switch_report(void);
+  bool light_switch_report(void);
+  bool staircase_timer_report(void);
+  bool temperature_report(void);
+  bool humidity_report(void);
+  bool temperature_and_humidity_report(void);
+  bool gateway_opening_sensor_report(void);
+  bool gate_opening_sensor_report(void);
+  bool garage_door_opening_sensor_report(void);
+  bool noliquid_sensor_report(void);
+  bool door_opening_sensor_report(void);
+  bool roller_shutter_opening_sensor_report(void);
+  bool roof_window_opening_sensor_report(void);
+  bool window_opening_sensor_report(void);
+  bool mail_sensor_report(void);
+  bool roller_shutter_report(void);
+  bool roof_window_report(void);
+  bool wind_sensor_report();
+  bool pressure_sensor_report();
+  bool rain_sensor_report();
+  bool weight_sensor_report();
+  bool distance_sensor_report();
+  bool depth_sensor_report();
+  bool dimmer_report();
+  bool dimmer_and_rgb_report();
+  bool rgb_report();
   bool electricity_measurement_report(
       supla_channel_electricity_measurement *em);
   bool impulse_counter_electricity_measurement_report(

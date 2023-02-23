@@ -23,128 +23,158 @@
 using std::shared_ptr;
 
 supla_state_webhook_request2::supla_state_webhook_request2(
-    const supla_caller &caller, supla_user *user, int device_id, int channel_id,
+    const supla_caller &caller, int user_id, int device_id, int channel_id,
     event_type et, int actions, supla_asynctask_queue *queue,
-    supla_abstract_asynctask_thread_pool *pool)
-    : supla_asynctask_http_request(caller, user, device_id, channel_id, et,
-                                   queue, pool) {
+    supla_abstract_asynctask_thread_pool *pool,
+    supla_abstract_channel_property_getter *property_getter,
+    supla_abstract_state_webhook_credentials *credentials)
+    : supla_asynctask_http_request(caller, user_id, device_id, channel_id, et,
+                                   queue, pool, property_getter) {
   this->actions = actions;
+  this->credentials = credentials;
 }
 
 supla_state_webhook_request2::~supla_state_webhook_request2(void) {}
 
 bool supla_state_webhook_request2::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
-  if (!get_user()->stateWebhookCredentials()->isAccessTokenExists()) {
+  if (!credentials->is_access_token_exists()) {
     return false;
   }
 
-  supla_state_webhook_client2 client(get_channel_id(), curl_adapter, nullptr);
+  supla_state_webhook_client2 client(get_channel_id(), curl_adapter,
+                                     credentials);
 
   if (get_event_type() == ET_ACTION_TRIGGERED) {
     return client.triggered_actions_report(actions);
   }
 
-  channel_complex_value value =
-      get_user()->get_channel_complex_value(get_channel_id());
+  int func = 0;
+  bool online = false;
+  supla_channel_value *value = get_channel_value(&func, &online);
 
-  client.set_channel_connected(value.online);
+  if (!value) {
+    return false;
+  }
+
+  client.set_channel_connected(online);
+  client.set_channel_value(value);
 
   bool result = false;
 
-  switch (value.function) {
+  switch (func) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
-      return client.power_switch_report(value.hi);
+      return client.power_switch_report();
 
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      return client.light_switch_report(value.hi);
+      return client.light_switch_report();
+      break;
 
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      return client.staircase_timer_report(value.hi);
+      return client.staircase_timer_report();
+      break;
 
     case SUPLA_CHANNELFNC_THERMOMETER:
-      return client.temperature_report(value.temperature);
+      result = client.temperature_report();
+      break;
 
     case SUPLA_CHANNELFNC_HUMIDITY:
-      return client.humidity_report(value.humidity);
+      result = client.humidity_report();
+      break;
+
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-      return client.temperature_and_humidity_report(value.temperature,
-                                                    value.humidity);
+      result = client.temperature_and_humidity_report();
+      break;
+
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-      return client.gateway_opening_sensor_report(value.hi);
+      result = client.gateway_opening_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-      return client.gate_opening_sensor_report(value.hi);
+      result = client.gate_opening_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-      return client.garage_door_opening_sensor_report(value.hi);
+      result = client.garage_door_opening_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
-      return client.noliquid_sensor_report(value.hi);
+      result = client.noliquid_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-      return client.door_opening_sensor_report(value.hi);
+      result = client.door_opening_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-      return client.roller_shutter_opening_sensor_report(value.hi);
+      result = client.roller_shutter_opening_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
-      return client.roof_window_opening_sensor_report(value.hi);
+      result = client.roof_window_opening_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
-      return client.window_opening_sensor_report(value.hi);
+      result = client.window_opening_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_MAILSENSOR:
-      return client.mail_sensor_report(value.hi);
+      result = client.mail_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      return client.roller_shutter_report(value.shut);
+      result = client.roller_shutter_report();
+      break;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      return client.roof_window_report(value.shut);
+      result = client.roof_window_report();
+      break;
 
     case SUPLA_CHANNELFNC_WINDSENSOR:
-      return client.wind_sensor_report(value.wind);
+      result = client.wind_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_PRESSURESENSOR:
-      return client.pressure_sensor_report(value.pressure);
+      result = client.pressure_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_RAINSENSOR:
-      return client.rain_sensor_report(value.rain);
+      result = client.rain_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_WEIGHTSENSOR:
-      return client.weight_sensor_report(value.weight);
+      result = client.weight_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_DISTANCESENSOR:
-      return client.distance_sensor_report(value.distance);
+      result = client.distance_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_DEPTHSENSOR:
-      return client.depth_sensor_report(value.depth);
+      result = client.depth_sensor_report();
+      break;
 
     case SUPLA_CHANNELFNC_DIMMER:
-      return client.dimmer_report(value.brightness, value.on_off);
+      result = client.dimmer_report();
+      break;
 
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-      return client.dimmer_and_rgb_report(value.color, value.color_brightness,
-                                          value.brightness, value.on_off);
+      result = client.dimmer_and_rgb_report();
+      break;
 
     case SUPLA_CHANNELFNC_RGBLIGHTING:
-      return client.rgb_report(value.color, value.color_brightness,
-                               value.on_off);
+      result = client.rgb_report();
+      break;
+
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-
-      access_device(
-          [&result, &client, this](shared_ptr<supla_device> device) -> void {
-            supla_channel_electricity_measurement *em =
-                device->get_channels()->get_electricity_measurement(
-                    get_channel_id());
-
-            if (em != nullptr) {
-              result = client.electricity_measurement_report(em);
-              delete em;
-            }
-          });
-
+      if (get_property_getter()) {
+        supla_channel_electricity_measurement *em =
+            get_property_getter()->get_electricity_measurement();
+        if (em) {
+          result = client.electricity_measurement_report(em);
+          delete em;
+        }
+      }
       break;
 
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
@@ -152,13 +182,12 @@ bool supla_state_webhook_request2::make_request(
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
 
-      access_device([&result, &client, value,
-                     this](shared_ptr<supla_device> device) -> void {
+      if (get_property_getter()) {
         supla_channel_ic_measurement *icm =
-            device->get_channels()->get_ic_measurement(get_channel_id());
+            get_property_getter()->get_ic_measurement();
 
         if (icm != nullptr) {
-          switch (value.function) {
+          switch (func) {
             case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
               result =
                   client.impulse_counter_electricity_measurement_report(icm);
@@ -176,9 +205,12 @@ bool supla_state_webhook_request2::make_request(
 
           delete icm;
         }
-      });
+      }
+
       break;
   }
+
+  delete value;
 
   return result;
 }

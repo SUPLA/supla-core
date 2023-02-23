@@ -22,6 +22,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <string>
+
+#include "device/value/channel_binary_sensor_value.h"
+#include "device/value/channel_floating_point_sensor_value.h"
+#include "device/value/channel_gate_value.h"
+#include "device/value/channel_onoff_value.h"
+#include "device/value/channel_rgbw_value.h"
+#include "device/value/channel_rs_value.h"
+
 using std::string;
 
 supla_state_webhook_client2::supla_state_webhook_client2(
@@ -31,6 +40,7 @@ supla_state_webhook_client2::supla_state_webhook_client2(
   this->channel_connected = false;
   this->curl_adapter = curl_adapter;
   this->credentials = credentials;
+  this->channel_value = nullptr;
 
   struct timeval now;
   gettimeofday(&now, nullptr);
@@ -43,6 +53,11 @@ void supla_state_webhook_client2::set_channel_connected(bool connected) {
 
 void supla_state_webhook_client2::set_timestamp(__time_t timestamp) {
   this->timestamp = timestamp;
+}
+
+void supla_state_webhook_client2::set_channel_value(
+    supla_channel_value *channel_value) {
+  this->channel_value = channel_value;
 }
 
 cJSON *supla_state_webhook_client2::get_header(const char *function) {
@@ -220,61 +235,81 @@ bool supla_state_webhook_client2::report_with_bool(const char *function,
 }
 
 bool supla_state_webhook_client2::report_with_number(const char *function,
-                                                     const char *name,
-                                                     double number) {
-  cJSON *root = get_header(function);
-  if (root) {
-    cJSON *state = cJSON_CreateObject();
-    if (state) {
-      cJSON_AddNumberToObject(state, name, number);
-      cJSON_AddBoolToObject(state, "connected", channel_connected);
-      cJSON_AddItemToObject(root, "state", state);
-      return send_report(root);
-    } else {
-      cJSON_Delete(root);
+                                                     const char *name) {
+  if (dynamic_cast<supla_channel_floating_point_sensor_value *>(
+          channel_value)) {
+    cJSON *root = get_header(function);
+    if (root) {
+      cJSON *state = cJSON_CreateObject();
+      if (state) {
+        cJSON_AddNumberToObject(
+            state, name ? name : "value",
+            dynamic_cast<supla_channel_floating_point_sensor_value *>(
+                channel_value)
+                ->get_value());
+        cJSON_AddBoolToObject(state, "connected", channel_connected);
+        cJSON_AddItemToObject(root, "state", state);
+        return send_report(root);
+      } else {
+        cJSON_Delete(root);
+      }
     }
   }
 
   return false;
 }
 
-bool supla_state_webhook_client2::value_report(const char *function,
-                                               double number) {
-  return report_with_number(function, "value", number);
+bool supla_state_webhook_client2::on_report(const char *function) {
+  if (dynamic_cast<supla_channel_onoff_value *>(channel_value)) {
+    return report_with_bool(
+        function, "on",
+        dynamic_cast<supla_channel_onoff_value *>(channel_value)->is_on());
+  }
+
+  return false;
 }
 
-bool supla_state_webhook_client2::on_report(const char *function, bool on) {
-  return report_with_bool(function, "on", on);
+bool supla_state_webhook_client2::hi_report(const char *function) {
+  if (dynamic_cast<supla_channel_binary_sensor_value *>(channel_value)) {
+    return report_with_bool(
+        function, "hi",
+        dynamic_cast<supla_channel_binary_sensor_value *>(channel_value)
+            ->is_hi());
+  }
+  return false;
 }
 
-bool supla_state_webhook_client2::hi_report(const char *function, bool hi) {
-  return report_with_bool(function, "hi", hi);
+bool supla_state_webhook_client2::power_switch_report(void) {
+  return on_report("POWERSWITCH");
 }
 
-bool supla_state_webhook_client2::power_switch_report(bool on) {
-  return on_report("POWERSWITCH", on);
+bool supla_state_webhook_client2::light_switch_report() {
+  return on_report("LIGHTSWITCH");
 }
 
-bool supla_state_webhook_client2::light_switch_report(bool on) {
-  return on_report("LIGHTSWITCH", on);
-}
-
-bool supla_state_webhook_client2::staircase_timer_report(bool on) {
-  return on_report("STAIRCASETIMER", on);
+bool supla_state_webhook_client2::staircase_timer_report() {
+  return on_report("STAIRCASETIMER");
 }
 
 bool supla_state_webhook_client2::temperature_and_humidity_report(
-    const char *function, double *temperature, double *humidity) {
+    const char *function, bool temperature, bool humidity) {
+  supla_channel_temphum_value *temphum =
+      dynamic_cast<supla_channel_temphum_value *>(channel_value);
+  if (!temphum) {
+    return false;
+  }
+
   cJSON *root = get_header(function);
   if (root) {
     cJSON *state = cJSON_CreateObject();
     if (state) {
       if (temperature) {
-        cJSON_AddNumberToObject(state, "temperature", *temperature);
+        cJSON_AddNumberToObject(state, "temperature",
+                                temphum->get_temperature());
       }
 
       if (humidity) {
-        cJSON_AddNumberToObject(state, "humidity", *humidity);
+        cJSON_AddNumberToObject(state, "humidity", temphum->get_humidity());
       }
 
       cJSON_AddBoolToObject(state, "connected", channel_connected);
@@ -288,58 +323,64 @@ bool supla_state_webhook_client2::temperature_and_humidity_report(
   return false;
 }
 
-bool supla_state_webhook_client2::temperature_report(double temperature) {
-  return temperature_and_humidity_report("THERMOMETER", &temperature, NULL);
+bool supla_state_webhook_client2::temperature_report() {
+  return temperature_and_humidity_report("THERMOMETER", true, false);
 }
 
-bool supla_state_webhook_client2::humidity_report(double humidity) {
-  return temperature_and_humidity_report("HUMIDITY", NULL, &humidity);
+bool supla_state_webhook_client2::humidity_report() {
+  return temperature_and_humidity_report("HUMIDITY", false, true);
 }
 
-bool supla_state_webhook_client2::temperature_and_humidity_report(
-    double temperature, double humidity) {
-  return temperature_and_humidity_report("HUMIDITYANDTEMPERATURE", &temperature,
-                                         &humidity);
+bool supla_state_webhook_client2::temperature_and_humidity_report() {
+  return temperature_and_humidity_report("HUMIDITYANDTEMPERATURE", true, true);
 }
 
-bool supla_state_webhook_client2::gateway_opening_sensor_report(bool hi) {
-  return hi_report("OPENINGSENSOR_GATEWAY", hi);
+bool supla_state_webhook_client2::gateway_opening_sensor_report() {
+  return hi_report("OPENINGSENSOR_GATEWAY");
 }
 
-bool supla_state_webhook_client2::gate_opening_sensor_report(bool hi) {
-  return hi_report("OPENINGSENSOR_GATE", hi);
+bool supla_state_webhook_client2::gate_opening_sensor_report() {
+  return hi_report("OPENINGSENSOR_GATE");
 }
 
-bool supla_state_webhook_client2::garage_door_opening_sensor_report(bool hi) {
-  return hi_report("OPENINGSENSOR_GARAGEDOOR", hi);
+bool supla_state_webhook_client2::garage_door_opening_sensor_report() {
+  return hi_report("OPENINGSENSOR_GARAGEDOOR");
 }
 
-bool supla_state_webhook_client2::noliquid_sensor_report(bool hi) {
-  return hi_report("NOLIQUIDSENSOR", hi);
+bool supla_state_webhook_client2::noliquid_sensor_report() {
+  return hi_report("NOLIQUIDSENSOR");
 }
 
-bool supla_state_webhook_client2::door_opening_sensor_report(bool hi) {
-  return hi_report("OPENINGSENSOR_DOOR", hi);
+bool supla_state_webhook_client2::door_opening_sensor_report() {
+  return hi_report("OPENINGSENSOR_DOOR");
 }
 
-bool supla_state_webhook_client2::roller_shutter_opening_sensor_report(
-    bool hi) {
-  return hi_report("OPENINGSENSOR_ROLLERSHUTTER", hi);
+bool supla_state_webhook_client2::roller_shutter_opening_sensor_report() {
+  return hi_report("OPENINGSENSOR_ROLLERSHUTTER");
 }
 
-bool supla_state_webhook_client2::roof_window_opening_sensor_report(bool hi) {
-  return hi_report("OPENINGSENSOR_ROOFWINDOW", hi);
+bool supla_state_webhook_client2::roof_window_opening_sensor_report() {
+  return hi_report("OPENINGSENSOR_ROOFWINDOW");
 }
 
-bool supla_state_webhook_client2::window_opening_sensor_report(bool hi) {
-  return hi_report("OPENINGSENSOR_WINDOW", hi);
+bool supla_state_webhook_client2::window_opening_sensor_report() {
+  return hi_report("OPENINGSENSOR_WINDOW");
 }
 
-bool supla_state_webhook_client2::mail_sensor_report(bool hi) {
-  return hi_report("MAILSENSOR", hi);
+bool supla_state_webhook_client2::mail_sensor_report() {
+  return hi_report("MAILSENSOR");
 }
 
-bool supla_state_webhook_client2::shut_report(const char *function, char shut) {
+bool supla_state_webhook_client2::shut_report(const char *function) {
+  supla_channel_rs_value *rs_val =
+      dynamic_cast<supla_channel_rs_value *>(channel_value);
+
+  if (!rs_val) {
+    return false;
+  }
+
+  char shut = rs_val->get_rs_value()->position;
+
   cJSON *root = get_header(function);
   if (root) {
     cJSON *state = cJSON_CreateObject();
@@ -357,64 +398,69 @@ bool supla_state_webhook_client2::shut_report(const char *function, char shut) {
   return false;
 }
 
-bool supla_state_webhook_client2::roller_shutter_report(char shut) {
-  return shut_report("CONTROLLINGTHEROLLERSHUTTER", shut);
+bool supla_state_webhook_client2::roller_shutter_report() {
+  return shut_report("CONTROLLINGTHEROLLERSHUTTER");
 }
 
-bool supla_state_webhook_client2::roof_window_report(char shut) {
-  return shut_report("CONTROLLINGTHEROOFWINDOW", shut);
+bool supla_state_webhook_client2::roof_window_report() {
+  return shut_report("CONTROLLINGTHEROOFWINDOW");
 }
 
-bool supla_state_webhook_client2::wind_sensor_report(double value) {
-  return value_report("WINDSENSOR", value);
+bool supla_state_webhook_client2::wind_sensor_report() {
+  return report_with_number("WINDSENSOR", nullptr);
 }
 
-bool supla_state_webhook_client2::pressure_sensor_report(double value) {
-  return value_report("PRESSURESENSOR", value);
+bool supla_state_webhook_client2::pressure_sensor_report() {
+  return report_with_number("PRESSURESENSOR", nullptr);
 }
 
-bool supla_state_webhook_client2::rain_sensor_report(double value) {
-  return value_report("RAINSENSOR", value);
+bool supla_state_webhook_client2::rain_sensor_report() {
+  return report_with_number("RAINSENSOR", nullptr);
 }
 
-bool supla_state_webhook_client2::weight_sensor_report(double value) {
-  return value_report("WEIGHTSENSOR", value);
+bool supla_state_webhook_client2::weight_sensor_report() {
+  return report_with_number("WEIGHTSENSOR", nullptr);
 }
 
-bool supla_state_webhook_client2::distance_sensor_report(double distance) {
-  return report_with_number("DISTANCESENSOR", "distance", distance);
+bool supla_state_webhook_client2::distance_sensor_report() {
+  return report_with_number("DISTANCESENSOR", "distance");
 }
 
-bool supla_state_webhook_client2::depth_sensor_report(double depth) {
-  return report_with_number("DEPTHSENSOR", "depth", depth);
+bool supla_state_webhook_client2::depth_sensor_report() {
+  return report_with_number("DEPTHSENSOR", "depth");
 }
 
 bool supla_state_webhook_client2::dimmer_and_rgb_report(const char *function,
-                                                        int *color,
-                                                        char *color_brightness,
-                                                        char *brightness,
-                                                        char on) {
+                                                        bool rgb, bool white) {
+  supla_channel_rgbw_value *rgbw =
+      dynamic_cast<supla_channel_rgbw_value *>(channel_value);
+  if (!rgbw) {
+    return false;
+  }
+
   cJSON *root = get_header(function);
   if (root) {
     cJSON *state = cJSON_CreateObject();
     if (state) {
-      if (color) {
-        char color_hex[9];
+      if (rgb) {
+        char color_hex[9] = {};
+        unsigned int color = rgbw->get_color();
         snprintf(color_hex, sizeof(color_hex), "0x%02X%02X%02X",
-                 ((unsigned char *)color)[2], ((unsigned char *)color)[1],
-                 ((unsigned char *)color)[0]);
+                 ((unsigned char *)&color)[2], ((unsigned char *)&color)[1],
+                 ((unsigned char *)&color)[0]);
         cJSON_AddStringToObject(state, "color", color_hex);
+
+        cJSON_AddNumberToObject(state, "color_brightness",
+                                rgbw->get_color_brightness());
       }
 
-      if (color_brightness) {
-        cJSON_AddNumberToObject(state, "color_brightness", *color_brightness);
+      if (white) {
+        cJSON_AddNumberToObject(state, "brightness", rgbw->get_brightness());
       }
 
-      if (brightness) {
-        cJSON_AddNumberToObject(state, "brightness", *brightness);
-      }
-
-      cJSON_AddBoolToObject(state, "on", on);
+      cJSON_AddBoolToObject(state, "on",
+                            (white && rgbw->get_brightness() > 0) ||
+                                (rgb && rgbw->get_color_brightness() > 0));
       cJSON_AddBoolToObject(state, "connected", channel_connected);
       cJSON_AddItemToObject(root, "state", state);
       return send_report(root);
@@ -426,22 +472,16 @@ bool supla_state_webhook_client2::dimmer_and_rgb_report(const char *function,
   return false;
 }
 
-bool supla_state_webhook_client2::dimmer_report(char brightness, char on) {
-  return dimmer_and_rgb_report("DIMMER", nullptr, nullptr, &brightness, on);
+bool supla_state_webhook_client2::dimmer_report() {
+  return dimmer_and_rgb_report("DIMMER", false, true);
 }
 
-bool supla_state_webhook_client2::dimmer_and_rgb_report(int color,
-                                                        char color_brightness,
-                                                        char brightness,
-                                                        char on) {
-  return dimmer_and_rgb_report("DIMMERANDRGBLIGHTING", &color,
-                               &color_brightness, &brightness, on);
+bool supla_state_webhook_client2::dimmer_and_rgb_report() {
+  return dimmer_and_rgb_report("DIMMERANDRGBLIGHTING", true, true);
 }
 
-bool supla_state_webhook_client2::rgb_report(int color, char color_brightness,
-                                             char on) {
-  return dimmer_and_rgb_report("RGBLIGHTING", &color, &color_brightness,
-                               nullptr, on);
+bool supla_state_webhook_client2::rgb_report() {
+  return dimmer_and_rgb_report("RGBLIGHTING", true, false);
 }
 
 bool supla_state_webhook_client2::electricity_measurement_report(
