@@ -38,6 +38,12 @@ class supla_state_webhook_request2 : public supla_asynctask_http_request {
       supla_abstract_state_webhook_credentials *credentials);
 
   virtual ~supla_state_webhook_request2(void);
+
+  static bool is_event_type_allowed(event_type et);
+  static bool is_caller_allowed(const supla_caller &caller);
+  static bool is_function_allowed(
+      int func, supla_abstract_state_webhook_credentials *credentials,
+      int *delay_time_msec);
 };
 
 #endif /* WEBHOOK_STATE_WEBHOOK_REQUEST2_H_ */

@@ -20,6 +20,7 @@
 
 #include "webhook/state_webhook_client2.h"
 
+using std::list;
 using std::shared_ptr;
 
 supla_state_webhook_request2::supla_state_webhook_request2(
@@ -216,16 +217,6 @@ bool supla_state_webhook_request2::make_request(
 }
 
 /*
-bool supla_state_webhook_request::isCancelled(void *sthread) {
-  if (sthread_isterminated(sthread)) {
-    return true;
-  }
-
-  return !getUser()->stateWebhookCredentials()->isAccessTokenExists();
-}
-
-
-
 bool supla_state_webhook_request::verifyExisting(supla_http_request *existing) {
   if (existing->getEventType() == getEventType()) {
     unsigned int actions = getActions();
@@ -244,17 +235,11 @@ bool supla_state_webhook_request::verifyExisting(supla_http_request *existing) {
   }
   return true;
 }
+*/
 
-
-bool supla_state_webhook_request::isCallerAccepted(const supla_caller &caller,
-                                                   bool verification) {
-  supla_state_webhook_credentials *credentials =
-      getUser()->stateWebhookCredentials();
-  if (credentials == NULL || !credentials->isAccessTokenExists() ||
-      !credentials->isUrlValid()) {
-    return false;
-  }
-
+// static
+bool supla_state_webhook_request2::is_caller_allowed(
+    const supla_caller &caller) {
   switch (caller.get_type()) {
     case ctDevice:
     case ctClient:
@@ -264,224 +249,78 @@ bool supla_state_webhook_request::isCallerAccepted(const supla_caller &caller,
     case ctScene:
     case ctIPC:
     case ctCyclicTask:
-    case ctMQTT: {
-      channel_complex_value value =
-          getUser()->get_channel_complex_value(getChannelId());
-
-      list<int> fids = credentials->getFunctionsIds();
-      for (int f : fids) {
-        if (f == value.function) {
-          switch (value.function) {
-            case SUPLA_CHANNELFNC_DIMMER:
-            case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-            case SUPLA_CHANNELFNC_RGBLIGHTING:
-              delayTime = 2500000;
-              return true;
-            case SUPLA_CHANNELFNC_THERMOMETER:
-            case SUPLA_CHANNELFNC_HUMIDITY:
-            case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-            case SUPLA_CHANNELFNC_WINDSENSOR:
-            case SUPLA_CHANNELFNC_PRESSURESENSOR:
-            case SUPLA_CHANNELFNC_RAINSENSOR:
-            case SUPLA_CHANNELFNC_WEIGHTSENSOR:
-            case SUPLA_CHANNELFNC_DISTANCESENSOR:
-            case SUPLA_CHANNELFNC_DEPTHSENSOR:
-            case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-            case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-            case SUPLA_CHANNELFNC_IC_GAS_METER:
-            case SUPLA_CHANNELFNC_IC_WATER_METER:
-            case SUPLA_CHANNELFNC_IC_HEAT_METER:
-              delayTime = 15000000;
-              return true;
-            case SUPLA_CHANNELFNC_POWERSWITCH:
-            case SUPLA_CHANNELFNC_LIGHTSWITCH:
-            case SUPLA_CHANNELFNC_STAIRCASETIMER:
-            case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-            case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-            case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-            case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
-            case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-            case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-            case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
-            case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
-            case SUPLA_CHANNELFNC_MAILSENSOR:
-            case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-            case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-              return true;
-            case SUPLA_CHANNELFNC_ACTIONTRIGGER:
-              delayTime = 100000;
-              return true;
-            default:
-              return false;
-          }
-        }
-      }
-
-      return false;
-    } break;
-    case ctUnknown:
+    case ctMQTT:
+      return true;
+    default:
       return false;
   }
 
   return false;
 }
 
-bool supla_state_webhook_request::isEventTypeAccepted(event_type eventType,
-                                                      bool verification) {
-  return eventType == ET_CHANNEL_VALUE_CHANGED ||
-         eventType == ET_ACTION_TRIGGERED;
+// static
+bool supla_state_webhook_request2::is_event_type_allowed(event_type et) {
+  return et == ET_CHANNEL_VALUE_CHANGED || et == ET_ACTION_TRIGGERED;
 }
 
-supla_state_webhook_client *supla_state_webhook_request::getClient(void) {
-  supla_state_webhook_credentials *credentials =
-      getUser()->stateWebhookCredentials();
-  assert(credentials != NULL);
-
-  supla_state_webhook_client *result = NULL;
-  lck_lock(lck);
-  if (!client) {
-    client = new supla_state_webhook_client(
-        credentials, credentials->getScheme() == schemeHttps);
+// static
+bool supla_state_webhook_request2::is_function_allowed(
+    int func, supla_abstract_state_webhook_credentials *credentials,
+    int *delay_time_msec) {
+  if (!credentials || !func) {
+    return false;
   }
-  result = client;
-  lck_unlock(lck);
 
-  return result;
+  list<int> fids = credentials->get_function_ids();
+
+  for (int f : fids) {
+    if (f == func) {
+      switch (func) {
+        case SUPLA_CHANNELFNC_DIMMER:
+        case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+        case SUPLA_CHANNELFNC_RGBLIGHTING:
+          *delay_time_msec = 2500000;
+          return true;
+        case SUPLA_CHANNELFNC_THERMOMETER:
+        case SUPLA_CHANNELFNC_HUMIDITY:
+        case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+        case SUPLA_CHANNELFNC_WINDSENSOR:
+        case SUPLA_CHANNELFNC_PRESSURESENSOR:
+        case SUPLA_CHANNELFNC_RAINSENSOR:
+        case SUPLA_CHANNELFNC_WEIGHTSENSOR:
+        case SUPLA_CHANNELFNC_DISTANCESENSOR:
+        case SUPLA_CHANNELFNC_DEPTHSENSOR:
+        case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+        case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+        case SUPLA_CHANNELFNC_IC_GAS_METER:
+        case SUPLA_CHANNELFNC_IC_WATER_METER:
+        case SUPLA_CHANNELFNC_IC_HEAT_METER:
+          *delay_time_msec = 15000000;
+          return true;
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+        case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        case SUPLA_CHANNELFNC_STAIRCASETIMER:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+        case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+        case SUPLA_CHANNELFNC_MAILSENSOR:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+          *delay_time_msec = 500000;
+          return true;
+        case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+          *delay_time_msec = 100000;
+          return true;
+        default:
+          return false;
+      }
+    }
+  }
+
+  return false;
 }
-
-
-
-void supla_state_webhook_request::execute(void *sthread) {
-  if (getEventType() == ET_ACTION_TRIGGERED) {
-    getClient()->triggeredActionsReport(getChannelId(), getActions());
-    return;
-  }
-
-  channel_complex_value value =
-      getUser()->get_channel_complex_value(getChannelId());
-
-  switch (value.function) {
-    case SUPLA_CHANNELFNC_POWERSWITCH:
-      getClient()->sendPowerSwitchReport(getChannelId(), value.hi,
-                                         value.online);
-      break;
-    case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      getClient()->sendLightSwitchReport(getChannelId(), value.hi,
-                                         value.online);
-      break;
-    case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      getClient()->sendStaircaseTimerReport(getChannelId(), value.hi,
-                                            value.online);
-      break;
-    case SUPLA_CHANNELFNC_THERMOMETER:
-      getClient()->sendTemperatureReport(getChannelId(), value.temperature,
-                                         value.online);
-      break;
-    case SUPLA_CHANNELFNC_HUMIDITY:
-      getClient()->sendHumidityReport(getChannelId(), value.humidity,
-                                      value.online);
-      break;
-    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-      getClient()->sendTemperatureAndHumidityReport(
-          getChannelId(), value.temperature, value.humidity, value.online);
-      break;
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-      getClient()->sendGatewayOpeningSensorReport(getChannelId(), value.hi,
-                                                  value.online);
-      break;
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-      getClient()->sendGateOpeningSensorReport(getChannelId(), value.hi,
-                                               value.online);
-      break;
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-      getClient()->sendGarageDoorOpeningSensorReport(getChannelId(), value.hi,
-                                                     value.online);
-      break;
-    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
-      getClient()->sendNoLiquidSensorReport(getChannelId(), value.hi,
-                                            value.online);
-      break;
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-      getClient()->sendDoorOpeningSensorReport(getChannelId(), value.hi,
-                                               value.online);
-      break;
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-      getClient()->sendRollerShutterOpeningSensorReport(getChannelId(),
-                                                        value.hi, value.online);
-      break;
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
-      getClient()->sendRoofWindowOpeningSensorReport(getChannelId(), value.hi,
-                                                     value.online);
-      break;
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
-      getClient()->sendWindowOpeningSensorReport(getChannelId(), value.hi,
-                                                 value.online);
-      break;
-    case SUPLA_CHANNELFNC_MAILSENSOR:
-      getClient()->sendMailSensorReport(getChannelId(), value.hi, value.online);
-      break;
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      getClient()->sendRollerShutterReport(getChannelId(), value.shut,
-                                           value.online);
-      break;
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      getClient()->sendRoofWindowReport(getChannelId(), value.shut,
-                                        value.online);
-      break;
-    case SUPLA_CHANNELFNC_WINDSENSOR:
-      getClient()->sendWindSensorReport(getChannelId(), value.wind,
-                                        value.online);
-      break;
-    case SUPLA_CHANNELFNC_PRESSURESENSOR:
-      getClient()->sendPressureSensorReport(getChannelId(), value.pressure,
-                                            value.online);
-      break;
-    case SUPLA_CHANNELFNC_RAINSENSOR:
-      getClient()->sendRainSensorReport(getChannelId(), value.rain,
-                                        value.online);
-      break;
-    case SUPLA_CHANNELFNC_WEIGHTSENSOR:
-      getClient()->sendWeightSensorReport(getChannelId(), value.weight,
-                                          value.online);
-      break;
-    case SUPLA_CHANNELFNC_DISTANCESENSOR:
-      getClient()->sendDistanceSensorReport(getChannelId(), value.distance,
-                                            value.online);
-      break;
-    case SUPLA_CHANNELFNC_DEPTHSENSOR:
-      getClient()->sendDepthSensorReport(getChannelId(), value.depth,
-                                         value.online);
-      break;
-    case SUPLA_CHANNELFNC_DIMMER:
-
-      getClient()->sendDimmerReport(getChannelId(), value.brightness,
-                                    value.on_off, value.online);
-
-      break;
-    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-      getClient()->sendDimmerAndRgbReport(
-          getChannelId(), value.color, value.color_brightness, value.brightness,
-          value.on_off, value.online);
-      break;
-    case SUPLA_CHANNELFNC_RGBLIGHTING:
-      getClient()->sendRgbReport(getChannelId(), value.color,
-                                 value.color_brightness, value.on_off,
-                                 value.online);
-      break;
-  }
-
-  switch (value.channel_type) {
-    case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
-      electricityMeterChannelType(&value);
-      break;
-    case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
-      impulseCounterChannelType(&value);
-      break;
-  }
-}
-
-
-
-
-REGISTER_HTTP_REQUEST_CLASS(supla_state_webhook_request);
-*/
