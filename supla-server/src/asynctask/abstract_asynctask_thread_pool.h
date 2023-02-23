@@ -47,7 +47,7 @@ class supla_abstract_asynctask_thread_pool {
  protected:
   friend class supla_asynctask_queue;
 
-  virtual supla_asynctask_thread_bucket *get_bucket(void);
+  virtual supla_asynctask_thread_bucket *get_bucket(void) = 0;
   void execution_request(supla_abstract_asynctask *task);
   void remove_task(supla_abstract_asynctask *task);
   void terminate(void);

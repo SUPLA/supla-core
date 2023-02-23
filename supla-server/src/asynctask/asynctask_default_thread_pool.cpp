@@ -42,6 +42,11 @@ string supla_asynctask_default_thread_pool::pool_name(void) {
   return "DefaultPool";
 }
 
+supla_asynctask_thread_bucket *supla_asynctask_default_thread_pool::get_bucket(
+    void) {
+  return nullptr;
+}
+
 // static
 supla_asynctask_default_thread_pool *
 supla_asynctask_default_thread_pool::global_instance(void) {

@@ -148,11 +148,6 @@ void supla_abstract_asynctask_thread_pool::remove_task(
   lck_unlock(lck);
 }
 
-supla_asynctask_thread_bucket *supla_abstract_asynctask_thread_pool::get_bucket(
-    void) {
-  return nullptr;
-}
-
 // static
 void supla_abstract_asynctask_thread_pool::_execute(void *_pool,
                                                     void *sthread) {

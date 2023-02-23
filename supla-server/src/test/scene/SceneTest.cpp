@@ -41,7 +41,7 @@ SceneTest::~SceneTest() {}
 void SceneTest::SetUp() {
   AsyncTaskTest::SetUp();
 
-  pool->set_thread_count_limit(10);
+  EXPECT_CALL(*pool, thread_count_limit).WillRepeatedly(Return(10));
 
   action_executor = new SceneActionExecutorMock();
   ASSERT_FALSE(action_executor == NULL);
@@ -233,7 +233,8 @@ TEST_F(SceneTest, executeSceneInsideScene) {
   supla_scene_operations *operations_s2 = new supla_scene_operations();
   ASSERT_FALSE(operations_s2 == NULL);
 
-  ChannelPropertyGetterMock *property_getter_s2 = new ChannelPropertyGetterMock();
+  ChannelPropertyGetterMock *property_getter_s2 =
+      new ChannelPropertyGetterMock();
   ASSERT_FALSE(property_getter_s2 == NULL);
 
   SceneActionExecutorMock *action_executor_s2 = new SceneActionExecutorMock();
@@ -288,7 +289,8 @@ TEST_F(SceneTest, infinityLoop) {
   supla_scene_operations *operations_s2 = new supla_scene_operations();
   ASSERT_FALSE(operations_s2 == NULL);
 
-  ChannelPropertyGetterMock *property_getter_s2 = new ChannelPropertyGetterMock();
+  ChannelPropertyGetterMock *property_getter_s2 =
+      new ChannelPropertyGetterMock();
   ASSERT_FALSE(property_getter_s2 == NULL);
 
   SceneActionExecutorMock *action_executor_s2 = new SceneActionExecutorMock();
@@ -345,7 +347,8 @@ TEST_F(SceneTest, interruptScene) {
   supla_scene_operations *operations_s2 = new supla_scene_operations();
   ASSERT_FALSE(operations_s2 == NULL);
 
-  ChannelPropertyGetterMock *property_getter_s2 = new ChannelPropertyGetterMock();
+  ChannelPropertyGetterMock *property_getter_s2 =
+      new ChannelPropertyGetterMock();
   ASSERT_FALSE(property_getter_s2 == NULL);
 
   SceneActionExecutorMock *action_executor_s2 = new SceneActionExecutorMock();
@@ -377,7 +380,8 @@ TEST_F(SceneTest, interruptScene) {
   supla_scene_operations *operations_s3 = new supla_scene_operations();
   ASSERT_FALSE(operations_s3 == NULL);
 
-  ChannelPropertyGetterMock *property_getter_s3 = new ChannelPropertyGetterMock();
+  ChannelPropertyGetterMock *property_getter_s3 =
+      new ChannelPropertyGetterMock();
   ASSERT_FALSE(property_getter_s3 == NULL);
 
   SceneActionExecutorMock *action_executor_s3 = new SceneActionExecutorMock();
@@ -409,7 +413,8 @@ TEST_F(SceneTest, interruptScene) {
   SceneActionExecutorMock *action_executor_oc = new SceneActionExecutorMock();
   ASSERT_FALSE(action_executor_oc == NULL);
 
-  ChannelPropertyGetterMock *property_getter_oc = new ChannelPropertyGetterMock();
+  ChannelPropertyGetterMock *property_getter_oc =
+      new ChannelPropertyGetterMock();
   ASSERT_FALSE(property_getter_oc == NULL);
 
   EXPECT_CALL(*property_getter_oc, _get_value)

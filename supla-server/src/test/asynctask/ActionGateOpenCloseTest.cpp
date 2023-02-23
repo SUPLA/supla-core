@@ -49,7 +49,7 @@ void ActionGateOpenCloseTest::WaitForOpenClose(
 }
 
 void ActionGateOpenCloseTest::noActionRequired(bool open) {
-  pool->set_thread_count_limit(10);
+  EXPECT_CALL(*pool, thread_count_limit).WillRepeatedly(Return(10));
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 
@@ -80,7 +80,7 @@ void ActionGateOpenCloseTest::noActionRequired(bool open) {
 
 void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
                                         bool success, int maxAttemptCount) {
-  pool->set_thread_count_limit(1);
+  EXPECT_CALL(*pool, thread_count_limit).WillRepeatedly(Return(1));
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 
@@ -156,7 +156,7 @@ void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
 }
 
 TEST_F(ActionGateOpenCloseTest, openWithDisconnectedSensor) {
-  pool->set_thread_count_limit(10);
+  EXPECT_CALL(*pool, thread_count_limit).WillRepeatedly(Return(10));
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 

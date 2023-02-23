@@ -47,7 +47,7 @@ TEST_F(AsyncTaskMainTest, taskWithInitStatus) {
 }
 
 TEST_F(AsyncTaskMainTest, runTaskWithoutDelay) {
-  pool->set_thread_count_limit(10);
+  EXPECT_CALL(*pool, thread_count_limit).WillRepeatedly(Return(10));
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 
@@ -79,7 +79,8 @@ TEST_F(AsyncTaskMainTest, runTaskWithDelay) {
 }
 
 TEST_F(AsyncTaskMainTest, runMultipleTasks) {
-  pool->set_thread_count_limit(10);
+  EXPECT_CALL(*pool, thread_count_limit).WillRepeatedly(Return(10));
+
   for (int a = 0; a < 50; a++) {
     AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
     task->set_job_time_usec(100000);
@@ -95,8 +96,8 @@ TEST_F(AsyncTaskMainTest, runMultipleTasksWithTwoPools) {
   AsyncTaskThreadPoolMock *pool2 = new AsyncTaskThreadPoolMock(queue);
   EXPECT_TRUE(pool2 != NULL);
 
-  pool->set_thread_count_limit(10);
-  pool2->set_thread_count_limit(5);
+  EXPECT_CALL(*pool, thread_count_limit).WillRepeatedly(Return(10));
+  EXPECT_CALL(*pool2, thread_count_limit).WillRepeatedly(Return(5));
 
   for (int a = 0; a < 100; a++) {
     AsyncTaskMock *task = new AsyncTaskMock(queue, a % 2 ? pool : pool2);
@@ -113,7 +114,7 @@ TEST_F(AsyncTaskMainTest, runMultipleTasksWithTwoPools) {
 }
 
 TEST_F(AsyncTaskMainTest, priorityTest) {
-  pool->set_thread_count_limit(1);
+  EXPECT_CALL(*pool, thread_count_limit).WillRepeatedly(Return(1));
   pool->hold();
 
   vector<shared_ptr<supla_abstract_asynctask>> tasks;
