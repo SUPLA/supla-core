@@ -62,12 +62,16 @@ void supla_temperature_logger::run(const vector<supla_user *> *users,
 
     if (th) {
       if (th->is_humidity_available()) {
-        if (th->get_temperature() > -273 || th->get_humidity() > -1) {
+        if (th->get_temperature() >
+                supla_channel_temphum_value::incorrect_temperature() ||
+            th->get_humidity() >
+                supla_channel_temphum_value::incorrect_humidity()) {
           dao.add_temperature_and_humidity((*it)->get_channel_id(),
                                            th->get_temperature(),
                                            th->get_humidity());
         }
-      } else if (th->get_temperature() > -273) {
+      } else if (th->get_temperature() >
+                 supla_channel_temphum_value::incorrect_temperature()) {
         dao.add_temperature((*it)->get_channel_id(), th->get_temperature());
       }
     }

@@ -20,10 +20,16 @@
 
 #include <string.h>
 
+// static
+int supla_channel_temphum_value::incorrect_temperature(void) { return -273; }
+
+// static
+int supla_channel_temphum_value::incorrect_humidity(void) { return -1; }
+
 supla_channel_temphum_value::supla_channel_temphum_value(void)
     : supla_channel_value() {
   this->with_humidity = false;
-  set_temperature(-273);
+  set_temperature(incorrect_temperature());
 }
 
 supla_channel_temphum_value::supla_channel_temphum_value(
@@ -68,7 +74,7 @@ double supla_channel_temphum_value::get_temperature(void) {
 
 double supla_channel_temphum_value::get_humidity(void) {
   if (!with_humidity) {
-    return -1;
+    return incorrect_humidity();
   }
   int n = 0;
   memcpy(&n, &raw_value[4], 4);
@@ -76,8 +82,8 @@ double supla_channel_temphum_value::get_humidity(void) {
 }
 
 void supla_channel_temphum_value::set_temperature(double temperature) {
-  if (temperature < -273 || temperature > 1000) {
-    temperature = -273;
+  if (temperature < incorrect_temperature() || temperature > 1000) {
+    temperature = incorrect_temperature();
   }
 
   if (with_humidity) {
@@ -90,8 +96,8 @@ void supla_channel_temphum_value::set_temperature(double temperature) {
 
 void supla_channel_temphum_value::set_humidity(double humidity) {
   if (with_humidity) {
-    if (humidity < -1 || humidity > 100) {
-      humidity = -1;
+    if (humidity < incorrect_humidity() || humidity > 100) {
+      humidity = incorrect_humidity();
     }
 
     int n = humidity * 1000;
