@@ -28,7 +28,7 @@ class supla_abstract_state_webhook_credentials {
   virtual ~supla_abstract_state_webhook_credentials(void);
   virtual void refresh_lock(void) = 0;
   virtual void refresh_unlock(void) = 0;
-  virtual const char *get_user_short_unique_id(void) = 0;
+  virtual std::string get_user_short_unique_id(void) = 0;
   virtual std::string get_url(void) = 0;
   virtual std::string get_access_token(void) = 0;
   virtual std::string get_refresh_token(void) = 0;
