@@ -26,6 +26,7 @@ class supla_channel_temphum_value : public supla_channel_value {
   bool with_humidity;
 
  public:
+  supla_channel_temphum_value(void);
   supla_channel_temphum_value(int channel_type, int func,
                               char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   supla_channel_temphum_value(bool with_humidity,

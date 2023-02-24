@@ -22,6 +22,12 @@
 
 namespace testing {
 
+TEST_F(ChannelTempHumValueTest, voidConstructor) {
+  supla_channel_temphum_value tempHum;
+  EXPECT_EQ(-273, tempHum.get_temperature());
+  EXPECT_EQ(-1, tempHum.get_humidity());
+}
+
 TEST_F(ChannelTempHumValueTest, temperatureAndHumidity) {
   supla_channel_temphum_value tempHum(true, 36.6, 88);
 

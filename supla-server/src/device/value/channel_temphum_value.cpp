@@ -20,6 +20,12 @@
 
 #include <string.h>
 
+supla_channel_temphum_value::supla_channel_temphum_value(void)
+    : supla_channel_value() {
+  this->with_humidity = false;
+  set_temperature(-273);
+}
+
 supla_channel_temphum_value::supla_channel_temphum_value(
     int channel_type, int func, char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {
