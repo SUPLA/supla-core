@@ -77,6 +77,7 @@ src/test/doubles/integration/mqtt \
 src/test/doubles/ipc \
 src/test/doubles/mqtt \
 src/test/doubles/scene \
+src/test/doubles/webhook \
 src/test/google \
 src/test/http \
 src/test/integration \
