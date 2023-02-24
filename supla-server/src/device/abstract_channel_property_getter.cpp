@@ -42,7 +42,13 @@ supla_channel_value* supla_abstract_channel_property_getter::get_value(
     return nullptr;
   }
 
-  return _get_value(user_id, device_id, channel_id, func, online);
+  supla_channel_value* result =
+      _get_value(user_id, device_id, channel_id, func, online);
+  if (result == nullptr && online) {
+    *online = false;
+  }
+
+  return result;
 }
 
 supla_channel_value* supla_abstract_channel_property_getter::get_value(void) {
