@@ -30,7 +30,6 @@ class supla_state_webhook_client2 {
  private:
   int channel_id;
   bool channel_connected;
-  __time_t timestamp;
   supla_abstract_curl_adapter *curl_adapter;
   supla_abstract_state_webhook_credentials *credentials;
   supla_channel_value *channel_value;
@@ -57,7 +56,6 @@ class supla_state_webhook_client2 {
       supla_abstract_state_webhook_credentials *credentials);
 
   void set_channel_connected(bool connected);
-  void set_timestamp(__time_t timestamp);
   void set_channel_value(supla_channel_value *channel_value);
 
   bool power_switch_report(void);

@@ -44,8 +44,9 @@ class supla_curl_adapter : public supla_abstract_curl_adapter {
   virtual void set_opt_custom_request(const char *method);
   virtual bool append_header(const char *string);
   virtual bool perform(void);
-
   virtual long get_response_code(void);
+
+  virtual __time_t get_timestamp(void);
 };
 
 #endif /* CURL_ADAPTER_H_ */

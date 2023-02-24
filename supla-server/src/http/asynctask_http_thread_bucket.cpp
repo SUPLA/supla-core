@@ -24,7 +24,9 @@ supla_asynctask_http_thread_bucket::supla_asynctask_http_thread_bucket(
   this->curl_adapter = curl_adapter;
 }
 
-supla_asynctask_http_thread_bucket::~supla_asynctask_http_thread_bucket(void) {}
+supla_asynctask_http_thread_bucket::~supla_asynctask_http_thread_bucket(void) {
+  delete curl_adapter;
+}
 
 supla_abstract_curl_adapter *supla_asynctask_http_thread_bucket::get_adapter(
     void) {

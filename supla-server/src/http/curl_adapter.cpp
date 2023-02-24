@@ -101,3 +101,9 @@ long supla_curl_adapter::get_response_code(void) {
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
   return http_code;
 }
+
+__time_t supla_curl_adapter::get_timestamp(void) {
+  struct timeval now;
+  gettimeofday(&now, nullptr);
+  return now.tv_sec;
+}

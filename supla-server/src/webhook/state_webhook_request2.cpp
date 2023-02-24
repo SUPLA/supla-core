@@ -54,10 +54,6 @@ bool supla_state_webhook_request2::make_request(
   bool online = false;
   supla_channel_value *value = get_channel_value(&func, &online);
 
-  if (!value) {
-    return false;
-  }
-
   client.set_channel_connected(online);
   client.set_channel_value(value);
 
@@ -65,14 +61,15 @@ bool supla_state_webhook_request2::make_request(
 
   switch (func) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
-      return client.power_switch_report();
+      result = client.power_switch_report();
+      break;
 
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      return client.light_switch_report();
+      result = client.light_switch_report();
       break;
 
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      return client.staircase_timer_report();
+      result = client.staircase_timer_report();
       break;
 
     case SUPLA_CHANNELFNC_THERMOMETER:
