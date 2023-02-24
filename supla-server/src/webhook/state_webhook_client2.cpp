@@ -214,10 +214,7 @@ bool supla_state_webhook_client2::report_with_bool(const char *function,
   if (root) {
     cJSON *state = cJSON_CreateObject();
     if (state) {
-      if (name) {
-        cJSON_AddBoolToObject(state, name, _true);
-      }
-
+      cJSON_AddBoolToObject(state, name, _true);
       cJSON_AddBoolToObject(state, "connected", channel_connected);
       cJSON_AddItemToObject(root, "state", state);
       return send_report(root);
@@ -235,14 +232,12 @@ bool supla_state_webhook_client2::report_with_number(const char *function,
   if (root) {
     cJSON *state = cJSON_CreateObject();
     if (state) {
-      if (dynamic_cast<supla_channel_floating_point_sensor_value *>(
-              channel_value)) {
-        cJSON_AddNumberToObject(
-            state, name ? name : "value",
-            dynamic_cast<supla_channel_floating_point_sensor_value *>(
-                channel_value)
-                ->get_value());
-      }
+      supla_channel_floating_point_sensor_value *fp_value =
+          dynamic_cast<supla_channel_floating_point_sensor_value *>(
+              channel_value);
+
+      cJSON_AddNumberToObject(state, name ? name : "value",
+                              fp_value ? fp_value->get_value() : 0.00);
 
       cJSON_AddBoolToObject(state, "connected", channel_connected);
       cJSON_AddItemToObject(root, "state", state);
@@ -259,14 +254,14 @@ bool supla_state_webhook_client2::on_report(const char *function) {
   supla_channel_onoff_value *v =
       dynamic_cast<supla_channel_onoff_value *>(channel_value);
 
-  return report_with_bool(function, v ? "on" : nullptr, v && v->is_on());
+  return report_with_bool(function, "on", v && v->is_on());
 }
 
 bool supla_state_webhook_client2::hi_report(const char *function) {
   supla_channel_binary_sensor_value *v =
       dynamic_cast<supla_channel_binary_sensor_value *>(channel_value);
 
-  return report_with_bool(function, v ? "hi" : nullptr, v && v->is_hi());
+  return report_with_bool(function, "hi", v && v->is_hi());
 }
 
 bool supla_state_webhook_client2::power_switch_report(void) {
@@ -290,15 +285,18 @@ bool supla_state_webhook_client2::temperature_and_humidity_report(
   if (root) {
     cJSON *state = cJSON_CreateObject();
     if (state) {
-      if (temphum) {
-        if (temperature) {
-          cJSON_AddNumberToObject(state, "temperature",
-                                  temphum->get_temperature());
-        }
+      if (temperature) {
+        cJSON_AddNumberToObject(
+            state, "temperature",
+            temphum ? temphum->get_temperature()
+                    : supla_channel_temphum_value::incorrect_temperature());
+      }
 
-        if (humidity) {
-          cJSON_AddNumberToObject(state, "humidity", temphum->get_humidity());
-        }
+      if (humidity) {
+        cJSON_AddNumberToObject(
+            state, "humidity",
+            temphum ? temphum->get_humidity()
+                    : supla_channel_temphum_value::incorrect_humidity());
       }
 
       cJSON_AddBoolToObject(state, "connected", channel_connected);
@@ -368,11 +366,10 @@ bool supla_state_webhook_client2::shut_report(const char *function) {
   if (root) {
     cJSON *state = cJSON_CreateObject();
     if (state) {
-      if (rs_val) {
-        char shut = rs_val->get_rs_value()->position;
-        cJSON_AddNumberToObject(state, "shut", shut >= 0 ? shut : 0);
-        cJSON_AddBoolToObject(state, "is_calibrating", shut < 0);
-      }
+      char shut = rs_val ? rs_val->get_rs_value()->position : 0;
+
+      cJSON_AddNumberToObject(state, "shut", shut >= 0 ? shut : 0);
+      cJSON_AddBoolToObject(state, "is_calibrating", shut < 0);
 
       cJSON_AddBoolToObject(state, "connected", channel_connected);
       cJSON_AddItemToObject(root, "state", state);
@@ -426,27 +423,33 @@ bool supla_state_webhook_client2::dimmer_and_rgb_report(const char *function,
   if (root) {
     cJSON *state = cJSON_CreateObject();
     if (state) {
+      char color_hex[9] = {};
+      unsigned int color = 0;
+      char brightness = 0;
+      char color_brightness = 0;
+
       if (rgbw) {
-        if (rgb) {
-          char color_hex[9] = {};
-          unsigned int color = rgbw->get_color();
-          snprintf(color_hex, sizeof(color_hex), "0x%02X%02X%02X",
-                   ((unsigned char *)&color)[2], ((unsigned char *)&color)[1],
-                   ((unsigned char *)&color)[0]);
-          cJSON_AddStringToObject(state, "color", color_hex);
-
-          cJSON_AddNumberToObject(state, "color_brightness",
-                                  rgbw->get_color_brightness());
-        }
-
-        if (white) {
-          cJSON_AddNumberToObject(state, "brightness", rgbw->get_brightness());
-        }
-
-        cJSON_AddBoolToObject(state, "on",
-                              (white && rgbw->get_brightness() > 0) ||
-                                  (rgb && rgbw->get_color_brightness() > 0));
+        color = rgbw->get_color();
+        brightness = rgbw->get_brightness();
+        color_brightness = rgbw->get_color_brightness();
       }
+
+      if (rgb) {
+        snprintf(color_hex, sizeof(color_hex), "0x%02X%02X%02X",
+                 ((unsigned char *)&color)[2], ((unsigned char *)&color)[1],
+                 ((unsigned char *)&color)[0]);
+        cJSON_AddStringToObject(state, "color", color_hex);
+
+        cJSON_AddNumberToObject(state, "color_brightness", color_brightness);
+      }
+
+      if (white) {
+        cJSON_AddNumberToObject(state, "brightness", brightness);
+      }
+
+      cJSON_AddBoolToObject(
+          state, "on",
+          (white && brightness > 0) || (rgb && color_brightness > 0));
 
       cJSON_AddBoolToObject(state, "connected", channel_connected);
       cJSON_AddItemToObject(root, "state", state);
