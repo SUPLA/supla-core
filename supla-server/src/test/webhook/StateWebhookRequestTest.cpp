@@ -129,6 +129,35 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
   WaitForState(task, supla_asynctask_state::SUCCESS, 1000);
 }
 
+void StateWebhookRequestTest::makeTest(
+    int func, bool online, supla_channel_electricity_measurement *em,
+    const char *expectedPayload) {
+  EXPECT_CALL(*propertyGetter,
+              _get_electricity_measurement(Eq(1), Eq(2), Eq(123)))
+      .Times(1)
+      .WillOnce(Return(em));
+
+  EXPECT_CALL(*propertyGetter,
+              _get_value(Eq(1), Eq(2), Eq(123), NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce([func, online](int user_id, int device_id, int channel_id,
+                               int *_func, bool *_connected) {
+        *_func = func;
+        *_connected = online;
+
+        return new supla_channel_value();
+      });
+
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+      .Times(1);
+
+  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+      supla_caller(ctDevice), 1, 2, 123, ET_CHANNEL_VALUE_CHANGED, 0, queue,
+      pool, propertyGetter, &credentials);
+  std::shared_ptr<supla_abstract_asynctask> task = request->start();
+  WaitForState(task, supla_asynctask_state::SUCCESS, 1000);
+}
+
 TEST_F(StateWebhookRequestTest, sendLightSwitchReport_Connected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
@@ -755,13 +784,13 @@ TEST_F(StateWebhookRequestTest,
       "\"channelId\":123,\"channelFunction\":\"IC_HEATMETER\",\"timestamp\":"
       "1600097258,\"state\":{\"totalCost\":555.5,\"pricePerUnit\":0.5555,"
       "\"impulsesPerUnit\":1000,\"counter\":1000000,\"calculatedValue\":1000,"
-      "\"currency\":\"PLN\",\"unit\":\"m3\",\"connected\":true}}";
+      "\"currency\":\"PLN\",\"unit\":\"GJ\",\"connected\":true}}";
 
   TDS_ImpulseCounter_Value ic_val;
   ic_val.counter = 1000000;
 
   char currency[] = "PLN";
-  char unit[] = "m3";
+  char unit[] = "GJ";
 
   supla_channel_ic_measurement *icm = new supla_channel_ic_measurement(
       123, SUPLA_CHANNELFNC_IC_HEAT_METER, &ic_val, currency, unit, 5555, 1000);
@@ -778,6 +807,388 @@ TEST_F(StateWebhookRequestTest,
 
   makeTest(SUPLA_CHANNELFNC_IC_HEAT_METER, false,
            (supla_channel_ic_measurement *)nullptr, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest,
+       sendImpulseCounterGasMeasurementReport_Connected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"IC_GASMETER\",\"timestamp\":"
+      "1600097258,\"state\":{\"totalCost\":555.5,\"pricePerUnit\":0.5555,"
+      "\"impulsesPerUnit\":1000,\"counter\":1000000,\"calculatedValue\":1000,"
+      "\"currency\":\"PLN\",\"unit\":\"m3\",\"connected\":true}}";
+
+  TDS_ImpulseCounter_Value ic_val;
+  ic_val.counter = 1000000;
+
+  char currency[] = "PLN";
+  char unit[] = "m3";
+
+  supla_channel_ic_measurement *icm = new supla_channel_ic_measurement(
+      123, SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, currency, unit, 5555, 1000);
+
+  makeTest(SUPLA_CHANNELFNC_IC_GAS_METER, true, icm, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest,
+       sendImpulseCounterGasMeasurementReport_Disconnected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"IC_GASMETER\",\"timestamp\":"
+      "1600097258,\"state\":{\"connected\":false}}";
+
+  makeTest(SUPLA_CHANNELFNC_IC_GAS_METER, false,
+           (supla_channel_ic_measurement *)nullptr, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest,
+       sendImpulseCounterWaterMeasurementReport_Connected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"IC_WATERMETER\",\"timestamp\":"
+      "1600097258,\"state\":{\"totalCost\":555.5,\"pricePerUnit\":0.5555,"
+      "\"impulsesPerUnit\":1000,\"counter\":1000000,\"calculatedValue\":1000,"
+      "\"currency\":\"PLN\",\"unit\":\"m3\",\"connected\":true}}";
+
+  TDS_ImpulseCounter_Value ic_val;
+  ic_val.counter = 1000000;
+
+  char currency[] = "PLN";
+  char unit[] = "m3";
+
+  supla_channel_ic_measurement *icm =
+      new supla_channel_ic_measurement(123, SUPLA_CHANNELFNC_IC_WATER_METER,
+                                       &ic_val, currency, unit, 5555, 1000);
+
+  makeTest(SUPLA_CHANNELFNC_IC_WATER_METER, true, icm, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest,
+       sendImpulseCounterWaterMeasurementReport_Disconnected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"IC_WATERMETER\",\"timestamp\":"
+      "1600097258,\"state\":{\"connected\":false}}";
+
+  makeTest(SUPLA_CHANNELFNC_IC_WATER_METER, false,
+           (supla_channel_ic_measurement *)nullptr, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest,
+       sendImpulseCounterElectricityMeasurementReport_Connected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"IC_ELECTRICITYMETER\","
+      "\"timestamp\":1600097258,\"state\":{\"totalCost\":555.5,"
+      "\"pricePerUnit\":0.5555,\"impulsesPerUnit\":1000,\"counter\":1000000,"
+      "\"calculatedValue\":1000,\"currency\":\"PLN\",\"unit\":\"kWh\","
+      "\"connected\":true}}";
+
+  TDS_ImpulseCounter_Value ic_val;
+  ic_val.counter = 1000000;
+
+  char currency[] = "PLN";
+  char unit[] = "kWh";
+
+  supla_channel_ic_measurement *icm = new supla_channel_ic_measurement(
+      123, SUPLA_CHANNELFNC_IC_ELECTRICITY_METER, &ic_val, currency, unit, 5555,
+      1000);
+
+  makeTest(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER, true, icm, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest,
+       sendImpulseCounterElectricityMeasurementReport_Disconnected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"IC_ELECTRICITYMETER\","
+      "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
+
+  makeTest(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER, false,
+           (supla_channel_ic_measurement *)nullptr, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest,
+       sendElectricityMeasurementReport_PowerActive_kW) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"ELECTRICITYMETER\","
+      "\"timestamp\":1600097258,\"state\":{\"support\":7405567,\"currency\":"
+      "\"PLN\",\"pricePerUnit\":1,\"totalCost\":3,\"phases\":[{\"number\":1,"
+      "\"frequency\":60.01,\"voltage\":240,\"current\":50,\"powerActive\":1,"
+      "\"powerReactive\":-1,\"powerApparent\":1,\"powerFactor\":1,"
+      "\"phaseAngle\":-180,\"totalForwardActiveEnergy\":1,"
+      "\"totalReverseActiveEnergy\":1,\"totalForwardReactiveEnergy\":1,"
+      "\"totalReverseReactiveEnergy\":1},{\"number\":2,\"frequency\":60.01,"
+      "\"voltage\":240,\"current\":50,\"powerActive\":1,\"powerReactive\":-1,"
+      "\"powerApparent\":1,\"powerFactor\":1,\"phaseAngle\":-180,"
+      "\"totalForwardActiveEnergy\":1,\"totalReverseActiveEnergy\":1,"
+      "\"totalForwardReactiveEnergy\":1,\"totalReverseReactiveEnergy\":1},{"
+      "\"number\":3,\"frequency\":60.01,\"voltage\":240,\"current\":50,"
+      "\"powerActive\":1,\"powerReactive\":-1,\"powerApparent\":1,"
+      "\"powerFactor\":1,\"phaseAngle\":-180,\"totalForwardActiveEnergy\":1,"
+      "\"totalReverseActiveEnergy\":1,\"totalForwardReactiveEnergy\":1,"
+      "\"totalReverseReactiveEnergy\":1}],\"totalForwardActiveEnergyBalanced\":"
+      "1,\"totalReverseActiveEnergyBalanced\":1,\"connected\":true}}";
+
+  TElectricityMeter_ExtendedValue_V2 em_ev;
+  memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+
+  em_ev.m[0].freq = 6001;
+
+  for (int p = 0; p < 3; p++) {
+    em_ev.total_forward_active_energy[p] = 100000;
+    em_ev.total_reverse_active_energy[p] = 100000;
+    em_ev.total_forward_reactive_energy[p] = 100000;
+    em_ev.total_reverse_reactive_energy[p] = 100000;
+
+    em_ev.m[0].voltage[p] = 24000;
+    em_ev.m[0].current[p] = 50000;
+
+    em_ev.m[0].power_active[p] = 100;
+    em_ev.m[0].power_reactive[p] = -100;
+    em_ev.m[0].power_apparent[p] = 100;
+    em_ev.m[0].power_factor[p] = 1000;
+    em_ev.m[0].phase_angle[p] = -1800;
+  }
+
+  em_ev.total_forward_active_energy_balanced = 100000;
+  em_ev.total_reverse_active_energy_balanced = 100000;
+
+  em_ev.measured_values = EM_VAR_ALL | EM_VAR_POWER_ACTIVE_KW |
+                          EM_VAR_POWER_REACTIVE_KVAR |
+                          EM_VAR_POWER_APPARENT_KVA;
+  em_ev.period = 1;
+  em_ev.m_count = 1;
+
+  char currency[] = "PLN";
+
+  supla_channel_electricity_measurement *em =
+      new supla_channel_electricity_measurement(123, &em_ev, 10000, currency);
+
+  makeTest(SUPLA_CHANNELFNC_ELECTRICITY_METER, true, em, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest, sendElectricityMeasurementReport_AllVars) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"ELECTRICITYMETER\",\"timestamp\":1600097258,\"state\":{\"support\":"
+      "65535,\"currency\":\"PLN\",\"pricePerUnit\":1,\"totalCost\":3,"
+      "\"phases\":[{\"number\":1,\"frequency\":60.01,\"voltage\":240,"
+      "\"current\":50,\"powerActive\":1,\"powerReactive\":-1,\"powerApparent\":"
+      "1,\"powerFactor\":1,\"phaseAngle\":-180,\"totalForwardActiveEnergy\":1,"
+      "\"totalReverseActiveEnergy\":1,\"totalForwardReactiveEnergy\":1,"
+      "\"totalReverseReactiveEnergy\":1},{\"number\":2,\"frequency\":60.01,"
+      "\"voltage\":240,\"current\":50,\"powerActive\":1,\"powerReactive\":-1,"
+      "\"powerApparent\":1,\"powerFactor\":1,\"phaseAngle\":-180,"
+      "\"totalForwardActiveEnergy\":1,\"totalReverseActiveEnergy\":1,"
+      "\"totalForwardReactiveEnergy\":1,\"totalReverseReactiveEnergy\":1},{"
+      "\"number\":3,\"frequency\":60.01,\"voltage\":240,\"current\":50,"
+      "\"powerActive\":1,\"powerReactive\":-1,\"powerApparent\":1,"
+      "\"powerFactor\":1,\"phaseAngle\":-180,\"totalForwardActiveEnergy\":1,"
+      "\"totalReverseActiveEnergy\":1,\"totalForwardReactiveEnergy\":1,"
+      "\"totalReverseReactiveEnergy\":1}],\"totalForwardActiveEnergyBalanced\":"
+      "1,\"totalReverseActiveEnergyBalanced\":1,\"connected\":true}}";
+
+  TElectricityMeter_ExtendedValue_V2 em_ev;
+  memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+
+  em_ev.m[0].freq = 6001;
+
+  for (int p = 0; p < 3; p++) {
+    em_ev.total_forward_active_energy[p] = 100000;
+    em_ev.total_reverse_active_energy[p] = 100000;
+    em_ev.total_forward_reactive_energy[p] = 100000;
+    em_ev.total_reverse_reactive_energy[p] = 100000;
+
+    em_ev.m[0].voltage[p] = 24000;
+    em_ev.m[0].current[p] = 50000;
+
+    em_ev.m[0].power_active[p] = 100000;
+    em_ev.m[0].power_reactive[p] = -100000;
+    em_ev.m[0].power_apparent[p] = 100000;
+    em_ev.m[0].power_factor[p] = 1000;
+    em_ev.m[0].phase_angle[p] = -1800;
+  }
+
+  em_ev.total_forward_active_energy_balanced = 100000;
+  em_ev.total_reverse_active_energy_balanced = 100000;
+
+  em_ev.measured_values = EM_VAR_ALL;
+  em_ev.period = 1;
+  em_ev.m_count = 1;
+
+  char currency[] = "PLN";
+
+  supla_channel_electricity_measurement *em =
+      new supla_channel_electricity_measurement(123, &em_ev, 10000, currency);
+
+  makeTest(SUPLA_CHANNELFNC_ELECTRICITY_METER, true, em, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest,
+       sendElectricityMeasurementReport_WithoutVoltageAndBalancedActiveEnergy) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"ELECTRICITYMETER\",\"timestamp\":1600097258,\"state\":{\"support\":"
+      "57341,\"currency\":\"PLN\",\"pricePerUnit\":1,\"totalCost\":3,"
+      "\"phases\":[{\"number\":1,\"frequency\":60.01,"
+      "\"current\":50,\"powerActive\":1,\"powerReactive\":-1,\"powerApparent\":"
+      "1,\"powerFactor\":1,\"phaseAngle\":-180,\"totalForwardActiveEnergy\":1,"
+      "\"totalReverseActiveEnergy\":1,\"totalForwardReactiveEnergy\":1,"
+      "\"totalReverseReactiveEnergy\":1},{\"number\":2,\"frequency\":60.01,"
+      "\"current\":50,\"powerActive\":1,\"powerReactive\":-1,"
+      "\"powerApparent\":1,\"powerFactor\":1,\"phaseAngle\":-180,"
+      "\"totalForwardActiveEnergy\":1,\"totalReverseActiveEnergy\":1,"
+      "\"totalForwardReactiveEnergy\":1,\"totalReverseReactiveEnergy\":1},{"
+      "\"number\":3,\"frequency\":60.01,\"current\":50,"
+      "\"powerActive\":1,\"powerReactive\":-1,\"powerApparent\":1,"
+      "\"powerFactor\":1,\"phaseAngle\":-180,\"totalForwardActiveEnergy\":1,"
+      "\"totalReverseActiveEnergy\":1,\"totalForwardReactiveEnergy\":1,"
+      "\"totalReverseReactiveEnergy\":1}],\"totalReverseActiveEnergyBalanced\":"
+      "1,\"connected\":true}}";
+
+  TElectricityMeter_ExtendedValue_V2 em_ev;
+  memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+
+  em_ev.m[0].freq = 6001;
+
+  for (int p = 0; p < 3; p++) {
+    em_ev.total_forward_active_energy[p] = 100000;
+    em_ev.total_reverse_active_energy[p] = 100000;
+    em_ev.total_forward_reactive_energy[p] = 100000;
+    em_ev.total_reverse_reactive_energy[p] = 100000;
+
+    em_ev.m[0].voltage[p] = 24000;
+    em_ev.m[0].current[p] = 50000;
+
+    em_ev.m[0].power_active[p] = 100000;
+    em_ev.m[0].power_reactive[p] = -100000;
+    em_ev.m[0].power_apparent[p] = 100000;
+    em_ev.m[0].power_factor[p] = 1000;
+    em_ev.m[0].phase_angle[p] = -1800;
+  }
+
+  em_ev.total_forward_active_energy_balanced = 100000;
+  em_ev.total_reverse_active_energy_balanced = 100000;
+
+  em_ev.measured_values = EM_VAR_ALL;
+  em_ev.measured_values ^= EM_VAR_VOLTAGE;
+  em_ev.measured_values ^= EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED;
+  em_ev.period = 1;
+  em_ev.m_count = 1;
+
+  char currency[] = "PLN";
+
+  supla_channel_electricity_measurement *em =
+      new supla_channel_electricity_measurement(123, &em_ev, 10000, currency);
+
+  makeTest(SUPLA_CHANNELFNC_ELECTRICITY_METER, true, em, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest, sendElectricityMeasurementReport_Disconnected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"ELECTRICITYMETER\",\"timestamp\":1600097258,\"state\":{\"connected\":"
+      "false}}";
+
+  makeTest(SUPLA_CHANNELFNC_ELECTRICITY_METER, false,
+           (supla_channel_electricity_measurement *)nullptr, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest,
+       sendElectricityMeasurementReport_LackOfMeasurements) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"ELECTRICITYMETER\",\"timestamp\":1600097258,\"state\":{\"support\":"
+      "65535,\"currency\":\"PLN\",\"pricePerUnit\":1,\"totalCost\":3,"
+      "\"phases\":[{\"number\":1,\"totalForwardActiveEnergy\":1,"
+      "\"totalReverseActiveEnergy\":1,\"totalForwardReactiveEnergy\":1,"
+      "\"totalReverseReactiveEnergy\":1},{\"number\":2,"
+      "\"totalForwardActiveEnergy\":1,\"totalReverseActiveEnergy\":1,"
+      "\"totalForwardReactiveEnergy\":1,\"totalReverseReactiveEnergy\":1},{"
+      "\"number\":3,\"totalForwardActiveEnergy\":1,"
+      "\"totalReverseActiveEnergy\":1,\"totalForwardReactiveEnergy\":1,"
+      "\"totalReverseReactiveEnergy\":1}],\"totalForwardActiveEnergyBalanced\":"
+      "1,\"totalReverseActiveEnergyBalanced\":1,\"connected\":true}}";
+
+  TElectricityMeter_ExtendedValue_V2 em_ev;
+  memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+
+  for (int p = 0; p < 3; p++) {
+    em_ev.total_forward_active_energy[p] = 100000;
+    em_ev.total_reverse_active_energy[p] = 100000;
+    em_ev.total_forward_reactive_energy[p] = 100000;
+    em_ev.total_reverse_reactive_energy[p] = 100000;
+  }
+
+  em_ev.total_forward_active_energy_balanced = 100000;
+  em_ev.total_reverse_active_energy_balanced = 100000;
+
+  em_ev.measured_values = EM_VAR_ALL;
+  em_ev.period = 1;
+
+  char currency[] = "PLN";
+
+  supla_channel_electricity_measurement *em =
+      new supla_channel_electricity_measurement(123, &em_ev, 10000, currency);
+
+  makeTest(SUPLA_CHANNELFNC_ELECTRICITY_METER, true, em, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest, triggeredActionsReport_ToggleX1_PressX3) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":567,\"channelFunction\":\"ACTION_TRIGGER\",\"timestamp\":"
+      "1600097258,\"triggered_actions\":[\"TOGGLE_X1\",\"PRESS_X3\"]}";
+
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+      .Times(1);
+
+  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+      supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
+      SUPLA_ACTION_CAP_TOGGLE_x1 | SUPLA_ACTION_CAP_SHORT_PRESS_x3, queue, pool,
+      propertyGetter, &credentials);
+  std::shared_ptr<supla_abstract_asynctask> task = request->start();
+  WaitForState(task, supla_asynctask_state::SUCCESS, 1000);
+}
+
+TEST_F(StateWebhookRequestTest, triggeredActionsReport_Hold) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":567,\"channelFunction\":\"ACTION_TRIGGER\",\"timestamp\":"
+      "1600097258,\"triggered_actions\":[\"HOLD\"]}";
+
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+      .Times(1);
+
+  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+      supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
+      SUPLA_ACTION_CAP_HOLD, queue, pool, propertyGetter, &credentials);
+  std::shared_ptr<supla_abstract_asynctask> task = request->start();
+  WaitForState(task, supla_asynctask_state::SUCCESS, 1000);
+}
+
+TEST_F(StateWebhookRequestTest, triggeredActionsReport_All) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":7777,\"channelFunction\":\"ACTION_TRIGGER\",\"timestamp\":"
+      "1600097258,\"triggered_actions\":[\"TURN_ON\",\"TURN_OFF\",\"TOGGLE_"
+      "X1\",\"TOGGLE_X2\",\"TOGGLE_X3\",\"TOGGLE_X4\",\"TOGGLE_X5\",\"HOLD\","
+      "\"PRESS_X1\",\"PRESS_X2\",\"PRESS_X3\",\"PRESS_X4\",\"PRESS_X5\"]}";
+
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+      .Times(1);
+
+  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+      supla_caller(ctDevice), 1, 2, 7777, ET_ACTION_TRIGGERED, 0xFFFFFFFF,
+      queue, pool, propertyGetter, &credentials);
+  std::shared_ptr<supla_abstract_asynctask> task = request->start();
+  WaitForState(task, supla_asynctask_state::SUCCESS, 1000);
 }
 
 }  // namespace testing
