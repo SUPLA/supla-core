@@ -74,8 +74,6 @@ void StateWebhookRequestTest::SetUp(void) {
   EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(200));
 }
 
-void StateWebhookRequestTest::TearDown(void) { AsyncTaskTest::TearDown(); }
-
 void StateWebhookRequestTest::makeTest(int func, bool online,
                                        supla_channel_value *value,
                                        const char *expectedPayload) {

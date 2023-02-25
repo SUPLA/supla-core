@@ -43,7 +43,6 @@ class StateWebhookRequestTest : public AsyncTaskTest {
 
  public:
   virtual void SetUp(void);
-  virtual void TearDown(void);
 };
 
 } /* namespace testing */
