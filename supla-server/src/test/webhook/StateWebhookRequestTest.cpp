@@ -143,7 +143,7 @@ TEST_F(StateWebhookRequestTest, sendLightSwitchReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"LIGHTSWITCH\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"on\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_LIGHTSWITCH, false, (supla_channel_value *)nullptr,
            expectedPayload);
@@ -163,7 +163,7 @@ TEST_F(StateWebhookRequestTest, sendPowerSwitchReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"POWERSWITCH\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"on\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_POWERSWITCH, false, (supla_channel_value *)nullptr,
            expectedPayload);
@@ -183,7 +183,7 @@ TEST_F(StateWebhookRequestTest, sendTemperatureReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"THERMOMETER\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"temperature\":-273,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_THERMOMETER, false, (supla_channel_value *)nullptr,
            expectedPayload);
@@ -203,7 +203,7 @@ TEST_F(StateWebhookRequestTest, sendHumidityReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"HUMIDITY\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"humidity\":-1,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_HUMIDITY, false, (supla_channel_value *)nullptr,
            expectedPayload);
@@ -225,7 +225,8 @@ TEST_F(StateWebhookRequestTest, sendTemperatureAndHumidityReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"HUMIDITYANDTEMPERATURE\","
-      "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
+      "\"timestamp\":1600097258,\"state\":{\"temperature\":-273,\"humidity\":-"
+      "1,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -245,7 +246,7 @@ TEST_F(StateWebhookRequestTest, sendGatewayOpeningSensorReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"OPENINGSENSOR_GATEWAY\","
-      "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
+      "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -265,7 +266,7 @@ TEST_F(StateWebhookRequestTest, sendGateOpeningSensorReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"OPENINGSENSOR_GATE\","
-      "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
+      "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_GATE, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -286,7 +287,7 @@ TEST_F(StateWebhookRequestTest,
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"OPENINGSENSOR_GARAGEDOOR\","
-      "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
+      "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -306,7 +307,7 @@ TEST_F(StateWebhookRequestTest, sendNoLiquidSensorReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"NOLIQUIDSENSOR\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_NOLIQUIDSENSOR, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -326,7 +327,7 @@ TEST_F(StateWebhookRequestTest, sendDoorOpeningSensorReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"OPENINGSENSOR_DOOR\","
-      "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
+      "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -348,7 +349,7 @@ TEST_F(StateWebhookRequestTest,
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"OPENINGSENSOR_ROLLERSHUTTER\","
-      "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
+      "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -369,7 +370,7 @@ TEST_F(StateWebhookRequestTest,
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"OPENINGSENSOR_ROOFWINDOW\","
-      "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
+      "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -377,11 +378,9 @@ TEST_F(StateWebhookRequestTest,
 
 TEST_F(StateWebhookRequestTest, sendWindowOpeningSensorReport_Connected) {
   const char expectedPayload[] =
-      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
-      "\"OPENINGSENSOR_WINDOW\",\"timestamp\":1600097258,\"state\":{"
-      "\"hi\":true,"
-      "\"connected\":true}}";
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"OPENINGSENSOR_WINDOW\","
+      "\"timestamp\":1600097258,\"state\":{\"hi\":true,\"connected\":true}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW, true,
            new supla_channel_binary_sensor_value(true), expectedPayload);
@@ -391,7 +390,7 @@ TEST_F(StateWebhookRequestTest, sendWindowOpeningSensorReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"OPENINGSENSOR_WINDOW\","
-      "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
+      "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -411,7 +410,7 @@ TEST_F(StateWebhookRequestTest, sendMailSensorReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"MAILSENSOR\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_MAILSENSOR, false, (supla_channel_value *)nullptr,
            expectedPayload);
@@ -449,7 +448,8 @@ TEST_F(StateWebhookRequestTest, sendRollerShutterReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"CONTROLLINGTHEROLLERSHUTTER\","
-      "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
+      "\"timestamp\":1600097258,\"state\":{\"shut\":0,\"is_calibrating\":false,"
+      "\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -487,7 +487,8 @@ TEST_F(StateWebhookRequestTest, sendRoofWindowReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"CONTROLLINGTHEROOFWINDOW\","
-      "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
+      "\"timestamp\":1600097258,\"state\":{\"shut\":0,\"is_calibrating\":false,"
+      "\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -508,7 +509,7 @@ TEST_F(StateWebhookRequestTest, sendWindSensorReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"WINDSENSOR\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"value\":0,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_WINDSENSOR, false, (supla_channel_value *)nullptr,
            expectedPayload);
@@ -529,7 +530,7 @@ TEST_F(StateWebhookRequestTest, sendPressureSensorReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"PRESSURESENSOR\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"value\":0,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_PRESSURESENSOR, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -550,7 +551,7 @@ TEST_F(StateWebhookRequestTest, sendRainSensorReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"RAINSENSOR\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"value\":0,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_RAINSENSOR, false, (supla_channel_value *)nullptr,
            expectedPayload);
@@ -571,7 +572,7 @@ TEST_F(StateWebhookRequestTest, sendWeightSensorReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"WEIGHTSENSOR\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"value\":0,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_WEIGHTSENSOR, false, (supla_channel_value *)nullptr,
            expectedPayload);
@@ -592,7 +593,7 @@ TEST_F(StateWebhookRequestTest, sendDistanceSensorReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"DISTANCESENSOR\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"distance\":0,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_DISTANCESENSOR, false,
            (supla_channel_value *)nullptr, expectedPayload);
@@ -613,7 +614,7 @@ TEST_F(StateWebhookRequestTest, sendDepthSensorReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"DEPTHSENSOR\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"depth\":0,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_DEPTHSENSOR, false, (supla_channel_value *)nullptr,
            expectedPayload);
@@ -650,7 +651,7 @@ TEST_F(StateWebhookRequestTest, sendDimmerReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"DIMMER\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}"
+      "1600097258,\"state\":{\"brightness\":0,\"on\":false,\"connected\":false}"
       "}";
 
   makeTest(SUPLA_CHANNELFNC_DIMMER, true, (supla_channel_value *)nullptr,
@@ -695,7 +696,8 @@ TEST_F(StateWebhookRequestTest, sendRgbReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"RGBLIGHTING\",\"timestamp\":"
-      "1600097258,\"state\":{\"connected\":false}}";
+      "1600097258,\"state\":{\"color\":\"0x000000\",\"color_brightness\":0,"
+      "\"on\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, false, (supla_channel_value *)nullptr,
            expectedPayload);
@@ -739,7 +741,8 @@ TEST_F(StateWebhookRequestTest, sendDimmerAndRgbReport_Disconnected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"DIMMERANDRGBLIGHTING\","
-      "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
+      "\"timestamp\":1600097258,\"state\":{\"color\":\"0x000000\",\"color_"
+      "brightness\":0,\"brightness\":0,\"on\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, false,
            (supla_channel_value *)nullptr, expectedPayload);
