@@ -20,6 +20,7 @@
 #define STATE_WEBHOOK_REQUEST_TEST_H_
 
 #include "asynctask/AsyncTaskTest.h"
+#include "device/channel_ic_measurement.h"
 #include "device/value/channel_value.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "doubles/http/CurlAdapterMock.h"
@@ -33,6 +34,8 @@ class StateWebhookRequestTest : public AsyncTaskTest {
   ChannelPropertyGetterMock *propertyGetter;
   CurlAdapterMock *curlAdapter;
   void makeTest(int func, bool online, supla_channel_value *value,
+                const char *expectedPayload);
+  void makeTest(int func, bool online, supla_channel_ic_measurement *icm,
                 const char *expectedPayload);
 
  public:
