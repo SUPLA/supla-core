@@ -19,6 +19,7 @@
 #include "webhook/StateWebhookTokenRefreshTest.h"
 
 #include "http/asynctask_http_thread_bucket.h"
+#include "log.h"
 #include "webhook/state_webhook_request2.h"
 
 namespace testing {
@@ -110,6 +111,8 @@ TEST_F(StateWebhookTokenRefreshTest, expired) {
 
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(postPayload2))).Times(1);
 
+  EXPECT_CALL(*curlAdapter, reset).Times(2);
+
   EXPECT_CALL(*curlAdapter, perform).Times(2).WillRepeatedly(Return(true));
 
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
@@ -141,5 +144,71 @@ TEST_F(StateWebhookTokenRefreshTest, refreshTokenNotExists) {
   WaitForState(task, supla_asynctask_state::FAILURE, 1000);
 }
 
+TEST_F(StateWebhookTokenRefreshTest, theTokenHasChangedInTheMeantime) {
+  EXPECT_CALL(credentials, is_access_token_exists).WillRepeatedly(Return(true));
+
+  EXPECT_CALL(credentials, expires_in).Times(1).WillOnce(Return(30));
+
+  EXPECT_CALL(credentials, is_refresh_token_exists)
+      .Times(1)
+      .WillOnce(Return(true));
+
+  struct timeval time = {};
+
+  EXPECT_CALL(credentials, get_set_time).WillRepeatedly([&time]() {
+    time.tv_usec++;
+    supla_log(LOG_DEBUG, "AAA %i", time.tv_usec);
+    return time;
+  });
+
+  EXPECT_CALL(credentials, refresh_lock).Times(1);
+
+  EXPECT_CALL(credentials, get_refresh_token).Times(0);
+
+  EXPECT_CALL(credentials, update).Times(0);
+
+  {
+    InSequence s;
+    EXPECT_CALL(credentials, refresh_unlock).Times(1);
+
+    EXPECT_CALL(credentials, get_access_token)
+        .WillRepeatedly(Return("AccessTokenEFGH"));
+  }
+
+  EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(200));
+
+  EXPECT_CALL(*curlAdapter,
+              append_header(StrEq("Content-Type: application/json")))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(*curlAdapter,
+              set_opt_url(StrEq("https://webhook.test.io/endpoint")))
+      .Times(1);
+
+  EXPECT_CALL(credentials, get_user_short_unique_id)
+      .Times(1)
+      .WillOnce(Return("dc85740d-cb27-405b-9da3-e8be5c71ae5b"));
+
+  EXPECT_CALL(*curlAdapter,
+              append_header(StrEq("Authorization: Bearer AccessTokenEFGH")))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  const char postPayload2[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":567,\"channelFunction\":\"ACTION_TRIGGER\",\"timestamp\":"
+      "0,\"triggered_actions\":[\"HOLD\"]}";
+
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(postPayload2))).Times(1);
+
+  EXPECT_CALL(*curlAdapter, perform).Times(1).WillOnce(Return(true));
+
+  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+      supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
+      SUPLA_ACTION_CAP_HOLD, queue, pool, propertyGetter, &credentials);
+  std::shared_ptr<supla_abstract_asynctask> task = request->start();
+  WaitForState(task, supla_asynctask_state::SUCCESS, 1000);
+}
 
 }  // namespace testing
