@@ -6,17 +6,20 @@
 CPP_SRCS += \
 ../src/test/webhook/StateWebhookClientTest.cpp \
 ../src/test/webhook/StateWebhookCredentialsTest.cpp \
-../src/test/webhook/StateWebhookRequestTest.cpp 
+../src/test/webhook/StateWebhookRequestTest.cpp \
+../src/test/webhook/StateWebhookTokenRefreshTest.cpp 
 
 CPP_DEPS += \
 ./src/test/webhook/StateWebhookClientTest.d \
 ./src/test/webhook/StateWebhookCredentialsTest.d \
-./src/test/webhook/StateWebhookRequestTest.d 
+./src/test/webhook/StateWebhookRequestTest.d \
+./src/test/webhook/StateWebhookTokenRefreshTest.d 
 
 OBJS += \
 ./src/test/webhook/StateWebhookClientTest.o \
 ./src/test/webhook/StateWebhookCredentialsTest.o \
-./src/test/webhook/StateWebhookRequestTest.o 
+./src/test/webhook/StateWebhookRequestTest.o \
+./src/test/webhook/StateWebhookTokenRefreshTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -31,7 +34,7 @@ src/test/webhook/%.o: ../src/test/webhook/%.cpp src/test/webhook/subdir.mk
 clean: clean-src-2f-test-2f-webhook
 
 clean-src-2f-test-2f-webhook:
-	-$(RM) ./src/test/webhook/StateWebhookClientTest.d ./src/test/webhook/StateWebhookClientTest.o ./src/test/webhook/StateWebhookCredentialsTest.d ./src/test/webhook/StateWebhookCredentialsTest.o ./src/test/webhook/StateWebhookRequestTest.d ./src/test/webhook/StateWebhookRequestTest.o
+	-$(RM) ./src/test/webhook/StateWebhookClientTest.d ./src/test/webhook/StateWebhookClientTest.o ./src/test/webhook/StateWebhookCredentialsTest.d ./src/test/webhook/StateWebhookCredentialsTest.o ./src/test/webhook/StateWebhookRequestTest.d ./src/test/webhook/StateWebhookRequestTest.o ./src/test/webhook/StateWebhookTokenRefreshTest.d ./src/test/webhook/StateWebhookTokenRefreshTest.o
 
 .PHONY: clean-src-2f-test-2f-webhook
 
