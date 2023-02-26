@@ -71,7 +71,7 @@ void StateWebhookRequestTest::SetUp(void) {
 
   EXPECT_CALL(*curlAdapter, perform).Times(1).WillOnce(Return(true));
 
-  EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(200));
+  ON_CALL(*curlAdapter, get_response_code).WillByDefault(Return(200));
 }
 
 void StateWebhookRequestTest::makeTest(int func, bool online,
@@ -171,6 +171,19 @@ TEST_F(StateWebhookRequestTest, sendLightSwitchReport_Disconnected) {
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":123,\"channelFunction\":\"LIGHTSWITCH\",\"timestamp\":"
       "1600097258,\"state\":{\"on\":false,\"connected\":false}}";
+
+  makeTest(SUPLA_CHANNELFNC_LIGHTSWITCH, false, (supla_channel_value *)nullptr,
+           expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest,
+       sendLightSwitchReport_Disconnected_With202Code) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"LIGHTSWITCH\",\"timestamp\":"
+      "1600097258,\"state\":{\"on\":false,\"connected\":false}}";
+
+  EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(202));
 
   makeTest(SUPLA_CHANNELFNC_LIGHTSWITCH, false, (supla_channel_value *)nullptr,
            expectedPayload);
