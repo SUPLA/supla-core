@@ -21,6 +21,7 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 
 #include "asynctask/abstract_asynctask.h"
 #include "caller.h"
@@ -39,9 +40,6 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
 
  protected:
   const supla_caller &get_caller(void);
-  int get_user_id(void);
-  int get_device_id(void);
-  int get_channel_id(void);
   event_type get_event_type(void);
   supla_abstract_channel_property_getter *get_property_getter(void);
   supla_channel_value *get_channel_value(int *func, bool *online);
@@ -49,6 +47,8 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
   virtual bool _execute(bool *execute_again,
                         supla_asynctask_thread_bucket *bucket);
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter) = 0;
+  virtual std::string get_name(void) = 0;
+  virtual void on_timeout(long long unsigned usec_after_timeout);
 
  public:
   supla_asynctask_http_request(
@@ -58,6 +58,10 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
       supla_abstract_channel_property_getter *property_getter);
 
   virtual ~supla_asynctask_http_request(void);
+
+  int get_user_id(void);
+  int get_device_id(void);
+  int get_channel_id(void);
 };
 
 #endif /* HTTP_ASYNCTASK_HTTP_REQUEST_H_ */

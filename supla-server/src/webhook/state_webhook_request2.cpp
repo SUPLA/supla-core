@@ -22,6 +22,7 @@
 
 using std::list;
 using std::shared_ptr;
+using std::string;
 
 supla_state_webhook_request2::supla_state_webhook_request2(
     const supla_caller &caller, int user_id, int device_id, int channel_id,
@@ -36,6 +37,8 @@ supla_state_webhook_request2::supla_state_webhook_request2(
 }
 
 supla_state_webhook_request2::~supla_state_webhook_request2(void) {}
+
+string supla_state_webhook_request2::get_name(void) { return "Webhook"; }
 
 bool supla_state_webhook_request2::make_request(
     supla_abstract_curl_adapter *curl_adapter) {

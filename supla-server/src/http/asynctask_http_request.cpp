@@ -19,6 +19,7 @@
 #include "http/asynctask_http_request.h"
 
 #include "http/asynctask_http_thread_bucket.h"
+#include "log.h"
 #include "svrcfg.h"
 
 using std::function;
@@ -43,6 +44,14 @@ supla_asynctask_http_request::~supla_asynctask_http_request(void) {
   if (property_getter) {
     delete property_getter;
   }
+}
+
+void supla_asynctask_http_request::on_timeout(
+    long long unsigned usec_after_timeout) {
+  supla_abstract_asynctask::on_timeout(usec_after_timeout);
+
+  supla_log(LOG_WARNING, "%s - HTTP Request timeout. ChannelId: %i, USec: %llu",
+            get_name().c_str(), usec_after_timeout);
 }
 
 const supla_caller &supla_asynctask_http_request::get_caller(void) {

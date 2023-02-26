@@ -28,6 +28,7 @@ class supla_state_webhook_request2 : public supla_asynctask_http_request {
 
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
+  virtual std::string get_name(void);
 
  public:
   supla_state_webhook_request2(
