@@ -211,4 +211,22 @@ TEST_F(StateWebhookTokenRefreshTest, theTokenHasChangedInTheMeantime) {
   WaitForState(task, supla_asynctask_state::SUCCESS, 1000);
 }
 
+TEST_F(StateWebhookTokenRefreshTest, http403) {
+  EXPECT_CALL(credentials, is_access_token_exists).WillRepeatedly(Return(true));
+
+  EXPECT_CALL(credentials, expires_in).Times(1).WillOnce(Return(1000));
+
+  EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(403));
+
+  EXPECT_CALL(*curlAdapter, perform).Times(2).WillRepeatedly(Return(true));
+
+  EXPECT_CALL(credentials, remove).Times(1);
+
+  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+      supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
+      SUPLA_ACTION_CAP_HOLD, queue, pool, propertyGetter, &credentials);
+  std::shared_ptr<supla_abstract_asynctask> task = request->start();
+  WaitForState(task, supla_asynctask_state::FAILURE, 1000);
+}
+
 }  // namespace testing
