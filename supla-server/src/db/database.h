@@ -56,10 +56,6 @@ class database : public svrdb {
                                  int expires_in);
 
   bool google_home_load_credentials(supla_google_home_credentials *google_home);
-  bool state_webhook_load_credentials(supla_state_webhook_credentials *webhook);
-  void state_webhook_update_token(int UserID, const char *token,
-                                  const char *refresh_token, int expires_in);
-  void state_webhook_remove_token(int UserID);
 
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
   bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);

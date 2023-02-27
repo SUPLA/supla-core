@@ -25,7 +25,6 @@
 
 #include "db/database.h"
 #include "http/httprequest.h"
-#include "http/httprequestactiontriggerextraparams.h"
 #include "http/httprequestvoiceassistantextraparams.h"
 #include "lck.h"
 #include "log.h"
@@ -477,9 +476,9 @@ void supla_http_request_queue::onActionsTriggered(const supla_caller &caller,
                                                   supla_user *user,
                                                   int deviceId, int channelId,
                                                   unsigned int actions) {
-  createInTheCallerContext(
-      user, deviceId, channelId, ET_ACTION_TRIGGERED, caller,
-      new supla_http_request_action_trigger_extra_params(actions));
+//  createInTheCallerContext(
+//      user, deviceId, channelId, ET_ACTION_TRIGGERED, caller,
+//      new supla_http_request_action_trigger_extra_params(actions));
 }
 
 void http_request_queue_loop(void *ssd, void *q_sthread) {

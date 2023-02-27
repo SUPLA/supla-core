@@ -78,7 +78,7 @@ void supla_user::user_init(int UserID, const char *short_unique_id,
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa_credentials = new supla_amazon_alexa_credentials(this);
   this->google_home_credentials = new supla_google_home_credentials(this);
-  this->state_webhook_credentials = new supla_state_webhook_credentials(this);
+  this->state_webhook_credentials = new supla_state_webhook_credentials2(this);
   this->connections_allowed = true;
   this->short_unique_id =
       short_unique_id ? strndup(short_unique_id, SHORT_UNIQUEID_MAXSIZE) : NULL;
@@ -454,7 +454,7 @@ void supla_user::on_state_webhook_changed(int UserID) {
   supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
-    user->stateWebhookCredentials()->on_credentials_changed();
+    user->stateWebhookCredentials()->load();
   }
 }
 
@@ -954,7 +954,7 @@ supla_google_home_credentials *supla_user::googleHomeCredentials(void) {
   return google_home_credentials;
 }
 
-supla_state_webhook_credentials *supla_user::stateWebhookCredentials(void) {
+supla_state_webhook_credentials2 *supla_user::stateWebhookCredentials(void) {
   return state_webhook_credentials;
 }
 

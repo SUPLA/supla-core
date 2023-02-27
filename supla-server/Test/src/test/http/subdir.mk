@@ -4,15 +4,12 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/http/HttpRequestActionTriggerExtraParamsTest.cpp \
 ../src/test/http/HttpRequestVoiceAssistantExtraParamsTest.cpp 
 
 CPP_DEPS += \
-./src/test/http/HttpRequestActionTriggerExtraParamsTest.d \
 ./src/test/http/HttpRequestVoiceAssistantExtraParamsTest.d 
 
 OBJS += \
-./src/test/http/HttpRequestActionTriggerExtraParamsTest.o \
 ./src/test/http/HttpRequestVoiceAssistantExtraParamsTest.o 
 
 
@@ -28,7 +25,7 @@ src/test/http/%.o: ../src/test/http/%.cpp src/test/http/subdir.mk
 clean: clean-src-2f-test-2f-http
 
 clean-src-2f-test-2f-http:
-	-$(RM) ./src/test/http/HttpRequestActionTriggerExtraParamsTest.d ./src/test/http/HttpRequestActionTriggerExtraParamsTest.o ./src/test/http/HttpRequestVoiceAssistantExtraParamsTest.d ./src/test/http/HttpRequestVoiceAssistantExtraParamsTest.o
+	-$(RM) ./src/test/http/HttpRequestVoiceAssistantExtraParamsTest.d ./src/test/http/HttpRequestVoiceAssistantExtraParamsTest.o
 
 .PHONY: clean-src-2f-test-2f-http
 
