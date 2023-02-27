@@ -16,29 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef STATE_WEBHOOK_CREDENTIALS2_H_
-#define STATE_WEBHOOK_CREDENTIALS2_H_
+#ifndef StateWebhookCredentialsTest_H_
+#define StateWebhookCredentialsTest_H_
 
-#include <list>
+#include "integration/IntegrationTest.h"
+#include "webhook/state_webhook_credentials2.h"
 
-#include "http/oauth_credentials.h"
+namespace testing {
 
-class supla_state_webhook_credentials2 : public supla_http_oauth_credentials {
- private:
-  std::string url;
-  std::list<int> function_ids;
-
+class SceneWebhookCredentialsIntegrationTest : public IntegrationTest,
+                                               public Test {
+ protected:
  public:
-  supla_state_webhook_credentials2(void);
-  explicit supla_state_webhook_credentials2(supla_user *user);
-  ~supla_state_webhook_credentials2(void);
-
-  virtual std::string get_url(void);
-  std::list<int> get_function_ids(void);
-  virtual void update(const std::string access_token,
-                      const std::string refresh_token, int expires_in);
-  virtual void remove(void);
-  void load(void);
 };
 
-#endif /* STATE_WEBHOOK_CREDENTIALS2_H_ */
+} /* namespace testing */
+
+#endif /* StateWebhookCredentialsTest_H_ */

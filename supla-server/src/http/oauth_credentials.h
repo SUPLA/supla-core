@@ -37,6 +37,9 @@ class supla_http_oauth_credentials {
   virtual void data_lock(void);
   virtual void data_unlock(void);
 
+  virtual void set(const std::string access_token,
+                   const std::string refresh_token, int expires_in);
+
  public:
   supla_http_oauth_credentials(void);
   supla_http_oauth_credentials(supla_user *user);

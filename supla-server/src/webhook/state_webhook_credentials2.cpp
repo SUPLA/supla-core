@@ -18,12 +18,11 @@
 
 #include "webhook/state_webhook_credentials2.h"
 
+#include "db/db_access_provider.h"
+#include "webhook/state_webhook_credentials_dao.h"
+
 using std::list;
 using std::string;
-
-#define WEBHOOK_TOKEN_MAXSIZE 255
-#define WEBHOOK_URL_MAXSIZE 255
-#define WEBHOOK_FUNCTIONS_IDS_MAXSIZE 255
 
 supla_state_webhook_credentials2::supla_state_webhook_credentials2(void)
     : supla_http_oauth_credentials() {}
@@ -44,20 +43,73 @@ string supla_state_webhook_credentials2::get_url(void) {
 
 list<int> supla_state_webhook_credentials2::get_function_ids(void) {
   data_lock();
-  list<int> result = functions_ids;
+  list<int> result = function_ids;
   data_unlock();
 
   return result;
 }
 
-void supla_state_webhook_credentials2::update(const std::string access_token,
-                                              const std::string refresh_token,
+void supla_state_webhook_credentials2::update(const string access_token,
+                                              const string refresh_token,
                                               int expires_in) {
   supla_http_oauth_credentials::update(access_token, refresh_token, expires_in);
+
+  supla_db_access_provider dba;
+  supla_state_webhook_credentials_dao dao(&dba);
+  dao.set(get_user_id(), access_token, refresh_token, expires_in);
 }
 
 void supla_state_webhook_credentials2::remove(void) {
+  data_lock();
   supla_http_oauth_credentials::remove();
+  url = "";
+  function_ids.clear();
+  data_unlock();
+
+  supla_db_access_provider dba;
+  supla_state_webhook_credentials_dao dao(&dba);
+  dao.remove(get_user_id());
 }
 
-void supla_state_webhook_credentials2::load(void) {}
+void supla_state_webhook_credentials2::load(void) {
+  supla_db_access_provider dba;
+  supla_state_webhook_credentials_dao dao(&dba);
+
+  string access_token, refresh_token, url, functions;
+  list<int> function_ids;
+  int expires_in = 0;
+
+  dao.get(get_user_id(), &access_token, &refresh_token, &expires_in, &url,
+          &functions);
+
+  unsigned int last_pos = 0;
+  int function = 0;
+  char divider = 1;
+
+  for (unsigned int a = 0; a < functions.size(); a++) {
+    char c = functions.at(a);
+    if (c >= '0' && c <= '9') {
+      function = function * 10 + c - '0';
+    } else if (c == '-' && a == last_pos) {
+      divider = -1;
+    } else {
+      if (function > 0) {
+        function_ids.push_back(function * divider);
+      }
+
+      last_pos = a + 1;
+      function = 0;
+      divider = 1;
+    }
+  }
+
+  if (function > 0) {
+    function_ids.push_back(function * divider);
+  }
+
+  data_lock();
+  set(access_token, refresh_token, expires_in);
+  this->url = url;
+  this->function_ids = function_ids;
+  data_unlock();
+}
