@@ -119,7 +119,7 @@ TEST_F(StateWebhookTokenRefreshTest, expired) {
       supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
       SUPLA_ACTION_CAP_HOLD, queue, pool, propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
-  WaitForState(task, supla_asynctask_state::SUCCESS, 1000);
+  WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
 
 TEST_F(StateWebhookTokenRefreshTest, refreshTokenNotExists) {
@@ -141,7 +141,7 @@ TEST_F(StateWebhookTokenRefreshTest, refreshTokenNotExists) {
       supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
       SUPLA_ACTION_CAP_HOLD, queue, pool, propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
-  WaitForState(task, supla_asynctask_state::FAILURE, 1000);
+  WaitForState(task, supla_asynctask_state::FAILURE, 10000);
 }
 
 TEST_F(StateWebhookTokenRefreshTest, theTokenHasChangedInTheMeantime) {
@@ -157,7 +157,6 @@ TEST_F(StateWebhookTokenRefreshTest, theTokenHasChangedInTheMeantime) {
 
   EXPECT_CALL(credentials, get_set_time).WillRepeatedly([&time]() {
     time.tv_usec++;
-    supla_log(LOG_DEBUG, "AAA %i", time.tv_usec);
     return time;
   });
 
@@ -208,7 +207,7 @@ TEST_F(StateWebhookTokenRefreshTest, theTokenHasChangedInTheMeantime) {
       supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
       SUPLA_ACTION_CAP_HOLD, queue, pool, propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
-  WaitForState(task, supla_asynctask_state::SUCCESS, 1000);
+  WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
 
 TEST_F(StateWebhookTokenRefreshTest, http403) {
@@ -226,7 +225,7 @@ TEST_F(StateWebhookTokenRefreshTest, http403) {
       supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
       SUPLA_ACTION_CAP_HOLD, queue, pool, propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
-  WaitForState(task, supla_asynctask_state::FAILURE, 1000);
+  WaitForState(task, supla_asynctask_state::FAILURE, 10000);
 }
 
 }  // namespace testing

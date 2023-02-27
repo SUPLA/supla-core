@@ -22,7 +22,7 @@
 
 supla_state_webhook_search_condition::supla_state_webhook_search_condition(
     int user_id, int device_id, int channel_id,
-    unsigned long long min_time_to_exec_usec) {
+    long long int min_time_to_exec_usec) {
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;

@@ -35,7 +35,7 @@ using std::string;
 
 supla_state_webhook_client2::supla_state_webhook_client2(
     int channel_id, supla_abstract_curl_adapter *curl_adapter,
-    supla_abstract_state_webhook_credentials *credentials) {
+    supla_state_webhook_credentials2 *credentials) {
   this->channel_id = channel_id;
   this->channel_connected = false;
   this->curl_adapter = curl_adapter;

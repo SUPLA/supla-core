@@ -29,7 +29,7 @@ supla_state_webhook_request2::supla_state_webhook_request2(
     event_type et, int actions, supla_asynctask_queue *queue,
     supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_channel_property_getter *property_getter,
-    supla_abstract_state_webhook_credentials *credentials)
+    supla_state_webhook_credentials2 *credentials)
     : supla_asynctask_http_request(caller, user_id, device_id, channel_id, et,
                                    queue, pool, property_getter) {
   this->actions = actions;
@@ -266,7 +266,7 @@ bool supla_state_webhook_request2::is_event_type_allowed(event_type et) {
 
 // static
 bool supla_state_webhook_request2::is_function_allowed(
-    int func, supla_abstract_state_webhook_credentials *credentials,
+    int func, supla_state_webhook_credentials2 *credentials,
     int *delay_time_msec) {
   if (!credentials || !func) {
     return false;

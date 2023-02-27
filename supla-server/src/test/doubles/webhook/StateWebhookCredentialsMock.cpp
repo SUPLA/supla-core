@@ -20,8 +20,11 @@
 
 namespace testing {
 
-StateWebhookCredentialsMock::StateWebhookCredentialsMock(void)
-    : supla_abstract_state_webhook_credentials() {}
+StateWebhookCredentialsMock::StateWebhookCredentialsMock()
+    : supla_state_webhook_credentials2() {}
+
+StateWebhookCredentialsMock::StateWebhookCredentialsMock(supla_user *user)
+    : supla_state_webhook_credentials2(user) {}
 
 StateWebhookCredentialsMock::~StateWebhookCredentialsMock(void) {}
 

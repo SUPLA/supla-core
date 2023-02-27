@@ -210,7 +210,7 @@ void supla_state_webhook_request::electricityMeterChannelType(
     shared_ptr<supla_device> device =
         getUser()->get_devices()->get(getDeviceId(), getChannelId());
     if (device != nullptr) {
-      em = device->get_channels()->get_electricity_measurement(getChannelId());
+    //  em = device->get_channels()->get_electricity_measurement(getChannelId());
       device = nullptr;
     }
 
@@ -230,7 +230,7 @@ void supla_state_webhook_request::impulseCounterChannelType(
   shared_ptr<supla_device> device =
       getUser()->get_devices()->get(getDeviceId(), getChannelId());
   if (device != nullptr) {
-    icm = device->get_channels()->get_ic_measurement(getChannelId());
+  //  icm = device->get_channels()->get_ic_measurement(getChannelId());
     device = nullptr;
   }
 

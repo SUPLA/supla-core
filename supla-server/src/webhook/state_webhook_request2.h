@@ -19,12 +19,12 @@
 #define WEBHOOK_STATE_WEBHOOK_REQUEST2_H_
 
 #include "http/asynctask_http_request.h"
-#include "webhook/abstract_state_webhook_credentials.h"
+#include "webhook/state_webhook_credentials2.h"
 
 class supla_state_webhook_request2 : public supla_asynctask_http_request {
  private:
   int actions;
-  supla_abstract_state_webhook_credentials *credentials;
+  supla_state_webhook_credentials2 *credentials;
 
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
@@ -36,15 +36,15 @@ class supla_state_webhook_request2 : public supla_asynctask_http_request {
       event_type et, int actions, supla_asynctask_queue *queue,
       supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_channel_property_getter *property_getter,
-      supla_abstract_state_webhook_credentials *credentials);
+      supla_state_webhook_credentials2 *credentials);
 
   virtual ~supla_state_webhook_request2(void);
 
   static bool is_event_type_allowed(event_type et);
   static bool is_caller_allowed(const supla_caller &caller);
-  static bool is_function_allowed(
-      int func, supla_abstract_state_webhook_credentials *credentials,
-      int *delay_time_msec);
+  static bool is_function_allowed(int func,
+                                  supla_state_webhook_credentials2 *credentials,
+                                  int *delay_time_msec);
 };
 
 #endif /* WEBHOOK_STATE_WEBHOOK_REQUEST2_H_ */

@@ -24,14 +24,14 @@
 #include "device/value/channel_value.h"
 #include "http/abstract_curl_adapter.h"
 #include "json/cJSON.h"
-#include "webhook/abstract_state_webhook_credentials.h"
+#include "webhook/state_webhook_credentials2.h"
 
 class supla_state_webhook_client2 {
  private:
   int channel_id;
   bool channel_connected;
   supla_abstract_curl_adapter *curl_adapter;
-  supla_abstract_state_webhook_credentials *credentials;
+  supla_state_webhook_credentials2 *credentials;
   supla_channel_value *channel_value;
 
   cJSON *get_header(const char *function);
@@ -53,7 +53,7 @@ class supla_state_webhook_client2 {
  public:
   explicit supla_state_webhook_client2(
       int channel_id, supla_abstract_curl_adapter *curl_adapter,
-      supla_abstract_state_webhook_credentials *credentials);
+      supla_state_webhook_credentials2 *credentials);
 
   void set_channel_connected(bool connected);
   void set_channel_value(supla_channel_value *channel_value);

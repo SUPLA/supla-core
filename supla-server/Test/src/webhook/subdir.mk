@@ -4,8 +4,8 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/webhook/abstract_state_webhook_credentials.cpp \
 ../src/webhook/state_webhook_client2.cpp \
+../src/webhook/state_webhook_credentials2.cpp \
 ../src/webhook/state_webhook_request2.cpp \
 ../src/webhook/state_webhook_search_condition.cpp \
 ../src/webhook/statewebhookclient.cpp \
@@ -15,8 +15,8 @@ CPP_SRCS += \
 ../src/webhook/webhookbasiccredentials.cpp 
 
 CPP_DEPS += \
-./src/webhook/abstract_state_webhook_credentials.d \
 ./src/webhook/state_webhook_client2.d \
+./src/webhook/state_webhook_credentials2.d \
 ./src/webhook/state_webhook_request2.d \
 ./src/webhook/state_webhook_search_condition.d \
 ./src/webhook/statewebhookclient.d \
@@ -26,8 +26,8 @@ CPP_DEPS += \
 ./src/webhook/webhookbasiccredentials.d 
 
 OBJS += \
-./src/webhook/abstract_state_webhook_credentials.o \
 ./src/webhook/state_webhook_client2.o \
+./src/webhook/state_webhook_credentials2.o \
 ./src/webhook/state_webhook_request2.o \
 ./src/webhook/state_webhook_search_condition.o \
 ./src/webhook/statewebhookclient.o \
@@ -49,7 +49,7 @@ src/webhook/%.o: ../src/webhook/%.cpp src/webhook/subdir.mk
 clean: clean-src-2f-webhook
 
 clean-src-2f-webhook:
-	-$(RM) ./src/webhook/abstract_state_webhook_credentials.d ./src/webhook/abstract_state_webhook_credentials.o ./src/webhook/state_webhook_client2.d ./src/webhook/state_webhook_client2.o ./src/webhook/state_webhook_request2.d ./src/webhook/state_webhook_request2.o ./src/webhook/state_webhook_search_condition.d ./src/webhook/state_webhook_search_condition.o ./src/webhook/statewebhookclient.d ./src/webhook/statewebhookclient.o ./src/webhook/statewebhookcredentials.d ./src/webhook/statewebhookcredentials.o ./src/webhook/statewebhookrequest.d ./src/webhook/statewebhookrequest.o ./src/webhook/webhookbasicclient.d ./src/webhook/webhookbasicclient.o ./src/webhook/webhookbasiccredentials.d ./src/webhook/webhookbasiccredentials.o
+	-$(RM) ./src/webhook/state_webhook_client2.d ./src/webhook/state_webhook_client2.o ./src/webhook/state_webhook_credentials2.d ./src/webhook/state_webhook_credentials2.o ./src/webhook/state_webhook_request2.d ./src/webhook/state_webhook_request2.o ./src/webhook/state_webhook_search_condition.d ./src/webhook/state_webhook_search_condition.o ./src/webhook/statewebhookclient.d ./src/webhook/statewebhookclient.o ./src/webhook/statewebhookcredentials.d ./src/webhook/statewebhookcredentials.o ./src/webhook/statewebhookrequest.d ./src/webhook/statewebhookrequest.o ./src/webhook/webhookbasicclient.d ./src/webhook/webhookbasicclient.o ./src/webhook/webhookbasiccredentials.d ./src/webhook/webhookbasiccredentials.o
 
 .PHONY: clean-src-2f-webhook
 
