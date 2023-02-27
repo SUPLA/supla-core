@@ -130,11 +130,7 @@ class supla_user {
 
   void on_channels_added(int DeviceID, const supla_caller &caller);
   void on_device_registered(int DeviceID, const supla_caller &caller);
-  /*
-    void moveDeviceToTrash(supla_device *device);
-    void moveClientToTrash(supla_client *client);
-    void emptyTrash(void);
-  */
+
   int getUserID(void);
   const char *getShortUniqueID(void);
   const char *getLongUniqueID(void);
