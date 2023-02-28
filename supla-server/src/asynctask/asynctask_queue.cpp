@@ -278,14 +278,20 @@ unsigned int supla_asynctask_queue::thread_count(void) {
 
 void supla_asynctask_queue::raise_event(void) { eh_raise_event(eh); }
 
-supla_abstract_asynctask *supla_asynctask_queue::find_task(
+shared_ptr<supla_abstract_asynctask> supla_asynctask_queue::find_task(
     supla_abstract_asynctask_search_condition *cnd) {
+  shared_ptr<supla_abstract_asynctask> result;
+
+  lck_lock(lck);
   for (auto it = tasks.begin(); it != tasks.end(); ++it) {
     if (cnd->condition_met(it->get())) {
-      return it->get();
+      result = *it;
+      break;
     }
   }
-  return NULL;
+  lck_unlock(lck);
+
+  return result;
 }
 
 bool supla_asynctask_queue::get_task_state(
@@ -295,14 +301,12 @@ bool supla_asynctask_queue::get_task_state(
     return false;
   }
 
-  lck_lock(lck);
-  supla_abstract_asynctask *task = find_task(cnd);
-  if (task != NULL) {
+  shared_ptr<supla_abstract_asynctask> task = find_task(cnd);
+  if (task != nullptr) {
     *state = task->get_state();
   }
-  lck_unlock(lck);
 
-  return task != NULL;
+  return task != nullptr;
 }
 
 unsigned int supla_asynctask_queue::get_task_count(
@@ -320,11 +324,7 @@ unsigned int supla_asynctask_queue::get_task_count(
 
 bool supla_asynctask_queue::task_exists(
     supla_abstract_asynctask_search_condition *cnd) {
-  lck_lock(lck);
-  bool result = find_task(cnd) != NULL;
-  lck_unlock(lck);
-
-  return result;
+  return find_task(cnd) != nullptr;
 }
 
 void supla_asynctask_queue::cancel_tasks(
@@ -395,15 +395,13 @@ void supla_asynctask_queue::on_task_finished(supla_abstract_asynctask *task) {
 bool supla_asynctask_queue::access_task(
     supla_abstract_asynctask_search_condition *cnd,
     function<void(supla_abstract_asynctask *)> on_task) {
-  bool result = false;
-  lck_lock(lck);
-  supla_abstract_asynctask *task = find_task(cnd);
-  if (task != NULL) {
-    result = true;
-    on_task(task);
+  std::shared_ptr<supla_abstract_asynctask> task = find_task(cnd);
+  if (task != nullptr) {
+    on_task(task.get());
+    return true;
   }
-  lck_unlock(lck);
-  return result;
+
+  return false;
 }
 
 void supla_asynctask_queue::log_stuck_warning(void) {

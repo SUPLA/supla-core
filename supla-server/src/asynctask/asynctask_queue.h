@@ -43,7 +43,7 @@ class supla_asynctask_queue {
   void iterate(void);
   void release_pools(void);
   static void loop(void *_queue, void *q_sthread);
-  supla_abstract_asynctask *find_task(
+  std::shared_ptr<supla_abstract_asynctask> find_task(
       supla_abstract_asynctask_search_condition *cnd);
 
  protected:
