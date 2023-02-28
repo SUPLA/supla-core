@@ -24,7 +24,8 @@ namespace testing {
 
 SceneOperationsDaoIntegrationTest::SceneOperationsDaoIntegrationTest()
     : IntegrationTest(), Test() {
-  dao = NULL;
+  dao = nullptr;
+  dba = nullptr;
 }
 
 SceneOperationsDaoIntegrationTest::~SceneOperationsDaoIntegrationTest() {}
