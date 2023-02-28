@@ -27,6 +27,7 @@
 
 class supla_curl_adapter : public supla_abstract_curl_adapter {
  private:
+  std::string url;
   CURL *curl;
   struct curl_slist *header;
   static size_t write_callback(void *contents, size_t size, size_t nmemb,

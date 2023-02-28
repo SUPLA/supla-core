@@ -20,6 +20,8 @@
 
 #include <assert.h>
 
+#include "log.h"
+
 supla_curl_adapter::supla_curl_adapter(void) : supla_abstract_curl_adapter() {
   header = nullptr;
   curl = curl_easy_init();
@@ -54,6 +56,7 @@ void supla_curl_adapter::reset(void) {
 }
 
 void supla_curl_adapter::set_opt_url(const char *url) {
+  this->url = url;
   curl_easy_setopt(curl, CURLOPT_URL, url);
 }
 
@@ -93,7 +96,15 @@ bool supla_curl_adapter::perform(void) {
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
                    supla_curl_adapter::write_callback);
 
-  return CURLE_OK == curl_easy_perform(curl);
+  CURLcode result = curl_easy_perform(curl);
+
+  if (CURLE_OK != result) {
+    supla_log(LOG_ERR, "curl_easy_perform() failed: %s. %s",
+              curl_easy_strerror(result), url.c_str());
+    return false;
+  }
+
+  return true;
 }
 
 long supla_curl_adapter::get_response_code(void) {
