@@ -36,5 +36,5 @@ bool supla_state_webhook_search_condition::condition_met(
   return request && request->get_user_id() == user_id &&
          request->get_device_id() == device_id &&
          request->get_channel_id() == channel_id &&
-         request->time_left_usec(nullptr) > min_time_to_exec_usec;
+         request->time_left_usec(nullptr) >= min_time_to_exec_usec;
 }
