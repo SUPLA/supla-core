@@ -1449,3 +1449,16 @@ void supla_device_channels::on_related_sensor_value_changed(
     delete config;
   }
 }
+
+vector<supla_channel_fragment> supla_device_channels::get_fragments(void) {
+  vector<supla_channel_fragment> result;
+  result.reserve(channels.size());
+
+  for_each_channel([&result](supla_device_channel *channel) -> void {
+    supla_channel_fragment f;
+    f = channel;
+    result.push_back(f);
+  });
+
+  return result;
+}

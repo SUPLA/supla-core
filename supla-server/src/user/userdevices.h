@@ -24,9 +24,15 @@
 #include <vector>
 
 #include "conn/connection_objects.h"
-#include "device.h"
+#include "device/channel_fragment.h"
+#include "device/device.h"
 
 class supla_user_devices : public supla_connection_objects {
+ private:
+  std::list<supla_channel_fragment>
+      channel_fragments;  // Fragments remain in memory even after the device is
+                          // freed.
+
  public:
   supla_user_devices();
   virtual ~supla_user_devices();
@@ -35,6 +41,7 @@ class supla_user_devices : public supla_connection_objects {
   std::shared_ptr<supla_device> get(int device_id);
   std::shared_ptr<supla_device> get(int device_id,
                                     int channel_id);  // device_id or channel_id
+  supla_channel_fragment get_channel_fragment(int channel_id);
 
   void for_each(std::function<void(std::shared_ptr<supla_device> device,
                                    bool *will_continue)>

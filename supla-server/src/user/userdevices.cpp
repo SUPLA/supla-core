@@ -30,7 +30,28 @@ supla_user_devices::supla_user_devices() : supla_connection_objects() {}
 supla_user_devices::~supla_user_devices() {}
 
 bool supla_user_devices::add(shared_ptr<supla_device> device) {
-  return supla_connection_objects::add(device);
+  bool result = supla_connection_objects::add(device);
+
+  vector<supla_channel_fragment> fragments =
+      device->get_channels()->get_fragments();
+
+  int device_id = device->get_id();
+
+  lock();
+  for (auto it = channel_fragments.begin(); it != channel_fragments.end();
+       ++it) {
+    if (it->get_device_id() == device_id) {
+      it = channel_fragments.erase(it);
+      --it;
+    }
+  }
+
+  for (auto it = fragments.rbegin(); it != fragments.rend(); ++it) {
+    channel_fragments.push_back(*it);
+  }
+  unlock();
+
+  return result;
 }
 
 std::shared_ptr<supla_device> supla_user_devices::get(int device_id) {
@@ -57,6 +78,21 @@ std::shared_ptr<supla_device> supla_user_devices::get(int device_id,
   }
 
   return nullptr;
+}
+
+supla_channel_fragment supla_user_devices::get_channel_fragment(
+    int channel_id) {
+  supla_channel_fragment result;
+  lock();
+  for (auto it = channel_fragments.rbegin(); it != channel_fragments.rend();
+       ++it) {
+    if (it->get_channel_id() == channel_id) {
+      result = *it;
+      break;
+    }
+  }
+  unlock();
+  return result;
 }
 
 void supla_user_devices::for_each(

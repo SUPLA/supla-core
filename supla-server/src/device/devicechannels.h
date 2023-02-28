@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "device/abstract_device_dao.h"
+#include "device/channel_fragment.h"
 #include "device/devicechannel.h"
 #include "device/value/channel_value_envelope.h"
 
@@ -214,6 +215,8 @@ class supla_device_channels {
 
   void get_channel_values(std::vector<supla_channel_value_envelope *> *result,
                           std::function<bool(supla_channel_value *)> filter);
+
+  std::vector<supla_channel_fragment> get_fragments(void);
 
   template <typename T>
   T *get_channel_value(int channel_id);
