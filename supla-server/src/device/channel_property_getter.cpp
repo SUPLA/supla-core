@@ -86,7 +86,7 @@ int supla_cahnnel_property_getter::_get_func(int user_id, int device_id,
         channel_id, [&result](supla_device_channel *channel) -> void {
           result = channel->get_func();
         });
-  };
+  }
 
   return result;
 }

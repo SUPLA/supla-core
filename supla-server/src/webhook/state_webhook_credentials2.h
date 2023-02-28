@@ -19,6 +19,7 @@
 #ifndef STATE_WEBHOOK_CREDENTIALS2_H_
 #define STATE_WEBHOOK_CREDENTIALS2_H_
 
+#include <string>
 #include <vector>
 
 #include "http/oauth_credentials.h"

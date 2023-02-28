@@ -18,6 +18,8 @@
 
 #include "webhook/state_webhook_request2.h"
 
+#include <vector>
+
 #include "device/channel_property_getter.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "user/user.h"

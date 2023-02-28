@@ -20,6 +20,7 @@
 #define USERDEVICES_H_
 
 #include <functional>
+#include <list>
 #include <memory>
 #include <vector>
 

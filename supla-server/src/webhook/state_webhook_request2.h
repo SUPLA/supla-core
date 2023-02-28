@@ -18,6 +18,8 @@
 #ifndef WEBHOOK_STATE_WEBHOOK_REQUEST2_H_
 #define WEBHOOK_STATE_WEBHOOK_REQUEST2_H_
 
+#include <string>
+
 #include "http/asynctask_http_request.h"
 #include "webhook/state_webhook_credentials2.h"
 

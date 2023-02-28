@@ -30,7 +30,7 @@ class StateWebhookCredentialsMock : public supla_state_webhook_credentials2 {
  protected:
  public:
   StateWebhookCredentialsMock();
-  StateWebhookCredentialsMock(supla_user *user);
+  explicit StateWebhookCredentialsMock(supla_user *user);
   virtual ~StateWebhookCredentialsMock(void);
 
   MOCK_METHOD0(refresh_lock, void(void));

@@ -42,7 +42,7 @@ class supla_http_oauth_credentials {
 
  public:
   supla_http_oauth_credentials(void);
-  supla_http_oauth_credentials(supla_user *user);
+  explicit supla_http_oauth_credentials(supla_user *user);
   virtual ~supla_http_oauth_credentials(void);
   virtual void refresh_lock(void);
   virtual void refresh_unlock(void);
