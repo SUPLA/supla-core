@@ -74,7 +74,6 @@ void supla_user::user_init(int UserID, const char *short_unique_id,
 
   this->devices = new supla_user_devices();
   this->clients = new supla_user_clients();
-  this->complex_value_functions_arr = safe_array_init();
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa_credentials = new supla_amazon_alexa_credentials(this);
   this->google_home_credentials = new supla_google_home_credentials(this);
@@ -117,9 +116,6 @@ supla_user::~supla_user() {
   delete amazon_alexa_credentials;
   delete google_home_credentials;
   delete state_webhook_credentials;
-
-  compex_value_cache_clean(0);
-  safe_array_free(complex_value_functions_arr);
 
   delete devices;
   delete clients;
@@ -259,8 +255,6 @@ supla_user *supla_user::add_device(shared_ptr<supla_device> device,
   assert(device->get_id() != 0);
 
   supla_user *user = find(user_id, true);
-
-  user->compex_value_cache_clean(device->get_id());
 
   if (user->devices->add(device)) {
     safe_array_lock(supla_user::user_arr);
@@ -721,87 +715,18 @@ bool supla_user::reconnect(int UserID, const supla_caller &caller) {
   return false;
 }
 
-void supla_user::compex_value_cache_clean(int DeviceId) {
-  safe_array_lock(complex_value_functions_arr);
-
-  for (int a = 0; a < safe_array_count(complex_value_functions_arr); a++) {
-    channel_function_t *fnc = static_cast<channel_function_t *>(
-        safe_array_get(complex_value_functions_arr, a));
-    if (fnc && (DeviceId == 0 || fnc->deviceId == DeviceId)) {
-      delete fnc;
-      safe_array_delete(complex_value_functions_arr, a);
-      a--;
-    }
-  }
-
-  safe_array_unlock(complex_value_functions_arr);
-}
-
-channel_function_t supla_user::compex_value_cache_get_function(
-    int ChannelID, channel_function_t **_fnc) {
-  channel_function_t result;
-  memset(&result, 0, sizeof(channel_function_t));
-
-  safe_array_lock(complex_value_functions_arr);
-
-  for (int a = 0; a < safe_array_count(complex_value_functions_arr); a++) {
-    channel_function_t *fnc = static_cast<channel_function_t *>(
-        safe_array_get(complex_value_functions_arr, a));
-    if (fnc && fnc->channelId == ChannelID) {
-      if (_fnc) {
-        *_fnc = fnc;
-      }
-      result = *fnc;
-      break;
-    }
-  }
-
-  safe_array_unlock(complex_value_functions_arr);
-  return result;
-}
-
-void supla_user::compex_value_cache_update_function(int DeviceId, int ChannelID,
-                                                    int Type, int Function,
-                                                    bool channel_is_hidden) {
-  if (!Function || !DeviceId || !ChannelID) return;
-  safe_array_lock(complex_value_functions_arr);
-
-  channel_function_t *fnc = NULL;
-  if (compex_value_cache_get_function(ChannelID, &fnc).function) {
-    if (fnc) {
-      fnc->deviceId = DeviceId;
-      fnc->channel_type = Type;
-      fnc->function = Function;
-      fnc->channel_is_hidden = channel_is_hidden;
-    }
-  } else {
-    fnc = new channel_function_t;
-    fnc->deviceId = DeviceId;
-    fnc->channelId = ChannelID;
-    fnc->function = Function;
-    fnc->channel_is_hidden = channel_is_hidden;
-
-    safe_array_add(complex_value_functions_arr, fnc);
-  }
-  safe_array_unlock(complex_value_functions_arr);
-}
-
 channel_complex_value supla_user::get_channel_complex_value(int channel_id) {
   channel_complex_value value = {};
 
   shared_ptr<supla_device> device = devices->get(0, channel_id);
   if (device == nullptr) {
-    channel_function_t f = compex_value_cache_get_function(channel_id);
-    value.function = f.function;
-    value.channel_type = f.channel_type;
-    value.hidden_channel = f.channel_is_hidden;
+    supla_channel_fragment f = devices->get_channel_fragment(channel_id);
+
+    value.function = f.get_function();
+    value.channel_type = f.get_type();
+    value.hidden_channel = f.is_hidden();
   } else {
     device->get_channels()->get_channel_complex_value(&value, channel_id);
-    if (value.function) {
-      compex_value_cache_update_function(device->get_id(), channel_id,
-                                         value.channel_type, value.function,
-                                         value.hidden_channel);
-    }
   }
 
   return value;

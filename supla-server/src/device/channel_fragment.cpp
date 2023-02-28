@@ -46,6 +46,10 @@ int supla_channel_fragment::get_type(void) { return type; }
 
 int supla_channel_fragment::get_function(void) { return function; }
 
+void supla_channel_fragment::set_function(int function) {
+  this->function = function;
+}
+
 bool supla_channel_fragment::is_hidden(void) { return _is_hidden; }
 
 supla_channel_fragment &supla_channel_fragment::operator=(

@@ -59,12 +59,4 @@ typedef struct {
  * inherit from supla_channel_value
  * https://github.com/SUPLA/supla-core/issues/268 */
 
-typedef struct {
-  int deviceId;
-  int channelId;
-  bool channel_is_hidden;
-  int channel_type;
-  int function;
-} channel_function_t;
-
 #endif /* COMMONTYPES_H_ */

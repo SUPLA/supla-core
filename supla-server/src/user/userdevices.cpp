@@ -95,6 +95,19 @@ supla_channel_fragment supla_user_devices::get_channel_fragment(
   return result;
 }
 
+void supla_user_devices::update_function_of_channel_fragment(int channel_id,
+                                                             int func) {
+  lock();
+  for (auto it = channel_fragments.rbegin(); it != channel_fragments.rend();
+       ++it) {
+    if (it->get_channel_id() == channel_id) {
+      it->set_function(func);
+      break;
+    }
+  }
+  unlock();
+}
+
 void supla_user_devices::for_each(
     function<void(shared_ptr<supla_device> device, bool *will_continue)>
         on_device) {

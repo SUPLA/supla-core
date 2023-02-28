@@ -68,4 +68,10 @@ TEST_F(ChannelFragmentTest, channelAssignment) {
   EXPECT_FALSE(f.is_hidden());
 }
 
+TEST_F(ChannelFragmentTest, functionSetter) {
+  supla_channel_fragment f;
+  f.set_function(SUPLA_CHANNELFNC_ACTIONTRIGGER);
+  EXPECT_EQ(f.get_function(), SUPLA_CHANNELFNC_ACTIONTRIGGER);
+}
+
 } /* namespace testing */

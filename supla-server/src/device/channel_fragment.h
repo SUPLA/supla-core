@@ -38,6 +38,7 @@ class supla_channel_fragment {
   int get_channel_id(void);
   int get_type(void);
   int get_function(void);
+  void set_function(int function);
   bool is_hidden(void);
 
   supla_channel_fragment &operator=(supla_device_channel *channel);

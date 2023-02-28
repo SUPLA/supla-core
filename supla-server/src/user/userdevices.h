@@ -42,6 +42,7 @@ class supla_user_devices : public supla_connection_objects {
   std::shared_ptr<supla_device> get(int device_id,
                                     int channel_id);  // device_id or channel_id
   supla_channel_fragment get_channel_fragment(int channel_id);
+  void update_function_of_channel_fragment(int channel_id, int func);
 
   void for_each(std::function<void(std::shared_ptr<supla_device> device,
                                    bool *will_continue)>
