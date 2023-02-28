@@ -24,8 +24,8 @@
 
 namespace testing {
 
-using std::list;
 using std::string;
+using std::vector;
 
 TEST_F(StateWebhookCredentialsIntegrationTest, defaults) {
   supla_state_webhook_credentials2 credentials;
@@ -77,11 +77,11 @@ TEST_F(StateWebhookCredentialsIntegrationTest, load) {
   EXPECT_EQ(credentials.get_url(), "https://spacex.com/api/state-webhook");
   ASSERT_EQ(credentials.get_function_ids().size(), 27);
 
-  list<int> expected = {140, 130, 300, 40,  100, 50,  42,  45,  60,
-                        70,  230, 125, 240, 310, 320, 330, 315, 80,
-                        250, 270, 280, 220, 210, 260, 120, 700, 110};
+  vector<int> expected = {140, 130, 300, 40,  100, 50,  42,  45,  60,
+                          70,  230, 125, 240, 310, 320, 330, 315, 80,
+                          250, 270, 280, 220, 210, 260, 120, 700, 110};
 
-  list<int> loaded = credentials.get_function_ids();
+  vector<int> loaded = credentials.get_function_ids();
 
   while (loaded.size()) {
     ASSERT_EQ(loaded.back(), expected.back());

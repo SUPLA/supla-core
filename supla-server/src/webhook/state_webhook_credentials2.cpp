@@ -21,8 +21,8 @@
 #include "db/db_access_provider.h"
 #include "webhook/state_webhook_credentials_dao.h"
 
-using std::list;
 using std::string;
+using std::vector;
 
 supla_state_webhook_credentials2::supla_state_webhook_credentials2(void)
     : supla_http_oauth_credentials() {}
@@ -41,9 +41,9 @@ string supla_state_webhook_credentials2::get_url(void) {
   return url;
 }
 
-list<int> supla_state_webhook_credentials2::get_function_ids(void) {
+vector<int> supla_state_webhook_credentials2::get_function_ids(void) {
   data_lock();
-  list<int> result = function_ids;
+  vector<int> result = function_ids;
   data_unlock();
 
   return result;
@@ -76,7 +76,7 @@ void supla_state_webhook_credentials2::load(void) {
   supla_state_webhook_credentials_dao dao(&dba);
 
   string access_token, refresh_token, url, functions;
-  list<int> function_ids;
+  vector<int> function_ids;
   int expires_in = 0;
 
   dao.get(get_user_id(), &access_token, &refresh_token, &expires_in, &url,

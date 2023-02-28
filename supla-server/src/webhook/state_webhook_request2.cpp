@@ -24,9 +24,9 @@
 #include "webhook/state_webhook_client2.h"
 #include "webhook/state_webhook_search_condition.h"
 
-using std::list;
 using std::shared_ptr;
 using std::string;
+using std::vector;
 
 supla_state_webhook_request2::supla_state_webhook_request2(
     const supla_caller &caller, int user_id, int device_id, int channel_id,
@@ -255,7 +255,7 @@ bool supla_state_webhook_request2::is_function_allowed(
     return false;
   }
 
-  list<int> fids = credentials->get_function_ids();
+  vector<int> fids = credentials->get_function_ids();
 
   for (int f : fids) {
     if (f == func) {

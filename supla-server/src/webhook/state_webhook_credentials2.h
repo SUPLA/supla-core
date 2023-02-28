@@ -19,14 +19,14 @@
 #ifndef STATE_WEBHOOK_CREDENTIALS2_H_
 #define STATE_WEBHOOK_CREDENTIALS2_H_
 
-#include <list>
+#include <vector>
 
 #include "http/oauth_credentials.h"
 
 class supla_state_webhook_credentials2 : public supla_http_oauth_credentials {
  private:
   std::string url;
-  std::list<int> function_ids;
+  std::vector<int> function_ids;
 
  public:
   supla_state_webhook_credentials2(void);
@@ -34,7 +34,7 @@ class supla_state_webhook_credentials2 : public supla_http_oauth_credentials {
   ~supla_state_webhook_credentials2(void);
 
   virtual std::string get_url(void);
-  std::list<int> get_function_ids(void);
+  std::vector<int> get_function_ids(void);
   virtual void update(const std::string access_token,
                       const std::string refresh_token, int expires_in);
   virtual void remove(void);
