@@ -29,12 +29,26 @@ supla_cahnnel_property_getter::~supla_cahnnel_property_getter(void) {}
 
 supla_channel_value *supla_cahnnel_property_getter::_get_value(
     int user_id, int device_id, int channel_id, int *func, bool *online) {
-  shared_ptr<supla_device> device =
-      supla_user::get_device(user_id, device_id, channel_id);
-
   supla_channel_value *result = nullptr;
 
-  if (device != nullptr) {
+  supla_user *user = supla_user::get_user(user_id);
+  if (!user) {
+    return result;
+  }
+
+  shared_ptr<supla_device> device =
+      user->get_devices()->get(device_id, channel_id);
+
+  if (device == nullptr) {
+    if (func) {
+      supla_channel_fragment f =
+          user->get_devices()->get_channel_fragment(channel_id);
+      *func = f.get_function();
+    }
+    if (online) {
+      *online = false;
+    }
+  } else {
     device->get_channels()->access_channel(
         channel_id,
         [&result, &func, &online](supla_device_channel *channel) -> void {
@@ -54,10 +68,20 @@ supla_channel_value *supla_cahnnel_property_getter::_get_value(
 int supla_cahnnel_property_getter::_get_func(int user_id, int device_id,
                                              int channel_id) {
   int result = 0;
-  shared_ptr<supla_device> device =
-      supla_user::get_device(user_id, device_id, channel_id);
+  supla_user *user = supla_user::get_user(user_id);
 
-  if (device != nullptr) {
+  if (!user) {
+    return result;
+  }
+
+  shared_ptr<supla_device> device =
+      user->get_devices()->get(device_id, channel_id);
+
+  if (device == nullptr) {
+    supla_channel_fragment f =
+        user->get_devices()->get_channel_fragment(channel_id);
+    result = f.get_function();
+  } else {
     device->get_channels()->access_channel(
         channel_id, [&result](supla_device_channel *channel) -> void {
           result = channel->get_func();
