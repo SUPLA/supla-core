@@ -102,9 +102,9 @@ void supla_state_webhook_credentials_dao::get(int user_id, string *access_token,
 
     rbind[4].buffer_type = MYSQL_TYPE_STRING;
     rbind[4].buffer = _function_ids;
-    rbind[4].buffer_length = sizeof(function_ids);
+    rbind[4].buffer_length = sizeof(_function_ids);
     rbind[4].length = &function_ids_size;
-    rbind[1].is_null = &function_ids_is_null;
+    rbind[4].is_null = &function_ids_is_null;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
