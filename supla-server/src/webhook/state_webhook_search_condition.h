@@ -20,6 +20,7 @@
 #define STATE_WEBHOOK_SEARCH_CONDITION_H_
 
 #include "asynctask/abstract_asynctask_search_condition.h"
+#include "commontypes.h"
 
 class supla_state_webhook_search_condition
     : public supla_abstract_asynctask_search_condition {
@@ -37,5 +38,5 @@ class supla_state_webhook_search_condition
 
   virtual bool condition_met(supla_abstract_asynctask *task);
 };
-event type
+
 #endif /*STATE_WEBHOOK_SEARCH_CONDITION_H_*/
