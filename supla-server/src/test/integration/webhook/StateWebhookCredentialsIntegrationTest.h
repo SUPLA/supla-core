@@ -19,14 +19,16 @@
 #ifndef StateWebhookCredentialsTest_H_
 #define StateWebhookCredentialsTest_H_
 
+#include "db/db_access_provider.h"
 #include "integration/IntegrationTest.h"
-#include "webhook/state_webhook_credentials2.h"
 
 namespace testing {
 
-class SceneWebhookCredentialsIntegrationTest : public IntegrationTest,
+class StateWebhookCredentialsIntegrationTest : public IntegrationTest,
                                                public Test {
  protected:
+  supla_db_access_provider dba;
+
  public:
 };
 
