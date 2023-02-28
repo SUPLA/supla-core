@@ -34,6 +34,7 @@
 #include "svrcfg.h"
 #include "tools.h"
 #include "user/user.h"
+#include "webhook/state_webhook_request2.h"
 
 using std::list;
 
@@ -443,6 +444,9 @@ void supla_http_request_queue::onChannelValueChangeEvent(
                            caller,
                            new supla_http_request_voice_assistant_extra_params(
                                correlationToken, googleRequestId));
+
+  supla_state_webhook_request2::new_request(caller, user, deviceId, channelId,
+                                            ET_CHANNEL_VALUE_CHANGED, 0);
 }
 
 void supla_http_request_queue::onChannelsAddedEvent(
@@ -476,9 +480,8 @@ void supla_http_request_queue::onActionsTriggered(const supla_caller &caller,
                                                   supla_user *user,
                                                   int deviceId, int channelId,
                                                   unsigned int actions) {
-//  createInTheCallerContext(
-//      user, deviceId, channelId, ET_ACTION_TRIGGERED, caller,
-//      new supla_http_request_action_trigger_extra_params(actions));
+  supla_state_webhook_request2::new_request(caller, user, deviceId, channelId,
+                                            ET_ACTION_TRIGGERED, actions);
 }
 
 void http_request_queue_loop(void *ssd, void *q_sthread) {

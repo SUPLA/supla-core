@@ -18,7 +18,11 @@
 
 #include "webhook/state_webhook_request2.h"
 
+#include "device/channel_property_getter.h"
+#include "http/asynctask_http_thread_pool.h"
+#include "user/user.h"
 #include "webhook/state_webhook_client2.h"
+#include "webhook/state_webhook_search_condition.h"
 
 using std::list;
 using std::shared_ptr;
@@ -217,27 +221,6 @@ bool supla_state_webhook_request2::make_request(
   return result;
 }
 
-/*
-bool supla_state_webhook_request::verifyExisting(supla_http_request *existing) {
-  if (existing->getEventType() == getEventType()) {
-    unsigned int actions = getActions();
-
-    existing->accessExtraParams(
-        [actions](supla_http_request_extra_params *_params) -> void {
-          supla_http_request_action_trigger_extra_params *params =
-              dynamic_cast<supla_http_request_action_trigger_extra_params *>(
-                  _params);
-          if (params) {
-            params->addActions(actions);
-          }
-        });
-
-    duplicateExists = true;
-  }
-  return true;
-}
-*/
-
 // static
 bool supla_state_webhook_request2::is_caller_allowed(
     const supla_caller &caller) {
@@ -322,4 +305,57 @@ bool supla_state_webhook_request2::is_function_allowed(
   }
 
   return false;
+}
+
+// static
+void supla_state_webhook_request2::new_request(const supla_caller &caller,
+                                               supla_user *user, int device_id,
+                                               int channel_id, event_type et,
+                                               int actions) {
+  if (!user || !is_event_type_allowed(et) || !is_caller_allowed(caller) ||
+      !user->stateWebhookCredentials() ||
+      !user->stateWebhookCredentials()->is_access_token_exists() ||
+      !user->stateWebhookCredentials()->get_url().size() == 0) {
+    return;
+  }
+
+  supla_cahnnel_property_getter *property_getter =
+      new supla_cahnnel_property_getter();
+  int func =
+      property_getter->get_func(user->getUserID(), device_id, channel_id);
+
+  int delay_time_msec = 0;
+  if (!is_function_allowed(func, user->stateWebhookCredentials(),
+                           &delay_time_msec)) {
+    delete property_getter;
+    return;
+  }
+
+  bool exists = false;
+  supla_state_webhook_search_condition cnd(user->getUserID(), device_id,
+                                           channel_id, 100000);
+  supla_asynctask_queue::global_instance()->access_task(
+      &cnd, [&exists, actions, et](supla_abstract_asynctask *task) -> void {
+        exists = true;
+        if (et == ET_ACTION_TRIGGERED) {
+          supla_state_webhook_request2 *request =
+              dynamic_cast<supla_state_webhook_request2 *>(task);
+          if (request && request->get_event_type() == ET_ACTION_TRIGGERED) {
+            request->actions |= actions;
+          }
+        }
+      });
+
+  if (exists) {
+    delete property_getter;
+    return;
+  }
+
+  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+      caller, user->getUserID(), device_id, channel_id, et, actions,
+      supla_asynctask_queue::global_instance(),
+      supla_asynctask_http_thread_pool::global_instance(), property_getter,
+      user->stateWebhookCredentials());
+  request->set_delay_usec(delay_time_msec * 1000);
+  request->start();
 }
