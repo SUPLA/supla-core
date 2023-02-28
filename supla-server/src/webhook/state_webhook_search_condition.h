@@ -27,14 +27,15 @@ class supla_state_webhook_search_condition
   int user_id;
   int device_id;
   int channel_id;
+  event_type et;
   long long int min_time_to_exec_usec;
 
  public:
   supla_state_webhook_search_condition(int user_id, int device_id,
-                                       int channel_id,
+                                       int channel_id, event_type et,
                                        long long int min_time_to_exec_usec);
 
   virtual bool condition_met(supla_abstract_asynctask *task);
 };
-
+event type
 #endif /*STATE_WEBHOOK_SEARCH_CONDITION_H_*/

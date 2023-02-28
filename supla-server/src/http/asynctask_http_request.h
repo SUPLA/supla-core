@@ -40,7 +40,6 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
 
  protected:
   const supla_caller &get_caller(void);
-  event_type get_event_type(void);
   supla_abstract_channel_property_getter *get_property_getter(void);
   supla_channel_value *get_channel_value(int *func, bool *online);
 
@@ -62,6 +61,7 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
   int get_user_id(void);
   int get_device_id(void);
   int get_channel_id(void);
+  event_type get_event_type(void);
 };
 
 #endif /* HTTP_ASYNCTASK_HTTP_REQUEST_H_ */
