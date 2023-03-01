@@ -72,6 +72,11 @@ supla_abstract_asynctask_thread_pool::~supla_abstract_asynctask_thread_pool(
 
 int supla_abstract_asynctask_thread_pool::tasks_per_thread(void) { return 0; }
 
+bool supla_abstract_asynctask_thread_pool::should_keep_alive(
+    unsigned long long usec_since_last_exec, size_t thread_count) {
+  return false;
+}
+
 void supla_abstract_asynctask_thread_pool::execution_request(
     supla_abstract_asynctask *task) {
   if (is_terminated() || is_holded()) {
@@ -169,6 +174,7 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
   bool iterate = true;
 
   supla_asynctask_thread_bucket *bucket = get_bucket();
+  struct timeval last_exec_time = {};
 
   do {
     shared_ptr<supla_abstract_asynctask> task = queue->pick(this);
@@ -184,6 +190,7 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
       }
 
       remove_task(task.get());
+      gettimeofday(&last_exec_time, nullptr);
     }
 
     if (task == NULL) {
@@ -193,8 +200,20 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
     }
 
     lck_lock(lck);
-    iterate =
-        !sthread_isterminated(sthread) && threads.size() <= requests.size();
+    iterate = false;
+    if (!sthread_isterminated(sthread)) {
+      if (threads.size() <= requests.size()) {
+        iterate = true;
+      } else {
+        struct timeval now = {};
+        gettimeofday(&now, nullptr);
+
+        iterate = should_keep_alive(
+            (now.tv_sec * 1000000UL + now.tv_usec) -
+                (last_exec_time.tv_sec * 1000000UL + last_exec_time.tv_usec),
+            threads.size());
+      }
+    }
     lck_unlock(lck);
   } while (iterate);
 

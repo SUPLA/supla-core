@@ -35,6 +35,8 @@ supla_asynctask_http_thread_pool::supla_asynctask_http_thread_pool(
     : supla_abstract_asynctask_thread_pool(queue) {
   _thread_count_limit = scfg_int(CFG_HTTP_THREAD_COUNT_LIMIT);
   requests_per_thread = scfg_int(CFG_HTTP_REQUESTS_PER_THREAD);
+  keep_alive_time_usec = scfg_int(CFG_HTTP_THREAD_KEEP_ALIVE_SEC) * 1000000;
+  keep_alive_max_thread_count = scfg_int(CFG_HTTP_KEEP_ALIVE_MAX_THREAD_COUNT);
 }
 
 supla_asynctask_http_thread_pool::~supla_asynctask_http_thread_pool(void) {}
@@ -45,6 +47,12 @@ unsigned int supla_asynctask_http_thread_pool::thread_count_limit(void) {
 
 int supla_asynctask_http_thread_pool::tasks_per_thread(void) {
   return requests_per_thread;
+}
+
+bool supla_asynctask_http_thread_pool::should_keep_alive(
+    unsigned long long usec_since_last_exec, size_t thread_count) {
+  return usec_since_last_exec < keep_alive_time_usec &&
+         thread_count <= keep_alive_max_thread_count;
 }
 
 string supla_asynctask_http_thread_pool::pool_name(void) { return "HttpPool"; }

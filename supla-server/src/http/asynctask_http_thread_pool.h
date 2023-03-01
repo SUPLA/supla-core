@@ -29,10 +29,14 @@ class supla_asynctask_http_thread_pool
   static supla_asynctask_http_thread_pool *_global_instance;
   int _thread_count_limit;
   int requests_per_thread;
+  unsigned long long keep_alive_time_usec;
+  unsigned int keep_alive_max_thread_count;
 
  protected:
   virtual supla_asynctask_thread_bucket *get_bucket(void);
   virtual int tasks_per_thread(void);
+  virtual bool should_keep_alive(unsigned long long usec_since_last_exec,
+                                 size_t thread_count);
 
  public:
   explicit supla_asynctask_http_thread_pool(supla_asynctask_queue *queue);

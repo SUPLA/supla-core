@@ -52,6 +52,8 @@ class supla_abstract_asynctask_thread_pool {
   void remove_task(supla_abstract_asynctask *task);
   void terminate(void);
   virtual int tasks_per_thread(void);
+  virtual bool should_keep_alive(unsigned long long usec_since_last_exec,
+                                 size_t thread_count);
 
  public:
   explicit supla_abstract_asynctask_thread_pool(supla_asynctask_queue *queue);

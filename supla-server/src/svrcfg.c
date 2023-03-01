@@ -33,7 +33,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
 
   char *s_mqtt = "MQTT-BROKER";
-  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 33)
+  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 35)
   // This ensures that realloc will only be called once
   scfg_add_int_param(CFG_MQTT_KEEP_ALIVE_SEC, s_mqtt, "CFG_MQTT_KEEP_ALIVE_SEC",
                      30);
@@ -90,6 +90,10 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
                      50);
   scfg_add_int_param(CFG_HTTP_REQUESTS_PER_THREAD, s_http,
                      "requests_per_thread", 5);
+  scfg_add_int_param(CFG_HTTP_THREAD_KEEP_ALIVE_SEC, s_http,
+                     "thread_keep_alive", 5);
+  scfg_add_int_param(CFG_HTTP_KEEP_ALIVE_MAX_THREAD_COUNT, s_http,
+                     "keep_alive_max_thread_count", 5);
 
   scfg_add_int_param(CFG_HTTP_REQUEST_TIMEOUT, s_http, "request_timeout", 5000);
 
