@@ -34,12 +34,17 @@ supla_asynctask_http_thread_pool::supla_asynctask_http_thread_pool(
     supla_asynctask_queue *queue)
     : supla_abstract_asynctask_thread_pool(queue) {
   _thread_count_limit = scfg_int(CFG_HTTP_THREAD_COUNT_LIMIT);
+  requests_per_thread = scfg_int(CFG_HTTP_REQUESTS_PER_THREAD);
 }
 
 supla_asynctask_http_thread_pool::~supla_asynctask_http_thread_pool(void) {}
 
 unsigned int supla_asynctask_http_thread_pool::thread_count_limit(void) {
   return _thread_count_limit;
+}
+
+int supla_asynctask_http_thread_pool::tasks_per_thread(void) {
+  return requests_per_thread;
 }
 
 string supla_asynctask_http_thread_pool::pool_name(void) { return "HttpPool"; }

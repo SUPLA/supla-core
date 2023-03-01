@@ -70,11 +70,15 @@ supla_abstract_asynctask_thread_pool::~supla_abstract_asynctask_thread_pool(
   lck_free(lck);
 }
 
+int supla_abstract_asynctask_thread_pool::tasks_per_thread(void) { return 0; }
+
 void supla_abstract_asynctask_thread_pool::execution_request(
     supla_abstract_asynctask *task) {
   if (is_terminated() || is_holded()) {
     return;
   }
+
+  size_t req_count = 0;
 
   {
     bool already_exists = false;
@@ -90,6 +94,9 @@ void supla_abstract_asynctask_thread_pool::execution_request(
     if (!already_exists) {
       requests.push_back(task);
     }
+
+    req_count = requests.size();
+
     lck_unlock(lck);
 
     if (already_exists) {
@@ -101,21 +108,25 @@ void supla_abstract_asynctask_thread_pool::execution_request(
 
   lck_lock(lck);
   if (threads.size() < thread_count_limit()) {
-    Tsthread_params p;
-    p.user_data = this;
-    p.free_on_finish = 1;
-    p.execute = _execute;
-    p.finish = _on_thread_finish;
-    p.initialize = NULL;
+    if (!tasks_per_thread() ||
+        req_count > tasks_per_thread() * threads.size()) {
+      Tsthread_params p;
+      p.user_data = this;
+      p.free_on_finish = 1;
+      p.execute = _execute;
+      p.finish = _on_thread_finish;
+      p.initialize = NULL;
 
-    void *thread = nullptr;
-    sthread_run(&p, &thread);
-    if (thread) {
-      threads.push_back(thread);
-      if (threads.size() > _highest_number_of_threads) {
-        _highest_number_of_threads = threads.size();
+      void *thread = nullptr;
+      sthread_run(&p, &thread);
+      if (thread) {
+        threads.push_back(thread);
+        if (threads.size() > _highest_number_of_threads) {
+          _highest_number_of_threads = threads.size();
+        }
       }
     }
+
   } else {
     _overload_count++;
     struct timeval now;

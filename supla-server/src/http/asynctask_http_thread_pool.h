@@ -28,9 +28,11 @@ class supla_asynctask_http_thread_pool
  private:
   static supla_asynctask_http_thread_pool *_global_instance;
   int _thread_count_limit;
+  int requests_per_thread;
 
  protected:
   virtual supla_asynctask_thread_bucket *get_bucket(void);
+  virtual int tasks_per_thread(void);
 
  public:
   explicit supla_asynctask_http_thread_pool(supla_asynctask_queue *queue);
