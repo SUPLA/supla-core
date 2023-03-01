@@ -262,6 +262,11 @@ bool supla_state_webhook_request2::is_function_allowed(
   for (int f : fids) {
     if (f == func) {
       switch (func) {
+        case SUPLA_CHANNELFNC_DIMMER:
+        case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+        case SUPLA_CHANNELFNC_RGBLIGHTING:
+          *delay_time_msec = 1000000;
+          return true;
         case SUPLA_CHANNELFNC_THERMOMETER:
         case SUPLA_CHANNELFNC_HUMIDITY:
         case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
@@ -281,9 +286,6 @@ bool supla_state_webhook_request2::is_function_allowed(
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
         case SUPLA_CHANNELFNC_STAIRCASETIMER:
-        case SUPLA_CHANNELFNC_DIMMER:
-        case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-        case SUPLA_CHANNELFNC_RGBLIGHTING:
         case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
         case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
         case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
