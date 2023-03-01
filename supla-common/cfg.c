@@ -17,6 +17,7 @@
  */
 
 #include "cfg.h"
+
 #include <assert.h>
 #include <grp.h>
 #include <pwd.h>
@@ -25,6 +26,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include "ini.h"
 #include "log.h"
 #include "tools.h"
@@ -120,7 +122,7 @@ void scfg_set_callback(_func_cfg_callback cb) {
   scfg->cb = cb;
 }
 
-void scfg_add_param(char *section_name, const char *param_name,
+void scfg_add_param(int index, char *section_name, const char *param_name,
                     unsigned char vtype, char *cval, unsigned char bval,
                     double dval, int ival) {
   TSuplaCfgParam *param;
@@ -141,7 +143,10 @@ void scfg_add_param(char *section_name, const char *param_name,
 
   if (param == NULL) return;
 
-  scfg_param = realloc(scfg->param, sizeof(void *) * (scfg->count + 1));
+  int add = index >= scfg->count ? index - scfg->count + 1 : 0;
+  if (add) {
+    scfg_param = realloc(scfg->param, sizeof(void *) * (scfg->count + add));
+  }
 
   if (scfg_param == NULL) {
     free(param);
@@ -149,7 +154,7 @@ void scfg_add_param(char *section_name, const char *param_name,
   } else {
     memset(param, 0, sizeof(TSuplaCfgParam));
 
-    scfg->count++;
+    scfg->count += add;
     scfg->param = scfg_param;
 
     param->section_name = section_name;
@@ -159,31 +164,31 @@ void scfg_add_param(char *section_name, const char *param_name,
     param->bval = bval;
     param->dval = dval;
     param->ival = ival;
-    scfg->param[scfg->count - 1] = param;
+    scfg->param[index] = param;
   }
 }
 
-void scfg_add_str_param(char *section_name, const char *param_name,
+void scfg_add_str_param(int index, char *section_name, const char *param_name,
                         char *default_value) {
-  scfg_add_param(section_name, param_name, SCFG_VTYPE_STRING, default_value, 0,
-                 0, 0);
+  scfg_add_param(index, section_name, param_name, SCFG_VTYPE_STRING,
+                 default_value, 0, 0, 0);
 }
 
-void scfg_add_double_param(char *section_name, const char *param_name,
-                           double default_value) {
-  scfg_add_param(section_name, param_name, SCFG_VTYPE_DOUBLE, NULL, 0,
+void scfg_add_double_param(int index, char *section_name,
+                           const char *param_name, double default_value) {
+  scfg_add_param(index, section_name, param_name, SCFG_VTYPE_DOUBLE, NULL, 0,
                  default_value, 0);
 }
 
-void scfg_add_int_param(char *section_name, const char *param_name,
+void scfg_add_int_param(int index, char *section_name, const char *param_name,
                         int default_value) {
-  scfg_add_param(section_name, param_name, SCFG_VTYPE_INT, NULL, 0, 0,
+  scfg_add_param(index, section_name, param_name, SCFG_VTYPE_INT, NULL, 0, 0,
                  default_value);
 }
 
-void scfg_add_bool_param(char *section_name, const char *param_name,
+void scfg_add_bool_param(int index, char *section_name, const char *param_name,
                          unsigned char default_value) {
-  scfg_add_param(section_name, param_name, SCFG_VTYPE_BOOLEAN, NULL,
+  scfg_add_param(index, section_name, param_name, SCFG_VTYPE_BOOLEAN, NULL,
                  default_value, 0, 0);
 }
 

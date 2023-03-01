@@ -17,10 +17,12 @@
  */
 
 #include "svrcfg.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 #include "log.h"
 #include "tools.h"
 
@@ -29,31 +31,46 @@ int svrcfg_oauth_url_base64_len = 0;
 
 unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
-  // !!! order is important !!!
+
+  char *s_mqtt = "MQTT-BROKER";
+  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 33)
+  // This ensures that realloc will only be called once
+  scfg_add_int_param(CFG_MQTT_KEEP_ALIVE_SEC, s_mqtt, "CFG_MQTT_KEEP_ALIVE_SEC",
+                     30);
+  // -----
+
+  scfg_add_int_param(CFG_MQTT_ENABLED, s_mqtt, "enabled", 0);
+  scfg_add_str_param(CFG_MQTT_HOST, s_mqtt, "host", NULL);
+  scfg_add_int_param(CFG_MQTT_PORT, s_mqtt, "port", 8883);
+  scfg_add_str_param(CFG_MQTT_USERNAME, s_mqtt, "username", NULL);
+  scfg_add_str_param(CFG_MQTT_PASSWORD, s_mqtt, "password", NULL);
+  scfg_add_str_param(CFG_MQTT_PREFIX, s_mqtt, "prefix", NULL);
+  scfg_add_int_param(CFG_MQTT_SSL, s_mqtt, "ssl", 1);
+  scfg_add_str_param(CFG_MQTT_CLIENTID, s_mqtt, "client_id", NULL);
 
   char *s_global = "GLOBAL";
-  scfg_add_str_param(s_global, "user", NULL);
-  scfg_add_str_param(s_global, "group", NULL);
+  scfg_add_str_param(CFG_UID, s_global, "user", NULL);
+  scfg_add_str_param(CFG_GID, s_global, "group", NULL);
 
   char *s_net = "NET";
-  scfg_add_int_param(s_net, "tcp_port", 2015);
-  scfg_add_bool_param(s_net, "tcp_enabled", 1);
+  scfg_add_int_param(CFG_TCP_PORT, s_net, "tcp_port", 2015);
+  scfg_add_bool_param(CFG_TCP_ENABLED, s_net, "tcp_enabled", 1);
 
-  scfg_add_int_param(s_net, "ssl_port", 2016);
-  scfg_add_bool_param(s_net, "ssl_enabled", 1);
+  scfg_add_int_param(CFG_SSL_PORT, s_net, "ssl_port", 2016);
+  scfg_add_bool_param(CFG_SSL_ENABLED, s_net, "ssl_enabled", 1);
 
-  scfg_add_str_param(s_net, "cert", NULL);
-  scfg_add_str_param(s_net, "private_key", NULL);
+  scfg_add_str_param(CFG_SSL_CERT, s_net, "cert", NULL);
+  scfg_add_str_param(CFG_SSL_KEY, s_net, "private_key", NULL);
 
   char *s_mysql = "MySQL";
-  scfg_add_str_param(s_mysql, "host", NULL);
-  scfg_add_int_param(s_mysql, "port", 0);
-  scfg_add_str_param(s_mysql, "database", "supla");
-  scfg_add_str_param(s_mysql, "user", NULL);
-  scfg_add_str_param(s_mysql, "password", NULL);
+  scfg_add_str_param(CFG_MYSQL_HOST, s_mysql, "host", NULL);
+  scfg_add_int_param(CFG_MYSQL_PORT, s_mysql, "port", 0);
+  scfg_add_str_param(CFG_MYSQL_DB, s_mysql, "database", "supla");
+  scfg_add_str_param(CFG_MYSQL_USER, s_mysql, "user", NULL);
+  scfg_add_str_param(CFG_MYSQL_PASSWORD, s_mysql, "password", NULL);
 
   char *s_ipc = "IPC";
-  scfg_add_str_param(s_ipc, "socket_path",
+  scfg_add_str_param(CFG_IPC_SOCKET_PATH, s_ipc, "socket_path",
                      "/var/run/supla/supla-server-ctrl.sock");
 
   char *s_oauth = "OAUTH";
@@ -64,35 +81,35 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char url[CFG_OAUTH_URL_MAXSIZE];
   snprintf(url, CFG_OAUTH_URL_MAXSIZE, "https://%s", hostname);
 
-  scfg_add_str_param(s_oauth, "url", url);
-  scfg_add_int_param(s_oauth, "access_token_lifetime", 300);
+  scfg_add_str_param(CFG_OAUTH_URL, s_oauth, "url", url);
+  scfg_add_int_param(CFG_OAUTH_TOKEN_LIFETIME, s_oauth, "access_token_lifetime",
+                     300);
 
   char *s_http = "HTTP";
-  scfg_add_int_param(s_http, "thread_count_limit", 50);
-  scfg_add_int_param(s_http, "request_timeout", 5000);
+  scfg_add_int_param(CFG_HTTP_THREAD_COUNT_LIMIT, s_http, "thread_count_limit",
+                     50);
+  scfg_add_int_param(CFG_HTTP_REQUESTS_PER_THREAD, s_http,
+                     "requests_per_thread", 5);
+
+  scfg_add_int_param(CFG_HTTP_REQUEST_TIMEOUT, s_http, "request_timeout", 5000);
 
   char *s_alexa = "ALEXA";
-  scfg_add_int_param(s_alexa, "response_timeout", 4000);
-  scfg_add_int_param(s_alexa, "changereport_timeout", 30000);
+  scfg_add_int_param(CFG_ALEXA_RESPONSE_TIMEOUT, s_alexa, "response_timeout",
+                     4000);
+  scfg_add_int_param(CFG_ALEXA_CHANGEREPORT_TIMEOUT, s_alexa,
+                     "changereport_timeout", 30000);
 
   char *s_google_home = "GOOGLE-HOME";
-  scfg_add_int_param(s_google_home, "syncrequest_timeout", 30000);
-  scfg_add_int_param(s_google_home, "statereport_timeout", 30000);
+  scfg_add_int_param(CFG_GOOGLE_HOME_SYNCREQUEST_TIMEOUT, s_google_home,
+                     "syncrequest_timeout", 30000);
+  scfg_add_int_param(CFG_GOOGLE_HOME_STATEREPORT_TIMEOUT, s_google_home,
+                     "statereport_timeout", 30000);
 
   char *s_limit = "LIMITS";
-  scfg_add_int_param(s_limit, "concurrent_registrations", 50);
-  scfg_add_int_param(s_limit, "authkey_auth_cache_size", 2000);
-
-  char *s_mqtt = "MQTT-BROKER";
-  scfg_add_int_param(s_mqtt, "enabled", 0);
-  scfg_add_str_param(s_mqtt, "host", NULL);
-  scfg_add_int_param(s_mqtt, "port", 8883);
-  scfg_add_str_param(s_mqtt, "username", NULL);
-  scfg_add_str_param(s_mqtt, "password", NULL);
-  scfg_add_str_param(s_mqtt, "prefix", NULL);
-  scfg_add_int_param(s_mqtt, "ssl", 1);
-  scfg_add_str_param(s_mqtt, "client_id", NULL);
-  scfg_add_int_param(s_mqtt, "keep_alive_sec", 30);
+  scfg_add_int_param(CFG_LIMIT_CONCURRENT_REGISTRATIONS, s_limit,
+                     "concurrent_registrations", 50);
+  scfg_add_int_param(CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE, s_limit,
+                     "authkey_auth_cache_size", 2000);
 
 #ifdef __TEST
   result = scfg_load(argc, argv, "/etc/supla-server/supla-test.cfg");
