@@ -27,6 +27,7 @@
 
 class supla_curl_adapter : public supla_abstract_curl_adapter {
  private:
+  std::string *write_data_ptr;
   std::string url;
   CURL *curl;
   struct curl_slist *header;

@@ -23,6 +23,7 @@
 #include "log.h"
 
 supla_curl_adapter::supla_curl_adapter(void) : supla_abstract_curl_adapter() {
+  write_data_ptr = nullptr;
   header = nullptr;
   curl = curl_easy_init();
   assert(curl != nullptr);
@@ -39,8 +40,9 @@ supla_curl_adapter::~supla_curl_adapter(void) {
 // static
 size_t supla_curl_adapter::write_callback(void *contents, size_t size,
                                           size_t nmemb, void *userp) {
-  if (size * nmemb > 0 && userp) {
-    ((std::string *)userp)->append((char *)contents, size * nmemb);
+  supla_curl_adapter *adapter = static_cast<supla_curl_adapter *>(userp);
+  if (adapter && adapter->write_data_ptr && size * nmemb > 0) {
+    adapter->write_data_ptr->append((char *)contents, size * nmemb);
   }
 
   return size * nmemb;
@@ -48,6 +50,7 @@ size_t supla_curl_adapter::write_callback(void *contents, size_t size,
 
 void supla_curl_adapter::reset(void) {
   curl_easy_reset(curl);
+  write_data_ptr = nullptr;
 
   if (header) {
     curl_slist_free_all(header);
@@ -65,7 +68,7 @@ void supla_curl_adapter::set_opt_post_fields(const char *fields) {
 }
 
 void supla_curl_adapter::set_opt_write_data(std::string *data) {
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, data);
+  write_data_ptr = data;
 }
 
 void supla_curl_adapter::set_opt_verbose(bool on) {
@@ -95,6 +98,7 @@ bool supla_curl_adapter::perform(void) {
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "supla-server");
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
                    supla_curl_adapter::write_callback);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, write_data_ptr);
 
   CURLcode result = curl_easy_perform(curl);
 
