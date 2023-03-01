@@ -98,7 +98,7 @@ bool supla_curl_adapter::perform(void) {
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "supla-server");
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
                    supla_curl_adapter::write_callback);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, write_data_ptr);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
   CURLcode result = curl_easy_perform(curl);
 
