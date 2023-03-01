@@ -319,7 +319,7 @@ void supla_state_webhook_request2::new_request(const supla_caller &caller,
   if (!user || !is_event_type_allowed(et) || !is_caller_allowed(caller) ||
       !user->stateWebhookCredentials() ||
       !user->stateWebhookCredentials()->is_access_token_exists() ||
-      !user->stateWebhookCredentials()->get_url().size() == 0) {
+      user->stateWebhookCredentials()->get_url().size() == 0) {
     return;
   }
 
