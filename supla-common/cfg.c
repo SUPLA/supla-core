@@ -125,47 +125,44 @@ void scfg_set_callback(_func_cfg_callback cb) {
 void scfg_add_param(int index, char *section_name, const char *param_name,
                     unsigned char vtype, char *cval, unsigned char bval,
                     double dval, int ival) {
-  TSuplaCfgParam *param;
+  TSuplaCfgParam *param = NULL;
   TSuplaCfgParam **scfg_param = NULL;
+  int a = 0;
 
   assert(section_name != NULL && strnlen(section_name, 128) > 0);
   assert(param_name != NULL && strnlen(param_name, 128) > 0);
 
   if (scfg == NULL) {
     scfg = malloc(sizeof(TSuplaCfg));
-
-    if (scfg == NULL) return;
-
+    assert(scfg != NULL);
     memset(scfg, 0, sizeof(TSuplaCfg));
   }
-
-  param = malloc(sizeof(TSuplaCfgParam));
-
-  if (param == NULL) return;
 
   int add = index >= scfg->count ? index - scfg->count + 1 : 0;
   if (add) {
     scfg_param = realloc(scfg->param, sizeof(void *) * (scfg->count + add));
-  }
+    assert(scfg_param != NULL);
 
-  if (scfg_param == NULL) {
-    free(param);
-
-  } else {
-    memset(param, 0, sizeof(TSuplaCfgParam));
+    for (a = scfg->count; a < scfg->count + add; a++) {
+      scfg_param[a] = NULL;
+    }
 
     scfg->count += add;
     scfg->param = scfg_param;
-
-    param->section_name = section_name;
-    param->name = strdup(param_name);
-    param->vtype = vtype;
-    param->cval = cval == NULL ? NULL : strdup(cval);
-    param->bval = bval;
-    param->dval = dval;
-    param->ival = ival;
-    scfg->param[index] = param;
   }
+
+  param = malloc(sizeof(TSuplaCfgParam));
+  assert(param != NULL);
+  memset(param, 0, sizeof(TSuplaCfgParam));
+
+  param->section_name = section_name;
+  param->name = strdup(param_name);
+  param->vtype = vtype;
+  param->cval = cval == NULL ? NULL : strdup(cval);
+  param->bval = bval;
+  param->dval = dval;
+  param->ival = ival;
+  scfg->param[index] = param;
 }
 
 void scfg_add_str_param(int index, char *section_name, const char *param_name,
@@ -300,22 +297,26 @@ void scfg_free(void) {
 }
 
 char *scfg_string(unsigned char param_id) {
-  assert(scfg != NULL && scfg->count > param_id);
+  assert(scfg != NULL && scfg->count > param_id &&
+         scfg->param[param_id] != NULL);
   return scfg->param[param_id]->cval;
 }
 
 int scfg_int(unsigned char param_id) {
-  assert(scfg != NULL && scfg->count > param_id);
+  assert(scfg != NULL && scfg->count > param_id &&
+         scfg->param[param_id] != NULL);
   return scfg->param[param_id]->ival;
 }
 
 double scfg_double(unsigned char param_id) {
-  assert(scfg != NULL && scfg->count > param_id);
+  assert(scfg != NULL && scfg->count > param_id &&
+         scfg->param[param_id] != NULL);
   return scfg->param[param_id]->dval;
 }
 
 unsigned char scfg_bool(unsigned char param_id) {
-  assert(scfg != NULL && scfg->count > param_id);
+  assert(scfg != NULL && scfg->count > param_id &&
+         scfg->param[param_id] != NULL);
   return scfg->param[param_id]->bval;
 }
 
