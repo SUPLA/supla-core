@@ -805,7 +805,7 @@ TEST_F(StateWebhookRequestTest,
 
   supla_channel_ic_measurement *icm =
       new supla_channel_ic_measurement(123, SUPLA_CHANNELFNC_IC_HEAT_METER,
-                                       &ic_val, currency, unit, 5555, 10000);
+                                       &ic_val, currency, unit, 5555, 1000);
 
   makeTest(SUPLA_CHANNELFNC_IC_HEAT_METER, true, icm, expectedPayload);
 }
@@ -837,7 +837,7 @@ TEST_F(StateWebhookRequestTest,
   char unit[] = "m3";
 
   supla_channel_ic_measurement *icm = new supla_channel_ic_measurement(
-      123, SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, currency, unit, 5555, 10000);
+      123, SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, currency, unit, 5555, 1000);
 
   makeTest(SUPLA_CHANNELFNC_IC_GAS_METER, true, icm, expectedPayload);
 }
@@ -870,7 +870,7 @@ TEST_F(StateWebhookRequestTest,
 
   supla_channel_ic_measurement *icm =
       new supla_channel_ic_measurement(123, SUPLA_CHANNELFNC_IC_WATER_METER,
-                                       &ic_val, currency, unit, 5555, 10000);
+                                       &ic_val, currency, unit, 5555, 1000);
 
   makeTest(SUPLA_CHANNELFNC_IC_WATER_METER, true, icm, expectedPayload);
 }
