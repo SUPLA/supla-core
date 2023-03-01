@@ -46,7 +46,7 @@ class supla_state_webhook_request2 : public supla_asynctask_http_request {
   static bool is_caller_allowed(const supla_caller &caller);
   static bool is_function_allowed(int func,
                                   supla_state_webhook_credentials2 *credentials,
-                                  int *delay_time_msec);
+                                  int *delay_time_usec);
   static void new_request(const supla_caller &caller, supla_user *user,
                           int device_id, int channel_id, event_type et,
                           int actions);

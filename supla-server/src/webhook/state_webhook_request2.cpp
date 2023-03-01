@@ -252,7 +252,7 @@ bool supla_state_webhook_request2::is_event_type_allowed(event_type et) {
 // static
 bool supla_state_webhook_request2::is_function_allowed(
     int func, supla_state_webhook_credentials2 *credentials,
-    int *delay_time_msec) {
+    int *delay_time_usec) {
   if (!credentials || !func) {
     return false;
   }
@@ -265,7 +265,7 @@ bool supla_state_webhook_request2::is_function_allowed(
         case SUPLA_CHANNELFNC_DIMMER:
         case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
         case SUPLA_CHANNELFNC_RGBLIGHTING:
-          *delay_time_msec = 1000000;
+          *delay_time_usec = 1000000;
           return true;
         case SUPLA_CHANNELFNC_THERMOMETER:
         case SUPLA_CHANNELFNC_HUMIDITY:
@@ -281,7 +281,7 @@ bool supla_state_webhook_request2::is_function_allowed(
         case SUPLA_CHANNELFNC_IC_GAS_METER:
         case SUPLA_CHANNELFNC_IC_WATER_METER:
         case SUPLA_CHANNELFNC_IC_HEAT_METER:
-          *delay_time_msec = 15000000;
+          *delay_time_usec = 15000000;
           return true;
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
@@ -297,10 +297,10 @@ bool supla_state_webhook_request2::is_function_allowed(
         case SUPLA_CHANNELFNC_MAILSENSOR:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-          *delay_time_msec = 250000;
+          *delay_time_usec = 250000;
           return true;
         case SUPLA_CHANNELFNC_ACTIONTRIGGER:
-          *delay_time_msec = 100000;
+          *delay_time_usec = 100000;
           return true;
         default:
           return false;
@@ -328,9 +328,9 @@ void supla_state_webhook_request2::new_request(const supla_caller &caller,
   int func =
       property_getter->get_func(user->getUserID(), device_id, channel_id);
 
-  int delay_time_msec = 0;
+  int delay_time_usec = 0;
   if (!is_function_allowed(func, user->stateWebhookCredentials(),
-                           &delay_time_msec)) {
+                           &delay_time_usec)) {
     delete property_getter;
     return;
   }
@@ -360,6 +360,6 @@ void supla_state_webhook_request2::new_request(const supla_caller &caller,
       supla_asynctask_queue::global_instance(),
       supla_asynctask_http_thread_pool::global_instance(), property_getter,
       user->stateWebhookCredentials());
-  request->set_delay_usec(delay_time_msec * 1000);
+  request->set_delay_usec(delay_time_usec);
   request->start();
 }
