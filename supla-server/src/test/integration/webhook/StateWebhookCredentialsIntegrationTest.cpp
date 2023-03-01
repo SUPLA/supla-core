@@ -40,6 +40,9 @@ TEST_F(StateWebhookCredentialsIntegrationTest, defaults) {
 }
 
 TEST_F(StateWebhookCredentialsIntegrationTest, load) {
+  supla_user::user_free();
+  supla_user::init();
+
   initTestDatabase();
 
   supla_state_webhook_credentials2 credentials(supla_user::find(2, true));
