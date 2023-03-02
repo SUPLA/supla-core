@@ -52,7 +52,8 @@ void supla_asynctask_http_request::on_timeout(
 
   supla_log(LOG_WARNING,
             "%s - HTTP Request timeout. ChannelId: %i, TimeoutUSec: %llu+%llu",
-            get_name().c_str(), timeout_usec, usec_after_timeout);
+            get_name().c_str(), get_channel_id(), timeout_usec,
+            usec_after_timeout);
 }
 
 const supla_caller &supla_asynctask_http_request::get_caller(void) {
