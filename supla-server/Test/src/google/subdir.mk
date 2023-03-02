@@ -4,6 +4,8 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/google/google_home_client2.cpp \
+../src/google/google_home_credentials2.cpp \
 ../src/google/googlehomeclient.cpp \
 ../src/google/googlehomecredentials.cpp \
 ../src/google/googlehomerequest.cpp \
@@ -11,6 +13,8 @@ CPP_SRCS += \
 ../src/google/googlehomesyncrequest.cpp 
 
 CPP_DEPS += \
+./src/google/google_home_client2.d \
+./src/google/google_home_credentials2.d \
 ./src/google/googlehomeclient.d \
 ./src/google/googlehomecredentials.d \
 ./src/google/googlehomerequest.d \
@@ -18,6 +22,8 @@ CPP_DEPS += \
 ./src/google/googlehomesyncrequest.d 
 
 OBJS += \
+./src/google/google_home_client2.o \
+./src/google/google_home_credentials2.o \
 ./src/google/googlehomeclient.o \
 ./src/google/googlehomecredentials.o \
 ./src/google/googlehomerequest.o \
@@ -37,7 +43,7 @@ src/google/%.o: ../src/google/%.cpp src/google/subdir.mk
 clean: clean-src-2f-google
 
 clean-src-2f-google:
-	-$(RM) ./src/google/googlehomeclient.d ./src/google/googlehomeclient.o ./src/google/googlehomecredentials.d ./src/google/googlehomecredentials.o ./src/google/googlehomerequest.d ./src/google/googlehomerequest.o ./src/google/googlehomestatereportrequest.d ./src/google/googlehomestatereportrequest.o ./src/google/googlehomesyncrequest.d ./src/google/googlehomesyncrequest.o
+	-$(RM) ./src/google/google_home_client2.d ./src/google/google_home_client2.o ./src/google/google_home_credentials2.d ./src/google/google_home_credentials2.o ./src/google/googlehomeclient.d ./src/google/googlehomeclient.o ./src/google/googlehomecredentials.d ./src/google/googlehomecredentials.o ./src/google/googlehomerequest.d ./src/google/googlehomerequest.o ./src/google/googlehomestatereportrequest.d ./src/google/googlehomestatereportrequest.o ./src/google/googlehomesyncrequest.d ./src/google/googlehomesyncrequest.o
 
 .PHONY: clean-src-2f-google
 
