@@ -41,7 +41,6 @@ class supla_asynctask_queue {
   std::vector<std::shared_ptr<supla_abstract_asynctask> > tasks;
   std::vector<supla_abstract_asynctask_thread_pool *> pools;
   void iterate(void);
-  void release_pools(void);
   static void loop(void *_queue, void *q_sthread);
   std::shared_ptr<supla_abstract_asynctask> find_task(
       supla_abstract_asynctask_search_condition *cnd);

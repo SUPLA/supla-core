@@ -43,7 +43,20 @@ supla_asynctask_queue::supla_asynctask_queue(void) {
 
 supla_asynctask_queue::~supla_asynctask_queue(void) {
   sthread_twf(thread, true);
-  release_pools();
+
+  do {
+    supla_abstract_asynctask_thread_pool *pool = nullptr;
+    lck_lock(lck);
+    if (pools.size()) {
+      pool = pools.front();
+    }
+    lck_unlock(lck);
+
+    if (pool) {
+      // We can remove outside of lck because pools are only deleted here.
+      delete pool;
+    }
+  } while (pool_count());
 
   lck_lock(lck);
   for (auto it = tasks.begin(); it != tasks.end(); ++it) {
@@ -87,21 +100,6 @@ void supla_asynctask_queue::loop(void *_queue, void *q_sthread) {
   while (sthread_isterminated(q_sthread) == 0) {
     queue->iterate();
   }
-}
-
-void supla_asynctask_queue::release_pools(void) {
-  do {
-    supla_abstract_asynctask_thread_pool *pool = nullptr;
-    lck_lock(lck);
-    if (pools.size()) {
-      pool = pools.front();
-    }
-    lck_unlock(lck);
-
-    if (pool) {
-      delete pool;
-    }
-  } while (pool_count());
 }
 
 bool supla_asynctask_queue::task_exists(supla_abstract_asynctask *task) {
