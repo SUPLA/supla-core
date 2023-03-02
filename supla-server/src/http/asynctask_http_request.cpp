@@ -48,7 +48,7 @@ supla_asynctask_http_request::~supla_asynctask_http_request(void) {
 
 void supla_asynctask_http_request::on_timeout(
     unsigned long long timeout_usec, unsigned long long usec_after_timeout) {
-  supla_abstract_asynctask::on_timeout(usec_after_timeout);
+  supla_abstract_asynctask::on_timeout(timeout_usec, usec_after_timeout);
 
   supla_log(LOG_WARNING,
             "%s - HTTP Request timeout. ChannelId: %i, TimeoutUSec: %llu+%llu",
