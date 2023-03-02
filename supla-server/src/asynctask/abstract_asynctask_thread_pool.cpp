@@ -60,9 +60,14 @@ supla_abstract_asynctask_thread_pool::~supla_abstract_asynctask_thread_pool(
   while (thread_count()) {
     usleep(10000);
     n++;
+    if (n == 100) {
+      terminate();
+    }
     if (n == 500) {
-      supla_log(LOG_DEBUG,
-                "Elapsed time waiting for the threads in the pool to stop.");
+      supla_log(LOG_ERR,
+                "Elapsed time waiting for the threads in the pool to stop. "
+                "Threads left: %i",
+                thread_count());
     }
   }
 
