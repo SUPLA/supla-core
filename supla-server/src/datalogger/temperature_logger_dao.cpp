@@ -156,6 +156,8 @@ void supla_temperature_logger_dao::load(
           supla_channel_value_envelope *env = nullptr;
 
           for (auto it = result->cbegin(); it != result->cend(); ++it) {
+            env = *it;
+
             if (env != nullptr && env->get_channel_id() == channel_id) {
               break;
             } else {
