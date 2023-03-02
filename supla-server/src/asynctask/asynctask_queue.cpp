@@ -91,11 +91,16 @@ void supla_asynctask_queue::loop(void *_queue, void *q_sthread) {
 
 void supla_asynctask_queue::release_pools(void) {
   do {
+    supla_abstract_asynctask_thread_pool *pool = nullptr;
     lck_lock(lck);
     if (pools.size()) {
-      delete pools.front();
+      pool = pools.front();
     }
     lck_unlock(lck);
+
+    if (pool) {
+      delete pool;
+    }
   } while (pool_count());
 }
 
