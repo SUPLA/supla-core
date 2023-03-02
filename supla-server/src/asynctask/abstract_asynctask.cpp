@@ -226,7 +226,7 @@ void supla_abstract_asynctask::execute(supla_asynctask_thread_bucket *bucket) {
     }
     unlock();
   } else if (usec_after_timeout) {
-    on_timeout(usec_after_timeout - 1);
+    on_timeout(timeout_usec, usec_after_timeout - 1);
   }
 
   if (is_finished()) {
@@ -242,7 +242,7 @@ void supla_abstract_asynctask::on_task_finished(void) {
 }
 
 void supla_abstract_asynctask::on_timeout(
-    long long unsigned usec_after_timeout) {}
+    unsigned long long timeout_usec, unsigned long long usec_after_timeout) {}
 
 void supla_abstract_asynctask::cancel(void) {
   lock();

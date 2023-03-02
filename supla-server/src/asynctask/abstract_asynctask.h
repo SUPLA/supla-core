@@ -58,7 +58,8 @@ class supla_abstract_asynctask {
                               // constructor. Calling it results in calling the
                               // on_asynctask_started method in the observer
   void on_task_finished(void);
-  virtual void on_timeout(long long unsigned usec_after_timeout);
+  virtual void on_timeout(unsigned long long timeout_usec,
+                          unsigned long long usec_after_timeout);
 
  public:
   supla_abstract_asynctask(supla_asynctask_queue *queue,
