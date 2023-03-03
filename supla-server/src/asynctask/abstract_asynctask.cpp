@@ -23,6 +23,7 @@
 #include "abstract_asynctask_thread_pool.h"
 #include "asynctask_queue.h"
 #include "lck.h"
+#include "log.h"
 
 using std::shared_ptr;
 
@@ -242,7 +243,10 @@ void supla_abstract_asynctask::on_task_finished(void) {
 }
 
 void supla_abstract_asynctask::on_timeout(
-    unsigned long long timeout_usec, unsigned long long usec_after_timeout) {}
+    unsigned long long timeout_usec, unsigned long long usec_after_timeout) {
+  supla_log(LOG_WARNING, "Asynctask execution timeout. TimeoutUSec: %llu+%llu",
+            timeout_usec, usec_after_timeout);
+}
 
 void supla_abstract_asynctask::cancel(void) {
   lock();

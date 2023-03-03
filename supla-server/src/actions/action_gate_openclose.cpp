@@ -28,6 +28,7 @@
 #include "channeljsonconfig/controlling_the_gate_config.h"
 #include "device/channel_property_getter.h"
 #include "device/value/channel_gate_value.h"
+#include "log.h"
 
 #define VERIFICATION_DELAY_US 60000000
 
@@ -149,6 +150,14 @@ bool supla_action_gate_openclose::_execute(
   set_delay_usec(verification_delay_us);
 
   return false;
+}
+
+void supla_action_gate_openclose::on_timeout(
+    unsigned long long timeout_usec, unsigned long long usec_after_timeout) {
+  supla_log(LOG_WARNING,
+            "Gate open/close - aciton execution timeout. ChannelId: %i, "
+            "TimeoutUSec: %llu+%llu",
+            get_channel_id(), timeout_usec, usec_after_timeout);
 }
 
 // static

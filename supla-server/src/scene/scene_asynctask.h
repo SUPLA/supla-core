@@ -43,6 +43,8 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
 
  protected:
   bool _execute(bool *execute_again, supla_asynctask_thread_bucket *bucket);
+  virtual void on_timeout(unsigned long long timeout_usec,
+                          unsigned long long usec_after_timeout);
 
  public:
   supla_scene_asynctask(const supla_caller &caller, int user_id, int scene_id,
