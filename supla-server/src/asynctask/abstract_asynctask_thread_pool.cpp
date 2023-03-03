@@ -150,7 +150,7 @@ void supla_abstract_asynctask_thread_pool::execution_request(
   lck_unlock(lck);
 
   if (overload_warning) {
-    supla_log(LOG_DEBUG,
+    supla_log(LOG_WARNING,
               "The thread pool for asynchronous tasks is overloaded. Pool "
               "Name: %s Limit: %li Counter: %li",
               pool_name().c_str(), thread_count_limit(), overload_count());
