@@ -18,10 +18,44 @@
 
 #include "google/google_home_credentials2.h"
 
+#include "http/httprequestqueue.h"
+#include "log.h"
+
 supla_google_home_credentials2::supla_google_home_credentials2(void)
-    : supla_http_oauth_credentials() {}
+    : supla_http_oauth_credentials() {
+  sync_40x_counter = 0;
+}
 
 supla_google_home_credentials2::supla_google_home_credentials2(supla_user *user)
-    : supla_http_oauth_credentials(user) {}
+    : supla_http_oauth_credentials(user) {
+  sync_40x_counter = 0;
+}
 
 supla_google_home_credentials2::~supla_google_home_credentials2(void) {}
+
+void supla_google_home_credentials2::on_sync_40x_error() {
+  bool disable = false;
+
+  data_lock();
+
+  sync_40x_counter++;
+  if (sync_40x_counter >= 2) {
+    sync_40x_counter = 0;
+    disable = true;
+  }
+
+  data_unlock();
+
+  if (disable) {
+    supla_log(LOG_INFO,
+              "Communication with the HomeGraph bridge paused for the user: %i",
+              get_user_id());
+
+    set("", "", 0);
+  }
+}
+
+void supla_google_home_credentials2::on_reportstate_404_error() {
+  supla_http_request_queue::getInstance()->onGoogleHomeSyncNeededEvent(
+      get_user(), supla_caller(ctGoogleHome));
+}

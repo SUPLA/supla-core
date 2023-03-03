@@ -18,10 +18,127 @@
 
 #include "google/google_home_client2.h"
 
+#include <string.h>
+
+#include "log.h"
+#include "tools.h"
+
+using std::string;
+
 supla_google_home_client2::supla_google_home_client2(
     int channel_id, supla_abstract_curl_adapter *curl_adapter,
     supla_google_home_credentials2 *credentials) {
   this->channel_id = channel_id;
   this->curl_adapter = curl_adapter;
   this->credentials = credentials;
+  this->json_states = nullptr;
+}
+
+void supla_google_home_client2::set_request_id(const string &request_id) {
+  this->request_id = request_id;
+}
+
+bool supla_google_home_client2::perform_post_request(cJSON *json_data,
+                                                     int *http_result_code) {
+  bool result = false;
+
+  if (!credentials->is_access_token_exists()) {
+    return false;
+  }
+
+  char *data = cJSON_PrintUnformatted(json_data);
+  cJSON_Delete((cJSON *)json_data);
+
+  if (data) {
+    string request_result;
+    string token = "Authorization: Bearer ";
+    token.append(credentials->get_access_token());
+
+    curl_adapter->reset();
+    curl_adapter->set_opt_url(
+        "https://2rxqysinpg.execute-api.eu-west-1.amazonaws.com/default/"
+        "googleHomeGraphBridge");
+    curl_adapter->append_header("Content-Type: application/json");
+    curl_adapter->append_header(token.c_str());
+    curl_adapter->set_opt_post_fields(data);
+
+    curl_adapter->set_opt_write_data(&request_result);
+
+    if (curl_adapter->perform()) {
+      if (http_result_code) {
+        *http_result_code = curl_adapter->get_response_code();
+      }
+      result = curl_adapter->get_response_code() == 200;
+
+      if (!result) {
+        supla_log(
+            LOG_ERR,
+            "GoogleHomeGraph client error userId: %i, code=%i, message=%s",
+            credentials->get_user_id(), curl_adapter->get_response_code(),
+            request_result.c_str());
+      }
+    }
+
+    free(data);
+  }
+
+  return result;
+}
+
+cJSON *supla_google_home_client2::get_header(void) {
+  cJSON *header = cJSON_CreateObject();
+  if (header) {
+    const char name[] = "requestId";
+
+    if (request_id.size() == 0) {
+      char request_id[37] = {};
+      st_uuid_v4(request_id);
+      this->request_id = request_id;
+    }
+
+    cJSON_AddStringToObject(header, name, request_id.c_str());
+    cJSON_AddStringToObject(header, "agentUserId",
+                            credentials->get_user_long_unique_id().c_str());
+
+    return header;
+  }
+
+  return NULL;
+}
+
+void supla_google_home_client2::state_report(void) {
+  cJSON *report = (cJSON *)get_header();
+
+  if (report) {
+    cJSON *payload = cJSON_CreateObject();
+    if (payload) {
+      cJSON *devices = cJSON_CreateObject();
+      if (devices) {
+        cJSON_AddItemToObject(devices, "states", json_states);
+        cJSON_AddItemToObject(payload, "devices", devices);
+        cJSON_AddItemToObject(report, "payload", payload);
+
+        json_states = cJSON_CreateObject();
+
+        int http_result_code = 0;
+        if (!perform_post_request(report, &http_result_code) &&
+            (http_result_code == 403 || http_result_code == 404)) {
+          credentials->on_reportstate_404_error();
+        }
+      }
+    }
+  }
+}
+
+void supla_google_home_client2::sync(void) {
+  cJSON *header = (cJSON *)get_header();
+
+  if (header) {
+    cJSON_AddStringToObject(header, "intent", "action.devices.SYNC");
+    int http_result_code = 0;
+    if (!perform_post_request(header, &http_result_code) &&
+        (http_result_code == 403 || http_result_code == 404)) {
+      credentials->on_sync_40x_error();
+    }
+  }
 }

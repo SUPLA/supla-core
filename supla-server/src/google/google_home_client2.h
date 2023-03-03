@@ -19,15 +19,23 @@
 #ifndef GOOGLE_HOME_CLIENT2_H_
 #define GOOGLE_HOME_CLIENT2_H_
 
+#include <string>
+
 #include "device/value/channel_value.h"
 #include "google/google_home_credentials2.h"
 #include "http/abstract_curl_adapter.h"
+#include "json/cJSON.h"
 
 class supla_google_home_client2 {
  private:
+  cJSON *json_states;
+  std::string request_id;
   int channel_id;
   supla_abstract_curl_adapter *curl_adapter;
   supla_google_home_credentials2 *credentials;
+
+  bool perform_post_request(cJSON *json_data, int *http_result_code);
+  cJSON *get_header(void);
 
  public:
   explicit supla_google_home_client2(
@@ -36,6 +44,9 @@ class supla_google_home_client2 {
 
   void set_channel_connected(bool connected);
   void set_channel_value(supla_channel_value *channel_value);
+  void set_request_id(const std::string &request_id);
+  void state_report(void);
+  void sync(void);
 };
 
 #endif /* GOOGLE_HOME_CLIENT2_H_ */

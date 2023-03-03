@@ -23,10 +23,15 @@
 
 class supla_google_home_credentials2 : public supla_http_oauth_credentials {
  private:
+  int sync_40x_counter;
+
  public:
   supla_google_home_credentials2(void);
   explicit supla_google_home_credentials2(supla_user *user);
   ~supla_google_home_credentials2(void);
+
+  void on_sync_40x_error();
+  void on_reportstate_404_error();
 };
 
 #endif /* STATE_WEBHOOK_CREDENTIALS2_H_ */
