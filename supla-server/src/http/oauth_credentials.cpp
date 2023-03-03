@@ -166,7 +166,11 @@ void supla_http_oauth_credentials::update(const std::string access_token,
 }
 
 void supla_http_oauth_credentials::remove(void) {
+  data_lock();
+
   access_token = "";
   refresh_token = "";
   expires_at = {};
+
+  data_unlock();
 }
