@@ -361,5 +361,8 @@ void supla_state_webhook_request2::new_request(const supla_caller &caller,
       supla_asynctask_http_thread_pool::global_instance(), property_getter,
       user->stateWebhookCredentials());
   request->set_delay_usec(delay_time_usec);
+  if (et == ET_ACTION_TRIGGERED) {
+    request->set_priority(100);
+  }
   request->start();
 }
