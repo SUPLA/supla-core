@@ -94,6 +94,13 @@ void supla_abstract_asynctask_thread_pool::execution_request(
     bool already_exists = false;
 
     lck_lock(lck);
+
+    if (requests.size() && !threads.size()) {
+      supla_log(LOG_WARNING,
+                "There are %i task(s) in the %s pool but there are no threads.",
+                pool_name().c_str(), requests.size());
+    }
+
     for (auto it = requests.begin(); it != requests.end(); ++it) {
       if (*it == task) {
         already_exists = true;
