@@ -27,11 +27,14 @@
 #include "asynctask_queue.h"
 #include "lck.h"
 #include "log.h"
+#include "metrics.h"
 #include "sthread.h"
 
 #define WARNING_MIN_FREQ_SEC 5
 #define PICK_RETRY_LIMIT 3
 #define PICK_RETRY_DELAY_USEC 10000
+#define PICK_WARNING_USEC 100000
+#define REMOVE_WARNING_USEC 100000
 
 using std::shared_ptr;
 using std::vector;
@@ -189,7 +192,16 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
   struct timeval last_exec_time = {};
 
   do {
-    shared_ptr<supla_abstract_asynctask> task = queue->pick(this);
+    shared_ptr<supla_abstract_asynctask> task;
+
+    unsigned long long time_usec = supla_metrics::measure_the_time_in_usec(
+        [&task, this]() -> void { queue->pick(this); });
+
+    if (time_usec >= PICK_WARNING_USEC) {
+      supla_log(LOG_WARNING,
+                "The time to pick the task in the %s pool was %llu usec.",
+                pool_name().c_str(), time_usec);
+    }
 
     if (task) {
       task->execute(bucket);
@@ -201,7 +213,15 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
         queue->remove_task(task);
       }
 
-      remove_task(task.get());
+      time_usec = supla_metrics::measure_the_time_in_usec(
+          [&task, this]() -> void { remove_task(task.get()); });
+
+      if (time_usec >= REMOVE_WARNING_USEC) {
+        supla_log(LOG_WARNING,
+                  "The time to remove the task in the %s pool was %llu usec.",
+                  pool_name().c_str(), time_usec);
+      }
+
       gettimeofday(&last_exec_time, nullptr);
     }
 
