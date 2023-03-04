@@ -195,7 +195,7 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
     shared_ptr<supla_abstract_asynctask> task;
 
     unsigned long long time_usec = supla_metrics::measure_the_time_in_usec(
-        [&task, this]() -> void { queue->pick(this); });
+        [&task, this]() -> void { task = queue->pick(this); });
 
     if (time_usec >= PICK_WARNING_USEC) {
       supla_log(LOG_WARNING,
