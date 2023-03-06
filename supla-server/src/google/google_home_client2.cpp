@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "device/value/channel_gate_value.h"
+#include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
 #include "log.h"
@@ -138,6 +139,17 @@ void supla_google_home_client2::add_open_percent_state(short open_percent) {
   cJSON *state = (cJSON *)get_state_skeleton();
   if (state) {
     cJSON_AddNumberToObject(state, "openPercent", open_percent);
+  }
+}
+
+void supla_google_home_client2::add_onoff_state(void) {
+  cJSON *state = (cJSON *)get_state_skeleton();
+  if (state) {
+    supla_channel_onoff_value *v =
+        dynamic_cast<supla_channel_onoff_value *>(get_channel_value());
+
+    cJSON_AddBoolToObject(state, "on",
+                          is_channel_connected() && v && v->is_on());
   }
 }
 
