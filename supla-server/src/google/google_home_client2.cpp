@@ -20,6 +20,7 @@
 
 #include <string.h>
 
+#include "device/value/channel_gate_value.h"
 #include "device/value/channel_rs_value.h"
 #include "log.h"
 #include "tools.h"
@@ -140,6 +141,16 @@ bool supla_google_home_client2::add_open_percent_state(short open_percent) {
   }
 
   return false;
+}
+
+bool supla_google_home_client2::add_gate_state(void) {
+  supla_channel_gate_value *v =
+      dynamic_cast<supla_channel_gate_value *>(get_channel_value());
+
+  return add_open_percent_state(
+      is_channel_connected() && v && v->get_opening_sensor_level() == gsl_open
+          ? 100
+          : 0);
 }
 
 bool supla_google_home_client2::add_roller_shutter_state(void) {

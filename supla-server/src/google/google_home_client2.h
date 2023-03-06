@@ -45,6 +45,7 @@ class supla_google_home_client2 : public supla_voice_assistant_client2 {
   void set_channel_connected(bool connected);
   void set_channel_value(supla_channel_value *channel_value);
   void set_request_id(const std::string &request_id);
+  bool add_gate_state(void);
   bool add_roller_shutter_state(void);
   void state_report(void);
   void sync(void);
