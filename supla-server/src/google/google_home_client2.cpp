@@ -33,7 +33,11 @@ supla_google_home_client2::supla_google_home_client2(
     int channel_id, supla_abstract_curl_adapter *curl_adapter,
     supla_google_home_credentials2 *credentials)
     : supla_voice_assistant_client2(channel_id, curl_adapter, credentials) {
-  this->json_states = nullptr;
+  this->json_states = cJSON_CreateObject();
+}
+
+supla_google_home_client2::~supla_google_home_client2(void) {
+  cJSON_Delete(json_states);
 }
 
 supla_google_home_credentials2 *supla_google_home_client2::get_gh_credentials(
