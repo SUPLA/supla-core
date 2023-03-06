@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "device/value/channel_gate_value.h"
+#include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
 #include "log.h"
 #include "tools.h"
@@ -137,6 +138,28 @@ void supla_google_home_client2::add_open_percent_state(short open_percent) {
   cJSON *state = (cJSON *)get_state_skeleton();
   if (state) {
     cJSON_AddNumberToObject(state, "openPercent", open_percent);
+  }
+}
+
+void supla_google_home_client2::add_color_state(void) {
+  supla_channel_rgbw_value *v =
+      dynamic_cast<supla_channel_rgbw_value *>(get_channel_value());
+
+  cJSON *state = (cJSON *)get_state_skeleton();
+  if (state) {
+    cJSON *json_color = cJSON_CreateObject();
+    if (json_color) {
+      cJSON_AddNumberToObject(json_color, "spectrumRGB",
+                              v ? v->get_color() : 0);
+      cJSON_AddItemToObject(state, "color", json_color);
+
+      cJSON_AddBoolToObject(
+          state, "on",
+          is_channel_connected() && v && v->get_color_brightness() > 0);
+      cJSON_AddNumberToObject(
+          state, "brightness",
+          is_channel_connected() && v ? v->get_color_brightness() : 0);
+    }
   }
 }
 
