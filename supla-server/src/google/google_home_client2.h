@@ -21,21 +21,21 @@
 
 #include <string>
 
-#include "device/value/channel_value.h"
 #include "google/google_home_credentials2.h"
-#include "http/abstract_curl_adapter.h"
+#include "http/voice_assistant_client2.h"
 #include "json/cJSON.h"
 
-class supla_google_home_client2 {
+class supla_google_home_client2 : public supla_voice_assistant_client2 {
  private:
   cJSON *json_states;
   std::string request_id;
-  int channel_id;
-  supla_abstract_curl_adapter *curl_adapter;
-  supla_google_home_credentials2 *credentials;
 
+  supla_google_home_credentials2 *get_gh_credentials(void);
   bool perform_post_request(cJSON *json_data, int *http_result_code);
   cJSON *get_header(void);
+  bool channel_exists(const char *endpoint_id);
+  cJSON *get_state_skeleton(void);
+  bool add_open_percent_state(short open_percent);
 
  public:
   explicit supla_google_home_client2(
@@ -45,6 +45,7 @@ class supla_google_home_client2 {
   void set_channel_connected(bool connected);
   void set_channel_value(supla_channel_value *channel_value);
   void set_request_id(const std::string &request_id);
+  bool add_roller_shutter_state(void);
   void state_report(void);
   void sync(void);
 };

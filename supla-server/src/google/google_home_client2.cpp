@@ -20,6 +20,7 @@
 
 #include <string.h>
 
+#include "device/value/channel_rs_value.h"
 #include "log.h"
 #include "tools.h"
 
@@ -27,11 +28,14 @@ using std::string;
 
 supla_google_home_client2::supla_google_home_client2(
     int channel_id, supla_abstract_curl_adapter *curl_adapter,
-    supla_google_home_credentials2 *credentials) {
-  this->channel_id = channel_id;
-  this->curl_adapter = curl_adapter;
-  this->credentials = credentials;
+    supla_google_home_credentials2 *credentials)
+    : supla_voice_assistant_client2(channel_id, curl_adapter, credentials) {
   this->json_states = nullptr;
+}
+
+supla_google_home_credentials2 *supla_google_home_client2::get_gh_credentials(
+    void) {
+  return dynamic_cast<supla_google_home_credentials2 *>(get_credentials());
 }
 
 void supla_google_home_client2::set_request_id(const string &request_id) {
@@ -42,7 +46,7 @@ bool supla_google_home_client2::perform_post_request(cJSON *json_data,
                                                      int *http_result_code) {
   bool result = false;
 
-  if (!credentials->is_access_token_exists()) {
+  if (!get_credentials()->is_access_token_exists()) {
     return false;
   }
 
@@ -52,30 +56,30 @@ bool supla_google_home_client2::perform_post_request(cJSON *json_data,
   if (data) {
     string request_result;
     string token = "Authorization: Bearer ";
-    token.append(credentials->get_access_token());
+    token.append(get_credentials()->get_access_token());
 
-    curl_adapter->reset();
-    curl_adapter->set_opt_url(
+    get_curl_adapter()->reset();
+    get_curl_adapter()->set_opt_url(
         "https://2rxqysinpg.execute-api.eu-west-1.amazonaws.com/default/"
         "googleHomeGraphBridge");
-    curl_adapter->append_header("Content-Type: application/json");
-    curl_adapter->append_header(token.c_str());
-    curl_adapter->set_opt_post_fields(data);
+    get_curl_adapter()->append_header("Content-Type: application/json");
+    get_curl_adapter()->append_header(token.c_str());
+    get_curl_adapter()->set_opt_post_fields(data);
 
-    curl_adapter->set_opt_write_data(&request_result);
+    get_curl_adapter()->set_opt_write_data(&request_result);
 
-    if (curl_adapter->perform()) {
+    if (get_curl_adapter()->perform()) {
       if (http_result_code) {
-        *http_result_code = curl_adapter->get_response_code();
+        *http_result_code = get_curl_adapter()->get_response_code();
       }
-      result = curl_adapter->get_response_code() == 200;
+      result = get_curl_adapter()->get_response_code() == 200;
 
       if (!result) {
         supla_log(
             LOG_ERR,
             "GoogleHomeGraph client error userId: %i, code=%i, message=%s",
-            credentials->get_user_id(), curl_adapter->get_response_code(),
-            request_result.c_str());
+            get_credentials()->get_user_id(),
+            get_curl_adapter()->get_response_code(), request_result.c_str());
       }
     }
 
@@ -97,13 +101,58 @@ cJSON *supla_google_home_client2::get_header(void) {
     }
 
     cJSON_AddStringToObject(header, name, request_id.c_str());
-    cJSON_AddStringToObject(header, "agentUserId",
-                            credentials->get_user_long_unique_id().c_str());
+    cJSON_AddStringToObject(
+        header, "agentUserId",
+        get_credentials()->get_user_long_unique_id().c_str());
 
     return header;
   }
 
   return NULL;
+}
+
+bool supla_google_home_client2::channel_exists(const char *endpoint_id) {
+  return endpoint_id != NULL &&
+         cJSON_GetObjectItem(json_states, endpoint_id) != NULL;
+}
+
+cJSON *supla_google_home_client2::get_state_skeleton(void) {
+  cJSON *state = NULL;
+  string endpoint_id = get_endpoint_id();
+  if (endpoint_id.size()) {
+    if (!channel_exists(endpoint_id.c_str())) {
+      state = cJSON_CreateObject();
+      if (state) {
+        cJSON_AddBoolToObject(state, "online", is_channel_connected());
+        cJSON_AddItemToObject(json_states, endpoint_id.c_str(), state);
+      }
+    }
+  }
+
+  return state;
+}
+
+bool supla_google_home_client2::add_open_percent_state(short open_percent) {
+  cJSON *state = (cJSON *)get_state_skeleton();
+  if (state) {
+    cJSON_AddNumberToObject(state, "openPercent", open_percent);
+    return true;
+  }
+
+  return false;
+}
+
+bool supla_google_home_client2::add_roller_shutter_state(void) {
+  supla_channel_rs_value *v =
+      dynamic_cast<supla_channel_rs_value *>(get_channel_value());
+
+  short shut_percentage = is_channel_connected() && v &&
+                                  v->get_rs_value()->position >= 0 &&
+                                  v->get_rs_value()->position <= 100
+                              ? v->get_rs_value()->position
+                              : 0;
+
+  return add_open_percent_state(100 - shut_percentage);
 }
 
 void supla_google_home_client2::state_report(void) {
@@ -123,7 +172,7 @@ void supla_google_home_client2::state_report(void) {
         int http_result_code = 0;
         if (!perform_post_request(report, &http_result_code) &&
             (http_result_code == 403 || http_result_code == 404)) {
-          credentials->on_reportstate_404_error();
+          get_gh_credentials()->on_reportstate_404_error();
         }
       }
     }
@@ -138,7 +187,7 @@ void supla_google_home_client2::sync(void) {
     int http_result_code = 0;
     if (!perform_post_request(header, &http_result_code) &&
         (http_result_code == 403 || http_result_code == 404)) {
-      credentials->on_sync_40x_error();
+      get_gh_credentials()->on_sync_40x_error();
     }
   }
 }
