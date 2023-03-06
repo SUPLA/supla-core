@@ -139,13 +139,6 @@ cJSON *supla_google_home_client2::get_state_skeleton(void) {
   return state;
 }
 
-void supla_google_home_client2::add_open_percent_state(short open_percent) {
-  cJSON *state = (cJSON *)get_state_skeleton();
-  if (state) {
-    cJSON_AddNumberToObject(state, "openPercent", open_percent);
-  }
-}
-
 void supla_google_home_client2::add_onoff_state(void) {
   cJSON *state = (cJSON *)get_state_skeleton();
   if (state) {
@@ -190,6 +183,13 @@ void supla_google_home_client2::add_color_state(void) {
           state, "brightness",
           is_channel_connected() && v ? v->get_color_brightness() : 0);
     }
+  }
+}
+
+void supla_google_home_client2::add_open_percent_state(short open_percent) {
+  cJSON *state = (cJSON *)get_state_skeleton();
+  if (state) {
+    cJSON_AddNumberToObject(state, "openPercent", open_percent);
   }
 }
 
