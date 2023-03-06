@@ -133,27 +133,24 @@ cJSON *supla_google_home_client2::get_state_skeleton(void) {
   return state;
 }
 
-bool supla_google_home_client2::add_open_percent_state(short open_percent) {
+void supla_google_home_client2::add_open_percent_state(short open_percent) {
   cJSON *state = (cJSON *)get_state_skeleton();
   if (state) {
     cJSON_AddNumberToObject(state, "openPercent", open_percent);
-    return true;
   }
-
-  return false;
 }
 
-bool supla_google_home_client2::add_gate_state(void) {
+void supla_google_home_client2::add_gate_state(void) {
   supla_channel_gate_value *v =
       dynamic_cast<supla_channel_gate_value *>(get_channel_value());
 
-  return add_open_percent_state(
-      is_channel_connected() && v && v->get_opening_sensor_level() == gsl_open
-          ? 100
-          : 0);
+  add_open_percent_state(is_channel_connected() && v &&
+                                 v->get_opening_sensor_level() == gsl_open
+                             ? 100
+                             : 0);
 }
 
-bool supla_google_home_client2::add_roller_shutter_state(void) {
+void supla_google_home_client2::add_roller_shutter_state(void) {
   supla_channel_rs_value *v =
       dynamic_cast<supla_channel_rs_value *>(get_channel_value());
 
@@ -163,7 +160,7 @@ bool supla_google_home_client2::add_roller_shutter_state(void) {
                               ? v->get_rs_value()->position
                               : 0;
 
-  return add_open_percent_state(100 - shut_percentage);
+  add_open_percent_state(100 - shut_percentage);
 }
 
 void supla_google_home_client2::state_report(void) {
