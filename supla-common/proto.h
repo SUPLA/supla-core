@@ -1608,13 +1608,22 @@ typedef struct {
 #define EM_VAR_CURRENT_OVER_65A 0x1000
 #define EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED 0x2000
 #define EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED 0x4000
-#define EM_VAR_ALL 0xFFFF
+#define EM_VAR_ALL 0xFFFFFF
+
+#define EM_VAR_VOLTAGE_PHASE_ANGLE_12 0x10000  // ver. >= 20
+#define EM_VAR_VOLTAGE_PHASE_ANGLE_13 0x20000  // ver. >= 20
+#define EM_VAR_VOLTAGE_PHASE_SEQUENCE 0x40000  // ver. >= 20
+#define EM_VAR_CURRENT_PHASE_SEQUENCE 0x80000  // ver. >= 20
 
 #define EM_VAR_POWER_ACTIVE_KW 0x100000
 #define EM_VAR_POWER_REACTIVE_KVAR 0x200000
 #define EM_VAR_POWER_APPARENT_KVA 0x400000
 
-#ifdef __AVR__
+#define EM_PHASE_SEQUENCE_VOLTAGE 0x01
+#define EM_PHASE_SEQUENCE_CURRENT 0x02
+
+#if defined(__AVR__) || defined(ESP8266) || defined(ESP32) ||                  \
+    defined(ESP_PLATFORM) || defined(ARDUINO) || defined(SUPLA_DEVICE)
 #define EM_MEASUREMENT_COUNT 1
 #else
 #define EM_MEASUREMENT_COUNT 5
@@ -1670,6 +1679,43 @@ typedef struct {
   TElectricityMeter_Measurement m[EM_MEASUREMENT_COUNT];  // Last variable in
                                                           // struct!
 } TElectricityMeter_ExtendedValue_V2;                     // v. >= 12
+
+// [IODevice->Server->Client]
+typedef struct {
+  unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kWh
+  unsigned _supla_int64_t total_reverse_active_energy[3];    // * 0.00001 kWh
+  unsigned _supla_int64_t total_forward_reactive_energy[3];  // * 0.00001 kvarh
+  unsigned _supla_int64_t total_reverse_reactive_energy[3];  // * 0.00001 kvarh
+  unsigned _supla_int64_t
+      total_forward_active_energy_balanced;  // * 0.00001 kWh
+                                             // Vector phase-to-phase balancing
+  unsigned _supla_int64_t
+      total_reverse_active_energy_balanced;  // * 0.00001 kWh
+                                             // Vector phase-to-phase balancing
+
+  // Voltage phase angle between phase 1 and 2
+  unsigned _supla_int16_t voltage_phase_angle_12;   // * 0.1 degree, 0..360
+  // Voltage phase angle between phase 1 and 3
+  unsigned _supla_int16_t voltage_phase_angle_13;   // * 0.1 degree, 0..360
+  unsigned char phase_sequence;  // bit 0x1 - voltage, bit 0x2 current
+                                 // EM_PHASE_SEQUENCE_*
+                                 // bit value: 0 - 123 (clockwise)
+                                 // bit value: 1 - 132 (counter-clockwise)
+
+  // The price per unit, total cost and currency is overwritten by the server
+  // total_cost == SUM(total_forward_active_energy[n] * price_per_unit
+  _supla_int_t total_cost;           // * 0.01
+  _supla_int_t total_cost_balanced;  // * 0.01
+  _supla_int_t price_per_unit;       // * 0.0001
+  // Currency Code A https://www.nationsonline.org/oneworld/currencies.htm
+  char currency[3];
+
+  _supla_int_t measured_values;
+  _supla_int_t period;  // Approximate period between measurements in seconds
+  _supla_int_t m_count;
+  TElectricityMeter_Measurement m[EM_MEASUREMENT_COUNT];  // Last variable in
+                                                          // struct!
+} TElectricityMeter_ExtendedValue_V3;                     // v. >= 20
 
 #define EM_VALUE_FLAG_PHASE1_ON 0x01
 #define EM_VALUE_FLAG_PHASE2_ON 0x02
