@@ -141,14 +141,28 @@ void supla_google_home_client2::add_open_percent_state(short open_percent) {
   }
 }
 
-void supla_google_home_client2::add_color_state(void) {
-  supla_channel_rgbw_value *v =
-      dynamic_cast<supla_channel_rgbw_value *>(get_channel_value());
+void supla_google_home_client2::add_brightness_state(void) {
+  cJSON *state = (cJSON *)get_state_skeleton();
+  if (state) {
+    supla_channel_rgbw_value *v =
+        dynamic_cast<supla_channel_rgbw_value *>(get_channel_value());
 
+    cJSON_AddBoolToObject(
+        state, "on", is_channel_connected() && v && v->get_brightness() > 0);
+    cJSON_AddNumberToObject(
+        state, "brightness",
+        is_channel_connected() && v ? v->get_brightness() : 0);
+  }
+}
+
+void supla_google_home_client2::add_color_state(void) {
   cJSON *state = (cJSON *)get_state_skeleton();
   if (state) {
     cJSON *json_color = cJSON_CreateObject();
     if (json_color) {
+      supla_channel_rgbw_value *v =
+          dynamic_cast<supla_channel_rgbw_value *>(get_channel_value());
+
       cJSON_AddNumberToObject(json_color, "spectrumRGB",
                               v ? v->get_color() : 0);
       cJSON_AddItemToObject(state, "color", json_color);
