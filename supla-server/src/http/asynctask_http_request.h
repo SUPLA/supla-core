@@ -37,6 +37,7 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
   int channel_id;
   event_type et;
   supla_abstract_channel_property_getter *property_getter;
+  long long delay_warning_time_usec;
 
  protected:
   const supla_caller &get_caller(void);

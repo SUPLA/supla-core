@@ -37,6 +37,7 @@ supla_asynctask_http_request::supla_asynctask_http_request(
   this->channel_id = channel_id;
   this->et = et;
   this->property_getter = property_getter;
+  this->delay_warning_time_usec = scfg_int(CFG_HTTP_DELAY_WARNING_TIME) * 1000;
   set_timeout(scfg_int(CFG_HTTP_REQUEST_TIMEOUT) * 1000);
 }
 
@@ -97,6 +98,18 @@ bool supla_asynctask_http_request::_execute(
   if (bucket) {
     ht_bucket = dynamic_cast<supla_asynctask_http_thread_bucket *>(bucket);
     if (ht_bucket && ht_bucket->get_adapter()) {
+      if (delay_warning_time_usec) {
+        long long time_left = time_left_usec(nullptr);
+        if (time_left < 0) {
+          time_left *= -1;
+          if (time_left >= delay_warning_time_usec) {
+            supla_log(LOG_WARNING,
+                      "%s - The http request is delayed. ChannelId: %i, "
+                      "DelayUSec: %lld",
+                      get_name().c_str(), get_channel_id(), time_left);
+          }
+        }
+      }
       return make_request(ht_bucket->get_adapter());
     }
   }
