@@ -21,12 +21,12 @@
 #include "webhook/state_webhook_request2.h"
 
 supla_state_webhook_search_condition::supla_state_webhook_search_condition(
-    int user_id, int device_id, int channel_id, event_type et,
+    int user_id, int device_id, int channel_id, bool actions,
     long long int min_time_to_exec_usec) {
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
-  this->et = et;
+  this->actions = actions;
   this->min_time_to_exec_usec = min_time_to_exec_usec;
 }
 
@@ -37,6 +37,6 @@ bool supla_state_webhook_search_condition::condition_met(
   return request && request->get_user_id() == user_id &&
          request->get_device_id() == device_id &&
          request->get_channel_id() == channel_id &&
-         request->get_event_type() == et &&
+         request->is_any_action_set() == actions &&
          request->time_left_usec(nullptr) >= min_time_to_exec_usec;
 }

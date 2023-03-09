@@ -116,8 +116,8 @@ TEST_F(StateWebhookTokenRefreshTest, expired) {
   EXPECT_CALL(*curlAdapter, perform).Times(2).WillRepeatedly(Return(true));
 
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
-      supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
-      SUPLA_ACTION_CAP_HOLD, queue, pool, propertyGetter, &credentials);
+      supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
+      propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
@@ -138,8 +138,8 @@ TEST_F(StateWebhookTokenRefreshTest, refreshTokenNotExists) {
   EXPECT_CALL(credentials, update).Times(0);
 
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
-      supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
-      SUPLA_ACTION_CAP_HOLD, queue, pool, propertyGetter, &credentials);
+      supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
+      propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::FAILURE, 10000);
 }
@@ -204,8 +204,8 @@ TEST_F(StateWebhookTokenRefreshTest, theTokenHasChangedInTheMeantime) {
   EXPECT_CALL(*curlAdapter, perform).Times(1).WillOnce(Return(true));
 
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
-      supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
-      SUPLA_ACTION_CAP_HOLD, queue, pool, propertyGetter, &credentials);
+      supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
+      propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
@@ -222,8 +222,8 @@ TEST_F(StateWebhookTokenRefreshTest, http403) {
   EXPECT_CALL(credentials, remove).Times(1);
 
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
-      supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
-      SUPLA_ACTION_CAP_HOLD, queue, pool, propertyGetter, &credentials);
+      supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
+      propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::FAILURE, 10000);
 }

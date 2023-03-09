@@ -35,7 +35,6 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
   int user_id;
   int device_id;
   int channel_id;
-  event_type et;
   supla_abstract_channel_property_getter *property_getter;
   long long delay_warning_time_usec;
 
@@ -54,8 +53,7 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
  public:
   supla_asynctask_http_request(
       const supla_caller &caller, int user_id, int device_id, int channel_id,
-      event_type et, supla_asynctask_queue *queue,
-      supla_abstract_asynctask_thread_pool *pool,
+      supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_channel_property_getter *property_getter);
 
   virtual ~supla_asynctask_http_request(void);
@@ -63,7 +61,6 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
   int get_user_id(void);
   int get_device_id(void);
   int get_channel_id(void);
-  event_type get_event_type(void);
 };
 
 #endif /* HTTP_ASYNCTASK_HTTP_REQUEST_H_ */

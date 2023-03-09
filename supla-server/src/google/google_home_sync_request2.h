@@ -33,14 +33,11 @@ class supla_google_home_sync_request2 : public supla_asynctask_http_request {
   virtual std::string get_name(void);
 
  public:
-  supla_google_home_sync_request2(const supla_caller &caller, int user_id,
-                                  event_type et, supla_asynctask_queue *queue,
+  supla_google_home_sync_request2(int user_id, supla_asynctask_queue *queue,
                                   supla_abstract_asynctask_thread_pool *pool,
                                   supla_google_home_credentials2 *credentials);
 
-  static bool is_event_type_allowed(event_type et);
-  static void new_request(const supla_caller &caller, supla_user *user,
-                          event_type et);
+  static void new_request(supla_user *user);
 };
 
 #endif /* GOOGLE_HOME_SYNC_REQUEST2_H_ */

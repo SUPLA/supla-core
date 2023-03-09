@@ -447,7 +447,7 @@ void supla_http_request_queue::onChannelValueChangeEvent(
                                correlationToken, googleRequestId));
 
   supla_state_webhook_request2::new_request(caller, user, deviceId, channelId,
-                                            ET_CHANNEL_VALUE_CHANGED, 0);
+                                            0);
 }
 
 void supla_http_request_queue::onChannelsAddedEvent(
@@ -457,7 +457,7 @@ void supla_http_request_queue::onChannelsAddedEvent(
                            new supla_http_request_voice_assistant_extra_params(
                                correlationToken, googleRequestId));
 
-  supla_google_home_sync_request2::new_request(caller, user, ET_CHANNELS_ADDED);
+  supla_google_home_sync_request2::new_request(user);
 }
 
 void supla_http_request_queue::onDeviceDeletedEvent(
@@ -467,14 +467,14 @@ void supla_http_request_queue::onDeviceDeletedEvent(
                            new supla_http_request_voice_assistant_extra_params(
                                correlationToken, googleRequestId));
 
-  supla_google_home_sync_request2::new_request(caller, user, ET_DEVICE_DELETED);
+  supla_google_home_sync_request2::new_request(user);
 }
 
 void supla_http_request_queue::onUserReconnectEvent(
     supla_user *user, const supla_caller &caller) {
   createInTheCallerContext(user, 0, 0, ET_USER_RECONNECT, caller, NULL);
 
-  supla_google_home_sync_request2::new_request(caller, user, ET_USER_RECONNECT);
+  supla_google_home_sync_request2::new_request(user);
 }
 
 void supla_http_request_queue::onGoogleHomeSyncNeededEvent(
@@ -482,16 +482,17 @@ void supla_http_request_queue::onGoogleHomeSyncNeededEvent(
   createInTheCallerContext(user, 0, 0, ET_GOOGLE_HOME_SYNC_NEEDED, caller,
                            NULL);
 
-  supla_google_home_sync_request2::new_request(caller, user,
-                                               ET_GOOGLE_HOME_SYNC_NEEDED);
+  supla_google_home_sync_request2::new_request(user);
 }
 
 void supla_http_request_queue::onActionsTriggered(const supla_caller &caller,
                                                   supla_user *user,
                                                   int deviceId, int channelId,
                                                   unsigned int actions) {
-  supla_state_webhook_request2::new_request(caller, user, deviceId, channelId,
-                                            ET_ACTION_TRIGGERED, actions);
+  if (actions) {
+    supla_state_webhook_request2::new_request(caller, user, deviceId, channelId,
+                                              actions);
+  }
 }
 
 void http_request_queue_loop(void *ssd, void *q_sthread) {

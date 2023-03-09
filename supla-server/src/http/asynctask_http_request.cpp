@@ -27,15 +27,13 @@ using std::shared_ptr;
 
 supla_asynctask_http_request::supla_asynctask_http_request(
     const supla_caller &caller, int user_id, int device_id, int channel_id,
-    event_type et, supla_asynctask_queue *queue,
-    supla_abstract_asynctask_thread_pool *pool,
+    supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_channel_property_getter *property_getter)
     : supla_abstract_asynctask(queue, pool) {
   this->caller = caller;
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
-  this->et = et;
   this->property_getter = property_getter;
   this->delay_warning_time_usec = scfg_int(CFG_HTTP_DELAY_WARNING_TIME) * 1000;
   set_timeout(scfg_int(CFG_HTTP_REQUEST_TIMEOUT) * 1000);
@@ -66,8 +64,6 @@ int supla_asynctask_http_request::get_user_id(void) { return user_id; }
 int supla_asynctask_http_request::get_device_id(void) { return device_id; }
 
 int supla_asynctask_http_request::get_channel_id(void) { return channel_id; }
-
-event_type supla_asynctask_http_request::get_event_type(void) { return et; }
 
 supla_abstract_channel_property_getter *
 supla_asynctask_http_request::get_property_getter(void) {

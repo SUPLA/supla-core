@@ -32,17 +32,19 @@ using std::vector;
 
 supla_state_webhook_request2::supla_state_webhook_request2(
     const supla_caller &caller, int user_id, int device_id, int channel_id,
-    event_type et, int actions, supla_asynctask_queue *queue,
+    int actions, supla_asynctask_queue *queue,
     supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_channel_property_getter *property_getter,
     supla_state_webhook_credentials2 *credentials)
-    : supla_asynctask_http_request(caller, user_id, device_id, channel_id, et,
+    : supla_asynctask_http_request(caller, user_id, device_id, channel_id,
                                    queue, pool, property_getter) {
   this->actions = actions;
   this->credentials = credentials;
 }
 
 supla_state_webhook_request2::~supla_state_webhook_request2(void) {}
+
+bool supla_state_webhook_request2::is_any_action_set(void) { return actions; }
 
 string supla_state_webhook_request2::get_name(void) { return "Webhook"; }
 
@@ -55,7 +57,7 @@ bool supla_state_webhook_request2::make_request(
   supla_state_webhook_client2 client(get_channel_id(), curl_adapter,
                                      credentials);
 
-  if (get_event_type() == ET_ACTION_TRIGGERED) {
+  if (actions) {
     return client.triggered_actions_report(actions);
   }
 
@@ -245,11 +247,6 @@ bool supla_state_webhook_request2::is_caller_allowed(
 }
 
 // static
-bool supla_state_webhook_request2::is_event_type_allowed(event_type et) {
-  return et == ET_CHANNEL_VALUE_CHANGED || et == ET_ACTION_TRIGGERED;
-}
-
-// static
 bool supla_state_webhook_request2::is_function_allowed(
     int func, supla_state_webhook_credentials2 *credentials,
     int *delay_time_usec) {
@@ -314,10 +311,8 @@ bool supla_state_webhook_request2::is_function_allowed(
 // static
 void supla_state_webhook_request2::new_request(const supla_caller &caller,
                                                supla_user *user, int device_id,
-                                               int channel_id, event_type et,
-                                               int actions) {
-  if (!user || !is_event_type_allowed(et) || !is_caller_allowed(caller) ||
-      !user->stateWebhookCredentials() ||
+                                               int channel_id, int actions) {
+  if (!user || !is_caller_allowed(caller) || !user->stateWebhookCredentials() ||
       !user->stateWebhookCredentials()->is_access_token_exists() ||
       user->stateWebhookCredentials()->get_url().size() == 0) {
     return;
@@ -337,14 +332,14 @@ void supla_state_webhook_request2::new_request(const supla_caller &caller,
 
   bool exists = false;
   supla_state_webhook_search_condition cnd(user->getUserID(), device_id,
-                                           channel_id, et, 100000);
+                                           channel_id, actions, 100000);
   supla_asynctask_queue::global_instance()->access_task(
-      &cnd, [&exists, actions, et](supla_abstract_asynctask *task) -> void {
+      &cnd, [&exists, actions](supla_abstract_asynctask *task) -> void {
         exists = true;
-        if (et == ET_ACTION_TRIGGERED) {
+        if (actions) {
           supla_state_webhook_request2 *request =
               dynamic_cast<supla_state_webhook_request2 *>(task);
-          if (request && request->get_event_type() == ET_ACTION_TRIGGERED) {
+          if (request) {
             request->actions |= actions;
           }
         }
@@ -356,12 +351,12 @@ void supla_state_webhook_request2::new_request(const supla_caller &caller,
   }
 
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
-      caller, user->getUserID(), device_id, channel_id, et, actions,
+      caller, user->getUserID(), device_id, channel_id, actions,
       supla_asynctask_queue::global_instance(),
       supla_asynctask_http_thread_pool::global_instance(), property_getter,
       user->stateWebhookCredentials());
   request->set_delay_usec(delay_time_usec);
-  if (et == ET_ACTION_TRIGGERED) {
+  if (actions) {
     request->set_priority(100);
   }
   request->start();

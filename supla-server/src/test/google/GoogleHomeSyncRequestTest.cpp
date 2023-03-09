@@ -39,9 +39,7 @@ TEST_F(GoogleHomeSyncRequestTest, noAccessToken) {
       .WillOnce(Return(false));
 
   supla_google_home_sync_request2 *request =
-      new supla_google_home_sync_request2(supla_caller(ctUnknown), 0,
-                                          ET_GOOGLE_HOME_SYNC_NEEDED, queue,
-                                          pool, &credentials);
+      new supla_google_home_sync_request2(0, queue, pool, &credentials);
 
   request->set_delay_usec(1);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
@@ -90,9 +88,7 @@ TEST_F(GoogleHomeSyncRequestTest, syncSuccessful) {
   EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(200));
 
   supla_google_home_sync_request2 *request =
-      new supla_google_home_sync_request2(supla_caller(ctUnknown), 0,
-                                          ET_GOOGLE_HOME_SYNC_NEEDED, queue,
-                                          pool, &credentials);
+      new supla_google_home_sync_request2(0, queue, pool, &credentials);
 
   request->set_delay_usec(1);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
@@ -109,9 +105,7 @@ TEST_F(GoogleHomeSyncRequestTest, http404) {
   EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(404));
 
   supla_google_home_sync_request2 *request =
-      new supla_google_home_sync_request2(supla_caller(ctUnknown), 0,
-                                          ET_GOOGLE_HOME_SYNC_NEEDED, queue,
-                                          pool, &credentials);
+      new supla_google_home_sync_request2(0, queue, pool, &credentials);
 
   request->set_delay_usec(1);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
@@ -128,9 +122,7 @@ TEST_F(GoogleHomeSyncRequestTest, http403) {
   EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(403));
 
   supla_google_home_sync_request2 *request =
-      new supla_google_home_sync_request2(supla_caller(ctUnknown), 0,
-                                          ET_GOOGLE_HOME_SYNC_NEEDED, queue,
-                                          pool, &credentials);
+      new supla_google_home_sync_request2(0, queue, pool, &credentials);
 
   request->set_delay_usec(1);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();

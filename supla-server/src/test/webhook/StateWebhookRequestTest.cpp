@@ -93,8 +93,8 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
       .Times(1);
 
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
-      supla_caller(ctDevice), 1, 2, 123, ET_CHANNEL_VALUE_CHANGED, 0, queue,
-      pool, propertyGetter, &credentials);
+      supla_caller(ctDevice), 1, 2, 123, 0, queue, pool, propertyGetter,
+      &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
@@ -121,8 +121,8 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
       .Times(1);
 
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
-      supla_caller(ctDevice), 1, 2, 123, ET_CHANNEL_VALUE_CHANGED, 0, queue,
-      pool, propertyGetter, &credentials);
+      supla_caller(ctDevice), 1, 2, 123, 0, queue, pool, propertyGetter,
+      &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
@@ -150,8 +150,8 @@ void StateWebhookRequestTest::makeTest(
       .Times(1);
 
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
-      supla_caller(ctDevice), 1, 2, 123, ET_CHANNEL_VALUE_CHANGED, 0, queue,
-      pool, propertyGetter, &credentials);
+      supla_caller(ctDevice), 1, 2, 123, 0, queue, pool, propertyGetter,
+      &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
@@ -803,9 +803,8 @@ TEST_F(StateWebhookRequestTest,
   char currency[] = "PLN";
   char unit[] = "GJ";
 
-  supla_channel_ic_measurement *icm =
-      new supla_channel_ic_measurement(123, SUPLA_CHANNELFNC_IC_HEAT_METER,
-                                       &ic_val, currency, unit, 5555, 1000);
+  supla_channel_ic_measurement *icm = new supla_channel_ic_measurement(
+      123, SUPLA_CHANNELFNC_IC_HEAT_METER, &ic_val, currency, unit, 5555, 1000);
 
   makeTest(SUPLA_CHANNELFNC_IC_HEAT_METER, true, icm, expectedPayload);
 }
@@ -1162,7 +1161,7 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_ToggleX1_PressX3) {
       .Times(1);
 
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
-      supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
+      supla_caller(ctDevice), 1, 2, 567,
       SUPLA_ACTION_CAP_TOGGLE_x1 | SUPLA_ACTION_CAP_SHORT_PRESS_x3, queue, pool,
       propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
@@ -1179,8 +1178,8 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_Hold) {
       .Times(1);
 
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
-      supla_caller(ctDevice), 1, 2, 567, ET_ACTION_TRIGGERED,
-      SUPLA_ACTION_CAP_HOLD, queue, pool, propertyGetter, &credentials);
+      supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
+      propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
@@ -1197,8 +1196,8 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_All) {
       .Times(1);
 
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
-      supla_caller(ctDevice), 1, 2, 7777, ET_ACTION_TRIGGERED, 0xFFFFFFFF,
-      queue, pool, propertyGetter, &credentials);
+      supla_caller(ctDevice), 1, 2, 7777, 0xFFFFFFFF, queue, pool,
+      propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }

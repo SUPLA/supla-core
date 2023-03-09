@@ -27,10 +27,10 @@
 using std::string;
 
 supla_google_home_sync_request2::supla_google_home_sync_request2(
-    const supla_caller &caller, int user_id, event_type et,
-    supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
+    int user_id, supla_asynctask_queue *queue,
+    supla_abstract_asynctask_thread_pool *pool,
     supla_google_home_credentials2 *credentials)
-    : supla_asynctask_http_request(caller, user_id, 0, 0, et, queue, pool,
+    : supla_asynctask_http_request(supla_caller(), user_id, 0, 0, queue, pool,
                                    nullptr) {
   this->credentials = credentials;
 
@@ -53,24 +53,8 @@ bool supla_google_home_sync_request2::make_request(
 }
 
 // static
-bool supla_google_home_sync_request2::is_event_type_allowed(event_type et) {
-  switch (et) {
-    case ET_CHANNELS_ADDED:
-    case ET_DEVICE_DELETED:
-    case ET_USER_RECONNECT:
-    case ET_GOOGLE_HOME_SYNC_NEEDED:
-      return true;
-    default:
-      return false;
-  }
-  return false;
-}
-
-// static
-void supla_google_home_sync_request2::new_request(const supla_caller &caller,
-                                                  supla_user *user,
-                                                  event_type et) {
-  if (!user || !is_event_type_allowed(et) || !user->googleHomeCredentials() ||
+void supla_google_home_sync_request2::new_request(supla_user *user) {
+  if (!user || !user->googleHomeCredentials() ||
       !user->googleHomeCredentials()->isAccessTokenExists()) {
     return;
   }
@@ -84,8 +68,7 @@ void supla_google_home_sync_request2::new_request(const supla_caller &caller,
   if (!exists) {
     supla_google_home_sync_request2 *request =
         new supla_google_home_sync_request2(
-            caller, user->getUserID(), et,
-            supla_asynctask_queue::global_instance(),
+            user->getUserID(), supla_asynctask_queue::global_instance(),
             supla_asynctask_http_thread_pool::global_instance(),
             /*user->googleHomeCredentials()*/ nullptr);
 

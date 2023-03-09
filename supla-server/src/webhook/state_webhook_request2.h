@@ -35,21 +35,21 @@ class supla_state_webhook_request2 : public supla_asynctask_http_request {
  public:
   supla_state_webhook_request2(
       const supla_caller &caller, int user_id, int device_id, int channel_id,
-      event_type et, int actions, supla_asynctask_queue *queue,
+      int actions, supla_asynctask_queue *queue,
       supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_channel_property_getter *property_getter,
       supla_state_webhook_credentials2 *credentials);
 
   virtual ~supla_state_webhook_request2(void);
 
-  static bool is_event_type_allowed(event_type et);
+  bool is_any_action_set(void);
+
   static bool is_caller_allowed(const supla_caller &caller);
   static bool is_function_allowed(int func,
                                   supla_state_webhook_credentials2 *credentials,
                                   int *delay_time_usec);
   static void new_request(const supla_caller &caller, supla_user *user,
-                          int device_id, int channel_id, event_type et,
-                          int actions);
+                          int device_id, int channel_id, int actions);
 };
 
 #endif /* WEBHOOK_STATE_WEBHOOK_REQUEST2_H_ */
