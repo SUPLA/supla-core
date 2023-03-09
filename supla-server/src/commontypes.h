@@ -21,6 +21,8 @@
 
 #include "proto.h"
 
+/* TODO(przemyslawzygmunt): Eliminate event_type.
+ * https://github.com/SUPLA/supla-core/issues/338 */
 enum event_type {
   ET_CHANNEL_VALUE_CHANGED,
   ET_DEVICE_DELETED,
