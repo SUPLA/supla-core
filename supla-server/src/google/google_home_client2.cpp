@@ -240,15 +240,18 @@ void supla_google_home_client2::state_report(void) {
   }
 }
 
-void supla_google_home_client2::sync(void) {
+bool supla_google_home_client2::sync(void) {
   cJSON *header = (cJSON *)get_header();
 
   if (header) {
     cJSON_AddStringToObject(header, "intent", "action.devices.SYNC");
     int http_result_code = 0;
-    if (!perform_post_request(header, &http_result_code) &&
-        (http_result_code == 403 || http_result_code == 404)) {
+    if (perform_post_request(header, &http_result_code)) {
+      return http_result_code >= 200 && http_result_code <= 206;
+    } else if (http_result_code == 403 || http_result_code == 404) {
       get_gh_credentials()->on_sync_40x_error();
     }
   }
+
+  return false;
 }

@@ -24,6 +24,7 @@
 #include <list>     // NOLINT
 
 #include "db/database.h"
+#include "google/google_home_sync_request2.h"
 #include "http/httprequest.h"
 #include "http/httprequestvoiceassistantextraparams.h"
 #include "lck.h"
@@ -455,6 +456,8 @@ void supla_http_request_queue::onChannelsAddedEvent(
   createInTheCallerContext(user, deviceId, 0, ET_CHANNELS_ADDED, caller,
                            new supla_http_request_voice_assistant_extra_params(
                                correlationToken, googleRequestId));
+
+  supla_google_home_sync_request2::new_request(caller, user, ET_CHANNELS_ADDED);
 }
 
 void supla_http_request_queue::onDeviceDeletedEvent(
@@ -463,17 +466,24 @@ void supla_http_request_queue::onDeviceDeletedEvent(
   createInTheCallerContext(user, deviceId, 0, ET_DEVICE_DELETED, caller,
                            new supla_http_request_voice_assistant_extra_params(
                                correlationToken, googleRequestId));
+
+  supla_google_home_sync_request2::new_request(caller, user, ET_DEVICE_DELETED);
 }
 
 void supla_http_request_queue::onUserReconnectEvent(
     supla_user *user, const supla_caller &caller) {
   createInTheCallerContext(user, 0, 0, ET_USER_RECONNECT, caller, NULL);
+
+  supla_google_home_sync_request2::new_request(caller, user, ET_USER_RECONNECT);
 }
 
 void supla_http_request_queue::onGoogleHomeSyncNeededEvent(
     supla_user *user, const supla_caller &caller) {
   createInTheCallerContext(user, 0, 0, ET_GOOGLE_HOME_SYNC_NEEDED, caller,
                            NULL);
+
+  supla_google_home_sync_request2::new_request(caller, user,
+                                               ET_GOOGLE_HOME_SYNC_NEEDED);
 }
 
 void supla_http_request_queue::onActionsTriggered(const supla_caller &caller,

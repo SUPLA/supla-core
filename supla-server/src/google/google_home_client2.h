@@ -52,7 +52,7 @@ class supla_google_home_client2 : public supla_voice_assistant_client2 {
   void add_gate_state(void);
   void add_roller_shutter_state(void);
   void state_report(void);
-  void sync(void);
+  bool sync(void);
 };
 
 #endif /* GOOGLE_HOME_CLIENT2_H_ */
