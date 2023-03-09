@@ -34,7 +34,7 @@ supla_google_home_sync_request2::supla_google_home_sync_request2(
                                    nullptr) {
   this->credentials = credentials;
 
-  set_delay_usec(15000000);  // 15 sec.
+  set_delay_usec(10000000);  // 10 sec.
   set_timeout(scfg_int(CFG_GOOGLE_HOME_SYNCREQUEST_TIMEOUT) * 1000);
 }
 
