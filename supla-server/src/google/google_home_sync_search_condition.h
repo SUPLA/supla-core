@@ -27,7 +27,7 @@ class supla_google_home_sync_search_condition
   int user_id;
 
  public:
-  supla_google_home_sync_search_condition(int user_id);
+  explicit supla_google_home_sync_search_condition(int user_id);
 
   virtual bool condition_met(supla_abstract_asynctask *task);
 };
