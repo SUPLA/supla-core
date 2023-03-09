@@ -71,6 +71,7 @@ src/test/doubles/cyclictasks \
 src/test/doubles/db \
 src/test/doubles/device \
 src/test/doubles/distributedobjects \
+src/test/doubles/google \
 src/test/doubles/http \
 src/test/doubles/integration/asynctask \
 src/test/doubles/integration/mqtt \

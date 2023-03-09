@@ -44,8 +44,12 @@ string supla_google_home_sync_request2::get_name(void) {
 
 bool supla_google_home_sync_request2::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
-  supla_google_home_client2 client(0, curl_adapter, credentials);
-  return client.sync();
+  if (credentials->is_access_token_exists()) {
+    supla_google_home_client2 client(0, curl_adapter, credentials);
+    return client.sync();
+  }
+
+  return false;
 }
 
 // static
@@ -75,9 +79,7 @@ void supla_google_home_sync_request2::new_request(const supla_caller &caller,
   supla_google_home_sync_search_condition cnd(user->getUserID());
   supla_asynctask_queue::global_instance()->access_task(
       &cnd,
-      [&exists](supla_abstract_asynctask *task) -> void {
-	  exists = true;
-  });
+      [&exists](supla_abstract_asynctask *task) -> void { exists = true; });
 
   if (!exists) {
     supla_google_home_sync_request2 *request =

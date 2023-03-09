@@ -30,6 +30,7 @@ RM := rm -rf
 -include src/test/doubles/integration/mqtt/subdir.mk
 -include src/test/doubles/integration/asynctask/subdir.mk
 -include src/test/doubles/http/subdir.mk
+-include src/test/doubles/google/subdir.mk
 -include src/test/doubles/distributedobjects/subdir.mk
 -include src/test/doubles/device/subdir.mk
 -include src/test/doubles/db/subdir.mk

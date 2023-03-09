@@ -16,22 +16,16 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLE_HOME_CREDENTIALS2_H_
-#define GOOGLE_HOME_CREDENTIALS2_H_
+#include "doubles/google/GoogleHomeCredentialsMock.h"
 
-#include "http/oauth_credentials.h"
+namespace testing {
 
-class supla_google_home_credentials2 : public supla_http_oauth_credentials {
- private:
-  int sync_40x_counter;
+GoogleHomeCredentialsMock::GoogleHomeCredentialsMock()
+    : supla_google_home_credentials2() {}
 
- public:
-  supla_google_home_credentials2(void);
-  explicit supla_google_home_credentials2(supla_user *user);
-  ~supla_google_home_credentials2(void);
+GoogleHomeCredentialsMock::GoogleHomeCredentialsMock(supla_user *user)
+    : supla_google_home_credentials2(user) {}
 
-  virtual void on_sync_40x_error();
-  virtual void on_reportstate_404_error();
-};
+GoogleHomeCredentialsMock::~GoogleHomeCredentialsMock(void) {}
 
-#endif /* STATE_WEBHOOK_CREDENTIALS2_H_ */
+}  // namespace testing

@@ -57,6 +57,7 @@ cpplint --filter=-build/include ./supla-server/src/test/doubles/client/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/conn/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/cyclictasks/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/distributedobjects/* 
+cpplint --filter=-build/include ./supla-server/src/test/doubles/google/* 
 cpplint --filter=-build/include ./supla-server/src/test/doubles/http/* 
 cpplint --filter=-build/include ./supla-server/src/test/doubles/device/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/mqtt/*
