@@ -647,7 +647,7 @@ bool supla_device_channel::set_value(
     if (db->connect() == true) {
       char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
       get_value(current_value);
-      db->update_channel_value(get_id(), get_user_id(), value,
+      db->update_channel_value(get_id(), get_user_id(), current_value,
                                *validity_time_sec);
     }
 
