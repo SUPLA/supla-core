@@ -6,7 +6,7 @@
 set -e
 
 # Defaults
-SDK="8.2"
+SDK="16.2"
 OPENSSL="3.0.8"
 THREADS=4
 
@@ -108,7 +108,6 @@ if [ ! -e ${OPENSSL_VERSION}.tar.gz ]
 then
   echo "[INFO] Downloading ${OPENSSL_VERSION}.tar.gz"
   curl -O https://www.openssl.org/source/${OPENSSL_VERSION}.tar.gz
-  if [ $? -ne 0 ]
 else
   echo "[INFO] Using ${OPENSSL_VERSION}.tar.gz"
 fi

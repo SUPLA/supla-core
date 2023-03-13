@@ -16,7 +16,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
-SDK="9.0"
+SDK="16.2"
 OPENSSL=""
 BUILD_CFG="Release"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -119,9 +119,14 @@ lipo \
 
 echo "[INFO] Creating XCFramework"
 rm -rf "${BUILD_DIR}/LibSuplaClient.xcframework"
+mkdir -p ${BUILD_DIR}/include
+cp ${BUILD_DIR}/../src/supla-client.h ${BUILD_DIR}/include/
+cp ${BUILD_DIR}/../../supla-common/proto.h ${BUILD_DIR}/include/
 xcodebuild -create-xcframework \
   -library "${BUILD_DIR}/libsupla-client-iphoneos.a" \
+  -headers "${BUILD_DIR}/include" \
   -library "${BUILD_DIR}/libsupla-client-iphonesimulator.a" \
+  -headers "${BUILD_DIR}/include" \ 
   -output "${BUILD_DIR}/LibSuplaClient.xcframework"
   
 RC=$?
@@ -136,4 +141,5 @@ rm -rf "${BUILD_DIR}/iPhoneOS_armv7" \
   "${BUILD_DIR}/iPhoneSimulator_arm64" \
   "${BUILD_DIR}/iPhoneSimulator_x86_64" \
   "${BUILD_DIR}/libsupla-client-iphoneos.a" \
-  "${BUILD_DIR}/libsupla-client-iphonesimulator.a"
+  "${BUILD_DIR}/libsupla-client-iphonesimulator.a" \
+  "${BUILD_DIR}/include"
