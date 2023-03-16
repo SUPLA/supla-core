@@ -216,7 +216,7 @@ void supla_google_home_client2::add_roller_shutter_state(void) {
   add_open_percent_state(100 - shut_percentage);
 }
 
-void supla_google_home_client2::state_report(void) {
+bool supla_google_home_client2::state_report(void) {
   cJSON *report = (cJSON *)get_header();
 
   if (report) {
@@ -231,13 +231,16 @@ void supla_google_home_client2::state_report(void) {
         json_states = cJSON_CreateObject();
 
         int http_result_code = 0;
-        if (!perform_post_request(report, &http_result_code) &&
-            (http_result_code == 403 || http_result_code == 404)) {
+        if (perform_post_request(report, &http_result_code)) {
+          return http_result_code >= 200 && http_result_code <= 206;
+        } else if (http_result_code == 403 || http_result_code == 404) {
           get_gh_credentials()->on_reportstate_404_error();
         }
       }
     }
   }
+
+  return false;
 }
 
 bool supla_google_home_client2::sync(void) {

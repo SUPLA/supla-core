@@ -71,3 +71,16 @@ string supla_voice_assistant_client2::get_endpoint_id(void) {
 
   return result;
 }
+
+void supla_voice_assistant_client2::set_subchannel_id(short subchannel_id) {
+  this->subchannel_id = subchannel_id;
+}
+
+void supla_voice_assistant_client2::set_channel_connected(bool connected) {
+  this->channel_connected = connected;
+}
+
+void supla_voice_assistant_client2::set_channel_value(
+    supla_channel_value *channel_value) {
+  this->channel_value = channel_value;
+}

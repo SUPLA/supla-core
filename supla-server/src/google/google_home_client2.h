@@ -29,6 +29,7 @@ class supla_google_home_client2 : public supla_voice_assistant_client2 {
  private:
   cJSON *json_states;
   std::string request_id;
+  int channel_id;
 
   supla_google_home_credentials2 *get_gh_credentials(void);
   bool perform_post_request(cJSON *json_data, int *http_result_code);
@@ -43,15 +44,13 @@ class supla_google_home_client2 : public supla_voice_assistant_client2 {
       supla_google_home_credentials2 *credentials);
   virtual ~supla_google_home_client2(void);
 
-  void set_channel_connected(bool connected);
-  void set_channel_value(supla_channel_value *channel_value);
   void set_request_id(const std::string &request_id);
   void add_onoff_state(void);
   void add_brightness_state(void);
   void add_color_state(void);
   void add_gate_state(void);
   void add_roller_shutter_state(void);
-  void state_report(void);
+  bool state_report(void);
   bool sync(void);
 };
 

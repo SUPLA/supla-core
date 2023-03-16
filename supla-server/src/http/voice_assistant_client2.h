@@ -47,6 +47,9 @@ class supla_voice_assistant_client2 {
   explicit supla_voice_assistant_client2(
       int channel_id, supla_abstract_curl_adapter *curl_adapter,
       supla_http_oauth_credentials *credentials);
+  void set_subchannel_id(short subchannel_id);
+  void set_channel_connected(bool connected);
+  void set_channel_value(supla_channel_value *channel_value);
 };
 
 #endif /* VOICE_ASSISTANT_CLIENT2_H_ */
