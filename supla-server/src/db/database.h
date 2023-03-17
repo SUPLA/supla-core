@@ -55,8 +55,6 @@ class database : public svrdb {
                                  const char *token, const char *refresh_token,
                                  int expires_in);
 
-  bool google_home_load_credentials(supla_google_home_credentials *google_home);
-
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
   bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);
   bool set_channel_function(int UserID, int ChannelID, int Func);

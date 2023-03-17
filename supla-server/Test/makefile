@@ -17,6 +17,7 @@ RM := rm -rf
 -include src/test/integration/webhook/subdir.mk
 -include src/test/integration/scene/subdir.mk
 -include src/test/integration/mqtt/subdir.mk
+-include src/test/integration/google/subdir.mk
 -include src/test/integration/datalogger/subdir.mk
 -include src/test/integration/cyclictasks/subdir.mk
 -include src/test/integration/client/subdir.mk

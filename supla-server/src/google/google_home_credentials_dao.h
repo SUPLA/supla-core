@@ -16,26 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLEHOME_H_
-#define GOOGLEHOME_H_
+#ifndef GOOGLE_HOME_CREDENTIALS_DAO_H_
+#define GOOGLE_HOME_CREDENTIALS_DAO_H_
 
-#include "webhook/webhookbasiccredentials.h"
+#include <string>
 
-class supla_google_home_credentials : public supla_webhook_basic_credentials {
- protected:
-  int sync_40x_counter;
+#include "db/abstract_db_access_provider.h"
+
+class supla_google_home_credentials_dao {
+ private:
+  supla_abstract_db_access_provider *dba;
 
  public:
-  explicit supla_google_home_credentials(supla_user *user);
-  virtual int get_token_maxsize(void);
-  void load();
-  void on_credentials_changed();
-  void on_sync_40x_error();
-  void on_reportstate_404_error();
+  explicit supla_google_home_credentials_dao(
+      supla_abstract_db_access_provider *dba);
+  virtual ~supla_google_home_credentials_dao(void);
 
-  // unused
-  virtual void update(const char *access_token, const char *refresh_token,
-                      int expires_in);
+  virtual std::string get_access_token(int user_id);
 };
 
-#endif /* GOOGLEHOME_H_ */
+#endif /* GOOGLE_HOME_CREDENTIALS_DAO_H_ */

@@ -85,6 +85,7 @@ src/test/integration \
 src/test/integration/client \
 src/test/integration/cyclictasks \
 src/test/integration/datalogger \
+src/test/integration/google \
 src/test/integration/mqtt \
 src/test/integration/scene \
 src/test/integration/webhook \

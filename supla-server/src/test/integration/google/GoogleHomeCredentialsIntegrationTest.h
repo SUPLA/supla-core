@@ -16,26 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLEHOME_H_
-#define GOOGLEHOME_H_
+#ifndef GoogleHomeCredentialsIntegrationTest_H_
+#define GoogleHomeCredentialsIntegrationTest_H_
 
-#include "webhook/webhookbasiccredentials.h"
+#include "db/db_access_provider.h"
+#include "integration/IntegrationTest.h"
 
-class supla_google_home_credentials : public supla_webhook_basic_credentials {
+namespace testing {
+
+class GoogleHomeCredentialsIntegrationTest : public IntegrationTest,
+                                             public Test {
  protected:
-  int sync_40x_counter;
+  supla_db_access_provider dba;
 
  public:
-  explicit supla_google_home_credentials(supla_user *user);
-  virtual int get_token_maxsize(void);
-  void load();
-  void on_credentials_changed();
-  void on_sync_40x_error();
-  void on_reportstate_404_error();
-
-  // unused
-  virtual void update(const char *access_token, const char *refresh_token,
-                      int expires_in);
 };
 
-#endif /* GOOGLEHOME_H_ */
+} /* namespace testing */
+
+#endif /* GoogleHomeCredentialsIntegrationTest_H_ */

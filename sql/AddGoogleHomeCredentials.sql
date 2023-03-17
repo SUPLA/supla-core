@@ -1,0 +1,2 @@
+INSERT INTO `supla_google_home` (`id`, `user_id`, `reg_date`, `access_token`) VALUES
+(1, 2, '2019-02-07 18:51:33', '11198ab7d5d5fa5db8f53bf03556a4018909b8b5d3ee9628014ef9e62206f7024eedebc279cd21af0dd34dc2766ebe2cdb34056340269a0e13b6a5415f2c18ad86df0c17b48ebd54f6e516011ad937c81c4220887d028a66d8b4316dcc5e57651775629f');

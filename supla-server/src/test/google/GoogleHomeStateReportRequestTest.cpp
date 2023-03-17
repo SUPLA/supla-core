@@ -16,26 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLEHOME_H_
-#define GOOGLEHOME_H_
+#include "google/GoogleHomeStateReportRequestTest.h"
 
-#include "webhook/webhookbasiccredentials.h"
+#include "google/google_home_state_report_request2.h"
+#include "http/asynctask_http_thread_bucket.h"
 
-class supla_google_home_credentials : public supla_webhook_basic_credentials {
- protected:
-  int sync_40x_counter;
+namespace testing {
 
- public:
-  explicit supla_google_home_credentials(supla_user *user);
-  virtual int get_token_maxsize(void);
-  void load();
-  void on_credentials_changed();
-  void on_sync_40x_error();
-  void on_reportstate_404_error();
+using std::string;
 
-  // unused
-  virtual void update(const char *access_token, const char *refresh_token,
-                      int expires_in);
-};
+void GoogleHomeStateReportRequestTest::SetUp(void) {
+  AsyncTaskTest::SetUp();
+  curlAdapter = new CurlAdapterMock();
 
-#endif /* GOOGLEHOME_H_ */
+  EXPECT_CALL(*pool, get_bucket)
+      .WillOnce(Return(new supla_asynctask_http_thread_bucket(curlAdapter)));
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, noAccessToken) {}
+
+}  // namespace testing

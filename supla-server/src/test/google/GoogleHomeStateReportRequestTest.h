@@ -16,26 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLEHOME_H_
-#define GOOGLEHOME_H_
+#ifndef GOOGLE_HOME_STATE_REPORT_REQUEST_TEST_H_
+#define GOOGLE_HOME_STATE_REPORT_REQUEST_TEST_H_
 
-#include "webhook/webhookbasiccredentials.h"
+#include "asynctask/AsyncTaskTest.h"
+#include "doubles/google/GoogleHomeCredentialsMock.h"
+#include "doubles/http/CurlAdapterMock.h"
 
-class supla_google_home_credentials : public supla_webhook_basic_credentials {
+namespace testing {
+
+class GoogleHomeStateReportRequestTest : public AsyncTaskTest {
  protected:
-  int sync_40x_counter;
+  GoogleHomeCredentialsMock credentials;
+  CurlAdapterMock *curlAdapter;
 
  public:
-  explicit supla_google_home_credentials(supla_user *user);
-  virtual int get_token_maxsize(void);
-  void load();
-  void on_credentials_changed();
-  void on_sync_40x_error();
-  void on_reportstate_404_error();
-
-  // unused
-  virtual void update(const char *access_token, const char *refresh_token,
-                      int expires_in);
+  virtual void SetUp(void);
 };
 
-#endif /* GOOGLEHOME_H_ */
+} /* namespace testing */
+
+#endif /* GOOGLE_HOME_STATE_REPORT_REQUEST_TEST_H_ */

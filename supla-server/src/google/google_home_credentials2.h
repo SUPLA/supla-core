@@ -32,6 +32,7 @@ class supla_google_home_credentials2 : public supla_http_oauth_credentials {
 
   virtual void on_sync_40x_error();
   virtual void on_reportstate_404_error();
+  virtual void load();
 };
 
 #endif /* STATE_WEBHOOK_CREDENTIALS2_H_ */

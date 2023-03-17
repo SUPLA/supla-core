@@ -29,17 +29,11 @@ supla_google_home_credentials::supla_google_home_credentials(supla_user *user)
 }
 
 int supla_google_home_credentials::get_token_maxsize(void) {
-  return GH_TOKEN_MAXSIZE;
+  return 0;
 }
 
 void supla_google_home_credentials::load() {
-  database *db = new database();
 
-  if (!db->connect() || !db->google_home_load_credentials(this)) {
-    set(NULL);
-  }
-
-  delete db;
 }
 
 void supla_google_home_credentials::on_credentials_changed() { load(); }

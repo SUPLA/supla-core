@@ -18,6 +18,8 @@
 
 #include "google/google_home_credentials2.h"
 
+#include "db/db_access_provider.h"
+#include "google/google_home_credentials_dao.h"
 #include "http/httprequestqueue.h"
 #include "log.h"
 
@@ -58,4 +60,11 @@ void supla_google_home_credentials2::on_sync_40x_error() {
 void supla_google_home_credentials2::on_reportstate_404_error() {
   supla_http_request_queue::getInstance()->onGoogleHomeSyncNeededEvent(
       get_user(), supla_caller(ctGoogleHome));
+}
+
+void supla_google_home_credentials2::load() {
+  supla_db_access_provider dba;
+  supla_google_home_credentials_dao dao(&dba);
+
+  set(dao.get_access_token(get_user_id()), "", 60 * 60 * 24 * 365);
 }
