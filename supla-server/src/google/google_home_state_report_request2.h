@@ -37,8 +37,7 @@ class supla_google_home_state_report_request2
  public:
   supla_google_home_state_report_request2(
       const supla_caller &caller, int user_id, int device_id, int channel_id,
-      int actions, supla_asynctask_queue *queue,
-      supla_abstract_asynctask_thread_pool *pool,
+      supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_channel_property_getter *property_getter,
       supla_google_home_credentials2 *credentials,
       const std::string &request_id);

@@ -27,7 +27,7 @@ using std::string;
 supla_google_home_state_report_request2::
     supla_google_home_state_report_request2(
         const supla_caller &caller, int user_id, int device_id, int channel_id,
-        int actions, supla_asynctask_queue *queue,
+        supla_asynctask_queue *queue,
         supla_abstract_asynctask_thread_pool *pool,
         supla_abstract_channel_property_getter *property_getter,
         supla_google_home_credentials2 *credentials, const string &request_id)
@@ -87,10 +87,14 @@ bool supla_google_home_state_report_request2::make_request(
       client.add_gate_state();
       break;
     default:
+      delete value;
       return false;
   }
 
-  return client.state_report();
+  bool result = client.state_report();
+  delete value;
+
+  return result;
 }
 
 // static

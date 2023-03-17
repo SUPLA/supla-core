@@ -20,6 +20,8 @@
 #define GOOGLE_HOME_STATE_REPORT_REQUEST_TEST_H_
 
 #include "asynctask/AsyncTaskTest.h"
+#include "device/value/channel_value.h"
+#include "doubles/device/ChannelPropertyGetterMock.h"
 #include "doubles/google/GoogleHomeCredentialsMock.h"
 #include "doubles/http/CurlAdapterMock.h"
 
@@ -29,9 +31,12 @@ class GoogleHomeStateReportRequestTest : public AsyncTaskTest {
  protected:
   GoogleHomeCredentialsMock credentials;
   CurlAdapterMock *curlAdapter;
+  ChannelPropertyGetterMock *propertyGetter;
 
  public:
   virtual void SetUp(void);
+  void makeTest(int func, bool online, supla_channel_value *value,
+                const char *expectedPayload);
 };
 
 } /* namespace testing */
