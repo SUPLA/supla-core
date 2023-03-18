@@ -26,8 +26,6 @@
 namespace testing {
 
 class GoogleHomeCredentialsMock : public supla_google_home_credentials2 {
- private:
- protected:
  public:
   GoogleHomeCredentialsMock();
   explicit GoogleHomeCredentialsMock(supla_user *user);
