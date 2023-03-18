@@ -24,6 +24,7 @@
 #include <list>     // NOLINT
 
 #include "db/database.h"
+#include "google/google_home_state_report_request2.h"
 #include "google/google_home_sync_request2.h"
 #include "http/httprequest.h"
 #include "http/httprequestvoiceassistantextraparams.h"
@@ -445,6 +446,9 @@ void supla_http_request_queue::onChannelValueChangeEvent(
                            caller,
                            new supla_http_request_voice_assistant_extra_params(
                                correlationToken, googleRequestId));
+
+  supla_google_home_state_report_request2::new_request(
+      caller, user, deviceId, channelId, googleRequestId);
 
   supla_state_webhook_request2::new_request(caller, user, deviceId, channelId,
                                             0);

@@ -31,7 +31,6 @@
 #include "client.h"
 #include "db/database.h"
 #include "device.h"
-#include "google/googlehomecredentials.h"
 #include "http/httprequestqueue.h"
 #include "lck.h"
 #include "log.h"
@@ -76,7 +75,7 @@ void supla_user::user_init(int UserID, const char *short_unique_id,
   this->clients = new supla_user_clients();
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa_credentials = new supla_amazon_alexa_credentials(this);
-  this->google_home_credentials = new supla_google_home_credentials(this);
+  this->google_home_credentials = new supla_google_home_credentials2(this);
   this->state_webhook_credentials = new supla_state_webhook_credentials2(this);
   this->connections_allowed = true;
   this->short_unique_id =
@@ -439,7 +438,7 @@ void supla_user::on_google_home_credentials_changed(int UserID) {
   supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
-    user->googleHomeCredentials()->on_credentials_changed();
+    user->googleHomeCredentials()->load();
   }
 }
 
@@ -875,7 +874,7 @@ supla_amazon_alexa_credentials *supla_user::amazonAlexaCredentials(void) {
   return amazon_alexa_credentials;
 }
 
-supla_google_home_credentials *supla_user::googleHomeCredentials(void) {
+supla_google_home_credentials2 *supla_user::googleHomeCredentials(void) {
   return google_home_credentials;
 }
 

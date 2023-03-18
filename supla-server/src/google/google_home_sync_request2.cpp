@@ -55,7 +55,7 @@ bool supla_google_home_sync_request2::make_request(
 // static
 void supla_google_home_sync_request2::new_request(supla_user *user) {
   if (!user || !user->googleHomeCredentials() ||
-      !user->googleHomeCredentials()->isAccessTokenExists()) {
+      !user->googleHomeCredentials()->is_access_token_exists()) {
     return;
   }
 
@@ -70,7 +70,7 @@ void supla_google_home_sync_request2::new_request(supla_user *user) {
         new supla_google_home_sync_request2(
             user->getUserID(), supla_asynctask_queue::global_instance(),
             supla_asynctask_http_thread_pool::global_instance(),
-            /*user->googleHomeCredentials()*/ nullptr);
+            user->googleHomeCredentials());
 
     request->start();
   }

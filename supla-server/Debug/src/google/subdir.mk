@@ -9,11 +9,7 @@ CPP_SRCS += \
 ../src/google/google_home_credentials_dao.cpp \
 ../src/google/google_home_state_report_request2.cpp \
 ../src/google/google_home_sync_request2.cpp \
-../src/google/google_home_sync_search_condition.cpp \
-../src/google/googlehomeclient.cpp \
-../src/google/googlehomecredentials.cpp \
-../src/google/googlehomerequest.cpp \
-../src/google/googlehomestatereportrequest.cpp 
+../src/google/google_home_sync_search_condition.cpp 
 
 CPP_DEPS += \
 ./src/google/google_home_client2.d \
@@ -21,11 +17,7 @@ CPP_DEPS += \
 ./src/google/google_home_credentials_dao.d \
 ./src/google/google_home_state_report_request2.d \
 ./src/google/google_home_sync_request2.d \
-./src/google/google_home_sync_search_condition.d \
-./src/google/googlehomeclient.d \
-./src/google/googlehomecredentials.d \
-./src/google/googlehomerequest.d \
-./src/google/googlehomestatereportrequest.d 
+./src/google/google_home_sync_search_condition.d 
 
 OBJS += \
 ./src/google/google_home_client2.o \
@@ -33,11 +25,7 @@ OBJS += \
 ./src/google/google_home_credentials_dao.o \
 ./src/google/google_home_state_report_request2.o \
 ./src/google/google_home_sync_request2.o \
-./src/google/google_home_sync_search_condition.o \
-./src/google/googlehomeclient.o \
-./src/google/googlehomecredentials.o \
-./src/google/googlehomerequest.o \
-./src/google/googlehomestatereportrequest.o 
+./src/google/google_home_sync_search_condition.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -52,7 +40,7 @@ src/google/%.o: ../src/google/%.cpp src/google/subdir.mk
 clean: clean-src-2f-google
 
 clean-src-2f-google:
-	-$(RM) ./src/google/google_home_client2.d ./src/google/google_home_client2.o ./src/google/google_home_credentials2.d ./src/google/google_home_credentials2.o ./src/google/google_home_credentials_dao.d ./src/google/google_home_credentials_dao.o ./src/google/google_home_state_report_request2.d ./src/google/google_home_state_report_request2.o ./src/google/google_home_sync_request2.d ./src/google/google_home_sync_request2.o ./src/google/google_home_sync_search_condition.d ./src/google/google_home_sync_search_condition.o ./src/google/googlehomeclient.d ./src/google/googlehomeclient.o ./src/google/googlehomecredentials.d ./src/google/googlehomecredentials.o ./src/google/googlehomerequest.d ./src/google/googlehomerequest.o ./src/google/googlehomestatereportrequest.d ./src/google/googlehomestatereportrequest.o
+	-$(RM) ./src/google/google_home_client2.d ./src/google/google_home_client2.o ./src/google/google_home_credentials2.d ./src/google/google_home_credentials2.o ./src/google/google_home_credentials_dao.d ./src/google/google_home_credentials_dao.o ./src/google/google_home_state_report_request2.d ./src/google/google_home_state_report_request2.o ./src/google/google_home_sync_request2.d ./src/google/google_home_sync_request2.o ./src/google/google_home_sync_search_condition.d ./src/google/google_home_sync_search_condition.o
 
 .PHONY: clean-src-2f-google
 
