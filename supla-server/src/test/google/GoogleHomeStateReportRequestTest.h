@@ -36,6 +36,8 @@ class GoogleHomeStateReportRequestTest : public AsyncTaskTest {
  public:
   virtual void SetUp(void);
   void makeTest(int func, bool online, supla_channel_value *value,
+                const char *expectedPayload, const std::string &request_id);
+  void makeTest(int func, bool online, supla_channel_value *value,
                 const char *expectedPayload);
 };
 

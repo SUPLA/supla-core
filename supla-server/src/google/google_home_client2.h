@@ -29,7 +29,6 @@ class supla_google_home_client2 : public supla_voice_assistant_client2 {
  private:
   cJSON *json_states;
   std::string request_id;
-  int channel_id;
 
   supla_google_home_credentials2 *get_gh_credentials(void);
   bool perform_post_request(cJSON *json_data, int *http_result_code);

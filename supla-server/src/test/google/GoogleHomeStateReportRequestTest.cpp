@@ -19,6 +19,8 @@
 #include "google/GoogleHomeStateReportRequestTest.h"
 
 #include "device/value/channel_onoff_value.h"
+#include "device/value/channel_rgbw_value.h"
+#include "device/value/channel_rs_value.h"
 #include "google/google_home_state_report_request2.h"
 #include "http/asynctask_http_thread_bucket.h"
 
@@ -68,7 +70,8 @@ void GoogleHomeStateReportRequestTest::SetUp(void) {
 
 void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
                                                 supla_channel_value *value,
-                                                const char *expectedPayload) {
+                                                const char *expectedPayload,
+                                                const string &request_id) {
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
       .Times(1)
@@ -87,10 +90,17 @@ void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
   supla_google_home_state_report_request2 *request =
       new supla_google_home_state_report_request2(
           supla_caller(ctDevice), 1, 2, 10, queue, pool, propertyGetter,
-          &credentials, "e2de5bc6-65a8-48e5-b919-8a48e86ad64a");
+          &credentials, request_id);
   request->set_delay_usec(1);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
+}
+
+void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
+                                                supla_channel_value *value,
+                                                const char *expectedPayload) {
+  makeTest(func, online, value, expectedPayload,
+           "e2de5bc6-65a8-48e5-b919-8a48e86ad64a");
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, onOff_Disconnected) {
@@ -101,6 +111,190 @@ TEST_F(GoogleHomeStateReportRequestTest, onOff_Disconnected) {
 
   makeTest(SUPLA_CHANNELFNC_LIGHTSWITCH, false,
            new supla_channel_onoff_value(false), expectedPayload);
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, onOff_Connected) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\",\"payload\":{"
+      "\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,\"on\":true}}}}"
+      "}";
+
+  makeTest(SUPLA_CHANNELFNC_LIGHTSWITCH, true,
+           new supla_channel_onoff_value(true), expectedPayload, "REQID");
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, brightness_Disconnected) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\",\"agentUserId\":"
+      "\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{\"qwerty-10\":{"
+      "\"online\":false,\"on\":false,\"brightness\":0}}}}}";
+
+  makeTest(SUPLA_CHANNELFNC_DIMMER, false, new supla_channel_rgbw_value(),
+           expectedPayload);
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, brightness_Connected) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\",\"payload\":{"
+      "\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,\"on\":true,"
+      "\"brightness\":55}}}}}";
+
+  TRGBW_Value rgbw = {};
+  rgbw.brightness = 55;
+
+  makeTest(SUPLA_CHANNELFNC_DIMMER, true, new supla_channel_rgbw_value(&rgbw),
+           expectedPayload, "REQID");
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, colorAndBrightness_Disconnected) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\",\"agentUserId\":"
+      "\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{\"qwerty-10-1\":{"
+      "\"online\":false,\"color\":{\"spectrumRGB\":0},\"on\":false,"
+      "\"brightness\":0},\"qwerty-10-2\":{\"online\":false,\"on\":false,"
+      "\"brightness\":0}}}}}";
+
+  makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, false,
+           new supla_channel_rgbw_value(), expectedPayload);
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, colorAndBrightness_Connected) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\",\"payload\":{"
+      "\"devices\":{\"states\":{\"qwerty-10-1\":{\"online\":true,\"color\":{"
+      "\"spectrumRGB\":11189196},\"on\":true,\"brightness\":90},\"qwerty-10-"
+      "2\":{\"online\":true,\"on\":true,\"brightness\":80}}}}}";
+
+  TRGBW_Value rgbw = {};
+  rgbw.brightness = 80;
+  rgbw.colorBrightness = 90;
+  rgbw.R = 0xAA;
+  rgbw.G = 0xBB;
+  rgbw.B = 0xCC;
+
+  makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, true,
+           new supla_channel_rgbw_value(&rgbw), expectedPayload, "REQID");
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, color_Disconnected) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\",\"agentUserId\":"
+      "\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{\"qwerty-10\":{"
+      "\"online\":false,\"color\":{\"spectrumRGB\":16711867},\"on\":false,"
+      "\"brightness\":0}}}}}";
+
+  TRGBW_Value rgbw = {};
+  rgbw.R = 0xFF;
+  rgbw.G = 0x00;
+  rgbw.B = 0xBB;
+
+  makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, false,
+           new supla_channel_rgbw_value(&rgbw), expectedPayload);
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, color_Connected) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\",\"payload\":{"
+      "\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,\"color\":{"
+      "\"spectrumRGB\":4486946},\"on\":true,\"brightness\":55}}}}}";
+
+  TRGBW_Value rgbw = {};
+  rgbw.colorBrightness = 55;
+  rgbw.R = 0x44;
+  rgbw.G = 0x77;
+  rgbw.B = 0x22;
+
+  makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, true,
+           new supla_channel_rgbw_value(&rgbw), expectedPayload, "REQID");
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, rollershutter_Disconnected) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\",\"agentUserId\":"
+      "\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{\"qwerty-10\":{"
+      "\"online\":false,\"openPercent\":100}}}}}";
+
+  TDSC_RollerShutterValue rs = {};
+  rs.position = 55;
+
+  makeTest(SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER, false,
+           new supla_channel_rs_value(&rs), expectedPayload);
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, rollershutter_Connected) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\",\"payload\":{"
+      "\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,\"openPercent\":"
+      "45}}}}}";
+
+  TDSC_RollerShutterValue rs = {};
+  rs.position = 55;
+
+  makeTest(SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER, true,
+           new supla_channel_rs_value(&rs), expectedPayload, "REQID");
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, rollershutter_80) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\",\"payload\":{"
+      "\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,\"openPercent\":"
+      "20}}}}}";
+
+  TDSC_RollerShutterValue rs = {};
+  rs.position = 80;
+
+  makeTest(SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER, true,
+           new supla_channel_rs_value(&rs), expectedPayload, "REQID");
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, x403) {
+  EXPECT_CALL(*propertyGetter,
+              _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce([](int user_id, int device_id, int channel_id, int *_func,
+                   bool *_connected) {
+        *_func = SUPLA_CHANNELFNC_LIGHTSWITCH;
+        *_connected = false;
+
+        return nullptr;
+      });
+
+  EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(403));
+
+  EXPECT_CALL(credentials, on_reportstate_404_error).Times(1);
+
+  supla_google_home_state_report_request2 *request =
+      new supla_google_home_state_report_request2(
+          supla_caller(ctDevice), 1, 2, 10, queue, pool, propertyGetter,
+          &credentials, "");
+  request->set_delay_usec(1);
+  std::shared_ptr<supla_abstract_asynctask> task = request->start();
+  WaitForState(task, supla_asynctask_state::FAILURE, 10000);
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, x404) {
+  EXPECT_CALL(*propertyGetter,
+              _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce([](int user_id, int device_id, int channel_id, int *_func,
+                   bool *_connected) {
+        *_func = SUPLA_CHANNELFNC_LIGHTSWITCH;
+        *_connected = false;
+
+        return nullptr;
+      });
+
+  EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(404));
+
+  EXPECT_CALL(credentials, on_reportstate_404_error).Times(1);
+
+  supla_google_home_state_report_request2 *request =
+      new supla_google_home_state_report_request2(
+          supla_caller(ctDevice), 1, 2, 10, queue, pool, propertyGetter,
+          &credentials, "");
+  request->set_delay_usec(1);
+  std::shared_ptr<supla_abstract_asynctask> task = request->start();
+  WaitForState(task, supla_asynctask_state::FAILURE, 10000);
 }
 
 }  // namespace testing

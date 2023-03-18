@@ -25,7 +25,8 @@ supla_channel_rs_value::supla_channel_rs_value(
     : supla_channel_value(raw_value) {}
 
 supla_channel_rs_value::supla_channel_rs_value(
-    const TDSC_RollerShutterValue *value) {
+    const TDSC_RollerShutterValue *value)
+    : supla_channel_value() {
   memcpy(raw_value, value, sizeof(TDSC_RollerShutterValue));
 }
 
