@@ -16,24 +16,31 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLE_HOME_CONFIG_H_
-#define GOOGLE_HOME_CONFIG_H_
+#include "google_home_config.h"
 
-#include <channeljsonconfig/channel_json_config.h>
+// static
+const char google_home_config::google_home_key[] = "googleHome";
 
-#include <string>
+// static
+const char google_home_config::google_home_disabled_key[] =
+    "googleHomeDisabled";
 
-#include "proto.h"
+google_home_config::google_home_config(void) : channel_json_config() {}
 
-class google_home_config : public channel_json_config {
- private:
-  static const char google_home_key[];
-  static const char google_home_disabled_key[];
+google_home_config::google_home_config(channel_json_config *root)
+    : channel_json_config(root) {}
 
- public:
-  explicit google_home_config(channel_json_config *root);
-  google_home_config(void);
-  bool is_integration_disabled(void);
-};
+bool google_home_config::is_integration_disabled(void) {
+  cJSON *root = get_user_root();
+  if (!root) {
+    return false;
+  }
 
-#endif /* GOOGLE_HOME_CONFIG_H_ */
+  root = cJSON_GetObjectItem(root, google_home_key);
+  if (root && cJSON_IsObject(root)) {
+    cJSON *value = cJSON_GetObjectItem(root, google_home_disabled_key);
+    return value && cJSON_IsTrue(value);
+  }
+
+  return false;
+}

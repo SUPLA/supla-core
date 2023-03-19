@@ -16,24 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLE_HOME_CONFIG_H_
-#define GOOGLE_HOME_CONFIG_H_
+#include "GoogleHomeConfigTest.h"
 
-#include <channeljsonconfig/channel_json_config.h>
-
-#include <string>
-
+#include "TestHelper.h"
+#include "channeljsonconfig/google_home_config.h"
 #include "proto.h"
 
-class google_home_config : public channel_json_config {
- private:
-  static const char google_home_key[];
-  static const char google_home_disabled_key[];
+namespace testing {
 
- public:
-  explicit google_home_config(channel_json_config *root);
-  google_home_config(void);
-  bool is_integration_disabled(void);
-};
+GoogleHomeConfigTest::GoogleHomeConfigTest(void) {}
 
-#endif /* GOOGLE_HOME_CONFIG_H_ */
+GoogleHomeConfigTest::~GoogleHomeConfigTest(void) {}
+
+TEST_F(GoogleHomeConfigTest, isIntegrationDisabled) {
+  google_home_config config;
+
+  EXPECT_FALSE(config.is_integration_disabled());
+
+  config.set_user_config("{\"googleHome\":{\"googleHomeDisabled\":true}}");
+
+  EXPECT_TRUE(config.is_integration_disabled());
+}
+
+} /* namespace testing */

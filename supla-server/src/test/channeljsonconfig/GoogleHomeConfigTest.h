@@ -16,24 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLE_HOME_CONFIG_H_
-#define GOOGLE_HOME_CONFIG_H_
+#ifndef GOOGLE_HOME_CONFIG_TEST_H_
+#define GOOGLE_HOME_CONFIG_TEST_H_
 
-#include <channeljsonconfig/channel_json_config.h>
+#include "gtest/gtest.h"  // NOLINT
 
-#include <string>
+namespace testing {
 
-#include "proto.h"
-
-class google_home_config : public channel_json_config {
- private:
-  static const char google_home_key[];
-  static const char google_home_disabled_key[];
-
+class GoogleHomeConfigTest : public Test {
+ protected:
  public:
-  explicit google_home_config(channel_json_config *root);
-  google_home_config(void);
-  bool is_integration_disabled(void);
+  GoogleHomeConfigTest(void);
+  virtual ~GoogleHomeConfigTest(void);
 };
 
-#endif /* GOOGLE_HOME_CONFIG_H_ */
+} /* namespace testing */
+
+#endif /* GOOGLE_HOME_CONFIG_TEST_H_ */

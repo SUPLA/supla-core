@@ -10,6 +10,7 @@ CPP_SRCS += \
 ../src/channeljsonconfig/channel_json_config_getter.cpp \
 ../src/channeljsonconfig/controlling_the_gate_config.cpp \
 ../src/channeljsonconfig/electricity_meter_config.cpp \
+../src/channeljsonconfig/google_home_config.cpp \
 ../src/channeljsonconfig/impulse_counter_config.cpp \
 ../src/channeljsonconfig/opening_sensor_config.cpp 
 
@@ -20,6 +21,7 @@ CPP_DEPS += \
 ./src/channeljsonconfig/channel_json_config_getter.d \
 ./src/channeljsonconfig/controlling_the_gate_config.d \
 ./src/channeljsonconfig/electricity_meter_config.d \
+./src/channeljsonconfig/google_home_config.d \
 ./src/channeljsonconfig/impulse_counter_config.d \
 ./src/channeljsonconfig/opening_sensor_config.d 
 
@@ -30,6 +32,7 @@ OBJS += \
 ./src/channeljsonconfig/channel_json_config_getter.o \
 ./src/channeljsonconfig/controlling_the_gate_config.o \
 ./src/channeljsonconfig/electricity_meter_config.o \
+./src/channeljsonconfig/google_home_config.o \
 ./src/channeljsonconfig/impulse_counter_config.o \
 ./src/channeljsonconfig/opening_sensor_config.o 
 
@@ -46,7 +49,7 @@ src/channeljsonconfig/%.o: ../src/channeljsonconfig/%.cpp src/channeljsonconfig/
 clean: clean-src-2f-channeljsonconfig
 
 clean-src-2f-channeljsonconfig:
-	-$(RM) ./src/channeljsonconfig/abstract_channel_json_config_getter.d ./src/channeljsonconfig/abstract_channel_json_config_getter.o ./src/channeljsonconfig/action_trigger_config.d ./src/channeljsonconfig/action_trigger_config.o ./src/channeljsonconfig/channel_json_config.d ./src/channeljsonconfig/channel_json_config.o ./src/channeljsonconfig/channel_json_config_getter.d ./src/channeljsonconfig/channel_json_config_getter.o ./src/channeljsonconfig/controlling_the_gate_config.d ./src/channeljsonconfig/controlling_the_gate_config.o ./src/channeljsonconfig/electricity_meter_config.d ./src/channeljsonconfig/electricity_meter_config.o ./src/channeljsonconfig/impulse_counter_config.d ./src/channeljsonconfig/impulse_counter_config.o ./src/channeljsonconfig/opening_sensor_config.d ./src/channeljsonconfig/opening_sensor_config.o
+	-$(RM) ./src/channeljsonconfig/abstract_channel_json_config_getter.d ./src/channeljsonconfig/abstract_channel_json_config_getter.o ./src/channeljsonconfig/action_trigger_config.d ./src/channeljsonconfig/action_trigger_config.o ./src/channeljsonconfig/channel_json_config.d ./src/channeljsonconfig/channel_json_config.o ./src/channeljsonconfig/channel_json_config_getter.d ./src/channeljsonconfig/channel_json_config_getter.o ./src/channeljsonconfig/controlling_the_gate_config.d ./src/channeljsonconfig/controlling_the_gate_config.o ./src/channeljsonconfig/electricity_meter_config.d ./src/channeljsonconfig/electricity_meter_config.o ./src/channeljsonconfig/google_home_config.d ./src/channeljsonconfig/google_home_config.o ./src/channeljsonconfig/impulse_counter_config.d ./src/channeljsonconfig/impulse_counter_config.o ./src/channeljsonconfig/opening_sensor_config.d ./src/channeljsonconfig/opening_sensor_config.o
 
 .PHONY: clean-src-2f-channeljsonconfig
 
