@@ -16,20 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLE_HOME_SYNC_SEARCH_CONDITION_H_
-#define GOOGLE_HOME_SYNC_SEARCH_CONDITION_H_
+#ifndef GOOGLE_HOME_SATE_REPORT_SEARCH_CONDITION_H_
+#define GOOGLE_HOME_SATE_REPORT_SEARCH_CONDITION_H_
 
 #include "asynctask/abstract_asynctask_search_condition.h"
 
-class supla_google_home_sync_search_condition
+class supla_google_home_state_report_search_condition
     : public supla_abstract_asynctask_search_condition {
  private:
   int user_id;
+  int device_id;
+  int channel_id;
+  long long int min_time_to_exec_usec;
 
  public:
-  explicit supla_google_home_sync_search_condition(int user_id);
+  explicit supla_google_home_state_report_search_condition(
+      int user_id, int device_id, int channel_id,
+      long long int min_time_to_exec_usec);
 
   virtual bool condition_met(supla_abstract_asynctask *task);
 };
 
-#endif /*GOOGLE_HOME_SYNC_SEARCH_CONDITION_H_*/
+#endif /*GOOGLE_HOME_SATE_REPORT_SEARCH_CONDITION_H_*/

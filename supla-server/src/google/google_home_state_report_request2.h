@@ -33,6 +33,8 @@ class supla_google_home_state_report_request2
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
   virtual std::string get_name(void);
+  std::string get_request_id(void);
+  void set_request_id(const std::string &request_id);
 
  public:
   supla_google_home_state_report_request2(

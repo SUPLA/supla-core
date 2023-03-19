@@ -18,9 +18,13 @@
 
 #include "google/google_home_state_report_request2.h"
 
+#include "channeljsonconfig/google_home_config.h"
+#include "device/channel_property_getter.h"
 #include "google/google_home_client2.h"
+#include "google/google_home_state_report_search_condition.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "svrcfg.h"
+#include "user/user.h"
 
 using std::string;
 
@@ -44,6 +48,21 @@ string supla_google_home_state_report_request2::get_name(void) {
   return "Google Home State Report Request";
 }
 
+string supla_google_home_state_report_request2::get_request_id(void) {
+  lock();
+  string result = request_id;
+  unlock();
+
+  return result;
+}
+
+void supla_google_home_state_report_request2::set_request_id(
+    const string &request_id) {
+  lock();
+  this->request_id = request_id;
+  unlock();
+}
+
 bool supla_google_home_state_report_request2::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
   if (!credentials->is_access_token_exists()) {
@@ -59,7 +78,7 @@ bool supla_google_home_state_report_request2::make_request(
 
   client.set_channel_connected(online);
   client.set_channel_value(value);
-  client.set_request_id(request_id);
+  client.set_request_id(get_request_id());
 
   switch (func) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
@@ -142,5 +161,56 @@ bool supla_google_home_state_report_request2::is_function_allowed(int func) {
 void supla_google_home_state_report_request2::new_request(
     const supla_caller &caller, supla_user *user, int device_id, int channel_id,
     const std::string &request_id) {
-  // reject disabled channels (json googleHomeDisabled == true)
+  if (!user || !is_caller_allowed(caller) || !user->googleHomeCredentials() ||
+      !user->googleHomeCredentials()->is_access_token_exists()) {
+    return;
+  }
+
+  supla_cahnnel_property_getter *property_getter =
+      new supla_cahnnel_property_getter();
+
+  int func =
+      property_getter->get_func(user->getUserID(), device_id, channel_id);
+
+  channel_json_config *config = property_getter->get_detached_json_config();
+
+  bool integration_disabled = false;
+  {
+    google_home_config gh_config(config);
+    integration_disabled = gh_config.is_integration_disabled();
+  }
+
+  if (!is_function_allowed(func) || !integration_disabled) {
+    delete property_getter;
+    return;
+  }
+
+  bool exists = false;
+  supla_google_home_state_report_search_condition cnd(
+      user->getUserID(), device_id, channel_id, 100000);
+  supla_asynctask_queue::global_instance()->access_task(
+      &cnd, [&exists, request_id](supla_abstract_asynctask *task) -> void {
+        exists = true;
+
+        supla_google_home_state_report_request2 *request =
+            dynamic_cast<supla_google_home_state_report_request2 *>(task);
+        if (request) {
+          request->set_request_id(request_id);
+        }
+      });
+
+  if (exists) {
+    delete property_getter;
+    return;
+  }
+
+  supla_google_home_state_report_request2 *request =
+      new supla_google_home_state_report_request2(
+          caller, user->getUserID(), device_id, channel_id,
+          supla_asynctask_queue::global_instance(),
+          supla_asynctask_http_thread_pool::global_instance(), property_getter,
+          user->googleHomeCredentials(), request_id);
+
+  request->set_priority(90);
+  request->start();
 }
