@@ -33,6 +33,9 @@ class supla_cahnnel_property_getter
   virtual supla_channel_ic_measurement *_get_ic_measurement(int user_id,
                                                             int device_id,
                                                             int channel_id);
+  virtual channel_json_config *_get_detached_json_config(int user_id,
+                                                         int device_id,
+                                                         int channel_id);
 
  public:
   virtual ~supla_cahnnel_property_getter(void);

@@ -127,3 +127,20 @@ supla_cahnnel_property_getter::_get_ic_measurement(int user_id, int device_id,
 
   return result;
 }
+
+channel_json_config *supla_cahnnel_property_getter::_get_detached_json_config(
+    int user_id, int device_id, int channel_id) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+
+  channel_json_config *result = nullptr;
+
+  if (device != nullptr) {
+    device->get_channels()->access_channel(
+        channel_id, [&result](supla_device_channel *channel) -> void {
+          result = channel->get_json_config();
+        });
+  }
+
+  return result;
+}

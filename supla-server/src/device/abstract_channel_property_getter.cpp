@@ -112,6 +112,21 @@ supla_abstract_channel_property_getter::get_ic_measurement(int user_id,
   return get_ic_measurement();
 }
 
+channel_json_config*
+supla_abstract_channel_property_getter::get_detached_json_config(void) {
+  return _get_detached_json_config(user_id, device_id, channel_id);
+}
+
+channel_json_config*
+supla_abstract_channel_property_getter::get_detached_json_config(
+    int user_id, int device_id, int channel_id) {
+  this->user_id = user_id;
+  this->device_id = device_id;
+  this->channel_id = channel_id;
+
+  return get_detached_json_config();
+}
+
 int supla_abstract_channel_property_getter::get_user_id(void) {
   return user_id;
 }
