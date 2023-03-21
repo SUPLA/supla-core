@@ -682,19 +682,15 @@ void supla_user::reconnect(const supla_caller &caller, bool all_devices,
 
   cgroups->load();  // load == reload
 
-  bool any_terminated = false;
-
-  if (all_devices && devices->reconnect_all()) {
-    any_terminated = true;
+  if (all_devices) {
+    devices->reconnect_all();
   }
 
-  if (all_clients && clients->reconnect_all()) {
-    any_terminated = true;
+  if (all_clients) {
+    clients->reconnect_all();
   }
 
-  if (any_terminated) {
-    supla_http_request_queue::getInstance()->onUserReconnectEvent(this, caller);
-  }
+  supla_http_request_queue::getInstance()->onUserReconnectEvent(this, caller);
 }
 
 void supla_user::reconnect(const supla_caller &caller) {
