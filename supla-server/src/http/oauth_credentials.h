@@ -37,8 +37,8 @@ class supla_http_oauth_credentials {
   virtual void data_lock(void);
   virtual void data_unlock(void);
 
-  virtual void set(const std::string access_token,
-                   const std::string refresh_token, int expires_in);
+  virtual void set(const std::string &access_token,
+                   const std::string &refresh_token, int expires_in);
 
  public:
   supla_http_oauth_credentials(void);
@@ -56,8 +56,8 @@ class supla_http_oauth_credentials {
   virtual bool is_refresh_token_exists(void);
   virtual int expires_in(void);
   virtual struct timeval get_set_time(void);
-  virtual void update(const std::string access_token,
-                      const std::string refresh_token, int expires_in);
+  virtual void update(const std::string &access_token,
+                      const std::string &refresh_token, int expires_in);
   virtual void remove(void);
 };
 

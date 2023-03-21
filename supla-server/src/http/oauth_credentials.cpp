@@ -139,8 +139,8 @@ struct timeval supla_http_oauth_credentials::get_set_time(void) {
   return result;
 }
 
-void supla_http_oauth_credentials::set(const string access_token,
-                                       const string refresh_token,
+void supla_http_oauth_credentials::set(const string &access_token,
+                                       const string &refresh_token,
                                        int expires_in) {
   data_lock();
 
@@ -159,8 +159,8 @@ void supla_http_oauth_credentials::set(const string access_token,
   data_unlock();
 }
 
-void supla_http_oauth_credentials::update(const std::string access_token,
-                                          const std::string refresh_token,
+void supla_http_oauth_credentials::update(const string &access_token,
+                                          const string &refresh_token,
                                           int expires_in) {
   set(access_token, refresh_token, expires_in);
 }
