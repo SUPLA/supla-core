@@ -448,7 +448,8 @@ void supla_http_request_queue::onChannelValueChangeEvent(
                                correlationToken, googleRequestId));
 
   supla_google_home_state_report_request2::new_request(
-      caller, user, deviceId, channelId, googleRequestId);
+      caller, user, deviceId, channelId,
+      googleRequestId ? googleRequestId : "");
 
   supla_state_webhook_request2::new_request(caller, user, deviceId, channelId,
                                             0);
