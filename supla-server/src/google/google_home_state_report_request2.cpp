@@ -192,10 +192,12 @@ void supla_google_home_state_report_request2::new_request(
       &cnd, [&exists, request_id](supla_abstract_asynctask *task) -> void {
         exists = true;
 
-        supla_google_home_state_report_request2 *request =
-            dynamic_cast<supla_google_home_state_report_request2 *>(task);
-        if (request) {
-          request->set_request_id(request_id);
+        if (!request_id.empty()) {
+            supla_google_home_state_report_request2 *request =
+                dynamic_cast<supla_google_home_state_report_request2 *>(task);
+            if (request) {
+              request->set_request_id(request_id);
+            }
         }
       });
 
