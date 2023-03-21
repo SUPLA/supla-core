@@ -180,7 +180,7 @@ void supla_google_home_state_report_request2::new_request(
     integration_disabled = gh_config.is_integration_disabled();
   }
 
-  if (!is_function_allowed(func) || !integration_disabled) {
+  if (!is_function_allowed(func) || integration_disabled) {
     delete property_getter;
     return;
   }
