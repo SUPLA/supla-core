@@ -36,30 +36,41 @@ supla_google_home_credentials2::supla_google_home_credentials2(supla_user *user)
 supla_google_home_credentials2::~supla_google_home_credentials2(void) {}
 
 void supla_google_home_credentials2::on_sync_40x_error() {
-  bool disable = false;
+  // For some unknown reason, home graph sometimes returns 404 when calling
+  // action.devices.SYNC, but sync works fine. Therefore, we do not react to
+  // this code for now.
 
-  data_lock();
+  /*
+    bool disable = false;
 
-  sync_40x_counter++;
-  if (sync_40x_counter >= 2) {
-    sync_40x_counter = 0;
-    disable = true;
-  }
+    data_lock();
 
-  data_unlock();
+    sync_40x_counter++;
+    if (sync_40x_counter >= 2) {
+      sync_40x_counter = 0;
+      disable = true;
+    }
 
-  if (disable) {
-    supla_log(LOG_INFO,
-              "Communication with the HomeGraph bridge paused for the user: %i",
-              get_user_id());
+    data_unlock();
 
-    set("", "", 0);
-  }
+    if (disable) {
+      supla_log(LOG_INFO,
+                "Communication with the HomeGraph bridge paused for the user:
+    %i", get_user_id());
+
+      set("", "", 0);
+    }
+    */
 }
 
 void supla_google_home_credentials2::on_reportstate_404_error() {
-  supla_http_request_queue::getInstance()->onGoogleHomeSyncNeededEvent(
-      get_user(), supla_caller(ctGoogleHome));
+  // We're not pushing re-syncing because currently, for some reason, a 404 code
+  // isn't always diagnostic.
+
+  /*
+    supla_http_request_queue::getInstance()->onGoogleHomeSyncNeededEvent(
+        get_user(), supla_caller(ctGoogleHome));
+  */
 }
 
 void supla_google_home_credentials2::load() {
