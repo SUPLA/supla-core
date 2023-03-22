@@ -74,4 +74,33 @@ TEST_F(GoogleHomeCredentialsIntegrationTest, load) {
   EXPECT_TRUE(credentials.is_access_token_exists());
 }
 
+TEST_F(GoogleHomeCredentialsIntegrationTest, excludeChannels) {
+  supla_user::user_free();
+  supla_user::init();
+
+  supla_google_home_credentials2 credentials(supla_user::find(2, true));
+
+  EXPECT_FALSE(credentials.is_channel_excluded(123));
+  EXPECT_FALSE(credentials.is_channel_excluded(456));
+
+  credentials.exclude_channel(678);
+
+  EXPECT_FALSE(credentials.is_channel_excluded(123));
+  EXPECT_FALSE(credentials.is_channel_excluded(456));
+  EXPECT_TRUE(credentials.is_channel_excluded(678));
+
+  credentials.exclude_channel(123);
+  credentials.exclude_channel(456);
+
+  EXPECT_TRUE(credentials.is_channel_excluded(123));
+  EXPECT_TRUE(credentials.is_channel_excluded(456));
+  EXPECT_TRUE(credentials.is_channel_excluded(678));
+
+  credentials.load();
+
+  EXPECT_FALSE(credentials.is_channel_excluded(123));
+  EXPECT_FALSE(credentials.is_channel_excluded(456));
+  EXPECT_FALSE(credentials.is_channel_excluded(678));
+}
+
 } /* namespace testing */
