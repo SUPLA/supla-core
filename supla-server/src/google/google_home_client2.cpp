@@ -234,7 +234,10 @@ bool supla_google_home_client2::state_report(void) {
         if (perform_post_request(report, &http_result_code)) {
           return http_result_code >= 200 && http_result_code <= 206;
         } else if (http_result_code == 403 || http_result_code == 404) {
-          get_gh_credentials()->on_reportstate_404_error();
+          // Previously, we forced re-sync, but as it turns out, nothing
+          // changes, and in addition, SYNC sometimes returns 404 even though
+          // the synchronization is going through correctly.
+          get_gh_credentials()->exclude_channel(get_channel_id());
         }
       }
     }
@@ -251,8 +254,6 @@ bool supla_google_home_client2::sync(void) {
     int http_result_code = 0;
     if (perform_post_request(header, &http_result_code)) {
       return http_result_code >= 200 && http_result_code <= 206;
-    } else if (http_result_code == 403 || http_result_code == 404) {
-      get_gh_credentials()->on_sync_40x_error();
     }
   }
 

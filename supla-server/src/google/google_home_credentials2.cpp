@@ -23,59 +23,48 @@
 #include "http/httprequestqueue.h"
 #include "log.h"
 
+using std::list;
+
 supla_google_home_credentials2::supla_google_home_credentials2(void)
-    : supla_http_oauth_credentials() {
-  sync_40x_counter = 0;
-}
+    : supla_http_oauth_credentials() {}
 
 supla_google_home_credentials2::supla_google_home_credentials2(supla_user *user)
-    : supla_http_oauth_credentials(user) {
-  sync_40x_counter = 0;
-}
+    : supla_http_oauth_credentials(user) {}
 
 supla_google_home_credentials2::~supla_google_home_credentials2(void) {}
-
-void supla_google_home_credentials2::on_sync_40x_error() {
-  // For some unknown reason, home graph sometimes returns 404 when calling
-  // action.devices.SYNC, but sync works fine. Therefore, we do not react to
-  // this code for now.
-
-  /*
-    bool disable = false;
-
-    data_lock();
-
-    sync_40x_counter++;
-    if (sync_40x_counter >= 2) {
-      sync_40x_counter = 0;
-      disable = true;
-    }
-
-    data_unlock();
-
-    if (disable) {
-      supla_log(LOG_INFO,
-                "Communication with the HomeGraph bridge paused for the user:
-    %i", get_user_id());
-
-      set("", "", 0);
-    }
-    */
-}
-
-void supla_google_home_credentials2::on_reportstate_404_error() {
-  // We're not pushing re-syncing because currently, for some reason, a 404 code
-  // isn't always diagnostic.
-
-  /*
-    supla_http_request_queue::getInstance()->onGoogleHomeSyncNeededEvent(
-        get_user(), supla_caller(ctGoogleHome));
-  */
-}
 
 void supla_google_home_credentials2::load() {
   supla_db_access_provider dba;
   supla_google_home_credentials_dao dao(&dba);
 
   set(dao.get_access_token(get_user_id()), "", 60 * 60 * 24 * 365);
+  data_lock();
+  excluded_channels.clear();
+  data_unlock();
+}
+
+void supla_google_home_credentials2::exclude_channel(int channel_id) {
+  data_lock();
+  if (!is_channel_excluded(channel_id)) {
+    excluded_channels.push_back(channel_id);
+  }
+  data_unlock();
+}
+
+bool supla_google_home_credentials2::is_channel_excluded(int channel_id) {
+  bool result = false;
+
+  data_lock();
+
+  for (auto it = excluded_channels.begin(); it != excluded_channels.end();
+       ++it) {
+    if (*it == channel_id) {
+      result = true;
+      break;
+    }
+  }
+
+  data_unlock();
+
+  return result;
 }

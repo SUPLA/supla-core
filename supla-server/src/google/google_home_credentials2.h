@@ -19,19 +19,24 @@
 #ifndef GOOGLE_HOME_CREDENTIALS2_H_
 #define GOOGLE_HOME_CREDENTIALS2_H_
 
+#include <list>
+
 #include "http/oauth_credentials.h"
 
 class supla_google_home_credentials2 : public supla_http_oauth_credentials {
  private:
-  int sync_40x_counter;
+  std::list<int> excluded_channels;
 
  public:
   supla_google_home_credentials2(void);
   explicit supla_google_home_credentials2(supla_user *user);
   ~supla_google_home_credentials2(void);
 
-  virtual void on_sync_40x_error();
-  virtual void on_reportstate_404_error();
+  // These methods are average here, but have been added for convenience
+  void exclude_channel(int channel_id);
+  bool is_channel_excluded(int channel_id);
+  // -------
+
   virtual void load();
 };
 

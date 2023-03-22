@@ -162,7 +162,8 @@ void supla_google_home_state_report_request2::new_request(
     const supla_caller &caller, supla_user *user, int device_id, int channel_id,
     const std::string &request_id) {
   if (!user || !is_caller_allowed(caller) || !user->googleHomeCredentials() ||
-      !user->googleHomeCredentials()->is_access_token_exists()) {
+      !user->googleHomeCredentials()->is_access_token_exists() ||
+      user->googleHomeCredentials()->is_channel_excluded(channel_id)) {
     return;
   }
 
@@ -172,12 +173,14 @@ void supla_google_home_state_report_request2::new_request(
   int func =
       property_getter->get_func(user->getUserID(), device_id, channel_id);
 
-  channel_json_config *config = property_getter->get_detached_json_config();
-
   bool integration_disabled = false;
   {
-    google_home_config gh_config(config);
-    integration_disabled = gh_config.is_integration_disabled();
+    channel_json_config *config = property_getter->get_detached_json_config();
+    if (config) {
+      google_home_config gh_config(config);
+      integration_disabled = gh_config.is_integration_disabled();
+      delete config;
+    }
   }
 
   if (!is_function_allowed(func) || integration_disabled) {
@@ -193,11 +196,11 @@ void supla_google_home_state_report_request2::new_request(
         exists = true;
 
         if (!request_id.empty()) {
-            supla_google_home_state_report_request2 *request =
-                dynamic_cast<supla_google_home_state_report_request2 *>(task);
-            if (request) {
-              request->set_request_id(request_id);
-            }
+          supla_google_home_state_report_request2 *request =
+              dynamic_cast<supla_google_home_state_report_request2 *>(task);
+          if (request) {
+            request->set_request_id(request_id);
+          }
         }
       });
 
