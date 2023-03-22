@@ -46,8 +46,7 @@ class GoogleHomeCredentialsMock : public supla_google_home_credentials2 {
                             const std::string refresh_token, int expires_in));
   MOCK_METHOD0(remove, void(void));
 
-  MOCK_METHOD0(on_sync_40x_error, void(void));
-  MOCK_METHOD0(on_reportstate_404_error, void(void));
+  MOCK_METHOD0(exclude_channel, void(void));
 };
 
 } /* namespace testing */

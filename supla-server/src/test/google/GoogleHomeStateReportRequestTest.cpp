@@ -261,7 +261,7 @@ TEST_F(GoogleHomeStateReportRequestTest, x403) {
 
   EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(403));
 
-  EXPECT_CALL(credentials, on_reportstate_404_error).Times(1);
+  EXPECT_CALL(credentials, exclude_channel).Times(1);
 
   supla_google_home_state_report_request2 *request =
       new supla_google_home_state_report_request2(
@@ -286,7 +286,7 @@ TEST_F(GoogleHomeStateReportRequestTest, x404) {
 
   EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(404));
 
-  EXPECT_CALL(credentials, on_reportstate_404_error).Times(1);
+  EXPECT_CALL(credentials, exclude_channel).Times(1);
 
   supla_google_home_state_report_request2 *request =
       new supla_google_home_state_report_request2(

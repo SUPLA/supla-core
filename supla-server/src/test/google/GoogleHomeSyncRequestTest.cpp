@@ -95,38 +95,4 @@ TEST_F(GoogleHomeSyncRequestTest, syncSuccessful) {
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
 
-TEST_F(GoogleHomeSyncRequestTest, http404) {
-  EXPECT_CALL(credentials, is_access_token_exists).WillRepeatedly(Return(true));
-
-  EXPECT_CALL(credentials, on_sync_40x_error).Times(1);
-
-  EXPECT_CALL(*curlAdapter, perform).Times(1).WillOnce(Return(true));
-
-  EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(404));
-
-  supla_google_home_sync_request2 *request =
-      new supla_google_home_sync_request2(0, queue, pool, &credentials);
-
-  request->set_delay_usec(1);
-  std::shared_ptr<supla_abstract_asynctask> task = request->start();
-  WaitForState(task, supla_asynctask_state::FAILURE, 10000);
-}
-
-TEST_F(GoogleHomeSyncRequestTest, http403) {
-  EXPECT_CALL(credentials, is_access_token_exists).WillRepeatedly(Return(true));
-
-  EXPECT_CALL(credentials, on_sync_40x_error).Times(1);
-
-  EXPECT_CALL(*curlAdapter, perform).Times(1).WillOnce(Return(true));
-
-  EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(403));
-
-  supla_google_home_sync_request2 *request =
-      new supla_google_home_sync_request2(0, queue, pool, &credentials);
-
-  request->set_delay_usec(1);
-  std::shared_ptr<supla_abstract_asynctask> task = request->start();
-  WaitForState(task, supla_asynctask_state::FAILURE, 10000);
-}
-
 }  // namespace testing
