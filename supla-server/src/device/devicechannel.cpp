@@ -78,38 +78,15 @@ supla_device_channel::supla_device_channel(
 
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
-  bool load_json_config = false;
-
-  switch (type) {
-    case SUPLA_CHANNELTYPE_ACTIONTRIGGER:
-    case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
-    case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
-    case SUPLA_CHANNELTYPE_RELAY:
-    case SUPLA_CHANNELTYPE_RELAYHFD4:
-    case SUPLA_CHANNELTYPE_RELAYG5LA1A:
-    case SUPLA_CHANNELTYPE_2XRELAYG5LA1A:
-      load_json_config = true;
-      break;
-  }
-
-  switch (get_func()) {
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-      load_json_config = true;
-      break;
-  }
-
-  if (load_json_config) {
-    json_config = new channel_json_config(nullptr);
-    if (json_config) {
-      json_config->set_properties(properties);
-      json_config->set_user_config(user_config);
-      if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
-        electricity_meter_config *config =
-            new electricity_meter_config(json_config);
-        this->flags |= config->get_channel_user_flags();
-        delete config;
-      }
+  json_config = new channel_json_config(nullptr);
+  if (json_config) {
+    json_config->set_properties(properties);
+    json_config->set_user_config(user_config);
+    if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+      electricity_meter_config *config =
+          new electricity_meter_config(json_config);
+      this->flags |= config->get_channel_user_flags();
+      delete config;
     }
   }
 
