@@ -30,17 +30,26 @@
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
+#include "webhook/state_webhook_request2.h"
 
 using std::string;
 
 supla_state_webhook_client::supla_state_webhook_client(
     int channel_id, supla_abstract_curl_adapter *curl_adapter,
-    supla_state_webhook_credentials *credentials) {
+    supla_state_webhook_credentials *credentials, __time_t timestamp) {
   this->channel_id = channel_id;
   this->channel_connected = false;
   this->curl_adapter = curl_adapter;
   this->credentials = credentials;
   this->channel_value = nullptr;
+
+  if (timestamp == 0) {
+    struct timeval now;
+    gettimeofday(&now, nullptr);
+    timestamp = now.tv_sec;
+  }
+
+  this->timestamp = timestamp;
 }
 
 void supla_state_webhook_client::set_channel_connected(bool connected) {
@@ -62,7 +71,7 @@ cJSON *supla_state_webhook_client::get_header(const char *function) {
 
     cJSON_AddStringToObject(header, "channelFunction", function);
 
-    cJSON_AddNumberToObject(header, "timestamp", curl_adapter->get_timestamp());
+    cJSON_AddNumberToObject(header, "timestamp", timestamp);
   }
 
   return header;

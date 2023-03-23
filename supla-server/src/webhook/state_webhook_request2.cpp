@@ -16,8 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <webhook/state_webhook_client.h>
 #include "webhook/state_webhook_request2.h"
+
+#include <webhook/state_webhook_client.h>
 
 #include <vector>
 
@@ -40,6 +41,7 @@ supla_state_webhook_request2::supla_state_webhook_request2(
                                    queue, pool, property_getter) {
   this->actions = actions;
   this->credentials = credentials;
+  this->timestamp = 0;
 }
 
 supla_state_webhook_request2::~supla_state_webhook_request2(void) {}
@@ -48,14 +50,18 @@ bool supla_state_webhook_request2::is_any_action_set(void) { return actions; }
 
 string supla_state_webhook_request2::get_name(void) { return "Webhook"; }
 
+void supla_state_webhook_request2::set_timestamp(__time_t timestmap) {
+  this->timestamp = timestmap;
+}
+
 bool supla_state_webhook_request2::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
   if (!credentials->is_access_token_exists()) {
     return false;
   }
 
-  supla_state_webhook_client client(get_channel_id(), curl_adapter,
-                                     credentials);
+  supla_state_webhook_client client(get_channel_id(), curl_adapter, credentials,
+                                    timestamp);
 
   if (actions) {
     return client.triggered_actions_report(actions);

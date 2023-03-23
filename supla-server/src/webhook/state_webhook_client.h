@@ -20,6 +20,7 @@
 #define WEBHOOK_STATE_WEBHOOK_CLIENT_H_
 
 #include <webhook/state_webhook_credentials.h>
+
 #include "channel_ic_measurement.h"
 #include "device/channel_electricity_measurement.h"
 #include "device/value/channel_value.h"
@@ -30,6 +31,7 @@ class supla_state_webhook_client {
  private:
   int channel_id;
   bool channel_connected;
+  __time_t timestamp;
   supla_abstract_curl_adapter *curl_adapter;
   supla_state_webhook_credentials *credentials;
   supla_channel_value *channel_value;
@@ -53,7 +55,7 @@ class supla_state_webhook_client {
  public:
   explicit supla_state_webhook_client(
       int channel_id, supla_abstract_curl_adapter *curl_adapter,
-      supla_state_webhook_credentials *credentials);
+      supla_state_webhook_credentials *credentials, __time_t timestamp);
 
   void set_channel_connected(bool connected);
   void set_channel_value(supla_channel_value *channel_value);

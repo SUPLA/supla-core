@@ -27,6 +27,7 @@
 class supla_state_webhook_request2 : public supla_asynctask_http_request {
  private:
   int actions;
+  __time_t timestamp;
   supla_state_webhook_credentials *credentials;
 
  protected:
@@ -43,6 +44,7 @@ class supla_state_webhook_request2 : public supla_asynctask_http_request {
 
   virtual ~supla_state_webhook_request2(void);
 
+  void set_timestamp(__time_t timestamp);
   bool is_any_action_set(void);
 
   static bool is_caller_allowed(const supla_caller &caller);

@@ -35,10 +35,6 @@ class supla_abstract_curl_adapter {
   virtual bool append_header(const char *string) = 0;
   virtual bool perform(void) = 0;
   virtual long get_response_code(void) = 0;
-
-  virtual __time_t get_timestamp(
-      void) = 0;  // This method is not necessary here, but has been added for
-                  // more convenient unit testing.
 };
 
 #endif /* ABSTRACT_CURL_ADAPTER_H_ */

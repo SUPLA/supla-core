@@ -53,8 +53,6 @@ void StateWebhookRequestTest::SetUp(void) {
   EXPECT_CALL(*pool, get_bucket)
       .WillOnce(Return(new supla_asynctask_http_thread_bucket(curlAdapter)));
 
-  EXPECT_CALL(*curlAdapter, get_timestamp).WillRepeatedly(Return(1600097258));
-
   EXPECT_CALL(*curlAdapter,
               set_opt_url(StrEq("https://webhook.test.io/endpoint")))
       .Times(1);
@@ -95,6 +93,7 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
       supla_caller(ctDevice), 1, 2, 123, 0, queue, pool, propertyGetter,
       &credentials);
+  request->set_timestamp(1600097258);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
@@ -123,6 +122,7 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
       supla_caller(ctDevice), 1, 2, 123, 0, queue, pool, propertyGetter,
       &credentials);
+  request->set_timestamp(1600097258);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
@@ -152,6 +152,7 @@ void StateWebhookRequestTest::makeTest(
   supla_state_webhook_request2 *request = new supla_state_webhook_request2(
       supla_caller(ctDevice), 1, 2, 123, 0, queue, pool, propertyGetter,
       &credentials);
+  request->set_timestamp(1600097258);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
