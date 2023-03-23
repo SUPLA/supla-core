@@ -21,7 +21,7 @@
 
 #include <gmock/gmock.h>
 
-#include <webhook/state_webhook_credentials.h>
+#include "webhook/state_webhook_credentials.h"
 
 namespace testing {
 

@@ -19,10 +19,9 @@
 #ifndef GOOGLE_HOME_SYNC_REQUEST_H_
 #define GOOGLE_HOME_SYNC_REQUEST_H_
 
-#include <google/google_home_credentials.h>
-
 #include <string>
 
+#include "google/google_home_credentials.h"
 #include "http/asynctask_http_request.h"
 
 class supla_google_home_sync_request2 : public supla_asynctask_http_request {

@@ -19,13 +19,12 @@
 #ifndef WEBHOOK_STATE_WEBHOOK_CLIENT_H_
 #define WEBHOOK_STATE_WEBHOOK_CLIENT_H_
 
-#include <webhook/state_webhook_credentials.h>
-
 #include "channel_ic_measurement.h"
 #include "device/channel_electricity_measurement.h"
 #include "device/value/channel_value.h"
 #include "http/abstract_curl_adapter.h"
 #include "json/cJSON.h"
+#include "webhook/state_webhook_credentials.h"
 
 class supla_state_webhook_client {
  private:

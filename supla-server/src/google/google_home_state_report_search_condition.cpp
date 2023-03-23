@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <google/google_home_state_report_request.h>
 #include "google/google_home_state_report_search_condition.h"
 
+#include "google/google_home_state_report_request.h"
 
 supla_google_home_state_report_search_condition::
     supla_google_home_state_report_search_condition(

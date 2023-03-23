@@ -19,10 +19,9 @@
 #ifndef GOOGLE_HOME_STATE_REPORT_REQUEST_H_
 #define GOOGLE_HOME_STATE_REPORT_REQUEST_H_
 
-#include <google/google_home_credentials.h>
-
 #include <string>
 
+#include "google/google_home_credentials.h"
 #include "http/asynctask_http_request.h"
 
 class supla_google_home_state_report_request

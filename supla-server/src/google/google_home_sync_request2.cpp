@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <google/google_home_client.h>
-#include "google/google_home_sync_request2.h"
+#include "google_home_sync_request2.h"
 
+#include "google/google_home_client.h"
 #include "google/google_home_sync_search_condition.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "svrcfg.h"

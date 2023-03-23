@@ -19,10 +19,9 @@
 #ifndef GOOGLE_HOME_CLIENT_H_
 #define GOOGLE_HOME_CLIENT_H_
 
-#include <google/google_home_credentials.h>
-
 #include <string>
 
+#include "google/google_home_credentials.h"
 #include "http/voice_assistant_client2.h"
 #include "json/cJSON.h"
 

@@ -16,11 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <integration/webhook/StateWebhookCredentialsIntegrationTest.h>
-#include <webhook/state_webhook_credentials.h>
+#include "StateWebhookCredentialsIntegrationTest.h"
 
 #include "log.h"
 #include "user.h"
+#include "webhook/state_webhook_credentials.h"
 
 namespace testing {
 

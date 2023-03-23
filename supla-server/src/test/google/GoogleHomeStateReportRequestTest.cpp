@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <google/google_home_state_report_request.h>
-#include "google/GoogleHomeStateReportRequestTest.h"
+#include "GoogleHomeStateReportRequestTest.h"
 
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
+#include "google/google_home_state_report_request.h"
 #include "http/asynctask_http_thread_bucket.h"
 
 namespace testing {
