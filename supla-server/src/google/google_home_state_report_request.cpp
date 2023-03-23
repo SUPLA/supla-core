@@ -77,6 +77,7 @@ bool supla_google_home_state_report_request::make_request(
   client.set_channel_connected(online);
   client.set_channel_value(value);
   client.set_request_id(get_request_id());
+  set_request_id("");
 
   switch (func) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
