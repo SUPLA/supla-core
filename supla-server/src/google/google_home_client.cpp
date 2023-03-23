@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "google/google_home_client2.h"
+#include "google_home_client.h"
 
 #include <string.h>
 
@@ -29,28 +29,28 @@
 
 using std::string;
 
-supla_google_home_client2::supla_google_home_client2(
+supla_google_home_client::supla_google_home_client(
     int channel_id, supla_abstract_curl_adapter *curl_adapter,
-    supla_google_home_credentials2 *credentials)
+    supla_google_home_credentials *credentials)
     : supla_voice_assistant_client2(channel_id, curl_adapter, credentials) {
   this->json_states = cJSON_CreateObject();
 }
 
-supla_google_home_client2::~supla_google_home_client2(void) {
+supla_google_home_client::~supla_google_home_client(void) {
   cJSON_Delete(json_states);
 }
 
-supla_google_home_credentials2 *supla_google_home_client2::get_gh_credentials(
+supla_google_home_credentials *supla_google_home_client::get_gh_credentials(
     void) {
-  return dynamic_cast<supla_google_home_credentials2 *>(get_credentials());
+  return dynamic_cast<supla_google_home_credentials *>(get_credentials());
 }
 
-void supla_google_home_client2::set_request_id(const string &request_id) {
+void supla_google_home_client::set_request_id(const string &request_id) {
   this->request_id = request_id;
 }
 
-bool supla_google_home_client2::perform_post_request(cJSON *json_data,
-                                                     int *http_result_code) {
+bool supla_google_home_client::perform_post_request(cJSON *json_data,
+                                                    int *http_result_code) {
   bool result = false;
 
   if (!get_credentials()->is_access_token_exists()) {
@@ -96,7 +96,7 @@ bool supla_google_home_client2::perform_post_request(cJSON *json_data,
   return result;
 }
 
-cJSON *supla_google_home_client2::get_header(void) {
+cJSON *supla_google_home_client::get_header(void) {
   cJSON *header = cJSON_CreateObject();
   if (header) {
     const char name[] = "requestId";
@@ -118,12 +118,12 @@ cJSON *supla_google_home_client2::get_header(void) {
   return NULL;
 }
 
-bool supla_google_home_client2::channel_exists(const char *endpoint_id) {
+bool supla_google_home_client::channel_exists(const char *endpoint_id) {
   return endpoint_id != NULL &&
          cJSON_GetObjectItem(json_states, endpoint_id) != NULL;
 }
 
-cJSON *supla_google_home_client2::get_state_skeleton(void) {
+cJSON *supla_google_home_client::get_state_skeleton(void) {
   cJSON *state = NULL;
   string endpoint_id = get_endpoint_id();
   if (endpoint_id.size()) {
@@ -139,7 +139,7 @@ cJSON *supla_google_home_client2::get_state_skeleton(void) {
   return state;
 }
 
-void supla_google_home_client2::add_onoff_state(void) {
+void supla_google_home_client::add_onoff_state(void) {
   cJSON *state = (cJSON *)get_state_skeleton();
   if (state) {
     supla_channel_onoff_value *v =
@@ -150,7 +150,7 @@ void supla_google_home_client2::add_onoff_state(void) {
   }
 }
 
-void supla_google_home_client2::add_brightness_state(void) {
+void supla_google_home_client::add_brightness_state(void) {
   cJSON *state = (cJSON *)get_state_skeleton();
   if (state) {
     supla_channel_rgbw_value *v =
@@ -164,7 +164,7 @@ void supla_google_home_client2::add_brightness_state(void) {
   }
 }
 
-void supla_google_home_client2::add_color_state(void) {
+void supla_google_home_client::add_color_state(void) {
   cJSON *state = (cJSON *)get_state_skeleton();
   if (state) {
     cJSON *json_color = cJSON_CreateObject();
@@ -186,14 +186,14 @@ void supla_google_home_client2::add_color_state(void) {
   }
 }
 
-void supla_google_home_client2::add_open_percent_state(short open_percent) {
+void supla_google_home_client::add_open_percent_state(short open_percent) {
   cJSON *state = (cJSON *)get_state_skeleton();
   if (state) {
     cJSON_AddNumberToObject(state, "openPercent", open_percent);
   }
 }
 
-void supla_google_home_client2::add_gate_state(void) {
+void supla_google_home_client::add_gate_state(void) {
   supla_channel_gate_value *v =
       dynamic_cast<supla_channel_gate_value *>(get_channel_value());
 
@@ -203,7 +203,7 @@ void supla_google_home_client2::add_gate_state(void) {
                              : 0);
 }
 
-void supla_google_home_client2::add_roller_shutter_state(void) {
+void supla_google_home_client::add_roller_shutter_state(void) {
   supla_channel_rs_value *v =
       dynamic_cast<supla_channel_rs_value *>(get_channel_value());
 
@@ -216,7 +216,7 @@ void supla_google_home_client2::add_roller_shutter_state(void) {
   add_open_percent_state(100 - shut_percentage);
 }
 
-bool supla_google_home_client2::state_report(void) {
+bool supla_google_home_client::state_report(void) {
   cJSON *report = (cJSON *)get_header();
 
   if (report) {
@@ -246,7 +246,7 @@ bool supla_google_home_client2::state_report(void) {
   return false;
 }
 
-bool supla_google_home_client2::sync(void) {
+bool supla_google_home_client::sync(void) {
   cJSON *header = (cJSON *)get_header();
 
   if (header) {

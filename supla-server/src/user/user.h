@@ -33,9 +33,9 @@
 #include "amazon/alexacredentials.h"
 #include "caller.h"
 #include "commontypes.h"
-#include "google/google_home_credentials2.h"
+#include <google/google_home_credentials.h>
 #include "proto.h"
-#include "webhook/state_webhook_credentials2.h"
+#include <webhook/state_webhook_credentials.h>
 
 class supla_device;
 class supla_client;
@@ -67,8 +67,8 @@ class supla_user {
 
   supla_user_channelgroups *cgroups;
   supla_amazon_alexa_credentials *amazon_alexa_credentials;
-  supla_google_home_credentials2 *google_home_credentials;
-  supla_state_webhook_credentials2 *state_webhook_credentials;
+  supla_google_home_credentials *google_home_credentials;
+  supla_state_webhook_credentials *state_webhook_credentials;
   int UserID;
   bool connections_allowed;
 
@@ -156,8 +156,8 @@ class supla_user {
                    TCS_SetCaption *caption, int call_id);
 
   supla_amazon_alexa_credentials *amazonAlexaCredentials(void);
-  supla_google_home_credentials2 *googleHomeCredentials(void);
-  supla_state_webhook_credentials2 *stateWebhookCredentials(void);
+  supla_google_home_credentials *googleHomeCredentials(void);
+  supla_state_webhook_credentials *stateWebhookCredentials(void);
 
   static void on_scene_changed(const supla_caller &caller, int user_id,
                                int scene_id);

@@ -16,6 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <webhook/state_webhook_client.h>
 #include "webhook/state_webhook_request2.h"
 
 #include <vector>
@@ -23,7 +24,6 @@
 #include "device/channel_property_getter.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "user/user.h"
-#include "webhook/state_webhook_client2.h"
 #include "webhook/state_webhook_search_condition.h"
 
 using std::shared_ptr;
@@ -35,7 +35,7 @@ supla_state_webhook_request2::supla_state_webhook_request2(
     int actions, supla_asynctask_queue *queue,
     supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_channel_property_getter *property_getter,
-    supla_state_webhook_credentials2 *credentials)
+    supla_state_webhook_credentials *credentials)
     : supla_asynctask_http_request(caller, user_id, device_id, channel_id,
                                    queue, pool, property_getter) {
   this->actions = actions;
@@ -54,7 +54,7 @@ bool supla_state_webhook_request2::make_request(
     return false;
   }
 
-  supla_state_webhook_client2 client(get_channel_id(), curl_adapter,
+  supla_state_webhook_client client(get_channel_id(), curl_adapter,
                                      credentials);
 
   if (actions) {
@@ -248,7 +248,7 @@ bool supla_state_webhook_request2::is_caller_allowed(
 
 // static
 bool supla_state_webhook_request2::is_function_allowed(
-    int func, supla_state_webhook_credentials2 *credentials,
+    int func, supla_state_webhook_credentials *credentials,
     int *delay_time_usec) {
   if (!credentials || !func) {
     return false;

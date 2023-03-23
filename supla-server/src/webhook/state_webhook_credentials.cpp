@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "webhook/state_webhook_credentials2.h"
+#include "state_webhook_credentials.h"
 
 #include "db/db_access_provider.h"
 #include "webhook/state_webhook_credentials_dao.h"
@@ -24,16 +24,16 @@
 using std::string;
 using std::vector;
 
-supla_state_webhook_credentials2::supla_state_webhook_credentials2(void)
+supla_state_webhook_credentials::supla_state_webhook_credentials(void)
     : supla_http_oauth_credentials() {}
 
-supla_state_webhook_credentials2::supla_state_webhook_credentials2(
+supla_state_webhook_credentials::supla_state_webhook_credentials(
     supla_user *user)
     : supla_http_oauth_credentials(user) {}
 
-supla_state_webhook_credentials2::~supla_state_webhook_credentials2(void) {}
+supla_state_webhook_credentials::~supla_state_webhook_credentials(void) {}
 
-string supla_state_webhook_credentials2::get_url(void) {
+string supla_state_webhook_credentials::get_url(void) {
   data_lock();
   string result = url;
   data_unlock();
@@ -41,7 +41,7 @@ string supla_state_webhook_credentials2::get_url(void) {
   return url;
 }
 
-vector<int> supla_state_webhook_credentials2::get_function_ids(void) {
+vector<int> supla_state_webhook_credentials::get_function_ids(void) {
   data_lock();
   vector<int> result = function_ids;
   data_unlock();
@@ -49,9 +49,9 @@ vector<int> supla_state_webhook_credentials2::get_function_ids(void) {
   return result;
 }
 
-void supla_state_webhook_credentials2::update(const string access_token,
-                                              const string refresh_token,
-                                              int expires_in) {
+void supla_state_webhook_credentials::update(const string access_token,
+                                             const string refresh_token,
+                                             int expires_in) {
   supla_http_oauth_credentials::update(access_token, refresh_token, expires_in);
 
   supla_db_access_provider dba;
@@ -59,7 +59,7 @@ void supla_state_webhook_credentials2::update(const string access_token,
   dao.set(get_user_id(), access_token, refresh_token, expires_in);
 }
 
-void supla_state_webhook_credentials2::remove(void) {
+void supla_state_webhook_credentials::remove(void) {
   data_lock();
   supla_http_oauth_credentials::remove();
   url = "";
@@ -71,7 +71,7 @@ void supla_state_webhook_credentials2::remove(void) {
   dao.remove(get_user_id());
 }
 
-void supla_state_webhook_credentials2::load(void) {
+void supla_state_webhook_credentials::load(void) {
   supla_db_access_provider dba;
   supla_state_webhook_credentials_dao dao(&dba);
 

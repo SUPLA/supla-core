@@ -16,6 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <google/google_home_state_report_request.h>
 #include "http/httprequestqueue.h"
 
 #include <unistd.h>  // NOLINT
@@ -24,7 +25,6 @@
 #include <list>     // NOLINT
 
 #include "db/database.h"
-#include "google/google_home_state_report_request2.h"
 #include "google/google_home_sync_request2.h"
 #include "http/httprequest.h"
 #include "http/httprequestvoiceassistantextraparams.h"
@@ -447,7 +447,7 @@ void supla_http_request_queue::onChannelValueChangeEvent(
                            new supla_http_request_voice_assistant_extra_params(
                                correlationToken, googleRequestId));
 
-  supla_google_home_state_report_request2::new_request(
+  supla_google_home_state_report_request::new_request(
       caller, user, deviceId, channelId,
       googleRequestId ? googleRequestId : "");
 

@@ -19,10 +19,10 @@
 #ifndef VOICE_ASSISTANT_CLIENT2_H_
 #define VOICE_ASSISTANT_CLIENT2_H_
 
+#include <google/google_home_credentials.h>
 #include <string>
 
 #include "device/value/channel_value.h"
-#include "google/google_home_credentials2.h"
 #include "http/abstract_curl_adapter.h"
 
 class supla_voice_assistant_client2 {

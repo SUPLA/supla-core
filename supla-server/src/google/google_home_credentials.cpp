@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "google/google_home_credentials2.h"
+#include "google_home_credentials.h"
 
 #include "db/db_access_provider.h"
 #include "google/google_home_credentials_dao.h"
@@ -25,15 +25,15 @@
 
 using std::list;
 
-supla_google_home_credentials2::supla_google_home_credentials2(void)
+supla_google_home_credentials::supla_google_home_credentials(void)
     : supla_http_oauth_credentials() {}
 
-supla_google_home_credentials2::supla_google_home_credentials2(supla_user *user)
+supla_google_home_credentials::supla_google_home_credentials(supla_user *user)
     : supla_http_oauth_credentials(user) {}
 
-supla_google_home_credentials2::~supla_google_home_credentials2(void) {}
+supla_google_home_credentials::~supla_google_home_credentials(void) {}
 
-void supla_google_home_credentials2::load() {
+void supla_google_home_credentials::load() {
   supla_db_access_provider dba;
   supla_google_home_credentials_dao dao(&dba);
 
@@ -43,7 +43,7 @@ void supla_google_home_credentials2::load() {
   data_unlock();
 }
 
-void supla_google_home_credentials2::exclude_channel(int channel_id) {
+void supla_google_home_credentials::exclude_channel(int channel_id) {
   data_lock();
   if (!is_channel_excluded(channel_id)) {
     excluded_channels.push_back(channel_id);
@@ -51,7 +51,7 @@ void supla_google_home_credentials2::exclude_channel(int channel_id) {
   data_unlock();
 }
 
-bool supla_google_home_credentials2::is_channel_excluded(int channel_id) {
+bool supla_google_home_credentials::is_channel_excluded(int channel_id) {
   bool result = false;
 
   data_lock();

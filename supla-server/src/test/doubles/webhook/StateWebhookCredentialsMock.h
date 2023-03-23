@@ -21,11 +21,11 @@
 
 #include <gmock/gmock.h>
 
-#include "webhook/state_webhook_credentials2.h"
+#include <webhook/state_webhook_credentials.h>
 
 namespace testing {
 
-class StateWebhookCredentialsMock : public supla_state_webhook_credentials2 {
+class StateWebhookCredentialsMock : public supla_state_webhook_credentials {
  private:
  protected:
  public:

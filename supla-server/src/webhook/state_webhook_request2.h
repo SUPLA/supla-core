@@ -15,18 +15,19 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-#ifndef WEBHOOK_STATE_WEBHOOK_REQUEST2_H_
-#define WEBHOOK_STATE_WEBHOOK_REQUEST2_H_
+#ifndef WEBHOOK_STATE_WEBHOOK_REQUEST_H_
+#define WEBHOOK_STATE_WEBHOOK_REQUEST_H_
+
+#include <webhook/state_webhook_credentials.h>
 
 #include <string>
 
 #include "http/asynctask_http_request.h"
-#include "webhook/state_webhook_credentials2.h"
 
 class supla_state_webhook_request2 : public supla_asynctask_http_request {
  private:
   int actions;
-  supla_state_webhook_credentials2 *credentials;
+  supla_state_webhook_credentials *credentials;
 
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
@@ -38,7 +39,7 @@ class supla_state_webhook_request2 : public supla_asynctask_http_request {
       int actions, supla_asynctask_queue *queue,
       supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_channel_property_getter *property_getter,
-      supla_state_webhook_credentials2 *credentials);
+      supla_state_webhook_credentials *credentials);
 
   virtual ~supla_state_webhook_request2(void);
 
@@ -46,10 +47,10 @@ class supla_state_webhook_request2 : public supla_asynctask_http_request {
 
   static bool is_caller_allowed(const supla_caller &caller);
   static bool is_function_allowed(int func,
-                                  supla_state_webhook_credentials2 *credentials,
+                                  supla_state_webhook_credentials *credentials,
                                   int *delay_time_usec);
   static void new_request(const supla_caller &caller, supla_user *user,
                           int device_id, int channel_id, int actions);
 };
 
-#endif /* WEBHOOK_STATE_WEBHOOK_REQUEST2_H_ */
+#endif /* WEBHOOK_STATE_WEBHOOK_REQUEST_H_ */

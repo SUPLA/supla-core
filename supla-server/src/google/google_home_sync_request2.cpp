@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <google/google_home_client.h>
 #include "google/google_home_sync_request2.h"
 
-#include "google/google_home_client2.h"
 #include "google/google_home_sync_search_condition.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "svrcfg.h"
@@ -29,7 +29,7 @@ using std::string;
 supla_google_home_sync_request2::supla_google_home_sync_request2(
     int user_id, supla_asynctask_queue *queue,
     supla_abstract_asynctask_thread_pool *pool,
-    supla_google_home_credentials2 *credentials)
+    supla_google_home_credentials *credentials)
     : supla_asynctask_http_request(supla_caller(), user_id, 0, 0, queue, pool,
                                    nullptr) {
   this->credentials = credentials;
@@ -45,7 +45,7 @@ string supla_google_home_sync_request2::get_name(void) {
 bool supla_google_home_sync_request2::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
   if (credentials->is_access_token_exists()) {
-    supla_google_home_client2 client(0, curl_adapter, credentials);
+    supla_google_home_client client(0, curl_adapter, credentials);
     return client.sync();
   }
 

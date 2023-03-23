@@ -16,11 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "google/google_home_state_report_request2.h"
+#include <google/google_home_client.h>
+#include "google_home_state_report_request.h"
 
 #include "channeljsonconfig/google_home_config.h"
 #include "device/channel_property_getter.h"
-#include "google/google_home_client2.h"
 #include "google/google_home_state_report_search_condition.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "svrcfg.h"
@@ -28,13 +28,11 @@
 
 using std::string;
 
-supla_google_home_state_report_request2::
-    supla_google_home_state_report_request2(
-        const supla_caller &caller, int user_id, int device_id, int channel_id,
-        supla_asynctask_queue *queue,
-        supla_abstract_asynctask_thread_pool *pool,
-        supla_abstract_channel_property_getter *property_getter,
-        supla_google_home_credentials2 *credentials, const string &request_id)
+supla_google_home_state_report_request::supla_google_home_state_report_request(
+    const supla_caller &caller, int user_id, int device_id, int channel_id,
+    supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
+    supla_abstract_channel_property_getter *property_getter,
+    supla_google_home_credentials *credentials, const string &request_id)
     : supla_asynctask_http_request(supla_caller(), user_id, device_id,
                                    channel_id, queue, pool, property_getter) {
   this->credentials = credentials;
@@ -44,11 +42,11 @@ supla_google_home_state_report_request2::
   set_timeout(scfg_int(CFG_GOOGLE_HOME_STATEREPORT_TIMEOUT) * 1000);
 }
 
-string supla_google_home_state_report_request2::get_name(void) {
+string supla_google_home_state_report_request::get_name(void) {
   return "Google Home State Report Request";
 }
 
-string supla_google_home_state_report_request2::get_request_id(void) {
+string supla_google_home_state_report_request::get_request_id(void) {
   lock();
   string result = request_id;
   unlock();
@@ -56,20 +54,20 @@ string supla_google_home_state_report_request2::get_request_id(void) {
   return result;
 }
 
-void supla_google_home_state_report_request2::set_request_id(
+void supla_google_home_state_report_request::set_request_id(
     const string &request_id) {
   lock();
   this->request_id = request_id;
   unlock();
 }
 
-bool supla_google_home_state_report_request2::make_request(
+bool supla_google_home_state_report_request::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
   if (!credentials->is_access_token_exists()) {
     return false;
   }
 
-  supla_google_home_client2 client(get_channel_id(), curl_adapter, credentials);
+  supla_google_home_client client(get_channel_id(), curl_adapter, credentials);
 
   int func = 0;
   bool online = false;
@@ -117,7 +115,7 @@ bool supla_google_home_state_report_request2::make_request(
 }
 
 // static
-bool supla_google_home_state_report_request2::is_caller_allowed(
+bool supla_google_home_state_report_request::is_caller_allowed(
     const supla_caller &caller) {
   switch (caller.get_type()) {
     case ctDevice:
@@ -138,7 +136,7 @@ bool supla_google_home_state_report_request2::is_caller_allowed(
 }
 
 // static
-bool supla_google_home_state_report_request2::is_function_allowed(int func) {
+bool supla_google_home_state_report_request::is_function_allowed(int func) {
   switch (func) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
@@ -158,7 +156,7 @@ bool supla_google_home_state_report_request2::is_function_allowed(int func) {
 }
 
 // static
-void supla_google_home_state_report_request2::new_request(
+void supla_google_home_state_report_request::new_request(
     const supla_caller &caller, supla_user *user, int device_id, int channel_id,
     const std::string &request_id) {
   if (!user || !is_caller_allowed(caller) || !user->googleHomeCredentials() ||
@@ -196,8 +194,8 @@ void supla_google_home_state_report_request2::new_request(
         exists = true;
 
         if (!request_id.empty()) {
-          supla_google_home_state_report_request2 *request =
-              dynamic_cast<supla_google_home_state_report_request2 *>(task);
+          supla_google_home_state_report_request *request =
+              dynamic_cast<supla_google_home_state_report_request *>(task);
           if (request) {
             request->set_request_id(request_id);
           }
@@ -209,8 +207,8 @@ void supla_google_home_state_report_request2::new_request(
     return;
   }
 
-  supla_google_home_state_report_request2 *request =
-      new supla_google_home_state_report_request2(
+  supla_google_home_state_report_request *request =
+      new supla_google_home_state_report_request(
           caller, user->getUserID(), device_id, channel_id,
           supla_asynctask_queue::global_instance(),
           supla_asynctask_http_thread_pool::global_instance(), property_getter,

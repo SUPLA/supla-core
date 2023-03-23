@@ -16,28 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLE_HOME_CREDENTIALS2_H_
-#define GOOGLE_HOME_CREDENTIALS2_H_
+#ifndef STATE_WEBHOOK_CREDENTIALS_H_
+#define STATE_WEBHOOK_CREDENTIALS_H_
 
-#include <list>
+#include <string>
+#include <vector>
 
 #include "http/oauth_credentials.h"
 
-class supla_google_home_credentials2 : public supla_http_oauth_credentials {
+class supla_state_webhook_credentials : public supla_http_oauth_credentials {
  private:
-  std::list<int> excluded_channels;
+  std::string url;
+  std::vector<int> function_ids;
 
  public:
-  supla_google_home_credentials2(void);
-  explicit supla_google_home_credentials2(supla_user *user);
-  ~supla_google_home_credentials2(void);
+  supla_state_webhook_credentials(void);
+  explicit supla_state_webhook_credentials(supla_user *user);
+  ~supla_state_webhook_credentials(void);
 
-  // These methods are average here, but have been added for convenience
-  void exclude_channel(int channel_id);
-  bool is_channel_excluded(int channel_id);
-  // -------
-
-  virtual void load();
+  virtual std::string get_url(void);
+  std::vector<int> get_function_ids(void);
+  virtual void update(const std::string access_token,
+                      const std::string refresh_token, int expires_in);
+  virtual void remove(void);
+  void load(void);
 };
 
-#endif /* STATE_WEBHOOK_CREDENTIALS2_H_ */
+#endif /* STATE_WEBHOOK_CREDENTIALS_H_ */

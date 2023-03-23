@@ -21,10 +21,10 @@
 namespace testing {
 
 GoogleHomeCredentialsMock::GoogleHomeCredentialsMock()
-    : supla_google_home_credentials2() {}
+    : supla_google_home_credentials() {}
 
 GoogleHomeCredentialsMock::GoogleHomeCredentialsMock(supla_user *user)
-    : supla_google_home_credentials2(user) {}
+    : supla_google_home_credentials(user) {}
 
 GoogleHomeCredentialsMock::~GoogleHomeCredentialsMock(void) {}
 

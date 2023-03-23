@@ -21,11 +21,11 @@
 
 #include <gmock/gmock.h>
 
-#include "google/google_home_credentials2.h"
+#include <google/google_home_credentials.h>
 
 namespace testing {
 
-class GoogleHomeCredentialsMock : public supla_google_home_credentials2 {
+class GoogleHomeCredentialsMock : public supla_google_home_credentials {
  public:
   GoogleHomeCredentialsMock();
   explicit GoogleHomeCredentialsMock(supla_user *user);

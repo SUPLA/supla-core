@@ -16,22 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef WEBHOOK_STATE_WEBHOOK_CLIENT2_H_
-#define WEBHOOK_STATE_WEBHOOK_CLIENT2_H_
+#ifndef WEBHOOK_STATE_WEBHOOK_CLIENT_H_
+#define WEBHOOK_STATE_WEBHOOK_CLIENT_H_
 
+#include <webhook/state_webhook_credentials.h>
 #include "channel_ic_measurement.h"
 #include "device/channel_electricity_measurement.h"
 #include "device/value/channel_value.h"
 #include "http/abstract_curl_adapter.h"
 #include "json/cJSON.h"
-#include "webhook/state_webhook_credentials2.h"
 
-class supla_state_webhook_client2 {
+class supla_state_webhook_client {
  private:
   int channel_id;
   bool channel_connected;
   supla_abstract_curl_adapter *curl_adapter;
-  supla_state_webhook_credentials2 *credentials;
+  supla_state_webhook_credentials *credentials;
   supla_channel_value *channel_value;
 
   cJSON *get_header(const char *function);
@@ -51,9 +51,9 @@ class supla_state_webhook_client2 {
                                           supla_channel_ic_measurement *icm);
 
  public:
-  explicit supla_state_webhook_client2(
+  explicit supla_state_webhook_client(
       int channel_id, supla_abstract_curl_adapter *curl_adapter,
-      supla_state_webhook_credentials2 *credentials);
+      supla_state_webhook_credentials *credentials);
 
   void set_channel_connected(bool connected);
   void set_channel_value(supla_channel_value *channel_value);
@@ -97,4 +97,4 @@ class supla_state_webhook_client2 {
   bool triggered_actions_report(unsigned int actions);
 };
 
-#endif /* WEBHOOK_STATE_WEBHOOK_CLIENT2_H_ */
+#endif /* WEBHOOK_STATE_WEBHOOK_CLIENT_H_ */

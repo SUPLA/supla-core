@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <google/google_home_state_report_request.h>
 #include "google/GoogleHomeStateReportRequestTest.h"
 
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
-#include "google/google_home_state_report_request2.h"
 #include "http/asynctask_http_thread_bucket.h"
 
 namespace testing {
@@ -87,8 +87,8 @@ void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
       .Times(1);
 
-  supla_google_home_state_report_request2 *request =
-      new supla_google_home_state_report_request2(
+  supla_google_home_state_report_request *request =
+      new supla_google_home_state_report_request(
           supla_caller(ctDevice), 1, 2, 10, queue, pool, propertyGetter,
           &credentials, request_id);
   request->set_delay_usec(1);
@@ -263,8 +263,8 @@ TEST_F(GoogleHomeStateReportRequestTest, x403) {
 
   EXPECT_CALL(credentials, exclude_channel).Times(1);
 
-  supla_google_home_state_report_request2 *request =
-      new supla_google_home_state_report_request2(
+  supla_google_home_state_report_request *request =
+      new supla_google_home_state_report_request(
           supla_caller(ctDevice), 1, 2, 10, queue, pool, propertyGetter,
           &credentials, "");
   request->set_delay_usec(1);
@@ -288,8 +288,8 @@ TEST_F(GoogleHomeStateReportRequestTest, x404) {
 
   EXPECT_CALL(credentials, exclude_channel).Times(1);
 
-  supla_google_home_state_report_request2 *request =
-      new supla_google_home_state_report_request2(
+  supla_google_home_state_report_request *request =
+      new supla_google_home_state_report_request(
           supla_caller(ctDevice), 1, 2, 10, queue, pool, propertyGetter,
           &credentials, "");
   request->set_delay_usec(1);

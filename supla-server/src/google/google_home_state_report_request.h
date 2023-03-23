@@ -16,18 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLE_HOME_STATE_REPORT_REQUEST2_H_
-#define GOOGLE_HOME_STATE_REPORT_REQUEST2_H_
+#ifndef GOOGLE_HOME_STATE_REPORT_REQUEST_H_
+#define GOOGLE_HOME_STATE_REPORT_REQUEST_H_
+
+#include <google/google_home_credentials.h>
 
 #include <string>
 
-#include "google/google_home_credentials2.h"
 #include "http/asynctask_http_request.h"
 
-class supla_google_home_state_report_request2
+class supla_google_home_state_report_request
     : public supla_asynctask_http_request {
  private:
-  supla_google_home_credentials2 *credentials;
+  supla_google_home_credentials *credentials;
   std::string request_id;
 
  protected:
@@ -37,11 +38,11 @@ class supla_google_home_state_report_request2
   void set_request_id(const std::string &request_id);
 
  public:
-  supla_google_home_state_report_request2(
+  supla_google_home_state_report_request(
       const supla_caller &caller, int user_id, int device_id, int channel_id,
       supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_channel_property_getter *property_getter,
-      supla_google_home_credentials2 *credentials,
+      supla_google_home_credentials *credentials,
       const std::string &request_id);
 
   static bool is_caller_allowed(const supla_caller &caller);
@@ -52,4 +53,4 @@ class supla_google_home_state_report_request2
                           const std::string &request_id);
 };
 
-#endif /* GOOGLE_HOME_STATE_REPORT_REQUEST2_H_ */
+#endif /* GOOGLE_HOME_STATE_REPORT_REQUEST_H_ */

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <google/google_home_credentials.h>
 #include "integration/google/GoogleHomeCredentialsIntegrationTest.h"
 
-#include "google/google_home_credentials2.h"
 #include "log.h"
 #include "user.h"
 
@@ -28,7 +28,7 @@ using std::string;
 using std::vector;
 
 TEST_F(GoogleHomeCredentialsIntegrationTest, defaults) {
-  supla_google_home_credentials2 credentials;
+  supla_google_home_credentials credentials;
 
   EXPECT_EQ(credentials.get_access_token(), "");
   EXPECT_EQ(credentials.get_refresh_token(), "");
@@ -43,7 +43,7 @@ TEST_F(GoogleHomeCredentialsIntegrationTest, load) {
 
   initTestDatabase();
 
-  supla_google_home_credentials2 credentials(supla_user::find(2, true));
+  supla_google_home_credentials credentials(supla_user::find(2, true));
 
   EXPECT_FALSE(credentials.is_access_token_exists());
 
@@ -78,7 +78,7 @@ TEST_F(GoogleHomeCredentialsIntegrationTest, excludeChannels) {
   supla_user::user_free();
   supla_user::init();
 
-  supla_google_home_credentials2 credentials(supla_user::find(2, true));
+  supla_google_home_credentials credentials(supla_user::find(2, true));
 
   EXPECT_FALSE(credentials.is_channel_excluded(123));
   EXPECT_FALSE(credentials.is_channel_excluded(456));

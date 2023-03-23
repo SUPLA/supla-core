@@ -16,17 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLE_HOME_SYNC_REQUEST2_H_
-#define GOOGLE_HOME_SYNC_REQUEST2_H_
+#ifndef GOOGLE_HOME_SYNC_REQUEST_H_
+#define GOOGLE_HOME_SYNC_REQUEST_H_
+
+#include <google/google_home_credentials.h>
 
 #include <string>
 
-#include "google/google_home_credentials2.h"
 #include "http/asynctask_http_request.h"
 
 class supla_google_home_sync_request2 : public supla_asynctask_http_request {
  private:
-  supla_google_home_credentials2 *credentials;
+  supla_google_home_credentials *credentials;
 
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
@@ -35,9 +36,9 @@ class supla_google_home_sync_request2 : public supla_asynctask_http_request {
  public:
   supla_google_home_sync_request2(int user_id, supla_asynctask_queue *queue,
                                   supla_abstract_asynctask_thread_pool *pool,
-                                  supla_google_home_credentials2 *credentials);
+                                  supla_google_home_credentials *credentials);
 
   static void new_request(supla_user *user);
 };
 
-#endif /* GOOGLE_HOME_SYNC_REQUEST2_H_ */
+#endif /* GOOGLE_HOME_SYNC_REQUEST_H_ */

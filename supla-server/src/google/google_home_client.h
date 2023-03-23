@@ -16,21 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLE_HOME_CLIENT2_H_
-#define GOOGLE_HOME_CLIENT2_H_
+#ifndef GOOGLE_HOME_CLIENT_H_
+#define GOOGLE_HOME_CLIENT_H_
+
+#include <google/google_home_credentials.h>
 
 #include <string>
 
-#include "google/google_home_credentials2.h"
 #include "http/voice_assistant_client2.h"
 #include "json/cJSON.h"
 
-class supla_google_home_client2 : public supla_voice_assistant_client2 {
+class supla_google_home_client : public supla_voice_assistant_client2 {
  private:
   cJSON *json_states;
   std::string request_id;
 
-  supla_google_home_credentials2 *get_gh_credentials(void);
+  supla_google_home_credentials *get_gh_credentials(void);
   bool perform_post_request(cJSON *json_data, int *http_result_code);
   cJSON *get_header(void);
   bool channel_exists(const char *endpoint_id);
@@ -38,10 +39,10 @@ class supla_google_home_client2 : public supla_voice_assistant_client2 {
   void add_open_percent_state(short open_percent);
 
  public:
-  explicit supla_google_home_client2(
-      int channel_id, supla_abstract_curl_adapter *curl_adapter,
-      supla_google_home_credentials2 *credentials);
-  virtual ~supla_google_home_client2(void);
+  explicit supla_google_home_client(int channel_id,
+                                    supla_abstract_curl_adapter *curl_adapter,
+                                    supla_google_home_credentials *credentials);
+  virtual ~supla_google_home_client(void);
 
   void set_request_id(const std::string &request_id);
   void add_onoff_state(void);
@@ -53,4 +54,4 @@ class supla_google_home_client2 : public supla_voice_assistant_client2 {
   bool sync(void);
 };
 
-#endif /* GOOGLE_HOME_CLIENT2_H_ */
+#endif /* GOOGLE_HOME_CLIENT_H_ */
