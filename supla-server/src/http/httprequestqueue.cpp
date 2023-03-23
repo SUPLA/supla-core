@@ -16,7 +16,6 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <google/google_home_state_report_request.h>
 #include "http/httprequestqueue.h"
 
 #include <unistd.h>  // NOLINT
@@ -25,6 +24,7 @@
 #include <list>     // NOLINT
 
 #include "db/database.h"
+#include "google/google_home_state_report_request.h"
 #include "google/google_home_sync_request2.h"
 #include "http/httprequest.h"
 #include "http/httprequestvoiceassistantextraparams.h"
@@ -36,7 +36,7 @@
 #include "svrcfg.h"
 #include "tools.h"
 #include "user/user.h"
-#include "webhook/state_webhook_request2.h"
+#include "webhook/state_webhook_request.h"
 
 using std::list;
 
@@ -451,8 +451,8 @@ void supla_http_request_queue::onChannelValueChangeEvent(
       caller, user, deviceId, channelId,
       googleRequestId ? googleRequestId : "");
 
-  supla_state_webhook_request2::new_request(caller, user, deviceId, channelId,
-                                            0);
+  supla_state_webhook_request::new_request(caller, user, deviceId, channelId,
+                                           0);
 }
 
 void supla_http_request_queue::onChannelsAddedEvent(
@@ -495,8 +495,8 @@ void supla_http_request_queue::onActionsTriggered(const supla_caller &caller,
                                                   int deviceId, int channelId,
                                                   unsigned int actions) {
   if (actions) {
-    supla_state_webhook_request2::new_request(caller, user, deviceId, channelId,
-                                              actions);
+    supla_state_webhook_request::new_request(caller, user, deviceId, channelId,
+                                             actions);
   }
 }
 

@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "webhook/StateWebhookRequestTest.h"
+#include "StateWebhookRequestTest.h"
 
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
@@ -25,7 +25,7 @@
 #include "device/value/channel_rs_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "http/asynctask_http_thread_bucket.h"
-#include "webhook/state_webhook_request2.h"
+#include "webhook/state_webhook_request.h"
 
 namespace testing {
 
@@ -90,7 +90,7 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
       .Times(1);
 
-  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+  supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 123, 0, queue, pool, propertyGetter,
       &credentials);
   request->set_timestamp(1600097258);
@@ -119,7 +119,7 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
       .Times(1);
 
-  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+  supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 123, 0, queue, pool, propertyGetter,
       &credentials);
   request->set_timestamp(1600097258);
@@ -149,7 +149,7 @@ void StateWebhookRequestTest::makeTest(
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
       .Times(1);
 
-  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+  supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 123, 0, queue, pool, propertyGetter,
       &credentials);
   request->set_timestamp(1600097258);
@@ -1161,7 +1161,7 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_ToggleX1_PressX3) {
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
       .Times(1);
 
-  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+  supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 567,
       SUPLA_ACTION_CAP_TOGGLE_x1 | SUPLA_ACTION_CAP_SHORT_PRESS_x3, queue, pool,
       propertyGetter, &credentials);
@@ -1178,7 +1178,7 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_Hold) {
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
       .Times(1);
 
-  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+  supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
       propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
@@ -1196,7 +1196,7 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_All) {
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
       .Times(1);
 
-  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+  supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 7777, 0xFFFFFFFF, queue, pool,
       propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();

@@ -7,7 +7,7 @@ CPP_SRCS += \
 ../src/webhook/state_webhook_client.cpp \
 ../src/webhook/state_webhook_credentials.cpp \
 ../src/webhook/state_webhook_credentials_dao.cpp \
-../src/webhook/state_webhook_request2.cpp \
+../src/webhook/state_webhook_request.cpp \
 ../src/webhook/state_webhook_search_condition.cpp \
 ../src/webhook/webhookbasicclient.cpp \
 ../src/webhook/webhookbasiccredentials.cpp 
@@ -16,7 +16,7 @@ CPP_DEPS += \
 ./src/webhook/state_webhook_client.d \
 ./src/webhook/state_webhook_credentials.d \
 ./src/webhook/state_webhook_credentials_dao.d \
-./src/webhook/state_webhook_request2.d \
+./src/webhook/state_webhook_request.d \
 ./src/webhook/state_webhook_search_condition.d \
 ./src/webhook/webhookbasicclient.d \
 ./src/webhook/webhookbasiccredentials.d 
@@ -25,7 +25,7 @@ OBJS += \
 ./src/webhook/state_webhook_client.o \
 ./src/webhook/state_webhook_credentials.o \
 ./src/webhook/state_webhook_credentials_dao.o \
-./src/webhook/state_webhook_request2.o \
+./src/webhook/state_webhook_request.o \
 ./src/webhook/state_webhook_search_condition.o \
 ./src/webhook/webhookbasicclient.o \
 ./src/webhook/webhookbasiccredentials.o 
@@ -43,7 +43,7 @@ src/webhook/%.o: ../src/webhook/%.cpp src/webhook/subdir.mk
 clean: clean-src-2f-webhook
 
 clean-src-2f-webhook:
-	-$(RM) ./src/webhook/state_webhook_client.d ./src/webhook/state_webhook_client.o ./src/webhook/state_webhook_credentials.d ./src/webhook/state_webhook_credentials.o ./src/webhook/state_webhook_credentials_dao.d ./src/webhook/state_webhook_credentials_dao.o ./src/webhook/state_webhook_request2.d ./src/webhook/state_webhook_request2.o ./src/webhook/state_webhook_search_condition.d ./src/webhook/state_webhook_search_condition.o ./src/webhook/webhookbasicclient.d ./src/webhook/webhookbasicclient.o ./src/webhook/webhookbasiccredentials.d ./src/webhook/webhookbasiccredentials.o
+	-$(RM) ./src/webhook/state_webhook_client.d ./src/webhook/state_webhook_client.o ./src/webhook/state_webhook_credentials.d ./src/webhook/state_webhook_credentials.o ./src/webhook/state_webhook_credentials_dao.d ./src/webhook/state_webhook_credentials_dao.o ./src/webhook/state_webhook_request.d ./src/webhook/state_webhook_request.o ./src/webhook/state_webhook_search_condition.d ./src/webhook/state_webhook_search_condition.o ./src/webhook/webhookbasicclient.d ./src/webhook/webhookbasicclient.o ./src/webhook/webhookbasiccredentials.d ./src/webhook/webhookbasiccredentials.o
 
 .PHONY: clean-src-2f-webhook
 

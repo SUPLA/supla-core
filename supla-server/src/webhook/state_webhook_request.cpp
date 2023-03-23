@@ -16,22 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "webhook/state_webhook_request2.h"
-
-#include <webhook/state_webhook_client.h>
+#include "state_webhook_request.h"
 
 #include <vector>
 
 #include "device/channel_property_getter.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "user/user.h"
+#include "webhook/state_webhook_client.h"
 #include "webhook/state_webhook_search_condition.h"
 
 using std::shared_ptr;
 using std::string;
 using std::vector;
 
-supla_state_webhook_request2::supla_state_webhook_request2(
+supla_state_webhook_request::supla_state_webhook_request(
     const supla_caller &caller, int user_id, int device_id, int channel_id,
     int actions, supla_asynctask_queue *queue,
     supla_abstract_asynctask_thread_pool *pool,
@@ -44,17 +43,17 @@ supla_state_webhook_request2::supla_state_webhook_request2(
   this->timestamp = 0;
 }
 
-supla_state_webhook_request2::~supla_state_webhook_request2(void) {}
+supla_state_webhook_request::~supla_state_webhook_request(void) {}
 
-bool supla_state_webhook_request2::is_any_action_set(void) { return actions; }
+bool supla_state_webhook_request::is_any_action_set(void) { return actions; }
 
-string supla_state_webhook_request2::get_name(void) { return "Webhook"; }
+string supla_state_webhook_request::get_name(void) { return "Webhook"; }
 
-void supla_state_webhook_request2::set_timestamp(__time_t timestmap) {
+void supla_state_webhook_request::set_timestamp(__time_t timestmap) {
   this->timestamp = timestmap;
 }
 
-bool supla_state_webhook_request2::make_request(
+bool supla_state_webhook_request::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
   if (!credentials->is_access_token_exists()) {
     return false;
@@ -232,7 +231,7 @@ bool supla_state_webhook_request2::make_request(
 }
 
 // static
-bool supla_state_webhook_request2::is_caller_allowed(
+bool supla_state_webhook_request::is_caller_allowed(
     const supla_caller &caller) {
   switch (caller.get_type()) {
     case ctDevice:
@@ -253,7 +252,7 @@ bool supla_state_webhook_request2::is_caller_allowed(
 }
 
 // static
-bool supla_state_webhook_request2::is_function_allowed(
+bool supla_state_webhook_request::is_function_allowed(
     int func, supla_state_webhook_credentials *credentials,
     int *delay_time_usec) {
   if (!credentials || !func) {
@@ -315,9 +314,9 @@ bool supla_state_webhook_request2::is_function_allowed(
 }
 
 // static
-void supla_state_webhook_request2::new_request(const supla_caller &caller,
-                                               supla_user *user, int device_id,
-                                               int channel_id, int actions) {
+void supla_state_webhook_request::new_request(const supla_caller &caller,
+                                              supla_user *user, int device_id,
+                                              int channel_id, int actions) {
   if (!user || !is_caller_allowed(caller) || !user->stateWebhookCredentials() ||
       !user->stateWebhookCredentials()->is_access_token_exists() ||
       user->stateWebhookCredentials()->get_url().size() == 0) {
@@ -343,8 +342,8 @@ void supla_state_webhook_request2::new_request(const supla_caller &caller,
       &cnd, [&exists, actions](supla_abstract_asynctask *task) -> void {
         exists = true;
         if (actions) {
-          supla_state_webhook_request2 *request =
-              dynamic_cast<supla_state_webhook_request2 *>(task);
+          supla_state_webhook_request *request =
+              dynamic_cast<supla_state_webhook_request *>(task);
           if (request) {
             request->actions |= actions;
           }
@@ -356,7 +355,7 @@ void supla_state_webhook_request2::new_request(const supla_caller &caller,
     return;
   }
 
-  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+  supla_state_webhook_request *request = new supla_state_webhook_request(
       caller, user->getUserID(), device_id, channel_id, actions,
       supla_asynctask_queue::global_instance(),
       supla_asynctask_http_thread_pool::global_instance(), property_getter,

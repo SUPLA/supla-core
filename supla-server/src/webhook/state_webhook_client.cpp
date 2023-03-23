@@ -30,7 +30,7 @@
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
-#include "webhook/state_webhook_request2.h"
+#include "webhook/state_webhook_request.h"
 
 using std::string;
 

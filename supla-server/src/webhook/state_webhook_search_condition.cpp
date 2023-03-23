@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "webhook/state_webhook_search_condition.h"
+#include "state_webhook_search_condition.h"
 
-#include "webhook/state_webhook_request2.h"
+#include "webhook/state_webhook_request.h"
 
 supla_state_webhook_search_condition::supla_state_webhook_search_condition(
     int user_id, int device_id, int channel_id, bool actions,
@@ -32,8 +32,8 @@ supla_state_webhook_search_condition::supla_state_webhook_search_condition(
 
 bool supla_state_webhook_search_condition::condition_met(
     supla_abstract_asynctask *task) {
-  supla_state_webhook_request2 *request =
-      dynamic_cast<supla_state_webhook_request2 *>(task);
+  supla_state_webhook_request *request =
+      dynamic_cast<supla_state_webhook_request *>(task);
   return request && request->get_user_id() == user_id &&
          request->get_device_id() == device_id &&
          request->get_channel_id() == channel_id &&

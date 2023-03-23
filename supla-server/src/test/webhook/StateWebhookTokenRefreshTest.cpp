@@ -16,11 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "webhook/StateWebhookTokenRefreshTest.h"
+#include "StateWebhookTokenRefreshTest.h"
 
 #include "http/asynctask_http_thread_bucket.h"
 #include "log.h"
-#include "webhook/state_webhook_request2.h"
+#include "webhook/state_webhook_request.h"
 
 namespace testing {
 
@@ -115,7 +115,7 @@ TEST_F(StateWebhookTokenRefreshTest, expired) {
 
   EXPECT_CALL(*curlAdapter, perform).Times(2).WillRepeatedly(Return(true));
 
-  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+  supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
       propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
@@ -137,7 +137,7 @@ TEST_F(StateWebhookTokenRefreshTest, refreshTokenNotExists) {
 
   EXPECT_CALL(credentials, update).Times(0);
 
-  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+  supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
       propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
@@ -203,7 +203,7 @@ TEST_F(StateWebhookTokenRefreshTest, theTokenHasChangedInTheMeantime) {
 
   EXPECT_CALL(*curlAdapter, perform).Times(1).WillOnce(Return(true));
 
-  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+  supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
       propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
@@ -221,7 +221,7 @@ TEST_F(StateWebhookTokenRefreshTest, http403) {
 
   EXPECT_CALL(credentials, remove).Times(1);
 
-  supla_state_webhook_request2 *request = new supla_state_webhook_request2(
+  supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
       propertyGetter, &credentials);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();

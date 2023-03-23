@@ -16,11 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <google/google_home_client.h>
 #include "google_home_state_report_request.h"
 
 #include "channeljsonconfig/google_home_config.h"
 #include "device/channel_property_getter.h"
+#include "google/google_home_client.h"
 #include "google/google_home_state_report_search_condition.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "svrcfg.h"
