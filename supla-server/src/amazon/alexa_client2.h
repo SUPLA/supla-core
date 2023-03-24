@@ -63,20 +63,59 @@
 
 class supla_alexa_client2 : public supla_voice_assistant_client2 {
  private:
+  typedef struct {
+    char *str;
+    int code;
+  } _alexa_code_t;
+
+  static const _alexa_code_t alexa_codes[];
+  static const _alexa_code_t alexa_causes[];
+
   int cause_type;
-  cJSON *props;
-  void add_props(cJSON *props);
-  cJSON *get_percentage_controller_properties(short percentage);
+  cJSON *props_arr;
   std::string zulu_time;
   std::string message_id;
+  std::string correlation_token;
+  const char *get_error_string(const int code);
+  int get_error_code(const char *code);
+  supla_amazon_alexa_credentials2 *get_alexa_credentials(void);
+  void add_props(cJSON *props);
+  cJSON *add_props(cJSON *props_arr, cJSON *props);
+  cJSON *get_power_controller_properties(bool hi);
+  cJSON *get_brightness_controller_properties(short brightness);
+  cJSON *get_color_controller_properties(int color, short brightness);
+  cJSON *get_range_controller_properties(short range);
+  cJSON *get_percentage_controller_properties(short percentage);
+  cJSON *get_contact_sensor_properties(bool hi);
+  cJSON *get_endpoint_health_properties(bool ok);
+  cJSON *get_header(const char name[], bool use_correlation_token);
+  cJSON *get_endpoint(void);
+  cJSON *get_response(void);
+  cJSON *get_change_report(void);
+  cJSON *get_unrechable_error_response(void);
+  int perform_post_request(char *data, int *http_result_code);
+  void refresh_token(void);
+  int perform_post_request(char *data);
 
  public:
   explicit supla_alexa_client2(int channel_id,
                                supla_abstract_curl_adapter *curl_adapter,
-                               supla_amazon_alexa_credentials2 *credentials);
+                               supla_amazon_alexa_credentials2 *credentials,
+                               const std::string &zulu_time,
+                               const std::string &message_id,
+                               const std::string &correlation_token);
   virtual ~supla_alexa_client2(void);
   void set_cause_type(int cause_type);
+
+  void add_power_controller_properties(void);
+  void add_brightness_controller_properties(void);
+  void add_color_controller_properties(void);
+  void add_range_controller(void);
   void add_percentage_controller(void);
+  void add_contact_sensor(void);
+
+  bool send_response(void);
+  bool send_change_report(void);
 };
 
 #endif /* AMAZON_ALEXACLIENT_H_ */

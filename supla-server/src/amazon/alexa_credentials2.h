@@ -19,6 +19,8 @@
 #ifndef AMAZON_ALEXA_CREDENTIALS2_H_
 #define AMAZON_ALEXA_CREDENTIALS2_H_
 
+#include <string>
+
 #include "http/oauth_credentials.h"
 
 class supla_amazon_alexa_credentials2 : public supla_http_oauth_credentials {
@@ -26,6 +28,9 @@ class supla_amazon_alexa_credentials2 : public supla_http_oauth_credentials {
   explicit supla_amazon_alexa_credentials2(supla_user *user);
   supla_amazon_alexa_credentials2();
   virtual ~supla_amazon_alexa_credentials2();
+
+  virtual void remove(void);
+  std::string get_region(void);
 };
 
 #endif /* AMAZON_ALEXACREDENTIALS2_H_ */

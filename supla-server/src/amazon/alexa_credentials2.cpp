@@ -18,6 +18,8 @@
 
 #include "alexa_credentials2.h"
 
+using std::string;
+
 supla_amazon_alexa_credentials2::supla_amazon_alexa_credentials2(
     supla_user *user)
     : supla_http_oauth_credentials(user) {}
@@ -26,3 +28,7 @@ supla_amazon_alexa_credentials2::supla_amazon_alexa_credentials2()
     : supla_http_oauth_credentials() {}
 
 supla_amazon_alexa_credentials2::~supla_amazon_alexa_credentials2() {}
+
+void supla_amazon_alexa_credentials2::remove(void) {}
+
+string supla_amazon_alexa_credentials2::get_region(void) {}
