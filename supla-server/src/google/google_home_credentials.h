@@ -33,8 +33,8 @@ class supla_google_home_credentials : public supla_http_oauth_credentials {
   ~supla_google_home_credentials(void);
 
   // These methods are average here, but have been added for convenience
-  void exclude_channel(int channel_id);
-  bool is_channel_excluded(int channel_id);
+  virtual void exclude_channel(int channel_id);
+  virtual bool is_channel_excluded(int channel_id);
   // -------
 
   virtual void load();

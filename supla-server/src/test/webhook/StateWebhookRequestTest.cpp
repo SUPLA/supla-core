@@ -1165,6 +1165,7 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_ToggleX1_PressX3) {
       supla_caller(ctDevice), 1, 2, 567,
       SUPLA_ACTION_CAP_TOGGLE_x1 | SUPLA_ACTION_CAP_SHORT_PRESS_x3, queue, pool,
       propertyGetter, &credentials);
+  request->set_timestamp(1600097258);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
@@ -1181,6 +1182,7 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_Hold) {
   supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
       propertyGetter, &credentials);
+  request->set_timestamp(1600097258);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
@@ -1199,6 +1201,7 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_All) {
   supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 7777, 0xFFFFFFFF, queue, pool,
       propertyGetter, &credentials);
+  request->set_timestamp(1600097258);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }

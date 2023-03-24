@@ -42,11 +42,11 @@ class GoogleHomeCredentialsMock : public supla_google_home_credentials {
   MOCK_METHOD0(is_refresh_token_exists, bool(void));
   MOCK_METHOD0(expires_in, int(void));
   MOCK_METHOD0(get_set_time, struct timeval(void));
-  MOCK_METHOD3(update, void(const std::string access_token,
-                            const std::string refresh_token, int expires_in));
+  MOCK_METHOD3(update, void(const std::string &access_token,
+                            const std::string &refresh_token, int expires_in));
   MOCK_METHOD0(remove, void(void));
 
-  MOCK_METHOD0(exclude_channel, void(void));
+  MOCK_METHOD1(exclude_channel, void(int channel_id));
 };
 
 } /* namespace testing */
