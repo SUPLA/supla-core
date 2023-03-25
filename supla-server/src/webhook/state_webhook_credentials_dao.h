@@ -35,8 +35,8 @@ class supla_state_webhook_credentials_dao {
   virtual void get(int user_id, std::string *access_token,
                    std::string *refresh_token, int *expires_in,
                    std::string *url, std::string *function_ids);
-  virtual void set(int user_id, const std::string access_token,
-                   const std::string refresh_token, int expires_in);
+  virtual void set(int user_id, const std::string &access_token,
+                   const std::string &refresh_token, int expires_in);
   virtual void remove(int user_id);
 };
 

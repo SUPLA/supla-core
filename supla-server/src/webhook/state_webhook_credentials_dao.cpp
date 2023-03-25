@@ -136,8 +136,8 @@ void supla_state_webhook_credentials_dao::get(int user_id, string *access_token,
 }
 
 void supla_state_webhook_credentials_dao::set(int user_id,
-                                              const string access_token,
-                                              const string refresh_token,
+                                              const string &access_token,
+                                              const string &refresh_token,
                                               int expires_in) {
   bool already_connected = dba->is_connected();
 
