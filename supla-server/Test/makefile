@@ -21,6 +21,7 @@ RM := rm -rf
 -include src/test/integration/datalogger/subdir.mk
 -include src/test/integration/cyclictasks/subdir.mk
 -include src/test/integration/client/subdir.mk
+-include src/test/integration/amazon/subdir.mk
 -include src/test/integration/subdir.mk
 -include src/test/http/subdir.mk
 -include src/test/google/subdir.mk
