@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef StateWebhookCredentialsTest_H_
-#define StateWebhookCredentialsTest_H_
+#ifndef StateWebhookCredentialsIntegrationTest_H_
+#define StateWebhookCredentialsIntegrationTest_H_
 
 #include "db/db_access_provider.h"
 #include "integration/IntegrationTest.h"
@@ -34,4 +34,4 @@ class StateWebhookCredentialsIntegrationTest : public IntegrationTest,
 
 } /* namespace testing */
 
-#endif /* StateWebhookCredentialsTest_H_ */
+#endif /* StateWebhookCredentialsIntegrationTest_H_ */
