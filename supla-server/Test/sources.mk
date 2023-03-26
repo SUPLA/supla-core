@@ -63,6 +63,7 @@ src/test/device/value \
 src/test/distributedobjects \
 src/test/doubles \
 src/test/doubles/actions \
+src/test/doubles/amazon \
 src/test/doubles/asynctask \
 src/test/doubles/channeljsonconfig \
 src/test/doubles/client \

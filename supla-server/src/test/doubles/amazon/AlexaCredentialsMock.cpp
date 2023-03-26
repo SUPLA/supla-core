@@ -16,27 +16,16 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AMAZON_ALEXA_CREDENTIALS2_H_
-#define AMAZON_ALEXA_CREDENTIALS2_H_
+#include "doubles/amazon/AlexaCredentialsMock.h"
 
-#include <string>
+namespace testing {
 
-#include "http/oauth_credentials.h"
+AlexaCredentialsMock::AlexaCredentialsMock()
+    : supla_amazon_alexa_credentials2() {}
 
-class supla_amazon_alexa_credentials2 : public supla_http_oauth_credentials {
- private:
-  std::string region;
+AlexaCredentialsMock::AlexaCredentialsMock(supla_user *user)
+    : supla_amazon_alexa_credentials2(user) {}
 
- public:
-  explicit supla_amazon_alexa_credentials2(supla_user *user);
-  supla_amazon_alexa_credentials2();
-  virtual ~supla_amazon_alexa_credentials2();
+AlexaCredentialsMock::~AlexaCredentialsMock(void) {}
 
-  virtual void remove(void);
-  virtual std::string get_region(void);
-  void load(void);
-  virtual void update(const std::string &access_token,
-                      const std::string &refresh_token, int expires_in);
-};
-
-#endif /* AMAZON_ALEXACREDENTIALS2_H_ */
+}  // namespace testing
