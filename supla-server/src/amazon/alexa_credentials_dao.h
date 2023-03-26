@@ -16,27 +16,29 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AMAZON_ALEXA_CREDENTIALS2_H_
-#define AMAZON_ALEXA_CREDENTIALS2_H_
+#ifndef AMAZON_ALEXA_CREDENTIALS_DAO_H_
+#define AMAZON_ALEXA_CREDENTIALS_DAO_H_
 
 #include <string>
 
-#include "http/oauth_credentials.h"
+#include "db/abstract_db_access_provider.h"
 
-class supla_amazon_alexa_credentials2 : public supla_http_oauth_credentials {
+class supla_amazon_alexa_credentials_dao {
  private:
-  std::string region;
+  supla_abstract_db_access_provider *dba;
 
  public:
-  explicit supla_amazon_alexa_credentials2(supla_user *user);
-  supla_amazon_alexa_credentials2();
-  virtual ~supla_amazon_alexa_credentials2();
+  explicit supla_amazon_alexa_credentials_dao(
+      supla_abstract_db_access_provider *dba);
 
-  virtual void remove(void);
-  std::string get_region(void);
-  void load(void);
-  virtual void update(const std::string &access_token,
-                      const std::string &refresh_token, int expires_in);
+  virtual ~supla_amazon_alexa_credentials_dao();
+
+  virtual bool get(int user_id, std::string *access_token,
+                   std::string *refresh_token, int *expires_in,
+                   std::string *region);
+  virtual void set(int user_id, const std::string &access_token,
+                   const std::string &refresh_token, int expires_in);
+  virtual void remove(int user_id);
 };
 
-#endif /* AMAZON_ALEXACREDENTIALS2_H_ */
+#endif /* AMAZON_ALEXA_CREDENTIALS_DAO_H_ */

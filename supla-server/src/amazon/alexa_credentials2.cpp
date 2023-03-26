@@ -18,6 +18,9 @@
 
 #include "alexa_credentials2.h"
 
+#include "amazon/alexa_credentials_dao.h"
+#include "db/db_access_provider.h"
+
 using std::string;
 
 supla_amazon_alexa_credentials2::supla_amazon_alexa_credentials2(
@@ -29,6 +32,46 @@ supla_amazon_alexa_credentials2::supla_amazon_alexa_credentials2()
 
 supla_amazon_alexa_credentials2::~supla_amazon_alexa_credentials2() {}
 
-void supla_amazon_alexa_credentials2::remove(void) {}
+void supla_amazon_alexa_credentials2::remove(void) {
+  data_lock();
+  supla_http_oauth_credentials::remove();
+  region = "";
+  data_unlock();
 
-string supla_amazon_alexa_credentials2::get_region(void) {}
+  supla_db_access_provider dba;
+  supla_amazon_alexa_credentials_dao dao(&dba);
+  dao.remove(get_user_id());
+}
+
+string supla_amazon_alexa_credentials2::get_region(void) {
+  data_lock();
+  string region = this->region;
+  data_unlock();
+  return region;
+}
+
+void supla_amazon_alexa_credentials2::load(void) {
+  supla_db_access_provider dba;
+  supla_amazon_alexa_credentials_dao dao(&dba);
+
+  string access_token, refresh_token, region;
+  int expires_in = 0;
+
+  if (dao.get(get_user_id(), &access_token, &refresh_token, &expires_in,
+              &region)) {
+    data_lock();
+    set(access_token, refresh_token, expires_in);
+    this->region = region;
+    data_unlock();
+  }
+}
+
+void supla_amazon_alexa_credentials2::update(const string &access_token,
+                                             const string &refresh_token,
+                                             int expires_in) {
+  supla_http_oauth_credentials::update(access_token, refresh_token, expires_in);
+
+  supla_db_access_provider dba;
+  supla_amazon_alexa_credentials_dao dao(&dba);
+  dao.set(get_user_id(), access_token, refresh_token, expires_in);
+}

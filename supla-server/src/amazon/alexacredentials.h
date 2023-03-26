@@ -19,9 +19,6 @@
 #ifndef AMAZON_ALEXACREDENTIALS_H_
 #define AMAZON_ALEXACREDENTIALS_H_
 
-#define ALEXA_TOKEN_MAXSIZE 1024
-#define ALEXA_REGION_MAXSIZE 5
-
 #include "webhook/webhookbasiccredentials.h"
 
 class supla_user;

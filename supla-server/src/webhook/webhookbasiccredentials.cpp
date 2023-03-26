@@ -179,8 +179,7 @@ void supla_webhook_basic_credentials::set(const char *access_token,
 
   supla_webhook_basic_credentials::set(access_token);
 
-  int refresh_token_len =
-      refresh_token ? strnlen(refresh_token, ALEXA_TOKEN_MAXSIZE) : 0;
+  int refresh_token_len = refresh_token ? strnlen(refresh_token, 1024) : 0;
 
   if (refresh_token_len > 0) {
     this->refresh_token = strndup(refresh_token, refresh_token_len);

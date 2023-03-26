@@ -232,7 +232,7 @@ void supla_alexa_client::refreshToken(void) {
     {
       char *refresh_token = getAlexaCredentials()->getRefreshToken();
       if (refresh_token) {
-        int rtoken_len = strnlen(refresh_token, ALEXA_TOKEN_MAXSIZE);
+        int rtoken_len = strnlen(refresh_token, 1024);
         if (rtoken_len != 0) {
           cJSON *root = cJSON_CreateObject();
           cJSON_AddStringToObject(root, "refresh_token", refresh_token);

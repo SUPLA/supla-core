@@ -42,13 +42,9 @@ void supla_amazon_alexa_credentials::region_free(void) {
   }
 }
 
-int supla_amazon_alexa_credentials::get_token_maxsize(void) {
-  return ALEXA_TOKEN_MAXSIZE;
-}
+int supla_amazon_alexa_credentials::get_token_maxsize(void) { return 1024; }
 
-int supla_amazon_alexa_credentials::get_region_maxsize(void) {
-  return ALEXA_REGION_MAXSIZE;
-}
+int supla_amazon_alexa_credentials::get_region_maxsize(void) { return 5; }
 
 void supla_amazon_alexa_credentials::set(const char *access_token,
                                          const char *refresh_token,
@@ -56,7 +52,7 @@ void supla_amazon_alexa_credentials::set(const char *access_token,
   data_lock();
   region_free();
 
-  int region_len = region ? strnlen(region, ALEXA_REGION_MAXSIZE) : 0;
+  int region_len = region ? strnlen(region, 1024) : 0;
 
   if (region_len > 0) {
     this->region = strndup(region, region_len);
@@ -68,17 +64,20 @@ void supla_amazon_alexa_credentials::set(const char *access_token,
 }
 
 void supla_amazon_alexa_credentials::load() {
-  database *db = new database();
+  /*
+database *db = new database();
 
-  if (!db->connect() || !db->amazon_alexa_load_credentials(this)) {
-    set(NULL, NULL, 0, NULL);
-  }
+if (!db->connect() || !db->amazon_alexa_load_credentials(this)) {
+set(NULL, NULL, 0, NULL);
+}
 
-  delete db;
+delete db;
+*/
 }
 
 void supla_amazon_alexa_credentials::remove() {
   set(NULL, NULL, 0, NULL);
+  /*
   database *db = new database();
 
   if (db->connect()) {
@@ -86,6 +85,7 @@ void supla_amazon_alexa_credentials::remove() {
   }
 
   delete db;
+  */
 }
 
 void supla_amazon_alexa_credentials::on_credentials_changed() { load(); }
@@ -100,15 +100,16 @@ void supla_amazon_alexa_credentials::update(const char *access_token,
   if (region) {
     free(region);
   }
+  /*
+    database *db = new database();
 
-  database *db = new database();
+    if (db->connect()) {
+      db->amazon_alexa_update_token(this, access_token, refresh_token,
+                                    expires_in);
+    }
 
-  if (db->connect()) {
-    db->amazon_alexa_update_token(this, access_token, refresh_token,
-                                  expires_in);
-  }
-
-  delete db;
+    delete db;
+  */
 }
 
 char *supla_amazon_alexa_credentials::getRegion(void) {
@@ -117,7 +118,7 @@ char *supla_amazon_alexa_credentials::getRegion(void) {
   data_lock();
 
   if (region != NULL) {
-    result = strndup(region, ALEXA_TOKEN_MAXSIZE);
+    result = strndup(region, 5);
   }
 
   data_unlock();
