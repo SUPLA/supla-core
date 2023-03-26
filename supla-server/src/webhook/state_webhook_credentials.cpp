@@ -49,8 +49,8 @@ vector<int> supla_state_webhook_credentials::get_function_ids(void) {
   return result;
 }
 
-void supla_state_webhook_credentials::update(const string access_token,
-                                             const string refresh_token,
+void supla_state_webhook_credentials::update(const string &access_token,
+                                             const string &refresh_token,
                                              int expires_in) {
   supla_http_oauth_credentials::update(access_token, refresh_token, expires_in);
 
