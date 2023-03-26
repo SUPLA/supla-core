@@ -43,8 +43,8 @@ class StateWebhookCredentialsMock : public supla_state_webhook_credentials {
   MOCK_METHOD0(is_refresh_token_exists, bool(void));
   MOCK_METHOD0(expires_in, int(void));
   MOCK_METHOD0(get_set_time, struct timeval(void));
-  MOCK_METHOD3(update, void(const std::string access_token,
-                            const std::string refresh_token, int expires_in));
+  MOCK_METHOD3(update, void(const std::string &access_token,
+                            const std::string &refresh_token, int expires_in));
   MOCK_METHOD0(remove, void(void));
   MOCK_METHOD0(get_function_ids, std::vector<int>(void));
 };

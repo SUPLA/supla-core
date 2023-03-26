@@ -107,7 +107,7 @@ TEST_F(StateWebhookTokenRefreshTest, expired) {
   const char postPayload2[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":567,\"channelFunction\":\"ACTION_TRIGGER\",\"timestamp\":"
-      "0,\"triggered_actions\":[\"HOLD\"]}";
+      "1679859036,\"triggered_actions\":[\"HOLD\"]}";
 
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(postPayload2))).Times(1);
 
@@ -118,6 +118,7 @@ TEST_F(StateWebhookTokenRefreshTest, expired) {
   supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
       propertyGetter, &credentials);
+  request->set_timestamp(1679859036);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
@@ -197,7 +198,7 @@ TEST_F(StateWebhookTokenRefreshTest, theTokenHasChangedInTheMeantime) {
   const char postPayload2[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
       "\"channelId\":567,\"channelFunction\":\"ACTION_TRIGGER\",\"timestamp\":"
-      "0,\"triggered_actions\":[\"HOLD\"]}";
+      "1679859036,\"triggered_actions\":[\"HOLD\"]}";
 
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(postPayload2))).Times(1);
 
@@ -206,6 +207,7 @@ TEST_F(StateWebhookTokenRefreshTest, theTokenHasChangedInTheMeantime) {
   supla_state_webhook_request *request = new supla_state_webhook_request(
       supla_caller(ctDevice), 1, 2, 567, SUPLA_ACTION_CAP_HOLD, queue, pool,
       propertyGetter, &credentials);
+  request->set_timestamp(1679859036);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
