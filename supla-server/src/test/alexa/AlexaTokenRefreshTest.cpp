@@ -136,4 +136,31 @@ TEST_F(AlexaTokenRefreshTest, expired) {
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
 
+TEST_F(AlexaTokenRefreshTest, refreshTokenNotExists) {
+  EXPECT_CALL(credentials, is_access_token_exists).WillRepeatedly(Return(true));
+
+  EXPECT_CALL(credentials, expires_in).Times(1).WillOnce(Return(30));
+
+  EXPECT_CALL(credentials, is_refresh_token_exists)
+      .Times(1)
+      .WillOnce(Return(false));
+
+  EXPECT_CALL(credentials, get_set_time).Times(0);
+
+  EXPECT_CALL(credentials, refresh_lock).Times(0);
+
+  EXPECT_CALL(credentials, update).Times(0);
+
+  EXPECT_CALL(credentials, remove).Times(0);
+
+  supla_alexa_change_report_request2 *request =
+      new supla_alexa_change_report_request2(supla_caller(ctDevice), 1, 2, 567,
+                                             queue, pool, propertyGetter,
+                                             &credentials);
+  request->set_delay_usec(0);
+  std::shared_ptr<supla_abstract_asynctask> task = request->start();
+  WaitForState(task, supla_asynctask_state::FAILURE, 10000);
+}
+
+
 }  // namespace testing
