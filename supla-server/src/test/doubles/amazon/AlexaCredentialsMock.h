@@ -36,7 +36,6 @@ class AlexaCredentialsMock : public supla_amazon_alexa_credentials2 {
   MOCK_METHOD0(refresh_lock, void(void));
   MOCK_METHOD0(refresh_unlock, void(void));
   MOCK_METHOD0(get_user_short_unique_id, std::string(void));
-  MOCK_METHOD0(get_url, std::string(void));
   MOCK_METHOD0(get_access_token, std::string(void));
   MOCK_METHOD0(get_refresh_token, std::string(void));
   MOCK_METHOD0(is_access_token_exists, bool(void));

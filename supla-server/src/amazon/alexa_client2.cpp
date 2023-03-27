@@ -551,7 +551,7 @@ void supla_alexa_client2::refresh_token(void) {
     get_curl_adapter()->reset();
     get_curl_adapter()->set_opt_write_data(&request_result);
     get_curl_adapter()->set_opt_url(
-        "xatgh8yc1j.execute-api.eu-west-1.amazonaws.com/default/"
+        "https://xatgh8yc1j.execute-api.eu-west-1.amazonaws.com/default/"
         "amazonRefreshTokenBridge");
 
     string refresh_token = get_credentials()->get_refresh_token();
