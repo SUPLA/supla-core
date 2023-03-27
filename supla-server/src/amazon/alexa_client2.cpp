@@ -606,7 +606,10 @@ int supla_alexa_client2::perform_post_request(char *data) {
 
   int http_result_code = 0;
   int result = perform_post_request(data, &http_result_code);
-  if (result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION) {
+  // https://developer.amazon.com/en-US/docs/alexa/smarthome/send-events.html
+  // 401 Unauthorized == INVALID_ACCESS_TOKEN_EXCEPTION
+  if (result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION ||
+      http_result_code == 401) {
     if (!refresh_attempt) {
       refresh_attempt = true;
       refresh_token();
@@ -614,9 +617,14 @@ int supla_alexa_client2::perform_post_request(char *data) {
     }
   }
 
-  if (result == POST_RESULT_SKILL_DISABLED_EXCEPTION ||
+  // 403 Forbidden == SKILL_NEVER_ENABLED_EXCEPTION
+  // 404 Not Found == SKILL_NOT_FOUND_EXCEPTION
+
+  if (http_result_code == 403 || http_result_code == 404 ||
+      result == POST_RESULT_SKILL_DISABLED_EXCEPTION ||
       result == POST_RESULT_SKILL_NOT_FOUND_EXCEPTION ||
-      (result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION &&
+      ((result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION ||
+        http_result_code == 401) &&
        refresh_attempt)) {
     get_alexa_credentials()->remove();
     return result;

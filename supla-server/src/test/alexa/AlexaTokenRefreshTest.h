@@ -19,6 +19,8 @@
 #ifndef ALEXA_TOKEN_REFRESH_TEST_H_
 #define ALEXA_TOKEN_REFRESH_TEST_H_
 
+#include <string>
+
 #include "asynctask/AsyncTaskTest.h"
 #include "doubles/amazon/AlexaCredentialsMock.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
@@ -34,6 +36,8 @@ class AlexaTokenRefreshTest : public AsyncTaskTest {
 
  public:
   virtual void SetUp(void);
+  void httpCodeTest(int code);
+  void exceptionTest(const std::string &exception, bool removingExpected);
 };
 
 } /* namespace testing */
