@@ -37,7 +37,7 @@ class AlexaTokenRefreshTest : public AsyncTaskTest {
  public:
   virtual void SetUp(void);
   void httpCodeTest(int code);
-  void exceptionTest(const std::string &exception, bool removingExpected);
+  void badRequestTest(const std::string &exception, bool removingExpected);
 };
 
 } /* namespace testing */

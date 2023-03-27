@@ -60,11 +60,13 @@ void AlexaTokenRefreshTest::httpCodeTest(int code) {
   WaitForState(task, supla_asynctask_state::FAILURE, 10000);
 }
 
-void AlexaTokenRefreshTest::exceptionTest(const string &exception,
-                                          bool removingExpected) {
+void AlexaTokenRefreshTest::badRequestTest(const string &exception,
+                                           bool removingExpected) {
   EXPECT_CALL(credentials, is_access_token_exists).WillRepeatedly(Return(true));
 
   EXPECT_CALL(credentials, expires_in).Times(1).WillOnce(Return(30));
+
+  EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(400));
 
   EXPECT_CALL(credentials, is_refresh_token_exists)
       .WillRepeatedly(Return(true));
@@ -225,19 +227,19 @@ TEST_F(AlexaTokenRefreshTest, http403) { httpCodeTest(403); }
 TEST_F(AlexaTokenRefreshTest, http404) { httpCodeTest(404); }
 
 TEST_F(AlexaTokenRefreshTest, badCode) {
-  exceptionTest("INVALID_ACCESS_TOKEN_EXCEPTION!", false);
+  badRequestTest("INVALID_ACCESS_TOKEN_EXCEPTION!", false);
 }
 
 TEST_F(AlexaTokenRefreshTest, invalidAccessTokenException) {
-  exceptionTest("INVALID_ACCESS_TOKEN_EXCEPTION", true);
+  badRequestTest("INVALID_ACCESS_TOKEN_EXCEPTION", true);
 }
 
 TEST_F(AlexaTokenRefreshTest, skillDisabledException) {
-  exceptionTest("SKILL_DISABLED_EXCEPTION", true);
+  badRequestTest("SKILL_DISABLED_EXCEPTION", true);
 }
 
 TEST_F(AlexaTokenRefreshTest, skillNotFoundException) {
-  exceptionTest("SKILL_NOT_FOUND_EXCEPTION", true);
+  badRequestTest("SKILL_NOT_FOUND_EXCEPTION", true);
 }
 
 TEST_F(AlexaTokenRefreshTest, theTokenHasChangedInTheMeantime) {
