@@ -55,6 +55,7 @@ class supla_state_webhook_client {
   explicit supla_state_webhook_client(
       int channel_id, supla_abstract_curl_adapter *curl_adapter,
       supla_state_webhook_credentials *credentials, __time_t timestamp);
+  ~supla_state_webhook_client(void);
 
   void set_channel_connected(bool connected);
   void set_channel_value(supla_channel_value *channel_value);

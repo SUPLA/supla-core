@@ -105,14 +105,10 @@ bool supla_google_home_state_report_request::make_request(
       client.add_gate_state();
       break;
     default:
-      delete value;
       return false;
   }
 
-  bool result = client.state_report();
-  delete value;
-
-  return result;
+  return client.state_report();
 }
 
 // static

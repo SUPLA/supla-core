@@ -225,8 +225,6 @@ bool supla_state_webhook_request::make_request(
       break;
   }
 
-  delete value;
-
   return result;
 }
 

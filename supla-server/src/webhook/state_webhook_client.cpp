@@ -52,6 +52,12 @@ supla_state_webhook_client::supla_state_webhook_client(
   this->timestamp = timestamp;
 }
 
+supla_state_webhook_client::~supla_state_webhook_client(void) {
+  if (channel_value) {
+    delete channel_value;
+  }
+}
+
 void supla_state_webhook_client::set_channel_connected(bool connected) {
   this->channel_connected = connected;
 }

@@ -31,6 +31,12 @@ supla_voice_assistant_client2::supla_voice_assistant_client2(
   this->credentials = credentials;
 }
 
+supla_voice_assistant_client2::~supla_voice_assistant_client2(void) {
+  if (channel_value) {
+    delete channel_value;
+  }
+}
+
 int supla_voice_assistant_client2::get_channel_id(void) { return channel_id; }
 
 short supla_voice_assistant_client2::get_subchannel_id(void) {
