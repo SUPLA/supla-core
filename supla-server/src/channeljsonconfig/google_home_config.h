@@ -19,21 +19,20 @@
 #ifndef GOOGLE_HOME_CONFIG_H_
 #define GOOGLE_HOME_CONFIG_H_
 
-#include <channeljsonconfig/channel_json_config.h>
+#include "channeljsonconfig/abstract_voice_assistant_config.h"
 
-#include <string>
-
-#include "proto.h"
-
-class google_home_config : public channel_json_config {
+class google_home_config : public supla_abstract_voice_assistant_config {
  private:
-  static const char google_home_key[];
-  static const char google_home_disabled_key[];
+  static const char root_key[];
+  static const char value_key[];
+
+ protected:
+  virtual const char *get_root_key(void);
+  virtual const char *get_value_key(void);
 
  public:
   explicit google_home_config(channel_json_config *root);
   google_home_config(void);
-  bool is_integration_disabled(void);
 };
 
 #endif /* GOOGLE_HOME_CONFIG_H_ */

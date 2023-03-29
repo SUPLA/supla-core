@@ -16,20 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "google_home_config.h"
+#ifndef ABSTRACT_VOICE_ASSISTANT_CONFIG_H_
+#define ABSTRACT_VOICE_ASSISTANT_CONFIG_H_
 
-// static
-const char google_home_config::root_key[] = "googleHome";
+#include <channeljsonconfig/channel_json_config.h>
 
-// static
-const char google_home_config::value_key[] = "googleHomeDisabled";
+#include "proto.h"
 
-google_home_config::google_home_config(void)
-    : supla_abstract_voice_assistant_config() {}
+class supla_abstract_voice_assistant_config : public channel_json_config {
+ protected:
+  virtual const char *get_root_key(void) = 0;
+  virtual const char *get_value_key(void) = 0;
 
-google_home_config::google_home_config(channel_json_config *root)
-    : supla_abstract_voice_assistant_config(root) {}
+ public:
+  explicit supla_abstract_voice_assistant_config(channel_json_config *root);
+  supla_abstract_voice_assistant_config(void);
+  bool is_integration_disabled(void);
+};
 
-const char *google_home_config::get_root_key(void) { return root_key; }
-
-const char *google_home_config::get_value_key(void) { return value_key; }
+#endif /* ABSTRACT_VOICE_ASSISTANT_CONFIG_H_ */

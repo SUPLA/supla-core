@@ -16,20 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "google_home_config.h"
+#include "AlexaConfigTest.h"
 
-// static
-const char google_home_config::root_key[] = "googleHome";
+#include "TestHelper.h"
+#include "channeljsonconfig/alexa_config.h"
+#include "proto.h"
 
-// static
-const char google_home_config::value_key[] = "googleHomeDisabled";
+namespace testing {
 
-google_home_config::google_home_config(void)
-    : supla_abstract_voice_assistant_config() {}
+AlexaConfigTest::AlexaConfigTest(void) {}
 
-google_home_config::google_home_config(channel_json_config *root)
-    : supla_abstract_voice_assistant_config(root) {}
+AlexaConfigTest::~AlexaConfigTest(void) {}
 
-const char *google_home_config::get_root_key(void) { return root_key; }
+TEST_F(AlexaConfigTest, isIntegrationDisabled) {
+  alexa_config config;
 
-const char *google_home_config::get_value_key(void) { return value_key; }
+  EXPECT_FALSE(config.is_integration_disabled());
+
+  config.set_user_config("{\"alexa\":{\"alexaDisabled\":true}}");
+
+  EXPECT_TRUE(config.is_integration_disabled());
+}
+
+} /* namespace testing */

@@ -16,20 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "google_home_config.h"
+#include "abstract_voice_assistant_config.h"
 
-// static
-const char google_home_config::root_key[] = "googleHome";
+supla_abstract_voice_assistant_config::supla_abstract_voice_assistant_config(
+    void)
+    : channel_json_config() {}
 
-// static
-const char google_home_config::value_key[] = "googleHomeDisabled";
+supla_abstract_voice_assistant_config::supla_abstract_voice_assistant_config(
+    channel_json_config *root)
+    : channel_json_config(root) {}
 
-google_home_config::google_home_config(void)
-    : supla_abstract_voice_assistant_config() {}
+bool supla_abstract_voice_assistant_config::is_integration_disabled(void) {
+  cJSON *root = get_user_root();
+  if (!root) {
+    return false;
+  }
 
-google_home_config::google_home_config(channel_json_config *root)
-    : supla_abstract_voice_assistant_config(root) {}
+  root = cJSON_GetObjectItem(root, get_root_key());
+  if (root && cJSON_IsObject(root)) {
+    cJSON *value = cJSON_GetObjectItem(root, get_value_key());
+    return value && cJSON_IsTrue(value);
+  }
 
-const char *google_home_config::get_root_key(void) { return root_key; }
-
-const char *google_home_config::get_value_key(void) { return value_key; }
+  return false;
+}

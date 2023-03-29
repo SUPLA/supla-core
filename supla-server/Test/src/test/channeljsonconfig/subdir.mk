@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/channeljsonconfig/ActionTriggerConfigTest.cpp \
+../src/test/channeljsonconfig/AlexaConfigTest.cpp \
 ../src/test/channeljsonconfig/ChannelJSONConfigTest.cpp \
 ../src/test/channeljsonconfig/ControllingTheGateConfigTest.cpp \
 ../src/test/channeljsonconfig/ElectricityMeterConfigTest.cpp \
@@ -14,6 +15,7 @@ CPP_SRCS += \
 
 CPP_DEPS += \
 ./src/test/channeljsonconfig/ActionTriggerConfigTest.d \
+./src/test/channeljsonconfig/AlexaConfigTest.d \
 ./src/test/channeljsonconfig/ChannelJSONConfigTest.d \
 ./src/test/channeljsonconfig/ControllingTheGateConfigTest.d \
 ./src/test/channeljsonconfig/ElectricityMeterConfigTest.d \
@@ -23,6 +25,7 @@ CPP_DEPS += \
 
 OBJS += \
 ./src/test/channeljsonconfig/ActionTriggerConfigTest.o \
+./src/test/channeljsonconfig/AlexaConfigTest.o \
 ./src/test/channeljsonconfig/ChannelJSONConfigTest.o \
 ./src/test/channeljsonconfig/ControllingTheGateConfigTest.o \
 ./src/test/channeljsonconfig/ElectricityMeterConfigTest.o \
@@ -43,7 +46,7 @@ src/test/channeljsonconfig/%.o: ../src/test/channeljsonconfig/%.cpp src/test/cha
 clean: clean-src-2f-test-2f-channeljsonconfig
 
 clean-src-2f-test-2f-channeljsonconfig:
-	-$(RM) ./src/test/channeljsonconfig/ActionTriggerConfigTest.d ./src/test/channeljsonconfig/ActionTriggerConfigTest.o ./src/test/channeljsonconfig/ChannelJSONConfigTest.d ./src/test/channeljsonconfig/ChannelJSONConfigTest.o ./src/test/channeljsonconfig/ControllingTheGateConfigTest.d ./src/test/channeljsonconfig/ControllingTheGateConfigTest.o ./src/test/channeljsonconfig/ElectricityMeterConfigTest.d ./src/test/channeljsonconfig/ElectricityMeterConfigTest.o ./src/test/channeljsonconfig/GoogleHomeConfigTest.d ./src/test/channeljsonconfig/GoogleHomeConfigTest.o ./src/test/channeljsonconfig/ImpulseCounterConfigTest.d ./src/test/channeljsonconfig/ImpulseCounterConfigTest.o ./src/test/channeljsonconfig/OpeningSensorConfigTest.d ./src/test/channeljsonconfig/OpeningSensorConfigTest.o
+	-$(RM) ./src/test/channeljsonconfig/ActionTriggerConfigTest.d ./src/test/channeljsonconfig/ActionTriggerConfigTest.o ./src/test/channeljsonconfig/AlexaConfigTest.d ./src/test/channeljsonconfig/AlexaConfigTest.o ./src/test/channeljsonconfig/ChannelJSONConfigTest.d ./src/test/channeljsonconfig/ChannelJSONConfigTest.o ./src/test/channeljsonconfig/ControllingTheGateConfigTest.d ./src/test/channeljsonconfig/ControllingTheGateConfigTest.o ./src/test/channeljsonconfig/ElectricityMeterConfigTest.d ./src/test/channeljsonconfig/ElectricityMeterConfigTest.o ./src/test/channeljsonconfig/GoogleHomeConfigTest.d ./src/test/channeljsonconfig/GoogleHomeConfigTest.o ./src/test/channeljsonconfig/ImpulseCounterConfigTest.d ./src/test/channeljsonconfig/ImpulseCounterConfigTest.o ./src/test/channeljsonconfig/OpeningSensorConfigTest.d ./src/test/channeljsonconfig/OpeningSensorConfigTest.o
 
 .PHONY: clean-src-2f-test-2f-channeljsonconfig
 

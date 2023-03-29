@@ -16,20 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "google_home_config.h"
+#ifndef ALEXA_CONFIG_H_
+#define ALEXA_CONFIG_H_
 
-// static
-const char google_home_config::root_key[] = "googleHome";
+#include "channeljsonconfig/abstract_voice_assistant_config.h"
 
-// static
-const char google_home_config::value_key[] = "googleHomeDisabled";
+class alexa_config : public supla_abstract_voice_assistant_config {
+ private:
+  static const char root_key[];
+  static const char value_key[];
 
-google_home_config::google_home_config(void)
-    : supla_abstract_voice_assistant_config() {}
+ protected:
+  virtual const char *get_root_key(void);
+  virtual const char *get_value_key(void);
 
-google_home_config::google_home_config(channel_json_config *root)
-    : supla_abstract_voice_assistant_config(root) {}
+ public:
+  explicit alexa_config(channel_json_config *root);
+  alexa_config(void);
+};
 
-const char *google_home_config::get_root_key(void) { return root_key; }
-
-const char *google_home_config::get_value_key(void) { return value_key; }
+#endif /* ALEXA_CONFIG_H_ */
