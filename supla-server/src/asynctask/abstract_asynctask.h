@@ -37,6 +37,7 @@ class supla_abstract_asynctask {
   supla_asynctask_state state;
   long long delay_usec;
   struct timeval started_at;
+  struct timeval execution_request_time;
   struct timeval execution_start_time;
   unsigned long long timeout_usec;
   supla_asynctask_queue *queue;
@@ -58,8 +59,12 @@ class supla_abstract_asynctask {
                               // constructor. Calling it results in calling the
                               // on_asynctask_started method in the observer
   void on_task_finished(void);
+  void set_execution_request_time(void);
   virtual void on_timeout(unsigned long long timeout_usec,
-                          unsigned long long usec_after_timeout);
+                          unsigned long long usec_after_timeout,
+                          bool log_allowed);
+  long long time_diff_usec(struct timeval *now, struct timeval *then,
+                           long long _default);
 
  public:
   supla_abstract_asynctask(supla_asynctask_queue *queue,
@@ -72,6 +77,7 @@ class supla_abstract_asynctask {
   short get_priority(void);
   struct timeval get_started_at(void);
   long long time_left_usec(struct timeval *now);
+  long long time_since_exec_request_usec(struct timeval *now);
   supla_asynctask_state get_state(void);
   long long get_delay_usec(void);
   void set_delay_usec(long long delay_usec);

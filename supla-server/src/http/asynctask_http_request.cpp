@@ -46,13 +46,17 @@ supla_asynctask_http_request::~supla_asynctask_http_request(void) {
 }
 
 void supla_asynctask_http_request::on_timeout(
-    unsigned long long timeout_usec, unsigned long long usec_after_timeout) {
-  supla_abstract_asynctask::on_timeout(timeout_usec, usec_after_timeout);
+    unsigned long long timeout_usec, unsigned long long usec_after_timeout,
+    bool log_allowed) {
+  supla_abstract_asynctask::on_timeout(timeout_usec, usec_after_timeout, false);
 
-  supla_log(LOG_WARNING,
-            "%s - HTTP Request timeout. ChannelId: %i, TimeoutUSec: %llu+%llu",
-            get_name().c_str(), get_channel_id(), timeout_usec,
-            usec_after_timeout);
+  if (log_allowed) {
+    supla_log(LOG_WARNING,
+              "%s - HTTP Request timeout. ChannelId: %i, TimeoutUSec: "
+              "%llu+%llu, TimeSinceExecReq: %lld",
+              get_name().c_str(), get_channel_id(), timeout_usec,
+              usec_after_timeout, time_since_exec_request_usec(nullptr));
+  }
 }
 
 const supla_caller &supla_asynctask_http_request::get_caller(void) {
@@ -101,8 +105,9 @@ bool supla_asynctask_http_request::_execute(
           if (time_left >= delay_warning_time_usec) {
             supla_log(LOG_WARNING,
                       "%s - The http request is delayed. ChannelId: %i, "
-                      "DelayUSec: %lld",
-                      get_name().c_str(), get_channel_id(), time_left);
+                      "DelayUSec: %lld, %lld, TimeSinceExecReq: %lld",
+                      get_name().c_str(), get_channel_id(), time_left,
+                      time_since_exec_request_usec(nullptr));
           }
         }
       }

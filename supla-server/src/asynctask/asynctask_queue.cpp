@@ -224,6 +224,7 @@ void supla_asynctask_queue::iterate(void) {
     long long time_left = (*it)->time_left_usec(&now);
     if (time_left <= 0) {
       if ((*it)->get_state() == supla_asynctask_state::WAITING) {
+        (*it)->set_execution_request_time();
         (*it)->get_pool()->execution_request(it->get());
       }
     } else if (time_left < wait_time) {

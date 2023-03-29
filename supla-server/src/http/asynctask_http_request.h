@@ -48,7 +48,8 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter) = 0;
   virtual std::string get_name(void) = 0;
   virtual void on_timeout(unsigned long long timeout_usec,
-                          unsigned long long usec_after_timeout);
+                          unsigned long long usec_after_timeout,
+                          bool log_allowed);
 
  public:
   supla_asynctask_http_request(
