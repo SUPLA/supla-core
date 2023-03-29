@@ -47,7 +47,7 @@ bool supla_alexa_response_request2::make_request(
     return false;
   }
 
-  int sub_pos = correlation_token.find("::SUB=");
+  size_t sub_pos = correlation_token.find("::SUB=");
   int subchannel_id = 0;
   if (sub_pos != string::npos) {
     subchannel_id = atoi(correlation_token.substr(sub_pos + 6).c_str());
