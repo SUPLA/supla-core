@@ -107,7 +107,7 @@
 						</tool>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="t|crypt_blowfish/Makefile|test|bcrypt" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="test|crypt_blowfish/Makefile|bcrypt|t" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -212,7 +212,7 @@
 						</tool>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="t|crypt_blowfish/Makefile|test|bcrypt" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="test|crypt_blowfish/Makefile|bcrypt|t" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -322,7 +322,7 @@
 						</tool>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="t|crypt_blowfish/Makefile|supla-server.cpp|bcrypt|gtest|test/gtest" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="crypt_blowfish/Makefile|bcrypt|test/gtest|t|supla-server.cpp|gtest" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
