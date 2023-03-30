@@ -18,10 +18,13 @@
 
 #include "alexa_change_report_request.h"
 
+#include "amazon/alexa_change_report_search_condition.h"
 #include "amazon/alexa_client2.h"
+#include "channeljsonconfig/alexa_config.h"
 #include "device/channel_property_getter.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "svrcfg.h"
+#include "user/user.h"
 
 using std::string;
 
@@ -150,4 +153,52 @@ bool supla_alexa_change_report_request2::is_function_allowed(int func) {
 void supla_alexa_change_report_request2::new_request(const supla_caller &caller,
                                                      supla_user *user,
                                                      int device_id,
-                                                     int channel_id) {}
+                                                     int channel_id) {
+  if (!user || !is_caller_allowed(caller) || !user->amazonAlexaCredentials() ||
+      !user->amazonAlexaCredentials()->is_access_token_exists()) {
+    return;
+  }
+
+  supla_cahnnel_property_getter *property_getter =
+      new supla_cahnnel_property_getter();
+
+  int func =
+      property_getter->get_func(user->getUserID(), device_id, channel_id);
+
+  bool integration_disabled = false;
+  {
+    channel_json_config *config = property_getter->get_detached_json_config();
+    if (config) {
+      alexa_config a_config(config);
+      integration_disabled = a_config.is_integration_disabled();
+      delete config;
+    }
+  }
+
+  if (!is_function_allowed(func) || integration_disabled) {
+    delete property_getter;
+    return;
+  }
+
+  bool exists = false;
+  supla_alexa_change_report_search_condition cnd(user->getUserID(), device_id,
+                                                 channel_id, 100000);
+  supla_asynctask_queue::global_instance()->access_task(
+      &cnd,
+      [&exists](supla_abstract_asynctask *task) -> void { exists = true; });
+
+  if (exists) {
+    delete property_getter;
+    return;
+  }
+
+  supla_alexa_change_report_request2 *request =
+      new supla_alexa_change_report_request2(
+          caller, user->getUserID(), device_id, channel_id,
+          supla_asynctask_queue::global_instance(),
+          supla_asynctask_http_thread_pool::global_instance(), property_getter,
+          user->amazonAlexaCredentials());
+
+  request->set_priority(90);
+  request->start();
+}
