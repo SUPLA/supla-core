@@ -184,7 +184,7 @@ TEST_F(AlexaTokenRefreshTest, expired) {
   EXPECT_CALL(*curlAdapter, perform).Times(2).WillRepeatedly(Return(true));
 
   supla_alexa_change_report_request2 *request =
-      new supla_alexa_change_report_request2(supla_caller(ctDevice), 1, 2, 567,
+      new supla_alexa_change_report_request2(supla_caller(ctClient), 1, 2, 567,
                                              queue, pool, propertyGetter,
                                              &credentials);
   request->set_zulu_time("2019-02-01T12:09:33Z");
@@ -309,7 +309,7 @@ TEST_F(AlexaTokenRefreshTest, theTokenHasChangedInTheMeantime) {
   EXPECT_CALL(*curlAdapter, perform).Times(1).WillRepeatedly(Return(true));
 
   supla_alexa_change_report_request2 *request =
-      new supla_alexa_change_report_request2(supla_caller(ctDevice), 1, 2, 567,
+      new supla_alexa_change_report_request2(supla_caller(ctClient), 1, 2, 567,
                                              queue, pool, propertyGetter,
                                              &credentials);
   request->set_zulu_time("2019-02-01T12:09:33Z");
