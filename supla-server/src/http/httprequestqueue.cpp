@@ -24,6 +24,7 @@
 #include <list>     // NOLINT
 
 #include "amazon/alexa_change_report_request.h"
+#include "amazon/alexa_response_request.h"
 #include "db/database.h"
 #include "google/google_home_state_report_request.h"
 #include "google/google_home_sync_request2.h"
@@ -447,6 +448,10 @@ void supla_http_request_queue::onChannelValueChangeEvent(
                            caller,
                            new supla_http_request_voice_assistant_extra_params(
                                correlationToken, googleRequestId));
+
+  supla_alexa_response_request2::new_request(
+      caller, user, deviceId, channelId,
+      correlationToken ? correlationToken : "");
 
   supla_alexa_change_report_request2::new_request(caller, user, deviceId,
                                                   channelId);

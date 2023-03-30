@@ -11,7 +11,6 @@ CPP_SRCS += \
 ../src/amazon/alexa_credentials_dao.cpp \
 ../src/amazon/alexa_request2.cpp \
 ../src/amazon/alexa_response_request.cpp \
-../src/amazon/alexa_response_search_condition.cpp \
 ../src/amazon/alexachangereportrequest.cpp \
 ../src/amazon/alexaclient.cpp \
 ../src/amazon/alexacredentials.cpp \
@@ -26,7 +25,6 @@ CPP_DEPS += \
 ./src/amazon/alexa_credentials_dao.d \
 ./src/amazon/alexa_request2.d \
 ./src/amazon/alexa_response_request.d \
-./src/amazon/alexa_response_search_condition.d \
 ./src/amazon/alexachangereportrequest.d \
 ./src/amazon/alexaclient.d \
 ./src/amazon/alexacredentials.d \
@@ -41,7 +39,6 @@ OBJS += \
 ./src/amazon/alexa_credentials_dao.o \
 ./src/amazon/alexa_request2.o \
 ./src/amazon/alexa_response_request.o \
-./src/amazon/alexa_response_search_condition.o \
 ./src/amazon/alexachangereportrequest.o \
 ./src/amazon/alexaclient.o \
 ./src/amazon/alexacredentials.o \
@@ -61,7 +58,7 @@ src/amazon/%.o: ../src/amazon/%.cpp src/amazon/subdir.mk
 clean: clean-src-2f-amazon
 
 clean-src-2f-amazon:
-	-$(RM) ./src/amazon/alexa_change_report_request.d ./src/amazon/alexa_change_report_request.o ./src/amazon/alexa_change_report_search_condition.d ./src/amazon/alexa_change_report_search_condition.o ./src/amazon/alexa_client2.d ./src/amazon/alexa_client2.o ./src/amazon/alexa_credentials2.d ./src/amazon/alexa_credentials2.o ./src/amazon/alexa_credentials_dao.d ./src/amazon/alexa_credentials_dao.o ./src/amazon/alexa_request2.d ./src/amazon/alexa_request2.o ./src/amazon/alexa_response_request.d ./src/amazon/alexa_response_request.o ./src/amazon/alexa_response_search_condition.d ./src/amazon/alexa_response_search_condition.o ./src/amazon/alexachangereportrequest.d ./src/amazon/alexachangereportrequest.o ./src/amazon/alexaclient.d ./src/amazon/alexaclient.o ./src/amazon/alexacredentials.d ./src/amazon/alexacredentials.o ./src/amazon/alexarequest.d ./src/amazon/alexarequest.o ./src/amazon/alexaresponserequest.d ./src/amazon/alexaresponserequest.o
+	-$(RM) ./src/amazon/alexa_change_report_request.d ./src/amazon/alexa_change_report_request.o ./src/amazon/alexa_change_report_search_condition.d ./src/amazon/alexa_change_report_search_condition.o ./src/amazon/alexa_client2.d ./src/amazon/alexa_client2.o ./src/amazon/alexa_credentials2.d ./src/amazon/alexa_credentials2.o ./src/amazon/alexa_credentials_dao.d ./src/amazon/alexa_credentials_dao.o ./src/amazon/alexa_request2.d ./src/amazon/alexa_request2.o ./src/amazon/alexa_response_request.d ./src/amazon/alexa_response_request.o ./src/amazon/alexachangereportrequest.d ./src/amazon/alexachangereportrequest.o ./src/amazon/alexaclient.d ./src/amazon/alexaclient.o ./src/amazon/alexacredentials.d ./src/amazon/alexacredentials.o ./src/amazon/alexarequest.d ./src/amazon/alexarequest.o ./src/amazon/alexaresponserequest.d ./src/amazon/alexaresponserequest.o
 
 .PHONY: clean-src-2f-amazon
 

@@ -44,7 +44,8 @@ class supla_alexa_response_request2 : public supla_alexa_request2 {
   static bool is_function_allowed(int func);
 
   static void new_request(const supla_caller &caller, supla_user *user,
-                          int device_id, int channel_id);
+                          int device_id, int channel_id,
+                          const std::string &correlation_token);
 };
 
 #endif /* ALEXA_RESPONSE_REQUEST_H_ */
