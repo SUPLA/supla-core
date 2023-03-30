@@ -51,7 +51,7 @@ src/scene \
 src/srpc \
 src/test \
 src/test/actions \
-src/test/alexa \
+src/test/amazon \
 src/test/analyzer \
 src/test/asynctask \
 src/test/channeljsonconfig \
