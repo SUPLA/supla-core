@@ -35,6 +35,7 @@ supla_alexa_response_request2::supla_alexa_response_request2(
                            queue, pool, property_getter, credentials) {
   set_delay_usec(1000000);  // 1 sec.
   set_timeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
+  this->correlation_token = correlation_token;
 }
 
 string supla_alexa_response_request2::get_name(void) {
