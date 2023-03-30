@@ -70,9 +70,9 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
       .Times(1)
       .WillOnce([func, online, value](int user_id, int device_id,
                                       int channel_id, int *_func,
-                                      bool *_connected) {
+                                      bool *_Reachable) {
         *_func = func;
-        *_connected = online;
+        *_Reachable = online;
 
         return value;
       });
@@ -124,9 +124,9 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
       .Times(1)
       .WillRepeatedly([func, online, value](int user_id, int device_id,
                                             int channel_id, int *_func,
-                                            bool *_connected) {
+                                            bool *_Reachable) {
         *_func = func;
-        *_connected = online;
+        *_Reachable = online;
 
         return value;
       });
@@ -154,7 +154,7 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
 
-TEST_F(AlexaChangeReportRequestTest, power_Connected) {
+TEST_F(AlexaChangeReportRequestTest, power_Reachable) {
   const char expectedPayload[] =
       "{\"context\":{\"properties\":[{\"namespace\":\"Alexa.PowerController\","
       "\"name\":\"powerState\",\"value\":\"ON\",\"timeOfSample\":\"2019-02-"
@@ -178,7 +178,7 @@ TEST_F(AlexaChangeReportRequestTest, power_Connected) {
            supla_caller(ctClient), "");
 }
 
-TEST_F(AlexaChangeReportRequestTest, power_Disconnected) {
+TEST_F(AlexaChangeReportRequestTest, power_Unreachable) {
   const char expectedPayload[] =
       "{\"context\":{},\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-"
       "6519-6e18-c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":"
@@ -195,7 +195,7 @@ TEST_F(AlexaChangeReportRequestTest, power_Disconnected) {
            supla_caller(ctClient), "");
 }
 
-TEST_F(AlexaChangeReportRequestTest, contanct_Connected) {
+TEST_F(AlexaChangeReportRequestTest, contanct_Reachable) {
   const char expectedPayload[] =
       "{\"context\":{\"properties\":[{\"namespace\":\"Alexa.ContactSensor\","
       "\"name\":\"detectionState\",\"value\":\"DETECTED\",\"timeOfSample\":"
@@ -220,7 +220,7 @@ TEST_F(AlexaChangeReportRequestTest, contanct_Connected) {
            supla_caller(ctDevice), "");
 }
 
-TEST_F(AlexaChangeReportRequestTest, contact_Disconnected) {
+TEST_F(AlexaChangeReportRequestTest, contact_Unreachable) {
   const char expectedPayload[] =
       "{\"context\":{},\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-"
       "6519-6e18-c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":"
@@ -237,7 +237,7 @@ TEST_F(AlexaChangeReportRequestTest, contact_Disconnected) {
            supla_caller(ctDevice), "en");
 }
 
-TEST_F(AlexaChangeReportRequestTest, brightness_Connected) {
+TEST_F(AlexaChangeReportRequestTest, brightness_Reachable) {
   const char expectedPayload[] =
       "{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
       "BrightnessController\",\"name\":\"brightness\",\"value\":10,"
@@ -268,7 +268,7 @@ TEST_F(AlexaChangeReportRequestTest, brightness_Connected) {
            expectedPayload, supla_caller(ctAmazonAlexa), "");
 }
 
-TEST_F(AlexaChangeReportRequestTest, brightness_Disconnected) {
+TEST_F(AlexaChangeReportRequestTest, brightness_Unreachable) {
   const char expectedPayload[] =
       "{\"context\":{},\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-"
       "6519-6e18-c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":"
@@ -284,7 +284,7 @@ TEST_F(AlexaChangeReportRequestTest, brightness_Disconnected) {
            expectedPayload, supla_caller(ctAmazonAlexa), "");
 }
 
-TEST_F(AlexaChangeReportRequestTest, color_Connected) {
+TEST_F(AlexaChangeReportRequestTest, color_Reachable) {
   const char expectedPayload[] =
       "{\"context\":{\"properties\":[{\"namespace\":\"Alexa.ColorController\","
       "\"name\":\"color\",\"value\":{\"hue\":348,\"saturation\":0."
@@ -326,7 +326,7 @@ TEST_F(AlexaChangeReportRequestTest, color_Connected) {
            supla_caller(ctAmazonAlexa), "");
 }
 
-TEST_F(AlexaChangeReportRequestTest, color_Disconnected) {
+TEST_F(AlexaChangeReportRequestTest, color_Unreachable) {
   const char expectedPayload[] =
       "{\"context\":{},\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-"
       "6519-6e18-c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":"
@@ -342,7 +342,7 @@ TEST_F(AlexaChangeReportRequestTest, color_Disconnected) {
            expectedPayload, supla_caller(ctAmazonAlexa), "");
 }
 
-TEST_F(AlexaChangeReportRequestTest, percentage_Connected) {
+TEST_F(AlexaChangeReportRequestTest, percentage_Reachable) {
   const char expectedPayload[] =
       "{\"context\":{\"properties\":[{\"namespace\":\"Alexa.RangeController\","
       "\"instance\":\"Blind.Lift\",\"name\":\"rangeValue\",\"value\":60,"
@@ -375,7 +375,7 @@ TEST_F(AlexaChangeReportRequestTest, percentage_Connected) {
            supla_caller(ctDevice), "");
 }
 
-TEST_F(AlexaChangeReportRequestTest, percentage_Disconnected) {
+TEST_F(AlexaChangeReportRequestTest, percentage_Unreachable) {
   const char expectedPayload[] =
       "{\"context\":{},\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-"
       "6519-6e18-c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":"
@@ -394,7 +394,7 @@ TEST_F(AlexaChangeReportRequestTest, percentage_Disconnected) {
            supla_caller(ctDevice), "");
 }
 
-TEST_F(AlexaChangeReportRequestTest, brightnessAndColor_Connected) {
+TEST_F(AlexaChangeReportRequestTest, brightnessAndColor_Reachable) {
   const char expectedPayload1[] =
       "{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
       "ColorController\",\"name\":\"color\",\"value\":{\"hue\":120,"
@@ -458,7 +458,7 @@ TEST_F(AlexaChangeReportRequestTest, brightnessAndColor_Connected) {
            expectedPayload2);
 }
 
-TEST_F(AlexaChangeReportRequestTest, brightnessAndColor_Disconnected) {
+TEST_F(AlexaChangeReportRequestTest, brightnessAndColor_Unreachable) {
   const char expectedPayload1[] =
       "{\"context\":{},\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-"
       "6519-6e18-c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":"
