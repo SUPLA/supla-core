@@ -25,8 +25,8 @@ supla_alexa_request2::supla_alexa_request2(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_channel_property_getter *property_getter,
     supla_amazon_alexa_credentials2 *credentials)
-    : supla_asynctask_http_request(supla_caller(), user_id, device_id,
-                                   channel_id, queue, pool, property_getter) {
+    : supla_asynctask_http_request(caller, user_id, device_id, channel_id,
+                                   queue, pool, property_getter) {
   this->credentials = credentials;
 }
 

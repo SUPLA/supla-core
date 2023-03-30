@@ -30,8 +30,8 @@ supla_alexa_change_report_request2::supla_alexa_change_report_request2(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_channel_property_getter *property_getter,
     supla_amazon_alexa_credentials2 *credentials)
-    : supla_alexa_request2(supla_caller(), user_id, device_id, channel_id,
-                           queue, pool, property_getter, credentials) {
+    : supla_alexa_request2(caller, user_id, device_id, channel_id, queue, pool,
+                           property_getter, credentials) {
   set_delay_usec(1500000);  // 1.5 sec.
   set_timeout(scfg_int(CFG_ALEXA_CHANGEREPORT_TIMEOUT) * 1000);
 }
@@ -58,12 +58,13 @@ bool supla_alexa_change_report_request2::make_request(
 
   client.set_channel_connected(online);
   client.set_channel_value(value);
+  client.set_cause_type(get_caller());
 
   switch (func) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      client.add_percentage_controller();
+      client.add_power_controller_properties();
       break;
     case SUPLA_CHANNELFNC_DIMMER:
       client.add_brightness_controller_properties();
@@ -92,8 +93,8 @@ bool supla_alexa_change_report_request2::make_request(
       client.add_contact_sensor();
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      client.add_percentage_controller();
       client.add_range_controller();
+      client.add_percentage_controller();
       break;
   }
 

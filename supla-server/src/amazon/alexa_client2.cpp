@@ -146,6 +146,25 @@ void supla_alexa_client2::set_cause_type(int cause_type) {
   this->cause_type = cause_type;
 }
 
+void supla_alexa_client2::set_cause_type(const supla_caller &caller) {
+  switch (caller.get_type()) {
+    case ctAmazonAlexa:
+      set_cause_type(CAUSE_VOICE_INTERACTION);
+      break;
+
+    case ctClient:
+    case ctIPC:
+    case ctMQTT:
+    case ctGoogleHome:
+    case ctScene:
+      set_cause_type(CAUSE_APP_INTERACTION);
+      break;
+    default:
+      set_cause_type(CAUSE_PHYSICAL_INTERACTION);
+      break;
+  }
+}
+
 cJSON *supla_alexa_client2::add_props(cJSON *props_arr, cJSON *props) {
   if (!props) {
     return props_arr;
@@ -671,8 +690,8 @@ void supla_alexa_client2::add_color_controller_properties(void) {
     if (rgbw_val) {
       add_props(get_color_controller_properties(
           rgbw_val->get_color(), rgbw_val->get_color_brightness()));
-      add_props(
-          get_brightness_controller_properties(rgbw_val->get_brightness()));
+      add_props(get_brightness_controller_properties(
+          rgbw_val->get_color_brightness()));
       add_props(get_power_controller_properties(
           rgbw_val->get_color_brightness() > 0));
     }

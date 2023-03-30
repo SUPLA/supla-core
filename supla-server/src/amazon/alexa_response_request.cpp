@@ -69,6 +69,7 @@ bool supla_alexa_response_request2::make_request(
   client.set_channel_connected(online);
   client.set_channel_value(value);
   client.set_subchannel_id(subchannel_id);
+  client.set_cause_type(get_caller());
 
   switch (func) {
     case SUPLA_CHANNELFNC_POWERSWITCH:

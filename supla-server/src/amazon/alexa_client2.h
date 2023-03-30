@@ -58,6 +58,7 @@
 #include <string>
 
 #include "amazon/alexa_credentials2.h"
+#include "caller.h"
 #include "http/voice_assistant_client2.h"
 #include "json/cJSON.h"
 
@@ -106,6 +107,7 @@ class supla_alexa_client2 : public supla_voice_assistant_client2 {
                                const std::string &correlation_token);
   virtual ~supla_alexa_client2(void);
   void set_cause_type(int cause_type);
+  void set_cause_type(const supla_caller &caller);
 
   void add_power_controller_properties(void);
   void add_brightness_controller_properties(void);
