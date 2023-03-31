@@ -18,7 +18,7 @@
 
 #include "alexa_response_request.h"
 
-#include "amazon/alexa_client2.h"
+#include "amazon/alexa_client.h"
 #include "channeljsonconfig/alexa_config.h"
 #include "device/channel_property_getter.h"
 #include "http/asynctask_http_thread_pool.h"
@@ -27,24 +27,24 @@
 
 using std::string;
 
-supla_alexa_response_request2::supla_alexa_response_request2(
+supla_alexa_response_request::supla_alexa_response_request(
     const supla_caller &caller, int user_id, int device_id, int channel_id,
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_channel_property_getter *property_getter,
-    supla_amazon_alexa_credentials2 *credentials,
+    supla_amazon_alexa_credentials *credentials,
     const string &correlation_token)
-    : supla_alexa_request2(supla_caller(), user_id, device_id, channel_id,
+    : supla_alexa_request(supla_caller(), user_id, device_id, channel_id,
                            queue, pool, property_getter, credentials) {
   set_delay_usec(1000000);  // 1 sec.
   set_timeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
   this->correlation_token = correlation_token;
 }
 
-string supla_alexa_response_request2::get_name(void) {
+string supla_alexa_response_request::get_name(void) {
   return "Alexa Response Request";
 }
 
-bool supla_alexa_response_request2::make_request(
+bool supla_alexa_response_request::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
   if (!get_credentials()->is_access_token_exists()) {
     return false;
@@ -57,9 +57,9 @@ bool supla_alexa_response_request2::make_request(
     correlation_token = correlation_token.substr(0, sub_pos);
   }
 
-  supla_alexa_client2 client(get_channel_id(), curl_adapter, get_credentials(),
-                             get_zulu_time(), get_message_id(),
-                             correlation_token);
+  supla_alexa_client client(get_channel_id(), curl_adapter, get_credentials(),
+                            get_zulu_time(), get_message_id(),
+                            correlation_token);
   set_zulu_time("");
   set_message_id("");
   correlation_token = "";
@@ -102,13 +102,13 @@ bool supla_alexa_response_request2::make_request(
 }
 
 // static
-bool supla_alexa_response_request2::is_caller_allowed(
+bool supla_alexa_response_request::is_caller_allowed(
     const supla_caller &caller) {
   return caller == ctAmazonAlexa;
 }
 
 // static
-bool supla_alexa_response_request2::is_function_allowed(int func) {
+bool supla_alexa_response_request::is_function_allowed(int func) {
   switch (func) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
@@ -126,7 +126,7 @@ bool supla_alexa_response_request2::is_function_allowed(int func) {
 }
 
 // static
-void supla_alexa_response_request2::new_request(
+void supla_alexa_response_request::new_request(
     const supla_caller &caller, supla_user *user, int device_id, int channel_id,
     const string &correlation_token) {
   if (correlation_token.size() == 0 || !user || !is_caller_allowed(caller) ||
@@ -156,7 +156,7 @@ void supla_alexa_response_request2::new_request(
     return;
   }
 
-  supla_alexa_response_request2 *request = new supla_alexa_response_request2(
+  supla_alexa_response_request *request = new supla_alexa_response_request(
       caller, user->getUserID(), device_id, channel_id,
       supla_asynctask_queue::global_instance(),
       supla_asynctask_http_thread_pool::global_instance(), property_getter,

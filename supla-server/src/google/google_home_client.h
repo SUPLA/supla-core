@@ -22,10 +22,10 @@
 #include <string>
 
 #include "google/google_home_credentials.h"
-#include "http/voice_assistant_client2.h"
+#include "http/voice_assistant_client.h"
 #include "json/cJSON.h"
 
-class supla_google_home_client : public supla_voice_assistant_client2 {
+class supla_google_home_client : public supla_voice_assistant_client {
  private:
   cJSON *json_states;
   std::string request_id;

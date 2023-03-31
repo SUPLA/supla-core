@@ -19,7 +19,7 @@
 #include "alexa_change_report_request.h"
 
 #include "amazon/alexa_change_report_search_condition.h"
-#include "amazon/alexa_client2.h"
+#include "amazon/alexa_client.h"
 #include "channeljsonconfig/alexa_config.h"
 #include "device/channel_property_getter.h"
 #include "http/asynctask_http_thread_pool.h"
@@ -28,29 +28,29 @@
 
 using std::string;
 
-supla_alexa_change_report_request2::supla_alexa_change_report_request2(
+supla_alexa_change_report_request::supla_alexa_change_report_request(
     const supla_caller &caller, int user_id, int device_id, int channel_id,
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_channel_property_getter *property_getter,
-    supla_amazon_alexa_credentials2 *credentials)
-    : supla_alexa_request2(caller, user_id, device_id, channel_id, queue, pool,
+    supla_amazon_alexa_credentials *credentials)
+    : supla_alexa_request(caller, user_id, device_id, channel_id, queue, pool,
                            property_getter, credentials) {
   set_delay_usec(1500000);  // 1.5 sec.
   set_timeout(scfg_int(CFG_ALEXA_CHANGEREPORT_TIMEOUT) * 1000);
 }
 
-string supla_alexa_change_report_request2::get_name(void) {
+string supla_alexa_change_report_request::get_name(void) {
   return "Alexa Change Report Request";
 }
 
-bool supla_alexa_change_report_request2::make_request(
+bool supla_alexa_change_report_request::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
   if (!get_credentials()->is_access_token_exists()) {
     return false;
   }
 
-  supla_alexa_client2 client(get_channel_id(), curl_adapter, get_credentials(),
-                             get_zulu_time(), get_message_id(), "");
+  supla_alexa_client client(get_channel_id(), curl_adapter, get_credentials(),
+                            get_zulu_time(), get_message_id(), "");
   set_zulu_time("");
   set_message_id("");
 
@@ -105,7 +105,7 @@ bool supla_alexa_change_report_request2::make_request(
 }
 
 // static
-bool supla_alexa_change_report_request2::is_caller_allowed(
+bool supla_alexa_change_report_request::is_caller_allowed(
     const supla_caller &caller) {
   switch (caller.get_type()) {
     case ctDevice:
@@ -126,7 +126,7 @@ bool supla_alexa_change_report_request2::is_caller_allowed(
 }
 
 // static
-bool supla_alexa_change_report_request2::is_function_allowed(int func) {
+bool supla_alexa_change_report_request::is_function_allowed(int func) {
   switch (func) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
@@ -150,7 +150,7 @@ bool supla_alexa_change_report_request2::is_function_allowed(int func) {
 }
 
 // static
-void supla_alexa_change_report_request2::new_request(const supla_caller &caller,
+void supla_alexa_change_report_request::new_request(const supla_caller &caller,
                                                      supla_user *user,
                                                      int device_id,
                                                      int channel_id) {
@@ -192,8 +192,8 @@ void supla_alexa_change_report_request2::new_request(const supla_caller &caller,
     return;
   }
 
-  supla_alexa_change_report_request2 *request =
-      new supla_alexa_change_report_request2(
+  supla_alexa_change_report_request *request =
+      new supla_alexa_change_report_request(
           caller, user->getUserID(), device_id, channel_id,
           supla_asynctask_queue::global_instance(),
           supla_asynctask_http_thread_pool::global_instance(), property_getter,

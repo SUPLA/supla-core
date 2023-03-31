@@ -32,8 +32,8 @@ supla_alexa_change_report_search_condition::
 
 bool supla_alexa_change_report_search_condition::condition_met(
     supla_abstract_asynctask *task) {
-  supla_alexa_change_report_request2 *request =
-      dynamic_cast<supla_alexa_change_report_request2 *>(task);
+  supla_alexa_change_report_request *request =
+      dynamic_cast<supla_alexa_change_report_request *>(task);
   return request && request->get_user_id() == user_id &&
          request->get_device_id() == device_id &&
          request->get_channel_id() == channel_id &&

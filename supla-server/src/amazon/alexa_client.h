@@ -57,12 +57,12 @@
 
 #include <string>
 
-#include "amazon/alexa_credentials2.h"
+#include "amazon/alexa_credentials.h"
 #include "caller.h"
-#include "http/voice_assistant_client2.h"
+#include "http/voice_assistant_client.h"
 #include "json/cJSON.h"
 
-class supla_alexa_client2 : public supla_voice_assistant_client2 {
+class supla_alexa_client : public supla_voice_assistant_client {
  private:
   typedef struct {
     char *str;
@@ -79,7 +79,7 @@ class supla_alexa_client2 : public supla_voice_assistant_client2 {
   std::string correlation_token;
   const char *get_error_string(const int code);
   int get_error_code(const char *code);
-  supla_amazon_alexa_credentials2 *get_alexa_credentials(void);
+  supla_amazon_alexa_credentials *get_alexa_credentials(void);
   void add_props(cJSON *props);
   cJSON *add_props(cJSON *props_arr, cJSON *props);
   cJSON *get_power_controller_properties(bool hi);
@@ -99,13 +99,13 @@ class supla_alexa_client2 : public supla_voice_assistant_client2 {
   int perform_post_request(char *data);
 
  public:
-  explicit supla_alexa_client2(int channel_id,
-                               supla_abstract_curl_adapter *curl_adapter,
-                               supla_amazon_alexa_credentials2 *credentials,
-                               const std::string &zulu_time,
-                               const std::string &message_id,
-                               const std::string &correlation_token);
-  virtual ~supla_alexa_client2(void);
+  explicit supla_alexa_client(int channel_id,
+                              supla_abstract_curl_adapter *curl_adapter,
+                              supla_amazon_alexa_credentials *credentials,
+                              const std::string &zulu_time,
+                              const std::string &message_id,
+                              const std::string &correlation_token);
+  virtual ~supla_alexa_client(void);
   void set_cause_type(int cause_type);
   void set_cause_type(const supla_caller &caller);
 

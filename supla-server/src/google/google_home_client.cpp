@@ -32,7 +32,7 @@ using std::string;
 supla_google_home_client::supla_google_home_client(
     int channel_id, supla_abstract_curl_adapter *curl_adapter,
     supla_google_home_credentials *credentials)
-    : supla_voice_assistant_client2(channel_id, curl_adapter, credentials) {
+    : supla_voice_assistant_client(channel_id, curl_adapter, credentials) {
   this->json_states = cJSON_CreateObject();
 }
 

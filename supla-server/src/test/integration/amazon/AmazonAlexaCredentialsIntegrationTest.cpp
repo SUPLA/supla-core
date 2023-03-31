@@ -18,7 +18,7 @@
 
 #include "AmazonAlexaCredentialsIntegrationTest.h"
 
-#include "amazon/alexa_credentials2.h"
+#include "amazon/alexa_credentials.h"
 #include "log.h"
 #include "user.h"
 
@@ -28,7 +28,7 @@ using std::string;
 using std::vector;
 
 TEST_F(AmazonAlexaCredentialsIntegrationTest, defaults) {
-  supla_amazon_alexa_credentials2 credentials;
+  supla_amazon_alexa_credentials credentials;
 
   EXPECT_EQ(credentials.get_access_token(), "");
   EXPECT_EQ(credentials.get_refresh_token(), "");
@@ -44,7 +44,7 @@ TEST_F(AmazonAlexaCredentialsIntegrationTest, load) {
 
   initTestDatabase();
 
-  supla_amazon_alexa_credentials2 credentials(supla_user::find(2, true));
+  supla_amazon_alexa_credentials credentials(supla_user::find(2, true));
 
   EXPECT_FALSE(credentials.is_access_token_exists());
   EXPECT_FALSE(credentials.is_refresh_token_exists());
@@ -91,7 +91,7 @@ TEST_F(AmazonAlexaCredentialsIntegrationTest, load) {
 TEST_F(AmazonAlexaCredentialsIntegrationTest, update) {
   initTestDatabase();
 
-  supla_amazon_alexa_credentials2 credentials(supla_user::find(2, true));
+  supla_amazon_alexa_credentials credentials(supla_user::find(2, true));
 
   credentials.load();
 
@@ -121,7 +121,7 @@ TEST_F(AmazonAlexaCredentialsIntegrationTest, update) {
 
 TEST_F(AmazonAlexaCredentialsIntegrationTest, remove) {
   initTestDatabase();
-  supla_amazon_alexa_credentials2 credentials(supla_user::find(2, true));
+  supla_amazon_alexa_credentials credentials(supla_user::find(2, true));
 
   runSqlScript("AddAlexaCredentials.sql");
 

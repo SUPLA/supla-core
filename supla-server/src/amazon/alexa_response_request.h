@@ -21,10 +21,10 @@
 
 #include <string>
 
-#include "amazon/alexa_credentials2.h"
-#include "amazon/alexa_request2.h"
+#include "amazon/alexa_credentials.h"
+#include "amazon/alexa_request.h"
 
-class supla_alexa_response_request2 : public supla_alexa_request2 {
+class supla_alexa_response_request : public supla_alexa_request {
  private:
   std::string correlation_token;
 
@@ -33,11 +33,11 @@ class supla_alexa_response_request2 : public supla_alexa_request2 {
   virtual std::string get_name(void);
 
  public:
-  supla_alexa_response_request2(
+  supla_alexa_response_request(
       const supla_caller &caller, int user_id, int device_id, int channel_id,
       supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_channel_property_getter *property_getter,
-      supla_amazon_alexa_credentials2 *credentials,
+      supla_amazon_alexa_credentials *credentials,
       const std::string &correlation_token);
 
   static bool is_caller_allowed(const supla_caller &caller);

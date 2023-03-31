@@ -16,23 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "alexa_credentials2.h"
+#include "alexa_credentials.h"
 
 #include "amazon/alexa_credentials_dao.h"
 #include "db/db_access_provider.h"
 
 using std::string;
 
-supla_amazon_alexa_credentials2::supla_amazon_alexa_credentials2(
-    supla_user *user)
+supla_amazon_alexa_credentials::supla_amazon_alexa_credentials(supla_user *user)
     : supla_http_oauth_credentials(user) {}
 
-supla_amazon_alexa_credentials2::supla_amazon_alexa_credentials2()
+supla_amazon_alexa_credentials::supla_amazon_alexa_credentials()
     : supla_http_oauth_credentials() {}
 
-supla_amazon_alexa_credentials2::~supla_amazon_alexa_credentials2() {}
+supla_amazon_alexa_credentials::~supla_amazon_alexa_credentials() {}
 
-void supla_amazon_alexa_credentials2::remove(void) {
+void supla_amazon_alexa_credentials::remove(void) {
   data_lock();
   supla_http_oauth_credentials::remove();
   region = "";
@@ -43,14 +42,14 @@ void supla_amazon_alexa_credentials2::remove(void) {
   dao.remove(get_user_id());
 }
 
-string supla_amazon_alexa_credentials2::get_region(void) {
+string supla_amazon_alexa_credentials::get_region(void) {
   data_lock();
   string region = this->region;
   data_unlock();
   return region;
 }
 
-void supla_amazon_alexa_credentials2::load(void) {
+void supla_amazon_alexa_credentials::load(void) {
   supla_db_access_provider dba;
   supla_amazon_alexa_credentials_dao dao(&dba);
 
@@ -66,9 +65,9 @@ void supla_amazon_alexa_credentials2::load(void) {
   }
 }
 
-void supla_amazon_alexa_credentials2::update(const string &access_token,
-                                             const string &refresh_token,
-                                             int expires_in) {
+void supla_amazon_alexa_credentials::update(const string &access_token,
+                                            const string &refresh_token,
+                                            int expires_in) {
   supla_http_oauth_credentials::update(access_token, refresh_token, expires_in);
 
   supla_db_access_provider dba;

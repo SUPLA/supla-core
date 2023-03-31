@@ -16,17 +16,16 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VOICE_ASSISTANT_CLIENT2_H_
-#define VOICE_ASSISTANT_CLIENT2_H_
-
-#include <google/google_home_credentials.h>
+#ifndef VOICE_ASSISTANT_CLIENT_H_
+#define VOICE_ASSISTANT_CLIENT_H_
 
 #include <string>
 
 #include "device/value/channel_value.h"
 #include "http/abstract_curl_adapter.h"
+#include "http/oauth_credentials.h"
 
-class supla_voice_assistant_client2 {
+class supla_voice_assistant_client {
  private:
   int channel_id;
   short subchannel_id;
@@ -45,14 +44,14 @@ class supla_voice_assistant_client2 {
   std::string get_endpoint_id(void);
 
  public:
-  explicit supla_voice_assistant_client2(
+  explicit supla_voice_assistant_client(
       int channel_id, supla_abstract_curl_adapter *curl_adapter,
       supla_http_oauth_credentials *credentials);
-  virtual ~supla_voice_assistant_client2(void);
+  virtual ~supla_voice_assistant_client(void);
 
   void set_subchannel_id(short subchannel_id);
   void set_channel_connected(bool connected);
   void set_channel_value(supla_channel_value *channel_value);
 };
 
-#endif /* VOICE_ASSISTANT_CLIENT2_H_ */
+#endif /* VOICE_ASSISTANT_CLIENT_H_ */

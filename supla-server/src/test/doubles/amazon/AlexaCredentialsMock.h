@@ -21,11 +21,11 @@
 
 #include <gmock/gmock.h>
 
-#include "amazon/alexa_credentials2.h"
+#include "amazon/alexa_credentials.h"
 
 namespace testing {
 
-class AlexaCredentialsMock : public supla_amazon_alexa_credentials2 {
+class AlexaCredentialsMock : public supla_amazon_alexa_credentials {
  private:
  protected:
  public:

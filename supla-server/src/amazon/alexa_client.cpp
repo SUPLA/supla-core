@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "amazon/alexa_client2.h"
+#include "alexa_client.h"
 
 #include <string.h>
 
@@ -47,7 +47,7 @@ using std::string;
 
 // https://developer.amazon.com/docs/smarthome/send-events-to-the-alexa-event-gateway.html
 // static
-const supla_alexa_client2::_alexa_code_t supla_alexa_client2::alexa_codes[]{
+const supla_alexa_client::_alexa_code_t supla_alexa_client::alexa_codes[]{
     {(char *)"SUCCESS", POST_RESULT_SUCCESS},
     {(char *)"UNKNOWN_ERROR", POST_RESULT_UNKNOWN_ERROR},
     {(char *)"NOSSL", POST_RESULT_NOSSL},
@@ -74,7 +74,7 @@ const supla_alexa_client2::_alexa_code_t supla_alexa_client2::alexa_codes[]{
 
 // https://developer.amazon.com/docs/smarthome/state-reporting-for-a-smart-home-skill.html#cause-object
 // static
-const supla_alexa_client2::_alexa_code_t supla_alexa_client2::alexa_causes[]{
+const supla_alexa_client::_alexa_code_t supla_alexa_client::alexa_causes[]{
     {(char *)"APP_INTERACTION", CAUSE_APP_INTERACTION},
     {(char *)"PHYSICAL_INTERACTION", CAUSE_PHYSICAL_INTERACTION},
     {(char *)"PERIODIC_POLL", CAUSE_PERIODIC_POLL},
@@ -83,11 +83,11 @@ const supla_alexa_client2::_alexa_code_t supla_alexa_client2::alexa_causes[]{
     {NULL, 0},
 };
 
-supla_alexa_client2::supla_alexa_client2(
+supla_alexa_client::supla_alexa_client(
     int channel_id, supla_abstract_curl_adapter *curl_adapter,
-    supla_amazon_alexa_credentials2 *credentials, const string &zulu_time,
+    supla_amazon_alexa_credentials *credentials, const string &zulu_time,
     const string &message_id, const string &correlation_token)
-    : supla_voice_assistant_client2(channel_id, curl_adapter, credentials) {
+    : supla_voice_assistant_client(channel_id, curl_adapter, credentials) {
   cause_type = CAUSE_APP_INTERACTION;
   props_arr = nullptr;
   this->zulu_time = zulu_time;
@@ -107,13 +107,13 @@ supla_alexa_client2::supla_alexa_client2(
   }
 }
 
-supla_alexa_client2::~supla_alexa_client2(void) {
+supla_alexa_client::~supla_alexa_client(void) {
   if (props_arr) {
     cJSON_Delete(props_arr);
   }
 }
 
-const char *supla_alexa_client2::get_error_string(const int code) {
+const char *supla_alexa_client::get_error_string(const int code) {
   int n = 0;
   while (alexa_codes[n].str) {
     if (alexa_codes[n].code == code) {
@@ -125,7 +125,7 @@ const char *supla_alexa_client2::get_error_string(const int code) {
   return "UNKNOWN";
 }
 
-int supla_alexa_client2::get_error_code(const char *code) {
+int supla_alexa_client::get_error_code(const char *code) {
   int n = 0;
   while (alexa_codes[n].str) {
     if (strncmp(alexa_codes[n].str, code, 50) == 0) {
@@ -137,16 +137,16 @@ int supla_alexa_client2::get_error_code(const char *code) {
   return POST_RESULT_UNKNOWN_ERROR;
 }
 
-supla_amazon_alexa_credentials2 *supla_alexa_client2::get_alexa_credentials(
+supla_amazon_alexa_credentials *supla_alexa_client::get_alexa_credentials(
     void) {
-  return static_cast<supla_amazon_alexa_credentials2 *>(get_credentials());
+  return static_cast<supla_amazon_alexa_credentials *>(get_credentials());
 }
 
-void supla_alexa_client2::set_cause_type(int cause_type) {
+void supla_alexa_client::set_cause_type(int cause_type) {
   this->cause_type = cause_type;
 }
 
-void supla_alexa_client2::set_cause_type(const supla_caller &caller) {
+void supla_alexa_client::set_cause_type(const supla_caller &caller) {
   switch (caller.get_type()) {
     case ctAmazonAlexa:
       set_cause_type(CAUSE_VOICE_INTERACTION);
@@ -165,7 +165,7 @@ void supla_alexa_client2::set_cause_type(const supla_caller &caller) {
   }
 }
 
-cJSON *supla_alexa_client2::add_props(cJSON *props_arr, cJSON *props) {
+cJSON *supla_alexa_client::add_props(cJSON *props_arr, cJSON *props) {
   if (!props) {
     return props_arr;
   }
@@ -181,11 +181,11 @@ cJSON *supla_alexa_client2::add_props(cJSON *props_arr, cJSON *props) {
   return props_arr;
 }
 
-void supla_alexa_client2::add_props(cJSON *props) {
+void supla_alexa_client::add_props(cJSON *props) {
   props_arr = add_props(props_arr, props);
 }
 
-cJSON *supla_alexa_client2::get_power_controller_properties(bool hi) {
+cJSON *supla_alexa_client::get_power_controller_properties(bool hi) {
   cJSON *property = cJSON_CreateObject();
   if (property) {
     cJSON_AddStringToObject(property, "namespace", "Alexa.PowerController");
@@ -198,7 +198,7 @@ cJSON *supla_alexa_client2::get_power_controller_properties(bool hi) {
   return property;
 }
 
-cJSON *supla_alexa_client2::get_brightness_controller_properties(
+cJSON *supla_alexa_client::get_brightness_controller_properties(
     short brightness) {
   if (brightness > 100) {
     brightness = 100;
@@ -219,8 +219,8 @@ cJSON *supla_alexa_client2::get_brightness_controller_properties(
   return property;
 }
 
-cJSON *supla_alexa_client2::get_color_controller_properties(int color,
-                                                            short brightness) {
+cJSON *supla_alexa_client::get_color_controller_properties(int color,
+                                                           short brightness) {
   if (brightness > 100) {
     brightness = 100;
   } else if (brightness < 0) {
@@ -247,7 +247,7 @@ cJSON *supla_alexa_client2::get_color_controller_properties(int color,
   return property;
 }
 
-cJSON *supla_alexa_client2::get_range_controller_properties(short range) {
+cJSON *supla_alexa_client::get_range_controller_properties(short range) {
   if (range > 100) {
     range = 100;
   } else if (range < 0) {
@@ -267,7 +267,7 @@ cJSON *supla_alexa_client2::get_range_controller_properties(short range) {
   return props;
 }
 
-cJSON *supla_alexa_client2::get_percentage_controller_properties(
+cJSON *supla_alexa_client::get_percentage_controller_properties(
     short percentage) {
   if (percentage > 100) {
     percentage = 100;
@@ -287,7 +287,7 @@ cJSON *supla_alexa_client2::get_percentage_controller_properties(
   return props;
 }
 
-cJSON *supla_alexa_client2::get_contact_sensor_properties(bool hi) {
+cJSON *supla_alexa_client::get_contact_sensor_properties(bool hi) {
   cJSON *props = cJSON_CreateObject();
   if (props) {
     cJSON_AddStringToObject(props, "namespace", "Alexa.ContactSensor");
@@ -300,7 +300,7 @@ cJSON *supla_alexa_client2::get_contact_sensor_properties(bool hi) {
   return props;
 }
 
-cJSON *supla_alexa_client2::get_endpoint_health_properties(bool ok) {
+cJSON *supla_alexa_client::get_endpoint_health_properties(bool ok) {
   cJSON *props = cJSON_CreateObject();
   if (props) {
     cJSON_AddStringToObject(props, "namespace", "Alexa.EndpointHealth");
@@ -318,8 +318,8 @@ cJSON *supla_alexa_client2::get_endpoint_health_properties(bool ok) {
   return props;
 }
 
-cJSON *supla_alexa_client2::get_header(const char name[],
-                                       bool use_correlation_token) {
+cJSON *supla_alexa_client::get_header(const char name[],
+                                      bool use_correlation_token) {
   cJSON *header = cJSON_CreateObject();
   if (header) {
     cJSON_AddStringToObject(header, "messageId", message_id.c_str());
@@ -335,7 +335,7 @@ cJSON *supla_alexa_client2::get_header(const char name[],
   return header;
 }
 
-cJSON *supla_alexa_client2::get_endpoint(void) {
+cJSON *supla_alexa_client::get_endpoint(void) {
   cJSON *endpoint = cJSON_CreateObject();
   if (endpoint) {
     cJSON *scope = cJSON_CreateObject();
@@ -352,7 +352,7 @@ cJSON *supla_alexa_client2::get_endpoint(void) {
   return endpoint;
 }
 
-cJSON *supla_alexa_client2::get_response(void) {
+cJSON *supla_alexa_client::get_response(void) {
   cJSON *root = cJSON_CreateObject();
   if (root) {
     cJSON *context = cJSON_CreateObject();
@@ -385,7 +385,7 @@ cJSON *supla_alexa_client2::get_response(void) {
   return root;
 }
 
-cJSON *supla_alexa_client2::get_change_report(void) {
+cJSON *supla_alexa_client::get_change_report(void) {
   cJSON *root = cJSON_CreateObject();
   if (root) {
     cJSON *context = cJSON_CreateObject();
@@ -456,7 +456,7 @@ cJSON *supla_alexa_client2::get_change_report(void) {
   return root;
 }
 
-cJSON *supla_alexa_client2::get_unrechable_error_response(void) {
+cJSON *supla_alexa_client::get_unrechable_error_response(void) {
   cJSON *root = cJSON_CreateObject();
   if (root) {
     cJSON *event = cJSON_CreateObject();
@@ -490,8 +490,8 @@ cJSON *supla_alexa_client2::get_unrechable_error_response(void) {
   return root;
 }
 
-int supla_alexa_client2::perform_post_request(char *data,
-                                              int *http_result_code) {
+int supla_alexa_client::perform_post_request(char *data,
+                                             int *http_result_code) {
   int result = POST_RESULT_UNKNOWN_ERROR;
 
   if (http_result_code) {
@@ -554,7 +554,7 @@ int supla_alexa_client2::perform_post_request(char *data,
   return result;
 }
 
-void supla_alexa_client2::refresh_token(void) {
+void supla_alexa_client::refresh_token(void) {
   if (!get_credentials()->is_refresh_token_exists()) {
     return;
   }
@@ -611,7 +611,7 @@ void supla_alexa_client2::refresh_token(void) {
   get_credentials()->refresh_unlock();
 }
 
-int supla_alexa_client2::perform_post_request(char *data) {
+int supla_alexa_client::perform_post_request(char *data) {
   if (!get_credentials()->is_access_token_exists()) {
     return POST_RESULT_TOKEN_DOES_NOT_EXISTS;
   }
@@ -660,7 +660,7 @@ int supla_alexa_client2::perform_post_request(char *data) {
   return result;
 }
 
-void supla_alexa_client2::add_power_controller_properties(void) {
+void supla_alexa_client::add_power_controller_properties(void) {
   if (is_channel_connected()) {
     supla_channel_onoff_value *onoff_val =
         dynamic_cast<supla_channel_onoff_value *>(get_channel_value());
@@ -670,7 +670,7 @@ void supla_alexa_client2::add_power_controller_properties(void) {
   }
 }
 
-void supla_alexa_client2::add_brightness_controller_properties(void) {
+void supla_alexa_client::add_brightness_controller_properties(void) {
   if (is_channel_connected()) {
     supla_channel_rgbw_value *rgbw_val =
         dynamic_cast<supla_channel_rgbw_value *>(get_channel_value());
@@ -683,7 +683,7 @@ void supla_alexa_client2::add_brightness_controller_properties(void) {
   }
 }
 
-void supla_alexa_client2::add_color_controller_properties(void) {
+void supla_alexa_client::add_color_controller_properties(void) {
   if (is_channel_connected()) {
     supla_channel_rgbw_value *rgbw_val =
         dynamic_cast<supla_channel_rgbw_value *>(get_channel_value());
@@ -698,7 +698,7 @@ void supla_alexa_client2::add_color_controller_properties(void) {
   }
 }
 
-void supla_alexa_client2::add_range_controller(void) {
+void supla_alexa_client::add_range_controller(void) {
   if (is_channel_connected()) {
     supla_channel_rs_value *rs_val =
         dynamic_cast<supla_channel_rs_value *>(get_channel_value());
@@ -709,7 +709,7 @@ void supla_alexa_client2::add_range_controller(void) {
   }
 }
 
-void supla_alexa_client2::add_percentage_controller(void) {
+void supla_alexa_client::add_percentage_controller(void) {
   if (is_channel_connected()) {
     supla_channel_rs_value *rs_val =
         dynamic_cast<supla_channel_rs_value *>(get_channel_value());
@@ -720,7 +720,7 @@ void supla_alexa_client2::add_percentage_controller(void) {
   }
 }
 
-void supla_alexa_client2::add_contact_sensor(void) {
+void supla_alexa_client::add_contact_sensor(void) {
   if (is_channel_connected()) {
     supla_channel_binary_sensor_value *bs_val =
         dynamic_cast<supla_channel_binary_sensor_value *>(get_channel_value());
@@ -730,7 +730,7 @@ void supla_alexa_client2::add_contact_sensor(void) {
   }
 }
 
-bool supla_alexa_client2::send_response(void) {
+bool supla_alexa_client::send_response(void) {
   char *data = NULL;
   cJSON *root = NULL;
 
@@ -756,7 +756,7 @@ bool supla_alexa_client2::send_response(void) {
 }
 
 // https://developer.amazon.com/docs/device-apis/alexa-interface.html#changereport
-bool supla_alexa_client2::send_change_report(void) {
+bool supla_alexa_client::send_change_report(void) {
   char *data = NULL;
 
   cJSON *root = get_change_report();

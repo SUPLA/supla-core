@@ -91,8 +91,8 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
       .Times(1);
 
-  supla_alexa_change_report_request2 *request =
-      new supla_alexa_change_report_request2(caller, 1, 2, 3, queue, pool,
+  supla_alexa_change_report_request *request =
+      new supla_alexa_change_report_request(caller, 1, 2, 3, queue, pool,
                                              propertyGetter, &credentials);
   request->set_delay_usec(1);
   request->set_message_id("29012dd1-33c7-6519-6e18-c4ee71d00487");
@@ -143,8 +143,8 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload2)))
       .Times(1);
 
-  supla_alexa_change_report_request2 *request =
-      new supla_alexa_change_report_request2(supla_caller(ctAmazonAlexa), 1, 2,
+  supla_alexa_change_report_request *request =
+      new supla_alexa_change_report_request(supla_caller(ctAmazonAlexa), 1, 2,
                                              3, queue, pool, propertyGetter,
                                              &credentials);
   request->set_delay_usec(1);

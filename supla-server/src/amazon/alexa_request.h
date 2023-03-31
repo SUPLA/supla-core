@@ -21,24 +21,24 @@
 
 #include <string>
 
-#include "amazon/alexa_credentials2.h"
+#include "amazon/alexa_credentials.h"
 #include "http/asynctask_http_request.h"
 
-class supla_alexa_request2 : public supla_asynctask_http_request {
+class supla_alexa_request : public supla_asynctask_http_request {
  private:
-  supla_amazon_alexa_credentials2 *credentials;
+  supla_amazon_alexa_credentials *credentials;
   std::string zulu_time;
   std::string message_id;
 
  protected:
-  supla_amazon_alexa_credentials2 *get_credentials(void);
+  supla_amazon_alexa_credentials *get_credentials(void);
 
  public:
-  supla_alexa_request2(const supla_caller &caller, int user_id, int device_id,
-                       int channel_id, supla_asynctask_queue *queue,
-                       supla_abstract_asynctask_thread_pool *pool,
-                       supla_abstract_channel_property_getter *property_getter,
-                       supla_amazon_alexa_credentials2 *credentials);
+  supla_alexa_request(const supla_caller &caller, int user_id, int device_id,
+                      int channel_id, supla_asynctask_queue *queue,
+                      supla_abstract_asynctask_thread_pool *pool,
+                      supla_abstract_channel_property_getter *property_getter,
+                      supla_amazon_alexa_credentials *credentials);
 
   std::string get_zulu_time(void);
   void set_zulu_time(const std::string &zulu_time);

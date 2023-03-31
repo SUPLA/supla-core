@@ -21,20 +21,20 @@
 
 #include <string>
 
-#include "amazon/alexa_credentials2.h"
-#include "amazon/alexa_request2.h"
+#include "amazon/alexa_credentials.h"
+#include "amazon/alexa_request.h"
 
-class supla_alexa_change_report_request2 : public supla_alexa_request2 {
+class supla_alexa_change_report_request : public supla_alexa_request {
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
   virtual std::string get_name(void);
 
  public:
-  supla_alexa_change_report_request2(
+  supla_alexa_change_report_request(
       const supla_caller &caller, int user_id, int device_id, int channel_id,
       supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_channel_property_getter *property_getter,
-      supla_amazon_alexa_credentials2 *credentials);
+      supla_amazon_alexa_credentials *credentials);
 
   static bool is_caller_allowed(const supla_caller &caller);
   static bool is_function_allowed(int func);

@@ -22,20 +22,19 @@
 #define SHORT_UNIQUEID_MAXSIZE 37
 #define LONG_UNIQUEID_MAXSIZE 201
 
-#include <google/google_home_credentials.h>
-#include <userclients.h>
-#include <userdevices.h>
-#include <webhook/state_webhook_credentials.h>
-
 #include <cstddef>
 #include <functional>
 #include <memory>
 #include <vector>
 
-#include "amazon/alexa_credentials2.h"
+#include "amazon/alexa_credentials.h"
 #include "caller.h"
 #include "commontypes.h"
+#include "google/google_home_credentials.h"
 #include "proto.h"
+#include "user/userclients.h"
+#include "user/userdevices.h"
+#include "webhook/state_webhook_credentials.h"
 
 class supla_device;
 class supla_client;
@@ -66,7 +65,7 @@ class supla_user {
   supla_user_devices *devices;
 
   supla_user_channelgroups *cgroups;
-  supla_amazon_alexa_credentials2 *amazon_alexa_credentials;
+  supla_amazon_alexa_credentials *amazon_alexa_credentials;
   supla_google_home_credentials *google_home_credentials;
   supla_state_webhook_credentials *state_webhook_credentials;
   int UserID;
@@ -155,7 +154,7 @@ class supla_user {
   void set_caption(std::shared_ptr<supla_client> sender,
                    TCS_SetCaption *caption, int call_id);
 
-  supla_amazon_alexa_credentials2 *amazonAlexaCredentials(void);
+  supla_amazon_alexa_credentials *amazonAlexaCredentials(void);
   supla_google_home_credentials *googleHomeCredentials(void);
   supla_state_webhook_credentials *stateWebhookCredentials(void);
 

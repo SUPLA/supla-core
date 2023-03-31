@@ -85,7 +85,7 @@ void AlexaResponseRequestTest::makeTest(int func, bool online,
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
       .Times(1);
 
-  supla_alexa_response_request2 *request = new supla_alexa_response_request2(
+  supla_alexa_response_request *request = new supla_alexa_response_request(
       supla_caller(), 1, 2, 15, queue, pool, propertyGetter, &credentials,
       correlation_token);
   request->set_delay_usec(1);

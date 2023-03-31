@@ -21,10 +21,10 @@
 namespace testing {
 
 AlexaCredentialsMock::AlexaCredentialsMock()
-    : supla_amazon_alexa_credentials2() {}
+    : supla_amazon_alexa_credentials() {}
 
 AlexaCredentialsMock::AlexaCredentialsMock(supla_user *user)
-    : supla_amazon_alexa_credentials2(user) {}
+    : supla_amazon_alexa_credentials(user) {}
 
 AlexaCredentialsMock::~AlexaCredentialsMock(void) {}
 

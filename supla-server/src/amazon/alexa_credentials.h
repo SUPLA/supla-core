@@ -16,21 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AMAZON_ALEXA_CREDENTIALS2_H_
-#define AMAZON_ALEXA_CREDENTIALS2_H_
+#ifndef AMAZON_ALEXA_CREDENTIALS_H_
+#define AMAZON_ALEXA_CREDENTIALS_H_
 
 #include <string>
 
 #include "http/oauth_credentials.h"
 
-class supla_amazon_alexa_credentials2 : public supla_http_oauth_credentials {
+class supla_amazon_alexa_credentials : public supla_http_oauth_credentials {
  private:
   std::string region;
 
  public:
-  explicit supla_amazon_alexa_credentials2(supla_user *user);
-  supla_amazon_alexa_credentials2();
-  virtual ~supla_amazon_alexa_credentials2();
+  explicit supla_amazon_alexa_credentials(supla_user *user);
+  supla_amazon_alexa_credentials();
+  virtual ~supla_amazon_alexa_credentials();
 
   virtual void remove(void);
   virtual std::string get_region(void);
