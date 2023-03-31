@@ -30,7 +30,7 @@
 #include "client.h"
 #include "db/database.h"
 #include "device.h"
-#include "http/httprequestqueue.h"
+#include "http/http_event_hub.h"
 #include "lck.h"
 #include "log.h"
 #include "mqtt/mqtt_client_suite.h"
@@ -477,7 +477,7 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
   if (user) {
     user->get_devices()->terminate(DeviceID);
 
-    supla_http_request_queue::onDeviceDeletedEvent(user, 0, caller);
+    supla_http_event_hub::on_device_deleted(user, 0, caller);
 
     supla_mqtt_client_suite::globalInstance()->onDeviceDeleted(UserID,
                                                                DeviceID);
@@ -553,7 +553,7 @@ void supla_user::log_metrics(int min_interval_sec) {
 }
 
 void supla_user::on_channels_added(int DeviceID, const supla_caller &caller) {
-  supla_http_request_queue::onChannelsAddedEvent(this, DeviceID, caller);
+  supla_http_event_hub::on_channel_added(this, DeviceID, caller);
 }
 
 void supla_user::on_device_registered(int DeviceID,
@@ -570,8 +570,8 @@ bool supla_user::set_device_channel_value(
   shared_ptr<supla_device> device = devices->get(device_id);
   if (device != nullptr) {
     // TODO(anyone): Check it out. I think there should be "will change"
-    supla_http_request_queue::onChannelValueChangeEvent(this, device_id,
-                                                        channel_id, caller);
+    supla_http_event_hub::on_channel_value_change(this, device_id, channel_id,
+                                                  caller);
 
     device->get_channels()->set_device_channel_value(caller, channel_id,
                                                      group_id, eol, value);
@@ -608,8 +608,8 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
   for (auto it = ca_list.begin(); it != ca_list.end(); it++) {
     if (significant_change && !extended && device_id && channel_id &&
         caller != ctUnknown) {
-      supla_http_request_queue::onChannelValueChangeEvent(
-          this, it->getDeviceId(), it->getChannelId(), caller);
+      supla_http_event_hub::on_channel_value_change(this, it->getDeviceId(),
+                                                    it->getChannelId(), caller);
     }
 
     supla_mqtt_client_suite::globalInstance()->onChannelStateChanged(
@@ -618,7 +618,7 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
 }
 
 void supla_user::on_channel_become_online(int DeviceId, int ChannelId) {
-  supla_http_request_queue::onChannelValueChangeEvent(
+  supla_http_event_hub::on_channel_value_change(
       this, DeviceId, ChannelId, supla_caller(ctDevice, DeviceId));
   supla_mqtt_client_suite::globalInstance()->onChannelStateChanged(
       getUserID(), DeviceId, ChannelId);
@@ -687,7 +687,7 @@ void supla_user::reconnect(const supla_caller &caller, bool all_devices,
     clients->reconnect_all();
   }
 
-  supla_http_request_queue::onUserReconnectEvent(this, caller);
+  supla_http_event_hub::on_user_reconnect(this, caller);
 }
 
 void supla_user::reconnect(const supla_caller &caller) {
@@ -846,7 +846,7 @@ void supla_user::set_caption(std::shared_ptr<supla_client> sender,
         break;
     }
 
-    supla_http_request_queue::onGoogleHomeSyncNeededEvent(
+    supla_http_event_hub::on_google_home_sync_needed(
         this, supla_caller(ctClient, sender->get_id()));
   }
 

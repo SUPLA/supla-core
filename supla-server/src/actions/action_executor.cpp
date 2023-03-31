@@ -18,7 +18,7 @@
 
 #include "actions/action_executor.h"
 
-#include "http/httprequestqueue.h"
+#include "http/http_event_hub.h"
 #include "mqtt/mqtt_client_suite.h"
 #include "scene/scene_asynctask.h"
 #include "userchannelgroups.h"
@@ -269,8 +269,8 @@ void supla_action_executor::forward_outside(int cap) {
     supla_mqtt_client_suite::globalInstance()->onActionsTriggered(
         device->get_user_id(), device->get_id(), get_channel_id(), cap);
 
-    supla_http_request_queue::onActionsTriggered(
-        get_caller(), device->get_user(), device->get_id(), get_channel_id(),
-        cap);
+    supla_http_event_hub::on_actions_triggered(get_caller(), device->get_user(),
+                                               device->get_id(),
+                                               get_channel_id(), cap);
   }
 }

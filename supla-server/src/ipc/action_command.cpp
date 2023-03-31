@@ -23,7 +23,7 @@
 #include "actions/action_executor.h"
 #include "device.h"
 #include "device/channel_property_getter.h"
-#include "http/httprequestqueue.h"
+#include "http/http_event_hub.h"
 #include "user.h"
 
 using std::shared_ptr;
@@ -41,7 +41,7 @@ bool supla_action_command::action_open_close(
     // onChannelValueChangeEvent must be called before
     // set_device_channel_char_value for the potential report to contain
     // AlexaCorrelationToken / GoogleRequestId
-    supla_http_request_queue::onChannelValueChangeEvent(
+    supla_http_event_hub::on_channel_value_change(
         device->get_user(), device->get_id(), channel_id, get_caller(),
         get_alexa_correlation_token(), get_google_request_id());
 

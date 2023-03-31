@@ -20,7 +20,7 @@
 
 #include "db/db_access_provider.h"
 #include "google/google_home_credentials_dao.h"
-#include "http/httprequestqueue.h"
+#include "http/http_event_hub.h"
 #include "log.h"
 
 using std::list;

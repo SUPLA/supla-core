@@ -26,7 +26,7 @@
 
 #include "db/database.h"
 #include "device/call_handler/call_handler_collection.h"
-#include "http/httprequestqueue.h"
+#include "http/http_event_hub.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"

@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "http/httprequestqueue.h"
+#include "http_event_hub.h"
 
 #include "amazon/alexa_change_report_request.h"
 #include "amazon/alexa_response_request.h"
@@ -25,7 +25,7 @@
 #include "webhook/state_webhook_request.h"
 
 // static
-void supla_http_request_queue::onChannelValueChangeEvent(
+void supla_http_event_hub::on_channel_value_change(
     supla_user *user, int deviceId, int channelId, const supla_caller &caller,
     const char correlationToken[], const char googleRequestId[]) {
   supla_alexa_response_request2::new_request(
@@ -44,34 +44,34 @@ void supla_http_request_queue::onChannelValueChangeEvent(
 }
 
 // static
-void supla_http_request_queue::onChannelsAddedEvent(
-    supla_user *user, int deviceId, const supla_caller &caller) {
+void supla_http_event_hub::on_channel_added(supla_user *user, int deviceId,
+                                            const supla_caller &caller) {
   supla_google_home_sync_request2::new_request(user);
 }
 
 // static
-void supla_http_request_queue::onDeviceDeletedEvent(
-    supla_user *user, int deviceId, const supla_caller &caller) {
+void supla_http_event_hub::on_device_deleted(supla_user *user, int deviceId,
+                                             const supla_caller &caller) {
   supla_google_home_sync_request2::new_request(user);
 }
 
 // static
-void supla_http_request_queue::onUserReconnectEvent(
+void supla_http_event_hub::on_user_reconnect(supla_user *user,
+                                             const supla_caller &caller) {
+  supla_google_home_sync_request2::new_request(user);
+}
+
+// static
+void supla_http_event_hub::on_google_home_sync_needed(
     supla_user *user, const supla_caller &caller) {
   supla_google_home_sync_request2::new_request(user);
 }
 
 // static
-void supla_http_request_queue::onGoogleHomeSyncNeededEvent(
-    supla_user *user, const supla_caller &caller) {
-  supla_google_home_sync_request2::new_request(user);
-}
-
-// static
-void supla_http_request_queue::onActionsTriggered(const supla_caller &caller,
-                                                  supla_user *user,
-                                                  int deviceId, int channelId,
-                                                  unsigned int actions) {
+void supla_http_event_hub::on_actions_triggered(const supla_caller &caller,
+                                                supla_user *user, int deviceId,
+                                                int channelId,
+                                                unsigned int actions) {
   if (actions) {
     supla_state_webhook_request::new_request(caller, user, deviceId, channelId,
                                              actions);
