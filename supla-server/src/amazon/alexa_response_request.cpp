@@ -19,6 +19,7 @@
 #include "alexa_response_request.h"
 
 #include "amazon/alexa_client.h"
+#include "amazon/alexa_response_search_condition.h"
 #include "channeljsonconfig/alexa_config.h"
 #include "device/channel_property_getter.h"
 #include "http/asynctask_http_thread_pool.h"
@@ -33,8 +34,8 @@ supla_alexa_response_request::supla_alexa_response_request(
     supla_abstract_channel_property_getter *property_getter,
     supla_amazon_alexa_credentials *credentials,
     const string &correlation_token)
-    : supla_alexa_request(supla_caller(), user_id, device_id, channel_id,
-                           queue, pool, property_getter, credentials) {
+    : supla_alexa_request(supla_caller(), user_id, device_id, channel_id, queue,
+                          pool, property_getter, credentials) {
   set_delay_usec(1000000);  // 1 sec.
   set_timeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
   this->correlation_token = correlation_token;
@@ -129,9 +130,21 @@ bool supla_alexa_response_request::is_function_allowed(int func) {
 void supla_alexa_response_request::new_request(
     const supla_caller &caller, supla_user *user, int device_id, int channel_id,
     const string &correlation_token) {
-  if (correlation_token.size() == 0 || !user || !is_caller_allowed(caller) ||
-      !user->amazonAlexaCredentials() ||
+  if (!user || !user->amazonAlexaCredentials() ||
       !user->amazonAlexaCredentials()->is_access_token_exists()) {
+    return;
+  }
+
+  if (caller == ctDevice) {
+    supla_alexa_response_search_condition cnd(user->getUserID(), device_id,
+                                              channel_id);
+    supla_asynctask_queue::global_instance()->access_task(
+        &cnd, [](supla_abstract_asynctask *task) -> void {
+          task->set_delay_usec(0);
+        });
+  }
+
+  if (correlation_token.size() == 0 || !is_caller_allowed(caller)) {
     return;
   }
 
