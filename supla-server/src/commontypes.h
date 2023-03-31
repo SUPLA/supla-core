@@ -21,17 +21,6 @@
 
 #include "proto.h"
 
-/* TODO(przemyslawzygmunt): Eliminate event_type.
- * https://github.com/SUPLA/supla-core/issues/338 */
-enum event_type {
-  ET_CHANNEL_VALUE_CHANGED,
-  ET_DEVICE_DELETED,
-  ET_CHANNELS_ADDED,
-  ET_USER_RECONNECT,
-  ET_GOOGLE_HOME_SYNC_NEEDED,
-  ET_ACTION_TRIGGERED
-};
-
 typedef struct {
   bool online;
   bool hidden_channel;

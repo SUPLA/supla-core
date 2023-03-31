@@ -11,8 +11,7 @@ CPP_SRCS += \
 ../src/objcontainer.cpp \
 ../src/objcontaineritem.cpp \
 ../src/serverstatus.cpp \
-../src/supla-server.cpp \
-../src/voiceassistantclient.cpp 
+../src/supla-server.cpp 
 
 C_SRCS += \
 ../src/cfg.c \
@@ -36,8 +35,7 @@ CPP_DEPS += \
 ./src/objcontainer.d \
 ./src/objcontaineritem.d \
 ./src/serverstatus.d \
-./src/supla-server.d \
-./src/voiceassistantclient.d 
+./src/supla-server.d 
 
 C_DEPS += \
 ./src/cfg.d \
@@ -73,8 +71,7 @@ OBJS += \
 ./src/supla-server.o \
 ./src/supla-socket.o \
 ./src/svrcfg.o \
-./src/tools.o \
-./src/voiceassistantclient.o 
+./src/tools.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -96,7 +93,7 @@ src/%.o: ../src/%.c src/subdir.mk
 clean: clean-src
 
 clean-src:
-	-$(RM) ./src/accept_loop.d ./src/accept_loop.o ./src/caller.d ./src/caller.o ./src/cfg.d ./src/cfg.o ./src/dcpair.d ./src/dcpair.o ./src/eh.d ./src/eh.o ./src/ini.d ./src/ini.o ./src/lck.d ./src/lck.o ./src/log.d ./src/log.o ./src/metrics.d ./src/metrics.o ./src/objcontainer.d ./src/objcontainer.o ./src/objcontaineritem.d ./src/objcontaineritem.o ./src/proto.d ./src/proto.o ./src/safearray.d ./src/safearray.o ./src/serverstatus.d ./src/serverstatus.o ./src/sslcrypto.d ./src/sslcrypto.o ./src/sthread.d ./src/sthread.o ./src/supla-server.d ./src/supla-server.o ./src/supla-socket.d ./src/supla-socket.o ./src/svrcfg.d ./src/svrcfg.o ./src/tools.d ./src/tools.o ./src/voiceassistantclient.d ./src/voiceassistantclient.o
+	-$(RM) ./src/accept_loop.d ./src/accept_loop.o ./src/caller.d ./src/caller.o ./src/cfg.d ./src/cfg.o ./src/dcpair.d ./src/dcpair.o ./src/eh.d ./src/eh.o ./src/ini.d ./src/ini.o ./src/lck.d ./src/lck.o ./src/log.d ./src/log.o ./src/metrics.d ./src/metrics.o ./src/objcontainer.d ./src/objcontainer.o ./src/objcontaineritem.d ./src/objcontaineritem.o ./src/proto.d ./src/proto.o ./src/safearray.d ./src/safearray.o ./src/serverstatus.d ./src/serverstatus.o ./src/sslcrypto.d ./src/sslcrypto.o ./src/sthread.d ./src/sthread.o ./src/supla-server.d ./src/supla-server.o ./src/supla-socket.d ./src/supla-socket.o ./src/svrcfg.d ./src/svrcfg.o ./src/tools.d ./src/tools.o
 
 .PHONY: clean-src
 

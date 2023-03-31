@@ -269,7 +269,7 @@ void supla_action_executor::forward_outside(int cap) {
     supla_mqtt_client_suite::globalInstance()->onActionsTriggered(
         device->get_user_id(), device->get_id(), get_channel_id(), cap);
 
-    supla_http_request_queue::getInstance()->onActionsTriggered(
+    supla_http_request_queue::onActionsTriggered(
         get_caller(), device->get_user(), device->get_id(), get_channel_id(),
         cap);
   }

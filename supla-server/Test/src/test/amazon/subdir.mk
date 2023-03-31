@@ -5,19 +5,16 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/amazon/AlexaChangeReportRequestTest.cpp \
-../src/test/amazon/AlexaClientTest.cpp \
 ../src/test/amazon/AlexaResponseRequestTest.cpp \
 ../src/test/amazon/AlexaTokenRefreshTest.cpp 
 
 CPP_DEPS += \
 ./src/test/amazon/AlexaChangeReportRequestTest.d \
-./src/test/amazon/AlexaClientTest.d \
 ./src/test/amazon/AlexaResponseRequestTest.d \
 ./src/test/amazon/AlexaTokenRefreshTest.d 
 
 OBJS += \
 ./src/test/amazon/AlexaChangeReportRequestTest.o \
-./src/test/amazon/AlexaClientTest.o \
 ./src/test/amazon/AlexaResponseRequestTest.o \
 ./src/test/amazon/AlexaTokenRefreshTest.o 
 
@@ -34,7 +31,7 @@ src/test/amazon/%.o: ../src/test/amazon/%.cpp src/test/amazon/subdir.mk
 clean: clean-src-2f-test-2f-amazon
 
 clean-src-2f-test-2f-amazon:
-	-$(RM) ./src/test/amazon/AlexaChangeReportRequestTest.d ./src/test/amazon/AlexaChangeReportRequestTest.o ./src/test/amazon/AlexaClientTest.d ./src/test/amazon/AlexaClientTest.o ./src/test/amazon/AlexaResponseRequestTest.d ./src/test/amazon/AlexaResponseRequestTest.o ./src/test/amazon/AlexaTokenRefreshTest.d ./src/test/amazon/AlexaTokenRefreshTest.o
+	-$(RM) ./src/test/amazon/AlexaChangeReportRequestTest.d ./src/test/amazon/AlexaChangeReportRequestTest.o ./src/test/amazon/AlexaResponseRequestTest.d ./src/test/amazon/AlexaResponseRequestTest.o ./src/test/amazon/AlexaTokenRefreshTest.d ./src/test/amazon/AlexaTokenRefreshTest.o
 
 .PHONY: clean-src-2f-test-2f-amazon
 

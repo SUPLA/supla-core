@@ -81,7 +81,6 @@ src/test/doubles/mqtt \
 src/test/doubles/scene \
 src/test/doubles/webhook \
 src/test/google \
-src/test/http \
 src/test/integration \
 src/test/integration/amazon \
 src/test/integration/client \

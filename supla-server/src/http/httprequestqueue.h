@@ -19,82 +19,34 @@
 #ifndef HTTP_HTTPREQUESTQUEUE_H_
 #define HTTP_HTTPREQUESTQUEUE_H_
 
-#include "caller.h"
-#include "commontypes.h"
-#include "eh.h"
-#include "http/httprequestextraparams.h"
-#include "string.h"
+#include <string>
 
-class supla_http_request;
-class supla_user;
+#include "caller.h"
+#include "user/user.h"
 
 class supla_http_request_queue {
- private:
-  static supla_http_request_queue *instance;
-  TEventHandler *main_eh;
-  void *lck;
-  void *arr_queue;
-  void *arr_thread;
-  int thread_count_limit;
-  int queue_offset;
-  int last_user_id;
-  unsigned long long last_iterate_time_sec;
-  unsigned long long time_of_the_next_iteration_usec;
-
-  unsigned long long last_metric_log_time_sec;
-  unsigned long long request_total_count;
-
-  void terminateAllThreads(void);
-  void runThread(supla_http_request *request);
-  supla_http_request *queuePop(void *q_sthread, struct timeval *now);
-  int queueSize(void);
-  int threadCount(void);
-  int threadCountLimit(void);
-  unsigned long long requestTotalCount(void);
-  void createInTheCallerContext(supla_user *user, int deviceId, int channelId,
-                                event_type eventType,
-                                const supla_caller &caller,
-                                supla_http_request_extra_params *extraParams);
-  void recalculateTime(struct timeval *now);
-
  public:
-  static void init();
-  static void queueFree();
-  static supla_http_request_queue *getInstance(void);
-  supla_http_request_queue();
-  virtual ~supla_http_request_queue();
+  static void onChannelValueChangeEvent(supla_user *user, int deviceId,
+                                        int channelId,
+                                        const supla_caller &caller,
+                                        const char correlationToken[] = nullptr,
+                                        const char googleRequestId[] = nullptr);
 
-  void recalculateTime(void);
-  void raiseEvent(void);
-  void logStuckWarning(void);
-  void logMetrics(unsigned int min_interval_sec);
-
-  void iterate(void *q_sthread);
-  void addRequest(supla_http_request *request);
-  void onChannelValueChangeEvent(supla_user *user, int deviceId, int channelId,
-                                 const supla_caller &caller,
-                                 const char correlationToken[] = NULL,
-                                 const char googleRequestId[] = NULL);
-
-  void onChannelsAddedEvent(supla_user *user, int deviceId,
-                            const supla_caller &caller,
-                            const char correlationToken[] = NULL,
-                            const char googleRequestId[] = NULL);
-
-  void onDeviceDeletedEvent(supla_user *user, int deviceId,
-                            const supla_caller &caller,
-                            const char correlationToken[] = NULL,
-                            const char googleRequestId[] = NULL);
-
-  void onUserReconnectEvent(supla_user *user, const supla_caller &caller);
-
-  void onGoogleHomeSyncNeededEvent(supla_user *user,
+  static void onChannelsAddedEvent(supla_user *user, int deviceId,
                                    const supla_caller &caller);
 
-  void onActionsTriggered(const supla_caller &caller, supla_user *user,
-                          int deviceId, int channelId, unsigned int actions);
-};
+  static void onDeviceDeletedEvent(supla_user *user, int deviceId,
+                                   const supla_caller &caller);
 
-void http_request_queue_loop(void *ssd, void *q_sthread);
+  static void onUserReconnectEvent(supla_user *user,
+                                   const supla_caller &caller);
+
+  static void onGoogleHomeSyncNeededEvent(supla_user *user,
+                                          const supla_caller &caller);
+
+  static void onActionsTriggered(const supla_caller &caller, supla_user *user,
+                                 int deviceId, int channelId,
+                                 unsigned int actions);
+};
 
 #endif /* HTTP_HTTPREQUESTQUEUE_H_ */

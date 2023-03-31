@@ -29,8 +29,6 @@
 #include "cyclictasks/agent.h"
 #include "db/database.h"
 #include "http/asynctask_http_thread_pool.h"
-#include "http/httprequestqueue.h"
-#include "http/trivialhttps.h"
 #include "ipc/ipcsocket.h"
 #include "lck.h"
 #include "log.h"
@@ -105,8 +103,6 @@ int main(int argc, char *argv[]) {
 
 #ifndef NOSSL
   sslcrypto_init();
-  supla_trivial_https::init();
-  supla_http_request_queue::init();
 
   if (scfg_bool(CFG_SSL_ENABLED) == 1) {
     if (0 == (ssd_ssl = ssocket_server_init(scfg_string(CFG_SSL_CERT),
@@ -161,11 +157,6 @@ int main(int argc, char *argv[]) {
   // CYCLIC TASKS
   cyclictasks_agent = new supla_cyclictasks_agent();
 
-  // HTTP EVENT QUEUE
-
-  sthread_simple_run(http_request_queue_loop, NULL, 0,
-                     &http_request_queue_loop_thread);
-
   // MQTT
   supla_mqtt_client_suite::globalInstance()->start();
 
@@ -175,8 +166,6 @@ int main(int argc, char *argv[]) {
     serverstatus::globalInstance()->mainLoopHeartbeat();
     supla_connection::log_limits();
     supla_user::log_metrics(3600);
-    supla_http_request_queue::getInstance()->logMetrics(3600);
-    supla_http_request_queue::getInstance()->logStuckWarning();
     supla_asynctask_queue::global_instance()->log_stuck_warning();
   }
 
@@ -218,7 +207,6 @@ int main(int argc, char *argv[]) {
   supla_connection::cleanup();
 
   // ! after serverconnection_free() and before user_free()
-  supla_http_request_queue::queueFree();
   supla_mqtt_client_suite::globalInstanceRelease();
   // -----------------------------------------------
 
