@@ -56,7 +56,6 @@ void *LCK_ICACHE_FLASH lck_init(void) {
   TLckData *lck = malloc(sizeof(TLckData));
 
   if (lck != NULL) {
-
 #ifdef _WIN32
     InitializeCriticalSectionEx(&lck->critSec, 4000,
                                 CRITICAL_SECTION_NO_DEBUG_INFO);
