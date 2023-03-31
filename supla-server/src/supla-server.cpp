@@ -60,11 +60,6 @@ int main(int argc, char *argv[]) {
 
   curl_global_init(CURL_GLOBAL_ALL);
 
-#ifdef __LCK_DEBUG
-  lck_debug_init();
-  supla_log(LOG_DEBUG, "!!! LCK DEBUG ENABED !!!");
-#endif /*__LCK_DEBUG*/
-
   // INIT BLOCK
   if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
 
@@ -170,10 +165,6 @@ int main(int argc, char *argv[]) {
   }
 
   supla_log(LOG_INFO, "Shutting down...");
-
-#ifdef __LCK_DEBUG
-  lck_debug_dump();
-#endif /*__LCK_DEBUG*/
 
   // RELEASE BLOCK
 

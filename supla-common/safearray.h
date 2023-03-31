@@ -29,12 +29,7 @@ typedef char (*_func_sa_cnd)(void *ptr);
 typedef char (*_func_sa_cnd_param)(void *ptr, void *user_param);
 
 void *safe_array_init(void);
-#ifdef __LCK_DEBUG
-#define safe_array_lock(arr) _safe_array_lock(arr, __FILE__, __LINE__)
-void _safe_array_lock(void *_arr, const char *file, int line);
-#else
 void safe_array_lock(void *arr);
-#endif /*__LCK_DEBUG*/
 void safe_array_unlock(void *arr);
 int safe_array_count(void *arr);
 int safe_array_add(void *arr, void *ptr);

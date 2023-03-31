@@ -17,8 +17,10 @@
  */
 
 #include "safearray.h"
+
 #include <assert.h>
 #include <stdlib.h>
+
 #include "log.h"
 
 typedef struct {
@@ -45,18 +47,11 @@ void safe_array_free(void *_arr) {
   free(_arr);
 }
 
-#ifdef __LCK_DEBUG
-void _safe_array_lock(void *_arr, const char *file, int line) {
-  assert(_arr != 0);
-  __lck_lock(((TSafeArray *)_arr)->lck, file, line);
-}
-#else
 void safe_array_lock(void *_arr) {
   assert(_arr != 0);
 
   lck_lock(((TSafeArray *)_arr)->lck);
 }
-#endif /*__LCK_DEBUG*/
 
 void safe_array_unlock(void *_arr) {
   assert(_arr != 0);
