@@ -24,7 +24,6 @@
 #include <list>
 #include <memory>
 
-#include "commontypes.h"
 #include "device/devicechannels.h"
 
 class supla_user;

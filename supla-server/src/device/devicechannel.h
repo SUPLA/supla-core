@@ -30,7 +30,6 @@
 #include "channel_electricity_measurement.h"
 #include "channel_ic_measurement.h"
 #include "channel_thermostat_measurement.h"
-#include "commontypes.h"
 #include "device/value/channel_temphum_value.h"
 #include "device/value/channel_value.h"
 #include "proto.h"

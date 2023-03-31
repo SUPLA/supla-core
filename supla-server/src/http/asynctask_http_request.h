@@ -25,7 +25,6 @@
 
 #include "asynctask/abstract_asynctask.h"
 #include "caller.h"
-#include "commontypes.h"
 #include "device/abstract_channel_property_getter.h"
 #include "http/abstract_curl_adapter.h"
 
