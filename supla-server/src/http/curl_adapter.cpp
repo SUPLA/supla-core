@@ -21,6 +21,7 @@
 #include <assert.h>
 
 #include "log.h"
+#include "svrcfg.h"
 
 supla_curl_adapter::supla_curl_adapter(void) : supla_abstract_curl_adapter() {
   write_data_ptr = nullptr;
@@ -96,6 +97,8 @@ bool supla_curl_adapter::perform(void) {
   }
 
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "supla-server");
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT,
+                   scfg_int(CFG_HTTP_CONNECTION_TIMEOUT));
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
                    supla_curl_adapter::write_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
