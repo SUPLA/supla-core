@@ -17,6 +17,7 @@
  */
 
 #include <curl/curl.h>
+#include <openssl/ssl.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,7 +37,6 @@
 #include "proto.h"
 #include "serverstatus.h"
 #include "srpc/srpc.h"
-#include "sslcrypto.h"
 #include "sthread.h"
 #include "supla-socket.h"
 #include "svrcfg.h"
@@ -96,8 +96,10 @@ int main(int argc, char *argv[]) {
     }
   }
 
-#ifndef NOSSL
-  sslcrypto_init();
+  SSL_library_init();
+  SSL_load_error_strings();
+
+  supla_log(LOG_INFO, "SSL version: %s", OpenSSL_version(OPENSSL_VERSION));
 
   if (scfg_bool(CFG_SSL_ENABLED) == 1) {
     if (0 == (ssd_ssl = ssocket_server_init(scfg_string(CFG_SSL_CERT),
@@ -107,7 +109,6 @@ int main(int argc, char *argv[]) {
       goto exit_fail;
     }
   }
-#endif /*NOSSL*/
 
   if (scfg_bool(CFG_TCP_ENABLED) == 1) {
     if (0 == (ssd_tcp =
@@ -203,7 +204,6 @@ int main(int argc, char *argv[]) {
 
   supla_user::user_free();
   database::mainthread_end();
-  sslcrypto_free();
 
   st_mainloop_free();  // Almost at the end
   st_delpidfile(pidfile_path);
