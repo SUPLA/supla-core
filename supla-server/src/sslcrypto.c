@@ -17,11 +17,13 @@
  */
 
 #include "sslcrypto.h"
+
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "lck.h"
 #include "log.h"
 
@@ -32,6 +34,9 @@ struct CRYPTO_dynlock_value {
 };
 
 static void **ssl_locks = NULL;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 static void sslcrypto_locking_function(int mode, int n, const char *file,
                                        int line) {
@@ -81,6 +86,8 @@ static void sslcrypto_dyn_destroy_function(struct CRYPTO_dynlock_value *l,
   free(l);
 }
 
+#pragma GCC diagnostic pop
+
 void sslcrypto_init(void) {
   int i;
   SSL_library_init();
@@ -96,11 +103,15 @@ void sslcrypto_init(void) {
     }
 
     // http://openssl.6102.n7.nabble.com/When-to-use-CRYPTO-set-locking-callback-and-CRYPTO-set-id-callback-td7379.html
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     CRYPTO_set_locking_callback(sslcrypto_locking_function);
     CRYPTO_set_id_callback(sslcrypto_id_function);
     CRYPTO_set_dynlock_create_callback(sslcrypto_dyn_create_function);
     CRYPTO_set_dynlock_lock_callback(sslcrypto_dyn_lock_function);
     CRYPTO_set_dynlock_destroy_callback(sslcrypto_dyn_destroy_function);
+#pragma GCC diagnostic pop
   }
 }
 

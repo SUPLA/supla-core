@@ -290,7 +290,10 @@ void ssocket_free(void *_ssd) {
 
     EVP_cleanup();
     ERR_clear_error();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     ERR_remove_thread_state(NULL);
+#pragma GCC diagnostic pop
     ERR_free_strings();
     CRYPTO_cleanup_all_ex_data();
 
@@ -440,7 +443,10 @@ void ssocket_supla_socket_close(void *_supla_socket) {
     }
 
     ERR_clear_error();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     ERR_remove_thread_state(NULL);
+#pragma GCC diagnostic pop
 
 #endif /*ifndef NOSSL */
 
