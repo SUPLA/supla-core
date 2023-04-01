@@ -68,10 +68,12 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(3), NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([func, online, value](int user_id, int device_id,
-                                      int channel_id, int *_func,
-                                      bool *_Reachable) {
-        *_func = func;
+      .WillOnce([func, online, value](
+                    int user_id, int device_id, int channel_id,
+                    supla_channel_fragment *_fragment, bool *_Reachable) {
+        supla_channel_fragment fragment(device_id, channel_id, 0,
+                                        SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
+        *_fragment = fragment;
         *_Reachable = online;
 
         return value;
@@ -93,7 +95,7 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
 
   supla_alexa_change_report_request *request =
       new supla_alexa_change_report_request(caller, 1, 2, 3, queue, pool,
-                                             propertyGetter, &credentials);
+                                            propertyGetter, &credentials);
   request->set_delay_usec(1);
   request->set_message_id("29012dd1-33c7-6519-6e18-c4ee71d00487");
   request->set_zulu_time("2019-02-01T12:09:33Z");
@@ -122,10 +124,12 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(3), NotNull(), NotNull()))
       .Times(1)
-      .WillRepeatedly([func, online, value](int user_id, int device_id,
-                                            int channel_id, int *_func,
-                                            bool *_Reachable) {
-        *_func = func;
+      .WillRepeatedly([func, online, value](
+                          int user_id, int device_id, int channel_id,
+                          supla_channel_fragment *_fragment, bool *_Reachable) {
+        supla_channel_fragment fragment(device_id, channel_id, 0,
+                                        SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
+        *_fragment = fragment;
         *_Reachable = online;
 
         return value;
@@ -145,8 +149,8 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
 
   supla_alexa_change_report_request *request =
       new supla_alexa_change_report_request(supla_caller(ctAmazonAlexa), 1, 2,
-                                             3, queue, pool, propertyGetter,
-                                             &credentials);
+                                            3, queue, pool, propertyGetter,
+                                            &credentials);
   request->set_delay_usec(1);
   request->set_message_id("29012dd1-33c7-6519-6e18-c4ee71d00487");
   request->set_zulu_time("2019-02-01T12:09:33Z");

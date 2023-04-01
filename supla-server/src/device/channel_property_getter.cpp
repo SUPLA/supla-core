@@ -28,7 +28,8 @@ using std::shared_ptr;
 supla_cahnnel_property_getter::~supla_cahnnel_property_getter(void) {}
 
 supla_channel_value *supla_cahnnel_property_getter::_get_value(
-    int user_id, int device_id, int channel_id, int *func, bool *online) {
+    int user_id, int device_id, int channel_id,
+    supla_channel_fragment *fragment, bool *online) {
   supla_channel_value *result = nullptr;
 
   supla_user *user = supla_user::get_user(user_id);
@@ -40,10 +41,8 @@ supla_channel_value *supla_cahnnel_property_getter::_get_value(
       user->get_devices()->get(device_id, channel_id);
 
   if (device == nullptr) {
-    if (func) {
-      supla_channel_fragment f =
-          user->get_devices()->get_channel_fragment(channel_id);
-      *func = f.get_function();
+    if (fragment) {
+      *fragment = user->get_devices()->get_channel_fragment(channel_id);
     }
     if (online) {
       *online = false;

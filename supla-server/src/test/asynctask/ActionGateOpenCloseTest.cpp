@@ -89,7 +89,7 @@ void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
 
   EXPECT_CALL(*property_getter, _get_value)
       .WillRepeatedly([open](int user_id, int device_id, int channel_id,
-                             int *func, bool *online) {
+                             supla_channel_fragment *fragment, bool *online) {
         return new supla_channel_gate_value(open ? gsl_closed : gsl_open,
                                             gsl_unknown);
       });

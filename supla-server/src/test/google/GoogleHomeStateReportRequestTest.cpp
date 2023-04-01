@@ -75,10 +75,12 @@ void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([func, online, value](int user_id, int device_id,
-                                      int channel_id, int *_func,
-                                      bool *_connected) {
-        *_func = func;
+      .WillOnce([func, online, value](
+                    int user_id, int device_id, int channel_id,
+                    supla_channel_fragment *_fragment, bool *_connected) {
+        supla_channel_fragment fragment(device_id, channel_id, 0, func, 0,
+                                        false);
+        *_fragment = fragment;
         *_connected = online;
 
         return value;
@@ -251,9 +253,11 @@ TEST_F(GoogleHomeStateReportRequestTest, x403) {
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([](int user_id, int device_id, int channel_id, int *_func,
-                   bool *_connected) {
-        *_func = SUPLA_CHANNELFNC_LIGHTSWITCH;
+      .WillOnce([](int user_id, int device_id, int channel_id,
+                   supla_channel_fragment *_fragment, bool *_connected) {
+        supla_channel_fragment fragment(device_id, channel_id, 0,
+                                        SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
+        *_fragment = fragment;
         *_connected = false;
 
         return nullptr;
@@ -276,9 +280,11 @@ TEST_F(GoogleHomeStateReportRequestTest, x404) {
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([](int user_id, int device_id, int channel_id, int *_func,
-                   bool *_connected) {
-        *_func = SUPLA_CHANNELFNC_LIGHTSWITCH;
+      .WillOnce([](int user_id, int device_id, int channel_id,
+                   supla_channel_fragment *_fragment, bool *_connected) {
+        supla_channel_fragment fragment(device_id, channel_id, 0,
+                                        SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
+        *_fragment = fragment;
         *_connected = false;
 
         return nullptr;

@@ -37,13 +37,13 @@ supla_abstract_channel_property_getter::
     ~supla_abstract_channel_property_getter() {}
 
 supla_channel_value* supla_abstract_channel_property_getter::get_value(
-    int* func, bool* online) {
+    supla_channel_fragment* fragment, bool* online) {
   if (!user_id || (!device_id && !channel_id)) {
     return nullptr;
   }
 
   supla_channel_value* result =
-      _get_value(user_id, device_id, channel_id, func, online);
+      _get_value(user_id, device_id, channel_id, fragment, online);
   if (result == nullptr && online) {
     *online = false;
   }
@@ -51,8 +51,20 @@ supla_channel_value* supla_abstract_channel_property_getter::get_value(
   return result;
 }
 
+supla_channel_value* supla_abstract_channel_property_getter::get_value(
+    int* func, bool* online) {
+  supla_channel_fragment fragment;
+  supla_channel_value* result = get_value(func ? &fragment : nullptr, online);
+
+  if (func) {
+    func = fragment.get_function();
+  }
+
+  return result;
+}
+
 supla_channel_value* supla_abstract_channel_property_getter::get_value(void) {
-  return get_value(nullptr, nullptr);
+  return get_value((supla_channel_fragment*)nullptr, nullptr);
 }
 
 supla_channel_value* supla_abstract_channel_property_getter::get_value(
@@ -65,8 +77,19 @@ supla_channel_value* supla_abstract_channel_property_getter::get_value(
 }
 
 supla_channel_value* supla_abstract_channel_property_getter::get_value(
+    int user_id, int device_id, int channel_id,
+    supla_channel_fragment* fragment, bool* online) {
+  this->user_id = user_id;
+  this->device_id = device_id;
+  this->channel_id = channel_id;
+
+  return get_value(fragment, online);
+}
+
+supla_channel_value* supla_abstract_channel_property_getter::get_value(
     int user_id, int device_id, int channel_id) {
-  return get_value(user_id, device_id, channel_id, nullptr, nullptr);
+  return get_value(user_id, device_id, channel_id,
+                   (supla_channel_fragment*)nullptr, nullptr);
 }
 
 int supla_abstract_channel_property_getter::get_func(void) {

@@ -25,7 +25,8 @@ class supla_cahnnel_property_getter
     : public supla_abstract_channel_property_getter {
  protected:
   virtual supla_channel_value *_get_value(int user_id, int device_id,
-                                          int channel_id, int *func,
+                                          int channel_id,
+                                          supla_channel_fragment *fragment,
                                           bool *online);
   virtual int _get_func(int user_id, int device_id, int channel_id);
   virtual supla_channel_electricity_measurement *_get_electricity_measurement(

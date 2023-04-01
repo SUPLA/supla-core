@@ -102,7 +102,7 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   EXPECT_CALL(*property_getter, _get_value)
       .Times(4)
       .WillRepeatedly([&rsval](int user_id, int device_id, int channel_id,
-                               int *func, bool *online) {
+                               supla_channel_fragment *fragment, bool *online) {
         return new supla_channel_rs_value(&rsval);
       });
 
@@ -183,7 +183,7 @@ TEST_F(ActionTriggerCopyTest, rgbw) {
   EXPECT_CALL(*property_getter, _get_value)
       .Times(4)
       .WillRepeatedly([&rgbw](int user_id, int device_id, int channel_id,
-                              int *func, bool *online) {
+                              supla_channel_fragment *_fragment, bool *online) {
         return new supla_channel_rgbw_value(&rgbw);
       });
 
