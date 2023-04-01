@@ -20,14 +20,23 @@
 #define CHANNEL_RS_VALUE_H_
 
 #include "device/value/channel_value.h"
+#include "user/user.h"
+
+enum _rs_sensor_level_enum { rsl_unknown, rsl_closed, rsl_open };
 
 class supla_channel_rs_value : public supla_channel_value {
+ private:
+  _rs_sensor_level_enum opening_sensor_level;
+
  public:
   explicit supla_channel_rs_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_rs_value(const TDSC_RollerShutterValue *value);
   const TDSC_RollerShutterValue *get_rs_value(void);
   void set_rs_value(TDSC_RollerShutterValue *value);
+  _rs_sensor_level_enum get_opening_sensor_level(void);
+  void set_opening_sensor_level(_rs_sensor_level_enum level);
+  void update_sensor(supla_user *user, int opening_sensor_channel_id);
 };
 
 #endif /*CHANNEL_RS_VALUE_H_*/

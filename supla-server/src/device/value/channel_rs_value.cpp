@@ -20,14 +20,23 @@
 
 #include <string.h>
 
+#include <memory>
+
+#include "device/device.h"
+
+using std::shared_ptr;
+
 supla_channel_rs_value::supla_channel_rs_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    : supla_channel_value(raw_value) {
+  opening_sensor_level = rsl_unknown;
+}
 
 supla_channel_rs_value::supla_channel_rs_value(
     const TDSC_RollerShutterValue *value)
     : supla_channel_value() {
   memcpy(raw_value, value, sizeof(TDSC_RollerShutterValue));
+  opening_sensor_level = rsl_unknown;
 }
 
 const TDSC_RollerShutterValue *supla_channel_rs_value::get_rs_value(void) {
@@ -37,4 +46,41 @@ const TDSC_RollerShutterValue *supla_channel_rs_value::get_rs_value(void) {
 void supla_channel_rs_value::set_rs_value(TDSC_RollerShutterValue *value) {
   memset(raw_value, 0, sizeof(raw_value));
   memcpy(raw_value, value, sizeof(TDSC_RollerShutterValue));
+}
+
+_rs_sensor_level_enum supla_channel_rs_value::get_opening_sensor_level(void) {
+  return opening_sensor_level;
+}
+
+void supla_channel_rs_value::set_opening_sensor_level(
+    _rs_sensor_level_enum level) {
+  opening_sensor_level = level;
+}
+
+void supla_channel_rs_value::update_sensor(supla_user *user,
+                                           int opening_sensor_channel_id) {
+  opening_sensor_level = rsl_unknown;
+
+  if (user && opening_sensor_channel_id) {
+    shared_ptr<supla_device> device =
+        user->get_devices()->get(0, opening_sensor_channel_id);
+    if (device != nullptr) {
+      supla_device_channels *channels = device->get_channels();
+
+      if (channels->is_channel_online(opening_sensor_channel_id)) {
+        int func = channels->get_channel_func(opening_sensor_channel_id);
+
+        switch (func) {
+          case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+          case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+            char v = 0;
+            if (channels->get_channel_char_value(opening_sensor_channel_id,
+                                                 &v)) {
+              opening_sensor_level = v != 0 ? rsl_closed : rsl_open;
+            }
+            break;
+        }
+      }
+    }
+  }
 }

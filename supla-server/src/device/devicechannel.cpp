@@ -1131,8 +1131,11 @@ supla_channel_value *supla_device_channel::_get_value(void) {
 
   switch (get_func()) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      return new supla_channel_rs_value(value);
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW: {
+      supla_channel_rs_value *rs_value = new supla_channel_rs_value(value);
+      rs_value->update_sensor(get_device()->get_user(), get_param2());
+      return rs_value;
+    }
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR: {
