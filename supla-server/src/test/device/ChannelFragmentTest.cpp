@@ -30,22 +30,25 @@ TEST_F(ChannelFragmentTest, defaultContructor) {
   EXPECT_EQ(f.get_channel_id(), 0);
   EXPECT_EQ(f.get_function(), 0);
   EXPECT_EQ(f.get_type(), 0);
+  EXPECT_EQ(f.get_flags(), 0);
   EXPECT_TRUE(f.is_hidden());
 }
 
 TEST_F(ChannelFragmentTest, constructorWithArgs) {
-  supla_channel_fragment f1(1, 2, 3, 4, false);
+  supla_channel_fragment f1(1, 2, 3, 4, 5, false);
   EXPECT_EQ(f1.get_device_id(), 1);
   EXPECT_EQ(f1.get_channel_id(), 2);
   EXPECT_EQ(f1.get_type(), 3);
   EXPECT_EQ(f1.get_function(), 4);
+  EXPECT_EQ(f1.get_flags(), 5U);
   EXPECT_FALSE(f1.is_hidden());
 
-  supla_channel_fragment f2(12, 22, 32, 42, true);
+  supla_channel_fragment f2(12, 22, 32, 42, 54, true);
   EXPECT_EQ(f2.get_device_id(), 12);
   EXPECT_EQ(f2.get_channel_id(), 22);
   EXPECT_EQ(f2.get_type(), 32);
   EXPECT_EQ(f2.get_function(), 42);
+  EXPECT_EQ(f2.get_flags(), 54U);
   EXPECT_TRUE(f2.is_hidden());
 }
 
@@ -53,10 +56,10 @@ TEST_F(ChannelFragmentTest, channelAssignment) {
   DeviceStub device(nullptr);
   device.set_id(286);
   char value[SUPLA_CHANNELVALUE_SIZE] = {};
-  supla_device_channel channel(&device, 686, 0, SUPLA_CHANNELTYPE_ACTIONTRIGGER,
-                               SUPLA_CHANNELFNC_ACTIONTRIGGER, 0, 0, 0, 0,
-                               nullptr, nullptr, nullptr, false, 0, value, 0,
-                               nullptr, nullptr);
+  supla_device_channel channel(
+      &device, 686, 0, SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+      SUPLA_CHANNELFNC_ACTIONTRIGGER, 0, 0, 0, 0, nullptr, nullptr, nullptr,
+      false, SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE, value, 0, nullptr, nullptr);
 
   supla_channel_fragment f;
   f = &channel;
@@ -65,6 +68,7 @@ TEST_F(ChannelFragmentTest, channelAssignment) {
   EXPECT_EQ(f.get_channel_id(), 686);
   EXPECT_EQ(f.get_type(), SUPLA_CHANNELTYPE_ACTIONTRIGGER);
   EXPECT_EQ(f.get_function(), SUPLA_CHANNELFNC_ACTIONTRIGGER);
+  EXPECT_EQ(f.get_flags(), SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE);
   EXPECT_FALSE(f.is_hidden());
 }
 

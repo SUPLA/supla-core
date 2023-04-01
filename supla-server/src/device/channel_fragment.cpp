@@ -25,16 +25,19 @@ supla_channel_fragment::supla_channel_fragment() {
   channel_id = 0;
   type = 0;
   function = 0;
+  flags = 0;
   _is_hidden = true;
 }
 
 supla_channel_fragment::supla_channel_fragment(int device_id, int channel_id,
                                                int type, int function,
+                                               unsigned int flags,
                                                bool _is_hidden) {
   this->device_id = device_id;
   this->channel_id = channel_id;
   this->type = type;
   this->function = function;
+  this->flags = flags;
   this->_is_hidden = _is_hidden;
 }
 
@@ -45,6 +48,8 @@ int supla_channel_fragment::get_channel_id(void) { return channel_id; }
 int supla_channel_fragment::get_type(void) { return type; }
 
 int supla_channel_fragment::get_function(void) { return function; }
+
+unsigned int supla_channel_fragment::get_flags(void) { return flags; }
 
 void supla_channel_fragment::set_function(int function) {
   this->function = function;
@@ -60,12 +65,14 @@ supla_channel_fragment &supla_channel_fragment::operator=(
     channel_id = channel->get_id();
     type = channel->get_type();
     function = channel->get_func();
+    flags = channel->get_flags();
     _is_hidden = channel->is_hidden();
   } else {
     device_id = 0;
     channel_id = 0;
     type = 0;
     function = 0;
+    flags = 0;
     _is_hidden = false;
   }
   return *this;
