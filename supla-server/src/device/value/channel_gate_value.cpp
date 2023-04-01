@@ -69,7 +69,7 @@ void supla_channel_gate_value::set_partial_opening_sensor_level(
 
 _gate_sensor_level_enum supla_channel_gate_value::get_sensor_state(
     supla_user *user, int channel_id) {
-  if (user) {
+  if (user && channel_id) {
     shared_ptr<supla_device> device = user->get_devices()->get(0, channel_id);
     if (device != nullptr) {
       supla_device_channels *channels = device->get_channels();
