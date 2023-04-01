@@ -20,6 +20,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <value/channel_openclosed_value.h>
 
 #include <memory>
 
@@ -1181,6 +1182,10 @@ supla_channel_value *supla_device_channel::_get_value(void) {
     case SUPLA_CHANNELTYPE_RAINSENSOR:
     case SUPLA_CHANNELTYPE_WEIGHTSENSOR:
       return new supla_channel_floating_point_sensor_value(value);
+
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      return new supla_channel_openclosed_value(value);
   }
 
   return new supla_channel_value(value);
