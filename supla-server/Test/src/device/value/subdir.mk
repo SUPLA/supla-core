@@ -12,6 +12,7 @@ CPP_SRCS += \
 ../src/device/value/channel_rgbw_value.cpp \
 ../src/device/value/channel_rs_value.cpp \
 ../src/device/value/channel_temphum_value.cpp \
+../src/device/value/channel_thermostat_value.cpp \
 ../src/device/value/channel_value.cpp \
 ../src/device/value/channel_value_envelope.cpp \
 ../src/device/value/channel_valve_value.cpp 
@@ -25,6 +26,7 @@ CPP_DEPS += \
 ./src/device/value/channel_rgbw_value.d \
 ./src/device/value/channel_rs_value.d \
 ./src/device/value/channel_temphum_value.d \
+./src/device/value/channel_thermostat_value.d \
 ./src/device/value/channel_value.d \
 ./src/device/value/channel_value_envelope.d \
 ./src/device/value/channel_valve_value.d 
@@ -38,6 +40,7 @@ OBJS += \
 ./src/device/value/channel_rgbw_value.o \
 ./src/device/value/channel_rs_value.o \
 ./src/device/value/channel_temphum_value.o \
+./src/device/value/channel_thermostat_value.o \
 ./src/device/value/channel_value.o \
 ./src/device/value/channel_value_envelope.o \
 ./src/device/value/channel_valve_value.o 
@@ -55,7 +58,7 @@ src/device/value/%.o: ../src/device/value/%.cpp src/device/value/subdir.mk
 clean: clean-src-2f-device-2f-value
 
 clean-src-2f-device-2f-value:
-	-$(RM) ./src/device/value/channel_binary_sensor_value.d ./src/device/value/channel_binary_sensor_value.o ./src/device/value/channel_floating_point_sensor_value.d ./src/device/value/channel_floating_point_sensor_value.o ./src/device/value/channel_gate_value.d ./src/device/value/channel_gate_value.o ./src/device/value/channel_onoff_value.d ./src/device/value/channel_onoff_value.o ./src/device/value/channel_openclosed_value.d ./src/device/value/channel_openclosed_value.o ./src/device/value/channel_rgbw_value.d ./src/device/value/channel_rgbw_value.o ./src/device/value/channel_rs_value.d ./src/device/value/channel_rs_value.o ./src/device/value/channel_temphum_value.d ./src/device/value/channel_temphum_value.o ./src/device/value/channel_value.d ./src/device/value/channel_value.o ./src/device/value/channel_value_envelope.d ./src/device/value/channel_value_envelope.o ./src/device/value/channel_valve_value.d ./src/device/value/channel_valve_value.o
+	-$(RM) ./src/device/value/channel_binary_sensor_value.d ./src/device/value/channel_binary_sensor_value.o ./src/device/value/channel_floating_point_sensor_value.d ./src/device/value/channel_floating_point_sensor_value.o ./src/device/value/channel_gate_value.d ./src/device/value/channel_gate_value.o ./src/device/value/channel_onoff_value.d ./src/device/value/channel_onoff_value.o ./src/device/value/channel_openclosed_value.d ./src/device/value/channel_openclosed_value.o ./src/device/value/channel_rgbw_value.d ./src/device/value/channel_rgbw_value.o ./src/device/value/channel_rs_value.d ./src/device/value/channel_rs_value.o ./src/device/value/channel_temphum_value.d ./src/device/value/channel_temphum_value.o ./src/device/value/channel_thermostat_value.d ./src/device/value/channel_thermostat_value.o ./src/device/value/channel_value.d ./src/device/value/channel_value.o ./src/device/value/channel_value_envelope.d ./src/device/value/channel_value_envelope.o ./src/device/value/channel_valve_value.d ./src/device/value/channel_valve_value.o
 
 .PHONY: clean-src-2f-device-2f-value
 

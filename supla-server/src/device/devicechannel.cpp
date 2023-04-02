@@ -35,6 +35,7 @@
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
 #include "device/value/channel_temphum_value.h"
+#include "device/value/channel_thermostat_value.h"
 #include "device/value/channel_valve_value.h"
 #include "lck.h"
 #include "user/user.h"
@@ -1186,6 +1187,10 @@ supla_channel_value *supla_device_channel::_get_value(void) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
       return new supla_channel_openclosed_value(value);
+
+    case SUPLA_CHANNELFNC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      return new supla_channel_thermostat_value(value);
   }
 
   return new supla_channel_value(value);
