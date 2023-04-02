@@ -40,6 +40,7 @@ supla_mqtt_abstract_state_message_provider::
   this->user_id = 0;
   this->device_id = 0;
   this->channel_id = 0;
+  this->channel_online = false;
   this->channel_function = 0;
   this->channel_type = 0;
   this->channel_flags = 0;
@@ -938,12 +939,11 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     return false;
   }
 
-  bool online = false;
-
   if (channel_value == nullptr) {
     supla_channel_fragment fragment;
+    channel_online = false;
     channel_value = _get_channel_property_getter()->get_value(
-        user_id, device_id, channel_id, &fragment, &online);
+        user_id, device_id, channel_id, &fragment, &channel_online);
 
     channel_function = fragment.get_function();
     channel_type = fragment.get_type();
@@ -952,12 +952,12 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
 
   if (index == 0) {
     return create_message(topic_prefix, user_suid, topic_name, message,
-                          message_size, online ? "true" : "false", false,
-                          "devices/%i/channels/%i/state/connected",
+                          message_size, channel_online ? "true" : "false",
+                          false, "devices/%i/channels/%i/state/connected",
                           get_device_id(), get_channel_id());
   }
 
-  if (!channel_value || !online) {
+  if (!channel_value || !channel_online) {
     message = nullptr;
 
     if (message_size) {

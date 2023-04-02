@@ -32,6 +32,7 @@ class supla_mqtt_abstract_state_message_provider
   int device_id;
   int channel_id;
 
+  bool channel_online;
   int channel_function;
   int channel_type;
   int channel_flags;
