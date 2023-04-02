@@ -29,7 +29,6 @@
 
 #include "amazon/alexa_credentials.h"
 #include "caller.h"
-#include "commontypes.h"
 #include "google/google_home_credentials.h"
 #include "proto.h"
 #include "user/userclients.h"
@@ -146,8 +145,6 @@ class supla_user {
   bool device_calcfg_request(const supla_caller &caller, int device_id,
                              int channel_id,
                              TCS_DeviceCalCfgRequest_B *request);
-
-  channel_complex_value get_channel_complex_value(int channel_id);
 
   void set_channel_function(std::shared_ptr<supla_client> sender,
                             TCS_SetChannelFunction *func);

@@ -57,7 +57,7 @@ supla_channel_value* supla_abstract_channel_property_getter::get_value(
   supla_channel_value* result = get_value(func ? &fragment : nullptr, online);
 
   if (func) {
-    func = fragment.get_function();
+    *func = fragment.get_function();
   }
 
   return result;

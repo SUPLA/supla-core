@@ -19,6 +19,7 @@
 #ifndef MQTT_ABSTRACT_STATE_MESSAGE_PROVIDER_H_
 #define MQTT_ABSTRACT_STATE_MESSAGE_PROVIDER_H_
 
+#include "device/abstract_channel_property_getter.h"
 #include "devicechannel.h"
 #include "mqtt_db.h"
 #include "mqtt_message_provider.h"
@@ -35,7 +36,7 @@ class supla_mqtt_abstract_state_message_provider
   int channel_type;
   int channel_flags;
 
-  channel_complex_value *cvalue;
+  supla_channel_value *channel_value;
   supla_channel_electricity_measurement *em;
   supla_channel_ic_measurement *icm;
 
@@ -44,21 +45,14 @@ class supla_mqtt_abstract_state_message_provider
   int get_device_id(void);
   int get_channel_id(void);
 
-  virtual channel_complex_value *_get_complex_value(int user_id, int device_id,
-                                                    int channel_id) = 0;
-  virtual supla_channel_electricity_measurement *_get_electricity_measurement(
+  virtual supla_abstract_channel_property_getter *_get_channel_property_getter(
       void) = 0;
-  virtual supla_channel_ic_measurement *_get_impulse_counter_measurement(
-      void) = 0;
-  virtual const char *_get_user_suid(void) = 0;
 
-  void get_complex_value(void);
-  void get_electricity_measurement(void);
-  void get_impulse_counter_measurement(void);
+  virtual const char *_get_user_suid(void) = 0;
 
   void get_temperature(char *buf, size_t buf_size);
   void get_humidity(char *buf, size_t buf_size);
-  void get_brightness(char *brightness, char *buf, size_t buf_size);
+  void get_brightness(char brightness, char *buf, size_t buf_size);
   void get_color(char *buf, size_t buf_size);
   void get_rgb(char *buf, size_t buf_size);
   void get_valve_closed(char *buf, size_t buf_size);

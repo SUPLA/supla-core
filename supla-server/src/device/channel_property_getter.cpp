@@ -40,21 +40,18 @@ supla_channel_value *supla_cahnnel_property_getter::_get_value(
   shared_ptr<supla_device> device =
       user->get_devices()->get(device_id, channel_id);
 
+  if (fragment) {
+    *fragment = user->get_devices()->get_channel_fragment(channel_id);
+  }
+
   if (device == nullptr) {
-    if (fragment) {
-      *fragment = user->get_devices()->get_channel_fragment(channel_id);
-    }
     if (online) {
       *online = false;
     }
   } else {
     device->get_channels()->access_channel(
-        channel_id,
-        [&result, &func, &online](supla_device_channel *channel) -> void {
+        channel_id, [&result, &online](supla_device_channel *channel) -> void {
           result = channel->get_value<supla_channel_value>();
-          if (func) {
-            *func = channel->get_func();
-          }
           if (online) {
             *online = !channel->is_offline();
           }

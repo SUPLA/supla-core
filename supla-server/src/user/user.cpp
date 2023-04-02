@@ -707,23 +707,6 @@ bool supla_user::reconnect(int UserID, const supla_caller &caller) {
   return false;
 }
 
-channel_complex_value supla_user::get_channel_complex_value(int channel_id) {
-  channel_complex_value value = {};
-
-  shared_ptr<supla_device> device = devices->get(0, channel_id);
-  if (device == nullptr) {
-    supla_channel_fragment f = devices->get_channel_fragment(channel_id);
-
-    value.function = f.get_function();
-    value.channel_type = f.get_type();
-    value.hidden_channel = f.is_hidden();
-  } else {
-    device->get_channels()->get_channel_complex_value(&value, channel_id);
-  }
-
-  return value;
-}
-
 void supla_user::set_channel_function(std::shared_ptr<supla_client> sender,
                                       TCS_SetChannelFunction *func) {
   if (sender == nullptr || func == NULL) {

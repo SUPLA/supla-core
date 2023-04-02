@@ -141,7 +141,6 @@ class supla_device_channels {
   bool get_channel_state_async(const supla_caller &caller,
                                TCSD_ChannelStateRequest *request);
 
-  bool get_channel_complex_value(channel_complex_value *value, int channel_id);
   void set_channel_function(int channel_id, int func);
   std::map<int, int> get_functions(void);
   bool get_channel_config(unsigned char channel_number, unsigned char type,

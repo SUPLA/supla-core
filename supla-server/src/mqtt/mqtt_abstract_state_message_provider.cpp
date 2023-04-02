@@ -16,10 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <mqtt_abstract_state_message_provider.h>
+#include "mqtt_abstract_state_message_provider.h"
+
 #include <stdlib.h>
 #include <string.h>
 
+#include "device/channel_fragment.h"
+#include "device/value/channel_binary_sensor_value.h"
+#include "device/value/channel_floating_point_sensor_value.h"
+#include "device/value/channel_gate_value.h"
+#include "device/value/channel_onoff_value.h"
+#include "device/value/channel_openclosed_value.h"
+#include "device/value/channel_rgbw_value.h"
+#include "device/value/channel_rs_value.h"
+#include "device/value/channel_temphum_value.h"
+#include "device/value/channel_thermostat_value.h"
+#include "device/value/channel_valve_value.h"
 #include "log.h"
 
 supla_mqtt_abstract_state_message_provider::
@@ -31,16 +43,16 @@ supla_mqtt_abstract_state_message_provider::
   this->channel_function = 0;
   this->channel_type = 0;
   this->channel_flags = 0;
-  this->cvalue = NULL;
-  this->user_suid = NULL;
-  this->em = NULL;
-  this->icm = NULL;
+  this->channel_value = nullptr;
+  this->user_suid = nullptr;
+  this->em = nullptr;
+  this->icm = nullptr;
 }
 
 supla_mqtt_abstract_state_message_provider::
     ~supla_mqtt_abstract_state_message_provider(void) {
-  if (cvalue) {
-    free(cvalue);
+  if (channel_value) {
+    delete channel_value;
   }
 
   if (em) {
@@ -71,19 +83,19 @@ void supla_mqtt_abstract_state_message_provider::set_ids(int user_id,
   this->device_id = device_id;
   this->channel_id = channel_id;
 
-  if (cvalue) {
-    free(cvalue);
-    cvalue = NULL;
+  if (channel_value) {
+    delete channel_value;
+    channel_value = nullptr;
   }
 
   if (em) {
     delete em;
-    em = NULL;
+    em = nullptr;
   }
 
   if (icm) {
     delete icm;
-    icm = NULL;
+    icm = nullptr;
   }
 }
 
@@ -104,79 +116,65 @@ void supla_mqtt_abstract_state_message_provider::set_user_suid(void) {
   user_suid = (char *)_get_user_suid();
 }
 
-void supla_mqtt_abstract_state_message_provider::get_complex_value(void) {
-  if (cvalue == NULL) {
-    cvalue = _get_complex_value(user_id, device_id, channel_id);
-    if (cvalue) {
-      channel_function = cvalue->function;
-      channel_type = cvalue->channel_type;
-      channel_flags = cvalue->channel_flags;
-    }
-  }
-}
-
-void supla_mqtt_abstract_state_message_provider::get_electricity_measurement(
-    void) {
-  if (em == NULL) {
-    em = _get_electricity_measurement();
-  }
-}
-
-void supla_mqtt_abstract_state_message_provider::
-    get_impulse_counter_measurement(void) {
-  if (icm == NULL) {
-    icm = _get_impulse_counter_measurement();
-  }
-}
-
 void supla_mqtt_abstract_state_message_provider::get_temperature(
     char *buf, size_t buf_size) {
-  if (cvalue) {
-    snprintf(buf, buf_size, "%f", cvalue->temperature);
+  supla_channel_temphum_value *temphum_val =
+      dynamic_cast<supla_channel_temphum_value *>(channel_value);
+  if (temphum_val) {
+    snprintf(buf, buf_size, "%f", temphum_val->get_temperature());
   }
 }
 
 void supla_mqtt_abstract_state_message_provider::get_humidity(char *buf,
                                                               size_t buf_size) {
-  if (cvalue) {
-    snprintf(buf, buf_size, "%f", cvalue->humidity);
+  supla_channel_temphum_value *temphum_val =
+      dynamic_cast<supla_channel_temphum_value *>(channel_value);
+  if (temphum_val) {
+    snprintf(buf, buf_size, "%f", temphum_val->get_humidity());
   }
 }
 
 void supla_mqtt_abstract_state_message_provider::get_brightness(
-    char *brightness, char *buf, size_t buf_size) {
-  if (brightness) {
-    snprintf(buf, buf_size, "%i", *brightness);
-  }
+    char brightness, char *buf, size_t buf_size) {
+  snprintf(buf, buf_size, "%i", brightness);
 }
 
 void supla_mqtt_abstract_state_message_provider::get_color(char *buf,
                                                            size_t buf_size) {
-  if (cvalue) {
-    snprintf(buf, buf_size, "0x%02X%02X%02X",
-             ((unsigned char *)&cvalue->color)[2],
-             ((unsigned char *)&cvalue->color)[1],
-             ((unsigned char *)&cvalue->color)[0]);
+  supla_channel_rgbw_value *rgbw_val =
+      dynamic_cast<supla_channel_rgbw_value *>(channel_value);
+
+  if (rgbw_val) {
+    int color = rgbw_val->get_color();
+    snprintf(buf, buf_size, "0x%02X%02X%02X", ((unsigned char *)&color)[2],
+             ((unsigned char *)&color)[1], ((unsigned char *)&color)[0]);
   }
 }
 
 void supla_mqtt_abstract_state_message_provider::get_rgb(char *buf,
                                                          size_t buf_size) {
-  if (cvalue) {
-    snprintf(buf, buf_size, "%i,%i,%i", ((unsigned char *)&cvalue->color)[2],
-             ((unsigned char *)&cvalue->color)[1],
-             ((unsigned char *)&cvalue->color)[0]);
+  supla_channel_rgbw_value *rgbw_val =
+      dynamic_cast<supla_channel_rgbw_value *>(channel_value);
+
+  if (rgbw_val) {
+    int color = rgbw_val->get_color();
+    snprintf(buf, buf_size, "%i,%i,%i", ((unsigned char *)&color)[2],
+             ((unsigned char *)&color)[1], ((unsigned char *)&color)[0]);
   }
 }
 
 void supla_mqtt_abstract_state_message_provider::get_valve_closed(
     char *buf, size_t buf_size) {
-  if (cvalue) {
+  supla_channel_valve_value *valve_val =
+      dynamic_cast<supla_channel_valve_value *>(channel_value);
+
+  if (valve_val) {
     if (channel_function == SUPLA_CHANNELFNC_VALVE_PERCENTAGE) {
-      snprintf(buf, buf_size, "%i", cvalue->valve_value.closed_percent);
+      snprintf(buf, buf_size, "%i",
+               valve_val->get_valve_value()->closed_percent);
     } else {
       snprintf(buf, buf_size, "%s",
-               cvalue->valve_value.closed ? "true" : "false");
+               valve_val->get_valve_value()->closed ? "true" : "false");
     }
   }
 }
@@ -184,6 +182,12 @@ void supla_mqtt_abstract_state_message_provider::get_valve_closed(
 bool supla_mqtt_abstract_state_message_provider::get_rs_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
+  supla_channel_rs_value *rs_val = nullptr;
+
+  if (index >= 1 && index <= 3) {
+    rs_val = dynamic_cast<supla_channel_rs_value *>(channel_value);
+  }
+
   char value[50];
   value[0] = 0;
 
@@ -191,16 +195,18 @@ bool supla_mqtt_abstract_state_message_provider::get_rs_message_at_index(
     case 1:
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
-          cvalue && cvalue->hi ? "true" : "false", false,
-          "devices/%i/channels/%i/state/hi", get_device_id(), get_channel_id());
+          rs_val && rs_val->get_opening_sensor_level() == rsl_closed ? "true"
+                                                                     : "false",
+          false, "devices/%i/channels/%i/state/hi", get_device_id(),
+          get_channel_id());
     case 2:
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
-          cvalue && cvalue->shut == -1 ? "true" : "false", false,
-          "devices/%i/channels/%i/state/is_calibrating", get_device_id(),
+          rs_val && rs_val->get_rs_value()->position == -1 ? "true" : "false",
+          false, "devices/%i/channels/%i/state/is_calibrating", get_device_id(),
           get_channel_id());
     case 3: {
-      short shut = cvalue ? cvalue->shut : 0;
+      short shut = rs_val ? rs_val->get_rs_value()->position : 0;
       if (shut < 0) {
         shut = 0;
       } else if (shut > 100) {
@@ -221,10 +227,13 @@ bool supla_mqtt_abstract_state_message_provider::get_lck_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   if (index == 1) {
-    return create_message(topic_prefix, user_suid, topic_name, message,
-                          message_size, cvalue && cvalue->hi ? "true" : "false",
-                          false, "devices/%i/channels/%i/state/hi",
-                          get_device_id(), get_channel_id());
+    supla_channel_openclosed_value *oc_val =
+        dynamic_cast<supla_channel_openclosed_value *>(channel_value);
+
+    return create_message(
+        topic_prefix, user_suid, topic_name, message, message_size,
+        oc_val && oc_val->is_closed() ? "true" : "false", false,
+        "devices/%i/channels/%i/state/hi", get_device_id(), get_channel_id());
   }
 
   return false;
@@ -233,17 +242,28 @@ bool supla_mqtt_abstract_state_message_provider::get_lck_message_at_index(
 bool supla_mqtt_abstract_state_message_provider::get_gate_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
+  supla_channel_gate_value *gate_val = nullptr;
+
+  if (index >= 1 && index <= 2) {
+    gate_val = dynamic_cast<supla_channel_gate_value *>(channel_value);
+  }
+
   switch (index) {
     case 1:
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
-          cvalue && cvalue->hi ? "true" : "false", false,
-          "devices/%i/channels/%i/state/hi", get_device_id(), get_channel_id());
+          gate_val && gate_val->get_opening_sensor_level() == gsl_closed
+              ? "true"
+              : "false",
+          false, "devices/%i/channels/%i/state/hi", get_device_id(),
+          get_channel_id());
     case 2:
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
-          cvalue && cvalue->partially_closed ? "true" : "false", false,
-          "devices/%i/channels/%i/state/partial_hi", get_device_id(),
+          gate_val && gate_val->get_partial_opening_sensor_level() == gsl_closed
+              ? "true"
+              : "false",
+          false, "devices/%i/channels/%i/state/partial_hi", get_device_id(),
           get_channel_id());
   }
 
@@ -273,7 +293,7 @@ bool supla_mqtt_abstract_state_message_provider::get_onoff_message_at_index(
     bool on, unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   return get_onoff_message_at_index(on, index, topic_prefix, topic_name,
-                                    message, message_size, NULL);
+                                    message, message_size, nullptr);
 }
 
 bool supla_mqtt_abstract_state_message_provider::get_depth_message_at_index(
@@ -283,8 +303,12 @@ bool supla_mqtt_abstract_state_message_provider::get_depth_message_at_index(
     char value[50];
     value[0] = 0;
 
-    if (cvalue) {
-      snprintf(value, sizeof(value), "%f", cvalue->depth);
+    supla_channel_floating_point_sensor_value *f_val =
+        dynamic_cast<supla_channel_floating_point_sensor_value *>(
+            channel_value);
+
+    if (f_val) {
+      snprintf(value, sizeof(value), "%f", f_val->get_value());
     }
     return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size, value, false,
@@ -302,8 +326,12 @@ bool supla_mqtt_abstract_state_message_provider::get_distance_message_at_index(
     char value[50];
     value[0] = 0;
 
-    if (cvalue) {
-      snprintf(value, sizeof(value), "%f", cvalue->distance);
+    supla_channel_floating_point_sensor_value *f_val =
+        dynamic_cast<supla_channel_floating_point_sensor_value *>(
+            channel_value);
+
+    if (f_val) {
+      snprintf(value, sizeof(value), "%f", f_val->get_value());
     }
     return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size, value, false,
@@ -323,19 +351,17 @@ bool supla_mqtt_abstract_state_message_provider::
     char value[50];
     value[0] = 0;
 
-    if (cvalue) {
+    supla_channel_floating_point_sensor_value *f_val =
+        dynamic_cast<supla_channel_floating_point_sensor_value *>(
+            channel_value);
+
+    if (f_val) {
       switch (channel_function) {
         case SUPLA_CHANNELFNC_PRESSURESENSOR:
-          snprintf(value, sizeof(value), "%f", cvalue->pressure);
-          break;
         case SUPLA_CHANNELFNC_RAINSENSOR:
-          snprintf(value, sizeof(value), "%f", cvalue->rain);
-          break;
         case SUPLA_CHANNELFNC_WEIGHTSENSOR:
-          snprintf(value, sizeof(value), "%f", cvalue->weight);
-          break;
         case SUPLA_CHANNELFNC_WINDSENSOR:
-          snprintf(value, sizeof(value), "%f", cvalue->wind);
+          snprintf(value, sizeof(value), "%f", f_val->get_value());
           break;
       }
     }
@@ -353,10 +379,13 @@ bool supla_mqtt_abstract_state_message_provider::get_sensor_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   if (index == 1) {
-    return create_message(topic_prefix, user_suid, topic_name, message,
-                          message_size, cvalue && cvalue->hi ? "true" : "false",
-                          false, "devices/%i/channels/%i/state/hi",
-                          get_device_id(), get_channel_id());
+    supla_channel_binary_sensor_value *bin_val =
+        dynamic_cast<supla_channel_binary_sensor_value *>(channel_value);
+
+    return create_message(
+        topic_prefix, user_suid, topic_name, message, message_size,
+        bin_val && bin_val->is_hi() ? "true" : "false", false,
+        "devices/%i/channels/%i/state/hi", get_device_id(), get_channel_id());
   }
 
   return false;
@@ -406,7 +435,13 @@ bool supla_mqtt_abstract_state_message_provider::get_brightness_message(
   char value[50];
   value[0] = 0;
 
-  get_brightness(cvalue ? &cvalue->brightness : NULL, value, sizeof(value));
+  supla_channel_rgbw_value *rgbw_val =
+      dynamic_cast<supla_channel_rgbw_value *>(channel_value);
+
+  if (rgbw_val) {
+    get_brightness(rgbw_val->get_brightness(), value, sizeof(value));
+  }
+
   return create_message(topic_prefix, user_suid, topic_name, message,
                         message_size, value, false,
                         "devices/%i/channels/%i/state/brightness",
@@ -419,8 +454,13 @@ bool supla_mqtt_abstract_state_message_provider::get_color_brightness_message(
   char value[50];
   value[0] = 0;
 
-  get_brightness(cvalue ? &cvalue->color_brightness : NULL, value,
-                 sizeof(value));
+  supla_channel_rgbw_value *rgbw_val =
+      dynamic_cast<supla_channel_rgbw_value *>(channel_value);
+
+  if (rgbw_val) {
+    get_brightness(rgbw_val->get_color_brightness(), value, sizeof(value));
+  }
+
   return create_message(topic_prefix, user_suid, topic_name, message,
                         message_size, value, false,
                         "devices/%i/channels/%i/state/color_brightness",
@@ -458,6 +498,12 @@ bool supla_mqtt_abstract_state_message_provider::get_valve_message_at_index(
   char value[50];
   value[0] = 0;
 
+  supla_channel_valve_value *valve_val = nullptr;
+
+  if (index >= 1 && index <= 3) {
+    valve_val = dynamic_cast<supla_channel_valve_value *>(channel_value);
+  }
+
   switch (index) {
     case 1:
       get_valve_closed(value, sizeof(value));
@@ -468,20 +514,22 @@ bool supla_mqtt_abstract_state_message_provider::get_valve_message_at_index(
     case 2:
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
-          cvalue &&
-                  (cvalue->valve_value.flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED)
+          valve_val && (valve_val->get_valve_value()->flags &
+                        SUPLA_VALVE_FLAG_MANUALLY_CLOSED)
               ? "true"
               : "false",
           false, "devices/%i/channels/%i/state/manually_closed",
           get_device_id(), get_channel_id());
+
     case 3:
-      return create_message(
-          topic_prefix, user_suid, topic_name, message, message_size,
-          cvalue && (cvalue->valve_value.flags & SUPLA_VALVE_FLAG_FLOODING)
-              ? "true"
-              : "false",
-          false, "devices/%i/channels/%i/state/flooding", get_device_id(),
-          get_channel_id());
+      return create_message(topic_prefix, user_suid, topic_name, message,
+                            message_size,
+                            valve_val && (valve_val->get_valve_value()->flags &
+                                          SUPLA_VALVE_FLAG_FLOODING)
+                                ? "true"
+                                : "false",
+                            false, "devices/%i/channels/%i/state/flooding",
+                            get_device_id(), get_channel_id());
   }
 
   return false;
@@ -492,13 +540,17 @@ bool supla_mqtt_abstract_state_message_provider::
                                         const char *topic_prefix,
                                         char **topic_name, void **message,
                                         size_t *message_size) {
-  get_impulse_counter_measurement();
-  if (icm == NULL) {
-    message = NULL;
+  if (icm == nullptr) {
+    icm = _get_channel_property_getter()->get_ic_measurement(
+        get_user_id(), get_device_id(), get_channel_id());
+  }
+
+  if (icm == nullptr) {
+    message = nullptr;
 
     if (message_size) {
       *message_size = 0;
-      message_size = NULL;
+      message_size = nullptr;
     }
   }
 
@@ -558,9 +610,9 @@ void supla_mqtt_abstract_state_message_provider::verify_flag(
     supla_channel_electricity_measurement **em, int flags, int flag1, int flag2,
     void **message, size_t *message_size) {
   if ((flags & flag1) == 0 && (flags & flag2) == 0) {
-    *em = NULL;
+    *em = nullptr;
     if (message) {
-      *message = NULL;
+      *message = nullptr;
     }
     if (message_size) {
       *message_size = 0;
@@ -577,7 +629,10 @@ bool supla_mqtt_abstract_state_message_provider::
     return false;
   }
 
-  get_electricity_measurement();
+  if (em == nullptr) {
+    em = _get_channel_property_getter()->get_electricity_measurement(
+        get_user_id(), get_device_id(), get_channel_id());
+  }
 
   supla_channel_electricity_measurement *em = this->em;
 
@@ -587,7 +642,7 @@ bool supla_mqtt_abstract_state_message_provider::
   if (em) {
     em->getMeasurement(&em_ev);
     if (em_ev.m_count == 0) {
-      em = NULL;
+      em = nullptr;
     }
   }
 
@@ -597,15 +652,15 @@ bool supla_mqtt_abstract_state_message_provider::
         index >= 22 && index <= 33)) ||
       (((channel_flags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED) &&
         index >= 34 && index <= 45))) {
-    em = NULL;
+    em = nullptr;
   }
 
-  if (em == NULL) {
-    message = NULL;
+  if (em == nullptr) {
+    message = nullptr;
 
     if (message_size) {
       *message_size = 0;
-      message_size = NULL;
+      message_size = nullptr;
     }
   }
 
@@ -883,22 +938,31 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     return false;
   }
 
-  get_complex_value();
+  bool online = false;
+
+  if (channel_value == nullptr) {
+    supla_channel_fragment fragment;
+    channel_value = _get_channel_property_getter()->get_value(
+        user_id, device_id, channel_id, &fragment, &online);
+
+    channel_function = fragment.get_function();
+    channel_type = fragment.get_type();
+    channel_flags = fragment.get_flags();
+  }
 
   if (index == 0) {
     return create_message(topic_prefix, user_suid, topic_name, message,
-                          message_size,
-                          cvalue && cvalue->online ? "true" : "false", false,
+                          message_size, online ? "true" : "false", false,
                           "devices/%i/channels/%i/state/connected",
                           get_device_id(), get_channel_id());
   }
 
-  if (!cvalue || !cvalue->online) {
-    message = NULL;
+  if (!channel_value || !online) {
+    message = nullptr;
 
     if (message_size) {
       *message_size = 0;
-      message_size = NULL;
+      message_size = nullptr;
     }
   }
 
@@ -919,16 +983,24 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
                                       message_size);
 
     case SUPLA_CHANNELFNC_THERMOSTAT:
-    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
-      return get_onoff_message_at_index(cvalue && cvalue->hi > 0, index,
-                                        topic_prefix, topic_name, message,
-                                        message_size);
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
+      supla_channel_thermostat_value *thermo_val =
+          dynamic_cast<supla_channel_thermostat_value *>(channel_value);
+
+      return get_onoff_message_at_index(thermo_val && thermo_val->is_on(),
+                                        index, topic_prefix, topic_name,
+                                        message, message_size);
+    }
 
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_STAIRCASETIMER: {
-      bool overcurrent_relay_off = cvalue && cvalue->overcurrent_relay_off;
-      return get_onoff_message_at_index(cvalue && cvalue->hi > 0, index,
+      supla_channel_onoff_value *onoff_val =
+          dynamic_cast<supla_channel_onoff_value *>(channel_value);
+
+      bool overcurrent_relay_off =
+          onoff_val && onoff_val->is_overcurrent_relay_off();
+      return get_onoff_message_at_index(onoff_val && onoff_val->is_on(), index,
                                         topic_prefix, topic_name, message,
                                         message_size, &overcurrent_relay_off);
     }
@@ -980,10 +1052,14 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
       break;
     case SUPLA_CHANNELFNC_DIMMER:
       switch (index) {
-        case 1:
-          return get_onoff_message_at_index(cvalue && cvalue->brightness > 0,
-                                            index, topic_prefix, topic_name,
-                                            message, message_size);
+        case 1: {
+          supla_channel_rgbw_value *rgbw_val =
+              dynamic_cast<supla_channel_rgbw_value *>(channel_value);
+
+          return get_onoff_message_at_index(
+              rgbw_val && rgbw_val->get_brightness() > 0, index, topic_prefix,
+              topic_name, message, message_size);
+        }
 
         case 2:
           return get_brightness_message(topic_prefix, topic_name, message,
@@ -992,10 +1068,14 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
       break;
     case SUPLA_CHANNELFNC_RGBLIGHTING:
       switch (index) {
-        case 1:
+        case 1: {
+          supla_channel_rgbw_value *rgbw_val =
+              dynamic_cast<supla_channel_rgbw_value *>(channel_value);
+
           return get_onoff_message_at_index(
-              cvalue && cvalue->color_brightness > 0, index, topic_prefix,
-              topic_name, message, message_size);
+              rgbw_val && rgbw_val->get_color_brightness() > 0, index,
+              topic_prefix, topic_name, message, message_size);
+        }
 
         case 2:
           return get_color_message(topic_prefix, topic_name, message,
@@ -1012,11 +1092,15 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
       break;
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
       switch (index) {
-        case 1:
+        case 1: {
+          supla_channel_rgbw_value *rgbw_val =
+              dynamic_cast<supla_channel_rgbw_value *>(channel_value);
+
           return get_onoff_message_at_index(
-              cvalue &&
-                  (cvalue->brightness > 0 || cvalue->color_brightness > 0),
+              rgbw_val && (rgbw_val->get_brightness() > 0 ||
+                           rgbw_val->get_color_brightness() > 0),
               index, topic_prefix, topic_name, message, message_size);
+        }
 
         case 2:
           return get_color_message(topic_prefix, topic_name, message,
