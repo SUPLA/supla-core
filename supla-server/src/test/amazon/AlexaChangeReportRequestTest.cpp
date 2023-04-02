@@ -71,9 +71,8 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
       .WillOnce([func, online, value](
                     int user_id, int device_id, int channel_id,
                     supla_channel_fragment *_fragment, bool *_Reachable) {
-        supla_channel_fragment fragment(device_id, channel_id, 0,
-                                        SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
-        *_fragment = fragment;
+        *_fragment = supla_channel_fragment(
+            device_id, channel_id, 0, SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
         *_Reachable = online;
 
         return value;
@@ -127,9 +126,8 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
       .WillRepeatedly([func, online, value](
                           int user_id, int device_id, int channel_id,
                           supla_channel_fragment *_fragment, bool *_Reachable) {
-        supla_channel_fragment fragment(device_id, channel_id, 0,
-                                        SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
-        *_fragment = fragment;
+        *_fragment = supla_channel_fragment(
+            device_id, channel_id, 0, SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
         *_Reachable = online;
 
         return value;
