@@ -26,6 +26,7 @@ namespace testing {
 TEST_F(ChannelOnOffValueTest, voidConstructor) {
   supla_channel_onoff_value v;
   EXPECT_FALSE(v.is_on());
+  EXPECT_FALSE(v.is_overcurrent_relay_off());
 
   char raw_value1[SUPLA_CHANNELVALUE_SIZE] = {};
   v.get_raw_value(raw_value1);
@@ -38,10 +39,19 @@ TEST_F(ChannelOnOffValueTest, rawDataConstructor) {
   char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
   supla_channel_onoff_value v1(raw_value);
   EXPECT_FALSE(v1.is_on());
+  EXPECT_FALSE(v1.is_overcurrent_relay_off());
 
-  raw_value[0] = 1;
+  ((TRelayChannel_Value*)raw_value)->hi = 1;
   supla_channel_onoff_value v2(raw_value);
   EXPECT_TRUE(v2.is_on());
+  EXPECT_FALSE(v2.is_overcurrent_relay_off());
+
+  ((TRelayChannel_Value*)raw_value)->flags =
+      SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF;
+  ((TRelayChannel_Value*)raw_value)->hi = 0;
+  supla_channel_onoff_value v3(raw_value);
+  EXPECT_TRUE(v3.is_on());
+  EXPECT_TRUE(v3.is_overcurrent_relay_off());
 }
 
 TEST_F(ChannelOnOffValueTest, setterAndGetter) {

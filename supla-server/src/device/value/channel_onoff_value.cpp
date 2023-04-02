@@ -32,6 +32,15 @@ supla_channel_onoff_value::supla_channel_onoff_value(bool on)
   set_on(on);
 }
 
-void supla_channel_onoff_value::set_on(bool on) { raw_value[0] = on ? 1 : 0; }
+void supla_channel_onoff_value::set_on(bool on) {
+  ((TRelayChannel_Value*)raw_value)->hi = on ? 1 : 0;
+}
 
-bool supla_channel_onoff_value::is_on(void) { return raw_value[0] > 0; }
+bool supla_channel_onoff_value::is_on(void) {
+  return ((TRelayChannel_Value*)raw_value)->hi > 0;
+}
+
+bool supla_channel_onoff_value::is_overcurrent_relay_off(void) {
+  return ((TRelayChannel_Value*)raw_value)->flags &
+         SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF;
+}
