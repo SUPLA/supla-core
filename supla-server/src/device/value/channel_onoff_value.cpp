@@ -44,3 +44,14 @@ bool supla_channel_onoff_value::is_overcurrent_relay_off(void) {
   return ((TRelayChannel_Value*)raw_value)->flags &
          SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF;
 }
+
+void supla_channel_onoff_value::set_overcurrent_relay_off(bool active) {
+  if (active) {
+    ((TRelayChannel_Value*)raw_value)->flags |=
+        SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF;
+  } else {
+    ((TRelayChannel_Value*)raw_value)->flags ^=
+        ((TRelayChannel_Value*)raw_value)->flags |=
+        SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF;
+  }
+}

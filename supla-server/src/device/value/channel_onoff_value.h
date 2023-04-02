@@ -27,6 +27,7 @@ class supla_channel_onoff_value : public supla_channel_value {
   explicit supla_channel_onoff_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_onoff_value(bool on);
   void set_on(bool on);
+  void set_overcurrent_relay_off(bool active);
   bool is_on(void);
   bool is_overcurrent_relay_off(void);
 };

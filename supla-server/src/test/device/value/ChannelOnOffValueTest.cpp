@@ -50,7 +50,7 @@ TEST_F(ChannelOnOffValueTest, rawDataConstructor) {
       SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF;
   ((TRelayChannel_Value*)raw_value)->hi = 0;
   supla_channel_onoff_value v3(raw_value);
-  EXPECT_TRUE(v3.is_on());
+  EXPECT_FALSE(v3.is_on());
   EXPECT_TRUE(v3.is_overcurrent_relay_off());
 }
 
@@ -60,9 +60,18 @@ TEST_F(ChannelOnOffValueTest, setterAndGetter) {
   v.get_raw_value(raw_value);
   EXPECT_EQ(raw_value[0], 0);
   EXPECT_FALSE(v.is_on());
+  EXPECT_FALSE(v.is_overcurrent_relay_off());
+
   v.set_on(true);
+  EXPECT_TRUE(v.is_on());
+  EXPECT_FALSE(v.is_overcurrent_relay_off());
   v.get_raw_value(raw_value);
   EXPECT_EQ(raw_value[0], 1);
+
+  v.set_overcurrent_relay_off(true);
+  EXPECT_TRUE(v.is_overcurrent_relay_off());
+  v.set_overcurrent_relay_off(false);
+  EXPECT_FALSE(v.is_overcurrent_relay_off());
 }
 
 }  // namespace testing
