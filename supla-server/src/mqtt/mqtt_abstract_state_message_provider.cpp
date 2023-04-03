@@ -42,7 +42,6 @@ supla_mqtt_abstract_state_message_provider::
   this->channel_id = 0;
   this->channel_online = false;
   this->channel_function = 0;
-  this->channel_type = 0;
   this->channel_flags = 0;
   this->channel_value = nullptr;
   this->user_suid = nullptr;
@@ -100,11 +99,10 @@ void supla_mqtt_abstract_state_message_provider::set_ids(int user_id,
   }
 }
 
-void supla_mqtt_abstract_state_message_provider::
-    set_channel_type_function_and_flags(int channel_type, int channel_function,
-                                        int channel_flags) {
+void supla_mqtt_abstract_state_message_provider::set_channel_function_and_flags(
+    int channel_function, int channel_flags) {
   this->channel_function = channel_function;
-  this->channel_type = channel_type;
+
   this->channel_flags = channel_flags;
 }
 
@@ -946,7 +944,6 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
         user_id, device_id, channel_id, &fragment, &channel_online);
 
     channel_function = fragment.get_function();
-    channel_type = fragment.get_type();
     channel_flags = fragment.get_flags();
   }
 

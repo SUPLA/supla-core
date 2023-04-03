@@ -17,6 +17,7 @@
  */
 
 #include <mqtt_channelandstate_message_provider.h>
+
 #include "log.h"
 
 supla_mqtt_channelandstate_message_provider::
@@ -91,8 +92,8 @@ void supla_mqtt_channelandstate_message_provider::set_data_row(
   if (row) {
     state_message_provider->set_ids(row->user_id, row->device_id,
                                     row->channel_id);
-    state_message_provider->set_channel_type_function_and_flags(
-        row->channel_type, row->channel_func, row->channel_flags);
+    state_message_provider->set_channel_function_and_flags(row->channel_func,
+                                                           row->channel_flags);
     state_message_provider->set_user_suid(row->user_suid);
   } else {
     state_message_provider->set_ids(0, 0, 0);
