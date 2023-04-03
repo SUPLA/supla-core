@@ -19,7 +19,10 @@
 #ifndef MQTTSTATEMESSAGEPROVIDERTEST_H_
 #define MQTTSTATEMESSAGEPROVIDERTEST_H_
 
+#include <string>
+
 #include "MqttMessageProviderTest.h"
+#include "doubles/device/ChannelPropertyGetterMock.h"
 #include "doubles/mqtt/MqttStateMessageProviderMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
@@ -27,13 +30,15 @@ namespace testing {
 
 class MqttStateMessageProviderTest : public MqttMessageProviderTest {
  protected:
-  MqttStateMessageProviderMock *provider;
+  std::string short_unique_id;
+  MqttStateMessageProviderMock provider;
+  ChannelPropertyGetterMock propertyGetter;
+  void SetResultValue(int func, bool connected, supla_channel_value *value);
+  void SetIcMeasurementResult(void);
+  void SetElectricityMeasurementResult(int measured_values, int m_count);
 
  public:
   virtual void SetUp();
-  virtual void TearDown();
-  MqttStateMessageProviderTest();
-  virtual ~MqttStateMessageProviderTest();
 };
 
 } /* namespace testing */
