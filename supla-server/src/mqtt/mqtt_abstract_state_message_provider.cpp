@@ -943,8 +943,10 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     channel_value = _get_channel_property_getter()->get_value(
         user_id, device_id, channel_id, &fragment, &channel_online);
 
-    channel_function = fragment.get_function();
-    channel_flags = fragment.get_flags();
+    if (fragment.get_channel_id()) {
+      channel_function = fragment.get_function();
+      channel_flags = fragment.get_flags();
+    }
   }
 
   if (index == 0) {
