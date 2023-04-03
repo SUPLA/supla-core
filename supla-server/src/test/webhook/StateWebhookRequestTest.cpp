@@ -83,7 +83,6 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
                     supla_channel_fragment *_fragment, bool *_connected) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, func, 0, false);
-        ;
         *_connected = online;
 
         return value;
@@ -115,7 +114,6 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
                                bool *_connected) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, func, 0, false);
-        ;
         *_connected = online;
 
         return new supla_channel_value();
@@ -148,7 +146,6 @@ void StateWebhookRequestTest::makeTest(
                                bool *_connected) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, func, 0, false);
-        ;
         *_connected = online;
 
         return new supla_channel_value();
