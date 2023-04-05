@@ -126,7 +126,7 @@ xcodebuild -create-xcframework \
   -library "${BUILD_DIR}/libsupla-client-iphoneos.a" \
   -headers "${BUILD_DIR}/include" \
   -library "${BUILD_DIR}/libsupla-client-iphonesimulator.a" \
-  -headers "${BUILD_DIR}/include" \ 
+  -headers "${BUILD_DIR}/include" \
   -output "${BUILD_DIR}/LibSuplaClient.xcframework"
   
 RC=$?
