@@ -256,7 +256,7 @@ void supla_abstract_asynctask::set_execution_request_time(void) {
 
 long long supla_abstract_asynctask::time_since_exec_request_usec(
     struct timeval *now) {
-  return time_diff_usec(now, &execution_request_time, -1);
+  return time_diff_usec(now, &execution_request_time, 1) * -1;
 }
 
 void supla_abstract_asynctask::on_timeout(unsigned long long timeout_usec,
