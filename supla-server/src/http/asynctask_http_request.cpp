@@ -105,7 +105,7 @@ bool supla_asynctask_http_request::_execute(
           if (time_left >= delay_warning_time_usec) {
             supla_log(LOG_WARNING,
                       "%s - The http request is delayed. ChannelId: %i, "
-                      "DelayUSec: %lld, %lld, TimeSinceExecReq: %lld",
+                      "DelayUSec: %lld, TimeSinceExecReq: %lld",
                       get_name().c_str(), get_channel_id(), time_left,
                       time_since_exec_request_usec(nullptr));
           }
