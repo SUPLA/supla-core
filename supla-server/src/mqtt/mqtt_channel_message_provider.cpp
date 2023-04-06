@@ -1476,6 +1476,7 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_POWERSWITCH:
       return ha_light_or_powerswitch(false, topic_prefix, topic_name, message,
                                      message_size);
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
       return ha_light_or_powerswitch(true, topic_prefix, topic_name, message,
                                      message_size);
