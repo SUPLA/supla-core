@@ -33,6 +33,7 @@ TEST_F(HttpThrottlingTest, defaults) {
     return thr.supla_http_throttling::get_reset_time_us(func);
   });
 
+  EXPECT_EQ(thr.get_size(), 0);
   EXPECT_EQ(thr.get_default_delay_time(0), 1500000);
   EXPECT_EQ(thr.get_delay_time_over_threadshold(0), 10000000);
   EXPECT_EQ(thr.get_reset_time_us(0), 10000000);
@@ -64,6 +65,24 @@ TEST_F(HttpThrottlingTest, crossingTheThreadshold) {
   }
 
   EXPECT_EQ(thr.get_delay_time(1, 0), thr.get_delay_time_over_threadshold(0));
+}
+
+TEST_F(HttpThrottlingTest, size) {
+  unsigned int a = 0;
+  for (a = 1; a <= 10; a++) {
+    thr.get_delay_time(a, 0);
+    EXPECT_EQ(thr.get_size(), a);
+  }
+
+  for (a = 1; a <= 10; a++) {
+    thr.get_delay_time(a, 0);
+    EXPECT_EQ(thr.get_size(), 10);
+  }
+
+  for (a = 11; a <= 20; a++) {
+    thr.get_delay_time(a, 0);
+    EXPECT_EQ(thr.get_size(), a);
+  }
 }
 
 }  // namespace testing

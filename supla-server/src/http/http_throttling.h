@@ -42,6 +42,7 @@ class supla_http_throttling {
   virtual int get_delay_time_over_threadshold(int func);
   virtual int get_reset_time_us(int func);
   virtual unsigned int get_counter_threadshold(int func);
+  size_t get_size(void);
 };
 
 #endif /* HTTP_THROTTLING_H_ */
