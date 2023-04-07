@@ -80,7 +80,7 @@ int supla_http_throttling::get_delay_time(int channel_id, int func) {
                         (it->last.tv_sec * 1000000 + it->last.tv_usec);
 
   if (time_diff >= get_reset_time_us(func)) {
-    it->counter = 0;
+    it->counter = 1;
   } else if (it->counter >= get_counter_threadshold(func)) {
     result = get_delay_time_over_threadshold(func);
   }
