@@ -69,6 +69,7 @@ int supla_http_throttling::get_delay_time(int channel_id, int func) {
 
   if (it == items.end()) {
     items.resize(items.size() + 1);
+    it = items.end();  // Probably not necessary, but better to make sure.
     --it;
     it->channel_id = channel_id;
     it->counter = 0;
