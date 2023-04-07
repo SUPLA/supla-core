@@ -10,6 +10,7 @@ CPP_SRCS += \
 ../src/http/asynctask_http_thread_pool.cpp \
 ../src/http/curl_adapter.cpp \
 ../src/http/http_event_hub.cpp \
+../src/http/http_throttling.cpp \
 ../src/http/oauth_credentials.cpp \
 ../src/http/voice_assistant_client.cpp 
 
@@ -20,6 +21,7 @@ CPP_DEPS += \
 ./src/http/asynctask_http_thread_pool.d \
 ./src/http/curl_adapter.d \
 ./src/http/http_event_hub.d \
+./src/http/http_throttling.d \
 ./src/http/oauth_credentials.d \
 ./src/http/voice_assistant_client.d 
 
@@ -30,6 +32,7 @@ OBJS += \
 ./src/http/asynctask_http_thread_pool.o \
 ./src/http/curl_adapter.o \
 ./src/http/http_event_hub.o \
+./src/http/http_throttling.o \
 ./src/http/oauth_credentials.o \
 ./src/http/voice_assistant_client.o 
 
@@ -46,7 +49,7 @@ src/http/%.o: ../src/http/%.cpp src/http/subdir.mk
 clean: clean-src-2f-http
 
 clean-src-2f-http:
-	-$(RM) ./src/http/abstract_curl_adapter.d ./src/http/abstract_curl_adapter.o ./src/http/asynctask_http_request.d ./src/http/asynctask_http_request.o ./src/http/asynctask_http_thread_bucket.d ./src/http/asynctask_http_thread_bucket.o ./src/http/asynctask_http_thread_pool.d ./src/http/asynctask_http_thread_pool.o ./src/http/curl_adapter.d ./src/http/curl_adapter.o ./src/http/http_event_hub.d ./src/http/http_event_hub.o ./src/http/oauth_credentials.d ./src/http/oauth_credentials.o ./src/http/voice_assistant_client.d ./src/http/voice_assistant_client.o
+	-$(RM) ./src/http/abstract_curl_adapter.d ./src/http/abstract_curl_adapter.o ./src/http/asynctask_http_request.d ./src/http/asynctask_http_request.o ./src/http/asynctask_http_thread_bucket.d ./src/http/asynctask_http_thread_bucket.o ./src/http/asynctask_http_thread_pool.d ./src/http/asynctask_http_thread_pool.o ./src/http/curl_adapter.d ./src/http/curl_adapter.o ./src/http/http_event_hub.d ./src/http/http_event_hub.o ./src/http/http_throttling.d ./src/http/http_throttling.o ./src/http/oauth_credentials.d ./src/http/oauth_credentials.o ./src/http/voice_assistant_client.d ./src/http/voice_assistant_client.o
 
 .PHONY: clean-src-2f-http
 

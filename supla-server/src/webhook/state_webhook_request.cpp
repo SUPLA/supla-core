@@ -25,6 +25,7 @@
 #include "user/user.h"
 #include "webhook/state_webhook_client.h"
 #include "webhook/state_webhook_search_condition.h"
+#include "webhook/state_webhook_throttling.h"
 
 using std::shared_ptr;
 using std::string;
@@ -251,8 +252,7 @@ bool supla_state_webhook_request::is_caller_allowed(
 
 // static
 bool supla_state_webhook_request::is_function_allowed(
-    int func, supla_state_webhook_credentials *credentials,
-    int *delay_time_usec) {
+    int func, supla_state_webhook_credentials *credentials) {
   if (!credentials || !func) {
     return false;
   }
@@ -265,8 +265,6 @@ bool supla_state_webhook_request::is_function_allowed(
         case SUPLA_CHANNELFNC_DIMMER:
         case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
         case SUPLA_CHANNELFNC_RGBLIGHTING:
-          *delay_time_usec = 1000000;
-          return true;
         case SUPLA_CHANNELFNC_THERMOMETER:
         case SUPLA_CHANNELFNC_HUMIDITY:
         case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
@@ -281,8 +279,6 @@ bool supla_state_webhook_request::is_function_allowed(
         case SUPLA_CHANNELFNC_IC_GAS_METER:
         case SUPLA_CHANNELFNC_IC_WATER_METER:
         case SUPLA_CHANNELFNC_IC_HEAT_METER:
-          *delay_time_usec = 15000000;
-          return true;
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
         case SUPLA_CHANNELFNC_STAIRCASETIMER:
@@ -297,13 +293,8 @@ bool supla_state_webhook_request::is_function_allowed(
         case SUPLA_CHANNELFNC_MAILSENSOR:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-          *delay_time_usec = 250000;
-          return true;
         case SUPLA_CHANNELFNC_ACTIONTRIGGER:
-          *delay_time_usec = 100000;
           return true;
-        default:
-          return false;
       }
     }
   }
@@ -326,13 +317,15 @@ void supla_state_webhook_request::new_request(const supla_caller &caller,
   int func =
       property_getter->get_func(user->getUserID(), device_id, channel_id);
 
-  int delay_time_usec = 0;
-  if (!is_function_allowed(func, user->stateWebhookCredentials(),
-                           &delay_time_usec)) {
+  if (!is_function_allowed(func, user->stateWebhookCredentials())) {
     delete property_getter;
     return;
   }
 
+  // Refer to this "throttling" before looking for duplicates
+  int delay_time_usec =
+      supla_state_webhook_throttling::get_instance()->get_delay_time(channel_id,
+                                                                     func);
   bool exists = false;
   supla_state_webhook_search_condition cnd(user->getUserID(), device_id,
                                            channel_id, actions);
