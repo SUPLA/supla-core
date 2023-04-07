@@ -184,8 +184,8 @@ void supla_google_home_state_report_request::new_request(
   }
 
   bool exists = false;
-  supla_google_home_state_report_search_condition cnd(
-      user->getUserID(), device_id, channel_id, 100000);
+  supla_google_home_state_report_search_condition cnd(user->getUserID(),
+                                                      device_id, channel_id);
   supla_asynctask_queue::global_instance()->access_task(
       &cnd, [&exists, request_id](supla_abstract_asynctask *task) -> void {
         exists = true;

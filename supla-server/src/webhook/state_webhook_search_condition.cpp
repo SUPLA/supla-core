@@ -21,13 +21,11 @@
 #include "webhook/state_webhook_request.h"
 
 supla_state_webhook_search_condition::supla_state_webhook_search_condition(
-    int user_id, int device_id, int channel_id, bool actions,
-    long long int min_time_to_exec_usec) {
+    int user_id, int device_id, int channel_id, bool actions) {
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
   this->actions = actions;
-  this->min_time_to_exec_usec = min_time_to_exec_usec;
 }
 
 bool supla_state_webhook_search_condition::condition_met(
@@ -38,5 +36,5 @@ bool supla_state_webhook_search_condition::condition_met(
          request->get_device_id() == device_id &&
          request->get_channel_id() == channel_id &&
          request->is_any_action_set() == actions &&
-         request->time_left_usec(nullptr) >= min_time_to_exec_usec;
+         request->get_state() == supla_asynctask_state::WAITING;
 }

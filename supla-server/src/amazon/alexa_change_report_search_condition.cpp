@@ -21,13 +21,11 @@
 #include "amazon/alexa_change_report_request.h"
 
 supla_alexa_change_report_search_condition::
-    supla_alexa_change_report_search_condition(
-        int user_id, int device_id, int channel_id,
-        long long int min_time_to_exec_usec) {
+    supla_alexa_change_report_search_condition(int user_id, int device_id,
+                                               int channel_id) {
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
-  this->min_time_to_exec_usec = min_time_to_exec_usec;
 }
 
 bool supla_alexa_change_report_search_condition::condition_met(
@@ -37,5 +35,5 @@ bool supla_alexa_change_report_search_condition::condition_met(
   return request && request->get_user_id() == user_id &&
          request->get_device_id() == device_id &&
          request->get_channel_id() == channel_id &&
-         request->time_left_usec(nullptr) >= min_time_to_exec_usec;
+         request->get_state() == supla_asynctask_state::WAITING;
 }

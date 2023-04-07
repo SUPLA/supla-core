@@ -27,12 +27,11 @@ class supla_alexa_change_report_search_condition
   int user_id;
   int device_id;
   int channel_id;
-  long long int min_time_to_exec_usec;
 
  public:
-  explicit supla_alexa_change_report_search_condition(
-      int user_id, int device_id, int channel_id,
-      long long int min_time_to_exec_usec);
+  explicit supla_alexa_change_report_search_condition(int user_id,
+                                                      int device_id,
+                                                      int channel_id);
 
   virtual bool condition_met(supla_abstract_asynctask *task);
 };

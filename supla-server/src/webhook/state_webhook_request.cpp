@@ -335,7 +335,7 @@ void supla_state_webhook_request::new_request(const supla_caller &caller,
 
   bool exists = false;
   supla_state_webhook_search_condition cnd(user->getUserID(), device_id,
-                                           channel_id, actions, 100000);
+                                           channel_id, actions);
   supla_asynctask_queue::global_instance()->access_task(
       &cnd, [&exists, actions](supla_abstract_asynctask *task) -> void {
         exists = true;

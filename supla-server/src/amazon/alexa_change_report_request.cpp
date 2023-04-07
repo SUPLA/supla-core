@@ -34,7 +34,7 @@ supla_alexa_change_report_request::supla_alexa_change_report_request(
     supla_abstract_channel_property_getter *property_getter,
     supla_amazon_alexa_credentials *credentials)
     : supla_alexa_request(caller, user_id, device_id, channel_id, queue, pool,
-                           property_getter, credentials) {
+                          property_getter, credentials) {
   set_delay_usec(1500000);  // 1.5 sec.
   set_timeout(scfg_int(CFG_ALEXA_CHANGEREPORT_TIMEOUT) * 1000);
 }
@@ -151,9 +151,9 @@ bool supla_alexa_change_report_request::is_function_allowed(int func) {
 
 // static
 void supla_alexa_change_report_request::new_request(const supla_caller &caller,
-                                                     supla_user *user,
-                                                     int device_id,
-                                                     int channel_id) {
+                                                    supla_user *user,
+                                                    int device_id,
+                                                    int channel_id) {
   if (!user || !is_caller_allowed(caller) || !user->amazonAlexaCredentials() ||
       !user->amazonAlexaCredentials()->is_access_token_exists()) {
     return;
@@ -182,7 +182,7 @@ void supla_alexa_change_report_request::new_request(const supla_caller &caller,
 
   bool exists = false;
   supla_alexa_change_report_search_condition cnd(user->getUserID(), device_id,
-                                                 channel_id, 100000);
+                                                 channel_id);
   supla_asynctask_queue::global_instance()->access_task(
       &cnd,
       [&exists](supla_abstract_asynctask *task) -> void { exists = true; });
