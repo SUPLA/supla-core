@@ -20,16 +20,16 @@
 
 #include "lck.h"
 
-supla_http_throttling::supla_http_throttling() {
-  lck = lck_init();
-  reset_time_us = 10000000;  // 10 sek.
-  counter_threadshold = 5;
-}
+supla_http_throttling::supla_http_throttling() { lck = lck_init(); }
 
 supla_http_throttling::~supla_http_throttling(void) { lck_free(lck); }
 
 int supla_http_throttling::get_delay_time(int channel_id, int func) {
   int result = get_default_delay_time(func);
+
+  if (result >= get_reset_time_us(func)) {
+    return result;
+  }
 
   struct timeval now = {};
   gettimeofday(&now, NULL);
@@ -56,9 +56,9 @@ int supla_http_throttling::get_delay_time(int channel_id, int func) {
   long long time_diff = (now.tv_sec * 1000000 + now.tv_usec) -
                         (it->last.tv_sec * 1000000 + it->last.tv_usec);
 
-  if (time_diff >= reset_time_us) {
+  if (time_diff >= get_reset_time_us(func)) {
     it->counter = 0;
-  } else if (it->counter >= counter_threadshold) {
+  } else if (it->counter >= get_counter_threadshold(func)) {
     result = get_delay_time_over_threadshold(func);
   }
 
@@ -67,12 +67,4 @@ int supla_http_throttling::get_delay_time(int channel_id, int func) {
   lck_unlock(lck);
 
   return result;
-}
-
-void supla_http_throttling::set_counter_threshold(unsigned int threshold) {
-  counter_threadshold = threshold;
-}
-
-void supla_http_throttling::set_reset_time(long long reset_time_us) {
-  this->reset_time_us = reset_time_us;
 }

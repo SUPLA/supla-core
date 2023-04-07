@@ -15,20 +15,20 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-#ifndef STATE_WEBHOOK_THROTTLING_H_
-#define STATE_WEBHOOK_THROTTLING_H_
+#ifndef ALEXA_THROTTLING_H_
+#define ALEXA_THROTTLING_H_
 
 #include "http/http_throttling.h"
 
-class supla_state_webhook_throttling : public supla_http_throttling {
+class supla_alexa_throttling : public supla_http_throttling {
  private:
-  static supla_state_webhook_throttling instance;
+  static supla_alexa_throttling instance;
 
  public:
-  supla_state_webhook_throttling(void);
-  virtual ~supla_state_webhook_throttling(void);
+  supla_alexa_throttling(void);
+  virtual ~supla_alexa_throttling(void);
 
-  static supla_state_webhook_throttling *get_instance(void);
+  static supla_alexa_throttling *get_instance(void);
 
   virtual int get_default_delay_time(int func);
   virtual int get_delay_time_over_threadshold(int func);
@@ -36,4 +36,4 @@ class supla_state_webhook_throttling : public supla_http_throttling {
   virtual unsigned int get_counter_threadshold(int func);
 };
 
-#endif /* STATE_WEBHOOK_THROTTLING_H_ */
+#endif /* ALEXA_THROTTLING_H_ */

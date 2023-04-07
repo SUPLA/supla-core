@@ -20,6 +20,7 @@
 
 #include "amazon/alexa_change_report_search_condition.h"
 #include "amazon/alexa_client.h"
+#include "amazon/alexa_throttling.h"
 #include "channeljsonconfig/alexa_config.h"
 #include "device/channel_property_getter.h"
 #include "http/asynctask_http_thread_pool.h"
@@ -35,7 +36,6 @@ supla_alexa_change_report_request::supla_alexa_change_report_request(
     supla_amazon_alexa_credentials *credentials)
     : supla_alexa_request(caller, user_id, device_id, channel_id, queue, pool,
                           property_getter, credentials) {
-  set_delay_usec(1500000);  // 1.5 sec.
   set_timeout(scfg_int(CFG_ALEXA_CHANGEREPORT_TIMEOUT) * 1000);
 }
 
@@ -180,6 +180,10 @@ void supla_alexa_change_report_request::new_request(const supla_caller &caller,
     return;
   }
 
+  // Refer to this "throttling" before looking for duplicates
+  int delay_time_usec =
+      supla_alexa_throttling::get_instance()->get_delay_time(channel_id, func);
+
   bool exists = false;
   supla_alexa_change_report_search_condition cnd(user->getUserID(), device_id,
                                                  channel_id);
@@ -200,5 +204,6 @@ void supla_alexa_change_report_request::new_request(const supla_caller &caller,
           user->amazonAlexaCredentials());
 
   request->set_priority(90);
+  request->set_delay_usec(delay_time_usec);
   request->start();
 }

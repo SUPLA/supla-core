@@ -74,6 +74,14 @@ int supla_state_webhook_throttling::get_delay_time_over_threadshold(int func) {
                                                 : 10000000;  // 10 sek.
 }
 
+int supla_state_webhook_throttling::get_reset_time_us(int func) {
+  return 10000000;
+}
+
+unsigned int supla_state_webhook_throttling::get_counter_threadshold(int func) {
+  return 5;
+}
+
 // static
 supla_state_webhook_throttling *supla_state_webhook_throttling::get_instance(
     void) {

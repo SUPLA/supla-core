@@ -32,19 +32,16 @@ class supla_http_throttling {
 
   std::list<item_t> items;
   void *lck;
-  long long reset_time_us;
-  unsigned int counter_threadshold;
-
- protected:
-  virtual int get_default_delay_time(int func) = 0;
-  virtual int get_delay_time_over_threadshold(int func) = 0;
 
  public:
   supla_http_throttling(void);
   virtual ~supla_http_throttling(void);
   int get_delay_time(int channel_id, int func);
-  void set_reset_time(long long reset_time_us);
-  void set_counter_threshold(unsigned int threshold);
+
+  virtual int get_default_delay_time(int func) = 0;
+  virtual int get_delay_time_over_threadshold(int func) = 0;
+  virtual int get_reset_time_us(int func) = 0;
+  virtual unsigned int get_counter_threadshold(int func) = 0;
 };
 
 #endif /* HTTP_THROTTLING_H_ */
