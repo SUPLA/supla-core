@@ -1177,10 +1177,11 @@ supla_channel_value *supla_device_channel::_get_value(void) {
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
       return new supla_channel_binary_sensor_value(value);
 
-    case SUPLA_CHANNELTYPE_DISTANCESENSOR:
-    case SUPLA_CHANNELTYPE_WINDSENSOR:
-    case SUPLA_CHANNELTYPE_PRESSURESENSOR:
-    case SUPLA_CHANNELTYPE_RAINSENSOR:
+    case SUPLA_CHANNELFNC_DISTANCESENSOR:
+    case SUPLA_CHANNELFNC_DEPTHSENSOR:
+    case SUPLA_CHANNELFNC_WINDSENSOR:
+    case SUPLA_CHANNELFNC_PRESSURESENSOR:
+    case SUPLA_CHANNELFNC_RAINSENSOR:
     case SUPLA_CHANNELTYPE_WEIGHTSENSOR:
       return new supla_channel_floating_point_sensor_value(value);
 
