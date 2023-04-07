@@ -55,7 +55,6 @@ int main(int argc, char *argv[]) {
   void *tcp_accept_loop_thread = nullptr;
   void *ssl_accept_loop_thread = nullptr;
   void *ipc_accept_loop_thread = nullptr;
-  void *http_request_queue_loop_thread = nullptr;
   supla_cyclictasks_agent *cyclictasks_agent = nullptr;
 
   curl_global_init(CURL_GLOBAL_ALL);
@@ -191,7 +190,6 @@ int main(int argc, char *argv[]) {
   }
 
   delete cyclictasks_agent;
-  sthread_twf(http_request_queue_loop_thread, true);
 
   supla_asynctask_queue::global_instance_release();  // before
                                                      // serverconnection_free()
