@@ -22,6 +22,7 @@
 #include "device/channel_property_getter.h"
 #include "google/google_home_client.h"
 #include "google/google_home_state_report_search_condition.h"
+#include "google/google_home_state_report_throttling.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "svrcfg.h"
 #include "user/user.h"
@@ -38,7 +39,6 @@ supla_google_home_state_report_request::supla_google_home_state_report_request(
   this->credentials = credentials;
   this->request_id = request_id;
 
-  set_delay_usec(1500000);  // 1.5 sec.
   set_timeout(scfg_int(CFG_GOOGLE_HOME_STATEREPORT_TIMEOUT) * 1000);
 }
 
@@ -183,6 +183,11 @@ void supla_google_home_state_report_request::new_request(
     return;
   }
 
+  // Refer to this "throttling" before looking for duplicates
+  int delay_time_usec =
+      supla_google_home_state_report_throttling::get_instance()->get_delay_time(
+          channel_id, func);
+
   bool exists = false;
   supla_google_home_state_report_search_condition cnd(user->getUserID(),
                                                       device_id, channel_id);
@@ -212,5 +217,6 @@ void supla_google_home_state_report_request::new_request(
           user->googleHomeCredentials(), request_id);
 
   request->set_priority(90);
+  request->set_delay_usec(delay_time_usec);
   request->start();
 }

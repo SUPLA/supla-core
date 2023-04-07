@@ -32,8 +32,6 @@ class supla_state_webhook_throttling : public supla_http_throttling {
 
   virtual int get_default_delay_time(int func);
   virtual int get_delay_time_over_threadshold(int func);
-  virtual int get_reset_time_us(int func);
-  virtual unsigned int get_counter_threadshold(int func);
 };
 
 #endif /* STATE_WEBHOOK_THROTTLING_H_ */

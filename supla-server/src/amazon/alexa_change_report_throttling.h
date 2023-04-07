@@ -29,11 +29,6 @@ class supla_alexa_change_report_throttling : public supla_http_throttling {
   virtual ~supla_alexa_change_report_throttling(void);
 
   static supla_alexa_change_report_throttling *get_instance(void);
-
-  virtual int get_default_delay_time(int func);
-  virtual int get_delay_time_over_threadshold(int func);
-  virtual int get_reset_time_us(int func);
-  virtual unsigned int get_counter_threadshold(int func);
 };
 
 #endif /* ALEXA_THROTTLING_H_ */

@@ -15,33 +15,20 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-#ifndef HTTP_THROTTLING_H_
-#define HTTP_THROTTLING_H_
+#ifndef GOOGLE_HOME_STATE_REPORT_THROTTLING_H_
+#define GOOGLE_HOME_STATE_REPORT_THROTTLING_H_
 
-#include <sys/time.h>
+#include "http/http_throttling.h"
 
-#include <list>
-
-class supla_http_throttling {
+class supla_google_home_state_report_throttling : public supla_http_throttling {
  private:
-  typedef struct {
-    int channel_id;
-    struct timeval last;
-    unsigned int counter;
-  } item_t;
-
-  std::list<item_t> items;
-  void *lck;
+  static supla_google_home_state_report_throttling instance;
 
  public:
-  supla_http_throttling(void);
-  virtual ~supla_http_throttling(void);
-  int get_delay_time(int channel_id, int func);
+  supla_google_home_state_report_throttling(void);
+  virtual ~supla_google_home_state_report_throttling(void);
 
-  virtual int get_default_delay_time(int func);
-  virtual int get_delay_time_over_threadshold(int func);
-  virtual int get_reset_time_us(int func);
-  virtual unsigned int get_counter_threadshold(int func);
+  static supla_google_home_state_report_throttling *get_instance(void);
 };
 
-#endif /* HTTP_THROTTLING_H_ */
+#endif /* GOOGLE_HOME_STATE_REPORT_THROTTLING_H_ */

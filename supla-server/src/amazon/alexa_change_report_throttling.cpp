@@ -30,30 +30,6 @@ supla_alexa_change_report_throttling::supla_alexa_change_report_throttling()
 supla_alexa_change_report_throttling::~supla_alexa_change_report_throttling(
     void) {}
 
-int supla_alexa_change_report_throttling::get_default_delay_time(int func) {
-  return 1500000;  // 1.5 sek.
-}
-
-int supla_alexa_change_report_throttling::get_delay_time_over_threadshold(
-    int func) {
-  return 10000000;  // 10 sek.
-}
-
-int supla_alexa_change_report_throttling::get_reset_time_us(int func) {
-  return 10000000;  // 10 sek.
-}
-
-unsigned int supla_alexa_change_report_throttling::get_counter_threadshold(
-    int func) {
-  switch (func) {
-    case SUPLA_CHANNELFNC_DIMMER:
-    case SUPLA_CHANNELFNC_RGBLIGHTING:
-    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-      return 20;
-  }
-  return 5;
-}
-
 // static
 supla_alexa_change_report_throttling*
 supla_alexa_change_report_throttling::get_instance(void) {

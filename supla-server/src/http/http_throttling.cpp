@@ -19,10 +19,33 @@
 #include "http_throttling.h"
 
 #include "lck.h"
+#include "proto.h"
 
 supla_http_throttling::supla_http_throttling() { lck = lck_init(); }
 
 supla_http_throttling::~supla_http_throttling(void) { lck_free(lck); }
+
+int supla_http_throttling::get_default_delay_time(int func) {
+  return 1500000;  // 1.5 sek.
+}
+
+int supla_http_throttling::get_delay_time_over_threadshold(int func) {
+  return 10000000;  // 10 sek.
+}
+
+int supla_http_throttling::get_reset_time_us(int func) {
+  return 10000000;  // 10 sek.
+}
+
+unsigned int supla_http_throttling::get_counter_threadshold(int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      return 20;
+  }
+  return 5;
+}
 
 int supla_http_throttling::get_delay_time(int channel_id, int func) {
   int result = get_default_delay_time(func);
