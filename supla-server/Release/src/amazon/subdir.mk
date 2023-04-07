@@ -6,35 +6,35 @@
 CPP_SRCS += \
 ../src/amazon/alexa_change_report_request.cpp \
 ../src/amazon/alexa_change_report_search_condition.cpp \
+../src/amazon/alexa_change_report_throttling.cpp \
 ../src/amazon/alexa_client.cpp \
 ../src/amazon/alexa_credentials.cpp \
 ../src/amazon/alexa_credentials_dao.cpp \
 ../src/amazon/alexa_request.cpp \
 ../src/amazon/alexa_response_request.cpp \
-../src/amazon/alexa_response_search_condition.cpp \
-../src/amazon/alexa_throttling.cpp 
+../src/amazon/alexa_response_search_condition.cpp 
 
 CPP_DEPS += \
 ./src/amazon/alexa_change_report_request.d \
 ./src/amazon/alexa_change_report_search_condition.d \
+./src/amazon/alexa_change_report_throttling.d \
 ./src/amazon/alexa_client.d \
 ./src/amazon/alexa_credentials.d \
 ./src/amazon/alexa_credentials_dao.d \
 ./src/amazon/alexa_request.d \
 ./src/amazon/alexa_response_request.d \
-./src/amazon/alexa_response_search_condition.d \
-./src/amazon/alexa_throttling.d 
+./src/amazon/alexa_response_search_condition.d 
 
 OBJS += \
 ./src/amazon/alexa_change_report_request.o \
 ./src/amazon/alexa_change_report_search_condition.o \
+./src/amazon/alexa_change_report_throttling.o \
 ./src/amazon/alexa_client.o \
 ./src/amazon/alexa_credentials.o \
 ./src/amazon/alexa_credentials_dao.o \
 ./src/amazon/alexa_request.o \
 ./src/amazon/alexa_response_request.o \
-./src/amazon/alexa_response_search_condition.o \
-./src/amazon/alexa_throttling.o 
+./src/amazon/alexa_response_search_condition.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -49,7 +49,7 @@ src/amazon/%.o: ../src/amazon/%.cpp src/amazon/subdir.mk
 clean: clean-src-2f-amazon
 
 clean-src-2f-amazon:
-	-$(RM) ./src/amazon/alexa_change_report_request.d ./src/amazon/alexa_change_report_request.o ./src/amazon/alexa_change_report_search_condition.d ./src/amazon/alexa_change_report_search_condition.o ./src/amazon/alexa_client.d ./src/amazon/alexa_client.o ./src/amazon/alexa_credentials.d ./src/amazon/alexa_credentials.o ./src/amazon/alexa_credentials_dao.d ./src/amazon/alexa_credentials_dao.o ./src/amazon/alexa_request.d ./src/amazon/alexa_request.o ./src/amazon/alexa_response_request.d ./src/amazon/alexa_response_request.o ./src/amazon/alexa_response_search_condition.d ./src/amazon/alexa_response_search_condition.o ./src/amazon/alexa_throttling.d ./src/amazon/alexa_throttling.o
+	-$(RM) ./src/amazon/alexa_change_report_request.d ./src/amazon/alexa_change_report_request.o ./src/amazon/alexa_change_report_search_condition.d ./src/amazon/alexa_change_report_search_condition.o ./src/amazon/alexa_change_report_throttling.d ./src/amazon/alexa_change_report_throttling.o ./src/amazon/alexa_client.d ./src/amazon/alexa_client.o ./src/amazon/alexa_credentials.d ./src/amazon/alexa_credentials.o ./src/amazon/alexa_credentials_dao.d ./src/amazon/alexa_credentials_dao.o ./src/amazon/alexa_request.d ./src/amazon/alexa_request.o ./src/amazon/alexa_response_request.d ./src/amazon/alexa_response_request.o ./src/amazon/alexa_response_search_condition.d ./src/amazon/alexa_response_search_condition.o
 
 .PHONY: clean-src-2f-amazon
 

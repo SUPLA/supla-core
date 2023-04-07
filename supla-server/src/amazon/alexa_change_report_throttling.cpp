@@ -16,30 +16,35 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "alexa_throttling.h"
+#include "alexa_change_report_throttling.h"
 
 #include "proto.h"
 
 // static
-supla_alexa_throttling supla_alexa_throttling::instance;
+supla_alexa_change_report_throttling
+    supla_alexa_change_report_throttling::instance;
 
-supla_alexa_throttling::supla_alexa_throttling() : supla_http_throttling() {}
+supla_alexa_change_report_throttling::supla_alexa_change_report_throttling()
+    : supla_http_throttling() {}
 
-supla_alexa_throttling::~supla_alexa_throttling(void) {}
+supla_alexa_change_report_throttling::~supla_alexa_change_report_throttling(
+    void) {}
 
-int supla_alexa_throttling::get_default_delay_time(int func) {
+int supla_alexa_change_report_throttling::get_default_delay_time(int func) {
   return 1500000;  // 1.5 sek.
 }
 
-int supla_alexa_throttling::get_delay_time_over_threadshold(int func) {
+int supla_alexa_change_report_throttling::get_delay_time_over_threadshold(
+    int func) {
   return 10000000;  // 10 sek.
 }
 
-int supla_alexa_throttling::get_reset_time_us(int func) {
+int supla_alexa_change_report_throttling::get_reset_time_us(int func) {
   return 10000000;  // 10 sek.
 }
 
-unsigned int supla_alexa_throttling::get_counter_threadshold(int func) {
+unsigned int supla_alexa_change_report_throttling::get_counter_threadshold(
+    int func) {
   switch (func) {
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
@@ -50,6 +55,7 @@ unsigned int supla_alexa_throttling::get_counter_threadshold(int func) {
 }
 
 // static
-supla_alexa_throttling *supla_alexa_throttling::get_instance(void) {
+supla_alexa_change_report_throttling*
+supla_alexa_change_report_throttling::get_instance(void) {
   return &instance;
 }

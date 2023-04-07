@@ -20,15 +20,15 @@
 
 #include "http/http_throttling.h"
 
-class supla_alexa_throttling : public supla_http_throttling {
+class supla_alexa_change_report_throttling : public supla_http_throttling {
  private:
-  static supla_alexa_throttling instance;
+  static supla_alexa_change_report_throttling instance;
 
  public:
-  supla_alexa_throttling(void);
-  virtual ~supla_alexa_throttling(void);
+  supla_alexa_change_report_throttling(void);
+  virtual ~supla_alexa_change_report_throttling(void);
 
-  static supla_alexa_throttling *get_instance(void);
+  static supla_alexa_change_report_throttling *get_instance(void);
 
   virtual int get_default_delay_time(int func);
   virtual int get_delay_time_over_threadshold(int func);

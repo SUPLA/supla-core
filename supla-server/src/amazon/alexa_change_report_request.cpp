@@ -19,8 +19,8 @@
 #include "alexa_change_report_request.h"
 
 #include "amazon/alexa_change_report_search_condition.h"
+#include "amazon/alexa_change_report_throttling.h"
 #include "amazon/alexa_client.h"
-#include "amazon/alexa_throttling.h"
 #include "channeljsonconfig/alexa_config.h"
 #include "device/channel_property_getter.h"
 #include "http/asynctask_http_thread_pool.h"
@@ -182,7 +182,8 @@ void supla_alexa_change_report_request::new_request(const supla_caller &caller,
 
   // Refer to this "throttling" before looking for duplicates
   int delay_time_usec =
-      supla_alexa_throttling::get_instance()->get_delay_time(channel_id, func);
+      supla_alexa_change_report_throttling::get_instance()->get_delay_time(
+          channel_id, func);
 
   bool exists = false;
   supla_alexa_change_report_search_condition cnd(user->getUserID(), device_id,
