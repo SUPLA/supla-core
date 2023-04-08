@@ -87,7 +87,7 @@ bool supla_abstract_asynctask_thread_pool::should_keep_alive(
 
 void supla_abstract_asynctask_thread_pool::execution_request(
     supla_abstract_asynctask *task) {
-  if (is_terminated() || is_holded()) {
+  if (is_terminated() || is_holded() || task->is_execution_requested()) {
     return;
   }
 
@@ -112,6 +112,7 @@ void supla_abstract_asynctask_thread_pool::execution_request(
     }
 
     if (!already_exists) {
+      task->set_execution_request_time(false);
       requests.push_back(task);
     }
 
@@ -211,6 +212,8 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
 
       if (task->is_finished()) {
         queue->remove_task(task);
+      } else {
+        task->set_execution_request_time(true);
       }
 
       time_usec = supla_metrics::measure_the_time_in_usec(

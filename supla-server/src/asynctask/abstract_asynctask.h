@@ -59,7 +59,7 @@ class supla_abstract_asynctask {
                               // constructor. Calling it results in calling the
                               // on_asynctask_started method in the observer
   void on_task_finished(void);
-  void set_execution_request_time(void);
+  void set_execution_request_time(bool reset);
   virtual void on_timeout(unsigned long long timeout_usec,
                           unsigned long long usec_after_timeout,
                           bool log_allowed);
@@ -86,6 +86,7 @@ class supla_abstract_asynctask {
   void cancel(void);
   bool is_finished(void);
   bool is_observable(void);
+  bool is_execution_requested(void);
 };
 
 #endif /*ABSTRACT_ASYNCTASK_H_*/

@@ -248,10 +248,25 @@ void supla_abstract_asynctask::on_task_finished(void) {
   }
 }
 
-void supla_abstract_asynctask::set_execution_request_time(void) {
+void supla_abstract_asynctask::set_execution_request_time(bool reset) {
   lock();
-  gettimeofday(&execution_request_time, nullptr);
+  if (reset) {
+    execution_request_time.tv_sec = 0;
+    execution_request_time.tv_usec = 0;
+  } else {
+    gettimeofday(&execution_request_time, nullptr);
+  }
+
   unlock();
+}
+
+bool supla_abstract_asynctask::is_execution_requested(void) {
+  lock();
+  bool result =
+      execution_request_time.tv_sec != 0 || execution_request_time.tv_usec != 0;
+  unlock();
+
+  return result;
 }
 
 long long supla_abstract_asynctask::time_since_exec_request_usec(
