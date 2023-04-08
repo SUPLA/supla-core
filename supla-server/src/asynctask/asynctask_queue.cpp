@@ -221,13 +221,15 @@ void supla_asynctask_queue::iterate(void) {
 
   lck_lock(lck);
   for (auto it = tasks.begin(); it != tasks.end(); ++it) {
-    long long time_left = (*it)->time_left_usec(&now);
-    if (time_left <= 0) {
-      if ((*it)->get_state() == supla_asynctask_state::WAITING) {
+    if (!(*it)->is_execution_requested() &&
+        (*it)->get_state() == supla_asynctask_state::WAITING) {
+      long long time_left = (*it)->time_left_usec(&now);
+      if (time_left <= 0) {
         (*it)->get_pool()->execution_request(it->get());
+
+      } else if (time_left < wait_time) {
+        wait_time = time_left;
       }
-    } else if (time_left < wait_time) {
-      wait_time = time_left;
     }
   }
   lck_unlock(lck);

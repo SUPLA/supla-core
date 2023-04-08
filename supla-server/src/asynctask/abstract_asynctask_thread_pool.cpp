@@ -87,7 +87,7 @@ bool supla_abstract_asynctask_thread_pool::should_keep_alive(
 
 void supla_abstract_asynctask_thread_pool::execution_request(
     supla_abstract_asynctask *task) {
-  if (is_terminated() || is_holded() || task->is_execution_requested()) {
+  if (is_terminated() || is_holded()) {
     return;
   }
 
@@ -214,6 +214,7 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
         queue->remove_task(task);
       } else {
         task->set_execution_request_time(true);
+        queue->raise_event();
       }
 
       time_usec = supla_metrics::measure_the_time_in_usec(
