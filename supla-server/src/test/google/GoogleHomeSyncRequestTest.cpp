@@ -18,7 +18,7 @@
 
 #include "GoogleHomeSyncRequestTest.h"
 
-#include "google/google_home_sync_request2.h"
+#include "google/google_home_sync_request.h"
 #include "http/asynctask_http_thread_bucket.h"
 
 namespace testing {
@@ -38,8 +38,8 @@ TEST_F(GoogleHomeSyncRequestTest, noAccessToken) {
       .Times(1)
       .WillOnce(Return(false));
 
-  supla_google_home_sync_request2 *request =
-      new supla_google_home_sync_request2(0, queue, pool, &credentials);
+  supla_google_home_sync_request *request =
+      new supla_google_home_sync_request(0, queue, pool, &credentials);
 
   request->set_delay_usec(1);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
@@ -87,8 +87,8 @@ TEST_F(GoogleHomeSyncRequestTest, syncSuccessful) {
 
   EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(200));
 
-  supla_google_home_sync_request2 *request =
-      new supla_google_home_sync_request2(0, queue, pool, &credentials);
+  supla_google_home_sync_request *request =
+      new supla_google_home_sync_request(0, queue, pool, &credentials);
 
   request->set_delay_usec(1);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();

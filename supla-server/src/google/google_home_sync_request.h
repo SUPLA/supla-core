@@ -24,7 +24,7 @@
 #include "google/google_home_credentials.h"
 #include "http/asynctask_http_request.h"
 
-class supla_google_home_sync_request2 : public supla_asynctask_http_request {
+class supla_google_home_sync_request : public supla_asynctask_http_request {
  private:
   supla_google_home_credentials *credentials;
 
@@ -33,7 +33,7 @@ class supla_google_home_sync_request2 : public supla_asynctask_http_request {
   virtual std::string get_name(void);
 
  public:
-  supla_google_home_sync_request2(int user_id, supla_asynctask_queue *queue,
+  supla_google_home_sync_request(int user_id, supla_asynctask_queue *queue,
                                   supla_abstract_asynctask_thread_pool *pool,
                                   supla_google_home_credentials *credentials);
 

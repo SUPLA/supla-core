@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <google/google_home_sync_request.h>
 #include "google_home_sync_search_condition.h"
 
-#include "google/google_home_sync_request2.h"
 
 supla_google_home_sync_search_condition::
     supla_google_home_sync_search_condition(int user_id) {
@@ -27,8 +27,8 @@ supla_google_home_sync_search_condition::
 
 bool supla_google_home_sync_search_condition::condition_met(
     supla_abstract_asynctask *task) {
-  supla_google_home_sync_request2 *request =
-      dynamic_cast<supla_google_home_sync_request2 *>(task);
+  supla_google_home_sync_request *request =
+      dynamic_cast<supla_google_home_sync_request *>(task);
   return request && request->get_user_id() == user_id &&
          request->get_state() == supla_asynctask_state::WAITING;
 }
