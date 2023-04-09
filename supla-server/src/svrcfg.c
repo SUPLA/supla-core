@@ -90,7 +90,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(CFG_HTTP_THREAD_COUNT_LIMIT, s_http, "thread_count_limit",
                      50);
   scfg_add_int_param(CFG_HTTP_REQUESTS_PER_THREAD, s_http,
-                     "requests_per_thread", 2);
+                     "requests_per_thread", 10);
   scfg_add_int_param(CFG_HTTP_THREAD_KEEP_ALIVE_SEC, s_http,
                      "thread_keep_alive", 10);
   scfg_add_int_param(CFG_HTTP_KEEP_ALIVE_MAX_THREAD_COUNT, s_http,
