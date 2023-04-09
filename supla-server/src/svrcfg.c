@@ -85,7 +85,8 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(CFG_OAUTH_TOKEN_LIFETIME, s_oauth, "access_token_lifetime",
                      300);
 
-  char *s_http = "HTTP";
+  char *s_http =
+      "HTTP";  // Does not apply to supla_google_home_sync_thread_pool
   scfg_add_int_param(CFG_HTTP_THREAD_COUNT_LIMIT, s_http, "thread_count_limit",
                      50);
   scfg_add_int_param(CFG_HTTP_REQUESTS_PER_THREAD, s_http,

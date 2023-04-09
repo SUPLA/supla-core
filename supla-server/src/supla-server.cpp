@@ -29,6 +29,7 @@
 #include "asynctask/asynctask_queue.h"
 #include "cyclictasks/agent.h"
 #include "db/database.h"
+#include "google/google_home_sync_thread_pool.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "ipc/ipcsocket.h"
 #include "lck.h"
@@ -128,6 +129,7 @@ int main(int argc, char *argv[]) {
   // ASYNCTASK QUEUE
   supla_asynctask_queue::global_instance();
   supla_asynctask_default_thread_pool::global_instance();
+  supla_google_home_sync_thread_pool::global_instance();
   supla_asynctask_http_thread_pool::global_instance();
 
   supla_user::init();

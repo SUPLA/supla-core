@@ -16,34 +16,29 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ASYNCTASK_HTTP_THREAD_POOL_H_
-#define ASYNCTASK_HTTP_THREAD_POOL_H_
+#ifndef GOOGLE_HOME_SYNC_THREAD_POOL_H_
+#define GOOGLE_HOME_SYNC_THREAD_POOL_H_
 
 #include <string>
 
-#include "asynctask/abstract_asynctask_thread_pool.h"
+#include "http/asynctask_http_thread_pool.h"
 
-class supla_asynctask_http_thread_pool
-    : public supla_abstract_asynctask_thread_pool {
+class supla_google_home_sync_thread_pool
+    : public supla_asynctask_http_thread_pool {
  private:
-  static supla_asynctask_http_thread_pool *_global_instance;
-  unsigned int _thread_count_limit;
-  int requests_per_thread;
-  unsigned long long keep_alive_time_usec;
-  unsigned int keep_alive_max_thread_count;
+  static supla_google_home_sync_thread_pool *_global_instance;
 
  protected:
-  virtual supla_asynctask_thread_bucket *get_bucket(void);
   virtual int tasks_per_thread(void);
   virtual bool should_keep_alive(unsigned long long usec_since_last_exec,
                                  size_t thread_count);
 
  public:
-  explicit supla_asynctask_http_thread_pool(supla_asynctask_queue *queue);
-  virtual ~supla_asynctask_http_thread_pool(void);
-  static supla_asynctask_http_thread_pool *global_instance(void);
-  virtual unsigned int thread_count_limit(void);
+  explicit supla_google_home_sync_thread_pool(supla_asynctask_queue *queue);
+  virtual ~supla_google_home_sync_thread_pool(void);
+  static supla_google_home_sync_thread_pool *global_instance(void);
   virtual std::string pool_name(void);
+  virtual unsigned int thread_count_limit(void);
 };
 
-#endif /*ASYNCTASK_HTTP_THREAD_POOL_H_*/
+#endif /*GOOGLE_HOME_SYNC_THREAD_POOL_H_*/
