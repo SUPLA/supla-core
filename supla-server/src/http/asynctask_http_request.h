@@ -36,6 +36,7 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
   int channel_id;
   supla_abstract_channel_property_getter *property_getter;
   long long delay_warning_time_usec;
+  unsigned long long long_request_time_usec;
 
  protected:
   const supla_caller &get_caller(void);
@@ -49,6 +50,7 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
   virtual void on_timeout(unsigned long long timeout_usec,
                           unsigned long long usec_after_timeout,
                           bool log_allowed);
+  void set_long_request_time(long long long_request_time_usec);
 
  public:
   supla_asynctask_http_request(
