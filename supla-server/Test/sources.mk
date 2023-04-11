@@ -47,6 +47,7 @@ src/http \
 src/ipc \
 src/json \
 src/mqtt \
+src/push \
 src/scene \
 src/srpc \
 src/test \

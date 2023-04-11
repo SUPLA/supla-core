@@ -58,6 +58,7 @@ RM := rm -rf
 -include src/test/subdir.mk
 -include src/srpc/subdir.mk
 -include src/scene/subdir.mk
+-include src/push/subdir.mk
 -include src/mqtt/subdir.mk
 -include src/json/subdir.mk
 -include src/ipc/subdir.mk
