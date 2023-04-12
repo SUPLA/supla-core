@@ -16,27 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "push_notification.h"
+#include "apns_client.h"
 
-using std::string;
-
-supla_push_notification::supla_push_notification(void) {}
-
-supla_push_notification::~supla_push_notification(void) {}
-
-supla_push_notification_recipients &supla_push_notification::get_recipients(
-    void) {
-  return recipients;
+supla_apns_client::supla_apns_client(
+    supla_abstract_curl_adapter *curl_adapter,
+    supla_push_notification_gateway_credentials *credentials,
+    supla_push_notification *push) {
+  this->curl_adapter = curl_adapter;
+  this->credentials = credentials;
+  this->push = push;
 }
 
-void supla_push_notification::set_title(const string &title) {
-  this->title = title;
-}
+supla_apns_client::~supla_apns_client(void) {}
 
-const string &supla_push_notification::get_title(void) { return title; }
-
-void supla_push_notification::set_body(const string &body) {
-  this->body = body;
-}
-
-const string &supla_push_notification::get_body(void) { return body; }
+bool supla_apns_client::send(void) { return false; }

@@ -16,27 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "push_notification.h"
+#include "push_notification_throttling.h"
 
-using std::string;
+// static
+supla_push_notification_throttling supla_push_notification_throttling::instance;
 
-supla_push_notification::supla_push_notification(void) {}
+supla_push_notification_throttling::supla_push_notification_throttling()
+    : supla_http_throttling() {}
 
-supla_push_notification::~supla_push_notification(void) {}
+supla_push_notification_throttling::~supla_push_notification_throttling(void) {}
 
-supla_push_notification_recipients &supla_push_notification::get_recipients(
-    void) {
-  return recipients;
+int supla_push_notification_throttling::get_default_delay_time(int func) {
+  return 0;  // 1.5 sek.
 }
 
-void supla_push_notification::set_title(const string &title) {
-  this->title = title;
+unsigned int supla_push_notification_throttling::get_counter_threadshold(
+    int func) {
+  return 5;
 }
 
-const string &supla_push_notification::get_title(void) { return title; }
-
-void supla_push_notification::set_body(const string &body) {
-  this->body = body;
+// static
+supla_push_notification_throttling*
+supla_push_notification_throttling::get_instance(void) {
+  return &instance;
 }
-
-const string &supla_push_notification::get_body(void) { return body; }

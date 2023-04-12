@@ -16,27 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "push_notification.h"
+#ifndef PUSH_NOTIFICATION_RECIPIENTS_H_
+#define PUSH_NOTIFICATION_RECIPIENTS_H_
 
-using std::string;
+class supla_push_notification_recipients {
+ private:
+ public:
+  supla_push_notification_recipients(void);
+  virtual ~supla_push_notification_recipients(void);
+};
 
-supla_push_notification::supla_push_notification(void) {}
-
-supla_push_notification::~supla_push_notification(void) {}
-
-supla_push_notification_recipients &supla_push_notification::get_recipients(
-    void) {
-  return recipients;
-}
-
-void supla_push_notification::set_title(const string &title) {
-  this->title = title;
-}
-
-const string &supla_push_notification::get_title(void) { return title; }
-
-void supla_push_notification::set_body(const string &body) {
-  this->body = body;
-}
-
-const string &supla_push_notification::get_body(void) { return body; }
+#endif /* PUSH_NOTIFICATION_RECIPIENTS_H_ */

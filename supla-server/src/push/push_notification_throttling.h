@@ -15,28 +15,23 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+#ifndef PUSH_NOTIFICATION_THROTTLING_H_
+#define PUSH_NOTIFICATION_THROTTLING_H_
 
-#include "push_notification.h"
+#include "http/http_throttling.h"
 
-using std::string;
+class supla_push_notification_throttling : public supla_http_throttling {
+ private:
+  static supla_push_notification_throttling instance;
 
-supla_push_notification::supla_push_notification(void) {}
+ public:
+  supla_push_notification_throttling(void);
+  virtual ~supla_push_notification_throttling(void);
 
-supla_push_notification::~supla_push_notification(void) {}
+  static supla_push_notification_throttling *get_instance(void);
 
-supla_push_notification_recipients &supla_push_notification::get_recipients(
-    void) {
-  return recipients;
-}
+  virtual int get_default_delay_time(int func);
+  virtual unsigned int get_counter_threadshold(int func);
+};
 
-void supla_push_notification::set_title(const string &title) {
-  this->title = title;
-}
-
-const string &supla_push_notification::get_title(void) { return title; }
-
-void supla_push_notification::set_body(const string &body) {
-  this->body = body;
-}
-
-const string &supla_push_notification::get_body(void) { return body; }
+#endif /* PUSH_NOTIFICATION_THROTTLING_H_ */

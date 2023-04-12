@@ -19,10 +19,24 @@
 #ifndef PUSH_NOTIFICATION_H_
 #define PUSH_NOTIFICATION_H_
 
+#include <string>
+
+#include "push/push_notification_recipients.h"
+
 class supla_push_notification {
+ private:
+  std::string title;
+  std::string body;
+  supla_push_notification_recipients recipients;
+
  public:
   supla_push_notification(void);
   virtual ~supla_push_notification(void);
+  supla_push_notification_recipients &get_recipients(void);
+  void set_title(const std::string &title);
+  const std::string &get_title(void);
+  void set_body(const std::string &body);
+  const std::string &get_body(void);
 };
 
 #endif /* PUSH_NOTIFICATION_H_ */

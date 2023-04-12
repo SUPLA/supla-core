@@ -4,16 +4,34 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/push/apns_client.cpp \
+../src/push/fcm_client.cpp \
 ../src/push/push_notification.cpp \
-../src/push/push_notification_recipient.cpp 
+../src/push/push_notification_delivery_task.cpp \
+../src/push/push_notification_gateway_credentials.cpp \
+../src/push/push_notification_recipient.cpp \
+../src/push/push_notification_recipients.cpp \
+../src/push/push_notification_throttling.cpp 
 
 CPP_DEPS += \
+./src/push/apns_client.d \
+./src/push/fcm_client.d \
 ./src/push/push_notification.d \
-./src/push/push_notification_recipient.d 
+./src/push/push_notification_delivery_task.d \
+./src/push/push_notification_gateway_credentials.d \
+./src/push/push_notification_recipient.d \
+./src/push/push_notification_recipients.d \
+./src/push/push_notification_throttling.d 
 
 OBJS += \
+./src/push/apns_client.o \
+./src/push/fcm_client.o \
 ./src/push/push_notification.o \
-./src/push/push_notification_recipient.o 
+./src/push/push_notification_delivery_task.o \
+./src/push/push_notification_gateway_credentials.o \
+./src/push/push_notification_recipient.o \
+./src/push/push_notification_recipients.o \
+./src/push/push_notification_throttling.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -28,7 +46,7 @@ src/push/%.o: ../src/push/%.cpp src/push/subdir.mk
 clean: clean-src-2f-push
 
 clean-src-2f-push:
-	-$(RM) ./src/push/push_notification.d ./src/push/push_notification.o ./src/push/push_notification_recipient.d ./src/push/push_notification_recipient.o
+	-$(RM) ./src/push/apns_client.d ./src/push/apns_client.o ./src/push/fcm_client.d ./src/push/fcm_client.o ./src/push/push_notification.d ./src/push/push_notification.o ./src/push/push_notification_delivery_task.d ./src/push/push_notification_delivery_task.o ./src/push/push_notification_gateway_credentials.d ./src/push/push_notification_gateway_credentials.o ./src/push/push_notification_recipient.d ./src/push/push_notification_recipient.o ./src/push/push_notification_recipients.d ./src/push/push_notification_recipients.o ./src/push/push_notification_throttling.d ./src/push/push_notification_throttling.o
 
 .PHONY: clean-src-2f-push
 
