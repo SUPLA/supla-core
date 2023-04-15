@@ -63,6 +63,7 @@ cpplint --filter=-build/include ./supla-server/src/test/doubles/integration/asyn
 cpplint --filter=-build/include ./supla-server/src/test/doubles/integration/mqtt/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/ipc/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/mqtt/*
+cpplint --filter=-build/include ./supla-server/src/test/doubles/push/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/scene/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/webhook/*
 cpplint --filter=-build/include ./supla-server/src/test/google/*
@@ -78,6 +79,7 @@ cpplint --filter=-build/include ./supla-server/src/test/integration/scene/*
 cpplint --filter=-build/include ./supla-server/src/test/integration/webhook/* 
 cpplint --filter=-build/include ./supla-server/src/test/ipc/*
 cpplint --filter=-build/include ./supla-server/src/test/mqtt/*
+cpplint --filter=-build/include ./supla-server/src/test/push/*
 cpplint --filter=-build/include ./supla-server/src/test/scene/*
 cpplint --filter=-build/include ./supla-server/src/test/webhook/*
 cpplint ./supla-scheduler/src/* 

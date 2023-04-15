@@ -79,6 +79,7 @@ src/test/doubles/integration/asynctask \
 src/test/doubles/integration/mqtt \
 src/test/doubles/ipc \
 src/test/doubles/mqtt \
+src/test/doubles/push \
 src/test/doubles/scene \
 src/test/doubles/webhook \
 src/test/google \
@@ -94,6 +95,7 @@ src/test/integration/scene \
 src/test/integration/webhook \
 src/test/ipc \
 src/test/mqtt \
+src/test/push \
 src/test/scene \
 src/test/webhook \
 src/user \

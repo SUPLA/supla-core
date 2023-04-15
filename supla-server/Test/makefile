@@ -12,6 +12,7 @@ RM := rm -rf
 -include src/user/subdir.mk
 -include src/test/webhook/subdir.mk
 -include src/test/scene/subdir.mk
+-include src/test/push/subdir.mk
 -include src/test/mqtt/subdir.mk
 -include src/test/ipc/subdir.mk
 -include src/test/integration/webhook/subdir.mk
@@ -27,6 +28,7 @@ RM := rm -rf
 -include src/test/google/subdir.mk
 -include src/test/doubles/webhook/subdir.mk
 -include src/test/doubles/scene/subdir.mk
+-include src/test/doubles/push/subdir.mk
 -include src/test/doubles/mqtt/subdir.mk
 -include src/test/doubles/ipc/subdir.mk
 -include src/test/doubles/integration/mqtt/subdir.mk
