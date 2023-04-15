@@ -173,3 +173,7 @@ bool supla_abstract_access_token_provider::is_token_valid(void) {
 
   return result;
 }
+
+bool supla_abstract_access_token_provider::is_service_running(void) {
+  return thread != nullptr;
+}

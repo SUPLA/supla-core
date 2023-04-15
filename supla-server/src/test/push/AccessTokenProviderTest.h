@@ -19,15 +19,19 @@
 #ifndef ACCESS_TOKEN_PROVIDER_TEST_H_
 #define ACCESS_TOKEN_PROVIDER_TEST_H_
 
+#include "doubles/push/AccessTokenProviderMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
 
 class AccessTokenProviderTest : public Test {
  protected:
+  AccessTokenProviderMock provider;
+
  public:
   AccessTokenProviderTest(void);
   virtual ~AccessTokenProviderTest(void);
+  virtual void SetUp(void);
 };
 
 } /* namespace testing */
