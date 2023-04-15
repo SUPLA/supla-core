@@ -53,6 +53,7 @@ class supla_abstract_access_token_provider {
   bool refresh(void);
   std::string get_token(void);
   virtual std::string get_url(void) = 0;
+  bool is_token_valid(void);
 };
 
 #endif /* ABSTRACT_ACCESS_TOKEN_PROVIDER_H_ */

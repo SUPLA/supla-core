@@ -159,3 +159,17 @@ string supla_abstract_access_token_provider::get_token(void) {
 
   return result;
 }
+
+bool supla_abstract_access_token_provider::is_token_valid(void) {
+  bool result = false;
+
+  lck_lock(data_lck);
+  if (token.size()) {
+    struct timeval now = {};
+    gettimeofday(&now, nullptr);
+    result = now.tv_sec < expires_at.tv_sec;
+  }
+  lck_unlock(data_lck);
+
+  return result;
+}
