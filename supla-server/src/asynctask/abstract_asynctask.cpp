@@ -311,3 +311,5 @@ bool supla_abstract_asynctask::is_finished(void) {
 
   return result;
 }
+
+bool supla_abstract_asynctask::will_use_database(void) { return false; }

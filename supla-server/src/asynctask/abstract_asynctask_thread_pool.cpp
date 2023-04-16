@@ -25,6 +25,7 @@
 
 #include "abstract_asynctask.h"
 #include "asynctask_queue.h"
+#include "db/database.h"
 #include "lck.h"
 #include "log.h"
 #include "metrics.h"
@@ -188,6 +189,7 @@ void supla_abstract_asynctask_thread_pool::_execute(void *_pool,
 
 void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
   bool iterate = true;
+  bool db_init = false;
 
   supla_asynctask_thread_bucket *bucket = get_bucket();
   struct timeval last_exec_time = {};
@@ -205,6 +207,10 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
     }
 
     if (task) {
+      if (!db_init && task->will_use_database()) {
+        db_init = true;
+        database::thread_init();
+      }
       task->execute(bucket);
       lck_lock(lck);
       _exec_count++;
@@ -255,6 +261,10 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
 
   if (bucket) {
     delete bucket;
+  }
+
+  if (db_init) {
+    database::thread_end();
   }
 }
 

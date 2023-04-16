@@ -87,6 +87,7 @@ class supla_abstract_asynctask {
   bool is_finished(void);
   bool is_observable(void);
   bool is_execution_requested(void);
+  virtual bool will_use_database(void);
 };
 
 #endif /*ABSTRACT_ASYNCTASK_H_*/

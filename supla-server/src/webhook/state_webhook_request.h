@@ -45,6 +45,7 @@ class supla_state_webhook_request : public supla_asynctask_http_request {
 
   void set_timestamp(__time_t timestamp);
   bool is_any_action_set(void);
+  virtual bool will_use_database(void);
 
   static bool is_caller_allowed(const supla_caller &caller);
   static bool is_function_allowed(int func,
