@@ -20,18 +20,18 @@
 #define FCM_CLIENT_H_
 
 #include "http/abstract_curl_adapter.h"
+#include "push/abstract_access_token_provider.h"
 #include "push/push_notification.h"
-#include "push/push_notification_gateway_credentials.h"
 
 class supla_fcm_client {
  private:
-  supla_push_notification_gateway_credentials *credentials;
+  supla_abstract_access_token_provider *token_provider;
   supla_push_notification *push;
   supla_abstract_curl_adapter *curl_adapter;
 
  public:
   supla_fcm_client(supla_abstract_curl_adapter *curl_adapter,
-                   supla_push_notification_gateway_credentials *credentials,
+                   supla_abstract_access_token_provider *token_provider,
                    supla_push_notification *push);
   virtual ~supla_fcm_client(void);
   bool send(void);

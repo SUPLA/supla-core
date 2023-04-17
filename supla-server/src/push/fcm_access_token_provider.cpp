@@ -322,3 +322,7 @@ string supla_fcm_access_token_provider::get_url(void) {
   char *url = scfg_string(CFG_PUSH_FCM_URL);
   return url ? url : "";
 }
+
+_platform_e supla_fcm_access_token_provider::get_platform(void) {
+  return platform_android;
+}

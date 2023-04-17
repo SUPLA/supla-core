@@ -22,15 +22,14 @@
 #include <string>
 
 #include "http/asynctask_http_request.h"
+#include "push/access_token_providers.h"
 #include "push/push_notification.h"
-#include "push/push_notification_gateway_credentials.h"
 
 class supla_push_notification_delivery_task
     : public supla_asynctask_http_request {
  private:
   supla_push_notification *push;
-  supla_push_notification_gateway_credentials *fcm_credentials;
-  supla_push_notification_gateway_credentials *apns_credentials;
+  supla_access_token_providers *access_token_providers;
 
  protected:
   bool make_request(supla_abstract_curl_adapter *curl_adapter);
@@ -40,8 +39,7 @@ class supla_push_notification_delivery_task
       const supla_caller &caller, int user_id, int device_id, int channel_id,
       supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
       supla_push_notification *push,
-      supla_push_notification_gateway_credentials *fcm_credentials,
-      supla_push_notification_gateway_credentials *apns_credentials);
+      supla_access_token_providers *access_token_providers);
   virtual ~supla_push_notification_delivery_task(void);
 };
 

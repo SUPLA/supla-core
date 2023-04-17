@@ -25,13 +25,11 @@ supla_push_notification_delivery_task::supla_push_notification_delivery_task(
     const supla_caller &caller, int user_id, int device_id, int channel_id,
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     supla_push_notification *push,
-    supla_push_notification_gateway_credentials *fcm_credentials,
-    supla_push_notification_gateway_credentials *apns_credentials)
+    supla_access_token_providers *access_token_providers)
     : supla_asynctask_http_request(supla_caller(), user_id, device_id,
                                    channel_id, queue, pool, nullptr) {
   this->push = push;
-  this->fcm_credentials = fcm_credentials;
-  this->apns_credentials = apns_credentials;
+  this->access_token_providers = access_token_providers;
 }
 
 supla_push_notification_delivery_task::~supla_push_notification_delivery_task(
@@ -44,20 +42,6 @@ supla_push_notification_delivery_task::~supla_push_notification_delivery_task(
 bool supla_push_notification_delivery_task::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
   bool result = false;
-
-  {
-    supla_fcm_client client(curl_adapter, fcm_credentials, push);
-    if (client.send()) {
-      result = true;
-    }
-  }
-
-  {
-    supla_apns_client client(curl_adapter, apns_credentials, push);
-    if (client.send()) {
-      result = true;
-    }
-  }
 
   return result;
 }

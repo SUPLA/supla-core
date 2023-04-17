@@ -21,23 +21,23 @@
 
 #include <string>
 
-class supla_push_notification_recipient {
- public:
-  enum type_e {
-    rt_ios,
-    rt_android,
-  };
+enum _platform_e {
+  platform_unknown,
+  platform_ios,
+  platform_android,
+};
 
+class supla_push_notification_recipient {
  private:
-  type_e type;
+  _platform_e platform;
   std::string id;
 
  public:
-  supla_push_notification_recipient(type_e type, const std::string& id);
+  supla_push_notification_recipient(_platform_e type, const std::string& id);
   virtual ~supla_push_notification_recipient(void);
 
   const std::string& get_id(void);
-  type_e get_type(void);
+  _platform_e get_platform(void);
 };
 
 #endif /* PUSH_NOTIFICATION_RECIPIENT_H_ */

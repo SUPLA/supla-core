@@ -16,11 +16,29 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "push_notification_gateway_credentials.h"
+#ifndef ACCESS_TOKEN_PROVIDERS_H_
+#define ACCESS_TOKEN_PROVIDERS_H_
 
-supla_push_notification_gateway_credentials::
-    supla_push_notification_gateway_credentials(void) {}
+#include <vector>
 
-supla_push_notification_gateway_credentials::
-    ~supla_push_notification_gateway_credentials(void) {}
+#include "push/abstract_access_token_provider.h"
+#include "push/push_notification_recipient.h"
 
+class supla_access_token_providers {
+ private:
+  static supla_access_token_providers instance;
+  bool initialized;
+  std::vector<supla_abstract_access_token_provider *> providers;
+
+ protected:
+ public:
+  supla_access_token_providers();
+  virtual ~supla_access_token_providers(void);
+  void initialize(
+      void);  // Call only when the server configuration is already loaded
+  supla_abstract_access_token_provider *get_provider(_platform_e platform);
+
+  static supla_access_token_providers *get_instance(void);
+};
+
+#endif /* ACCESS_TOKEN_PROVIDERS_H_ */

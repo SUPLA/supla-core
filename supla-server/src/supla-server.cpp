@@ -36,7 +36,7 @@
 #include "log.h"
 #include "mqtt_client_suite.h"
 #include "proto.h"
-#include "push/fcm_access_token_provider.h"
+#include "push/access_token_providers.h"
 #include "serverstatus.h"
 #include "srpc/srpc.h"
 #include "sthread.h"
@@ -99,6 +99,10 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  supla_access_token_providers::get_instance()
+      ->initialize();  // Call only when the server configuration is already
+                       // loaded.
+
   supla_log(LOG_INFO, "SSL version: %s", OpenSSL_version(OPENSSL_VERSION));
 
   if (scfg_bool(CFG_SSL_ENABLED) == 1) {
@@ -125,9 +129,6 @@ int main(int argc, char *argv[]) {
 #if __DEBUG
   prctl(PR_SET_DUMPABLE, 1);
 #endif /*__DEBUG*/
-
-  // PUSH
-  supla_fcm_access_token_provider::get_instance()->start_service();
 
   // ASYNCTASK QUEUE
   supla_asynctask_queue::global_instance();

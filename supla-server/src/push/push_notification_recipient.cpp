@@ -21,8 +21,8 @@
 using std::string;
 
 supla_push_notification_recipient::supla_push_notification_recipient(
-    type_e type, const string& id) {
-  this->type = type;
+    _platform_e platform, const string& id) {
+  this->platform = platform;
   this->id = id;
 }
 
@@ -30,9 +30,8 @@ const std::string& supla_push_notification_recipient::get_id(void) {
   return id;
 }
 
-supla_push_notification_recipient::type_e
-supla_push_notification_recipient::get_type(void) {
-  return type;
+_platform_e supla_push_notification_recipient::get_platform(void) {
+  return platform;
 }
 
 supla_push_notification_recipient::~supla_push_notification_recipient(void) {}

@@ -22,6 +22,7 @@
 #include <string>
 
 #include "http/curl_adapter.h"
+#include "push/push_notification_recipient.h"
 
 class supla_abstract_access_token_provider {
  private:
@@ -53,6 +54,7 @@ class supla_abstract_access_token_provider {
 
   std::string get_token(void);
   virtual std::string get_url(void) = 0;
+  virtual _platform_e get_platform(void) = 0;
   bool is_token_valid(void);
   bool is_service_running(void);
 };

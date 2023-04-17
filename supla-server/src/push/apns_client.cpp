@@ -20,10 +20,10 @@
 
 supla_apns_client::supla_apns_client(
     supla_abstract_curl_adapter *curl_adapter,
-    supla_push_notification_gateway_credentials *credentials,
+    supla_abstract_access_token_provider *token_provider,
     supla_push_notification *push) {
   this->curl_adapter = curl_adapter;
-  this->credentials = credentials;
+  this->token_provider = token_provider;
   this->push = push;
 }
 
