@@ -43,28 +43,29 @@ TEST_F(AccessTokenProviderTest, defaults) {
 TEST_F(AccessTokenProviderTest, refreshThrottling) {
   int a = 0;
 
-  CurlAdapterMock curl;
+  supla_abstract_curl_adapter *curl = new CurlAdapterMock();
 
   EXPECT_CALL(provider, new_token(IsNull(), NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([](supla_abstract_curl_adapter *curl_adapter,
+      .WillOnce([](supla_abstract_curl_adapter **curl_adapter,
                    std::string *token, int *expires_in_secs) {
         *expires_in_secs = 3600;
         *token = std::to_string(1);
         return true;
       });
 
-  EXPECT_CALL(provider, new_token(Eq(&curl), NotNull(), NotNull()))
+  EXPECT_CALL(provider, new_token(NotNull(), NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([](supla_abstract_curl_adapter *curl_adapter,
-                   std::string *token, int *expires_in_secs) {
+      .WillOnce([curl](supla_abstract_curl_adapter **curl_adapter,
+                       std::string *token, int *expires_in_secs) {
         *expires_in_secs = 3600;
         *token = std::to_string(2);
+        EXPECT_EQ(*curl_adapter, curl);
         return true;
       });
 
   for (a = 0; a < 10; a++) {
-    provider.refresh();
+    provider.refresh(nullptr);
   }
 
   EXPECT_EQ(provider.get_token(), "1");
@@ -78,19 +79,30 @@ TEST_F(AccessTokenProviderTest, refreshThrottling) {
 
   EXPECT_EQ(provider.get_token(), "2");
   EXPECT_TRUE(provider.is_token_valid());
+
+  delete curl;
 }
 
-TEST_F(AccessTokenProviderTest,
-       refreshByServiceWithoutCurlAndWithShortExpirationPeriod) {
+TEST_F(AccessTokenProviderTest, refreshByServiceWithShortExpirationPeriod) {
   int n = 0;
   EXPECT_CALL(provider, min_secs_between_refresh_attempts)
       .WillRepeatedly(Return(0));
-  EXPECT_CALL(provider, new_token(IsNull(), NotNull(), NotNull()))
-      .WillRepeatedly([&n](supla_abstract_curl_adapter *curl_adapter,
+  EXPECT_CALL(provider, new_token(NotNull(), NotNull(), NotNull()))
+      .WillRepeatedly([&n](supla_abstract_curl_adapter **curl_adapter,
                            std::string *token, int *expires_in_secs) {
         n++;
         *expires_in_secs = 1;
         *token = std::to_string(n);
+
+        if (n == 1) {
+          EXPECT_TRUE(*curl_adapter == nullptr);
+        } else {
+          EXPECT_TRUE(*curl_adapter != nullptr);
+        }
+
+        if (*curl_adapter == nullptr) {
+          *curl_adapter = new CurlAdapterMock();
+        }
 
         return true;
       });
@@ -104,10 +116,8 @@ TEST_F(AccessTokenProviderTest,
   EXPECT_LE(n, 4);
 }
 
-TEST_F(AccessTokenProviderTest,
-       refreshByServiceWithCurlAndLongExpirationPeriod) {
-  CurlAdapterMock *curl = new CurlAdapterMock();
-  AccessTokenProviderMock provider(curl);
+TEST_F(AccessTokenProviderTest, refreshByServiceWithLongExpirationPeriod) {
+  AccessTokenProviderMock provider;
 
   ON_CALL(provider, refresh_time_margin_secs)
       .WillByDefault(Return(this->provider.refresh_time_margin_secs()));
@@ -116,11 +126,12 @@ TEST_F(AccessTokenProviderTest,
 
   EXPECT_CALL(provider, min_secs_between_refresh_attempts)
       .WillRepeatedly(Return(0));
-  EXPECT_CALL(provider, new_token(Eq(curl), NotNull(), NotNull()))
-      .WillOnce([](supla_abstract_curl_adapter *curl_adapter,
+  EXPECT_CALL(provider, new_token(NotNull(), NotNull(), NotNull()))
+      .WillOnce([](supla_abstract_curl_adapter **curl_adapter,
                    std::string *token, int *expires_in_secs) {
         *expires_in_secs = 0;  // 0 == 10 years
         *token = "123";
+        EXPECT_TRUE(*curl_adapter == nullptr);
 
         return true;
       });
@@ -137,8 +148,8 @@ TEST_F(AccessTokenProviderTest, refreshFailed) {
   int n = 0;
   EXPECT_CALL(provider, min_secs_between_refresh_attempts)
       .WillRepeatedly(Return(0));
-  EXPECT_CALL(provider, new_token(IsNull(), NotNull(), NotNull()))
-      .WillRepeatedly([&n](supla_abstract_curl_adapter *curl_adapter,
+  EXPECT_CALL(provider, new_token(NotNull(), NotNull(), NotNull()))
+      .WillRepeatedly([&n](supla_abstract_curl_adapter **curl_adapter,
                            std::string *token, int *expires_in_secs) {
         n++;
         *expires_in_secs = n;
@@ -162,8 +173,8 @@ TEST_F(AccessTokenProviderTest, timeMargin) {
   EXPECT_CALL(provider, min_secs_between_refresh_attempts)
       .WillRepeatedly(Return(0));
   EXPECT_CALL(provider, refresh_time_margin_secs).WillRepeatedly(Return(98));
-  EXPECT_CALL(provider, new_token(IsNull(), NotNull(), NotNull()))
-      .WillRepeatedly([&n](supla_abstract_curl_adapter *curl_adapter,
+  EXPECT_CALL(provider, new_token(NotNull(), NotNull(), NotNull()))
+      .WillRepeatedly([&n](supla_abstract_curl_adapter **curl_adapter,
                            std::string *token, int *expires_in_secs) {
         n++;
         *expires_in_secs = 100;

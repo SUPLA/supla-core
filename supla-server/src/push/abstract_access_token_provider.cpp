@@ -27,8 +27,8 @@
 using std::string;
 
 supla_abstract_access_token_provider::supla_abstract_access_token_provider(
-    supla_abstract_curl_adapter *curl_adapter) {
-  this->curl_adapter = curl_adapter;
+    void) {
+  this->curl_adapter = nullptr;
   this->refresh_lck = lck_init();
   this->data_lck = lck_init();
   this->last_refresh_attpemt_time = {};
@@ -39,11 +39,6 @@ supla_abstract_access_token_provider::supla_abstract_access_token_provider(
 supla_abstract_access_token_provider::~supla_abstract_access_token_provider(
     void) {
   stop_service();
-
-  if (curl_adapter) {
-    delete curl_adapter;
-    curl_adapter = nullptr;
-  }
 
   lck_free(data_lck);
   lck_free(refresh_lck);
@@ -62,19 +57,16 @@ void supla_abstract_access_token_provider::_service_loop(void *_provider,
     return;
   }
 
-  provider->thread_init();
-
   while (sthread_isterminated(sthread) == 0) {
     provider->service_loop();
     usleep(provider->service_tick_time_usec());
   }
 
-  provider->thread_cleanup();
+  if (provider->curl_adapter) {
+    delete provider->curl_adapter;
+    provider->curl_adapter = nullptr;
+  }
 }
-
-void supla_abstract_access_token_provider::thread_init(void) {}
-
-void supla_abstract_access_token_provider::thread_cleanup(void) {}
 
 void supla_abstract_access_token_provider::service_loop(void) {
   struct timeval now = {};
@@ -87,7 +79,7 @@ void supla_abstract_access_token_provider::service_loop(void) {
   secs_left -= refresh_time_margin_secs();
 
   if (secs_left <= 0) {
-    refresh(curl_adapter);
+    refresh(&curl_adapter);
   }
 }
 
@@ -116,7 +108,7 @@ int supla_abstract_access_token_provider::min_secs_between_refresh_attempts(
 }
 
 bool supla_abstract_access_token_provider::refresh(
-    supla_abstract_curl_adapter *curl_adapter) {
+    supla_abstract_curl_adapter **curl_adapter) {
   bool result = false;
   int expires_in_secs = 0;
   string token;
@@ -148,10 +140,6 @@ bool supla_abstract_access_token_provider::refresh(
   }
 
   return result;
-}
-
-bool supla_abstract_access_token_provider::refresh(void) {
-  return refresh(nullptr);
 }
 
 string supla_abstract_access_token_provider::get_token(void) {

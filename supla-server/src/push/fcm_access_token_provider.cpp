@@ -25,6 +25,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "http/curl_adapter.h"
 #include "log.h"
 #include "svrcfg.h"
 #include "tools.h"
@@ -34,36 +35,10 @@ using std::ostringstream;
 using std::string;
 
 supla_fcm_access_token_provider::supla_fcm_access_token_provider(
-    supla_abstract_curl_adapter *curl_adapter)
-    : supla_abstract_access_token_provider(curl_adapter) {
+    const char *key_file_path)
+    : supla_abstract_access_token_provider() {
   private_key = nullptr;
   pk_bio = nullptr;
-  init_attempt = false;
-}
-
-supla_fcm_access_token_provider::~supla_fcm_access_token_provider(void) {
-  if (pk_bio) {
-    BIO_free_all(pk_bio);
-    pk_bio = nullptr;
-  }
-
-  if (private_key) {
-    EVP_PKEY_free(private_key);
-    private_key = nullptr;
-  }
-}
-
-void supla_fcm_access_token_provider::initialize(void) {
-  if (init_attempt) {
-    return;
-  }
-
-  init_attempt = true;
-
-  const char *key_file_path = scfg_string(CFG_PUSH_FCM_KEY_FILE);
-  if (!key_file_path || key_file_path[0] == 0) {
-    return;
-  }
 
   cJSON *json = nullptr;
 
@@ -136,6 +111,18 @@ void supla_fcm_access_token_provider::initialize(void) {
     pk_bio = nullptr;
 
     supla_log(LOG_ERR, "FCM: Error reading private key");
+  }
+}
+
+supla_fcm_access_token_provider::~supla_fcm_access_token_provider(void) {
+  if (pk_bio) {
+    BIO_free_all(pk_bio);
+    pk_bio = nullptr;
+  }
+
+  if (private_key) {
+    EVP_PKEY_free(private_key);
+    private_key = nullptr;
   }
 }
 
@@ -234,17 +221,21 @@ string supla_fcm_access_token_provider::jwt_sign(void) {
 }
 
 bool supla_fcm_access_token_provider::new_token(
-    supla_abstract_curl_adapter *curl_adapter, std::string *token,
+    supla_abstract_curl_adapter **_curl_adapter, std::string *token,
     int *expires_in_secs) {
-  if (!curl_adapter) {
+  if (!_curl_adapter) {
     return false;
   }
 
-  initialize();
+  if (!*_curl_adapter) {
+    *_curl_adapter = new supla_curl_adapter();
+  }
 
   if (!private_key) {
     return false;
   }
+
+  supla_abstract_curl_adapter *curl_adapter = *_curl_adapter;
 
   string jwt = jwt_sign();
   if (jwt.empty()) {

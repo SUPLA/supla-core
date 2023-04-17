@@ -36,16 +36,14 @@ class supla_fcm_access_token_provider
   std::string jwt_sign(void);
   EVP_PKEY *private_key;
   BIO *pk_bio;
-  bool init_attempt;
   void initialize(void);
 
  protected:
-  virtual bool new_token(supla_abstract_curl_adapter *curl_adapter,
+  virtual bool new_token(supla_abstract_curl_adapter **_curl_adapter,
                          std::string *token, int *expires_in_secs);
 
  public:
-  explicit supla_fcm_access_token_provider(
-      supla_abstract_curl_adapter *curl_adapter);
+  explicit supla_fcm_access_token_provider(const char *key_file_path);
   virtual ~supla_fcm_access_token_provider(void);
 
   virtual std::string get_url(void);

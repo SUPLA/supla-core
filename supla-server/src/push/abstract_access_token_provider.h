@@ -25,35 +25,32 @@
 
 class supla_abstract_access_token_provider {
  private:
-  supla_abstract_curl_adapter *curl_adapter;
   void *data_lck;
   void *refresh_lck;
   struct timeval last_refresh_attpemt_time;
   struct timeval expires_at;
   std::string token;
   void *thread;
+  supla_abstract_curl_adapter *curl_adapter;
 
   static void _service_loop(void *_provider, void *sthread);
-  void service_loop(void);
+  void service_loop();
 
  protected:
   virtual int min_secs_between_refresh_attempts(void);
   virtual int refresh_time_margin_secs(void);
   virtual long long service_tick_time_usec(void);
-  virtual bool new_token(supla_abstract_curl_adapter *curl_adapter,
+  virtual bool new_token(supla_abstract_curl_adapter **curl_adapter,
                          std::string *token, int *expires_in_secs) = 0;
-  virtual void thread_init(void);
-  virtual void thread_cleanup(void);
 
  public:
-  explicit supla_abstract_access_token_provider(
-      supla_abstract_curl_adapter *curl_adapter);
+  supla_abstract_access_token_provider(void);
   virtual ~supla_abstract_access_token_provider(void);
   virtual void start_service(void);
   void stop_service(void);
 
-  bool refresh(supla_abstract_curl_adapter *curl_adapter);
-  bool refresh(void);
+  bool refresh(supla_abstract_curl_adapter **curl_adapter);
+
   std::string get_token(void);
   virtual std::string get_url(void) = 0;
   bool is_token_valid(void);
