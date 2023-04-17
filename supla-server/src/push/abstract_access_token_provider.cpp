@@ -20,6 +20,7 @@
 
 #include <unistd.h>
 
+#include "http/curl_adapter.h"
 #include "lck.h"
 #include "sthread.h"
 
@@ -39,11 +40,6 @@ supla_abstract_access_token_provider::~supla_abstract_access_token_provider(
     void) {
   stop_service();
 
-  if (curl_adapter) {
-    delete curl_adapter;
-    curl_adapter = nullptr;
-  }
-
   lck_free(data_lck);
   lck_free(refresh_lck);
 }
@@ -61,11 +57,19 @@ void supla_abstract_access_token_provider::_service_loop(void *_provider,
     return;
   }
 
+  provider->thread_init();
+
   while (sthread_isterminated(sthread) == 0) {
     provider->service_loop();
     usleep(provider->service_tick_time_usec());
   }
+
+  provider->thread_cleanup();
 }
+
+void supla_abstract_access_token_provider::thread_init(void) {}
+
+void supla_abstract_access_token_provider::thread_cleanup(void) {}
 
 void supla_abstract_access_token_provider::service_loop(void) {
   struct timeval now = {};
@@ -85,6 +89,9 @@ void supla_abstract_access_token_provider::service_loop(void) {
 void supla_abstract_access_token_provider::start_service(
     supla_abstract_curl_adapter *curl_adapter) {
   if (thread) {
+    if (curl_adapter) {
+      delete curl_adapter;
+    }
     return;
   }
 
@@ -97,15 +104,24 @@ void supla_abstract_access_token_provider::start_service(
   sthread_simple_run(_service_loop, this, 0, &thread);
 }
 
+void supla_abstract_access_token_provider::start_service(void) {
+  start_service(new supla_curl_adapter());
+}
+
 void supla_abstract_access_token_provider::stop_service(void) {
   if (thread) {
-    sthread_twf(thread, true);
+    sthread_twf(thread, false);
     thread = nullptr;
+  }
+
+  if (curl_adapter) {
+    delete curl_adapter;
+    curl_adapter = nullptr;
   }
 }
 
 int supla_abstract_access_token_provider::refresh_time_margin_secs(void) {
-  return 60;
+  return 300;
 }
 
 int supla_abstract_access_token_provider::min_secs_between_refresh_attempts(

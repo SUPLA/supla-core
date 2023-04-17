@@ -42,11 +42,14 @@ class supla_abstract_access_token_provider {
   virtual long long service_tick_time_usec(void);
   virtual bool new_token(supla_abstract_curl_adapter *curl_adapter,
                          std::string *token, int *expires_in_secs) = 0;
+  virtual void thread_init(void);
+  virtual void thread_cleanup(void);
 
  public:
   supla_abstract_access_token_provider();
   virtual ~supla_abstract_access_token_provider(void);
   virtual void start_service(supla_abstract_curl_adapter *curl_adapter);
+  virtual void start_service(void);
   void stop_service(void);
 
   bool refresh(supla_abstract_curl_adapter *curl_adapter);

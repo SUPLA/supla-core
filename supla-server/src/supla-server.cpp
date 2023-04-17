@@ -36,6 +36,7 @@
 #include "log.h"
 #include "mqtt_client_suite.h"
 #include "proto.h"
+#include "push/fcm_access_token_provider.h"
 #include "serverstatus.h"
 #include "srpc/srpc.h"
 #include "sthread.h"
@@ -58,6 +59,8 @@ int main(int argc, char *argv[]) {
   void *ipc_accept_loop_thread = nullptr;
   supla_cyclictasks_agent *cyclictasks_agent = nullptr;
 
+  SSL_library_init();
+  SSL_load_error_strings();
   curl_global_init(CURL_GLOBAL_ALL);
 
   // INIT BLOCK
@@ -96,9 +99,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  SSL_library_init();
-  SSL_load_error_strings();
-
   supla_log(LOG_INFO, "SSL version: %s", OpenSSL_version(OPENSSL_VERSION));
 
   if (scfg_bool(CFG_SSL_ENABLED) == 1) {
@@ -125,6 +125,9 @@ int main(int argc, char *argv[]) {
 #if __DEBUG
   prctl(PR_SET_DUMPABLE, 1);
 #endif /*__DEBUG*/
+
+  // PUSH
+  supla_fcm_access_token_provider::get_instance()->start_service();
 
   // ASYNCTASK QUEUE
   supla_asynctask_queue::global_instance();

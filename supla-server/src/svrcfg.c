@@ -33,7 +33,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
 
   char *s_mqtt = "MQTT-BROKER";
-  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 38)
+  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 40)
   // This ensures that realloc will only be called once
   scfg_add_int_param(CFG_MQTT_KEEP_ALIVE_SEC, s_mqtt, "CFG_MQTT_KEEP_ALIVE_SEC",
                      30);
@@ -119,6 +119,10 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
                      "syncrequest_timeout", 30000);
   scfg_add_int_param(CFG_GOOGLE_HOME_STATEREPORT_TIMEOUT, s_google_home,
                      "statereport_timeout", 30000);
+
+  char *s_push = "PUSH";
+  scfg_add_str_param(CFG_PUSH_FCM_URL, s_push, "fcm_url", "");
+  scfg_add_str_param(CFG_PUSH_FCM_KEY_FILE, s_push, "fcm_key_file", "");
 
   char *s_limit = "LIMITS";
   scfg_add_int_param(CFG_LIMIT_CONCURRENT_REGISTRATIONS, s_limit,

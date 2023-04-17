@@ -6,6 +6,7 @@
 CPP_SRCS += \
 ../src/push/abstract_access_token_provider.cpp \
 ../src/push/apns_client.cpp \
+../src/push/fcm_access_token_provider.cpp \
 ../src/push/fcm_client.cpp \
 ../src/push/push_notification.cpp \
 ../src/push/push_notification_delivery_task.cpp \
@@ -17,6 +18,7 @@ CPP_SRCS += \
 CPP_DEPS += \
 ./src/push/abstract_access_token_provider.d \
 ./src/push/apns_client.d \
+./src/push/fcm_access_token_provider.d \
 ./src/push/fcm_client.d \
 ./src/push/push_notification.d \
 ./src/push/push_notification_delivery_task.d \
@@ -28,6 +30,7 @@ CPP_DEPS += \
 OBJS += \
 ./src/push/abstract_access_token_provider.o \
 ./src/push/apns_client.o \
+./src/push/fcm_access_token_provider.o \
 ./src/push/fcm_client.o \
 ./src/push/push_notification.o \
 ./src/push/push_notification_delivery_task.o \
@@ -49,7 +52,7 @@ src/push/%.o: ../src/push/%.cpp src/push/subdir.mk
 clean: clean-src-2f-push
 
 clean-src-2f-push:
-	-$(RM) ./src/push/abstract_access_token_provider.d ./src/push/abstract_access_token_provider.o ./src/push/apns_client.d ./src/push/apns_client.o ./src/push/fcm_client.d ./src/push/fcm_client.o ./src/push/push_notification.d ./src/push/push_notification.o ./src/push/push_notification_delivery_task.d ./src/push/push_notification_delivery_task.o ./src/push/push_notification_gateway_credentials.d ./src/push/push_notification_gateway_credentials.o ./src/push/push_notification_recipient.d ./src/push/push_notification_recipient.o ./src/push/push_notification_recipients.d ./src/push/push_notification_recipients.o ./src/push/push_notification_throttling.d ./src/push/push_notification_throttling.o
+	-$(RM) ./src/push/abstract_access_token_provider.d ./src/push/abstract_access_token_provider.o ./src/push/apns_client.d ./src/push/apns_client.o ./src/push/fcm_access_token_provider.d ./src/push/fcm_access_token_provider.o ./src/push/fcm_client.d ./src/push/fcm_client.o ./src/push/push_notification.d ./src/push/push_notification.o ./src/push/push_notification_delivery_task.d ./src/push/push_notification_delivery_task.o ./src/push/push_notification_gateway_credentials.d ./src/push/push_notification_gateway_credentials.o ./src/push/push_notification_recipient.d ./src/push/push_notification_recipient.o ./src/push/push_notification_recipients.d ./src/push/push_notification_recipients.o ./src/push/push_notification_throttling.d ./src/push/push_notification_throttling.o
 
 .PHONY: clean-src-2f-push
 

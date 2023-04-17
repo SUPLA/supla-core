@@ -23,6 +23,8 @@
 #include "log.h"
 #include "svrcfg.h"
 
+using std::string;
+
 supla_curl_adapter::supla_curl_adapter(void) : supla_abstract_curl_adapter() {
   write_data_ptr = nullptr;
   header = nullptr;
@@ -78,6 +80,13 @@ void supla_curl_adapter::set_opt_verbose(bool on) {
 
 void supla_curl_adapter::set_opt_custom_request(const char *method) {
   curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
+}
+
+string supla_curl_adapter::escape(const std::string &str) {
+  char *escaped = curl_easy_escape(curl, str.c_str(), str.size());
+  string result = escaped;
+  curl_free(escaped);
+  return result;
 }
 
 bool supla_curl_adapter::append_header(const char *string) {

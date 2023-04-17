@@ -41,6 +41,7 @@ class CurlAdapterMock : public supla_abstract_curl_adapter {
   MOCK_METHOD1(append_header, bool(const char *string));
   MOCK_METHOD0(perform, bool(void));
   MOCK_METHOD0(get_response_code, long(void));
+  MOCK_METHOD1(escape, std::string(const std::string &str));
 };
 
 } /* namespace testing */
