@@ -27,7 +27,8 @@ namespace testing {
 
 class AccessTokenProviderMock : public supla_abstract_access_token_provider {
  public:
-  AccessTokenProviderMock();
+  AccessTokenProviderMock(void);
+  explicit AccessTokenProviderMock(supla_abstract_curl_adapter *curl_adapter);
   virtual ~AccessTokenProviderMock();
 
   MOCK_METHOD0(min_secs_between_refresh_attempts, int(void));

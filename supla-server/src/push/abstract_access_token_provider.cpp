@@ -27,18 +27,23 @@
 using std::string;
 
 supla_abstract_access_token_provider::supla_abstract_access_token_provider(
-    void) {
-  curl_adapter = nullptr;
-  refresh_lck = lck_init();
-  data_lck = lck_init();
-  last_refresh_attpemt_time = {};
-  expires_at = {};
-  thread = nullptr;
+    supla_abstract_curl_adapter *curl_adapter) {
+  this->curl_adapter = curl_adapter;
+  this->refresh_lck = lck_init();
+  this->data_lck = lck_init();
+  this->last_refresh_attpemt_time = {};
+  this->expires_at = {};
+  this->thread = nullptr;
 }
 
 supla_abstract_access_token_provider::~supla_abstract_access_token_provider(
     void) {
   stop_service();
+
+  if (curl_adapter) {
+    delete curl_adapter;
+    curl_adapter = nullptr;
+  }
 
   lck_free(data_lck);
   lck_free(refresh_lck);
@@ -86,37 +91,18 @@ void supla_abstract_access_token_provider::service_loop(void) {
   }
 }
 
-void supla_abstract_access_token_provider::start_service(
-    supla_abstract_curl_adapter *curl_adapter) {
+void supla_abstract_access_token_provider::start_service(void) {
   if (thread) {
-    if (curl_adapter) {
-      delete curl_adapter;
-    }
     return;
   }
 
-  if (this->curl_adapter) {
-    delete this->curl_adapter;
-  }
-
-  this->curl_adapter = curl_adapter;
-
   sthread_simple_run(_service_loop, this, 0, &thread);
-}
-
-void supla_abstract_access_token_provider::start_service(void) {
-  start_service(new supla_curl_adapter());
 }
 
 void supla_abstract_access_token_provider::stop_service(void) {
   if (thread) {
     sthread_twf(thread, false);
     thread = nullptr;
-  }
-
-  if (curl_adapter) {
-    delete curl_adapter;
-    curl_adapter = nullptr;
   }
 }
 

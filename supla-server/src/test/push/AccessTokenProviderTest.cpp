@@ -95,7 +95,7 @@ TEST_F(AccessTokenProviderTest,
         return true;
       });
 
-  provider.start_service(nullptr);
+  provider.start_service();
   EXPECT_TRUE(provider.is_service_running());
   usleep(2500000);
   provider.stop_service();
@@ -107,6 +107,12 @@ TEST_F(AccessTokenProviderTest,
 TEST_F(AccessTokenProviderTest,
        refreshByServiceWithCurlAndLongExpirationPeriod) {
   CurlAdapterMock *curl = new CurlAdapterMock();
+  AccessTokenProviderMock provider(curl);
+
+  ON_CALL(provider, refresh_time_margin_secs)
+      .WillByDefault(Return(this->provider.refresh_time_margin_secs()));
+  ON_CALL(provider, service_tick_time_usec)
+      .WillByDefault(Return(this->provider.service_tick_time_usec()));
 
   EXPECT_CALL(provider, min_secs_between_refresh_attempts)
       .WillRepeatedly(Return(0));
@@ -119,7 +125,7 @@ TEST_F(AccessTokenProviderTest,
         return true;
       });
 
-  provider.start_service(curl);
+  provider.start_service();
   EXPECT_TRUE(provider.is_service_running());
   usleep(2500000);
   provider.stop_service();
@@ -141,7 +147,7 @@ TEST_F(AccessTokenProviderTest, refreshFailed) {
         return n == 1;
       });
 
-  provider.start_service(nullptr);
+  provider.start_service();
   EXPECT_TRUE(provider.is_service_running());
   usleep(2500000);
   provider.stop_service();
@@ -166,7 +172,7 @@ TEST_F(AccessTokenProviderTest, timeMargin) {
         return true;
       });
 
-  provider.start_service(nullptr);
+  provider.start_service();
   EXPECT_TRUE(provider.is_service_running());
   usleep(2500000);
   provider.stop_service();

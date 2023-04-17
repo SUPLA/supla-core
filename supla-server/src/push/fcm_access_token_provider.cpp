@@ -33,11 +33,9 @@ using std::ifstream;
 using std::ostringstream;
 using std::string;
 
-// static
-supla_fcm_access_token_provider supla_fcm_access_token_provider::instance;
-
-supla_fcm_access_token_provider::supla_fcm_access_token_provider(void)
-    : supla_abstract_access_token_provider() {
+supla_fcm_access_token_provider::supla_fcm_access_token_provider(
+    supla_abstract_curl_adapter *curl_adapter)
+    : supla_abstract_access_token_provider(curl_adapter) {
   private_key = nullptr;
   pk_bio = nullptr;
   init_attempt = false;
@@ -332,10 +330,4 @@ bool supla_fcm_access_token_provider::new_token(
 string supla_fcm_access_token_provider::get_url(void) {
   char *url = scfg_string(CFG_PUSH_FCM_URL);
   return url ? url : "";
-}
-
-// static
-supla_fcm_access_token_provider *supla_fcm_access_token_provider::get_instance(
-    void) {
-  return &instance;
 }

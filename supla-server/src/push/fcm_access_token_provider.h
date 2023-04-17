@@ -37,7 +37,6 @@ class supla_fcm_access_token_provider
   EVP_PKEY *private_key;
   BIO *pk_bio;
   bool init_attempt;
-  static supla_fcm_access_token_provider instance;
   void initialize(void);
 
  protected:
@@ -45,11 +44,11 @@ class supla_fcm_access_token_provider
                          std::string *token, int *expires_in_secs);
 
  public:
-  supla_fcm_access_token_provider();
+  explicit supla_fcm_access_token_provider(
+      supla_abstract_curl_adapter *curl_adapter);
   virtual ~supla_fcm_access_token_provider(void);
 
   virtual std::string get_url(void);
-  static supla_fcm_access_token_provider *get_instance(void);
 };
 
 #endif /* FCM_ACCESS_TOKEN_PROVIDER_H_ */

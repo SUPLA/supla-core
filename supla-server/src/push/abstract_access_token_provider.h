@@ -46,9 +46,9 @@ class supla_abstract_access_token_provider {
   virtual void thread_cleanup(void);
 
  public:
-  supla_abstract_access_token_provider();
+  explicit supla_abstract_access_token_provider(
+      supla_abstract_curl_adapter *curl_adapter);
   virtual ~supla_abstract_access_token_provider(void);
-  virtual void start_service(supla_abstract_curl_adapter *curl_adapter);
   virtual void start_service(void);
   void stop_service(void);
 
