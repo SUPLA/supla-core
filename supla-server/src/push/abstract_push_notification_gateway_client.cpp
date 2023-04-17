@@ -16,18 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef FCM_CLIENT_H_
-#define FCM_CLIENT_H_
+#include "abstract_push_notification_gateway_client.h"
 
-#include "push/abstract_push_notification_gateway_client.h"
+supla_abstract_push_notification_gateway_client::
+    supla_abstract_push_notification_gateway_client(
+        supla_abstract_curl_adapter *curl_adapter,
+        supla_access_token_providers *token_providers,
+        supla_push_notification *push) {
+  this->curl_adapter = curl_adapter;
+  this->token_providers = token_providers;
+  this->push = push;
+}
 
-class supla_fcm_client
-    : public supla_abstract_push_notification_gateway_client {
- public:
-  supla_fcm_client(supla_abstract_curl_adapter *curl_adapter,
-                   supla_access_token_providers *token_providers,
-                   supla_push_notification *push);
-  virtual ~supla_fcm_client(void);
-};
+supla_abstract_push_notification_gateway_client::
+    ~supla_abstract_push_notification_gateway_client(void) {}
 
-#endif /* FCM_CLIENT_H_ */
+bool supla_abstract_push_notification_gateway_client::send(void) {
+  return false;
+}

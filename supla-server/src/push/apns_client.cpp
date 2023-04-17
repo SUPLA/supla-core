@@ -20,13 +20,9 @@
 
 supla_apns_client::supla_apns_client(
     supla_abstract_curl_adapter *curl_adapter,
-    supla_abstract_access_token_provider *token_provider,
-    supla_push_notification *push) {
-  this->curl_adapter = curl_adapter;
-  this->token_provider = token_provider;
-  this->push = push;
-}
+    supla_access_token_providers *token_providers,
+    supla_push_notification *push)
+    : supla_abstract_push_notification_gateway_client(curl_adapter,
+                                                      token_providers, push) {}
 
 supla_apns_client::~supla_apns_client(void) {}
-
-bool supla_apns_client::send(void) { return false; }

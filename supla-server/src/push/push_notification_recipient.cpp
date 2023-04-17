@@ -21,9 +21,10 @@
 using std::string;
 
 supla_push_notification_recipient::supla_push_notification_recipient(
-    _platform_e platform, const string& id) {
+    _platform_e platform, _app_id_e app_id, const string& id) {
   this->platform = platform;
   this->id = id;
+  this->app_id = app_id;
 }
 
 const std::string& supla_push_notification_recipient::get_id(void) {
@@ -33,5 +34,7 @@ const std::string& supla_push_notification_recipient::get_id(void) {
 _platform_e supla_push_notification_recipient::get_platform(void) {
   return platform;
 }
+
+_app_id_e supla_push_notification_recipient::get_app_id(void) { return app_id; }
 
 supla_push_notification_recipient::~supla_push_notification_recipient(void) {}

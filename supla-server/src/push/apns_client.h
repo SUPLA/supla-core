@@ -19,22 +19,15 @@
 #ifndef APNS_CLIENT_H_
 #define APNS_CLIENT_H_
 
-#include "http/abstract_curl_adapter.h"
-#include "push/abstract_access_token_provider.h"
-#include "push/push_notification.h"
+#include "push/abstract_push_notification_gateway_client.h"
 
-class supla_apns_client {
- private:
-  supla_abstract_access_token_provider *token_provider;
-  supla_push_notification *push;
-  supla_abstract_curl_adapter *curl_adapter;
-
+class supla_apns_client
+    : public supla_abstract_push_notification_gateway_client {
  public:
   supla_apns_client(supla_abstract_curl_adapter *curl_adapter,
-                    supla_abstract_access_token_provider *token_provider,
+                    supla_access_token_providers *token_providers,
                     supla_push_notification *push);
   virtual ~supla_apns_client(void);
-  bool send(void);
 };
 
 #endif /* APNS_CLIENT_H_ */

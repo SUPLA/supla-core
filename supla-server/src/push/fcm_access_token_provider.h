@@ -47,6 +47,7 @@ class supla_fcm_access_token_provider
 
   virtual std::string get_url(void);
   virtual _platform_e get_platform(void);
+  virtual _app_id_e get_app_id(void);
 };
 
 #endif /* FCM_ACCESS_TOKEN_PROVIDER_H_ */

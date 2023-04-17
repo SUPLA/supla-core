@@ -326,3 +326,7 @@ string supla_fcm_access_token_provider::get_url(void) {
 _platform_e supla_fcm_access_token_provider::get_platform(void) {
   return platform_android;
 }
+
+_app_id_e supla_fcm_access_token_provider::get_app_id(void) {
+  return app_supla;
+}

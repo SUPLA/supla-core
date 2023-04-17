@@ -27,17 +27,26 @@ enum _platform_e {
   platform_android,
 };
 
+enum _app_id_e {
+  app_supla = 0,
+  app_nice = 1,
+  app_comelit = 2,
+};
+
 class supla_push_notification_recipient {
  private:
   _platform_e platform;
+  _app_id_e app_id;
   std::string id;
 
  public:
-  supla_push_notification_recipient(_platform_e type, const std::string& id);
+  supla_push_notification_recipient(_platform_e type, _app_id_e app_id,
+                                    const std::string& id);
   virtual ~supla_push_notification_recipient(void);
 
   const std::string& get_id(void);
   _platform_e get_platform(void);
+  _app_id_e get_app_id(void);
 };
 
 #endif /* PUSH_NOTIFICATION_RECIPIENT_H_ */

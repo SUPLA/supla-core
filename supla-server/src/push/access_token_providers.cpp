@@ -56,9 +56,10 @@ void supla_access_token_providers::initialize(void) {
 }
 
 supla_abstract_access_token_provider *
-supla_access_token_providers::get_provider(_platform_e platform) {
+supla_access_token_providers::get_provider(_platform_e platform,
+                                           _app_id_e app_id) {
   for (auto it = providers.rbegin(); it != providers.rend(); ++it) {
-    if ((*it)->get_platform() == platform) {
+    if ((*it)->get_platform() == platform && (*it)->get_app_id() == app_id) {
       return *it;
     }
   }

@@ -21,3 +21,13 @@
 supla_push_notification_recipients::supla_push_notification_recipients(void) {}
 
 supla_push_notification_recipients::~supla_push_notification_recipients(void) {}
+
+supla_push_notification_recipient* supla_push_notification_recipients::pop(
+    _platform_e platform) {
+  return nullptr;
+}
+
+bool supla_push_notification_recipients::any_recipient_exists(
+    _platform_e platform) {
+  return false;
+}

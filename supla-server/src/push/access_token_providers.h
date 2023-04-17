@@ -36,7 +36,8 @@ class supla_access_token_providers {
   virtual ~supla_access_token_providers(void);
   void initialize(
       void);  // Call only when the server configuration is already loaded
-  supla_abstract_access_token_provider *get_provider(_platform_e platform);
+  supla_abstract_access_token_provider *get_provider(_platform_e platform,
+                                                     _app_id_e app_id);
 
   static supla_access_token_providers *get_instance(void);
 };

@@ -19,11 +19,15 @@
 #ifndef PUSH_NOTIFICATION_RECIPIENTS_H_
 #define PUSH_NOTIFICATION_RECIPIENTS_H_
 
+#include "push/push_notification_recipient.h"
+
 class supla_push_notification_recipients {
  private:
  public:
   supla_push_notification_recipients(void);
   virtual ~supla_push_notification_recipients(void);
+  supla_push_notification_recipient* pop(_platform_e platform);
+  bool any_recipient_exists(_platform_e platform);
 };
 
 #endif /* PUSH_NOTIFICATION_RECIPIENTS_H_ */

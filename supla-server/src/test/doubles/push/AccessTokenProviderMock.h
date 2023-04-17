@@ -38,6 +38,7 @@ class AccessTokenProviderMock : public supla_abstract_access_token_provider {
                                std::string *token, int *expires_in_secs));
   MOCK_METHOD0(get_url, std::string(void));
   MOCK_METHOD0(get_platform, _platform_e(void));
+  MOCK_METHOD0(get_app_id, _app_id_e(void));
 };
 
 } /* namespace testing */
