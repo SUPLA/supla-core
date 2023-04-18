@@ -19,6 +19,8 @@
 #ifndef APNS_CLIENT_H_
 #define APNS_CLIENT_H_
 
+#include <string>
+
 #include "push/abstract_push_notification_gateway_client.h"
 
 class supla_apns_client

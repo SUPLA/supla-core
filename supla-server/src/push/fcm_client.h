@@ -19,6 +19,8 @@
 #ifndef FCM_CLIENT_H_
 #define FCM_CLIENT_H_
 
+#include <string>
+
 #include "push/abstract_push_notification_gateway_client.h"
 
 class supla_fcm_client
