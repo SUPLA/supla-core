@@ -19,6 +19,8 @@
 #ifndef ABSTRACT_PUSH_NOTIFICATION_GATEWAY_CLIENT_H_
 #define ABSTRACT_PUSH_NOTIFICATION_GATEWAY_CLIENT_H_
 
+#include <string>
+
 #include "http/abstract_curl_adapter.h"
 #include "push/access_token_providers.h"
 #include "push/push_notification.h"
@@ -28,6 +30,14 @@ class supla_abstract_push_notification_gateway_client {
   supla_access_token_providers *token_providers;
   supla_push_notification *push;
   supla_abstract_curl_adapter *curl_adapter;
+
+ protected:
+  supla_push_notification *get_push_notification(void);
+  supla_abstract_curl_adapter *get_curl_adapter(void);
+
+  virtual _platform_e get_platform(void) = 0;
+  virtual bool _send(const std::string &url, const std::string &token,
+                     supla_push_notification_recipient *recipient) = 0;
 
  public:
   supla_abstract_push_notification_gateway_client(

@@ -18,6 +18,8 @@
 
 #include "fcm_client.h"
 
+using std::string;
+
 supla_fcm_client::supla_fcm_client(
     supla_abstract_curl_adapter *curl_adapter,
     supla_access_token_providers *token_providers,
@@ -26,3 +28,10 @@ supla_fcm_client::supla_fcm_client(
                                                       token_providers, push) {}
 
 supla_fcm_client::~supla_fcm_client(void) {}
+
+_platform_e supla_fcm_client::get_platform(void) { return platform_android; }
+
+bool supla_fcm_client::_send(const string &url, const string &token,
+                             supla_push_notification_recipient *recipient) {
+  return false;
+}

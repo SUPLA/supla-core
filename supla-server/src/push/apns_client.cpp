@@ -18,6 +18,8 @@
 
 #include "apns_client.h"
 
+using std::string;
+
 supla_apns_client::supla_apns_client(
     supla_abstract_curl_adapter *curl_adapter,
     supla_access_token_providers *token_providers,
@@ -26,3 +28,10 @@ supla_apns_client::supla_apns_client(
                                                       token_providers, push) {}
 
 supla_apns_client::~supla_apns_client(void) {}
+
+_platform_e supla_apns_client::get_platform(void) { return platform_ios; }
+
+bool supla_apns_client::_send(const string &url, const string &token,
+                              supla_push_notification_recipient *recipient) {
+  return false;
+}

@@ -22,7 +22,7 @@
 #include <string>
 
 #include "http/curl_adapter.h"
-#include "push/push_notification_recipient.h"
+#include "push/push_notification_recipients.h"
 
 class supla_abstract_access_token_provider {
  private:

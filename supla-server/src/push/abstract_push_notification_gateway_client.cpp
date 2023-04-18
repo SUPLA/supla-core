@@ -18,6 +18,8 @@
 
 #include "abstract_push_notification_gateway_client.h"
 
+using std::string;
+
 supla_abstract_push_notification_gateway_client::
     supla_abstract_push_notification_gateway_client(
         supla_abstract_curl_adapter *curl_adapter,
@@ -31,6 +33,48 @@ supla_abstract_push_notification_gateway_client::
 supla_abstract_push_notification_gateway_client::
     ~supla_abstract_push_notification_gateway_client(void) {}
 
+supla_push_notification *
+supla_abstract_push_notification_gateway_client::get_push_notification(void) {
+  return push;
+}
+
+supla_abstract_curl_adapter *
+supla_abstract_push_notification_gateway_client::get_curl_adapter(void) {
+  return curl_adapter;
+}
+
 bool supla_abstract_push_notification_gateway_client::send(void) {
-  return false;
+  bool any_sent = false;
+  bool any_error = false;
+
+  supla_abstract_access_token_provider *token_provider = nullptr;
+
+  for (size_t a = 0; a < push->get_recipients().count(get_platform()); a++) {
+    supla_push_notification_recipient *recipient =
+        push->get_recipients().get(get_platform(), a);
+
+    if (!recipient) {
+      continue;
+    }
+
+    token_provider =
+        token_providers->get_provider(get_platform(), recipient->get_app_id());
+
+    if (token_provider) {
+      string token = token_provider->get_token();
+      string url = token_provider->get_url();
+
+      curl_adapter->reset();
+
+      if (token.empty() || url.empty() || !_send(token, url, recipient)) {
+        any_error = true;
+      } else {
+        any_sent = true;
+      }
+    } else {
+      any_error = true;
+    }
+  }
+
+  return any_sent && !any_error;
 }

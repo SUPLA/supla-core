@@ -23,6 +23,11 @@
 
 class supla_fcm_client
     : public supla_abstract_push_notification_gateway_client {
+ protected:
+  virtual _platform_e get_platform(void);
+  virtual bool _send(const std::string &url, const std::string &token,
+                     supla_push_notification_recipient *recipient);
+
  public:
   supla_fcm_client(supla_abstract_curl_adapter *curl_adapter,
                    supla_access_token_providers *token_providers,
