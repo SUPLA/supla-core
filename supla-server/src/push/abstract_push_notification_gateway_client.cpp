@@ -49,6 +49,8 @@ bool supla_abstract_push_notification_gateway_client::send(void) {
 
   supla_abstract_access_token_provider *token_provider = nullptr;
 
+  _app_id_e last_app_id = app_supla;
+
   for (size_t a = 0; a < push->get_recipients().count(get_platform()); a++) {
     supla_push_notification_recipient *recipient =
         push->get_recipients().get(get_platform(), a);
@@ -57,8 +59,12 @@ bool supla_abstract_push_notification_gateway_client::send(void) {
       continue;
     }
 
-    token_provider =
-        token_providers->get_provider(get_platform(), recipient->get_app_id());
+    if (token_provider == nullptr || last_app_id != recipient->get_app_id()) {
+      token_provider = token_providers->get_provider(get_platform(),
+                                                     recipient->get_app_id());
+
+      last_app_id = recipient->get_app_id();
+    }
 
     if (token_provider) {
       string token = token_provider->get_token();
