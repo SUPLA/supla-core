@@ -41,21 +41,26 @@ supla_push_notification_delivery_task::~supla_push_notification_delivery_task(
 
 bool supla_push_notification_delivery_task::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
-  bool result = false;
+  bool fcm_recipients = false;
+  bool fcm_result = false;
+
+  bool apns_recipients = false;
+  bool apns_result = false;
 
   if (push->get_recipients().any_recipient_exists(platform_android)) {
     supla_fcm_client client(curl_adapter, token_providers, push);
-    if (client.send()) {
-      result = true;
-    }
+
+    fcm_recipients = true;
+    fcm_result = client.send();
   }
 
   if (push->get_recipients().any_recipient_exists(platform_ios)) {
     supla_apns_client client(curl_adapter, token_providers, push);
-    if (client.send()) {
-      result = true;
-    }
+
+    apns_recipients = true;
+    apns_result = client.send();
   }
 
-  return result;
+  return (fcm_recipients || apns_recipients) &&
+         (!fcm_recipients || fcm_result) && (!apns_recipients || apns_result);
 }
