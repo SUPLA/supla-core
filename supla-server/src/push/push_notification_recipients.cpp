@@ -18,16 +18,58 @@
 
 #include "push_notification_recipients.h"
 
+using std::map;
+using std::vector;
+
 supla_push_notification_recipients::supla_push_notification_recipients(void) {}
 
-supla_push_notification_recipients::~supla_push_notification_recipients(void) {}
+supla_push_notification_recipients::~supla_push_notification_recipients(void) {
+  for (auto mit = recipients.begin(); mit != recipients.end(); ++mit) {
+    for (auto it = mit->second.begin(); it != mit->second.end(); ++it) {
+      delete *it;
+    }
+  }
+}
 
-supla_push_notification_recipient* supla_push_notification_recipients::pop(
-    _platform_e platform) {
+void supla_push_notification_recipients::add(
+    supla_push_notification_recipient* recipient, _platform_e platform) {
+  auto mit = recipients.find(platform);
+  if (mit == recipients.end()) {
+    recipients[platform] = vector<supla_push_notification_recipient*>();
+  }
+
+  recipients[platform].push_back(recipient);
+}
+
+supla_push_notification_recipient* supla_push_notification_recipients::get(
+    _platform_e platform, size_t index) {
+  auto mit = recipients.find(platform);
+
+  if (mit != recipients.end() && index < mit->second.size()) {
+    return mit->second.at(index);
+  }
+
   return nullptr;
+}
+
+size_t supla_push_notification_recipients::count(_platform_e platform) {
+  auto mit = recipients.find(platform);
+  if (mit != recipients.end()) {
+    return mit->second.size();
+  }
+
+  return 0;
+}
+
+size_t supla_push_notification_recipients::total_count(void) {
+  size_t result = 0;
+  for (auto mit = recipients.begin(); mit != recipients.end(); ++mit) {
+    result += mit->second.size();
+  }
+  return result;
 }
 
 bool supla_push_notification_recipients::any_recipient_exists(
     _platform_e platform) {
-  return false;
+  return count(platform) > 0;
 }

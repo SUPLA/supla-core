@@ -21,12 +21,6 @@
 
 #include <string>
 
-enum _platform_e {
-  platform_unknown,
-  platform_ios,
-  platform_android,
-};
-
 enum _app_id_e {
   app_supla = 0,
   app_nice = 1,
@@ -35,17 +29,14 @@ enum _app_id_e {
 
 class supla_push_notification_recipient {
  private:
-  _platform_e platform;
   _app_id_e app_id;
   std::string id;
 
  public:
-  supla_push_notification_recipient(_platform_e type, _app_id_e app_id,
-                                    const std::string& id);
+  supla_push_notification_recipient(_app_id_e app_id, const std::string& id);
   virtual ~supla_push_notification_recipient(void);
 
   const std::string& get_id(void);
-  _platform_e get_platform(void);
   _app_id_e get_app_id(void);
 };
 

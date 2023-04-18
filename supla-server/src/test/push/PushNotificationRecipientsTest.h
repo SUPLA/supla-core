@@ -16,20 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "push_notification_recipient.h"
+#ifndef PUSH_NOTIFICATION_RECIPIENTS_TEST_H_
+#define PUSH_NOTIFICATION_RECIPIENTS_TEST_H_
 
-using std::string;
+#include "gtest/gtest.h"  // NOLINT
+#include "push/push_notification_recipients.h"
 
-supla_push_notification_recipient::supla_push_notification_recipient(
-    _app_id_e app_id, const string& id) {
-  this->id = id;
-  this->app_id = app_id;
-}
+namespace testing {
 
-const std::string& supla_push_notification_recipient::get_id(void) {
-  return id;
-}
+class PushNotificationRecipientsTest : public Test {
+ protected:
+  supla_push_notification_recipients recipients;
 
-_app_id_e supla_push_notification_recipient::get_app_id(void) { return app_id; }
+ public:
+  PushNotificationRecipientsTest(void);
+  virtual ~PushNotificationRecipientsTest(void);
+};
 
-supla_push_notification_recipient::~supla_push_notification_recipient(void) {}
+} /* namespace testing */
+
+#endif /* PUSH_NOTIFICATION_RECIPIENTS_TEST_H_ */

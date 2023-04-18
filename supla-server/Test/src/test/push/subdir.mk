@@ -4,13 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/push/AccessTokenProviderTest.cpp 
+../src/test/push/AccessTokenProviderTest.cpp \
+../src/test/push/PushNotificationRecipientsTest.cpp 
 
 CPP_DEPS += \
-./src/test/push/AccessTokenProviderTest.d 
+./src/test/push/AccessTokenProviderTest.d \
+./src/test/push/PushNotificationRecipientsTest.d 
 
 OBJS += \
-./src/test/push/AccessTokenProviderTest.o 
+./src/test/push/AccessTokenProviderTest.o \
+./src/test/push/PushNotificationRecipientsTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -25,7 +28,7 @@ src/test/push/%.o: ../src/test/push/%.cpp src/test/push/subdir.mk
 clean: clean-src-2f-test-2f-push
 
 clean-src-2f-test-2f-push:
-	-$(RM) ./src/test/push/AccessTokenProviderTest.d ./src/test/push/AccessTokenProviderTest.o
+	-$(RM) ./src/test/push/AccessTokenProviderTest.d ./src/test/push/AccessTokenProviderTest.o ./src/test/push/PushNotificationRecipientsTest.d ./src/test/push/PushNotificationRecipientsTest.o
 
 .PHONY: clean-src-2f-test-2f-push
 

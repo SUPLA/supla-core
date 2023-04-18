@@ -19,14 +19,29 @@
 #ifndef PUSH_NOTIFICATION_RECIPIENTS_H_
 #define PUSH_NOTIFICATION_RECIPIENTS_H_
 
+#include <map>
+#include <vector>
+
 #include "push/push_notification_recipient.h"
+
+enum _platform_e {
+  platform_unknown,
+  platform_ios,
+  platform_android,
+};
 
 class supla_push_notification_recipients {
  private:
+  std::map<_platform_e, std::vector<supla_push_notification_recipient*>>
+      recipients;
+
  public:
   supla_push_notification_recipients(void);
   virtual ~supla_push_notification_recipients(void);
-  supla_push_notification_recipient* pop(_platform_e platform);
+  supla_push_notification_recipient* get(_platform_e platform, size_t index);
+  size_t count(_platform_e platform);
+  size_t total_count(void);
+  void add(supla_push_notification_recipient* recipient, _platform_e platform);
   bool any_recipient_exists(_platform_e platform);
 };
 
