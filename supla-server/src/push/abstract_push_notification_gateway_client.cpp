@@ -55,7 +55,7 @@ bool supla_abstract_push_notification_gateway_client::send(void) {
     supla_push_notification_recipient *recipient =
         push->get_recipients().get(get_platform(), a);
 
-    if (!recipient) {
+    if (!recipient || !recipient->is_exists()) {
       continue;
     }
 
