@@ -72,7 +72,7 @@ bool supla_abstract_push_notification_gateway_client::send(void) {
 
       curl_adapter->reset();
 
-      if (token.empty() || url.empty() || !_send(token, url, recipient)) {
+      if (token.empty() || url.empty() || !_send(url, token, recipient)) {
         any_error = true;
       } else {
         any_sent = true;
