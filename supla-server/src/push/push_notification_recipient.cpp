@@ -21,15 +21,34 @@
 using std::string;
 
 supla_push_notification_recipient::supla_push_notification_recipient(
-    _app_id_e app_id, const string& id) {
+    int client_id, _app_id_e app_id, const string& id) {
+  this->client_id = client_id;
   this->id = id;
   this->app_id = app_id;
+  this->exists = true;
 }
+
+supla_push_notification_recipient::~supla_push_notification_recipient(void) {}
 
 const std::string& supla_push_notification_recipient::get_id(void) {
   return id;
 }
 
+int supla_push_notification_recipient::get_client_id(void) { return client_id; }
+
 _app_id_e supla_push_notification_recipient::get_app_id(void) { return app_id; }
 
-supla_push_notification_recipient::~supla_push_notification_recipient(void) {}
+void supla_push_notification_recipient::set_message_id(
+    const std::string& message_id) {
+  this->message_id = message_id;
+}
+
+std::string supla_push_notification_recipient::get_message_id(void) {
+  return message_id;
+}
+
+bool supla_push_notification_recipient::is_exists(void) { return exists; }
+
+void supla_push_notification_recipient::set_exists(bool exists) {
+  this->exists = exists;
+}

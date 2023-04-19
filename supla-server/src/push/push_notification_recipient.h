@@ -29,15 +29,24 @@ enum _app_id_e {
 
 class supla_push_notification_recipient {
  private:
+  int client_id;
   _app_id_e app_id;
   std::string id;
+  std::string message_id;
+  bool exists;
 
  public:
-  supla_push_notification_recipient(_app_id_e app_id, const std::string& id);
+  supla_push_notification_recipient(int client_id, _app_id_e app_id,
+                                    const std::string& id);
   virtual ~supla_push_notification_recipient(void);
 
   const std::string& get_id(void);
+  int get_client_id(void);
   _app_id_e get_app_id(void);
+  void set_message_id(const std::string& message_id);
+  std::string get_message_id(void);
+  bool is_exists(void);
+  void set_exists(bool exists);
 };
 
 #endif /* PUSH_NOTIFICATION_RECIPIENT_H_ */
