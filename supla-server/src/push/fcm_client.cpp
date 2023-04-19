@@ -18,7 +18,7 @@
 
 #include "fcm_client.h"
 
-#include <regex>
+#include <regex>  // NOLINT
 
 #include "json/cJSON.h"
 #include "log.h"
