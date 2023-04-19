@@ -37,8 +37,8 @@ class supla_push_notification_delivery_task
 
  public:
   supla_push_notification_delivery_task(
-      supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
-      supla_push_notification *push,
+      int user_id, supla_asynctask_queue *queue,
+      supla_abstract_asynctask_thread_pool *pool, supla_push_notification *push,
       supla_access_token_providers *token_providers);
   virtual ~supla_push_notification_delivery_task(void);
   virtual bool will_use_database(void);

@@ -11,6 +11,7 @@ CPP_SRCS += \
 ../src/push/fcm_access_token_provider.cpp \
 ../src/push/fcm_client.cpp \
 ../src/push/push_notification.cpp \
+../src/push/push_notification_dao.cpp \
 ../src/push/push_notification_delivery_task.cpp \
 ../src/push/push_notification_recipient.cpp \
 ../src/push/push_notification_recipients.cpp \
@@ -24,6 +25,7 @@ CPP_DEPS += \
 ./src/push/fcm_access_token_provider.d \
 ./src/push/fcm_client.d \
 ./src/push/push_notification.d \
+./src/push/push_notification_dao.d \
 ./src/push/push_notification_delivery_task.d \
 ./src/push/push_notification_recipient.d \
 ./src/push/push_notification_recipients.d \
@@ -37,6 +39,7 @@ OBJS += \
 ./src/push/fcm_access_token_provider.o \
 ./src/push/fcm_client.o \
 ./src/push/push_notification.o \
+./src/push/push_notification_dao.o \
 ./src/push/push_notification_delivery_task.o \
 ./src/push/push_notification_recipient.o \
 ./src/push/push_notification_recipients.o \
@@ -55,7 +58,7 @@ src/push/%.o: ../src/push/%.cpp src/push/subdir.mk
 clean: clean-src-2f-push
 
 clean-src-2f-push:
-	-$(RM) ./src/push/abstract_access_token_provider.d ./src/push/abstract_access_token_provider.o ./src/push/abstract_push_notification_gateway_client.d ./src/push/abstract_push_notification_gateway_client.o ./src/push/access_token_providers.d ./src/push/access_token_providers.o ./src/push/apns_client.d ./src/push/apns_client.o ./src/push/fcm_access_token_provider.d ./src/push/fcm_access_token_provider.o ./src/push/fcm_client.d ./src/push/fcm_client.o ./src/push/push_notification.d ./src/push/push_notification.o ./src/push/push_notification_delivery_task.d ./src/push/push_notification_delivery_task.o ./src/push/push_notification_recipient.d ./src/push/push_notification_recipient.o ./src/push/push_notification_recipients.d ./src/push/push_notification_recipients.o ./src/push/push_notification_throttling.d ./src/push/push_notification_throttling.o
+	-$(RM) ./src/push/abstract_access_token_provider.d ./src/push/abstract_access_token_provider.o ./src/push/abstract_push_notification_gateway_client.d ./src/push/abstract_push_notification_gateway_client.o ./src/push/access_token_providers.d ./src/push/access_token_providers.o ./src/push/apns_client.d ./src/push/apns_client.o ./src/push/fcm_access_token_provider.d ./src/push/fcm_access_token_provider.o ./src/push/fcm_client.d ./src/push/fcm_client.o ./src/push/push_notification.d ./src/push/push_notification.o ./src/push/push_notification_dao.d ./src/push/push_notification_dao.o ./src/push/push_notification_delivery_task.d ./src/push/push_notification_delivery_task.o ./src/push/push_notification_recipient.d ./src/push/push_notification_recipient.o ./src/push/push_notification_recipients.d ./src/push/push_notification_recipients.o ./src/push/push_notification_throttling.d ./src/push/push_notification_throttling.o
 
 .PHONY: clean-src-2f-push
 

@@ -18,16 +18,18 @@
 
 #include "push_notification_delivery_task.h"
 
+#include "db/db_access_provider.h"
 #include "push/apns_client.h"
 #include "push/fcm_client.h"
+#include "push/push_notification_dao.h"
 
 using std::string;
 
 supla_push_notification_delivery_task::supla_push_notification_delivery_task(
-    supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
-    supla_push_notification *push,
+    int user_id, supla_asynctask_queue *queue,
+    supla_abstract_asynctask_thread_pool *pool, supla_push_notification *push,
     supla_access_token_providers *token_providers)
-    : supla_asynctask_http_request(supla_caller(), 0, 0, 0, queue, pool,
+    : supla_asynctask_http_request(supla_caller(), user_id, 0, 0, queue, pool,
                                    nullptr) {
   this->push = push;
   this->token_providers = token_providers;
@@ -68,6 +70,32 @@ bool supla_push_notification_delivery_task::make_request(
 
     apns_recipients = true;
     apns_result = client.send();
+  }
+
+  supla_db_access_provider *dba = nullptr;
+  supla_push_notification_dao *dao = nullptr;
+
+  for (size_t a = 0; a < push->get_recipients().total_count(); a++) {
+    supla_push_notification_recipient *recipient =
+        push->get_recipients().get(a);
+    if (!recipient->is_exists()) {
+      if (!dba) {
+        dba = new supla_db_access_provider();
+      }
+      if (!dao) {
+        dao = new supla_push_notification_dao(dba);
+      }
+
+      dao->remove(get_user_id(), recipient);
+    }
+  }
+
+  if (dba) {
+    delete dba;
+  }
+
+  if (dao) {
+    delete dao;
   }
 
   return (fcm_recipients || apns_recipients) &&
