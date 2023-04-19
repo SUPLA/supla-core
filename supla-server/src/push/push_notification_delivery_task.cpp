@@ -21,13 +21,14 @@
 #include "push/apns_client.h"
 #include "push/fcm_client.h"
 
+using std::string;
+
 supla_push_notification_delivery_task::supla_push_notification_delivery_task(
-    const supla_caller &caller, int user_id, int device_id, int channel_id,
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     supla_push_notification *push,
     supla_access_token_providers *token_providers)
-    : supla_asynctask_http_request(supla_caller(), user_id, device_id,
-                                   channel_id, queue, pool, nullptr) {
+    : supla_asynctask_http_request(supla_caller(), 0, 0, 0, queue, pool,
+                                   nullptr) {
   this->push = push;
   this->token_providers = token_providers;
 }
@@ -39,6 +40,14 @@ supla_push_notification_delivery_task::~supla_push_notification_delivery_task(
   }
 }
 
+string supla_push_notification_delivery_task::get_name(void) {
+  return "Push delivery task";
+}
+
+bool supla_push_notification_delivery_task::will_use_database(void) {
+  return true;
+}
+
 bool supla_push_notification_delivery_task::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
   bool fcm_recipients = false;
@@ -47,14 +56,14 @@ bool supla_push_notification_delivery_task::make_request(
   bool apns_recipients = false;
   bool apns_result = false;
 
-  if (push->get_recipients().any_recipient_exists(platform_android)) {
+  if (push->get_recipients().count(platform_android) > 0) {
     supla_fcm_client client(curl_adapter, token_providers, push);
 
     fcm_recipients = true;
     fcm_result = client.send();
   }
 
-  if (push->get_recipients().any_recipient_exists(platform_ios)) {
+  if (push->get_recipients().count(platform_ios) > 0) {
     supla_apns_client client(curl_adapter, token_providers, push);
 
     apns_recipients = true;

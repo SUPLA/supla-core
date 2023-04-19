@@ -32,15 +32,16 @@ class supla_push_notification_delivery_task
   supla_access_token_providers *token_providers;
 
  protected:
-  bool make_request(supla_abstract_curl_adapter *curl_adapter);
+  virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
+  virtual std::string get_name(void);
 
  public:
   supla_push_notification_delivery_task(
-      const supla_caller &caller, int user_id, int device_id, int channel_id,
       supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
       supla_push_notification *push,
       supla_access_token_providers *token_providers);
   virtual ~supla_push_notification_delivery_task(void);
+  virtual bool will_use_database(void);
 };
 
 #endif /* PUSH_NOTIFICATION_DELIVERY_TASK_H_ */
