@@ -30,7 +30,7 @@ TEST_F(PushNotificationRecipientsTest, counting) {
   EXPECT_EQ(recipients.count(platform_android), 0);
   EXPECT_EQ(recipients.count(platform_ios), 0);
 
-  recipients.add(new supla_push_notification_recipient(app_supla, "id1"),
+  recipients.add(new supla_push_notification_recipient(1, app_supla, "id1"),
                  platform_android);
 
   EXPECT_EQ(recipients.total_count(), 1);
@@ -38,7 +38,7 @@ TEST_F(PushNotificationRecipientsTest, counting) {
   EXPECT_EQ(recipients.count(platform_android), 1);
   EXPECT_EQ(recipients.count(platform_ios), 0);
 
-  recipients.add(new supla_push_notification_recipient(app_nice, "id2"),
+  recipients.add(new supla_push_notification_recipient(2, app_nice, "id2"),
                  platform_android);
 
   EXPECT_EQ(recipients.total_count(), 2);
@@ -46,21 +46,29 @@ TEST_F(PushNotificationRecipientsTest, counting) {
   EXPECT_EQ(recipients.count(platform_android), 2);
   EXPECT_EQ(recipients.count(platform_ios), 0);
 
-  recipients.add(new supla_push_notification_recipient(app_supla, "id1"),
+  recipients.add(new supla_push_notification_recipient(3, app_supla, "id1"),
                  platform_ios);
 
   EXPECT_EQ(recipients.total_count(), 3);
   EXPECT_EQ(recipients.count(platform_unknown), 0);
   EXPECT_EQ(recipients.count(platform_android), 2);
   EXPECT_EQ(recipients.count(platform_ios), 1);
+
+  recipients.add(new supla_push_notification_recipient(3, app_supla, "id1"),
+                 platform_ios);
+
+  EXPECT_EQ(recipients.total_count(), 4);
+  EXPECT_EQ(recipients.count(platform_unknown), 0);
+  EXPECT_EQ(recipients.count(platform_android), 2);
+  EXPECT_EQ(recipients.count(platform_ios), 2);
 }
 
 TEST_F(PushNotificationRecipientsTest, addAndGet) {
-  recipients.add(new supla_push_notification_recipient(app_supla, "and1"),
+  recipients.add(new supla_push_notification_recipient(1, app_supla, "and1"),
                  platform_android);
-  recipients.add(new supla_push_notification_recipient(app_supla, "ios1"),
+  recipients.add(new supla_push_notification_recipient(2, app_supla, "ios1"),
                  platform_ios);
-  recipients.add(new supla_push_notification_recipient(app_supla, "ios2"),
+  recipients.add(new supla_push_notification_recipient(3, app_supla, "ios2"),
                  platform_ios);
 
   supla_push_notification_recipient *r = recipients.get(platform_android, 1);
@@ -79,6 +87,23 @@ TEST_F(PushNotificationRecipientsTest, addAndGet) {
   EXPECT_EQ(r->get_id(), "ios2");
 
   r = recipients.get(platform_ios, 2);
+  EXPECT_TRUE(r == nullptr);
+
+  // The order of rising from the platform on the map
+
+  r = recipients.get(0);
+  ASSERT_TRUE(r != nullptr);
+  EXPECT_EQ(r->get_id(), "ios1");
+
+  r = recipients.get(1);
+  ASSERT_TRUE(r != nullptr);
+  EXPECT_EQ(r->get_id(), "ios2");
+
+  r = recipients.get(2);
+  ASSERT_TRUE(r != nullptr);
+  EXPECT_EQ(r->get_id(), "and1");
+
+  r = recipients.get(3);
   EXPECT_TRUE(r == nullptr);
 }
 

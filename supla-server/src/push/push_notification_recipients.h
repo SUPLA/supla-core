@@ -39,10 +39,10 @@ class supla_push_notification_recipients {
   supla_push_notification_recipients(void);
   virtual ~supla_push_notification_recipients(void);
   supla_push_notification_recipient* get(_platform_e platform, size_t index);
+  supla_push_notification_recipient* get(size_t index);
   size_t count(_platform_e platform);
   size_t total_count(void);
   void add(supla_push_notification_recipient* recipient, _platform_e platform);
-  bool any_recipient_exists(_platform_e platform);
 };
 
 #endif /* PUSH_NOTIFICATION_RECIPIENTS_H_ */

@@ -52,6 +52,20 @@ supla_push_notification_recipient* supla_push_notification_recipients::get(
   return nullptr;
 }
 
+supla_push_notification_recipient* supla_push_notification_recipients::get(
+    size_t index) {
+  for (auto mit = recipients.begin(); mit != recipients.end(); ++mit) {
+    if (index >= mit->second.size()) {
+      index -= mit->second.size();
+      continue;
+    }
+
+    return mit->second.at(index);
+  }
+
+  return nullptr;
+}
+
 size_t supla_push_notification_recipients::count(_platform_e platform) {
   auto mit = recipients.find(platform);
   if (mit != recipients.end()) {
@@ -67,9 +81,4 @@ size_t supla_push_notification_recipients::total_count(void) {
     result += mit->second.size();
   }
   return result;
-}
-
-bool supla_push_notification_recipients::any_recipient_exists(
-    _platform_e platform) {
-  return count(platform) > 0;
 }
