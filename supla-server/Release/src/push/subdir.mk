@@ -4,42 +4,39 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/push/abstract_access_token_provider.cpp \
 ../src/push/abstract_pn_gateway_client.cpp \
-../src/push/access_token_providers.cpp \
 ../src/push/apns_client.cpp \
-../src/push/fcm_access_token_provider.cpp \
 ../src/push/fcm_client.cpp \
 ../src/push/pn_dao.cpp \
 ../src/push/pn_delivery_task.cpp \
+../src/push/pn_gateway_access_token.cpp \
+../src/push/pn_gateway_access_token_provider.cpp \
 ../src/push/pn_recipient.cpp \
 ../src/push/pn_recipients.cpp \
 ../src/push/pn_throttling.cpp \
 ../src/push/push_notification.cpp 
 
 CPP_DEPS += \
-./src/push/abstract_access_token_provider.d \
 ./src/push/abstract_pn_gateway_client.d \
-./src/push/access_token_providers.d \
 ./src/push/apns_client.d \
-./src/push/fcm_access_token_provider.d \
 ./src/push/fcm_client.d \
 ./src/push/pn_dao.d \
 ./src/push/pn_delivery_task.d \
+./src/push/pn_gateway_access_token.d \
+./src/push/pn_gateway_access_token_provider.d \
 ./src/push/pn_recipient.d \
 ./src/push/pn_recipients.d \
 ./src/push/pn_throttling.d \
 ./src/push/push_notification.d 
 
 OBJS += \
-./src/push/abstract_access_token_provider.o \
 ./src/push/abstract_pn_gateway_client.o \
-./src/push/access_token_providers.o \
 ./src/push/apns_client.o \
-./src/push/fcm_access_token_provider.o \
 ./src/push/fcm_client.o \
 ./src/push/pn_dao.o \
 ./src/push/pn_delivery_task.o \
+./src/push/pn_gateway_access_token.o \
+./src/push/pn_gateway_access_token_provider.o \
 ./src/push/pn_recipient.o \
 ./src/push/pn_recipients.o \
 ./src/push/pn_throttling.o \
@@ -58,7 +55,7 @@ src/push/%.o: ../src/push/%.cpp src/push/subdir.mk
 clean: clean-src-2f-push
 
 clean-src-2f-push:
-	-$(RM) ./src/push/abstract_access_token_provider.d ./src/push/abstract_access_token_provider.o ./src/push/abstract_pn_gateway_client.d ./src/push/abstract_pn_gateway_client.o ./src/push/access_token_providers.d ./src/push/access_token_providers.o ./src/push/apns_client.d ./src/push/apns_client.o ./src/push/fcm_access_token_provider.d ./src/push/fcm_access_token_provider.o ./src/push/fcm_client.d ./src/push/fcm_client.o ./src/push/pn_dao.d ./src/push/pn_dao.o ./src/push/pn_delivery_task.d ./src/push/pn_delivery_task.o ./src/push/pn_recipient.d ./src/push/pn_recipient.o ./src/push/pn_recipients.d ./src/push/pn_recipients.o ./src/push/pn_throttling.d ./src/push/pn_throttling.o ./src/push/push_notification.d ./src/push/push_notification.o
+	-$(RM) ./src/push/abstract_pn_gateway_client.d ./src/push/abstract_pn_gateway_client.o ./src/push/apns_client.d ./src/push/apns_client.o ./src/push/fcm_client.d ./src/push/fcm_client.o ./src/push/pn_dao.d ./src/push/pn_dao.o ./src/push/pn_delivery_task.d ./src/push/pn_delivery_task.o ./src/push/pn_gateway_access_token.d ./src/push/pn_gateway_access_token.o ./src/push/pn_gateway_access_token_provider.d ./src/push/pn_gateway_access_token_provider.o ./src/push/pn_recipient.d ./src/push/pn_recipient.o ./src/push/pn_recipients.d ./src/push/pn_recipients.o ./src/push/pn_throttling.d ./src/push/pn_throttling.o ./src/push/push_notification.d ./src/push/push_notification.o
 
 .PHONY: clean-src-2f-push
 

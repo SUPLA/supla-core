@@ -22,12 +22,12 @@
 #include <string>
 
 #include "http/abstract_curl_adapter.h"
-#include "push/access_token_providers.h"
+#include "push/pn_gateway_access_token_provider.h"
 #include "push/push_notification.h"
 
 class supla_abstract_pn_gateway_client {
  private:
-  supla_access_token_providers *token_providers;
+  supla_pn_gateway_access_token_provider *token_provider;
   supla_push_notification *push;
   supla_abstract_curl_adapter *curl_adapter;
 
@@ -36,13 +36,13 @@ class supla_abstract_pn_gateway_client {
   supla_abstract_curl_adapter *get_curl_adapter(void);
 
   virtual _platform_e get_platform(void) = 0;
-  virtual bool _send(const std::string &url, const std::string &token,
+  virtual bool _send(supla_pn_gateway_access_token *token,
                      supla_pn_recipient *recipient) = 0;
 
  public:
   supla_abstract_pn_gateway_client(
       supla_abstract_curl_adapter *curl_adapter,
-      supla_access_token_providers *token_providers,
+      supla_pn_gateway_access_token_provider *token_provider,
       supla_push_notification *push);
   virtual ~supla_abstract_pn_gateway_client(void);
   bool send(void);

@@ -22,10 +22,10 @@ using std::string;
 
 supla_abstract_pn_gateway_client::supla_abstract_pn_gateway_client(
     supla_abstract_curl_adapter *curl_adapter,
-    supla_access_token_providers *token_providers,
+    supla_pn_gateway_access_token_provider *token_provider,
     supla_push_notification *push) {
   this->curl_adapter = curl_adapter;
-  this->token_providers = token_providers;
+  this->token_provider = token_provider;
   this->push = push;
 }
 
@@ -45,10 +45,6 @@ bool supla_abstract_pn_gateway_client::send(void) {
   bool any_sent = false;
   bool any_error = false;
 
-  supla_abstract_access_token_provider *token_provider = nullptr;
-
-  _app_id_e last_app_id = app_supla;
-
   for (size_t a = 0; a < push->get_recipients().count(get_platform()); a++) {
     supla_pn_recipient *recipient =
         push->get_recipients().get(get_platform(), a);
@@ -57,26 +53,15 @@ bool supla_abstract_pn_gateway_client::send(void) {
       continue;
     }
 
-    if (token_provider == nullptr || last_app_id != recipient->get_app_id()) {
-      token_provider = token_providers->get_provider(get_platform(),
-                                                     recipient->get_app_id());
+    supla_pn_gateway_access_token token =
+        token_provider->get_token(get_platform(), recipient->get_app_id());
 
-      last_app_id = recipient->get_app_id();
-    }
+    curl_adapter->reset();
 
-    if (token_provider) {
-      string token = token_provider->get_token();
-      string url = token_provider->get_url();
-
-      curl_adapter->reset();
-
-      if (token.empty() || url.empty() || !_send(url, token, recipient)) {
-        any_error = true;
-      } else {
-        any_sent = true;
-      }
-    } else {
+    if (token.is_valid() || !_send(&token, recipient)) {
       any_error = true;
+    } else {
+      any_sent = true;
     }
   }
 

@@ -22,15 +22,15 @@ using std::string;
 
 supla_apns_client::supla_apns_client(
     supla_abstract_curl_adapter *curl_adapter,
-    supla_access_token_providers *token_providers,
+    supla_pn_gateway_access_token_provider *token_provider,
     supla_push_notification *push)
-    : supla_abstract_pn_gateway_client(curl_adapter, token_providers, push) {}
+    : supla_abstract_pn_gateway_client(curl_adapter, token_provider, push) {}
 
 supla_apns_client::~supla_apns_client(void) {}
 
 _platform_e supla_apns_client::get_platform(void) { return platform_ios; }
 
-bool supla_apns_client::_send(const string &url, const string &token,
+bool supla_apns_client::_send(supla_pn_gateway_access_token *token,
                               supla_pn_recipient *recipient) {
   return false;
 }

@@ -36,7 +36,7 @@
 #include "log.h"
 #include "mqtt_client_suite.h"
 #include "proto.h"
-#include "push/access_token_providers.h"
+#include "push/pn_gateway_access_token_provider.h"
 #include "serverstatus.h"
 #include "srpc/srpc.h"
 #include "sthread.h"
@@ -99,9 +99,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  supla_access_token_providers::get_instance()
-      ->initialize();  // Call only when the server configuration is already
-                       // loaded.
+  // Start service only when the server configuration is already loaded.
+  supla_pn_gateway_access_token_provider::global_instance()->start_service();
 
   supla_log(LOG_INFO, "SSL version: %s", OpenSSL_version(OPENSSL_VERSION));
 

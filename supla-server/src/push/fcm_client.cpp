@@ -22,6 +22,7 @@
 
 #include "json/cJSON.h"
 #include "log.h"
+#include "svrcfg.h"
 
 using std::regex;
 using std::smatch;
@@ -29,9 +30,9 @@ using std::string;
 
 supla_fcm_client::supla_fcm_client(
     supla_abstract_curl_adapter *curl_adapter,
-    supla_access_token_providers *token_providers,
+    supla_pn_gateway_access_token_provider *token_provider,
     supla_push_notification *push)
-    : supla_abstract_pn_gateway_client(curl_adapter, token_providers, push) {}
+    : supla_abstract_pn_gateway_client(curl_adapter, token_provider, push) {}
 
 supla_fcm_client::~supla_fcm_client(void) {}
 
@@ -85,13 +86,13 @@ string supla_fcm_client::get_message_id(const string &request_result) {
   return result;
 }
 
-bool supla_fcm_client::_send(const string &url, const string &token,
+bool supla_fcm_client::_send(supla_pn_gateway_access_token *token,
                              supla_pn_recipient *recipient) {
   get_curl_adapter()->append_header("Content-Type: application/json");
-  string _token = "Authorization: Bearer " + token;
+  string _token = "Authorization: Bearer " + token->get_token();
   get_curl_adapter()->append_header(_token.c_str());
 
-  get_curl_adapter()->set_opt_url(url.c_str());
+  get_curl_adapter()->set_opt_url(token->get_url().c_str());
   char *payload = get_payload(recipient);
   get_curl_adapter()->set_opt_post_fields(payload);
 

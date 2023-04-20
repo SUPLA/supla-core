@@ -22,23 +22,23 @@
 #include <string>
 
 #include "http/asynctask_http_request.h"
-#include "push/access_token_providers.h"
+#include "push/pn_gateway_access_token_provider.h"
 #include "push/push_notification.h"
 
 class supla_pn_delivery_task : public supla_asynctask_http_request {
  private:
   supla_push_notification *push;
-  supla_access_token_providers *token_providers;
+  supla_pn_gateway_access_token_provider *token_provider;
 
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
   virtual std::string get_name(void);
 
  public:
-  supla_pn_delivery_task(int user_id, supla_asynctask_queue *queue,
-                         supla_abstract_asynctask_thread_pool *pool,
-                         supla_push_notification *push,
-                         supla_access_token_providers *token_providers);
+  supla_pn_delivery_task(
+      int user_id, supla_asynctask_queue *queue,
+      supla_abstract_asynctask_thread_pool *pool, supla_push_notification *push,
+      supla_pn_gateway_access_token_provider *token_provider);
   virtual ~supla_pn_delivery_task(void);
   virtual bool will_use_database(void);
 };

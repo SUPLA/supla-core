@@ -28,11 +28,11 @@ using std::string;
 supla_pn_delivery_task::supla_pn_delivery_task(
     int user_id, supla_asynctask_queue *queue,
     supla_abstract_asynctask_thread_pool *pool, supla_push_notification *push,
-    supla_access_token_providers *token_providers)
+    supla_pn_gateway_access_token_provider *token_provider)
     : supla_asynctask_http_request(supla_caller(), user_id, 0, 0, queue, pool,
                                    nullptr) {
   this->push = push;
-  this->token_providers = token_providers;
+  this->token_provider = token_provider;
 }
 
 supla_pn_delivery_task::~supla_pn_delivery_task(void) {
@@ -54,14 +54,14 @@ bool supla_pn_delivery_task::make_request(
   bool apns_result = false;
 
   if (push->get_recipients().count(platform_android) > 0) {
-    supla_fcm_client client(curl_adapter, token_providers, push);
+    supla_fcm_client client(curl_adapter, token_provider, push);
 
     fcm_recipients = true;
     fcm_result = client.send();
   }
 
   if (push->get_recipients().count(platform_ios) > 0) {
-    supla_apns_client client(curl_adapter, token_providers, push);
+    supla_apns_client client(curl_adapter, token_provider, push);
 
     apns_recipients = true;
     apns_result = client.send();
