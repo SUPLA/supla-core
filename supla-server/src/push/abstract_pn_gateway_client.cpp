@@ -16,34 +16,32 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "abstract_push_notification_gateway_client.h"
+#include "abstract_pn_gateway_client.h"
 
 using std::string;
 
-supla_abstract_push_notification_gateway_client::
-    supla_abstract_push_notification_gateway_client(
-        supla_abstract_curl_adapter *curl_adapter,
-        supla_access_token_providers *token_providers,
-        supla_push_notification *push) {
+supla_abstract_pn_gateway_client::supla_abstract_pn_gateway_client(
+    supla_abstract_curl_adapter *curl_adapter,
+    supla_access_token_providers *token_providers,
+    supla_push_notification *push) {
   this->curl_adapter = curl_adapter;
   this->token_providers = token_providers;
   this->push = push;
 }
 
-supla_abstract_push_notification_gateway_client::
-    ~supla_abstract_push_notification_gateway_client(void) {}
+supla_abstract_pn_gateway_client::~supla_abstract_pn_gateway_client(void) {}
 
 supla_push_notification *
-supla_abstract_push_notification_gateway_client::get_push_notification(void) {
+supla_abstract_pn_gateway_client::get_push_notification(void) {
   return push;
 }
 
-supla_abstract_curl_adapter *
-supla_abstract_push_notification_gateway_client::get_curl_adapter(void) {
+supla_abstract_curl_adapter *supla_abstract_pn_gateway_client::get_curl_adapter(
+    void) {
   return curl_adapter;
 }
 
-bool supla_abstract_push_notification_gateway_client::send(void) {
+bool supla_abstract_pn_gateway_client::send(void) {
   bool any_sent = false;
   bool any_error = false;
 

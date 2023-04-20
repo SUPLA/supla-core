@@ -31,8 +31,7 @@ supla_fcm_client::supla_fcm_client(
     supla_abstract_curl_adapter *curl_adapter,
     supla_access_token_providers *token_providers,
     supla_push_notification *push)
-    : supla_abstract_push_notification_gateway_client(curl_adapter,
-                                                      token_providers, push) {}
+    : supla_abstract_pn_gateway_client(curl_adapter, token_providers, push) {}
 
 supla_fcm_client::~supla_fcm_client(void) {}
 

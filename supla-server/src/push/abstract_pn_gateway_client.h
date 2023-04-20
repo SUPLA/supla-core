@@ -25,7 +25,7 @@
 #include "push/access_token_providers.h"
 #include "push/push_notification.h"
 
-class supla_abstract_push_notification_gateway_client {
+class supla_abstract_pn_gateway_client {
  private:
   supla_access_token_providers *token_providers;
   supla_push_notification *push;
@@ -40,11 +40,11 @@ class supla_abstract_push_notification_gateway_client {
                      supla_pn_recipient *recipient) = 0;
 
  public:
-  supla_abstract_push_notification_gateway_client(
+  supla_abstract_pn_gateway_client(
       supla_abstract_curl_adapter *curl_adapter,
       supla_access_token_providers *token_providers,
       supla_push_notification *push);
-  virtual ~supla_abstract_push_notification_gateway_client(void);
+  virtual ~supla_abstract_pn_gateway_client(void);
   bool send(void);
 };
 

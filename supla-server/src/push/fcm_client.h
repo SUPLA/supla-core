@@ -21,10 +21,9 @@
 
 #include <string>
 
-#include "push/abstract_push_notification_gateway_client.h"
+#include "push/abstract_pn_gateway_client.h"
 
-class supla_fcm_client
-    : public supla_abstract_push_notification_gateway_client {
+class supla_fcm_client : public supla_abstract_pn_gateway_client {
  protected:
   virtual _platform_e get_platform(void);
   char *get_payload(supla_pn_recipient *recipient);

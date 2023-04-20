@@ -21,10 +21,9 @@
 
 #include <string>
 
-#include "push/abstract_push_notification_gateway_client.h"
+#include "push/abstract_pn_gateway_client.h"
 
-class supla_apns_client
-    : public supla_abstract_push_notification_gateway_client {
+class supla_apns_client : public supla_abstract_pn_gateway_client {
  protected:
   virtual bool _send(const std::string &url, const std::string &token,
                      supla_pn_recipient *recipient);
