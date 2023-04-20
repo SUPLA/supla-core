@@ -22,13 +22,13 @@
 #include "db/abstract_db_access_provider.h"
 #include "push/push_notification_recipient.h"
 
-class supla_push_notification_dao {
+class supla_pn_dao {
  private:
   supla_abstract_db_access_provider *dba;
 
  public:
-  supla_push_notification_dao(supla_abstract_db_access_provider *dba);
-  virtual ~supla_push_notification_dao(void);
+  supla_pn_dao(supla_abstract_db_access_provider *dba);
+  virtual ~supla_pn_dao(void);
   void remove(int user_id, supla_push_notification_recipient *recipient);
 };
 

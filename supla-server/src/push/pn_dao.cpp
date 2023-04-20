@@ -16,19 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "push_notification_dao.h"
+#include "pn_dao.h"
 
 #include <mysql/mysql.h>
 
-supla_push_notification_dao::supla_push_notification_dao(
-    supla_abstract_db_access_provider *dba) {
+supla_pn_dao::supla_pn_dao(supla_abstract_db_access_provider *dba) {
   this->dba = dba;
 }
 
-supla_push_notification_dao::~supla_push_notification_dao(void) {}
+supla_pn_dao::~supla_pn_dao(void) {}
 
-void supla_push_notification_dao::remove(
-    int user_id, supla_push_notification_recipient *recipient) {
+void supla_pn_dao::remove(int user_id,
+                          supla_push_notification_recipient *recipient) {
   if (!user_id || !recipient || !recipient->get_client_id()) {
     return;
   }

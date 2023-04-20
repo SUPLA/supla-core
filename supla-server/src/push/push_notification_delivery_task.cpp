@@ -21,7 +21,7 @@
 #include "db/db_access_provider.h"
 #include "push/apns_client.h"
 #include "push/fcm_client.h"
-#include "push/push_notification_dao.h"
+#include "push/pn_dao.h"
 
 using std::string;
 
@@ -73,7 +73,7 @@ bool supla_push_notification_delivery_task::make_request(
   }
 
   supla_db_access_provider *dba = nullptr;
-  supla_push_notification_dao *dao = nullptr;
+  supla_pn_dao *dao = nullptr;
 
   for (size_t a = 0; a < push->get_recipients().total_count(); a++) {
     supla_push_notification_recipient *recipient =
@@ -83,7 +83,7 @@ bool supla_push_notification_delivery_task::make_request(
         dba = new supla_db_access_provider();
       }
       if (!dao) {
-        dao = new supla_push_notification_dao(dba);
+        dao = new supla_pn_dao(dba);
       }
 
       dao->remove(get_user_id(), recipient);
