@@ -21,18 +21,18 @@
 
 #include <string>
 
-#include "push/push_notification_recipients.h"
+#include "push/pn_recipients.h"
 
 class supla_push_notification {
  private:
   std::string title;
   std::string body;
-  supla_push_notification_recipients recipients;
+  supla_pn_recipients recipients;
 
  public:
   supla_push_notification(void);
   virtual ~supla_push_notification(void);
-  supla_push_notification_recipients &get_recipients(void);
+  supla_pn_recipients &get_recipients(void);
   void set_title(const std::string &title);
   const std::string &get_title(void);
   void set_body(const std::string &body);

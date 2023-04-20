@@ -30,13 +30,13 @@ enum _platform_e {
   platform_android,
 };
 
-class supla_push_notification_recipients {
+class supla_pn_recipients {
  private:
   std::map<_platform_e, std::vector<supla_pn_recipient*>> recipients;
 
  public:
-  supla_push_notification_recipients(void);
-  virtual ~supla_push_notification_recipients(void);
+  supla_pn_recipients(void);
+  virtual ~supla_pn_recipients(void);
   supla_pn_recipient* get(_platform_e platform, size_t index);
   supla_pn_recipient* get(size_t index);
   size_t count(_platform_e platform);

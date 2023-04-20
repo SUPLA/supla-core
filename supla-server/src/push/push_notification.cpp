@@ -24,8 +24,7 @@ supla_push_notification::supla_push_notification(void) {}
 
 supla_push_notification::~supla_push_notification(void) {}
 
-supla_push_notification_recipients &supla_push_notification::get_recipients(
-    void) {
+supla_pn_recipients &supla_push_notification::get_recipients(void) {
   return recipients;
 }
 

@@ -20,13 +20,13 @@
 #define PUSH_NOTIFICATION_RECIPIENTS_TEST_H_
 
 #include "gtest/gtest.h"  // NOLINT
-#include "push/push_notification_recipients.h"
+#include "push/pn_recipients.h"
 
 namespace testing {
 
 class PushNotificationRecipientsTest : public Test {
  protected:
-  supla_push_notification_recipients recipients;
+  supla_pn_recipients recipients;
 
  public:
   PushNotificationRecipientsTest(void);
