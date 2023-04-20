@@ -52,7 +52,7 @@ bool supla_abstract_push_notification_gateway_client::send(void) {
   _app_id_e last_app_id = app_supla;
 
   for (size_t a = 0; a < push->get_recipients().count(get_platform()); a++) {
-    supla_push_notification_recipient *recipient =
+    supla_pn_recipient *recipient =
         push->get_recipients().get(get_platform(), a);
 
     if (!recipient || !recipient->is_exists()) {

@@ -26,8 +26,7 @@ supla_pn_dao::supla_pn_dao(supla_abstract_db_access_provider *dba) {
 
 supla_pn_dao::~supla_pn_dao(void) {}
 
-void supla_pn_dao::remove(int user_id,
-                          supla_push_notification_recipient *recipient) {
+void supla_pn_dao::remove(int user_id, supla_pn_recipient *recipient) {
   if (!user_id || !recipient || !recipient->get_client_id()) {
     return;
   }

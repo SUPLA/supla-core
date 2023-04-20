@@ -31,17 +31,17 @@ supla_push_notification_recipients::~supla_push_notification_recipients(void) {
   }
 }
 
-void supla_push_notification_recipients::add(
-    supla_push_notification_recipient* recipient, _platform_e platform) {
+void supla_push_notification_recipients::add(supla_pn_recipient* recipient,
+                                             _platform_e platform) {
   auto mit = recipients.find(platform);
   if (mit == recipients.end()) {
-    recipients[platform] = vector<supla_push_notification_recipient*>();
+    recipients[platform] = vector<supla_pn_recipient*>();
   }
 
   recipients[platform].push_back(recipient);
 }
 
-supla_push_notification_recipient* supla_push_notification_recipients::get(
+supla_pn_recipient* supla_push_notification_recipients::get(
     _platform_e platform, size_t index) {
   auto mit = recipients.find(platform);
 
@@ -52,8 +52,7 @@ supla_push_notification_recipient* supla_push_notification_recipients::get(
   return nullptr;
 }
 
-supla_push_notification_recipient* supla_push_notification_recipients::get(
-    size_t index) {
+supla_pn_recipient* supla_push_notification_recipients::get(size_t index) {
   for (auto mit = recipients.begin(); mit != recipients.end(); ++mit) {
     if (index >= mit->second.size()) {
       index -= mit->second.size();

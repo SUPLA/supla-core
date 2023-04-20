@@ -27,7 +27,7 @@ class supla_apns_client
     : public supla_abstract_push_notification_gateway_client {
  protected:
   virtual bool _send(const std::string &url, const std::string &token,
-                     supla_push_notification_recipient *recipient);
+                     supla_pn_recipient *recipient);
   _platform_e get_platform(void);
 
  public:

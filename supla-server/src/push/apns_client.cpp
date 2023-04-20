@@ -32,6 +32,6 @@ supla_apns_client::~supla_apns_client(void) {}
 _platform_e supla_apns_client::get_platform(void) { return platform_ios; }
 
 bool supla_apns_client::_send(const string &url, const string &token,
-                              supla_push_notification_recipient *recipient) {
+                              supla_pn_recipient *recipient) {
   return false;
 }

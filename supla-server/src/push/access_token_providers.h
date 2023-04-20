@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "push/abstract_access_token_provider.h"
-#include "push/push_notification_recipient.h"
+#include "push/pn_recipient.h"
 
 class supla_access_token_providers {
  private:

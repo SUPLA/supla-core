@@ -71,8 +71,7 @@ bool supla_pn_delivery_task::make_request(
   supla_pn_dao *dao = nullptr;
 
   for (size_t a = 0; a < push->get_recipients().total_count(); a++) {
-    supla_push_notification_recipient *recipient =
-        push->get_recipients().get(a);
+    supla_pn_recipient *recipient = push->get_recipients().get(a);
     if (!recipient->is_exists()) {
       if (!dba) {
         dba = new supla_db_access_provider();

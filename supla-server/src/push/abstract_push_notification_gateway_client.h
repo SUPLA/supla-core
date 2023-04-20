@@ -37,7 +37,7 @@ class supla_abstract_push_notification_gateway_client {
 
   virtual _platform_e get_platform(void) = 0;
   virtual bool _send(const std::string &url, const std::string &token,
-                     supla_push_notification_recipient *recipient) = 0;
+                     supla_pn_recipient *recipient) = 0;
 
  public:
   supla_abstract_push_notification_gateway_client(

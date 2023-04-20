@@ -27,7 +27,7 @@ enum _app_id_e {
   app_comelit = 2,
 };
 
-class supla_push_notification_recipient {
+class supla_pn_recipient {
  private:
   int client_id;
   _app_id_e app_id;
@@ -36,9 +36,8 @@ class supla_push_notification_recipient {
   bool exists;
 
  public:
-  supla_push_notification_recipient(int client_id, _app_id_e app_id,
-                                    const std::string& id);
-  virtual ~supla_push_notification_recipient(void);
+  supla_pn_recipient(int client_id, _app_id_e app_id, const std::string& id);
+  virtual ~supla_pn_recipient(void);
 
   const std::string& get_id(void);
   int get_client_id(void);

@@ -38,8 +38,7 @@ supla_fcm_client::~supla_fcm_client(void) {}
 
 _platform_e supla_fcm_client::get_platform(void) { return platform_android; }
 
-char *supla_fcm_client::get_payload(
-    supla_push_notification_recipient *recipient) {
+char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
   cJSON *root = cJSON_CreateObject();
   cJSON *message = cJSON_CreateObject();
   cJSON_AddItemToObject(root, "message", message);
@@ -88,7 +87,7 @@ string supla_fcm_client::get_message_id(const string &request_result) {
 }
 
 bool supla_fcm_client::_send(const string &url, const string &token,
-                             supla_push_notification_recipient *recipient) {
+                             supla_pn_recipient *recipient) {
   get_curl_adapter()->append_header("Content-Type: application/json");
   string _token = "Authorization: Bearer " + token;
   get_curl_adapter()->append_header(_token.c_str());

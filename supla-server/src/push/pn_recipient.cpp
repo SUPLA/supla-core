@@ -16,39 +16,32 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "push_notification_recipient.h"
+#include "pn_recipient.h"
 
 using std::string;
 
-supla_push_notification_recipient::supla_push_notification_recipient(
-    int client_id, _app_id_e app_id, const string& id) {
+supla_pn_recipient::supla_pn_recipient(int client_id, _app_id_e app_id,
+                                       const string& id) {
   this->client_id = client_id;
   this->id = id;
   this->app_id = app_id;
   this->exists = true;
 }
 
-supla_push_notification_recipient::~supla_push_notification_recipient(void) {}
+supla_pn_recipient::~supla_pn_recipient(void) {}
 
-const std::string& supla_push_notification_recipient::get_id(void) {
-  return id;
-}
+const std::string& supla_pn_recipient::get_id(void) { return id; }
 
-int supla_push_notification_recipient::get_client_id(void) { return client_id; }
+int supla_pn_recipient::get_client_id(void) { return client_id; }
 
-_app_id_e supla_push_notification_recipient::get_app_id(void) { return app_id; }
+_app_id_e supla_pn_recipient::get_app_id(void) { return app_id; }
 
-void supla_push_notification_recipient::set_message_id(
-    const std::string& message_id) {
+void supla_pn_recipient::set_message_id(const std::string& message_id) {
   this->message_id = message_id;
 }
 
-std::string supla_push_notification_recipient::get_message_id(void) {
-  return message_id;
-}
+std::string supla_pn_recipient::get_message_id(void) { return message_id; }
 
-bool supla_push_notification_recipient::is_exists(void) { return exists; }
+bool supla_pn_recipient::is_exists(void) { return exists; }
 
-void supla_push_notification_recipient::set_exists(bool exists) {
-  this->exists = exists;
-}
+void supla_pn_recipient::set_exists(bool exists) { this->exists = exists; }
