@@ -25,8 +25,7 @@
 #include "push/access_token_providers.h"
 #include "push/push_notification.h"
 
-class supla_push_notification_delivery_task
-    : public supla_asynctask_http_request {
+class supla_pn_delivery_task : public supla_asynctask_http_request {
  private:
   supla_push_notification *push;
   supla_access_token_providers *token_providers;
@@ -36,11 +35,11 @@ class supla_push_notification_delivery_task
   virtual std::string get_name(void);
 
  public:
-  supla_push_notification_delivery_task(
-      int user_id, supla_asynctask_queue *queue,
-      supla_abstract_asynctask_thread_pool *pool, supla_push_notification *push,
-      supla_access_token_providers *token_providers);
-  virtual ~supla_push_notification_delivery_task(void);
+  supla_pn_delivery_task(int user_id, supla_asynctask_queue *queue,
+                         supla_abstract_asynctask_thread_pool *pool,
+                         supla_push_notification *push,
+                         supla_access_token_providers *token_providers);
+  virtual ~supla_pn_delivery_task(void);
   virtual bool will_use_database(void);
 };
 
