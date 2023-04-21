@@ -37,7 +37,7 @@ class supla_pn_gateway_access_token_provider {
 
   void process_result(std::vector<supla_pn_gateway_access_token> *tokens,
                       _platform_e platform, cJSON *platform_json,
-                      _app_id_e app_id, const std::string &app_name);
+                      cJSON *app_json);
 
   void process_result(std::vector<supla_pn_gateway_access_token> *tokens,
                       _platform_e platform, const std::string &platform_name,
@@ -62,8 +62,8 @@ class supla_pn_gateway_access_token_provider {
   virtual void start_service(void);
   void stop_service(void);
 
-  supla_pn_gateway_access_token get_token(_platform_e platform,
-                                          _app_id_e app_id);
+  supla_pn_gateway_access_token get_token(_platform_e platform, int app_id);
+  size_t get_token_count(void);
   bool is_any_token_available(void);
   bool is_service_running(void);
 

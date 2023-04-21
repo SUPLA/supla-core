@@ -27,12 +27,12 @@ supla_pn_gateway_access_token::supla_pn_gateway_access_token(void) {
   expires_at.tv_sec += 60 * 60 * 24 * 365 * 10;  // 10 years
 
   platform = platform_unknown;
-  app_id = app_supla;
+  app_id = 0;
 }
 
 supla_pn_gateway_access_token::supla_pn_gateway_access_token(
     const string &url, const string &token, int expires_in,
-    _platform_e platform, _app_id_e app_id) {
+    _platform_e platform, int app_id) {
   gettimeofday(&expires_at, nullptr);
   if (expires_in == 0) {
     expires_in += 60 * 60 * 24 * 365 * 10;  // 10 years
@@ -51,7 +51,7 @@ _platform_e supla_pn_gateway_access_token::get_platform(void) {
   return platform;
 }
 
-_app_id_e supla_pn_gateway_access_token::get_app_id(void) { return app_id; }
+int supla_pn_gateway_access_token::get_app_id(void) { return app_id; }
 
 string supla_pn_gateway_access_token::get_url(void) { return url; }
 

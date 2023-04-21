@@ -20,7 +20,7 @@
 
 using std::string;
 
-supla_pn_recipient::supla_pn_recipient(int client_id, _app_id_e app_id,
+supla_pn_recipient::supla_pn_recipient(int client_id, int app_id,
                                        const string& id) {
   this->client_id = client_id;
   this->id = id;
@@ -34,7 +34,7 @@ const std::string& supla_pn_recipient::get_id(void) { return id; }
 
 int supla_pn_recipient::get_client_id(void) { return client_id; }
 
-_app_id_e supla_pn_recipient::get_app_id(void) { return app_id; }
+int supla_pn_recipient::get_app_id(void) { return app_id; }
 
 void supla_pn_recipient::set_message_id(const std::string& message_id) {
   this->message_id = message_id;

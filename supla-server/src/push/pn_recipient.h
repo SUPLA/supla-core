@@ -21,27 +21,21 @@
 
 #include <string>
 
-enum _app_id_e {
-  app_supla = 0,
-  app_nice = 1,
-  app_comelit = 2,
-};
-
 class supla_pn_recipient {
  private:
   int client_id;
-  _app_id_e app_id;
+  int app_id;
   std::string id;
   std::string message_id;
   bool exists;
 
  public:
-  supla_pn_recipient(int client_id, _app_id_e app_id, const std::string& id);
+  supla_pn_recipient(int client_id, int app_id, const std::string& id);
   virtual ~supla_pn_recipient(void);
 
   const std::string& get_id(void);
   int get_client_id(void);
-  _app_id_e get_app_id(void);
+  int get_app_id(void);
   void set_message_id(const std::string& message_id);
   std::string get_message_id(void);
   bool is_exists(void);

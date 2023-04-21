@@ -135,10 +135,15 @@ int supla_pn_gateway_access_token_provider::min_secs_between_refresh_attempts(
 
 void supla_pn_gateway_access_token_provider::process_result(
     vector<supla_pn_gateway_access_token> *tokens, _platform_e platform,
-    cJSON *platform_json, _app_id_e app_id, const string &app_name) {
-  cJSON *app_json = cJSON_GetObjectItem(platform_json, app_name.c_str());
+    cJSON *platform_json, cJSON *app_json) {
+  if (!app_json || !app_json->string) {
+    return;
+  }
 
-  if (!app_json) {
+  char *endptr = nullptr;
+  int app_id = strtol(app_json->string, &endptr, 10);
+
+  if (endptr == app_json->string || *endptr != '\0') {
     return;
   }
 
@@ -174,9 +179,11 @@ void supla_pn_gateway_access_token_provider::process_result(
     return;
   }
 
-  process_result(tokens, platform, platform_json, app_supla, "supla");
-  process_result(tokens, platform, platform_json, app_comelit, "comelit");
-  process_result(tokens, platform, platform_json, app_nice, "nice");
+  int size = cJSON_GetArraySize(platform_json);
+  for (int a = 0; a < size; a++) {
+    cJSON *item = cJSON_GetArrayItem(platform_json, a);
+    process_result(tokens, platform, platform_json, item);
+  }
 }
 
 void supla_pn_gateway_access_token_provider::get_new_tokens(
@@ -208,14 +215,17 @@ void supla_pn_gateway_access_token_provider::get_new_tokens(
   cJSON *root = cJSON_Parse(request_result.c_str());
   request_result = "";
 
-  if (!root) {
-    return;
+  if (root) {
+    process_result(tokens, platform_android, "android", root);
+    process_result(tokens, platform_ios, "ios", root);
+
+    cJSON_Delete(root);
   }
 
-  process_result(tokens, platform_android, "android", root);
-  process_result(tokens, platform_ios, "ios", root);
-
-  cJSON_Delete(root);
+  if (!tokens->size()) {
+    supla_log(LOG_ERR,
+              "Could not get any token for PUSH gateway from AD server.");
+  }
 }
 
 bool supla_pn_gateway_access_token_provider::refresh(void) {
@@ -227,15 +237,17 @@ bool supla_pn_gateway_access_token_provider::refresh(void) {
   lck_lock(refresh_lck);
   struct timeval now = {};
   gettimeofday(&now, nullptr);
+
   if (last_refresh_attpemt_time.tv_sec == 0 ||
       now.tv_sec - last_refresh_attpemt_time.tv_sec >=
           min_secs_between_refresh_attempts()) {
     last_refresh_attpemt_time = now;
+
     get_new_tokens(&tokens);
   }
   lck_unlock(refresh_lck);
 
-  if (result) {
+  if (tokens.size()) {
     lck_lock(data_lck);
 
     for (auto nit = tokens.rbegin(); nit != tokens.rend(); ++nit) {
@@ -244,6 +256,7 @@ bool supla_pn_gateway_access_token_provider::refresh(void) {
       while (it != this->tokens.rend()) {
         if (it->get_platform() == nit->get_platform() &&
             it->get_app_id() == nit->get_app_id()) {
+          *it = *nit;
           break;
         }
         ++it;
@@ -261,7 +274,7 @@ bool supla_pn_gateway_access_token_provider::refresh(void) {
 }
 
 supla_pn_gateway_access_token supla_pn_gateway_access_token_provider::get_token(
-    _platform_e platform, _app_id_e app_id) {
+    _platform_e platform, int app_id) {
   supla_pn_gateway_access_token result;
 
   lck_lock(data_lck);
@@ -276,11 +289,15 @@ supla_pn_gateway_access_token supla_pn_gateway_access_token_provider::get_token(
   return result;
 }
 
-bool supla_pn_gateway_access_token_provider::is_any_token_available(void) {
+size_t supla_pn_gateway_access_token_provider::get_token_count(void) {
   lck_lock(data_lck);
-  bool result = tokens.size() > 0;
+  size_t result = tokens.size();
   lck_unlock(data_lck);
   return result;
+}
+
+bool supla_pn_gateway_access_token_provider::is_any_token_available(void) {
+  return get_token_count() > 0;
 }
 
 bool supla_pn_gateway_access_token_provider::is_service_running(void) {
