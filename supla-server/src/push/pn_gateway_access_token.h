@@ -42,6 +42,7 @@ class supla_pn_gateway_access_token {
   _app_id_e get_app_id(void);
   std::string get_url(void);
   std::string get_token(void);
+  int get_expires_in(void);
   void set_token(const std::string &token);
   bool is_valid(void);
   void get_expiration_time_if_earlier(struct timeval *expires_at);

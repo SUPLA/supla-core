@@ -71,6 +71,13 @@ bool supla_pn_gateway_access_token::is_valid(void) {
   return false;
 }
 
+int supla_pn_gateway_access_token::get_expires_in(void) {
+  struct timeval now = {};
+  gettimeofday(&now, nullptr);
+
+  return expires_at.tv_sec - now.tv_sec;
+}
+
 void supla_pn_gateway_access_token::get_expiration_time_if_earlier(
     struct timeval *expires_at) {
   if (expires_at->tv_sec == 0 || expires_at->tv_sec > this->expires_at.tv_sec ||
