@@ -54,7 +54,7 @@ bool supla_alexa_response_request::make_request(
   size_t sub_pos = correlation_token.find("::SUB=");
   int subchannel_id = 0;
   if (sub_pos != string::npos) {
-    subchannel_id = atoi(correlation_token.substr(sub_pos + 6).c_str());
+    subchannel_id = std::stoi(correlation_token.substr(sub_pos + 6));
     correlation_token = correlation_token.substr(0, sub_pos);
   }
 
