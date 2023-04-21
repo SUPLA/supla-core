@@ -30,28 +30,28 @@ TEST_F(PushNotificationRecipientsTest, counting) {
   EXPECT_EQ(recipients.count(platform_android), 0);
   EXPECT_EQ(recipients.count(platform_ios), 0);
 
-  recipients.add(new supla_pn_recipient(1, app_supla, "id1"), platform_android);
+  recipients.add(new supla_pn_recipient(1, 0, "id1"), platform_android);
 
   EXPECT_EQ(recipients.total_count(), 1);
   EXPECT_EQ(recipients.count(platform_unknown), 0);
   EXPECT_EQ(recipients.count(platform_android), 1);
   EXPECT_EQ(recipients.count(platform_ios), 0);
 
-  recipients.add(new supla_pn_recipient(2, app_nice, "id2"), platform_android);
+  recipients.add(new supla_pn_recipient(2, 1, "id2"), platform_android);
 
   EXPECT_EQ(recipients.total_count(), 2);
   EXPECT_EQ(recipients.count(platform_unknown), 0);
   EXPECT_EQ(recipients.count(platform_android), 2);
   EXPECT_EQ(recipients.count(platform_ios), 0);
 
-  recipients.add(new supla_pn_recipient(3, app_supla, "id1"), platform_ios);
+  recipients.add(new supla_pn_recipient(3, 2, "id1"), platform_ios);
 
   EXPECT_EQ(recipients.total_count(), 3);
   EXPECT_EQ(recipients.count(platform_unknown), 0);
   EXPECT_EQ(recipients.count(platform_android), 2);
   EXPECT_EQ(recipients.count(platform_ios), 1);
 
-  recipients.add(new supla_pn_recipient(3, app_supla, "id1"), platform_ios);
+  recipients.add(new supla_pn_recipient(3, 0, "id1"), platform_ios);
 
   EXPECT_EQ(recipients.total_count(), 4);
   EXPECT_EQ(recipients.count(platform_unknown), 0);
@@ -60,10 +60,9 @@ TEST_F(PushNotificationRecipientsTest, counting) {
 }
 
 TEST_F(PushNotificationRecipientsTest, addAndGet) {
-  recipients.add(new supla_pn_recipient(1, app_supla, "and1"),
-                 platform_android);
-  recipients.add(new supla_pn_recipient(2, app_supla, "ios1"), platform_ios);
-  recipients.add(new supla_pn_recipient(3, app_supla, "ios2"), platform_ios);
+  recipients.add(new supla_pn_recipient(1, 0, "and1"), platform_android);
+  recipients.add(new supla_pn_recipient(2, 0, "ios1"), platform_ios);
+  recipients.add(new supla_pn_recipient(3, 0, "ios2"), platform_ios);
 
   supla_pn_recipient *r = recipients.get(platform_android, 1);
   EXPECT_TRUE(r == nullptr);

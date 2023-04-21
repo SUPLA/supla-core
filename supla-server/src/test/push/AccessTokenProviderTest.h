@@ -19,6 +19,7 @@
 #ifndef ACCESS_TOKEN_PROVIDER_TEST_H_
 #define ACCESS_TOKEN_PROVIDER_TEST_H_
 
+#include "doubles/http/CurlAdapterMock.h"
 #include "doubles/push/AccessTokenProviderMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
@@ -26,12 +27,14 @@ namespace testing {
 
 class AccessTokenProviderTest : public Test {
  protected:
-  AccessTokenProviderMock provider;
+  CurlAdapterMock *curlAdapter;
+  AccessTokenProviderMock *provider;
 
  public:
   AccessTokenProviderTest(void);
   virtual ~AccessTokenProviderTest(void);
   virtual void SetUp(void);
+  virtual void TearDown(void);
 };
 
 } /* namespace testing */

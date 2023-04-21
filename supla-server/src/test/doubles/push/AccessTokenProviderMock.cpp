@@ -22,9 +22,16 @@ namespace testing {
 
 using std::shared_ptr;
 
-AccessTokenProviderMock::AccessTokenProviderMock(void)
-    : supla_abstract_access_token_provider() {}
+AccessTokenProviderMock::AccessTokenProviderMock(
+    supla_abstract_curl_adapter *curl_adapter)
+    : supla_pn_gateway_access_token_provider() {
+  this->curl_adapter = curl_adapter;
+}
 
 AccessTokenProviderMock::~AccessTokenProviderMock() {}
+
+void AccessTokenProviderMock::refresh(void) {
+  supla_pn_gateway_access_token_provider::refresh();
+}
 
 }  // namespace testing
