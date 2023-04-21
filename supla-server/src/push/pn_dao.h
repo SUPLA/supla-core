@@ -27,7 +27,7 @@ class supla_pn_dao {
   supla_abstract_db_access_provider *dba;
 
  public:
-  supla_pn_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_pn_dao(supla_abstract_db_access_provider *dba);
   virtual ~supla_pn_dao(void);
   void remove(int user_id, supla_pn_recipient *recipient);
 };
