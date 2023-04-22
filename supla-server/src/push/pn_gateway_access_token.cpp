@@ -86,3 +86,11 @@ void supla_pn_gateway_access_token::get_expiration_time_if_earlier(
     *expires_at = this->expires_at;
   }
 }
+
+void supla_pn_gateway_access_token::set_extra_field(string name, string value) {
+  extra_fields[name] = value;
+}
+
+string supla_pn_gateway_access_token::get_extra_field(string name) {
+  return extra_fields[name];
+}

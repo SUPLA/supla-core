@@ -210,14 +210,15 @@ TEST_F(AccessTokenProviderTest, multipleTokensAndOneSoonExpired) {
               "3800,\"url\":\"https://"
               "push3.supla.org\"}},\"ios\":{\"0\":{\"token\":\"abcd4\","
               "\"expires_in\":1,\"url\":\"https://"
-              "push4.supla.org\"},\"1\":{\"token\":\"abcd5\",\"expires_in\":"
-              "4000,\"url\":\"https://"
-              "push5.supla.org\"},\"2\":{\"token\":\"abcd6\",\"expires_in\":"
-              "4100,\"url\":\"https://push6.supla.org\"}}}";
+              "push4.supla.org\",\"bundle_id\":\"bid1\"},\"1\":{\"token\":"
+              "\"abcd5\",\"expires_in\":4000,\"url\":\"https://"
+              "push5.supla.org\",\"bundle_id\":\"bid2\"},\"2\":{\"token\":"
+              "\"abcd6\",\"expires_in\":4100,\"url\":\"https://"
+              "push6.supla.org\",\"bundle_id\":\"bid3\"}}}";
         } else {
           *request_result =
               "{\"ios\":{\"0\":{\"token\":\"XyZ\",\"url\":\"https://"
-              "push.supla.org\",\"expires_in\":100}}}";
+              "push.supla.org\",\"expires_in\":100,\"bundle_id\":\"bid1\"}}}";
         }
       });
 
@@ -295,18 +296,21 @@ TEST_F(AccessTokenProviderTest, multipleTokensAndOneSoonExpired) {
   EXPECT_LE(token.get_expires_in(), 100);
   EXPECT_EQ(token.get_token(), "XyZ");
   EXPECT_EQ(token.get_url(), "https://push.supla.org");
+  EXPECT_EQ(token.get_extra_field("bundle_id"), "bid1");
 
   token = provider->get_token(platform_ios, 1);
   EXPECT_GE(token.get_expires_in(), 3995);
   EXPECT_LE(token.get_expires_in(), 3998);
   EXPECT_EQ(token.get_token(), "abcd5");
   EXPECT_EQ(token.get_url(), "https://push5.supla.org");
+  EXPECT_EQ(token.get_extra_field("bundle_id"), "bid2");
 
   token = provider->get_token(platform_ios, 2);
   EXPECT_GE(token.get_expires_in(), 4095);
   EXPECT_LE(token.get_expires_in(), 4098);
   EXPECT_EQ(token.get_token(), "abcd6");
   EXPECT_EQ(token.get_url(), "https://push6.supla.org");
+  EXPECT_EQ(token.get_extra_field("bundle_id"), "bid3");
 }
 
 } /* namespace testing */

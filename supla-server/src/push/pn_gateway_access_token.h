@@ -19,6 +19,7 @@
 #ifndef PUSH_NOTIFICATION_GATEWAY_ACCESS_TOKEN_H_
 #define PUSH_NOTIFICATION_GATEWAY_ACCESS_TOKEN_H_
 
+#include <map>
 #include <string>
 
 #include "push/pn_recipients.h"
@@ -30,6 +31,7 @@ class supla_pn_gateway_access_token {
   std::string token;
   int app_id;
   _platform_e platform;
+  std::map<std::string, std::string> extra_fields;
 
  public:
   supla_pn_gateway_access_token(void);
@@ -46,6 +48,8 @@ class supla_pn_gateway_access_token {
   void set_token(const std::string &token);
   bool is_valid(void);
   void get_expiration_time_if_earlier(struct timeval *expires_at);
+  void set_extra_field(std::string name, std::string value);
+  std::string get_extra_field(std::string name);
 };
 
 #endif /* PUSH_NOTIFICATION_GATEWAY_ACCESS_TOKEN_H_ */

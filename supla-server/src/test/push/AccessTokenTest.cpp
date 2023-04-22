@@ -77,4 +77,22 @@ TEST_F(AccessTokenTest, getExpirationTimeIfEarlier) {
   EXPECT_LE(now1.tv_sec - now2.tv_sec, 61);
 }
 
+TEST_F(AccessTokenTest, extraFields) {
+  supla_pn_gateway_access_token token("a", "b", 60, platform_ios, 1);
+  EXPECT_EQ(token.get_extra_field("extra1"), "");
+  EXPECT_EQ(token.get_extra_field("extra2"), "");
+  EXPECT_EQ(token.get_extra_field("extra3"), "");
+
+  token.set_extra_field("extra1", "e1");
+  EXPECT_EQ(token.get_extra_field("extra1"), "e1");
+
+  token.set_extra_field("extra1", "e2");
+  token.set_extra_field("extra2", "123-2");
+  token.set_extra_field("extra3", "3-345");
+
+  EXPECT_EQ(token.get_extra_field("extra1"), "e2");
+  EXPECT_EQ(token.get_extra_field("extra2"), "123-2");
+  EXPECT_EQ(token.get_extra_field("extra3"), "3-345");
+}
+
 } /* namespace testing */

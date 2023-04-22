@@ -162,12 +162,31 @@ void supla_pn_gateway_access_token_provider::process_result(
     return;
   }
 
-  std::string url = cJSON_GetStringValue(url_item);
-  std::string token = cJSON_GetStringValue(token_item);
+  string bundle_id;
+  if (platform == platform_ios) {
+    cJSON *bundle_id_item = cJSON_GetObjectItem(app_json, "bundle_id");
+    if (!bundle_id_item || !cJSON_IsString(bundle_id_item)) {
+      return;
+    }
+
+    bundle_id = cJSON_GetStringValue(bundle_id_item);
+    if (bundle_id.empty()) {
+      return;
+    }
+  }
+
+  string url = cJSON_GetStringValue(url_item);
+  string token = cJSON_GetStringValue(token_item);
 
   if (!url.empty() && !token.empty() && expires_in_item->valueint > 0) {
-    tokens->push_back(supla_pn_gateway_access_token(
-        url, token, expires_in_item->valueint, platform, app_id));
+    supla_pn_gateway_access_token t(url, token, expires_in_item->valueint,
+                                    platform, app_id);
+
+    if (!bundle_id.empty()) {
+      t.set_extra_field("bundle_id", bundle_id);
+    }
+
+    tokens->push_back(t);
   }
 }
 
