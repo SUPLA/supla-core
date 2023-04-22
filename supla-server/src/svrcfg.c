@@ -33,7 +33,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
 
   char *s_mqtt = "MQTT-BROKER";
-  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 39)
+  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 46)
   // This ensures that realloc will only be called once
   scfg_add_int_param(CFG_MQTT_KEEP_ALIVE_SEC, s_mqtt, "CFG_MQTT_KEEP_ALIVE_SEC",
                      30);
@@ -123,6 +123,22 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char *s_push = "PUSH";
 
   scfg_add_int_param(CFG_PUSH_DEVELOPMENT, s_push, "development", 0);
+
+  scfg_add_int_param(CFG_PUSH_THREAD_COUNT_LIMIT, s_push, "thread_count_limit",
+                     10);
+  scfg_add_int_param(CFG_PUSH_REQUESTS_PER_THREAD, s_push,
+                     "requests_per_thread", 5);
+  scfg_add_int_param(CFG_PUSH_THREAD_KEEP_ALIVE_SEC, s_push,
+                     "thread_keep_alive", 3600);
+  scfg_add_int_param(CFG_PUSH_KEEP_ALIVE_MAX_THREAD_COUNT, s_push,
+                     "keep_alive_max_thread_count", 10);
+  scfg_add_int_param(CFG_PUSH_REQUEST_TIMEOUT, s_push, "request_timeout", 5000);
+
+  scfg_add_int_param(CFG_PUSH_DELAY_WARNING_TIME, s_push, "delay_warning_time",
+                     3000);
+
+  scfg_add_int_param(CFG_PUSH_LONG_REQUEST_TIME, s_push, "long_request_time",
+                     1000000);
 
   char *s_limit = "LIMITS";
   scfg_add_int_param(CFG_LIMIT_CONCURRENT_REGISTRATIONS, s_limit,
