@@ -9,6 +9,7 @@ CPP_SRCS += \
 ../src/push/fcm_client.cpp \
 ../src/push/pn_dao.cpp \
 ../src/push/pn_delivery_task.cpp \
+../src/push/pn_delivery_task_thread_pool.cpp \
 ../src/push/pn_gateway_access_token.cpp \
 ../src/push/pn_gateway_access_token_provider.cpp \
 ../src/push/pn_recipient.cpp \
@@ -22,6 +23,7 @@ CPP_DEPS += \
 ./src/push/fcm_client.d \
 ./src/push/pn_dao.d \
 ./src/push/pn_delivery_task.d \
+./src/push/pn_delivery_task_thread_pool.d \
 ./src/push/pn_gateway_access_token.d \
 ./src/push/pn_gateway_access_token_provider.d \
 ./src/push/pn_recipient.d \
@@ -35,6 +37,7 @@ OBJS += \
 ./src/push/fcm_client.o \
 ./src/push/pn_dao.o \
 ./src/push/pn_delivery_task.o \
+./src/push/pn_delivery_task_thread_pool.o \
 ./src/push/pn_gateway_access_token.o \
 ./src/push/pn_gateway_access_token_provider.o \
 ./src/push/pn_recipient.o \
@@ -55,7 +58,7 @@ src/push/%.o: ../src/push/%.cpp src/push/subdir.mk
 clean: clean-src-2f-push
 
 clean-src-2f-push:
-	-$(RM) ./src/push/abstract_pn_gateway_client.d ./src/push/abstract_pn_gateway_client.o ./src/push/apns_client.d ./src/push/apns_client.o ./src/push/fcm_client.d ./src/push/fcm_client.o ./src/push/pn_dao.d ./src/push/pn_dao.o ./src/push/pn_delivery_task.d ./src/push/pn_delivery_task.o ./src/push/pn_gateway_access_token.d ./src/push/pn_gateway_access_token.o ./src/push/pn_gateway_access_token_provider.d ./src/push/pn_gateway_access_token_provider.o ./src/push/pn_recipient.d ./src/push/pn_recipient.o ./src/push/pn_recipients.d ./src/push/pn_recipients.o ./src/push/pn_throttling.d ./src/push/pn_throttling.o ./src/push/push_notification.d ./src/push/push_notification.o
+	-$(RM) ./src/push/abstract_pn_gateway_client.d ./src/push/abstract_pn_gateway_client.o ./src/push/apns_client.d ./src/push/apns_client.o ./src/push/fcm_client.d ./src/push/fcm_client.o ./src/push/pn_dao.d ./src/push/pn_dao.o ./src/push/pn_delivery_task.d ./src/push/pn_delivery_task.o ./src/push/pn_delivery_task_thread_pool.d ./src/push/pn_delivery_task_thread_pool.o ./src/push/pn_gateway_access_token.d ./src/push/pn_gateway_access_token.o ./src/push/pn_gateway_access_token_provider.d ./src/push/pn_gateway_access_token_provider.o ./src/push/pn_recipient.d ./src/push/pn_recipient.o ./src/push/pn_recipients.d ./src/push/pn_recipients.o ./src/push/pn_throttling.d ./src/push/pn_throttling.o ./src/push/push_notification.d ./src/push/push_notification.o
 
 .PHONY: clean-src-2f-push
 

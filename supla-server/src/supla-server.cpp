@@ -36,6 +36,7 @@
 #include "log.h"
 #include "mqtt_client_suite.h"
 #include "proto.h"
+#include "push/pn_delivery_task_thread_pool.h"
 #include "push/pn_gateway_access_token_provider.h"
 #include "serverstatus.h"
 #include "srpc/srpc.h"
@@ -134,6 +135,7 @@ int main(int argc, char *argv[]) {
   supla_asynctask_default_thread_pool::global_instance();
   supla_google_home_sync_thread_pool::global_instance();
   supla_asynctask_http_thread_pool::global_instance();
+  supla_pn_delivery_task_thread_pool::global_instance();
 
   supla_user::init();
   supla_connection::init();
