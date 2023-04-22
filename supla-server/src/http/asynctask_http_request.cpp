@@ -36,8 +36,7 @@ supla_asynctask_http_request::supla_asynctask_http_request(
   this->device_id = device_id;
   this->channel_id = channel_id;
   this->property_getter = property_getter;
-  this->delay_warning_time_usec = scfg_int(CFG_HTTP_DELAY_WARNING_TIME) * 1000;
-  this->long_request_time_usec = scfg_int(CFG_HTTP_LONG_REQUEST_TIME) * 1000;
+
   set_timeout(scfg_int(CFG_HTTP_REQUEST_TIMEOUT) * 1000);
 }
 
@@ -45,6 +44,15 @@ supla_asynctask_http_request::~supla_asynctask_http_request(void) {
   if (property_getter) {
     delete property_getter;
   }
+}
+
+long long supla_asynctask_http_request::get_cfg_delay_warning_time_usec(void) {
+  return scfg_int(CFG_HTTP_DELAY_WARNING_TIME) * 1000;
+}
+
+unsigned long long supla_asynctask_http_request::get_cfg_long_request_time_usec(
+    void) {
+  return scfg_int(CFG_HTTP_LONG_REQUEST_TIME) * 1000;
 }
 
 void supla_asynctask_http_request::on_timeout(
@@ -94,22 +102,17 @@ supla_channel_value *supla_asynctask_http_request::get_channel_value(
   return nullptr;
 }
 
-void supla_asynctask_http_request::set_long_request_time(
-    long long long_request_time_usec) {
-  this->long_request_time_usec = long_request_time_usec;
-}
-
 bool supla_asynctask_http_request::_execute(
     bool *execute_again, supla_asynctask_thread_bucket *bucket) {
   supla_asynctask_http_thread_bucket *ht_bucket = nullptr;
   if (bucket) {
     ht_bucket = dynamic_cast<supla_asynctask_http_thread_bucket *>(bucket);
     if (ht_bucket && ht_bucket->get_adapter()) {
-      if (delay_warning_time_usec) {
+      if (get_cfg_delay_warning_time_usec()) {
         long long time_left = time_left_usec(nullptr);
         if (time_left < 0) {
           time_left *= -1;
-          if (time_left >= delay_warning_time_usec) {
+          if (time_left >= get_cfg_delay_warning_time_usec()) {
             supla_log(LOG_WARNING,
                       "%s - The http request is delayed. ChannelId: %i, "
                       "DelayUSec: %lld, TimeSinceExecReq: %lld",
@@ -120,13 +123,13 @@ bool supla_asynctask_http_request::_execute(
       }
       bool result = false;
 
-      if (long_request_time_usec) {
+      if (get_cfg_long_request_time_usec()) {
         unsigned long long time_usec = supla_metrics::measure_the_time_in_usec(
             [ht_bucket, &result, this]() -> void {
               result = make_request(ht_bucket->get_adapter());
             });
 
-        if (time_usec >= long_request_time_usec) {
+        if (time_usec >= get_cfg_long_request_time_usec()) {
           supla_log(LOG_WARNING,
                     "%s - Long time to complete the request. ChannelId: %i, "
                     "TimeUSec: %lld",

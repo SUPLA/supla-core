@@ -32,10 +32,12 @@ class supla_google_home_sync_request : public supla_asynctask_http_request {
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
   virtual std::string get_name(void);
 
+  virtual unsigned long long get_cfg_long_request_time_usec(void);
+
  public:
   supla_google_home_sync_request(int user_id, supla_asynctask_queue *queue,
-                                  supla_abstract_asynctask_thread_pool *pool,
-                                  supla_google_home_credentials *credentials);
+                                 supla_abstract_asynctask_thread_pool *pool,
+                                 supla_google_home_credentials *credentials);
 
   static void new_request(supla_user *user);
 };

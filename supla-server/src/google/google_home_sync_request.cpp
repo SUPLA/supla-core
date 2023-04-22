@@ -36,7 +36,11 @@ supla_google_home_sync_request::supla_google_home_sync_request(
 
   set_delay_usec(10000000);  // 10 sec.
   set_timeout(scfg_int(CFG_GOOGLE_HOME_SYNCREQUEST_TIMEOUT) * 1000);
-  set_long_request_time(10000000);  // 10 sec.
+}
+
+unsigned long long
+supla_google_home_sync_request::get_cfg_long_request_time_usec(void) {
+  return 10000000;  // 10 sec.
 }
 
 string supla_google_home_sync_request::get_name(void) {
