@@ -58,7 +58,7 @@ bool supla_abstract_pn_gateway_client::send(void) {
 
     curl_adapter->reset();
 
-    if (token.is_valid() || !_send(&token, recipient)) {
+    if (!token.is_valid() || !_send(&token, recipient)) {
       any_error = true;
     } else {
       any_sent = true;
