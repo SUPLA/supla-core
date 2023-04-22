@@ -22,6 +22,7 @@
 #include "push/apns_client.h"
 #include "push/fcm_client.h"
 #include "push/pn_dao.h"
+#include "svrcfg.h"
 
 using std::string;
 
@@ -33,12 +34,22 @@ supla_pn_delivery_task::supla_pn_delivery_task(
                                    nullptr) {
   this->push = push;
   this->token_provider = token_provider;
+  set_timeout(scfg_int(CFG_PUSH_REQUEST_TIMEOUT) * 1000);
 }
 
 supla_pn_delivery_task::~supla_pn_delivery_task(void) {
   if (push) {
     delete push;
   }
+}
+
+long long supla_pn_delivery_task::get_cfg_delay_warning_time_usec(void) {
+  return scfg_int(CFG_PUSH_DELAY_WARNING_TIME) * 1000;
+}
+
+unsigned long long supla_pn_delivery_task::get_cfg_long_request_time_usec(
+    void) {
+  return scfg_int(CFG_PUSH_LONG_REQUEST_TIME) * 1000;
 }
 
 string supla_pn_delivery_task::get_name(void) { return "Push delivery task"; }

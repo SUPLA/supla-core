@@ -33,6 +33,8 @@ class supla_pn_delivery_task : public supla_asynctask_http_request {
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
   virtual std::string get_name(void);
+  virtual long long get_cfg_delay_warning_time_usec(void);
+  virtual unsigned long long get_cfg_long_request_time_usec(void);
 
  public:
   supla_pn_delivery_task(
