@@ -18,10 +18,12 @@
 
 #include "pn_delivery_task.h"
 
+#include "asynctask/asynctask_queue.h"
 #include "db/db_access_provider.h"
 #include "push/apns_client.h"
 #include "push/fcm_client.h"
 #include "push/pn_dao.h"
+#include "push/pn_delivery_task_thread_pool.h"
 #include "svrcfg.h"
 
 using std::string;
@@ -105,4 +107,14 @@ bool supla_pn_delivery_task::make_request(
 
   return (fcm_recipients || apns_recipients) &&
          (!fcm_recipients || fcm_result) && (!apns_recipients || apns_result);
+}
+
+// static
+void supla_pn_delivery_task::start_delivering(int user_id,
+                                              supla_push_notification *push) {
+  supla_pn_delivery_task *task = new supla_pn_delivery_task(
+      user_id, supla_asynctask_queue::global_instance(),
+      supla_pn_delivery_task_thread_pool::global_instance(), push,
+      supla_pn_gateway_access_token_provider::global_instance());
+  task->start();
 }
