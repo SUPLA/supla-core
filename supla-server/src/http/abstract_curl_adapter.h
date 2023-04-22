@@ -19,6 +19,7 @@
 #ifndef ABSTRACT_CURL_ADAPTER_H_
 #define ABSTRACT_CURL_ADAPTER_H_
 
+#include <list>
 #include <string>
 
 class supla_abstract_curl_adapter {
@@ -30,6 +31,7 @@ class supla_abstract_curl_adapter {
   virtual void set_opt_url(const char *url) = 0;
   virtual void set_opt_post_fields(const char *fields) = 0;
   virtual void set_opt_write_data(std::string *data) = 0;
+  virtual void set_opt_header_data(std::list<std::string> *data) = 0;
   virtual void set_opt_verbose(bool on) = 0;
   virtual void set_opt_custom_request(const char *method) = 0;
   virtual bool append_header(const char *string) = 0;

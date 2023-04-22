@@ -20,13 +20,19 @@
 
 #include <assert.h>
 
+#include <regex>
+
 #include "log.h"
 #include "svrcfg.h"
 
+using std::list;
+using std::regex;
+using std::regex_replace;
 using std::string;
 
 supla_curl_adapter::supla_curl_adapter(void) : supla_abstract_curl_adapter() {
   write_data_ptr = nullptr;
+  header_data_ptr = nullptr;
   header = nullptr;
   curl = curl_easy_init();
   assert(curl != nullptr);
@@ -51,9 +57,26 @@ size_t supla_curl_adapter::write_callback(void *contents, size_t size,
   return size * nmemb;
 }
 
+// static
+size_t supla_curl_adapter::header_callback(void *contents, size_t size,
+                                           size_t nmemb, void *userp) {
+  supla_curl_adapter *adapter = static_cast<supla_curl_adapter *>(userp);
+
+  if (adapter && adapter->header_data_ptr && size * nmemb > 0) {
+    string item;
+    item.append((char *)contents, size * nmemb);
+    regex pattern(R"(\r\n$)");
+    item = regex_replace(item, pattern, "");
+    adapter->header_data_ptr->push_back(item);
+  }
+
+  return size * nmemb;
+}
+
 void supla_curl_adapter::reset(void) {
   curl_easy_reset(curl);
   write_data_ptr = nullptr;
+  header_data_ptr = nullptr;
 
   if (header) {
     curl_slist_free_all(header);
@@ -74,6 +97,10 @@ void supla_curl_adapter::set_opt_write_data(std::string *data) {
   write_data_ptr = data;
 }
 
+void supla_curl_adapter::set_opt_header_data(list<string> *data) {
+  header_data_ptr = data;
+}
+
 void supla_curl_adapter::set_opt_verbose(bool on) {
   curl_easy_setopt(curl, CURLOPT_VERBOSE, on ? 1L : 0L);
 }
@@ -82,7 +109,7 @@ void supla_curl_adapter::set_opt_custom_request(const char *method) {
   curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
 }
 
-string supla_curl_adapter::escape(const std::string &str) {
+string supla_curl_adapter::escape(const string &str) {
   char *escaped = curl_easy_escape(curl, str.c_str(), str.size());
   string result = escaped;
   curl_free(escaped);
@@ -110,7 +137,10 @@ bool supla_curl_adapter::perform(void) {
                    scfg_int(CFG_HTTP_CONNECTION_TIMEOUT));
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
                    supla_curl_adapter::write_callback);
+  curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION,
+                   supla_curl_adapter::header_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+  curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
 
   CURLcode result = curl_easy_perform(curl);
 

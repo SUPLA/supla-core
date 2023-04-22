@@ -35,6 +35,7 @@ class CurlAdapterMock : public supla_abstract_curl_adapter {
   MOCK_METHOD0(reset, void(void));
   MOCK_METHOD1(set_opt_url, void(const char *url));
   MOCK_METHOD1(set_opt_post_fields, void(const char *fields));
+  MOCK_METHOD1(set_opt_header_data, void(std::list<std::string> *data));
   MOCK_METHOD1(set_opt_write_data, void(std::string *data));
   MOCK_METHOD1(set_opt_verbose, void(bool on));
   MOCK_METHOD1(set_opt_custom_request, void(const char *method));

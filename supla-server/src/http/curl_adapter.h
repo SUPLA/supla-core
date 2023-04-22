@@ -28,11 +28,14 @@
 class supla_curl_adapter : public supla_abstract_curl_adapter {
  private:
   std::string *write_data_ptr;
+  std::list<std::string> *header_data_ptr;
   std::string url;
   CURL *curl;
   struct curl_slist *header;
   static size_t write_callback(void *contents, size_t size, size_t nmemb,
                                void *userp);
+  static size_t header_callback(void *contents, size_t size, size_t nmemb,
+                                void *userp);
 
  public:
   supla_curl_adapter(void);
@@ -42,6 +45,7 @@ class supla_curl_adapter : public supla_abstract_curl_adapter {
   virtual void set_opt_url(const char *url);
   virtual void set_opt_post_fields(const char *fields);
   virtual void set_opt_write_data(std::string *data);
+  virtual void set_opt_header_data(std::list<std::string> *data);
   virtual void set_opt_verbose(bool on);
   virtual void set_opt_custom_request(const char *method);
   virtual bool append_header(const char *string);
