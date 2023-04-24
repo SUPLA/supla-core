@@ -32,35 +32,46 @@ TEST_F(AccessTokenTest, defaults) {
   supla_pn_gateway_access_token token;
   EXPECT_EQ(token.get_platform(), platform_unknown);
   EXPECT_EQ(token.get_app_id(), 0);
-  EXPECT_TRUE(token.get_url().empty());
+  EXPECT_TRUE(token.get_url(false).empty());
+  EXPECT_TRUE(token.get_url(true).empty());
   EXPECT_TRUE(token.get_token().empty());
   EXPECT_GE(token.get_expires_in(), 60 * 60 * 24 * 365 * 10 - 1);
   EXPECT_FALSE(token.is_valid());
 }
 
 TEST_F(AccessTokenTest, constructorWithArguments) {
-  supla_pn_gateway_access_token token("https://api.development.push.apple.com",
-                                      "6465eece984600c0a81e3d6a3a93190c2d0be",
-                                      60, platform_ios, 1);
+  supla_pn_gateway_access_token token(
+      "https://api.push.apple.com", "https://api.development.push.apple.com",
+      "6465eece984600c0a81e3d6a3a93190c2d0be", 60, platform_ios, 1);
 
   EXPECT_EQ(token.get_platform(), platform_ios);
   EXPECT_EQ(token.get_app_id(), 1);
-  EXPECT_EQ(token.get_url(), "https://api.development.push.apple.com");
+  EXPECT_EQ(token.get_url(false), "https://api.push.apple.com");
+  EXPECT_EQ(token.get_url(true), "https://api.development.push.apple.com");
   EXPECT_EQ(token.get_token(), "6465eece984600c0a81e3d6a3a93190c2d0be");
   EXPECT_GE(token.get_expires_in(), 59);
   EXPECT_LE(token.get_expires_in(), 60);
   EXPECT_TRUE(token.is_valid());
 }
 
+TEST_F(AccessTokenTest, missingDevelopmentUrlInConstructor) {
+  supla_pn_gateway_access_token token("https://api.push.apple.com", "",
+                                      "6465eece984600c0a81e3d6a3a93190c2d0be",
+                                      60, platform_ios, 1);
+
+  EXPECT_EQ(token.get_url(true), "https://api.push.apple.com");
+  EXPECT_EQ(token.get_url(false), "https://api.push.apple.com");
+}
+
 TEST_F(AccessTokenTest, validation) {
-  supla_pn_gateway_access_token token("a", "b", 2, platform_ios, 1);
+  supla_pn_gateway_access_token token("a", "b", "c", 2, platform_ios, 1);
   EXPECT_TRUE(token.is_valid());
   usleep(2000000);
   EXPECT_FALSE(token.is_valid());
 }
 
 TEST_F(AccessTokenTest, getExpirationTimeIfEarlier) {
-  supla_pn_gateway_access_token token("a", "b", 60, platform_ios, 1);
+  supla_pn_gateway_access_token token("a", "b", "c", 60, platform_ios, 1);
 
   struct timeval now1 = {};
   gettimeofday(&now1, nullptr);
@@ -78,7 +89,7 @@ TEST_F(AccessTokenTest, getExpirationTimeIfEarlier) {
 }
 
 TEST_F(AccessTokenTest, extraFields) {
-  supla_pn_gateway_access_token token("a", "b", 60, platform_ios, 1);
+  supla_pn_gateway_access_token token("a", "b", "c", 60, platform_ios, 1);
   EXPECT_EQ(token.get_extra_field("extra1"), "");
   EXPECT_EQ(token.get_extra_field("extra2"), "");
   EXPECT_EQ(token.get_extra_field("extra3"), "");

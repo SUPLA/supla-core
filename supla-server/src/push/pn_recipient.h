@@ -28,9 +28,11 @@ class supla_pn_recipient {
   std::string id;
   std::string message_id;
   bool exists;
+  bool development_env;
 
  public:
-  supla_pn_recipient(int client_id, int app_id, const std::string& id);
+  supla_pn_recipient(int client_id, int app_id, bool development_env,
+                     const std::string& id);
   virtual ~supla_pn_recipient(void);
 
   const std::string& get_id(void);
@@ -39,6 +41,7 @@ class supla_pn_recipient {
   void set_message_id(const std::string& message_id);
   std::string get_message_id(void);
   bool is_exists(void);
+  bool is_development_env(void);
   void set_exists(bool exists);
 };
 

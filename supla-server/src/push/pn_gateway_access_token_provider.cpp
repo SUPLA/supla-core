@@ -152,6 +152,8 @@ void supla_pn_gateway_access_token_provider::process_result(
     return;
   }
 
+  cJSON *devel_url_item = cJSON_GetObjectItem(app_json, "development_url");
+
   cJSON *token_item = cJSON_GetObjectItem(app_json, "token");
   if (!token_item || !cJSON_IsString(token_item)) {
     return;
@@ -176,11 +178,14 @@ void supla_pn_gateway_access_token_provider::process_result(
   }
 
   string url = cJSON_GetStringValue(url_item);
+  string devel_url = devel_url_item && cJSON_IsString(devel_url_item)
+                         ? cJSON_GetStringValue(devel_url_item)
+                         : "";
   string token = cJSON_GetStringValue(token_item);
 
   if (!url.empty() && !token.empty() && expires_in_item->valueint > 0) {
-    supla_pn_gateway_access_token t(url, token, expires_in_item->valueint,
-                                    platform, app_id);
+    supla_pn_gateway_access_token t(
+        url, devel_url, token, expires_in_item->valueint, platform, app_id);
 
     if (!bundle_id.empty()) {
       t.set_extra_field("bundle_id", bundle_id);
@@ -211,8 +216,7 @@ void supla_pn_gateway_access_token_provider::get_new_tokens(
 
   curl_adapter->append_header("Authorization: Bearer {target-cloud-token}");
 
-  string url = "https://autodiscover.supla.org/pn-token?production=";
-  url.append(scfg_int(CFG_PUSH_DEVELOPMENT) ? "false" : "true");
+  string url = "https://autodiscover.supla.org/pn-token";
 
   curl_adapter->set_opt_url(url.c_str());
 

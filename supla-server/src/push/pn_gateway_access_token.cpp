@@ -31,8 +31,8 @@ supla_pn_gateway_access_token::supla_pn_gateway_access_token(void) {
 }
 
 supla_pn_gateway_access_token::supla_pn_gateway_access_token(
-    const string &url, const string &token, int expires_in,
-    _platform_e platform, int app_id) {
+    const std::string &production_url, const std::string &development_url,
+    const string &token, int expires_in, _platform_e platform, int app_id) {
   gettimeofday(&expires_at, nullptr);
   if (expires_in == 0) {
     expires_in += 60 * 60 * 24 * 365 * 10;  // 10 years
@@ -41,7 +41,8 @@ supla_pn_gateway_access_token::supla_pn_gateway_access_token(
 
   this->platform = platform;
   this->app_id = app_id;
-  this->url = url;
+  this->production_url = production_url;
+  this->development_url = development_url;
   this->token = token;
 }
 
@@ -53,7 +54,10 @@ _platform_e supla_pn_gateway_access_token::get_platform(void) {
 
 int supla_pn_gateway_access_token::get_app_id(void) { return app_id; }
 
-string supla_pn_gateway_access_token::get_url(void) { return url; }
+string supla_pn_gateway_access_token::get_url(bool development_env) {
+  return !development_env || development_url.empty() ? production_url
+                                                     : development_url;
+}
 
 string supla_pn_gateway_access_token::get_token(void) { return token; }
 

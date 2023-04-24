@@ -21,10 +21,11 @@
 using std::string;
 
 supla_pn_recipient::supla_pn_recipient(int client_id, int app_id,
-                                       const string& id) {
+                                       bool development_env, const string& id) {
   this->client_id = client_id;
   this->id = id;
   this->app_id = app_id;
+  this->development_env = development_env;
   this->exists = true;
 }
 
@@ -43,5 +44,7 @@ void supla_pn_recipient::set_message_id(const std::string& message_id) {
 std::string supla_pn_recipient::get_message_id(void) { return message_id; }
 
 bool supla_pn_recipient::is_exists(void) { return exists; }
+
+bool supla_pn_recipient::is_development_env(void) { return development_env; }
 
 void supla_pn_recipient::set_exists(bool exists) { this->exists = exists; }

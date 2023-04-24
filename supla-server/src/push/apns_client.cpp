@@ -68,7 +68,7 @@ bool supla_apns_client::_send(supla_pn_gateway_access_token *token,
   get_curl_adapter()->append_header(topic.c_str());
   get_curl_adapter()->append_header("apns-push-type: alert");
 
-  string endpoint = token->get_url();
+  string endpoint = token->get_url(recipient->is_development_env());
   size_t pos = endpoint.find("{device_token}");
   if (pos != std::string::npos) {
     endpoint.replace(pos, std::string("{device_token}").length(),

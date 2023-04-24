@@ -33,7 +33,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
 
   char *s_mqtt = "MQTT-BROKER";
-  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 46)
+  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 45)
   // This ensures that realloc will only be called once
   scfg_add_int_param(CFG_MQTT_KEEP_ALIVE_SEC, s_mqtt, "CFG_MQTT_KEEP_ALIVE_SEC",
                      30);
@@ -121,8 +121,6 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
                      "statereport_timeout", 30000);
 
   char *s_push = "PUSH";
-
-  scfg_add_int_param(CFG_PUSH_DEVELOPMENT, s_push, "development", 0);
 
   scfg_add_int_param(CFG_PUSH_THREAD_COUNT_LIMIT, s_push, "thread_count_limit",
                      10);

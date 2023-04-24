@@ -92,7 +92,8 @@ bool supla_fcm_client::_send(supla_pn_gateway_access_token *token,
   string _token = "Authorization: Bearer " + token->get_token();
   get_curl_adapter()->append_header(_token.c_str());
 
-  get_curl_adapter()->set_opt_url(token->get_url().c_str());
+  get_curl_adapter()->set_opt_url(
+      token->get_url(recipient->is_development_env()).c_str());
   char *payload = get_payload(recipient);
   get_curl_adapter()->set_opt_post_fields(payload);
 

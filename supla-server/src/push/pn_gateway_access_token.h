@@ -27,7 +27,8 @@
 class supla_pn_gateway_access_token {
  private:
   struct timeval expires_at;
-  std::string url;
+  std::string production_url;
+  std::string development_url;
   std::string token;
   int app_id;
   _platform_e platform;
@@ -35,14 +36,15 @@ class supla_pn_gateway_access_token {
 
  public:
   supla_pn_gateway_access_token(void);
-  supla_pn_gateway_access_token(const std::string &url,
+  supla_pn_gateway_access_token(const std::string &production_url,
+                                const std::string &development_url,
                                 const std::string &token, int expires_in,
                                 _platform_e platform, int app_id);
   virtual ~supla_pn_gateway_access_token(void);
 
   _platform_e get_platform(void);
   int get_app_id(void);
-  std::string get_url(void);
+  std::string get_url(bool development_env);
   std::string get_token(void);
   int get_expires_in(void);
   void set_token(const std::string &token);
