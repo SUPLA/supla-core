@@ -93,16 +93,10 @@ class supla_device_channels {
   unsigned int get_channel_value_duration(int channel_id);
   int get_channel_func(int channel_id);
   int get_channel_type(int channel_id);
-  bool set_channel_value(supla_device_channel *channel,
-                         char value[SUPLA_CHANNELVALUE_SIZE],
-                         bool *converted2extended,
-                         const unsigned _supla_int_t *validity_time_sec,
-                         bool *significant_change);
   bool set_channel_value(int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
-                         bool *converted2extended,
                          const unsigned _supla_int_t *validity_time_sec,
-                         bool *significant_change);
-  bool set_channel_offline(int channel_id, bool offline);
+                         bool *offline);
+  bool set_channel_offlineee(int channel_id, bool offline);
   void set_channel_extendedvalue(int channel_id,
                                  TSuplaChannelExtendedValue *ev);
 

@@ -73,8 +73,7 @@ supla_device_channels::supla_device_channels(
     supla_device_channel *channel = find_channel(channel_id);
 
     if (channel) {
-      set_channel_value(channel_id, value, nullptr, 0, nullptr);
-
+      channel->set_value(value, nullptr, nullptr);
       channel->add_flags(flags);
 
       if (type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
@@ -319,58 +318,14 @@ bool supla_device_channels::recalibrate(int channel_id,
 }
 
 bool supla_device_channels::set_channel_value(
-    supla_device_channel *channel, char value[SUPLA_CHANNELVALUE_SIZE],
-    bool *converted2extended, const unsigned _supla_int_t *validity_time_sec,
-    bool *significant_change) {
-  if (!channel) return false;
-  bool result = false;
-
-  if (converted2extended) {
-    *converted2extended = false;
-  }
-
-  unsigned char proto_version = srpc_get_proto_version(get_srpc());
-
-  result = channel->set_value(value, validity_time_sec, significant_change,
-                              proto_version);
-
-  if (channel->conver_value_to_extended()) {
-    if (converted2extended) {
-      *converted2extended = true;
-    }
-  }
-
-  if (result) {
-    switch (channel->get_func()) {
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-        if (channel->get_param1()) {
-          shared_ptr<supla_device> rel_device = device->get_user()->get_device(
-              device->get_user_id(), 0, channel->get_param1());
-          if (rel_device) {
-            rel_device->get_channels()->on_related_sensor_value_changed(
-                channel->get_param1(), channel->get_id(), value[0] == 0);
-          }
-        }
-        break;
-    }
-  }
-
-  return result;
-}
-
-bool supla_device_channels::set_channel_value(
     int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
-    bool *converted2extended, const unsigned _supla_int_t *validity_time_sec,
-    bool *significant_change) {
-  return channel_id &&
-         set_channel_value(find_channel(channel_id), value, converted2extended,
-                           validity_time_sec, significant_change);
-}
-
-bool supla_device_channels::set_channel_offline(int channel_id, bool offline) {
+    const unsigned _supla_int_t *validity_time_sec, bool *offline) {
   supla_device_channel *channel = find_channel(channel_id);
-  return channel && channel->set_offline(offline);
+  if (channel) {
+    return channel->set_value(value, validity_time_sec, offline);
+  }
+
+  return false;
 }
 
 void supla_device_channels::set_channel_extendedvalue(

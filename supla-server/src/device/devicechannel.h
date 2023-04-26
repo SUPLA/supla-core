@@ -87,6 +87,8 @@ class supla_device_channel {
   void update_timer_state(void);
   void update_extended_electricity_meter_value(void);
   supla_channel_value *_get_value(void);
+  bool convert_value_to_extended(void);
+  void on_value_changed(bool significant_change, bool converted2extended);
 
  public:
   supla_device_channel(supla_device *device, int id, int number, int type,
@@ -130,8 +132,7 @@ class supla_device_channel {
   unsigned _supla_int_t get_value_validity_time_sec(void);
   void get_value(char value[SUPLA_CHANNELVALUE_SIZE]);
   bool set_value(const char value[SUPLA_CHANNELVALUE_SIZE],
-                 const unsigned _supla_int_t *validity_time_sec,
-                 bool *significantChange, unsigned char proto_version);
+                 const unsigned _supla_int_t *validity_time_sec, bool *offline);
   bool get_extended_value(TSuplaChannelExtendedValue *ev, bool em_update);
   void set_extended_value(TSuplaChannelExtendedValue *ev);
   void assign_rgbw_value(char value[SUPLA_CHANNELVALUE_SIZE], int color,
@@ -152,7 +153,6 @@ class supla_device_channel {
       bool for_data_logger_purposes);
   supla_channel_thermostat_measurement *get_thermostat_measurement(void);
   channel_json_config *get_json_config(void);
-  bool conver_value_to_extended(void);
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);
