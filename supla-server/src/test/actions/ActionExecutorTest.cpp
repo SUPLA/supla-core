@@ -181,4 +181,38 @@ TEST_F(ActionExecutorTest, interruptScene) {
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
 }
 
+TEST_F(ActionExecutorTest, enableSchedule) {
+  supla_action_config config;
+  config.set_subject_id(25);
+  config.set_subject_type(stSchedule);
+  config.set_action_id(ACTION_ENABLE);
+
+  ChannelPropertyGetterMock property_getter;
+
+  aexec->execute_action(supla_caller(ctScene), 12345, &config,
+                        &property_getter);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getEnableCounter(), 1);
+  EXPECT_EQ(aexec->get_schedule_id(), 25);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctScene));
+}
+
+TEST_F(ActionExecutorTest, disableSchedule) {
+  supla_action_config config;
+  config.set_subject_id(26);
+  config.set_subject_type(stSchedule);
+  config.set_action_id(ACTION_DISABLE);
+
+  ChannelPropertyGetterMock property_getter;
+
+  aexec->execute_action(supla_caller(ctScene), 12345, &config,
+                        &property_getter);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getDisableCounter(), 1);
+  EXPECT_EQ(aexec->get_schedule_id(), 26);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctScene));
+}
+
 } /* namespace testing */

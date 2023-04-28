@@ -151,6 +151,14 @@ void supla_action_executor::interrupt_and_execute(void) {
   }
 }
 
+void supla_action_executor::enable(void) {
+  // TODO(pzygmunt): Must be implemented
+}
+
+void supla_action_executor::disable(void) {
+  // TODO(pzygmunt): Must be implemented
+}
+
 void supla_action_executor::stop(void) {
   execute_action([this](supla_user_channelgroups *channel_groups,
                         supla_device_channels *channels) -> void {

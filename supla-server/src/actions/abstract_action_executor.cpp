@@ -89,6 +89,22 @@ void supla_abstract_action_executor::set_scene_id(int user_id, int scene_id) {
   this->subject_type = stScene;
 }
 
+void supla_abstract_action_executor::set_schedule_id(supla_user *user,
+                                                     int schedule_id) {
+  this->user = user;
+  this->device_id = 0;
+  this->subject_id = schedule_id;
+  this->subject_type = stSchedule;
+}
+
+void supla_abstract_action_executor::set_schedule_id(int user_id,
+                                                     int schedule_id) {
+  this->user = user_id ? supla_user::find(user_id, false) : NULL;
+  this->device_id = 0;
+  this->subject_id = schedule_id;
+  this->subject_type = stSchedule;
+}
+
 shared_ptr<supla_device> supla_abstract_action_executor::get_device(void) {
   if (user && (device_id || (subject_id && subject_type == stChannel))) {
     return user->get_devices()->get(
@@ -119,6 +135,9 @@ void supla_abstract_action_executor::execute_action(
       break;
     case stScene:
       set_scene_id(user_id, subject_id);
+      break;
+    case stSchedule:
+      set_schedule_id(user_id, subject_id);
       break;
     default:
       set_unknown_subject_type();
@@ -178,6 +197,12 @@ void supla_abstract_action_executor::execute_action(
       break;
     case ACTION_EXECUTE:
       execute();
+      break;
+    case ACTION_ENABLE:
+      enable();
+      break;
+    case ACTION_DISABLE:
+      disable();
       break;
     case ACTION_INTERRUPT:
       interrupt();
@@ -285,6 +310,10 @@ int supla_abstract_action_executor::get_group_id(void) {
 
 int supla_abstract_action_executor::get_scene_id(void) {
   return subject_type == stScene ? subject_id : 0;
+}
+
+int supla_abstract_action_executor::get_schedule_id(void) {
+  return subject_type == stSchedule ? subject_id : 0;
 }
 
 void supla_abstract_action_executor::copy(

@@ -56,6 +56,8 @@ class supla_abstract_action_executor {
   void set_group_id(int user_id, int group_id);
   void set_scene_id(supla_user *user, int scene_id);
   void set_scene_id(int user_id, int scene_id);
+  void set_schedule_id(supla_user *user, int schedule_id);
+  void set_schedule_id(int user_id, int schedule_id);
 
   const supla_caller &get_caller(void);
   int get_user_id(void);
@@ -63,6 +65,7 @@ class supla_abstract_action_executor {
   int get_channel_id(void);
   int get_group_id(void);
   int get_scene_id(void);
+  int get_schedule_id(void);
 
   void execute_action(const supla_caller &caller, int user_id,
                       abstract_action_config *config,
@@ -88,6 +91,8 @@ class supla_abstract_action_executor {
   virtual void up_or_stop(void) = 0;
   virtual void down_or_stop(void) = 0;
   virtual void step_by_step(void) = 0;
+  virtual void enable(void) = 0;
+  virtual void disable(void) = 0;
   virtual void execute(void) = 0;
   virtual void interrupt(void) = 0;
   virtual void interrupt_and_execute(void) = 0;
