@@ -112,6 +112,8 @@ supla_scene_state supla_scene_asynctask::get_scene_state(void) {
                            is_finished() ? 0 : get_estimated_execution_time());
 }
 
+bool supla_scene_asynctask::will_use_database(void) { return true; }
+
 // static
 bool supla_scene_asynctask::get_scene_state(supla_asynctask_queue *queue,
                                             int user_id, int scene_id,
