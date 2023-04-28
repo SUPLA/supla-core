@@ -105,20 +105,19 @@ TEST_F(VoltageThreadsholdLoggerDaoIntegrationTest, add) {
 
   sqlQuery(
       "SELECT channel_id, phase_no, count_total, count_above, count_below, "
-      "sec_total, sec_above, sec_below, max_sec_above, max_sec_below, "
-      "min_voltage, max_voltage, avg_voltage, measurement_time_sec FROM "
+      "sec_above, sec_below, max_sec_above, max_sec_below, min_voltage, "
+      "max_voltage, avg_voltage, measurement_time_sec FROM "
       "supla_em_voltage_log WHERE date >= DATE_ADD(UTC_TIMESTAMP(), INTERVAL "
       "-2 SECOND) AND date <= DATE_ADD(UTC_TIMESTAMP(), INTERVAL 2 SECOND)",
       &result);
 
-  EXPECT_EQ(
-      result,
-      "channel_id\tphase_no\tcount_total\tcount_above\tcount_below\tsec_"
-      "total\tsec_above\tsec_below\tmax_sec_above\tmax_sec_below\tmin_"
-      "voltage\tmax_voltage\tavg_voltage\tmeasurement_time_"
-      "sec\n234\t1\t4\t1\t1\t3\t2\t1\t2\t1\t10.51\t310.55\t160."
-      "53\t3\n234\t2\t4\t1\t1\t3\t2\t1\t2\t1\t15.52\t315.55\t165."
-      "53\t3\n234\t3\t4\t1\t1\t3\t2\t1\t2\t1\t20.53\t320.55\t170.54\t3\n");
+  EXPECT_EQ(result,
+            "channel_id\tphase_no\tcount_total\tcount_above\tcount_below\tsec_"
+            "above\tsec_below\tmax_sec_above\tmax_sec_below\tmin_voltage\tmax_"
+            "voltage\tavg_voltage\tmeasurement_time_"
+            "sec\n234\t1\t4\t1\t1\t2\t1\t2\t1\t10.51\t310.55\t160."
+            "53\t3\n234\t2\t4\t1\t1\t2\t1\t2\t1\t15.52\t315.55\t165."
+            "53\t3\n234\t3\t4\t1\t1\t2\t1\t2\t1\t20.53\t320.55\t170.54\t3\n");
 }
 
 } /* namespace testing */

@@ -64,12 +64,12 @@ void supla_voltage_threshold_logger_dao::add(MYSQL_TIME *time, int channel_id,
     return;
   }
 
-  MYSQL_BIND pbind[15] = {};
+  MYSQL_BIND pbind[14] = {};
 
   int count_total = va->get_sample_count();
   int count_above = va->get_above_count();
   int count_below = va->get_below_count();
-  int sec_total = va->get_total_time_msec() / 1000;
+
   int sec_above = va->get_total_msec_above() / 1000;
   int sec_below = va->get_total_msec_below() / 1000;
   int max_sec_above = va->get_max_msec_above() / 1000;
@@ -105,40 +105,37 @@ void supla_voltage_threshold_logger_dao::add(MYSQL_TIME *time, int channel_id,
   pbind[5].buffer = (char *)&count_below;
 
   pbind[6].buffer_type = MYSQL_TYPE_LONG;
-  pbind[6].buffer = (char *)&sec_total;
+  pbind[6].buffer = (char *)&sec_above;
 
   pbind[7].buffer_type = MYSQL_TYPE_LONG;
-  pbind[7].buffer = (char *)&sec_above;
+  pbind[7].buffer = (char *)&sec_below;
 
   pbind[8].buffer_type = MYSQL_TYPE_LONG;
-  pbind[8].buffer = (char *)&sec_below;
+  pbind[8].buffer = (char *)&max_sec_above;
 
   pbind[9].buffer_type = MYSQL_TYPE_LONG;
-  pbind[9].buffer = (char *)&max_sec_above;
+  pbind[9].buffer = (char *)&max_sec_below;
 
-  pbind[10].buffer_type = MYSQL_TYPE_LONG;
-  pbind[10].buffer = (char *)&max_sec_below;
+  pbind[10].buffer_type = MYSQL_TYPE_DECIMAL;
+  pbind[10].buffer = min_voltage;
+  pbind[10].buffer_length = strnlen(min_voltage, sizeof(min_voltage));
 
   pbind[11].buffer_type = MYSQL_TYPE_DECIMAL;
-  pbind[11].buffer = min_voltage;
-  pbind[11].buffer_length = strnlen(min_voltage, sizeof(min_voltage));
+  pbind[11].buffer = max_voltage;
+  pbind[11].buffer_length = strnlen(max_voltage, sizeof(max_voltage));
 
   pbind[12].buffer_type = MYSQL_TYPE_DECIMAL;
-  pbind[12].buffer = max_voltage;
-  pbind[12].buffer_length = strnlen(max_voltage, sizeof(max_voltage));
+  pbind[12].buffer = avg_voltage;
+  pbind[12].buffer_length = strnlen(avg_voltage, sizeof(avg_voltage));
 
-  pbind[13].buffer_type = MYSQL_TYPE_DECIMAL;
-  pbind[13].buffer = avg_voltage;
-  pbind[13].buffer_length = strnlen(avg_voltage, sizeof(avg_voltage));
-
-  pbind[14].buffer_type = MYSQL_TYPE_LONG;
-  pbind[14].buffer = (char *)&measurement_time_sec;
+  pbind[13].buffer_type = MYSQL_TYPE_LONG;
+  pbind[13].buffer = (char *)&measurement_time_sec;
 
   const char sql[] =
-      "CALL `supla_add_em_voltage_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+      "CALL `supla_add_em_voltage_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 15, true);
+  dba->stmt_execute((void **)&stmt, sql, pbind, 14, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }
