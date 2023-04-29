@@ -92,6 +92,7 @@ src/test/integration/cyclictasks \
 src/test/integration/datalogger \
 src/test/integration/google \
 src/test/integration/mqtt \
+src/test/integration/push \
 src/test/integration/scene \
 src/test/integration/schedule \
 src/test/integration/webhook \
