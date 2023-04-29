@@ -25,13 +25,16 @@
 
 class supla_push_notification {
  private:
+  int id;
   std::string title;
   std::string body;
   supla_pn_recipients recipients;
 
  public:
   supla_push_notification(void);
+  explicit supla_push_notification(int id);
   virtual ~supla_push_notification(void);
+  int get_id(void);
   supla_pn_recipients &get_recipients(void);
   void set_title(const std::string &title);
   const std::string &get_title(void);

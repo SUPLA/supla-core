@@ -20,7 +20,9 @@
 
 using std::string;
 
-supla_push_notification::supla_push_notification(void) {}
+supla_push_notification::supla_push_notification(void) { id = 0; }
+
+supla_push_notification::supla_push_notification(int id) { this->id = id; }
 
 supla_push_notification::~supla_push_notification(void) {}
 
