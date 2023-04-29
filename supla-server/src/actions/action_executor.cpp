@@ -21,6 +21,7 @@
 #include "http/http_event_hub.h"
 #include "mqtt/mqtt_client_suite.h"
 #include "scene/scene_asynctask.h"
+#include "schedule/schedule_dao.h"
 #include "userchannelgroups.h"
 
 using std::shared_ptr;
@@ -152,11 +153,15 @@ void supla_action_executor::interrupt_and_execute(void) {
 }
 
 void supla_action_executor::enable(void) {
-  // TODO(pzygmunt): Must be implemented
+  supla_db_access_provider dba;
+  supla_schedule_dao dao(&dba);
+  dao.enable(get_user_id(), get_schedule_id(), true);
 }
 
 void supla_action_executor::disable(void) {
-  // TODO(pzygmunt): Must be implemented
+  supla_db_access_provider dba;
+  supla_schedule_dao dao(&dba);
+  dao.enable(get_user_id(), get_schedule_id(), false);
 }
 
 void supla_action_executor::stop(void) {

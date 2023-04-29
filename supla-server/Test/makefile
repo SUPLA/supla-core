@@ -16,6 +16,7 @@ RM := rm -rf
 -include src/test/mqtt/subdir.mk
 -include src/test/ipc/subdir.mk
 -include src/test/integration/webhook/subdir.mk
+-include src/test/integration/schedule/subdir.mk
 -include src/test/integration/scene/subdir.mk
 -include src/test/integration/mqtt/subdir.mk
 -include src/test/integration/google/subdir.mk
@@ -59,6 +60,7 @@ RM := rm -rf
 -include src/test/actions/subdir.mk
 -include src/test/subdir.mk
 -include src/srpc/subdir.mk
+-include src/schedule/subdir.mk
 -include src/scene/subdir.mk
 -include src/push/subdir.mk
 -include src/mqtt/subdir.mk

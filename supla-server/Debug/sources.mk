@@ -49,6 +49,7 @@ src/json \
 src/mqtt \
 src/push \
 src/scene \
+src/schedule \
 src/srpc \
 src/user \
 src/webhook \
