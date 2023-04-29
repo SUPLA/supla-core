@@ -64,7 +64,7 @@ TEST_F(PnRecipientDaoIntegrationTest, remove) {
   runSqlScript("SetPushNotificationToken.sql");
 
   string result;
-  sqlQuery("SELECT push_token FROM supla_client WHERE id = 1", &result);
+  sqlQuery("SELECT push_token FROM supla_client WHERE id = 24", &result);
 
   EXPECT_EQ(result, "push_token\nabcd\n");
 
@@ -73,16 +73,16 @@ TEST_F(PnRecipientDaoIntegrationTest, remove) {
 
   result = "";
 
-  sqlQuery("SELECT push_token FROM supla_client WHERE id = 1", &result);
+  sqlQuery("SELECT push_token FROM supla_client WHERE id = 24", &result);
 
   EXPECT_EQ(result, "push_token\nabcd\n");
 
-  supla_pn_recipient r2(1, 0, false, "abcd");
+  supla_pn_recipient r2(24, 0, false, "abcd");
   dao->remove(2, &r2);
 
   result = "";
 
-  sqlQuery("SELECT push_token FROM supla_client WHERE id = 1", &result);
+  sqlQuery("SELECT push_token FROM supla_client WHERE id = 24", &result);
 
   EXPECT_EQ(result, "push_token\nNULL\n");
 }
