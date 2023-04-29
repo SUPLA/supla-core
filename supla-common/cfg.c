@@ -57,9 +57,10 @@ unsigned run_as_daemon = 0;
 
 #ifdef __TEST
 char *cfg_sql_dir = NULL;
-#endif /*__TEST*/
-
+char debug_mode = 1;
+#else
 char debug_mode = 0;
+#endif /*__TEST*/
 
 int scfg_ini_handler(void *user, const char *section, const char *name,
                      const char *value) {
