@@ -59,11 +59,7 @@ unsigned run_as_daemon = 0;
 char *cfg_sql_dir = NULL;
 #endif /*__TEST*/
 
-#ifdef __DEBUG
-char debug_mode = 1;
-#else
 char debug_mode = 0;
-#endif
 
 int scfg_ini_handler(void *user, const char *section, const char *name,
                      const char *value) {
@@ -197,11 +193,7 @@ void scfg_print_help(const char *app_name) {
   printf("    --sqldir    Specifies the path of the sql script directory\n");
 #endif /**/
   printf("    -d                  run in daemon mode\n");
-#ifdef __DEBUG
-  printf("    --debug-off         run in normal mode\n");
-#else
   printf("    -D                  run in debug mode\n");
-#endif /*__DEBUG*/
   printf("    -h                  prints this help\n");
   printf("\n");
 }
@@ -224,13 +216,8 @@ unsigned char scfg_load(int argc, char *argv[], char default_file[]) {
     } else if (strcmp("--sqldir", argv[a]) == 0 && a < argc - 1) {
       cfg_sql_dir = strdup(argv[a + 1]);
 #endif /*__TEST*/
-#ifdef __DEBUG
-    } else if (strcmp("--debug-off", argv[a]) == 0) {
-      debug_mode = 0;
-#else
     } else if (strcmp("-D", argv[a]) == 0) {
       debug_mode = 1;
-#endif /*__DEBUG*/
     } else if (strcmp("-h", argv[a]) == 0) {
       scfg_print_help(argv[0]);
       return 0;
