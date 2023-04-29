@@ -118,4 +118,11 @@ TEST_F(PushNotificationRecipientsTest, addAndGet) {
   EXPECT_TRUE(r == nullptr);
 }
 
+TEST_F(PushNotificationRecipientsTest, clear) {
+  recipients.add(new supla_pn_recipient(1, 0, false, "and1"), platform_android);
+  recipients.add(new supla_pn_recipient(2, 0, true, "ios1"), platform_ios);
+  recipients.clear();
+  EXPECT_EQ(recipients.total_count(), 0);
+}
+
 } /* namespace testing */

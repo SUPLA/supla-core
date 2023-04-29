@@ -23,13 +23,7 @@ using std::vector;
 
 supla_pn_recipients::supla_pn_recipients(void) {}
 
-supla_pn_recipients::~supla_pn_recipients(void) {
-  for (auto mit = recipients.begin(); mit != recipients.end(); ++mit) {
-    for (auto it = mit->second.begin(); it != mit->second.end(); ++it) {
-      delete *it;
-    }
-  }
-}
+supla_pn_recipients::~supla_pn_recipients(void) { clear(); }
 
 void supla_pn_recipients::add(supla_pn_recipient* recipient,
                               _platform_e platform) {
@@ -80,4 +74,14 @@ size_t supla_pn_recipients::total_count(void) {
     result += mit->second.size();
   }
   return result;
+}
+
+void supla_pn_recipients::clear(void) {
+  for (auto mit = recipients.begin(); mit != recipients.end(); ++mit) {
+    for (auto it = mit->second.begin(); it != mit->second.end(); ++it) {
+      delete *it;
+    }
+  }
+
+  recipients.clear();
 }

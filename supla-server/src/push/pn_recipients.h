@@ -42,6 +42,7 @@ class supla_pn_recipients {
   size_t count(_platform_e platform);
   size_t total_count(void);
   void add(supla_pn_recipient* recipient, _platform_e platform);
+  void clear(void);
 };
 
 #endif /* PUSH_NOTIFICATION_RECIPIENTS_H_ */
