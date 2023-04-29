@@ -16,20 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef PUSH_NOTIFICATION_DAO_H_
-#define PUSH_NOTIFICATION_DAO_H_
+#ifndef PUSH_NOTIFICATION_RECIPIENT_DAO_H_
+#define PUSH_NOTIFICATION_RECIPIENT_DAO_H_
 
 #include "db/abstract_db_access_provider.h"
-#include "push/push_notification.h"
+#include "push/pn_recipient.h"
 
-class supla_pn_dao {
+class supla_pn_recipient_dao {
  private:
   supla_abstract_db_access_provider *dba;
 
  public:
-  explicit supla_pn_dao(supla_abstract_db_access_provider *dba);
-  virtual ~supla_pn_dao(void);
-  bool get(int user_id, supla_push_notification *push);
+  explicit supla_pn_recipient_dao(supla_abstract_db_access_provider *dba);
+  virtual ~supla_pn_recipient_dao(void);
+  void remove(int user_id, supla_pn_recipient *recipient);
 };
 
-#endif /* PUSH_NOTIFICATION_DAO_H_ */
+#endif /* PUSH_NOTIFICATION_RECIPIENT_DAO_H_ */

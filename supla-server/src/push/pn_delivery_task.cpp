@@ -22,8 +22,8 @@
 #include "db/db_access_provider.h"
 #include "push/apns_client.h"
 #include "push/fcm_client.h"
-#include "push/pn_dao.h"
 #include "push/pn_delivery_task_thread_pool.h"
+#include "push/pn_recipient_dao.h"
 #include "svrcfg.h"
 
 using std::string;
@@ -81,7 +81,7 @@ bool supla_pn_delivery_task::make_request(
   }
 
   supla_db_access_provider *dba = nullptr;
-  supla_pn_dao *dao = nullptr;
+  supla_pn_recipient_dao *dao = nullptr;
 
   for (size_t a = 0; a < push->get_recipients().total_count(); a++) {
     supla_pn_recipient *recipient = push->get_recipients().get(a);
@@ -90,7 +90,7 @@ bool supla_pn_delivery_task::make_request(
         dba = new supla_db_access_provider();
       }
       if (!dao) {
-        dao = new supla_pn_dao(dba);
+        dao = new supla_pn_recipient_dao(dba);
       }
 
       dao->remove(get_user_id(), recipient);

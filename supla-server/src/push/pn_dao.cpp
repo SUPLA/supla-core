@@ -26,37 +26,6 @@ supla_pn_dao::supla_pn_dao(supla_abstract_db_access_provider *dba) {
 
 supla_pn_dao::~supla_pn_dao(void) {}
 
-void supla_pn_dao::remove(int user_id, supla_pn_recipient *recipient) {
-  if (!user_id || !recipient || !recipient->get_client_id()) {
-    return;
-  }
-
-  bool already_connected = dba->is_connected();
-
-  if (!already_connected && !dba->connect()) {
-    return;
-  }
-
-  MYSQL_BIND pbind[2] = {};
-
-  int client_id = recipient->get_client_id();
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&user_id;
-
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&client_id;
-
-  const char sql[] = "CALL `supla_remove_push_recipients`(?,?)";
-
-  MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, &pbind, 2, true);
-
-  if (stmt != nullptr) {
-    mysql_stmt_close(stmt);
-  }
-
-  if (!already_connected) {
-    dba->disconnect();
-  }
+bool supla_pn_dao::get(int user_id, supla_push_notification *push) {
+  return false;
 }
