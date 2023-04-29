@@ -18,7 +18,7 @@
 
 #include "pn_dao.h"
 
-#include <mysql/mysql.h>
+#include <mysql.h>
 
 supla_pn_dao::supla_pn_dao(supla_abstract_db_access_provider *dba) {
   this->dba = dba;
