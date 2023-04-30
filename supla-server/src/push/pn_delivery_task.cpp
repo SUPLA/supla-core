@@ -22,6 +22,7 @@
 #include "db/db_access_provider.h"
 #include "push/apns_client.h"
 #include "push/fcm_client.h"
+#include "push/pn_dao.h"
 #include "push/pn_delivery_task_thread_pool.h"
 #include "push/pn_recipient_dao.h"
 #include "svrcfg.h"
@@ -66,6 +67,26 @@ bool supla_pn_delivery_task::make_request(
   bool apns_recipients = false;
   bool apns_result = false;
 
+  supla_db_access_provider *dba = nullptr;
+  supla_pn_recipient_dao *recipient_dao = nullptr;
+
+  if (push->get_id()) {
+    dba = new supla_db_access_provider();
+    dba->connect();  // Connect to the database beforehand so that inside the
+                     // dao it doesn't disconnect with every method.
+
+    supla_pn_dao push_dao(dba);
+    if (!push_dao.get(get_user_id(), push)) {
+      delete dba;
+      return false;
+    }
+
+    recipient_dao->get_recipients(get_user_id(), push->get_id(),
+                                  &push->get_recipients());
+
+    dba->disconnect();
+  }
+
   if (push->get_recipients().count(platform_android) > 0) {
     supla_fcm_client client(curl_adapter, token_provider, push);
 
@@ -80,20 +101,17 @@ bool supla_pn_delivery_task::make_request(
     apns_result = client.send();
   }
 
-  supla_db_access_provider *dba = nullptr;
-  supla_pn_recipient_dao *dao = nullptr;
-
   for (size_t a = 0; a < push->get_recipients().total_count(); a++) {
     supla_pn_recipient *recipient = push->get_recipients().get(a);
     if (!recipient->is_exists()) {
       if (!dba) {
         dba = new supla_db_access_provider();
       }
-      if (!dao) {
-        dao = new supla_pn_recipient_dao(dba);
+      if (!recipient_dao) {
+        recipient_dao = new supla_pn_recipient_dao(dba);
       }
 
-      dao->remove(get_user_id(), recipient);
+      recipient_dao->remove(get_user_id(), recipient);
     }
   }
 
@@ -101,8 +119,8 @@ bool supla_pn_delivery_task::make_request(
     delete dba;
   }
 
-  if (dao) {
-    delete dao;
+  if (recipient_dao) {
+    delete recipient_dao;
   }
 
   return (fcm_recipients || apns_recipients) &&
