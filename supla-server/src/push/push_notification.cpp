@@ -20,11 +20,19 @@
 
 using std::string;
 
-supla_push_notification::supla_push_notification(void) { id = 0; }
+supla_push_notification::supla_push_notification(void) {
+  id = 0;
+  sound = 0;
+}
 
-supla_push_notification::supla_push_notification(int id) { this->id = id; }
+supla_push_notification::supla_push_notification(int id) {
+  this->id = id;
+  sound = 0;
+}
 
 supla_push_notification::~supla_push_notification(void) {}
+
+int supla_push_notification::get_id(void) { return id; };
 
 supla_pn_recipients &supla_push_notification::get_recipients(void) {
   return recipients;
@@ -41,3 +49,7 @@ void supla_push_notification::set_body(const string &body) {
 }
 
 const string &supla_push_notification::get_body(void) { return body; }
+
+void supla_push_notification::set_sound(int sound) { this->sound = sound; }
+
+int supla_push_notification::get_sound(void) { return sound; }

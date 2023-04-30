@@ -16,33 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef PUSH_NOTIFICATION_H_
-#define PUSH_NOTIFICATION_H_
+#ifndef PnDaoTest_H_
+#define PnDaoTest_H_
 
-#include <string>
+#include "db/db_access_provider.h"
+#include "integration/IntegrationTest.h"
+#include "push/pn_dao.h"
 
-#include "push/pn_recipients.h"
+namespace testing {
 
-class supla_push_notification {
- private:
-  int id;
-  std::string title;
-  std::string body;
-  int sound;
-  supla_pn_recipients recipients;
+class PnDaoIntegrationTest : public IntegrationTest, public Test {
+ protected:
+  supla_db_access_provider *dba;
+  supla_pn_dao *dao;
 
  public:
-  supla_push_notification(void);
-  explicit supla_push_notification(int id);
-  virtual ~supla_push_notification(void);
-  int get_id(void);
-  supla_pn_recipients &get_recipients(void);
-  void set_title(const std::string &title);
-  const std::string &get_title(void);
-  void set_body(const std::string &body);
-  const std::string &get_body(void);
-  void set_sound(int sound);
-  int get_sound(void);
+  PnDaoIntegrationTest();
+  virtual ~PnDaoIntegrationTest();
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
-#endif /* PUSH_NOTIFICATION_H_ */
+} /* namespace testing */
+
+#endif /* PnDaoTest_H_ */

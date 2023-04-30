@@ -2772,4 +2772,9 @@ ALTER TABLE supla_value_based_trigger ADD CONSTRAINT FK_1DFF99CA166053B4 FOREIGN
 ALTER TABLE supla_value_based_trigger ADD CONSTRAINT FK_1DFF99CAA40BC2D5 FOREIGN KEY (schedule_id) REFERENCES supla_schedule (id) ON DELETE CASCADE;
 ALTER TABLE supla_value_based_trigger ADD CONSTRAINT FK_1DFF99CA4E328CBE FOREIGN KEY (push_notification_id) REFERENCES supla_push_notification (id) ON DELETE CASCADE;
 ALTER TABLE supla_client ADD push_token VARCHAR(255) DEFAULT NULL, ADD platform TINYINT UNSIGNED DEFAULT NULL COMMENT '(DC2Type:tinyint)', ADD devel_env TINYINT(1) DEFAULT '0' NOT NULL;
-CREATE PROCEDURE `supla_remove_push_recipients`(IN `_user_id` INT, IN `_client_id` INT) UPDATE supla_client SET push_token = NULL WHERE id = _client_id AND user_id = _user_id
+CREATE PROCEDURE `supla_remove_push_recipients`(IN `_user_id` INT, IN `_client_id` INT) UPDATE supla_client SET push_token = NULL WHERE id = _client_id AND user_id = _user_id;
+INSERT INTO `supla_client` (`id`, `access_id`, `guid`, `name`, `reg_ipv4`, `reg_date`, `last_access_ipv4`, `last_access_date`, `software_version`, `protocol_version`, `enabled`, `user_id`, `auth_key`, `caption`, `disable_after_date`) VALUES
+(4, 2, 0xa944878fa9141f6241e7c98abaeec331, 'samsung SM-G955N', 3000535933, '2020-03-23 08:03:52', 3000535933, '2020-07-20 05:41:45', 'Android5.1.1/2.3.44', 12, 1, 2, NULL, NULL, NULL),
+(11, 2, 0xb79856ba6dc35b49966411d028cb1772, 'motorola Moto G (5S)', 1588637783, '2020-09-01 14:29:43', 3241066828, '2022-03-01 15:20:02', 'Android8.1.0/2.3.77 ', 15, 1, 2, '$2a$04$k0zWbw2Zy5v6CvmViZLDxeOT9dTCotndef9oHlbFyElxV9OKsZoSe', NULL, NULL),
+(31, 2, 0x40dcd836bb7dd492cbaf22475328542e, 'iPhone', 785126333, '2021-01-17 18:52:03', 785126333, '2021-01-17 19:03:12', 'iOS14.3/2.3.33', 12, 1, 2, '$2a$04$o5KZTCfT1.lCdyGvYTYsmO1feLwm37efGvSbi2nojul3j/2.hc0Pu', NULL, NULL);
+
