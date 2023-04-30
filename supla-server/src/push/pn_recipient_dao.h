@@ -21,6 +21,7 @@
 
 #include "db/abstract_db_access_provider.h"
 #include "push/pn_recipient.h"
+#include "push/pn_recipients.h"
 
 class supla_pn_recipient_dao {
  private:
@@ -30,6 +31,8 @@ class supla_pn_recipient_dao {
   explicit supla_pn_recipient_dao(supla_abstract_db_access_provider *dba);
   virtual ~supla_pn_recipient_dao(void);
   void remove(int user_id, supla_pn_recipient *recipient);
+  void get_recipients(int user_id, int push_notification_id,
+                      supla_pn_recipients *recipients);
 };
 
 #endif /* PUSH_NOTIFICATION_RECIPIENT_DAO_H_ */

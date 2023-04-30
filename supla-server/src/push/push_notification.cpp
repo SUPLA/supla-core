@@ -32,15 +32,10 @@ supla_push_notification::supla_push_notification(int id) {
 
 supla_push_notification::~supla_push_notification(void) {}
 
-int supla_push_notification::get_id(void) { return id; };
+int supla_push_notification::get_id(void) { return id; }
 
 supla_pn_recipients &supla_push_notification::get_recipients(void) {
   return recipients;
-}
-
-void supla_push_notification::set_recipients(
-    const supla_pn_recipients &recipients) {
-  this->recipients = recipients;
 }
 
 void supla_push_notification::set_title(const string &title) {

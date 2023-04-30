@@ -37,7 +37,6 @@ class supla_push_notification {
   virtual ~supla_push_notification(void);
   int get_id(void);
   supla_pn_recipients &get_recipients(void);
-  void set_recipients(const supla_pn_recipients &recipients);
   void set_title(const std::string &title);
   const std::string &get_title(void);
   void set_body(const std::string &body);

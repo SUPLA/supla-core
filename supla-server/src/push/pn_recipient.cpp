@@ -21,12 +21,21 @@
 using std::string;
 
 supla_pn_recipient::supla_pn_recipient(int client_id, int app_id,
-                                       bool development_env, const string& id) {
+                                       bool development_env,
+                                       const string& token) {
   this->client_id = client_id;
-  this->token = id;
+  this->token = token;
   this->app_id = app_id;
   this->development_env = development_env;
   this->exists = true;
+}
+
+supla_pn_recipient::supla_pn_recipient(supla_pn_recipient* recipient) {
+  this->client_id = recipient->client_id;
+  this->token = recipient->token;
+  this->app_id = recipient->app_id;
+  this->development_env = recipient->development_env;
+  this->exists = recipient->exists;
 }
 
 supla_pn_recipient::~supla_pn_recipient(void) {}
