@@ -100,6 +100,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipients) {
   EXPECT_EQ(recipients.total_count(), 3);
 
   supla_pn_recipient *recipient = recipients.get(platform_android, 0);
+  ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 1");
   EXPECT_EQ(recipient->get_client_id(), 4);
@@ -108,6 +109,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipients) {
   EXPECT_FALSE(recipient->is_development_env());
 
   recipient = recipients.get(platform_ios, 0);
+  ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 2");
   EXPECT_EQ(recipient->get_client_id(), 24);
@@ -116,6 +118,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipients) {
   EXPECT_FALSE(recipient->is_development_env());
 
   recipient = recipients.get(platform_ios, 1);
+  ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 3");
   EXPECT_EQ(recipient->get_client_id(), 31);
