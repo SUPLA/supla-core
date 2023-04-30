@@ -81,6 +81,7 @@ bool supla_pn_delivery_task::make_request(
       return false;
     }
 
+    recipient_dao = new supla_pn_recipient_dao(dba);
     recipient_dao->get_recipients(get_user_id(), push->get_id(),
                                   &push->get_recipients());
 
