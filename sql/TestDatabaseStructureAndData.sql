@@ -2771,7 +2771,7 @@ ALTER TABLE supla_value_based_trigger ADD CONSTRAINT FK_1DFF99CA89E4AAEE FOREIGN
 ALTER TABLE supla_value_based_trigger ADD CONSTRAINT FK_1DFF99CA166053B4 FOREIGN KEY (scene_id) REFERENCES supla_scene (id) ON DELETE CASCADE;
 ALTER TABLE supla_value_based_trigger ADD CONSTRAINT FK_1DFF99CAA40BC2D5 FOREIGN KEY (schedule_id) REFERENCES supla_schedule (id) ON DELETE CASCADE;
 ALTER TABLE supla_value_based_trigger ADD CONSTRAINT FK_1DFF99CA4E328CBE FOREIGN KEY (push_notification_id) REFERENCES supla_push_notification (id) ON DELETE CASCADE;
-ALTER TABLE supla_client ADD push_token VARCHAR(255) DEFAULT NULL, ADD platform TINYINT UNSIGNED DEFAULT NULL COMMENT '(DC2Type:tinyint)', ADD devel_env TINYINT(1) DEFAULT '0' NOT NULL;
+ALTER TABLE supla_client ADD push_token VARCHAR(255) DEFAULT NULL, ADD platform TINYINT UNSIGNED DEFAULT NULL COMMENT '(DC2Type:tinyint)', ADD app_id INT DEFAULT '0' NOT NULL, ADD devel_env TINYINT(1) DEFAULT '0' NOT NULL;
 CREATE PROCEDURE `supla_remove_push_recipients`(IN `_user_id` INT, IN `_client_id` INT) UPDATE supla_client SET push_token = NULL WHERE id = _client_id AND user_id = _user_id;
 INSERT INTO `supla_client` (`id`, `access_id`, `guid`, `name`, `reg_ipv4`, `reg_date`, `last_access_ipv4`, `last_access_date`, `software_version`, `protocol_version`, `enabled`, `user_id`, `auth_key`, `caption`, `disable_after_date`) VALUES
 (4, 2, 0xa944878fa9141f6241e7c98abaeec331, 'samsung SM-G955N', 3000535933, '2020-03-23 08:03:52', 3000535933, '2020-07-20 05:41:45', 'Android5.1.1/2.3.44', 12, 1, 2, NULL, NULL, NULL),
