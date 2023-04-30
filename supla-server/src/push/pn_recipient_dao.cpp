@@ -136,7 +136,6 @@ void supla_pn_recipient_dao::get_recipients(int user_id,
         while (!mysql_stmt_fetch(stmt)) {
           dba->set_terminating_byte(token, sizeof(token), token_len,
                                     token_is_null);
-
           supla_pn_recipient *recipient =
               new supla_pn_recipient(client_id, app_id, devel_env > 0, token);
           if (recipient) {

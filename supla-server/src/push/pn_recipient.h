@@ -33,7 +33,7 @@ class supla_pn_recipient {
  public:
   supla_pn_recipient(int client_id, int app_id, bool development_env,
                      const std::string& token);
-  supla_pn_recipient(supla_pn_recipient* recipient);
+  explicit supla_pn_recipient(supla_pn_recipient* recipient);
   virtual ~supla_pn_recipient(void);
 
   const std::string& get_token(void);

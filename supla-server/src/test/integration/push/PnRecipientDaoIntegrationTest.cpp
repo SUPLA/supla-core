@@ -99,29 +99,29 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipients) {
   dao->get_recipients(2, 5, &recipients);
   EXPECT_EQ(recipients.total_count(), 3);
 
-  supla_pn_recipient recipient = recipients.get(platform_android, 0);
+  supla_pn_recipient *recipient = recipients.get(platform_android, 0);
 
-  EXPECT_EQ(recipient.get_token(), "Token 1");
-  EXPECT_EQ(recipient.get_client_id(), 4);
-  EXPECT_EQ(recipient.get_app_id(), 0);
-  EXPECT_TRUE(recipient.is_exists());
-  EXPECT_FALSE(recipient.is_development_env());
+  EXPECT_EQ(recipient->get_token(), "Token 1");
+  EXPECT_EQ(recipient->get_client_id(), 4);
+  EXPECT_EQ(recipient->get_app_id(), 0);
+  EXPECT_TRUE(recipient->is_exists());
+  EXPECT_FALSE(recipient->is_development_env());
 
   recipient = recipients.get(platform_ios, 0);
 
-  EXPECT_EQ(recipient.get_token(), "Token 2");
-  EXPECT_EQ(recipient.get_client_id(), 24);
-  EXPECT_EQ(recipient.get_app_id(), 0);
-  EXPECT_TRUE(recipient.is_exists());
-  EXPECT_FALSE(recipient.is_development_env());
+  EXPECT_EQ(recipient->get_token(), "Token 2");
+  EXPECT_EQ(recipient->get_client_id(), 24);
+  EXPECT_EQ(recipient->get_app_id(), 200);
+  EXPECT_TRUE(recipient->is_exists());
+  EXPECT_FALSE(recipient->is_development_env());
 
   recipient = recipients.get(platform_ios, 1);
 
-  EXPECT_EQ(recipient.get_token(), "Token 3");
-  EXPECT_EQ(recipient.get_client_id(), 31);
-  EXPECT_EQ(recipient.get_app_id(), 0);
-  EXPECT_TRUE(recipient.is_exists());
-  EXPECT_TRUE(recipient.is_development_env());
+  EXPECT_EQ(recipient->get_token(), "Token 3");
+  EXPECT_EQ(recipient->get_client_id(), 31);
+  EXPECT_EQ(recipient->get_app_id(), 0);
+  EXPECT_TRUE(recipient->is_exists());
+  EXPECT_TRUE(recipient->is_development_env());
 }
 
 } /* namespace testing */
