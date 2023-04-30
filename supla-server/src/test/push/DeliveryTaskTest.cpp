@@ -28,15 +28,15 @@ namespace testing {
 using std::shared_ptr;
 using std::string;
 
-DeliveryTaskTestTest::DeliveryTaskTestTest(void) : AsyncTaskTest() {
+DeliveryTaskTest::DeliveryTaskTest(void) : AsyncTaskTest() {
   tokenProviderCurlAdapter = nullptr;
   deliveryTaskCurlAdapter = nullptr;
   provider = nullptr;
 }
 
-DeliveryTaskTestTest::~DeliveryTaskTestTest(void) {}
+DeliveryTaskTest::~DeliveryTaskTest(void) {}
 
-void DeliveryTaskTestTest::SetUp(void) {
+void DeliveryTaskTest::SetUp(void) {
   AsyncTaskTest::SetUp();
 
   tokenProviderCurlAdapter = new CurlAdapterMock();
@@ -70,12 +70,12 @@ void DeliveryTaskTestTest::SetUp(void) {
           new supla_asynctask_http_thread_bucket(deliveryTaskCurlAdapter)));
 }
 
-void DeliveryTaskTestTest::TearDown(void) {
+void DeliveryTaskTest::TearDown(void) {
   delete provider;
   AsyncTaskTest::TearDown();
 }
 
-TEST_F(DeliveryTaskTestTest, recipientsFromAndroidAndiOsPlatforms) {
+TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
   supla_push_notification *push = new supla_push_notification();
   push->set_title("TiTle");
   push->set_body("BoDy");
@@ -150,7 +150,7 @@ TEST_F(DeliveryTaskTestTest, recipientsFromAndroidAndiOsPlatforms) {
   EXPECT_TRUE(r3->is_exists());
 }
 
-TEST_F(DeliveryTaskTestTest, fcmMessageId) {
+TEST_F(DeliveryTaskTest, fcmMessageId) {
   supla_push_notification *push = new supla_push_notification();
   push->set_title("T");
   push->set_body("B");
@@ -171,7 +171,7 @@ TEST_F(DeliveryTaskTestTest, fcmMessageId) {
   EXPECT_EQ(r->get_message_id(), "MsgId123");
 }
 
-TEST_F(DeliveryTaskTestTest, apnsMessageId) {
+TEST_F(DeliveryTaskTest, apnsMessageId) {
   supla_push_notification *push = new supla_push_notification();
   push->set_title("T");
   push->set_body("B");
@@ -192,7 +192,7 @@ TEST_F(DeliveryTaskTestTest, apnsMessageId) {
   EXPECT_EQ(r->get_message_id(), "APNS-ID");
 }
 
-TEST_F(DeliveryTaskTestTest, fcmRecipientDoesNotExist) {
+TEST_F(DeliveryTaskTest, fcmRecipientDoesNotExist) {
   supla_push_notification *push = new supla_push_notification();
   push->set_title("T");
   push->set_body("B");
@@ -212,7 +212,7 @@ TEST_F(DeliveryTaskTestTest, fcmRecipientDoesNotExist) {
   EXPECT_FALSE(r->is_exists());
 }
 
-TEST_F(DeliveryTaskTestTest, apnsRecipientDoesNotExist) {
+TEST_F(DeliveryTaskTest, apnsRecipientDoesNotExist) {
   supla_push_notification *push = new supla_push_notification();
   push->set_title("T");
   push->set_body("B");

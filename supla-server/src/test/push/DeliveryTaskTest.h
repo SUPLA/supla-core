@@ -27,15 +27,15 @@
 
 namespace testing {
 
-class DeliveryTaskTestTest : public AsyncTaskTest {
+class DeliveryTaskTest : public AsyncTaskTest {
  protected:
   CurlAdapterMock *deliveryTaskCurlAdapter;
   CurlAdapterMock *tokenProviderCurlAdapter;
   AccessTokenProviderMock *provider;
 
  public:
-  DeliveryTaskTestTest(void);
-  virtual ~DeliveryTaskTestTest(void);
+  DeliveryTaskTest(void);
+  virtual ~DeliveryTaskTest(void);
   virtual void SetUp(void);
   virtual void TearDown(void);
 };
