@@ -4,14 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/integration/push/DeliveryTaskIntegrationTest.cpp \
 ../src/test/integration/push/PnDaoIntegrationTest.cpp \
 ../src/test/integration/push/PnRecipientDaoIntegrationTest.cpp 
 
 CPP_DEPS += \
+./src/test/integration/push/DeliveryTaskIntegrationTest.d \
 ./src/test/integration/push/PnDaoIntegrationTest.d \
 ./src/test/integration/push/PnRecipientDaoIntegrationTest.d 
 
 OBJS += \
+./src/test/integration/push/DeliveryTaskIntegrationTest.o \
 ./src/test/integration/push/PnDaoIntegrationTest.o \
 ./src/test/integration/push/PnRecipientDaoIntegrationTest.o 
 
@@ -28,7 +31,7 @@ src/test/integration/push/%.o: ../src/test/integration/push/%.cpp src/test/integ
 clean: clean-src-2f-test-2f-integration-2f-push
 
 clean-src-2f-test-2f-integration-2f-push:
-	-$(RM) ./src/test/integration/push/PnDaoIntegrationTest.d ./src/test/integration/push/PnDaoIntegrationTest.o ./src/test/integration/push/PnRecipientDaoIntegrationTest.d ./src/test/integration/push/PnRecipientDaoIntegrationTest.o
+	-$(RM) ./src/test/integration/push/DeliveryTaskIntegrationTest.d ./src/test/integration/push/DeliveryTaskIntegrationTest.o ./src/test/integration/push/PnDaoIntegrationTest.d ./src/test/integration/push/PnDaoIntegrationTest.o ./src/test/integration/push/PnRecipientDaoIntegrationTest.d ./src/test/integration/push/PnRecipientDaoIntegrationTest.o
 
 .PHONY: clean-src-2f-test-2f-integration-2f-push
 
