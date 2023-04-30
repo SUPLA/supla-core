@@ -7,19 +7,22 @@ CPP_SRCS += \
 ../src/test/push/AccessTokenProviderTest.cpp \
 ../src/test/push/AccessTokenTest.cpp \
 ../src/test/push/DeliveryTaskTest.cpp \
-../src/test/push/PushNotificationRecipientsTest.cpp 
+../src/test/push/PushNotificationRecipientsTest.cpp \
+../src/test/push/PushNotificationTest.cpp 
 
 CPP_DEPS += \
 ./src/test/push/AccessTokenProviderTest.d \
 ./src/test/push/AccessTokenTest.d \
 ./src/test/push/DeliveryTaskTest.d \
-./src/test/push/PushNotificationRecipientsTest.d 
+./src/test/push/PushNotificationRecipientsTest.d \
+./src/test/push/PushNotificationTest.d 
 
 OBJS += \
 ./src/test/push/AccessTokenProviderTest.o \
 ./src/test/push/AccessTokenTest.o \
 ./src/test/push/DeliveryTaskTest.o \
-./src/test/push/PushNotificationRecipientsTest.o 
+./src/test/push/PushNotificationRecipientsTest.o \
+./src/test/push/PushNotificationTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -34,7 +37,7 @@ src/test/push/%.o: ../src/test/push/%.cpp src/test/push/subdir.mk
 clean: clean-src-2f-test-2f-push
 
 clean-src-2f-test-2f-push:
-	-$(RM) ./src/test/push/AccessTokenProviderTest.d ./src/test/push/AccessTokenProviderTest.o ./src/test/push/AccessTokenTest.d ./src/test/push/AccessTokenTest.o ./src/test/push/DeliveryTaskTest.d ./src/test/push/DeliveryTaskTest.o ./src/test/push/PushNotificationRecipientsTest.d ./src/test/push/PushNotificationRecipientsTest.o
+	-$(RM) ./src/test/push/AccessTokenProviderTest.d ./src/test/push/AccessTokenProviderTest.o ./src/test/push/AccessTokenTest.d ./src/test/push/AccessTokenTest.o ./src/test/push/DeliveryTaskTest.d ./src/test/push/DeliveryTaskTest.o ./src/test/push/PushNotificationRecipientsTest.d ./src/test/push/PushNotificationRecipientsTest.o ./src/test/push/PushNotificationTest.d ./src/test/push/PushNotificationTest.o
 
 .PHONY: clean-src-2f-test-2f-push
 
