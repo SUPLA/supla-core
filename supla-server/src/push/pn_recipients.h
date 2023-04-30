@@ -25,9 +25,9 @@
 #include "push/pn_recipient.h"
 
 enum _platform_e {
-  platform_unknown,
-  platform_ios,
-  platform_android,
+  platform_unknown = 0,
+  platform_ios = 1,
+  platform_android = 2,
 };
 
 class supla_pn_recipients {
@@ -43,6 +43,8 @@ class supla_pn_recipients {
   size_t total_count(void);
   void add(supla_pn_recipient* recipient, _platform_e platform);
   void clear(void);
+
+  supla_pn_recipients& operator=(const supla_pn_recipients& src);
 };
 
 #endif /* PUSH_NOTIFICATION_RECIPIENTS_H_ */

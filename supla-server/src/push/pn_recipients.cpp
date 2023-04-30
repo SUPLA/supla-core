@@ -85,3 +85,16 @@ void supla_pn_recipients::clear(void) {
 
   recipients.clear();
 }
+
+supla_pn_recipients& supla_pn_recipients::operator=(
+    const supla_pn_recipients& src) {
+  clear();
+
+  for (auto mit = src.recipients.begin(); mit != src.recipients.end(); ++mit) {
+    for (auto it = mit->second.begin(); it != mit->second.end(); ++it) {
+      add(new supla_pn_recipient(*it), mit->first);
+    }
+  }
+
+  return *this;
+}
