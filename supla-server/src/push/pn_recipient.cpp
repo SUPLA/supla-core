@@ -23,7 +23,7 @@ using std::string;
 supla_pn_recipient::supla_pn_recipient(int client_id, int app_id,
                                        bool development_env, const string& id) {
   this->client_id = client_id;
-  this->id = id;
+  this->token = id;
   this->app_id = app_id;
   this->development_env = development_env;
   this->exists = true;
@@ -31,7 +31,7 @@ supla_pn_recipient::supla_pn_recipient(int client_id, int app_id,
 
 supla_pn_recipient::~supla_pn_recipient(void) {}
 
-const std::string& supla_pn_recipient::get_id(void) { return id; }
+const std::string& supla_pn_recipient::get_token(void) { return token; }
 
 int supla_pn_recipient::get_client_id(void) { return client_id; }
 

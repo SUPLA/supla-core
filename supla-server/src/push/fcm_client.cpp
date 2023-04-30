@@ -43,7 +43,7 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
   cJSON *message = cJSON_CreateObject();
   cJSON_AddItemToObject(root, "message", message);
 
-  cJSON_AddStringToObject(message, "token", recipient->get_id().c_str());
+  cJSON_AddStringToObject(message, "token", recipient->get_token().c_str());
   cJSON *notification = cJSON_CreateObject();
   cJSON_AddItemToObject(message, "notification", notification);
 

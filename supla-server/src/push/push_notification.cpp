@@ -38,6 +38,11 @@ supla_pn_recipients &supla_push_notification::get_recipients(void) {
   return recipients;
 }
 
+void supla_push_notification::set_recipients(
+    const supla_pn_recipients &recipients) {
+  this->recipients = recipients;
+}
+
 void supla_push_notification::set_title(const string &title) {
   this->title = title;
 }

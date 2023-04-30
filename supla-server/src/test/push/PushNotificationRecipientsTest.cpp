@@ -69,21 +69,21 @@ TEST_F(PushNotificationRecipientsTest, addAndGet) {
 
   r = recipients.get(platform_android, 0);
   ASSERT_TRUE(r != nullptr);
-  EXPECT_EQ(r->get_id(), "and1");
+  EXPECT_EQ(r->get_token(), "and1");
   EXPECT_EQ(r->get_client_id(), 1);
   EXPECT_EQ(r->get_app_id(), 0);
   EXPECT_FALSE(r->is_development_env());
 
   r = recipients.get(platform_ios, 0);
   ASSERT_TRUE(r != nullptr);
-  EXPECT_EQ(r->get_id(), "ios1");
+  EXPECT_EQ(r->get_token(), "ios1");
   EXPECT_EQ(r->get_client_id(), 2);
   EXPECT_EQ(r->get_app_id(), 0);
   EXPECT_TRUE(r->is_development_env());
 
   r = recipients.get(platform_ios, 1);
   ASSERT_TRUE(r != nullptr);
-  EXPECT_EQ(r->get_id(), "ios2");
+  EXPECT_EQ(r->get_token(), "ios2");
   EXPECT_EQ(r->get_client_id(), 3);
   EXPECT_EQ(r->get_app_id(), 5);
   EXPECT_FALSE(r->is_development_env());
@@ -95,21 +95,21 @@ TEST_F(PushNotificationRecipientsTest, addAndGet) {
 
   r = recipients.get(0);
   ASSERT_TRUE(r != nullptr);
-  EXPECT_EQ(r->get_id(), "ios1");
+  EXPECT_EQ(r->get_token(), "ios1");
   EXPECT_EQ(r->get_client_id(), 2);
   EXPECT_EQ(r->get_app_id(), 0);
   EXPECT_TRUE(r->is_development_env());
 
   r = recipients.get(1);
   ASSERT_TRUE(r != nullptr);
-  EXPECT_EQ(r->get_id(), "ios2");
+  EXPECT_EQ(r->get_token(), "ios2");
   EXPECT_EQ(r->get_client_id(), 3);
   EXPECT_EQ(r->get_app_id(), 5);
   EXPECT_FALSE(r->is_development_env());
 
   r = recipients.get(2);
   ASSERT_TRUE(r != nullptr);
-  EXPECT_EQ(r->get_id(), "and1");
+  EXPECT_EQ(r->get_token(), "and1");
   EXPECT_EQ(r->get_client_id(), 1);
   EXPECT_EQ(r->get_app_id(), 0);
   EXPECT_FALSE(r->is_development_env());

@@ -25,17 +25,17 @@ class supla_pn_recipient {
  private:
   int client_id;
   int app_id;
-  std::string id;
+  std::string token;
   std::string message_id;
   bool exists;
   bool development_env;
 
  public:
   supla_pn_recipient(int client_id, int app_id, bool development_env,
-                     const std::string& id);
+                     const std::string& token);
   virtual ~supla_pn_recipient(void);
 
-  const std::string& get_id(void);
+  const std::string& get_token(void);
   int get_client_id(void);
   int get_app_id(void);
   void set_message_id(const std::string& message_id);

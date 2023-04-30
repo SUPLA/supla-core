@@ -74,7 +74,7 @@ bool supla_apns_client::_send(supla_pn_gateway_access_token *token,
   size_t pos = endpoint.find("{device_token}");
   if (pos != std::string::npos) {
     endpoint.replace(pos, std::string("{device_token}").length(),
-                     recipient->get_id());
+                     recipient->get_token());
   } else {
     supla_log(LOG_ERR, "Url %s does not contain the string {device_token}",
               endpoint.c_str());
