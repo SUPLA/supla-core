@@ -49,13 +49,6 @@ enum rsAction {
   rsActionReveal
 };
 
-typedef struct {
-  union {
-    char value[SUPLA_CHANNELVALUE_SIZE];
-    TSuplaChannelExtendedValue *extendedValue;
-  };
-} _logger_purpose_t;
-
 class supla_device_channel {
  private:
   void *lck;
@@ -88,7 +81,9 @@ class supla_device_channel {
   void update_extended_electricity_meter_value(void);
   supla_channel_value *_get_value(void);
   bool convert_value_to_extended(void);
-  void on_value_changed(bool significant_change, bool converted2extended);
+  void on_value_changed(supla_channel_value *old_value,
+                        supla_channel_value *new_value, bool significant_change,
+                        bool converted2extended);
 
  public:
   supla_device_channel(supla_device *device, int id, int number, int type,

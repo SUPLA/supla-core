@@ -29,8 +29,11 @@
 #include "db/database.h"
 #include "device.h"
 #include "device/value/channel_binary_sensor_value.h"
+#include "device/value/channel_dgf_value.h"
+#include "device/value/channel_em_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
+#include "device/value/channel_ic_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
@@ -517,107 +520,28 @@ bool supla_device_channel::set_value(
     value_valid_to.tv_usec = 0;
   }
 
-  char old_value[SUPLA_CHANNELVALUE_SIZE] =
-      {};  // Because of
-           // TempHum->toValue(current_value)
-           // and current_value[0] =
-           // current_value[0]...
-
-  supla_channel_temphum_value *old_temp_hum =
-      get_value<supla_channel_temphum_value>();
-  supla_channel_temphum_value *temp_hum = nullptr;
-
-  memcpy(old_value, this->value, SUPLA_CHANNELVALUE_SIZE);
+  supla_channel_value *old_value = _get_value();
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
+  supla_channel_value *new_value = _get_value();
 
-  if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER ||
-      func == SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW) {
-    TDSC_RollerShutterValue *rs_val = (TDSC_RollerShutterValue *)this->value;
-    rs_val->bottom_position = param4;
-  } else if ((func == SUPLA_CHANNELFNC_POWERSWITCH ||
-              func == SUPLA_CHANNELFNC_LIGHTSWITCH ||
-              func == SUPLA_CHANNELFNC_STAIRCASETIMER) &&
-             get_device()->get_connection()->get_protocol_version() < 15) {
-    // https://forum.supla.org/viewtopic.php?f=6&t=8861
-    for (short a = 1; a < SUPLA_CHANNELVALUE_SIZE; a++) {
-      this->value[a] = 0;
-    }
-  } else if (type == SUPLA_CHANNELTYPE_DIGIGLASS) {
-    TDigiglass_Value *dgf_val = (TDigiglass_Value *)this->value;
-    dgf_val->sectionCount = param1;
-  } else if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
-    electricity_meter_config *config =
-        new electricity_meter_config(json_config);
-    config->add_initial_value((TElectricityMeter_Value *)this->value);
-    delete config;
-  } else if (type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
-    impulse_counter_config *config = new impulse_counter_config(json_config);
-
-    if (logger_data && !config->should_be_added_to_history()) {
-      memcpy(logger_data->value, this->value, SUPLA_CHANNELVALUE_SIZE);
-    }
-
-    config->add_initial_value((TDS_ImpulseCounter_Value *)this->value);
-
-    if (logger_data && config->should_be_added_to_history()) {
-      memcpy(logger_data->value, this->value, SUPLA_CHANNELVALUE_SIZE);
-    }
-
-    delete config;
-  } else if (type == SUPLA_CHANNELTYPE_SENSORNC) {
-    this->value[0] = this->value[0] == 0 ? 1 : 0;
-  } else {
-    temp_hum = get_value<supla_channel_temphum_value>();
-
-    if (temp_hum) {
-      if ((param2 != 0 || param3 != 0)) {
-        if (param2 != 0) {
-          temp_hum->set_temperature(temp_hum->get_temperature() +
-                                    (param2 / 100.00));
-        }
-
-        if (param3 != 0) {
-          temp_hum->set_humidity(temp_hum->get_humidity() + (param3 / 100.00));
-        }
-
-        temp_hum->get_raw_value(this->value);
-      }
-    }
-  }
-
-  if (param3 == 1 && (type == SUPLA_CHANNELTYPE_SENSORNC ||
-                      type == SUPLA_CHANNELTYPE_SENSORNO)) {
-    this->value[0] = this->value[0] == 0 ? 1 : 0;
-  }
+  new_value->apply_channel_properties(
+      type, get_device()->get_connection()->get_protocol_version(), param1,
+      param2, param3, param4, json_config, logger_data);
 
   if (validity_time_sec) {
     gettimeofday(&value_valid_to, nullptr);
     value_valid_to.tv_sec += (*validity_time_sec);
   }
 
-  bool differ = memcmp(this->value, old_value, SUPLA_CHANNELVALUE_SIZE) != 0;
   bool significant_change = false;
+  bool differ = new_value->is_differ(old_value, &significant_change);
 
   if (offline && set_offline(*offline)) {
     differ = true;
+    significant_change = true;
   }
 
-  if (temp_hum || old_temp_hum) {
-    significant_change =
-        supla_channel_temphum_value::significant_change(old_temp_hum, temp_hum);
-  } else {
-    significant_change = differ;
-  }
-
-  if (temp_hum) {
-    delete temp_hum;
-    temp_hum = nullptr;
-  }
-
-  if (old_temp_hum) {
-    delete old_temp_hum;
-    old_temp_hum = nullptr;
-  }
+  new_value->get_raw_value(this->value);
 
   unlock();
 
@@ -626,7 +550,7 @@ bool supla_device_channel::set_value(
 
     if (db->connect() == true) {
       char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
-      get_value(current_value);
+      new_value->get_raw_value(current_value);
       db->update_channel_value(get_id(), get_user_id(), current_value,
                                validity_time_sec ? *validity_time_sec : 0);
     }
@@ -637,7 +561,16 @@ bool supla_device_channel::set_value(
   bool converted2extended = convert_value_to_extended();
 
   if (differ) {
-    on_value_changed(significant_change, converted2extended);
+    on_value_changed(old_value, new_value, significant_change,
+                     converted2extended);
+  }
+
+  if (new_value) {
+    delete new_value;
+  }
+
+  if (old_value) {
+    delete old_value;
   }
 
   return differ;
@@ -668,7 +601,9 @@ bool supla_device_channel::convert_value_to_extended(void) {
   return false;
 }
 
-void supla_device_channel::on_value_changed(bool significant_change,
+void supla_device_channel::on_value_changed(supla_channel_value *old_value,
+                                            supla_channel_value *new_value,
+                                            bool significant_change,
                                             bool converted2extended) {
   switch (get_func()) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
@@ -1225,6 +1160,19 @@ supla_channel_value *supla_device_channel::_get_value(void) {
     case SUPLA_CHANNELFNC_THERMOSTAT:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       return new supla_channel_thermostat_value(value);
+
+    case SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL:
+    case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
+      return new supla_channel_dgf_value(value);
+
+    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_GAS_METER:
+    case SUPLA_CHANNELFNC_IC_HEAT_METER:
+    case SUPLA_CHANNELFNC_IC_WATER_METER:
+      return new supla_channel_ic_value(value);
+
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+      return new supla_channel_em_value(value);
   }
 
   return new supla_channel_value(value);
