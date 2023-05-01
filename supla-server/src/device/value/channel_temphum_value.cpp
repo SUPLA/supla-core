@@ -105,13 +105,19 @@ void supla_channel_temphum_value::set_humidity(double humidity) {
   }
 }
 
-// static
-bool supla_channel_temphum_value::significant_change(
-    supla_channel_temphum_value *old_val,
-    supla_channel_temphum_value *new_val) {
-  return (new_val && !old_val) || (!new_val && old_val) ||
-         ((int)(new_val->get_humidity() * 100) !=
-              (int)(old_val->get_humidity() * 100) ||
-          (int)(new_val->get_temperature() * 100) !=
-              (int)(old_val->get_temperature() * 100));
+bool supla_channel_temphum_value::is_differ(supla_channel_value *value,
+                                            bool *significant_change) {
+  bool result = supla_channel_value::is_differ(value, significant_change);
+  if (result && significant_change) {
+    supla_channel_temphum_value *temphum_val =
+        dynamic_cast<supla_channel_temphum_value *>(value);
+
+    *significant_change =
+        !temphum_val || ((int)(get_humidity() * 100) !=
+                             (int)(temphum_val->get_humidity() * 100) ||
+                         (int)(get_temperature() * 100) !=
+                             (int)(temphum_val->get_temperature() * 100));
+  }
+
+  return result;
 }

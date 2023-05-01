@@ -40,3 +40,13 @@ void supla_channel_value::set_raw_value(
     char raw_value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(this->raw_value, raw_value, SUPLA_CHANNELVALUE_SIZE);
 }
+
+bool supla_channel_value::is_differ(supla_channel_value *value,
+                                    bool *significant_change) {
+  bool result = !value || memcmp(this->raw_value, value->raw_value,
+                                 SUPLA_CHANNELVALUE_SIZE) != 0;
+  if (significant_change) {
+    *significant_change = result;
+  }
+  return result;
+}

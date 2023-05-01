@@ -31,6 +31,7 @@ class supla_channel_value {
   virtual ~supla_channel_value(void);
   void get_raw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   void set_raw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  virtual bool is_differ(supla_channel_value *value, bool *significant_change);
 };
 
 #endif /*CHANNEL_VALUE_H_*/

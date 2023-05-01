@@ -39,8 +39,7 @@ class supla_channel_temphum_value : public supla_channel_value {
   double get_humidity(void);
   void set_temperature(double temperature);
   void set_humidity(double humidity);
-  static bool significant_change(supla_channel_temphum_value *old_val,
-                                 supla_channel_temphum_value *new_val);
+  virtual bool is_differ(supla_channel_value *value, bool *significant_change);
   static int incorrect_temperature(void);
   static int incorrect_humidity(void);
 };
