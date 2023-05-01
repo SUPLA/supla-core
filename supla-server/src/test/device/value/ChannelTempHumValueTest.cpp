@@ -129,4 +129,22 @@ TEST_F(ChannelTempHumValueTest, diff) {
   EXPECT_TRUE(significant_change);
 }
 
+TEST_F(ChannelTempHumValueTest, applyChannelProperties) {
+  supla_channel_temphum_value v(true, 22.331, 45.678);
+
+  EXPECT_EQ(v.get_temperature(), 22.331);
+  EXPECT_EQ(v.get_humidity(), 45.678);
+
+  v.apply_channel_properties(0, 0, 0, 122, 1211, 0, nullptr, nullptr);
+
+  EXPECT_EQ(v.get_temperature(), 23.551);
+  EXPECT_EQ(v.get_humidity(), 57.788);
+
+  v.apply_channel_properties(0, 0, 0, -2455, -100, 0, nullptr, nullptr);
+
+  EXPECT_LE(v.get_temperature(), -0.999);
+  EXPECT_GE(v.get_temperature(), -1.0);
+  EXPECT_EQ(v.get_humidity(), 56.788);
+}
+
 }  // namespace testing

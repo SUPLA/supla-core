@@ -40,6 +40,12 @@ class supla_channel_temphum_value : public supla_channel_value {
   void set_temperature(double temperature);
   void set_humidity(double humidity);
   virtual bool is_differ(supla_channel_value *value, bool *significant_change);
+  virtual void apply_channel_properties(int type,
+                                        unsigned char protocol_version,
+                                        int param1, int param2, int param3,
+                                        int param4,
+                                        channel_json_config *json_config,
+                                        _logger_purpose_t *logger_data);
   static int incorrect_temperature(void);
   static int incorrect_humidity(void);
 };
