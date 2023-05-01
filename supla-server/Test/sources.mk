@@ -102,5 +102,6 @@ src/test/push \
 src/test/scene \
 src/test/webhook \
 src/user \
+src/vbt \
 src/webhook \
 

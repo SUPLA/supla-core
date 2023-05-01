@@ -52,5 +52,6 @@ src/scene \
 src/schedule \
 src/srpc \
 src/user \
+src/vbt \
 src/webhook \
 

@@ -33,7 +33,8 @@ cpplint ./supla-server/src/push/*
 cpplint ./supla-server/src/schedule/* 
 cpplint ./supla-server/src/scene/* 
 cpplint ./supla-server/src/srpc/* 
-cpplint ./supla-server/src/user/* 
+cpplint ./supla-server/src/user/*
+cpplint ./supla-server/src/vbt/*
 cpplint ./supla-server/src/webhook/* 
 cpplint --filter=-build/include ./supla-server/src/test/* 
 cpplint --filter=-build/include ./supla-server/src/test/actions/* 
