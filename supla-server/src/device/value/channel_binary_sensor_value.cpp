@@ -37,3 +37,16 @@ void supla_channel_binary_sensor_value::set_hi(bool hi) {
 }
 
 bool supla_channel_binary_sensor_value::is_hi(void) { return raw_value[0] > 0; }
+
+void supla_channel_binary_sensor_value::apply_channel_properties(
+    int type, unsigned char protocol_version, int param1, int param2,
+    int param3, int param4, channel_json_config *json_config,
+    _logger_purpose_t *logger_data) {
+  if (type == SUPLA_CHANNELTYPE_SENSORNC) {
+    set_hi(!is_hi());
+  }
+
+  if (param3 == 1) {  // inverted logic
+    set_hi(!is_hi());
+  }
+}
