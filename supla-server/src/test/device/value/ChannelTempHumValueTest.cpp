@@ -98,4 +98,35 @@ TEST_F(ChannelTempHumValueTest, nativeValue) {
   tempHum2.get_raw_value(value2);
   EXPECT_EQ(0, memcmp(value1, value2, SUPLA_CHANNELVALUE_SIZE));
 }
+
+TEST_F(ChannelTempHumValueTest, diff) {
+  supla_channel_temphum_value v1(true, 22.3345, 45.6789);
+  supla_channel_temphum_value v2(true, 22.3345, 45.6789);
+
+  bool significant_change = false;
+  EXPECT_FALSE(v1.is_differ(&v2, &significant_change));
+  EXPECT_FALSE(significant_change);
+
+  EXPECT_TRUE(v1.is_differ(nullptr, &significant_change));
+  EXPECT_TRUE(significant_change);
+
+  v2.set_temperature(22.3390);
+  v2.set_humidity(45.6710);
+
+  EXPECT_TRUE(v1.is_differ(&v2, &significant_change));
+  EXPECT_FALSE(significant_change);
+
+  v2.set_temperature(22.3322);
+  v2.set_humidity(45.68);
+
+  EXPECT_TRUE(v1.is_differ(nullptr, &significant_change));
+  EXPECT_TRUE(significant_change);
+
+  v2.set_temperature(23.33);
+  v2.set_humidity(45.6741);
+
+  EXPECT_TRUE(v1.is_differ(nullptr, &significant_change));
+  EXPECT_TRUE(significant_change);
+}
+
 }  // namespace testing
