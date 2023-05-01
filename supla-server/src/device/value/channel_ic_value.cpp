@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "channeljsonconfig/impulse_counter_config.h"
+
 supla_channel_ic_value::supla_channel_ic_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {}
@@ -32,4 +34,23 @@ supla_channel_ic_value::supla_channel_ic_value(
 
 const TDS_ImpulseCounter_Value *supla_channel_ic_value::get_ic_value(void) {
   return (TDS_ImpulseCounter_Value *)raw_value;
+}
+
+void supla_channel_ic_value::apply_channel_properties(
+    int type, unsigned char protocol_version, int param1, int param2,
+    int param3, int param4, channel_json_config *json_config,
+    _logger_purpose_t *logger_data) {
+  impulse_counter_config *config = new impulse_counter_config(json_config);
+
+  if (logger_data && !config->should_be_added_to_history()) {
+    get_raw_value(logger_data->value);
+  }
+
+  config->add_initial_value(&((TDS_ImpulseCounter_Value *)raw_value)->counter);
+
+  if (logger_data && config->should_be_added_to_history()) {
+    get_raw_value(logger_data->value);
+  }
+
+  delete config;
 }

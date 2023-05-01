@@ -40,7 +40,7 @@ class impulse_counter_config : public channel_json_config {
   bool should_be_added_to_history(void);
   double get_initial_value(void);
   unsigned int get_impulses_per_unit(void);
-  void add_initial_value(TDS_ImpulseCounter_Value *value);
+  void add_initial_value(unsigned _supla_int64_t *counter);
 };
 
 #endif /* IMPULSECOUNTERCONFIG_H_ */

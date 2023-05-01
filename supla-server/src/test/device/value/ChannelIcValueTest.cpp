@@ -18,6 +18,7 @@
 
 #include "ChannelIcValueTest.h"
 
+#include "channeljsonconfig/impulse_counter_config.h"
 #include "device/value/channel_ic_value.h"
 #include "devicechannel.h"  // NOLINT
 
@@ -42,6 +43,37 @@ TEST_F(ChannelIcValueTest, icValueConstructor) {
 
   supla_channel_ic_value v(&ic);
   EXPECT_EQ(v.get_ic_value()->counter, 2);
+}
+
+TEST_F(ChannelIcValueTest, applyChannelProperties) {
+  impulse_counter_config config;
+  config.set_user_config(
+      "{\"impulsesPerUnit\":5, \"initialValue\":100,\"addToHistory\":false}");
+
+  const TDS_ImpulseCounter_Value icval = {};
+  supla_channel_ic_value v1(&icval);
+
+  _logger_purpose_t logger_data = {};
+
+  EXPECT_EQ(v1.get_ic_value()->counter, 0);
+  v1.apply_channel_properties(0, 0, 0, 0, 0, 0, &config, &logger_data);
+  EXPECT_EQ(v1.get_ic_value()->counter, 500);
+
+  {
+    supla_channel_ic_value v2(logger_data.value);
+    EXPECT_EQ(v2.get_ic_value()->counter, 0);
+  }
+
+  config.set_user_config(
+      "{\"impulsesPerUnit\":5, \"initialValue\":100,\"addToHistory\":true}");
+
+  v1.apply_channel_properties(0, 0, 0, 0, 0, 0, &config, &logger_data);
+  EXPECT_EQ(v1.get_ic_value()->counter, 1000);
+
+  {
+    supla_channel_ic_value v2(logger_data.value);
+    EXPECT_EQ(v2.get_ic_value()->counter, 1000);
+  }
 }
 
 }  // namespace testing
