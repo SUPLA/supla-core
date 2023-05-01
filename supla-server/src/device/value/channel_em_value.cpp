@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "channeljsonconfig/electricity_meter_config.h"
+
 supla_channel_em_value::supla_channel_em_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {}
@@ -32,4 +34,13 @@ supla_channel_em_value::supla_channel_em_value(
 
 const TElectricityMeter_Value *supla_channel_em_value::get_em_value(void) {
   return (TElectricityMeter_Value *)raw_value;
+}
+
+void supla_channel_em_value::apply_channel_properties(
+    int type, unsigned char protocol_version, int param1, int param2,
+    int param3, int param4, channel_json_config *json_config,
+    _logger_purpose_t *logger_data) {
+  electricity_meter_config config(json_config);
+  config.add_initial_value(
+      &((TElectricityMeter_Value *)raw_value)->total_forward_active_energy);
 }

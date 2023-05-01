@@ -427,23 +427,22 @@ void electricity_meter_config::add_initial_values(
 }
 
 void electricity_meter_config::add_initial_value(
-    TElectricityMeter_Value *value) {
-  if (value) {
+    unsigned _supla_int_t *total_forward_active_energy) {
+  if (total_forward_active_energy) {
     _supla_int64_t initial_value =
         get_initial_value_for_all_phases(EM_VAR_FORWARD_ACTIVE_ENERGY) / 1000;
 
     if (initial_value < 0) {
-      if (initial_value * -1 > value->total_forward_active_energy) {
-        initial_value = value->total_forward_active_energy * -1;
+      if (initial_value * -1 > (*total_forward_active_energy)) {
+        initial_value = (*total_forward_active_energy) * -1;
       }
     } else {
-      unsigned _supla_int64_t left =
-          UINT_MAX - value->total_forward_active_energy;
+      unsigned _supla_int64_t left = UINT_MAX - (*total_forward_active_energy);
       if ((unsigned _supla_int64_t)initial_value > left) {
         initial_value = left;
       }
     }
 
-    value->total_forward_active_energy += initial_value;
+    *total_forward_active_energy += initial_value;
   }
 }

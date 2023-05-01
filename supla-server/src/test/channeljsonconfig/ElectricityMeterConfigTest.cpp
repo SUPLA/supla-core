@@ -712,7 +712,7 @@ TEST_F(ElectricityMeterConfigTest, substractonWithPhaseImbalance) {
                                       1000;
 
   config->add_initial_values(0, &em_ev);
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.total_forward_active_energy);
 
   EXPECT_EQ(value.total_forward_active_energy,
             (em_ev.total_forward_active_energy[0] +
@@ -743,7 +743,7 @@ TEST_F(ElectricityMeterConfigTest, channelValue) {
   TElectricityMeter_Value value = {};
   value.total_forward_active_energy = 5;
 
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.total_forward_active_energy);
   EXPECT_EQ(value.total_forward_active_energy, (unsigned)10017);
 
   delete config;
@@ -761,7 +761,7 @@ TEST_F(ElectricityMeterConfigTest, channelValueOverflow) {
   TElectricityMeter_Value value = {};
   value.total_forward_active_energy = UINT_MAX - 1000;
 
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.total_forward_active_energy);
   EXPECT_EQ(value.total_forward_active_energy, UINT_MAX);
 
   delete config;
@@ -780,12 +780,12 @@ TEST_F(ElectricityMeterConfigTest, channelValueNeg) {
   TElectricityMeter_Value value = {};
   value.total_forward_active_energy = 1000;
 
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.total_forward_active_energy);
   EXPECT_EQ(value.total_forward_active_energy, (unsigned int)0);
 
   value.total_forward_active_energy = 1000000001;
 
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.total_forward_active_energy);
   EXPECT_EQ(value.total_forward_active_energy, (unsigned int)1);
 
   delete config;

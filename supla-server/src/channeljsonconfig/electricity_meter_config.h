@@ -70,7 +70,7 @@ class electricity_meter_config : public channel_json_config {
 
   void add_initial_values(int flags, TElectricityMeter_ExtendedValue_V2 *em_ev);
   void add_initial_values(int flags, TSuplaChannelExtendedValue *ev);
-  void add_initial_value(TElectricityMeter_Value *value);
+  void add_initial_value(unsigned _supla_int_t *total_forward_active_energy);
 };
 
 #endif /* ELECTRICITYMETERCONFIG_H_ */

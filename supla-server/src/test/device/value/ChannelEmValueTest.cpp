@@ -18,6 +18,7 @@
 
 #include "ChannelEmValueTest.h"
 
+#include "channeljsonconfig/electricity_meter_config.h"
 #include "device/value/channel_em_value.h"
 #include "devicechannel.h"  // NOLINT
 
@@ -47,6 +48,20 @@ TEST_F(ChannelEmValueTest, emValueConstructor) {
   supla_channel_em_value v(&em);
   EXPECT_EQ(v.get_em_value()->flags, 1);
   EXPECT_EQ(v.get_em_value()->total_forward_active_energy, 2);
+}
+
+TEST_F(ChannelEmValueTest, applyChannelProperties) {
+  electricity_meter_config config;
+  config.set_user_config(
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":10000000}}");
+  config.update_available_counters(0xFFFFFFFF);
+
+  TElectricityMeter_Value em = {};
+  supla_channel_em_value v(&em);
+
+  v.apply_channel_properties(0, 0, 0, 0, 0, 0, &config, nullptr);
+
+  EXPECT_EQ(v.get_em_value()->total_forward_active_energy, 1000000000);
 }
 
 }  // namespace testing
