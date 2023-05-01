@@ -28,6 +28,12 @@ class supla_channel_dgf_value : public supla_channel_value {
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_dgf_value(const TDigiglass_Value *value);
   const TDigiglass_Value *get_dgf_value(void);
+  virtual void apply_channel_properties(int type,
+                                        unsigned char protocol_version,
+                                        int param1, int param2, int param3,
+                                        int param4,
+                                        channel_json_config *json_config,
+                                        _logger_purpose_t *logger_data);
 };
 
 #endif /*CHANNEL_DGF_VALUE_H_*/

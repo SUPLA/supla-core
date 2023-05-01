@@ -53,4 +53,18 @@ TEST_F(ChannelDgfValueTest, dgfValueConstructor) {
   EXPECT_EQ(v.get_dgf_value()->sectionCount, 3);
 }
 
+TEST_F(ChannelDgfValueTest, applyChannelProperties) {
+  TDigiglass_Value dgf = {};
+  dgf.flags = 1;
+  dgf.mask = 2;
+  dgf.sectionCount = 3;
+
+  supla_channel_dgf_value v(&dgf);
+  v.apply_channel_properties(0, 0, 10, 0, 0, 0, nullptr, nullptr);
+
+  EXPECT_EQ(v.get_dgf_value()->flags, 1);
+  EXPECT_EQ(v.get_dgf_value()->mask, 2);
+  EXPECT_EQ(v.get_dgf_value()->sectionCount, 10);
+}
+
 }  // namespace testing
