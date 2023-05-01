@@ -40,17 +40,15 @@ void supla_channel_ic_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
     int param3, int param4, channel_json_config *json_config,
     _logger_purpose_t *logger_data) {
-  impulse_counter_config *config = new impulse_counter_config(json_config);
+  impulse_counter_config config(json_config);
 
-  if (logger_data && !config->should_be_added_to_history()) {
+  if (logger_data && !config.should_be_added_to_history()) {
     get_raw_value(logger_data->value);
   }
 
-  config->add_initial_value(&((TDS_ImpulseCounter_Value *)raw_value)->counter);
+  config.add_initial_value(&((TDS_ImpulseCounter_Value *)raw_value)->counter);
 
-  if (logger_data && config->should_be_added_to_history()) {
+  if (logger_data && config.should_be_added_to_history()) {
     get_raw_value(logger_data->value);
   }
-
-  delete config;
 }
