@@ -65,4 +65,28 @@ TEST_F(ChannelValueTest, setterAndGetter) {
   }
 }
 
+TEST_F(ChannelValueTest, diff) {
+  supla_channel_value v1;
+  supla_channel_value v2;
+
+  bool significant_change = false;
+
+  EXPECT_TRUE(v1.is_differ(nullptr, &significant_change));
+  EXPECT_TRUE(significant_change);
+  EXPECT_FALSE(v1.is_differ(&v2, &significant_change));
+  EXPECT_FALSE(significant_change);
+
+  char raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  v1.set_raw_value(raw);
+
+  EXPECT_FALSE(v1.is_differ(&v2, &significant_change));
+  EXPECT_FALSE(significant_change);
+
+  raw[4] = 1;
+  v1.set_raw_value(raw);
+
+  EXPECT_TRUE(v1.is_differ(&v2, &significant_change));
+  EXPECT_TRUE(significant_change);
+}
+
 }  // namespace testing
