@@ -46,7 +46,8 @@ void supla_channel_ic_value::apply_channel_properties(
     get_raw_value(logger_data->value);
   }
 
-  config.add_initial_value(&((TDS_ImpulseCounter_Value *)raw_value)->counter);
+  config.add_initial_value(
+      &reinterpret_cast<TDS_ImpulseCounter_Value *>(raw_value)->counter);
 
   if (logger_data && config.should_be_added_to_history()) {
     get_raw_value(logger_data->value);

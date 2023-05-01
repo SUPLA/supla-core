@@ -42,5 +42,6 @@ void supla_channel_em_value::apply_channel_properties(
     _logger_purpose_t *logger_data) {
   electricity_meter_config config(json_config);
   config.add_initial_value(
-      &((TElectricityMeter_Value *)raw_value)->total_forward_active_energy);
+      &reinterpret_cast<TElectricityMeter_Value *>(raw_value)
+           ->total_forward_active_energy);
 }
