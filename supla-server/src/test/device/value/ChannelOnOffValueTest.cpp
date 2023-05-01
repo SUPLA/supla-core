@@ -74,4 +74,24 @@ TEST_F(ChannelOnOffValueTest, setterAndGetter) {
   EXPECT_FALSE(v.is_overcurrent_relay_off());
 }
 
+TEST_F(ChannelOnOffValueTest, applyChannelProperties) {
+  char raw_value1[SUPLA_CHANNELVALUE_SIZE] = {};
+  memset(raw_value1, 1, sizeof(raw_value1));
+
+  char raw_value2[SUPLA_CHANNELVALUE_SIZE] = {};
+
+  supla_channel_onoff_value v(raw_value1);
+  v.apply_channel_properties(0, 15, 0, 0, 0, 0, nullptr, nullptr);
+  v.get_raw_value(raw_value2);
+
+  EXPECT_EQ(memcmp(raw_value1, raw_value2, sizeof(raw_value1)), 0);
+
+  v.apply_channel_properties(0, 14, 0, 0, 0, 0, nullptr, nullptr);
+  v.get_raw_value(raw_value2);
+
+  for (size_t a = 0; a < sizeof(raw_value2); a++) {
+    ASSERT_EQ(raw_value2[a], a == 0 ? 1 : 0);
+  }
+}
+
 }  // namespace testing

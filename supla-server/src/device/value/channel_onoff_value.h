@@ -30,6 +30,12 @@ class supla_channel_onoff_value : public supla_channel_value {
   void set_overcurrent_relay_off(bool active);
   bool is_on(void);
   bool is_overcurrent_relay_off(void);
+  virtual void apply_channel_properties(int type,
+                                        unsigned char protocol_version,
+                                        int param1, int param2, int param3,
+                                        int param4,
+                                        channel_json_config *json_config,
+                                        _logger_purpose_t *logger_data);
 };
 
 #endif /*CHANNEL_ONOFF_VALUE_H_*/

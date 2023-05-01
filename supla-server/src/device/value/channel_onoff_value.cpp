@@ -33,25 +33,37 @@ supla_channel_onoff_value::supla_channel_onoff_value(bool on)
 }
 
 void supla_channel_onoff_value::set_on(bool on) {
-  ((TRelayChannel_Value*)raw_value)->hi = on ? 1 : 0;
+  ((TRelayChannel_Value *)raw_value)->hi = on ? 1 : 0;
 }
 
 bool supla_channel_onoff_value::is_on(void) {
-  return ((TRelayChannel_Value*)raw_value)->hi > 0;
+  return ((TRelayChannel_Value *)raw_value)->hi > 0;
 }
 
 bool supla_channel_onoff_value::is_overcurrent_relay_off(void) {
-  return ((TRelayChannel_Value*)raw_value)->flags &
+  return ((TRelayChannel_Value *)raw_value)->flags &
          SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF;
 }
 
 void supla_channel_onoff_value::set_overcurrent_relay_off(bool active) {
   if (active) {
-    ((TRelayChannel_Value*)raw_value)->flags |=
+    ((TRelayChannel_Value *)raw_value)->flags |=
         SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF;
   } else {
-    ((TRelayChannel_Value*)raw_value)->flags ^=
-        ((TRelayChannel_Value*)raw_value)->flags |=
+    ((TRelayChannel_Value *)raw_value)->flags ^=
+        ((TRelayChannel_Value *)raw_value)->flags |=
         SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF;
+  }
+}
+
+void supla_channel_onoff_value::apply_channel_properties(
+    int type, unsigned char protocol_version, int param1, int param2,
+    int param3, int param4, channel_json_config *json_config,
+    _logger_purpose_t *logger_data) {
+  if (protocol_version < 15) {
+    // https://forum.supla.org/viewtopic.php?f=6&t=8861
+    for (short a = 1; a < SUPLA_CHANNELVALUE_SIZE; a++) {
+      this->raw_value[a] = 0;
+    }
   }
 }
