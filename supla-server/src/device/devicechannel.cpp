@@ -528,6 +528,8 @@ bool supla_device_channel::set_value(
       type, get_device()->get_connection()->get_protocol_version(), param1,
       param2, param3, param4, json_config, logger_data);
 
+  new_value->get_raw_value(this->value);
+
   if (validity_time_sec) {
     gettimeofday(&value_valid_to, nullptr);
     value_valid_to.tv_sec += (*validity_time_sec);
@@ -540,8 +542,6 @@ bool supla_device_channel::set_value(
     differ = true;
     significant_change = true;
   }
-
-  new_value->get_raw_value(this->value);
 
   unlock();
 
