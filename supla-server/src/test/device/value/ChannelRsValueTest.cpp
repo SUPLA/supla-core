@@ -46,4 +46,19 @@ TEST_F(ChannelRsValueTest, setterAndGetter) {
   EXPECT_EQ(v2.get_rs_value()->position, 50);
 }
 
+TEST_F(ChannelRsValueTest, applyChannelProperties) {
+  TDSC_RollerShutterValue value = {};
+
+  value.bottom_position = 1;
+  value.flags = 2;
+  value.position = 3;
+
+  supla_channel_rs_value v(&value);
+  v.apply_channel_properties(0, 0, 0, 0, 0, 10, nullptr, nullptr);
+
+  EXPECT_EQ(v.get_rs_value()->bottom_position, 10);
+  EXPECT_EQ(v.get_rs_value()->flags, 2);
+  EXPECT_EQ(v.get_rs_value()->position, 3);
+}
+
 }  // namespace testing

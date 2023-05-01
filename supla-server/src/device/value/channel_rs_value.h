@@ -37,6 +37,12 @@ class supla_channel_rs_value : public supla_channel_value {
   _rs_sensor_level_enum get_opening_sensor_level(void);
   void set_opening_sensor_level(_rs_sensor_level_enum level);
   void update_sensor(supla_user *user, int opening_sensor_channel_id);
+  virtual void apply_channel_properties(int type,
+                                        unsigned char protocol_version,
+                                        int param1, int param2, int param3,
+                                        int param4,
+                                        channel_json_config *json_config,
+                                        _logger_purpose_t *logger_data);
 };
 
 #endif /*CHANNEL_RS_VALUE_H_*/
