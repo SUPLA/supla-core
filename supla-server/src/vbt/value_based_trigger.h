@@ -43,7 +43,8 @@ class supla_value_based_trigger {
   explicit supla_value_based_trigger(int id, int channel_id, int func,
                                      _subjectType_e subject_type,
                                      int subject_id,
-                                     supla_action_config *action_config);
+                                     supla_action_config *action_config,
+                                     const char *conditions);
   virtual ~supla_value_based_trigger(void);
 
   int get_id(void);

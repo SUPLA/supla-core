@@ -46,9 +46,9 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
       "SELECT t.id, t.owning_channel_id, c.func, IFNULL(t.channel_id, 0), "
       "IFNULL(t.channel_group_id, 0), IFNULL(t.scene_id, 0), "
       "IFNULL(t.schedule_id, 0), IFNULL(t.push_notification_id, 0), "
-      "IFNULL(t.action, 0), t.action_param FROM supla_value_based_trigger t, "
-      "supla_dev_channel c WHERE t.user_id = ? AND t.enabled = 1 AND "
-      "t.owning_channel_id = c.id AND c.func > 0";
+      "IFNULL(t.action, 0), t.action_param, t.trigger FROM "
+      "supla_value_based_trigger t, supla_dev_channel c WHERE t.user_id = ? "
+      "AND t.enabled = 1 AND t.owning_channel_id = c.id AND c.func > 0";
 
   MYSQL_BIND pbind = {};
 
@@ -56,7 +56,7 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
   pbind.buffer = (char *)&user_id;
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
-    MYSQL_BIND rbind[10] = {};
+    MYSQL_BIND rbind[11] = {};
 
     int id = 0;
     int func = 0;
@@ -71,6 +71,10 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
     char action_param[256] = {};
     unsigned long action_param_len = 0;
     my_bool action_param_is_null = false;
+
+    char conditions[2049] = {};
+    unsigned long conditions_len = 0;
+    my_bool conditions_are_null = false;
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&id;
@@ -114,6 +118,12 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
     rbind[9].length = &action_param_len;
     rbind[9].is_null = &action_param_is_null;
 
+    rbind[10].buffer_type = MYSQL_TYPE_STRING;
+    rbind[10].buffer = conditions;
+    rbind[10].buffer_length = sizeof(conditions);
+    rbind[10].length = &conditions_len;
+    rbind[10].is_null = &conditions_are_null;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -124,6 +134,9 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
         while (!mysql_stmt_fetch(stmt)) {
           dba->set_terminating_byte(action_param, sizeof(action_param),
                                     action_param_len, action_param_is_null);
+
+          dba->set_terminating_byte(conditions, sizeof(conditions),
+                                    conditions_len, conditions_are_null);
 
           _subjectType_e subject_type = stUnknown;
           int subject_id = 0;
@@ -154,7 +167,7 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
 
           supla_value_based_trigger *vbt = new supla_value_based_trigger(
               id, owning_channel_id, func, subject_type, subject_id,
-              action_config);
+              action_config, conditions);
 
           if (vbt) {
             result.push_back(vbt);

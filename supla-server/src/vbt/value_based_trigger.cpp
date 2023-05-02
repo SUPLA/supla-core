@@ -20,7 +20,8 @@
 
 supla_value_based_trigger::supla_value_based_trigger(
     int id, int channel_id, int func, _subjectType_e subject_type,
-    int subject_id, supla_action_config *action_config) {
+    int subject_id, supla_action_config *action_config,
+    const char *conditions) {
   this->id = id;
   this->channel_id = channel_id;
   this->subject_type = subject_type;
