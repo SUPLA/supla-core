@@ -32,7 +32,7 @@ class supla_push_notification {
   int sound;
   supla_pn_recipients recipients;
   std::map<std::string, std::string> replacement_map;
-  std::string apply_replacement_map(std::string &str);
+  std::string apply_replacement_map(std::string str);
   void apply_replacement_map(void);
 
  public:

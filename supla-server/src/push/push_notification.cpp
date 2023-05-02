@@ -56,7 +56,7 @@ void supla_push_notification::set_sound(int sound) { this->sound = sound; }
 
 int supla_push_notification::get_sound(void) { return sound; }
 
-string supla_push_notification::apply_replacement_map(string &str) {
+string supla_push_notification::apply_replacement_map(string str) {
   for (auto it = replacement_map.rbegin(); it != replacement_map.rend(); ++it) {
     std::string pattern = "{";
     pattern.append(it->first);
