@@ -44,3 +44,14 @@ void supla_channel_valve_value::set_valve_value(TValve_Value *value) {
   memset(raw_value, 0, sizeof(raw_value));
   memcpy(raw_value, value, sizeof(TValve_Value));
 }
+
+// static
+bool supla_channel_valve_value::is_function_supported(int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
+      return true;
+  }
+
+  return false;
+}

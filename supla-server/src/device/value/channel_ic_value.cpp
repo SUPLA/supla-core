@@ -53,3 +53,16 @@ void supla_channel_ic_value::apply_channel_properties(
     get_raw_value(logger_data->value);
   }
 }
+
+// static
+bool supla_channel_ic_value::is_function_supported(int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_GAS_METER:
+    case SUPLA_CHANNELFNC_IC_HEAT_METER:
+    case SUPLA_CHANNELFNC_IC_WATER_METER:
+      return true;
+  }
+
+  return false;
+}

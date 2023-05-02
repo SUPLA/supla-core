@@ -67,3 +67,15 @@ void supla_channel_onoff_value::apply_channel_properties(
     }
   }
 }
+
+// static
+bool supla_channel_onoff_value::is_function_supported(int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      return true;
+  }
+
+  return false;
+}

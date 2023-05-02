@@ -91,3 +91,14 @@ void supla_channel_rs_value::apply_channel_properties(
     _logger_purpose_t *logger_data) {
   ((TDSC_RollerShutterValue *)raw_value)->bottom_position = param4;
 }
+
+// static
+bool supla_channel_rs_value::is_function_supported(int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      return true;
+  }
+
+  return false;
+}

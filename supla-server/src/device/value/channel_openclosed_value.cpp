@@ -39,3 +39,13 @@ void supla_channel_openclosed_value::set_closed(bool closed) {
 bool supla_channel_openclosed_value::is_closed(void) {
   return raw_value[0] > 0;
 }
+
+bool supla_channel_openclosed_value::is_function_supported(int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      return true;
+  }
+
+  return false;
+}

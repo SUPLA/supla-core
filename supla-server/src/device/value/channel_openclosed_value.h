@@ -29,6 +29,7 @@ class supla_channel_openclosed_value : public supla_channel_value {
   explicit supla_channel_openclosed_value(bool closed);
   void set_closed(bool closed);
   bool is_closed(void);
+  static bool is_function_supported(int func);
 };
 
 #endif /*CHANNEL_OPENCLOSED_VALUE_H_*/

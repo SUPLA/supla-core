@@ -39,3 +39,14 @@ void supla_channel_dgf_value::apply_channel_properties(
     _logger_purpose_t *logger_data) {
   ((TDigiglass_Value *)raw_value)->sectionCount = param1;
 }
+
+// static
+bool supla_channel_dgf_value::is_function_supported(int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL:
+    case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
+      return true;
+  }
+
+  return false;
+}

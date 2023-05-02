@@ -44,3 +44,19 @@ double supla_channel_floating_point_sensor_value::get_value(void) {
   memcpy(&result, raw_value, sizeof(double));
   return result;
 }
+
+// static
+bool supla_channel_floating_point_sensor_value::is_function_supported(
+    int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_DISTANCESENSOR:
+    case SUPLA_CHANNELFNC_DEPTHSENSOR:
+    case SUPLA_CHANNELFNC_WINDSENSOR:
+    case SUPLA_CHANNELFNC_PRESSURESENSOR:
+    case SUPLA_CHANNELFNC_RAINSENSOR:
+    case SUPLA_CHANNELTYPE_WEIGHTSENSOR:
+      return true;
+  }
+
+  return false;
+}

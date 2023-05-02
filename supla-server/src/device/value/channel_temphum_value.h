@@ -48,6 +48,7 @@ class supla_channel_temphum_value : public supla_channel_value {
                                         _logger_purpose_t *logger_data);
   static int incorrect_temperature(void);
   static int incorrect_humidity(void);
+  static bool is_function_supported(int func);
 };
 
 #endif /* CHANNEL_TEMPHUM_VALUE_H_ */

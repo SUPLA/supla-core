@@ -43,6 +43,7 @@ class supla_channel_rs_value : public supla_channel_value {
                                         int param4,
                                         channel_json_config *json_config,
                                         _logger_purpose_t *logger_data);
+  static bool is_function_supported(int func);
 };
 
 #endif /*CHANNEL_RS_VALUE_H_*/

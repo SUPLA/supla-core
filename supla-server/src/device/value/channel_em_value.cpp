@@ -45,3 +45,8 @@ void supla_channel_em_value::apply_channel_properties(
       &reinterpret_cast<TElectricityMeter_Value *>(raw_value)
            ->total_forward_active_energy);
 }
+
+// static
+bool supla_channel_em_value::is_function_supported(int func) {
+  return func == SUPLA_CHANNELFNC_ELECTRICITY_METER;
+}

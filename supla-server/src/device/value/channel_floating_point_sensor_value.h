@@ -29,6 +29,7 @@ class supla_channel_floating_point_sensor_value : public supla_channel_value {
   explicit supla_channel_floating_point_sensor_value(double value);
   void set_value(double value);
   double get_value(void);
+  static bool is_function_supported(int func);
 };
 
 #endif /*CHANNEL_FLOATING_POINT_SENSOR_VALUE_H_*/

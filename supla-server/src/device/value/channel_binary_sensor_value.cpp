@@ -50,3 +50,21 @@ void supla_channel_binary_sensor_value::apply_channel_properties(
     set_hi(!is_hi());
   }
 }
+
+// static
+bool supla_channel_binary_sensor_value::is_function_supported(int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+    case SUPLA_CHANNELFNC_MAILSENSOR:
+    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+      return true;
+  }
+
+  return false;
+}

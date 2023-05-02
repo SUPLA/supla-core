@@ -27,6 +27,7 @@ class supla_channel_thermostat_value : public supla_channel_value {
   explicit supla_channel_thermostat_value(
       char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   bool is_on(void);
+  static bool is_function_supported(int func);
 };
 
 #endif /*CHANNEL_THERMOSTAT_VALUE_H_*/

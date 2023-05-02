@@ -28,3 +28,14 @@ supla_channel_thermostat_value::supla_channel_thermostat_value(
     : supla_channel_value(raw_value) {}
 
 bool supla_channel_thermostat_value::is_on(void) { return raw_value[0] > 0; }
+
+// static
+bool supla_channel_thermostat_value::is_function_supported(int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      return true;
+  }
+
+  return false;
+}

@@ -102,3 +102,14 @@ void supla_channel_gate_value::update_sensors(
 }
 
 bool supla_channel_gate_value::is_relay_hi(void) { return raw_value[0] > 0; }
+
+// static
+bool supla_channel_gate_value::is_function_supported(int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      return true;
+  }
+
+  return false;
+}

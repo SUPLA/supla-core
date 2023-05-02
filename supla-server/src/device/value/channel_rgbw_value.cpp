@@ -96,3 +96,15 @@ void supla_channel_rgbw_value::set_color_brightness(char brightness) {
   TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
   rgbw->colorBrightness = brightness;
 }
+
+// static
+bool supla_channel_rgbw_value::is_function_supported(int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      return true;
+  }
+
+  return false;
+}

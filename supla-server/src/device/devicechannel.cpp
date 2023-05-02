@@ -1098,81 +1098,64 @@ supla_channel_value *supla_device_channel::_get_value(void) {
 
   char value[SUPLA_CHANNELVALUE_SIZE] = {};
   get_value(value);
+  int func = get_func();
 
-  switch (get_func()) {
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW: {
-      supla_channel_rs_value *rs_value = new supla_channel_rs_value(value);
-      rs_value->update_sensor(get_device()->get_user(), get_param2());
-      return rs_value;
-    }
+  if (supla_channel_rs_value::is_function_supported(func)) {
+    supla_channel_rs_value *rs_value = new supla_channel_rs_value(value);
+    rs_value->update_sensor(get_device()->get_user(), get_param2());
+    return rs_value;
+  }
 
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR: {
-      supla_channel_gate_value *gate_value =
-          new supla_channel_gate_value(value);
+  if (supla_channel_gate_value::is_function_supported(func)) {
+    supla_channel_gate_value *gate_value = new supla_channel_gate_value(value);
 
-      gate_value->update_sensors(get_device()->get_user(), get_param2(),
-                                 get_param3());
-      return gate_value;
-    }
-    case SUPLA_CHANNELFNC_LIGHTSWITCH:
-    case SUPLA_CHANNELFNC_POWERSWITCH:
-    case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      return new supla_channel_onoff_value(value);
+    gate_value->update_sensors(get_device()->get_user(), get_param2(),
+                               get_param3());
+    return gate_value;
+  }
 
-    case SUPLA_CHANNELFNC_DIMMER:
-    case SUPLA_CHANNELFNC_RGBLIGHTING:
-    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-      return new supla_channel_rgbw_value(value);
+  if (supla_channel_onoff_value::is_function_supported(func)) {
+    return new supla_channel_onoff_value(value);
+  }
 
-    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
-    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
-      return new supla_channel_valve_value(value);
-    case SUPLA_CHANNELFNC_THERMOMETER:
-    case SUPLA_CHANNELFNC_HUMIDITY:
-    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-      return new supla_channel_temphum_value(get_type(), get_func(), value);
+  if (supla_channel_rgbw_value::is_function_supported(func)) {
+    return new supla_channel_rgbw_value(value);
+  }
 
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
-    case SUPLA_CHANNELFNC_MAILSENSOR:
-    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
-      return new supla_channel_binary_sensor_value(value);
+  if (supla_channel_valve_value::is_function_supported(func)) {
+    return new supla_channel_valve_value(value);
+  }
 
-    case SUPLA_CHANNELFNC_DISTANCESENSOR:
-    case SUPLA_CHANNELFNC_DEPTHSENSOR:
-    case SUPLA_CHANNELFNC_WINDSENSOR:
-    case SUPLA_CHANNELFNC_PRESSURESENSOR:
-    case SUPLA_CHANNELFNC_RAINSENSOR:
-    case SUPLA_CHANNELTYPE_WEIGHTSENSOR:
-      return new supla_channel_floating_point_sensor_value(value);
+  if (supla_channel_temphum_value::is_function_supported(func)) {
+    return new supla_channel_temphum_value(get_type(), get_func(), value);
+  }
 
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-      return new supla_channel_openclosed_value(value);
+  if (supla_channel_binary_sensor_value::is_function_supported(func)) {
+    return new supla_channel_binary_sensor_value(value);
+  }
 
-    case SUPLA_CHANNELFNC_THERMOSTAT:
-    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
-      return new supla_channel_thermostat_value(value);
+  if (supla_channel_floating_point_sensor_value::is_function_supported(func)) {
+    return new supla_channel_floating_point_sensor_value(value);
+  }
 
-    case SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL:
-    case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
-      return new supla_channel_dgf_value(value);
+  if (supla_channel_openclosed_value::is_function_supported(func)) {
+    return new supla_channel_openclosed_value(value);
+  }
 
-    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_GAS_METER:
-    case SUPLA_CHANNELFNC_IC_HEAT_METER:
-    case SUPLA_CHANNELFNC_IC_WATER_METER:
-      return new supla_channel_ic_value(value);
+  if (supla_channel_thermostat_value::is_function_supported(func)) {
+    return new supla_channel_thermostat_value(value);
+  }
 
-    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-      return new supla_channel_em_value(value);
+  if (supla_channel_dgf_value::is_function_supported(func)) {
+    return new supla_channel_dgf_value(value);
+  }
+
+  if (supla_channel_ic_value::is_function_supported(func)) {
+    return new supla_channel_ic_value(value);
+  }
+
+  if (supla_channel_em_value::is_function_supported(func)) {
+    return new supla_channel_em_value(value);
   }
 
   return new supla_channel_value(value);

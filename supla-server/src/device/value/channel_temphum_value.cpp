@@ -134,3 +134,15 @@ void supla_channel_temphum_value::apply_channel_properties(
     set_humidity(get_humidity() + (param3 / 100.00));
   }
 }
+
+// static
+bool supla_channel_temphum_value::is_function_supported(int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_THERMOMETER:
+    case SUPLA_CHANNELFNC_HUMIDITY:
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+      return true;
+  }
+
+  return false;
+}
