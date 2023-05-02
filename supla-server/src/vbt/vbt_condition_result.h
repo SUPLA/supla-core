@@ -31,7 +31,7 @@ class supla_vbt_condition_result {
   std::map<std::string, std::string> replacement_map;
 
  public:
-  supla_vbt_condition_result(bool cnd_met);
+  explicit supla_vbt_condition_result(bool cnd_met);
   virtual ~supla_vbt_condition_result(void);
 
   const std::shared_ptr<supla_value_based_trigger> &get_trigger(void);
