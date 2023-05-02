@@ -68,6 +68,9 @@ void DeliveryTaskTest::SetUp(void) {
   ON_CALL(*pool, get_bucket)
       .WillByDefault(Return(
           new supla_asynctask_http_thread_bucket(deliveryTaskCurlAdapter)));
+
+  ON_CALL(*deliveryTaskCurlAdapter, escape)
+      .WillByDefault([](const std::string &str) { return str; });
 }
 
 void DeliveryTaskTest::TearDown(void) {
