@@ -29,7 +29,7 @@ class supla_abstract_vbt_condition {
   virtual ~supla_abstract_vbt_condition(void);
 
   virtual bool equal(supla_abstract_vbt_condition *cnd) = 0;
-  virtual supla_abstract_vbt_condition *copy(void) = 0;
+  virtual supla_abstract_vbt_condition *copy(void) = 0; // NOLINT
 
   virtual bool is_condition_met(supla_channel_value *old_value,
                                 supla_channel_value *new_value) = 0;
