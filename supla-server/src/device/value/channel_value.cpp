@@ -20,6 +20,9 @@
 
 #include <string.h>
 
+using std::map;
+using std::string;
+
 supla_channel_value::supla_channel_value(void) {
   memset(this->raw_value, 0, SUPLA_CHANNELVALUE_SIZE);
 }
@@ -55,3 +58,8 @@ void supla_channel_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
     int param3, int param4, channel_json_config *json_config,
     _logger_purpose_t *logger_data) {}
+
+map<string, string> supla_channel_value::get_replacement_map(void) {
+  map<string, string> result;
+  return result;
+}

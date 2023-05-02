@@ -22,6 +22,9 @@
 
 namespace testing {
 
+using std::map;
+using std::string;
+
 PushNotificationTest::PushNotificationTest(void) {}
 
 PushNotificationTest::~PushNotificationTest(void) {}
@@ -60,6 +63,54 @@ TEST_F(PushNotificationTest, soundSetterAndGetter) {
   supla_push_notification n;
   n.set_sound(123);
   EXPECT_EQ(n.get_sound(), 123);
+}
+
+TEST_F(PushNotificationTest, replacementMapLoopPrevention) {
+  supla_push_notification n;
+  map<string, string> m;
+  m["A"] = "{A}";
+
+  n.set_body("{A}{A}{A}");
+  n.set_replacement_map(m);
+  EXPECT_EQ(n.get_body(), "{A}{A}{A}");
+}
+
+TEST_F(PushNotificationTest, replacementMapWithBody) {
+  supla_push_notification n;
+  map<string, string> m;
+  m["HUMIDITY"] = "45.50";
+  m["TEMPERATURE"] = "25.5";
+
+  n.set_body(
+      "The air humidity is {HUMIDITY}% and the temperature is {TEMPERATURE} "
+      "degrees Celsius.");
+  n.set_replacement_map(m);
+
+  EXPECT_EQ(n.get_body(),
+            "The air humidity is 45.50% and the temperature is 25.5 degrees "
+            "Celsius.");
+
+  m["ABCD"] = "123456";
+  n.set_replacement_map(m);
+
+  n.set_body("{ABCD}{ABCD} {ABCD}");
+
+  EXPECT_EQ(n.get_body(), "123456123456 123456");
+}
+
+TEST_F(PushNotificationTest, replacementMapWithTtile) {
+  supla_push_notification n;
+  map<string, string> m;
+  m["XYZ"] = "1";
+
+  n.set_title("{XYZ}{XYZ}");
+  n.set_replacement_map(m);
+  EXPECT_EQ(n.get_title(), "11");
+
+  m["A"] = "B";
+  n.set_replacement_map(m);
+  n.set_title("{A}");
+  EXPECT_EQ(n.get_title(), "B");
 }
 
 } /* namespace testing */

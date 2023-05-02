@@ -40,12 +40,14 @@ supla_pn_recipients &supla_push_notification::get_recipients(void) {
 
 void supla_push_notification::set_title(const string &title) {
   this->title = title;
+  apply_replacement_map();
 }
 
 const string &supla_push_notification::get_title(void) { return title; }
 
 void supla_push_notification::set_body(const string &body) {
   this->body = body;
+  apply_replacement_map();
 }
 
 const string &supla_push_notification::get_body(void) { return body; }
@@ -53,3 +55,33 @@ const string &supla_push_notification::get_body(void) { return body; }
 void supla_push_notification::set_sound(int sound) { this->sound = sound; }
 
 int supla_push_notification::get_sound(void) { return sound; }
+
+string supla_push_notification::apply_replacement_map(string &str) {
+  for (auto it = replacement_map.rbegin(); it != replacement_map.rend(); ++it) {
+    std::string pattern = "{";
+    pattern.append(it->first);
+    pattern.append("}");
+
+    std::size_t pos = 0;
+
+    while ((pos = str.find(pattern, pos)) != std::string::npos) {
+      str.replace(pos, pattern.length(), it->second);
+      pos += it->second.length();
+    }
+  }
+
+  return str;
+}
+
+void supla_push_notification::apply_replacement_map(void) {
+  if (replacement_map.size()) {
+    title = apply_replacement_map(title);
+    body = apply_replacement_map(body);
+  }
+}
+
+void supla_push_notification::set_replacement_map(
+    const std::map<std::string, std::string> &replacement_map) {
+  this->replacement_map = replacement_map;
+  apply_replacement_map();
+}

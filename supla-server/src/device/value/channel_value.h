@@ -19,6 +19,9 @@
 #ifndef CHANNEL_VALUE_H_
 #define CHANNEL_VALUE_H_
 
+#include <map>
+#include <string>
+
 #include "channeljsonconfig/channel_json_config.h"
 #include "proto.h"
 
@@ -46,6 +49,7 @@ class supla_channel_value {
                                         int param4,
                                         channel_json_config *json_config,
                                         _logger_purpose_t *logger_data);
+  virtual std::map<std::string, std::string> get_replacement_map(void);
 };
 
 #endif /*CHANNEL_VALUE_H_*/

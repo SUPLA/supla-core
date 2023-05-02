@@ -19,6 +19,7 @@
 #ifndef PUSH_NOTIFICATION_H_
 #define PUSH_NOTIFICATION_H_
 
+#include <map>
 #include <string>
 
 #include "push/pn_recipients.h"
@@ -30,6 +31,9 @@ class supla_push_notification {
   std::string body;
   int sound;
   supla_pn_recipients recipients;
+  std::map<std::string, std::string> replacement_map;
+  std::string apply_replacement_map(std::string &str);
+  void apply_replacement_map(void);
 
  public:
   supla_push_notification(void);
@@ -43,6 +47,8 @@ class supla_push_notification {
   const std::string &get_body(void);
   void set_sound(int sound);
   int get_sound(void);
+  void set_replacement_map(
+      const std::map<std::string, std::string> &replacement_map);
 };
 
 #endif /* PUSH_NOTIFICATION_H_ */
