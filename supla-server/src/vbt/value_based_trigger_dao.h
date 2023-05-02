@@ -16,35 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACTACTIONCONFIG_H_
-#define ABSTRACTACTIONCONFIG_H_
+#ifndef VALUE_BASED_TRIGGER_DAO_H_
+#define VALUE_BASED_TRIGGER_DAO_H_
 
-#include "proto.h"
+#include <vector>
 
-enum _subjectType_e {
-  stUnknown,
-  stChannel,
-  stChannelGroup,
-  stScene,
-  stSchedule,
-  stPushNotifiction
-};
+#include "db/abstract_db_access_provider.h"
+#include "vbt/value_based_trigger.h"
 
-class abstract_action_config {
+class supla_value_based_trigger_dao {
+ private:
+  supla_abstract_db_access_provider *dba;
+
  public:
-  abstract_action_config(void);
-  virtual ~abstract_action_config(void);
+  explicit supla_value_based_trigger_dao(
+      supla_abstract_db_access_provider *dba);
+  virtual ~supla_value_based_trigger_dao(void);
 
-  virtual int get_action_id(void) = 0;
-  virtual _subjectType_e get_subject_type(void) = 0;
-  virtual int get_subject_id(void) = 0;
-
-  virtual int get_source_device_id(void) = 0;
-  virtual int get_source_channel_id(void) = 0;
-
-  virtual char get_percentage(void) = 0;
-  virtual TAction_RGBW_Parameters get_rgbw(void) = 0;
-  virtual int get_cap(void);
+  virtual std::vector<supla_value_based_trigger *> get_triggers(int user_id);
 };
 
-#endif /* ABSTRACTACTIONCONFIG_H_ */
+#endif /* VALUE_BASED_TRIGGER_DAO_H_ */

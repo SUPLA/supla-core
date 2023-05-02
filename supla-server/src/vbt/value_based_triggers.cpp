@@ -19,8 +19,11 @@
 #include "value_based_triggers.h"
 
 #include "actions/action_executor.h"
+#include "db/db_access_provider.h"
+#include "device/channel_property_getter.h"
 #include "lck.h"
 #include "push/pn_dispatcher.h"
+#include "vbt/value_based_trigger_dao.h"
 
 using std::shared_ptr;
 using std::vector;
@@ -32,42 +35,91 @@ supla_value_based_triggers::supla_value_based_triggers(supla_user *user) {
 
 supla_value_based_triggers::~supla_value_based_triggers(void) { lck_free(lck); }
 
-void supla_value_based_triggers::load(void) {}
+void supla_value_based_triggers::load(void) {
+  supla_db_access_provider dba;
+  supla_value_based_trigger_dao dao(&dba);
 
-void supla_value_based_triggers::on_trigger_removed(int id) {}
+  std::vector<supla_value_based_trigger *> triggers =
+      dao.get_triggers(user->getUserID());
 
-void supla_value_based_triggers::on_trigger_changed(int id) {}
+  lck_lock(lck);
 
-void supla_value_based_triggers::on_trigger_added(int id) {}
+  for (auto it = this->triggers.begin(); it != this->triggers.end(); ++it) {
+    auto nit = triggers.rbegin();
+    while (nit != triggers.rend()) {
+      if ((*it)->get_id() == (*nit)->get_id()) {
+        (*it)->update(*nit);
+        break;
+      }
+      ++nit;
+    }
+
+    // Remove if not exists
+    if (nit == triggers.rend()) {
+      it = this->triggers.erase(it);
+      --it;
+    }
+  }
+
+  for (auto nit = triggers.begin(); nit != triggers.end(); ++nit) {
+    auto it = this->triggers.rbegin();
+    while (it != this->triggers.rend()) {
+      if ((*it)->get_id() == (*nit)->get_id()) {
+        break;
+      }
+      ++it;
+    }
+
+    // Add if not exists
+    if (it == this->triggers.rend()) {
+      this->triggers.push_back(shared_ptr<supla_value_based_trigger>(*nit));
+      nit = triggers.erase(nit);
+      --nit;
+    }
+  }
+
+  lck_unlock(lck);
+
+  for (auto nit = triggers.begin(); nit != triggers.end(); ++nit) {
+    delete *nit;
+  }
+}
 
 void supla_value_based_triggers::on_channel_value_changed(
-    int channel_id, supla_channel_value *old_value,
+    const supla_caller &caller, int channel_id, supla_channel_value *old_value,
     supla_channel_value *new_value,
     supla_abstract_action_executor *action_executor,
+    supla_abstract_channel_property_getter *property_getter,
     supla_pn_dispatcher *pn_dispatcher) {
-  vector<shared_ptr<supla_value_based_trigger>> matched_triggers;
+  vector<supla_vbt_condition_result> matches;
 
   lck_lock(lck);
   for (auto it = triggers.rbegin(); it != triggers.rend(); ++it) {
-    if ((*it)->are_conditions_met(channel_id, old_value, new_value)) {
-      matched_triggers.push_back(*it);
+    supla_vbt_condition_result m =
+        (*it)->are_conditions_met(channel_id, old_value, new_value);
+
+    if (m.are_conditions_met()) {
+      m.set_trigger(*it);
       break;
     }
   }
   lck_unlock(lck);
 
-  for (auto it = matched_triggers.rbegin(); it != matched_triggers.rend();
-       ++it) {
-    (*it)->fire(action_executor, pn_dispatcher);
+  // We fire triggers only after leaving the lock.
+  for (auto it = matches.rbegin(); it != matches.rend(); ++it) {
+    it->get_trigger()->fire(caller, user->getUserID(), action_executor,
+                            property_getter, pn_dispatcher,
+                            it->get_replacement_map());
   }
 }
 
 void supla_value_based_triggers::on_channel_value_changed(
-    int channel_id, supla_channel_value *old_value,
+    const supla_caller &caller, int channel_id, supla_channel_value *old_value,
     supla_channel_value *new_value) {
   supla_action_executor exec;
+  supla_cahnnel_property_getter property_getter;
   supla_pn_dispatcher pn_dispatcher;
 
-  on_channel_value_changed(channel_id, old_value, new_value, &exec,
-                           &pn_dispatcher);
+  on_channel_value_changed(caller, channel_id, old_value, new_value, &exec,
+                           &property_getter, &pn_dispatcher);
 }
