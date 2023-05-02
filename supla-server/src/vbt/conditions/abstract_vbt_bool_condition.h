@@ -16,25 +16,32 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_VALUE_BASED_TRIGGER_CONDITION_H_
-#define ABSTRACT_VALUE_BASED_TRIGGER_CONDITION_H_
+#ifndef ABSTRACT_VALUE_BASED_TRIGGER_BOOL_CONDITION_H_
+#define ABSTRACT_VALUE_BASED_TRIGGER_BOOL_CONDITION_H_
 
 #include <string>
 
 #include "device/value/channel_value.h"
-#include "json/cJSON.h"
+#include "vbt/conditions/abstract_vbt_condition.h"
 
-class supla_abstract_vbt_condition {
+enum _vbt_bool_e { vbt_bool_not_set, vbt_bool_false, vbt_bool_true };
+
+class supla_abstract_vbt_bool_condition : public supla_abstract_vbt_condition {
+ private:
+  _vbt_bool_e expected;
+
+ protected:
+  virtual bool convert(supla_channel_value *value, _vbt_bool_e *converted) = 0;
+  void set_expected(_vbt_bool_e expected);
+  _vbt_bool_e get_expected(void);
+
  public:
-  supla_abstract_vbt_condition(void);
-  explicit supla_abstract_vbt_condition(cJSON *json);
-  virtual ~supla_abstract_vbt_condition(void);
-
-  virtual bool equal(supla_abstract_vbt_condition *cnd) = 0;
-  virtual supla_abstract_vbt_condition *copy(void) = 0;  // NOLINT
+  supla_abstract_vbt_bool_condition(void);
+  explicit supla_abstract_vbt_bool_condition(cJSON *json);
+  virtual ~supla_abstract_vbt_bool_condition(void);
 
   virtual bool is_condition_met(supla_channel_value *old_value,
-                                supla_channel_value *new_value) = 0;
+                                supla_channel_value *new_value);
 };
 
-#endif /* ABSTRACT_VALUE_BASED_TRIGGER_CONDITION_H_ */
+#endif /* ABSTRACT_VALUE_BASED_TRIGGER_BOOL_CONDITION_H_ */

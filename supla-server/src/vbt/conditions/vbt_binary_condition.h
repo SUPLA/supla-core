@@ -16,25 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_VALUE_BASED_TRIGGER_CONDITION_H_
-#define ABSTRACT_VALUE_BASED_TRIGGER_CONDITION_H_
+#ifndef VALUE_BASED_TRIGGER_BINARY_CONDITION_H_
+#define VALUE_BASED_TRIGGER_BINARY_CONDITION_H_
 
-#include <string>
+#include "vbt/conditions/abstract_vbt_bool_condition.h"
 
-#include "device/value/channel_value.h"
-#include "json/cJSON.h"
+class supla_vbt_binary_condition : public supla_abstract_vbt_bool_condition {
+ protected:
+  virtual bool convert(supla_channel_value *value, _vbt_bool_e *converted);
 
-class supla_abstract_vbt_condition {
  public:
-  supla_abstract_vbt_condition(void);
-  explicit supla_abstract_vbt_condition(cJSON *json);
-  virtual ~supla_abstract_vbt_condition(void);
+  supla_vbt_binary_condition(void);
+  explicit supla_vbt_binary_condition(cJSON *json);
+  virtual ~supla_vbt_binary_condition(void);
 
-  virtual bool equal(supla_abstract_vbt_condition *cnd) = 0;
-  virtual supla_abstract_vbt_condition *copy(void) = 0;  // NOLINT
-
-  virtual bool is_condition_met(supla_channel_value *old_value,
-                                supla_channel_value *new_value) = 0;
+  virtual bool equal(supla_abstract_vbt_condition *cnd);
+  virtual supla_abstract_vbt_condition *copy(void);  // NOLINT
+  static bool is_function_supported(int func);
 };
 
-#endif /* ABSTRACT_VALUE_BASED_TRIGGER_CONDITION_H_ */
+#endif /* VALUE_BASED_TRIGGER_BINARY_CONDITION_H_ */

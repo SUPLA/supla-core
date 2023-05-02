@@ -20,7 +20,8 @@
 
 using std::string;
 
-supla_abstract_vbt_condition::supla_abstract_vbt_condition(
-    const string &conditions) {}
+supla_abstract_vbt_condition::supla_abstract_vbt_condition(void) {}
+
+supla_abstract_vbt_condition::supla_abstract_vbt_condition(cJSON *json) {}
 
 supla_abstract_vbt_condition::~supla_abstract_vbt_condition(void) {}

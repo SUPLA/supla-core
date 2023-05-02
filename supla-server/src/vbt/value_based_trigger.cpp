@@ -18,6 +18,8 @@
 
 #include "value_based_trigger.h"
 
+#include "conditions/vbt_binary_condition.h"
+
 supla_value_based_trigger::supla_value_based_trigger(
     int id, int channel_id, int func, _subjectType_e subject_type,
     int subject_id, supla_action_config *action_config,
@@ -28,6 +30,17 @@ supla_value_based_trigger::supla_value_based_trigger(
   this->subject_id = subject_id;
   this->cnd = nullptr;
   this->action_config = action_config;
+
+  cJSON *json = nullptr;
+
+  if (conditions && conditions[0] != 0) {
+    json = cJSON_Parse(conditions);
+
+    if (json) {
+      cnd = contition_init(func, json);
+      cJSON_Delete(json);
+    }
+  }
 }
 
 supla_value_based_trigger::~supla_value_based_trigger(void) {
@@ -38,6 +51,15 @@ supla_value_based_trigger::~supla_value_based_trigger(void) {
   if (cnd) {
     delete cnd;
   }
+}
+
+supla_abstract_vbt_condition *supla_value_based_trigger::contition_init(
+    int func, cJSON *json) {
+  if (supla_vbt_binary_condition::is_function_supported(func)) {
+    return new supla_vbt_binary_condition(json);
+  }
+
+  return nullptr;
 }
 
 supla_vbt_condition_result supla_value_based_trigger::are_conditions_met(

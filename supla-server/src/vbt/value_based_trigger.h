@@ -38,6 +38,7 @@ class supla_value_based_trigger {
   int subject_id;
   supla_abstract_vbt_condition *cnd;
   supla_action_config *action_config;
+  supla_abstract_vbt_condition *contition_init(int func, cJSON *json);
 
  public:
   explicit supla_value_based_trigger(int id, int channel_id, int func,
