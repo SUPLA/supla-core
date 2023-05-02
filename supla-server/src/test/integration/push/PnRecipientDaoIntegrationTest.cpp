@@ -41,6 +41,7 @@ void PnRecipientDaoIntegrationTest::SetUp() {
   ASSERT_TRUE(dao != nullptr);
 
   initTestDatabase();
+  runSqlScript("AddPushNotification.sql");
   Test::SetUp();
 }
 
@@ -88,7 +89,6 @@ TEST_F(PnRecipientDaoIntegrationTest, remove) {
 }
 
 TEST_F(PnRecipientDaoIntegrationTest, getRecipients) {
-  runSqlScript("AddPushNotification.sql");
   supla_pn_recipients recipients;
   dao->get_recipients(2, 6, &recipients);
   EXPECT_EQ(recipients.total_count(), 0);
