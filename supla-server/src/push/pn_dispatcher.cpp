@@ -18,6 +18,19 @@
 
 #include "pn_dispatcher.h"
 
+#include "push/pn_delivery_task.h"
+#include "push/push_notification.h"
+
 supla_pn_dispatcher::supla_pn_dispatcher(void) {}
 
 supla_pn_dispatcher::~supla_pn_dispatcher(void) {}
+
+void supla_pn_dispatcher::send_push(
+    int user_id, int push_notification_id,
+    const std::map<std::string, std::string>& replacement_map) {
+  supla_push_notification* push =
+      new supla_push_notification(push_notification_id);
+  push->set_replacement_map(replacement_map);
+
+  supla_pn_delivery_task::start_delivering(user_id, push);
+}

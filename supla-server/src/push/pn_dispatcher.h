@@ -19,10 +19,16 @@
 #ifndef PUSH_NOTIFICATION_DISPATCHER_H_
 #define PUSH_NOTIFICATION_DISPATCHER_H_
 
+#include <map>
+#include <string>
+
 class supla_pn_dispatcher {
  public:
   supla_pn_dispatcher(void);
   virtual ~supla_pn_dispatcher(void);
+  virtual void send_push(
+      int user_id, int push_notification_id,
+      const std::map<std::string, std::string>& replacement_map);
 };
 
 #endif /* PUSH_NOTIFICATION_DISPATCHER_H_ */
