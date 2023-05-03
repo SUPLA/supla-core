@@ -173,3 +173,16 @@ void supla_action_config::apply_json_params(const char *params) {
 
   cJSON_Delete(root);
 }
+
+bool supla_action_config::operator==(const supla_action_config &config) const {
+  return action_id == config.action_id && subject_type == config.subject_type &&
+         subject_id == config.subject_id &&
+         source_device_id == config.source_device_id &&
+         source_channel_id == config.source_channel_id &&
+         percentage == config.percentage &&
+         rgbw.Brightness == config.rgbw.Brightness &&
+         rgbw.Color == config.rgbw.Color &&
+         rgbw.ColorBrightness == config.rgbw.ColorBrightness &&
+         rgbw.ColorRandom == config.rgbw.ColorRandom &&
+         rgbw.OnOff == config.rgbw.OnOff;
+}

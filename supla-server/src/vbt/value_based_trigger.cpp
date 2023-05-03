@@ -18,17 +18,15 @@
 
 #include "value_based_trigger.h"
 
-#include "conditions/vbt_binary_condition.h"
+#include "vbt/vbt_on_change_condition.h"
 
 supla_value_based_trigger::supla_value_based_trigger(
-    int id, int channel_id, int func, _subjectType_e subject_type,
-    int subject_id, supla_action_config *action_config,
-    const char *conditions) {
+    int id, int channel_id, _subjectType_e subject_type, int subject_id,
+    supla_action_config *action_config, const char *conditions) {
   this->id = id;
   this->channel_id = channel_id;
   this->subject_type = subject_type;
   this->subject_id = subject_id;
-  this->cnd = nullptr;
   this->action_config = action_config;
 
   cJSON *json = nullptr;
@@ -37,7 +35,7 @@ supla_value_based_trigger::supla_value_based_trigger(
     json = cJSON_Parse(conditions);
 
     if (json) {
-      cnd = contition_init(func, json);
+      on_change_cnd.apply_json_config(json);
       cJSON_Delete(json);
     }
   }
@@ -47,26 +45,13 @@ supla_value_based_trigger::~supla_value_based_trigger(void) {
   if (action_config) {
     delete action_config;
   }
-
-  if (cnd) {
-    delete cnd;
-  }
-}
-
-supla_abstract_vbt_condition *supla_value_based_trigger::contition_init(
-    int func, cJSON *json) {
-  if (supla_vbt_binary_condition::is_function_supported(func)) {
-    return new supla_vbt_binary_condition(json);
-  }
-
-  return nullptr;
 }
 
 supla_vbt_condition_result supla_value_based_trigger::are_conditions_met(
     int channel_id, supla_channel_value *old_value,
     supla_channel_value *new_value) {
-  bool cnd_met = channel_id == this->channel_id && cnd &&
-                 cnd->is_condition_met(old_value, new_value);
+  bool cnd_met = channel_id == this->channel_id &&
+                 on_change_cnd.is_condition_met(old_value, new_value);
   supla_vbt_condition_result result(cnd_met);
   result.set_replacement_map(new_value->get_replacement_map());
   return result;
@@ -93,49 +78,33 @@ void supla_value_based_trigger::fire(
 
 int supla_value_based_trigger::get_id(void) { return id; }
 
-int supla_value_based_trigger::get_channel_id(void) { return channel_id; }
-
-_subjectType_e supla_value_based_trigger::get_subject_type(void) {
-  return subject_type;
+bool supla_value_based_trigger::equal(
+    const supla_value_based_trigger &trigger) const {
+  return id == trigger.id && channel_id == trigger.channel_id &&
+         subject_type == trigger.subject_type &&
+         subject_id == trigger.subject_id &&
+         on_change_cnd == trigger.on_change_cnd &&
+         ((!action_config && !trigger.action_config) ||
+          (action_config && trigger.action_config &&
+           *action_config == *trigger.action_config));
 }
 
-int supla_value_based_trigger::get_subject_id(void) { return subject_id; }
-
-const supla_action_config *supla_value_based_trigger::get_action_config(void) {
-  return action_config;
+bool supla_value_based_trigger::operator==(
+    const supla_value_based_trigger &trigger) const {
+  return equal(trigger);
 }
 
-const supla_abstract_vbt_condition *supla_value_based_trigger::get_condition(
-    void) {
-  return cnd;
+bool supla_value_based_trigger::operator!=(
+    const supla_value_based_trigger &trigger) const {
+  return !equal(trigger);
 }
 
-void supla_value_based_trigger::update(supla_value_based_trigger *trigger) {
-  if (this->channel_id != trigger->channel_id ||
-      this->subject_type != trigger->subject_type ||
-      this->subject_id != trigger->subject_id || !this->cnd || !trigger->cnd ||
-      !this->cnd->equal(trigger->cnd)) {
-    if (this->cnd) {
-      delete this->cnd;
-      this->cnd = nullptr;
-    }
+bool supla_value_based_trigger::operator==(
+    const supla_value_based_trigger *trigger) const {
+  return *this == *trigger;
+}
 
-    if (trigger->cnd) {
-      this->cnd = trigger->cnd->copy();
-    }
-  }
-
-  if (action_config) {
-    delete action_config;
-    action_config = nullptr;
-  }
-
-  if (trigger->action_config) {
-    action_config = new supla_action_config();
-    *this->action_config = *trigger->action_config;
-  }
-
-  this->channel_id = trigger->channel_id;
-  this->subject_type = trigger->subject_type;
-  this->subject_id = trigger->subject_id;
+bool supla_value_based_trigger::operator!=(
+    const supla_value_based_trigger *trigger) const {
+  return *this != *trigger;
 }

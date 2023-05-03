@@ -57,6 +57,8 @@ class supla_action_config : public abstract_action_config {
   void set_rgbw(TAction_RGBW_Parameters rgbw);
 
   void apply_json_params(const char *param);
+
+  bool operator==(const supla_action_config &config) const;
 };
 
 #endif /* ACTIONCONFIG_H_ */

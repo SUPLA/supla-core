@@ -48,13 +48,15 @@ void supla_value_based_triggers::load(void) {
     auto nit = triggers.rbegin();
     while (nit != triggers.rend()) {
       if ((*it)->get_id() == (*nit)->get_id()) {
-        (*it)->update(*nit);
+        if (*(*nit) == it->get()) {
+          nit = triggers.rend();
+        }
         break;
       }
       ++nit;
     }
 
-    // Remove if not exists
+    // Remove if it doesn't exist or has changed
     if (nit == triggers.rend()) {
       it = this->triggers.erase(it);
       --it;

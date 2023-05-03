@@ -27,8 +27,8 @@
 #include "actions/action_config.h"
 #include "push/pn_dispatcher.h"
 #include "user/user.h"
-#include "vbt/conditions/abstract_vbt_condition.h"
 #include "vbt/vbt_condition_result.h"
+#include "vbt/vbt_on_change_condition.h"
 
 class supla_value_based_trigger {
  private:
@@ -36,12 +36,11 @@ class supla_value_based_trigger {
   int channel_id;
   _subjectType_e subject_type;
   int subject_id;
-  supla_abstract_vbt_condition *cnd;
+  supla_vbt_on_change_condition on_change_cnd;
   supla_action_config *action_config;
-  supla_abstract_vbt_condition *contition_init(int func, cJSON *json);
 
  public:
-  explicit supla_value_based_trigger(int id, int channel_id, int func,
+  explicit supla_value_based_trigger(int id, int channel_id,
                                      _subjectType_e subject_type,
                                      int subject_id,
                                      supla_action_config *action_config,
@@ -49,13 +48,6 @@ class supla_value_based_trigger {
   virtual ~supla_value_based_trigger(void);
 
   int get_id(void);
-  int get_channel_id(void);
-  _subjectType_e get_subject_type(void);
-  int get_subject_id(void);
-  const supla_action_config *get_action_config(void);
-  const supla_abstract_vbt_condition *get_condition(void);
-
-  void update(supla_value_based_trigger *trigger);
 
   supla_vbt_condition_result are_conditions_met(int channel_id,
                                                 supla_channel_value *old_value,
@@ -66,6 +58,13 @@ class supla_value_based_trigger {
             supla_abstract_channel_property_getter *property_getter,
             supla_pn_dispatcher *pn_dispatcher,
             const std::map<std::string, std::string> &replacement_map);
+
+  bool equal(const supla_value_based_trigger &trigger) const;
+
+  bool operator==(const supla_value_based_trigger &trigger) const;
+  bool operator!=(const supla_value_based_trigger &trigger) const;
+  bool operator==(const supla_value_based_trigger *trigger) const;
+  bool operator!=(const supla_value_based_trigger *trigger) const;
 };
 
 #endif /* VALUE_BASED_TRIGGER_H_ */
