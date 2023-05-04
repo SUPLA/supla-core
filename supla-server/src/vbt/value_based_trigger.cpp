@@ -64,7 +64,7 @@ void supla_value_based_trigger::fire(
     const std::map<std::string, std::string> &replacement_map) {
   if (action_config) {
     action_executor->execute_action(caller, user_id, action_config,
-                                    property_getter);
+                                    property_getter, &replacement_map);
   }
 }
 

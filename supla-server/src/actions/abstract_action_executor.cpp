@@ -21,7 +21,9 @@
 #include "converter/any_value_to_action_converter.h"
 
 using std::function;
+using std::map;
 using std::shared_ptr;
+using std::string;
 
 supla_abstract_action_executor::supla_abstract_action_executor(void) {
   this->user = NULL;
@@ -105,6 +107,22 @@ void supla_abstract_action_executor::set_schedule_id(int user_id,
   this->subject_type = stSchedule;
 }
 
+void supla_abstract_action_executor::set_push_notification_id(supla_user *user,
+                                                              int push_id) {
+  this->user = user;
+  this->device_id = 0;
+  this->subject_id = push_id;
+  this->subject_type = stPushNotifiction;
+}
+
+void supla_abstract_action_executor::set_push_notification_id(int user_id,
+                                                              int push_id) {
+  this->user = user_id ? supla_user::find(user_id, false) : NULL;
+  this->device_id = 0;
+  this->subject_id = push_id;
+  this->subject_type = stPushNotifiction;
+}
+
 shared_ptr<supla_device> supla_abstract_action_executor::get_device(void) {
   if (user && (device_id || (subject_id && subject_type == stChannel))) {
     return user->get_devices()->get(
@@ -119,7 +137,8 @@ void supla_abstract_action_executor::execute_action(
     _subjectType_e subject_type, int subject_id,
     supla_abstract_channel_property_getter *property_getter,
     TAction_RS_Parameters *rs, TAction_RGBW_Parameters *rgbw,
-    int source_device_id, int source_channel_id, int cap) {
+    int source_device_id, int source_channel_id, int cap,
+    const map<string, string> *replacement_map) {
   if (action_id == 0 || subject_id == 0) {
     return;
   }
@@ -138,6 +157,9 @@ void supla_abstract_action_executor::execute_action(
       break;
     case stSchedule:
       set_schedule_id(user_id, subject_id);
+      break;
+    case stPushNotifiction:
+      set_push_notification_id(user_id, subject_id);
       break;
     default:
       set_unknown_subject_type();
@@ -204,6 +226,9 @@ void supla_abstract_action_executor::execute_action(
     case ACTION_DISABLE:
       disable();
       break;
+    case ACTION_SEND:
+      send(replacement_map);
+      break;
     case ACTION_INTERRUPT:
       interrupt();
       break;
@@ -229,7 +254,8 @@ void supla_abstract_action_executor::execute_action(
 
 void supla_abstract_action_executor::execute_action(
     const supla_caller &caller, int user_id, abstract_action_config *config,
-    supla_abstract_channel_property_getter *property_getter) {
+    supla_abstract_channel_property_getter *property_getter,
+    const map<string, string> *replacement_map) {
   int action_id = 0;
   int subject_id = 0;
 
@@ -263,7 +289,13 @@ void supla_abstract_action_executor::execute_action(
 
   execute_action(caller, user_id, action_id, config->get_subject_type(),
                  subject_id, property_getter, &rs, &rgbw, source_device_id,
-                 source_channel_id, cap);
+                 source_channel_id, cap, replacement_map);
+}
+
+void supla_abstract_action_executor::execute_action(
+    const supla_caller &caller, int user_id, abstract_action_config *config,
+    supla_abstract_channel_property_getter *property_getter) {
+  execute_action(caller, user_id, config, property_getter, nullptr);
 }
 
 void supla_abstract_action_executor::execute_action(
@@ -314,6 +346,10 @@ int supla_abstract_action_executor::get_scene_id(void) {
 
 int supla_abstract_action_executor::get_schedule_id(void) {
   return subject_type == stSchedule ? subject_id : 0;
+}
+
+int supla_abstract_action_executor::get_push_notification_id(void) {
+  return subject_type == stPushNotifiction ? subject_id : 0;
 }
 
 void supla_abstract_action_executor::copy(

@@ -42,6 +42,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int step_by_step_counter;
   int enable_counter;
   int disable_counter;
+  int sent_counter;
   int execute_counter;
   int interrupt_counter;
   int interrupt_and_execute_counter;
@@ -82,6 +83,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   virtual void step_by_step(void);
   virtual void enable(void);
   virtual void disable(void);
+  virtual void send(const std::map<std::string, std::string> *replacement_map);
   virtual void execute(void);
   virtual void interrupt(void);
   virtual void interrupt_and_execute(void);
@@ -111,6 +113,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int getStopCounter(void);
   int getEnableCounter(void);
   int getDisableCounter(void);
+  int getSentCounter(void);
   int getExecuteCounter(void);
   int getInterruptCounter(void);
   int getInterruptAndExecuteCounter(void);

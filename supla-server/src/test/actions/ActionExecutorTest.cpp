@@ -215,4 +215,20 @@ TEST_F(ActionExecutorTest, disableSchedule) {
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctScene));
 }
 
+TEST_F(ActionExecutorTest, sendPush) {
+  supla_action_config config;
+  config.set_subject_id(155);
+  config.set_subject_type(stPushNotifiction);
+  config.set_action_id(ACTION_SEND);
+
+  ChannelPropertyGetterMock property_getter;
+
+  aexec->execute_action(supla_caller(ctIPC), 12345, &config, &property_getter);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getSentCounter(), 1);
+  EXPECT_EQ(aexec->get_push_notification_id(), 155);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
+}
+
 } /* namespace testing */

@@ -104,7 +104,7 @@ void supla_ch_abstract_execute_action::execute_action(
 
   aexec->execute_action(supla_caller(ctClient, client_id, client_name), user_id,
                         action->ActionId, subject_type, action->SubjectId,
-                        nullptr, &rs, &rgbw, 0, 0, 0);
+                        nullptr, &rs, &rgbw, 0, 0, 0, nullptr);
 
   send_result(action, srpc_adapter, SUPLA_RESULTCODE_TRUE);
 }

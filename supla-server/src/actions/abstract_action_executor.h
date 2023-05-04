@@ -19,7 +19,9 @@
 #ifndef ABSTRACT_ACTION_EXECUTOR_H_
 #define ABSTRACT_ACTION_EXECUTOR_H_
 
+#include <map>
 #include <memory>
+#include <string>
 
 #include "abstract_action_config.h"
 #include "caller.h"
@@ -58,6 +60,8 @@ class supla_abstract_action_executor {
   void set_scene_id(int user_id, int scene_id);
   void set_schedule_id(supla_user *user, int schedule_id);
   void set_schedule_id(int user_id, int schedule_id);
+  void set_push_notification_id(supla_user *user, int push_id);
+  void set_push_notification_id(int user_id, int push_id);
 
   const supla_caller &get_caller(void);
   int get_user_id(void);
@@ -66,16 +70,24 @@ class supla_abstract_action_executor {
   int get_group_id(void);
   int get_scene_id(void);
   int get_schedule_id(void);
+  int get_push_notification_id(void);
 
   void execute_action(const supla_caller &caller, int user_id,
                       abstract_action_config *config,
                       supla_abstract_channel_property_getter *property_getter);
 
-  void execute_action(const supla_caller &caller, int user_id, int action_id,
-                      _subjectType_e subject_type, int subject_id,
-                      supla_abstract_channel_property_getter *property_getter,
-                      TAction_RS_Parameters *rs, TAction_RGBW_Parameters *rgbw,
-                      int source_device_id, int source_channel_id, int cap);
+  void execute_action(
+      const supla_caller &caller, int user_id, abstract_action_config *config,
+      supla_abstract_channel_property_getter *property_getter,
+      const std::map<std::string, std::string> *replacement_map);
+
+  void execute_action(
+      const supla_caller &caller, int user_id, int action_id,
+      _subjectType_e subject_type, int subject_id,
+      supla_abstract_channel_property_getter *property_getter,
+      TAction_RS_Parameters *rs, TAction_RGBW_Parameters *rgbw,
+      int source_device_id, int source_channel_id, int cap,
+      const std::map<std::string, std::string> *replacement_map);
 
   virtual void set_on(bool on) = 0;
   virtual void set_color(unsigned int color) = 0;
@@ -93,6 +105,8 @@ class supla_abstract_action_executor {
   virtual void step_by_step(void) = 0;
   virtual void enable(void) = 0;
   virtual void disable(void) = 0;
+  virtual void send(
+      const std::map<std::string, std::string> *replacement_map) = 0;
   virtual void execute(void) = 0;
   virtual void interrupt(void) = 0;
   virtual void interrupt_and_execute(void) = 0;

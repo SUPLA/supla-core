@@ -52,6 +52,7 @@ void ActionExecutorMock::clear(void) {
   this->step_by_step_counter = 0;
   this->enable_counter = 0;
   this->disable_counter = 0;
+  this->sent_counter = 0;
   this->execute_counter = 0;
   this->interrupt_counter = 0;
   this->interrupt_and_execute_counter = 0;
@@ -188,6 +189,12 @@ void ActionExecutorMock::disable(void) {
   disable_counter++;
 }
 
+void ActionExecutorMock::send(
+    const std::map<std::string, std::string> *replacement_map) {
+  addTime();
+  sent_counter++;
+}
+
 void ActionExecutorMock::interrupt(void) {
   addTime();
   interrupt_counter++;
@@ -270,6 +277,8 @@ int ActionExecutorMock::getInterruptAndExecuteCounter(void) {
 int ActionExecutorMock::getEnableCounter(void) { return enable_counter; }
 
 int ActionExecutorMock::getDisableCounter(void) { return disable_counter; }
+
+int ActionExecutorMock::getSentCounter(void) { return sent_counter; }
 
 int ActionExecutorMock::getStopCounter(void) { return stop_counter; }
 
@@ -360,6 +369,10 @@ int ActionExecutorMock::counterSetCount(void) {
   }
 
   if (enable_counter > 0) {
+    result++;
+  }
+
+  if (sent_counter > 0) {
     result++;
   }
 

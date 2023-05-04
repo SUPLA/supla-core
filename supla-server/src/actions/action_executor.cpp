@@ -20,11 +20,14 @@
 
 #include "http/http_event_hub.h"
 #include "mqtt/mqtt_client_suite.h"
+#include "push/pn_delivery_task.h"
 #include "scene/scene_asynctask.h"
 #include "schedule/schedule_dao.h"
 #include "userchannelgroups.h"
 
+using std::map;
 using std::shared_ptr;
+using std::string;
 
 supla_action_executor::supla_action_executor(void)
     : supla_abstract_action_executor() {}
@@ -162,6 +165,16 @@ void supla_action_executor::disable(void) {
   supla_db_access_provider dba;
   supla_schedule_dao dao(&dba);
   dao.enable(get_user_id(), get_schedule_id(), false);
+}
+
+void supla_action_executor::send(const map<string, string> *replacement_map) {
+  if (get_push_notification_id() && get_user()) {
+    supla_push_notification *push =
+        new supla_push_notification(get_push_notification_id());
+    push->set_replacement_map(*replacement_map);
+
+    supla_pn_delivery_task::start_delivering(get_user()->getUserID(), push);
+  }
 }
 
 void supla_action_executor::stop(void) {
