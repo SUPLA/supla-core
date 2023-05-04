@@ -4,13 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/vbt/OnChangeConditionTest.cpp 
+../src/test/vbt/OnChangeConditionTest.cpp \
+../src/test/vbt/ValueBasedTriggerTest.cpp 
 
 CPP_DEPS += \
-./src/test/vbt/OnChangeConditionTest.d 
+./src/test/vbt/OnChangeConditionTest.d \
+./src/test/vbt/ValueBasedTriggerTest.d 
 
 OBJS += \
-./src/test/vbt/OnChangeConditionTest.o 
+./src/test/vbt/OnChangeConditionTest.o \
+./src/test/vbt/ValueBasedTriggerTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -25,7 +28,7 @@ src/test/vbt/%.o: ../src/test/vbt/%.cpp src/test/vbt/subdir.mk
 clean: clean-src-2f-test-2f-vbt
 
 clean-src-2f-test-2f-vbt:
-	-$(RM) ./src/test/vbt/OnChangeConditionTest.d ./src/test/vbt/OnChangeConditionTest.o
+	-$(RM) ./src/test/vbt/OnChangeConditionTest.d ./src/test/vbt/OnChangeConditionTest.o ./src/test/vbt/ValueBasedTriggerTest.d ./src/test/vbt/ValueBasedTriggerTest.o
 
 .PHONY: clean-src-2f-test-2f-vbt
 
