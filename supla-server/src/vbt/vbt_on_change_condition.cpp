@@ -43,8 +43,27 @@ supla_vbt_on_change_condition::supla_vbt_on_change_condition(void) {
 
 supla_vbt_on_change_condition::~supla_vbt_on_change_condition(void) {}
 
+double supla_vbt_on_change_condition::get_value(void) { return value; }
+
+_vbt_var_name_e supla_vbt_on_change_condition::get_var_name(void) {
+  return var_name;
+}
+
+_vbt_operator_e supla_vbt_on_change_condition::get_op(void) { return op; }
+
+_vbt_operator_e supla_vbt_on_change_condition::get_resume_op(void) {
+  return resume_op;
+}
+
+double supla_vbt_on_change_condition::get_resume_value(void) {
+  return resume_value;
+}
+
+bool supla_vbt_on_change_condition::is_paused(void) { return paused; }
+
 void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
   op = op_unknown;
+
   cJSON *root = cJSON_GetObjectItem(json, "on_change_to");
   if (!root) {
     return;
@@ -53,6 +72,30 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
   if (!get_operator_and_value(root, &op, &value)) {
     op = op_unknown;
     return;
+  }
+
+  cJSON *name_json = cJSON_GetObjectItem(root, "name");
+  if (name_json && cJSON_IsString(name_json)) {
+    map<_vbt_var_name_e, string> names{
+        {var_name_color, "color"},
+        {var_name_color_brightness, "color_brightness"},
+        {var_name_brightness, "brightness"},
+        {var_name_temperature, "temperature"},
+        {var_name_humidity, "humidity"},
+        {var_name_flooding, "flooding"},
+        {var_name_manually_closed, "manually_closed"},
+        {var_name_voltage, "voltage"},
+        {var_name_current, "current"},
+        {var_name_power_active, "power_active"},
+        {var_name_power_reactive, "power_reactive"},
+        {var_name_power_apparent, "power_apparent"}};
+
+    for (auto it = names.rbegin(); it != names.rend(); ++it) {
+      if (it->second == cJSON_GetStringValue(name_json)) {
+        var_name = it->first;
+        break;
+      }
+    }
   }
 
   cJSON *resume_json = cJSON_GetObjectItem(root, "resume");
@@ -72,7 +115,7 @@ bool supla_vbt_on_change_condition::get_operator_and_value(cJSON *root,
   cJSON *op_json = nullptr;
 
   for (auto it = ops.rbegin(); it != ops.rend(); ++it) {
-    cJSON *op_json = cJSON_GetObjectItem(root, it->second.c_str());
+    op_json = cJSON_GetObjectItem(root, it->second.c_str());
     if (op_json) {
       *op = it->first;
       break;
