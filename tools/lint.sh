@@ -80,11 +80,13 @@ cpplint --filter=-build/include ./supla-server/src/test/integration/mqtt/*
 cpplint --filter=-build/include ./supla-server/src/test/integration/push/* 
 cpplint --filter=-build/include ./supla-server/src/test/integration/scene/* 
 cpplint --filter=-build/include ./supla-server/src/test/integration/schedule/* 
+cpplint --filter=-build/include ./supla-server/src/test/integration/vbt/* 
 cpplint --filter=-build/include ./supla-server/src/test/integration/webhook/* 
 cpplint --filter=-build/include ./supla-server/src/test/ipc/*
 cpplint --filter=-build/include ./supla-server/src/test/mqtt/*
 cpplint --filter=-build/include ./supla-server/src/test/push/*
 cpplint --filter=-build/include ./supla-server/src/test/scene/*
+cpplint --filter=-build/include ./supla-server/src/test/vbt/*
 cpplint --filter=-build/include ./supla-server/src/test/webhook/*
 cpplint ./supla-scheduler/src/* 
 cpplint --filter=-build/include ./supla-scheduler/src/test/* 
