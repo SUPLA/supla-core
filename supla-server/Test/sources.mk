@@ -95,6 +95,7 @@ src/test/integration/mqtt \
 src/test/integration/push \
 src/test/integration/scene \
 src/test/integration/schedule \
+src/test/integration/vbt \
 src/test/integration/webhook \
 src/test/ipc \
 src/test/mqtt \
