@@ -294,4 +294,18 @@ TEST_F(ActionConfigTest, equalityOperator) {
   EXPECT_TRUE(c1 == c2);
 }
 
+TEST_F(ActionConfigTest, constructorWithArg) {
+  supla_action_config c1;
+  c1.set_action_id(2);
+  c1.set_subject_type(stScene);
+  c1.set_subject_id(3);
+  c1.set_source_device_id(4);
+  c1.set_source_channel_id(5);
+  c1.set_percentage(6);
+
+  supla_action_config *c2 = new supla_action_config(&c1);
+  EXPECT_TRUE(c1 == *c2);
+  delete c2;
+}
+
 } /* namespace testing */

@@ -33,6 +33,7 @@ class supla_action_config : public abstract_action_config {
 
  public:
   supla_action_config(void);
+  supla_action_config(supla_action_config *src);
   virtual ~supla_action_config(void);
 
   virtual int get_action_id(void);

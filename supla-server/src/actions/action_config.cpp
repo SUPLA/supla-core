@@ -35,6 +35,16 @@ supla_action_config::supla_action_config(void) : abstract_action_config() {
   rgbw = {};
 }
 
+supla_action_config::supla_action_config(supla_action_config *src) {
+  action_id = src->action_id;
+  subject_type = src->subject_type;
+  subject_id = src->subject_id;
+  source_device_id = src->source_device_id;
+  source_channel_id = src->source_channel_id;
+  percentage = src->percentage;
+  rgbw = src->rgbw;
+}
+
 supla_action_config::~supla_action_config(void) {}
 
 int supla_action_config::get_action_id(void) { return action_id; }
