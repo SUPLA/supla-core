@@ -46,8 +46,8 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
       "SELECT id, owning_channel_id, IFNULL(channel_id, 0), "
       "IFNULL(channel_group_id, 0), IFNULL(scene_id, 0), IFNULL(schedule_id, "
       "0), IFNULL(push_notification_id, 0), IFNULL(action, 0), action_param, "
-      "trigger FROM supla_value_based_trigger WHERE t.user_id = ? AND "
-      "t.enabled = 1";
+      "`trigger` FROM supla_value_based_trigger WHERE user_id = ? AND enabled "
+      "= 1";
 
   MYSQL_BIND pbind = {};
 
