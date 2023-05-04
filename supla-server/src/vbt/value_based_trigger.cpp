@@ -61,15 +61,7 @@ void supla_value_based_trigger::fire(
     const supla_caller &caller, int user_id,
     supla_abstract_action_executor *action_executor,
     supla_abstract_channel_property_getter *property_getter,
-    supla_pn_dispatcher *pn_dispatcher,
     const std::map<std::string, std::string> &replacement_map) {
-  if (subject_type == stPushNotifiction) {
-    if (subject_id) {
-      pn_dispatcher->send_push(user_id, subject_id, replacement_map);
-    }
-    return;
-  }
-
   if (action_config) {
     action_executor->execute_action(caller, user_id, action_config,
                                     property_getter);

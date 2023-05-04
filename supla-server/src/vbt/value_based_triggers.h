@@ -37,13 +37,13 @@ class supla_value_based_triggers {
   virtual ~supla_value_based_triggers(void);
 
   void load(void);
+  size_t get_count(void);
 
   virtual void on_channel_value_changed(
       const supla_caller &caller, int channel_id,
       supla_channel_value *old_value, supla_channel_value *new_value,
       supla_abstract_action_executor *action_executor,
-      supla_abstract_channel_property_getter *property_getter,
-      supla_pn_dispatcher *pn_dispatcher);
+      supla_abstract_channel_property_getter *property_getter);
 
   void on_channel_value_changed(const supla_caller &caller, int channel_id,
                                 supla_channel_value *old_value,

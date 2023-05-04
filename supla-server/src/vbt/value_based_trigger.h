@@ -25,7 +25,6 @@
 
 #include "actions/abstract_action_executor.h"
 #include "actions/action_config.h"
-#include "push/pn_dispatcher.h"
 #include "user/user.h"
 #include "vbt/vbt_condition_result.h"
 #include "vbt/vbt_on_change_condition.h"
@@ -56,7 +55,6 @@ class supla_value_based_trigger {
   void fire(const supla_caller &caller, int user_id,
             supla_abstract_action_executor *action_executor,
             supla_abstract_channel_property_getter *property_getter,
-            supla_pn_dispatcher *pn_dispatcher,
             const std::map<std::string, std::string> &replacement_map);
 
   bool equal(const supla_value_based_trigger &trigger) const;

@@ -22,7 +22,6 @@
 #include "db/db_access_provider.h"
 #include "device/channel_property_getter.h"
 #include "lck.h"
-#include "push/pn_dispatcher.h"
 #include "vbt/value_based_trigger_dao.h"
 
 using std::shared_ptr;
@@ -87,12 +86,18 @@ void supla_value_based_triggers::load(void) {
   }
 }
 
+size_t supla_value_based_triggers::get_count(void) {
+  lck_lock(lck);
+  size_t result = triggers.size();
+  lck_unlock(lck);
+  return result;
+}
+
 void supla_value_based_triggers::on_channel_value_changed(
     const supla_caller &caller, int channel_id, supla_channel_value *old_value,
     supla_channel_value *new_value,
     supla_abstract_action_executor *action_executor,
-    supla_abstract_channel_property_getter *property_getter,
-    supla_pn_dispatcher *pn_dispatcher) {
+    supla_abstract_channel_property_getter *property_getter) {
   vector<supla_vbt_condition_result> matches;
 
   lck_lock(lck);
@@ -110,8 +115,7 @@ void supla_value_based_triggers::on_channel_value_changed(
   // We fire triggers only after leaving the lock.
   for (auto it = matches.rbegin(); it != matches.rend(); ++it) {
     it->get_trigger()->fire(caller, user->getUserID(), action_executor,
-                            property_getter, pn_dispatcher,
-                            it->get_replacement_map());
+                            property_getter, it->get_replacement_map());
   }
 }
 
@@ -120,8 +124,7 @@ void supla_value_based_triggers::on_channel_value_changed(
     supla_channel_value *new_value) {
   supla_action_executor exec;
   supla_cahnnel_property_getter property_getter;
-  supla_pn_dispatcher pn_dispatcher;
 
   on_channel_value_changed(caller, channel_id, old_value, new_value, &exec,
-                           &property_getter, &pn_dispatcher);
+                           &property_getter);
 }
