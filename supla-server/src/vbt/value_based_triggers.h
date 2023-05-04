@@ -37,7 +37,8 @@ class supla_value_based_triggers {
   virtual ~supla_value_based_triggers(void);
 
   void load(void);
-  size_t get_count(void);
+  size_t count(void);
+  std::shared_ptr<supla_value_based_trigger> get(int id);
 
   virtual void on_channel_value_changed(
       const supla_caller &caller, int channel_id,

@@ -86,9 +86,22 @@ void supla_value_based_triggers::load(void) {
   }
 }
 
-size_t supla_value_based_triggers::get_count(void) {
+size_t supla_value_based_triggers::count(void) {
   lck_lock(lck);
   size_t result = triggers.size();
+  lck_unlock(lck);
+  return result;
+}
+
+shared_ptr<supla_value_based_trigger> supla_value_based_triggers::get(int id) {
+  shared_ptr<supla_value_based_trigger> result;
+  lck_lock(lck);
+  for (auto it = triggers.rbegin(); it != triggers.rend(); ++it) {
+    if ((*it)->get_id() == id) {
+      result = *it;
+      break;
+    }
+  }
   lck_unlock(lck);
   return result;
 }
