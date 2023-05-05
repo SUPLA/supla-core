@@ -136,9 +136,17 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
           int subject_id = 0;
           supla_action_config *action_config = nullptr;
 
-          if (!action_param_is_null && action_param_len > 0) {
+          if (action_id) {
             action_config = new supla_action_config();
-            action_config->set_action_id(action_id);
+          }
+
+          action_config->set_action_id(action_id);
+
+          if (!action_param_is_null && action_param_len > 0) {
+            if (!action_config) {
+              action_config = new supla_action_config();
+            }
+
             action_config->apply_json_params(action_param);
           }
 
