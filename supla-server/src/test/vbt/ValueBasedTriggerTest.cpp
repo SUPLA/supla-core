@@ -78,8 +78,8 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
 
     EXPECT_TRUE(main == t1);
     EXPECT_FALSE(main != t1);
-    EXPECT_FALSE(main == t2);
-    EXPECT_TRUE(main != t2);
+    EXPECT_FALSE(main != t2);
+    EXPECT_TRUE(main == t2);
   }
 
   {
@@ -94,6 +94,19 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
     EXPECT_FALSE(main != t1);
     EXPECT_FALSE(main == t2);
     EXPECT_TRUE(main != t2);
+  }
+
+  {
+    supla_value_based_trigger t1(5, 10, supla_action_config(&main_ac),
+                                 "{\"on_change_to\":{\"eq\":1}}");
+
+    supla_value_based_trigger t2(5, 10, supla_action_config(&main_ac),
+                                 "{\"on_change_to\":{\"eq\":1}}");
+
+    EXPECT_TRUE(main == t1);
+    EXPECT_FALSE(main != t1);
+    EXPECT_FALSE(main != t2);
+    EXPECT_TRUE(main == t2);
   }
 
   {
