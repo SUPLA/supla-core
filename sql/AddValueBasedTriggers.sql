@@ -5,6 +5,7 @@ INSERT INTO supla_value_based_trigger (id, user_id, owning_channel_id, channel_i
 VALUES(20, 2, 140, 141, NULL, NULL, NULL, NULL, '{"on_change_to":{"eq":1}}', 60, NULL, 1),
 (21, 2, 140, 173, NULL, NULL, NULL, NULL, '{"on_change_to":{"eq":1}}', 51, '{"percentage":45}', 1),
 (22, 2, 140, NULL, 1, NULL, NULL, NULL, '{"on_change_to":{"eq":1}}', 70, NULL, 1),
-(30, 2, 141, NULL, NULL, 6, NULL, NULL, '{"on_change_to":{"eq":0}}', 3000, NULL, 1),
+(30, 2, 141, NULL, NULL, 6, NULL, NULL, '{"on_change_to":{"ne":0}}', 3000, NULL, 1),
 (31, 2, 141, NULL, NULL, NULL, 1, NULL, '{"on_change_to":{"eq":1}}', 210, NULL, 1),
-(32, 2, 141, NULL, NULL, NULL, NULL, 500, '{"on_change_to":{"eq":1}}', 220, NULL, 1)
+(32, 2, 141, NULL, NULL, NULL, NULL, 500, '{"on_change_to":{"eq":1}}', 220, NULL, 1),
+(33, 2, 158, NULL, NULL, NULL, NULL, 500, '{"on_change_to":{"ge":50,"name":"humidity"}}', 220, NULL, 1);

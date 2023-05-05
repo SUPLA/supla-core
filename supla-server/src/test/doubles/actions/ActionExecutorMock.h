@@ -60,12 +60,14 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   char rgbw_on_off;
   bool delta;
   std::list<struct timeval> times;
+  std::map<std::string, std::string> replacement_map;
   void addTime(void);
 
  public:
   ActionExecutorMock();
   virtual ~ActionExecutorMock();
   std::shared_ptr<supla_device> get_device(void);
+  std::map<std::string, std::string> get_replacement_map(void);
 
   virtual void set_on(bool on);
   virtual void set_color(unsigned int color);

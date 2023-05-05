@@ -20,14 +20,19 @@
 #define ValueBasedTriggerIntegrationTest_H_
 
 #include "integration/IntegrationTest.h"
+#include "user/user.h"
 
 namespace testing {
 
 class ValueBasedTriggerIntegrationTest : public IntegrationTest, public Test {
+ protected:
+  supla_user *user;
+
  public:
   ValueBasedTriggerIntegrationTest();
   virtual ~ValueBasedTriggerIntegrationTest();
   virtual void SetUp(void);
+  virtual void TearDown(void);
 };
 
 } /* namespace testing */

@@ -24,7 +24,9 @@ namespace testing {
 
 using std::function;
 using std::list;
+using std::map;
 using std::shared_ptr;
+using std::string;
 
 ActionExecutorMock::ActionExecutorMock() : supla_abstract_action_executor() {
   clear();
@@ -34,6 +36,10 @@ ActionExecutorMock::~ActionExecutorMock() {}
 
 shared_ptr<supla_device> ActionExecutorMock::get_device(void) {
   return supla_abstract_action_executor::get_device();
+}
+
+map<string, string> ActionExecutorMock::get_replacement_map(void) {
+  return replacement_map;
 }
 
 void ActionExecutorMock::clear(void) {
@@ -193,6 +199,9 @@ void ActionExecutorMock::send(
     const std::map<std::string, std::string> *replacement_map) {
   addTime();
   sent_counter++;
+  if (replacement_map) {
+    this->replacement_map = *replacement_map;
+  }
 }
 
 void ActionExecutorMock::interrupt(void) {
