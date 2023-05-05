@@ -47,7 +47,7 @@ void supla_value_based_triggers::load(void) {
     auto nit = triggers.rbegin();
     while (nit != triggers.rend()) {
       if ((*it)->get_id() == (*nit)->get_id()) {
-        if (*(*nit) == it->get()) {
+        if (*(*nit) != it->get()) {
           nit = triggers.rend();
         }
         break;
@@ -120,7 +120,7 @@ void supla_value_based_triggers::on_channel_value_changed(
 
     if (m.are_conditions_met()) {
       m.set_trigger(*it);
-      break;
+      matches.push_back(m);
     }
   }
   lck_unlock(lck);
