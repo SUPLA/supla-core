@@ -18,13 +18,101 @@
 
 #include "ValueBasedTriggerTest.h"
 
+#include "doubles/actions/ActionExecutorMock.h"
+#include "doubles/device/ChannelPropertyGetterMock.h"
 #include "vbt/value_based_trigger.h"
 
 namespace testing {
 
+using std::map;
+using std::string;
+
 ValueBasedTriggerTest::ValueBasedTriggerTest() : Test() {}
 
 ValueBasedTriggerTest::~ValueBasedTriggerTest() {}
+
+TEST_F(ValueBasedTriggerTest, defaultLimits) {
+  supla_action_config main_ac;
+  supla_value_based_trigger t(1, 2, main_ac, "");
+
+  EXPECT_EQ(t.get_time_window_sec(), 5);
+  EXPECT_EQ(t.get_fire_count_limit(), 5);
+  EXPECT_EQ(t.get_min_time_between_firing_usec(), 100000);
+}
+
+TEST_F(ValueBasedTriggerTest, changeLimits) {
+  supla_action_config main_ac;
+  supla_value_based_trigger t(1, 2, main_ac, "");
+
+  t.set_time_window_sec(10);
+  t.set_fire_count_limit(6);
+  t.set_min_time_between_firing_usec(200);
+
+  EXPECT_EQ(t.get_time_window_sec(), 10);
+  EXPECT_EQ(t.get_fire_count_limit(), 6);
+  EXPECT_EQ(t.get_min_time_between_firing_usec(), 200);
+}
+
+TEST_F(ValueBasedTriggerTest, tooFastFiring) {
+  supla_action_config main_ac;
+  main_ac.set_action_id(ACTION_TURN_ON);
+  main_ac.set_subject_id(140);
+  main_ac.set_subject_type(stChannel);
+  supla_value_based_trigger t(1, 2, main_ac, "");
+  t.set_min_time_between_firing_usec(200000);
+
+  ActionExecutorMock actionExecutor;
+  ChannelPropertyGetterMock propertyGetter;
+  map<string, string> replacement_map;
+
+  for (int a = 0; a < 100; a++) {
+    usleep(10);
+    t.fire(supla_caller(ctIPC), 2, &actionExecutor, &propertyGetter,
+           replacement_map);
+  }
+
+  EXPECT_EQ(actionExecutor.counterSetCount(), 1);
+  EXPECT_EQ(actionExecutor.getOnCounter(), 1);
+  usleep(t.get_min_time_between_firing_usec() + 1);
+
+  t.fire(supla_caller(ctIPC), 2, &actionExecutor, &propertyGetter,
+         replacement_map);
+
+  EXPECT_EQ(actionExecutor.counterSetCount(), 1);
+  EXPECT_EQ(actionExecutor.getOnCounter(), 2);
+}
+
+TEST_F(ValueBasedTriggerTest, tooManyFiresInAcertainAmountOfTime) {
+  supla_action_config main_ac;
+  main_ac.set_action_id(ACTION_TURN_ON);
+  main_ac.set_subject_id(140);
+  main_ac.set_subject_type(stChannel);
+  supla_value_based_trigger t(1, 2, main_ac, "");
+  t.set_min_time_between_firing_usec(0);
+  t.set_time_window_sec(1);
+
+  ActionExecutorMock actionExecutor;
+  ChannelPropertyGetterMock propertyGetter;
+  map<string, string> replacement_map;
+
+  for (unsigned int a = 0; a <= t.get_fire_count_limit() + 10; a++) {
+    t.fire(supla_caller(ctIPC), 2, &actionExecutor, &propertyGetter,
+           replacement_map);
+  }
+
+  EXPECT_EQ(actionExecutor.counterSetCount(), 1);
+  EXPECT_EQ(actionExecutor.getOnCounter(), t.get_fire_count_limit());
+
+  usleep(t.get_time_window_sec() * 1000000);
+
+  for (unsigned int a = 0; a <= t.get_fire_count_limit() + 10; a++) {
+    t.fire(supla_caller(ctIPC), 2, &actionExecutor, &propertyGetter,
+           replacement_map);
+  }
+
+  EXPECT_EQ(actionExecutor.counterSetCount(), 1);
+  EXPECT_EQ(actionExecutor.getOnCounter(), t.get_fire_count_limit() * 2);
+}
 
 TEST_F(ValueBasedTriggerTest, equalityOperator) {
   supla_action_config main_ac;
@@ -35,14 +123,14 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   main_ac.set_source_channel_id(5);
   main_ac.set_percentage(6);
 
-  supla_value_based_trigger main(5, 10, supla_action_config(&main_ac),
+  supla_value_based_trigger main(5, 10, main_ac,
                                  "{\"on_change_to\":{\"eq\":1}}");
 
   {
-    supla_value_based_trigger t1(5, 10, supla_action_config(&main_ac),
+    supla_value_based_trigger t1(5, 10, main_ac,
                                  "{\"on_change_to\":{\"eq\":1}}");
 
-    supla_value_based_trigger t2(6, 10, supla_action_config(&main_ac),
+    supla_value_based_trigger t2(6, 10, main_ac,
                                  "{\"on_change_to\":{\"eq\":1}}");
 
     EXPECT_TRUE(main == t1);
@@ -57,10 +145,10 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, supla_action_config(&main_ac),
+    supla_value_based_trigger t1(5, 10, main_ac,
                                  "{\"on_change_to\":{\"eq\":1}}");
 
-    supla_value_based_trigger t2(5, 11, supla_action_config(&main_ac),
+    supla_value_based_trigger t2(5, 11, main_ac,
                                  "{\"on_change_to\":{\"eq\":1}}");
 
     EXPECT_TRUE(main == t1);
@@ -70,10 +158,10 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, supla_action_config(&main_ac),
+    supla_value_based_trigger t1(5, 10, main_ac,
                                  "{\"on_change_to\":{\"eq\":1}}");
 
-    supla_value_based_trigger t2(5, 10, supla_action_config(&main_ac),
+    supla_value_based_trigger t2(5, 10, main_ac,
                                  "{\"on_change_to\":{\"eq\":1}}");
 
     EXPECT_TRUE(main == t1);
@@ -83,7 +171,7 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, supla_action_config(&main_ac),
+    supla_value_based_trigger t1(5, 10, main_ac,
                                  "{\"on_change_to\":{\"eq\":1}}");
 
     supla_action_config ac(&main_ac);
@@ -97,10 +185,10 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, supla_action_config(&main_ac),
+    supla_value_based_trigger t1(5, 10, main_ac,
                                  "{\"on_change_to\":{\"eq\":1}}");
 
-    supla_value_based_trigger t2(5, 10, supla_action_config(&main_ac),
+    supla_value_based_trigger t2(5, 10, main_ac,
                                  "{\"on_change_to\":{\"eq\":1}}");
 
     EXPECT_TRUE(main == t1);
@@ -110,10 +198,10 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, supla_action_config(&main_ac),
+    supla_value_based_trigger t1(5, 10, main_ac,
                                  "{\"on_change_to\":{\"eq\":1}}");
 
-    supla_value_based_trigger t2(5, 10, supla_action_config(&main_ac),
+    supla_value_based_trigger t2(5, 10, main_ac,
                                  "{\"on_change_to\":{\"ne\":1}}");
 
     EXPECT_TRUE(main == t1);

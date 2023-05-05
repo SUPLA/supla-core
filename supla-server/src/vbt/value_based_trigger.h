@@ -36,6 +36,13 @@ class supla_value_based_trigger {
   supla_vbt_on_change_condition on_change_cnd;
   supla_action_config action_config;
 
+  struct timeval first_fire_time;
+  struct timeval last_fire_try_time;
+  long long min_time_between_firing_usec;
+  unsigned int fire_counter;
+  unsigned int fire_count_limit;
+  int time_window_sec;
+
  public:
   explicit supla_value_based_trigger(int id, int channel_id,
                                      const supla_action_config &action_config,
@@ -44,6 +51,14 @@ class supla_value_based_trigger {
 
   int get_id(void);
   int get_channel_id(void);
+
+  int get_time_window_sec(void);
+  void set_time_window_sec(int time_window_sec);
+  unsigned int get_fire_count_limit(void);
+  void set_fire_count_limit(unsigned int fire_count_limit);
+  long long get_min_time_between_firing_usec(void);
+  void set_min_time_between_firing_usec(long long min_time_between_firing_usec);
+
   supla_action_config get_action_config(void);
   const supla_vbt_on_change_condition &get_on_change_cnd(void);
 
