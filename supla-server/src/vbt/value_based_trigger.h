@@ -47,6 +47,11 @@ class supla_value_based_trigger {
   virtual ~supla_value_based_trigger(void);
 
   int get_id(void);
+  int get_channel_id(void);
+  _subjectType_e get_subject_type(void);
+  int get_subject_id(void);
+  supla_action_config get_action_config(void);
+  supla_vbt_on_change_condition get_on_change_cnd(void);
 
   supla_vbt_condition_result are_conditions_met(int channel_id,
                                                 supla_channel_value *old_value,
