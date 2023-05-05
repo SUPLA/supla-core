@@ -22,6 +22,9 @@
 
 namespace testing {
 
+using std::map;
+using std::string;
+
 TEST_F(ChannelTempHumValueTest, voidConstructor) {
   supla_channel_temphum_value tempHum;
   EXPECT_EQ(-273, tempHum.get_temperature());
@@ -145,6 +148,19 @@ TEST_F(ChannelTempHumValueTest, applyChannelProperties) {
   EXPECT_LE(v.get_temperature(), -0.999);
   EXPECT_GE(v.get_temperature(), -1.0);
   EXPECT_EQ(v.get_humidity(), 56.788);
+}
+
+TEST_F(ChannelTempHumValueTest, replacementMap) {
+  supla_channel_temphum_value v(true, 22.331, 45.671);
+  map<string, string> m = v.get_replacement_map();
+  EXPECT_EQ(m.size(), 2);
+  EXPECT_EQ(m["temperature"], "22.33");
+  EXPECT_EQ(m["humidity"], "45.67");
+
+  supla_channel_temphum_value v2(false, 10.0, 0.0);
+  m = v2.get_replacement_map();
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_EQ(m["temperature"], "10.00");
 }
 
 }  // namespace testing

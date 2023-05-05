@@ -20,6 +20,9 @@
 
 #include <string.h>
 
+using std::map;
+using std::string;
+
 // static
 int supla_channel_temphum_value::incorrect_temperature(void) { return -273; }
 
@@ -133,6 +136,20 @@ void supla_channel_temphum_value::apply_channel_properties(
   if (param3 != 0) {
     set_humidity(get_humidity() + (param3 / 100.00));
   }
+}
+
+map<string, string> supla_channel_temphum_value::get_replacement_map(void) {
+  map<string, string> result = supla_channel_value::get_replacement_map();
+
+  char buffer[50] = {};
+  snprintf(buffer, sizeof(buffer), "%.2f", get_temperature());
+
+  result["temperature"] = buffer;
+  if (is_humidity_available()) {
+    snprintf(buffer, sizeof(buffer), "%.2f", get_humidity());
+    result["humidity"] = buffer;
+  }
+  return result;
 }
 
 // static
