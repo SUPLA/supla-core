@@ -38,6 +38,7 @@
 #include "scene/scene_asynctask.h"
 #include "serverstatus.h"
 #include "userchannelgroups.h"
+#include "vbt/value_based_triggers.h"
 
 void *supla_user::user_arr = NULL;
 unsigned int supla_user::client_add_metric = 0;
@@ -86,6 +87,9 @@ void supla_user::user_init(int UserID, const char *short_unique_id,
   this->google_home_credentials->load();
   this->state_webhook_credentials->load();
 
+  this->value_based_triggers = new supla_value_based_triggers(this);
+  this->value_based_triggers->load();
+
   safe_array_add(supla_user::user_arr, this);
 }
 
@@ -110,6 +114,7 @@ supla_user::~supla_user() {
   }
 
   lck_free(lck);
+  delete value_based_triggers;
   delete cgroups;
   delete amazon_alexa_credentials;
   delete google_home_credentials;
@@ -860,6 +865,10 @@ supla_state_webhook_credentials *supla_user::stateWebhookCredentials(void) {
 
 supla_user_channelgroups *supla_user::get_channel_groups(void) {
   return cgroups;
+}
+
+supla_value_based_triggers *supla_user::get_value_based_triggers(void) {
+  return value_based_triggers;
 }
 
 // static

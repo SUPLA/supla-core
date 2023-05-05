@@ -40,6 +40,7 @@ class supla_client;
 class supla_user_channelgroups;
 class supla_channel_electricity_measurement;
 class supla_channel_ic_measurement;
+class supla_value_based_triggers;
 
 class supla_user {
  private:
@@ -67,6 +68,7 @@ class supla_user {
   supla_amazon_alexa_credentials *amazon_alexa_credentials;
   supla_google_home_credentials *google_home_credentials;
   supla_state_webhook_credentials *state_webhook_credentials;
+  supla_value_based_triggers *value_based_triggers;
   int UserID;
   bool connections_allowed;
 
@@ -155,9 +157,10 @@ class supla_user {
   supla_google_home_credentials *googleHomeCredentials(void);
   supla_state_webhook_credentials *stateWebhookCredentials(void);
 
+  supla_value_based_triggers *get_value_based_triggers(void);
+
   static void on_scene_changed(const supla_caller &caller, int user_id,
                                int scene_id);
-
   explicit supla_user(int UserID);
   supla_user(int UserID, const char *short_unique_id,
              const char *long_unique_id);

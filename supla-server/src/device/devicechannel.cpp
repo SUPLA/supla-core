@@ -42,6 +42,7 @@
 #include "device/value/channel_valve_value.h"
 #include "lck.h"
 #include "user/user.h"
+#include "vbt/value_based_triggers.h"
 
 using std::list;
 using std::shared_ptr;
@@ -626,9 +627,15 @@ void supla_device_channel::on_value_changed(supla_channel_value *old_value,
 
   if (converted2extended) {
     get_device()->get_user()->on_channel_value_changed(
-        supla_caller(ctDevice, get_id()), get_device()->get_id(), get_id(),
-        true);
+        supla_caller(ctDevice, get_device()->get_id()), get_device()->get_id(),
+        get_id(), true);
   }
+
+  get_device()
+      ->get_user()
+      ->get_value_based_triggers()
+      ->on_channel_value_changed(supla_caller(ctDevice, get_device()->get_id()),
+                                 get_id(), old_value, new_value);
 }
 
 void supla_device_channel::update_timer_state(void) {
