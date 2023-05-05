@@ -30,6 +30,9 @@ class supla_pn_dao {
   explicit supla_pn_dao(supla_abstract_db_access_provider *dba);
   virtual ~supla_pn_dao(void);
   bool get(int user_id, supla_push_notification *push);
+
+  int get_limit(int user_id);  // I have doubts whether geting limits of sent
+                               // messages should be in pn_dao or user_dao.
 };
 
 #endif /* PUSH_NOTIFICATION_DAO_H_ */

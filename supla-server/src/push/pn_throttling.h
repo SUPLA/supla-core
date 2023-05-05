@@ -18,20 +18,36 @@
 #ifndef PUSH_NOTIFICATION_THROTTLING_H_
 #define PUSH_NOTIFICATION_THROTTLING_H_
 
+#include <list>
+
 #include "http/http_throttling.h"
 
-class supla_pn_throttling : public supla_http_throttling {
+class supla_pn_throttling {
  private:
   static supla_pn_throttling instance;
+  unsigned int time_window_sec;
+
+  typedef struct {
+    int user_id;
+    struct timeval first_time;
+    unsigned int limit;
+    unsigned int counter;
+  } item_t;
+
+  std::list<item_t> items;
+  void *lck;
 
  public:
   supla_pn_throttling(void);
   virtual ~supla_pn_throttling(void);
+  unsigned int get_time_window_sec(void);
+  void set_time_window_sec(unsigned int time_window_sec);
+
+  bool is_delivery_possible(int user_id, bool *first_time_exceeded);
+  size_t get_size(void);
+  unsigned int get_count(int user_id);
 
   static supla_pn_throttling *get_instance(void);
-
-  virtual int get_default_delay_time(int func);
-  virtual unsigned int get_counter_threadshold(int func);
 };
 
 #endif /* PUSH_NOTIFICATION_THROTTLING_H_ */

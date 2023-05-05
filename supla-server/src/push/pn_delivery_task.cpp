@@ -20,11 +20,13 @@
 
 #include "asynctask/asynctask_queue.h"
 #include "db/db_access_provider.h"
+#include "log.h"
 #include "push/apns_client.h"
 #include "push/fcm_client.h"
 #include "push/pn_dao.h"
 #include "push/pn_delivery_task_thread_pool.h"
 #include "push/pn_recipient_dao.h"
+#include "push/pn_throttling.h"
 #include "svrcfg.h"
 
 using std::string;
@@ -131,6 +133,21 @@ bool supla_pn_delivery_task::make_request(
 // static
 void supla_pn_delivery_task::start_delivering(int user_id,
                                               supla_push_notification *push) {
+  bool first_time_exceeded = false;
+  bool is_delivery_possible =
+      supla_pn_throttling::get_instance()->is_delivery_possible(
+          user_id, &first_time_exceeded);
+
+  if (!is_delivery_possible) {
+    if (first_time_exceeded) {
+      push->set_limit_exceeded_message_type(true);
+      supla_log(LOG_WARNING,
+                "UserId %i has exceeded the limit of PUSH messages.", user_id);
+    } else {
+      return;
+    }
+  }
+
   supla_pn_delivery_task *task = new supla_pn_delivery_task(
       user_id, supla_asynctask_queue::global_instance(),
       supla_pn_delivery_task_thread_pool::global_instance(), push,

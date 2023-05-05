@@ -93,4 +93,10 @@ int supla_http_throttling::get_delay_time(int channel_id, int func) {
   return result;
 }
 
-size_t supla_http_throttling::get_size(void) { return items.size(); }
+size_t supla_http_throttling::get_size(void) {
+  lck_lock(lck);
+  size_t result = items.size();
+  lck_unlock(lck);
+
+  return result;
+}

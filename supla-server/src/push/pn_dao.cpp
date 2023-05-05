@@ -112,3 +112,21 @@ bool supla_pn_dao::get(int user_id, supla_push_notification *push) {
 
   return result;
 }
+
+int supla_pn_dao::get_limit(int user_id) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return 0;
+  }
+
+  int result = dba->get_int(
+      user_id, 0,
+      "SELECT limit_push_notifications FROM supla_user WHERE id = ?");
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
+}
