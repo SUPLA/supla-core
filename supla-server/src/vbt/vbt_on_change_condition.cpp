@@ -43,23 +43,23 @@ supla_vbt_on_change_condition::supla_vbt_on_change_condition(void) {
 
 supla_vbt_on_change_condition::~supla_vbt_on_change_condition(void) {}
 
-double supla_vbt_on_change_condition::get_value(void) { return value; }
+double supla_vbt_on_change_condition::get_value(void) const { return value; }
 
-_vbt_var_name_e supla_vbt_on_change_condition::get_var_name(void) {
+_vbt_var_name_e supla_vbt_on_change_condition::get_var_name(void) const {
   return var_name;
 }
 
-_vbt_operator_e supla_vbt_on_change_condition::get_op(void) { return op; }
+_vbt_operator_e supla_vbt_on_change_condition::get_op(void) const { return op; }
 
-_vbt_operator_e supla_vbt_on_change_condition::get_resume_op(void) {
+_vbt_operator_e supla_vbt_on_change_condition::get_resume_op(void) const {
   return resume_op;
 }
 
-double supla_vbt_on_change_condition::get_resume_value(void) {
+double supla_vbt_on_change_condition::get_resume_value(void) const {
   return resume_value;
 }
 
-bool supla_vbt_on_change_condition::is_paused(void) { return paused; }
+bool supla_vbt_on_change_condition::is_paused(void) const { return paused; }
 
 void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
   op = op_unknown;

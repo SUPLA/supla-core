@@ -35,17 +35,14 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   main_ac.set_source_channel_id(5);
   main_ac.set_percentage(6);
 
-  supla_value_based_trigger main(5, 10, stChannel, 10,
-                                 new supla_action_config(&main_ac),
+  supla_value_based_trigger main(5, 10, supla_action_config(&main_ac),
                                  "{\"on_change_to\":{\"eq\":1}}");
 
   {
-    supla_value_based_trigger t1(5, 10, stChannel, 10,
-                                 new supla_action_config(&main_ac),
+    supla_value_based_trigger t1(5, 10, supla_action_config(&main_ac),
                                  "{\"on_change_to\":{\"eq\":1}}");
 
-    supla_value_based_trigger t2(6, 10, stChannel, 10,
-                                 new supla_action_config(&main_ac),
+    supla_value_based_trigger t2(6, 10, supla_action_config(&main_ac),
                                  "{\"on_change_to\":{\"eq\":1}}");
 
     EXPECT_TRUE(main == t1);
@@ -60,27 +57,10 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, stChannel, 10,
-                                 new supla_action_config(&main_ac),
+    supla_value_based_trigger t1(5, 10, supla_action_config(&main_ac),
                                  "{\"on_change_to\":{\"eq\":1}}");
 
-    supla_value_based_trigger t2(5, 11, stChannel, 10,
-                                 new supla_action_config(&main_ac),
-                                 "{\"on_change_to\":{\"eq\":1}}");
-
-    EXPECT_TRUE(main == t1);
-    EXPECT_FALSE(main != t1);
-    EXPECT_FALSE(main == t2);
-    EXPECT_TRUE(main != t2);
-  }
-
-  {
-    supla_value_based_trigger t1(5, 10, stChannel, 10,
-                                 new supla_action_config(&main_ac),
-                                 "{\"on_change_to\":{\"eq\":1}}");
-
-    supla_value_based_trigger t2(5, 11, stChannel, 10,
-                                 new supla_action_config(&main_ac),
+    supla_value_based_trigger t2(5, 11, supla_action_config(&main_ac),
                                  "{\"on_change_to\":{\"eq\":1}}");
 
     EXPECT_TRUE(main == t1);
@@ -90,27 +70,10 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, stChannel, 10,
-                                 new supla_action_config(&main_ac),
+    supla_value_based_trigger t1(5, 10, supla_action_config(&main_ac),
                                  "{\"on_change_to\":{\"eq\":1}}");
 
-    supla_value_based_trigger t2(5, 10, stChannelGroup, 10,
-                                 new supla_action_config(&main_ac),
-                                 "{\"on_change_to\":{\"eq\":1}}");
-
-    EXPECT_TRUE(main == t1);
-    EXPECT_FALSE(main != t1);
-    EXPECT_FALSE(main == t2);
-    EXPECT_TRUE(main != t2);
-  }
-
-  {
-    supla_value_based_trigger t1(5, 10, stChannel, 10,
-                                 new supla_action_config(&main_ac),
-                                 "{\"on_change_to\":{\"eq\":1}}");
-
-    supla_value_based_trigger t2(5, 10, stChannel, 15,
-                                 new supla_action_config(&main_ac),
+    supla_value_based_trigger t2(5, 10, supla_action_config(&main_ac),
                                  "{\"on_change_to\":{\"eq\":1}}");
 
     EXPECT_TRUE(main == t1);
@@ -120,14 +83,12 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, stChannel, 10,
-                                 new supla_action_config(&main_ac),
+    supla_value_based_trigger t1(5, 10, supla_action_config(&main_ac),
                                  "{\"on_change_to\":{\"eq\":1}}");
 
-    supla_action_config *ac = new supla_action_config(&main_ac);
-    ac->set_percentage(50);
-    supla_value_based_trigger t2(5, 10, stChannel, 10, ac,
-                                 "{\"on_change_to\":{\"eq\":1}}");
+    supla_action_config ac(&main_ac);
+    ac.set_percentage(50);
+    supla_value_based_trigger t2(5, 10, ac, "{\"on_change_to\":{\"eq\":1}}");
 
     EXPECT_TRUE(main == t1);
     EXPECT_FALSE(main != t1);
@@ -136,12 +97,10 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, stChannel, 10,
-                                 new supla_action_config(&main_ac),
+    supla_value_based_trigger t1(5, 10, supla_action_config(&main_ac),
                                  "{\"on_change_to\":{\"eq\":1}}");
 
-    supla_value_based_trigger t2(5, 10, stChannel, 10,
-                                 new supla_action_config(&main_ac),
+    supla_value_based_trigger t2(5, 10, supla_action_config(&main_ac),
                                  "{\"on_change_to\":{\"ne\":1}}");
 
     EXPECT_TRUE(main == t1);

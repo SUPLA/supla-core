@@ -64,12 +64,12 @@ class supla_vbt_on_change_condition {
 
   void apply_json_config(cJSON *json);
 
-  double get_value(void);
-  _vbt_var_name_e get_var_name(void);
-  _vbt_operator_e get_op(void);
-  _vbt_operator_e get_resume_op(void);
-  double get_resume_value(void);
-  bool is_paused(void);
+  double get_value(void) const;
+  _vbt_var_name_e get_var_name(void) const;
+  _vbt_operator_e get_op(void) const;
+  _vbt_operator_e get_resume_op(void) const;
+  double get_resume_value(void) const;
+  bool is_paused(void) const;
 
   virtual bool is_condition_met(supla_channel_value *old_value,
                                 supla_channel_value *new_value);

@@ -132,49 +132,36 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
           dba->set_terminating_byte(conditions, sizeof(conditions),
                                     conditions_len, conditions_are_null);
 
-          _subjectType_e subject_type = stUnknown;
-          int subject_id = 0;
-          supla_action_config *action_config = nullptr;
+          supla_action_config action_config;
 
-          if (action_id) {
-            action_config = new supla_action_config();
-          }
-
-          action_config->set_action_id(action_id);
+          action_config.set_action_id(action_id);
 
           if (!action_param_is_null && action_param_len > 0) {
-            if (!action_config) {
-              action_config = new supla_action_config();
-            }
-
-            action_config->apply_json_params(action_param);
+            action_config.apply_json_params(action_param);
           }
 
           if (channel_id) {
-            subject_id = channel_id;
-            subject_type = stChannel;
+            action_config.set_subject_id(channel_id);
+            action_config.set_subject_type(stChannel);
           } else if (channel_group_id) {
-            subject_id = channel_group_id;
-            subject_type = stChannelGroup;
+            action_config.set_subject_id(channel_group_id);
+            action_config.set_subject_type(stChannelGroup);
           } else if (scene_id) {
-            subject_id = scene_id;
-            subject_type = stScene;
+            action_config.set_subject_id(scene_id);
+            action_config.set_subject_type(stScene);
           } else if (schedule_id) {
-            subject_id = schedule_id;
-            subject_type = stSchedule;
+            action_config.set_subject_id(schedule_id);
+            action_config.set_subject_type(stSchedule);
           } else if (push_notification_id) {
-            subject_id = push_notification_id;
-            subject_type = stPushNotifiction;
+            action_config.set_subject_id(push_notification_id);
+            action_config.set_subject_type(stPushNotifiction);
           }
 
           supla_value_based_trigger *vbt = new supla_value_based_trigger(
-              id, owning_channel_id, subject_type, subject_id, action_config,
-              conditions);
+              id, owning_channel_id, action_config, conditions);
 
           if (vbt) {
             result.push_back(vbt);
-          } else if (action_config) {
-            delete action_config;
           }
         }
       }

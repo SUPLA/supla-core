@@ -21,12 +21,10 @@
 #include "vbt/vbt_on_change_condition.h"
 
 supla_value_based_trigger::supla_value_based_trigger(
-    int id, int channel_id, _subjectType_e subject_type, int subject_id,
-    supla_action_config *action_config, const char *conditions) {
+    int id, int channel_id, const supla_action_config &action_config,
+    const char *conditions) {
   this->id = id;
   this->channel_id = channel_id;
-  this->subject_type = subject_type;
-  this->subject_id = subject_id;
   this->action_config = action_config;
 
   cJSON *json = nullptr;
@@ -41,11 +39,7 @@ supla_value_based_trigger::supla_value_based_trigger(
   }
 }
 
-supla_value_based_trigger::~supla_value_based_trigger(void) {
-  if (action_config) {
-    delete action_config;
-  }
-}
+supla_value_based_trigger::~supla_value_based_trigger(void) {}
 
 supla_vbt_condition_result supla_value_based_trigger::are_conditions_met(
     int channel_id, supla_channel_value *old_value,
@@ -62,43 +56,28 @@ void supla_value_based_trigger::fire(
     supla_abstract_action_executor *action_executor,
     supla_abstract_channel_property_getter *property_getter,
     const std::map<std::string, std::string> &replacement_map) {
-  if (action_config) {
-    action_executor->execute_action(caller, user_id, action_config,
-                                    property_getter, &replacement_map);
-  }
+  action_executor->execute_action(caller, user_id, &action_config,
+                                  property_getter, &replacement_map);
 }
 
 int supla_value_based_trigger::get_id(void) { return id; }
 
 int supla_value_based_trigger::get_channel_id(void) { return channel_id; }
 
-_subjectType_e supla_value_based_trigger::get_subject_type(void) {
-  return subject_type;
-}
-
 supla_action_config supla_value_based_trigger::get_action_config(void) {
-  if (action_config) {
-    return *action_config;
-  }
-  return supla_action_config();
+  return action_config;
 }
 
-supla_vbt_on_change_condition supla_value_based_trigger::get_on_change_cnd(
-    void) {
+const supla_vbt_on_change_condition &
+supla_value_based_trigger::get_on_change_cnd(void) {
   return on_change_cnd;
 }
-
-int supla_value_based_trigger::get_subject_id(void) { return subject_id; }
 
 bool supla_value_based_trigger::equal(
     const supla_value_based_trigger &trigger) const {
   return id == trigger.id && channel_id == trigger.channel_id &&
-         subject_type == trigger.subject_type &&
-         subject_id == trigger.subject_id &&
          on_change_cnd == trigger.on_change_cnd &&
-         ((!action_config && !trigger.action_config) ||
-          (action_config && trigger.action_config &&
-           *action_config == *trigger.action_config));
+         action_config == trigger.action_config;
 }
 
 bool supla_value_based_trigger::operator==(
