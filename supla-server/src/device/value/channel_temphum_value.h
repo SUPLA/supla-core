@@ -19,6 +19,9 @@
 #ifndef CHANNEL_TEMPHUM_VALUE_H_
 #define CHANNEL_TEMPHUM_VALUE_H_
 
+#include <map>
+#include <string>
+
 #include "device/value/channel_value.h"
 
 class supla_channel_temphum_value : public supla_channel_value {
