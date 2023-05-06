@@ -23,13 +23,11 @@ using std::string;
 supla_push_notification::supla_push_notification(void) {
   id = 0;
   sound = 0;
-  limit_exceeded_message_type = false;
 }
 
 supla_push_notification::supla_push_notification(int id) {
   this->id = id;
   sound = 0;
-  limit_exceeded_message_type = false;
 }
 
 supla_push_notification::~supla_push_notification(void) {}
@@ -45,26 +43,14 @@ void supla_push_notification::set_title(const string &title) {
   apply_replacement_map();
 }
 
-const string &supla_push_notification::get_title(void) {
-  if (limit_exceeded_message_type) {
-    return "";
-  }
-
-  return title;
-}
+const string &supla_push_notification::get_title(void) { return title; }
 
 void supla_push_notification::set_body(const string &body) {
   this->body = body;
   apply_replacement_map();
 }
 
-const string &supla_push_notification::get_body(void) {
-  if (limit_exceeded_message_type) {
-    return "The number of push messages that can be sent per hour has been "
-           "exceeded.";
-  }
-  return body;
-}
+const string &supla_push_notification::get_body(void) { return body; }
 
 void supla_push_notification::set_sound(int sound) { this->sound = sound; }
 
@@ -98,13 +84,4 @@ void supla_push_notification::set_replacement_map(
     const std::map<std::string, std::string> &replacement_map) {
   this->replacement_map = replacement_map;
   apply_replacement_map();
-}
-
-void supla_push_notification::set_limit_exceeded_message_type(
-    bool limit_exceeded_message_type) {
-  this->limit_exceeded_message_type = limit_exceeded_message_type;
-}
-
-bool supla_push_notification::is_limit_exceeded_message_type(void) {
-  return limit_exceeded_message_type;
 }

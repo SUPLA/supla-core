@@ -34,7 +34,6 @@ class supla_push_notification {
   std::map<std::string, std::string> replacement_map;
   std::string apply_replacement_map(std::string str);
   void apply_replacement_map(void);
-  bool limit_exceeded_message_type;
 
  public:
   supla_push_notification(void);
@@ -50,8 +49,6 @@ class supla_push_notification {
   int get_sound(void);
   void set_replacement_map(
       const std::map<std::string, std::string> &replacement_map);
-  void set_limit_exceeded_message_type(bool limit_exceeded_message_type);
-  bool is_limit_exceeded_message_type(void);
 };
 
 #endif /* PUSH_NOTIFICATION_H_ */

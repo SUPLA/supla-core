@@ -108,8 +108,7 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
   EXPECT_CALL(
       *deliveryTaskCurlAdapter,
       set_opt_post_fields(StrEq(
-          "{\"message\":{\"token\":\"0956469ed2650ed09534e4193ef8028f950\","
-          "\"notification\":{\"title\":\"TiTle\",\"body\":\"BoDy\"}}}")))
+          "{\"message\":{\"token\":\"0956469ed2650ed09534e4193ef8028f950\",\"android\":{\"notification\":{\"title\":\"TiTle\",\"body\":\"BoDy\"}}}}")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
