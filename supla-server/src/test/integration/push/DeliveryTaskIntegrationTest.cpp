@@ -98,9 +98,9 @@ TEST_F(DeliveryTaskIntegrationTest, notificationLoadedFromDatabase) {
 
   EXPECT_CALL(
       *deliveryTaskCurlAdapter,
-      set_opt_post_fields(StrEq(
-          "{\"message\":{\"token\":\"Token "
-          "1\",\"notification\":{\"title\":\"Abcd\",\"body\":\"Efgh\"}}}")))
+      set_opt_post_fields(StrEq("{\"message\":{\"token\":\"Token "
+                                "1\",\"android\":{\"notification\":{\"title\":"
+                                "\"Abcd\",\"body\":\"Efgh\"}}}}")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
