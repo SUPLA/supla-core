@@ -27,6 +27,7 @@ namespace testing {
 
 using std::shared_ptr;
 using std::string;
+using std::vector;
 
 DeliveryTaskTest::DeliveryTaskTest(void) : AsyncTaskTest() {
   tokenProviderCurlAdapter = nullptr;
@@ -82,6 +83,14 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
   supla_push_notification *push = new supla_push_notification();
   push->set_title("TiTle");
   push->set_body("BoDy");
+  push->set_localized_title("Localized Title");
+  push->set_localized_body("Localized Body");
+
+  vector<string> targs{"t1", "t2"};
+  vector<string> bargs{"b1", "b2"};
+
+  push->set_localized_title_args(targs);
+  push->set_localized_body_args(bargs);
 
   supla_pn_recipient *r1 = new supla_pn_recipient(
       1, 0, false, "0956469ed2650ed09534e4193ef8028f950");
@@ -108,7 +117,11 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
   EXPECT_CALL(
       *deliveryTaskCurlAdapter,
       set_opt_post_fields(StrEq(
-          "{\"message\":{\"token\":\"0956469ed2650ed09534e4193ef8028f950\",\"android\":{\"notification\":{\"title\":\"TiTle\",\"body\":\"BoDy\"}}}}")))
+          "{\"message\":{\"token\":\"0956469ed2650ed09534e4193ef8028f950\","
+          "\"android\":{\"notification\":{\"title\":\"TiTle\",\"body\":"
+          "\"BoDy\",\"title_loc_key\":\"Localized "
+          "Title\",\"title_loc_args\":[\"t2\",\"t1\"],\"body_loc_key\":"
+          "\"Localized Body\",\"body_loc_args\":[\"b2\",\"b1\"]}}}}")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
@@ -136,10 +149,12 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
       set_opt_url(StrEq("https://devel-push-apns.supla.org/ybuabnuf548549")))
       .Times(1);
 
-  EXPECT_CALL(
-      *deliveryTaskCurlAdapter,
-      set_opt_post_fields(StrEq(
-          "{\"aps\":{\"alert\":{\"title\":\"TiTle\",\"body\":\"BoDy\"}}}")))
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              set_opt_post_fields(StrEq(
+                  "{\"aps\":{\"alert\":{\"title\":\"TiTle\",\"body\":\"BoDy\","
+                  "\"title-loc-key\":\"Localized "
+                  "Title\",\"title-loc-args\":[\"t2\",\"t1\"],\"loc-key\":"
+                  "\"Localized Body\",\"loc-args\":[\"b2\",\"b1\"]}}}")))
       .Times(2);
 
   shared_ptr<supla_abstract_asynctask> task =

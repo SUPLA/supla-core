@@ -59,6 +59,28 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
                             get_push_notification()->get_body().c_str());
   }
 
+  if (!get_push_notification()->get_localized_title().empty()) {
+    cJSON_AddStringToObject(
+        notification, "title_loc_key",
+        get_push_notification()->get_localized_title().c_str());
+  }
+
+  if (get_push_notification()->get_localized_title_args().size()) {
+    add_args(get_push_notification()->get_localized_title_args(),
+             "title_loc_args", notification);
+  }
+
+  if (!get_push_notification()->get_localized_body().empty()) {
+    cJSON_AddStringToObject(
+        notification, "body_loc_key",
+        get_push_notification()->get_localized_body().c_str());
+  }
+
+  if (get_push_notification()->get_localized_body_args().size()) {
+    add_args(get_push_notification()->get_localized_body_args(),
+             "body_loc_args", notification);
+  }
+
   char *payload = cJSON_PrintUnformatted(root);
   cJSON_Delete(root);
 

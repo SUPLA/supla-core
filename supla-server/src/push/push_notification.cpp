@@ -52,6 +52,44 @@ void supla_push_notification::set_body(const string &body) {
 
 const string &supla_push_notification::get_body(void) { return body; }
 
+void supla_push_notification::set_localized_title(const std::string &title) {
+  localized_title = title;
+  apply_replacement_map();
+}
+
+const std::string &supla_push_notification::get_localized_title(void) {
+  return localized_title;
+}
+
+void supla_push_notification::set_localized_body(const std::string &body) {
+  localized_body = body;
+  apply_replacement_map();
+}
+
+const std::string &supla_push_notification::get_localized_body(void) {
+  return localized_body;
+}
+
+void supla_push_notification::set_localized_title_args(
+    std::vector<std::string> &args) {
+  localized_title_args = args;
+}
+
+const std::vector<std::string>
+    &supla_push_notification::get_localized_title_args() {
+  return localized_title_args;
+}
+
+void supla_push_notification::set_localized_body_args(
+    std::vector<std::string> &args) {
+  localized_body_args = args;
+}
+
+const std::vector<std::string>
+    &supla_push_notification::get_localized_body_args() {
+  return localized_body_args;
+}
+
 void supla_push_notification::set_sound(int sound) { this->sound = sound; }
 
 int supla_push_notification::get_sound(void) { return sound; }
@@ -77,6 +115,8 @@ void supla_push_notification::apply_replacement_map(void) {
   if (replacement_map.size()) {
     title = apply_replacement_map(title);
     body = apply_replacement_map(body);
+    localized_title = apply_replacement_map(localized_title);
+    localized_body = apply_replacement_map(localized_body);
   }
 }
 

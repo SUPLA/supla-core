@@ -19,6 +19,7 @@
 #include "abstract_pn_gateway_client.h"
 
 using std::string;
+using std::vector;
 
 supla_abstract_pn_gateway_client::supla_abstract_pn_gateway_client(
     supla_abstract_curl_adapter *curl_adapter,
@@ -39,6 +40,16 @@ supla_abstract_pn_gateway_client::get_push_notification(void) {
 supla_abstract_curl_adapter *supla_abstract_pn_gateway_client::get_curl_adapter(
     void) {
   return curl_adapter;
+}
+
+void supla_abstract_pn_gateway_client::add_args(const vector<string> &args,
+                                                const string &key_name,
+                                                cJSON *parent) {
+  cJSON *arr = cJSON_AddArrayToObject(parent, key_name.c_str());
+
+  for (auto it = args.rbegin(); it != args.rend(); ++it) {
+    cJSON_AddItemToArray(arr, cJSON_CreateString(it->c_str()));
+  }
 }
 
 bool supla_abstract_pn_gateway_client::send(void) {

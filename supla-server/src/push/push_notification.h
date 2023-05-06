@@ -29,6 +29,10 @@ class supla_push_notification {
   int id;
   std::string title;
   std::string body;
+  std::string localized_title;
+  std::string localized_body;
+  std::vector<std::string> localized_title_args;
+  std::vector<std::string> localized_body_args;
   int sound;
   supla_pn_recipients recipients;
   std::map<std::string, std::string> replacement_map;
@@ -41,10 +45,22 @@ class supla_push_notification {
   virtual ~supla_push_notification(void);
   int get_id(void);
   supla_pn_recipients &get_recipients(void);
+
   void set_title(const std::string &title);
   const std::string &get_title(void);
   void set_body(const std::string &body);
   const std::string &get_body(void);
+
+  void set_localized_title(const std::string &title);
+  const std::string &get_localized_title();
+  void set_localized_body(const std::string &body);
+  const std::string &get_localized_body();
+
+  void set_localized_title_args(std::vector<std::string> &args);
+  const std::vector<std::string> &get_localized_title_args();
+  void set_localized_body_args(std::vector<std::string> &args);
+  const std::vector<std::string> &get_localized_body_args();
+
   void set_sound(int sound);
   int get_sound(void);
   void set_replacement_map(

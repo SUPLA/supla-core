@@ -20,8 +20,10 @@
 #define ABSTRACT_PUSH_NOTIFICATION_GATEWAY_CLIENT_H_
 
 #include <string>
+#include <vector>
 
 #include "http/abstract_curl_adapter.h"
+#include "json/cJSON.h"
 #include "push/pn_gateway_access_token_provider.h"
 #include "push/push_notification.h"
 
@@ -34,6 +36,8 @@ class supla_abstract_pn_gateway_client {
  protected:
   supla_push_notification *get_push_notification(void);
   supla_abstract_curl_adapter *get_curl_adapter(void);
+  void add_args(const std::vector<std::string> &args,
+                const std::string &key_name, cJSON *parent);
 
   virtual _platform_e get_platform(void) = 0;
   virtual bool _send(supla_pn_gateway_access_token *token,

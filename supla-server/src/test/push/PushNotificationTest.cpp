@@ -24,6 +24,7 @@ namespace testing {
 
 using std::map;
 using std::string;
+using std::vector;
 
 PushNotificationTest::PushNotificationTest(void) {}
 
@@ -55,8 +56,42 @@ TEST_F(PushNotificationTest, titleSetterAndGetter) {
 
 TEST_F(PushNotificationTest, bodySetterAndGetter) {
   supla_push_notification n;
-  n.set_title("uijh");
-  EXPECT_EQ(n.get_title(), "uijh");
+  n.set_body("uijh");
+  EXPECT_EQ(n.get_body(), "uijh");
+}
+
+TEST_F(PushNotificationTest, localizedTitleSetterAndGetter) {
+  supla_push_notification n;
+  n.set_localized_title("lasd");
+  EXPECT_EQ(n.get_localized_title(), "lasd");
+}
+
+TEST_F(PushNotificationTest, localizedBodySetterAndGetter) {
+  supla_push_notification n;
+  n.set_localized_body("luijh");
+  EXPECT_EQ(n.get_localized_body(), "luijh");
+}
+
+TEST_F(PushNotificationTest, localizedTitleArgsSetterAndGetter) {
+  supla_push_notification n;
+  vector<string> args_in{"a", "b"};
+  n.set_localized_title_args(args_in);
+
+  vector<string> args_out = n.get_localized_title_args();
+  ASSERT_EQ(args_out.size(), 2);
+  EXPECT_EQ(args_out.at(0), "a");
+  EXPECT_EQ(args_out.at(1), "b");
+}
+
+TEST_F(PushNotificationTest, localizedBodyArgsSetterAndGetter) {
+  supla_push_notification n;
+  vector<string> args_in{"c", "d"};
+  n.set_localized_body_args(args_in);
+
+  vector<string> args_out = n.get_localized_body_args();
+  ASSERT_EQ(args_out.size(), 2);
+  EXPECT_EQ(args_out.at(0), "c");
+  EXPECT_EQ(args_out.at(1), "d");
 }
 
 TEST_F(PushNotificationTest, soundSetterAndGetter) {
@@ -111,6 +146,36 @@ TEST_F(PushNotificationTest, replacementMapWithTtile) {
   n.set_replacement_map(m);
   n.set_title("{A}");
   EXPECT_EQ(n.get_title(), "B");
+}
+
+TEST_F(PushNotificationTest, replacementMapWithLocalizedTtile) {
+  supla_push_notification n;
+  map<string, string> m;
+  m["XY"] = "1";
+
+  n.set_localized_title("{XY}{XY}");
+  n.set_replacement_map(m);
+  EXPECT_EQ(n.get_localized_title(), "11");
+
+  m["A"] = "B";
+  n.set_replacement_map(m);
+  n.set_localized_title("{A}");
+  EXPECT_EQ(n.get_localized_title(), "B");
+}
+
+TEST_F(PushNotificationTest, replacementMapWithLocalizedBody) {
+  supla_push_notification n;
+  map<string, string> m;
+  m["XM"] = "1";
+
+  n.set_localized_body("{XM}{XM}");
+  n.set_replacement_map(m);
+  EXPECT_EQ(n.get_localized_body(), "11");
+
+  m["U"] = "B";
+  n.set_replacement_map(m);
+  n.set_localized_body("{U}");
+  EXPECT_EQ(n.get_localized_body(), "B");
 }
 
 } /* namespace testing */
