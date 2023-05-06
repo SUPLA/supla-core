@@ -16,56 +16,29 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef PUSH_NOTIFICATION_H_
-#define PUSH_NOTIFICATION_H_
+#ifndef PUSH_NOTIFICATION_LIMIT_EXCEEDED_H_
+#define PUSH_NOTIFICATION_LIMIT_EXCEEDED_H_
 
 #include <map>
 #include <string>
 #include <vector>
 
-#include "push/pn_recipients.h"
+#include "push/push_notification.h"
 
-class supla_push_notification {
- private:
-  int id;
-  std::string title;
-  std::string body;
-  std::string localized_title;
-  std::string localized_body;
-  std::vector<std::string> localized_title_args;
-  std::vector<std::string> localized_body_args;
-  int sound;
-  supla_pn_recipients recipients;
-  std::map<std::string, std::string> replacement_map;
-  std::string apply_replacement_map(std::string str);
-  void apply_replacement_map(void);
-
+class supla_pn_limit_exceeded : public supla_push_notification {
  public:
-  supla_push_notification(void);
-  explicit supla_push_notification(int id);
-  virtual ~supla_push_notification(void);
-  int get_id(void);
-  supla_pn_recipients &get_recipients(void);
+  explicit supla_pn_limit_exceeded(supla_push_notification *push, int limit);
+  virtual ~supla_pn_limit_exceeded(void);
 
   virtual void set_title(const std::string &title);
-  virtual const std::string &get_title(void);
   virtual void set_body(const std::string &body);
-  virtual const std::string &get_body(void);
-
   virtual void set_localized_title(const std::string &title);
-  virtual const std::string &get_localized_title();
   virtual void set_localized_body(const std::string &body);
-  virtual const std::string &get_localized_body();
-
   virtual void set_localized_title_args(const std::vector<std::string> &args);
-  virtual const std::vector<std::string> &get_localized_title_args();
   virtual void set_localized_body_args(const std::vector<std::string> &args);
-  virtual const std::vector<std::string> &get_localized_body_args();
-
   virtual void set_sound(int sound);
-  virtual int get_sound(void);
   virtual void set_replacement_map(
       const std::map<std::string, std::string> &replacement_map);
 };
 
-#endif /* PUSH_NOTIFICATION_H_ */
+#endif /* PUSH_NOTIFICATION_LIMIT_EXCEEDED_H_ */

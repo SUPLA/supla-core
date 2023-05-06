@@ -46,7 +46,8 @@ void supla_pn_throttling::set_time_window_sec(unsigned int time_window_sec) {
 }
 
 bool supla_pn_throttling::is_delivery_possible(int user_id,
-                                               bool* first_time_exceeded) {
+                                               bool* first_time_exceeded,
+                                               unsigned int* limit) {
   bool result = false;
 
   struct timeval now = {};
@@ -90,6 +91,10 @@ bool supla_pn_throttling::is_delivery_possible(int user_id,
   }
 
   it->counter++;
+
+  if (limit) {
+    *limit = it->limit;
+  }
 
   if (it->counter < it->limit) {
     result = true;

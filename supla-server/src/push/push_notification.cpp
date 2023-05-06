@@ -18,7 +18,9 @@
 
 #include "push_notification.h"
 
+using std::map;
 using std::string;
+using std::vector;
 
 supla_push_notification::supla_push_notification(void) {
   id = 0;
@@ -52,41 +54,39 @@ void supla_push_notification::set_body(const string &body) {
 
 const string &supla_push_notification::get_body(void) { return body; }
 
-void supla_push_notification::set_localized_title(const std::string &title) {
+void supla_push_notification::set_localized_title(const string &title) {
   localized_title = title;
   apply_replacement_map();
 }
 
-const std::string &supla_push_notification::get_localized_title(void) {
+const string &supla_push_notification::get_localized_title(void) {
   return localized_title;
 }
 
-void supla_push_notification::set_localized_body(const std::string &body) {
+void supla_push_notification::set_localized_body(const string &body) {
   localized_body = body;
   apply_replacement_map();
 }
 
-const std::string &supla_push_notification::get_localized_body(void) {
+const string &supla_push_notification::get_localized_body(void) {
   return localized_body;
 }
 
 void supla_push_notification::set_localized_title_args(
-    std::vector<std::string> &args) {
+    const vector<string> &args) {
   localized_title_args = args;
 }
 
-const std::vector<std::string>
-    &supla_push_notification::get_localized_title_args() {
+const vector<string> &supla_push_notification::get_localized_title_args() {
   return localized_title_args;
 }
 
 void supla_push_notification::set_localized_body_args(
-    std::vector<std::string> &args) {
+    const vector<string> &args) {
   localized_body_args = args;
 }
 
-const std::vector<std::string>
-    &supla_push_notification::get_localized_body_args() {
+const vector<string> &supla_push_notification::get_localized_body_args() {
   return localized_body_args;
 }
 
@@ -96,13 +96,13 @@ int supla_push_notification::get_sound(void) { return sound; }
 
 string supla_push_notification::apply_replacement_map(string str) {
   for (auto it = replacement_map.rbegin(); it != replacement_map.rend(); ++it) {
-    std::string pattern = "{";
+    string pattern = "{";
     pattern.append(it->first);
     pattern.append("}");
 
-    std::size_t pos = 0;
+    size_t pos = 0;
 
-    while ((pos = str.find(pattern, pos)) != std::string::npos) {
+    while ((pos = str.find(pattern, pos)) != string::npos) {
       str.replace(pos, pattern.length(), it->second);
       pos += it->second.length();
     }
@@ -121,7 +121,7 @@ void supla_push_notification::apply_replacement_map(void) {
 }
 
 void supla_push_notification::set_replacement_map(
-    const std::map<std::string, std::string> &replacement_map) {
+    const map<string, string> &replacement_map) {
   this->replacement_map = replacement_map;
   apply_replacement_map();
 }

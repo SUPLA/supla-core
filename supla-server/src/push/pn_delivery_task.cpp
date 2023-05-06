@@ -25,6 +25,7 @@
 #include "push/fcm_client.h"
 #include "push/pn_dao.h"
 #include "push/pn_delivery_task_thread_pool.h"
+#include "push/pn_limit_exceeded.h"
 #include "push/pn_recipient_dao.h"
 #include "push/pn_throttling.h"
 #include "svrcfg.h"
@@ -133,16 +134,18 @@ bool supla_pn_delivery_task::make_request(
 // static
 void supla_pn_delivery_task::start_delivering(int user_id,
                                               supla_push_notification *push) {
+  unsigned int limit = 0;
   bool first_time_exceeded = false;
   bool is_delivery_possible =
       supla_pn_throttling::get_instance()->is_delivery_possible(
-          user_id, &first_time_exceeded);
+          user_id, &first_time_exceeded, &limit);
 
   if (!is_delivery_possible) {
     if (first_time_exceeded) {
-      push->set_limit_exceeded_message_type(true);
+      push = new supla_pn_limit_exceeded(push, limit);
       supla_log(LOG_WARNING,
-                "UserId %i has exceeded the limit of PUSH messages.", user_id);
+                "UserID %i has exceeded the PUSH message limit of %u.", user_id,
+                limit);
     } else {
       return;
     }

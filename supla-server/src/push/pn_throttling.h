@@ -43,7 +43,8 @@ class supla_pn_throttling {
   unsigned int get_time_window_sec(void);
   void set_time_window_sec(unsigned int time_window_sec);
 
-  bool is_delivery_possible(int user_id, bool *first_time_exceeded);
+  bool is_delivery_possible(int user_id, bool *first_time_exceeded,
+                            unsigned int *limit);
   size_t get_size(void);
   unsigned int get_count(int user_id);
 
