@@ -42,7 +42,6 @@ void PnRecipientDaoIntegrationTest::SetUp() {
 
   initTestDatabase();
   runSqlScript("AddPushNotification.sql");
-  Test::SetUp();
 }
 
 void PnRecipientDaoIntegrationTest::TearDown() {
