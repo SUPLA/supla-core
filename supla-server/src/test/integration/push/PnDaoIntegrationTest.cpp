@@ -69,4 +69,30 @@ TEST_F(PnDaoIntegrationTest, get) {
   EXPECT_EQ(pn.get_sound(), 11);
 }
 
+TEST_F(PnDaoIntegrationTest, fieldsWithNullsShouldNotWriteTheObject) {
+  std::srand(std::time(nullptr));
+
+  string title = std::to_string(std::rand()) + "-Title";
+  string body = std::to_string(std::rand()) + "-Body";
+  int sound = std::rand();
+
+  runSqlScript("AddPushNotificationWithNulls.sql");
+  supla_push_notification pn(5);
+  pn.set_title(title);
+  pn.set_body(body);
+  pn.set_sound(sound);
+
+  EXPECT_TRUE(dao->get(2, &pn));
+  EXPECT_EQ(pn.get_title(), title);
+  EXPECT_EQ(pn.get_body(), body);
+  EXPECT_EQ(pn.get_sound(), sound);
+
+  runSqlScript("PushNotificationFillNulls.sql");
+
+  EXPECT_TRUE(dao->get(2, &pn));
+  EXPECT_EQ(pn.get_title(), "titleee");
+  EXPECT_EQ(pn.get_body(), "bbody");
+  EXPECT_EQ(pn.get_sound(), 155);
+}
+
 } /* namespace testing */

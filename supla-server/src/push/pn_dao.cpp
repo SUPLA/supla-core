@@ -50,8 +50,8 @@ bool supla_pn_dao::get(int user_id, supla_push_notification *push) {
   pbind[1].buffer = (char *)&user_id;
 
   const char sql[] =
-      "SELECT title, body, IFNULL(sound, 0) FROM `supla_push_notification` "
-      "WHERE id = ? AND user_id = ?";
+      "SELECT title, body, sound FROM `supla_push_notification` WHERE id = ? "
+      "AND user_id = ?";
 
   MYSQL_STMT *stmt = nullptr;
   bool result = false;
@@ -67,6 +67,7 @@ bool supla_pn_dao::get(int user_id, supla_push_notification *push) {
     my_bool title_is_null = false;
     my_bool body_is_null = false;
     int sound = 0;
+    my_bool sound_is_null = false;
 
     rbind[0].buffer_type = MYSQL_TYPE_STRING;
     rbind[0].buffer = title;
@@ -83,6 +84,7 @@ bool supla_pn_dao::get(int user_id, supla_push_notification *push) {
     rbind[2].buffer_type = MYSQL_TYPE_LONG;
     rbind[2].buffer = (char *)&sound;
     rbind[2].buffer_length = sizeof(int);
+    rbind[2].is_null = &sound_is_null;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -96,9 +98,18 @@ bool supla_pn_dao::get(int user_id, supla_push_notification *push) {
 
         dba->set_terminating_byte(body, sizeof(body), body_len, body_is_null);
 
-        push->set_title(title);
-        push->set_body(body);
-        push->set_sound(sound);
+        if (!title_is_null) {
+          push->set_title(title);
+        }
+
+        if (!body_is_null) {
+          push->set_body(body);
+        }
+
+        if (!sound_is_null) {
+          push->set_sound(sound);
+        }
+
         result = true;
       }
     }
