@@ -49,6 +49,7 @@ class supla_pn_throttling {
                             unsigned int *limit);
   size_t get_user_count(void);
   unsigned int get_count(int user_id);
+  unsigned int get_limit(int user_id, long *left);
 
   static supla_pn_throttling *get_instance(void);
 };

@@ -157,4 +157,19 @@ TEST_F(PnThrootlingIntegrationTest, resetBeforeExceedingTheLimit) {
   EXPECT_EQ(t.get_count(2), 1);
 }
 
+TEST_F(PnThrootlingIntegrationTest, getUserLimit) {
+  long left = 0;
+  PnThrootlingStub t;
+  EXPECT_EQ(t.get_user_count(), 0);
+  EXPECT_EQ(t.get_limit(2, &left), 20);
+  EXPECT_EQ(left, 20);
+
+  for (long a = 0; a < left + 1; a++) {
+    t.is_delivery_possible(2, nullptr, nullptr);
+  }
+
+  EXPECT_EQ(t.get_limit(2, &left), 20);
+  EXPECT_EQ(left, -1);
+}
+
 } /* namespace testing */

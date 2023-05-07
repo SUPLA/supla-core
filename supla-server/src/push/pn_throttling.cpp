@@ -133,6 +133,39 @@ unsigned int supla_pn_throttling::get_count(int user_id) {
   return result;
 }
 
+unsigned int supla_pn_throttling::get_limit(int user_id, long* left) {
+  int result = 0;
+
+  lck_unlock(lck);
+
+  auto it = items.begin();
+
+  while (it != items.end()) {
+    if (it->user_id == user_id) {
+      result = it->limit;
+      if (left) {
+        *left = result;
+        *left -= it->counter;
+      }
+      break;
+    }
+    ++it;
+  }
+
+  lck_unlock(lck);
+
+  if (!result) {
+    supla_db_access_provider dba;
+    supla_pn_dao dao(&dba);
+    result = dao.get_limit(user_id);
+    if (left) {
+      *left = result;
+    }
+  }
+
+  return result;
+}
+
 // static
 supla_pn_throttling* supla_pn_throttling::get_instance(void) {
   return &instance;
