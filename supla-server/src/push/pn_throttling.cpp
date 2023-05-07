@@ -50,6 +50,10 @@ bool supla_pn_throttling::is_delivery_possible(int user_id,
                                                unsigned int* limit) {
   bool result = false;
 
+  if (first_time_exceeded) {
+    *first_time_exceeded = false;
+  }
+
   struct timeval now = {};
   gettimeofday(&now, NULL);
 
@@ -96,9 +100,9 @@ bool supla_pn_throttling::is_delivery_possible(int user_id,
     *limit = it->limit;
   }
 
-  if (it->counter < it->limit) {
+  if (it->counter <= it->limit) {
     result = true;
-  } else if (it->counter == it->limit && first_time_exceeded) {
+  } else if (first_time_exceeded && it->counter == it->limit + 1) {
     *first_time_exceeded = true;
   }
 
@@ -107,7 +111,7 @@ bool supla_pn_throttling::is_delivery_possible(int user_id,
   return result;
 }
 
-size_t supla_pn_throttling::get_size(void) {
+size_t supla_pn_throttling::get_user_count(void) {
   lck_lock(lck);
   size_t result = items.size();
   lck_unlock(lck);

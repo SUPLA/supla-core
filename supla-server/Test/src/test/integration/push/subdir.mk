@@ -6,17 +6,20 @@
 CPP_SRCS += \
 ../src/test/integration/push/DeliveryTaskIntegrationTest.cpp \
 ../src/test/integration/push/PnDaoIntegrationTest.cpp \
-../src/test/integration/push/PnRecipientDaoIntegrationTest.cpp 
+../src/test/integration/push/PnRecipientDaoIntegrationTest.cpp \
+../src/test/integration/push/PnThrootlingIntegrationTest.cpp 
 
 CPP_DEPS += \
 ./src/test/integration/push/DeliveryTaskIntegrationTest.d \
 ./src/test/integration/push/PnDaoIntegrationTest.d \
-./src/test/integration/push/PnRecipientDaoIntegrationTest.d 
+./src/test/integration/push/PnRecipientDaoIntegrationTest.d \
+./src/test/integration/push/PnThrootlingIntegrationTest.d 
 
 OBJS += \
 ./src/test/integration/push/DeliveryTaskIntegrationTest.o \
 ./src/test/integration/push/PnDaoIntegrationTest.o \
-./src/test/integration/push/PnRecipientDaoIntegrationTest.o 
+./src/test/integration/push/PnRecipientDaoIntegrationTest.o \
+./src/test/integration/push/PnThrootlingIntegrationTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -31,7 +34,7 @@ src/test/integration/push/%.o: ../src/test/integration/push/%.cpp src/test/integ
 clean: clean-src-2f-test-2f-integration-2f-push
 
 clean-src-2f-test-2f-integration-2f-push:
-	-$(RM) ./src/test/integration/push/DeliveryTaskIntegrationTest.d ./src/test/integration/push/DeliveryTaskIntegrationTest.o ./src/test/integration/push/PnDaoIntegrationTest.d ./src/test/integration/push/PnDaoIntegrationTest.o ./src/test/integration/push/PnRecipientDaoIntegrationTest.d ./src/test/integration/push/PnRecipientDaoIntegrationTest.o
+	-$(RM) ./src/test/integration/push/DeliveryTaskIntegrationTest.d ./src/test/integration/push/DeliveryTaskIntegrationTest.o ./src/test/integration/push/PnDaoIntegrationTest.d ./src/test/integration/push/PnDaoIntegrationTest.o ./src/test/integration/push/PnRecipientDaoIntegrationTest.d ./src/test/integration/push/PnRecipientDaoIntegrationTest.o ./src/test/integration/push/PnThrootlingIntegrationTest.d ./src/test/integration/push/PnThrootlingIntegrationTest.o
 
 .PHONY: clean-src-2f-test-2f-integration-2f-push
 

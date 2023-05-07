@@ -37,15 +37,17 @@ class supla_pn_throttling {
   std::list<item_t> items;
   void *lck;
 
+ protected:
+  void set_time_window_sec(unsigned int time_window_sec);
+
  public:
   supla_pn_throttling(void);
   virtual ~supla_pn_throttling(void);
   unsigned int get_time_window_sec(void);
-  void set_time_window_sec(unsigned int time_window_sec);
 
   bool is_delivery_possible(int user_id, bool *first_time_exceeded,
                             unsigned int *limit);
-  size_t get_size(void);
+  size_t get_user_count(void);
   unsigned int get_count(int user_id);
 
   static supla_pn_throttling *get_instance(void);
