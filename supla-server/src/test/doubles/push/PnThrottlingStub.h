@@ -25,7 +25,7 @@ namespace testing {
 
 class PnThrootlingStub : public supla_pn_throttling {
  public:
-  explicit PnThrootlingStub();
+  PnThrootlingStub();
   virtual ~PnThrootlingStub();
 
   void set_time_window_sec(unsigned int time_window_sec);
