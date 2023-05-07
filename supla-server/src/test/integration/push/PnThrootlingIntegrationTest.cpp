@@ -144,4 +144,17 @@ TEST_F(PnThrootlingIntegrationTest, multipleUsers) {
   EXPECT_TRUE(first_time_exceeded);
 }
 
+TEST_F(PnThrootlingIntegrationTest, resetBeforeExceedingTheLimit) {
+  PnThrootlingStub t;
+  t.set_time_window_sec(2);
+
+  EXPECT_TRUE(t.is_delivery_possible(2, nullptr, nullptr));
+  EXPECT_EQ(t.get_count(2), 1);
+
+  usleep(2000000);
+
+  EXPECT_TRUE(t.is_delivery_possible(2, nullptr, nullptr));
+  EXPECT_EQ(t.get_count(2), 1);
+}
+
 } /* namespace testing */
