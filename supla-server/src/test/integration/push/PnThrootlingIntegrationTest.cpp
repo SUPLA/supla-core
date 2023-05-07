@@ -43,7 +43,7 @@ TEST_F(PnThrootlingIntegrationTest, userId2) {
   bool delivery_possible = false;
 
   PnThrootlingStub t;
-  t.set_time_window_sec(1);
+  t.set_time_window_sec(2);
 
   for (unsigned int a = 1; a < 100; a++) {
     delivery_possible = t.is_delivery_possible(2, &first_time_exceeded, &limit);
@@ -63,7 +63,7 @@ TEST_F(PnThrootlingIntegrationTest, userId2) {
     }
   }
 
-  usleep(1000000);
+  usleep(2000000);
   delivery_possible = t.is_delivery_possible(2, &first_time_exceeded, &limit);
 
   EXPECT_TRUE(delivery_possible);
@@ -77,7 +77,7 @@ TEST_F(PnThrootlingIntegrationTest, changeLimits) {
   unsigned int limit = 0;
 
   PnThrootlingStub t;
-  t.set_time_window_sec(1);
+  t.set_time_window_sec(2);
   EXPECT_EQ(t.get_user_count(), 0);
   t.is_delivery_possible(2, &first_time_exceeded, &limit);
 
@@ -88,7 +88,7 @@ TEST_F(PnThrootlingIntegrationTest, changeLimits) {
     EXPECT_EQ(limit, 20);
   }
 
-  usleep(1000000);
+  usleep(2000000);
   t.is_delivery_possible(2, &first_time_exceeded, &limit);
   EXPECT_EQ(limit, 5);
   EXPECT_EQ(t.get_user_count(), 1);
