@@ -16,6 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <ipc/get_pn_limit_command.h>
 #include "ipc/ipc_ctrl.h"
 
 #include <ipc/on_scene_removed_command.h>
@@ -127,6 +128,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_before_device_delete_command(socket_adapter));
   add_command(new supla_on_device_settings_changed_command(socket_adapter));
   add_command(new supla_before_channel_function_change_command(socket_adapter));
+  add_command(new supla_get_pn_limit_command(socket_adapter));
 }
 
 supla_ipc_ctrl::~supla_ipc_ctrl() {}
