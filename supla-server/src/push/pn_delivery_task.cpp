@@ -30,6 +30,7 @@
 #include "push/pn_throttling.h"
 #include "svrcfg.h"
 
+using std::map;
 using std::string;
 
 supla_pn_delivery_task::supla_pn_delivery_task(
@@ -156,4 +157,18 @@ void supla_pn_delivery_task::start_delivering(int user_id,
       supla_pn_delivery_task_thread_pool::global_instance(), push,
       supla_pn_gateway_access_token_provider::global_instance());
   task->start();
+}
+
+// static
+void supla_pn_delivery_task::start_delivering(
+    int user_id, int push_notification_id,
+    const map<string, string> *replacement_map) {
+  if (!push_notification_id) {
+    return;
+  }
+  supla_push_notification *push =
+      new supla_push_notification(push_notification_id);
+  push->set_replacement_map(*replacement_map);
+
+  start_delivering(user_id, push);
 }

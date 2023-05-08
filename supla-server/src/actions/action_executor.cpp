@@ -168,12 +168,9 @@ void supla_action_executor::disable(void) {
 }
 
 void supla_action_executor::send(const map<string, string> *replacement_map) {
-  if (get_push_notification_id() && get_user()) {
-    supla_push_notification *push =
-        new supla_push_notification(get_push_notification_id());
-    push->set_replacement_map(*replacement_map);
-
-    supla_pn_delivery_task::start_delivering(get_user()->getUserID(), push);
+  if (get_user()) {
+    supla_pn_delivery_task::start_delivering(
+        get_user()->getUserID(), get_push_notification_id(), replacement_map);
   }
 }
 

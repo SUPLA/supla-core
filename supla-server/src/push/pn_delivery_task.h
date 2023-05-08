@@ -19,6 +19,7 @@
 #ifndef PUSH_NOTIFICATION_DELIVERY_TASK_H_
 #define PUSH_NOTIFICATION_DELIVERY_TASK_H_
 
+#include <map>
 #include <string>
 
 #include "http/asynctask_http_request.h"
@@ -45,6 +46,9 @@ class supla_pn_delivery_task : public supla_asynctask_http_request {
   virtual bool will_use_database(void);
 
   static void start_delivering(int user_id, supla_push_notification *push);
+  static void start_delivering(
+      int user_id, int push_notification_id,
+      const std::map<std::string, std::string> *replacement_map);
 };
 
 #endif /* PUSH_NOTIFICATION_DELIVERY_TASK_H_ */
