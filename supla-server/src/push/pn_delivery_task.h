@@ -49,6 +49,7 @@ class supla_pn_delivery_task : public supla_asynctask_http_request {
   static void start_delivering(
       int user_id, int push_notification_id,
       const std::map<std::string, std::string> *replacement_map);
+  static bool start_delivering(int user_id, const char *json);
 };
 
 #endif /* PUSH_NOTIFICATION_DELIVERY_TASK_H_ */

@@ -41,14 +41,14 @@ supla_pn_recipients &supla_push_notification::get_recipients(void) {
 }
 
 void supla_push_notification::set_title(const string &title) {
-  this->title = title;
+  this->title = title.substr(0, 100);  // Same limit as in the database
   apply_replacement_map();
 }
 
 const string &supla_push_notification::get_title(void) { return title; }
 
 void supla_push_notification::set_body(const string &body) {
-  this->body = body;
+  this->body = body.substr(0, 255);  // Same limit as in the database
   apply_replacement_map();
 }
 
@@ -126,3 +126,62 @@ void supla_push_notification::set_replacement_map(
   apply_replacement_map();
 }
 
+bool supla_push_notification::apply_json(int user_id, cJSON *json) {
+  if (!json) {
+    return false;
+  }
+
+  cJSON *id_json = cJSON_GetObjectItem(json, "id");
+  if (id_json) {
+    this->id = 0;
+    if (cJSON_IsNumber(id_json)) {
+      this->id = id_json->valuedouble;
+    }
+    return this->id;
+  }
+
+  cJSON *title_json = cJSON_GetObjectItem(json, "title");
+  if (title_json) {
+    if (!cJSON_IsString(title_json)) {
+      return false;
+    }
+
+    set_title(cJSON_GetStringValue(title_json));
+  }
+
+  cJSON *body_json = cJSON_GetObjectItem(json, "body");
+  if (body_json) {
+    if (!cJSON_IsString(body_json)) {
+      return false;
+    }
+
+    set_body(cJSON_GetStringValue(body_json));
+  }
+
+  cJSON *sound_json = cJSON_GetObjectItem(json, "sound");
+  if (sound_json) {
+    if (!cJSON_IsNumber(sound_json)) {
+      return false;
+    }
+
+    set_sound(sound_json->valuedouble);
+  }
+
+  return recipients.apply_json(user_id, json);
+}
+
+bool supla_push_notification::apply_json(int user_id, const char *json) {
+  if (!user_id) {
+    return false;
+  }
+
+  cJSON *json_obj = cJSON_Parse(json);
+  if (!json_obj) {
+    return false;
+  }
+
+  bool result = apply_json(user_id, json_obj);
+  cJSON_Delete(json_obj);
+
+  return result;
+}

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <ipc/get_pn_limit_command.h>
 #include "ipc/ipc_ctrl.h"
 
+#include <ipc/get_pn_limit_command.h>
 #include <ipc/on_scene_removed_command.h>
 
 #include "sthread.h"
@@ -59,6 +59,7 @@
 #include "ipc/on_state_webhook_changed_command.h"
 #include "ipc/recalibrate_command.h"
 #include "ipc/reset_counters_command.h"
+#include "ipc/send_push_command.h"
 #include "ipc/set_cg_char_command.h"
 #include "ipc/set_cg_rgbw_command.h"
 #include "ipc/set_char_command.h"

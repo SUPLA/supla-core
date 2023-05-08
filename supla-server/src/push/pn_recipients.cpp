@@ -18,6 +18,10 @@
 
 #include "pn_recipients.h"
 
+#include "db/db_access_provider.h"
+#include "log.h"
+#include "push/pn_recipient_dao.h"
+
 using std::map;
 using std::vector;
 
@@ -84,6 +88,54 @@ void supla_pn_recipients::clear(void) {
   }
 
   recipients.clear();
+}
+
+bool supla_pn_recipients::get_ids(cJSON* json, vector<int>* ids) {
+  int size = cJSON_GetArraySize(json);
+
+  ids->reserve(size);
+
+  for (int a = 0; a < size; a++) {
+    cJSON* id_json = cJSON_GetArrayItem(json, a);
+    if (!id_json || !cJSON_IsNumber(id_json)) {
+      return false;
+    }
+
+    ids->push_back(id_json->valuedouble);
+  }
+
+  return true;
+}
+
+bool supla_pn_recipients::apply_json(int user_id, cJSON* json) {
+  cJSON* recipients_json = cJSON_GetObjectItem(json, "recipients");
+  if (!recipients_json) {
+    return false;
+  }
+
+  cJSON* aids_json = cJSON_GetObjectItem(recipients_json, "aids");
+  cJSON* cids_json = cJSON_GetObjectItem(recipients_json, "cids");
+
+  if (!aids_json && !cids_json) {
+    return false;
+  }
+
+  vector<int> aids;
+  if (!get_ids(aids_json, &aids)) {
+    return false;
+  }
+
+  vector<int> cids;
+  if (!get_ids(cids_json, &cids)) {
+    return false;
+  }
+
+  supla_db_access_provider dba;
+  supla_pn_recipient_dao dao(&dba);
+
+  dao.get_recipients(user_id, aids, cids, this);
+
+  return true;
 }
 
 supla_pn_recipients& supla_pn_recipients::operator=(

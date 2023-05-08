@@ -22,6 +22,7 @@
 #include <map>
 #include <vector>
 
+#include "json/cJSON.h"
 #include "push/pn_recipient.h"
 
 enum _platform_e {
@@ -33,6 +34,7 @@ enum _platform_e {
 class supla_pn_recipients {
  private:
   std::map<_platform_e, std::vector<supla_pn_recipient*>> recipients;
+  bool get_ids(cJSON* json, std::vector<int>* ids);
 
  public:
   supla_pn_recipients(void);
@@ -43,6 +45,7 @@ class supla_pn_recipients {
   size_t total_count(void);
   void add(supla_pn_recipient* recipient, _platform_e platform);
   void clear(void);
+  bool apply_json(int user_id, cJSON* json);
 
   supla_pn_recipients& operator=(const supla_pn_recipients& src);
 };

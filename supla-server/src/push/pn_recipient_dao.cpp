@@ -18,9 +18,11 @@
 
 #include "pn_recipient_dao.h"
 
-#include <mysql.h>
+#include <string>
 
 #include "log.h"
+
+using std::string;
 
 supla_pn_recipient_dao::supla_pn_recipient_dao(
     supla_abstract_db_access_provider *dba) {
@@ -65,8 +67,8 @@ void supla_pn_recipient_dao::remove(int user_id,
   }
 }
 
-void supla_pn_recipient_dao::get_recipients(int user_id,
-                                            int push_notification_id,
+void supla_pn_recipient_dao::get_recipients(const char *sql, MYSQL_BIND *pbind,
+                                            int pbind_size,
                                             supla_pn_recipients *recipients) {
   recipients->clear();
 
@@ -77,22 +79,8 @@ void supla_pn_recipient_dao::get_recipients(int user_id,
   }
 
   MYSQL_STMT *stmt = NULL;
-  const char sql[] =
-      "SELECT c.push_token, c.id, c.platform, c.app_id, c.devel_env FROM "
-      "supla_client c, supla_rel_aid_pushnotification p WHERE "
-      "p.push_notification_id = ? AND c.user_id = ? AND c.access_id = "
-      "p.access_id AND c.push_token IS NOT NULL AND (c.platform = 1 OR "
-      "c.platform = 2)";
 
-  MYSQL_BIND pbind[2] = {};
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&push_notification_id;
-
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&user_id;
-
-  if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, pbind_size, true)) {
     MYSQL_BIND rbind[5] = {};
 
     char token[256] = {};
@@ -151,4 +139,88 @@ void supla_pn_recipient_dao::get_recipients(int user_id,
   if (!already_connected) {
     dba->disconnect();
   }
+}
+
+void supla_pn_recipient_dao::get_recipients(int user_id,
+                                            int push_notification_id,
+                                            supla_pn_recipients *recipients) {
+  const char sql[] =
+      "SELECT c.push_token, c.id, c.platform, c.app_id, c.devel_env FROM "
+      "supla_client c, supla_rel_aid_pushnotification p WHERE "
+      "p.push_notification_id = ? AND c.user_id = ? AND c.access_id = "
+      "p.access_id AND c.push_token IS NOT NULL AND (c.platform = 1 OR "
+      "c.platform = 2)";
+
+  MYSQL_BIND pbind[2] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&push_notification_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
+
+  get_recipients(sql, pbind, 2, recipients);
+}
+
+void supla_pn_recipient_dao::get_recipients(int user_id,
+                                            const std::vector<int> &aids,
+                                            const std::vector<int> &cids,
+                                            supla_pn_recipients *recipients) {
+  if (aids.size() == 0 && cids.size() == 0) {
+    recipients->clear();
+    return;
+  }
+
+  string sql =
+      "SELECT push_token, id, platform, app_id, devel_env FROM supla_client "
+      "WHERE user_id = ? AND push_token IS NOT NULL AND (platform = 1 OR "
+      "platform = 2) AND ((access_id != 0 AND access_id IN (0";
+
+  for (size_t a = 0; a < aids.size(); a++) {
+    sql.append(",?");
+  }
+
+  sql.append(")) OR id IN (0");
+
+  for (size_t a = 0; a < cids.size(); a++) {
+    sql.append(",?");
+  }
+
+  sql.append("))");
+
+  int bind_size = 1 + aids.size() + cids.size();
+
+  MYSQL_BIND *pbind = new MYSQL_BIND[bind_size]();
+  if (!pbind) {
+    return;
+  }
+
+  int *ids = new int[aids.size() + cids.size()]();
+  if (!ids) {
+    delete[] pbind;
+    return;
+  }
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&user_id;
+
+  int n = 1;
+  for (auto it = aids.begin(); it != aids.end(); ++it) {
+    ids[n - 1] = *it;
+    pbind[n].buffer_type = MYSQL_TYPE_LONG;
+    pbind[n].buffer = (char *)&ids[n - 1];
+    n++;
+  }
+
+  for (auto it = cids.begin(); it != cids.end(); ++it) {
+    ids[n - 1] = *it;
+    pbind[n].buffer_type = MYSQL_TYPE_LONG;
+    pbind[n].buffer = (char *)&ids[n - 1];
+    n++;
+  }
+
+  get_recipients(sql.c_str(), pbind, bind_size, recipients);
+
+  delete[] pbind;
+  delete[] ids;
 }

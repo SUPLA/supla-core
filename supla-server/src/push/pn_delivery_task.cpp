@@ -172,3 +172,11 @@ void supla_pn_delivery_task::start_delivering(
 
   start_delivering(user_id, push);
 }
+
+// static
+bool supla_pn_delivery_task::start_delivering(int user_id, const char *json) {
+  supla_push_notification *push = new supla_push_notification();
+  bool result = push->apply_json(user_id, json);
+  start_delivering(user_id, push);
+  return result;
+}
