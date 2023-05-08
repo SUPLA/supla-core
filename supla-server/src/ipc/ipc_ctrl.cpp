@@ -57,6 +57,7 @@
 #include "ipc/on_scene_added_command.h"
 #include "ipc/on_scene_changed_command.h"
 #include "ipc/on_state_webhook_changed_command.h"
+#include "ipc/on_vbt_changed_command.h"
 #include "ipc/recalibrate_command.h"
 #include "ipc/reset_counters_command.h"
 #include "ipc/send_push_command.h"
@@ -130,6 +131,8 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_on_device_settings_changed_command(socket_adapter));
   add_command(new supla_before_channel_function_change_command(socket_adapter));
   add_command(new supla_get_pn_limit_command(socket_adapter));
+  add_command(new supla_on_vbt_changed_command(socket_adapter));
+  add_command(new supla_send_push_command(socket_adapter));
 }
 
 supla_ipc_ctrl::~supla_ipc_ctrl() {}

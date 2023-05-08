@@ -23,7 +23,8 @@
 
 #include "ipc/abstract_on_vbt_changed_command.h"
 
-class supla_on_vbt_changed_command : public supla_abstract_ipc_command {
+class supla_on_vbt_changed_command
+    : public supla_abstract_on_vbt_changed_command {
  protected:
   virtual void on_vbt_changed(int user_id);
 

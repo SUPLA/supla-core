@@ -25,7 +25,7 @@ using std::string;
 
 supla_on_vbt_changed_command::supla_on_vbt_changed_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_ipc_command(socket_adapter) {}
+    : supla_abstract_on_vbt_changed_command(socket_adapter) {}
 
 void supla_on_vbt_changed_command::supla_on_vbt_changed_command::on_vbt_changed(
     int user_id) {
