@@ -95,7 +95,7 @@ void supla_pn_gateway_access_token_provider::service_loop(void) {
   lck_lock(data_lck);
   struct timeval expires_at = {};
 
-  for (auto it = tokens.rbegin(); it != tokens.rend(); ++it) {
+  for (auto it = tokens.begin(); it != tokens.end(); ++it) {
     it->get_expiration_time_if_earlier(&expires_at);
   }
 
@@ -273,10 +273,10 @@ bool supla_pn_gateway_access_token_provider::refresh(void) {
   if (tokens.size()) {
     lck_lock(data_lck);
 
-    for (auto nit = tokens.rbegin(); nit != tokens.rend(); ++nit) {
-      auto it = this->tokens.rbegin();
+    for (auto nit = tokens.begin(); nit != tokens.end(); ++nit) {
+      auto it = this->tokens.begin();
 
-      while (it != this->tokens.rend()) {
+      while (it != this->tokens.end()) {
         if (it->get_platform() == nit->get_platform() &&
             it->get_app_id() == nit->get_app_id()) {
           *it = *nit;
@@ -285,7 +285,7 @@ bool supla_pn_gateway_access_token_provider::refresh(void) {
         ++it;
       }
 
-      if (it == this->tokens.rend()) {
+      if (it == this->tokens.end()) {
         this->tokens.push_back(*nit);
       }
     }
@@ -301,7 +301,7 @@ supla_pn_gateway_access_token supla_pn_gateway_access_token_provider::get_token(
   supla_pn_gateway_access_token result;
 
   lck_lock(data_lck);
-  for (auto it = tokens.rbegin(); it != tokens.rend(); ++it) {
+  for (auto it = tokens.begin(); it != tokens.end(); ++it) {
     if (it->get_platform() == platform && it->get_app_id() == app_id) {
       result = *it;
       break;

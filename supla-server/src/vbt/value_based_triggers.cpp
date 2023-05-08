@@ -44,11 +44,11 @@ void supla_value_based_triggers::load(void) {
   lck_lock(lck);
 
   for (auto it = this->triggers.begin(); it != this->triggers.end(); ++it) {
-    auto nit = triggers.rbegin();
-    while (nit != triggers.rend()) {
+    auto nit = triggers.begin();
+    while (nit != triggers.end()) {
       if ((*it)->get_id() == (*nit)->get_id()) {
         if (*(*nit) != it->get()) {
-          nit = triggers.rend();
+          nit = triggers.end();
         }
         break;
       }
@@ -56,15 +56,15 @@ void supla_value_based_triggers::load(void) {
     }
 
     // Remove if it doesn't exist or has changed
-    if (nit == triggers.rend()) {
+    if (nit == triggers.end()) {
       it = this->triggers.erase(it);
       --it;
     }
   }
 
   for (auto nit = triggers.begin(); nit != triggers.end(); ++nit) {
-    auto it = this->triggers.rbegin();
-    while (it != this->triggers.rend()) {
+    auto it = this->triggers.begin();
+    while (it != this->triggers.end()) {
       if ((*it)->get_id() == (*nit)->get_id()) {
         break;
       }
@@ -72,7 +72,7 @@ void supla_value_based_triggers::load(void) {
     }
 
     // Add if not exists
-    if (it == this->triggers.rend()) {
+    if (it == this->triggers.end()) {
       this->triggers.push_back(shared_ptr<supla_value_based_trigger>(*nit));
       nit = triggers.erase(nit);
       --nit;
@@ -96,7 +96,7 @@ size_t supla_value_based_triggers::count(void) {
 shared_ptr<supla_value_based_trigger> supla_value_based_triggers::get(int id) {
   shared_ptr<supla_value_based_trigger> result;
   lck_lock(lck);
-  for (auto it = triggers.rbegin(); it != triggers.rend(); ++it) {
+  for (auto it = triggers.begin(); it != triggers.end(); ++it) {
     if ((*it)->get_id() == id) {
       result = *it;
       break;
@@ -114,7 +114,7 @@ void supla_value_based_triggers::on_channel_value_changed(
   vector<supla_vbt_condition_result> matches;
 
   lck_lock(lck);
-  for (auto it = triggers.rbegin(); it != triggers.rend(); ++it) {
+  for (auto it = triggers.begin(); it != triggers.end(); ++it) {
     supla_vbt_condition_result m =
         (*it)->are_conditions_met(channel_id, old_value, new_value);
 
@@ -126,7 +126,7 @@ void supla_value_based_triggers::on_channel_value_changed(
   lck_unlock(lck);
 
   // We fire triggers only after leaving the lock.
-  for (auto it = matches.rbegin(); it != matches.rend(); ++it) {
+  for (auto it = matches.begin(); it != matches.end(); ++it) {
     it->get_trigger()->fire(caller, user->getUserID(), action_executor,
                             property_getter, it->get_replacement_map());
   }

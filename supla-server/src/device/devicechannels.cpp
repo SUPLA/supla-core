@@ -91,7 +91,7 @@ supla_device_channels::supla_device_channels(
 }
 
 supla_device_channels::~supla_device_channels() {
-  for (auto it = channels.rbegin(); it != channels.rend(); ++it) {
+  for (auto it = channels.begin(); it != channels.end(); ++it) {
     delete *it;
   }
 }
@@ -106,7 +106,7 @@ void *supla_device_channels::get_srpc(void) {
 
 supla_device_channel *supla_device_channels::find_channel(int id) {
   if (id) {
-    for (auto it = channels.rbegin(); it != channels.rend(); ++it) {
+    for (auto it = channels.begin(); it != channels.end(); ++it) {
       if ((*it)->get_id() == id) {
         return *it;
       }
@@ -118,7 +118,7 @@ supla_device_channel *supla_device_channels::find_channel(int id) {
 
 supla_device_channel *supla_device_channels::find_channel_by_number(
     int number) {
-  for (auto it = channels.rbegin(); it != channels.rend(); ++it) {
+  for (auto it = channels.begin(); it != channels.end(); ++it) {
     if ((*it)->get_number() == number) {
       return *it;
     }
@@ -137,7 +137,7 @@ void supla_device_channels::access_channel(
 
 void supla_device_channels::for_each_channel(
     function<void(supla_device_channel *)> on_channel) {
-  for (auto it = channels.rbegin(); it != channels.rend(); ++it) {
+  for (auto it = channels.begin(); it != channels.end(); ++it) {
     on_channel(*it);
   }
 }
@@ -568,7 +568,7 @@ bool supla_device_channels::set_device_channel_rgbw_value(
 void supla_device_channels::get_electricity_measurements(
     vector<supla_channel_electricity_measurement *> *result,
     bool for_data_logger_purposes) {
-  for (auto it = channels.rbegin(); it != channels.rend(); ++it) {
+  for (auto it = channels.begin(); it != channels.end(); ++it) {
     supla_device_channel *channel = *it;
 
     if (channel != nullptr && !channel->is_offline()) {
@@ -584,7 +584,7 @@ void supla_device_channels::get_electricity_measurements(
 void supla_device_channels::get_ic_measurements(
     vector<supla_channel_ic_measurement *> *result,
     bool for_data_logger_purposes) {
-  for (auto it = channels.rbegin(); it != channels.rend(); ++it) {
+  for (auto it = channels.begin(); it != channels.end(); ++it) {
     if (!(*it)->is_offline()) {
       supla_channel_ic_measurement *ic =
           (*it)->get_impulse_counter_measurement(for_data_logger_purposes);
@@ -597,7 +597,7 @@ void supla_device_channels::get_ic_measurements(
 
 void supla_device_channels::get_thermostat_measurements(
     vector<supla_channel_thermostat_measurement *> *result) {
-  for (auto it = channels.rbegin(); it != channels.rend(); ++it) {
+  for (auto it = channels.begin(); it != channels.end(); ++it) {
     if (!(*it)->is_offline()) {
       supla_channel_thermostat_measurement *th =
           (*it)->get_thermostat_measurement();
@@ -611,7 +611,7 @@ void supla_device_channels::get_thermostat_measurements(
 void supla_device_channels::get_channel_values(
     vector<supla_channel_value_envelope *> *result,
     function<bool(supla_channel_value *)> filter) {
-  for (auto it = channels.rbegin(); it != channels.rend(); ++it) {
+  for (auto it = channels.begin(); it != channels.end(); ++it) {
     supla_channel_value *value = (*it)->get_value<supla_channel_value>();
     if (value) {
       if (filter(value)) {
@@ -703,7 +703,7 @@ bool supla_device_channels::get_channel_state_async(
 list<int> supla_device_channels::get_all_ids(void) {
   list<int> result;
 
-  for (auto it = channels.rbegin(); it != channels.rend(); ++it) {
+  for (auto it = channels.begin(); it != channels.end(); ++it) {
     result.push_back((*it)->get_id());
   }
 
@@ -721,7 +721,7 @@ void supla_device_channels::set_channel_function(int channel_id, int func) {
 map<int, int> supla_device_channels::get_functions(void) {
   map<int, int> result;
 
-  for (auto it = channels.rbegin(); it != channels.rend(); ++it) {
+  for (auto it = channels.begin(); it != channels.end(); ++it) {
     result.insert({(*it)->get_number(), (*it)->get_func()});
   }
 

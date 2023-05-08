@@ -46,7 +46,7 @@ bool supla_user_devices::add(shared_ptr<supla_device> device) {
     }
   }
 
-  for (auto it = fragments.rbegin(); it != fragments.rend(); ++it) {
+  for (auto it = fragments.begin(); it != fragments.end(); ++it) {
     channel_fragments.push_back(*it);
   }
   unlock();
@@ -84,7 +84,7 @@ supla_channel_fragment supla_user_devices::get_channel_fragment(
     int channel_id) {
   supla_channel_fragment result;
   lock();
-  for (auto it = channel_fragments.rbegin(); it != channel_fragments.rend();
+  for (auto it = channel_fragments.begin(); it != channel_fragments.end();
        ++it) {
     if (it->get_channel_id() == channel_id) {
       result = *it;
@@ -98,7 +98,7 @@ supla_channel_fragment supla_user_devices::get_channel_fragment(
 void supla_user_devices::update_function_of_channel_fragment(int channel_id,
                                                              int func) {
   lock();
-  for (auto it = channel_fragments.rbegin(); it != channel_fragments.rend();
+  for (auto it = channel_fragments.begin(); it != channel_fragments.end();
        ++it) {
     if (it->get_channel_id() == channel_id) {
       it->set_function(func);

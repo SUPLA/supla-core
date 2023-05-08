@@ -47,7 +47,7 @@ void supla_abstract_pn_gateway_client::add_args(const vector<string> &args,
                                                 cJSON *parent) {
   cJSON *arr = cJSON_AddArrayToObject(parent, key_name.c_str());
 
-  for (auto it = args.rbegin(); it != args.rend(); ++it) {
+  for (auto it = args.begin(); it != args.end(); ++it) {
     cJSON_AddItemToArray(arr, cJSON_CreateString(it->c_str()));
   }
 }

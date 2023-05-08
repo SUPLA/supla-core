@@ -90,7 +90,7 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_power_reactive, "power_reactive"},
         {var_name_power_apparent, "power_apparent"}};
 
-    for (auto it = names.rbegin(); it != names.rend(); ++it) {
+    for (auto it = names.begin(); it != names.end(); ++it) {
       if (it->second == cJSON_GetStringValue(name_json)) {
         var_name = it->first;
         break;
@@ -114,7 +114,7 @@ bool supla_vbt_on_change_condition::get_operator_and_value(cJSON *root,
 
   cJSON *op_json = nullptr;
 
-  for (auto it = ops.rbegin(); it != ops.rend(); ++it) {
+  for (auto it = ops.begin(); it != ops.end(); ++it) {
     op_json = cJSON_GetObjectItem(root, it->second.c_str());
     if (op_json) {
       *op = it->first;

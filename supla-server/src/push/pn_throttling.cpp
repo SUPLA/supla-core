@@ -122,7 +122,7 @@ size_t supla_pn_throttling::get_user_count(void) {
 unsigned int supla_pn_throttling::get_count(int user_id) {
   lck_lock(lck);
   unsigned int result = 0;
-  for (auto it = items.rbegin(); it != items.rend(); ++it) {
+  for (auto it = items.begin(); it != items.end(); ++it) {
     if (it->user_id == user_id) {
       result = it->counter;
       break;

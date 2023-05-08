@@ -145,7 +145,7 @@ bool supla_apns_client::_send(supla_pn_gateway_access_token *token,
     } else {
       string prefix = "apns-id: ";
 
-      for (auto it = header.rbegin(); it != header.rend(); ++it) {
+      for (auto it = header.begin(); it != header.end(); ++it) {
         size_t pos = it->find(prefix);
         if (pos != std::string::npos && pos == 0) {
           recipient->set_message_id(it->substr(pos + prefix.length()));

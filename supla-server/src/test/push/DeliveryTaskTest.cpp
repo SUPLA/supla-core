@@ -120,8 +120,8 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
           "{\"message\":{\"token\":\"0956469ed2650ed09534e4193ef8028f950\","
           "\"android\":{\"notification\":{\"title\":\"TiTle\",\"body\":"
           "\"BoDy\",\"title_loc_key\":\"Localized "
-          "Title\",\"title_loc_args\":[\"t2\",\"t1\"],\"body_loc_key\":"
-          "\"Localized Body\",\"body_loc_args\":[\"b2\",\"b1\"]}}}}")))
+          "Title\",\"title_loc_args\":[\"t1\",\"t2\"],\"body_loc_key\":"
+          "\"Localized Body\",\"body_loc_args\":[\"b1\",\"b2\"]}}}}")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
@@ -153,8 +153,8 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
               set_opt_post_fields(StrEq(
                   "{\"aps\":{\"alert\":{\"title\":\"TiTle\",\"body\":\"BoDy\","
                   "\"title-loc-key\":\"Localized "
-                  "Title\",\"title-loc-args\":[\"t2\",\"t1\"],\"loc-key\":"
-                  "\"Localized Body\",\"loc-args\":[\"b2\",\"b1\"]}}}")))
+                  "Title\",\"title-loc-args\":[\"t1\",\"t2\"],\"loc-key\":"
+                  "\"Localized Body\",\"loc-args\":[\"b1\",\"b2\"]}}}")))
       .Times(2);
 
   shared_ptr<supla_abstract_asynctask> task =
