@@ -40,7 +40,6 @@ void PnDaoIntegrationTest::SetUp() {
   ASSERT_TRUE(dao != nullptr);
 
   initTestDatabase();
-  Test::SetUp();
 }
 
 void PnDaoIntegrationTest::TearDown() {
