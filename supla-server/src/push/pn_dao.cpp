@@ -141,3 +141,12 @@ int supla_pn_dao::get_limit(int user_id) {
 
   return result;
 }
+
+int supla_pn_dao::get_device_managed_push_id(int user_id, int device_id,
+                                             int channel_id) {
+  return 0;
+}
+
+void supla_pn_dao::add_or_update_device_managed_push(int user_id, int device_id,
+                                                     int channel_id, bool title,
+                                                     bool body, bool sound) {}

@@ -644,3 +644,7 @@ bool supla_client_dao::scene_exists(int client_id, int scene_id) {
 
   return exists(client_id, scene_id, query);
 }
+
+void supla_client_dao::update_client_push_notification_token(
+    int client_id, const char *token, int platform, int app_id,
+    bool development_env) {}

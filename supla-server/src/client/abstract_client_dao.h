@@ -77,6 +77,11 @@ class supla_abstract_client_dao {
   virtual bool channel_group_exists(int client_id, int channel_group_id) = 0;
 
   virtual bool scene_exists(int client_id, int scene_id) = 0;
+
+  virtual void update_client_push_notification_token(int client_id,
+                                                     const char *token,
+                                                     int platform, int app_id,
+                                                     bool development_env) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_CLIENT_DAO_H_ */

@@ -176,6 +176,9 @@ union TsrpcDataPacketData {
   TSC_ActionExecutionResult *sc_action_execution_result;
   TCS_GetChannelValueWithAuth *cs_get_value_with_auth;
   TSC_GetChannelValueResult *sc_get_value_result;
+  TDS_RegisterPushNotification *ds_register_push_notification;
+  TDS_PushNotification *ds_push_notification;
+  TCS_RegisterPnClientToken *cs_register_pn_client_token;
 };
 
 typedef struct {
@@ -287,6 +290,10 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_sd_async_get_channel_config_result(void *_srpc, TSD_ChannelConfig *config);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_action_trigger(void *_srpc, TDS_ActionTrigger *action_trigger);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_register_push_notification(
+    void *_srpc, TDS_RegisterPushNotification *reg);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_send_push_notification(void *_srpc, TDS_PushNotification *push);
 #endif /*SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT
@@ -420,6 +427,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_channel_value_with_auth(
     void *_srpc, TCS_GetChannelValueWithAuth *vwa);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_get_channel_value_result(
     void *_srpc, TSC_GetChannelValueResult *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_register_pn_client_token(
+    void *_srpc, TCS_RegisterPnClientToken *reg);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS

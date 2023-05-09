@@ -33,6 +33,10 @@ class supla_pn_dao {
 
   int get_limit(int user_id);  // I have doubts whether geting limits of sent
                                // messages should be in pn_dao or user_dao.
+  int get_device_managed_push_id(int user_id, int device_id, int channel_id);
+  void add_or_update_device_managed_push(int user_id, int device_id,
+                                         int channel_id, bool title, bool body,
+                                         bool sound);
 };
 
 #endif /* PUSH_NOTIFICATION_DAO_H_ */
