@@ -40,7 +40,7 @@ class supla_client_objcontainer_item : public supla_objcontainer_item {
   virtual ~supla_client_objcontainer_item(void);
   supla_client_objcontainer *getContainer(void);
   char *getCaption(void);
-  void setCaption(const char *Caption);
+  virtual void setCaption(const char *Caption);
 };
 
 #endif /* CLIENT_CLIENTOBJCONTAINERITEM_H_ */

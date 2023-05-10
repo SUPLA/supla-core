@@ -826,6 +826,9 @@ void supla_user::set_caption(std::shared_ptr<supla_client> sender,
       case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
         clients->set_channel_caption(caption->ID, caption->Caption);
         break;
+      case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
+        clients->set_channel_group_caption(caption->ID, caption->Caption);
+        break;
       case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
         clients->set_location_caption(caption->ID, caption->Caption);
         break;

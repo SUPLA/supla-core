@@ -45,6 +45,7 @@ class supla_user_clients : public supla_connection_objects {
                                 bool extended);
   void call_event(TSC_SuplaEvent *event);
   void set_channel_caption(int channel_id, char *caption);
+  void set_channel_group_caption(int channel_group_id, char *caption);
   void set_location_caption(int location_id, char *caption);
   void set_scene_caption(int location_id, char *caption);
 };

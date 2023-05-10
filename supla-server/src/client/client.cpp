@@ -255,6 +255,11 @@ void supla_client::set_channel_caption(int ChannelId, char *Caption) {
       get_connection()->get_srpc_adapter()->get_srpc(), ChannelId, Caption);
 }
 
+void supla_client::set_channel_group_caption(int ChannelGroupId,
+                                             char *Caption) {
+  cgroups->set_caption(Caption, ChannelGroupId, Caption);
+}
+
 void supla_client::set_location_caption(int LocationId, char *Caption) {
   locations->set_caption(LocationId, Caption);
   locations->remote_update(get_connection()->get_srpc_adapter()->get_srpc());

@@ -1395,6 +1395,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         break;
 
       case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
+      case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
       case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
       case SUPLA_CS_CALL_SET_SCENE_CAPTION:
         if (srpc->sdp.data_size >=
@@ -1405,6 +1406,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         break;
 
       case SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT:
+      case SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT:
       case SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT:
       case SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT:
         if (srpc->sdp.data_size >=
@@ -1677,6 +1679,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
     case SUPLA_DS_CALL_REGISTER_PUSH_NOTIFICATION:
     case SUPLA_DS_CALL_SEND_PUSH_NOTIFICATION:
     case SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN:
+    case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
+    case SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT:
       return 20;
   }
 
@@ -2672,6 +2676,18 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_caption_result(
     void *_srpc, TSC_SetCaptionResult *result) {
   return srpc_sc_async_set_caption_result(
       _srpc, result, SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_set_channel_group_caption(void *_srpc, TCS_SetCaption *caption) {
+  return srpc_cs_async_set_caption(_srpc, caption,
+                                   SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_group_caption_result(
+    void *_srpc, TSC_SetCaptionResult *result) {
+  return srpc_sc_async_set_caption_result(
+      _srpc, result, SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT);
 }
 
 _supla_int_t SRPC_ICACHE_FLASH

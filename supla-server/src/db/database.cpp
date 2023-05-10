@@ -875,12 +875,16 @@ bool database::set_caption(int UserID, int ID, char *Caption, int call_id) {
   char *sql = nullptr;
 
   char sql_c[] = "CALL `supla_set_channel_caption`(?,?,?)";
+  char sql_cg[] = "CALL `supla_set_channel_group_caption`(?,?,?)";
   char sql_l[] = "CALL `supla_set_location_caption`(?,?,?)";
   char sql_s[] = "CALL `supla_set_scene_caption`(?,?,?)";
 
   switch (call_id) {
     case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
       sql = sql_c;
+      break;
+    case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
+      sql = sql_cg;
       break;
     case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
       sql = sql_l;

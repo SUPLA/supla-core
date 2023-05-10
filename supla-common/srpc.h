@@ -392,6 +392,10 @@ srpc_cs_async_set_channel_caption(void *_srpc, TCS_SetCaption *caption);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_caption_result(
     void *_srpc, TSC_SetCaptionResult *caption);
 _supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_set_channel_group_caption(void *_srpc, TCS_SetCaption *caption);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_group_caption_result(
+    void *_srpc, TSC_SetCaptionResult *caption);
+_supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_set_location_caption(void *_srpc, TCS_SetCaption *caption);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_location_caption_result(
     void *_srpc, TSC_SetCaptionResult *caption);

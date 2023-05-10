@@ -521,7 +521,9 @@ vector<int> SrpcTest::get_call_ids(int version) {
     case 20:
       return {SUPLA_DS_CALL_REGISTER_PUSH_NOTIFICATION,
               SUPLA_DS_CALL_SEND_PUSH_NOTIFICATION,
-              SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN};
+              SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN,
+              SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION,
+              SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT};
   }
 
   return {};
@@ -3446,6 +3448,21 @@ SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_channel_caption_result,
                                   SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT, 32,
                                   433, sc_set_caption_result,
                                   SUPLA_CHANNEL_CAPTION_MAXSIZE);
+
+//---------------------------------------------------------
+// SET CHANNEL GROUP CAPTION
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_channel_group_caption,
+                                  TCS_SetCaption,
+                                  SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION, 31,
+                                  432, cs_set_caption,
+                                  SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE);
+
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(
+    srpc_sc_async_set_channel_group_caption_result, TSC_SetCaptionResult,
+    SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT, 32, 433,
+    sc_set_caption_result, SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
 // SET LOCATION CAPTION

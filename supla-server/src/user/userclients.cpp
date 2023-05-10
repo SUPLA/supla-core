@@ -93,6 +93,14 @@ void supla_user_clients::set_channel_caption(int channel_id, char *caption) {
   });
 }
 
+void supla_user_clients::set_channel_group_caption(int channel_group_id,
+                                                   char *caption) {
+  for_each([channel_group_id, caption](shared_ptr<supla_client> client,
+                                       bool *will_continue) -> void {
+    client->set_channel_group_caption(channel_group_id, caption);
+  });
+}
+
 void supla_user_clients::set_location_caption(int location_id, char *caption) {
   for_each([location_id, caption](shared_ptr<supla_client> client,
                                   bool *will_continue) -> void {

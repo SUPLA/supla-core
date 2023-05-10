@@ -1053,6 +1053,7 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         }
         break;
       case SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT:
+      case SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT:
       case SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT:
       case SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT:
         if (rd.data.sc_set_caption_result) {
@@ -1063,6 +1064,11 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           if (rd.call_id == SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT &&
               scd->cfg.cb_on_channel_caption_set_result) {
             scd->cfg.cb_on_channel_caption_set_result(
+                scd, scd->cfg.user_data, rd.data.sc_set_caption_result);
+          } else if (rd.call_id ==
+                         SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT &&
+                     scd->cfg.cb_on_channel_group_caption_set_result) {
+            scd->cfg.cb_on_channel_group_caption_set_result(
                 scd, scd->cfg.user_data, rd.data.sc_set_caption_result);
           } else if (rd.call_id == SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT &&
                      scd->cfg.cb_on_location_caption_set_result) {
@@ -1653,6 +1659,9 @@ char supla_client_set_caption(void *_suplaclient, int ID, const char *Caption,
     case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
       return srpc_cs_async_set_channel_caption(
           ((TSuplaClientData *)_suplaclient)->srpc, &caption);
+    case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
+      return srpc_cs_async_set_channel_group_caption(
+          ((TSuplaClientData *)_suplaclient)->srpc, &caption);
     case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
       return srpc_cs_async_set_location_caption(
           ((TSuplaClientData *)_suplaclient)->srpc, &caption);
@@ -1668,6 +1677,13 @@ char supla_client_set_channel_caption(void *_suplaclient, int ChannelID,
                                       const char *Caption) {
   return supla_client_set_caption(_suplaclient, ChannelID, Caption,
                                   SUPLA_CS_CALL_SET_CHANNEL_CAPTION);
+}
+
+char supla_client_set_channel_group_caption(void *_suplaclient,
+                                            int ChannelGroupID,
+                                            const char *Caption) {
+  return supla_client_set_caption(_suplaclient, ChannelGroupID, Caption,
+                                  SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION);
 }
 
 char supla_client_set_location_caption(void *_suplaclient, int LocationID,

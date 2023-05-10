@@ -1205,6 +1205,21 @@ void supla_cb_on_channel_caption_set_result(void *_suplaclient, void *user_data,
                       result->ResultCode);
 }
 
+void supla_cb_on_channel_group_caption_set_result(
+    void *_suplaclient, void *user_data, TSC_SetCaptionResult *result) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_channel_group_caption_set_result == NULL ||
+      result == NULL) {
+    return;
+  }
+
+  env->CallVoidMethod(
+      asc->j_obj, asc->j_mid_on_channel_group_caption_set_result, result->ID,
+      new_string_utf(env, result->Caption), result->ResultCode);
+}
+
 void supla_cb_on_location_caption_set_result(void *_suplaclient,
                                              void *user_data,
                                              TSC_SetCaptionResult *result) {
@@ -1670,6 +1685,8 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
         env->GetMethodID(oclass, "onChannelFunctionSetResult", "(III)V");
     _asc->j_mid_on_channel_caption_set_result = env->GetMethodID(
         oclass, "onChannelCaptionSetResult", "(ILjava/lang/String;I)V");
+    _asc->j_mid_on_channel_group_caption_set_result = env->GetMethodID(
+        oclass, "onChannelGroupCaptionSetResult", "(ILjava/lang/String;I)V");
     _asc->j_mid_on_location_caption_set_result = env->GetMethodID(
         oclass, "onLocationCaptionSetResult", "(ILjava/lang/String;I)V");
     _asc->j_mid_on_scene_caption_set_result = env->GetMethodID(
@@ -2094,6 +2111,8 @@ JNI_FUNCTION_I(scGetChannelBasicCfg, supla_client_get_channel_basic_cfg);
 JNI_FUNCTION_II(scSetChannelFunction, supla_client_set_channel_function);
 
 JNI_FUNCTION_IString(scSetChannelCaption, supla_client_set_channel_caption);
+
+JNI_FUNCTION_IString(scSetChannelGroupCaption, supla_client_set_channel_group_caption);
 
 JNI_FUNCTION_IString(scSetLocationCaption, supla_client_set_location_caption);
 
