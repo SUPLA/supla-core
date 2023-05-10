@@ -2096,7 +2096,7 @@ Java_org_supla_android_lib_SuplaClient_scSuperUserAuthorizationRequest(
     }
 
     if (pwd) {
-      env->ReleaseStringUTFChars(email, pwd);
+      env->ReleaseStringUTFChars(password, pwd);
     }
   }
 
