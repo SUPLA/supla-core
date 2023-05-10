@@ -2192,6 +2192,9 @@ typedef struct {
   _supla_int_t Platform;
   _supla_int_t AppId;
   unsigned _supla_int16_t
+      RealTokenSize;  // It allows you to determine if the maximum size of the
+                      // Token variable is sufficient.
+  unsigned _supla_int16_t
       TokenSize;  // Including the terminating null byte ('\0'). Size
                   // <= 1 removes the token
   signed char Token[SUPLA_PN_CLIENT_TOKEN_MAXSIZE];  // Last variable in struct!

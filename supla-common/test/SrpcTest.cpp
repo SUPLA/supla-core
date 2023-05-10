@@ -3630,8 +3630,8 @@ SRPC_CALL_BASIC_TEST(srpc_ds_async_register_push_notification,
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_register_pn_client_token,
                                      TCS_RegisterPnClientToken,
-                                     SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN, 34,
-                                     290, cs_register_pn_client_token,
+                                     SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN, 36,
+                                     292, cs_register_pn_client_token,
                                      SUPLA_PN_CLIENT_TOKEN_MAXSIZE, Token,
                                      TokenSize);
 

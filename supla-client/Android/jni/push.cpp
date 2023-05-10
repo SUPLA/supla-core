@@ -41,6 +41,8 @@ Java_org_supla_android_lib_SuplaClient_scRegisterPushNotificationClientToken(
 
     if (tkn) {
       reg.TokenSize = strnlen(tkn, SUPLA_PN_CLIENT_TOKEN_MAXSIZE) + 1;
+      reg.RealTokenSize = strnlen(tkn, 4096) + 1;
+
       if (reg.TokenSize > SUPLA_PN_CLIENT_TOKEN_MAXSIZE) {
         reg.TokenSize = SUPLA_PN_CLIENT_TOKEN_MAXSIZE;
       }
