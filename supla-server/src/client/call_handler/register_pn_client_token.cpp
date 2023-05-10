@@ -47,7 +47,7 @@ void supla_ch_register_pn_client_token::handle_call(
       supla_log(
           LOG_WARNING,
           "The size of the push token is actually larger than what was passed "
-          "to the server. Actual Size: %i, Platform: %i, AppId: %i",
+          "to the server. Real Size: %i, Platform: %i, AppId: %i",
           reg->RealTokenSize, reg->Platform, reg->AppId);
     }
     if (reg->TokenSize <= SUPLA_PN_CLIENT_TOKEN_MAXSIZE) {
