@@ -1751,6 +1751,8 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
         supla_cb_on_channel_function_set_result;
     sclient_cfg.cb_on_channel_caption_set_result =
         supla_cb_on_channel_caption_set_result;
+    sclient_cfg.cb_on_channel_group_caption_set_result =
+        supla_cb_on_channel_group_caption_set_result;
     sclient_cfg.cb_on_location_caption_set_result =
         supla_cb_on_location_caption_set_result;
     sclient_cfg.cb_on_scene_caption_set_result =
