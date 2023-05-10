@@ -257,7 +257,8 @@ void supla_client::set_channel_caption(int ChannelId, char *Caption) {
 
 void supla_client::set_channel_group_caption(int ChannelGroupId,
                                              char *Caption) {
-  cgroups->set_caption(Caption, ChannelGroupId, Caption);
+  cgroups->set_caption(get_connection()->get_srpc_adapter()->get_srpc(),
+                       ChannelGroupId, Caption);
 }
 
 void supla_client::set_location_caption(int LocationId, char *Caption) {
