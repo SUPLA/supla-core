@@ -36,6 +36,7 @@
 #include "client/call_handler/register_client_b.h"
 #include "client/call_handler/register_client_c.h"
 #include "client/call_handler/register_client_d.h"
+#include "client/call_handler/register_pn_client_token.h"
 #include "client/call_handler/set_caption.h"
 #include "client/call_handler/set_channel_function.h"
 #include "client/call_handler/set_registration_enabled.h"
@@ -75,6 +76,7 @@ supla_client_call_handler_collection::supla_client_call_handler_collection(void)
   add_handler(new supla_ch_register_client_c);
   add_handler(new supla_ch_register_client_b);
   add_handler(new supla_ch_register_client_a);
+  add_handler(new supla_ch_register_pn_client_token());
 
   // common
   add_handler(new supla_ch_get_version());
