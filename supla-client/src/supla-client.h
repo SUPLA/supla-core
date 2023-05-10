@@ -288,6 +288,9 @@ char supla_client_execute_action(void *_suplaclient, int action_id,
                                  TAction_RGBW_Parameters *rgbw_param,
                                  unsigned char subject_type, int subject_id);
 
+char supla_client_pn_register_client_token(void *_suplaclient,
+                                           TCS_RegisterPnClientToken *reg);
+
 _supla_int_t srpc_evtool_value_get(TSuplaChannelExtendedValue *ev,
                                    unsigned short index,
                                    TSuplaChannelExtendedValue *dest);

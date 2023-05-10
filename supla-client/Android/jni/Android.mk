@@ -25,6 +25,7 @@ LOCAL_SRC_FILES := supla.cpp \
     main.cpp \
     actions.cpp \
     singlecall.cpp \
+    push.cpp \
     ../../src/cfg.c \
     ../../src/eh.c \
     ../../src/ini.c \

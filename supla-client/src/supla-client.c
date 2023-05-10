@@ -1913,3 +1913,17 @@ char supla_client_execute_action(void *_suplaclient, int action_id,
   lck_unlock(suplaclient->lck);
   return result;
 }
+
+char supla_client_pn_register_client_token(void *_suplaclient,
+                                           TCS_RegisterPnClientToken *reg) {
+  TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
+  char result = 0;
+
+  lck_lock(suplaclient->lck);
+  result = srpc_cs_async_register_pn_client_token(suplaclient->srpc, reg) ==
+                   SUPLA_RESULT_FALSE
+               ? 0
+               : 1;
+  lck_unlock(suplaclient->lck);
+  return result;
+}

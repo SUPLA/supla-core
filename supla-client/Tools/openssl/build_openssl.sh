@@ -6,7 +6,7 @@
 set -e
 
 # Defaults
-SDK="16.2"
+SDK="16.4"
 OPENSSL="3.0.8"
 THREADS=4
 
@@ -124,9 +124,9 @@ elif [ -f ./${OPENSSL_VERSION}/Makefile ]; then
 fi
 
 build "x86_64" "iPhoneSimulator"
-build "arm64" "iPhoneSimulator"
-build "armv7" "iPhoneOS"
-build "arm64" "iPhoneOS"
+#build "arm64" "iPhoneSimulator"
+#build "armv7" "iPhoneOS"
+#build "arm64" "iPhoneOS"
 
 echo "[INFO] Merging static libraries"
 lipo \
