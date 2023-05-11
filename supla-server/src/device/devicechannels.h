@@ -84,8 +84,6 @@ class supla_device_channels {
                          TSuplaChannelExtendedValue *ev, int *function,
                          bool for_client);
   bool get_channel_extendedvalue(int channel_id,
-                                 TSuplaChannelExtendedValue *value);
-  bool get_channel_extendedvalue(int channel_id,
                                  TSC_SuplaChannelExtendedValue *cev);
   bool get_channel_double_value(int channel_id, double *value);
   bool get_channel_char_value(int channel_id, char *value);

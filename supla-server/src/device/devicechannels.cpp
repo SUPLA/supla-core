@@ -193,12 +193,6 @@ bool supla_device_channels::get_channel_value(
 }
 
 bool supla_device_channels::get_channel_extendedvalue(
-    int channel_id, TSuplaChannelExtendedValue *value) {
-  supla_device_channel *channel = find_channel(channel_id);
-  return channel && channel->get_extended_value(value, false);
-}
-
-bool supla_device_channels::get_channel_extendedvalue(
     int channel_id, TSC_SuplaChannelExtendedValue *cev) {
   supla_device_channel *channel = find_channel(channel_id);
 
