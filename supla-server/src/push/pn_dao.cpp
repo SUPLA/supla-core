@@ -144,7 +144,73 @@ int supla_pn_dao::get_limit(int user_id) {
 
 int supla_pn_dao::get_device_managed_push_id(int user_id, int device_id,
                                              int channel_id) {
-  return 0;
+  if (!user_id || !device_id) return 0;
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return 0;
+  }
+
+  int result = 0;
+
+  MYSQL_STMT *stmt = nullptr;
+
+  const char sql[] =
+      "SELECT id FROM supla_push_notification WHERE user_id = ? AND "
+      "managed_by_device = 1 AND iodevice_id = ? AND ((? = 0 AND channel_id IS "
+      "NULL) OR (? != 0 AND channel_id = ?)) LIMIT 1";  // We add a LIMIT 1 if
+                                                        // for some reason more
+                                                        // than one notification
+                                                        // for the pair
+                                                        // device_id/channel_id
+                                                        // appears in the
+                                                        // database.
+
+  MYSQL_BIND pbind[5] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&user_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&device_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&channel_id;
+
+  pbind[3].buffer_type = MYSQL_TYPE_LONG;
+  pbind[3].buffer = (char *)&channel_id;
+
+  pbind[4].buffer_type = MYSQL_TYPE_LONG;
+  pbind[4].buffer = (char *)&channel_id;
+
+  int _id = 0;
+
+  if (dba->stmt_execute((void **)&stmt, sql, &pbind, 5, true)) {
+    MYSQL_BIND rbind = {};
+
+    rbind.buffer_type = MYSQL_TYPE_LONG;
+    rbind.buffer = (char *)&_id;
+
+    if (mysql_stmt_bind_result(stmt, &rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
+        result = _id;
+      }
+    }
+  }
+
+  mysql_stmt_close(stmt);
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
 }
 
 void supla_pn_dao::add_or_update_device_managed_push(int user_id, int device_id,

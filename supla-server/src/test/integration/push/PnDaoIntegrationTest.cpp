@@ -94,4 +94,25 @@ TEST_F(PnDaoIntegrationTest, fieldsWithNullsShouldNotWriteTheObject) {
   EXPECT_EQ(pn.get_sound(), 155);
 }
 
+TEST_F(PnDaoIntegrationTest, getPushIdNotManagedByDeviceAndChannel) {
+  runSqlScript("AddPushNotification.sql");
+
+  int id = dao->get_device_managed_push_id(2, 73, 140);
+  EXPECT_EQ(id, 0);
+}
+
+TEST_F(PnDaoIntegrationTest, getPushIdManagedByDevice) {
+  runSqlScript("AddDeviceManagedPushNotifications.sql");
+
+  int id = dao->get_device_managed_push_id(2, 83, 0);
+  EXPECT_EQ(id, 16);
+}
+
+TEST_F(PnDaoIntegrationTest, getPushIdManagedByDeviceAndChannel) {
+  runSqlScript("AddDeviceManagedPushNotifications.sql");
+
+  int id = dao->get_device_managed_push_id(2, 83, 157);
+  EXPECT_EQ(id, 15);
+}
+
 } /* namespace testing */
