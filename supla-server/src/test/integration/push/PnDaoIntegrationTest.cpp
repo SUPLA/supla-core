@@ -115,4 +115,41 @@ TEST_F(PnDaoIntegrationTest, getPushIdManagedByDeviceAndChannel) {
   EXPECT_EQ(id, 15);
 }
 
+TEST_F(PnDaoIntegrationTest, registerDeviceManagedPush) {
+  string result;
+  sqlQuery(
+      "SELECT id FROM supla_push_notification WHERE user_id = 2 AND "
+      "iodevice_id = 83",
+      &result);
+
+  EXPECT_EQ(result, "");
+
+  dao->register_device_managed_push(2, 83, 0, true, false, true);
+  dao->register_device_managed_push(
+      2, 83, 0, 0, 0,
+      0);  // Attempting to overwrite the settings should not change anything.
+
+  sqlQuery(
+      "SELECT id FROM supla_push_notification WHERE user_id = 2 AND "
+      "iodevice_id = 83 AND channel_id IS NULL AND title = '' AND body IS NULL "
+      "AND sound = 0 AND  managed_by_device = 1",
+      &result);
+
+  EXPECT_EQ(result, "id\n1\n");
+  result = "";
+
+  dao->register_device_managed_push(2, 83, 157, false, true, false);
+  dao->register_device_managed_push(
+      2, 83, 157, 1, 1,
+      1);  // Attempting to overwrite the settings should not change anything.
+
+  sqlQuery(
+      "SELECT id FROM supla_push_notification WHERE user_id = 2 AND "
+      "iodevice_id = 83 AND channel_id = 157 AND title IS NULL AND body = '' "
+      "AND sound IS NULL AND  managed_by_device = 1",
+      &result);
+
+  EXPECT_EQ(result, "id\n2\n");
+}
+
 } /* namespace testing */

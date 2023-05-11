@@ -213,6 +213,52 @@ int supla_pn_dao::get_device_managed_push_id(int user_id, int device_id,
   return result;
 }
 
-void supla_pn_dao::add_or_update_device_managed_push(int user_id, int device_id,
-                                                     int channel_id, bool title,
-                                                     bool body, bool sound) {}
+void supla_pn_dao::register_device_managed_push(int user_id, int device_id,
+                                                     int channel_id,
+                                                     bool sm_title,
+                                                     bool sm_body,
+                                                     bool sm_sound) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  MYSQL_BIND pbind[6] = {};
+
+  char _sm_title = sm_title ? 1 : 0;
+  char _sm_body = sm_body ? 1 : 0;
+  char _sm_sound = sm_sound ? 1 : 0;
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&user_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&device_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&channel_id;
+
+  pbind[3].buffer_type = MYSQL_TYPE_TINY;
+  pbind[3].buffer = (char *)&_sm_title;
+
+  pbind[4].buffer_type = MYSQL_TYPE_TINY;
+  pbind[4].buffer = (char *)&_sm_body;
+
+  pbind[5].buffer_type = MYSQL_TYPE_TINY;
+  pbind[5].buffer = (char *)&_sm_sound;
+
+  const char sql[] =
+      "CALL `supla_register_device_managed_push`(?,?,?,?,?,?)";
+
+  MYSQL_STMT *stmt = nullptr;
+  dba->stmt_execute((void **)&stmt, sql, pbind, 6, true);
+
+  if (stmt != nullptr) {
+    mysql_stmt_close(stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+}

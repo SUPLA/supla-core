@@ -2772,3 +2772,47 @@ ALTER TABLE supla_client ADD push_token VARCHAR(255) DEFAULT NULL, ADD platform 
 CREATE PROCEDURE `supla_remove_push_recipients`(IN `_user_id` INT, IN `_client_id` INT) UPDATE supla_client SET push_token = NULL WHERE id = _client_id AND user_id = _user_id;
 ALTER TABLE supla_user ADD limit_push_notifications INT DEFAULT 20 NOT NULL;
 CREATE PROCEDURE `supla_set_channel_group_caption`(IN `_user_id` INT, IN `_channel_group_id` INT, IN `_caption` VARCHAR(255) CHARSET utf8mb4) NOT DETERMINISTIC NO SQL SQL SECURITY DEFINER UPDATE supla_dev_channel_group SET caption = _caption WHERE id = _channel_group_id AND user_id = _user_id;
+CREATE PROCEDURE `supla_register_device_managed_push`(IN `_user_id` INT, IN `_device_id` INT, IN `_channel_id` INT, IN `_sm_title` TINYINT, IN `_sm_body` TINYINT, IN `_sm_sound` TINYINT)
+INSERT INTO `supla_push_notification`(
+    `user_id`,
+    `iodevice_id`,
+    `channel_id`,
+    `managed_by_device`,
+    `title`,
+    `body`,
+    `sound`
+)
+SELECT
+    _user_id,
+    _device_id,
+    CASE _channel_id 
+      WHEN 0 THEN NULL ELSE _channel_id END,
+    1,
+    CASE _sm_title WHEN 0 THEN NULL ELSE '' END,
+    CASE _sm_body WHEN 0 THEN NULL ELSE '' END,
+    CASE _sm_sound WHEN 0 THEN NULL ELSE 0 END
+FROM DUAL 
+  WHERE NOT EXISTS(
+   SELECT id
+    FROM `supla_push_notification`
+    WHERE user_id = _user_id 
+      AND iodevice_id = _device_id 
+      AND managed_by_device = 1 
+      AND (( _channel_id = 0 AND channel_id IS NULL) 
+        OR( channel_id != 0 AND channel_id = 
+           _channel_id)) LIMIT 1);
+CREATE PROCEDURE `supla_update_push_notification_client_token`(IN `_user_id` INT, IN `_client_id` INT, IN `_token` VARCHAR(255) CHARSET utf8mb4, IN `_platform` TINYINT, IN `_app_id` INT, IN `_devel_env` TINYINT)
+UPDATE supla_client SET
+   push_token = _token,
+   platform = _platform,
+   app_id = _app_id,
+   devel_env = _devel_env
+WHERE id = _client_id
+ AND user_id = _user_id
+ AND ((_token IS NULL AND push_token IS NOT NULL)
+   OR (push_token IS NULL AND _token IS NOT NULL)
+   OR (push_token IS NOT NULL
+      AND _token IS NOT NULL AND push_token != _token)
+   OR platform != _platform
+   OR app_id != app_id
+   OR devel_env != _devel_env);

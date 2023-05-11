@@ -54,9 +54,9 @@ void supla_ch_register_pn_client_token::handle_call(
       supla_db_access_provider dba;
       supla_client_dao dao(&dba);
       reg->Token[reg->TokenSize > 1 ? reg->TokenSize - 1 : 0] = 0;
-      dao.update_client_push_notification_token(
-          client->get_id(), (char*)reg->Token, reg->Platform, reg->AppId,
-          reg->DevelopmentEnv);
+      dao.update_client_push_notification_client_token(
+          client->get_user_id(), client->get_id(), (char*)reg->Token,
+          reg->Platform, reg->AppId, reg->DevelopmentEnv);
     }
   }
 }

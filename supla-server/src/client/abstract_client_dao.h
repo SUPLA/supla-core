@@ -78,10 +78,9 @@ class supla_abstract_client_dao {
 
   virtual bool scene_exists(int client_id, int scene_id) = 0;
 
-  virtual void update_client_push_notification_token(int client_id,
-                                                     const char *token,
-                                                     int platform, int app_id,
-                                                     bool development_env) = 0;
+  virtual void update_client_push_notification_client_token(
+      int user_id, int client_id, const char *token, int platform, int app_id,
+      bool development_env) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_CLIENT_DAO_H_ */

@@ -55,9 +55,9 @@ void supla_ch_register_push_notification::handle_call(
                        ? device->get_channels()->get_channel_id(reg->Context)
                        : 0;
 
-  dao.add_or_update_device_managed_push(
+  dao.register_device_managed_push(
       device->get_user_id(), device->get_id(), channel_id,
-      !(reg->ServerManagedFields & PN_SERVER_MANAGED_TITLE),
-      !(reg->ServerManagedFields & PN_SERVER_MANAGED_BODY),
-      !(reg->ServerManagedFields & PN_SERVER_MANAGED_SOUND));
+      reg->ServerManagedFields & PN_SERVER_MANAGED_TITLE,
+      reg->ServerManagedFields & PN_SERVER_MANAGED_BODY,
+      reg->ServerManagedFields & PN_SERVER_MANAGED_SOUND);
 }

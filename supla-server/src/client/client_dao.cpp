@@ -645,6 +645,53 @@ bool supla_client_dao::scene_exists(int client_id, int scene_id) {
   return exists(client_id, scene_id, query);
 }
 
-void supla_client_dao::update_client_push_notification_token(
-    int client_id, const char *token, int platform, int app_id,
-    bool development_env) {}
+void supla_client_dao::update_client_push_notification_client_token(
+    int user_id, int client_id, const char *token, int platform, int app_id,
+    bool development_env) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  MYSQL_BIND pbind[6] = {};
+
+  char _platform = platform;
+  char _devel_env = development_env ? 1 : 0;
+  my_bool _token_is_null = token == nullptr || token[0] == 0;
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&user_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&client_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = (char *)token;
+  pbind[2].buffer_length =
+      token ? strnlen(token, SUPLA_PN_CLIENT_TOKEN_MAXSIZE) : 0;
+  pbind[2].is_null = &_token_is_null;
+
+  pbind[3].buffer_type = MYSQL_TYPE_TINY;
+  pbind[3].buffer = (char *)&_platform;
+
+  pbind[4].buffer_type = MYSQL_TYPE_LONG;
+  pbind[4].buffer = (char *)&app_id;
+
+  pbind[5].buffer_type = MYSQL_TYPE_TINY;
+  pbind[5].buffer = (char *)&_devel_env;
+
+  const char sql[] =
+      "CALL `supla_update_push_notification_client_token`(?,?,?,?,?,?)";
+
+  MYSQL_STMT *stmt = nullptr;
+  dba->stmt_execute((void **)&stmt, sql, pbind, 6, true);
+
+  if (stmt != nullptr) {
+    mysql_stmt_close(stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+}
