@@ -247,7 +247,7 @@ void LOG_ICACHE_FLASH supla_vlog(int __pri, const char *message) {
 #ifdef __APPLE__
     printf("[%s.%06i] ", time_buf, now.tv_usec);
 #else
-	printf("[%s.%06ld] ", time_buf, now.tv_usec);
+    printf("[%s.%06ld] ", time_buf, now.tv_usec);
 #endif
     printf("%s", message);
     printf("\n");
