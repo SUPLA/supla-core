@@ -22,6 +22,7 @@ RM := rm -rf
 -include src/google/subdir.mk
 -include src/distributedobjects/subdir.mk
 -include src/device/value/subdir.mk
+-include src/device/extended_value/subdir.mk
 -include src/device/call_handler/subdir.mk
 -include src/device/subdir.mk
 -include src/db/subdir.mk

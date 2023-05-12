@@ -40,6 +40,7 @@ src/datalogger \
 src/db \
 src/device \
 src/device/call_handler \
+src/device/extended_value \
 src/device/value \
 src/distributedobjects \
 src/google \
@@ -61,6 +62,7 @@ src/test/client \
 src/test/conn \
 src/test/cyclictasks \
 src/test/device \
+src/test/device/extended_value \
 src/test/device/value \
 src/test/distributedobjects \
 src/test/doubles \

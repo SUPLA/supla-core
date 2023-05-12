@@ -40,6 +40,7 @@ src/datalogger \
 src/db \
 src/device \
 src/device/call_handler \
+src/device/extended_value \
 src/device/value \
 src/distributedobjects \
 src/google \

@@ -22,6 +22,7 @@ cpplint ./supla-server/src/db/*
 cpplint ./supla-server/src/cyclictasks/* 
 cpplint ./supla-server/src/datalogger/* 
 cpplint ./supla-server/src/device/* 
+cpplint ./supla-server/src/device/extended_value/* 
 cpplint ./supla-server/src/device/value/* 
 cpplint ./supla-server/src/device/call_handler* 
 cpplint ./supla-server/src/distributedobjects/* 
@@ -47,6 +48,7 @@ cpplint --filter=-build/include ./supla-server/src/test/conn/*
 cpplint --filter=-build/include ./supla-server/src/test/cyclictasks/* 
 cpplint --filter=-build/include ./supla-server/src/test/device/* 
 cpplint --filter=-build/include ./supla-server/src/test/device/value/* 
+cpplint --filter=-build/include ./supla-server/src/test/device/extended_value/* 
 cpplint --filter=-build/include ./supla-server/src/test/distributedobjects/* 
 cpplint --filter=-build/include ./supla-server/src/test/doubles/* 
 cpplint --filter=-build/include ./supla-server/src/test/doubles/actions/*
