@@ -40,6 +40,7 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
   const supla_caller &get_caller(void);
   supla_abstract_channel_property_getter *get_property_getter(void);
   supla_channel_value *get_channel_value(int *func, bool *online);
+  supla_channel_extended_value *get_channel_extended_value(void);
 
   virtual bool _execute(bool *execute_again,
                         supla_asynctask_thread_bucket *bucket);

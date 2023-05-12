@@ -19,12 +19,15 @@
 #ifndef CLIENTCHANNEL_H_
 #define CLIENTCHANNEL_H_
 
+#include <memory>
+
 #include "clientchannels.h"
 #include "clientobjcontaineritem.h"
 #include "proto.h"
 
 class supla_client;
 class supla_client_channels;
+class supla_device;
 class supla_client_channel : public supla_client_objcontainer_item {
  private:
   int DeviceId;
@@ -59,6 +62,9 @@ class supla_client_channel : public supla_client_objcontainer_item {
                        supla_client *client);
   void proto_get_value(TSuplaChannelValue *value, char *online,
                        supla_client *client);
+  bool get_cs_extended_value(std::shared_ptr<supla_device> device,
+                             int channel_id,
+                             TSC_SuplaChannelExtendedValue *cev);
 
  public:
   supla_client_channel(supla_client_channels *Container, int Id, int DeviceId,

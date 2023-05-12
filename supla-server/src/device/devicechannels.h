@@ -26,6 +26,7 @@
 #include "device/abstract_device_dao.h"
 #include "device/channel_fragment.h"
 #include "device/devicechannel.h"
+#include "device/extended_value/channel_extended_value_envelope.h"
 #include "device/value/channel_value_envelope.h"
 
 class supla_device;
@@ -81,10 +82,8 @@ class supla_device_channels {
 
   bool get_channel_value(int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
                          char *online, unsigned _supla_int_t *validity_time_sec,
-                         TSuplaChannelExtendedValue *ev, int *function,
-                         bool for_client);
-  bool get_channel_extendedvalue(int channel_id,
-                                 TSC_SuplaChannelExtendedValue *cev);
+                         supla_channel_extended_value **extended_value,
+                         int *function, bool for_client);
   bool get_channel_double_value(int channel_id, double *value);
   bool get_channel_char_value(int channel_id, char *value);
 
@@ -201,11 +200,13 @@ class supla_device_channels {
   void get_thermostat_measurements(
       std::vector<supla_channel_thermostat_measurement *> *result);
 
-  void get_ic_measurements(std::vector<supla_channel_ic_measurement *> *result,
-                           bool for_data_logger_purposes);
-
   void get_channel_values(std::vector<supla_channel_value_envelope *> *result,
                           std::function<bool(supla_channel_value *)> filter);
+
+  void get_channel_extended_values(
+      std::vector<supla_channel_extended_value_envelope *> *result,
+      std::function<bool(supla_channel_extended_value *)> filter,
+      bool for_data_logger_purposes);
 
   std::vector<supla_channel_fragment> get_fragments(void);
 

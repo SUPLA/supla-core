@@ -42,33 +42,33 @@ TEST_F(GetIcmValueCommandTest, getIcmValueWithSuccess) {
   TDS_ImpulseCounter_Value ic_val = {};
   ic_val.counter = 10000;
 
-  supla_channel_ic_measurement *icm = new supla_channel_ic_measurement(
-      30, SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, "PLN", "", 500, 1000);
+  supla_channel_ic_extended_value *icv = new supla_channel_ic_extended_value(
+      SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, "PLN", "", 500, 1000);
 
-  EXPECT_CALL(*cmd, get_ic_measurement(10, 20, 30)).WillOnce(Return(icm));
+  EXPECT_CALL(*cmd, get_ic_value(10, 20, 30)).WillOnce(Return(icv));
 
   commandProcessingTest("GET-IC-VALUE:10,20,30\n",
                         "VALUE:50,500,1000,10000,10000,PLN,bcKz\n");
 }
 
 TEST_F(GetIcmValueCommandTest, getIcmValueWithFilure) {
-  supla_channel_ic_measurement *icm = NULL;
-  EXPECT_CALL(*cmd, get_ic_measurement).WillOnce(Return(icm));
+  supla_channel_ic_extended_value *icv = NULL;
+  EXPECT_CALL(*cmd, get_ic_value).WillOnce(Return(icv));
   commandProcessingTest("GET-IC-VALUE:10,20,30\n", "UNKNOWN:30\n");
 }
 
 TEST_F(GetIcmValueCommandTest, noParams) {
-  EXPECT_CALL(*cmd, get_ic_measurement).Times(0);
+  EXPECT_CALL(*cmd, get_ic_value).Times(0);
   commandProcessingTest("GET-IC-VALUE:\n", "UNKNOWN:0\n");
 }
 
 TEST_F(GetIcmValueCommandTest, paramsWithZeros) {
-  EXPECT_CALL(*cmd, get_ic_measurement).Times(0);
+  EXPECT_CALL(*cmd, get_ic_value).Times(0);
   commandProcessingTest("GET-IC-VALUE:0,0,0\n", "UNKNOWN:0\n");
 }
 
 TEST_F(GetIcmValueCommandTest, badParams) {
-  EXPECT_CALL(*cmd, get_ic_measurement).Times(0);
+  EXPECT_CALL(*cmd, get_ic_value).Times(0);
   commandProcessingTest("GET-IC-VALUE:a,10,c\n", "UNKNOWN:0\n");
 }
 

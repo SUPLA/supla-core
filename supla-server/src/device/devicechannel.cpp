@@ -28,6 +28,7 @@
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "db/database.h"
 #include "device.h"
+#include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_dgf_value.h"
 #include "device/value/channel_em_value.h"
@@ -302,39 +303,32 @@ unsigned _supla_int_t supla_device_channel::get_value_validity_time_sec(void) {
   return result;
 }
 
-bool supla_device_channel::get_extended_value(TSuplaChannelExtendedValue *ev,
-                                              bool em_update) {
-  if (ev == nullptr) {
-    return false;
-  }
-
+supla_channel_extended_value *supla_device_channel::_get_extended_value(
+    bool for_data_logger_purposes) {
+  supla_channel_extended_value *result = nullptr;
   lock();
-
-  bool result = true;
-
-  if (extended_value == nullptr) {
-    memset(ev, 0, sizeof(TSuplaChannelExtendedValue));
-    result = false;
-  } else {
-    memcpy(ev, extended_value, sizeof(TSuplaChannelExtendedValue));
-
-    if (em_update) {
-      switch (ev->type) {
-        case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2:
-          result = supla_channel_electricity_measurement::update_cev(
-              ev, get_param2(), get_text_param1());
-          break;
-        case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
-          result = supla_channel_ic_measurement::update_cev(
-              ev, get_func(), get_param2(), get_param3(), get_text_param1(),
-              get_text_param2());
-          break;
+  int func = get_func();
+  if (supla_channel_ic_extended_value::is_function_supported(func)) {
+    supla_channel_ic_value *icval = nullptr;
+    if (for_data_logger_purposes) {
+      if (logger_data) {
+        icval = new supla_channel_ic_value(logger_data->value);
       }
+    } else {
+      icval = get_value<supla_channel_ic_value>();
     }
+
+    if (icval) {
+      result = new supla_channel_ic_extended_value(
+          func, icval->get_ic_value(), get_text_param1(), get_text_param2(),
+          get_param2(), get_param3());
+
+      delete icval;
+    }
+  } else if (extended_value) {
+    result = new supla_channel_extended_value(extended_value);
   }
-
   unlock();
-
   return result;
 }
 
@@ -559,11 +553,11 @@ bool supla_device_channel::set_value(
     delete db;
   }
 
-  bool converted2extended = convert_value_to_extended();
+  bool convertible2extended = is_convertible2extended();
 
   if (differ) {
     on_value_changed(old_value, new_value, significant_change,
-                     converted2extended);
+                     convertible2extended);
   }
 
   if (new_value) {
@@ -577,25 +571,12 @@ bool supla_device_channel::set_value(
   return differ;
 }
 
-bool supla_device_channel::convert_value_to_extended(void) {
+bool supla_device_channel::is_convertible2extended(void) {
   switch (get_func()) {
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
-      char value[SUPLA_CHANNELVALUE_SIZE];
-      TSuplaChannelExtendedValue ev;
-      TSC_ImpulseCounter_ExtendedValue ic_ev;
-      memset(&ic_ev, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
-
-      get_value(value);
-
-      TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
-      ic_ev.counter = ic_val->counter;
-
-      srpc_evtool_v1_icextended2extended(&ic_ev, &ev);
-
-      set_extended_value(&ev);
       return true;
   }
 
@@ -605,7 +586,7 @@ bool supla_device_channel::convert_value_to_extended(void) {
 void supla_device_channel::on_value_changed(supla_channel_value *old_value,
                                             supla_channel_value *new_value,
                                             bool significant_change,
-                                            bool converted2extended) {
+                                            bool convertible2extended) {
   switch (get_func()) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
@@ -625,7 +606,7 @@ void supla_device_channel::on_value_changed(supla_channel_value *old_value,
       supla_caller(ctDevice, get_device()->get_id()), get_device()->get_id(),
       get_id(), false, significant_change);
 
-  if (converted2extended) {
+  if (convertible2extended) {
     get_device()->get_user()->on_channel_value_changed(
         supla_caller(ctDevice, get_device()->get_id()), get_device()->get_id(),
         get_id(), true);
@@ -970,39 +951,6 @@ supla_device_channel::get_electricity_measurement(
   unlock();
 
   return result;
-}
-
-supla_channel_ic_measurement *
-supla_device_channel::get_impulse_counter_measurement(
-    bool for_data_logger_purposes) {
-  int func = get_func();
-  switch (func) {
-    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_WATER_METER:
-    case SUPLA_CHANNELFNC_IC_GAS_METER:
-    case SUPLA_CHANNELFNC_IC_HEAT_METER: {
-      TDS_ImpulseCounter_Value *ic_val = nullptr;
-      char value[SUPLA_CHANNELVALUE_SIZE] = {};
-
-      if (for_data_logger_purposes) {
-        lock();
-        ic_val = logger_data ? (TDS_ImpulseCounter_Value *)logger_data->value
-                             : nullptr;
-        unlock();
-      } else {
-        get_value(value);
-        ic_val = (TDS_ImpulseCounter_Value *)value;
-      }
-
-      if (ic_val) {
-        return new supla_channel_ic_measurement(
-            get_id(), func, ic_val, text_param1, text_param2, param2, param3);
-      }
-
-      break;
-    }
-  }
-  return nullptr;
 }
 
 supla_channel_thermostat_measurement *

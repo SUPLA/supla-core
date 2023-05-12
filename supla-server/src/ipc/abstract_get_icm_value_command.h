@@ -21,15 +21,15 @@
 
 #include <string>
 
-#include "device/channel_ic_measurement.h"
+#include "device/extended_value/channel_ic_extended_value.h"
 #include "ipc/abstract_ipc_command.h"
 
 class supla_abstract_get_icm_value_command : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual supla_channel_ic_measurement *get_ic_measurement(int user_id,
-                                                           int device_id,
-                                                           int channel_id) = 0;
+  virtual supla_channel_ic_extended_value *get_ic_value(int user_id,
+                                                        int device_id,
+                                                        int channel_id) = 0;
 
  public:
   explicit supla_abstract_get_icm_value_command(

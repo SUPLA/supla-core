@@ -19,8 +19,8 @@
 #ifndef WEBHOOK_STATE_WEBHOOK_CLIENT_H_
 #define WEBHOOK_STATE_WEBHOOK_CLIENT_H_
 
-#include "channel_ic_measurement.h"
 #include "device/channel_electricity_measurement.h"
+#include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_value.h"
 #include "http/abstract_curl_adapter.h"
 #include "json/cJSON.h"
@@ -34,6 +34,7 @@ class supla_state_webhook_client {
   supla_abstract_curl_adapter *curl_adapter;
   supla_state_webhook_credentials *credentials;
   supla_channel_value *channel_value;
+  supla_channel_extended_value *channel_extended_value;
 
   cJSON *get_header(const char *function);
   void refresh_token(void);
@@ -48,8 +49,7 @@ class supla_state_webhook_client {
   bool temperature_and_humidity_report(const char *function, bool temperature,
                                        bool humidity);
   bool dimmer_and_rgb_report(const char *function, bool rgb, bool white);
-  bool impulse_counter_measurement_report(const char *function,
-                                          supla_channel_ic_measurement *icm);
+  bool impulse_counter_measurement_report(const char *function);
 
  public:
   explicit supla_state_webhook_client(
@@ -59,6 +59,8 @@ class supla_state_webhook_client {
 
   void set_channel_connected(bool connected);
   void set_channel_value(supla_channel_value *channel_value);
+  void set_channel_extended_value(
+      supla_channel_extended_value *channel_extended_value);
 
   bool power_switch_report(void);
   bool light_switch_report(void);
@@ -88,14 +90,10 @@ class supla_state_webhook_client {
   bool rgb_report();
   bool electricity_measurement_report(
       supla_channel_electricity_measurement *em);
-  bool impulse_counter_electricity_measurement_report(
-      supla_channel_ic_measurement *icm);
-  bool impulse_counter_gas_measurement_report(
-      supla_channel_ic_measurement *icm);
-  bool impulse_counter_water_measurement_report(
-      supla_channel_ic_measurement *icm);
-  bool impulse_counter_heat_measurement_report(
-      supla_channel_ic_measurement *icm);
+  bool impulse_counter_electricity_measurement_report(void);
+  bool impulse_counter_gas_measurement_report(void);
+  bool impulse_counter_water_measurement_report(void);
+  bool impulse_counter_heat_measurement_report(void);
   bool triggered_actions_report(unsigned int actions);
 };
 

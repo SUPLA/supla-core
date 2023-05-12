@@ -29,6 +29,7 @@
 #include "db/database.h"
 #include "device.h"
 #include "device/channel_property_getter.h"
+#include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_valve_value.h"
 #include "log.h"
@@ -144,8 +145,9 @@ void supla_device_channels::for_each_channel(
 
 bool supla_device_channels::get_channel_value(
     int channel_id, char value[SUPLA_CHANNELVALUE_SIZE], char *online,
-    unsigned _supla_int_t *validity_time_sec, TSuplaChannelExtendedValue *ev,
-    int *function, bool for_client) {
+    unsigned _supla_int_t *validity_time_sec,
+    supla_channel_extended_value **extended_value, int *function,
+    bool for_client) {
   supla_device_channel *channel = find_channel(channel_id);
 
   if (channel) {
@@ -162,8 +164,9 @@ bool supla_device_channels::get_channel_value(
       *function = channel->get_func();
     }
 
-    if (ev) {
-      channel->get_extended_value(ev, for_client);
+    if (extended_value) {
+      *extended_value =
+          channel->get_extended_value<supla_channel_extended_value>(false);
     }
 
     if (for_client) {
@@ -172,32 +175,23 @@ bool supla_device_channels::get_channel_value(
         case SUPLA_CHANNELFNC_IC_GAS_METER:
         case SUPLA_CHANNELFNC_IC_WATER_METER:
         case SUPLA_CHANNELFNC_IC_HEAT_METER: {
-          TDS_ImpulseCounter_Value ds;
-          memcpy(&ds, value, sizeof(TDS_ImpulseCounter_Value));
           memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
 
-          TSC_ImpulseCounter_Value sc;
-          sc.calculated_value = supla_channel_ic_measurement::get_calculated_i(
-              channel->get_param3(), ds.counter);
+          supla_channel_ic_extended_value *icv =
+              channel->get_extended_value<supla_channel_ic_extended_value>(
+                  false);
+          if (icv) {
+            TSC_ImpulseCounter_Value sc;
+            sc.calculated_value = icv->get_calculated_value();
+            memcpy(value, &sc, sizeof(TSC_ImpulseCounter_Value));
+            delete icv;
+          }
 
-          memcpy(value, &sc, sizeof(TSC_ImpulseCounter_Value));
           break;
         }
       }
     }
 
-    return true;
-  }
-
-  return false;
-}
-
-bool supla_device_channels::get_channel_extendedvalue(
-    int channel_id, TSC_SuplaChannelExtendedValue *cev) {
-  supla_device_channel *channel = find_channel(channel_id);
-
-  if (channel && channel->get_extended_value(&cev->value, true)) {
-    cev->Id = channel->get_id();
     return true;
   }
 
@@ -575,20 +569,6 @@ void supla_device_channels::get_electricity_measurements(
   }
 }
 
-void supla_device_channels::get_ic_measurements(
-    vector<supla_channel_ic_measurement *> *result,
-    bool for_data_logger_purposes) {
-  for (auto it = channels.begin(); it != channels.end(); ++it) {
-    if (!(*it)->is_offline()) {
-      supla_channel_ic_measurement *ic =
-          (*it)->get_impulse_counter_measurement(for_data_logger_purposes);
-      if (ic) {
-        result->push_back(ic);
-      }
-    }
-  }
-}
-
 void supla_device_channels::get_thermostat_measurements(
     vector<supla_channel_thermostat_measurement *> *result) {
   for (auto it = channels.begin(); it != channels.end(); ++it) {
@@ -611,6 +591,25 @@ void supla_device_channels::get_channel_values(
       if (filter(value)) {
         result->push_back(
             new supla_channel_value_envelope((*it)->get_id(), value));
+      } else {
+        delete value;
+      }
+    }
+  }
+}
+
+void supla_device_channels::get_channel_extended_values(
+    vector<supla_channel_extended_value_envelope *> *result,
+    function<bool(supla_channel_extended_value *)> filter,
+    bool for_data_logger_purposes) {
+  for (auto it = channels.begin(); it != channels.end(); ++it) {
+    supla_channel_extended_value *value =
+        (*it)->get_extended_value<supla_channel_extended_value>(
+            for_data_logger_purposes);
+    if (value) {
+      if (filter(value)) {
+        result->push_back(
+            new supla_channel_extended_value_envelope((*it)->get_id(), value));
       } else {
         delete value;
       }

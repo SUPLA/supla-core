@@ -102,6 +102,15 @@ supla_channel_value *supla_asynctask_http_request::get_channel_value(
   return nullptr;
 }
 
+supla_channel_extended_value *
+supla_asynctask_http_request::get_channel_extended_value(void) {
+  if (property_getter) {
+    return property_getter->get_extended_value(user_id, device_id, channel_id);
+  }
+
+  return nullptr;
+}
+
 bool supla_asynctask_http_request::_execute(
     bool *execute_again, supla_asynctask_thread_bucket *bucket) {
   supla_asynctask_http_thread_bucket *ht_bucket = nullptr;

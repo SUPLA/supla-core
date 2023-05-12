@@ -42,6 +42,7 @@ supla_state_webhook_client::supla_state_webhook_client(
   this->curl_adapter = curl_adapter;
   this->credentials = credentials;
   this->channel_value = nullptr;
+  this->channel_extended_value = nullptr;
 
   if (timestamp == 0) {
     struct timeval now;
@@ -56,6 +57,10 @@ supla_state_webhook_client::~supla_state_webhook_client(void) {
   if (channel_value) {
     delete channel_value;
   }
+
+  if (channel_extended_value) {
+    delete channel_extended_value;
+  }
 }
 
 void supla_state_webhook_client::set_channel_connected(bool connected) {
@@ -64,7 +69,20 @@ void supla_state_webhook_client::set_channel_connected(bool connected) {
 
 void supla_state_webhook_client::set_channel_value(
     supla_channel_value *channel_value) {
+  if (this->channel_value) {
+    delete channel_value;
+  }
+
   this->channel_value = channel_value;
+}
+
+void supla_state_webhook_client::set_channel_extended_value(
+    supla_channel_extended_value *channel_extended_value) {
+  if (this->channel_extended_value) {
+    delete channel_extended_value;
+  }
+
+  this->channel_extended_value = channel_extended_value;
 }
 
 cJSON *supla_state_webhook_client::get_header(const char *function) {
@@ -633,30 +651,36 @@ bool supla_state_webhook_client::electricity_measurement_report(
 }
 
 bool supla_state_webhook_client::impulse_counter_measurement_report(
-    const char *function, supla_channel_ic_measurement *icm) {
+    const char *function) {
+  supla_channel_ic_extended_value *icv =
+      dynamic_cast<supla_channel_ic_extended_value *>(channel_extended_value);
+
   cJSON *root = get_header(function);
   if (root) {
     cJSON *state = cJSON_CreateObject();
     if (state) {
-      if (channel_connected && icm != nullptr) {
-        cJSON_AddNumberToObject(state, "totalCost", icm->getTotalCost() * 0.01);
+      if (channel_connected && icv != nullptr) {
+        cJSON_AddNumberToObject(state, "totalCost",
+                                icv->get_total_cost() * 0.01);
         cJSON_AddNumberToObject(state, "pricePerUnit",
-                                icm->getPricePerUnit() * 0.0001);
+                                icv->get_price_per_unit() * 0.0001);
         cJSON_AddNumberToObject(state, "impulsesPerUnit",
-                                icm->getImpulsesPerUnit());
-        cJSON_AddNumberToObject(state, "counter", icm->getCounter());
+                                icv->get_impulses_per_unit());
+        cJSON_AddNumberToObject(state, "counter", icv->get_counter());
         cJSON_AddNumberToObject(state, "calculatedValue",
-                                icm->getCalculatedValue() * 0.001);
-        if (strnlen(icm->getCurrency(), 4) == 0) {
+                                icv->get_calculated_value() * 0.001);
+        if (icv->get_currency().size() == 0) {
           cJSON_AddNullToObject(state, "currency");
         } else {
-          cJSON_AddStringToObject(state, "currency", icm->getCurrency());
+          cJSON_AddStringToObject(state, "currency",
+                                  icv->get_currency().c_str());
         }
 
-        if (strnlen(icm->getCustomUnit(), 9) == 0) {
+        if (icv->get_custom_unit().size() == 0) {
           cJSON_AddNullToObject(state, "unit");
         } else {
-          cJSON_AddStringToObject(state, "unit", icm->getCustomUnit());
+          cJSON_AddStringToObject(state, "unit",
+                                  icv->get_custom_unit().c_str());
         }
       }
 
@@ -672,23 +696,21 @@ bool supla_state_webhook_client::impulse_counter_measurement_report(
 }
 
 bool supla_state_webhook_client::impulse_counter_electricity_measurement_report(
-    supla_channel_ic_measurement *icm) {
-  return impulse_counter_measurement_report("IC_ELECTRICITYMETER", icm);
+    void) {
+  return impulse_counter_measurement_report("IC_ELECTRICITYMETER");
 }
 
-bool supla_state_webhook_client::impulse_counter_gas_measurement_report(
-    supla_channel_ic_measurement *icm) {
-  return impulse_counter_measurement_report("IC_GASMETER", icm);
+bool supla_state_webhook_client::impulse_counter_gas_measurement_report(void) {
+  return impulse_counter_measurement_report("IC_GASMETER");
 }
 
 bool supla_state_webhook_client::impulse_counter_water_measurement_report(
-    supla_channel_ic_measurement *icm) {
-  return impulse_counter_measurement_report("IC_WATERMETER", icm);
+    void) {
+  return impulse_counter_measurement_report("IC_WATERMETER");
 }
 
-bool supla_state_webhook_client::impulse_counter_heat_measurement_report(
-    supla_channel_ic_measurement *icm) {
-  return impulse_counter_measurement_report("IC_HEATMETER", icm);
+bool supla_state_webhook_client::impulse_counter_heat_measurement_report(void) {
+  return impulse_counter_measurement_report("IC_HEATMETER");
 }
 
 bool supla_state_webhook_client::triggered_actions_report(

@@ -16,19 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef IMPULSE_LOGGER_DAO_H_
-#define IMPULSE_LOGGER_DAO_H_
+#ifndef CHANNEL_EXTENDED_VALUE_ENVELOPE_H_
+#define CHANNEL_EXTENDED_VALUE_ENVELOPE_H_
 
-#include "db/abstract_db_access_provider.h"
-#include "device/extended_value/channel_ic_extended_value.h"
+#include "device/extended_value/channel_extended_value.h"
 
-class supla_impulse_logger_dao {
+class supla_channel_extended_value_envelope {
  private:
-  supla_abstract_db_access_provider *dba;
+  int channel_id;
+  supla_channel_extended_value *extended_value;
 
  public:
-  explicit supla_impulse_logger_dao(supla_abstract_db_access_provider *dba);
-  void add(int channel_id, supla_channel_ic_extended_value *icv);
+  supla_channel_extended_value_envelope(
+      int channel_id, supla_channel_extended_value *extended_value);
+  virtual ~supla_channel_extended_value_envelope(void);
+  int get_channel_id(void);
+  supla_channel_extended_value *get_extended_value(void);
 };
 
-#endif /* IMPULSE_LOGGER_DAO_H_ */
+#endif /*CHANNEL_EXTENDED_VALUE_ENVELOPE_H_*/

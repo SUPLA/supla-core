@@ -28,8 +28,8 @@
 #include "caller.h"
 #include "channel_address.h"
 #include "channel_electricity_measurement.h"
-#include "channel_ic_measurement.h"
 #include "channel_thermostat_measurement.h"
+#include "device/extended_value/channel_extended_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "device/value/channel_value.h"
 #include "proto.h"
@@ -80,10 +80,12 @@ class supla_device_channel {
   void update_timer_state(void);
   void update_extended_electricity_meter_value(void);
   supla_channel_value *_get_value(void);
-  bool convert_value_to_extended(void);
+  bool is_convertible2extended(void);
   void on_value_changed(supla_channel_value *old_value,
                         supla_channel_value *new_value, bool significant_change,
-                        bool converted2extended);
+                        bool convertible2extended);
+  supla_channel_extended_value *_get_extended_value(
+      bool for_data_logger_purposes);
 
  public:
   supla_device_channel(supla_device *device, int id, int number, int type,
@@ -128,7 +130,6 @@ class supla_device_channel {
   void get_value(char value[SUPLA_CHANNELVALUE_SIZE]);
   bool set_value(const char value[SUPLA_CHANNELVALUE_SIZE],
                  const unsigned _supla_int_t *validity_time_sec, bool *offline);
-  bool get_extended_value(TSuplaChannelExtendedValue *ev, bool em_update);
   void set_extended_value(TSuplaChannelExtendedValue *ev);
   void assign_rgbw_value(char value[SUPLA_CHANNELVALUE_SIZE], int color,
                          char color_brightness, char brightness, char on_off);
@@ -144,8 +145,6 @@ class supla_device_channel {
   std::list<int> related_channel(void);
   supla_channel_electricity_measurement *get_electricity_measurement(
       bool for_data_logger_purposes);
-  supla_channel_ic_measurement *get_impulse_counter_measurement(
-      bool for_data_logger_purposes);
   supla_channel_thermostat_measurement *get_thermostat_measurement(void);
   channel_json_config *get_json_config(void);
   unsigned int get_value_validity_time_left_msec(void);
@@ -156,11 +155,28 @@ class supla_device_channel {
 
   template <typename T>
   T *get_value(void);
+
+  template <typename T>
+  T *get_extended_value(bool for_data_logger_purposes);
 };
 
 template <typename T>
 T *supla_device_channel::get_value(void) {
   supla_channel_value *value = _get_value();
+  if (value) {
+    T *expected = dynamic_cast<T *>(value);
+    if (!expected) {
+      delete value;
+    }
+    return expected;
+  }
+  return nullptr;
+}
+
+template <typename T>
+T *supla_device_channel::get_extended_value(bool for_data_logger_purposes) {
+  supla_channel_extended_value *value =
+      _get_extended_value(for_data_logger_purposes);
   if (value) {
     T *expected = dynamic_cast<T *>(value);
     if (!expected) {

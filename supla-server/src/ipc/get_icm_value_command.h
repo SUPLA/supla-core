@@ -26,9 +26,9 @@
 class supla_get_icm_value_command
     : public supla_abstract_get_icm_value_command {
  protected:
-  virtual supla_channel_ic_measurement *get_ic_measurement(int user_id,
-                                                           int device_id,
-                                                           int channel_id);
+  virtual supla_channel_ic_extended_value *get_ic_value(int user_id,
+                                                        int device_id,
+                                                        int channel_id);
 
  public:
   explicit supla_get_icm_value_command(

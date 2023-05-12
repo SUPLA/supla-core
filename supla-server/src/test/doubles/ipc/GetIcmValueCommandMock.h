@@ -30,9 +30,9 @@ class GetIcmValueCommandMock : public supla_abstract_get_icm_value_command {
   explicit GetIcmValueCommandMock(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  MOCK_METHOD3(get_ic_measurement,
-               supla_channel_ic_measurement *(int user_id, int device_id,
-                                              int channel_id));
+  MOCK_METHOD3(get_ic_value,
+               supla_channel_ic_extended_value *(int user_id, int device_id,
+                                                 int channel_id));
 };
 
 } /* namespace testing */

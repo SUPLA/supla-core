@@ -20,7 +20,6 @@
 
 #include <string.h>
 
-#include "channel_ic_measurement.h"
 #include "safearray.h"
 #include "srpc/srpc.h"
 
@@ -64,6 +63,25 @@ void supla_channel_electricity_measurement::getCurrency(char currency[4]) {
   currency[3] = 0;
 }
 
+// Temporary
+void supla_channel_electricity_measurement::get_cost_and_currency(
+    const char *TextParam1, int Param2, char currency[3],
+    _supla_int_t *total_cost, _supla_int_t *price_per_unit, double count) {
+  currency[0] = 0;
+  *total_cost = 0;
+  *price_per_unit = 0;
+
+  if (TextParam1 && strlen(TextParam1) == 3) {
+    memcpy(currency, TextParam1, 3);
+  }
+
+  if (Param2 > 0) {
+    *price_per_unit = Param2;
+    // *total_cost = (double)(Param2 * 0.0001 * count) * 100;
+    *total_cost = (double)(Param2 * 0.01 * count);
+  }
+}
+
 // static
 void supla_channel_electricity_measurement::set_costs(
     int Param2, const char *TextParam1,
@@ -72,12 +90,11 @@ void supla_channel_electricity_measurement::set_costs(
   sum += em_ev->total_forward_active_energy[1] * 0.00001;
   sum += em_ev->total_forward_active_energy[2] * 0.00001;
 
-  supla_channel_ic_measurement::get_cost_and_currency(
-      TextParam1, Param2, em_ev->currency, &em_ev->total_cost,
-      &em_ev->price_per_unit, sum);
+  get_cost_and_currency(TextParam1, Param2, em_ev->currency, &em_ev->total_cost,
+                        &em_ev->price_per_unit, sum);
 
   if (em_ev->measured_values & EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED) {
-    supla_channel_ic_measurement::get_cost_and_currency(
+    get_cost_and_currency(
         TextParam1, Param2, em_ev->currency, &em_ev->total_cost_balanced,
         &em_ev->price_per_unit,
         em_ev->total_forward_active_energy_balanced * 0.00001);

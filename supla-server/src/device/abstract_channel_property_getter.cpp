@@ -119,20 +119,20 @@ supla_abstract_channel_property_getter::get_electricity_measurement(
   return get_electricity_measurement();
 }
 
-supla_channel_ic_measurement*
-supla_abstract_channel_property_getter::get_ic_measurement(void) {
-  return _get_ic_measurement(user_id, device_id, channel_id);
+supla_channel_extended_value*
+supla_abstract_channel_property_getter::get_extended_value(void) {
+  return _get_extended_value(user_id, device_id, channel_id);
 }
 
-supla_channel_ic_measurement*
-supla_abstract_channel_property_getter::get_ic_measurement(int user_id,
+supla_channel_extended_value*
+supla_abstract_channel_property_getter::get_extended_value(int user_id,
                                                            int device_id,
                                                            int channel_id) {
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
 
-  return get_ic_measurement();
+  return get_extended_value();
 }
 
 channel_json_config*

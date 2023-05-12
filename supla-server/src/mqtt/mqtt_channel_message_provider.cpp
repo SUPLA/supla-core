@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "channeljsonconfig/action_trigger_config.h"
+#include "device/extended_value/channel_ic_extended_value.h"
 #include "log.h"
 
 supla_mqtt_channel_message_provider::supla_mqtt_channel_message_provider(void)
@@ -961,11 +962,12 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
   if (index <= 1) {
     TDS_ImpulseCounter_Value v;
     memset(&v, 0, sizeof(TDS_ImpulseCounter_Value));
-    supla_channel_ic_measurement *ic = new supla_channel_ic_measurement(
-        row->channel_id, row->channel_func, &v, row->channel_text_param1,
+
+    supla_channel_ic_extended_value *icv = new supla_channel_ic_extended_value(
+        row->channel_func, &v, row->channel_text_param1,
         row->channel_text_param2, row->channel_param2, row->channel_param3);
 
-    if (ic == NULL) {
+    if (icv == NULL) {
       return false;
     }
 
@@ -976,28 +978,29 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
         char gas[] = "gas";
 
         if (func == SUPLA_CHANNELFNC_IC_ELECTRICITY_METER &&
-            (strncmp(ic->getCustomUnit(), "kWh", 5) == 0 ||
-             strncmp(ic->getCustomUnit(), "Wh", 5) == 0)) {
+            (icv->get_custom_unit() == "kWh" ||
+             icv->get_custom_unit() == "Wh")) {
           device_class = energy;
         } else if (func == SUPLA_CHANNELFNC_IC_GAS_METER &&
-                   (strncmp(ic->getCustomUnit(), "m³", 5) == 0 ||
-                    strncmp(ic->getCustomUnit(), "ft³", 5) == 0)) {
+                   (icv->get_custom_unit() == "m³" ||
+                    icv->get_custom_unit() == "ft³")) {
           device_class = gas;
         }
 
-        result =
-            ha_sensor(ic->getCustomUnit(), 3, 0, true, "state/calculated_value",
-                      NULL, "Value", NULL, device_class, true, topic_prefix,
-                      topic_name, message, message_size);
+        result = ha_sensor(icv->get_custom_unit().c_str(), 3, 0, true,
+                           "state/calculated_value", NULL, "Value", NULL,
+                           device_class, true, topic_prefix, topic_name,
+                           message, message_size);
       } break;
       case 1:
-        result = ha_sensor(ic->getCurrency(), 2, 1, true, "state/total_cost",
-                           NULL, "Total cost", NULL, "monetary", false,
-                           topic_prefix, topic_name, message, message_size);
+        result =
+            ha_sensor(icv->get_currency().c_str(), 2, 1, true,
+                      "state/total_cost", NULL, "Total cost", NULL, "monetary",
+                      false, topic_prefix, topic_name, message, message_size);
         break;
     }
 
-    delete ic;
+    delete icv;
   }
 
   return result;

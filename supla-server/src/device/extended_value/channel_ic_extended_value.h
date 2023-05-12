@@ -27,11 +27,9 @@
 class supla_channel_ic_extended_value : public supla_channel_extended_value,
                                         private supla_channel_billing_value {
  public:
-  explicit supla_channel_ic_extended_value(int func,
-                                           TDS_ImpulseCounter_Value *ic_val,
-                                           const char *text_param1,
-                                           const char *text_param2, int param2,
-                                           int param3);
+  explicit supla_channel_ic_extended_value(
+      int func, const TDS_ImpulseCounter_Value *ic_val, const char *text_param1,
+      const char *text_param2, int param2, int param3);
   virtual ~supla_channel_ic_extended_value(void);
 
   _supla_int_t get_total_cost(void);
@@ -41,6 +39,7 @@ class supla_channel_ic_extended_value : public supla_channel_extended_value,
   _supla_int_t get_impulses_per_unit(void);
   unsigned _supla_int64_t get_counter(void);
   unsigned _supla_int64_t get_calculated_value(void);
+  static bool is_function_supported(int func);
 };
 
 #endif /*CHANNEL_IC_EXTENDED_VALUE_H_*/

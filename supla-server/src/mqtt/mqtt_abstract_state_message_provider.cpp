@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "device/channel_fragment.h"
+#include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
@@ -44,9 +45,9 @@ supla_mqtt_abstract_state_message_provider::
   this->channel_function = 0;
   this->channel_flags = 0;
   this->channel_value = nullptr;
+  this->channel_extended_value = nullptr;
   this->user_suid = nullptr;
   this->em = nullptr;
-  this->icm = nullptr;
 }
 
 supla_mqtt_abstract_state_message_provider::
@@ -55,12 +56,12 @@ supla_mqtt_abstract_state_message_provider::
     delete channel_value;
   }
 
-  if (em) {
-    delete em;
+  if (channel_extended_value) {
+    delete channel_extended_value;
   }
 
-  if (icm) {
-    delete icm;
+  if (em) {
+    delete em;
   }
 }
 
@@ -88,14 +89,14 @@ void supla_mqtt_abstract_state_message_provider::set_ids(int user_id,
     channel_value = nullptr;
   }
 
+  if (channel_extended_value) {
+    delete channel_extended_value;
+    channel_extended_value = nullptr;
+  }
+
   if (em) {
     delete em;
     em = nullptr;
-  }
-
-  if (icm) {
-    delete icm;
-    icm = nullptr;
   }
 }
 
@@ -539,12 +540,15 @@ bool supla_mqtt_abstract_state_message_provider::
                                         const char *topic_prefix,
                                         char **topic_name, void **message,
                                         size_t *message_size) {
-  if (icm == nullptr) {
-    icm = _get_channel_property_getter()->get_ic_measurement(
+  if (channel_extended_value == nullptr) {
+    channel_extended_value = _get_channel_property_getter()->get_extended_value(
         get_user_id(), get_device_id(), get_channel_id());
   }
 
-  if (icm == nullptr) {
+  supla_channel_ic_extended_value *icv =
+      dynamic_cast<supla_channel_ic_extended_value *>(channel_extended_value);
+
+  if (icv == nullptr) {
     message = nullptr;
 
     if (message_size) {
@@ -559,46 +563,49 @@ bool supla_mqtt_abstract_state_message_provider::
   switch (index) {
     case 1:
       snprintf(value, sizeof(value), "%.2f",
-               icm ? (icm->getTotalCost() * 0.01) : 0);
+               icv ? (icv->get_total_cost() * 0.01) : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/total_cost",
                             get_device_id(), get_channel_id());
     case 2:
       snprintf(value, sizeof(value), "%.4f",
-               icm ? (icm->getPricePerUnit() * 0.0001) : 0);
+               icv ? (icv->get_price_per_unit() * 0.0001) : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/price_per_unit",
                             get_device_id(), get_channel_id());
     case 3:
-      snprintf(value, sizeof(value), "%i", icm ? icm->getImpulsesPerUnit() : 0);
+      snprintf(value, sizeof(value), "%i",
+               icv ? icv->get_impulses_per_unit() : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/impulses_per_unit",
                             get_device_id(), get_channel_id());
     case 4:
-      snprintf(value, sizeof(value), "%llu", icm ? icm->getCounter() : 0);
+      snprintf(value, sizeof(value), "%llu", icv ? icv->get_counter() : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/counter",
                             get_device_id(), get_channel_id());
     case 5:
       snprintf(value, sizeof(value), "%.3f",
-               icm ? (icm->getCalculatedValue() * 0.001) : 0);
+               icv ? (icv->get_calculated_value() * 0.001) : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/calculated_value",
                             get_device_id(), get_channel_id());
     case 6:
       return create_message(topic_prefix, user_suid, topic_name, message,
-                            message_size, icm ? icm->getCurrency() : "", false,
+                            message_size,
+                            icv ? icv->get_currency().c_str() : "", false,
                             "devices/%i/channels/%i/state/currency",
                             get_device_id(), get_channel_id());
     case 7:
       return create_message(topic_prefix, user_suid, topic_name, message,
-                            message_size, icm ? icm->getCustomUnit() : "",
-                            false, "devices/%i/channels/%i/state/unit",
+                            message_size,
+                            icv ? icv->get_custom_unit().c_str() : "", false,
+                            "devices/%i/channels/%i/state/unit",
                             get_device_id(), get_channel_id());
   }
 

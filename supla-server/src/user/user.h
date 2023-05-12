@@ -127,13 +127,11 @@ class supla_user {
   const char *getShortUniqueID(void);
   const char *getLongUniqueID(void);
 
-  bool get_channel_value(int device_id, int channel_id,
-                         char value[SUPLA_CHANNELVALUE_SIZE],
-                         char sub_value[SUPLA_CHANNELVALUE_SIZE],
-                         char *sub_value_type, TSuplaChannelExtendedValue *ev,
-                         int *function, char *online,
-                         unsigned _supla_int_t *validity_time_sec,
-                         bool for_client);
+  bool get_channel_value(
+      int device_id, int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
+      char sub_value[SUPLA_CHANNELVALUE_SIZE], char *sub_value_type,
+      supla_channel_extended_value **extended_value, int *function,
+      char *online, unsigned _supla_int_t *validity_time_sec, bool for_client);
 
   bool set_device_channel_value(const supla_caller &caller, int device_id,
                                 int channel_id, int group_id, unsigned char eol,

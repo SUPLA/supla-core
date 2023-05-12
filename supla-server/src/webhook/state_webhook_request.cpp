@@ -70,9 +70,11 @@ bool supla_state_webhook_request::make_request(
   int func = 0;
   bool online = false;
   supla_channel_value *value = get_channel_value(&func, &online);
+  supla_channel_extended_value *extended_value = get_channel_extended_value();
 
   client.set_channel_connected(online);
   client.set_channel_value(value);
+  client.set_channel_extended_value(extended_value);
 
   bool result = false;
 
@@ -195,34 +197,16 @@ bool supla_state_webhook_request::make_request(
       break;
 
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+      result = client.impulse_counter_electricity_measurement_report();
+      break;
     case SUPLA_CHANNELFNC_IC_GAS_METER:
+      result = client.impulse_counter_gas_measurement_report();
+      break;
     case SUPLA_CHANNELFNC_IC_WATER_METER:
+      result = client.impulse_counter_water_measurement_report();
+      break;
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
-
-      if (get_property_getter()) {
-        supla_channel_ic_measurement *icm =
-            get_property_getter()->get_ic_measurement();
-
-        switch (func) {
-          case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-            result = client.impulse_counter_electricity_measurement_report(icm);
-            break;
-          case SUPLA_CHANNELFNC_IC_GAS_METER:
-            result = client.impulse_counter_gas_measurement_report(icm);
-            break;
-          case SUPLA_CHANNELFNC_IC_WATER_METER:
-            result = client.impulse_counter_water_measurement_report(icm);
-            break;
-          case SUPLA_CHANNELFNC_IC_HEAT_METER:
-            result = client.impulse_counter_heat_measurement_report(icm);
-            break;
-        }
-
-        if (icm != nullptr) {
-          delete icm;
-        }
-      }
-
+      result = client.impulse_counter_heat_measurement_report();
       break;
   }
 

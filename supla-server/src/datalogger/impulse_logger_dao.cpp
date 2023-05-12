@@ -25,23 +25,23 @@ supla_impulse_logger_dao::supla_impulse_logger_dao(
   this->dba = dba;
 }
 
-void supla_impulse_logger_dao::add(supla_channel_ic_measurement *ic) {
-  if (!ic) {
+void supla_impulse_logger_dao::add(int channel_id,
+                                   supla_channel_ic_extended_value *icv) {
+  if (!icv) {
     return;
   }
 
   MYSQL_BIND pbind[3] = {};
 
-  int ChannelId = ic->getChannelId();
-  unsigned _supla_int64_t counter = ic->getCounter();
-  unsigned _supla_int64_t calculatedValue = ic->getCalculatedValue();
+  unsigned _supla_int64_t counter = icv->get_counter();
+  unsigned _supla_int64_t calculated_value = icv->get_calculated_value();
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&ChannelId;
+  pbind[0].buffer = (char *)&channel_id;
   pbind[1].buffer_type = MYSQL_TYPE_LONGLONG;
   pbind[1].buffer = (char *)&counter;
   pbind[2].buffer_type = MYSQL_TYPE_LONGLONG;
-  pbind[2].buffer = (char *)&calculatedValue;
+  pbind[2].buffer = (char *)&calculated_value;
 
   const char sql[] = "CALL `supla_add_ic_log_item`(?,?,?)";
 

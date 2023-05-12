@@ -42,8 +42,8 @@ class ChannelPropertyGetterMock
                supla_channel_electricity_measurement *(int user_id,
                                                        int device_id,
                                                        int channel_id));
-  MOCK_METHOD3(_get_ic_measurement,
-               supla_channel_ic_measurement *(int user_id, int device_id,
+  MOCK_METHOD3(_get_extended_value,
+               supla_channel_extended_value *(int user_id, int device_id,
                                               int channel_id));
   MOCK_METHOD3(_get_detached_json_config,
                channel_json_config *(int user_id, int device_id,

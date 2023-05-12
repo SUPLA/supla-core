@@ -18,6 +18,7 @@
 
 #include "StateWebhookRequestTest.h"
 
+#include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_onoff_value.h"
@@ -99,12 +100,12 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
 
-void StateWebhookRequestTest::makeTest(int func, bool online,
-                                       supla_channel_ic_measurement *icm,
-                                       const char *expectedPayload) {
-  EXPECT_CALL(*propertyGetter, _get_ic_measurement(Eq(1), Eq(2), Eq(123)))
+void StateWebhookRequestTest::makeTest(
+    int func, bool online, supla_channel_extended_value *extended_value,
+    const char *expectedPayload) {
+  EXPECT_CALL(*propertyGetter, _get_extended_value(Eq(1), Eq(2), Eq(123)))
       .Times(1)
-      .WillOnce(Return(icm));
+      .WillOnce(Return(extended_value));
 
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(123), NotNull(), NotNull()))
@@ -809,10 +810,10 @@ TEST_F(StateWebhookRequestTest,
   char currency[] = "PLN";
   char unit[] = "GJ";
 
-  supla_channel_ic_measurement *icm = new supla_channel_ic_measurement(
-      123, SUPLA_CHANNELFNC_IC_HEAT_METER, &ic_val, currency, unit, 5555, 1000);
+  supla_channel_ic_extended_value *icv = new supla_channel_ic_extended_value(
+      SUPLA_CHANNELFNC_IC_HEAT_METER, &ic_val, currency, unit, 5555, 1000);
 
-  makeTest(SUPLA_CHANNELFNC_IC_HEAT_METER, true, icm, expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_IC_HEAT_METER, true, icv, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest,
@@ -823,7 +824,7 @@ TEST_F(StateWebhookRequestTest,
       "1600097258,\"state\":{\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_IC_HEAT_METER, false,
-           (supla_channel_ic_measurement *)nullptr, expectedPayload);
+           (supla_channel_ic_extended_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest,
@@ -841,10 +842,10 @@ TEST_F(StateWebhookRequestTest,
   char currency[] = "PLN";
   char unit[] = "m3";
 
-  supla_channel_ic_measurement *icm = new supla_channel_ic_measurement(
-      123, SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, currency, unit, 5555, 1000);
+  supla_channel_ic_extended_value *icv = new supla_channel_ic_extended_value(
+      SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, currency, unit, 5555, 1000);
 
-  makeTest(SUPLA_CHANNELFNC_IC_GAS_METER, true, icm, expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_IC_GAS_METER, true, icv, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest,
@@ -855,7 +856,7 @@ TEST_F(StateWebhookRequestTest,
       "1600097258,\"state\":{\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_IC_GAS_METER, false,
-           (supla_channel_ic_measurement *)nullptr, expectedPayload);
+           (supla_channel_ic_extended_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest,
@@ -873,11 +874,10 @@ TEST_F(StateWebhookRequestTest,
   char currency[] = "PLN";
   char unit[] = "m3";
 
-  supla_channel_ic_measurement *icm =
-      new supla_channel_ic_measurement(123, SUPLA_CHANNELFNC_IC_WATER_METER,
-                                       &ic_val, currency, unit, 5555, 1000);
+  supla_channel_ic_extended_value *icv = new supla_channel_ic_extended_value(
+      SUPLA_CHANNELFNC_IC_WATER_METER, &ic_val, currency, unit, 5555, 1000);
 
-  makeTest(SUPLA_CHANNELFNC_IC_WATER_METER, true, icm, expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_IC_WATER_METER, true, icv, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest,
@@ -888,7 +888,7 @@ TEST_F(StateWebhookRequestTest,
       "1600097258,\"state\":{\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_IC_WATER_METER, false,
-           (supla_channel_ic_measurement *)nullptr, expectedPayload);
+           (supla_channel_ic_extended_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest,
@@ -907,11 +907,11 @@ TEST_F(StateWebhookRequestTest,
   char currency[] = "PLN";
   char unit[] = "kWh";
 
-  supla_channel_ic_measurement *icm = new supla_channel_ic_measurement(
-      123, SUPLA_CHANNELFNC_IC_ELECTRICITY_METER, &ic_val, currency, unit, 5555,
-      1000);
+  supla_channel_ic_extended_value *icv =
+      new supla_channel_ic_extended_value(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
+                                          &ic_val, currency, unit, 5555, 1000);
 
-  makeTest(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER, true, icm, expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER, true, icv, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest,
@@ -922,7 +922,7 @@ TEST_F(StateWebhookRequestTest,
       "\"timestamp\":1600097258,\"state\":{\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER, false,
-           (supla_channel_ic_measurement *)nullptr, expectedPayload);
+           (supla_channel_ic_extended_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest,

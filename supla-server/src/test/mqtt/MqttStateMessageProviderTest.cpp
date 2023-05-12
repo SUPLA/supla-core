@@ -19,6 +19,7 @@
 #include "MqttStateMessageProviderTest.h"
 
 #include "device/channel_electricity_measurement.h"
+#include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
@@ -59,7 +60,7 @@ void MqttStateMessageProviderTest::SetResultValue(int func, bool connected,
 }
 
 void MqttStateMessageProviderTest::SetIcMeasurementResult(void) {
-  EXPECT_CALL(propertyGetter, _get_ic_measurement(Eq(123), Eq(456), Eq(789)))
+  EXPECT_CALL(propertyGetter, _get_extended_value(Eq(123), Eq(456), Eq(789)))
       .Times(1)
       .WillOnce([](int user_id, int device_id, int channel_id) {
         TDS_ImpulseCounter_Value ic_val;
@@ -68,9 +69,9 @@ void MqttStateMessageProviderTest::SetIcMeasurementResult(void) {
         char customUnit[] = "m3";
         char currency[] = "EUR";
 
-        return new supla_channel_ic_measurement(
-            123, SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, currency, customUnit,
-            10000, 1000);
+        return new supla_channel_ic_extended_value(
+            SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, currency, customUnit, 10000,
+            1000);
       });
 }
 

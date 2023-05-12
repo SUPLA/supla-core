@@ -36,9 +36,9 @@ void supla_abstract_get_icm_value_command::on_command_match(
     const char *params) {
   process_parameters(
       params, [this](int user_id, int device_id, int channel_id) -> bool {
-        supla_channel_ic_measurement *icm =
-            get_ic_measurement(user_id, device_id, channel_id);
-        if (!icm) {
+        supla_channel_ic_extended_value *icv =
+            get_ic_value(user_id, device_id, channel_id);
+        if (!icv) {
           return false;
         }
 
@@ -46,14 +46,15 @@ void supla_abstract_get_icm_value_command::on_command_match(
         size_t size = 0;
 
         char *unit_b64 = st_openssl_base64_encode(
-            (char *)icm->getCustomUnit(), strnlen(icm->getCustomUnit(), 9));
+            icv->get_custom_unit().c_str(), icv->get_custom_unit().size());
 
         for (char a = 0; a < 2; a++) {
-          int n = snprintf(buffer, size, "VALUE:%i,%i,%i,%llu,%lld,%s,%s",
-                           icm->getTotalCost(), icm->getPricePerUnit(),
-                           icm->getImpulsesPerUnit(), icm->getCounter(),
-                           icm->getCalculatedValue(), icm->getCurrency(),
-                           unit_b64 ? unit_b64 : "");
+          int n =
+              snprintf(buffer, size, "VALUE:%i,%i,%i,%llu,%lld,%s,%s",
+                       icv->get_total_cost(), icv->get_price_per_unit(),
+                       icv->get_impulses_per_unit(), icv->get_counter(),
+                       icv->get_calculated_value(), icv->get_currency().c_str(),
+                       unit_b64 ? unit_b64 : "");
 
           if (a == 0) {
             if (n > -1) { /* glibc 2.1 */
@@ -74,7 +75,7 @@ void supla_abstract_get_icm_value_command::on_command_match(
           unit_b64 = NULL;
         }
 
-        delete icm;
+        delete icv;
 
         if (buffer) {
           send_result(buffer);

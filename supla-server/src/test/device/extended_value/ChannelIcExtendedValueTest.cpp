@@ -18,7 +18,6 @@
 
 #include "ChannelIcExtendedValueTest.h"
 
-#include "device/channel_ic_measurement.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 
 namespace testing {
@@ -71,7 +70,6 @@ TEST_F(ChannelIcExtendedValueTest, vefityAllGetters) {
   supla_channel_ic_extended_value ev(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
                                      &ic_val, "PLN", "Unit", 45000, 10);
 
-  EXPECT_EQ(ev.get_custom_unit(), "kWh");
   EXPECT_EQ(ev.get_total_cost(), 6750);
   EXPECT_EQ(ev.get_price_per_unit(), 45000);
   EXPECT_EQ(ev.get_currency(), "PLN");

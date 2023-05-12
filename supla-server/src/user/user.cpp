@@ -323,7 +323,7 @@ std::shared_ptr<supla_client> supla_user::get_client(int user_id,
 bool supla_user::get_channel_value(
     int device_id, int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
     char sub_value[SUPLA_CHANNELVALUE_SIZE], char *sub_value_type,
-    TSuplaChannelExtendedValue *ev, int *function, char *online,
+    supla_channel_extended_value **extended_value, int *function, char *online,
     unsigned _supla_int_t *validity_time_sec, bool for_client) {
   bool result = false;
   memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
@@ -336,7 +336,8 @@ bool supla_user::get_channel_value(
   shared_ptr<supla_device> device = devices->get(device_id);
   if (device != nullptr) {
     result = device->get_channels()->get_channel_value(
-        channel_id, value, online, validity_time_sec, ev, function, for_client);
+        channel_id, value, online, validity_time_sec, extended_value, function,
+        for_client);
 
     if (result) {
       list<int> related_list =

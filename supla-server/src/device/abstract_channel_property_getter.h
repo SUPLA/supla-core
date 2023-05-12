@@ -22,7 +22,7 @@
 #include "channeljsonconfig/channel_json_config.h"
 #include "device/channel_electricity_measurement.h"
 #include "device/channel_fragment.h"
-#include "device/channel_ic_measurement.h"
+#include "device/extended_value/channel_extended_value.h"
 #include "device/value/channel_value.h"
 #include "proto.h"
 
@@ -41,7 +41,7 @@ class supla_abstract_channel_property_getter {
   virtual int _get_func(int user_id, int device_id, int channel_id) = 0;
   virtual supla_channel_electricity_measurement* _get_electricity_measurement(
       int user_id, int device_id, int channel_id) = 0;
-  virtual supla_channel_ic_measurement* _get_ic_measurement(int user_id,
+  virtual supla_channel_extended_value* _get_extended_value(int user_id,
                                                             int device_id,
                                                             int channel_id) = 0;
   virtual channel_json_config* _get_detached_json_config(int user_id,
@@ -64,6 +64,9 @@ class supla_abstract_channel_property_getter {
   supla_channel_value* get_value(int user_id, int device_id, int channel_id,
                                  supla_channel_fragment* fragment,
                                  bool* online);
+  supla_channel_extended_value* get_extended_value(void);
+  supla_channel_extended_value* get_extended_value(int user_id, int device_id,
+                                                   int channel_id);
 
   int get_func(void);
   int get_func(int user_id, int device_id, int channel_id);
@@ -71,10 +74,6 @@ class supla_abstract_channel_property_getter {
   supla_channel_electricity_measurement* get_electricity_measurement(void);
   supla_channel_electricity_measurement* get_electricity_measurement(
       int user_id, int device_id, int channel_id);
-
-  supla_channel_ic_measurement* get_ic_measurement(void);
-  supla_channel_ic_measurement* get_ic_measurement(int user_id, int device_id,
-                                                   int channel_id);
 
   channel_json_config* get_detached_json_config(void);
   channel_json_config* get_detached_json_config(int user_id, int device_id,

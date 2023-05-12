@@ -42,6 +42,10 @@ class supla_channel_electricity_measurement {
 
   static bool update_cev(TSuplaChannelExtendedValue *ev, int Param2,
                          const char *TextParam1);
+
+  static void get_cost_and_currency(const char *TextParam1, int Param2,
+                                    char currency[3], _supla_int_t *total_cost,
+                                    _supla_int_t *price_per_unit, double count);
 };
 
 #endif /* CHANNEL_ELECTRICITY_MEASUREMENT_H_ */

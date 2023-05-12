@@ -37,8 +37,8 @@ class supla_mqtt_abstract_state_message_provider
   int channel_flags;
 
   supla_channel_value *channel_value;
+  supla_channel_extended_value *channel_extended_value;
   supla_channel_electricity_measurement *em;
-  supla_channel_ic_measurement *icm;
 
  protected:
   int get_user_id(void);
