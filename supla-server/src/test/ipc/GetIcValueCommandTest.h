@@ -16,17 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GETICMVALUECOMMANDTEST_H_
-#define GETICMVALUECOMMANDTEST_H_
+#ifndef GETICVALUECOMMANDTEST_H_
+#define GETICVALUECOMMANDTEST_H_
 
-#include "doubles/ipc/GetIcmValueCommandMock.h"
+#include "doubles/ipc/GetIcValueCommandMock.h"
 #include "ipc/IpcCommandTest.h"
 
 namespace testing {
 
-class GetIcmValueCommandTest : public IpcCommandTest {
+class GetIcValueCommandTest : public IpcCommandTest {
  protected:
-  GetIcmValueCommandMock *cmd;
+  GetIcValueCommandMock *cmd;
   virtual supla_abstract_ipc_command *getCommand(void);
 
  public:
@@ -36,4 +36,4 @@ class GetIcmValueCommandTest : public IpcCommandTest {
 
 } /* namespace testing */
 
-#endif /* GETICMVALUECOMMANDTEST_H_ */
+#endif /* GETICVALUECOMMANDTEST_H_ */

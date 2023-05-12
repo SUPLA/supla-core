@@ -16,12 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "doubles/ipc/GetIcmValueCommandMock.h"
+#ifndef SUPLA_ABSTRACT_GET_IC_VALUE_COMMAND_H_
+#define SUPLA_ABSTRACT_GET_IC_VALUE_COMMAND_H_
 
-namespace testing {
+#include <string>
 
-GetIcmValueCommandMock::GetIcmValueCommandMock(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_get_icm_value_command(socket_adapter) {}
+#include "device/extended_value/channel_ic_extended_value.h"
+#include "ipc/abstract_ipc_command.h"
 
-}  // namespace testing
+class supla_abstract_get_ic_value_command : public supla_abstract_ipc_command {
+ protected:
+  virtual void on_command_match(const char *params);
+  virtual supla_channel_ic_extended_value *get_ic_extended_value(
+      int user_id, int device_id, int channel_id) = 0;
+
+ public:
+  explicit supla_abstract_get_ic_value_command(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
+  virtual const std::string get_command_name(void);
+};
+
+#endif /* SUPLA_ABSTRACT_GET_IC_VALUE_COMMAND_H_ */

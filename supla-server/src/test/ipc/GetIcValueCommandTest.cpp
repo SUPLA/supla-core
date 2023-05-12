@@ -16,59 +16,59 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/GetIcmValueCommandTest.h"
+#include "GetIcValueCommandTest.h"
 
 namespace testing {
 
-void GetIcmValueCommandTest::SetUp() {
+void GetIcValueCommandTest::SetUp() {
   IpcCommandTest::SetUp();
-  cmd = new GetIcmValueCommandMock(socketAdapter);
+  cmd = new GetIcValueCommandMock(socketAdapter);
 }
 
-void GetIcmValueCommandTest::TearDown() {
+void GetIcValueCommandTest::TearDown() {
   IpcCommandTest::TearDown();
   delete cmd;
 }
 
-supla_abstract_ipc_command *GetIcmValueCommandTest::getCommand(void) {
+supla_abstract_ipc_command *GetIcValueCommandTest::getCommand(void) {
   return cmd;
 }
 
-TEST_F(GetIcmValueCommandTest, noData) {
+TEST_F(GetIcValueCommandTest, noData) {
   EXPECT_FALSE(cmd->process_command(buffer, sizeof(buffer), 0));
 }
 
-TEST_F(GetIcmValueCommandTest, getIcmValueWithSuccess) {
+TEST_F(GetIcValueCommandTest, getIcmValueWithSuccess) {
   TDS_ImpulseCounter_Value ic_val = {};
   ic_val.counter = 10000;
 
   supla_channel_ic_extended_value *icv = new supla_channel_ic_extended_value(
       SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, "PLN", "", 500, 1000);
 
-  EXPECT_CALL(*cmd, get_ic_value(10, 20, 30)).WillOnce(Return(icv));
+  EXPECT_CALL(*cmd, get_ic_extended_value(10, 20, 30)).WillOnce(Return(icv));
 
   commandProcessingTest("GET-IC-VALUE:10,20,30\n",
                         "VALUE:50,500,1000,10000,10000,PLN,bcKz\n");
 }
 
-TEST_F(GetIcmValueCommandTest, getIcmValueWithFilure) {
+TEST_F(GetIcValueCommandTest, getIcmValueWithFilure) {
   supla_channel_ic_extended_value *icv = NULL;
-  EXPECT_CALL(*cmd, get_ic_value).WillOnce(Return(icv));
+  EXPECT_CALL(*cmd, get_ic_extended_value).WillOnce(Return(icv));
   commandProcessingTest("GET-IC-VALUE:10,20,30\n", "UNKNOWN:30\n");
 }
 
-TEST_F(GetIcmValueCommandTest, noParams) {
-  EXPECT_CALL(*cmd, get_ic_value).Times(0);
+TEST_F(GetIcValueCommandTest, noParams) {
+  EXPECT_CALL(*cmd, get_ic_extended_value).Times(0);
   commandProcessingTest("GET-IC-VALUE:\n", "UNKNOWN:0\n");
 }
 
-TEST_F(GetIcmValueCommandTest, paramsWithZeros) {
-  EXPECT_CALL(*cmd, get_ic_value).Times(0);
+TEST_F(GetIcValueCommandTest, paramsWithZeros) {
+  EXPECT_CALL(*cmd, get_ic_extended_value).Times(0);
   commandProcessingTest("GET-IC-VALUE:0,0,0\n", "UNKNOWN:0\n");
 }
 
-TEST_F(GetIcmValueCommandTest, badParams) {
-  EXPECT_CALL(*cmd, get_ic_value).Times(0);
+TEST_F(GetIcValueCommandTest, badParams) {
+  EXPECT_CALL(*cmd, get_ic_extended_value).Times(0);
   commandProcessingTest("GET-IC-VALUE:a,10,c\n", "UNKNOWN:0\n");
 }
 

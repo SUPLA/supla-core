@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/get_icm_value_command.h"
+#include "get_ic_value_command.h"
 
 #include <memory>
 
@@ -25,12 +25,13 @@
 
 using std::shared_ptr;
 
-supla_get_icm_value_command::supla_get_icm_value_command(
+supla_get_ic_value_command::supla_get_ic_value_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_get_icm_value_command(socket_adapter) {}
+    : supla_abstract_get_ic_value_command(socket_adapter) {}
 
-supla_channel_ic_extended_value *supla_get_icm_value_command::get_ic_value(
-    int user_id, int device_id, int channel_id) {
+supla_channel_ic_extended_value *
+supla_get_ic_value_command::get_ic_extended_value(int user_id, int device_id,
+                                                  int channel_id) {
   supla_channel_ic_extended_value *result = nullptr;
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);

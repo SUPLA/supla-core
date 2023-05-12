@@ -16,22 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_GET_ICM_VALUE_COMMAND_H_
-#define SUPLA_GET_ICM_VALUE_COMMAND_H_
+#ifndef SUPLA_GET_IC_VALUE_COMMAND_H_
+#define SUPLA_GET_IC_VALUE_COMMAND_H_
 
 #include <string>
 
-#include "ipc/abstract_get_icm_value_command.h"
+#include "ipc/abstract_get_ic_value_command.h"
 
-class supla_get_icm_value_command
-    : public supla_abstract_get_icm_value_command {
+class supla_get_ic_value_command : public supla_abstract_get_ic_value_command {
  protected:
-  virtual supla_channel_ic_extended_value *get_ic_value(int user_id,
-                                                        int device_id,
-                                                        int channel_id);
+  virtual supla_channel_ic_extended_value *get_ic_extended_value(
+      int user_id, int device_id, int channel_id);
 
  public:
-  explicit supla_get_icm_value_command(
+  explicit supla_get_ic_value_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };
 

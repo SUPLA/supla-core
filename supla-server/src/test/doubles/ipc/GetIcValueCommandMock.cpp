@@ -16,25 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GET_ICM_VALUE_COMMMAND_MOCK_H_
-#define GET_ICM_VALUE_COMMMAND_MOCK_H_
-
-#include <gmock/gmock.h>
-
-#include "ipc/abstract_get_icm_value_command.h"
+#include "GetIcValueCommandMock.h"
 
 namespace testing {
 
-class GetIcmValueCommandMock : public supla_abstract_get_icm_value_command {
- public:
-  explicit GetIcmValueCommandMock(
-      supla_abstract_ipc_socket_adapter *socket_adapter);
+GetIcValueCommandMock::GetIcValueCommandMock(
+    supla_abstract_ipc_socket_adapter *socket_adapter)
+    : supla_abstract_get_ic_value_command(socket_adapter) {}
 
-  MOCK_METHOD3(get_ic_value,
-               supla_channel_ic_extended_value *(int user_id, int device_id,
-                                                 int channel_id));
-};
-
-} /* namespace testing */
-
-#endif /* GET_ICM_VALUE_COMMMAND_MOCK_H_ */
+}  // namespace testing

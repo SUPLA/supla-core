@@ -18,11 +18,6 @@
 
 #include "ipc/ipc_ctrl.h"
 
-#include <ipc/get_pn_limit_command.h>
-#include <ipc/on_scene_removed_command.h>
-
-#include "sthread.h"
-
 // TODO(anyone): For setters, use the supla_action_executor class
 
 #include "ipc/action_cg_command.h"
@@ -38,7 +33,8 @@
 #include "ipc/get_double_command.h"
 #include "ipc/get_em_value_command.h"
 #include "ipc/get_humidity_command.h"
-#include "ipc/get_icm_value_command.h"
+#include "ipc/get_ic_value_command.h"
+#include "ipc/get_pn_limit_command.h"
 #include "ipc/get_relay_value_command.h"
 #include "ipc/get_rgbw_command.h"
 #include "ipc/get_scene_summary_command.h"
@@ -56,6 +52,7 @@
 #include "ipc/on_mqtt_settings_changed_command.h"
 #include "ipc/on_scene_added_command.h"
 #include "ipc/on_scene_changed_command.h"
+#include "ipc/on_scene_removed_command.h"
 #include "ipc/on_state_webhook_changed_command.h"
 #include "ipc/on_vbt_changed_command.h"
 #include "ipc/recalibrate_command.h"
@@ -67,6 +64,7 @@
 #include "ipc/set_digiglass_value_command.h"
 #include "ipc/set_rgbw_command.h"
 #include "ipc/user_reconnect_command.h"
+#include "sthread.h"
 
 supla_ipc_ctrl::supla_ipc_ctrl(
     supla_abstract_ipc_socket_adapter *socket_adapter)
@@ -84,7 +82,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_get_char_command(socket_adapter));
   add_command(new supla_get_rgbw_command(socket_adapter));
   add_command(new supla_get_em_value_command(socket_adapter));
-  add_command(new supla_get_icm_value_command(socket_adapter));
+  add_command(new supla_get_ic_value_command(socket_adapter));
   add_command(new supla_get_valve_value_command(socket_adapter));
   add_command(new supla_get_relay_value_command(socket_adapter));
   add_command(new supla_set_char_command(socket_adapter));
