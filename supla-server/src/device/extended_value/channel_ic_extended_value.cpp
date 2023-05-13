@@ -31,7 +31,7 @@ supla_channel_ic_extended_value::supla_channel_ic_extended_value(
     : supla_channel_extended_value(), supla_channel_billing_value() {
   TSC_ImpulseCounter_ExtendedValue ic_ev = {};
 
-  if (!srpc_evtool_v1_extended2icextended(&this->value, &ic_ev)) {
+  if (!srpc_evtool_v1_extended2icextended(get_value_ptr(), &ic_ev)) {
     ic_ev = {};
   }
 
@@ -69,14 +69,20 @@ supla_channel_ic_extended_value::supla_channel_ic_extended_value(
                         &ic_ev.price_per_unit,
                         ic_ev.calculated_value / 1000.00);
 
-  srpc_evtool_v1_icextended2extended(&ic_ev, &this->value);
+  TSuplaChannelExtendedValue ev = {};
+  if (srpc_evtool_v1_icextended2extended(&ic_ev, &ev)) {
+    TSuplaChannelExtendedValue *value = get_value_ptr(ev.size);
+    if (value) {
+      memcpy(value, &ev, get_real_size());
+    }
+  }
 }
 
 supla_channel_ic_extended_value::~supla_channel_ic_extended_value(void) {}
 
 _supla_int_t supla_channel_ic_extended_value::get_total_cost(void) {
   TSC_ImpulseCounter_ExtendedValue ic_ev = {};
-  if (srpc_evtool_v1_extended2icextended(&value, &ic_ev)) {
+  if (srpc_evtool_v1_extended2icextended(get_value_ptr(), &ic_ev)) {
     return ic_ev.total_cost;
   }
 
@@ -85,7 +91,7 @@ _supla_int_t supla_channel_ic_extended_value::get_total_cost(void) {
 
 _supla_int_t supla_channel_ic_extended_value::get_price_per_unit(void) {
   TSC_ImpulseCounter_ExtendedValue ic_ev = {};
-  if (srpc_evtool_v1_extended2icextended(&value, &ic_ev)) {
+  if (srpc_evtool_v1_extended2icextended(get_value_ptr(), &ic_ev)) {
     return ic_ev.price_per_unit;
   }
 
@@ -94,7 +100,7 @@ _supla_int_t supla_channel_ic_extended_value::get_price_per_unit(void) {
 
 string supla_channel_ic_extended_value::get_currency(void) {
   TSC_ImpulseCounter_ExtendedValue ic_ev = {};
-  if (srpc_evtool_v1_extended2icextended(&value, &ic_ev)) {
+  if (srpc_evtool_v1_extended2icextended(get_value_ptr(), &ic_ev)) {
     char currency[4] = {};
     memcpy(currency, ic_ev.currency, 3);
     return currency;
@@ -105,7 +111,7 @@ string supla_channel_ic_extended_value::get_currency(void) {
 
 string supla_channel_ic_extended_value::get_custom_unit(void) {
   TSC_ImpulseCounter_ExtendedValue ic_ev = {};
-  if (srpc_evtool_v1_extended2icextended(&value, &ic_ev)) {
+  if (srpc_evtool_v1_extended2icextended(get_value_ptr(), &ic_ev)) {
     return ic_ev.custom_unit;
   }
 
@@ -114,7 +120,7 @@ string supla_channel_ic_extended_value::get_custom_unit(void) {
 
 _supla_int_t supla_channel_ic_extended_value::get_impulses_per_unit(void) {
   TSC_ImpulseCounter_ExtendedValue ic_ev = {};
-  if (srpc_evtool_v1_extended2icextended(&value, &ic_ev)) {
+  if (srpc_evtool_v1_extended2icextended(get_value_ptr(), &ic_ev)) {
     return ic_ev.impulses_per_unit;
   }
 
@@ -123,7 +129,7 @@ _supla_int_t supla_channel_ic_extended_value::get_impulses_per_unit(void) {
 
 unsigned _supla_int64_t supla_channel_ic_extended_value::get_counter(void) {
   TSC_ImpulseCounter_ExtendedValue ic_ev = {};
-  if (srpc_evtool_v1_extended2icextended(&value, &ic_ev)) {
+  if (srpc_evtool_v1_extended2icextended(get_value_ptr(), &ic_ev)) {
     return ic_ev.counter;
   }
 
@@ -133,7 +139,7 @@ unsigned _supla_int64_t supla_channel_ic_extended_value::get_counter(void) {
 unsigned _supla_int64_t
 supla_channel_ic_extended_value::get_calculated_value(void) {
   TSC_ImpulseCounter_ExtendedValue ic_ev = {};
-  if (srpc_evtool_v1_extended2icextended(&value, &ic_ev)) {
+  if (srpc_evtool_v1_extended2icextended(get_value_ptr(), &ic_ev)) {
     return ic_ev.calculated_value;
   }
 

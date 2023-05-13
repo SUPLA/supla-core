@@ -2938,8 +2938,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_register_pn_client_token(
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS
 
 #ifdef USE_DEPRECATED_EMEV_V1
-_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_emextended2extended(
-    TElectricityMeter_ExtendedValue *em_ev, TSuplaChannelExtendedValue *ev) {
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_v1_emextended2extended(const TElectricityMeter_ExtendedValue *em_ev,
+                                   TSuplaChannelExtendedValue *ev) {
   if (em_ev == NULL || ev == NULL || em_ev->m_count > EM_MEASUREMENT_COUNT ||
       em_ev->m_count < 0) {
     return 0;
@@ -2961,8 +2962,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_emextended2extended(
   return 0;
 }
 
-_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2emextended(
-    TSuplaChannelExtendedValue *ev, TElectricityMeter_ExtendedValue *em_ev) {
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_v1_extended2emextended(const TSuplaChannelExtendedValue *ev,
+                                   TElectricityMeter_ExtendedValue *em_ev) {
   if (em_ev == NULL || ev == NULL ||
       ev->type != EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 || ev->size == 0 ||
       ev->size > sizeof(TElectricityMeter_ExtendedValue)) {
@@ -2990,7 +2992,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2emextended(
 }
 
 _supla_int_t SRPC_ICACHE_FLASH
-srpc_evtool_emev_v1to2(TElectricityMeter_ExtendedValue *v1,
+srpc_evtool_emev_v1to2(const TElectricityMeter_ExtendedValue *v1,
                        TElectricityMeter_ExtendedValue_V2 *v2) {
   if (v1 == NULL || v2 == NULL) {
     return 0;
@@ -3023,7 +3025,7 @@ srpc_evtool_emev_v1to2(TElectricityMeter_ExtendedValue *v1,
 }
 
 _supla_int_t SRPC_ICACHE_FLASH
-srpc_evtool_emev_v2to1(TElectricityMeter_ExtendedValue_V2 *v2,
+srpc_evtool_emev_v2to1(const TElectricityMeter_ExtendedValue_V2 *v2,
                        TElectricityMeter_ExtendedValue *v1) {
   if (v1 == NULL || v2 == NULL) {
     return 0;
@@ -3058,7 +3060,8 @@ srpc_evtool_emev_v2to1(TElectricityMeter_ExtendedValue_V2 *v2,
 #endif /*USE_DEPRECATED_EMEV_V1*/
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v2_emextended2extended(
-    TElectricityMeter_ExtendedValue_V2 *em_ev, TSuplaChannelExtendedValue *ev) {
+    const TElectricityMeter_ExtendedValue_V2 *em_ev,
+    TSuplaChannelExtendedValue *ev) {
   if (em_ev == NULL || ev == NULL || em_ev->m_count > EM_MEASUREMENT_COUNT ||
       em_ev->m_count < 0) {
     return 0;
@@ -3080,8 +3083,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v2_emextended2extended(
   return 0;
 }
 
-_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v2_extended2emextended(
-    TSuplaChannelExtendedValue *ev, TElectricityMeter_ExtendedValue_V2 *em_ev) {
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_v2_extended2emextended(const TSuplaChannelExtendedValue *ev,
+                                   TElectricityMeter_ExtendedValue_V2 *em_ev) {
   if (em_ev == NULL || ev == NULL ||
       ev->type != EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2 || ev->size == 0 ||
       ev->size > sizeof(TElectricityMeter_ExtendedValue_V2)) {
@@ -3109,7 +3113,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v2_extended2emextended(
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2thermostatextended(
-    TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev) {
+    const TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev) {
   if (ev == NULL || th_ev == NULL ||
       ev->type != EV_TYPE_THERMOSTAT_DETAILS_V1 || ev->size == 0 ||
       ev->size > sizeof(TThermostat_ExtendedValue)) {
@@ -3123,7 +3127,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2thermostatextended(
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_thermostatextended2extended(
-    TThermostat_ExtendedValue *th_ev, TSuplaChannelExtendedValue *ev) {
+    const TThermostat_ExtendedValue *th_ev, TSuplaChannelExtendedValue *ev) {
   if (th_ev == NULL || ev == NULL) {
     return 0;
   }
@@ -3164,7 +3168,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_thermostatextended2extended(
 
 #ifndef SRPC_EXCLUDE_CLIENT
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_icextended2extended(
-    TSC_ImpulseCounter_ExtendedValue *ic_ev, TSuplaChannelExtendedValue *ev) {
+    const TSC_ImpulseCounter_ExtendedValue *ic_ev,
+    TSuplaChannelExtendedValue *ev) {
   if (ic_ev == NULL || ev == NULL) {
     return 0;
   }
@@ -3177,8 +3182,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_icextended2extended(
   return 1;
 }
 
-_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2icextended(
-    TSuplaChannelExtendedValue *ev, TSC_ImpulseCounter_ExtendedValue *ic_ev) {
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_v1_extended2icextended(const TSuplaChannelExtendedValue *ev,
+                                   TSC_ImpulseCounter_ExtendedValue *ic_ev) {
   if (ic_ev == NULL || ev == NULL ||
       ev->type != EV_TYPE_IMPULSE_COUNTER_DETAILS_V1 || ev->size == 0 ||
       ev->size != sizeof(TSC_ImpulseCounter_ExtendedValue)) {
