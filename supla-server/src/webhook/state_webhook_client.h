@@ -19,7 +19,6 @@
 #ifndef WEBHOOK_STATE_WEBHOOK_CLIENT_H_
 #define WEBHOOK_STATE_WEBHOOK_CLIENT_H_
 
-#include "device/channel_electricity_measurement.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_value.h"
 #include "http/abstract_curl_adapter.h"
@@ -88,8 +87,7 @@ class supla_state_webhook_client {
   bool dimmer_report();
   bool dimmer_and_rgb_report();
   bool rgb_report();
-  bool electricity_measurement_report(
-      supla_channel_electricity_measurement *em);
+  bool electricity_measurement_report(void);
   bool impulse_counter_electricity_measurement_report(void);
   bool impulse_counter_gas_measurement_report(void);
   bool impulse_counter_water_measurement_report(void);

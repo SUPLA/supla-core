@@ -27,7 +27,6 @@
 #include "analyzer/voltage_analyzers.h"
 #include "caller.h"
 #include "channel_address.h"
-#include "channel_electricity_measurement.h"
 #include "channel_thermostat_measurement.h"
 #include "device/extended_value/channel_extended_value.h"
 #include "device/value/channel_temphum_value.h"
@@ -143,8 +142,6 @@ class supla_device_channel {
 
   std::list<int> master_channel(void);
   std::list<int> related_channel(void);
-  supla_channel_electricity_measurement *get_electricity_measurement(
-      bool for_data_logger_purposes);
   supla_channel_thermostat_measurement *get_thermostat_measurement(void);
   channel_json_config *get_json_config(void);
   unsigned int get_value_validity_time_left_msec(void);

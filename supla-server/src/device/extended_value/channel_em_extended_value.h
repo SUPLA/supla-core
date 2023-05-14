@@ -26,9 +26,15 @@
 
 class supla_channel_em_extended_value : public supla_channel_extended_value,
                                         private supla_channel_billing_value {
+ private:
+  void init(TElectricityMeter_ExtendedValue_V2 *value, const char *text_param1,
+            int param2);
+
  public:
-  explicit supla_channel_em_extended_value(
-      const TSuplaChannelExtendedValue *value, const char *text_param1,
+  supla_channel_em_extended_value(const TSuplaChannelExtendedValue *value,
+                                  const char *text_param1, int param2);
+  supla_channel_em_extended_value(
+      const TElectricityMeter_ExtendedValue_V2 *value, const char *text_param1,
       int param2);
   virtual ~supla_channel_em_extended_value(void);
 

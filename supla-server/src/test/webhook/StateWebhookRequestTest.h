@@ -38,9 +38,6 @@ class StateWebhookRequestTest : public AsyncTaskTest {
   void makeTest(int func, bool online,
                 supla_channel_extended_value *extended_value,
                 const char *expectedPayload);
-  void makeTest(int func, bool online,
-                supla_channel_electricity_measurement *em,
-                const char *expectedPayload);
 
  public:
   virtual void SetUp(void);

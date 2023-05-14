@@ -20,7 +20,6 @@
 #define ABSTRACT_PROPERTY_GETTER_H_
 
 #include "channeljsonconfig/channel_json_config.h"
-#include "device/channel_electricity_measurement.h"
 #include "device/channel_fragment.h"
 #include "device/extended_value/channel_extended_value.h"
 #include "device/value/channel_value.h"
@@ -39,8 +38,7 @@ class supla_abstract_channel_property_getter {
                                           bool* online) = 0;
 
   virtual int _get_func(int user_id, int device_id, int channel_id) = 0;
-  virtual supla_channel_electricity_measurement* _get_electricity_measurement(
-      int user_id, int device_id, int channel_id) = 0;
+
   virtual supla_channel_extended_value* _get_extended_value(int user_id,
                                                             int device_id,
                                                             int channel_id) = 0;
@@ -70,10 +68,6 @@ class supla_abstract_channel_property_getter {
 
   int get_func(void);
   int get_func(int user_id, int device_id, int channel_id);
-
-  supla_channel_electricity_measurement* get_electricity_measurement(void);
-  supla_channel_electricity_measurement* get_electricity_measurement(
-      int user_id, int device_id, int channel_id);
 
   channel_json_config* get_detached_json_config(void);
   channel_json_config* get_detached_json_config(int user_id, int device_id,

@@ -16,25 +16,34 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GET_EM_VALUE_COMMMAND_MOCK_H_
-#define GET_EM_VALUE_COMMMAND_MOCK_H_
+#include "ChannelBillingValueTest.h"
 
-#include <gmock/gmock.h>
-
-#include "ipc/abstract_get_em_value_command.h"
+#include "device/extended_value/channel_billing_value.h"
+#include "srpc/srpc.h"
 
 namespace testing {
 
-class GetEmValueCommandMock : public supla_abstract_get_em_value_command {
- public:
-  explicit GetEmValueCommandMock(
-      supla_abstract_ipc_socket_adapter *socket_adapter);
+TEST_F(ChannelBillingValueTest, defaults) {
+  supla_channel_billing_value bil;
+  EXPECT_EQ(bil.get_currency("PLN"), "PLN");
+}
 
-  MOCK_METHOD3(get_em_value,
-               supla_channel_em_extended_value *(int user_id, int device_id,
-                                                 int channel_id));
-};
+TEST_F(ChannelBillingValueTest, costAndCurrency) {
+  char currency[3] = {};
+  _supla_int_t total_cost = 0;
+  _supla_int_t price_per_unit = 0;
+  double count = 1000;
 
-} /* namespace testing */
+  supla_channel_billing_value bil;
+  bil.get_cost_and_currency("EUR", 12345, currency, &total_cost,
+                            &price_per_unit, count);
 
-#endif /* GET_EM_VALUE_COMMMAND_MOCK_H_ */
+  EXPECT_EQ(currency[0], 'E');
+  EXPECT_EQ(currency[1], 'U');
+  EXPECT_EQ(currency[2], 'R');
+
+  EXPECT_EQ(total_cost, 123450);
+  EXPECT_EQ(price_per_unit, 12345);
+}
+
+}  // namespace testing

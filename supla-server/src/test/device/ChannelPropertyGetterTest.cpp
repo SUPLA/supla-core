@@ -37,11 +37,6 @@ TEST_F(ChannelPropertyGetterTest, changeOfIdentifiersAtGetters) {
       .Times(1)
       .WillOnce(Return(SUPLA_CHANNELFNC_ACTIONTRIGGER));
 
-  EXPECT_CALL(propertyGetter,
-              _get_electricity_measurement(Eq(734), Eq(767), Eq(790)))
-      .Times(1)
-      .WillOnce(Return(nullptr));
-
   EXPECT_CALL(propertyGetter, _get_extended_value(Eq(834), Eq(867), Eq(890)))
       .Times(1)
       .WillOnce(Return(nullptr));
@@ -58,12 +53,6 @@ TEST_F(ChannelPropertyGetterTest, changeOfIdentifiersAtGetters) {
   EXPECT_EQ(propertyGetter.get_user_id(), 239);
   EXPECT_EQ(propertyGetter.get_device_id(), 569);
   EXPECT_EQ(propertyGetter.get_channel_id(), 899);
-
-  EXPECT_EQ(propertyGetter.get_electricity_measurement(734, 767, 790), nullptr);
-
-  EXPECT_EQ(propertyGetter.get_user_id(), 734);
-  EXPECT_EQ(propertyGetter.get_device_id(), 767);
-  EXPECT_EQ(propertyGetter.get_channel_id(), 790);
 
   EXPECT_EQ(propertyGetter.get_extended_value(834, 867, 890), nullptr);
 

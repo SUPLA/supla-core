@@ -184,16 +184,7 @@ bool supla_state_webhook_request::make_request(
       break;
 
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-      if (get_property_getter()) {
-        supla_channel_electricity_measurement *em =
-            get_property_getter()->get_electricity_measurement();
-
-        result = client.electricity_measurement_report(em);
-
-        if (em) {
-          delete em;
-        }
-      }
+      result = client.electricity_measurement_report();
       break;
 
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:

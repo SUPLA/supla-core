@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+using std::string;
+
 supla_channel_billing_value::supla_channel_billing_value() {}
 
 supla_channel_billing_value::~supla_channel_billing_value(void) {}
@@ -31,7 +33,7 @@ void supla_channel_billing_value::get_cost_and_currency(
   *total_cost = 0;
   *price_per_unit = 0;
 
-  if (text_param1 && strlen(text_param1) == 3) {
+  if (text_param1 && strnlen(text_param1, 4) == 3) {
     memcpy(currency, text_param1, 3);
   }
 
@@ -40,4 +42,14 @@ void supla_channel_billing_value::get_cost_and_currency(
     // *total_cost = (double)(Param2 * 0.0001 * count) * 100;
     *total_cost = (double)(param2 * 0.01 * count);
   }
+}
+
+string supla_channel_billing_value::get_currency(const char *text_param1) {
+  char currency[4] = {};
+
+  if (text_param1 && strnlen(text_param1, 4) == 3) {
+    memcpy(currency, text_param1, 3);
+  }
+
+  return currency;
 }

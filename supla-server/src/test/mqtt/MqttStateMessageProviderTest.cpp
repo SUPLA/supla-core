@@ -18,7 +18,7 @@
 
 #include "MqttStateMessageProviderTest.h"
 
-#include "device/channel_electricity_measurement.h"
+#include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
@@ -77,8 +77,7 @@ void MqttStateMessageProviderTest::SetIcMeasurementResult(void) {
 
 void MqttStateMessageProviderTest::SetElectricityMeasurementResult(
     int measured_values, int m_count) {
-  EXPECT_CALL(propertyGetter,
-              _get_electricity_measurement(Eq(123), Eq(456), Eq(789)))
+  EXPECT_CALL(propertyGetter, _get_extended_value(Eq(123), Eq(456), Eq(789)))
       .Times(1)
       .WillOnce([measured_values, m_count](int user_id, int device_id,
                                            int channel_id) {
@@ -112,8 +111,7 @@ void MqttStateMessageProviderTest::SetElectricityMeasurementResult(
         em_ev.m_count = m_count;
 
         char currency[] = "EUR";
-        return new supla_channel_electricity_measurement(123, &em_ev, 10000,
-                                                         currency);
+        return new supla_channel_em_extended_value(&em_ev, currency, 10000);
       });
 }
 

@@ -16,21 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_BILLING_VALUE_H_
-#define CHANNEL_BILLING_VALUE_H_
+#ifndef CHANNEL_BILLING_VALUE_TEST_H_
+#define CHANNEL_BILLING_VALUE_TEST_H_
 
-#include <string>
+#include "gtest/gtest.h"
 
-#include "proto.h"
+namespace testing {
 
-class supla_channel_billing_value {
+class ChannelBillingValueTest : public Test {
  public:
-  supla_channel_billing_value(void);
-  virtual ~supla_channel_billing_value(void);
-  void get_cost_and_currency(const char *text_param1, int param2,
-                             char currency[3], _supla_int_t *total_cost,
-                             _supla_int_t *price_per_unit, double count);
-  std::string get_currency(const char *text_param1);
 };
 
-#endif /*CHANNEL_BILLING_VALUE_H_*/
+}  // namespace testing
+
+#endif /* CHANNEL_BILLING_VALUE_TEST_H_ */

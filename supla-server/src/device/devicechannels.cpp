@@ -553,22 +553,6 @@ bool supla_device_channels::set_device_channel_rgbw_value(
   return false;
 }
 
-void supla_device_channels::get_electricity_measurements(
-    vector<supla_channel_electricity_measurement *> *result,
-    bool for_data_logger_purposes) {
-  for (auto it = channels.begin(); it != channels.end(); ++it) {
-    supla_device_channel *channel = *it;
-
-    if (channel != nullptr && !channel->is_offline()) {
-      supla_channel_electricity_measurement *em =
-          channel->get_electricity_measurement(for_data_logger_purposes);
-      if (em) {
-        result->push_back(em);
-      }
-    }
-  }
-}
-
 void supla_device_channels::get_thermostat_measurements(
     vector<supla_channel_thermostat_measurement *> *result) {
   for (auto it = channels.begin(); it != channels.end(); ++it) {

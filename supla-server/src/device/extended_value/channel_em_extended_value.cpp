@@ -44,24 +44,41 @@ supla_channel_em_extended_value::supla_channel_em_extended_value(
     return;
   }
 
-  double sum = v2.total_forward_active_energy[0] * 0.00001;
-  sum += v2.total_forward_active_energy[1] * 0.00001;
-  sum += v2.total_forward_active_energy[2] * 0.00001;
+  init(&v2, text_param1, param2);
+}
 
-  get_cost_and_currency(text_param1, param2, v2.currency, &v2.total_cost,
-                        &v2.price_per_unit, sum);
+supla_channel_em_extended_value::supla_channel_em_extended_value(
+    const TElectricityMeter_ExtendedValue_V2 *value, const char *text_param1,
+    int param2) {
+  TElectricityMeter_ExtendedValue_V2 copy = {};
+  if (value) {
+    memcpy(&copy, value, sizeof(TElectricityMeter_ExtendedValue_V2));
+  }
+  init(&copy, text_param1, param2);
+}
 
-  if (v2.measured_values & EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED) {
-    get_cost_and_currency(text_param1, param2, v2.currency,
-                          &v2.total_cost_balanced, &v2.price_per_unit,
-                          v2.total_forward_active_energy_balanced * 0.00001);
+void supla_channel_em_extended_value::init(
+    TElectricityMeter_ExtendedValue_V2 *value, const char *text_param1,
+    int param2) {
+  double sum = value->total_forward_active_energy[0] * 0.00001;
+  sum += value->total_forward_active_energy[1] * 0.00001;
+  sum += value->total_forward_active_energy[2] * 0.00001;
+
+  get_cost_and_currency(text_param1, param2, value->currency,
+                        &value->total_cost, &value->price_per_unit, sum);
+
+  if (value->measured_values & EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED) {
+    get_cost_and_currency(
+        text_param1, param2, value->currency, &value->total_cost_balanced,
+        &value->price_per_unit,
+        value->total_forward_active_energy_balanced * 0.00001);
   } else {
-    v2.total_cost_balanced = 0;
+    value->total_cost_balanced = 0;
   }
 
   TSuplaChannelExtendedValue new_value = {};
 
-  if (srpc_evtool_v2_emextended2extended(&v2, &new_value)) {
+  if (srpc_evtool_v2_emextended2extended(value, &new_value)) {
     set_raw_value(&new_value);
   }
 }

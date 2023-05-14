@@ -28,6 +28,7 @@
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "db/database.h"
 #include "device.h"
+#include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_dgf_value.h"
@@ -325,6 +326,18 @@ supla_channel_extended_value *supla_device_channel::_get_extended_value(
 
       delete icval;
     }
+  } else if (extended_value &&
+             supla_channel_em_extended_value::is_function_supported(func)) {
+    if (for_data_logger_purposes) {
+      if (logger_data) {
+        result = new supla_channel_em_extended_value(
+            logger_data->extendedValue, get_text_param1(), get_param2());
+      }
+    } else {
+      result = new supla_channel_em_extended_value(
+          extended_value, get_text_param1(), get_param2());
+    }
+
   } else if (extended_value) {
     result = new supla_channel_extended_value(extended_value);
   }
@@ -923,32 +936,6 @@ list<int> supla_device_channel::master_channel(void) {
 
       break;
   }
-
-  return result;
-}
-
-supla_channel_electricity_measurement *
-supla_device_channel::get_electricity_measurement(
-    bool for_data_logger_purposes) {
-  supla_channel_electricity_measurement *result = nullptr;
-
-  lock();
-  if (get_func() == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
-    TSuplaChannelExtendedValue *ev =
-        for_data_logger_purposes
-            ? (logger_data ? logger_data->extendedValue : nullptr)
-            : extended_value;
-
-    if (ev && ev->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
-      TElectricityMeter_ExtendedValue_V2 em_ev;
-
-      if (srpc_evtool_v2_extended2emextended(ev, &em_ev) == 1) {
-        result = new supla_channel_electricity_measurement(get_id(), &em_ev,
-                                                           param2, text_param1);
-      }
-    }
-  }
-  unlock();
 
   return result;
 }

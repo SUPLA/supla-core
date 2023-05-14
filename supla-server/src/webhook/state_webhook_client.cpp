@@ -24,6 +24,7 @@
 
 #include <string>
 
+#include "device/extended_value/channel_em_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
@@ -507,17 +508,18 @@ bool supla_state_webhook_client::rgb_report() {
   return dimmer_and_rgb_report("RGBLIGHTING", true, false);
 }
 
-bool supla_state_webhook_client::electricity_measurement_report(
-    supla_channel_electricity_measurement *em) {
+bool supla_state_webhook_client::electricity_measurement_report(void) {
   cJSON *root = get_header("ELECTRICITYMETER");
   if (root) {
     cJSON *state = cJSON_CreateObject();
     if (state) {
-      if (channel_connected && em != nullptr) {
+      supla_channel_em_extended_value *emv =
+          dynamic_cast<supla_channel_em_extended_value *>(
+              channel_extended_value);
+
+      if (channel_connected && emv != nullptr) {
         TElectricityMeter_ExtendedValue_V2 em_ev;
-        char currency[4];
-        em->getMeasurement(&em_ev);
-        em->getCurrency(currency);
+        emv->get_raw_value(&em_ev);
 
         if ((em_ev.measured_values & EM_VAR_CURRENT_OVER_65A) &&
             !(em_ev.measured_values & EM_VAR_CURRENT)) {
@@ -528,10 +530,11 @@ bool supla_state_webhook_client::electricity_measurement_report(
 
         cJSON_AddNumberToObject(state, "support", em_ev.measured_values);
 
-        if (strnlen(currency, 4) == 0) {
+        if (emv->get_currency().empty()) {
           cJSON_AddNullToObject(state, "currency");
         } else {
-          cJSON_AddStringToObject(state, "currency", currency);
+          cJSON_AddStringToObject(state, "currency",
+                                  emv->get_currency().c_str());
         }
 
         cJSON_AddNumberToObject(state, "pricePerUnit",

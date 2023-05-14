@@ -18,6 +18,7 @@
 
 #include "StateWebhookRequestTest.h"
 
+#include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
@@ -106,38 +107,6 @@ void StateWebhookRequestTest::makeTest(
   EXPECT_CALL(*propertyGetter, _get_extended_value(Eq(1), Eq(2), Eq(123)))
       .Times(1)
       .WillOnce(Return(extended_value));
-
-  EXPECT_CALL(*propertyGetter,
-              _get_value(Eq(1), Eq(2), Eq(123), NotNull(), NotNull()))
-      .Times(1)
-      .WillOnce([func, online](int user_id, int device_id, int channel_id,
-                               supla_channel_fragment *_fragment,
-                               bool *_connected) {
-        *_fragment =
-            supla_channel_fragment(device_id, channel_id, 0, func, 0, false);
-        *_connected = online;
-
-        return new supla_channel_value();
-      });
-
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
-      .Times(1);
-
-  supla_state_webhook_request *request = new supla_state_webhook_request(
-      supla_caller(ctDevice), 1, 2, 123, 0, queue, pool, propertyGetter,
-      &credentials);
-  request->set_timestamp(1600097258);
-  std::shared_ptr<supla_abstract_asynctask> task = request->start();
-  WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
-}
-
-void StateWebhookRequestTest::makeTest(
-    int func, bool online, supla_channel_electricity_measurement *em,
-    const char *expectedPayload) {
-  EXPECT_CALL(*propertyGetter,
-              _get_electricity_measurement(Eq(1), Eq(2), Eq(123)))
-      .Times(1)
-      .WillOnce(Return(em));
 
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(123), NotNull(), NotNull()))
@@ -980,10 +949,10 @@ TEST_F(StateWebhookRequestTest,
 
   char currency[] = "PLN";
 
-  supla_channel_electricity_measurement *em =
-      new supla_channel_electricity_measurement(123, &em_ev, 10000, currency);
+  supla_channel_em_extended_value *emv =
+      new supla_channel_em_extended_value(&em_ev, currency, 10000);
 
-  makeTest(SUPLA_CHANNELFNC_ELECTRICITY_METER, true, em, expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_ELECTRICITY_METER, true, emv, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendElectricityMeasurementReport_AllVars) {
@@ -1038,8 +1007,8 @@ TEST_F(StateWebhookRequestTest, sendElectricityMeasurementReport_AllVars) {
 
   char currency[] = "PLN";
 
-  supla_channel_electricity_measurement *em =
-      new supla_channel_electricity_measurement(123, &em_ev, 10000, currency);
+  supla_channel_em_extended_value *em =
+      new supla_channel_em_extended_value(&em_ev, currency, 10000);
 
   makeTest(SUPLA_CHANNELFNC_ELECTRICITY_METER, true, em, expectedPayload);
 }
@@ -1099,8 +1068,8 @@ TEST_F(StateWebhookRequestTest,
 
   char currency[] = "PLN";
 
-  supla_channel_electricity_measurement *em =
-      new supla_channel_electricity_measurement(123, &em_ev, 10000, currency);
+  supla_channel_em_extended_value *em =
+      new supla_channel_em_extended_value(&em_ev, currency, 10000);
 
   makeTest(SUPLA_CHANNELFNC_ELECTRICITY_METER, true, em, expectedPayload);
 }
@@ -1113,7 +1082,7 @@ TEST_F(StateWebhookRequestTest, sendElectricityMeasurementReport_Disconnected) {
       "false}}";
 
   makeTest(SUPLA_CHANNELFNC_ELECTRICITY_METER, false,
-           (supla_channel_electricity_measurement *)nullptr, expectedPayload);
+           (supla_channel_em_extended_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest,
@@ -1151,8 +1120,8 @@ TEST_F(StateWebhookRequestTest,
 
   char currency[] = "PLN";
 
-  supla_channel_electricity_measurement *em =
-      new supla_channel_electricity_measurement(123, &em_ev, 10000, currency);
+  supla_channel_em_extended_value *em =
+      new supla_channel_em_extended_value(&em_ev, currency, 10000);
 
   makeTest(SUPLA_CHANNELFNC_ELECTRICITY_METER, true, em, expectedPayload);
 }

@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "channeljsonconfig/action_trigger_config.h"
+#include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "log.h"
 
@@ -1075,30 +1076,23 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
     case 0:
     case 1: {
       bool result = false;
-      supla_channel_electricity_measurement *em =
-          new supla_channel_electricity_measurement(
-              row->channel_id, (TElectricityMeter_ExtendedValue_V2 *)NULL,
-              row->channel_param2, row->channel_text_param1);
-      if (em) {
-        char currency[4];
-        em->getCurrency(currency);
+      supla_channel_billing_value bil;
 
-        switch (index) {
-          case 0:
-            result = ha_sensor(currency, 2, index, true, "state/total_cost",
-                               NULL, "Total cost", NULL, "monetary", false,
-                               topic_prefix, topic_name, message, message_size);
-            break;
-          case 1:
-            result = ha_sensor(currency, 2, index, true,
-                               "state/total_cost_balanced", NULL,
-                               "Total cost - balanced", NULL, "monetary", false,
-                               topic_prefix, topic_name, message, message_size);
-            break;
-        }
-
-        delete em;
+      switch (index) {
+        case 0:
+          result = ha_sensor(bil.get_currency(row->channel_text_param1).c_str(),
+                             2, index, true, "state/total_cost", NULL,
+                             "Total cost", NULL, "monetary", false,
+                             topic_prefix, topic_name, message, message_size);
+          break;
+        case 1:
+          result = ha_sensor(bil.get_currency(row->channel_text_param1).c_str(),
+                             2, index, true, "state/total_cost_balanced", NULL,
+                             "Total cost - balanced", NULL, "monetary", false,
+                             topic_prefix, topic_name, message, message_size);
+          break;
       }
+
       return result;
     }
     case 2:

@@ -29,17 +29,16 @@ supla_get_em_value_command::supla_get_em_value_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_get_em_value_command(socket_adapter) {}
 
-supla_channel_electricity_measurement *
-supla_get_em_value_command::get_electricity_measurement(int user_id,
-                                                        int device_id,
-                                                        int channel_id) {
-  supla_channel_electricity_measurement *result = nullptr;
+supla_channel_em_extended_value *supla_get_em_value_command::get_em_value(
+    int user_id, int device_id, int channel_id) {
+  supla_channel_em_extended_value *result = nullptr;
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
     device->get_channels()->access_channel(
         channel_id, [&result](supla_device_channel *channel) -> void {
-          result = channel->get_electricity_measurement(false);
+          result = channel->get_extended_value<supla_channel_em_extended_value>(
+              false);
         });
   }
 

@@ -29,8 +29,6 @@ class supla_cahnnel_property_getter
                                           supla_channel_fragment *fragment,
                                           bool *online);
   virtual int _get_func(int user_id, int device_id, int channel_id);
-  virtual supla_channel_electricity_measurement *_get_electricity_measurement(
-      int user_id, int device_id, int channel_id);
   virtual supla_channel_extended_value *_get_extended_value(int user_id,
                                                             int device_id,
                                                             int channel_id);

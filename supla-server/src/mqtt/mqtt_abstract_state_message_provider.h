@@ -20,6 +20,7 @@
 #define MQTT_ABSTRACT_STATE_MESSAGE_PROVIDER_H_
 
 #include "device/abstract_channel_property_getter.h"
+#include "device/extended_value/channel_em_extended_value.h"
 #include "devicechannel.h"
 #include "mqtt_db.h"
 #include "mqtt_message_provider.h"
@@ -38,7 +39,6 @@ class supla_mqtt_abstract_state_message_provider
 
   supla_channel_value *channel_value;
   supla_channel_extended_value *channel_extended_value;
-  supla_channel_electricity_measurement *em;
 
  protected:
   int get_user_id(void);
@@ -129,8 +129,8 @@ class supla_mqtt_abstract_state_message_provider
                                            char **topic_name, void **message,
                                            size_t *message_size);
 
-  void verify_flag(supla_channel_electricity_measurement **em, int flags,
-                   int flag1, int flag2, void **message, size_t *message_size);
+  void verify_flag(supla_channel_em_extended_value **em, int flags, int flag1,
+                   int flag2, void **message, size_t *message_size);
 
   bool get_electricitymeter_message_at_index(unsigned short index,
                                              const char *topic_prefix,

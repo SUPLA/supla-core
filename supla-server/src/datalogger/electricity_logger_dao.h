@@ -20,7 +20,6 @@
 #define ELECTRICITY_LOGGER_DAO_H_
 
 #include "db/abstract_db_access_provider.h"
-#include "device/channel_electricity_measurement.h"
 #include "proto.h"
 
 class supla_electricity_logger_dao {

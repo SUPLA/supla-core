@@ -47,7 +47,6 @@ supla_mqtt_abstract_state_message_provider::
   this->channel_value = nullptr;
   this->channel_extended_value = nullptr;
   this->user_suid = nullptr;
-  this->em = nullptr;
 }
 
 supla_mqtt_abstract_state_message_provider::
@@ -58,10 +57,6 @@ supla_mqtt_abstract_state_message_provider::
 
   if (channel_extended_value) {
     delete channel_extended_value;
-  }
-
-  if (em) {
-    delete em;
   }
 }
 
@@ -92,11 +87,6 @@ void supla_mqtt_abstract_state_message_provider::set_ids(int user_id,
   if (channel_extended_value) {
     delete channel_extended_value;
     channel_extended_value = nullptr;
-  }
-
-  if (em) {
-    delete em;
-    em = nullptr;
   }
 }
 
@@ -613,7 +603,7 @@ bool supla_mqtt_abstract_state_message_provider::
 }
 
 void supla_mqtt_abstract_state_message_provider::verify_flag(
-    supla_channel_electricity_measurement **em, int flags, int flag1, int flag2,
+    supla_channel_em_extended_value **em, int flags, int flag1, int flag2,
     void **message, size_t *message_size) {
   if ((flags & flag1) == 0 && (flags & flag2) == 0) {
     *em = nullptr;
@@ -635,20 +625,20 @@ bool supla_mqtt_abstract_state_message_provider::
     return false;
   }
 
-  if (em == nullptr) {
-    em = _get_channel_property_getter()->get_electricity_measurement(
+  if (channel_extended_value == nullptr) {
+    channel_extended_value = _get_channel_property_getter()->get_extended_value(
         get_user_id(), get_device_id(), get_channel_id());
   }
 
-  supla_channel_electricity_measurement *em = this->em;
+  supla_channel_em_extended_value *emv =
+      dynamic_cast<supla_channel_em_extended_value *>(channel_extended_value);
 
-  TElectricityMeter_ExtendedValue_V2 em_ev;
-  memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
 
-  if (em) {
-    em->getMeasurement(&em_ev);
+  if (emv) {
+    emv->get_raw_value(&em_ev);
     if (em_ev.m_count == 0) {
-      em = nullptr;
+      emv = nullptr;
     }
   }
 
@@ -658,10 +648,10 @@ bool supla_mqtt_abstract_state_message_provider::
         index >= 22 && index <= 33)) ||
       (((channel_flags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED) &&
         index >= 34 && index <= 45))) {
-    em = nullptr;
+    emv = nullptr;
   }
 
-  if (em == nullptr) {
+  if (emv == nullptr) {
     message = nullptr;
 
     if (message_size) {
@@ -670,22 +660,21 @@ bool supla_mqtt_abstract_state_message_provider::
     }
   }
 
-  char value[50];
-  value[0] = 0;
+  char value[50] = {};
 
   short phase = (index - 10) / 12;
 
   switch (index) {
     case 1:
       snprintf(value, sizeof(value), "%.2f",
-               em ? (em_ev.total_cost * 0.01) : 0);
+               emv ? (em_ev.total_cost * 0.01) : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/total_cost",
                             get_device_id(), get_channel_id());
     case 2:
       snprintf(value, sizeof(value), "%.2f",
-               em ? (em_ev.total_cost_balanced * 0.01) : 0);
+               emv ? (em_ev.total_cost_balanced * 0.01) : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/total_cost_balanced",
@@ -693,23 +682,21 @@ bool supla_mqtt_abstract_state_message_provider::
 
     case 3:
       snprintf(value, sizeof(value), "%.4f",
-               em ? (em_ev.price_per_unit * 0.0001) : 0);
+               emv ? (em_ev.price_per_unit * 0.0001) : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/price_per_unit",
                             get_device_id(), get_channel_id());
 
     case 4:
-      if (em) {
-        em->getCurrency(value);
-      }
       return create_message(topic_prefix, user_suid, topic_name, message,
-                            message_size, value, false,
+                            message_size,
+                            emv ? emv->get_currency().c_str() : "", false,
                             "devices/%i/channels/%i/state/currency",
                             get_device_id(), get_channel_id());
 
     case 5:
-      snprintf(value, sizeof(value), "%u", em ? em_ev.measured_values : 0);
+      snprintf(value, sizeof(value), "%u", emv ? em_ev.measured_values : 0);
       // This topic should be called "measured_values" but for compatibility
       // with the rest API it has been changed to "support"
       return create_message(topic_prefix, user_suid, topic_name, message,
@@ -718,39 +705,40 @@ bool supla_mqtt_abstract_state_message_provider::
                             get_device_id(), get_channel_id());
 
     case 6:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_FORWARD_ACTIVE_ENERGY, 0,
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_FORWARD_ACTIVE_ENERGY, 0,
                   message, message_size);
       snprintf(value, sizeof(value), "%.5f",
-               em ? ((em_ev.total_forward_active_energy[0] +
-                      em_ev.total_forward_active_energy[1] +
-                      em_ev.total_forward_active_energy[2]) *
-                     0.00001)
-                  : 0);
+               emv ? ((em_ev.total_forward_active_energy[0] +
+                       em_ev.total_forward_active_energy[1] +
+                       em_ev.total_forward_active_energy[2]) *
+                      0.00001)
+                   : 0);
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/total_forward_active_energy",
           get_device_id(), get_channel_id());
 
     case 7:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_REVERSE_ACTIVE_ENERGY, 0,
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_REVERSE_ACTIVE_ENERGY, 0,
                   message, message_size);
       snprintf(value, sizeof(value), "%.5f",
-               em ? ((em_ev.total_reverse_active_energy[0] +
-                      em_ev.total_reverse_active_energy[1] +
-                      em_ev.total_reverse_active_energy[2]) *
-                     0.00001)
-                  : 0);
+               emv ? ((em_ev.total_reverse_active_energy[0] +
+                       em_ev.total_reverse_active_energy[1] +
+                       em_ev.total_reverse_active_energy[2]) *
+                      0.00001)
+                   : 0);
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/total_reverse_active_energy",
           get_device_id(), get_channel_id());
 
     case 8:
-      verify_flag(&em, em_ev.measured_values,
+      verify_flag(&emv, em_ev.measured_values,
                   EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED, 0, message,
                   message_size);
-      snprintf(value, sizeof(value), "%.5f",
-               em ? (em_ev.total_forward_active_energy_balanced * 0.00001) : 0);
+      snprintf(
+          value, sizeof(value), "%.5f",
+          emv ? (em_ev.total_forward_active_energy_balanced * 0.00001) : 0);
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false,
@@ -758,11 +746,12 @@ bool supla_mqtt_abstract_state_message_provider::
           get_device_id(), get_channel_id());
 
     case 9:
-      verify_flag(&em, em_ev.measured_values,
+      verify_flag(&emv, em_ev.measured_values,
                   EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED, 0, message,
                   message_size);
-      snprintf(value, sizeof(value), "%.5f",
-               em ? (em_ev.total_reverse_active_energy_balanced * 0.00001) : 0);
+      snprintf(
+          value, sizeof(value), "%.5f",
+          emv ? (em_ev.total_reverse_active_energy_balanced * 0.00001) : 0);
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false,
@@ -772,10 +761,10 @@ bool supla_mqtt_abstract_state_message_provider::
     case 10:
     case 22:
     case 34:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_FORWARD_ACTIVE_ENERGY, 0,
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_FORWARD_ACTIVE_ENERGY, 0,
                   message, message_size);
       snprintf(value, sizeof(value), "%.5f",
-               em ? (em_ev.total_forward_active_energy[phase] * 0.00001) : 0);
+               emv ? (em_ev.total_forward_active_energy[phase] * 0.00001) : 0);
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false,
@@ -785,10 +774,10 @@ bool supla_mqtt_abstract_state_message_provider::
     case 11:
     case 23:
     case 35:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_REVERSE_ACTIVE_ENERGY, 0,
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_REVERSE_ACTIVE_ENERGY, 0,
                   message, message_size);
       snprintf(value, sizeof(value), "%.5f",
-               em ? (em_ev.total_reverse_active_energy[phase] * 0.00001) : 0);
+               emv ? (em_ev.total_reverse_active_energy[phase] * 0.00001) : 0);
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false,
@@ -798,10 +787,11 @@ bool supla_mqtt_abstract_state_message_provider::
     case 12:
     case 24:
     case 36:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_FORWARD_REACTIVE_ENERGY, 0,
-                  message, message_size);
-      snprintf(value, sizeof(value), "%.5f",
-               em ? (em_ev.total_forward_reactive_energy[phase] * 0.00001) : 0);
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_FORWARD_REACTIVE_ENERGY,
+                  0, message, message_size);
+      snprintf(
+          value, sizeof(value), "%.5f",
+          emv ? (em_ev.total_forward_reactive_energy[phase] * 0.00001) : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/phases/%i/"
@@ -811,10 +801,11 @@ bool supla_mqtt_abstract_state_message_provider::
     case 13:
     case 25:
     case 37:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_REVERSE_REACTIVE_ENERGY, 0,
-                  message, message_size);
-      snprintf(value, sizeof(value), "%.5f",
-               em ? (em_ev.total_reverse_reactive_energy[phase] * 0.00001) : 0);
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_REVERSE_REACTIVE_ENERGY,
+                  0, message, message_size);
+      snprintf(
+          value, sizeof(value), "%.5f",
+          emv ? (em_ev.total_reverse_reactive_energy[phase] * 0.00001) : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/phases/%i/"
@@ -824,9 +815,10 @@ bool supla_mqtt_abstract_state_message_provider::
     case 14:
     case 26:
     case 38:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_FREQ, 0, message,
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_FREQ, 0, message,
                   message_size);
-      snprintf(value, sizeof(value), "%.2f", em ? (em_ev.m[0].freq * 0.01) : 0);
+      snprintf(value, sizeof(value), "%.2f",
+               emv ? (em_ev.m[0].freq * 0.01) : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/phases/%i/frequency",
@@ -835,10 +827,10 @@ bool supla_mqtt_abstract_state_message_provider::
     case 15:
     case 27:
     case 39:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_VOLTAGE, 0, message,
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_VOLTAGE, 0, message,
                   message_size);
       snprintf(value, sizeof(value), "%.2f",
-               em ? (em_ev.m[0].voltage[phase] * 0.01) : 0);
+               emv ? (em_ev.m[0].voltage[phase] * 0.01) : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/phases/%i/voltage",
@@ -847,7 +839,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 16:
     case 28:
     case 40: {
-      verify_flag(&em, em_ev.measured_values, EM_VAR_CURRENT,
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_CURRENT,
                   EM_VAR_CURRENT_OVER_65A, message, message_size);
       unsigned int current = em_ev.m[0].current[phase];
 
@@ -856,7 +848,7 @@ bool supla_mqtt_abstract_state_message_provider::
         current *= 10;
       }
 
-      snprintf(value, sizeof(value), "%.3f", em ? (current * 0.001) : 0);
+      snprintf(value, sizeof(value), "%.3f", emv ? (current * 0.001) : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/phases/%i/current",
@@ -865,10 +857,10 @@ bool supla_mqtt_abstract_state_message_provider::
     case 17:
     case 29:
     case 41:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_ACTIVE, 0, message,
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_POWER_ACTIVE, 0, message,
                   message_size);
       {
-        double power = em ? (em_ev.m[0].power_active[phase] * 0.00001) : 0;
+        double power = emv ? (em_ev.m[0].power_active[phase] * 0.00001) : 0;
         if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KW) {
           power *= 1000;
         }
@@ -881,10 +873,10 @@ bool supla_mqtt_abstract_state_message_provider::
     case 18:
     case 30:
     case 42:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_REACTIVE, 0, message,
-                  message_size);
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_POWER_REACTIVE, 0,
+                  message, message_size);
       {
-        double power = em ? (em_ev.m[0].power_reactive[phase] * 0.00001) : 0;
+        double power = emv ? (em_ev.m[0].power_reactive[phase] * 0.00001) : 0;
         if (em_ev.measured_values & EM_VAR_POWER_REACTIVE_KVAR) {
           power *= 1000;
         }
@@ -897,10 +889,10 @@ bool supla_mqtt_abstract_state_message_provider::
     case 19:
     case 31:
     case 43:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_APPARENT, 0, message,
-                  message_size);
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_POWER_APPARENT, 0,
+                  message, message_size);
       {
-        double power = em ? (em_ev.m[0].power_apparent[phase] * 0.00001) : 0;
+        double power = emv ? (em_ev.m[0].power_apparent[phase] * 0.00001) : 0;
         if (em_ev.measured_values & EM_VAR_POWER_APPARENT_KVA) {
           power *= 1000;
         }
@@ -913,10 +905,10 @@ bool supla_mqtt_abstract_state_message_provider::
     case 20:
     case 32:
     case 44:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_FACTOR, 0, message,
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_POWER_FACTOR, 0, message,
                   message_size);
       snprintf(value, sizeof(value), "%.3f",
-               em ? (em_ev.m[0].power_factor[phase] * 0.001) : 0);
+               emv ? (em_ev.m[0].power_factor[phase] * 0.001) : 0);
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/power_factor",
@@ -924,10 +916,10 @@ bool supla_mqtt_abstract_state_message_provider::
     case 21:
     case 33:
     case 45:
-      verify_flag(&em, em_ev.measured_values, EM_VAR_PHASE_ANGLE, 0, message,
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_PHASE_ANGLE, 0, message,
                   message_size);
       snprintf(value, sizeof(value), "%.1f",
-               em ? (em_ev.m[0].phase_angle[phase] * 0.1) : 0);
+               emv ? (em_ev.m[0].phase_angle[phase] * 0.1) : 0);
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/phase_angle",
