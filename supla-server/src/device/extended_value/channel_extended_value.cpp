@@ -28,15 +28,7 @@ supla_channel_extended_value::supla_channel_extended_value(void) {
 
 supla_channel_extended_value::supla_channel_extended_value(
     TSuplaChannelExtendedValue *value) {
-  this->real_size = 0;
-  this->value = nullptr;
-
-  if (value) {
-    get_value_ptr(value->size);
-    if (this->value) {
-      memcpy(this->value, value, real_size);
-    }
-  }
+  set_raw_value(value);
 }
 
 supla_channel_extended_value::supla_channel_extended_value(
@@ -90,6 +82,19 @@ void supla_channel_extended_value::get_raw_value(
     memset(value, 0, sizeof(TSuplaChannelExtendedValue));
     if (this->value) {
       memcpy(value, &this->value, real_size);
+    }
+  }
+}
+
+void supla_channel_extended_value::set_raw_value(
+    const TSuplaChannelExtendedValue *value) {
+  this->real_size = 0;
+  this->value = nullptr;
+
+  if (value) {
+    get_value_ptr(value->size);
+    if (this->value) {
+      memcpy(this->value, value, real_size);
     }
   }
 }

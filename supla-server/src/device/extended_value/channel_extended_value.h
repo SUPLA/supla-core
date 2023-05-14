@@ -42,6 +42,7 @@ class supla_channel_extended_value {
   virtual ~supla_channel_extended_value(void);
   virtual bool is_differ(supla_channel_extended_value *value);
   void get_raw_value(TSuplaChannelExtendedValue *value);
+  void set_raw_value(const TSuplaChannelExtendedValue *value);
 };
 
 #endif /*CHANNEL_EXTENDED_VALUE_H_*/
