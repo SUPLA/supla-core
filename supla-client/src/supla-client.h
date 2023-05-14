@@ -296,13 +296,15 @@ _supla_int_t srpc_evtool_value_get(TSuplaChannelExtendedValue *ev,
                                    TSuplaChannelExtendedValue *dest);
 
 _supla_int_t srpc_evtool_v2_extended2emextended(
-    TSuplaChannelExtendedValue *ev, TElectricityMeter_ExtendedValue_V2 *em_ev);
+    const TSuplaChannelExtendedValue *ev,
+    TElectricityMeter_ExtendedValue_V2 *em_ev);
 
 _supla_int_t srpc_evtool_v1_extended2icextended(
-    TSuplaChannelExtendedValue *ev, TSC_ImpulseCounter_ExtendedValue *ic_ev);
+    const TSuplaChannelExtendedValue *ev,
+    TSC_ImpulseCounter_ExtendedValue *ic_ev);
 
 _supla_int_t srpc_evtool_v1_extended2thermostatextended(
-    TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev);
+    const TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev);
 
 #ifdef __cplusplus
 }
