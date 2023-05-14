@@ -27,7 +27,17 @@ supla_channel_thermostat_value::supla_channel_thermostat_value(
     char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {}
 
-bool supla_channel_thermostat_value::is_on(void) { return raw_value[0] > 0; }
+bool supla_channel_thermostat_value::is_on(void) {
+  return ((TThermostat_Value *)raw_value)->IsOn > 0;
+}
+
+double supla_channel_thermostat_value::get_measured_temperature(void) {
+  return ((TThermostat_Value *)raw_value)->MeasuredTemperature * 0.01;
+}
+
+double supla_channel_thermostat_value::get_preset_temperature(void) {
+  return ((TThermostat_Value *)raw_value)->PresetTemperature * 0.01;
+}
 
 // static
 bool supla_channel_thermostat_value::is_function_supported(int func) {

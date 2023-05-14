@@ -20,7 +20,7 @@
 #define THERMOSTAT_LOGGER_DAO_H_
 
 #include "db/abstract_db_access_provider.h"
-#include "device/channel_thermostat_measurement.h"
+#include "device/value/channel_thermostat_value.h"
 
 class supla_thermostat_logger_dao {
  private:
@@ -28,7 +28,7 @@ class supla_thermostat_logger_dao {
 
  public:
   explicit supla_thermostat_logger_dao(supla_abstract_db_access_provider *dba);
-  void add(supla_channel_thermostat_measurement *th);
+  void add(int channel_id, supla_channel_thermostat_value *th);
 };
 
 #endif /* THERMOSTAT_LOGGER_DAO_H_ */

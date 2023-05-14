@@ -27,6 +27,8 @@ class supla_channel_thermostat_value : public supla_channel_value {
   explicit supla_channel_thermostat_value(
       char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   bool is_on(void);
+  double get_measured_temperature(void);
+  double get_preset_temperature(void);
   static bool is_function_supported(int func);
 };
 

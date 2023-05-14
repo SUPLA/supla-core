@@ -44,4 +44,14 @@ TEST_F(ChannelThermostatValueTest, rawDataConstructor) {
   EXPECT_TRUE(v2.is_on());
 }
 
+TEST_F(ChannelThermostatValueTest, getTemperatures) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((TThermostat_Value *)raw_value)->PresetTemperature = 1234;
+  ((TThermostat_Value *)raw_value)->MeasuredTemperature = 4456;
+
+  supla_channel_thermostat_value v1(raw_value);
+  EXPECT_EQ(v1.get_preset_temperature(), 12.34);
+  EXPECT_EQ(v1.get_measured_temperature(), 44.56);
+}
+
 }  // namespace testing

@@ -940,29 +940,6 @@ list<int> supla_device_channel::master_channel(void) {
   return result;
 }
 
-supla_channel_thermostat_measurement *
-supla_device_channel::get_thermostat_measurement(void) {
-  switch (get_type()) {
-    case SUPLA_CHANNELTYPE_THERMOSTAT:
-    case SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS:
-      switch (get_func()) {
-        case SUPLA_CHANNELFNC_THERMOSTAT:
-        case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
-          char value[SUPLA_CHANNELVALUE_SIZE];
-          get_value(value);
-          TThermostat_Value *th_val = (TThermostat_Value *)value;
-
-          return new supla_channel_thermostat_measurement(
-              get_id(), th_val->IsOn > 0, th_val->MeasuredTemperature * 0.01,
-              th_val->PresetTemperature * 0.01);
-        }
-      }
-      break;
-  }
-
-  return nullptr;
-}
-
 channel_json_config *supla_device_channel::get_json_config(void) {
   channel_json_config *result = nullptr;
 

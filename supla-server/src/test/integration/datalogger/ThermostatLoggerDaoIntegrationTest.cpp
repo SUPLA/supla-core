@@ -20,6 +20,8 @@
 
 #include <string>
 
+#include "device/value/channel_thermostat_value.h"
+
 using std::string;
 
 namespace testing {
@@ -64,9 +66,14 @@ TEST_F(ThermostatLoggerDaoIntegrationTest, add) {
 
   EXPECT_EQ(result, "count\n0\n");
 
-  supla_channel_thermostat_measurement tm(25, true, 21.34, 22.34);
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((TThermostat_Value *)raw_value)->IsOn = 1;
+  ((TThermostat_Value *)raw_value)->PresetTemperature = 2234;
+  ((TThermostat_Value *)raw_value)->MeasuredTemperature = 2134;
 
-  dao->add(&tm);
+  supla_channel_thermostat_value tv(raw_value);
+
+  dao->add(25, &tv);
 
   result = "";
 

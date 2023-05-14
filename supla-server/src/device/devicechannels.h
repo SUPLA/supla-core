@@ -193,9 +193,6 @@ class supla_device_channels {
   void on_related_sensor_value_changed(int control_channel_id, int sensor_id,
                                        bool is_open);
 
-  void get_thermostat_measurements(
-      std::vector<supla_channel_thermostat_measurement *> *result);
-
   void get_channel_values(std::vector<supla_channel_value_envelope *> *result,
                           std::function<bool(supla_channel_value *)> filter);
 

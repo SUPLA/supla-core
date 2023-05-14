@@ -22,6 +22,7 @@
 
 #include "datalogger/thermostat_logger_dao.h"
 #include "device/device.h"
+#include "device/value/channel_thermostat_value.h"
 #include "safearray.h"
 
 using std::shared_ptr;
@@ -37,19 +38,26 @@ unsigned int supla_thermostat_logger::task_interval_sec(void) { return 600; }
 
 void supla_thermostat_logger::run(const vector<supla_user *> *users,
                                   supla_abstract_db_access_provider *dba) {
-  std::vector<supla_channel_thermostat_measurement *> th;
+  std::vector<supla_channel_value_envelope *> env;
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
     (*uit)->get_devices()->for_each(
-        [&th](shared_ptr<supla_device> device, bool *will_continue) -> void {
-          device->get_channels()->get_thermostat_measurements(&th);
+        [&env](shared_ptr<supla_device> device, bool *will_continue) -> void {
+          device->get_channels()->get_channel_values(
+              &env, [](supla_channel_value *value) -> bool {
+                return dynamic_cast<supla_channel_thermostat_value *>(value) !=
+                       nullptr;
+              });
         });
   }
 
   supla_thermostat_logger_dao dao(dba);
 
-  for (auto it = th.cbegin(); it != th.cend(); ++it) {
-    if ((*it)->getMeasuredTemperature() > -273) {
-      dao.add(*it);
+  for (auto it = env.cbegin(); it != env.cend(); ++it) {
+    supla_channel_thermostat_value *th =
+        dynamic_cast<supla_channel_thermostat_value *>((*it)->get_value());
+
+    if (th && th->get_measured_temperature() > -273) {
+      dao.add((*it)->get_channel_id(), th);
     }
 
     delete *it;
