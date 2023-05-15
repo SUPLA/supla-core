@@ -41,6 +41,7 @@ RM := rm -rf
 -include src/test/doubles/http/subdir.mk
 -include src/test/doubles/google/subdir.mk
 -include src/test/doubles/distributedobjects/subdir.mk
+-include src/test/doubles/device/extended_value/subdir.mk
 -include src/test/doubles/device/subdir.mk
 -include src/test/doubles/db/subdir.mk
 -include src/test/doubles/cyclictasks/subdir.mk

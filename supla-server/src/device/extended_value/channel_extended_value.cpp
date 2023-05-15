@@ -27,12 +27,15 @@ supla_channel_extended_value::supla_channel_extended_value(void) {
 }
 
 supla_channel_extended_value::supla_channel_extended_value(
-    TSuplaChannelExtendedValue *value) {
+    const TSuplaChannelExtendedValue *value) {
+  this->real_size = 0;
+  this->value = nullptr;
+
   set_raw_value(value);
 }
 
 supla_channel_extended_value::supla_channel_extended_value(
-    supla_channel_extended_value *value) {
+    const supla_channel_extended_value *value) {
   this->real_size = 0;
   this->value = nullptr;
 
@@ -49,57 +52,74 @@ supla_channel_extended_value::~supla_channel_extended_value(void) {
   }
 }
 
-TSuplaChannelExtendedValue *supla_channel_extended_value::get_value_ptr(
+TSuplaChannelExtendedValue *supla_channel_extended_value::_realloc(
     size_t required_data_size) {
   if (required_data_size > SUPLA_CHANNELEXTENDEDVALUE_SIZE) {
+    if (value) {
+      free(value);
+    }
+    value = nullptr;
+    real_size = 0;
     return nullptr;
   }
 
-  size_t size = sizeof(TSuplaChannelExtendedValue) -
-                SUPLA_CHANNELEXTENDEDVALUE_SIZE + required_data_size;
+  size_t new_size = sizeof(TSuplaChannelExtendedValue) -
+                    SUPLA_CHANNELEXTENDEDVALUE_SIZE + required_data_size;
 
-  if (size != real_size) {
-    free(value);
-    value = nullptr;
-  }
+  if (new_size != real_size) {
+    value = (TSuplaChannelExtendedValue *)realloc(value, new_size);
 
-  if (value == nullptr) {
-    value = (TSuplaChannelExtendedValue *)calloc(1, size);
-    real_size = size;
+    if (value) {
+      value->size = required_data_size;
+
+      if (new_size > real_size) {
+          char *dst = (char *)value;
+          memset(&dst[real_size], 0, new_size - real_size);
+      }
+    }
+
+    real_size = new_size;
   }
 
   return value;
 }
 
-const TSuplaChannelExtendedValue *supla_channel_extended_value::get_value_ptr(
-    void) {
+TSuplaChannelExtendedValue *supla_channel_extended_value::get_value_ptr(void) {
   return value;
 }
 
-void supla_channel_extended_value::get_raw_value(
+bool supla_channel_extended_value::get_raw_value(
     TSuplaChannelExtendedValue *value) {
   if (value) {
     memset(value, 0, sizeof(TSuplaChannelExtendedValue));
     if (this->value) {
-      memcpy(value, &this->value, real_size);
+      memcpy(value, this->value, real_size);
+      return true;
     }
   }
+
+  return false;
 }
 
 void supla_channel_extended_value::set_raw_value(
     const TSuplaChannelExtendedValue *value) {
-  this->real_size = 0;
-  this->value = nullptr;
-
   if (value) {
-    get_value_ptr(value->size);
+    _realloc(value->size);
     if (this->value) {
       memcpy(this->value, value, real_size);
     }
+  } else if (this->value) {
+    free(this->value);
+    this->value = nullptr;
+    this->real_size = 0;
   }
 }
 
 size_t supla_channel_extended_value::get_real_size(void) { return real_size; }
+
+size_t supla_channel_extended_value::get_value_size(void) {
+  return value ? value->size : 0;
+}
 
 bool supla_channel_extended_value::is_differ(
     supla_channel_extended_value *value) {

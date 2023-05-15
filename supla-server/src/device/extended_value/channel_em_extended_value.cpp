@@ -119,18 +119,27 @@ string supla_channel_em_extended_value::get_currency(void) {
   return "";
 }
 
-void supla_channel_em_extended_value::get_raw_value(
+bool supla_channel_em_extended_value::get_raw_value(
     TElectricityMeter_ExtendedValue_V2 *value) {
   if (!value) {
-    return;
+    return false;
   }
 
-  if (!srpc_evtool_v2_extended2emextended(get_value_ptr(), value)) {
-    memset(value, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+  if (srpc_evtool_v2_extended2emextended(get_value_ptr(), value)) {
+    return true;
   }
+
+  memset(value, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+  return false;
 }
 
 // static
 bool supla_channel_em_extended_value::is_function_supported(int func) {
   return func == SUPLA_CHANNELFNC_ELECTRICITY_METER;
+}
+
+// static
+bool supla_channel_em_extended_value::is_ev_type_supported(char type) {
+  return type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 ||
+         type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2;
 }

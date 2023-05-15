@@ -60,6 +60,7 @@ cpplint --filter=-build/include ./supla-server/src/test/doubles/conn/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/cyclictasks/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/db/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/device/*
+cpplint --filter=-build/include ./supla-server/src/test/doubles/device/extended_value/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/distributedobjects/* 
 cpplint --filter=-build/include ./supla-server/src/test/doubles/google/* 
 cpplint --filter=-build/include ./supla-server/src/test/doubles/http/* 

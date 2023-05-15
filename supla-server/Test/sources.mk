@@ -75,6 +75,7 @@ src/test/doubles/conn \
 src/test/doubles/cyclictasks \
 src/test/doubles/db \
 src/test/doubles/device \
+src/test/doubles/device/extended_value \
 src/test/doubles/distributedobjects \
 src/test/doubles/google \
 src/test/doubles/http \

@@ -71,7 +71,7 @@ supla_channel_ic_extended_value::supla_channel_ic_extended_value(
 
   TSuplaChannelExtendedValue ev = {};
   if (srpc_evtool_v1_icextended2extended(&ic_ev, &ev)) {
-    TSuplaChannelExtendedValue *value = get_value_ptr(ev.size);
+    TSuplaChannelExtendedValue *value = _realloc(ev.size);
     if (value) {
       memcpy(value, &ev, get_real_size());
     }

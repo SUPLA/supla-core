@@ -4,19 +4,28 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/device/extended_value/ChannelAndTimerStateExtendedValueTest.cpp \
 ../src/test/device/extended_value/ChannelBillingValueTest.cpp \
 ../src/test/device/extended_value/ChannelEmExtendedValueTest.cpp \
-../src/test/device/extended_value/ChannelIcExtendedValueTest.cpp 
+../src/test/device/extended_value/ChannelIcExtendedValueTest.cpp \
+../src/test/device/extended_value/ChannelStateExtendedValueTest.cpp \
+../src/test/device/extended_value/TimerStateExtendedValueTest.cpp 
 
 CPP_DEPS += \
+./src/test/device/extended_value/ChannelAndTimerStateExtendedValueTest.d \
 ./src/test/device/extended_value/ChannelBillingValueTest.d \
 ./src/test/device/extended_value/ChannelEmExtendedValueTest.d \
-./src/test/device/extended_value/ChannelIcExtendedValueTest.d 
+./src/test/device/extended_value/ChannelIcExtendedValueTest.d \
+./src/test/device/extended_value/ChannelStateExtendedValueTest.d \
+./src/test/device/extended_value/TimerStateExtendedValueTest.d 
 
 OBJS += \
+./src/test/device/extended_value/ChannelAndTimerStateExtendedValueTest.o \
 ./src/test/device/extended_value/ChannelBillingValueTest.o \
 ./src/test/device/extended_value/ChannelEmExtendedValueTest.o \
-./src/test/device/extended_value/ChannelIcExtendedValueTest.o 
+./src/test/device/extended_value/ChannelIcExtendedValueTest.o \
+./src/test/device/extended_value/ChannelStateExtendedValueTest.o \
+./src/test/device/extended_value/TimerStateExtendedValueTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -31,7 +40,7 @@ src/test/device/extended_value/%.o: ../src/test/device/extended_value/%.cpp src/
 clean: clean-src-2f-test-2f-device-2f-extended_value
 
 clean-src-2f-test-2f-device-2f-extended_value:
-	-$(RM) ./src/test/device/extended_value/ChannelBillingValueTest.d ./src/test/device/extended_value/ChannelBillingValueTest.o ./src/test/device/extended_value/ChannelEmExtendedValueTest.d ./src/test/device/extended_value/ChannelEmExtendedValueTest.o ./src/test/device/extended_value/ChannelIcExtendedValueTest.d ./src/test/device/extended_value/ChannelIcExtendedValueTest.o
+	-$(RM) ./src/test/device/extended_value/ChannelAndTimerStateExtendedValueTest.d ./src/test/device/extended_value/ChannelAndTimerStateExtendedValueTest.o ./src/test/device/extended_value/ChannelBillingValueTest.d ./src/test/device/extended_value/ChannelBillingValueTest.o ./src/test/device/extended_value/ChannelEmExtendedValueTest.d ./src/test/device/extended_value/ChannelEmExtendedValueTest.o ./src/test/device/extended_value/ChannelIcExtendedValueTest.d ./src/test/device/extended_value/ChannelIcExtendedValueTest.o ./src/test/device/extended_value/ChannelStateExtendedValueTest.d ./src/test/device/extended_value/ChannelStateExtendedValueTest.o ./src/test/device/extended_value/TimerStateExtendedValueTest.d ./src/test/device/extended_value/TimerStateExtendedValueTest.o
 
 .PHONY: clean-src-2f-test-2f-device-2f-extended_value
 

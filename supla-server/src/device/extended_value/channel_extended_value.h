@@ -31,18 +31,21 @@ class supla_channel_extended_value {
                // specified by sizeof.
 
  protected:
-  TSuplaChannelExtendedValue *get_value_ptr(size_t required_data_size);
-  const TSuplaChannelExtendedValue *get_value_ptr(void);
-  size_t get_real_size(void);
+  TSuplaChannelExtendedValue *_realloc(size_t required_data_size);
+  TSuplaChannelExtendedValue *get_value_ptr(void);
 
  public:
   supla_channel_extended_value(void);
-  explicit supla_channel_extended_value(TSuplaChannelExtendedValue *value);
-  explicit supla_channel_extended_value(supla_channel_extended_value *value);
+  explicit supla_channel_extended_value(
+      const TSuplaChannelExtendedValue *value);
+  explicit supla_channel_extended_value(
+      const supla_channel_extended_value *value);
   virtual ~supla_channel_extended_value(void);
+  virtual size_t get_real_size(void);
+  virtual size_t get_value_size(void);
   virtual bool is_differ(supla_channel_extended_value *value);
-  void get_raw_value(TSuplaChannelExtendedValue *value);
-  void set_raw_value(const TSuplaChannelExtendedValue *value);
+  virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
+  virtual void set_raw_value(const TSuplaChannelExtendedValue *value);
 };
 
 #endif /*CHANNEL_EXTENDED_VALUE_H_*/
