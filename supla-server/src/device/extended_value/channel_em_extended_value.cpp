@@ -30,18 +30,18 @@ supla_channel_em_extended_value::supla_channel_em_extended_value(
     : supla_channel_extended_value(), supla_channel_billing_value() {
   TElectricityMeter_ExtendedValue_V2 v2 = {};
 
-  if (value->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
-    TElectricityMeter_ExtendedValue v1 = {};
-    if (!srpc_evtool_v1_extended2emextended(value, &v1) ||
-        !srpc_evtool_emev_v1to2(&v1, &v2)) {
-      return;
+  if (value) {
+    if (value->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
+      TElectricityMeter_ExtendedValue v1 = {};
+      if (!srpc_evtool_v1_extended2emextended(value, &v1) ||
+          !srpc_evtool_emev_v1to2(&v1, &v2)) {
+        return;
+      }
+    } else if (value->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
+      if (!srpc_evtool_v2_extended2emextended(value, &v2)) {
+        return;
+      }
     }
-  } else if (value->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
-    if (!srpc_evtool_v2_extended2emextended(value, &v2)) {
-      return;
-    }
-  } else {
-    return;
   }
 
   init(&v2, text_param1, param2);
@@ -120,6 +120,11 @@ string supla_channel_em_extended_value::get_currency(void) {
 }
 
 bool supla_channel_em_extended_value::get_raw_value(
+    TSuplaChannelExtendedValue *value) {
+  return supla_channel_extended_value::get_raw_value(value);
+}
+
+bool supla_channel_em_extended_value::get_raw_value(
     TElectricityMeter_ExtendedValue_V2 *value) {
   if (!value) {
     return false;
@@ -131,6 +136,15 @@ bool supla_channel_em_extended_value::get_raw_value(
 
   memset(value, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
   return false;
+}
+
+supla_channel_extended_value *supla_channel_em_extended_value::
+    supla_channel_em_extended_value::copy(  // NOLINT
+        void) {                             // NOLINT
+  supla_channel_em_extended_value *result = new supla_channel_em_extended_value(
+      (const TSuplaChannelExtendedValue *)nullptr, nullptr, 0);
+  result->set_raw_value(get_value_ptr());
+  return result;
 }
 
 // static

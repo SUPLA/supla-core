@@ -41,6 +41,7 @@ class supla_channel_extended_value {
   explicit supla_channel_extended_value(
       const supla_channel_extended_value *value);
   virtual ~supla_channel_extended_value(void);
+  virtual supla_channel_extended_value *copy(void);  // NOLINT
   virtual size_t get_real_size(void);
   virtual size_t get_value_size(void);
   virtual bool is_differ(supla_channel_extended_value *value);

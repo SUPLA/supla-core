@@ -32,6 +32,7 @@ class supla_timer_state_extended_value : public supla_channel_extended_value {
 
  protected:
   virtual std::string get_sender_name(int client_id);
+  supla_user *get_user(void);
 
  public:
   explicit supla_timer_state_extended_value(
@@ -44,6 +45,7 @@ class supla_timer_state_extended_value : public supla_channel_extended_value {
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
   static bool is_ev_type_supported(char type);
   static bool valid_size(size_t size);
+  virtual supla_channel_extended_value *copy(void);  // NOLINT
 };
 
 #endif /*TIMER_STATE_EXTENDED_VALUE_H_*/

@@ -52,6 +52,11 @@ supla_channel_extended_value::~supla_channel_extended_value(void) {
   }
 }
 
+supla_channel_extended_value *supla_channel_extended_value::copy(  // NOLINT
+    void) {                                                        // NOLINT
+  return new supla_channel_extended_value(get_value_ptr());
+}
+
 TSuplaChannelExtendedValue *supla_channel_extended_value::_realloc(
     size_t required_data_size) {
   if (required_data_size > SUPLA_CHANNELEXTENDEDVALUE_SIZE) {
@@ -73,8 +78,8 @@ TSuplaChannelExtendedValue *supla_channel_extended_value::_realloc(
       value->size = required_data_size;
 
       if (new_size > real_size) {
-          char *dst = (char *)value;
-          memset(&dst[real_size], 0, new_size - real_size);
+        char *dst = (char *)value;
+        memset(&dst[real_size], 0, new_size - real_size);
       }
     }
 

@@ -40,6 +40,7 @@ class supla_channel_ic_extended_value : public supla_channel_extended_value,
   unsigned _supla_int64_t get_counter(void);
   unsigned _supla_int64_t get_calculated_value(void);
   static bool is_function_supported(int func);
+  virtual supla_channel_extended_value *copy(void);  // NOLINT
 };
 
 #endif /*CHANNEL_IC_EXTENDED_VALUE_H_*/

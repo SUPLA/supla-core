@@ -82,3 +82,9 @@ bool supla_channel_state_extended_value::get_raw_value(
 bool supla_channel_state_extended_value::is_ev_type_supported(char type) {
   return type == EV_TYPE_CHANNEL_STATE_V1;
 }
+
+supla_channel_extended_value *
+supla_channel_state_extended_value::copy(  // NOLINT
+    void) {                                // NOLINT
+  return new supla_channel_state_extended_value(get_value_ptr());
+}

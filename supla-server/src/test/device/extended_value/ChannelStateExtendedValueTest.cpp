@@ -18,6 +18,7 @@
 
 #include "ChannelStateExtendedValueTest.h"
 
+#include "TestHelper.h"
 #include "device/extended_value/channel_state_extended_value.h"
 
 namespace testing {
@@ -48,12 +49,7 @@ TEST_F(ChannelStateExtendedValueTest, randomData) {
   ev_raw1.type = EV_TYPE_CHANNEL_STATE_V1;
   ev_raw1.size = sizeof(TChannelState_ExtendedValue);
 
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  unsigned int seed = tv.tv_sec + tv.tv_usec;
-  for (unsigned int a = 0; a < ev_raw1.size; a++) {
-    ev_raw1.value[a] = rand_r(&seed);
-  }
+  TestHelper::randomize(ev_raw1.value, ev_raw1.size);
 
   supla_channel_state_extended_value ev(&ev_raw1);
 
@@ -64,6 +60,31 @@ TEST_F(ChannelStateExtendedValueTest, randomData) {
                                     sizeof(TChannelState_ExtendedValue));
   EXPECT_TRUE(ev.get_raw_value(&ev_raw2));
   EXPECT_EQ(memcmp(&ev_raw1, &ev_raw2, sizeof(TSuplaChannelExtendedValue)), 0);
+}
+
+TEST_F(ChannelStateExtendedValueTest, copy) {
+  TSuplaChannelExtendedValue ev_raw1 = {};
+  ev_raw1.type = EV_TYPE_CHANNEL_STATE_V1;
+  ev_raw1.size = sizeof(TChannelState_ExtendedValue);
+
+  TestHelper::randomize(ev_raw1.value, ev_raw1.size);
+
+  ((TTimerState_ExtendedValue *)ev_raw1.value)->SenderNameSize = 0;
+
+  supla_channel_state_extended_value ev(&ev_raw1);
+
+  supla_channel_state_extended_value *copy =
+      dynamic_cast<supla_channel_state_extended_value *>(ev.copy());
+  ASSERT_TRUE(copy != nullptr);
+
+  TSuplaChannelExtendedValue ev1 = {};
+  TSuplaChannelExtendedValue ev2 = {};
+  ev.get_raw_value(&ev1);
+  copy->get_raw_value(&ev2);
+
+  EXPECT_TRUE(memcmp(&ev1, &ev2, sizeof(TSuplaChannelExtendedValue)) == 0);
+
+  delete copy;
 }
 
 }  // namespace testing

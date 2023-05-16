@@ -18,8 +18,10 @@
 
 #include "TimerStateExtendedValueTest.h"
 
+#include "TestHelper.h"
 #include "device/extended_value/timer_state_extended_value.h"
 #include "doubles/device/extended_value/TimerStateExtendedValueMock.h"
+#include "log.h"
 #include "user/user.h"
 
 namespace testing {
@@ -175,6 +177,29 @@ TEST_F(TimerStateExtendedValueTest, countdownEndsAt) {
 
   EXPECT_GE(ts.CountdownEndsAt, now.tv_sec + 2);
   EXPECT_LE(ts.CountdownEndsAt, now.tv_sec + 3);
+}
+
+TEST_F(TimerStateExtendedValueTest, copy) {
+  TSuplaChannelExtendedValue ev_raw1 = {};
+  ev_raw1.size = sizeof(TTimerState_ExtendedValue) - SUPLA_SENDER_NAME_MAXSIZE;
+  ev_raw1.type = EV_TYPE_TIMER_STATE_V1;
+
+  TestHelper::randomize(ev_raw1.value, ev_raw1.size);
+
+  supla_timer_state_extended_value ev(&ev_raw1, nullptr);
+
+  supla_timer_state_extended_value *copy =
+      dynamic_cast<supla_timer_state_extended_value *>(ev.copy());
+  ASSERT_TRUE(copy != nullptr);
+
+  TSuplaChannelExtendedValue ev1 = {};
+  TSuplaChannelExtendedValue ev2 = {};
+  ev.get_raw_value(&ev1);
+  copy->get_raw_value(&ev2);
+
+  EXPECT_TRUE(memcmp(&ev1, &ev2, sizeof(TSuplaChannelExtendedValue)) == 0);
+
+  delete copy;
 }
 
 }  // namespace testing

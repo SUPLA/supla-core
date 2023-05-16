@@ -18,6 +18,7 @@
 
 #include "ChannelAndTimerStateExtendedValueTest.h"
 
+#include "TestHelper.h"
 #include "device/extended_value/channel_and_timer_state_extended_value.h"
 
 namespace testing {
@@ -48,17 +49,12 @@ TEST_F(ChannelAndTimerStateExtendedValueTest, randomData) {
   ev_raw1.size = sizeof(TChannelAndTimerState_ExtendedValue);
   ev_raw1.type = EV_TYPE_CHANNEL_AND_TIMER_STATE_V1;
 
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  unsigned int seed = tv.tv_sec + tv.tv_usec;
-  for (unsigned int a = 0; a < ev_raw1.size; a++) {
-    ev_raw1.value[a] = rand_r(&seed);
-  }
+  TestHelper::randomize(ev_raw1.value, ev_raw1.size);
 
-  ((TChannelAndTimerState_ExtendedValue*)ev_raw1.value)->Timer.SenderNameSize =
+  ((TChannelAndTimerState_ExtendedValue *)ev_raw1.value)->Timer.SenderNameSize =
       0;
-  ((TChannelAndTimerState_ExtendedValue*)ev_raw1.value)->Timer.RemainingTimeMs =
-      0;
+  ((TChannelAndTimerState_ExtendedValue *)ev_raw1.value)
+      ->Timer.RemainingTimeMs = 0;
 
   supla_channel_and_timer_state_extended_value v(&ev_raw1, nullptr);
   EXPECT_EQ(v.get_real_size(), sizeof(TSuplaChannelExtendedValue) -
@@ -83,8 +79,8 @@ TEST_F(ChannelAndTimerStateExtendedValueTest, countdownEndsAt) {
   ev_raw1.size = sizeof(TChannelAndTimerState_ExtendedValue);
   ev_raw1.type = EV_TYPE_CHANNEL_AND_TIMER_STATE_V1;
 
-  ((TChannelAndTimerState_ExtendedValue*)ev_raw1.value)->Timer.RemainingTimeMs =
-      5000;
+  ((TChannelAndTimerState_ExtendedValue *)ev_raw1.value)
+      ->Timer.RemainingTimeMs = 5000;
 
   supla_channel_and_timer_state_extended_value v(&ev_raw1, nullptr);
 
@@ -96,6 +92,30 @@ TEST_F(ChannelAndTimerStateExtendedValueTest, countdownEndsAt) {
 
   EXPECT_GE(state_raw.Timer.CountdownEndsAt, now.tv_sec + 5);
   EXPECT_LE(state_raw.Timer.CountdownEndsAt, now.tv_sec + 6);
+}
+
+TEST_F(ChannelAndTimerStateExtendedValueTest, copy) {
+  TSuplaChannelExtendedValue ev_raw1 = {};
+  ev_raw1.size = sizeof(TChannelAndTimerState_ExtendedValue);
+  ev_raw1.type = EV_TYPE_CHANNEL_AND_TIMER_STATE_V1;
+
+  TestHelper::randomize(ev_raw1.value, ev_raw1.size);
+
+  ((TChannelAndTimerState_ExtendedValue *)ev_raw1.value)->Timer.SenderNameSize =
+      0;
+  ((TChannelAndTimerState_ExtendedValue *)ev_raw1.value)
+      ->Timer.RemainingTimeMs = 0;
+
+  supla_channel_and_timer_state_extended_value v(&ev_raw1, nullptr);
+  supla_channel_and_timer_state_extended_value *copy =
+      dynamic_cast<supla_channel_and_timer_state_extended_value *>(v.copy());
+  ASSERT_TRUE(copy != nullptr);
+
+  TSuplaChannelExtendedValue ev_raw2 = {};
+  EXPECT_TRUE(copy->get_raw_value(&ev_raw2));
+  EXPECT_TRUE(memcmp(&ev_raw1, &ev_raw2, sizeof(TSuplaChannelExtendedValue)));
+
+  delete copy;
 }
 
 }  // namespace testing

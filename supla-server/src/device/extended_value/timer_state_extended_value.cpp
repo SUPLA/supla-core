@@ -49,6 +49,8 @@ string supla_timer_state_extended_value::get_sender_name(int client_id) {
   return "";
 }
 
+supla_user *supla_timer_state_extended_value::get_user(void) { return user; }
+
 void supla_timer_state_extended_value::update_sender_name(void) {
   if (!get_value_ptr()) {
     return;
@@ -163,6 +165,15 @@ bool supla_timer_state_extended_value::get_raw_value(
 bool supla_timer_state_extended_value::get_raw_value(
     TSuplaChannelExtendedValue *value) {
   return supla_channel_extended_value::get_raw_value(value);
+}
+
+supla_channel_extended_value *supla_timer_state_extended_value::copy(  // NOLINT
+    void) {                                                            // NOLINT
+  supla_timer_state_extended_value *result =
+      new supla_timer_state_extended_value(nullptr, get_user());
+  result->supla_channel_extended_value::set_raw_value(get_value_ptr());
+
+  return result;
 }
 
 // static

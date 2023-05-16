@@ -18,7 +18,9 @@
 
 #include "ChannelEmExtendedValueTest.h"
 
+#include "TestHelper.h"
 #include "device/extended_value/channel_em_extended_value.h"
+#include "log.h"
 #include "srpc/srpc.h"
 
 namespace testing {
@@ -97,6 +99,55 @@ TEST_F(ChannelEmExtendedValueTest, verifyGetters) {
   EXPECT_EQ(v2b.total_forward_active_energy_balanced, 4500000);
   EXPECT_EQ(v2b.m[EM_MEASUREMENT_COUNT - 1].phase_angle[2], 150);
   EXPECT_EQ(v2b.m_count, EM_MEASUREMENT_COUNT);
+}
+
+TEST_F(ChannelEmExtendedValueTest, random) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  TSuplaChannelExtendedValue value = {};
+
+  TestHelper::randomize((char *)&v2,
+                        sizeof(TElectricityMeter_ExtendedValue_V2));
+  v2.m_count = EM_MEASUREMENT_COUNT;
+
+  srpc_evtool_v2_emextended2extended(&v2, &value);
+
+  supla_channel_em_extended_value ev(&value, "EUR", 245);
+
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  ev.get_raw_value(&v2b);
+
+  memcpy(v2.currency, v2b.currency, sizeof(v2.currency));
+  v2.total_cost = v2b.total_cost;
+  v2.price_per_unit = v2b.price_per_unit;
+  v2.total_cost_balanced = v2b.total_cost_balanced;
+
+  EXPECT_TRUE(memcmp(&v2, &v2b, sizeof(TElectricityMeter_ExtendedValue_V2)) ==
+              0);
+}
+
+TEST_F(ChannelEmExtendedValueTest, copy) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  TSuplaChannelExtendedValue value = {};
+
+  TestHelper::randomize((char *)&v2,
+                        sizeof(TElectricityMeter_ExtendedValue_V2));
+  v2.m_count = EM_MEASUREMENT_COUNT;
+
+  srpc_evtool_v2_emextended2extended(&v2, &value);
+
+  supla_channel_em_extended_value ev(&value, "EUR", 245);
+  supla_channel_em_extended_value *copy =
+      dynamic_cast<supla_channel_em_extended_value *>(ev.copy());
+  ASSERT_TRUE(copy != nullptr);
+
+  TSuplaChannelExtendedValue ev1 = {};
+  TSuplaChannelExtendedValue ev2 = {};
+  ev.get_raw_value(&ev1);
+  copy->get_raw_value(&ev2);
+
+  EXPECT_TRUE(memcmp(&ev1, &ev2, sizeof(TSuplaChannelExtendedValue)) == 0);
+
+  delete copy;
 }
 
 }  // namespace testing

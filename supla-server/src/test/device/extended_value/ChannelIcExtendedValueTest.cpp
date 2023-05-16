@@ -79,4 +79,25 @@ TEST_F(ChannelIcExtendedValueTest, vefityAllGetters) {
   EXPECT_EQ(ev.get_calculated_value(), 15000);
 }
 
+TEST_F(ChannelIcExtendedValueTest, copy) {
+  TDS_ImpulseCounter_Value ic_val = {};
+  ic_val.counter = 150;
+
+  supla_channel_ic_extended_value ev(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
+                                     &ic_val, "PLN", "Unit", 45000, 10);
+
+  supla_channel_ic_extended_value *copy =
+      dynamic_cast<supla_channel_ic_extended_value *>(ev.copy());
+  ASSERT_TRUE(copy != nullptr);
+
+  TSuplaChannelExtendedValue ev1 = {};
+  TSuplaChannelExtendedValue ev2 = {};
+  ev.get_raw_value(&ev1);
+  copy->get_raw_value(&ev2);
+
+  EXPECT_TRUE(memcmp(&ev1, &ev2, sizeof(TSuplaChannelExtendedValue)) == 0);
+
+  delete copy;
+}
+
 }  // namespace testing

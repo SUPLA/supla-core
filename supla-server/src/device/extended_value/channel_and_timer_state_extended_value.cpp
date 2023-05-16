@@ -96,3 +96,18 @@ bool supla_channel_and_timer_state_extended_value::is_ev_type_supported(
     char type) {
   return type == EV_TYPE_CHANNEL_AND_TIMER_STATE_V1;
 }
+
+supla_channel_extended_value *
+supla_channel_and_timer_state_extended_value::copy(  // NOLINT
+    void) {                                          // NOLINT
+
+  TChannelAndTimerState_ExtendedValue val;
+  get_raw_value(&val);
+
+  supla_channel_and_timer_state_extended_value *result =
+      new supla_channel_and_timer_state_extended_value(nullptr, get_user());
+
+  result->set_raw_value(&val);
+
+  return result;
+}

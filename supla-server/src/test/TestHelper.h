@@ -19,6 +19,7 @@
 #ifndef TESTHELPER_H_
 #define TESTHELPER_H_
 
+#include <stddef.h>
 #include <sys/time.h>
 
 namespace testing {
@@ -28,6 +29,7 @@ class TestHelper {
   static unsigned long long usecSince(const struct timeval &tv);
   static unsigned long long timeDiffUs(const struct timeval &now,
                                        const struct timeval &then);
+  static void randomize(char *data, size_t size);
 };
 }  // namespace testing
 

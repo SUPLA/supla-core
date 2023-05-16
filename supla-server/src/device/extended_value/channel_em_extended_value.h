@@ -43,9 +43,11 @@ class supla_channel_em_extended_value : public supla_channel_extended_value,
   _supla_int_t get_total_cost_balanced(void);
   _supla_int_t get_price_per_unit(void);
 
+  virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
   virtual bool get_raw_value(TElectricityMeter_ExtendedValue_V2 *value);
   static bool is_function_supported(int func);
   static bool is_ev_type_supported(char type);
+  virtual supla_channel_extended_value *copy(void);  // NOLINT
 };
 
 #endif /*CHANNEL_EM_EXTENDED_VALUE_H_*/
