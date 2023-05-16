@@ -49,4 +49,9 @@ class supla_channel_extended_value {
   virtual void set_raw_value(const TSuplaChannelExtendedValue *value);
 };
 
+typedef struct {
+  char value[SUPLA_CHANNELVALUE_SIZE];
+  supla_channel_extended_value *extended_value;
+} _logger_purpose_t;
+
 #endif /*CHANNEL_EXTENDED_VALUE_H_*/

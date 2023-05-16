@@ -126,11 +126,9 @@ TEST_F(ChannelEmExtendedValueTest, random) {
   v2.price_per_unit = v2b.price_per_unit;
   v2.total_cost_balanced = v2b.total_cost_balanced;
 
-  EXPECT_TRUE(memcmp(&v2, &v2b, sizeof(TElectricityMeter_ExtendedValue_V2)) ==
-              0);
+  EXPECT_EQ(memcmp(&v2, &v2b, sizeof(TElectricityMeter_ExtendedValue_V2)), 0);
 
-  EXPECT_TRUE(memcmp(&v2b, &v2c, sizeof(TElectricityMeter_ExtendedValue_V2)) ==
-              0);
+  EXPECT_EQ(memcmp(&v2b, &v2c, sizeof(TElectricityMeter_ExtendedValue_V2)), 0);
 }
 
 TEST_F(ChannelEmExtendedValueTest, copy) {
@@ -153,7 +151,7 @@ TEST_F(ChannelEmExtendedValueTest, copy) {
   ev.get_raw_value(&ev1);
   copy->get_raw_value(&ev2);
 
-  EXPECT_TRUE(memcmp(&ev1, &ev2, sizeof(TSuplaChannelExtendedValue)) == 0);
+  EXPECT_EQ(memcmp(&ev1, &ev2, sizeof(TSuplaChannelExtendedValue)), 0);
 
   delete copy;
 }

@@ -28,8 +28,11 @@
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "db/database.h"
 #include "device.h"
+#include "device/extended_value/channel_and_timer_state_extended_value.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "device/extended_value/channel_state_extended_value.h"
+#include "device/extended_value/timer_state_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_dgf_value.h"
 #include "device/value/channel_em_value.h"
@@ -129,9 +132,8 @@ supla_device_channel::~supla_device_channel() {
   }
 
   if (logger_data) {
-    if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER &&
-        logger_data->extendedValue) {
-      delete logger_data->extendedValue;
+    if (logger_data->extended_value) {
+      delete logger_data->extended_value;
     }
     delete logger_data;
     logger_data = nullptr;
@@ -326,20 +328,14 @@ supla_channel_extended_value *supla_device_channel::_get_extended_value(
 
       delete icval;
     }
-  } else if (extended_value &&
-             supla_channel_em_extended_value::is_function_supported(func)) {
+  } else {
     if (for_data_logger_purposes) {
-      if (logger_data) {
-        result = new supla_channel_em_extended_value(
-            logger_data->extendedValue, get_text_param1(), get_param2());
-      }
+      result = logger_data && logger_data->extended_value
+                   ? logger_data->extended_value->copy()
+                   : nullptr;
     } else {
-      result = new supla_channel_em_extended_value(
-          extended_value, get_text_param1(), get_param2());
+      result = extended_value ? extended_value->copy() : nullptr;
     }
-
-  } else if (extended_value) {
-    result = new supla_channel_extended_value(extended_value);
   }
   unlock();
   return result;
@@ -632,120 +628,90 @@ void supla_device_channel::on_value_changed(supla_channel_value *old_value,
                                  get_id(), old_value, new_value);
 }
 
-void supla_device_channel::update_timer_state(void) {
-  TTimerState_ExtendedValue *ts_ev = nullptr;
-
-  lock();
-  if (extended_value->type == EV_TYPE_TIMER_STATE_V1) {
-    ts_ev = (TTimerState_ExtendedValue *)extended_value->value;
-  } else if (extended_value->type == EV_TYPE_CHANNEL_AND_TIMER_STATE_V1) {
-    TChannelAndTimerState_ExtendedValue *cats =
-        (TChannelAndTimerState_ExtendedValue *)extended_value->value;
-    ts_ev = &cats->Timer;
-  }
-  unlock();
-
-  if (ts_ev == nullptr) {
-    return;
-  }
-
-  if (ts_ev->SenderID) {
-    supla_user *user = get_user();
-    if (user) {
-      shared_ptr<supla_client> client =
-          user->get_clients()->get(ts_ev->SenderID);
-      if (client != nullptr) {
-        client->get_name(ts_ev->SenderName, SUPLA_SENDER_NAME_MAXSIZE);
-        ts_ev->SenderNameSize =
-            strnlen(ts_ev->SenderName, SUPLA_SENDER_NAME_MAXSIZE) + 1;
-      } else {
-        ts_ev->SenderID = 0;
-        ts_ev->SenderName[0] = 0;
-        ts_ev->SenderNameSize = 0;
-      }
-    }
-  }
-
-  if (ts_ev->RemainingTimeMs > 0) {
-    struct timeval now;
-    gettimeofday(&now, nullptr);
-
-    unsigned _supla_int64_t time =
-        now.tv_sec * (unsigned _supla_int64_t)1000000 + now.tv_usec;
-    time /= 1000;
-    time += ts_ev->RemainingTimeMs;
-    time /= 1000;
-
-    ts_ev->CountdownEndsAt = time;
-  }
-}
-
-void supla_device_channel::update_extended_electricity_meter_value(void) {
-  if (type != SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
-    return;
-  }
-
-  lock();
-
-  TElectricityMeter_ExtendedValue em_ev_v1 = {};
-  if (srpc_evtool_v1_extended2emextended(extended_value, &em_ev_v1)) {
-    TElectricityMeter_ExtendedValue_V2 em_ev_v2 = {};
-
-    if (!srpc_evtool_emev_v1to2(&em_ev_v1, &em_ev_v2) ||
-        !srpc_evtool_v2_emextended2extended(&em_ev_v2, extended_value)) {
-      delete extended_value;
-      extended_value = nullptr;
-    }
-  }
-
-  electricity_meter_config *config = new electricity_meter_config(json_config);
-
-  if (config->update_available_counters(extended_value)) {
-    db_set_properties(config);
-  }
-
-  if (logger_data && !logger_data->extendedValue) {
-    logger_data->extendedValue = new TSuplaChannelExtendedValue();
-  }
-
-  if (logger_data && logger_data->extendedValue &&
-      !config->should_be_added_to_history()) {
-    memcpy(logger_data->extendedValue, extended_value,
-           sizeof(TSuplaChannelExtendedValue));
-  }
-
-  config->add_initial_values(flags, extended_value);
-
-  if (logger_data && logger_data->extendedValue &&
-      config->should_be_added_to_history()) {
-    memcpy(logger_data->extendedValue, extended_value,
-           sizeof(TSuplaChannelExtendedValue));
-  }
-
-  voltage_analyzers.add_samples(get_flags(), config, extended_value);
-
-  delete config;
-
-  unlock();
-}
+void supla_device_channel::on_extended_value_changed(
+    supla_channel_extended_value *old_value,
+    supla_channel_extended_value *new_value) {}
 
 void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
   lock();
-  if (ev == nullptr) {
-    if (extended_value != nullptr) {
-      delete extended_value;
-      extended_value = nullptr;
-    }
-  } else {
-    if (extended_value == nullptr) {
-      extended_value = new TSuplaChannelExtendedValue;
-    }
-    memcpy(extended_value, ev, sizeof(TSuplaChannelExtendedValue));
 
-    update_extended_electricity_meter_value();
-    update_timer_state();
+  supla_channel_extended_value *old_value = extended_value;
+  supla_channel_extended_value *new_value = nullptr;
+
+  if (ev) {
+    if (supla_channel_em_extended_value::is_ev_type_supported(ev->type)) {
+      supla_channel_em_extended_value *em = new supla_channel_em_extended_value(
+          ev, get_text_param1(), get_param2());
+
+      electricity_meter_config *config =
+          new electricity_meter_config(json_config);
+
+      if (config->update_available_counters(em)) {
+        db_set_properties(config);
+      }
+
+      if (logger_data && !config->should_be_added_to_history()) {
+        if (logger_data->extended_value) {
+          delete logger_data->extended_value;
+        }
+
+        logger_data->extended_value = em->copy();
+      }
+
+      {
+        TElectricityMeter_ExtendedValue_V2 em_ev;
+        if (em->get_raw_value(&em_ev)) {
+          config->add_initial_values(flags, &em_ev);
+          em->set_raw_value(&em_ev);
+        }
+      }
+
+      if (logger_data && config->should_be_added_to_history()) {
+        if (logger_data->extended_value) {
+          delete logger_data->extended_value;
+        }
+
+        logger_data->extended_value = em->copy();
+      }
+
+      voltage_analyzers.add_samples(flags, config, em);
+
+      delete config;
+      new_value = em;
+
+    } else if (supla_timer_state_extended_value::is_ev_type_supported(
+                   ev->type)) {
+      new_value = new supla_timer_state_extended_value(ev, get_user());
+    } else if (supla_channel_state_extended_value::is_ev_type_supported(
+                   ev->type)) {
+      new_value = new supla_channel_state_extended_value(ev);
+    } else if (supla_channel_and_timer_state_extended_value::
+                   is_ev_type_supported(ev->type)) {
+      new_value =
+          new supla_channel_and_timer_state_extended_value(ev, get_user());
+    }
   }
+
+  extended_value = new_value;
+
+  if (new_value && old_value && new_value->is_differ(old_value)) {
+    new_value =
+        new_value->copy();  // We create a copy to call
+                            // on_extended_value_changed when we exit lock
+  } else {
+    new_value = nullptr;
+  }
+
   unlock();
+
+  if (new_value) {  // That means there are differences
+    on_extended_value_changed(old_value, new_value);
+    delete new_value;  // This is a copy of the new value
+  }
+
+  if (old_value) {
+    delete old_value;
+  }
 }
 
 void supla_device_channel::assign_rgbw_value(

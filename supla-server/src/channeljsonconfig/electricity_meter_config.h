@@ -19,10 +19,9 @@
 #ifndef ELECTRICITYMETERCONFIG_H_
 #define ELECTRICITYMETERCONFIG_H_
 
-#include <channeljsonconfig/channel_json_config.h>
-
 #include <string>
 
+#include "channeljsonconfig/channel_json_config.h"
 #include "proto.h"
 
 typedef struct {
@@ -30,6 +29,7 @@ typedef struct {
   std::string str;
 } _emc_map_t;
 
+class supla_channel_em_extended_value;
 class electricity_meter_config : public channel_json_config {
  private:
   static const _emc_map_t map[];
@@ -60,7 +60,7 @@ class electricity_meter_config : public channel_json_config {
   bool is_phase_disabled(unsigned char phase);
   int get_channel_user_flags(void);
   bool update_available_counters(int measured_values);
-  bool update_available_counters(TSuplaChannelExtendedValue *ev);
+  bool update_available_counters(supla_channel_em_extended_value *em);
   _supla_int64_t get_initial_value(int var, unsigned char phase,
                                    bool *initial_value_for_all_phases);
   _supla_int64_t get_initial_value_for_all_phases(int var);
@@ -69,7 +69,6 @@ class electricity_meter_config : public channel_json_config {
   void add_initial_value(int var, unsigned _supla_int64_t *value);
 
   void add_initial_values(int flags, TElectricityMeter_ExtendedValue_V2 *em_ev);
-  void add_initial_values(int flags, TSuplaChannelExtendedValue *ev);
   void add_initial_value(unsigned _supla_int_t *total_forward_active_energy);
 };
 

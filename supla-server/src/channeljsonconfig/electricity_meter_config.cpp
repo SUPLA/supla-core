@@ -20,6 +20,7 @@
 
 #include <limits.h>
 
+#include "device/extended_value/channel_em_extended_value.h"
 #include "srpc/srpc.h"
 
 const _emc_map_t electricity_meter_config::map[] = {
@@ -134,20 +135,12 @@ bool electricity_meter_config::update_available_counters(int measured_values) {
 }
 
 bool electricity_meter_config::update_available_counters(
-    TSuplaChannelExtendedValue *ev) {
-  if (ev == NULL) {
+    supla_channel_em_extended_value *em) {
+  if (em == NULL) {
     return false;
   }
 
-  if (ev->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
-    TElectricityMeter_ExtendedValue_V2 em_ev = {};
-
-    if (srpc_evtool_v2_extended2emextended(ev, &em_ev) == 1) {
-      return update_available_counters(em_ev.measured_values);
-    }
-  }
-
-  return false;
+  return update_available_counters(em->get_measured_values());
 }
 
 bool electricity_meter_config::should_be_added_to_history(void) {
@@ -408,22 +401,6 @@ void electricity_meter_config::add_initial_values(
 
   add_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED,
                     &em_ev->total_reverse_active_energy_balanced);
-}
-
-void electricity_meter_config::add_initial_values(
-    int flags, TSuplaChannelExtendedValue *ev) {
-  if (ev == NULL) {
-    return;
-  }
-
-  if (ev->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
-    TElectricityMeter_ExtendedValue_V2 em_ev = {};
-
-    if (srpc_evtool_v2_extended2emextended(ev, &em_ev) == 1) {
-      add_initial_values(flags, &em_ev);
-      srpc_evtool_v2_emextended2extended(&em_ev, ev);
-    }
-  }
 }
 
 void electricity_meter_config::add_initial_value(

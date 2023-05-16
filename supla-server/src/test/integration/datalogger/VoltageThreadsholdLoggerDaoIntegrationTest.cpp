@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include "device/extended_value/channel_em_extended_value.h"
 #include "srpc/srpc.h"
 
 using std::string;
@@ -82,22 +83,21 @@ TEST_F(VoltageThreadsholdLoggerDaoIntegrationTest, add) {
   em_ev.m[0].voltage[2] = 32055;
   em_ev.measured_values = EM_VAR_VOLTAGE;
 
-  TSuplaChannelExtendedValue ev = {};
-  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  supla_channel_em_extended_value em(&em_ev, "", 0);
 
-  vas.add_samples(0, &config, &ev);
+  vas.add_samples(0, &config, &em);
   usleep(2000000);
-  vas.add_samples(0, &config, &ev);
+  vas.add_samples(0, &config, &em);
 
   em_ev.m[0].voltage[0] = 1051;
   em_ev.m[0].voltage[1] = 1552;
   em_ev.m[0].voltage[2] = 2053;
 
-  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  em.set_raw_value(&em_ev);
 
-  vas.add_samples(0, &config, &ev);
+  vas.add_samples(0, &config, &em);
   usleep(1000000);
-  vas.add_samples(0, &config, &ev);
+  vas.add_samples(0, &config, &em);
 
   dao->add(&vas);
 

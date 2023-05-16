@@ -18,6 +18,7 @@
 
 #include "analyzer/voltage_analyzers.h"
 
+#include "device/extended_value/channel_em_extended_value.h"
 #include "srpc/srpc.h"
 
 supla_voltage_analyzers::supla_voltage_analyzers() {
@@ -83,11 +84,11 @@ void supla_voltage_analyzers::add_sample(double lower_voltage_threshold,
 
 void supla_voltage_analyzers::add_samples(
     int channel_flags, electricity_meter_config *config,
-    TSuplaChannelExtendedValue *extendedValue) {
+    supla_channel_em_extended_value *extended_value) {
   double lower_voltage_threshold = 0;
   double upper_voltage_threshold = 0;
 
-  if (!config || !extendedValue) {
+  if (!config || !extended_value) {
     return;
   }
 
@@ -99,7 +100,7 @@ void supla_voltage_analyzers::add_samples(
   }
 
   TElectricityMeter_ExtendedValue_V2 em_ev = {};
-  if (srpc_evtool_v2_extended2emextended(extendedValue, &em_ev) &&
+  if (extended_value->get_raw_value(&em_ev) &&
       (em_ev.measured_values & EM_VAR_VOLTAGE) && em_ev.m_count > 0) {
     if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED)) {
       add_sample(lower_voltage_threshold, upper_voltage_threshold,

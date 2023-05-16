@@ -68,20 +68,20 @@ class supla_device_channel {
   TDSC_ChannelState *state;
   char value[SUPLA_CHANNELVALUE_SIZE];
   struct timeval value_valid_to;  // during offline
-  TSuplaChannelExtendedValue *extended_value;
+  supla_channel_extended_value *extended_value;
   channel_json_config *json_config;
   _logger_purpose_t *logger_data;
   supla_voltage_analyzers voltage_analyzers;
 
   void db_set_properties(channel_json_config *config);
   void db_set_params(int param1, int param2, int param3, int param4);
-  void update_timer_state(void);
-  void update_extended_electricity_meter_value(void);
   supla_channel_value *_get_value(void);
   bool is_convertible2extended(void);
   void on_value_changed(supla_channel_value *old_value,
                         supla_channel_value *new_value, bool significant_change,
                         bool convertible2extended);
+  void on_extended_value_changed(supla_channel_extended_value *old_value,
+                                 supla_channel_extended_value *new_value);
   supla_channel_extended_value *_get_extended_value(
       bool for_data_logger_purposes);
 

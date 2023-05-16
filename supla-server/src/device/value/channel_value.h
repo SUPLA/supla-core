@@ -23,14 +23,8 @@
 #include <string>
 
 #include "channeljsonconfig/channel_json_config.h"
+#include "device/extended_value/channel_extended_value.h"
 #include "proto.h"
-
-typedef struct {
-  union {
-    char value[SUPLA_CHANNELVALUE_SIZE];
-    TSuplaChannelExtendedValue *extendedValue;
-  };
-} _logger_purpose_t;
 
 class supla_channel_value {
  protected:

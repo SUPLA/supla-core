@@ -82,7 +82,7 @@ TEST_F(ChannelStateExtendedValueTest, copy) {
   ev.get_raw_value(&ev1);
   copy->get_raw_value(&ev2);
 
-  EXPECT_TRUE(memcmp(&ev1, &ev2, sizeof(TSuplaChannelExtendedValue)) == 0);
+  EXPECT_EQ(memcmp(&ev1, &ev2, sizeof(TSuplaChannelExtendedValue)), 0);
 
   delete copy;
 }
