@@ -105,28 +105,28 @@ void supla_channel_em_extended_value::set_raw_value(
 
 supla_channel_em_extended_value::~supla_channel_em_extended_value(void) {}
 
-_supla_int_t supla_channel_em_extended_value::get_total_cost(void) {
+double supla_channel_em_extended_value::get_total_cost(void) {
   TElectricityMeter_ExtendedValue_V2 em_ev = {};
   if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev)) {
-    return em_ev.total_cost;
+    return em_ev.total_cost * 0.01;
   }
-  return 0;
+  return 0.0;
 }
 
-_supla_int_t supla_channel_em_extended_value::get_total_cost_balanced(void) {
+double supla_channel_em_extended_value::get_total_cost_balanced(void) {
   TElectricityMeter_ExtendedValue_V2 em_ev = {};
   if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev)) {
-    return em_ev.total_cost_balanced;
+    return em_ev.total_cost_balanced * 0.01;
   }
-  return 0;
+  return 0.0;
 }
 
-_supla_int_t supla_channel_em_extended_value::get_price_per_unit(void) {
+double supla_channel_em_extended_value::get_price_per_unit(void) {
   TElectricityMeter_ExtendedValue_V2 em_ev = {};
   if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev)) {
-    return em_ev.price_per_unit;
+    return em_ev.price_per_unit * 0.0001;
   }
-  return 0;
+  return 0.0;
 }
 
 string supla_channel_em_extended_value::get_currency(void) {

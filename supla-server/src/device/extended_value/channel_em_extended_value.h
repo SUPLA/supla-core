@@ -41,9 +41,9 @@ class supla_channel_em_extended_value : public supla_channel_extended_value,
   virtual ~supla_channel_em_extended_value(void);
 
   std::string get_currency(void);
-  _supla_int_t get_total_cost(void);
-  _supla_int_t get_total_cost_balanced(void);
-  _supla_int_t get_price_per_unit(void);
+  double get_total_cost(void);
+  double get_total_cost_balanced(void);
+  double get_price_per_unit(void);
   _supla_int_t get_measured_values(void);
 
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
