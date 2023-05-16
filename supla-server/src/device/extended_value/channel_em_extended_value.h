@@ -24,11 +24,13 @@
 #include "device/extended_value/channel_billing_value.h"
 #include "device/extended_value/channel_extended_value.h"
 
+class channel_json_config;
+class supla_voltage_analyzers;
 class supla_channel_em_extended_value : public supla_channel_extended_value,
                                         private supla_channel_billing_value {
  private:
-  void init(TElectricityMeter_ExtendedValue_V2 *value, const char *text_param1,
-            int param2);
+  void set_raw_value(const TElectricityMeter_ExtendedValue_V2 *_value,
+                     const char *text_param1, int *param2);
 
  public:
   supla_channel_em_extended_value(const TSuplaChannelExtendedValue *value,
@@ -42,9 +44,13 @@ class supla_channel_em_extended_value : public supla_channel_extended_value,
   _supla_int_t get_total_cost(void);
   _supla_int_t get_total_cost_balanced(void);
   _supla_int_t get_price_per_unit(void);
+  _supla_int_t get_measured_values(void);
 
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
   virtual bool get_raw_value(TElectricityMeter_ExtendedValue_V2 *value);
+  virtual void set_raw_value(const TSuplaChannelExtendedValue *value);
+  virtual void set_raw_value(const TElectricityMeter_ExtendedValue_V2 *value);
+
   static bool is_function_supported(int func);
   static bool is_ev_type_supported(char type);
   virtual supla_channel_extended_value *copy(void);  // NOLINT

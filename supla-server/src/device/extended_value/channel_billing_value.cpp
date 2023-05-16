@@ -33,23 +33,33 @@ void supla_channel_billing_value::get_cost_and_currency(
   *total_cost = 0;
   *price_per_unit = 0;
 
-  if (text_param1 && strnlen(text_param1, 4) == 3) {
-    memcpy(currency, text_param1, 3);
-  }
+  get_currency(currency, text_param1);
 
   if (param2 > 0) {
     *price_per_unit = param2;
-    // *total_cost = (double)(Param2 * 0.0001 * count) * 100;
-    *total_cost = (double)(param2 * 0.01 * count);
+    *total_cost = get_cost(param2, count);
+  }
+}
+
+_supla_int_t supla_channel_billing_value::get_cost(_supla_int_t price_per_unit,
+                                                   double count) {
+  // *total_cost = (double)(Param2 * 0.0001 * count) * 100;
+  return (double)(price_per_unit * 0.01 * count);
+}
+
+void supla_channel_billing_value::get_currency(char currency[3],
+                                               const char *text_param1) {
+  if (text_param1 && strnlen(text_param1, 4) == 3) {
+    memcpy(currency, text_param1, 3);
+  } else {
+    memset(currency, 0, 3);
   }
 }
 
 string supla_channel_billing_value::get_currency(const char *text_param1) {
-  char currency[4] = {};
-
   if (text_param1 && strnlen(text_param1, 4) == 3) {
-    memcpy(currency, text_param1, 3);
+    return text_param1;
   }
 
-  return currency;
+  return "";
 }

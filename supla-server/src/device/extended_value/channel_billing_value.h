@@ -30,7 +30,9 @@ class supla_channel_billing_value {
   void get_cost_and_currency(const char *text_param1, int param2,
                              char currency[3], _supla_int_t *total_cost,
                              _supla_int_t *price_per_unit, double count);
+  void get_currency(char currency[3], const char *text_param1);
   std::string get_currency(const char *text_param1);
+  _supla_int_t get_cost(_supla_int_t price_per_unit, double count);
 };
 
 #endif /*CHANNEL_BILLING_VALUE_H_*/
