@@ -38,13 +38,11 @@
 // SERVER CONNECTION BLOCK BEGIN ---------------------------------------
 
 void accept_loop_connection_execute(void *connection, void *sthread) {
-  database::thread_init();
   ((supla_connection *)connection)->execute(sthread);
 }
 
 void accept_loop_connection_finish(void *connection, void *sthread) {
   delete (supla_connection *)connection;
-  database::thread_end();
 }
 
 char accept_loop_connection_thread_cnd(void *connection_sthread) {
@@ -101,13 +99,11 @@ void accept_loop(void *ssd, void *al_sthread) {
 // IPC CTRL BLOCK BEGIN ------------------------------------------------
 
 void accept_loop_ipcctrl_execute(void *ipcctrl, void *sthread) {
-  database::thread_init();
   ((supla_ipc_ctrl *)ipcctrl)->execute(sthread);
 }
 
 void accept_loop_ipcctrl_finish(void *ipcctrl, void *sthread) {
   delete (supla_ipc_ctrl *)ipcctrl;
-  database::thread_end();
 }
 
 char accept_loop_ipcctrl_thread_cnd(void *ipcctrl_sthread) {

@@ -44,7 +44,6 @@ class supla_alexa_request : public supla_asynctask_http_request {
   void set_zulu_time(const std::string &zulu_time);
   std::string get_message_id(void);
   void set_message_id(const std::string &message_id);
-  virtual bool will_use_database(void);
 };
 
 #endif /* ALEXA_REQUEST_H_ */

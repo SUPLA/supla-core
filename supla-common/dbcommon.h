@@ -62,9 +62,6 @@ class dbcommon {
   static bool mainthread_init(void);
   static void mainthread_end(void);
 
-  static void thread_init(void);
-  static void thread_end(void);
-
   void start_transaction(void);
   void commit(void);
   void rollback(void);

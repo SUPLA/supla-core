@@ -73,14 +73,10 @@ void supla_pn_gateway_access_token_provider::_service_loop(void *_provider,
     provider->curl_adapter = new supla_curl_adapter();
   }
 
-  database::thread_init();
-
   while (sthread_isterminated(sthread) == 0) {
     provider->service_loop();
     usleep(provider->service_tick_time_usec());
   }
-
-  database::thread_end();
 
   if (provider->curl_adapter) {
     delete provider->curl_adapter;

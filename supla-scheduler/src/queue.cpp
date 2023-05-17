@@ -55,13 +55,11 @@ char queue_loop_worker_thread_cnd(void *worker_sthread) {
 }
 
 void queue_loop_worker_execute(void *worker, void *sthread) {
-  database::thread_init();
   ((s_abstract_worker *)worker)->execute(sthread);
 }
 
 void queue_loop_worker_finish(void *worker, void *sthread) {
   delete (s_abstract_worker *)worker;
-  database::thread_end();
 }
 
 queue::queue(void *user, void *q_sthread) {
@@ -289,12 +287,8 @@ void queue::print_statistics(void) {
 }
 
 void queue_loop(void *user, void *q_sthread) {
-  database::thread_init();
-
   queue *q = new queue(user, q_sthread);
   q->loop();
   q->print_statistics();
   delete q;
-
-  database::thread_end();
 }

@@ -60,8 +60,6 @@ void supla_cyclictasks_agent::loop(void *agent, void *sthread) {
 }
 
 void supla_cyclictasks_agent::loop(void *sthread) {
-  dbcommon::thread_init();
-
   struct timeval now = {};
 
   while (sthread_isterminated(sthread) == 0) {
@@ -109,6 +107,4 @@ void supla_cyclictasks_agent::loop(void *sthread) {
       }
     }
   }
-
-  dbcommon::thread_end();
 }

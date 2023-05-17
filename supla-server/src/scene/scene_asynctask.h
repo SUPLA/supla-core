@@ -60,7 +60,6 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
   int get_scene_id(void);
   unsigned int get_estimated_execution_time(void);
   supla_scene_state get_scene_state(void);
-  virtual bool will_use_database(void);
 
   static bool get_scene_state(supla_asynctask_queue *queue, int user_id,
                               int scene_id, supla_scene_state *state);

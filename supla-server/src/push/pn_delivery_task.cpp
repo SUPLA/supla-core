@@ -61,8 +61,6 @@ unsigned long long supla_pn_delivery_task::get_cfg_long_request_time_usec(
 
 string supla_pn_delivery_task::get_name(void) { return "Push delivery task"; }
 
-bool supla_pn_delivery_task::will_use_database(void) { return true; }
-
 bool supla_pn_delivery_task::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
   bool fcm_recipients = false;

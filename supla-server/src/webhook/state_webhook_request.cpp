@@ -204,8 +204,6 @@ bool supla_state_webhook_request::make_request(
   return result;
 }
 
-bool supla_state_webhook_request::will_use_database(void) { return true; }
-
 // static
 bool supla_state_webhook_request::is_caller_allowed(
     const supla_caller &caller) {

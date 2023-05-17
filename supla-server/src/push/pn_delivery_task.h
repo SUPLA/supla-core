@@ -43,7 +43,6 @@ class supla_pn_delivery_task : public supla_asynctask_http_request {
       supla_abstract_asynctask_thread_pool *pool, supla_push_notification *push,
       supla_pn_gateway_access_token_provider *token_provider);
   virtual ~supla_pn_delivery_task(void);
-  virtual bool will_use_database(void);
 
   static void start_delivering(int user_id, supla_push_notification *push);
   static void start_delivering(

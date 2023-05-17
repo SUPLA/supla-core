@@ -61,5 +61,3 @@ void supla_alexa_request::set_message_id(const string &message_id) {
   this->message_id = message_id;
   unlock();
 }
-
-bool supla_alexa_request::will_use_database(void) { return true; }
