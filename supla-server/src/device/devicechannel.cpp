@@ -630,7 +630,13 @@ void supla_device_channel::on_value_changed(supla_channel_value *old_value,
 
 void supla_device_channel::on_extended_value_changed(
     supla_channel_extended_value *old_value,
-    supla_channel_extended_value *new_value) {}
+    supla_channel_extended_value *new_value) {
+  get_device()
+      ->get_user()
+      ->get_value_based_triggers()
+      ->on_channel_value_changed(supla_caller(ctDevice, get_device()->get_id()),
+                                 get_id(), old_value, new_value);
+}
 
 void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
   lock();
