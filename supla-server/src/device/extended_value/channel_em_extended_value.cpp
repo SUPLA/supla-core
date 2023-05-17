@@ -147,6 +147,151 @@ _supla_int_t supla_channel_em_extended_value::get_measured_values(void) {
   return 0;
 }
 
+double supla_channel_em_extended_value::get_voltage(int phase) {
+  if (phase >= 1 && phase <= 3) {
+    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev) &&
+        em_ev.m_count > 0) {
+      return em_ev.m[0].voltage[phase - 1] * 0.01;
+    }
+  }
+
+  return 0.0;
+}
+
+double supla_channel_em_extended_value::get_voltage_avg(void) {
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev) &&
+      em_ev.m_count > 0) {
+    short divider = 0;
+    double sum = 0.0;
+    for (unsigned char a = 0; a < 3; a++) {
+      if (em_ev.m[0].voltage[a]) {
+        sum += em_ev.m[0].voltage[a] * 0.01;
+        divider++;
+      }
+    }
+
+    if (divider) {
+      return sum / divider;
+    }
+  }
+
+  return 0.0;
+}
+
+double supla_channel_em_extended_value::get_current(int phase) {
+  if (phase >= 1 && phase <= 3) {
+    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev) &&
+        em_ev.m_count > 0) {
+      return em_ev.m[0].current[phase - 1] *
+             (em_ev.measured_values & EM_VAR_CURRENT_OVER_65A ? 0.01 : 0.001);
+    }
+  }
+
+  return 0.0;
+}
+
+double supla_channel_em_extended_value::get_current_sum(void) {
+  double sum = 0.0;
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev) &&
+      em_ev.m_count > 0) {
+    for (unsigned char a = 0; a < 3; a++) {
+      sum += em_ev.m[0].current[a] *
+             (em_ev.measured_values & EM_VAR_CURRENT_OVER_65A ? 0.01 : 0.001);
+    }
+  }
+
+  return sum;
+}
+
+double supla_channel_em_extended_value::get_power_active(int phase) {
+  if (phase >= 1 && phase <= 3) {
+    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev) &&
+        em_ev.m_count > 0) {
+      return em_ev.m[0].power_active[phase - 1] *
+             (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KW ? 0.01 : 0.00001);
+    }
+  }
+
+  return 0.0;
+}
+
+double supla_channel_em_extended_value::get_power_active_sum(void) {
+  double sum = 0.0;
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev) &&
+      em_ev.m_count > 0) {
+    for (unsigned char a = 0; a < 3; a++) {
+      sum += em_ev.m[0].power_active[a] *
+             (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KW ? 0.01 : 0.00001);
+    }
+  }
+
+  return sum;
+}
+
+double supla_channel_em_extended_value::get_power_reactive(int phase) {
+  if (phase >= 1 && phase <= 3) {
+    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev) &&
+        em_ev.m_count > 0) {
+      return em_ev.m[0].power_reactive[phase - 1] *
+             (em_ev.measured_values & EM_VAR_POWER_REACTIVE_KVAR ? 0.01
+                                                                 : 0.00001);
+    }
+  }
+
+  return 0.0;
+}
+
+double supla_channel_em_extended_value::get_power_reactive_sum(void) {
+  double sum = 0.0;
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev) &&
+      em_ev.m_count > 0) {
+    for (unsigned char a = 0; a < 3; a++) {
+      sum +=
+          em_ev.m[0].power_reactive[a] *
+          (em_ev.measured_values & EM_VAR_POWER_REACTIVE_KVAR ? 0.01 : 0.00001);
+    }
+  }
+
+  return sum;
+}
+
+double supla_channel_em_extended_value::get_power_apparent(int phase) {
+  if (phase >= 1 && phase <= 3) {
+    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev) &&
+        em_ev.m_count > 0) {
+      return em_ev.m[0].power_apparent[phase - 1] *
+             (em_ev.measured_values & EM_VAR_POWER_APPARENT_KVA ? 0.01
+                                                                : 0.00001);
+    }
+  }
+
+  return 0.0;
+}
+
+double supla_channel_em_extended_value::get_power_apparent_sum(void) {
+  double sum = 0.0;
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev) &&
+      em_ev.m_count > 0) {
+    for (unsigned char a = 0; a < 3; a++) {
+      sum +=
+          em_ev.m[0].power_apparent[a] *
+          (em_ev.measured_values & EM_VAR_POWER_APPARENT_KVA ? 0.01 : 0.00001);
+    }
+  }
+
+  return sum;
+}
+
 bool supla_channel_em_extended_value::get_raw_value(
     TSuplaChannelExtendedValue *value) {
   return supla_channel_extended_value::get_raw_value(value);

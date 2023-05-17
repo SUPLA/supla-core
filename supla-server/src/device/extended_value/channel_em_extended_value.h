@@ -46,6 +46,17 @@ class supla_channel_em_extended_value : public supla_channel_extended_value,
   double get_price_per_unit(void);
   _supla_int_t get_measured_values(void);
 
+  double get_voltage(int phase);
+  double get_voltage_avg(void);
+  double get_current(int phase);
+  double get_current_sum(void);
+  double get_power_active(int phase);
+  double get_power_active_sum(void);
+  double get_power_reactive(int phase);
+  double get_power_reactive_sum(void);
+  double get_power_apparent(int phase);
+  double get_power_apparent_sum(void);
+
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
   virtual bool get_raw_value(TElectricityMeter_ExtendedValue_V2 *value);
   virtual void set_raw_value(const TSuplaChannelExtendedValue *value);

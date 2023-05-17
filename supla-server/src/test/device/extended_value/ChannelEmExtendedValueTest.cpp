@@ -192,4 +192,132 @@ TEST_F(ChannelEmExtendedValueTest, recalculate) {
   EXPECT_DOUBLE_EQ(ev.get_price_per_unit(), 0);
 }
 
+TEST_F(ChannelEmExtendedValueTest, voltage) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.m_count = 1;
+  v2.m[0].voltage[0] = 24512;
+  v2.m[0].voltage[1] = 23123;
+  v2.m[0].voltage[2] = 21000;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_voltage(1), 245.12);
+  EXPECT_DOUBLE_EQ(ev.get_voltage(2), 231.23);
+  EXPECT_DOUBLE_EQ(ev.get_voltage(3), 210.00);
+  EXPECT_DOUBLE_EQ(ev.get_voltage_avg(), 228.78333333333333);
+
+  v2.m[0].voltage[1] = 0;
+  ev.set_raw_value(&v2);
+  EXPECT_DOUBLE_EQ(ev.get_voltage_avg(), 227.56);
+}
+
+TEST_F(ChannelEmExtendedValueTest, current) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.m_count = 1;
+  v2.m[0].current[0] = 12345;
+  v2.m[0].current[1] = 58912;
+  v2.m[0].current[2] = 58766;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_current(1), 12.345);
+  EXPECT_DOUBLE_EQ(ev.get_current(2), 58.912);
+  EXPECT_DOUBLE_EQ(ev.get_current(3), 58.766);
+  EXPECT_DOUBLE_EQ(ev.get_current_sum(), 130.023);
+}
+
+TEST_F(ChannelEmExtendedValueTest, currentOver65A) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.m_count = 1;
+  v2.measured_values = EM_VAR_CURRENT_OVER_65A;
+  v2.m[0].current[0] = 12345;
+  v2.m[0].current[1] = 58912;
+  v2.m[0].current[2] = 58766;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_current(1), 123.45);
+  EXPECT_DOUBLE_EQ(ev.get_current(2), 589.12);
+  EXPECT_DOUBLE_EQ(ev.get_current(3), 587.66);
+  EXPECT_DOUBLE_EQ(ev.get_current_sum(), 1300.230);
+}
+
+TEST_F(ChannelEmExtendedValueTest, powerActive_W) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.m_count = 1;
+  v2.m[0].power_active[0] = 1234578;
+  v2.m[0].power_active[1] = 5891298;
+  v2.m[0].power_active[2] = 5876630;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_power_active(1), 12.34578);
+  EXPECT_DOUBLE_EQ(ev.get_power_active(2), 58.91298);
+  EXPECT_DOUBLE_EQ(ev.get_power_active(3), 58.76630);
+  EXPECT_GE(ev.get_power_active_sum(), 130.025);
+  EXPECT_LE(ev.get_power_active_sum(), 130.0251);
+}
+
+TEST_F(ChannelEmExtendedValueTest, powerActive_kW) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.m_count = 1;
+  v2.measured_values = EM_VAR_POWER_ACTIVE_KW;
+  v2.m[0].power_active[0] = 1234578;
+  v2.m[0].power_active[1] = 5891298;
+  v2.m[0].power_active[2] = 5876630;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_power_active(1), 12345.78);
+  EXPECT_DOUBLE_EQ(ev.get_power_active(2), 58912.98);
+  EXPECT_DOUBLE_EQ(ev.get_power_active(3), 58766.30);
+  EXPECT_DOUBLE_EQ(ev.get_power_active_sum(), 130025.06);
+}
+
+TEST_F(ChannelEmExtendedValueTest, powerReactive_var) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.m_count = 1;
+  v2.m[0].power_reactive[0] = 1234578;
+  v2.m[0].power_reactive[1] = 5891298;
+  v2.m[0].power_reactive[2] = 5876630;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_power_reactive(1), 12.34578);
+  EXPECT_DOUBLE_EQ(ev.get_power_reactive(2), 58.91298);
+  EXPECT_DOUBLE_EQ(ev.get_power_reactive(3), 58.76630);
+  EXPECT_GE(ev.get_power_reactive_sum(), 130.025);
+  EXPECT_LE(ev.get_power_reactive_sum(), 130.0251);
+}
+
+TEST_F(ChannelEmExtendedValueTest, powerReactive_kvar) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.m_count = 1;
+  v2.measured_values = EM_VAR_POWER_REACTIVE_KVAR;
+  v2.m[0].power_reactive[0] = 1234578;
+  v2.m[0].power_reactive[1] = 5891298;
+  v2.m[0].power_reactive[2] = 5876630;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_power_reactive(1), 12345.78);
+  EXPECT_DOUBLE_EQ(ev.get_power_reactive(2), 58912.98);
+  EXPECT_DOUBLE_EQ(ev.get_power_reactive(3), 58766.30);
+  EXPECT_DOUBLE_EQ(ev.get_power_reactive_sum(), 130025.06);
+}
+
+TEST_F(ChannelEmExtendedValueTest, powerApparent_VA) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.m_count = 1;
+  v2.m[0].power_apparent[0] = 1234578;
+  v2.m[0].power_apparent[1] = 5891298;
+  v2.m[0].power_apparent[2] = 5876630;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_power_apparent(1), 12.34578);
+  EXPECT_DOUBLE_EQ(ev.get_power_apparent(2), 58.91298);
+  EXPECT_DOUBLE_EQ(ev.get_power_apparent(3), 58.76630);
+  EXPECT_GE(ev.get_power_apparent_sum(), 130.025);
+  EXPECT_LE(ev.get_power_apparent_sum(), 130.0251);
+}
+
+TEST_F(ChannelEmExtendedValueTest, powerApparent_kVA) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.m_count = 1;
+  v2.measured_values = EM_VAR_POWER_APPARENT_KVA;
+  v2.m[0].power_apparent[0] = 1234578;
+  v2.m[0].power_apparent[1] = 5891298;
+  v2.m[0].power_apparent[2] = 5876630;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_power_apparent(1), 12345.78);
+  EXPECT_DOUBLE_EQ(ev.get_power_apparent(2), 58912.98);
+  EXPECT_DOUBLE_EQ(ev.get_power_apparent(3), 58766.30);
+  EXPECT_DOUBLE_EQ(ev.get_power_apparent_sum(), 130025.06);
+}
+
 }  // namespace testing
