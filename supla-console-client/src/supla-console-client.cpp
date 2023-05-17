@@ -69,10 +69,11 @@ int main(int argc, char *argv[]) {
 
   st_mainloop_init();
   st_hook_signals();
-
+  void sthread_simple_run(_func_sthread_execute execute, void *user_data,
+                          char free_on_finish, void **sthread);
   // CLIENT LOOP
   void *sclient = NULL;
-  client_loop_t = sthread_simple_run(client_loop, (void *)&sclient, 0);
+  sthread_simple_run(client_loop, (void *)&sclient, 0, &client_loop_t);
 
   // MAIN LOOP
 
@@ -126,7 +127,7 @@ int main(int argc, char *argv[]) {
   }
 
   // RELEASE BLOCK
-  sthread_twf(client_loop_t);
+  sthread_twf(client_loop_t, 1);
   st_mainloop_free();
   clientcfg_free();
 
