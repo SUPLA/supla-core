@@ -32,6 +32,14 @@ class supla_value_based_triggers {
   void *lck;
   std::vector<std::shared_ptr<supla_value_based_trigger>> triggers;
 
+  virtual void on_channel_value_changed(
+      const supla_caller &caller, int channel_id,
+      supla_channel_value *old_value, supla_channel_value *new_value,
+      supla_channel_extended_value *old_evalue,
+      supla_channel_extended_value *new_evalue,
+      supla_abstract_action_executor *action_executor,
+      supla_abstract_channel_property_getter *property_getter);
+
  public:
   explicit supla_value_based_triggers(supla_user *user);
   virtual ~supla_value_based_triggers(void);
@@ -46,9 +54,20 @@ class supla_value_based_triggers {
       supla_abstract_action_executor *action_executor,
       supla_abstract_channel_property_getter *property_getter);
 
+  virtual void on_channel_value_changed(
+      const supla_caller &caller, int channel_id,
+      supla_channel_extended_value *old_value,
+      supla_channel_extended_value *new_value,
+      supla_abstract_action_executor *action_executor,
+      supla_abstract_channel_property_getter *property_getter);
+
   void on_channel_value_changed(const supla_caller &caller, int channel_id,
                                 supla_channel_value *old_value,
                                 supla_channel_value *new_value);
+
+  void on_channel_value_changed(const supla_caller &caller, int channel_id,
+                                supla_channel_extended_value *old_value,
+                                supla_channel_extended_value *new_value);
 };
 
 #endif /* VALUE_BASED_TRIGGERS_H_ */

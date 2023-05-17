@@ -18,9 +18,12 @@
 
 #include "vbt_on_change_condition.h"
 
+#include <math.h>
+
 #include <map>
 #include <string>
 
+#include "device/extended_value/channel_em_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_onoff_value.h"
@@ -84,11 +87,26 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_humidity, "humidity"},
         {var_name_flooding, "flooding"},
         {var_name_manually_closed, "manually_closed"},
-        {var_name_voltage, "voltage"},
-        {var_name_current, "current"},
-        {var_name_power_active, "power_active"},
-        {var_name_power_reactive, "power_reactive"},
-        {var_name_power_apparent, "power_apparent"}};
+        {var_name_voltage_avg, "voltage_avg"},
+        {var_name_voltage1, "voltage1"},
+        {var_name_voltage2, "voltage2"},
+        {var_name_voltage3, "voltage3"},
+        {var_name_current_sum, "current_sum"},
+        {var_name_current1, "current1"},
+        {var_name_current2, "current2"},
+        {var_name_current3, "current3"},
+        {var_name_power_active_sum, "power_active_sum"},
+        {var_name_power_active1, "power_active1"},
+        {var_name_power_active2, "power_active2"},
+        {var_name_power_active3, "power_active3"},
+        {var_name_power_reactive_sum, "power_reactive_sum"},
+        {var_name_power_reactive1, "power_reactive1"},
+        {var_name_power_reactive2, "power_reactive2"},
+        {var_name_power_reactive3, "power_reactive3"},
+        {var_name_power_apparent_sum, "power_apparent_sum"},
+        {var_name_power_apparent1, "power_apparent1"},
+        {var_name_power_apparent2, "power_apparent2"},
+        {var_name_power_apparent3, "power_apparent3"}};
 
     for (auto it = names.begin(); it != names.end(); ++it) {
       if (it->second == cJSON_GetStringValue(name_json)) {
@@ -241,16 +259,93 @@ bool supla_vbt_on_change_condition::get_number(supla_channel_value *value,
   return false;
 }
 
+bool supla_vbt_on_change_condition::get_number(
+    supla_channel_extended_value *value, double *result) {
+  if (dynamic_cast<supla_channel_em_extended_value *>(value)) {
+    supla_channel_em_extended_value *em =
+        dynamic_cast<supla_channel_em_extended_value *>(value);
+
+    switch (var_name) {
+      case var_name_voltage_avg:
+        *result = em->get_voltage_avg();
+        break;
+      case var_name_voltage1:
+        *result = em->get_voltage(1);
+        break;
+      case var_name_voltage2:
+        *result = em->get_voltage(2);
+        break;
+      case var_name_voltage3:
+        *result = em->get_voltage(3);
+        break;
+      case var_name_current_sum:
+        *result = em->get_current_sum();
+        break;
+      case var_name_current1:
+        *result = em->get_current(1);
+        break;
+      case var_name_current2:
+        *result = em->get_current(2);
+        break;
+      case var_name_current3:
+        *result = em->get_current(3);
+        break;
+      case var_name_power_active_sum:
+        *result = em->get_power_active_sum();
+        break;
+      case var_name_power_active1:
+        *result = em->get_power_active(1);
+        break;
+      case var_name_power_active2:
+        *result = em->get_power_active(2);
+        break;
+      case var_name_power_active3:
+        *result = em->get_power_active(3);
+        break;
+      case var_name_power_reactive_sum:
+        *result = em->get_power_reactive_sum();
+        break;
+      case var_name_power_reactive1:
+        *result = em->get_power_reactive(1);
+        break;
+      case var_name_power_reactive2:
+        *result = em->get_power_reactive(2);
+        break;
+      case var_name_power_reactive3:
+        *result = em->get_power_reactive(3);
+        break;
+      case var_name_power_apparent_sum:
+        *result = em->get_power_apparent_sum();
+        break;
+      case var_name_power_apparent1:
+        *result = em->get_power_apparent(1);
+        break;
+      case var_name_power_apparent2:
+        *result = em->get_power_apparent(2);
+        break;
+      case var_name_power_apparent3:
+        *result = em->get_power_apparent(3);
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
 bool supla_vbt_on_change_condition::is_condition_met(_vbt_operator_e op,
                                                      double old_value,
                                                      double new_value,
                                                      double expected) {
-  if (old_value == new_value) {
+  if (fabs(old_value - new_value) <= 0.000001) {
     return false;
   }
 
-  return (op == op_eq && new_value == expected) ||
-         (op == op_ne && new_value != expected) ||
+  return (op == op_eq && fabs(new_value - expected) <= 0.000001) ||
+         (op == op_ne && fabs(new_value - expected) > 0.000001) ||
          (op == op_gt && new_value > expected && old_value <= expected) ||
          (op == op_lt && new_value < expected && old_value >= expected) ||
          (op == op_ge && new_value >= expected && old_value < expected) ||
@@ -277,6 +372,27 @@ bool supla_vbt_on_change_condition::is_condition_met(double old_value,
 
 bool supla_vbt_on_change_condition::is_condition_met(
     supla_channel_value *old_value, supla_channel_value *new_value) {
+  if (op == op_unknown) {
+    return false;
+  }
+
+  double oldv = 0;
+  double newv = 0;
+
+  if (!get_number(old_value, &oldv)) {
+    return false;
+  }
+
+  if (!get_number(new_value, &newv)) {
+    return false;
+  }
+
+  return is_condition_met(oldv, newv);
+}
+
+bool supla_vbt_on_change_condition::is_condition_met(
+    supla_channel_extended_value *old_value,
+    supla_channel_extended_value *new_value) {
   if (op == op_unknown) {
     return false;
   }

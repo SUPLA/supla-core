@@ -18,6 +18,7 @@
 
 #include "OnChangeConditionTest.h"
 
+#include "device/extended_value/channel_em_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_onoff_value.h"
@@ -146,37 +147,137 @@ TEST_F(OnChangeConditionTest, allPredictedVarNames) {
 
   EXPECT_EQ(c.get_var_name(), var_name_manually_closed);
 
-  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"voltage\"}}");
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"voltage_avg\"}}");
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  EXPECT_EQ(c.get_var_name(), var_name_voltage);
+  EXPECT_EQ(c.get_var_name(), var_name_voltage_avg);
 
-  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"current\"}}");
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"voltage1\"}}");
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  EXPECT_EQ(c.get_var_name(), var_name_current);
+  EXPECT_EQ(c.get_var_name(), var_name_voltage1);
 
-  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"power_active\"}}");
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"voltage2\"}}");
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  EXPECT_EQ(c.get_var_name(), var_name_power_active);
+  EXPECT_EQ(c.get_var_name(), var_name_voltage2);
+
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"voltage3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_voltage3);
+
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"current_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_current_sum);
+
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"current1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_current1);
+
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"current2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_current2);
+
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"current3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_current3);
+
+  json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":1,\"name\":\"power_active_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_active_sum);
 
   json =
-      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"power_reactive\"}}");
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"power_active1\"}}");
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  EXPECT_EQ(c.get_var_name(), var_name_power_reactive);
+  EXPECT_EQ(c.get_var_name(), var_name_power_active1);
 
   json =
-      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"power_apparent\"}}");
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"power_active2\"}}");
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  EXPECT_EQ(c.get_var_name(), var_name_power_apparent);
+  EXPECT_EQ(c.get_var_name(), var_name_power_active2);
+
+  json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"power_active3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_active3);
+
+  json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":1,\"name\":\"power_reactive_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_reactive_sum);
+
+  json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"power_reactive1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_reactive1);
+
+  json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"power_reactive2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_reactive2);
+
+  json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"power_reactive3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_reactive3);
+
+  json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":1,\"name\":\"power_apparent_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_apparent_sum);
+
+  json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"power_apparent1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_apparent1);
+
+  json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"power_apparent2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_apparent2);
+
+  json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"power_apparent3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_apparent3);
 }
 
 TEST_F(OnChangeConditionTest, boolValues) {
@@ -555,6 +656,396 @@ TEST_F(OnChangeConditionTest, humidity) {
 
   cJSON *json =
       cJSON_Parse("{\"on_change_to\":{\"eq\":45,\"name\":\"humidity\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, avgVoltage) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].voltage[0] = 24000;
+  v2b.m[0].voltage[1] = 23000;
+  v2b.m[0].voltage[2] = 22000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":230,\"name\":\"voltage_avg\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, voltage1) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].voltage[0] = 24000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":240,\"name\":\"voltage1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, voltage2) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].voltage[1] = 23000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":230,\"name\":\"voltage2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, voltage3) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].voltage[2] = 22000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":220,\"name\":\"voltage3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, currentSum) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].current[0] = 10000;
+  v2b.m[0].current[1] = 20000;
+  v2b.m[0].current[2] = 30000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":60,\"name\":\"current_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, current1) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].current[0] = 10000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":10,\"name\":\"current1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, current2) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].current[1] = 20000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":20,\"name\":\"current2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, current3) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].current[2] = 30000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":30,\"name\":\"current3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, powerActiveSum) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].power_active[0] = 1000000;
+  v2b.m[0].power_active[1] = 2000000;
+  v2b.m[0].power_active[2] = 3000000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":60,\"name\":\"power_active_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, powerActive1) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].power_active[0] = 1000000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":10,\"name\":\"power_active1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, powerActive2) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].power_active[1] = 2000000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":20,\"name\":\"power_active2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, powerActive3) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].power_active[2] = 3000000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":30,\"name\":\"power_active3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, powerRectiveSum) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].power_reactive[0] = 1000000;
+  v2b.m[0].power_reactive[1] = 2000000;
+  v2b.m[0].power_reactive[2] = 3000000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":60,\"name\":\"power_reactive_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, powerRective1) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].power_reactive[0] = 1000000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":10,\"name\":\"power_reactive1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, powerReactive2) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].power_reactive[1] = 2000000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":20,\"name\":\"power_reactive2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, powerRective3) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].power_reactive[2] = 3000000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":30,\"name\":\"power_reactive3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, powerApparentSum) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].power_apparent[0] = 1000000;
+  v2b.m[0].power_apparent[1] = 2000000;
+  v2b.m[0].power_apparent[2] = 3000000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":60,\"name\":\"power_apparent_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, powerApparent1) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].power_apparent[0] = 1000000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":10,\"name\":\"power_apparent1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, powerApparent2) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].power_apparent[1] = 2000000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":20,\"name\":\"power_apparent2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, powerApparent3) {
+  TElectricityMeter_ExtendedValue_V2 v2a = {};
+  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  v2b.m_count = 1;
+  v2b.m[0].power_apparent[2] = 3000000;
+
+  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":30,\"name\":\"power_apparent3\"}}");
   c.apply_json_config(json);
   cJSON_Delete(json);
 

@@ -66,6 +66,10 @@ class supla_value_based_trigger {
                                                 supla_channel_value *old_value,
                                                 supla_channel_value *new_value);
 
+  supla_vbt_condition_result are_conditions_met(
+      int channel_id, supla_channel_extended_value *old_value,
+      supla_channel_extended_value *new_value);
+
   void fire(const supla_caller &caller, int user_id,
             supla_abstract_action_executor *action_executor,
             supla_abstract_channel_property_getter *property_getter,
