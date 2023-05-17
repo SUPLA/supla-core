@@ -19,7 +19,7 @@
 #include "sthread.h"
 
 #ifndef NOMYSQL
-#include <mysql/mysql.h>
+#include <mariadb/mysql.h>
 #endif /*NOMYSQL*/
 
 #include <pthread.h>
