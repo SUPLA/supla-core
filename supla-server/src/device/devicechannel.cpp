@@ -983,13 +983,13 @@ bool supla_device_channel::get_voltage_analyzers_with_any_sample_over_threshold(
 }
 
 supla_channel_value *supla_device_channel::_get_value(void) {
-  if (!get_func()) {
-    return nullptr;
-  }
-
   char value[SUPLA_CHANNELVALUE_SIZE] = {};
   get_value(value);
   int func = get_func();
+
+  if (!func) {
+    return new supla_channel_value(value);
+  }
 
   if (supla_channel_rs_value::is_function_supported(func)) {
     supla_channel_rs_value *rs_value = new supla_channel_rs_value(value);
