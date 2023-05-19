@@ -75,8 +75,7 @@ class supla_client_channel : public supla_client_objcontainer_item {
                        short ProductID, unsigned char ProtocolVersion,
                        int Flags, int EmSubcFlags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
-                       unsigned _supla_int_t validity_time_sec,
-                       const char *user_config,
+                       _supla_int_t validity_time_sec, const char *user_config,
                        const char *em_subc_user_config);
   virtual ~supla_client_channel(void);
   void mark_for_remote_update(int mark);

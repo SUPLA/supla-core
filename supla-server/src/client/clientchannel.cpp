@@ -40,9 +40,8 @@ supla_client_channel::supla_client_channel(
     char *TextParam1, char *TextParam2, char *TextParam3, const char *Caption,
     int AltIcon, int UserIcon, short ManufacturerID, short ProductID,
     unsigned char ProtocolVersion, int Flags, int EmSubcFlags,
-    const char value[SUPLA_CHANNELVALUE_SIZE],
-    unsigned _supla_int_t validity_time_sec, const char *user_config,
-    const char *em_subc_user_config)
+    const char value[SUPLA_CHANNELVALUE_SIZE], _supla_int_t validity_time_sec,
+    const char *user_config, const char *em_subc_user_config)
     : supla_client_objcontainer_item(Container, Id, Caption) {
   this->DeviceId = DeviceId;
   this->LocationId = LocationID;
