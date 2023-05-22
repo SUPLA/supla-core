@@ -921,6 +921,19 @@ bool database::channel_is_associated_with_scene(int channel_id) {
   return get_int(channel_id, 0, sql) > 0;
 }
 
+bool database::channel_is_associated_with_vbt(int channel_id) {
+  const char sql[] =
+      "SELECT id FROM supla_value_based_trigger WHERE ? IN (owning_channel_id, "
+      "channel_id) LIMIT 1";
+  return get_int(channel_id, 0, sql) > 0;
+}
+
+bool database::channel_is_associated_with_push(int channel_id) {
+  const char sql[] =
+      "SELECT id FROM supla_value_based_trigger WHERE channel_id = ? LIMIT 1";
+  return get_int(channel_id, 0, sql) > 0;
+}
+
 bool database::channel_is_associated_with_action_trigger(int UserID,
                                                          int ChannelID) {
   bool result = false;

@@ -188,9 +188,60 @@ TEST_F(SetChannelFunctionIntegrationTest,
 }
 
 TEST_F(SetChannelFunctionIntegrationTest,
-       SetTheFunctionForChannelAssociatedWithSchedule) {
+       SetTheFunctionForChannelAssociatedWithScene) {
   runSqlScript("CreateSceneForChannelId303.sql");
   expectedResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE;
+  expectedChannelID = 303;
+  expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
+  ASSERT_FALSE(sclient == NULL);
+
+  superuserAuthorize();
+
+  ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
+                                              expectedFunction),
+            0);
+
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(SetChannelFunctionIntegrationTest,
+       SetTheFunctionForChannelAssociatedWithVBT) {
+  runSqlScript("CreateVbtForChannelId303.sql");
+  expectedResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_VBT;
+  expectedChannelID = 303;
+  expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
+  ASSERT_FALSE(sclient == NULL);
+
+  superuserAuthorize();
+
+  ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
+                                              expectedFunction),
+            0);
+
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(SetChannelFunctionIntegrationTest,
+       SetTheFunctionForChannelAssociatedWithVBT) {
+  runSqlScript("CreatePushForChannelId303.sql");
+  expectedResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_VBT;
+  expectedChannelID = 303;
+  expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
+  ASSERT_FALSE(sclient == NULL);
+
+  superuserAuthorize();
+
+  ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
+                                              expectedFunction),
+            0);
+
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(SetChannelFunctionIntegrationTest,
+       SetTheFunctionForChannelAssociatedWithVBT_Owner) {
+  runSqlScript("CreatePushForChannelId303_Owner.sql");
+  expectedResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_VBT;
   expectedChannelID = 303;
   expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
   ASSERT_FALSE(sclient == NULL);
