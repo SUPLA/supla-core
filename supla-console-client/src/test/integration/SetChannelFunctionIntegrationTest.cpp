@@ -206,6 +206,7 @@ TEST_F(SetChannelFunctionIntegrationTest,
 
 TEST_F(SetChannelFunctionIntegrationTest,
        SetTheFunctionForChannelAssociatedWithPush) {
+  runSqlScript("DeleteSceneOperaionsWithChannelId303.sql");
   runSqlScript("CreatePushForChannelId303.sql");
   expectedResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_PUSH;
   expectedChannelID = 303;
@@ -223,6 +224,7 @@ TEST_F(SetChannelFunctionIntegrationTest,
 
 TEST_F(SetChannelFunctionIntegrationTest,
        SetTheFunctionForChannelAssociatedWithVBT) {
+  runSqlScript("DeleteSceneOperaionsWithChannelId303.sql");
   runSqlScript("CreateVbtForChannelId303.sql");
   expectedResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_VBT;
   expectedChannelID = 303;
@@ -240,6 +242,7 @@ TEST_F(SetChannelFunctionIntegrationTest,
 
 TEST_F(SetChannelFunctionIntegrationTest,
        SetTheFunctionForChannelAssociatedWithVBT_Owner) {
+  runSqlScript("DeleteSceneOperaionsWithChannelId303.sql");
   runSqlScript("CreateVbtForChannelId303_Owner.sql");
   expectedResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_VBT;
   expectedChannelID = 303;
