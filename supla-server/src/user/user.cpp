@@ -749,10 +749,10 @@ void supla_user::set_channel_function(std::shared_ptr<supla_client> sender,
                      getUserID(), func->ChannelID)) {
         result.ResultCode =
             SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_ACTION_TRIGGER;
-      } else if (db->channel_is_associated_with_vbt(func->ChannelID)) {
+      } else if (db->channel_is_associated_with_push(func->ChannelID)) {
         result.ResultCode =
             SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_PUSH;
-      } else if (db->channel_is_associated_with_push(func->ChannelID)) {
+      } else if (db->channel_is_associated_with_vbt(func->ChannelID)) {
         result.ResultCode =
             SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_VBT;
       } else {
