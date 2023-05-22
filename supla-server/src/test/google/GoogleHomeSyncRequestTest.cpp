@@ -67,10 +67,11 @@ TEST_F(GoogleHomeSyncRequestTest, syncSuccessful) {
 
   EXPECT_CALL(*curlAdapter, reset).Times(1);
 
-  EXPECT_CALL(*curlAdapter,
-              set_opt_url(StrEq(
-                  "https://2rxqysinpg.execute-api.eu-west-1.amazonaws.com/"
-                  "default/googleHomeGraphBridge")))
+  EXPECT_CALL(
+      *curlAdapter,
+      set_opt_url(StrEq(
+          "https://"
+          "odokilkqoesh73zfznmiupey4a0uugaz.lambda-url.eu-west-1.on.aws/")))
       .Times(1);
 
   EXPECT_CALL(*curlAdapter,

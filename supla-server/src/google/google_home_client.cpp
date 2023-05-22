@@ -67,8 +67,8 @@ bool supla_google_home_client::perform_post_request(cJSON *json_data,
 
     get_curl_adapter()->reset();
     get_curl_adapter()->set_opt_url(
-        "https://2rxqysinpg.execute-api.eu-west-1.amazonaws.com/default/"
-        "googleHomeGraphBridge");
+        "https://"
+        "odokilkqoesh73zfznmiupey4a0uugaz.lambda-url.eu-west-1.on.aws/");
     get_curl_adapter()->append_header("Content-Type: application/json");
     get_curl_adapter()->append_header(token.c_str());
     get_curl_adapter()->set_opt_post_fields(data);
