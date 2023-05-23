@@ -1065,7 +1065,9 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         break;
       case SUPLA_DS_CALL_SET_CHANNEL_CONFIG:
       case SUPLA_SD_CALL_SET_CHANNEL_CONFIG:
-        if (srpc->sdp.data_size == sizeof(TSDS_SetChannelConfig)) {
+        if (srpc->sdp.data_size <= sizeof(TSDS_SetChannelConfig) &&
+            srpc->sdp.data_size >=
+                sizeof(TSDS_SetChannelConfig) - SUPLA_CHANNEL_CONFIG_MAXSIZE) {
           rd->data.sds_set_channel_config_request =
               (TSDS_SetChannelConfig *)malloc(sizeof(TSDS_SetChannelConfig));
         }
@@ -1080,7 +1082,9 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         break;
       case SUPLA_DS_CALL_SET_DEVICE_CONFIG:
       case SUPLA_SD_CALL_SET_DEVICE_CONFIG:
-        if (srpc->sdp.data_size == sizeof(TSDS_SetDeviceConfig)) {
+        if (srpc->sdp.data_size <= sizeof(TSDS_SetDeviceConfig) &&
+            srpc->sdp.data_size >=
+                sizeof(TSDS_SetDeviceConfig) - SUPLA_DEVICE_CONFIG_MAXSIZE) {
           rd->data.sds_set_device_config_request =
               (TSDS_SetDeviceConfig *)malloc(sizeof(TSDS_SetDeviceConfig));
         }
