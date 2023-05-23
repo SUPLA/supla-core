@@ -23,6 +23,7 @@
 namespace testing {
 
 using std::shared_ptr;
+using std::string;
 
 AsyncTaskTest::AsyncTaskTest(void) {
   queue = NULL;
@@ -36,6 +37,10 @@ void AsyncTaskTest::SetUp() {
 
   pool = new AsyncTaskThreadPoolMock(queue);
   EXPECT_TRUE(pool != NULL);
+
+  ON_CALL(*pool, thread_count_limit).WillByDefault(Return(1));
+  ON_CALL(*pool, pool_name).WillByDefault(Return(string("TestPool")));
+  ON_CALL(*pool, get_bucket).WillByDefault(Return(nullptr));
 }
 
 void AsyncTaskTest::TearDown() {

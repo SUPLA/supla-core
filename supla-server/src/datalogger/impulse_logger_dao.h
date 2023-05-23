@@ -20,7 +20,7 @@
 #define IMPULSE_LOGGER_DAO_H_
 
 #include "db/abstract_db_access_provider.h"
-#include "device/channel_ic_measurement.h"
+#include "device/extended_value/channel_ic_extended_value.h"
 
 class supla_impulse_logger_dao {
  private:
@@ -28,7 +28,7 @@ class supla_impulse_logger_dao {
 
  public:
   explicit supla_impulse_logger_dao(supla_abstract_db_access_provider *dba);
-  void add(supla_channel_ic_measurement *ic);
+  void add(int channel_id, supla_channel_ic_extended_value *icv);
 };
 
 #endif /* IMPULSE_LOGGER_DAO_H_ */

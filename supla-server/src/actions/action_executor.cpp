@@ -18,12 +18,16 @@
 
 #include "actions/action_executor.h"
 
-#include "http/httprequestqueue.h"
+#include "http/http_event_hub.h"
 #include "mqtt/mqtt_client_suite.h"
+#include "push/pn_delivery_task.h"
 #include "scene/scene_asynctask.h"
+#include "schedule/schedule_dao.h"
 #include "userchannelgroups.h"
 
+using std::map;
 using std::shared_ptr;
+using std::string;
 
 supla_action_executor::supla_action_executor(void)
     : supla_abstract_action_executor() {}
@@ -151,6 +155,25 @@ void supla_action_executor::interrupt_and_execute(void) {
   }
 }
 
+void supla_action_executor::enable(void) {
+  supla_db_access_provider dba;
+  supla_schedule_dao dao(&dba);
+  dao.enable(get_user_id(), get_schedule_id(), true);
+}
+
+void supla_action_executor::disable(void) {
+  supla_db_access_provider dba;
+  supla_schedule_dao dao(&dba);
+  dao.enable(get_user_id(), get_schedule_id(), false);
+}
+
+void supla_action_executor::send(const map<string, string> *replacement_map) {
+  if (get_user()) {
+    supla_pn_delivery_task::start_delivering(
+        get_user()->getUserID(), get_push_notification_id(), replacement_map);
+  }
+}
+
 void supla_action_executor::stop(void) {
   execute_action([this](supla_user_channelgroups *channel_groups,
                         supla_device_channels *channels) -> void {
@@ -269,8 +292,8 @@ void supla_action_executor::forward_outside(int cap) {
     supla_mqtt_client_suite::globalInstance()->onActionsTriggered(
         device->get_user_id(), device->get_id(), get_channel_id(), cap);
 
-    supla_http_request_queue::getInstance()->onActionsTriggered(
-        get_caller(), device->get_user(), device->get_id(), get_channel_id(),
-        cap);
+    supla_http_event_hub::on_actions_triggered(get_caller(), device->get_user(),
+                                               device->get_id(),
+                                               get_channel_id(), cap);
   }
 }

@@ -32,7 +32,7 @@ TEST_F(SceneAccessTest, accessNonExistent) {
   EXPECT_FALSE(result);
 
   delete action_executor;
-  delete value_getter;
+  delete property_getter;
   delete operations;
 }
 
@@ -46,7 +46,7 @@ TEST_F(SceneAccessTest, accessSuccessfully) {
 
   shared_ptr<supla_abstract_asynctask> scene =
       (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 0, queue, pool,
-                                 action_executor, value_getter, operations))
+                                 action_executor, property_getter, operations))
           ->start();
 
   bool result =

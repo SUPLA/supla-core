@@ -17,6 +17,7 @@
  */
 
 #include "cfg.h"
+
 #include <assert.h>
 #include <grp.h>
 #include <pwd.h>
@@ -25,6 +26,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include "ini.h"
 #include "log.h"
 #include "tools.h"
@@ -55,13 +57,10 @@ unsigned run_as_daemon = 0;
 
 #ifdef __TEST
 char *cfg_sql_dir = NULL;
-#endif /*__TEST*/
-
-#ifdef __DEBUG
 char debug_mode = 1;
 #else
 char debug_mode = 0;
-#endif
+#endif /*__TEST*/
 
 int scfg_ini_handler(void *user, const char *section, const char *name,
                      const char *value) {
@@ -120,70 +119,70 @@ void scfg_set_callback(_func_cfg_callback cb) {
   scfg->cb = cb;
 }
 
-void scfg_add_param(char *section_name, const char *param_name,
+void scfg_add_param(int index, char *section_name, const char *param_name,
                     unsigned char vtype, char *cval, unsigned char bval,
                     double dval, int ival) {
-  TSuplaCfgParam *param;
+  TSuplaCfgParam *param = NULL;
   TSuplaCfgParam **scfg_param = NULL;
+  int a = 0;
 
   assert(section_name != NULL && strnlen(section_name, 128) > 0);
   assert(param_name != NULL && strnlen(param_name, 128) > 0);
 
   if (scfg == NULL) {
     scfg = malloc(sizeof(TSuplaCfg));
-
-    if (scfg == NULL) return;
-
+    assert(scfg != NULL);
     memset(scfg, 0, sizeof(TSuplaCfg));
   }
 
-  param = malloc(sizeof(TSuplaCfgParam));
+  int add = index >= scfg->count ? index - scfg->count + 1 : 0;
+  if (add) {
+    scfg_param = realloc(scfg->param, sizeof(void *) * (scfg->count + add));
+    assert(scfg_param != NULL);
 
-  if (param == NULL) return;
+    for (a = scfg->count; a < scfg->count + add; a++) {
+      scfg_param[a] = NULL;
+    }
 
-  scfg_param = realloc(scfg->param, sizeof(void *) * (scfg->count + 1));
-
-  if (scfg_param == NULL) {
-    free(param);
-
-  } else {
-    memset(param, 0, sizeof(TSuplaCfgParam));
-
-    scfg->count++;
+    scfg->count += add;
     scfg->param = scfg_param;
-
-    param->section_name = section_name;
-    param->name = strdup(param_name);
-    param->vtype = vtype;
-    param->cval = cval == NULL ? NULL : strdup(cval);
-    param->bval = bval;
-    param->dval = dval;
-    param->ival = ival;
-    scfg->param[scfg->count - 1] = param;
   }
+
+  param = malloc(sizeof(TSuplaCfgParam));
+  assert(param != NULL);
+  memset(param, 0, sizeof(TSuplaCfgParam));
+
+  param->section_name = section_name;
+  param->name = strdup(param_name);
+  param->vtype = vtype;
+  param->cval = cval == NULL ? NULL : strdup(cval);
+  param->bval = bval;
+  param->dval = dval;
+  param->ival = ival;
+  scfg->param[index] = param;
 }
 
-void scfg_add_str_param(char *section_name, const char *param_name,
+void scfg_add_str_param(int index, char *section_name, const char *param_name,
                         char *default_value) {
-  scfg_add_param(section_name, param_name, SCFG_VTYPE_STRING, default_value, 0,
-                 0, 0);
+  scfg_add_param(index, section_name, param_name, SCFG_VTYPE_STRING,
+                 default_value, 0, 0, 0);
 }
 
-void scfg_add_double_param(char *section_name, const char *param_name,
-                           double default_value) {
-  scfg_add_param(section_name, param_name, SCFG_VTYPE_DOUBLE, NULL, 0,
+void scfg_add_double_param(int index, char *section_name,
+                           const char *param_name, double default_value) {
+  scfg_add_param(index, section_name, param_name, SCFG_VTYPE_DOUBLE, NULL, 0,
                  default_value, 0);
 }
 
-void scfg_add_int_param(char *section_name, const char *param_name,
+void scfg_add_int_param(int index, char *section_name, const char *param_name,
                         int default_value) {
-  scfg_add_param(section_name, param_name, SCFG_VTYPE_INT, NULL, 0, 0,
+  scfg_add_param(index, section_name, param_name, SCFG_VTYPE_INT, NULL, 0, 0,
                  default_value);
 }
 
-void scfg_add_bool_param(char *section_name, const char *param_name,
+void scfg_add_bool_param(int index, char *section_name, const char *param_name,
                          unsigned char default_value) {
-  scfg_add_param(section_name, param_name, SCFG_VTYPE_BOOLEAN, NULL,
+  scfg_add_param(index, section_name, param_name, SCFG_VTYPE_BOOLEAN, NULL,
                  default_value, 0, 0);
 }
 
@@ -195,11 +194,7 @@ void scfg_print_help(const char *app_name) {
   printf("    --sqldir    Specifies the path of the sql script directory\n");
 #endif /**/
   printf("    -d                  run in daemon mode\n");
-#ifdef __DEBUG
-  printf("    --debug-off         run in normal mode\n");
-#else
   printf("    -D                  run in debug mode\n");
-#endif /*__DEBUG*/
   printf("    -h                  prints this help\n");
   printf("\n");
 }
@@ -222,13 +217,8 @@ unsigned char scfg_load(int argc, char *argv[], char default_file[]) {
     } else if (strcmp("--sqldir", argv[a]) == 0 && a < argc - 1) {
       cfg_sql_dir = strdup(argv[a + 1]);
 #endif /*__TEST*/
-#ifdef __DEBUG
-    } else if (strcmp("--debug-off", argv[a]) == 0) {
-      debug_mode = 0;
-#else
     } else if (strcmp("-D", argv[a]) == 0) {
       debug_mode = 1;
-#endif /*__DEBUG*/
     } else if (strcmp("-h", argv[a]) == 0) {
       scfg_print_help(argv[0]);
       return 0;
@@ -295,22 +285,26 @@ void scfg_free(void) {
 }
 
 char *scfg_string(unsigned char param_id) {
-  assert(scfg != NULL && scfg->count > param_id);
+  assert(scfg != NULL && scfg->count > param_id &&
+         scfg->param[param_id] != NULL);
   return scfg->param[param_id]->cval;
 }
 
 int scfg_int(unsigned char param_id) {
-  assert(scfg != NULL && scfg->count > param_id);
+  assert(scfg != NULL && scfg->count > param_id &&
+         scfg->param[param_id] != NULL);
   return scfg->param[param_id]->ival;
 }
 
 double scfg_double(unsigned char param_id) {
-  assert(scfg != NULL && scfg->count > param_id);
+  assert(scfg != NULL && scfg->count > param_id &&
+         scfg->param[param_id] != NULL);
   return scfg->param[param_id]->dval;
 }
 
 unsigned char scfg_bool(unsigned char param_id) {
-  assert(scfg != NULL && scfg->count > param_id);
+  assert(scfg != NULL && scfg->count > param_id &&
+         scfg->param[param_id] != NULL);
   return scfg->param[param_id]->bval;
 }
 

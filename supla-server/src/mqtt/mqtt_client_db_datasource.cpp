@@ -37,7 +37,6 @@ supla_mqtt_client_db_datasource::~supla_mqtt_client_db_datasource(void) {}
 
 void supla_mqtt_client_db_datasource::thread_init(void) {
   supla_mqtt_client_datasource::thread_init();
-  database::thread_init();
 #ifdef __TEST
   pthread = pthread_self();
 #endif /*__TEST*/
@@ -45,7 +44,6 @@ void supla_mqtt_client_db_datasource::thread_init(void) {
 
 void supla_mqtt_client_db_datasource::thread_cleanup(void) {
   supla_mqtt_client_datasource::thread_cleanup();
-  database::thread_end();
 }
 
 bool supla_mqtt_client_db_datasource::db_connect(void) {

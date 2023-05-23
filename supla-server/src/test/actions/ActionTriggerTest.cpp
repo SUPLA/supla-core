@@ -26,7 +26,7 @@ ActionTriggerTest::ActionTriggerTest(void) {
   at = NULL;
   at_config = NULL;
   aexec = NULL;
-  value_getter = NULL;
+  property_getter = NULL;
 }
 ActionTriggerTest::~ActionTriggerTest(void) {}
 
@@ -37,17 +37,17 @@ void ActionTriggerTest::SetUp() {
   aexec = new ActionExecutorMock();
   EXPECT_TRUE(aexec != NULL);
 
-  value_getter = new ValueGetterStub();
-  EXPECT_TRUE(value_getter != NULL);
+  property_getter = new ChannelPropertyGetterMock();
+  EXPECT_TRUE(property_getter != NULL);
 
-  at = new supla_action_trigger(aexec, at_config, value_getter);
+  at = new supla_action_trigger(aexec, at_config, property_getter);
   EXPECT_TRUE(at != NULL);
 }
 
 void ActionTriggerTest::TearDown() {
-  if (value_getter) {
-    delete value_getter;
-    value_getter = NULL;
+  if (property_getter) {
+    delete property_getter;
+    property_getter = NULL;
   }
 
   if (at_config) {

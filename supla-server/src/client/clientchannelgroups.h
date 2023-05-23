@@ -49,6 +49,7 @@ class supla_client_channelgroups : public supla_client_objcontainer {
   supla_client_channelgroup *findGroup(int Id);
   bool groupExists(int Id);
   void on_channel_value_changed(void *srpc, int DeviceId, int ChannelId);
+  void set_caption(void *srpc, int id, char *caption);
 };
 
 #endif /* CLIENTCHANNELGROUPS_H_ */

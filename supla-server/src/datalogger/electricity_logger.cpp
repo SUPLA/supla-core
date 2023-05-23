@@ -22,8 +22,10 @@
 
 #include "datalogger/electricity_logger_dao.h"
 #include "device/device.h"
+#include "device/extended_value/channel_em_extended_value.h"
 #include "safearray.h"
 
+using std::function;
 using std::shared_ptr;
 using std::vector;
 using std::weak_ptr;
@@ -37,24 +39,30 @@ unsigned int supla_electricity_logger::task_interval_sec(void) { return 600; }
 
 void supla_electricity_logger::run(const vector<supla_user *> *users,
                                    supla_abstract_db_access_provider *dba) {
-  vector<supla_channel_electricity_measurement *> em;
+  std::vector<supla_channel_extended_value_envelope *> env;
 
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-    vector<weak_ptr<supla_device> > devices = (*uit)->get_devices()->get_all();
-
-    for (auto dit = devices.cbegin(); dit != devices.cend(); ++dit) {
-      shared_ptr<supla_device> device = (*dit).lock();
-      if (device) {
-        device->get_channels()->get_electricity_measurements(&em, true);
-      }
-    }
+    (*uit)->get_devices()->for_each(
+        [&env](shared_ptr<supla_device> device, bool *will_continue) -> void {
+          device->get_channels()->get_channel_extended_values(
+              &env,
+              [](supla_channel_extended_value *value) -> bool {
+                return dynamic_cast<supla_channel_em_extended_value *>(value) !=
+                       nullptr;
+              },
+              true);
+        });
   }
 
   supla_electricity_logger_dao dao(dba);
 
-  for (auto it = em.cbegin(); it != em.cend(); ++it) {
+  for (auto it = env.begin(); it != env.end(); ++it) {
+    supla_channel_em_extended_value *emv =
+        dynamic_cast<supla_channel_em_extended_value *>(
+            (*it)->get_extended_value());
+
     TElectricityMeter_ExtendedValue_V2 em_ev = {};
-    (*it)->getMeasurement(&em_ev);
+    emv->get_raw_value(&em_ev);
 
     bool ne_zero = false;
 
@@ -70,7 +78,7 @@ void supla_electricity_logger::run(const vector<supla_user *> *users,
 
     if (ne_zero || em_ev.total_forward_active_energy_balanced ||
         em_ev.total_reverse_active_energy_balanced) {
-      dao.add((*it)->getChannelId(), &em_ev);
+      dao.add((*it)->get_channel_id(), &em_ev);
     }
 
     delete *it;

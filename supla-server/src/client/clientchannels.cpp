@@ -25,7 +25,6 @@
 #include <memory>
 
 #include "clientchannel.h"
-#include "commontypes.h"
 #include "db/database.h"
 #include "log.h"
 #include "safearray.h"

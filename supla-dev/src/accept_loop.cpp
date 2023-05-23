@@ -16,10 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "accept_loop.h"
+
 #include <stdio.h>
 #include <unistd.h>
 
-#include "accept_loop.h"
 #include "ipcctrl.h"
 #include "ipcsocket.h"
 #include "log.h"
@@ -45,7 +46,7 @@ char accept_loop_ipcctrl_thread_cnd(void *ipcctrl_sthread) {
 }
 
 char accept_loop_ipcctrl_thread_twt(void *ipcctrl_sthread) {
-  sthread_twf(ipcctrl_sthread);
+  sthread_twf(ipcctrl_sthread, true);
   return 1;
 }
 
@@ -67,7 +68,10 @@ void ipc_accept_loop(void *ipc, void *ipc_al_sthread) {
       stp.free_on_finish = 0;
       stp.initialize = NULL;
 
-      safe_array_add(ipcctrl_thread_arr, sthread_run(&stp));
+      void *sthread = NULL;
+      sthread_run(&stp, &sthread);
+
+      safe_array_add(ipcctrl_thread_arr, sthread);
     }
   }
 

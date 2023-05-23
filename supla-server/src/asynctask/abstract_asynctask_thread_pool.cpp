@@ -25,13 +25,17 @@
 
 #include "abstract_asynctask.h"
 #include "asynctask_queue.h"
+#include "db/database.h"
 #include "lck.h"
 #include "log.h"
+#include "metrics.h"
 #include "sthread.h"
 
 #define WARNING_MIN_FREQ_SEC 5
 #define PICK_RETRY_LIMIT 3
 #define PICK_RETRY_DELAY_USEC 10000
+#define PICK_WARNING_USEC 100000
+#define REMOVE_WARNING_USEC 100000
 
 using std::shared_ptr;
 using std::vector;
@@ -60,14 +64,26 @@ supla_abstract_asynctask_thread_pool::~supla_abstract_asynctask_thread_pool(
   while (thread_count()) {
     usleep(10000);
     n++;
+    if (n == 100) {
+      terminate();
+    }
     if (n == 500) {
-      supla_log(LOG_DEBUG,
-                "Elapsed time waiting for the threads in the pool to stop.");
+      supla_log(LOG_ERR,
+                "Elapsed time waiting for the threads in the pool to stop. "
+                "Threads left: %i",
+                thread_count());
     }
   }
 
   queue->unregister_pool(this);
   lck_free(lck);
+}
+
+int supla_abstract_asynctask_thread_pool::tasks_per_thread(void) { return 0; }
+
+bool supla_abstract_asynctask_thread_pool::should_keep_alive(
+    unsigned long long usec_since_last_exec, size_t thread_count) {
+  return false;
 }
 
 void supla_abstract_asynctask_thread_pool::execution_request(
@@ -76,10 +92,19 @@ void supla_abstract_asynctask_thread_pool::execution_request(
     return;
   }
 
+  size_t req_count = 0;
+
   {
     bool already_exists = false;
 
     lck_lock(lck);
+
+    if (requests.size() && !threads.size()) {
+      supla_log(LOG_WARNING,
+                "There are %i task(s) in the %s pool but there are no threads.",
+                pool_name().c_str(), requests.size());
+    }
+
     for (auto it = requests.begin(); it != requests.end(); ++it) {
       if (*it == task) {
         already_exists = true;
@@ -88,8 +113,12 @@ void supla_abstract_asynctask_thread_pool::execution_request(
     }
 
     if (!already_exists) {
+      task->set_execution_request_time(false);
       requests.push_back(task);
     }
+
+    req_count = requests.size();
+
     lck_unlock(lck);
 
     if (already_exists) {
@@ -101,21 +130,25 @@ void supla_abstract_asynctask_thread_pool::execution_request(
 
   lck_lock(lck);
   if (threads.size() < thread_count_limit()) {
-    Tsthread_params p;
-    p.user_data = this;
-    p.free_on_finish = 1;
-    p.execute = _execute;
-    p.finish = _on_thread_finish;
-    p.initialize = NULL;
+    if (!tasks_per_thread() ||
+        req_count > tasks_per_thread() * threads.size()) {
+      Tsthread_params p;
+      p.user_data = this;
+      p.free_on_finish = 1;
+      p.execute = _execute;
+      p.finish = _on_thread_finish;
+      p.initialize = NULL;
 
-    void *thread = nullptr;
-    sthread_run(&p, &thread);
-    if (thread) {
-      threads.push_back(thread);
-      if (threads.size() > _highest_number_of_threads) {
-        _highest_number_of_threads = threads.size();
+      void *thread = nullptr;
+      sthread_run(&p, &thread);
+      if (thread) {
+        threads.push_back(thread);
+        if (threads.size() > _highest_number_of_threads) {
+          _highest_number_of_threads = threads.size();
+        }
       }
     }
+
   } else {
     _overload_count++;
     struct timeval now;
@@ -129,7 +162,7 @@ void supla_abstract_asynctask_thread_pool::execution_request(
   lck_unlock(lck);
 
   if (overload_warning) {
-    supla_log(LOG_DEBUG,
+    supla_log(LOG_WARNING,
               "The thread pool for asynchronous tasks is overloaded. Pool "
               "Name: %s Limit: %li Counter: %li",
               pool_name().c_str(), thread_count_limit(), overload_count());
@@ -157,22 +190,44 @@ void supla_abstract_asynctask_thread_pool::_execute(void *_pool,
 void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
   bool iterate = true;
 
-  supla_asynctask_thread_storage *storage = nullptr;
+  supla_asynctask_thread_bucket *bucket = get_bucket();
+  struct timeval last_exec_time = {};
 
   do {
-    shared_ptr<supla_abstract_asynctask> task = queue->pick(this);
+    shared_ptr<supla_abstract_asynctask> task;
+
+    unsigned long long time_usec = supla_metrics::measure_the_time_in_usec(
+        [&task, this]() -> void { task = queue->pick(this); });
+
+    if (time_usec >= PICK_WARNING_USEC) {
+      supla_log(LOG_WARNING,
+                "The time to pick the task in the %s pool was %llu usec.",
+                pool_name().c_str(), time_usec);
+    }
 
     if (task) {
-      task->execute(&storage);
+      task->execute(bucket);
       lck_lock(lck);
       _exec_count++;
       lck_unlock(lck);
 
       if (task->is_finished()) {
         queue->remove_task(task);
+      } else {
+        task->set_execution_request_time(true);
+        queue->raise_event();
       }
 
-      remove_task(task.get());
+      time_usec = supla_metrics::measure_the_time_in_usec(
+          [&task, this]() -> void { remove_task(task.get()); });
+
+      if (time_usec >= REMOVE_WARNING_USEC) {
+        supla_log(LOG_WARNING,
+                  "The time to remove the task in the %s pool was %llu usec.",
+                  pool_name().c_str(), time_usec);
+      }
+
+      gettimeofday(&last_exec_time, nullptr);
     }
 
     if (task == NULL) {
@@ -182,13 +237,25 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
     }
 
     lck_lock(lck);
-    iterate =
-        !sthread_isterminated(sthread) && threads.size() <= requests.size();
+    iterate = false;
+    if (!sthread_isterminated(sthread)) {
+      if (threads.size() <= requests.size()) {
+        iterate = true;
+      } else {
+        struct timeval now = {};
+        gettimeofday(&now, nullptr);
+
+        iterate = should_keep_alive(
+            (now.tv_sec * 1000000UL + now.tv_usec) -
+                (last_exec_time.tv_sec * 1000000UL + last_exec_time.tv_usec),
+            threads.size());
+      }
+    }
     lck_unlock(lck);
   } while (iterate);
 
-  if (storage) {
-    delete storage;
+  if (bucket) {
+    delete bucket;
   }
 }
 

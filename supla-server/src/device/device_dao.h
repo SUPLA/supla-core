@@ -19,6 +19,8 @@
 #ifndef SUPLA_DEVICE_DAO_H_
 #define SUPLA_DEVICE_DAO_H_
 
+#include <vector>
+
 #include "db/abstract_db_access_provider.h"
 #include "device/abstract_device_dao.h"
 
@@ -66,7 +68,7 @@ class supla_device_dao : public supla_abstract_device_dao {
                          int proto_version, short manufacturer_id,
                          short product_id, int flags, int user_id);
 
-  virtual bool update_device(int device_od, int original_location_id,
+  virtual bool update_device(int device_id, int original_location_id,
                              const char *authkey, const char *name,
                              unsigned int ipv4, const char *softver,
                              int proto_version, int flags);
@@ -78,6 +80,9 @@ class supla_device_dao : public supla_abstract_device_dao {
   virtual bool on_new_device(int device_id);
 
   virtual bool on_channel_added(int device_id, int channel_id);
+
+  virtual std::vector<supla_device_channel *> get_channels(
+      supla_device *device);
 };
 
 #endif /* SUPLA_DEVICE_DAO_H_ */

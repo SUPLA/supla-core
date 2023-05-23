@@ -35,6 +35,16 @@ supla_action_config::supla_action_config(void) : abstract_action_config() {
   rgbw = {};
 }
 
+supla_action_config::supla_action_config(supla_action_config *src) {
+  action_id = src->action_id;
+  subject_type = src->subject_type;
+  subject_id = src->subject_id;
+  source_device_id = src->source_device_id;
+  source_channel_id = src->source_channel_id;
+  percentage = src->percentage;
+  rgbw = src->rgbw;
+}
+
 supla_action_config::~supla_action_config(void) {}
 
 int supla_action_config::get_action_id(void) { return action_id; }
@@ -172,4 +182,17 @@ void supla_action_config::apply_json_params(const char *params) {
   }
 
   cJSON_Delete(root);
+}
+
+bool supla_action_config::operator==(const supla_action_config &config) const {
+  return action_id == config.action_id && subject_type == config.subject_type &&
+         subject_id == config.subject_id &&
+         source_device_id == config.source_device_id &&
+         source_channel_id == config.source_channel_id &&
+         percentage == config.percentage &&
+         rgbw.Brightness == config.rgbw.Brightness &&
+         rgbw.Color == config.rgbw.Color &&
+         rgbw.ColorBrightness == config.rgbw.ColorBrightness &&
+         rgbw.ColorRandom == config.rgbw.ColorRandom &&
+         rgbw.OnOff == config.rgbw.OnOff;
 }

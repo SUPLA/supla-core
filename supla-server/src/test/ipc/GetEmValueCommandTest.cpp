@@ -78,11 +78,10 @@ TEST_F(GetEmValueCommandTest, getEmValueWithSuccess) {
   em_ev.total_reverse_reactive_energy[1] = 33;
   em_ev.total_reverse_reactive_energy[2] = 34;
 
-  supla_channel_electricity_measurement *em =
-      new supla_channel_electricity_measurement(30, &em_ev, 50, "PLN");
+  supla_channel_em_extended_value *em =
+      new supla_channel_em_extended_value(&em_ev, "PLN", 50);
 
-  EXPECT_CALL(*cmd, get_electricity_measurement(10, 20, 30))
-      .WillOnce(Return(em));
+  EXPECT_CALL(*cmd, get_em_value(10, 20, 30)).WillOnce(Return(em));
 
   commandProcessingTest(
       "GET-EM-VALUE:10,20,30\n",
@@ -91,23 +90,23 @@ TEST_F(GetEmValueCommandTest, getEmValueWithSuccess) {
 }
 
 TEST_F(GetEmValueCommandTest, getEmValueWithFilure) {
-  supla_channel_electricity_measurement *em = NULL;
-  EXPECT_CALL(*cmd, get_electricity_measurement).WillOnce(Return(em));
+  EXPECT_CALL(*cmd, get_em_value)
+      .WillOnce(Return((supla_channel_em_extended_value *)nullptr));
   commandProcessingTest("GET-EM-VALUE:10,20,30\n", "UNKNOWN:30\n");
 }
 
 TEST_F(GetEmValueCommandTest, noParams) {
-  EXPECT_CALL(*cmd, get_electricity_measurement).Times(0);
+  EXPECT_CALL(*cmd, get_em_value).Times(0);
   commandProcessingTest("GET-EM-VALUE:\n", "UNKNOWN:0\n");
 }
 
 TEST_F(GetEmValueCommandTest, paramsWithZeros) {
-  EXPECT_CALL(*cmd, get_electricity_measurement).Times(0);
+  EXPECT_CALL(*cmd, get_em_value).Times(0);
   commandProcessingTest("GET-EM-VALUE:0,0,0\n", "UNKNOWN:0\n");
 }
 
 TEST_F(GetEmValueCommandTest, badParams) {
-  EXPECT_CALL(*cmd, get_electricity_measurement).Times(0);
+  EXPECT_CALL(*cmd, get_em_value).Times(0);
   commandProcessingTest("GET-EM-VALUE:a,10,c\n", "UNKNOWN:0\n");
 }
 

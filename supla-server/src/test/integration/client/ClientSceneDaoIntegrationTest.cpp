@@ -66,7 +66,7 @@ TEST_F(ClientSceneDaoIntegrationTest, getAllScenes) {
   runSqlScript("ChangeLocationForSceneWithId2.sql");
   list<supla_client_scene *> scenes = dao->get_all_scenes(2, 1);
 
-  EXPECT_EQ(scenes.size(), 6U);
+  EXPECT_EQ(scenes.size(), 8U);
 
   supla_client_scene *scene = scenes.front();
   EXPECT_EQ(scene->get_id(), 1);
@@ -135,6 +135,30 @@ TEST_F(ClientSceneDaoIntegrationTest, getAllScenes) {
   EXPECT_EQ(scene->get_alt_icon_id(), 0);
   EXPECT_EQ(
       strncmp(scene->get_caption(), "Scene #6", SUPLA_SCENE_CAPTION_MAXSIZE),
+      0);
+
+  delete scene;
+  scenes.pop_front();
+
+  scene = scenes.front();
+  EXPECT_EQ(scene->get_id(), 7);
+  EXPECT_EQ(scene->get_location_id(), 2);
+  EXPECT_EQ(scene->get_user_icon_id(), 0);
+  EXPECT_EQ(scene->get_alt_icon_id(), 0);
+  EXPECT_EQ(
+      strncmp(scene->get_caption(), "Scene #7", SUPLA_SCENE_CAPTION_MAXSIZE),
+      0);
+
+  delete scene;
+  scenes.pop_front();
+
+  scene = scenes.front();
+  EXPECT_EQ(scene->get_id(), 8);
+  EXPECT_EQ(scene->get_location_id(), 2);
+  EXPECT_EQ(scene->get_user_icon_id(), 0);
+  EXPECT_EQ(scene->get_alt_icon_id(), 0);
+  EXPECT_EQ(
+      strncmp(scene->get_caption(), "Scene #8", SUPLA_SCENE_CAPTION_MAXSIZE),
       0);
 
   delete scene;

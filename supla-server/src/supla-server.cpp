@@ -16,9 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <curl/curl.h>
+#include <openssl/ssl.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/prctl.h>
 #include <sys/resource.h>
 
 #include "accept_loop.h"
@@ -26,16 +29,17 @@
 #include "asynctask/asynctask_queue.h"
 #include "cyclictasks/agent.h"
 #include "db/database.h"
-#include "http/httprequestqueue.h"
-#include "http/trivialhttps.h"
+#include "google/google_home_sync_thread_pool.h"
+#include "http/asynctask_http_thread_pool.h"
 #include "ipc/ipcsocket.h"
 #include "lck.h"
 #include "log.h"
 #include "mqtt_client_suite.h"
 #include "proto.h"
+#include "push/pn_delivery_task_thread_pool.h"
+#include "push/pn_gateway_access_token_provider.h"
 #include "serverstatus.h"
 #include "srpc/srpc.h"
-#include "sslcrypto.h"
 #include "sthread.h"
 #include "supla-socket.h"
 #include "svrcfg.h"
@@ -44,7 +48,8 @@
 
 int main(int argc, char *argv[]) {
 #if __DEBUG
-  st_hook_critical_signals();
+// We give up capturing critical signals in favor of coredump.
+// st_hook_critical_signals();
 #endif
 
   void *ssd_ssl = nullptr;
@@ -53,13 +58,11 @@ int main(int argc, char *argv[]) {
   void *tcp_accept_loop_thread = nullptr;
   void *ssl_accept_loop_thread = nullptr;
   void *ipc_accept_loop_thread = nullptr;
-  void *http_request_queue_loop_thread = nullptr;
   supla_cyclictasks_agent *cyclictasks_agent = nullptr;
 
-#ifdef __LCK_DEBUG
-  lck_debug_init();
-  supla_log(LOG_DEBUG, "!!! LCK DEBUG ENABED !!!");
-#endif /*__LCK_DEBUG*/
+  SSL_library_init();
+  SSL_load_error_strings();
+  curl_global_init(CURL_GLOBAL_ALL);
 
   // INIT BLOCK
   if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
@@ -97,10 +100,10 @@ int main(int argc, char *argv[]) {
     }
   }
 
-#ifndef NOSSL
-  sslcrypto_init();
-  supla_trivial_https::init();
-  supla_http_request_queue::init();
+  // Start service only when the server configuration is already loaded.
+  supla_pn_gateway_access_token_provider::global_instance()->start_service();
+
+  supla_log(LOG_INFO, "SSL version: %s", OpenSSL_version(OPENSSL_VERSION));
 
   if (scfg_bool(CFG_SSL_ENABLED) == 1) {
     if (0 == (ssd_ssl = ssocket_server_init(scfg_string(CFG_SSL_CERT),
@@ -110,7 +113,6 @@ int main(int argc, char *argv[]) {
       goto exit_fail;
     }
   }
-#endif /*NOSSL*/
 
   if (scfg_bool(CFG_TCP_ENABLED) == 1) {
     if (0 == (ssd_tcp =
@@ -124,9 +126,16 @@ int main(int argc, char *argv[]) {
     goto exit_fail;
   }
 
+#if __DEBUG
+  prctl(PR_SET_DUMPABLE, 1);
+#endif /*__DEBUG*/
+
   // ASYNCTASK QUEUE
   supla_asynctask_queue::global_instance();
   supla_asynctask_default_thread_pool::global_instance();
+  supla_google_home_sync_thread_pool::global_instance();
+  supla_asynctask_http_thread_pool::global_instance();
+  supla_pn_delivery_task_thread_pool::global_instance();
 
   supla_user::init();
   supla_connection::init();
@@ -150,11 +159,6 @@ int main(int argc, char *argv[]) {
   // CYCLIC TASKS
   cyclictasks_agent = new supla_cyclictasks_agent();
 
-  // HTTP EVENT QUEUE
-
-  sthread_simple_run(http_request_queue_loop, NULL, 0,
-                     &http_request_queue_loop_thread);
-
   // MQTT
   supla_mqtt_client_suite::globalInstance()->start();
 
@@ -164,16 +168,10 @@ int main(int argc, char *argv[]) {
     serverstatus::globalInstance()->mainLoopHeartbeat();
     supla_connection::log_limits();
     supla_user::log_metrics(3600);
-    supla_http_request_queue::getInstance()->logMetrics(3600);
-    supla_http_request_queue::getInstance()->logStuckWarning();
     supla_asynctask_queue::global_instance()->log_stuck_warning();
   }
 
   supla_log(LOG_INFO, "Shutting down...");
-
-#ifdef __LCK_DEBUG
-  lck_debug_dump();
-#endif /*__LCK_DEBUG*/
 
   // RELEASE BLOCK
 
@@ -199,7 +197,6 @@ int main(int argc, char *argv[]) {
   }
 
   delete cyclictasks_agent;
-  sthread_twf(http_request_queue_loop_thread, true);
 
   supla_asynctask_queue::global_instance_release();  // before
                                                      // serverconnection_free()
@@ -207,17 +204,16 @@ int main(int argc, char *argv[]) {
   supla_connection::cleanup();
 
   // ! after serverconnection_free() and before user_free()
-  supla_http_request_queue::queueFree();
   supla_mqtt_client_suite::globalInstanceRelease();
   // -----------------------------------------------
 
   supla_user::user_free();
   database::mainthread_end();
-  sslcrypto_free();
 
   st_mainloop_free();  // Almost at the end
   st_delpidfile(pidfile_path);
   svrcfg_free();
+  curl_global_cleanup();
 
   {
     char dt[64];
@@ -231,5 +227,7 @@ exit_fail:
   ssocket_free(ssd_ssl);
   ssocket_free(ssd_tcp);
   svrcfg_free();
+  curl_global_cleanup();
+
   exit(EXIT_FAILURE);
 }

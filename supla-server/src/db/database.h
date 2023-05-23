@@ -33,9 +33,6 @@ class database : public svrdb {
 
   int get_user_id_by_suid(const char *suid);
 
-  void get_device_channels(int UserID, int DeviceID,
-                           supla_device_channels *channels);
-
   void get_client_locations(int ClientID, supla_client_locations *locs);
   void get_client_channels(int ClientID, int *DeviceID,
                            supla_client_channels *channels);
@@ -52,18 +49,6 @@ class database : public svrdb {
                                const char email[SUPLA_EMAIL_MAXSIZE],
                                const char password[SUPLA_PASSWORD_MAXSIZE]);
 
-  bool amazon_alexa_load_credentials(supla_amazon_alexa_credentials *alexa);
-  void amazon_alexa_remove_token(supla_amazon_alexa_credentials *alexa);
-  void amazon_alexa_update_token(supla_amazon_alexa_credentials *alexa,
-                                 const char *token, const char *refresh_token,
-                                 int expires_in);
-
-  bool google_home_load_credentials(supla_google_home_credentials *google_home);
-  bool state_webhook_load_credentials(supla_state_webhook_credentials *webhook);
-  void state_webhook_update_token(int UserID, const char *token,
-                                  const char *refresh_token, int expires_in);
-  void state_webhook_remove_token(int UserID);
-
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
   bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);
   bool set_channel_function(int UserID, int ChannelID, int Func);
@@ -75,13 +60,12 @@ class database : public svrdb {
   bool channel_belong_to_group(int channel_id);
   bool channel_has_schedule(int channel_id);
   bool channel_is_associated_with_scene(int channel_id);
+  bool channel_is_associated_with_vbt(int channel_id);
+  bool channel_is_associated_with_push(int channel_id);
   bool channel_is_associated_with_action_trigger(int UserID, int ChannelID);
   void update_channel_value(int channel_id, int user_id,
                             const char value[SUPLA_CHANNELVALUE_SIZE],
                             unsigned _supla_int_t validity_time_sec);
-  bool get_channel_value(int channel_id, int user_id,
-                         char value[SUPLA_CHANNELVALUE_SIZE],
-                         unsigned _supla_int_t *validity_time_sec);
 
   void update_channel_properties(int channel_id, int user_id,
                                  const char *properties);

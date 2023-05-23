@@ -31,7 +31,7 @@ class SceneActionExecutorMock : public ActionExecutorMock {
   supla_asynctask_queue *queue;
   supla_abstract_asynctask_thread_pool *pool;
   SceneActionExecutorMock *action_executor;
-  supla_abstract_value_getter *value_getter;
+  supla_abstract_channel_property_getter *property_getter;
   supla_scene_operations *operations;
   std::shared_ptr<supla_abstract_asynctask> last_executed_asynctask;
 
@@ -40,11 +40,11 @@ class SceneActionExecutorMock : public ActionExecutorMock {
   virtual ~SceneActionExecutorMock();
   virtual void execute(void);
   virtual void open(void);
-  void set_asynctask_params(supla_asynctask_queue *queue,
-                            supla_abstract_asynctask_thread_pool *pool,
-                            SceneActionExecutorMock *action_executor,
-                            supla_abstract_value_getter *value_getter,
-                            supla_scene_operations *operations);
+  void set_asynctask_params(
+      supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
+      SceneActionExecutorMock *action_executor,
+      supla_abstract_channel_property_getter *property_getter,
+      supla_scene_operations *operations);
   std::shared_ptr<supla_abstract_asynctask> get_last_executed_asynctask(void);
 };
 

@@ -16,9 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <amazon/alexacredentials.h>
 #include <ctype.h>
-#include <google/googlehomecredentials.h>
 #include <mysql.h>
 #include <stdio.h>
 #include <time.h>
@@ -151,186 +149,6 @@ int database::get_user_id_by_suid(const char *suid) {
   }
 
   return 0;
-}
-
-void database::get_device_channels(int UserID, int DeviceID,
-                                   supla_device_channels *channels) {
-  MYSQL_STMT *stmt = NULL;
-  const char sql[] =
-      "SELECT c.`type`, c.`func`, c.`param1`, c.`param2`, c.`param3`, "
-      "c.`param4`, c.`text_param1`, c.`text_param2`, c.`text_param3`, "
-      "c.`channel_number`, c.`id`, c.`hidden`, c.`flags`, v.`value`, "
-      "TIME_TO_SEC(TIMEDIFF(v.`valid_to`, UTC_TIMESTAMP())) + 2, "
-      "c.`user_config`, c.`properties` FROM `supla_dev_channel` c  LEFT JOIN "
-      "`supla_dev_channel_value` v ON v.channel_id = c.id AND v.valid_to >= "
-      "UTC_TIMESTAMP() WHERE c.`iodevice_id` = ? ORDER BY c.`channel_number`";
-
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&DeviceID;
-
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    my_bool is_null[11] = {};
-
-    MYSQL_BIND rbind[17];
-    memset(rbind, 0, sizeof(rbind));
-
-    int type = 0;
-    int func = 0;
-    int param1 = 0;
-    int param2 = 0;
-    int param3 = 0;
-    int param4 = 0;
-    int number = 0;
-    int id = 0;
-    int hidden = 0;
-    int flags = 0;
-
-    char text_param1[256] = {};
-    char text_param2[256] = {};
-    char text_param3[256] = {};
-
-    unsigned long text_param1_size = 0;
-    unsigned long text_param2_size = 0;
-    unsigned long text_param3_size = 0;
-
-    char user_config[2049] = {};
-    char properties[2049] = {};
-
-    unsigned long user_config_size = 0;
-    unsigned long properties_size = 0;
-
-    char value[SUPLA_CHANNELVALUE_SIZE];
-    memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
-    my_bool value_is_null = true;
-
-    unsigned _supla_int_t validity_time_sec = 0;
-    my_bool validity_time_is_null = true;
-
-    rbind[0].buffer_type = MYSQL_TYPE_LONG;
-    rbind[0].buffer = (char *)&type;
-    rbind[0].is_null = &is_null[0];
-
-    rbind[1].buffer_type = MYSQL_TYPE_LONG;
-    rbind[1].buffer = (char *)&func;
-    rbind[1].is_null = &is_null[1];
-
-    rbind[2].buffer_type = MYSQL_TYPE_LONG;
-    rbind[2].buffer = (char *)&param1;
-    rbind[2].is_null = &is_null[2];
-
-    rbind[3].buffer_type = MYSQL_TYPE_LONG;
-    rbind[3].buffer = (char *)&param2;
-    rbind[3].is_null = &is_null[3];
-
-    rbind[4].buffer_type = MYSQL_TYPE_LONG;
-    rbind[4].buffer = (char *)&param3;
-    rbind[4].is_null = &is_null[4];
-
-    rbind[5].buffer_type = MYSQL_TYPE_LONG;
-    rbind[5].buffer = (char *)&param4;
-    rbind[5].is_null = &is_null[5];
-
-    rbind[6].buffer_type = MYSQL_TYPE_STRING;
-    rbind[6].buffer = text_param1;
-    rbind[6].is_null = &is_null[6];
-    rbind[6].buffer_length = sizeof(text_param1) - 1;
-    rbind[6].length = &text_param1_size;
-
-    rbind[7].buffer_type = MYSQL_TYPE_STRING;
-    rbind[7].buffer = text_param2;
-    rbind[7].is_null = &is_null[7];
-    rbind[7].buffer_length = sizeof(text_param2) - 1;
-    rbind[7].length = &text_param2_size;
-
-    rbind[8].buffer_type = MYSQL_TYPE_STRING;
-    rbind[8].buffer = text_param3;
-    rbind[8].is_null = &is_null[8];
-    rbind[8].buffer_length = sizeof(text_param3) - 1;
-    rbind[8].length = &text_param3_size;
-
-    rbind[9].buffer_type = MYSQL_TYPE_LONG;
-    rbind[9].buffer = (char *)&number;
-
-    rbind[10].buffer_type = MYSQL_TYPE_LONG;
-    rbind[10].buffer = (char *)&id;
-
-    rbind[11].buffer_type = MYSQL_TYPE_LONG;
-    rbind[11].buffer = (char *)&hidden;
-
-    rbind[12].buffer_type = MYSQL_TYPE_LONG;
-    rbind[12].buffer = (char *)&flags;
-
-    rbind[13].buffer_type = MYSQL_TYPE_BLOB;
-    rbind[13].buffer = value;
-    rbind[13].buffer_length = SUPLA_CHANNELVALUE_SIZE;
-    rbind[13].is_null = &value_is_null;
-
-    rbind[14].buffer_type = MYSQL_TYPE_LONG;
-    rbind[14].buffer = (char *)&validity_time_sec;
-    rbind[14].buffer_length = sizeof(unsigned _supla_int_t);
-    rbind[14].is_null = &validity_time_is_null;
-
-    rbind[15].buffer_type = MYSQL_TYPE_STRING;
-    rbind[15].buffer = user_config;
-    rbind[15].is_null = &is_null[9];
-    rbind[15].buffer_length = sizeof(user_config) - 1;
-    rbind[15].length = &user_config_size;
-
-    rbind[16].buffer_type = MYSQL_TYPE_STRING;
-    rbind[16].buffer = properties;
-    rbind[16].is_null = &is_null[10];
-    rbind[16].buffer_length = sizeof(properties) - 1;
-    rbind[16].length = &properties_size;
-
-    if (mysql_stmt_bind_result(stmt, rbind)) {
-      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                mysql_stmt_error(stmt));
-    } else {
-      mysql_stmt_store_result(stmt);
-
-      if (mysql_stmt_num_rows(stmt) > 0) {
-        while (!mysql_stmt_fetch(stmt)) {
-          if (is_null[0] == true) type = 0;
-          if (is_null[1] == true) func = 0;
-          if (is_null[2] == true) param1 = 0;
-          if (is_null[3] == true) param2 = 0;
-          if (is_null[4] == true) param3 = 0;
-          if (is_null[5] == true) param4 = 0;
-          if (is_null[6] == true) text_param1_size = 0;
-          if (is_null[7] == true) text_param2_size = 0;
-          if (is_null[8] == true) text_param3_size = 0;
-          if (is_null[9] == true) user_config_size = 0;
-          if (is_null[10] == true) properties_size = 0;
-
-          text_param1[text_param1_size] = 0;
-          text_param2[text_param2_size] = 0;
-          text_param3[text_param3_size] = 0;
-
-          user_config[user_config_size] = 0;
-          properties[properties_size] = 0;
-
-          if (value_is_null) {
-            memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
-          }
-
-          if (validity_time_is_null) {
-            validity_time_sec = 0;
-          }
-
-          channels->add_channel(id, number, type, func, param1, param2, param3,
-                                param4, text_param1, text_param2, text_param3,
-                                hidden > 0, flags, value, validity_time_sec,
-                                user_config_size ? user_config : NULL,
-                                properties_size ? properties : NULL);
-        }
-      }
-    }
-
-    mysql_stmt_close(stmt);
-  }
 }
 
 void database::get_client_locations(int ClientID,
@@ -852,322 +670,6 @@ bool database::superuser_authorization(
   return result;
 }
 
-bool database::amazon_alexa_load_credentials(
-    supla_amazon_alexa_credentials *alexa) {
-  bool result = false;
-  char sql[] =
-      "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
-      "UTC_TIMESTAMP(), expires_at) `expires_in`, `region` "
-      "FROM "
-      "`supla_amazon_alexa` WHERE user_id = ? AND LENGTH(access_token) > 0";
-
-  MYSQL_STMT *stmt = NULL;
-
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  int UserID = alexa->getUserID();
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&UserID;
-
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    MYSQL_BIND rbind[4];
-    memset(rbind, 0, sizeof(rbind));
-
-    char buffer_token[ALEXA_TOKEN_MAXSIZE + 1];
-    buffer_token[0] = 0;
-    unsigned long token_size = 0;
-    my_bool token_is_null = true;
-
-    char buffer_refresh_token[ALEXA_TOKEN_MAXSIZE + 1];
-    buffer_refresh_token[0] = 0;
-    unsigned long refresh_token_size = 0;
-    my_bool refresh_token_is_null = true;
-
-    char buffer_region[ALEXA_REGION_MAXSIZE + 1];
-    buffer_region[0] = 0;
-    unsigned long region_size = 0;
-    my_bool region_is_null = true;
-
-    int expires_in = 0;
-
-    rbind[0].buffer_type = MYSQL_TYPE_STRING;
-    rbind[0].buffer = buffer_token;
-    rbind[0].buffer_length = ALEXA_TOKEN_MAXSIZE;
-    rbind[0].length = &token_size;
-    rbind[0].is_null = &token_is_null;
-
-    rbind[1].buffer_type = MYSQL_TYPE_STRING;
-    rbind[1].buffer = buffer_refresh_token;
-    rbind[1].buffer_length = ALEXA_TOKEN_MAXSIZE;
-    rbind[1].length = &refresh_token_size;
-    rbind[1].is_null = &refresh_token_is_null;
-
-    rbind[2].buffer_type = MYSQL_TYPE_LONG;
-    rbind[2].buffer = (char *)&expires_in;
-
-    rbind[3].buffer_type = MYSQL_TYPE_STRING;
-    rbind[3].buffer = buffer_region;
-    rbind[3].buffer_length = ALEXA_REGION_MAXSIZE;
-    rbind[3].length = &region_size;
-    rbind[3].is_null = &region_is_null;
-
-    if (mysql_stmt_bind_result(stmt, rbind)) {
-      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                mysql_stmt_error(stmt));
-    } else {
-      mysql_stmt_store_result(stmt);
-
-      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
-        buffer_token[token_is_null ? 0 : token_size] = 0;
-        buffer_refresh_token[refresh_token_is_null ? 0 : refresh_token_size] =
-            0;
-        buffer_region[region_is_null ? 0 : region_size] = 0;
-
-        alexa->set(buffer_token, buffer_refresh_token, expires_in,
-                   region_is_null ? NULL : buffer_region);
-        result = true;
-      }
-    }
-    mysql_stmt_close(stmt);
-  }
-
-  return result;
-}
-
-void database::amazon_alexa_remove_token(
-    supla_amazon_alexa_credentials *alexa) {
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  int UserID = alexa->getUserID();
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&UserID;
-
-  const char sql[] = "CALL `supla_update_amazon_alexa`('','',0,?)";
-
-  MYSQL_STMT *stmt = NULL;
-  stmt_execute((void **)&stmt, sql, pbind, 1, true);
-
-  if (stmt != NULL) mysql_stmt_close(stmt);
-}
-
-void database::amazon_alexa_update_token(supla_amazon_alexa_credentials *alexa,
-                                         const char *token,
-                                         const char *refresh_token,
-                                         int expires_in) {
-  MYSQL_BIND pbind[4];
-  memset(pbind, 0, sizeof(pbind));
-
-  int UserID = alexa->getUserID();
-
-  pbind[0].buffer_type = MYSQL_TYPE_STRING;
-  pbind[0].buffer = (char *)token;
-  pbind[0].buffer_length = strnlen((char *)token, ALEXA_TOKEN_MAXSIZE);
-
-  pbind[1].buffer_type = MYSQL_TYPE_STRING;
-  pbind[1].buffer = (char *)refresh_token;
-  pbind[1].buffer_length = strnlen((char *)refresh_token, ALEXA_TOKEN_MAXSIZE);
-
-  pbind[2].buffer_type = MYSQL_TYPE_LONG;
-  pbind[2].buffer = (char *)&expires_in;
-
-  pbind[3].buffer_type = MYSQL_TYPE_LONG;
-  pbind[3].buffer = (char *)&UserID;
-
-  const char sql[] = "CALL `supla_update_amazon_alexa`(?,?,?,?)";
-
-  MYSQL_STMT *stmt = NULL;
-  stmt_execute((void **)&stmt, sql, pbind, 4, true);
-
-  if (stmt != NULL) mysql_stmt_close(stmt);
-}
-
-bool database::google_home_load_credentials(
-    supla_google_home_credentials *google_home) {
-  bool result = false;
-  char sql[] =
-      "SELECT `access_token` FROM `supla_google_home` WHERE user_id = ? AND "
-      "LENGTH(access_token) > 0";
-
-  MYSQL_STMT *stmt = NULL;
-
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  int UserID = google_home->getUserID();
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&UserID;
-
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    MYSQL_BIND rbind[1];
-    memset(rbind, 0, sizeof(rbind));
-
-    char buffer_token[GH_TOKEN_MAXSIZE + 1];
-    buffer_token[0] = 0;
-    unsigned long token_size = 0;
-    my_bool token_is_null = true;
-
-    rbind[0].buffer_type = MYSQL_TYPE_STRING;
-    rbind[0].buffer = buffer_token;
-    rbind[0].buffer_length = GH_TOKEN_MAXSIZE;
-    rbind[0].length = &token_size;
-    rbind[0].is_null = &token_is_null;
-
-    if (mysql_stmt_bind_result(stmt, rbind)) {
-      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                mysql_stmt_error(stmt));
-    } else {
-      mysql_stmt_store_result(stmt);
-
-      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
-        buffer_token[token_is_null ? 0 : token_size] = 0;
-
-        google_home->set(buffer_token);
-        result = true;
-      }
-    }
-    mysql_stmt_close(stmt);
-  }
-
-  return result;
-}
-
-bool database::state_webhook_load_credentials(
-    supla_state_webhook_credentials *webhook) {
-  bool result = false;
-  char sql[] =
-      "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
-      "UTC_TIMESTAMP(), expires_at) `expires_in`, `url`, `functions_ids` "
-      "FROM "
-      "`supla_state_webhooks` WHERE user_id = ? AND enabled = 1 AND "
-      "LENGTH(access_token) > 0";
-
-  MYSQL_STMT *stmt = NULL;
-
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  int UserID = webhook->getUserID();
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&UserID;
-
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    MYSQL_BIND rbind[5];
-    memset(rbind, 0, sizeof(rbind));
-
-    char buffer_token[ALEXA_TOKEN_MAXSIZE + 1];
-    buffer_token[0] = 0;
-    unsigned long token_size = 0;
-
-    char buffer_refresh_token[ALEXA_TOKEN_MAXSIZE + 1];
-    buffer_refresh_token[0] = 0;
-    unsigned long refresh_token_size = 0;
-
-    char buffer_url[WEBHOOK_URL_MAXSIZE + 1];
-    buffer_url[0] = 0;
-    unsigned long url_size = 0;
-
-    char buffer_functions[WEBHOOK_FUNCTIONS_IDS_MAXSIZE + 1];
-    buffer_functions[0] = 0;
-    unsigned long functions_size = 0;
-
-    int expires_in = 0;
-
-    rbind[0].buffer_type = MYSQL_TYPE_STRING;
-    rbind[0].buffer = buffer_token;
-    rbind[0].buffer_length = WEBHOOK_TOKEN_MAXSIZE;
-    rbind[0].length = &token_size;
-
-    rbind[1].buffer_type = MYSQL_TYPE_STRING;
-    rbind[1].buffer = buffer_refresh_token;
-    rbind[1].buffer_length = WEBHOOK_TOKEN_MAXSIZE;
-    rbind[1].length = &refresh_token_size;
-
-    rbind[2].buffer_type = MYSQL_TYPE_LONG;
-    rbind[2].buffer = (char *)&expires_in;
-
-    rbind[3].buffer_type = MYSQL_TYPE_STRING;
-    rbind[3].buffer = buffer_url;
-    rbind[3].buffer_length = WEBHOOK_URL_MAXSIZE;
-    rbind[3].length = &url_size;
-
-    rbind[4].buffer_type = MYSQL_TYPE_STRING;
-    rbind[4].buffer = buffer_functions;
-    rbind[4].buffer_length = WEBHOOK_FUNCTIONS_IDS_MAXSIZE;
-    rbind[4].length = &functions_size;
-
-    if (mysql_stmt_bind_result(stmt, rbind)) {
-      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                mysql_stmt_error(stmt));
-    } else {
-      mysql_stmt_store_result(stmt);
-
-      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
-        buffer_token[token_size] = 0;
-        buffer_refresh_token[refresh_token_size] = 0;
-        buffer_url[url_size] = 0;
-        buffer_functions[functions_size] = 0;
-
-        webhook->set(buffer_token, buffer_refresh_token, expires_in, buffer_url,
-                     buffer_functions);
-        result = true;
-      }
-    }
-    mysql_stmt_close(stmt);
-  }
-
-  return result;
-}
-
-void database::state_webhook_update_token(int UserID, const char *token,
-                                          const char *refresh_token,
-                                          int expires_in) {
-  MYSQL_BIND pbind[4];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_STRING;
-  pbind[0].buffer = (char *)token;
-  pbind[0].buffer_length = strnlen((char *)token, WEBHOOK_TOKEN_MAXSIZE);
-
-  pbind[1].buffer_type = MYSQL_TYPE_STRING;
-  pbind[1].buffer = (char *)refresh_token;
-  pbind[1].buffer_length =
-      strnlen((char *)refresh_token, WEBHOOK_TOKEN_MAXSIZE);
-
-  pbind[2].buffer_type = MYSQL_TYPE_LONG;
-  pbind[2].buffer = (char *)&expires_in;
-
-  pbind[3].buffer_type = MYSQL_TYPE_LONG;
-  pbind[3].buffer = (char *)&UserID;
-
-  const char sql[] = "CALL `supla_update_state_webhook`(?,?,?,?)";
-
-  MYSQL_STMT *stmt = NULL;
-  stmt_execute((void **)&stmt, sql, pbind, 4, true);
-
-  if (stmt != NULL) mysql_stmt_close(stmt);
-}
-
-void database::state_webhook_remove_token(int UserID) {
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&UserID;
-
-  const char sql[] = "CALL `supla_update_state_webhook`('','',0,?)";
-
-  MYSQL_STMT *stmt = NULL;
-  stmt_execute((void **)&stmt, sql, pbind, 1, true);
-
-  if (stmt != NULL) mysql_stmt_close(stmt);
-}
-
 bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
   if (cfg == NULL) {
     return false;
@@ -1373,12 +875,16 @@ bool database::set_caption(int UserID, int ID, char *Caption, int call_id) {
   char *sql = nullptr;
 
   char sql_c[] = "CALL `supla_set_channel_caption`(?,?,?)";
+  char sql_cg[] = "CALL `supla_set_channel_group_caption`(?,?,?)";
   char sql_l[] = "CALL `supla_set_location_caption`(?,?,?)";
   char sql_s[] = "CALL `supla_set_scene_caption`(?,?,?)";
 
   switch (call_id) {
     case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
       sql = sql_c;
+      break;
+    case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
+      sql = sql_cg;
       break;
     case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
       sql = sql_l;
@@ -1412,6 +918,19 @@ bool database::channel_has_schedule(int channel_id) {
 bool database::channel_is_associated_with_scene(int channel_id) {
   const char sql[] =
       "SELECT id FROM supla_scene_operation WHERE channel_id = ? LIMIT 1";
+  return get_int(channel_id, 0, sql) > 0;
+}
+
+bool database::channel_is_associated_with_vbt(int channel_id) {
+  const char sql[] =
+      "SELECT id FROM supla_value_based_trigger WHERE ? IN (owning_channel_id, "
+      "channel_id) LIMIT 1";
+  return get_int(channel_id, 0, sql) > 0;
+}
+
+bool database::channel_is_associated_with_push(int channel_id) {
+  const char sql[] =
+      "SELECT id FROM supla_push_notification WHERE channel_id = ? LIMIT 1";
   return get_int(channel_id, 0, sql) > 0;
 }
 
@@ -1519,58 +1038,6 @@ void database::update_channel_value(int channel_id, int user_id,
   if (stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
     if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
   }
-}
-
-bool database::get_channel_value(int user_id, int channel_id,
-                                 char value[SUPLA_CHANNELVALUE_SIZE],
-                                 unsigned _supla_int_t *validity_time_sec) {
-  if (channel_id == 0 || value == NULL || validity_time_sec == NULL) {
-    return false;
-  }
-
-  bool result = false;
-  const char sql[] =
-      "SELECT `value`, TIME_TO_SEC(TIMEDIFF(`valid_to`, UTC_TIMESTAMP())) + 2 "
-      "FROM `supla_dev_channel_value` WHERE `channel_id` = ? AND `user_id` = ? "
-      ", `valid_to` >= UTC_TIMESTAMP()";
-
-  MYSQL_STMT *stmt = NULL;
-  MYSQL_BIND pbind[2];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&channel_id;
-
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&user_id;
-
-  if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
-    MYSQL_BIND rbind[2];
-    memset(rbind, 0, sizeof(rbind));
-
-    rbind[0].buffer_type = MYSQL_TYPE_BLOB;
-    rbind[0].buffer = value;
-    rbind[0].buffer_length = SUPLA_CHANNELVALUE_SIZE;
-
-    rbind[1].buffer_type = MYSQL_TYPE_LONG;
-    rbind[1].buffer = (char *)validity_time_sec;
-    rbind[1].buffer_length = sizeof(unsigned _supla_int_t);
-
-    if (mysql_stmt_bind_result(stmt, rbind)) {
-      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                mysql_stmt_error(stmt));
-    } else {
-      mysql_stmt_store_result(stmt);
-
-      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
-        result = true;
-      }
-    }
-  }
-
-  if (stmt != NULL) mysql_stmt_close(stmt);
-
-  return result;
 }
 
 void database::update_channel_properties(int channel_id, int user_id,

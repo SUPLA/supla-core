@@ -19,7 +19,7 @@
 #ifndef DBCOMMON_H_
 #define DBCOMMON_H_
 
-#define DB_VERSION "20221219113615"
+#define DB_VERSION "20230427200016"
 
 #include <atomic>
 
@@ -61,9 +61,6 @@ class dbcommon {
 
   static bool mainthread_init(void);
   static void mainthread_end(void);
-
-  static void thread_init(void);
-  static void thread_end(void);
 
   void start_transaction(void);
   void commit(void);

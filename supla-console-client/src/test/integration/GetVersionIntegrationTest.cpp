@@ -64,7 +64,7 @@ void GetVersionIntegrationTest::getVersionTest(bool withoutRegistration) {
   ASSERT_EQ(version.proto_version_min, 1);
   ASSERT_EQ(version.proto_version, SUPLA_PROTO_VERSION);
 
-  char VersionSuffix[] = "22.";
+  char VersionSuffix[] = "23.";
   ASSERT_EQ(memcmp(VersionSuffix, version.SoftVer, strlen(VersionSuffix)), 0);
 }
 

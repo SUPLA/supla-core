@@ -25,7 +25,6 @@
 
 #include "client.h"
 #include "clientchannelgroup.h"
-#include "commontypes.h"
 #include "db/database.h"
 #include "log.h"
 #include "safearray.h"
@@ -233,4 +232,14 @@ void supla_client_channelgroups::on_channel_value_changed(void *srpc,
                                                           int ChannelId) {
   on_value_changed(srpc, ChannelId, DeviceId, detail2,
                    OI_REMOTEUPDATE_DATATYPE1);
+}
+
+void supla_client_channelgroups::set_caption(void *srpc, int id,
+                                             char *caption) {
+  supla_client_channelgroup *group = findGroup(id);
+
+  if (group != NULL) {
+    group->setCaption(caption);
+    remote_update(srpc);
+  }
 }

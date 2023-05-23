@@ -32,7 +32,7 @@
 void client_loop_on_registererror(void *_suplaclient, void *sthread, int code) {
   if (code == SUPLA_RESULTCODE_BAD_CREDENTIALS) {
     st_app_terminate = 1;
-    sthread_terminate(sthread);
+    sthread_terminate(sthread, 1);
 
   } else {
     usleep(5000000);

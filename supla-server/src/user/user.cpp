@@ -27,12 +27,10 @@
 
 #include <list>
 
-#include "amazon/alexacredentials.h"
 #include "client.h"
 #include "db/database.h"
 #include "device.h"
-#include "google/googlehomecredentials.h"
-#include "http/httprequestqueue.h"
+#include "http/http_event_hub.h"
 #include "lck.h"
 #include "log.h"
 #include "mqtt/mqtt_client_suite.h"
@@ -40,6 +38,7 @@
 #include "scene/scene_asynctask.h"
 #include "serverstatus.h"
 #include "userchannelgroups.h"
+#include "vbt/value_based_triggers.h"
 
 void *supla_user::user_arr = NULL;
 unsigned int supla_user::client_add_metric = 0;
@@ -74,7 +73,6 @@ void supla_user::user_init(int UserID, const char *short_unique_id,
 
   this->devices = new supla_user_devices();
   this->clients = new supla_user_clients();
-  this->complex_value_functions_arr = safe_array_init();
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa_credentials = new supla_amazon_alexa_credentials(this);
   this->google_home_credentials = new supla_google_home_credentials(this);
@@ -88,6 +86,9 @@ void supla_user::user_init(int UserID, const char *short_unique_id,
   this->amazon_alexa_credentials->load();
   this->google_home_credentials->load();
   this->state_webhook_credentials->load();
+
+  this->value_based_triggers = new supla_value_based_triggers(this);
+  this->value_based_triggers->load();
 
   safe_array_add(supla_user::user_arr, this);
 }
@@ -113,13 +114,11 @@ supla_user::~supla_user() {
   }
 
   lck_free(lck);
+  delete value_based_triggers;
   delete cgroups;
   delete amazon_alexa_credentials;
   delete google_home_credentials;
   delete state_webhook_credentials;
-
-  compex_value_cache_clean(0);
-  safe_array_free(complex_value_functions_arr);
 
   delete devices;
   delete clients;
@@ -260,8 +259,6 @@ supla_user *supla_user::add_device(shared_ptr<supla_device> device,
 
   supla_user *user = find(user_id, true);
 
-  user->compex_value_cache_clean(device->get_id());
-
   if (user->devices->add(device)) {
     safe_array_lock(supla_user::user_arr);
     device_add_metric++;
@@ -326,7 +323,7 @@ std::shared_ptr<supla_client> supla_user::get_client(int user_id,
 bool supla_user::get_channel_value(
     int device_id, int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
     char sub_value[SUPLA_CHANNELVALUE_SIZE], char *sub_value_type,
-    TSuplaChannelExtendedValue *ev, int *function, char *online,
+    supla_channel_extended_value **extended_value, int *function, char *online,
     unsigned _supla_int_t *validity_time_sec, bool for_client) {
   bool result = false;
   memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
@@ -339,7 +336,8 @@ bool supla_user::get_channel_value(
   shared_ptr<supla_device> device = devices->get(device_id);
   if (device != nullptr) {
     result = device->get_channels()->get_channel_value(
-        channel_id, value, online, validity_time_sec, ev, function, for_client);
+        channel_id, value, online, validity_time_sec, extended_value, function,
+        for_client);
 
     if (result) {
       list<int> related_list =
@@ -436,7 +434,7 @@ void supla_user::on_amazon_alexa_credentials_changed(int UserID) {
   supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
-    user->amazonAlexaCredentials()->on_credentials_changed();
+    user->amazonAlexaCredentials()->load();
   }
 }
 
@@ -445,7 +443,7 @@ void supla_user::on_google_home_credentials_changed(int UserID) {
   supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
-    user->googleHomeCredentials()->on_credentials_changed();
+    user->googleHomeCredentials()->load();
   }
 }
 
@@ -454,7 +452,7 @@ void supla_user::on_state_webhook_changed(int UserID) {
   supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
-    user->stateWebhookCredentials()->on_credentials_changed();
+    user->stateWebhookCredentials()->load();
   }
 }
 
@@ -485,8 +483,7 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
   if (user) {
     user->get_devices()->terminate(DeviceID);
 
-    supla_http_request_queue::getInstance()->onDeviceDeletedEvent(user, 0,
-                                                                  caller);
+    supla_http_event_hub::on_device_deleted(user, 0, caller);
 
     supla_mqtt_client_suite::globalInstance()->onDeviceDeleted(UserID,
                                                                DeviceID);
@@ -562,8 +559,7 @@ void supla_user::log_metrics(int min_interval_sec) {
 }
 
 void supla_user::on_channels_added(int DeviceID, const supla_caller &caller) {
-  supla_http_request_queue::getInstance()->onChannelsAddedEvent(this, DeviceID,
-                                                                caller);
+  supla_http_event_hub::on_channel_added(this, DeviceID, caller);
 }
 
 void supla_user::on_device_registered(int DeviceID,
@@ -580,8 +576,8 @@ bool supla_user::set_device_channel_value(
   shared_ptr<supla_device> device = devices->get(device_id);
   if (device != nullptr) {
     // TODO(anyone): Check it out. I think there should be "will change"
-    supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-        this, device_id, channel_id, caller);
+    supla_http_event_hub::on_channel_value_change(this, device_id, channel_id,
+                                                  caller);
 
     device->get_channels()->set_device_channel_value(caller, channel_id,
                                                      group_id, eol, value);
@@ -618,8 +614,8 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
   for (auto it = ca_list.begin(); it != ca_list.end(); it++) {
     if (significant_change && !extended && device_id && channel_id &&
         caller != ctUnknown) {
-      supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-          this, it->getDeviceId(), it->getChannelId(), caller);
+      supla_http_event_hub::on_channel_value_change(this, it->getDeviceId(),
+                                                    it->getChannelId(), caller);
     }
 
     supla_mqtt_client_suite::globalInstance()->onChannelStateChanged(
@@ -628,7 +624,7 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
 }
 
 void supla_user::on_channel_become_online(int DeviceId, int ChannelId) {
-  supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+  supla_http_event_hub::on_channel_value_change(
       this, DeviceId, ChannelId, supla_caller(ctDevice, DeviceId));
   supla_mqtt_client_suite::globalInstance()->onChannelStateChanged(
       getUserID(), DeviceId, ChannelId);
@@ -689,19 +685,15 @@ void supla_user::reconnect(const supla_caller &caller, bool all_devices,
 
   cgroups->load();  // load == reload
 
-  bool any_terminated = false;
-
-  if (all_devices && devices->reconnect_all()) {
-    any_terminated = true;
+  if (all_devices) {
+    devices->reconnect_all();
   }
 
-  if (all_clients && clients->reconnect_all()) {
-    any_terminated = true;
+  if (all_clients) {
+    clients->reconnect_all();
   }
 
-  if (any_terminated) {
-    supla_http_request_queue::getInstance()->onUserReconnectEvent(this, caller);
-  }
+  supla_http_event_hub::on_user_reconnect(this, caller);
 }
 
 void supla_user::reconnect(const supla_caller &caller) {
@@ -719,92 +711,6 @@ bool supla_user::reconnect(int UserID, const supla_caller &caller) {
   }
 
   return false;
-}
-
-void supla_user::compex_value_cache_clean(int DeviceId) {
-  safe_array_lock(complex_value_functions_arr);
-
-  for (int a = 0; a < safe_array_count(complex_value_functions_arr); a++) {
-    channel_function_t *fnc = static_cast<channel_function_t *>(
-        safe_array_get(complex_value_functions_arr, a));
-    if (fnc && (DeviceId == 0 || fnc->deviceId == DeviceId)) {
-      delete fnc;
-      safe_array_delete(complex_value_functions_arr, a);
-      a--;
-    }
-  }
-
-  safe_array_unlock(complex_value_functions_arr);
-}
-
-channel_function_t supla_user::compex_value_cache_get_function(
-    int ChannelID, channel_function_t **_fnc) {
-  channel_function_t result;
-  memset(&result, 0, sizeof(channel_function_t));
-
-  safe_array_lock(complex_value_functions_arr);
-
-  for (int a = 0; a < safe_array_count(complex_value_functions_arr); a++) {
-    channel_function_t *fnc = static_cast<channel_function_t *>(
-        safe_array_get(complex_value_functions_arr, a));
-    if (fnc && fnc->channelId == ChannelID) {
-      if (_fnc) {
-        *_fnc = fnc;
-      }
-      result = *fnc;
-      break;
-    }
-  }
-
-  safe_array_unlock(complex_value_functions_arr);
-  return result;
-}
-
-void supla_user::compex_value_cache_update_function(int DeviceId, int ChannelID,
-                                                    int Type, int Function,
-                                                    bool channel_is_hidden) {
-  if (!Function || !DeviceId || !ChannelID) return;
-  safe_array_lock(complex_value_functions_arr);
-
-  channel_function_t *fnc = NULL;
-  if (compex_value_cache_get_function(ChannelID, &fnc).function) {
-    if (fnc) {
-      fnc->deviceId = DeviceId;
-      fnc->channel_type = Type;
-      fnc->function = Function;
-      fnc->channel_is_hidden = channel_is_hidden;
-    }
-  } else {
-    fnc = new channel_function_t;
-    fnc->deviceId = DeviceId;
-    fnc->channelId = ChannelID;
-    fnc->function = Function;
-    fnc->channel_is_hidden = channel_is_hidden;
-
-    safe_array_add(complex_value_functions_arr, fnc);
-  }
-  safe_array_unlock(complex_value_functions_arr);
-}
-
-channel_complex_value supla_user::get_channel_complex_value(int channel_id) {
-  channel_complex_value value = {};
-
-  shared_ptr<supla_device> device = devices->get(0, channel_id);
-  if (device == nullptr) {
-    channel_function_t f = compex_value_cache_get_function(channel_id);
-    value.function = f.function;
-    value.channel_type = f.channel_type;
-    value.hidden_channel = f.channel_is_hidden;
-  } else {
-    device->get_channels()->get_channel_complex_value(&value, channel_id);
-    if (value.function) {
-      compex_value_cache_update_function(device->get_id(), channel_id,
-                                         value.channel_type, value.function,
-                                         value.hidden_channel);
-    }
-  }
-
-  return value;
 }
 
 void supla_user::set_channel_function(std::shared_ptr<supla_client> sender,
@@ -843,6 +749,12 @@ void supla_user::set_channel_function(std::shared_ptr<supla_client> sender,
                      getUserID(), func->ChannelID)) {
         result.ResultCode =
             SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_ACTION_TRIGGER;
+      } else if (db->channel_is_associated_with_push(func->ChannelID)) {
+        result.ResultCode =
+            SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_PUSH;
+      } else if (db->channel_is_associated_with_vbt(func->ChannelID)) {
+        result.ResultCode =
+            SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_VBT;
       } else {
         if (Type != SUPLA_CHANNELTYPE_BRIDGE ||
             (func->Func != SUPLA_CHANNELFNC_NONE &&
@@ -921,6 +833,9 @@ void supla_user::set_caption(std::shared_ptr<supla_client> sender,
       case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
         clients->set_channel_caption(caption->ID, caption->Caption);
         break;
+      case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
+        clients->set_channel_group_caption(caption->ID, caption->Caption);
+        break;
       case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
         clients->set_location_caption(caption->ID, caption->Caption);
         break;
@@ -928,11 +843,17 @@ void supla_user::set_caption(std::shared_ptr<supla_client> sender,
         clients->set_scene_caption(caption->ID, caption->Caption);
         break;
     }
+
+    supla_http_event_hub::on_google_home_sync_needed(
+        this, supla_caller(ctClient, sender->get_id()));
   }
 
   switch (call_id) {
     case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
       srpc_sc_async_set_channel_caption_result(srpc, &result);
+      break;
+    case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
+      srpc_sc_async_set_channel_group_caption_result(srpc, &result);
       break;
     case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
       srpc_sc_async_set_location_caption_result(srpc, &result);
@@ -959,6 +880,10 @@ supla_user_channelgroups *supla_user::get_channel_groups(void) {
   return cgroups;
 }
 
+supla_value_based_triggers *supla_user::get_value_based_triggers(void) {
+  return value_based_triggers;
+}
+
 // static
 void supla_user::on_scene_changed(const supla_caller &caller, int user_id,
                                   int scene_id) {
@@ -967,5 +892,6 @@ void supla_user::on_scene_changed(const supla_caller &caller, int user_id,
     user->reconnect(caller, false, true);
     supla_scene_asynctask::interrupt(supla_scene_asynctask::get_queue(),
                                      user_id, scene_id);
+    supla_http_event_hub::on_google_home_sync_needed(user, caller);
   }
 }

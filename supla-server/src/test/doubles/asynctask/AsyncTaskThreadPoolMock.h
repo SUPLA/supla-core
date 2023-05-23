@@ -19,20 +19,18 @@
 #ifndef ASYNCTASK_THREAD_POOL_MOCK_H_
 #define ASYNCTASK_THREAD_POOL_MOCK_H_
 
+#include <gmock/gmock.h>
+
 #include "abstract_asynctask_thread_pool.h"
 
 class AsyncTaskThreadPoolMock : public supla_abstract_asynctask_thread_pool {
- private:
-  unsigned int limit;
-
- protected:
-  virtual unsigned int thread_count_limit(void);
-
  public:
   explicit AsyncTaskThreadPoolMock(supla_asynctask_queue *queue);
   virtual ~AsyncTaskThreadPoolMock(void);
-  virtual std::string pool_name(void);
-  void set_thread_count_limit(unsigned int limit);
+
+  MOCK_METHOD0(thread_count_limit, unsigned int(void));
+  MOCK_METHOD0(pool_name, std::string(void));
+  MOCK_METHOD0(get_bucket, supla_asynctask_thread_bucket *(void));
 };
 
 #endif /*ASYNCTASK_THREAD_POOL_MOCK_H_*/

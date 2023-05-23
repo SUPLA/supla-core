@@ -47,25 +47,6 @@ void supla_ch_abstract_device_channel_value_changed::on_channel_value_changed(
     return;
   }
 
-  bool converted2extended = false;
-  bool differ = false;
-  bool significant_change = false;
-
-  differ = device->get_channels()->set_channel_value(
-      channel_id, value, &converted2extended, validity_time_sec,
-      &significant_change);
-  if (device->get_channels()->set_channel_offline(channel_id, offline)) {
-    differ = true;
-  }
-  if (differ) {
-    device->get_user()->on_channel_value_changed(
-        supla_caller(ctDevice, device->get_id()), device->get_id(), channel_id,
-        false, significant_change);
-
-    if (converted2extended) {
-      device->get_user()->on_channel_value_changed(
-          supla_caller(ctDevice, device->get_id()), device->get_id(),
-          channel_id, true);
-    }
-  }
+  device->get_channels()->set_channel_value(channel_id, value,
+                                            validity_time_sec, &offline);
 }

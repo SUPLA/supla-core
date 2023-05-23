@@ -199,4 +199,113 @@ TEST_F(ActionConfigTest, jsonMultipleParams) {
   EXPECT_FALSE(rgbw2.ColorRandom);
 }
 
+TEST_F(ActionConfigTest, equalityOperator) {
+  supla_action_config c1;
+  c1.set_action_id(2);
+  c1.set_subject_type(stScene);
+  c1.set_subject_id(3);
+  c1.set_source_device_id(4);
+  c1.set_source_channel_id(5);
+  c1.set_percentage(6);
+
+  TAction_RGBW_Parameters rgbw = {};
+  rgbw.Brightness = 1;
+  rgbw.Color = 2;
+  rgbw.ColorBrightness = 3;
+  rgbw.ColorRandom = 1;
+  rgbw.OnOff = 2;
+
+  c1.set_rgbw(rgbw);
+
+  supla_action_config c2;
+  c2.set_action_id(2);
+  c2.set_subject_type(stScene);
+  c2.set_subject_id(3);
+  c2.set_source_device_id(4);
+  c2.set_source_channel_id(5);
+  c2.set_percentage(6);
+  c2.set_rgbw(rgbw);
+
+  EXPECT_TRUE(c1 == c2);
+
+  c1.set_action_id(3);
+  EXPECT_FALSE(c1 == c2);
+  c1.set_action_id(2);
+  EXPECT_TRUE(c1 == c2);
+
+  c1.set_subject_type(stChannel);
+  EXPECT_FALSE(c1 == c2);
+  c1.set_subject_type(stScene);
+  EXPECT_TRUE(c1 == c2);
+
+  c1.set_subject_id(4);
+  EXPECT_FALSE(c1 == c2);
+  c1.set_subject_id(3);
+  EXPECT_TRUE(c1 == c2);
+
+  c1.set_source_device_id(1);
+  EXPECT_FALSE(c1 == c2);
+  c1.set_source_device_id(4);
+  EXPECT_TRUE(c1 == c2);
+
+  c1.set_source_channel_id(2);
+  EXPECT_FALSE(c1 == c2);
+  c1.set_source_channel_id(5);
+  EXPECT_TRUE(c1 == c2);
+
+  c1.set_percentage(5);
+  EXPECT_FALSE(c1 == c2);
+  c1.set_percentage(6);
+  EXPECT_TRUE(c1 == c2);
+
+  rgbw.Brightness = 2;
+  c1.set_rgbw(rgbw);
+  EXPECT_FALSE(c1 == c2);
+  rgbw.Brightness = 1;
+  c1.set_rgbw(rgbw);
+  EXPECT_TRUE(c1 == c2);
+
+  rgbw.Color = 3;
+  c1.set_rgbw(rgbw);
+  EXPECT_FALSE(c1 == c2);
+  rgbw.Color = 2;
+  c1.set_rgbw(rgbw);
+  EXPECT_TRUE(c1 == c2);
+
+  rgbw.ColorBrightness = 1;
+  c1.set_rgbw(rgbw);
+  EXPECT_FALSE(c1 == c2);
+  rgbw.ColorBrightness = 3;
+  c1.set_rgbw(rgbw);
+  EXPECT_TRUE(c1 == c2);
+
+  rgbw.ColorRandom = 0;
+  c1.set_rgbw(rgbw);
+  EXPECT_FALSE(c1 == c2);
+  rgbw.ColorRandom = 1;
+  c1.set_rgbw(rgbw);
+  EXPECT_TRUE(c1 == c2);
+
+  rgbw.OnOff = 1;
+  c1.set_rgbw(rgbw);
+  EXPECT_FALSE(c1 == c2);
+  rgbw.OnOff = 2;
+  c1.set_rgbw(rgbw);
+  EXPECT_TRUE(c1 == c2);
+}
+
+TEST_F(ActionConfigTest, constructorWithArg) {
+  supla_action_config c1;
+  c1.set_action_id(2);
+  c1.set_subject_type(stScene);
+  c1.set_subject_id(3);
+  c1.set_source_device_id(4);
+  c1.set_source_channel_id(5);
+  c1.set_percentage(6);
+
+  supla_action_config *c2 = new supla_action_config(&c1);
+  EXPECT_TRUE(c1 == *c2);
+  delete c2;
+}
+
 } /* namespace testing */

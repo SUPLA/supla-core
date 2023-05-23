@@ -348,6 +348,24 @@ void supla_client_channel::proto_get(TSC_SuplaChannelValue_B *channel_value,
   proto_get_value(&channel_value->value, &channel_value->online, client);
 }
 
+bool supla_client_channel::get_cs_extended_value(
+    shared_ptr<supla_device> device, int channel_id,
+    TSC_SuplaChannelExtendedValue *cev) {
+  supla_channel_extended_value *extended_value = nullptr;
+  device->get_channels()->access_channel(
+      channel_id, [&extended_value](supla_device_channel *channel) -> void {
+        extended_value =
+            channel->get_extended_value<supla_channel_extended_value>(false);
+      });
+  if (extended_value) {
+    cev->Id = channel_id;
+    extended_value->get_raw_value(&cev->value);
+    delete extended_value;
+    return true;
+  }
+  return false;
+}
+
 bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
                                      supla_client *client) {
   if (cev == NULL) {
@@ -364,8 +382,7 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
         client->get_user()->get_devices()->get(DeviceId);
 
     if (device != nullptr) {
-      cev_exists =
-          device->get_channels()->get_channel_extendedvalue(ChannelId, cev);
+      cev_exists = get_cs_extended_value(device, ChannelId, cev);
     }
 
     device = nullptr;
@@ -387,8 +404,7 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
 
       if (device != nullptr) {
         TSC_SuplaChannelExtendedValue second_cev = {};
-        if (device->get_channels()->get_channel_extendedvalue(ChannelId,
-                                                              &second_cev)) {
+        if (get_cs_extended_value(device, ChannelId, &second_cev)) {
           if (client->get_protocol_version() >= 17) {
             srpc_evtool_value_add(&cev->value, &second_cev.value);
           } else {
@@ -413,10 +429,12 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
 
 void supla_client_channel::mark_for_remote_update(int mark) {
   supla_client_objcontainer_item::mark_for_remote_update(mark);
+  lock();
   mark = marked_for_remote_update();
   if ((mark & OI_REMOTEUPDATE_DATA1) && (mark & OI_REMOTEUPDATE_DATA2)) {
     unmark_for_remote_update(OI_REMOTEUPDATE_DATA2);
   }
+  unlock();
 }
 
 bool supla_client_channel::get_basic_cfg(TSC_ChannelBasicCfg *basic_cfg) {

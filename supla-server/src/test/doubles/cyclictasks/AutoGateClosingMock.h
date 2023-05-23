@@ -33,9 +33,10 @@ class AutoGateClosingMock : public supla_abstract_auto_gate_closing {
   MOCK_METHOD1(get_dao, supla_abstract_auto_gate_closing_dao *(
                             supla_abstract_db_access_provider *dba));
   MOCK_METHOD1(release_dao, void(supla_abstract_auto_gate_closing_dao *dao));
-  MOCK_METHOD0(get_value_getter, supla_abstract_value_getter *(void));
-  MOCK_METHOD1(release_value_getter,
-               void(supla_abstract_value_getter *value_getter));
+  MOCK_METHOD0(get_property_getter,
+               supla_abstract_channel_property_getter *(void));
+  MOCK_METHOD1(release_property_getter,
+               void(supla_abstract_channel_property_getter *property_getter));
   MOCK_METHOD3(close_the_gate,
                void(int user_id, int device_id, int channel_id));
 

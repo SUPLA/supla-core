@@ -19,6 +19,7 @@
 #include "TestHelper.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 namespace testing {
@@ -46,6 +47,16 @@ unsigned long long TestHelper::usecSince(const struct timeval &tv) {
   struct timeval now = {};
   gettimeofday(&now, NULL);
   return timeDiffUs(now, tv);
+}
+
+// static
+void TestHelper::randomize(char *data, size_t size) {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  unsigned int seed = tv.tv_sec + tv.tv_usec;
+  for (size_t a = 0; a < size; a++) {
+    data[a] = rand_r(&seed);
+  }
 }
 
 }  // namespace testing

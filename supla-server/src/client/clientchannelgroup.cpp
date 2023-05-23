@@ -145,3 +145,13 @@ list<dcpair> supla_client_channelgroup::get_channel_list(void) {
   safe_array_unlock(relarr);
   return result;
 }
+
+void supla_client_channelgroup::setCaption(const char *Caption) {
+  if ((Caption == NULL && getCaption() != NULL) ||
+      (Caption != NULL && getCaption() == NULL) ||
+      strncmp(Caption, getCaption(), SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE) !=
+          0) {
+    supla_client_objcontainer_item::setCaption(Caption);
+    mark_for_remote_update(OI_REMOTEUPDATE_DATA1);
+  }
+}

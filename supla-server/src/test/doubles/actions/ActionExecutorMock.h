@@ -40,6 +40,9 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int up_or_stop_counter;
   int down_or_stop_counter;
   int step_by_step_counter;
+  int enable_counter;
+  int disable_counter;
+  int sent_counter;
   int execute_counter;
   int interrupt_counter;
   int interrupt_and_execute_counter;
@@ -57,12 +60,14 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   char rgbw_on_off;
   bool delta;
   std::list<struct timeval> times;
+  std::map<std::string, std::string> replacement_map;
   void addTime(void);
 
  public:
   ActionExecutorMock();
   virtual ~ActionExecutorMock();
   std::shared_ptr<supla_device> get_device(void);
+  std::map<std::string, std::string> get_replacement_map(void);
 
   virtual void set_on(bool on);
   virtual void set_color(unsigned int color);
@@ -78,6 +83,9 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   virtual void up_or_stop(void);
   virtual void down_or_stop(void);
   virtual void step_by_step(void);
+  virtual void enable(void);
+  virtual void disable(void);
+  virtual void send(const std::map<std::string, std::string> *replacement_map);
   virtual void execute(void);
   virtual void interrupt(void);
   virtual void interrupt_and_execute(void);
@@ -105,6 +113,9 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int getDownOrStopCounter(void);
   int getStepByStepCounter(void);
   int getStopCounter(void);
+  int getEnableCounter(void);
+  int getDisableCounter(void);
+  int getSentCounter(void);
   int getExecuteCounter(void);
   int getInterruptCounter(void);
   int getInterruptAndExecuteCounter(void);

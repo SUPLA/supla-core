@@ -19,16 +19,19 @@
 #include "ActionExecutorTest.h"
 
 #include "actions/action_config.h"
-#include "doubles/device/ValueGetterStub.h"
+#include "device/devicechannels.h"
+#include "doubles/device/ChannelPropertyGetterMock.h"
+#include "doubles/device/DeviceDaoMock.h"
 #include "user/user.h"
 
 namespace testing {
 
 using std::make_shared;
 using std::shared_ptr;
+using std::vector;
 
 ActionExecutorTest::ActionExecutorTest(void) {
-  aexec = NULL;
+  aexec = nullptr;
   device = nullptr;
 }
 
@@ -38,9 +41,26 @@ void ActionExecutorTest::SetUp() {
   supla_user *user = supla_user::find(12345, true);
   device = make_shared<DeviceStub>(nullptr);
   device->set_id(567);
-  char value[SUPLA_CHANNELVALUE_SIZE] = {};
-  device->get_channels()->add_channel(89, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL,
-                                      0, 0, value, 0, NULL, NULL);
+
+  DeviceDaoMock dao;
+
+  EXPECT_CALL(dao, get_channels(_)).Times(1).WillOnce([](supla_device *device) {
+    vector<supla_device_channel *> result;
+
+    char value[SUPLA_CHANNELVALUE_SIZE] = {};
+    supla_device_channel *channel = new supla_device_channel(
+        device, 89, 0, 0, 0, 0, 0, 0, 0, nullptr, nullptr, nullptr, 0, 0, value,
+        0, nullptr, nullptr);
+
+    result.push_back(channel);
+
+    return result;
+  });
+
+  supla_device_channels *channels =
+      new supla_device_channels(&dao, device.get(), nullptr, nullptr, 0);
+
+  device->set_channels(channels);
 
   supla_user::add_device(device, user->getUserID());
   aexec = new ActionExecutorMock();
@@ -119,9 +139,9 @@ TEST_F(ActionExecutorTest, executeScene) {
   config.set_subject_type(stScene);
   config.set_action_id(ACTION_EXECUTE);
 
-  ValueGetterStub value_getter;
+  ChannelPropertyGetterMock property_getter;
 
-  aexec->execute_action(supla_caller(ctIPC), 12345, &config, &value_getter);
+  aexec->execute_action(supla_caller(ctIPC), 12345, &config, &property_getter);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getExecuteCounter(), 1);
@@ -135,9 +155,9 @@ TEST_F(ActionExecutorTest, interruptAndExecuteScene) {
   config.set_subject_type(stScene);
   config.set_action_id(ACTION_INTERRUPT_AND_EXECUTE);
 
-  ValueGetterStub value_getter;
+  ChannelPropertyGetterMock property_getter;
 
-  aexec->execute_action(supla_caller(ctIPC), 12345, &config, &value_getter);
+  aexec->execute_action(supla_caller(ctIPC), 12345, &config, &property_getter);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getInterruptAndExecuteCounter(), 1);
@@ -151,13 +171,63 @@ TEST_F(ActionExecutorTest, interruptScene) {
   config.set_subject_type(stScene);
   config.set_action_id(ACTION_STOP);
 
-  ValueGetterStub value_getter;
+  ChannelPropertyGetterMock property_getter;
 
-  aexec->execute_action(supla_caller(ctIPC), 12345, &config, &value_getter);
+  aexec->execute_action(supla_caller(ctIPC), 12345, &config, &property_getter);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getStopCounter(), 1);
   EXPECT_EQ(aexec->get_scene_id(), 25);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
+}
+
+TEST_F(ActionExecutorTest, enableSchedule) {
+  supla_action_config config;
+  config.set_subject_id(25);
+  config.set_subject_type(stSchedule);
+  config.set_action_id(ACTION_ENABLE);
+
+  ChannelPropertyGetterMock property_getter;
+
+  aexec->execute_action(supla_caller(ctScene), 12345, &config,
+                        &property_getter);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getEnableCounter(), 1);
+  EXPECT_EQ(aexec->get_schedule_id(), 25);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctScene));
+}
+
+TEST_F(ActionExecutorTest, disableSchedule) {
+  supla_action_config config;
+  config.set_subject_id(26);
+  config.set_subject_type(stSchedule);
+  config.set_action_id(ACTION_DISABLE);
+
+  ChannelPropertyGetterMock property_getter;
+
+  aexec->execute_action(supla_caller(ctScene), 12345, &config,
+                        &property_getter);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getDisableCounter(), 1);
+  EXPECT_EQ(aexec->get_schedule_id(), 26);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctScene));
+}
+
+TEST_F(ActionExecutorTest, sendPush) {
+  supla_action_config config;
+  config.set_subject_id(155);
+  config.set_subject_type(stPushNotifiction);
+  config.set_action_id(ACTION_SEND);
+
+  ChannelPropertyGetterMock property_getter;
+
+  aexec->execute_action(supla_caller(ctIPC), 12345, &config, &property_getter);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getSentCounter(), 1);
+  EXPECT_EQ(aexec->get_push_notification_id(), 155);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
 }
 

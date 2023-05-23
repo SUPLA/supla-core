@@ -21,7 +21,7 @@
 #include <memory>
 
 #include "device.h"
-#include "http/httprequestqueue.h"
+#include "http/http_event_hub.h"
 #include "user.h"
 
 using std::shared_ptr;
@@ -39,7 +39,7 @@ bool supla_set_rgbw_command::set_channel_rgbw_value(
   if (device != nullptr) {
     // set_device_channel_char_value for the potential report to contain
     // AlexaCorrelationToken / GoogleRequestId
-    supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+    supla_http_event_hub::on_channel_value_change(
         user, device_id, channel_id, get_caller(), alexa_correlation_token,
         google_request_id);
 

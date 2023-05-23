@@ -517,6 +517,13 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_SC_CALL_GET_CHANNEL_VALUE_RESULT,
               SUPLA_CS_CALL_SET_SCENE_CAPTION,
               SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT};
+
+    case 20:
+      return {SUPLA_DS_CALL_REGISTER_PUSH_NOTIFICATION,
+              SUPLA_DS_CALL_SEND_PUSH_NOTIFICATION,
+              SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN,
+              SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION,
+              SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT};
   }
 
   return {};
@@ -3443,6 +3450,21 @@ SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_channel_caption_result,
                                   SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
+// SET CHANNEL GROUP CAPTION
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_channel_group_caption,
+                                  TCS_SetCaption,
+                                  SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION, 31,
+                                  432, cs_set_caption,
+                                  SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE);
+
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(
+    srpc_sc_async_set_channel_group_caption_result, TSC_SetCaptionResult,
+    SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT, 32, 433,
+    sc_set_caption_result, SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE);
+
+//---------------------------------------------------------
 // SET LOCATION CAPTION
 //---------------------------------------------------------
 
@@ -3549,6 +3571,69 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_config_result,
 
 SRPC_CALL_BASIC_TEST(srpc_ds_async_action_trigger, TDS_ActionTrigger,
                      SUPLA_DS_CALL_ACTIONTRIGGER, 38, ds_action_trigger);
+
+//---------------------------------------------------------
+// PUSH NOTIFICATIONS
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, srpc_ds_async_send_push_notification_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+  DECLARE_WITH_RANDOM(TDS_PushNotification, param);
+  param.TitleSize = SUPLA_PN_TITLE_MAXSIZE + 1;
+  param.BodySize = SUPLA_PN_BODY_MAXSIZE;
+  ASSERT_EQ(srpc_ds_async_send_push_notification(srpc, &param), 0);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_ds_async_send_push_notification_with_minimum_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+  DECLARE_WITH_RANDOM(TDS_PushNotification, param);
+  param.TitleSize = 0;
+  param.BodySize = 0;
+  ASSERT_GT(srpc_ds_async_send_push_notification(srpc, &param), 0);
+  SendAndReceive(SUPLA_DS_CALL_SEND_PUSH_NOTIFICATION, 65);
+  ASSERT_FALSE(cr_rd.data.ds_push_notification == NULL);
+  ASSERT_EQ(0,
+            memcmp(cr_rd.data.ds_push_notification, &param,
+                   sizeof(TDS_PushNotification) - sizeof(param.TitleAndBody)));
+  free(cr_rd.data.ds_push_notification);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_ds_async_send_push_notification_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+  DECLARE_WITH_RANDOM(TDS_PushNotification, param);
+  param.TitleSize = SUPLA_PN_TITLE_MAXSIZE;
+  param.BodySize = SUPLA_PN_BODY_MAXSIZE;
+  ASSERT_GT(srpc_ds_async_send_push_notification(srpc, &param), 0);
+  SendAndReceive(SUPLA_DS_CALL_SEND_PUSH_NOTIFICATION, 422);
+  ASSERT_FALSE(cr_rd.data.ds_push_notification == NULL);
+  ASSERT_EQ(0, memcmp(cr_rd.data.ds_push_notification, &param,
+                      sizeof(TDS_PushNotification)));
+  free(cr_rd.data.ds_push_notification);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+SRPC_CALL_BASIC_TEST(srpc_ds_async_register_push_notification,
+                     TDS_RegisterPushNotification,
+                     SUPLA_DS_CALL_REGISTER_PUSH_NOTIFICATION, 26,
+                     ds_register_push_notification);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_register_pn_client_token,
+                                     TCS_RegisterPnClientToken,
+                                     SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN, 36,
+                                     292, cs_register_pn_client_token,
+                                     SUPLA_PN_CLIENT_TOKEN_MAXSIZE, Token,
+                                     TokenSize);
 
 //---------------------------------------------------------
 // TIMER

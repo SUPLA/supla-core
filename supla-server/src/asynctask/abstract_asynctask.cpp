@@ -23,6 +23,7 @@
 #include "abstract_asynctask_thread_pool.h"
 #include "asynctask_queue.h"
 #include "lck.h"
+#include "log.h"
 
 using std::shared_ptr;
 
@@ -37,6 +38,7 @@ supla_abstract_asynctask::supla_abstract_asynctask(
   this->delay_usec = 0;
   this->started_at = {};
   this->execution_start_time = {};
+  this->execution_request_time = {};
   this->timeout_usec = 0;
   this->queue = queue;
   this->pool = pool;
@@ -110,7 +112,7 @@ long long supla_abstract_asynctask::get_delay_usec(void) {
 
 void supla_abstract_asynctask::set_delay_usec(long long delay_usec) {
   lock();
-  gettimeofday(&execution_start_time, NULL);
+  gettimeofday(&execution_start_time, nullptr);
   this->delay_usec = delay_usec;
 
   if (delay_usec > 0) {
@@ -137,23 +139,28 @@ unsigned long long supla_abstract_asynctask::get_timeout(void) {
   return result;
 }
 
-long long supla_abstract_asynctask::time_left_usec(struct timeval *now) {
+long long supla_abstract_asynctask::time_diff_usec(struct timeval *now,
+                                                   struct timeval *then,
+                                                   long long _default) {
   struct timeval _now;
   if (!now) {
-    gettimeofday(&_now, NULL);
+    gettimeofday(&_now, nullptr);
     now = &_now;
   }
 
   lock();
-  long long result = 0;
-  if (execution_start_time.tv_sec || execution_start_time.tv_usec) {
-    result = (execution_start_time.tv_sec * (long long)1000000 +
-              execution_start_time.tv_usec) -
+  long long result = _default;
+  if (then->tv_sec || then->tv_usec) {
+    result = (then->tv_sec * (long long)1000000 + then->tv_usec) -
              (now->tv_sec * (long long)1000000 + now->tv_usec);
   }
   unlock();
 
   return result;
+}
+
+long long supla_abstract_asynctask::time_left_usec(struct timeval *now) {
+  return time_diff_usec(now, &execution_start_time, 0);
 }
 
 shared_ptr<supla_abstract_asynctask> supla_abstract_asynctask::start(void) {
@@ -167,7 +174,7 @@ shared_ptr<supla_abstract_asynctask> supla_abstract_asynctask::start(void) {
   unlock();
 
   if (result != nullptr) {
-    gettimeofday(&started_at, NULL);
+    gettimeofday(&started_at, nullptr);
     queue->on_task_started(
         this);  // Call on_task_started before adding to the queue
     queue->add_task(result);
@@ -187,14 +194,13 @@ bool supla_abstract_asynctask::pick(void) {
   return result;
 }
 
-void supla_abstract_asynctask::execute(
-    supla_asynctask_thread_storage **storage) {
+void supla_abstract_asynctask::execute(supla_asynctask_thread_bucket *bucket) {
   lock();
   bool exec_allowed = state == supla_asynctask_state::PICKED;
   long long unsigned usec_after_timeout = 0;
 
   if (exec_allowed && timeout_usec) {
-    long long time_left = time_left_usec(NULL);
+    long long time_left = time_left_usec(nullptr);
     if (time_left < 0) {
       time_left *= -1;
       if ((long long unsigned)time_left >= timeout_usec) {
@@ -212,7 +218,7 @@ void supla_abstract_asynctask::execute(
 
   if (exec_allowed) {
     bool exec_again = false;
-    bool result = _execute(&exec_again, storage);
+    bool result = _execute(&exec_again, bucket);
 
     lock();
     if (state != supla_asynctask_state::CANCELED) {
@@ -227,7 +233,7 @@ void supla_abstract_asynctask::execute(
     }
     unlock();
   } else if (usec_after_timeout) {
-    on_timeout(usec_after_timeout - 1);
+    on_timeout(timeout_usec, usec_after_timeout - 1, true);
   }
 
   if (is_finished()) {
@@ -242,8 +248,43 @@ void supla_abstract_asynctask::on_task_finished(void) {
   }
 }
 
-void supla_abstract_asynctask::on_timeout(
-    long long unsigned usec_after_timeout) {}
+void supla_abstract_asynctask::set_execution_request_time(bool reset) {
+  lock();
+  if (reset) {
+    execution_request_time.tv_sec = 0;
+    execution_request_time.tv_usec = 0;
+  } else {
+    gettimeofday(&execution_request_time, nullptr);
+  }
+
+  unlock();
+}
+
+bool supla_abstract_asynctask::is_execution_requested(void) {
+  lock();
+  bool result =
+      execution_request_time.tv_sec != 0 || execution_request_time.tv_usec != 0;
+  unlock();
+
+  return result;
+}
+
+long long supla_abstract_asynctask::time_since_exec_request_usec(
+    struct timeval *now) {
+  return time_diff_usec(now, &execution_request_time, 1) * -1;
+}
+
+void supla_abstract_asynctask::on_timeout(unsigned long long timeout_usec,
+                                          unsigned long long usec_after_timeout,
+                                          bool log_allowed) {
+  if (log_allowed) {
+    supla_log(LOG_WARNING,
+              "Asynctask execution timeout. TimeoutUSec: %llu+%llu, "
+              "TimeSinceExecReq: %lld",
+              timeout_usec, usec_after_timeout,
+              time_since_exec_request_usec(nullptr));
+  }
+}
 
 void supla_abstract_asynctask::cancel(void) {
   lock();

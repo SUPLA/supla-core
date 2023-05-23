@@ -26,7 +26,7 @@
 
 #include "db/database.h"
 #include "device/call_handler/call_handler_collection.h"
-#include "http/httprequestqueue.h"
+#include "http/http_event_hub.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
@@ -43,13 +43,13 @@ supla_device_call_handler_collection supla_device::call_handler_collection;
 supla_device::supla_device(supla_connection *connection)
     : supla_abstract_connection_object(connection) {
   this->entering_cfg_mode_in_progress = false;
-  this->channels = new supla_device_channels(this);
+  this->channels = nullptr;
   this->flags = 0;
 }
 
 supla_device::~supla_device() {
   if (get_user()) {  // 1st line!
-    list<int> ids = channels->get_channel_ids();
+    list<int> ids = channels->get_all_ids();
     for (auto it = ids.begin(); it != ids.end(); it++) {
       get_user()->on_channel_value_changed(supla_caller(ctDevice, get_id()),
                                            get_id(), *it);
@@ -123,11 +123,13 @@ bool supla_device::funclist_contains_function(int funcList, int func) {
   return false;
 }
 
-void supla_device::load_config(int UserID) { channels->load(UserID, get_id()); }
-
 void supla_device::set_flags(int flags) { this->flags = flags; }
 
 int supla_device::get_flags(void) { return flags; }
+
+void supla_device::set_channels(supla_device_channels *channels) {
+  this->channels = channels;
+}
 
 supla_device_channels *supla_device::get_channels(void) { return channels; }
 

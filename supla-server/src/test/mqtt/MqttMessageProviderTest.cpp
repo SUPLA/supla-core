@@ -17,6 +17,7 @@
  */
 
 #include "MqttMessageProviderTest.h"
+
 #include <stdarg.h>
 
 namespace testing {
@@ -102,12 +103,12 @@ bool MqttMessageProviderTest::fetchAndCompare(
     _topic_name = NULL;
   }
 
-  if (message == NULL && (message != NULL || _message_size > 0)) {
+  if (message == NULL && (_message != NULL || _message_size > 0)) {
     EXPECT_TRUE(false);
     result = false;
   }
 
-  if (message != NULL && (message == NULL || _message_size == 0)) {
+  if (message != NULL && (_message == NULL || _message_size == 0)) {
     EXPECT_TRUE(false);
     result = false;
   }

@@ -9,25 +9,39 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include src/webhook/subdir.mk
+-include src/vbt/subdir.mk
 -include src/user/subdir.mk
 -include src/test/webhook/subdir.mk
+-include src/test/vbt/subdir.mk
 -include src/test/scene/subdir.mk
+-include src/test/push/subdir.mk
 -include src/test/mqtt/subdir.mk
 -include src/test/ipc/subdir.mk
+-include src/test/integration/webhook/subdir.mk
+-include src/test/integration/vbt/subdir.mk
+-include src/test/integration/schedule/subdir.mk
 -include src/test/integration/scene/subdir.mk
+-include src/test/integration/push/subdir.mk
 -include src/test/integration/mqtt/subdir.mk
+-include src/test/integration/google/subdir.mk
 -include src/test/integration/datalogger/subdir.mk
 -include src/test/integration/cyclictasks/subdir.mk
 -include src/test/integration/client/subdir.mk
+-include src/test/integration/amazon/subdir.mk
 -include src/test/integration/subdir.mk
 -include src/test/http/subdir.mk
 -include src/test/google/subdir.mk
+-include src/test/doubles/webhook/subdir.mk
 -include src/test/doubles/scene/subdir.mk
+-include src/test/doubles/push/subdir.mk
 -include src/test/doubles/mqtt/subdir.mk
 -include src/test/doubles/ipc/subdir.mk
 -include src/test/doubles/integration/mqtt/subdir.mk
 -include src/test/doubles/integration/asynctask/subdir.mk
+-include src/test/doubles/http/subdir.mk
+-include src/test/doubles/google/subdir.mk
 -include src/test/doubles/distributedobjects/subdir.mk
+-include src/test/doubles/device/extended_value/subdir.mk
 -include src/test/doubles/device/subdir.mk
 -include src/test/doubles/db/subdir.mk
 -include src/test/doubles/cyclictasks/subdir.mk
@@ -35,9 +49,12 @@ RM := rm -rf
 -include src/test/doubles/client/subdir.mk
 -include src/test/doubles/channeljsonconfig/subdir.mk
 -include src/test/doubles/asynctask/subdir.mk
+-include src/test/doubles/amazon/subdir.mk
 -include src/test/doubles/actions/subdir.mk
 -include src/test/doubles/subdir.mk
 -include src/test/distributedobjects/subdir.mk
+-include src/test/device/value/subdir.mk
+-include src/test/device/extended_value/subdir.mk
 -include src/test/device/subdir.mk
 -include src/test/cyclictasks/subdir.mk
 -include src/test/conn/subdir.mk
@@ -45,17 +62,21 @@ RM := rm -rf
 -include src/test/channeljsonconfig/subdir.mk
 -include src/test/asynctask/subdir.mk
 -include src/test/analyzer/subdir.mk
--include src/test/alexa/subdir.mk
+-include src/test/amazon/subdir.mk
 -include src/test/actions/subdir.mk
 -include src/test/subdir.mk
 -include src/srpc/subdir.mk
+-include src/schedule/subdir.mk
 -include src/scene/subdir.mk
+-include src/push/subdir.mk
 -include src/mqtt/subdir.mk
 -include src/json/subdir.mk
 -include src/ipc/subdir.mk
 -include src/http/subdir.mk
 -include src/google/subdir.mk
 -include src/distributedobjects/subdir.mk
+-include src/device/value/subdir.mk
+-include src/device/extended_value/subdir.mk
 -include src/device/call_handler/subdir.mk
 -include src/device/subdir.mk
 -include src/db/subdir.mk
@@ -119,7 +140,7 @@ main-build: supla-server
 supla-server: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++ -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS) -lssl -lgtest -lgmock -l$(LIBMYSQL) -lcrypto
+	g++ -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS) -lssl -lcurl -lgtest -lgmock -l$(LIBMYSQL) -lcrypto
 	@echo 'Finished building target: $@'
 	@echo ' '
 

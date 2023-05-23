@@ -290,7 +290,10 @@ void ssocket_free(void *_ssd) {
 
     EVP_cleanup();
     ERR_clear_error();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     ERR_remove_thread_state(NULL);
+#pragma GCC diagnostic pop
     ERR_free_strings();
     CRYPTO_cleanup_all_ex_data();
 
@@ -440,7 +443,10 @@ void ssocket_supla_socket_close(void *_supla_socket) {
     }
 
     ERR_clear_error();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     ERR_remove_thread_state(NULL);
+#pragma GCC diagnostic pop
 
 #endif /*ifndef NOSSL */
 
@@ -582,7 +588,7 @@ void *ssocket_client_init(const char host[], int port, unsigned char secure) {
 
   if (ssd == NULL) return NULL;
 
-  supla_log(LOG_INFO, "SSL version: %s", OPENSSL_VERSION_TEXT);
+  supla_log(LOG_INFO, "SSL version: %s", OpenSSL_version(OPENSSL_VERSION));
 
   memset(ssd, 0, sizeof(TSuplaSocketData));
 
@@ -715,6 +721,16 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
     // if (count < 0) {
     //  ssocket_log_ssl_error(supla_socket, count);
     //}
+
+#ifndef __SUPLA_SERVER
+    if (count < 0) {
+      int32_t ssl_error = SSL_get_error(supla_socket->ssl, count);
+      if (ssl_error == SSL_ERROR_SYSCALL || ssl_error == SSL_ERROR_SSL) {
+        return 0;
+      }
+    }
+
+#endif
 
 #endif /*ifdef NOSSL*/
 

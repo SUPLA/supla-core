@@ -35,11 +35,12 @@ class supla_abstract_ipc_command {
 
   template <typename T>
   void send_result(const char *result, const char *format, T value);
-  char *cut(const char *params, const char *var, unsigned int buffer_size);
   void free_correlation_token();
   void free_google_requestid();
 
  protected:
+  char *base64_decode_cut(const char *params, const char *needle,
+                          unsigned int buffer_size);
   void send_result(const char *result);
   void send_result(const char *result, int i);
   void send_result(const char *result, double d);

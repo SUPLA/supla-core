@@ -28,8 +28,9 @@ class supla_auto_gate_closing : public supla_abstract_auto_gate_closing {
   virtual supla_abstract_auto_gate_closing_dao *get_dao(
       supla_abstract_db_access_provider *dba);
   virtual void release_dao(supla_abstract_auto_gate_closing_dao *dao);
-  virtual supla_abstract_value_getter *get_value_getter(void);
-  virtual void release_value_getter(supla_abstract_value_getter *value_getter);
+  virtual supla_abstract_channel_property_getter *get_property_getter(void);
+  virtual void release_property_getter(
+      supla_abstract_channel_property_getter *property_getter);
   virtual void close_the_gate(int user_id, int device_id, int channel_id);
 
  public:

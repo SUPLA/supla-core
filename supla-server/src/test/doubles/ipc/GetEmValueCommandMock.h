@@ -30,10 +30,9 @@ class GetEmValueCommandMock : public supla_abstract_get_em_value_command {
   explicit GetEmValueCommandMock(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  MOCK_METHOD3(get_electricity_measurement,
-               supla_channel_electricity_measurement *(int user_id,
-                                                       int device_id,
-                                                       int channel_id));
+  MOCK_METHOD3(get_em_value,
+               supla_channel_em_extended_value *(int user_id, int device_id,
+                                                 int channel_id));
 };
 
 } /* namespace testing */

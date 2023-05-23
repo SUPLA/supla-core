@@ -18,6 +18,7 @@
 
 #include "test/analyzer/VoltageAnalyzersTest.h"
 
+#include "device/extended_value/channel_em_extended_value.h"
 #include "srpc/srpc.h"
 
 namespace testing {
@@ -40,8 +41,7 @@ TEST_F(VoltageAnalyzersTest, onePhase) {
   em_ev.m[0].voltage[2] = 32055;
   em_ev.measured_values = EM_VAR_VOLTAGE;
 
-  TSuplaChannelExtendedValue ev = {};
-  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  supla_channel_em_extended_value em(&em_ev, nullptr, 0);
 
   electricity_meter_config config;
   config.set_user_config(
@@ -49,7 +49,7 @@ TEST_F(VoltageAnalyzersTest, onePhase) {
 
   vas.add_samples(SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
                       SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED,
-                  &config, &ev);
+                  &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() != nullptr);
   EXPECT_TRUE(vas.get_phase2() == nullptr);
@@ -73,12 +73,13 @@ TEST_F(VoltageAnalyzersTest, threePhases) {
 
   TSuplaChannelExtendedValue ev = {};
   srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  supla_channel_em_extended_value em(&ev, nullptr, 0);
 
   electricity_meter_config config;
   config.set_user_config(
       "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
 
-  vas.add_samples(0, &config, &ev);
+  vas.add_samples(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() != nullptr);
   ASSERT_TRUE(vas.get_phase2() != nullptr);
@@ -104,12 +105,13 @@ TEST_F(VoltageAnalyzersTest, noMeasurements) {
 
   TSuplaChannelExtendedValue ev = {};
   srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  supla_channel_em_extended_value em(&ev, nullptr, 0);
 
   electricity_meter_config config;
   config.set_user_config(
       "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
 
-  vas.add_samples(0, &config, &ev);
+  vas.add_samples(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() == nullptr);
   ASSERT_TRUE(vas.get_phase2() == nullptr);
@@ -120,14 +122,13 @@ TEST_F(VoltageAnalyzersTest, voltageIsNotMeasured) {
   TElectricityMeter_ExtendedValue_V2 em_ev = {};
   em_ev.m_count = 1;
 
-  TSuplaChannelExtendedValue ev = {};
-  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  supla_channel_em_extended_value em(&em_ev, nullptr, 0);
 
   electricity_meter_config config;
   config.set_user_config(
       "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
 
-  vas.add_samples(0, &config, &ev);
+  vas.add_samples(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() == nullptr);
   ASSERT_TRUE(vas.get_phase2() == nullptr);
@@ -144,12 +145,13 @@ TEST_F(VoltageAnalyzersTest, thresholdsAreNotSet) {
 
   TSuplaChannelExtendedValue ev = {};
   srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  supla_channel_em_extended_value em(&ev, nullptr, 0);
 
   electricity_meter_config config;
   config.set_user_config(
       "{\"lowerVoltageThreshold\":0,\"upperVoltageThreshold\":0}");
 
-  vas.add_samples(0, &config, &ev);
+  vas.add_samples(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() == nullptr);
   ASSERT_TRUE(vas.get_phase2() == nullptr);
@@ -164,14 +166,13 @@ TEST_F(VoltageAnalyzersTest, assignmentOperator) {
   em_ev.m[0].voltage[2] = 32055;
   em_ev.measured_values = EM_VAR_VOLTAGE;
 
-  TSuplaChannelExtendedValue ev = {};
-  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  supla_channel_em_extended_value em(&em_ev, nullptr, 0);
 
   electricity_meter_config config;
   config.set_user_config(
       "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
 
-  vas.add_samples(0, &config, &ev);
+  vas.add_samples(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() != nullptr);
   ASSERT_TRUE(vas.get_phase2() != nullptr);
@@ -206,14 +207,13 @@ TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   em_ev.m[0].voltage[2] = 20000;
   em_ev.measured_values = EM_VAR_VOLTAGE;
 
-  TSuplaChannelExtendedValue ev = {};
-  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  supla_channel_em_extended_value em(&em_ev, nullptr, 0);
 
   electricity_meter_config config;
   config.set_user_config(
       "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
 
-  vas.add_samples(0, &config, &ev);
+  vas.add_samples(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() != nullptr);
   ASSERT_TRUE(vas.get_phase2() != nullptr);
@@ -230,8 +230,8 @@ TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   em_ev.m[0].voltage[0] = 20000;
   em_ev.m[0].voltage[1] = 31055;
 
-  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
-  vas.add_samples(0, &config, &ev);
+  em.set_raw_value(&em_ev);
+  vas.add_samples(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() != nullptr);
   ASSERT_TRUE(vas.get_phase2() != nullptr);
@@ -248,8 +248,8 @@ TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   em_ev.m[0].voltage[1] = 20000;
   em_ev.m[0].voltage[2] = 31055;
 
-  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
-  vas.add_samples(0, &config, &ev);
+  em.set_raw_value(&em_ev);
+  vas.add_samples(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() != nullptr);
   ASSERT_TRUE(vas.get_phase2() != nullptr);

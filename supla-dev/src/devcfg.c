@@ -16,12 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "devcfg.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "channel-io.h"
-#include "devcfg.h"
 #include "log.h"
 #include "mcp23008.h"
 #include "tools.h"
@@ -122,27 +123,30 @@ unsigned char devcfg_init(int argc, char *argv[]) {
 
   scfg_set_callback(devcfg_channel_cfg);
 
-  // !!! order is important !!!
+  char *s_auth = "AUTH";
+  // Start with the highest index (CFG_EMAIL == 11)
+  // This ensures that realloc will only be called once
+  scfg_add_str_param(CFG_EMAIL, s_auth, "email", "");
+  // ----
+
   char *s_global = "GLOBAL";
-  scfg_add_str_param(s_global, "device_guid_file", "");
-  scfg_add_str_param(s_global, "alt_cfg", "");
-  scfg_add_str_param(s_global, "state_file", "");
-  scfg_add_str_param(s_global, "device_name", "");
+  scfg_add_str_param(CFG_GUID_FILE, s_global, "device_guid_file", "");
+  scfg_add_str_param(CFG_ALTCFG_FILE, s_global, "alt_cfg", "");
+  scfg_add_str_param(CFG_STATE_FILE, s_global, "state_file", "");
+  scfg_add_str_param(CFG_DEVNAME, s_global, "device_name", "");
 
   char *s_server = "SERVER";
-  scfg_add_str_param(s_server, "host", "");
-  scfg_add_int_param(s_server, "tcp_port", 2015);
-  scfg_add_int_param(s_server, "ssl_port", 2016);
-  scfg_add_bool_param(s_server, "ssl_enabled", 1);
-  scfg_add_int_param(s_server, "protocol_version", SUPLA_PROTO_VERSION);
+  scfg_add_str_param(CFG_SERVER_HOST, s_server, "host", "");
+  scfg_add_int_param(CFG_SERVER_TCPPORT, s_server, "tcp_port", 2015);
+  scfg_add_int_param(CFG_SERVER_SSLPORT, s_server, "ssl_port", 2016);
+  scfg_add_bool_param(CFG_SERVER_SSLENABLED, s_server, "ssl_enabled", 1);
+  scfg_add_int_param(CFG_PROTO, s_server, "protocol_version",
+                     SUPLA_PROTO_VERSION);
 
   char *s_location = "LOCATION";
 
-  scfg_add_int_param(s_location, "ID", 0);
-  scfg_add_str_param(s_location, "PASSWORD", 0);
-
-  char *s_auth = "AUTH";
-  scfg_add_str_param(s_auth, "email", "");
+  scfg_add_int_param(CFG_LOCATION_ID, s_location, "ID", 0);
+  scfg_add_str_param(CFG_LOCATION_PWD, s_location, "PASSWORD", 0);
 
   result = scfg_load(argc, argv, "/etc/supla-dev/supla.cfg");
 

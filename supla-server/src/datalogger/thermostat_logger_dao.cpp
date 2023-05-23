@@ -27,9 +27,9 @@ supla_thermostat_logger_dao::supla_thermostat_logger_dao(
   this->dba = dba;
 }
 
-void supla_thermostat_logger_dao::add(
-    supla_channel_thermostat_measurement *th) {
-  if (!th) {
+void supla_thermostat_logger_dao::add(int channel_id,
+                                      supla_channel_thermostat_value *th) {
+  if (!th || !channel_id) {
     return;
   }
 
@@ -37,14 +37,13 @@ void supla_thermostat_logger_dao::add(
   char buff2[20] = {};
   MYSQL_BIND pbind[4] = {};
 
-  int ChannelId = th->getChannelId();
-  snprintf(buff1, sizeof(buff1), "%05.2f", th->getMeasuredTemperature());
-  snprintf(buff2, sizeof(buff2), "%05.2f", th->getPresetTemperature());
+  snprintf(buff1, sizeof(buff1), "%05.2f", th->get_measured_temperature());
+  snprintf(buff2, sizeof(buff2), "%05.2f", th->get_preset_temperature());
 
-  char on = th->getOn() ? 1 : 0;
+  char on = th->is_on() ? 1 : 0;
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&ChannelId;
+  pbind[0].buffer = (char *)&channel_id;
 
   pbind[1].buffer_type = MYSQL_TYPE_DECIMAL;
   pbind[1].buffer = (char *)buff1;

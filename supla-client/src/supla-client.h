@@ -176,6 +176,7 @@ typedef struct {
   _suplaclient_cb_on_channel_function_set_result
       cb_on_channel_function_set_result;
   _suplaclient_cb_on_caption_set_result cb_on_channel_caption_set_result;
+  _suplaclient_cb_on_caption_set_result cb_on_channel_group_caption_set_result;
   _suplaclient_cb_on_caption_set_result cb_on_location_caption_set_result;
   _suplaclient_cb_on_caption_set_result cb_on_scene_caption_set_result;
   _suplaclient_cb_on_clients_reconnect_request_result
@@ -249,6 +250,9 @@ char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
                                        int Function);
 char supla_client_set_channel_caption(void *_suplaclient, int ChannelID,
                                       const char *Caption);
+char supla_client_set_channel_group_caption(void *_suplaclient,
+                                            int ChannelGroupID,
+                                            const char *Caption);
 char supla_client_set_location_caption(void *_suplaclient, int LocationID,
                                        const char *Caption);
 char supla_client_set_scene_caption(void *_suplaclient, int SceneID,
@@ -284,18 +288,23 @@ char supla_client_execute_action(void *_suplaclient, int action_id,
                                  TAction_RGBW_Parameters *rgbw_param,
                                  unsigned char subject_type, int subject_id);
 
+char supla_client_pn_register_client_token(void *_suplaclient,
+                                           TCS_RegisterPnClientToken *reg);
+
 _supla_int_t srpc_evtool_value_get(TSuplaChannelExtendedValue *ev,
                                    unsigned short index,
                                    TSuplaChannelExtendedValue *dest);
 
 _supla_int_t srpc_evtool_v2_extended2emextended(
-    TSuplaChannelExtendedValue *ev, TElectricityMeter_ExtendedValue_V2 *em_ev);
+    const TSuplaChannelExtendedValue *ev,
+    TElectricityMeter_ExtendedValue_V2 *em_ev);
 
 _supla_int_t srpc_evtool_v1_extended2icextended(
-    TSuplaChannelExtendedValue *ev, TSC_ImpulseCounter_ExtendedValue *ic_ev);
+    const TSuplaChannelExtendedValue *ev,
+    TSC_ImpulseCounter_ExtendedValue *ic_ev);
 
 _supla_int_t srpc_evtool_v1_extended2thermostatextended(
-    TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev);
+    const TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev);
 
 #ifdef __cplusplus
 }

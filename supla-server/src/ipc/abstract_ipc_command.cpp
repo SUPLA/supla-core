@@ -78,12 +78,13 @@ void supla_abstract_ipc_command::free_google_requestid() {
   }
 }
 
-char *supla_abstract_ipc_command::cut(const char *params, const char *var,
-                                      unsigned int buffer_size) {
+char *supla_abstract_ipc_command::base64_decode_cut(const char *params,
+                                                    const char *needle,
+                                                    unsigned int buffer_size) {
   char *result = NULL;
 
-  char *ct = strstr((char *)params, var);
-  unsigned int var_len = strnlen(var, 255);
+  char *ct = strstr((char *)params, needle);
+  unsigned int var_len = strnlen(needle, 255);
 
   if (ct != NULL && strnlen(ct, buffer_size) > var_len) {
     char *value = &ct[var_len];
@@ -93,7 +94,7 @@ char *supla_abstract_ipc_command::cut(const char *params, const char *var,
     if (len > 0) {
       result = st_openssl_base64_decode(value, len, NULL);
       if (strnlen(result, buffer_size) <= 0) {
-        delete result;
+        free(result);
         result = NULL;
       }
     }
@@ -153,8 +154,9 @@ bool supla_abstract_ipc_command::process_command(char *buffer,
     free_google_requestid();
 
     alexa_correlation_token =
-        cut(buffer, ",ALEXA-CORRELATION-TOKEN=", buffer_size);
-    google_request_id = cut(buffer, ",GOOGLE-REQUEST-ID=", buffer_size);
+        base64_decode_cut(buffer, ",ALEXA-CORRELATION-TOKEN=", buffer_size);
+    google_request_id =
+        base64_decode_cut(buffer, ",GOOGLE-REQUEST-ID=", buffer_size);
 
     on_command_match(data_size > cmd.size() ? &buffer[cmd.size()] : NULL);
     return true;

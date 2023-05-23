@@ -16,13 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "channel-io.h"
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include "channel-io.h"
 #include "eh.h"
 #include "gpio.h"
 #include "lck.h"
@@ -169,15 +170,15 @@ void channelio_free(void) {
 #ifndef __SINGLE_THREAD
     // 1st stop threads!!!
 
-    if (cio->w1_sthread) sthread_twf(cio->w1_sthread);
+    if (cio->w1_sthread) sthread_twf(cio->w1_sthread, 1);
 
-    if (cio->mcp_sthread) sthread_twf(cio->mcp_sthread);
+    if (cio->mcp_sthread) sthread_twf(cio->mcp_sthread, 1);
 
     while (safe_array_count(cio->gpio_thread_arr) > 0) {
       safe_array_lock(cio->gpio_thread_arr);
       TGpioThreadItem *gti = safe_array_get(cio->gpio_thread_arr, 0);
 
-      if (gti && gti->sthread) sthread_terminate(gti->sthread);
+      if (gti && gti->sthread) sthread_terminate(gti->sthread, 1);
 
       safe_array_unlock(cio->gpio_thread_arr);
 
@@ -285,7 +286,6 @@ char channelio_read_temp_and_humidity(int type, char *w1,
       type != SUPLA_CHANNELTYPE_AM2302 &&
       type != SUPLA_CHANNELTYPE_HUMIDITYSENSOR)
     return 0;
-
 
   if (w1 != NULL || type != SUPLA_CHANNELTYPE_THERMOMETERDS18B20) {
     gettimeofday(&now, NULL);
@@ -427,7 +427,7 @@ char channelio_start_gpio_thread(TDeviceChannel *channel,
   p.initialize = NULL;
 
   safe_array_lock(cio->gpio_thread_arr);
-  gti->sthread = sthread_run(&p);
+  sthread_run(&p, &gti->sthread);
   safe_array_add(cio->gpio_thread_arr, gti);
   safe_array_unlock(cio->gpio_thread_arr);
 
@@ -468,7 +468,7 @@ void channelio_channel_init(void) {
   }
 
 #ifndef __SINGLE_THREAD
-  cio->w1_sthread = sthread_simple_run(channelio_w1_execute, NULL, 0);
+  sthread_simple_run(channelio_w1_execute, NULL, 0, &cio->w1_sthread);
   lck_lock(cio->wl_lck);
 
   if (cio->watch_list_count > 0) {
@@ -478,7 +478,7 @@ void channelio_channel_init(void) {
 
   lck_unlock(cio->wl_lck);
 
-  cio->mcp_sthread = sthread_simple_run(channelio_mcp23008_execute, NULL, 0);
+  sthread_simple_run(channelio_mcp23008_execute, NULL, 0, cio->mcp_sthread);
 #endif
 }
 
@@ -749,9 +749,8 @@ void channelio_gpio_on_portvalue(TGpioPort *port) {
     gettimeofday(&now, NULL);
 
     if (gpio_value->last_tv.tv_sec > now.tv_sec  // the date has been changed
-        ||
-        (long int)(now.tv_sec - gpio_value->last_tv.tv_sec) >
-            (long int)(GPIO_MINDELAY_USEC / 1000000) ||
+        || (long int)(now.tv_sec - gpio_value->last_tv.tv_sec) >
+               (long int)(GPIO_MINDELAY_USEC / 1000000) ||
         ((long int)(now.tv_sec - gpio_value->last_tv.tv_sec) ==
              (long int)(GPIO_MINDELAY_USEC / 1000000) &&
          (long int)(now.tv_usec - gpio_value->last_tv.tv_usec) >=

@@ -19,32 +19,19 @@
 #ifndef MQTTSTATEMESSAGEPROVIDERMOCK_H_
 #define MQTTSTATEMESSAGEPROVIDERMOCK_H_
 
-#include "gtest/gtest.h"  // NOLINT
+#include "gmock/gmock.h"  // NOLINT
 #include "mqtt_abstract_state_message_provider.h"
 #include "mqtt_db.h"
 
 class MqttStateMessageProviderMock
     : public supla_mqtt_abstract_state_message_provider {
- private:
-  channel_complex_value *cvalue_mock;
-  char suid[SHORT_UNIQUEID_MAXSIZE];
-  _supla_int_t measured_values;
-  _supla_int_t m_count;
-
- protected:
-  virtual const char *_get_user_suid(void);
-  virtual channel_complex_value *_get_complex_value(int user_id, int device_id,
-                                                    int channel_id);
-  virtual supla_channel_electricity_measurement *_get_electricity_measurement(
-      void);
-  virtual supla_channel_ic_measurement *_get_impulse_counter_measurement(void);
-
  public:
   MqttStateMessageProviderMock();
   virtual ~MqttStateMessageProviderMock();
-  void setComplexValue(channel_complex_value *cvalue);
-  void setMeasuredValues(_supla_int_t measured_values);
-  void setMeasurementCount(_supla_int_t m_count);
+
+  MOCK_METHOD0(_get_channel_property_getter,
+               supla_abstract_channel_property_getter *());
+  MOCK_METHOD0(_get_user_suid, const char *());
 };
 
 #endif /* MQTTSTATEMESSAGEPROVIDERMOCK_H_ */

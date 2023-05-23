@@ -21,7 +21,7 @@
 #include <memory>
 
 #include "device.h"
-#include "http/httprequestqueue.h"
+#include "http/http_event_hub.h"
 #include "user.h"
 
 using std::shared_ptr;

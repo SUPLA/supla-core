@@ -22,8 +22,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "device/device.h"
 #include "log.h"
 #include "tools.h"
+
+using std::vector;
 
 supla_device_dao::supla_device_dao(supla_abstract_db_access_provider *dba)
     : supla_abstract_device_dao() {
@@ -602,4 +605,188 @@ bool supla_device_dao::on_channel_added(int device_id, int channel_id) {
            channel_id);
 
   return dba->query(sql, true) == 0;
+}
+
+vector<supla_device_channel *> supla_device_dao::get_channels(
+    supla_device *device) {
+  vector<supla_device_channel *> result;
+
+  MYSQL_STMT *stmt = nullptr;
+  const char sql[] =
+      "SELECT c.`type`, c.`func`, c.`param1`, c.`param2`, c.`param3`, "
+      "c.`param4`, c.`text_param1`, c.`text_param2`, c.`text_param3`, "
+      "c.`channel_number`, c.`id`, c.`hidden`, c.`flags`, v.`value`, "
+      "TIME_TO_SEC(TIMEDIFF(v.`valid_to`, UTC_TIMESTAMP())) + 2, "
+      "c.`user_config`, c.`properties` FROM `supla_dev_channel` c  LEFT JOIN "
+      "`supla_dev_channel_value` v ON v.channel_id = c.id WHERE "
+      "c.`iodevice_id` = ? ORDER BY c.`channel_number`";
+
+  MYSQL_BIND pbind = {};
+
+  int device_id = device->get_id();
+
+  pbind.buffer_type = MYSQL_TYPE_LONG;
+  pbind.buffer = (char *)&device_id;
+
+  if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
+    my_bool is_null[11] = {};
+    MYSQL_BIND rbind[17] = {};
+
+    int type = 0;
+    int func = 0;
+    int param1 = 0;
+    int param2 = 0;
+    int param3 = 0;
+    int param4 = 0;
+    int number = 0;
+    int id = 0;
+    int hidden = 0;
+    int flags = 0;
+
+    char text_param1[256] = {};
+    char text_param2[256] = {};
+    char text_param3[256] = {};
+
+    unsigned long text_param1_size = 0;
+    unsigned long text_param2_size = 0;
+    unsigned long text_param3_size = 0;
+
+    char user_config[2049] = {};
+    char properties[2049] = {};
+
+    unsigned long user_config_size = 0;
+    unsigned long properties_size = 0;
+
+    char value[SUPLA_CHANNELVALUE_SIZE] = {};
+    my_bool value_is_null = true;
+
+    unsigned _supla_int_t validity_time_sec = 0;
+    my_bool validity_time_is_null = true;
+
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)&type;
+    rbind[0].is_null = &is_null[0];
+
+    rbind[1].buffer_type = MYSQL_TYPE_LONG;
+    rbind[1].buffer = (char *)&func;
+    rbind[1].is_null = &is_null[1];
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&param1;
+    rbind[2].is_null = &is_null[2];
+
+    rbind[3].buffer_type = MYSQL_TYPE_LONG;
+    rbind[3].buffer = (char *)&param2;
+    rbind[3].is_null = &is_null[3];
+
+    rbind[4].buffer_type = MYSQL_TYPE_LONG;
+    rbind[4].buffer = (char *)&param3;
+    rbind[4].is_null = &is_null[4];
+
+    rbind[5].buffer_type = MYSQL_TYPE_LONG;
+    rbind[5].buffer = (char *)&param4;
+    rbind[5].is_null = &is_null[5];
+
+    rbind[6].buffer_type = MYSQL_TYPE_STRING;
+    rbind[6].buffer = text_param1;
+    rbind[6].is_null = &is_null[6];
+    rbind[6].buffer_length = sizeof(text_param1) - 1;
+    rbind[6].length = &text_param1_size;
+
+    rbind[7].buffer_type = MYSQL_TYPE_STRING;
+    rbind[7].buffer = text_param2;
+    rbind[7].is_null = &is_null[7];
+    rbind[7].buffer_length = sizeof(text_param2) - 1;
+    rbind[7].length = &text_param2_size;
+
+    rbind[8].buffer_type = MYSQL_TYPE_STRING;
+    rbind[8].buffer = text_param3;
+    rbind[8].is_null = &is_null[8];
+    rbind[8].buffer_length = sizeof(text_param3) - 1;
+    rbind[8].length = &text_param3_size;
+
+    rbind[9].buffer_type = MYSQL_TYPE_LONG;
+    rbind[9].buffer = (char *)&number;
+
+    rbind[10].buffer_type = MYSQL_TYPE_LONG;
+    rbind[10].buffer = (char *)&id;
+
+    rbind[11].buffer_type = MYSQL_TYPE_LONG;
+    rbind[11].buffer = (char *)&hidden;
+
+    rbind[12].buffer_type = MYSQL_TYPE_LONG;
+    rbind[12].buffer = (char *)&flags;
+
+    rbind[13].buffer_type = MYSQL_TYPE_BLOB;
+    rbind[13].buffer = value;
+    rbind[13].buffer_length = SUPLA_CHANNELVALUE_SIZE;
+    rbind[13].is_null = &value_is_null;
+
+    rbind[14].buffer_type = MYSQL_TYPE_LONG;
+    rbind[14].buffer = (char *)&validity_time_sec;
+    rbind[14].buffer_length = sizeof(unsigned _supla_int_t);
+    rbind[14].is_null = &validity_time_is_null;
+
+    rbind[15].buffer_type = MYSQL_TYPE_STRING;
+    rbind[15].buffer = user_config;
+    rbind[15].is_null = &is_null[9];
+    rbind[15].buffer_length = sizeof(user_config) - 1;
+    rbind[15].length = &user_config_size;
+
+    rbind[16].buffer_type = MYSQL_TYPE_STRING;
+    rbind[16].buffer = properties;
+    rbind[16].is_null = &is_null[10];
+    rbind[16].buffer_length = sizeof(properties) - 1;
+    rbind[16].length = &properties_size;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0) {
+        while (!mysql_stmt_fetch(stmt)) {
+          if (is_null[0] == true) type = 0;
+          if (is_null[1] == true) func = 0;
+          if (is_null[2] == true) param1 = 0;
+          if (is_null[3] == true) param2 = 0;
+          if (is_null[4] == true) param3 = 0;
+          if (is_null[5] == true) param4 = 0;
+          if (is_null[6] == true) text_param1_size = 0;
+          if (is_null[7] == true) text_param2_size = 0;
+          if (is_null[8] == true) text_param3_size = 0;
+          if (is_null[9] == true) user_config_size = 0;
+          if (is_null[10] == true) properties_size = 0;
+
+          text_param1[text_param1_size] = 0;
+          text_param2[text_param2_size] = 0;
+          text_param3[text_param3_size] = 0;
+
+          user_config[user_config_size] = 0;
+          properties[properties_size] = 0;
+
+          if (value_is_null) {
+            memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+          }
+
+          if (validity_time_is_null) {
+            validity_time_sec = 0;
+          }
+
+          supla_device_channel *channel = new supla_device_channel(
+              device, id, number, type, func, param1, param2, param3, param4,
+              text_param1, text_param2, text_param3, hidden > 0, flags, value,
+              validity_time_sec, user_config_size ? user_config : nullptr,
+              properties_size ? properties : nullptr);
+
+          result.push_back(channel);
+        }
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
 }

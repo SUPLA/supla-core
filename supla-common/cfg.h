@@ -42,13 +42,13 @@ typedef void (*_func_cfg_callback)(const char *section, const char *name,
 // section_name must be allocated until call scfg_load
 void scfg_print_help(const char *app_name);
 unsigned char scfg_load(int argc, char *argv[], char default_file[]);
-void scfg_add_str_param(char *section_name, const char *param_name,
+void scfg_add_str_param(int index, char *section_name, const char *param_name,
                         char *default_value);
-void scfg_add_double_param(char *section_name, const char *param_name,
-                           double default_value);
-void scfg_add_int_param(char *section_name, const char *param_name,
+void scfg_add_double_param(int index, char *section_name,
+                           const char *param_name, double default_value);
+void scfg_add_int_param(int index, char *section_name, const char *param_name,
                         int default_value);
-void scfg_add_bool_param(char *section_name, const char *param_name,
+void scfg_add_bool_param(int index, char *section_name, const char *param_name,
                          unsigned char default_value);
 void scfg_set_callback(_func_cfg_callback cb);
 void scfg_names_free();

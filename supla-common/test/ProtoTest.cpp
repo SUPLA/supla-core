@@ -247,6 +247,10 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   EXPECT_EQ(sizeof(TSC_GetChannelValueResult), 1055);
   EXPECT_EQ(sizeof(TCS_GetChannelValueWithAuth), 394);
+
+  EXPECT_EQ(sizeof(TDS_RegisterPushNotification), 3);
+  EXPECT_EQ(sizeof(TDS_PushNotification), 399);
+  EXPECT_EQ(sizeof(TCS_RegisterPnClientToken), 269);
 }
 
 TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {
@@ -280,6 +284,8 @@ TEST_F(ProtoTest, littleEndian) {
   ASSERT_EQ((unsigned int)4, sizeof(int));
   ASSERT_EQ(67305985, *(int *)i);
 }
+
+TEST_F(ProtoTest, sizeOfShort) { ASSERT_EQ((unsigned int)2, sizeof(short)); }
 
 TEST_F(ProtoTest, set_version) {
   void *sproto = sproto_init();

@@ -23,6 +23,7 @@
 #ifndef VOLTAGE_ANALYZERS_H_
 #define VOLTAGE_ANALYZERS_H_
 
+class supla_channel_em_extended_value;
 class supla_voltage_analyzers {
  private:
   int channel_id;
@@ -43,7 +44,7 @@ class supla_voltage_analyzers {
   supla_voltage_analyzer *get_phase2(void);
   supla_voltage_analyzer *get_phase3(void);
   void add_samples(int channel_flags, electricity_meter_config *config,
-                   TSuplaChannelExtendedValue *extended_value);
+                   supla_channel_em_extended_value *extended_value);
 
   bool is_any_sample_over_threshold(void);
   void reset(void);

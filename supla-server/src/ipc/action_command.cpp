@@ -22,8 +22,8 @@
 
 #include "actions/action_executor.h"
 #include "device.h"
-#include "device/value_getter.h"
-#include "http/httprequestqueue.h"
+#include "device/channel_property_getter.h"
+#include "http/http_event_hub.h"
 #include "user.h"
 
 using std::shared_ptr;
@@ -41,7 +41,7 @@ bool supla_action_command::action_open_close(
     // onChannelValueChangeEvent must be called before
     // set_device_channel_char_value for the potential report to contain
     // AlexaCorrelationToken / GoogleRequestId
-    supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+    supla_http_event_hub::on_channel_value_change(
         device->get_user(), device->get_id(), channel_id, get_caller(),
         get_alexa_correlation_token(), get_google_request_id());
 
@@ -122,12 +122,14 @@ bool supla_action_command::action_copy(int user_id, int device_id,
   if (action_executor) {
     action_executor->set_channel_id(user_id, device_id, channel_id);
 
-    supla_value_getter *value_getter = new supla_value_getter();
-    if (value_getter) {
-      action_executor->copy(value_getter, source_device_id, source_channel_id);
+    supla_cahnnel_property_getter *property_getter =
+        new supla_cahnnel_property_getter();
+    if (property_getter) {
+      action_executor->copy(property_getter, source_device_id,
+                            source_channel_id);
       result = true;
-      delete value_getter;
-      value_getter = NULL;
+      delete property_getter;
+      property_getter = NULL;
     }
 
     delete action_executor;

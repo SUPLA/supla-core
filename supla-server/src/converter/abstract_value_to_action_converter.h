@@ -19,9 +19,8 @@
 #ifndef VALUE_TO_ACTION_CONVERTER_H_
 #define VALUE_TO_ACTION_CONVERTER_H_
 
-#include <abstract_value_getter.h>
-
 #include "actions/abstract_action_executor.h"
+#include "device/abstract_channel_property_getter.h"
 
 class abstract_value_to_action_converter {
  public:

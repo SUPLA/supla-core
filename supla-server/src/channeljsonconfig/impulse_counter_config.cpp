@@ -82,12 +82,12 @@ unsigned int impulse_counter_config::get_impulses_per_unit(void) {
 }
 
 void impulse_counter_config::add_initial_value(
-    TDS_ImpulseCounter_Value *value) {
-  if (!value) {
+    unsigned _supla_int64_t *counter) {
+  if (!counter) {
     return;
   }
 
-  unsigned _supla_int64_t left = ULONG_MAX - value->counter;
+  unsigned _supla_int64_t left = ULONG_MAX - (*counter);
   double initial_value = get_initial_value();
   int impulses_per_unit = get_impulses_per_unit();
 
@@ -104,14 +104,14 @@ void impulse_counter_config::add_initial_value(
   unsigned _supla_int64_t impulses_added = initial_value * impulses_per_unit;
 
   if (minus) {
-    if (impulses_added > value->counter) {
-      impulses_added = value->counter;
+    if (impulses_added > (*counter)) {
+      impulses_added = (*counter);
     }
-    value->counter -= impulses_added;
+    *counter -= impulses_added;
   } else {
     if (impulses_added > left) {
       impulses_added = left;
     }
-    value->counter += impulses_added;
+    *counter += impulses_added;
   }
 }

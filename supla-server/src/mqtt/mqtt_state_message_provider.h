@@ -21,19 +21,20 @@
 
 #include <memory.h>
 
+#include "device/channel_property_getter.h"
 #include "devicechannel.h"
 #include "mqtt_abstract_state_message_provider.h"
 #include "mqtt_db.h"
 
 class supla_mqtt_state_message_provider
     : public supla_mqtt_abstract_state_message_provider {
+ private:
+  supla_cahnnel_property_getter prop_getter;
+
  protected:
   virtual const char *_get_user_suid(void);
-  virtual channel_complex_value *_get_complex_value(int user_id, int device_id,
-                                                    int channel_id);
-  virtual supla_channel_electricity_measurement *_get_electricity_measurement(
+  virtual supla_abstract_channel_property_getter *_get_channel_property_getter(
       void);
-  virtual supla_channel_ic_measurement *_get_impulse_counter_measurement(void);
 
  public:
   supla_mqtt_state_message_provider(void);

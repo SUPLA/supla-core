@@ -24,7 +24,8 @@ namespace testing {
 
 SceneOperationsDaoIntegrationTest::SceneOperationsDaoIntegrationTest()
     : IntegrationTest(), Test() {
-  dao = NULL;
+  dao = nullptr;
+  dba = nullptr;
 }
 
 SceneOperationsDaoIntegrationTest::~SceneOperationsDaoIntegrationTest() {}
@@ -330,6 +331,46 @@ TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene6) {
       EXPECT_GT(cfg->get_rgbw().Color, (unsigned int)0);
       EXPECT_EQ(cfg->get_rgbw().ColorBrightness, 15);
       EXPECT_TRUE(cfg->get_rgbw().ColorRandom);
+      delete operation;
+    }
+    delete operations;
+  }
+}
+
+TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene7) {
+  supla_scene_operations *operations = dao->get_scene_operations(7);
+
+  EXPECT_TRUE(operations != NULL);
+  if (operations) {
+    EXPECT_EQ(operations->count(), 1);
+    supla_scene_operation *operation = operations->pop();
+    EXPECT_TRUE(operation != NULL);
+    if (operation) {
+      EXPECT_EQ(operation->get_delay_ms(), 0);
+      supla_action_config *cfg = operation->get_action_config();
+      EXPECT_EQ(cfg->get_action_id(), ACTION_ENABLE);
+      EXPECT_EQ(cfg->get_subject_type(), stSchedule);
+      EXPECT_EQ(cfg->get_subject_id(), 1);
+      delete operation;
+    }
+    delete operations;
+  }
+}
+
+TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene8) {
+  supla_scene_operations *operations = dao->get_scene_operations(8);
+
+  EXPECT_TRUE(operations != NULL);
+  if (operations) {
+    EXPECT_EQ(operations->count(), 1);
+    supla_scene_operation *operation = operations->pop();
+    EXPECT_TRUE(operation != NULL);
+    if (operation) {
+      EXPECT_EQ(operation->get_delay_ms(), 0);
+      supla_action_config *cfg = operation->get_action_config();
+      EXPECT_EQ(cfg->get_action_id(), ACTION_DISABLE);
+      EXPECT_EQ(cfg->get_subject_type(), stSchedule);
+      EXPECT_EQ(cfg->get_subject_id(), 1);
       delete operation;
     }
     delete operations;

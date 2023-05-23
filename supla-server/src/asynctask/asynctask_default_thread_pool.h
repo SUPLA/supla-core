@@ -20,12 +20,16 @@
 #define ASYNCTASK_DEFAULT_THREAD_POOL_H_
 
 #include <string>
+
 #include "asynctask/abstract_asynctask_thread_pool.h"
 
 class supla_asynctask_default_thread_pool
     : public supla_abstract_asynctask_thread_pool {
  private:
   static supla_asynctask_default_thread_pool *_global_instance;
+
+ protected:
+  virtual supla_asynctask_thread_bucket *get_bucket(void);
 
  public:
   explicit supla_asynctask_default_thread_pool(supla_asynctask_queue *queue);

@@ -25,6 +25,7 @@
 #include "client/client_dao.h"
 #include "conn/connection_dao.h"
 #include "device/device.h"
+#include "device/extended_value/channel_extended_value.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -72,10 +73,16 @@ void supla_ch_get_channel_value_with_auth::handle_call(
         supla_user::get_device(regcli.get_user_id(), 0, channel_id);
     if (device != nullptr) {
       char online = 0;
+      supla_channel_extended_value* ev = nullptr;
       bool r = device->get_user()->get_channel_value(
           device->get_id(), channel_id, result.Value.value,
-          result.Value.sub_value, &result.Value.sub_value_type,
-          &result.ExtendedValue, &result.Function, &online, nullptr, true);
+          result.Value.sub_value, &result.Value.sub_value_type, &ev,
+          &result.Function, &online, nullptr, true);
+
+      if (ev) {
+        ev->get_raw_value(&result.ExtendedValue);
+        delete ev;
+      }
 
       if (r && online) {
         result.ResultCode = SUPLA_RESULTCODE_TRUE;

@@ -35,16 +35,14 @@ const string supla_abstract_get_em_value_command::get_command_name(void) {
 void supla_abstract_get_em_value_command::on_command_match(const char *params) {
   process_parameters(
       params, [this](int user_id, int device_id, int channel_id) -> bool {
-        supla_channel_electricity_measurement *em =
-            get_electricity_measurement(user_id, device_id, channel_id);
-        if (!em) {
+        supla_channel_em_extended_value *emv =
+            get_em_value(user_id, device_id, channel_id);
+        if (!emv) {
           return false;
         }
 
         TElectricityMeter_ExtendedValue_V2 em_ev = {};
-        char currency[4];
-        em->getMeasurement(&em_ev);
-        em->getCurrency(currency);
+        emv->get_raw_value(&em_ev);
 
         unsigned int current1 = em_ev.m[0].current[0];
         unsigned int current2 = em_ev.m[0].current[1];
@@ -116,7 +114,7 @@ void supla_abstract_get_em_value_command::on_command_match(const char *params) {
               em_ev.total_reverse_reactive_energy[0],
               em_ev.total_reverse_reactive_energy[1],
               em_ev.total_reverse_reactive_energy[2], em_ev.total_cost,
-              em_ev.price_per_unit, currency);
+              em_ev.price_per_unit, emv->get_currency().c_str());
 
           if (a == 0) {
             if (n > -1) { /* glibc 2.1 */
@@ -132,7 +130,7 @@ void supla_abstract_get_em_value_command::on_command_match(const char *params) {
           }
         }
 
-        delete em;
+        delete emv;
 
         if (buffer) {
           send_result(buffer);

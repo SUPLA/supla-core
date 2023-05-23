@@ -47,10 +47,6 @@ bool dbcommon::mainthread_init(void) {
 
 void dbcommon::mainthread_end(void) { mysql_library_end(); }
 
-void dbcommon::thread_init(void) { mysql_thread_init(); }
-
-void dbcommon::thread_end(void) { mysql_thread_end(); }
-
 bool dbcommon::connect(int connection_timeout_sec) {
   if (is_connected()) {
     return true;

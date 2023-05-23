@@ -19,13 +19,21 @@
 #ifndef USERDEVICES_H_
 #define USERDEVICES_H_
 
+#include <functional>
+#include <list>
 #include <memory>
 #include <vector>
 
 #include "conn/connection_objects.h"
-#include "device.h"
+#include "device/channel_fragment.h"
+#include "device/device.h"
 
 class supla_user_devices : public supla_connection_objects {
+ private:
+  std::list<supla_channel_fragment>
+      channel_fragments;  // Fragments remain in memory even after the device is
+                          // freed.
+
  public:
   supla_user_devices();
   virtual ~supla_user_devices();
@@ -34,7 +42,12 @@ class supla_user_devices : public supla_connection_objects {
   std::shared_ptr<supla_device> get(int device_id);
   std::shared_ptr<supla_device> get(int device_id,
                                     int channel_id);  // device_id or channel_id
-  std::vector<std::weak_ptr<supla_device> > get_all(void);
+  supla_channel_fragment get_channel_fragment(int channel_id);
+  void update_function_of_channel_fragment(int channel_id, int func);
+
+  void for_each(std::function<void(std::shared_ptr<supla_device> device,
+                                   bool *will_continue)>
+                    on_device);
 };
 
 #endif /* USERDEVICES_H_ */

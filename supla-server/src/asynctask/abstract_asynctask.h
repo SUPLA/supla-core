@@ -25,7 +25,7 @@
 #include <memory>
 
 #include "asynctask_state.h"
-#include "asynctask_thread_storage.h"
+#include "asynctask_thread_bucket.h"
 
 class supla_asynctask_queue;
 class supla_abstract_asynctask_thread_pool;
@@ -37,6 +37,7 @@ class supla_abstract_asynctask {
   supla_asynctask_state state;
   long long delay_usec;
   struct timeval started_at;
+  struct timeval execution_request_time;
   struct timeval execution_start_time;
   unsigned long long timeout_usec;
   supla_asynctask_queue *queue;
@@ -52,13 +53,18 @@ class supla_abstract_asynctask {
 
   bool pick(void);
   virtual bool _execute(bool *execute_again,
-                        supla_asynctask_thread_storage **storage) = 0;
-  void execute(supla_asynctask_thread_storage **storage);
+                        supla_asynctask_thread_bucket *bucket) = 0;
+  void execute(supla_asynctask_thread_bucket *bucket);
   void set_observable(void);  // This method should only be called in the
                               // constructor. Calling it results in calling the
                               // on_asynctask_started method in the observer
   void on_task_finished(void);
-  virtual void on_timeout(long long unsigned usec_after_timeout);
+  void set_execution_request_time(bool reset);
+  virtual void on_timeout(unsigned long long timeout_usec,
+                          unsigned long long usec_after_timeout,
+                          bool log_allowed);
+  long long time_diff_usec(struct timeval *now, struct timeval *then,
+                           long long _default);
 
  public:
   supla_abstract_asynctask(supla_asynctask_queue *queue,
@@ -71,6 +77,7 @@ class supla_abstract_asynctask {
   short get_priority(void);
   struct timeval get_started_at(void);
   long long time_left_usec(struct timeval *now);
+  long long time_since_exec_request_usec(struct timeval *now);
   supla_asynctask_state get_state(void);
   long long get_delay_usec(void);
   void set_delay_usec(long long delay_usec);
@@ -79,6 +86,7 @@ class supla_abstract_asynctask {
   void cancel(void);
   bool is_finished(void);
   bool is_observable(void);
+  bool is_execution_requested(void);
 };
 
 #endif /*ABSTRACT_ASYNCTASK_H_*/

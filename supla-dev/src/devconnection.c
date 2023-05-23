@@ -58,7 +58,7 @@ void devconnection_terminate(void *sthread) {
 #ifdef __SINGLE_THREAD
   st_app_terminate = 1;
 #else
-  sthread_terminate(sthread);
+  sthread_terminate(sthread, 1);
 #endif
 }
 
@@ -373,11 +373,13 @@ void *devconnection_start(void) {
   stp.free_on_finish = 0;
   stp.initialize = NULL;
 
-  return sthread_run(&stp);
+  void *sthread = NULL;
+  sthread_run(&stp, &sthread);
+  return sthread;
 
 #endif
 }
 
 void devconnection_stop(void *dconn_thread) {
-  if (dconn_thread != NULL) sthread_twf(dconn_thread);
+  if (dconn_thread != NULL) sthread_twf(dconn_thread, 1);
 }

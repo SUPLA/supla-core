@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "db/abstract_db_access_provider.h"
-#include "device/channel_temphum.h"
+#include "device/value/channel_value_envelope.h"
 #include "proto.h"
 
 class supla_temperature_logger_dao {
@@ -34,7 +34,7 @@ class supla_temperature_logger_dao {
   void add_temperature(int channel_id, double temperature);
   void add_temperature_and_humidity(int channel_id, double temperature,
                                     double humidity);
-  void load(int user_id, std::vector<supla_channel_temphum *> *result);
+  void load(int user_id, std::vector<supla_channel_value_envelope *> *result);
 };
 
 #endif /* TEMPERATURE_LOGGER_DAO_H_ */

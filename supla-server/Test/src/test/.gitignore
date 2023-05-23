@@ -1,4 +1,4 @@
-/alexa/
+/amazon/
 /integration/
 /webhook/
 /mqtt/
@@ -15,3 +15,5 @@
 /device/
 /analyzer/
 /cyclictasks/
+/push/
+/vbt/

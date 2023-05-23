@@ -39,32 +39,41 @@ unsigned int supla_temperature_logger::task_interval_sec(void) { return 600; }
 
 void supla_temperature_logger::run(const vector<supla_user *> *users,
                                    supla_abstract_db_access_provider *dba) {
-  std::vector<supla_channel_temphum *> th;
+  std::vector<supla_channel_value_envelope *> env;
 
   supla_temperature_logger_dao dao(dba);
 
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-    vector<weak_ptr<supla_device> > devices = (*uit)->get_devices()->get_all();
+    (*uit)->get_devices()->for_each(
+        [&env](shared_ptr<supla_device> device, bool *will_continue) -> void {
+          device->get_channels()->get_channel_values(
+              &env, [](supla_channel_value *value) -> bool {
+                return dynamic_cast<supla_channel_temphum_value *>(value) !=
+                       nullptr;
+              });
+        });
 
-    for (auto dit = devices.cbegin(); dit != devices.cend(); ++dit) {
-      shared_ptr<supla_device> device = (*dit).lock();
-      if (device) {
-        device->get_channels()->get_temp_and_humidity(&th);
-      }
-    }
-
-    dao.load((*uit)->getUserID(), &th);
+    dao.load((*uit)->getUserID(), &env);
   }
 
-  for (auto it = th.cbegin(); it != th.cend(); ++it) {
-    if ((*it)->isTempAndHumidity() == 1) {
-      if ((*it)->getTemperature() > -273 || (*it)->getHumidity() > -1) {
-        dao.add_temperature_and_humidity((*it)->getChannelId(),
-                                         (*it)->getTemperature(),
-                                         (*it)->getHumidity());
+  for (auto it = env.cbegin(); it != env.cend(); ++it) {
+    supla_channel_temphum_value *th =
+        dynamic_cast<supla_channel_temphum_value *>((*it)->get_value());
+
+    if (th) {
+      if (th->is_humidity_available()) {
+        if (th->get_temperature() >
+                supla_channel_temphum_value::incorrect_temperature() ||
+            th->get_humidity() >
+                supla_channel_temphum_value::incorrect_humidity()) {
+          dao.add_temperature_and_humidity((*it)->get_channel_id(),
+                                           th->get_temperature(),
+                                           th->get_humidity());
+        }
+      } else if (th->get_temperature() >
+                 supla_channel_temphum_value::incorrect_temperature()) {
+        dao.add_temperature((*it)->get_channel_id(), th->get_temperature());
       }
-    } else if ((*it)->getTemperature() > -273) {
-      dao.add_temperature((*it)->getChannelId(), (*it)->getTemperature());
     }
 
     delete *it;

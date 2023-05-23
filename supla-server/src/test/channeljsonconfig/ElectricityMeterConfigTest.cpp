@@ -22,6 +22,7 @@
 
 #include "TestHelper.h"
 #include "channeljsonconfig/electricity_meter_config.h"
+#include "device/extended_value/channel_em_extended_value.h"
 #include "log.h"
 #include "srpc/srpc.h"
 
@@ -87,11 +88,10 @@ TEST_F(ElectricityMeterConfigTest, emEvSetAvailableCounters) {
   TElectricityMeter_ExtendedValue_V2 em_ev = {};
   em_ev.measured_values = EM_VAR_REVERSE_ACTIVE_ENERGY;
 
-  TSuplaChannelExtendedValue ev = {};
-  EXPECT_TRUE(srpc_evtool_v2_emextended2extended(&em_ev, &ev));
+  supla_channel_em_extended_value em(&em_ev, nullptr, 0);
 
-  EXPECT_TRUE(config->update_available_counters(&ev));
-  EXPECT_FALSE(config->update_available_counters(&ev));
+  EXPECT_TRUE(config->update_available_counters(&em));
+  EXPECT_FALSE(config->update_available_counters(&em));
 
   char *str1 = config->get_properties();
   EXPECT_TRUE(str1 != NULL);
@@ -557,19 +557,12 @@ TEST_F(ElectricityMeterConfigTest, channelExtendedValue_EV) {
       EM_VAR_REVERSE_ACTIVE_ENERGY | EM_VAR_REVERSE_REACTIVE_ENERGY |
       EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED));
 
-  TSuplaChannelExtendedValue ev = {};
-  {
-    TElectricityMeter_ExtendedValue_V2 em_ev = {};
-    srpc_evtool_v2_emextended2extended(&em_ev, &ev);
-  }
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
 
-  config->add_initial_values(0, (TSuplaChannelExtendedValue *)NULL);
-  config->add_initial_values(0, &ev);
+  config->add_initial_values(0, (TElectricityMeter_ExtendedValue_V2 *)nullptr);
+  config->add_initial_values(0, &em_ev);
 
   {
-    TElectricityMeter_ExtendedValue_V2 em_ev = {};
-    srpc_evtool_v2_extended2emextended(&ev, &em_ev);
-
     EXPECT_EQ(em_ev.total_forward_active_energy[0], (unsigned)0);
     EXPECT_EQ(em_ev.total_forward_active_energy[1], (unsigned)0);
     EXPECT_EQ(em_ev.total_forward_active_energy[2], (unsigned)0);
@@ -712,7 +705,7 @@ TEST_F(ElectricityMeterConfigTest, substractonWithPhaseImbalance) {
                                       1000;
 
   config->add_initial_values(0, &em_ev);
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.total_forward_active_energy);
 
   EXPECT_EQ(value.total_forward_active_energy,
             (em_ev.total_forward_active_energy[0] +
@@ -743,7 +736,7 @@ TEST_F(ElectricityMeterConfigTest, channelValue) {
   TElectricityMeter_Value value = {};
   value.total_forward_active_energy = 5;
 
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.total_forward_active_energy);
   EXPECT_EQ(value.total_forward_active_energy, (unsigned)10017);
 
   delete config;
@@ -761,7 +754,7 @@ TEST_F(ElectricityMeterConfigTest, channelValueOverflow) {
   TElectricityMeter_Value value = {};
   value.total_forward_active_energy = UINT_MAX - 1000;
 
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.total_forward_active_energy);
   EXPECT_EQ(value.total_forward_active_energy, UINT_MAX);
 
   delete config;
@@ -780,12 +773,12 @@ TEST_F(ElectricityMeterConfigTest, channelValueNeg) {
   TElectricityMeter_Value value = {};
   value.total_forward_active_energy = 1000;
 
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.total_forward_active_energy);
   EXPECT_EQ(value.total_forward_active_energy, (unsigned int)0);
 
   value.total_forward_active_energy = 1000000001;
 
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.total_forward_active_energy);
   EXPECT_EQ(value.total_forward_active_energy, (unsigned int)1);
 
   delete config;

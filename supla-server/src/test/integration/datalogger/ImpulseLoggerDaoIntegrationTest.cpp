@@ -68,10 +68,10 @@ TEST_F(ImpulseLoggerDaoIntegrationTest, add) {
 
   ic_val.counter = 4;
 
-  supla_channel_ic_measurement icm(11, SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                   &ic_val, nullptr, nullptr, 0, 2);
+  supla_channel_ic_extended_value icv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
+                                      &ic_val, nullptr, nullptr, 0, 2);
 
-  dao->add(&icm);
+  dao->add(11, &icv);
 
   result = "";
 

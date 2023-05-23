@@ -24,7 +24,7 @@
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
 #include "db/db_access_provider.h"
-#include "device/value_getter.h"
+#include "device/channel_property_getter.h"
 #include "log.h"
 #include "scene/scene_dao.h"
 #include "scene/scene_operations_dao.h"
@@ -35,19 +35,19 @@ supla_scene_asynctask::supla_scene_asynctask(
     unsigned int estimated_execution_time, supla_asynctask_queue *queue,
     supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_action_executor *action_executor,
-    supla_abstract_value_getter *value_getter,
+    supla_abstract_channel_property_getter *property_getter,
     supla_scene_operations *operations)
     : supla_abstract_asynctask(queue, pool) {
   assert(action_executor);
   assert(operations);
-  assert(value_getter);
+  assert(property_getter);
 
   this->caller = caller;
   this->user_id = user_id;
   this->scene_id = scene_id;
   this->estimated_execution_time = estimated_execution_time;
   this->action_executor = action_executor;
-  this->value_getter = value_getter;
+  this->property_getter = property_getter;
   this->operations = operations;
 
   set_delay_usec(op_get_delay_ms() * 1000);
@@ -67,9 +67,9 @@ supla_scene_asynctask::~supla_scene_asynctask() {
     operations = NULL;
   }
 
-  if (value_getter) {
-    delete value_getter;
-    value_getter = NULL;
+  if (property_getter) {
+    delete property_getter;
+    property_getter = NULL;
   }
 }
 
@@ -128,7 +128,7 @@ bool supla_scene_asynctask::get_scene_state(supla_asynctask_queue *queue,
 }
 
 bool supla_scene_asynctask::_execute(bool *execute_again,
-                                     supla_asynctask_thread_storage **storage) {
+                                     supla_asynctask_thread_bucket *bucket) {
   do {
     supla_scene_operation *operation = op_pop();
     if (operation) {
@@ -137,7 +137,7 @@ bool supla_scene_asynctask::_execute(bool *execute_again,
                        operation->get_action_config()->get_subject_id())) {
         action_executor->execute_action(supla_caller(caller, ctScene, scene_id),
                                         user_id, operation->get_action_config(),
-                                        value_getter);
+                                        property_getter);
       }
 
       delete operation;
@@ -170,6 +170,13 @@ bool supla_scene_asynctask::_execute(bool *execute_again,
 
   *execute_again = false;
   return true;
+}
+
+void supla_scene_asynctask::on_timeout(unsigned long long timeout_usec,
+                                       unsigned long long usec_after_timeout) {
+  supla_log(LOG_WARNING,
+            "Scene execution timeout. Id: %i, TimeoutUSec: %llu+%llu",
+            get_scene_id(), timeout_usec, usec_after_timeout);
 }
 
 // static
@@ -210,12 +217,13 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
       return serNotExists;
     } else {
       supla_action_executor *action_executor = new supla_action_executor();
-      supla_value_getter *value_getter = new supla_value_getter();
+      supla_cahnnel_property_getter *property_getter =
+          new supla_cahnnel_property_getter();
 
       supla_scene_asynctask *scene = new supla_scene_asynctask(
           caller, user_id, scene_id,
           scene_dao.get_estimated_execution_time(scene_id), queue, pool,
-          action_executor, value_getter, operations);
+          action_executor, property_getter, operations);
       scene->start();
       return serOK;
     }

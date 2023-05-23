@@ -103,49 +103,49 @@ TEST_F(ImpulseCounterConfigTest, addingAnInitialValue) {
   config->add_initial_value(NULL);
 
   config->set_user_config("{\"impulsesPerUnit\":0, \"initialValue\":2234.56}");
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, (unsigned)0);
 
   config->set_user_config("{\"impulsesPerUnit\":100, \"initialValue\":0}");
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, (unsigned)0);
 
   config->set_user_config("{\"impulsesPerUnit\":1, \"initialValue\":100}");
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, (unsigned)100);
 
   value.counter = 0;
   config->set_user_config("{\"impulsesPerUnit\":1000, \"initialValue\":100}");
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, (unsigned)100000);
 
   value.counter = 0;
   config->set_user_config(
       "{\"impulsesPerUnit\":1000, \"initialValue\":100.123}");
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, (unsigned)100123);
 
   value.counter = 0;
   config->set_user_config(
       "{\"impulsesPerUnit\":1000000, \"initialValue\":100000000}");
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, (unsigned long long)100000000000000);
 
   value.counter = -1;
   config->set_user_config(
       "{\"impulsesPerUnit\":1000000, \"initialValue\":100000000}");
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, ULONG_MAX);
 
   value.counter = 0xFFFFFFFFFFFFFF00;
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, ULONG_MAX);
 
@@ -161,12 +161,12 @@ TEST_F(ImpulseCounterConfigTest, overValue) {
   value.counter = ULONG_MAX;
   config->set_user_config(
       "{\"impulsesPerUnit\":1000000, \"initialValue\":100000000}");
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, ULONG_MAX);
 
   value.counter = ULONG_MAX - 100;
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, ULONG_MAX);
 
@@ -180,19 +180,19 @@ TEST_F(ImpulseCounterConfigTest, negative) {
   TDS_ImpulseCounter_Value value = {};
 
   config->set_user_config("{\"impulsesPerUnit\":5, \"initialValue\":-100}");
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, (unsigned)0);
 
   value.counter = 499;
 
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, (unsigned)0);
 
   value.counter = 501;
 
-  config->add_initial_value(&value);
+  config->add_initial_value(&value.counter);
 
   EXPECT_EQ(value.counter, (unsigned)1);
 

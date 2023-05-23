@@ -56,12 +56,12 @@ TEST_F(ClientSceneIntegrationTest, loadAndUpdateRemote) {
   supla_client_scenes scenes(&remoteUpdater, &dao, NULL);
 
   scenes.load(2, 1);
-  EXPECT_EQ(scenes.count(), 6);
+  EXPECT_EQ(scenes.count(), 8);
   EXPECT_EQ(scenePack.count, 0);
 
   EXPECT_TRUE(scenes.update_remote());
 
-  EXPECT_EQ(scenePack.count, 6);
+  EXPECT_EQ(scenePack.count, 8);
   EXPECT_EQ(scenePack.total_left, 0);
 
   for (int a = 0; a < scenePack.count; a++) {
@@ -89,7 +89,7 @@ TEST_F(ClientSceneIntegrationTest, loadAndUpdateRemote) {
   EXPECT_EQ(statePack.count, 0);
   EXPECT_TRUE(scenes.update_remote());
 
-  EXPECT_EQ(statePack.count, 6);
+  EXPECT_EQ(statePack.count, 8);
   EXPECT_EQ(statePack.total_left, 0);
 
   for (int a = 0; a < statePack.count; a++) {

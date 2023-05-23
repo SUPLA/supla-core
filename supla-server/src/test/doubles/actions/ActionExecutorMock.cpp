@@ -24,7 +24,9 @@ namespace testing {
 
 using std::function;
 using std::list;
+using std::map;
 using std::shared_ptr;
+using std::string;
 
 ActionExecutorMock::ActionExecutorMock() : supla_abstract_action_executor() {
   clear();
@@ -34,6 +36,10 @@ ActionExecutorMock::~ActionExecutorMock() {}
 
 shared_ptr<supla_device> ActionExecutorMock::get_device(void) {
   return supla_abstract_action_executor::get_device();
+}
+
+map<string, string> ActionExecutorMock::get_replacement_map(void) {
+  return replacement_map;
 }
 
 void ActionExecutorMock::clear(void) {
@@ -50,6 +56,9 @@ void ActionExecutorMock::clear(void) {
   this->up_or_stop_counter = 0;
   this->down_or_stop_counter = 0;
   this->step_by_step_counter = 0;
+  this->enable_counter = 0;
+  this->disable_counter = 0;
+  this->sent_counter = 0;
   this->execute_counter = 0;
   this->interrupt_counter = 0;
   this->interrupt_and_execute_counter = 0;
@@ -176,6 +185,25 @@ void ActionExecutorMock::execute(void) {
   execute_counter++;
 }
 
+void ActionExecutorMock::enable(void) {
+  addTime();
+  enable_counter++;
+}
+
+void ActionExecutorMock::disable(void) {
+  addTime();
+  disable_counter++;
+}
+
+void ActionExecutorMock::send(
+    const std::map<std::string, std::string> *replacement_map) {
+  addTime();
+  sent_counter++;
+  if (replacement_map) {
+    this->replacement_map = *replacement_map;
+  }
+}
+
 void ActionExecutorMock::interrupt(void) {
   addTime();
   interrupt_counter++;
@@ -254,6 +282,12 @@ int ActionExecutorMock::getInterruptCounter(void) { return interrupt_counter; }
 int ActionExecutorMock::getInterruptAndExecuteCounter(void) {
   return interrupt_and_execute_counter;
 }
+
+int ActionExecutorMock::getEnableCounter(void) { return enable_counter; }
+
+int ActionExecutorMock::getDisableCounter(void) { return disable_counter; }
+
+int ActionExecutorMock::getSentCounter(void) { return sent_counter; }
 
 int ActionExecutorMock::getStopCounter(void) { return stop_counter; }
 
@@ -336,6 +370,18 @@ int ActionExecutorMock::counterSetCount(void) {
   }
 
   if (step_by_step_counter > 0) {
+    result++;
+  }
+
+  if (disable_counter > 0) {
+    result++;
+  }
+
+  if (enable_counter > 0) {
+    result++;
+  }
+
+  if (sent_counter > 0) {
     result++;
   }
 

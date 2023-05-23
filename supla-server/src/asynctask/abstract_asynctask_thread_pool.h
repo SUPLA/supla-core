@@ -20,11 +20,13 @@
 #define ASYNCTASK_THREAD_POOL_H_
 
 #include <sys/time.h>
+
 #include <string>
 #include <vector>
 
 class supla_asynctask_queue;
 class supla_abstract_asynctask;
+class supla_asynctask_thread_bucket;
 class supla_abstract_asynctask_thread_pool {
  private:
   void *lck;
@@ -45,9 +47,13 @@ class supla_abstract_asynctask_thread_pool {
  protected:
   friend class supla_asynctask_queue;
 
+  virtual supla_asynctask_thread_bucket *get_bucket(void) = 0;
   void execution_request(supla_abstract_asynctask *task);
   void remove_task(supla_abstract_asynctask *task);
   void terminate(void);
+  virtual int tasks_per_thread(void);
+  virtual bool should_keep_alive(unsigned long long usec_since_last_exec,
+                                 size_t thread_count);
 
  public:
   explicit supla_abstract_asynctask_thread_pool(supla_asynctask_queue *queue);

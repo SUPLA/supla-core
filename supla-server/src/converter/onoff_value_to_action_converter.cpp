@@ -17,7 +17,7 @@
  */
 #include "converter/onoff_value_to_action_converter.h"
 
-#include "device/channel_onoff_value.h"
+#include "device/value/channel_onoff_value.h"
 
 bool onoff_value_to_action_converter::convert(
     supla_channel_value *value,

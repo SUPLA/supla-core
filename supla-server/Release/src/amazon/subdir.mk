@@ -4,32 +4,44 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/amazon/alexachangereportrequest.cpp \
-../src/amazon/alexaclient.cpp \
-../src/amazon/alexacredentials.cpp \
-../src/amazon/alexarequest.cpp \
-../src/amazon/alexaresponserequest.cpp 
+../src/amazon/alexa_change_report_request.cpp \
+../src/amazon/alexa_change_report_search_condition.cpp \
+../src/amazon/alexa_change_report_throttling.cpp \
+../src/amazon/alexa_client.cpp \
+../src/amazon/alexa_credentials.cpp \
+../src/amazon/alexa_credentials_dao.cpp \
+../src/amazon/alexa_request.cpp \
+../src/amazon/alexa_response_request.cpp \
+../src/amazon/alexa_response_search_condition.cpp 
 
 CPP_DEPS += \
-./src/amazon/alexachangereportrequest.d \
-./src/amazon/alexaclient.d \
-./src/amazon/alexacredentials.d \
-./src/amazon/alexarequest.d \
-./src/amazon/alexaresponserequest.d 
+./src/amazon/alexa_change_report_request.d \
+./src/amazon/alexa_change_report_search_condition.d \
+./src/amazon/alexa_change_report_throttling.d \
+./src/amazon/alexa_client.d \
+./src/amazon/alexa_credentials.d \
+./src/amazon/alexa_credentials_dao.d \
+./src/amazon/alexa_request.d \
+./src/amazon/alexa_response_request.d \
+./src/amazon/alexa_response_search_condition.d 
 
 OBJS += \
-./src/amazon/alexachangereportrequest.o \
-./src/amazon/alexaclient.o \
-./src/amazon/alexacredentials.o \
-./src/amazon/alexarequest.o \
-./src/amazon/alexaresponserequest.o 
+./src/amazon/alexa_change_report_request.o \
+./src/amazon/alexa_change_report_search_condition.o \
+./src/amazon/alexa_change_report_throttling.o \
+./src/amazon/alexa_client.o \
+./src/amazon/alexa_credentials.o \
+./src/amazon/alexa_credentials_dao.o \
+./src/amazon/alexa_request.o \
+./src/amazon/alexa_response_request.o \
+./src/amazon/alexa_response_search_condition.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
 src/amazon/%.o: ../src/amazon/%.cpp src/amazon/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__BCRYPT=1 -DSPROTO_WITHOUT_OUT_BUFFER -DSRPC_WITHOUT_OUT_QUEUE -DUSE_DEPRECATED_EMEV_V1 -D__OPENSSL_TOOLS=1 -I$(INCMYSQL) -I../src/mqtt -I../src/client -I../src/user -I../src/device -I../src -I$(SSLDIR)/include -O2 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -std=c++11 -fPIE -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	g++ -D__BCRYPT=1 -D__SUPLA_SERVER=1 -DSPROTO_WITHOUT_OUT_BUFFER -DSRPC_WITHOUT_OUT_QUEUE -DUSE_DEPRECATED_EMEV_V1 -D__OPENSSL_TOOLS=1 -I$(INCMYSQL) -I../src/mqtt -I../src/client -I../src/user -I../src/device -I../src -I$(SSLDIR)/include -O2 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -std=c++11 -fPIE -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
@@ -37,7 +49,7 @@ src/amazon/%.o: ../src/amazon/%.cpp src/amazon/subdir.mk
 clean: clean-src-2f-amazon
 
 clean-src-2f-amazon:
-	-$(RM) ./src/amazon/alexachangereportrequest.d ./src/amazon/alexachangereportrequest.o ./src/amazon/alexaclient.d ./src/amazon/alexaclient.o ./src/amazon/alexacredentials.d ./src/amazon/alexacredentials.o ./src/amazon/alexarequest.d ./src/amazon/alexarequest.o ./src/amazon/alexaresponserequest.d ./src/amazon/alexaresponserequest.o
+	-$(RM) ./src/amazon/alexa_change_report_request.d ./src/amazon/alexa_change_report_request.o ./src/amazon/alexa_change_report_search_condition.d ./src/amazon/alexa_change_report_search_condition.o ./src/amazon/alexa_change_report_throttling.d ./src/amazon/alexa_change_report_throttling.o ./src/amazon/alexa_client.d ./src/amazon/alexa_client.o ./src/amazon/alexa_credentials.d ./src/amazon/alexa_credentials.o ./src/amazon/alexa_credentials_dao.d ./src/amazon/alexa_credentials_dao.o ./src/amazon/alexa_request.d ./src/amazon/alexa_request.o ./src/amazon/alexa_response_request.d ./src/amazon/alexa_response_request.o ./src/amazon/alexa_response_search_condition.d ./src/amazon/alexa_response_search_condition.o
 
 .PHONY: clean-src-2f-amazon
 

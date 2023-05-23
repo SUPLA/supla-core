@@ -258,11 +258,11 @@ bool supla_abstract_register_device::add_channels(void) {
       if (channel_type == 0) {
         int Param1 = 0;
         int Param2 = 0;
-        supla_device_channel::getDefaults(type, default_func, &Param1, &Param2);
+        supla_device_channel::get_defaults(type, default_func, &Param1, &Param2);
 
         int channel_id = device_dao->add_channel(
             device_id, number, type, default_func, Param1, Param2,
-            supla_device_channel::funcListFilter(func_list, type),
+            supla_device_channel::func_list_filter(func_list, type),
             channel_flags, get_user_id());
 
         if (channel_id == 0) {

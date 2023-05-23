@@ -32,31 +32,27 @@ void supla_connection_objects::lock(void) { lck_lock(lck); }
 void supla_connection_objects::unlock(void) { lck_unlock(lck); }
 
 void supla_connection_objects::for_each(
-    function<bool(shared_ptr<supla_abstract_connection_object> obj)>
+    function<void(shared_ptr<supla_abstract_connection_object> obj,
+                  bool *will_continue)>
         on_object) {
-  lock();
+  vector<weak_ptr<supla_abstract_connection_object>> objects = get_all();
+  bool will_continue = true;
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     shared_ptr<supla_abstract_connection_object> _obj = (*it).lock();
 
-    if (_obj != nullptr && !on_object(_obj)) {
-      break;
+    if (_obj != nullptr) {
+      on_object(_obj, &will_continue);
+      if (!will_continue) {
+        break;
+      }
     }
   }
-  unlock();
 }
 
-vector<shared_ptr<supla_abstract_connection_object> >
+vector<weak_ptr<supla_abstract_connection_object>>
 supla_connection_objects::get_all(void) {
   lock();
-  vector<shared_ptr<supla_abstract_connection_object> > result;
-
-  for (auto it = objects.begin(); it != objects.end(); ++it) {
-    shared_ptr<supla_abstract_connection_object> _obj = (*it).lock();
-    if (_obj != nullptr) {
-      result.push_back(_obj);
-    }
-  }
-
+  vector<weak_ptr<supla_abstract_connection_object>> result = objects;
   unlock();
 
   return result;
@@ -73,6 +69,9 @@ bool supla_connection_objects::add(
 
   bool ptr_exists = false;
   shared_ptr<supla_abstract_connection_object> previous = nullptr;
+  vector<shared_ptr<supla_abstract_connection_object>> dont_release;
+
+  dont_release.reserve(objects.size());
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     shared_ptr<supla_abstract_connection_object> _obj = (*it).lock();
@@ -87,6 +86,10 @@ bool supla_connection_objects::add(
       // remove from list (will be terminated)
       it = objects.erase(it);
       --it;
+    } else {
+      // We don't want the object to accidentally get freed between lock() and
+      // unlock()
+      dont_release.push_back(_obj);
     }
   }
 
@@ -102,6 +105,8 @@ bool supla_connection_objects::add(
 
   unlock();
 
+  dont_release.clear();
+
   return result;
 }
 
@@ -112,7 +117,11 @@ shared_ptr<supla_abstract_connection_object> supla_connection_objects::get(
   }
 
   shared_ptr<supla_abstract_connection_object> result;
-  lock();
+  vector<weak_ptr<supla_abstract_connection_object>> objects =
+      get_all();  // We don't want to use lock() / unlock() so that if an object
+                  // is freed it won't happen during the lock. That's why we
+                  // make a copy of the list.
+
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     shared_ptr<supla_abstract_connection_object> _obj = (*it).lock();
 
@@ -121,32 +130,36 @@ shared_ptr<supla_abstract_connection_object> supla_connection_objects::get(
       break;
     }
   }
-  unlock();
+
   return result;
 }
 
 int supla_connection_objects::count(void) {
   int result = 0;
-  lock();
+
+  vector<weak_ptr<supla_abstract_connection_object>> objects =
+      get_all();  // We don't want to use lock() / unlock() so that if an object
+                  // is freed it won't happen during the lock. That's why we
+                  // make a copy of the list.
+
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     if (!(*it).expired()) {
       result++;
     }
   }
-  unlock();
+
   return result;
 }
 
 bool supla_connection_objects::reconnect_all(void) {
-  vector<shared_ptr<supla_abstract_connection_object> > objects = get_all();
-
   bool result = false;
 
-  for (auto it = objects.begin(); it != objects.end(); ++it) {
-    if ((*it)->reconnect()) {
+  for_each([&result](shared_ptr<supla_abstract_connection_object> object,
+                     bool *will_continue) -> void {
+    if (object->reconnect()) {
       result = true;
     }
-  }
+  });
 
   return result;
 }

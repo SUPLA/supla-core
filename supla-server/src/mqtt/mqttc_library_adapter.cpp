@@ -17,6 +17,7 @@
  */
 
 #include "mqttc_library_adapter.h"
+
 #include <fcntl.h>
 #include <netdb.h>
 #include <openssl/bio.h>
@@ -27,6 +28,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include "log.h"
 #include "mqtt_client.h"
 #include "supla-socket.h"
@@ -203,7 +205,10 @@ void supla_mqttc_library_adapter::cleanup(void) {
   if (settings->isSSLEnabled()) {
     EVP_cleanup();
     ERR_clear_error();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     ERR_remove_thread_state(NULL);
+#pragma GCC diagnostic pop
     ERR_free_strings();
     CRYPTO_cleanup_all_ex_data();
   }

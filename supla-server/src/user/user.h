@@ -22,26 +22,25 @@
 #define SHORT_UNIQUEID_MAXSIZE 37
 #define LONG_UNIQUEID_MAXSIZE 201
 
-#include <userclients.h>
-#include <userdevices.h>
-
 #include <cstddef>
 #include <functional>
 #include <memory>
 #include <vector>
 
-#include "amazon/alexacredentials.h"
+#include "amazon/alexa_credentials.h"
 #include "caller.h"
-#include "commontypes.h"
-#include "google/googlehomecredentials.h"
+#include "google/google_home_credentials.h"
 #include "proto.h"
-#include "webhook/statewebhookcredentials.h"
+#include "user/userclients.h"
+#include "user/userdevices.h"
+#include "webhook/state_webhook_credentials.h"
 
 class supla_device;
 class supla_client;
 class supla_user_channelgroups;
 class supla_channel_electricity_measurement;
 class supla_channel_ic_measurement;
+class supla_value_based_triggers;
 
 class supla_user {
  private:
@@ -65,20 +64,13 @@ class supla_user {
   supla_user_clients *clients;
   supla_user_devices *devices;
 
-  void *complex_value_functions_arr;
-
   supla_user_channelgroups *cgroups;
   supla_amazon_alexa_credentials *amazon_alexa_credentials;
   supla_google_home_credentials *google_home_credentials;
   supla_state_webhook_credentials *state_webhook_credentials;
+  supla_value_based_triggers *value_based_triggers;
   int UserID;
   bool connections_allowed;
-
-  void compex_value_cache_clean(int DeviceId);
-  channel_function_t compex_value_cache_get_function(
-      int ChannelID, channel_function_t **_fnc = NULL);
-  void compex_value_cache_update_function(int DeviceId, int ChannelID, int Type,
-                                          int Function, bool channel_is_hidden);
 
   static char find_user_by_id(void *ptr, void *UserID);
   static char find_user_by_suid(void *ptr, void *suid);
@@ -130,22 +122,16 @@ class supla_user {
 
   void on_channels_added(int DeviceID, const supla_caller &caller);
   void on_device_registered(int DeviceID, const supla_caller &caller);
-  /*
-    void moveDeviceToTrash(supla_device *device);
-    void moveClientToTrash(supla_client *client);
-    void emptyTrash(void);
-  */
+
   int getUserID(void);
   const char *getShortUniqueID(void);
   const char *getLongUniqueID(void);
 
-  bool get_channel_value(int device_id, int channel_id,
-                         char value[SUPLA_CHANNELVALUE_SIZE],
-                         char sub_value[SUPLA_CHANNELVALUE_SIZE],
-                         char *sub_value_type, TSuplaChannelExtendedValue *ev,
-                         int *function, char *online,
-                         unsigned _supla_int_t *validity_time_sec,
-                         bool for_client);
+  bool get_channel_value(
+      int device_id, int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
+      char sub_value[SUPLA_CHANNELVALUE_SIZE], char *sub_value_type,
+      supla_channel_extended_value **extended_value, int *function,
+      char *online, unsigned _supla_int_t *validity_time_sec, bool for_client);
 
   bool set_device_channel_value(const supla_caller &caller, int device_id,
                                 int channel_id, int group_id, unsigned char eol,
@@ -160,8 +146,6 @@ class supla_user {
                              int channel_id,
                              TCS_DeviceCalCfgRequest_B *request);
 
-  channel_complex_value get_channel_complex_value(int channel_id);
-
   void set_channel_function(std::shared_ptr<supla_client> sender,
                             TCS_SetChannelFunction *func);
   void set_caption(std::shared_ptr<supla_client> sender,
@@ -171,9 +155,10 @@ class supla_user {
   supla_google_home_credentials *googleHomeCredentials(void);
   supla_state_webhook_credentials *stateWebhookCredentials(void);
 
+  supla_value_based_triggers *get_value_based_triggers(void);
+
   static void on_scene_changed(const supla_caller &caller, int user_id,
                                int scene_id);
-
   explicit supla_user(int UserID);
   supla_user(int UserID, const char *short_unique_id,
              const char *long_unique_id);

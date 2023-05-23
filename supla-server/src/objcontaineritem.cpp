@@ -17,6 +17,8 @@
  */
 
 #include "objcontaineritem.h"
+
+#include "lck.h"
 #include "log.h"
 
 supla_objcontainer_item::supla_objcontainer_item(supla_objcontainer *Container,
@@ -24,9 +26,10 @@ supla_objcontainer_item::supla_objcontainer_item(supla_objcontainer *Container,
   this->Container = Container;
   this->Id = Id;
   this->RemoteUpdateMark = 0;
+  this->lck = lck_init();
 }
 
-supla_objcontainer_item::~supla_objcontainer_item(void) {}
+supla_objcontainer_item::~supla_objcontainer_item(void) { lck_free(lck); }
 
 supla_objcontainer *supla_objcontainer_item::getContainer(void) {
   return Container;
@@ -38,14 +41,25 @@ int supla_objcontainer_item::getExtraId() { return -1; }
 
 void supla_objcontainer_item::mark_for_remote_update(int mark) {
   if (remote_update_is_possible()) {
+    lock();
     RemoteUpdateMark |= mark;
+    unlock();
   }
 }
 
 void supla_objcontainer_item::unmark_for_remote_update(int unmark) {
+  lock();
   RemoteUpdateMark ^= RemoteUpdateMark & unmark;
+  unlock();
 }
 
 int supla_objcontainer_item::marked_for_remote_update(void) {
-  return RemoteUpdateMark;
+  lock();
+  int result = RemoteUpdateMark;
+  unlock();
+  return result;
 }
+
+void supla_objcontainer_item::lock(void) { lck_lock(lck); }
+
+void supla_objcontainer_item::unlock(void) { lck_unlock(lck); }

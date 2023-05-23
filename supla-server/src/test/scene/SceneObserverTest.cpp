@@ -75,7 +75,7 @@ TEST_F(SceneObserverTest, startAndFinish) {
 
   shared_ptr<supla_abstract_asynctask> scene =
       (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 0, queue, pool,
-                                 action_executor, value_getter, operations))
+                                 action_executor, property_getter, operations))
           ->start();
 
   EXPECT_EQ(start_count, 1);
@@ -107,7 +107,7 @@ TEST_F(SceneObserverTest, removeObserverBeforeTaskFinished) {
 
   shared_ptr<supla_abstract_asynctask> scene =
       (new supla_scene_asynctask(supla_caller(ctIPC), 1, 2, 0, queue, pool,
-                                 action_executor, value_getter, operations))
+                                 action_executor, property_getter, operations))
           ->start();
 
   EXPECT_EQ(start_count, 1);

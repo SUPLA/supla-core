@@ -42,7 +42,10 @@ int main(int argc, char **argv) {
 #ifdef __OPENSSL_TOOLS
   EVP_cleanup();
   ERR_clear_error();
-  ERR_remove_thread_state(NULL);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    ERR_remove_thread_state(NULL);
+#pragma GCC diagnostic pop
   ERR_free_strings();
   CRYPTO_cleanup_all_ex_data();
 #endif /*__OPENSSL_TOOLS*/

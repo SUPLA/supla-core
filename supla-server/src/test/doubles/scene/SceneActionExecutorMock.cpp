@@ -30,7 +30,7 @@ using std::shared_ptr;
 SceneActionExecutorMock::SceneActionExecutorMock() : ActionExecutorMock() {
   this->queue = NULL;
   this->pool = NULL;
-  this->value_getter = NULL;
+  this->property_getter = NULL;
   this->action_executor = NULL;
   this->operations = NULL;
   this->last_executed_asynctask = NULL;
@@ -45,11 +45,11 @@ SceneActionExecutorMock::~SceneActionExecutorMock() {
 void SceneActionExecutorMock::execute(void) {
   ActionExecutorMock::execute();
   if (get_scene_id() && queue && pool && action_executor,
-      value_getter && operations) {
+      property_getter && operations) {
     last_executed_asynctask =
         (new supla_scene_asynctask(get_caller(), get_user_id(), get_scene_id(),
                                    0, queue, pool, action_executor,
-                                   value_getter, operations))
+                                   property_getter, operations))
             ->start();
     operations = NULL;
   }
@@ -58,10 +58,10 @@ void SceneActionExecutorMock::execute(void) {
 void SceneActionExecutorMock::open(void) {
   ActionExecutorMock::open();
 
-  if (get_channel_id() && queue && pool && value_getter) {
+  if (get_channel_id() && queue && pool && property_getter) {
     last_executed_asynctask =
         (new supla_action_gate_openclose(
-             get_caller(), queue, pool, action_executor, value_getter, NULL,
+             get_caller(), queue, pool, action_executor, property_getter, NULL,
              get_user_id(), get_device_id(), get_channel_id(), 10000000, true))
             ->start();
   }
@@ -70,7 +70,7 @@ void SceneActionExecutorMock::open(void) {
 void SceneActionExecutorMock::set_asynctask_params(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     SceneActionExecutorMock *action_executor,
-    supla_abstract_value_getter *value_getter,
+    supla_abstract_channel_property_getter *property_getter,
     supla_scene_operations *operations) {
   if (this->operations) {
     delete this->operations;
@@ -79,7 +79,7 @@ void SceneActionExecutorMock::set_asynctask_params(
   this->queue = queue;
   this->pool = pool;
   this->action_executor = action_executor;
-  this->value_getter = value_getter;
+  this->property_getter = property_getter;
   this->operations = operations;
 }
 

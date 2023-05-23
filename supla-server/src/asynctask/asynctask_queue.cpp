@@ -43,7 +43,20 @@ supla_asynctask_queue::supla_asynctask_queue(void) {
 
 supla_asynctask_queue::~supla_asynctask_queue(void) {
   sthread_twf(thread, true);
-  release_pools();
+
+  do {
+    supla_abstract_asynctask_thread_pool *pool = nullptr;
+    lck_lock(lck);
+    if (pools.size()) {
+      pool = pools.front();
+    }
+    lck_unlock(lck);
+
+    if (pool) {
+      // We can remove outside of lck because pools are only deleted here.
+      delete pool;
+    }
+  } while (pool_count());
 
   lck_lock(lck);
   for (auto it = tasks.begin(); it != tasks.end(); ++it) {
@@ -87,16 +100,6 @@ void supla_asynctask_queue::loop(void *_queue, void *q_sthread) {
   while (sthread_isterminated(q_sthread) == 0) {
     queue->iterate();
   }
-}
-
-void supla_asynctask_queue::release_pools(void) {
-  do {
-    lck_lock(lck);
-    if (pools.size()) {
-      delete pools.front();
-    }
-    lck_unlock(lck);
-  } while (pool_count());
 }
 
 bool supla_asynctask_queue::task_exists(supla_abstract_asynctask *task) {
@@ -218,13 +221,15 @@ void supla_asynctask_queue::iterate(void) {
 
   lck_lock(lck);
   for (auto it = tasks.begin(); it != tasks.end(); ++it) {
-    long long time_left = (*it)->time_left_usec(&now);
-    if (time_left <= 0) {
-      if ((*it)->get_state() == supla_asynctask_state::WAITING) {
+    if (!(*it)->is_execution_requested() &&
+        (*it)->get_state() == supla_asynctask_state::WAITING) {
+      long long time_left = (*it)->time_left_usec(&now);
+      if (time_left <= 0) {
         (*it)->get_pool()->execution_request(it->get());
+
+      } else if (time_left < wait_time) {
+        wait_time = time_left;
       }
-    } else if (time_left < wait_time) {
-      wait_time = time_left;
     }
   }
   lck_unlock(lck);
@@ -278,14 +283,20 @@ unsigned int supla_asynctask_queue::thread_count(void) {
 
 void supla_asynctask_queue::raise_event(void) { eh_raise_event(eh); }
 
-supla_abstract_asynctask *supla_asynctask_queue::find_task(
+shared_ptr<supla_abstract_asynctask> supla_asynctask_queue::find_task(
     supla_abstract_asynctask_search_condition *cnd) {
+  shared_ptr<supla_abstract_asynctask> result;
+
+  lck_lock(lck);
   for (auto it = tasks.begin(); it != tasks.end(); ++it) {
     if (cnd->condition_met(it->get())) {
-      return it->get();
+      result = *it;
+      break;
     }
   }
-  return NULL;
+  lck_unlock(lck);
+
+  return result;
 }
 
 bool supla_asynctask_queue::get_task_state(
@@ -295,14 +306,12 @@ bool supla_asynctask_queue::get_task_state(
     return false;
   }
 
-  lck_lock(lck);
-  supla_abstract_asynctask *task = find_task(cnd);
-  if (task != NULL) {
+  shared_ptr<supla_abstract_asynctask> task = find_task(cnd);
+  if (task != nullptr) {
     *state = task->get_state();
   }
-  lck_unlock(lck);
 
-  return task != NULL;
+  return task != nullptr;
 }
 
 unsigned int supla_asynctask_queue::get_task_count(
@@ -320,11 +329,7 @@ unsigned int supla_asynctask_queue::get_task_count(
 
 bool supla_asynctask_queue::task_exists(
     supla_abstract_asynctask_search_condition *cnd) {
-  lck_lock(lck);
-  bool result = find_task(cnd) != NULL;
-  lck_unlock(lck);
-
-  return result;
+  return find_task(cnd) != nullptr;
 }
 
 void supla_asynctask_queue::cancel_tasks(
@@ -395,15 +400,13 @@ void supla_asynctask_queue::on_task_finished(supla_abstract_asynctask *task) {
 bool supla_asynctask_queue::access_task(
     supla_abstract_asynctask_search_condition *cnd,
     function<void(supla_abstract_asynctask *)> on_task) {
-  bool result = false;
-  lck_lock(lck);
-  supla_abstract_asynctask *task = find_task(cnd);
-  if (task != NULL) {
-    result = true;
-    on_task(task);
+  std::shared_ptr<supla_abstract_asynctask> task = find_task(cnd);
+  if (task != nullptr) {
+    on_task(task.get());
+    return true;
   }
-  lck_unlock(lck);
-  return result;
+
+  return false;
 }
 
 void supla_asynctask_queue::log_stuck_warning(void) {
@@ -415,8 +418,8 @@ void supla_asynctask_queue::log_stuck_warning(void) {
   int time = now.tv_sec - last_iterate_time_sec;
   lck_unlock(lck);
 
-  if (time > 10) {
-    supla_log(LOG_WARNING, "AsyncTask Queue iteration is stuck!");
+  if (time >= 5) {
+    supla_log(LOG_WARNING, "AsyncTask Queue iteration is stuck! %i sec.", time);
   }
   serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 }

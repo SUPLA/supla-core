@@ -20,17 +20,23 @@
 
 #include "log.h"
 
+using std::function;
+using std::shared_ptr;
+using std::vector;
+using std::weak_ptr;
+
 ConnectionObjectsMock::ConnectionObjectsMock() : supla_connection_objects() {}
 
 ConnectionObjectsMock::~ConnectionObjectsMock() {}
 
 void ConnectionObjectsMock::for_each(
-    std::function<bool(std::shared_ptr<supla_abstract_connection_object> obj)>
+    function<void(shared_ptr<supla_abstract_connection_object> obj,
+                  bool *will_continue)>
         on_object) {
   supla_connection_objects::for_each(on_object);
 }
 
-std::vector<std::shared_ptr<supla_abstract_connection_object> >
+vector<weak_ptr<supla_abstract_connection_object> >
 ConnectionObjectsMock::get_all(void) {
   return supla_connection_objects::get_all();
 }

@@ -20,16 +20,38 @@
 #include "device/device.h"
 
 using std::dynamic_pointer_cast;
+using std::function;
 using std::shared_ptr;
-using std::weak_ptr;
 using std::vector;
+using std::weak_ptr;
 
 supla_user_devices::supla_user_devices() : supla_connection_objects() {}
 
 supla_user_devices::~supla_user_devices() {}
 
 bool supla_user_devices::add(shared_ptr<supla_device> device) {
-  return supla_connection_objects::add(device);
+  bool result = supla_connection_objects::add(device);
+
+  vector<supla_channel_fragment> fragments =
+      device->get_channels()->get_fragments();
+
+  int device_id = device->get_id();
+
+  lock();
+  for (auto it = channel_fragments.begin(); it != channel_fragments.end();
+       ++it) {
+    if (it->get_device_id() == device_id) {
+      it = channel_fragments.erase(it);
+      --it;
+    }
+  }
+
+  for (auto it = fragments.begin(); it != fragments.end(); ++it) {
+    channel_fragments.push_back(*it);
+  }
+  unlock();
+
+  return result;
 }
 
 std::shared_ptr<supla_device> supla_user_devices::get(int device_id) {
@@ -44,14 +66,12 @@ std::shared_ptr<supla_device> supla_user_devices::get(int device_id,
   } else if (channel_id) {
     shared_ptr<supla_device> result;
 
-    for_each([&result, channel_id](
-                 shared_ptr<supla_abstract_connection_object> obj) -> bool {
-      shared_ptr<supla_device> device = dynamic_pointer_cast<supla_device>(obj);
+    for_each([&result, channel_id](shared_ptr<supla_device> device,
+                                   bool *will_continue) -> void {
       if (device->get_channels()->channel_exists(channel_id)) {
         result = device;
-        return false;
+        *will_continue = false;
       }
-      return true;
     });
 
     return result;
@@ -60,13 +80,44 @@ std::shared_ptr<supla_device> supla_user_devices::get(int device_id,
   return nullptr;
 }
 
-vector<weak_ptr<supla_device> > supla_user_devices::get_all(void) {
-  vector<weak_ptr<supla_device> > result;
-
-  for_each([&result](shared_ptr<supla_abstract_connection_object> obj) -> bool {
-    result.push_back(dynamic_pointer_cast<supla_device>(obj));
-    return true;
-  });
-
+supla_channel_fragment supla_user_devices::get_channel_fragment(
+    int channel_id) {
+  supla_channel_fragment result;
+  lock();
+  for (auto it = channel_fragments.begin(); it != channel_fragments.end();
+       ++it) {
+    if (it->get_channel_id() == channel_id) {
+      result = *it;
+      break;
+    }
+  }
+  unlock();
   return result;
+}
+
+void supla_user_devices::update_function_of_channel_fragment(int channel_id,
+                                                             int func) {
+  lock();
+  for (auto it = channel_fragments.begin(); it != channel_fragments.end();
+       ++it) {
+    if (it->get_channel_id() == channel_id) {
+      it->set_function(func);
+      break;
+    }
+  }
+  unlock();
+}
+
+void supla_user_devices::for_each(
+    function<void(shared_ptr<supla_device> device, bool *will_continue)>
+        on_device) {
+  supla_connection_objects::for_each(
+      [on_device](shared_ptr<supla_abstract_connection_object> obj,
+                  bool *will_continue) -> void {
+        shared_ptr<supla_device> device =
+            dynamic_pointer_cast<supla_device>(obj);
+        if (device) {
+          on_device(device, will_continue);
+        }
+      });
 }

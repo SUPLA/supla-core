@@ -21,7 +21,14 @@
 
 #include "proto.h"
 
-enum _subjectType_e { stUnknown, stChannel, stChannelGroup, stScene };
+enum _subjectType_e {
+  stUnknown,
+  stChannel,
+  stChannelGroup,
+  stScene,
+  stSchedule,
+  stPushNotifiction
+};
 
 class abstract_action_config {
  public:

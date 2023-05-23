@@ -23,8 +23,8 @@
 
 #include "cyclictasks/abstract_auto_gate_closing_dao.h"
 #include "cyclictasks/abstract_cyclictask.h"
-#include "device/channel_gate_value.h"
-#include "device/value_getter.h"
+#include "device/channel_property_getter.h"
+#include "device/value/channel_gate_value.h"
 
 class supla_abstract_auto_gate_closing : public supla_abstract_cyclictask {
  private:
@@ -39,9 +39,9 @@ class supla_abstract_auto_gate_closing : public supla_abstract_cyclictask {
   virtual supla_abstract_auto_gate_closing_dao *get_dao(
       supla_abstract_db_access_provider *dba) = 0;
   virtual void release_dao(supla_abstract_auto_gate_closing_dao *dao) = 0;
-  virtual supla_abstract_value_getter *get_value_getter(void) = 0;
-  virtual void release_value_getter(
-      supla_abstract_value_getter *value_getter) = 0;
+  virtual supla_abstract_channel_property_getter *get_property_getter(void) = 0;
+  virtual void release_property_getter(
+      supla_abstract_channel_property_getter *property_getter) = 0;
   virtual void close_the_gate(int user_id, int device_id, int channel_id) = 0;
 
  public:

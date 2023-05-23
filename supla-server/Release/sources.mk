@@ -40,14 +40,19 @@ src/datalogger \
 src/db \
 src/device \
 src/device/call_handler \
+src/device/extended_value \
+src/device/value \
 src/distributedobjects \
 src/google \
 src/http \
 src/ipc \
 src/json \
 src/mqtt \
+src/push \
 src/scene \
+src/schedule \
 src/srpc \
 src/user \
+src/vbt \
 src/webhook \
 
