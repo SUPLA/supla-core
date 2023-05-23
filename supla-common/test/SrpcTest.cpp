@@ -524,6 +524,16 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN,
               SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION,
               SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT};
+
+    case 21:
+      return {SUPLA_DS_CALL_SET_CHANNEL_CONFIG,
+              SUPLA_SD_CALL_SET_CHANNEL_CONFIG_RESULT,
+              SUPLA_SD_CALL_SET_CHANNEL_CONFIG,
+              SUPLA_DS_CALL_SET_CHANNEL_CONFIG_RESULT,
+              SUPLA_DS_CALL_SET_DEVICE_CONFIG,
+              SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT,
+              SUPLA_SD_CALL_SET_DEVICE_CONFIG,
+              SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT};
   }
 
   return {};
@@ -568,6 +578,12 @@ TEST_F(SrpcTest, call_allowed_v16) { srpcCallAllowed(16, get_call_ids(16)); }
 TEST_F(SrpcTest, call_allowed_v17) { srpcCallAllowed(17, get_call_ids(17)); }
 
 TEST_F(SrpcTest, call_allowed_v18) { srpcCallAllowed(18, get_call_ids(18)); }
+
+TEST_F(SrpcTest, call_allowed_v19) { srpcCallAllowed(19, get_call_ids(19)); }
+
+TEST_F(SrpcTest, call_allowed_v20) { srpcCallAllowed(20, get_call_ids(20)); }
+
+TEST_F(SrpcTest, call_allowed_v21) { srpcCallAllowed(21, get_call_ids(21)); }
 
 TEST_F(SrpcTest, call_not_allowed) {
   vector<int> all_calls;
@@ -3561,9 +3577,65 @@ SRPC_CALL_BASIC_TEST(srpc_ds_async_get_channel_config,
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_config_result,
                                      TSD_ChannelConfig,
                                      SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT,
-                                     31, 159, sd_channel_config,
+                                     31, 543, sd_channel_config,
                                      SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
                                      ConfigSize);
+
+//---------------------------------------------------------
+// SET CHANNEL CONFIG
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_ds_async_set_channel_config_request,
+                                     TSDS_SetChannelConfig,
+                                     SUPLA_DS_CALL_SET_CHANNEL_CONFIG, 31, 543,
+                                     sds_set_channel_config_request,
+                                     SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
+                                     ConfigSize);
+
+SRPC_CALL_BASIC_TEST(srpc_ds_async_set_channel_config_result,
+                     TSDS_SetChannelConfigResult,
+                     SUPLA_DS_CALL_SET_CHANNEL_CONFIG_RESULT, 26,
+                     sds_set_channel_config_result);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_set_channel_config_request,
+                                     TSDS_SetChannelConfig,
+                                     SUPLA_SD_CALL_SET_CHANNEL_CONFIG, 31, 543,
+                                     sds_set_channel_config_request,
+                                     SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
+                                     ConfigSize);
+
+SRPC_CALL_BASIC_TEST(srpc_sd_async_set_channel_config_result,
+                     TSDS_SetChannelConfigResult,
+                     SUPLA_SD_CALL_SET_CHANNEL_CONFIG_RESULT, 26,
+                     sds_set_channel_config_result);
+
+//---------------------------------------------------------
+// SET DEVICE CONFIG
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_ds_async_set_device_config_request,
+                                     TSDS_SetDeviceConfig,
+                                     SUPLA_DS_CALL_SET_DEVICE_CONFIG, 42, 554,
+                                     sds_set_channel_config_request,
+                                     SUPLA_DEVICE_CONFIG_MAXSIZE, Config,
+                                     ConfigSize);
+
+SRPC_CALL_BASIC_TEST(srpc_ds_async_set_device_config_result,
+                     TSDS_SetDeviceConfigResult,
+                     SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT, 33,
+                     sds_set_device_config_result);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_set_device_config_request,
+                                     TSDS_SetDeviceConfig,
+                                     SUPLA_SD_CALL_SET_DEVICE_CONFIG, 42, 554,
+                                     sds_set_device_config_request,
+                                     SUPLA_DEVICE_CONFIG_MAXSIZE, Config,
+                                     ConfigSize);
+
+SRPC_CALL_BASIC_TEST(srpc_sd_async_set_device_config_result,
+                     TSDS_SetDeviceConfigResult,
+                     SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT, 33,
+                     sds_set_device_config_result);
 
 //---------------------------------------------------------
 // ACTION TRIGGER

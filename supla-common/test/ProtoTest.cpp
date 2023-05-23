@@ -195,13 +195,34 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TRelayChannel_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
   EXPECT_EQ((unsigned int)6, sizeof(TDS_GetChannelConfigRequest));
-  EXPECT_EQ((unsigned int)136, sizeof(TSD_ChannelConfig));
+  EXPECT_EQ((unsigned int)520, sizeof(TSD_ChannelConfig));
+  EXPECT_EQ((unsigned int)520, sizeof(TSDS_SetChannelConfig));
+  EXPECT_EQ((unsigned int)3, sizeof(TSDS_SetChannelConfigResult));
   EXPECT_LE(sizeof(TSD_ChannelConfig_StaircaseTimer),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
   EXPECT_LE(sizeof(TSD_ChannelConfig_Rollershutter),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
   EXPECT_LE(sizeof(TSD_ChannelConfig_ActionTrigger),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ((unsigned int)531, sizeof(TSDS_SetDeviceConfig));
+  EXPECT_EQ((unsigned int)10, sizeof(TSDS_SetDeviceConfigResult));
+  EXPECT_LE(sizeof(TDeviceConfig_StatusLed),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_ScreenBrightness),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_ButtonVolume),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_DisableLocalConfig),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_TimezoneOffset),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_AutomaticTimeSync),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_ScreensaverDelay),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_ScreensaverMode),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   EXPECT_EQ((unsigned int)8, sizeof(TCalCfg_RollerShutterSettings));
   EXPECT_LE(sizeof(TCalCfg_RollerShutterSettings),
