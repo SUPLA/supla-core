@@ -373,11 +373,11 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_2XRELAYG5LA1A 2020   // DEPRECATED
 #define SUPLA_CHANNELTYPE_RELAY 2900
 #define SUPLA_CHANNELTYPE_THERMOMETERDS18B20 3000  // DEPRECATED
-#define SUPLA_CHANNELTYPE_DHT11 3010   // ver. >= 4  DEPRECATED
-#define SUPLA_CHANNELTYPE_DHT22 3020   // ver. >= 4  DEPRECATED
-#define SUPLA_CHANNELTYPE_DHT21 3022   // ver. >= 5  DEPRECATED
-#define SUPLA_CHANNELTYPE_AM2302 3030  // ver. >= 4  DEPRECATED
-#define SUPLA_CHANNELTYPE_AM2301 3032  // ver. >= 5  DEPRECATED
+#define SUPLA_CHANNELTYPE_DHT11 3010               // ver. >= 4  DEPRECATED
+#define SUPLA_CHANNELTYPE_DHT22 3020               // ver. >= 4  DEPRECATED
+#define SUPLA_CHANNELTYPE_DHT21 3022               // ver. >= 5  DEPRECATED
+#define SUPLA_CHANNELTYPE_AM2302 3030              // ver. >= 4  DEPRECATED
+#define SUPLA_CHANNELTYPE_AM2301 3032              // ver. >= 5  DEPRECATED
 
 #define SUPLA_CHANNELTYPE_THERMOMETER 3034            // ver. >= 8
 #define SUPLA_CHANNELTYPE_HUMIDITYSENSOR 3036         // ver. >= 8
@@ -434,40 +434,40 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_DIMMER 180
 #define SUPLA_CHANNELFNC_RGBLIGHTING 190
 #define SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING 200
-#define SUPLA_CHANNELFNC_DEPTHSENSOR 210                  // ver. >= 5
-#define SUPLA_CHANNELFNC_DISTANCESENSOR 220               // ver. >= 5
-#define SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW 230         // ver. >= 8
-#define SUPLA_CHANNELFNC_MAILSENSOR 240                   // ver. >= 8
-#define SUPLA_CHANNELFNC_WINDSENSOR 250                   // ver. >= 8
-#define SUPLA_CHANNELFNC_PRESSURESENSOR 260               // ver. >= 8
-#define SUPLA_CHANNELFNC_RAINSENSOR 270                   // ver. >= 8
-#define SUPLA_CHANNELFNC_WEIGHTSENSOR 280                 // ver. >= 8
-#define SUPLA_CHANNELFNC_WEATHER_STATION 290              // ver. >= 8
-#define SUPLA_CHANNELFNC_STAIRCASETIMER 300               // ver. >= 8
-#define SUPLA_CHANNELFNC_ELECTRICITY_METER 310            // ver. >= 10
-#define SUPLA_CHANNELFNC_IC_ELECTRICITY_METER 315         // ver. >= 12
-#define SUPLA_CHANNELFNC_IC_GAS_METER 320                 // ver. >= 10
-#define SUPLA_CHANNELFNC_IC_WATER_METER 330               // ver. >= 10
-#define SUPLA_CHANNELFNC_IC_HEAT_METER 340                // ver. >= 10
-#define SUPLA_CHANNELFNC_IC_EVENTS 350                    // ver. >= 21
-#define SUPLA_CHANNELFNC_IC_SECONDS 360                   // ver. >= 21
+#define SUPLA_CHANNELFNC_DEPTHSENSOR 210           // ver. >= 5
+#define SUPLA_CHANNELFNC_DISTANCESENSOR 220        // ver. >= 5
+#define SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW 230  // ver. >= 8
+#define SUPLA_CHANNELFNC_MAILSENSOR 240            // ver. >= 8
+#define SUPLA_CHANNELFNC_WINDSENSOR 250            // ver. >= 8
+#define SUPLA_CHANNELFNC_PRESSURESENSOR 260        // ver. >= 8
+#define SUPLA_CHANNELFNC_RAINSENSOR 270            // ver. >= 8
+#define SUPLA_CHANNELFNC_WEIGHTSENSOR 280          // ver. >= 8
+#define SUPLA_CHANNELFNC_WEATHER_STATION 290       // ver. >= 8
+#define SUPLA_CHANNELFNC_STAIRCASETIMER 300        // ver. >= 8
+#define SUPLA_CHANNELFNC_ELECTRICITY_METER 310     // ver. >= 10
+#define SUPLA_CHANNELFNC_IC_ELECTRICITY_METER 315  // ver. >= 12
+#define SUPLA_CHANNELFNC_IC_GAS_METER 320          // ver. >= 10
+#define SUPLA_CHANNELFNC_IC_WATER_METER 330        // ver. >= 10
+#define SUPLA_CHANNELFNC_IC_HEAT_METER 340         // ver. >= 10
+#define SUPLA_CHANNELFNC_IC_EVENTS 350             // ver. >= 21
+#define SUPLA_CHANNELFNC_IC_SECONDS 360            // ver. >= 21
 // Thermostat 400 funciton is not used
-#define SUPLA_CHANNELFNC_THERMOSTAT                   400  // ver. >= 11
-#define SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS  410  // ver. >= 11
-#define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT         420  // ver. >= 21
-#define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL         421  // ver. >= 21
-#define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO         422  // ver. >= 21
-#define SUPLA_CHANNELFNC_HVAC_DRYER                   423  // ver. >= 21
-#define SUPLA_CHANNELFNC_HVAC_FAN                     424  // ver. >= 21
+#define SUPLA_CHANNELFNC_THERMOSTAT 400                    // ver. >= 11
+#define SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS 410   // ver. >= 11
+#define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT 420          // ver. >= 21
+#define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL 421          // ver. >= 21
+#define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO 422          // ver. >= 21
+#define SUPLA_CHANNELFNC_HVAC_DRYER 423                    // ver. >= 21
+#define SUPLA_CHANNELFNC_HVAC_FAN 424                      // ver. >= 21
 #define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL 425  // ver. >= 21
-#define SUPLA_CHANNELFNC_VALVE_OPENCLOSE              500  // ver. >= 12
-#define SUPLA_CHANNELFNC_VALVE_PERCENTAGE             510  // ver. >= 12
-#define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT  520  // ver. >= 21
-#define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED    600  // ver. >= 12
-#define SUPLA_CHANNELFNC_ACTIONTRIGGER                700  // ver. >= 16
-#define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL         800  // ver. >= 14
-#define SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL           810  // ver. >= 14
-#define SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND    900  // ver. >= 17
+#define SUPLA_CHANNELFNC_VALVE_OPENCLOSE 500               // ver. >= 12
+#define SUPLA_CHANNELFNC_VALVE_PERCENTAGE 510              // ver. >= 12
+#define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520   // ver. >= 21
+#define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600     // ver. >= 12
+#define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                 // ver. >= 16
+#define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800          // ver. >= 14
+#define SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL 810            // ver. >= 14
+#define SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND 900     // ver. >= 17
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -528,45 +528,48 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
 #define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010  // ver. >= 17
-#define SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED    0x0020  // ver. >= 18
-#define SUPLA_DEVICE_FLAG_CALCFG_SET_TIME       0x0040  // ver. >= 21
+#define SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED 0x0020     // ver. >= 18
+#define SUPLA_DEVICE_FLAG_CALCFG_SET_TIME 0x0040        // ver. >= 21
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
-#define SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED            (1ULL << 0)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED (1ULL << 0)  // v. >= 21
 // type: TDeviceConfig_ScreenBrightness
-#define SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS     (1ULL << 1)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS (1ULL << 1)  // v. >= 21
 // type: TDeviceConfig_ButtonVolume
-#define SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME         (1ULL << 2)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME (1ULL << 2)  // v. >= 21
 // type: TDeviceConfig_DisableLocalConfig
-#define SUPLA_DEVICE_CONFIG_FIELD_DISABLE_LOCAL_CONFIG  (1ULL << 3)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_DISABLE_LOCAL_CONFIG (1ULL << 3)  // v. >= 21
 // type: TDeviceConfig_TimezoneOffset
-#define SUPLA_DEVICE_CONFIG_FIELD_TIMEZONE_OFFSET       (1ULL << 4)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_TIMEZONE_OFFSET (1ULL << 4)  // v. >= 21
 // type: TDeviceConfig_AutomaticTimeSync
-#define SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC   (1ULL << 5)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC (1ULL << 5)  // v. >= 21
 // type: TDeviceConfig_ScreensaverDelay
-#define SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY     (1ULL << 6)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY (1ULL << 6)  // v. >= 21
 // type: TDeviceConfig_ScreensaverMode
-#define SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE      (1ULL << 7)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE (1ULL << 7)  // v. >= 21
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002     // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004     // ver. >= 12
 // Free bit for future use: 0x0008
-#define SUPLA_CHANNEL_FLAG_CHART_TYPE_BAR 0x0010                  // ver. >= 12
-                                                                  // DEPRECATED
-#define SUPLA_CHANNEL_FLAG_CHART_DS_TYPE_DIFFERENTAL 0x0020       // ver. >= 12
-                                                                  // DEPRECATED
-#define SUPLA_CHANNEL_FLAG_CHART_INTERPOLATE_MEASUREMENTS 0x0040  // ver. >= 12
-                                                                  // DEPRECATED
-#define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080         // ver. >= 17
+#define SUPLA_CHANNEL_FLAG_CHART_TYPE_BAR \
+  0x0010  // ver. >= 12
+          // DEPRECATED
+#define SUPLA_CHANNEL_FLAG_CHART_DS_TYPE_DIFFERENTAL \
+  0x0020  // ver. >= 12
+          // DEPRECATED
+#define SUPLA_CHANNEL_FLAG_CHART_INTERPOLATE_MEASUREMENTS \
+  0x0040                                                   // ver. >= 12
+                                                           // DEPRECATED
+#define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080  // ver. >= 17
 #define SUPLA_CHANNEL_FLAG_RGBW_SET_LEVEL_WITHOUT_SWITCHING_ON \
   0x0100  // ver. >= 17
 // Free bits for future use:  0x0200, 0x0400, 0x0800
 #define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000    // ver. >= 15
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000  // ver. >= 15
-#define SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE 0x4000               // ver. >= 15
+#define SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE 0x4000     // ver. >= 15
 // Free bits for future use: 0x8000
 #define SUPLA_CHANNEL_FLAG_CHANNELSTATE 0x00010000                 // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED 0x00020000           // ver. >= 12
@@ -582,9 +585,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE_deprecated \
   0x04000000  // ver. >= 12  DEPRECATED
 #define SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE \
-  0x08000000  // ver. >= 21
-#define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE \
-  0x10000000  // ver. >= 21
+  0x08000000                                           // ver. >= 21
+#define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE 0x10000000  // ver. >= 21
 
 #pragma pack(push, 1)
 
@@ -747,34 +749,34 @@ typedef struct {
 #define SUPLA_HVAC_VALUE_FLAG_COUNTDOWN_TIMER (1ULL << 5)
 // FAN flag tells if fan function is enabled
 #define SUPLA_HVAC_VALUE_FLAG_FAN_ENABLED (1ULL << 6)
-#define SUPLA_HVAC_VALUE_FLAG_ERROR       (1ULL << 7)
+#define SUPLA_HVAC_VALUE_FLAG_ERROR (1ULL << 7)
 #define SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR (1ULL << 8)
 
 // HVAC modes are used in channel value (as a command from server or
 // as a status response from device to server) and in weekly schedules
 // programs. Programs can't use value TURN_ON and WEEKLY_SCHEDULE
-#define SUPLA_HVAC_MODE_NOT_SET         0
-#define SUPLA_HVAC_MODE_OFF             1
-#define SUPLA_HVAC_MODE_HEAT            2
-#define SUPLA_HVAC_MODE_COOL            3
-#define SUPLA_HVAC_MODE_AUTO            4
-#define SUPLA_HVAC_MODE_FAN_ONLY        6
-#define SUPLA_HVAC_MODE_DRY             7
+#define SUPLA_HVAC_MODE_NOT_SET 0
+#define SUPLA_HVAC_MODE_OFF 1
+#define SUPLA_HVAC_MODE_HEAT 2
+#define SUPLA_HVAC_MODE_COOL 3
+#define SUPLA_HVAC_MODE_AUTO 4
+#define SUPLA_HVAC_MODE_FAN_ONLY 6
+#define SUPLA_HVAC_MODE_DRY 7
 // TURN ON mode is a command. Device will use it to turn on and then it will
 // restore previous mode which was used before turn off.
-#define SUPLA_HVAC_MODE_CMD_TURN_ON         8
+#define SUPLA_HVAC_MODE_CMD_TURN_ON 8
 // Weekly schedule is a command. Device will use it to enable weekly schedule
 // mode and then it will set its mode according to schedule
 #define SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE 9
 
 typedef struct {
   unsigned char IsOn;  // DS: 0/1 (or 0..100 ?)
-  unsigned char Mode;                     // SUPLA_HVAC_MODE_
+  unsigned char Mode;  // SUPLA_HVAC_MODE_
   _supla_int16_t
-      SetpointTemperatureMin; // * 0.01 Celcius degree - used for heating
+      SetpointTemperatureMin;  // * 0.01 Celcius degree - used for heating
   _supla_int16_t
-      SetpointTemperatureMax;    // * 0.01 - Celcius degree used for cooling
-  unsigned _supla_int16_t Flags; // SUPLA_HVAC_VALUE_FLAG_
+      SetpointTemperatureMax;     // * 0.01 - Celcius degree used for cooling
+  unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
 } THVACValue;
 
 typedef struct {
@@ -1935,22 +1937,22 @@ typedef struct {
 // THVACTemperatureCfg
 // Below values are settable by user in UI
 // Temperature below which heating will be enabled as a freeze protection
-#define TEMPERATURE_FREEZE_PROTECTION          (1ULL << 0)
+#define TEMPERATURE_FREEZE_PROTECTION (1ULL << 0)
 // Economic temperaturey
-#define TEMPERATURE_ECO                        (1ULL << 1)
+#define TEMPERATURE_ECO (1ULL << 1)
 // Comfort temperature
-#define TEMPERATURE_COMFORT                    (1ULL << 2)
-#define TEMPERATURE_BOOST                      (1ULL << 3)
+#define TEMPERATURE_COMFORT (1ULL << 2)
+#define TEMPERATURE_BOOST (1ULL << 3)
 // Temperature above which cooling will be enabled as an overheating protection.
-#define TEMPERATURE_HEAT_PROTECTION            (1ULL << 4)
+#define TEMPERATURE_HEAT_PROTECTION (1ULL << 4)
 // Histeresis value - i.e. heating will be enabled when current temperature
 // is histeresis/2 lower than current setpoint.
-#define TEMPERATURE_HISTERESIS                 (1ULL << 5)
+#define TEMPERATURE_HISTERESIS (1ULL << 5)
 // Turns on "alarm" when temperature is below this value. Can be visual effect
 // or sound (if device is capable). It can also send AT to server (TBD)
-#define TEMPERATURE_BELOW_ALARM                (1ULL << 6)
+#define TEMPERATURE_BELOW_ALARM (1ULL << 6)
 // As above, but for tempertatures above threshold
-#define TEMPERATURE_ABOVE_ALARM                (1ULL << 7)
+#define TEMPERATURE_ABOVE_ALARM (1ULL << 7)
 // Minimum temperature to be kept on heat/cold source (i.e. keeps floor always
 // at least 19 degrees)
 #define TEMPERATURE_AUX_MIN_SETPOINT (1ULL << 8)
@@ -1960,22 +1962,22 @@ typedef struct {
 
 // Below values are readonly for user
 // Minimum room (main thermometer) temperature to be set by user
-#define TEMPERATURE_ROOM_MIN                   (1ULL << 10)
+#define TEMPERATURE_ROOM_MIN (1ULL << 10)
 // Maximum room (main thermometer) temperature to be set by user
-#define TEMPERATURE_ROOM_MAX                   (1ULL << 11)
+#define TEMPERATURE_ROOM_MAX (1ULL << 11)
 // Minimum allowed temperature for heat/cold source (used with second
 // thermomter for floor/water/etc.)
-#define TEMPERATURE_AUX_MIN          (1ULL << 12)
+#define TEMPERATURE_AUX_MIN (1ULL << 12)
 // Maximum allowed temperature for heat/cold source
-#define TEMPERATURE_AUX_MAX          (1ULL << 13)
+#define TEMPERATURE_AUX_MAX (1ULL << 13)
 // Minimum histereis value
-#define TEMPERATURE_HISTERESIS_MIN             (1ULL << 14)
+#define TEMPERATURE_HISTERESIS_MIN (1ULL << 14)
 // Maximum histereis value
-#define TEMPERATURE_HISTERESIS_MAX             (1ULL << 15)
+#define TEMPERATURE_HISTERESIS_MAX (1ULL << 15)
 // Minimum temperature offset in AUTO mode
-#define TEMPERATURE_AUTO_OFFSET_MIN            (1ULL << 16)
+#define TEMPERATURE_AUTO_OFFSET_MIN (1ULL << 16)
 // Maximum temperature offset in AUTO mode
-#define TEMPERATURE_AUTO_OFFSET_MAX            (1ULL << 17)
+#define TEMPERATURE_AUTO_OFFSET_MAX (1ULL << 17)
 // 6 values left for future use
 
 #define SUPLA_TEMPERATURE_INVALID_INT16 -32768
@@ -2003,13 +2005,13 @@ typedef struct {
 #define SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE 13
 
 // HVAC channel capability flags - ver. >= 21
-#define SUPLA_HVAC_CAP_FLAG_MODE_ONOFF    0x0001
-#define SUPLA_HVAC_CAP_FLAG_MODE_AUTO     0x0002  // AUTO = HEAT + COOL
-#define SUPLA_HVAC_CAP_FLAG_MODE_COOL     0x0004
-#define SUPLA_HVAC_CAP_FLAG_MODE_HEAT     0x0008
-#define SUPLA_HVAC_CAP_FLAG_MODE_DRY      0x0010
-#define SUPLA_HVAC_CAP_FLAG_MODE_FAN      0x0020
-#define SUPLA_HVAC_CAP_FLAG_DIFFERENTIAL  0x0040
+#define SUPLA_HVAC_CAP_FLAG_MODE_ONOFF 0x0001
+#define SUPLA_HVAC_CAP_FLAG_MODE_AUTO 0x0002  // AUTO = HEAT + COOL
+#define SUPLA_HVAC_CAP_FLAG_MODE_COOL 0x0004
+#define SUPLA_HVAC_CAP_FLAG_MODE_HEAT 0x0008
+#define SUPLA_HVAC_CAP_FLAG_MODE_DRY 0x0010
+#define SUPLA_HVAC_CAP_FLAG_MODE_FAN 0x0020
+#define SUPLA_HVAC_CAP_FLAG_DIFFERENTIAL 0x0040
 
 // Heatpol: Thermostat value flags - ver. >= 11
 #define SUPLA_THERMOSTAT_VALUE_FLAG_ON 0x0001
@@ -2253,28 +2255,27 @@ typedef struct {
 // Fields parameter. Size of parameter depends on Field type.
 typedef struct {
   unsigned char EndOfDataFlag;  // 1 - last message; 0 - more messages will come
-  unsigned char zero[8];  // for future use
-  unsigned _supla_int64_t Fields;   // bit map of SUPLA_DEVICE_CONFIG_FIELD_
+  unsigned char zero[8];        // for future use
+  unsigned _supla_int64_t Fields;  // bit map of SUPLA_DEVICE_CONFIG_FIELD_
   unsigned _supla_int16_t ConfigSize;
   char Config[SUPLA_DEVICE_CONFIG_MAXSIZE];  // Last variable in struct!
-} TSD_SetDeviceConfig;  // v. >= 21
+} TSDS_SetDeviceConfig;                      // v. >= 21
 
 // SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT
 // SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT
 typedef struct {
-  unsigned char Result;  // SUPLA_CONFIG_RESULT_*
+  unsigned char Result;      // SUPLA_CONFIG_RESULT_*
   unsigned char ConfigType;  // SUPLA_DEVICE_CONFIG_TYPE_*
-  unsigned char zero[8];  // for future use
-} TSD_SetDeviceConfigResult;
+  unsigned char zero[8];     // for future use
+} TSDS_SetDeviceConfigResult;
 
-
-#define SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED  0
+#define SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED 0
 #define SUPLA_DEVCFG_STATUS_LED_OFF_WHEN_CONNECTED 1
-#define SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF         2
+#define SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF 2
 
 typedef struct {
   unsigned char StatusLedType;  // SUPLA_DEVCFG_STATUS_LED_
-} TDeviceConfig_StatusLed;  // v. >= 21
+} TDeviceConfig_StatusLed;      // v. >= 21
 
 typedef struct {
   unsigned char ScreenBrightness;  // 0-100%
@@ -2282,7 +2283,7 @@ typedef struct {
 } TDeviceConfig_ScreenBrightness;  // v. >= 21
 
 typedef struct {
-  unsigned char Volume;  // 0-100%
+  unsigned char Volume;        // 0-100%
 } TDeviceConfig_ButtonVolume;  // v. >= 21
 
 typedef struct {
@@ -2293,7 +2294,7 @@ typedef struct {
 typedef struct {
   _supla_int16_t TimezoneOffsetMinutes;  // -1560 .. +1560 minutes
                                          // biggest timezone diff is 26h
-} TDeviceConfig_TimezoneOffset;  // v. >= 21
+} TDeviceConfig_TimezoneOffset;          // v. >= 21
 
 typedef struct {
   unsigned char AutomaticTimeSync;  // 0 - disabled
@@ -2303,24 +2304,23 @@ typedef struct {
 typedef struct {
   unsigned _supla_int16_t ScreensaverDelayMs;  // delay in ms units
                                                // 0 - disabled
-} TDeviceConfig_ScreensaverDelay;  // v. >= 21
+} TDeviceConfig_ScreensaverDelay;              // v. >= 21
 
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_OFF          0
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_ALL          1
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_TIME         2
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_MEASUREMENT  3
+#define SUPLA_DEVCFG_SCREENSAVER_MODE_OFF 0
+#define SUPLA_DEVCFG_SCREENSAVER_MODE_ALL 1
+#define SUPLA_DEVCFG_SCREENSAVER_MODE_TIME 2
+#define SUPLA_DEVCFG_SCREENSAVER_MODE_MEASUREMENT 3
 
 typedef struct {
   unsigned char ScreensaverMode;  // SUPLA_DEVCFG_SCREENSAVER_MODE_
-}  TDeviceConfig_ScreensaverMode;  // v. >= 21
-
+} TDeviceConfig_ScreensaverMode;  // v. >= 21
 
 /********************************************
  * CHANNEL CONFIG STRUCTURES
  ********************************************/
 
 #define SUPLA_CONFIG_RESULT_FALSE 0
-#define SUPLA_CONFIG_RESULT_TRUE  1
+#define SUPLA_CONFIG_RESULT_TRUE 1
 #define SUPLA_CONFIG_RESULT_DATA_ERROR 2
 #define SUPLA_CONFIG_RESULT_TYPE_NOT_SUPPORTED 3
 #define SUPLA_CONFIG_RESULT_FUNCTION_NOT_SUPPORTED 4
@@ -2347,15 +2347,15 @@ typedef struct {
 
 // SUPLA_DS_CALL_SET_CHANNEL_CONFIG
 // SUPLA_SD_CALL_SET_CHANNEL_CONFIG
-typedef TSD_ChannelConfig TSD_SetChannelConfig;  // v. >= 21
+typedef TSD_ChannelConfig TSDS_SetChannelConfig;  // v. >= 21
 
 // SUPLA_SD_CALL_SET_CHANNEL_CONFIG_RESULT
 // SUPLA_DS_CALL_SET_CHANNEL_CONFIG_RESULT
 typedef struct {
-  unsigned char Result;  // SUPLA_CONFIG_RESULT_*
+  unsigned char Result;      // SUPLA_CONFIG_RESULT_*
   unsigned char ConfigType;  // SUPLA_CONFIG_TYPE_
   unsigned char ChannelNumber;
-} TSD_SetChannelConfigResult;
+} TSDS_SetChannelConfigResult;
 
 typedef struct {
   _supla_int_t TimeMS;
@@ -2405,7 +2405,7 @@ typedef struct {
   // 3 - program 3
   // 4 - program 4
   unsigned char Value[SUPLA_WEEKLY_SCHEDULE_VALUES_SIZE / 2];  // 336 B
-} TSD_ChannelConfig_WeeklySchedule;  // v. >= 21
+} TSD_ChannelConfig_WeeklySchedule;                            // v. >= 21
 
 // Config used for thermometers and thermometers with humidity channels.
 // When used for thermometers, humidity param is ignored.
@@ -2422,16 +2422,15 @@ typedef struct {
 // to user), but it is not used by thermostat for any other purpose
 // Other values are mainly for UI adjustement (i.e. show temperature as floor,
 // as water, generic heater or cooler device)
-#define SUPLA_HVAC_AUX_THERMOMETER_TYPE_NOT_SET        0
-#define SUPLA_HVAC_AUX_THERMOMETER_TYPE_DISABLED       1
-#define SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR          2
-#define SUPLA_HVAC_AUX_THERMOMETER_TYPE_WATER          3
+#define SUPLA_HVAC_AUX_THERMOMETER_TYPE_NOT_SET 0
+#define SUPLA_HVAC_AUX_THERMOMETER_TYPE_DISABLED 1
+#define SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR 2
+#define SUPLA_HVAC_AUX_THERMOMETER_TYPE_WATER 3
 #define SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_HEATER 4
 #define SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER 5
 
 #define SUPLA_HVAC_ALGORITHM_NOT_SET 0
 #define SUPLA_HVAC_ALGORITHM_ON_OFF (1ULL << 0)
-
 
 // TODO(klew): should we have separate structures for configuration specific
 // to selected algorithm? I.e. histeresis should be applicable to on/off
@@ -2458,7 +2457,7 @@ typedef struct {
                                         // be enabled
   unsigned _supla_int16_t MinOffTimeS;  // minimum allowed time for output to
                                         // be disabled
-  signed char OutputValueOnError;      // -100 cool, 0 off (default), 100 heat
+  signed char OutputValueOnError;       // -100 cool, 0 off (default), 100 heat
   THVACTemperatureCfg Temperatures;
 } TSD_ChannelConfig_HVAC;  // v. >= 21
 
