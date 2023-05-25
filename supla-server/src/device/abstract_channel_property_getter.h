@@ -19,10 +19,10 @@
 #ifndef ABSTRACT_PROPERTY_GETTER_H_
 #define ABSTRACT_PROPERTY_GETTER_H_
 
-#include "channeljsonconfig/channel_json_config.h"
 #include "device/channel_fragment.h"
 #include "device/extended_value/channel_extended_value.h"
 #include "device/value/channel_value.h"
+#include "jsonconfig/channel/channel_json_config.h"
 #include "proto.h"
 
 class supla_abstract_channel_property_getter {

@@ -22,8 +22,8 @@
 #include "actions/action_executor.h"
 #include "asynctask/abstract_asynctask.h"
 #include "caller.h"
-#include "channeljsonconfig/abstract_channel_json_config_getter.h"
 #include "device/abstract_channel_property_getter.h"
+#include "jsonconfig/channel/abstract_channel_json_config_getter.h"
 
 class supla_action_gate_openclose : public supla_abstract_asynctask {
  private:

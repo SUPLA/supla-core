@@ -17,7 +17,7 @@
  */
 
 #include "analyzer/voltage_analyzer.h"
-#include "channeljsonconfig/electricity_meter_config.h"
+#include "jsonconfig/channel/electricity_meter_config.h"
 #include "proto.h"
 
 #ifndef VOLTAGE_ANALYZERS_H_

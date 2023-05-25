@@ -24,8 +24,6 @@
 
 #include <memory>
 
-#include "channeljsonconfig/action_trigger_config.h"
-#include "channeljsonconfig/impulse_counter_config.h"
 #include "db/database.h"
 #include "device.h"
 #include "device/extended_value/channel_and_timer_state_extended_value.h"
@@ -47,6 +45,8 @@
 #include "device/value/channel_temphum_value.h"
 #include "device/value/channel_thermostat_value.h"
 #include "device/value/channel_valve_value.h"
+#include "jsonconfig/channel/action_trigger_config.h"
+#include "jsonconfig/channel/impulse_counter_config.h"
 #include "lck.h"
 #include "user/user.h"
 #include "vbt/value_based_triggers.h"

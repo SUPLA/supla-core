@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-#include "channeljsonconfig/impulse_counter_config.h"
+#include "jsonconfig/channel/impulse_counter_config.h"
 
 supla_channel_ic_value::supla_channel_ic_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])

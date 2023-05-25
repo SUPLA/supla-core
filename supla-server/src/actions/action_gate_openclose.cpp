@@ -24,10 +24,10 @@
 #include "actions/action_executor.h"
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
-#include "channeljsonconfig/channel_json_config_getter.h"
-#include "channeljsonconfig/controlling_the_gate_config.h"
 #include "device/channel_property_getter.h"
 #include "device/value/channel_gate_value.h"
+#include "jsonconfig/channel/channel_json_config_getter.h"
+#include "jsonconfig/channel/controlling_the_gate_config.h"
 #include "log.h"
 
 #define VERIFICATION_DELAY_US 60000000

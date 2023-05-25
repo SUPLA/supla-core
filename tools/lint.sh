@@ -13,7 +13,9 @@ cpplint --filter=-build/include_what_you_use ./supla-server/src/actions/*
 cpplint ./supla-server/src/amazon/* 
 cpplint ./supla-server/src/analyzer/* 
 cpplint ./supla-server/src/asynctask/* 
-cpplint ./supla-server/src/channeljsonconfig/* 
+cpplint ./supla-server/src/jsonconfig/* 
+cpplint ./supla-server/src/jsonconfig/channel/* 
+cpplint ./supla-server/src/jsonconfig/device/* 
 cpplint ./supla-server/src/client/* 
 cpplint ./supla-server/src/client/call_handler/* 
 cpplint ./supla-server/src/conn/* 
@@ -42,7 +44,9 @@ cpplint --filter=-build/include ./supla-server/src/test/actions/*
 cpplint --filter=-build/include ./supla-server/src/test/amazon/* 
 cpplint --filter=-build/include ./supla-server/src/test/analyzer/* 
 cpplint --filter=-build/include ./supla-server/src/test/asynctask/* 
-cpplint --filter=-build/include ./supla-server/src/test/channeljsonconfig/* 
+cpplint --filter=-build/include ./supla-server/src/test/jsonconfig/* 
+cpplint --filter=-build/include ./supla-server/src/test/jsonconfig/channel/* 
+cpplint --filter=-build/include ./supla-server/src/test/jsonconfig/device/* 
 cpplint --filter=-build/include ./supla-server/src/test/client/* 
 cpplint --filter=-build/include ./supla-server/src/test/conn/* 
 cpplint --filter=-build/include ./supla-server/src/test/cyclictasks/* 
@@ -54,7 +58,9 @@ cpplint --filter=-build/include ./supla-server/src/test/doubles/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/actions/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/amazon/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/asynctask/*
-cpplint --filter=-build/include ./supla-server/src/test/doubles/channeljsonconfig/*
+cpplint --filter=-build/include ./supla-server/src/test/doubles/jsonconfig/*
+cpplint --filter=-build/include ./supla-server/src/test/doubles/jsonconfig/channel/*
+cpplint --filter=-build/include ./supla-server/src/test/doubles/jsonconfig/device/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/client/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/conn/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/cyclictasks/*

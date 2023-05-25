@@ -20,10 +20,10 @@
 #define ACTIONTRIGGERTEST_H_
 
 #include "actions/action_trigger.h"
-#include "channeljsonconfig/action_trigger_config.h"
 #include "doubles/actions/ActionExecutorMock.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "gtest/gtest.h"  // NOLINT
+#include "jsonconfig/channel/action_trigger_config.h"
 
 namespace testing {
 

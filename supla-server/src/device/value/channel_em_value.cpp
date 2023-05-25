@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-#include "channeljsonconfig/electricity_meter_config.h"
+#include "jsonconfig/channel/electricity_meter_config.h"
 
 supla_channel_em_value::supla_channel_em_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])

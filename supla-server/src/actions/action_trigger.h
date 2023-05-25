@@ -20,8 +20,8 @@
 #define ACTIONTRIGGER_H_
 
 #include "actions/abstract_action_executor.h"
-#include "channeljsonconfig/action_trigger_config.h"
 #include "device/abstract_channel_property_getter.h"
+#include "jsonconfig/channel/action_trigger_config.h"
 
 class supla_action_trigger {
  private:

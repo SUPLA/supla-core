@@ -28,7 +28,6 @@ src/actions \
 src/amazon \
 src/analyzer \
 src/asynctask \
-src/channeljsonconfig \
 src/client \
 src/client/call_handler \
 src/conn \
@@ -47,6 +46,7 @@ src/google \
 src/http \
 src/ipc \
 src/json \
+src/jsonconfig/channel \
 src/mqtt \
 src/push \
 src/scene \

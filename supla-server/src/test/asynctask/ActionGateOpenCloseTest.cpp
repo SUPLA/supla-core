@@ -20,8 +20,8 @@
 
 #include "actions/action_gate_openclose.h"
 #include "device/value/channel_gate_value.h"
-#include "doubles/channeljsonconfig/ChannelJSONConfigGetterStub.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
+#include "doubles/jsonconfig/channel/ChannelJSONConfigGetterStub.h"
 #include "log.h"
 
 namespace testing {

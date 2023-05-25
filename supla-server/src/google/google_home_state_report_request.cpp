@@ -18,12 +18,12 @@
 
 #include "google_home_state_report_request.h"
 
-#include "channeljsonconfig/google_home_config.h"
 #include "device/channel_property_getter.h"
 #include "google/google_home_client.h"
 #include "google/google_home_state_report_search_condition.h"
 #include "google/google_home_state_report_throttling.h"
 #include "http/asynctask_http_thread_pool.h"
+#include "jsonconfig/channel/google_home_config.h"
 #include "svrcfg.h"
 #include "user/user.h"
 

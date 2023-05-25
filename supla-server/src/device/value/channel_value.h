@@ -22,8 +22,8 @@
 #include <map>
 #include <string>
 
-#include "channeljsonconfig/channel_json_config.h"
 #include "device/extended_value/channel_extended_value.h"
+#include "jsonconfig/channel/channel_json_config.h"
 #include "proto.h"
 
 class supla_channel_value {

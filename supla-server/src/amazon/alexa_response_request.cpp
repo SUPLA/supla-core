@@ -20,9 +20,9 @@
 
 #include "amazon/alexa_client.h"
 #include "amazon/alexa_response_search_condition.h"
-#include "channeljsonconfig/alexa_config.h"
 #include "device/channel_property_getter.h"
 #include "http/asynctask_http_thread_pool.h"
+#include "jsonconfig/channel/alexa_config.h"
 #include "svrcfg.h"
 #include "user/user.h"
 

@@ -18,9 +18,9 @@
 
 #include "ChannelEmValueTest.h"
 
-#include "channeljsonconfig/electricity_meter_config.h"
 #include "device/value/channel_em_value.h"
 #include "devicechannel.h"  // NOLINT
+#include "jsonconfig/channel/electricity_meter_config.h"
 
 namespace testing {
 

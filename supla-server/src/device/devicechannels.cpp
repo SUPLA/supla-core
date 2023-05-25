@@ -25,13 +25,13 @@
 
 #include "actions/action_gate_openclose.h"
 #include "actions/action_trigger.h"
-#include "channeljsonconfig/controlling_the_gate_config.h"
 #include "db/database.h"
 #include "device.h"
 #include "device/channel_property_getter.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_valve_value.h"
+#include "jsonconfig/channel/controlling_the_gate_config.h"
 #include "log.h"
 
 using std::function;

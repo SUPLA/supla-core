@@ -16,6 +16,7 @@ RM := rm -rf
 -include src/test/scene/subdir.mk
 -include src/test/push/subdir.mk
 -include src/test/mqtt/subdir.mk
+-include src/test/jsonconfig/channel/subdir.mk
 -include src/test/ipc/subdir.mk
 -include src/test/integration/webhook/subdir.mk
 -include src/test/integration/vbt/subdir.mk
@@ -35,6 +36,7 @@ RM := rm -rf
 -include src/test/doubles/scene/subdir.mk
 -include src/test/doubles/push/subdir.mk
 -include src/test/doubles/mqtt/subdir.mk
+-include src/test/doubles/jsonconfig/channel/subdir.mk
 -include src/test/doubles/ipc/subdir.mk
 -include src/test/doubles/integration/mqtt/subdir.mk
 -include src/test/doubles/integration/asynctask/subdir.mk
@@ -47,7 +49,6 @@ RM := rm -rf
 -include src/test/doubles/cyclictasks/subdir.mk
 -include src/test/doubles/conn/subdir.mk
 -include src/test/doubles/client/subdir.mk
--include src/test/doubles/channeljsonconfig/subdir.mk
 -include src/test/doubles/asynctask/subdir.mk
 -include src/test/doubles/amazon/subdir.mk
 -include src/test/doubles/actions/subdir.mk
@@ -59,7 +60,6 @@ RM := rm -rf
 -include src/test/cyclictasks/subdir.mk
 -include src/test/conn/subdir.mk
 -include src/test/client/subdir.mk
--include src/test/channeljsonconfig/subdir.mk
 -include src/test/asynctask/subdir.mk
 -include src/test/analyzer/subdir.mk
 -include src/test/amazon/subdir.mk
@@ -70,6 +70,7 @@ RM := rm -rf
 -include src/scene/subdir.mk
 -include src/push/subdir.mk
 -include src/mqtt/subdir.mk
+-include src/jsonconfig/channel/subdir.mk
 -include src/json/subdir.mk
 -include src/ipc/subdir.mk
 -include src/http/subdir.mk
@@ -88,7 +89,6 @@ RM := rm -rf
 -include src/conn/subdir.mk
 -include src/client/call_handler/subdir.mk
 -include src/client/subdir.mk
--include src/channeljsonconfig/subdir.mk
 -include src/asynctask/subdir.mk
 -include src/analyzer/subdir.mk
 -include src/amazon/subdir.mk

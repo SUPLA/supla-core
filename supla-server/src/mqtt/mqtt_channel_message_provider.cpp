@@ -21,9 +21,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "channeljsonconfig/action_trigger_config.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "jsonconfig/channel/action_trigger_config.h"
 #include "log.h"
 
 supla_mqtt_channel_message_provider::supla_mqtt_channel_message_provider(void)
