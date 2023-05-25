@@ -19,32 +19,14 @@
 #ifndef CHANNELJSONCONFIG_H_
 #define CHANNELJSONCONFIG_H_
 
-#include "json/cJSON.h"
+#include "jsonconfig/json_config.h"
 
-class channel_json_config {
+class channel_json_config : public supla_json_config {
  private:
-  cJSON *user_root;
   cJSON *properties_root;
 
-  channel_json_config *root;
-  void json_clear(void);
-
  protected:
-  cJSON *get_user_root(void);
   cJSON *get_properties_root(void);
-  bool equal(const char *str1, const char *str2);
-  bool equal(cJSON *item, const char *str);
-  virtual int get_map_size(void);
-  virtual int get_map_key(int index);
-  virtual const char *get_map_str(int index);
-
-  bool key_exists(int key);
-  const char *string_with_key(int key);
-  int key_with_string(const char *str);
-  int json_to_key(cJSON *item);
-  int get_int(const char *key);
-  bool get_bool(const char *key);
-  double get_double(const char *key);
 
  public:
   explicit channel_json_config(const channel_json_config &json_config);
@@ -53,9 +35,6 @@ class channel_json_config {
   channel_json_config(channel_json_config *root, bool copy_and_detach);
   channel_json_config(void);
   virtual ~channel_json_config(void);
-  bool is_root_exists(void);
-  void set_user_config(const char *config);
-  char *get_user_config(void);
   void set_properties(const char *config);
   char *get_properties(void);
 };

@@ -71,6 +71,7 @@ RM := rm -rf
 -include src/push/subdir.mk
 -include src/mqtt/subdir.mk
 -include src/jsonconfig/channel/subdir.mk
+-include src/jsonconfig/subdir.mk
 -include src/json/subdir.mk
 -include src/ipc/subdir.mk
 -include src/http/subdir.mk

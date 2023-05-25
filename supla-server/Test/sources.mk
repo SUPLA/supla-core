@@ -47,6 +47,7 @@ src/http \
 src/ipc \
 src/json \
 src/jsonconfig/channel \
+src/jsonconfig \
 src/mqtt \
 src/push \
 src/scene \
