@@ -30,16 +30,9 @@ class supla_json_config {
   supla_json_config *get_root(void);
   cJSON *get_user_root(void);
   cJSON *get_properties_root(void);
-  bool equal(const char *str1, const char *str2);
-  bool equal(cJSON *item, const char *str);
-  virtual int get_map_size(void);
-  virtual int get_map_key(int index);
-  virtual const char *get_map_str(int index);
+  bool equal_ci(const char *str1, const char *str2);
+  bool equal_ci(cJSON *item, const char *str);
 
-  bool key_exists(int key);
-  const char *string_with_key(int key);
-  int key_with_string(const char *str);
-  int json_to_key(cJSON *item);
   int get_int(const char *key);
   bool get_bool(const char *key);
   double get_double(const char *key);
@@ -54,8 +47,6 @@ class supla_json_config {
   bool is_root_exists(void);
   void set_user_config(const char *config);
   char *get_user_config(void);
-  void set_properties(const char *config);
-  char *get_properties(void);
 
   supla_json_config &operator=(const supla_json_config &json_config);
 };

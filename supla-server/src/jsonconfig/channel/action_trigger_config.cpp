@@ -22,22 +22,23 @@
 #include "tools.h"
 
 using std::function;
+using std::map;
+using std::string;
 
-// static
-const _atc_map_t action_trigger_config::map[] = {
-    {.cap = SUPLA_ACTION_CAP_TURN_ON, .str = "TURN_ON"},
-    {.cap = SUPLA_ACTION_CAP_TURN_OFF, .str = "TURN_OFF"},
-    {.cap = SUPLA_ACTION_CAP_TOGGLE_x1, .str = "TOGGLE_X1"},
-    {.cap = SUPLA_ACTION_CAP_TOGGLE_x2, .str = "TOGGLE_X2"},
-    {.cap = SUPLA_ACTION_CAP_TOGGLE_x3, .str = "TOGGLE_X3"},
-    {.cap = SUPLA_ACTION_CAP_TOGGLE_x4, .str = "TOGGLE_X4"},
-    {.cap = SUPLA_ACTION_CAP_TOGGLE_x5, .str = "TOGGLE_X5"},
-    {.cap = SUPLA_ACTION_CAP_HOLD, .str = "HOLD"},
-    {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x1, .str = "SHORT_PRESS_X1"},
-    {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x2, .str = "SHORT_PRESS_X2"},
-    {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x3, .str = "SHORT_PRESS_X3"},
-    {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x4, .str = "SHORT_PRESS_X4"},
-    {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x5, .str = "SHORT_PRESS_X5"}};
+const map<int, string> action_trigger_config::cap_map{
+    {SUPLA_ACTION_CAP_TURN_ON, "TURN_ON"},
+    {SUPLA_ACTION_CAP_TURN_OFF, "TURN_OFF"},
+    {SUPLA_ACTION_CAP_TOGGLE_x1, "TOGGLE_X1"},
+    {SUPLA_ACTION_CAP_TOGGLE_x2, "TOGGLE_X2"},
+    {SUPLA_ACTION_CAP_TOGGLE_x3, "TOGGLE_X3"},
+    {SUPLA_ACTION_CAP_TOGGLE_x4, "TOGGLE_X4"},
+    {SUPLA_ACTION_CAP_TOGGLE_x5, "TOGGLE_X5"},
+    {SUPLA_ACTION_CAP_HOLD, "HOLD"},
+    {SUPLA_ACTION_CAP_SHORT_PRESS_x1, "SHORT_PRESS_X1"},
+    {SUPLA_ACTION_CAP_SHORT_PRESS_x2, "SHORT_PRESS_X2"},
+    {SUPLA_ACTION_CAP_SHORT_PRESS_x3, "SHORT_PRESS_X3"},
+    {SUPLA_ACTION_CAP_SHORT_PRESS_x4, "SHORT_PRESS_X4"},
+    {SUPLA_ACTION_CAP_SHORT_PRESS_x5, "SHORT_PRESS_X5"}};
 
 // static
 const char action_trigger_config::caps_key[] = "actionTriggerCapabilities";
@@ -68,16 +69,6 @@ action_trigger_config::action_trigger_config(channel_json_config *root)
 }
 
 action_trigger_config::~action_trigger_config(void) {}
-
-int action_trigger_config::get_map_size(void) {
-  return sizeof(map) / sizeof(_atc_map_t);
-}
-
-int action_trigger_config::get_map_key(int index) { return map[index].cap; }
-
-const char *action_trigger_config::get_map_str(int index) {
-  return map[index].str.c_str();
-}
 
 int action_trigger_config::get_action_id(int cap) {
   cJSON *cap_cfg = get_cap_user_config(cap);
@@ -114,13 +105,13 @@ _subjectType_e action_trigger_config::get_subject_type(int cap) {
   }
 
   cJSON *subjectType = cJSON_GetObjectItem(cap_cfg, "subjectType");
-  if (equal(subjectType, "channelGroup")) {
+  if (equal_ci(subjectType, "channelGroup")) {
     return stChannelGroup;
-  } else if (equal(subjectType, "channel")) {
+  } else if (equal_ci(subjectType, "channel")) {
     return stChannel;
-  } else if (equal(subjectType, "scene")) {
+  } else if (equal_ci(subjectType, "scene")) {
     return stScene;
-  } else if (equal(subjectType, "schedule")) {
+  } else if (equal_ci(subjectType, "schedule")) {
     return stSchedule;
   } else if (channel_id_if_subject_not_set) {
     cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
@@ -227,7 +218,12 @@ unsigned int action_trigger_config::get_capabilities(const char *key) {
   int st_size = cJSON_GetArraySize(st);
 
   for (short a = 0; a < st_size; a++) {
-    result |= json_to_key(cJSON_GetArrayItem(st, a));
+    cJSON *item = cJSON_GetArrayItem(st, a);
+    for (auto it = cap_map.cbegin(); it != cap_map.cend(); ++it) {
+      if (equal_ci(item, it->second.c_str())) {
+        result |= it->first;
+      }
+    }
   }
 
   return result;
@@ -241,12 +237,10 @@ bool action_trigger_config::set_capabilities(const char *key,
     return false;
   }
 
-  int map_size = sizeof(map) / sizeof(_atc_map_t);
-
   unsigned int all_possible = 0;
 
-  for (int a = 0; a < map_size; a++) {
-    all_possible |= map[a].cap;
+  for (auto it = cap_map.cbegin(); it != cap_map.cend(); ++it) {
+    all_possible |= it->first;
   }
 
   caps = all_possible & caps;
@@ -270,9 +264,9 @@ bool action_trigger_config::set_capabilities(const char *key,
   }
 
   if (st) {
-    for (int a = 0; a < map_size; a++) {
-      if (caps & map[a].cap) {
-        cJSON *jstr = cJSON_CreateString(map[a].str.c_str());
+    for (auto it = cap_map.cbegin(); it != cap_map.cend(); ++it) {
+      if (caps & it->first) {
+        cJSON *jstr = cJSON_CreateString(it->second.c_str());
         if (jstr) {
           cJSON_AddItemToArray(st, jstr);
         }
@@ -322,11 +316,9 @@ unsigned int action_trigger_config::get_active_actions(void) {
 
   cJSON *actions = cJSON_GetObjectItem(json, actions_key);
 
-  int size = sizeof(map) / sizeof(_atc_map_t);
-
-  for (int a = 0; a < size; a++) {
-    if (cJSON_GetObjectItem(actions, map[a].str.c_str())) {
-      result |= map[a].cap;
+  for (auto it = cap_map.cbegin(); it != cap_map.cend(); ++it) {
+    if (cJSON_GetObjectItem(actions, it->second.c_str())) {
+      result |= it->first;
     }
   }
 
@@ -335,27 +327,27 @@ unsigned int action_trigger_config::get_active_actions(void) {
 
 cJSON *action_trigger_config::get_cap_user_config(int cap) {
   if (!(get_capabilities() & cap)) {
-    return NULL;
+    return nullptr;
   }
 
   cJSON *root = get_user_root();
   if (!root) {
-    return NULL;
+    return nullptr;
   }
 
   cJSON *actions = cJSON_GetObjectItem(root, actions_key);
 
   if (!actions) {
-    return NULL;
+    return nullptr;
   }
 
-  const char *cap_str = string_with_key(cap);
+  auto it = cap_map.find(cap);
 
-  if (!cap_str) {
-    return NULL;
+  if (it == cap_map.end()) {
+    return nullptr;
   }
 
-  return cJSON_GetObjectItem(actions, cap_str);
+  return cJSON_GetObjectItem(actions, it->second.c_str());
 }
 
 char action_trigger_config::get_percentage(void) {
@@ -424,12 +416,12 @@ TAction_RGBW_Parameters action_trigger_config::get_rgbw(void) {
       if (item) {
         if (cJSON_IsNumber(item)) {
           result.Color = st_hue2rgb(item->valuedouble);
-        } else if (equal(item, "white")) {
+        } else if (equal_ci(item, "white")) {
           result.Color = 0xFFFFFF;
-        } else if (equal(item, "random")) {
+        } else if (equal_ci(item, "random")) {
           while (!result.Color) {
             struct timeval time = {};
-            gettimeofday(&time, NULL);
+            gettimeofday(&time, nullptr);
             unsigned int seed = time.tv_sec + time.tv_usec;
             result.Color = st_hue2rgb(rand_r(&seed) % 360);
           }

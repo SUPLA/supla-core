@@ -23,15 +23,16 @@
 #include "device/extended_value/channel_em_extended_value.h"
 #include "srpc/srpc.h"
 
-const _emc_map_t electricity_meter_config::map[] = {
-    {.var = EM_VAR_FORWARD_ACTIVE_ENERGY, .str = "forwardActiveEnergy"},
-    {.var = EM_VAR_REVERSE_ACTIVE_ENERGY, .str = "reverseActiveEnergy"},
-    {.var = EM_VAR_FORWARD_REACTIVE_ENERGY, .str = "forwardReactiveEnergy"},
-    {.var = EM_VAR_REVERSE_REACTIVE_ENERGY, .str = "reverseReactiveEnergy"},
-    {.var = EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED,
-     .str = "forwardActiveEnergyBalanced"},
-    {.var = EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED,
-     .str = "reverseActiveEnergyBalanced"}};
+using std::map;
+using std::string;
+
+const map<int, string> electricity_meter_config::var_map = {
+    {EM_VAR_FORWARD_ACTIVE_ENERGY, "forwardActiveEnergy"},
+    {EM_VAR_REVERSE_ACTIVE_ENERGY, "reverseActiveEnergy"},
+    {EM_VAR_FORWARD_REACTIVE_ENERGY, "forwardReactiveEnergy"},
+    {EM_VAR_REVERSE_REACTIVE_ENERGY, "reverseReactiveEnergy"},
+    {EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED, "forwardActiveEnergyBalanced"},
+    {EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED, "reverseActiveEnergyBalanced"}};
 
 // static
 const char electricity_meter_config::counters_available_key[] =
@@ -61,16 +62,6 @@ electricity_meter_config::electricity_meter_config(void)
 electricity_meter_config::electricity_meter_config(channel_json_config *root)
     : channel_json_config(root) {}
 
-int electricity_meter_config::get_map_size(void) {
-  return sizeof(map) / sizeof(_emc_map_t);
-}
-
-int electricity_meter_config::get_map_key(int index) { return map[index].var; }
-
-const char *electricity_meter_config::get_map_str(int index) {
-  return map[index].str.c_str();
-}
-
 int electricity_meter_config::get_available_counters(void) {
   cJSON *root = get_properties_root();
   if (!root) {
@@ -88,7 +79,11 @@ int electricity_meter_config::get_available_counters(void) {
   for (int a = 0; a < asize; a++) {
     cJSON *item = cJSON_GetArrayItem(available, a);
     if (item && cJSON_IsString(item)) {
-      result |= key_with_string(cJSON_GetStringValue(item));
+      for (auto it = var_map.cbegin(); it != var_map.cend(); ++it) {
+        if (equal_ci(item, it->second.c_str())) {
+          result |= it->first;
+        }
+      }
     }
   }
 
@@ -110,11 +105,10 @@ bool electricity_meter_config::update_available_counters(int measured_values) {
   int available_counters = get_available_counters();
 
   bool result = false;
-  int msize = get_map_size();
 
-  for (int a = 0; a < msize; a++) {
-    if ((measured_values & get_map_key(a)) &&
-        (available_counters & get_map_key(a)) == 0) {
+  for (auto it = var_map.cbegin(); it != var_map.cend(); ++it) {
+    if ((measured_values & it->first) &&
+        (available_counters & it->first) == 0) {
       if (!available) {
         available = cJSON_AddArrayToObject(root, counters_available_key);
 
@@ -123,7 +117,7 @@ bool electricity_meter_config::update_available_counters(int measured_values) {
         }
       }
 
-      cJSON *jstr = cJSON_CreateString(get_map_str(a));
+      cJSON *jstr = cJSON_CreateString(it->second.c_str());
       if (jstr) {
         cJSON_AddItemToArray(available, jstr);
         result = true;
@@ -203,7 +197,8 @@ _supla_int64_t electricity_meter_config::get_initial_value(
     *initial_value_for_all_phases = true;
   }
 
-  if (!key_exists(var) || (get_available_counters() & var) == 0) {
+  if (var_map.find(var) == var_map.end() ||
+      (get_available_counters() & var) == 0) {
     return 0;
   }
 
@@ -214,8 +209,10 @@ _supla_int64_t electricity_meter_config::get_initial_value(
 
   cJSON *initial_values = cJSON_GetObjectItem(root, em_initial_values_key);
   if (initial_values) {
-    cJSON *initial_value =
-        cJSON_GetObjectItem(initial_values, string_with_key(var));
+    auto it = var_map.find(var);
+
+    cJSON *initial_value = cJSON_GetObjectItem(
+        initial_values, it == var_map.end() ? nullptr : it->second.c_str());
     if (initial_value) {
       if (cJSON_IsObject(initial_value)) {
         if (initial_value_for_all_phases) {

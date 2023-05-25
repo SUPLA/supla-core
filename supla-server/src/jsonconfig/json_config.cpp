@@ -103,57 +103,7 @@ char *supla_json_config::get_user_config(void) {
   return nullptr;
 }
 
-int supla_json_config::get_map_size(void) { return 0; }
-
-int supla_json_config::get_map_key(int index) { return 0; }
-
-const char *supla_json_config::get_map_str(int index) { return nullptr; }
-
-bool supla_json_config::key_exists(int key) {
-  int size = get_map_size();
-
-  for (int a = 0; a < size; a++) {
-    if (get_map_key(a) == key) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-const char *supla_json_config::string_with_key(int key) {
-  int size = get_map_size();
-
-  for (int a = 0; a < size; a++) {
-    if (get_map_key(a) == key) {
-      return get_map_str(a);
-    }
-  }
-
-  return nullptr;
-}
-
-int supla_json_config::key_with_string(const char *str) {
-  int size = get_map_size();
-
-  for (int a = 0; a < size; a++) {
-    if (equal(get_map_str(a), str)) {
-      return get_map_key(a);
-    }
-  }
-
-  return 0;
-}
-
-int supla_json_config::json_to_key(cJSON *item) {
-  if (item) {
-    return key_with_string(cJSON_GetStringValue(item));
-  }
-
-  return 0;
-}
-
-bool supla_json_config::equal(const char *str1, const char *str2) {
+bool supla_json_config::equal_ci(const char *str1, const char *str2) {
   if (!str1 || !str2) {
     return false;
   }
@@ -173,8 +123,8 @@ bool supla_json_config::equal(const char *str1, const char *str2) {
   return true;
 }
 
-bool supla_json_config::equal(cJSON *item, const char *str) {
-  return item && equal(cJSON_GetStringValue(item), str);
+bool supla_json_config::equal_ci(cJSON *item, const char *str) {
+  return item && equal_ci(cJSON_GetStringValue(item), str);
 }
 
 int supla_json_config::get_int(const char *key) {

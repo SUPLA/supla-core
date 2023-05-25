@@ -20,17 +20,13 @@
 #define ACTIONTRIGGERCONFIG_H_
 
 #include <functional>
+#include <map>
 #include <string>
 
 #include "actions/abstract_action_config.h"
 #include "jsonconfig/channel/channel_json_config.h"
 
 #define DISABLE_LOCAL_FUNCTION 10200
-
-typedef struct {
-  int cap;
-  std::string str;
-} _atc_map_t;
 
 typedef struct {
   int actionId;
@@ -44,7 +40,7 @@ typedef struct {
 class action_trigger_config : public abstract_action_config,
                               public channel_json_config {
  private:
-  static const _atc_map_t map[];
+  static const std::map<int, std::string> cap_map;
   static const char caps_key[];
   static const char disables_local_operation_key[];
   static const char action_key[];
@@ -63,11 +59,6 @@ class action_trigger_config : public abstract_action_config,
   int get_source_id(const char *key);
   int active_cap;
   int channel_id_if_subject_not_set;
-
- protected:
-  virtual int get_map_size(void);
-  virtual int get_map_key(int index);
-  virtual const char *get_map_str(int index);
 
  public:
   explicit action_trigger_config(channel_json_config *root);

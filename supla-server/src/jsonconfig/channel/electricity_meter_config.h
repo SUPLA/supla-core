@@ -19,31 +19,24 @@
 #ifndef ELECTRICITYMETERCONFIG_H_
 #define ELECTRICITYMETERCONFIG_H_
 
+#include <map>
 #include <string>
 
 #include "jsonconfig/channel/channel_json_config.h"
 #include "proto.h"
 
-typedef struct {
-  int var;
-  std::string str;
-} _emc_map_t;
-
 class supla_channel_em_extended_value;
 class electricity_meter_config : public channel_json_config {
  private:
-  static const _emc_map_t map[];
   static const char counters_available_key[];
   static const char em_initial_values_key[];
   static const char add_to_history_key[];
   static const char upper_voltage_threshold_key[];
   static const char lower_voltage_threshold_key[];
   static const char disabled_phases_key[];
+  static const std::map<int, std::string> var_map;
 
  protected:
-  virtual int get_map_size(void);
-  virtual int get_map_key(int index);
-  virtual const char *get_map_str(int index);
   int get_available_counters(void);
   void add_initial_value(_supla_int64_t initial_value,
                          bool initial_value_for_all_phases, unsigned char phase,
