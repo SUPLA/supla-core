@@ -10,7 +10,9 @@ CPP_SRCS += \
 ../src/device/extended_value/channel_extended_value.cpp \
 ../src/device/extended_value/channel_extended_value_envelope.cpp \
 ../src/device/extended_value/channel_ic_extended_value.cpp \
+../src/device/extended_value/channel_multi_extended_value.cpp \
 ../src/device/extended_value/channel_state_extended_value.cpp \
+../src/device/extended_value/channel_thermostat_extended_value.cpp \
 ../src/device/extended_value/timer_state_extended_value.cpp 
 
 CPP_DEPS += \
@@ -20,7 +22,9 @@ CPP_DEPS += \
 ./src/device/extended_value/channel_extended_value.d \
 ./src/device/extended_value/channel_extended_value_envelope.d \
 ./src/device/extended_value/channel_ic_extended_value.d \
+./src/device/extended_value/channel_multi_extended_value.d \
 ./src/device/extended_value/channel_state_extended_value.d \
+./src/device/extended_value/channel_thermostat_extended_value.d \
 ./src/device/extended_value/timer_state_extended_value.d 
 
 OBJS += \
@@ -30,7 +34,9 @@ OBJS += \
 ./src/device/extended_value/channel_extended_value.o \
 ./src/device/extended_value/channel_extended_value_envelope.o \
 ./src/device/extended_value/channel_ic_extended_value.o \
+./src/device/extended_value/channel_multi_extended_value.o \
 ./src/device/extended_value/channel_state_extended_value.o \
+./src/device/extended_value/channel_thermostat_extended_value.o \
 ./src/device/extended_value/timer_state_extended_value.o 
 
 
@@ -46,7 +52,7 @@ src/device/extended_value/%.o: ../src/device/extended_value/%.cpp src/device/ext
 clean: clean-src-2f-device-2f-extended_value
 
 clean-src-2f-device-2f-extended_value:
-	-$(RM) ./src/device/extended_value/channel_and_timer_state_extended_value.d ./src/device/extended_value/channel_and_timer_state_extended_value.o ./src/device/extended_value/channel_billing_value.d ./src/device/extended_value/channel_billing_value.o ./src/device/extended_value/channel_em_extended_value.d ./src/device/extended_value/channel_em_extended_value.o ./src/device/extended_value/channel_extended_value.d ./src/device/extended_value/channel_extended_value.o ./src/device/extended_value/channel_extended_value_envelope.d ./src/device/extended_value/channel_extended_value_envelope.o ./src/device/extended_value/channel_ic_extended_value.d ./src/device/extended_value/channel_ic_extended_value.o ./src/device/extended_value/channel_state_extended_value.d ./src/device/extended_value/channel_state_extended_value.o ./src/device/extended_value/timer_state_extended_value.d ./src/device/extended_value/timer_state_extended_value.o
+	-$(RM) ./src/device/extended_value/channel_and_timer_state_extended_value.d ./src/device/extended_value/channel_and_timer_state_extended_value.o ./src/device/extended_value/channel_billing_value.d ./src/device/extended_value/channel_billing_value.o ./src/device/extended_value/channel_em_extended_value.d ./src/device/extended_value/channel_em_extended_value.o ./src/device/extended_value/channel_extended_value.d ./src/device/extended_value/channel_extended_value.o ./src/device/extended_value/channel_extended_value_envelope.d ./src/device/extended_value/channel_extended_value_envelope.o ./src/device/extended_value/channel_ic_extended_value.d ./src/device/extended_value/channel_ic_extended_value.o ./src/device/extended_value/channel_multi_extended_value.d ./src/device/extended_value/channel_multi_extended_value.o ./src/device/extended_value/channel_state_extended_value.d ./src/device/extended_value/channel_state_extended_value.o ./src/device/extended_value/channel_thermostat_extended_value.d ./src/device/extended_value/channel_thermostat_extended_value.o ./src/device/extended_value/timer_state_extended_value.d ./src/device/extended_value/timer_state_extended_value.o
 
 .PHONY: clean-src-2f-device-2f-extended_value
 
