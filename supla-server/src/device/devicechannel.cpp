@@ -31,7 +31,9 @@
 #include "device/extended_value/channel_and_timer_state_extended_value.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "device/extended_value/channel_multi_extended_value.h"
 #include "device/extended_value/channel_state_extended_value.h"
+#include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/extended_value/timer_state_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_dgf_value.h"
@@ -695,6 +697,12 @@ void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
                    is_ev_type_supported(ev->type)) {
       new_value =
           new supla_channel_and_timer_state_extended_value(ev, get_user());
+    } else if (supla_channel_thermostat_extended_value::is_ev_type_supported(
+                   ev->type)) {
+      new_value = new supla_channel_thermostat_extended_value(ev);
+    } else if (supla_channel_multi_extended_value::is_ev_type_supported(
+                   ev->type)) {
+      new_value = new supla_channel_multi_extended_value(ev);
     }
   }
 
