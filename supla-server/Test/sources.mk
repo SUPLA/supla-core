@@ -47,6 +47,7 @@ src/http \
 src/ipc \
 src/json \
 src/jsonconfig/channel \
+src/jsonconfig/device \
 src/jsonconfig \
 src/mqtt \
 src/push \
@@ -81,6 +82,7 @@ src/test/doubles/http \
 src/test/doubles/integration/asynctask \
 src/test/doubles/integration/mqtt \
 src/test/doubles/ipc \
+src/test/doubles/jsonconfig \
 src/test/doubles/jsonconfig/channel \
 src/test/doubles/mqtt \
 src/test/doubles/push \
@@ -101,7 +103,9 @@ src/test/integration/schedule \
 src/test/integration/vbt \
 src/test/integration/webhook \
 src/test/ipc \
+src/test/jsonconfig \
 src/test/jsonconfig/channel \
+src/test/jsonconfig/device \
 src/test/mqtt \
 src/test/push \
 src/test/scene \

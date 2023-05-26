@@ -19,6 +19,9 @@
 #ifndef JSON_CONFIG_H_
 #define JSON_CONFIG_H_
 
+#include <map>
+#include <string>
+
 #include "json/cJSON.h"
 
 class supla_json_config {
@@ -29,13 +32,20 @@ class supla_json_config {
  protected:
   supla_json_config *get_root(void);
   cJSON *get_user_root(void);
-  cJSON *get_properties_root(void);
+
   bool equal_ci(const char *str1, const char *str2);
   bool equal_ci(cJSON *item, const char *str);
 
   int get_int(const char *key);
   bool get_bool(const char *key);
   double get_double(const char *key);
+
+  cJSON *set_item_value(cJSON *parent, const std::string &name, int type,
+                        bool force, const char *string_value,
+                        double number_value);
+
+  void merge_user_config(const std::string &path, std::map<int, std::string> m,
+                         cJSON *dest);
 
  public:
   explicit supla_json_config(const supla_json_config &json_config);

@@ -22,10 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "log.h"
-
-#define MAX_STR_LEN 100
-
 channel_json_config::channel_json_config(void) : supla_json_config() {
   this->properties_root = nullptr;
 }

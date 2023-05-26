@@ -16,7 +16,9 @@ RM := rm -rf
 -include src/test/scene/subdir.mk
 -include src/test/push/subdir.mk
 -include src/test/mqtt/subdir.mk
+-include src/test/jsonconfig/device/subdir.mk
 -include src/test/jsonconfig/channel/subdir.mk
+-include src/test/jsonconfig/subdir.mk
 -include src/test/ipc/subdir.mk
 -include src/test/integration/webhook/subdir.mk
 -include src/test/integration/vbt/subdir.mk
@@ -37,6 +39,7 @@ RM := rm -rf
 -include src/test/doubles/push/subdir.mk
 -include src/test/doubles/mqtt/subdir.mk
 -include src/test/doubles/jsonconfig/channel/subdir.mk
+-include src/test/doubles/jsonconfig/subdir.mk
 -include src/test/doubles/ipc/subdir.mk
 -include src/test/doubles/integration/mqtt/subdir.mk
 -include src/test/doubles/integration/asynctask/subdir.mk
@@ -70,6 +73,7 @@ RM := rm -rf
 -include src/scene/subdir.mk
 -include src/push/subdir.mk
 -include src/mqtt/subdir.mk
+-include src/jsonconfig/device/subdir.mk
 -include src/jsonconfig/channel/subdir.mk
 -include src/jsonconfig/subdir.mk
 -include src/json/subdir.mk

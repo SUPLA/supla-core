@@ -26,6 +26,10 @@
 
 #define MAX_STR_LEN 100
 
+using std::map;
+using std::string;
+using std::stringstream;
+
 supla_json_config::supla_json_config(void) {
   this->user_root = nullptr;
   this->root = nullptr;
@@ -164,6 +168,65 @@ bool supla_json_config::get_bool(const char *key) {
   cJSON *value = cJSON_GetObjectItem(root, key);
   return value && cJSON_IsBool(value) && cJSON_IsTrue(value);
 }
+
+cJSON *supla_json_config::set_item_value(cJSON *parent, const std::string &name,
+                                         int type, bool force,
+                                         const char *string_value,
+                                         double number_value) {
+  if (!parent) {
+    return nullptr;
+  }
+
+  cJSON *item_json = nullptr;
+
+  item_json = cJSON_GetObjectItem(parent, name.c_str());
+
+  if (!item_json && !force) {
+    return nullptr;
+  }
+
+  if (item_json && item_json->type != type && !force) {
+    return nullptr;
+  }
+
+  if (item_json && (item_json->type != type || type == cJSON_String)) {
+    cJSON_Delete(item_json);
+    item_json = nullptr;
+  }
+
+  if (item_json) {
+    if (type == cJSON_Number) {
+      cJSON_SetNumberValue(item_json, number_value);
+    } else {
+      return nullptr;
+    }
+  } else {
+    switch (type) {
+      case cJSON_False:
+        item_json = cJSON_AddFalseToObject(parent, name.c_str());
+        break;
+      case cJSON_True:
+        item_json = cJSON_AddTrueToObject(parent, name.c_str());
+        break;
+      case cJSON_Number:
+        item_json = cJSON_AddNumberToObject(parent, name.c_str(), number_value);
+        break;
+      case cJSON_String:
+        item_json = cJSON_AddStringToObject(parent, name.c_str(), string_value);
+        break;
+      case cJSON_NULL:
+        item_json = cJSON_AddNullToObject(parent, name.c_str());
+        break;
+      default:
+        return nullptr;
+    }
+  }
+
+  return item_json;
+}
+
+void supla_json_config::merge_user_config(const string &path,
+                                          map<int, string> m, cJSON *dest) {}
 
 supla_json_config &supla_json_config::operator=(
     const supla_json_config &json_config) {
