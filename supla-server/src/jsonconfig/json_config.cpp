@@ -173,30 +173,33 @@ cJSON *supla_json_config::set_item_value(cJSON *parent, const std::string &name,
                                          int type, bool force,
                                          const char *string_value,
                                          double number_value) {
-  if (!parent) {
+  if (!parent || name.empty()) {
     return nullptr;
   }
 
-  cJSON *item_json = nullptr;
-
-  item_json = cJSON_GetObjectItem(parent, name.c_str());
+  cJSON *item_json = cJSON_GetObjectItem(parent, name.c_str());
 
   if (!item_json && !force) {
     return nullptr;
   }
 
-  if (item_json && item_json->type != type && !force) {
+  if (item_json && !force &&
+      !(item_json->type == type ||
+        (item_json->type == cJSON_True && type == cJSON_False) ||
+        (item_json->type == cJSON_False && type == cJSON_True))) {
     return nullptr;
   }
 
-  if (item_json && (item_json->type != type || type == cJSON_String)) {
-    cJSON_Delete(item_json);
+  if (item_json && (item_json->type != type)) {
+    cJSON_Delete(cJSON_DetachItemViaPointer(parent, item_json));
     item_json = nullptr;
   }
 
   if (item_json) {
     if (type == cJSON_Number) {
       cJSON_SetNumberValue(item_json, number_value);
+    } else if (type == cJSON_String) {
+      cJSON_SetValuestring(item_json, string_value);
     } else {
       return nullptr;
     }
