@@ -35,10 +35,30 @@ device_json_config::device_json_config(void) : supla_json_config() {}
 
 device_json_config::~device_json_config(void) {}
 
-void device_json_config::set_status_led(TDeviceConfig_StatusLed *status_led) {}
+void device_json_config::set_status_led(TDeviceConfig_StatusLed *status_led) {
+  if (status_led && status_led->StatusLedType >= 0 &&
+      status_led->StatusLedType <= 2) {
+    set_item_value(get_user_root(),
+                   field_map.at(SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED),
+                   cJSON_Number, true, nullptr, status_led->StatusLedType);
+  }
+}
 
 void device_json_config::set_screen_brightness(
-    TDeviceConfig_ScreenBrightness *brightness) {}
+    TDeviceConfig_ScreenBrightness *brightness) {
+  if (brightness) {
+    if (brightness->Automatic == 1) {
+      set_item_value(get_user_root(),
+                     field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS),
+                     cJSON_String, true, "auto", 0);
+    } else if (brightness->ScreenBrightness >= 0 &&
+               brightness->ScreenBrightness <= 100) {
+      set_item_value(get_user_root(),
+                     field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS),
+                     cJSON_Number, true, nullptr, brightness->ScreenBrightness);
+    }
+  }
+}
 
 void device_json_config::set_button_volume(TDeviceConfig_ButtonVolume *volume) {
   unsigned char v = volume ? volume->Volume : 0;
@@ -121,54 +141,70 @@ void device_json_config::set_config(TSDS_SetDeviceConfig *config) {
       }
 
       void *ptr = &config->Config[offset];
+      unsigned short size = 0;
 
       switch (it->first) {
         case SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED:
-          if (left >= sizeof(TDeviceConfig_StatusLed)) {
+          if (left >= (size = sizeof(TDeviceConfig_StatusLed))) {
             set_status_led(static_cast<TDeviceConfig_StatusLed *>(ptr));
           }
           break;
         case SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS:
-          if (left >= sizeof(TDeviceConfig_ScreenBrightness)) {
+          if (left >= (size = sizeof(TDeviceConfig_ScreenBrightness))) {
             set_screen_brightness(
                 static_cast<TDeviceConfig_ScreenBrightness *>(ptr));
           }
           break;
         case SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME:
-          if (left >= sizeof(TDeviceConfig_ButtonVolume)) {
+          if (left >= (size = sizeof(TDeviceConfig_ButtonVolume))) {
             set_button_volume(static_cast<TDeviceConfig_ButtonVolume *>(ptr));
           }
           break;
         case SUPLA_DEVICE_CONFIG_FIELD_DISABLE_LOCAL_CONFIG:
-          if (left >= sizeof(TDeviceConfig_DisableLocalConfig)) {
+          if (left >= (size = sizeof(TDeviceConfig_DisableLocalConfig))) {
             set_local_config_disabled(
                 static_cast<TDeviceConfig_DisableLocalConfig *>(ptr));
           }
           break;
         case SUPLA_DEVICE_CONFIG_FIELD_TIMEZONE_OFFSET:
-          if (left >= sizeof(TDeviceConfig_TimezoneOffset)) {
+          if (left >= (size = sizeof(TDeviceConfig_TimezoneOffset))) {
             set_timezone_offset(
                 static_cast<TDeviceConfig_TimezoneOffset *>(ptr));
           }
           break;
         case SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC:
-          if (left >= sizeof(TDeviceConfig_AutomaticTimeSync)) {
+          if (left >= (size = sizeof(TDeviceConfig_AutomaticTimeSync))) {
             set_automatic_time_sync(
                 static_cast<TDeviceConfig_AutomaticTimeSync *>(ptr));
           }
           break;
         case SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY:
-          if (left >= sizeof(TDeviceConfig_ScreensaverDelay)) {
+          if (left >= (size = sizeof(TDeviceConfig_ScreensaverDelay))) {
             set_screen_saver_delay(
                 static_cast<TDeviceConfig_ScreensaverDelay *>(ptr));
           }
           break;
         case SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE:
-          if (left >= sizeof(TDeviceConfig_ScreensaverMode)) {
+          if (left >= (size = sizeof(TDeviceConfig_ScreensaverMode))) {
             set_screen_saver_mode(
                 static_cast<TDeviceConfig_ScreensaverMode *>(ptr));
           }
           break;
+      }
+
+      offset += size;
+    }
+  }
+}
+
+void device_json_config::leave_only_thise_fields(
+    unsigned _supla_int64_t fields) {
+  for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
+    if (!(fields & it->first)) {
+      cJSON *item = cJSON_GetObjectItem(get_user_root(), it->second.c_str());
+      if (item) {
+        cJSON_DetachItemViaPointer(get_user_root(), item);
+        cJSON_Delete(item);
       }
     }
   }
