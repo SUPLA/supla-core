@@ -22,6 +22,9 @@
 
 namespace testing {
 
+using std::map;
+using std::string;
+
 JSONConfigTest::JSONConfigTest(void) {}
 
 JSONConfigTest::~JSONConfigTest(void) {}
@@ -143,6 +146,46 @@ TEST_F(JSONConfigTest, setItemValue_ItemExistsWithSameType_NoForce) {
   ASSERT_TRUE(json != nullptr);
   EXPECT_STREQ(json, "{\"a\":true}");
   free(json);
+}
+
+TEST_F(JSONConfigTest, merge) {
+  map<int, string> m = {{1, "a"}, {2, "b"}, {3, "c"}};
+
+  JSONConfigStub cfg1;
+  JSONConfigStub cfg2;
+
+  cfg1.set_item_value(cfg1.get_user_root(), "xyz", cJSON_String, true, "aaa",
+                      0);
+  cfg1.set_item_value(cfg1.get_user_root(), "a", cJSON_String, true, "iiii", 0);
+  cfg1.set_item_value(cfg1.get_user_root(), "b", cJSON_Number, true, nullptr,
+                      155.20);
+
+  cfg2.set_item_value(cfg2.get_user_root(), "uiop", cJSON_Number, true, nullptr,
+                      20);
+  cfg2.set_item_value(cfg2.get_user_root(), "a", cJSON_Number, true, nullptr,
+                      30);
+  cfg2.set_item_value(cfg2.get_user_root(), "c", cJSON_String, true, "sxcde",
+                      0);
+
+  char *str = cfg1.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"xyz\":\"aaa\",\"a\":\"iiii\",\"b\":155.2}");
+  free(str);
+
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"uiop\":20,\"a\":30,\"c\":\"sxcde\"}");
+  free(str);
+
+  EXPECT_TRUE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m));
+
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"uiop\":20,\"a\":\"iiii\",\"b\":155.2}");
+  free(str);
+
+
+  EXPECT_FALSE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m));
 }
 
 } /* namespace testing */

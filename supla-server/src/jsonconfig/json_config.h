@@ -45,7 +45,7 @@ class supla_json_config {
                         double number_value);
 
   bool merge(cJSON *src_parent, cJSON *dst_parent,
-             std::map<int, std::string> m);
+             const std::map<int, std::string> &m);
 
  public:
   explicit supla_json_config(const supla_json_config &json_config);

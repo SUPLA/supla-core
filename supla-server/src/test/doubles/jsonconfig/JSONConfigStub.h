@@ -32,6 +32,8 @@ class JSONConfigStub : public supla_json_config {
   cJSON *set_item_value(cJSON *parent, const std::string &name, int type,
                         bool force, const char *string_value,
                         double number_value);
+  bool merge(cJSON *src_parent, cJSON *dst_parent,
+             const std::map<int, std::string> &m);
 };
 
 } /* namespace testing */

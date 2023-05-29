@@ -229,7 +229,7 @@ cJSON *supla_json_config::set_item_value(cJSON *parent, const std::string &name,
 }
 
 bool supla_json_config::merge(cJSON *src_parent, cJSON *dst_parent,
-                              std::map<int, std::string> m) {
+                              const map<int, string> &m) {
   bool dst_changed = false;
 
   for (auto it = m.cbegin(); it != m.cend(); ++it) {

@@ -19,6 +19,10 @@
 #include "JSONConfigStub.h"
 
 namespace testing {
+
+using std::map;
+using std::string;
+
 JSONConfigStub::JSONConfigStub(void) : supla_json_config() {}
 
 JSONConfigStub::~JSONConfigStub(void) {}
@@ -33,6 +37,11 @@ cJSON *JSONConfigStub::set_item_value(cJSON *parent, const std::string &name,
                                       double number_value) {
   return supla_json_config::set_item_value(parent, name, type, force,
                                            string_value, number_value);
+}
+
+bool JSONConfigStub::merge(cJSON *src_parent, cJSON *dst_parent,
+                           const map<int, string> &m) {
+  return supla_json_config::merge(src_parent, dst_parent, m);
 }
 
 }  // namespace testing
