@@ -228,8 +228,28 @@ cJSON *supla_json_config::set_item_value(cJSON *parent, const std::string &name,
   return item_json;
 }
 
-void supla_json_config::merge_user_config(const string &path,
-                                          map<int, string> m, cJSON *dest) {}
+bool supla_json_config::merge(cJSON *src_parent, cJSON *dst_parent,
+                              std::map<int, std::string> m) {
+  bool dst_changed = false;
+
+  for (auto it = m.cbegin(); it != m.cend(); ++it) {
+    cJSON *src_item = cJSON_GetObjectItem(src_parent, it->second.c_str());
+    cJSON *dst_item = cJSON_GetObjectItem(dst_parent, it->second.c_str());
+    if (src_item == nullptr) {
+      if (dst_item) {
+        cJSON_DetachItemViaPointer(dst_parent, dst_item);
+        cJSON_Delete(dst_item);
+      }
+    } else if (!dst_item || !cJSON_Compare(src_item, dst_item, cJSON_True)) {
+      set_item_value(dst_parent, it->second, src_item->type, true,
+                     cJSON_GetStringValue(src_item),
+                     cJSON_GetNumberValue(src_item));
+      dst_changed = true;
+    }
+  }
+
+  return dst_changed;
+}
 
 supla_json_config &supla_json_config::operator=(
     const supla_json_config &json_config) {
