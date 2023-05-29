@@ -922,7 +922,7 @@ bool database::channel_is_associated_with_scene(int channel_id) {
 }
 
 bool database::channel_is_associated_with_vbt(int channel_id) {
-#if DB_VERSION == "20230427200016"
+#ifdef DB_VERSION_20230529143433
   return false;  // Temporarily disabled
 #else
   Remove it
@@ -935,7 +935,7 @@ bool database::channel_is_associated_with_vbt(int channel_id) {
 }
 
 bool database::channel_is_associated_with_push(int channel_id) {
-#if DB_VERSION == "20230427200016"
+#ifdef DB_VERSION_20230529143433
   return false;  // Temporarily disabled
 #else
   Remove it

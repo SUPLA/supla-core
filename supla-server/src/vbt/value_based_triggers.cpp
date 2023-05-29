@@ -35,7 +35,7 @@ supla_value_based_triggers::supla_value_based_triggers(supla_user *user) {
 supla_value_based_triggers::~supla_value_based_triggers(void) { lck_free(lck); }
 
 void supla_value_based_triggers::load(void) {
-#if DB_VERSION == "20230427200016"
+#ifdef DB_VERSION_20230529143433
   return;  // Temporarily disabled
 #else
   Remove it
