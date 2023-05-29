@@ -922,7 +922,7 @@ bool database::channel_is_associated_with_scene(int channel_id) {
 }
 
 bool database::channel_is_associated_with_vbt(int channel_id) {
-#ifdef DB_VERSION_20230529143433
+#if SUPLA_PROTO_VERSION == 20
   return false;  // Temporarily disabled
 #else
   Remove it
@@ -935,7 +935,7 @@ bool database::channel_is_associated_with_vbt(int channel_id) {
 }
 
 bool database::channel_is_associated_with_push(int channel_id) {
-#ifdef DB_VERSION_20230529143433
+#if SUPLA_PROTO_VERSION == 20
   return false;  // Temporarily disabled
 #else
   Remove it
