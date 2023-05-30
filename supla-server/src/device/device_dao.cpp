@@ -617,8 +617,8 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
       "c.`param4`, c.`text_param1`, c.`text_param2`, c.`text_param3`, "
       "c.`channel_number`, c.`id`, c.`hidden`, c.`flags`, v.`value`, CASE WHEN "
       "v.`valid_to` >= UTC_TIMESTAMP() THEN TIME_TO_SEC(TIMEDIFF(v.`valid_to`, "
-      "UTC_TIMESTAMP())) + 2 ELSE NULL E, c.`user_config`, c.`properties` FROM "
-      "`supla_dev_channel` c  LEFT JOIN `supla_dev_channel_value` v ON "
+      "UTC_TIMESTAMP())) + 2 ELSE NULL END, c.`user_config`, c.`properties` "
+      "FROM `supla_dev_channel` c  LEFT JOIN `supla_dev_channel_value` v ON "
       "v.channel_id = c.id WHERE c.`iodevice_id` = ? ORDER BY "
       "c.`channel_number`";
 
