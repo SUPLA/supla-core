@@ -207,6 +207,10 @@ int main(int argc, char *argv[]) {
   supla_mqtt_client_suite::globalInstanceRelease();
   // -----------------------------------------------
 
+  supla_pn_gateway_access_token_provider::global_instance()
+      ->stop_service();  // Stop the service before calling
+                         // curl_global_cleanup()
+
   supla_user::user_free();
   database::mainthread_end();
 
