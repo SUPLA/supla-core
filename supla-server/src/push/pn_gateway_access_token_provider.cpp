@@ -106,6 +106,11 @@ void supla_pn_gateway_access_token_provider::service_loop(void) {
 }
 
 void supla_pn_gateway_access_token_provider::start_service(void) {
+#if SUPLA_PROTO_VERSION == 20
+  return;  // Temporarily disabled
+#else
+  Remove it
+#endif
   if (thread) {
     return;
   }
