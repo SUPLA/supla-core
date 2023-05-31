@@ -35,6 +35,11 @@ supla_value_based_triggers::supla_value_based_triggers(supla_user *user) {
 supla_value_based_triggers::~supla_value_based_triggers(void) { lck_free(lck); }
 
 void supla_value_based_triggers::load(void) {
+#if SUPLA_PROTO_VERSION == 20
+  return;  // Temporarily disabled
+#else
+  Remove it
+#endif
   supla_db_access_provider dba;
   supla_value_based_trigger_dao dao(&dba);
 

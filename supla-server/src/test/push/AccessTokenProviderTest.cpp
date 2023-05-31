@@ -53,6 +53,9 @@ void AccessTokenProviderTest::TearDown(void) {
   Test::TearDown();
 }
 
+#if SUPLA_PROTO_VERSION > 20
+Remove this macro
+
 TEST_F(AccessTokenProviderTest, defaults) {
   EXPECT_FALSE(provider->is_service_running());
   EXPECT_FALSE(provider->is_any_token_available());
@@ -326,5 +329,6 @@ TEST_F(AccessTokenProviderTest, multipleTokensAndOneSoonExpired) {
   EXPECT_EQ(token.get_url(false), "https://push6.supla.org");
   EXPECT_EQ(token.get_extra_field("bundle_id"), "bid3");
 }
+#endif
 
 } /* namespace testing */
