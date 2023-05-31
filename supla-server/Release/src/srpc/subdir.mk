@@ -7,6 +7,8 @@ CPP_SRCS += \
 ../src/srpc/abstract_srpc_adapter.cpp \
 ../src/srpc/abstract_srpc_call_handler.cpp \
 ../src/srpc/abstract_srpc_call_handler_collection.cpp \
+../src/srpc/multipart_call.cpp \
+../src/srpc/multipart_call_store.cpp \
 ../src/srpc/srpc_adapter.cpp 
 
 C_SRCS += \
@@ -16,6 +18,8 @@ CPP_DEPS += \
 ./src/srpc/abstract_srpc_adapter.d \
 ./src/srpc/abstract_srpc_call_handler.d \
 ./src/srpc/abstract_srpc_call_handler_collection.d \
+./src/srpc/multipart_call.d \
+./src/srpc/multipart_call_store.d \
 ./src/srpc/srpc_adapter.d 
 
 C_DEPS += \
@@ -25,6 +29,8 @@ OBJS += \
 ./src/srpc/abstract_srpc_adapter.o \
 ./src/srpc/abstract_srpc_call_handler.o \
 ./src/srpc/abstract_srpc_call_handler_collection.o \
+./src/srpc/multipart_call.o \
+./src/srpc/multipart_call_store.o \
 ./src/srpc/srpc.o \
 ./src/srpc/srpc_adapter.o 
 
@@ -48,7 +54,7 @@ src/srpc/%.o: ../src/srpc/%.c src/srpc/subdir.mk
 clean: clean-src-2f-srpc
 
 clean-src-2f-srpc:
-	-$(RM) ./src/srpc/abstract_srpc_adapter.d ./src/srpc/abstract_srpc_adapter.o ./src/srpc/abstract_srpc_call_handler.d ./src/srpc/abstract_srpc_call_handler.o ./src/srpc/abstract_srpc_call_handler_collection.d ./src/srpc/abstract_srpc_call_handler_collection.o ./src/srpc/srpc.d ./src/srpc/srpc.o ./src/srpc/srpc_adapter.d ./src/srpc/srpc_adapter.o
+	-$(RM) ./src/srpc/abstract_srpc_adapter.d ./src/srpc/abstract_srpc_adapter.o ./src/srpc/abstract_srpc_call_handler.d ./src/srpc/abstract_srpc_call_handler.o ./src/srpc/abstract_srpc_call_handler_collection.d ./src/srpc/abstract_srpc_call_handler_collection.o ./src/srpc/multipart_call.d ./src/srpc/multipart_call.o ./src/srpc/multipart_call_store.d ./src/srpc/multipart_call_store.o ./src/srpc/srpc.d ./src/srpc/srpc.o ./src/srpc/srpc_adapter.d ./src/srpc/srpc_adapter.o
 
 .PHONY: clean-src-2f-srpc
 
