@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_REGISTER_DEVICE_H_
 #define SUPLA_CH_REGISTER_DEVICE_H_
 
+#include <memory>
+
 #include "device/call_handler/abstract_register_device.h"
 
 class supla_user;

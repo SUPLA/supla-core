@@ -18,6 +18,8 @@
 
 #include "AlexaResponseRequestTest.h"
 
+#include <memory>
+
 #include "amazon/alexa_response_request.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_onoff_value.h"

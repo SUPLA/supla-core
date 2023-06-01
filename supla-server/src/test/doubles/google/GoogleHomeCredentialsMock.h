@@ -21,6 +21,8 @@
 
 #include <gmock/gmock.h>
 
+#include <string>
+
 #include "google/google_home_credentials.h"
 
 namespace testing {

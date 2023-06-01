@@ -19,6 +19,8 @@
 #ifndef GOOGLE_HOME_STATE_REPORT_REQUEST_TEST_H_
 #define GOOGLE_HOME_STATE_REPORT_REQUEST_TEST_H_
 
+#include <string>
+
 #include "asynctask/AsyncTaskTest.h"
 #include "device/value/channel_value.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"

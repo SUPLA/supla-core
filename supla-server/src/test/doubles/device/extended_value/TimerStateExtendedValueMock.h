@@ -21,6 +21,8 @@
 
 #include <gmock/gmock.h>
 
+#include <string>
+
 #include "device/extended_value/timer_state_extended_value.h"
 
 namespace testing {

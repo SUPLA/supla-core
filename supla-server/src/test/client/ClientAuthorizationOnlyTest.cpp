@@ -18,6 +18,9 @@
 
 #include "client/ClientAuthorizationOnlyTest.h"
 
+#include <memory>
+#include <string>
+
 namespace testing {
 
 using std::shared_ptr;

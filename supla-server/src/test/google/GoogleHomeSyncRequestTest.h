@@ -19,6 +19,8 @@
 #ifndef GOOGLE_HOME_SYNC_REQUEST_TEST_H_
 #define GOOGLE_HOME_SYNC_REQUEST_TEST_H_
 
+#include <string>
+
 #include "asynctask/AsyncTaskTest.h"
 #include "doubles/google/GoogleHomeCredentialsMock.h"
 #include "doubles/http/CurlAdapterMock.h"

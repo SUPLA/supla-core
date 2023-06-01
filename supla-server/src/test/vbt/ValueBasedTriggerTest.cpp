@@ -18,6 +18,8 @@
 
 #include "ValueBasedTriggerTest.h"
 
+#include <string>
+
 #include "doubles/actions/ActionExecutorMock.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "vbt/value_based_trigger.h"

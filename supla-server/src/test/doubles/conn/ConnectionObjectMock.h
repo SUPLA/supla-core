@@ -21,6 +21,9 @@
 
 #include <gmock/gmock.h>
 
+#include <memory>
+#include <vector>
+
 #include "conn/abstract_connection_object.h"
 
 class ConnectionObjectMock : public supla_abstract_connection_object {

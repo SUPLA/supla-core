@@ -19,6 +19,7 @@
 #include "integration/cyclictasks/AutoGateClosingDaoIntegrationTest.h"
 
 #include <string>
+#include <vector>
 
 #include "srpc/srpc.h"
 

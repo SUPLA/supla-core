@@ -21,6 +21,8 @@
 
 #include <gmock/gmock.h>
 
+#include <string>
+
 #include "amazon/alexa_credentials.h"
 
 namespace testing {

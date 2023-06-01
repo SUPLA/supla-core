@@ -18,6 +18,9 @@
 
 #include "StateWebhookTokenRefreshTest.h"
 
+#include <memory>
+#include <string>
+
 #include "http/asynctask_http_thread_bucket.h"
 #include "log.h"
 #include "webhook/state_webhook_request.h"

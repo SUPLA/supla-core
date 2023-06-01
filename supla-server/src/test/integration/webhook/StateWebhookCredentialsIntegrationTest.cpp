@@ -18,6 +18,9 @@
 
 #include "StateWebhookCredentialsIntegrationTest.h"
 
+#include <string>
+#include <vector>
+
 #include "log.h"
 #include "user.h"
 #include "webhook/state_webhook_credentials.h"

@@ -18,6 +18,8 @@
 
 #include "actions/action_executor.h"
 
+#include <memory>
+
 #include "http/http_event_hub.h"
 #include "mqtt/mqtt_client_suite.h"
 #include "push/pn_delivery_task.h"

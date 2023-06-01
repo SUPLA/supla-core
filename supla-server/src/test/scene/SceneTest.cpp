@@ -18,6 +18,9 @@
 
 #include "scene/SceneTest.h"
 
+#include <list>
+#include <memory>
+
 #include "TestHelper.h"
 #include "actions/action_gate_openclose.h"
 #include "device/value/channel_gate_value.h"

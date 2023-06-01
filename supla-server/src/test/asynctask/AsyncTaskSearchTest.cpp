@@ -18,6 +18,9 @@
 
 #include <asynctask/AsyncTaskSearchTest.h>
 
+#include <memory>
+#include <vector>
+
 #include "doubles/asynctask/AsyncTaskMock.h"
 #include "doubles/integration/asynctask/ChannelOrientedAsyncTaskMock.h"
 #include "log.h"

@@ -18,6 +18,12 @@
 
 #include "ipc/IpcCtrlTest.h"
 
+#include <algorithm>
+#include <list>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "ipc/ipc_ctrl.h"
 
 namespace testing {

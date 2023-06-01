@@ -18,6 +18,8 @@
 
 #include "ChannelTempHumValueTest.h"
 
+#include <string>
+
 #include "device/value/channel_temphum_value.h"
 
 namespace testing {

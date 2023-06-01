@@ -21,7 +21,7 @@
 
 #include <string.h>
 
-#include <chrono>
+#include <chrono>  // NOLINT
 #include <vector>
 
 #include "proto.h"

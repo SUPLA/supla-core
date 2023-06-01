@@ -21,6 +21,8 @@
 
 #include <gmock/gmock.h>
 
+#include <vector>
+
 #include "device/abstract_device_dao.h"
 
 namespace testing {

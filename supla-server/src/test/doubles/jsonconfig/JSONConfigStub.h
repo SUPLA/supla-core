@@ -19,6 +19,9 @@
 #ifndef JSON_CONFIG_STUB_H_
 #define JSON_CONFIG_STUB_H_
 
+#include <map>
+#include <string>
+
 #include "jsonconfig/json_config.h"
 
 namespace testing {

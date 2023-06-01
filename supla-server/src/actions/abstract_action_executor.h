@@ -116,8 +116,8 @@ class supla_abstract_action_executor {
   virtual void open_close(void) = 0;
   virtual void open_close_without_canceling_tasks(void) = 0;
   virtual void forward_outside(int cap) = 0;
-  void copy(supla_abstract_channel_property_getter *property_getter,
-            int source_device_id, int source_channel_id);
+  void copy(supla_abstract_channel_property_getter *property_getter,  // NOLINT
+            int source_device_id, int source_channel_id);             // NOLINT
 };
 
 #endif /*ABSTRACT_ACTION_EXECUTOR_H_*/

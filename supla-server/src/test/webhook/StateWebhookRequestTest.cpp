@@ -18,6 +18,8 @@
 
 #include "StateWebhookRequestTest.h"
 
+#include <memory>
+
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"

@@ -18,6 +18,7 @@
 
 #include "integration/vbt/ValueBasedTriggerIntegrationTest.h"
 
+#include <memory>
 #include <string>
 
 #include "device/value/channel_onoff_value.h"

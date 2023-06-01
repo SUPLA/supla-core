@@ -21,6 +21,8 @@
 
 #include <gmock/gmock.h>
 
+#include <string>
+
 #include "abstract_asynctask_thread_pool.h"
 
 class AsyncTaskThreadPoolMock : public supla_abstract_asynctask_thread_pool {

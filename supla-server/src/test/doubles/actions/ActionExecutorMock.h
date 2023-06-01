@@ -19,7 +19,10 @@
 #ifndef ACTION_EXECUTOR_MOCK_H_
 #define ACTION_EXECUTOR_MOCK_H_
 
+#include <list>
+#include <map>
 #include <memory>
+#include <string>
 
 #include "actions/abstract_action_executor.h"
 

@@ -19,6 +19,8 @@
 #ifndef MULTIPART_CALL_STORE_H_
 #define MULTIPART_CALL_STORE_H_
 
+#include <vector>
+
 #include "srpc/multipart_call.h"
 
 class supla_multipart_call_store {

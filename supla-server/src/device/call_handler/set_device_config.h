@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_SET_DEVICE_CONFIG_H_
 #define SUPLA_CH_SET_DEVICE_CONFIG_H_
 
+#include <memory>
+
 #include "device/call_handler/abstract_device_srpc_call_handler.h"
 
 class supla_ch_set_device_config

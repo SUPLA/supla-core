@@ -18,6 +18,8 @@
 
 #include "ActionGateOpenCloseTest.h"
 
+#include <memory>
+
 #include "actions/action_gate_openclose.h"
 #include "device/value/channel_gate_value.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"

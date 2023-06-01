@@ -37,5 +37,6 @@ void supla_ch_set_channel_config::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (rd->data.sds_set_channel_config_request != nullptr) {
+    //
   }
 }

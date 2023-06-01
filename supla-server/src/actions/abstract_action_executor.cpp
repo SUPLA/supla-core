@@ -243,7 +243,7 @@ void supla_abstract_action_executor::execute_action(
       break;
     case ACTION_COPY:
       if (property_getter) {
-        copy(property_getter, source_device_id, source_channel_id);
+        copy(property_getter, source_device_id, source_channel_id);  // NOLINT
       }
       break;
     case ACTION_FORWARD_OUTSIDE:

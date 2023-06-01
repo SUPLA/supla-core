@@ -20,6 +20,8 @@
 #define ACTION_EXECUTOR_H_
 
 #include <functional>
+#include <map>
+#include <string>
 
 #include "actions/abstract_action_executor.h"
 

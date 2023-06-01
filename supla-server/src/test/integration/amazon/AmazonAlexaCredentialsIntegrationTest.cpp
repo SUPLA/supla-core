@@ -18,6 +18,8 @@
 
 #include "AmazonAlexaCredentialsIntegrationTest.h"
 
+#include <string>
+
 #include "amazon/alexa_credentials.h"
 #include "log.h"
 #include "user.h"

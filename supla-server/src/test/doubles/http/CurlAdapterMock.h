@@ -21,6 +21,9 @@
 
 #include <gmock/gmock.h>
 
+#include <list>
+#include <string>
+
 #include "http/abstract_curl_adapter.h"
 
 namespace testing {

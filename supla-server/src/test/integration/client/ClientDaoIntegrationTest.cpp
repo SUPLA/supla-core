@@ -18,6 +18,8 @@
 
 #include "ClientDaoIntegrationTest.h"
 
+#include <string>
+
 namespace testing {
 
 using std::string;

@@ -18,6 +18,8 @@
 
 #include "JSONConfigTest.h"
 
+#include <string>
+
 #include "doubles/jsonconfig/JSONConfigStub.h"
 
 namespace testing {
@@ -183,7 +185,6 @@ TEST_F(JSONConfigTest, merge) {
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str, "{\"uiop\":20,\"a\":\"iiii\",\"b\":155.2}");
   free(str);
-
 
   EXPECT_FALSE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m));
 }

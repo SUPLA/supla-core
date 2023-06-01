@@ -18,6 +18,9 @@
 
 #include "PushNotificationTest.h"
 
+#include <string>
+#include <vector>
+
 #include "push/push_notification.h"
 
 namespace testing {

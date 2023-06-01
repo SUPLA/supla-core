@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_GET_VERSION_H_
 #define SUPLA_CH_GET_VERSION_H_
 
+#include <memory>
+
 #include "srpc/abstract_srpc_call_hanlder.h"
 
 class supla_ch_get_version : public supla_abstract_srpc_call_handler {

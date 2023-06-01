@@ -18,6 +18,8 @@
 
 #include "ActionExecutorTest.h"
 
+#include <vector>
+
 #include "actions/action_config.h"
 #include "device/devicechannels.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
