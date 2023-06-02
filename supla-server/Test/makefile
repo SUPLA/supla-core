@@ -60,6 +60,7 @@ RM := rm -rf
 -include src/test/distributedobjects/subdir.mk
 -include src/test/device/value/subdir.mk
 -include src/test/device/extended_value/subdir.mk
+-include src/test/device/call_handler/subdir.mk
 -include src/test/device/subdir.mk
 -include src/test/cyclictasks/subdir.mk
 -include src/test/conn/subdir.mk

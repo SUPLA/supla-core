@@ -63,6 +63,7 @@ src/test/client \
 src/test/conn \
 src/test/cyclictasks \
 src/test/device \
+src/test/device/call_handler \
 src/test/device/extended_value \
 src/test/device/value \
 src/test/distributedobjects \
