@@ -32,6 +32,7 @@ class supla_multipart_call_store {
   virtual ~supla_multipart_call_store();
 
   void release(unsigned int call_id);
+  void detach(supla_multipart_call *call);
   supla_multipart_call *get(unsigned int call_id);
   void add(supla_multipart_call *call);
   size_t size(void);

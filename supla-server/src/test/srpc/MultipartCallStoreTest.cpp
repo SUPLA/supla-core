@@ -51,6 +51,16 @@ TEST_F(MultipartCallStoreTest, addGetRelease) {
   EXPECT_EQ(store.size(), 0);
 }
 
+TEST_F(MultipartCallStoreTest, detach) {
+  supla_multipart_call_store store;
+  supla_multipart_call *c = new supla_multipart_call(1, 1000);
+  store.add(c);
+
+  EXPECT_EQ(store.size(), 1);
+  store.detach(c);
+  delete c;
+}
+
 TEST_F(MultipartCallStoreTest, free) {
   // The result of this test is only applicable in cooperation with valgrind
 

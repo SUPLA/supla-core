@@ -52,6 +52,15 @@ void supla_multipart_call_store::release(unsigned int call_id) {
   }
 }
 
+void supla_multipart_call_store::detach(supla_multipart_call *call) {
+  for (auto it = calls.begin(); it != calls.end(); ++it) {
+    if (*it == call) {
+      calls.erase(it);
+      break;
+    }
+  }
+}
+
 void supla_multipart_call_store::add(supla_multipart_call *call) {
   if (call) {
     release(call->get_call_id());
