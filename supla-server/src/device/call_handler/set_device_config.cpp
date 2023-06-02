@@ -20,7 +20,10 @@
 
 #include <memory>
 
+#include "db/db_access_provider.h"
 #include "device.h"
+#include "device/device_dao.h"
+#include "jsonconfig/device/device_json_config.h"
 
 using std::shared_ptr;
 
@@ -33,10 +36,55 @@ bool supla_ch_set_device_config::can_handle_call(unsigned int call_id) {
   return call_id == SUPLA_DS_CALL_SET_DEVICE_CONFIG;
 }
 
+void supla_ch_set_device_config::handle_multipart_call(
+    shared_ptr<supla_device> device, supla_set_device_multipart_call* mp_call) {
+  TSDS_SetDeviceConfig config = {};
+  device_json_config json_config;
+  unsigned _supla_int16_t all_fields = 0;
+
+  while (mp_call->part_pop(&config)) {
+    json_config.set_config(&config);
+    all_fields |= config.Fields;
+    if (config.EndOfDataFlag) {
+      json_config.leave_only_thise_fields(all_fields);
+      supla_db_access_provider dba;
+      supla_device_dao dao(&dba);
+      dao.set_device_config(device->get_user_id(), device->get_id(),
+                            &json_config);
+      break;
+    }
+  }
+  delete mp_call;
+}
+
 void supla_ch_set_device_config::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (rd->data.sds_set_device_config_request != nullptr) {
-    //
+    supla_set_device_multipart_call* _mp_call = nullptr;
+
+    device->access_multipart_call_store(
+        [&rd, &_mp_call, this](supla_multipart_call_store* store) -> void {
+          supla_set_device_multipart_call* mp_call =
+              dynamic_cast<supla_set_device_multipart_call*>(
+                  store->get(SUPLA_DS_CALL_SET_DEVICE_CONFIG));
+
+          if (!mp_call) {
+            mp_call = new supla_set_device_multipart_call();
+            store->add(mp_call);
+          }
+
+          mp_call->part_push(rd->data.sds_set_device_config_request);
+
+          if (rd->data.sds_set_device_config_request->EndOfDataFlag) {
+            store->detach(mp_call);
+            _mp_call = mp_call;
+          }
+        });
+
+    if (_mp_call) {
+      // Process the call outside the store so as not to block it.
+      handle_multipart_call(device, _mp_call);
+    }
   }
 }

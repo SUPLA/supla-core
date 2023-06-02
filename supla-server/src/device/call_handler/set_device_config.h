@@ -22,10 +22,13 @@
 #include <memory>
 
 #include "device/call_handler/abstract_device_srpc_call_handler.h"
+#include "device/call_handler/set_device_config_multipart_call.h"
 
 class supla_ch_set_device_config
     : public supla_abstract_device_srpc_call_handler {
  protected:
+  void handle_multipart_call(std::shared_ptr<supla_device> device,
+                             supla_set_device_multipart_call* mp_call);
   virtual void handle_call(std::shared_ptr<supla_device> device,
                            supla_abstract_srpc_adapter* srpc_adapter,
                            TsrpcReceivedData* rd, unsigned int call_id,
