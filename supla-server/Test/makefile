@@ -13,6 +13,7 @@ RM := rm -rf
 -include src/user/subdir.mk
 -include src/test/webhook/subdir.mk
 -include src/test/vbt/subdir.mk
+-include src/test/srpc/subdir.mk
 -include src/test/scene/subdir.mk
 -include src/test/push/subdir.mk
 -include src/test/mqtt/subdir.mk

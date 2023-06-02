@@ -109,6 +109,7 @@ src/test/jsonconfig/device \
 src/test/mqtt \
 src/test/push \
 src/test/scene \
+src/test/srpc \
 src/test/vbt \
 src/test/webhook \
 src/user \

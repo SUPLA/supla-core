@@ -58,3 +58,5 @@ void supla_multipart_call_store::add(supla_multipart_call *call) {
     calls.push_back(call);
   }
 }
+
+size_t supla_multipart_call_store::size(void) { return calls.size(); }

@@ -16,25 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MULTIPART_CALL_STORE_H_
-#define MULTIPART_CALL_STORE_H_
+#ifndef MULTIPART_CALL_STORE_TEST_H_
+#define MULTIPART_CALL_STORE_TEST_H_
 
-#include <vector>
+#include "gtest/gtest.h"
 
-#include "srpc/multipart_call.h"
+namespace testing {
 
-class supla_multipart_call_store {
- private:
-  std::vector<supla_multipart_call *> calls;
-
+class MultipartCallStoreTest : public Test {
  public:
-  supla_multipart_call_store(void);
-  virtual ~supla_multipart_call_store();
-
-  void release(unsigned int call_id);
-  supla_multipart_call *get(unsigned int call_id);
-  void add(supla_multipart_call *call);
-  size_t size(void);
+  MultipartCallStoreTest();
+  virtual ~MultipartCallStoreTest();
 };
 
-#endif /* MULTIPART_CALL_STORE_H_ */
+} /* namespace testing */
+
+#endif /* MULTIPART_CALL_STORE_TEST_H_ */
