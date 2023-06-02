@@ -21,7 +21,6 @@
 
 #include <string.h>
 
-#include <chrono>  // NOLINT
 #include <vector>
 
 #include "proto.h"
@@ -29,7 +28,7 @@
 class supla_multipart_call {
  private:
   unsigned int call_id;
-  std::chrono::steady_clock::time_point expires_at;
+  unsigned long long expires_at;
 
   typedef struct {
     char *data;
@@ -45,7 +44,7 @@ class supla_multipart_call {
   bool is_expired(void);
   unsigned int get_call_id(void);
   void part_push(char *data, size_t data_size);
-  void *part_pop(size_t *data_size);
+  char *part_pop(size_t *data_size);
 };
 
 #endif /* MULTIPART_CALL_STORE_H_ */

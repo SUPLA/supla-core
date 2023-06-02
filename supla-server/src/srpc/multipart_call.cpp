@@ -18,11 +18,16 @@
 
 #include "multipart_call.h"
 
+#include <stdlib.h>
+
 supla_multipart_call::supla_multipart_call(unsigned int call_id,
                                            int expire_in_msec) {
   this->call_id = call_id;
-  std::chrono::milliseconds mills(expire_in_msec);
-  expires_at = std::chrono::steady_clock::now() + mills;
+
+  struct timeval now = {};
+  gettimeofday(&now, nullptr);
+
+  expires_at = now.tv_sec * 1000000 + now.tv_usec + expire_in_msec * 1000;
 }
 
 supla_multipart_call::~supla_multipart_call() {
@@ -32,25 +37,35 @@ supla_multipart_call::~supla_multipart_call() {
 }
 
 bool supla_multipart_call::is_expired(void) {
-  return std::chrono::steady_clock::now() <= expires_at;
+  struct timeval now = {};
+  gettimeofday(&now, nullptr);
+
+  unsigned long long now_usec = now.tv_sec * 1000000 + now.tv_usec;
+  return now_usec >= expires_at;
 }
 
-unsigned int supla_multipart_call::get_call_id(void) { return get_call_id(); }
+unsigned int supla_multipart_call::get_call_id(void) { return call_id; }
 
 void supla_multipart_call::part_push(char *data, size_t data_size) {
-  parts.push_back({.data = data, .data_size = data_size});
+  if (data && data_size) {
+    part_t p = {};
+    p.data = new char[data_size];
+    memcpy(p.data, data, data_size);
+    p.data_size = data_size;
+    parts.push_back(p);
+  }
 }
 
-void *supla_multipart_call::part_pop(size_t *data_size) {
-  void *result = nullptr;
+char *supla_multipart_call::part_pop(size_t *data_size) {
+  char *result = nullptr;
 
   if (parts.size()) {
-    part_t part = parts.back();
+    part_t part = parts.front();
     if (data_size) {
       *data_size = part.data_size;
     }
     result = part.data;
-    parts.pop_back();
+    parts.erase(parts.begin());
   }
 
   return result;
