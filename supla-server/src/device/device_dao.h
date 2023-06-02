@@ -81,6 +81,11 @@ class supla_device_dao : public supla_abstract_device_dao {
 
   virtual bool on_channel_added(int device_id, int channel_id);
 
+  virtual bool set_device_config(int user_id, int device_id,
+                                 device_json_config *config);
+
+  virtual device_json_config *get_device_config(int device_id);
+
   virtual std::vector<supla_device_channel *> get_channels(
       supla_device *device);
 };

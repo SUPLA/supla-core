@@ -607,6 +607,15 @@ bool supla_device_dao::on_channel_added(int device_id, int channel_id) {
   return dba->query(sql, true) == 0;
 }
 
+bool supla_device_dao::set_device_config(int user_id, int device_id,
+                                         device_json_config *config) {
+  return false;
+}
+
+device_json_config *supla_device_dao::get_device_config(int device_id) {
+  return nullptr;
+}
+
 vector<supla_device_channel *> supla_device_dao::get_channels(
     supla_device *device) {
   vector<supla_device_channel *> result;

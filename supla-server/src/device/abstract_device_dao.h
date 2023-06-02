@@ -21,6 +21,7 @@
 
 #include <vector>
 
+#include "jsonconfig/device/device_json_config.h"
 #include "proto.h"
 #include "tools.h"
 
@@ -79,6 +80,11 @@ class supla_abstract_device_dao {
   virtual bool on_new_device(int device_id) = 0;
 
   virtual bool on_channel_added(int device_id, int channel_id) = 0;
+
+  virtual bool set_device_config(int user_id, int device_id,
+                                 device_json_config *config) = 0;
+
+  virtual device_json_config *get_device_config(int device_id) = 0;
 
   // Perhaps this method should be added to the repository
   virtual std::vector<supla_device_channel *> get_channels(
