@@ -55,7 +55,13 @@ void supla_client_scene::set_caption(const char *caption) {
     this->caption = strndup(caption, SUPLA_SCENE_CAPTION_MAXSIZE);
   }
 
-  mark_as_changed();
+  const supla_client_scene_change_indicator *ind =
+      dynamic_cast<const supla_client_scene_change_indicator *>(
+          get_change_indicator());
+  if (!ind || !ind->is_scene_changed()) {
+    set_change_indicator(new supla_client_scene_change_indicator(
+        true, ind && ind->is_state_changed()));
+  }
 }
 
 const char *supla_client_scene::get_caption(void) { return caption; }
@@ -80,20 +86,16 @@ int supla_client_scene::get_alt_icon_id(void) { return alt_icon_id; }
 
 const supla_scene_state &supla_client_scene::get_state(void) { return state; }
 
-void supla_client_scene::mark_as_changed(void) {
-  const supla_client_scene_change_indicator *ind =
-      dynamic_cast<const supla_client_scene_change_indicator *>(
-          get_change_indicator());
-  if (!ind || !ind->is_state_changed()) {
-    set_change_indicator(new supla_client_scene_change_indicator(
-        ind && ind->is_scene_changed(), true));
-  }
-}
-
 void supla_client_scene::set_state(const supla_scene_state &state) {
   if (this->state != state) {
     this->state = state;
-    mark_as_changed();
+    const supla_client_scene_change_indicator *ind =
+        dynamic_cast<const supla_client_scene_change_indicator *>(
+            get_change_indicator());
+    if (!ind || !ind->is_state_changed()) {
+      set_change_indicator(new supla_client_scene_change_indicator(
+          ind && ind->is_scene_changed(), true));
+    }
   }
 }
 

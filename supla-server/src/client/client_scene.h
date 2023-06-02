@@ -30,7 +30,6 @@ class supla_client_scene : public supla_dobject {
   int alt_icon_id;
   int location_id;
   supla_scene_state state;
-  void mark_as_changed(void);
 
  public:
   explicit supla_client_scene(int id);
