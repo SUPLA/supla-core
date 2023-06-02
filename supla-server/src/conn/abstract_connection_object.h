@@ -19,10 +19,12 @@
 #ifndef SUPLA_ABSTRACT_CONNECTION_OBJECT_H_
 #define SUPLA_ABSTRACT_CONNECTION_OBJECT_H_
 
+#include <functional>
 #include <memory>
 
 #include "conn/connection.h"
 #include "proto.h"
+#include "srpc/multipart_call_store.h"
 
 class supla_user;
 class database;
@@ -37,6 +39,7 @@ class supla_abstract_connection_object {
   supla_user *user;
   bool registered;
   void *lck;
+  supla_multipart_call_store *multipart_call_store;
 
  protected:
   // Thread safe start
@@ -78,6 +81,8 @@ class supla_abstract_connection_object {
   void update_last_activity_time(void);
   int get_activity_delay(void);
   unsigned char get_protocol_version(void);
+  void access_multipart_call_store(
+      std::function<void(supla_multipart_call_store *)> on_store);
   // Thread safe end
 };
 
