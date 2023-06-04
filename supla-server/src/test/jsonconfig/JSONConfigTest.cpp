@@ -150,7 +150,7 @@ TEST_F(JSONConfigTest, setItemValue_ItemExistsWithSameType_NoForce) {
   free(json);
 }
 
-TEST_F(JSONConfigTest, merge) {
+TEST_F(JSONConfigTest, mergeWithDelete) {
   map<unsigned _supla_int16_t, string> m = {{1, "a"}, {2, "b"}, {3, "c"}};
 
   JSONConfigStub cfg1;
@@ -179,14 +179,47 @@ TEST_F(JSONConfigTest, merge) {
   EXPECT_STREQ(str, "{\"uiop\":20,\"a\":30,\"c\":\"sxcde\"}");
   free(str);
 
-  EXPECT_TRUE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m));
+  EXPECT_TRUE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, true));
 
   str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str, "{\"uiop\":20,\"a\":\"iiii\",\"b\":155.2}");
   free(str);
 
-  EXPECT_FALSE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m));
+  EXPECT_FALSE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, true));
+}
+
+TEST_F(JSONConfigTest, mergeWithoutDelete) {
+  map<unsigned _supla_int16_t, string> m = {{1, "a"}, {2, "b"}};
+
+  JSONConfigStub cfg1;
+  JSONConfigStub cfg2;
+
+  cfg1.set_item_value(cfg1.get_user_root(), "b", cJSON_Number, true, nullptr,
+                      155.20);
+
+  cfg2.set_item_value(cfg2.get_user_root(), "a", cJSON_Number, true, nullptr,
+                      30);
+
+  char *str = cfg1.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"b\":155.2}");
+  free(str);
+
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"a\":30}");
+  free(str);
+
+  EXPECT_TRUE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, false));
+
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"a\":30,\"b\":155.2}");
+  free(str);
+
+  EXPECT_FALSE(
+      cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, false));
 }
 
 } /* namespace testing */

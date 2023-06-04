@@ -254,7 +254,8 @@ cJSON *supla_json_config::set_item_value(cJSON *parent, const std::string &name,
 }
 
 bool supla_json_config::merge(cJSON *src_parent, cJSON *dst_parent,
-                              const map<unsigned _supla_int16_t, string> &m) {
+                              const map<unsigned _supla_int16_t, string> &m,
+                              bool delete_nonexistent) {
   bool dst_changed = false;
 
   if (!src_parent || !dst_parent) {
@@ -265,7 +266,7 @@ bool supla_json_config::merge(cJSON *src_parent, cJSON *dst_parent,
     cJSON *src_item = cJSON_GetObjectItem(src_parent, it->second.c_str());
     cJSON *dst_item = cJSON_GetObjectItem(dst_parent, it->second.c_str());
     if (src_item == nullptr) {
-      if (dst_item) {
+      if (dst_item && delete_nonexistent) {
         cJSON_DetachItemViaPointer(dst_parent, dst_item);
         cJSON_Delete(dst_item);
       }
