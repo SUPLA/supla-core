@@ -154,7 +154,7 @@ double supla_json_config::get_double(const char *key) {
   double result = 0;
   get_double(get_user_root(), key, &result);
 
-  return 0;
+  return result;
 }
 
 bool supla_json_config::get_bool(const char *key) {
