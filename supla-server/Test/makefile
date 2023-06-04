@@ -28,6 +28,7 @@ RM := rm -rf
 -include src/test/integration/push/subdir.mk
 -include src/test/integration/mqtt/subdir.mk
 -include src/test/integration/google/subdir.mk
+-include src/test/integration/device/subdir.mk
 -include src/test/integration/datalogger/subdir.mk
 -include src/test/integration/cyclictasks/subdir.mk
 -include src/test/integration/client/subdir.mk

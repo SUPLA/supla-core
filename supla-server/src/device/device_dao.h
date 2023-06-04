@@ -19,6 +19,7 @@
 #ifndef SUPLA_DEVICE_DAO_H_
 #define SUPLA_DEVICE_DAO_H_
 
+#include <string>
 #include <vector>
 
 #include "db/abstract_db_access_provider.h"
@@ -84,7 +85,8 @@ class supla_device_dao : public supla_abstract_device_dao {
   virtual bool set_device_config(int user_id, int device_id,
                                  device_json_config *config);
 
-  virtual device_json_config *get_device_config(int device_id);
+  virtual device_json_config *get_device_config(int device_id,
+                                                std::string *md5sum);
 
   virtual std::vector<supla_device_channel *> get_channels(
       supla_device *device);

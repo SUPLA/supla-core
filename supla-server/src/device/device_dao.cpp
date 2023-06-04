@@ -26,6 +26,7 @@
 #include "log.h"
 #include "tools.h"
 
+using std::string;
 using std::vector;
 
 supla_device_dao::supla_device_dao(supla_abstract_db_access_provider *dba)
@@ -609,11 +610,142 @@ bool supla_device_dao::on_channel_added(int device_id, int channel_id) {
 
 bool supla_device_dao::set_device_config(int user_id, int device_id,
                                          device_json_config *config) {
-  return false;
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return false;
+  }
+
+  bool result = false;
+
+  for (char a = 0; a < 3; a++) {
+    string md5sum;
+    device_json_config *_config = get_device_config(device_id, &md5sum);
+    if (_config) {
+      config->merge(_config);
+
+      char *config_str = _config->get_user_config();
+      if (config_str) {
+        MYSQL_BIND pbind[4] = {};
+
+        pbind[0].buffer_type = MYSQL_TYPE_LONG;
+        pbind[0].buffer = (char *)&user_id;
+
+        pbind[1].buffer_type = MYSQL_TYPE_LONG;
+        pbind[1].buffer = (char *)&device_id;
+
+        pbind[2].buffer_type = MYSQL_TYPE_STRING;
+        pbind[2].buffer = (char *)config_str;
+        pbind[2].buffer_length = strnlen(config_str, 2048);
+
+        pbind[3].buffer_type = MYSQL_TYPE_STRING;
+        pbind[3].buffer = (char *)md5sum.c_str();
+        pbind[3].buffer_length = md5sum.size();
+
+        const char sql[] =
+            "CALL "
+            "`supla_set_device_user_config`(?,?,?,?)";
+
+        MYSQL_STMT *stmt = nullptr;
+        if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true) &&
+            mysql_stmt_affected_rows(stmt) == 1) {
+          result = true;
+        }
+
+        if (stmt != nullptr) mysql_stmt_close(stmt);
+
+        free(config_str);
+      }
+
+      delete _config;
+
+    } else {
+      break;
+    }
+
+    if (result) {
+      break;
+    }
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
 }
 
-device_json_config *supla_device_dao::get_device_config(int device_id) {
-  return nullptr;
+device_json_config *supla_device_dao::get_device_config(int device_id,
+                                                        string *md5sum) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return nullptr;
+  }
+
+  device_json_config *result = nullptr;
+
+  MYSQL_STMT *stmt = nullptr;
+  const char sql[] =
+      "SELECT user_config, MD5(IFNULL(user_config, '')) FROM supla_iodevice "
+      "WHERE id = ?";
+
+  MYSQL_BIND pbind = {};
+
+  pbind.buffer_type = MYSQL_TYPE_LONG;
+  pbind.buffer = (char *)&device_id;
+
+  if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
+    char user_config[2049] = {};
+    char md5[33] = {};
+
+    unsigned long user_config_size = 0;
+    my_bool user_config_is_null = true;
+
+    unsigned long md5_size = 0;
+    my_bool md5_is_null = true;
+
+    MYSQL_BIND rbind[2] = {};
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = user_config;
+    rbind[0].is_null = &user_config_is_null;
+    rbind[0].buffer_length = sizeof(user_config);
+    rbind[0].length = &user_config_size;
+
+    rbind[1].buffer_type = MYSQL_TYPE_STRING;
+    rbind[1].buffer = md5;
+    rbind[1].is_null = &md5_is_null;
+    rbind[1].buffer_length = sizeof(md5);
+    rbind[1].length = &md5_size;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
+        dba->set_terminating_byte(user_config, sizeof(user_config),
+                                  user_config_size, user_config_is_null);
+        dba->set_terminating_byte(md5, sizeof(md5), md5_size, md5_is_null);
+
+        result = new device_json_config();
+        result->set_user_config(user_config);
+        if (md5sum) {
+          *md5sum = md5;
+        }
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
 }
 
 vector<supla_device_channel *> supla_device_dao::get_channels(

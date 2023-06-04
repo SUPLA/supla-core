@@ -19,6 +19,7 @@
 #ifndef SUPLA_ABSTRACT_DEVICE_DAO_H_
 #define SUPLA_ABSTRACT_DEVICE_DAO_H_
 
+#include <string>
 #include <vector>
 
 #include "jsonconfig/device/device_json_config.h"
@@ -84,7 +85,8 @@ class supla_abstract_device_dao {
   virtual bool set_device_config(int user_id, int device_id,
                                  device_json_config *config) = 0;
 
-  virtual device_json_config *get_device_config(int device_id) = 0;
+  virtual device_json_config *get_device_config(int device_id,
+                                                std::string *md5sum) = 0;
 
   // Perhaps this method should be added to the repository
   virtual std::vector<supla_device_channel *> get_channels(
