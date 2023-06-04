@@ -212,7 +212,8 @@ TEST_F(DeviceConfigTest, merge) {
   char *user_config = cfg2.get_user_config();
   ASSERT_NE(user_config, nullptr);
 
-  EXPECT_STREQ(user_config, "{\"a\":true,\"b\":123,\"statusLed\":2}");
+  EXPECT_STREQ(user_config,
+               "{\"a\":true,\"b\":123,\"statusLed\":2,\"buttonVolume\":100}");
 
   free(user_config);
 }

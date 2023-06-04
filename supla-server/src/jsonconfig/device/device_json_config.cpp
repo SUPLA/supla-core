@@ -445,6 +445,7 @@ void device_json_config::leave_only_thise_fields(
 
 void device_json_config::merge(device_json_config *dst) {
   if (dst) {
-    supla_json_config::merge(get_user_root(), dst->get_user_root(), field_map);
+    supla_json_config::merge(get_user_root(), dst->get_user_root(), field_map,
+                             false);
   }
 }
