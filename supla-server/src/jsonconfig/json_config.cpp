@@ -26,6 +26,7 @@
 
 #define MAX_STR_LEN 100
 
+using std::function;
 using std::map;
 using std::string;
 using std::stringstream;
@@ -131,42 +132,66 @@ bool supla_json_config::equal_ci(cJSON *item, const char *str) {
   return item && equal_ci(cJSON_GetStringValue(item), str);
 }
 
-int supla_json_config::get_int(const char *key) {
-  cJSON *root = get_user_root();
-  if (!root) {
-    return 0;
-  }
+int supla_json_config::get_int(const char *key) { return get_double(key); }
 
-  cJSON *value = cJSON_GetObjectItem(root, key);
-  if (value && cJSON_IsNumber(value)) {
-    return value->valueint;
-  }
-
-  return 0;
-}
-
-double supla_json_config::get_double(const char *key) {
-  cJSON *root = get_user_root();
-  if (!root) {
+bool supla_json_config::get_double(cJSON *parent, const char *key,
+                                   double *value) {
+  if (!parent || !key || !value) {
     return false;
   }
 
-  cJSON *value = cJSON_GetObjectItem(root, key);
-  if (value && cJSON_IsNumber(value)) {
-    return value->valuedouble;
+  cJSON *json_value = cJSON_GetObjectItem(parent, key);
+  if (json_value && cJSON_IsNumber(json_value)) {
+    *value = cJSON_GetNumberValue(json_value);
+    return true;
   }
+
+  *value = 0;
+  return false;
+}
+
+double supla_json_config::get_double(const char *key) {
+  double result = 0;
+  get_double(get_user_root(), key, &result);
 
   return 0;
 }
 
 bool supla_json_config::get_bool(const char *key) {
-  cJSON *root = get_user_root();
-  if (!root) {
+  bool result = false;
+  get_bool(get_user_root(), key, &result);
+  return result;
+}
+
+bool supla_json_config::get_bool(cJSON *parent, const char *key, bool *value) {
+  if (!parent || !key || !value) {
     return false;
   }
 
-  cJSON *value = cJSON_GetObjectItem(root, key);
-  return value && cJSON_IsBool(value) && cJSON_IsTrue(value);
+  cJSON *json_value = cJSON_GetObjectItem(parent, key);
+  if (json_value && cJSON_IsBool(json_value)) {
+    *value = cJSON_IsTrue(json_value);
+    return true;
+  }
+
+  *value = false;
+  return false;
+}
+
+bool supla_json_config::get_string(cJSON *parent, const char *key,
+                                   std::string *value) {
+  if (!parent || !key || !value) {
+    return false;
+  }
+
+  cJSON *json_value = cJSON_GetObjectItem(parent, key);
+  if (json_value && cJSON_IsString(json_value)) {
+    char *str = cJSON_GetStringValue(json_value);
+    *value = str ? str : "";
+    return true;
+  }
+
+  return false;
 }
 
 cJSON *supla_json_config::set_item_value(cJSON *parent, const std::string &name,
@@ -229,8 +254,12 @@ cJSON *supla_json_config::set_item_value(cJSON *parent, const std::string &name,
 }
 
 bool supla_json_config::merge(cJSON *src_parent, cJSON *dst_parent,
-                              const map<int, string> &m) {
+                              const map<unsigned _supla_int16_t, string> &m) {
   bool dst_changed = false;
+
+  if (!src_parent || !dst_parent) {
+    return false;
+  }
 
   for (auto it = m.cbegin(); it != m.cend(); ++it) {
     cJSON *src_item = cJSON_GetObjectItem(src_parent, it->second.c_str());

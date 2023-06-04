@@ -151,7 +151,7 @@ TEST_F(JSONConfigTest, setItemValue_ItemExistsWithSameType_NoForce) {
 }
 
 TEST_F(JSONConfigTest, merge) {
-  map<int, string> m = {{1, "a"}, {2, "b"}, {3, "c"}};
+  map<unsigned _supla_int16_t, string> m = {{1, "a"}, {2, "b"}, {3, "c"}};
 
   JSONConfigStub cfg1;
   JSONConfigStub cfg2;

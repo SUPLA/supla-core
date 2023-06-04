@@ -19,10 +19,12 @@
 #ifndef JSON_CONFIG_H_
 #define JSON_CONFIG_H_
 
+#include <functional>
 #include <map>
 #include <string>
 
 #include "json/cJSON.h"
+#include "proto.h"
 
 class supla_json_config {
  private:
@@ -37,15 +39,21 @@ class supla_json_config {
   bool equal_ci(cJSON *item, const char *str);
 
   int get_int(const char *key);
+
+  bool get_bool(cJSON *parent, const char *key, bool *value);
   bool get_bool(const char *key);
+
+  bool get_double(cJSON *parent, const char *key, double *value);
   double get_double(const char *key);
+
+  bool get_string(cJSON *parent, const char *key, std::string *value);
 
   cJSON *set_item_value(cJSON *parent, const std::string &name, int type,
                         bool force, const char *string_value,
                         double number_value);
 
   bool merge(cJSON *src_parent, cJSON *dst_parent,
-             const std::map<int, std::string> &m);
+             const std::map<unsigned _supla_int16_t, std::string> &m);
 
  public:
   explicit supla_json_config(const supla_json_config &json_config);

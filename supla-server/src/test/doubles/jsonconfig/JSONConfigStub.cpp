@@ -40,7 +40,7 @@ cJSON *JSONConfigStub::set_item_value(cJSON *parent, const std::string &name,
 }
 
 bool JSONConfigStub::merge(cJSON *src_parent, cJSON *dst_parent,
-                           const map<int, string> &m) {
+                           const map<unsigned _supla_int16_t, string> &m) {
   return supla_json_config::merge(src_parent, dst_parent, m);
 }
 

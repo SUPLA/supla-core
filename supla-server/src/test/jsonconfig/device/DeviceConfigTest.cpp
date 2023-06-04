@@ -201,4 +201,102 @@ TEST_F(DeviceConfigTest, leaveOnly) {
   free(str);
 }
 
+TEST_F(DeviceConfigTest, merge) {
+  device_json_config cfg1, cfg2;
+  cfg1.set_user_config("{\"statusLed\":2}");
+  cfg2.set_user_config(
+      "{\"a\":true,\"b\":123,\"statusLed\":1,\"buttonVolume\":100}");
+
+  cfg1.merge(&cfg2);
+
+  char *user_config = cfg2.get_user_config();
+  ASSERT_NE(user_config, nullptr);
+
+  EXPECT_STREQ(user_config, "{\"a\":true,\"b\":123,\"statusLed\":2}");
+
+  free(user_config);
+}
+
+TEST_F(DeviceConfigTest, getConfig_AllFields) {
+  TSDS_SetDeviceConfig sds_cfg = {};
+  device_json_config cfg1, cfg2;
+
+  const char user_config[] =
+      "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
+      "\"localConfigDisabled\":false,\"timezoneOffset\":555,"
+      "\"automaticTimeSync\":true,\"screenSaverDelay\":123,"
+      "\"screenSaverMode\":3}";
+  cfg1.set_user_config(user_config);
+
+  unsigned _supla_int64_t fields_left = 0xFFFFFFFFFFFFFFFF;
+  cfg1.get_config(&sds_cfg, &fields_left);
+
+  EXPECT_EQ(fields_left, 0);
+  EXPECT_EQ(sds_cfg.Fields, SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
+                                SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
+                                SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
+                                SUPLA_DEVICE_CONFIG_FIELD_DISABLE_LOCAL_CONFIG |
+                                SUPLA_DEVICE_CONFIG_FIELD_TIMEZONE_OFFSET |
+                                SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
+                                SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY |
+                                SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE);
+
+  cfg2.set_config(&sds_cfg);
+  char *user_config2 = cfg2.get_user_config();
+  ASSERT_NE(user_config2, nullptr);
+
+  EXPECT_STREQ(user_config, user_config2);
+
+  free(user_config2);
+}
+
+TEST_F(DeviceConfigTest, getConfig_AutoBrightness) {
+  TSDS_SetDeviceConfig sds_cfg = {};
+  device_json_config cfg1, cfg2;
+
+  const char user_config[] = "{\"screenBrightness\":\"auto\"}";
+  cfg1.set_user_config(user_config);
+
+  unsigned _supla_int64_t fields_left = 0xFFFFFFFFFFFFFFFF;
+  cfg1.get_config(&sds_cfg, &fields_left);
+
+  EXPECT_EQ(fields_left, 0);
+
+  EXPECT_EQ(sds_cfg.Fields, SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS);
+
+  cfg2.set_config(&sds_cfg);
+  char *user_config2 = cfg2.get_user_config();
+  ASSERT_NE(user_config2, nullptr);
+
+  EXPECT_STREQ(user_config, user_config2);
+
+  free(user_config2);
+}
+
+TEST_F(DeviceConfigTest, getConfig_OneField) {
+  TSDS_SetDeviceConfig sds_cfg = {};
+  device_json_config cfg1, cfg2;
+
+  cfg1.set_user_config(
+      "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
+      "\"localConfigDisabled\":false,\"timezoneOffset\":555,"
+      "\"automaticTimeSync\":true,\"screenSaverDelay\":123,"
+      "\"screenSaverMode\":3}");
+
+  unsigned _supla_int64_t fields_left = 0xFFFFFFFFFFFFFFFF;
+  cfg1.get_config(&sds_cfg, SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC,
+                  &fields_left);
+
+  EXPECT_EQ(fields_left, 0);
+  EXPECT_EQ(sds_cfg.Fields, SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC);
+
+  cfg2.set_config(&sds_cfg);
+  char *user_config = cfg2.get_user_config();
+  ASSERT_NE(user_config, nullptr);
+
+  EXPECT_STREQ(user_config, "{\"automaticTimeSync\":true}");
+
+  free(user_config);
+}
+
 } /* namespace testing */

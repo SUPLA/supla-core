@@ -36,7 +36,7 @@ class JSONConfigStub : public supla_json_config {
                         bool force, const char *string_value,
                         double number_value);
   bool merge(cJSON *src_parent, cJSON *dst_parent,
-             const std::map<int, std::string> &m);
+             const std::map<unsigned _supla_int16_t, std::string> &m);
 };
 
 } /* namespace testing */
