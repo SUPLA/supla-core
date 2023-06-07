@@ -154,20 +154,23 @@ bool supla_device::enter_cfg_mode(void) {
 }
 
 void supla_device::on_device_config_changed(void) {
-  supla_db_access_provider dba;
-  supla_device_dao dao(&dba);
+  if (get_protocol_version() >= 21) {
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
 
-  device_json_config *config = dao.get_device_config(get_id(), nullptr);
-  if (config) {
-    unsigned _supla_int64_t fields = 0xFFFFFFFFFFFFFFFF;
-    while (fields) {
-      TSDS_SetDeviceConfig sds_config = {};
-      config->get_config(&sds_config, fields, &fields);
-      sds_config.EndOfDataFlag = fields == 0 ? 1 : 0;
-      get_connection()->get_srpc_adapter()->sd_async_set_device_config_request(
-          &sds_config);
+    device_json_config *config = dao.get_device_config(get_id(), nullptr);
+    if (config) {
+      unsigned _supla_int64_t fields = 0xFFFFFFFFFFFFFFFF;
+      while (fields) {
+        TSDS_SetDeviceConfig sds_config = {};
+        config->get_config(&sds_config, fields, &fields);
+        sds_config.EndOfDataFlag = fields == 0 ? 1 : 0;
+        get_connection()
+            ->get_srpc_adapter()
+            ->sd_async_set_device_config_request(&sds_config);
+      }
+
+      delete config;
     }
-
-    delete config;
   }
 }

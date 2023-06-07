@@ -94,6 +94,10 @@ void supla_register_device::on_registraction_success(void) {
 
   device->get_user()->on_device_registered(
       get_device_id(), supla_caller(ctDevice, get_device_id()));
+
+  if (device->get_flags() & SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED) {
+    device->on_device_config_changed();
+  }
 }
 
 void supla_register_device::register_device(
