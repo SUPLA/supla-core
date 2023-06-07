@@ -443,9 +443,33 @@ void device_json_config::leave_only_thise_fields(
   }
 }
 
+void device_json_config::remove_fields(unsigned _supla_int64_t fields) {
+  for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
+    if (fields & it->first) {
+      cJSON *item = cJSON_GetObjectItem(get_user_root(), it->second.c_str());
+      if (item) {
+        cJSON_DetachItemViaPointer(get_user_root(), item);
+        cJSON_Delete(item);
+      }
+    }
+  }
+}
+
 void device_json_config::merge(device_json_config *dst) {
   if (dst) {
     supla_json_config::merge(get_user_root(), dst->get_user_root(), field_map,
                              false);
   }
+}
+
+bool device_json_config::is_local_config_disabled(void) {
+  bool result = false;
+  if (get_bool(
+          get_user_root(),
+          field_map.at(SUPLA_DEVICE_CONFIG_FIELD_DISABLE_LOCAL_CONFIG).c_str(),
+          &result)) {
+    return result;
+  }
+
+  return false;
 }

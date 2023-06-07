@@ -201,6 +201,44 @@ TEST_F(DeviceConfigTest, leaveOnly) {
   free(str);
 }
 
+TEST_F(DeviceConfigTest, removeFields) {
+  TSDS_SetDeviceConfig sds_cfg = {};
+  sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
+                   SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
+                   SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME;
+
+  ((TDeviceConfig_StatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->StatusLedType = SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_StatusLed);
+  ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
+
+  ((TDeviceConfig_ScreenBrightness *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->ScreenBrightness = 100;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_ScreenBrightness);
+  ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
+
+  ((TDeviceConfig_ButtonVolume *)&sds_cfg.Config[sds_cfg.ConfigSize])->Volume =
+      0;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_ButtonVolume);
+  ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
+
+  device_json_config cfg;
+  cfg.set_config(&sds_cfg);
+  char *str = cfg.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str,
+               "{\"statusLed\":0,\"screenBrightness\":100,\"buttonVolume\":0}");
+  free(str);
+
+  cfg.remove_fields(SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
+                    SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS);
+
+  str = cfg.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"buttonVolume\":0}");
+  free(str);
+}
+
 TEST_F(DeviceConfigTest, merge) {
   device_json_config cfg1, cfg2;
   cfg1.set_user_config("{\"statusLed\":2}");
@@ -298,6 +336,19 @@ TEST_F(DeviceConfigTest, getConfig_OneField) {
   EXPECT_STREQ(user_config, "{\"automaticTimeSync\":true}");
 
   free(user_config);
+}
+
+TEST_F(DeviceConfigTest, isLocalConfigDisabled) {
+  device_json_config cfg;
+
+  cfg.set_user_config("");
+  EXPECT_FALSE(cfg.is_local_config_disabled());
+
+  cfg.set_user_config("{\"localConfigDisabled\":false}");
+  EXPECT_FALSE(cfg.is_local_config_disabled());
+
+  cfg.set_user_config("{\"localConfigDisabled\":true}");
+  EXPECT_TRUE(cfg.is_local_config_disabled());
 }
 
 } /* namespace testing */

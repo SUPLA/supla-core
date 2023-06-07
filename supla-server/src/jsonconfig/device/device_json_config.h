@@ -55,7 +55,9 @@ class device_json_config : public supla_json_config {
   void get_config(TSDS_SetDeviceConfig *config,
                   unsigned _supla_int64_t *fields_left);
   void leave_only_thise_fields(unsigned _supla_int64_t fields);
+  void remove_fields(unsigned _supla_int64_t fields);
   void merge(device_json_config *dst);
+  bool is_local_config_disabled(void);
 };
 
 #endif /* DEVICE_JSON_CONFIG_H_ */
