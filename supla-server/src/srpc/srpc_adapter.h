@@ -128,6 +128,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sd_async_set_device_config_result(
       TSDS_SetDeviceConfigResult *result);  // ver. >= 21
+
+  virtual _supla_int_t sd_async_set_device_config_request(
+      TSDS_SetDeviceConfig *config);  // ver. >= 21
 };
 
 #endif /* SRPC_ADAPTER_H_ */
