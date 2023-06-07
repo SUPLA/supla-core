@@ -38,24 +38,52 @@ bool supla_ch_set_device_config::can_handle_call(unsigned int call_id) {
 
 void supla_ch_set_device_config::handle_multipart_call(
     shared_ptr<supla_device> device, supla_set_device_multipart_call* mp_call) {
-  TSDS_SetDeviceConfig config = {};
-  device_json_config json_config;
-  unsigned _supla_int16_t all_fields = 0;
+  supla_db_access_provider dba;
+  supla_device_dao dao(&dba);
 
-  while (mp_call->part_pop(&config)) {
-    json_config.set_config(&config);
-    all_fields |= config.Fields;
-    if (config.EndOfDataFlag) {
-      json_config.leave_only_thise_fields(all_fields);
-      json_config.remove_fields(SUPLA_DEVICE_CONFIG_FIELD_DISABLE_LOCAL_CONFIG);
-      supla_db_access_provider dba;
-      supla_device_dao dao(&dba);
-      dao.set_device_config(device->get_user_id(), device->get_id(),
-                            &json_config);
-      break;
+  TSDS_SetDeviceConfigResult result = {};
+  result.Result = SUPLA_CONFIG_RESULT_FALSE;
+
+  {
+    device_json_config* config =
+        dao.get_device_config(device->get_id(), nullptr);
+    if (config) {
+      if (config->is_local_config_disabled()) {
+        result.Result = SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED;
+      }
+      delete config;
     }
   }
+
+  if (result.Result != SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED) {
+    TSDS_SetDeviceConfig config = {};
+    device_json_config json_config;
+    unsigned _supla_int16_t all_fields = 0;
+
+    while (mp_call->part_pop(&config)) {
+      json_config.set_config(&config);
+      all_fields |= config.Fields;
+      if (config.EndOfDataFlag) {
+        json_config.leave_only_thise_fields(all_fields);
+        json_config.remove_fields(
+            SUPLA_DEVICE_CONFIG_FIELD_DISABLE_LOCAL_CONFIG);
+        if (dao.set_device_config(device->get_user_id(), device->get_id(),
+                                  &json_config)) {
+          result.Result = SUPLA_CONFIG_RESULT_TRUE;
+        }
+        break;
+      }
+    }
+  }
+
   delete mp_call;
+
+  device->get_connection()
+      ->get_srpc_adapter()
+      ->sd_async_set_device_config_result(&result);
+
+  device->on_device_config_changed();  // Regardless of the result, call this
+                                       // method.
 }
 
 void supla_ch_set_device_config::handle_call(

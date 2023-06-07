@@ -62,6 +62,7 @@ class supla_device : public supla_abstract_connection_object {
   int get_flags(void);
 
   bool enter_cfg_mode(void);
+  void on_device_config_changed(void);
 };
 
 #endif /* DEVICE_H_ */

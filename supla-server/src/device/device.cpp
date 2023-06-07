@@ -150,3 +150,5 @@ bool supla_device::enter_cfg_mode(void) {
 
   return false;
 }
+
+void supla_device::on_device_config_changed(void) {}

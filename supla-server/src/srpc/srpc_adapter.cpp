@@ -156,3 +156,8 @@ _supla_int_t supla_srpc_adapter::sc_async_get_channel_value_result(
     TSC_GetChannelValueResult *result) {
   return srpc_sc_async_get_channel_value_result(get_srpc(), result);
 }
+
+_supla_int_t supla_srpc_adapter::sd_async_set_device_config_result(
+    TSDS_SetDeviceConfigResult *result) {
+  return srpc_sd_async_set_device_config_result(get_srpc(), result);
+}
