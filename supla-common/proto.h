@@ -527,9 +527,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_POLIER 15
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
-#define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010  // ver. >= 17
-#define SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED 0x0020     // ver. >= 18
-#define SUPLA_DEVICE_FLAG_CALCFG_SET_TIME 0x0040        // ver. >= 21
+#define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010    // ver. >= 17
+#define SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED 0x0020       // ver. >= 18
+#define SUPLA_DEVICE_FLAG_CALCFG_SET_TIME 0x0040          // ver. >= 21
+#define SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED 0x0080  // ver. >= 21
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
