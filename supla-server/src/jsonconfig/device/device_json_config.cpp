@@ -334,12 +334,6 @@ bool device_json_config::get_screen_saver_mode(
 void device_json_config::get_config(TSDS_SetDeviceConfig *config,
                                     unsigned _supla_int64_t fields,
                                     unsigned _supla_int64_t *fields_left) {
-  if (!config) {
-    return;
-  }
-
-  config->Fields = 0;
-
   if (fields_left) {
     *fields_left = 0;
     // map is sorted
@@ -350,6 +344,11 @@ void device_json_config::get_config(TSDS_SetDeviceConfig *config,
     }
   }
 
+  if (!config) {
+    return;
+  }
+
+  config->Fields = 0;
   config->ConfigSize = 0;
 
   // map is sorted
