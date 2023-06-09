@@ -71,7 +71,7 @@ bool serverstatus::getStatus(char *buffer, size_t buffer_size) {
 
   long int time_sec = ssocket_get_last_accept_error_time_sec();
   if (time_sec) {
-    if (now.tv_sec - time_sec < 300) {
+    if (now.tv_sec - time_sec <= 60) {
       snprintf(buffer, buffer_size, "CONN_ACCEPT_ERR:%i",
                ssocket_get_last_accept_errno());
       return false;
