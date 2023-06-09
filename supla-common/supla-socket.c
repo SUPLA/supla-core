@@ -326,10 +326,14 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
     client_sd = accept(ssd->supla_socket.sfd, (struct sockaddr *)&addr, &len);
 
     if (client_sd == -1) {
-      ssocket_last_accept_errno = errno;
-      gettimeofday(&ssocket_last_accept_error_time, NULL);
-      supla_log(LOG_ERR, "Connection accept error %i",
-                ssocket_last_accept_errno);
+      if (errno != EAGAIN && errno != ECONNABORTED) {
+        ssocket_last_accept_errno = errno;
+        gettimeofday(&ssocket_last_accept_error_time, NULL);
+      }
+
+      supla_log(LOG_ERR, "Connection accept error %i, %s:%d",
+                ssocket_last_accept_errno, inet_ntoa(addr.sin_addr),
+                ntohs(addr.sin_port));
     } else {
       supla_log(LOG_INFO, "Connection accepted: %s:%d ClientSD: %i Secure: %i",
                 inet_ntoa(addr.sin_addr), ntohs(addr.sin_port), client_sd,
