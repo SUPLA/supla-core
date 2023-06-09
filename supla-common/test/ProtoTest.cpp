@@ -272,6 +272,13 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ(sizeof(TDS_RegisterPushNotification), 3);
   EXPECT_EQ(sizeof(TDS_PushNotification), 399);
   EXPECT_EQ(sizeof(TCS_RegisterPnClientToken), 269);
+
+  EXPECT_EQ(sizeof(THVACValue), 8);
+  EXPECT_LE(sizeof(THVACValue), static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+
+  EXPECT_EQ(sizeof(TSD_ChannelConfig_HVAC), 65);
+  EXPECT_LE(sizeof(TSD_ChannelConfig_HVAC),
+            static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 }
 
 TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {
