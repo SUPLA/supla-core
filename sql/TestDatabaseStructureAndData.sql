@@ -2816,3 +2816,5 @@ WHERE id = _client_id
    OR platform != _platform
    OR app_id != app_id
    OR devel_env != _devel_env);
+
+CREATE TABLE supla_settings_string (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(50) NOT NULL, value VARCHAR(1024) NOT NULL, UNIQUE INDEX UNIQ_814604C95E237E06 (name), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB;
