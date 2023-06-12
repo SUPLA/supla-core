@@ -21,6 +21,8 @@
 #include <unistd.h>
 
 #include "db/database.h"
+#include "db/db_access_provider.h"
+#include "db/server_settings_dao.h"
 #include "http/curl_adapter.h"
 #include "lck.h"
 #include "log.h"
@@ -106,11 +108,6 @@ void supla_pn_gateway_access_token_provider::service_loop(void) {
 }
 
 void supla_pn_gateway_access_token_provider::start_service(void) {
-#if SUPLA_PROTO_VERSION == 20
-  return;  // Temporarily disabled
-#else
-  Remove it
-#endif
   if (thread) {
     return;
   }
@@ -215,7 +212,13 @@ void supla_pn_gateway_access_token_provider::get_new_tokens(
     vector<supla_pn_gateway_access_token> *tokens) {
   curl_adapter->reset();
 
-  curl_adapter->append_header("Authorization: Bearer {target-cloud-token}");
+  string auth = "Authorization: Bearer ";
+
+  supla_db_access_provider dba;
+  supla_server_settins_dao dao(&dba);
+  auth.append(dao.get_target_token());
+
+  curl_adapter->append_header(auth.c_str());
 
   string url = "https://autodiscover.supla.org/pn-token";
 
