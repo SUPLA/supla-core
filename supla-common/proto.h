@@ -2439,6 +2439,81 @@ typedef struct {
 // algorithm, while i.e. PID requires different parameters to work (or can
 // those be adjusted automatically by software?)
 
+// HVAC channel validation rules for thermometers:
+// - MainThermometerChannelNo must be set
+// - AuxThermometerChannelNo is validated and used only when
+//     AuxThermometerType != SUPLA_HVAC_AUX_THERMOMETER_TYPE_NOT_SET
+// - AuxThermometerChannelNo != MainThermometerChannelNo
+// - AuxThermometerChannelNo must be set for
+//     SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL. For other functions it is
+//     optional.
+// - MainThermometerChannelNo and AuxThermometerChannelNo have to be
+//     SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR or SUPLA_CHANNELTYPE_THERMOMETER
+// - When AuxThermometerType == SUPLA_HVAC_AUX_THERMOMETER_TYPE_NOT_SET,
+//     AuxThermometerChannelNo is ignored, it can be set to 0.
+
+// HVAC channel validation for AntiFreezeAndOverheatProtectionEnabled:
+// - function is available for channel functions: HEAT, COOL, AUTO
+// - for other channel functions, this parameter is ignored
+// - AntiFreeze/Overheat protection always use MainThermometerChannelNo as
+//     temperature source
+
+// HVAC channel validation for Algorithms:
+// - AvailableAlgorithms is set only by device
+// - UsedAlgorithm == 0 may be reported by device for incorrectly configured
+//     thermostat (i.e. there AvailableAlgorithms == 0), this shouldn't happen
+//     for devices with proper SW.
+// - UsedAlgorithm & AvailableAlgorithms should evaluate to true
+// - UsedAlgorithm should contain only one bit set
+
+// MinOnTimeS and MinOffTimeS:
+// - function is always available
+// - time is given in seconds
+// - allowed range: 0 - 600 sec
+
+// OutputValueOnError:
+// - function is always available
+// - allowed values: -100 .. 100
+// - it is recommended to use only -100 (cool), 0 (off), 100 (heat).
+// - info: this range comes from assumption that cooling and heating may
+//     be enabled with gradients (i.e. for some thermostat with PWM output), but
+//     majority of thermostats are on/off, so only -100 (cool), 0 (off), and 100
+//     (heat) are proposed here.
+
+// Temperature validation rules:
+// - Temperature in "Room Constrain" means:
+//     TEMPERATURE_ROOM_MIN <= t <= TEMPERATURE_ROOM_MAX
+// - Temperature in "Aux Constrain" means:
+//     TEMPERATURE_AUX_MIN <= t <= TEMPERATURE_AUX_MAX
+// - Temperatures (t_min, t_max) in "Auto Constrain" means:
+//     TEMPERATURE_ROOM_MIN <= t_min <= TEMPERATURE_ROOM_MAX AND
+//     TEMPERATURE_ROOM_MAX <= t_max <= TEMPERATURE_ROOM_MAX AND
+//     (t_max - t_min >= TEMPERATURE_AUTO_OFFSET_MIN) AND
+//     (t_max - t_min <= TEMPERATURE_AUTO_OFFSET_MAX)
+
+// TEMPERATURE_FREEZE_PROTECTION - has to be in Room Constrain when
+//   AntiFreezeAndOverheatProtectionEnabled is set
+// TEMPERATURE_ECO - has to be in Room Constrain
+// TEMPERATURE_COMFORT - has to be in Room Constrain
+// TEMPERATURE_BOOST - has to be in Room Constrain
+// TEMPERATURE_HEAT_PROTECTION - has to be in Room Constrain when function
+//   is COOL or AUTO
+// TEMPERATURE_HISTERESIS - has to be
+//   TEMPERATURE_HISTERESIS_MIN <= t <= TEMPERATURE_HISTERESIS_MAX
+// TEMPERATURE_BELOW_ALARM - has to be in Room Constrain
+// TEMPERATURE_ABOVE_ALARM - has to be in Room Constrain
+// TEMPERATURE_AUX_MIN_SETPOINT - has to be in Aux Constrain and has
+//   to be < TEMPERATURE_AUX_MAX_SETPOINT
+// TEMPERATURE_AUX_MAX_SETPOINT - has to be in Aux Constrain and has
+//   to be > TEMPERATURE_AUX_MIN_SETPOINT
+
+// Below values are readonly and defines device capabilities for current
+// function:
+// TEMPERATURE_ROOM_MIN < TEMPERATURE_ROOM_MAX
+// TEMPERATURE_AUX_MIN < TEMPERATURE_AUX_MAX
+// TEMPERATURE_HISTERESIS_MIN < TEMPERATURE_HISTERESIS_MAX
+// TEMPERATURE_AUTO_OFFSET_MIN < TEMPERATURE_AUTO_OFFSET_MAX
+
 typedef struct {
   // Channel numbers for thermometer config. Channels have to be local and
   // numbering is the same as for registration message
@@ -2461,7 +2536,7 @@ typedef struct {
                                         // be disabled
   signed char OutputValueOnError;       // -100 cool, 0 off (default), 100 heat
   THVACTemperatureCfg Temperatures;
-} TSD_ChannelConfig_HVAC;  // v. >= 21
+} TSD_ChannelConfig_HVAC; // v. >= 21
 
 typedef struct {
   _supla_int_t ChannelID;
