@@ -2446,9 +2446,9 @@ typedef struct {
   unsigned char AuxThermometerChannelNo;
   // SUPLA_HVAC_AUX_THERMOMETER_TYPE_
   unsigned char AuxThermometerType;
-  unsigned char EnableAntiFreezeAndOverheatProtection;
+  unsigned char AntiFreezeAndOverheatProtectionEnabled;
   // bit map SUPLA_HVAC_ALGORITHM_ (readonly)
-  unsigned _supla_int16_t AlgorithmCaps;
+  unsigned _supla_int16_t AvailableAlgorithms;
   // only one value of SUPLA_HVAC_ALGORITHM_
   unsigned _supla_int16_t UsedAlgorithm;
   // Below Min TimeS parameters defines minimum time of relay/output to be
