@@ -204,6 +204,9 @@ TEST_F(SetChannelFunctionIntegrationTest,
   iterateUntilDefaultTimeout();
 }
 
+#if SUPLA_PROTO_VERSION > 20
+Remove this macro
+
 TEST_F(SetChannelFunctionIntegrationTest,
        SetTheFunctionForChannelAssociatedWithPush) {
   runSqlScript("DeleteSceneOperaionsWithChannelId303.sql");
@@ -257,6 +260,7 @@ TEST_F(SetChannelFunctionIntegrationTest,
 
   iterateUntilDefaultTimeout();
 }
+#endif
 
 TEST_F(SetChannelFunctionIntegrationTest,
        SetTheFunctionForChannelAssociatedWithTheActionTrigger) {
