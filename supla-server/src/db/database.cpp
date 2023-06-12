@@ -922,12 +922,6 @@ bool database::channel_is_associated_with_scene(int channel_id) {
 }
 
 bool database::channel_is_associated_with_vbt(int channel_id) {
-#if SUPLA_PROTO_VERSION == 20
-  return false;  // Temporarily disabled
-#else
-  Remove it
-#endif
-
   const char sql[] =
       "SELECT id FROM supla_value_based_trigger WHERE ? IN (owning_channel_id, "
       "channel_id) LIMIT 1";
@@ -935,12 +929,6 @@ bool database::channel_is_associated_with_vbt(int channel_id) {
 }
 
 bool database::channel_is_associated_with_push(int channel_id) {
-#if SUPLA_PROTO_VERSION == 20
-  return false;  // Temporarily disabled
-#else
-  Remove it
-#endif
-
   const char sql[] =
       "SELECT id FROM supla_push_notification WHERE channel_id = ? LIMIT 1";
   return get_int(channel_id, 0, sql) > 0;
