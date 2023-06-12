@@ -2536,7 +2536,7 @@ typedef struct {
                                         // be disabled
   signed char OutputValueOnError;       // -100 cool, 0 off (default), 100 heat
   THVACTemperatureCfg Temperatures;
-} TSD_ChannelConfig_HVAC; // v. >= 21
+} TSD_ChannelConfig_HVAC;  // v. >= 21
 
 typedef struct {
   _supla_int_t ChannelID;
