@@ -441,4 +441,6 @@ void supla_abstract_register_device::register_device(
   on_registraction_success();
 
   send_result(resultcode);
+
+  after_registration_success();
 }

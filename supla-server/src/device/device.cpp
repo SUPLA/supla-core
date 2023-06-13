@@ -153,7 +153,7 @@ bool supla_device::enter_cfg_mode(void) {
   return false;
 }
 
-void supla_device::on_device_config_changed(void) {
+void supla_device::send_device_config_to_device(void) {
   if (get_protocol_version() >= 21) {
     supla_db_access_provider dba;
     supla_device_dao dao(&dba);

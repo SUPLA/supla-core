@@ -36,6 +36,7 @@ class supla_register_device : public supla_abstract_register_device {
 
   virtual bool is_prev_entering_cfg_mode(void);
   virtual void on_registraction_success(void);
+  virtual void after_registration_success(void);
 
  public:
   supla_register_device(void);

@@ -66,6 +66,7 @@ class supla_abstract_register_device
 
   virtual bool is_prev_entering_cfg_mode(void) = 0;
   virtual void on_registraction_success(void) = 0;
+  virtual void after_registration_success(void) = 0;
 
   supla_abstract_device_dao *get_device_dao(void);
   std::weak_ptr<supla_device> get_device(void);

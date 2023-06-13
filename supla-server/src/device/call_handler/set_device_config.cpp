@@ -82,8 +82,8 @@ void supla_ch_set_device_config::handle_multipart_call(
       ->get_srpc_adapter()
       ->sd_async_set_device_config_result(&result);
 
-  device->on_device_config_changed();  // Regardless of the result, call this
-                                       // method.
+  device->send_device_config_to_device();  // Regardless of the result, call
+                                           // this method.
 }
 
 void supla_ch_set_device_config::handle_call(
