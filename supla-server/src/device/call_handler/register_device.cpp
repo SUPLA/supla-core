@@ -63,7 +63,7 @@ bool supla_register_device::is_prev_entering_cfg_mode(void) {
   return false;
 }
 
-void supla_register_device::on_registraction_success(void) {
+void supla_register_device::on_registration_success(void) {
   shared_ptr<supla_device> device = get_device().lock();
 
   device->set_id(get_device_id());

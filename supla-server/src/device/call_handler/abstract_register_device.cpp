@@ -438,7 +438,7 @@ void supla_abstract_register_device::register_device(
     resultcode = SUPLA_RESULTCODE_CFG_MODE_REQUESTED;
   }
 
-  on_registraction_success();
+  on_registration_success();
 
   send_result(resultcode);
 
