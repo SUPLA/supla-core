@@ -52,9 +52,6 @@ void ValueBasedTriggerIntegrationTest::TearDown() {
   delete user;
 }
 
-#if SUPLA_PROTO_VERSION > 20
-Remove this macro
-
 TEST_F(ValueBasedTriggerIntegrationTest, loadFromUserWhoHasNoTriggers) {
   supla_user *user = supla_user::find(12345, true);
 
@@ -291,6 +288,5 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel158) {
   EXPECT_EQ(m["temperature"], "25.15");
   EXPECT_EQ(m["humidity"], "50.00");
 }
-#endif
 
 } /* namespace testing */
