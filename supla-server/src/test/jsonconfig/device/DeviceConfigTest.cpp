@@ -118,10 +118,10 @@ TEST_F(DeviceConfigTest, allFields) {
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
-               "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
-               "\"localConfigDisabled\":false,\"timezoneOffset\":555,"
-               "\"automaticTimeSync\":true,\"screenSaverDelay\":123,"
-               "\"screenSaverMode\":3}");
+               "{\"statusLed\":\"AlwaysOff\",\"screenBrightness\":24,"
+               "\"buttonVolume\":100,\"localConfigDisabled\":false,"
+               "\"timezoneOffset\":555,\"automaticTimeSync\":true,"
+               "\"screenSaverDelay\":123,\"screenSaverMode\":\"Measurement\"}");
   free(str);
 }
 
@@ -182,7 +182,8 @@ TEST_F(DeviceConfigTest, leaveOnly) {
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
-               "{\"statusLed\":0,\"screenBrightness\":100,\"buttonVolume\":0}");
+               "{\"statusLed\":\"OnWhenConnected\",\"screenBrightness\":100,"
+               "\"buttonVolume\":0}");
   free(str);
 
   cfg.leave_only_thise_fields(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS);
@@ -227,7 +228,8 @@ TEST_F(DeviceConfigTest, removeFields) {
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
-               "{\"statusLed\":0,\"screenBrightness\":100,\"buttonVolume\":0}");
+               "{\"statusLed\":\"OnWhenConnected\",\"screenBrightness\":100,"
+               "\"buttonVolume\":0}");
   free(str);
 
   cfg.remove_fields(SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
@@ -261,10 +263,10 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
   device_json_config cfg1, cfg2;
 
   const char user_config[] =
-      "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
-      "\"localConfigDisabled\":false,\"timezoneOffset\":555,"
-      "\"automaticTimeSync\":true,\"screenSaverDelay\":123,"
-      "\"screenSaverMode\":3}";
+      "{\"statusLed\":\"AlwaysOff\",\"screenBrightness\":24,\"buttonVolume\":"
+      "100,\"localConfigDisabled\":false,\"timezoneOffset\":555,"
+      "\"automaticTimeSync\":true,\"screenSaverDelay\":123,\"screenSaverMode\":"
+      "\"Measurement\"}";
   cfg1.set_user_config(user_config);
 
   unsigned _supla_int64_t fields_left = 0xFFFFFFFFFFFFFFFF;
@@ -349,6 +351,96 @@ TEST_F(DeviceConfigTest, isLocalConfigDisabled) {
 
   cfg.set_user_config("{\"localConfigDisabled\":true}");
   EXPECT_TRUE(cfg.is_local_config_disabled());
+}
+
+TEST_F(DeviceConfigTest, statusLED) {
+  TDeviceConfig_StatusLed status_led = {};
+  device_json_config cfg1;
+  device_json_config cfg2;
+  cfg1.set_user_config("{\"statusLed\": \"AlwaysOff\"}");
+
+  EXPECT_TRUE(cfg1.get_status_led(&status_led));
+  EXPECT_EQ(status_led.StatusLedType, SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF);
+
+  TSDS_SetDeviceConfig sds_config = {};
+  cfg1.get_config(&sds_config, nullptr);
+  cfg2.set_config(&sds_config);
+  char *str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"statusLed\":\"AlwaysOff\"}");
+  free(str);
+
+  cfg1.set_user_config("{\"statusLed\": \"OnWhenConnected\"}");
+
+  EXPECT_TRUE(cfg1.get_status_led(&status_led));
+  EXPECT_EQ(status_led.StatusLedType,
+            SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED);
+
+  sds_config = {};
+  cfg1.get_config(&sds_config, nullptr);
+  cfg2.set_config(&sds_config);
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"statusLed\":\"OnWhenConnected\"}");
+  free(str);
+
+  cfg1.set_user_config("{\"statusLed\": \"OffWhenConnected\"}");
+
+  EXPECT_TRUE(cfg1.get_status_led(&status_led));
+  EXPECT_EQ(status_led.StatusLedType,
+            SUPLA_DEVCFG_STATUS_LED_OFF_WHEN_CONNECTED);
+
+  sds_config = {};
+  cfg1.get_config(&sds_config, nullptr);
+  cfg2.set_config(&sds_config);
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"statusLed\":\"OffWhenConnected\"}");
+  free(str);
+}
+
+TEST_F(DeviceConfigTest, screenSaverMode) {
+  TDeviceConfig_ScreensaverMode mode = {};
+  device_json_config cfg1;
+  device_json_config cfg2;
+  cfg1.set_user_config("{\"screenSaverMode\": \"Measurement\"}");
+
+  EXPECT_TRUE(cfg1.get_screen_saver_mode(&mode));
+  EXPECT_EQ(mode.ScreensaverMode, SUPLA_DEVCFG_SCREENSAVER_MODE_MEASUREMENT);
+
+  TSDS_SetDeviceConfig sds_config = {};
+  cfg1.get_config(&sds_config, nullptr);
+  cfg2.set_config(&sds_config);
+  char *str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"screenSaverMode\":\"Measurement\"}");
+  free(str);
+
+  cfg1.set_user_config("{\"screenSaverMode\": \"Time\"}");
+
+  EXPECT_TRUE(cfg1.get_screen_saver_mode(&mode));
+  EXPECT_EQ(mode.ScreensaverMode, SUPLA_DEVCFG_SCREENSAVER_MODE_TIME);
+
+  sds_config = {};
+  cfg1.get_config(&sds_config, nullptr);
+  cfg2.set_config(&sds_config);
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"screenSaverMode\":\"Time\"}");
+  free(str);
+
+  cfg1.set_user_config("{\"screenSaverMode\": \"All\"}");
+
+  EXPECT_TRUE(cfg1.get_screen_saver_mode(&mode));
+  EXPECT_EQ(mode.ScreensaverMode, SUPLA_DEVCFG_SCREENSAVER_MODE_ALL);
+
+  sds_config = {};
+  cfg1.get_config(&sds_config, nullptr);
+  cfg2.set_config(&sds_config);
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"screenSaverMode\":\"All\"}");
+  free(str);
 }
 
 } /* namespace testing */

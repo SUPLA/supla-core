@@ -28,6 +28,12 @@
 class device_json_config : public supla_json_config {
  private:
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
+
+  std::string status_led_to_string(unsigned char status);
+  unsigned char string_to_status_led(const std::string &status);
+  std::string screen_saver_mode_to_string(unsigned char status);
+  unsigned char string_to_screen_saver_mode(const std::string &status);
+
   void set_status_led(TDeviceConfig_StatusLed *status_led);
   void set_screen_brightness(TDeviceConfig_ScreenBrightness *brightness);
   void set_button_volume(TDeviceConfig_ButtonVolume *volume);
@@ -36,15 +42,6 @@ class device_json_config : public supla_json_config {
   void set_automatic_time_sync(TDeviceConfig_AutomaticTimeSync *time_sync);
   void set_screen_saver_delay(TDeviceConfig_ScreensaverDelay *delay);
   void set_screen_saver_mode(TDeviceConfig_ScreensaverMode *mode);
-
-  bool get_status_led(TDeviceConfig_StatusLed *status_led);
-  bool get_screen_brightness(TDeviceConfig_ScreenBrightness *brightness);
-  bool get_button_volume(TDeviceConfig_ButtonVolume *volume);
-  bool get_local_config_disabled(TDeviceConfig_DisableLocalConfig *disabled);
-  bool get_timezone_offset(TDeviceConfig_TimezoneOffset *offset);
-  bool get_automatic_time_sync(TDeviceConfig_AutomaticTimeSync *time_sync);
-  bool get_screen_saver_delay(TDeviceConfig_ScreensaverDelay *delay);
-  bool get_screen_saver_mode(TDeviceConfig_ScreensaverMode *mode);
 
  public:
   device_json_config(void);
@@ -56,8 +53,16 @@ class device_json_config : public supla_json_config {
                   unsigned _supla_int64_t *fields_left);
   void leave_only_thise_fields(unsigned _supla_int64_t fields);
   void remove_fields(unsigned _supla_int64_t fields);
-  void merge(device_json_config *dst);
+  virtual void merge(supla_json_config *dst);
   bool is_local_config_disabled(void);
+  bool get_screen_brightness(TDeviceConfig_ScreenBrightness *brightness);
+  bool get_button_volume(TDeviceConfig_ButtonVolume *volume);
+  bool get_local_config_disabled(TDeviceConfig_DisableLocalConfig *disabled);
+  bool get_timezone_offset(TDeviceConfig_TimezoneOffset *offset);
+  bool get_automatic_time_sync(TDeviceConfig_AutomaticTimeSync *time_sync);
+  bool get_screen_saver_delay(TDeviceConfig_ScreensaverDelay *delay);
+  bool get_status_led(TDeviceConfig_StatusLed *status_led);
+  bool get_screen_saver_mode(TDeviceConfig_ScreensaverMode *mode);
 };
 
 #endif /* DEVICE_JSON_CONFIG_H_ */

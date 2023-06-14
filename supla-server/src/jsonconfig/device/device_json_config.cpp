@@ -35,12 +35,61 @@ device_json_config::device_json_config(void) : supla_json_config() {}
 
 device_json_config::~device_json_config(void) {}
 
+string device_json_config::status_led_to_string(unsigned char status) {
+  switch (status) {
+    case SUPLA_DEVCFG_STATUS_LED_OFF_WHEN_CONNECTED:
+      return "OffWhenConnected";
+    case SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF:
+      return "AlwaysOff";
+  }
+
+  return "OnWhenConnected";
+}
+
+unsigned char device_json_config::string_to_status_led(
+    const std::string &status) {
+  if (status == "OffWhenConnected") {
+    return SUPLA_DEVCFG_STATUS_LED_OFF_WHEN_CONNECTED;
+  } else if (status == "AlwaysOff") {
+    return SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF;
+  }
+
+  return SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED;
+}
+
+string device_json_config::screen_saver_mode_to_string(unsigned char mode) {
+  switch (mode) {
+    case SUPLA_DEVCFG_SCREENSAVER_MODE_ALL:
+      return "All";
+    case SUPLA_DEVCFG_SCREENSAVER_MODE_TIME:
+      return "Time";
+    case SUPLA_DEVCFG_SCREENSAVER_MODE_MEASUREMENT:
+      return "Measurement";
+  }
+
+  return "Off";
+}
+
+unsigned char device_json_config::string_to_screen_saver_mode(
+    const std::string &mode) {
+  if (mode == "All") {
+    return SUPLA_DEVCFG_SCREENSAVER_MODE_ALL;
+  } else if (mode == "Time") {
+    return SUPLA_DEVCFG_SCREENSAVER_MODE_TIME;
+  } else if (mode == "Measurement") {
+    return SUPLA_DEVCFG_SCREENSAVER_MODE_MEASUREMENT;
+  }
+
+  return SUPLA_DEVCFG_SCREENSAVER_MODE_OFF;
+}
+
 void device_json_config::set_status_led(TDeviceConfig_StatusLed *status_led) {
   if (status_led && status_led->StatusLedType >= 0 &&
       status_led->StatusLedType <= 2) {
     set_item_value(get_user_root(),
                    field_map.at(SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED),
-                   cJSON_Number, true, nullptr, status_led->StatusLedType);
+                   cJSON_String, true,
+                   status_led_to_string(status_led->StatusLedType).c_str(), 0);
   }
 }
 
@@ -114,9 +163,10 @@ void device_json_config::set_screen_saver_delay(
 void device_json_config::set_screen_saver_mode(
     TDeviceConfig_ScreensaverMode *mode) {
   if (mode && mode->ScreensaverMode >= 0 && mode->ScreensaverMode <= 3) {
-    set_item_value(get_user_root(),
-                   field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE),
-                   cJSON_Number, true, nullptr, mode->ScreensaverMode);
+    set_item_value(
+        get_user_root(),
+        field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE), cJSON_String,
+        true, screen_saver_mode_to_string(mode->ScreensaverMode).c_str(), 0);
   }
 }
 
@@ -198,16 +248,14 @@ void device_json_config::set_config(TSDS_SetDeviceConfig *config) {
 }
 
 bool device_json_config::get_status_led(TDeviceConfig_StatusLed *status_led) {
-  double value = 0;
+  std::string str_value;
   if (status_led &&
-      get_double(get_user_root(),
+      get_string(get_user_root(),
                  field_map.at(SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED).c_str(),
-                 &value) &&
-      value >= 0 && value <= 2) {
-    status_led->StatusLedType = value;
+                 &str_value)) {
+    status_led->StatusLedType = string_to_status_led(str_value);
     return true;
   }
-
   return false;
 }
 
@@ -317,17 +365,15 @@ bool device_json_config::get_screen_saver_delay(
 
 bool device_json_config::get_screen_saver_mode(
     TDeviceConfig_ScreensaverMode *mode) {
-  double value = 0;
+  std::string str_value;
   if (mode &&
-      get_double(
+      get_string(
           get_user_root(),
           field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE).c_str(),
-          &value) &&
-      value >= 0 && value <= 3) {
-    mode->ScreensaverMode = value;
+          &str_value)) {
+    mode->ScreensaverMode = string_to_screen_saver_mode(str_value);
     return true;
   }
-
   return false;
 }
 
@@ -454,7 +500,8 @@ void device_json_config::remove_fields(unsigned _supla_int64_t fields) {
   }
 }
 
-void device_json_config::merge(device_json_config *dst) {
+void device_json_config::merge(supla_json_config *_dst) {
+  device_json_config *dst = dynamic_cast<device_json_config *>(_dst);
   if (dst) {
     supla_json_config::merge(get_user_root(), dst->get_user_root(), field_map,
                              false);
