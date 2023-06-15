@@ -68,6 +68,7 @@ class supla_json_config {
   char *get_user_config(void);
 
   supla_json_config &operator=(const supla_json_config &json_config);
+  virtual void merge(supla_json_config *dst);
 };
 
 #endif /* JSON_CONFIG_H_ */

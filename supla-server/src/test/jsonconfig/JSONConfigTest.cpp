@@ -222,4 +222,92 @@ TEST_F(JSONConfigTest, mergeWithoutDelete) {
       cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, false));
 }
 
+TEST_F(JSONConfigTest, mergeArray) {
+  map<unsigned _supla_int16_t, string> m = {{1, "a"}};
+
+  JSONConfigStub cfg1;
+  cfg1.set_user_config("{\"a\":[1,2,3,4,5]}");
+  JSONConfigStub cfg2;
+  cfg2.set_user_config("{\"a\":\"x\", \"b\":true}");
+
+  EXPECT_TRUE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, false));
+
+  char *str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"a\":[1,2,3,4,5],\"b\":true}");
+  free(str);
+
+  EXPECT_FALSE(
+      cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, false));
+
+  cfg1.set_user_config("{\"a\":[1,2,3,4,5], \"b\":12345}");
+  cfg2.set_user_config("{\"a\":\"[7,8,9]\", \"b\":true}");
+
+  EXPECT_TRUE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, false));
+
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"a\":[1,2,3,4,5],\"b\":true}");
+  free(str);
+
+  EXPECT_FALSE(
+      cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, false));
+
+  cfg1.set_user_config("{\"b\":12345}");
+  cfg2.set_user_config("{\"a\":\"[7,8,9]\", \"b\":true}");
+
+  EXPECT_TRUE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, true));
+
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"b\":true}");
+  free(str);
+
+  EXPECT_FALSE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, true));
+}
+
+TEST_F(JSONConfigTest, mergeObject) {
+  map<unsigned _supla_int16_t, string> m = {{1, "a"}};
+
+  JSONConfigStub cfg1;
+  cfg1.set_user_config("{\"a\":{\"x1\": true, \"x2\": false}}");
+  JSONConfigStub cfg2;
+  cfg2.set_user_config("{\"a\":\"x\", \"b\":true}");
+
+  EXPECT_TRUE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, false));
+
+  char *str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"a\":{\"x1\":true,\"x2\":false},\"b\":true}");
+  free(str);
+
+  EXPECT_FALSE(
+      cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, false));
+
+  cfg1.set_user_config("{\"a\":{\"x1\": true, \"x2\": false}, \"b\":12345}");
+  cfg2.set_user_config("{\"a\":{\"x4\": true, \"x5\": false}, \"b\":true}");
+
+  EXPECT_TRUE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, false));
+
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"a\":{\"x1\":true,\"x2\":false},\"b\":true}");
+  free(str);
+
+  EXPECT_FALSE(
+      cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, false));
+
+  cfg1.set_user_config("{\"b\":12345}");
+  cfg2.set_user_config("{\"a\":{\"x1\": 5, \"x2\": 6}, \"b\":true}");
+
+  EXPECT_TRUE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, true));
+
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"b\":true}");
+  free(str);
+
+  EXPECT_FALSE(cfg1.merge(cfg1.get_user_root(), cfg2.get_user_root(), m, true));
+}
+
 } /* namespace testing */

@@ -269,12 +269,18 @@ bool supla_json_config::merge(cJSON *src_parent, cJSON *dst_parent,
       if (dst_item && delete_nonexistent) {
         cJSON_DetachItemViaPointer(dst_parent, dst_item);
         cJSON_Delete(dst_item);
+        dst_changed = true;
       }
     } else if (!dst_item || !cJSON_Compare(src_item, dst_item, cJSON_True)) {
-      set_item_value(dst_parent, it->second, src_item->type, true,
-                     cJSON_GetStringValue(src_item),
-                     cJSON_GetNumberValue(src_item));
-      dst_changed = true;
+      cJSON *dup = cJSON_Duplicate(src_item, cJSON_True);
+      if (dup) {
+        if (dst_item) {
+          cJSON_ReplaceItemViaPointer(dst_parent, dst_item, dup);
+        } else {
+          cJSON_AddItemToObject(dst_parent, it->second.c_str(), dup);
+        }
+        dst_changed = true;
+      }
     }
   }
 
@@ -295,4 +301,8 @@ supla_json_config &supla_json_config::operator=(
   }
 
   return *this;
+}
+
+void supla_json_config::merge(supla_json_config *dst) {
+  throw std::bad_function_call();
 }
