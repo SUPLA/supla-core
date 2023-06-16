@@ -67,8 +67,6 @@ void supla_ch_set_device_config::handle_multipart_call(
       available_fields |= config.AvailableFields;
       if (config.EndOfDataFlag) {
         json_config.leave_only_thise_fields(fields);
-        json_config.remove_fields(
-            SUPLA_DEVICE_CONFIG_FIELD_DISABLE_LOCAL_CONFIG);
         if (dao.set_device_config(device->get_user_id(), device->get_id(),
                                   &json_config, available_fields)) {
           result.Result = SUPLA_CONFIG_RESULT_TRUE;
