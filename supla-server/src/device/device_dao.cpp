@@ -608,8 +608,9 @@ bool supla_device_dao::on_channel_added(int device_id, int channel_id) {
   return dba->query(sql, true) == 0;
 }
 
-bool supla_device_dao::set_device_config(int user_id, int device_id,
-                                         device_json_config *config) {
+bool supla_device_dao::set_device_config(
+    int user_id, int device_id, device_json_config *config,
+    unsigned _supla_int16_t available_fields) {
   bool already_connected = dba->is_connected();
 
   if (!already_connected && !dba->connect()) {
@@ -623,6 +624,7 @@ bool supla_device_dao::set_device_config(int user_id, int device_id,
     device_json_config *_config = get_device_config(device_id, &md5sum);
     if (_config) {
       config->merge(_config);
+      _config->leave_only_thise_fields(available_fields);
 
       char *config_str = _config->get_user_config();
       if (config_str) {

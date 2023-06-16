@@ -205,7 +205,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TSD_ChannelConfig_ActionTrigger),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  EXPECT_EQ((unsigned int)531, sizeof(TSDS_SetDeviceConfig));
+  EXPECT_EQ((unsigned int)539, sizeof(TSDS_SetDeviceConfig));
   EXPECT_EQ((unsigned int)10, sizeof(TSDS_SetDeviceConfigResult));
   EXPECT_LE(sizeof(TDeviceConfig_StatusLed),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);

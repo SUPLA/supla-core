@@ -83,7 +83,8 @@ class supla_abstract_device_dao {
   virtual bool on_channel_added(int device_id, int channel_id) = 0;
 
   virtual bool set_device_config(int user_id, int device_id,
-                                 device_json_config *config) = 0;
+                                 device_json_config *config,
+                                 unsigned _supla_int16_t available_fields) = 0;
 
   virtual device_json_config *get_device_config(int device_id,
                                                 std::string *md5sum) = 0;

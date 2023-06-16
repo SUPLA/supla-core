@@ -3615,7 +3615,7 @@ SRPC_CALL_BASIC_TEST(srpc_sd_async_set_channel_config_result,
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_ds_async_set_device_config_request,
                                      TSDS_SetDeviceConfig,
-                                     SUPLA_DS_CALL_SET_DEVICE_CONFIG, 42, 554,
+                                     SUPLA_DS_CALL_SET_DEVICE_CONFIG, 50, 562,
                                      sds_set_channel_config_request,
                                      SUPLA_DEVICE_CONFIG_MAXSIZE, Config,
                                      ConfigSize);
@@ -3627,7 +3627,7 @@ SRPC_CALL_BASIC_TEST(srpc_ds_async_set_device_config_result,
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_set_device_config_request,
                                      TSDS_SetDeviceConfig,
-                                     SUPLA_SD_CALL_SET_DEVICE_CONFIG, 42, 554,
+                                     SUPLA_SD_CALL_SET_DEVICE_CONFIG, 50, 562,
                                      sds_set_device_config_request,
                                      SUPLA_DEVICE_CONFIG_MAXSIZE, Config,
                                      ConfigSize);
