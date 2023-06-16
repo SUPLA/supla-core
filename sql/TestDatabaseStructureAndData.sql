@@ -2816,10 +2816,6 @@ WHERE id = _client_id
    OR platform != _platform
    OR app_id != app_id
    OR devel_env != _devel_env);
-<<<<<<< HEAD
 ALTER TABLE supla_iodevice ADD user_config VARCHAR(2048) DEFAULT NULL;
 CREATE PROCEDURE `supla_set_device_user_config`(IN `_user_id` INT, IN `_device_id` INT, IN `_user_config` VARCHAR(2048) CHARSET utf8mb4, IN `_md5` VARCHAR(32)) UPDATE supla_iodevice SET user_config = _user_config WHERE id = _device_id AND user_id = _user_id AND MD5(IFNULL(user_config, '')) = _md5;
-=======
-
 CREATE TABLE supla_settings_string (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(50) NOT NULL, value VARCHAR(1024) NOT NULL, UNIQUE INDEX UNIQ_814604C95E237E06 (name), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB;
->>>>>>> develop
