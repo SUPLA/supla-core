@@ -39,6 +39,7 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED,
      "antiFreezeAndOverheatProtectionEnabled"},
     {FIELD_AVAILABLE_ALGORITHMS, "availableAlgorithms"},
+    {FIELD_USED_ALGORITHM, "usedAlgorithm"},
     {FIELD_MIN_ON_TIME_S, "minOnTimeS"},
     {FIELD_MIN_OFF_TIME_S, "minOffTimeS"},
     {FIELD_OUTPUT_VALUE_ON_ERROR, "outputValueOnError"},
@@ -183,15 +184,20 @@ void hvac_config::set_config(TSD_ChannelConfig_HVAC *config) {
 
   if (config->MinOnTimeS >= 0 && config->MinOnTimeS <= 600) {
     set_item_value(root, field_map.at(FIELD_MIN_ON_TIME_S).c_str(),
-                   cJSON_Number, true, nullptr, config->MinOffTimeS);
+                   cJSON_Number, true, nullptr, config->MinOnTimeS);
+  }
+
+  if (config->OutputValueOnError >= -100 && config->OutputValueOnError <= 100) {
+    set_item_value(root, field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR).c_str(),
+                   cJSON_Number, true, nullptr, config->OutputValueOnError);
   }
 
   cJSON *temperatures =
       cJSON_GetObjectItem(root, field_map.at(FIELD_TEMPERATURES).c_str());
 
   if (temperatures) {
-    cJSON_DetachItemViaPointer(temperatures, algs);
-    cJSON_Delete(algs);
+    cJSON_DetachItemViaPointer(root, temperatures);
+    cJSON_Delete(temperatures);
   }
 
   temperatures =
@@ -202,7 +208,7 @@ void hvac_config::set_config(TSD_ChannelConfig_HVAC *config) {
 
   for (int a = 0; a < size; a++) {
     if (config->Temperatures.Index & idx) {
-      string name = std::to_string(a);
+      string name = std::to_string(a + 1);
       cJSON_AddNumberToObject(temperatures, name.c_str(),
                               config->Temperatures.Temperature[a]);
     }
@@ -276,21 +282,24 @@ void hvac_config::get_config(TSD_ChannelConfig_HVAC *config) {
     config->MinOnTimeS = dbl_value;
   }
 
+  if (get_double(root, field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR).c_str(),
+                 &dbl_value) &&
+      dbl_value >= -100 && dbl_value <= 100) {
+    config->OutputValueOnError = dbl_value;
+  }
+
   cJSON *temperatures =
       cJSON_GetObjectItem(root, field_map.at(FIELD_TEMPERATURES).c_str());
 
-  if (algs && cJSON_IsArray(temperatures)) {
+  if (temperatures && cJSON_IsObject(temperatures)) {
     int size =
         sizeof(config->Temperatures.Temperature) / sizeof(_supla_int16_t);
-
-    for (int a = 0; a < cJSON_GetArraySize(algs); a++) {
-      cJSON *item = cJSON_GetArrayItem(algs, a);
-      if (item && item->string && cJSON_IsNumber(item)) {
-        char *endptr = nullptr;
-        int index = strtol(item->string, &endptr, 10);
-        if (index > 0 && index < size) {
-          config->Temperatures.Temperature[index] = cJSON_GetNumberValue(item);
-        }
+    for (int a = 0; a < size; a++) {
+      string name = std::to_string(a + 1);
+      cJSON *item = cJSON_GetObjectItem(temperatures, name.c_str());
+      if (item && cJSON_IsNumber(item)) {
+        config->Temperatures.Temperature[a] = cJSON_GetNumberValue(item);
+        config->Temperatures.Index |= 1 << a;
       }
     }
   }
