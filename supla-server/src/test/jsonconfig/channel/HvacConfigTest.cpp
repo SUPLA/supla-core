@@ -80,8 +80,73 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   EXPECT_EQ(ds_hvac1.Temperatures.Index, ds_hvac2.Temperatures.Index);
 }
 
-TEST_F(HvacConfigTest, selectedTemperatures) {}
+TEST_F(HvacConfigTest, selectedTemperatures) {
+  TSD_ChannelConfig_HVAC ds_hvac = {};
 
-TEST_F(HvacConfigTest, merge) {}
+  ds_hvac.Temperatures.Index = (1 << 0) | (1 << 1) | (1 << 8) | (1 << 15);
+  int size = sizeof(ds_hvac.Temperatures.Temperature) / sizeof(_supla_int16_t);
+
+  for (int a = 0; a < size; a++) {
+    ds_hvac.Temperatures.Temperature[a] = a + 1;
+  }
+
+  ds_hvac.Temperatures.Temperature[0] = 12345;
+  ds_hvac.Temperatures.Temperature[1] = 0;
+  ds_hvac.Temperatures.Temperature[8] = -723;
+  ds_hvac.Temperatures.Temperature[15] = -28910;
+
+  hvac_config config;
+  config.set_config(&ds_hvac);
+
+  char *str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"hvac\":{\"mainThermometerChannelNo\":0,\"auxThermometerChannelNo\":0,"
+      "\"auxThermometerType\":\"NotSet\","
+      "\"antiFreezeAndOverheatProtectionEnabled\":false,"
+      "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOffTimeS\":0,"
+      "\"minOnTimeS\":0,\"outputValueOnError\":0,\"temperatures\":{\"1\":12345,"
+      "\"2\":0,\"9\":-723,\"16\":-28910}}}");
+
+  free(str);
+}
+
+TEST_F(HvacConfigTest, merge) {
+  hvac_config config1;
+  config1.set_user_config(
+      "{\"a\":\"b\", \"x\": true, \"hvac\":{\"c\": true, "
+      "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
+      "\"auxThermometerType\":\"GenericHeater\","
+      "\"antiFreezeAndOverheatProtectionEnabled\":true,\"availableAlgorithms\":"
+      "[\"OnOff\"],\"usedAlgorithm\":\"OnOff\",\"minOffTimeS\":600,"
+      "\"minOnTimeS\":10,\"outputValueOnError\":55,\"temperatures\":{\"1\":1,"
+      "\"2\":2,\"3\":3,\"4\":4,\"5\":5,\"6\":6,\"7\":7,\"8\":8,\"9\":9,\"10\":"
+      "10,\"11\":11,\"12\":12,\"13\":13,\"14\":14,\"15\":15,\"16\":16,\"17\":"
+      "17,\"18\":18,\"19\":19,\"20\":20,\"21\":21,\"22\":22,\"23\":23,\"24\":"
+      "24}}}");
+
+  TSD_ChannelConfig_HVAC ds_hvac = {};
+
+  ds_hvac.Temperatures.Index = 1 << 1;
+  ds_hvac.Temperatures.Temperature[1] = 10;
+
+  hvac_config config2;
+  config2.set_config(&ds_hvac);
+  config2.merge(&config1);
+
+  char *str = config1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"a\":\"b\",\"x\":true,\"hvac\":{\"c\":true,"
+               "\"mainThermometerChannelNo\":0,\"auxThermometerChannelNo\":0,"
+               "\"auxThermometerType\":\"NotSet\","
+               "\"antiFreezeAndOverheatProtectionEnabled\":false,"
+               "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\","
+               "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
+               "\"temperatures\":{\"2\":10}}}");
+
+  free(str);
+}
 
 } /* namespace testing */
