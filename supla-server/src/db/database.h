@@ -67,9 +67,6 @@ class database : public svrdb {
                             const char value[SUPLA_CHANNELVALUE_SIZE],
                             unsigned _supla_int_t validity_time_sec);
 
-  void update_channel_properties(int channel_id, int user_id,
-                                 const char *properties);
-
   void update_channel_params(int channel_id, int user_id, int param1,
                              int param2, int param3, int param4);
   void update_channel_flags(int channel_id, int user_id, unsigned int flags);

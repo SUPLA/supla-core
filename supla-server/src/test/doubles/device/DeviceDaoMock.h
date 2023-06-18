@@ -102,6 +102,17 @@ class DeviceDaoMock : public supla_abstract_device_dao {
 
   MOCK_METHOD1(get_channels,
                std::vector<supla_device_channel *>(supla_device *device));
+
+  MOCK_METHOD3(set_channel_properties,
+               void(int user_id, int channel_id, channel_json_config *config));
+
+  MOCK_METHOD3(get_channel_config,
+               channel_json_config *(int channel_id,
+                                     std::string *user_config_md5sum,
+                                     std::string *properties_md5sum));
+
+  MOCK_METHOD3(set_channel_user_config,
+               bool(int user_id, int channel_id, channel_json_config *config));
 };
 
 } /* namespace testing */

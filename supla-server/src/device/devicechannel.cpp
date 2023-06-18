@@ -20,12 +20,12 @@
 
 #include <assert.h>
 #include <string.h>
-#include <value/channel_openclosed_value.h>
 
 #include <memory>
 
 #include "db/database.h"
 #include "device.h"
+#include "device/device_dao.h"
 #include "device/extended_value/channel_and_timer_state_extended_value.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
@@ -49,6 +49,7 @@
 #include "jsonconfig/channel/impulse_counter_config.h"
 #include "lck.h"
 #include "user/user.h"
+#include "value/channel_openclosed_value.h"
 #include "vbt/value_based_triggers.h"
 
 using std::list;
@@ -434,21 +435,10 @@ bool supla_device_channel::get_config(TSD_ChannelConfig *config,
 }
 
 void supla_device_channel::db_set_properties(channel_json_config *config) {
-  database *db = new database();
-
-  if (db) {
-    if (db->connect() == true) {
-      char *cfg_string = config->get_properties();
-
-      db->update_channel_properties(get_id(), get_user_id(), cfg_string);
-
-      if (cfg_string) {
-        free(cfg_string);
-        cfg_string = nullptr;
-      }
-    }
-    delete db;
-    db = nullptr;
+  if (config) {
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+    dao.set_channel_properties(get_user_id(), get_id(), config);
   }
 }
 

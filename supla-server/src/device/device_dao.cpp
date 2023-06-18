@@ -934,3 +934,224 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
 
   return result;
 }
+
+void supla_device_dao::set_channel_properties(int user_id, int channel_id,
+                                              channel_json_config *config) {
+  if (!config) {
+    return;
+  }
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  char *properties = config->get_properties();
+
+  if (!properties) {
+    return;
+  }
+
+  MYSQL_STMT *stmt = NULL;
+  MYSQL_BIND pbind[3];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = (char *)properties;
+  pbind[2].buffer_length = strnlen(properties, 2049);
+
+  const char sql[] = "CALL `supla_update_channel_properties`(?, ?, ?)";
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+
+  free(properties);
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+}
+
+channel_json_config *supla_device_dao::get_channel_config(
+    int channel_id, std::string *user_config_md5sum,
+    std::string *properties_md5sum) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return nullptr;
+  }
+
+  channel_json_config *result = nullptr;
+
+  MYSQL_STMT *stmt = nullptr;
+  const char sql[] =
+      "SELECT user_config, properties, MD5(IFNULL(user_config, '')), "
+      "MD5(IFNULL(properties, '')) FROM supla_dev_channel WHERE id = ?";
+
+  MYSQL_BIND pbind = {};
+
+  pbind.buffer_type = MYSQL_TYPE_LONG;
+  pbind.buffer = (char *)&channel_id;
+
+  if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
+    char user_config[2049] = {};
+    char user_config_md5[33] = {};
+
+    char properties[2049] = {};
+    char properties_md5[33] = {};
+
+    unsigned long user_config_size = 0;
+    my_bool user_config_is_null = true;
+
+    unsigned long user_config_md5_size = 0;
+    my_bool user_config_md5_is_null = true;
+
+    unsigned long properties_size = 0;
+    my_bool properties_is_null = true;
+
+    unsigned long properties_md5_size = 0;
+    my_bool properties_md5_is_null = true;
+
+    MYSQL_BIND rbind[4] = {};
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = user_config;
+    rbind[0].is_null = &user_config_is_null;
+    rbind[0].buffer_length = sizeof(user_config);
+    rbind[0].length = &user_config_size;
+
+    rbind[1].buffer_type = MYSQL_TYPE_STRING;
+    rbind[1].buffer = properties;
+    rbind[1].is_null = &properties_is_null;
+    rbind[1].buffer_length = sizeof(properties);
+    rbind[1].length = &properties_size;
+
+    rbind[2].buffer_type = MYSQL_TYPE_STRING;
+    rbind[2].buffer = user_config_md5;
+    rbind[2].is_null = &user_config_md5_is_null;
+    rbind[2].buffer_length = sizeof(user_config_md5);
+    rbind[2].length = &user_config_md5_size;
+
+    rbind[3].buffer_type = MYSQL_TYPE_STRING;
+    rbind[3].buffer = properties_md5;
+    rbind[3].is_null = &properties_md5_is_null;
+    rbind[3].buffer_length = sizeof(properties_md5);
+    rbind[3].length = &properties_md5_size;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
+        dba->set_terminating_byte(user_config, sizeof(user_config),
+                                  user_config_size, user_config_is_null);
+        dba->set_terminating_byte(user_config_md5, sizeof(user_config_md5),
+                                  user_config_md5_size,
+                                  user_config_md5_is_null);
+
+        dba->set_terminating_byte(properties, sizeof(properties),
+                                  properties_size, properties_is_null);
+        dba->set_terminating_byte(properties_md5, sizeof(properties_md5),
+                                  properties_md5_size, properties_md5_is_null);
+
+        result = new channel_json_config();
+        result->set_user_config(user_config);
+        result->set_properties(properties);
+
+        if (user_config_md5sum) {
+          *user_config_md5sum = user_config_md5;
+        }
+
+        if (properties_md5sum) {
+          *properties_md5sum = properties_md5;
+        }
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
+}
+
+bool supla_device_dao::set_channel_user_config(int user_id, int channel_id,
+                                               channel_json_config *config) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return false;
+  }
+
+  bool result = false;
+
+  for (char a = 0; a < 3; a++) {
+    string md5sum;
+    channel_json_config *_config =
+        get_channel_config(channel_id, &md5sum, nullptr);
+    if (_config) {
+      config->merge(_config);
+
+      char *config_str = _config->get_user_config();
+      if (config_str) {
+        MYSQL_BIND pbind[4] = {};
+
+        pbind[0].buffer_type = MYSQL_TYPE_LONG;
+        pbind[0].buffer = (char *)&user_id;
+
+        pbind[1].buffer_type = MYSQL_TYPE_LONG;
+        pbind[1].buffer = (char *)&channel_id;
+
+        pbind[2].buffer_type = MYSQL_TYPE_STRING;
+        pbind[2].buffer = (char *)config_str;
+        pbind[2].buffer_length = strnlen(config_str, 2048);
+
+        pbind[3].buffer_type = MYSQL_TYPE_STRING;
+        pbind[3].buffer = (char *)md5sum.c_str();
+        pbind[3].buffer_length = md5sum.size();
+
+        const char sql[] =
+            "CALL "
+            "`supla_set_channel_user_config`(?,?,?,?)";
+
+        MYSQL_STMT *stmt = nullptr;
+        if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true) &&
+            mysql_stmt_affected_rows(stmt) == 1) {
+          result = true;
+        }
+
+        if (stmt != nullptr) mysql_stmt_close(stmt);
+
+        free(config_str);
+      }
+
+      delete _config;
+
+    } else {
+      break;
+    }
+
+    if (result) {
+      break;
+    }
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
+}
