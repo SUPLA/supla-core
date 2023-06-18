@@ -38,7 +38,7 @@ class hvac_config : public channel_json_config {
                               unsigned _supla_int16_t alg);
 
  public:
-  explicit hvac_config(channel_json_config *root);
+  explicit hvac_config(supla_json_config *root);
   hvac_config(void);
   virtual void merge(supla_json_config *dst);
   void set_config(TSD_ChannelConfig_HVAC *config);

@@ -32,7 +32,7 @@ channel_json_config::channel_json_config(const channel_json_config &json_config)
   *this = json_config;
 }
 
-channel_json_config::channel_json_config(channel_json_config *root)
+channel_json_config::channel_json_config(supla_json_config *root)
     : supla_json_config(root) {
   this->properties_root = nullptr;
 }

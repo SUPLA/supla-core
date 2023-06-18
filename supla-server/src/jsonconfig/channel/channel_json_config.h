@@ -30,7 +30,7 @@ class channel_json_config : public supla_json_config {
 
  public:
   explicit channel_json_config(const channel_json_config &json_config);
-  explicit channel_json_config(channel_json_config *root);
+  explicit channel_json_config(supla_json_config *root);
   channel_json_config &operator=(const channel_json_config &json_config);
   channel_json_config(channel_json_config *root, bool copy_and_detach);
   channel_json_config(void);

@@ -33,6 +33,9 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
 
 device_json_config::device_json_config(void) : supla_json_config() {}
 
+device_json_config::device_json_config(supla_json_config *root)
+    : supla_json_config(root) {}
+
 device_json_config::~device_json_config(void) {}
 
 string device_json_config::status_led_to_string(unsigned char status) {
@@ -501,11 +504,9 @@ void device_json_config::remove_fields(unsigned _supla_int64_t fields) {
 }
 
 void device_json_config::merge(supla_json_config *_dst) {
-  device_json_config *dst = dynamic_cast<device_json_config *>(_dst);
-  if (dst) {
-    supla_json_config::merge(get_user_root(), dst->get_user_root(), field_map,
-                             false);
-  }
+  device_json_config dst(_dst);
+  supla_json_config::merge(get_user_root(), dst.get_user_root(), field_map,
+                           false);
 }
 
 bool device_json_config::is_local_config_disabled(void) {

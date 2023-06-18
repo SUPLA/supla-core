@@ -1,0 +1,1 @@
+UPDATE supla_dev_channel SET properties = '{"countersAvailable":["forwardActiveEnergy","reverseActiveEnergy","forwardReactiveEnergy","reverseReactiveEnergy","forwardActiveEnergyBalanced","reverseActiveEnergyBalanced"]}' WHERE id = 144;

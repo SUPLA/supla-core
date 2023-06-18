@@ -47,7 +47,7 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
 
 hvac_config::hvac_config(void) : channel_json_config() {}
 
-hvac_config::hvac_config(channel_json_config *root)
+hvac_config::hvac_config(supla_json_config *root)
     : channel_json_config(root) {}
 
 cJSON *hvac_config::get_hvac_root(void) {
@@ -114,11 +114,9 @@ unsigned _supla_int16_t hvac_config::string_to_alg(const string &alg) {
 }
 
 void hvac_config::merge(supla_json_config *_dst) {
-  hvac_config *dst = dynamic_cast<hvac_config *>(_dst);
-  if (dst) {
-    supla_json_config::merge(get_hvac_root(), dst->get_hvac_root(), field_map,
-                             false);
-  }
+  hvac_config dst(_dst);
+  supla_json_config::merge(get_hvac_root(), dst.get_hvac_root(), field_map,
+                           false);
 }
 
 void hvac_config::add_algorithm_to_array(cJSON *root, cJSON *algs,
