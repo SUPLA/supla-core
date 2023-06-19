@@ -649,9 +649,24 @@ bool supla_device_dao::set_device_config(
             "`supla_set_device_user_config`(?,?,?,?)";
 
         MYSQL_STMT *stmt = nullptr;
-        if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true) &&
-            mysql_stmt_affected_rows(stmt) == 1) {
-          result = true;
+        if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
+          MYSQL_BIND rbind = {};
+
+          int _result = -1;
+
+          rbind.buffer_type = MYSQL_TYPE_LONG;
+          rbind.buffer = (char *)&_result;
+
+          if (mysql_stmt_bind_result(stmt, &rbind)) {
+            supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                      mysql_stmt_error(stmt));
+          } else {
+            mysql_stmt_store_result(stmt);
+
+            if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
+              result = _result == 0;
+            }
+          }
         }
 
         if (stmt != nullptr) mysql_stmt_close(stmt);
@@ -1128,9 +1143,24 @@ bool supla_device_dao::set_channel_user_config(int user_id, int channel_id,
             "`supla_set_channel_user_config`(?,?,?,?)";
 
         MYSQL_STMT *stmt = nullptr;
-        if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true) &&
-            mysql_stmt_affected_rows(stmt) == 1) {
-          result = true;
+        if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
+          MYSQL_BIND rbind = {};
+
+          int _result = -1;
+
+          rbind.buffer_type = MYSQL_TYPE_LONG;
+          rbind.buffer = (char *)&_result;
+
+          if (mysql_stmt_bind_result(stmt, &rbind)) {
+            supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                      mysql_stmt_error(stmt));
+          } else {
+            mysql_stmt_store_result(stmt);
+
+            if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
+              result = _result == 0;
+            }
+          }
         }
 
         if (stmt != nullptr) mysql_stmt_close(stmt);

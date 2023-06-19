@@ -88,6 +88,12 @@ TEST_F(DeviceDaoIntegrationTest, setDeviceConfig) {
                                  SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
                                  SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE));
 
+  EXPECT_TRUE(
+       dao->set_device_config(2, 73, &cfg1,
+                              SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
+                                  SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
+                                  SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE));
+
   device_json_config *cfg2 = dao->get_device_config(73, nullptr);
   ASSERT_NE(cfg2, nullptr);
 
