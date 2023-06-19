@@ -47,15 +47,16 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
 
 hvac_config::hvac_config(void) : channel_json_config() {}
 
-hvac_config::hvac_config(supla_json_config *root)
-    : channel_json_config(root) {}
+hvac_config::hvac_config(supla_json_config *root) : channel_json_config(root) {}
 
 cJSON *hvac_config::get_hvac_root(void) {
+  const char hvac[] = "hvac";
+
   cJSON *root = get_user_root();
   if (root) {
-    cJSON *hvac_root = cJSON_GetObjectItem(root, "hvac");
+    cJSON *hvac_root = cJSON_GetObjectItem(root, hvac);
     if (!hvac_root) {
-      hvac_root = cJSON_AddObjectToObject(root, "hvac");
+      hvac_root = cJSON_AddObjectToObject(root, hvac);
     }
     return hvac_root;
   }

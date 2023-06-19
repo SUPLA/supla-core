@@ -2401,15 +2401,14 @@ typedef struct {
 typedef struct {
   // 4*5 = 20 B
   TWeeklyScheduleProgram Program[SUPLA_WEEKLY_SCHEDULE_PROGRAMS_MAX_SIZE];
-  // Value contain Program setting for each 15 min. One 15 min program is set
-  // on 4 bits, so in one byte we have settings for two 2x 15 min.
-  // 0 - off
+  // "Quarters" contain Program setting for each 15 min. One 15 min program is
+  // set on 4 bits, so in one byte we have settings for two 2x 15 min. 0 - off
   // 1 - program 1
   // 2 - program 2
   // 3 - program 3
   // 4 - program 4
-  unsigned char Value[SUPLA_WEEKLY_SCHEDULE_VALUES_SIZE / 2];  // 336 B
-} TSD_ChannelConfig_WeeklySchedule;                            // v. >= 21
+  unsigned char Quarters[SUPLA_WEEKLY_SCHEDULE_VALUES_SIZE / 2];  // 336 B
+} TSD_ChannelConfig_WeeklySchedule;                               // v. >= 21
 
 // Config used for thermometers and thermometers with humidity channels.
 // When used for thermometers, humidity param is ignored.
