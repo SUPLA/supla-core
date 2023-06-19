@@ -48,6 +48,7 @@ class device_json_config : public supla_json_config {
   explicit device_json_config(supla_json_config *root);
   virtual ~device_json_config(void);
   void set_config(TSDS_SetDeviceConfig *config);
+  unsigned _supla_int64_t get_available_fields(void);
   void get_config(TSDS_SetDeviceConfig *config, unsigned _supla_int64_t fields,
                   unsigned _supla_int64_t *fields_left);
   void get_config(TSDS_SetDeviceConfig *config,

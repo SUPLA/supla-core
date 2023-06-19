@@ -380,6 +380,16 @@ bool device_json_config::get_screen_saver_mode(
   return false;
 }
 
+unsigned _supla_int64_t device_json_config::get_available_fields(void) {
+  unsigned _supla_int64_t result = 0;
+  for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
+    if (cJSON_GetObjectItem(get_user_root(), it->second.c_str())) {
+      result |= it->first;
+    }
+  }
+  return result;
+}
+
 void device_json_config::get_config(TSDS_SetDeviceConfig *config,
                                     unsigned _supla_int64_t fields,
                                     unsigned _supla_int64_t *fields_left) {

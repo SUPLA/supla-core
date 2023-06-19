@@ -161,9 +161,11 @@ void supla_device::send_device_config_to_device(void) {
     device_json_config *config = dao.get_device_config(get_id(), nullptr);
     if (config) {
       unsigned _supla_int64_t fields = 0xFFFFFFFFFFFFFFFF;
+      unsigned _supla_int64_t available_fields = config->get_available_fields();
       while (fields) {
         TSDS_SetDeviceConfig sds_config = {};
         config->get_config(&sds_config, fields, &fields);
+        sds_config.AvailableFields = available_fields;
         sds_config.EndOfDataFlag = fields == 0 ? 1 : 0;
         get_connection()
             ->get_srpc_adapter()

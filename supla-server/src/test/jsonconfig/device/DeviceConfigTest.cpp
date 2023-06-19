@@ -443,4 +443,28 @@ TEST_F(DeviceConfigTest, screenSaverMode) {
   free(str);
 }
 
+TEST_F(DeviceConfigTest, availableFields) {
+  device_json_config cfg;
+  cfg.set_user_config("{\"screenSaverMode\": \"Measurement\"}");
+
+  EXPECT_EQ(cfg.get_available_fields(),
+            SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE);
+
+  cfg.set_user_config(
+      "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
+      "\"localConfigDisabled\":false,\"timezoneOffset\":555,"
+      "\"automaticTimeSync\":true,\"screenSaverDelay\":123,"
+      "\"screenSaverMode\":3}");
+
+  EXPECT_EQ(cfg.get_available_fields(),
+            SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
+                SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
+                SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
+                SUPLA_DEVICE_CONFIG_FIELD_DISABLE_LOCAL_CONFIG |
+                SUPLA_DEVICE_CONFIG_FIELD_TIMEZONE_OFFSET |
+                SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
+                SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY |
+                SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE);
+}
+
 } /* namespace testing */
