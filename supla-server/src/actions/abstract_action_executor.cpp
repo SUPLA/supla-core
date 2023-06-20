@@ -112,7 +112,7 @@ void supla_abstract_action_executor::set_push_notification_id(supla_user *user,
   this->user = user;
   this->device_id = 0;
   this->subject_id = push_id;
-  this->subject_type = stPushNotifiction;
+  this->subject_type = stPushNotification;
 }
 
 void supla_abstract_action_executor::set_push_notification_id(int user_id,
@@ -120,7 +120,7 @@ void supla_abstract_action_executor::set_push_notification_id(int user_id,
   this->user = user_id ? supla_user::find(user_id, false) : NULL;
   this->device_id = 0;
   this->subject_id = push_id;
-  this->subject_type = stPushNotifiction;
+  this->subject_type = stPushNotification;
 }
 
 shared_ptr<supla_device> supla_abstract_action_executor::get_device(void) {
@@ -158,7 +158,7 @@ void supla_abstract_action_executor::execute_action(
     case stSchedule:
       set_schedule_id(user_id, subject_id);
       break;
-    case stPushNotifiction:
+    case stPushNotification:
       set_push_notification_id(user_id, subject_id);
       break;
     default:
@@ -349,7 +349,7 @@ int supla_abstract_action_executor::get_schedule_id(void) {
 }
 
 int supla_abstract_action_executor::get_push_notification_id(void) {
-  return subject_type == stPushNotifiction ? subject_id : 0;
+  return subject_type == stPushNotification ? subject_id : 0;
 }
 
 void supla_abstract_action_executor::copy(
