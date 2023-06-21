@@ -147,6 +147,10 @@ class supla_device_channel {
   bool get_state(TDSC_ChannelState *state);
   bool get_voltage_analyzers_with_any_sample_over_threshold(
       supla_voltage_analyzers *voltage_analyzers, bool reset);
+  int set_user_config(unsigned char config_type,
+                      unsigned _supla_int16_t config_size, char *config);
+  void send_config_to_device(unsigned char config_type);
+  void send_config_to_device(void);
 
   template <typename T>
   T *get_value(void);

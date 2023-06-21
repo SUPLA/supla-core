@@ -46,7 +46,10 @@
 #include "device/value/channel_thermostat_value.h"
 #include "device/value/channel_valve_value.h"
 #include "jsonconfig/channel/action_trigger_config.h"
+#include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/impulse_counter_config.h"
+#include "jsonconfig/channel/weekly_schedule_config.h"
+#include "jsonconfig/device/device_json_config.h"
 #include "lck.h"
 #include "user/user.h"
 #include "value/channel_openclosed_value.h"
@@ -390,13 +393,34 @@ void supla_device_channel::get_char(char *value) {
 bool supla_device_channel::get_config(TSD_ChannelConfig *config,
                                       unsigned char config_type,
                                       unsigned _supla_int_t flags) {
-  if (config_type != SUPLA_CONFIG_TYPE_DEFAULT || flags != 0) {
+  if (flags != 0) {
     return false;
   }
 
   memset(config, 0, sizeof(TSD_ChannelConfig));
   config->Func = get_func();
   config->ChannelNumber = get_number();
+  config->ConfigType = config_type;
+
+  if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
+      (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
+    config->ConfigSize = sizeof(TSD_ChannelConfig_WeeklySchedule);
+
+    TSD_ChannelConfig_WeeklySchedule *ws_cfg =
+        (TSD_ChannelConfig_WeeklySchedule *)config->Config;
+
+    lock();
+    weekly_schedule_config *config = new weekly_schedule_config(json_config);
+    config->get_config(ws_cfg);
+    delete config;
+    unlock();
+
+    return true;
+  }
+
+  if (config_type != SUPLA_CONFIG_TYPE_DEFAULT) {
+    return false;
+  }
 
   switch (config->Func) {
     case SUPLA_CHANNELFNC_STAIRCASETIMER: {
@@ -429,6 +453,8 @@ bool supla_device_channel::get_config(TSD_ChannelConfig *config,
       }
       unlock();
     } break;
+    default:
+      return false;
   }
 
   return true;
@@ -920,6 +946,91 @@ channel_json_config *supla_device_channel::get_json_config(void) {
   unlock();
 
   return result;
+}
+
+int supla_device_channel::set_user_config(unsigned char config_type,
+                                          unsigned _supla_int16_t config_size,
+                                          char *config) {
+  if (config_size > SUPLA_CHANNEL_CONFIG_MAXSIZE || !config) {
+    return SUPLA_CONFIG_RESULT_FALSE;
+  }
+
+  int result = SUPLA_CONFIG_RESULT_FALSE;
+
+  supla_db_access_provider dba;
+  supla_device_dao dao(&dba);
+
+  {
+    device_json_config *config =
+        dao.get_device_config(device->get_id(), nullptr);
+    if (config) {
+      if (config->is_local_config_disabled()) {
+        result = SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED;
+      }
+      delete config;
+    }
+  }
+
+  channel_json_config *json_config = nullptr;
+
+  if (result != SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED) {
+    if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
+        config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
+        config_size == sizeof(TSD_ChannelConfig_HVAC)) {
+      json_config = new hvac_config();
+      static_cast<hvac_config *>(json_config)
+          ->set_config((TSD_ChannelConfig_HVAC *)config);
+    } else if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
+               config_size == sizeof(TSD_ChannelConfig_WeeklySchedule) &&
+               (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
+      json_config = new weekly_schedule_config();
+      static_cast<weekly_schedule_config *>(json_config)
+          ->set_config((TSD_ChannelConfig_WeeklySchedule *)config);
+    }
+  }
+
+  if (json_config) {
+    if (dao.set_channel_user_config(device->get_user_id(), get_id(),
+                                    json_config)) {
+      result = SUPLA_CONFIG_RESULT_TRUE;
+      delete json_config;
+
+      // Get the merged configuration.
+      json_config = dao.get_channel_config(get_id(), nullptr, nullptr);
+      if (json_config) {
+        lock();
+        if (this->json_config) {
+          delete json_config;
+        }
+        this->json_config = json_config;
+        unlock();
+      }
+    }
+  }
+
+  return result;
+}
+
+void supla_device_channel::send_config_to_device(unsigned char config_type) {
+  if ((get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) &&
+      get_device()->get_protocol_version() >= 21) {
+    TSDS_SetChannelConfig config = {};
+    if (get_config(&config, config_type, 0)) {
+      get_device()
+          ->get_connection()
+          ->get_srpc_adapter()
+          ->sd_async_set_channel_config_request(
+              (TSDS_SetChannelConfig *)&config);
+    }
+  }
+}
+
+void supla_device_channel::send_config_to_device(void) {
+  send_config_to_device(SUPLA_CONFIG_TYPE_DEFAULT);
+  if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
+      (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
+    send_config_to_device(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE);
+  }
 }
 
 unsigned int supla_device_channel::get_value_validity_time_left_msec(void) {

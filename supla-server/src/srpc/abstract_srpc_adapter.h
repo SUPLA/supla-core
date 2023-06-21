@@ -114,6 +114,12 @@ class supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sd_async_set_device_config_request(
       TSDS_SetDeviceConfig *config) = 0;  // ver. >= 21
+
+  virtual _supla_int_t sd_async_set_channel_config_result(
+      TSDS_SetChannelConfigResult *result) = 0;  // ver. >= 21
+
+  virtual _supla_int_t sd_async_set_channel_config_request(
+      TSDS_SetChannelConfig *config) = 0;  // ver. >= 21
 };
 
 #endif /* ABSTRACT_SRPC_ADAPTER_H_ */

@@ -99,9 +99,8 @@ void supla_register_device::on_registration_success(void) {
 void supla_register_device::after_registration_success(void) {
   shared_ptr<supla_device> device = get_device().lock();
 
-  if (device->get_flags() & SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED) {
-    device->send_device_config_to_device();
-  }
+  device->send_config_to_device();
+  device->get_channels()->send_configs_to_device();
 }
 
 void supla_register_device::register_device(

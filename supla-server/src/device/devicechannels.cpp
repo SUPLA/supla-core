@@ -1241,3 +1241,9 @@ vector<supla_channel_fragment> supla_device_channels::get_fragments(void) {
 
   return result;
 }
+
+void supla_device_channels::send_configs_to_device(void) {
+  for_each_channel([](supla_device_channel *channel) -> void {
+    channel->send_config_to_device();
+  });
+}

@@ -20,7 +20,7 @@
 
 #include <memory>
 
-#include "device.h"
+#include "device/device.h"
 
 using std::shared_ptr;
 
@@ -36,7 +36,31 @@ bool supla_ch_set_channel_config::can_handle_call(unsigned int call_id) {
 void supla_ch_set_channel_config::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  if (rd->data.sds_set_channel_config_request != nullptr) {
-    //
+  if (rd->data.sds_set_channel_config_request == nullptr) {
+    return;
   }
+
+  TSDS_SetChannelConfig* request = rd->data.sds_set_channel_config_request;
+
+  TSDS_SetChannelConfigResult result = {};
+  result.Result = SUPLA_CONFIG_RESULT_FALSE;
+  result.ConfigType = request->ConfigType;
+
+  int channel_id =
+      device->get_channels()->get_channel_id(request->ChannelNumber);
+
+  device->get_channels()->access_channel(
+      channel_id, [&](supla_device_channel* channel) -> void {
+        result.Result = channel->set_user_config(
+            request->ConfigType, request->ConfigSize, request->Config);
+      });
+
+  device->get_connection()
+      ->get_srpc_adapter()
+      ->sd_async_set_channel_config_result(&result);
+
+  device->get_channels()->access_channel(
+      channel_id, [&](supla_device_channel* channel) -> void {
+        channel->send_config_to_device(request->ConfigType);
+      });
 }

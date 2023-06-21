@@ -166,3 +166,13 @@ _supla_int_t supla_srpc_adapter::sd_async_set_device_config_request(
     TSDS_SetDeviceConfig *config) {
   return srpc_sd_async_set_device_config_request(get_srpc(), config);
 }
+
+_supla_int_t supla_srpc_adapter::sd_async_set_channel_config_result(
+    TSDS_SetChannelConfigResult *result) {
+  return srpc_sd_async_set_channel_config_result(get_srpc(), result);
+}
+
+_supla_int_t supla_srpc_adapter::sd_async_set_channel_config_request(
+    TSDS_SetChannelConfig *config) {
+  return srpc_sd_async_set_channel_config_request(get_srpc(), config);
+}

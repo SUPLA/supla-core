@@ -198,10 +198,16 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)520, sizeof(TSD_ChannelConfig));
   EXPECT_EQ((unsigned int)520, sizeof(TSDS_SetChannelConfig));
   EXPECT_EQ((unsigned int)3, sizeof(TSDS_SetChannelConfigResult));
+
+  EXPECT_EQ(sizeof(TSD_ChannelConfig_StaircaseTimer), 4);
   EXPECT_LE(sizeof(TSD_ChannelConfig_StaircaseTimer),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TSD_ChannelConfig_Rollershutter), 8);
   EXPECT_LE(sizeof(TSD_ChannelConfig_Rollershutter),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TSD_ChannelConfig_ActionTrigger), 4);
   EXPECT_LE(sizeof(TSD_ChannelConfig_ActionTrigger),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
@@ -278,6 +284,10 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   EXPECT_EQ(sizeof(TSD_ChannelConfig_HVAC), 65);
   EXPECT_LE(sizeof(TSD_ChannelConfig_HVAC),
+            static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+
+  EXPECT_EQ(sizeof(TSD_ChannelConfig_WeeklySchedule), 356);
+  EXPECT_LE(sizeof(TSD_ChannelConfig_WeeklySchedule),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 }
 
