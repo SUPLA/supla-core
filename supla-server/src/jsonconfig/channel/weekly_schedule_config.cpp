@@ -150,25 +150,32 @@ void weekly_schedule_config::add_program(
   }
 }
 
-void weekly_schedule_config::get_program(
+bool weekly_schedule_config::get_program(
     unsigned char index, TSD_ChannelConfig_WeeklySchedule *config,
     cJSON *program_root) {
+  bool result = false;
+
   string name = std::to_string(index + 1);
   cJSON *program = cJSON_GetObjectItem(program_root, name.c_str());
   if (program) {
     string str_value;
     if (get_string(program, mode, &str_value)) {
       config->Program[index].Mode = string_to_mode(str_value);
+      result = true;
     }
 
     double dbl_value = 0;
     if (get_double(program, setpoint_temperature_min, &dbl_value)) {
       config->Program[index].SetpointTemperatureMin = dbl_value;
+      result = true;
     }
     if (get_double(program, setpoint_temperature_max, &dbl_value)) {
       config->Program[index].SetpointTemperatureMax = dbl_value;
+      result = true;
     }
   }
+
+  return result;
 }
 
 void weekly_schedule_config::add_quarter(
@@ -219,24 +226,28 @@ void weekly_schedule_config::set_config(
   }
 }
 
-void weekly_schedule_config::get_config(
+bool weekly_schedule_config::get_config(
     TSD_ChannelConfig_WeeklySchedule *config) {
   if (!config) {
-    return;
+    return false;
   }
 
   *config = {};
 
-  cJSON *root = get_ws_root();
+  cJSON *root = get_ws_root(get_user_root(), false);
   if (!root) {
-    return;
+    return false;
   }
+
+  bool result = false;
 
   cJSON *program_root = cJSON_GetObjectItem(root, program_settings);
 
   if (program_root) {
     for (char a = 0; a < SUPLA_WEEKLY_SCHEDULE_PROGRAMS_MAX_SIZE; a++) {
-      get_program(a, config, program_root);
+      if (get_program(a, config, program_root)) {
+        result = true;
+      }
     }
   }
 
@@ -258,9 +269,13 @@ void weekly_schedule_config::get_config(
         } else {
           config->Quarters[offset] = v & 0xF;
         }
+
+        result = true;
       }
 
       offset += a % 2;
     }
   }
+
+  return result;
 }

@@ -390,6 +390,21 @@ void supla_device_channel::get_char(char *value) {
   }
 }
 
+template <typename jsonT, typename sdT>
+void supla_device_channel::json_to_config(TSD_ChannelConfig *config) {
+  config->ConfigSize = sizeof(sdT);
+
+  sdT *ws_cfg = (sdT *)config->Config;
+
+  lock();
+  jsonT *_json_config = new jsonT(json_config);
+  if (!_json_config->get_config(ws_cfg)) {
+    config->ConfigSize = 0;
+  }
+  delete _json_config;
+  unlock();
+}
+
 bool supla_device_channel::get_config(TSD_ChannelConfig *config,
                                       unsigned char config_type,
                                       unsigned _supla_int_t flags) {
@@ -404,22 +419,20 @@ bool supla_device_channel::get_config(TSD_ChannelConfig *config,
 
   if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
       (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
-    config->ConfigSize = sizeof(TSD_ChannelConfig_WeeklySchedule);
-
-    TSD_ChannelConfig_WeeklySchedule *ws_cfg =
-        (TSD_ChannelConfig_WeeklySchedule *)config->Config;
-
-    lock();
-    weekly_schedule_config *config = new weekly_schedule_config(json_config);
-    config->get_config(ws_cfg);
-    delete config;
-    unlock();
+    json_to_config<weekly_schedule_config, TSD_ChannelConfig_WeeklySchedule>(
+        config);
 
     return true;
   }
 
   if (config_type != SUPLA_CONFIG_TYPE_DEFAULT) {
     return false;
+  }
+
+  if (get_type() == SUPLA_CHANNELTYPE_HVAC) {
+    json_to_config<hvac_config, TSD_ChannelConfig_HVAC>(config);
+
+    return true;
   }
 
   switch (config->Func) {

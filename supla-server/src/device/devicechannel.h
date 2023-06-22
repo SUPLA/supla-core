@@ -84,6 +84,8 @@ class supla_device_channel {
                                  supla_channel_extended_value *new_value);
   supla_channel_extended_value *_get_extended_value(
       bool for_data_logger_purposes);
+  template <typename jsonT, typename sdT>
+  void json_to_config(TSD_ChannelConfig *config);
 
  public:
   supla_device_channel(supla_device *device, int id, int number, int type,

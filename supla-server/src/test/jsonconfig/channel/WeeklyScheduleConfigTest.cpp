@@ -109,6 +109,44 @@ TEST_F(WeeklyScheduleConfigTest, setAndGetConfig) {
             0);
 }
 
+TEST_F(WeeklyScheduleConfigTest, getConfigResult) {
+  weekly_schedule_config config;
+  TSD_ChannelConfig_WeeklySchedule sd_config = {};
+  EXPECT_FALSE(config.get_config(&sd_config));
+
+  config.set_user_config("{\"hvac\":{}}");
+
+  EXPECT_FALSE(config.get_config(&sd_config));
+
+  config.set_user_config("{\"hvac\":{\"weeklySchedule\":{}}}");
+
+  EXPECT_FALSE(config.get_config(&sd_config));
+
+  config.set_user_config(
+      "{\"hvac\":{\"weeklySchedule\":{\"programSettings\":{}}}}");
+
+  EXPECT_FALSE(config.get_config(&sd_config));
+
+  config.set_user_config(
+      "{\"hvac\":{\"weeklySchedule\":{\"programSettings\":{},\"quarters\":[]}}"
+      "}");
+
+  EXPECT_FALSE(config.get_config(&sd_config));
+
+  config.set_user_config(
+      "{\"hvac\":{\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":"
+      "\"Cool\"}},\"quarters\":[]}}"
+      "}");
+
+  EXPECT_TRUE(config.get_config(&sd_config));
+
+  config.set_user_config(
+      "{\"hvac\":{\"weeklySchedule\":{\"programSettings\":{},\"quarters\":[0]}}"
+      "}");
+
+  EXPECT_TRUE(config.get_config(&sd_config));
+}
+
 TEST_F(WeeklyScheduleConfigTest, rendom) {
   TSD_ChannelConfig_WeeklySchedule sd_config1 = {};
   TSD_ChannelConfig_WeeklySchedule sd_config2 = {};

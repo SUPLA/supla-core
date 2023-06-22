@@ -49,7 +49,7 @@ hvac_config::hvac_config(void) : channel_json_config() {}
 
 hvac_config::hvac_config(supla_json_config *root) : channel_json_config(root) {}
 
-cJSON *hvac_config::get_hvac_root(void) {
+cJSON *hvac_config::get_hvac_root(bool force) {
   const char hvac[] = "hvac";
 
   cJSON *root = get_user_root();
@@ -62,6 +62,8 @@ cJSON *hvac_config::get_hvac_root(void) {
   }
   return nullptr;
 }
+
+cJSON *hvac_config::get_hvac_root(void) { return get_hvac_root(true); }
 
 string hvac_config::aux_thermometer_type_to_string(unsigned char type) {
   switch (type) {
@@ -215,33 +217,38 @@ void hvac_config::set_config(TSD_ChannelConfig_HVAC *config) {
   }
 }
 
-void hvac_config::get_config(TSD_ChannelConfig_HVAC *config) {
+bool hvac_config::get_config(TSD_ChannelConfig_HVAC *config) {
   if (!config) {
-    return;
+    return false;
   }
 
   *config = {};
 
-  cJSON *root = get_hvac_root();
+  cJSON *root = get_hvac_root(false);
   if (!root) {
-    return;
+    return false;
   }
+
+  bool result = false;
 
   double dbl_value = 0;
   if (get_double(root, field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_NO).c_str(),
                  &dbl_value)) {
     config->MainThermometerChannelNo = dbl_value;
+    result = true;
   }
 
   if (get_double(root, field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_NO).c_str(),
                  &dbl_value)) {
     config->AuxThermometerChannelNo = dbl_value;
+    result = true;
   }
 
   std::string str_value;
   if (get_string(root, field_map.at(FIELD_AUX_THERMOMETER_TYPE).c_str(),
                  &str_value)) {
     config->AuxThermometerType = string_to_aux_thermometer_type(str_value);
+    result = true;
   }
 
   bool bool_value;
@@ -250,6 +257,7 @@ void hvac_config::get_config(TSD_ChannelConfig_HVAC *config) {
                    .c_str(),
                &bool_value)) {
     config->AntiFreezeAndOverheatProtectionEnabled = bool_value ? 1 : 0;
+    result = true;
   }
 
   cJSON *algs = cJSON_GetObjectItem(
@@ -261,6 +269,7 @@ void hvac_config::get_config(TSD_ChannelConfig_HVAC *config) {
       if (item && cJSON_IsString(item)) {
         config->AvailableAlgorithms |=
             string_to_alg(cJSON_GetStringValue(item));
+        result = true;
       }
     }
   }
@@ -268,23 +277,27 @@ void hvac_config::get_config(TSD_ChannelConfig_HVAC *config) {
   if (get_string(root, field_map.at(FIELD_USED_ALGORITHM).c_str(),
                  &str_value)) {
     config->UsedAlgorithm = string_to_alg(str_value);
+    result = true;
   }
 
   if (get_double(root, field_map.at(FIELD_MIN_OFF_TIME_S).c_str(),
                  &dbl_value) &&
       dbl_value >= 0 && dbl_value <= 600) {
     config->MinOffTimeS = dbl_value;
+    result = true;
   }
 
   if (get_double(root, field_map.at(FIELD_MIN_ON_TIME_S).c_str(), &dbl_value) &&
       dbl_value >= 0 && dbl_value <= 600) {
     config->MinOnTimeS = dbl_value;
+    result = true;
   }
 
   if (get_double(root, field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR).c_str(),
                  &dbl_value) &&
       dbl_value >= -100 && dbl_value <= 100) {
     config->OutputValueOnError = dbl_value;
+    result = true;
   }
 
   cJSON *temperatures =
@@ -299,7 +312,10 @@ void hvac_config::get_config(TSD_ChannelConfig_HVAC *config) {
       if (item && cJSON_IsNumber(item)) {
         config->Temperatures.Temperature[a] = cJSON_GetNumberValue(item);
         config->Temperatures.Index |= 1 << a;
+        result = true;
       }
     }
   }
+
+  return result;
 }

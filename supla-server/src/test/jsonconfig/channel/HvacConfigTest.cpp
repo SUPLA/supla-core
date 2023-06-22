@@ -80,6 +80,20 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   EXPECT_EQ(ds_hvac1.Temperatures.Index, ds_hvac2.Temperatures.Index);
 }
 
+TEST_F(HvacConfigTest, getConfigResult) {
+  hvac_config config;
+  TSD_ChannelConfig_HVAC ds_hvac = {};
+  EXPECT_FALSE(config.get_config(&ds_hvac));
+
+  config.set_user_config("{\"hvac\":{}}");
+
+  EXPECT_FALSE(config.get_config(&ds_hvac));
+
+  config.set_user_config("{\"hvac\":{\"minOffTimeS\":600}}");
+
+  EXPECT_TRUE(config.get_config(&ds_hvac));
+}
+
 TEST_F(HvacConfigTest, selectedTemperatures) {
   TSD_ChannelConfig_HVAC ds_hvac = {};
 

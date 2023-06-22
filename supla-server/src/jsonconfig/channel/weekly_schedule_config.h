@@ -41,7 +41,7 @@ class weekly_schedule_config : public channel_json_config {
   void add_program(unsigned char index,
                    TSD_ChannelConfig_WeeklySchedule *config,
                    cJSON *program_root);
-  void get_program(unsigned char index,
+  bool get_program(unsigned char index,
                    TSD_ChannelConfig_WeeklySchedule *config,
                    cJSON *program_root);
   void add_quarter(TSD_ChannelConfig_WeeklySchedule *config,
@@ -52,7 +52,7 @@ class weekly_schedule_config : public channel_json_config {
   weekly_schedule_config(void);
   virtual void merge(supla_json_config *dst);
   void set_config(TSD_ChannelConfig_WeeklySchedule *config);
-  void get_config(TSD_ChannelConfig_WeeklySchedule *config);
+  bool get_config(TSD_ChannelConfig_WeeklySchedule *config);
 };
 
 #endif /* WEEKLY_SCHEDULE_CONFIG_H_ */

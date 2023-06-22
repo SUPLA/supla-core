@@ -29,6 +29,7 @@ class hvac_config : public channel_json_config {
  private:
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
   cJSON *get_hvac_root(void);
+  cJSON *get_hvac_root(bool force);
   std::string aux_thermometer_type_to_string(unsigned char type);
   unsigned char string_to_aux_thermometer_type(const std::string &type);
   std::string alg_to_string(unsigned _supla_int16_t alg);
@@ -42,7 +43,7 @@ class hvac_config : public channel_json_config {
   hvac_config(void);
   virtual void merge(supla_json_config *dst);
   void set_config(TSD_ChannelConfig_HVAC *config);
-  void get_config(TSD_ChannelConfig_HVAC *config);
+  bool get_config(TSD_ChannelConfig_HVAC *config);
 };
 
 #endif /* HVAC_CONFIG_H_ */
