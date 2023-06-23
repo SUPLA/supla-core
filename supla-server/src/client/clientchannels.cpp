@@ -158,7 +158,12 @@ bool supla_client_channels::get_data_for_remote(
     bool *check_more, e_objc_scope scope) {
   *check_more = true;
   if (data_type & OI_REMOTEUPDATE_DATA1) {
-    if (getClient()->get_protocol_version() >= 15) {
+    if (getClient()->get_protocol_version() >= 21) {
+      return get_datapack_for_remote<TSC_SuplaChannelPack_E,
+                                     supla_client_channel>(
+          obj, data, SUPLA_CHANNELPACK_MAXCOUNT);
+
+    } else if (getClient()->get_protocol_version() >= 15) {
       return get_datapack_for_remote<TSC_SuplaChannelPack_D,
                                      supla_client_channel>(
           obj, data, SUPLA_CHANNELPACK_MAXCOUNT);
@@ -220,7 +225,12 @@ void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
                                                          int data_type,
                                                          e_objc_scope scope) {
   if (data_type & OI_REMOTEUPDATE_DATA1) {
-    if (getClient()->get_protocol_version() >= 15) {
+    if (getClient()->get_protocol_version() >= 21) {
+      set_pack_eol<TSC_SuplaChannelPack_E>(data);
+      srpc_sc_async_channelpack_update_e(
+          srpc, static_cast<TSC_SuplaChannelPack_E *>(data));
+
+    } else if (getClient()->get_protocol_version() >= 15) {
       set_pack_eol<TSC_SuplaChannelPack_D>(data);
       srpc_sc_async_channelpack_update_d(
           srpc, static_cast<TSC_SuplaChannelPack_D *>(data));

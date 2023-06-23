@@ -99,6 +99,8 @@ class supla_device_channel {
 
   static void get_defaults(int type, int func, int *param1, int *param2);
   static int func_list_filter(int func_list, int type);
+  static void get_parent_channel_id(int func, int param1, int param2,
+                                    int param4, int *parent1, int *parent2);
 
   void lock(void);
   void unlock(void);

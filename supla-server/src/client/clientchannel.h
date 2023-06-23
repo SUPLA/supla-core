@@ -85,6 +85,7 @@ class supla_client_channel : public supla_client_objcontainer_item {
   void proto_get(TSC_SuplaChannel_B *channel, supla_client *client);
   void proto_get(TSC_SuplaChannel_C *channel, supla_client *client);
   void proto_get(TSC_SuplaChannel_D *channel, supla_client *client);
+  void proto_get(TSC_SuplaChannel_E *channel, supla_client *client);
   void proto_get(TSC_SuplaChannelValue *channel_value, supla_client *client);
   void proto_get(TSC_SuplaChannelValue_B *channel_value, supla_client *client);
   bool proto_get(TSC_SuplaChannelExtendedValue *cev, supla_client *client);
@@ -98,6 +99,7 @@ class supla_client_channel : public supla_client_objcontainer_item {
   short getProductID();
   int getFlags();
   int getExtraId();
+  int getParentChannelId();
 
   void setValueValidityTimeSec(unsigned _supla_int_t validity_time_sec);
   bool isValueValidityTimeSet();

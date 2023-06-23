@@ -26,6 +26,7 @@
 
 #include "client.h"
 #include "db/database.h"
+#include "device/devicechannel.h"
 #include "log.h"
 #include "proto.h"
 #include "safearray.h"
@@ -164,6 +165,19 @@ void supla_client_channel::resetValueValidityTime(void) {
 }
 
 bool supla_client_channel::remote_update_is_possible(void) {
+  if (dynamic_cast<supla_client_channels *>(getContainer())
+          ->getClient()
+          ->get_protocol_version() < 21) {
+    int p1 = 0;
+    int p2 = 0;
+    supla_device_channel::get_parent_channel_id(Func, Param1, Param2, Param4,
+                                                &p1, &p2);
+
+    if (p1 || p2) {
+      return false;
+    }
+  }
+
   switch (Func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
@@ -195,8 +209,6 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
     case SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL:
     case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
-      return true;
-
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
@@ -204,22 +216,12 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
-
-      if (Param1 == 0 && Param2 == 0) {
-        return true;
-      }
-      break;
-
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
-
-      if (Param4 == 0) {
-        return true;
-      }
-      break;
+      return true;
   }
 
   return Type == SUPLA_CHANNELTYPE_BRIDGE && Func == 0;
@@ -327,6 +329,32 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
   channel->ProductID = this->ProductID;
   channel->ProtocolVersion = this->ProtocolVersion;
   channel->Flags = this->Flags;
+
+  proto_get_value(&channel->value, &channel->online, client);
+  sproto_set_null_terminated_string(getCaption(), channel->Caption,
+                                    &channel->CaptionSize,
+                                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
+}
+
+void supla_client_channel::proto_get(TSC_SuplaChannel_E *channel,
+                                     supla_client *client) {
+  memset(channel, 0, sizeof(TSC_SuplaChannel_D));
+
+  channel->Id = getId();
+  channel->DeviceID = getDeviceId();
+  supla_device_channel::get_parent_channel_id(Func, Param1, Param2, Param4,
+                                              &channel->ParentChannelId[0],
+                                              &channel->ParentChannelId[1]);
+
+  channel->Type = Type;
+  channel->Func = Func;
+  channel->LocationID = LocationId;
+  channel->AltIcon = AltIcon;
+  channel->UserIcon = UserIcon;
+  channel->ManufacturerID = ManufacturerID;
+  channel->ProductID = ProductID;
+  channel->ProtocolVersion = ProtocolVersion;
+  channel->Flags = Flags;
 
   proto_get_value(&channel->value, &channel->online, client);
   sproto_set_null_terminated_string(getCaption(), channel->Caption,

@@ -479,7 +479,7 @@ jobject supla_channelvalue_to_jobject(void *_suplaclient, void *user_data,
 }
 
 void supla_cb_channel_update(void *_suplaclient, void *user_data,
-                             TSC_SuplaChannel_D *channel) {
+                             TSC_SuplaChannel_E *channel) {
   // int a;
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
@@ -504,6 +504,12 @@ void supla_cb_channel_update(void *_suplaclient, void *user_data,
 
     fid = supla_client_GetFieldID(env, cch, "DeviceID", "I");
     env->SetIntField(ch, fid, channel->DeviceID);
+
+    fid = supla_client_GetFieldID(env, cch, "ParantChannel1Id", "I");
+    env->SetIntField(ch, fid, channel->ParentChannelId[0]);
+
+    fid = supla_client_GetFieldID(env, cch, "ParantChannel2Id", "I");
+    env->SetIntField(ch, fid, channel->ParentChannelId[1]);
 
     fid = supla_client_GetFieldID(env, cch, "LocationID", "I");
     env->SetIntField(ch, fid, channel->LocationID);
@@ -2114,7 +2120,8 @@ JNI_FUNCTION_II(scSetChannelFunction, supla_client_set_channel_function);
 
 JNI_FUNCTION_IString(scSetChannelCaption, supla_client_set_channel_caption);
 
-JNI_FUNCTION_IString(scSetChannelGroupCaption, supla_client_set_channel_group_caption);
+JNI_FUNCTION_IString(scSetChannelGroupCaption,
+                     supla_client_set_channel_group_caption);
 
 JNI_FUNCTION_IString(scSetLocationCaption, supla_client_set_location_caption);
 
