@@ -1045,7 +1045,7 @@ int supla_device_channel::set_user_config(unsigned char config_type,
       if (json_config) {
         lock();
         if (this->json_config) {
-          delete json_config;
+          delete this->json_config;
         }
         this->json_config = json_config;
         unlock();
