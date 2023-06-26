@@ -19,14 +19,12 @@
 #include "pn_delivery_task.h"
 
 #include "asynctask/asynctask_queue.h"
-#include "db/db_access_provider.h"
 #include "log.h"
 #include "push/apns_client.h"
 #include "push/fcm_client.h"
 #include "push/pn_dao.h"
 #include "push/pn_delivery_task_thread_pool.h"
 #include "push/pn_limit_exceeded.h"
-#include "push/pn_recipient_dao.h"
 #include "push/pn_throttling.h"
 #include "svrcfg.h"
 
@@ -41,12 +39,22 @@ supla_pn_delivery_task::supla_pn_delivery_task(
                                    nullptr) {
   this->push = push;
   this->token_provider = token_provider;
+  dba = nullptr;
+  recipient_dao = nullptr;
   set_timeout(scfg_int(CFG_PUSH_REQUEST_TIMEOUT) * 1000);
 }
 
 supla_pn_delivery_task::~supla_pn_delivery_task(void) {
   if (push) {
     delete push;
+  }
+
+  if (recipient_dao) {
+    delete recipient_dao;
+  }
+
+  if (dba) {
+    delete dba;
   }
 }
 
@@ -61,6 +69,33 @@ unsigned long long supla_pn_delivery_task::get_cfg_long_request_time_usec(
 
 string supla_pn_delivery_task::get_name(void) { return "Push delivery task"; }
 
+void supla_pn_delivery_task::load_content(void) {
+  if (push->get_id()) {
+    if (!dba) {
+      dba = new supla_db_access_provider();
+    }
+
+    dba->connect();  // Connect to the database beforehand so that inside the
+                     // dao it doesn't disconnect with every method.
+
+    supla_pn_dao push_dao(dba);
+    if (!push_dao.get(get_user_id(), push)) {
+      delete dba;
+      dba = nullptr;
+      return;
+    }
+
+    if (!recipient_dao) {
+      recipient_dao = new supla_pn_recipient_dao(dba);
+    }
+
+    recipient_dao->get_recipients(get_user_id(), push->get_id(),
+                                  &push->get_recipients());
+
+    dba->disconnect();
+  }
+}
+
 bool supla_pn_delivery_task::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
   bool fcm_recipients = false;
@@ -69,25 +104,26 @@ bool supla_pn_delivery_task::make_request(
   bool apns_recipients = false;
   bool apns_result = false;
 
-  supla_db_access_provider *dba = nullptr;
-  supla_pn_recipient_dao *recipient_dao = nullptr;
+  load_content();
 
-  if (push->get_id()) {
-    dba = new supla_db_access_provider();
-    dba->connect();  // Connect to the database beforehand so that inside the
-                     // dao it doesn't disconnect with every method.
+  if (push->get_recipients().total_count()) {
+    unsigned int limit = 0;
+    bool first_time_exceeded = false;
+    bool is_delivery_possible =
+        supla_pn_throttling::get_instance()->is_delivery_possible(
+            get_user_id(), &first_time_exceeded, &limit);
 
-    supla_pn_dao push_dao(dba);
-    if (!push_dao.get(get_user_id(), push)) {
-      delete dba;
-      return false;
+    if (!is_delivery_possible) {
+      if (first_time_exceeded) {
+        push = new supla_pn_limit_exceeded(push, limit);
+        supla_log(LOG_WARNING,
+                  "UserID %i has exceeded the PUSH message limit of %u.",
+                  get_user_id(), limit);
+        load_content();
+      } else {
+        push->get_recipients().clear();
+      }
     }
-
-    recipient_dao = new supla_pn_recipient_dao(dba);
-    recipient_dao->get_recipients(get_user_id(), push->get_id(),
-                                  &push->get_recipients());
-
-    dba->disconnect();
   }
 
   if (push->get_recipients().count(platform_android) > 0) {
@@ -133,24 +169,6 @@ bool supla_pn_delivery_task::make_request(
 // static
 void supla_pn_delivery_task::start_delivering(int user_id,
                                               supla_push_notification *push) {
-  unsigned int limit = 0;
-  bool first_time_exceeded = false;
-  bool is_delivery_possible =
-      supla_pn_throttling::get_instance()->is_delivery_possible(
-          user_id, &first_time_exceeded, &limit);
-
-  if (!is_delivery_possible) {
-    if (first_time_exceeded) {
-      push = new supla_pn_limit_exceeded(push, limit);
-      supla_log(LOG_WARNING,
-                "UserID %i has exceeded the PUSH message limit of %u.", user_id,
-                limit);
-    } else {
-      delete push;
-      return;
-    }
-  }
-
   supla_pn_delivery_task *task = new supla_pn_delivery_task(
       user_id, supla_asynctask_queue::global_instance(),
       supla_pn_delivery_task_thread_pool::global_instance(), push,

@@ -22,14 +22,19 @@
 #include <map>
 #include <string>
 
+#include "db/db_access_provider.h"
 #include "http/asynctask_http_request.h"
 #include "push/pn_gateway_access_token_provider.h"
+#include "push/pn_recipient_dao.h"
 #include "push/push_notification.h"
 
 class supla_pn_delivery_task : public supla_asynctask_http_request {
  private:
   supla_push_notification *push;
   supla_pn_gateway_access_token_provider *token_provider;
+  supla_db_access_provider *dba;
+  supla_pn_recipient_dao *recipient_dao;
+  void load_content(void);
 
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
