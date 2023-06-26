@@ -2203,7 +2203,7 @@ SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_d,
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_e,
                                   TSC_SuplaChannel_E,
-                                  SUPLA_SC_CALL_CHANNEL_UPDATE_E, 87, 488,
+                                  SUPLA_SC_CALL_CHANNEL_UPDATE_E, 91, 492,
                                   sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
@@ -2231,7 +2231,7 @@ SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
 
 SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
     srpc_sc_async_channelpack_update_e, TSC_SuplaChannelPack_E,
-    TSC_SuplaChannel_E, SUPLA_SC_CALL_CHANNELPACK_UPDATE_E, 8866, 9331,
+    TSC_SuplaChannel_E, SUPLA_SC_CALL_CHANNELPACK_UPDATE_E, 8942, 9411,
     sc_channel_pack_e);
 
 //---------------------------------------------------------
