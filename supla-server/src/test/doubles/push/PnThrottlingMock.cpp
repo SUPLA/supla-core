@@ -16,32 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef PUSH_NOTIFOCATION_DELIVERY_TASK_TEST_H_
-#define PUSH_NOTIFOCATION_DELIVERY_TASK_TEST_H_
-
-#include <string>
-
-#include "asynctask/AsyncTaskTest.h"
-#include "doubles/http/CurlAdapterMock.h"
-#include "doubles/push/AccessTokenProviderMock.h"
-#include "doubles/push/PnThrottlingMock.h"
+#include "PnThrottlingMock.h"
 
 namespace testing {
 
-class DeliveryTaskTest : public AsyncTaskTest {
- protected:
-  CurlAdapterMock *deliveryTaskCurlAdapter;
-  CurlAdapterMock *tokenProviderCurlAdapter;
-  AccessTokenProviderMock *provider;
-  PnThrottlingMock throttling;
+PnThrottlingMock::PnThrottlingMock(void) : supla_pn_throttling() {}
 
- public:
-  DeliveryTaskTest(void);
-  virtual ~DeliveryTaskTest(void);
-  virtual void SetUp(void);
-  virtual void TearDown(void);
-};
+PnThrottlingMock::~PnThrottlingMock() {}
 
-} /* namespace testing */
-
-#endif /* PUSH_NOTIFOCATION_DELIVERY_TASK_TEST_H_ */
+}  // namespace testing
