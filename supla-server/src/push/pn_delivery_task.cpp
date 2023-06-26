@@ -146,6 +146,7 @@ void supla_pn_delivery_task::start_delivering(int user_id,
                 "UserID %i has exceeded the PUSH message limit of %u.", user_id,
                 limit);
     } else {
+      delete push;
       return;
     }
   }
