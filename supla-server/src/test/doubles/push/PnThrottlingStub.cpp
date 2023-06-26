@@ -20,11 +20,11 @@
 
 namespace testing {
 
-PnThrootlingStub::PnThrootlingStub(void) : supla_pn_throttling() {}
+PnThrottlingStub::PnThrottlingStub(void) : supla_pn_throttling() {}
 
-PnThrootlingStub::~PnThrootlingStub() {}
+PnThrottlingStub::~PnThrottlingStub() {}
 
-void PnThrootlingStub::set_time_window_sec(unsigned int time_window_sec) {
+void PnThrottlingStub::set_time_window_sec(unsigned int time_window_sec) {
   supla_pn_throttling::set_time_window_sec(time_window_sec);
 }
 
