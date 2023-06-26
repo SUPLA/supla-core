@@ -39,11 +39,11 @@
 #include "device/call_handler/register_device_c.h"
 #include "device/call_handler/register_device_d.h"
 #include "device/call_handler/register_device_e.h"
+#include "device/call_handler/register_push_notification.h"
 #include "device/call_handler/set_channel_config.h"
 #include "device/call_handler/set_channel_config_result.h"
 #include "device/call_handler/set_device_config.h"
 #include "device/call_handler/set_device_config_result.h"
-#include "device/call_handler/register_push_notification.h"
 
 supla_device_call_handler_collection::supla_device_call_handler_collection(void)
     : supla_abstract_srpc_call_handler_collection() {
