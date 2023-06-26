@@ -46,7 +46,7 @@ void client_loop_location_update(void *_suplaclient, void *sthread,
 }
 
 void client_loop_channel_update(void *_suplaclient, void *sthread,
-                                TSC_SuplaChannel_D *channel) {
+                                TSC_SuplaChannel_E *channel) {
   double temp;
   if (channel->Func == 40) {
     memcpy(&temp, channel->value.value, sizeof(double));

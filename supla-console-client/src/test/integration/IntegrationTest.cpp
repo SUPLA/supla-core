@@ -96,7 +96,7 @@ void integration_test_on_channel_basic_cfg(void *_suplaclient, void *instance,
 }
 
 void integration_test_channel_update(void *_suplaclient, void *instance,
-                                     TSC_SuplaChannel_D *channel) {
+                                     TSC_SuplaChannel_E *channel) {
   static_cast<IntegrationTest *>(instance)->channelUpdate(channel);
 }
 
@@ -341,7 +341,7 @@ void IntegrationTest::onSceneCaptionSetResult(TSC_SetCaptionResult *result) {}
 
 void IntegrationTest::onChannelBasicCfg(TSC_ChannelBasicCfg *cfg) {}
 
-void IntegrationTest::channelUpdate(TSC_SuplaChannel_D *channel) {}
+void IntegrationTest::channelUpdate(TSC_SuplaChannel_E *channel) {}
 
 void IntegrationTest::locationUpdate(TSC_SuplaLocation *location) {}
 
