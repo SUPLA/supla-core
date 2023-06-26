@@ -40,6 +40,7 @@
 #include "device/call_handler/register_device_d.h"
 #include "device/call_handler/register_device_e.h"
 #include "device/call_handler/register_push_notification.h"
+#include "device/call_handler/send_push_notification.h"
 
 supla_device_call_handler_collection::supla_device_call_handler_collection(void)
     : supla_abstract_srpc_call_handler_collection() {
@@ -60,6 +61,7 @@ supla_device_call_handler_collection::supla_device_call_handler_collection(void)
   add_handler(new supla_ch_register_device_b);
   add_handler(new supla_ch_register_device_a);
   add_handler(new supla_ch_register_push_notification);
+  add_handler(new supla_ch_send_push_notification);
 
   // common
   add_handler(new supla_ch_get_version());
