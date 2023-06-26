@@ -220,7 +220,7 @@ TEST_F(ActionExecutorTest, disableSchedule) {
 TEST_F(ActionExecutorTest, sendPush) {
   supla_action_config config;
   config.set_subject_id(155);
-  config.set_subject_type(stPushNotifiction);
+  config.set_subject_type(stPushNotification);
   config.set_action_id(ACTION_SEND);
 
   ChannelPropertyGetterMock property_getter;

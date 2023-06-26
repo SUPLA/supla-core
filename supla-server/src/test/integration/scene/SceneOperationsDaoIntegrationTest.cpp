@@ -404,4 +404,31 @@ TEST_F(SceneOperationsDaoIntegrationTest, getOperationsForNonExistentScene) {
   }
 }
 
+TEST_F(SceneOperationsDaoIntegrationTest, getOperationWithPushAction) {
+  runSqlScript("AddPushNotification.sql");
+  runSqlScript("AddSceneOperationWithPushNotification.sql");
+
+  supla_scene_operations *operations = dao->get_scene_operations(1);
+
+  EXPECT_TRUE(operations != NULL);
+  if (operations) {
+    EXPECT_EQ(operations->count(), 4);
+    delete operations->pop();
+    delete operations->pop();
+    delete operations->pop();
+
+    supla_scene_operation *operation = operations->pop();
+    EXPECT_TRUE(operation != NULL);
+    if (operation) {
+      EXPECT_EQ(operation->get_delay_ms(), 0);
+      supla_action_config *cfg = operation->get_action_config();
+      EXPECT_EQ(cfg->get_action_id(), ACTION_SEND);
+      EXPECT_EQ(cfg->get_subject_type(), stPushNotification);
+      EXPECT_EQ(cfg->get_subject_id(), 5);
+      delete operation;
+    }
+    delete operations;
+  }
+}
+
 } /* namespace testing */

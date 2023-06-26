@@ -72,5 +72,9 @@ void supla_ch_send_push_notification::handle_call(
   }
 
   supla_push_notification* push = new supla_push_notification(id);
+  push->set_title(title);
+  push->set_body(body);
+  push->set_sound(pn->SoundId);
+
   supla_pn_delivery_task::start_delivering(device->get_user_id(), push);
 }

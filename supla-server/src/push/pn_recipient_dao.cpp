@@ -148,7 +148,8 @@ void supla_pn_recipient_dao::get_recipients(int user_id,
       "SELECT c.push_token, c.id, c.platform, c.app_id, c.devel_env FROM "
       "supla_client c, supla_rel_aid_pushnotification p WHERE "
       "p.push_notification_id = ? AND c.user_id = ? AND c.access_id = "
-      "p.access_id AND c.push_token IS NOT NULL AND (c.platform = 1 OR "
+      "p.access_id AND c.push_token IS NOT NULL AND TIMESTAMPDIFF(MONTH, "
+      "c.last_access_date, UTC_TIMESTAMP()) < 2 AND (c.platform = 1 OR "
       "c.platform = 2)";
 
   MYSQL_BIND pbind[2] = {};
@@ -174,7 +175,8 @@ void supla_pn_recipient_dao::get_recipients(int user_id,
   string sql =
       "SELECT push_token, id, platform, app_id, devel_env FROM supla_client "
       "WHERE user_id = ? AND push_token IS NOT NULL AND (platform = 1 OR "
-      "platform = 2) AND ((access_id != 0 AND access_id IN (0";
+      "platform = 2) AND TIMESTAMPDIFF(MONTH, last_access_date, "
+      "UTC_TIMESTAMP()) < 2 AND ((access_id != 0 AND access_id IN (0";
 
   for (size_t a = 0; a < aids.size(); a++) {
     sql.append(",?");
