@@ -156,10 +156,12 @@ bool supla_pn_delivery_task::make_request(
 
   if (dba) {
     delete dba;
+    dba = nullptr;
   }
 
   if (recipient_dao) {
     delete recipient_dao;
+    recipient_dao = nullptr;
   }
 
   return (fcm_recipients || apns_recipients) &&
