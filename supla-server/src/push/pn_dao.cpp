@@ -133,7 +133,7 @@ int supla_pn_dao::get_limit(int user_id) {
 
   int result = dba->get_int(
       user_id, 0,
-      "SELECT limit_push_notifications FROM supla_user WHERE id = ?");
+      "SELECT limit_push_notifications_per_hour FROM supla_user WHERE id = ?");
 
   if (!already_connected) {
     dba->disconnect();
@@ -214,10 +214,8 @@ int supla_pn_dao::get_device_managed_push_id(int user_id, int device_id,
 }
 
 void supla_pn_dao::register_device_managed_push(int user_id, int device_id,
-                                                     int channel_id,
-                                                     bool sm_title,
-                                                     bool sm_body,
-                                                     bool sm_sound) {
+                                                int channel_id, bool sm_title,
+                                                bool sm_body, bool sm_sound) {
   bool already_connected = dba->is_connected();
 
   if (!already_connected && !dba->connect()) {
@@ -248,8 +246,7 @@ void supla_pn_dao::register_device_managed_push(int user_id, int device_id,
   pbind[5].buffer_type = MYSQL_TYPE_TINY;
   pbind[5].buffer = (char *)&_sm_sound;
 
-  const char sql[] =
-      "CALL `supla_register_device_managed_push`(?,?,?,?,?,?)";
+  const char sql[] = "CALL `supla_register_device_managed_push`(?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
   dba->stmt_execute((void **)&stmt, sql, pbind, 6, true);
