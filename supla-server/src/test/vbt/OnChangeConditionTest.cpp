@@ -1052,4 +1052,80 @@ TEST_F(OnChangeConditionTest, powerApparent3) {
   EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
 }
 
+TEST_F(OnChangeConditionTest, withoutPausing) {
+  supla_channel_temphum_value oldv, newv;
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"lt\":20,\"name\":\"temperature\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  oldv.set_temperature(23);
+  newv.set_temperature(19);
+
+  for (int a = 0; a < 10; a++) {
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+    EXPECT_FALSE(c.is_paused());
+  }
+}
+
+TEST_F(OnChangeConditionTest, resume) {
+  supla_channel_temphum_value oldv, newv;
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"lt\":20,\"resume\":{\"ge\":22},\"name\":"
+      "\"temperature\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  oldv.set_temperature(23);
+  newv.set_temperature(19);
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  EXPECT_TRUE(c.is_paused());
+
+  oldv.set_temperature(19);
+  newv.set_temperature(23);
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  EXPECT_FALSE(c.is_paused());
+
+  oldv.set_temperature(23);
+  newv.set_temperature(19);
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  EXPECT_TRUE(c.is_paused());
+}
+
+TEST_F(OnChangeConditionTest, resume_AnotherCase) {
+  supla_channel_temphum_value oldv, newv;
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"lt\":20,\"resume\":{\"ge\":22},\"name\":"
+      "\"temperature\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  oldv.set_temperature(23);
+  newv.set_temperature(19);
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  EXPECT_TRUE(c.is_paused());
+
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  EXPECT_TRUE(c.is_paused());
+
+  oldv.set_temperature(19);
+  newv.set_temperature(23);
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  EXPECT_FALSE(c.is_paused());
+
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  EXPECT_FALSE(c.is_paused());
+
+  oldv.set_temperature(23);
+  newv.set_temperature(19);
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  EXPECT_TRUE(c.is_paused());
+}
+
 }  // namespace testing
