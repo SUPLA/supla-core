@@ -522,6 +522,7 @@ vector<int> SrpcTest::get_call_ids(int version) {
       return {SUPLA_DS_CALL_REGISTER_PUSH_NOTIFICATION,
               SUPLA_DS_CALL_SEND_PUSH_NOTIFICATION,
               SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN,
+              SUPLA_SC_CALL_REGISTER_PN_CLIENT_TOKEN_RESULT,
               SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION,
               SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT};
   }
@@ -3630,10 +3631,15 @@ SRPC_CALL_BASIC_TEST(srpc_ds_async_register_push_notification,
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_register_pn_client_token,
                                      TCS_RegisterPnClientToken,
-                                     SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN, 36,
-                                     292, cs_register_pn_client_token,
-                                     SUPLA_PN_CLIENT_TOKEN_MAXSIZE, Token,
-                                     TokenSize);
+                                     SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN,
+                                     426, 682, cs_register_pn_client_token,
+                                     SUPLA_PN_CLIENT_TOKEN_MAXSIZE, Token.Token,
+                                     Token.TokenSize);
+
+SRPC_CALL_BASIC_TEST(srpc_sc_async_register_pn_client_token_result,
+                     TSC_RegisterPnClientTokenResult,
+                     SUPLA_SC_CALL_REGISTER_PN_CLIENT_TOKEN_RESULT, 27,
+                     sc_register_pn_client_token_result);
 
 //---------------------------------------------------------
 // TIMER

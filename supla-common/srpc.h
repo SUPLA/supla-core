@@ -179,6 +179,7 @@ union TsrpcDataPacketData {
   TDS_RegisterPushNotification *ds_register_push_notification;
   TDS_PushNotification *ds_push_notification;
   TCS_RegisterPnClientToken *cs_register_pn_client_token;
+  TSC_RegisterPnClientTokenResult *sc_register_pn_client_token_result;
 };
 
 typedef struct {
@@ -433,6 +434,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_get_channel_value_result(
     void *_srpc, TSC_GetChannelValueResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_register_pn_client_token(
     void *_srpc, TCS_RegisterPnClientToken *reg);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_register_pn_client_token_result(
+    void *_srpc, TSC_RegisterPnClientTokenResult *result);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS

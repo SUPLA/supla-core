@@ -274,6 +274,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_REGISTER_PUSH_NOTIFICATION 1100         // ver. >= 20
 #define SUPLA_DS_CALL_SEND_PUSH_NOTIFICATION 1110             // ver. >= 20
 #define SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN 1120           // ver. >= 20
+#define SUPLA_SC_CALL_REGISTER_PN_CLIENT_TOKEN_RESULT 1121    // ver. >= 20
 
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
@@ -2203,7 +2204,17 @@ typedef struct {
       TokenSize;  // Including the terminating null byte ('\0'). Size
                   // <= 1 removes the token
   signed char Token[SUPLA_PN_CLIENT_TOKEN_MAXSIZE];  // Last variable in struct!
+} TCS_PnClientToken;
+
+typedef struct {
+  TCS_ClientAuthorizationDetails Auth;
+  TCS_PnClientToken Token;  // Last variable in struct!
+
 } TCS_RegisterPnClientToken;
+
+typedef struct {
+  _supla_int_t ResultCode;
+} TSC_RegisterPnClientTokenResult;
 
 #pragma pack(pop)
 
