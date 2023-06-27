@@ -1599,6 +1599,13 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                   1, sizeof(TCS_RegisterPnClientToken));
         }
         break;
+      case SUPLA_SC_CALL_REGISTER_PN_CLIENT_TOKEN_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_RegisterPnClientTokenResult)) {
+          rd->data.sc_register_pn_client_token_result =
+              (TSC_RegisterPnClientTokenResult *)calloc(
+                  1, sizeof(TSC_RegisterPnClientTokenResult));
+        }
+        break;
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
@@ -1761,6 +1768,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
     case SUPLA_DS_CALL_REGISTER_PUSH_NOTIFICATION:
     case SUPLA_DS_CALL_SEND_PUSH_NOTIFICATION:
     case SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN:
+    case SUPLA_SC_CALL_REGISTER_PN_CLIENT_TOKEN_RESULT:
     case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
     case SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT:
       return 20;
@@ -3128,14 +3136,25 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_register_pn_client_token(
     return 0;
   }
 
-  if (reg->TokenSize > SUPLA_PN_CLIENT_TOKEN_MAXSIZE) {
+  if (reg->Token.TokenSize > SUPLA_PN_CLIENT_TOKEN_MAXSIZE) {
     return 0;
   }
 
-  return srpc_async_call(_srpc, SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN,
-                         (char *)reg,
-                         sizeof(TCS_RegisterPnClientToken) -
-                             SUPLA_PN_CLIENT_TOKEN_MAXSIZE + reg->TokenSize);
+  return srpc_async_call(
+      _srpc, SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN, (char *)reg,
+      sizeof(TCS_RegisterPnClientToken) - SUPLA_PN_CLIENT_TOKEN_MAXSIZE +
+          reg->Token.TokenSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_register_pn_client_token_result(
+    void *_srpc, TSC_RegisterPnClientTokenResult *result) {
+  if (!result) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_REGISTER_PN_CLIENT_TOKEN_RESULT,
+                         (char *)result,
+                         sizeof(TSC_RegisterPnClientTokenResult));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

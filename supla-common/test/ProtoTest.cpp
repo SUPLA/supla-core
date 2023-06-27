@@ -277,7 +277,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   EXPECT_EQ(sizeof(TDS_RegisterPushNotification), 3);
   EXPECT_EQ(sizeof(TDS_PushNotification), 399);
-  EXPECT_EQ(sizeof(TCS_RegisterPnClientToken), 269);
+  EXPECT_EQ(sizeof(TCS_RegisterPnClientToken), 659);
+  EXPECT_EQ(sizeof(TSC_RegisterPnClientTokenResult), 4);
 
   EXPECT_EQ(sizeof(THVACValue), 8);
   EXPECT_LE(sizeof(THVACValue), static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
