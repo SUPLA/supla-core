@@ -354,20 +354,21 @@ bool supla_vbt_on_change_condition::is_condition_met(_vbt_operator_e op,
 
 bool supla_vbt_on_change_condition::is_condition_met(double old_value,
                                                      double new_value) {
-  bool result = is_condition_met(op, old_value, new_value, value);
-
   if (paused) {
-    if (result) {
+    if (is_condition_met(resume_op, old_value, new_value, resume_value)) {
       paused = false;
     }
-    return false;
+  } else {
+    bool result = is_condition_met(op, old_value, new_value, value);
+
+    if (result && resume_op != op_unknown) {
+      paused = true;
+    }
+
+    return result;
   }
 
-  if (result && resume_op != op_unknown) {
-    paused = true;
-  }
-
-  return result;
+  return false;
 }
 
 bool supla_vbt_on_change_condition::is_condition_met(
