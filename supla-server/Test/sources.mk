@@ -71,7 +71,6 @@ src/test/doubles \
 src/test/doubles/actions \
 src/test/doubles/amazon \
 src/test/doubles/asynctask \
-src/test/doubles/channeljsonconfig \
 src/test/doubles/client \
 src/test/doubles/conn \
 src/test/doubles/cyclictasks \

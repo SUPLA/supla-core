@@ -128,6 +128,7 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sc_async_register_pn_client_token_result(
       TSC_RegisterPnClientTokenResult *result);  // ver. >= 20
+
   virtual _supla_int_t sd_async_set_device_config_result(
       TSDS_SetDeviceConfigResult *result);  // ver. >= 21
 

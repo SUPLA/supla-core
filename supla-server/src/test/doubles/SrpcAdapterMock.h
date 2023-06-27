@@ -107,6 +107,7 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
 
   MOCK_METHOD1(sc_async_register_pn_client_token_result,
                _supla_int_t(TSC_RegisterPnClientTokenResult *result));
+
   MOCK_METHOD1(sd_async_set_device_config_result,
                _supla_int_t(TSDS_SetDeviceConfigResult *result));
 
