@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include <memory>
+#include <string>
 
 #include "client/call_handler/register_client.h"
 #include "client/client.h"
