@@ -2209,7 +2209,6 @@ typedef struct {
 typedef struct {
   TCS_ClientAuthorizationDetails Auth;
   TCS_PnClientToken Token;  // Last variable in struct!
-
 } TCS_RegisterPnClientToken;
 
 typedef struct {
