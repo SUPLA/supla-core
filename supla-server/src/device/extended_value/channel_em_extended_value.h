@@ -57,6 +57,14 @@ class supla_channel_em_extended_value : public supla_channel_extended_value,
   double get_power_apparent(int phase);
   double get_power_apparent_sum(void);
 
+  double get_fae(int phase);
+  double get_fae_sum(void);
+  double get_fae_balanced(void);
+
+  double get_rae(int phase);
+  double get_rae_sum(void);
+  double get_rae_balanced(void);
+
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
   virtual bool get_raw_value(TElectricityMeter_ExtendedValue_V2 *value);
   virtual void set_raw_value(const TSuplaChannelExtendedValue *value);

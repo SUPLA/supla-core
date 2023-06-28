@@ -292,6 +292,72 @@ double supla_channel_em_extended_value::get_power_apparent_sum(void) {
   return sum;
 }
 
+double supla_channel_em_extended_value::get_fae(int phase) {
+  if (phase >= 1 && phase <= 3) {
+    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev)) {
+      return em_ev.total_forward_active_energy[phase - 1] * 0.00001;
+    }
+  }
+
+  return 0.0;
+}
+
+double supla_channel_em_extended_value::get_fae_sum(void) {
+  double sum = 0.0;
+
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev)) {
+    for (unsigned char a = 0; a < 3; a++) {
+      sum += em_ev.total_forward_active_energy[a] * 0.00001;
+    }
+  }
+
+  return sum;
+}
+
+double supla_channel_em_extended_value::get_fae_balanced(void) {
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev)) {
+    return em_ev.total_forward_active_energy_balanced * 0.00001;
+  }
+
+  return 0.0;
+}
+
+double supla_channel_em_extended_value::get_rae(int phase) {
+  if (phase >= 1 && phase <= 3) {
+    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev)) {
+      return em_ev.total_reverse_active_energy[phase - 1] * 0.00001;
+    }
+  }
+
+  return 0.0;
+}
+
+double supla_channel_em_extended_value::get_rae_sum(void) {
+  double sum = 0.0;
+
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev)) {
+    for (unsigned char a = 0; a < 3; a++) {
+      sum += em_ev.total_reverse_active_energy[a] * 0.00001;
+    }
+  }
+
+  return sum;
+}
+
+double supla_channel_em_extended_value::get_rae_balanced(void) {
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev)) {
+    return em_ev.total_reverse_active_energy_balanced * 0.00001;
+  }
+
+  return 0.0;
+}
+
 bool supla_channel_em_extended_value::get_raw_value(
     TSuplaChannelExtendedValue *value) {
   return supla_channel_extended_value::get_raw_value(value);

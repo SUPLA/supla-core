@@ -106,7 +106,18 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_power_apparent_sum, "power_apparent_sum"},
         {var_name_power_apparent1, "power_apparent1"},
         {var_name_power_apparent2, "power_apparent2"},
-        {var_name_power_apparent3, "power_apparent3"}};
+        {var_name_power_apparent3, "power_apparent3"},
+        {var_name_fae1, "fae1"},
+        {var_name_fae2, "fae2"},
+        {var_name_fae3, "fae3"},
+        {var_name_fae_sum, "fae_sum"},
+        {var_name_fae_balanced, "fae_balanced"},
+        {var_name_rae1, "rae1"},
+        {var_name_rae2, "rae2"},
+        {var_name_rae3, "rae3"},
+        {var_name_rae_sum, "rae_sum"},
+        {var_name_rae_balanced, "rae_balanced"},
+    };
 
     for (auto it = names.begin(); it != names.end(); ++it) {
       if (it->second == cJSON_GetStringValue(name_json)) {
@@ -325,6 +336,36 @@ bool supla_vbt_on_change_condition::get_number(
         break;
       case var_name_power_apparent3:
         *result = em->get_power_apparent(3);
+        break;
+      case var_name_fae1:
+        *result = em->get_fae(1);
+        break;
+      case var_name_fae2:
+        *result = em->get_fae(2);
+        break;
+      case var_name_fae3:
+        *result = em->get_fae(3);
+        break;
+      case var_name_fae_sum:
+        *result = em->get_fae_sum();
+        break;
+      case var_name_fae_balanced:
+        *result = em->get_fae_balanced();
+        break;
+      case var_name_rae1:
+        *result = em->get_rae(1);
+        break;
+      case var_name_rae2:
+        *result = em->get_rae(2);
+        break;
+      case var_name_rae3:
+        *result = em->get_rae(3);
+        break;
+      case var_name_rae_sum:
+        *result = em->get_rae_sum();
+        break;
+      case var_name_rae_balanced:
+        *result = em->get_rae_balanced();
         break;
       default:
         return false;
