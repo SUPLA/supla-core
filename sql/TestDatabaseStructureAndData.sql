@@ -2768,7 +2768,7 @@ ALTER TABLE supla_value_based_trigger ADD CONSTRAINT FK_1DFF99CA89E4AAEE FOREIGN
 ALTER TABLE supla_value_based_trigger ADD CONSTRAINT FK_1DFF99CA166053B4 FOREIGN KEY (scene_id) REFERENCES supla_scene (id) ON DELETE CASCADE;
 ALTER TABLE supla_value_based_trigger ADD CONSTRAINT FK_1DFF99CAA40BC2D5 FOREIGN KEY (schedule_id) REFERENCES supla_schedule (id) ON DELETE CASCADE;
 ALTER TABLE supla_value_based_trigger ADD CONSTRAINT FK_1DFF99CA4E328CBE FOREIGN KEY (push_notification_id) REFERENCES supla_push_notification (id) ON DELETE CASCADE;
-ALTER TABLE supla_client ADD push_token VARCHAR(255) DEFAULT NULL, ADD platform TINYINT UNSIGNED DEFAULT NULL COMMENT '(DC2Type:tinyint)', ADD app_id INT DEFAULT '0' NOT NULL, ADD devel_env TINYINT(1) DEFAULT '0' NOT NULL;
+ALTER TABLE supla_client ADD push_token VARCHAR(255) DEFAULT NULL, ADD push_token_update_time datetime, ADD platform TINYINT UNSIGNED DEFAULT NULL COMMENT '(DC2Type:tinyint)', ADD app_id INT DEFAULT '0' NOT NULL, ADD devel_env TINYINT(1) DEFAULT '0' NOT NULL;
 ALTER TABLE supla_scene_operation ADD push_notification_id INT(11) DEFAULT NULL;
 CREATE PROCEDURE `supla_remove_push_recipients`(IN `_user_id` INT, IN `_client_id` INT) UPDATE supla_client SET push_token = NULL WHERE id = _client_id AND user_id = _user_id;
 ALTER TABLE supla_user ADD limit_push_notifications_per_hour INT DEFAULT 20 NOT NULL;
@@ -2805,6 +2805,7 @@ FROM DUAL
 CREATE PROCEDURE `supla_update_push_notification_client_token`(IN `_user_id` INT, IN `_client_id` INT, IN `_token` VARCHAR(255) CHARSET utf8mb4, IN `_platform` TINYINT, IN `_app_id` INT, IN `_devel_env` TINYINT)
 UPDATE supla_client SET
    push_token = _token,
+   push_token_update_time = UTC_TIMESTAMP(),
    platform = _platform,
    app_id = _app_id,
    devel_env = _devel_env
