@@ -306,6 +306,18 @@ _supla_int_t srpc_evtool_v1_extended2icextended(
 _supla_int_t srpc_evtool_v1_extended2thermostatextended(
     const TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev);
 
+_supla_int_t supla_single_call_execute_action(
+    TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
+    TCS_Action *action);
+
+_supla_int_t supla_single_call_register_pn_client_token(
+    TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
+    TCS_PnClientToken *token);
+
+_supla_int_t supla_single_call_get_channel_value(
+    TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
+    int channel_id, TSC_GetChannelValueResult *vresult);
+
 #ifdef __cplusplus
 }
 #endif
