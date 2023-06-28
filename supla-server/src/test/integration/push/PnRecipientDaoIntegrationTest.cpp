@@ -290,7 +290,7 @@ TEST_F(PnRecipientDaoIntegrationTest, inactiveForTwoMonths) {
   dao->get_recipients(2, 5, &recipients);
   EXPECT_EQ(recipients.total_count(), 3);
 
-  runSqlScript("SetLastAccessDate.sql");
+  runSqlScript("SetPushUpdateTime.sql");
 
   dao->get_recipients(2, 5, &recipients);
   EXPECT_EQ(recipients.total_count(), 0);
