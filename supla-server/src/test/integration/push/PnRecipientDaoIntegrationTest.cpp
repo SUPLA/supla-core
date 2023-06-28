@@ -296,4 +296,72 @@ TEST_F(PnRecipientDaoIntegrationTest, inactiveForTwoMonths) {
   EXPECT_EQ(recipients.total_count(), 0);
 }
 
+TEST_F(PnRecipientDaoIntegrationTest, clientDisabled) {
+  supla_pn_recipients recipients;
+  dao->get_recipients(2, 5, &recipients);
+  EXPECT_EQ(recipients.total_count(), 3);
+
+  vector<int> aids;
+  vector<int> cids;
+
+  cids.push_back(4);
+
+  dao->get_recipients(2, aids, cids, &recipients);
+  EXPECT_EQ(recipients.total_count(), 1);
+
+  runSqlScript("DisableClient4.sql");
+
+  dao->get_recipients(2, 5, &recipients);
+  EXPECT_EQ(recipients.total_count(), 2);
+
+  dao->get_recipients(2, aids, cids, &recipients);
+  EXPECT_EQ(recipients.total_count(), 0);
+}
+
+TEST_F(PnRecipientDaoIntegrationTest, accessIdDisabled) {
+  supla_pn_recipients recipients;
+  dao->get_recipients(2, 5, &recipients);
+  EXPECT_EQ(recipients.total_count(), 3);
+
+  vector<int> aids;
+  vector<int> cids;
+
+  cids.push_back(4);
+  aids.push_back(3);
+
+  dao->get_recipients(2, aids, cids, &recipients);
+  EXPECT_EQ(recipients.total_count(), 3);
+
+  runSqlScript("DisableAccessId2.sql");
+
+  dao->get_recipients(2, 5, &recipients);
+  EXPECT_EQ(recipients.total_count(), 0);
+
+  dao->get_recipients(2, aids, cids, &recipients);
+  EXPECT_EQ(recipients.total_count(), 2);
+}
+
+TEST_F(PnRecipientDaoIntegrationTest, accessIdDuringInactiveHour) {
+  supla_pn_recipients recipients;
+  dao->get_recipients(2, 5, &recipients);
+  EXPECT_EQ(recipients.total_count(), 3);
+
+  vector<int> aids;
+  vector<int> cids;
+
+  cids.push_back(4);
+  aids.push_back(3);
+
+  dao->get_recipients(2, aids, cids, &recipients);
+  EXPECT_EQ(recipients.total_count(), 3);
+
+  runSqlScript("SetAnInactiveTimeForAccessId2.sql");
+
+  dao->get_recipients(2, 5, &recipients);
+  EXPECT_EQ(recipients.total_count(), 0);
+
+  dao->get_recipients(2, aids, cids, &recipients);
+  EXPECT_EQ(recipients.total_count(), 2);
+}
+
 } /* namespace testing */
