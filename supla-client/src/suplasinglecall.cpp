@@ -280,3 +280,24 @@ int supla_single_call::get_channel_value(int channel_id,
 
   return make_call(call, process_response);
 }
+
+extern "C" _supla_int_t supla_single_call_execute_action(
+    TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
+    TCS_Action *action) {
+  supla_single_call single_call(auth_details, protocol_version);
+  return single_call.execute_action(action);
+}
+
+extern "C" _supla_int_t supla_single_call_register_pn_client_token(
+    TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
+    TCS_PnClientToken *token) {
+  supla_single_call single_call(auth_details, protocol_version);
+  return single_call.register_pn_client_token(token);
+}
+
+extern "C" _supla_int_t supla_single_call_get_channel_value(
+    TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
+    int channel_id, TSC_GetChannelValueResult *vresult) {
+  supla_single_call single_call(auth_details, protocol_version);
+  return single_call.get_channel_value(channel_id, vresult);
+}
