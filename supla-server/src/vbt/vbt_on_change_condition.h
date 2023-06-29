@@ -62,7 +62,9 @@ enum _vbt_var_name_e {
   var_name_rae2,
   var_name_rae3,
   var_name_rae_sum,
-  var_name_rae_balanced
+  var_name_rae_balanced,
+  var_name_counter,
+  var_name_calculated_value
 };
 
 enum _vbt_operator_e { op_unknown, op_eq, op_ne, op_le, op_lt, op_gt, op_ge };

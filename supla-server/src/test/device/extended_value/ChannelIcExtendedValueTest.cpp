@@ -77,6 +77,7 @@ TEST_F(ChannelIcExtendedValueTest, vefityAllGetters) {
   EXPECT_EQ(ev.get_impulses_per_unit(), 10);
   EXPECT_EQ(ev.get_counter(), 150);
   EXPECT_EQ(ev.get_calculated_value(), 15000);
+  EXPECT_EQ(ev.get_calculated_value_dbl(), 15.0);
 }
 
 TEST_F(ChannelIcExtendedValueTest, copy) {

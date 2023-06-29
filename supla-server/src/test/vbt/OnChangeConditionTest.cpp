@@ -19,6 +19,7 @@
 #include "OnChangeConditionTest.h"
 
 #include "device/extended_value/channel_em_extended_value.h"
+#include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_onoff_value.h"
@@ -338,6 +339,19 @@ TEST_F(OnChangeConditionTest, allPredictedVarNames) {
   cJSON_Delete(json);
 
   EXPECT_EQ(c.get_var_name(), var_name_rae_balanced);
+
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"counter\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_counter);
+
+  json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":1,\"name\":\"calculated_value\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_calculated_value);
 }
 
 TEST_F(OnChangeConditionTest, boolValues) {
@@ -1294,6 +1308,48 @@ TEST_F(OnChangeConditionTest, reversectiveEnergyBalanced) {
 
   cJSON *json =
       cJSON_Parse("{\"on_change_to\":{\"eq\":33,\"name\":\"rae_balanced\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, icCounter) {
+  TDS_ImpulseCounter_Value ic_val1 = {};
+  TDS_ImpulseCounter_Value ic_val2 = {};
+  ic_val1.counter = 151;
+
+  supla_channel_ic_extended_value newv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
+                                       &ic_val1, "PLN", "Unit", 45000, 10);
+
+  supla_channel_ic_extended_value oldv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
+                                       &ic_val2, "PLN", "Unit", 45000, 10);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":151,\"name\":\"counter\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, icCalculatedValue) {
+  TDS_ImpulseCounter_Value ic_val1 = {};
+  TDS_ImpulseCounter_Value ic_val2 = {};
+  ic_val1.counter = 151;
+
+  supla_channel_ic_extended_value newv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
+                                       &ic_val1, "PLN", "Unit", 45000, 10);
+
+  supla_channel_ic_extended_value oldv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
+                                       &ic_val2, "PLN", "Unit", 45000, 10);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":15.1,\"name\":\"calculated_value\"}}");
   c.apply_json_config(json);
   cJSON_Delete(json);
 
