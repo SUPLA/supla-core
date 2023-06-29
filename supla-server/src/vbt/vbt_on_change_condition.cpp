@@ -24,6 +24,7 @@
 #include <string>
 
 #include "device/extended_value/channel_em_extended_value.h"
+#include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_onoff_value.h"
@@ -117,7 +118,8 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_rae3, "rae3"},
         {var_name_rae_sum, "rae_sum"},
         {var_name_rae_balanced, "rae_balanced"},
-    };
+        {var_name_counter, "counter"},
+        {var_name_calculated_value, "calculated_value"}};
 
     for (auto it = names.begin(); it != names.end(); ++it) {
       if (it->second == cJSON_GetStringValue(name_json)) {
@@ -366,6 +368,22 @@ bool supla_vbt_on_change_condition::get_number(
         break;
       case var_name_rae_balanced:
         *result = em->get_rae_balanced();
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  } else if (dynamic_cast<supla_channel_ic_extended_value *>(value)) {
+    supla_channel_ic_extended_value *ic =
+        dynamic_cast<supla_channel_ic_extended_value *>(value);
+
+    switch (var_name) {
+      case var_name_counter:
+        *result = ic->get_counter();
+        break;
+      case var_name_calculated_value:
+        *result = ic->get_calculated_value_dbl();
         break;
       default:
         return false;
