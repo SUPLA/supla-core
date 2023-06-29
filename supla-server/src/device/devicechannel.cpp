@@ -455,11 +455,11 @@ void supla_device_channel::json_to_config(TSD_ChannelConfig *config) {
   unlock();
 }
 
-bool supla_device_channel::get_config(TSD_ChannelConfig *config,
+void supla_device_channel::get_config(TSD_ChannelConfig *config,
                                       unsigned char config_type,
                                       unsigned _supla_int_t flags) {
   if (flags != 0) {
-    return false;
+    return;
   }
 
   memset(config, 0, sizeof(TSD_ChannelConfig));
@@ -472,17 +472,17 @@ bool supla_device_channel::get_config(TSD_ChannelConfig *config,
     json_to_config<weekly_schedule_config, TSD_ChannelConfig_WeeklySchedule>(
         config);
 
-    return true;
+    return;
   }
 
   if (config_type != SUPLA_CONFIG_TYPE_DEFAULT) {
-    return false;
+    return;
   }
 
   if (get_type() == SUPLA_CHANNELTYPE_HVAC) {
     json_to_config<hvac_config, TSD_ChannelConfig_HVAC>(config);
 
-    return true;
+    return;
   }
 
   switch (config->Func) {
@@ -516,11 +516,7 @@ bool supla_device_channel::get_config(TSD_ChannelConfig *config,
       }
       unlock();
     } break;
-    default:
-      return false;
   }
-
-  return true;
 }
 
 void supla_device_channel::db_set_properties(channel_json_config *config) {
@@ -1060,13 +1056,13 @@ void supla_device_channel::send_config_to_device(unsigned char config_type) {
   if ((get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) &&
       get_device()->get_protocol_version() >= 21) {
     TSDS_SetChannelConfig config = {};
-    if (get_config(&config, config_type, 0)) {
-      get_device()
-          ->get_connection()
-          ->get_srpc_adapter()
-          ->sd_async_set_channel_config_request(
-              (TSDS_SetChannelConfig *)&config);
-    }
+
+    get_config(&config, config_type, 0);
+
+    get_device()
+        ->get_connection()
+        ->get_srpc_adapter()
+        ->sd_async_set_channel_config_request((TSDS_SetChannelConfig *)&config);
   }
 }
 

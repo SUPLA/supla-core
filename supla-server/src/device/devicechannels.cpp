@@ -703,7 +703,8 @@ bool supla_device_channels::get_channel_config(unsigned char channel_number,
   supla_device_channel *channel = find_channel_by_number(channel_number);
 
   if (channel) {
-    return channel->get_config(config, type, flags);
+    channel->get_config(config, type, flags);
+    return true;
   }
 
   return false;

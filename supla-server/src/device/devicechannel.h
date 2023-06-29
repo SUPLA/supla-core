@@ -137,7 +137,7 @@ class supla_device_channel {
                          char color_brightness, char brightness, char on_off);
   void get_double(double *value);
   void get_char(char *value);
-  bool get_config(TSD_ChannelConfig *config, unsigned char config_type,
+  void get_config(TSD_ChannelConfig *config, unsigned char config_type,
                   unsigned _supla_int_t flags);
   void set_action_trigger_config(unsigned int capabilities,
                                  int related_channel_id,
