@@ -2159,8 +2159,10 @@ typedef struct {
   _supla_int_t ActionTrigger;
   unsigned char zero[10];  // Place for future variables
 } TDS_ActionTrigger;
+
 #define SUPLA_PN_TITLE_MAXSIZE 101
 #define SUPLA_PN_BODY_MAXSIZE 256
+#define SUPLA_PN_PROFILE_NAME_MAXSIZE 51
 
 #define PN_SERVER_MANAGED_TITLE (1 << 0)
 #define PN_SERVER_MANAGED_BODY (1 << 1)
@@ -2197,6 +2199,9 @@ typedef struct {
   unsigned char DevelopmentEnv;
   _supla_int_t Platform;
   _supla_int_t AppId;
+  signed char
+      ProfileName[SUPLA_PN_PROFILE_NAME_MAXSIZE];  // Including the terminating
+                                                   // null byte ('\0').
   unsigned _supla_int16_t
       RealTokenSize;  // It allows you to determine if the maximum size of the
                       // Token variable is sufficient.
