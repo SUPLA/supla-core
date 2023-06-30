@@ -77,6 +77,7 @@ class supla_vbt_on_change_condition {
   _vbt_operator_e resume_op;
   double resume_value;
   bool paused;
+  bool on_change;
 
   bool get_operator_and_value(cJSON *root, _vbt_operator_e *op, double *value);
 

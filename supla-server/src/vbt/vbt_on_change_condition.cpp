@@ -43,6 +43,7 @@ supla_vbt_on_change_condition::supla_vbt_on_change_condition(void) {
   resume_op = op_unknown;
   resume_value = 0;
   paused = false;
+  on_change = false;
 }
 
 supla_vbt_on_change_condition::~supla_vbt_on_change_condition(void) {}
@@ -68,14 +69,14 @@ bool supla_vbt_on_change_condition::is_paused(void) const { return paused; }
 void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
   op = op_unknown;
 
-  cJSON *root = cJSON_GetObjectItem(json, "on_change_to");
-  if (!root) {
-    return;
-  }
+  cJSON *root = cJSON_GetObjectItem(json, "on_change");
+  on_change = root != nullptr;
 
-  if (!get_operator_and_value(root, &op, &value)) {
-    op = op_unknown;
-    return;
+  if (!root) {
+    root = cJSON_GetObjectItem(json, "on_change_to");
+    if (!root) {
+      return;
+    }
   }
 
   cJSON *name_json = cJSON_GetObjectItem(root, "name");
@@ -127,6 +128,15 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         break;
       }
     }
+  }
+
+  if (on_change) {
+    return;
+  }
+
+  if (!get_operator_and_value(root, &op, &value)) {
+    op = op_unknown;
+    return;
   }
 
   cJSON *resume_json = cJSON_GetObjectItem(root, "resume");
@@ -413,6 +423,10 @@ bool supla_vbt_on_change_condition::is_condition_met(_vbt_operator_e op,
 
 bool supla_vbt_on_change_condition::is_condition_met(double old_value,
                                                      double new_value) {
+  if (on_change) {
+    return fabs(new_value - old_value) > 0.000001;
+  }
+
   if (paused) {
     if (is_condition_met(resume_op, old_value, new_value, resume_value)) {
       paused = false;
@@ -432,7 +446,7 @@ bool supla_vbt_on_change_condition::is_condition_met(double old_value,
 
 bool supla_vbt_on_change_condition::is_condition_met(
     supla_channel_value *old_value, supla_channel_value *new_value) {
-  if (op == op_unknown) {
+  if (!on_change && op == op_unknown) {
     return false;
   }
 
@@ -453,7 +467,7 @@ bool supla_vbt_on_change_condition::is_condition_met(
 bool supla_vbt_on_change_condition::is_condition_met(
     supla_channel_extended_value *old_value,
     supla_channel_extended_value *new_value) {
-  if (op == op_unknown) {
+  if (!on_change && op == op_unknown) {
     return false;
   }
 

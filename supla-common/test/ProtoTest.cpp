@@ -277,7 +277,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   EXPECT_EQ(sizeof(TDS_RegisterPushNotification), 3);
   EXPECT_EQ(sizeof(TDS_PushNotification), 399);
-  EXPECT_EQ(sizeof(TCS_RegisterPnClientToken), 659);
+  EXPECT_EQ(sizeof(TCS_RegisterPnClientToken), 710);
   EXPECT_EQ(sizeof(TSC_RegisterPnClientTokenResult), 4);
 
   EXPECT_EQ(sizeof(THVACValue), 8);

@@ -101,7 +101,7 @@ TEST_F(OnChangeConditionTest, allPredictedOperators) {
   EXPECT_EQ(c.get_op(), op_gt);
 }
 
-TEST_F(OnChangeConditionTest, allPredictedVarNames) {
+TEST_F(OnChangeConditionTest, onChangeTo_allPredictedVarNames) {
   supla_vbt_on_change_condition c;
 
   cJSON *json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"color\"}}");
@@ -348,6 +348,259 @@ TEST_F(OnChangeConditionTest, allPredictedVarNames) {
 
   json = cJSON_Parse(
       "{\"on_change_to\":{\"eq\":1,\"name\":\"calculated_value\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_calculated_value);
+}
+
+TEST_F(OnChangeConditionTest, onChange_allPredictedVarNames) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{\"name\":\"color\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_color);
+
+  json = cJSON_Parse(
+      "{\"on_change\":{\"name\":\"color_brightness\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_color_brightness);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"brightness\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_brightness);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"temperature\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_temperature);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"humidity\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_humidity);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"flooding\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_flooding);
+
+  json =
+      cJSON_Parse("{\"on_change\":{\"name\":\"manually_closed\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_manually_closed);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"voltage_avg\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_voltage_avg);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"voltage1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_voltage1);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"voltage2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_voltage2);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"voltage3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_voltage3);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"current_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_current_sum);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"current1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_current1);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"current2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_current2);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"current3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_current3);
+
+  json = cJSON_Parse(
+      "{\"on_change\":{\"name\":\"power_active_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_active_sum);
+
+  json =
+      cJSON_Parse("{\"on_change\":{\"name\":\"power_active1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_active1);
+
+  json =
+      cJSON_Parse("{\"on_change\":{\"name\":\"power_active2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_active2);
+
+  json =
+      cJSON_Parse("{\"on_change\":{\"name\":\"power_active3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_active3);
+
+  json = cJSON_Parse(
+      "{\"on_change\":{\"name\":\"power_reactive_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_reactive_sum);
+
+  json =
+      cJSON_Parse("{\"on_change\":{\"name\":\"power_reactive1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_reactive1);
+
+  json =
+      cJSON_Parse("{\"on_change\":{\"name\":\"power_reactive2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_reactive2);
+
+  json =
+      cJSON_Parse("{\"on_change\":{\"name\":\"power_reactive3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_reactive3);
+
+  json = cJSON_Parse(
+      "{\"on_change\":{\"name\":\"power_apparent_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_apparent_sum);
+
+  json =
+      cJSON_Parse("{\"on_change\":{\"name\":\"power_apparent1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_apparent1);
+
+  json =
+      cJSON_Parse("{\"on_change\":{\"name\":\"power_apparent2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_apparent2);
+
+  json =
+      cJSON_Parse("{\"on_change\":{\"name\":\"power_apparent3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_power_apparent3);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"fae1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_fae1);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"fae2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_fae2);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"fae3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_fae3);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"fae_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_fae_sum);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"fae_balanced\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_fae_balanced);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"rae1\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_rae1);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"rae2\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_rae2);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"rae3\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_rae3);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"rae_sum\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_rae_sum);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"rae_balanced\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_rae_balanced);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"counter\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_counter);
+
+  json = cJSON_Parse(
+      "{\"on_change\":{\"name\":\"calculated_value\"}}");
   c.apply_json_config(json);
   cJSON_Delete(json);
 
@@ -1430,6 +1683,48 @@ TEST_F(OnChangeConditionTest, resume_AnotherCase) {
   newv.set_temperature(19);
   EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
   EXPECT_TRUE(c.is_paused());
+}
+
+TEST_F(OnChangeConditionTest, floatingPointValueChanged) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  supla_channel_floating_point_sensor_value oldv, newv;
+  oldv.set_value(56);
+  newv.set_value(56);
+
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+
+  oldv.set_value(2);
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+
+  newv.set_value(1);
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, temperatureChanged) {
+  supla_channel_temphum_value oldv, newv;
+  oldv.set_temperature(22.5);
+  newv.set_temperature(22.5);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{\"name\":\"temperature\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+
+  oldv.set_temperature(22.6);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+
+  newv.set_temperature(22.7);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
 }
 
 }  // namespace testing
