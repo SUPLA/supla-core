@@ -2176,6 +2176,7 @@ typedef struct {
                             // applies to all subsequent notifications.
 
   _supla_int16_t Context;  // >= 0 Channel, -1 Device
+  signed char Reserved[8];
 } TDS_RegisterPushNotification;
 
 typedef struct {

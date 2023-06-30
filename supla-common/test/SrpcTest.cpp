@@ -3626,7 +3626,7 @@ TEST_F(SrpcTest, srpc_ds_async_send_push_notification_with_full_size) {
 
 SRPC_CALL_BASIC_TEST(srpc_ds_async_register_push_notification,
                      TDS_RegisterPushNotification,
-                     SUPLA_DS_CALL_REGISTER_PUSH_NOTIFICATION, 26,
+                     SUPLA_DS_CALL_REGISTER_PUSH_NOTIFICATION, 34,
                      ds_register_push_notification);
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_register_pn_client_token,
