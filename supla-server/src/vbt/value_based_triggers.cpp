@@ -130,8 +130,9 @@ void supla_value_based_triggers::on_channel_value_changed(
 
   // We fire triggers only after leaving the lock.
   for (auto it = matches.begin(); it != matches.end(); ++it) {
+    auto replacement_map = it->get_replacement_map();
     it->get_trigger()->fire(caller, user->getUserID(), action_executor,
-                            property_getter, it->get_replacement_map());
+                            property_getter, &replacement_map);
   }
 }
 

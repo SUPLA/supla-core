@@ -68,7 +68,7 @@ TEST_F(ValueBasedTriggerTest, tooFastFiring) {
   for (int a = 0; a < 100; a++) {
     usleep(10);
     t.fire(supla_caller(ctIPC), 2, &actionExecutor, &propertyGetter,
-           replacement_map);
+           &replacement_map);
   }
 
   EXPECT_EQ(actionExecutor.counterSetCount(), 1);
@@ -76,7 +76,7 @@ TEST_F(ValueBasedTriggerTest, tooFastFiring) {
   usleep(t.get_min_time_between_firing_usec() + 1);
 
   t.fire(supla_caller(ctIPC), 2, &actionExecutor, &propertyGetter,
-         replacement_map);
+         &replacement_map);
 
   EXPECT_EQ(actionExecutor.counterSetCount(), 1);
   EXPECT_EQ(actionExecutor.getOnCounter(), 2);
@@ -97,7 +97,7 @@ TEST_F(ValueBasedTriggerTest, tooManyFiresInAcertainAmountOfTime) {
 
   for (unsigned int a = 0; a <= t.get_fire_count_limit() + 10; a++) {
     t.fire(supla_caller(ctIPC), 2, &actionExecutor, &propertyGetter,
-           replacement_map);
+           &replacement_map);
   }
 
   EXPECT_EQ(actionExecutor.counterSetCount(), 1);
@@ -107,7 +107,7 @@ TEST_F(ValueBasedTriggerTest, tooManyFiresInAcertainAmountOfTime) {
 
   for (unsigned int a = 0; a <= t.get_fire_count_limit() + 10; a++) {
     t.fire(supla_caller(ctIPC), 2, &actionExecutor, &propertyGetter,
-           replacement_map);
+           &replacement_map);
   }
 
   EXPECT_EQ(actionExecutor.counterSetCount(), 1);

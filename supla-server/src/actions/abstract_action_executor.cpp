@@ -138,7 +138,7 @@ void supla_abstract_action_executor::execute_action(
     supla_abstract_channel_property_getter *property_getter,
     TAction_RS_Parameters *rs, TAction_RGBW_Parameters *rgbw,
     int source_device_id, int source_channel_id, int cap,
-    const map<string, string> *replacement_map) {
+    map<string, string> *replacement_map) {
   if (action_id == 0 || subject_id == 0) {
     return;
   }
@@ -255,7 +255,7 @@ void supla_abstract_action_executor::execute_action(
 void supla_abstract_action_executor::execute_action(
     const supla_caller &caller, int user_id, abstract_action_config *config,
     supla_abstract_channel_property_getter *property_getter,
-    const map<string, string> *replacement_map) {
+    map<string, string> *replacement_map) {
   int action_id = 0;
   int subject_id = 0;
 

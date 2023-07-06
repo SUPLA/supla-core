@@ -76,18 +76,17 @@ class supla_abstract_action_executor {
                       abstract_action_config *config,
                       supla_abstract_channel_property_getter *property_getter);
 
-  void execute_action(
-      const supla_caller &caller, int user_id, abstract_action_config *config,
-      supla_abstract_channel_property_getter *property_getter,
-      const std::map<std::string, std::string> *replacement_map);
+  void execute_action(const supla_caller &caller, int user_id,
+                      abstract_action_config *config,
+                      supla_abstract_channel_property_getter *property_getter,
+                      std::map<std::string, std::string> *replacement_map);
 
-  void execute_action(
-      const supla_caller &caller, int user_id, int action_id,
-      _subjectType_e subject_type, int subject_id,
-      supla_abstract_channel_property_getter *property_getter,
-      TAction_RS_Parameters *rs, TAction_RGBW_Parameters *rgbw,
-      int source_device_id, int source_channel_id, int cap,
-      const std::map<std::string, std::string> *replacement_map);
+  void execute_action(const supla_caller &caller, int user_id, int action_id,
+                      _subjectType_e subject_type, int subject_id,
+                      supla_abstract_channel_property_getter *property_getter,
+                      TAction_RS_Parameters *rs, TAction_RGBW_Parameters *rgbw,
+                      int source_device_id, int source_channel_id, int cap,
+                      std::map<std::string, std::string> *replacement_map);
 
   virtual void set_on(bool on) = 0;
   virtual void set_color(unsigned int color) = 0;
@@ -105,8 +104,7 @@ class supla_abstract_action_executor {
   virtual void step_by_step(void) = 0;
   virtual void enable(void) = 0;
   virtual void disable(void) = 0;
-  virtual void send(
-      const std::map<std::string, std::string> *replacement_map) = 0;
+  virtual void send(std::map<std::string, std::string> *replacement_map) = 0;
   virtual void execute(void) = 0;
   virtual void interrupt(void) = 0;
   virtual void interrupt_and_execute(void) = 0;

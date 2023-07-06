@@ -106,7 +106,7 @@ TEST_F(PushNotificationTest, replacementMapLoopPrevention) {
   m["A"] = "{A}";
 
   n.set_body("{A}{A}{A}");
-  n.set_replacement_map(m);
+  n.set_replacement_map(&m);
   EXPECT_EQ(n.get_body(), "{A}{A}{A}");
 }
 
@@ -119,14 +119,14 @@ TEST_F(PushNotificationTest, replacementMapWithBody) {
   n.set_body(
       "The air humidity is {HUMIDITY}% and the temperature is {TEMPERATURE} "
       "degrees Celsius.");
-  n.set_replacement_map(m);
+  n.set_replacement_map(&m);
 
   EXPECT_EQ(n.get_body(),
             "The air humidity is 45.50% and the temperature is 25.5 degrees "
             "Celsius.");
 
   m["ABCD"] = "123456";
-  n.set_replacement_map(m);
+  n.set_replacement_map(&m);
 
   n.set_body("{ABCD}{ABCD} {ABCD}");
 
@@ -139,11 +139,11 @@ TEST_F(PushNotificationTest, replacementMapWithTtile) {
   m["XYZ"] = "1";
 
   n.set_title("{XYZ}{XYZ}");
-  n.set_replacement_map(m);
+  n.set_replacement_map(&m);
   EXPECT_EQ(n.get_title(), "11");
 
   m["A"] = "B";
-  n.set_replacement_map(m);
+  n.set_replacement_map(&m);
   n.set_title("{A}");
   EXPECT_EQ(n.get_title(), "B");
 }
@@ -154,11 +154,11 @@ TEST_F(PushNotificationTest, replacementMapWithLocalizedTtile) {
   m["XY"] = "1";
 
   n.set_localized_title("{XY}{XY}");
-  n.set_replacement_map(m);
+  n.set_replacement_map(&m);
   EXPECT_EQ(n.get_localized_title(), "11");
 
   m["A"] = "B";
-  n.set_replacement_map(m);
+  n.set_replacement_map(&m);
   n.set_localized_title("{A}");
   EXPECT_EQ(n.get_localized_title(), "B");
 }
@@ -169,11 +169,11 @@ TEST_F(PushNotificationTest, replacementMapWithLocalizedBody) {
   m["XM"] = "1";
 
   n.set_localized_body("{XM}{XM}");
-  n.set_replacement_map(m);
+  n.set_replacement_map(&m);
   EXPECT_EQ(n.get_localized_body(), "11");
 
   m["U"] = "B";
-  n.set_replacement_map(m);
+  n.set_replacement_map(&m);
   n.set_localized_body("{U}");
   EXPECT_EQ(n.get_localized_body(), "B");
 }
