@@ -88,7 +88,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   virtual void step_by_step(void);
   virtual void enable(void);
   virtual void disable(void);
-  virtual void send(const std::map<std::string, std::string> *replacement_map);
+  virtual void send(std::map<std::string, std::string> *replacement_map);
   virtual void execute(void);
   virtual void interrupt(void);
   virtual void interrupt_and_execute(void);

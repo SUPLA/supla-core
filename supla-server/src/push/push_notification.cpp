@@ -121,8 +121,13 @@ void supla_push_notification::apply_replacement_map(void) {
 }
 
 void supla_push_notification::set_replacement_map(
-    const map<string, string> &replacement_map) {
-  this->replacement_map = replacement_map;
+    map<string, string> *replacement_map) {
+  if (replacement_map) {
+    this->replacement_map = *replacement_map;
+  } else {
+    this->replacement_map.clear();
+  }
+
   apply_replacement_map();
 }
 

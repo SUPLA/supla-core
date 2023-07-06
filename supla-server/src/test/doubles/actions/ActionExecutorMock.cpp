@@ -196,7 +196,7 @@ void ActionExecutorMock::disable(void) {
 }
 
 void ActionExecutorMock::send(
-    const std::map<std::string, std::string> *replacement_map) {
+    std::map<std::string, std::string> *replacement_map) {
   addTime();
   sent_counter++;
   if (replacement_map) {

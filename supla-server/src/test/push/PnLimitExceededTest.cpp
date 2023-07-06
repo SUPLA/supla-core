@@ -48,7 +48,7 @@ TEST_F(PnLimitExceededTest, initializationWithTheSourceMessage) {
   src->set_sound(15);
   src->get_recipients().add(new supla_pn_recipient(10, 0, false, "ancd"),
                             platform_android);
-  src->set_replacement_map(replacement_map);
+  src->set_replacement_map(&replacement_map);
 
   supla_pn_limit_exceeded push(src, 150);
   args = push.get_localized_body_args();

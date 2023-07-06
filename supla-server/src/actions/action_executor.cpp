@@ -169,7 +169,7 @@ void supla_action_executor::disable(void) {
   dao.enable(get_user_id(), get_schedule_id(), false);
 }
 
-void supla_action_executor::send(const map<string, string> *replacement_map) {
+void supla_action_executor::send(map<string, string> *replacement_map) {
   if (get_user()) {
     supla_pn_delivery_task::start_delivering(
         get_user()->getUserID(), get_push_notification_id(), replacement_map);

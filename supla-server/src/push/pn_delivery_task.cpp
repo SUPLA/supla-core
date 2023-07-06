@@ -183,13 +183,13 @@ void supla_pn_delivery_task::start_delivering(int user_id,
 // static
 void supla_pn_delivery_task::start_delivering(
     int user_id, int push_notification_id,
-    const map<string, string> *replacement_map) {
+    map<string, string> *replacement_map) {
   if (!push_notification_id) {
     return;
   }
   supla_push_notification *push =
       new supla_push_notification(push_notification_id);
-  push->set_replacement_map(*replacement_map);
+  push->set_replacement_map(replacement_map);
 
   start_delivering(user_id, push);
 }
