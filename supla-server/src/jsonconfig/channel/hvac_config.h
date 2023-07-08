@@ -35,15 +35,15 @@ class hvac_config : public channel_json_config {
   std::string alg_to_string(unsigned _supla_int16_t alg);
   unsigned _supla_int16_t string_to_alg(const std::string &alg);
   void add_algorithm_to_array(cJSON *root, cJSON *algs,
-                              TSD_ChannelConfig_HVAC *config,
+                              TChannelConfig_HVAC *config,
                               unsigned _supla_int16_t alg);
 
  public:
   explicit hvac_config(supla_json_config *root);
   hvac_config(void);
   virtual void merge(supla_json_config *dst);
-  void set_config(TSD_ChannelConfig_HVAC *config);
-  bool get_config(TSD_ChannelConfig_HVAC *config);
+  void set_config(TChannelConfig_HVAC *config);
+  bool get_config(TChannelConfig_HVAC *config);
 };
 
 #endif /* HVAC_CONFIG_H_ */

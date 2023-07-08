@@ -2384,7 +2384,7 @@ typedef struct {
   unsigned _supla_int16_t ConfigSize;
   char Config[SUPLA_CHANNEL_CONFIG_MAXSIZE];  // Last variable in struct!
                                               // v. >= 16
-                                              // TSD_ChannelConfig_*
+                                              // TChannelConfig_*
 } TSD_ChannelConfig;
 
 // SUPLA_DS_CALL_SET_CHANNEL_CONFIG
@@ -2401,23 +2401,23 @@ typedef struct {
 
 typedef struct {
   _supla_int_t TimeMS;
-} TSD_ChannelConfig_StaircaseTimer;  // v. >= 16
+} TChannelConfig_StaircaseTimer;  // v. >= 16
 
 typedef struct {
   _supla_int_t ClosingTimeMS;
   _supla_int_t OpeningTimeMS;
-} TSD_ChannelConfig_Rollershutter;  // v. >= 16
+} TChannelConfig_Rollershutter;  // v. >= 16
 
 typedef struct {
   _supla_int_t ClosingTimeMS;
   _supla_int_t OpeningTimeMS;
   _supla_int_t TiltingTimeMS;
   unsigned char FacadeBlindType;  // SUPLA_FACADEBLIND_TYPE_
-} TSD_ChannelConfig_FacadeBlind;  // v. >= 21
+} TChannelConfig_FacadeBlind;     // v. >= 21
 
 typedef struct {
   unsigned _supla_int_t ActiveActions;
-} TSD_ChannelConfig_ActionTrigger;  // v. >= 16
+} TChannelConfig_ActionTrigger;  // v. >= 16
 
 // Weekly schedule definition for HVAC channel
 
@@ -2446,7 +2446,7 @@ typedef struct {
   // 3 - program 3
   // 4 - program 4
   unsigned char Quarters[SUPLA_WEEKLY_SCHEDULE_VALUES_SIZE / 2];  // 336 B
-} TSD_ChannelConfig_WeeklySchedule;                               // v. >= 21
+} TChannelConfig_WeeklySchedule;                                  // v. >= 21
 
 // Config used for thermometers and thermometers with humidity channels.
 // When used for thermometers, humidity param is ignored.
@@ -2575,7 +2575,7 @@ typedef struct {
                                         // be disabled
   signed char OutputValueOnError;       // -100 cool, 0 off (default), 100 heat
   THVACTemperatureCfg Temperatures;
-} TSD_ChannelConfig_HVAC;  // v. >= 21
+} TChannelConfig_HVAC;  // v. >= 21
 
 typedef struct {
   _supla_int_t ChannelID;

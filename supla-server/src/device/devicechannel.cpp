@@ -469,7 +469,7 @@ void supla_device_channel::get_config(TSD_ChannelConfig *config,
 
   if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
       (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
-    json_to_config<weekly_schedule_config, TSD_ChannelConfig_WeeklySchedule>(
+    json_to_config<weekly_schedule_config, TChannelConfig_WeeklySchedule>(
         config);
 
     return;
@@ -480,32 +480,32 @@ void supla_device_channel::get_config(TSD_ChannelConfig *config,
   }
 
   if (get_type() == SUPLA_CHANNELTYPE_HVAC) {
-    json_to_config<hvac_config, TSD_ChannelConfig_HVAC>(config);
+    json_to_config<hvac_config, TChannelConfig_HVAC>(config);
 
     return;
   }
 
   switch (config->Func) {
     case SUPLA_CHANNELFNC_STAIRCASETIMER: {
-      config->ConfigSize = sizeof(TSD_ChannelConfig_StaircaseTimer);
-      TSD_ChannelConfig_StaircaseTimer *cfg =
-          (TSD_ChannelConfig_StaircaseTimer *)config->Config;
+      config->ConfigSize = sizeof(TChannelConfig_StaircaseTimer);
+      TChannelConfig_StaircaseTimer *cfg =
+          (TChannelConfig_StaircaseTimer *)config->Config;
       cfg->TimeMS = get_param1() * 100;
     } break;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW: {
-      config->ConfigSize = sizeof(TSD_ChannelConfig_Rollershutter);
-      TSD_ChannelConfig_Rollershutter *cfg =
-          (TSD_ChannelConfig_Rollershutter *)config->Config;
+      config->ConfigSize = sizeof(TChannelConfig_Rollershutter);
+      TChannelConfig_Rollershutter *cfg =
+          (TChannelConfig_Rollershutter *)config->Config;
       cfg->OpeningTimeMS = get_param1() * 100;
       cfg->ClosingTimeMS = get_param3() * 100;
     } break;
 
     case SUPLA_CHANNELFNC_ACTIONTRIGGER: {
-      config->ConfigSize = sizeof(TSD_ChannelConfig_ActionTrigger);
-      TSD_ChannelConfig_ActionTrigger *cfg =
-          (TSD_ChannelConfig_ActionTrigger *)config->Config;
+      config->ConfigSize = sizeof(TChannelConfig_ActionTrigger);
+      TChannelConfig_ActionTrigger *cfg =
+          (TChannelConfig_ActionTrigger *)config->Config;
       cfg->ActiveActions = 0;
       lock();
       action_trigger_config *at_config = new action_trigger_config(json_config);
@@ -1017,16 +1017,16 @@ int supla_device_channel::set_user_config(unsigned char config_type,
   if (result != SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED) {
     if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
         config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
-        config_size == sizeof(TSD_ChannelConfig_HVAC)) {
+        config_size == sizeof(TChannelConfig_HVAC)) {
       json_config = new hvac_config();
       static_cast<hvac_config *>(json_config)
-          ->set_config((TSD_ChannelConfig_HVAC *)config);
+          ->set_config((TChannelConfig_HVAC *)config);
     } else if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
-               config_size == sizeof(TSD_ChannelConfig_WeeklySchedule) &&
+               config_size == sizeof(TChannelConfig_WeeklySchedule) &&
                (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
       json_config = new weekly_schedule_config();
       static_cast<weekly_schedule_config *>(json_config)
-          ->set_config((TSD_ChannelConfig_WeeklySchedule *)config);
+          ->set_config((TChannelConfig_WeeklySchedule *)config);
     }
   }
 

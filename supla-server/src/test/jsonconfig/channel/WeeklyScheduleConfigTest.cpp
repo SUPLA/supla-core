@@ -30,8 +30,8 @@ WeeklyScheduleConfigTest::WeeklyScheduleConfigTest(void) {}
 WeeklyScheduleConfigTest::~WeeklyScheduleConfigTest(void) {}
 
 TEST_F(WeeklyScheduleConfigTest, setAndGetConfig) {
-  TSD_ChannelConfig_WeeklySchedule sd_config1 = {};
-  TSD_ChannelConfig_WeeklySchedule sd_config2 = {};
+  TChannelConfig_WeeklySchedule sd_config1 = {};
+  TChannelConfig_WeeklySchedule sd_config2 = {};
 
   sd_config1.Program[0].Mode = SUPLA_HVAC_MODE_COOL;
   sd_config1.Program[0].SetpointTemperatureMin = 10;
@@ -104,14 +104,14 @@ TEST_F(WeeklyScheduleConfigTest, setAndGetConfig) {
 
   config.get_config(&sd_config2);
 
-  EXPECT_EQ(memcmp(&sd_config1, &sd_config2,
-                   sizeof(TSD_ChannelConfig_WeeklySchedule)),
-            0);
+  EXPECT_EQ(
+      memcmp(&sd_config1, &sd_config2, sizeof(TChannelConfig_WeeklySchedule)),
+      0);
 }
 
 TEST_F(WeeklyScheduleConfigTest, getConfigResult) {
   weekly_schedule_config config;
-  TSD_ChannelConfig_WeeklySchedule sd_config = {};
+  TChannelConfig_WeeklySchedule sd_config = {};
   EXPECT_FALSE(config.get_config(&sd_config));
 
   config.set_user_config("{\"hvac\":{}}");
@@ -148,8 +148,8 @@ TEST_F(WeeklyScheduleConfigTest, getConfigResult) {
 }
 
 TEST_F(WeeklyScheduleConfigTest, rendom) {
-  TSD_ChannelConfig_WeeklySchedule sd_config1 = {};
-  TSD_ChannelConfig_WeeklySchedule sd_config2 = {};
+  TChannelConfig_WeeklySchedule sd_config1 = {};
+  TChannelConfig_WeeklySchedule sd_config2 = {};
 
   TestHelper::randomize((char *)sd_config1.Quarters,
                         sizeof(sd_config1.Quarters));
@@ -158,9 +158,9 @@ TEST_F(WeeklyScheduleConfigTest, rendom) {
   config.set_config(&sd_config1);
   config.get_config(&sd_config2);
 
-  EXPECT_EQ(memcmp(&sd_config1, &sd_config2,
-                   sizeof(TSD_ChannelConfig_WeeklySchedule)),
-            0);
+  EXPECT_EQ(
+      memcmp(&sd_config1, &sd_config2, sizeof(TChannelConfig_WeeklySchedule)),
+      0);
 }
 
 TEST_F(WeeklyScheduleConfigTest, merge) {

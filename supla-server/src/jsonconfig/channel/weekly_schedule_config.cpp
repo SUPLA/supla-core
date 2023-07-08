@@ -133,9 +133,9 @@ unsigned char weekly_schedule_config::string_to_mode(const std::string &mode) {
   return SUPLA_HVAC_MODE_NOT_SET;
 }
 
-void weekly_schedule_config::add_program(
-    unsigned char index, TSD_ChannelConfig_WeeklySchedule *config,
-    cJSON *program_root) {
+void weekly_schedule_config::add_program(unsigned char index,
+                                         TChannelConfig_WeeklySchedule *config,
+                                         cJSON *program_root) {
   string name = std::to_string(index + 1);
   cJSON *program = cJSON_AddObjectToObject(program_root, name.c_str());
   if (program) {
@@ -150,9 +150,9 @@ void weekly_schedule_config::add_program(
   }
 }
 
-bool weekly_schedule_config::get_program(
-    unsigned char index, TSD_ChannelConfig_WeeklySchedule *config,
-    cJSON *program_root) {
+bool weekly_schedule_config::get_program(unsigned char index,
+                                         TChannelConfig_WeeklySchedule *config,
+                                         cJSON *program_root) {
   bool result = false;
 
   string name = std::to_string(index + 1);
@@ -178,16 +178,15 @@ bool weekly_schedule_config::get_program(
   return result;
 }
 
-void weekly_schedule_config::add_quarter(
-    TSD_ChannelConfig_WeeklySchedule *config, cJSON *quarters_root,
-    unsigned char quarter) {
+void weekly_schedule_config::add_quarter(TChannelConfig_WeeklySchedule *config,
+                                         cJSON *quarters_root,
+                                         unsigned char quarter) {
   cJSON *item = cJSON_CreateNumber(quarter);
   assert(item != nullptr);
   cJSON_AddItemToArray(quarters_root, item);
 }
 
-void weekly_schedule_config::set_config(
-    TSD_ChannelConfig_WeeklySchedule *config) {
+void weekly_schedule_config::set_config(TChannelConfig_WeeklySchedule *config) {
   if (!config) {
     return;
   }
@@ -226,8 +225,7 @@ void weekly_schedule_config::set_config(
   }
 }
 
-bool weekly_schedule_config::get_config(
-    TSD_ChannelConfig_WeeklySchedule *config) {
+bool weekly_schedule_config::get_config(TChannelConfig_WeeklySchedule *config) {
   if (!config) {
     return false;
   }

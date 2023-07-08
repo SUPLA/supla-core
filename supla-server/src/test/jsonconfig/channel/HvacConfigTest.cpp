@@ -31,7 +31,7 @@ HvacConfigTest::HvacConfigTest(void) {}
 HvacConfigTest::~HvacConfigTest(void) {}
 
 TEST_F(HvacConfigTest, setAndGetConfig) {
-  TSD_ChannelConfig_HVAC ds_hvac1 = {};
+  TChannelConfig_HVAC ds_hvac1 = {};
   ds_hvac1.MainThermometerChannelNo = 1;
   ds_hvac1.AuxThermometerChannelNo = 2;
   ds_hvac1.AuxThermometerType = SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_HEATER;
@@ -70,19 +70,19 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   config2.set_user_config(str);
   free(str);
 
-  TSD_ChannelConfig_HVAC ds_hvac2 = {};
+  TChannelConfig_HVAC ds_hvac2 = {};
   config2.get_config(&ds_hvac2);
 
   ds_hvac1.AvailableAlgorithms = SUPLA_HVAC_ALGORITHM_ON_OFF;
 
-  EXPECT_EQ(memcmp(&ds_hvac1, &ds_hvac2, sizeof(TSD_ChannelConfig_HVAC)), 0);
+  EXPECT_EQ(memcmp(&ds_hvac1, &ds_hvac2, sizeof(TChannelConfig_HVAC)), 0);
 
   EXPECT_EQ(ds_hvac1.Temperatures.Index, ds_hvac2.Temperatures.Index);
 }
 
 TEST_F(HvacConfigTest, getConfigResult) {
   hvac_config config;
-  TSD_ChannelConfig_HVAC ds_hvac = {};
+  TChannelConfig_HVAC ds_hvac = {};
   EXPECT_FALSE(config.get_config(&ds_hvac));
 
   config.set_user_config("{\"hvac\":{}}");
@@ -95,7 +95,7 @@ TEST_F(HvacConfigTest, getConfigResult) {
 }
 
 TEST_F(HvacConfigTest, selectedTemperatures) {
-  TSD_ChannelConfig_HVAC ds_hvac = {};
+  TChannelConfig_HVAC ds_hvac = {};
 
   ds_hvac.Temperatures.Index = (1 << 0) | (1 << 1) | (1 << 8) | (1 << 15);
   int size = sizeof(ds_hvac.Temperatures.Temperature) / sizeof(_supla_int16_t);
@@ -140,7 +140,7 @@ TEST_F(HvacConfigTest, merge) {
       "17,\"18\":18,\"19\":19,\"20\":20,\"21\":21,\"22\":22,\"23\":23,\"24\":"
       "24}}}");
 
-  TSD_ChannelConfig_HVAC ds_hvac = {};
+  TChannelConfig_HVAC ds_hvac = {};
 
   ds_hvac.Temperatures.Index = 1 << 1;
   ds_hvac.Temperatures.Temperature[1] = 10;

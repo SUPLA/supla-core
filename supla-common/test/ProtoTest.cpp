@@ -199,16 +199,16 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)520, sizeof(TSDS_SetChannelConfig));
   EXPECT_EQ((unsigned int)3, sizeof(TSDS_SetChannelConfigResult));
 
-  EXPECT_EQ(sizeof(TSD_ChannelConfig_StaircaseTimer), 4);
-  EXPECT_LE(sizeof(TSD_ChannelConfig_StaircaseTimer),
+  EXPECT_EQ(sizeof(TChannelConfig_StaircaseTimer), 4);
+  EXPECT_LE(sizeof(TChannelConfig_StaircaseTimer),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  EXPECT_EQ(sizeof(TSD_ChannelConfig_Rollershutter), 8);
-  EXPECT_LE(sizeof(TSD_ChannelConfig_Rollershutter),
+  EXPECT_EQ(sizeof(TChannelConfig_Rollershutter), 8);
+  EXPECT_LE(sizeof(TChannelConfig_Rollershutter),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  EXPECT_EQ(sizeof(TSD_ChannelConfig_ActionTrigger), 4);
-  EXPECT_LE(sizeof(TSD_ChannelConfig_ActionTrigger),
+  EXPECT_EQ(sizeof(TChannelConfig_ActionTrigger), 4);
+  EXPECT_LE(sizeof(TChannelConfig_ActionTrigger),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
   EXPECT_EQ((unsigned int)539, sizeof(TSDS_SetDeviceConfig));
@@ -238,8 +238,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TCalCfg_FacadeBlindSettings),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 
-  EXPECT_EQ(static_cast<size_t>(13), sizeof(TSD_ChannelConfig_FacadeBlind));
-  EXPECT_LE(sizeof(TSD_ChannelConfig_FacadeBlind),
+  EXPECT_EQ(static_cast<size_t>(13), sizeof(TChannelConfig_FacadeBlind));
+  EXPECT_LE(sizeof(TChannelConfig_FacadeBlind),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 
   EXPECT_LE(sizeof(TDSC_RollerShutterValue),
@@ -283,12 +283,12 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ(sizeof(THVACValue), 8);
   EXPECT_LE(sizeof(THVACValue), static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
 
-  EXPECT_EQ(sizeof(TSD_ChannelConfig_HVAC), 65);
-  EXPECT_LE(sizeof(TSD_ChannelConfig_HVAC),
+  EXPECT_EQ(sizeof(TChannelConfig_HVAC), 65);
+  EXPECT_LE(sizeof(TChannelConfig_HVAC),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 
-  EXPECT_EQ(sizeof(TSD_ChannelConfig_WeeklySchedule), 356);
-  EXPECT_LE(sizeof(TSD_ChannelConfig_WeeklySchedule),
+  EXPECT_EQ(sizeof(TChannelConfig_WeeklySchedule), 356);
+  EXPECT_LE(sizeof(TChannelConfig_WeeklySchedule),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 }
 

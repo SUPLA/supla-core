@@ -123,7 +123,7 @@ void hvac_config::merge(supla_json_config *_dst) {
 }
 
 void hvac_config::add_algorithm_to_array(cJSON *root, cJSON *algs,
-                                         TSD_ChannelConfig_HVAC *config,
+                                         TChannelConfig_HVAC *config,
                                          unsigned _supla_int16_t alg) {
   if (root && algs) {
     if (config->AvailableAlgorithms & alg) {
@@ -135,7 +135,7 @@ void hvac_config::add_algorithm_to_array(cJSON *root, cJSON *algs,
   }
 }
 
-void hvac_config::set_config(TSD_ChannelConfig_HVAC *config) {
+void hvac_config::set_config(TChannelConfig_HVAC *config) {
   if (!config) {
     return;
   }
@@ -217,7 +217,7 @@ void hvac_config::set_config(TSD_ChannelConfig_HVAC *config) {
   }
 }
 
-bool hvac_config::get_config(TSD_ChannelConfig_HVAC *config) {
+bool hvac_config::get_config(TChannelConfig_HVAC *config) {
   if (!config) {
     return false;
   }

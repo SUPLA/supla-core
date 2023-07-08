@@ -38,21 +38,19 @@ class weekly_schedule_config : public channel_json_config {
   cJSON *get_ws_root(cJSON *root, bool force);
   std::string mode_to_string(unsigned char mode);
   unsigned char string_to_mode(const std::string &mode);
-  void add_program(unsigned char index,
-                   TSD_ChannelConfig_WeeklySchedule *config,
+  void add_program(unsigned char index, TChannelConfig_WeeklySchedule *config,
                    cJSON *program_root);
-  bool get_program(unsigned char index,
-                   TSD_ChannelConfig_WeeklySchedule *config,
+  bool get_program(unsigned char index, TChannelConfig_WeeklySchedule *config,
                    cJSON *program_root);
-  void add_quarter(TSD_ChannelConfig_WeeklySchedule *config,
-                   cJSON *quarters_root, unsigned char quarter);
+  void add_quarter(TChannelConfig_WeeklySchedule *config, cJSON *quarters_root,
+                   unsigned char quarter);
 
  public:
   explicit weekly_schedule_config(supla_json_config *root);
   weekly_schedule_config(void);
   virtual void merge(supla_json_config *dst);
-  void set_config(TSD_ChannelConfig_WeeklySchedule *config);
-  bool get_config(TSD_ChannelConfig_WeeklySchedule *config);
+  void set_config(TChannelConfig_WeeklySchedule *config);
+  bool get_config(TChannelConfig_WeeklySchedule *config);
 };
 
 #endif /* WEEKLY_SCHEDULE_CONFIG_H_ */
