@@ -2554,10 +2554,18 @@ typedef struct {
 // TEMPERATURE_AUTO_OFFSET_MIN < TEMPERATURE_AUTO_OFFSET_MAX
 
 typedef struct {
-  // Channel numbers for thermometer config. Channels have to be local and
-  // numbering is the same as for registration message
-  unsigned char MainThermometerChannelNo;
-  unsigned char AuxThermometerChannelNo;
+  union {
+    _supla_int_t MainThermometerChannelId;
+    // Channel numbers for thermometer config. Channels have to be local and
+    // numbering is the same as for registration message
+    unsigned char MainThermometerChannelNo;
+  };
+
+  union {
+    _supla_int_t AuxThermometerChannelId;
+    unsigned char AuxThermometerChannelNo;
+  };
+
   // SUPLA_HVAC_AUX_THERMOMETER_TYPE_
   unsigned char AuxThermometerType;
   unsigned char AntiFreezeAndOverheatProtectionEnabled;

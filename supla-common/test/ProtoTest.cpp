@@ -283,7 +283,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ(sizeof(THVACValue), 8);
   EXPECT_LE(sizeof(THVACValue), static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
 
-  EXPECT_EQ(sizeof(TChannelConfig_HVAC), 65);
+  EXPECT_EQ(sizeof(TChannelConfig_HVAC), 71);
   EXPECT_LE(sizeof(TChannelConfig_HVAC),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 
