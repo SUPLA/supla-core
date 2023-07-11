@@ -122,6 +122,8 @@ _subjectType_e action_trigger_config::get_subject_type(int cap) {
     return stScene;
   } else if (equal(subjectType, "schedule")) {
     return stSchedule;
+  } else if (equal(subjectType, "notification")) {
+    return stPushNotification;
   } else if (channel_id_if_subject_not_set) {
     cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
     if (action) {
