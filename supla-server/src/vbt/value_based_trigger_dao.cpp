@@ -154,7 +154,7 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
             action_config.set_subject_type(stSchedule);
           } else if (push_notification_id) {
             action_config.set_subject_id(push_notification_id);
-            action_config.set_subject_type(stPushNotifiction);
+            action_config.set_subject_type(stPushNotification);
           }
 
           supla_value_based_trigger *vbt = new supla_value_based_trigger(

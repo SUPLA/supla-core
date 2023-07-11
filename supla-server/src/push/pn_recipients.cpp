@@ -36,6 +36,14 @@ void supla_pn_recipients::add(supla_pn_recipient* recipient,
     recipients[platform] = vector<supla_pn_recipient*>();
   }
 
+  for (auto it = recipients[platform].cbegin();
+       it != recipients[platform].cend(); ++it) {
+    if (recipient->get_app_id() == (*it)->get_app_id() &&
+        recipient->get_token() == (*it)->get_token()) {
+      delete recipient;
+      return;
+    }
+  }
   recipients[platform].push_back(recipient);
 }
 

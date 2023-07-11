@@ -35,11 +35,6 @@ supla_value_based_triggers::supla_value_based_triggers(supla_user *user) {
 supla_value_based_triggers::~supla_value_based_triggers(void) { lck_free(lck); }
 
 void supla_value_based_triggers::load(void) {
-#if SUPLA_PROTO_VERSION == 20
-  return;  // Temporarily disabled
-#else
-  Remove it
-#endif
   supla_db_access_provider dba;
   supla_value_based_trigger_dao dao(&dba);
 
@@ -135,8 +130,9 @@ void supla_value_based_triggers::on_channel_value_changed(
 
   // We fire triggers only after leaving the lock.
   for (auto it = matches.begin(); it != matches.end(); ++it) {
+    auto replacement_map = it->get_replacement_map();
     it->get_trigger()->fire(caller, user->getUserID(), action_executor,
-                            property_getter, it->get_replacement_map());
+                            property_getter, &replacement_map);
   }
 }
 

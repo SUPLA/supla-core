@@ -53,6 +53,18 @@ enum _vbt_var_name_e {
   var_name_power_apparent1,
   var_name_power_apparent2,
   var_name_power_apparent3,
+  var_name_fae1,
+  var_name_fae2,
+  var_name_fae3,
+  var_name_fae_sum,
+  var_name_fae_balanced,
+  var_name_rae1,
+  var_name_rae2,
+  var_name_rae3,
+  var_name_rae_sum,
+  var_name_rae_balanced,
+  var_name_counter,
+  var_name_calculated_value
 };
 
 enum _vbt_operator_e { op_unknown, op_eq, op_ne, op_le, op_lt, op_gt, op_ge };
@@ -65,6 +77,7 @@ class supla_vbt_on_change_condition {
   _vbt_operator_e resume_op;
   double resume_value;
   bool paused;
+  bool on_change;
 
   bool get_operator_and_value(cJSON *root, _vbt_operator_e *op, double *value);
 

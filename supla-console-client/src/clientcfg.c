@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "clientcfg.h"
+
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +26,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "clientcfg.h"
+#include "supla-client-lib/cfg.h"
 #include "supla-client-lib/log.h"
 #include "supla-client-lib/proto.h"
 #include "supla-client-lib/tools.h"
@@ -61,6 +63,8 @@ unsigned char clientcfg_init(int argc, char *argv[]) {
     } else if (strcmp("-h", argv[a]) == 0 && a < argc - 1) {
       cfg_host = strdup(argv[a + 1]);
       a++;
+    } else if (strcmp("-D", argv[a]) == 0 && a < argc - 1) {
+      debug_mode = 1;
     } else if (strcmp("-tcp", argv[a]) == 0) {
       cfg_ssl_enabled = 0;
     } else if (strcmp("-p", argv[a]) == 0 && a < argc - 1) {

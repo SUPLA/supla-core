@@ -51,9 +51,6 @@ void ValueBasedTriggerIntegrationTest::TearDown() {
   delete user;
 }
 
-#if SUPLA_PROTO_VERSION > 20
-Remove this macro
-
 TEST_F(ValueBasedTriggerIntegrationTest, loadFromUserWhoHasNoTriggers) {
   supla_user *user = supla_user::find(12345, true);
 
@@ -211,7 +208,7 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
   if (t) {
     EXPECT_EQ(t->get_id(), 32);
     EXPECT_EQ(t->get_channel_id(), 141);
-    EXPECT_EQ(t->get_action_config().get_subject_type(), stPushNotifiction);
+    EXPECT_EQ(t->get_action_config().get_subject_type(), stPushNotification);
     EXPECT_EQ(t->get_action_config().get_subject_id(), 500);
     EXPECT_EQ(t->get_action_config().get_action_id(), ACTION_SEND);
     EXPECT_EQ(t->get_on_change_cnd().get_op(), op_eq);
@@ -223,7 +220,7 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
   if (t) {
     EXPECT_EQ(t->get_id(), 33);
     EXPECT_EQ(t->get_channel_id(), 158);
-    EXPECT_EQ(t->get_action_config().get_subject_type(), stPushNotifiction);
+    EXPECT_EQ(t->get_action_config().get_subject_type(), stPushNotification);
     EXPECT_EQ(t->get_action_config().get_subject_id(), 500);
     EXPECT_EQ(t->get_action_config().get_action_id(), ACTION_SEND);
     EXPECT_EQ(t->get_on_change_cnd().get_op(), op_ge);
@@ -290,6 +287,5 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel158) {
   EXPECT_EQ(m["temperature"], "25.15");
   EXPECT_EQ(m["humidity"], "50.00");
 }
-#endif
 
 } /* namespace testing */

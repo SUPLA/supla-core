@@ -71,7 +71,7 @@ void supla_value_based_trigger::fire(
     const supla_caller &caller, int user_id,
     supla_abstract_action_executor *action_executor,
     supla_abstract_channel_property_getter *property_getter,
-    const std::map<std::string, std::string> &replacement_map) {
+    std::map<std::string, std::string> *replacement_map) {
   struct timeval now = {};
   gettimeofday(&now, nullptr);
 
@@ -116,7 +116,7 @@ void supla_value_based_trigger::fire(
   }
 
   action_executor->execute_action(caller, user_id, &action_config,
-                                  property_getter, &replacement_map);
+                                  property_getter, replacement_map);
 }
 
 int supla_value_based_trigger::get_id(void) { return id; }

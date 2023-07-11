@@ -125,6 +125,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sc_async_get_channel_value_result(
       TSC_GetChannelValueResult *result);  // ver. >= 19
+
+  virtual _supla_int_t sc_async_register_pn_client_token_result(
+      TSC_RegisterPnClientTokenResult *result);  // ver. >= 20
 };
 
 #endif /* SRPC_ADAPTER_H_ */

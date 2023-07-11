@@ -1,0 +1,33 @@
+LOCAL_PATH := $(call my-dir)
+
+include $(CLEAR_VARS)
+
+LOCAL_C_INCLUDES := $(OPENSSL_ANDROID)/include \
+         ../src
+
+LOCAL_MODULE    := libsuplaclient
+LOCAL_STATIC_LIBRARIES := cpufeatures 
+LOCAL_LDLIBS := -llog -landroid -L$(OPENSSL_ANDROID)/libs/$(TARGET_ARCH_ABI)/ -lssl -lcrypto
+LOCAL_CFLAGS += -DNOMYSQL -DSRPC_WITHOUT_IN_QUEUE -DSRPC_WITHOUT_OUT_QUEUE -DSPROTO_WITHOUT_OUT_BUFFER -DUSE_DEPRECATED_EMEV_V1 -fPIC -g
+
+LOCAL_SRC_FILES := supla.cpp \
+    main.cpp \
+    actions.cpp \
+    singlecall.cpp \
+    push.cpp \
+    ../../src/cfg.c \
+    ../../src/eh.c \
+    ../../src/ini.c \
+    ../../src/lck.c \
+    ../../src/log.c \
+    ../../src/proto.c \
+    ../../src/safearray.c \
+    ../../src/srpc.c \
+    ../../src/sthread.c \
+    ../../src/supla-client.c \
+    ../../src/suplasinglecall.cpp \
+    ../../src/supla-socket.c \
+    ../../src/tools.c \
+
+include $(BUILD_SHARED_LIBRARY)
+$(call import-module,android/cpufeatures)

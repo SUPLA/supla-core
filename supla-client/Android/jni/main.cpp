@@ -599,7 +599,6 @@ void supla_channel_em_addsummary(TAndroidSuplaClient *asc, JNIEnv *env,
   jlong rre = em_ev->total_reverse_reactive_energy[phase];
 
   jobject sum_obj = env->NewObject(cls, methodID, parent, fae, rae, fre, rre);
-  jclass sum_class = env->GetObjectClass(sum_obj);
 
   jmethodID add_summary_mid = env->GetMethodID(
       parent_cls, "addSummary",
@@ -624,7 +623,6 @@ void supla_channel_em_addmeasurement(TAndroidSuplaClient *asc, JNIEnv *env,
       em_ev->m[midx].power_reactive[phase],
       em_ev->m[midx].power_apparent[phase], em_ev->m[midx].power_factor[phase],
       em_ev->m[midx].phase_angle[phase]);
-  jclass m_class = env->GetObjectClass(m_obj);
 
   jmethodID add_m_mid =
       env->GetMethodID(parent_cls, "addMeasurement",
@@ -654,7 +652,6 @@ jobject supla_channelelectricitymetervalue_to_jobject(
   jobject val = env->NewObject(
       cls, methodID, em_ev->measured_values, em_ev->period, em_ev->total_cost,
       em_ev->price_per_unit, new_string_utf(env, currency), fae_b, rae_b);
-  jclass cval = env->GetObjectClass(val);
 
   for (a = 0; a < 3; a++) {
     supla_channel_em_addsummary(asc, env, val, cls, em_ev, a);
@@ -1071,7 +1068,6 @@ void supla_cb_on_oauth_token_request_result(
     void *_suplaclient, void *user_data, TSC_OAuthTokenRequestResult *result) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
-  jfieldID fid;
 
   if (asc->j_mid_on_oauth_token_request_result) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaOAuthToken");
@@ -1092,7 +1088,6 @@ void supla_cb_on_superuser_authorization_result(void *_suplaclient,
                                                 _supla_int_t code) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
-  jfieldID fid;
 
   if (asc->j_mid_on_superuser_authorization_result) {
     env->CallVoidMethod(asc->j_obj,
@@ -1130,8 +1125,6 @@ void supla_cb_on_device_calcfg_progress_report(void *_suplaclient,
   ENV_VAR_DECLARATION();
 
   if (asc->j_mid_on_device_calcfg_progress_report) {
-    jbyteArray data = NULL;
-
     env->CallVoidMethod(asc->j_obj, asc->j_mid_on_device_calcfg_progress_report,
                         ChannelID, result->Command, result->Progress);
   }
@@ -1607,9 +1600,6 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
 
     supla_bytearrobj2buffer(env, cfg, jcs, "AuthKey", sclient_cfg.AuthKey,
                             SUPLA_AUTHKEY_SIZE);
-
-    fid = supla_client_GetFieldID(env, jcs, "clientGUID", "[B");
-    jbyteArray barr = (jbyteArray)env->GetObjectField(cfg, fid);
 
     TAndroidSuplaClient *_asc =
         (TAndroidSuplaClient *)malloc(sizeof(TAndroidSuplaClient));
@@ -2114,7 +2104,8 @@ JNI_FUNCTION_II(scSetChannelFunction, supla_client_set_channel_function);
 
 JNI_FUNCTION_IString(scSetChannelCaption, supla_client_set_channel_caption);
 
-JNI_FUNCTION_IString(scSetChannelGroupCaption, supla_client_set_channel_group_caption);
+JNI_FUNCTION_IString(scSetChannelGroupCaption,
+                     supla_client_set_channel_group_caption);
 
 JNI_FUNCTION_IString(scSetLocationCaption, supla_client_set_location_caption);
 

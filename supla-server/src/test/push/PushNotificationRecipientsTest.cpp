@@ -125,4 +125,36 @@ TEST_F(PushNotificationRecipientsTest, clear) {
   EXPECT_EQ(recipients.total_count(), 0);
 }
 
+TEST_F(PushNotificationRecipientsTest, ignoringDuplicates) {
+  recipients.add(new supla_pn_recipient(1, 0, false, "t1"), platform_android);
+  recipients.add(new supla_pn_recipient(1, 0, false, "t2"), platform_android);
+  recipients.add(new supla_pn_recipient(1, 0, false, "t1"), platform_android);
+  recipients.add(new supla_pn_recipient(1, 1, false, "t1"), platform_android);
+  recipients.add(new supla_pn_recipient(1, 0, true, "t1"), platform_ios);
+
+  supla_pn_recipient *r = recipients.get(platform_android, 0);
+  ASSERT_TRUE(r != nullptr);
+  EXPECT_EQ(r->get_token(), "t1");
+  EXPECT_EQ(r->get_client_id(), 1);
+  EXPECT_EQ(r->get_app_id(), 0);
+
+  r = recipients.get(platform_android, 1);
+  ASSERT_TRUE(r != nullptr);
+  EXPECT_EQ(r->get_token(), "t2");
+  EXPECT_EQ(r->get_client_id(), 1);
+  EXPECT_EQ(r->get_app_id(), 0);
+
+  r = recipients.get(platform_android, 2);
+  ASSERT_TRUE(r != nullptr);
+  EXPECT_EQ(r->get_token(), "t1");
+  EXPECT_EQ(r->get_client_id(), 1);
+  EXPECT_EQ(r->get_app_id(), 1);
+
+  r = recipients.get(platform_ios, 0);
+  ASSERT_TRUE(r != nullptr);
+  EXPECT_EQ(r->get_token(), "t1");
+  EXPECT_EQ(r->get_client_id(), 1);
+  EXPECT_EQ(r->get_app_id(), 0);
+}
+
 } /* namespace testing */

@@ -8,6 +8,7 @@ CPP_SRCS += \
 ../src/db/database.cpp \
 ../src/db/db_access_provider.cpp \
 ../src/db/dbcommon.cpp \
+../src/db/server_settings_dao.cpp \
 ../src/db/svrdb.cpp 
 
 CPP_DEPS += \
@@ -15,6 +16,7 @@ CPP_DEPS += \
 ./src/db/database.d \
 ./src/db/db_access_provider.d \
 ./src/db/dbcommon.d \
+./src/db/server_settings_dao.d \
 ./src/db/svrdb.d 
 
 OBJS += \
@@ -22,6 +24,7 @@ OBJS += \
 ./src/db/database.o \
 ./src/db/db_access_provider.o \
 ./src/db/dbcommon.o \
+./src/db/server_settings_dao.o \
 ./src/db/svrdb.o 
 
 
@@ -37,7 +40,7 @@ src/db/%.o: ../src/db/%.cpp src/db/subdir.mk
 clean: clean-src-2f-db
 
 clean-src-2f-db:
-	-$(RM) ./src/db/abstract_db_access_provider.d ./src/db/abstract_db_access_provider.o ./src/db/database.d ./src/db/database.o ./src/db/db_access_provider.d ./src/db/db_access_provider.o ./src/db/dbcommon.d ./src/db/dbcommon.o ./src/db/svrdb.d ./src/db/svrdb.o
+	-$(RM) ./src/db/abstract_db_access_provider.d ./src/db/abstract_db_access_provider.o ./src/db/database.d ./src/db/database.o ./src/db/db_access_provider.d ./src/db/db_access_provider.o ./src/db/dbcommon.d ./src/db/dbcommon.o ./src/db/server_settings_dao.d ./src/db/server_settings_dao.o ./src/db/svrdb.d ./src/db/svrdb.o
 
 .PHONY: clean-src-2f-db
 

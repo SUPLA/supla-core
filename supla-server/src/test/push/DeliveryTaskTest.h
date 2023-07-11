@@ -24,6 +24,7 @@
 #include "asynctask/AsyncTaskTest.h"
 #include "doubles/http/CurlAdapterMock.h"
 #include "doubles/push/AccessTokenProviderMock.h"
+#include "doubles/push/PnThrottlingMock.h"
 
 namespace testing {
 
@@ -32,6 +33,7 @@ class DeliveryTaskTest : public AsyncTaskTest {
   CurlAdapterMock *deliveryTaskCurlAdapter;
   CurlAdapterMock *tokenProviderCurlAdapter;
   AccessTokenProviderMock *provider;
+  PnThrottlingMock throttling;
 
  public:
   DeliveryTaskTest(void);

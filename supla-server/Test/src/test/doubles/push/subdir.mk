@@ -5,14 +5,17 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/doubles/push/AccessTokenProviderMock.cpp \
+../src/test/doubles/push/PnThrottlingMock.cpp \
 ../src/test/doubles/push/PnThrottlingStub.cpp 
 
 CPP_DEPS += \
 ./src/test/doubles/push/AccessTokenProviderMock.d \
+./src/test/doubles/push/PnThrottlingMock.d \
 ./src/test/doubles/push/PnThrottlingStub.d 
 
 OBJS += \
 ./src/test/doubles/push/AccessTokenProviderMock.o \
+./src/test/doubles/push/PnThrottlingMock.o \
 ./src/test/doubles/push/PnThrottlingStub.o 
 
 
@@ -28,7 +31,7 @@ src/test/doubles/push/%.o: ../src/test/doubles/push/%.cpp src/test/doubles/push/
 clean: clean-src-2f-test-2f-doubles-2f-push
 
 clean-src-2f-test-2f-doubles-2f-push:
-	-$(RM) ./src/test/doubles/push/AccessTokenProviderMock.d ./src/test/doubles/push/AccessTokenProviderMock.o ./src/test/doubles/push/PnThrottlingStub.d ./src/test/doubles/push/PnThrottlingStub.o
+	-$(RM) ./src/test/doubles/push/AccessTokenProviderMock.d ./src/test/doubles/push/AccessTokenProviderMock.o ./src/test/doubles/push/PnThrottlingMock.d ./src/test/doubles/push/PnThrottlingMock.o ./src/test/doubles/push/PnThrottlingStub.d ./src/test/doubles/push/PnThrottlingStub.o
 
 .PHONY: clean-src-2f-test-2f-doubles-2f-push
 

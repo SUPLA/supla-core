@@ -15,3 +15,4 @@ UPDATE supla_client SET push_token = 'Token 2', platform = 1, devel_env = 0, app
 UPDATE supla_client SET push_token = 'Token 3', platform = 1, devel_env = 1  WHERE id = 31;
 UPDATE supla_client SET push_token = 'Token 4', platform = 1, devel_env = 1  WHERE id = 32;
 UPDATE supla_client SET push_token = 'Token 5', platform = 1, devel_env = 1  WHERE id = 33;
+UPDATE supla_client SET push_token_update_time = UTC_TIMESTAMP();

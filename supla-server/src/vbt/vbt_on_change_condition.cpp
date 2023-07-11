@@ -24,6 +24,7 @@
 #include <string>
 
 #include "device/extended_value/channel_em_extended_value.h"
+#include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_onoff_value.h"
@@ -42,6 +43,7 @@ supla_vbt_on_change_condition::supla_vbt_on_change_condition(void) {
   resume_op = op_unknown;
   resume_value = 0;
   paused = false;
+  on_change = false;
 }
 
 supla_vbt_on_change_condition::~supla_vbt_on_change_condition(void) {}
@@ -67,14 +69,14 @@ bool supla_vbt_on_change_condition::is_paused(void) const { return paused; }
 void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
   op = op_unknown;
 
-  cJSON *root = cJSON_GetObjectItem(json, "on_change_to");
-  if (!root) {
-    return;
-  }
+  cJSON *root = cJSON_GetObjectItem(json, "on_change");
+  on_change = root != nullptr;
 
-  if (!get_operator_and_value(root, &op, &value)) {
-    op = op_unknown;
-    return;
+  if (!root) {
+    root = cJSON_GetObjectItem(json, "on_change_to");
+    if (!root) {
+      return;
+    }
   }
 
   cJSON *name_json = cJSON_GetObjectItem(root, "name");
@@ -106,7 +108,19 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_power_apparent_sum, "power_apparent_sum"},
         {var_name_power_apparent1, "power_apparent1"},
         {var_name_power_apparent2, "power_apparent2"},
-        {var_name_power_apparent3, "power_apparent3"}};
+        {var_name_power_apparent3, "power_apparent3"},
+        {var_name_fae1, "fae1"},
+        {var_name_fae2, "fae2"},
+        {var_name_fae3, "fae3"},
+        {var_name_fae_sum, "fae_sum"},
+        {var_name_fae_balanced, "fae_balanced"},
+        {var_name_rae1, "rae1"},
+        {var_name_rae2, "rae2"},
+        {var_name_rae3, "rae3"},
+        {var_name_rae_sum, "rae_sum"},
+        {var_name_rae_balanced, "rae_balanced"},
+        {var_name_counter, "counter"},
+        {var_name_calculated_value, "calculated_value"}};
 
     for (auto it = names.begin(); it != names.end(); ++it) {
       if (it->second == cJSON_GetStringValue(name_json)) {
@@ -114,6 +128,15 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         break;
       }
     }
+  }
+
+  if (on_change) {
+    return;
+  }
+
+  if (!get_operator_and_value(root, &op, &value)) {
+    op = op_unknown;
+    return;
   }
 
   cJSON *resume_json = cJSON_GetObjectItem(root, "resume");
@@ -326,6 +349,52 @@ bool supla_vbt_on_change_condition::get_number(
       case var_name_power_apparent3:
         *result = em->get_power_apparent(3);
         break;
+      case var_name_fae1:
+        *result = em->get_fae(1);
+        break;
+      case var_name_fae2:
+        *result = em->get_fae(2);
+        break;
+      case var_name_fae3:
+        *result = em->get_fae(3);
+        break;
+      case var_name_fae_sum:
+        *result = em->get_fae_sum();
+        break;
+      case var_name_fae_balanced:
+        *result = em->get_fae_balanced();
+        break;
+      case var_name_rae1:
+        *result = em->get_rae(1);
+        break;
+      case var_name_rae2:
+        *result = em->get_rae(2);
+        break;
+      case var_name_rae3:
+        *result = em->get_rae(3);
+        break;
+      case var_name_rae_sum:
+        *result = em->get_rae_sum();
+        break;
+      case var_name_rae_balanced:
+        *result = em->get_rae_balanced();
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  } else if (dynamic_cast<supla_channel_ic_extended_value *>(value)) {
+    supla_channel_ic_extended_value *ic =
+        dynamic_cast<supla_channel_ic_extended_value *>(value);
+
+    switch (var_name) {
+      case var_name_counter:
+        *result = ic->get_counter();
+        break;
+      case var_name_calculated_value:
+        *result = ic->get_calculated_value_dbl();
+        break;
       default:
         return false;
     }
@@ -354,25 +423,30 @@ bool supla_vbt_on_change_condition::is_condition_met(_vbt_operator_e op,
 
 bool supla_vbt_on_change_condition::is_condition_met(double old_value,
                                                      double new_value) {
-  bool result = is_condition_met(op, old_value, new_value, value);
+  if (on_change) {
+    return fabs(new_value - old_value) > 0.000001;
+  }
 
   if (paused) {
-    if (result) {
+    if (is_condition_met(resume_op, old_value, new_value, resume_value)) {
       paused = false;
     }
-    return false;
+  } else {
+    bool result = is_condition_met(op, old_value, new_value, value);
+
+    if (result && resume_op != op_unknown) {
+      paused = true;
+    }
+
+    return result;
   }
 
-  if (result && resume_op != op_unknown) {
-    paused = true;
-  }
-
-  return result;
+  return false;
 }
 
 bool supla_vbt_on_change_condition::is_condition_met(
     supla_channel_value *old_value, supla_channel_value *new_value) {
-  if (op == op_unknown) {
+  if (!on_change && op == op_unknown) {
     return false;
   }
 
@@ -393,7 +467,7 @@ bool supla_vbt_on_change_condition::is_condition_met(
 bool supla_vbt_on_change_condition::is_condition_met(
     supla_channel_extended_value *old_value,
     supla_channel_extended_value *new_value) {
-  if (op == op_unknown) {
+  if (!on_change && op == op_unknown) {
     return false;
   }
 

@@ -72,6 +72,8 @@ void DeliveryTaskTest::SetUp(void) {
 
   ON_CALL(*deliveryTaskCurlAdapter, escape)
       .WillByDefault([](const std::string &str) { return str; });
+
+  ON_CALL(throttling, is_delivery_possible).WillByDefault(Return(true));
 }
 
 void DeliveryTaskTest::TearDown(void) {
@@ -158,7 +160,8 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
       .Times(2);
 
   shared_ptr<supla_abstract_asynctask> task =
-      (new supla_pn_delivery_task(1, queue, pool, push, provider))->start();
+      (new supla_pn_delivery_task(1, queue, pool, push, provider, &throttling))
+          ->start();
 
   WaitForState(task, supla_asynctask_state::SUCCESS, 1000000);
 
@@ -181,7 +184,8 @@ TEST_F(DeliveryTaskTest, fcmMessageId) {
       });
 
   shared_ptr<supla_abstract_asynctask> task =
-      (new supla_pn_delivery_task(1, queue, pool, push, provider))->start();
+      (new supla_pn_delivery_task(1, queue, pool, push, provider, &throttling))
+          ->start();
 
   WaitForState(task, supla_asynctask_state::SUCCESS, 1000000);
 
@@ -202,7 +206,8 @@ TEST_F(DeliveryTaskTest, apnsMessageId) {
       });
 
   shared_ptr<supla_abstract_asynctask> task =
-      (new supla_pn_delivery_task(1, queue, pool, push, provider))->start();
+      (new supla_pn_delivery_task(1, queue, pool, push, provider, &throttling))
+          ->start();
 
   WaitForState(task, supla_asynctask_state::SUCCESS, 1000000);
 
@@ -222,7 +227,8 @@ TEST_F(DeliveryTaskTest, fcmRecipientDoesNotExist) {
       .WillRepeatedly(Return(404));
 
   shared_ptr<supla_abstract_asynctask> task =
-      (new supla_pn_delivery_task(1, queue, pool, push, provider))->start();
+      (new supla_pn_delivery_task(1, queue, pool, push, provider, &throttling))
+          ->start();
 
   WaitForState(task, supla_asynctask_state::FAILURE, 1000000);
 
@@ -247,7 +253,8 @@ TEST_F(DeliveryTaskTest, apnsRecipientDoesNotExist) {
       });
 
   shared_ptr<supla_abstract_asynctask> task =
-      (new supla_pn_delivery_task(1, queue, pool, push, provider))->start();
+      (new supla_pn_delivery_task(1, queue, pool, push, provider, &throttling))
+          ->start();
 
   WaitForState(task, supla_asynctask_state::FAILURE, 1000000);
 

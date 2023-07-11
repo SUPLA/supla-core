@@ -18,6 +18,7 @@
 #include "ActionParamTest.h"
 
 #include <list>
+#include <string>
 
 #include "action_copy.h"
 #include "action_rgb.h"

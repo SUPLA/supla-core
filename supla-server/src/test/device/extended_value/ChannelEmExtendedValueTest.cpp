@@ -320,4 +320,42 @@ TEST_F(ChannelEmExtendedValueTest, powerApparent_kVA) {
   EXPECT_DOUBLE_EQ(ev.get_power_apparent_sum(), 130025.06);
 }
 
+TEST_F(ChannelEmExtendedValueTest, forwardActiveEnergy) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.total_forward_active_energy[0] = 122001;
+  v2.total_forward_active_energy[1] = 233002;
+  v2.total_forward_active_energy[2] = 344003;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_fae(1), 1.22001);
+  EXPECT_DOUBLE_EQ(ev.get_fae(2), 2.33002);
+  EXPECT_DOUBLE_EQ(ev.get_fae(3), 3.44003);
+  EXPECT_DOUBLE_EQ(ev.get_fae_sum(), 6.99006);
+}
+
+TEST_F(ChannelEmExtendedValueTest, reverseActiveEnergy) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.total_reverse_active_energy[0] = 122002;
+  v2.total_reverse_active_energy[1] = 233004;
+  v2.total_reverse_active_energy[2] = 344006;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_rae(1), 1.22002);
+  EXPECT_DOUBLE_EQ(ev.get_rae(2), 2.33004);
+  EXPECT_DOUBLE_EQ(ev.get_rae(3), 3.44006);
+  EXPECT_DOUBLE_EQ(ev.get_rae_sum(), 6.99012);
+}
+
+TEST_F(ChannelEmExtendedValueTest, forwardActiveEnergyBalanced) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.total_forward_active_energy_balanced = 123456;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_fae_balanced(), 1.23456);
+}
+
+TEST_F(ChannelEmExtendedValueTest, reverseActiveEnergyBalanced) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.total_reverse_active_energy_balanced = 223456;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_rae_balanced(), 2.23456);
+}
+
 }  // namespace testing

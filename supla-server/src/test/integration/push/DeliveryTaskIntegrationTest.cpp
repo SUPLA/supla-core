@@ -18,6 +18,7 @@
 
 #include "integration/push/DeliveryTaskIntegrationTest.h"
 
+#include "doubles/push/PnThrottlingMock.h"
 #include "gmock/gmock.h"
 #include "http/asynctask_http_thread_bucket.h"
 #include "push/pn_delivery_task.h"
@@ -147,9 +148,13 @@ TEST_F(DeliveryTaskIntegrationTest, notificationLoadedFromDatabase) {
           "{\"aps\":{\"alert\":{\"title\":\"Abcd\",\"body\":\"Efgh\"}}}")))
       .Times(2);
 
+  PnThrottlingMock throttling;
+  EXPECT_CALL(throttling, is_delivery_possible).WillRepeatedly(Return(true));
+
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(2, queue, pool,
-                                  new supla_push_notification(5), provider))
+                                  new supla_push_notification(5), provider,
+                                  &throttling))
           ->start();
 
   WaitForState(task, supla_asynctask_state::SUCCESS, 1000000);

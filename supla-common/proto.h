@@ -274,6 +274,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_REGISTER_PUSH_NOTIFICATION 1100         // ver. >= 20
 #define SUPLA_DS_CALL_SEND_PUSH_NOTIFICATION 1110             // ver. >= 20
 #define SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN 1120           // ver. >= 20
+#define SUPLA_SC_CALL_REGISTER_PN_CLIENT_TOKEN_RESULT 1121    // ver. >= 20
 
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
@@ -2158,8 +2159,10 @@ typedef struct {
   _supla_int_t ActionTrigger;
   unsigned char zero[10];  // Place for future variables
 } TDS_ActionTrigger;
+
 #define SUPLA_PN_TITLE_MAXSIZE 101
 #define SUPLA_PN_BODY_MAXSIZE 256
+#define SUPLA_PN_PROFILE_NAME_MAXSIZE 51
 
 #define PN_SERVER_MANAGED_TITLE (1 << 0)
 #define PN_SERVER_MANAGED_BODY (1 << 1)
@@ -2173,6 +2176,7 @@ typedef struct {
                             // applies to all subsequent notifications.
 
   _supla_int16_t Context;  // >= 0 Channel, -1 Device
+  signed char Reserved[8];
 } TDS_RegisterPushNotification;
 
 typedef struct {
@@ -2196,6 +2200,9 @@ typedef struct {
   unsigned char DevelopmentEnv;
   _supla_int_t Platform;
   _supla_int_t AppId;
+  signed char
+      ProfileName[SUPLA_PN_PROFILE_NAME_MAXSIZE];  // Including the terminating
+                                                   // null byte ('\0').
   unsigned _supla_int16_t
       RealTokenSize;  // It allows you to determine if the maximum size of the
                       // Token variable is sufficient.
@@ -2203,7 +2210,16 @@ typedef struct {
       TokenSize;  // Including the terminating null byte ('\0'). Size
                   // <= 1 removes the token
   signed char Token[SUPLA_PN_CLIENT_TOKEN_MAXSIZE];  // Last variable in struct!
+} TCS_PnClientToken;
+
+typedef struct {
+  TCS_ClientAuthorizationDetails Auth;
+  TCS_PnClientToken Token;  // Last variable in struct!
 } TCS_RegisterPnClientToken;
+
+typedef struct {
+  _supla_int_t ResultCode;
+} TSC_RegisterPnClientTokenResult;
 
 #pragma pack(pop)
 

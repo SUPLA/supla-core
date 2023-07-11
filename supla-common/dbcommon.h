@@ -19,7 +19,7 @@
 #ifndef DBCOMMON_H_
 #define DBCOMMON_H_
 
-#define DB_VERSION "20230529143433"
+#define DB_VERSION "20230612185931"
 
 #include <atomic>
 

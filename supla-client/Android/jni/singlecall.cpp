@@ -22,6 +22,7 @@
 
 #include "actions.h"
 #include "proto.h"
+#include "push.h"
 #include "supla.h"
 #include "suplasinglecall.h"
 
@@ -203,6 +204,25 @@ Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
 
   supla_single_call single_call(&auth_details, protocol_version);
   int result = single_call.execute_action(&action);
+  if (result != SUPLA_RESULTCODE_TRUE) {
+    throwResultException(env, result);
+  }
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_org_supla_android_lib_singlecall_SingleCall_registerPushNotificationClientToken(
+    JNIEnv *env, jobject thiz, jobject context, jobject auth_info, jint app_id,
+    jstring token) {
+  TCS_ClientAuthorizationDetails auth_details = {};
+  int protocol_version = 0;
+  getAuthDetails(env, context, auth_info, &auth_details, &protocol_version);
+
+  TCS_PnClientToken pn_token = {};
+
+  set_token_details(env, &pn_token, app_id, token);
+
+  supla_single_call single_call(&auth_details, protocol_version);
+  int result = single_call.register_pn_client_token(&pn_token);
   if (result != SUPLA_RESULTCODE_TRUE) {
     throwResultException(env, result);
   }

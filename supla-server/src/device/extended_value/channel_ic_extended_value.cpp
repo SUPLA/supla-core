@@ -146,6 +146,10 @@ supla_channel_ic_extended_value::get_calculated_value(void) {
   return 0;
 }
 
+double supla_channel_ic_extended_value::get_calculated_value_dbl(void) {
+  return get_calculated_value() * 0.001;
+}
+
 supla_channel_extended_value *supla_channel_ic_extended_value::
     supla_channel_ic_extended_value::copy(  // NOLINT
         void) {                             // NOLINT

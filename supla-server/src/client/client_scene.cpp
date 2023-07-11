@@ -41,6 +41,11 @@ supla_client_scene::~supla_client_scene() {
 }
 
 void supla_client_scene::set_caption(const char *caption) {
+  if ((this->caption == nullptr && caption == nullptr) ||
+      (this->caption != nullptr && caption != nullptr &&
+       strncmp(this->caption, caption, SUPLA_SCENE_CAPTION_MAXSIZE) == 0)) {
+    return;
+  }
   if (this->caption) {
     free(this->caption);
     this->caption = NULL;
@@ -48,6 +53,14 @@ void supla_client_scene::set_caption(const char *caption) {
 
   if (caption) {
     this->caption = strndup(caption, SUPLA_SCENE_CAPTION_MAXSIZE);
+  }
+
+  const supla_client_scene_change_indicator *ind =
+      dynamic_cast<const supla_client_scene_change_indicator *>(
+          get_change_indicator());
+  if (!ind || !ind->is_scene_changed()) {
+    set_change_indicator(new supla_client_scene_change_indicator(
+        true, ind && ind->is_state_changed()));
   }
 }
 

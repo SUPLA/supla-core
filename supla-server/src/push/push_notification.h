@@ -66,7 +66,7 @@ class supla_push_notification {
   virtual void set_sound(int sound);
   virtual int get_sound(void);
   virtual void set_replacement_map(
-      const std::map<std::string, std::string> &replacement_map);
+      std::map<std::string, std::string> *replacement_map);
   virtual bool apply_json(int user_id, cJSON *json);
   virtual bool apply_json(int user_id, const char *json);
 };

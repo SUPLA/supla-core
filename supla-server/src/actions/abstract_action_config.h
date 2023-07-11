@@ -27,7 +27,7 @@ enum _subjectType_e {
   stChannelGroup,
   stScene,
   stSchedule,
-  stPushNotifiction
+  stPushNotification
 };
 
 class abstract_action_config {

@@ -63,6 +63,7 @@ class supla_single_call {
   virtual ~supla_single_call();
   unsigned char get_min_version_number(void);
   int execute_action(TCS_Action *action);
+  int register_pn_client_token(TCS_PnClientToken *token);
   int get_channel_value(int channel_id, TSC_GetChannelValueResult *vresult);
 };
 
