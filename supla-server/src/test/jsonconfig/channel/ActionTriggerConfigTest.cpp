@@ -744,4 +744,24 @@ TEST_F(ActionTriggerConfigTest, setSubjectIdIfNotSet) {
   delete config;
 }
 
+TEST_F(ActionTriggerConfigTest, sendPush) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"notification\",\"subjectId\":272,\"action\":{\"id\":220,\"param\":{"
+      "\"title\":\"Test 123\",\"body\":\"ABCD\",\"accessIds\":[5]}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_SEND);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stPushNotification);
+
+  delete config;
+}
+
 } /* namespace testing */
