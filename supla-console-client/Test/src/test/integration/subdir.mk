@@ -16,6 +16,7 @@ CPP_SRCS += \
 ../src/test/integration/RegistrationIntegrationTest.cpp \
 ../src/test/integration/SetChannelCaptionIntegrationTest.cpp \
 ../src/test/integration/SetChannelFunctionIntegrationTest.cpp \
+../src/test/integration/SetChannelGroupCaptionIntegrationTest.cpp \
 ../src/test/integration/SetLocationCaptionIntegrationTest.cpp \
 ../src/test/integration/SetRegistrationEnabledIntegrationTest.cpp \
 ../src/test/integration/SetSceneCaptionIntegrationTest.cpp \
@@ -35,6 +36,7 @@ CPP_DEPS += \
 ./src/test/integration/RegistrationIntegrationTest.d \
 ./src/test/integration/SetChannelCaptionIntegrationTest.d \
 ./src/test/integration/SetChannelFunctionIntegrationTest.d \
+./src/test/integration/SetChannelGroupCaptionIntegrationTest.d \
 ./src/test/integration/SetLocationCaptionIntegrationTest.d \
 ./src/test/integration/SetRegistrationEnabledIntegrationTest.d \
 ./src/test/integration/SetSceneCaptionIntegrationTest.d \
@@ -54,6 +56,7 @@ OBJS += \
 ./src/test/integration/RegistrationIntegrationTest.o \
 ./src/test/integration/SetChannelCaptionIntegrationTest.o \
 ./src/test/integration/SetChannelFunctionIntegrationTest.o \
+./src/test/integration/SetChannelGroupCaptionIntegrationTest.o \
 ./src/test/integration/SetLocationCaptionIntegrationTest.o \
 ./src/test/integration/SetRegistrationEnabledIntegrationTest.o \
 ./src/test/integration/SetSceneCaptionIntegrationTest.o \
@@ -73,7 +76,7 @@ src/test/integration/%.o: ../src/test/integration/%.cpp src/test/integration/sub
 clean: clean-src-2f-test-2f-integration
 
 clean-src-2f-test-2f-integration:
-	-$(RM) ./src/test/integration/ActionExecutionIntegrationTest.d ./src/test/integration/ActionExecutionIntegrationTest.o ./src/test/integration/ConnectionIntegrationTest.d ./src/test/integration/ConnectionIntegrationTest.o ./src/test/integration/GetChannelBasicCfg.d ./src/test/integration/GetChannelBasicCfg.o ./src/test/integration/GetChannelBasicCfgIntegrationTest.d ./src/test/integration/GetChannelBasicCfgIntegrationTest.o ./src/test/integration/GetVersionIntegrationTest.d ./src/test/integration/GetVersionIntegrationTest.o ./src/test/integration/IntegrationTest.d ./src/test/integration/IntegrationTest.o ./src/test/integration/MySqlShell.d ./src/test/integration/MySqlShell.o ./src/test/integration/OAuthIntegrationTest.d ./src/test/integration/OAuthIntegrationTest.o ./src/test/integration/ProperlyRegistered.d ./src/test/integration/ProperlyRegistered.o ./src/test/integration/RegistrationIntegrationTest.d ./src/test/integration/RegistrationIntegrationTest.o ./src/test/integration/SetChannelCaptionIntegrationTest.d ./src/test/integration/SetChannelCaptionIntegrationTest.o ./src/test/integration/SetChannelFunctionIntegrationTest.d ./src/test/integration/SetChannelFunctionIntegrationTest.o ./src/test/integration/SetLocationCaptionIntegrationTest.d ./src/test/integration/SetLocationCaptionIntegrationTest.o ./src/test/integration/SetRegistrationEnabledIntegrationTest.d ./src/test/integration/SetRegistrationEnabledIntegrationTest.o ./src/test/integration/SetSceneCaptionIntegrationTest.d ./src/test/integration/SetSceneCaptionIntegrationTest.o ./src/test/integration/SuperuserAuthorization.d ./src/test/integration/SuperuserAuthorization.o ./src/test/integration/SuperuserAuthorizationIntegrationTest.d ./src/test/integration/SuperuserAuthorizationIntegrationTest.o
+	-$(RM) ./src/test/integration/ActionExecutionIntegrationTest.d ./src/test/integration/ActionExecutionIntegrationTest.o ./src/test/integration/ConnectionIntegrationTest.d ./src/test/integration/ConnectionIntegrationTest.o ./src/test/integration/GetChannelBasicCfg.d ./src/test/integration/GetChannelBasicCfg.o ./src/test/integration/GetChannelBasicCfgIntegrationTest.d ./src/test/integration/GetChannelBasicCfgIntegrationTest.o ./src/test/integration/GetVersionIntegrationTest.d ./src/test/integration/GetVersionIntegrationTest.o ./src/test/integration/IntegrationTest.d ./src/test/integration/IntegrationTest.o ./src/test/integration/MySqlShell.d ./src/test/integration/MySqlShell.o ./src/test/integration/OAuthIntegrationTest.d ./src/test/integration/OAuthIntegrationTest.o ./src/test/integration/ProperlyRegistered.d ./src/test/integration/ProperlyRegistered.o ./src/test/integration/RegistrationIntegrationTest.d ./src/test/integration/RegistrationIntegrationTest.o ./src/test/integration/SetChannelCaptionIntegrationTest.d ./src/test/integration/SetChannelCaptionIntegrationTest.o ./src/test/integration/SetChannelFunctionIntegrationTest.d ./src/test/integration/SetChannelFunctionIntegrationTest.o ./src/test/integration/SetChannelGroupCaptionIntegrationTest.d ./src/test/integration/SetChannelGroupCaptionIntegrationTest.o ./src/test/integration/SetLocationCaptionIntegrationTest.d ./src/test/integration/SetLocationCaptionIntegrationTest.o ./src/test/integration/SetRegistrationEnabledIntegrationTest.d ./src/test/integration/SetRegistrationEnabledIntegrationTest.o ./src/test/integration/SetSceneCaptionIntegrationTest.d ./src/test/integration/SetSceneCaptionIntegrationTest.o ./src/test/integration/SuperuserAuthorization.d ./src/test/integration/SuperuserAuthorization.o ./src/test/integration/SuperuserAuthorizationIntegrationTest.d ./src/test/integration/SuperuserAuthorizationIntegrationTest.o
 
 .PHONY: clean-src-2f-test-2f-integration
 
