@@ -2445,7 +2445,7 @@ DELIMITER ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
 DELIMITER ;;
-CREATE DEFINER=`pzygmunt`@`localhost` PROCEDURE `supla_set_channel_group_caption`(IN `_user_id` INT, IN `_channel_group_id` INT, IN `_caption` VARCHAR(255) CHARSET utf8mb4)
+CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_set_channel_group_caption`(IN `_user_id` INT, IN `_channel_group_id` INT, IN `_caption` VARCHAR(255) CHARSET utf8mb4)
     NO SQL
 UPDATE supla_dev_channel_group SET caption = _caption WHERE id = _channel_group_id AND user_id = _user_id ;;
 DELIMITER ;
