@@ -57,7 +57,7 @@ void SetChannelGroupCaptionIntegrationTest::channelGroupMatch(
   }
 }
 
-void SetChannelGroupCaptionIntegrationTest::onChannelCaptionSetResult(
+void SetChannelGroupCaptionIntegrationTest::onChannelGroupCaptionSetResult(
     TSC_SetCaptionResult *result) {
   ASSERT_FALSE(result == NULL);
   channelGroupMatch(result, NULL);

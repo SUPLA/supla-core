@@ -41,7 +41,7 @@ class SetChannelGroupCaptionIntegrationTest : public GetChannelBasicCfg {
  public:
   SetChannelGroupCaptionIntegrationTest();
   virtual ~SetChannelGroupCaptionIntegrationTest();
-  virtual void onChannelCaptionSetResult(TSC_SetCaptionResult *result);
+  virtual void onChannelGroupCaptionSetResult(TSC_SetCaptionResult *result);
   virtual void channelGroupUpdate(TSC_SuplaChannelGroup_B *channel_group);
 };
 
