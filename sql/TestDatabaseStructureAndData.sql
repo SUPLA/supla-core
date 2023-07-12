@@ -2981,3 +2981,9 @@ DELIMITER ;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2023-07-12 22:06:56
+
+ALTER TABLE supla_iodevice ADD user_config VARCHAR(2048) DEFAULT NULL;
+DELIMITER ;;
+CREATE PROCEDURE `supla_set_device_user_config`(IN `_user_id` INT, IN `_device_id` INT, IN `_user_config` VARCHAR(2048) CHARSET utf8mb4, IN `_md5` VARCHAR(32)) BEGIN UPDATE supla_iodevice SET user_config = _user_config WHERE id = _device_id AND user_id = _user_id AND MD5(IFNULL(user_config, '')) = _md5; SELECT STRCMP(user_config, _user_config) FROM supla_iodevice WHERE id = _device_id AND user_id = _user_id; END;;
+CREATE PROCEDURE `supla_set_channel_user_config`(IN `_user_id` INT, IN `_channel_id` INT, IN `_user_config` VARCHAR(2048) CHARSET utf8mb4, IN `_md5` VARCHAR(32)) BEGIN UPDATE supla_dev_channel SET user_config = _user_config WHERE id = _channel_id AND user_id = _user_id AND MD5(IFNULL(user_config, '')) = _md5; SELECT STRCMP(user_config, _user_config) FROM supla_dev_channel WHERE id = _channel_id AND user_id = _user_id; END;;
+DELIMITER ;
