@@ -155,12 +155,13 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
       set_opt_url(StrEq("https://devel-push-apns.supla.org/ybuabnuf548549")))
       .Times(1);
 
-  EXPECT_CALL(*deliveryTaskCurlAdapter,
-              set_opt_post_fields(StrEq(
-                  "{\"aps\":{\"alert\":{\"title\":\"TiTle\",\"body\":\"BoDy\","
-                  "\"title-loc-key\":\"Localized "
-                  "Title\",\"title-loc-args\":[\"t1\",\"t2\"],\"loc-key\":"
-                  "\"Localized Body\",\"loc-args\":[\"b1\",\"b2\"]}}}")))
+  EXPECT_CALL(
+      *deliveryTaskCurlAdapter,
+      set_opt_post_fields(StrEq(
+          "{\"aps\":{\"alert\":{\"title\":\"TiTle\",\"body\":\"BoDy\",\"title-"
+          "loc-key\":\"Localized "
+          "Title\",\"title-loc-args\":[\"t1\",\"t2\"],\"loc-key\":\"Localized "
+          "Body\",\"loc-args\":[\"b1\",\"b2\"]},\"sound\":\"default\"}}")))
       .Times(2);
 
   shared_ptr<supla_abstract_asynctask> task =

@@ -146,8 +146,8 @@ TEST_F(DeliveryTaskIntegrationTest, notificationLoadedFromDatabase) {
 
   EXPECT_CALL(
       *deliveryTaskCurlAdapter,
-      set_opt_post_fields(StrEq(
-          "{\"aps\":{\"alert\":{\"title\":\"Abcd\",\"body\":\"Efgh\"}}}")))
+      set_opt_post_fields(StrEq("{\"aps\":{\"alert\":{\"title\":\"Abcd\","
+                                "\"body\":\"Efgh\"},\"sound\":\"default\"}}")))
       .Times(2);
 
   PnThrottlingMock throttling;
