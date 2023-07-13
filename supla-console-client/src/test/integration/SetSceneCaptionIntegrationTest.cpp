@@ -136,7 +136,7 @@ TEST_F(SetSceneCaptionIntegrationTest, SetFewViarintsOfCaption) {
   iterateUntilDefaultTimeout();
 
   // FullSize -----------------
-  // Database field is limited to 100 characters
+  // Database field is limited to 255 characters
 
   reconnect();
   superuserAuthorize();
