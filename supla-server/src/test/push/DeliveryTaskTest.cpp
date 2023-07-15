@@ -147,6 +147,10 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
       .Times(2);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(StrEq("apns-priority: 10")))
+      .Times(2);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
               set_opt_url(StrEq("https://push-apns.supla.org/2568548549")))
       .Times(1);
 
