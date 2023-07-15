@@ -128,6 +128,10 @@ TEST_F(DeliveryTaskIntegrationTest, notificationLoadedFromDatabase) {
               append_header(StrEq("apns-push-type: alert")))
       .Times(2);
 
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(StrEq("apns-priority: 10")))
+      .Times(2);
+
   EXPECT_CALL(*deliveryTaskCurlAdapter, escape(StrEq("Token 2")))
       .WillOnce(Return("Token%202"));
 
