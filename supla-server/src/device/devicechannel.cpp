@@ -566,10 +566,6 @@ bool supla_device_channel::set_value(
     on_value_changed(old_value, new_value, significant_change, eval != nullptr);
   }
 
-  if (eval) {
-    delete eval;
-  }
-
   if (new_value) {
     delete new_value;
   }
