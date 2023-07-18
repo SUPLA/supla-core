@@ -165,9 +165,10 @@ void supla_client_channel::resetValueValidityTime(void) {
 }
 
 bool supla_client_channel::remote_update_is_possible(void) {
-  if (dynamic_cast<supla_client_channels *>(getContainer())
-          ->getClient()
-          ->get_protocol_version() < 21) {
+  int protocol_version = dynamic_cast<supla_client_channels *>(getContainer())
+                             ->getClient()
+                             ->get_protocol_version();
+  if (protocol_version < 21) {
     int p1 = 0;
     int p2 = 0;
     supla_device_channel::get_parent_channel_id(Func, Param1, Param2, Param4,
@@ -221,10 +222,17 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+
       return true;
+  }
+
+  if (protocol_version >= 21) {
+    switch (Func) {
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+        return true;
+    }
   }
 
   return Type == SUPLA_CHANNELTYPE_BRIDGE && Func == 0;
