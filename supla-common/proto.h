@@ -1114,6 +1114,7 @@ typedef struct {
 
   _supla_int_t Id;
   _supla_int_t ParentChannelId[2];
+  _supla_int16_t ParentChannelRelationType[2];
   _supla_int_t DeviceID;
   _supla_int_t LocationID;
   _supla_int_t Type;
