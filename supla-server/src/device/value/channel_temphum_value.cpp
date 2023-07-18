@@ -127,8 +127,7 @@ bool supla_channel_temphum_value::is_differ(supla_channel_value *value,
 
 void supla_channel_temphum_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
-    int param3, int param4, channel_json_config *json_config,
-    _logger_purpose_t *logger_data) {
+    int param3, int param4, channel_json_config *json_config) {
   if (param2 != 0) {
     set_temperature(get_temperature() + (param2 / 100.00));
   }

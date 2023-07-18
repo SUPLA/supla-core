@@ -58,17 +58,17 @@ TEST_F(ChannelBinarySensorValueTest, setterAndGetter) {
 TEST_F(ChannelBinarySensorValueTest, applyChannelProperties) {
   supla_channel_binary_sensor_value v;
   v.set_hi(true);
-  v.apply_channel_properties(SUPLA_CHANNELTYPE_SENSORNC, 0, 0, 0, 0, 0, nullptr,
+  v.apply_channel_properties(SUPLA_CHANNELTYPE_SENSORNC, 0, 0, 0, 0, 0,
                              nullptr);
   EXPECT_FALSE(v.is_hi());
 
   v.set_hi(true);
-  v.apply_channel_properties(SUPLA_CHANNELTYPE_SENSORNC, 0, 0, 0, 1, 0, nullptr,
+  v.apply_channel_properties(SUPLA_CHANNELTYPE_SENSORNC, 0, 0, 0, 1, 0,
                              nullptr);
   EXPECT_TRUE(v.is_hi());
 
   v.set_hi(true);
-  v.apply_channel_properties(0, 0, 0, 0, 1, 0, nullptr, nullptr);
+  v.apply_channel_properties(0, 0, 0, 0, 1, 0, nullptr);
   EXPECT_FALSE(v.is_hi());
 }
 

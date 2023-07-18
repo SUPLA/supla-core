@@ -59,7 +59,7 @@ TEST_F(ChannelEmValueTest, applyChannelProperties) {
   TElectricityMeter_Value em = {};
   supla_channel_em_value v(&em);
 
-  v.apply_channel_properties(0, 0, 0, 0, 0, 0, &config, nullptr);
+  v.apply_channel_properties(0, 0, 0, 0, 0, 0, &config);
 
   EXPECT_EQ(v.get_em_value()->total_forward_active_energy, 1000000000);
 }

@@ -33,8 +33,7 @@ class supla_channel_em_value : public supla_channel_value {
                                         unsigned char protocol_version,
                                         int param1, int param2, int param3,
                                         int param4,
-                                        channel_json_config *json_config,
-                                        _logger_purpose_t *logger_data);
+                                        channel_json_config *json_config);
   static bool is_function_supported(int func);
 };
 

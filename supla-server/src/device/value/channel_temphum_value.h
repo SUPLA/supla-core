@@ -47,8 +47,7 @@ class supla_channel_temphum_value : public supla_channel_value {
                                         unsigned char protocol_version,
                                         int param1, int param2, int param3,
                                         int param4,
-                                        channel_json_config *json_config,
-                                        _logger_purpose_t *logger_data);
+                                        channel_json_config *json_config);
   virtual std::map<std::string, std::string> get_replacement_map(void);
   static int incorrect_temperature(void);
   static int incorrect_humidity(void);
