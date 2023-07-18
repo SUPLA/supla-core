@@ -221,6 +221,9 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
       return true;
   }
 
