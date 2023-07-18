@@ -82,10 +82,10 @@ supla_device_channel::supla_device_channel(
   this->flags = flags;
   this->offline = flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION;
   this->extended_value = nullptr;
+  this->logger_purpose_extended_value = nullptr;
   this->value_valid_to.tv_sec = 0;
   this->value_valid_to.tv_usec = 0;
   this->json_config = nullptr;
-  this->logger_data = nullptr;
   this->state = nullptr;
 
   if (validity_time_sec > 0) {
@@ -107,12 +107,23 @@ supla_device_channel::supla_device_channel(
     }
   }
 
-  if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER ||
-      SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
-    logger_data = new _logger_purpose_t();
-  }
-
   voltage_analyzers.set_channel_id(id);
+
+  {
+    supla_channel_value *value = _get_value();
+
+    supla_channel_extended_value *eval = value->convert2extended(
+        json_config, func, text_param1, text_param2, param2, param3, nullptr);
+
+    if (eval) {
+      if (this->extended_value) {
+        delete this->extended_value;
+      }
+      this->extended_value = eval;
+    }
+
+    delete value;
+  }
 }
 
 supla_device_channel::~supla_device_channel() {
@@ -137,12 +148,9 @@ supla_device_channel::~supla_device_channel() {
     delete json_config;
   }
 
-  if (logger_data) {
-    if (logger_data->extended_value) {
-      delete logger_data->extended_value;
-    }
-    delete logger_data;
-    logger_data = nullptr;
+  if (logger_purpose_extended_value) {
+    delete logger_purpose_extended_value;
+    logger_purpose_extended_value = nullptr;
   }
 
   if (state) {
@@ -366,33 +374,15 @@ supla_channel_extended_value *supla_device_channel::_get_extended_value(
     bool for_data_logger_purposes) {
   supla_channel_extended_value *result = nullptr;
   lock();
-  int func = get_func();
-  if (supla_channel_ic_extended_value::is_function_supported(func)) {
-    supla_channel_ic_value *icval = nullptr;
-    if (for_data_logger_purposes) {
-      if (logger_data) {
-        icval = new supla_channel_ic_value(logger_data->value);
-      }
-    } else {
-      icval = get_value<supla_channel_ic_value>();
-    }
 
-    if (icval) {
-      result = new supla_channel_ic_extended_value(
-          func, icval->get_ic_value(), get_text_param1(), get_text_param2(),
-          get_param2(), get_param3());
-
-      delete icval;
-    }
+  if (for_data_logger_purposes) {
+    result = logger_purpose_extended_value
+                 ? logger_purpose_extended_value->copy()
+                 : nullptr;
   } else {
-    if (for_data_logger_purposes) {
-      result = logger_data && logger_data->extended_value
-                   ? logger_data->extended_value->copy()
-                   : nullptr;
-    } else {
-      result = extended_value ? extended_value->copy() : nullptr;
-    }
+    result = extended_value ? extended_value->copy() : nullptr;
   }
+
   unlock();
   return result;
 }
@@ -607,7 +597,7 @@ bool supla_device_channel::set_value(
 
   new_value->apply_channel_properties(
       type, get_device()->get_connection()->get_protocol_version(), param1,
-      param2, param3, param4, json_config, logger_data);
+      param2, param3, param4, json_config);
 
   new_value->get_raw_value(this->value);
 
@@ -639,11 +629,20 @@ bool supla_device_channel::set_value(
     delete db;
   }
 
-  bool convertible2extended = is_convertible2extended();
+  supla_channel_extended_value *eval = new_value->convert2extended(
+      json_config, func, text_param1, text_param2, param2, param3,
+      &logger_purpose_extended_value);
+
+  if (eval) {
+    set_extended_value(nullptr, eval);
+  }
 
   if (differ) {
-    on_value_changed(old_value, new_value, significant_change,
-                     convertible2extended);
+    on_value_changed(old_value, new_value, significant_change, eval != nullptr);
+  }
+
+  if (eval) {
+    delete eval;
   }
 
   if (new_value) {
@@ -655,18 +654,6 @@ bool supla_device_channel::set_value(
   }
 
   return differ;
-}
-
-bool supla_device_channel::is_convertible2extended(void) {
-  switch (get_func()) {
-    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_GAS_METER:
-    case SUPLA_CHANNELFNC_IC_WATER_METER:
-    case SUPLA_CHANNELFNC_IC_HEAT_METER:
-      return true;
-  }
-
-  return false;
 }
 
 void supla_device_channel::on_value_changed(supla_channel_value *old_value,
@@ -715,11 +702,11 @@ void supla_device_channel::on_extended_value_changed(
                                  get_id(), old_value, new_value);
 }
 
-void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
+void supla_device_channel::set_extended_value(
+    TSuplaChannelExtendedValue *ev, supla_channel_extended_value *new_value) {
   lock();
 
   supla_channel_extended_value *old_value = extended_value;
-  supla_channel_extended_value *new_value = nullptr;
 
   if (ev) {
     if (supla_channel_em_extended_value::is_ev_type_supported(ev->type)) {
@@ -733,12 +720,12 @@ void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
         db_set_properties(config);
       }
 
-      if (logger_data && !config->should_be_added_to_history()) {
-        if (logger_data->extended_value) {
-          delete logger_data->extended_value;
+      if (!config->should_be_added_to_history()) {
+        if (logger_purpose_extended_value) {
+          delete logger_purpose_extended_value;
         }
 
-        logger_data->extended_value = em->copy();
+        logger_purpose_extended_value = em->copy();
       }
 
       {
@@ -749,12 +736,12 @@ void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
         }
       }
 
-      if (logger_data && config->should_be_added_to_history()) {
-        if (logger_data->extended_value) {
-          delete logger_data->extended_value;
+      if (config->should_be_added_to_history()) {
+        if (logger_purpose_extended_value) {
+          delete logger_purpose_extended_value;
         }
 
-        logger_data->extended_value = em->copy();
+        logger_purpose_extended_value = em->copy();
       }
 
       voltage_analyzers.add_samples(flags, config, em);
@@ -801,6 +788,10 @@ void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
   if (old_value) {
     delete old_value;
   }
+}
+
+void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
+  set_extended_value(ev, nullptr);
 }
 
 void supla_device_channel::assign_rgbw_value(

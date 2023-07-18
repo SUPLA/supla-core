@@ -26,6 +26,7 @@
 #include "jsonconfig/channel/channel_json_config.h"
 #include "proto.h"
 
+class supla_channel_extended_value;
 class supla_channel_value {
  protected:
   char raw_value[SUPLA_CHANNELVALUE_SIZE];
@@ -35,15 +36,18 @@ class supla_channel_value {
   explicit supla_channel_value(const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   virtual ~supla_channel_value(void);
   void get_raw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  void set_raw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  virtual void set_raw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   virtual bool is_differ(supla_channel_value *value, bool *significant_change);
   virtual void apply_channel_properties(int type,
                                         unsigned char protocol_version,
                                         int param1, int param2, int param3,
                                         int param4,
-                                        channel_json_config *json_config,
-                                        _logger_purpose_t *logger_data);
+                                        channel_json_config *json_config);
   virtual std::map<std::string, std::string> get_replacement_map(void);
+  virtual supla_channel_extended_value *convert2extended(
+      channel_json_config *json_config, int func, const char *text_param1,
+      const char *text_param2, int param2, int param3,
+      supla_channel_extended_value **data_logger_purpose);
 };
 
 #endif /*CHANNEL_VALUE_H_*/
