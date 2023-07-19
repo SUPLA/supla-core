@@ -97,11 +97,11 @@ TEST_F(DeliveryTaskIntegrationTest, notificationLoadedFromDatabase) {
               set_opt_url(StrEq("https://push-fcm.supla.org")))
       .Times(1);
 
-  EXPECT_CALL(
-      *deliveryTaskCurlAdapter,
-      set_opt_post_fields(StrEq("{\"message\":{\"token\":\"Token "
-                                "1\",\"android\":{\"notification\":{\"title\":"
-                                "\"Abcd\",\"body\":\"Efgh\"}}}}")))
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              set_opt_post_fields(StrEq(
+                  "{\"message\":{\"token\":\"Token "
+                  "1\",\"android\":{\"priority\":\"high\",\"notification\":{"
+                  "\"title\":\"Abcd\",\"body\":\"Efgh\"}}}}")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,

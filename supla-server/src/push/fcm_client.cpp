@@ -46,6 +46,8 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
   cJSON_AddStringToObject(message, "token", recipient->get_token().c_str());
   cJSON *android = cJSON_CreateObject();
   cJSON_AddItemToObject(message, "android", android);
+  cJSON_AddStringToObject(android, "priority", "high");
+
   cJSON *notification = cJSON_CreateObject();
   cJSON_AddItemToObject(android, "notification", notification);
 
