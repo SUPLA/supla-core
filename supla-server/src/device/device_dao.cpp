@@ -791,7 +791,7 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
     my_bool is_null[11] = {};
-    MYSQL_BIND rbind[18] = {};
+    MYSQL_BIND rbind[19] = {};
 
     int type = 0;
     int func = 0;
@@ -892,22 +892,27 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
     rbind[14].buffer_length = sizeof(unsigned _supla_int_t);
     rbind[14].is_null = &validity_time_is_null;
 
-    rbind[15].buffer_type = MYSQL_TYPE_BLOB;
-    rbind[15].buffer = ev.value;
-    rbind[15].buffer_length = sizeof(ev.value);
-    rbind[15].is_null = &ev_value_is_null;
+    rbind[15].buffer_type = MYSQL_TYPE_TINY;
+    rbind[15].buffer = &ev.type;
+    rbind[15].buffer_length = sizeof(ev.type);
 
-    rbind[16].buffer_type = MYSQL_TYPE_STRING;
-    rbind[16].buffer = user_config;
-    rbind[16].is_null = &is_null[9];
-    rbind[16].buffer_length = sizeof(user_config) - 1;
-    rbind[16].length = &user_config_size;
+    rbind[16].buffer_type = MYSQL_TYPE_BLOB;
+    rbind[16].buffer = ev.value;
+    rbind[16].buffer_length = sizeof(ev.value);
+    rbind[16].is_null = &ev_value_is_null;
+    rbind[16].length = &ev_value_size;
 
     rbind[17].buffer_type = MYSQL_TYPE_STRING;
-    rbind[17].buffer = properties;
-    rbind[17].is_null = &is_null[10];
-    rbind[17].buffer_length = sizeof(properties) - 1;
-    rbind[17].length = &properties_size;
+    rbind[17].buffer = user_config;
+    rbind[17].is_null = &is_null[9];
+    rbind[17].buffer_length = sizeof(user_config) - 1;
+    rbind[17].length = &user_config_size;
+
+    rbind[18].buffer_type = MYSQL_TYPE_STRING;
+    rbind[18].buffer = properties;
+    rbind[18].is_null = &is_null[10];
+    rbind[18].buffer_length = sizeof(properties) - 1;
+    rbind[18].length = &properties_size;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
