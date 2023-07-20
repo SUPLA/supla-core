@@ -90,22 +90,6 @@ supla_device_channel::supla_device_channel(
   }
 
   voltage_analyzers.set_channel_id(id);
-
-  {
-    supla_channel_value *value = _get_value();
-
-    supla_channel_extended_value *eval = value->convert2extended(
-        json_config, func, text_param1, text_param2, param2, param3, nullptr);
-
-    if (eval) {
-      if (this->extended_value) {
-        delete this->extended_value;
-      }
-      this->extended_value = eval;
-    }
-
-    delete value;
-  }
 }
 
 supla_device_channel::~supla_device_channel() {
@@ -661,10 +645,12 @@ void supla_device_channel::set_extended_value(
 
   extended_value = new_value;
 
-  if (new_value && old_value && new_value->is_differ(old_value)) {
+  if (new_value &&
+      (!old_value || (old_value && new_value->is_differ(old_value)))) {
     new_value =
-        new_value->copy();  // We create a copy to call
-                            // on_extended_value_changed when we exit lock
+        new_value
+            ->copy();  // We create a copy to save the data to the database or
+                       // call on_extended_value_changed after leaving the lock
   } else {
     new_value = nullptr;
   }
@@ -676,7 +662,10 @@ void supla_device_channel::set_extended_value(
     supla_device_dao dao(&dba);
     dao.update_channel_extended_value(get_id(), get_user_id(), new_value);
 
-    on_extended_value_changed(old_value, new_value);
+    if (old_value) {
+      on_extended_value_changed(old_value, new_value);
+    }
+
     delete new_value;  // This is a copy of the new value
   }
 
