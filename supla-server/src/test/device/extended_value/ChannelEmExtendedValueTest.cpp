@@ -35,6 +35,34 @@ TEST_F(ChannelEmExtendedValueTest, defaults) {
   EXPECT_EQ(ev.get_price_per_unit(), 0.0);
 }
 
+TEST_F(ChannelEmExtendedValueTest, defaultConstructor) {
+  TSuplaChannelExtendedValue ev_raw1 = {};
+  TSuplaChannelExtendedValue ev_raw2 = {};
+
+  ev_raw1.size = sizeof(TElectricityMeter_ExtendedValue_V2);
+  ev_raw1.type = -1;
+
+  TestHelper::randomize(ev_raw1.value, ev_raw1.size);
+
+  ((TElectricityMeter_ExtendedValue_V2 *)ev_raw1.value)->m_count =
+      EM_MEASUREMENT_COUNT;
+
+  {
+    supla_channel_em_extended_value v(&ev_raw1);
+    EXPECT_FALSE(v.get_raw_value(&ev_raw2));
+  }
+
+  ev_raw1.size = sizeof(TElectricityMeter_ExtendedValue_V2);
+  ev_raw1.type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2;
+
+  {
+    supla_channel_em_extended_value v(&ev_raw1);
+    EXPECT_TRUE(v.get_raw_value(&ev_raw2));
+  }
+
+  EXPECT_EQ(memcmp(&ev_raw1, &ev_raw2, sizeof(TSuplaChannelExtendedValue)), 0);
+}
+
 TEST_F(ChannelEmExtendedValueTest, converstionV1toV2) {
   TElectricityMeter_ExtendedValue v1 = {};
   TSuplaChannelExtendedValue value = {};
@@ -156,7 +184,7 @@ TEST_F(ChannelEmExtendedValueTest, copy) {
   delete copy;
 }
 
-TEST_F(ChannelEmExtendedValueTest, recalculate) {
+TEST_F(ChannelEmExtendedValueTest, calculate) {
   TElectricityMeter_ExtendedValue_V2 v2 = {};
 
   v2.total_forward_active_energy[2] = 5000000;
@@ -175,21 +203,12 @@ TEST_F(ChannelEmExtendedValueTest, recalculate) {
   ev.get_raw_value(&v2);
   v2.total_forward_active_energy[1] = 5000000;
   v2.total_forward_active_energy_balanced = 9000000;
-  ev.set_raw_value(&v2);
+  supla_channel_em_extended_value ev2(&v2, "EUR", 245);
 
-  EXPECT_EQ(ev.get_currency(), "EUR");
-  EXPECT_DOUBLE_EQ(ev.get_total_cost(), 2.45);
-  EXPECT_DOUBLE_EQ(ev.get_total_cost_balanced(), 2.20);
-  EXPECT_DOUBLE_EQ(ev.get_price_per_unit(), 0.0245);
-
-  v2.price_per_unit = 0;
-  memset(v2.currency, 0, 3);
-
-  ev.set_raw_value(&v2);
-  EXPECT_EQ(ev.get_currency(), "");
-  EXPECT_DOUBLE_EQ(ev.get_total_cost(), 0.0);
-  EXPECT_DOUBLE_EQ(ev.get_total_cost_balanced(), 0.0);
-  EXPECT_DOUBLE_EQ(ev.get_price_per_unit(), 0);
+  EXPECT_EQ(ev2.get_currency(), "EUR");
+  EXPECT_DOUBLE_EQ(ev2.get_total_cost(), 2.45);
+  EXPECT_DOUBLE_EQ(ev2.get_total_cost_balanced(), 2.20);
+  EXPECT_DOUBLE_EQ(ev2.get_price_per_unit(), 0.0245);
 }
 
 TEST_F(ChannelEmExtendedValueTest, voltage) {

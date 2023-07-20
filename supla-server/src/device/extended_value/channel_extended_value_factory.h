@@ -16,27 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "channel_multi_extended_value.h"
+#ifndef CHANNEL_EXTENDED_VALUE_FACTORY_H_
+#define CHANNEL_EXTENDED_VALUE_FACTORY_H_
 
-#include <stdlib.h>
-#include <string.h>
+#include "device/extended_value/channel_extended_value.h"
+#include "user/user.h"
 
-supla_channel_multi_extended_value::supla_channel_multi_extended_value(
-    const TSuplaChannelExtendedValue *value)
-    : supla_channel_extended_value() {
-  set_raw_value(value);
-}
+class supla_channel_extended_value_factory {
+ public:
+  supla_channel_extended_value_factory(void);
+  static supla_channel_extended_value *new_value(TSuplaChannelExtendedValue *ev,
+                                                 const char *text_param1,
+                                                 int param2, supla_user *user);
 
-supla_channel_multi_extended_value::~supla_channel_multi_extended_value(void) {}
+  static supla_channel_extended_value *new_value(
+      TSuplaChannelExtendedValue *ev);
+};
 
-// static
-bool supla_channel_multi_extended_value::is_ev_type_supported(char type) {
-  return type == EV_TYPE_MULTI_VALUE;
-}
-
-void supla_channel_multi_extended_value::set_raw_value(
-    const TSuplaChannelExtendedValue *value) {
-  if (value && is_ev_type_supported(value->type)) {
-    supla_channel_extended_value::set_raw_value(value);
-  }
-}
+#endif /*CHANNEL_EXTENDED_VALUE_FACTORY_H_*/

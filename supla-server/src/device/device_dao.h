@@ -94,7 +94,12 @@ class supla_device_dao : public supla_abstract_device_dao {
 
   virtual void set_channel_properties(int user_id, int channel_id,
                                       channel_json_config *config);
+  virtual void update_channel_value(int channel_id, int user_id,
+                                    const char value[SUPLA_CHANNELVALUE_SIZE],
+                                    unsigned _supla_int_t validity_time_sec);
 
+  virtual void update_channel_extended_value(int channel_id, int user_id,
+                                             supla_channel_extended_value *ev);
   virtual channel_json_config *get_channel_config(
       int channel_id, std::string *user_config_md5sum,
       std::string *properties_md5sum);

@@ -205,4 +205,114 @@ TEST_F(DeviceDaoIntegrationTest, setChannelProperties) {
   delete cfg2;
 }
 
+TEST_F(DeviceDaoIntegrationTest, setAndUpdateChanneValue) {
+  char value[SUPLA_CHANNELVALUE_SIZE] = {0x01, 0x11, 0x22, 0x33,
+                                         0x23, 0x24, 0x00, 0x25};
+  dao->update_channel_value(2, 2, value, 10);
+
+  string result = "";
+
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_value WHERE channel_id = 2 "
+      "AND "
+      "user_id = 2 AND TIMESTAMPDIFF(SECOND, update_time, UTC_TIMESTAMP) >= 0 "
+      "AND TIMESTAMPDIFF(SECOND, update_time, UTC_TIMESTAMP) <= 1 AND "
+      "TIMESTAMPDIFF(SECOND, UTC_TIMESTAMP, valid_to) >= 9 AND "
+      "TIMESTAMPDIFF(SECOND, UTC_TIMESTAMP, valid_to) <= 10",
+      &result);
+
+  EXPECT_EQ(result, "v\n0111223323240025\n");
+
+  value[0] = 0x02;
+  dao->update_channel_value(2, 2, value, 0);
+
+  result = "";
+
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_value WHERE "
+      "channel_id = 2 AND user_id = 2 AND TIMESTAMPDIFF(SECOND, update_time, "
+      "UTC_TIMESTAMP) >= 0 AND TIMESTAMPDIFF(SECOND, update_time, "
+      "UTC_TIMESTAMP) <= 1 AND valid_to IS NULL",
+      &result);
+
+  EXPECT_EQ(result, "v\n0211223323240025\n");
+}
+
+TEST_F(DeviceDaoIntegrationTest, setAndUpdateExtendedValue) {
+  TSuplaChannelExtendedValue ev_struct = {};
+
+  ev_struct.type = 10;
+
+  for (int a = 0; a < 15; a++) {
+    ev_struct.value[a] = a;
+  }
+
+  {
+    ev_struct.size = 10;
+    supla_channel_extended_value ev(&ev_struct);
+    dao->update_channel_extended_value(2, 2, &ev);
+  }
+
+  string result = "";
+
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_extended_value WHERE "
+      "channel_id = 2 AND user_id = 2 AND TIMESTAMPDIFF(SECOND, update_time, "
+      "UTC_TIMESTAMP) >= 0 AND TIMESTAMPDIFF(SECOND, update_time, "
+      "UTC_TIMESTAMP) <= 1",
+      &result);
+
+  EXPECT_EQ(result, "v\n00010203040506070809\n");
+
+  {
+    ev_struct.size = 5;
+    supla_channel_extended_value ev(&ev_struct);
+    dao->update_channel_extended_value(2, 2, &ev);
+  }
+
+  result = "";
+
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_extended_value WHERE "
+      "channel_id = 2 AND user_id = 2 AND TIMESTAMPDIFF(SECOND, update_time, "
+      "UTC_TIMESTAMP) >= 0 AND TIMESTAMPDIFF(SECOND, update_time, "
+      "UTC_TIMESTAMP) <= 1",
+      &result);
+
+  EXPECT_EQ(result, "v\n0001020304\n");
+
+  {
+    ev_struct.size = 0;
+    supla_channel_extended_value ev(&ev_struct);
+    dao->update_channel_extended_value(2, 2, &ev);
+  }
+
+  result = "";
+
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_extended_value WHERE "
+      "channel_id = 2 AND user_id = 2 AND TIMESTAMPDIFF(SECOND, update_time, "
+      "UTC_TIMESTAMP) >= 0 AND TIMESTAMPDIFF(SECOND, update_time, "
+      "UTC_TIMESTAMP) <= 1",
+      &result);
+
+  EXPECT_EQ(result, "v\nNULL\n");
+
+  {
+    ev_struct.size = 15;
+    supla_channel_extended_value ev(&ev_struct);
+    dao->update_channel_extended_value(2, 2, &ev);
+  }
+
+  result = "";
+
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_extended_value WHERE "
+      "channel_id = 2 AND user_id = 2 AND TIMESTAMPDIFF(SECOND, update_time, "
+      "UTC_TIMESTAMP) >= 0 AND TIMESTAMPDIFF(SECOND, update_time, "
+      "UTC_TIMESTAMP) <= 1",
+      &result);
+
+  EXPECT_EQ(result, "v\n000102030405060708090A0B0C0D0E\n");
+}
 } /* namespace testing */

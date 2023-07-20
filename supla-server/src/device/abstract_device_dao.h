@@ -24,6 +24,7 @@
 
 #include "jsonconfig/channel/channel_json_config.h"
 #include "jsonconfig/device/device_json_config.h"
+#include "device/extended_value/channel_extended_value.h"
 #include "proto.h"
 #include "tools.h"
 
@@ -97,7 +98,12 @@ class supla_abstract_device_dao {
   // The following methods should be moved to channel_dao
   virtual void set_channel_properties(int user_id, int channel_id,
                                       channel_json_config *config) = 0;
+  virtual void update_channel_value(
+      int channel_id, int user_id, const char value[SUPLA_CHANNELVALUE_SIZE],
+      unsigned _supla_int_t validity_time_sec) = 0;
 
+  virtual void update_channel_extended_value(
+      int channel_id, int user_id, supla_channel_extended_value *ev) = 0;
   virtual channel_json_config *get_channel_config(
       int channel_id, std::string *user_config_md5sum,
       std::string *properties_md5sum) = 0;

@@ -124,8 +124,8 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
       *deliveryTaskCurlAdapter,
       set_opt_post_fields(StrEq(
           "{\"message\":{\"token\":\"0956469ed2650ed09534e4193ef8028f950\","
-          "\"android\":{\"notification\":{\"title\":\"TiTle\",\"body\":"
-          "\"BoDy\",\"title_loc_key\":\"Localized "
+          "\"android\":{\"priority\":\"high\",\"notification\":{\"title\":"
+          "\"TiTle\",\"body\":\"BoDy\",\"title_loc_key\":\"Localized "
           "Title\",\"title_loc_args\":[\"t1\",\"t2\"],\"body_loc_key\":"
           "\"Localized Body\",\"body_loc_args\":[\"b1\",\"b2\"]}}}}")))
       .Times(1);
