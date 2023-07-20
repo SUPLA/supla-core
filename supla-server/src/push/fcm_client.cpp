@@ -132,7 +132,8 @@ bool supla_fcm_client::_send(supla_pn_gateway_access_token *token,
   if (result) {
     result = get_curl_adapter()->get_response_code() == 200;
     if (!result) {
-      if (get_curl_adapter()->get_response_code() == 404) {
+      if (get_curl_adapter()->get_response_code() == 404 ||
+          get_curl_adapter()->get_response_code() == 403) {
         recipient->set_exists(false);
       } else {
         supla_log(LOG_ERR, "The FCM server returned an unexpected code: %i",
