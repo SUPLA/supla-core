@@ -29,8 +29,8 @@ class supla_timer_state_extended_value : public supla_channel_extended_value {
   virtual std::string get_sender_name(supla_user *user, int client_id);
   void update_sender_name(supla_user *user);
   void update_time(void);
-  virtual void set_raw_value_with_update(const TSuplaChannelExtendedValue *value,
-                                 supla_user *user);
+  virtual void set_raw_value_with_update(
+      const TSuplaChannelExtendedValue *value, supla_user *user);
 
  public:
   explicit supla_timer_state_extended_value(

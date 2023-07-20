@@ -672,12 +672,9 @@ void supla_device_channel::set_extended_value(
   unlock();
 
   if (new_value) {  // That means there are differences
-
-    {
-      supla_db_access_provider dba;
-      supla_device_dao dao(&dba);
-      dao.update_channel_extended_value(get_id(), get_user_id(), new_value);
-    }
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+    dao.update_channel_extended_value(get_id(), get_user_id(), new_value);
 
     on_extended_value_changed(old_value, new_value);
     delete new_value;  // This is a copy of the new value
