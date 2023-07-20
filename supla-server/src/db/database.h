@@ -63,9 +63,6 @@ class database : public svrdb {
   bool channel_is_associated_with_vbt(int channel_id);
   bool channel_is_associated_with_push(int channel_id);
   bool channel_is_associated_with_action_trigger(int UserID, int ChannelID);
-  void update_channel_value(int channel_id, int user_id,
-                            const char value[SUPLA_CHANNELVALUE_SIZE],
-                            unsigned _supla_int_t validity_time_sec);
 
   void update_channel_properties(int channel_id, int user_id,
                                  const char *properties);

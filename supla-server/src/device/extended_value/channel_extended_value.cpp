@@ -52,6 +52,10 @@ supla_channel_extended_value::~supla_channel_extended_value(void) {
   }
 }
 
+char supla_channel_extended_value::get_type() {
+  return get_value_ptr() ? get_value_ptr()->type : 0;
+}
+
 supla_channel_extended_value *supla_channel_extended_value::copy(  // NOLINT
     void) {                                                        // NOLINT
   return new supla_channel_extended_value(get_value_ptr());
@@ -142,4 +146,10 @@ bool supla_channel_extended_value::is_differ(
          (this->value->size != 0 &&
           memcmp(value->value->value, this->value->value, this->value->size) !=
               0);
+}
+
+void supla_channel_extended_value::get_value(char *buffer) {
+  if (get_value_size()) {
+    memcpy(buffer, get_value_ptr()->value, get_value_size());
+  }
 }

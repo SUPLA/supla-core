@@ -31,8 +31,12 @@ class supla_channel_em_extended_value : public supla_channel_extended_value,
  private:
   void set_raw_value(const TElectricityMeter_ExtendedValue_V2 *_value,
                      const char *text_param1, int *param2);
+  void set_raw_value(const TSuplaChannelExtendedValue *value,
+                     const char *text_param1, int *param2);
 
  public:
+  explicit supla_channel_em_extended_value(
+      const TSuplaChannelExtendedValue *value);
   supla_channel_em_extended_value(const TSuplaChannelExtendedValue *value,
                                   const char *text_param1, int param2);
   supla_channel_em_extended_value(

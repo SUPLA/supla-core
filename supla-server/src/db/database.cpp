@@ -1010,36 +1010,6 @@ bool database::channel_is_associated_with_action_trigger(int UserID,
   return result;
 }
 
-void database::update_channel_value(int channel_id, int user_id,
-                                    const char value[SUPLA_CHANNELVALUE_SIZE],
-                                    unsigned _supla_int_t validity_time_sec) {
-  MYSQL_STMT *stmt = NULL;
-  MYSQL_BIND pbind[4];
-  memset(pbind, 0, sizeof(pbind));
-
-  char value_hex[SUPLA_CHANNELVALUE_SIZE * 2 + 1];
-  st_bin2hex(value_hex, value, SUPLA_CHANNELVALUE_SIZE);
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&channel_id;
-
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&user_id;
-
-  pbind[2].buffer_type = MYSQL_TYPE_STRING;
-  pbind[2].buffer = (char *)value_hex;
-  pbind[2].buffer_length = SUPLA_CHANNELVALUE_SIZE * 2;
-
-  pbind[3].buffer_type = MYSQL_TYPE_LONG;
-  pbind[3].buffer = (char *)&validity_time_sec;
-
-  const char sql[] = "CALL `supla_update_channel_value`(?, ?, unhex(?), ?)";
-
-  if (stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
-    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
-  }
-}
-
 void database::update_channel_properties(int channel_id, int user_id,
                                          const char *properties) {
   MYSQL_STMT *stmt = NULL;

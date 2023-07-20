@@ -16,27 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "channel_multi_extended_value.h"
+#ifndef DeviceDaoIntegrationTest_H_
+#define DeviceDaoIntegrationTest_H_
 
-#include <stdlib.h>
-#include <string.h>
+#include "db/db_access_provider.h"
+#include "device/device_dao.h"
+#include "integration/IntegrationTest.h"
 
-supla_channel_multi_extended_value::supla_channel_multi_extended_value(
-    const TSuplaChannelExtendedValue *value)
-    : supla_channel_extended_value() {
-  set_raw_value(value);
-}
+namespace testing {
 
-supla_channel_multi_extended_value::~supla_channel_multi_extended_value(void) {}
+class DeviceDaoIntegrationTest : public IntegrationTest, public Test {
+ protected:
+  supla_db_access_provider *dba;
+  supla_device_dao *dao;
 
-// static
-bool supla_channel_multi_extended_value::is_ev_type_supported(char type) {
-  return type == EV_TYPE_MULTI_VALUE;
-}
+ public:
+  DeviceDaoIntegrationTest();
+  virtual ~DeviceDaoIntegrationTest();
+  virtual void SetUp();
+  virtual void TearDown();
+};
 
-void supla_channel_multi_extended_value::set_raw_value(
-    const TSuplaChannelExtendedValue *value) {
-  if (value && is_ev_type_supported(value->type)) {
-    supla_channel_extended_value::set_raw_value(value);
-  }
-}
+} /* namespace testing */
+
+#endif /* DeviceDaoIntegrationTest_H_ */

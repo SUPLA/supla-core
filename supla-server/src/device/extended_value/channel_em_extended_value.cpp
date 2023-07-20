@@ -29,9 +29,37 @@
 using std::string;
 
 supla_channel_em_extended_value::supla_channel_em_extended_value(
+    const TSuplaChannelExtendedValue *value)
+    : supla_channel_extended_value(), supla_channel_billing_value() {
+  set_raw_value(value, nullptr, nullptr);
+}
+
+supla_channel_em_extended_value::supla_channel_em_extended_value(
     const TSuplaChannelExtendedValue *value, const char *text_param1,
     int param2)
     : supla_channel_extended_value(), supla_channel_billing_value() {
+  set_raw_value(value, text_param1, &param2);
+}
+
+supla_channel_em_extended_value::supla_channel_em_extended_value(
+    const TElectricityMeter_ExtendedValue_V2 *value, const char *text_param1,
+    int param2) {
+  set_raw_value(value, text_param1, &param2);
+}
+
+void supla_channel_em_extended_value::set_raw_value(
+    const TSuplaChannelExtendedValue *value) {
+  set_raw_value(value, nullptr, nullptr);
+}
+
+void supla_channel_em_extended_value::set_raw_value(
+    const TElectricityMeter_ExtendedValue_V2 *value) {
+  set_raw_value(value, nullptr, nullptr);
+}
+
+void supla_channel_em_extended_value::set_raw_value(
+    const TSuplaChannelExtendedValue *value, const char *text_param1,
+    int *param2) {
   TElectricityMeter_ExtendedValue_V2 v2 = {};
 
   if (value) {
@@ -45,26 +73,12 @@ supla_channel_em_extended_value::supla_channel_em_extended_value(
       if (!srpc_evtool_v2_extended2emextended(value, &v2)) {
         return;
       }
+    } else {
+      return;
     }
   }
 
-  set_raw_value(&v2, text_param1, &param2);
-}
-
-supla_channel_em_extended_value::supla_channel_em_extended_value(
-    const TElectricityMeter_ExtendedValue_V2 *value, const char *text_param1,
-    int param2) {
-  set_raw_value(value, text_param1, &param2);
-}
-
-void supla_channel_em_extended_value::set_raw_value(
-    const TSuplaChannelExtendedValue *value) {
-  return supla_channel_extended_value::set_raw_value(value);
-}
-
-void supla_channel_em_extended_value::set_raw_value(
-    const TElectricityMeter_ExtendedValue_V2 *value) {
-  set_raw_value(value, nullptr, nullptr);
+  set_raw_value(&v2, text_param1, param2);
 }
 
 void supla_channel_em_extended_value::set_raw_value(
@@ -78,29 +92,26 @@ void supla_channel_em_extended_value::set_raw_value(
   TElectricityMeter_ExtendedValue_V2 *value =
       (TElectricityMeter_ExtendedValue_V2 *)new_value.value;
 
-  double sum = value->total_forward_active_energy[0] * 0.00001;
-  sum += value->total_forward_active_energy[1] * 0.00001;
-  sum += value->total_forward_active_energy[2] * 0.00001;
+  if (text_param1 && param2) {
+    double sum = value->total_forward_active_energy[0] * 0.00001;
+    sum += value->total_forward_active_energy[1] * 0.00001;
+    sum += value->total_forward_active_energy[2] * 0.00001;
 
-  if (param2) {
     value->price_per_unit = *param2;
-  }
-
-  if (text_param1) {
     supla_channel_billing_value::get_currency(value->currency, text_param1);
+
+    value->total_cost = get_cost(value->price_per_unit, sum);
+
+    if (value->measured_values & EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED) {
+      value->total_cost_balanced =
+          get_cost(value->price_per_unit,
+                   value->total_forward_active_energy_balanced * 0.00001);
+    } else {
+      value->total_cost_balanced = 0;
+    }
   }
 
-  value->total_cost = get_cost(value->price_per_unit, sum);
-
-  if (value->measured_values & EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED) {
-    value->total_cost_balanced =
-        get_cost(value->price_per_unit,
-                 value->total_forward_active_energy_balanced * 0.00001);
-  } else {
-    value->total_cost_balanced = 0;
-  }
-
-  set_raw_value(&new_value);
+  supla_channel_extended_value::set_raw_value(&new_value);
 }
 
 supla_channel_em_extended_value::~supla_channel_em_extended_value(void) {}
@@ -360,7 +371,8 @@ double supla_channel_em_extended_value::get_rae_balanced(void) {
 
 bool supla_channel_em_extended_value::get_raw_value(
     TSuplaChannelExtendedValue *value) {
-  return supla_channel_extended_value::get_raw_value(value);
+  return is_ev_type_supported(get_type()) &&
+         supla_channel_extended_value::get_raw_value(value);
 }
 
 bool supla_channel_em_extended_value::get_raw_value(

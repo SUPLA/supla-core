@@ -94,6 +94,7 @@ class supla_device_channel {
                        const char *text_param3, bool hidden, unsigned int flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
                        unsigned _supla_int_t validity_time_sec,
+                       supla_channel_extended_value *extended_value,
                        const char *user_config, const char *properties);
   virtual ~supla_device_channel();
 

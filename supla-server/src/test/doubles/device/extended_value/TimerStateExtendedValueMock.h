@@ -31,8 +31,10 @@ class TimerStateExtendedValueMock : public supla_timer_state_extended_value {
   TimerStateExtendedValueMock(const TSuplaChannelExtendedValue *value,
                               supla_user *user);
   virtual ~TimerStateExtendedValueMock(void);
+  void set_raw_value_with_update(const TSuplaChannelExtendedValue *value,
+                                 supla_user *user);
 
-  MOCK_METHOD1(get_sender_name, std::string(int client_id));
+  MOCK_METHOD2(get_sender_name, std::string(supla_user *user, int client_id));
 };
 
 } /* namespace testing */

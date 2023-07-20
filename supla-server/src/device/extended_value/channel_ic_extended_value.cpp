@@ -26,6 +26,12 @@
 using std::string;
 
 supla_channel_ic_extended_value::supla_channel_ic_extended_value(
+    const TSuplaChannelExtendedValue *value)
+    : supla_channel_extended_value(), supla_channel_billing_value() {
+  set_raw_value(value);
+}
+
+supla_channel_ic_extended_value::supla_channel_ic_extended_value(
     int func, const TDS_ImpulseCounter_Value *ic_val, const char *text_param1,
     const char *text_param2, int param2, int param3)
     : supla_channel_extended_value(), supla_channel_billing_value() {
@@ -79,6 +85,14 @@ supla_channel_ic_extended_value::supla_channel_ic_extended_value(
 }
 
 supla_channel_ic_extended_value::~supla_channel_ic_extended_value(void) {}
+
+void supla_channel_ic_extended_value::set_raw_value(
+    const TSuplaChannelExtendedValue *value) {
+  if (value && is_ev_type_supported(value->type) &&
+      value->size == sizeof(TSC_ImpulseCounter_ExtendedValue)) {
+    supla_channel_extended_value::set_raw_value(value);
+  }
+}
 
 _supla_int_t supla_channel_ic_extended_value::get_total_cost(void) {
   TSC_ImpulseCounter_ExtendedValue ic_ev = {};
@@ -170,4 +184,9 @@ bool supla_channel_ic_extended_value::is_function_supported(int func) {
   }
 
   return false;
+}
+
+// static
+bool supla_channel_ic_extended_value::is_ev_type_supported(char type) {
+  return type == EV_TYPE_IMPULSE_COUNTER_DETAILS_V1;
 }
