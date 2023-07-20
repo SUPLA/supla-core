@@ -315,4 +315,5 @@ TEST_F(DeviceDaoIntegrationTest, setAndUpdateExtendedValue) {
 
   EXPECT_EQ(result, "v\n000102030405060708090A0B0C0D0E\n");
 }
+
 } /* namespace testing */
