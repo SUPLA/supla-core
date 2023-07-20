@@ -620,7 +620,8 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
       "v.`valid_to` >= UTC_TIMESTAMP() THEN TIME_TO_SEC(TIMEDIFF(v.`valid_to`, "
       "UTC_TIMESTAMP())) + 2 ELSE NULL END, ev.`type`, ev.`value`, "
       "c.`user_config`, c.`properties` FROM `supla_dev_channel` c  LEFT JOIN "
-      "`supla_dev_channel_value` v ON v.channel_id = c.id WHERE "
+      "`supla_dev_channel_value` v ON v.channel_id = c.id LEFT JOIN "
+      "`supla_dev_channel_extended_value` ev ON ev.channel_id = c.id WHERE "
       "c.`iodevice_id` = ? ORDER BY c.`channel_number`";
 
   MYSQL_BIND pbind = {};
