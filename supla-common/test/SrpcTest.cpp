@@ -2232,7 +2232,7 @@ SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
 
 SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
     srpc_sc_async_channelpack_update_e, TSC_SuplaChannelPack_E,
-    TSC_SuplaChannel_E, SUPLA_SC_CALL_CHANNELPACK_UPDATE_E, 9081, 9491,
+    TSC_SuplaChannel_E, SUPLA_SC_CALL_CHANNELPACK_UPDATE_E, 9018, 9491,
     sc_channel_pack_e);
 
 //---------------------------------------------------------
