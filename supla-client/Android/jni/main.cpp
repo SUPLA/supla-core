@@ -505,11 +505,17 @@ void supla_cb_channel_update(void *_suplaclient, void *user_data,
     fid = supla_client_GetFieldID(env, cch, "DeviceID", "I");
     env->SetIntField(ch, fid, channel->DeviceID);
 
-    fid = supla_client_GetFieldID(env, cch, "ParantChannel1Id", "I");
+    fid = supla_client_GetFieldID(env, cch, "ParentChannel1Id", "I");
     env->SetIntField(ch, fid, channel->ParentChannelId[0]);
 
-    fid = supla_client_GetFieldID(env, cch, "ParantChannel2Id", "I");
+    fid = supla_client_GetFieldID(env, cch, "ParentChannel2Id", "I");
     env->SetIntField(ch, fid, channel->ParentChannelId[1]);
+
+    fid = supla_client_GetFieldID(env, cch, "ParentChannel1RelationType", "I");
+    env->SetIntField(ch, fid, channel->ParentChannelRelationType[0]);
+
+    fid = supla_client_GetFieldID(env, cch, "ParentChannel2RelationType", "I");
+    env->SetIntField(ch, fid, channel->ParentChannelRelationType[1]);
 
     fid = supla_client_GetFieldID(env, cch, "LocationID", "I");
     env->SetIntField(ch, fid, channel->LocationID);
