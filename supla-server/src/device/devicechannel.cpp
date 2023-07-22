@@ -43,16 +43,16 @@ using std::list;
 using std::shared_ptr;
 
 supla_device_channel::supla_device_channel(
-    supla_device *device, int id, int number, int type, int func, int param1,
-    int param2, int param3, int param4, const char *text_param1,
-    const char *text_param2, const char *text_param3, bool hidden,
-    unsigned int flags, const char value[SUPLA_CHANNELVALUE_SIZE],
+    supla_device *device, int id, unsigned char channel_number, int type,
+    int func, int param1, int param2, int param3, int param4,
+    const char *text_param1, const char *text_param2, const char *text_param3,
+    bool hidden, unsigned int flags, const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec,
     supla_channel_extended_value *extended_value, const char *user_config,
     const char *properties)
     : supla_abstract_common_channel_properties(),
       id(id),
-      number(number),
+      channel_number(channel_number),
       type(type),
       param2(param2),
       param3(param3),
@@ -159,7 +159,9 @@ void supla_device_channel::unlock(void) { lck_unlock(lck); }
 
 int supla_device_channel::get_id(void) { return id; }
 
-int supla_device_channel::get_number(void) { return number; }
+unsigned char supla_device_channel::get_channel_number(void) {
+  return channel_number;
+}
 
 int supla_device_channel::get_func(void) {
   lock();
@@ -374,7 +376,7 @@ void supla_device_channel::get_config(TSD_ChannelConfig *config,
 
   memset(config, 0, sizeof(TSD_ChannelConfig));
   config->Func = get_func();
-  config->ChannelNumber = get_number();
+  config->ChannelNumber = get_channel_number();
   config->ConfigType = config_type;
 
   if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&

@@ -81,7 +81,7 @@ class supla_client_channel : public supla_client_objcontainer_item,
       unsigned _supla_int_t validity_time_sec, const char *user_config,
       const char *em_subc_user_config);
   virtual ~supla_client_channel(void);
-  unsigned char get_channel_number(void);
+  virtual unsigned char get_channel_number(void);
   void mark_for_remote_update(int mark);
   bool remote_update_is_possible(void);
   void proto_get(TSC_SuplaChannel *channel, supla_client *client);

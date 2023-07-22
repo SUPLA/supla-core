@@ -120,7 +120,7 @@ supla_device_channel *supla_device_channels::find_channel(int id) {
 supla_device_channel *supla_device_channels::find_channel_by_number(
     int number) {
   for (auto it = channels.begin(); it != channels.end(); ++it) {
-    if ((*it)->get_number() == number) {
+    if ((*it)->get_channel_number() == number) {
       return *it;
     }
   }
@@ -265,7 +265,7 @@ bool supla_device_channels::reset_counters(int channel_id) {
       (channel->get_flags() & SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS)) {
     TSD_DeviceCalCfgRequest request = {};
 
-    request.ChannelNumber = channel->get_number();
+    request.ChannelNumber = channel->get_channel_number();
     request.Command = SUPLA_CALCFG_CMD_RESET_COUNTERS;
     request.SuperUserAuthorized = true;
 
@@ -285,7 +285,7 @@ bool supla_device_channels::recalibrate(int channel_id,
       (channel->get_flags() & SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE)) {
     TSD_DeviceCalCfgRequest request = {};
 
-    request.ChannelNumber = channel->get_number();
+    request.ChannelNumber = channel->get_channel_number();
     request.Command = SUPLA_CALCFG_CMD_RECALIBRATE;
     request.SenderID = caller.convert_to_sender_id();
     request.SuperUserAuthorized = superuser_authorized;
@@ -429,7 +429,7 @@ void supla_device_channels::async_set_channel_value(
     TSD_SuplaChannelGroupNewValue s;
     memset(&s, 0, sizeof(TSD_SuplaChannelGroupNewValue));
 
-    s.ChannelNumber = channel->get_number();
+    s.ChannelNumber = channel->get_channel_number();
     s.DurationMS = duration_ms;
     s.SenderID = caller.convert_to_sender_id();
     s.GroupID = group_id;
@@ -441,7 +441,7 @@ void supla_device_channels::async_set_channel_value(
     TSD_SuplaChannelNewValue s;
     memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));
 
-    s.ChannelNumber = channel->get_number();
+    s.ChannelNumber = channel->get_channel_number();
     s.DurationMS = duration_ms;
     s.SenderID = group_id ? 0 : caller.convert_to_sender_id();
     memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
@@ -607,7 +607,7 @@ bool supla_device_channels::calcfg_request(const supla_caller &caller,
     memset(&drequest, 0, sizeof(TSD_DeviceCalCfgRequest));
 
     drequest.SenderID = caller.convert_to_sender_id();
-    drequest.ChannelNumber = channel->get_number();
+    drequest.ChannelNumber = channel->get_channel_number();
     drequest.Command = request->Command;
     drequest.SuperUserAuthorized = superuser_authorized;
     drequest.DataType = request->DataType;
@@ -654,7 +654,7 @@ bool supla_device_channels::get_channel_state_async(
     memcpy(&drequest, request, sizeof(TCSD_ChannelStateRequest));
 
     drequest.SenderID = caller.convert_to_sender_id();
-    drequest.ChannelNumber = channel->get_number();
+    drequest.ChannelNumber = channel->get_channel_number();
 
     srpc_csd_async_get_channel_state(get_srpc(), &drequest);
 
@@ -686,7 +686,7 @@ map<int, int> supla_device_channels::get_functions(void) {
   map<int, int> result;
 
   for (auto it = channels.begin(); it != channels.end(); ++it) {
-    result.insert({(*it)->get_number(), (*it)->get_func()});
+    result.insert({(*it)->get_channel_number(), (*it)->get_func()});
   }
 
   return result;

@@ -52,7 +52,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   void *lck;
   supla_device *device;
   const int id;
-  const unsigned char number;
+  const unsigned char channel_number;
   const int type;
   int func;
   int param1;
@@ -91,8 +91,9 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   virtual int get_channel_id(unsigned char channel_number);
 
  public:
-  supla_device_channel(supla_device *device, int id, int number, int type,
-                       int func, int param1, int param2, int param3, int param4,
+  supla_device_channel(supla_device *device, int id,
+                       unsigned char channel_number, int type, int func,
+                       int param1, int param2, int param3, int param4,
                        const char *text_param1, const char *text_param2,
                        const char *text_param3, bool hidden, unsigned int flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
@@ -107,7 +108,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   void lock(void);
   void unlock(void);
   int get_id(void);
-  int get_number(void);
+  virtual unsigned char get_channel_number(void);
   int get_user_id(void);
   supla_user *get_user();
   supla_device *get_device();

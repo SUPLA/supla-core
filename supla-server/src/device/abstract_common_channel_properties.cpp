@@ -80,8 +80,10 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
         hvac_config config(json_config);
         TChannelConfig_HVAC hvac = {};
         if (config.get_config(&hvac)) {
-          p1 = get_channel_id(hvac.MainThermometerChannelNo);
-          p1_relation_type = RELATION_MAIN_TERMOMETER;
+          if (hvac.MainThermometerChannelNo != get_channel_number()) {
+            p1 = get_channel_id(hvac.MainThermometerChannelNo);
+            p1_relation_type = RELATION_MAIN_TERMOMETER;
+          }
 
           if (hvac.AuxThermometerType >=
                   SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
