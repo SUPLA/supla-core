@@ -46,6 +46,8 @@ class supla_client_channels : public supla_client_objcontainer {
                                     e_objc_scope scope);
   int available_data_types_for_remote(e_objc_scope scope);
   void _load(database *db, e_objc_scope scope);
+  void for_each(std::function<void(supla_client_channel *, bool *will_continue)>
+                    on_channel);
 
  public:
   explicit supla_client_channels(supla_client *client);
@@ -66,6 +68,7 @@ class supla_client_channels : public supla_client_objcontainer {
                      std::function<void(supla_device *)> method);
   int get_device_id(int channel_id);
   int get_any_channel_id_with_deviceid(int device_id);
+  int get_channel_id(unsigned char channel_number);
 };
 
 #endif /* CLIENTCHANNELS_H_ */

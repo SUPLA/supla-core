@@ -1108,13 +1108,22 @@ typedef struct {
   char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
 } TSC_SuplaChannel_D;                           // ver. >= 15
 
+#define RELATION_OPENING_SENSOR 1
+#define RELATION_PARTIAL_OPENING_SENSOR 2
+#define RELATION_METER 3
+#define RELATION_MAIN_TERMOMETER 4
+#define RELATION_AUX_THERMOMETER_FLOOR 5
+#define RELATION_AUX_THERMOMETER_WATER 6
+#define RELATION_AUX_THERMOMETER_GENERIC_HEATER 7
+#define RELATION_AUX_THERMOMETER_GENERIC_COOLER 8
+
 typedef struct {
   // server -> client
   char EOL;  // End Of List
 
   _supla_int_t Id;
   _supla_int_t ParentChannelId[2];
-  _supla_int16_t ParentChannelRelationType[2];
+  _supla_int16_t ParentChannelRelationType[2];  // RELATION_*
   _supla_int_t DeviceID;
   _supla_int_t LocationID;
   _supla_int_t Type;

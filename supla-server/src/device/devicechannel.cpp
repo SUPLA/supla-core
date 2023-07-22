@@ -50,7 +50,8 @@ supla_device_channel::supla_device_channel(
     unsigned _supla_int_t validity_time_sec,
     supla_channel_extended_value *extended_value, const char *user_config,
     const char *properties)
-    : id(id),
+    : supla_abstract_common_channel_properties(),
+      id(id),
       number(number),
       type(type),
       param2(param2),
@@ -150,56 +151,6 @@ int supla_device_channel::func_list_filter(int func_list, int type) {
   }
 
   return func_list;
-}
-
-// static
-void supla_device_channel::get_parent_channel_id(int func, int param1,
-                                                 int param2, int param4,
-                                                 int *parent1, int *parent2) {
-  if (parent1) {
-    *parent1 = 0;
-  }
-
-  if (parent2) {
-    *parent2 = 0;
-  }
-
-  int p1 = 0;
-  int p2 = 0;
-
-  switch (func) {
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
-      p1 = param1;
-      p2 = param2;
-      break;
-    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_GAS_METER:
-    case SUPLA_CHANNELFNC_IC_WATER_METER:
-    case SUPLA_CHANNELFNC_IC_HEAT_METER:
-      p1 = param4;
-      break;
-  }
-
-  if (p1) {
-    if (parent1) {
-      *parent1 = p1;
-    } else if (parent2) {
-      *parent2 = p1;
-    }
-  }
-  if (p2) {
-    if (parent1 && *parent1 == 0) {
-      *parent1 = p2;
-    } else if (parent2 && *parent2 == 0) {
-      *parent2 = p2;
-    }
-  }
 }
 
 void supla_device_channel::lock(void) { lck_lock(lck); }
@@ -752,6 +703,10 @@ void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
   set_extended_value(ev, nullptr);
 }
 
+int supla_device_channel::get_channel_id(unsigned char channel_number) {
+  return get_device()->get_channels()->get_channel_id(channel_number);
+}
+
 void supla_device_channel::assign_rgbw_value(
     char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness,
     char brightness, char on_off) {
@@ -912,8 +867,7 @@ list<int> supla_device_channel::master_channel(void) {
   list<int> result;
   int p1 = 0;
   int p2 = 0;
-  get_parent_channel_id(get_func(), get_param1(), get_param2(), get_param4(),
-                        &p1, &p2);
+  get_parent_channel_id(&p1, &p2, nullptr, nullptr);
 
   if (p1) {
     result.push_back(p1);
