@@ -93,15 +93,14 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
                 if (hvac.MainThermometerChannelNo == get_channel_number()) {
                   p1 = id;
                   p1_relation_type = RELATION_MAIN_TERMOMETER;
-                }
-
-                if (hvac.AuxThermometerType >=
-                        SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
-                    hvac.AuxThermometerType <=
-                        SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER &&
-                    hvac.AuxThermometerChannelNo == get_channel_number()) {
-                  p2 = id;
-                  p2_relation_type = hvac.AuxThermometerType + 3;
+                } else if (hvac.AuxThermometerType >=
+                               SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
+                           hvac.AuxThermometerType <=
+                               SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER &&
+                           hvac.AuxThermometerChannelNo ==
+                               get_channel_number()) {
+                  p1 = id;
+                  p1_relation_type = hvac.AuxThermometerType + 3;
                 }
               }
               delete json_config;
