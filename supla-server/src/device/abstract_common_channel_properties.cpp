@@ -109,6 +109,10 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
 
             break;
         }
+
+        if (p1 && p2) {
+          *will_continue = false;
+        }
       });
     }
 
