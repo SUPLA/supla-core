@@ -77,7 +77,10 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
 
       for_each([&](int id, supla_abstract_common_channel_properties *props,
                    bool *will_continue) -> void {
-        switch (props->get_device_id() == device_id && props->get_func()) {
+        if (props->get_device_id() != device_id) {
+          return;
+        }
+        switch (props->get_func()) {
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
