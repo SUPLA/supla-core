@@ -72,11 +72,12 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
       p1_relation_type = RELATION_METER;
       break;
     case SUPLA_CHANNELFNC_THERMOMETER:
-    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
+      int device_id = get_device_id();
 
       for_each([&](int id, supla_abstract_common_channel_properties *props,
                    bool *will_continue) -> void {
-        switch (props->get_func()) {
+        switch (props->get_device_id() == device_id && props->get_func()) {
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
@@ -106,7 +107,9 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
             break;
         }
       });
-      break;
+    }
+
+    break;
   }
 
   if (p1 && parent1) {

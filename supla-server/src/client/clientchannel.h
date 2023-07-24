@@ -106,7 +106,7 @@ class supla_client_channel : public supla_client_objcontainer_item,
   virtual channel_json_config *get_json_config();
   void set_func(int Func);
   void setCaption(const char *Caption);
-  int get_device_id();
+  virtual int get_device_id();
   short get_manufacturer_id();
   short get_product_id();
   int get_flags();

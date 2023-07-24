@@ -159,6 +159,8 @@ void supla_device_channel::unlock(void) { lck_unlock(lck); }
 
 int supla_device_channel::get_id(void) { return id; }
 
+int supla_device_channel::get_device_id(void) { return get_device()->get_id(); }
+
 unsigned char supla_device_channel::get_channel_number(void) {
   return channel_number;
 }

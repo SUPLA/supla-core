@@ -112,6 +112,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   void lock(void);
   void unlock(void);
   int get_id(void);
+  virtual int get_device_id(void);
   virtual unsigned char get_channel_number(void);
   int get_user_id(void);
   supla_user *get_user();

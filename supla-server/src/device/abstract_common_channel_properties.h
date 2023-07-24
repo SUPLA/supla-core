@@ -24,6 +24,7 @@
 class channel_json_config;
 class supla_abstract_common_channel_properties {
  protected:
+  virtual int get_device_id(void) = 0;
   virtual int get_func(void) = 0;
   virtual int get_param1(void) = 0;
   virtual int get_param2(void) = 0;
