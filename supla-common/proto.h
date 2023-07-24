@@ -1307,6 +1307,8 @@ typedef struct {
 #define ACTION_ENABLE 200
 #define ACTION_DISABLE 210
 #define ACTION_SEND 220
+#define ACTION_SET_HVAC_MODE 230
+#define ACTION_SET_HVAC_TEMPERATURE 240
 #define ACTION_READ 1000
 #define ACTION_SET 2000
 #define ACTION_EXECUTE 3000
@@ -1329,6 +1331,18 @@ typedef struct {
   char OnOff;
   char Reserved[8];
 } TAction_RGBW_Parameters;  // ver. >= 19
+
+typedef struct {
+  unsigned char Mode;  // SUPLA_HVAC_MODE_
+} TAction_SetHVACMode;
+
+typedef struct {
+  _supla_int16_t
+      SetpointTemperatureMin;  // * 0.01 Celcius degree - used for heating
+  _supla_int16_t
+      SetpointTemperatureMax;     // * 0.01 - Celcius degree used for cooling
+  unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
+} TAction_SetHVACTemperature;
 
 typedef struct {
   _supla_int_t ActionId;
