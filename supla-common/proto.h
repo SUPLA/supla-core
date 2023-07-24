@@ -171,6 +171,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SCENE_PACK_MAXCOUNT 20                       // ver. >= 18
 #define SUPLA_SCENE_STATE_PACK_MAXCOUNT 20                 // ver. >= 18
 
+#define SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT 100  // ver. >= 21
+
 #define SUPLA_DCS_CALL_GETVERSION 10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT 20
 #define SUPLA_SDC_CALL_VERSIONERROR 30
@@ -224,6 +226,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380            // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B 381          // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE 390   // ver. >= 9
+#define SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE 395        // ver. >= 21
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400            // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B 401          // ver. >= 15
 #define SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE 405    // ver. >= 10
@@ -1106,15 +1109,6 @@ typedef struct {
   char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
 } TSC_SuplaChannel_D;                           // ver. >= 15
 
-#define RELATION_OPENING_SENSOR 1
-#define RELATION_PARTIAL_OPENING_SENSOR 2
-#define RELATION_METER 3
-#define RELATION_MAIN_TERMOMETER 4
-#define RELATION_AUX_THERMOMETER_FLOOR 5
-#define RELATION_AUX_THERMOMETER_WATER 6
-#define RELATION_AUX_THERMOMETER_GENERIC_HEATER 7
-#define RELATION_AUX_THERMOMETER_GENERIC_COOLER 8
-
 typedef struct {
   // server -> client
 
@@ -1199,6 +1193,29 @@ typedef struct {
       items[SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT];  // Last variable in
                                                          // struct!
 } TSC_SuplaChannelGroupRelationPack;                     // ver. >= 9
+
+#define CHANNEL_RELATION_TYPE_OPENING_SENSOR 1
+#define CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR 2
+#define CHANNEL_RELATION_TYPE_METER 3
+#define CHANNEL_RELATION_TYPE_MAIN_TERMOMETER 4
+#define CHANNEL_RELATION_TYPE_AUX_THERMOMETER_FLOOR 5
+#define CHANNEL_RELATION_TYPE_AUX_THERMOMETER_WATER 6
+#define CHANNEL_RELATION_TYPE_AUX_THERMOMETER_GENERIC_HEATER 7
+#define CHANNEL_RELATION_TYPE_AUX_THERMOMETER_GENERIC_COOLER 8
+
+typedef struct {
+  char EOL;  // End Of List
+  _supla_int_t Id;
+  _supla_int_t ParentId;
+  _supla_int16_t Type;       // CHANNEL_RELATION_TYPE_
+} TSC_SuplaChannelRelation;  //  ver. >= 21
+
+typedef struct {
+  _supla_int_t count;
+  _supla_int_t total_left;
+  TSC_SuplaChannelRelation
+      items[SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelRelationPack;
 
 typedef struct {
   // server -> client

@@ -44,8 +44,8 @@ void SetChannelFunctionIntegrationTest::channelMatch(
     }
   }
 
-  if (match & 0x1 &&
-      (match & 0x2 || expectedResultCode != SUPLA_RESULTCODE_TRUE)) {
+  if ((match & 0x1) &&
+      ((match & 0x2) || expectedResultCode != SUPLA_RESULTCODE_TRUE)) {
     cancelIteration();
   }
 }

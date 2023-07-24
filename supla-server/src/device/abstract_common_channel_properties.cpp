@@ -59,9 +59,9 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
       p1 = get_param1();
-      p1_relation_type = RELATION_OPENING_SENSOR;
+      p1_relation_type = CHANNEL_RELATION_TYPE_OPENING_SENSOR;
       p2 = get_param2();
-      p2_relation_type = RELATION_PARTIAL_OPENING_SENSOR;
+      p2_relation_type = CHANNEL_RELATION_TYPE_OPENING_SENSOR;
       break;
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
@@ -69,7 +69,7 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       p1 = get_param4();
-      p1_relation_type = RELATION_METER;
+      p1_relation_type = CHANNEL_RELATION_TYPE_METER;
       break;
     case SUPLA_CHANNELFNC_THERMOMETER:
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
@@ -92,7 +92,7 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
               if (config.get_config(&hvac)) {
                 if (hvac.MainThermometerChannelNo == get_channel_number()) {
                   p1 = id;
-                  p1_relation_type = RELATION_MAIN_TERMOMETER;
+                  p1_relation_type = CHANNEL_RELATION_TYPE_MAIN_TERMOMETER;
                 }
 
                 if (hvac.AuxThermometerType >=

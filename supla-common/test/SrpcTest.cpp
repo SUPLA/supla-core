@@ -534,7 +534,8 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_DS_CALL_SET_DEVICE_CONFIG,
               SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT,
               SUPLA_SD_CALL_SET_DEVICE_CONFIG,
-              SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT};
+              SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT,
+              SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE};
   }
 
   return {};
@@ -2535,6 +2536,86 @@ TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_minimum_size) {
                       sizeof(TSC_SuplaChannelGroupRelationPack) -
                           ((SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT - 1) *
                            sizeof(TSC_SuplaChannelGroupRelation))));
+
+  free(cr_rd.data.sc_channelgroup_relation_pack);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// CHANNEL RELATION PACK
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, srpc_sc_async_channel_relation_pack_update_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelRelationPack, pack);
+
+  pack.count = SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channel_relation_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_sc_async_channel_relation_pack_update_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelRelationPack, pack);
+
+  pack.count = SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channel_relation_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_sc_async_channel_relation_pack_update_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelRelationPack, pack);
+
+  pack.count = SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT;
+
+  ASSERT_GT(srpc_sc_async_channel_relation_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE, 1131);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_relation_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_relation_pack, &pack,
+                      sizeof(TSC_SuplaChannelRelationPack)));
+
+  free(cr_rd.data.sc_channel_relation_pack);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_sc_async_channel_relation_pack_update_with_minimum_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelRelationPack, pack);
+
+  pack.count = 1;
+
+  ASSERT_GT(srpc_sc_async_channel_relation_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE, 42);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_relation_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_relation_pack, &pack,
+                      sizeof(TSC_SuplaChannelRelationPack) -
+                          ((SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT - 1) *
+                           sizeof(TSC_SuplaChannelRelation))));
 
   free(cr_rd.data.sc_channelgroup_relation_pack);
   srpc_free(srpc);

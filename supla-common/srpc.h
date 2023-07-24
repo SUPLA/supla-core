@@ -138,6 +138,7 @@ union TsrpcDataPacketData {
   TSC_SuplaChannelGroupPack *sc_channelgroup_pack;
   TSC_SuplaChannelGroupPack_B *sc_channelgroup_pack_b;
   TSC_SuplaChannelGroupRelationPack *sc_channelgroup_relation_pack;
+  TSC_SuplaChannelRelationPack *sc_channel_relation_pack;
   TSC_SuplaChannelValuePack *sc_channelvalue_pack;
   TSC_SuplaChannelValuePack_B *sc_channelvalue_pack_b;
   TSC_SuplaChannelExtendedValuePack *sc_channelextendedvalue_pack;
@@ -369,6 +370,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_pack_update_b(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_relation_pack_update(
     void *_srpc, TSC_SuplaChannelGroupRelationPack
                      *channelgroup_relation_pack);  // ver. >= 9
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_relation_pack_update(
+    void *_srpc, TSC_SuplaChannelRelationPack *relation_pack);  // ver. >= 21
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update(
     void *_srpc, TSC_SuplaChannelValuePack *channelvalue_pack);  // ver. >= 9
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update_b(

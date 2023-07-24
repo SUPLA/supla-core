@@ -1279,6 +1279,17 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         }
         break;
 
+      case SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE:
+        if (srpc->sdp.data_size <= sizeof(TSC_SuplaChannelRelationPack) &&
+            srpc->sdp.data_size >= (sizeof(TSC_SuplaChannelRelationPack) -
+                                    (sizeof(TSC_SuplaChannelRelation) *
+                                     SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT))) {
+          rd->data.sc_channel_relation_pack =
+              (TSC_SuplaChannelRelationPack *)calloc(
+                  1, sizeof(TSC_SuplaChannelRelationPack));
+        }
+        break;
+
       case SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE:
         if (srpc->sdp.data_size <= sizeof(TSC_SuplaChannelValuePack) &&
             srpc->sdp.data_size >= (sizeof(TSC_SuplaChannelValuePack) -
@@ -1732,6 +1743,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
     case SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT:
     case SUPLA_SD_CALL_SET_DEVICE_CONFIG:
     case SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT:
+    case SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE:
       return 21;
   }
 
@@ -2597,6 +2609,21 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_relation_pack_update(
 
   return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE,
                          (char *)channelgroup_relation_pack, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_relation_pack_update(
+    void *_srpc, TSC_SuplaChannelRelationPack *relation_pack) {
+  if (relation_pack->count < 1 ||
+      relation_pack->count > SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT) {
+    return 0;
+  }
+
+  unsigned _supla_int_t size =
+      sizeof(TSC_SuplaChannelRelationPack) - sizeof(relation_pack->items) +
+      (sizeof(TSC_SuplaChannelRelation) * relation_pack->count);
+
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE,
+                         (char *)relation_pack, size);
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update(
