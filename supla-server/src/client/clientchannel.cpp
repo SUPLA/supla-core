@@ -129,6 +129,8 @@ int supla_client_channel::get_param1() { return Param1; }
 
 int supla_client_channel::get_param2() { return Param2; }
 
+int supla_client_channel::get_param3() { return Param3; }
+
 int supla_client_channel::get_param4() { return Param4; }
 
 channel_json_config *supla_client_channel::get_json_config() {

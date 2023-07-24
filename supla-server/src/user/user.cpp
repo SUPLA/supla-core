@@ -341,7 +341,7 @@ bool supla_user::get_channel_value(
 
     if (result) {
       list<int> related_list =
-          device->get_channels()->related_channel(channel_id);
+          device->get_channels()->get_related_channel_ids(channel_id, false);
 
       auto it = related_list.begin();
       bool sub_value_exists = false;
@@ -595,7 +595,8 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
 
   shared_ptr<supla_device> device = devices->get(device_id);
   if (device != nullptr) {
-    list<int> master_list = device->get_channels()->master_channel(channel_id);
+    list<int> master_list =
+        device->get_channels()->get_related_channel_ids(channel_id, true);
 
     device = nullptr;
 
@@ -647,8 +648,8 @@ bool supla_user::device_calcfg_request(const supla_caller &caller,
       switch (device->get_channels()->get_channel_func(channel_id)) {
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH: {
-          list<int> related =
-              device->get_channels()->related_channel(channel_id);
+          list<int> related = device->get_channels()->get_related_channel_ids(
+              channel_id, false);
           if (related.size() == 1) {
             device_id = 0;
             channel_id = related.front();

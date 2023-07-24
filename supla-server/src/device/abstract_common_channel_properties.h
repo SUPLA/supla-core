@@ -19,12 +19,15 @@
 #ifndef ABSTRACT_COMMON_CHANNEL_PROPERTIES_H_
 #define ABSTRACT_COMMON_CHANNEL_PROPERTIES_H_
 
+#include <functional>
+
 class channel_json_config;
 class supla_abstract_common_channel_properties {
  protected:
   virtual int get_func(void) = 0;
   virtual int get_param1(void) = 0;
   virtual int get_param2(void) = 0;
+  virtual int get_param3(void) = 0;
   virtual int get_param4(void) = 0;
   virtual channel_json_config *get_json_config(void) = 0;
   virtual int get_channel_id(unsigned char channel_number) = 0;
@@ -32,6 +35,7 @@ class supla_abstract_common_channel_properties {
   void get_parent_channel_id(int *parent1, int *parent2,
                              short *parent1_relation_type,
                              short *parent2_relation_type);
+  void get_sub_channel_id(int *sub1, int *sub2);
 
  public:
   supla_abstract_common_channel_properties(void);

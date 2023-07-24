@@ -354,24 +354,18 @@ int supla_device_channels::get_channel_type(int channel_id) {
   return 0;
 }
 
-list<int> supla_device_channels::mr_channel(int channel_id, bool master) {
+list<int> supla_device_channels::get_related_channel_ids(int channel_id,
+                                                         bool parent) {
   list<int> result;
 
   supla_device_channel *channel = find_channel(channel_id);
 
   if (channel) {
-    result = master ? channel->master_channel() : channel->related_channel();
+    result =
+        parent ? channel->parent_channel_ids() : channel->sub_channel_ids();
   }
 
   return result;
-}
-
-list<int> supla_device_channels::master_channel(int channel_id) {
-  return mr_channel(channel_id, true);
-}
-
-list<int> supla_device_channels::related_channel(int channel_id) {
-  return mr_channel(channel_id, false);
 }
 
 bool supla_device_channels::channel_exists(int channel_id) {

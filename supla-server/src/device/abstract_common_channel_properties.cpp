@@ -127,3 +127,69 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
     }
   }
 }
+
+void supla_abstract_common_channel_properties::get_sub_channel_id(int *sub1,
+                                                                  int *sub2) {
+  int s1 = 0;
+  int s2 = 0;
+
+  if (sub1) {
+    *sub1 = 0;
+  }
+
+  if (sub2) {
+    *sub2 = 0;
+  }
+
+  switch (get_func()) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      s1 = get_param2();
+      s2 = get_param3();
+      break;
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH: {
+      s1 = get_param1();
+    } break;
+
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      s1 = get_param2();
+      break;
+
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+
+      channel_json_config *json_config = get_json_config();
+      if (json_config) {
+        hvac_config config(json_config);
+        TChannelConfig_HVAC hvac = {};
+        if (config.get_config(&hvac)) {
+          if (hvac.MainThermometerChannelNo != get_channel_number()) {
+            s1 = get_channel_id(hvac.MainThermometerChannelNo);
+          }
+
+          if (hvac.AuxThermometerType >=
+                  SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
+              hvac.AuxThermometerType <=
+                  SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER) {
+            s2 = get_channel_id(hvac.AuxThermometerChannelNo);
+          }
+        }
+        delete json_config;
+      }
+      break;
+  }
+
+  if (s1 && sub1) {
+    *sub1 = s1;
+  }
+
+  if (s2 && sub2) {
+    *sub2 = s2;
+  }
+}

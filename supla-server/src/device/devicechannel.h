@@ -117,7 +117,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   int get_type(void);
   virtual int get_param1(void);
   virtual int get_param2(void);
-  int get_param3(void);
+  virtual int get_param3(void);
   virtual int get_param4(void);
   const char *get_text_param1(void);
   const char *get_text_param2(void);
@@ -146,8 +146,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
                                  int related_channel_id,
                                  unsigned int disables_local_operation);
 
-  std::list<int> master_channel(void);
-  std::list<int> related_channel(void);
+  std::list<int> parent_channel_ids(void);
+  std::list<int> sub_channel_ids(void);
   virtual channel_json_config *get_json_config(void);
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);

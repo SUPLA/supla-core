@@ -40,8 +40,6 @@ class supla_device_channels {
   supla_device_channel *find_channel(int id);
   supla_device_channel *find_channel_by_number(int number);
 
-  std::list<int> mr_channel(int channel_id, bool master);
-
   void async_set_channel_value(supla_device_channel *channel,
                                const supla_caller &caller, int group_id,
                                unsigned char eol,
@@ -114,8 +112,7 @@ class supla_device_channels {
 
   bool get_dgf_transparency(int channel_id, unsigned short *mask);
 
-  std::list<int> master_channel(int channel_id);
-  std::list<int> related_channel(int channel_id);
+  std::list<int> get_related_channel_ids(int channel_id, bool parent);
   std::list<int> get_all_ids(void);
   int get_channel_id(unsigned char channel_number);
   bool channel_exists(int channel_id);

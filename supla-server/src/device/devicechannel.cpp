@@ -818,54 +818,21 @@ unsigned int supla_device_channel::get_value_duration(void) {
   return 0;
 }
 
-list<int> supla_device_channel::related_channel(void) {
+list<int> supla_device_channel::sub_channel_ids(void) {
   list<int> result;
 
-  // Only channels associated with NO / NC sensors can return more than one
-  // channel!!!
-  // See supla_user::get_channel_value
+  int sub1 = 0;
+  int sub2 = 0;
+  get_sub_channel_id(&sub1, &sub2);
 
-  switch (get_func()) {
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-
-      // The order is important !!!
-      // 1st Param2
-      // 2nd Param3
-
-      // Always add Param2
-      result.push_back(param2);
-
-      if (param3) {
-        result.push_back(param3);
-      }
-
-      break;
-    case SUPLA_CHANNELFNC_POWERSWITCH:
-    case SUPLA_CHANNELFNC_LIGHTSWITCH: {
-      int param1 = get_param1();
-      if (param1) {
-        result.push_back(param1);
-      }
-    } break;
-
-    case SUPLA_CHANNELFNC_STAIRCASETIMER:
-
-      if (param2) {
-        result.push_back(param2);
-      }
-
-      break;
-  }
+  // We always add both even if there is zero
+  result.push_back(sub1);
+  result.push_back(sub2);
 
   return result;
 }
 
-list<int> supla_device_channel::master_channel(void) {
+list<int> supla_device_channel::parent_channel_ids(void) {
   list<int> result;
   int p1 = 0;
   int p2 = 0;
