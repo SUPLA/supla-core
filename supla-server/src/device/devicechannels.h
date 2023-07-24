@@ -76,7 +76,7 @@ class supla_device_channels {
   void access_channel(int channel_id,
                       std::function<void(supla_device_channel *)> on_channel);
 
-  void for_each_channel(std::function<void(supla_device_channel *)> on_channel);
+  void for_each(std::function<void(supla_device_channel *, bool *)> on_channel);
 
   bool get_channel_value(int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
                          char *online, unsigned _supla_int_t *validity_time_sec,

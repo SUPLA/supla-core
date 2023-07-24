@@ -71,30 +71,41 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
       p1 = get_param4();
       p1_relation_type = RELATION_METER;
       break;
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+    case SUPLA_CHANNELFNC_THERMOMETER:
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
 
-      channel_json_config *json_config = get_json_config();
-      if (json_config) {
-        hvac_config config(json_config);
-        TChannelConfig_HVAC hvac = {};
-        if (config.get_config(&hvac)) {
-          if (hvac.MainThermometerChannelNo != get_channel_number()) {
-            p1 = get_channel_id(hvac.MainThermometerChannelNo);
-            p1_relation_type = RELATION_MAIN_TERMOMETER;
-          }
+      for_each([&](int id, supla_abstract_common_channel_properties *props,
+                   bool *will_continue) -> void {
+        switch (props->get_func()) {
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
 
-          if (hvac.AuxThermometerType >=
-                  SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
-              hvac.AuxThermometerType <=
-                  SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER) {
-            p2 = get_channel_id(hvac.AuxThermometerChannelNo);
-            p2_relation_type = hvac.AuxThermometerType + 3;
-          }
+            channel_json_config *json_config = get_json_config();
+            if (json_config) {
+              hvac_config config(json_config);
+              TChannelConfig_HVAC hvac = {};
+              if (config.get_config(&hvac)) {
+                if (hvac.MainThermometerChannelNo == get_channel_number()) {
+                  p1 = id;
+                  p1_relation_type = RELATION_MAIN_TERMOMETER;
+                }
+
+                if (hvac.AuxThermometerType >=
+                        SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
+                    hvac.AuxThermometerType <=
+                        SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER &&
+                    hvac.AuxThermometerChannelNo == get_channel_number()) {
+                  p2 = id;
+                  p2_relation_type = hvac.AuxThermometerType + 3;
+                }
+              }
+              delete json_config;
+            }
+
+            break;
         }
-        delete json_config;
-      }
+      });
       break;
   }
 

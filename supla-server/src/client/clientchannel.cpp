@@ -516,3 +516,13 @@ int supla_client_channel::get_channel_id(unsigned char channel_number) {
   return dynamic_cast<supla_client_channels *>(getContainer())
       ->get_channel_id(channel_number);
 }
+
+void supla_client_channel::for_each(
+    std::function<void(int, supla_abstract_common_channel_properties *, bool *)>
+        on_channel_properties) {
+  dynamic_cast<supla_client_channels *>(getContainer())
+      ->for_each(
+          [&](supla_client_channel *channel, bool *will_continue) -> void {
+            on_channel_properties(channel->getId(), channel, will_continue);
+          });
+}

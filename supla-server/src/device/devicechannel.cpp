@@ -709,6 +709,15 @@ int supla_device_channel::get_channel_id(unsigned char channel_number) {
   return get_device()->get_channels()->get_channel_id(channel_number);
 }
 
+void supla_device_channel::for_each(
+    std::function<void(int, supla_abstract_common_channel_properties *, bool *)>
+        on_channel_properties) {
+  get_device()->get_channels()->for_each(
+      [&](supla_device_channel *channel, bool *will_continue) -> void {
+        on_channel_properties(channel->get_id(), channel, will_continue);
+      });
+}
+
 void supla_device_channel::assign_rgbw_value(
     char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness,
     char brightness, char on_off) {

@@ -136,10 +136,14 @@ void supla_device_channels::access_channel(
   }
 }
 
-void supla_device_channels::for_each_channel(
-    function<void(supla_device_channel *)> on_channel) {
+void supla_device_channels::for_each(
+    function<void(supla_device_channel *, bool *)> on_channel) {
   for (auto it = channels.begin(); it != channels.end(); ++it) {
-    on_channel(*it);
+    bool will_continue = true;
+    on_channel(*it, &will_continue);
+    if (!will_continue) {
+      break;
+    }
   }
 }
 
@@ -1191,12 +1195,13 @@ channel_json_config *supla_device_channels::get_json_config(int channel_id) {
 
 unsigned int supla_device_channels::get_value_validity_time_left_msec(void) {
   unsigned int result = 0;
-  for_each_channel([&result](supla_device_channel *channel) -> void {
-    unsigned int time = channel->get_value_validity_time_left_msec();
-    if (time > result) {
-      result = time;
-    }
-  });
+  for_each(
+      [&result](supla_device_channel *channel, bool *will_continue) -> void {
+        unsigned int time = channel->get_value_validity_time_left_msec();
+        if (time > result) {
+          result = time;
+        }
+      });
   return result;
 }
 
@@ -1228,17 +1233,18 @@ vector<supla_channel_fragment> supla_device_channels::get_fragments(void) {
   vector<supla_channel_fragment> result;
   result.reserve(channels.size());
 
-  for_each_channel([&result](supla_device_channel *channel) -> void {
-    supla_channel_fragment f;
-    f = channel;
-    result.push_back(f);
-  });
+  for_each(
+      [&result](supla_device_channel *channel, bool *will_continue) -> void {
+        supla_channel_fragment f;
+        f = channel;
+        result.push_back(f);
+      });
 
   return result;
 }
 
 void supla_device_channels::send_configs_to_device(void) {
-  for_each_channel([](supla_device_channel *channel) -> void {
+  for_each([](supla_device_channel *channel, bool *will_continue) -> void {
     channel->send_config_to_device();
   });
 }

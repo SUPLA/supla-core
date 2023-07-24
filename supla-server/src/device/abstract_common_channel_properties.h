@@ -37,6 +37,11 @@ class supla_abstract_common_channel_properties {
                              short *parent2_relation_type);
   void get_sub_channel_id(int *sub1, int *sub2);
 
+  virtual void for_each(
+      std::function<void(int, supla_abstract_common_channel_properties *,
+                         bool *)>
+          on_channel_properties) = 0;
+
  public:
   supla_abstract_common_channel_properties(void);
   virtual ~supla_abstract_common_channel_properties(void);

@@ -69,6 +69,10 @@ class supla_client_channel : public supla_client_objcontainer_item,
   bool get_cs_extended_value(std::shared_ptr<supla_device> device,
                              int channel_id,
                              TSC_SuplaChannelExtendedValue *cev);
+  virtual void for_each(
+      std::function<void(int, supla_abstract_common_channel_properties *,
+                         bool *)>
+          on_channel_properties);
 
  public:
   supla_client_channel(
