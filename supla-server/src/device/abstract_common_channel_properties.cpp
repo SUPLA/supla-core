@@ -81,7 +81,7 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
 
-            channel_json_config *json_config = get_json_config();
+            channel_json_config *json_config = props->get_json_config();
             if (json_config) {
               hvac_config config(json_config);
               TChannelConfig_HVAC hvac = {};
