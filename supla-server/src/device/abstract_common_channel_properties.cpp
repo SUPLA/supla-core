@@ -98,32 +98,18 @@ void supla_abstract_common_channel_properties::get_parent_channel_id(
       break;
   }
 
-  if (p1) {
-    if (parent1) {
-      *parent1 = p1;
-      if (parent1_relation_type) {
-        *parent1_relation_type = p1_relation_type;
-      }
-    } else if (parent2) {
-      *parent2 = p1;
-      if (parent2_relation_type) {
-        *parent2_relation_type = p1_relation_type;
-      }
+  if (p1 && parent1) {
+    *parent1 = p1;
+    if (parent1_relation_type) {
+      *parent1_relation_type = p1_relation_type;
     }
   }
-  if (p2) {
-    if (parent1 && *parent1 == 0) {
-      *parent1 = p2;
 
-      if (parent1_relation_type) {
-        *parent1_relation_type = p2_relation_type;
-      }
-    } else if (parent2 && *parent2 == 0) {
-      *parent2 = p2;
+  if (p2 && parent2) {
+    *parent2 = p2;
 
-      if (parent2_relation_type) {
-        *parent2_relation_type = p2_relation_type;
-      }
+    if (parent2_relation_type) {
+      *parent2_relation_type = p2_relation_type;
     }
   }
 }
