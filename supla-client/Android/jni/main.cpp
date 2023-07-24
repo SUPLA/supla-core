@@ -479,7 +479,7 @@ jobject supla_channelvalue_to_jobject(void *_suplaclient, void *user_data,
 }
 
 void supla_cb_channel_update(void *_suplaclient, void *user_data,
-                             TSC_SuplaChannel_E *channel) {
+                             TSC_SuplaChannel_D *channel) {
   // int a;
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
@@ -504,18 +504,6 @@ void supla_cb_channel_update(void *_suplaclient, void *user_data,
 
     fid = supla_client_GetFieldID(env, cch, "DeviceID", "I");
     env->SetIntField(ch, fid, channel->DeviceID);
-
-    fid = supla_client_GetFieldID(env, cch, "ParentChannel1Id", "I");
-    env->SetIntField(ch, fid, channel->ParentChannelId[0]);
-
-    fid = supla_client_GetFieldID(env, cch, "ParentChannel2Id", "I");
-    env->SetIntField(ch, fid, channel->ParentChannelId[1]);
-
-    fid = supla_client_GetFieldID(env, cch, "ParentChannel1RelationType", "I");
-    env->SetIntField(ch, fid, channel->ParentChannelRelationType[0]);
-
-    fid = supla_client_GetFieldID(env, cch, "ParentChannel2RelationType", "I");
-    env->SetIntField(ch, fid, channel->ParentChannelRelationType[1]);
 
     fid = supla_client_GetFieldID(env, cch, "LocationID", "I");
     env->SetIntField(ch, fid, channel->LocationID);

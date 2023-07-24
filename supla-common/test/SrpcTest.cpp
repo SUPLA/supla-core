@@ -534,9 +534,7 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_DS_CALL_SET_DEVICE_CONFIG,
               SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT,
               SUPLA_SD_CALL_SET_DEVICE_CONFIG,
-              SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT,
-              SUPLA_SC_CALL_CHANNEL_UPDATE_E,
-              SUPLA_SC_CALL_CHANNELPACK_UPDATE_E};
+              SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT};
   }
 
   return {};
@@ -2202,11 +2200,6 @@ SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_d,
                                   SUPLA_SC_CALL_CHANNEL_UPDATE_D, 83, 484,
                                   sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_e,
-                                  TSC_SuplaChannel_E,
-                                  SUPLA_SC_CALL_CHANNEL_UPDATE_E, 95, 496,
-                                  sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
-
 //---------------------------------------------------------
 // CHANNEL PACK UPDATE
 //---------------------------------------------------------
@@ -2229,11 +2222,6 @@ SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
     srpc_sc_async_channelpack_update_d, TSC_SuplaChannelPack_D,
     TSC_SuplaChannel_D, SUPLA_SC_CALL_CHANNELPACK_UPDATE_D, 8790, 9251,
     sc_channel_pack_d);
-
-SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
-    srpc_sc_async_channelpack_update_e, TSC_SuplaChannelPack_E,
-    TSC_SuplaChannel_E, SUPLA_SC_CALL_CHANNELPACK_UPDATE_E, 9018, 9491,
-    sc_channel_pack_e);
 
 //---------------------------------------------------------
 // CHANNEL VALUE UPDATE

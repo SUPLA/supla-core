@@ -370,34 +370,6 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
                                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
-void supla_client_channel::proto_get(TSC_SuplaChannel_E *channel,
-                                     supla_client *client) {
-  memset(channel, 0, sizeof(TSC_SuplaChannel_E));
-
-  channel->Id = getId();
-  channel->DeviceID = get_device_id();
-
-  get_parent_channel_id(&channel->ParentChannelId[0],
-                        &channel->ParentChannelId[1],
-                        &channel->ParentChannelRelationType[0],
-                        &channel->ParentChannelRelationType[1]);
-
-  channel->Type = Type;
-  channel->Func = Func;
-  channel->LocationID = LocationId;
-  channel->AltIcon = AltIcon;
-  channel->UserIcon = UserIcon;
-  channel->ManufacturerID = ManufacturerID;
-  channel->ProductID = ProductID;
-  channel->ProtocolVersion = ProtocolVersion;
-  channel->Flags = Flags;
-
-  proto_get_value(&channel->value, &channel->online, client);
-  sproto_set_null_terminated_string(getCaption(), channel->Caption,
-                                    &channel->CaptionSize,
-                                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
-}
-
 void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,
                                      supla_client *client) {
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));

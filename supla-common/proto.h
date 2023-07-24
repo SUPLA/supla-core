@@ -218,11 +218,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE_B 360                // ver. >= 8
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE_C 361                // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE_D 362                // ver. >= 15
-#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_E 363                // ver. >= 21
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_B 370                    // ver. >= 8
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_C 371                    // ver. >= 10
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_D 372                    // ver. >= 15
-#define SUPLA_SC_CALL_CHANNEL_UPDATE_E 373                    // ver. >= 21
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380            // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B 381          // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE 390   // ver. >= 9
@@ -1119,33 +1117,6 @@ typedef struct {
 
 typedef struct {
   // server -> client
-  char EOL;  // End Of List
-
-  _supla_int_t Id;
-  _supla_int_t ParentChannelId[2];
-  _supla_int16_t ParentChannelRelationType[2];  // RELATION_*
-  _supla_int_t DeviceID;
-  _supla_int_t LocationID;
-  _supla_int_t Type;
-  _supla_int_t Func;
-  _supla_int_t AltIcon;
-  _supla_int_t UserIcon;
-  _supla_int16_t ManufacturerID;
-  _supla_int16_t ProductID;
-
-  unsigned _supla_int_t Flags;
-  unsigned char ProtocolVersion;
-  char online;
-
-  TSuplaChannelValue_B value;
-
-  unsigned _supla_int_t
-      CaptionSize;  // including the terminating null byte ('\0')
-  char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
-} TSC_SuplaChannel_E;                           // ver. >= 21
-
-typedef struct {
-  // server -> client
 
   _supla_int_t count;
   _supla_int_t total_left;
@@ -1161,15 +1132,6 @@ typedef struct {
   TSC_SuplaChannel_D
       items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelPack_D;                 // ver. >= 15
-
-typedef struct {
-  // server -> client
-
-  _supla_int_t count;
-  _supla_int_t total_left;
-  TSC_SuplaChannel_E
-      items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
-} TSC_SuplaChannelPack_E;                 // ver. >= 21
 
 typedef struct {
   // server -> client
