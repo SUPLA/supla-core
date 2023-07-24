@@ -372,7 +372,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
 
 void supla_client_channel::proto_get(TSC_SuplaChannel_E *channel,
                                      supla_client *client) {
-  memset(channel, 0, sizeof(TSC_SuplaChannel_D));
+  memset(channel, 0, sizeof(TSC_SuplaChannel_E));
 
   channel->Id = getId();
   channel->DeviceID = get_device_id();
