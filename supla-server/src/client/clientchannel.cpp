@@ -64,6 +64,7 @@ supla_client_channel::supla_client_channel(
   this->ProductID = ProductID;
   this->ProtocolVersion = ProtocolVersion;
   this->Flags = Flags;
+
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED;
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
@@ -82,6 +83,8 @@ supla_client_channel::supla_client_channel(
 
     delete config;
   }
+
+  this->Flags ^= this->Flags & SUPLA_CHANNEL_FLAG_HAS_PARENT;
 
   setValueValidityTimeSec(validity_time_sec);
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
@@ -150,7 +153,13 @@ short supla_client_channel::get_manufacturer_id() { return ManufacturerID; }
 
 short supla_client_channel::get_product_id() { return ProductID; }
 
-int supla_client_channel::get_flags() { return Flags; }
+int supla_client_channel::get_flags() {
+  int p1 = 0;
+  int p2 = 0;
+  get_parent_channel_id(&p1, &p2, nullptr, nullptr);
+
+  return Flags | (p1 || p2 ? SUPLA_CHANNEL_FLAG_HAS_PARENT : 0);
+}
 
 void supla_client_channel::setValueValidityTimeSec(
     unsigned _supla_int_t validity_time_sec) {
@@ -318,7 +327,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
   channel->LocationID = this->LocationId;
   channel->AltIcon = this->AltIcon;
   channel->ProtocolVersion = this->ProtocolVersion;
-  channel->Flags = this->Flags;
+  channel->Flags = get_flags();
 
   proto_get_value(&channel->value, &channel->online, client);
   sproto_set_null_terminated_string(getCaption(), channel->Caption,
@@ -340,7 +349,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
   channel->ManufacturerID = this->ManufacturerID;
   channel->ProductID = this->ProductID;
   channel->ProtocolVersion = this->ProtocolVersion;
-  channel->Flags = this->Flags;
+  channel->Flags = get_flags();
 
   proto_get_value(&channel->value, &channel->online, client);
   sproto_set_null_terminated_string(getCaption(), channel->Caption,
@@ -362,7 +371,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
   channel->ManufacturerID = this->ManufacturerID;
   channel->ProductID = this->ProductID;
   channel->ProtocolVersion = this->ProtocolVersion;
-  channel->Flags = this->Flags;
+  channel->Flags = get_flags();
 
   proto_get_value(&channel->value, &channel->online, client);
   sproto_set_null_terminated_string(getCaption(), channel->Caption,

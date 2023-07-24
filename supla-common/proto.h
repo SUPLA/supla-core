@@ -589,7 +589,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE \
   0x08000000                                           // ver. >= 21
 #define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE 0x10000000  // ver. >= 21
-
+#define SUPLA_CHANNEL_FLAG_HAS_PARENT 0x20000000       // ver. >= 21
 #pragma pack(push, 1)
 
 typedef struct {
