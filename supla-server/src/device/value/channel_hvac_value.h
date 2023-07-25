@@ -26,6 +26,13 @@ class supla_channel_hvac_value : public supla_channel_value {
   supla_channel_hvac_value(void);
   explicit supla_channel_hvac_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   static bool is_function_supported(int func);
+
+  unsigned char get_mode(void);
+  void set_mode(unsigned char mode);
+  bool is_on(void);
+  void turn_on(void);
+  void turn_off(void);
+  void toggle(void);
 };
 
 #endif /*CHANNEL_HVAC_VALUE_H_*/

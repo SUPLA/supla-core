@@ -23,6 +23,30 @@
 
 namespace testing {
 
-TEST_F(ChannelHvacValueTest, voidConstructor) {}
+TEST_F(ChannelHvacValueTest, mode) {
+  supla_channel_hvac_value value;
+  EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_NOT_SET);
+  value.set_mode(100);
+  EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_NOT_SET);
+  value.set_mode(SUPLA_HVAC_MODE_HEAT);
+  EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_HEAT);
+}
+
+TEST_F(ChannelHvacValueTest, turnOn) {
+  supla_channel_hvac_value value;
+  EXPECT_FALSE(value.is_on());
+  value.turn_on();
+  EXPECT_FALSE(value.is_on());
+  EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_CMD_TURN_ON);
+}
+
+TEST_F(ChannelHvacValueTest, turnOff) {
+  supla_channel_hvac_value value;
+  EXPECT_FALSE(value.is_on());
+  value.set_mode(SUPLA_HVAC_MODE_HEAT);
+  EXPECT_TRUE(value.is_on());
+  value.turn_off();
+  EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_OFF);
+}
 
 }  // namespace testing

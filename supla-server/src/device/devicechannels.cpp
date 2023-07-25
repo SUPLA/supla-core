@@ -29,6 +29,7 @@
 #include "device.h"
 #include "device/channel_property_getter.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "device/value/channel_hvac_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_valve_value.h"
 #include "jsonconfig/channel/controlling_the_gate_config.h"
@@ -818,6 +819,27 @@ bool supla_device_channels::set_on(const supla_caller &caller, int channel_id,
         }
         break;
       }
+
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO: {
+        supla_channel_hvac_value *hvac_value =
+            channel->get_value<supla_channel_hvac_value>();
+        if (hvac_value) {
+          if (toggle) {
+            hvac_value->toggle();
+          } else if (on) {
+            hvac_value->turn_on();
+          } else {
+            hvac_value->turn_off();
+          }
+
+          char v[SUPLA_CHANNELVALUE_SIZE] = {};
+          hvac_value->get_raw_value(v);
+          async_set_channel_value(channel, caller, group_id, eol, v, false);
+          result = true;
+        }
+      } break;
     }
   }
 
