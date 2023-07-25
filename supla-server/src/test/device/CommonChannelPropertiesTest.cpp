@@ -18,6 +18,8 @@
 
 #include "CommonChannelPropertiesTest.h"
 
+#include <vector>
+
 #include "doubles/device/CommonChannelPropertiesMock.h"
 
 namespace testing {
