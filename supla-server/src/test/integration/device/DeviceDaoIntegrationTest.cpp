@@ -316,4 +316,9 @@ TEST_F(DeviceDaoIntegrationTest, setAndUpdateExtendedValue) {
   EXPECT_EQ(result, "v\n000102030405060708090A0B0C0D0E\n");
 }
 
+TEST_F(DeviceDaoIntegrationTest, deviceLimit) {
+  ASSERT_TRUE(dba->connect());
+  EXPECT_EQ(dao->get_device_limit_left(2), 90);
+}
+
 } /* namespace testing */

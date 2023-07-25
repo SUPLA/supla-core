@@ -282,8 +282,8 @@ bool supla_device_dao::get_device_reg_enabled(int user_id) {
 int supla_device_dao::get_device_limit_left(int user_id) {
   return dba->get_int(
       user_id, 0,
-      "SELECT IFNULL(limit_client, 0) - IFNULL(( SELECT COUNT(*) "
-      "FROM supla_client WHERE user_id = supla_user.id ), 0) FROM "
+      "SELECT IFNULL(limit_iodev, 0) - IFNULL(( SELECT COUNT(*) "
+      "FROM supla_iodevice WHERE user_id = supla_user.id ), 0) FROM "
       "supla_user WHERE id = ?");
 }
 
