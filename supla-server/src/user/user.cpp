@@ -353,10 +353,11 @@ bool supla_user::get_channel_value(
 
     char _value[SUPLA_CHANNELVALUE_SIZE] = {};
     char sub_channel_online = 0;
+    int func = 0;
 
     if (related_device->get_channels()->get_channel_value(
-            it->get_id(), _value, &sub_channel_online, nullptr, nullptr,
-            nullptr, for_client) &&
+            it->get_id(), _value, &sub_channel_online, nullptr, nullptr, &func,
+            for_client) &&
         sub_channel_online) {
       switch (it->get_relation_type()) {
         case CHANNEL_RELATION_TYPE_OPENING_SENSOR:
@@ -369,32 +370,30 @@ bool supla_user::get_channel_value(
           memcpy(sub_value, _value, SUPLA_CHANNELVALUE_SIZE);
           break;
       }
-    }
 
-    if (sub_value_type) {
-      *sub_value_type = SUBV_TYPE_NOT_SET_OR_OFFLINE;
+      if (sub_value_type) {
+        *sub_value_type = SUBV_TYPE_NOT_SET_OR_OFFLINE;
 
-      switch (it->get_relation_type()) {
-        case CHANNEL_RELATION_TYPE_OPENING_SENSOR:
-        case CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR:
-          *sub_value_type = SUBV_TYPE_SENSOR;
-          break;
-        case CHANNEL_RELATION_TYPE_METER: {
-          switch (
-              related_device->get_channels()->get_channel_func(it->get_id())) {
-            case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-              *sub_value_type = SUBV_TYPE_ELECTRICITY_MEASUREMENTS;
-              break;
-            case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-            case SUPLA_CHANNELFNC_IC_GAS_METER:
-            case SUPLA_CHANNELFNC_IC_WATER_METER:
-            case SUPLA_CHANNELFNC_IC_HEAT_METER:
-              *sub_value_type = SUBV_TYPE_IC_MEASUREMENTS;
-              break;
+        switch (it->get_relation_type()) {
+          case CHANNEL_RELATION_TYPE_OPENING_SENSOR:
+          case CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR:
+            *sub_value_type = SUBV_TYPE_SENSOR;
+            break;
+          case CHANNEL_RELATION_TYPE_METER: {
+            switch (func) {
+              case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+                *sub_value_type = SUBV_TYPE_ELECTRICITY_MEASUREMENTS;
+                break;
+              case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+              case SUPLA_CHANNELFNC_IC_GAS_METER:
+              case SUPLA_CHANNELFNC_IC_WATER_METER:
+              case SUPLA_CHANNELFNC_IC_HEAT_METER:
+                *sub_value_type = SUBV_TYPE_IC_MEASUREMENTS;
+                break;
+            }
           }
         }
       }
-      break;
     }
   }
 
