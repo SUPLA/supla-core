@@ -45,7 +45,6 @@ class supla_abstract_common_channel_properties {
   virtual int get_param3(void) = 0;
   virtual int get_param4(void) = 0;
   virtual channel_json_config *get_json_config(void) = 0;
-  virtual int get_channel_id(unsigned char channel_number) = 0;
   virtual unsigned char get_channel_number(void) = 0;
 
   virtual void for_each(

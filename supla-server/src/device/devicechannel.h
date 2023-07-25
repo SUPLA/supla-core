@@ -88,7 +88,6 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   void json_to_config(TSD_ChannelConfig *config);
   void set_extended_value(TSuplaChannelExtendedValue *ev,
                           supla_channel_extended_value *new_value);
-  virtual int get_channel_id(unsigned char channel_number);
   virtual void for_each(
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties);

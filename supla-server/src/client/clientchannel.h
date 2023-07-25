@@ -115,7 +115,6 @@ class supla_client_channel : public supla_client_objcontainer_item,
   bool isValueValidityTimeSet();
   unsigned _supla_int64_t getValueValidityTimeUSec(void);
   void resetValueValidityTime(void);
-  virtual int get_channel_id(unsigned char channel_number);
 };
 
 #endif /* CLIENTCHANNEL_H_ */

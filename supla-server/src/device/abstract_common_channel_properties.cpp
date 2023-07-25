@@ -88,20 +88,35 @@ void supla_abstract_common_channel_properties::get_channel_relations(
           hvac_config config(json_config);
           TChannelConfig_HVAC hvac = {};
           if (config.get_config(&hvac)) {
-            if (hvac.MainThermometerChannelNo != get_channel_number()) {
-              add_relation(relations,
-                           get_channel_id(hvac.MainThermometerChannelNo),
-                           get_id(), CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
-            }
+            int device_id = get_device_id();
 
-            if (hvac.AuxThermometerType >=
-                    SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
-                hvac.AuxThermometerType <=
-                    SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER) {
-              add_relation(relations,
-                           get_channel_id(hvac.AuxThermometerChannelNo),
-                           get_id(), hvac.AuxThermometerType + 3);
-            }
+            bool find_main =
+                hvac.MainThermometerChannelNo != get_channel_number();
+            bool find_aux = hvac.AuxThermometerType >=
+                                SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
+                            hvac.AuxThermometerType <=
+                                SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER;
+
+            for_each([&](supla_abstract_common_channel_properties *props,
+                         bool *will_continue) -> void {
+              if (device_id == props->get_device_id()) {
+                if (find_main && hvac.MainThermometerChannelNo ==
+                                     props->get_channel_number()) {
+                  add_relation(relations, props->get_id(), get_id(),
+                               CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
+                  find_main = false;
+                }
+
+                if (find_aux && hvac.AuxThermometerChannelNo ==
+                                    props->get_channel_number()) {
+                  add_relation(relations, props->get_id(), get_id(),
+                               hvac.AuxThermometerType + 3);
+                  find_aux = false;
+                }
+              }
+
+              *will_continue = find_main || find_aux;
+            });
           }
           delete json_config;
         }

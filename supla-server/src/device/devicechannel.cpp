@@ -707,10 +707,6 @@ void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
   set_extended_value(ev, nullptr);
 }
 
-int supla_device_channel::get_channel_id(unsigned char channel_number) {
-  return get_device()->get_channels()->get_channel_id(channel_number);
-}
-
 void supla_device_channel::for_each(
     std::function<void(supla_abstract_common_channel_properties *, bool *)>
         on_channel_properties) {
