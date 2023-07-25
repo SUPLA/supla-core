@@ -26,9 +26,14 @@
 using std::vector;
 
 supla_client_channel_reactions::supla_client_channel_reactions(
-    supla_abstract_dobject_remote_updater *updater,
-    supla_client_channels *channels)
-    : supla_dobjects(updater) {
+    supla_abstract_dobject_remote_updater *updater)
+    : supla_dobjects(updater) {}
+
+supla_client_channel_reactions::~supla_client_channel_reactions() {}
+
+void supla_client_channel_reactions::load(supla_client_channels *channels) {
+  clear();
+
   vector<supla_channel_relation> relations;
 
   channels->for_each(
@@ -40,5 +45,3 @@ supla_client_channel_reactions::supla_client_channel_reactions(
     add(new supla_channel_relation(&(*it), true));
   }
 }
-
-supla_client_channel_reactions::~supla_client_channel_reactions() {}

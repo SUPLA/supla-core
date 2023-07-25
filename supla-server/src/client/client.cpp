@@ -57,8 +57,8 @@ supla_client::supla_client(supla_connection *connection)
   this->channel_relation_remote_updater =
       new supla_client_channel_relation_remote_updater(
           connection->get_srpc_adapter());
-  this->channel_relations = new supla_client_channel_reactions(
-      channel_relation_remote_updater, channels);
+  this->channel_relations =
+      new supla_client_channel_reactions(channel_relation_remote_updater);
 }
 
 supla_client::~supla_client() {
@@ -174,6 +174,7 @@ void supla_client::load_config(void) {
   channels->load();
   cgroups->load();
   scenes->load(get_user_id(), get_id());
+  channel_relations->load(channels);
 }
 
 void supla_client::get_next(void) { remote_update_lists(); }

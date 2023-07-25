@@ -26,9 +26,9 @@ class supla_client_channels;
 class supla_client_channel_reactions : public supla_dobjects {
  public:
   explicit supla_client_channel_reactions(
-      supla_abstract_dobject_remote_updater *updater,
-      supla_client_channels *channels);
+      supla_abstract_dobject_remote_updater *updater);
   virtual ~supla_client_channel_reactions();
+  void load(supla_client_channels *channels);
 };
 
 #endif /* SUPLA_CLIENT_CHANNEL_RELATIONS_H_ */
