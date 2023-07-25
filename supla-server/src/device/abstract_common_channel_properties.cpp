@@ -60,13 +60,13 @@ void supla_abstract_common_channel_properties::get_channel_relations(
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+        add_relation(relations, get_param3(), get_id(),
+                     CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR);
+        break;
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
         add_relation(relations, get_param2(), get_id(),
                      CHANNEL_RELATION_TYPE_OPENING_SENSOR);
-
-        add_relation(relations, get_param3(), get_id(),
-                     CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR);
         break;
 
       case SUPLA_CHANNELFNC_POWERSWITCH:
