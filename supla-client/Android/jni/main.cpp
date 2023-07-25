@@ -1662,6 +1662,9 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
     _asc->j_mid_on_min_version_required =
         env->GetMethodID(oclass, "onMinVersionRequired",
                          "(Lorg/supla/android/lib/SuplaMinVersionRequired;)V");
+    _asc->j_mid_channel_relation_update =
+        env->GetMethodID(oclass, "channelRelationUpdate",
+                         "(Lorg/supla/android/lib/SuplaChannelRelation;)V");
     _asc->j_mid_channelgroup_update =
         env->GetMethodID(oclass, "channelGroupUpdate",
                          "(Lorg/supla/android/lib/SuplaChannelGroup;)V");
