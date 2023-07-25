@@ -37,7 +37,7 @@ class supla_client_channelgroup_value : public supla_client_objcontainer_item {
   bool remote_update_is_possible(void);
   int getChannelId(void);
   int getDeviceId(void);
-  virtual int getExtraId();
+  virtual int get_extra_id();
   void proto_get(TSC_SuplaChannelValue *channel_value);
   void proto_get(TSC_SuplaChannelValue_B *channel_value);
 };

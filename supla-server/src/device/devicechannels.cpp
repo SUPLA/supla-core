@@ -358,15 +358,14 @@ int supla_device_channels::get_channel_type(int channel_id) {
   return 0;
 }
 
-list<int> supla_device_channels::get_related_channel_ids(int channel_id,
-                                                         bool parent) {
-  list<int> result;
+vector<supla_channel_relation> supla_device_channels::get_channel_relations(
+    int channel_id, e_relation_kind kind) {
+  vector<supla_channel_relation> result;
 
   supla_device_channel *channel = find_channel(channel_id);
 
   if (channel) {
-    result =
-        parent ? channel->parent_channel_ids() : channel->sub_channel_ids();
+    result = channel->get_channel_relations(kind);
   }
 
   return result;

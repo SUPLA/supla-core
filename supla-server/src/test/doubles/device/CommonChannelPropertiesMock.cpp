@@ -16,18 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "userchannelgroup.h"
+#include "doubles/device/CommonChannelPropertiesMock.h"
 
-supla_user_channelgroup::supla_user_channelgroup(
-    supla_user_channelgroups *Container, int GroupId, int ChannelId,
-    int DeviceId)
-    : supla_objcontainer_item(Container, GroupId) {
-  this->ChannelId = ChannelId;
-  this->DeviceId = DeviceId;
-}
+#include <string.h>
 
-bool supla_user_channelgroup::remote_update_is_possible(void) { return false; }
-int supla_user_channelgroup::getGroupId() { return get_id(); }
-int supla_user_channelgroup::getChannelId() { return ChannelId; }
-int supla_user_channelgroup::getDeviceId() { return DeviceId; }
-int supla_user_channelgroup::get_extra_id() { return ChannelId; }
+namespace testing {
+
+CommonChannelPropertiesMock::CommonChannelPropertiesMock(void)
+    : supla_abstract_common_channel_properties() {}
+
+CommonChannelPropertiesMock::~CommonChannelPropertiesMock(void) {}
+
+}  // namespace testing

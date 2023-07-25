@@ -24,12 +24,14 @@
 #include <memory>
 #include <string>
 
-#include "client_scene_dao.h"
-#include "client_scene_remote_updater.h"
-#include "client_scenes.h"
-#include "clientchannelgroups.h"
-#include "clientchannels.h"
-#include "clientlocation.h"
+#include "client/client_channel_relation_remote_updater.h"
+#include "client/client_channel_relations.h"
+#include "client/client_scene_dao.h"
+#include "client/client_scene_remote_updater.h"
+#include "client/client_scenes.h"
+#include "client/clientchannelgroups.h"
+#include "client/clientchannels.h"
+#include "client/clientlocation.h"
 #include "db/db_access_provider.h"
 
 class supla_client_call_handler_collection;
@@ -49,6 +51,8 @@ class supla_client : public supla_abstract_connection_object {
   supla_client_scenes *scenes;
   supla_client_scene_remote_updater *scene_remote_updater;
   supla_client_scene_dao *scene_dao;
+  supla_client_channel_reactions *channel_relations;
+  supla_client_channel_relation_remote_updater *channel_relation_remote_updater;
 
  protected:
   friend class supla_register_client;

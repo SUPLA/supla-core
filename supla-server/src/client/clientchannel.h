@@ -30,7 +30,7 @@ class supla_client;
 class supla_client_channels;
 class supla_device;
 class supla_client_channel : public supla_client_objcontainer_item,
-                             supla_abstract_common_channel_properties {
+                             public supla_abstract_common_channel_properties {
  private:
   unsigned char channel_number;
   int DeviceId;
@@ -70,8 +70,7 @@ class supla_client_channel : public supla_client_objcontainer_item,
                              int channel_id,
                              TSC_SuplaChannelExtendedValue *cev);
   virtual void for_each(
-      std::function<void(int, supla_abstract_common_channel_properties *,
-                         bool *)>
+      std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties);
 
  public:
@@ -109,7 +108,8 @@ class supla_client_channel : public supla_client_objcontainer_item,
   short get_manufacturer_id();
   short get_product_id();
   int get_flags();
-  int getExtraId();
+  virtual int get_id();
+  virtual int get_extra_id();
 
   void setValueValidityTimeSec(unsigned _supla_int_t validity_time_sec);
   bool isValueValidityTimeSet();

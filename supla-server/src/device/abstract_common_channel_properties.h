@@ -20,10 +20,24 @@
 #define ABSTRACT_COMMON_CHANNEL_PROPERTIES_H_
 
 #include <functional>
+#include <vector>
+
+#include "device/channel_relation.h"
+
+enum e_relation_kind {
+  relation_any = 0,
+  relation_with_sub_channel = 1,
+  relation_with_parent_channel = 2
+};
 
 class channel_json_config;
 class supla_abstract_common_channel_properties {
+ private:
+  void add_relation(std::vector<supla_channel_relation> *relations,
+                    int channel_id, int parent_id, short relation_type);
+
  protected:
+  virtual int get_id(void) = 0;
   virtual int get_device_id(void) = 0;
   virtual int get_func(void) = 0;
   virtual int get_param1(void) = 0;
@@ -33,19 +47,20 @@ class supla_abstract_common_channel_properties {
   virtual channel_json_config *get_json_config(void) = 0;
   virtual int get_channel_id(unsigned char channel_number) = 0;
   virtual unsigned char get_channel_number(void) = 0;
-  void get_parent_channel_id(int *parent1, int *parent2,
-                             short *parent1_relation_type,
-                             short *parent2_relation_type);
-  void get_sub_channel_id(int *sub1, int *sub2);
 
   virtual void for_each(
-      std::function<void(int, supla_abstract_common_channel_properties *,
-                         bool *)>
+      std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties) = 0;
 
  public:
   supla_abstract_common_channel_properties(void);
   virtual ~supla_abstract_common_channel_properties(void);
+
+  std::vector<supla_channel_relation> get_channel_relations(
+      e_relation_kind kind);
+
+  void get_channel_relations(std::vector<supla_channel_relation> *relations,
+                             e_relation_kind kind);
 };
 
 #endif /*ABSTRACT_COMMON_CHANNEL_PROPERTIES_H_*/

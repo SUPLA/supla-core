@@ -90,8 +90,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
                           supla_channel_extended_value *new_value);
   virtual int get_channel_id(unsigned char channel_number);
   virtual void for_each(
-      std::function<void(int, supla_abstract_common_channel_properties *,
-                         bool *)>
+      std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties);
 
  public:
@@ -151,8 +150,6 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
                                  int related_channel_id,
                                  unsigned int disables_local_operation);
 
-  std::list<int> parent_channel_ids(void);
-  std::list<int> sub_channel_ids(void);
   virtual channel_json_config *get_json_config(void);
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);

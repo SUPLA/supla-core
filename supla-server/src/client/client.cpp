@@ -54,6 +54,11 @@ supla_client::supla_client(supla_connection *connection)
   this->name[0] = 0;
   this->superuser_authorized = false;
   this->access_id = 0;
+  this->channel_relation_remote_updater =
+      new supla_client_channel_relation_remote_updater(
+          connection->get_srpc_adapter());
+  this->channel_relations = new supla_client_channel_reactions(
+      channel_relation_remote_updater, channels);
 }
 
 supla_client::~supla_client() {
@@ -63,6 +68,8 @@ supla_client::~supla_client() {
   delete scenes;
   delete scene_remote_updater;
   delete scene_dao;
+  delete channel_relations;
+  delete channel_relation_remote_updater;
 }
 
 supla_abstract_srpc_call_handler_collection *
@@ -158,6 +165,8 @@ void supla_client::remote_update_lists(void) {
     return;
 
   if (scenes->update_remote()) return;
+
+  if (channel_relations->update_remote()) return;
 }
 
 void supla_client::load_config(void) {

@@ -397,7 +397,7 @@ int supla_client_channels::get_any_channel_id_with_deviceid(int device_id) {
   safe_array_lock(getArr());
   supla_client_channel *channel = any_channel_with_deviceid(device_id);
   if (channel) {
-    result = channel->getId();
+    result = channel->get_id();
   }
   safe_array_unlock(getArr());
 
@@ -410,7 +410,7 @@ int supla_client_channels::get_channel_id(unsigned char channel_number) {
                                      bool *will_continue) -> void {
     if (channel->get_channel_number() == channel_number) {
       *will_continue = false;
-      result = channel->getId();
+      result = channel->get_id();
     }
   });
 

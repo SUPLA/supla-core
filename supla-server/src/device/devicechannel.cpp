@@ -712,11 +712,11 @@ int supla_device_channel::get_channel_id(unsigned char channel_number) {
 }
 
 void supla_device_channel::for_each(
-    std::function<void(int, supla_abstract_common_channel_properties *, bool *)>
+    std::function<void(supla_abstract_common_channel_properties *, bool *)>
         on_channel_properties) {
   get_device()->get_channels()->for_each(
       [&](supla_device_channel *channel, bool *will_continue) -> void {
-        on_channel_properties(channel->get_id(), channel, will_continue);
+        on_channel_properties(channel, will_continue);
       });
 }
 
@@ -827,37 +827,6 @@ unsigned int supla_device_channel::get_value_duration(void) {
   }
 
   return 0;
-}
-
-list<int> supla_device_channel::sub_channel_ids(void) {
-  list<int> result;
-
-  int sub1 = 0;
-  int sub2 = 0;
-  get_sub_channel_id(&sub1, &sub2);
-
-  // We always add both even if there is zero
-  result.push_back(sub1);
-  result.push_back(sub2);
-
-  return result;
-}
-
-list<int> supla_device_channel::parent_channel_ids(void) {
-  list<int> result;
-  int p1 = 0;
-  int p2 = 0;
-  get_parent_channel_id(&p1, &p2, nullptr, nullptr);
-
-  if (p1) {
-    result.push_back(p1);
-  }
-
-  if (p2) {
-    result.push_back(p2);
-  }
-
-  return result;
 }
 
 channel_json_config *supla_device_channel::get_json_config(void) {

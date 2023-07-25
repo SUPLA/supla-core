@@ -53,8 +53,12 @@ class supla_abstract_srpc_adapter {
   virtual _supla_int_t sdc_async_get_user_localtime_result(
       TSDC_UserLocalTimeResult *localtime) = 0;
 
+  virtual _supla_int_t sc_async_channel_relation_pack_update(
+      TSC_SuplaChannelRelationPack *relation_pack) = 0;  // ver. >= 21
+
   virtual _supla_int_t sc_async_scene_pack_update(
       TSC_SuplaScenePack *scene_pack) = 0;  // ver. >= 18
+
   virtual _supla_int_t sc_async_scene_state_pack_update(
       TSC_SuplaSceneStatePack *scene_state_pack) = 0;  // ver. >= 18
 

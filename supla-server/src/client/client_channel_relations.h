@@ -16,18 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "userchannelgroup.h"
+#ifndef SUPLA_CLIENT_CHANNEL_RELATIONS_H_
+#define SUPLA_CLIENT_CHANNEL_RELATIONS_H_
 
-supla_user_channelgroup::supla_user_channelgroup(
-    supla_user_channelgroups *Container, int GroupId, int ChannelId,
-    int DeviceId)
-    : supla_objcontainer_item(Container, GroupId) {
-  this->ChannelId = ChannelId;
-  this->DeviceId = DeviceId;
-}
+#include "distributedobjects/dobjects.h"
+#include "proto.h"
 
-bool supla_user_channelgroup::remote_update_is_possible(void) { return false; }
-int supla_user_channelgroup::getGroupId() { return get_id(); }
-int supla_user_channelgroup::getChannelId() { return ChannelId; }
-int supla_user_channelgroup::getDeviceId() { return DeviceId; }
-int supla_user_channelgroup::get_extra_id() { return ChannelId; }
+class supla_client_channels;
+class supla_client_channel_reactions : public supla_dobjects {
+ public:
+  explicit supla_client_channel_reactions(
+      supla_abstract_dobject_remote_updater *updater,
+      supla_client_channels *channels);
+  virtual ~supla_client_channel_reactions();
+};
+
+#endif /* SUPLA_CLIENT_CHANNEL_RELATIONS_H_ */

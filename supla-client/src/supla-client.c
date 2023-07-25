@@ -289,6 +289,23 @@ void supla_client_channelgroup_pack_update_b(
   srpc_cs_async_get_next(scd->srpc);
 }
 
+void supla_client_channel_relation_update(
+    TSuplaClientData *scd, TSC_SuplaChannelRelation *channel_relation) {
+  if (scd->cfg.cb_channel_relation_update)
+    scd->cfg.cb_channel_relation_update(scd, scd->cfg.user_data,
+                                        channel_relation);
+}
+
+void supla_client_channel_relation_pack_update(
+    TSuplaClientData *scd, TSC_SuplaChannelRelationPack *pack) {
+  int a;
+
+  for (a = 0; a < pack->count; a++)
+    supla_client_channel_relation_update(scd, &pack->items[a]);
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
 void supla_client_channelgroup_relation_update(
     TSuplaClientData *scd, TSC_SuplaChannelGroupRelation *channelgroup_relation,
     char gn) {
@@ -940,6 +957,12 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
       case SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE:
         if (rd.data.sc_channel_value) {
           supla_client_channel_value_update(scd, rd.data.sc_channel_value, 1);
+        }
+        break;
+      case SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE:
+        if (rd.data.sc_channel_relation_pack) {
+          supla_client_channel_relation_pack_update(
+              scd, rd.data.sc_channel_relation_pack);
         }
         break;
       case SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE:

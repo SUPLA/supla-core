@@ -36,7 +36,7 @@ class supla_user_channelgroup : public supla_objcontainer_item {
   int getGroupId();
   int getChannelId();
   int getDeviceId();
-  int getExtraId();
+  int get_extra_id();
 };
 
 #endif /* USERCHANNELGROUP_H_ */

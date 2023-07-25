@@ -21,182 +21,166 @@
 #include "jsonconfig/channel/hvac_config.h"
 #include "proto.h"
 
+using std::vector;
+
 supla_abstract_common_channel_properties::
     supla_abstract_common_channel_properties(void) {}
 
 supla_abstract_common_channel_properties::
     ~supla_abstract_common_channel_properties(void) {}
 
-void supla_abstract_common_channel_properties::get_parent_channel_id(
-    int *parent1, int *parent2, short *parent1_relation_type,
-    short *parent2_relation_type) {
-  if (parent1) {
-    *parent1 = 0;
+void supla_abstract_common_channel_properties::add_relation(
+    std::vector<supla_channel_relation> *relations, int channel_id,
+    int parent_id, short relation_type) {
+  if (!channel_id || !parent_id || !relation_type) {
+    return;
   }
 
-  if (parent2) {
-    *parent2 = 0;
+  for (auto it = relations->begin(); it != relations->end(); ++it) {
+    if (((it->get_id() == channel_id && it->get_parent_id() == parent_id) ||
+         (it->get_id() == parent_id && it->get_parent_id() == channel_id)) &&
+        it->get_relation_type() == relation_type) {
+      return;
+    }
   }
 
-  if (parent1_relation_type) {
-    *parent1_relation_type = 0;
+  relations->push_back(
+      supla_channel_relation(channel_id, parent_id, relation_type));
+}
+
+void supla_abstract_common_channel_properties::get_channel_relations(
+    vector<supla_channel_relation> *relations, e_relation_kind kind) {
+  if (!relations) {
+    return;
   }
 
-  if (parent2_relation_type) {
-    *parent2_relation_type = 0;
-  }
+  if (kind == relation_any || kind == relation_with_sub_channel) {
+    switch (get_func()) {
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+        add_relation(relations, get_param2(), get_id(),
+                     CHANNEL_RELATION_TYPE_OPENING_SENSOR);
 
-  int p1 = 0;
-  short p1_relation_type = 0;
-  int p2 = 0;
-  short p2_relation_type = 0;
+        add_relation(relations, get_param3(), get_id(),
+                     CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR);
+        break;
 
-  switch (get_func()) {
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
-      p1 = get_param1();
-      p1_relation_type = CHANNEL_RELATION_TYPE_OPENING_SENSOR;
-      p2 = get_param2();
-      p2_relation_type = CHANNEL_RELATION_TYPE_OPENING_SENSOR;
-      break;
-    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_GAS_METER:
-    case SUPLA_CHANNELFNC_IC_WATER_METER:
-    case SUPLA_CHANNELFNC_IC_HEAT_METER:
-      p1 = get_param4();
-      p1_relation_type = CHANNEL_RELATION_TYPE_METER;
-      break;
-    case SUPLA_CHANNELFNC_THERMOMETER:
-    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
-      int device_id = get_device_id();
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH: {
+        add_relation(relations, get_param1(), get_id(),
+                     CHANNEL_RELATION_TYPE_METER);
+      } break;
 
-      for_each([&](int id, supla_abstract_common_channel_properties *props,
-                   bool *will_continue) -> void {
-        if (props->get_device_id() != device_id) {
-          return;
-        }
-        switch (props->get_func()) {
-          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
-          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
-          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+      case SUPLA_CHANNELFNC_STAIRCASETIMER:
+        add_relation(relations, get_param2(), get_id(),
+                     CHANNEL_RELATION_TYPE_METER);
+        break;
 
-            channel_json_config *json_config = props->get_json_config();
-            if (json_config) {
-              hvac_config config(json_config);
-              TChannelConfig_HVAC hvac = {};
-              if (config.get_config(&hvac)) {
-                if (hvac.MainThermometerChannelNo == get_channel_number()) {
-                  p1 = id;
-                  p1_relation_type = CHANNEL_RELATION_TYPE_MAIN_TERMOMETER;
-                }
-
-                if (hvac.AuxThermometerType >=
-                        SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
-                    hvac.AuxThermometerType <=
-                        SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER &&
-                    hvac.AuxThermometerChannelNo == get_channel_number()) {
-                  p2 = id;
-                  p2_relation_type = hvac.AuxThermometerType + 3;
-                }
-              }
-              delete json_config;
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO: {
+        channel_json_config *json_config = get_json_config();
+        if (json_config) {
+          hvac_config config(json_config);
+          TChannelConfig_HVAC hvac = {};
+          if (config.get_config(&hvac)) {
+            if (hvac.MainThermometerChannelNo != get_channel_number()) {
+              add_relation(relations,
+                           get_channel_id(hvac.MainThermometerChannelNo),
+                           get_id(), CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
             }
 
-            break;
+            if (hvac.AuxThermometerType >=
+                    SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
+                hvac.AuxThermometerType <=
+                    SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER) {
+              add_relation(relations,
+                           get_channel_id(hvac.AuxThermometerChannelNo),
+                           get_id(), hvac.AuxThermometerType + 3);
+            }
+          }
+          delete json_config;
         }
-
-        if (p1 && p2) {
-          *will_continue = false;
-        }
-      });
-    }
-
-    break;
-  }
-
-  if (p1 && parent1) {
-    *parent1 = p1;
-    if (parent1_relation_type) {
-      *parent1_relation_type = p1_relation_type;
+      } break;
     }
   }
 
-  if (p2 && parent2) {
-    *parent2 = p2;
+  if (kind == relation_any || kind == relation_with_parent_channel) {
+    switch (get_func()) {
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+        add_relation(relations, get_id(), get_param1(),
+                     CHANNEL_RELATION_TYPE_OPENING_SENSOR);
 
-    if (parent2_relation_type) {
-      *parent2_relation_type = p2_relation_type;
+        add_relation(relations, get_id(), get_param2(),
+                     CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR);
+        break;
+      case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+      case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+      case SUPLA_CHANNELFNC_IC_GAS_METER:
+      case SUPLA_CHANNELFNC_IC_WATER_METER:
+      case SUPLA_CHANNELFNC_IC_HEAT_METER:
+        add_relation(relations, get_id(), get_param4(),
+                     CHANNEL_RELATION_TYPE_METER);
+        break;
+      case SUPLA_CHANNELFNC_THERMOMETER:
+      case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
+        int device_id = get_device_id();
+
+        for_each([&](supla_abstract_common_channel_properties *props,
+                     bool *will_continue) -> void {
+          if (props->get_device_id() != device_id) {
+            return;
+          }
+          switch (props->get_func()) {
+            case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
+            case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
+            case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+
+              channel_json_config *json_config = props->get_json_config();
+              if (json_config) {
+                hvac_config config(json_config);
+                TChannelConfig_HVAC hvac = {};
+                if (config.get_config(&hvac)) {
+                  if (hvac.MainThermometerChannelNo == get_channel_number()) {
+                    add_relation(relations, get_id(), props->get_id(),
+                                 CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
+                  }
+
+                  if (hvac.AuxThermometerType >=
+                          SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
+                      hvac.AuxThermometerType <=
+                          SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER &&
+                      hvac.AuxThermometerChannelNo == get_channel_number()) {
+                    add_relation(relations, get_id(), props->get_id(),
+                                 hvac.AuxThermometerType + 3);
+                  }
+                }
+                delete json_config;
+              }
+
+              break;
+          }
+        });
+      }
+
+      break;
     }
   }
 }
 
-void supla_abstract_common_channel_properties::get_sub_channel_id(int *sub1,
-                                                                  int *sub2) {
-  int s1 = 0;
-  int s2 = 0;
-
-  if (sub1) {
-    *sub1 = 0;
-  }
-
-  if (sub2) {
-    *sub2 = 0;
-  }
-
-  switch (get_func()) {
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      s1 = get_param2();
-      s2 = get_param3();
-      break;
-    case SUPLA_CHANNELFNC_POWERSWITCH:
-    case SUPLA_CHANNELFNC_LIGHTSWITCH: {
-      s1 = get_param1();
-    } break;
-
-    case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      s1 = get_param2();
-      break;
-
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
-
-      channel_json_config *json_config = get_json_config();
-      if (json_config) {
-        hvac_config config(json_config);
-        TChannelConfig_HVAC hvac = {};
-        if (config.get_config(&hvac)) {
-          if (hvac.MainThermometerChannelNo != get_channel_number()) {
-            s1 = get_channel_id(hvac.MainThermometerChannelNo);
-          }
-
-          if (hvac.AuxThermometerType >=
-                  SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
-              hvac.AuxThermometerType <=
-                  SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER) {
-            s2 = get_channel_id(hvac.AuxThermometerChannelNo);
-          }
-        }
-        delete json_config;
-      }
-      break;
-  }
-
-  if (s1 && sub1) {
-    *sub1 = s1;
-  }
-
-  if (s2 && sub2) {
-    *sub2 = s2;
-  }
+vector<supla_channel_relation>
+supla_abstract_common_channel_properties::get_channel_relations(
+    e_relation_kind kind) {
+  vector<supla_channel_relation> result;
+  get_channel_relations(&result, kind);
+  return result;
 }

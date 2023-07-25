@@ -112,7 +112,8 @@ class supla_device_channels {
 
   bool get_dgf_transparency(int channel_id, unsigned short *mask);
 
-  std::list<int> get_related_channel_ids(int channel_id, bool parent);
+  std::vector<supla_channel_relation> get_channel_relations(int channel_id,
+                                                          e_relation_kind kind);
   std::list<int> get_all_ids(void);
   int get_channel_id(unsigned char channel_number);
   bool channel_exists(int channel_id);

@@ -16,18 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "userchannelgroup.h"
+#ifndef SUPLA_CHANNEL_RELATION_H_
+#define SUPLA_CHANNEL_RELATION_H_
 
-supla_user_channelgroup::supla_user_channelgroup(
-    supla_user_channelgroups *Container, int GroupId, int ChannelId,
-    int DeviceId)
-    : supla_objcontainer_item(Container, GroupId) {
-  this->ChannelId = ChannelId;
-  this->DeviceId = DeviceId;
-}
+#include "distributedobjects/dobject.h"
+#include "proto.h"
 
-bool supla_user_channelgroup::remote_update_is_possible(void) { return false; }
-int supla_user_channelgroup::getGroupId() { return get_id(); }
-int supla_user_channelgroup::getChannelId() { return ChannelId; }
-int supla_user_channelgroup::getDeviceId() { return DeviceId; }
-int supla_user_channelgroup::get_extra_id() { return ChannelId; }
+class supla_channel_relation : public supla_dobject {
+ private:
+  int parent_id;
+  short relation_type;
+
+ public:
+  supla_channel_relation(int channel_id, int parent_id, short relation_type);
+  supla_channel_relation(supla_channel_relation *relation, bool changed);
+  virtual ~supla_channel_relation();
+
+  int get_parent_id(void);
+  void set_parent_id(int parent_id);
+  short get_relation_type(void);
+  void set_relation_type(short relation_type);
+
+  void convert(TSC_SuplaChannelRelation *dest);
+};
+
+#endif /* SUPLA_CHANNEL_RELATION_H_ */
