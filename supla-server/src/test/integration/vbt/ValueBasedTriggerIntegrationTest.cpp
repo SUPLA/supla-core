@@ -21,6 +21,7 @@
 #include <memory>
 #include <string>
 
+#include "actions/action_rs_parameters.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "doubles/actions/ActionExecutorMock.h"
@@ -163,7 +164,16 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
     EXPECT_EQ(t->get_action_config().get_subject_type(), stChannel);
     EXPECT_EQ(t->get_action_config().get_subject_id(), 173);
     EXPECT_EQ(t->get_action_config().get_action_id(), ACTION_SHUT_PARTIALLY);
-    EXPECT_EQ(t->get_action_config().get_percentage(), 45);
+    TAction_RS_Parameters rs = {};
+    supla_abstract_action_parameters *params =
+        t->get_action_config().get_parameters();
+    if (params) {
+      if (dynamic_cast<supla_action_rs_parameters *>(params)) {
+        rs = dynamic_cast<supla_action_rs_parameters *>(params)->get_rs();
+      }
+      delete params;
+    }
+    EXPECT_EQ(rs.Percentage, 45);
     EXPECT_EQ(t->get_on_change_cnd().get_op(), op_eq);
     EXPECT_EQ(t->get_on_change_cnd().get_value(), 1);
   }

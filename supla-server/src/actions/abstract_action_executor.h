@@ -24,6 +24,7 @@
 #include <string>
 
 #include "abstract_action_config.h"
+#include "actions/abstract_action_parameters.h"
 #include "caller.h"
 #include "device.h"
 #include "device/abstract_channel_property_getter.h"
@@ -84,7 +85,7 @@ class supla_abstract_action_executor {
   void execute_action(const supla_caller &caller, int user_id, int action_id,
                       _subjectType_e subject_type, int subject_id,
                       supla_abstract_channel_property_getter *property_getter,
-                      TAction_RS_Parameters *rs, TAction_RGBW_Parameters *rgbw,
+                      supla_abstract_action_parameters *params,
                       int source_device_id, int source_channel_id, int cap,
                       std::map<std::string, std::string> *replacement_map);
 

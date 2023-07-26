@@ -20,6 +20,8 @@
 #define ACTIONTRIGGERCONFIGTEST_H_
 
 #include "gtest/gtest.h"  // NOLINT
+#include "jsonconfig/channel/action_trigger_config.h"
+#include "proto.h"
 
 namespace testing {
 
@@ -28,6 +30,9 @@ class ActionTriggerConfigTest : public Test {
  public:
   ActionTriggerConfigTest(void);
   virtual ~ActionTriggerConfigTest(void);
+  void EXPECT_NO_PARAMS(action_trigger_config *config);
+  TAction_RS_Parameters get_rs_params(action_trigger_config *config);
+  TAction_RGBW_Parameters get_rgbw_params(action_trigger_config *config);
 };
 
 } /* namespace testing */

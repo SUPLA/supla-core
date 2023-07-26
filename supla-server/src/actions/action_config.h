@@ -19,6 +19,8 @@
 #ifndef ACTIONCONFIG_H_
 #define ACTIONCONFIG_H_
 
+#include <actions/abstract_action_parameters.h>
+
 #include "abstract_action_config.h"
 
 class supla_action_config : public abstract_action_config {
@@ -28,12 +30,12 @@ class supla_action_config : public abstract_action_config {
   int subject_id;
   int source_device_id;
   int source_channel_id;
-  char percentage;
-  TAction_RGBW_Parameters rgbw;
+  supla_abstract_action_parameters *parameters;
 
  public:
   supla_action_config(void);
   explicit supla_action_config(supla_action_config *src);
+  supla_action_config(const supla_action_config &src);  // NO LINT
   virtual ~supla_action_config(void);
 
   virtual int get_action_id(void);
@@ -51,15 +53,13 @@ class supla_action_config : public abstract_action_config {
   virtual int get_source_channel_id(void);
   void set_source_channel_id(int source_channel_id);
 
-  virtual char get_percentage(void);
-  void set_percentage(char percentage);
-
-  virtual TAction_RGBW_Parameters get_rgbw(void);
-  void set_rgbw(TAction_RGBW_Parameters rgbw);
+  virtual supla_abstract_action_parameters *get_parameters(void);
+  void set_parameters(supla_abstract_action_parameters *parameters);
 
   void apply_json_params(const char *param);
 
   bool operator==(const supla_action_config &config) const;
+  supla_action_config &operator=(const supla_action_config &config);
 };
 
 #endif /* ACTIONCONFIG_H_ */

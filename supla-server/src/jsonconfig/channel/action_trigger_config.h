@@ -59,6 +59,8 @@ class action_trigger_config : public abstract_action_config,
   int get_source_id(const char *key);
   int active_cap;
   int channel_id_if_subject_not_set;
+  supla_abstract_action_parameters *get_rs(void);
+  supla_abstract_action_parameters *get_rgbw(void);
 
  public:
   explicit action_trigger_config(channel_json_config *root);
@@ -78,8 +80,7 @@ class action_trigger_config : public abstract_action_config,
   unsigned int get_caps_that_disables_local_operation(void);
   bool set_caps_that_disables_local_operation(unsigned int caps);
   unsigned int get_active_actions(void);
-  virtual char get_percentage(void);
-  virtual TAction_RGBW_Parameters get_rgbw(void);
+  virtual supla_abstract_action_parameters *get_parameters(void);
   virtual int get_cap(void);
   void set_active_cap(int cap);
   bool channel_exists(int channel_id);

@@ -16,36 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACTACTIONCONFIG_H_
-#define ABSTRACTACTIONCONFIG_H_
+#include <actions/abstract_action_parameters.h>
 
-#include "actions/abstract_action_parameters.h"
-#include "proto.h"
+supla_abstract_action_parameters::supla_abstract_action_parameters(void) {}
 
-enum _subjectType_e {
-  stUnknown,
-  stChannel,
-  stChannelGroup,
-  stScene,
-  stSchedule,
-  stPushNotification
-};
-
-class abstract_action_config {
- public:
-  abstract_action_config(void);
-  virtual ~abstract_action_config(void);
-
-  virtual int get_action_id(void) = 0;
-  virtual _subjectType_e get_subject_type(void) = 0;
-  virtual int get_subject_id(void) = 0;
-
-  virtual int get_source_device_id(void) = 0;
-  virtual int get_source_channel_id(void) = 0;
-
-  virtual supla_abstract_action_parameters* get_parameters(void) = 0;
-
-  virtual int get_cap(void);
-};
-
-#endif /* ABSTRACTACTIONCONFIG_H_ */
+supla_abstract_action_parameters::~supla_abstract_action_parameters(void) {}

@@ -16,36 +16,29 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACTACTIONCONFIG_H_
-#define ABSTRACTACTIONCONFIG_H_
+#ifndef ACTION_RGBW_PARAMETERS_H_
+#define ACTION_RGBW_PARAMETERS_H_
 
 #include "actions/abstract_action_parameters.h"
 #include "proto.h"
 
-enum _subjectType_e {
-  stUnknown,
-  stChannel,
-  stChannelGroup,
-  stScene,
-  stSchedule,
-  stPushNotification
-};
+class supla_action_rgbw_parameters : public supla_abstract_action_parameters {
+ private:
+  TAction_RGBW_Parameters rgbw;
 
-class abstract_action_config {
  public:
-  abstract_action_config(void);
-  virtual ~abstract_action_config(void);
+  supla_action_rgbw_parameters(void);
+  explicit supla_action_rgbw_parameters(const TAction_RGBW_Parameters &rgbw);
+  explicit supla_action_rgbw_parameters(const TAction_RGBW_Parameters *rgbw);
+  virtual ~supla_action_rgbw_parameters(void);
+  virtual bool equal(supla_abstract_action_parameters *params) const;
+  virtual supla_abstract_action_parameters *copy(void);  // NOLINT
 
-  virtual int get_action_id(void) = 0;
-  virtual _subjectType_e get_subject_type(void) = 0;
-  virtual int get_subject_id(void) = 0;
-
-  virtual int get_source_device_id(void) = 0;
-  virtual int get_source_channel_id(void) = 0;
-
-  virtual supla_abstract_action_parameters* get_parameters(void) = 0;
-
-  virtual int get_cap(void);
+  const TAction_RGBW_Parameters get_rgbw(void);
+  void set_brightness(char brightness);
+  void set_color_brightness(char brightness);
+  void set_color(unsigned int color);
+  void set_random_color(bool random);
 };
 
-#endif /* ABSTRACTACTIONCONFIG_H_ */
+#endif /* ACTION_RGBW_PARAMETERS_H_ */
