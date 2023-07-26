@@ -1314,7 +1314,7 @@ typedef struct {
 
 typedef struct {
   unsigned char Mode;  // SUPLA_HVAC_MODE_
-} TAction_SetHVACMode;
+} TAction_HVACMode_Parameter;
 
 typedef struct {
   _supla_int16_t
@@ -1322,7 +1322,7 @@ typedef struct {
   _supla_int16_t
       SetpointTemperatureMax;     // * 0.01 - Celcius degree used for cooling
   unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
-} TAction_SetHVACTemperature;
+} TAction_HVACTemperature_Parameters;
 
 typedef struct {
   _supla_int_t ActionId;
