@@ -838,6 +838,8 @@ bool supla_device_channels::set_on(const supla_caller &caller, int channel_id,
           hvac_value->get_raw_value(v);
           async_set_channel_value(channel, caller, group_id, eol, v, false);
           result = true;
+
+          delete hvac_value;
         }
       } break;
     }
