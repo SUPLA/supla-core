@@ -20,6 +20,7 @@
 #define ACTION_HVAC_PARAMETERS_H_
 
 #include "actions/abstract_action_parameters.h"
+#include "device/value/channel_hvac_value.h"
 #include "proto.h"
 
 class supla_action_hvac_parameters : public supla_abstract_action_parameters {
@@ -33,6 +34,8 @@ class supla_action_hvac_parameters : public supla_abstract_action_parameters {
   virtual ~supla_action_hvac_parameters(void);
   virtual bool equal(supla_abstract_action_parameters *params) const;
   virtual supla_abstract_action_parameters *copy(void);  // NOLINT
+  void apply_on(supla_channel_hvac_value *value);
+  unsigned int get_duration_sec(void);
 };
 
 #endif /* ACTION_HVAC_PARAMETERS_H_ */

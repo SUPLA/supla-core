@@ -299,3 +299,17 @@ void supla_action_executor::forward_outside(int cap) {
                                                get_channel_id(), cap);
   }
 }
+
+void supla_action_executor::set_hvac_parameters(
+    supla_action_hvac_parameters *params) {
+  execute_action([&](supla_user_channelgroups *channel_groups,
+                     supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_set_hvac_parameters(get_caller(), get_group_id(),
+                                                 params);
+    } else {
+      channels->action_set_hvac_parameters(get_caller(), get_channel_id(), 0, 0,
+                                           params);
+    }
+  });
+}
