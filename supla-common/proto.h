@@ -925,7 +925,7 @@ typedef struct {
   unsigned char ChannelNumber;
   union {
     unsigned _supla_int_t DurationMS;
-    unsigned _supla_int_t DurationSec;
+    unsigned _supla_int_t DurationSec;  // ver. >= 21. Applies to HVAC
   };
 
   char value[SUPLA_CHANNELVALUE_SIZE];
@@ -937,8 +937,10 @@ typedef struct {
   _supla_int_t GroupID;
   unsigned char EOL;  // End Of List
   unsigned char ChannelNumber;
-  unsigned _supla_int_t DurationMS;
-
+  union {
+    unsigned _supla_int_t DurationMS;
+    unsigned _supla_int_t DurationSec;  // ver. >= 21. Applies to HVAC
+  };
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TSD_SuplaChannelGroupNewValue;  // v. >= 13
 
@@ -1313,16 +1315,14 @@ typedef struct {
 } TAction_RGBW_Parameters;  // ver. >= 19
 
 typedef struct {
-  unsigned char Mode;  // SUPLA_HVAC_MODE_
-} TAction_HVACMode_Parameter;
-
-typedef struct {
+  unsigned _supla_int_t DurationSec;
+  unsigned char Mode;  // for HVAC: SUPLA_HVAC_MODE_
   _supla_int16_t
       SetpointTemperatureMin;  // * 0.01 Celcius degree - used for heating
   _supla_int16_t
       SetpointTemperatureMax;     // * 0.01 - Celcius degree used for cooling
   unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
-} TAction_HVACTemperature_Parameters;
+} TAction_HVAC_Parameters;
 
 typedef struct {
   _supla_int_t ActionId;
@@ -2591,7 +2591,10 @@ typedef struct {
 
 typedef struct {
   _supla_int_t ChannelID;
-  unsigned _supla_int_t DurationMS;
+  union {
+    unsigned _supla_int_t DurationMS;
+    unsigned _supla_int_t DurationSec;  // ver. >= 21. Applies to HVAC
+  };
   unsigned char On;
 } TCS_TimerArmRequest;  // v. >= 17
 

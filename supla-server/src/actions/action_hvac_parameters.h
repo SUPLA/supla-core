@@ -16,30 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTION_HVAC_MODE_PARAMETER_H_
-#define ACTION_HVAC_MODE_PARAMETER_H_
+#ifndef ACTION_HVAC_PARAMETERS_H_
+#define ACTION_HVAC_PARAMETERS_H_
 
 #include "actions/abstract_action_parameters.h"
 #include "proto.h"
 
-class supla_action_hvac_mode_parameter
-    : public supla_abstract_action_parameters {
+class supla_action_hvac_parameters : public supla_abstract_action_parameters {
  private:
-  unsigned char mode;
+  TAction_HVAC_Parameters params;
 
  public:
-  supla_action_hvac_mode_parameter(void);
-  explicit supla_action_hvac_mode_parameter(unsigned char mode);
-  explicit supla_action_hvac_mode_parameter(
-      const TAction_HVACMode_Parameter &mode);
-  explicit supla_action_hvac_mode_parameter(
-      const TAction_HVACMode_Parameter *rgbw);
-  virtual ~supla_action_hvac_mode_parameter(void);
+  supla_action_hvac_parameters(void);
+  explicit supla_action_hvac_parameters(const TAction_HVAC_Parameters &params);
+  explicit supla_action_hvac_parameters(const TAction_HVAC_Parameters *params);
+  virtual ~supla_action_hvac_parameters(void);
   virtual bool equal(supla_abstract_action_parameters *params) const;
   virtual supla_abstract_action_parameters *copy(void);  // NOLINT
-
-  unsigned char get_mode(void);
-  void set_mode(unsigned char mode);
 };
 
-#endif /* ACTION_HVAC_MODE_PARAMETER_H_ */
+#endif /* ACTION_HVAC_PARAMETERS_H_ */
