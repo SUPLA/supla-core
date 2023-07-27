@@ -56,10 +56,11 @@ TEST_F(ChannelFragmentTest, channelAssignment) {
   DeviceStub device(nullptr);
   device.set_id(286);
   char value[SUPLA_CHANNELVALUE_SIZE] = {};
-  supla_device_channel channel(
-      &device, 686, 0, SUPLA_CHANNELTYPE_ACTIONTRIGGER,
-      SUPLA_CHANNELFNC_ACTIONTRIGGER, 0, 0, 0, 0, nullptr, nullptr, nullptr,
-      false, SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE, value, 0, nullptr, nullptr);
+  supla_device_channel channel(&device, 686, 0, SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+                               SUPLA_CHANNELFNC_ACTIONTRIGGER, 0, 0, 0, 0,
+                               nullptr, nullptr, nullptr, false,
+                               SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE, value, 0,
+                               nullptr, nullptr, nullptr);
 
   supla_channel_fragment f;
   f = &channel;

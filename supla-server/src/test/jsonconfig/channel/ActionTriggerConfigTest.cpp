@@ -19,13 +19,59 @@
 #include "ActionTriggerConfigTest.h"
 
 #include "TestHelper.h"
-#include "jsonconfig/channel/action_trigger_config.h"
-#include "proto.h"
+#include "actions/action_rgbw_parameters.h"
+#include "actions/action_rs_parameters.h"
 
 namespace testing {
 
 ActionTriggerConfigTest::ActionTriggerConfigTest(void) {}
+
 ActionTriggerConfigTest::~ActionTriggerConfigTest(void) {}
+
+void ActionTriggerConfigTest::EXPECT_NO_PARAMS(action_trigger_config *config) {
+  EXPECT_NE(config, nullptr);
+  if (config) {
+    supla_abstract_action_parameters *params = config->get_parameters();
+    EXPECT_EQ(params, nullptr);
+    if (params) {
+      delete params;
+    }
+  }
+}
+
+TAction_RS_Parameters ActionTriggerConfigTest::get_rs_params(
+    action_trigger_config *config) {
+  TAction_RS_Parameters result = {};
+
+  EXPECT_NE(config, nullptr);
+  if (config) {
+    supla_abstract_action_parameters *params = config->get_parameters();
+    EXPECT_NE(params, nullptr);
+    if (params && dynamic_cast<supla_action_rs_parameters *>(params)) {
+      result = dynamic_cast<supla_action_rs_parameters *>(params)->get_rs();
+      delete params;
+    }
+  }
+
+  return result;
+}
+
+TAction_RGBW_Parameters ActionTriggerConfigTest::get_rgbw_params(
+    action_trigger_config *config) {
+  TAction_RGBW_Parameters result = {};
+
+  EXPECT_NE(config, nullptr);
+  if (config) {
+    supla_abstract_action_parameters *params = config->get_parameters();
+    EXPECT_NE(params, nullptr);
+    if (params && dynamic_cast<supla_action_rgbw_parameters *>(params)) {
+      result = dynamic_cast<supla_action_rgbw_parameters *>(params)->get_rgbw();
+      delete params;
+    }
+  }
+
+  return result;
+}
 
 TEST_F(ActionTriggerConfigTest, root) {
   channel_json_config *c1 = new channel_json_config();
@@ -334,33 +380,33 @@ TEST_F(ActionTriggerConfigTest, getPercentage) {
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":98}}}}}");
 
-  EXPECT_EQ(config->get_percentage(), -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_percentage(), -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_percentage(), 98);
+  EXPECT_EQ(get_rs_params(config).Percentage, 98);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":110}}}}}");
 
-  EXPECT_EQ(config->get_percentage(), -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":0}}}}}");
 
-  EXPECT_EQ(config->get_percentage(), 0);
+  EXPECT_EQ(get_rs_params(config).Percentage, 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentag\":10}}}}}");
 
-  EXPECT_EQ(config->get_percentage(), -1);
+  EXPECT_NO_PARAMS(config);
 
   delete config;
 }
@@ -375,29 +421,29 @@ TEST_F(ActionTriggerConfigTest, getBrightness) {
 
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_rgbw().Brightness, -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_rgbw().Brightness, 15);
+  EXPECT_EQ(get_rgbw_params(config).Brightness, 15);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightness\":110}}}}}");
 
-  EXPECT_EQ(config->get_rgbw().Brightness, -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightness\":0}}}}}");
 
-  EXPECT_EQ(config->get_rgbw().Brightness, 0);
+  EXPECT_EQ(get_rgbw_params(config).Brightness, 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightnes\":15}}}}}");
 
-  EXPECT_EQ(config->get_rgbw().Brightness, -1);
+  EXPECT_NO_PARAMS(config);
 
   delete config;
 }
@@ -412,32 +458,32 @@ TEST_F(ActionTriggerConfigTest, getColorBrightness) {
       "}");
 
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(config->get_rgbw().ColorBrightness, -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_rgbw().ColorBrightness, 15);
+  EXPECT_EQ(get_rgbw_params(config).ColorBrightness, 15);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":110}}}"
       "}}");
 
-  EXPECT_EQ(config->get_rgbw().ColorBrightness, -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":0}}}}"
       "}");
 
-  EXPECT_EQ(config->get_rgbw().ColorBrightness, 0);
+  EXPECT_EQ(get_rgbw_params(config).ColorBrightness, 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightnes\":15}}}}"
       "}");
 
-  EXPECT_EQ(config->get_rgbw().ColorBrightness, -1);
+  EXPECT_NO_PARAMS(config);
 
   delete config;
 }
@@ -452,36 +498,36 @@ TEST_F(ActionTriggerConfigTest, getColor) {
       "}");
 
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(config->get_rgbw().Color, (unsigned int)0);
+  EXPECT_EQ(get_rgbw_params(config).Color, 0);
 
-  EXPECT_FALSE(config->get_rgbw().ColorRandom);
+  EXPECT_FALSE(get_rgbw_params(config).ColorRandom);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_rgbw().Color, (unsigned int)0xFF9400);
+  EXPECT_EQ(get_rgbw_params(config).Color, (unsigned int)0xFF9400);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":\"random\"}}}}"
       "}");
 
-  unsigned int color = config->get_rgbw().Color;
+  unsigned int color = get_rgbw_params(config).Color;
   int a = 0;
   for (a = 0; a < 10; a++) {
-    if (color != config->get_rgbw().Color) {
+    if (color != get_rgbw_params(config).Color) {
       break;
     }
   }
   EXPECT_NE(a, 10);
 
-  EXPECT_TRUE(config->get_rgbw().ColorRandom);
+  EXPECT_TRUE(get_rgbw_params(config).ColorRandom);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":\"white\"}}}}"
       "}");
 
-  EXPECT_EQ(config->get_rgbw().Color, (unsigned int)0xFFFFFF);
+  EXPECT_EQ(get_rgbw_params(config).Color, (unsigned int)0xFFFFFF);
 
   delete config;
 }
@@ -505,7 +551,7 @@ TEST_F(ActionTriggerConfigTest, actionSetRGBW) {
   EXPECT_EQ(config->get_source_channel_id(), 0);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
-  TAction_RGBW_Parameters rgbw = config->get_rgbw();
+  TAction_RGBW_Parameters rgbw = get_rgbw_params(config);
   EXPECT_EQ(rgbw.Brightness, (char)-1);
   EXPECT_EQ(rgbw.ColorBrightness, (char)44);
   EXPECT_EQ(rgbw.Color, (unsigned int)0xFF002A);
@@ -529,7 +575,7 @@ TEST_F(ActionTriggerConfigTest, actionRevealPartially) {
   EXPECT_EQ(config->get_subject_id(), 3611);
   EXPECT_EQ(config->get_source_device_id(), 0);
   EXPECT_EQ(config->get_source_channel_id(), 0);
-  EXPECT_EQ(config->get_percentage(), 65);
+  EXPECT_EQ(get_rs_params(config).Percentage, 65);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;
@@ -549,7 +595,7 @@ TEST_F(ActionTriggerConfigTest, actionShutPartially) {
   EXPECT_EQ(config->get_action_id(), ACTION_SHUT_PARTIALLY);
   EXPECT_EQ(config->get_subject_id(), 45678);
   EXPECT_EQ(config->get_source_channel_id(), 0);
-  EXPECT_EQ(config->get_percentage(), 20);
+  EXPECT_EQ(get_rs_params(config).Percentage, 20);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;
@@ -762,6 +808,48 @@ TEST_F(ActionTriggerConfigTest, sendPush) {
   EXPECT_EQ(config->get_subject_type(), stPushNotification);
 
   delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, copy) {
+  action_trigger_config c1, c2;
+
+  c1.set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":11}}}}}");
+
+  c1.set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  c1.set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  c2 = c1;
+
+  EXPECT_EQ(c1.get_action_id(), c2.get_action_id());
+  EXPECT_EQ(c1.get_subject_type(), c2.get_subject_type());
+  EXPECT_EQ(c1.get_subject_id(), c2.get_subject_id());
+  EXPECT_EQ(c1.get_source_device_id(), c2.get_source_device_id());
+  EXPECT_EQ(c1.get_source_channel_id(), c2.get_source_channel_id());
+  EXPECT_EQ(c1.get_capabilities(), c2.get_capabilities());
+  EXPECT_EQ(c1.get_caps_that_disables_local_operation(),
+            c2.get_caps_that_disables_local_operation());
+  EXPECT_EQ(c1.get_active_actions(), c2.get_active_actions());
+  EXPECT_EQ(c1.get_cap(), c2.get_cap());
+
+  supla_abstract_action_parameters *p1 = c1.get_parameters();
+  ASSERT_NE(p1, nullptr);
+
+  supla_abstract_action_parameters *p2 = c2.get_parameters();
+  EXPECT_NE(p2, nullptr);
+
+  if (p1 && p2) {
+    EXPECT_TRUE(p1->equal(p2));
+  }
+
+  if (p1) {
+    delete p1;
+  }
+
+  if (p2) {
+    delete p2;
+  }
 }
 
 } /* namespace testing */

@@ -29,6 +29,7 @@
 #include "device.h"
 #include "device/channel_property_getter.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "device/value/channel_hvac_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_valve_value.h"
 #include "jsonconfig/channel/controlling_the_gate_config.h"
@@ -120,7 +121,7 @@ supla_device_channel *supla_device_channels::find_channel(int id) {
 supla_device_channel *supla_device_channels::find_channel_by_number(
     int number) {
   for (auto it = channels.begin(); it != channels.end(); ++it) {
-    if ((*it)->get_number() == number) {
+    if ((*it)->get_channel_number() == number) {
       return *it;
     }
   }
@@ -136,10 +137,14 @@ void supla_device_channels::access_channel(
   }
 }
 
-void supla_device_channels::for_each_channel(
-    function<void(supla_device_channel *)> on_channel) {
+void supla_device_channels::for_each(
+    function<void(supla_device_channel *, bool *)> on_channel) {
   for (auto it = channels.begin(); it != channels.end(); ++it) {
-    on_channel(*it);
+    bool will_continue = true;
+    on_channel(*it, &will_continue);
+    if (!will_continue) {
+      break;
+    }
   }
 }
 
@@ -265,7 +270,7 @@ bool supla_device_channels::reset_counters(int channel_id) {
       (channel->get_flags() & SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS)) {
     TSD_DeviceCalCfgRequest request = {};
 
-    request.ChannelNumber = channel->get_number();
+    request.ChannelNumber = channel->get_channel_number();
     request.Command = SUPLA_CALCFG_CMD_RESET_COUNTERS;
     request.SuperUserAuthorized = true;
 
@@ -285,7 +290,7 @@ bool supla_device_channels::recalibrate(int channel_id,
       (channel->get_flags() & SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE)) {
     TSD_DeviceCalCfgRequest request = {};
 
-    request.ChannelNumber = channel->get_number();
+    request.ChannelNumber = channel->get_channel_number();
     request.Command = SUPLA_CALCFG_CMD_RECALIBRATE;
     request.SenderID = caller.convert_to_sender_id();
     request.SuperUserAuthorized = superuser_authorized;
@@ -354,24 +359,17 @@ int supla_device_channels::get_channel_type(int channel_id) {
   return 0;
 }
 
-list<int> supla_device_channels::mr_channel(int channel_id, bool master) {
-  list<int> result;
+vector<supla_channel_relation> supla_device_channels::get_channel_relations(
+    int channel_id, e_relation_kind kind) {
+  vector<supla_channel_relation> result;
 
   supla_device_channel *channel = find_channel(channel_id);
 
   if (channel) {
-    result = master ? channel->master_channel() : channel->related_channel();
+    result = channel->get_channel_relations(kind);
   }
 
   return result;
-}
-
-list<int> supla_device_channels::master_channel(int channel_id) {
-  return mr_channel(channel_id, true);
-}
-
-list<int> supla_device_channels::related_channel(int channel_id) {
-  return mr_channel(channel_id, false);
 }
 
 bool supla_device_channels::channel_exists(int channel_id) {
@@ -429,7 +427,7 @@ void supla_device_channels::async_set_channel_value(
     TSD_SuplaChannelGroupNewValue s;
     memset(&s, 0, sizeof(TSD_SuplaChannelGroupNewValue));
 
-    s.ChannelNumber = channel->get_number();
+    s.ChannelNumber = channel->get_channel_number();
     s.DurationMS = duration_ms;
     s.SenderID = caller.convert_to_sender_id();
     s.GroupID = group_id;
@@ -441,7 +439,7 @@ void supla_device_channels::async_set_channel_value(
     TSD_SuplaChannelNewValue s;
     memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));
 
-    s.ChannelNumber = channel->get_number();
+    s.ChannelNumber = channel->get_channel_number();
     s.DurationMS = duration_ms;
     s.SenderID = group_id ? 0 : caller.convert_to_sender_id();
     memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
@@ -607,7 +605,7 @@ bool supla_device_channels::calcfg_request(const supla_caller &caller,
     memset(&drequest, 0, sizeof(TSD_DeviceCalCfgRequest));
 
     drequest.SenderID = caller.convert_to_sender_id();
-    drequest.ChannelNumber = channel->get_number();
+    drequest.ChannelNumber = channel->get_channel_number();
     drequest.Command = request->Command;
     drequest.SuperUserAuthorized = superuser_authorized;
     drequest.DataType = request->DataType;
@@ -654,7 +652,7 @@ bool supla_device_channels::get_channel_state_async(
     memcpy(&drequest, request, sizeof(TCSD_ChannelStateRequest));
 
     drequest.SenderID = caller.convert_to_sender_id();
-    drequest.ChannelNumber = channel->get_number();
+    drequest.ChannelNumber = channel->get_channel_number();
 
     srpc_csd_async_get_channel_state(get_srpc(), &drequest);
 
@@ -686,7 +684,7 @@ map<int, int> supla_device_channels::get_functions(void) {
   map<int, int> result;
 
   for (auto it = channels.begin(); it != channels.end(); ++it) {
-    result.insert({(*it)->get_number(), (*it)->get_func()});
+    result.insert({(*it)->get_channel_number(), (*it)->get_func()});
   }
 
   return result;
@@ -821,6 +819,29 @@ bool supla_device_channels::set_on(const supla_caller &caller, int channel_id,
         }
         break;
       }
+
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO: {
+        supla_channel_hvac_value *hvac_value =
+            channel->get_value<supla_channel_hvac_value>();
+        if (hvac_value) {
+          if (toggle) {
+            hvac_value->toggle();
+          } else if (on) {
+            hvac_value->turn_on();
+          } else {
+            hvac_value->turn_off();
+          }
+
+          char v[SUPLA_CHANNELVALUE_SIZE] = {};
+          hvac_value->get_raw_value(v);
+          async_set_channel_value(channel, caller, group_id, eol, v, false);
+          result = true;
+
+          delete hvac_value;
+        }
+      } break;
     }
   }
 
@@ -1197,12 +1218,13 @@ channel_json_config *supla_device_channels::get_json_config(int channel_id) {
 
 unsigned int supla_device_channels::get_value_validity_time_left_msec(void) {
   unsigned int result = 0;
-  for_each_channel([&result](supla_device_channel *channel) -> void {
-    unsigned int time = channel->get_value_validity_time_left_msec();
-    if (time > result) {
-      result = time;
-    }
-  });
+  for_each(
+      [&result](supla_device_channel *channel, bool *will_continue) -> void {
+        unsigned int time = channel->get_value_validity_time_left_msec();
+        if (time > result) {
+          result = time;
+        }
+      });
   return result;
 }
 
@@ -1234,17 +1256,18 @@ vector<supla_channel_fragment> supla_device_channels::get_fragments(void) {
   vector<supla_channel_fragment> result;
   result.reserve(channels.size());
 
-  for_each_channel([&result](supla_device_channel *channel) -> void {
-    supla_channel_fragment f;
-    f = channel;
-    result.push_back(f);
-  });
+  for_each(
+      [&result](supla_device_channel *channel, bool *will_continue) -> void {
+        supla_channel_fragment f;
+        f = channel;
+        result.push_back(f);
+      });
 
   return result;
 }
 
 void supla_device_channels::send_configs_to_device(void) {
-  for_each_channel([](supla_device_channel *channel) -> void {
+  for_each([](supla_device_channel *channel, bool *will_continue) -> void {
     channel->send_config_to_device();
   });
 }

@@ -18,6 +18,8 @@
 
 #include "jsonconfig/channel/action_trigger_config.h"
 
+#include "actions/action_rgbw_parameters.h"
+#include "actions/action_rs_parameters.h"
 #include "proto.h"
 #include "tools.h"
 
@@ -352,19 +354,18 @@ cJSON *action_trigger_config::get_cap_user_config(int cap) {
   return cJSON_GetObjectItem(actions, it->second.c_str());
 }
 
-char action_trigger_config::get_percentage(void) {
-  char result = -1;
-
+supla_abstract_action_parameters *action_trigger_config::get_rs(void) {
   if (!active_cap) {
-    return result;
+    return nullptr;
   }
 
   cJSON *cap_cfg = get_cap_user_config(active_cap);
 
   if (!cap_cfg) {
-    return result;
+    return nullptr;
   }
 
+  supla_abstract_action_parameters *result = nullptr;
   cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
 
   if (action) {
@@ -373,7 +374,7 @@ char action_trigger_config::get_percentage(void) {
       cJSON *percentage = cJSON_GetObjectItem(param, "percentage");
       if (percentage && cJSON_IsNumber(percentage) &&
           percentage->valueint >= 0 && percentage->valueint <= 100) {
-        result = percentage->valueint;
+        result = new supla_action_rs_parameters(percentage->valueint);
       }
     }
   }
@@ -381,60 +382,73 @@ char action_trigger_config::get_percentage(void) {
   return result;
 }
 
-TAction_RGBW_Parameters action_trigger_config::get_rgbw(void) {
-  TAction_RGBW_Parameters result = {.Brightness = -1,
-                                    .ColorBrightness = -1,
-                                    .Color = 0,
-                                    .ColorRandom = false,
-                                    .OnOff = false};
+supla_abstract_action_parameters *action_trigger_config::get_rgbw(void) {
   if (!active_cap) {
-    return result;
+    return nullptr;
   }
 
   cJSON *cap_cfg = get_cap_user_config(active_cap);
 
   if (!cap_cfg) {
-    return result;
+    return nullptr;
   }
 
+  supla_action_rgbw_parameters *result = nullptr;
   cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
 
   if (action) {
     cJSON *param = cJSON_GetObjectItem(action, "param");
+
+    bool any_set = false;
+    result = new supla_action_rgbw_parameters();
+    result->set_brightness(-1);
+    result->set_color_brightness(-1);
+
     if (param) {
       cJSON *item = cJSON_GetObjectItem(param, "brightness");
       if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
           item->valueint <= 100) {
-        result.Brightness = item->valueint;
+        result->set_brightness(item->valueint);
+        any_set = true;
       }
 
       item = cJSON_GetObjectItem(param, "color_brightness");
       if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
           item->valueint <= 100) {
-        result.ColorBrightness = item->valueint;
+        result->set_color_brightness(item->valueint);
+        any_set = true;
       }
 
       item = cJSON_GetObjectItem(param, "hue");
       if (item) {
         if (cJSON_IsNumber(item)) {
-          result.Color = st_hue2rgb(item->valuedouble);
+          result->set_color(st_hue2rgb(item->valuedouble));
+          any_set = true;
         } else if (equal_ci(item, "white")) {
-          result.Color = 0xFFFFFF;
+          result->set_color(0xFFFFFF);
+          any_set = true;
         } else if (equal_ci(item, "random")) {
-          while (!result.Color) {
-            struct timeval time = {};
-            gettimeofday(&time, nullptr);
-            unsigned int seed = time.tv_sec + time.tv_usec;
-            result.Color = st_hue2rgb(rand_r(&seed) % 360);
-          }
-
-          result.ColorRandom = true;
+          result->set_random_color(true);
+          any_set = true;
         }
+      }
+
+      if (!any_set) {
+        delete result;
+        result = nullptr;
       }
     }
   }
 
   return result;
+}
+
+supla_abstract_action_parameters *action_trigger_config::get_parameters(void) {
+  supla_abstract_action_parameters *result = get_rs();
+  if (result) {
+    return result;
+  }
+  return get_rgbw();
 }
 
 int action_trigger_config::get_cap(void) { return active_cap; }

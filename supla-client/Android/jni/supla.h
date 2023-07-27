@@ -42,6 +42,7 @@ typedef struct {
   jmethodID j_mid_on_event;
   jmethodID j_mid_on_registration_enabled;
   jmethodID j_mid_on_min_version_required;
+  jmethodID j_mid_channel_relation_update;
   jmethodID j_mid_channelgroup_update;
   jmethodID j_mid_channelgroup_relation_update;
   jmethodID j_mid_scene_update;

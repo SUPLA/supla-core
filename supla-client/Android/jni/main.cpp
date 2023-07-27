@@ -479,7 +479,7 @@ jobject supla_channelvalue_to_jobject(void *_suplaclient, void *user_data,
 }
 
 void supla_cb_channel_update(void *_suplaclient, void *user_data,
-                             TSC_SuplaChannel_E *channel) {
+                             TSC_SuplaChannel_D *channel) {
   // int a;
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
@@ -504,12 +504,6 @@ void supla_cb_channel_update(void *_suplaclient, void *user_data,
 
     fid = supla_client_GetFieldID(env, cch, "DeviceID", "I");
     env->SetIntField(ch, fid, channel->DeviceID);
-
-    fid = supla_client_GetFieldID(env, cch, "ParantChannel1Id", "I");
-    env->SetIntField(ch, fid, channel->ParentChannelId[0]);
-
-    fid = supla_client_GetFieldID(env, cch, "ParantChannel2Id", "I");
-    env->SetIntField(ch, fid, channel->ParentChannelId[1]);
 
     fid = supla_client_GetFieldID(env, cch, "LocationID", "I");
     env->SetIntField(ch, fid, channel->LocationID);
@@ -1027,6 +1021,25 @@ void supla_cb_channelgroup_relation_update(
     env->SetIntField(chg, fid, channelgroup_relation->ChannelID);
 
     supla_android_client(asc, asc->j_mid_channelgroup_relation_update, chg);
+  }
+}
+
+void supla_cb_channel_relation_update(
+    void *_suplaclient, void *user_data,
+    TSC_SuplaChannelRelation *channel_relation) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_channel_update) {
+    jclass cls = env->FindClass("org/supla/android/lib/SuplaChannelRelation");
+
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "(IISZ)V");
+    jobject rel =
+        env->NewObject(cls, methodID, channel_relation->Id,
+                       channel_relation->ParentId, channel_relation->Type,
+                       channel_relation->EOL == 1 ? JNI_TRUE : JNI_FALSE);
+
+    supla_android_client(asc, asc->j_mid_channel_relation_update, rel);
   }
 }
 
@@ -1649,6 +1662,9 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
     _asc->j_mid_on_min_version_required =
         env->GetMethodID(oclass, "onMinVersionRequired",
                          "(Lorg/supla/android/lib/SuplaMinVersionRequired;)V");
+    _asc->j_mid_channel_relation_update =
+        env->GetMethodID(oclass, "channelRelationUpdate",
+                         "(Lorg/supla/android/lib/SuplaChannelRelation;)V");
     _asc->j_mid_channelgroup_update =
         env->GetMethodID(oclass, "channelGroupUpdate",
                          "(Lorg/supla/android/lib/SuplaChannelGroup;)V");
@@ -1727,6 +1743,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
     sclient_cfg.cb_on_event = supla_cb_on_event;
     sclient_cfg.cb_on_registration_enabled = supla_cb_on_registration_enabled;
     sclient_cfg.cb_on_min_version_required = supla_cb_on_min_version_required;
+    sclient_cfg.cb_channel_relation_update = supla_cb_channel_relation_update;
     sclient_cfg.cb_channelgroup_update = supla_cb_channelgroup_update;
     sclient_cfg.cb_channelgroup_relation_update =
         supla_cb_channelgroup_relation_update;

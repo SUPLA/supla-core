@@ -28,17 +28,28 @@ using std::shared_ptr;
 using std::string;
 
 supla_timer_state_extended_value::supla_timer_state_extended_value(
+    const TSuplaChannelExtendedValue *value) {
+  set_raw_value(value);
+}
+
+supla_timer_state_extended_value::supla_timer_state_extended_value(
     const TSuplaChannelExtendedValue *value, supla_user *user)
     : supla_channel_extended_value() {
-  // Don't use supla_channel_extended_value(value) here because we want to
-  // overwrite the set_raw_value method
-  this->user = user;
-  set_raw_value(value);
+  set_raw_value_with_update(value, user);
 }
 
 supla_timer_state_extended_value::~supla_timer_state_extended_value(void) {}
 
-string supla_timer_state_extended_value::get_sender_name(int client_id) {
+void supla_timer_state_extended_value::set_raw_value_with_update(
+    const TSuplaChannelExtendedValue *value, supla_user *user) {
+  set_raw_value(value);
+
+  update_sender_name(user);
+  update_time();
+}
+
+string supla_timer_state_extended_value::get_sender_name(supla_user *user,
+                                                         int client_id) {
   if (user) {
     shared_ptr<supla_client> client = user->get_clients()->get(client_id);
     if (client != nullptr) {
@@ -49,18 +60,15 @@ string supla_timer_state_extended_value::get_sender_name(int client_id) {
   return "";
 }
 
-supla_user *supla_timer_state_extended_value::get_user(void) { return user; }
-
-void supla_timer_state_extended_value::update_sender_name(void) {
+void supla_timer_state_extended_value::update_sender_name(supla_user *user) {
   if (!get_value_ptr()) {
     return;
   }
 
   TTimerState_ExtendedValue *value =
       (TTimerState_ExtendedValue *)get_value_ptr()->value;
-
   if (value && value->SenderID) {
-    string name = get_sender_name(value->SenderID);
+    string name = get_sender_name(user, value->SenderID);
     size_t size = name.size();
     if (size > 0) {
       size++;
@@ -129,9 +137,6 @@ void supla_timer_state_extended_value::set_raw_value(
   } else {
     supla_channel_extended_value::set_raw_value(nullptr);
   }
-
-  update_sender_name();
-  update_time();
 }
 
 void supla_timer_state_extended_value::set_raw_value(
@@ -150,7 +155,7 @@ bool supla_timer_state_extended_value::get_raw_value(
   if (value) {
     memset(value, 0, sizeof(TTimerState_ExtendedValue));
 
-    if (get_value_ptr()) {
+    if (get_value_ptr() && is_ev_type_supported(get_value_ptr()->type)) {
       memcpy(value, get_value_ptr()->value,
              supla_timer_state_extended_value::
                  get_value_size());  // The method can be overridden so we refer
@@ -170,7 +175,7 @@ bool supla_timer_state_extended_value::get_raw_value(
 supla_channel_extended_value *supla_timer_state_extended_value::copy(  // NOLINT
     void) {                                                            // NOLINT
   supla_timer_state_extended_value *result =
-      new supla_timer_state_extended_value(nullptr, get_user());
+      new supla_timer_state_extended_value(nullptr, nullptr);
   result->supla_channel_extended_value::set_raw_value(get_value_ptr());
 
   return result;

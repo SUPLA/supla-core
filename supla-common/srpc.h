@@ -120,12 +120,10 @@ union TsrpcDataPacketData {
   TSC_SuplaChannel_B *sc_channel_b;
   TSC_SuplaChannel_C *sc_channel_c;
   TSC_SuplaChannel_D *sc_channel_d;
-  TSC_SuplaChannel_E *sc_channel_e;
   TSC_SuplaChannelPack *sc_channel_pack;
   TSC_SuplaChannelPack_B *sc_channel_pack_b;
   TSC_SuplaChannelPack_C *sc_channel_pack_c;
   TSC_SuplaChannelPack_D *sc_channel_pack_d;
-  TSC_SuplaChannelPack_E *sc_channel_pack_e;
   TSC_SuplaChannelValue *sc_channel_value;
   TSC_SuplaChannelValue_B *sc_channel_value_b;
   TSC_SuplaEvent *sc_event;
@@ -140,6 +138,7 @@ union TsrpcDataPacketData {
   TSC_SuplaChannelGroupPack *sc_channelgroup_pack;
   TSC_SuplaChannelGroupPack_B *sc_channelgroup_pack_b;
   TSC_SuplaChannelGroupRelationPack *sc_channelgroup_relation_pack;
+  TSC_SuplaChannelRelationPack *sc_channel_relation_pack;
   TSC_SuplaChannelValuePack *sc_channelvalue_pack;
   TSC_SuplaChannelValuePack_B *sc_channelvalue_pack_b;
   TSC_SuplaChannelExtendedValuePack *sc_channelextendedvalue_pack;
@@ -352,8 +351,6 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_update_c(
     void *_srpc, TSC_SuplaChannel_C *channel);  // ver. >= 10
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_update_d(
     void *_srpc, TSC_SuplaChannel_D *channel);  // ver. >= 15
-_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_update_e(
-    void *_srpc, TSC_SuplaChannel_E *channel);  // ver. >= 21
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(
     void *_srpc, TSC_SuplaChannelPack *channel_pack);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_b(
@@ -362,8 +359,6 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_c(
     void *_srpc, TSC_SuplaChannelPack_C *channel_pack);  // ver. >= 10
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_d(
     void *_srpc, TSC_SuplaChannelPack_D *channel_pack);  // ver. >= 15
-_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_e(
-    void *_srpc, TSC_SuplaChannelPack_E *channel_pack);  // ver. >= 21
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_value_update(
     void *_srpc, TSC_SuplaChannelValue *channel_item_value);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_value_update_b(
@@ -375,6 +370,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_pack_update_b(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_relation_pack_update(
     void *_srpc, TSC_SuplaChannelGroupRelationPack
                      *channelgroup_relation_pack);  // ver. >= 9
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_relation_pack_update(
+    void *_srpc, TSC_SuplaChannelRelationPack *relation_pack);  // ver. >= 21
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update(
     void *_srpc, TSC_SuplaChannelValuePack *channelvalue_pack);  // ver. >= 9
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update_b(

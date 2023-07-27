@@ -27,6 +27,7 @@
 #include "analyzer/voltage_analyzers.h"
 #include "caller.h"
 #include "channel_address.h"
+#include "device/abstract_common_channel_properties.h"
 #include "device/extended_value/channel_extended_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "device/value/channel_value.h"
@@ -34,7 +35,6 @@
 
 class supla_user;
 class supla_device;
-class channel_json_config;
 
 enum rsAction {
   rsActionStop,
@@ -47,12 +47,12 @@ enum rsAction {
   rsActionReveal
 };
 
-class supla_device_channel {
+class supla_device_channel : public supla_abstract_common_channel_properties {
  private:
   void *lck;
   supla_device *device;
   const int id;
-  const unsigned char number;
+  const unsigned char channel_number;
   const int type;
   int func;
   int param1;
@@ -88,36 +88,40 @@ class supla_device_channel {
   void json_to_config(TSD_ChannelConfig *config);
   void set_extended_value(TSuplaChannelExtendedValue *ev,
                           supla_channel_extended_value *new_value);
+  virtual void for_each(
+      std::function<void(supla_abstract_common_channel_properties *, bool *)>
+          on_channel_properties);
 
  public:
-  supla_device_channel(supla_device *device, int id, int number, int type,
-                       int func, int param1, int param2, int param3, int param4,
+  supla_device_channel(supla_device *device, int id,
+                       unsigned char channel_number, int type, int func,
+                       int param1, int param2, int param3, int param4,
                        const char *text_param1, const char *text_param2,
                        const char *text_param3, bool hidden, unsigned int flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
                        unsigned _supla_int_t validity_time_sec,
+                       supla_channel_extended_value *extended_value,
                        const char *user_config, const char *properties);
   virtual ~supla_device_channel();
 
   static void get_defaults(int type, int func, int *param1, int *param2);
   static int func_list_filter(int func_list, int type);
-  static void get_parent_channel_id(int func, int param1, int param2,
-                                    int param4, int *parent1, int *parent2);
 
   void lock(void);
   void unlock(void);
   int get_id(void);
-  int get_number(void);
+  virtual int get_device_id(void);
+  virtual unsigned char get_channel_number(void);
   int get_user_id(void);
   supla_user *get_user();
   supla_device *get_device();
   int get_func(void);
   void set_func(int func);
   int get_type(void);
-  int get_param1(void);
-  int get_param2(void);
-  int get_param3(void);
-  int get_param4(void);
+  virtual int get_param1(void);
+  virtual int get_param2(void);
+  virtual int get_param3(void);
+  virtual int get_param4(void);
   const char *get_text_param1(void);
   const char *get_text_param2(void);
   const char *get_text_param3(void);
@@ -145,9 +149,7 @@ class supla_device_channel {
                                  int related_channel_id,
                                  unsigned int disables_local_operation);
 
-  std::list<int> master_channel(void);
-  std::list<int> related_channel(void);
-  channel_json_config *get_json_config(void);
+  virtual channel_json_config *get_json_config(void);
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);

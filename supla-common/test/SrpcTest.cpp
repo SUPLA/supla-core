@@ -535,8 +535,7 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT,
               SUPLA_SD_CALL_SET_DEVICE_CONFIG,
               SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT,
-              SUPLA_SC_CALL_CHANNEL_UPDATE_E,
-              SUPLA_SC_CALL_CHANNELPACK_UPDATE_E};
+              SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE};
   }
 
   return {};
@@ -2202,11 +2201,6 @@ SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_d,
                                   SUPLA_SC_CALL_CHANNEL_UPDATE_D, 83, 484,
                                   sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_e,
-                                  TSC_SuplaChannel_E,
-                                  SUPLA_SC_CALL_CHANNEL_UPDATE_E, 95, 496,
-                                  sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
-
 //---------------------------------------------------------
 // CHANNEL PACK UPDATE
 //---------------------------------------------------------
@@ -2229,11 +2223,6 @@ SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
     srpc_sc_async_channelpack_update_d, TSC_SuplaChannelPack_D,
     TSC_SuplaChannel_D, SUPLA_SC_CALL_CHANNELPACK_UPDATE_D, 8790, 9251,
     sc_channel_pack_d);
-
-SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
-    srpc_sc_async_channelpack_update_e, TSC_SuplaChannelPack_E,
-    TSC_SuplaChannel_E, SUPLA_SC_CALL_CHANNELPACK_UPDATE_E, 8982, 9451,
-    sc_channel_pack_e);
 
 //---------------------------------------------------------
 // CHANNEL VALUE UPDATE
@@ -2547,6 +2536,86 @@ TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_minimum_size) {
                       sizeof(TSC_SuplaChannelGroupRelationPack) -
                           ((SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT - 1) *
                            sizeof(TSC_SuplaChannelGroupRelation))));
+
+  free(cr_rd.data.sc_channelgroup_relation_pack);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// CHANNEL RELATION PACK
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, srpc_sc_async_channel_relation_pack_update_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelRelationPack, pack);
+
+  pack.count = SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channel_relation_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_sc_async_channel_relation_pack_update_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelRelationPack, pack);
+
+  pack.count = SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channel_relation_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_sc_async_channel_relation_pack_update_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelRelationPack, pack);
+
+  pack.count = SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT;
+
+  ASSERT_GT(srpc_sc_async_channel_relation_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE, 1131);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_relation_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_relation_pack, &pack,
+                      sizeof(TSC_SuplaChannelRelationPack)));
+
+  free(cr_rd.data.sc_channel_relation_pack);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_sc_async_channel_relation_pack_update_with_minimum_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelRelationPack, pack);
+
+  pack.count = 1;
+
+  ASSERT_GT(srpc_sc_async_channel_relation_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE, 42);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_relation_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_relation_pack, &pack,
+                      sizeof(TSC_SuplaChannelRelationPack) -
+                          ((SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT - 1) *
+                           sizeof(TSC_SuplaChannelRelation))));
 
   free(cr_rd.data.sc_channelgroup_relation_pack);
   srpc_free(srpc);

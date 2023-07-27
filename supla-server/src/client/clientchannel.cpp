@@ -36,15 +36,17 @@
 using std::shared_ptr;
 
 supla_client_channel::supla_client_channel(
-    supla_client_channels *Container, int Id, int DeviceId, int LocationID,
-    int Type, int Func, int Param1, int Param2, int Param3, int Param4,
-    char *TextParam1, char *TextParam2, char *TextParam3, const char *Caption,
-    int AltIcon, int UserIcon, short ManufacturerID, short ProductID,
-    unsigned char ProtocolVersion, int Flags, int EmSubcFlags,
-    const char value[SUPLA_CHANNELVALUE_SIZE],
+    supla_client_channels *Container, int Id, unsigned char channel_number,
+    int DeviceId, int LocationID, int Type, int Func, int Param1, int Param2,
+    int Param3, int Param4, char *TextParam1, char *TextParam2,
+    char *TextParam3, const char *Caption, int AltIcon, int UserIcon,
+    short ManufacturerID, short ProductID, unsigned char ProtocolVersion,
+    int Flags, int EmSubcFlags, const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec, const char *user_config,
     const char *em_subc_user_config)
-    : supla_client_objcontainer_item(Container, Id, Caption) {
+    : supla_client_objcontainer_item(Container, Id, Caption),
+      supla_abstract_common_channel_properties() {
+  this->channel_number = channel_number;
   this->DeviceId = DeviceId;
   this->LocationId = LocationID;
   this->Type = Type;
@@ -53,18 +55,22 @@ supla_client_channel::supla_client_channel(
   this->Param2 = Param2;
   this->Param3 = Param3;
   this->Param4 = Param4;
-  this->TextParam1 = TextParam1 ? strndup(TextParam1, 255) : NULL;
-  this->TextParam2 = TextParam2 ? strndup(TextParam2, 255) : NULL;
-  this->TextParam3 = TextParam3 ? strndup(TextParam3, 255) : NULL;
+  this->TextParam1 = TextParam1 ? strndup(TextParam1, 255) : nullptr;
+  this->TextParam2 = TextParam2 ? strndup(TextParam2, 255) : nullptr;
+  this->TextParam3 = TextParam3 ? strndup(TextParam3, 255) : nullptr;
   this->AltIcon = AltIcon;
   this->UserIcon = UserIcon;
   this->ManufacturerID = ManufacturerID;
   this->ProductID = ProductID;
   this->ProtocolVersion = ProtocolVersion;
   this->Flags = Flags;
+
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED;
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
+
+  json_config = new channel_json_config();
+  json_config->set_user_config(user_config);
 
   if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
     electricity_meter_config *config = new electricity_meter_config();
@@ -78,6 +84,8 @@ supla_client_channel::supla_client_channel(
     delete config;
   }
 
+  this->Flags ^= this->Flags & SUPLA_CHANNEL_FLAG_HAS_PARENT;
+
   setValueValidityTimeSec(validity_time_sec);
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 }
@@ -85,56 +93,81 @@ supla_client_channel::supla_client_channel(
 supla_client_channel::~supla_client_channel(void) {
   if (this->TextParam1) {
     free(this->TextParam1);
-    this->TextParam1 = NULL;
+    this->TextParam1 = nullptr;
   }
 
   if (this->TextParam2) {
     free(this->TextParam2);
-    this->TextParam2 = NULL;
+    this->TextParam2 = nullptr;
   }
 
   if (this->TextParam3) {
     free(this->TextParam3);
-    this->TextParam3 = NULL;
+    this->TextParam3 = nullptr;
   }
+
+  delete json_config;
 }
 
-int supla_client_channel::getDeviceId() { return DeviceId; }
+unsigned char supla_client_channel::get_channel_number(void) {
+  return channel_number;
+}
 
-int supla_client_channel::getExtraId() { return DeviceId; }
+int supla_client_channel::get_device_id() { return DeviceId; }
 
-int supla_client_channel::getType() { return Type; }
+int supla_client_channel::get_id() {
+  return supla_client_objcontainer_item::get_id();
+}
 
-int supla_client_channel::getFunc() { return Func; }
+int supla_client_channel::get_extra_id() { return DeviceId; }
 
-void supla_client_channel::setFunc(int Func) {
+int supla_client_channel::get_type() { return Type; }
+
+int supla_client_channel::get_func() { return Func; }
+
+void supla_client_channel::set_func(int Func) {
   if (Func != this->Func) {
     this->Func = Func;
     mark_for_remote_update(OI_REMOTEUPDATE_DATA1);
   }
 }
 
+int supla_client_channel::get_param1() { return Param1; }
+
+int supla_client_channel::get_param2() { return Param2; }
+
+int supla_client_channel::get_param3() { return Param3; }
+
+int supla_client_channel::get_param4() { return Param4; }
+
+channel_json_config *supla_client_channel::get_json_config() {
+  return new channel_json_config(json_config, true);
+}
+
 void supla_client_channel::setCaption(const char *Caption) {
-  if ((Caption == NULL && getCaption() != NULL) ||
-      (Caption != NULL && getCaption() == NULL) ||
+  if ((Caption == nullptr && getCaption() != nullptr) ||
+      (Caption != nullptr && getCaption() == nullptr) ||
       strncmp(Caption, getCaption(), SUPLA_CHANNEL_CAPTION_MAXSIZE) != 0) {
     supla_client_objcontainer_item::setCaption(Caption);
     mark_for_remote_update(OI_REMOTEUPDATE_DATA1);
   }
 }
 
-short supla_client_channel::getManufacturerID() { return ManufacturerID; }
+short supla_client_channel::get_manufacturer_id() { return ManufacturerID; }
 
-short supla_client_channel::getProductID() { return ProductID; }
+short supla_client_channel::get_product_id() { return ProductID; }
 
-int supla_client_channel::getFlags() { return Flags; }
+int supla_client_channel::get_flags() {
+  auto relations = get_channel_relations(relation_with_parent_channel);
+  return Flags | (relations.size() ? SUPLA_CHANNEL_FLAG_HAS_PARENT : 0);
+}
 
 void supla_client_channel::setValueValidityTimeSec(
     unsigned _supla_int_t validity_time_sec) {
   resetValueValidityTime();
 
   if (validity_time_sec > 0) {
-    gettimeofday(&value_valid_to, NULL);
+    gettimeofday(&value_valid_to, nullptr);
     value_valid_to.tv_sec += validity_time_sec;
   }
 }
@@ -146,7 +179,7 @@ bool supla_client_channel::isValueValidityTimeSet() {
 unsigned _supla_int64_t supla_client_channel::getValueValidityTimeUSec(void) {
   if (isValueValidityTimeSet()) {
     struct timeval now;
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
 
     _supla_int64_t result =
         (value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec) -
@@ -168,15 +201,9 @@ bool supla_client_channel::remote_update_is_possible(void) {
   int protocol_version = dynamic_cast<supla_client_channels *>(getContainer())
                              ->getClient()
                              ->get_protocol_version();
-  if (protocol_version < 21) {
-    int p1 = 0;
-    int p2 = 0;
-    supla_device_channel::get_parent_channel_id(Func, Param1, Param2, Param4,
-                                                &p1, &p2);
-
-    if (p1 || p2) {
-      return false;
-    }
+  if (protocol_version < 21 &&
+      get_channel_relations(relation_with_parent_channel).size()) {
+    return false;
   }
 
   switch (Func) {
@@ -245,7 +272,7 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue_B *value,
   if (client && client->get_user()) {
     unsigned _supla_int_t validity_time_sec = 0;
     result = client->get_user()->get_channel_value(
-        DeviceId, getId(), value->value, value->sub_value,
+        DeviceId, get_id(), value->value, value->sub_value,
         &value->sub_value_type, nullptr, nullptr, online, &validity_time_sec,
         true);
     if (result) {
@@ -276,7 +303,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel *channel,
                                      supla_client *client) {
   memset(channel, 0, sizeof(TSC_SuplaChannel));
 
-  channel->Id = getId();
+  channel->Id = get_id();
   channel->Func = Func;
   channel->LocationID = this->LocationId;
 
@@ -290,12 +317,12 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
                                      supla_client *client) {
   memset(channel, 0, sizeof(TSC_SuplaChannel_B));
 
-  channel->Id = getId();
+  channel->Id = get_id();
   channel->Func = Func;
   channel->LocationID = this->LocationId;
   channel->AltIcon = this->AltIcon;
   channel->ProtocolVersion = this->ProtocolVersion;
-  channel->Flags = this->Flags;
+  channel->Flags = get_flags();
 
   proto_get_value(&channel->value, &channel->online, client);
   sproto_set_null_terminated_string(getCaption(), channel->Caption,
@@ -307,8 +334,8 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
                                      supla_client *client) {
   memset(channel, 0, sizeof(TSC_SuplaChannel_C));
 
-  channel->Id = getId();
-  channel->DeviceID = getDeviceId();
+  channel->Id = get_id();
+  channel->DeviceID = get_device_id();
   channel->Type = this->Type;
   channel->Func = Func;
   channel->LocationID = this->LocationId;
@@ -317,7 +344,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
   channel->ManufacturerID = this->ManufacturerID;
   channel->ProductID = this->ProductID;
   channel->ProtocolVersion = this->ProtocolVersion;
-  channel->Flags = this->Flags;
+  channel->Flags = get_flags();
 
   proto_get_value(&channel->value, &channel->online, client);
   sproto_set_null_terminated_string(getCaption(), channel->Caption,
@@ -329,8 +356,8 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
                                      supla_client *client) {
   memset(channel, 0, sizeof(TSC_SuplaChannel_D));
 
-  channel->Id = getId();
-  channel->DeviceID = getDeviceId();
+  channel->Id = get_id();
+  channel->DeviceID = get_device_id();
   channel->Type = this->Type;
   channel->Func = Func;
   channel->LocationID = this->LocationId;
@@ -339,33 +366,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
   channel->ManufacturerID = this->ManufacturerID;
   channel->ProductID = this->ProductID;
   channel->ProtocolVersion = this->ProtocolVersion;
-  channel->Flags = this->Flags;
-
-  proto_get_value(&channel->value, &channel->online, client);
-  sproto_set_null_terminated_string(getCaption(), channel->Caption,
-                                    &channel->CaptionSize,
-                                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
-}
-
-void supla_client_channel::proto_get(TSC_SuplaChannel_E *channel,
-                                     supla_client *client) {
-  memset(channel, 0, sizeof(TSC_SuplaChannel_D));
-
-  channel->Id = getId();
-  channel->DeviceID = getDeviceId();
-  supla_device_channel::get_parent_channel_id(Func, Param1, Param2, Param4,
-                                              &channel->ParentChannelId[0],
-                                              &channel->ParentChannelId[1]);
-
-  channel->Type = Type;
-  channel->Func = Func;
-  channel->LocationID = LocationId;
-  channel->AltIcon = AltIcon;
-  channel->UserIcon = UserIcon;
-  channel->ManufacturerID = ManufacturerID;
-  channel->ProductID = ProductID;
-  channel->ProtocolVersion = ProtocolVersion;
-  channel->Flags = Flags;
+  channel->Flags = get_flags();
 
   proto_get_value(&channel->value, &channel->online, client);
   sproto_set_null_terminated_string(getCaption(), channel->Caption,
@@ -376,14 +377,14 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_E *channel,
 void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,
                                      supla_client *client) {
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
-  channel_value->Id = getId();
+  channel_value->Id = get_id();
   proto_get_value(&channel_value->value, &channel_value->online, client);
 }
 
 void supla_client_channel::proto_get(TSC_SuplaChannelValue_B *channel_value,
                                      supla_client *client) {
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue_B));
-  channel_value->Id = getId();
+  channel_value->Id = get_id();
   proto_get_value(&channel_value->value, &channel_value->online, client);
 }
 
@@ -407,7 +408,7 @@ bool supla_client_channel::get_cs_extended_value(
 
 bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
                                      supla_client *client) {
-  if (cev == NULL) {
+  if (cev == nullptr) {
     return false;
   }
 
@@ -416,7 +417,7 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
   if (client && client->get_user()) {
     bool cev_exists = false;
 
-    int ChannelId = getId();
+    int ChannelId = get_id();
     shared_ptr<supla_device> device =
         client->get_user()->get_devices()->get(DeviceId);
 
@@ -427,7 +428,7 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     device = nullptr;
     ChannelId = 0;
 
-    switch (getFunc()) {
+    switch (get_func()) {
       case SUPLA_CHANNELFNC_POWERSWITCH:
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
         ChannelId = Param1;  // Associated measurement channel
@@ -458,7 +459,7 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     }
 
     if (cev_exists) {
-      cev->Id = getId();
+      cev->Id = get_id();
       return true;
     }
   }
@@ -477,12 +478,22 @@ void supla_client_channel::mark_for_remote_update(int mark) {
 }
 
 bool supla_client_channel::get_basic_cfg(TSC_ChannelBasicCfg *basic_cfg) {
-  if (basic_cfg == NULL) return false;
+  if (basic_cfg == nullptr) return false;
 
   bool result = false;
   database *db = new database();
-  result = db->connect() && db->get_channel_basic_cfg(getId(), basic_cfg);
+  result = db->connect() && db->get_channel_basic_cfg(get_id(), basic_cfg);
   delete db;
 
   return result;
+}
+
+void supla_client_channel::for_each(
+    std::function<void(supla_abstract_common_channel_properties *, bool *)>
+        on_channel_properties) {
+  dynamic_cast<supla_client_channels *>(getContainer())
+      ->for_each(
+          [&](supla_client_channel *channel, bool *will_continue) -> void {
+            on_channel_properties(channel, will_continue);
+          });
 }

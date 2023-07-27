@@ -52,7 +52,7 @@ void ActionExecutorTest::SetUp() {
     char value[SUPLA_CHANNELVALUE_SIZE] = {};
     supla_device_channel *channel = new supla_device_channel(
         device, 89, 0, 0, 0, 0, 0, 0, 0, nullptr, nullptr, nullptr, 0, 0, value,
-        0, nullptr, nullptr);
+        0, nullptr, nullptr, nullptr);
 
     result.push_back(channel);
 

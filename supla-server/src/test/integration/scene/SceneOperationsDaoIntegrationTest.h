@@ -35,6 +35,10 @@ class SceneOperationsDaoIntegrationTest : public IntegrationTest, public Test {
   virtual ~SceneOperationsDaoIntegrationTest();
   virtual void SetUp();
   virtual void TearDown();
+
+  void EXPECT_NO_PARAMS(supla_action_config *config);
+  char get_percentage(supla_action_config *config);
+  TAction_RGBW_Parameters get_rgbw(supla_action_config *config);
 };
 
 } /* namespace testing */

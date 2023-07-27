@@ -2987,3 +2987,39 @@ DELIMITER ;;
 CREATE PROCEDURE `supla_set_device_user_config`(IN `_user_id` INT, IN `_device_id` INT, IN `_user_config` VARCHAR(2048) CHARSET utf8mb4, IN `_md5` VARCHAR(32)) BEGIN UPDATE supla_iodevice SET user_config = _user_config WHERE id = _device_id AND user_id = _user_id AND MD5(IFNULL(user_config, '')) = _md5; SELECT STRCMP(user_config, _user_config) FROM supla_iodevice WHERE id = _device_id AND user_id = _user_id; END;;
 CREATE PROCEDURE `supla_set_channel_user_config`(IN `_user_id` INT, IN `_channel_id` INT, IN `_user_config` VARCHAR(2048) CHARSET utf8mb4, IN `_md5` VARCHAR(32)) BEGIN UPDATE supla_dev_channel SET user_config = _user_config WHERE id = _channel_id AND user_id = _user_id AND MD5(IFNULL(user_config, '')) = _md5; SELECT STRCMP(user_config, _user_config) FROM supla_dev_channel WHERE id = _channel_id AND user_id = _user_id; END;;
 DELIMITER ;
+
+CREATE TABLE `supla_dev_channel_extended_value` (
+  `channel_id` int(11) NOT NULL,
+  `update_time` datetime DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
+  `type` tinyint NOT NULL,
+  `value` varbinary(1024) DEFAULT NULL,
+  `user_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE `supla_dev_channel_extended_value`
+  ADD PRIMARY KEY (`channel_id`),
+  ADD KEY `IDX_2BA789BF7D3CA75E` (`user_id`);
+
+ALTER TABLE `supla_dev_channel_extended_value`
+  ADD CONSTRAINT `FK_CC60EC4B51E184DE` FOREIGN KEY (`channel_id`) REFERENCES `supla_dev_channel` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `FK_46E226ECDABFAE5C` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`);
+
+DELIMITER ||
+
+CREATE PROCEDURE `supla_update_channel_extended_value`(
+    IN `_id` INT,
+    IN `_user_id` INT,
+    IN `_type` TINYINT,
+    IN `_value` VARBINARY(1024)
+) NOT DETERMINISTIC NO SQL SQL SECURITY DEFINER
+BEGIN
+    UPDATE `supla_dev_channel_extended_value` SET
+        `update_time` = UTC_TIMESTAMP(), `type` = _type, `value` = _value
+         WHERE user_id = _user_id AND channel_id = _id;
+
+    IF ROW_COUNT() = 0 THEN
+      INSERT INTO `supla_dev_channel_extended_value` (`channel_id`, `user_id`, `update_time`, `type`, `value`)
+         VALUES(_id, _user_id, UTC_TIMESTAMP(), _type, _value)
+      ON DUPLICATE KEY UPDATE `type` = _type, `value` = _value, `update_time` = UTC_TIMESTAMP();
+     END IF;
+END||

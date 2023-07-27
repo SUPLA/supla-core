@@ -18,11 +18,62 @@
 
 #include "ActionConfigTest.h"
 
+#include "actions/action_rgbw_parameters.h"
+#include "actions/action_rs_parameters.h"
+
 namespace testing {
 
 ActionConfigTest::ActionConfigTest(void) {}
 
 ActionConfigTest::~ActionConfigTest(void) {}
+
+char ActionConfigTest::get_percentage(void) {
+  TAction_RS_Parameters result = {};
+
+  supla_abstract_action_parameters *params = config.get_parameters();
+  if (params) {
+    supla_action_rs_parameters *rsp =
+        dynamic_cast<supla_action_rs_parameters *>(params);
+    EXPECT_NE(rsp, nullptr);
+    if (rsp) {
+      result = dynamic_cast<supla_action_rs_parameters *>(params)->get_rs();
+    }
+
+    delete params;
+  }
+
+  return result.Percentage;
+}
+
+void ActionConfigTest::set_percentage(supla_action_config *config,
+                                      char percentage) {
+  supla_action_rs_parameters rs(percentage);
+  config->set_parameters(&rs);
+}
+
+TAction_RGBW_Parameters ActionConfigTest::get_rgbw(void) {
+  TAction_RGBW_Parameters result = {};
+
+  supla_abstract_action_parameters *params = config.get_parameters();
+  if (params) {
+    supla_action_rgbw_parameters *rgbw =
+        dynamic_cast<supla_action_rgbw_parameters *>(params);
+    EXPECT_NE(rgbw, nullptr);
+    if (rgbw) {
+      result = dynamic_cast<supla_action_rgbw_parameters *>(params)->get_rgbw();
+    }
+
+    delete params;
+  }
+
+  return result;
+}
+
+void ActionConfigTest::set_rgbw(supla_action_config *config,
+                                const TAction_RGBW_Parameters &rgbw) {
+  supla_action_rgbw_parameters rgbwp(rgbw);
+  config->set_parameters(&rgbwp);
+}
 
 TEST_F(ActionConfigTest, actionId) {
   EXPECT_EQ(config.get_action_id(), 0);
@@ -55,14 +106,14 @@ TEST_F(ActionConfigTest, sourceChannelId) {
 }
 
 TEST_F(ActionConfigTest, percentage) {
-  EXPECT_EQ(config.get_percentage(), 0);
-  config.set_percentage(22);
-  EXPECT_EQ(config.get_percentage(), 22);
+  EXPECT_EQ(get_percentage(), 0);
+  set_percentage(&config, 22);
+  EXPECT_EQ(get_percentage(), 22);
 }
 
 TEST_F(ActionConfigTest, rgbw) {
   TAction_RGBW_Parameters rgbw1 = {};
-  TAction_RGBW_Parameters rgbw2 = config.get_rgbw();
+  TAction_RGBW_Parameters rgbw2 = get_rgbw();
 
   EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 
@@ -72,26 +123,26 @@ TEST_F(ActionConfigTest, rgbw) {
   rgbw1.ColorRandom = false;
   rgbw1.OnOff = true;
 
-  config.set_rgbw(rgbw1);
-  rgbw2 = config.get_rgbw();
+  set_rgbw(&config, rgbw1);
+  rgbw2 = get_rgbw();
 
   EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 }
 
 TEST_F(ActionConfigTest, jsonPercentage) {
-  EXPECT_EQ(config.get_percentage(), 0);
+  EXPECT_EQ(get_percentage(), 0);
 
   config.apply_json_params("{\"percentage\":45}");
-  EXPECT_EQ(config.get_percentage(), 45);
+  EXPECT_EQ(get_percentage(), 45);
 
   config.apply_json_params("{\"perCentaGe\":80}");
-  EXPECT_EQ(config.get_percentage(), 80);
+  EXPECT_EQ(get_percentage(), 80);
 
   config.apply_json_params("{\"percentage\":110}");
-  EXPECT_EQ(config.get_percentage(), 100);
+  EXPECT_EQ(get_percentage(), 100);
 
   config.apply_json_params("{\"percentage\":-1}");
-  EXPECT_EQ(config.get_percentage(), 0);
+  EXPECT_EQ(get_percentage(), 0);
 }
 
 TEST_F(ActionConfigTest, jsonSourceChannelId) {
@@ -108,14 +159,14 @@ TEST_F(ActionConfigTest, jsonSourceDeviceId) {
 
 TEST_F(ActionConfigTest, jsonRGBW) {
   TAction_RGBW_Parameters rgbw1 = {};
-  TAction_RGBW_Parameters rgbw2 = config.get_rgbw();
+  TAction_RGBW_Parameters rgbw2 = get_rgbw();
 
   EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 
   config.apply_json_params(
       "{\"brightness\":32,\"hue\":244,\"color_brightness\":22}");
 
-  rgbw2 = config.get_rgbw();
+  rgbw2 = get_rgbw();
   EXPECT_EQ(rgbw2.Brightness, 32);
   EXPECT_EQ(rgbw2.Color, (unsigned int)0x1000FF);
   EXPECT_EQ(rgbw2.ColorBrightness, 22);
@@ -124,14 +175,14 @@ TEST_F(ActionConfigTest, jsonRGBW) {
 
 TEST_F(ActionConfigTest, jsonRGBW_white) {
   TAction_RGBW_Parameters rgbw1 = {};
-  TAction_RGBW_Parameters rgbw2 = config.get_rgbw();
+  TAction_RGBW_Parameters rgbw2 = get_rgbw();
 
   EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 
   config.apply_json_params(
       "{\"brightness\":32,\"hue\":\"white\",\"color_brightness\":22}");
 
-  rgbw2 = config.get_rgbw();
+  rgbw2 = get_rgbw();
   EXPECT_EQ(rgbw2.Brightness, 32);
   EXPECT_EQ(rgbw2.Color, (unsigned int)0xFFFFFF);
   EXPECT_EQ(rgbw2.ColorBrightness, 22);
@@ -140,14 +191,14 @@ TEST_F(ActionConfigTest, jsonRGBW_white) {
 
 TEST_F(ActionConfigTest, jsonRGBW_random) {
   TAction_RGBW_Parameters rgbw1 = {};
-  TAction_RGBW_Parameters rgbw2 = config.get_rgbw();
+  TAction_RGBW_Parameters rgbw2 = get_rgbw();
 
   EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 
   config.apply_json_params(
       "{\"brightness\":32,\"hue\":\"random\",\"color_brightness\":22}");
 
-  rgbw2 = config.get_rgbw();
+  rgbw2 = get_rgbw();
   EXPECT_EQ(rgbw2.Brightness, 32);
   EXPECT_GT(rgbw2.Color, (unsigned int)0);
   EXPECT_EQ(rgbw2.ColorBrightness, 22);
@@ -160,7 +211,7 @@ TEST_F(ActionConfigTest, jsonRGBW_random) {
 
     short a = 0;
     for (a = 0; a < 10; a++) {
-      rgbw2 = config.get_rgbw();
+      rgbw2 = get_rgbw();
       usleep(1000);
       if (rgbw2.Color != color) {
         break;
@@ -172,10 +223,6 @@ TEST_F(ActionConfigTest, jsonRGBW_random) {
 }
 
 TEST_F(ActionConfigTest, jsonMultipleParams) {
-  EXPECT_EQ(config.get_percentage(), 0);
-  config.apply_json_params("{\"percentage\":23}");
-  EXPECT_EQ(config.get_percentage(), 23);
-
   EXPECT_EQ(config.get_source_channel_id(), 0);
   config.apply_json_params("{\"sourceChannelId\":555666}");
   EXPECT_EQ(config.get_source_channel_id(), 555666);
@@ -185,14 +232,14 @@ TEST_F(ActionConfigTest, jsonMultipleParams) {
   EXPECT_EQ(config.get_source_device_id(), 1333);
 
   TAction_RGBW_Parameters rgbw1 = {};
-  TAction_RGBW_Parameters rgbw2 = config.get_rgbw();
+  TAction_RGBW_Parameters rgbw2 = get_rgbw();
 
   EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 
   config.apply_json_params(
       "{\"brightness\":12,\"hue\":244,\"color_brightness\":23}");
 
-  rgbw2 = config.get_rgbw();
+  rgbw2 = get_rgbw();
   EXPECT_EQ(rgbw2.Brightness, 12);
   EXPECT_EQ(rgbw2.Color, (unsigned int)0x1000FF);
   EXPECT_EQ(rgbw2.ColorBrightness, 23);
@@ -206,7 +253,7 @@ TEST_F(ActionConfigTest, equalityOperator) {
   c1.set_subject_id(3);
   c1.set_source_device_id(4);
   c1.set_source_channel_id(5);
-  c1.set_percentage(6);
+  set_percentage(&c1, 6);
 
   TAction_RGBW_Parameters rgbw = {};
   rgbw.Brightness = 1;
@@ -215,16 +262,13 @@ TEST_F(ActionConfigTest, equalityOperator) {
   rgbw.ColorRandom = 1;
   rgbw.OnOff = 2;
 
-  c1.set_rgbw(rgbw);
-
   supla_action_config c2;
   c2.set_action_id(2);
   c2.set_subject_type(stScene);
   c2.set_subject_id(3);
   c2.set_source_device_id(4);
   c2.set_source_channel_id(5);
-  c2.set_percentage(6);
-  c2.set_rgbw(rgbw);
+  set_percentage(&c2, 6);
 
   EXPECT_TRUE(c1 == c2);
 
@@ -253,44 +297,47 @@ TEST_F(ActionConfigTest, equalityOperator) {
   c1.set_source_channel_id(5);
   EXPECT_TRUE(c1 == c2);
 
-  c1.set_percentage(5);
+  set_percentage(&c1, 5);
   EXPECT_FALSE(c1 == c2);
-  c1.set_percentage(6);
+  set_percentage(&c1, 6);
   EXPECT_TRUE(c1 == c2);
 
+  set_rgbw(&c1, rgbw);
+  set_rgbw(&c2, rgbw);
+
   rgbw.Brightness = 2;
-  c1.set_rgbw(rgbw);
+  set_rgbw(&c1, rgbw);
   EXPECT_FALSE(c1 == c2);
   rgbw.Brightness = 1;
-  c1.set_rgbw(rgbw);
+  set_rgbw(&c1, rgbw);
   EXPECT_TRUE(c1 == c2);
 
   rgbw.Color = 3;
-  c1.set_rgbw(rgbw);
+  set_rgbw(&c1, rgbw);
   EXPECT_FALSE(c1 == c2);
   rgbw.Color = 2;
-  c1.set_rgbw(rgbw);
+  set_rgbw(&c1, rgbw);
   EXPECT_TRUE(c1 == c2);
 
   rgbw.ColorBrightness = 1;
-  c1.set_rgbw(rgbw);
+  set_rgbw(&c1, rgbw);
   EXPECT_FALSE(c1 == c2);
   rgbw.ColorBrightness = 3;
-  c1.set_rgbw(rgbw);
+  set_rgbw(&c1, rgbw);
   EXPECT_TRUE(c1 == c2);
 
   rgbw.ColorRandom = 0;
-  c1.set_rgbw(rgbw);
+  set_rgbw(&c1, rgbw);
   EXPECT_FALSE(c1 == c2);
   rgbw.ColorRandom = 1;
-  c1.set_rgbw(rgbw);
+  set_rgbw(&c1, rgbw);
   EXPECT_TRUE(c1 == c2);
 
   rgbw.OnOff = 1;
-  c1.set_rgbw(rgbw);
+  set_rgbw(&c1, rgbw);
   EXPECT_FALSE(c1 == c2);
   rgbw.OnOff = 2;
-  c1.set_rgbw(rgbw);
+  set_rgbw(&c1, rgbw);
   EXPECT_TRUE(c1 == c2);
 }
 
@@ -301,11 +348,25 @@ TEST_F(ActionConfigTest, constructorWithArg) {
   c1.set_subject_id(3);
   c1.set_source_device_id(4);
   c1.set_source_channel_id(5);
-  c1.set_percentage(6);
+  set_percentage(&c1, 6);
 
   supla_action_config *c2 = new supla_action_config(&c1);
   EXPECT_TRUE(c1 == *c2);
   delete c2;
+}
+
+TEST_F(ActionConfigTest, copyAndCompare) {
+  supla_action_config c1;
+  c1.set_action_id(2);
+  c1.set_subject_type(stScene);
+  c1.set_subject_id(3);
+  c1.set_source_device_id(4);
+  c1.set_source_channel_id(5);
+  set_percentage(&c1, 6);
+
+  supla_action_config c2;
+  c2 = c1;
+  EXPECT_TRUE(c1 == c2);
 }
 
 } /* namespace testing */

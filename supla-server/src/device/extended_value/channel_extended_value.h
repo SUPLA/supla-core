@@ -33,6 +33,7 @@ class supla_channel_extended_value {
  protected:
   TSuplaChannelExtendedValue *_realloc(size_t required_data_size);
   TSuplaChannelExtendedValue *get_value_ptr(void);
+  virtual void set_raw_value(const TSuplaChannelExtendedValue *value);
 
  public:
   supla_channel_extended_value(void);
@@ -41,12 +42,13 @@ class supla_channel_extended_value {
   explicit supla_channel_extended_value(
       const supla_channel_extended_value *value);
   virtual ~supla_channel_extended_value(void);
+  char get_type();
   virtual supla_channel_extended_value *copy(void);  // NOLINT
   virtual size_t get_real_size(void);
   virtual size_t get_value_size(void);
   virtual bool is_differ(supla_channel_extended_value *value);
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
-  virtual void set_raw_value(const TSuplaChannelExtendedValue *value);
+  void get_value(char *buffer);
 };
 
 #endif /*CHANNEL_EXTENDED_VALUE_H_*/

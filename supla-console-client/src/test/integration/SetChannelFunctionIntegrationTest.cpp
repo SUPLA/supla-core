@@ -32,7 +32,7 @@ SetChannelFunctionIntegrationTest::SetChannelFunctionIntegrationTest() {
 SetChannelFunctionIntegrationTest::~SetChannelFunctionIntegrationTest() {}
 
 void SetChannelFunctionIntegrationTest::channelMatch(
-    TSC_SetChannelFunctionResult *result, TSC_SuplaChannel_E *channel) {
+    TSC_SetChannelFunctionResult *result, TSC_SuplaChannel_D *channel) {
   if (result) {
     ASSERT_EQ(result->ResultCode, expectedResultCode);
     ASSERT_EQ(result->ChannelID, expectedChannelID);
@@ -44,8 +44,8 @@ void SetChannelFunctionIntegrationTest::channelMatch(
     }
   }
 
-  if (match & 0x1 &&
-      (match & 0x2 || expectedResultCode != SUPLA_RESULTCODE_TRUE)) {
+  if ((match & 0x1) &&
+      ((match & 0x2) || expectedResultCode != SUPLA_RESULTCODE_TRUE)) {
     cancelIteration();
   }
 }
@@ -57,7 +57,7 @@ void SetChannelFunctionIntegrationTest::onChannelFunctionSetResult(
 }
 
 void SetChannelFunctionIntegrationTest::channelUpdate(
-    TSC_SuplaChannel_E *channel) {
+    TSC_SuplaChannel_D *channel) {
   ASSERT_FALSE(channel == NULL);
   channelMatch(NULL, channel);
 }

@@ -171,6 +171,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SCENE_PACK_MAXCOUNT 20                       // ver. >= 18
 #define SUPLA_SCENE_STATE_PACK_MAXCOUNT 20                 // ver. >= 18
 
+#define SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT 100  // ver. >= 21
+
 #define SUPLA_DCS_CALL_GETVERSION 10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT 20
 #define SUPLA_SDC_CALL_VERSIONERROR 30
@@ -218,14 +220,13 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE_B 360                // ver. >= 8
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE_C 361                // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE_D 362                // ver. >= 15
-#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_E 363                // ver. >= 21
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_B 370                    // ver. >= 8
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_C 371                    // ver. >= 10
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_D 372                    // ver. >= 15
-#define SUPLA_SC_CALL_CHANNEL_UPDATE_E 373                    // ver. >= 21
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380            // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B 381          // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE 390   // ver. >= 9
+#define SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE 395        // ver. >= 21
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400            // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B 401          // ver. >= 15
 #define SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE 405    // ver. >= 10
@@ -463,6 +464,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_HVAC_DRYER 423                    // ver. >= 21
 #define SUPLA_CHANNELFNC_HVAC_FAN 424                      // ver. >= 21
 #define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL 425  // ver. >= 21
+#define SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER 426       // ver. >= 21
 #define SUPLA_CHANNELFNC_VALVE_OPENCLOSE 500               // ver. >= 12
 #define SUPLA_CHANNELFNC_VALVE_PERCENTAGE 510              // ver. >= 12
 #define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520   // ver. >= 21
@@ -591,7 +593,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE \
   0x08000000                                           // ver. >= 21
 #define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE 0x10000000  // ver. >= 21
-
+#define SUPLA_CHANNEL_FLAG_HAS_PARENT 0x20000000       // ver. >= 21
 #pragma pack(push, 1)
 
 typedef struct {
@@ -1110,33 +1112,6 @@ typedef struct {
 
 typedef struct {
   // server -> client
-  char EOL;  // End Of List
-
-  _supla_int_t Id;
-  _supla_int_t ParentChannelId[2];
-  _supla_int16_t ParentChannelRelationType[2];
-  _supla_int_t DeviceID;
-  _supla_int_t LocationID;
-  _supla_int_t Type;
-  _supla_int_t Func;
-  _supla_int_t AltIcon;
-  _supla_int_t UserIcon;
-  _supla_int16_t ManufacturerID;
-  _supla_int16_t ProductID;
-
-  unsigned _supla_int_t Flags;
-  unsigned char ProtocolVersion;
-  char online;
-
-  TSuplaChannelValue_B value;
-
-  unsigned _supla_int_t
-      CaptionSize;  // including the terminating null byte ('\0')
-  char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
-} TSC_SuplaChannel_E;                           // ver. >= 21
-
-typedef struct {
-  // server -> client
 
   _supla_int_t count;
   _supla_int_t total_left;
@@ -1152,15 +1127,6 @@ typedef struct {
   TSC_SuplaChannel_D
       items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelPack_D;                 // ver. >= 15
-
-typedef struct {
-  // server -> client
-
-  _supla_int_t count;
-  _supla_int_t total_left;
-  TSC_SuplaChannel_E
-      items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
-} TSC_SuplaChannelPack_E;                 // ver. >= 21
 
 typedef struct {
   // server -> client
@@ -1228,6 +1194,29 @@ typedef struct {
       items[SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT];  // Last variable in
                                                          // struct!
 } TSC_SuplaChannelGroupRelationPack;                     // ver. >= 9
+
+#define CHANNEL_RELATION_TYPE_OPENING_SENSOR 1
+#define CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR 2
+#define CHANNEL_RELATION_TYPE_METER 3
+#define CHANNEL_RELATION_TYPE_MAIN_TERMOMETER 4
+#define CHANNEL_RELATION_TYPE_AUX_THERMOMETER_FLOOR 5
+#define CHANNEL_RELATION_TYPE_AUX_THERMOMETER_WATER 6
+#define CHANNEL_RELATION_TYPE_AUX_THERMOMETER_GENERIC_HEATER 7
+#define CHANNEL_RELATION_TYPE_AUX_THERMOMETER_GENERIC_COOLER 8
+
+typedef struct {
+  char EOL;  // End Of List
+  _supla_int_t Id;
+  _supla_int_t ParentId;
+  _supla_int16_t Type;       // CHANNEL_RELATION_TYPE_
+} TSC_SuplaChannelRelation;  //  ver. >= 21
+
+typedef struct {
+  _supla_int_t count;
+  _supla_int_t total_left;
+  TSC_SuplaChannelRelation
+      items[SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelRelationPack;
 
 typedef struct {
   // server -> client
@@ -1298,6 +1287,8 @@ typedef struct {
 #define ACTION_ENABLE 200
 #define ACTION_DISABLE 210
 #define ACTION_SEND 220
+#define ACTION_SET_HVAC_MODE 230
+#define ACTION_SET_HVAC_TEMPERATURE 240
 #define ACTION_READ 1000
 #define ACTION_SET 2000
 #define ACTION_EXECUTE 3000
@@ -1320,6 +1311,18 @@ typedef struct {
   char OnOff;
   char Reserved[8];
 } TAction_RGBW_Parameters;  // ver. >= 19
+
+typedef struct {
+  unsigned char Mode;  // SUPLA_HVAC_MODE_
+} TAction_SetHVACMode;
+
+typedef struct {
+  _supla_int16_t
+      SetpointTemperatureMin;  // * 0.01 Celcius degree - used for heating
+  _supla_int16_t
+      SetpointTemperatureMax;     // * 0.01 - Celcius degree used for cooling
+  unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
+} TAction_SetHVACTemperature;
 
 typedef struct {
   _supla_int_t ActionId;
