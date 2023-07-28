@@ -122,4 +122,40 @@ TEST_F(ActionHvacParametersTest, applyOn_allParams) {
   EXPECT_EQ(hvac.get_duration_sec(), 15);
 }
 
+TEST_F(ActionHvacParametersTest, anyParamSet) {
+  {
+    TAction_HVAC_Parameters p = {};
+    supla_action_hvac_parameters hvac(&p);
+    EXPECT_FALSE(hvac.is_any_param_set());
+  }
+
+  {
+    TAction_HVAC_Parameters p = {};
+    p.DurationSec = 15;
+    supla_action_hvac_parameters hvac(&p);
+    EXPECT_FALSE(hvac.is_any_param_set());
+  }
+
+  {
+    TAction_HVAC_Parameters p = {};
+    p.Mode = SUPLA_HVAC_MODE_COOL;
+    supla_action_hvac_parameters hvac(&p);
+    EXPECT_TRUE(hvac.is_any_param_set());
+  }
+
+  {
+    TAction_HVAC_Parameters p = {};
+    p.Flags = SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET;
+    supla_action_hvac_parameters hvac(&p);
+    EXPECT_TRUE(hvac.is_any_param_set());
+  }
+
+  {
+    TAction_HVAC_Parameters p = {};
+    p.Flags = SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET;
+    supla_action_hvac_parameters hvac(&p);
+    EXPECT_TRUE(hvac.is_any_param_set());
+  }
+}
+
 } /* namespace testing */

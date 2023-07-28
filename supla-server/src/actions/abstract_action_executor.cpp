@@ -267,6 +267,16 @@ void supla_abstract_action_executor::execute_action(
     case ACTION_FORWARD_OUTSIDE:
       forward_outside(cap);
       break;
+    case ACTION_SET_HVAC_PARAMETERS:
+      if (params) {
+        supla_action_hvac_parameters *hvac =
+            dynamic_cast<supla_action_hvac_parameters *>(params);
+
+        if (hvac && hvac->is_any_param_set()) {
+          set_hvac_parameters(hvac);
+        }
+      }
+      break;
   }
 }
 

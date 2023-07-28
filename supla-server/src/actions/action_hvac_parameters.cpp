@@ -73,3 +73,9 @@ void supla_action_hvac_parameters::apply_on(supla_channel_hvac_value *value) {
 unsigned int supla_action_hvac_parameters::get_duration_sec(void) {
   return params.DurationSec;
 }
+
+bool supla_action_hvac_parameters::is_any_param_set(void) {
+  return params.Mode != SUPLA_HVAC_MODE_NOT_SET ||
+         (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET) ||
+         (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET);
+}

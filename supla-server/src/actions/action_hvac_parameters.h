@@ -36,6 +36,7 @@ class supla_action_hvac_parameters : public supla_abstract_action_parameters {
   virtual supla_abstract_action_parameters *copy(void);  // NOLINT
   void apply_on(supla_channel_hvac_value *value);
   unsigned int get_duration_sec(void);
+  bool is_any_param_set(void);
 };
 
 #endif /* ACTION_HVAC_PARAMETERS_H_ */
