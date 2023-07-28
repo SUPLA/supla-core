@@ -75,31 +75,80 @@ jobject supla_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,
 }
 
 jlong supla_CallLongMethod(JNIEnv *env, jclass cls, jobject obj,
-                           const char *method_name, const char *type) {
-  jmethodID method_id = env->GetMethodID(cls, method_name, type);
+                           const char *method_name) {
+  jmethodID method_id = env->GetMethodID(cls, method_name, "()J");
 
   return env->CallLongMethod(obj, method_id);
 }
 
+bool supla_CallLongObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                                const char *method_name, jlong *result) {
+  jobject l =
+      supla_CallObjectMethod(env, cls, obj, method_name, "()Ljava/lang/Long;");
+  if (l) {
+    jclass l_cls = env->FindClass("java/lang/Long");
+
+    *result = supla_CallLongMethod(env, l_cls, l, "longValue");
+    return true;
+  }
+
+  return false;
+}
+
 jint supla_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
-                         const char *method_name, const char *type) {
-  jmethodID method_id = env->GetMethodID(cls, method_name, type);
+                         const char *method_name) {
+  jmethodID method_id = env->GetMethodID(cls, method_name, "()I");
 
   return env->CallIntMethod(obj, method_id);
 }
 
+bool supla_CallIntObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                               const char *method_name, jint *result) {
+  jobject i = supla_CallObjectMethod(env, cls, obj, method_name,
+                                     "()Ljava/lang/Integer;");
+  if (i) {
+    jclass i_cls = env->FindClass("java/lang/Integer");
+
+    *result = supla_CallIntMethod(env, i_cls, i, "intValue");
+    return true;
+  }
+
+  return false;
+}
+
 jshort supla_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
-                             const char *method_name, const char *type) {
-  jmethodID method_id = env->GetMethodID(cls, method_name, type);
+                             const char *method_name) {
+  jmethodID method_id = env->GetMethodID(cls, method_name, "()S");
 
   return env->CallShortMethod(obj, method_id);
 }
 
 jboolean supla_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
-                                 const char *method_name, const char *type) {
-  jmethodID method_id = env->GetMethodID(cls, method_name, type);
+                                 const char *method_name) {
+  jmethodID method_id = env->GetMethodID(cls, method_name, "()Z");
 
   return env->CallBooleanMethod(obj, method_id);
+}
+
+jdouble supla_CallDoubleMethod(JNIEnv *env, jclass cls, jobject obj,
+                               const char *method_name) {
+  jmethodID method_id = env->GetMethodID(cls, method_name, "()D");
+
+  return env->CallDoubleMethod(obj, method_id);
+}
+
+bool supla_CallDoubleObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                                  const char *method_name, jdouble *result) {
+  jobject d = supla_CallObjectMethod(env, cls, obj, method_name,
+                                     "()Ljava/lang/Double;");
+  if (d) {
+    jclass d_cls = env->FindClass("java/lang/Double");
+
+    *result = supla_CallDoubleMethod(env, d_cls, d, "doubleValue");
+    return true;
+  }
+
+  return false;
 }
 
 jobject supla_NewInt(JNIEnv *env, jint value) {
