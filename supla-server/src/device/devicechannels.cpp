@@ -1220,19 +1220,38 @@ void supla_device_channels::timer_arm(const supla_caller &caller,
                                       unsigned char eol, unsigned char on,
                                       unsigned int duration_ms) {
   supla_device_channel *channel = find_channel(channel_id);
+  char value[SUPLA_CHANNELVALUE_SIZE] = {};
 
   if (channel) {
     switch (channel->get_func()) {
       case SUPLA_CHANNELFNC_POWERSWITCH:
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
-        char value[SUPLA_CHANNELVALUE_SIZE] = {};
+      case SUPLA_CHANNELFNC_STAIRCASETIMER:
         value[0] = on ? 1 : 0;
-        async_set_channel_value(channel, caller, group_id, eol, value,
-                                duration_ms);
-      }
+        break;
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO: {
+        supla_channel_hvac_value *hvac_value =
+            channel->get_value<supla_channel_hvac_value>();
+        if (hvac_value) {
+          if (on) {
+            hvac_value->turn_on();
+          } else {
+            hvac_value->turn_off();
+          }
+          hvac_value->get_raw_value(value);
+          delete hvac_value;
+        } else {
+          return;
+        }
+      } break;
+      default:
+        return;
     }
   }
+
+  async_set_channel_value(channel, caller, group_id, eol, value, duration_ms);
 }
 
 channel_json_config *supla_device_channels::get_json_config(int channel_id) {
