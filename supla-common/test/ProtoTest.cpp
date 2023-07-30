@@ -291,6 +291,13 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ(sizeof(TChannelConfig_WeeklySchedule), 356);
   EXPECT_LE(sizeof(TChannelConfig_WeeklySchedule),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+
+  EXPECT_EQ((unsigned int)543, sizeof(TSCS_DeviceConfig));
+  EXPECT_EQ((unsigned int)20, sizeof(TCS_GetDeviceConfigRequest));
+  EXPECT_EQ((unsigned int)13, sizeof(TSC_SetDeviceConfigResult));
+  EXPECT_EQ((unsigned int)9, sizeof(TCS_GetChannelConfigRequest));
+  EXPECT_EQ((unsigned int)519, sizeof(TSCS_ChannelConfig));
+  EXPECT_EQ((unsigned int)6, sizeof(TSC_SetChannelConfigResult));
 }
 
 TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {
