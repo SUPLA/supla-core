@@ -2321,7 +2321,6 @@ typedef struct {
 } TSDS_SetDeviceConfigResult;
 
 // SUPLA_CS_CALL_SET_DEVICE_CONFIG
-// SUPLA_SC_CALL_GET_DEVICE_CONFIG_RESULT
 typedef struct {
   _supla_int_t ChannelId;       // Any channel ID belonging to the device
   unsigned char EndOfDataFlag;  // 1 - last message; 0 - more messages will come
@@ -2332,6 +2331,12 @@ typedef struct {
   unsigned _supla_int16_t ConfigSize;
   char Config[SUPLA_DEVICE_CONFIG_MAXSIZE];  // Last variable in struct!
 } TSCS_DeviceConfig;                         // v. >= 21
+
+// SUPLA_SC_CALL_GET_DEVICE_CONFIG_RESULT
+typedef struct {
+  unsigned char Result;      // SUPLA_CONFIG_RESULT_*
+  TSCS_DeviceConfig Config;  // Last variable in struct!
+} TSC_GetDeviceConfigResult;
 
 // SUPLA_CS_CALL_GET_DEVICE_CONFIG
 typedef struct {
@@ -2411,7 +2416,6 @@ typedef struct {
   unsigned _supla_int_t Flags;
 } TCS_GetChannelConfigRequest;  // v. >= 21
 
-// SUPLA_SC_CALL_GET_CHANNEL_CONFIG_RESULT
 // SUPLA_CS_CALL_SET_CHANNEL_CONFIG
 typedef struct {
   _supla_int_t ChannelId;
@@ -2421,6 +2425,12 @@ typedef struct {
                                               // v. >= 21
                                               // TChannelConfig_*
 } TSCS_ChannelConfig;
+
+// SUPLA_SC_CALL_GET_CHANNEL_CONFIG_RESULT
+typedef struct {
+  unsigned char Result;       // SUPLA_CONFIG_RESULT_*
+  TSCS_ChannelConfig Config;  // Last variable in struct!
+} TSC_GetChannelConfigResult;
 
 // SUPLA_SC_CALL_SET_CHANNEL_CONFIG_RESULT
 typedef struct {

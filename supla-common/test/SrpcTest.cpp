@@ -3681,11 +3681,11 @@ SRPC_CALL_BASIC_TEST(srpc_cs_async_get_channel_config_request,
                      cs_get_channel_config_request);
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_get_channel_config_result,
-                                     TSCS_ChannelConfig,
+                                     TSC_GetChannelConfigResult,
                                      SUPLA_SC_CALL_GET_CHANNEL_CONFIG_RESULT,
-                                     30, 542, scs_channel_config,
-                                     SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
-                                     ConfigSize);
+                                     31, 543, sc_get_channel_config_result,
+                                     SUPLA_CHANNEL_CONFIG_MAXSIZE,
+                                     Config.Config, Config.ConfigSize);
 
 //---------------------------------------------------------
 // SET CHANNEL CONFIG
@@ -3777,11 +3777,11 @@ SRPC_CALL_BASIC_TEST(srpc_cs_async_get_device_config_request,
                      cs_get_device_config_request);
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_get_device_config_result,
-                                     TSCS_DeviceConfig,
-                                     SUPLA_SC_CALL_GET_DEVICE_CONFIG_RESULT, 54,
-                                     566, scs_device_config,
-                                     SUPLA_DEVICE_CONFIG_MAXSIZE, Config,
-                                     ConfigSize);
+                                     TSC_GetDeviceConfigResult,
+                                     SUPLA_SC_CALL_GET_DEVICE_CONFIG_RESULT, 55,
+                                     567, sc_get_device_config_result,
+                                     SUPLA_DEVICE_CONFIG_MAXSIZE, Config.Config,
+                                     Config.ConfigSize);
 
 //---------------------------------------------------------
 // ACTION TRIGGER

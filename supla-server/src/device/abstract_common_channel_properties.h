@@ -39,7 +39,9 @@ class supla_abstract_common_channel_properties {
  protected:
   virtual int get_id(void) = 0;
   virtual int get_device_id(void) = 0;
+  virtual int get_type(void) = 0;
   virtual int get_func(void) = 0;
+  virtual unsigned int get_flags(void) = 0;
   virtual int get_param1(void) = 0;
   virtual int get_param2(void) = 0;
   virtual int get_param3(void) = 0;
@@ -50,6 +52,12 @@ class supla_abstract_common_channel_properties {
   virtual void for_each(
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties) = 0;
+
+  template <typename jsonT, typename sdT>
+  void json_to_config(char *config, unsigned _supla_int16_t *config_size);
+
+  bool get_config(char *config, unsigned _supla_int16_t *config_size,
+                  unsigned char config_type, unsigned _supla_int_t flags);
 
  public:
   supla_abstract_common_channel_properties(void);
