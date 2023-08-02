@@ -3682,8 +3682,8 @@ SRPC_CALL_BASIC_TEST(srpc_cs_async_get_channel_config_request,
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_channel_config_update,
                                      TSC_ChannelConfigUpdate,
-                                     SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE, 31,
-                                     543, sc_channel_config_update,
+                                     SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE, 35,
+                                     547, sc_channel_config_update,
                                      SUPLA_CHANNEL_CONFIG_MAXSIZE,
                                      Config.Config, Config.ConfigSize);
 
@@ -3717,7 +3717,7 @@ SRPC_CALL_BASIC_TEST(srpc_sd_async_set_channel_config_result,
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_set_channel_config_request,
                                      TSCS_ChannelConfig,
-                                     SUPLA_CS_CALL_SET_CHANNEL_CONFIG, 30, 542,
+                                     SUPLA_CS_CALL_SET_CHANNEL_CONFIG, 34, 546,
                                      scs_channel_config,
                                      SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
                                      ConfigSize);

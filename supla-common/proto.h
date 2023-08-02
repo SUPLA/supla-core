@@ -2420,6 +2420,7 @@ typedef struct {
 // SUPLA_CS_CALL_SET_CHANNEL_CONFIG
 typedef struct {
   _supla_int_t ChannelId;
+  _supla_int_t Func;
   unsigned char ConfigType;  // SUPLA_CONFIG_TYPE_
   unsigned _supla_int16_t ConfigSize;
   char Config[SUPLA_CHANNEL_CONFIG_MAXSIZE];  // Last variable in struct!
