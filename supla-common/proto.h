@@ -763,7 +763,7 @@ typedef struct {
 #define SUPLA_HVAC_VALUE_FLAG_COUNTDOWN_TIMER (1ULL << 5)
 // FAN flag tells if fan function is enabled
 #define SUPLA_HVAC_VALUE_FLAG_FAN_ENABLED (1ULL << 6)
-#define SUPLA_HVAC_VALUE_FLAG_ERROR (1ULL << 7)
+#define SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR (1ULL << 7)
 #define SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR (1ULL << 8)
 
 // HVAC modes are used in channel value (as a command from server or
