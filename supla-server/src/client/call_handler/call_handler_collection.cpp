@@ -29,6 +29,7 @@
 #include "client/call_handler/device_reconnect_request.h"
 #include "client/call_handler/execute_action.h"
 #include "client/call_handler/get_channel_basic_cfg.h"
+#include "client/call_handler/get_channel_config.h"
 #include "client/call_handler/get_channel_state.h"
 #include "client/call_handler/get_channel_value_with_auth.h"
 #include "client/call_handler/get_next.h"
@@ -77,6 +78,7 @@ supla_client_call_handler_collection::supla_client_call_handler_collection(void)
   add_handler(new supla_ch_register_client_b);
   add_handler(new supla_ch_register_client_a);
   add_handler(new supla_ch_register_pn_client_token());
+  add_handler(new supla_client_ch_get_channel_config());
 
   // common
   add_handler(new supla_ch_get_version());
