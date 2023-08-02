@@ -62,19 +62,6 @@ void supla_ch_abstract_execute_action::execute_action(
       break;
   }
 
-  if (action->SubjectType == ACTION_SUBJECT_TYPE_UNKNOWN ||
-      action->SubjectId == 0 ||
-      !subject_exists(action->SubjectType, action->SubjectId)) {
-    send_result(action, srpc_adapter, SUPLA_RESULTCODE_SUBJECT_NOT_FOUND);
-    return;
-  }
-
-  if (action->SubjectType == ACTION_SUBJECT_TYPE_CHANNEL &&
-      !is_channel_online(action->SubjectId)) {
-    send_result(action, srpc_adapter, SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE);
-    return;
-  }
-
   supla_abstract_action_parameters* params = nullptr;
 
   switch (action->ActionId) {
@@ -111,11 +98,20 @@ void supla_ch_abstract_execute_action::execute_action(
       break;
   }
 
-  aexec->execute_action(supla_caller(ctClient, client_id, client_name), user_id,
-                        action->ActionId, subject_type, action->SubjectId,
-                        nullptr, params, 0, 0, 0, nullptr);
+  if (action->SubjectType == ACTION_SUBJECT_TYPE_UNKNOWN ||
+      action->SubjectId == 0 ||
+      !subject_exists(action->SubjectType, action->SubjectId)) {
+    send_result(action, srpc_adapter, SUPLA_RESULTCODE_SUBJECT_NOT_FOUND);
+  } else if (action->SubjectType == ACTION_SUBJECT_TYPE_CHANNEL &&
+             !is_channel_online(action->SubjectId)) {
+    send_result(action, srpc_adapter, SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE);
+  } else {
+    aexec->execute_action(supla_caller(ctClient, client_id, client_name),
+                          user_id, action->ActionId, subject_type,
+                          action->SubjectId, nullptr, params, 0, 0, 0, nullptr);
 
-  send_result(action, srpc_adapter, SUPLA_RESULTCODE_TRUE);
+    send_result(action, srpc_adapter, SUPLA_RESULTCODE_TRUE);
+  }
 
   if (params) {
     delete params;
