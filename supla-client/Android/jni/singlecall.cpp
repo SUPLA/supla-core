@@ -65,7 +65,7 @@ void getAuthDetails(JNIEnv *env, jobject context, jobject auth_info,
                              sizeof(details->AuthKey));
 
   jboolean email_auth =
-      supla_CallBooleanMethod(env, cls, auth_info, "getEmailAuth", "()Z");
+      supla_CallBooleanMethod(env, cls, auth_info, "getEmailAuth");
 
   jstring server = nullptr;
 
@@ -87,40 +87,33 @@ void getAuthDetails(JNIEnv *env, jobject context, jobject auth_info,
     supla_GetStringUtfChars(env, pass, details->AccessIDpwd,
                             sizeof(details->AccessIDpwd));
 
-    details->AccessID =
-        supla_CallIntMethod(env, cls, auth_info, "getAccessID", "()I");
+    details->AccessID = supla_CallIntMethod(env, cls, auth_info, "getAccessID");
   }
 
   supla_GetStringUtfChars(env, server, details->ServerName,
                           sizeof(details->ServerName));
 
-  *protocol_version = supla_CallIntMethod(env, cls, auth_info,
-                                          "getPreferredProtocolVersion", "()I");
+  *protocol_version =
+      supla_CallIntMethod(env, cls, auth_info, "getPreferredProtocolVersion");
 }
 
 void actionParamsToAction(JNIEnv *env, jobject action_params,
                           TCS_Action *action) {
-  TAction_RS_Parameters *rs_param = nullptr;
-  TAction_RGBW_Parameters *rgbw_param = nullptr;
-
+  void *param = nullptr;
+  unsigned _supla_int16_t param_size = 0;
   int subject_type = 0;
 
-  getActionExecutionCallParams(env, action_params, &action->ActionId, &rs_param,
-                               &rgbw_param, &subject_type, &action->SubjectId);
+  getActionExecutionCallParams(env, action_params, &action->ActionId, &param,
+                               &param_size, &subject_type, &action->SubjectId);
 
-  action->ParamSize = 0;
   action->SubjectType = subject_type;
 
-  if (rs_param) {
-    action->ParamSize = sizeof(TAction_RS_Parameters);
-    memcpy(action->Param, rs_param, action->ParamSize);
-    free(rs_param);
-  }
-
-  if (rgbw_param) {
-    action->ParamSize = sizeof(TAction_RGBW_Parameters);
-    memcpy(action->Param, rgbw_param, action->ParamSize);
-    free(rgbw_param);
+  if (param) {
+    if (param_size <= SUPLA_ACTION_PARAM_MAXSIZE) {
+      action->ParamSize = param_size;
+      memcpy(action->Param, param, param_size);
+    }
+    free(param);
   }
 }
 

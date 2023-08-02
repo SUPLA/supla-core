@@ -19,6 +19,7 @@
 #include "client/call_handler/abstract_execute_action.h"
 
 #include "actions/action_executor.h"
+#include "actions/action_hvac_parameters.h"
 #include "actions/action_rgbw_parameters.h"
 #include "actions/action_rs_parameters.h"
 #include "log.h"
@@ -92,6 +93,16 @@ void supla_ch_abstract_execute_action::execute_action(
       if (action->ParamSize == sizeof(TAction_RGBW_Parameters)) {
         params = new supla_action_rgbw_parameters(
             (TAction_RGBW_Parameters*)action->Param);
+      } else {
+        send_result(action, srpc_adapter,
+                    SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
+        return;
+      }
+      break;
+    case ACTION_SET_HVAC_PARAMETERS:
+      if (action->ParamSize == sizeof(TAction_HVAC_Parameters)) {
+        params = new supla_action_hvac_parameters(
+            (TAction_HVAC_Parameters*)action->Param);
       } else {
         send_result(action, srpc_adapter,
                     SUPLA_RESULTCODE_INCORRECT_PARAMETERS);

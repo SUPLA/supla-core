@@ -16,28 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTIONS_H_
-#define ACTIONS_H_
+#ifndef ACTION_HVAC_PARAMETERS_TEST_H_
+#define ACTION_HVAC_PARAMETERS_TEST_H_
 
-#include <jni.h>
+#include "actions/action_config.h"
+#include "gtest/gtest.h"  // NOLINT
 
-#include "proto.h"
+namespace testing {
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class ActionHvacParametersTest : public Test {
+ public:
+  ActionHvacParametersTest(void);
+  virtual ~ActionHvacParametersTest(void);
+};
 
-void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
-                                  int *action_id, void **param,
-                                  unsigned _supla_int16_t *param_size,
-                                  int *subject_type, int *subject_id);
+} /* namespace testing */
 
-JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scExecuteAction(JNIEnv *env,
-                                                       jobject thiz, jlong _asc,
-                                                       jobject action_params);
-
-#ifdef __cplusplus
-}
-#endif
-#endif /*ACTIONS_H_*/
+#endif /* ACTION_HVAC_PARAMETERS_TEST_H_ */

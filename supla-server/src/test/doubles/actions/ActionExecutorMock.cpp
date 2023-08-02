@@ -73,6 +73,7 @@ void ActionExecutorMock::clear(void) {
   this->closing_percentage = -1;
   this->rgbw_counter = 0;
   this->forward_outside_counter = 0;
+  this->hvac_counter = 0;
   this->rgbw_on_off = -1;
   this->delta = false;
 }
@@ -239,6 +240,12 @@ void ActionExecutorMock::forward_outside(int cap) {
   forward_outside_counter++;
 }
 
+void ActionExecutorMock::set_hvac_parameters(
+    supla_action_hvac_parameters *params) {
+  addTime();
+  hvac_counter++;
+}
+
 int ActionExecutorMock::getOnCounter(void) { return on_counter; }
 
 int ActionExecutorMock::getOffCounter(void) { return off_counter; }
@@ -304,6 +311,8 @@ int ActionExecutorMock::getOpenCloseWctCounter(void) {
 int ActionExecutorMock::getForwardOutsideCounter(void) {
   return forward_outside_counter;
 }
+
+int ActionExecutorMock::getHvacCounter(void) { return hvac_counter; }
 
 char ActionExecutorMock::getClosingPercentage(void) {
   return closing_percentage;
@@ -422,6 +431,10 @@ int ActionExecutorMock::counterSetCount(void) {
   }
 
   if (forward_outside_counter > 0) {
+    result++;
+  }
+
+  if (hvac_counter > 0) {
     result++;
   }
 

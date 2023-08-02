@@ -143,10 +143,10 @@ void weekly_schedule_config::add_program(unsigned char index,
                    mode_to_string(config->Program[index].Mode).c_str(), 0);
 
     set_item_value(program, setpoint_temperature_min, cJSON_Number, true,
-                   nullptr, config->Program[index].Value1);
+                   nullptr, config->Program[index].SetpointTemperatureMin);
 
     set_item_value(program, setpoint_temperature_max, cJSON_Number, true,
-                   nullptr, config->Program[index].Value2);
+                   nullptr, config->Program[index].SetpointTemperatureMax);
   }
 }
 

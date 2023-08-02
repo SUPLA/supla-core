@@ -23,6 +23,7 @@
 #include <map>
 #include <vector>
 
+#include "actions/action_hvac_parameters.h"
 #include "device/abstract_device_dao.h"
 #include "device/channel_fragment.h"
 #include "device/devicechannel.h"
@@ -112,8 +113,8 @@ class supla_device_channels {
 
   bool get_dgf_transparency(int channel_id, unsigned short *mask);
 
-  std::vector<supla_channel_relation> get_channel_relations(int channel_id,
-                                                          e_relation_kind kind);
+  std::vector<supla_channel_relation> get_channel_relations(
+      int channel_id, e_relation_kind kind);
   std::list<int> get_all_ids(void);
   int get_channel_id(unsigned char channel_number);
   bool channel_exists(int channel_id);
@@ -181,6 +182,9 @@ class supla_device_channels {
   bool action_open_close_without_canceling_tasks(const supla_caller &caller,
                                                  int channel_id, int group_id,
                                                  unsigned char eol);
+  bool action_set_hvac_parameters(const supla_caller &caller, int channel_id,
+                                  int group_id, unsigned char eol,
+                                  supla_action_hvac_parameters *params);
   bool reset_counters(int channel_id);
   bool recalibrate(int channel_id, const supla_caller &caller,
                    bool superuser_authorized);

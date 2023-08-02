@@ -288,9 +288,8 @@ char supla_client_set_dgf_transparency(void *_suplaclient, int channelID,
 int supla_client_get_time_diff(void *_suplaclient);
 char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
                             unsigned int durationMS);
-char supla_client_execute_action(void *_suplaclient, int action_id,
-                                 TAction_RS_Parameters *rs_param,
-                                 TAction_RGBW_Parameters *rgbw_param,
+char supla_client_execute_action(void *_suplaclient, int action_id, void *param,
+                                 unsigned _supla_int16_t param_size,
                                  unsigned char subject_type, int subject_id);
 
 char supla_client_pn_register_client_token(void *_suplaclient,

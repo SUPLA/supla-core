@@ -81,16 +81,11 @@ supla_device_channel::supla_device_channel(
 
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
-  json_config = new channel_json_config(nullptr);
+  channel_json_config *json_config = new channel_json_config(nullptr);
   if (json_config) {
     json_config->set_properties(properties);
     json_config->set_user_config(user_config);
-    if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
-      electricity_meter_config *config =
-          new electricity_meter_config(json_config);
-      this->flags |= config->get_channel_user_flags();
-      delete config;
-    }
+    set_channel_json_config(json_config);
   }
 
   voltage_analyzers.set_channel_id(id);
@@ -354,83 +349,39 @@ void supla_device_channel::get_char(char *value) {
   }
 }
 
-template <typename jsonT, typename sdT>
-void supla_device_channel::json_to_config(TSD_ChannelConfig *config) {
-  config->ConfigSize = sizeof(sdT);
-
-  sdT *ws_cfg = (sdT *)config->Config;
-
-  lock();
-  jsonT *_json_config = new jsonT(json_config);
-  if (!_json_config->get_config(ws_cfg)) {
-    config->ConfigSize = 0;
-  }
-  delete _json_config;
-  unlock();
-}
-
 void supla_device_channel::get_config(TSD_ChannelConfig *config,
                                       unsigned char config_type,
                                       unsigned _supla_int_t flags) {
-  if (flags != 0) {
-    return;
+  if (supla_abstract_common_channel_properties::get_config(
+          config->Config, &config->ConfigSize, config_type, flags)) {
+    config->Func = get_func();
+    config->ChannelNumber = get_channel_number();
+    config->ConfigType = config_type;
+  } else {
+    config->Func = 0;
+    config->ChannelNumber = 0;
+    config->ConfigType = 0;
+    config->ConfigSize = 0;
+  }
+}
+
+void supla_device_channel::set_channel_json_config(
+    channel_json_config *config) {
+  lock();
+
+  if (this->json_config) {
+    delete json_config;
   }
 
-  memset(config, 0, sizeof(TSD_ChannelConfig));
-  config->Func = get_func();
-  config->ChannelNumber = get_channel_number();
-  config->ConfigType = config_type;
-
-  if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
-      (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
-    json_to_config<weekly_schedule_config, TChannelConfig_WeeklySchedule>(
-        config);
-
-    return;
+  this->json_config = config;
+  if (config && type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+    electricity_meter_config *config =
+        new electricity_meter_config(json_config);
+    this->flags |= config->get_channel_user_flags();
+    delete config;
   }
 
-  if (config_type != SUPLA_CONFIG_TYPE_DEFAULT) {
-    return;
-  }
-
-  if (get_type() == SUPLA_CHANNELTYPE_HVAC) {
-    json_to_config<hvac_config, TChannelConfig_HVAC>(config);
-
-    return;
-  }
-
-  switch (config->Func) {
-    case SUPLA_CHANNELFNC_STAIRCASETIMER: {
-      config->ConfigSize = sizeof(TChannelConfig_StaircaseTimer);
-      TChannelConfig_StaircaseTimer *cfg =
-          (TChannelConfig_StaircaseTimer *)config->Config;
-      cfg->TimeMS = get_param1() * 100;
-    } break;
-
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW: {
-      config->ConfigSize = sizeof(TChannelConfig_Rollershutter);
-      TChannelConfig_Rollershutter *cfg =
-          (TChannelConfig_Rollershutter *)config->Config;
-      cfg->OpeningTimeMS = get_param1() * 100;
-      cfg->ClosingTimeMS = get_param3() * 100;
-    } break;
-
-    case SUPLA_CHANNELFNC_ACTIONTRIGGER: {
-      config->ConfigSize = sizeof(TChannelConfig_ActionTrigger);
-      TChannelConfig_ActionTrigger *cfg =
-          (TChannelConfig_ActionTrigger *)config->Config;
-      cfg->ActiveActions = 0;
-      lock();
-      action_trigger_config *at_config = new action_trigger_config(json_config);
-      if (at_config) {
-        cfg->ActiveActions = at_config->get_active_actions();
-        delete at_config;
-        at_config = nullptr;
-      }
-      unlock();
-    } break;
-  }
+  unlock();
 }
 
 void supla_device_channel::db_set_properties(channel_json_config *config) {

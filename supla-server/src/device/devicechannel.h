@@ -84,13 +84,13 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
                                  supla_channel_extended_value *new_value);
   supla_channel_extended_value *_get_extended_value(
       bool for_data_logger_purposes);
-  template <typename jsonT, typename sdT>
-  void json_to_config(TSD_ChannelConfig *config);
+
   void set_extended_value(TSuplaChannelExtendedValue *ev,
                           supla_channel_extended_value *new_value);
   virtual void for_each(
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties);
+  void set_channel_json_config(channel_json_config *config);
 
  public:
   supla_device_channel(supla_device *device, int id,
@@ -117,7 +117,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   supla_device *get_device();
   int get_func(void);
   void set_func(int func);
-  int get_type(void);
+  virtual int get_type(void);
   virtual int get_param1(void);
   virtual int get_param2(void);
   virtual int get_param3(void);
@@ -126,7 +126,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   const char *get_text_param2(void);
   const char *get_text_param3(void);
   bool is_hidden(void);
-  unsigned int get_flags();
+  virtual unsigned int get_flags();
   void add_flags(unsigned int flags);
   bool is_offline(void);
   bool set_offline(bool Offline);

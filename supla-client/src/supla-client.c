@@ -1898,9 +1898,8 @@ char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
   return result;
 }
 
-char supla_client_execute_action(void *_suplaclient, int action_id,
-                                 TAction_RS_Parameters *rs_param,
-                                 TAction_RGBW_Parameters *rgbw_param,
+char supla_client_execute_action(void *_suplaclient, int action_id, void *param,
+                                 unsigned _supla_int16_t param_size,
                                  unsigned char subject_type, int subject_id) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
   char result = 0;
@@ -1912,20 +1911,9 @@ char supla_client_execute_action(void *_suplaclient, int action_id,
     action.SubjectType = subject_type;
     action.SubjectId = subject_id;
 
-    switch (action_id) {
-      case ACTION_SHUT_PARTIALLY:
-      case ACTION_REVEAL_PARTIALLY:
-        if (rs_param) {
-          action.ParamSize = sizeof(TAction_RS_Parameters);
-          memcpy(action.Param, rs_param, action.ParamSize);
-        }
-        break;
-      case ACTION_SET_RGBW_PARAMETERS:
-        if (rgbw_param) {
-          action.ParamSize = sizeof(TAction_RGBW_Parameters);
-          memcpy(action.Param, rgbw_param, action.ParamSize);
-        }
-        break;
+    if (param_size && param_size <= SUPLA_ACTION_PARAM_MAXSIZE) {
+      action.ParamSize = param_size;
+      memcpy(action.Param, param, param_size);
     }
 
     result = srpc_cs_async_execute_action(suplaclient->srpc, &action) ==

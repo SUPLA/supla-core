@@ -18,7 +18,11 @@
 
 #include "abstract_common_channel_properties.h"
 
+#include <string.h>
+
+#include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "jsonconfig/channel/weekly_schedule_config.h"
 #include "proto.h"
 
 using std::vector;
@@ -201,4 +205,92 @@ supla_abstract_common_channel_properties::get_channel_relations(
   vector<supla_channel_relation> result;
   get_channel_relations(&result, kind);
   return result;
+}
+
+template <typename jsonT, typename sdT>
+void supla_abstract_common_channel_properties::json_to_config(
+    char *config, unsigned _supla_int16_t *config_size) {
+  *config_size = sizeof(sdT);
+
+  sdT *ws_cfg = (sdT *)config;
+
+  channel_json_config *json_config = get_json_config();
+
+  jsonT *_json_config = new jsonT(json_config);
+  if (!_json_config->get_config(ws_cfg)) {
+    *config_size = 0;
+  }
+  delete _json_config;
+
+  if (json_config) {
+    delete json_config;
+  }
+}
+
+bool supla_abstract_common_channel_properties::get_config(
+    char *config, unsigned _supla_int16_t *config_size,
+    unsigned char config_type, unsigned _supla_int_t flags) {
+  if (flags != 0) {
+    return false;
+  }
+
+  memset(config, 0, SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
+      (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
+    json_to_config<weekly_schedule_config, TChannelConfig_WeeklySchedule>(
+        config, config_size);
+
+    return true;
+  }
+
+  if (config_type != SUPLA_CONFIG_TYPE_DEFAULT) {
+    return false;
+  }
+
+  if (get_type() == SUPLA_CHANNELTYPE_HVAC) {
+    json_to_config<hvac_config, TChannelConfig_HVAC>(config, config_size);
+
+    return true;
+  }
+
+  switch (get_func()) {
+    case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+      *config_size = sizeof(TChannelConfig_StaircaseTimer);
+      TChannelConfig_StaircaseTimer *cfg =
+          (TChannelConfig_StaircaseTimer *)config;
+      cfg->TimeMS = get_param1() * 100;
+    } break;
+
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW: {
+      *config_size = sizeof(TChannelConfig_Rollershutter);
+      TChannelConfig_Rollershutter *cfg =
+          (TChannelConfig_Rollershutter *)config;
+      cfg->OpeningTimeMS = get_param1() * 100;
+      cfg->ClosingTimeMS = get_param3() * 100;
+    } break;
+
+    case SUPLA_CHANNELFNC_ACTIONTRIGGER: {
+      *config_size = sizeof(TChannelConfig_ActionTrigger);
+      TChannelConfig_ActionTrigger *cfg =
+          (TChannelConfig_ActionTrigger *)config;
+      cfg->ActiveActions = 0;
+      channel_json_config *json_config = get_json_config();
+      action_trigger_config *at_config = new action_trigger_config(json_config);
+      if (at_config) {
+        cfg->ActiveActions = at_config->get_active_actions();
+        delete at_config;
+        at_config = nullptr;
+      }
+
+      if (json_config) {
+        delete json_config;
+      }
+    } break;
+    default:
+      return false;
+  }
+
+  return true;
 }

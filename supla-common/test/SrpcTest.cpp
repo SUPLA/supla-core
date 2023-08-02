@@ -535,7 +535,15 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT,
               SUPLA_SD_CALL_SET_DEVICE_CONFIG,
               SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT,
-              SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE};
+              SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE,
+              SUPLA_CS_CALL_GET_CHANNEL_CONFIG,
+              SUPLA_SC_CALL_GET_CHANNEL_CONFIG_RESULT,
+              SUPLA_CS_CALL_SET_CHANNEL_CONFIG,
+              SUPLA_SC_CALL_SET_CHANNEL_CONFIG_RESULT,
+              SUPLA_CS_CALL_SET_DEVICE_CONFIG,
+              SUPLA_SC_CALL_SET_DEVICE_CONFIG_RESULT,
+              SUPLA_CS_CALL_GET_DEVICE_CONFIG,
+              SUPLA_SC_CALL_GET_DEVICE_CONFIG_RESULT};
   }
 
   return {};
@@ -3651,7 +3659,7 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_functions_result,
 // GET CHANNEL CONFIG
 //---------------------------------------------------------
 
-SRPC_CALL_BASIC_TEST(srpc_ds_async_get_channel_config,
+SRPC_CALL_BASIC_TEST(srpc_ds_async_get_channel_config_request,
                      TDS_GetChannelConfigRequest,
                      SUPLA_DS_CALL_GET_CHANNEL_CONFIG, 29,
                      ds_get_channel_config_request);
@@ -3662,6 +3670,22 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_config_result,
                                      31, 543, sd_channel_config,
                                      SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
                                      ConfigSize);
+
+//---------------------------------------------------------
+// GET CHANNEL CONFIG
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_cs_async_get_channel_config_request,
+                     TCS_GetChannelConfigRequest,
+                     SUPLA_CS_CALL_GET_CHANNEL_CONFIG, 32,
+                     cs_get_channel_config_request);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_get_channel_config_result,
+                                     TSC_GetChannelConfigResult,
+                                     SUPLA_SC_CALL_GET_CHANNEL_CONFIG_RESULT,
+                                     31, 543, sc_get_channel_config_result,
+                                     SUPLA_CHANNEL_CONFIG_MAXSIZE,
+                                     Config.Config, Config.ConfigSize);
 
 //---------------------------------------------------------
 // SET CHANNEL CONFIG
@@ -3691,6 +3715,18 @@ SRPC_CALL_BASIC_TEST(srpc_sd_async_set_channel_config_result,
                      SUPLA_SD_CALL_SET_CHANNEL_CONFIG_RESULT, 26,
                      sds_set_channel_config_result);
 
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_set_channel_config_request,
+                                     TSCS_ChannelConfig,
+                                     SUPLA_CS_CALL_SET_CHANNEL_CONFIG, 30, 542,
+                                     scs_channel_config,
+                                     SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
+                                     ConfigSize);
+
+SRPC_CALL_BASIC_TEST(srpc_sc_async_set_channel_config_result,
+                     TSC_SetChannelConfigResult,
+                     SUPLA_SC_CALL_SET_CHANNEL_CONFIG_RESULT, 29,
+                     sc_set_channel_config_result);
+
 //---------------------------------------------------------
 // SET DEVICE CONFIG
 //---------------------------------------------------------
@@ -3718,6 +3754,34 @@ SRPC_CALL_BASIC_TEST(srpc_sd_async_set_device_config_result,
                      TSDS_SetDeviceConfigResult,
                      SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT, 33,
                      sds_set_device_config_result);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_set_device_config_request,
+                                     TSCS_DeviceConfig,
+                                     SUPLA_CS_CALL_SET_DEVICE_CONFIG, 54, 566,
+                                     scs_device_config,
+                                     SUPLA_DEVICE_CONFIG_MAXSIZE, Config,
+                                     ConfigSize);
+
+SRPC_CALL_BASIC_TEST(srpc_sc_async_set_device_config_result,
+                     TSC_SetDeviceConfigResult,
+                     SUPLA_SC_CALL_SET_DEVICE_CONFIG_RESULT, 36,
+                     sc_set_device_config_result);
+
+//---------------------------------------------------------
+// GET DEVICE CONFIG
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_cs_async_get_device_config_request,
+                     TCS_GetDeviceConfigRequest,
+                     SUPLA_CS_CALL_GET_DEVICE_CONFIG, 43,
+                     cs_get_device_config_request);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_get_device_config_result,
+                                     TSC_GetDeviceConfigResult,
+                                     SUPLA_SC_CALL_GET_DEVICE_CONFIG_RESULT, 55,
+                                     567, sc_get_device_config_result,
+                                     SUPLA_DEVICE_CONFIG_MAXSIZE, Config.Config,
+                                     Config.ConfigSize);
 
 //---------------------------------------------------------
 // ACTION TRIGGER

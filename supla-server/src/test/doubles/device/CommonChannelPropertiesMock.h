@@ -34,12 +34,14 @@ class CommonChannelPropertiesMock
 
   MOCK_METHOD0(get_id, int());
   MOCK_METHOD0(get_device_id, int());
+  MOCK_METHOD0(get_type, int());
   MOCK_METHOD0(get_func, int());
+  MOCK_METHOD0(get_flags, unsigned int());
   MOCK_METHOD0(get_param1, int());
   MOCK_METHOD0(get_param2, int());
   MOCK_METHOD0(get_param3, int());
   MOCK_METHOD0(get_param4, int());
-  MOCK_METHOD0(get_json_config, channel_json_config *());
+  MOCK_METHOD0(get_json_config, channel_json_config *(void));
   MOCK_METHOD0(get_channel_number, unsigned char());
   MOCK_METHOD1(for_each,
                void(std::function<

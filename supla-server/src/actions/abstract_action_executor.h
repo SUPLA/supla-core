@@ -25,6 +25,7 @@
 
 #include "abstract_action_config.h"
 #include "actions/abstract_action_parameters.h"
+#include "actions/action_hvac_parameters.h"
 #include "caller.h"
 #include "device.h"
 #include "device/abstract_channel_property_getter.h"
@@ -115,6 +116,7 @@ class supla_abstract_action_executor {
   virtual void open_close(void) = 0;
   virtual void open_close_without_canceling_tasks(void) = 0;
   virtual void forward_outside(int cap) = 0;
+  virtual void set_hvac_parameters(supla_action_hvac_parameters *params) = 0;
   void copy(supla_abstract_channel_property_getter *property_getter,  // NOLINT
             int source_device_id, int source_channel_id);             // NOLINT
 };

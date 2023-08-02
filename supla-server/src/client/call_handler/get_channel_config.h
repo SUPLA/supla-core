@@ -16,30 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_HVAC_VALUE_H_
-#define CHANNEL_HVAC_VALUE_H_
+#ifndef SUPLA_CLIENT_CH_GET_CHANNEL_CONFIG_H_
+#define SUPLA_CLIENT_GET_CHANNEL_CONFIG_H_
 
-#include "device/value/channel_value.h"
+#include <memory>
 
-class supla_channel_hvac_value : public supla_channel_value {
+#include "client/call_handler/abstract_client_srpc_call_handler.h"
+
+class supla_client_ch_get_channel_config
+    : public supla_abstract_client_srpc_call_handler {
+ protected:
+  virtual void handle_call(std::shared_ptr<supla_client> client,
+                           supla_abstract_srpc_adapter* srpc_adapter,
+                           TsrpcReceivedData* rd, unsigned int call_id,
+                           unsigned char proto_version);
+
  public:
-  supla_channel_hvac_value(void);
-  explicit supla_channel_hvac_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  static bool is_function_supported(int func);
-
-  unsigned char get_mode(void);
-  short get_temperature_min(void);
-  short get_temperature_max(void);
-  unsigned short get_flags(void);
-
-  void set_mode(unsigned char mode);
-  void set_temperature_min(short temperature);
-  void set_temperature_max(short temperature);
-  void set_flags(unsigned short flags);
-  bool is_on(void);
-  void turn_on(void);
-  void turn_off(void);
-  void toggle(void);
+  supla_client_ch_get_channel_config(void);
+  virtual ~supla_client_ch_get_channel_config();
+  virtual bool can_handle_call(unsigned int call_id);
 };
 
-#endif /*CHANNEL_HVAC_VALUE_H_*/
+#endif /* SUPLA_CLIENT_CH_GET_CHANNEL_CONFIG_H_*/

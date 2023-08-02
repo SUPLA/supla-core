@@ -41,7 +41,8 @@ supla_client_channel::supla_client_channel(
     int Param3, int Param4, char *TextParam1, char *TextParam2,
     char *TextParam3, const char *Caption, int AltIcon, int UserIcon,
     short ManufacturerID, short ProductID, unsigned char ProtocolVersion,
-    int Flags, int EmSubcFlags, const char value[SUPLA_CHANNELVALUE_SIZE],
+    unsigned int Flags, unsigned int EmSubcFlags,
+    const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec, const char *user_config,
     const char *em_subc_user_config)
     : supla_client_objcontainer_item(Container, Id, Caption),
@@ -140,8 +141,12 @@ int supla_client_channel::get_param3() { return Param3; }
 
 int supla_client_channel::get_param4() { return Param4; }
 
-channel_json_config *supla_client_channel::get_json_config() {
-  return new channel_json_config(json_config, true);
+channel_json_config *supla_client_channel::get_json_config(void) {
+  lock();
+  channel_json_config *result = new channel_json_config(json_config, true);
+  unlock();
+
+  return result;
 }
 
 void supla_client_channel::setCaption(const char *Caption) {
@@ -157,7 +162,7 @@ short supla_client_channel::get_manufacturer_id() { return ManufacturerID; }
 
 short supla_client_channel::get_product_id() { return ProductID; }
 
-int supla_client_channel::get_flags() {
+unsigned int supla_client_channel::get_flags() {
   auto relations = get_channel_relations(relation_with_parent_channel);
   return Flags | (relations.size() ? SUPLA_CHANNEL_FLAG_HAS_PARENT : 0);
 }
@@ -496,4 +501,17 @@ void supla_client_channel::for_each(
           [&](supla_client_channel *channel, bool *will_continue) -> void {
             on_channel_properties(channel, will_continue);
           });
+}
+
+bool supla_client_channel::get_config(TSCS_ChannelConfig *config,
+                                      unsigned char config_type,
+                                      unsigned _supla_int_t flags) {
+  if (config && supla_abstract_common_channel_properties::get_config(
+                    config->Config, &config->ConfigSize, config_type, flags)) {
+    config->ChannelId = get_id();
+    config->ConfigType = config_type;
+    return true;
+  }
+
+  return false;
 }

@@ -286,6 +286,14 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_SEND_PUSH_NOTIFICATION 1110             // ver. >= 20
 #define SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN 1120           // ver. >= 20
 #define SUPLA_SC_CALL_REGISTER_PN_CLIENT_TOKEN_RESULT 1121    // ver. >= 20
+#define SUPLA_CS_CALL_GET_CHANNEL_CONFIG 1200                 // ver. >= 21
+#define SUPLA_SC_CALL_GET_CHANNEL_CONFIG_RESULT 1210          // ver. >= 21
+#define SUPLA_CS_CALL_SET_CHANNEL_CONFIG 1220                 // ver. >= 21
+#define SUPLA_SC_CALL_SET_CHANNEL_CONFIG_RESULT 1230          // ver. >= 21
+#define SUPLA_CS_CALL_GET_DEVICE_CONFIG 1240                  // ver. >= 21
+#define SUPLA_SC_CALL_GET_DEVICE_CONFIG_RESULT 1250           // ver. >= 21
+#define SUPLA_CS_CALL_SET_DEVICE_CONFIG 1260                  // ver. >= 21
+#define SUPLA_SC_CALL_SET_DEVICE_CONFIG_RESULT 1270           // ver. >= 21
 
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
@@ -925,7 +933,7 @@ typedef struct {
   unsigned char ChannelNumber;
   union {
     unsigned _supla_int_t DurationMS;
-    unsigned _supla_int_t DurationSec;
+    unsigned _supla_int_t DurationSec;  // ver. >= 21. Applies to HVAC
   };
 
   char value[SUPLA_CHANNELVALUE_SIZE];
@@ -937,8 +945,10 @@ typedef struct {
   _supla_int_t GroupID;
   unsigned char EOL;  // End Of List
   unsigned char ChannelNumber;
-  unsigned _supla_int_t DurationMS;
-
+  union {
+    unsigned _supla_int_t DurationMS;
+    unsigned _supla_int_t DurationSec;  // ver. >= 21. Applies to HVAC
+  };
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TSD_SuplaChannelGroupNewValue;  // v. >= 13
 
@@ -1287,8 +1297,7 @@ typedef struct {
 #define ACTION_ENABLE 200
 #define ACTION_DISABLE 210
 #define ACTION_SEND 220
-#define ACTION_SET_HVAC_MODE 230
-#define ACTION_SET_HVAC_TEMPERATURE 240
+#define ACTION_SET_HVAC_PARAMETERS 230
 #define ACTION_READ 1000
 #define ACTION_SET 2000
 #define ACTION_EXECUTE 3000
@@ -1313,16 +1322,14 @@ typedef struct {
 } TAction_RGBW_Parameters;  // ver. >= 19
 
 typedef struct {
-  unsigned char Mode;  // SUPLA_HVAC_MODE_
-} TAction_SetHVACMode;
-
-typedef struct {
+  unsigned _supla_int_t DurationSec;
+  unsigned char Mode;  // for HVAC: SUPLA_HVAC_MODE_
   _supla_int16_t
       SetpointTemperatureMin;  // * 0.01 Celcius degree - used for heating
   _supla_int16_t
       SetpointTemperatureMax;     // * 0.01 - Celcius degree used for cooling
   unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
-} TAction_SetHVACTemperature;
+} TAction_HVAC_Parameters;
 
 typedef struct {
   _supla_int_t ActionId;
@@ -2309,10 +2316,41 @@ typedef struct {
 // SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT
 // SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT
 typedef struct {
-  unsigned char Result;      // SUPLA_CONFIG_RESULT_*
-  unsigned char ConfigType;  // SUPLA_DEVICE_CONFIG_TYPE_*
-  unsigned char zero[8];     // for future use
+  unsigned char Result;   // SUPLA_CONFIG_RESULT_*
+  unsigned char zero[9];  // for future use
 } TSDS_SetDeviceConfigResult;
+
+// SUPLA_CS_CALL_SET_DEVICE_CONFIG
+typedef struct {
+  _supla_int_t ChannelId;       // Any channel ID belonging to the device
+  unsigned char EndOfDataFlag;  // 1 - last message; 0 - more messages will come
+  unsigned char zero[8];        // for future use
+  unsigned _supla_int64_t
+      AvailableFields;             // bit map of SUPLA_DEVICE_CONFIG_FIELD_
+  unsigned _supla_int64_t Fields;  // bit map of SUPLA_DEVICE_CONFIG_FIELD_
+  unsigned _supla_int16_t ConfigSize;
+  char Config[SUPLA_DEVICE_CONFIG_MAXSIZE];  // Last variable in struct!
+} TSCS_DeviceConfig;                         // v. >= 21
+
+// SUPLA_SC_CALL_GET_DEVICE_CONFIG_RESULT
+typedef struct {
+  unsigned char Result;      // SUPLA_CONFIG_RESULT_*
+  TSCS_DeviceConfig Config;  // Last variable in struct!
+} TSC_GetDeviceConfigResult;
+
+// SUPLA_CS_CALL_GET_DEVICE_CONFIG
+typedef struct {
+  _supla_int_t ChannelId;          // Any channel ID belonging to the device
+  unsigned _supla_int64_t Fields;  // bit map of SUPLA_DEVICE_CONFIG_FIELD_
+  unsigned char zero[8];           // for future use
+} TCS_GetDeviceConfigRequest;
+
+// SUPLA_SC_CALL_SET_DEVICE_CONFIG_RESULT
+typedef struct {
+  _supla_int_t ChannelId;  // Any channel ID belonging to the device
+  unsigned char Result;    // SUPLA_CONFIG_RESULT_*
+  unsigned char zero[8];   // for future use
+} TSC_SetDeviceConfigResult;
 
 #define SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED 0
 #define SUPLA_DEVCFG_STATUS_LED_OFF_WHEN_CONNECTED 1
@@ -2370,6 +2408,36 @@ typedef struct {
 #define SUPLA_CONFIG_RESULT_TYPE_NOT_SUPPORTED 3
 #define SUPLA_CONFIG_RESULT_FUNCTION_NOT_SUPPORTED 4
 #define SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED 5
+
+// SUPLA_CS_CALL_GET_CHANNEL_CONFIG
+typedef struct {
+  _supla_int_t ChannelId;
+  unsigned char ConfigType;  // SUPLA_CONFIG_TYPE_
+  unsigned _supla_int_t Flags;
+} TCS_GetChannelConfigRequest;  // v. >= 21
+
+// SUPLA_CS_CALL_SET_CHANNEL_CONFIG
+typedef struct {
+  _supla_int_t ChannelId;
+  unsigned char ConfigType;  // SUPLA_CONFIG_TYPE_
+  unsigned _supla_int16_t ConfigSize;
+  char Config[SUPLA_CHANNEL_CONFIG_MAXSIZE];  // Last variable in struct!
+                                              // v. >= 21
+                                              // TChannelConfig_*
+} TSCS_ChannelConfig;
+
+// SUPLA_SC_CALL_GET_CHANNEL_CONFIG_RESULT
+typedef struct {
+  unsigned char Result;       // SUPLA_CONFIG_RESULT_*
+  TSCS_ChannelConfig Config;  // Last variable in struct!
+} TSC_GetChannelConfigResult;
+
+// SUPLA_SC_CALL_SET_CHANNEL_CONFIG_RESULT
+typedef struct {
+  unsigned char Result;      // SUPLA_CONFIG_RESULT_*
+  unsigned char ConfigType;  // SUPLA_CONFIG_TYPE_
+  _supla_int_t ChannelId;
+} TSC_SetChannelConfigResult;
 
 // SUPLA_DS_CALL_GET_CHANNEL_CONFIG
 typedef struct {
@@ -2591,7 +2659,10 @@ typedef struct {
 
 typedef struct {
   _supla_int_t ChannelID;
-  unsigned _supla_int_t DurationMS;
+  union {
+    unsigned _supla_int_t DurationMS;
+    unsigned _supla_int_t DurationSec;  // ver. >= 21. Applies to HVAC
+  };
   unsigned char On;
 } TCS_TimerArmRequest;  // v. >= 17
 
