@@ -537,13 +537,13 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT,
               SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE,
               SUPLA_CS_CALL_GET_CHANNEL_CONFIG,
-              SUPLA_SC_CALL_GET_CHANNEL_CONFIG_RESULT,
+              SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE,
               SUPLA_CS_CALL_SET_CHANNEL_CONFIG,
               SUPLA_SC_CALL_SET_CHANNEL_CONFIG_RESULT,
               SUPLA_CS_CALL_SET_DEVICE_CONFIG,
               SUPLA_SC_CALL_SET_DEVICE_CONFIG_RESULT,
               SUPLA_CS_CALL_GET_DEVICE_CONFIG,
-              SUPLA_SC_CALL_GET_DEVICE_CONFIG_RESULT};
+              SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE};
   }
 
   return {};
@@ -3680,10 +3680,10 @@ SRPC_CALL_BASIC_TEST(srpc_cs_async_get_channel_config_request,
                      SUPLA_CS_CALL_GET_CHANNEL_CONFIG, 32,
                      cs_get_channel_config_request);
 
-SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_get_channel_config_result,
-                                     TSC_GetChannelConfigResult,
-                                     SUPLA_SC_CALL_GET_CHANNEL_CONFIG_RESULT,
-                                     31, 543, sc_get_channel_config_result,
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_channel_config_update,
+                                     TSC_ChannelConfigUpdate,
+                                     SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE, 31,
+                                     543, sc_channel_config_update,
                                      SUPLA_CHANNEL_CONFIG_MAXSIZE,
                                      Config.Config, Config.ConfigSize);
 
@@ -3776,10 +3776,10 @@ SRPC_CALL_BASIC_TEST(srpc_cs_async_get_device_config_request,
                      SUPLA_CS_CALL_GET_DEVICE_CONFIG, 43,
                      cs_get_device_config_request);
 
-SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_get_device_config_result,
-                                     TSC_GetDeviceConfigResult,
-                                     SUPLA_SC_CALL_GET_DEVICE_CONFIG_RESULT, 55,
-                                     567, sc_get_device_config_result,
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_device_config_update,
+                                     TSC_DeviceConfigUpdate,
+                                     SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE, 55,
+                                     567, sc_device_config_update,
                                      SUPLA_DEVICE_CONFIG_MAXSIZE, Config.Config,
                                      Config.ConfigSize);
 

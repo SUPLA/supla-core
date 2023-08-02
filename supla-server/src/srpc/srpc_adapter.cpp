@@ -187,7 +187,7 @@ _supla_int_t supla_srpc_adapter::sd_async_set_channel_config_request(
   return srpc_sd_async_set_channel_config_request(get_srpc(), config);
 }
 
-_supla_int_t supla_srpc_adapter::sc_async_get_channel_config_result(
-    TSC_GetChannelConfigResult *result) {
-  return srpc_sc_async_get_channel_config_result(get_srpc(), result);
+_supla_int_t supla_srpc_adapter::sc_async_channel_config_update(
+    TSC_ChannelConfigUpdate *config) {
+  return srpc_sc_async_channel_config_update(get_srpc(), config);
 }

@@ -42,18 +42,18 @@ void supla_client_ch_get_channel_config::handle_call(
     TCS_GetChannelConfigRequest* request =
         rd->data.cs_get_channel_config_request;
     if (request->ChannelId) {
-      TSC_GetChannelConfigResult result = {};
-      result.Result = SUPLA_CONFIG_RESULT_FALSE;
+      TSC_ChannelConfigUpdate config = {};
+      config.Result = SUPLA_CONFIG_RESULT_FALSE;
 
       client->get_channels()->channel_access(
           request->ChannelId, [&](supla_client_channel* channel) -> void {
-            if (channel->get_config(&result.Config, request->ConfigType,
+            if (channel->get_config(&config.Config, request->ConfigType,
                                     request->Flags)) {
-              result.Result = SUPLA_CONFIG_RESULT_TRUE;
+              config.Result = SUPLA_CONFIG_RESULT_TRUE;
             }
           });
 
-      srpc_adapter->sc_async_get_channel_config_result(&result);
+      srpc_adapter->sc_async_channel_config_update(&config);
     }
   }
 }
