@@ -1131,6 +1131,12 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
                                                   rd.data.sc_get_value_result);
         }
         break;
+      case SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE:
+        if (scd->cfg.cb_on_channel_config_update) {
+          scd->cfg.cb_on_channel_config_update(
+              scd, scd->cfg.user_data, rd.data.sc_channel_config_update);
+        }
+        break;
     }
 
     srpc_rd_free(&rd);
@@ -1933,6 +1939,20 @@ char supla_client_pn_register_client_token(void *_suplaclient,
   lck_lock(suplaclient->lck);
   result = srpc_cs_async_register_pn_client_token(suplaclient->srpc, reg) ==
                    SUPLA_RESULT_FALSE
+               ? 0
+               : 1;
+  lck_unlock(suplaclient->lck);
+  return result;
+}
+
+char supla_client_get_channel_config(void *_suplaclient,
+                                     TCS_GetChannelConfigRequest *request) {
+  TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
+  char result = 0;
+
+  lck_lock(suplaclient->lck);
+  result = srpc_cs_async_get_channel_config_request(
+               suplaclient->srpc, request) == SUPLA_RESULT_FALSE
                ? 0
                : 1;
   lck_unlock(suplaclient->lck);

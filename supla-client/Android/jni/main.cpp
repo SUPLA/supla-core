@@ -36,63 +36,13 @@ D | double
 #include <string.h>
 
 #include "actions.h"
+#include "channel_config.h"
 #include "proto.h"
 #include "srpc.h"
 #include "supla-client.h"
 #include "supla.h"
 
-static int android_api_level = 0;
-
 //  __android_log_write(ANDROID_LOG_DEBUG, log_tag, "XXXX");
-
-jstring new_string_utf(JNIEnv *env, char *string) {
-  if (android_api_level >= 19) {
-    return env->NewStringUTF(string);
-  } else {
-    // For API level <19, emoticons will crash the application
-    jobject bb = env->NewDirectByteBuffer((void *)string, strlen(string));
-
-    jclass cls_charset = env->FindClass("java/nio/charset/Charset");
-
-    jmethodID mid_for_name = env->GetStaticMethodID(
-        cls_charset, "forName",
-        "(Ljava/lang/String;)Ljava/nio/charset/Charset;");
-
-    jobject charset = env->CallStaticObjectMethod(cls_charset, mid_for_name,
-                                                  env->NewStringUTF("UTF-8"));
-
-    jmethodID mid_decode = env->GetMethodID(
-        cls_charset, "decode", "(Ljava/nio/ByteBuffer;)Ljava/nio/CharBuffer;");
-
-    jobject cb = env->CallObjectMethod(charset, mid_decode, bb);
-
-    env->DeleteLocalRef(bb);
-    env->DeleteLocalRef(charset);
-
-    jclass cls_char_buffer = env->FindClass("java/nio/CharBuffer");
-
-    jmethodID mid_to_string =
-        env->GetMethodID(cls_char_buffer, "toString", "()Ljava/lang/String;");
-
-    jstring result = (jstring)env->CallObjectMethod(cb, mid_to_string);
-
-    env->DeleteLocalRef(cb);
-
-    return result;
-  }
-}
-
-#define ASC_VAR_DECLARATION(...)                               \
-  TAndroidSuplaClient *asc = (TAndroidSuplaClient *)user_data; \
-  if (asc == NULL) {                                           \
-    return __VA_ARGS__;                                        \
-  }
-
-#define ENV_VAR_DECLARATION(...)           \
-  JNIEnv *env = supla_client_get_env(asc); \
-  if (env == NULL) {                       \
-    return __VA_ARGS__;                    \
-  }
 
 #define JNI_FUNCTION_V(jni_function_suffix, supla_client_function)       \
   extern "C" JNIEXPORT jboolean JNICALL                                  \
@@ -168,45 +118,7 @@ jstring new_string_utf(JNIEnv *env, char *string) {
                         str ? new_string_utf(env, str) : NULL);        \
   }
 
-static JavaVM *java_vm;
 
-jint JNI_OnLoad(JavaVM *vm, void *reserved) {
-  java_vm = vm;
-
-  JNIEnv *env;
-  if (vm->GetEnv((void **)&env, JNI_VERSION_1_6) != JNI_OK) {
-    __android_log_write(ANDROID_LOG_DEBUG, log_tag, "GetEnv failed.");
-    return -1;
-  }
-
-  jclass cls_version = env->FindClass("android/os/Build$VERSION");
-  if (NULL != cls_version) {
-    jfieldID fid_sdk = env->GetStaticFieldID(cls_version, "SDK_INT", "I");
-    if (fid_sdk != NULL) {
-      android_api_level = env->GetStaticIntField(cls_version, fid_sdk);
-    }
-  }
-
-  __android_log_print(ANDROID_LOG_DEBUG, log_tag,
-                      "Library loaded. Api level: %i", android_api_level);
-
-  return JNI_VERSION_1_6;
-};
-
-JNIEnv *supla_client_get_env(TAndroidSuplaClient *asc) {
-  JNIEnv *env = NULL;
-  int getEnvStat;
-
-  if (asc && asc->j_obj) {
-    getEnvStat = java_vm->GetEnv((void **)&env, JNI_VERSION_1_6);
-
-    if (getEnvStat == JNI_OK) {
-      return env;
-    }
-  }
-
-  return NULL;
-}
 
 jfieldID supla_client_GetFieldID(JNIEnv *env, jclass c, const char *name,
                                  const char *type) {
@@ -1789,6 +1701,9 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
         supla_cb_on_zwave_wake_up_settings_report;
     sclient_cfg.cb_on_zwave_set_wake_up_time_result =
         supla_cb_on_zwave_set_wake_up_time_result;
+
+    supla_channel_config_init(env, oclass, _asc, &sclient_cfg);
+
     _asc->_supla_client = supla_client_init(&sclient_cfg);
 
     if (sclient_cfg.host) {

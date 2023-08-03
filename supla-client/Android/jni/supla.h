@@ -22,6 +22,19 @@
 #include <jni.h>
 
 extern char log_tag[];
+extern JavaVM *java_vm;
+
+#define ASC_VAR_DECLARATION(...)                               \
+  TAndroidSuplaClient *asc = (TAndroidSuplaClient *)user_data; \
+  if (asc == NULL) {                                           \
+    return __VA_ARGS__;                                        \
+  }
+
+#define ENV_VAR_DECLARATION(...)           \
+  JNIEnv *env = supla_client_get_env(asc); \
+  if (env == NULL) {                       \
+    return __VA_ARGS__;                    \
+  }
 
 typedef struct {
   void *_supla_client;
@@ -69,10 +82,15 @@ typedef struct {
   jmethodID j_mid_on_zwave_wake_up_settings_report;
   jmethodID j_mid_on_zwave_assign_node_id_result;
   jmethodID j_mid_on_zwave_set_wake_up_time_result;
+  jmethodID j_mid_on_channel_config_update;
 
 } TAndroidSuplaClient;
 
+jstring new_string_utf(JNIEnv *env, char *string);
+
 void *supla_client_ptr(jlong _asc);
+
+JNIEnv *supla_client_get_env(TAndroidSuplaClient *asc);
 
 void supla_GetStringUtfChars(JNIEnv *env, jstring jstr, char *buff,
                              size_t size);
@@ -110,5 +128,9 @@ bool supla_CallDoubleObjectMethod(JNIEnv *env, jclass cls, jobject obj,
 jobject supla_NewInt(JNIEnv *env, jint value);
 
 jobject supla_NewDouble(JNIEnv *env, jdouble value);
+
+jobject supla_NewArrayList(JNIEnv *env);
+
+void supla_AddItemToArrayList(JNIEnv *env, jobject arr, jobject item);
 
 #endif /*SUPLA_H_*/
