@@ -352,17 +352,12 @@ void supla_device_channel::get_char(char *value) {
 void supla_device_channel::get_config(TSD_ChannelConfig *config,
                                       unsigned char config_type,
                                       unsigned _supla_int_t flags) {
-  if (supla_abstract_common_channel_properties::get_config(
-          config->Config, &config->ConfigSize, config_type, flags)) {
-    config->Func = get_func();
-    config->ChannelNumber = get_channel_number();
-    config->ConfigType = config_type;
-  } else {
-    config->Func = 0;
-    config->ChannelNumber = 0;
-    config->ConfigType = 0;
-    config->ConfigSize = 0;
-  }
+  supla_abstract_common_channel_properties::get_config(
+      config->Config, &config->ConfigSize, config_type, flags);
+
+  config->Func = get_func();
+  config->ChannelNumber = get_channel_number();
+  config->ConfigType = config_type;
 }
 
 void supla_device_channel::set_channel_json_config(

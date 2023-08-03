@@ -227,11 +227,13 @@ void supla_abstract_common_channel_properties::json_to_config(
   }
 }
 
-bool supla_abstract_common_channel_properties::get_config(
+void supla_abstract_common_channel_properties::get_config(
     char *config, unsigned _supla_int16_t *config_size,
     unsigned char config_type, unsigned _supla_int_t flags) {
+  *config_size = 0;
+
   if (flags != 0) {
-    return false;
+    return;
   }
 
   memset(config, 0, SUPLA_CHANNEL_CONFIG_MAXSIZE);
@@ -241,17 +243,17 @@ bool supla_abstract_common_channel_properties::get_config(
     json_to_config<weekly_schedule_config, TChannelConfig_WeeklySchedule>(
         config, config_size);
 
-    return true;
+    return;
   }
 
   if (config_type != SUPLA_CONFIG_TYPE_DEFAULT) {
-    return false;
+    return;
   }
 
   if (get_type() == SUPLA_CHANNELTYPE_HVAC) {
     json_to_config<hvac_config, TChannelConfig_HVAC>(config, config_size);
 
-    return true;
+    return;
   }
 
   switch (get_func()) {
@@ -288,9 +290,5 @@ bool supla_abstract_common_channel_properties::get_config(
         delete json_config;
       }
     } break;
-    default:
-      return false;
   }
-
-  return true;
 }

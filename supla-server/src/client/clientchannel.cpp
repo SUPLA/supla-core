@@ -503,15 +503,15 @@ void supla_client_channel::for_each(
           });
 }
 
-bool supla_client_channel::get_config(TSCS_ChannelConfig *config,
+void supla_client_channel::get_config(TSCS_ChannelConfig *config,
                                       unsigned char config_type,
                                       unsigned _supla_int_t flags) {
-  if (config && supla_abstract_common_channel_properties::get_config(
-                    config->Config, &config->ConfigSize, config_type, flags)) {
+  if (config) {
+    supla_abstract_common_channel_properties::get_config(
+        config->Config, &config->ConfigSize, config_type, flags);
+
     config->ChannelId = get_id();
     config->ConfigType = config_type;
-    return true;
+    config->Func = get_func();
   }
-
-  return false;
 }

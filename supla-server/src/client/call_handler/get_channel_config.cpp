@@ -47,11 +47,9 @@ void supla_client_ch_get_channel_config::handle_call(
 
       client->get_channels()->channel_access(
           request->ChannelId, [&](supla_client_channel* channel) -> void {
-            if (channel->get_config(&config.Config, request->ConfigType,
-                                    request->Flags)) {
-              config.Config.Func = channel->get_func();
-              config.Result = SUPLA_CONFIG_RESULT_TRUE;
-            }
+            channel->get_config(&config.Config, request->ConfigType,
+                                request->Flags);
+            config.Result = SUPLA_CONFIG_RESULT_TRUE;
           });
 
       srpc_adapter->sc_async_channel_config_update(&config);

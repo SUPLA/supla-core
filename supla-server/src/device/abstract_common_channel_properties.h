@@ -56,7 +56,7 @@ class supla_abstract_common_channel_properties {
   template <typename jsonT, typename sdT>
   void json_to_config(char *config, unsigned _supla_int16_t *config_size);
 
-  bool get_config(char *config, unsigned _supla_int16_t *config_size,
+  void get_config(char *config, unsigned _supla_int16_t *config_size,
                   unsigned char config_type, unsigned _supla_int_t flags);
 
  public:
