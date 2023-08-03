@@ -353,7 +353,7 @@ void supla_device_channel::get_config(TSD_ChannelConfig *config,
                                       unsigned char config_type,
                                       unsigned _supla_int_t flags) {
   supla_abstract_common_channel_properties::get_config(
-      config->Config, &config->ConfigSize, config_type, flags);
+      config->Config, &config->ConfigSize, config_type, flags, false);
 
   config->Func = get_func();
   config->ChannelNumber = get_channel_number();

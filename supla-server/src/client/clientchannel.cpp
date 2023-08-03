@@ -508,7 +508,7 @@ void supla_client_channel::get_config(TSCS_ChannelConfig *config,
                                       unsigned _supla_int_t flags) {
   if (config) {
     supla_abstract_common_channel_properties::get_config(
-        config->Config, &config->ConfigSize, config_type, flags);
+        config->Config, &config->ConfigSize, config_type, flags, true);
 
     config->ChannelId = get_id();
     config->ConfigType = config_type;
