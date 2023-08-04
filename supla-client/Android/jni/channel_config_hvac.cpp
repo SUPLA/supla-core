@@ -24,14 +24,6 @@
 
 jobject supla_cc_hvac_thermometer_type_to_jobject(JNIEnv *env,
                                                   unsigned char type) {
-  jclass result_cls = env->FindClass(
-      "org/supla/android/data/source/remote/hvac/SuplaHvacThermometerType");
-
-  jmethodID result_init =
-      env->GetStaticMethodID(result_cls, "valueOf",
-                             "(Ljava/lang/String;)Lorg/supla/android/data/"
-                             "source/remote/hvac/SuplaHvacThermometerType;");
-
   char enum_name[20] = {};
 
   switch (type) {
@@ -55,24 +47,13 @@ jobject supla_cc_hvac_thermometer_type_to_jobject(JNIEnv *env,
       break;
   }
 
-  jobject result = env->CallStaticObjectMethod(result_cls, result_init,
-                                               env->NewStringUTF(enum_name));
-
-  env->DeleteLocalRef(result_cls);
-
-  return result;
+  return supla_NewEnum(
+      env, "org/supla/android/data/source/remote/hvac/SuplaHvacThermometerType",
+      enum_name);
 }
 
 jobject supla_cc_hvac_algorithm_to_jobject(JNIEnv *env,
                                            unsigned char algorithm) {
-  jclass result_cls = env->FindClass(
-      "org/supla/android/data/source/remote/hvac/SuplaHvacAlgorithm");
-
-  jmethodID result_init =
-      env->GetStaticMethodID(result_cls, "valueOf",
-                             "(Ljava/lang/String;)Lorg/supla/android/data/"
-                             "source/remote/hvac/SuplaHvacAlgorithm;");
-
   char enum_name[10] = {};
 
   switch (algorithm) {
@@ -84,12 +65,9 @@ jobject supla_cc_hvac_algorithm_to_jobject(JNIEnv *env,
       break;
   }
 
-  jobject result = env->CallStaticObjectMethod(result_cls, result_init,
-                                               env->NewStringUTF(enum_name));
-
-  env->DeleteLocalRef(result_cls);
-
-  return result;
+  return supla_NewEnum(
+      env, "org/supla/android/data/source/remote/hvac/SuplaHvacAlgorithm",
+      enum_name);
 }
 
 jobject supla_cc_hvac_avil_algs_to_jobject(

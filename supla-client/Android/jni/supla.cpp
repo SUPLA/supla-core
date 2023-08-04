@@ -19,6 +19,7 @@
 #include "supla.h"
 
 #include <android/log.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "proto.h"
@@ -265,4 +266,28 @@ void supla_AddItemToArrayList(JNIEnv *env, jobject arr, jobject item) {
   env->CallBooleanMethod(arr, arr_add_method, item);
 
   env->DeleteLocalRef(arr_cls);
+}
+
+jobject supla_NewEnum(JNIEnv *env, const char *cls_name,
+                      const char *enum_name) {
+  jclass result_cls = env->FindClass(cls_name);
+
+  size_t size = 25 + strnlen(cls_name, 1024);
+  char *method_args = new char[size];
+  snprintf(method_args, size, "(Ljava/lang/String;)L%s;", cls_name);
+
+  jmethodID result_init =
+      env->GetStaticMethodID(result_cls, "valueOf", method_args);
+
+  delete[] method_args;
+
+  jobject jenum_name = env->NewStringUTF(enum_name);
+
+  jobject result =
+      env->CallStaticObjectMethod(result_cls, result_init, jenum_name);
+
+  env->DeleteLocalRef(result_cls);
+  env->DeleteLocalRef(jenum_name);
+
+  return result;
 }

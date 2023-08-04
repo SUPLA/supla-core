@@ -133,4 +133,6 @@ jobject supla_NewArrayList(JNIEnv *env);
 
 void supla_AddItemToArrayList(JNIEnv *env, jobject arr, jobject item);
 
+jobject supla_NewEnum(JNIEnv *env, const char *cls_name, const char *enum_name);
+
 #endif /*SUPLA_H_*/

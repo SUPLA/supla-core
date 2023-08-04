@@ -23,14 +23,6 @@
 #include "supla.h"
 
 jobject supla_cc_hvac_mode_to_jobject(JNIEnv *env, unsigned char mode) {
-  jclass result_cls =
-      env->FindClass("org/supla/android/data/source/remote/hvac/HvacMode");
-
-  jmethodID result_init =
-      env->GetStaticMethodID(result_cls, "valueOf",
-                             "(Ljava/lang/String;)Lorg/supla/android/data/"
-                             "source/remote/hvac/HvacMode;");
-
   char enum_name[20] = {};
 
   switch (mode) {
@@ -63,24 +55,12 @@ jobject supla_cc_hvac_mode_to_jobject(JNIEnv *env, unsigned char mode) {
       break;
   }
 
-  jobject result = env->CallStaticObjectMethod(result_cls, result_init,
-                                               env->NewStringUTF(enum_name));
-
-  env->DeleteLocalRef(result_cls);
-
-  return result;
+  return supla_NewEnum(
+      env, "org/supla/android/data/source/remote/hvac/HvacMode", enum_name);
 }
 
 jobject supla_cc_schedule_program_to_jobject(JNIEnv *env,
                                              unsigned char program) {
-  jclass result_cls = env->FindClass(
-      "org/supla/android/data/source/remote/hvac/SuplaScheduleProgram");
-
-  jmethodID result_init =
-      env->GetStaticMethodID(result_cls, "valueOf",
-                             "(Ljava/lang/String;)Lorg/supla/android/data/"
-                             "source/remote/hvac/SuplaScheduleProgram;");
-
   char enum_name[15] = {};
 
   if (program >= 1 && program <= 4) {
@@ -89,12 +69,9 @@ jobject supla_cc_schedule_program_to_jobject(JNIEnv *env,
     snprintf(enum_name, sizeof(enum_name), "OFF");
   }
 
-  jobject result = env->CallStaticObjectMethod(result_cls, result_init,
-                                               env->NewStringUTF(enum_name));
-
-  env->DeleteLocalRef(result_cls);
-
-  return result;
+  return supla_NewEnum(
+      env, "org/supla/android/data/source/remote/hvac/SuplaScheduleProgram",
+      enum_name);
 }
 
 jobject supla_cc_ws_program_to_jobject(JNIEnv *env, unsigned char index,
@@ -138,11 +115,6 @@ jobject supla_cc_ws_program_configurations_to_jobject(
 
 jobject supla_cc_day_of_week_to_jobject(JNIEnv *env,
                                         unsigned char day_of_week) {
-  jclass result_cls = env->FindClass("java/time/DayOfWeek");
-
-  jmethodID result_init = env->GetStaticMethodID(
-      result_cls, "valueOf", "(Ljava/lang/String;)Ljava/time/DayOfWeek;");
-
   char enum_name[20] = {};
 
   switch (day_of_week) {
@@ -169,12 +141,7 @@ jobject supla_cc_day_of_week_to_jobject(JNIEnv *env,
       break;
   }
 
-  jobject result = env->CallStaticObjectMethod(result_cls, result_init,
-                                               env->NewStringUTF(enum_name));
-
-  env->DeleteLocalRef(result_cls);
-
-  return result;
+  return supla_NewEnum(env, "java/time/DayOfWeek", enum_name);
 }
 
 jobject supla_cc_ws_get_entry(JNIEnv *env, unsigned char day_of_week,
