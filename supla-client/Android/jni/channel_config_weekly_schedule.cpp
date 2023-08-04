@@ -56,7 +56,7 @@ jobject supla_cc_hvac_mode_to_jobject(JNIEnv *env, unsigned char mode) {
   }
 
   return supla_NewEnum(
-      env, "org/supla/android/data/source/remote/hvac/HvacMode", enum_name);
+      env, "org/supla/android/data/source/remote/hvac/SuplaHvacMode", enum_name);
 }
 
 jobject supla_cc_schedule_program_to_jobject(JNIEnv *env,
@@ -89,7 +89,7 @@ jobject supla_cc_ws_program_to_jobject(JNIEnv *env, unsigned char index,
   jmethodID init_method = env->GetMethodID(
       program_cls, "<init>",
       "(Lorg/supla/android/data/source/remote/hvac/SuplaScheduleProgram;Lorg/"
-      "supla/android/data/source/remote/hvac/HvacMode;DD)V");
+      "supla/android/data/source/remote/hvac/SuplaHvacMode;DD)V");
 
   jobject result =
       env->NewObject(program_cls, init_method, enum_program, hvac_mode,
