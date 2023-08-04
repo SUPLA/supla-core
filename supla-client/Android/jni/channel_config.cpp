@@ -55,6 +55,9 @@ jobject supla_config_result_to_jobject(JNIEnv *env, int result) {
     case SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED:
       snprintf(enum_name, sizeof(enum_name), "LOCAL_CONFIG_DISABLED");
       break;
+    case SUPLA_CONFIG_RESULT_NOT_ALLOWED:
+      snprintf(enum_name, sizeof(enum_name), "NOT_ALLOWED");
+      break;
   }
 
   return enum_name[0] == 0
