@@ -42,7 +42,7 @@ void ActionExecutionIntegrationTest::onActionExecutionResult(
 
 TEST_F(ActionExecutionIntegrationTest, channelNotFound) {
   ASSERT_FALSE(sclient == NULL);
-  ASSERT_GT(supla_client_execute_action(sclient, ACTION_OPEN, nullptr, nullptr,
+  ASSERT_GT(supla_client_execute_action(sclient, ACTION_OPEN, nullptr, 0,
                                         ACTION_SUBJECT_TYPE_CHANNEL, 55667788),
             0);
   iterateUntilDefaultTimeout();
@@ -56,7 +56,7 @@ TEST_F(ActionExecutionIntegrationTest, channelNotFound) {
 TEST_F(ActionExecutionIntegrationTest, channelGroupNotFound) {
   ASSERT_FALSE(sclient == NULL);
   ASSERT_GT(
-      supla_client_execute_action(sclient, ACTION_OPEN, nullptr, nullptr,
+      supla_client_execute_action(sclient, ACTION_OPEN, nullptr, 0,
                                   ACTION_SUBJECT_TYPE_CHANNEL_GROUP, 11667788),
       0);
   iterateUntilDefaultTimeout();
@@ -69,10 +69,9 @@ TEST_F(ActionExecutionIntegrationTest, channelGroupNotFound) {
 
 TEST_F(ActionExecutionIntegrationTest, sceneNotFound) {
   ASSERT_FALSE(sclient == NULL);
-  ASSERT_GT(
-      supla_client_execute_action(sclient, ACTION_EXECUTE, nullptr, nullptr,
-                                  ACTION_SUBJECT_TYPE_SCENE, 22667788),
-      0);
+  ASSERT_GT(supla_client_execute_action(sclient, ACTION_EXECUTE, nullptr, 0,
+                                        ACTION_SUBJECT_TYPE_SCENE, 22667788),
+            0);
   iterateUntilDefaultTimeout();
 
   ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_SUBJECT_NOT_FOUND);
@@ -83,10 +82,9 @@ TEST_F(ActionExecutionIntegrationTest, sceneNotFound) {
 
 TEST_F(ActionExecutionIntegrationTest, rollerShutterIncorrectParameters) {
   ASSERT_FALSE(sclient == NULL);
-  ASSERT_GT(
-      supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, nullptr,
-                                  nullptr, ACTION_SUBJECT_TYPE_CHANNEL, 303),
-      0);
+  ASSERT_GT(supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, nullptr,
+                                        0, ACTION_SUBJECT_TYPE_CHANNEL, 303),
+            0);
   iterateUntilDefaultTimeout();
 
   ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
@@ -104,10 +102,10 @@ TEST_F(ActionExecutionIntegrationTest, shutPartiallyWithSuccess) {
   // group to the database before performing the test.
 
   ASSERT_FALSE(sclient == NULL);
-  ASSERT_GT(
-      supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, &rs, nullptr,
-                                  ACTION_SUBJECT_TYPE_CHANNEL_GROUP, 1),
-      0);
+  ASSERT_GT(supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, &rs,
+                                        sizeof(TAction_RS_Parameters),
+                                        ACTION_SUBJECT_TYPE_CHANNEL_GROUP, 1),
+            0);
   iterateUntilDefaultTimeout();
 
   ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_TRUE);
@@ -120,7 +118,7 @@ TEST_F(ActionExecutionIntegrationTest, rgbwIncorrectParameters) {
   ASSERT_FALSE(sclient == NULL);
   ASSERT_GT(
       supla_client_execute_action(sclient, ACTION_SET_RGBW_PARAMETERS, nullptr,
-                                  nullptr, ACTION_SUBJECT_TYPE_CHANNEL, 170),
+                                  0, ACTION_SUBJECT_TYPE_CHANNEL, 170),
       0);
   iterateUntilDefaultTimeout();
 
@@ -139,10 +137,10 @@ TEST_F(ActionExecutionIntegrationTest, setBrightnessWithSuccess) {
   // group to the database before performing the test.
 
   ASSERT_FALSE(sclient == NULL);
-  ASSERT_GT(
-      supla_client_execute_action(sclient, ACTION_SET_RGBW_PARAMETERS, nullptr,
-                                  &rgbw, ACTION_SUBJECT_TYPE_CHANNEL_GROUP, 1),
-      0);
+  ASSERT_GT(supla_client_execute_action(sclient, ACTION_SET_RGBW_PARAMETERS,
+                                        &rgbw, sizeof(TAction_RGBW_Parameters),
+                                        ACTION_SUBJECT_TYPE_CHANNEL_GROUP, 1),
+            0);
   iterateUntilDefaultTimeout();
 
   ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_TRUE);
@@ -160,10 +158,10 @@ TEST_F(ActionExecutionIntegrationTest, channelIsOffline) {
   // group to the database before performing the test.
 
   ASSERT_FALSE(sclient == NULL);
-  ASSERT_GT(
-      supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, &rs, nullptr,
-                                  ACTION_SUBJECT_TYPE_CHANNEL, 303),
-      0);
+  ASSERT_GT(supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, &rs,
+                                        sizeof(TAction_RS_Parameters),
+                                        ACTION_SUBJECT_TYPE_CHANNEL, 303),
+            0);
   iterateUntilDefaultTimeout();
 
   ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE);

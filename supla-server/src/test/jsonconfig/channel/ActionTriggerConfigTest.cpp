@@ -498,12 +498,11 @@ TEST_F(ActionTriggerConfigTest, getColor) {
       "}");
 
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(get_rgbw_params(config).Color, 0);
-
-  EXPECT_FALSE(get_rgbw_params(config).ColorRandom);
+  EXPECT_NO_PARAMS(config);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
+  EXPECT_FALSE(get_rgbw_params(config).ColorRandom);
   EXPECT_EQ(get_rgbw_params(config).Color, (unsigned int)0xFF9400);
 
   config->set_user_config(

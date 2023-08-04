@@ -227,11 +227,14 @@ void supla_abstract_common_channel_properties::json_to_config(
   }
 }
 
-bool supla_abstract_common_channel_properties::get_config(
+void supla_abstract_common_channel_properties::get_config(
     char *config, unsigned _supla_int16_t *config_size,
-    unsigned char config_type, unsigned _supla_int_t flags) {
+    unsigned char config_type, unsigned _supla_int_t flags,
+    bool resolve_channel_identifiers) {
+  *config_size = 0;
+
   if (flags != 0) {
-    return false;
+    return;
   }
 
   memset(config, 0, SUPLA_CHANNEL_CONFIG_MAXSIZE);
@@ -241,17 +244,54 @@ bool supla_abstract_common_channel_properties::get_config(
     json_to_config<weekly_schedule_config, TChannelConfig_WeeklySchedule>(
         config, config_size);
 
-    return true;
+    return;
   }
 
   if (config_type != SUPLA_CONFIG_TYPE_DEFAULT) {
-    return false;
+    return;
   }
 
   if (get_type() == SUPLA_CHANNELTYPE_HVAC) {
     json_to_config<hvac_config, TChannelConfig_HVAC>(config, config_size);
 
-    return true;
+    if (resolve_channel_identifiers) {
+      TChannelConfig_HVAC *hvac = (TChannelConfig_HVAC *)config;
+      bool find_main = hvac->MainThermometerChannelNo != get_channel_number();
+      bool find_aux =
+          hvac->AuxThermometerType >= SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
+          hvac->AuxThermometerType <=
+              SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER;
+      int device_id = get_device_id();
+
+      for_each([&](supla_abstract_common_channel_properties *props,
+                   bool *will_continue) -> void {
+        if (device_id == props->get_device_id()) {
+          if (find_main &&
+              hvac->MainThermometerChannelNo == props->get_channel_number()) {
+            hvac->MainThermometerChannelId = props->get_id();
+            find_main = false;
+          }
+
+          if (find_aux &&
+              hvac->AuxThermometerChannelNo == props->get_channel_number()) {
+            hvac->AuxThermometerChannelId = props->get_id();
+            find_aux = false;
+          }
+        }
+
+        *will_continue = find_main || find_aux;
+      });
+
+      if (find_main) {
+        hvac->MainThermometerChannelId = 0;
+      }
+
+      if (find_aux) {
+        hvac->AuxThermometerChannelId = 0;
+      }
+    }
+
+    return;
   }
 
   switch (get_func()) {
@@ -288,9 +328,5 @@ bool supla_abstract_common_channel_properties::get_config(
         delete json_config;
       }
     } break;
-    default:
-      return false;
   }
-
-  return true;
 }

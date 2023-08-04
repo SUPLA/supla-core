@@ -287,11 +287,11 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN 1120           // ver. >= 20
 #define SUPLA_SC_CALL_REGISTER_PN_CLIENT_TOKEN_RESULT 1121    // ver. >= 20
 #define SUPLA_CS_CALL_GET_CHANNEL_CONFIG 1200                 // ver. >= 21
-#define SUPLA_SC_CALL_GET_CHANNEL_CONFIG_RESULT 1210          // ver. >= 21
+#define SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE 1210              // ver. >= 21
 #define SUPLA_CS_CALL_SET_CHANNEL_CONFIG 1220                 // ver. >= 21
 #define SUPLA_SC_CALL_SET_CHANNEL_CONFIG_RESULT 1230          // ver. >= 21
 #define SUPLA_CS_CALL_GET_DEVICE_CONFIG 1240                  // ver. >= 21
-#define SUPLA_SC_CALL_GET_DEVICE_CONFIG_RESULT 1250           // ver. >= 21
+#define SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE 1250               // ver. >= 21
 #define SUPLA_CS_CALL_SET_DEVICE_CONFIG 1260                  // ver. >= 21
 #define SUPLA_SC_CALL_SET_DEVICE_CONFIG_RESULT 1270           // ver. >= 21
 
@@ -2332,11 +2332,12 @@ typedef struct {
   char Config[SUPLA_DEVICE_CONFIG_MAXSIZE];  // Last variable in struct!
 } TSCS_DeviceConfig;                         // v. >= 21
 
-// SUPLA_SC_CALL_GET_DEVICE_CONFIG_RESULT
+// SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE
 typedef struct {
-  unsigned char Result;      // SUPLA_CONFIG_RESULT_*
+  unsigned char Result;      // SUPLA_CONFIG_RESULT_*. It matters when it is a
+                             // response to SUPLA_CS_CALL_GET_DEVICE_CONFIG
   TSCS_DeviceConfig Config;  // Last variable in struct!
-} TSC_GetDeviceConfigResult;
+} TSC_DeviceConfigUpdate;
 
 // SUPLA_CS_CALL_GET_DEVICE_CONFIG
 typedef struct {
@@ -2408,6 +2409,7 @@ typedef struct {
 #define SUPLA_CONFIG_RESULT_TYPE_NOT_SUPPORTED 3
 #define SUPLA_CONFIG_RESULT_FUNCTION_NOT_SUPPORTED 4
 #define SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED 5
+#define SUPLA_CONFIG_RESULT_NOT_ALLOWED 6
 
 // SUPLA_CS_CALL_GET_CHANNEL_CONFIG
 typedef struct {
@@ -2419,6 +2421,7 @@ typedef struct {
 // SUPLA_CS_CALL_SET_CHANNEL_CONFIG
 typedef struct {
   _supla_int_t ChannelId;
+  _supla_int_t Func;
   unsigned char ConfigType;  // SUPLA_CONFIG_TYPE_
   unsigned _supla_int16_t ConfigSize;
   char Config[SUPLA_CHANNEL_CONFIG_MAXSIZE];  // Last variable in struct!
@@ -2426,11 +2429,12 @@ typedef struct {
                                               // TChannelConfig_*
 } TSCS_ChannelConfig;
 
-// SUPLA_SC_CALL_GET_CHANNEL_CONFIG_RESULT
+// SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE
 typedef struct {
-  unsigned char Result;       // SUPLA_CONFIG_RESULT_*
+  unsigned char Result;       // SUPLA_CONFIG_RESULT_*. It matters when it is a
+                              // response to SUPLA_CS_CALL_GET_CHANNEL_CONFIG
   TSCS_ChannelConfig Config;  // Last variable in struct!
-} TSC_GetChannelConfigResult;
+} TSC_ChannelConfigUpdate;
 
 // SUPLA_SC_CALL_SET_CHANNEL_CONFIG_RESULT
 typedef struct {

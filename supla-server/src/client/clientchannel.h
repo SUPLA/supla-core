@@ -118,7 +118,7 @@ class supla_client_channel : public supla_client_objcontainer_item,
   bool isValueValidityTimeSet();
   unsigned _supla_int64_t getValueValidityTimeUSec(void);
   void resetValueValidityTime(void);
-  bool get_config(TSCS_ChannelConfig *config, unsigned char config_type,
+  void get_config(TSCS_ChannelConfig *config, unsigned char config_type,
                   unsigned _supla_int_t flags);
 };
 

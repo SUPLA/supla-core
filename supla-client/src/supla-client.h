@@ -119,6 +119,9 @@ typedef void (*_suplaclient_cb_on_action_execution_result)(
 typedef void (*_suplaclient_cb_on_get_channel_value_get_result)(
     void *_suplaclient, void *user_data, TSC_GetChannelValueResult *result);
 
+typedef void (*_suplaclient_cb_on_channel_config_update)(
+    void *_suplaclient, void *user_data, TSC_ChannelConfigUpdate *config);
+
 typedef struct {
   char clientGUID[SUPLA_GUID_SIZE];
   char Name[SUPLA_CLIENT_NAME_MAXSIZE];  // UTF8
@@ -206,6 +209,7 @@ typedef struct {
   _suplaclient_cb_on_action_execution_result cb_on_action_execution_result;
   _suplaclient_cb_on_get_channel_value_get_result
       cb_on_get_channel_value_result;
+  _suplaclient_cb_on_channel_config_update cb_on_channel_config_update;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus
@@ -294,6 +298,9 @@ char supla_client_execute_action(void *_suplaclient, int action_id, void *param,
 
 char supla_client_pn_register_client_token(void *_suplaclient,
                                            TCS_RegisterPnClientToken *reg);
+
+char supla_client_get_channel_config(void *_suplaclient,
+                                     TCS_GetChannelConfigRequest *request);
 
 _supla_int_t srpc_evtool_value_get(TSuplaChannelExtendedValue *ev,
                                    unsigned short index,
