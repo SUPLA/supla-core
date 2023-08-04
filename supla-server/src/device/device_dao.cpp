@@ -714,7 +714,7 @@ device_json_config *supla_device_dao::get_device_config(int device_id,
   pbind.buffer = (char *)&device_id;
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
-    char user_config[2049] = {};
+    char user_config[4097] = {};
     char md5[33] = {};
 
     unsigned long user_config_size = 0;
@@ -812,7 +812,7 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
     unsigned long text_param2_size = 0;
     unsigned long text_param3_size = 0;
 
-    char user_config[2049] = {};
+    char user_config[4097] = {};
     char properties[2049] = {};
 
     unsigned long user_config_size = 0;
@@ -1044,7 +1044,7 @@ channel_json_config *supla_device_dao::get_channel_config(
   pbind.buffer = (char *)&channel_id;
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
-    char user_config[2049] = {};
+    char user_config[4097] = {};
     char user_config_md5[33] = {};
 
     char properties[2049] = {};
