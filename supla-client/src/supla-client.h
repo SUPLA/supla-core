@@ -302,6 +302,9 @@ char supla_client_pn_register_client_token(void *_suplaclient,
 char supla_client_get_channel_config(void *_suplaclient,
                                      TCS_GetChannelConfigRequest *request);
 
+char supla_client_set_channel_config(void *_suplaclient,
+                                     TSCS_ChannelConfig *config);
+
 _supla_int_t srpc_evtool_value_get(TSuplaChannelExtendedValue *ev,
                                    unsigned short index,
                                    TSuplaChannelExtendedValue *dest);

@@ -184,7 +184,7 @@ jobject supla_cc_hvac_to_jobject(JNIEnv *env, _supla_int_t channel_id,
 
   jmethodID method_init = env->GetMethodID(
       config_cls, "<init>",
-      "(IIIILorg/supla/android/data/source/remote/hvac/"
+      "(ILjava/lang/Integer;IILorg/supla/android/data/source/remote/hvac/"
       "SuplaHvacThermometerType;ZLjava/util/List;Lorg/supla/android/data/"
       "source/remote/hvac/SuplaHvacAlgorithm;IIILorg/supla/android/data/source/"
       "remote/hvac/SuplaHvacTemperatures;)V");
@@ -206,7 +206,7 @@ jobject supla_cc_hvac_to_jobject(JNIEnv *env, _supla_int_t channel_id,
       supla_cc_vhac_temperatures_to_jobject(env, &hvac->Temperatures);
 
   jobject result = env->NewObject(
-      config_cls, method_init, channel_id, func,
+      config_cls, method_init, channel_id, supla_NewInt(env, func),
       (jint)hvac->MainThermometerChannelId, (jint)hvac->AuxThermometerChannelId,
       aux_thermometer_type,
       hvac->AntiFreezeAndOverheatProtectionEnabled ? JNI_TRUE : JNI_FALSE,
@@ -216,4 +216,9 @@ jobject supla_cc_hvac_to_jobject(JNIEnv *env, _supla_int_t channel_id,
   env->DeleteLocalRef(config_cls);
 
   return result;
+}
+
+bool supla_cc_jobject_to_hvac(JNIEnv *env, jobject object,
+                              TSCS_ChannelConfig *config) {
+  return false;
 }

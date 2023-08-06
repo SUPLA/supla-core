@@ -291,3 +291,38 @@ jobject supla_NewEnum(JNIEnv *env, const char *cls_name,
 
   return result;
 }
+
+jint supla_GetEnumValue(JNIEnv *env, jobject obj, const char *cls_name,
+                        const char *method) {
+  jclass cls = env->FindClass(cls_name);
+  jint result = supla_CallIntMethod(env, cls, obj, method);
+  env->DeleteLocalRef(cls);
+
+  return result;
+}
+
+jint supla_GetEnumValue(JNIEnv *env, jobject obj, const char *cls_name) {
+  return supla_GetEnumValue(env, obj, cls_name, "getValue");
+}
+
+int supla_GetListSize(JNIEnv *env, jobject list) {
+  jclass cls = env->FindClass("java/util/List");
+
+  int result = supla_CallIntMethod(env, cls, list, "size");
+
+  env->DeleteLocalRef(cls);
+
+  return result;
+}
+
+jobject supla_GetListItem(JNIEnv *env, jobject list, jint index) {
+  jclass cls = env->FindClass("java/util/List");
+
+  jmethodID method_id = env->GetMethodID(cls, "get", "(I)Ljava/lang/Object;");
+
+  jobject result = env->CallObjectMethod(list, method_id, index);
+
+  env->DeleteLocalRef(cls);
+
+  return result;
+}

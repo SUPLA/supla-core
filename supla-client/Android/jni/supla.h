@@ -135,4 +135,13 @@ void supla_AddItemToArrayList(JNIEnv *env, jobject arr, jobject item);
 
 jobject supla_NewEnum(JNIEnv *env, const char *cls_name, const char *enum_name);
 
+jint supla_GetEnumValue(JNIEnv *env, jobject obj, const char *cls_name,
+                        const char *method);
+
+jint supla_GetEnumValue(JNIEnv *env, jobject obj, const char *cls_name);
+
+int supla_GetListSize(JNIEnv *env, jobject list);
+
+jobject supla_GetListItem(JNIEnv *env, jobject list, jint index);
+
 #endif /*SUPLA_H_*/

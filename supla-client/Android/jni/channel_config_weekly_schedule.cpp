@@ -18,6 +18,7 @@
 
 #include "channel_config_weekly_schedule.h"
 
+#include <android/log.h>
 #include <stdlib.h>
 
 #include "supla.h"
@@ -56,7 +57,8 @@ jobject supla_cc_hvac_mode_to_jobject(JNIEnv *env, unsigned char mode) {
   }
 
   return supla_NewEnum(
-      env, "org/supla/android/data/source/remote/hvac/SuplaHvacMode", enum_name);
+      env, "org/supla/android/data/source/remote/hvac/SuplaHvacMode",
+      enum_name);
 }
 
 jobject supla_cc_schedule_program_to_jobject(JNIEnv *env,
@@ -141,7 +143,32 @@ jobject supla_cc_day_of_week_to_jobject(JNIEnv *env,
       break;
   }
 
-  return supla_NewEnum(env, "java/time/DayOfWeek", enum_name);
+  return supla_NewEnum(
+      env, "org/supla/android/data/source/local/calendar/DayOfWeek", enum_name);
+}
+
+jobject supla_cc_quarter_of_hour_to_jobject(JNIEnv *env,
+                                            unsigned char quarter_of_hour) {
+  char enum_name[20] = {};
+
+  switch (quarter_of_hour) {
+    case 1:
+      snprintf(enum_name, sizeof(enum_name), "FIRST");
+      break;
+    case 2:
+      snprintf(enum_name, sizeof(enum_name), "SECOND");
+      break;
+    case 3:
+      snprintf(enum_name, sizeof(enum_name), "THIRD");
+      break;
+    case 4:
+      snprintf(enum_name, sizeof(enum_name), "FOURTH");
+      break;
+  }
+
+  return supla_NewEnum(
+      env, "org/supla/android/data/source/local/calendar/QuarterOfHour",
+      enum_name);
 }
 
 jobject supla_cc_ws_get_entry(JNIEnv *env, unsigned char day_of_week,
@@ -150,14 +177,16 @@ jobject supla_cc_ws_get_entry(JNIEnv *env, unsigned char day_of_week,
   jclass entry_cls = env->FindClass(
       "org/supla/android/data/source/remote/hvac/SuplaWeeklyScheduleEntry");
 
-  jmethodID init_method =
-      env->GetMethodID(entry_cls, "<init>",
-                       "(Ljava/time/DayOfWeek;IILorg/supla/android/data/source/"
-                       "remote/hvac/SuplaScheduleProgram;)V");
+  jmethodID init_method = env->GetMethodID(
+      entry_cls, "<init>",
+      "(Lorg/supla/android/data/source/local/calendar/DayOfWeek;ILorg/supla/"
+      "android/data/source/local/calendar/QuarterOfHour;Lorg/supla/android/"
+      "data/source/remote/hvac/SuplaScheduleProgram;)V");
 
   jobject jday_of_week = supla_cc_day_of_week_to_jobject(env, day_of_week);
   jint jhour = hour;
-  jint jquarter_of_hour = quarter_of_hour;
+  jobject jquarter_of_hour =
+      supla_cc_quarter_of_hour_to_jobject(env, quarter_of_hour);
   jobject program = supla_cc_schedule_program_to_jobject(env, program_index);
 
   jobject result = env->NewObject(entry_cls, init_method, jday_of_week, jhour,
@@ -199,16 +228,179 @@ jobject supla_cc_weekly_schedule_to_jobject(JNIEnv *env,
       "SuplaChannelWeeklyScheduleConfig");
 
   jmethodID method_init = env->GetMethodID(
-      config_cls, "<init>", "(IILjava/util/List;Ljava/util/List;)V");
+      config_cls, "<init>",
+      "(ILjava/lang/Integer;Ljava/util/List;Ljava/util/List;)V");
 
   jobject program_configurations =
       supla_cc_ws_program_configurations_to_jobject(env, ws);
   jobject schedule = supla_cc_ws_quarters_to_jobject(env, ws);
 
-  jobject result = env->NewObject(config_cls, method_init, channel_id, func,
-                                  program_configurations, schedule);
+  jobject result =
+      env->NewObject(config_cls, method_init, channel_id,
+                     supla_NewInt(env, func), program_configurations, schedule);
 
   env->DeleteLocalRef(config_cls);
 
   return result;
+}
+
+void supla_cc_ws_get_programs(JNIEnv *env, jobject programs,
+                              TChannelConfig_WeeklySchedule *ws) {
+  int prog_size = supla_GetListSize(env, programs);
+  jclass program_cls = env->FindClass(
+      "org/supla/android/data/source/remote/hvac/SuplaWeeklyScheduleProgram");
+
+  for (int a = 0; a < prog_size; a++) {
+    jobject item = supla_GetListItem(env, programs, a);
+
+    jobject program_enum = supla_CallObjectMethod(
+        env, program_cls, item, "getProgram",
+        "()Lorg/supla/android/data/source/remote/hvac/SuplaScheduleProgram;");
+
+    jint prog_id = supla_GetEnumValue(
+        env, program_enum,
+        "org/supla/android/data/source/remote/hvac/SuplaScheduleProgram");
+
+    jobject mode_enum = supla_CallObjectMethod(
+        env, program_cls, item, "getMode",
+        "()Lorg/supla/android/data/source/remote/hvac/SuplaHvacMode;");
+
+    jint mode_id = supla_GetEnumValue(
+        env, mode_enum,
+        "org/supla/android/data/source/remote/hvac/SuplaHvacMode");
+
+    jdouble setpoint_temperature_min = supla_CallDoubleMethod(
+        env, program_cls, item, "getSetpointTemperatureMin");
+
+    jdouble setpoint_temperature_max = supla_CallDoubleMethod(
+        env, program_cls, item, "getSetpointTemperatureMax");
+
+    if (prog_id > 0 && prog_id < 5) {
+      prog_id--;
+      ws->Program[prog_id].Mode = mode_id;
+      ws->Program[prog_id].SetpointTemperatureMin =
+          setpoint_temperature_min * 100;
+      ws->Program[prog_id].SetpointTemperatureMax =
+          setpoint_temperature_max * 100;
+    }
+
+    env->DeleteLocalRef(item);
+    env->DeleteLocalRef(program_enum);
+    env->DeleteLocalRef(mode_enum);
+  }
+
+  env->DeleteLocalRef(program_cls);
+}
+
+void supla_cc_ws_get_quarters(JNIEnv *env, jobject schedule,
+                              TChannelConfig_WeeklySchedule *ws) {
+  int schedule_size = supla_GetListSize(env, schedule);
+
+  jclass schedule_entry_cls = env->FindClass(
+      "org/supla/android/data/source/remote/hvac/SuplaWeeklyScheduleEntry");
+
+  for (int a = 0; a < schedule_size; a++) {
+    jobject item = supla_GetListItem(env, schedule, a);
+
+    jobject day_of_week_enum = supla_CallObjectMethod(
+        env, schedule_entry_cls, item, "getDayOfWeek",
+        "()Lorg/supla/android/data/source/local/calendar/DayOfWeek;");
+
+    jint day_of_week = supla_GetEnumValue(
+        env, day_of_week_enum,
+        "org/supla/android/data/source/local/calendar/DayOfWeek", "getDay");
+
+    if (day_of_week == 7) {
+      day_of_week = 0;
+    }
+
+    jobject program_enum = supla_CallObjectMethod(
+        env, schedule_entry_cls, item, "getProgram",
+        "()Lorg/supla/android/data/source/remote/hvac/SuplaScheduleProgram;");
+
+    jint program = supla_GetEnumValue(
+        env, program_enum,
+        "org/supla/android/data/source/remote/hvac/SuplaScheduleProgram");
+
+    jint hour = supla_CallIntMethod(env, schedule_entry_cls, item, "getHour");
+    jobject quarter_of_hour_enum = supla_CallObjectMethod(
+        env, schedule_entry_cls, item, "getQuarterOfHour",
+        "()Lorg/supla/android/data/source/local/calendar/QuarterOfHour;");
+
+    jint quarter_of_hour = supla_GetEnumValue(
+        env, quarter_of_hour_enum,
+        "org/supla/android/data/source/local/calendar/QuarterOfHour",
+        "getStartingMinute");
+
+    switch (quarter_of_hour) {
+      case 15:
+        quarter_of_hour = 2;
+        break;
+      case 30:
+        quarter_of_hour = 3;
+        break;
+      case 45:
+        quarter_of_hour = 4;
+        break;
+      default:
+        quarter_of_hour = 1;
+    }
+
+    if (day_of_week >= 0 && day_of_week <= 6 && hour >= 0 && hour <= 23 &&
+        quarter_of_hour >= 1 && quarter_of_hour <= 4 && program >= 0 &&
+        program <= 4) {
+      int index = (day_of_week * 24 + hour) * 2 + quarter_of_hour / 3;
+
+      if (index < sizeof(ws->Quarters)) {
+        unsigned char q = program & 0xF;
+        if (quarter_of_hour == 2 || quarter_of_hour == 4) {
+          q <<= 4;
+        }
+        ws->Quarters[index] |= q;
+      }
+    }
+
+    env->DeleteLocalRef(item);
+    env->DeleteLocalRef(day_of_week_enum);
+    env->DeleteLocalRef(program_enum);
+  }
+
+  env->DeleteLocalRef(schedule_entry_cls);
+}
+
+bool supla_cc_jobject_to_weekly_schedule(JNIEnv *env, jobject object,
+                                         TSCS_ChannelConfig *config) {
+  jclass cls = env->FindClass(
+      "org/supla/android/data/source/remote/hvac/"
+      "SuplaChannelWeeklyScheduleConfig");
+
+  if (!env->IsInstanceOf(object, cls)) {
+    env->DeleteLocalRef(cls);
+    return false;
+  }
+
+  jmethodID method_program_list_getter =
+      env->GetMethodID(cls, "getProgramConfigurations", "()Ljava/util/List;");
+
+  jobject programs = env->CallObjectMethod(object, method_program_list_getter);
+
+  jmethodID method_schedule_list_getter =
+      env->GetMethodID(cls, "getSchedule", "()Ljava/util/List;");
+
+  jobject schedule = env->CallObjectMethod(object, method_schedule_list_getter);
+
+  TChannelConfig_WeeklySchedule *ws =
+      (TChannelConfig_WeeklySchedule *)config->Config;
+
+  supla_cc_ws_get_programs(env, programs, ws);
+  supla_cc_ws_get_quarters(env, schedule, ws);
+
+  env->DeleteLocalRef(cls);
+  env->DeleteLocalRef(programs);
+  env->DeleteLocalRef(schedule);
+
+  config->ConfigType = SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE;
+  config->ConfigSize = sizeof(TChannelConfig_WeeklySchedule);
+
+  return true;
 }
