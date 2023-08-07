@@ -91,11 +91,13 @@ jobject supla_cc_ws_program_to_jobject(JNIEnv *env, unsigned char index,
   jmethodID init_method = env->GetMethodID(
       program_cls, "<init>",
       "(Lorg/supla/android/data/source/remote/hvac/SuplaScheduleProgram;Lorg/"
-      "supla/android/data/source/remote/hvac/SuplaHvacMode;DD)V");
+      "supla/android/data/source/remote/hvac/SuplaHvacMode;Ljava/lang/"
+      "Double;Ljava/lang/Double;)V");
 
   jobject result =
       env->NewObject(program_cls, init_method, enum_program, hvac_mode,
-                     setpoint_temperature_min, setpoint_temperature_max);
+                     supla_NewDouble(env, setpoint_temperature_min),
+                     supla_NewDouble(env, setpoint_temperature_max));
 
   env->DeleteLocalRef(program_cls);
 
@@ -269,11 +271,20 @@ void supla_cc_ws_get_programs(JNIEnv *env, jobject programs,
         env, mode_enum,
         "org/supla/android/data/source/remote/hvac/SuplaHvacMode");
 
-    jdouble setpoint_temperature_min = supla_CallDoubleMethod(
-        env, program_cls, item, "getSetpointTemperatureMin");
+    jdouble setpoint_temperature_min = 0;
 
-    jdouble setpoint_temperature_max = supla_CallDoubleMethod(
-        env, program_cls, item, "getSetpointTemperatureMax");
+    if (!supla_CallDoubleObjectMethod(env, program_cls, item,
+                                      "getSetpointTemperatureMin",
+                                      &setpoint_temperature_min)) {
+      setpoint_temperature_min = 0;
+    }
+
+    jdouble setpoint_temperature_max = 0;
+    if (!supla_CallDoubleObjectMethod(env, program_cls, item,
+                                      "getSetpointTemperatureMax",
+                                      &setpoint_temperature_max)) {
+      setpoint_temperature_max = 0;
+    }
 
     if (prog_id > 0 && prog_id < 5) {
       prog_id--;

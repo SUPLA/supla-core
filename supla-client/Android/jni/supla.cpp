@@ -165,7 +165,7 @@ bool supla_CallLongObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                 const char *method_name, jlong *result) {
   jobject l =
       supla_CallObjectMethod(env, cls, obj, method_name, "()Ljava/lang/Long;");
-  if (l) {
+  if (!env->IsSameObject(l, nullptr)) {
     jclass l_cls = env->FindClass("java/lang/Long");
 
     *result = supla_CallLongMethod(env, l_cls, l, "longValue");
@@ -186,7 +186,7 @@ bool supla_CallIntObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                const char *method_name, jint *result) {
   jobject i = supla_CallObjectMethod(env, cls, obj, method_name,
                                      "()Ljava/lang/Integer;");
-  if (i) {
+  if (!env->IsSameObject(i, nullptr)) {
     jclass i_cls = env->FindClass("java/lang/Integer");
 
     *result = supla_CallIntMethod(env, i_cls, i, "intValue");
@@ -221,7 +221,7 @@ bool supla_CallDoubleObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                   const char *method_name, jdouble *result) {
   jobject d = supla_CallObjectMethod(env, cls, obj, method_name,
                                      "()Ljava/lang/Double;");
-  if (d) {
+  if (!env->IsSameObject(d, nullptr)) {
     jclass d_cls = env->FindClass("java/lang/Double");
 
     *result = supla_CallDoubleMethod(env, d_cls, d, "doubleValue");
