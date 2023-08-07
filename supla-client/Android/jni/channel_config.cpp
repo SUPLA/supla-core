@@ -99,8 +99,9 @@ jobject supla_channel_config_to_jobject(JNIEnv *env,
                         supla_NewInt(env, config->Func));
 }
 
-void supla_cb_on_channel_config_update(void *_suplaclient, void *user_data,
-                                       TSC_ChannelConfigUpdate *config) {
+void supla_cb_on_channel_config_update_or_result(
+    void *_suplaclient, void *user_data,
+    TSC_ChannelConfigUpdateOrResult *config) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -109,19 +110,20 @@ void supla_cb_on_channel_config_update(void *_suplaclient, void *user_data,
                         ? supla_channel_config_to_jobject(env, &config->Config)
                         : env->NewGlobalRef(nullptr);
 
-  env->CallVoidMethod(asc->j_obj, asc->j_mid_on_channel_config_update, jconfig,
-                      jresult);
+  env->CallVoidMethod(asc->j_obj, asc->j_mid_on_channel_config_update_or_result,
+                      jconfig, jresult);
 }
 
 void supla_channel_config_init(JNIEnv *env, jclass oclass,
                                TAndroidSuplaClient *asc,
                                TSuplaClientCfg *sclient_cfg) {
-  asc->j_mid_on_channel_config_update = env->GetMethodID(
-      oclass, "onChannelConfigUpdate",
+  asc->j_mid_on_channel_config_update_or_result = env->GetMethodID(
+      oclass, "onChannelConfigUpdateOrResult",
       "(Lorg/supla/android/data/source/remote/SuplaChannelConfig;Lorg/supla/"
       "android/data/source/remote/ChannelConfigResult;)V");
 
-  sclient_cfg->cb_on_channel_config_update = supla_cb_on_channel_config_update;
+  sclient_cfg->cb_on_channel_config_update_or_result =
+      supla_cb_on_channel_config_update_or_result;
 }
 
 JNIEXPORT jboolean JNICALL

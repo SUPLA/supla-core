@@ -70,8 +70,9 @@ supla_client_channel::supla_client_channel(
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
 
-  json_config = new channel_json_config();
+  channel_json_config *json_config = new channel_json_config();
   json_config->set_user_config(user_config);
+  set_json_config(json_config);
 
   if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
     electricity_meter_config *config = new electricity_meter_config();
@@ -114,6 +115,12 @@ unsigned char supla_client_channel::get_channel_number(void) {
   return channel_number;
 }
 
+int supla_client_channel::get_user_id() {
+  return dynamic_cast<supla_client_channels *>(getContainer())
+      ->getClient()
+      ->get_user_id();
+}
+
 int supla_client_channel::get_device_id() { return DeviceId; }
 
 int supla_client_channel::get_id() {
@@ -147,6 +154,16 @@ channel_json_config *supla_client_channel::get_json_config(void) {
   unlock();
 
   return result;
+}
+
+void supla_client_channel::set_json_config(channel_json_config *json_config) {
+  lock();
+  if (this->json_config) {
+    delete this->json_config;
+  }
+
+  this->json_config = json_config;
+  unlock();
 }
 
 void supla_client_channel::setCaption(const char *Caption) {

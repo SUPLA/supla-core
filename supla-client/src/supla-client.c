@@ -1131,10 +1131,11 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
                                                   rd.data.sc_get_value_result);
         }
         break;
-      case SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE:
-        if (scd->cfg.cb_on_channel_config_update) {
-          scd->cfg.cb_on_channel_config_update(
-              scd, scd->cfg.user_data, rd.data.sc_channel_config_update);
+      case SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE_OR_RESULT:
+        if (scd->cfg.cb_on_channel_config_update_or_result) {
+          scd->cfg.cb_on_channel_config_update_or_result(
+              scd, scd->cfg.user_data,
+              rd.data.sc_channel_config_update_or_result);
         }
         break;
     }

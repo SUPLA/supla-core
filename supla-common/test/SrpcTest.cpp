@@ -537,9 +537,8 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT,
               SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE,
               SUPLA_CS_CALL_GET_CHANNEL_CONFIG,
-              SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE,
+              SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE_OR_RESULT,
               SUPLA_CS_CALL_SET_CHANNEL_CONFIG,
-              SUPLA_SC_CALL_SET_CHANNEL_CONFIG_RESULT,
               SUPLA_CS_CALL_SET_DEVICE_CONFIG,
               SUPLA_SC_CALL_SET_DEVICE_CONFIG_RESULT,
               SUPLA_CS_CALL_GET_DEVICE_CONFIG,
@@ -3680,12 +3679,12 @@ SRPC_CALL_BASIC_TEST(srpc_cs_async_get_channel_config_request,
                      SUPLA_CS_CALL_GET_CHANNEL_CONFIG, 32,
                      cs_get_channel_config_request);
 
-SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_channel_config_update,
-                                     TSC_ChannelConfigUpdate,
-                                     SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE, 35,
-                                     547, sc_channel_config_update,
-                                     SUPLA_CHANNEL_CONFIG_MAXSIZE,
-                                     Config.Config, Config.ConfigSize);
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(
+    srpc_sc_async_channel_config_update_or_result,
+    TSC_ChannelConfigUpdateOrResult,
+    SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE_OR_RESULT, 35, 547,
+    sc_channel_config_update_or_result, SUPLA_CHANNEL_CONFIG_MAXSIZE,
+    Config.Config, Config.ConfigSize);
 
 //---------------------------------------------------------
 // SET CHANNEL CONFIG
@@ -3721,11 +3720,6 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_set_channel_config_request,
                                      scs_channel_config,
                                      SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
                                      ConfigSize);
-
-SRPC_CALL_BASIC_TEST(srpc_sc_async_set_channel_config_result,
-                     TSC_SetChannelConfigResult,
-                     SUPLA_SC_CALL_SET_CHANNEL_CONFIG_RESULT, 29,
-                     sc_set_channel_config_result);
 
 //---------------------------------------------------------
 // SET DEVICE CONFIG

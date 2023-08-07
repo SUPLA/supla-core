@@ -119,8 +119,9 @@ typedef void (*_suplaclient_cb_on_action_execution_result)(
 typedef void (*_suplaclient_cb_on_get_channel_value_get_result)(
     void *_suplaclient, void *user_data, TSC_GetChannelValueResult *result);
 
-typedef void (*_suplaclient_cb_on_channel_config_update)(
-    void *_suplaclient, void *user_data, TSC_ChannelConfigUpdate *config);
+typedef void (*_suplaclient_cb_on_channel_config_update_or_result)(
+    void *_suplaclient, void *user_data,
+    TSC_ChannelConfigUpdateOrResult *config);
 
 typedef struct {
   char clientGUID[SUPLA_GUID_SIZE];
@@ -209,7 +210,8 @@ typedef struct {
   _suplaclient_cb_on_action_execution_result cb_on_action_execution_result;
   _suplaclient_cb_on_get_channel_value_get_result
       cb_on_get_channel_value_result;
-  _suplaclient_cb_on_channel_config_update cb_on_channel_config_update;
+  _suplaclient_cb_on_channel_config_update_or_result
+      cb_on_channel_config_update_or_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus

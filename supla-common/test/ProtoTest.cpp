@@ -298,8 +298,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)13, sizeof(TSC_SetDeviceConfigResult));
   EXPECT_EQ((unsigned int)9, sizeof(TCS_GetChannelConfigRequest));
   EXPECT_EQ((unsigned int)523, sizeof(TSCS_ChannelConfig));
-  EXPECT_EQ((unsigned int)6, sizeof(TSC_SetChannelConfigResult));
-  EXPECT_EQ((unsigned int)524, sizeof(TSC_ChannelConfigUpdate));
+  EXPECT_EQ((unsigned int)524, sizeof(TSC_ChannelConfigUpdateOrResult));
 }
 
 TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {

@@ -82,7 +82,7 @@ typedef struct {
   jmethodID j_mid_on_zwave_wake_up_settings_report;
   jmethodID j_mid_on_zwave_assign_node_id_result;
   jmethodID j_mid_on_zwave_set_wake_up_time_result;
-  jmethodID j_mid_on_channel_config_update;
+  jmethodID j_mid_on_channel_config_update_or_result;
 
 } TAndroidSuplaClient;
 
