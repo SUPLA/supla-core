@@ -217,8 +217,3 @@ jobject supla_cc_hvac_to_jobject(JNIEnv *env, _supla_int_t channel_id,
 
   return result;
 }
-
-bool supla_cc_jobject_to_hvac(JNIEnv *env, jobject object,
-                              TSCS_ChannelConfig *config) {
-  return false;
-}

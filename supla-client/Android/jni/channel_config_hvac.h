@@ -30,9 +30,6 @@ extern "C" {
 jobject supla_cc_hvac_to_jobject(JNIEnv *env, _supla_int_t channel_id,
                                  _supla_int_t func, TChannelConfig_HVAC *hvac);
 
-bool supla_cc_jobject_to_hvac(JNIEnv *env, jobject object,
-                              TSCS_ChannelConfig *config);
-
 #ifdef __cplusplus
 }
 #endif

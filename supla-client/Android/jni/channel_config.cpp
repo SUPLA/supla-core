@@ -156,8 +156,7 @@ Java_org_supla_android_lib_SuplaClient_scSetChannelConfig(JNIEnv *env,
   void *supla_client = supla_client_ptr(_asc);
   if (supla_client) {
     TSCS_ChannelConfig scs_config = {};
-    if (!supla_cc_jobject_to_weekly_schedule(env, config, &scs_config) &&
-        !supla_cc_jobject_to_hvac(env, config, &scs_config)) {
+    if (!supla_cc_jobject_to_weekly_schedule(env, config, &scs_config)) {
       return JNI_FALSE;
     }
 
