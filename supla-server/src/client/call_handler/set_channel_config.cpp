@@ -50,7 +50,7 @@ void supla_client_ch_set_channel_config::handle_call(
   // identifiers/numbers!
 
   if (rd->data.scs_channel_config != nullptr) {
-    TSCS_ChannelConfig* config = rd->data.scs_channel_config;
+    config = rd->data.scs_channel_config;
 
     if (config->ChannelId) {
       client->get_channels()->channel_access(
