@@ -72,17 +72,6 @@ void supla_client_ch_set_channel_config::handle_call(
   }
 
   if (cfg_result.Result == SUPLA_CONFIG_RESULT_TRUE) {
-    std::shared_ptr<supla_device> device =
-        client->get_user()->get_devices()->get(0, config->ChannelId);
-
-    device->get_channels()->access_channel(
-        config->ChannelId, [&](supla_device_channel* channel) -> void {
-          channel->set_json_config(
-              json_config ? new channel_json_config(json_config, true)
-                          : nullptr);
-          channel->send_config_to_device(config->ConfigType);
-        });
-
     int client_id = client->get_id();
 
     client->get_user()->get_clients()->for_each(
@@ -101,6 +90,20 @@ void supla_client_ch_set_channel_config::handle_call(
                     ->get_srpc_adapter()
                     ->sc_async_channel_config_update_or_result(&cfg_result);
               });
+        });
+
+    // Send a new config to the device after sending the configuration to
+    // clients because the device can correct the configuration.
+
+    std::shared_ptr<supla_device> device =
+        client->get_user()->get_devices()->get(0, config->ChannelId);
+
+    device->get_channels()->access_channel(
+        config->ChannelId, [&](supla_device_channel* channel) -> void {
+          channel->set_json_config(
+              json_config ? new channel_json_config(json_config, true)
+                          : nullptr);
+          channel->send_config_to_device(config->ConfigType);
         });
   }
 
