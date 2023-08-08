@@ -112,6 +112,7 @@ jobject supla_cc_ws_program_configurations_to_jobject(
     jobject program =
         supla_cc_ws_program_to_jobject(env, a + 1, &ws->Program[a]);
     supla_AddItemToArrayList(env, jarr, program);
+    env->DeleteLocalRef(program);
   }
 
   return jarr;
@@ -195,6 +196,8 @@ jobject supla_cc_ws_get_entry(JNIEnv *env, unsigned char day_of_week,
                                   jquarter_of_hour, program);
 
   env->DeleteLocalRef(entry_cls);
+  env->DeleteLocalRef(jday_of_week);
+  env->DeleteLocalRef(jquarter_of_hour);
 
   return result;
 }
@@ -217,6 +220,7 @@ jobject supla_cc_ws_quarters_to_jobject(JNIEnv *env,
                                   (ws->Quarters[a] & 0xF0) >> 4);
 
     supla_AddItemToArrayList(env, jarr, entry);
+    env->DeleteLocalRef(entry);
   }
   return jarr;
 }
