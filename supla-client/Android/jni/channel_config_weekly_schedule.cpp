@@ -374,6 +374,7 @@ void supla_cc_ws_get_quarters(JNIEnv *env, jobject schedule,
     env->DeleteLocalRef(item);
     env->DeleteLocalRef(day_of_week_enum);
     env->DeleteLocalRef(program_enum);
+    env->DeleteLocalRef(quarter_of_hour_enum);
   }
 
   env->DeleteLocalRef(schedule_entry_cls);
