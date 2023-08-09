@@ -216,6 +216,7 @@ jobject supla_cc_ws_quarters_to_jobject(JNIEnv *env,
         env, day_of_week, hour, quarter_of_hour + 1, ws->Quarters[a] & 0xF);
 
     supla_AddItemToArrayList(env, jarr, entry);
+    env->DeleteLocalRef(entry);
 
     entry = supla_cc_ws_get_entry(env, day_of_week, hour, quarter_of_hour + 2,
                                   (ws->Quarters[a] & 0xF0) >> 4);
