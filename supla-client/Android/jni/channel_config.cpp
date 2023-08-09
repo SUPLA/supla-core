@@ -112,6 +112,9 @@ void supla_cb_on_channel_config_update_or_result(
 
   env->CallVoidMethod(asc->j_obj, asc->j_mid_on_channel_config_update_or_result,
                       jconfig, jresult);
+
+  env->DeleteLocalRef(jconfig);
+  env->DeleteLocalRef(jresult);
 }
 
 void supla_channel_config_init(JNIEnv *env, jclass oclass,

@@ -198,6 +198,7 @@ jobject supla_cc_ws_get_entry(JNIEnv *env, unsigned char day_of_week,
   env->DeleteLocalRef(entry_cls);
   env->DeleteLocalRef(jday_of_week);
   env->DeleteLocalRef(jquarter_of_hour);
+  env->DeleteLocalRef(program);
 
   return result;
 }
@@ -246,6 +247,8 @@ jobject supla_cc_weekly_schedule_to_jobject(JNIEnv *env,
                      supla_NewInt(env, func), program_configurations, schedule);
 
   env->DeleteLocalRef(config_cls);
+  env->DeleteLocalRef(program_configurations);
+  env->DeleteLocalRef(schedule);
 
   return result;
 }
