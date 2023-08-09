@@ -98,13 +98,15 @@ void supla_client_ch_set_channel_config::handle_call(
     std::shared_ptr<supla_device> device =
         client->get_user()->get_devices()->get(0, config->ChannelId);
 
-    device->get_channels()->access_channel(
-        config->ChannelId, [&](supla_device_channel* channel) -> void {
-          channel->set_json_config(
-              json_config ? new channel_json_config(json_config, true)
-                          : nullptr);
-          channel->send_config_to_device(config->ConfigType);
-        });
+    if (device) {
+      device->get_channels()->access_channel(
+          config->ChannelId, [&](supla_device_channel* channel) -> void {
+            channel->set_json_config(
+                json_config ? new channel_json_config(json_config, true)
+                            : nullptr);
+            channel->send_config_to_device(config->ConfigType);
+          });
+    }
   }
 
   if (json_config) {
