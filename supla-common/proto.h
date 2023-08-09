@@ -287,9 +287,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CS_CALL_REGISTER_PN_CLIENT_TOKEN 1120           // ver. >= 20
 #define SUPLA_SC_CALL_REGISTER_PN_CLIENT_TOKEN_RESULT 1121    // ver. >= 20
 #define SUPLA_CS_CALL_GET_CHANNEL_CONFIG 1200                 // ver. >= 21
-#define SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE 1210              // ver. >= 21
+#define SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE_OR_RESULT 1210    // ver. >= 21
 #define SUPLA_CS_CALL_SET_CHANNEL_CONFIG 1220                 // ver. >= 21
-#define SUPLA_SC_CALL_SET_CHANNEL_CONFIG_RESULT 1230          // ver. >= 21
 #define SUPLA_CS_CALL_GET_DEVICE_CONFIG 1240                  // ver. >= 21
 #define SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE 1250               // ver. >= 21
 #define SUPLA_CS_CALL_SET_DEVICE_CONFIG 1260                  // ver. >= 21
@@ -2432,16 +2431,10 @@ typedef struct {
 // SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE
 typedef struct {
   unsigned char Result;       // SUPLA_CONFIG_RESULT_*. It matters when it is a
-                              // response to SUPLA_CS_CALL_GET_CHANNEL_CONFIG
+                              // response to SUPLA_CS_CALL_GET_CHANNEL_CONFIG or
+                              // SUPLA_CS_CALL_SET_CHANNEL_CONFIG
   TSCS_ChannelConfig Config;  // Last variable in struct!
-} TSC_ChannelConfigUpdate;
-
-// SUPLA_SC_CALL_SET_CHANNEL_CONFIG_RESULT
-typedef struct {
-  unsigned char Result;      // SUPLA_CONFIG_RESULT_*
-  unsigned char ConfigType;  // SUPLA_CONFIG_TYPE_
-  _supla_int_t ChannelId;
-} TSC_SetChannelConfigResult;
+} TSC_ChannelConfigUpdateOrResult;
 
 // SUPLA_DS_CALL_GET_CHANNEL_CONFIG
 typedef struct {

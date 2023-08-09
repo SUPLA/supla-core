@@ -1159,7 +1159,7 @@ bool supla_device_dao::set_channel_user_config(int user_id, int channel_id,
 
         pbind[2].buffer_type = MYSQL_TYPE_STRING;
         pbind[2].buffer = (char *)config_str;
-        pbind[2].buffer_length = strnlen(config_str, 2048);
+        pbind[2].buffer_length = strnlen(config_str, 4096);
 
         pbind[3].buffer_type = MYSQL_TYPE_STRING;
         pbind[3].buffer = (char *)md5sum.c_str();

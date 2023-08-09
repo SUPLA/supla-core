@@ -85,7 +85,7 @@ supla_device_channel::supla_device_channel(
   if (json_config) {
     json_config->set_properties(properties);
     json_config->set_user_config(user_config);
-    set_channel_json_config(json_config);
+    set_json_config(json_config);
   }
 
   voltage_analyzers.set_channel_id(id);
@@ -360,16 +360,15 @@ void supla_device_channel::get_config(TSD_ChannelConfig *config,
   config->ConfigType = config_type;
 }
 
-void supla_device_channel::set_channel_json_config(
-    channel_json_config *config) {
+void supla_device_channel::set_json_config(channel_json_config *json_config) {
   lock();
 
   if (this->json_config) {
-    delete json_config;
+    delete this->json_config;
   }
 
-  this->json_config = config;
-  if (config && type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+  this->json_config = json_config;
+  if (json_config && type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
     electricity_meter_config *config =
         new electricity_meter_config(json_config);
     this->flags |= config->get_channel_user_flags();
@@ -779,69 +778,6 @@ channel_json_config *supla_device_channel::get_json_config(void) {
     result = new channel_json_config(json_config, true);
   }
   unlock();
-
-  return result;
-}
-
-int supla_device_channel::set_user_config(unsigned char config_type,
-                                          unsigned _supla_int16_t config_size,
-                                          char *config) {
-  if (config_size > SUPLA_CHANNEL_CONFIG_MAXSIZE || !config) {
-    return SUPLA_CONFIG_RESULT_FALSE;
-  }
-
-  int result = SUPLA_CONFIG_RESULT_FALSE;
-
-  supla_db_access_provider dba;
-  supla_device_dao dao(&dba);
-
-  {
-    device_json_config *config =
-        dao.get_device_config(device->get_id(), nullptr);
-    if (config) {
-      if (config->is_local_config_disabled()) {
-        result = SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED;
-      }
-      delete config;
-    }
-  }
-
-  channel_json_config *json_config = nullptr;
-
-  if (result != SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED) {
-    if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
-        config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
-        config_size == sizeof(TChannelConfig_HVAC)) {
-      json_config = new hvac_config();
-      static_cast<hvac_config *>(json_config)
-          ->set_config((TChannelConfig_HVAC *)config);
-    } else if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
-               config_size == sizeof(TChannelConfig_WeeklySchedule) &&
-               (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
-      json_config = new weekly_schedule_config();
-      static_cast<weekly_schedule_config *>(json_config)
-          ->set_config((TChannelConfig_WeeklySchedule *)config);
-    }
-  }
-
-  if (json_config) {
-    if (dao.set_channel_user_config(device->get_user_id(), get_id(),
-                                    json_config)) {
-      result = SUPLA_CONFIG_RESULT_TRUE;
-      delete json_config;
-
-      // Get the merged configuration.
-      json_config = dao.get_channel_config(get_id(), nullptr, nullptr);
-      if (json_config) {
-        lock();
-        if (this->json_config) {
-          delete this->json_config;
-        }
-        this->json_config = json_config;
-        unlock();
-      }
-    }
-  }
 
   return result;
 }

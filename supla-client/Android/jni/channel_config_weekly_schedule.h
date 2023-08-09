@@ -32,6 +32,9 @@ jobject supla_cc_weekly_schedule_to_jobject(JNIEnv *env,
                                             _supla_int_t func,
                                             TChannelConfig_WeeklySchedule *ws);
 
+bool supla_cc_jobject_to_weekly_schedule(JNIEnv *env, jobject object,
+                                         TSCS_ChannelConfig *config);
+
 #ifdef __cplusplus
 }
 #endif

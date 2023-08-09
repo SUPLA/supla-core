@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "db/db_access_provider.h"
+#include "device/device_dao.h"
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/weekly_schedule_config.h"
@@ -329,4 +331,63 @@ void supla_abstract_common_channel_properties::get_config(
       }
     } break;
   }
+}
+
+int supla_abstract_common_channel_properties::set_user_config(
+    unsigned char config_type, unsigned _supla_int16_t config_size,
+    char *config) {
+  if (config_size > SUPLA_CHANNEL_CONFIG_MAXSIZE || !config) {
+    return SUPLA_CONFIG_RESULT_FALSE;
+  }
+
+  int result = SUPLA_CONFIG_RESULT_FALSE;
+
+  supla_db_access_provider dba;
+  supla_device_dao dao(&dba);
+
+  {
+    device_json_config *config =
+        dao.get_device_config(get_device_id(), nullptr);
+    if (config) {
+      if (config->is_local_config_disabled()) {
+        result = SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED;
+      }
+      delete config;
+    }
+  }
+
+  channel_json_config *json_config = nullptr;
+
+  if (result != SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED) {
+    if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
+        config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
+        config_size == sizeof(TChannelConfig_HVAC)) {
+      json_config = new hvac_config();
+      static_cast<hvac_config *>(json_config)
+          ->set_config((TChannelConfig_HVAC *)config);
+    } else if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
+               config_size == sizeof(TChannelConfig_WeeklySchedule) &&
+               (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
+      json_config = new weekly_schedule_config();
+      static_cast<weekly_schedule_config *>(json_config)
+          ->set_config((TChannelConfig_WeeklySchedule *)config);
+    } else {
+      result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
+    }
+  }
+
+  if (json_config) {
+    if (dao.set_channel_user_config(get_user_id(), get_id(), json_config)) {
+      result = SUPLA_CONFIG_RESULT_TRUE;
+      delete json_config;
+
+      // Get the merged configuration.
+      json_config = dao.get_channel_config(get_id(), nullptr, nullptr);
+      if (json_config) {
+        set_json_config(json_config);
+      }
+    }
+  }
+
+  return result;
 }

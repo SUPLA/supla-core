@@ -90,7 +90,6 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   virtual void for_each(
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties);
-  void set_channel_json_config(channel_json_config *config);
 
  public:
   supla_device_channel(supla_device *device, int id,
@@ -112,7 +111,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   int get_id(void);
   virtual int get_device_id(void);
   virtual unsigned char get_channel_number(void);
-  int get_user_id(void);
+  virtual int get_user_id(void);
   supla_user *get_user();
   supla_device *get_device();
   int get_func(void);
@@ -150,13 +149,12 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
                                  unsigned int disables_local_operation);
 
   virtual channel_json_config *get_json_config(void);
+  void set_json_config(channel_json_config *json_config);
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);
   bool get_voltage_analyzers_with_any_sample_over_threshold(
       supla_voltage_analyzers *voltage_analyzers, bool reset);
-  int set_user_config(unsigned char config_type,
-                      unsigned _supla_int16_t config_size, char *config);
   void send_config_to_device(unsigned char config_type);
   void send_config_to_device(void);
 

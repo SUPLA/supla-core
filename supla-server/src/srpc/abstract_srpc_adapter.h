@@ -128,8 +128,8 @@ class supla_abstract_srpc_adapter {
   virtual _supla_int_t sd_async_set_channel_config_request(
       TSDS_SetChannelConfig *config) = 0;  // ver. >= 21
 
-  virtual _supla_int_t sc_async_channel_config_update(
-      TSC_ChannelConfigUpdate *config) = 0;  // ver. >= 21
+  virtual _supla_int_t sc_async_channel_config_update_or_result(
+      TSC_ChannelConfigUpdateOrResult *config) = 0;  // ver. >= 21
 };
 
 #endif /* ABSTRACT_SRPC_ADAPTER_H_ */

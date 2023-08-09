@@ -165,7 +165,7 @@ bool supla_CallLongObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                 const char *method_name, jlong *result) {
   jobject l =
       supla_CallObjectMethod(env, cls, obj, method_name, "()Ljava/lang/Long;");
-  if (l) {
+  if (!env->IsSameObject(l, nullptr)) {
     jclass l_cls = env->FindClass("java/lang/Long");
 
     *result = supla_CallLongMethod(env, l_cls, l, "longValue");
@@ -186,7 +186,7 @@ bool supla_CallIntObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                const char *method_name, jint *result) {
   jobject i = supla_CallObjectMethod(env, cls, obj, method_name,
                                      "()Ljava/lang/Integer;");
-  if (i) {
+  if (!env->IsSameObject(i, nullptr)) {
     jclass i_cls = env->FindClass("java/lang/Integer");
 
     *result = supla_CallIntMethod(env, i_cls, i, "intValue");
@@ -221,7 +221,7 @@ bool supla_CallDoubleObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                   const char *method_name, jdouble *result) {
   jobject d = supla_CallObjectMethod(env, cls, obj, method_name,
                                      "()Ljava/lang/Double;");
-  if (d) {
+  if (!env->IsSameObject(d, nullptr)) {
     jclass d_cls = env->FindClass("java/lang/Double");
 
     *result = supla_CallDoubleMethod(env, d_cls, d, "doubleValue");
@@ -288,6 +288,41 @@ jobject supla_NewEnum(JNIEnv *env, const char *cls_name,
 
   env->DeleteLocalRef(result_cls);
   env->DeleteLocalRef(jenum_name);
+
+  return result;
+}
+
+jint supla_GetEnumValue(JNIEnv *env, jobject obj, const char *cls_name,
+                        const char *method) {
+  jclass cls = env->FindClass(cls_name);
+  jint result = supla_CallIntMethod(env, cls, obj, method);
+  env->DeleteLocalRef(cls);
+
+  return result;
+}
+
+jint supla_GetEnumValue(JNIEnv *env, jobject obj, const char *cls_name) {
+  return supla_GetEnumValue(env, obj, cls_name, "getValue");
+}
+
+int supla_GetListSize(JNIEnv *env, jobject list) {
+  jclass cls = env->FindClass("java/util/List");
+
+  int result = supla_CallIntMethod(env, cls, list, "size");
+
+  env->DeleteLocalRef(cls);
+
+  return result;
+}
+
+jobject supla_GetListItem(JNIEnv *env, jobject list, jint index) {
+  jclass cls = env->FindClass("java/util/List");
+
+  jmethodID method_id = env->GetMethodID(cls, "get", "(I)Ljava/lang/Object;");
+
+  jobject result = env->CallObjectMethod(list, method_id, index);
+
+  env->DeleteLocalRef(cls);
 
   return result;
 }

@@ -37,6 +37,12 @@ JNIEXPORT jboolean JNICALL
 Java_org_supla_android_lib_SuplaClient_scGetChannelConfig(
     JNIEnv *env, jobject thiz, jlong _asc, jint channel_id, jobject type);
 
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scSetChannelConfig(JNIEnv *env,
+                                                          jobject thiz,
+                                                          jlong _asc,
+                                                          jobject config);
+
 #ifdef __cplusplus
 }
 #endif
