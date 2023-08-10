@@ -25,7 +25,12 @@
 #include "log.h"
 #include "proto.h"
 
+// ESP8266 and ESP32
 #if defined(ESP8266) || defined(ESP32)
+#define __EH_DISABLED
+#define SRPC_BUFFER_SIZE 256
+#define SRPC_QUEUE_SIZE 2
+#define SRPC_QUEUE_MIN_ALLOC_COUNT 2
 
 #if !defined(ESP32)
 #include <mem.h>
@@ -34,46 +39,32 @@
 
 #if defined(ARDUINO_ARCH_ESP8266)
 #include <ets_sys.h>
-#define __EH_DISABLED
 #elif defined(ARDUINO_ARCH_ESP32)
-#define __EH_DISABLED
 #else
+// ESP8266 nonos SDK target
 #include <user_interface.h>
-
 #include "espmissingincludes.h"
 #endif
 
-#ifndef SRPC_BUFFER_SIZE
-#define SRPC_BUFFER_SIZE 1024
-#endif /*SRPC_BUFFER_SIZE*/
-
-#ifndef SRPC_QUEUE_SIZE
-#define SRPC_QUEUE_SIZE 2
-#endif /*SRPC_QUEUE_SIZE*/
-
-#ifndef SRPC_QUEUE_MIN_ALLOC_COUNT
-#define SRPC_QUEUE_MIN_ALLOC_COUNT 2
-#endif /* SRPC_QUEUE_MIN_ALLOC_COUNT */
-
+// ARDUINO MEGA
 #elif defined(__AVR__)
-
 #define SRPC_BUFFER_SIZE 32
 #define SRPC_QUEUE_SIZE 1
 #define SRPC_QUEUE_MIN_ALLOC_COUNT 1
 #define __EH_DISABLED
 
+// OTHER SUPLA_DEVICE
+// Linux target, other?
 #elif defined(SUPLA_DEVICE)
-
-#ifndef SRPC_BUFFER_SIZE
 #define SRPC_BUFFER_SIZE 1024
-#endif /*SRPC_BUFFER_SIZE*/
-
 #define __EH_DISABLED
 
+// other not releated to supla-device
 #else
 #include <assert.h>
 #endif
 
+// ALL targets
 #ifndef SRPC_BUFFER_SIZE
 #define SRPC_BUFFER_SIZE 32768
 #endif /*SRPC_BUFFER_SIZE*/

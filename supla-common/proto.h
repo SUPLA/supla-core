@@ -762,7 +762,7 @@ typedef struct {
 #define SUPLA_HVAC_VALUE_FLAG_COUNTDOWN_TIMER (1ULL << 5)
 // FAN flag tells if fan function is enabled
 #define SUPLA_HVAC_VALUE_FLAG_FAN_ENABLED (1ULL << 6)
-#define SUPLA_HVAC_VALUE_FLAG_ERROR (1ULL << 7)
+#define SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR (1ULL << 7)
 #define SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR (1ULL << 8)
 
 // HVAC modes are used in channel value (as a command from server or
@@ -2514,6 +2514,9 @@ typedef struct {
   // 2 - program 2
   // 3 - program 3
   // 4 - program 4
+  // (Quarter[0] & 0x0F)      is Sunday, 0:00 to 0:14
+  // (Quarter[0] & 0xF0) >> 4 is Sunday, 0:15 to 0:29
+  // Days of week are numbered: 0 - Sunday, 1 - Monday, etc.
   unsigned char Quarters[SUPLA_WEEKLY_SCHEDULE_VALUES_SIZE / 2];  // 336 B
 } TChannelConfig_WeeklySchedule;                                  // v. >= 21
 
