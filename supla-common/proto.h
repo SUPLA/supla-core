@@ -551,8 +551,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS (1ULL << 1)  // v. >= 21
 // type: TDeviceConfig_ButtonVolume
 #define SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME (1ULL << 2)  // v. >= 21
-// type: TDeviceConfig_DisableLocalConfig
-#define SUPLA_DEVICE_CONFIG_FIELD_DISABLE_LOCAL_CONFIG (1ULL << 3)  // v. >= 21
+// type: TDeviceConfig_DisableUserInterface
+#define SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE (1ULL << 3)  // v. >= 21
 // type: TDeviceConfig_TimezoneOffset
 #define SUPLA_DEVICE_CONFIG_FIELD_TIMEZONE_OFFSET (1ULL << 4)  // v. >= 21
 // type: TDeviceConfig_AutomaticTimeSync
@@ -2370,9 +2370,9 @@ typedef struct {
 } TDeviceConfig_ButtonVolume;  // v. >= 21
 
 typedef struct {
-  unsigned char DisableLocalConfig;  // 0 - false (local config enabled)
-                                     // 1 - true (local config disabled)
-} TDeviceConfig_DisableLocalConfig;  // v. >= 21
+  unsigned char DisableUserInterface;  // 0 - false (local UI enabled)
+                                       // 1 - true (local UI disabled)
+} TDeviceConfig_DisableUserInterface;  // v. >= 21
 
 typedef struct {
   _supla_int16_t TimezoneOffsetMinutes;  // -1560 .. +1560 minutes
@@ -2389,13 +2389,20 @@ typedef struct {
                                                // 0 - disabled
 } TDeviceConfig_ScreensaverDelay;              // v. >= 21
 
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_OFF 0
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_ALL 1
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_TIME 2
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_MEASUREMENT 3
+#define SUPLA_DEVCFG_SCREENSAVER_MODE_OFF (1ULL << 0)
+#define SUPLA_DEVCFG_SCREENSAVER_MODE_TEMPERATURE (1ULL << 1)
+#define SUPLA_DEVCFG_SCREENSAVER_MODE_HUMIDITY (1ULL << 2)
+#define SUPLA_DEVCFG_SCREENSAVER_MODE_TIME (1ULL << 3)
+#define SUPLA_DEVCFG_SCREENSAVER_MODE_TIME_DATE (1ULL << 4)
+#define SUPLA_DEVCFG_SCREENSAVER_MODE_TEMPERATURE_TIME (1ULL << 5)
+#define SUPLA_DEVCFG_SCREENSAVER_MODE_MAIN_AND_AUX_TEMPERATURE (1ULL << 6)
 
 typedef struct {
-  unsigned char ScreensaverMode;  // SUPLA_DEVCFG_SCREENSAVER_MODE_
+  // bitfield with all available modes (reported by device, readonly for other
+  // components)
+  unsigned _supla_int64_t ModesAvailable;
+  // configured mode (settable)
+  unsigned _supla_int64_t ScreensaverMode;  // SUPLA_DEVCFG_SCREENSAVER_MODE_
 } TDeviceConfig_ScreensaverMode;  // v. >= 21
 
 /********************************************
@@ -2648,7 +2655,7 @@ typedef struct {
   // Below Min TimeS parameters defines minimum time of relay/output to be
   // be disabled or enabled in seconds. It is used to prevent to frequent relay
   // state change.
-  // Allowed values are 0-600 (10 minutes) (TBD)
+  // Allowed values are 0-600 (10 minutes)
   unsigned _supla_int16_t MinOnTimeS;   // minimum allowed time for output to
                                         // be enabled
   unsigned _supla_int16_t MinOffTimeS;  // minimum allowed time for output to
