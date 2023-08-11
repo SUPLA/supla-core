@@ -553,14 +553,12 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME (1ULL << 2)  // v. >= 21
 // type: TDeviceConfig_DisableUserInterface
 #define SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE (1ULL << 3)  // v. >= 21
-// type: TDeviceConfig_TimezoneOffset
-#define SUPLA_DEVICE_CONFIG_FIELD_TIMEZONE_OFFSET (1ULL << 4)  // v. >= 21
 // type: TDeviceConfig_AutomaticTimeSync
-#define SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC (1ULL << 5)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC (1ULL << 4)  // v. >= 21
 // type: TDeviceConfig_ScreensaverDelay
-#define SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY (1ULL << 6)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY (1ULL << 5)  // v. >= 21
 // type: TDeviceConfig_ScreensaverMode
-#define SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE (1ULL << 7)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE (1ULL << 6)  // v. >= 21
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
@@ -2373,11 +2371,6 @@ typedef struct {
   unsigned char DisableUserInterface;  // 0 - false (local UI enabled)
                                        // 1 - true (local UI disabled)
 } TDeviceConfig_DisableUserInterface;  // v. >= 21
-
-typedef struct {
-  _supla_int16_t TimezoneOffsetMinutes;  // -1560 .. +1560 minutes
-                                         // biggest timezone diff is 26h
-} TDeviceConfig_TimezoneOffset;          // v. >= 21
 
 typedef struct {
   unsigned char AutomaticTimeSync;  // 0 - disabled
