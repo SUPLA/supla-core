@@ -82,8 +82,8 @@ jobject supla_cc_ws_program_to_jobject(JNIEnv *env, unsigned char index,
 
   jobject hvac_mode = supla_cc_hvac_mode_to_jobject(env, program->Mode);
 
-  jdouble setpoint_temperature_min = program->SetpointTemperatureMin * 0.01;
-  jdouble setpoint_temperature_max = program->SetpointTemperatureMax * 0.01;
+  jshort setpoint_temperature_min = program->SetpointTemperatureMin;
+  jshort setpoint_temperature_max = program->SetpointTemperatureMax;
 
   jclass program_cls = env->FindClass(
       "org/supla/android/data/source/remote/hvac/SuplaWeeklyScheduleProgram");
@@ -92,12 +92,12 @@ jobject supla_cc_ws_program_to_jobject(JNIEnv *env, unsigned char index,
       program_cls, "<init>",
       "(Lorg/supla/android/data/source/remote/hvac/SuplaScheduleProgram;Lorg/"
       "supla/android/data/source/remote/hvac/SuplaHvacMode;Ljava/lang/"
-      "Double;Ljava/lang/Double;)V");
+      "Short;Ljava/lang/Short;)V");
 
   jobject result =
       env->NewObject(program_cls, init_method, enum_program, hvac_mode,
-                     supla_NewDouble(env, setpoint_temperature_min),
-                     supla_NewDouble(env, setpoint_temperature_max));
+                     supla_NewShort(env, setpoint_temperature_min),
+                     supla_NewShort(env, setpoint_temperature_max));
 
   env->DeleteLocalRef(program_cls);
 
@@ -279,28 +279,26 @@ void supla_cc_ws_get_programs(JNIEnv *env, jobject programs,
         env, mode_enum,
         "org/supla/android/data/source/remote/hvac/SuplaHvacMode");
 
-    jdouble setpoint_temperature_min = 0;
+    jshort setpoint_temperature_min = 0;
 
-    if (!supla_CallDoubleObjectMethod(env, program_cls, item,
-                                      "getSetpointTemperatureMin",
-                                      &setpoint_temperature_min)) {
+    if (!supla_CallShortObjectMethod(env, program_cls, item,
+                                     "getSetpointTemperatureMin",
+                                     &setpoint_temperature_min)) {
       setpoint_temperature_min = 0;
     }
 
-    jdouble setpoint_temperature_max = 0;
-    if (!supla_CallDoubleObjectMethod(env, program_cls, item,
-                                      "getSetpointTemperatureMax",
-                                      &setpoint_temperature_max)) {
+    jshort setpoint_temperature_max = 0;
+    if (!supla_CallShortObjectMethod(env, program_cls, item,
+                                     "getSetpointTemperatureMax",
+                                     &setpoint_temperature_max)) {
       setpoint_temperature_max = 0;
     }
 
     if (prog_id > 0 && prog_id < 5) {
       prog_id--;
       ws->Program[prog_id].Mode = mode_id;
-      ws->Program[prog_id].SetpointTemperatureMin =
-          setpoint_temperature_min * 100;
-      ws->Program[prog_id].SetpointTemperatureMax =
-          setpoint_temperature_max * 100;
+      ws->Program[prog_id].SetpointTemperatureMin = setpoint_temperature_min;
+      ws->Program[prog_id].SetpointTemperatureMax = setpoint_temperature_max;
     }
 
     env->DeleteLocalRef(item);

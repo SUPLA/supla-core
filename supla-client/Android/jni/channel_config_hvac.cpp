@@ -91,7 +91,7 @@ jobject supla_cc_vhac_get_temperature_jobject(JNIEnv *env,
         sizeof(temperatures->Temperature) / sizeof(_supla_int16_t);
     for (int a = 0; a < size; a++) {
       if (1 << a == index) {
-        return supla_NewDouble(env, temperatures->Temperature[a] * 0.01);
+        return supla_NewShort(env, temperatures->Temperature[a]);
       }
     }
   }
@@ -160,11 +160,11 @@ jobject supla_cc_vhac_temperatures_to_jobject(
 
   jmethodID method_init = env->GetMethodID(
       temperatures_cls, "<init>",
-      "(Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/"
-      "Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/"
-      "Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/"
-      "Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/"
-      "Double;Ljava/lang/Double;Ljava/lang/Double;)V");
+      "(Ljava/lang/Short;Ljava/lang/Short;Ljava/lang/Short;Ljava/lang/"
+      "Short;Ljava/lang/Short;Ljava/lang/Short;Ljava/lang/Short;Ljava/lang/"
+      "Short;Ljava/lang/Short;Ljava/lang/Short;Ljava/lang/Short;Ljava/lang/"
+      "Short;Ljava/lang/Short;Ljava/lang/Short;Ljava/lang/Short;Ljava/lang/"
+      "Short;Ljava/lang/Short;Ljava/lang/Short;)V");
 
   jobject result = env->NewObject(
       temperatures_cls, method_init, freeze_protection, eco, comfort, boost,

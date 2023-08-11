@@ -116,6 +116,9 @@ bool supla_CallIntObjectMethod(JNIEnv *env, jclass cls, jobject obj,
 jshort supla_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
                              const char *method_name);
 
+bool supla_CallShortObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                                 const char *method_name, jshort *result);
+
 jboolean supla_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
                                  const char *method_name);
 
@@ -124,6 +127,8 @@ jdouble supla_CallDoubleMethod(JNIEnv *env, jclass cls, jobject obj,
 
 bool supla_CallDoubleObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                   const char *method_name, jdouble *result);
+
+jobject supla_NewShort(JNIEnv *env, jshort value);
 
 jobject supla_NewInt(JNIEnv *env, jint value);
 

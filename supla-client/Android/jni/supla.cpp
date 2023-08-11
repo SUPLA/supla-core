@@ -203,6 +203,20 @@ jshort supla_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
   return env->CallShortMethod(obj, method_id);
 }
 
+bool supla_CallShortObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                                 const char *method_name, jshort *result) {
+  jobject s =
+      supla_CallObjectMethod(env, cls, obj, method_name, "()Ljava/lang/Short;");
+  if (!env->IsSameObject(s, nullptr)) {
+    jclass s_cls = env->FindClass("java/lang/Short");
+
+    *result = supla_CallShortMethod(env, s_cls, s, "shortValue");
+    return true;
+  }
+
+  return false;
+}
+
 jboolean supla_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
                                  const char *method_name) {
   jmethodID method_id = env->GetMethodID(cls, method_name, "()Z");
@@ -229,6 +243,14 @@ bool supla_CallDoubleObjectMethod(JNIEnv *env, jclass cls, jobject obj,
   }
 
   return false;
+}
+
+jobject supla_NewShort(JNIEnv *env, jshort value) {
+  jclass cls = env->FindClass("java/lang/Short");
+  jmethodID midInit = env->GetMethodID(cls, "<init>", "(S)V");
+  jobject result = env->NewObject(cls, midInit, value);
+  env->DeleteLocalRef(cls);
+  return result;
 }
 
 jobject supla_NewInt(JNIEnv *env, jint value) {

@@ -83,26 +83,31 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
 
     jlong l = 0;
     if (supla_CallLongObjectMethod(env, cls, action_params, "getDurationSec",
-                                  &l)) {
+                                   &l)) {
       hvac_param->DurationSec = l;
     }
 
-    jint i = 0;
-    if (supla_CallIntObjectMethod(env, cls, action_params, "getMode", &i)) {
-      hvac_param->Mode = i;
+    jobject mode_enum = supla_CallObjectMethod(
+        env, cls, action_params, "getMode",
+        "()Lorg/supla/android/data/source/remote/hvac/SuplaHvacMode;");
+
+    if (!env->IsSameObject(mode_enum, nullptr)) {
+      hvac_param->Mode = supla_GetEnumValue(
+          env, mode_enum,
+          "org/supla/android/data/source/remote/hvac/SuplaHvacMode");
     }
 
-    jdouble d = 0;
+    jshort s = 0;
 
-    if (supla_CallDoubleObjectMethod(env, cls, action_params,
-                                     "getSetpointTemperatureMin", &d)) {
-      hvac_param->SetpointTemperatureMin = d * 100;
+    if (supla_CallShortObjectMethod(env, cls, action_params,
+                                    "getSetpointTemperatureMin", &s)) {
+      hvac_param->SetpointTemperatureMin = s;
       hvac_param->Flags = SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET;
     }
 
-    if (supla_CallDoubleObjectMethod(env, cls, action_params,
-                                     "getSetpointTemperatureMax", &d)) {
-      hvac_param->SetpointTemperatureMax = d * 100;
+    if (supla_CallShortObjectMethod(env, cls, action_params,
+                                    "getSetpointTemperatureMax", &s)) {
+      hvac_param->SetpointTemperatureMax = s;
       hvac_param->Flags = SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET;
     }
 
