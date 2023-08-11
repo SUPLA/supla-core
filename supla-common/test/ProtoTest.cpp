@@ -220,7 +220,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
   EXPECT_LE(sizeof(TDeviceConfig_ButtonVolume),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
-  EXPECT_LE(sizeof(TDeviceConfig_DisableLocalConfig),
+  EXPECT_LE(sizeof(TDeviceConfig_DisableUserInterface),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
   EXPECT_LE(sizeof(TDeviceConfig_TimezoneOffset),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);

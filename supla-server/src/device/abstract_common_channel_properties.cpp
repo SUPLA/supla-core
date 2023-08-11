@@ -345,35 +345,22 @@ int supla_abstract_common_channel_properties::set_user_config(
   supla_db_access_provider dba;
   supla_device_dao dao(&dba);
 
-  {
-    device_json_config *config =
-        dao.get_device_config(get_device_id(), nullptr);
-    if (config) {
-      if (config->is_local_config_disabled()) {
-        result = SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED;
-      }
-      delete config;
-    }
-  }
-
   channel_json_config *json_config = nullptr;
 
-  if (result != SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED) {
-    if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
-        config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
-        config_size == sizeof(TChannelConfig_HVAC)) {
-      json_config = new hvac_config();
-      static_cast<hvac_config *>(json_config)
-          ->set_config((TChannelConfig_HVAC *)config);
-    } else if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
-               config_size == sizeof(TChannelConfig_WeeklySchedule) &&
-               (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
-      json_config = new weekly_schedule_config();
-      static_cast<weekly_schedule_config *>(json_config)
-          ->set_config((TChannelConfig_WeeklySchedule *)config);
-    } else {
-      result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
-    }
+  if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
+      config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
+      config_size == sizeof(TChannelConfig_HVAC)) {
+    json_config = new hvac_config();
+    static_cast<hvac_config *>(json_config)
+        ->set_config((TChannelConfig_HVAC *)config);
+  } else if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
+             config_size == sizeof(TChannelConfig_WeeklySchedule) &&
+             (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
+    json_config = new weekly_schedule_config();
+    static_cast<weekly_schedule_config *>(json_config)
+        ->set_config((TChannelConfig_WeeklySchedule *)config);
+  } else {
+    result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }
 
   if (json_config) {
