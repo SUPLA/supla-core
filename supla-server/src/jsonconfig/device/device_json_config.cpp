@@ -26,7 +26,6 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
     {SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS, "screenBrightness"},
     {SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME, "buttonVolume"},
     {SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE, "userInterfaceDisabled"},
-    {SUPLA_DEVICE_CONFIG_FIELD_TIMEZONE_OFFSET, "timezoneOffset"},
     {SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC, "automaticTimeSync"},
     {SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY, "delay"},
     {SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE, "mode"}};
@@ -141,16 +140,6 @@ void device_json_config::set_user_interface_disabled(
         field_map.at(SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE),
         disabled->DisableUserInterface ? cJSON_True : cJSON_False, true,
         nullptr, 0);
-  }
-}
-
-void device_json_config::set_timezone_offset(
-    TDeviceConfig_TimezoneOffset *offset) {
-  if (offset && offset->TimezoneOffsetMinutes >= -1560 &&
-      offset->TimezoneOffsetMinutes <= 1560) {
-    set_item_value(get_user_root(),
-                   field_map.at(SUPLA_DEVICE_CONFIG_FIELD_TIMEZONE_OFFSET),
-                   cJSON_Number, true, nullptr, offset->TimezoneOffsetMinutes);
   }
 }
 
@@ -277,12 +266,6 @@ void device_json_config::set_config(TSDS_SetDeviceConfig *config) {
                 static_cast<TDeviceConfig_DisableUserInterface *>(ptr));
           }
           break;
-        case SUPLA_DEVICE_CONFIG_FIELD_TIMEZONE_OFFSET:
-          if (left >= (size = sizeof(TDeviceConfig_TimezoneOffset))) {
-            set_timezone_offset(
-                static_cast<TDeviceConfig_TimezoneOffset *>(ptr));
-          }
-          break;
         case SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC:
           if (left >= (size = sizeof(TDeviceConfig_AutomaticTimeSync))) {
             set_automatic_time_sync(
@@ -372,22 +355,6 @@ bool device_json_config::get_user_interface_disabled(
                    .c_str(),
                &value)) {
     disabled->DisableUserInterface = value ? 1 : 0;
-    return true;
-  }
-
-  return false;
-}
-
-bool device_json_config::get_timezone_offset(
-    TDeviceConfig_TimezoneOffset *offset) {
-  double value = 0;
-  if (offset &&
-      get_double(
-          get_user_root(),
-          field_map.at(SUPLA_DEVICE_CONFIG_FIELD_TIMEZONE_OFFSET).c_str(),
-          &value) &&
-      value >= -1560 && value <= 1560) {
-    offset->TimezoneOffsetMinutes = value;
     return true;
   }
 
@@ -520,11 +487,6 @@ void device_json_config::get_config(TSDS_SetDeviceConfig *config,
               get_user_interface_disabled(
                   static_cast<TDeviceConfig_DisableUserInterface *>(ptr));
           break;
-        case SUPLA_DEVICE_CONFIG_FIELD_TIMEZONE_OFFSET:
-          field_set = left >= (size = sizeof(TDeviceConfig_TimezoneOffset)) &&
-                      get_timezone_offset(
-                          static_cast<TDeviceConfig_TimezoneOffset *>(ptr));
-          break;
         case SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC:
           field_set =
               left >= (size = sizeof(TDeviceConfig_AutomaticTimeSync)) &&
@@ -566,33 +528,70 @@ void device_json_config::get_config(TSDS_SetDeviceConfig *config,
   get_config(config, 0xFFFFFFFFFFFFFFFF, fields_left);
 }
 
+void device_json_config::remove_empty_sub_roots() {
+  cJSON *root = get_user_root();
+  for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
+    cJSON *item = get_root(false, it->first);
+    if (item && root != item && !item->child) {
+      cJSON_DetachItemViaPointer(root, item);
+      cJSON_Delete(item);
+    }
+  }
+}
+
 void device_json_config::leave_only_thise_fields(
     unsigned _supla_int64_t fields) {
   for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
     if (!(fields & it->first)) {
-      cJSON *item = cJSON_GetObjectItem(get_user_root(), it->second.c_str());
-      if (item) {
-        cJSON_DetachItemViaPointer(get_user_root(), item);
-        cJSON_Delete(item);
+      cJSON *root = get_root(false, it->first);
+      if (root) {
+        cJSON *item = cJSON_GetObjectItem(root, it->second.c_str());
+        if (item) {
+          cJSON_DetachItemViaPointer(root, item);
+          cJSON_Delete(item);
+        }
       }
     }
   }
+
+  remove_empty_sub_roots();
 }
 
 void device_json_config::remove_fields(unsigned _supla_int64_t fields) {
   for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
     if (fields & it->first) {
-      cJSON *item = cJSON_GetObjectItem(get_user_root(), it->second.c_str());
-      if (item) {
-        cJSON_DetachItemViaPointer(get_user_root(), item);
-        cJSON_Delete(item);
+      cJSON *root = get_root(false, it->first);
+      if (root) {
+        cJSON *item = cJSON_GetObjectItem(root, it->second.c_str());
+        if (item) {
+          cJSON_DetachItemViaPointer(root, item);
+          cJSON_Delete(item);
+        }
       }
     }
   }
+
+  remove_empty_sub_roots();
 }
 
 void device_json_config::merge(supla_json_config *_dst) {
   device_json_config dst(_dst);
-  supla_json_config::merge(get_user_root(), dst.get_user_root(), field_map,
-                           false);
+
+  map<cJSON *, map<unsigned _supla_int16_t, string>> map;
+
+  for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
+    cJSON *root = get_root(false, it->first);
+    if (root) {
+      map[root][it->first] = it->second;
+    }
+  }
+
+  for (auto rit = map.cbegin(); rit != map.cend(); ++rit) {
+    for (auto fit = rit->second.cbegin(); fit != rit->second.cend(); ++fit) {
+      supla_json_config::merge(rit->first, dst.get_root(true, fit->first),
+                               rit->second, false);
+    }
+  }
+
+  remove_empty_sub_roots();
 }

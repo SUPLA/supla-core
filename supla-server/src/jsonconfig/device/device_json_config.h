@@ -42,11 +42,11 @@ class device_json_config : public supla_json_config {
   void set_button_volume(TDeviceConfig_ButtonVolume *volume);
   void set_user_interface_disabled(
       TDeviceConfig_DisableUserInterface *disabled);
-  void set_timezone_offset(TDeviceConfig_TimezoneOffset *offset);
   void set_automatic_time_sync(TDeviceConfig_AutomaticTimeSync *time_sync);
   cJSON *get_root(bool create, unsigned _supla_int64_t field);
   void set_screen_saver_delay(TDeviceConfig_ScreensaverDelay *delay);
   void set_screen_saver_mode(TDeviceConfig_ScreensaverMode *mode);
+  void remove_empty_sub_roots();
 
  public:
   device_json_config(void);
@@ -65,7 +65,6 @@ class device_json_config : public supla_json_config {
   bool get_button_volume(TDeviceConfig_ButtonVolume *volume);
   bool get_user_interface_disabled(
       TDeviceConfig_DisableUserInterface *disabled);
-  bool get_timezone_offset(TDeviceConfig_TimezoneOffset *offset);
   bool get_automatic_time_sync(TDeviceConfig_AutomaticTimeSync *time_sync);
   bool get_screen_saver_delay(TDeviceConfig_ScreensaverDelay *delay);
   bool get_status_led(TDeviceConfig_StatusLed *status_led);

@@ -81,7 +81,8 @@ TEST_F(DeviceDaoIntegrationTest, getDeviceConfig) {
 
 TEST_F(DeviceDaoIntegrationTest, setDeviceConfig) {
   device_json_config cfg1;
-  cfg1.set_user_config("{\"buttonVolume\":100,\"screenSaverMode\":3}");
+  cfg1.set_user_config(
+      "{\"buttonVolume\":100,\"screenSaver\":{\"mode\":\"Off\"}}");
   EXPECT_TRUE(
       dao->set_device_config(2, 73, &cfg1,
                              SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
@@ -102,7 +103,7 @@ TEST_F(DeviceDaoIntegrationTest, setDeviceConfig) {
   if (config_str) {
     EXPECT_STREQ(config_str,
                  "{\"a\":1,\"b\":\"abcd\",\"c\":true,\"screenBrightness\":98,"
-                 "\"buttonVolume\":100,\"screenSaverMode\":3}");
+                 "\"buttonVolume\":100,\"screenSaver\":{\"mode\":\"Off\"}}");
 
     free(config_str);
   }
