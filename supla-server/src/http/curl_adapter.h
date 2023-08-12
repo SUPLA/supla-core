@@ -53,6 +53,7 @@ class supla_curl_adapter : public supla_abstract_curl_adapter {
   virtual bool perform(void);
   virtual long get_response_code(void);
   virtual std::string escape(const std::string &str);
+  virtual void cancel(void);
 };
 
 #endif /* CURL_ADAPTER_H_ */

@@ -20,7 +20,7 @@
 
 #include <assert.h>
 
-#include <regex> // NOLINT
+#include <regex>  // NOLINT
 
 #include "log.h"
 #include "svrcfg.h"
@@ -157,4 +157,8 @@ long supla_curl_adapter::get_response_code(void) {
   long http_code = 0;
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
   return http_code;
+}
+
+void supla_curl_adapter::cancel(void) {
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 1);
 }
