@@ -181,4 +181,39 @@ TEST_F(PushNotificationTest, replacementMapWithLocalizedBody) {
   EXPECT_EQ(n.get_localized_body(), "B");
 }
 
+TEST_F(PushNotificationTest, dateTime) {
+  map<string, string> m;
+  m["XY"] = "11";
+
+  {
+    supla_push_notification n;
+    n.set_title("{XY}|{date}|{time}|{date_time}");
+    n.set_replacement_map(&m);
+    EXPECT_EQ(n.get_title(), "11|{date}|{time}|{date_time}");
+    n.set_date_time("2023-08-13 13:53:14");
+    EXPECT_EQ(n.get_title(), "11|2023-08-13|13:53:14|2023-08-13 13:53:14");
+  }
+
+  {
+    supla_push_notification n;
+    n.set_title("{XY}|{date}|{time}|{date_time}");
+    n.set_date_time("2023-08-13 13:53:14");
+
+    EXPECT_EQ(n.get_title(), "{XY}|2023-08-13|13:53:14|2023-08-13 13:53:14");
+
+    n.set_replacement_map(&m);
+    EXPECT_EQ(n.get_title(), "11|2023-08-13|13:53:14|2023-08-13 13:53:14");
+  }
+
+  {
+    supla_push_notification n;
+
+    n.set_date_time("2023-08-13 13:53:14");
+    n.set_replacement_map(&m);
+
+    n.set_title("{XY}|{date}|{time}|{date_time}");
+    EXPECT_EQ(n.get_title(), "11|2023-08-13|13:53:14|2023-08-13 13:53:14");
+  }
+}
+
 } /* namespace testing */

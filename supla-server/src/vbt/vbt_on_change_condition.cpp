@@ -241,20 +241,28 @@ bool supla_vbt_on_change_condition::get_number(supla_channel_value *value,
         dynamic_cast<supla_channel_temphum_value *>(value);
 
     switch (var_name) {
-      case var_name_temperature:
-        *result = temphum->get_temperature();
-        break;
-      case var_name_humidity:
-        if (!temphum->is_humidity_available()) {
-          return false;
+      case var_name_temperature: {
+        double temperature = temphum->get_temperature();
+        if (temperature >
+            supla_channel_temphum_value::incorrect_temperature()) {
+          *result = temperature;
+          return true;
         }
-        *result = temphum->get_humidity();
+      } break;
+      case var_name_humidity:
+        if (temphum->is_humidity_available()) {
+          double humidity = temphum->get_humidity();
+          if (humidity > supla_channel_temphum_value::incorrect_humidity()) {
+            *result = temphum->get_humidity();
+            return true;
+          }
+        }
         break;
       default:
-        return false;
+        break;
     }
 
-    return true;
+    return false;
   }
 
   if (dynamic_cast<supla_channel_valve_value *>(value)) {

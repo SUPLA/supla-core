@@ -72,15 +72,16 @@ unsigned long long supla_pn_delivery_task::get_cfg_long_request_time_usec(
 string supla_pn_delivery_task::get_name(void) { return "Push delivery task"; }
 
 void supla_pn_delivery_task::load_content(void) {
+  if (!dba) {
+    dba = new supla_db_access_provider();
+  }
+
+  dba->connect();  // Connect to the database beforehand so that inside the
+                   // dao it doesn't disconnect with every method.
+
+  supla_pn_dao push_dao(dba);
+
   if (push->get_id()) {
-    if (!dba) {
-      dba = new supla_db_access_provider();
-    }
-
-    dba->connect();  // Connect to the database beforehand so that inside the
-                     // dao it doesn't disconnect with every method.
-
-    supla_pn_dao push_dao(dba);
     if (!push_dao.get(get_user_id(), push)) {
       delete dba;
       dba = nullptr;
@@ -94,8 +95,11 @@ void supla_pn_delivery_task::load_content(void) {
     recipient_dao->get_recipients(get_user_id(), push->get_id(),
                                   &push->get_recipients());
 
-    dba->disconnect();
+  } else {
+    push_dao.get_date_time(get_user_id(), push);
   }
+
+  dba->disconnect();
 }
 
 bool supla_pn_delivery_task::make_request(

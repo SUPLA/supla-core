@@ -128,6 +128,16 @@ void supla_push_notification::set_replacement_map(
     this->replacement_map.clear();
   }
 
+  set_date_time(date_time);  // apply_replacement_map is called at set_date_time
+}
+
+void supla_push_notification::set_date_time(const std::string date_time) {
+  this->date_time = date_time;
+  if (this->date_time.length() == 19) {
+    replacement_map["date"] = date_time.substr(0, 10);
+    replacement_map["time"] = date_time.substr(11, 8);
+    replacement_map["date_time"] = date_time;
+  }
   apply_replacement_map();
 }
 
