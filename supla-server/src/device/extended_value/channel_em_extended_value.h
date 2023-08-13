@@ -19,6 +19,7 @@
 #ifndef CHANNEL_EM_EXTENDED_VALUE_H_
 #define CHANNEL_EM_EXTENDED_VALUE_H_
 
+#include <map>
 #include <string>
 
 #include "device/extended_value/channel_billing_value.h"
