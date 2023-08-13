@@ -64,6 +64,7 @@ supla_vbt_condition_result supla_value_based_trigger::are_conditions_met(
   bool cnd_met = channel_id == this->channel_id &&
                  on_change_cnd.is_condition_met(old_value, new_value);
   supla_vbt_condition_result result(cnd_met);
+  result.set_replacement_map(new_value->get_replacement_map());
   return result;
 }
 

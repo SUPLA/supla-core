@@ -21,6 +21,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+using std::map;
+using std::string;
+
 supla_channel_extended_value::supla_channel_extended_value(void) {
   this->real_size = 0;
   this->value = nullptr;
@@ -152,4 +155,9 @@ void supla_channel_extended_value::get_value(char *buffer) {
   if (get_value_size()) {
     memcpy(buffer, get_value_ptr()->value, get_value_size());
   }
+}
+
+map<string, string> supla_channel_extended_value::get_replacement_map(void) {
+  map<string, string> result;
+  return result;
 }

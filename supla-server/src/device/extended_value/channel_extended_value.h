@@ -20,6 +20,8 @@
 #define CHANNEL_EXTENDED_VALUE_H_
 
 #include <stddef.h>
+#include <map>
+#include <string>
 
 #include "proto.h"
 
@@ -49,6 +51,7 @@ class supla_channel_extended_value {
   virtual bool is_differ(supla_channel_extended_value *value);
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
   void get_value(char *buffer);
+  virtual std::map<std::string, std::string> get_replacement_map(void);
 };
 
 #endif /*CHANNEL_EXTENDED_VALUE_H_*/
