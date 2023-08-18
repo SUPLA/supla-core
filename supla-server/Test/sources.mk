@@ -27,6 +27,7 @@ src \
 src/actions \
 src/amazon \
 src/analyzer \
+src/astro \
 src/asynctask \
 src/channeljsonconfig \
 src/client \
@@ -37,6 +38,7 @@ src/converter \
 src/crypt_blowfish \
 src/cyclictasks \
 src/datalogger \
+src/date \
 src/db \
 src/device \
 src/device/call_handler \
