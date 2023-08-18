@@ -18,7 +18,7 @@
 
 #include "active_period.h"
 
-#include <chrono>
+#include <chrono>  // NOLINT
 
 #include "astro/SolarCalculator.h"
 #include "date/tz.h"

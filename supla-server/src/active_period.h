@@ -19,10 +19,10 @@
 #ifndef ACTIVE_PERIOD_H_
 #define ACTIVE_PERIOD_H_
 
-#include <chrono>
+#include <chrono>  // NOLINT
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 class supla_active_period {
  private:
