@@ -52,6 +52,8 @@ class supla_active_period {
   void set_astro_conditions(const char *json);
 
   bool is_now_active(const char *timezone, double latitude, double longitude);
+
+  bool operator==(const supla_active_period &ap) const;
 };
 
 #endif /* ACTIVE_PERIOD_H_ */

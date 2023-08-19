@@ -226,3 +226,27 @@ bool supla_active_period::is_now_active(const char *timezone, double latitude,
   }
   return result;
 }
+
+bool supla_active_period::operator==(const supla_active_period &ap) const {
+  if (active_from_utc != ap.active_from_utc ||
+      active_to_utc != ap.active_to_utc || active_hours != ap.active_hours ||
+      astro_conditions.size() != ap.astro_conditions.size()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < astro_conditions.size(); ++i) {
+    if (astro_conditions[i].size() != ap.astro_conditions[i].size()) {
+      return false;
+    }
+
+    for (size_t y = 0; y < astro_conditions[i].size(); ++y) {
+      if (astro_conditions[i][y].cnd_type !=
+              ap.astro_conditions[i][y].cnd_type ||
+          astro_conditions[i][y].minutes != ap.astro_conditions[i][y].minutes) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}

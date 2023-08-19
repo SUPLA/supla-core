@@ -374,4 +374,64 @@ TEST_F(ActivePeriodTest, afterSunset_WarsawCoordinates) {
   ASSERT_TRUE(p.is_now_active(tz, lat, lng));
 }
 
+TEST_F(ActivePeriodTest, compare) {
+  ActivePeriodMock p2;
+  EXPECT_TRUE(p == p2);
+
+  p2.set_active_from(1);
+  EXPECT_FALSE(p == p2);
+
+  p.set_active_from(1);
+  EXPECT_TRUE(p == p2);
+
+  p.set_active_to(2);
+  EXPECT_FALSE(p == p2);
+
+  p2.set_active_to(2);
+  EXPECT_TRUE(p == p2);
+
+  p.set_active_hours(",10,11,");
+  EXPECT_FALSE(p == p2);
+
+  p2.set_active_hours(",10,11,222,");
+  EXPECT_FALSE(p == p2);
+
+  p.set_active_hours(",10,11,222,");
+  EXPECT_TRUE(p == p2);
+
+  p.set_astro_conditions(
+      "[[{\"afterSunset\": -10}], [{\"beforeSunrise\": 20}]]");
+
+  EXPECT_FALSE(p == p2);
+
+  p2.set_astro_conditions(
+      "[[{\"afterSunset\": -10}], [{\"beforeSunrise\": 21}]]");
+
+  EXPECT_FALSE(p == p2);
+
+  p2.set_astro_conditions(
+      "[[{\"afterSunset\": -11}], [{\"beforeSunrise\": 20}]]");
+
+  EXPECT_FALSE(p == p2);
+
+  p2.set_astro_conditions(
+      "[[{\"afterSunset\": -10}, {\"beforeSunrise\": 20}]]");
+
+  EXPECT_FALSE(p == p2);
+
+  p2.set_astro_conditions(
+      "[[{\"afterSunset\": -10}], [{\"beforeSunrise\": 20}]]");
+
+  EXPECT_TRUE(p == p2);
+
+  p.set_astro_conditions("[[{\"afterSunset\": -10}, {\"beforeSunrise\": 20}]]");
+
+  EXPECT_FALSE(p == p2);
+
+  p2.set_astro_conditions(
+      "[[{\"afterSunset\": -10}, {\"beforeSunrise\": 20}]]");
+
+  EXPECT_TRUE(p == p2);
+}
+
 } /* namespace testing */
