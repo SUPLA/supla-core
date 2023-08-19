@@ -31,8 +31,6 @@ using std::stringstream;
 supla_active_period::supla_active_period(void) {
   this->active_from_utc = 0;
   this->active_to_utc = 0;
-  this->latitude = 0;
-  this->longitude = 0;
 }
 
 supla_active_period::~supla_active_period(void) {}
@@ -62,11 +60,6 @@ void supla_active_period::set_active_hours(string hours) {
       active_hours[day_of_week].push_back(hour);
     }
   }
-}
-
-void supla_active_period::set_coordinates(double latitude, double longitude) {
-  this->latitude = latitude;
-  this->longitude = longitude;
 }
 
 void supla_active_period::set_astro_conditions(const char *json) {
@@ -125,7 +118,8 @@ supla_active_period::get_current_point_in_time(void) {
   return std::chrono::system_clock::now();
 }
 
-bool supla_active_period::_is_now_active(const char *timezone) {
+bool supla_active_period::_is_now_active(const char *timezone, double latitude,
+                                         double longitude) {
   auto now =
       date::make_zoned(timezone ? timezone : "", get_current_point_in_time());
 
@@ -219,10 +213,11 @@ bool supla_active_period::_is_now_active(const char *timezone) {
   return true;
 }
 
-bool supla_active_period::is_now_active(const char *timezone) {
+bool supla_active_period::is_now_active(const char *timezone, double latitude,
+                                        double longitude) {
   bool result = false;
   try {
-    result = _is_now_active(timezone);
+    result = _is_now_active(timezone, latitude, longitude);
   } catch (std::exception &e) {
     supla_log(
         LOG_ERR,

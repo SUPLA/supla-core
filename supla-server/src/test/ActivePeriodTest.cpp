@@ -24,7 +24,10 @@ namespace testing {
 
 const char ActivePeriodTest::tz[] = "Europe/Warsaw";
 
-ActivePeriodTest::ActivePeriodTest(void) {}
+ActivePeriodTest::ActivePeriodTest(void) {
+  lat = 0;
+  lng = 0;
+}
 
 ActivePeriodTest::~ActivePeriodTest(void) {}
 
@@ -38,34 +41,36 @@ void ActivePeriodTest::SetUp() {
           std::chrono::seconds(timestamp))));
 }
 
-TEST_F(ActivePeriodTest, defaultSettings) { EXPECT_TRUE(p.is_now_active(tz)); }
+TEST_F(ActivePeriodTest, defaultSettings) {
+  EXPECT_TRUE(p.is_now_active(tz, lat, lng));
+}
 
 TEST_F(ActivePeriodTest, activeFrom) {
   p.set_active_from(1692196977);
-  EXPECT_FALSE(p.is_now_active(tz));
+  EXPECT_FALSE(p.is_now_active(tz, lat, lng));
 
   p.set_active_from(5000000000);
-  EXPECT_FALSE(p.is_now_active(tz));
+  EXPECT_FALSE(p.is_now_active(tz, lat, lng));
 
   p.set_active_from(1692196976);
-  EXPECT_TRUE(p.is_now_active(tz));
+  EXPECT_TRUE(p.is_now_active(tz, lat, lng));
 
   p.set_active_from(1);
-  EXPECT_TRUE(p.is_now_active(tz));
+  EXPECT_TRUE(p.is_now_active(tz, lat, lng));
 }
 
 TEST_F(ActivePeriodTest, activeTo) {
   p.set_active_to(1692196975);
-  EXPECT_FALSE(p.is_now_active(tz));
+  EXPECT_FALSE(p.is_now_active(tz, lat, lng));
 
   p.set_active_to(1);
-  EXPECT_FALSE(p.is_now_active(tz));
+  EXPECT_FALSE(p.is_now_active(tz, lat, lng));
 
   p.set_active_to(1692196977);
-  EXPECT_TRUE(p.is_now_active(tz));
+  EXPECT_TRUE(p.is_now_active(tz, lat, lng));
 
   p.set_active_to(5000000000);
-  EXPECT_TRUE(p.is_now_active(tz));
+  EXPECT_TRUE(p.is_now_active(tz, lat, lng));
 }
 
 TEST_F(ActivePeriodTest, allActiveHours) {
@@ -90,7 +95,7 @@ TEST_F(ActivePeriodTest, allActiveHours) {
 
   for (int d = 0; d < 30; d++) {
     for (int h = 0; h < 24; h++) {
-      EXPECT_TRUE(p.is_now_active(tz));
+      EXPECT_TRUE(p.is_now_active(tz, lat, lng));
     }
   }
 }
@@ -117,9 +122,9 @@ TEST_F(ActivePeriodTest, selectedActiveHours) {
   for (int d = 1; d <= 7; d++) {
     for (int h = 0; h < 24; h++) {
       if (h >= 6 && h <= 18 && d >= 3 && d <= 5) {
-        ASSERT_FALSE(p.is_now_active(tz));
+        ASSERT_FALSE(p.is_now_active(tz, lat, lng));
       } else {
-        ASSERT_TRUE(p.is_now_active(tz));
+        ASSERT_TRUE(p.is_now_active(tz, lat, lng));
       }
     }
   }
@@ -153,14 +158,14 @@ TEST_F(ActivePeriodTest, afterSunsetOrBeforeSunrise) {
   p.set_astro_conditions(
       "[[{\"afterSunset\": -10}], [{\"beforeSunrise\": 20}]]");
 
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_TRUE(p.is_now_active(tz));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
 }
 
 TEST_F(ActivePeriodTest, beforeSunriseAndAfterSunset) {
@@ -190,14 +195,14 @@ TEST_F(ActivePeriodTest, beforeSunriseAndAfterSunset) {
 
   p.set_astro_conditions("[[{\"beforeSunset\": -10}, {\"afterSunrise\": 20}]]");
 
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
 }
 
 TEST_F(ActivePeriodTest, beforeSunrise) {
@@ -223,11 +228,11 @@ TEST_F(ActivePeriodTest, beforeSunrise) {
 
   p.set_astro_conditions("[[{\"beforeSunrise\": 20}]]");
 
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
 }
 
 TEST_F(ActivePeriodTest, afterSunrise) {
@@ -253,11 +258,11 @@ TEST_F(ActivePeriodTest, afterSunrise) {
 
   p.set_astro_conditions("[[{\"afterSunrise\": 20}]]");
 
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_TRUE(p.is_now_active(tz));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
 }
 
 TEST_F(ActivePeriodTest, beforeSunset) {
@@ -283,11 +288,11 @@ TEST_F(ActivePeriodTest, beforeSunset) {
 
   p.set_astro_conditions("[[{\"beforeSunset\": -10}]]");
 
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
 }
 
 TEST_F(ActivePeriodTest, afterSunset) {
@@ -318,14 +323,55 @@ TEST_F(ActivePeriodTest, afterSunset) {
 
   p.set_astro_conditions("[[{\"afterSunset\": -10}]]");
 
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_TRUE(p.is_now_active(tz));
-  ASSERT_FALSE(p.is_now_active(tz));
-  ASSERT_TRUE(p.is_now_active(tz));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+}
+
+TEST_F(ActivePeriodTest, afterSunset_WarsawCoordinates) {
+  lat = 52.25;
+  lng = 21.00;
+
+  // Sunset - 10 = 17:51:20
+  // Sunset - 10 = 17:49:18
+  // Sunset - 10 = 17:57:55
+
+  // 1692122585 - 17:53:05 (day before)
+  // 1692144000 - 00:00:00
+  // 1692208138 - 17:48:58
+  // 1692208158 - 17:49:18 *
+  // 1692208160 - 17:49:20
+  // 1692230399 - 23:59:59
+  // 1692294434 - 17:47:14 * (next day)
+  // 1692294440 - 17:47:20 (next day)
+
+  std::time_t timestamp[] = {1692122585, 1692144000, 1692208138, 1692208158,
+		  1692208160, 1692230399, 1692294434, 1692294440};
+
+  size_t n = 0;
+
+  EXPECT_CALL(p, get_current_point_in_time).WillRepeatedly([&]() {
+    auto result = std::chrono::time_point<std::chrono::system_clock>(
+        std::chrono::seconds(timestamp[n]));
+    n++;
+    return result;
+  });
+
+  p.set_astro_conditions("[[{\"afterSunset\": -10}]]");
+
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
 }
 
 } /* namespace testing */
