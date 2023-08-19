@@ -3018,7 +3018,7 @@ BEGIN
      END IF;
 END||
 ALTER TABLE supla_user ADD home_latitude NUMERIC(9, 6) DEFAULT NULL, ADD home_longitude NUMERIC(9, 6) DEFAULT NULL||
+UPDATE supla_user SET home_latitude = 52.25, home_longitude = 21.00 WHERE timezone = 'Europe/Warsaw'||
 ALTER TABLE supla_value_based_trigger ADD active_from DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', ADD active_to DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', ADD active_hours VARCHAR(768) DEFAULT NULL, ADD activity_conditions VARCHAR(1024) DEFAULT NULL||
 ALTER TABLE supla_user CHANGE home_latitude home_latitude NUMERIC(9, 6) NOT NULL||
 ALTER TABLE supla_user CHANGE home_latitude home_longitude NUMERIC(9, 6) NOT NULL||
-UPDATE supla_user SET home_latitude = 52.25, home_longitude = 21.00 WHERE timezone = 'Europe/Warsaw'||
