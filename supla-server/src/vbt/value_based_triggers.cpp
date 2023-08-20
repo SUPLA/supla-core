@@ -18,6 +18,8 @@
 
 #include "value_based_triggers.h"
 
+#include <string>
+
 #include "actions/action_executor.h"
 #include "db/db_access_provider.h"
 #include "device/channel_property_getter.h"

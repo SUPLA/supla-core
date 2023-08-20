@@ -166,8 +166,8 @@ std::string database::get_user_timezone(int user_id, double *latitude,
   MYSQL_STMT *stmt = NULL;
 
   const char sql[] =
-      "SELECT timezone, home_latitude, 	home_longitude FROM supla_user WHERE "
-      "id = ?";
+      "SELECT timezone, home_latitude, home_longitude FROM supla_user WHERE id "
+      "= ?";
 
   MYSQL_BIND pbind = {};
 

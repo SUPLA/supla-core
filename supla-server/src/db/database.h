@@ -19,6 +19,8 @@
 #ifndef DATABASE_H_
 #define DATABASE_H_
 
+#include <string>
+
 #include "client.h"
 #include "device.h"
 #include "proto.h"

@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "amazon/alexa_credentials.h"
