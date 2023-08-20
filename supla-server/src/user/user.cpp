@@ -502,6 +502,19 @@ void supla_user::on_device_settings_changed(int UserID, int DeviceID,
 }
 
 // static
+void supla_user::reset_timezone(int user_id) {
+  supla_user *user = supla_user::find(user_id, false);
+
+  if (user) {
+    lck_lock(user->lck);
+    user->timezone = "";
+    user->latitude = 0;
+    user->longitude = 0;
+    lck_unlock(user->lck);
+  }
+}
+
+// static
 unsigned int supla_user::total_cd_count(bool client) {
   unsigned int result = 0;
   supla_user *user = NULL;

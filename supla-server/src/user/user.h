@@ -117,6 +117,7 @@ class supla_user {
                                 const supla_caller &caller);
   static void on_device_settings_changed(int UserID, int DeviceID,
                                          const supla_caller &caller);
+  static void reset_timezone(int user_id);
   static unsigned int total_cd_count(bool client);
   static void log_metrics(int min_interval_sec);
 
