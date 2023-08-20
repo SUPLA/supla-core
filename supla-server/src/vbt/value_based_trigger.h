@@ -25,6 +25,7 @@
 
 #include "actions/abstract_action_executor.h"
 #include "actions/action_config.h"
+#include "active_period.h"
 #include "user/user.h"
 #include "vbt/vbt_condition_result.h"
 #include "vbt/vbt_on_change_condition.h"
@@ -35,6 +36,7 @@ class supla_value_based_trigger {
   int channel_id;
   supla_vbt_on_change_condition on_change_cnd;
   supla_action_config action_config;
+  supla_active_period active_period;
 
   struct timeval first_fire_time;
   struct timeval last_fire_try_time;
@@ -46,7 +48,8 @@ class supla_value_based_trigger {
  public:
   explicit supla_value_based_trigger(int id, int channel_id,
                                      const supla_action_config &action_config,
-                                     const char *conditions);
+                                     const char *conditions,
+                                     const supla_active_period &active_period);
   virtual ~supla_value_based_trigger(void);
 
   int get_id(void);
@@ -61,6 +64,7 @@ class supla_value_based_trigger {
 
   supla_action_config get_action_config(void);
   const supla_vbt_on_change_condition &get_on_change_cnd(void);
+  const supla_active_period &get_active_period(void);
 
   supla_vbt_condition_result are_conditions_met(int channel_id,
                                                 supla_channel_value *old_value,
@@ -69,6 +73,8 @@ class supla_value_based_trigger {
   supla_vbt_condition_result are_conditions_met(
       int channel_id, supla_channel_extended_value *old_value,
       supla_channel_extended_value *new_value);
+
+  bool is_now_active(const char *timezone, double latitude, double longitude);
 
   void fire(const supla_caller &caller, int user_id,
             supla_abstract_action_executor *action_executor,

@@ -895,3 +895,36 @@ void supla_user::on_scene_changed(const supla_caller &caller, int user_id,
     supla_http_event_hub::on_google_home_sync_needed(user, caller);
   }
 }
+
+std::string supla_user::get_timezone(double *latitude, double *longitude) {
+  lck_lock(lck);
+
+  if (timezone.empty()) {
+    database *db = new database();
+
+    if (db->connect()) {
+      timezone =
+          db->get_user_timezone(UserID, &this->latitude, &this->longitude);
+    }
+
+    delete db;
+  }
+
+  if (timezone.empty()) {
+    timezone = "UTC";
+  }
+
+  if (latitude) {
+    *latitude = this->latitude;
+  }
+
+  if (longitude) {
+    *longitude = this->longitude;
+  }
+
+  std::string result = timezone;
+
+  lck_unlock(lck);
+
+  return result;
+}

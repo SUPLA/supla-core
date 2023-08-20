@@ -48,6 +48,10 @@ class supla_user {
   char *long_unique_id;
   void *lck;
 
+  std::string timezone;
+  double latitude;
+  double longitude;
+
   static struct timeval metric_tv;
   static unsigned int client_add_metric;
   static unsigned int client_max_metric;
@@ -163,6 +167,7 @@ class supla_user {
   supla_user(int UserID, const char *short_unique_id,
              const char *long_unique_id);
   supla_user_channelgroups *get_channel_groups(void);
+  std::string get_timezone(double *latitude, double *longitude);
   virtual ~supla_user();
 };
 

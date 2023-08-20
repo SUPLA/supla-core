@@ -33,6 +33,16 @@ supla_active_period::supla_active_period(void) {
   this->active_to_utc = 0;
 }
 
+supla_active_period::supla_active_period(unsigned long active_from,
+                                         unsigned long active_to,
+                                         const char *active_hours,
+                                         const char *astro_conditions) {
+  this->active_from_utc = active_from;
+  this->active_to_utc = active_to;
+  set_active_hours(active_hours);
+  set_astro_conditions(astro_conditions);
+}
+
 supla_active_period::~supla_active_period(void) {}
 
 void supla_active_period::set_active_from(unsigned long utc) {
@@ -114,12 +124,12 @@ void supla_active_period::set_astro_conditions(const char *json) {
 }
 
 std::chrono::time_point<std::chrono::system_clock>
-supla_active_period::get_current_point_in_time(void) {
+supla_active_period::get_current_point_in_time(void) const {
   return std::chrono::system_clock::now();
 }
 
 bool supla_active_period::_is_now_active(const char *timezone, double latitude,
-                                         double longitude) {
+                                         double longitude) const {
   auto now =
       date::make_zoned(timezone ? timezone : "", get_current_point_in_time());
 
@@ -214,7 +224,7 @@ bool supla_active_period::_is_now_active(const char *timezone, double latitude,
 }
 
 bool supla_active_period::is_now_active(const char *timezone, double latitude,
-                                        double longitude) {
+                                        double longitude) const {
   bool result = false;
   try {
     result = _is_now_active(timezone, latitude, longitude);

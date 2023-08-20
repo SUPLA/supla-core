@@ -38,12 +38,15 @@ class supla_active_period {
   std::map<unsigned char, std::vector<unsigned char>> active_hours;
   std::vector<std::vector<_t_astro_condition>> astro_conditions;
 
-  bool _is_now_active(const char *timezone, double latitude, double longitude);
+  bool _is_now_active(const char *timezone, double latitude,
+                      double longitude) const;
   virtual std::chrono::time_point<std::chrono::system_clock>
-  get_current_point_in_time(void);
+  get_current_point_in_time(void) const;
 
  public:
   supla_active_period(void);
+  supla_active_period(unsigned long active_from, unsigned long active_to,
+                      const char *active_hours, const char *astro_conditions);
   virtual ~supla_active_period(void);
 
   void set_active_from(unsigned long utc);
@@ -51,7 +54,8 @@ class supla_active_period {
   void set_active_hours(std::string hours);
   void set_astro_conditions(const char *json);
 
-  bool is_now_active(const char *timezone, double latitude, double longitude);
+  bool is_now_active(const char *timezone, double latitude,
+                     double longitude) const;
 
   bool operator==(const supla_active_period &ap) const;
 };

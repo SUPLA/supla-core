@@ -151,6 +151,74 @@ int database::get_user_id_by_suid(const char *suid) {
   return 0;
 }
 
+std::string database::get_user_timezone(int user_id, double *latitude,
+                                        double *longitude) {
+  char timezone[51] = {};
+
+  if (latitude) {
+    *latitude = 0;
+  }
+
+  if (longitude) {
+    *longitude = 0;
+  }
+
+  MYSQL_STMT *stmt = NULL;
+
+  const char sql[] =
+      "SELECT timezone, home_latitude, 	home_longitude FROM supla_user WHERE "
+      "id = ?";
+
+  MYSQL_BIND pbind = {};
+
+  pbind.buffer_type = MYSQL_TYPE_LONG;
+  pbind.buffer = (char *)&user_id;
+
+  if (stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
+    MYSQL_BIND rbind[3] = {};
+
+    unsigned long timezone_size = 0;
+    double lat = 0;
+    double lng = 0;
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = timezone;
+    rbind[0].buffer_length = sizeof(timezone);
+    rbind[0].length = &timezone_size;
+
+    rbind[1].buffer_type = MYSQL_TYPE_DOUBLE;
+    rbind[1].buffer = (char *)&lat;
+
+    rbind[2].buffer_type = MYSQL_TYPE_DOUBLE;
+    rbind[2].buffer = (char *)&lng;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
+        set_terminating_byte(timezone, sizeof(timezone), timezone_size, false);
+
+        if (latitude) {
+          *latitude = lat;
+        }
+
+        if (longitude) {
+          *longitude = lng;
+        }
+      } else {
+        timezone[0] = 0;
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+
+  return timezone;
+}
+
 void database::get_client_locations(int ClientID,
                                     supla_client_locations *locs) {
   MYSQL_STMT *stmt = NULL;

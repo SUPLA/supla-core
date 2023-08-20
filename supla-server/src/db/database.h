@@ -33,6 +33,9 @@ class database : public svrdb {
 
   int get_user_id_by_suid(const char *suid);
 
+  std::string get_user_timezone(int user_id, double *latitude,
+                                double *longitude);
+
   void get_client_locations(int ClientID, supla_client_locations *locs);
   void get_client_channels(int ClientID, int *DeviceID,
                            supla_client_channels *channels);

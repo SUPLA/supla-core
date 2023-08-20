@@ -30,8 +30,8 @@ class ActivePeriodMock : public supla_active_period {
  public:
   ActivePeriodMock(void);
   virtual ~ActivePeriodMock(void);
-  MOCK_METHOD0(get_current_point_in_time,
-               std::chrono::time_point<std::chrono::system_clock>(void));
+  MOCK_CONST_METHOD0(get_current_point_in_time,
+                     std::chrono::time_point<std::chrono::system_clock>(void));
 };
 
 } /* namespace testing */
