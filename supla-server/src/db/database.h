@@ -19,6 +19,8 @@
 #ifndef DATABASE_H_
 #define DATABASE_H_
 
+#include <string>
+
 #include "client.h"
 #include "device.h"
 #include "proto.h"
@@ -32,6 +34,9 @@ class database : public svrdb {
   bool get_user_uniqueid(int UserID, char *id, bool longid);
 
   int get_user_id_by_suid(const char *suid);
+
+  std::string get_user_timezone(int user_id, double *latitude,
+                                double *longitude);
 
   void get_client_locations(int ClientID, supla_client_locations *locs);
   void get_client_channels(int ClientID, int *DeviceID,

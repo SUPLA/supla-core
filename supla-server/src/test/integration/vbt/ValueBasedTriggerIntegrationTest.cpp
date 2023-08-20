@@ -139,9 +139,11 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadThenDisableThenEnableThenModify) {
 }
 
 TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
+  runSqlScript("SetVbtActivityConditions.sql");
+
   supla_value_based_triggers triggers(user);
   triggers.load();
-
+  //
   EXPECT_EQ(triggers.count(), 7);
 
   shared_ptr<supla_value_based_trigger> t = triggers.get(20);
@@ -154,6 +156,10 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
     EXPECT_EQ(t->get_action_config().get_action_id(), ACTION_TURN_ON);
     EXPECT_EQ(t->get_on_change_cnd().get_op(), op_eq);
     EXPECT_EQ(t->get_on_change_cnd().get_value(), 1);
+
+    supla_active_period p(1692551804, 1692626454, ",14,",
+                          "[[{\"afterSunset\": 15}]]");
+    EXPECT_TRUE(p == t->get_active_period());
   }
 
   t = triggers.get(21);

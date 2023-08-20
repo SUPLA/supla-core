@@ -46,8 +46,8 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
       "SELECT id, owning_channel_id, IFNULL(channel_id, 0), "
       "IFNULL(channel_group_id, 0), IFNULL(scene_id, 0), IFNULL(schedule_id, "
       "0), IFNULL(push_notification_id, 0), IFNULL(action, 0), action_param, "
-      "`trigger` FROM supla_value_based_trigger WHERE user_id = ? AND enabled "
-      "= 1";
+      "`trigger`, active_from, active_to, active_hours, activity_conditions "
+      "FROM supla_value_based_trigger WHERE user_id = ? AND enabled = 1";
 
   MYSQL_BIND pbind = {};
 
@@ -55,7 +55,7 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
   pbind.buffer = (char *)&user_id;
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
-    MYSQL_BIND rbind[10] = {};
+    MYSQL_BIND rbind[14] = {};
 
     int id = 0;
     int owning_channel_id = 0;
@@ -73,6 +73,20 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
     char conditions[2049] = {};
     unsigned long conditions_len = 0;
     my_bool conditions_are_null = false;
+
+    MYSQL_TIME active_from = {};
+    my_bool active_from_is_null = false;
+
+    MYSQL_TIME active_to = {};
+    my_bool active_to_is_null = false;
+
+    char active_hours[769] = {};
+    unsigned long active_hours_len = 0;
+    my_bool active_hours_are_null = false;
+
+    char activity_conditions[1024] = {};
+    unsigned long activity_conditions_len = 0;
+    my_bool activity_conditions_are_null = false;
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&id;
@@ -118,6 +132,28 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
     rbind[9].length = &conditions_len;
     rbind[9].is_null = &conditions_are_null;
 
+    rbind[10].buffer_type = MYSQL_TYPE_DATETIME;
+    rbind[10].buffer = (char *)&active_from;
+    rbind[10].buffer_length = sizeof(active_from);
+    rbind[10].is_null = &active_from_is_null;
+
+    rbind[11].buffer_type = MYSQL_TYPE_DATETIME;
+    rbind[11].buffer = (char *)&active_to;
+    rbind[11].buffer_length = sizeof(active_to);
+    rbind[11].is_null = &active_to_is_null;
+
+    rbind[12].buffer_type = MYSQL_TYPE_STRING;
+    rbind[12].buffer = active_hours;
+    rbind[12].buffer_length = sizeof(active_hours);
+    rbind[12].length = &active_hours_len;
+    rbind[12].is_null = &active_hours_are_null;
+
+    rbind[13].buffer_type = MYSQL_TYPE_STRING;
+    rbind[13].buffer = activity_conditions;
+    rbind[13].buffer_length = sizeof(activity_conditions);
+    rbind[13].length = &activity_conditions_len;
+    rbind[13].is_null = &activity_conditions_are_null;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -131,6 +167,13 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
 
           dba->set_terminating_byte(conditions, sizeof(conditions),
                                     conditions_len, conditions_are_null);
+
+          dba->set_terminating_byte(active_hours, sizeof(active_hours),
+                                    active_hours_len, active_hours_are_null);
+
+          dba->set_terminating_byte(
+              activity_conditions, sizeof(activity_conditions),
+              activity_conditions_len, activity_conditions_are_null);
 
           supla_action_config action_config;
 
@@ -157,8 +200,15 @@ vector<supla_value_based_trigger *> supla_value_based_trigger_dao::get_triggers(
             action_config.set_subject_type(stPushNotification);
           }
 
+          unsigned long _active_from =
+              active_from_is_null ? 0 : dba->mytime_to_time_t(&active_from);
+          unsigned long _active_to =
+              active_to_is_null ? 0 : dba->mytime_to_time_t(&active_to);
+
           supla_value_based_trigger *vbt = new supla_value_based_trigger(
-              id, owning_channel_id, action_config, conditions);
+              id, owning_channel_id, action_config, conditions,
+              supla_active_period(_active_from, _active_to, active_hours,
+                                  activity_conditions));
 
           if (vbt) {
             result.push_back(vbt);

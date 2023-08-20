@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "amazon/alexa_credentials.h"
@@ -47,6 +48,10 @@ class supla_user {
   char *short_unique_id;
   char *long_unique_id;
   void *lck;
+
+  std::string timezone;
+  double latitude;
+  double longitude;
 
   static struct timeval metric_tv;
   static unsigned int client_add_metric;
@@ -113,6 +118,7 @@ class supla_user {
                                 const supla_caller &caller);
   static void on_device_settings_changed(int UserID, int DeviceID,
                                          const supla_caller &caller);
+  static void reset_timezone(int user_id);
   static unsigned int total_cd_count(bool client);
   static void log_metrics(int min_interval_sec);
 
@@ -163,6 +169,7 @@ class supla_user {
   supla_user(int UserID, const char *short_unique_id,
              const char *long_unique_id);
   supla_user_channelgroups *get_channel_groups(void);
+  std::string get_timezone(double *latitude, double *longitude);
   virtual ~supla_user();
 };
 
