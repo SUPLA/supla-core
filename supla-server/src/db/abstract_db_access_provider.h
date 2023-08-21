@@ -21,7 +21,7 @@
 
 #include <ctime>
 
-#include "mysql/mysql.h"
+#include <mysql.h>
 
 class supla_abstract_db_access_provider {
  public:
