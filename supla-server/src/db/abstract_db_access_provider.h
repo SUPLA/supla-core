@@ -19,6 +19,10 @@
 #ifndef ABSTRACT_DBACCESS_PROVIDER_H_
 #define ABSTRACT_DBACCESS_PROVIDER_H_
 
+#include <ctime>
+
+#include <mysql.h>
+
 class supla_abstract_db_access_provider {
  public:
   supla_abstract_db_access_provider(void);
@@ -55,6 +59,8 @@ class supla_abstract_db_access_provider {
 
   virtual int add_by_proc_call(const char *stmt_str, void *bind,
                                int bind_size) = 0;
+
+  time_t mytime_to_time_t(MYSQL_TIME *time);
 };
 
 #endif /* ABSTRACT_DBACCESS_PROVIDER_H_ */

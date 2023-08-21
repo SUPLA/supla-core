@@ -18,6 +18,8 @@
 
 #include "value_based_triggers.h"
 
+#include <string>
+
 #include "actions/action_executor.h"
 #include "db/db_access_provider.h"
 #include "device/channel_property_getter.h"
@@ -114,16 +116,23 @@ void supla_value_based_triggers::on_channel_value_changed(
     supla_abstract_channel_property_getter *property_getter) {
   vector<supla_vbt_condition_result> matches;
 
+  double latitude = 0;
+  double longitude = 0;
+  std::string timezone = user->get_timezone(&latitude, &longitude);
+
   lck_lock(lck);
   for (auto it = triggers.begin(); it != triggers.end(); ++it) {
-    supla_vbt_condition_result m =
-        new_value || old_value
-            ? (*it)->are_conditions_met(channel_id, old_value, new_value)
-            : (*it)->are_conditions_met(channel_id, old_evalue, new_evalue);
+    if ((*it)->get_active_period().is_now_active(timezone.c_str(), latitude,
+                                                 longitude)) {
+      supla_vbt_condition_result m =
+          new_value || old_value
+              ? (*it)->are_conditions_met(channel_id, old_value, new_value)
+              : (*it)->are_conditions_met(channel_id, old_evalue, new_evalue);
 
-    if (m.are_conditions_met()) {
-      m.set_trigger(*it);
-      matches.push_back(m);
+      if (m.are_conditions_met()) {
+        m.set_trigger(*it);
+        matches.push_back(m);
+      }
     }
   }
   lck_unlock(lck);
