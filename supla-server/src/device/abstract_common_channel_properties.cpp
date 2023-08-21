@@ -118,8 +118,11 @@ void supla_abstract_common_channel_properties::get_channel_relations(
 
                 if (find_aux && hvac.AuxThermometerChannelNo ==
                                     props->get_channel_number()) {
-                  add_relation(relations, props->get_id(), get_id(),
-                               hvac.AuxThermometerType + 3);
+                  if (props->get_func() == SUPLA_CHANNELFNC_THERMOMETER ||
+                      props->get_func() ==
+                          SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)
+                    add_relation(relations, props->get_id(), get_id(),
+                                 hvac.AuxThermometerType + 3);
                   find_aux = false;
                 }
               }
