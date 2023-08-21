@@ -198,7 +198,10 @@ double supla_channel_em_extended_value::get_current(int phase) {
     if (srpc_evtool_v2_extended2emextended(get_value_ptr(), &em_ev) &&
         em_ev.m_count > 0) {
       return em_ev.m[0].current[phase - 1] *
-             (em_ev.measured_values & EM_VAR_CURRENT_OVER_65A ? 0.01 : 0.001);
+             ((em_ev.measured_values & EM_VAR_CURRENT_OVER_65A) &&
+                      !(em_ev.measured_values & EM_VAR_CURRENT)
+                  ? 0.01
+                  : 0.001);
     }
   }
 
@@ -212,7 +215,10 @@ double supla_channel_em_extended_value::get_current_sum(void) {
       em_ev.m_count > 0) {
     for (unsigned char a = 0; a < 3; a++) {
       sum += em_ev.m[0].current[a] *
-             (em_ev.measured_values & EM_VAR_CURRENT_OVER_65A ? 0.01 : 0.001);
+             ((em_ev.measured_values & EM_VAR_CURRENT_OVER_65A) &&
+                      !(em_ev.measured_values & EM_VAR_CURRENT)
+                  ? 0.01
+                  : 0.001);
     }
   }
 
