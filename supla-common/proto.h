@@ -2550,7 +2550,8 @@ typedef struct {
 #define SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER 5
 
 #define SUPLA_HVAC_ALGORITHM_NOT_SET 0
-#define SUPLA_HVAC_ALGORITHM_ON_OFF (1ULL << 0)
+#define SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE (1ULL << 0)
+#define SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST (1ULL << 1)
 
 // TODO(klew): should we have separate structures for configuration specific
 // to selected algorithm? I.e. histeresis should be applicable to on/off
