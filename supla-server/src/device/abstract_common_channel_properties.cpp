@@ -111,8 +111,13 @@ void supla_abstract_common_channel_properties::get_channel_relations(
               if (device_id == props->get_device_id()) {
                 if (find_main && hvac.MainThermometerChannelNo ==
                                      props->get_channel_number()) {
-                  add_relation(relations, props->get_id(), get_id(),
-                               CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
+                  if (props->get_func() == SUPLA_CHANNELFNC_THERMOMETER ||
+                      props->get_func() ==
+                          SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE) {
+                    add_relation(relations, props->get_id(), get_id(),
+                                 CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
+                  }
+
                   find_main = false;
                 }
 
@@ -120,9 +125,11 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                                     props->get_channel_number()) {
                   if (props->get_func() == SUPLA_CHANNELFNC_THERMOMETER ||
                       props->get_func() ==
-                          SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)
+                          SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE) {
                     add_relation(relations, props->get_id(), get_id(),
                                  hvac.AuxThermometerType + 3);
+                  }
+
                   find_aux = false;
                 }
               }
