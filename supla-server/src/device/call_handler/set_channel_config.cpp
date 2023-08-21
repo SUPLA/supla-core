@@ -47,6 +47,7 @@ void supla_ch_set_channel_config::handle_call(
   TSDS_SetChannelConfigResult result = {};
   result.Result = SUPLA_CONFIG_RESULT_FALSE;
   result.ConfigType = request->ConfigType;
+  result.ChannelNumber = request->ChannelNumber;
 
   int channel_id =
       device->get_channels()->get_channel_id(request->ChannelNumber);
