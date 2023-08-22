@@ -124,7 +124,7 @@ bool supla_pn_dao::get(int user_id, supla_push_notification *push) {
           push->set_sound(sound);
         }
 
-        if (date_time_is_null) {
+        if (!date_time_is_null) {
           push->set_date_time(date_time);
         }
 
@@ -188,7 +188,7 @@ bool supla_pn_dao::get_date_time(int user_id, supla_push_notification *push) {
         dba->set_terminating_byte(date_time, sizeof(date_time), date_time_len,
                                   date_time_is_null);
 
-        if (date_time_is_null) {
+        if (!date_time_is_null) {
           push->set_date_time(date_time);
         }
 

@@ -61,11 +61,20 @@ void PnDaoIntegrationTest::TearDown() {
 TEST_F(PnDaoIntegrationTest, get) {
   runSqlScript("AddPushNotification.sql");
   supla_push_notification pn(5);
+  EXPECT_EQ(pn.get_date_time().size(), 0);
   EXPECT_TRUE(dao->get(2, &pn));
   EXPECT_EQ(pn.get_id(), 5);
   EXPECT_EQ(pn.get_title(), "Abcd");
   EXPECT_EQ(pn.get_body(), "Efgh");
   EXPECT_EQ(pn.get_sound(), 11);
+  EXPECT_EQ(pn.get_date_time().size(), 19);
+}
+
+TEST_F(PnDaoIntegrationTest, getDateTime) {
+  supla_push_notification pn(0);
+  EXPECT_EQ(pn.get_date_time().size(), 0);
+  EXPECT_TRUE(dao->get_date_time(2, &pn));
+  EXPECT_EQ(pn.get_date_time().size(), 19);
 }
 
 TEST_F(PnDaoIntegrationTest, fieldsWithNullsShouldNotWriteTheObject) {

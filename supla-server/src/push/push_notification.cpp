@@ -141,6 +141,8 @@ void supla_push_notification::set_date_time(const std::string date_time) {
   apply_replacement_map();
 }
 
+std::string supla_push_notification::get_date_time(void) { return date_time; }
+
 bool supla_push_notification::apply_json(int user_id, cJSON *json) {
   if (!json) {
     return false;
