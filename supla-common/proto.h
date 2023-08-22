@@ -2059,6 +2059,7 @@ typedef struct {
 #define SUPLA_HVAC_CAP_FLAG_MODE_DRY 0x0010
 #define SUPLA_HVAC_CAP_FLAG_MODE_FAN 0x0020
 #define SUPLA_HVAC_CAP_FLAG_DIFFERENTIAL 0x0040
+#define SUPLA_HVAC_CAP_FLAG_DOMESTIC_HOT_WATER 0x0080
 
 // Heatpol: Thermostat value flags - ver. >= 11
 #define SUPLA_THERMOSTAT_VALUE_FLAG_ON 0x0001
@@ -2520,14 +2521,20 @@ typedef struct {
   unsigned char Quarters[SUPLA_WEEKLY_SCHEDULE_VALUES_SIZE / 2];  // 336 B
 } TChannelConfig_WeeklySchedule;                                  // v. >= 21
 
-// Config used for thermometers and thermometers with humidity channels.
-// When used for thermometers, humidity param is ignored.
+// Config used for thermometers, humidity sensors, and thermometers with
+// humidity channels.
+// Correction is always applied by io device. Parameter
+// AdjustmentAppliedByDevice is added in order to handle older versions where
+// correction was applied by server. Devices supporting this setting will
+// retreive config from server and if AdjustmentAppliedByDevice is set to 0,
+// then they will store new correction value, set AdjustmentAppliedByDevice to 1
+// and send it to server, so server will no longer apply correction.
 typedef struct {
   _supla_int16_t TemperatureAdjustment;     // * 0.01
   _supla_int16_t HumidityAdjustment;        // * 0.01
-  unsigned char AdjustmentAppliedByServer;  // 1/true - by server;
-                                            // 0/false - by device
-} TSD_HumidityAndTempChannelCfg;            // v. >= 21
+  unsigned char AdjustmentAppliedByDevice;  // 1/true - by device
+                                            // 0/false - by server
+} TChannelConfig_TemperatureAndHumidity;    // v. >= 21
 
 // Not set is set when there is no thermometer for "AUX" available
 // at all.
@@ -2543,7 +2550,8 @@ typedef struct {
 #define SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER 5
 
 #define SUPLA_HVAC_ALGORITHM_NOT_SET 0
-#define SUPLA_HVAC_ALGORITHM_ON_OFF (1ULL << 0)
+#define SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE (1ULL << 0)
+#define SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST (1ULL << 1)
 
 // TODO(klew): should we have separate structures for configuration specific
 // to selected algorithm? I.e. histeresis should be applicable to on/off
@@ -2598,7 +2606,7 @@ typedef struct {
 //     TEMPERATURE_AUX_MIN <= t <= TEMPERATURE_AUX_MAX
 // - Temperatures (t_min, t_max) in "Auto Constrain" means:
 //     TEMPERATURE_ROOM_MIN <= t_min <= TEMPERATURE_ROOM_MAX AND
-//     TEMPERATURE_ROOM_MAX <= t_max <= TEMPERATURE_ROOM_MAX AND
+//     TEMPERATURE_ROOM_MIN <= t_max <= TEMPERATURE_ROOM_MAX AND
 //     (t_max - t_min >= TEMPERATURE_AUTO_OFFSET_MIN) AND
 //     (t_max - t_min <= TEMPERATURE_AUTO_OFFSET_MAX)
 
