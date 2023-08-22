@@ -102,15 +102,19 @@ unsigned char hvac_config::string_to_aux_thermometer_type(const string &type) {
 
 string hvac_config::alg_to_string(unsigned _supla_int16_t alg) {
   switch (alg) {
-    case SUPLA_HVAC_ALGORITHM_ON_OFF:
-      return "OnOff";
+    case SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE:
+      return "OnOffSetpointMiddle";
+    case SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST:
+      return "OnOffSetpointAtMost";
   }
   return "";
 }
 
 unsigned _supla_int16_t hvac_config::string_to_alg(const string &alg) {
-  if (alg == "OnOff") {
-    return SUPLA_HVAC_ALGORITHM_ON_OFF;
+  if (alg == "OnOffSetpointMiddle") {
+    return SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE;
+  } else if (alg == "OnOffSetpointAtMost") {
+    return SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST;
   }
 
   return 0;
@@ -173,7 +177,8 @@ void hvac_config::set_config(TChannelConfig_HVAC *config) {
   algs = cJSON_AddArrayToObject(
       root, field_map.at(FIELD_AVAILABLE_ALGORITHMS).c_str());
 
-  add_algorithm_to_array(root, algs, config, SUPLA_HVAC_ALGORITHM_ON_OFF);
+  add_algorithm_to_array(root, algs, config,
+                         SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE);
 
   set_item_value(root, field_map.at(FIELD_USED_ALGORITHM).c_str(), cJSON_String,
                  true, alg_to_string(config->UsedAlgorithm).c_str(), 0);
