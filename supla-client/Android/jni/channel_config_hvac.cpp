@@ -54,7 +54,7 @@ jobject supla_cc_hvac_thermometer_type_to_jobject(JNIEnv *env,
 
 jobject supla_cc_hvac_algorithm_to_jobject(JNIEnv *env,
                                            unsigned char algorithm) {
-  char enum_name[10] = {};
+  char enum_name[25] = {};
 
   switch (algorithm) {
     case SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE:
