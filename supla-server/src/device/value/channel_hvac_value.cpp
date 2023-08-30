@@ -104,6 +104,7 @@ bool supla_channel_hvac_value::is_function_supported(int func) {
     case SUPLA_CHANNELFNC_HVAC_DRYER:
     case SUPLA_CHANNELFNC_HVAC_FAN:
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
       return true;
   }
 

@@ -281,6 +281,7 @@ bool supla_client_channel::remote_update_is_possible(void) {
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+      case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
         return true;
     }
   }
