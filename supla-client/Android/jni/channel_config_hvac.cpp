@@ -76,19 +76,17 @@ jobject supla_cc_hvac_algorithm_to_jobject(JNIEnv *env,
 jobject supla_cc_hvac_avil_algs_to_jobject(
     JNIEnv *env, unsigned _supla_int16_t available_algorithms) {
   jobject jarr = supla_NewArrayList(env);
-  jobject alg = nullptr;
+  nullptr;
 
   if (available_algorithms & SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE) {
-    alg = supla_cc_hvac_algorithm_to_jobject(
+    jobject alg = supla_cc_hvac_algorithm_to_jobject(
         env, SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE);
-
-  } else if (available_algorithms &
-             SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST) {
-    alg = supla_cc_hvac_algorithm_to_jobject(
-        env, SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST);
+    supla_AddItemToArrayList(env, jarr, alg);
   }
 
-  if (alg) {
+  if (available_algorithms & SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST) {
+    jobject alg = supla_cc_hvac_algorithm_to_jobject(
+        env, SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST);
     supla_AddItemToArrayList(env, jarr, alg);
   }
 
