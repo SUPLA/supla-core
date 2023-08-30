@@ -73,6 +73,7 @@ jobject supla_channel_config_to_jobject(JNIEnv *env,
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+      case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
         if (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
             sizeof(TChannelConfig_HVAC) == config->ConfigSize) {
           return supla_cc_hvac_to_jobject(
