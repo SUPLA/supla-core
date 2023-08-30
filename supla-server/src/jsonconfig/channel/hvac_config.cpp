@@ -180,6 +180,9 @@ void hvac_config::set_config(TChannelConfig_HVAC *config) {
   add_algorithm_to_array(root, algs, config,
                          SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE);
 
+  add_algorithm_to_array(root, algs, config,
+                         SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST);
+
   set_item_value(root, field_map.at(FIELD_USED_ALGORITHM).c_str(), cJSON_String,
                  true, alg_to_string(config->UsedAlgorithm).c_str(), 0);
 

@@ -59,12 +59,12 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
       "{\"hvac\":{\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
       "\"auxThermometerType\":\"GenericHeater\","
       "\"antiFreezeAndOverheatProtectionEnabled\":true,\"availableAlgorithms\":"
-      "[\"OnOff\"],\"usedAlgorithm\":\"OnOffSetpointMiddle\",\"minOffTimeS\":"
-      "600,\"minOnTimeS\":10,\"outputValueOnError\":55,\"temperatures\":{\"1\":"
-      "1,\"2\":2,\"3\":3,\"4\":4,\"5\":5,\"6\":6,\"7\":7,\"8\":8,\"9\":9,"
-      "\"10\":10,\"11\":11,\"12\":12,\"13\":13,\"14\":14,\"15\":15,\"16\":16,"
-      "\"17\":17,\"18\":18,\"19\":19,\"20\":20,\"21\":21,\"22\":22,\"23\":23,"
-      "\"24\":24}}}");
+      "[\"OnOffSetpointMiddle\",\"OnOffSetpointAtMost\"],\"usedAlgorithm\":"
+      "\"OnOffSetpointMiddle\",\"minOffTimeS\":600,\"minOnTimeS\":10,"
+      "\"outputValueOnError\":55,\"temperatures\":{\"1\":1,\"2\":2,\"3\":3,"
+      "\"4\":4,\"5\":5,\"6\":6,\"7\":7,\"8\":8,\"9\":9,\"10\":10,\"11\":11,"
+      "\"12\":12,\"13\":13,\"14\":14,\"15\":15,\"16\":16,\"17\":17,\"18\":18,"
+      "\"19\":19,\"20\":20,\"21\":21,\"22\":22,\"23\":23,\"24\":24}}}");
 
   hvac_config config2;
   config2.set_user_config(str);
@@ -73,7 +73,8 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   TChannelConfig_HVAC ds_hvac2 = {};
   config2.get_config(&ds_hvac2);
 
-  ds_hvac1.AvailableAlgorithms = SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE;
+  ds_hvac1.AvailableAlgorithms = SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE |
+                                 SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST;
 
   EXPECT_EQ(memcmp(&ds_hvac1, &ds_hvac2, sizeof(TChannelConfig_HVAC)), 0);
 
@@ -133,12 +134,12 @@ TEST_F(HvacConfigTest, merge) {
       "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
       "\"auxThermometerType\":\"GenericHeater\","
       "\"antiFreezeAndOverheatProtectionEnabled\":true,\"availableAlgorithms\":"
-      "[\"OnOff\"],\"usedAlgorithm\":\"OnOff\",\"minOffTimeS\":600,"
-      "\"minOnTimeS\":10,\"outputValueOnError\":55,\"temperatures\":{\"1\":1,"
-      "\"2\":2,\"3\":3,\"4\":4,\"5\":5,\"6\":6,\"7\":7,\"8\":8,\"9\":9,\"10\":"
-      "10,\"11\":11,\"12\":12,\"13\":13,\"14\":14,\"15\":15,\"16\":16,\"17\":"
-      "17,\"18\":18,\"19\":19,\"20\":20,\"21\":21,\"22\":22,\"23\":23,\"24\":"
-      "24}}}");
+      "[\"OnOffSetpointMiddle\"],\"usedAlgorithm\":\"OnOffSetpointMiddle\","
+      "\"minOffTimeS\":600,\"minOnTimeS\":10,\"outputValueOnError\":55,"
+      "\"temperatures\":{\"1\":1,\"2\":2,\"3\":3,\"4\":4,\"5\":5,\"6\":6,\"7\":"
+      "7,\"8\":8,\"9\":9,\"10\":10,\"11\":11,\"12\":12,\"13\":13,\"14\":14,"
+      "\"15\":15,\"16\":16,\"17\":17,\"18\":18,\"19\":19,\"20\":20,\"21\":21,"
+      "\"22\":22,\"23\":23,\"24\":24}}}");
 
   TChannelConfig_HVAC ds_hvac = {};
 
