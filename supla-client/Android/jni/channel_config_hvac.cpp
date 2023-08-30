@@ -57,8 +57,11 @@ jobject supla_cc_hvac_algorithm_to_jobject(JNIEnv *env,
   char enum_name[10] = {};
 
   switch (algorithm) {
-    case SUPLA_HVAC_ALGORITHM_ON_OFF:
-      snprintf(enum_name, sizeof(enum_name), "ON_OFF");
+    case SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE:
+      snprintf(enum_name, sizeof(enum_name), "ON_OFF_SETPOINT_MIDDLE");
+      break;
+    case SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST:
+      snprintf(enum_name, sizeof(enum_name), "ON_OFF_SETPOINT_AT_MOST");
       break;
     default:
       snprintf(enum_name, sizeof(enum_name), "NOT_SET");
@@ -73,10 +76,19 @@ jobject supla_cc_hvac_algorithm_to_jobject(JNIEnv *env,
 jobject supla_cc_hvac_avil_algs_to_jobject(
     JNIEnv *env, unsigned _supla_int16_t available_algorithms) {
   jobject jarr = supla_NewArrayList(env);
+  jobject alg = nullptr;
 
-  if (available_algorithms & SUPLA_HVAC_ALGORITHM_ON_OFF) {
-    jobject alg =
-        supla_cc_hvac_algorithm_to_jobject(env, SUPLA_HVAC_ALGORITHM_ON_OFF);
+  if (available_algorithms & SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE) {
+    alg = supla_cc_hvac_algorithm_to_jobject(
+        env, SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE);
+
+  } else if (available_algorithms &
+             SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST) {
+    alg = supla_cc_hvac_algorithm_to_jobject(
+        env, SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST);
+  }
+
+  if (alg) {
     supla_AddItemToArrayList(env, jarr, alg);
   }
 
