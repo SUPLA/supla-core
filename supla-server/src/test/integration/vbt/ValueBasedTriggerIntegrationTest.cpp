@@ -246,6 +246,80 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
   }
 }
 
+TEST_F(ValueBasedTriggerIntegrationTest, deleteFirst) {
+  supla_value_based_triggers triggers(user);
+  triggers.load();
+
+  EXPECT_EQ(triggers.count(), 7);
+
+  auto t = triggers.get(20);
+  EXPECT_TRUE(t != nullptr);
+
+  runSqlScript("DeleteVbtFirst.sql");
+  EXPECT_EQ(triggers.count(), 6);
+
+  triggers.load();
+  t = triggers.get(20);
+  EXPECT_TRUE(t == nullptr);
+}
+
+TEST_F(ValueBasedTriggerIntegrationTest, deleteVbt22) {
+  supla_value_based_triggers triggers(user);
+  triggers.load();
+
+  EXPECT_EQ(triggers.count(), 7);
+
+  auto t = triggers.get(22);
+  EXPECT_TRUE(t != nullptr);
+
+  runSqlScript("DeleteVbt22.sql");
+
+  triggers.load();
+  EXPECT_EQ(triggers.count(), 6);
+
+  t = triggers.get(22);
+  EXPECT_TRUE(t == nullptr);
+}
+
+TEST_F(ValueBasedTriggerIntegrationTest, deleteLast) {
+  supla_value_based_triggers triggers(user);
+  triggers.load();
+
+  EXPECT_EQ(triggers.count(), 7);
+
+  auto t = triggers.get(33);
+  EXPECT_TRUE(t != nullptr);
+
+  runSqlScript("DeleteVbtLast.sql");
+
+  triggers.load();
+  EXPECT_EQ(triggers.count(), 6);
+
+  t = triggers.get(33);
+  EXPECT_TRUE(t == nullptr);
+}
+
+TEST_F(ValueBasedTriggerIntegrationTest, delete31and32) {
+  supla_value_based_triggers triggers(user);
+  triggers.load();
+  EXPECT_EQ(triggers.count(), 7);
+
+  auto t = triggers.get(31);
+  EXPECT_TRUE(t != nullptr);
+  t = triggers.get(32);
+  EXPECT_TRUE(t != nullptr);
+
+  runSqlScript("DeleteVbt31and32.sql");
+
+  triggers.load();
+  EXPECT_EQ(triggers.count(), 5);
+
+  t = triggers.get(31);
+  EXPECT_TRUE(t == nullptr);
+  t = triggers.get(32);
+  EXPECT_TRUE(t == nullptr);
+}
+
 TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel140) {
   supla_value_based_triggers triggers(user);
   triggers.load();
