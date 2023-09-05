@@ -102,13 +102,13 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
     if (supla_CallShortObjectMethod(env, cls, action_params,
                                     "getSetpointTemperatureMin", &s)) {
       hvac_param->SetpointTemperatureMin = s;
-      hvac_param->Flags = SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET;
+      hvac_param->Flags |= SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET;
     }
 
     if (supla_CallShortObjectMethod(env, cls, action_params,
                                     "getSetpointTemperatureMax", &s)) {
       hvac_param->SetpointTemperatureMax = s;
-      hvac_param->Flags = SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET;
+      hvac_param->Flags |= SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET;
     }
 
     *param = hvac_param;
