@@ -63,10 +63,14 @@ void supla_action_hvac_parameters::apply_on(supla_channel_hvac_value *value) {
 
   if (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET) {
     value->set_temperature_min(params.SetpointTemperatureMin);
+  } else {
+    value->set_temperature_min_to_null();
   }
 
   if (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET) {
     value->set_temperature_max(params.SetpointTemperatureMax);
+  } else {
+    value->set_temperature_max_to_null();
   }
 }
 

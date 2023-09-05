@@ -63,6 +63,20 @@ void supla_channel_hvac_value::set_temperature_max(short temperature) {
       SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET;
 }
 
+void supla_channel_hvac_value::set_temperature_min_to_null(void) {
+  ((THVACValue*)raw_value)->SetpointTemperatureMin = 0;
+  ((THVACValue*)raw_value)->Flags ^=
+      ((THVACValue*)raw_value)->Flags &
+      SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET;
+}
+
+void supla_channel_hvac_value::set_temperature_max_to_null(void) {
+  ((THVACValue*)raw_value)->SetpointTemperatureMax = 0;
+  ((THVACValue*)raw_value)->Flags ^=
+      ((THVACValue*)raw_value)->Flags &
+      SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET;
+}
+
 void supla_channel_hvac_value::set_flags(unsigned short flags) {
   ((THVACValue*)raw_value)->Flags = flags;
 }

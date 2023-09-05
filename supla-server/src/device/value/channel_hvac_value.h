@@ -35,6 +35,8 @@ class supla_channel_hvac_value : public supla_channel_value {
   void set_mode(unsigned char mode);
   void set_temperature_min(short temperature);
   void set_temperature_max(short temperature);
+  void set_temperature_min_to_null(void);
+  void set_temperature_max_to_null(void);
   void set_flags(unsigned short flags);
   bool is_on(void);
   void turn_on(void);

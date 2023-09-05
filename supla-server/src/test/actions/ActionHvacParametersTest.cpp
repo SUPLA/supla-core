@@ -122,6 +122,42 @@ TEST_F(ActionHvacParametersTest, applyOn_allParams) {
   EXPECT_EQ(hvac.get_duration_sec(), 15);
 }
 
+TEST_F(ActionHvacParametersTest, applyOn_minIsNull) {
+  TAction_HVAC_Parameters p = {};
+
+  p.SetpointTemperatureMax = 200;
+  p.Flags |= SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET;
+
+  supla_action_hvac_parameters hvac(&p);
+  supla_channel_hvac_value v;
+  v.set_temperature_min(134);
+  v.set_temperature_max(223);
+
+  hvac.apply_on(&v);
+
+  EXPECT_EQ(v.get_temperature_min(), 0);
+  EXPECT_EQ(v.get_temperature_max(), 200);
+  EXPECT_EQ(v.get_flags(), SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET);
+}
+
+TEST_F(ActionHvacParametersTest, applyOn_maxIsNull) {
+  TAction_HVAC_Parameters p = {};
+
+  p.SetpointTemperatureMin = 100;
+  p.Flags |= SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET;
+
+  supla_action_hvac_parameters hvac(&p);
+  supla_channel_hvac_value v;
+  v.set_temperature_min(134);
+  v.set_temperature_max(223);
+
+  hvac.apply_on(&v);
+
+  EXPECT_EQ(v.get_temperature_min(), 100);
+  EXPECT_EQ(v.get_temperature_max(), 0);
+  EXPECT_EQ(v.get_flags(), SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET);
+}
+
 TEST_F(ActionHvacParametersTest, anyParamSet) {
   {
     TAction_HVAC_Parameters p = {};
