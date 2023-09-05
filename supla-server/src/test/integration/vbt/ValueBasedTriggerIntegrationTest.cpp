@@ -256,9 +256,9 @@ TEST_F(ValueBasedTriggerIntegrationTest, deleteFirst) {
   EXPECT_TRUE(t != nullptr);
 
   runSqlScript("DeleteVbtFirst.sql");
-  EXPECT_EQ(triggers.count(), 6);
 
   triggers.load();
+  EXPECT_EQ(triggers.count(), 6);
   t = triggers.get(20);
   EXPECT_TRUE(t == nullptr);
 }
