@@ -267,6 +267,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SD_CALL_SET_CHANNEL_CONFIG_RESULT 691           // ver. >= 21
 #define SUPLA_SD_CALL_SET_CHANNEL_CONFIG 682                  // ver. >= 21
 #define SUPLA_DS_CALL_SET_CHANNEL_CONFIG_RESULT 692           // ver. >= 21
+#define SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED 683             // ver. >= 21
 #define SUPLA_DS_CALL_SET_DEVICE_CONFIG 684                   // ver. >= 21
 #define SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT 694            // ver. >= 21
 #define SUPLA_SD_CALL_SET_DEVICE_CONFIG 685                   // ver. >= 21
@@ -465,8 +466,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // Thermostat 400 funciton is not used
 #define SUPLA_CHANNELFNC_THERMOSTAT 400                    // ver. >= 11
 #define SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS 410   // ver. >= 11
-#define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT 420          // ver. >= 21
-#define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL 421          // ver. >= 21
+#define SUPLA_CHANNELFNC_HVAC_THERMOSTAT 420               // ver. >= 21
 #define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO 422          // ver. >= 21
 #define SUPLA_CHANNELFNC_HVAC_DRYER 423                    // ver. >= 21
 #define SUPLA_CHANNELFNC_HVAC_FAN 424                      // ver. >= 21
@@ -763,9 +763,16 @@ typedef struct {
 #define SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR (1ULL << 7)
 #define SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR (1ULL << 8)
 
+// Only for SUPLA_CHANNELFNC_HVAC_THERMOSTAT
+// 0 - heat subfunction
+// 1 - cool subfunction
+#define SUPLA_HVAC_VALUE_FLAG_HEAT_OR_COOL (1ULL << 9)
+
 // HVAC modes are used in channel value (as a command from server or
 // as a status response from device to server) and in weekly schedules
 // programs. Programs can't use value TURN_ON and WEEKLY_SCHEDULE
+// Use SUPLA_HVAC_MODE_NOT_SET if you don't want to modify current mode, but
+// only to alter tempreature setpoints.
 #define SUPLA_HVAC_MODE_NOT_SET 0
 #define SUPLA_HVAC_MODE_OFF 1
 #define SUPLA_HVAC_MODE_HEAT 2
@@ -779,6 +786,12 @@ typedef struct {
 // Weekly schedule is a command. Device will use it to enable weekly schedule
 // mode and then it will set its mode according to schedule
 #define SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE 9
+// Switch to manual mode - it will restore previously used manual mode and
+// restore manual mode temperature setpoints when no new setpoints are given
+// in value.
+// It can be also used to switch to default manual mode, when no manual mode
+// was used earlier.
+#define SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL 10
 
 typedef struct {
   unsigned char IsOn;  // DS: 0/1 (or 0..100 ?)
@@ -2292,6 +2305,7 @@ typedef struct {
 #define SUPLA_CONFIG_TYPE_DEFAULT 0
 // Weekly schedule
 #define SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE 2
+#define SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE 3
 
 /********************************************
  * DEVICE CONFIG STRUCTURES
@@ -2633,6 +2647,12 @@ typedef struct {
 // TEMPERATURE_HISTERESIS_MIN < TEMPERATURE_HISTERESIS_MAX
 // TEMPERATURE_AUTO_OFFSET_MIN < TEMPERATURE_AUTO_OFFSET_MAX
 
+// Subfunction for SUPLA_CHANNELFNC_HVAC_THERMOSTAT
+// Other channel functions dont' use subfunction setting (yet)
+#define SUPLA_HVAC_SUBFUNCTION_NOT_SET 0
+#define SUPLA_HVAC_SUBFUNCTION_HEAT 1
+#define SUPLA_HVAC_SUBFUNCTION_COOL 2
+
 typedef struct {
   union {
     _supla_int_t MainThermometerChannelId;
@@ -2662,6 +2682,9 @@ typedef struct {
   unsigned _supla_int16_t MinOffTimeS;  // minimum allowed time for output to
                                         // be disabled
   signed char OutputValueOnError;       // -100 cool, 0 off (default), 100 heat
+  unsigned char Subfunction;            // SUPLA_HVAC_SUBFUNCTION_
+  unsigned char SetointChangeKeepsWeeklyScheduleMode;  // 0 - off, 1 - on
+  unsigned char Reserved[50];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
 
