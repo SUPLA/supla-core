@@ -376,7 +376,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELEXTENDEDVALUE_SIZE 1024
 #endif
 
-#define SUPLA_CHANNELTYPE_SENSORNO 1000
+#define SUPLA_CHANNELTYPE_SENSORNO 1000        // name DEPRECATED
+                                               // use BINARYSENSOR instead
+#define SUPLA_CHANNELTYPE_BINARYSENSOR 1000
 #define SUPLA_CHANNELTYPE_SENSORNC 1010        // DEPRECATED
 #define SUPLA_CHANNELTYPE_DISTANCESENSOR 1020  // ver. >= 5
 #define SUPLA_CHANNELTYPE_CALLBUTTON 1500      // ver. >= 4
@@ -748,8 +750,8 @@ typedef struct {
   unsigned _supla_int_t disablesLocalOperation;
 } TActionTriggerProperties;
 
-#define SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET (1ULL << 0)
-#define SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET (1ULL << 1)
+#define SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET (1ULL << 0)
+#define SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET (1ULL << 1)
 // Tells if output responsible for heating function is enabled
 #define SUPLA_HVAC_VALUE_FLAG_HEATING (1ULL << 2)
 // Tells if output responsible for cooling function is enabled
@@ -762,11 +764,11 @@ typedef struct {
 #define SUPLA_HVAC_VALUE_FLAG_FAN_ENABLED (1ULL << 6)
 #define SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR (1ULL << 7)
 #define SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR (1ULL << 8)
-
+#define SUPLA_HVAC_VALUE_FLAG_FORCED_OFF_BY_SENSOR (1ULL << 9)
 // Only for SUPLA_CHANNELFNC_HVAC_THERMOSTAT
 // 0 - heat subfunction
 // 1 - cool subfunction
-#define SUPLA_HVAC_VALUE_FLAG_HEAT_OR_COOL (1ULL << 9)
+#define SUPLA_HVAC_VALUE_FLAG_HEAT_OR_COOL (1ULL << 10)
 
 // HVAC modes are used in channel value (as a command from server or
 // as a status response from device to server) and in weekly schedules
@@ -797,9 +799,9 @@ typedef struct {
   unsigned char IsOn;  // DS: 0/1 (or 0..100 ?)
   unsigned char Mode;  // SUPLA_HVAC_MODE_
   _supla_int16_t
-      SetpointTemperatureMin;  // * 0.01 Celcius degree - used for heating
+      SetpointTemperatureHeat;  // * 0.01 Celcius degree - used for heating
   _supla_int16_t
-      SetpointTemperatureMax;     // * 0.01 - Celcius degree used for cooling
+      SetpointTemperatureCool;     // * 0.01 - Celcius degree used for cooling
   unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
 } THVACValue;
 
@@ -1335,9 +1337,9 @@ typedef struct {
   unsigned _supla_int_t DurationSec;
   unsigned char Mode;  // for HVAC: SUPLA_HVAC_MODE_
   _supla_int16_t
-      SetpointTemperatureMin;  // * 0.01 Celcius degree - used for heating
+      SetpointTemperatureHeat;  // * 0.01 Celcius degree - used for heating
   _supla_int16_t
-      SetpointTemperatureMax;     // * 0.01 - Celcius degree used for cooling
+      SetpointTemperatureCool;     // * 0.01 - Celcius degree used for cooling
   unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
 } TAction_HVAC_Parameters;
 
@@ -2483,6 +2485,11 @@ typedef struct {
   unsigned char ChannelNumber;
 } TSDS_SetChannelConfigResult;
 
+// SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED
+typedef struct {
+  unsigned char ChannelNumber;
+} TSD_ChannelConfigFinished;
+
 typedef struct {
   _supla_int_t TimeMS;
 } TChannelConfig_StaircaseTimer;  // v. >= 16
@@ -2508,11 +2515,11 @@ typedef struct {
 typedef struct {
   unsigned char Mode;  // for HVAC: SUPLA_HVAC_MODE_
   union {
-    _supla_int16_t SetpointTemperatureMin;  // * 0.01 - used for heating
+    _supla_int16_t SetpointTemperatureHeat;  // * 0.01 - used for heating
     _supla_int16_t Value1;
   };
   union {
-    _supla_int16_t SetpointTemperatureMax;  // * 0.01 - used for cooling
+    _supla_int16_t SetpointTemperatureCool;  // * 0.01 - used for cooling
     _supla_int16_t Value2;
   };
 } TWeeklyScheduleProgram;
@@ -2549,6 +2556,15 @@ typedef struct {
   unsigned char AdjustmentAppliedByDevice;  // 1/true - by device
                                             // 0/false - by server
 } TChannelConfig_TemperatureAndHumidity;    // v. >= 21
+
+// ChannelConfig for all binary sensors (all functions valid for
+// SUPLA_CHANNELTYPE_BINARYSENSOR)
+// Device doesn't apply this inverted logic on communication towards server.
+// It is used only for interanal purposes and for other external interfaces
+// like MQTT
+typedef struct {
+  unsigned char InvertedLogic;  // 0 - not inverted, 1 - inverted
+} TChannelConfig_BinarySensor;  // v. >= 21
 
 // Not set is set when there is no thermometer for "AUX" available
 // at all.
@@ -2666,6 +2682,11 @@ typedef struct {
     unsigned char AuxThermometerChannelNo;
   };
 
+  union {
+    _supla_int_t BinarySensorChannelId;
+    unsigned char BinarySensorChannelNo;
+  };
+
   // SUPLA_HVAC_AUX_THERMOMETER_TYPE_
   unsigned char AuxThermometerType;
   unsigned char AntiFreezeAndOverheatProtectionEnabled;
@@ -2683,7 +2704,7 @@ typedef struct {
                                         // be disabled
   signed char OutputValueOnError;       // -100 cool, 0 off (default), 100 heat
   unsigned char Subfunction;            // SUPLA_HVAC_SUBFUNCTION_
-  unsigned char SetointChangeKeepsWeeklyScheduleMode;  // 0 - off, 1 - on
+  unsigned char SetpointChangeKeepsWeeklyScheduleMode;  // 0 - off, 1 - on
   unsigned char Reserved[50];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
