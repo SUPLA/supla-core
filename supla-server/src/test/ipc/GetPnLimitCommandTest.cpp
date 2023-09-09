@@ -44,7 +44,7 @@ TEST_F(GetPnLimitCommandTest, getLimit) {
     return 30;
   });
 
-  commandProcessingTest("GET-PN-LIMIT:10\n", "PN-LIMIT:30,-10\n");
+  commandProcessingTest("PN-GET-LIMIT:10\n", "PN-LIMIT:30,-10\n");
 }
 
 } /* namespace testing */
