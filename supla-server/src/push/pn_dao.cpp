@@ -50,22 +50,27 @@ bool supla_pn_dao::get(int user_id, supla_push_notification *push) {
   pbind[1].buffer = (char *)&user_id;
 
   const char sql[] =
-      "SELECT title, body, sound FROM `supla_push_notification` WHERE id = ? "
-      "AND user_id = ?";
+      "SELECT pn.title, pn.body, pn.sound, "
+      "DATE_FORMAT(IFNULL(CONVERT_TZ(UTC_TIMESTAMP, 'UTC', u.`timezone`), "
+      "UTC_TIMESTAMP), '%Y-%m-%d %T') FROM `supla_push_notification` pn, "
+      "`supla_user` u WHERE u.id = pn.user_id AND pn.id = ? AND pn.user_id = ?";
 
   MYSQL_STMT *stmt = nullptr;
   bool result = false;
 
   if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
-    MYSQL_BIND rbind[3] = {};
+    MYSQL_BIND rbind[4] = {};
 
     char title[100] = {};
     char body[256] = {};
+    char date_time[20] = {};
 
     unsigned long title_len = 0;
     unsigned long body_len = 0;
+    unsigned long date_time_len = 0;
     my_bool title_is_null = false;
     my_bool body_is_null = false;
+    my_bool date_time_is_null = false;
     int sound = 0;
     my_bool sound_is_null = false;
 
@@ -86,6 +91,12 @@ bool supla_pn_dao::get(int user_id, supla_push_notification *push) {
     rbind[2].buffer_length = sizeof(int);
     rbind[2].is_null = &sound_is_null;
 
+    rbind[3].buffer_type = MYSQL_TYPE_STRING;
+    rbind[3].buffer = date_time;
+    rbind[3].buffer_length = sizeof(date_time);
+    rbind[3].length = &date_time_len;
+    rbind[3].is_null = &date_time_is_null;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -98,6 +109,9 @@ bool supla_pn_dao::get(int user_id, supla_push_notification *push) {
 
         dba->set_terminating_byte(body, sizeof(body), body_len, body_is_null);
 
+        dba->set_terminating_byte(date_time, sizeof(date_time), date_time_len,
+                                  date_time_is_null);
+
         if (!title_is_null) {
           push->set_title(title);
         }
@@ -108,6 +122,74 @@ bool supla_pn_dao::get(int user_id, supla_push_notification *push) {
 
         if (!sound_is_null) {
           push->set_sound(sound);
+        }
+
+        if (!date_time_is_null) {
+          push->set_date_time(date_time);
+        }
+
+        result = true;
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
+}
+
+bool supla_pn_dao::get_date_time(int user_id, supla_push_notification *push) {
+  if (!user_id || !push) {
+    return false;
+  }
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return false;
+  }
+
+  MYSQL_BIND pbind = {};
+
+  pbind.buffer_type = MYSQL_TYPE_LONG;
+  pbind.buffer = (char *)&user_id;
+
+  const char sql[] =
+      "SELECT DATE_FORMAT(IFNULL(CONVERT_TZ(UTC_TIMESTAMP, 'UTC', `timezone`), "
+      "UTC_TIMESTAMP), '%Y-%m-%d %T') FROM `supla_user` WHERE id = ?";
+
+  MYSQL_STMT *stmt = nullptr;
+  bool result = false;
+
+  if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
+    MYSQL_BIND rbind = {};
+
+    char date_time[20] = {};
+    unsigned long date_time_len = 0;
+    my_bool date_time_is_null = false;
+
+    rbind.buffer_type = MYSQL_TYPE_STRING;
+    rbind.buffer = date_time;
+    rbind.buffer_length = sizeof(date_time);
+    rbind.length = &date_time_len;
+    rbind.is_null = &date_time_is_null;
+
+    if (mysql_stmt_bind_result(stmt, &rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
+        dba->set_terminating_byte(date_time, sizeof(date_time), date_time_len,
+                                  date_time_is_null);
+
+        if (!date_time_is_null) {
+          push->set_date_time(date_time);
         }
 
         result = true;

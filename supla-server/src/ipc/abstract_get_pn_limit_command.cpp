@@ -29,7 +29,7 @@ supla_abstract_get_pn_limit_command::supla_abstract_get_pn_limit_command(
     : supla_abstract_ipc_command(socket_adapter) {}
 
 const string supla_abstract_get_pn_limit_command::get_command_name(void) {
-  return "GET-PN-LIMIT:";
+  return "PN-GET-LIMIT:";
 }
 
 void supla_abstract_get_pn_limit_command::on_command_match(const char *params) {

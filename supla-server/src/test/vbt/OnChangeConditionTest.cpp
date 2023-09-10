@@ -963,6 +963,7 @@ TEST_F(OnChangeConditionTest, brightness) {
 
 TEST_F(OnChangeConditionTest, temperature) {
   supla_channel_temphum_value oldv, newv;
+  oldv.set_temperature(22.0);
   newv.set_temperature(22.5);
 
   supla_vbt_on_change_condition c;

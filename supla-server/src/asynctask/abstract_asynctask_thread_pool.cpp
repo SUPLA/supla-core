@@ -52,6 +52,7 @@ supla_abstract_asynctask_thread_pool::supla_abstract_asynctask_thread_pool(
   this->warinig_time.tv_sec = 0;
   this->warinig_time.tv_usec = 0;
   this->holded = false;
+  this->bucket = nullptr;
 
   queue->register_pool(this);
 }
@@ -59,21 +60,6 @@ supla_abstract_asynctask_thread_pool::supla_abstract_asynctask_thread_pool(
 supla_abstract_asynctask_thread_pool::~supla_abstract_asynctask_thread_pool(
     void) {
   terminate();
-
-  int n = 0;
-  while (thread_count()) {
-    usleep(10000);
-    n++;
-    if (n == 100) {
-      terminate();
-    }
-    if (n == 500) {
-      supla_log(LOG_ERR,
-                "Elapsed time waiting for the threads in the pool to stop. "
-                "Threads left: %i",
-                thread_count());
-    }
-  }
 
   queue->unregister_pool(this);
   lck_free(lck);
@@ -181,6 +167,27 @@ void supla_abstract_asynctask_thread_pool::remove_task(
   lck_unlock(lck);
 }
 
+void supla_abstract_asynctask_thread_pool::add_bucket(
+    supla_asynctask_thread_bucket *bucket) {
+  if (bucket) {
+    lck_lock(lck);
+    buckets.push_back(bucket);
+    lck_unlock(lck);
+  }
+}
+
+void supla_abstract_asynctask_thread_pool::remove_bucket(
+    supla_asynctask_thread_bucket *bucket) {
+  lck_lock(lck);
+  for (auto it = buckets.begin(); it != buckets.end(); ++it) {
+    if (*it == bucket) {
+      buckets.erase(it);
+      break;
+    }
+  }
+  lck_unlock(lck);
+}
+
 // static
 void supla_abstract_asynctask_thread_pool::_execute(void *_pool,
                                                     void *sthread) {
@@ -191,6 +198,8 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
   bool iterate = true;
 
   supla_asynctask_thread_bucket *bucket = get_bucket();
+  add_bucket(bucket);
+
   struct timeval last_exec_time = {};
 
   do {
@@ -255,6 +264,7 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
   } while (iterate);
 
   if (bucket) {
+    remove_bucket(bucket);
     delete bucket;
   }
 }
@@ -319,11 +329,26 @@ void supla_abstract_asynctask_thread_pool::terminate(void) {
   lck_lock(lck);
   terminated = true;
 
+  for (auto it = buckets.begin(); it != buckets.end(); ++it) {
+    (*it)->thread_will_terminate();
+  }
+
   for (auto it = threads.begin(); it != threads.end(); ++it) {
     sthread_terminate(*it, true);
   }
-
   lck_unlock(lck);
+
+  int n = 0;
+  do {
+    if (n == 500) {
+      supla_log(LOG_ERR,
+                "Elapsed time waiting for the threads in the pool to stop. "
+                "Threads left: %i",
+                thread_count());
+    }
+    usleep(10000);
+    n++;
+  } while (thread_count());
 }
 
 bool supla_abstract_asynctask_thread_pool::is_terminated(void) {

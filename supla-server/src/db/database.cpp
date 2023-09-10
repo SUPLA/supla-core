@@ -151,6 +151,74 @@ int database::get_user_id_by_suid(const char *suid) {
   return 0;
 }
 
+std::string database::get_user_timezone(int user_id, double *latitude,
+                                        double *longitude) {
+  char timezone[51] = {};
+
+  if (latitude) {
+    *latitude = 0;
+  }
+
+  if (longitude) {
+    *longitude = 0;
+  }
+
+  MYSQL_STMT *stmt = NULL;
+
+  const char sql[] =
+      "SELECT timezone, home_latitude, home_longitude FROM supla_user WHERE id "
+      "= ?";
+
+  MYSQL_BIND pbind = {};
+
+  pbind.buffer_type = MYSQL_TYPE_LONG;
+  pbind.buffer = (char *)&user_id;
+
+  if (stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
+    MYSQL_BIND rbind[3] = {};
+
+    unsigned long timezone_size = 0;
+    double lat = 0;
+    double lng = 0;
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = timezone;
+    rbind[0].buffer_length = sizeof(timezone);
+    rbind[0].length = &timezone_size;
+
+    rbind[1].buffer_type = MYSQL_TYPE_DOUBLE;
+    rbind[1].buffer = (char *)&lat;
+
+    rbind[2].buffer_type = MYSQL_TYPE_DOUBLE;
+    rbind[2].buffer = (char *)&lng;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
+        set_terminating_byte(timezone, sizeof(timezone), timezone_size, false);
+
+        if (latitude) {
+          *latitude = lat;
+        }
+
+        if (longitude) {
+          *longitude = lng;
+        }
+      } else {
+        timezone[0] = 0;
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+
+  return timezone;
+}
+
 void database::get_client_locations(int ClientID,
                                     supla_client_locations *locs) {
   MYSQL_STMT *stmt = NULL;
@@ -1008,36 +1076,6 @@ bool database::channel_is_associated_with_action_trigger(int UserID,
   }
 
   return result;
-}
-
-void database::update_channel_value(int channel_id, int user_id,
-                                    const char value[SUPLA_CHANNELVALUE_SIZE],
-                                    unsigned _supla_int_t validity_time_sec) {
-  MYSQL_STMT *stmt = NULL;
-  MYSQL_BIND pbind[4];
-  memset(pbind, 0, sizeof(pbind));
-
-  char value_hex[SUPLA_CHANNELVALUE_SIZE * 2 + 1];
-  st_bin2hex(value_hex, value, SUPLA_CHANNELVALUE_SIZE);
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&channel_id;
-
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&user_id;
-
-  pbind[2].buffer_type = MYSQL_TYPE_STRING;
-  pbind[2].buffer = (char *)value_hex;
-  pbind[2].buffer_length = SUPLA_CHANNELVALUE_SIZE * 2;
-
-  pbind[3].buffer_type = MYSQL_TYPE_LONG;
-  pbind[3].buffer = (char *)&validity_time_sec;
-
-  const char sql[] = "CALL `supla_update_channel_value`(?, ?, unhex(?), ?)";
-
-  if (stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
-    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
-  }
 }
 
 void database::update_channel_properties(int channel_id, int user_id,

@@ -21,6 +21,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+using std::map;
+using std::string;
+
 supla_channel_extended_value::supla_channel_extended_value(void) {
   this->real_size = 0;
   this->value = nullptr;
@@ -50,6 +53,10 @@ supla_channel_extended_value::~supla_channel_extended_value(void) {
   if (value) {
     free(value);
   }
+}
+
+char supla_channel_extended_value::get_type() {
+  return get_value_ptr() ? get_value_ptr()->type : 0;
 }
 
 supla_channel_extended_value *supla_channel_extended_value::copy(  // NOLINT
@@ -142,4 +149,15 @@ bool supla_channel_extended_value::is_differ(
          (this->value->size != 0 &&
           memcmp(value->value->value, this->value->value, this->value->size) !=
               0);
+}
+
+void supla_channel_extended_value::get_value(char *buffer) {
+  if (get_value_size()) {
+    memcpy(buffer, get_value_ptr()->value, get_value_size());
+  }
+}
+
+map<string, string> supla_channel_extended_value::get_replacement_map(void) {
+  map<string, string> result;
+  return result;
 }

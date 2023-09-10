@@ -502,6 +502,19 @@ void supla_user::on_device_settings_changed(int UserID, int DeviceID,
 }
 
 // static
+void supla_user::reset_timezone(int user_id) {
+  supla_user *user = supla_user::find(user_id, false);
+
+  if (user) {
+    lck_lock(user->lck);
+    user->timezone = "";
+    user->latitude = 0;
+    user->longitude = 0;
+    lck_unlock(user->lck);
+  }
+}
+
+// static
 unsigned int supla_user::total_cd_count(bool client) {
   unsigned int result = 0;
   supla_user *user = NULL;
@@ -894,4 +907,37 @@ void supla_user::on_scene_changed(const supla_caller &caller, int user_id,
                                      user_id, scene_id);
     supla_http_event_hub::on_google_home_sync_needed(user, caller);
   }
+}
+
+std::string supla_user::get_timezone(double *latitude, double *longitude) {
+  lck_lock(lck);
+
+  if (timezone.empty()) {
+    database *db = new database();
+
+    if (db->connect()) {
+      timezone =
+          db->get_user_timezone(UserID, &this->latitude, &this->longitude);
+    }
+
+    delete db;
+  }
+
+  if (timezone.empty()) {
+    timezone = "UTC";
+  }
+
+  if (latitude) {
+    *latitude = this->latitude;
+  }
+
+  if (longitude) {
+    *longitude = this->longitude;
+  }
+
+  std::string result = timezone;
+
+  lck_unlock(lck);
+
+  return result;
 }

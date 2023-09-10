@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "device/device.h"
+#include "device/extended_value/channel_extended_value_factory.h"
 #include "log.h"
 #include "tools.h"
 
@@ -280,8 +281,8 @@ bool supla_device_dao::get_device_reg_enabled(int user_id) {
 int supla_device_dao::get_device_limit_left(int user_id) {
   return dba->get_int(
       user_id, 0,
-      "SELECT IFNULL(limit_client, 0) - IFNULL(( SELECT COUNT(*) "
-      "FROM supla_client WHERE user_id = supla_user.id ), 0) FROM "
+      "SELECT IFNULL(limit_iodev, 0) - IFNULL(( SELECT COUNT(*) "
+      "FROM supla_iodevice WHERE user_id = supla_user.id ), 0) FROM "
       "supla_user WHERE id = ?");
 }
 
@@ -617,10 +618,11 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
       "c.`param4`, c.`text_param1`, c.`text_param2`, c.`text_param3`, "
       "c.`channel_number`, c.`id`, c.`hidden`, c.`flags`, v.`value`, CASE WHEN "
       "v.`valid_to` >= UTC_TIMESTAMP() THEN TIME_TO_SEC(TIMEDIFF(v.`valid_to`, "
-      "UTC_TIMESTAMP())) + 2 ELSE NULL END, c.`user_config`, c.`properties` "
-      "FROM `supla_dev_channel` c  LEFT JOIN `supla_dev_channel_value` v ON "
-      "v.channel_id = c.id WHERE c.`iodevice_id` = ? ORDER BY "
-      "c.`channel_number`";
+      "UTC_TIMESTAMP())) + 2 ELSE NULL END, ev.`type`, ev.`value`, "
+      "c.`user_config`, c.`properties` FROM `supla_dev_channel` c  LEFT JOIN "
+      "`supla_dev_channel_value` v ON v.channel_id = c.id LEFT JOIN "
+      "`supla_dev_channel_extended_value` ev ON ev.channel_id = c.id WHERE "
+      "c.`iodevice_id` = ? ORDER BY c.`channel_number`";
 
   MYSQL_BIND pbind = {};
 
@@ -631,7 +633,7 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
     my_bool is_null[11] = {};
-    MYSQL_BIND rbind[17] = {};
+    MYSQL_BIND rbind[19] = {};
 
     int type = 0;
     int func = 0;
@@ -663,6 +665,10 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
 
     unsigned _supla_int_t validity_time_sec = 0;
     my_bool validity_time_is_null = true;
+
+    TSuplaChannelExtendedValue ev = {};
+    unsigned long ev_value_size = 0;
+    my_bool ev_value_is_null = true;
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&type;
@@ -728,17 +734,27 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
     rbind[14].buffer_length = sizeof(unsigned _supla_int_t);
     rbind[14].is_null = &validity_time_is_null;
 
-    rbind[15].buffer_type = MYSQL_TYPE_STRING;
-    rbind[15].buffer = user_config;
-    rbind[15].is_null = &is_null[9];
-    rbind[15].buffer_length = sizeof(user_config) - 1;
-    rbind[15].length = &user_config_size;
+    rbind[15].buffer_type = MYSQL_TYPE_TINY;
+    rbind[15].buffer = &ev.type;
+    rbind[15].buffer_length = sizeof(ev.type);
 
-    rbind[16].buffer_type = MYSQL_TYPE_STRING;
-    rbind[16].buffer = properties;
-    rbind[16].is_null = &is_null[10];
-    rbind[16].buffer_length = sizeof(properties) - 1;
-    rbind[16].length = &properties_size;
+    rbind[16].buffer_type = MYSQL_TYPE_BLOB;
+    rbind[16].buffer = ev.value;
+    rbind[16].buffer_length = sizeof(ev.value);
+    rbind[16].is_null = &ev_value_is_null;
+    rbind[16].length = &ev_value_size;
+
+    rbind[17].buffer_type = MYSQL_TYPE_STRING;
+    rbind[17].buffer = user_config;
+    rbind[17].is_null = &is_null[9];
+    rbind[17].buffer_length = sizeof(user_config) - 1;
+    rbind[17].length = &user_config_size;
+
+    rbind[18].buffer_type = MYSQL_TYPE_STRING;
+    rbind[18].buffer = properties;
+    rbind[18].is_null = &is_null[10];
+    rbind[18].buffer_length = sizeof(properties) - 1;
+    rbind[18].length = &properties_size;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -775,10 +791,21 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
             validity_time_sec = 0;
           }
 
+          supla_channel_extended_value *extended_value = nullptr;
+
+          if (!ev_value_is_null && ev_value_size > 0) {
+            ev.size = ev_value_size;
+            extended_value =
+                supla_channel_extended_value_factory::new_value(&ev);
+          }
+
+          ev = {};
+
           supla_device_channel *channel = new supla_device_channel(
               device, id, number, type, func, param1, param2, param3, param4,
               text_param1, text_param2, text_param3, hidden > 0, flags, value,
-              validity_time_sec, user_config_size ? user_config : nullptr,
+              validity_time_sec, extended_value,
+              user_config_size ? user_config : nullptr,
               properties_size ? properties : nullptr);
 
           result.push_back(channel);
@@ -790,4 +817,94 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
   }
 
   return result;
+}
+
+void supla_device_dao::update_channel_value(
+    int channel_id, int user_id, const char value[SUPLA_CHANNELVALUE_SIZE],
+    unsigned _supla_int_t validity_time_sec) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  MYSQL_STMT *stmt = nullptr;
+  MYSQL_BIND pbind[4] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_BLOB;
+  pbind[2].buffer = (char *)value;
+  pbind[2].buffer_length = SUPLA_CHANNELVALUE_SIZE;
+
+  pbind[3].buffer_type = MYSQL_TYPE_LONG;
+  pbind[3].buffer = (char *)&validity_time_sec;
+
+  const char sql[] = "CALL `supla_update_channel_value`(?, ?, ?, ?)";
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+}
+
+void supla_device_dao::update_channel_extended_value(
+    int channel_id, int user_id, supla_channel_extended_value *ev) {
+  if (!ev) {
+    return;
+  }
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  MYSQL_STMT *stmt = nullptr;
+  MYSQL_BIND pbind[4] = {};
+
+  char type = ev->get_type();
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_TINY;
+  pbind[2].buffer = (char *)&type;
+
+  char *buffer = nullptr;
+
+  if (ev->get_value_size()) {
+    buffer = new char[ev->get_value_size()]{};
+    ev->get_value(buffer);
+
+    pbind[3].buffer_type = MYSQL_TYPE_BLOB;
+    pbind[3].buffer = buffer;
+    pbind[3].buffer_length = ev->get_value_size();
+  } else {
+    pbind[3].buffer_type = MYSQL_TYPE_NULL;
+  }
+
+  const char sql[] = "CALL `supla_update_channel_extended_value`(?, ?, ?, ?)";
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+
+  if (buffer) {
+    delete[] buffer;
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
 }

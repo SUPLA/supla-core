@@ -24,6 +24,7 @@ RM := rm -rf
 -include src/test/integration/push/subdir.mk
 -include src/test/integration/mqtt/subdir.mk
 -include src/test/integration/google/subdir.mk
+-include src/test/integration/device/subdir.mk
 -include src/test/integration/datalogger/subdir.mk
 -include src/test/integration/cyclictasks/subdir.mk
 -include src/test/integration/client/subdir.mk
@@ -80,6 +81,7 @@ RM := rm -rf
 -include src/device/call_handler/subdir.mk
 -include src/device/subdir.mk
 -include src/db/subdir.mk
+-include src/date/subdir.mk
 -include src/datalogger/subdir.mk
 -include src/cyclictasks/subdir.mk
 -include src/crypt_blowfish/subdir.mk
@@ -90,6 +92,7 @@ RM := rm -rf
 -include src/client/subdir.mk
 -include src/channeljsonconfig/subdir.mk
 -include src/asynctask/subdir.mk
+-include src/astro/subdir.mk
 -include src/analyzer/subdir.mk
 -include src/amazon/subdir.mk
 -include src/actions/subdir.mk

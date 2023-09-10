@@ -21,3 +21,5 @@
 supla_asynctask_thread_bucket::supla_asynctask_thread_bucket(void) {}
 
 supla_asynctask_thread_bucket::~supla_asynctask_thread_bucket(void) {}
+
+void supla_asynctask_thread_bucket::thread_will_terminate(void) {}

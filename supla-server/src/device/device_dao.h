@@ -83,6 +83,13 @@ class supla_device_dao : public supla_abstract_device_dao {
 
   virtual std::vector<supla_device_channel *> get_channels(
       supla_device *device);
+
+  virtual void update_channel_value(int channel_id, int user_id,
+                                    const char value[SUPLA_CHANNELVALUE_SIZE],
+                                    unsigned _supla_int_t validity_time_sec);
+
+  virtual void update_channel_extended_value(int channel_id, int user_id,
+                                             supla_channel_extended_value *ev);
 };
 
 #endif /* SUPLA_DEVICE_DAO_H_ */

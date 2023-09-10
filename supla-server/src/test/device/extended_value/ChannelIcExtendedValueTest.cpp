@@ -18,6 +18,7 @@
 
 #include "ChannelIcExtendedValueTest.h"
 
+#include "TestHelper.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 
 namespace testing {
@@ -33,6 +34,30 @@ TEST_F(ChannelIcExtendedValueTest, defaults) {
   EXPECT_EQ(ev.get_impulses_per_unit(), 0);
   EXPECT_EQ(ev.get_counter(), 0);
   EXPECT_EQ(ev.get_calculated_value(), 0);
+}
+
+TEST_F(ChannelIcExtendedValueTest, defaultContructor) {
+  TSuplaChannelExtendedValue ev_raw1 = {};
+  TSuplaChannelExtendedValue ev_raw2 = {};
+
+  ev_raw1.size = sizeof(TSC_ImpulseCounter_ExtendedValue);
+  ev_raw1.type = -1;
+
+  TestHelper::randomize(ev_raw1.value, ev_raw1.size);
+
+  {
+    supla_channel_ic_extended_value v(&ev_raw1);
+    EXPECT_FALSE(v.get_raw_value(&ev_raw2));
+  }
+
+  ev_raw1.type = EV_TYPE_IMPULSE_COUNTER_DETAILS_V1;
+
+  {
+    supla_channel_ic_extended_value v(&ev_raw1);
+    EXPECT_TRUE(v.get_raw_value(&ev_raw2));
+  }
+
+  EXPECT_EQ(memcmp(&ev_raw1, &ev_raw2, sizeof(TSuplaChannelExtendedValue)), 0);
 }
 
 TEST_F(ChannelIcExtendedValueTest, electricityMeterDefaults) {

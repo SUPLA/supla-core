@@ -19,6 +19,7 @@
 #ifndef CHANNEL_EM_EXTENDED_VALUE_H_
 #define CHANNEL_EM_EXTENDED_VALUE_H_
 
+#include <map>
 #include <string>
 
 #include "device/extended_value/channel_billing_value.h"
@@ -31,8 +32,12 @@ class supla_channel_em_extended_value : public supla_channel_extended_value,
  private:
   void set_raw_value(const TElectricityMeter_ExtendedValue_V2 *_value,
                      const char *text_param1, int *param2);
+  void set_raw_value(const TSuplaChannelExtendedValue *value,
+                     const char *text_param1, int *param2);
 
  public:
+  explicit supla_channel_em_extended_value(
+      const TSuplaChannelExtendedValue *value);
   supla_channel_em_extended_value(const TSuplaChannelExtendedValue *value,
                                   const char *text_param1, int param2);
   supla_channel_em_extended_value(
@@ -73,6 +78,7 @@ class supla_channel_em_extended_value : public supla_channel_extended_value,
   static bool is_function_supported(int func);
   static bool is_ev_type_supported(char type);
   virtual supla_channel_extended_value *copy(void);  // NOLINT
+  virtual std::map<std::string, std::string> get_replacement_map(void);
 };
 
 #endif /*CHANNEL_EM_EXTENDED_VALUE_H_*/

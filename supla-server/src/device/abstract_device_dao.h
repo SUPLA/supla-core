@@ -21,6 +21,7 @@
 
 #include <vector>
 
+#include "device/extended_value/channel_extended_value.h"
 #include "proto.h"
 #include "tools.h"
 
@@ -83,6 +84,13 @@ class supla_abstract_device_dao {
   // Perhaps this method should be added to the repository
   virtual std::vector<supla_device_channel *> get_channels(
       supla_device *device) = 0;
+
+  virtual void update_channel_value(
+      int channel_id, int user_id, const char value[SUPLA_CHANNELVALUE_SIZE],
+      unsigned _supla_int_t validity_time_sec) = 0;
+
+  virtual void update_channel_extended_value(
+      int channel_id, int user_id, supla_channel_extended_value *ev) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_DEVICE_DAO_H_ */

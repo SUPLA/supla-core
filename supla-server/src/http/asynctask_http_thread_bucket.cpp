@@ -32,3 +32,7 @@ supla_abstract_curl_adapter *supla_asynctask_http_thread_bucket::get_adapter(
     void) {
   return curl_adapter;
 }
+
+void supla_asynctask_http_thread_bucket::thread_will_terminate(void) {
+  curl_adapter->cancel();
+}

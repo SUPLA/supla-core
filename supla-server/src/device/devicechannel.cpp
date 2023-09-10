@@ -28,25 +28,10 @@
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "db/database.h"
 #include "device.h"
-#include "device/extended_value/channel_and_timer_state_extended_value.h"
+#include "device/device_dao.h"
 #include "device/extended_value/channel_em_extended_value.h"
-#include "device/extended_value/channel_ic_extended_value.h"
-#include "device/extended_value/channel_multi_extended_value.h"
-#include "device/extended_value/channel_state_extended_value.h"
-#include "device/extended_value/channel_thermostat_extended_value.h"
-#include "device/extended_value/timer_state_extended_value.h"
-#include "device/value/channel_binary_sensor_value.h"
-#include "device/value/channel_dgf_value.h"
-#include "device/value/channel_em_value.h"
-#include "device/value/channel_floating_point_sensor_value.h"
-#include "device/value/channel_gate_value.h"
-#include "device/value/channel_ic_value.h"
-#include "device/value/channel_onoff_value.h"
-#include "device/value/channel_rgbw_value.h"
-#include "device/value/channel_rs_value.h"
-#include "device/value/channel_temphum_value.h"
-#include "device/value/channel_thermostat_value.h"
-#include "device/value/channel_valve_value.h"
+#include "device/extended_value/channel_extended_value_factory.h"
+#include "device/value/channel_value_factory.h"
 #include "lck.h"
 #include "user/user.h"
 #include "vbt/value_based_triggers.h"
@@ -59,7 +44,8 @@ supla_device_channel::supla_device_channel(
     int param2, int param3, int param4, const char *text_param1,
     const char *text_param2, const char *text_param3, bool hidden,
     unsigned int flags, const char value[SUPLA_CHANNELVALUE_SIZE],
-    unsigned _supla_int_t validity_time_sec, const char *user_config,
+    unsigned _supla_int_t validity_time_sec,
+    supla_channel_extended_value *extended_value, const char *user_config,
     const char *properties)
     : id(id),
       number(number),
@@ -77,11 +63,11 @@ supla_device_channel::supla_device_channel(
   this->text_param3 = text_param3 ? strndup(text_param3, 255) : nullptr;
   this->flags = flags;
   this->offline = flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION;
-  this->extended_value = nullptr;
+  this->extended_value = extended_value;
+  this->logger_purpose_extended_value = nullptr;
   this->value_valid_to.tv_sec = 0;
   this->value_valid_to.tv_usec = 0;
   this->json_config = nullptr;
-  this->logger_data = nullptr;
   this->state = nullptr;
 
   if (validity_time_sec > 0) {
@@ -101,11 +87,6 @@ supla_device_channel::supla_device_channel(
       this->flags |= config->get_channel_user_flags();
       delete config;
     }
-  }
-
-  if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER ||
-      SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
-    logger_data = new _logger_purpose_t();
   }
 
   voltage_analyzers.set_channel_id(id);
@@ -133,12 +114,9 @@ supla_device_channel::~supla_device_channel() {
     delete json_config;
   }
 
-  if (logger_data) {
-    if (logger_data->extended_value) {
-      delete logger_data->extended_value;
-    }
-    delete logger_data;
-    logger_data = nullptr;
+  if (logger_purpose_extended_value) {
+    delete logger_purpose_extended_value;
+    logger_purpose_extended_value = nullptr;
   }
 
   if (state) {
@@ -312,33 +290,15 @@ supla_channel_extended_value *supla_device_channel::_get_extended_value(
     bool for_data_logger_purposes) {
   supla_channel_extended_value *result = nullptr;
   lock();
-  int func = get_func();
-  if (supla_channel_ic_extended_value::is_function_supported(func)) {
-    supla_channel_ic_value *icval = nullptr;
-    if (for_data_logger_purposes) {
-      if (logger_data) {
-        icval = new supla_channel_ic_value(logger_data->value);
-      }
-    } else {
-      icval = get_value<supla_channel_ic_value>();
-    }
 
-    if (icval) {
-      result = new supla_channel_ic_extended_value(
-          func, icval->get_ic_value(), get_text_param1(), get_text_param2(),
-          get_param2(), get_param3());
-
-      delete icval;
-    }
+  if (for_data_logger_purposes) {
+    result = logger_purpose_extended_value
+                 ? logger_purpose_extended_value->copy()
+                 : nullptr;
   } else {
-    if (for_data_logger_purposes) {
-      result = logger_data && logger_data->extended_value
-                   ? logger_data->extended_value->copy()
-                   : nullptr;
-    } else {
-      result = extended_value ? extended_value->copy() : nullptr;
-    }
+    result = extended_value ? extended_value->copy() : nullptr;
   }
+
   unlock();
   return result;
 }
@@ -532,7 +492,7 @@ bool supla_device_channel::set_value(
 
   new_value->apply_channel_properties(
       type, get_device()->get_connection()->get_protocol_version(), param1,
-      param2, param3, param4, json_config, logger_data);
+      param2, param3, param4, json_config);
 
   new_value->get_raw_value(this->value);
 
@@ -552,23 +512,25 @@ bool supla_device_channel::set_value(
   unlock();
 
   if (differ || validity_time_sec) {
-    database *db = new database();
+    char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
+    new_value->get_raw_value(current_value);
 
-    if (db->connect() == true) {
-      char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
-      new_value->get_raw_value(current_value);
-      db->update_channel_value(get_id(), get_user_id(), current_value,
-                               validity_time_sec ? *validity_time_sec : 0);
-    }
-
-    delete db;
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+    dao.update_channel_value(get_id(), get_user_id(), current_value,
+                             validity_time_sec ? *validity_time_sec : 0);
   }
 
-  bool convertible2extended = is_convertible2extended();
+  supla_channel_extended_value *eval = new_value->convert2extended(
+      json_config, func, text_param1, text_param2, param2, param3,
+      &logger_purpose_extended_value);
+
+  if (eval) {
+    set_extended_value(nullptr, eval);
+  }
 
   if (differ) {
-    on_value_changed(old_value, new_value, significant_change,
-                     convertible2extended);
+    on_value_changed(old_value, new_value, significant_change, eval != nullptr);
   }
 
   if (new_value) {
@@ -580,18 +542,6 @@ bool supla_device_channel::set_value(
   }
 
   return differ;
-}
-
-bool supla_device_channel::is_convertible2extended(void) {
-  switch (get_func()) {
-    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_GAS_METER:
-    case SUPLA_CHANNELFNC_IC_WATER_METER:
-    case SUPLA_CHANNELFNC_IC_HEAT_METER:
-      return true;
-  }
-
-  return false;
 }
 
 void supla_device_channel::on_value_changed(supla_channel_value *old_value,
@@ -640,17 +590,19 @@ void supla_device_channel::on_extended_value_changed(
                                  get_id(), old_value, new_value);
 }
 
-void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
+void supla_device_channel::set_extended_value(
+    TSuplaChannelExtendedValue *ev, supla_channel_extended_value *new_value) {
   lock();
 
   supla_channel_extended_value *old_value = extended_value;
-  supla_channel_extended_value *new_value = nullptr;
 
   if (ev) {
-    if (supla_channel_em_extended_value::is_ev_type_supported(ev->type)) {
-      supla_channel_em_extended_value *em = new supla_channel_em_extended_value(
-          ev, get_text_param1(), get_param2());
+    new_value = supla_channel_extended_value_factory::new_value(
+        ev, text_param1, param2, get_user());
+    supla_channel_em_extended_value *em =
+        dynamic_cast<supla_channel_em_extended_value *>(new_value);
 
+    if (em) {
       electricity_meter_config *config =
           new electricity_meter_config(json_config);
 
@@ -658,60 +610,47 @@ void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
         db_set_properties(config);
       }
 
-      if (logger_data && !config->should_be_added_to_history()) {
-        if (logger_data->extended_value) {
-          delete logger_data->extended_value;
+      if (!config->should_be_added_to_history()) {
+        if (logger_purpose_extended_value) {
+          delete logger_purpose_extended_value;
         }
 
-        logger_data->extended_value = em->copy();
+        logger_purpose_extended_value = em->copy();
       }
 
       {
         TElectricityMeter_ExtendedValue_V2 em_ev;
         if (em->get_raw_value(&em_ev)) {
           config->add_initial_values(flags, &em_ev);
-          em->set_raw_value(&em_ev);
+
+          delete em;
+          em = new supla_channel_em_extended_value(&em_ev, text_param1, param2);
+          new_value = em;
         }
       }
 
-      if (logger_data && config->should_be_added_to_history()) {
-        if (logger_data->extended_value) {
-          delete logger_data->extended_value;
+      if (config->should_be_added_to_history()) {
+        if (logger_purpose_extended_value) {
+          delete logger_purpose_extended_value;
         }
 
-        logger_data->extended_value = em->copy();
+        logger_purpose_extended_value = em->copy();
       }
 
       voltage_analyzers.add_samples(flags, config, em);
 
       delete config;
-      new_value = em;
-
-    } else if (supla_timer_state_extended_value::is_ev_type_supported(
-                   ev->type)) {
-      new_value = new supla_timer_state_extended_value(ev, get_user());
-    } else if (supla_channel_state_extended_value::is_ev_type_supported(
-                   ev->type)) {
-      new_value = new supla_channel_state_extended_value(ev);
-    } else if (supla_channel_and_timer_state_extended_value::
-                   is_ev_type_supported(ev->type)) {
-      new_value =
-          new supla_channel_and_timer_state_extended_value(ev, get_user());
-    } else if (supla_channel_thermostat_extended_value::is_ev_type_supported(
-                   ev->type)) {
-      new_value = new supla_channel_thermostat_extended_value(ev);
-    } else if (supla_channel_multi_extended_value::is_ev_type_supported(
-                   ev->type)) {
-      new_value = new supla_channel_multi_extended_value(ev);
     }
   }
 
   extended_value = new_value;
 
-  if (new_value && old_value && new_value->is_differ(old_value)) {
+  if (new_value &&
+      (!old_value || (old_value && new_value->is_differ(old_value)))) {
     new_value =
-        new_value->copy();  // We create a copy to call
-                            // on_extended_value_changed when we exit lock
+        new_value
+            ->copy();  // We create a copy to save the data to the database or
+                       // call on_extended_value_changed after leaving the lock
   } else {
     new_value = nullptr;
   }
@@ -719,13 +658,24 @@ void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
   unlock();
 
   if (new_value) {  // That means there are differences
-    on_extended_value_changed(old_value, new_value);
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+    dao.update_channel_extended_value(get_id(), get_user_id(), new_value);
+
+    if (old_value) {
+      on_extended_value_changed(old_value, new_value);
+    }
+
     delete new_value;  // This is a copy of the new value
   }
 
   if (old_value) {
     delete old_value;
   }
+}
+
+void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
+  set_extended_value(ev, nullptr);
 }
 
 void supla_device_channel::assign_rgbw_value(
@@ -995,67 +945,10 @@ supla_channel_value *supla_device_channel::_get_value(void) {
   get_value(value);
   int func = get_func();
 
-  if (!func) {
-    return new supla_channel_value(value);
-  }
+  lock();
+  supla_channel_value *result = supla_channel_value_factory::new_value(
+      value, type, func, get_user(), param2, param3);
+  unlock();
 
-  if (supla_channel_rs_value::is_function_supported(func)) {
-    supla_channel_rs_value *rs_value = new supla_channel_rs_value(value);
-    rs_value->update_sensor(get_device()->get_user(), get_param2());
-    return rs_value;
-  }
-
-  if (supla_channel_gate_value::is_function_supported(func)) {
-    supla_channel_gate_value *gate_value = new supla_channel_gate_value(value);
-
-    gate_value->update_sensors(get_device()->get_user(), get_param2(),
-                               get_param3());
-    return gate_value;
-  }
-
-  if (supla_channel_onoff_value::is_function_supported(func)) {
-    return new supla_channel_onoff_value(value);
-  }
-
-  if (supla_channel_rgbw_value::is_function_supported(func)) {
-    return new supla_channel_rgbw_value(value);
-  }
-
-  if (supla_channel_valve_value::is_function_supported(func)) {
-    return new supla_channel_valve_value(value);
-  }
-
-  if (supla_channel_temphum_value::is_function_supported(func)) {
-    return new supla_channel_temphum_value(get_type(), get_func(), value);
-  }
-
-  if (supla_channel_binary_sensor_value::is_function_supported(func)) {
-    return new supla_channel_binary_sensor_value(value);
-  }
-
-  if (supla_channel_floating_point_sensor_value::is_function_supported(func)) {
-    return new supla_channel_floating_point_sensor_value(value);
-  }
-
-  if (supla_channel_openclosed_value::is_function_supported(func)) {
-    return new supla_channel_openclosed_value(value);
-  }
-
-  if (supla_channel_thermostat_value::is_function_supported(func)) {
-    return new supla_channel_thermostat_value(value);
-  }
-
-  if (supla_channel_dgf_value::is_function_supported(func)) {
-    return new supla_channel_dgf_value(value);
-  }
-
-  if (supla_channel_ic_value::is_function_supported(func)) {
-    return new supla_channel_ic_value(value);
-  }
-
-  if (supla_channel_em_value::is_function_supported(func)) {
-    return new supla_channel_em_value(value);
-  }
-
-  return new supla_channel_value(value);
+  return result;
 }

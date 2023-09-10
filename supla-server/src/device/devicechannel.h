@@ -70,13 +70,13 @@ class supla_device_channel {
   struct timeval value_valid_to;  // during offline
   supla_channel_extended_value *extended_value;
   channel_json_config *json_config;
-  _logger_purpose_t *logger_data;
+  supla_channel_extended_value *logger_purpose_extended_value;
   supla_voltage_analyzers voltage_analyzers;
 
   void db_set_properties(channel_json_config *config);
   void db_set_params(int param1, int param2, int param3, int param4);
   supla_channel_value *_get_value(void);
-  bool is_convertible2extended(void);
+
   void on_value_changed(supla_channel_value *old_value,
                         supla_channel_value *new_value, bool significant_change,
                         bool convertible2extended);
@@ -84,6 +84,8 @@ class supla_device_channel {
                                  supla_channel_extended_value *new_value);
   supla_channel_extended_value *_get_extended_value(
       bool for_data_logger_purposes);
+  void set_extended_value(TSuplaChannelExtendedValue *ev,
+                          supla_channel_extended_value *new_value);
 
  public:
   supla_device_channel(supla_device *device, int id, int number, int type,
@@ -92,6 +94,7 @@ class supla_device_channel {
                        const char *text_param3, bool hidden, unsigned int flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
                        unsigned _supla_int_t validity_time_sec,
+                       supla_channel_extended_value *extended_value,
                        const char *user_config, const char *properties);
   virtual ~supla_device_channel();
 

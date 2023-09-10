@@ -22,9 +22,18 @@
 
 supla_channel_and_timer_state_extended_value::
     supla_channel_and_timer_state_extended_value(
-        const TSuplaChannelExtendedValue *value, supla_user *user)
-    : supla_timer_state_extended_value(nullptr, user) {
+        const TSuplaChannelExtendedValue *value)
+    : supla_timer_state_extended_value(nullptr, nullptr) {
   set_raw_value(value);
+}
+
+supla_channel_and_timer_state_extended_value::
+    supla_channel_and_timer_state_extended_value(
+        const TSuplaChannelExtendedValue *value, supla_user *user)
+    : supla_timer_state_extended_value(nullptr, nullptr) {
+  set_raw_value(value);
+  update_sender_name(user);
+  update_time();
 }
 
 supla_channel_and_timer_state_extended_value::
@@ -105,7 +114,7 @@ supla_channel_and_timer_state_extended_value::copy(  // NOLINT
   get_raw_value(&val);
 
   supla_channel_and_timer_state_extended_value *result =
-      new supla_channel_and_timer_state_extended_value(nullptr, get_user());
+      new supla_channel_and_timer_state_extended_value(nullptr, nullptr);
 
   result->set_raw_value(&val);
 

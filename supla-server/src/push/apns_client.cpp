@@ -91,7 +91,9 @@ bool supla_apns_client::_send(supla_pn_gateway_access_token *token,
 
   string topic = "apns-topic: " + token->get_extra_field("bundle_id");
   get_curl_adapter()->append_header(topic.c_str());
+
   get_curl_adapter()->append_header("apns-push-type: alert");
+  get_curl_adapter()->append_header("apns-priority: 10");
 
   string endpoint = token->get_url(recipient->is_development_env());
   size_t pos = endpoint.find("{device_token}");
@@ -133,7 +135,8 @@ bool supla_apns_client::_send(supla_pn_gateway_access_token *token,
         }
       }
 
-      if (reason == "BadDeviceToken") {
+      if (reason == "BadDeviceToken" ||
+          get_curl_adapter()->get_response_code() == 410) {
         recipient->set_exists(false);
       } else {
         supla_log(LOG_ERR,
