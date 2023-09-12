@@ -451,6 +451,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_DEPTHSENSOR 210           // ver. >= 5
 #define SUPLA_CHANNELFNC_DISTANCESENSOR 220        // ver. >= 5
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW 230  // ver. >= 8
+#define SUPLA_CHANNELFNC_HOTELCARDSENSOR 235       // ver. >= 21
 #define SUPLA_CHANNELFNC_MAILSENSOR 240            // ver. >= 8
 #define SUPLA_CHANNELFNC_WINDSENSOR 250            // ver. >= 8
 #define SUPLA_CHANNELFNC_PRESSURESENSOR 260        // ver. >= 8
