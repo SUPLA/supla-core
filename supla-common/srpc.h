@@ -183,6 +183,7 @@ union TsrpcDataPacketData {
   TSC_RegisterPnClientTokenResult *sc_register_pn_client_token_result;
   TSDS_SetChannelConfig *sds_set_channel_config_request;
   TSDS_SetChannelConfigResult *sds_set_channel_config_result;
+  TSD_ChannelConfigFinished *sd_channel_config_finished;
   TSDS_SetDeviceConfig *sds_set_device_config_request;
   TSDS_SetDeviceConfigResult *sds_set_device_config_result;
   TSCS_ChannelConfig *scs_channel_config;
@@ -315,6 +316,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_channel_config_request(
     void *_srpc, TSDS_SetChannelConfig *config);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channel_config_result(
     void *_srpc, TSDS_SetChannelConfigResult *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_channel_config_finished(
+    void *_srpc, TSD_ChannelConfigFinished *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_device_config_request(
     void *_srpc, TSDS_SetDeviceConfig *config);
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_device_config_result(
