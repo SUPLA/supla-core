@@ -39,8 +39,8 @@ void supla_mqtt_channel_message_provider::channel_type_to_string(
   // Names adapted to
   // https://github.com/SUPLA/supla-cloud/blob/b0afbfba770c4426154684668782aacbab82d0ee/src/SuplaBundle/Enums/ChannelType.php#L26
   switch (type) {
-    case SUPLA_CHANNELTYPE_SENSORNO:
-      snprintf(buf, buf_size, "SENSORNO");
+    case SUPLA_CHANNELTYPE_BINARYSENSOR:
+      snprintf(buf, buf_size, "BINARYSENSOR");
       break;
     case SUPLA_CHANNELTYPE_SENSORNC:
       snprintf(buf, buf_size, "SENSORNC");
@@ -977,6 +977,7 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
         char *device_class = NULL;
         char energy[] = "energy";
         char gas[] = "gas";
+        char water[] = "water";
 
         if (func == SUPLA_CHANNELFNC_IC_ELECTRICITY_METER &&
             (icv->get_custom_unit() == "kWh" ||
@@ -984,8 +985,16 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
           device_class = energy;
         } else if (func == SUPLA_CHANNELFNC_IC_GAS_METER &&
                    (icv->get_custom_unit() == "m³" ||
-                    icv->get_custom_unit() == "ft³")) {
+                    icv->get_custom_unit() == "ft³" ||
+                    icv->get_custom_unit() == "CCF")) {
           device_class = gas;
+        } else if (func == SUPLA_CHANNELFNC_IC_WATER_METER &&
+                   (icv->get_custom_unit() == "m³" ||
+                    icv->get_custom_unit() == "ft³" ||
+                    icv->get_custom_unit() == "CCF" ||
+                    icv->get_custom_unit() == "L" ||
+                    icv->get_custom_unit() == "gal")) {
+          device_class = water;
         }
 
         result = ha_sensor(icv->get_custom_unit().c_str(), 3, 0, true,

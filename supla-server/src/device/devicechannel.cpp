@@ -313,7 +313,7 @@ void supla_device_channel::get_double(double *value) {
   get_value(current_value);
 
   switch (type) {
-    case SUPLA_CHANNELTYPE_SENSORNO:
+    case SUPLA_CHANNELTYPE_BINARYSENSOR:
     case SUPLA_CHANNELTYPE_SENSORNC:
       *value = current_value[0] == 1 ? 1 : 0;
       break;
