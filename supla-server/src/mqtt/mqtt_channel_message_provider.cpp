@@ -981,7 +981,10 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
 
         if (func == SUPLA_CHANNELFNC_IC_ELECTRICITY_METER &&
             (icv->get_custom_unit() == "kWh" ||
-             icv->get_custom_unit() == "Wh")) {
+             icv->get_custom_unit() == "Wh" ||
+             icv->get_custom_unit() == "MWh" ||
+             icv->get_custom_unit() == "MJ" ||
+             icv->get_custom_unit() == "GJ")) {
           device_class = energy;
         } else if (func == SUPLA_CHANNELFNC_IC_GAS_METER &&
                    (icv->get_custom_unit() == "m³" ||
