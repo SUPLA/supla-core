@@ -34,6 +34,8 @@ class hvac_config : public channel_json_config {
   unsigned char string_to_aux_thermometer_type(const std::string &type);
   std::string alg_to_string(unsigned _supla_int16_t alg);
   unsigned _supla_int16_t string_to_alg(const std::string &alg);
+  std::string subfunction_to_string(unsigned char subfunction);
+  unsigned char string_to_subfunction(const std::string &subfunction);
   void add_algorithm_to_array(cJSON *root, cJSON *algs,
                               TChannelConfig_HVAC *config,
                               unsigned _supla_int16_t alg);

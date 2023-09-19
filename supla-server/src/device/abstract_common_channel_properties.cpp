@@ -23,8 +23,8 @@
 #include "db/db_access_provider.h"
 #include "device/device_dao.h"
 #include "jsonconfig/channel/action_trigger_config.h"
+#include "jsonconfig/channel/alt_weekly_schedule_config.h"
 #include "jsonconfig/channel/hvac_config.h"
-#include "jsonconfig/channel/weekly_schedule_config.h"
 #include "proto.h"
 
 using std::vector;
@@ -38,7 +38,7 @@ supla_abstract_common_channel_properties::
 void supla_abstract_common_channel_properties::add_relation(
     std::vector<supla_channel_relation> *relations, int channel_id,
     int parent_id, short relation_type) {
-  if (!channel_id || !parent_id || !relation_type) {
+  if (!channel_id || !parent_id) {
     return;
   }
 
@@ -89,8 +89,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                      CHANNEL_RELATION_TYPE_METER);
         break;
 
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
         channel_json_config *json_config = get_json_config();
@@ -102,10 +101,16 @@ void supla_abstract_common_channel_properties::get_channel_relations(
 
             bool find_main =
                 hvac.MainThermometerChannelNo != get_channel_number();
-            bool find_aux = hvac.AuxThermometerType >=
-                                SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
-                            hvac.AuxThermometerType <=
-                                SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER;
+
+            bool find_aux =
+                hvac.AuxThermometerType >=
+                    SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
+                hvac.AuxThermometerType <=
+                    SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER &&
+                hvac.AuxThermometerChannelNo != get_channel_number();
+
+            bool find_sensor =
+                hvac.BinarySensorChannelNo != get_channel_number();
 
             for_each([&](supla_abstract_common_channel_properties *props,
                          bool *will_continue) -> void {
@@ -133,6 +138,15 @@ void supla_abstract_common_channel_properties::get_channel_relations(
 
                   find_aux = false;
                 }
+
+                if (find_sensor &&
+                    hvac.BinarySensorChannelNo == props->get_channel_number()) {
+                  if (props->get_type() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
+                    add_relation(relations, props->get_id(), get_id(),
+                                 CHANNEL_RELATION_TYPE_DEFAULT);
+                  }
+                  find_sensor = false;
+                }
               }
 
               *will_continue = find_main || find_aux;
@@ -145,7 +159,10 @@ void supla_abstract_common_channel_properties::get_channel_relations(
   }
 
   if (kind == relation_any || kind == relation_with_parent_channel) {
-    switch (get_func()) {
+    int func = get_func();
+    int type = get_type();
+
+    switch (func) {
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
@@ -166,26 +183,34 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         add_relation(relations, get_id(), get_param4(),
                      CHANNEL_RELATION_TYPE_METER);
         break;
-      case SUPLA_CHANNELFNC_THERMOMETER:
-      case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
-        int device_id = get_device_id();
+    }
 
-        for_each([&](supla_abstract_common_channel_properties *props,
-                     bool *will_continue) -> void {
-          if (props->get_device_id() != device_id) {
-            return;
-          }
-          switch (props->get_func()) {
-            case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
-            case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
-            case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
-            case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+    if (type == SUPLA_CHANNELTYPE_BINARYSENSOR ||
+        func == SUPLA_CHANNELFNC_THERMOMETER ||
+        func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE) {
+      int device_id = get_device_id();
 
-              channel_json_config *json_config = props->get_json_config();
-              if (json_config) {
-                hvac_config config(json_config);
-                TChannelConfig_HVAC hvac = {};
-                if (config.get_config(&hvac)) {
+      for_each([&](supla_abstract_common_channel_properties *props,
+                   bool *will_continue) -> void {
+        if (props->get_device_id() != device_id) {
+          return;
+        }
+        switch (props->get_func()) {
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+          case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+
+            channel_json_config *json_config = props->get_json_config();
+            if (json_config) {
+              hvac_config config(json_config);
+              TChannelConfig_HVAC hvac = {};
+              if (config.get_config(&hvac)) {
+                if (type == SUPLA_CHANNELTYPE_BINARYSENSOR) {
+                  if (hvac.BinarySensorChannelNo == get_channel_number()) {
+                    add_relation(relations, get_id(), props->get_id(),
+                                 CHANNEL_RELATION_TYPE_DEFAULT);
+                  }
+                } else {
                   if (hvac.MainThermometerChannelNo == get_channel_number()) {
                     add_relation(relations, get_id(), props->get_id(),
                                  CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
@@ -200,15 +225,13 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                                  hvac.AuxThermometerType + 3);
                   }
                 }
-                delete json_config;
               }
+              delete json_config;
+            }
 
-              break;
-          }
-        });
-      }
-
-      break;
+            break;
+        }
+      });
     }
   }
 }
@@ -253,12 +276,18 @@ void supla_abstract_common_channel_properties::get_config(
 
   memset(config, 0, SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
-      (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
-    json_to_config<weekly_schedule_config, TChannelConfig_WeeklySchedule>(
-        config, config_size);
+  if (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE) {
+    if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE) {
+      json_to_config<weekly_schedule_config, TChannelConfig_WeeklySchedule>(
+          config, config_size);
 
-    return;
+      return;
+    } else if (config_type == SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE) {
+      json_to_config<alt_weekly_schedule_config, TChannelConfig_WeeklySchedule>(
+          config, config_size);
+
+      return;
+    }
   }
 
   if (config_type != SUPLA_CONFIG_TYPE_DEFAULT) {
@@ -365,12 +394,20 @@ int supla_abstract_common_channel_properties::set_user_config(
     json_config = new hvac_config();
     static_cast<hvac_config *>(json_config)
         ->set_config((TChannelConfig_HVAC *)config);
-  } else if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
+  } else if ((config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE ||
+              config_type == SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE) &&
              config_size == sizeof(TChannelConfig_WeeklySchedule) &&
              (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
-    json_config = new weekly_schedule_config();
-    static_cast<weekly_schedule_config *>(json_config)
-        ->set_config((TChannelConfig_WeeklySchedule *)config);
+    if (config_type == SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE) {
+      json_config = new alt_weekly_schedule_config();
+      static_cast<alt_weekly_schedule_config *>(json_config)
+          ->set_config((TChannelConfig_WeeklySchedule *)config);
+    } else {
+      json_config = new weekly_schedule_config();
+      static_cast<weekly_schedule_config *>(json_config)
+          ->set_config((TChannelConfig_WeeklySchedule *)config);
+    }
+
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }

@@ -820,8 +820,7 @@ bool supla_device_channels::set_on(const supla_caller &caller, int channel_id,
         break;
       }
 
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
         supla_channel_hvac_value *hvac_value =
@@ -1230,8 +1229,7 @@ void supla_device_channels::timer_arm(const supla_caller &caller,
       case SUPLA_CHANNELFNC_STAIRCASETIMER:
         value[0] = on ? 1 : 0;
         break;
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
         supla_channel_hvac_value *hvac_value =

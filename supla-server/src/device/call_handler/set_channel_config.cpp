@@ -84,7 +84,8 @@ void supla_ch_set_channel_config::handle_call(
 
                 TSC_ChannelConfigUpdateOrResult cfg_result = {};
                 cfg_result.Result = SUPLA_CONFIG_RESULT_TRUE;
-                channel->get_config(&cfg_result.Config, request->ConfigType, 0);
+                channel->get_config(&cfg_result.Config, request->ConfigType,
+                                    nullptr, 0);
 
                 client->get_connection()
                     ->get_srpc_adapter()

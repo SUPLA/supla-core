@@ -1027,6 +1027,7 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
     case SUPLA_CHANNELFNC_MAILSENSOR:
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
       return get_sensor_message_at_index(index, topic_prefix, topic_name,
                                          message, message_size);
 

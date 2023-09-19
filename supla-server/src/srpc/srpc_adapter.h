@@ -147,6 +147,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sc_async_channel_config_update_or_result(
       TSC_ChannelConfigUpdateOrResult *config);  // ver. >= 21
+
+  virtual _supla_int_t sd_async_channel_config_finished(
+      TSD_ChannelConfigFinished *fin);  // ver. >= 21
 };
 
 #endif /* SRPC_ADAPTER_H_ */

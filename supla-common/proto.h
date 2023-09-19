@@ -376,8 +376,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELEXTENDEDVALUE_SIZE 1024
 #endif
 
-#define SUPLA_CHANNELTYPE_SENSORNO 1000        // name DEPRECATED
-                                               // use BINARYSENSOR instead
+//#define SUPLA_CHANNELTYPE_SENSORNO 1000        // name DEPRECATED
+// use BINARYSENSOR instead
 #define SUPLA_CHANNELTYPE_BINARYSENSOR 1000
 #define SUPLA_CHANNELTYPE_SENSORNC 1010        // DEPRECATED
 #define SUPLA_CHANNELTYPE_DISTANCESENSOR 1020  // ver. >= 5
@@ -555,7 +555,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // type: TDeviceConfig_ButtonVolume
 #define SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME (1ULL << 2)  // v. >= 21
 // type: TDeviceConfig_DisableUserInterface
-#define SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE (1ULL << 3)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE \
+  (1ULL << 3)  // v. >= 21
 // type: TDeviceConfig_AutomaticTimeSync
 #define SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC (1ULL << 4)  // v. >= 21
 // type: TDeviceConfig_ScreensaverDelay
@@ -803,7 +804,7 @@ typedef struct {
   _supla_int16_t
       SetpointTemperatureHeat;  // * 0.01 Celcius degree - used for heating
   _supla_int16_t
-      SetpointTemperatureCool;     // * 0.01 - Celcius degree used for cooling
+      SetpointTemperatureCool;    // * 0.01 - Celcius degree used for cooling
   unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
 } THVACValue;
 
@@ -1219,6 +1220,7 @@ typedef struct {
                                                          // struct!
 } TSC_SuplaChannelGroupRelationPack;                     // ver. >= 9
 
+#define CHANNEL_RELATION_TYPE_DEFAULT 0
 #define CHANNEL_RELATION_TYPE_OPENING_SENSOR 1
 #define CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR 2
 #define CHANNEL_RELATION_TYPE_METER 3
@@ -1341,7 +1343,7 @@ typedef struct {
   _supla_int16_t
       SetpointTemperatureHeat;  // * 0.01 Celcius degree - used for heating
   _supla_int16_t
-      SetpointTemperatureCool;     // * 0.01 - Celcius degree used for cooling
+      SetpointTemperatureCool;    // * 0.01 - Celcius degree used for cooling
   unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
 } TAction_HVAC_Parameters;
 
@@ -2417,7 +2419,7 @@ typedef struct {
   unsigned _supla_int64_t ModesAvailable;
   // configured mode (settable)
   unsigned _supla_int64_t ScreensaverMode;  // SUPLA_DEVCFG_SCREENSAVER_MODE_
-} TDeviceConfig_ScreensaverMode;  // v. >= 21
+} TDeviceConfig_ScreensaverMode;            // v. >= 21
 
 /********************************************
  * CHANNEL CONFIG STRUCTURES
@@ -2683,16 +2685,16 @@ typedef struct {
 
   union {
     _supla_int_t AuxThermometerChannelId;
-    // when aux thermomter is not used, channel number is set to thermostat
-    // channel number
-    unsigned char AuxThermometerChannelNo;
+    unsigned char
+        AuxThermometerChannelNo;  // If the channel number points to itself, it
+                                  // means that the aux thermometer is not set.
   };
 
   union {
     _supla_int_t BinarySensorChannelId;
-    // when binary sensor function is not used, channel number is set to
-    // thermostat channel number
-    unsigned char BinarySensorChannelNo;
+    unsigned char
+        BinarySensorChannelNo;  // If the channel number points to itself, it
+                                // means that the binary sensor is not set.
   };
 
   // SUPLA_HVAC_AUX_THERMOMETER_TYPE_

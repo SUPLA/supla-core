@@ -61,16 +61,16 @@ void supla_action_hvac_parameters::apply_on(supla_channel_hvac_value *value) {
     value->set_mode(params.Mode);
   }
 
-  if (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET) {
-    value->set_temperature_min(params.SetpointTemperatureMin);
+  if (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET) {
+    value->set_temperature_heat(params.SetpointTemperatureHeat);
   } else {
-    value->set_temperature_min_to_null();
+    value->set_temperature_heat_to_null();
   }
 
-  if (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET) {
-    value->set_temperature_max(params.SetpointTemperatureMax);
+  if (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET) {
+    value->set_temperature_cool(params.SetpointTemperatureCool);
   } else {
-    value->set_temperature_max_to_null();
+    value->set_temperature_cool_to_null();
   }
 }
 
@@ -80,6 +80,6 @@ unsigned int supla_action_hvac_parameters::get_duration_sec(void) {
 
 bool supla_action_hvac_parameters::is_any_param_set(void) {
   return params.Mode != SUPLA_HVAC_MODE_NOT_SET ||
-         (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET) ||
-         (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET);
+         (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET) ||
+         (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET);
 }

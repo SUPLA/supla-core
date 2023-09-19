@@ -317,7 +317,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_channel_config_request(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channel_config_result(
     void *_srpc, TSDS_SetChannelConfigResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_channel_config_finished(
-    void *_srpc, TSD_ChannelConfigFinished *result);
+    void *_srpc, TSD_ChannelConfigFinished *fin);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_device_config_request(
     void *_srpc, TSDS_SetDeviceConfig *config);
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_device_config_result(

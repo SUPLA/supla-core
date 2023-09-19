@@ -542,7 +542,8 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_CS_CALL_SET_DEVICE_CONFIG,
               SUPLA_SC_CALL_SET_DEVICE_CONFIG_RESULT,
               SUPLA_CS_CALL_GET_DEVICE_CONFIG,
-              SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE};
+              SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE,
+              SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED};
   }
 
   return {};
@@ -3720,6 +3721,11 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_set_channel_config_request,
                                      scs_channel_config,
                                      SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
                                      ConfigSize);
+
+SRPC_CALL_BASIC_TEST(srpc_sd_async_channel_config_finished,
+                     TSD_ChannelConfigFinished,
+                     SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED, 24,
+                     sd_channel_config_finished);
 
 //---------------------------------------------------------
 // SET DEVICE CONFIG

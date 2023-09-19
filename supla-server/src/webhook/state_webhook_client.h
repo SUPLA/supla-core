@@ -75,6 +75,7 @@ class supla_state_webhook_client {
   bool roller_shutter_opening_sensor_report(void);
   bool roof_window_opening_sensor_report(void);
   bool window_opening_sensor_report(void);
+  bool hotel_card_sensor_report(void);
   bool mail_sensor_report(void);
   bool roller_shutter_report(void);
   bool roof_window_report(void);

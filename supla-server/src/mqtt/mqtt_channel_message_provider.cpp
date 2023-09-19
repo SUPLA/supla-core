@@ -244,6 +244,9 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       snprintf(buf, buf_size, "OPENINGSENSOR_WINDOW");
       break;
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+      snprintf(buf, buf_size, "HOTELCARDSENSOR");
+      break;
     case SUPLA_CHANNELFNC_MAILSENSOR:
       snprintf(buf, buf_size, "MAILSENSOR");
       break;
@@ -424,6 +427,9 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "Window opening sensor");
+      break;
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Hotel card sensor");
       break;
     case SUPLA_CHANNELFNC_MAILSENSOR:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Mail sensor");
@@ -1465,6 +1471,7 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
       break;
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
     case SUPLA_CHANNELFNC_MAILSENSOR:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
       return ha_binary_sensor(NULL, topic_prefix, topic_name, message,
                               message_size);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:

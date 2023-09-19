@@ -46,10 +46,13 @@ jobject supla_cc_hvac_mode_to_jobject(JNIEnv *env, unsigned char mode) {
       snprintf(enum_name, sizeof(enum_name), "DRY");
       break;
     case SUPLA_HVAC_MODE_CMD_TURN_ON:
-      snprintf(enum_name, sizeof(enum_name), "TURN_ON");
+      snprintf(enum_name, sizeof(enum_name), " CMD_TURN_ON");
       break;
     case SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE:
-      snprintf(enum_name, sizeof(enum_name), "WEEKLY_SCHEDULE");
+      snprintf(enum_name, sizeof(enum_name), " CMD_WEEKLY_SCHEDULE");
+      break;
+    case SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL:
+      snprintf(enum_name, sizeof(enum_name), " CMD_SWITCH_TO_MANUAL");
       break;
     default:
       snprintf(enum_name, sizeof(enum_name), "NOT_SET");
@@ -82,8 +85,8 @@ jobject supla_cc_ws_program_to_jobject(JNIEnv *env, unsigned char index,
 
   jobject hvac_mode = supla_cc_hvac_mode_to_jobject(env, program->Mode);
 
-  jshort setpoint_temperature_min = program->SetpointTemperatureMin;
-  jshort setpoint_temperature_max = program->SetpointTemperatureMax;
+  jshort setpoint_temperature_heat = program->SetpointTemperatureHeat;
+  jshort setpoint_temperature_cool = program->SetpointTemperatureCool;
 
   jclass program_cls = env->FindClass(
       "org/supla/android/data/source/remote/hvac/SuplaWeeklyScheduleProgram");
@@ -96,8 +99,8 @@ jobject supla_cc_ws_program_to_jobject(JNIEnv *env, unsigned char index,
 
   jobject result =
       env->NewObject(program_cls, init_method, enum_program, hvac_mode,
-                     supla_NewShort(env, setpoint_temperature_min),
-                     supla_NewShort(env, setpoint_temperature_max));
+                     supla_NewShort(env, setpoint_temperature_heat),
+                     supla_NewShort(env, setpoint_temperature_cool));
 
   env->DeleteLocalRef(program_cls);
 
@@ -279,26 +282,26 @@ void supla_cc_ws_get_programs(JNIEnv *env, jobject programs,
         env, mode_enum,
         "org/supla/android/data/source/remote/hvac/SuplaHvacMode");
 
-    jshort setpoint_temperature_min = 0;
+    jshort setpoint_temperature_heat = 0;
 
     if (!supla_CallShortObjectMethod(env, program_cls, item,
-                                     "getSetpointTemperatureMin",
-                                     &setpoint_temperature_min)) {
-      setpoint_temperature_min = 0;
+                                     "getSetpointTemperatureHeat",
+                                     &setpoint_temperature_heat)) {
+      setpoint_temperature_heat = 0;
     }
 
-    jshort setpoint_temperature_max = 0;
+    jshort setpoint_temperature_cool = 0;
     if (!supla_CallShortObjectMethod(env, program_cls, item,
-                                     "getSetpointTemperatureMax",
-                                     &setpoint_temperature_max)) {
-      setpoint_temperature_max = 0;
+                                     "getSetpointTemperatureCool",
+                                     &setpoint_temperature_cool)) {
+      setpoint_temperature_cool = 0;
     }
 
     if (prog_id > 0 && prog_id < 5) {
       prog_id--;
       ws->Program[prog_id].Mode = mode_id;
-      ws->Program[prog_id].SetpointTemperatureMin = setpoint_temperature_min;
-      ws->Program[prog_id].SetpointTemperatureMax = setpoint_temperature_max;
+      ws->Program[prog_id].SetpointTemperatureHeat = setpoint_temperature_heat;
+      ws->Program[prog_id].SetpointTemperatureCool = setpoint_temperature_cool;
     }
 
     env->DeleteLocalRef(item);

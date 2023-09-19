@@ -414,6 +414,26 @@ TEST_F(StateWebhookRequestTest, sendWindowOpeningSensorReport_Disconnected) {
            (supla_channel_value *)nullptr, expectedPayload);
 }
 
+TEST_F(StateWebhookRequestTest, sendHotelCardSensorReport_Connected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"HOTELCARDSENSOR\","
+      "\"timestamp\":1600097258,\"state\":{\"hi\":true,\"connected\":true}}";
+
+  makeTest(SUPLA_CHANNELFNC_HOTELCARDSENSOR, true,
+           new supla_channel_binary_sensor_value(true), expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest, sendHotelCardSensorReport_Disconnected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"HOTELCARDSENSOR\","
+      "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
+
+  makeTest(SUPLA_CHANNELFNC_HOTELCARDSENSOR, false,
+           (supla_channel_value *)nullptr, expectedPayload);
+}
+
 TEST_F(StateWebhookRequestTest, sendMailSensorReport_Connected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","

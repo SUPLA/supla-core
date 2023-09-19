@@ -73,6 +73,8 @@ class supla_client_channel : public supla_client_objcontainer_item,
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties);
 
+  unsigned char get_real_config_type(unsigned char config_type);
+
  public:
   supla_client_channel(supla_client_channels *Container, int Id,
                        unsigned char channel_number, int DeviceId,
@@ -121,7 +123,9 @@ class supla_client_channel : public supla_client_objcontainer_item,
   unsigned _supla_int64_t getValueValidityTimeUSec(void);
   void resetValueValidityTime(void);
   void get_config(TSCS_ChannelConfig *config, unsigned char config_type,
-                  unsigned _supla_int_t flags);
+                  unsigned char *real_config_type, unsigned _supla_int_t flags);
+  int set_user_config(unsigned char config_type,
+                      unsigned _supla_int16_t config_size, char *config);
 };
 
 #endif /* CLIENTCHANNEL_H_ */

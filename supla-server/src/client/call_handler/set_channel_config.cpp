@@ -49,6 +49,8 @@ void supla_client_ch_set_channel_config::handle_call(
   // SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, remember to convert channel
   // identifiers/numbers!
 
+  unsigned char real_config_type = config->ConfigType;
+
   if (rd->data.scs_channel_config != nullptr) {
     config = rd->data.scs_channel_config;
 
@@ -62,7 +64,8 @@ void supla_client_ch_set_channel_config::handle_call(
               cfg_result.Result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
             }
 
-            channel->get_config(&cfg_result.Config, config->ConfigType, 0);
+            channel->get_config(&cfg_result.Config, config->ConfigType,
+                                &real_config_type, 0);
 
             if (cfg_result.Result == SUPLA_CONFIG_RESULT_TRUE) {
               json_config = channel->get_json_config();
@@ -104,7 +107,7 @@ void supla_client_ch_set_channel_config::handle_call(
             channel->set_json_config(
                 json_config ? new channel_json_config(json_config, true)
                             : nullptr);
-            channel->send_config_to_device(config->ConfigType);
+            channel->send_config_to_device(real_config_type);
           });
     }
   }
