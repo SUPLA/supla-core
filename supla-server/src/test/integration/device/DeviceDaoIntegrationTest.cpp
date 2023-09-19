@@ -182,8 +182,8 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
         "\"antiFreezeAndOverheatProtectionEnabled\":false,"
         "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOnTimeS\":0,"
         "\"minOffTimeS\":0,\"outputValueOnError\":0,\"subfunction\":\"NotSet\","
-        "\"setpointChangeKeepsWeeklyScheduleMode\":false,\"temperatures\":{}}"
-        "}");
+        "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
+        "\"temperatures\":{}}}");
     free(config_str);
   }
 
