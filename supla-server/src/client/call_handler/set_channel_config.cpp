@@ -49,10 +49,11 @@ void supla_client_ch_set_channel_config::handle_call(
   // SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, remember to convert channel
   // identifiers/numbers!
 
-  unsigned char real_config_type = config->ConfigType;
+  unsigned char real_config_type = SUPLA_CONFIG_TYPE_DEFAULT;
 
   if (rd->data.scs_channel_config != nullptr) {
     config = rd->data.scs_channel_config;
+    real_config_type = config->ConfigType;
 
     if (config->ChannelId) {
       client->get_channels()->channel_access(
