@@ -76,7 +76,6 @@ jobject supla_cc_hvac_algorithm_to_jobject(JNIEnv *env,
 jobject supla_cc_hvac_avil_algs_to_jobject(
     JNIEnv *env, unsigned _supla_int16_t available_algorithms) {
   jobject jarr = supla_NewArrayList(env);
-  nullptr;
 
   if (available_algorithms & SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE) {
     jobject alg = supla_cc_hvac_algorithm_to_jobject(
