@@ -73,6 +73,27 @@ jobject supla_cc_hvac_algorithm_to_jobject(JNIEnv *env,
       enum_name);
 }
 
+jobject supla_cc_hvac_subfunction_to_jobject(JNIEnv *env,
+                                             unsigned char subfunction) {
+  char enum_name[10] = {};
+
+  switch (subfunction) {
+    case SUPLA_HVAC_SUBFUNCTION_HEAT:
+      snprintf(enum_name, sizeof(enum_name), "HEAT");
+      break;
+    case SUPLA_HVAC_SUBFUNCTION_COOL:
+      snprintf(enum_name, sizeof(enum_name), "COOL");
+      break;
+    default:
+      snprintf(enum_name, sizeof(enum_name), "NOT_SET");
+      break;
+  }
+
+  return supla_NewEnum(
+      env, "org/supla/android/data/source/remote/hvac/SuplaHvacAlgorithm",
+      enum_name);
+}
+
 jobject supla_cc_hvac_avil_algs_to_jobject(
     JNIEnv *env, unsigned _supla_int16_t available_algorithms) {
   jobject jarr = supla_NewArrayList(env);
@@ -196,6 +217,7 @@ jobject supla_cc_hvac_to_jobject(JNIEnv *env, _supla_int_t channel_id,
       "(ILjava/lang/Integer;IILorg/supla/android/data/source/remote/hvac/"
       "SuplaHvacThermometerType;ZLjava/util/List;Lorg/supla/android/data/"
       "source/remote/hvac/SuplaHvacAlgorithm;IIILorg/supla/android/data/source/"
+      "remote/hvac/ThermostatSubfunction;ZLorg/supla/android/data/source/"
       "remote/hvac/SuplaHvacTemperatures;)V");
 
   jint min_on_time_s = hvac->MinOnTimeS;
@@ -211,6 +233,9 @@ jobject supla_cc_hvac_to_jobject(JNIEnv *env, _supla_int_t channel_id,
   jobject used_algorithm =
       supla_cc_hvac_algorithm_to_jobject(env, hvac->UsedAlgorithm);
 
+  jobject subfunction =
+      supla_cc_hvac_subfunction_to_jobject(env, hvac->Subfunction);
+
   jobject temperatures =
       supla_cc_vhac_temperatures_to_jobject(env, &hvac->Temperatures);
 
@@ -220,7 +245,10 @@ jobject supla_cc_hvac_to_jobject(JNIEnv *env, _supla_int_t channel_id,
       aux_thermometer_type,
       hvac->AntiFreezeAndOverheatProtectionEnabled ? JNI_TRUE : JNI_FALSE,
       available_algorithms, used_algorithm, min_on_time_s, min_off_time_s,
-      output_value_on_error, temperatures);
+      output_value_on_error,
+      hvac->TemperatureSetpointChangeSwitchesToManualMode ? JNI_TRUE
+                                                          : JNI_FALSE,
+      subfunction, temperatures);
 
   env->DeleteLocalRef(config_cls);
 
