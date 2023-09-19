@@ -96,7 +96,7 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
           env, mode_enum,
           "org/supla/android/data/source/remote/hvac/SuplaHvacMode");
     }
-    it jshort s = 0;
+    jshort s = 0;
 
     if (supla_CallShortObjectMethod(env, cls, action_params,
                                     "getSetpointTemperatureHeat", &s)) {
