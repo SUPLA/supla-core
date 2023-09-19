@@ -771,6 +771,7 @@ typedef struct {
 // 0 - heat subfunction
 // 1 - cool subfunction
 #define SUPLA_HVAC_VALUE_FLAG_HEAT_OR_COOL (1ULL << 10)
+#define SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE_TEMPORAL_OVERRIDE (1ULL << 11)
 
 // HVAC modes are used in channel value (as a command from server or
 // as a status response from device to server) and in weekly schedules
@@ -2310,6 +2311,8 @@ typedef struct {
 #define SUPLA_CONFIG_TYPE_DEFAULT 0
 // Weekly schedule
 #define SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE 2
+// For SUPLA_CHANNELFNC_HVAC_THERMOSTAT, ALT weekly schedule is used for
+// cooling subfuction, while standard weelkly schedule is used for heating
 #define SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE 3
 
 /********************************************
@@ -2711,7 +2714,8 @@ typedef struct {
                                         // be disabled
   signed char OutputValueOnError;       // -100 cool, 0 off (default), 100 heat
   unsigned char Subfunction;            // SUPLA_HVAC_SUBFUNCTION_
-  unsigned char SetpointChangeKeepsWeeklyScheduleMode;  // 0 - off, 1 - on
+  unsigned char TemperatureSetpointChangeSwitchesToManualMode;  // 0 - off,
+                                                                // 1 - on (def)
   unsigned char Reserved[50];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
