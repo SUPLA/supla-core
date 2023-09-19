@@ -93,6 +93,7 @@ bool supla_alexa_change_report_request::make_request(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
       client.add_contact_sensor();
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
@@ -141,6 +142,7 @@ bool supla_alexa_change_report_request::is_function_allowed(int func) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
       return true;
     default:
       return false;

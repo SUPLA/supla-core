@@ -62,6 +62,7 @@ bool supla_channel_binary_sensor_value::is_function_supported(int func) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
     case SUPLA_CHANNELFNC_MAILSENSOR:
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
       return true;
   }
 

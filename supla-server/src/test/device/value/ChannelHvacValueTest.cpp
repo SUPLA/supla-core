@@ -49,4 +49,11 @@ TEST_F(ChannelHvacValueTest, turnOff) {
   EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_OFF);
 }
 
+TEST_F(ChannelHvacValueTest, switchToManual) {
+  supla_channel_hvac_value value;
+  EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_NOT_SET);
+  value.switch_to_manual();
+  EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL);
+}
+
 }  // namespace testing

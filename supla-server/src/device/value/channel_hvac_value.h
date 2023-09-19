@@ -28,20 +28,21 @@ class supla_channel_hvac_value : public supla_channel_value {
   static bool is_function_supported(int func);
 
   unsigned char get_mode(void);
-  short get_temperature_min(void);
-  short get_temperature_max(void);
+  short get_temperature_heat(void);
+  short get_temperature_cool(void);
   unsigned short get_flags(void);
 
   void set_mode(unsigned char mode);
-  void set_temperature_min(short temperature);
-  void set_temperature_max(short temperature);
-  void set_temperature_min_to_null(void);
-  void set_temperature_max_to_null(void);
+  void set_temperature_heat(short temperature);
+  void set_temperature_cool(short temperature);
+  void set_temperature_heat_to_null(void);
+  void set_temperature_cool_to_null(void);
   void set_flags(unsigned short flags);
   bool is_on(void);
   void turn_on(void);
   void turn_off(void);
   void toggle(void);
+  void switch_to_manual(void);
 };
 
 #endif /*CHANNEL_HVAC_VALUE_H_*/

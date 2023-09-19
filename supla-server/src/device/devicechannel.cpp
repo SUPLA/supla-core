@@ -789,19 +789,35 @@ void supla_device_channel::send_config_to_device(unsigned char config_type) {
 
     get_config(&config, config_type, 0);
 
-    get_device()
-        ->get_connection()
-        ->get_srpc_adapter()
-        ->sd_async_set_channel_config_request((TSDS_SetChannelConfig *)&config);
+    if (config.ConfigSize > 0) {
+      get_device()
+          ->get_connection()
+          ->get_srpc_adapter()
+          ->sd_async_set_channel_config_request(
+              (TSDS_SetChannelConfig *)&config);
+    }
   }
 }
 
 void supla_device_channel::send_config_to_device(void) {
   send_config_to_device(SUPLA_CONFIG_TYPE_DEFAULT);
+
   if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
       (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
     send_config_to_device(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE);
+
+    if (get_func() == SUPLA_CHANNELFNC_HVAC_THERMOSTAT) {
+      send_config_to_device(SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE);
+    }
   }
+
+  TSD_ChannelConfigFinished fin = {};
+  fin.ChannelNumber = get_channel_number();
+
+  get_device()
+      ->get_connection()
+      ->get_srpc_adapter()
+      ->sd_async_channel_config_finished(&fin);
 }
 
 unsigned int supla_device_channel::get_value_validity_time_left_msec(void) {

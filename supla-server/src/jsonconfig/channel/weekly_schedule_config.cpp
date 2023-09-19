@@ -25,11 +25,10 @@ using std::string;
 
 const char weekly_schedule_config::mode[] = "mode";
 const char weekly_schedule_config::hvac[] = "hvac";
-const char weekly_schedule_config::weekly_shedule[] = "weeklySchedule";
-const char weekly_schedule_config::setpoint_temperature_min[] =
-    "setpointTemperatureMin";
-const char weekly_schedule_config::setpoint_temperature_max[] =
-    "setpointTemperatureMax";
+const char weekly_schedule_config::setpoint_temperature_heat[] =
+    "SetpointTemperatureHeat";
+const char weekly_schedule_config::setpoint_temperature_cool[] =
+    "SetpointTemperatureCool";
 const char weekly_schedule_config::program_settings[] = "programSettings";
 const char weekly_schedule_config::quarters[] = "quarters";
 
@@ -37,6 +36,10 @@ weekly_schedule_config::weekly_schedule_config(void) : channel_json_config() {}
 
 weekly_schedule_config::weekly_schedule_config(supla_json_config *root)
     : channel_json_config(root) {}
+
+std::string weekly_schedule_config::get_weekly_shedule_key(void) {
+  return "weeklySchedule";
+}
 
 void weekly_schedule_config::merge(supla_json_config *_dst) {
   if (!_dst) {
@@ -58,7 +61,8 @@ void weekly_schedule_config::merge(supla_json_config *_dst) {
   }
 
   if (dst_hvac_root) {
-    cJSON *dst_ws_root = cJSON_GetObjectItem(dst_hvac_root, weekly_shedule);
+    cJSON *dst_ws_root =
+        cJSON_GetObjectItem(dst_hvac_root, get_weekly_shedule_key().c_str());
     if (dst_ws_root) {
       cJSON_DetachItemViaPointer(dst_hvac_root, dst_ws_root);
       cJSON_Delete(dst_ws_root);
@@ -67,7 +71,8 @@ void weekly_schedule_config::merge(supla_json_config *_dst) {
     if (src_ws_root) {
       dst_ws_root = cJSON_Duplicate(src_ws_root, cJSON_True);
       if (dst_ws_root) {
-        cJSON_AddItemToObject(dst_hvac_root, weekly_shedule, dst_ws_root);
+        cJSON_AddItemToObject(dst_hvac_root, get_weekly_shedule_key().c_str(),
+                              dst_ws_root);
       }
     }
   }
@@ -80,9 +85,11 @@ cJSON *weekly_schedule_config::get_ws_root(cJSON *root, bool force) {
       hvac_root = cJSON_AddObjectToObject(root, hvac);
     }
     if (hvac_root) {
-      cJSON *ws_root = cJSON_GetObjectItem(hvac_root, weekly_shedule);
+      cJSON *ws_root =
+          cJSON_GetObjectItem(hvac_root, get_weekly_shedule_key().c_str());
       if (!ws_root && force) {
-        ws_root = cJSON_AddObjectToObject(hvac_root, weekly_shedule);
+        ws_root = cJSON_AddObjectToObject(hvac_root,
+                                          get_weekly_shedule_key().c_str());
       }
       return ws_root;
     }
@@ -142,11 +149,11 @@ void weekly_schedule_config::add_program(unsigned char index,
     set_item_value(program, mode, cJSON_String, true,
                    mode_to_string(config->Program[index].Mode).c_str(), 0);
 
-    set_item_value(program, setpoint_temperature_min, cJSON_Number, true,
-                   nullptr, config->Program[index].SetpointTemperatureMin);
+    set_item_value(program, setpoint_temperature_heat, cJSON_Number, true,
+                   nullptr, config->Program[index].SetpointTemperatureHeat);
 
-    set_item_value(program, setpoint_temperature_max, cJSON_Number, true,
-                   nullptr, config->Program[index].SetpointTemperatureMax);
+    set_item_value(program, setpoint_temperature_cool, cJSON_Number, true,
+                   nullptr, config->Program[index].SetpointTemperatureCool);
   }
 }
 
@@ -165,12 +172,12 @@ bool weekly_schedule_config::get_program(unsigned char index,
     }
 
     double dbl_value = 0;
-    if (get_double(program, setpoint_temperature_min, &dbl_value)) {
-      config->Program[index].SetpointTemperatureMin = dbl_value;
+    if (get_double(program, setpoint_temperature_heat, &dbl_value)) {
+      config->Program[index].SetpointTemperatureHeat = dbl_value;
       result = true;
     }
-    if (get_double(program, setpoint_temperature_max, &dbl_value)) {
-      config->Program[index].SetpointTemperatureMax = dbl_value;
+    if (get_double(program, setpoint_temperature_cool, &dbl_value)) {
+      config->Program[index].SetpointTemperatureCool = dbl_value;
       result = true;
     }
   }

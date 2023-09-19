@@ -22,6 +22,7 @@
 
 #include "client/client.h"
 #include "client/clientchannels.h"
+#include "jsonconfig/channel/hvac_config.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -47,8 +48,9 @@ void supla_client_ch_get_channel_config::handle_call(
 
       client->get_channels()->channel_access(
           request->ChannelId, [&](supla_client_channel* channel) -> void {
-            channel->get_config(&config.Config, request->ConfigType,
+            channel->get_config(&config.Config, request->ConfigType, nullptr,
                                 request->Flags);
+
             config.Result = SUPLA_CONFIG_RESULT_TRUE;
           });
 

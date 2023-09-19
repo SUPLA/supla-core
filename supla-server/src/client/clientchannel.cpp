@@ -27,6 +27,7 @@
 #include "client.h"
 #include "db/database.h"
 #include "device/devicechannel.h"
+#include "jsonconfig/channel/hvac_config.h"
 #include "log.h"
 #include "proto.h"
 #include "safearray.h"
@@ -267,6 +268,7 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
@@ -278,8 +280,7 @@ bool supla_client_channel::remote_update_is_possible(void) {
 
   if (protocol_version >= 21) {
     switch (Func) {
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT:
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_COOL:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
         return true;
@@ -522,15 +523,54 @@ void supla_client_channel::for_each(
           });
 }
 
+unsigned char supla_client_channel::get_real_config_type(
+    unsigned char config_type) {
+  if ((config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE ||
+       config_type == SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE) &&
+      get_func() == SUPLA_CHANNELFNC_HVAC_THERMOSTAT) {
+    TChannelConfig_HVAC native_cfg = {};
+    lock();
+    hvac_config hvac_cfg(json_config);
+    hvac_cfg.get_config(&native_cfg);
+    unlock();
+
+    if (native_cfg.Subfunction == SUPLA_HVAC_SUBFUNCTION_COOL) {
+      config_type = SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE;
+    }
+  }
+
+  return config_type;
+}
+
 void supla_client_channel::get_config(TSCS_ChannelConfig *config,
                                       unsigned char config_type,
+                                      unsigned char *real_config_type,
                                       unsigned _supla_int_t flags) {
+  unsigned char rct = config_type;
+
   if (config) {
+    rct = get_real_config_type(config_type);
+
     supla_abstract_common_channel_properties::get_config(
-        config->Config, &config->ConfigSize, config_type, flags, true);
+        config->Config, &config->ConfigSize, rct, flags, true);
 
     config->ChannelId = get_id();
     config->ConfigType = config_type;
     config->Func = get_func();
+
+    if (config->ConfigType == SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE) {
+      config->ConfigType = SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE;
+    }
   }
+
+  if (real_config_type) {
+    *real_config_type = rct;
+  }
+}
+
+int supla_client_channel::set_user_config(unsigned char config_type,
+                                          unsigned _supla_int16_t config_size,
+                                          char *config) {
+  return supla_abstract_common_channel_properties::set_user_config(
+      get_real_config_type(config_type), config_size, config);
 }

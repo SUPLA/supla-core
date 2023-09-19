@@ -34,6 +34,7 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   TChannelConfig_HVAC ds_hvac1 = {};
   ds_hvac1.MainThermometerChannelNo = 1;
   ds_hvac1.AuxThermometerChannelNo = 2;
+  ds_hvac1.BinarySensorChannelNo = 3;
   ds_hvac1.AuxThermometerType = SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_HEATER;
   ds_hvac1.AntiFreezeAndOverheatProtectionEnabled = true;
   ds_hvac1.AvailableAlgorithms = 0xFFFF;
@@ -41,6 +42,8 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   ds_hvac1.MinOnTimeS = 10;
   ds_hvac1.MinOffTimeS = 600;
   ds_hvac1.OutputValueOnError = 55;
+  ds_hvac1.SetpointChangeKeepsWeeklyScheduleMode = 1;
+  ds_hvac1.Subfunction = SUPLA_HVAC_SUBFUNCTION_COOL;
 
   int size = sizeof(ds_hvac1.Temperatures.Temperature) / sizeof(_supla_int16_t);
 
@@ -57,14 +60,16 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   EXPECT_STREQ(
       str,
       "{\"hvac\":{\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
-      "\"auxThermometerType\":\"GenericHeater\","
+      "\"auxThermometerType\":\"GenericHeater\",\"BinarySensorChannelNo\":3,"
       "\"antiFreezeAndOverheatProtectionEnabled\":true,\"availableAlgorithms\":"
       "[\"OnOffSetpointMiddle\",\"OnOffSetpointAtMost\"],\"usedAlgorithm\":"
       "\"OnOffSetpointMiddle\",\"minOffTimeS\":600,\"minOnTimeS\":10,"
-      "\"outputValueOnError\":55,\"temperatures\":{\"1\":1,\"2\":2,\"3\":3,"
-      "\"4\":4,\"5\":5,\"6\":6,\"7\":7,\"8\":8,\"9\":9,\"10\":10,\"11\":11,"
-      "\"12\":12,\"13\":13,\"14\":14,\"15\":15,\"16\":16,\"17\":17,\"18\":18,"
-      "\"19\":19,\"20\":20,\"21\":21,\"22\":22,\"23\":23,\"24\":24}}}");
+      "\"outputValueOnError\":55,\"subfunction\":\"Cool\","
+      "\"setpointChangeKeepsWeeklyScheduleMode\":true,\"temperatures\":{\"1\":"
+      "1,\"2\":2,\"3\":3,\"4\":4,\"5\":5,\"6\":6,\"7\":7,\"8\":8,\"9\":9,"
+      "\"10\":10,\"11\":11,\"12\":12,\"13\":13,\"14\":14,\"15\":15,\"16\":16,"
+      "\"17\":17,\"18\":18,\"19\":19,\"20\":20,\"21\":21,\"22\":22,\"23\":23,"
+      "\"24\":24}}}");
 
   hvac_config config2;
   config2.set_user_config(str);
@@ -118,11 +123,12 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
   EXPECT_STREQ(
       str,
       "{\"hvac\":{\"mainThermometerChannelNo\":0,\"auxThermometerChannelNo\":0,"
-      "\"auxThermometerType\":\"NotSet\","
+      "\"auxThermometerType\":\"NotSet\",\"BinarySensorChannelNo\":0,"
       "\"antiFreezeAndOverheatProtectionEnabled\":false,"
       "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOffTimeS\":0,"
-      "\"minOnTimeS\":0,\"outputValueOnError\":0,\"temperatures\":{\"1\":12345,"
-      "\"2\":0,\"9\":-723,\"16\":-28910}}}");
+      "\"minOnTimeS\":0,\"outputValueOnError\":0,\"subfunction\":\"NotSet\","
+      "\"setpointChangeKeepsWeeklyScheduleMode\":false,\"temperatures\":{\"1\":"
+      "12345,\"2\":0,\"9\":-723,\"16\":-28910}}}");
 
   free(str);
 }
@@ -152,14 +158,16 @@ TEST_F(HvacConfigTest, merge) {
 
   char *str = config1.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"a\":\"b\",\"x\":true,\"hvac\":{\"c\":true,"
-               "\"mainThermometerChannelNo\":0,\"auxThermometerChannelNo\":0,"
-               "\"auxThermometerType\":\"NotSet\","
-               "\"antiFreezeAndOverheatProtectionEnabled\":false,"
-               "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\","
-               "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
-               "\"temperatures\":{\"2\":10}}}");
+  EXPECT_STREQ(
+      str,
+      "{\"a\":\"b\",\"x\":true,\"hvac\":{\"c\":true,"
+      "\"mainThermometerChannelNo\":0,\"auxThermometerChannelNo\":0,"
+      "\"auxThermometerType\":\"NotSet\","
+      "\"antiFreezeAndOverheatProtectionEnabled\":false,"
+      "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOffTimeS\":0,"
+      "\"minOnTimeS\":0,\"outputValueOnError\":0,\"temperatures\":{\"2\":10},"
+      "\"BinarySensorChannelNo\":0,\"subfunction\":\"NotSet\","
+      "\"setpointChangeKeepsWeeklyScheduleMode\":false}}");
 
   free(str);
 }

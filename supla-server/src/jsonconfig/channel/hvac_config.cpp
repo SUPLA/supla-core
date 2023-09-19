@@ -24,18 +24,22 @@ using std::string;
 #define FIELD_MAIN_THERMOMETER_CHANNEL_NO 1
 #define FIELD_AUX_THERMOMETER_CHANNEL_NO 2
 #define FIELD_AUX_THERMOMETER_TYPE 3
-#define FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED 4
-#define FIELD_AVAILABLE_ALGORITHMS 5
-#define FIELD_USED_ALGORITHM 6
-#define FIELD_MIN_ON_TIME_S 7
-#define FIELD_MIN_OFF_TIME_S 8
-#define FIELD_OUTPUT_VALUE_ON_ERROR 9
-#define FIELD_TEMPERATURES 10
+#define FIELD_BINARY_SENSOR_CHANNEL_NO 4
+#define FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED 5
+#define FIELD_AVAILABLE_ALGORITHMS 6
+#define FIELD_USED_ALGORITHM 7
+#define FIELD_MIN_ON_TIME_S 8
+#define FIELD_MIN_OFF_TIME_S 9
+#define FIELD_OUTPUT_VALUE_ON_ERROR 10
+#define FIELD_SUBSUNCTION 11
+#define FIELD_SETPOINT_CHANGE_KEEPS_WEEKLY_SCHEDULE_MODE 12
+#define FIELD_TEMPERATURES 13
 
 const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_MAIN_THERMOMETER_CHANNEL_NO, "mainThermometerChannelNo"},
     {FIELD_AUX_THERMOMETER_CHANNEL_NO, "auxThermometerChannelNo"},
     {FIELD_AUX_THERMOMETER_TYPE, "auxThermometerType"},
+    {FIELD_BINARY_SENSOR_CHANNEL_NO, "BinarySensorChannelNo"},
     {FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED,
      "antiFreezeAndOverheatProtectionEnabled"},
     {FIELD_AVAILABLE_ALGORITHMS, "availableAlgorithms"},
@@ -43,6 +47,9 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_MIN_ON_TIME_S, "minOnTimeS"},
     {FIELD_MIN_OFF_TIME_S, "minOffTimeS"},
     {FIELD_OUTPUT_VALUE_ON_ERROR, "outputValueOnError"},
+    {FIELD_SUBSUNCTION, "subfunction"},
+    {FIELD_SETPOINT_CHANGE_KEEPS_WEEKLY_SCHEDULE_MODE,
+     "setpointChangeKeepsWeeklyScheduleMode"},
     {FIELD_TEMPERATURES, "temperatures"}};
 
 hvac_config::hvac_config(void) : channel_json_config() {}
@@ -120,6 +127,26 @@ unsigned _supla_int16_t hvac_config::string_to_alg(const string &alg) {
   return 0;
 }
 
+string hvac_config::subfunction_to_string(unsigned char subfunction) {
+  switch (subfunction) {
+    case SUPLA_HVAC_SUBFUNCTION_HEAT:
+      return "Heat";
+    case SUPLA_HVAC_SUBFUNCTION_COOL:
+      return "Cool";
+  }
+  return "NotSet";
+}
+
+unsigned char hvac_config::string_to_subfunction(const string &subfunction) {
+  if (subfunction == "Heat") {
+    return SUPLA_HVAC_SUBFUNCTION_HEAT;
+  } else if (subfunction == "Cool") {
+    return SUPLA_HVAC_SUBFUNCTION_COOL;
+  }
+
+  return SUPLA_HVAC_SUBFUNCTION_NOT_SET;
+}
+
 void hvac_config::merge(supla_json_config *_dst) {
   hvac_config dst(_dst);
   supla_json_config::merge(get_hvac_root(), dst.get_hvac_root(), field_map,
@@ -159,6 +186,9 @@ void hvac_config::set_config(TChannelConfig_HVAC *config) {
       root, field_map.at(FIELD_AUX_THERMOMETER_TYPE).c_str(), cJSON_String,
       true, aux_thermometer_type_to_string(config->AuxThermometerType).c_str(),
       0);
+
+  set_item_value(root, field_map.at(FIELD_BINARY_SENSOR_CHANNEL_NO).c_str(),
+                 cJSON_Number, true, nullptr, config->BinarySensorChannelNo);
 
   set_item_value(
       root,
@@ -200,6 +230,15 @@ void hvac_config::set_config(TChannelConfig_HVAC *config) {
     set_item_value(root, field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR).c_str(),
                    cJSON_Number, true, nullptr, config->OutputValueOnError);
   }
+
+  set_item_value(root, field_map.at(FIELD_SUBSUNCTION).c_str(), cJSON_String,
+                 true, subfunction_to_string(config->Subfunction).c_str(), 0);
+
+  set_item_value(
+      root,
+      field_map.at(FIELD_SETPOINT_CHANGE_KEEPS_WEEKLY_SCHEDULE_MODE).c_str(),
+      config->SetpointChangeKeepsWeeklyScheduleMode ? cJSON_True : cJSON_False,
+      true, nullptr, 0);
 
   cJSON *temperatures =
       cJSON_GetObjectItem(root, field_map.at(FIELD_TEMPERATURES).c_str());
@@ -259,6 +298,12 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config) {
     result = true;
   }
 
+  if (get_double(root, field_map.at(FIELD_BINARY_SENSOR_CHANNEL_NO).c_str(),
+                 &dbl_value)) {
+    config->BinarySensorChannelNo = dbl_value;
+    result = true;
+  }
+
   bool bool_value;
   if (get_bool(root,
                field_map.at(FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED)
@@ -305,6 +350,19 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config) {
                  &dbl_value) &&
       dbl_value >= -100 && dbl_value <= 100) {
     config->OutputValueOnError = dbl_value;
+    result = true;
+  }
+
+  if (get_string(root, field_map.at(FIELD_SUBSUNCTION).c_str(), &str_value)) {
+    config->Subfunction = string_to_subfunction(str_value);
+    result = true;
+  }
+
+  if (get_bool(root,
+               field_map.at(FIELD_SETPOINT_CHANGE_KEEPS_WEEKLY_SCHEDULE_MODE)
+                   .c_str(),
+               &bool_value)) {
+    config->SetpointChangeKeepsWeeklyScheduleMode = bool_value ? 1 : 0;
     result = true;
   }
 

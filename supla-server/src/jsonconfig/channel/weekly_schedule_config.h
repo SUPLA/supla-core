@@ -28,9 +28,8 @@ class weekly_schedule_config : public channel_json_config {
  private:
   static const char mode[];
   static const char hvac[];
-  static const char weekly_shedule[];
-  static const char setpoint_temperature_min[];
-  static const char setpoint_temperature_max[];
+  static const char setpoint_temperature_heat[];
+  static const char setpoint_temperature_cool[];
   static const char program_settings[];
   static const char quarters[];
 
@@ -44,6 +43,9 @@ class weekly_schedule_config : public channel_json_config {
                    cJSON *program_root);
   void add_quarter(TChannelConfig_WeeklySchedule *config, cJSON *quarters_root,
                    unsigned char quarter);
+
+ protected:
+  virtual std::string get_weekly_shedule_key(void);
 
  public:
   explicit weekly_schedule_config(supla_json_config *root);

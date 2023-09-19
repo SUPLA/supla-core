@@ -891,7 +891,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "hi",
       NULL,
       "supla/de1257b7824b6825c276b763db1b711f/devices/205/channels/404/type",
-      "SENSORNO",
+      "BINARYSENSOR",
       "supla/de1257b7824b6825c276b763db1b711f/devices/205/channels/404/"
       "function",
       "OPENINGSENSOR_GARAGEDOOR",
@@ -1791,7 +1791,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "state/on",
       NULL,
       "supla/bd6287c398bc81403c643410f5043d4e/devices/9236/channels/15039/type",
-      "SENSORNO",
+      "BINARYSENSOR",
       "supla/bd6287c398bc81403c643410f5043d4e/devices/9236/channels/15039/"
       "function",
       "NOLIQUIDSENSOR",
@@ -1819,7 +1819,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "state/hi",
       NULL,
       "supla/689eb3922683b4e4e7b9227f32f2d89b/devices/5823/channels/7341/type",
-      "SENSORNO",
+      "BINARYSENSOR",
       "supla/689eb3922683b4e4e7b9227f32f2d89b/devices/5823/channels/7341/"
       "function",
       "OPENINGSENSOR_ROLLERSHUTTER",
@@ -1994,7 +1994,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "state/unit",
       NULL,
       "supla/93158d9b795bb1c65e79199d42381706/devices/9344/channels/15283/type",
-      "SENSORNO",
+      "BINARYSENSOR",
       "supla/93158d9b795bb1c65e79199d42381706/devices/9344/channels/15283/"
       "function",
       "OPENINGSENSOR_WINDOW",
@@ -2023,7 +2023,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "state/hi",
       NULL,
       "supla/4b2bb30d2db31cf5809ede445862f6d7/devices/5761/channels/7212/type",
-      "SENSORNO",
+      "BINARYSENSOR",
       "supla/4b2bb30d2db31cf5809ede445862f6d7/devices/5761/channels/7212/"
       "function",
       "MAILSENSOR",
@@ -2052,7 +2052,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "hi",
       NULL,
       "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/channels/5177/type",
-      "SENSORNO",
+      "BINARYSENSOR",
       "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/channels/5177/"
       "function",
       "OPENINGSENSOR_GATEWAY",
@@ -2070,7 +2070,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       NULL,
       "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10286/channels/18023/"
       "type",
-      "SENSORNO",
+      "BINARYSENSOR",
       "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10286/channels/18023/"
       "function",
       "OPENINGSENSOR_GATE",
@@ -2300,7 +2300,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "state/value",
       NULL,
       "supla/c8e5fd3b528033b98e09e0d1582d1031/devices/6361/channels/8453/type",
-      "SENSORNO",
+      "BINARYSENSOR",
       "supla/c8e5fd3b528033b98e09e0d1582d1031/devices/6361/channels/8453/"
       "function",
       "OPENINGSENSOR_DOOR",

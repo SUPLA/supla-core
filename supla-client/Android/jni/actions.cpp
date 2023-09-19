@@ -96,19 +96,18 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
           env, mode_enum,
           "org/supla/android/data/source/remote/hvac/SuplaHvacMode");
     }
-
-    jshort s = 0;
+    it jshort s = 0;
 
     if (supla_CallShortObjectMethod(env, cls, action_params,
-                                    "getSetpointTemperatureMin", &s)) {
-      hvac_param->SetpointTemperatureMin = s;
-      hvac_param->Flags |= SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MIN_SET;
+                                    "getSetpointTemperatureHeat", &s)) {
+      hvac_param->SetpointTemperatureHeat = s;
+      hvac_param->Flags |= SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET;
     }
 
     if (supla_CallShortObjectMethod(env, cls, action_params,
-                                    "getSetpointTemperatureMax", &s)) {
-      hvac_param->SetpointTemperatureMax = s;
-      hvac_param->Flags |= SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_MAX_SET;
+                                    "getSetpointTemperatureCool", &s)) {
+      hvac_param->SetpointTemperatureCool = s;
+      hvac_param->Flags |= SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET;
     }
 
     *param = hvac_param;
