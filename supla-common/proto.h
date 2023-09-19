@@ -768,9 +768,9 @@ typedef struct {
 #define SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR (1ULL << 8)
 #define SUPLA_HVAC_VALUE_FLAG_FORCED_OFF_BY_SENSOR (1ULL << 9)
 // Only for SUPLA_CHANNELFNC_HVAC_THERMOSTAT
-// 0 - heat subfunction
-// 1 - cool subfunction
-#define SUPLA_HVAC_VALUE_FLAG_HEAT_OR_COOL (1ULL << 10)
+// If the COOL flag is not set, it means that the thermostat is working in
+// heating mode.
+#define SUPLA_HVAC_VALUE_FLAG_COOL (1ULL << 10)
 #define SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE_TEMPORAL_OVERRIDE (1ULL << 11)
 
 // HVAC modes are used in channel value (as a command from server or
