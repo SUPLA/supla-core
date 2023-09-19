@@ -32,7 +32,7 @@ using std::string;
 #define FIELD_MIN_OFF_TIME_S 9
 #define FIELD_OUTPUT_VALUE_ON_ERROR 10
 #define FIELD_SUBSUNCTION 11
-#define FIELD_SETPOINT_CHANGE_KEEPS_WEEKLY_SCHEDULE_MODE 12
+#define FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE 12
 #define FIELD_TEMPERATURES 13
 
 const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
@@ -48,8 +48,8 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_MIN_OFF_TIME_S, "minOffTimeS"},
     {FIELD_OUTPUT_VALUE_ON_ERROR, "outputValueOnError"},
     {FIELD_SUBSUNCTION, "subfunction"},
-    {FIELD_SETPOINT_CHANGE_KEEPS_WEEKLY_SCHEDULE_MODE,
-     "setpointChangeKeepsWeeklyScheduleMode"},
+    {FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE,
+     "temperatureSetpointChangeSwitchesToManualMode"},
     {FIELD_TEMPERATURES, "temperatures"}};
 
 hvac_config::hvac_config(void) : channel_json_config() {}
@@ -236,8 +236,10 @@ void hvac_config::set_config(TChannelConfig_HVAC *config) {
 
   set_item_value(
       root,
-      field_map.at(FIELD_SETPOINT_CHANGE_KEEPS_WEEKLY_SCHEDULE_MODE).c_str(),
-      config->SetpointChangeKeepsWeeklyScheduleMode ? cJSON_True : cJSON_False,
+      field_map.at(FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE)
+          .c_str(),
+      config->TemperatureSetpointChangeSwitchesToManualMode ? cJSON_True
+                                                            : cJSON_False,
       true, nullptr, 0);
 
   cJSON *temperatures =
@@ -358,11 +360,13 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config) {
     result = true;
   }
 
-  if (get_bool(root,
-               field_map.at(FIELD_SETPOINT_CHANGE_KEEPS_WEEKLY_SCHEDULE_MODE)
-                   .c_str(),
-               &bool_value)) {
-    config->SetpointChangeKeepsWeeklyScheduleMode = bool_value ? 1 : 0;
+  if (get_bool(
+          root,
+          field_map
+              .at(FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE)
+              .c_str(),
+          &bool_value)) {
+    config->TemperatureSetpointChangeSwitchesToManualMode = bool_value ? 1 : 0;
     result = true;
   }
 
