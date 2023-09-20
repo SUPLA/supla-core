@@ -245,10 +245,10 @@ jobject supla_cc_hvac_to_jobject(JNIEnv *env, _supla_int_t channel_id,
       aux_thermometer_type,
       hvac->AntiFreezeAndOverheatProtectionEnabled ? JNI_TRUE : JNI_FALSE,
       available_algorithms, used_algorithm, min_on_time_s, min_off_time_s,
-      output_value_on_error,
+      output_value_on_error, subfunction,
       hvac->TemperatureSetpointChangeSwitchesToManualMode ? JNI_TRUE
                                                           : JNI_FALSE,
-      subfunction, temperatures);
+      temperatures);
 
   env->DeleteLocalRef(config_cls);
 
