@@ -90,7 +90,7 @@ jobject supla_cc_hvac_subfunction_to_jobject(JNIEnv *env,
   }
 
   return supla_NewEnum(
-      env, "org/supla/android/data/source/remote/hvac/SuplaHvacAlgorithm",
+      env, "org/supla/android/data/source/remote/hvac/ThermostatSubfunction",
       enum_name);
 }
 
