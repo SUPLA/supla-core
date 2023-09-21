@@ -94,6 +94,19 @@ char *channel_json_config::get_properties(void) {
   return nullptr;
 }
 
+cJSON *channel_json_config::get_user_root_with_key(const char *key,
+                                                   bool force) {
+  cJSON *root = get_user_root();
+  if (root) {
+    cJSON *key_root = cJSON_GetObjectItem(root, key);
+    if (!key_root) {
+      key_root = cJSON_AddObjectToObject(root, key);
+    }
+    return key_root;
+  }
+  return nullptr;
+}
+
 channel_json_config &channel_json_config::operator=(
     const channel_json_config &json_config) {
   supla_json_config::operator=(json_config);

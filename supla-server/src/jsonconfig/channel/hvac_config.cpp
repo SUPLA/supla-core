@@ -57,17 +57,7 @@ hvac_config::hvac_config(void) : channel_json_config() {}
 hvac_config::hvac_config(supla_json_config *root) : channel_json_config(root) {}
 
 cJSON *hvac_config::get_hvac_root(bool force) {
-  const char hvac[] = "hvac";
-
-  cJSON *root = get_user_root();
-  if (root) {
-    cJSON *hvac_root = cJSON_GetObjectItem(root, hvac);
-    if (!hvac_root) {
-      hvac_root = cJSON_AddObjectToObject(root, hvac);
-    }
-    return hvac_root;
-  }
-  return nullptr;
+  return get_user_root_with_key("hvac", force);
 }
 
 cJSON *hvac_config::get_hvac_root(void) { return get_hvac_root(true); }
