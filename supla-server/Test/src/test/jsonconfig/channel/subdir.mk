@@ -14,7 +14,6 @@ CPP_SRCS += \
 ../src/test/jsonconfig/channel/GoogleHomeConfigTest.cpp \
 ../src/test/jsonconfig/channel/HvacConfigTest.cpp \
 ../src/test/jsonconfig/channel/ImpulseCounterConfigTest.cpp \
-../src/test/jsonconfig/channel/OpeningSensorConfigTest.cpp \
 ../src/test/jsonconfig/channel/TempHumConfigTest.cpp \
 ../src/test/jsonconfig/channel/WeeklyScheduleConfigTest.cpp 
 
@@ -29,7 +28,6 @@ CPP_DEPS += \
 ./src/test/jsonconfig/channel/GoogleHomeConfigTest.d \
 ./src/test/jsonconfig/channel/HvacConfigTest.d \
 ./src/test/jsonconfig/channel/ImpulseCounterConfigTest.d \
-./src/test/jsonconfig/channel/OpeningSensorConfigTest.d \
 ./src/test/jsonconfig/channel/TempHumConfigTest.d \
 ./src/test/jsonconfig/channel/WeeklyScheduleConfigTest.d 
 
@@ -44,7 +42,6 @@ OBJS += \
 ./src/test/jsonconfig/channel/GoogleHomeConfigTest.o \
 ./src/test/jsonconfig/channel/HvacConfigTest.o \
 ./src/test/jsonconfig/channel/ImpulseCounterConfigTest.o \
-./src/test/jsonconfig/channel/OpeningSensorConfigTest.o \
 ./src/test/jsonconfig/channel/TempHumConfigTest.o \
 ./src/test/jsonconfig/channel/WeeklyScheduleConfigTest.o 
 
@@ -61,7 +58,7 @@ src/test/jsonconfig/channel/%.o: ../src/test/jsonconfig/channel/%.cpp src/test/j
 clean: clean-src-2f-test-2f-jsonconfig-2f-channel
 
 clean-src-2f-test-2f-jsonconfig-2f-channel:
-	-$(RM) ./src/test/jsonconfig/channel/ActionTriggerConfigTest.d ./src/test/jsonconfig/channel/ActionTriggerConfigTest.o ./src/test/jsonconfig/channel/AlexaConfigTest.d ./src/test/jsonconfig/channel/AlexaConfigTest.o ./src/test/jsonconfig/channel/AltWeeklyScheduleConfigTest.d ./src/test/jsonconfig/channel/AltWeeklyScheduleConfigTest.o ./src/test/jsonconfig/channel/BinarySensorConfigTest.d ./src/test/jsonconfig/channel/BinarySensorConfigTest.o ./src/test/jsonconfig/channel/ChannelJSONConfigTest.d ./src/test/jsonconfig/channel/ChannelJSONConfigTest.o ./src/test/jsonconfig/channel/ControllingTheGateConfigTest.d ./src/test/jsonconfig/channel/ControllingTheGateConfigTest.o ./src/test/jsonconfig/channel/ElectricityMeterConfigTest.d ./src/test/jsonconfig/channel/ElectricityMeterConfigTest.o ./src/test/jsonconfig/channel/GoogleHomeConfigTest.d ./src/test/jsonconfig/channel/GoogleHomeConfigTest.o ./src/test/jsonconfig/channel/HvacConfigTest.d ./src/test/jsonconfig/channel/HvacConfigTest.o ./src/test/jsonconfig/channel/ImpulseCounterConfigTest.d ./src/test/jsonconfig/channel/ImpulseCounterConfigTest.o ./src/test/jsonconfig/channel/OpeningSensorConfigTest.d ./src/test/jsonconfig/channel/OpeningSensorConfigTest.o ./src/test/jsonconfig/channel/TempHumConfigTest.d ./src/test/jsonconfig/channel/TempHumConfigTest.o ./src/test/jsonconfig/channel/WeeklyScheduleConfigTest.d ./src/test/jsonconfig/channel/WeeklyScheduleConfigTest.o
+	-$(RM) ./src/test/jsonconfig/channel/ActionTriggerConfigTest.d ./src/test/jsonconfig/channel/ActionTriggerConfigTest.o ./src/test/jsonconfig/channel/AlexaConfigTest.d ./src/test/jsonconfig/channel/AlexaConfigTest.o ./src/test/jsonconfig/channel/AltWeeklyScheduleConfigTest.d ./src/test/jsonconfig/channel/AltWeeklyScheduleConfigTest.o ./src/test/jsonconfig/channel/BinarySensorConfigTest.d ./src/test/jsonconfig/channel/BinarySensorConfigTest.o ./src/test/jsonconfig/channel/ChannelJSONConfigTest.d ./src/test/jsonconfig/channel/ChannelJSONConfigTest.o ./src/test/jsonconfig/channel/ControllingTheGateConfigTest.d ./src/test/jsonconfig/channel/ControllingTheGateConfigTest.o ./src/test/jsonconfig/channel/ElectricityMeterConfigTest.d ./src/test/jsonconfig/channel/ElectricityMeterConfigTest.o ./src/test/jsonconfig/channel/GoogleHomeConfigTest.d ./src/test/jsonconfig/channel/GoogleHomeConfigTest.o ./src/test/jsonconfig/channel/HvacConfigTest.d ./src/test/jsonconfig/channel/HvacConfigTest.o ./src/test/jsonconfig/channel/ImpulseCounterConfigTest.d ./src/test/jsonconfig/channel/ImpulseCounterConfigTest.o ./src/test/jsonconfig/channel/TempHumConfigTest.d ./src/test/jsonconfig/channel/TempHumConfigTest.o ./src/test/jsonconfig/channel/WeeklyScheduleConfigTest.d ./src/test/jsonconfig/channel/WeeklyScheduleConfigTest.o
 
 .PHONY: clean-src-2f-test-2f-jsonconfig-2f-channel
 
