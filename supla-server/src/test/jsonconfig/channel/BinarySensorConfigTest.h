@@ -16,27 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef BINARY_SENSOR_CONFIG_H_
-#define BINARY_SENSOR_CONFIG_H_
+#ifndef BINARYSENSORCONFIGTEST_H_
+#define BINARYSENSORCONFIGTEST_H_
 
-#include <map>
-#include <string>
+#include "gtest/gtest.h"  // NOLINT
 
-#include "jsonconfig/channel/channel_json_config.h"
-#include "proto.h"
+namespace testing {
 
-class binary_sensor_config : public channel_json_config {
- private:
-  static const std::map<unsigned _supla_int16_t, std::string> field_map;
-
+class BinarySensorConfigTest : public Test {
+ protected:
  public:
-  explicit binary_sensor_config(supla_json_config *root);
-  binary_sensor_config(void);
-  virtual void merge(supla_json_config *dst);
-  void set_config(TChannelConfig_BinarySensor *config);
-  bool get_config(TChannelConfig_BinarySensor *config);
-
-  bool is_logic_inverted(void);
+  BinarySensorConfigTest(void);
+  virtual ~BinarySensorConfigTest(void);
 };
 
-#endif /* BINARY_SENSOR_CONFIG_H_ */
+} /* namespace testing */
+
+#endif /* BINARYSENSORCONFIGTEST_H_ */

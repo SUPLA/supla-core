@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "jsonconfig/channel/temp_hum_config.h"
+
 using std::map;
 using std::string;
 
@@ -128,12 +130,13 @@ bool supla_channel_temphum_value::is_differ(supla_channel_value *value,
 void supla_channel_temphum_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
     int param3, int param4, channel_json_config *json_config) {
-  if (param2 != 0) {
-    set_temperature(get_temperature() + (param2 / 100.00));
-  }
+  if (json_config) {
+    temp_hum_config cfg(json_config);
 
-  if (param3 != 0) {
-    set_humidity(get_humidity() + (param3 / 100.00));
+    if (!cfg.is_adjustment_applied_by_device()) {
+      set_temperature(get_temperature() + cfg.get_temperature_adjustment_dbl());
+      set_humidity(get_humidity() + cfg.get_humidity_adjustment_dbl());
+    }
   }
 }
 

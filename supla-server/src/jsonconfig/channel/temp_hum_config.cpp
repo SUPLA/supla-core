@@ -18,15 +18,27 @@
 
 #include "temp_hum_config.h"
 
+using std::map;
+using std::string;
+
+#define FIELD_TEMPERATURE_ADJUSTMENT 1
+#define FIELD_HUMIDITY_ADJUSTMENT 2
+#define FIELD_ADJUSTMENT_APPLIED_BY_DEVICE 3
+
+const map<unsigned _supla_int16_t, string> temp_hum_config::field_map = {
+    {FIELD_TEMPERATURE_ADJUSTMENT, "temperatureAdjustment"},
+    {FIELD_HUMIDITY_ADJUSTMENT, "humidityAdjustment"},
+    {FIELD_ADJUSTMENT_APPLIED_BY_DEVICE, "adjustmentAppliedByDevice"}};
+
 temp_hum_config::temp_hum_config(void) : channel_json_config() {}
 
 temp_hum_config::temp_hum_config(supla_json_config *root)
     : channel_json_config(root) {}
 
-void temp_hum_config::merge(supla_json_config *_dst) {}
-
-cJSON *temp_hum_config::get_th_root(bool force) {
-  return get_user_root_with_key("tempHum", force);
+void temp_hum_config::merge(supla_json_config *_dst) {
+  temp_hum_config dst(_dst);
+  supla_json_config::merge(get_user_root(), dst.get_user_root(), field_map,
+                           false);
 }
 
 void temp_hum_config::set_config(
@@ -35,7 +47,7 @@ void temp_hum_config::set_config(
     return;
   }
 
-  cJSON *root = get_th_root(false);
+  cJSON *root = get_user_root();
   if (!root) {
     return;
   }
@@ -52,7 +64,42 @@ void temp_hum_config::set_config(
 }
 
 bool temp_hum_config::get_config(
-    TChannelConfig_TemperatureAndHumidity *config) {}
+    TChannelConfig_TemperatureAndHumidity *config) {
+  if (!config) {
+    return false;
+  }
+
+  *config = {};
+
+  cJSON *root = get_user_root();
+  if (!root) {
+    return false;
+  }
+
+  bool result = false;
+
+  double dbl_value = 0;
+  if (get_double(root, field_map.at(FIELD_TEMPERATURE_ADJUSTMENT).c_str(),
+                 &dbl_value)) {
+    config->TemperatureAdjustment = dbl_value;
+    result = true;
+  }
+
+  if (get_double(root, field_map.at(FIELD_HUMIDITY_ADJUSTMENT).c_str(),
+                 &dbl_value)) {
+    config->HumidityAdjustment = dbl_value;
+    result = true;
+  }
+
+  bool bool_value;
+  if (get_bool(root, field_map.at(FIELD_ADJUSTMENT_APPLIED_BY_DEVICE).c_str(),
+               &bool_value)) {
+    config->AdjustmentAppliedByDevice = bool_value ? 1 : 0;
+    result = true;
+  }
+
+  return result;
+}
 
 _supla_int16_t temp_hum_config::get_temperature_adjustment(void) {
   TChannelConfig_TemperatureAndHumidity config = {};

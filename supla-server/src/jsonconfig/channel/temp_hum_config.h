@@ -19,12 +19,15 @@
 #ifndef TEMP_HUM_CONFIG_H_
 #define TEMP_HUM_CONFIG_H_
 
+#include <map>
+#include <string>
+
 #include "jsonconfig/channel/channel_json_config.h"
 #include "proto.h"
 
 class temp_hum_config : public channel_json_config {
  private:
-  cJSON *get_th_root(bool force);
+  static const std::map<unsigned _supla_int16_t, std::string> field_map;
 
  public:
   explicit temp_hum_config(supla_json_config *root);

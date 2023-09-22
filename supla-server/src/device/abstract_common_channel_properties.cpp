@@ -24,7 +24,9 @@
 #include "device/device_dao.h"
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/alt_weekly_schedule_config.h"
+#include "jsonconfig/channel/binary_sensor_config.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "jsonconfig/channel/temp_hum_config.h"
 #include "proto.h"
 
 using std::vector;
@@ -335,6 +337,10 @@ void supla_abstract_common_channel_properties::get_config(
     }
 
     return;
+  } else if (get_type() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
+    json_to_config<binary_sensor_config, TChannelConfig_BinarySensor>(
+        config, config_size);
+    return;
   }
 
   switch (get_func()) {
@@ -371,6 +377,12 @@ void supla_abstract_common_channel_properties::get_config(
         delete json_config;
       }
     } break;
+    case SUPLA_CHANNELFNC_THERMOMETER:
+    case SUPLA_CHANNELFNC_HUMIDITY:
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+      json_to_config<temp_hum_config, TChannelConfig_TemperatureAndHumidity>(
+          config, config_size);
+      break;
   }
 }
 
@@ -388,7 +400,10 @@ int supla_abstract_common_channel_properties::set_user_config(
 
   channel_json_config *json_config = nullptr;
 
-  if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
+  int type = get_type();
+  int func = get_func();
+
+  if (type == SUPLA_CHANNELTYPE_HVAC &&
       config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
       config_size == sizeof(TChannelConfig_HVAC)) {
     json_config = new hvac_config();
@@ -408,6 +423,16 @@ int supla_abstract_common_channel_properties::set_user_config(
           ->set_config((TChannelConfig_WeeklySchedule *)config);
     }
 
+  } else if (type == SUPLA_CHANNELTYPE_BINARYSENSOR) {
+    json_config = new binary_sensor_config();
+    static_cast<binary_sensor_config *>(json_config)
+        ->set_config((TChannelConfig_BinarySensor *)config);
+  } else if (func == SUPLA_CHANNELFNC_THERMOMETER ||
+             func == SUPLA_CHANNELFNC_HUMIDITY ||
+             func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE) {
+    json_config = new temp_hum_config();
+    static_cast<temp_hum_config *>(json_config)
+        ->set_config((TChannelConfig_TemperatureAndHumidity *)config);
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }

@@ -297,6 +297,14 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)9, sizeof(TCS_GetChannelConfigRequest));
   EXPECT_EQ((unsigned int)523, sizeof(TSCS_ChannelConfig));
   EXPECT_EQ((unsigned int)524, sizeof(TSC_ChannelConfigUpdateOrResult));
+
+  EXPECT_EQ(sizeof(TChannelConfig_BinarySensor), 32);
+  EXPECT_LE(sizeof(TChannelConfig_BinarySensor),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TChannelConfig_TemperatureAndHumidity), 32);
+  EXPECT_LE(sizeof(TChannelConfig_TemperatureAndHumidity),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 }
 
 TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {

@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "jsonconfig/channel/binary_sensor_config.h"
+
 supla_channel_binary_sensor_value::supla_channel_binary_sensor_value(void)
     : supla_channel_value() {}
 
@@ -45,8 +47,11 @@ void supla_channel_binary_sensor_value::apply_channel_properties(
     set_hi(!is_hi());
   }
 
-  if (param3 == 1) {  // inverted logic
-    set_hi(!is_hi());
+  if (json_config) {
+    binary_sensor_config cfg(json_config);
+    if (cfg.is_logic_inverted()) {
+      set_hi(!is_hi());
+    }
   }
 }
 

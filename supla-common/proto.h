@@ -2561,7 +2561,8 @@ typedef struct {
   _supla_int16_t HumidityAdjustment;        // * 0.01
   unsigned char AdjustmentAppliedByDevice;  // 1/true - by device
                                             // 0/false - by server
-} TChannelConfig_TemperatureAndHumidity;    // v. >= 21
+  unsigned char Reserved[27];
+} TChannelConfig_TemperatureAndHumidity;  // v. >= 21
 
 // ChannelConfig for all binary sensors (all functions valid for
 // SUPLA_CHANNELTYPE_BINARYSENSOR)
@@ -2570,6 +2571,7 @@ typedef struct {
 // like MQTT
 typedef struct {
   unsigned char InvertedLogic;  // 0 - not inverted, 1 - inverted
+  unsigned char Reserved[31];
 } TChannelConfig_BinarySensor;  // v. >= 21
 
 // Not set is set when there is no thermometer for "AUX" available
