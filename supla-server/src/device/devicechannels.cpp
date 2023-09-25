@@ -1197,19 +1197,14 @@ bool supla_device_channels::action_set_hvac_parameters(
   bool result = false;
 
   access_channel(channel_id, [&](supla_device_channel *channel) -> void {
-    supla_channel_hvac_value *hvac_value =
-        channel->get_value<supla_channel_hvac_value>();
-    if (hvac_value) {
-      params->apply_on(hvac_value);
+    supla_channel_hvac_value hvac_value;
+    params->apply_on(&hvac_value);
 
-      char v[SUPLA_CHANNELVALUE_SIZE] = {};
-      hvac_value->get_raw_value(v);
-      async_set_channel_value(channel, caller, group_id, eol, v,
-                              params->get_duration_sec(), false);
-      result = true;
-
-      delete hvac_value;
-    }
+    char v[SUPLA_CHANNELVALUE_SIZE] = {};
+    hvac_value.get_raw_value(v);
+    async_set_channel_value(channel, caller, group_id, eol, v,
+                            params->get_duration_sec(), false);
+    result = true;
   });
 
   return result;
