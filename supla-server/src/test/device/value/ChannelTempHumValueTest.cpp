@@ -21,6 +21,7 @@
 #include <string>
 
 #include "device/value/channel_temphum_value.h"
+#include "jsonconfig/channel/temp_hum_config.h"
 
 namespace testing {
 
@@ -140,12 +141,22 @@ TEST_F(ChannelTempHumValueTest, applyChannelProperties) {
   EXPECT_EQ(v.get_temperature(), 22.331);
   EXPECT_EQ(v.get_humidity(), 45.678);
 
-  v.apply_channel_properties(0, 0, 0, 122, 1211, 0, nullptr);
+  TChannelConfig_TemperatureAndHumidity raw_cfg = {};
+  raw_cfg.TemperatureAdjustment = 122;
+  raw_cfg.HumidityAdjustment = 1211;
+  temp_hum_config cfg;
+  cfg.set_config(&raw_cfg);
+
+  v.apply_channel_properties(0, 0, 0, 0, 0, 0, &cfg);
 
   EXPECT_EQ(v.get_temperature(), 23.551);
   EXPECT_EQ(v.get_humidity(), 57.788);
 
-  v.apply_channel_properties(0, 0, 0, -2455, -100, 0, nullptr);
+  raw_cfg.TemperatureAdjustment = -2455;
+  raw_cfg.HumidityAdjustment = -100;
+  cfg.set_config(&raw_cfg);
+
+  v.apply_channel_properties(0, 0, 0, 0, 0, 0, &cfg);
 
   EXPECT_LE(v.get_temperature(), -0.999);
   EXPECT_GE(v.get_temperature(), -1.0);
