@@ -57,9 +57,7 @@ supla_abstract_action_parameters *supla_action_hvac_parameters::copy(  // NOLINT
 }
 
 void supla_action_hvac_parameters::apply_on(supla_channel_hvac_value *value) {
-  if (params.Mode != SUPLA_HVAC_MODE_NOT_SET) {
-    value->set_mode(params.Mode);
-  }
+  value->set_mode(params.Mode);
 
   if (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET) {
     value->set_temperature_heat(params.SetpointTemperatureHeat);
