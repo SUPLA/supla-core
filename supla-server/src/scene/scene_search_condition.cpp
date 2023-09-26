@@ -22,7 +22,8 @@
 #include "scene/scene_asynctask.h"
 
 supla_scene_search_condition::supla_scene_search_condition(
-    int user_id, int scene_id, bool include_sub_tasks) {
+    int user_id, int scene_id, bool include_sub_tasks)
+    : supla_abstract_asynctask_search_condition() {
   this->user_id = user_id;
   this->scene_id = scene_id;
   this->include_sub_tasks = include_sub_tasks;
