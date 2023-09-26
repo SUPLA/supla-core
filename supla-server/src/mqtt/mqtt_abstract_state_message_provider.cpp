@@ -980,7 +980,6 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
       return get_lck_message_at_index(index, topic_prefix, topic_name, message,
                                       message_size);
 
-    case SUPLA_CHANNELFNC_THERMOSTAT:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
       supla_channel_thermostat_value *thermo_val =
           dynamic_cast<supla_channel_thermostat_value *>(channel_value);

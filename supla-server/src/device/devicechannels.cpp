@@ -772,7 +772,6 @@ bool supla_device_channels::set_on(const supla_caller &caller, int channel_id,
       case SUPLA_CHANNELFNC_POWERSWITCH:
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
       case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      case SUPLA_CHANNELFNC_THERMOSTAT:
       case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
         char c = on ? 1 : 0;
         if (toggle) {
@@ -857,7 +856,6 @@ bool supla_device_channels::is_on(int channel_id) {
       case SUPLA_CHANNELFNC_POWERSWITCH:
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
       case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      case SUPLA_CHANNELFNC_THERMOSTAT:
       case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
         char c = 0;
         channel->get_char(&c);

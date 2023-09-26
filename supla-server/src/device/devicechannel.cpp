@@ -338,7 +338,6 @@ void supla_device_channel::get_char(char *value) {
   get_value(current_value);
 
   switch (get_func()) {
-    case SUPLA_CHANNELFNC_THERMOSTAT:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
       TThermostat_Value *tv = (TThermostat_Value *)current_value;
       *value = tv->IsOn;

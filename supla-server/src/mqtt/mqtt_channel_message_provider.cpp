@@ -283,9 +283,6 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       snprintf(buf, buf_size, "IC_HEATMETER");
       break;
-    case SUPLA_CHANNELFNC_THERMOSTAT:
-      snprintf(buf, buf_size, "THERMOSTAT");
-      break;
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       snprintf(buf, buf_size, "THERMOSTATHEATPOLHOMEPLUS");
       break;
@@ -464,9 +461,6 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
       break;
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Heat meter");
-      break;
-    case SUPLA_CHANNELFNC_THERMOSTAT:
-      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Thermostat");
       break;
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Home+ Heater");
