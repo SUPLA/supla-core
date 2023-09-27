@@ -1827,6 +1827,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_async__call(void *_srpc,
                                                 char *data,
                                                 unsigned _supla_int_t data_size,
                                                 unsigned char *version) {
+  if (_srpc == NULL) {
+    return SUPLA_RESULT_FALSE;
+  }
+
   Tsrpc *srpc = (Tsrpc *)_srpc;
 
   if (!srpc_call_allowed(_srpc, call_id)) {
