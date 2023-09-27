@@ -56,12 +56,6 @@ hvac_config::hvac_config(void) : channel_json_config() {}
 
 hvac_config::hvac_config(supla_json_config *root) : channel_json_config(root) {}
 
-cJSON *hvac_config::get_hvac_root(bool force) {
-  return get_user_root_with_key("hvac", force);
-}
-
-cJSON *hvac_config::get_hvac_root(void) { return get_hvac_root(true); }
-
 string hvac_config::aux_thermometer_type_to_string(unsigned char type) {
   switch (type) {
     case SUPLA_HVAC_AUX_THERMOMETER_TYPE_NOT_SET:
@@ -139,7 +133,7 @@ unsigned char hvac_config::string_to_subfunction(const string &subfunction) {
 
 void hvac_config::merge(supla_json_config *_dst) {
   hvac_config dst(_dst);
-  supla_json_config::merge(get_hvac_root(), dst.get_hvac_root(), field_map,
+  supla_json_config::merge(get_user_root(), dst.get_user_root(), field_map,
                            false);
 }
 
@@ -161,7 +155,7 @@ void hvac_config::set_config(TChannelConfig_HVAC *config) {
     return;
   }
 
-  cJSON *root = get_hvac_root();
+  cJSON *root = get_user_root();
   if (!root) {
     return;
   }
@@ -263,7 +257,7 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config) {
 
   *config = {};
 
-  cJSON *root = get_hvac_root(false);
+  cJSON *root = get_user_root();
   if (!root) {
     return false;
   }
