@@ -498,7 +498,11 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_BIT_FUNC_RAINSENSOR 0x00002000                // ver. >= 12
 #define SUPLA_BIT_FUNC_WEIGHTSENSOR 0x00004000              // ver. >= 12
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEROOFWINDOW 0x00008000  // ver. >= 13
-#define SUPLA_BIT_FUNC_CONTROLLINGTHEFACADEBLIND 0x0010000  // ver. >= 17
+#define SUPLA_BIT_FUNC_CONTROLLINGTHEFACADEBLIND 0x00010000  // ver. >= 17
+#define SUPLA_BIT_FUNC_HVAC_THERMOSTAT 0x00020000           // ver. >= 21
+#define SUPLA_BIT_FUNC_HVAC_THERMOSTAT_AUTO 0x00040000      // ver. >= 21
+#define SUPLA_BIT_FUNC_HVAC_THERMOSTAT_DIFFERENTIAL 0x00080000  // ver. >= 21
+#define SUPLA_BIT_FUNC_HVAC_DOMESTIC_HOT_WATER 0x00100000   // ver. >= 21
 
 #define SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK 10
 #define SUPLA_EVENT_CONTROLLINGTHEGATE 20
@@ -2068,16 +2072,6 @@ typedef struct {
 #define SUPLA_THERMOSTAT_CMD_SET_TIME 12
 #define SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE 13
 
-// HVAC channel capability flags - ver. >= 21
-#define SUPLA_HVAC_CAP_FLAG_MODE_ONOFF 0x0001
-#define SUPLA_HVAC_CAP_FLAG_MODE_AUTO 0x0002  // AUTO = HEAT + COOL
-#define SUPLA_HVAC_CAP_FLAG_MODE_COOL 0x0004
-#define SUPLA_HVAC_CAP_FLAG_MODE_HEAT 0x0008
-#define SUPLA_HVAC_CAP_FLAG_MODE_DRY 0x0010
-#define SUPLA_HVAC_CAP_FLAG_MODE_FAN 0x0020
-#define SUPLA_HVAC_CAP_FLAG_DIFFERENTIAL 0x0040
-#define SUPLA_HVAC_CAP_FLAG_DOMESTIC_HOT_WATER 0x0080
-
 // Heatpol: Thermostat value flags - ver. >= 11
 #define SUPLA_THERMOSTAT_VALUE_FLAG_ON 0x0001
 #define SUPLA_THERMOSTAT_VALUE_FLAG_AUTO_MODE 0x0002
@@ -2675,6 +2669,16 @@ typedef struct {
 #define SUPLA_HVAC_SUBFUNCTION_HEAT 1
 #define SUPLA_HVAC_SUBFUNCTION_COOL 2
 
+// HVAC channel capability flags for ModeCapabilities field
+#define SUPLA_HVAC_CAP_FLAG_MODE_ONOFF 0x0001
+#define SUPLA_HVAC_CAP_FLAG_MODE_AUTO 0x0002  // AUTO = HEAT + COOL
+#define SUPLA_HVAC_CAP_FLAG_MODE_COOL                                          \
+  0x0004  // Cool mode, additionally, when set, then Cool subfunction is
+          // supported for HVAC_THERMOSTAT function
+#define SUPLA_HVAC_CAP_FLAG_MODE_HEAT                                          \
+  0x0008  // Heat mode, additionally, when set, then Heat subfunction is
+          // supported for HVAC_THERMOSTAT
+
 typedef struct {
   union {
     _supla_int_t MainThermometerChannelId;
@@ -2716,7 +2720,8 @@ typedef struct {
   unsigned char Subfunction;            // SUPLA_HVAC_SUBFUNCTION_
   unsigned char TemperatureSetpointChangeSwitchesToManualMode;  // 0 - off,
                                                                 // 1 - on (def)
-  unsigned char Reserved[50];
+  unsigned _supla_int16_t ModeCapabilities;  // bits: SUPLA_HVAC_CAP_FLAG_*
+  unsigned char Reserved[48];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
 
