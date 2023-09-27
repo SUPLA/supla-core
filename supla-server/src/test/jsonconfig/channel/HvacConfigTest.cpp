@@ -60,15 +60,14 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   EXPECT_STREQ(
       str,
       "{\"hvac\":{\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
-      "\"auxThermometerType\":\"GenericHeater\",\"BinarySensorChannelNo\":3,"
+      "\"auxThermometerType\":\"GENERIC_HEATER\",\"binarySensorChannelNo\":3,"
       "\"antiFreezeAndOverheatProtectionEnabled\":true,\"availableAlgorithms\":"
-      "[\"OnOffSetpointMiddle\",\"OnOffSetpointAtMost\"],\"usedAlgorithm\":"
-      "\"OnOffSetpointMiddle\",\"minOffTimeS\":600,\"minOnTimeS\":10,"
-      "\"outputValueOnError\":55,\"subfunction\":\"Cool\","
+      "[\"ON_OFF_SETPOINT_MIDDLE\",\"ON_OFF_SETPOINT_AT_MOST\"],"
+      "\"usedAlgorithm\":\"ON_OFF_SETPOINT_MIDDLE\",\"minOffTimeS\":600,"
+      "\"minOnTimeS\":10,\"outputValueOnError\":55,\"subfunction\":\"COOL\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":true,\"temperatures\":"
-      "{\"1\":"
-      "1,\"2\":2,\"3\":3,\"4\":4,\"5\":5,\"6\":6,\"7\":7,\"8\":8,\"9\":9,"
-      "\"10\":10,\"11\":11,\"12\":12,\"13\":13,\"14\":14,\"15\":15,\"16\":16,"
+      "{\"1\":1,\"2\":2,\"3\":3,\"4\":4,\"5\":5,\"6\":6,\"7\":7,\"8\":8,\"9\":"
+      "9,\"10\":10,\"11\":11,\"12\":12,\"13\":13,\"14\":14,\"15\":15,\"16\":16,"
       "\"17\":17,\"18\":18,\"19\":19,\"20\":20,\"21\":21,\"22\":22,\"23\":23,"
       "\"24\":24}}}");
 
@@ -124,13 +123,12 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
   EXPECT_STREQ(
       str,
       "{\"hvac\":{\"mainThermometerChannelNo\":0,\"auxThermometerChannelNo\":0,"
-      "\"auxThermometerType\":\"NotSet\",\"BinarySensorChannelNo\":0,"
+      "\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelNo\":0,"
       "\"antiFreezeAndOverheatProtectionEnabled\":false,"
       "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOffTimeS\":0,"
-      "\"minOnTimeS\":0,\"outputValueOnError\":0,\"subfunction\":\"NotSet\","
+      "\"minOnTimeS\":0,\"outputValueOnError\":0,\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
-      "\"temperatures\":{\"1\":"
-      "12345,\"2\":0,\"9\":-723,\"16\":-28910}}}");
+      "\"temperatures\":{\"1\":12345,\"2\":0,\"9\":-723,\"16\":-28910}}}");
 
   free(str);
 }
@@ -140,14 +138,14 @@ TEST_F(HvacConfigTest, merge) {
   config1.set_user_config(
       "{\"a\":\"b\", \"x\": true, \"hvac\":{\"c\": true, "
       "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
-      "\"auxThermometerType\":\"GenericHeater\","
+      "\"auxThermometerType\":\"GENERIC_HEATER\","
       "\"antiFreezeAndOverheatProtectionEnabled\":true,\"availableAlgorithms\":"
-      "[\"OnOffSetpointMiddle\"],\"usedAlgorithm\":\"OnOffSetpointMiddle\","
-      "\"minOffTimeS\":600,\"minOnTimeS\":10,\"outputValueOnError\":55,"
-      "\"temperatures\":{\"1\":1,\"2\":2,\"3\":3,\"4\":4,\"5\":5,\"6\":6,\"7\":"
-      "7,\"8\":8,\"9\":9,\"10\":10,\"11\":11,\"12\":12,\"13\":13,\"14\":14,"
-      "\"15\":15,\"16\":16,\"17\":17,\"18\":18,\"19\":19,\"20\":20,\"21\":21,"
-      "\"22\":22,\"23\":23,\"24\":24}}}");
+      "[\"ON_OFF_SETPOINT_MIDDLE\"],\"usedAlgorithm\":\"ON_OFF_SETPOINT_"
+      "MIDDLE\",\"minOffTimeS\":600,\"minOnTimeS\":10,\"outputValueOnError\":"
+      "55,\"temperatures\":{\"1\":1,\"2\":2,\"3\":3,\"4\":4,\"5\":5,\"6\":6,"
+      "\"7\":7,\"8\":8,\"9\":9,\"10\":10,\"11\":11,\"12\":12,\"13\":13,\"14\":"
+      "14,\"15\":15,\"16\":16,\"17\":17,\"18\":18,\"19\":19,\"20\":20,\"21\":"
+      "21,\"22\":22,\"23\":23,\"24\":24}}}");
 
   TChannelConfig_HVAC ds_hvac = {};
 
@@ -164,11 +162,11 @@ TEST_F(HvacConfigTest, merge) {
       str,
       "{\"a\":\"b\",\"x\":true,\"hvac\":{\"c\":true,"
       "\"mainThermometerChannelNo\":0,\"auxThermometerChannelNo\":0,"
-      "\"auxThermometerType\":\"NotSet\","
+      "\"auxThermometerType\":\"NOT_SET\","
       "\"antiFreezeAndOverheatProtectionEnabled\":false,"
       "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOffTimeS\":0,"
       "\"minOnTimeS\":0,\"outputValueOnError\":0,\"temperatures\":{\"2\":10},"
-      "\"BinarySensorChannelNo\":0,\"subfunction\":\"NotSet\","
+      "\"binarySensorChannelNo\":0,\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false}}");
 
   free(str);

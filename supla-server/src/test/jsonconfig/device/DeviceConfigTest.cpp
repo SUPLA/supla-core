@@ -115,11 +115,11 @@ TEST_F(DeviceConfigTest, allFields) {
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(
       str,
-      "{\"statusLed\":\"AlwaysOff\",\"screenBrightness\":24,\"buttonVolume\":"
+      "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":24,\"buttonVolume\":"
       "100,\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"screenSaver\":{\"delay\":123,\"mode\":\"TimeDate\",\"modesAvailable\":"
-      "[\"Off\",\"Temperature\",\"Humidity\",\"Time\",\"TimeDate\","
-      "\"TemperatureTime\",\"MainAndAuxTemperature\"]}}");
+      "\"screenSaver\":{\"delay\":123,\"mode\":\"TIME_DATE\","
+      "\"modesAvailable\":[\"OFF\",\"TEMPERATURE\",\"HUMIDITY\",\"TIME\","
+      "\"TIME_DATE\",\"TEMPERATURE_TIME\",\"MAIN_AND_AUX_TEMPERATURE\"]}}");
   free(str);
 }
 
@@ -186,7 +186,7 @@ TEST_F(DeviceConfigTest, leaveOnly) {
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
-               "{\"statusLed\":\"OnWhenConnected\",\"screenBrightness\":100,"
+               "{\"statusLed\":\"ON_WHEN_CONNECTED\",\"screenBrightness\":100,"
                "\"buttonVolume\":0,\"screenSaver\":{\"delay\":10}}");
   free(str);
 
@@ -238,7 +238,7 @@ TEST_F(DeviceConfigTest, removeFields) {
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
-               "{\"statusLed\":\"OnWhenConnected\",\"screenBrightness\":100,"
+               "{\"statusLed\":\"ON_WHEN_CONNECTED\",\"screenBrightness\":100,"
                "\"buttonVolume\":0,\"screenSaver\":{\"delay\":15}}");
   free(str);
 
@@ -275,9 +275,9 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
   device_json_config cfg1, cfg2;
 
   const char user_config[] =
-      "{\"statusLed\":\"AlwaysOff\",\"screenBrightness\":24,\"buttonVolume\":"
+      "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":24,\"buttonVolume\":"
       "100,\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"screenSaver\":{\"delay\":123,\"mode\":\"TimeDate\",\"modesAvailable\":"
+      "\"screenSaver\":{\"delay\":123,\"mode\":\"TIME_DATE\",\"modesAvailable\":"
       "[]}}";
   cfg1.set_user_config(user_config);
 
@@ -355,7 +355,7 @@ TEST_F(DeviceConfigTest, statusLED) {
   TDeviceConfig_StatusLed status_led = {};
   device_json_config cfg1;
   device_json_config cfg2;
-  cfg1.set_user_config("{\"statusLed\": \"AlwaysOff\"}");
+  cfg1.set_user_config("{\"statusLed\": \"ALWAYS_OFF\"}");
 
   EXPECT_TRUE(cfg1.get_status_led(&status_led));
   EXPECT_EQ(status_led.StatusLedType, SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF);
@@ -365,10 +365,10 @@ TEST_F(DeviceConfigTest, statusLED) {
   cfg2.set_config(&sds_config);
   char *str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str, "{\"statusLed\":\"AlwaysOff\"}");
+  EXPECT_STREQ(str, "{\"statusLed\":\"ALWAYS_OFF\"}");
   free(str);
 
-  cfg1.set_user_config("{\"statusLed\": \"OnWhenConnected\"}");
+  cfg1.set_user_config("{\"statusLed\": \"ON_WHEN_CONNECTED\"}");
 
   EXPECT_TRUE(cfg1.get_status_led(&status_led));
   EXPECT_EQ(status_led.StatusLedType,
@@ -379,10 +379,10 @@ TEST_F(DeviceConfigTest, statusLED) {
   cfg2.set_config(&sds_config);
   str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str, "{\"statusLed\":\"OnWhenConnected\"}");
+  EXPECT_STREQ(str, "{\"statusLed\":\"ON_WHEN_CONNECTED\"}");
   free(str);
 
-  cfg1.set_user_config("{\"statusLed\": \"OffWhenConnected\"}");
+  cfg1.set_user_config("{\"statusLed\": \"OFF_WHEN_CONNECTED\"}");
 
   EXPECT_TRUE(cfg1.get_status_led(&status_led));
   EXPECT_EQ(status_led.StatusLedType,
@@ -393,7 +393,7 @@ TEST_F(DeviceConfigTest, statusLED) {
   cfg2.set_config(&sds_config);
   str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str, "{\"statusLed\":\"OffWhenConnected\"}");
+  EXPECT_STREQ(str, "{\"statusLed\":\"OFF_WHEN_CONNECTED\"}");
   free(str);
 }
 
@@ -401,7 +401,7 @@ TEST_F(DeviceConfigTest, screenSaverMode) {
   TDeviceConfig_ScreensaverMode mode = {};
   device_json_config cfg1;
   device_json_config cfg2;
-  cfg1.set_user_config("{\"screenSaver\": {\"mode\": \"TimeDate\"}}");
+  cfg1.set_user_config("{\"screenSaver\": {\"mode\": \"TIME_DATE\"}}");
 
   EXPECT_TRUE(cfg1.get_screen_saver_mode(&mode));
   EXPECT_EQ(mode.ScreensaverMode, SUPLA_DEVCFG_SCREENSAVER_MODE_TIME_DATE);
@@ -413,10 +413,10 @@ TEST_F(DeviceConfigTest, screenSaverMode) {
   char *str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(
-      str, "{\"screenSaver\":{\"mode\":\"TimeDate\",\"modesAvailable\":[]}}");
+      str, "{\"screenSaver\":{\"mode\":\"TIME_DATE\",\"modesAvailable\":[]}}");
   free(str);
 
-  cfg1.set_user_config("{\"screenSaver\": {\"mode\": \"Humidity\"}}");
+  cfg1.set_user_config("{\"screenSaver\": {\"mode\": \"HUMIDITY\"}}");
 
   EXPECT_TRUE(cfg1.get_screen_saver_mode(&mode));
   EXPECT_EQ(mode.ScreensaverMode, SUPLA_DEVCFG_SCREENSAVER_MODE_HUMIDITY);
@@ -427,12 +427,12 @@ TEST_F(DeviceConfigTest, screenSaverMode) {
   str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(
-      str, "{\"screenSaver\":{\"mode\":\"Humidity\",\"modesAvailable\":[]}}");
+      str, "{\"screenSaver\":{\"mode\":\"HUMIDITY\",\"modesAvailable\":[]}}");
   free(str);
 
   cfg1.set_user_config(
-      "{\"screenSaver\": {\"mode\": \"MainAndAuxTemperature\", "
-      "\"modesAvailable\":[\"MainAndAuxTemperature\", \"Humidity\"]}}");
+      "{\"screenSaver\": {\"mode\": \"MAIN_AND_AUX_TEMPERATURE\", "
+      "\"modesAvailable\":[\"MAIN_AND_AUX_TEMPERATURE\", \"HUMIDITY\"]}}");
 
   EXPECT_TRUE(cfg1.get_screen_saver_mode(&mode));
   EXPECT_EQ(mode.ScreensaverMode,
@@ -446,15 +446,16 @@ TEST_F(DeviceConfigTest, screenSaverMode) {
   cfg2.set_config(&sds_config);
   str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str,
-               "{\"screenSaver\":{\"mode\":\"MainAndAuxTemperature\","
-               "\"modesAvailable\":[\"Humidity\",\"MainAndAuxTemperature\"]}}");
+  EXPECT_STREQ(
+      str,
+      "{\"screenSaver\":{\"mode\":\"MAIN_AND_AUX_TEMPERATURE\","
+      "\"modesAvailable\":[\"HUMIDITY\",\"MAIN_AND_AUX_TEMPERATURE\"]}}");
   free(str);
 }
 
 TEST_F(DeviceConfigTest, availableFields) {
   device_json_config cfg;
-  cfg.set_user_config("{\"screenSaver\": {\"mode\": \"Humidity\"}}");
+  cfg.set_user_config("{\"screenSaver\": {\"mode\": \"HUMIDITY\"}}");
 
   EXPECT_EQ(cfg.get_available_fields(),
             SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE);
@@ -462,7 +463,7 @@ TEST_F(DeviceConfigTest, availableFields) {
   cfg.set_user_config(
       "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
       "\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"screenSaver\": {\"delay\":123,\"mode\": \"Humidity\"}}");
+      "\"screenSaver\": {\"delay\":123,\"mode\": \"HUMIDITY\"}}");
 
   EXPECT_EQ(cfg.get_available_fields(),
             SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |

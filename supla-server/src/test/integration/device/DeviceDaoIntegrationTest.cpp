@@ -178,11 +178,11 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
         config_str,
         "{\"pricePerUnit\":0.56,\"currency\":\"PLN\",\"hvac\":{"
         "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":0,"
-        "\"auxThermometerType\":\"NotSet\",\"BinarySensorChannelNo\":0,"
+        "\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelNo\":0,"
         "\"antiFreezeAndOverheatProtectionEnabled\":false,"
         "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOnTimeS\":0,"
-        "\"minOffTimeS\":0,\"outputValueOnError\":0,\"subfunction\":\"NotSet\","
-        "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
+        "\"minOffTimeS\":0,\"outputValueOnError\":0,\"subfunction\":\"NOT_"
+        "SET\",\"temperatureSetpointChangeSwitchesToManualMode\":false,"
         "\"temperatures\":{}}}");
     free(config_str);
   }

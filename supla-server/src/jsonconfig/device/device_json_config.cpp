@@ -32,14 +32,14 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
 
 const map<unsigned _supla_int16_t, string>
     device_json_config::screen_saver_modes_map = {
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_OFF, "Off"},
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_TEMPERATURE, "Temperature"},
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_HUMIDITY, "Humidity"},
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_TIME, "Time"},
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_TIME_DATE, "TimeDate"},
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_TEMPERATURE_TIME, "TemperatureTime"},
+        {SUPLA_DEVCFG_SCREENSAVER_MODE_OFF, "OFF"},
+        {SUPLA_DEVCFG_SCREENSAVER_MODE_TEMPERATURE, "TEMPERATURE"},
+        {SUPLA_DEVCFG_SCREENSAVER_MODE_HUMIDITY, "HUMIDITY"},
+        {SUPLA_DEVCFG_SCREENSAVER_MODE_TIME, "TIME"},
+        {SUPLA_DEVCFG_SCREENSAVER_MODE_TIME_DATE, "TIME_DATE"},
+        {SUPLA_DEVCFG_SCREENSAVER_MODE_TEMPERATURE_TIME, "TEMPERATURE_TIME"},
         {SUPLA_DEVCFG_SCREENSAVER_MODE_MAIN_AND_AUX_TEMPERATURE,
-         "MainAndAuxTemperature"}};
+         "MAIN_AND_AUX_TEMPERATURE"}};
 
 const char device_json_config::modesAvailable[] = "modesAvailable";
 
@@ -53,19 +53,19 @@ device_json_config::~device_json_config(void) {}
 string device_json_config::status_led_to_string(unsigned char status) {
   switch (status) {
     case SUPLA_DEVCFG_STATUS_LED_OFF_WHEN_CONNECTED:
-      return "OffWhenConnected";
+      return "OFF_WHEN_CONNECTED";
     case SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF:
-      return "AlwaysOff";
+      return "ALWAYS_OFF";
   }
 
-  return "OnWhenConnected";
+  return "ON_WHEN_CONNECTED";
 }
 
 unsigned char device_json_config::string_to_status_led(
     const std::string &status) {
-  if (status == "OffWhenConnected") {
+  if (status == "OFF_WHEN_CONNECTED") {
     return SUPLA_DEVCFG_STATUS_LED_OFF_WHEN_CONNECTED;
-  } else if (status == "AlwaysOff") {
+  } else if (status == "ALWAYS_OFF") {
     return SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF;
   }
 

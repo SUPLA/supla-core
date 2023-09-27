@@ -39,7 +39,7 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_MAIN_THERMOMETER_CHANNEL_NO, "mainThermometerChannelNo"},
     {FIELD_AUX_THERMOMETER_CHANNEL_NO, "auxThermometerChannelNo"},
     {FIELD_AUX_THERMOMETER_TYPE, "auxThermometerType"},
-    {FIELD_BINARY_SENSOR_CHANNEL_NO, "BinarySensorChannelNo"},
+    {FIELD_BINARY_SENSOR_CHANNEL_NO, "binarySensorChannelNo"},
     {FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED,
      "antiFreezeAndOverheatProtectionEnabled"},
     {FIELD_AVAILABLE_ALGORITHMS, "availableAlgorithms"},
@@ -65,32 +65,32 @@ cJSON *hvac_config::get_hvac_root(void) { return get_hvac_root(true); }
 string hvac_config::aux_thermometer_type_to_string(unsigned char type) {
   switch (type) {
     case SUPLA_HVAC_AUX_THERMOMETER_TYPE_NOT_SET:
-      return "NotSet";
+      return "NOT_SET";
     case SUPLA_HVAC_AUX_THERMOMETER_TYPE_DISABLED:
-      return "Disabled";
+      return "DISABLED";
     case SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR:
-      return "Floor";
+      return "FLOOR";
     case SUPLA_HVAC_AUX_THERMOMETER_TYPE_WATER:
-      return "Wather";
+      return "WATER";
     case SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_HEATER:
-      return "GenericHeater";
+      return "GENERIC_HEATER";
     case SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER:
-      return "GenericCooler";
+      return "GENERIC_COOLER";
   }
 
   return "";
 }
 
 unsigned char hvac_config::string_to_aux_thermometer_type(const string &type) {
-  if (type == "Disabled") {
+  if (type == "DISABLED") {
     return SUPLA_HVAC_AUX_THERMOMETER_TYPE_DISABLED;
-  } else if (type == "Floor") {
+  } else if (type == "FLOOR") {
     return SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR;
-  } else if (type == "Wather") {
+  } else if (type == "WATER") {
     return SUPLA_HVAC_AUX_THERMOMETER_TYPE_WATER;
-  } else if (type == "GenericHeater") {
+  } else if (type == "GENERIC_HEATER") {
     return SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_HEATER;
-  } else if (type == "GenericCooler") {
+  } else if (type == "GENERIC_COOLER") {
     return SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER;
   }
 
@@ -100,17 +100,17 @@ unsigned char hvac_config::string_to_aux_thermometer_type(const string &type) {
 string hvac_config::alg_to_string(unsigned _supla_int16_t alg) {
   switch (alg) {
     case SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE:
-      return "OnOffSetpointMiddle";
+      return "ON_OFF_SETPOINT_MIDDLE";
     case SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST:
-      return "OnOffSetpointAtMost";
+      return "ON_OFF_SETPOINT_AT_MOST";
   }
   return "";
 }
 
 unsigned _supla_int16_t hvac_config::string_to_alg(const string &alg) {
-  if (alg == "OnOffSetpointMiddle") {
+  if (alg == "ON_OFF_SETPOINT_MIDDLE") {
     return SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE;
-  } else if (alg == "OnOffSetpointAtMost") {
+  } else if (alg == "ON_OFF_SETPOINT_AT_MOST") {
     return SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST;
   }
 
@@ -120,17 +120,17 @@ unsigned _supla_int16_t hvac_config::string_to_alg(const string &alg) {
 string hvac_config::subfunction_to_string(unsigned char subfunction) {
   switch (subfunction) {
     case SUPLA_HVAC_SUBFUNCTION_HEAT:
-      return "Heat";
+      return "HEAT";
     case SUPLA_HVAC_SUBFUNCTION_COOL:
-      return "Cool";
+      return "COOL";
   }
-  return "NotSet";
+  return "NOT_SET";
 }
 
 unsigned char hvac_config::string_to_subfunction(const string &subfunction) {
-  if (subfunction == "Heat") {
+  if (subfunction == "HEAT") {
     return SUPLA_HVAC_SUBFUNCTION_HEAT;
-  } else if (subfunction == "Cool") {
+  } else if (subfunction == "COOL") {
     return SUPLA_HVAC_SUBFUNCTION_COOL;
   }
 
