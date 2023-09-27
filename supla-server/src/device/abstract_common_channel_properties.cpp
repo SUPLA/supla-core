@@ -98,7 +98,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         if (json_config) {
           hvac_config config(json_config);
           TChannelConfig_HVAC hvac = {};
-          if (config.get_config(&hvac)) {
+          if (config.get_config(&hvac, get_channel_number())) {
             int device_id = get_device_id();
 
             bool find_main =
@@ -206,7 +206,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
             if (json_config) {
               hvac_config config(json_config);
               TChannelConfig_HVAC hvac = {};
-              if (config.get_config(&hvac)) {
+              if (config.get_config(&hvac, get_channel_number())) {
                 if (type == SUPLA_CHANNELTYPE_BINARYSENSOR) {
                   if (hvac.BinarySensorChannelNo == get_channel_number()) {
                     add_relation(relations, get_id(), props->get_id(),
@@ -248,7 +248,8 @@ supla_abstract_common_channel_properties::get_channel_relations(
 
 template <typename jsonT, typename sdT>
 void supla_abstract_common_channel_properties::json_to_config(
-    char *config, unsigned _supla_int16_t *config_size) {
+    char *config, unsigned _supla_int16_t *config_size,
+    std::function<bool(jsonT *, sdT *)> get_config) {
   *config_size = sizeof(sdT);
 
   sdT *ws_cfg = (sdT *)config;
@@ -256,7 +257,7 @@ void supla_abstract_common_channel_properties::json_to_config(
   channel_json_config *json_config = get_json_config();
 
   jsonT *_json_config = new jsonT(json_config);
-  if (!_json_config->get_config(ws_cfg)) {
+  if (!get_config(_json_config, ws_cfg)) {
     *config_size = 0;
   }
   delete _json_config;
@@ -265,6 +266,12 @@ void supla_abstract_common_channel_properties::json_to_config(
     delete json_config;
   }
 }
+
+#define JSON_TO_CONFIG(jsonT, sdT, config, config_size)                    \
+  json_to_config<jsonT, sdT>(config, config_size,                          \
+                             [](jsonT *json_config, sdT *ws_cfg) -> bool { \
+                               return json_config->get_config(ws_cfg);     \
+                             });
 
 void supla_abstract_common_channel_properties::get_config(
     char *config, unsigned _supla_int16_t *config_size,
@@ -280,13 +287,13 @@ void supla_abstract_common_channel_properties::get_config(
 
   if (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE) {
     if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE) {
-      json_to_config<weekly_schedule_config, TChannelConfig_WeeklySchedule>(
-          config, config_size);
+      JSON_TO_CONFIG(weekly_schedule_config, TChannelConfig_WeeklySchedule,
+                     config, config_size);
 
       return;
     } else if (config_type == SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE) {
-      json_to_config<alt_weekly_schedule_config, TChannelConfig_WeeklySchedule>(
-          config, config_size);
+      JSON_TO_CONFIG(alt_weekly_schedule_config, TChannelConfig_WeeklySchedule,
+                     config, config_size);
 
       return;
     }
@@ -297,7 +304,11 @@ void supla_abstract_common_channel_properties::get_config(
   }
 
   if (get_type() == SUPLA_CHANNELTYPE_HVAC) {
-    json_to_config<hvac_config, TChannelConfig_HVAC>(config, config_size);
+    json_to_config<hvac_config, TChannelConfig_HVAC>(
+        config, config_size,
+        [&](hvac_config *json_config, TChannelConfig_HVAC *ws_cfg) -> bool {
+          return json_config->get_config(ws_cfg, get_channel_number());
+        });
 
     if (resolve_channel_identifiers) {
       TChannelConfig_HVAC *hvac = (TChannelConfig_HVAC *)config;
@@ -338,8 +349,8 @@ void supla_abstract_common_channel_properties::get_config(
 
     return;
   } else if (get_type() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
-    json_to_config<binary_sensor_config, TChannelConfig_BinarySensor>(
-        config, config_size);
+    JSON_TO_CONFIG(binary_sensor_config, TChannelConfig_BinarySensor, config,
+                   config_size);
     return;
   }
 
@@ -380,8 +391,8 @@ void supla_abstract_common_channel_properties::get_config(
     case SUPLA_CHANNELFNC_THERMOMETER:
     case SUPLA_CHANNELFNC_HUMIDITY:
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-      json_to_config<temp_hum_config, TChannelConfig_TemperatureAndHumidity>(
-          config, config_size);
+      JSON_TO_CONFIG(temp_hum_config, TChannelConfig_TemperatureAndHumidity,
+                     config, config_size);
       break;
   }
 }
@@ -408,7 +419,7 @@ int supla_abstract_common_channel_properties::set_user_config(
       config_size == sizeof(TChannelConfig_HVAC)) {
     json_config = new hvac_config();
     static_cast<hvac_config *>(json_config)
-        ->set_config((TChannelConfig_HVAC *)config);
+        ->set_config((TChannelConfig_HVAC *)config, get_channel_number());
   } else if ((config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE ||
               config_type == SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE) &&
              config_size == sizeof(TChannelConfig_WeeklySchedule) &&

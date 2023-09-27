@@ -530,7 +530,7 @@ unsigned char supla_client_channel::get_real_config_type(
     TChannelConfig_HVAC native_cfg = {};
     lock();
     hvac_config hvac_cfg(json_config);
-    hvac_cfg.get_config(&native_cfg);
+    hvac_cfg.get_config(&native_cfg, get_channel_number());
     unlock();
 
     if (native_cfg.Subfunction == SUPLA_HVAC_SUBFUNCTION_COOL) {

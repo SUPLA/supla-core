@@ -150,7 +150,31 @@ void hvac_config::add_algorithm_to_array(cJSON *root, cJSON *algs,
   }
 }
 
-void hvac_config::set_config(TChannelConfig_HVAC *config) {
+void hvac_config::set_channel_number(cJSON *root, int field,
+                                     unsigned char cfg_channel_number,
+                                     unsigned char channel_number) {
+  set_item_value(
+      root, field_map.at(field).c_str(),
+      channel_number == cfg_channel_number ? cJSON_NULL : cJSON_Number, true,
+      nullptr, cfg_channel_number);
+}
+
+bool hvac_config::get_channel_number(cJSON *root, int field,
+                                     unsigned char channel_number,
+                                     unsigned char *result) {
+  double dbl_value = 0;
+  if (get_double(root, field_map.at(field).c_str(), &dbl_value)) {
+    *result = dbl_value;
+    return true;
+  }
+
+  *result = channel_number;
+  cJSON *item = cJSON_GetObjectItem(root, field_map.at(field).c_str());
+  return item != nullptr && cJSON_IsNull(item);
+}
+
+void hvac_config::set_config(TChannelConfig_HVAC *config,
+                             unsigned char channel_number) {
   if (!config) {
     return;
   }
@@ -160,19 +184,19 @@ void hvac_config::set_config(TChannelConfig_HVAC *config) {
     return;
   }
 
-  set_item_value(root, field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_NO).c_str(),
-                 cJSON_Number, true, nullptr, config->MainThermometerChannelNo);
+  set_channel_number(root, FIELD_MAIN_THERMOMETER_CHANNEL_NO,
+                     config->MainThermometerChannelNo, channel_number);
 
-  set_item_value(root, field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_NO).c_str(),
-                 cJSON_Number, true, nullptr, config->AuxThermometerChannelNo);
+  set_channel_number(root, FIELD_AUX_THERMOMETER_CHANNEL_NO,
+                     config->AuxThermometerChannelNo, channel_number);
 
   set_item_value(
       root, field_map.at(FIELD_AUX_THERMOMETER_TYPE).c_str(), cJSON_String,
       true, aux_thermometer_type_to_string(config->AuxThermometerType).c_str(),
       0);
 
-  set_item_value(root, field_map.at(FIELD_BINARY_SENSOR_CHANNEL_NO).c_str(),
-                 cJSON_Number, true, nullptr, config->BinarySensorChannelNo);
+  set_channel_number(root, FIELD_BINARY_SENSOR_CHANNEL_NO,
+                     config->BinarySensorChannelNo, channel_number);
 
   set_item_value(
       root,
@@ -250,7 +274,8 @@ void hvac_config::set_config(TChannelConfig_HVAC *config) {
   }
 }
 
-bool hvac_config::get_config(TChannelConfig_HVAC *config) {
+bool hvac_config::get_config(TChannelConfig_HVAC *config,
+                             unsigned char channel_number) {
   if (!config) {
     return false;
   }
@@ -264,16 +289,13 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config) {
 
   bool result = false;
 
-  double dbl_value = 0;
-  if (get_double(root, field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_NO).c_str(),
-                 &dbl_value)) {
-    config->MainThermometerChannelNo = dbl_value;
+  if (get_channel_number(root, FIELD_MAIN_THERMOMETER_CHANNEL_NO,
+                         channel_number, &config->MainThermometerChannelNo)) {
     result = true;
   }
 
-  if (get_double(root, field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_NO).c_str(),
-                 &dbl_value)) {
-    config->AuxThermometerChannelNo = dbl_value;
+  if (get_channel_number(root, FIELD_AUX_THERMOMETER_CHANNEL_NO, channel_number,
+                         &config->AuxThermometerChannelNo)) {
     result = true;
   }
 
@@ -284,9 +306,8 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config) {
     result = true;
   }
 
-  if (get_double(root, field_map.at(FIELD_BINARY_SENSOR_CHANNEL_NO).c_str(),
-                 &dbl_value)) {
-    config->BinarySensorChannelNo = dbl_value;
+  if (get_channel_number(root, FIELD_BINARY_SENSOR_CHANNEL_NO, channel_number,
+                         &config->BinarySensorChannelNo)) {
     result = true;
   }
 
@@ -318,6 +339,8 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config) {
     config->UsedAlgorithm = string_to_alg(str_value);
     result = true;
   }
+
+  double dbl_value = 0;
 
   if (get_double(root, field_map.at(FIELD_MIN_OFF_TIME_S).c_str(),
                  &dbl_value) &&

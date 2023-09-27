@@ -53,7 +53,7 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   }
 
   hvac_config config1;
-  config1.set_config(&ds_hvac1);
+  config1.set_config(&ds_hvac1, 0);
 
   char *str = config1.get_user_config();
   ASSERT_NE(str, nullptr);
@@ -76,7 +76,7 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   free(str);
 
   TChannelConfig_HVAC ds_hvac2 = {};
-  config2.get_config(&ds_hvac2);
+  config2.get_config(&ds_hvac2, 0);
 
   ds_hvac1.AvailableAlgorithms = SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE |
                                  SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST;
@@ -89,15 +89,28 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
 TEST_F(HvacConfigTest, getConfigResult) {
   hvac_config config;
   TChannelConfig_HVAC ds_hvac = {};
-  EXPECT_FALSE(config.get_config(&ds_hvac));
+  EXPECT_FALSE(config.get_config(&ds_hvac, 0));
 
   config.set_user_config("{}");
 
-  EXPECT_FALSE(config.get_config(&ds_hvac));
+  EXPECT_FALSE(config.get_config(&ds_hvac, 0));
 
   config.set_user_config("{\"minOffTimeS\":600}");
 
-  EXPECT_TRUE(config.get_config(&ds_hvac));
+  EXPECT_TRUE(config.get_config(&ds_hvac, 0));
+}
+
+TEST_F(HvacConfigTest, getUnsetChannelNumber) {
+  hvac_config config;
+  TChannelConfig_HVAC ds_hvac = {};
+
+  EXPECT_FALSE(config.get_config(&ds_hvac, 10));
+  EXPECT_EQ(ds_hvac.BinarySensorChannelNo, 10);
+
+  config.set_user_config("{\"binarySensorChannelNo\":null}");
+
+  EXPECT_TRUE(config.get_config(&ds_hvac, 15));
+  EXPECT_EQ(ds_hvac.BinarySensorChannelNo, 15);
 }
 
 TEST_F(HvacConfigTest, selectedTemperatures) {
@@ -116,14 +129,14 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
   ds_hvac.Temperatures.Temperature[15] = -28910;
 
   hvac_config config;
-  config.set_config(&ds_hvac);
+  config.set_config(&ds_hvac, 0);
 
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
-      "{\"mainThermometerChannelNo\":0,\"auxThermometerChannelNo\":0,"
-      "\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelNo\":0,"
+      "{\"mainThermometerChannelNo\":null,\"auxThermometerChannelNo\":null,"
+      "\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelNo\":null,"
       "\"antiFreezeAndOverheatProtectionEnabled\":false,"
       "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOffTimeS\":0,"
       "\"minOnTimeS\":0,\"outputValueOnError\":0,\"subfunction\":\"NOT_SET\","
@@ -153,7 +166,7 @@ TEST_F(HvacConfigTest, merge) {
   ds_hvac.Temperatures.Temperature[1] = 10;
 
   hvac_config config2;
-  config2.set_config(&ds_hvac);
+  config2.set_config(&ds_hvac, 0);
   config2.merge(&config1);
 
   char *str = config1.get_user_config();
@@ -161,12 +174,12 @@ TEST_F(HvacConfigTest, merge) {
   EXPECT_STREQ(
       str,
       "{\"a\":\"b\",\"x\":true,\"c\":true,"
-      "\"mainThermometerChannelNo\":0,\"auxThermometerChannelNo\":0,"
+      "\"mainThermometerChannelNo\":null,\"auxThermometerChannelNo\":null,"
       "\"auxThermometerType\":\"NOT_SET\","
       "\"antiFreezeAndOverheatProtectionEnabled\":false,"
       "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOffTimeS\":0,"
       "\"minOnTimeS\":0,\"outputValueOnError\":0,\"temperatures\":{\"2\":10},"
-      "\"binarySensorChannelNo\":0,\"subfunction\":\"NOT_SET\","
+      "\"binarySensorChannelNo\":null,\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false}");
 
   free(str);

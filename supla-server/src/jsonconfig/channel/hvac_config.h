@@ -37,13 +37,18 @@ class hvac_config : public channel_json_config {
   void add_algorithm_to_array(cJSON *root, cJSON *algs,
                               TChannelConfig_HVAC *config,
                               unsigned _supla_int16_t alg);
+  void set_channel_number(cJSON *root, int field,
+                          unsigned char cfg_channel_number,
+                          unsigned char channel_number);
+  bool get_channel_number(cJSON *root, int field, unsigned char channel_number,
+                          unsigned char *result);
 
  public:
   explicit hvac_config(supla_json_config *root);
   hvac_config(void);
   virtual void merge(supla_json_config *dst);
-  void set_config(TChannelConfig_HVAC *config);
-  bool get_config(TChannelConfig_HVAC *config);
+  void set_config(TChannelConfig_HVAC *config, unsigned char channel_number);
+  bool get_config(TChannelConfig_HVAC *config, unsigned char channel_number);
 };
 
 #endif /* HVAC_CONFIG_H_ */

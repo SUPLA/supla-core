@@ -164,7 +164,7 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
   TChannelConfig_HVAC ds_hvac = {};
   ds_hvac.MainThermometerChannelNo = 1;
   hvac_config cfg1;
-  cfg1.set_config(&ds_hvac);
+  cfg1.set_config(&ds_hvac, 0);
 
   EXPECT_TRUE(dao->set_channel_user_config(2, 144, &cfg1));
 
