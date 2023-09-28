@@ -177,8 +177,8 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
     EXPECT_STREQ(
         config_str,
         "{\"pricePerUnit\":0.56,\"currency\":\"PLN\","
-        "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":0,"
-        "\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelNo\":0,"
+        "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":null,"
+        "\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelNo\":null,"
         "\"antiFreezeAndOverheatProtectionEnabled\":false,"
         "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOnTimeS\":0,"
         "\"minOffTimeS\":0,\"outputValueOnError\":0,\"subfunction\":\"NOT_"
