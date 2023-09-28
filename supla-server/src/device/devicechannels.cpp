@@ -1148,6 +1148,10 @@ bool supla_device_channels::action_open_close(const supla_caller &caller,
           result = set_device_channel_char_value(caller, channel, group_id, eol,
                                                  1, cancel_tasks);
           break;
+        case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+          result = set_device_channel_char_value(caller, channel, group_id, eol,
+                                                 open ? 1 : 0, false);
+          break;
       }
     }
   }
