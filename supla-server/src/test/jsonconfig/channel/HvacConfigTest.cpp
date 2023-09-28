@@ -66,10 +66,11 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
       "\"usedAlgorithm\":\"ON_OFF_SETPOINT_MIDDLE\",\"minOffTimeS\":600,"
       "\"minOnTimeS\":10,\"outputValueOnError\":55,\"subfunction\":\"COOL\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":true,\"temperatures\":"
-      "{\"1\":1,\"2\":2,\"3\":3,\"4\":4,\"5\":5,\"6\":6,\"7\":7,\"8\":8,\"9\":"
-      "9,\"10\":10,\"11\":11,\"12\":12,\"13\":13,\"14\":14,\"15\":15,\"16\":16,"
-      "\"17\":17,\"18\":18,\"19\":19,\"20\":20,\"21\":21,\"22\":22,\"23\":23,"
-      "\"24\":24}}");
+      "{\"freezeProtection\":1,\"eco\":2,\"comfort\":3,\"boost\":4,"
+      "\"heatProtection\":5,\"histeresis\":6,\"belowAlarm\":7,\"aboveAlarm\":8,"
+      "\"auxMinSetpoint\":9,\"auxMaxSetpoint\":10,\"roomMin\":11,\"roomMax\":"
+      "12,\"auxMin\":13,\"auxMax\":14,\"histeresisMin\":15,\"histeresisMax\":"
+      "16,\"autoOffsetMin\":17,\"autoOffsetMax\":18}}");
 
   hvac_config config2;
   config2.set_user_config(str);
@@ -77,6 +78,14 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
 
   TChannelConfig_HVAC ds_hvac2 = {};
   config2.get_config(&ds_hvac2, 0);
+
+  // Set unused to zero
+  ds_hvac1.Temperatures.Index = ds_hvac2.Temperatures.Index;
+  for (int a = 0; a < size; a++) {
+    if (!(ds_hvac1.Temperatures.Index & (1 << a))) {
+      ds_hvac1.Temperatures.Temperature[a] = 0;
+    }
+  }
 
   ds_hvac1.AvailableAlgorithms = SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE |
                                  SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST;
@@ -141,7 +150,8 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
       "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOffTimeS\":0,"
       "\"minOnTimeS\":0,\"outputValueOnError\":0,\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
-      "\"temperatures\":{\"1\":12345,\"2\":0,\"9\":-723,\"16\":-28910}}");
+      "\"temperatures\":{\"freezeProtection\":12345,\"eco\":0,"
+      "\"auxMinSetpoint\":-723,\"histeresisMax\":-28910}}");
 
   free(str);
 }
@@ -155,10 +165,11 @@ TEST_F(HvacConfigTest, merge) {
       "\"antiFreezeAndOverheatProtectionEnabled\":true,\"availableAlgorithms\":"
       "[\"ON_OFF_SETPOINT_MIDDLE\"],\"usedAlgorithm\":\"ON_OFF_SETPOINT_"
       "MIDDLE\",\"minOffTimeS\":600,\"minOnTimeS\":10,\"outputValueOnError\":"
-      "55,\"temperatures\":{\"1\":1,\"2\":2,\"3\":3,\"4\":4,\"5\":5,\"6\":6,"
-      "\"7\":7,\"8\":8,\"9\":9,\"10\":10,\"11\":11,\"12\":12,\"13\":13,\"14\":"
-      "14,\"15\":15,\"16\":16,\"17\":17,\"18\":18,\"19\":19,\"20\":20,\"21\":"
-      "21,\"22\":22,\"23\":23,\"24\":24}}");
+      "55,\"temperatures\":{\"freezeProtection\":1,\"eco\":2,\"comfort\":3,"
+      "\"boost\":4,\"heatProtection\":5,\"histeresis\":6,\"belowAlarm\":7,"
+      "\"aboveAlarm\":8,\"auxMinSetpoint\":9,\"auxMaxSetpoint\":10,\"roomMin\":"
+      "11,\"roomMax\":12,\"auxMin\":13,\"auxMax\":14,\"histeresisMin\":15,"
+      "\"histeresisMax\":16,\"autoOffsetMin\":17,\"autoOffsetMax\":18}}");
 
   TChannelConfig_HVAC ds_hvac = {};
 
@@ -178,7 +189,7 @@ TEST_F(HvacConfigTest, merge) {
       "\"auxThermometerType\":\"NOT_SET\","
       "\"antiFreezeAndOverheatProtectionEnabled\":false,"
       "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOffTimeS\":0,"
-      "\"minOnTimeS\":0,\"outputValueOnError\":0,\"temperatures\":{\"2\":10},"
+      "\"minOnTimeS\":0,\"outputValueOnError\":0,\"temperatures\":{\"eco\":10},"
       "\"binarySensorChannelNo\":null,\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false}");
 

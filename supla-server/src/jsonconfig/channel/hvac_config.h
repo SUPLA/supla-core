@@ -28,12 +28,14 @@
 class hvac_config : public channel_json_config {
  private:
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
+  static const std::map<unsigned int, std::string> temperatures_map;
   std::string aux_thermometer_type_to_string(unsigned char type);
   unsigned char string_to_aux_thermometer_type(const std::string &type);
   std::string alg_to_string(unsigned _supla_int16_t alg);
   unsigned _supla_int16_t string_to_alg(const std::string &alg);
   std::string subfunction_to_string(unsigned char subfunction);
   unsigned char string_to_subfunction(const std::string &subfunction);
+  std::string temperature_key_to_string(unsigned int temperature_key);
   void add_algorithm_to_array(cJSON *root, cJSON *algs,
                               TChannelConfig_HVAC *config,
                               unsigned _supla_int16_t alg);

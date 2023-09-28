@@ -52,6 +52,26 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
      "temperatureSetpointChangeSwitchesToManualMode"},
     {FIELD_TEMPERATURES, "temperatures"}};
 
+const map<unsigned int, string> hvac_config::temperatures_map = {
+    {TEMPERATURE_FREEZE_PROTECTION, "freezeProtection"},
+    {TEMPERATURE_ECO, "eco"},
+    {TEMPERATURE_COMFORT, "comfort"},
+    {TEMPERATURE_BOOST, "boost"},
+    {TEMPERATURE_HEAT_PROTECTION, "heatProtection"},
+    {TEMPERATURE_HISTERESIS, "histeresis"},
+    {TEMPERATURE_BELOW_ALARM, "belowAlarm"},
+    {TEMPERATURE_ABOVE_ALARM, "aboveAlarm"},
+    {TEMPERATURE_AUX_MIN_SETPOINT, "auxMinSetpoint"},
+    {TEMPERATURE_AUX_MAX_SETPOINT, "auxMaxSetpoint"},
+    {TEMPERATURE_ROOM_MIN, "roomMin"},
+    {TEMPERATURE_ROOM_MAX, "roomMax"},
+    {TEMPERATURE_AUX_MIN, "auxMin"},
+    {TEMPERATURE_AUX_MAX, "auxMax"},
+    {TEMPERATURE_HISTERESIS_MIN, "histeresisMin"},
+    {TEMPERATURE_HISTERESIS_MAX, "histeresisMax"},
+    {TEMPERATURE_AUTO_OFFSET_MIN, "autoOffsetMin"},
+    {TEMPERATURE_AUTO_OFFSET_MAX, "autoOffsetMax"}};
+
 hvac_config::hvac_config(void) : channel_json_config() {}
 
 hvac_config::hvac_config(supla_json_config *root) : channel_json_config(root) {}
@@ -129,6 +149,17 @@ unsigned char hvac_config::string_to_subfunction(const string &subfunction) {
   }
 
   return SUPLA_HVAC_SUBFUNCTION_NOT_SET;
+}
+
+std::string hvac_config::temperature_key_to_string(
+    unsigned int temperature_key) {
+  for (auto it = temperatures_map.cbegin(); it != temperatures_map.cend();
+       ++it) {
+    if (it->first == temperature_key) {
+      return it->second;
+    }
+  }
+  return "";
 }
 
 void hvac_config::merge(supla_json_config *_dst) {
@@ -266,9 +297,11 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
 
   for (int a = 0; a < size; a++) {
     if (config->Temperatures.Index & idx) {
-      string name = std::to_string(a + 1);
-      cJSON_AddNumberToObject(temperatures, name.c_str(),
-                              config->Temperatures.Temperature[a]);
+      string key = temperature_key_to_string(idx);
+      if (!key.empty()) {
+        cJSON_AddNumberToObject(temperatures, key.c_str(),
+                                config->Temperatures.Temperature[a]);
+      }
     }
     idx <<= 1;
   }
@@ -381,15 +414,20 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
       cJSON_GetObjectItem(root, field_map.at(FIELD_TEMPERATURES).c_str());
 
   if (temperatures && cJSON_IsObject(temperatures)) {
-    int size =
-        sizeof(config->Temperatures.Temperature) / sizeof(_supla_int16_t);
-    for (int a = 0; a < size; a++) {
-      string name = std::to_string(a + 1);
-      cJSON *item = cJSON_GetObjectItem(temperatures, name.c_str());
+    for (auto it = temperatures_map.cbegin(); it != temperatures_map.cend();
+         ++it) {
+      cJSON *item = cJSON_GetObjectItem(temperatures, it->second.c_str());
       if (item && cJSON_IsNumber(item)) {
-        config->Temperatures.Temperature[a] = cJSON_GetNumberValue(item);
-        config->Temperatures.Index |= 1 << a;
-        result = true;
+        unsigned int n = 1;
+        for (size_t a = 0; a < sizeof(n) * 8; a++) {
+          if (n == it->first) {
+            config->Temperatures.Temperature[a] = cJSON_GetNumberValue(item);
+            config->Temperatures.Index |= n;
+            result = true;
+            break;
+          }
+          n <<= 1;
+        }
       }
     }
   }
