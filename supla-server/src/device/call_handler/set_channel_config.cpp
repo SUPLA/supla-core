@@ -52,7 +52,7 @@ void supla_ch_set_channel_config::handle_call(
   int channel_id =
       device->get_channels()->get_channel_id(request->ChannelNumber);
 
-  channel_json_config* json_config = nullptr;
+  supla_json_config* json_config = nullptr;
 
   device->get_channels()->access_channel(
       channel_id, [&](supla_device_channel* channel) -> void {
@@ -79,7 +79,7 @@ void supla_ch_set_channel_config::handle_call(
           client->get_channels()->channel_access(
               channel_id, [&](supla_client_channel* channel) -> void {
                 channel->set_json_config(
-                    json_config ? new channel_json_config(json_config, true)
+                    json_config ? new supla_json_config(json_config, true)
                                 : nullptr);
 
                 TSC_ChannelConfigUpdateOrResult cfg_result = {};

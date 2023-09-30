@@ -190,7 +190,7 @@ class supla_device_channels {
                    bool superuser_authorized);
   void timer_arm(const supla_caller &caller, int channel_id, int group_id,
                  unsigned char eol, unsigned char On, unsigned int duration_ms);
-  channel_json_config *get_json_config(int channel_id);
+  supla_json_config *get_json_config(int channel_id);
   unsigned int get_value_validity_time_left_msec(void);
   void on_related_sensor_value_changed(int control_channel_id, int sensor_id,
                                        bool is_open);

@@ -94,7 +94,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
-        channel_json_config *json_config = get_json_config();
+        supla_json_config *json_config = get_json_config();
         if (json_config) {
           hvac_config config(json_config);
           TChannelConfig_HVAC hvac = {};
@@ -202,7 +202,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
           case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
 
-            channel_json_config *json_config = props->get_json_config();
+            supla_json_config *json_config = props->get_json_config();
             if (json_config) {
               hvac_config config(json_config);
               TChannelConfig_HVAC hvac = {};
@@ -254,7 +254,7 @@ void supla_abstract_common_channel_properties::json_to_config(
 
   sdT *ws_cfg = (sdT *)config;
 
-  channel_json_config *json_config = get_json_config();
+  supla_json_config *json_config = get_json_config();
 
   jsonT *_json_config = new jsonT(json_config);
   if (!get_config(_json_config, ws_cfg)) {
@@ -376,7 +376,7 @@ void supla_abstract_common_channel_properties::get_config(
       TChannelConfig_ActionTrigger *cfg =
           (TChannelConfig_ActionTrigger *)config;
       cfg->ActiveActions = 0;
-      channel_json_config *json_config = get_json_config();
+      supla_json_config *json_config = get_json_config();
       action_trigger_config *at_config = new action_trigger_config(json_config);
       if (at_config) {
         cfg->ActiveActions = at_config->get_active_actions();
@@ -409,7 +409,7 @@ int supla_abstract_common_channel_properties::set_user_config(
   supla_db_access_provider dba;
   supla_device_dao dao(&dba);
 
-  channel_json_config *json_config = nullptr;
+  supla_json_config *json_config = nullptr;
 
   int type = get_type();
   int func = get_func();
@@ -449,7 +449,7 @@ int supla_abstract_common_channel_properties::set_user_config(
   }
 
   if (json_config) {
-    if (dao.set_channel_user_config(get_user_id(), get_id(), json_config)) {
+    if (dao.set_channel_config(get_user_id(), get_id(), json_config)) {
       result = SUPLA_CONFIG_RESULT_TRUE;
       delete json_config;
 

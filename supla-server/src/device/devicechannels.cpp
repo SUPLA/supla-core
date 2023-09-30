@@ -715,7 +715,7 @@ void supla_device_channels::action_trigger(TDS_ActionTrigger *at) {
 
   int channel_id = 0;
   int user_id = 0;
-  channel_json_config *json_config = nullptr;
+  supla_json_config *json_config = nullptr;
 
   supla_device_channel *channel = find_channel_by_number(at->ChannelNumber);
   if (channel) {
@@ -1251,8 +1251,8 @@ void supla_device_channels::timer_arm(const supla_caller &caller,
   async_set_channel_value(channel, caller, group_id, eol, value, duration_ms);
 }
 
-channel_json_config *supla_device_channels::get_json_config(int channel_id) {
-  channel_json_config *result = nullptr;
+supla_json_config *supla_device_channels::get_json_config(int channel_id) {
+  supla_json_config *result = nullptr;
   access_channel(channel_id, [&result](supla_device_channel *channel) -> void {
     result = channel->get_json_config();
   });
@@ -1274,7 +1274,7 @@ unsigned int supla_device_channels::get_value_validity_time_left_msec(void) {
 
 void supla_device_channels::on_related_sensor_value_changed(
     int control_channel_id, int sensor_id, bool is_open) {
-  channel_json_config *config = nullptr;
+  supla_json_config *config = nullptr;
   access_channel(control_channel_id,
                  [&config](supla_device_channel *channel) -> void {
                    switch (channel->get_func()) {

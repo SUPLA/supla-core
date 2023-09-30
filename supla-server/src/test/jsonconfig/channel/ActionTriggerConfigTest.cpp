@@ -74,7 +74,7 @@ TAction_RGBW_Parameters ActionTriggerConfigTest::get_rgbw_params(
 }
 
 TEST_F(ActionTriggerConfigTest, root) {
-  channel_json_config *c1 = new channel_json_config();
+  supla_json_config *c1 = new supla_json_config();
   action_trigger_config *c2 = new action_trigger_config(c1);
 
   EXPECT_TRUE(c1 != NULL);

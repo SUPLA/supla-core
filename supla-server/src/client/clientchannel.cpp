@@ -72,7 +72,7 @@ supla_client_channel::supla_client_channel(
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
   this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
 
-  channel_json_config *json_config = new channel_json_config();
+  supla_json_config *json_config = new supla_json_config();
   json_config->set_user_config(user_config);
   set_json_config(json_config);
 
@@ -150,15 +150,15 @@ int supla_client_channel::get_param3() { return Param3; }
 
 int supla_client_channel::get_param4() { return Param4; }
 
-channel_json_config *supla_client_channel::get_json_config(void) {
+supla_json_config *supla_client_channel::get_json_config(void) {
   lock();
-  channel_json_config *result = new channel_json_config(json_config, true);
+  supla_json_config *result = new supla_json_config(json_config, true);
   unlock();
 
   return result;
 }
 
-void supla_client_channel::set_json_config(channel_json_config *json_config) {
+void supla_client_channel::set_json_config(supla_json_config *json_config) {
   lock();
   if (this->json_config) {
     delete this->json_config;

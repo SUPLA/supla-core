@@ -39,7 +39,7 @@ bool supla_client_ch_set_channel_config::can_handle_call(unsigned int call_id) {
 void supla_client_ch_set_channel_config::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  channel_json_config* json_config = nullptr;
+  supla_json_config* json_config = nullptr;
   TSCS_ChannelConfig* config = nullptr;
   TSC_ChannelConfigUpdateOrResult cfg_result = {};
 
@@ -87,7 +87,7 @@ void supla_client_ch_set_channel_config::handle_call(
           client->get_channels()->channel_access(
               config->ChannelId, [&](supla_client_channel* channel) -> void {
                 channel->set_json_config(
-                    json_config ? new channel_json_config(json_config, true)
+                    json_config ? new supla_json_config(json_config, true)
                                 : nullptr);
 
                 client->get_connection()
@@ -106,7 +106,7 @@ void supla_client_ch_set_channel_config::handle_call(
       device->get_channels()->access_channel(
           config->ChannelId, [&](supla_device_channel* channel) -> void {
             channel->set_json_config(
-                json_config ? new channel_json_config(json_config, true)
+                json_config ? new supla_json_config(json_config, true)
                             : nullptr);
             channel->send_config_to_device(real_config_type);
           });

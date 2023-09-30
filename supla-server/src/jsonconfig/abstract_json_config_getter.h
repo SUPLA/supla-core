@@ -16,28 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNELJSONCONFIG_H_
-#define CHANNELJSONCONFIG_H_
+#ifndef ABSTRACTJSONCONFIGGETTER_H_
+#define ABSTRACTJSONCONFIGGETTER_H_
 
 #include "jsonconfig/json_config.h"
 
-class channel_json_config : public supla_json_config {
+class abstract_json_config_getter {
  private:
-  cJSON *properties_root;
-
  protected:
-  cJSON *get_properties_root(void);
-  cJSON *get_user_root_with_key(const char *key, bool force);
-
  public:
-  explicit channel_json_config(const channel_json_config &json_config);
-  explicit channel_json_config(supla_json_config *root);
-  channel_json_config &operator=(const channel_json_config &json_config);
-  channel_json_config(channel_json_config *root, bool copy_and_detach);
-  channel_json_config(void);
-  virtual ~channel_json_config(void);
-  void set_properties(const char *config);
-  char *get_properties(void);
+  abstract_json_config_getter(void);
+  virtual ~abstract_json_config_getter(void);
+
+  virtual supla_json_config *get_config(int user_id, int device_id,
+                                        int channel_id) = 0;
 };
 
-#endif /* CHANNELJSONCONFIG_H_ */
+#endif /* ABSTRACTJSONCONFIGGETTER_H_ */

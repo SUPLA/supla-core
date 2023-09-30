@@ -69,11 +69,11 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   char value[SUPLA_CHANNELVALUE_SIZE];
   struct timeval value_valid_to;  // during offline
   supla_channel_extended_value *extended_value;
-  channel_json_config *json_config;
+  supla_json_config *json_config;
   supla_channel_extended_value *logger_purpose_extended_value;
   supla_voltage_analyzers voltage_analyzers;
 
-  void db_set_properties(channel_json_config *config);
+  void db_set_properties(supla_json_config *config);
   void db_set_params(int param1, int param2, int param3, int param4);
   supla_channel_value *_get_value(void);
 
@@ -148,8 +148,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
                                  int related_channel_id,
                                  unsigned int disables_local_operation);
 
-  virtual channel_json_config *get_json_config(void);
-  void set_json_config(channel_json_config *json_config);
+  virtual supla_json_config *get_json_config(void);
+  void set_json_config(supla_json_config *json_config);
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);

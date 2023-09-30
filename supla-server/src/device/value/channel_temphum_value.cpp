@@ -129,7 +129,7 @@ bool supla_channel_temphum_value::is_differ(supla_channel_value *value,
 
 void supla_channel_temphum_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
-    int param3, int param4, channel_json_config *json_config) {
+    int param3, int param4, supla_json_config *json_config) {
   if (json_config) {
     temp_hum_config cfg(json_config);
 

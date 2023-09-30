@@ -56,7 +56,7 @@ bool supla_channel_value::is_differ(supla_channel_value *value,
 
 void supla_channel_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
-    int param3, int param4, channel_json_config *json_config) {}
+    int param3, int param4, supla_json_config *json_config) {}
 
 map<string, string> supla_channel_value::get_replacement_map(void) {
   map<string, string> result;
@@ -64,7 +64,7 @@ map<string, string> supla_channel_value::get_replacement_map(void) {
 }
 
 supla_channel_extended_value *supla_channel_value::convert2extended(
-    channel_json_config *json_config, int func, const char *text_param1,
+    supla_json_config *json_config, int func, const char *text_param1,
     const char *text_param2, int param2, int param3,
     supla_channel_extended_value **data_logger_purpose) {
   return nullptr;

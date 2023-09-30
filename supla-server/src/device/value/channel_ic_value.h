@@ -37,9 +37,9 @@ class supla_channel_ic_value : public supla_channel_value {
                                         unsigned char protocol_version,
                                         int param1, int param2, int param3,
                                         int param4,
-                                        channel_json_config *json_config);
+                                        supla_json_config *json_config);
   virtual supla_channel_extended_value *convert2extended(
-      channel_json_config *json_config, int func, const char *text_param1,
+      supla_json_config *json_config, int func, const char *text_param1,
       const char *text_param2, int param2, int param3,
       supla_channel_extended_value **data_logger_purpose);
   static bool is_function_supported(int func);

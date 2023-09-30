@@ -81,7 +81,7 @@ supla_device_channel::supla_device_channel(
 
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
-  channel_json_config *json_config = new channel_json_config(nullptr);
+  supla_json_config *json_config = new supla_json_config(nullptr);
   if (json_config) {
     json_config->set_properties(properties);
     json_config->set_user_config(user_config);
@@ -359,7 +359,7 @@ void supla_device_channel::get_config(TSD_ChannelConfig *config,
   config->ConfigType = config_type;
 }
 
-void supla_device_channel::set_json_config(channel_json_config *json_config) {
+void supla_device_channel::set_json_config(supla_json_config *json_config) {
   lock();
 
   if (this->json_config) {
@@ -377,7 +377,7 @@ void supla_device_channel::set_json_config(channel_json_config *json_config) {
   unlock();
 }
 
-void supla_device_channel::db_set_properties(channel_json_config *config) {
+void supla_device_channel::db_set_properties(supla_json_config *config) {
   if (config) {
     supla_db_access_provider dba;
     supla_device_dao dao(&dba);
@@ -769,12 +769,12 @@ unsigned int supla_device_channel::get_value_duration(void) {
   return 0;
 }
 
-channel_json_config *supla_device_channel::get_json_config(void) {
-  channel_json_config *result = nullptr;
+supla_json_config *supla_device_channel::get_json_config(void) {
+  supla_json_config *result = nullptr;
 
   lock();
   if (json_config) {
-    result = new channel_json_config(json_config, true);
+    result = new supla_json_config(json_config, true);
   }
   unlock();
 

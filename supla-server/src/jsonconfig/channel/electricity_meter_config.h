@@ -22,11 +22,11 @@
 #include <map>
 #include <string>
 
-#include "jsonconfig/channel/channel_json_config.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 
 class supla_channel_em_extended_value;
-class electricity_meter_config : public channel_json_config {
+class electricity_meter_config : public supla_json_config {
  private:
   static const char counters_available_key[];
   static const char em_initial_values_key[];
@@ -45,7 +45,7 @@ class electricity_meter_config : public channel_json_config {
   void add_initial_value(int var, int flags, unsigned _supla_int64_t value[]);
 
  public:
-  explicit electricity_meter_config(channel_json_config *root);
+  explicit electricity_meter_config(supla_json_config *root);
   electricity_meter_config(void);
   bool should_be_added_to_history(void);
   double get_upper_voltage_threshold(void);

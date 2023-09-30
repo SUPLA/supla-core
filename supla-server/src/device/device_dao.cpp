@@ -621,59 +621,76 @@ bool supla_device_dao::set_device_config(
   bool result = false;
 
   for (char a = 0; a < 3; a++) {
-    string md5sum;
-    device_json_config *_config = get_device_config(device_id, &md5sum);
+    string user_config_md5sum, properties_md5sum;
+    device_json_config *_config =
+        get_device_config(device_id, &user_config_md5sum, &properties_md5sum);
     if (_config) {
       config->merge(_config);
       _config->leave_only_thise_fields(available_fields);
 
-      char *config_str = _config->get_user_config();
-      if (config_str) {
-        MYSQL_BIND pbind[4] = {};
+      char *user_config_str = _config->get_user_config();
+      if (!user_config_str) {
+        user_config_str = strndup("{}", 3);
+      }
 
-        pbind[0].buffer_type = MYSQL_TYPE_LONG;
-        pbind[0].buffer = (char *)&user_id;
+      char *properties_str = _config->get_properties();
+      if (!properties_str) {
+        properties_str = strndup("{}", 3);
+      }
 
-        pbind[1].buffer_type = MYSQL_TYPE_LONG;
-        pbind[1].buffer = (char *)&device_id;
+      MYSQL_BIND pbind[6] = {};
 
-        pbind[2].buffer_type = MYSQL_TYPE_STRING;
-        pbind[2].buffer = (char *)config_str;
-        pbind[2].buffer_length = strnlen(config_str, 2048);
+      pbind[0].buffer_type = MYSQL_TYPE_LONG;
+      pbind[0].buffer = (char *)&user_id;
 
-        pbind[3].buffer_type = MYSQL_TYPE_STRING;
-        pbind[3].buffer = (char *)md5sum.c_str();
-        pbind[3].buffer_length = md5sum.size();
+      pbind[1].buffer_type = MYSQL_TYPE_LONG;
+      pbind[1].buffer = (char *)&device_id;
 
-        const char sql[] =
-            "CALL "
-            "`supla_set_device_user_config`(?,?,?,?)";
+      pbind[2].buffer_type = MYSQL_TYPE_STRING;
+      pbind[2].buffer = (char *)user_config_str;
+      pbind[2].buffer_length = strnlen(user_config_str, 4096);
 
-        MYSQL_STMT *stmt = nullptr;
-        if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
-          MYSQL_BIND rbind = {};
+      pbind[3].buffer_type = MYSQL_TYPE_STRING;
+      pbind[3].buffer = (char *)user_config_md5sum.c_str();
+      pbind[3].buffer_length = user_config_md5sum.size();
 
-          int _result = -1;
+      pbind[4].buffer_type = MYSQL_TYPE_STRING;
+      pbind[4].buffer = (char *)properties_str;
+      pbind[4].buffer_length = strnlen(properties_str, 2048);
 
-          rbind.buffer_type = MYSQL_TYPE_LONG;
-          rbind.buffer = (char *)&_result;
+      pbind[5].buffer_type = MYSQL_TYPE_STRING;
+      pbind[5].buffer = (char *)properties_md5sum.c_str();
+      pbind[5].buffer_length = properties_md5sum.size();
 
-          if (mysql_stmt_bind_result(stmt, &rbind)) {
-            supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                      mysql_stmt_error(stmt));
-          } else {
-            mysql_stmt_store_result(stmt);
+      const char sql[] =
+          "CALL "
+          "`supla_set_device_json_config`(?,?,?,?,?,?)";
 
-            if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
-              result = _result == 0;
-            }
+      MYSQL_STMT *stmt = nullptr;
+      if (dba->stmt_execute((void **)&stmt, sql, pbind, 6, true)) {
+        MYSQL_BIND rbind = {};
+
+        int _result = -1;
+
+        rbind.buffer_type = MYSQL_TYPE_LONG;
+        rbind.buffer = (char *)&_result;
+
+        if (mysql_stmt_bind_result(stmt, &rbind)) {
+          supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                    mysql_stmt_error(stmt));
+        } else {
+          mysql_stmt_store_result(stmt);
+
+          if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
+            result = _result == 0;
           }
         }
-
-        if (stmt != nullptr) mysql_stmt_close(stmt);
-
-        free(config_str);
       }
+
+      if (stmt != nullptr) mysql_stmt_close(stmt);
+
+      free(user_config_str);
+      free(properties_str);
 
       delete _config;
 
@@ -693,8 +710,8 @@ bool supla_device_dao::set_device_config(
   return result;
 }
 
-device_json_config *supla_device_dao::get_device_config(int device_id,
-                                                        string *md5sum) {
+device_json_config *supla_device_dao::get_device_config(
+    int device_id, string *user_config_md5sum, string *properties_md5sum) {
   bool already_connected = dba->is_connected();
 
   if (!already_connected && !dba->connect()) {
@@ -705,8 +722,8 @@ device_json_config *supla_device_dao::get_device_config(int device_id,
 
   MYSQL_STMT *stmt = nullptr;
   const char sql[] =
-      "SELECT user_config, MD5(IFNULL(user_config, '')) FROM supla_iodevice "
-      "WHERE id = ?";
+      "SELECT user_config, MD5(IFNULL(user_config, '')), properties, "
+      "MD5(IFNULL(properties, '')) FROM supla_iodevice WHERE id = ?";
 
   MYSQL_BIND pbind = {};
 
@@ -715,15 +732,23 @@ device_json_config *supla_device_dao::get_device_config(int device_id,
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
     char user_config[4097] = {};
-    char md5[33] = {};
+    char user_config_md5[33] = {};
+    char properties[2049] = {};
+    char properties_md5[33] = {};
 
     unsigned long user_config_size = 0;
     my_bool user_config_is_null = true;
 
-    unsigned long md5_size = 0;
-    my_bool md5_is_null = true;
+    unsigned long properties_size = 0;
+    my_bool properties_are_null = true;
 
-    MYSQL_BIND rbind[2] = {};
+    unsigned long user_config_md5_size = 0;
+    my_bool user_config_md5_is_null = true;
+
+    unsigned long properties_md5_size = 0;
+    my_bool properties_md5_is_null = true;
+
+    MYSQL_BIND rbind[4] = {};
 
     rbind[0].buffer_type = MYSQL_TYPE_STRING;
     rbind[0].buffer = user_config;
@@ -732,10 +757,22 @@ device_json_config *supla_device_dao::get_device_config(int device_id,
     rbind[0].length = &user_config_size;
 
     rbind[1].buffer_type = MYSQL_TYPE_STRING;
-    rbind[1].buffer = md5;
-    rbind[1].is_null = &md5_is_null;
-    rbind[1].buffer_length = sizeof(md5);
-    rbind[1].length = &md5_size;
+    rbind[1].buffer = user_config_md5;
+    rbind[1].is_null = &user_config_md5_is_null;
+    rbind[1].buffer_length = sizeof(user_config_md5);
+    rbind[1].length = &user_config_md5_size;
+
+    rbind[2].buffer_type = MYSQL_TYPE_STRING;
+    rbind[2].buffer = properties;
+    rbind[2].is_null = &properties_are_null;
+    rbind[2].buffer_length = sizeof(properties);
+    rbind[2].length = &properties_size;
+
+    rbind[3].buffer_type = MYSQL_TYPE_STRING;
+    rbind[3].buffer = properties_md5;
+    rbind[3].is_null = &properties_md5_is_null;
+    rbind[3].buffer_length = sizeof(properties_md5);
+    rbind[3].length = &properties_md5_size;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -746,12 +783,24 @@ device_json_config *supla_device_dao::get_device_config(int device_id,
       if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
         dba->set_terminating_byte(user_config, sizeof(user_config),
                                   user_config_size, user_config_is_null);
-        dba->set_terminating_byte(md5, sizeof(md5), md5_size, md5_is_null);
+        dba->set_terminating_byte(user_config_md5, sizeof(user_config_md5),
+                                  user_config_md5_size,
+                                  user_config_md5_is_null);
+        dba->set_terminating_byte(properties, sizeof(properties),
+                                  properties_size, properties_are_null);
+        dba->set_terminating_byte(properties_md5, sizeof(properties_md5),
+                                  properties_md5_size, properties_md5_is_null);
 
         result = new device_json_config();
         result->set_user_config(user_config);
-        if (md5sum) {
-          *md5sum = md5;
+        result->set_properties(properties);
+
+        if (user_config_md5sum) {
+          *user_config_md5sum = user_config_md5;
+        }
+
+        if (properties_md5sum) {
+          *properties_md5sum = properties_md5;
         }
       }
     }
@@ -978,7 +1027,7 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
 }
 
 void supla_device_dao::set_channel_properties(int user_id, int channel_id,
-                                              channel_json_config *config) {
+                                              supla_json_config *config) {
   if (!config) {
     return;
   }
@@ -1022,7 +1071,7 @@ void supla_device_dao::set_channel_properties(int user_id, int channel_id,
   }
 }
 
-channel_json_config *supla_device_dao::get_channel_config(
+supla_json_config *supla_device_dao::get_channel_config(
     int channel_id, std::string *user_config_md5sum,
     std::string *properties_md5sum) {
   bool already_connected = dba->is_connected();
@@ -1031,7 +1080,7 @@ channel_json_config *supla_device_dao::get_channel_config(
     return nullptr;
   }
 
-  channel_json_config *result = nullptr;
+  supla_json_config *result = nullptr;
 
   MYSQL_STMT *stmt = nullptr;
   const char sql[] =
@@ -1106,7 +1155,7 @@ channel_json_config *supla_device_dao::get_channel_config(
         dba->set_terminating_byte(properties_md5, sizeof(properties_md5),
                                   properties_md5_size, properties_md5_is_null);
 
-        result = new channel_json_config();
+        result = new supla_json_config();
         result->set_user_config(user_config);
         result->set_properties(properties);
 
@@ -1130,8 +1179,8 @@ channel_json_config *supla_device_dao::get_channel_config(
   return result;
 }
 
-bool supla_device_dao::set_channel_user_config(int user_id, int channel_id,
-                                               channel_json_config *config) {
+bool supla_device_dao::set_channel_config(int user_id, int channel_id,
+                                          supla_json_config *config) {
   bool already_connected = dba->is_connected();
 
   if (!already_connected && !dba->connect()) {
@@ -1141,59 +1190,75 @@ bool supla_device_dao::set_channel_user_config(int user_id, int channel_id,
   bool result = false;
 
   for (char a = 0; a < 3; a++) {
-    string md5sum;
-    channel_json_config *_config =
-        get_channel_config(channel_id, &md5sum, nullptr);
+    string user_config_md5sum, properties_md5sum;
+    supla_json_config *_config =
+        get_channel_config(channel_id, &user_config_md5sum, &properties_md5sum);
     if (_config) {
       config->merge(_config);
 
-      char *config_str = _config->get_user_config();
-      if (config_str) {
-        MYSQL_BIND pbind[4] = {};
+      char *user_config_str = _config->get_user_config();
+      if (!user_config_str) {
+        user_config_str = strndup("{}", 2);
+      }
 
-        pbind[0].buffer_type = MYSQL_TYPE_LONG;
-        pbind[0].buffer = (char *)&user_id;
+      char *properties_str = _config->get_properties();
+      if (!properties_str) {
+        properties_str = strndup("{}", 2);
+      }
 
-        pbind[1].buffer_type = MYSQL_TYPE_LONG;
-        pbind[1].buffer = (char *)&channel_id;
+      MYSQL_BIND pbind[6] = {};
 
-        pbind[2].buffer_type = MYSQL_TYPE_STRING;
-        pbind[2].buffer = (char *)config_str;
-        pbind[2].buffer_length = strnlen(config_str, 4096);
+      pbind[0].buffer_type = MYSQL_TYPE_LONG;
+      pbind[0].buffer = (char *)&user_id;
 
-        pbind[3].buffer_type = MYSQL_TYPE_STRING;
-        pbind[3].buffer = (char *)md5sum.c_str();
-        pbind[3].buffer_length = md5sum.size();
+      pbind[1].buffer_type = MYSQL_TYPE_LONG;
+      pbind[1].buffer = (char *)&channel_id;
 
-        const char sql[] =
-            "CALL "
-            "`supla_set_channel_user_config`(?,?,?,?)";
+      pbind[2].buffer_type = MYSQL_TYPE_STRING;
+      pbind[2].buffer = (char *)user_config_str;
+      pbind[2].buffer_length = strnlen(user_config_str, 4096);
 
-        MYSQL_STMT *stmt = nullptr;
-        if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
-          MYSQL_BIND rbind = {};
+      pbind[3].buffer_type = MYSQL_TYPE_STRING;
+      pbind[3].buffer = (char *)user_config_md5sum.c_str();
+      pbind[3].buffer_length = user_config_md5sum.size();
 
-          int _result = -1;
+      pbind[4].buffer_type = MYSQL_TYPE_STRING;
+      pbind[4].buffer = (char *)properties_str;
+      pbind[4].buffer_length = strnlen(properties_str, 4096);
 
-          rbind.buffer_type = MYSQL_TYPE_LONG;
-          rbind.buffer = (char *)&_result;
+      pbind[5].buffer_type = MYSQL_TYPE_STRING;
+      pbind[5].buffer = (char *)properties_md5sum.c_str();
+      pbind[5].buffer_length = properties_md5sum.size();
 
-          if (mysql_stmt_bind_result(stmt, &rbind)) {
-            supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                      mysql_stmt_error(stmt));
-          } else {
-            mysql_stmt_store_result(stmt);
+      const char sql[] =
+          "CALL "
+          "`supla_set_channel_json_config`(?,?,?,?,?,?)";
 
-            if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
-              result = _result == 0;
-            }
+      MYSQL_STMT *stmt = nullptr;
+      if (dba->stmt_execute((void **)&stmt, sql, pbind, 6, true)) {
+        MYSQL_BIND rbind = {};
+
+        int _result = -1;
+
+        rbind.buffer_type = MYSQL_TYPE_LONG;
+        rbind.buffer = (char *)&_result;
+
+        if (mysql_stmt_bind_result(stmt, &rbind)) {
+          supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                    mysql_stmt_error(stmt));
+        } else {
+          mysql_stmt_store_result(stmt);
+
+          if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
+            result = _result == 0;
           }
         }
-
-        if (stmt != nullptr) mysql_stmt_close(stmt);
-
-        free(config_str);
       }
+
+      if (stmt != nullptr) mysql_stmt_close(stmt);
+
+      free(user_config_str);
+      free(properties_str);
 
       delete _config;
 

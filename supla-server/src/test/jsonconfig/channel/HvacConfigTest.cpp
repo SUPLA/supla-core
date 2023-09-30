@@ -61,19 +61,28 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
       str,
       "{\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
       "\"auxThermometerType\":\"GENERIC_HEATER\",\"binarySensorChannelNo\":3,"
-      "\"antiFreezeAndOverheatProtectionEnabled\":true,\"availableAlgorithms\":"
-      "[\"ON_OFF_SETPOINT_MIDDLE\",\"ON_OFF_SETPOINT_AT_MOST\"],"
-      "\"usedAlgorithm\":\"ON_OFF_SETPOINT_MIDDLE\",\"minOffTimeS\":600,"
-      "\"minOnTimeS\":10,\"outputValueOnError\":55,\"subfunction\":\"COOL\","
+      "\"antiFreezeAndOverheatProtectionEnabled\":true,\"usedAlgorithm\":\"ON_"
+      "OFF_SETPOINT_MIDDLE\",\"minOffTimeS\":600,\"minOnTimeS\":10,"
+      "\"outputValueOnError\":55,\"subfunction\":\"COOL\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":true,\"temperatures\":"
       "{\"freezeProtection\":1,\"eco\":2,\"comfort\":3,\"boost\":4,"
       "\"heatProtection\":5,\"histeresis\":6,\"belowAlarm\":7,\"aboveAlarm\":8,"
-      "\"auxMinSetpoint\":9,\"auxMaxSetpoint\":10,\"roomMin\":11,\"roomMax\":"
-      "12,\"auxMin\":13,\"auxMax\":14,\"histeresisMin\":15,\"histeresisMax\":"
-      "16,\"autoOffsetMin\":17,\"autoOffsetMax\":18}}");
+      "\"auxMinSetpoint\":9,\"auxMaxSetpoint\":10}}");
 
   hvac_config config2;
   config2.set_user_config(str);
+  free(str);
+
+  str = config1.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"availableAlgorithms\":[\"ON_OFF_SETPOINT_MIDDLE\",\"ON_OFF_SETPOINT_"
+      "AT_MOST\"],\"temperatures\":{\"roomMin\":11,\"roomMax\":12,\"auxMin\":"
+      "13,\"auxMax\":14,\"histeresisMin\":15,\"histeresisMax\":16,"
+      "\"autoOffsetMin\":17,\"autoOffsetMax\":18}}");
+
+  config2.set_properties(str);
   free(str);
 
   TChannelConfig_HVAC ds_hvac2 = {};
@@ -146,12 +155,20 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
       str,
       "{\"mainThermometerChannelNo\":null,\"auxThermometerChannelNo\":null,"
       "\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelNo\":null,"
-      "\"antiFreezeAndOverheatProtectionEnabled\":false,"
-      "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOffTimeS\":0,"
-      "\"minOnTimeS\":0,\"outputValueOnError\":0,\"subfunction\":\"NOT_SET\","
+      "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":\"\","
+      "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
+      "\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
       "\"temperatures\":{\"freezeProtection\":12345,\"eco\":0,"
-      "\"auxMinSetpoint\":-723,\"histeresisMax\":-28910}}");
+      "\"auxMinSetpoint\":-723}}");
+
+  free(str);
+
+  str = config.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"availableAlgorithms\":[],\"temperatures\":{"
+               "\"histeresisMax\":-28910}}");
 
   free(str);
 }
@@ -162,19 +179,28 @@ TEST_F(HvacConfigTest, merge) {
       "{\"a\":\"b\", \"x\": true, \"c\": true, "
       "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
       "\"auxThermometerType\":\"GENERIC_HEATER\","
-      "\"antiFreezeAndOverheatProtectionEnabled\":true,\"availableAlgorithms\":"
-      "[\"ON_OFF_SETPOINT_MIDDLE\"],\"usedAlgorithm\":\"ON_OFF_SETPOINT_"
-      "MIDDLE\",\"minOffTimeS\":600,\"minOnTimeS\":10,\"outputValueOnError\":"
-      "55,\"temperatures\":{\"freezeProtection\":1,\"eco\":2,\"comfort\":3,"
-      "\"boost\":4,\"heatProtection\":5,\"histeresis\":6,\"belowAlarm\":7,"
-      "\"aboveAlarm\":8,\"auxMinSetpoint\":9,\"auxMaxSetpoint\":10,\"roomMin\":"
-      "11,\"roomMax\":12,\"auxMin\":13,\"auxMax\":14,\"histeresisMin\":15,"
-      "\"histeresisMax\":16,\"autoOffsetMin\":17,\"autoOffsetMax\":18}}");
+      "\"antiFreezeAndOverheatProtectionEnabled\":true,\"usedAlgorithm\":\"ON_"
+      "OFF_SETPOINT_MIDDLE\",\"minOffTimeS\":600,\"minOnTimeS\":10,"
+      "\"outputValueOnError\":55,\"temperatures\":{\"freezeProtection\":1,"
+      "\"eco\":2,\"comfort\":3,\"boost\":4,\"heatProtection\":5,\"histeresis\":"
+      "6,\"belowAlarm\":7,\"aboveAlarm\":8,\"auxMinSetpoint\":9,"
+      "\"auxMaxSetpoint\":10}}");
+
+  config1.set_properties(
+      "{\"1\": "
+      "10,\"availableAlgorithms\":[\"ON_OFF_SETPOINT_MIDDLE\"],"
+      "\"temperatures\":{\"roomMin\":11,\"roomMax\":12,\"auxMin\":13,"
+      "\"auxMax\":14,\"histeresisMin\":15,\"histeresisMax\":16,"
+      "\"autoOffsetMin\":17,\"autoOffsetMax\":18}}");
 
   TChannelConfig_HVAC ds_hvac = {};
 
-  ds_hvac.Temperatures.Index = 1 << 1;
+  ds_hvac.Temperatures.Index = 1ULL << 1;
+  ds_hvac.Temperatures.Index |= 1ULL << 2;
+  ds_hvac.Temperatures.Index |= 1ULL << 16;
+  ds_hvac.Temperatures.Index |= 1ULL << 17;
   ds_hvac.Temperatures.Temperature[1] = 10;
+  ds_hvac.Temperatures.Temperature[17] = 19;
 
   hvac_config config2;
   config2.set_config(&ds_hvac, 0);
@@ -184,14 +210,21 @@ TEST_F(HvacConfigTest, merge) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
-      "{\"a\":\"b\",\"x\":true,\"c\":true,"
-      "\"mainThermometerChannelNo\":null,\"auxThermometerChannelNo\":null,"
-      "\"auxThermometerType\":\"NOT_SET\","
-      "\"antiFreezeAndOverheatProtectionEnabled\":false,"
-      "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOffTimeS\":0,"
-      "\"minOnTimeS\":0,\"outputValueOnError\":0,\"temperatures\":{\"eco\":10},"
-      "\"binarySensorChannelNo\":null,\"subfunction\":\"NOT_SET\","
+      "{\"a\":\"b\",\"x\":true,\"c\":true,\"mainThermometerChannelNo\":null,"
+      "\"auxThermometerChannelNo\":null,\"auxThermometerType\":\"NOT_SET\","
+      "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":\"\","
+      "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
+      "\"temperatures\":{\"eco\":10,\"comfort\":0},\"binarySensorChannelNo\":"
+      "null,\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false}");
+
+  free(str);
+
+  str = config1.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"1\":10,\"availableAlgorithms\":[],\"temperatures\":{"
+               "\"autoOffsetMin\":0,\"autoOffsetMax\":19}}");
 
   free(str);
 }

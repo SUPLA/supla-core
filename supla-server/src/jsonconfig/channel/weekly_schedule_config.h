@@ -21,10 +21,10 @@
 
 #include <string>
 
-#include "jsonconfig/channel/channel_json_config.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 
-class weekly_schedule_config : public channel_json_config {
+class weekly_schedule_config : public supla_json_config {
  private:
   static const char mode[];
   static const char hvac[];

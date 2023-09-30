@@ -18,7 +18,7 @@
 
 #include "ChannelJSONConfigTest.h"
 
-#include "jsonconfig/channel/channel_json_config.h"
+#include "jsonconfig/json_config.h"
 
 namespace testing {
 
@@ -26,7 +26,7 @@ ChannelJSONConfigTest::ChannelJSONConfigTest(void) {}
 ChannelJSONConfigTest::~ChannelJSONConfigTest(void) {}
 
 TEST_F(ChannelJSONConfigTest, checkDefaults) {
-  channel_json_config *config = new channel_json_config();
+  supla_json_config *config = new supla_json_config();
   ASSERT_TRUE(config != NULL);
 
   char *str = config->get_user_config();
@@ -49,7 +49,7 @@ TEST_F(ChannelJSONConfigTest, checkDefaults) {
 }
 
 TEST_F(ChannelJSONConfigTest, setUserConfigToNull) {
-  channel_json_config *config = new channel_json_config();
+  supla_json_config *config = new supla_json_config();
   ASSERT_TRUE(config != NULL);
 
   config->set_user_config("{\"c\":1}");
@@ -78,7 +78,7 @@ TEST_F(ChannelJSONConfigTest, setUserConfigToNull) {
 }
 
 TEST_F(ChannelJSONConfigTest, setPropertiesToNull) {
-  channel_json_config *config = new channel_json_config();
+  supla_json_config *config = new supla_json_config();
   ASSERT_TRUE(config != NULL);
 
   config->set_properties("{\"c\":1}");
@@ -107,7 +107,7 @@ TEST_F(ChannelJSONConfigTest, setPropertiesToNull) {
 }
 
 TEST_F(ChannelJSONConfigTest, userConfigFormatting) {
-  channel_json_config *config = new channel_json_config();
+  supla_json_config *config = new supla_json_config();
   ASSERT_TRUE(config != NULL);
 
   config->set_user_config("{   }");
@@ -136,7 +136,7 @@ TEST_F(ChannelJSONConfigTest, userConfigFormatting) {
 }
 
 TEST_F(ChannelJSONConfigTest, propertiesFormatting) {
-  channel_json_config *config = new channel_json_config();
+  supla_json_config *config = new supla_json_config();
   ASSERT_TRUE(config != NULL);
 
   config->set_properties("{   }");
@@ -165,7 +165,7 @@ TEST_F(ChannelJSONConfigTest, propertiesFormatting) {
 }
 
 TEST_F(ChannelJSONConfigTest, userConfigInvalidFormat) {
-  channel_json_config *config = new channel_json_config();
+  supla_json_config *config = new supla_json_config();
   ASSERT_TRUE(config != NULL);
 
   config->set_user_config("{a=b}");
@@ -194,7 +194,7 @@ TEST_F(ChannelJSONConfigTest, userConfigInvalidFormat) {
 }
 
 TEST_F(ChannelJSONConfigTest, propertiesInvalidFormat) {
-  channel_json_config *config = new channel_json_config();
+  supla_json_config *config = new supla_json_config();
   ASSERT_TRUE(config != NULL);
 
   config->set_properties("{a=b}");
@@ -223,9 +223,9 @@ TEST_F(ChannelJSONConfigTest, propertiesInvalidFormat) {
 }
 
 TEST_F(ChannelJSONConfigTest, userConfigRoot) {
-  channel_json_config *c1 = new channel_json_config();
-  channel_json_config *c2 = new channel_json_config(c1);
-  channel_json_config *c3 = new channel_json_config(c2);
+  supla_json_config *c1 = new supla_json_config();
+  supla_json_config *c2 = new supla_json_config(c1);
+  supla_json_config *c3 = new supla_json_config(c2);
 
   EXPECT_TRUE(c1 != NULL);
   EXPECT_TRUE(c2 != NULL);
@@ -366,9 +366,9 @@ TEST_F(ChannelJSONConfigTest, userConfigRoot) {
 }
 
 TEST_F(ChannelJSONConfigTest, propertiesRoot) {
-  channel_json_config *c1 = new channel_json_config();
-  channel_json_config *c2 = new channel_json_config(c1);
-  channel_json_config *c3 = new channel_json_config(c2);
+  supla_json_config *c1 = new supla_json_config();
+  supla_json_config *c2 = new supla_json_config(c1);
+  supla_json_config *c3 = new supla_json_config(c2);
 
   EXPECT_TRUE(c1 != NULL);
   EXPECT_TRUE(c2 != NULL);
@@ -513,7 +513,7 @@ TEST_F(ChannelJSONConfigTest, propertiesRoot) {
 }
 
 TEST_F(ChannelJSONConfigTest, verificationOfIndependence) {
-  channel_json_config *config = new channel_json_config();
+  supla_json_config *config = new supla_json_config();
   ASSERT_TRUE(config != NULL);
 
   char *str = config->get_user_config();
@@ -569,14 +569,14 @@ TEST_F(ChannelJSONConfigTest, verificationOfIndependence) {
 }
 
 TEST_F(ChannelJSONConfigTest, copyAndDetach_true) {
-  channel_json_config *c1 = new channel_json_config();
+  supla_json_config *c1 = new supla_json_config();
   ASSERT_TRUE(c1 != NULL);
   EXPECT_FALSE(c1->is_root_exists());
 
   c1->set_user_config("{\"u\":123}");
   c1->set_properties("{\"p\":456}");
 
-  channel_json_config *c2 = new channel_json_config(c1, true);
+  supla_json_config *c2 = new supla_json_config(c1, true);
   EXPECT_TRUE(c2 != NULL);
 
   if (!c2) {
@@ -612,14 +612,14 @@ TEST_F(ChannelJSONConfigTest, copyAndDetach_true) {
 }
 
 TEST_F(ChannelJSONConfigTest, copyAndDetach_false) {
-  channel_json_config *c1 = new channel_json_config();
+  supla_json_config *c1 = new supla_json_config();
   ASSERT_TRUE(c1 != NULL);
   EXPECT_FALSE(c1->is_root_exists());
 
   c1->set_user_config("{\"u\":123}");
   c1->set_properties("{\"p\":456}");
 
-  channel_json_config *c2 = new channel_json_config(c1, false);
+  supla_json_config *c2 = new supla_json_config(c1, false);
   EXPECT_TRUE(c2 != NULL);
 
   if (!c2) {
@@ -655,14 +655,14 @@ TEST_F(ChannelJSONConfigTest, copyAndDetach_false) {
 }
 
 TEST_F(ChannelJSONConfigTest, assigmentOperator) {
-  channel_json_config *c1 = new channel_json_config();
+  supla_json_config *c1 = new supla_json_config();
   ASSERT_TRUE(c1 != NULL);
   EXPECT_FALSE(c1->is_root_exists());
 
   c1->set_user_config("{\"u\":123}");
   c1->set_properties("{\"p\":456}");
 
-  channel_json_config *c2 = new channel_json_config(*c1);
+  supla_json_config *c2 = new supla_json_config(*c1);
   EXPECT_TRUE(c2 != NULL);
 
   if (!c2) {

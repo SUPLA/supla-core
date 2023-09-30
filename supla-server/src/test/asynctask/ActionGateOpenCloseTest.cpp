@@ -101,7 +101,7 @@ void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
   EXPECT_TRUE(config_getter != NULL);
 
   if (config_getter) {
-    channel_json_config *config = new channel_json_config();
+    supla_json_config *config = new supla_json_config();
     EXPECT_TRUE(config != NULL);
 
     if (config) {

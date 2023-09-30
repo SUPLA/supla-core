@@ -117,9 +117,15 @@ TEST_F(DeviceConfigTest, allFields) {
       str,
       "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":24,\"buttonVolume\":"
       "100,\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"screenSaver\":{\"delay\":123,\"mode\":\"TIME_DATE\","
-      "\"modesAvailable\":[\"OFF\",\"TEMPERATURE\",\"HUMIDITY\",\"TIME\","
-      "\"TIME_DATE\",\"TEMPERATURE_TIME\",\"MAIN_AND_AUX_TEMPERATURE\"]}}");
+      "\"screenSaver\":{\"delay\":123,\"mode\":\"TIME_DATE\"}}");
+  free(str);
+
+  str = cfg.get_properties();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str,
+               "{\"screenSaverModesAvailable\":[\"OFF\",\"TEMPERATURE\","
+               "\"HUMIDITY\",\"TIME\",\"TIME_DATE\",\"TEMPERATURE_TIME\","
+               "\"MAIN_AND_AUX_TEMPERATURE\"]}");
   free(str);
 }
 
@@ -277,9 +283,14 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
   const char user_config[] =
       "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":24,\"buttonVolume\":"
       "100,\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"screenSaver\":{\"delay\":123,\"mode\":\"TIME_DATE\",\"modesAvailable\":"
-      "[]}}";
+      "\"screenSaver\":{\"delay\":123,\"mode\":\"TIME_DATE\"}}";
   cfg1.set_user_config(user_config);
+
+  const char properties[] =
+      "{\"screenSaverModesAvailable\":[\"OFF\",\"TEMPERATURE\",\"MAIN_AND_AUX_"
+      "TEMPERATURE\"]}";
+  cfg1.set_user_config(user_config);
+  cfg1.set_properties(properties);
 
   unsigned _supla_int64_t fields_left = 0xFFFFFFFFFFFFFFFF;
   cfg1.get_config(&sds_cfg, &fields_left);
@@ -298,9 +309,14 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
   char *user_config2 = cfg2.get_user_config();
   ASSERT_NE(user_config2, nullptr);
 
+  char *properties2 = cfg2.get_properties();
+  ASSERT_NE(properties2, nullptr);
+
   EXPECT_STREQ(user_config, user_config2);
+  EXPECT_STREQ(properties, properties2);
 
   free(user_config2);
+  free(properties2);
 }
 
 TEST_F(DeviceConfigTest, getConfig_AutoBrightness) {
@@ -412,8 +428,12 @@ TEST_F(DeviceConfigTest, screenSaverMode) {
   cfg2.set_config(&sds_config);
   char *str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(
-      str, "{\"screenSaver\":{\"mode\":\"TIME_DATE\",\"modesAvailable\":[]}}");
+  EXPECT_STREQ(str, "{\"screenSaver\":{\"mode\":\"TIME_DATE\"}}");
+  free(str);
+
+  str = cfg2.get_properties();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"screenSaverModesAvailable\":[]}");
   free(str);
 
   cfg1.set_user_config("{\"screenSaver\": {\"mode\": \"HUMIDITY\"}}");
@@ -426,13 +446,14 @@ TEST_F(DeviceConfigTest, screenSaverMode) {
   cfg2.set_config(&sds_config);
   str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(
-      str, "{\"screenSaver\":{\"mode\":\"HUMIDITY\",\"modesAvailable\":[]}}");
+  EXPECT_STREQ(str, "{\"screenSaver\":{\"mode\":\"HUMIDITY\"}}");
   free(str);
 
   cfg1.set_user_config(
-      "{\"screenSaver\": {\"mode\": \"MAIN_AND_AUX_TEMPERATURE\", "
-      "\"modesAvailable\":[\"MAIN_AND_AUX_TEMPERATURE\", \"HUMIDITY\"]}}");
+      "{\"screenSaver\": {\"mode\": \"MAIN_AND_AUX_TEMPERATURE\"}}");
+  cfg1.set_properties(
+      "{\"screenSaverModesAvailable\":[\"MAIN_AND_AUX_TEMPERATURE\", "
+      "\"HUMIDITY\"]}");
 
   EXPECT_TRUE(cfg1.get_screen_saver_mode(&mode));
   EXPECT_EQ(mode.ScreensaverMode,
@@ -446,10 +467,15 @@ TEST_F(DeviceConfigTest, screenSaverMode) {
   cfg2.set_config(&sds_config);
   str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"screenSaver\":{\"mode\":\"MAIN_AND_AUX_TEMPERATURE\","
-      "\"modesAvailable\":[\"HUMIDITY\",\"MAIN_AND_AUX_TEMPERATURE\"]}}");
+  EXPECT_STREQ(str,
+               "{\"screenSaver\":{\"mode\":\"MAIN_AND_AUX_TEMPERATURE\"}}");
+  free(str);
+
+  str = cfg2.get_properties();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str,
+               "{\"screenSaverModesAvailable\":[\"HUMIDITY\",\"MAIN_AND_AUX_"
+               "TEMPERATURE\"]}");
   free(str);
 }
 

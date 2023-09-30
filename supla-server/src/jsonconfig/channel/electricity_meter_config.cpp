@@ -57,10 +57,10 @@ const char electricity_meter_config::lower_voltage_threshold_key[] =
 const char electricity_meter_config::disabled_phases_key[] = "disabledPhases";
 
 electricity_meter_config::electricity_meter_config(void)
-    : channel_json_config() {}
+    : supla_json_config() {}
 
-electricity_meter_config::electricity_meter_config(channel_json_config *root)
-    : channel_json_config(root) {}
+electricity_meter_config::electricity_meter_config(supla_json_config *root)
+    : supla_json_config(root) {}
 
 int electricity_meter_config::get_available_counters(void) {
   cJSON *root = get_properties_root();

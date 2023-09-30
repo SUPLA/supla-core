@@ -16,10 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "abstract_channel_json_config_getter.h"
+#include "jsonconfig/abstract_json_config_getter.h"
 
-abstract_channel_json_config_getter::abstract_channel_json_config_getter(void) {
-}
+abstract_json_config_getter::abstract_json_config_getter(void) {}
 
-abstract_channel_json_config_getter::~abstract_channel_json_config_getter(
-    void) {}
+abstract_json_config_getter::~abstract_json_config_getter(void) {}

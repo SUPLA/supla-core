@@ -27,7 +27,7 @@ const char google_home_config::value_key[] = "googleHomeDisabled";
 google_home_config::google_home_config(void)
     : supla_abstract_voice_assistant_config() {}
 
-google_home_config::google_home_config(channel_json_config *root)
+google_home_config::google_home_config(supla_json_config *root)
     : supla_abstract_voice_assistant_config(root) {}
 
 const char *google_home_config::get_root_key(void) { return root_key; }

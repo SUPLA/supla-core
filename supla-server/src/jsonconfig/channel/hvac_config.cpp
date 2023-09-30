@@ -72,9 +72,15 @@ const map<unsigned int, string> hvac_config::temperatures_map = {
     {TEMPERATURE_AUTO_OFFSET_MIN, "autoOffsetMin"},
     {TEMPERATURE_AUTO_OFFSET_MAX, "autoOffsetMax"}};
 
-hvac_config::hvac_config(void) : channel_json_config() {}
+const unsigned int hvac_config::readonly_temperatures =
+    TEMPERATURE_ROOM_MIN | TEMPERATURE_ROOM_MAX | TEMPERATURE_AUX_MIN |
+    TEMPERATURE_AUX_MAX | TEMPERATURE_HISTERESIS_MIN |
+    TEMPERATURE_HISTERESIS_MAX | TEMPERATURE_AUTO_OFFSET_MIN |
+    TEMPERATURE_AUTO_OFFSET_MAX;
 
-hvac_config::hvac_config(supla_json_config *root) : channel_json_config(root) {}
+hvac_config::hvac_config(void) : supla_json_config() {}
+
+hvac_config::hvac_config(supla_json_config *root) : supla_json_config(root) {}
 
 string hvac_config::aux_thermometer_type_to_string(unsigned char type) {
   switch (type) {
@@ -165,7 +171,9 @@ std::string hvac_config::temperature_key_to_string(
 void hvac_config::merge(supla_json_config *_dst) {
   hvac_config dst(_dst);
   supla_json_config::merge(get_user_root(), dst.get_user_root(), field_map,
-                           false);
+                           true);
+  supla_json_config::merge(get_properties_root(), dst.get_properties_root(),
+                           field_map, true);
 }
 
 void hvac_config::add_algorithm_to_array(cJSON *root, cJSON *algs,
@@ -204,83 +212,8 @@ bool hvac_config::get_channel_number(cJSON *root, int field,
   return item != nullptr && cJSON_IsNull(item);
 }
 
-void hvac_config::set_config(TChannelConfig_HVAC *config,
-                             unsigned char channel_number) {
-  if (!config) {
-    return;
-  }
-
-  cJSON *root = get_user_root();
-  if (!root) {
-    return;
-  }
-
-  set_channel_number(root, FIELD_MAIN_THERMOMETER_CHANNEL_NO,
-                     config->MainThermometerChannelNo, channel_number);
-
-  set_channel_number(root, FIELD_AUX_THERMOMETER_CHANNEL_NO,
-                     config->AuxThermometerChannelNo, channel_number);
-
-  set_item_value(
-      root, field_map.at(FIELD_AUX_THERMOMETER_TYPE).c_str(), cJSON_String,
-      true, aux_thermometer_type_to_string(config->AuxThermometerType).c_str(),
-      0);
-
-  set_channel_number(root, FIELD_BINARY_SENSOR_CHANNEL_NO,
-                     config->BinarySensorChannelNo, channel_number);
-
-  set_item_value(
-      root,
-      field_map.at(FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED).c_str(),
-      config->AntiFreezeAndOverheatProtectionEnabled ? cJSON_True : cJSON_False,
-      true, nullptr, 0);
-
-  cJSON *algs = cJSON_GetObjectItem(
-      root, field_map.at(FIELD_AVAILABLE_ALGORITHMS).c_str());
-
-  if (algs) {
-    cJSON_DetachItemViaPointer(root, algs);
-    cJSON_Delete(algs);
-  }
-
-  algs = cJSON_AddArrayToObject(
-      root, field_map.at(FIELD_AVAILABLE_ALGORITHMS).c_str());
-
-  add_algorithm_to_array(root, algs, config,
-                         SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE);
-
-  add_algorithm_to_array(root, algs, config,
-                         SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST);
-
-  set_item_value(root, field_map.at(FIELD_USED_ALGORITHM).c_str(), cJSON_String,
-                 true, alg_to_string(config->UsedAlgorithm).c_str(), 0);
-
-  if (config->MinOffTimeS >= 0 && config->MinOffTimeS <= 600) {
-    set_item_value(root, field_map.at(FIELD_MIN_OFF_TIME_S).c_str(),
-                   cJSON_Number, true, nullptr, config->MinOffTimeS);
-  }
-
-  if (config->MinOnTimeS >= 0 && config->MinOnTimeS <= 600) {
-    set_item_value(root, field_map.at(FIELD_MIN_ON_TIME_S).c_str(),
-                   cJSON_Number, true, nullptr, config->MinOnTimeS);
-  }
-
-  if (config->OutputValueOnError >= -100 && config->OutputValueOnError <= 100) {
-    set_item_value(root, field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR).c_str(),
-                   cJSON_Number, true, nullptr, config->OutputValueOnError);
-  }
-
-  set_item_value(root, field_map.at(FIELD_SUBSUNCTION).c_str(), cJSON_String,
-                 true, subfunction_to_string(config->Subfunction).c_str(), 0);
-
-  set_item_value(
-      root,
-      field_map.at(FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE)
-          .c_str(),
-      config->TemperatureSetpointChangeSwitchesToManualMode ? cJSON_True
-                                                            : cJSON_False,
-      true, nullptr, 0);
-
+void hvac_config::set_temperatures(TChannelConfig_HVAC *config, cJSON *root,
+                                   unsigned int filter) {
   cJSON *temperatures =
       cJSON_GetObjectItem(root, field_map.at(FIELD_TEMPERATURES).c_str());
 
@@ -296,7 +229,7 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
   int size = sizeof(config->Temperatures.Temperature) / sizeof(_supla_int16_t);
 
   for (int a = 0; a < size; a++) {
-    if (config->Temperatures.Index & idx) {
+    if ((filter & idx) && (config->Temperatures.Index & idx)) {
       string key = temperature_key_to_string(idx);
       if (!key.empty()) {
         cJSON_AddNumberToObject(temperatures, key.c_str(),
@@ -307,6 +240,126 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
   }
 }
 
+bool hvac_config::get_temperatures(TChannelConfig_HVAC *config, cJSON *root,
+                                   unsigned int filter) {
+  bool result = false;
+
+  cJSON *temperatures =
+      cJSON_GetObjectItem(root, field_map.at(FIELD_TEMPERATURES).c_str());
+
+  if (temperatures && cJSON_IsObject(temperatures)) {
+    for (auto it = temperatures_map.cbegin(); it != temperatures_map.cend();
+         ++it) {
+      if (filter & it->first) {
+        cJSON *item = cJSON_GetObjectItem(temperatures, it->second.c_str());
+        if (item && cJSON_IsNumber(item)) {
+          unsigned int n = 1;
+          for (size_t a = 0; a < sizeof(n) * 8; a++) {
+            if (n == it->first) {
+              config->Temperatures.Temperature[a] = cJSON_GetNumberValue(item);
+              config->Temperatures.Index |= n;
+              result = true;
+              break;
+            }
+            n <<= 1;
+          }
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+void hvac_config::set_config(TChannelConfig_HVAC *config,
+                             unsigned char channel_number) {
+  if (!config) {
+    return;
+  }
+
+  cJSON *user_root = get_user_root();
+  if (!user_root) {
+    return;
+  }
+
+  cJSON *properties_root = get_properties_root();
+  if (!properties_root) {
+    return;
+  }
+
+  set_channel_number(user_root, FIELD_MAIN_THERMOMETER_CHANNEL_NO,
+                     config->MainThermometerChannelNo, channel_number);
+
+  set_channel_number(user_root, FIELD_AUX_THERMOMETER_CHANNEL_NO,
+                     config->AuxThermometerChannelNo, channel_number);
+
+  set_item_value(
+      user_root, field_map.at(FIELD_AUX_THERMOMETER_TYPE).c_str(), cJSON_String,
+      true, aux_thermometer_type_to_string(config->AuxThermometerType).c_str(),
+      0);
+
+  set_channel_number(user_root, FIELD_BINARY_SENSOR_CHANNEL_NO,
+                     config->BinarySensorChannelNo, channel_number);
+
+  set_item_value(
+      user_root,
+      field_map.at(FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED).c_str(),
+      config->AntiFreezeAndOverheatProtectionEnabled ? cJSON_True : cJSON_False,
+      true, nullptr, 0);
+
+  cJSON *algs = cJSON_GetObjectItem(
+      properties_root, field_map.at(FIELD_AVAILABLE_ALGORITHMS).c_str());
+
+  if (algs) {
+    cJSON_DetachItemViaPointer(properties_root, algs);
+    cJSON_Delete(algs);
+  }
+
+  algs = cJSON_AddArrayToObject(
+      properties_root, field_map.at(FIELD_AVAILABLE_ALGORITHMS).c_str());
+
+  add_algorithm_to_array(user_root, algs, config,
+                         SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE);
+
+  add_algorithm_to_array(user_root, algs, config,
+                         SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST);
+
+  set_item_value(user_root, field_map.at(FIELD_USED_ALGORITHM).c_str(),
+                 cJSON_String, true,
+                 alg_to_string(config->UsedAlgorithm).c_str(), 0);
+
+  if (config->MinOffTimeS >= 0 && config->MinOffTimeS <= 600) {
+    set_item_value(user_root, field_map.at(FIELD_MIN_OFF_TIME_S).c_str(),
+                   cJSON_Number, true, nullptr, config->MinOffTimeS);
+  }
+
+  if (config->MinOnTimeS >= 0 && config->MinOnTimeS <= 600) {
+    set_item_value(user_root, field_map.at(FIELD_MIN_ON_TIME_S).c_str(),
+                   cJSON_Number, true, nullptr, config->MinOnTimeS);
+  }
+
+  if (config->OutputValueOnError >= -100 && config->OutputValueOnError <= 100) {
+    set_item_value(user_root, field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR).c_str(),
+                   cJSON_Number, true, nullptr, config->OutputValueOnError);
+  }
+
+  set_item_value(user_root, field_map.at(FIELD_SUBSUNCTION).c_str(),
+                 cJSON_String, true,
+                 subfunction_to_string(config->Subfunction).c_str(), 0);
+
+  set_item_value(
+      user_root,
+      field_map.at(FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE)
+          .c_str(),
+      config->TemperatureSetpointChangeSwitchesToManualMode ? cJSON_True
+                                                            : cJSON_False,
+      true, nullptr, 0);
+
+  set_temperatures(config, user_root, 0xFFFFFFFF ^ readonly_temperatures);
+
+  set_temperatures(config, properties_root, readonly_temperatures);
+}
+
 bool hvac_config::get_config(TChannelConfig_HVAC *config,
                              unsigned char channel_number) {
   if (!config) {
@@ -315,37 +368,42 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
 
   *config = {};
 
-  cJSON *root = get_user_root();
-  if (!root) {
+  cJSON *user_root = get_user_root();
+  if (!user_root) {
+    return false;
+  }
+
+  cJSON *properties_root = get_properties_root();
+  if (!properties_root) {
     return false;
   }
 
   bool result = false;
 
-  if (get_channel_number(root, FIELD_MAIN_THERMOMETER_CHANNEL_NO,
+  if (get_channel_number(user_root, FIELD_MAIN_THERMOMETER_CHANNEL_NO,
                          channel_number, &config->MainThermometerChannelNo)) {
     result = true;
   }
 
-  if (get_channel_number(root, FIELD_AUX_THERMOMETER_CHANNEL_NO, channel_number,
-                         &config->AuxThermometerChannelNo)) {
+  if (get_channel_number(user_root, FIELD_AUX_THERMOMETER_CHANNEL_NO,
+                         channel_number, &config->AuxThermometerChannelNo)) {
     result = true;
   }
 
   std::string str_value;
-  if (get_string(root, field_map.at(FIELD_AUX_THERMOMETER_TYPE).c_str(),
+  if (get_string(user_root, field_map.at(FIELD_AUX_THERMOMETER_TYPE).c_str(),
                  &str_value)) {
     config->AuxThermometerType = string_to_aux_thermometer_type(str_value);
     result = true;
   }
 
-  if (get_channel_number(root, FIELD_BINARY_SENSOR_CHANNEL_NO, channel_number,
-                         &config->BinarySensorChannelNo)) {
+  if (get_channel_number(user_root, FIELD_BINARY_SENSOR_CHANNEL_NO,
+                         channel_number, &config->BinarySensorChannelNo)) {
     result = true;
   }
 
   bool bool_value;
-  if (get_bool(root,
+  if (get_bool(user_root,
                field_map.at(FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED)
                    .c_str(),
                &bool_value)) {
@@ -354,7 +412,7 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
   }
 
   cJSON *algs = cJSON_GetObjectItem(
-      root, field_map.at(FIELD_AVAILABLE_ALGORITHMS).c_str());
+      properties_root, field_map.at(FIELD_AVAILABLE_ALGORITHMS).c_str());
 
   if (algs && cJSON_IsArray(algs)) {
     for (int a = 0; a < cJSON_GetArraySize(algs); a++) {
@@ -367,7 +425,7 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
     }
   }
 
-  if (get_string(root, field_map.at(FIELD_USED_ALGORITHM).c_str(),
+  if (get_string(user_root, field_map.at(FIELD_USED_ALGORITHM).c_str(),
                  &str_value)) {
     config->UsedAlgorithm = string_to_alg(str_value);
     result = true;
@@ -375,33 +433,35 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
 
   double dbl_value = 0;
 
-  if (get_double(root, field_map.at(FIELD_MIN_OFF_TIME_S).c_str(),
+  if (get_double(user_root, field_map.at(FIELD_MIN_OFF_TIME_S).c_str(),
                  &dbl_value) &&
       dbl_value >= 0 && dbl_value <= 600) {
     config->MinOffTimeS = dbl_value;
     result = true;
   }
 
-  if (get_double(root, field_map.at(FIELD_MIN_ON_TIME_S).c_str(), &dbl_value) &&
+  if (get_double(user_root, field_map.at(FIELD_MIN_ON_TIME_S).c_str(),
+                 &dbl_value) &&
       dbl_value >= 0 && dbl_value <= 600) {
     config->MinOnTimeS = dbl_value;
     result = true;
   }
 
-  if (get_double(root, field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR).c_str(),
+  if (get_double(user_root, field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR).c_str(),
                  &dbl_value) &&
       dbl_value >= -100 && dbl_value <= 100) {
     config->OutputValueOnError = dbl_value;
     result = true;
   }
 
-  if (get_string(root, field_map.at(FIELD_SUBSUNCTION).c_str(), &str_value)) {
+  if (get_string(user_root, field_map.at(FIELD_SUBSUNCTION).c_str(),
+                 &str_value)) {
     config->Subfunction = string_to_subfunction(str_value);
     result = true;
   }
 
   if (get_bool(
-          root,
+          user_root,
           field_map
               .at(FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE)
               .c_str(),
@@ -410,26 +470,12 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
     result = true;
   }
 
-  cJSON *temperatures =
-      cJSON_GetObjectItem(root, field_map.at(FIELD_TEMPERATURES).c_str());
+  if (get_temperatures(config, user_root, 0xFFFFFFFF ^ readonly_temperatures)) {
+    result = true;
+  }
 
-  if (temperatures && cJSON_IsObject(temperatures)) {
-    for (auto it = temperatures_map.cbegin(); it != temperatures_map.cend();
-         ++it) {
-      cJSON *item = cJSON_GetObjectItem(temperatures, it->second.c_str());
-      if (item && cJSON_IsNumber(item)) {
-        unsigned int n = 1;
-        for (size_t a = 0; a < sizeof(n) * 8; a++) {
-          if (n == it->first) {
-            config->Temperatures.Temperature[a] = cJSON_GetNumberValue(item);
-            config->Temperatures.Index |= n;
-            result = true;
-            break;
-          }
-          n <<= 1;
-        }
-      }
-    }
+  if (get_temperatures(config, properties_root, readonly_temperatures)) {
+    result = true;
   }
 
   return result;

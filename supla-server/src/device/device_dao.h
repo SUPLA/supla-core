@@ -87,16 +87,17 @@ class supla_device_dao : public supla_abstract_device_dao {
                                  unsigned _supla_int16_t available_fields);
 
   virtual device_json_config *get_device_config(int device_id,
-                                                std::string *md5sum);
+                                                std::string *user_config_md5sum,
+                                                std::string *properties_md5sum);
 
   virtual std::vector<supla_device_channel *> get_channels(
       supla_device *device);
 
   virtual void set_channel_properties(int user_id, int channel_id,
-                                      channel_json_config *config);
+                                      supla_json_config *config);
 
-  virtual bool set_channel_user_config(int user_id, int channel_id,
-                                       channel_json_config *config);
+  virtual bool set_channel_config(int user_id, int channel_id,
+                                  supla_json_config *config);
 
   virtual void update_channel_value(int channel_id, int user_id,
                                     const char value[SUPLA_CHANNELVALUE_SIZE],
@@ -104,9 +105,9 @@ class supla_device_dao : public supla_abstract_device_dao {
 
   virtual void update_channel_extended_value(int channel_id, int user_id,
                                              supla_channel_extended_value *ev);
-  virtual channel_json_config *get_channel_config(
-      int channel_id, std::string *user_config_md5sum,
-      std::string *properties_md5sum);
+  virtual supla_json_config *get_channel_config(int channel_id,
+                                                std::string *user_config_md5sum,
+                                                std::string *properties_md5sum);
 };
 
 #endif /* SUPLA_DEVICE_DAO_H_ */

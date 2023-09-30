@@ -24,7 +24,7 @@
 #include <string>
 
 #include "actions/abstract_action_config.h"
-#include "jsonconfig/channel/channel_json_config.h"
+#include "jsonconfig/json_config.h"
 
 #define DISABLE_LOCAL_FUNCTION 10200
 
@@ -38,7 +38,7 @@ typedef struct {
 } _at_config_action_t;
 
 class action_trigger_config : public abstract_action_config,
-                              public channel_json_config {
+                              public supla_json_config {
  private:
   static const std::map<int, std::string> cap_map;
   static const char caps_key[];
@@ -63,7 +63,7 @@ class action_trigger_config : public abstract_action_config,
   supla_abstract_action_parameters *get_rgbw(void);
 
  public:
-  explicit action_trigger_config(channel_json_config *root);
+  explicit action_trigger_config(supla_json_config *root);
   action_trigger_config(void);
   virtual ~action_trigger_config(void);
 

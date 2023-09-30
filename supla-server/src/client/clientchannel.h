@@ -50,7 +50,7 @@ class supla_client_channel : public supla_client_objcontainer_item,
   short ProductID;
   unsigned char ProtocolVersion;
   unsigned int Flags;
-  channel_json_config *json_config;
+  supla_json_config *json_config;
 
   // during offline
   char value[SUPLA_CHANNELVALUE_SIZE];
@@ -106,8 +106,8 @@ class supla_client_channel : public supla_client_objcontainer_item,
   virtual int get_param2();
   virtual int get_param3();
   virtual int get_param4();
-  virtual channel_json_config *get_json_config(void);
-  virtual void set_json_config(channel_json_config *json_config);
+  virtual supla_json_config *get_json_config(void);
+  virtual void set_json_config(supla_json_config *json_config);
   void set_func(int Func);
   void setCaption(const char *Caption);
   virtual int get_user_id();

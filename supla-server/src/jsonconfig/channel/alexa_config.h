@@ -31,7 +31,7 @@ class alexa_config : public supla_abstract_voice_assistant_config {
   virtual const char *get_value_key(void);
 
  public:
-  explicit alexa_config(channel_json_config *root);
+  explicit alexa_config(supla_json_config *root);
   alexa_config(void);
 };
 

@@ -41,7 +41,7 @@ const map<unsigned _supla_int16_t, string>
         {SUPLA_DEVCFG_SCREENSAVER_MODE_MAIN_AND_AUX_TEMPERATURE,
          "MAIN_AND_AUX_TEMPERATURE"}};
 
-const char device_json_config::modesAvailable[] = "modesAvailable";
+const char device_json_config::modesAvailable[] = "screenSaverModesAvailable";
 
 device_json_config::device_json_config(void) : supla_json_config() {}
 
@@ -194,14 +194,14 @@ void device_json_config::set_screen_saver_mode(
                    cJSON_String, true, mode_str.c_str(), 0);
   }
 
-  cJSON *modes = cJSON_GetObjectItem(root, modesAvailable);
+  cJSON *modes = cJSON_GetObjectItem(get_properties_root(), modesAvailable);
 
   if (modes) {
-    cJSON_DetachItemViaPointer(root, modes);
+    cJSON_DetachItemViaPointer(get_properties_root(), modes);
     cJSON_Delete(modes);
   }
 
-  modes = cJSON_AddArrayToObject(root, modesAvailable);
+  modes = cJSON_AddArrayToObject(get_properties_root(), modesAvailable);
   if (modes) {
     unsigned char size = sizeof(mode->ModesAvailable) * 8;
     unsigned _supla_int64_t n = 1;
@@ -408,7 +408,7 @@ bool device_json_config::get_screen_saver_mode(
 
     mode->ModesAvailable = 0;
 
-    cJSON *modes = cJSON_GetObjectItem(root, modesAvailable);
+    cJSON *modes = cJSON_GetObjectItem(get_properties_root(), modesAvailable);
 
     if (modes && cJSON_IsArray(modes)) {
       result = true;
@@ -554,6 +554,14 @@ void device_json_config::leave_only_thise_fields(
     }
   }
 
+  if (!(fields & SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE)) {
+    cJSON *item = cJSON_GetObjectItem(get_properties_root(), modesAvailable);
+    if (item) {
+      cJSON_DetachItemViaPointer(get_properties_root(), item);
+      cJSON_Delete(item);
+    }
+  }
+
   remove_empty_sub_roots();
 }
 
@@ -577,6 +585,7 @@ void device_json_config::remove_fields(unsigned _supla_int64_t fields) {
 void device_json_config::merge(supla_json_config *_dst) {
   device_json_config dst(_dst);
 
+  map<unsigned _supla_int16_t, string> props_fields = {{1, modesAvailable}};
   map<cJSON *, map<unsigned _supla_int16_t, string>> map;
 
   for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
@@ -594,4 +603,7 @@ void device_json_config::merge(supla_json_config *_dst) {
   }
 
   remove_empty_sub_roots();
+
+  supla_json_config::merge(get_properties_root(), dst.get_properties_root(),
+                           props_fields, false);
 }

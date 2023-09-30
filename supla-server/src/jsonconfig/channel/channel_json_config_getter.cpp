@@ -26,13 +26,13 @@
 using std::shared_ptr;
 
 channel_json_config_getter::channel_json_config_getter(void)
-    : abstract_channel_json_config_getter() {}
+    : abstract_json_config_getter() {}
 
 channel_json_config_getter::~channel_json_config_getter(void) {}
 
-channel_json_config *channel_json_config_getter::get_config(int user_id,
-                                                            int device_id,
-                                                            int channel_id) {
+supla_json_config *channel_json_config_getter::get_config(int user_id,
+                                                          int device_id,
+                                                          int channel_id) {
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {

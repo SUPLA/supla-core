@@ -22,10 +22,10 @@
 #include <map>
 #include <string>
 
-#include "jsonconfig/channel/channel_json_config.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 
-class binary_sensor_config : public channel_json_config {
+class binary_sensor_config : public supla_json_config {
  private:
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
 

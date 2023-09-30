@@ -19,16 +19,16 @@
 #ifndef ABSTRACT_VOICE_ASSISTANT_CONFIG_H_
 #define ABSTRACT_VOICE_ASSISTANT_CONFIG_H_
 
-#include "jsonconfig/channel/channel_json_config.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 
-class supla_abstract_voice_assistant_config : public channel_json_config {
+class supla_abstract_voice_assistant_config : public supla_json_config {
  protected:
   virtual const char *get_root_key(void) = 0;
   virtual const char *get_value_key(void) = 0;
 
  public:
-  explicit supla_abstract_voice_assistant_config(channel_json_config *root);
+  explicit supla_abstract_voice_assistant_config(supla_json_config *root);
   supla_abstract_voice_assistant_config(void);
   bool is_integration_disabled(void);
 };

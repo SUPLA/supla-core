@@ -156,7 +156,7 @@ void supla_alexa_response_request::new_request(
 
   bool integration_disabled = false;
   {
-    channel_json_config *config = property_getter->get_detached_json_config();
+    supla_json_config *config = property_getter->get_detached_json_config();
     if (config) {
       alexa_config a_config(config);
       integration_disabled = a_config.is_integration_disabled();

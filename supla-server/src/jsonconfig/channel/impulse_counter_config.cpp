@@ -36,10 +36,10 @@ const char impulse_counter_config::impulses_per_unit_key[] = "impulsesPerUnit";
 // static
 const char impulse_counter_config::add_to_history_key[] = "addToHistory";
 
-impulse_counter_config::impulse_counter_config(void) : channel_json_config() {}
+impulse_counter_config::impulse_counter_config(void) : supla_json_config() {}
 
-impulse_counter_config::impulse_counter_config(channel_json_config *root)
-    : channel_json_config(root) {}
+impulse_counter_config::impulse_counter_config(supla_json_config *root)
+    : supla_json_config(root) {}
 
 bool impulse_counter_config::should_be_added_to_history(void) {
   cJSON *root = get_user_root();

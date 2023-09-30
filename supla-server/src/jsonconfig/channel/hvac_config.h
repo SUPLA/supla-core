@@ -22,13 +22,14 @@
 #include <map>
 #include <string>
 
-#include "jsonconfig/channel/channel_json_config.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 
-class hvac_config : public channel_json_config {
+class hvac_config : public supla_json_config {
  private:
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
   static const std::map<unsigned int, std::string> temperatures_map;
+  static const unsigned int readonly_temperatures;
   std::string aux_thermometer_type_to_string(unsigned char type);
   unsigned char string_to_aux_thermometer_type(const std::string &type);
   std::string alg_to_string(unsigned _supla_int16_t alg);
@@ -44,6 +45,10 @@ class hvac_config : public channel_json_config {
                           unsigned char channel_number);
   bool get_channel_number(cJSON *root, int field, unsigned char channel_number,
                           unsigned char *result);
+  void set_temperatures(TChannelConfig_HVAC *config, cJSON *root,
+                        unsigned int filter);
+  bool get_temperatures(TChannelConfig_HVAC *config, cJSON *root,
+                        unsigned int filter);
 
  public:
   explicit hvac_config(supla_json_config *root);

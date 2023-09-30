@@ -30,10 +30,10 @@ const map<unsigned _supla_int16_t, string> temp_hum_config::field_map = {
     {FIELD_HUMIDITY_ADJUSTMENT, "humidityAdjustment"},
     {FIELD_ADJUSTMENT_APPLIED_BY_DEVICE, "adjustmentAppliedByDevice"}};
 
-temp_hum_config::temp_hum_config(void) : channel_json_config() {}
+temp_hum_config::temp_hum_config(void) : supla_json_config() {}
 
 temp_hum_config::temp_hum_config(supla_json_config *root)
-    : channel_json_config(root) {}
+    : supla_json_config(root) {}
 
 void temp_hum_config::merge(supla_json_config *_dst) {
   temp_hum_config dst(_dst);

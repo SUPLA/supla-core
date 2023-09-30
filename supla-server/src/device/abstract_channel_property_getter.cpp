@@ -120,12 +120,12 @@ supla_abstract_channel_property_getter::get_extended_value(int user_id,
   return get_extended_value();
 }
 
-channel_json_config*
+supla_json_config*
 supla_abstract_channel_property_getter::get_detached_json_config(void) {
   return _get_detached_json_config(user_id, device_id, channel_id);
 }
 
-channel_json_config*
+supla_json_config*
 supla_abstract_channel_property_getter::get_detached_json_config(
     int user_id, int device_id, int channel_id) {
   this->user_id = user_id;

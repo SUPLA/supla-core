@@ -41,7 +41,7 @@ void DeviceDaoIntegrationTest::SetUp() {
   ASSERT_TRUE(dao != nullptr);
 
   initTestDatabase();
-  runSqlScript("SetDeviceUserConfig.sql");
+  runSqlScript("SetDeviceJsonConfig.sql");
   Test::SetUp();
 }
 
@@ -60,20 +60,32 @@ void DeviceDaoIntegrationTest::TearDown() {
 }
 
 TEST_F(DeviceDaoIntegrationTest, getDeviceConfig) {
-  string md5sum;
-  device_json_config *config = dao->get_device_config(73, &md5sum);
+  string user_config_md5sum, properties_md5sum;
+  device_json_config *config =
+      dao->get_device_config(73, &user_config_md5sum, &properties_md5sum);
   ASSERT_NE(config, nullptr);
 
-  EXPECT_EQ(md5sum, "426fe9ff7937ecc4fb1a223196965d68");
+  EXPECT_EQ(user_config_md5sum, "426fe9ff7937ecc4fb1a223196965d68");
+  EXPECT_EQ(properties_md5sum, "651e6c58d52796442056a2500b32daab");
 
-  char *config_str = config->get_user_config();
-  EXPECT_NE(config_str, nullptr);
-  if (config_str) {
-    EXPECT_STREQ(config_str,
+  char *str = config->get_user_config();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str,
                  "{\"a\":1,\"b\":\"abcd\",\"c\":true,\"screenBrightness\":98,"
                  "\"buttonVolume\":15}");
 
-    free(config_str);
+    free(str);
+  }
+
+  str = config->get_properties();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str,
+                 "{\"1\":2,\"screenSaverModesAvailable\":[\"OFF\","
+                 "\"TEMPERATURE\",\"MAIN_AND_AUX_TEMPERATURE\"]}");
+
+    free(str);
   }
 
   delete config;
@@ -83,11 +95,7 @@ TEST_F(DeviceDaoIntegrationTest, setDeviceConfig) {
   device_json_config cfg1;
   cfg1.set_user_config(
       "{\"buttonVolume\":100,\"screenSaver\":{\"mode\":\"Off\"}}");
-  EXPECT_TRUE(
-      dao->set_device_config(2, 73, &cfg1,
-                             SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
-                                 SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
-                                 SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE));
+  cfg1.set_properties("{\"screenSaverModesAvailable\":[\"OFF\"]}");
 
   EXPECT_TRUE(
       dao->set_device_config(2, 73, &cfg1,
@@ -95,17 +103,31 @@ TEST_F(DeviceDaoIntegrationTest, setDeviceConfig) {
                                  SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
                                  SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE));
 
-  device_json_config *cfg2 = dao->get_device_config(73, nullptr);
+  EXPECT_TRUE(
+      dao->set_device_config(2, 73, &cfg1,
+                             SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
+                                 SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
+                                 SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE));
+
+  device_json_config *cfg2 = dao->get_device_config(73, nullptr, nullptr);
   ASSERT_NE(cfg2, nullptr);
 
-  char *config_str = cfg2->get_user_config();
-  EXPECT_NE(config_str, nullptr);
-  if (config_str) {
-    EXPECT_STREQ(config_str,
+  char *str = cfg2->get_user_config();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str,
                  "{\"a\":1,\"b\":\"abcd\",\"c\":true,\"screenBrightness\":98,"
                  "\"buttonVolume\":100,\"screenSaver\":{\"mode\":\"Off\"}}");
 
-    free(config_str);
+    free(str);
+  }
+
+  str = cfg2->get_properties();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str, "{\"1\":2,\"screenSaverModesAvailable\":[\"OFF\"]}");
+
+    free(str);
   }
 
   delete cfg2;
@@ -113,16 +135,24 @@ TEST_F(DeviceDaoIntegrationTest, setDeviceConfig) {
   EXPECT_TRUE(dao->set_device_config(2, 73, &cfg1,
                                      SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME));
 
-  cfg2 = dao->get_device_config(73, nullptr);
+  cfg2 = dao->get_device_config(73, nullptr, nullptr);
   ASSERT_NE(cfg2, nullptr);
 
-  config_str = cfg2->get_user_config();
-  EXPECT_NE(config_str, nullptr);
-  if (config_str) {
-    EXPECT_STREQ(config_str,
+  str = cfg2->get_user_config();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str,
                  "{\"a\":1,\"b\":\"abcd\",\"c\":true,\"buttonVolume\":100}");
 
-    free(config_str);
+    free(str);
+  }
+
+  str = cfg2->get_properties();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str, "{\"1\":2}");
+
+    free(str);
   }
 
   delete cfg2;
@@ -132,7 +162,7 @@ TEST_F(DeviceDaoIntegrationTest, getChannelConfig) {
   runSqlScript("SetChannelProperties.sql");
 
   string user_config_md5sum, properties_md5sum;
-  channel_json_config *config =
+  supla_json_config *config =
       dao->get_channel_config(144, &user_config_md5sum, &properties_md5sum);
   ASSERT_NE(config, nullptr);
 
@@ -166,36 +196,43 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
   hvac_config cfg1;
   cfg1.set_config(&ds_hvac, 0);
 
-  EXPECT_TRUE(dao->set_channel_user_config(2, 144, &cfg1));
+  EXPECT_TRUE(dao->set_channel_config(2, 144, &cfg1));
 
-  channel_json_config *cfg2 = dao->get_channel_config(144, nullptr, nullptr);
+  supla_json_config *cfg2 = dao->get_channel_config(144, nullptr, nullptr);
   ASSERT_NE(cfg2, nullptr);
 
-  char *config_str = cfg2->get_user_config();
-  EXPECT_NE(config_str, nullptr);
-  if (config_str) {
+  char *str = cfg2->get_user_config();
+  EXPECT_NE(str, nullptr);
+  if (str) {
     EXPECT_STREQ(
-        config_str,
+        str,
         "{\"pricePerUnit\":0.56,\"currency\":\"PLN\","
         "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":null,"
         "\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelNo\":null,"
-        "\"antiFreezeAndOverheatProtectionEnabled\":false,"
-        "\"availableAlgorithms\":[],\"usedAlgorithm\":\"\",\"minOnTimeS\":0,"
-        "\"minOffTimeS\":0,\"outputValueOnError\":0,\"subfunction\":\"NOT_"
-        "SET\",\"temperatureSetpointChangeSwitchesToManualMode\":false,"
+        "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":"
+        "\"\",\"minOnTimeS\":0,\"minOffTimeS\":0,\"outputValueOnError\":0,"
+        "\"subfunction\":\"NOT_SET\","
+        "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
         "\"temperatures\":{}}");
-    free(config_str);
+    free(str);
+  }
+
+  str = cfg2->get_properties();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str, "{\"availableAlgorithms\":[],\"temperatures\":{}}");
+    free(str);
   }
 
   delete cfg2;
 }
 
 TEST_F(DeviceDaoIntegrationTest, setChannelProperties) {
-  channel_json_config cfg1;
+  supla_json_config cfg1;
   cfg1.set_properties("{\"props\": 123}");
   dao->set_channel_properties(2, 144, &cfg1);
 
-  channel_json_config *cfg2 = dao->get_channel_config(144, nullptr, nullptr);
+  supla_json_config *cfg2 = dao->get_channel_config(144, nullptr, nullptr);
   ASSERT_NE(cfg2, nullptr);
 
   char *prop_str = cfg2->get_properties();

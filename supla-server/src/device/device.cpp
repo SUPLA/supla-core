@@ -159,7 +159,8 @@ void supla_device::send_config_to_device(void) {
     supla_db_access_provider dba;
     supla_device_dao dao(&dba);
 
-    device_json_config *config = dao.get_device_config(get_id(), nullptr);
+    device_json_config *config =
+        dao.get_device_config(get_id(), nullptr, nullptr);
     if (config) {
       unsigned _supla_int64_t fields = 0xFFFFFFFFFFFFFFFF;
       unsigned _supla_int64_t available_fields = config->get_available_fields();

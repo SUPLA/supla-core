@@ -30,7 +30,7 @@ enum e_relation_kind {
   relation_with_parent_channel = 2
 };
 
-class channel_json_config;
+class supla_json_config;
 class supla_abstract_common_channel_properties {
  private:
   void add_relation(std::vector<supla_channel_relation> *relations,
@@ -47,8 +47,8 @@ class supla_abstract_common_channel_properties {
   virtual int get_param2(void) = 0;
   virtual int get_param3(void) = 0;
   virtual int get_param4(void) = 0;
-  virtual channel_json_config *get_json_config(void) = 0;
-  virtual void set_json_config(channel_json_config *config) = 0;
+  virtual supla_json_config *get_json_config(void) = 0;
+  virtual void set_json_config(supla_json_config *config) = 0;
   virtual unsigned char get_channel_number(void) = 0;
 
   virtual void for_each(

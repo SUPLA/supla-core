@@ -20,11 +20,11 @@
 
 supla_abstract_voice_assistant_config::supla_abstract_voice_assistant_config(
     void)
-    : channel_json_config() {}
+    : supla_json_config() {}
 
 supla_abstract_voice_assistant_config::supla_abstract_voice_assistant_config(
-    channel_json_config *root)
-    : channel_json_config(root) {}
+    supla_json_config *root)
+    : supla_json_config(root) {}
 
 bool supla_abstract_voice_assistant_config::is_integration_disabled(void) {
   cJSON *root = get_user_root();

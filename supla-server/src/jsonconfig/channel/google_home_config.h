@@ -31,7 +31,7 @@ class google_home_config : public supla_abstract_voice_assistant_config {
   virtual const char *get_value_key(void);
 
  public:
-  explicit google_home_config(channel_json_config *root);
+  explicit google_home_config(supla_json_config *root);
   google_home_config(void);
 };
 

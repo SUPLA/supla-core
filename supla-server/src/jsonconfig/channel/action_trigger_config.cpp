@@ -59,13 +59,13 @@ const char action_trigger_config::actions_key[] = "actions";
 const char action_trigger_config::param_key[] = "param";
 
 action_trigger_config::action_trigger_config(void)
-    : abstract_action_config(), channel_json_config() {
+    : abstract_action_config(), supla_json_config() {
   active_cap = 0;
   channel_id_if_subject_not_set = 0;
 }
 
-action_trigger_config::action_trigger_config(channel_json_config *root)
-    : abstract_action_config(), channel_json_config(root) {
+action_trigger_config::action_trigger_config(supla_json_config *root)
+    : abstract_action_config(), supla_json_config(root) {
   active_cap = 0;
   channel_id_if_subject_not_set = 0;
 }

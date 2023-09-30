@@ -33,11 +33,13 @@ using std::stringstream;
 
 supla_json_config::supla_json_config(void) {
   this->user_root = nullptr;
+  this->properties_root = nullptr;
   this->root = nullptr;
 }
 
 supla_json_config::supla_json_config(const supla_json_config &json_config) {
   this->user_root = nullptr;
+  this->properties_root = nullptr;
   this->root = nullptr;
 
   *this = json_config;
@@ -45,26 +47,37 @@ supla_json_config::supla_json_config(const supla_json_config &json_config) {
 
 supla_json_config::supla_json_config(supla_json_config *root) {
   this->user_root = nullptr;
+  this->properties_root = nullptr;
   this->root = root;
 }
 
 supla_json_config::supla_json_config(supla_json_config *root,
                                      bool copy_and_detach) {
   this->user_root = nullptr;
+  this->properties_root = nullptr;
   this->root = root;
 
   if (root && copy_and_detach) {
     this->user_root = cJSON_Duplicate(root->get_user_root(), cJSON_True);
+    this->properties_root =
+        cJSON_Duplicate(root->get_properties_root(), cJSON_True);
     this->root = nullptr;
   }
 }
 
-supla_json_config::~supla_json_config(void) {
+void supla_json_config::json_clear(void) {
   if (this->user_root) {
     cJSON_Delete(this->user_root);
     this->user_root = nullptr;
   }
+
+  if (this->properties_root) {
+    cJSON_Delete(this->properties_root);
+    this->properties_root = nullptr;
+  }
 }
+
+supla_json_config::~supla_json_config(void) { json_clear(); }
 
 supla_json_config *supla_json_config::get_root(void) { return root; }
 
@@ -104,6 +117,57 @@ char *supla_json_config::get_user_config(void) {
   cJSON *json = get_user_root();
   if (json) {
     return cJSON_PrintUnformatted(json);
+  }
+  return nullptr;
+}
+
+cJSON *supla_json_config::get_properties_root(void) {
+  supla_json_config *root = dynamic_cast<supla_json_config *>(get_root());
+
+  if (root) {
+    return root->get_properties_root();
+  }
+
+  if (properties_root == nullptr) {
+    properties_root = cJSON_CreateObject();
+  }
+
+  return properties_root;
+}
+
+void supla_json_config::set_properties(const char *properties) {
+  supla_json_config *root = dynamic_cast<supla_json_config *>(get_root());
+  if (root) {
+    root->set_properties(properties);
+    return;
+  }
+
+  if (properties_root != nullptr) {
+    cJSON_Delete(properties_root);
+    properties_root = nullptr;
+  }
+
+  if (properties) {
+    properties_root = cJSON_Parse(properties);
+  }
+}
+
+char *supla_json_config::get_properties(void) {
+  cJSON *json = get_properties_root();
+  if (json) {
+    return cJSON_PrintUnformatted(json);
+  }
+  return nullptr;
+}
+
+cJSON *supla_json_config::get_user_root_with_key(const char *key, bool force) {
+  cJSON *root = get_user_root();
+  if (root) {
+    cJSON *key_root = cJSON_GetObjectItem(root, key);
+    if (!key_root) {
+      key_root = cJSON_AddObjectToObject(root, key);
+    }
+    return key_root;
   }
   return nullptr;
 }
@@ -289,15 +353,17 @@ bool supla_json_config::merge(cJSON *src_parent, cJSON *dst_parent,
 
 supla_json_config &supla_json_config::operator=(
     const supla_json_config &json_config) {
-  if (this->user_root) {
-    cJSON_Delete(this->user_root);
-    this->user_root = nullptr;
-  }
+  json_clear();
 
   this->root = json_config.root;
 
   if (json_config.user_root) {
     this->user_root = cJSON_Duplicate(json_config.user_root, cJSON_True);
+  }
+
+  if (json_config.properties_root) {
+    this->properties_root =
+        cJSON_Duplicate(json_config.properties_root, cJSON_True);
   }
 
   return *this;

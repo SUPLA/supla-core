@@ -170,7 +170,7 @@ void supla_google_home_state_report_request::new_request(
 
   bool integration_disabled = false;
   {
-    channel_json_config *config = property_getter->get_detached_json_config();
+    supla_json_config *config = property_getter->get_detached_json_config();
     if (config) {
       google_home_config gh_config(config);
       integration_disabled = gh_config.is_integration_disabled();

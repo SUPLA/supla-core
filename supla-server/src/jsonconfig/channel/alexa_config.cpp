@@ -26,7 +26,7 @@ const char alexa_config::value_key[] = "alexaDisabled";
 
 alexa_config::alexa_config(void) : supla_abstract_voice_assistant_config() {}
 
-alexa_config::alexa_config(channel_json_config *root)
+alexa_config::alexa_config(supla_json_config *root)
     : supla_abstract_voice_assistant_config(root) {}
 
 const char *alexa_config::get_root_key(void) { return root_key; }

@@ -32,10 +32,10 @@ const char weekly_schedule_config::setpoint_temperature_cool[] =
 const char weekly_schedule_config::program_settings[] = "programSettings";
 const char weekly_schedule_config::quarters[] = "quarters";
 
-weekly_schedule_config::weekly_schedule_config(void) : channel_json_config() {}
+weekly_schedule_config::weekly_schedule_config(void) : supla_json_config() {}
 
 weekly_schedule_config::weekly_schedule_config(supla_json_config *root)
-    : channel_json_config(root) {}
+    : supla_json_config(root) {}
 
 std::string weekly_schedule_config::get_weekly_shedule_key(void) {
   return "weeklySchedule";
