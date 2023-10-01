@@ -69,37 +69,36 @@ TEST_F(WeeklyScheduleConfigTest, setAndGetConfig) {
 
   EXPECT_STREQ(
       str,
-      "{\"hvac\":{\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":"
-      "\"Cool\",\"SetpointTemperatureHeat\":10,\"SetpointTemperatureCool\":20},"
-      "\"2\":{\"mode\":\"Dry\",\"SetpointTemperatureHeat\":30,"
-      "\"SetpointTemperatureCool\":40},\"3\":{\"mode\":\"FanOnly\","
+      "{\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":"
+      "\"COOL\",\"SetpointTemperatureHeat\":10,\"SetpointTemperatureCool\":20},"
+      "\"2\":{\"mode\":\"DRY\",\"SetpointTemperatureHeat\":30,"
+      "\"SetpointTemperatureCool\":40},\"3\":{\"mode\":\"FAN_ONLY\","
       "\"SetpointTemperatureHeat\":50,\"SetpointTemperatureCool\":60},\"4\":{"
-      "\"mode\":\"Auto\",\"SetpointTemperatureHeat\":70,"
+      "\"mode\":\"AUTO\",\"SetpointTemperatureHeat\":70,"
       "\"SetpointTemperatureCool\":80}},\"quarters\":[0,1,2,3,4,5,6,7,8,9,10,"
-      "11,"
-      "12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,"
-      "10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,"
-      "8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,"
-      "6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,"
-      "4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,"
-      "2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,"
-      "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
-      "14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,"
-      "12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,"
-      "10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,"
-      "8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,"
-      "6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,"
-      "4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,"
-      "2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,"
-      "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
-      "14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,"
-      "12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,"
-      "10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,"
-      "8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,"
-      "6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,"
-      "4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,"
-      "2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]"
-      "}}}");
+      "11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,"
+      "9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,"
+      "7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,"
+      "5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,"
+      "3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,"
+      "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,"
+      "15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,"
+      "13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,"
+      "11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,"
+      "9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,"
+      "7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,"
+      "5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,"
+      "3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,"
+      "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,"
+      "15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,"
+      "13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,"
+      "11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,"
+      "9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,"
+      "7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,"
+      "5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,"
+      "3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,"
+      "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,"
+      "15]}}");
 
   free(str);
 
@@ -115,35 +114,31 @@ TEST_F(WeeklyScheduleConfigTest, getConfigResult) {
   TChannelConfig_WeeklySchedule sd_config = {};
   EXPECT_FALSE(config.get_config(&sd_config));
 
-  config.set_user_config("{\"hvac\":{}}");
+  config.set_user_config("{}");
 
   EXPECT_FALSE(config.get_config(&sd_config));
 
-  config.set_user_config("{\"hvac\":{\"weeklySchedule\":{}}}");
+  config.set_user_config("{\"weeklySchedule\":{}}");
 
   EXPECT_FALSE(config.get_config(&sd_config));
 
-  config.set_user_config(
-      "{\"hvac\":{\"weeklySchedule\":{\"programSettings\":{}}}}");
-
-  EXPECT_FALSE(config.get_config(&sd_config));
-
-  config.set_user_config(
-      "{\"hvac\":{\"weeklySchedule\":{\"programSettings\":{},\"quarters\":[]}}"
-      "}");
+  config.set_user_config("{\"weeklySchedule\":{\"programSettings\":{}}}");
 
   EXPECT_FALSE(config.get_config(&sd_config));
 
   config.set_user_config(
-      "{\"hvac\":{\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":"
-      "\"Cool\"}},\"quarters\":[]}}"
-      "}");
+      "{\"weeklySchedule\":{\"programSettings\":{},\"quarters\":[]}}");
+
+  EXPECT_FALSE(config.get_config(&sd_config));
+
+  config.set_user_config(
+      "{\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":\"COOL\"}},"
+      "\"quarters\":[]}}");
 
   EXPECT_TRUE(config.get_config(&sd_config));
 
   config.set_user_config(
-      "{\"hvac\":{\"weeklySchedule\":{\"programSettings\":{},\"quarters\":[0]}}"
-      "}");
+      "{\"weeklySchedule\":{\"programSettings\":{},\"quarters\":[0]}}");
 
   EXPECT_TRUE(config.get_config(&sd_config));
 }
@@ -176,20 +171,19 @@ TEST_F(WeeklyScheduleConfigTest, merge) {
   free(str);
 
   config2.set_user_config(
-      "{\"a\": 123, \"hvac\":{\"b\": 456, \"weeklySchedule\":{\"c\": 789}}}");
+      "{\"a\": 123, \"b\": 456, \"weeklySchedule\":{\"c\": 789}}");
 
   config1.merge(&config2);
 
   str = config2.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str, "{\"a\":123,\"hvac\":{\"b\":456}}");
+  EXPECT_STREQ(str, "{\"a\":123,\"b\":456}");
   free(str);
 
   config2.set_user_config(
-      "{\"abc\": 123, "
-      "\"hvac\":{\"x\": 987, "
+      "{\"abc\": 123, \"x\": 987, "
       "\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":"
-      "\"Cool\",\"SetpointTemperatureHeat\":10,\"SetpointTemperatureCool\":20},"
+      "\"COOL\",\"SetpointTemperatureHeat\":10,\"SetpointTemperatureCool\":20},"
       "\"2\":{\"mode\":\"Dry\",\"SetpointTemperatureHeat\":30,"
       "\"SetpointTemperatureCool\":40},\"3\":{\"mode\":\"FanOnly\","
       "\"SetpointTemperatureHeat\":50,\"SetpointTemperatureCool\":60},\"4\":{"
@@ -218,10 +212,10 @@ TEST_F(WeeklyScheduleConfigTest, merge) {
       "6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,"
       "4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,"
       "2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]"
-      "}}}");
+      "}}");
 
   config1.set_user_config(
-      "{\"a\": 123, \"hvac\":{\"b\": 456, "
+      "{\"a\": 123, \"b\": 456, "
       "\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":\"FanOnly\","
       "\"SetpointTemperatureHeat\":100,\"SetpointTemperatureCool\":200},\"2\":{"
       "\"mode\":\"Dry\",\"SetpointTemperatureHeat\":300,"
@@ -230,7 +224,7 @@ TEST_F(WeeklyScheduleConfigTest, merge) {
       "\"mode\":\"Auto\",\"SetpointTemperatureHeat\":700,"
       "\"SetpointTemperatureCool\":800}},\"quarters\":[0,1,2,3,4,5,6,7,8,9,10,"
       "11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,"
-      "9]}}}");
+      "9]}}");
 
   config1.merge(&config2);
 
@@ -238,7 +232,7 @@ TEST_F(WeeklyScheduleConfigTest, merge) {
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(
       str,
-      "{\"abc\":123,\"hvac\":{\"x\":987,\"weeklySchedule\":{"
+      "{\"abc\":123,\"x\":987,\"weeklySchedule\":{"
       "\"programSettings\":{\"1\":{\"mode\":\"FanOnly\","
       "\"SetpointTemperatureHeat\":100,\"SetpointTemperatureCool\":200},"
       "\"2\":{\"mode\":\"Dry\",\"SetpointTemperatureHeat\":300,"
@@ -247,7 +241,7 @@ TEST_F(WeeklyScheduleConfigTest, merge) {
       "\"4\":{\"mode\":\"Auto\",\"SetpointTemperatureHeat\":700,"
       "\"SetpointTemperatureCool\":800}},\"quarters\":[0,1,2,3,4,5,6,7,"
       "8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,"
-      "1,2,3,4,5,6,7,8,9]}}}");
+      "1,2,3,4,5,6,7,8,9]}}");
   free(str);
 }
 

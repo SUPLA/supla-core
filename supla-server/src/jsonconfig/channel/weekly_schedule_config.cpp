@@ -24,7 +24,6 @@
 using std::string;
 
 const char weekly_schedule_config::mode[] = "mode";
-const char weekly_schedule_config::hvac[] = "hvac";
 const char weekly_schedule_config::setpoint_temperature_heat[] =
     "SetpointTemperatureHeat";
 const char weekly_schedule_config::setpoint_temperature_cool[] =
@@ -46,94 +45,69 @@ void weekly_schedule_config::merge(supla_json_config *_dst) {
     return;
   }
 
-  cJSON *src_ws_root = get_ws_root(get_user_root(), false);
-
   weekly_schedule_config dst(_dst);
-  cJSON *dst_root = dst.get_user_root();
 
-  if (!dst_root) {
-    return;
+  cJSON *dst_ws_root = cJSON_GetObjectItem(dst.get_user_root(),
+                                           get_weekly_shedule_key().c_str());
+  if (dst_ws_root) {
+    cJSON_DetachItemViaPointer(dst.get_user_root(), dst_ws_root);
+    cJSON_Delete(dst_ws_root);
   }
 
-  cJSON *dst_hvac_root = cJSON_GetObjectItem(dst_root, hvac);
-  if (!dst_hvac_root && src_ws_root) {
-    dst_hvac_root = cJSON_AddObjectToObject(dst_root, hvac);
-  }
+  cJSON *src_ws_root = get_ws_root(false);
 
-  if (dst_hvac_root) {
-    cJSON *dst_ws_root =
-        cJSON_GetObjectItem(dst_hvac_root, get_weekly_shedule_key().c_str());
+  if (src_ws_root) {
+    dst_ws_root = cJSON_Duplicate(src_ws_root, cJSON_True);
     if (dst_ws_root) {
-      cJSON_DetachItemViaPointer(dst_hvac_root, dst_ws_root);
-      cJSON_Delete(dst_ws_root);
-    }
-
-    if (src_ws_root) {
-      dst_ws_root = cJSON_Duplicate(src_ws_root, cJSON_True);
-      if (dst_ws_root) {
-        cJSON_AddItemToObject(dst_hvac_root, get_weekly_shedule_key().c_str(),
-                              dst_ws_root);
-      }
+      cJSON_AddItemToObject(dst.get_user_root(),
+                            get_weekly_shedule_key().c_str(), dst_ws_root);
     }
   }
 }
 
-cJSON *weekly_schedule_config::get_ws_root(cJSON *root, bool force) {
-  if (root) {
-    cJSON *hvac_root = cJSON_GetObjectItem(root, hvac);
-    if (!hvac_root && force) {
-      hvac_root = cJSON_AddObjectToObject(root, hvac);
-    }
-    if (hvac_root) {
-      cJSON *ws_root =
-          cJSON_GetObjectItem(hvac_root, get_weekly_shedule_key().c_str());
-      if (!ws_root && force) {
-        ws_root = cJSON_AddObjectToObject(hvac_root,
-                                          get_weekly_shedule_key().c_str());
-      }
-      return ws_root;
-    }
+cJSON *weekly_schedule_config::get_ws_root(bool force) {
+  cJSON *ws_root =
+      cJSON_GetObjectItem(get_user_root(), get_weekly_shedule_key().c_str());
+  if (!ws_root && force) {
+    ws_root = cJSON_AddObjectToObject(get_user_root(),
+                                      get_weekly_shedule_key().c_str());
   }
-  return nullptr;
-}
-
-cJSON *weekly_schedule_config::get_ws_root(void) {
-  return get_ws_root(get_user_root(), true);
+  return ws_root;
 }
 
 string weekly_schedule_config::mode_to_string(unsigned char mode) {
   switch (mode) {
     case SUPLA_HVAC_MODE_NOT_SET:
-      return "NotSet";
+      return "NOT_SET";
     case SUPLA_HVAC_MODE_OFF:
-      return "Off";
+      return "OFF";
     case SUPLA_HVAC_MODE_HEAT:
-      return "Heat";
+      return "HEAT";
     case SUPLA_HVAC_MODE_COOL:
-      return "Cool";
+      return "COOL";
     case SUPLA_HVAC_MODE_AUTO:
-      return "Auto";
+      return "AUTO";
     case SUPLA_HVAC_MODE_FAN_ONLY:
-      return "FanOnly";
+      return "FAN_ONLY";
     case SUPLA_HVAC_MODE_DRY:
-      return "Dry";
+      return "DRY";
   }
 
   return "";
 }
 
 unsigned char weekly_schedule_config::string_to_mode(const std::string &mode) {
-  if (mode == "Off") {
+  if (mode == "OFF") {
     return SUPLA_HVAC_MODE_OFF;
-  } else if (mode == "Heat") {
+  } else if (mode == "HEAT") {
     return SUPLA_HVAC_MODE_HEAT;
-  } else if (mode == "Cool") {
+  } else if (mode == "COOL") {
     return SUPLA_HVAC_MODE_COOL;
-  } else if (mode == "Auto") {
+  } else if (mode == "AUTO") {
     return SUPLA_HVAC_MODE_AUTO;
-  } else if (mode == "FanOnly") {
+  } else if (mode == "FAN_ONLY") {
     return SUPLA_HVAC_MODE_FAN_ONLY;
-  } else if (mode == "Dry") {
+  } else if (mode == "DRY") {
     return SUPLA_HVAC_MODE_DRY;
   }
 
@@ -198,7 +172,7 @@ void weekly_schedule_config::set_config(TChannelConfig_WeeklySchedule *config) {
     return;
   }
 
-  cJSON *root = get_ws_root();
+  cJSON *root = get_ws_root(true);
   if (!root) {
     return;
   }
@@ -239,7 +213,7 @@ bool weekly_schedule_config::get_config(TChannelConfig_WeeklySchedule *config) {
 
   *config = {};
 
-  cJSON *root = get_ws_root(get_user_root(), false);
+  cJSON *root = get_ws_root(false);
   if (!root) {
     return false;
   }

@@ -27,14 +27,12 @@
 class weekly_schedule_config : public supla_json_config {
  private:
   static const char mode[];
-  static const char hvac[];
   static const char setpoint_temperature_heat[];
   static const char setpoint_temperature_cool[];
   static const char program_settings[];
   static const char quarters[];
 
-  cJSON *get_ws_root(void);
-  cJSON *get_ws_root(cJSON *root, bool force);
+  cJSON *get_ws_root(bool force);
   std::string mode_to_string(unsigned char mode);
   unsigned char string_to_mode(const std::string &mode);
   void add_program(unsigned char index, TChannelConfig_WeeklySchedule *config,

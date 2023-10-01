@@ -38,12 +38,12 @@ TEST_F(AltWeeklyScheduleConfigTest, getConfig) {
 
   EXPECT_STREQ(
       str,
-      "{\"hvac\":{\"altWeeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":"
-      "\"NotSet\",\"SetpointTemperatureHeat\":0,\"SetpointTemperatureCool\":0},"
-      "\"2\":{\"mode\":\"NotSet\",\"SetpointTemperatureHeat\":0,"
-      "\"SetpointTemperatureCool\":0},\"3\":{\"mode\":\"NotSet\","
+      "{\"altWeeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":"
+      "\"NOT_SET\",\"SetpointTemperatureHeat\":0,\"SetpointTemperatureCool\":0}"
+      ",\"2\":{\"mode\":\"NOT_SET\",\"SetpointTemperatureHeat\":0,"
+      "\"SetpointTemperatureCool\":0},\"3\":{\"mode\":\"NOT_SET\","
       "\"SetpointTemperatureHeat\":0,\"SetpointTemperatureCool\":0},\"4\":{"
-      "\"mode\":\"NotSet\",\"SetpointTemperatureHeat\":0,"
+      "\"mode\":\"NOT_SET\",\"SetpointTemperatureHeat\":0,"
       "\"SetpointTemperatureCool\":0}},\"quarters\":[0,0,0,0,0,0,0,0,0,0,0,0,0,"
       "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"
       "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"
@@ -63,7 +63,7 @@ TEST_F(AltWeeklyScheduleConfigTest, getConfig) {
       "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"
       "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"
       "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"
-      "0,0,0,0,0,0,0,0,0,0,0]}}}");
+      "0,0,0,0,0,0,0,0,0,0,0]}}");
 
   free(str);
 }
