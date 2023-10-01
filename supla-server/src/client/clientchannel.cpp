@@ -45,7 +45,7 @@ supla_client_channel::supla_client_channel(
     unsigned int Flags, unsigned int EmSubcFlags,
     const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec, const char *user_config,
-    const char *em_subc_user_config)
+    const char *properties, const char *em_subc_user_config)
     : supla_client_objcontainer_item(Container, Id, Caption),
       supla_abstract_common_channel_properties() {
   this->channel_number = channel_number;
@@ -74,6 +74,7 @@ supla_client_channel::supla_client_channel(
 
   supla_json_config *json_config = new supla_json_config();
   json_config->set_user_config(user_config);
+  json_config->set_properties(properties);
   set_json_config(json_config);
 
   if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {

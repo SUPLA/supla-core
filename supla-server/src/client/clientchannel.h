@@ -86,7 +86,7 @@ class supla_client_channel : public supla_client_objcontainer_item,
                        unsigned int Flags, unsigned int EmSubcFlags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
                        unsigned _supla_int_t validity_time_sec,
-                       const char *user_config,
+                       const char *user_config, const char *properties,
                        const char *em_subc_user_config);
   virtual ~supla_client_channel(void);
   virtual unsigned char get_channel_number(void);
