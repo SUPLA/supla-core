@@ -1877,7 +1877,7 @@ srpc_async_call(void *_srpc, unsigned _supla_int_t call_id, char *data,
 unsigned char SRPC_ICACHE_FLASH srpc_get_proto_version(void *_srpc) {
   unsigned char version;
 
-  if (!_srpc) {
+  if (_srpc == NULL) {
     return 0;
   }
 
