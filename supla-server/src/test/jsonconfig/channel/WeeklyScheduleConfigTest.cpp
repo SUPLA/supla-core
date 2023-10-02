@@ -184,10 +184,10 @@ TEST_F(WeeklyScheduleConfigTest, merge) {
       "{\"abc\": 123, \"x\": 987, "
       "\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":"
       "\"COOL\",\"setpointTemperatureHeat\":10,\"setpointTemperatureCool\":20},"
-      "\"2\":{\"mode\":\"Dry\",\"setpointTemperatureHeat\":30,"
-      "\"setpointTemperatureCool\":40},\"3\":{\"mode\":\"FanOnly\","
+      "\"2\":{\"mode\":\"DRY\",\"setpointTemperatureHeat\":30,"
+      "\"setpointTemperatureCool\":40},\"3\":{\"mode\":\"FAN_ONLY\","
       "\"setpointTemperatureHeat\":50,\"setpointTemperatureCool\":60},\"4\":{"
-      "\"mode\":\"Auto\",\"setpointTemperatureHeat\":70,"
+      "\"mode\":\"AUTO\",\"setpointTemperatureHeat\":70,"
       "\"setpointTemperatureCool\":80}},\"quarters\":[0,3,2,3,4,5,6,7,8,9,10,"
       "11,"
       "12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,"
@@ -216,12 +216,12 @@ TEST_F(WeeklyScheduleConfigTest, merge) {
 
   config1.set_user_config(
       "{\"a\": 123, \"b\": 456, "
-      "\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":\"FanOnly\","
+      "\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":\"FAN_ONLY\","
       "\"setpointTemperatureHeat\":100,\"setpointTemperatureCool\":200},\"2\":{"
-      "\"mode\":\"Dry\",\"setpointTemperatureHeat\":300,"
-      "\"setpointTemperatureCool\":400},\"3\":{\"mode\":\"FanOnly\","
+      "\"mode\":\"DRY\",\"setpointTemperatureHeat\":300,"
+      "\"setpointTemperatureCool\":400},\"3\":{\"mode\":\"FAN_ONLY\","
       "\"setpointTemperatureHeat\":500,\"setpointTemperatureCool\":600},\"4\":{"
-      "\"mode\":\"Auto\",\"setpointTemperatureHeat\":700,"
+      "\"mode\":\"AUTO\",\"setpointTemperatureHeat\":700,"
       "\"setpointTemperatureCool\":800}},\"quarters\":[0,1,2,3,4,5,6,7,8,9,10,"
       "11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,"
       "9]}}");
@@ -233,12 +233,12 @@ TEST_F(WeeklyScheduleConfigTest, merge) {
   EXPECT_STREQ(
       str,
       "{\"abc\":123,\"x\":987,\"weeklySchedule\":{"
-      "\"programSettings\":{\"1\":{\"mode\":\"FanOnly\","
+      "\"programSettings\":{\"1\":{\"mode\":\"FAN_ONLY\","
       "\"setpointTemperatureHeat\":100,\"setpointTemperatureCool\":200},"
-      "\"2\":{\"mode\":\"Dry\",\"setpointTemperatureHeat\":300,"
-      "\"setpointTemperatureCool\":400},\"3\":{\"mode\":\"FanOnly\","
+      "\"2\":{\"mode\":\"DRY\",\"setpointTemperatureHeat\":300,"
+      "\"setpointTemperatureCool\":400},\"3\":{\"mode\":\"FAN_ONLY\","
       "\"setpointTemperatureHeat\":500,\"setpointTemperatureCool\":600},"
-      "\"4\":{\"mode\":\"Auto\",\"setpointTemperatureHeat\":700,"
+      "\"4\":{\"mode\":\"AUTO\",\"setpointTemperatureHeat\":700,"
       "\"setpointTemperatureCool\":800}},\"quarters\":[0,1,2,3,4,5,6,7,"
       "8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,"
       "1,2,3,4,5,6,7,8,9]}}");
