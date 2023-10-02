@@ -1877,6 +1877,10 @@ srpc_async_call(void *_srpc, unsigned _supla_int_t call_id, char *data,
 unsigned char SRPC_ICACHE_FLASH srpc_get_proto_version(void *_srpc) {
   unsigned char version;
 
+  if (!_srpc) {
+    return 0;
+  }
+
   Tsrpc *srpc = (Tsrpc *)_srpc;
   lck_lock(srpc->lck);
   version = sproto_get_version(srpc->proto);
