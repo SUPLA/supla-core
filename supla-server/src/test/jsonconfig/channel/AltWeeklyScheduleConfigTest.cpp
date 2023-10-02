@@ -44,7 +44,7 @@ TEST_F(AltWeeklyScheduleConfigTest, getConfig) {
       "\"setpointTemperatureCool\":0},\"3\":{\"mode\":\"NOT_SET\","
       "\"setpointTemperatureHeat\":0,\"setpointTemperatureCool\":0},\"4\":{"
       "\"mode\":\"NOT_SET\",\"setpointTemperatureHeat\":0,"
-      "\"SetpointTemperatureCool\":0}},\"quarters\":[0,0,0,0,0,0,0,0,0,0,0,0,0,"
+      "\"setpointTemperatureCool\":0}},\"quarters\":[0,0,0,0,0,0,0,0,0,0,0,0,0,"
       "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"
       "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"
       "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"
