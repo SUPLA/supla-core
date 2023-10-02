@@ -34,20 +34,20 @@ TEST_F(WeeklyScheduleConfigTest, setAndGetConfig) {
   TChannelConfig_WeeklySchedule sd_config2 = {};
 
   sd_config1.Program[0].Mode = SUPLA_HVAC_MODE_COOL;
-  sd_config1.Program[0].setpointTemperatureHeat = 10;
-  sd_config1.Program[0].setpointTemperatureCool = 20;
+  sd_config1.Program[0].SetpointTemperatureHeat = 10;
+  sd_config1.Program[0].SetpointTemperatureCool = 20;
 
   sd_config1.Program[1].Mode = SUPLA_HVAC_MODE_DRY;
-  sd_config1.Program[1].setpointTemperatureHeat = 30;
-  sd_config1.Program[1].setpointTemperatureCool = 40;
+  sd_config1.Program[1].SetpointTemperatureHeat = 30;
+  sd_config1.Program[1].SetpointTemperatureCool = 40;
 
   sd_config1.Program[2].Mode = SUPLA_HVAC_MODE_FAN_ONLY;
-  sd_config1.Program[2].setpointTemperatureHeat = 50;
-  sd_config1.Program[2].setpointTemperatureCool = 60;
+  sd_config1.Program[2].SetpointTemperatureHeat = 50;
+  sd_config1.Program[2].SetpointTemperatureCool = 60;
 
   sd_config1.Program[3].Mode = SUPLA_HVAC_MODE_AUTO;
-  sd_config1.Program[3].setpointTemperatureHeat = 70;
-  sd_config1.Program[3].setpointTemperatureCool = 80;
+  sd_config1.Program[3].SetpointTemperatureHeat = 70;
+  sd_config1.Program[3].SetpointTemperatureCool = 80;
 
   unsigned short b = 0;
   for (unsigned short a = 0; a < sizeof(sd_config1.Quarters); a++) {
