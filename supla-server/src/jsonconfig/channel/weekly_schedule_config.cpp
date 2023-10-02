@@ -25,9 +25,9 @@ using std::string;
 
 const char weekly_schedule_config::mode[] = "mode";
 const char weekly_schedule_config::setpoint_temperature_heat[] =
-    "SetpointTemperatureHeat";
+    "setpointTemperatureHeat";
 const char weekly_schedule_config::setpoint_temperature_cool[] =
-    "SetpointTemperatureCool";
+    "setpointTemperatureCool";
 const char weekly_schedule_config::program_settings[] = "programSettings";
 const char weekly_schedule_config::quarters[] = "quarters";
 
