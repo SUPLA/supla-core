@@ -821,6 +821,7 @@ bool supla_device_channels::set_on(const supla_caller &caller, int channel_id,
 
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
         supla_channel_hvac_value *hvac_value =
             channel->get_value<supla_channel_hvac_value>();
