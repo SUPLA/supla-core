@@ -452,6 +452,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_DISTANCESENSOR 220        // ver. >= 5
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW 230  // ver. >= 8
 #define SUPLA_CHANNELFNC_HOTELCARDSENSOR 235       // ver. >= 21
+#define SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR 236   // ver. >= 21
 #define SUPLA_CHANNELFNC_MAILSENSOR 240            // ver. >= 8
 #define SUPLA_CHANNELFNC_WINDSENSOR 250            // ver. >= 8
 #define SUPLA_CHANNELFNC_PRESSURESENSOR 260        // ver. >= 8
@@ -2710,7 +2711,8 @@ typedef struct {
   unsigned char Subfunction;            // SUPLA_HVAC_SUBFUNCTION_
   unsigned char TemperatureSetpointChangeSwitchesToManualMode;  // 0 - off,
                                                                 // 1 - on (def)
-  unsigned char Reserved[50];
+  unsigned char AuxMinMaxSetpointEnabled;  // 0 - off (default), 1 - on
+  unsigned char Reserved[49];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
 
