@@ -1913,6 +1913,27 @@ typedef struct {
 #define RGBW_BRIGHTNESS_ONOFF 0x1
 #define RGBW_COLOR_ONOFF 0x2
 
+// Values from other fields are applied in a standard way
+#define RGBW_COMMAND_NOT_SET 0
+// Ignores all other bytes and turns on the dimmer
+#define RGBW_COMMAND_TURN_ON_DIMMER 1
+// Ignores all other bytes and turns off the dimmer
+#define RGBW_COMMAND_TURN_OFF_DIMMER 2
+// Ignores all other bytes and toggles the dimmer
+#define RGBW_COMMAND_TOGGLE_DIMMER 3
+// Ignores all other bytes and turns on the RGB
+#define RGBW_COMMAND_TURN_ON_RGB 4
+// Ignores all other bytes and turns off the RGB
+#define RGBW_COMMAND_TURN_OFF_RGB 5
+// Ignores all other bytes and toggles the RGB
+#define RGBW_COMMAND_TOGGLE_RGB 6
+// Stores brightness value and ignores all other bytes, if dimmer is off, it
+// stays off
+#define RGBW_COMMAND_SET_BRIGHTNESS_WITHOUT_TURN_ON 7
+// Stores color value (R, G, B) and colorBrightness value and ignores all other
+// bytes, if RGB is off, it stays off
+#define RGBW_COMMAND_SET_RGB_AND_COLOR_BRIGHTNESS_WITHOUT_TURN_ON 8
+
 typedef struct {
   char brightness;
   char colorBrightness;
@@ -1920,6 +1941,8 @@ typedef struct {
   char G;
   char R;
   char onOff;
+  char command;  // RGBW_COMMAND_, requires
+                 // SUPLA_CHANNEL_FLAG_RGBW_SET_LEVEL_WITHOUT_SWITCHING_ON
 } TRGBW_Value;  // v. >= 10
 
 #define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1
