@@ -562,10 +562,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   (1ULL << 3)  // v. >= 21
 // type: TDeviceConfig_AutomaticTimeSync
 #define SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC (1ULL << 4)  // v. >= 21
-// type: TDeviceConfig_ScreensaverDelay
-#define SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY (1ULL << 5)  // v. >= 21
-// type: TDeviceConfig_ScreensaverMode
-#define SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE (1ULL << 6)  // v. >= 21
+// type: TDeviceConfig_HomeScreenDelay
+#define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY (1ULL << 5)  // v. >= 21
+// type: TDeviceConfig_HomeScreenContent
+#define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT (1ULL << 6)  // v. >= 21
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
@@ -2394,25 +2394,26 @@ typedef struct {
 } TDeviceConfig_AutomaticTimeSync;  // v. >= 21
 
 typedef struct {
-  unsigned _supla_int16_t ScreensaverDelayS;  // delay in seconds
-                                              // 0 - disabled
-} TDeviceConfig_ScreensaverDelay;             // v. >= 21
+  unsigned _supla_int16_t HomeScreenDelayS;  // delay in seconds
+                                             // 0 - disabled
+} TDeviceConfig_HomeScreenDelay;             // v. >= 21
 
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_OFF (1ULL << 0)
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_TEMPERATURE (1ULL << 1)
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_HUMIDITY (1ULL << 2)
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_TIME (1ULL << 3)
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_TIME_DATE (1ULL << 4)
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_TEMPERATURE_TIME (1ULL << 5)
-#define SUPLA_DEVCFG_SCREENSAVER_MODE_MAIN_AND_AUX_TEMPERATURE (1ULL << 6)
+#define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_NONE (1ULL << 0)
+#define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE (1ULL << 1)
+#define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_HUMIDITY (1ULL << 2)
+#define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME (1ULL << 3)
+#define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME_DATE (1ULL << 4)
+#define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_TIME (1ULL << 5)
+#define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE (1ULL << 6)
 
 typedef struct {
   // bitfield with all available modes (reported by device, readonly for other
   // components)
-  unsigned _supla_int64_t ModesAvailable;
+  unsigned _supla_int64_t ContentAvailable;
   // configured mode (settable)
-  unsigned _supla_int64_t ScreensaverMode;  // SUPLA_DEVCFG_SCREENSAVER_MODE_
-} TDeviceConfig_ScreensaverMode;            // v. >= 21
+  unsigned _supla_int64_t
+      HomeScreenContent;            // SUPLA_DEVCFG_HOME_SCREEN_CONTENT_
+} TDeviceConfig_HomeScreenContent;  // v. >= 21
 
 /********************************************
  * CHANNEL CONFIG STRUCTURES

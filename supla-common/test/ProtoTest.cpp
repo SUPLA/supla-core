@@ -224,9 +224,9 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
   EXPECT_LE(sizeof(TDeviceConfig_AutomaticTimeSync),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
-  EXPECT_LE(sizeof(TDeviceConfig_ScreensaverDelay),
+  EXPECT_LE(sizeof(TDeviceConfig_HomeScreenDelay),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
-  EXPECT_LE(sizeof(TDeviceConfig_ScreensaverMode),
+  EXPECT_LE(sizeof(TDeviceConfig_HomeScreenContent),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   EXPECT_EQ((unsigned int)8, sizeof(TCalCfg_RollerShutterSettings));

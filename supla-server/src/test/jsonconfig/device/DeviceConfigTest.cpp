@@ -71,8 +71,8 @@ TEST_F(DeviceConfigTest, allFields) {
                    SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
                    SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE |
                    SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
-                   SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY |
-                   SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE;
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY |
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT;
 
   ((TDeviceConfig_StatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
       ->StatusLedType = SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF;
@@ -97,16 +97,16 @@ TEST_F(DeviceConfigTest, allFields) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_AutomaticTimeSync);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
-  ((TDeviceConfig_ScreensaverDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->ScreensaverDelayS = 123;
-  sds_cfg.ConfigSize += sizeof(TDeviceConfig_ScreensaverDelay);
+  ((TDeviceConfig_HomeScreenDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->HomeScreenDelayS = 123;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
-  ((TDeviceConfig_ScreensaverMode *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->ScreensaverMode = SUPLA_DEVCFG_SCREENSAVER_MODE_TIME_DATE;
-  ((TDeviceConfig_ScreensaverMode *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->ModesAvailable = 0xFFFFFFFFFFFFFFFF;
-  sds_cfg.ConfigSize += sizeof(TDeviceConfig_ScreensaverMode);
+  ((TDeviceConfig_HomeScreenContent *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->HomeScreenContent = SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME_DATE;
+  ((TDeviceConfig_HomeScreenContent *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->ContentAvailable = 0xFFFFFFFFFFFFFFFF;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenContent);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   device_json_config cfg;
@@ -117,13 +117,13 @@ TEST_F(DeviceConfigTest, allFields) {
       str,
       "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":24,\"buttonVolume\":"
       "100,\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"screenSaver\":{\"delay\":123,\"mode\":\"TIME_DATE\"}}");
+      "\"homeScreen\":{\"delay\":123,\"content\":\"TIME_DATE\"}}");
   free(str);
 
   str = cfg.get_properties();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
-               "{\"screenSaverModesAvailable\":[\"OFF\",\"TEMPERATURE\","
+               "{\"homeScreenContentAvailable\":[\"NONE\",\"TEMPERATURE\","
                "\"HUMIDITY\",\"TIME\",\"TIME_DATE\",\"TEMPERATURE_TIME\","
                "\"MAIN_AND_AUX_TEMPERATURE\"]}");
   free(str);
@@ -133,7 +133,7 @@ TEST_F(DeviceConfigTest, twoFieldsSlightlyApart) {
   TSDS_SetDeviceConfig sds_cfg = {};
   sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE |
                    SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
-                   SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY;
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY;
 
   ((TDeviceConfig_DisableUserInterface *)&sds_cfg.Config[sds_cfg.ConfigSize])
       ->DisableUserInterface = true;
@@ -145,9 +145,9 @@ TEST_F(DeviceConfigTest, twoFieldsSlightlyApart) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_AutomaticTimeSync);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
-  ((TDeviceConfig_ScreensaverDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->ScreensaverDelayS = 678;
-  sds_cfg.ConfigSize += sizeof(TDeviceConfig_ScreensaverDelay);
+  ((TDeviceConfig_HomeScreenDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->HomeScreenDelayS = 678;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   device_json_config cfg;
@@ -156,7 +156,7 @@ TEST_F(DeviceConfigTest, twoFieldsSlightlyApart) {
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
                "{\"userInterfaceDisabled\":true,\"automaticTimeSync\":true,"
-               "\"screenSaver\":{\"delay\":678}}");
+               "\"homeScreen\":{\"delay\":678}}");
   free(str);
 }
 
@@ -165,7 +165,7 @@ TEST_F(DeviceConfigTest, leaveOnly) {
   sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
                    SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
                    SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
-                   SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY;
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY;
 
   ((TDeviceConfig_StatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
       ->StatusLedType = SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED;
@@ -182,9 +182,9 @@ TEST_F(DeviceConfigTest, leaveOnly) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_ButtonVolume);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
-  ((TDeviceConfig_ScreensaverDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->ScreensaverDelayS = 10;
-  sds_cfg.ConfigSize += sizeof(TDeviceConfig_ScreensaverDelay);
+  ((TDeviceConfig_HomeScreenDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->HomeScreenDelayS = 10;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   device_json_config cfg;
@@ -193,7 +193,7 @@ TEST_F(DeviceConfigTest, leaveOnly) {
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
                "{\"statusLed\":\"ON_WHEN_CONNECTED\",\"screenBrightness\":100,"
-               "\"buttonVolume\":0,\"screenSaver\":{\"delay\":10}}");
+               "\"buttonVolume\":0,\"homeScreen\":{\"delay\":10}}");
   free(str);
 
   cfg.leave_only_thise_fields(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS);
@@ -217,7 +217,7 @@ TEST_F(DeviceConfigTest, removeFields) {
   sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
                    SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
                    SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
-                   SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY;
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY;
 
   ((TDeviceConfig_StatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
       ->StatusLedType = SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED;
@@ -234,9 +234,9 @@ TEST_F(DeviceConfigTest, removeFields) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_ButtonVolume);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
-  ((TDeviceConfig_ScreensaverDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->ScreensaverDelayS = 15;
-  sds_cfg.ConfigSize += sizeof(TDeviceConfig_ScreensaverDelay);
+  ((TDeviceConfig_HomeScreenDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->HomeScreenDelayS = 15;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   device_json_config cfg;
@@ -245,12 +245,12 @@ TEST_F(DeviceConfigTest, removeFields) {
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
                "{\"statusLed\":\"ON_WHEN_CONNECTED\",\"screenBrightness\":100,"
-               "\"buttonVolume\":0,\"screenSaver\":{\"delay\":15}}");
+               "\"buttonVolume\":0,\"homeScreen\":{\"delay\":15}}");
   free(str);
 
   cfg.remove_fields(SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
                     SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
-                    SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY);
+                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY);
 
   str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
@@ -260,7 +260,7 @@ TEST_F(DeviceConfigTest, removeFields) {
 
 TEST_F(DeviceConfigTest, merge) {
   device_json_config cfg1, cfg2;
-  cfg1.set_user_config("{\"statusLed\":2,\"screenSaver\":{\"delay\":15}}");
+  cfg1.set_user_config("{\"statusLed\":2,\"homeScreen\":{\"delay\":15}}");
   cfg2.set_user_config(
       "{\"a\":true,\"b\":123,\"statusLed\":1,\"buttonVolume\":100}");
 
@@ -271,7 +271,7 @@ TEST_F(DeviceConfigTest, merge) {
 
   EXPECT_STREQ(user_config,
                "{\"a\":true,\"b\":123,\"statusLed\":2,\"buttonVolume\":100,"
-               "\"screenSaver\":{\"delay\":15}}");
+               "\"homeScreen\":{\"delay\":15}}");
 
   free(user_config);
 }
@@ -283,11 +283,12 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
   const char user_config[] =
       "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":24,\"buttonVolume\":"
       "100,\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"screenSaver\":{\"delay\":123,\"mode\":\"TIME_DATE\"}}";
+      "\"homeScreen\":{\"delay\":123,\"content\":\"TIME_DATE\"}}";
   cfg1.set_user_config(user_config);
 
   const char properties[] =
-      "{\"screenSaverModesAvailable\":[\"OFF\",\"TEMPERATURE\",\"MAIN_AND_AUX_"
+      "{\"homeScreenContentAvailable\":[\"NONE\",\"TEMPERATURE\",\"MAIN_AND_"
+      "AUX_"
       "TEMPERATURE\"]}";
   cfg1.set_user_config(user_config);
   cfg1.set_properties(properties);
@@ -302,8 +303,8 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
                 SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
                 SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE |
                 SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
-                SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY |
-                SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE);
+                SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY |
+                SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT);
 
   cfg2.set_config(&sds_cfg);
   char *user_config2 = cfg2.get_user_config();
@@ -349,7 +350,7 @@ TEST_F(DeviceConfigTest, getConfig_OneField) {
   cfg1.set_user_config(
       "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
       "\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"screenSaver\":{\"delay\":123,\"mode\":\"TimeDate\"}}");
+      "\"homeScreen\":{\"delay\":123,\"content\":\"TimeDate\"}}");
 
   unsigned _supla_int64_t fields_left = 0xFFFFFFFFFFFFFFFF;
   cfg1.get_config(&sds_cfg, SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC,
@@ -413,54 +414,56 @@ TEST_F(DeviceConfigTest, statusLED) {
   free(str);
 }
 
-TEST_F(DeviceConfigTest, screenSaverMode) {
-  TDeviceConfig_ScreensaverMode mode = {};
+TEST_F(DeviceConfigTest, homeScreenMode) {
+  TDeviceConfig_HomeScreenContent content = {};
   device_json_config cfg1;
   device_json_config cfg2;
-  cfg1.set_user_config("{\"screenSaver\": {\"mode\": \"TIME_DATE\"}}");
+  cfg1.set_user_config("{\"homeScreen\": {\"content\": \"TIME_DATE\"}}");
 
-  EXPECT_TRUE(cfg1.get_screen_saver_mode(&mode));
-  EXPECT_EQ(mode.ScreensaverMode, SUPLA_DEVCFG_SCREENSAVER_MODE_TIME_DATE);
-  EXPECT_EQ(mode.ModesAvailable, 0);
+  EXPECT_TRUE(cfg1.get_home_screen_content(&content));
+  EXPECT_EQ(content.HomeScreenContent,
+            SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME_DATE);
+  EXPECT_EQ(content.ContentAvailable, 0);
 
   TSDS_SetDeviceConfig sds_config = {};
   cfg1.get_config(&sds_config, nullptr);
   cfg2.set_config(&sds_config);
   char *str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str, "{\"screenSaver\":{\"mode\":\"TIME_DATE\"}}");
+  EXPECT_STREQ(str, "{\"homeScreen\":{\"content\":\"TIME_DATE\"}}");
   free(str);
 
   str = cfg2.get_properties();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str, "{\"screenSaverModesAvailable\":[]}");
+  EXPECT_STREQ(str, "{\"homeScreenContentAvailable\":[]}");
   free(str);
 
-  cfg1.set_user_config("{\"screenSaver\": {\"mode\": \"HUMIDITY\"}}");
+  cfg1.set_user_config("{\"homeScreen\": {\"content\": \"HUMIDITY\"}}");
 
-  EXPECT_TRUE(cfg1.get_screen_saver_mode(&mode));
-  EXPECT_EQ(mode.ScreensaverMode, SUPLA_DEVCFG_SCREENSAVER_MODE_HUMIDITY);
+  EXPECT_TRUE(cfg1.get_home_screen_content(&content));
+  EXPECT_EQ(content.HomeScreenContent,
+            SUPLA_DEVCFG_HOME_SCREEN_CONTENT_HUMIDITY);
 
   sds_config = {};
   cfg1.get_config(&sds_config, nullptr);
   cfg2.set_config(&sds_config);
   str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str, "{\"screenSaver\":{\"mode\":\"HUMIDITY\"}}");
+  EXPECT_STREQ(str, "{\"homeScreen\":{\"content\":\"HUMIDITY\"}}");
   free(str);
 
   cfg1.set_user_config(
-      "{\"screenSaver\": {\"mode\": \"MAIN_AND_AUX_TEMPERATURE\"}}");
+      "{\"homeScreen\": {\"content\": \"MAIN_AND_AUX_TEMPERATURE\"}}");
   cfg1.set_properties(
-      "{\"screenSaverModesAvailable\":[\"MAIN_AND_AUX_TEMPERATURE\", "
+      "{\"homeScreenContentAvailable\":[\"MAIN_AND_AUX_TEMPERATURE\", "
       "\"HUMIDITY\"]}");
 
-  EXPECT_TRUE(cfg1.get_screen_saver_mode(&mode));
-  EXPECT_EQ(mode.ScreensaverMode,
-            SUPLA_DEVCFG_SCREENSAVER_MODE_MAIN_AND_AUX_TEMPERATURE);
-  EXPECT_EQ(mode.ModesAvailable,
-            SUPLA_DEVCFG_SCREENSAVER_MODE_MAIN_AND_AUX_TEMPERATURE |
-                SUPLA_DEVCFG_SCREENSAVER_MODE_HUMIDITY);
+  EXPECT_TRUE(cfg1.get_home_screen_content(&content));
+  EXPECT_EQ(content.HomeScreenContent,
+            SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE);
+  EXPECT_EQ(content.ContentAvailable,
+            SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE |
+                SUPLA_DEVCFG_HOME_SCREEN_CONTENT_HUMIDITY);
 
   sds_config = {};
   cfg1.get_config(&sds_config, nullptr);
@@ -468,28 +471,28 @@ TEST_F(DeviceConfigTest, screenSaverMode) {
   str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
-               "{\"screenSaver\":{\"mode\":\"MAIN_AND_AUX_TEMPERATURE\"}}");
+               "{\"homeScreen\":{\"content\":\"MAIN_AND_AUX_TEMPERATURE\"}}");
   free(str);
 
   str = cfg2.get_properties();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
-               "{\"screenSaverModesAvailable\":[\"HUMIDITY\",\"MAIN_AND_AUX_"
+               "{\"homeScreenContentAvailable\":[\"HUMIDITY\",\"MAIN_AND_AUX_"
                "TEMPERATURE\"]}");
   free(str);
 }
 
 TEST_F(DeviceConfigTest, availableFields) {
   device_json_config cfg;
-  cfg.set_user_config("{\"screenSaver\": {\"mode\": \"HUMIDITY\"}}");
+  cfg.set_user_config("{\"homeScreen\": {\"content\": \"HUMIDITY\"}}");
 
   EXPECT_EQ(cfg.get_available_fields(),
-            SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE);
+            SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT);
 
   cfg.set_user_config(
       "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
       "\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"screenSaver\": {\"delay\":123,\"mode\": \"HUMIDITY\"}}");
+      "\"homeScreen\": {\"delay\":123,\"content\": \"HUMIDITY\"}}");
 
   EXPECT_EQ(cfg.get_available_fields(),
             SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
@@ -497,8 +500,8 @@ TEST_F(DeviceConfigTest, availableFields) {
                 SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
                 SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE |
                 SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
-                SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY |
-                SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE);
+                SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY |
+                SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT);
 }
 
 } /* namespace testing */

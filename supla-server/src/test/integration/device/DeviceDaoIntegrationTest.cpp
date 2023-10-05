@@ -66,7 +66,7 @@ TEST_F(DeviceDaoIntegrationTest, getDeviceConfig) {
   ASSERT_NE(config, nullptr);
 
   EXPECT_EQ(user_config_md5sum, "426fe9ff7937ecc4fb1a223196965d68");
-  EXPECT_EQ(properties_md5sum, "651e6c58d52796442056a2500b32daab");
+  EXPECT_EQ(properties_md5sum, "c74065d79f3dbcf05899b6109fca2e2a");
 
   char *str = config->get_user_config();
   EXPECT_NE(str, nullptr);
@@ -82,7 +82,7 @@ TEST_F(DeviceDaoIntegrationTest, getDeviceConfig) {
   EXPECT_NE(str, nullptr);
   if (str) {
     EXPECT_STREQ(str,
-                 "{\"1\":2,\"screenSaverModesAvailable\":[\"OFF\","
+                 "{\"1\":2,\"homeScreenContentAvailable\":[\"NONE\","
                  "\"TEMPERATURE\",\"MAIN_AND_AUX_TEMPERATURE\"]}");
 
     free(str);
@@ -94,20 +94,20 @@ TEST_F(DeviceDaoIntegrationTest, getDeviceConfig) {
 TEST_F(DeviceDaoIntegrationTest, setDeviceConfig) {
   device_json_config cfg1;
   cfg1.set_user_config(
-      "{\"buttonVolume\":100,\"screenSaver\":{\"mode\":\"Off\"}}");
-  cfg1.set_properties("{\"screenSaverModesAvailable\":[\"OFF\"]}");
+      "{\"buttonVolume\":100,\"homeScreen\":{\"content\":\"NONE\"}}");
+  cfg1.set_properties("{\"homeScreenContentAvailable\":[\"NONE\"]}");
 
-  EXPECT_TRUE(
-      dao->set_device_config(2, 73, &cfg1,
-                             SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
-                                 SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
-                                 SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE));
+  EXPECT_TRUE(dao->set_device_config(
+      2, 73, &cfg1,
+      SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
+          SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
+          SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT));
 
-  EXPECT_TRUE(
-      dao->set_device_config(2, 73, &cfg1,
-                             SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
-                                 SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
-                                 SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE));
+  EXPECT_TRUE(dao->set_device_config(
+      2, 73, &cfg1,
+      SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
+          SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
+          SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT));
 
   device_json_config *cfg2 = dao->get_device_config(73, nullptr, nullptr);
   ASSERT_NE(cfg2, nullptr);
@@ -117,7 +117,7 @@ TEST_F(DeviceDaoIntegrationTest, setDeviceConfig) {
   if (str) {
     EXPECT_STREQ(str,
                  "{\"a\":1,\"b\":\"abcd\",\"c\":true,\"screenBrightness\":98,"
-                 "\"buttonVolume\":100,\"screenSaver\":{\"mode\":\"Off\"}}");
+                 "\"buttonVolume\":100,\"homeScreen\":{\"content\":\"NONE\"}}");
 
     free(str);
   }
@@ -125,7 +125,7 @@ TEST_F(DeviceDaoIntegrationTest, setDeviceConfig) {
   str = cfg2->get_properties();
   EXPECT_NE(str, nullptr);
   if (str) {
-    EXPECT_STREQ(str, "{\"1\":2,\"screenSaverModesAvailable\":[\"OFF\"]}");
+    EXPECT_STREQ(str, "{\"1\":2,\"homeScreenContentAvailable\":[\"NONE\"]}");
 
     free(str);
   }
