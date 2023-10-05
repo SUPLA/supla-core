@@ -98,7 +98,7 @@ TEST_F(DeviceConfigTest, allFields) {
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   ((TDeviceConfig_ScreensaverDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->ScreensaverDelayMs = 123;
+      ->ScreensaverDelayS = 123;
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_ScreensaverDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
@@ -146,7 +146,7 @@ TEST_F(DeviceConfigTest, twoFieldsSlightlyApart) {
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   ((TDeviceConfig_ScreensaverDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->ScreensaverDelayMs = 678;
+      ->ScreensaverDelayS = 678;
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_ScreensaverDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
@@ -183,7 +183,7 @@ TEST_F(DeviceConfigTest, leaveOnly) {
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   ((TDeviceConfig_ScreensaverDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->ScreensaverDelayMs = 10;
+      ->ScreensaverDelayS = 10;
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_ScreensaverDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
@@ -235,7 +235,7 @@ TEST_F(DeviceConfigTest, removeFields) {
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   ((TDeviceConfig_ScreensaverDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->ScreensaverDelayMs = 15;
+      ->ScreensaverDelayS = 15;
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_ScreensaverDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 

@@ -180,7 +180,7 @@ void device_json_config::set_screen_saver_delay(
   if (delay) {
     set_item_value(get_root(true, SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY),
                    field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY),
-                   cJSON_Number, true, nullptr, delay->ScreensaverDelayMs);
+                   cJSON_Number, true, nullptr, delay->ScreensaverDelayS);
   }
 }
 
@@ -384,7 +384,7 @@ bool device_json_config::get_screen_saver_delay(
           get_root(false, SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY),
           field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY).c_str(),
           &value)) {
-    delay->ScreensaverDelayMs = value;
+    delay->ScreensaverDelayS = value;
     return true;
   }
 
