@@ -62,6 +62,7 @@ supla_device_channel::supla_device_channel(
   this->text_param2 = text_param2 ? strndup(text_param2, 255) : nullptr;
   this->text_param3 = text_param3 ? strndup(text_param3, 255) : nullptr;
   this->flags = flags;
+  this->init_flags = flags;
   this->offline = flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION;
   this->extended_value = extended_value;
   this->logger_purpose_extended_value = nullptr;
@@ -209,19 +210,19 @@ unsigned int supla_device_channel::get_flags() {
   return result;
 }
 
-void supla_device_channel::add_flags(unsigned int flags) {
-  unsigned int current_flags = get_flags();
-  if ((current_flags | flags) != current_flags) {
-    current_flags |= flags;
+void supla_device_channel::add_init_flags(unsigned int flags) {
+  if ((init_flags | flags) != init_flags) {
+    init_flags |= flags;
     lock();
-    this->flags = current_flags;
+    this->flags |= flags;
+    this->init_flags |= flags;
     unlock();
 
     database *db = new database();
 
     if (db) {
       if (db->connect() == true) {
-        db->update_channel_flags(get_id(), get_user_id(), current_flags);
+        db->update_channel_flags(get_id(), get_user_id(), init_flags);
       }
       delete db;
       db = nullptr;

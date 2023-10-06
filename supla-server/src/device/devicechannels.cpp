@@ -75,7 +75,7 @@ supla_device_channels::supla_device_channels(
 
     if (channel) {
       channel->set_value(value, nullptr, nullptr);
-      channel->add_flags(flags);
+      channel->add_init_flags(flags);
 
       if (type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
         int actionTriggerRelatedChannelId = 0;

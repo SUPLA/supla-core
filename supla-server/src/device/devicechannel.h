@@ -65,6 +65,7 @@ class supla_device_channel {
   const bool hidden;
   bool offline;
   unsigned int flags;
+  unsigned int init_flags;
   TDSC_ChannelState *state;
   char value[SUPLA_CHANNELVALUE_SIZE];
   struct timeval value_valid_to;  // during offline
@@ -120,7 +121,7 @@ class supla_device_channel {
   const char *get_text_param3(void);
   bool is_hidden(void);
   unsigned int get_flags();
-  void add_flags(unsigned int flags);
+  void add_init_flags(unsigned int flags);
   bool is_offline(void);
   bool set_offline(bool Offline);
   bool is_value_writable(void);
