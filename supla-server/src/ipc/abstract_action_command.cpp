@@ -19,7 +19,6 @@
 #include "ipc/abstract_action_command.h"
 
 #include "actions/abstract_action_config.h"
-#include "proto.h"
 
 using std::string;
 
@@ -53,6 +52,8 @@ const string supla_abstract_action_command::get_command_name(void) {
       return "ACTION-SBS:";
     case ACTION_SHUT_PARTIALLY:
       return "ACTION-SHUT-PARTIALLY:";
+    case ACTION_SET_HVAC_PARAMETERS:
+      return "ACTION-SET-HVAC-PARAMETERS";
   }
   return "";
 }
@@ -106,6 +107,36 @@ void supla_abstract_action_command::on_command_match(const char *params) {
     if (user_id && device_id && channel_id && source_channel_id) {
       bool result = action_copy(user_id, device_id, channel_id,
                                 source_device_id, source_channel_id);
+      _send_result(result, channel_id);
+    } else {
+      send_result("UNKNOWN:", channel_id);
+    }
+
+    return;
+  }
+
+  if (action == ACTION_SET_HVAC_PARAMETERS) {
+    int user_id = 0;
+    int device_id = 0;
+    int channel_id = 0;
+
+    TAction_HVAC_Parameters raw_hvac_params = {};
+    unsigned int mode = 0;
+    int heat = 0;
+    int cool = 0;
+    unsigned int flags = 0;
+
+    sscanf(params, "%i,%i,%i,%u,%u,%i,%i,%u", &user_id, &device_id, &channel_id,
+           &raw_hvac_params.DurationSec, &mode, &heat, &cool, &flags);
+
+    if (user_id && device_id && channel_id) {
+      raw_hvac_params.Mode = mode;
+      raw_hvac_params.SetpointTemperatureHeat = heat;
+      raw_hvac_params.SetpointTemperatureCool = cool;
+      raw_hvac_params.Flags = flags;
+      supla_action_hvac_parameters hvac_params(&raw_hvac_params);
+      bool result = action_set_hvac_parameters(user_id, device_id, channel_id,
+                                               &hvac_params);
       _send_result(result, channel_id);
     } else {
       send_result("UNKNOWN:", channel_id);

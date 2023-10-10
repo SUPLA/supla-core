@@ -52,11 +52,12 @@ bool supla_action_hvac_parameters::equal(
 }
 
 supla_abstract_action_parameters *supla_action_hvac_parameters::copy(  // NOLINT
-    void) {                                                            // NOLINT
+    void) const {                                                      // NOLINT
   return new supla_action_hvac_parameters(params);
 }
 
-void supla_action_hvac_parameters::apply_on(supla_channel_hvac_value *value) {
+void supla_action_hvac_parameters::apply_on(
+    supla_channel_hvac_value *value) const {
   value->set_mode(params.Mode);
 
   if (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET) {
@@ -72,11 +73,11 @@ void supla_action_hvac_parameters::apply_on(supla_channel_hvac_value *value) {
   }
 }
 
-unsigned int supla_action_hvac_parameters::get_duration_sec(void) {
+unsigned int supla_action_hvac_parameters::get_duration_sec(void) const {
   return params.DurationSec;
 }
 
-bool supla_action_hvac_parameters::is_any_param_set(void) {
+bool supla_action_hvac_parameters::is_any_param_set(void) const {
   return params.Mode != SUPLA_HVAC_MODE_NOT_SET ||
          (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET) ||
          (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET);

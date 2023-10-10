@@ -171,3 +171,16 @@ bool supla_action_command::action_shut(int user_id, int device_id,
 
   return false;
 }
+
+bool supla_action_command::action_set_hvac_parameters(
+    int user_id, int device_id, int channel_id,
+    const supla_action_hvac_parameters *params) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->action_set_hvac_parameters(
+        get_caller(), channel_id, 0, 1, params);
+  }
+
+  return false;
+}

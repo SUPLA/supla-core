@@ -1192,7 +1192,7 @@ bool supla_device_channels::action_open_close_without_canceling_tasks(
 
 bool supla_device_channels::action_set_hvac_parameters(
     const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
-    supla_action_hvac_parameters *params) {
+    const supla_action_hvac_parameters *params) {
   if (!params) {
     return false;
   }

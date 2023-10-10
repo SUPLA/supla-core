@@ -32,7 +32,7 @@ class supla_action_rgbw_parameters : public supla_abstract_action_parameters {
   explicit supla_action_rgbw_parameters(const TAction_RGBW_Parameters *rgbw);
   virtual ~supla_action_rgbw_parameters(void);
   virtual bool equal(supla_abstract_action_parameters *params) const;
-  virtual supla_abstract_action_parameters *copy(void);  // NOLINT
+  virtual supla_abstract_action_parameters *copy(void) const;  // NOLINT
 
   const TAction_RGBW_Parameters get_rgbw(void);
   void set_brightness(char brightness);

@@ -42,6 +42,9 @@ class ActionCgCommandMock : public supla_abstract_action_cg_command {
                                  int source_device_id, int source_channel_id));
   MOCK_METHOD4(action_shut, bool(supla_user *user, int group_id,
                                  const char *percentage, bool delta));
+  MOCK_METHOD3(action_set_hvac_parameters,
+               bool(supla_user *user, int group_id,
+                    const supla_action_hvac_parameters *params));
 };
 
 } /* namespace testing */

@@ -55,7 +55,7 @@ bool supla_action_rgbw_parameters::equal(
 }
 
 supla_abstract_action_parameters *supla_action_rgbw_parameters::copy(  // NOLINT
-    void) {                                                            // NOLINT
+    void) const {                                                      // NOLINT
   return new supla_action_rgbw_parameters(rgbw);
 }
 

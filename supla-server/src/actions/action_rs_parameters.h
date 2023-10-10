@@ -33,7 +33,7 @@ class supla_action_rs_parameters : public supla_abstract_action_parameters {
   explicit supla_action_rs_parameters(const TAction_RS_Parameters *params);
   virtual ~supla_action_rs_parameters(void);
   virtual bool equal(supla_abstract_action_parameters *params) const;
-  virtual supla_abstract_action_parameters *copy(void);  // NOLINT
+  virtual supla_abstract_action_parameters *copy(void) const;  // NOLINT
 
   char get_percentage(void) const;
   void set_percentage(char percentage);

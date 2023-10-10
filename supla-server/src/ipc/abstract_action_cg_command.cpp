@@ -53,6 +53,8 @@ const string supla_abstract_action_cg_command::get_command_name(void) {
       return "ACTION-CG-SBS:";
     case ACTION_SHUT_PARTIALLY:
       return "ACTION-CG-SHUT-PARTIALLY:";
+    case ACTION_SET_HVAC_PARAMETERS:
+      return "ACTION-CG-SET-HVAC-PARAMETERS";
   }
   return "";
 }
@@ -104,6 +106,35 @@ void supla_abstract_action_cg_command::on_command_match(const char *params) {
         (user = supla_user::find(user_id, false)) != NULL) {
       bool result =
           action_copy(user, group_id, source_device_id, source_channel_id);
+      _send_result(result, group_id);
+    } else {
+      send_result("UNKNOWN:", group_id);
+    }
+
+    return;
+  }
+
+  if (action == ACTION_SET_HVAC_PARAMETERS) {
+    int user_id = 0;
+    int group_id = 0;
+
+    TAction_HVAC_Parameters raw_hvac_params = {};
+    unsigned int mode = 0;
+    int heat = 0;
+    int cool = 0;
+    unsigned int flags = 0;
+
+    sscanf(params, "%i,%i,%u,%u,%i,%i,%u", &user_id, &group_id,
+           &raw_hvac_params.DurationSec, &mode, &heat, &cool, &flags);
+
+    if (user_id && group_id &&
+        (user = supla_user::find(user_id, false)) != NULL) {
+      raw_hvac_params.Mode = mode;
+      raw_hvac_params.SetpointTemperatureHeat = heat;
+      raw_hvac_params.SetpointTemperatureCool = cool;
+      raw_hvac_params.Flags = flags;
+      supla_action_hvac_parameters hvac_params(&raw_hvac_params);
+      bool result = action_set_hvac_parameters(user, group_id, &hvac_params);
       _send_result(result, group_id);
     } else {
       send_result("UNKNOWN:", group_id);

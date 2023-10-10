@@ -326,7 +326,7 @@ bool supla_user_channelgroups::action_open_close(const supla_caller &caller,
 
 bool supla_user_channelgroups::action_set_hvac_parameters(
     const supla_caller &caller, int group_id,
-    supla_action_hvac_parameters *params) {
+    const supla_action_hvac_parameters *params) {
   return for_each_channel(
       group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
         return device->get_channels()->action_set_hvac_parameters(
