@@ -35,6 +35,10 @@ const string supla_abstract_action_cg_command::get_command_name(void) {
       return "ACTION-CG-OPEN:";
     case ACTION_CLOSE:
       return "ACTION-CG-CLOSE:";
+    case ACTION_TURN_ON:
+      return "ACTION-CG-TURN-ON:";
+    case ACTION_TURN_OFF:
+      return "ACTION-CG-TURN-OFF:";
     case ACTION_TOGGLE:
       return "ACTION-CG-TOGGLE:";
     case ACTION_STOP:
@@ -119,6 +123,12 @@ void supla_abstract_action_cg_command::on_command_match(const char *params) {
         case ACTION_OPEN:
         case ACTION_CLOSE:
           result = action_open_close(user, group_id, action == ACTION_OPEN);
+          break;
+        case ACTION_TURN_ON:
+          result = action_turn_on(user, group_id);
+          break;
+        case ACTION_TURN_OFF:
+          result = action_turn_off(user, group_id);
           break;
         case ACTION_TOGGLE:
           result = action_toggle(user, group_id);

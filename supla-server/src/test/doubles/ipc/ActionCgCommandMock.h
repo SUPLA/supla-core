@@ -31,6 +31,8 @@ class ActionCgCommandMock : public supla_abstract_action_cg_command {
       supla_abstract_ipc_socket_adapter *socket_adapter, int action);
   MOCK_METHOD3(action_open_close,
                bool(supla_user *user, int group_id, bool open));
+  MOCK_METHOD2(action_turn_on, bool(supla_user *user, int group_id));
+  MOCK_METHOD2(action_turn_off, bool(supla_user *user, int group_id));
   MOCK_METHOD2(action_toggle, bool(supla_user *user, int group_id));
   MOCK_METHOD2(action_stop, bool(supla_user *user, int group_id));
   MOCK_METHOD2(action_up_or_stop, bool(supla_user *user, int group_id));

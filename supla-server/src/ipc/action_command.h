@@ -28,6 +28,8 @@ class supla_action_command : public supla_abstract_action_command {
   virtual bool action_open_close(int user_id, int device_id, int channel_id,
                                  bool open, const char *alexa_correlation_token,
                                  const char *google_request_id);
+  virtual bool action_turn_on(int user_id, int device_id, int channel_id);
+  virtual bool action_turn_off(int user_id, int device_id, int channel_id);
   virtual bool action_toggle(int user_id, int device_id, int channel_id);
   virtual bool action_stop(int user_id, int device_id, int channel_id);
   virtual bool action_up_or_stop(int user_id, int device_id, int channel_id);

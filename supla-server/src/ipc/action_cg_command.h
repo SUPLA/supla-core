@@ -26,6 +26,8 @@
 class supla_action_cg_command : public supla_abstract_action_cg_command {
  protected:
   virtual bool action_open_close(supla_user *user, int group_id, bool open);
+  virtual bool action_turn_off(supla_user *user, int group_id);
+  virtual bool action_turn_on(supla_user *user, int group_id);
   virtual bool action_toggle(supla_user *user, int group_id);
   virtual bool action_stop(supla_user *user, int group_id);
   virtual bool action_up_or_stop(supla_user *user, int group_id);

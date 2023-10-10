@@ -35,6 +35,10 @@ const string supla_abstract_action_command::get_command_name(void) {
       return "ACTION-OPEN:";
     case ACTION_CLOSE:
       return "ACTION-CLOSE:";
+    case ACTION_TURN_ON:
+      return "ACTION-TURN-ON:";
+    case ACTION_TURN_OFF:
+      return "ACTION-TURN-OFF:";
     case ACTION_TOGGLE:
       return "ACTION-TOGGLE:";
     case ACTION_STOP:
@@ -120,6 +124,12 @@ void supla_abstract_action_command::on_command_match(const char *params) {
             result = action_open_close(
                 user_id, device_id, channel_id, action == ACTION_OPEN,
                 get_alexa_correlation_token(), get_google_request_id());
+            break;
+          case ACTION_TURN_ON:
+            result = action_turn_on(user_id, device_id, channel_id);
+            break;
+          case ACTION_TURN_OFF:
+            result = action_turn_off(user_id, device_id, channel_id);
             break;
           case ACTION_TOGGLE:
             result = action_toggle(user_id, device_id, channel_id);

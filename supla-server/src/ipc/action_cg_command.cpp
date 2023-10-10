@@ -39,6 +39,14 @@ bool supla_action_cg_command::action_open_close(supla_user *user, int group_id,
   return result;
 }
 
+bool supla_action_cg_command::action_turn_off(supla_user *user, int group_id) {
+  return user->get_channel_groups()->set_on(get_caller(), group_id, false);
+}
+
+bool supla_action_cg_command::action_turn_on(supla_user *user, int group_id) {
+  return user->get_channel_groups()->set_on(get_caller(), group_id, true);
+}
+
 bool supla_action_cg_command::action_toggle(supla_user *user, int group_id) {
   return user->get_channel_groups()->action_toggle(get_caller(), group_id);
 }

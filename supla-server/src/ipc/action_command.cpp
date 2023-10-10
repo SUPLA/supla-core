@@ -56,6 +56,27 @@ bool supla_action_command::action_open_close(
   return false;
 }
 
+bool supla_action_command::action_turn_on(int user_id, int device_id,
+                                          int channel_id) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->set_on(get_caller(), channel_id, 0, 1, true);
+  }
+  return false;
+}
+
+bool supla_action_command::action_turn_off(int user_id, int device_id,
+                                           int channel_id) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->set_on(get_caller(), channel_id, 0, 1,
+                                          false);
+  }
+  return false;
+}
+
 bool supla_action_command::action_toggle(int user_id, int device_id,
                                          int channel_id) {
   shared_ptr<supla_device> device =
