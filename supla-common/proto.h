@@ -582,8 +582,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   0x0040                                                   // ver. >= 12
                                                            // DEPRECATED
 #define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080  // ver. >= 17
-#define SUPLA_CHANNEL_FLAG_RGBW_SET_LEVEL_WITHOUT_SWITCHING_ON \
-  0x0100  // ver. >= 17
+#define SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED \
+  0x0100  // ver. >= 21
 // Free bits for future use:  0x0200, 0x0400, 0x0800
 #define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000    // ver. >= 15
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000  // ver. >= 15
@@ -1928,12 +1928,22 @@ typedef struct {
 #define RGBW_COMMAND_TURN_OFF_RGB 5
 // Ignores all other bytes and toggles the RGB
 #define RGBW_COMMAND_TOGGLE_RGB 6
+// Ignores all other bytes and turns on the RGB and Dimmer
+#define RGBW_COMMAND_TURN_ON_ALL 7
+// Ignores all other bytes and turns off the RGB and Dimmer
+#define RGBW_COMMAND_TURN_OFF_ALL 8
+// Ignores all other bytes and toggles the RGB and Dimmer (with sync, so both
+// will be off or both will be on)
+#define RGBW_COMMAND_TOGGLE_ALL 9
 // Stores brightness value and ignores all other bytes, if dimmer is off, it
 // stays off
-#define RGBW_COMMAND_SET_BRIGHTNESS_WITHOUT_TURN_ON 7
-// Stores color value (R, G, B) and colorBrightness value and ignores all other
-// bytes, if RGB is off, it stays off
-#define RGBW_COMMAND_SET_RGB_AND_COLOR_BRIGHTNESS_WITHOUT_TURN_ON 8
+#define RGBW_COMMAND_SET_BRIGHTNESS_WITHOUT_TURN_ON 10
+// Stores colorBrightness value and ignores all other bytes.
+// If RGB is off, it stays off
+#define RGBW_COMMAND_SET_COLOR_BRIGHTNESS_WITHOUT_TURN_ON 11
+// Stores color value (R, G, B) and ignores all other bytes.
+// If RGB is off, it stays off
+#define RGBW_COMMAND_SET_RGB_WITHOUT_TURN_ON 12
 
 typedef struct {
   char brightness;
