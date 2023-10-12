@@ -55,7 +55,7 @@ bool supla_action_rs_parameters::equal(
 }
 
 supla_abstract_action_parameters *supla_action_rs_parameters::copy(
-    void) {                                       // NOLINT
+    void) const {                                 // NOLINT
   return new supla_action_rs_parameters(params);  // NOLINT
 }
 

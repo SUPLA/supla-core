@@ -27,21 +27,22 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
     {SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME, "buttonVolume"},
     {SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE, "userInterfaceDisabled"},
     {SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC, "automaticTimeSync"},
-    {SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY, "delay"},
-    {SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE, "mode"}};
+    {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY, "delay"},
+    {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT, "content"}};
 
 const map<unsigned _supla_int16_t, string>
-    device_json_config::screen_saver_modes_map = {
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_OFF, "OFF"},
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_TEMPERATURE, "TEMPERATURE"},
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_HUMIDITY, "HUMIDITY"},
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_TIME, "TIME"},
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_TIME_DATE, "TIME_DATE"},
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_TEMPERATURE_TIME, "TEMPERATURE_TIME"},
-        {SUPLA_DEVCFG_SCREENSAVER_MODE_MAIN_AND_AUX_TEMPERATURE,
+    device_json_config::hone_screen_content_map = {
+        {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_NONE, "NONE"},
+        {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE, "TEMPERATURE"},
+        {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_HUMIDITY, "HUMIDITY"},
+        {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME, "TIME"},
+        {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME_DATE, "TIME_DATE"},
+        {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_TIME, "TEMPERATURE_TIME"},
+        {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE,
          "MAIN_AND_AUX_TEMPERATURE"}};
 
-const char device_json_config::modesAvailable[] = "screenSaverModesAvailable";
+const char device_json_config::contentAvailable[] =
+    "homeScreenContentAvailable";
 
 device_json_config::device_json_config(void) : supla_json_config() {}
 
@@ -72,10 +73,11 @@ unsigned char device_json_config::string_to_status_led(
   return SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED;
 }
 
-string device_json_config::screen_saver_mode_to_string(unsigned char mode) {
-  for (auto it = screen_saver_modes_map.cbegin();
-       it != screen_saver_modes_map.cend(); ++it) {
-    if (it->first == mode) {
+string device_json_config::home_screen_content_to_string(
+    unsigned char content) {
+  for (auto it = hone_screen_content_map.cbegin();
+       it != hone_screen_content_map.cend(); ++it) {
+    if (it->first == content) {
       return it->second;
     }
   }
@@ -83,16 +85,16 @@ string device_json_config::screen_saver_mode_to_string(unsigned char mode) {
   return "";
 }
 
-unsigned char device_json_config::string_to_screen_saver_mode(
-    const std::string &mode) {
-  for (auto it = screen_saver_modes_map.cbegin();
-       it != screen_saver_modes_map.cend(); ++it) {
-    if (it->second == mode) {
+unsigned char device_json_config::string_to_home_screen_content(
+    const std::string &content) {
+  for (auto it = hone_screen_content_map.cbegin();
+       it != hone_screen_content_map.cend(); ++it) {
+    if (it->second == content) {
       return it->first;
     }
   }
 
-  return SUPLA_DEVCFG_SCREENSAVER_MODE_OFF;
+  return SUPLA_DEVCFG_HOME_SCREEN_CONTENT_NONE;
 }
 
 void device_json_config::set_status_led(TDeviceConfig_StatusLed *status_led) {
@@ -158,13 +160,13 @@ cJSON *device_json_config::get_root(bool create,
                                     unsigned _supla_int64_t field) {
   cJSON *root = get_user_root();
 
-  if (field != SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY &&
-      field != SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE) {
+  if (field != SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY &&
+      field != SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT) {
     return root;
   }
 
   if (root) {
-    const char name[] = "screenSaver";
+    const char name[] = "homeScreen";
     cJSON *result = cJSON_GetObjectItem(root, name);
     if (!result && create) {
       result = cJSON_AddObjectToObject(root, name);
@@ -175,43 +177,46 @@ cJSON *device_json_config::get_root(bool create,
   return nullptr;
 }
 
-void device_json_config::set_screen_saver_delay(
-    TDeviceConfig_ScreensaverDelay *delay) {
+void device_json_config::set_home_screen_delay(
+    TDeviceConfig_HomeScreenDelay *delay) {
   if (delay) {
-    set_item_value(get_root(true, SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY),
-                   field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY),
-                   cJSON_Number, true, nullptr, delay->ScreensaverDelayMs);
+    set_item_value(get_root(true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY),
+                   field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY),
+                   cJSON_Number, true, nullptr, delay->HomeScreenDelayS);
   }
 }
 
-void device_json_config::set_screen_saver_mode(
-    TDeviceConfig_ScreensaverMode *mode) {
-  cJSON *root = get_root(true, SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE);
-  string mode_str = screen_saver_mode_to_string(mode->ScreensaverMode);
-  if (!mode_str.empty()) {
+void device_json_config::set_home_screen_content(
+    TDeviceConfig_HomeScreenContent *content) {
+  cJSON *root = get_root(true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT);
+  string content_str =
+      home_screen_content_to_string(content->HomeScreenContent);
+  if (!content_str.empty()) {
     set_item_value(root,
-                   field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE),
-                   cJSON_String, true, mode_str.c_str(), 0);
+                   field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT),
+                   cJSON_String, true, content_str.c_str(), 0);
   }
 
-  cJSON *modes = cJSON_GetObjectItem(get_properties_root(), modesAvailable);
+  cJSON *content_items =
+      cJSON_GetObjectItem(get_properties_root(), contentAvailable);
 
-  if (modes) {
-    cJSON_DetachItemViaPointer(get_properties_root(), modes);
-    cJSON_Delete(modes);
+  if (content_items) {
+    cJSON_DetachItemViaPointer(get_properties_root(), content_items);
+    cJSON_Delete(content_items);
   }
 
-  modes = cJSON_AddArrayToObject(get_properties_root(), modesAvailable);
-  if (modes) {
-    unsigned char size = sizeof(mode->ModesAvailable) * 8;
+  content_items =
+      cJSON_AddArrayToObject(get_properties_root(), contentAvailable);
+  if (content_items) {
+    unsigned char size = sizeof(content->ContentAvailable) * 8;
     unsigned _supla_int64_t n = 1;
     for (unsigned char a = 0; a < size; a++) {
-      if (mode->ModesAvailable & n) {
-        mode_str = screen_saver_mode_to_string(n);
-        if (!mode_str.empty()) {
-          cJSON *mode_json = cJSON_CreateString(mode_str.c_str());
+      if (content->ContentAvailable & n) {
+        content_str = home_screen_content_to_string(n);
+        if (!content_str.empty()) {
+          cJSON *mode_json = cJSON_CreateString(content_str.c_str());
           if (mode_json) {
-            cJSON_AddItemToArray(modes, mode_json);
+            cJSON_AddItemToArray(content_items, mode_json);
           }
         }
       }
@@ -272,16 +277,16 @@ void device_json_config::set_config(TSDS_SetDeviceConfig *config) {
                 static_cast<TDeviceConfig_AutomaticTimeSync *>(ptr));
           }
           break;
-        case SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY:
-          if (left >= (size = sizeof(TDeviceConfig_ScreensaverDelay))) {
-            set_screen_saver_delay(
-                static_cast<TDeviceConfig_ScreensaverDelay *>(ptr));
+        case SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY:
+          if (left >= (size = sizeof(TDeviceConfig_HomeScreenDelay))) {
+            set_home_screen_delay(
+                static_cast<TDeviceConfig_HomeScreenDelay *>(ptr));
           }
           break;
-        case SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE:
-          if (left >= (size = sizeof(TDeviceConfig_ScreensaverMode))) {
-            set_screen_saver_mode(
-                static_cast<TDeviceConfig_ScreensaverMode *>(ptr));
+        case SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT:
+          if (left >= (size = sizeof(TDeviceConfig_HomeScreenContent))) {
+            set_home_screen_content(
+                static_cast<TDeviceConfig_HomeScreenContent *>(ptr));
           }
           break;
       }
@@ -376,47 +381,47 @@ bool device_json_config::get_automatic_time_sync(
   return false;
 }
 
-bool device_json_config::get_screen_saver_delay(
-    TDeviceConfig_ScreensaverDelay *delay) {
+bool device_json_config::get_home_screen_delay(
+    TDeviceConfig_HomeScreenDelay *delay) {
   double value = 0;
   if (delay &&
       get_double(
-          get_root(false, SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY),
-          field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY).c_str(),
+          get_root(false, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY),
+          field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY).c_str(),
           &value)) {
-    delay->ScreensaverDelayMs = value;
+    delay->HomeScreenDelayS = value;
     return true;
   }
 
   return false;
 }
 
-bool device_json_config::get_screen_saver_mode(
-    TDeviceConfig_ScreensaverMode *mode) {
+bool device_json_config::get_home_screen_content(
+    TDeviceConfig_HomeScreenContent *content) {
   std::string str_value;
   bool result = false;
 
-  if (mode) {
-    cJSON *root = get_root(false, SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY);
+  if (content) {
+    cJSON *root = get_root(false, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY);
     if (get_string(
             root,
-            field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE).c_str(),
+            field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT).c_str(),
             &str_value)) {
-      mode->ScreensaverMode = string_to_screen_saver_mode(str_value);
+      content->HomeScreenContent = string_to_home_screen_content(str_value);
       result = true;
     }
 
-    mode->ModesAvailable = 0;
+    content->ContentAvailable = 0;
 
-    cJSON *modes = cJSON_GetObjectItem(get_properties_root(), modesAvailable);
+    cJSON *modes = cJSON_GetObjectItem(get_properties_root(), contentAvailable);
 
     if (modes && cJSON_IsArray(modes)) {
       result = true;
       for (int a = 0; a < cJSON_GetArraySize(modes); a++) {
         cJSON *item = cJSON_GetArrayItem(modes, a);
         if (item && cJSON_IsString(item)) {
-          mode->ModesAvailable |=
-              string_to_screen_saver_mode(cJSON_GetStringValue(item));
+          content->ContentAvailable |=
+              string_to_home_screen_content(cJSON_GetStringValue(item));
         }
       }
     }
@@ -493,15 +498,16 @@ void device_json_config::get_config(TSDS_SetDeviceConfig *config,
               get_automatic_time_sync(
                   static_cast<TDeviceConfig_AutomaticTimeSync *>(ptr));
           break;
-        case SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_DELAY:
-          field_set = left >= (size = sizeof(TDeviceConfig_ScreensaverDelay)) &&
-                      get_screen_saver_delay(
-                          static_cast<TDeviceConfig_ScreensaverDelay *>(ptr));
+        case SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY:
+          field_set = left >= (size = sizeof(TDeviceConfig_HomeScreenDelay)) &&
+                      get_home_screen_delay(
+                          static_cast<TDeviceConfig_HomeScreenDelay *>(ptr));
           break;
-        case SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE:
-          field_set = left >= (size = sizeof(TDeviceConfig_ScreensaverMode)) &&
-                      get_screen_saver_mode(
-                          static_cast<TDeviceConfig_ScreensaverMode *>(ptr));
+        case SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT:
+          field_set =
+              left >= (size = sizeof(TDeviceConfig_HomeScreenContent)) &&
+              get_home_screen_content(
+                  static_cast<TDeviceConfig_HomeScreenContent *>(ptr));
           break;
       }
 
@@ -554,8 +560,8 @@ void device_json_config::leave_only_thise_fields(
     }
   }
 
-  if (!(fields & SUPLA_DEVICE_CONFIG_FIELD_SCREENSAVER_MODE)) {
-    cJSON *item = cJSON_GetObjectItem(get_properties_root(), modesAvailable);
+  if (!(fields & SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT)) {
+    cJSON *item = cJSON_GetObjectItem(get_properties_root(), contentAvailable);
     if (item) {
       cJSON_DetachItemViaPointer(get_properties_root(), item);
       cJSON_Delete(item);
@@ -585,7 +591,7 @@ void device_json_config::remove_fields(unsigned _supla_int64_t fields) {
 void device_json_config::merge(supla_json_config *_dst) {
   device_json_config dst(_dst);
 
-  map<unsigned _supla_int16_t, string> props_fields = {{1, modesAvailable}};
+  map<unsigned _supla_int16_t, string> props_fields = {{1, contentAvailable}};
   map<cJSON *, map<unsigned _supla_int16_t, string>> map;
 
   for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {

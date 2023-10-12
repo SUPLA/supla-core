@@ -184,7 +184,7 @@ class supla_device_channels {
                                                  unsigned char eol);
   bool action_set_hvac_parameters(const supla_caller &caller, int channel_id,
                                   int group_id, unsigned char eol,
-                                  supla_action_hvac_parameters *params);
+                                  const supla_action_hvac_parameters *params);
   bool reset_counters(int channel_id);
   bool recalibrate(int channel_id, const supla_caller &caller,
                    bool superuser_authorized);

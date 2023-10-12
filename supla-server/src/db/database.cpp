@@ -305,7 +305,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
   if (stmt_execute((void **)&stmt, DeviceID ? sql2 : sql1, pbind,
                    DeviceID ? 2 : 1, true)) {
-    MYSQL_BIND rbind[25] = {};
+    MYSQL_BIND rbind[26] = {};
 
     int id = 0, channel_number = 0, type = 0, func = 0, param1 = 0, param2 = 0,
         param3 = 0, param4 = 0, iodevice_id = 0, location_id = 0, alt_icon = 0,

@@ -33,12 +33,14 @@ using std::string;
 #define FIELD_OUTPUT_VALUE_ON_ERROR 10
 #define FIELD_SUBSUNCTION 11
 #define FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE 12
-#define FIELD_TEMPERATURES 13
+#define FIELD_AUX_MIN_MAX_SETPOINT_ENABLED 13
+#define FIELD_TEMPERATURES 14
 
 const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_MAIN_THERMOMETER_CHANNEL_NO, "mainThermometerChannelNo"},
     {FIELD_AUX_THERMOMETER_CHANNEL_NO, "auxThermometerChannelNo"},
     {FIELD_AUX_THERMOMETER_TYPE, "auxThermometerType"},
+    {FIELD_AUX_MIN_MAX_SETPOINT_ENABLED, "auxMinMaxSetpointEnabled"},
     {FIELD_BINARY_SENSOR_CHANNEL_NO, "binarySensorChannelNo"},
     {FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED,
      "antiFreezeAndOverheatProtectionEnabled"},
@@ -298,6 +300,11 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
       true, aux_thermometer_type_to_string(config->AuxThermometerType).c_str(),
       0);
 
+  set_item_value(user_root,
+                 field_map.at(FIELD_AUX_MIN_MAX_SETPOINT_ENABLED).c_str(),
+                 config->AuxMinMaxSetpointEnabled ? cJSON_True : cJSON_False,
+                 true, nullptr, 0);
+
   set_channel_number(user_root, FIELD_BINARY_SENSOR_CHANNEL_NO,
                      config->BinarySensorChannelNo, channel_number);
 
@@ -397,12 +404,19 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
     result = true;
   }
 
+  bool bool_value;
+  if (get_bool(user_root,
+               field_map.at(FIELD_AUX_MIN_MAX_SETPOINT_ENABLED).c_str(),
+               &bool_value)) {
+    config->AuxMinMaxSetpointEnabled = bool_value ? 1 : 0;
+    result = true;
+  }
+
   if (get_channel_number(user_root, FIELD_BINARY_SENSOR_CHANNEL_NO,
                          channel_number, &config->BinarySensorChannelNo)) {
     result = true;
   }
 
-  bool bool_value;
   if (get_bool(user_root,
                field_map.at(FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED)
                    .c_str(),

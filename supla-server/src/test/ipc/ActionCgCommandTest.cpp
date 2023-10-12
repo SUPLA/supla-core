@@ -84,6 +84,50 @@ TEST_F(ActionCgCommandTest, CloseWithoutParams) {
   commandProcessingTest("ACTION-CG-CLOSE:\n", "UNKNOWN:0\n");
 }
 
+TEST_F(ActionCgCommandTest, TurnOnWithSuccess) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_TURN_ON);
+  cmd = &c;
+  EXPECT_CALL(c, action_turn_on(user, 30)).WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-CG-TURN-ON:10,30\n", "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, TurnOnWithFilure) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_TURN_ON);
+  cmd = &c;
+  EXPECT_CALL(c, action_turn_on).WillOnce(Return(false));
+  commandProcessingTest("ACTION-CG-TURN-ON:10,30\n", "FAIL:30\n");
+}
+
+TEST_F(ActionCgCommandTest, TurnOnWithoutParams) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_TURN_ON);
+  cmd = &c;
+  EXPECT_CALL(c, action_turn_on).Times(0);
+  commandProcessingTest("ACTION-CG-TURN-ON:\n", "UNKNOWN:0\n");
+}
+
+TEST_F(ActionCgCommandTest, TurnOffWithSuccess) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_TURN_OFF);
+  cmd = &c;
+  EXPECT_CALL(c, action_turn_off(user, 30)).WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-CG-TURN-OFF:10,30\n", "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, TurnOffWithFilure) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_TURN_OFF);
+  cmd = &c;
+  EXPECT_CALL(c, action_turn_off).WillOnce(Return(false));
+  commandProcessingTest("ACTION-CG-TURN-OFF:10,30\n", "FAIL:30\n");
+}
+
+TEST_F(ActionCgCommandTest, TurnOffWithoutParams) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_TURN_OFF);
+  cmd = &c;
+  EXPECT_CALL(c, action_turn_off).Times(0);
+  commandProcessingTest("ACTION-CG-TURN-OFF:\n", "UNKNOWN:0\n");
+}
+
 TEST_F(ActionCgCommandTest, ToggleWithSuccess) {
   StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_TOGGLE);
   cmd = &c;

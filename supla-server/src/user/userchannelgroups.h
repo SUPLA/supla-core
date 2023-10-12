@@ -74,7 +74,7 @@ class supla_user_channelgroups : public supla_objcontainer {
   bool action_close(const supla_caller &caller, int GroupID);
   bool action_open_close(const supla_caller &caller, int GroupID);
   bool action_set_hvac_parameters(const supla_caller &caller, int group_id,
-                                  supla_action_hvac_parameters *params);
+                                  const supla_action_hvac_parameters *params);
 };
 
 #endif /* USERCHANNELGROUPS_H_ */

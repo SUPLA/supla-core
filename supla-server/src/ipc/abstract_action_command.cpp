@@ -19,7 +19,6 @@
 #include "ipc/abstract_action_command.h"
 
 #include "actions/abstract_action_config.h"
-#include "proto.h"
 
 using std::string;
 
@@ -35,6 +34,10 @@ const string supla_abstract_action_command::get_command_name(void) {
       return "ACTION-OPEN:";
     case ACTION_CLOSE:
       return "ACTION-CLOSE:";
+    case ACTION_TURN_ON:
+      return "ACTION-TURN-ON:";
+    case ACTION_TURN_OFF:
+      return "ACTION-TURN-OFF:";
     case ACTION_TOGGLE:
       return "ACTION-TOGGLE:";
     case ACTION_STOP:
@@ -49,6 +52,8 @@ const string supla_abstract_action_command::get_command_name(void) {
       return "ACTION-SBS:";
     case ACTION_SHUT_PARTIALLY:
       return "ACTION-SHUT-PARTIALLY:";
+    case ACTION_SET_HVAC_PARAMETERS:
+      return "ACTION-SET-HVAC-PARAMETERS";
   }
   return "";
 }
@@ -110,6 +115,36 @@ void supla_abstract_action_command::on_command_match(const char *params) {
     return;
   }
 
+  if (action == ACTION_SET_HVAC_PARAMETERS) {
+    int user_id = 0;
+    int device_id = 0;
+    int channel_id = 0;
+
+    TAction_HVAC_Parameters raw_hvac_params = {};
+    unsigned int mode = 0;
+    int heat = 0;
+    int cool = 0;
+    unsigned int flags = 0;
+
+    sscanf(params, "%i,%i,%i,%u,%u,%i,%i,%u", &user_id, &device_id, &channel_id,
+           &raw_hvac_params.DurationSec, &mode, &heat, &cool, &flags);
+
+    if (user_id && device_id && channel_id) {
+      raw_hvac_params.Mode = mode;
+      raw_hvac_params.SetpointTemperatureHeat = heat;
+      raw_hvac_params.SetpointTemperatureCool = cool;
+      raw_hvac_params.Flags = flags;
+      supla_action_hvac_parameters hvac_params(&raw_hvac_params);
+      bool result = action_set_hvac_parameters(user_id, device_id, channel_id,
+                                               &hvac_params);
+      _send_result(result, channel_id);
+    } else {
+      send_result("UNKNOWN:", channel_id);
+    }
+
+    return;
+  }
+
   process_parameters(
       params, [this](int user_id, int device_id, int channel_id) -> bool {
         bool result = false;
@@ -120,6 +155,12 @@ void supla_abstract_action_command::on_command_match(const char *params) {
             result = action_open_close(
                 user_id, device_id, channel_id, action == ACTION_OPEN,
                 get_alexa_correlation_token(), get_google_request_id());
+            break;
+          case ACTION_TURN_ON:
+            result = action_turn_on(user_id, device_id, channel_id);
+            break;
+          case ACTION_TURN_OFF:
+            result = action_turn_off(user_id, device_id, channel_id);
             break;
           case ACTION_TOGGLE:
             result = action_toggle(user_id, device_id, channel_id);

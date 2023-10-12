@@ -24,7 +24,7 @@ class supla_abstract_action_parameters {
   supla_abstract_action_parameters(void);
   virtual ~supla_abstract_action_parameters(void);
   virtual bool equal(supla_abstract_action_parameters *params) const = 0;
-  virtual supla_abstract_action_parameters *copy(void) = 0;  // NOLINT
+  virtual supla_abstract_action_parameters *copy(void) const = 0;  // NOLINT
 };
 
 #endif /* ABSTRACT_ACTION_PARAMETERS_H_ */

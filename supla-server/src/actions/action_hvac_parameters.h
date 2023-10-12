@@ -33,10 +33,10 @@ class supla_action_hvac_parameters : public supla_abstract_action_parameters {
   explicit supla_action_hvac_parameters(const TAction_HVAC_Parameters *params);
   virtual ~supla_action_hvac_parameters(void);
   virtual bool equal(supla_abstract_action_parameters *params) const;
-  virtual supla_abstract_action_parameters *copy(void);  // NOLINT
-  void apply_on(supla_channel_hvac_value *value);
-  unsigned int get_duration_sec(void);
-  bool is_any_param_set(void);
+  virtual supla_abstract_action_parameters *copy(void) const;  // NOLINT
+  void apply_on(supla_channel_hvac_value *value) const;
+  unsigned int get_duration_sec(void) const;
+  bool is_any_param_set(void) const;
 };
 
 #endif /* ACTION_HVAC_PARAMETERS_H_ */

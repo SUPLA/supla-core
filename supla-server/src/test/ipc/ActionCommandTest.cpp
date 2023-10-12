@@ -122,6 +122,50 @@ TEST_F(ActionCommandTest, ActionCloseWithGoogleRequestId) {
       "ACTION-CLOSE:10,20,30,GOOGLE-REQUEST-ID=UmVxdWVzdElE\n", "OK:30\n");
 }
 
+TEST_F(ActionCommandTest, TurnOnWithSuccess) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_TURN_ON);
+  cmd = &c;
+  EXPECT_CALL(c, action_turn_on(10, 20, 30)).WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-TURN-ON:10,20,30\n", "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, TurnOnWithFilure) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_TURN_ON);
+  cmd = &c;
+  EXPECT_CALL(c, action_turn_on).WillOnce(Return(false));
+  commandProcessingTest("ACTION-TURN-ON:10,20,30\n", "FAIL:30\n");
+}
+
+TEST_F(ActionCommandTest, TurnOnWithoutParams) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_TURN_ON);
+  cmd = &c;
+  EXPECT_CALL(c, action_turn_on).Times(0);
+  commandProcessingTest("ACTION-TURN-ON:10\n", "UNKNOWN:0\n");
+}
+
+TEST_F(ActionCommandTest, TurnOffWithSuccess) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_TURN_OFF);
+  cmd = &c;
+  EXPECT_CALL(c, action_turn_off(10, 20, 30)).WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-TURN-OFF:10,20,30\n", "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, TurnOffWithFilure) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_TURN_OFF);
+  cmd = &c;
+  EXPECT_CALL(c, action_turn_off).WillOnce(Return(false));
+  commandProcessingTest("ACTION-TURN-OFF:10,20,30\n", "FAIL:30\n");
+}
+
+TEST_F(ActionCommandTest, TurnOffWithoutParams) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_TURN_OFF);
+  cmd = &c;
+  EXPECT_CALL(c, action_turn_off).Times(0);
+  commandProcessingTest("ACTION-TURN-OFF:10\n", "UNKNOWN:0\n");
+}
+
 TEST_F(ActionCommandTest, ToggleWithSuccess) {
   StrictMock<ActionCommandMock> c(socketAdapter, ACTION_TOGGLE);
   cmd = &c;

@@ -33,6 +33,8 @@ class supla_abstract_action_cg_command : public supla_abstract_ipc_command {
   std::string get_command_name(int action);
   virtual void on_command_match(const char *params);
   virtual bool action_open_close(supla_user *user, int group_id, bool open) = 0;
+  virtual bool action_turn_on(supla_user *user, int group_id) = 0;
+  virtual bool action_turn_off(supla_user *user, int group_id) = 0;
   virtual bool action_toggle(supla_user *user, int group_id) = 0;
   virtual bool action_stop(supla_user *user, int group_id) = 0;
   virtual bool action_up_or_stop(supla_user *user, int group_id) = 0;
@@ -42,6 +44,9 @@ class supla_abstract_action_cg_command : public supla_abstract_ipc_command {
                            int source_channel_id) = 0;
   virtual bool action_shut(supla_user *user, int group_id,
                            const char *percentage, bool delta) = 0;
+  virtual bool action_set_hvac_parameters(
+      supla_user *user, int group_id,
+      const supla_action_hvac_parameters *params) = 0;
 
  public:
   explicit supla_abstract_action_cg_command(

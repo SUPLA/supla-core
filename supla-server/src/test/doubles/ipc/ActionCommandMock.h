@@ -33,6 +33,10 @@ class ActionCommandMock : public supla_abstract_action_command {
                bool(int user_id, int device_id, int channel_id, bool open,
                     const char *alexa_correlation_token,
                     const char *google_request_id));
+  MOCK_METHOD3(action_turn_on,
+               bool(int user_id, int device_id, int channel_id));
+  MOCK_METHOD3(action_turn_off,
+               bool(int user_id, int device_id, int channel_id));
   MOCK_METHOD3(action_toggle, bool(int user_id, int device_id, int channel_id));
   MOCK_METHOD3(action_stop, bool(int user_id, int device_id, int channel_id));
   MOCK_METHOD3(action_up_or_stop,
@@ -45,6 +49,9 @@ class ActionCommandMock : public supla_abstract_action_command {
                                  int source_device_id, int source_channel_id));
   MOCK_METHOD5(action_shut, bool(int user_id, int device_id, int channel_id,
                                  const char *percentage, bool delta));
+  MOCK_METHOD4(action_set_hvac_parameters,
+               bool(int user_id, int device_id, int channel_id,
+                    const supla_action_hvac_parameters *params));
 };
 
 } /* namespace testing */

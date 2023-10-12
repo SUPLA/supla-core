@@ -76,7 +76,7 @@ supla_device_channels::supla_device_channels(
 
     if (channel) {
       channel->set_value(value, nullptr, nullptr);
-      channel->add_flags(flags);
+      channel->add_init_flags(flags);
 
       if (type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
         int actionTriggerRelatedChannelId = 0;
@@ -821,6 +821,7 @@ bool supla_device_channels::set_on(const supla_caller &caller, int channel_id,
 
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
         supla_channel_hvac_value *hvac_value =
             channel->get_value<supla_channel_hvac_value>();
@@ -1191,7 +1192,7 @@ bool supla_device_channels::action_open_close_without_canceling_tasks(
 
 bool supla_device_channels::action_set_hvac_parameters(
     const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
-    supla_action_hvac_parameters *params) {
+    const supla_action_hvac_parameters *params) {
   if (!params) {
     return false;
   }
