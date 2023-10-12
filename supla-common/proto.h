@@ -688,6 +688,7 @@ typedef struct {
 #define EV_TYPE_THERMOSTAT_DETAILS_V1 30
 #define EV_TYPE_CHANNEL_STATE_V1 40
 #define EV_TYPE_TIMER_STATE_V1 50
+#define EV_TYPE_TIMER_STATE_V1_SEC 51
 #define EV_TYPE_CHANNEL_AND_TIMER_STATE_V1 60
 #define EV_TYPE_MULTI_VALUE 100
 
@@ -2224,6 +2225,7 @@ typedef struct {
   union {
     // Remaining time to turn off
     unsigned _supla_int_t RemainingTimeMs;
+    unsigned _supla_int_t RemainingTimeS;
     unsigned _supla_int_t CountdownEndsAt;  // Unix timestamp - Filled by server
   };
 
