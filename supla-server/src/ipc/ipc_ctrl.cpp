@@ -117,9 +117,9 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_action_cg_command(socket_adapter, ACTION_STEP_BY_STEP));
   add_command(new supla_action_command(socket_adapter, ACTION_STEP_BY_STEP));
   add_command(
-      new supla_action_cg_command(socket_adapter, ACTION_SET_HVAC_PARAMETERS));
+      new supla_action_cg_command(socket_adapter, ACTION_HVAC_SET_PARAMETERS));
   add_command(
-      new supla_action_command(socket_adapter, ACTION_SET_HVAC_PARAMETERS));
+      new supla_action_command(socket_adapter, ACTION_HVAC_SET_PARAMETERS));
   add_command(new supla_reset_counters_command(socket_adapter));
   add_command(new supla_recalibrate_command(socket_adapter));
   add_command(new supla_get_status_command(socket_adapter));

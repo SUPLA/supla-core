@@ -309,4 +309,22 @@ TEST_F(ActionCgCommandTest, ShutPartiallyWithFilure) {
   commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,0\n", "FAIL:30\n");
 }
 
+TEST_F(ActionCgCommandTest, SetHvacParameters) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_HVAC_SET_PARAMETERS);
+  cmd = &c;
+  EXPECT_CALL(c, action_set_hvac_parameters(user, 30, NotNull()))
+      .WillOnce([](supla_user *user, int group_id,
+                   const supla_action_hvac_parameters *params) -> bool {
+        EXPECT_EQ(params->get_duration_sec(), 1);
+        EXPECT_EQ(params->get_mode(), 2);
+        EXPECT_EQ(params->get_setpoint_temperature_heat(), 3);
+        EXPECT_EQ(params->get_setpoint_temperature_cool(), 4);
+        EXPECT_EQ(params->get_flags(), 5);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-CG-HVAC-SET-PARAMETERS:10,30,1,2,3,4,5\n",
+                        "OK:30\n");
+}
+
 } /* namespace testing */
