@@ -52,8 +52,8 @@ const string supla_abstract_action_command::get_command_name(void) {
       return "ACTION-SBS:";
     case ACTION_SHUT_PARTIALLY:
       return "ACTION-SHUT-PARTIALLY:";
-    case ACTION_SET_HVAC_PARAMETERS:
-      return "ACTION-SET-HVAC-PARAMETERS";
+    case ACTION_HVAC_SET_PARAMETERS:
+      return "ACTION-HVAC-SET-PARAMETERS";
   }
   return "";
 }
