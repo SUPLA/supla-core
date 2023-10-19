@@ -988,12 +988,16 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
           device_class = energy;
         } else if (func == SUPLA_CHANNELFNC_IC_GAS_METER &&
                    (icv->get_custom_unit() == "m³" ||
+                    icv->get_custom_unit() == "m3" ||
                     icv->get_custom_unit() == "ft³" ||
+                    icv->get_custom_unit() == "ft3" ||
                     icv->get_custom_unit() == "CCF")) {
           device_class = gas;
         } else if (func == SUPLA_CHANNELFNC_IC_WATER_METER &&
                    (icv->get_custom_unit() == "m³" ||
+                    icv->get_custom_unit() == "m3" ||
                     icv->get_custom_unit() == "ft³" ||
+                    icv->get_custom_unit() == "ft3" ||
                     icv->get_custom_unit() == "CCF" ||
                     icv->get_custom_unit() == "L" ||
                     icv->get_custom_unit() == "gal")) {
