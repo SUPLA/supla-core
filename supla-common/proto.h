@@ -1317,10 +1317,11 @@ typedef struct {
 #define ACTION_DISABLE 210
 #define ACTION_SEND 220
 #define ACTION_HVAC_SET_PARAMETERS 230
-#define ACTION_HVAC_SET_WEEKLY_SCHEDULE 231
-#define ACTION_HVAC_TURN_OFF_TIMER 232
-#define ACTION_HVAC_SWITCH_TO_MANUAL 233
-#define ACTION_HVAC_SET_TEMPERATURES 234
+#define ACTION_HVAC_SWITCH_TO_PROGRAM_MODE 231
+#define ACTION_HVAC_SWITCH_TO_MANUAL_MODE 232
+#define ACTION_HVAC_SET_TEMPERATURES 233
+#define ACTION_TURN_ON_WITH_DURATION 234
+#define ACTION_TURN_OFF_WITH_DURATION 235
 #define ACTION_READ 1000
 #define ACTION_SET 2000
 #define ACTION_EXECUTE 3000
@@ -1350,7 +1351,7 @@ typedef struct {
   _supla_int16_t
       SetpointTemperatureHeat;  // * 0.01 Celcius degree - used for heating
   _supla_int16_t
-      SetpointTemperatureCool;    // * 0.01 - Celcius degree used for cooling
+      SetpointTemperatureCool;    // * 0.01 - Celcius degree used for coolingx
   unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
 } TAction_HVAC_Parameters;
 
