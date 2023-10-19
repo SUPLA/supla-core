@@ -27,7 +27,7 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
     {SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME, "buttonVolume"},
     {SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE, "userInterfaceDisabled"},
     {SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC, "automaticTimeSync"},
-    {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY, "delay"},
+    {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY, "offDelay"},
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT, "content"}};
 
 const map<unsigned _supla_int16_t, string>
@@ -160,7 +160,7 @@ cJSON *device_json_config::get_root(bool create,
                                     unsigned _supla_int64_t field) {
   cJSON *root = get_user_root();
 
-  if (field != SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY &&
+  if (field != SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY &&
       field != SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT) {
     return root;
   }
@@ -177,12 +177,13 @@ cJSON *device_json_config::get_root(bool create,
   return nullptr;
 }
 
-void device_json_config::set_home_screen_delay(
-    TDeviceConfig_HomeScreenDelay *delay) {
+void device_json_config::set_home_screen_off_delay(
+    TDeviceConfig_HomeScreenOffDelay *delay) {
   if (delay) {
-    set_item_value(get_root(true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY),
-                   field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY),
-                   cJSON_Number, true, nullptr, delay->HomeScreenDelayS);
+    set_item_value(
+        get_root(true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY),
+        field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY),
+        cJSON_Number, true, nullptr, delay->HomeScreenOffDelayS);
   }
 }
 
@@ -277,10 +278,10 @@ void device_json_config::set_config(TSDS_SetDeviceConfig *config) {
                 static_cast<TDeviceConfig_AutomaticTimeSync *>(ptr));
           }
           break;
-        case SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY:
-          if (left >= (size = sizeof(TDeviceConfig_HomeScreenDelay))) {
-            set_home_screen_delay(
-                static_cast<TDeviceConfig_HomeScreenDelay *>(ptr));
+        case SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY:
+          if (left >= (size = sizeof(TDeviceConfig_HomeScreenOffDelay))) {
+            set_home_screen_off_delay(
+                static_cast<TDeviceConfig_HomeScreenOffDelay *>(ptr));
           }
           break;
         case SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT:
@@ -381,15 +382,15 @@ bool device_json_config::get_automatic_time_sync(
   return false;
 }
 
-bool device_json_config::get_home_screen_delay(
-    TDeviceConfig_HomeScreenDelay *delay) {
+bool device_json_config::get_home_screen_off_delay(
+    TDeviceConfig_HomeScreenOffDelay *delay) {
   double value = 0;
   if (delay &&
       get_double(
-          get_root(false, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY),
-          field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY).c_str(),
+          get_root(false, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY),
+          field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY).c_str(),
           &value)) {
-    delay->HomeScreenDelayS = value;
+    delay->HomeScreenOffDelayS = value;
     return true;
   }
 
@@ -402,7 +403,8 @@ bool device_json_config::get_home_screen_content(
   bool result = false;
 
   if (content) {
-    cJSON *root = get_root(false, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY);
+    cJSON *root =
+        get_root(false, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY);
     if (get_string(
             root,
             field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT).c_str(),
@@ -498,10 +500,11 @@ void device_json_config::get_config(TSDS_SetDeviceConfig *config,
               get_automatic_time_sync(
                   static_cast<TDeviceConfig_AutomaticTimeSync *>(ptr));
           break;
-        case SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY:
-          field_set = left >= (size = sizeof(TDeviceConfig_HomeScreenDelay)) &&
-                      get_home_screen_delay(
-                          static_cast<TDeviceConfig_HomeScreenDelay *>(ptr));
+        case SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY:
+          field_set =
+              left >= (size = sizeof(TDeviceConfig_HomeScreenOffDelay)) &&
+              get_home_screen_off_delay(
+                  static_cast<TDeviceConfig_HomeScreenOffDelay *>(ptr));
           break;
         case SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT:
           field_set =

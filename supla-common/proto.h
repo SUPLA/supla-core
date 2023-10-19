@@ -563,7 +563,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // type: TDeviceConfig_AutomaticTimeSync
 #define SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC (1ULL << 4)  // v. >= 21
 // type: TDeviceConfig_HomeScreenDelay
-#define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY (1ULL << 5)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY (1ULL << 5)  // v. >= 21
 // type: TDeviceConfig_HomeScreenContent
 #define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT (1ULL << 6)  // v. >= 21
 
@@ -2399,9 +2399,9 @@ typedef struct {
 } TDeviceConfig_AutomaticTimeSync;  // v. >= 21
 
 typedef struct {
-  unsigned _supla_int16_t HomeScreenDelayS;  // delay in seconds
-                                             // 0 - disabled
-} TDeviceConfig_HomeScreenDelay;             // v. >= 21
+  unsigned _supla_int16_t HomeScreenOffDelayS;  // delay in seconds
+                                                // 0 - disabled
+} TDeviceConfig_HomeScreenOffDelay;             // v. >= 21
 
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_NONE (1ULL << 0)
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE (1ULL << 1)
