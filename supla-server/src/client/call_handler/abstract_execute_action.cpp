@@ -86,7 +86,7 @@ void supla_ch_abstract_execute_action::execute_action(
         return;
       }
       break;
-    case ACTION_SET_HVAC_PARAMETERS:
+    case ACTION_HVAC_SET_PARAMETERS:
       if (action->ParamSize == sizeof(TAction_HVAC_Parameters)) {
         params = new supla_action_hvac_parameters(
             (TAction_HVAC_Parameters*)action->Param);

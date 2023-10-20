@@ -224,7 +224,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
   EXPECT_LE(sizeof(TDeviceConfig_AutomaticTimeSync),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
-  EXPECT_LE(sizeof(TDeviceConfig_HomeScreenDelay),
+  EXPECT_LE(sizeof(TDeviceConfig_HomeScreenOffDelay),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
   EXPECT_LE(sizeof(TDeviceConfig_HomeScreenContent),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);

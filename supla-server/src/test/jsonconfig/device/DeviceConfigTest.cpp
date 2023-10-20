@@ -71,7 +71,7 @@ TEST_F(DeviceConfigTest, allFields) {
                    SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
                    SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE |
                    SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
-                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY |
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY |
                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT;
 
   ((TDeviceConfig_StatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
@@ -97,9 +97,9 @@ TEST_F(DeviceConfigTest, allFields) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_AutomaticTimeSync);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
-  ((TDeviceConfig_HomeScreenDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->HomeScreenDelayS = 123;
-  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenDelay);
+  ((TDeviceConfig_HomeScreenOffDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->HomeScreenOffDelayS = 123;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenOffDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   ((TDeviceConfig_HomeScreenContent *)&sds_cfg.Config[sds_cfg.ConfigSize])
@@ -117,7 +117,7 @@ TEST_F(DeviceConfigTest, allFields) {
       str,
       "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":24,\"buttonVolume\":"
       "100,\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"homeScreen\":{\"delay\":123,\"content\":\"TIME_DATE\"}}");
+      "\"homeScreen\":{\"offDelay\":123,\"content\":\"TIME_DATE\"}}");
   free(str);
 
   str = cfg.get_properties();
@@ -133,7 +133,7 @@ TEST_F(DeviceConfigTest, twoFieldsSlightlyApart) {
   TSDS_SetDeviceConfig sds_cfg = {};
   sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE |
                    SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
-                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY;
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY;
 
   ((TDeviceConfig_DisableUserInterface *)&sds_cfg.Config[sds_cfg.ConfigSize])
       ->DisableUserInterface = true;
@@ -145,9 +145,9 @@ TEST_F(DeviceConfigTest, twoFieldsSlightlyApart) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_AutomaticTimeSync);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
-  ((TDeviceConfig_HomeScreenDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->HomeScreenDelayS = 678;
-  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenDelay);
+  ((TDeviceConfig_HomeScreenOffDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->HomeScreenOffDelayS = 678;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenOffDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   device_json_config cfg;
@@ -156,7 +156,7 @@ TEST_F(DeviceConfigTest, twoFieldsSlightlyApart) {
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
                "{\"userInterfaceDisabled\":true,\"automaticTimeSync\":true,"
-               "\"homeScreen\":{\"delay\":678}}");
+               "\"homeScreen\":{\"offDelay\":678}}");
   free(str);
 }
 
@@ -165,7 +165,7 @@ TEST_F(DeviceConfigTest, leaveOnly) {
   sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
                    SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
                    SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
-                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY;
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY;
 
   ((TDeviceConfig_StatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
       ->StatusLedType = SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED;
@@ -182,9 +182,9 @@ TEST_F(DeviceConfigTest, leaveOnly) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_ButtonVolume);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
-  ((TDeviceConfig_HomeScreenDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->HomeScreenDelayS = 10;
-  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenDelay);
+  ((TDeviceConfig_HomeScreenOffDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->HomeScreenOffDelayS = 10;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenOffDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   device_json_config cfg;
@@ -193,7 +193,7 @@ TEST_F(DeviceConfigTest, leaveOnly) {
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
                "{\"statusLed\":\"ON_WHEN_CONNECTED\",\"screenBrightness\":100,"
-               "\"buttonVolume\":0,\"homeScreen\":{\"delay\":10}}");
+               "\"buttonVolume\":0,\"homeScreen\":{\"offDelay\":10}}");
   free(str);
 
   cfg.leave_only_thise_fields(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS);
@@ -217,7 +217,7 @@ TEST_F(DeviceConfigTest, removeFields) {
   sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
                    SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
                    SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
-                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY;
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY;
 
   ((TDeviceConfig_StatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
       ->StatusLedType = SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED;
@@ -234,9 +234,9 @@ TEST_F(DeviceConfigTest, removeFields) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_ButtonVolume);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
-  ((TDeviceConfig_HomeScreenDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->HomeScreenDelayS = 15;
-  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenDelay);
+  ((TDeviceConfig_HomeScreenOffDelay *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->HomeScreenOffDelayS = 15;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenOffDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   device_json_config cfg;
@@ -245,12 +245,12 @@ TEST_F(DeviceConfigTest, removeFields) {
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
                "{\"statusLed\":\"ON_WHEN_CONNECTED\",\"screenBrightness\":100,"
-               "\"buttonVolume\":0,\"homeScreen\":{\"delay\":15}}");
+               "\"buttonVolume\":0,\"homeScreen\":{\"offDelay\":15}}");
   free(str);
 
   cfg.remove_fields(SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
                     SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
-                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY);
+                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY);
 
   str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
@@ -260,7 +260,7 @@ TEST_F(DeviceConfigTest, removeFields) {
 
 TEST_F(DeviceConfigTest, merge) {
   device_json_config cfg1, cfg2;
-  cfg1.set_user_config("{\"statusLed\":2,\"homeScreen\":{\"delay\":15}}");
+  cfg1.set_user_config("{\"statusLed\":2,\"homeScreen\":{\"offDelay\":15}}");
   cfg2.set_user_config(
       "{\"a\":true,\"b\":123,\"statusLed\":1,\"buttonVolume\":100}");
 
@@ -271,7 +271,7 @@ TEST_F(DeviceConfigTest, merge) {
 
   EXPECT_STREQ(user_config,
                "{\"a\":true,\"b\":123,\"statusLed\":2,\"buttonVolume\":100,"
-               "\"homeScreen\":{\"delay\":15}}");
+               "\"homeScreen\":{\"offDelay\":15}}");
 
   free(user_config);
 }
@@ -283,7 +283,7 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
   const char user_config[] =
       "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":24,\"buttonVolume\":"
       "100,\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"homeScreen\":{\"delay\":123,\"content\":\"TIME_DATE\"}}";
+      "\"homeScreen\":{\"offDelay\":123,\"content\":\"TIME_DATE\"}}";
   cfg1.set_user_config(user_config);
 
   const char properties[] =
@@ -303,7 +303,7 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
                 SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
                 SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE |
                 SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
-                SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY |
+                SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY |
                 SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT);
 
   cfg2.set_config(&sds_cfg);
@@ -350,7 +350,7 @@ TEST_F(DeviceConfigTest, getConfig_OneField) {
   cfg1.set_user_config(
       "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
       "\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"homeScreen\":{\"delay\":123,\"content\":\"TimeDate\"}}");
+      "\"homeScreen\":{\"offDelay\":123,\"content\":\"TimeDate\"}}");
 
   unsigned _supla_int64_t fields_left = 0xFFFFFFFFFFFFFFFF;
   cfg1.get_config(&sds_cfg, SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC,
@@ -492,7 +492,7 @@ TEST_F(DeviceConfigTest, availableFields) {
   cfg.set_user_config(
       "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
       "\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
-      "\"homeScreen\": {\"delay\":123,\"content\": \"HUMIDITY\"}}");
+      "\"homeScreen\": {\"offDelay\":123,\"content\": \"HUMIDITY\"}}");
 
   EXPECT_EQ(cfg.get_available_fields(),
             SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
@@ -500,7 +500,7 @@ TEST_F(DeviceConfigTest, availableFields) {
                 SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
                 SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE |
                 SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
-                SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY |
+                SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY |
                 SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT);
 }
 

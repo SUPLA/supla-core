@@ -77,6 +77,22 @@ unsigned int supla_action_hvac_parameters::get_duration_sec(void) const {
   return params.DurationSec;
 }
 
+unsigned char supla_action_hvac_parameters::get_mode(void) const {
+  return params.Mode;
+}
+
+short supla_action_hvac_parameters::get_setpoint_temperature_heat(void) const {
+  return params.SetpointTemperatureHeat;
+}
+
+short supla_action_hvac_parameters::get_setpoint_temperature_cool(void) const {
+  return params.SetpointTemperatureCool;
+}
+
+unsigned short supla_action_hvac_parameters::get_flags(void) const {
+  return params.Flags;
+}
+
 bool supla_action_hvac_parameters::is_any_param_set(void) const {
   return params.Mode != SUPLA_HVAC_MODE_NOT_SET ||
          (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET) ||

@@ -563,7 +563,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // type: TDeviceConfig_AutomaticTimeSync
 #define SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC (1ULL << 4)  // v. >= 21
 // type: TDeviceConfig_HomeScreenDelay
-#define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_DELAY (1ULL << 5)  // v. >= 21
+#define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY (1ULL << 5)  // v. >= 21
 // type: TDeviceConfig_HomeScreenContent
 #define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT (1ULL << 6)  // v. >= 21
 
@@ -1317,7 +1317,12 @@ typedef struct {
 #define ACTION_ENABLE 200
 #define ACTION_DISABLE 210
 #define ACTION_SEND 220
-#define ACTION_SET_HVAC_PARAMETERS 230
+#define ACTION_HVAC_SET_PARAMETERS 230
+#define ACTION_HVAC_SWITCH_TO_PROGRAM_MODE 231
+#define ACTION_HVAC_SWITCH_TO_MANUAL_MODE 232
+#define ACTION_HVAC_SET_TEMPERATURES 233
+#define ACTION_TURN_ON_WITH_DURATION 234
+#define ACTION_TURN_OFF_WITH_DURATION 235
 #define ACTION_READ 1000
 #define ACTION_SET 2000
 #define ACTION_EXECUTE 3000
@@ -1347,7 +1352,7 @@ typedef struct {
   _supla_int16_t
       SetpointTemperatureHeat;  // * 0.01 Celcius degree - used for heating
   _supla_int16_t
-      SetpointTemperatureCool;    // * 0.01 - Celcius degree used for cooling
+      SetpointTemperatureCool;    // * 0.01 - Celcius degree used for coolingx
   unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
 } TAction_HVAC_Parameters;
 
@@ -2441,9 +2446,9 @@ typedef struct {
 } TDeviceConfig_AutomaticTimeSync;  // v. >= 21
 
 typedef struct {
-  unsigned _supla_int16_t HomeScreenDelayS;  // delay in seconds
-                                             // 0 - disabled
-} TDeviceConfig_HomeScreenDelay;             // v. >= 21
+  unsigned _supla_int16_t HomeScreenOffDelayS;  // delay in seconds
+                                                // 0 - disabled
+} TDeviceConfig_HomeScreenOffDelay;             // v. >= 21
 
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_NONE (1ULL << 0)
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE (1ULL << 1)

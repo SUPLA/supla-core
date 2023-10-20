@@ -53,8 +53,8 @@ const string supla_abstract_action_cg_command::get_command_name(void) {
       return "ACTION-CG-SBS:";
     case ACTION_SHUT_PARTIALLY:
       return "ACTION-CG-SHUT-PARTIALLY:";
-    case ACTION_SET_HVAC_PARAMETERS:
-      return "ACTION-CG-SET-HVAC-PARAMETERS";
+    case ACTION_HVAC_SET_PARAMETERS:
+      return "ACTION-CG-HVAC-SET-PARAMETERS:";
   }
   return "";
 }
@@ -114,7 +114,7 @@ void supla_abstract_action_cg_command::on_command_match(const char *params) {
     return;
   }
 
-  if (action == ACTION_SET_HVAC_PARAMETERS) {
+  if (action == ACTION_HVAC_SET_PARAMETERS) {
     int user_id = 0;
     int group_id = 0;
 
