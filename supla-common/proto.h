@@ -582,8 +582,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   0x0040                                                   // ver. >= 12
                                                            // DEPRECATED
 #define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080  // ver. >= 17
-#define SUPLA_CHANNEL_FLAG_RGBW_SET_LEVEL_WITHOUT_SWITCHING_ON \
-  0x0100  // ver. >= 17
+#define SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED \
+  0x0100  // ver. >= 21
 // Free bits for future use:  0x0200, 0x0400, 0x0800
 #define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000    // ver. >= 15
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000  // ver. >= 15
@@ -688,6 +688,7 @@ typedef struct {
 #define EV_TYPE_THERMOSTAT_DETAILS_V1 30
 #define EV_TYPE_CHANNEL_STATE_V1 40
 #define EV_TYPE_TIMER_STATE_V1 50
+#define EV_TYPE_TIMER_STATE_V1_SEC 51
 #define EV_TYPE_CHANNEL_AND_TIMER_STATE_V1 60
 #define EV_TYPE_MULTI_VALUE 100
 
@@ -1920,6 +1921,49 @@ typedef struct {
 #define RGBW_BRIGHTNESS_ONOFF 0x1
 #define RGBW_COLOR_ONOFF 0x2
 
+// Values from other fields are applied in a standard way
+#define RGBW_COMMAND_NOT_SET 0
+// Ignores all other bytes and turns on the dimmer
+#define RGBW_COMMAND_TURN_ON_DIMMER 1
+// Ignores all other bytes and turns off the dimmer
+#define RGBW_COMMAND_TURN_OFF_DIMMER 2
+// Ignores all other bytes and toggles the dimmer
+#define RGBW_COMMAND_TOGGLE_DIMMER 3
+// Ignores all other bytes and turns on the RGB
+#define RGBW_COMMAND_TURN_ON_RGB 4
+// Ignores all other bytes and turns off the RGB
+#define RGBW_COMMAND_TURN_OFF_RGB 5
+// Ignores all other bytes and toggles the RGB
+#define RGBW_COMMAND_TOGGLE_RGB 6
+// Ignores all other bytes and turns on the RGB and Dimmer
+#define RGBW_COMMAND_TURN_ON_ALL 7
+// Ignores all other bytes and turns off the RGB and Dimmer
+#define RGBW_COMMAND_TURN_OFF_ALL 8
+// Ignores all other bytes and toggles the RGB and Dimmer (with sync, so both
+// will be off or both will be on)
+#define RGBW_COMMAND_TOGGLE_ALL 9
+// Stores brightness value and ignores all other bytes, if dimmer is off, it
+// stays off
+#define RGBW_COMMAND_SET_BRIGHTNESS_WITHOUT_TURN_ON 10
+// Stores colorBrightness value and ignores all other bytes.
+// If RGB is off, it stays off
+#define RGBW_COMMAND_SET_COLOR_BRIGHTNESS_WITHOUT_TURN_ON 11
+// Stores color value (R, G, B) and ignores all other bytes.
+// If RGB is off, it stays off
+#define RGBW_COMMAND_SET_RGB_WITHOUT_TURN_ON 12
+// Start brightness dimmer iteration
+#define RGBW_COMMAND_START_ITERATE_DIMMER 13
+// Start color brightness iteration
+#define RGBW_COMMAND_START_ITERATE_RGB 14
+// Start dimmer and rgb brightness iteration
+#define RGBW_COMMAND_START_ITERATE_ALL 15
+// Stop brightness dimmer iteration
+#define RGBW_COMMAND_STOP_ITERATE_DIMMER 16
+// Stop color brightness iteration
+#define RGBW_COMMAND_STOP_ITERATE_RGB 17
+// Stop dimmer and rgb brightness iteration
+#define RGBW_COMMAND_STOP_ITERATE_ALL 18
+
 typedef struct {
   char brightness;
   char colorBrightness;
@@ -1927,6 +1971,8 @@ typedef struct {
   char G;
   char R;
   char onOff;
+  char command;  // RGBW_COMMAND_, requires
+                 // SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED v. >= 21
 } TRGBW_Value;  // v. >= 10
 
 #define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1
@@ -2197,6 +2243,7 @@ typedef struct {
   union {
     // Remaining time to turn off
     unsigned _supla_int_t RemainingTimeMs;
+    unsigned _supla_int_t RemainingTimeS;
     unsigned _supla_int_t CountdownEndsAt;  // Unix timestamp - Filled by server
   };
 
@@ -2392,6 +2439,10 @@ typedef struct {
 typedef struct {
   unsigned char DisableUserInterface;  // 0 - false (local UI enabled)
                                        // 1 - true (local UI disabled)
+                                       // 2 - partial
+  // min/max allowed parameters are mandatory for "partial" variant
+  unsigned _supla_int16_t minAllowedTemperatureSetpointFromLocalUI;
+  unsigned _supla_int16_t maxAllowedTemperatureSetpointFromLocalUI;
 } TDeviceConfig_DisableUserInterface;  // v. >= 21
 
 typedef struct {
