@@ -1971,7 +1971,7 @@ typedef struct {
   char R;
   char onOff;
   char command;  // RGBW_COMMAND_, requires
-                 // SUPLA_CHANNEL_FLAG_RGBW_SET_LEVEL_WITHOUT_SWITCHING_ON
+                 // SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED v. >= 21
 } TRGBW_Value;  // v. >= 10
 
 #define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1
