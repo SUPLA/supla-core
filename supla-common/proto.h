@@ -2438,6 +2438,10 @@ typedef struct {
 typedef struct {
   unsigned char DisableUserInterface;  // 0 - false (local UI enabled)
                                        // 1 - true (local UI disabled)
+                                       // 2 - partial
+  // min/max allowed parameters are mandatory for "partial" variant
+  unsigned _supla_int16_t minAllowedTemperatureSetpointFromLocalUI;
+  unsigned _supla_int16_t maxAllowedTemperatureSetpointFromLocalUI;
 } TDeviceConfig_DisableUserInterface;  // v. >= 21
 
 typedef struct {
