@@ -208,10 +208,10 @@ void supla_abstract_action_executor::execute_action(
       }
       break;
     case ACTION_TURN_ON:
-      set_on(true);
+      set_on(true, 0);
       break;
     case ACTION_TURN_OFF:
-      set_on(false);
+      set_on(false, 0);
       break;
     case ACTION_SET_RGBW_PARAMETERS:
       if (params) {
@@ -273,7 +273,33 @@ void supla_abstract_action_executor::execute_action(
             dynamic_cast<supla_action_hvac_parameters *>(params);
 
         if (hvac && hvac->is_any_param_set()) {
-          set_hvac_parameters(hvac);
+          hvac_set_parameters(hvac);
+        }
+      }
+      break;
+    case ACTION_HVAC_SWITCH_TO_MANUAL_MODE:
+      hvac_switch_to_manual_mode();
+      break;
+    case ACTION_HVAC_SWITCH_TO_PROGRAM_MODE:
+      hvac_switch_to_program_mode();
+      break;
+    case ACTION_HVAC_SET_TEMPERATURE:
+      if (params) {
+        supla_action_hvac_setpoint_temperature *t =
+            dynamic_cast<supla_action_hvac_setpoint_temperature *>(params);
+
+        if (t) {
+          hvac_set_temperature(t);
+        }
+      }
+      break;
+    case ACTION_HVAC_SET_TEMPERATURES:
+      if (params) {
+        supla_action_hvac_setpoint_temperatures *t =
+            dynamic_cast<supla_action_hvac_setpoint_temperatures *>(params);
+
+        if (t) {
+          hvac_set_temperatures(t);
         }
       }
       break;

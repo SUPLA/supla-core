@@ -24,6 +24,8 @@
 #include <vector>
 
 #include "actions/action_hvac_parameters.h"
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
 #include "device/abstract_device_dao.h"
 #include "device/channel_fragment.h"
 #include "device/devicechannel.h"
@@ -65,6 +67,12 @@ class supla_device_channels {
   bool action_open_close(const supla_caller &caller, int channel_id,
                          int group_id, unsigned char eol, bool unknown,
                          bool open, bool cancel_tasks = true);
+
+  bool action_hvac(
+      const supla_caller &caller, int channel_id, int group_id,
+      unsigned char eol, unsigned int duration,
+      std::function<bool(supla_device_channel *, supla_channel_hvac_value *)>
+          on_value);
 
  public:
   explicit supla_device_channels(supla_abstract_device_dao *dao,
@@ -182,9 +190,23 @@ class supla_device_channels {
   bool action_open_close_without_canceling_tasks(const supla_caller &caller,
                                                  int channel_id, int group_id,
                                                  unsigned char eol);
-  bool action_set_hvac_parameters(const supla_caller &caller, int channel_id,
+  bool action_hvac_set_parameters(const supla_caller &caller, int channel_id,
                                   int group_id, unsigned char eol,
                                   const supla_action_hvac_parameters *params);
+  bool action_hvac_switch_to_manual_mode(const supla_caller &caller,
+                                         int channel_id, int group_id,
+                                         unsigned char eol);
+  bool action_hvac_switch_to_program_mode(const supla_caller &caller,
+                                          int channel_id, int group_id,
+                                          unsigned char eol);
+  bool action_hvac_set_temperature(
+      const supla_caller &caller, int channel_id, int group_id,
+      unsigned char eol,
+      const supla_action_hvac_setpoint_temperature *temperature);
+  bool action_hvac_set_temperatures(
+      const supla_caller &caller, int channel_id, int group_id,
+      unsigned char eol,
+      const supla_action_hvac_setpoint_temperatures *temperatures);
   bool reset_counters(int channel_id);
   bool recalibrate(int channel_id, const supla_caller &caller,
                    bool superuser_authorized);

@@ -29,6 +29,10 @@ supla_channel_hvac_value::supla_channel_hvac_value(
     char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {}
 
+void supla_channel_hvac_value::clear(void) {
+  memset(raw_value, 0, SUPLA_CHANNELVALUE_SIZE);
+}
+
 void supla_channel_hvac_value::set_mode(unsigned char mode) {
   if (mode >= 0 && mode <= SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL) {
     ((THVACValue*)raw_value)->Mode = mode;
@@ -111,6 +115,10 @@ void supla_channel_hvac_value::toggle(void) {
 
 void supla_channel_hvac_value::switch_to_manual(void) {
   set_mode(SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL);
+}
+
+void supla_channel_hvac_value::switch_to_program(void) {
+  set_mode(SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE);
 }
 
 // static

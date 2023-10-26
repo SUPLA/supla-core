@@ -350,7 +350,7 @@ TEST_F(ActionCommandTest, ShutPartiallyWithFaulure) {
 TEST_F(ActionCommandTest, SetHvacParameters) {
   StrictMock<ActionCommandMock> c(socketAdapter, ACTION_HVAC_SET_PARAMETERS);
   cmd = &c;
-  EXPECT_CALL(c, action_set_hvac_parameters(10, 20, 30, NotNull()))
+  EXPECT_CALL(c, action_hvac_set_parameters(10, 20, 30, NotNull()))
       .WillOnce([](int user_id, int device_id, int channel_id,
                    const supla_action_hvac_parameters *params) -> bool {
         EXPECT_EQ(params->get_duration_sec(), 1);

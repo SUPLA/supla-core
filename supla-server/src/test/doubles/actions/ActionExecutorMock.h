@@ -56,7 +56,11 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int open_close_wct_counter;
   int rgbw_counter;
   int forward_outside_counter;
-  int hvac_counter;
+  int hvac_set_parameters_counter;
+  int hvac_switch_to_program_mode_counter;
+  int hvac_switch_to_manual_mode_counter;
+  int hvac_set_temperature_counter;
+  int hvac_set_temperatures_counter;
   unsigned int color;
   char brightness;
   char color_brightness;
@@ -66,6 +70,8 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   std::list<struct timeval> times;
   std::map<std::string, std::string> replacement_map;
   void addTime(void);
+  supla_action_hvac_setpoint_temperature *temperature;
+  supla_action_hvac_setpoint_temperatures *temperatures;
 
  public:
   ActionExecutorMock();
@@ -73,7 +79,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   std::shared_ptr<supla_device> get_device(void);
   std::map<std::string, std::string> get_replacement_map(void);
 
-  virtual void set_on(bool on);
+  virtual void set_on(bool on, unsigned long long duration_ms);
   virtual void set_color(unsigned int color);
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
@@ -99,8 +105,13 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   virtual void open_close(void);
   virtual void open_close_without_canceling_tasks(void);
   virtual void forward_outside(int cap);
-  virtual void set_hvac_parameters(supla_action_hvac_parameters *params);
-
+  virtual void hvac_set_parameters(supla_action_hvac_parameters *params);
+  virtual void hvac_switch_to_program_mode(void);
+  virtual void hvac_switch_to_manual_mode(void);
+  virtual void hvac_set_temperature(
+      supla_action_hvac_setpoint_temperature *temperature);
+  virtual void hvac_set_temperatures(
+      supla_action_hvac_setpoint_temperatures *temperatures);
   void clear(void);
   int counterSetCount(void);
   int getOnCounter(void);
@@ -129,7 +140,11 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int getOpenCloseCounter(void);
   int getOpenCloseWctCounter(void);
   int getForwardOutsideCounter(void);
-  int getHvacCounter(void);
+  int getHvacSetParametersCounter(void);
+  int getHvacSwitchToProgramModeCounter(void);
+  int getHvacSwitchToManualModeCounter(void);
+  int getHvacSetTemperatureCounter(void);
+  int getHvacSetTemperaturesCounter(void);
   char getClosingPercentage(void);
   unsigned int getColor(void);
   char getBrightness(void);
@@ -137,6 +152,8 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   char getRGBWOnOff(void);
   bool getDelta(void);
   std::list<struct timeval> getTimes(void);
+  supla_action_hvac_setpoint_temperature *getHvacSetpointTemperature(void);
+  supla_action_hvac_setpoint_temperatures *getHvacSetpointTemperatures(void);
 };
 
 } /* namespace testing */

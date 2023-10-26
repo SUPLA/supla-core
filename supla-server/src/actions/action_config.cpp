@@ -22,6 +22,8 @@
 #include <strings.h>
 #include <time.h>
 
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
 #include "actions/action_rgbw_parameters.h"
 #include "actions/action_rs_parameters.h"
 #include "json/cJSON.h"
@@ -141,52 +143,81 @@ void supla_action_config::apply_json_params(const char *params) {
     set_source_device_id(item->valuedouble);
   }
 
-  supla_action_rgbw_parameters rgbw;
-  bool rgbw_changed = false;
+  {
+    supla_action_rgbw_parameters rgbw;
+    bool rgbw_changed = false;
 
-  item = cJSON_GetObjectItem(root, "brightness");
-  if (item && cJSON_IsNumber(item)) {
-    if (item->valuedouble < 0) {
-      rgbw.set_brightness(0);
-    } else if (item->valuedouble > 100) {
-      rgbw.set_brightness(100);
-    } else {
-      rgbw.set_brightness(item->valuedouble);
-    }
+    item = cJSON_GetObjectItem(root, "brightness");
+    if (item && cJSON_IsNumber(item)) {
+      if (item->valuedouble < 0) {
+        rgbw.set_brightness(0);
+      } else if (item->valuedouble > 100) {
+        rgbw.set_brightness(100);
+      } else {
+        rgbw.set_brightness(item->valuedouble);
+      }
 
-    rgbw_changed = true;
-  }
-
-  item = cJSON_GetObjectItem(root, "color_brightness");
-  if (item && cJSON_IsNumber(item)) {
-    if (item->valuedouble < 0) {
-      rgbw.set_color_brightness(0);
-    } else if (item->valuedouble > 100) {
-      rgbw.set_color_brightness(100);
-    } else {
-      rgbw.set_color_brightness(item->valuedouble);
-    }
-    rgbw_changed = true;
-  }
-
-  item = cJSON_GetObjectItem(root, "hue");
-  if (item) {
-    if (cJSON_IsNumber(item)) {
-      rgbw.set_color(st_hue2rgb(item->valuedouble));
       rgbw_changed = true;
-    } else if (cJSON_IsString(item)) {
-      if (strncasecmp(cJSON_GetStringValue(item), "random", 255) == 0) {
-        rgbw.set_random_color(true);
+    }
+
+    item = cJSON_GetObjectItem(root, "color_brightness");
+    if (item && cJSON_IsNumber(item)) {
+      if (item->valuedouble < 0) {
+        rgbw.set_color_brightness(0);
+      } else if (item->valuedouble > 100) {
+        rgbw.set_color_brightness(100);
+      } else {
+        rgbw.set_color_brightness(item->valuedouble);
+      }
+      rgbw_changed = true;
+    }
+
+    item = cJSON_GetObjectItem(root, "hue");
+    if (item) {
+      if (cJSON_IsNumber(item)) {
+        rgbw.set_color(st_hue2rgb(item->valuedouble));
         rgbw_changed = true;
-      } else if (strncasecmp(cJSON_GetStringValue(item), "white", 255) == 0) {
-        rgbw.set_color(0xFFFFFF);
-        rgbw_changed = true;
+      } else if (cJSON_IsString(item)) {
+        if (strncasecmp(cJSON_GetStringValue(item), "random", 255) == 0) {
+          rgbw.set_random_color(true);
+          rgbw_changed = true;
+        } else if (strncasecmp(cJSON_GetStringValue(item), "white", 255) == 0) {
+          rgbw.set_color(0xFFFFFF);
+          rgbw_changed = true;
+        }
       }
     }
+
+    if (rgbw_changed) {
+      set_parameters(&rgbw);
+    }
   }
 
-  if (rgbw_changed) {
-    set_parameters(&rgbw);
+  item = cJSON_GetObjectItem(root, "temperature");
+
+  if (item && cJSON_IsNumber(item)) {
+    supla_action_hvac_setpoint_temperature t(item->valueint);
+    set_parameters(&t);
+  }
+
+  {
+    supla_action_hvac_setpoint_temperatures hvac_temperatures;
+
+    item = cJSON_GetObjectItem(root, "temperatureHeat");
+
+    if ((item && cJSON_IsNumber(item))) {
+      hvac_temperatures.set_heating_temperature(item->valueint);
+    }
+
+    item = cJSON_GetObjectItem(root, "temperatureCool");
+
+    if ((item && cJSON_IsNumber(item))) {
+      hvac_temperatures.set_cooling_temperature(item->valueint);
+    }
+
+    if (hvac_temperatures.is_any_temperature_set()) {
+      set_parameters(&hvac_temperatures);
+    }
   }
 
   cJSON_Delete(root);

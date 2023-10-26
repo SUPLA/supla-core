@@ -53,6 +53,8 @@ class action_trigger_config : public abstract_action_config,
   unsigned int get_capabilities(const char *key);
   bool set_capabilities(const char *key, std::function<unsigned int()> get_caps,
                         unsigned int caps);
+  supla_abstract_action_parameters *get_parameters(
+      std::function<supla_abstract_action_parameters *(cJSON *)> on_json_param);
   int get_action_id(int cap);
   _subjectType_e get_subject_type(int cap);
   int get_subject_id(int cap);
@@ -61,6 +63,8 @@ class action_trigger_config : public abstract_action_config,
   int channel_id_if_subject_not_set;
   supla_abstract_action_parameters *get_rs(void);
   supla_abstract_action_parameters *get_rgbw(void);
+  supla_abstract_action_parameters *get_temperature(void);
+  supla_abstract_action_parameters *get_temperatures(void);
 
  public:
   explicit action_trigger_config(supla_json_config *root);

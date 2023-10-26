@@ -52,7 +52,7 @@ supla_action_executor *supla_mqtt_value_setter::get_action_executor(void) {
 void supla_mqtt_value_setter::set_on(bool on) {
   supla_action_executor *action = get_action_executor();
   if (action) {
-    action->set_on(on);
+    action->set_on(on, 0);
   }
 }
 

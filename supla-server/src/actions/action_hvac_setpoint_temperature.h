@@ -16,28 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTIONTRIGGERCONFIGTEST_H_
-#define ACTIONTRIGGERCONFIGTEST_H_
+#ifndef ACTION_HVAC_SETPOINT_TEMPERATURE_H_
+#define ACTION_HVAC_SETPOINT_TEMPERATURE_H_
 
-#include "gtest/gtest.h"  // NOLINT
-#include "jsonconfig/channel/action_trigger_config.h"
+#include "actions/abstract_action_parameters.h"
+#include "device/value/channel_hvac_value.h"
 #include "proto.h"
 
-namespace testing {
-
-class ActionTriggerConfigTest : public Test {
- protected:
-  template <class resultCls>
-  resultCls *get_params(action_trigger_config *config);
+class supla_action_hvac_setpoint_temperature
+    : public supla_abstract_action_parameters {
+ private:
+  short temperature;
 
  public:
-  ActionTriggerConfigTest(void);
-  virtual ~ActionTriggerConfigTest(void);
-  void EXPECT_NO_PARAMS(action_trigger_config *config);
-  TAction_RS_Parameters get_rs_params(action_trigger_config *config);
-  TAction_RGBW_Parameters get_rgbw_params(action_trigger_config *config);
+  supla_action_hvac_setpoint_temperature(void);
+  explicit supla_action_hvac_setpoint_temperature(const short &temperature);
+  virtual ~supla_action_hvac_setpoint_temperature(void);
+  virtual bool equal(supla_abstract_action_parameters *params) const;
+  virtual supla_abstract_action_parameters *copy(void) const;  // NOLINT
+
+  short get_temperature(void) const;
 };
 
-} /* namespace testing */
-
-#endif /* ACTIONTRIGGERCONFIGTEST_H_ */
+#endif /* ACTION_HVAC_SETPOINT_TEMPERATURE_H_ */

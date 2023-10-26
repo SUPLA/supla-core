@@ -18,6 +18,8 @@
 
 #include "jsonconfig/channel/action_trigger_config.h"
 
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
 #include "actions/action_rgbw_parameters.h"
 #include "actions/action_rs_parameters.h"
 #include "proto.h"
@@ -354,7 +356,8 @@ cJSON *action_trigger_config::get_cap_user_config(int cap) {
   return cJSON_GetObjectItem(actions, it->second.c_str());
 }
 
-supla_abstract_action_parameters *action_trigger_config::get_rs(void) {
+supla_abstract_action_parameters *action_trigger_config::get_parameters(
+    function<supla_abstract_action_parameters *(cJSON *)> on_json_param) {
   if (!active_cap) {
     return nullptr;
   }
@@ -371,84 +374,128 @@ supla_abstract_action_parameters *action_trigger_config::get_rs(void) {
   if (action) {
     cJSON *param = cJSON_GetObjectItem(action, "param");
     if (param) {
-      cJSON *percentage = cJSON_GetObjectItem(param, "percentage");
-      if (percentage && cJSON_IsNumber(percentage) &&
-          percentage->valueint >= 0 && percentage->valueint <= 100) {
-        result = new supla_action_rs_parameters(percentage->valueint);
-      }
+      result = on_json_param(param);
     }
   }
 
   return result;
 }
 
+supla_abstract_action_parameters *action_trigger_config::get_rs(void) {
+  return action_trigger_config::get_parameters(
+      [](cJSON *param) -> supla_abstract_action_parameters * {
+        cJSON *percentage = cJSON_GetObjectItem(param, "percentage");
+        if (percentage && cJSON_IsNumber(percentage) &&
+            percentage->valueint >= 0 && percentage->valueint <= 100) {
+          return new supla_action_rs_parameters(percentage->valueint);
+        }
+        return nullptr;
+      });
+}
+
 supla_abstract_action_parameters *action_trigger_config::get_rgbw(void) {
-  if (!active_cap) {
-    return nullptr;
-  }
+  return action_trigger_config::get_parameters(
+      [&](cJSON *param) -> supla_abstract_action_parameters * {
+        supla_action_rgbw_parameters *result =
+            new supla_action_rgbw_parameters();
+        result->set_brightness(-1);
+        result->set_color_brightness(-1);
 
-  cJSON *cap_cfg = get_cap_user_config(active_cap);
+        bool any_set = false;
 
-  if (!cap_cfg) {
-    return nullptr;
-  }
-
-  supla_action_rgbw_parameters *result = nullptr;
-  cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
-
-  if (action) {
-    cJSON *param = cJSON_GetObjectItem(action, "param");
-
-    bool any_set = false;
-    result = new supla_action_rgbw_parameters();
-    result->set_brightness(-1);
-    result->set_color_brightness(-1);
-
-    if (param) {
-      cJSON *item = cJSON_GetObjectItem(param, "brightness");
-      if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
-          item->valueint <= 100) {
-        result->set_brightness(item->valueint);
-        any_set = true;
-      }
-
-      item = cJSON_GetObjectItem(param, "color_brightness");
-      if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
-          item->valueint <= 100) {
-        result->set_color_brightness(item->valueint);
-        any_set = true;
-      }
-
-      item = cJSON_GetObjectItem(param, "hue");
-      if (item) {
-        if (cJSON_IsNumber(item)) {
-          result->set_color(st_hue2rgb(item->valuedouble));
-          any_set = true;
-        } else if (equal_ci(item, "white")) {
-          result->set_color(0xFFFFFF);
-          any_set = true;
-        } else if (equal_ci(item, "random")) {
-          result->set_random_color(true);
+        cJSON *item = cJSON_GetObjectItem(param, "brightness");
+        if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
+            item->valueint <= 100) {
+          result->set_brightness(item->valueint);
           any_set = true;
         }
-      }
 
-      if (!any_set) {
-        delete result;
-        result = nullptr;
-      }
-    }
-  }
+        item = cJSON_GetObjectItem(param, "color_brightness");
+        if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
+            item->valueint <= 100) {
+          result->set_color_brightness(item->valueint);
+          any_set = true;
+        }
 
-  return result;
+        item = cJSON_GetObjectItem(param, "hue");
+        if (item) {
+          if (cJSON_IsNumber(item)) {
+            result->set_color(st_hue2rgb(item->valuedouble));
+            any_set = true;
+          } else if (equal_ci(item, "white")) {
+            result->set_color(0xFFFFFF);
+            any_set = true;
+          } else if (equal_ci(item, "random")) {
+            result->set_random_color(true);
+            any_set = true;
+          }
+        }
+
+        if (!any_set) {
+          delete result;
+          result = nullptr;
+        }
+
+        return result;
+      });
+}
+
+supla_abstract_action_parameters *action_trigger_config::get_temperature(void) {
+  return action_trigger_config::get_parameters(
+      [](cJSON *param) -> supla_abstract_action_parameters * {
+        cJSON *temperature = cJSON_GetObjectItem(param, "temperature");
+        if (temperature && cJSON_IsNumber(temperature)) {
+          return new supla_action_hvac_setpoint_temperature(
+              temperature->valueint);
+        }
+        return nullptr;
+      });
+}
+
+supla_abstract_action_parameters *action_trigger_config::get_temperatures(
+    void) {
+  return action_trigger_config::get_parameters(
+      [](cJSON *param) -> supla_abstract_action_parameters * {
+        supla_action_hvac_setpoint_temperatures *temperatures =
+            new supla_action_hvac_setpoint_temperatures();
+
+        cJSON *item = cJSON_GetObjectItem(param, "temperatureHeat");
+
+        if (item && cJSON_IsNumber(item)) {
+          temperatures->set_heating_temperature(item->valueint);
+        }
+
+        item = cJSON_GetObjectItem(param, "temperatureCool");
+
+        if (item && cJSON_IsNumber(item)) {
+          temperatures->set_cooling_temperature(item->valueint);
+        }
+
+        if (temperatures->is_any_temperature_set()) {
+          return temperatures;
+        } else {
+          delete temperatures;
+        }
+
+        return nullptr;
+      });
 }
 
 supla_abstract_action_parameters *action_trigger_config::get_parameters(void) {
   supla_abstract_action_parameters *result = get_rs();
-  if (result) {
-    return result;
+  if (!result) {
+    result = get_rgbw();
   }
-  return get_rgbw();
+
+  if (!result) {
+    result = get_temperature();
+  }
+
+  if (!result) {
+    result = get_temperatures();
+  }
+
+  return result;
 }
 
 int action_trigger_config::get_cap(void) { return active_cap; }

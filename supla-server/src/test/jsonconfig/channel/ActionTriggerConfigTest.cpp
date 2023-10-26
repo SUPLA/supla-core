@@ -19,6 +19,8 @@
 #include "ActionTriggerConfigTest.h"
 
 #include "TestHelper.h"
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
 #include "actions/action_rgbw_parameters.h"
 #include "actions/action_rs_parameters.h"
 
@@ -39,18 +41,34 @@ void ActionTriggerConfigTest::EXPECT_NO_PARAMS(action_trigger_config *config) {
   }
 }
 
-TAction_RS_Parameters ActionTriggerConfigTest::get_rs_params(
-    action_trigger_config *config) {
-  TAction_RS_Parameters result = {};
-
+template <class resultCls>
+resultCls *ActionTriggerConfigTest::get_params(action_trigger_config *config) {
   EXPECT_NE(config, nullptr);
   if (config) {
     supla_abstract_action_parameters *params = config->get_parameters();
     EXPECT_NE(params, nullptr);
-    if (params && dynamic_cast<supla_action_rs_parameters *>(params)) {
-      result = dynamic_cast<supla_action_rs_parameters *>(params)->get_rs();
-      delete params;
+    if (params) {
+      resultCls *result = dynamic_cast<resultCls *>(params);
+      EXPECT_NE(result, nullptr);
+      if (!result) {
+        delete params;
+        return nullptr;
+      }
+      return result;
     }
+  }
+
+  return nullptr;
+}
+
+TAction_RS_Parameters ActionTriggerConfigTest::get_rs_params(
+    action_trigger_config *config) {
+  TAction_RS_Parameters result = {};
+  supla_action_rs_parameters *rsp =
+      get_params<supla_action_rs_parameters>(config);
+  if (rsp) {
+    result = rsp->get_rs();
+    delete rsp;
   }
 
   return result;
@@ -59,15 +77,12 @@ TAction_RS_Parameters ActionTriggerConfigTest::get_rs_params(
 TAction_RGBW_Parameters ActionTriggerConfigTest::get_rgbw_params(
     action_trigger_config *config) {
   TAction_RGBW_Parameters result = {};
+  supla_action_rgbw_parameters *rgbwp =
+      get_params<supla_action_rgbw_parameters>(config);
 
-  EXPECT_NE(config, nullptr);
-  if (config) {
-    supla_abstract_action_parameters *params = config->get_parameters();
-    EXPECT_NE(params, nullptr);
-    if (params && dynamic_cast<supla_action_rgbw_parameters *>(params)) {
-      result = dynamic_cast<supla_action_rgbw_parameters *>(params)->get_rgbw();
-      delete params;
-    }
+  if (rgbwp) {
+    result = rgbwp->get_rgbw();
+    delete rgbwp;
   }
 
   return result;
@@ -805,6 +820,167 @@ TEST_F(ActionTriggerConfigTest, sendPush) {
   EXPECT_EQ(config->get_action_id(), ACTION_SEND);
   EXPECT_EQ(config->get_subject_id(), 272);
   EXPECT_EQ(config->get_subject_type(), stPushNotification);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, hvacSwitchToProgramMode) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"channel\",\"subjectId\":272,\"action\":{\"id\":231,\"param\":{}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_PROGRAM_MODE);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, hvacSwitchToManualMode) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"channel\",\"subjectId\":272,\"action\":{\"id\":232,\"param\":{}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, hvacSetTemperature) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"channel\",\"subjectId\":272,\"action\":{\"id\":234,\"param\":{"
+      "\"temperature\":123}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SET_TEMPERATURE);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  supla_action_hvac_setpoint_temperature *temperature =
+      get_params<supla_action_hvac_setpoint_temperature>(config);
+
+  if (temperature) {
+    EXPECT_EQ(temperature->get_temperature(), 123);
+    delete temperature;
+  }
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, hvacSetHeatingTemperature) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"channel\",\"subjectId\":272,\"action\":{\"id\":232,\"param\":{"
+      "\"temperatureHeat\":123}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  supla_action_hvac_setpoint_temperatures *temperature =
+      get_params<supla_action_hvac_setpoint_temperatures>(config);
+
+  if (temperature) {
+    short t = 0;
+    EXPECT_TRUE(temperature->get_heating_temperature(&t));
+    EXPECT_EQ(t, 123);
+    EXPECT_FALSE(temperature->get_cooling_temperature(&t));
+    delete temperature;
+  }
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, hvacSetCoolingTemperature) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"channel\",\"subjectId\":272,\"action\":{\"id\":232,\"param\":{"
+      "\"temperatureCool\":123}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  supla_action_hvac_setpoint_temperatures *temperature =
+      get_params<supla_action_hvac_setpoint_temperatures>(config);
+
+  if (temperature) {
+    short t = 0;
+    EXPECT_FALSE(temperature->get_heating_temperature(&t));
+    t = 0;
+    EXPECT_TRUE(temperature->get_cooling_temperature(&t));
+    EXPECT_EQ(t, 123);
+    delete temperature;
+  }
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, hvacSetHeatingAndCoolingTemperature) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"channel\",\"subjectId\":272,\"action\":{\"id\":232,\"param\":{"
+      "\"temperatureHeat\":123,\"temperatureCool\":-123}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  supla_action_hvac_setpoint_temperatures *temperature =
+      get_params<supla_action_hvac_setpoint_temperatures>(config);
+
+  if (temperature) {
+    short t = 0;
+    EXPECT_TRUE(temperature->get_heating_temperature(&t));
+    EXPECT_EQ(t, 123);
+    EXPECT_TRUE(temperature->get_cooling_temperature(&t));
+    EXPECT_EQ(t, -123);
+    delete temperature;
+  }
 
   delete config;
 }

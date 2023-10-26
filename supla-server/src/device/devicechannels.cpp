@@ -33,6 +33,7 @@
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_valve_value.h"
 #include "jsonconfig/channel/controlling_the_gate_config.h"
+#include "jsonconfig/channel/hvac_config.h"
 #include "log.h"
 
 using std::function;
@@ -1190,27 +1191,141 @@ bool supla_device_channels::action_open_close_without_canceling_tasks(
                            false);
 }
 
-bool supla_device_channels::action_set_hvac_parameters(
+bool supla_device_channels::action_hvac(
+    const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
+    unsigned int duration,
+    function<bool(supla_device_channel *, supla_channel_hvac_value *)>
+        on_value) {
+  bool result = false;
+
+  access_channel(channel_id, [&](supla_device_channel *channel) -> void {
+    supla_channel_hvac_value *hvac_value =
+        channel->get_value<supla_channel_hvac_value>();
+    if (hvac_value && on_value(channel, hvac_value)) {
+      char value[SUPLA_CHANNELVALUE_SIZE] = {};
+      hvac_value->get_raw_value(value);
+      delete hvac_value;
+
+      async_set_channel_value(channel, caller, group_id, eol, value, duration,
+                              false);
+      result = true;
+    }
+  });
+
+  return result;
+}
+
+bool supla_device_channels::action_hvac_set_parameters(
     const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
     const supla_action_hvac_parameters *params) {
   if (!params) {
     return false;
   }
 
-  bool result = false;
+  return action_hvac(caller, channel_id, group_id, eol,
+                     params->get_duration_sec(),
+                     [&](supla_device_channel *channel,
+                         supla_channel_hvac_value *value) -> bool {
+                       value->clear();
+                       params->apply_on(value);
+                       return true;
+                     });
+}
 
-  access_channel(channel_id, [&](supla_device_channel *channel) -> void {
-    supla_channel_hvac_value hvac_value;
-    params->apply_on(&hvac_value);
+bool supla_device_channels::action_hvac_switch_to_manual_mode(
+    const supla_caller &caller, int channel_id, int group_id,
+    unsigned char eol) {
+  return action_hvac(caller, channel_id, group_id, eol, 0,
+                     [&](supla_device_channel *channel,
+                         supla_channel_hvac_value *value) -> bool {
+                       value->clear();
+                       value->switch_to_manual();
+                       return true;
+                     });
+}
 
-    char v[SUPLA_CHANNELVALUE_SIZE] = {};
-    hvac_value.get_raw_value(v);
-    async_set_channel_value(channel, caller, group_id, eol, v,
-                            params->get_duration_sec(), false);
-    result = true;
-  });
+bool supla_device_channels::action_hvac_switch_to_program_mode(
+    const supla_caller &caller, int channel_id, int group_id,
+    unsigned char eol) {
+  return action_hvac(caller, channel_id, group_id, eol, 0,
+                     [&](supla_device_channel *channel,
+                         supla_channel_hvac_value *value) -> bool {
+                       value->clear();
+                       value->switch_to_program();
+                       return true;
+                     });
+}
 
-  return result;
+bool supla_device_channels::action_hvac_set_temperature(
+    const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
+    const supla_action_hvac_setpoint_temperature *temperature) {
+  if (!temperature) {
+    return false;
+  }
+
+  return action_hvac(
+      caller, channel_id, group_id, eol, 0,
+      [&](supla_device_channel *channel,
+          supla_channel_hvac_value *value) -> bool {
+        value->clear();
+        bool result = false;
+        switch (channel->get_func()) {
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+          case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+            value->set_temperature_heat(temperature->get_temperature());
+            result = true;
+            break;
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT: {
+            supla_json_config *json_config = channel->get_json_config();
+            if (json_config) {
+              hvac_config hvac(json_config);
+              TChannelConfig_HVAC raw = {};
+              if (hvac.get_config(&raw, channel->get_channel_number())) {
+                if (raw.Subfunction == SUPLA_HVAC_SUBFUNCTION_HEAT) {
+                  value->set_temperature_heat(temperature->get_temperature());
+                  result = true;
+                } else if (raw.Subfunction == SUPLA_HVAC_SUBFUNCTION_COOL) {
+                  value->set_temperature_cool(temperature->get_temperature());
+                  result = true;
+                }
+              }
+              delete json_config;
+            }
+          } break;
+        }
+
+        return result;
+      });
+}
+
+bool supla_device_channels::action_hvac_set_temperatures(
+    const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
+    const supla_action_hvac_setpoint_temperatures *temperatures) {
+  if (!temperatures) {
+    return false;
+  }
+
+  return action_hvac(
+      caller, channel_id, group_id, eol, 0,
+      [&](supla_device_channel *channel,
+          supla_channel_hvac_value *value) -> bool {
+        bool result = false;
+        if (channel->get_func() == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO) {
+          value->clear();
+          short temperature = 0;
+          if (temperatures->get_heating_temperature(&temperature)) {
+            value->set_temperature_heat(temperature);
+            result = true;
+          }
+
+          if (temperatures->get_cooling_temperature(&temperature)) {
+            value->set_temperature_cool(temperature);
+            result = true;
+          }
+        }
+
+        return result;
+      });
 }
 
 void supla_device_channels::timer_arm(const supla_caller &caller,

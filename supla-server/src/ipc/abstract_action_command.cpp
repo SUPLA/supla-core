@@ -135,7 +135,7 @@ void supla_abstract_action_command::on_command_match(const char *params) {
       raw_hvac_params.SetpointTemperatureCool = cool;
       raw_hvac_params.Flags = flags;
       supla_action_hvac_parameters hvac_params(&raw_hvac_params);
-      bool result = action_set_hvac_parameters(user_id, device_id, channel_id,
+      bool result = action_hvac_set_parameters(user_id, device_id, channel_id,
                                                &hvac_params);
       _send_result(result, channel_id);
     } else {

@@ -26,6 +26,8 @@
 #include "abstract_action_config.h"
 #include "actions/abstract_action_parameters.h"
 #include "actions/action_hvac_parameters.h"
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
 #include "caller.h"
 #include "device.h"
 #include "device/abstract_channel_property_getter.h"
@@ -90,7 +92,7 @@ class supla_abstract_action_executor {
                       int source_device_id, int source_channel_id, int cap,
                       std::map<std::string, std::string> *replacement_map);
 
-  virtual void set_on(bool on) = 0;
+  virtual void set_on(bool on, unsigned long long duration_ms) = 0;
   virtual void set_color(unsigned int color) = 0;
   virtual void set_brightness(char brightness) = 0;
   virtual void set_color_brightness(char brightness) = 0;
@@ -116,7 +118,14 @@ class supla_abstract_action_executor {
   virtual void open_close(void) = 0;
   virtual void open_close_without_canceling_tasks(void) = 0;
   virtual void forward_outside(int cap) = 0;
-  virtual void set_hvac_parameters(supla_action_hvac_parameters *params) = 0;
+  virtual void hvac_set_parameters(supla_action_hvac_parameters *params) = 0;
+  virtual void hvac_switch_to_program_mode(void) = 0;
+  virtual void hvac_switch_to_manual_mode(void) = 0;
+  virtual void hvac_set_temperature(
+      supla_action_hvac_setpoint_temperature *temperature) = 0;
+  virtual void hvac_set_temperatures(
+      supla_action_hvac_setpoint_temperatures *temperatures) = 0;
+
   void copy(supla_abstract_channel_property_getter *property_getter,  // NOLINT
             int source_device_id, int source_channel_id);             // NOLINT
 };

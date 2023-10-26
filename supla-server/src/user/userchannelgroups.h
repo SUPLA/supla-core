@@ -73,8 +73,18 @@ class supla_user_channelgroups : public supla_objcontainer {
   bool action_open(const supla_caller &caller, int GroupID);
   bool action_close(const supla_caller &caller, int GroupID);
   bool action_open_close(const supla_caller &caller, int GroupID);
-  bool action_set_hvac_parameters(const supla_caller &caller, int group_id,
+  bool action_hvac_set_parameters(const supla_caller &caller, int group_id,
                                   const supla_action_hvac_parameters *params);
+  bool action_hvac_switch_to_program_mode(const supla_caller &caller,
+                                          int group_id);
+  bool action_hvac_switch_to_manual_mode(const supla_caller &caller,
+                                         int group_id);
+  bool action_hvac_set_temperatures(
+      const supla_caller &caller, int group_id,
+      const supla_action_hvac_setpoint_temperatures *temperatures);
+  bool action_hvac_set_temperature(
+      const supla_caller &caller, int group_id,
+      const supla_action_hvac_setpoint_temperature *temperature);
 };
 
 #endif /* USERCHANNELGROUPS_H_ */

@@ -324,12 +324,50 @@ bool supla_user_channelgroups::action_open_close(const supla_caller &caller,
       });
 }
 
-bool supla_user_channelgroups::action_set_hvac_parameters(
+bool supla_user_channelgroups::action_hvac_set_parameters(
     const supla_caller &caller, int group_id,
     const supla_action_hvac_parameters *params) {
   return for_each_channel(
       group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
-        return device->get_channels()->action_set_hvac_parameters(
+        return device->get_channels()->action_hvac_set_parameters(
             caller, channel_id, group_id, eol, params);
+      });
+}
+
+bool supla_user_channelgroups::action_hvac_switch_to_program_mode(
+    const supla_caller &caller, int group_id) {
+  return for_each_channel(
+      group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
+        return device->get_channels()->action_hvac_switch_to_program_mode(
+            caller, channel_id, group_id, eol);
+      });
+}
+
+bool supla_user_channelgroups::action_hvac_switch_to_manual_mode(
+    const supla_caller &caller, int group_id) {
+  return for_each_channel(
+      group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
+        return device->get_channels()->action_hvac_switch_to_manual_mode(
+            caller, channel_id, group_id, eol);
+      });
+}
+
+bool supla_user_channelgroups::action_hvac_set_temperatures(
+    const supla_caller &caller, int group_id,
+    const supla_action_hvac_setpoint_temperatures *temperatures) {
+  return for_each_channel(
+      group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
+        return device->get_channels()->action_hvac_set_temperatures(
+            caller, channel_id, group_id, eol, temperatures);
+      });
+}
+
+bool supla_user_channelgroups::action_hvac_set_temperature(
+    const supla_caller &caller, int group_id,
+    const supla_action_hvac_setpoint_temperature *temperature) {
+  return for_each_channel(
+      group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
+        return device->get_channels()->action_hvac_set_temperature(
+            caller, channel_id, group_id, eol, temperature);
       });
 }

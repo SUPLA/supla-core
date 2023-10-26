@@ -107,6 +107,6 @@ bool supla_action_cg_command::action_shut(supla_user *user, int group_id,
 bool supla_action_cg_command::action_set_hvac_parameters(
     supla_user *user, int group_id,
     const supla_action_hvac_parameters *params) {
-  return user->get_channel_groups()->action_set_hvac_parameters(
+  return user->get_channel_groups()->action_hvac_set_parameters(
       get_caller(), group_id, params);
 }
