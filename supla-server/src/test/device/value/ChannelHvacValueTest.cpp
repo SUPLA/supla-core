@@ -56,4 +56,29 @@ TEST_F(ChannelHvacValueTest, switchToManual) {
   EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL);
 }
 
+TEST_F(ChannelHvacValueTest, switchToProgram) {
+  supla_channel_hvac_value value;
+  EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_NOT_SET);
+  value.switch_to_program();
+  EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE);
+}
+
+TEST_F(ChannelHvacValueTest, clear) {
+  char raw_value1[SUPLA_CHANNELVALUE_SIZE] = {};
+  char raw_value2[SUPLA_CHANNELVALUE_SIZE] = {};
+
+  supla_channel_hvac_value value;
+  value.set_temperature_heat(1);
+  value.set_temperature_cool(2);
+  value.turn_on();
+
+  value.get_raw_value(raw_value2);
+  EXPECT_NE(memcmp(raw_value1, raw_value2, SUPLA_CHANNELVALUE_SIZE), 0);
+
+  value.clear();
+
+  value.get_raw_value(raw_value2);
+  EXPECT_EQ(memcmp(raw_value1, raw_value2, SUPLA_CHANNELVALUE_SIZE), 0);
+}
+
 }  // namespace testing
