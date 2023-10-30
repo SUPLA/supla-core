@@ -22,6 +22,8 @@
 #include <string>
 
 #include "actions/action_hvac_parameters.h"
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
 #include "ipc/abstract_ipc_command.h"
 
 class supla_abstract_action_command : public supla_abstract_ipc_command {
@@ -53,6 +55,16 @@ class supla_abstract_action_command : public supla_abstract_ipc_command {
   virtual bool action_hvac_set_parameters(
       int user_id, int device_id, int channel_id,
       const supla_action_hvac_parameters *params) = 0;
+  virtual bool action_hvac_switch_to_manual_mode(int user_id, int device_id,
+                                                 int channel_id) = 0;
+  virtual bool action_hvac_switch_to_program_mode(int user_id, int device_id,
+                                                  int channel_id) = 0;
+  virtual bool action_hvac_set_temperature(
+      int user_id, int device_id, int channel_id,
+      const supla_action_hvac_setpoint_temperature *temperature) = 0;
+  virtual bool action_hvac_set_temperatures(
+      int user_id, int device_id, int channel_id,
+      const supla_action_hvac_setpoint_temperatures *temperatures) = 0;
 
  public:
   explicit supla_abstract_action_command(

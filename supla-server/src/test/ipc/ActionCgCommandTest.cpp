@@ -312,7 +312,7 @@ TEST_F(ActionCgCommandTest, ShutPartiallyWithFilure) {
 TEST_F(ActionCgCommandTest, SetHvacParameters) {
   StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_HVAC_SET_PARAMETERS);
   cmd = &c;
-  EXPECT_CALL(c, action_set_hvac_parameters(user, 30, NotNull()))
+  EXPECT_CALL(c, action_hvac_set_parameters(user, 30, NotNull()))
       .WillOnce([](supla_user *user, int group_id,
                    const supla_action_hvac_parameters *params) -> bool {
         EXPECT_EQ(params->get_duration_sec(), 1);
@@ -324,6 +324,97 @@ TEST_F(ActionCgCommandTest, SetHvacParameters) {
       });
 
   commandProcessingTest("ACTION-CG-HVAC-SET-PARAMETERS:10,30,1,2,3,4,5\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, HvacSwitchToManualMode) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter,
+                                    ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  cmd = &c;
+  EXPECT_CALL(c, action_hvac_switch_to_manual_mode(user, 30))
+      .WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-CG-HVAC-SWITCH-TO-MANUAL-MODE:10,30\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, HvacSwitchToProgramMode) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter,
+                                    ACTION_HVAC_SWITCH_TO_PROGRAM_MODE);
+  cmd = &c;
+  EXPECT_CALL(c, action_hvac_switch_to_program_mode(user, 30))
+      .WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-CG-HVAC-SWITCH-TO-PROGRAM-MODE:10,30\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, HvacSetTemperature) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_HVAC_SET_TEMPERATURE);
+  cmd = &c;
+  EXPECT_CALL(c, action_hvac_set_temperature(user, 30, NotNull()))
+      .WillOnce([](supla_user *user, int group_id,
+                   const supla_action_hvac_setpoint_temperature *t) -> bool {
+        EXPECT_EQ(t->get_temperature(), -12);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-CG-HVAC-SET-TEMPERATURE:10,30,-12\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, HvacSetHeatingTemperature) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter,
+                                    ACTION_HVAC_SET_TEMPERATURES);
+  cmd = &c;
+  EXPECT_CALL(c, action_hvac_set_temperatures(user, 30, NotNull()))
+      .WillOnce([](supla_user *user, int group_id,
+                   const supla_action_hvac_setpoint_temperatures *t) -> bool {
+        short temperature = 0;
+        EXPECT_TRUE(t->get_heating_temperature(&temperature));
+        EXPECT_EQ(temperature, 230);
+        EXPECT_FALSE(t->get_cooling_temperature(&temperature));
+        return true;
+      });
+
+  commandProcessingTest("ACTION-CG-HVAC-SET-TEMPERATURES:10,30,230,-1,1\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, HvacSetCoolingTemperature) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter,
+                                    ACTION_HVAC_SET_TEMPERATURES);
+  cmd = &c;
+  EXPECT_CALL(c, action_hvac_set_temperatures(user, 30, NotNull()))
+      .WillOnce([](supla_user *user, int group_id,
+                   const supla_action_hvac_setpoint_temperatures *t) -> bool {
+        short temperature = 0;
+        EXPECT_FALSE(t->get_heating_temperature(&temperature));
+        EXPECT_TRUE(t->get_cooling_temperature(&temperature));
+        EXPECT_EQ(temperature, -1);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-CG-HVAC-SET-TEMPERATURES:10,30,230,-1,2\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, HvacSetHeatingAndCoolingTemperature) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter,
+                                    ACTION_HVAC_SET_TEMPERATURES);
+  cmd = &c;
+  EXPECT_CALL(c, action_hvac_set_temperatures(user, 30, NotNull()))
+      .WillOnce([](supla_user *user, int group_id,
+                   const supla_action_hvac_setpoint_temperatures *t) -> bool {
+        short temperature = 0;
+        EXPECT_TRUE(t->get_heating_temperature(&temperature));
+        EXPECT_EQ(temperature, 230);
+        EXPECT_TRUE(t->get_cooling_temperature(&temperature));
+        EXPECT_EQ(temperature, -1);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-CG-HVAC-SET-TEMPERATURES:10,30,230,-1,3\n",
                         "OK:30\n");
 }
 

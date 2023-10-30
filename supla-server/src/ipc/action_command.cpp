@@ -184,3 +184,55 @@ bool supla_action_command::action_hvac_set_parameters(
 
   return false;
 }
+
+bool supla_action_command::action_hvac_switch_to_manual_mode(int user_id,
+                                                             int device_id,
+                                                             int channel_id) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->action_hvac_switch_to_manual_mode(
+        get_caller(), channel_id, 0, 1);
+  }
+
+  return false;
+}
+
+bool supla_action_command::action_hvac_switch_to_program_mode(int user_id,
+                                                              int device_id,
+                                                              int channel_id) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->action_hvac_switch_to_program_mode(
+        get_caller(), channel_id, 0, 1);
+  }
+
+  return false;
+}
+
+bool supla_action_command::action_hvac_set_temperature(
+    int user_id, int device_id, int channel_id,
+    const supla_action_hvac_setpoint_temperature *temperature) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->action_hvac_set_temperature(
+        get_caller(), channel_id, 0, 1, temperature);
+  }
+
+  return false;
+}
+
+bool supla_action_command::action_hvac_set_temperatures(
+    int user_id, int device_id, int channel_id,
+    const supla_action_hvac_setpoint_temperatures *temperatures) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->action_hvac_set_temperatures(
+        get_caller(), channel_id, 0, 1, temperatures);
+  }
+
+  return false;
+}

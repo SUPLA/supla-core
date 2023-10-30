@@ -347,7 +347,7 @@ TEST_F(ActionCommandTest, ShutPartiallyWithFaulure) {
   commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,0\n", "FAIL:30\n");
 }
 
-TEST_F(ActionCommandTest, SetHvacParameters) {
+TEST_F(ActionCommandTest, HvacSetParameters) {
   StrictMock<ActionCommandMock> c(socketAdapter, ACTION_HVAC_SET_PARAMETERS);
   cmd = &c;
   EXPECT_CALL(c, action_hvac_set_parameters(10, 20, 30, NotNull()))
@@ -362,6 +362,94 @@ TEST_F(ActionCommandTest, SetHvacParameters) {
       });
 
   commandProcessingTest("ACTION-HVAC-SET-PARAMETERS:10,20,30,1,2,3,4,5\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, HvacSwitchToManualMode) {
+  StrictMock<ActionCommandMock> c(socketAdapter,
+                                  ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  cmd = &c;
+  EXPECT_CALL(c, action_hvac_switch_to_manual_mode(10, 20, 30))
+      .WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-HVAC-SWITCH-TO-MANUAL-MODE:10,20,30\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, HvacSwitchToProgramMode) {
+  StrictMock<ActionCommandMock> c(socketAdapter,
+                                  ACTION_HVAC_SWITCH_TO_PROGRAM_MODE);
+  cmd = &c;
+  EXPECT_CALL(c, action_hvac_switch_to_program_mode(10, 20, 30))
+      .WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-HVAC-SWITCH-TO-PROGRAM-MODE:10,20,30\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, HvacSetTemperature) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_HVAC_SET_TEMPERATURE);
+  cmd = &c;
+  EXPECT_CALL(c, action_hvac_set_temperature(10, 20, 30, NotNull()))
+      .WillOnce([](int user_id, int device_id, int channel_id,
+                   const supla_action_hvac_setpoint_temperature *t) -> bool {
+        EXPECT_EQ(t->get_temperature(), -12);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-HVAC-SET-TEMPERATURE:10,20,30,-12\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, HvacSetHeatingTemperature) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_HVAC_SET_TEMPERATURES);
+  cmd = &c;
+  EXPECT_CALL(c, action_hvac_set_temperatures(10, 20, 30, NotNull()))
+      .WillOnce([](int user_id, int device_id, int channel_id,
+                   const supla_action_hvac_setpoint_temperatures *t) -> bool {
+        short temperature = 0;
+        EXPECT_TRUE(t->get_heating_temperature(&temperature));
+        EXPECT_EQ(temperature, 230);
+        EXPECT_FALSE(t->get_cooling_temperature(&temperature));
+        return true;
+      });
+
+  commandProcessingTest("ACTION-HVAC-SET-TEMPERATURES:10,20,30,230,-1,1\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, HvacSetCoolingTemperature) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_HVAC_SET_TEMPERATURES);
+  cmd = &c;
+  EXPECT_CALL(c, action_hvac_set_temperatures(10, 20, 30, NotNull()))
+      .WillOnce([](int user_id, int device_id, int channel_id,
+                   const supla_action_hvac_setpoint_temperatures *t) -> bool {
+        short temperature = 0;
+        EXPECT_FALSE(t->get_heating_temperature(&temperature));
+        EXPECT_TRUE(t->get_cooling_temperature(&temperature));
+        EXPECT_EQ(temperature, -1);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-HVAC-SET-TEMPERATURES:10,20,30,230,-1,2\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, HvacSetHeatingAndCoolingTemperature) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_HVAC_SET_TEMPERATURES);
+  cmd = &c;
+  EXPECT_CALL(c, action_hvac_set_temperatures(10, 20, 30, NotNull()))
+      .WillOnce([](int user_id, int device_id, int channel_id,
+                   const supla_action_hvac_setpoint_temperatures *t) -> bool {
+        short temperature = 0;
+        EXPECT_TRUE(t->get_heating_temperature(&temperature));
+        EXPECT_EQ(temperature, 230);
+        EXPECT_TRUE(t->get_cooling_temperature(&temperature));
+        EXPECT_EQ(temperature, -1);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-HVAC-SET-TEMPERATURES:10,20,30,230,-1,3\n",
                         "OK:30\n");
 }
 

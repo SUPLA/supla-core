@@ -42,6 +42,16 @@ class supla_action_command : public supla_abstract_action_command {
   virtual bool action_hvac_set_parameters(
       int user_id, int device_id, int channel_id,
       const supla_action_hvac_parameters *params);
+  virtual bool action_hvac_switch_to_manual_mode(int user_id, int device_id,
+                                                 int channel_id);
+  virtual bool action_hvac_switch_to_program_mode(int user_id, int device_id,
+                                                  int channel_id);
+  virtual bool action_hvac_set_temperature(
+      int user_id, int device_id, int channel_id,
+      const supla_action_hvac_setpoint_temperature *temperature);
+  virtual bool action_hvac_set_temperatures(
+      int user_id, int device_id, int channel_id,
+      const supla_action_hvac_setpoint_temperatures *temperatures);
 
  public:
   explicit supla_action_command(

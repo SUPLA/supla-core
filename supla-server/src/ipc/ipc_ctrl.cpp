@@ -120,6 +120,23 @@ supla_ipc_ctrl::supla_ipc_ctrl(
       new supla_action_cg_command(socket_adapter, ACTION_HVAC_SET_PARAMETERS));
   add_command(
       new supla_action_command(socket_adapter, ACTION_HVAC_SET_PARAMETERS));
+
+  add_command(new supla_action_cg_command(socket_adapter,
+                                          ACTION_HVAC_SWITCH_TO_MANUAL_MODE));
+  add_command(new supla_action_command(socket_adapter,
+                                       ACTION_HVAC_SWITCH_TO_MANUAL_MODE));
+  add_command(new supla_action_cg_command(socket_adapter,
+                                          ACTION_HVAC_SWITCH_TO_PROGRAM_MODE));
+  add_command(new supla_action_command(socket_adapter,
+                                       ACTION_HVAC_SWITCH_TO_PROGRAM_MODE));
+  add_command(
+      new supla_action_cg_command(socket_adapter, ACTION_HVAC_SET_TEMPERATURE));
+  add_command(
+      new supla_action_command(socket_adapter, ACTION_HVAC_SET_TEMPERATURE));
+  add_command(new supla_action_cg_command(socket_adapter,
+                                          ACTION_HVAC_SET_TEMPERATURES));
+  add_command(
+      new supla_action_command(socket_adapter, ACTION_HVAC_SET_TEMPERATURES));
   add_command(new supla_reset_counters_command(socket_adapter));
   add_command(new supla_recalibrate_command(socket_adapter));
   add_command(new supla_get_status_command(socket_adapter));
