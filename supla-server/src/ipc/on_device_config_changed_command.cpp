@@ -20,12 +20,11 @@
 
 #include "user.h"
 
-supla_on_device_settings_changed_command::
-    supla_on_device_settings_changed_command(
-        supla_abstract_ipc_socket_adapter *socket_adapter)
+supla_on_device_config_changed_command::supla_on_device_config_changed_command(
+    supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_on_device_config_changed_command(socket_adapter) {}
 
-void supla_on_device_settings_changed_command::on_device_config_changed(
+void supla_on_device_config_changed_command::on_device_config_changed(
     int user_id, int device_id) {
   supla_user::on_device_settings_changed(user_id, device_id, get_caller());
 }

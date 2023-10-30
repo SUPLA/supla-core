@@ -154,7 +154,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_on_device_deleted_command(socket_adapter));
   add_command(new supla_on_mqtt_settings_changed_command(socket_adapter));
   add_command(new supla_before_device_delete_command(socket_adapter));
-  add_command(new supla_on_device_settings_changed_command(socket_adapter));
+  add_command(new supla_on_device_config_changed_command(socket_adapter));
   add_command(new supla_on_user_settings_changed_command(socket_adapter));
   add_command(new supla_before_channel_function_change_command(socket_adapter));
   add_command(new supla_get_pn_limit_command(socket_adapter));
