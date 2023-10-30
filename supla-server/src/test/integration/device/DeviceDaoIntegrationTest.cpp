@@ -207,13 +207,14 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
     EXPECT_STREQ(
         str,
         "{\"pricePerUnit\":0.56,\"currency\":\"PLN\","
-        "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":"
-        "null,\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelNo\":"
-        "null,\"antiFreezeAndOverheatProtectionEnabled\":false,"
-        "\"usedAlgorithm\":\"\",\"minOnTimeS\":0,\"minOffTimeS\":0,"
-        "\"outputValueOnError\":0,\"subfunction\":\"NOT_SET\","
+        "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":null,"
+        "\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelNo\":null,"
+        "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":"
+        "\"\",\"minOnTimeS\":0,\"minOffTimeS\":0,\"outputValueOnError\":0,"
+        "\"subfunction\":\"NOT_SET\","
         "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
-        "\"auxMinMaxSetpointEnabled\":false,\"temperatures\":{}}");
+        "\"auxMinMaxSetpointEnabled\":false,\"autoUseSeparateHeatCoolOutputs\":"
+        "false,\"temperatures\":{}}");
     free(str);
   }
 
