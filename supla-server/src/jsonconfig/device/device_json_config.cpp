@@ -18,6 +18,8 @@
 
 #include "device_json_config.h"
 
+#include "log.h"
+
 using std::map;
 using std::string;
 
@@ -25,7 +27,7 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
     {SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED, "statusLed"},
     {SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS, "screenBrightness"},
     {SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME, "buttonVolume"},
-    {SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE, "userInterfaceDisabled"},
+    {SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE, "userInterface"},
     {SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC, "automaticTimeSync"},
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY, "offDelay"},
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT, "content"}};
@@ -43,6 +45,14 @@ const map<unsigned _supla_int16_t, string>
 
 const char device_json_config::contentAvailable[] =
     "homeScreenContentAvailable";
+
+const char device_json_config::disabledStr[] = "disabled";
+
+const char device_json_config::minAllowedTemperature[] =
+    "minAllowedTemperatureSetpointFromLocalUI";
+
+const char device_json_config::maxAllowedTemperature[] =
+    "maxAllowedTemperatureSetpointFromLocalUI";
 
 device_json_config::device_json_config(void) : supla_json_config() {}
 
@@ -102,7 +112,7 @@ void device_json_config::set_status_led(TDeviceConfig_StatusLed *status_led) {
       status_led->StatusLedType <= 2) {
     set_item_value(get_user_root(),
                    field_map.at(SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED),
-                   cJSON_String, true,
+                   cJSON_String, true, nullptr,
                    status_led_to_string(status_led->StatusLedType).c_str(), 0);
   }
 }
@@ -113,12 +123,13 @@ void device_json_config::set_screen_brightness(
     if (brightness->Automatic == 1) {
       set_item_value(get_user_root(),
                      field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS),
-                     cJSON_String, true, "auto", 0);
+                     cJSON_String, true, nullptr, "auto", 0);
     } else if (brightness->ScreenBrightness >= 0 &&
                brightness->ScreenBrightness <= 100) {
       set_item_value(get_user_root(),
                      field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS),
-                     cJSON_Number, true, nullptr, brightness->ScreenBrightness);
+                     cJSON_Number, true, nullptr, nullptr,
+                     brightness->ScreenBrightness);
     }
   }
 }
@@ -129,19 +140,35 @@ void device_json_config::set_button_volume(TDeviceConfig_ButtonVolume *volume) {
   if (v <= 100) {
     set_item_value(get_user_root(),
                    field_map.at(SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME),
-                   cJSON_Number, true, nullptr, v);
+                   cJSON_Number, true, nullptr, nullptr, v);
   }
 }
 
 void device_json_config::set_user_interface_disabled(
     TDeviceConfig_DisableUserInterface *disabled) {
-  if (disabled && (disabled->DisableUserInterface == 0 ||
-                   disabled->DisableUserInterface == 1)) {
-    set_item_value(
-        get_user_root(),
-        field_map.at(SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE),
-        disabled->DisableUserInterface ? cJSON_True : cJSON_False, true,
-        nullptr, 0);
+  if (disabled && disabled->DisableUserInterface >= 0 &&
+      disabled->DisableUserInterface <= 2) {
+    cJSON *ui = cJSON_CreateObject();
+    if (ui) {
+      if (disabled->DisableUserInterface == 2) {
+        cJSON_AddStringToObject(ui, disabledStr, "partial");
+        cJSON_AddNumberToObject(
+            ui, minAllowedTemperature,
+            disabled->minAllowedTemperatureSetpointFromLocalUI);
+        cJSON_AddNumberToObject(
+            ui, maxAllowedTemperature,
+            disabled->maxAllowedTemperatureSetpointFromLocalUI);
+      } else {
+        cJSON_AddBoolToObject(
+            ui, disabledStr,
+            disabled->DisableUserInterface ? true : false);
+      }
+
+      set_item_value(
+          get_user_root(),
+          field_map.at(SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE),
+          cJSON_Object, true, ui, nullptr, 0);
+    }
   }
 }
 
@@ -152,7 +179,7 @@ void device_json_config::set_automatic_time_sync(
     set_item_value(get_user_root(),
                    field_map.at(SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC),
                    time_sync->AutomaticTimeSync ? cJSON_True : cJSON_False,
-                   true, nullptr, 0);
+                   true, nullptr, nullptr, 0);
   }
 }
 
@@ -183,7 +210,7 @@ void device_json_config::set_home_screen_off_delay(
     set_item_value(
         get_root(true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY),
         field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY),
-        cJSON_Number, true, nullptr, delay->HomeScreenOffDelayS);
+        cJSON_Number, true, nullptr, nullptr, delay->HomeScreenOffDelayS);
   }
 }
 
@@ -195,7 +222,7 @@ void device_json_config::set_home_screen_content(
   if (!content_str.empty()) {
     set_item_value(root,
                    field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT),
-                   cJSON_String, true, content_str.c_str(), 0);
+                   cJSON_String, true, nullptr, content_str.c_str(), 0);
   }
 
   cJSON *content_items =
@@ -354,14 +381,31 @@ bool device_json_config::get_button_volume(TDeviceConfig_ButtonVolume *volume) {
 
 bool device_json_config::get_user_interface_disabled(
     TDeviceConfig_DisableUserInterface *disabled) {
-  bool value = 0;
-  if (disabled &&
-      get_bool(get_user_root(),
-               field_map.at(SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE)
-                   .c_str(),
-               &value)) {
-    disabled->DisableUserInterface = value ? 1 : 0;
-    return true;
+  bool bool_value = 0;
+  double dbl_min = 0;
+  double dbl_max = 0;
+  string str_value;
+
+  if (disabled) {
+    cJSON *parent = cJSON_GetObjectItem(
+        get_user_root(),
+        field_map.at(SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE).c_str());
+
+    disabled->minAllowedTemperatureSetpointFromLocalUI = 0;
+    disabled->maxAllowedTemperatureSetpointFromLocalUI = 0;
+
+    if (get_bool(parent, disabledStr, &bool_value)) {
+      disabled->DisableUserInterface = bool_value ? 1 : 0;
+      return true;
+    } else if (get_string(parent, disabledStr, &str_value) &&
+               str_value == "partial" &&
+               get_double(parent, minAllowedTemperature, &dbl_min) &&
+               get_double(parent, maxAllowedTemperature, &dbl_max)) {
+      disabled->DisableUserInterface = 2;
+      disabled->minAllowedTemperatureSetpointFromLocalUI = dbl_min;
+      disabled->maxAllowedTemperatureSetpointFromLocalUI = dbl_max;
+      return true;
+    }
   }
 
   return false;

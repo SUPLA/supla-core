@@ -116,7 +116,7 @@ TEST_F(DeviceConfigTest, allFields) {
   EXPECT_STREQ(
       str,
       "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":24,\"buttonVolume\":"
-      "100,\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
+      "100,\"userInterface\":{\"disabled\":false},\"automaticTimeSync\":true,"
       "\"homeScreen\":{\"offDelay\":123,\"content\":\"TIME_DATE\"}}");
   free(str);
 
@@ -136,7 +136,7 @@ TEST_F(DeviceConfigTest, twoFieldsSlightlyApart) {
                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY;
 
   ((TDeviceConfig_DisableUserInterface *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->DisableUserInterface = true;
+      ->DisableUserInterface = 1;
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_DisableUserInterface);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
@@ -155,8 +155,73 @@ TEST_F(DeviceConfigTest, twoFieldsSlightlyApart) {
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
-               "{\"userInterfaceDisabled\":true,\"automaticTimeSync\":true,"
-               "\"homeScreen\":{\"offDelay\":678}}");
+               "{\"userInterface\":{\"disabled\":true},\"automaticTimeSync\":"
+               "true,\"homeScreen\":{\"offDelay\":678}}");
+  free(str);
+}
+
+TEST_F(DeviceConfigTest, userInterfaceDisabled) {
+  TSDS_SetDeviceConfig sds_cfg = {};
+  sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_DisableUserInterface);
+
+  device_json_config cfg1, cfg2;
+  cfg1.set_config(&sds_cfg);
+  char *str = cfg1.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"userInterface\":{\"disabled\":false}}");
+  free(str);
+
+  sds_cfg = {};
+  cfg1.get_config(&sds_cfg, nullptr);
+  cfg2.set_config(&sds_cfg);
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"userInterface\":{\"disabled\":false}}");
+  free(str);
+
+  ((TDeviceConfig_DisableUserInterface *)&sds_cfg.Config)
+      ->DisableUserInterface = 2;
+  ((TDeviceConfig_DisableUserInterface *)&sds_cfg.Config)
+      ->minAllowedTemperatureSetpointFromLocalUI = 123;
+  ((TDeviceConfig_DisableUserInterface *)&sds_cfg.Config)
+      ->maxAllowedTemperatureSetpointFromLocalUI = 345;
+
+  cfg1.set_config(&sds_cfg);
+  str = cfg1.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str,
+               "{\"userInterface\":{\"disabled\":\"partial\","
+               "\"minAllowedTemperatureSetpointFromLocalUI\":123,"
+               "\"maxAllowedTemperatureSetpointFromLocalUI\":345}}");
+  free(str);
+
+  sds_cfg = {};
+  cfg1.get_config(&sds_cfg, nullptr);
+  cfg2.set_config(&sds_cfg);
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str,
+               "{\"userInterface\":{\"disabled\":\"partial\","
+               "\"minAllowedTemperatureSetpointFromLocalUI\":123,"
+               "\"maxAllowedTemperatureSetpointFromLocalUI\":345}}");
+  free(str);
+
+  ((TDeviceConfig_DisableUserInterface *)&sds_cfg.Config)
+      ->DisableUserInterface = 1;
+
+  cfg1.set_config(&sds_cfg);
+  str = cfg1.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"userInterface\":{\"disabled\":true}}");
+  free(str);
+
+  sds_cfg = {};
+  cfg1.get_config(&sds_cfg, nullptr);
+  cfg2.set_config(&sds_cfg);
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"userInterface\":{\"disabled\":true}}");
   free(str);
 }
 
@@ -282,7 +347,7 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
 
   const char user_config[] =
       "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":24,\"buttonVolume\":"
-      "100,\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
+      "100,\"userInterface\":{\"disabled\":true},\"automaticTimeSync\":true,"
       "\"homeScreen\":{\"offDelay\":123,\"content\":\"TIME_DATE\"}}";
   cfg1.set_user_config(user_config);
 
@@ -491,7 +556,7 @@ TEST_F(DeviceConfigTest, availableFields) {
 
   cfg.set_user_config(
       "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
-      "\"userInterfaceDisabled\":false,\"automaticTimeSync\":true,"
+      "\"userInterface\":{\"disabled\":false},\"automaticTimeSync\":true,"
       "\"homeScreen\": {\"offDelay\":123,\"content\": \"HUMIDITY\"}}");
 
   EXPECT_EQ(cfg.get_available_fields(),

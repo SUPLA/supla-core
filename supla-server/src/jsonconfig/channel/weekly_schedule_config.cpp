@@ -120,14 +120,16 @@ void weekly_schedule_config::add_program(unsigned char index,
   string name = std::to_string(index + 1);
   cJSON *program = cJSON_AddObjectToObject(program_root, name.c_str());
   if (program) {
-    set_item_value(program, mode, cJSON_String, true,
+    set_item_value(program, mode, cJSON_String, true, nullptr,
                    mode_to_string(config->Program[index].Mode).c_str(), 0);
 
     set_item_value(program, setpoint_temperature_heat, cJSON_Number, true,
-                   nullptr, config->Program[index].SetpointTemperatureHeat);
+                   nullptr, nullptr,
+                   config->Program[index].SetpointTemperatureHeat);
 
     set_item_value(program, setpoint_temperature_cool, cJSON_Number, true,
-                   nullptr, config->Program[index].SetpointTemperatureCool);
+                   nullptr, nullptr,
+                   config->Program[index].SetpointTemperatureCool);
   }
 }
 

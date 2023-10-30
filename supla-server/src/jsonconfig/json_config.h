@@ -53,7 +53,7 @@ class supla_json_config {
   bool get_string(cJSON *parent, const char *key, std::string *value);
 
   cJSON *set_item_value(cJSON *parent, const std::string &name, int type,
-                        bool force, const char *string_value,
+                        bool force, cJSON *obj, const char *string_value,
                         double number_value);
 
   bool merge(cJSON *src_parent, cJSON *dst_parent,

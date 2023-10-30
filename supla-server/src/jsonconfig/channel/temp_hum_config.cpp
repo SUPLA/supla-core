@@ -53,14 +53,16 @@ void temp_hum_config::set_config(
   }
 
   set_item_value(root, field_map.at(FIELD_TEMPERATURE_ADJUSTMENT).c_str(),
-                 cJSON_Number, true, nullptr, config->TemperatureAdjustment);
+                 cJSON_Number, true, nullptr, nullptr,
+                 config->TemperatureAdjustment);
 
   set_item_value(root, field_map.at(FIELD_HUMIDITY_ADJUSTMENT).c_str(),
-                 cJSON_Number, true, nullptr, config->HumidityAdjustment);
+                 cJSON_Number, true, nullptr, nullptr,
+                 config->HumidityAdjustment);
 
   set_item_value(root, field_map.at(FIELD_ADJUSTMENT_APPLIED_BY_DEVICE).c_str(),
                  config->AdjustmentAppliedByDevice ? cJSON_True : cJSON_False,
-                 true, nullptr, 0);
+                 true, nullptr, nullptr, 0);
 }
 
 bool temp_hum_config::get_config(

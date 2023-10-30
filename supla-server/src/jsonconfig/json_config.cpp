@@ -259,7 +259,7 @@ bool supla_json_config::get_string(cJSON *parent, const char *key,
 }
 
 cJSON *supla_json_config::set_item_value(cJSON *parent, const std::string &name,
-                                         int type, bool force,
+                                         int type, bool force, cJSON *obj,
                                          const char *string_value,
                                          double number_value) {
   if (!parent || name.empty()) {
@@ -289,6 +289,12 @@ cJSON *supla_json_config::set_item_value(cJSON *parent, const std::string &name,
       cJSON_SetNumberValue(item_json, number_value);
     } else if (type == cJSON_String) {
       cJSON_SetValuestring(item_json, string_value);
+    } else if (type == cJSON_Object) {
+      if (cJSON_ReplaceItemInObject(parent, name.c_str(), obj)) {
+        return obj;
+      } else {
+        return nullptr;
+      }
     } else {
       return nullptr;
     }
@@ -305,6 +311,13 @@ cJSON *supla_json_config::set_item_value(cJSON *parent, const std::string &name,
         break;
       case cJSON_String:
         item_json = cJSON_AddStringToObject(parent, name.c_str(), string_value);
+        break;
+      case cJSON_Object:
+        if (cJSON_AddItemToObject(parent, name.c_str(), obj)) {
+          return obj;
+        } else {
+          return nullptr;
+        }
         break;
       case cJSON_NULL:
         item_json = cJSON_AddNullToObject(parent, name.c_str());

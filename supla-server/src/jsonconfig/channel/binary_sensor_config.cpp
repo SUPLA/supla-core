@@ -49,7 +49,7 @@ void binary_sensor_config::set_config(TChannelConfig_BinarySensor *config) {
 
   set_item_value(root, field_map.at(FIELD_INVERTED_LOGIC).c_str(),
                  config->InvertedLogic ? cJSON_True : cJSON_False, true,
-                 nullptr, 0);
+                 nullptr, nullptr, 0);
 }
 
 bool binary_sensor_config::get_config(TChannelConfig_BinarySensor *config) {

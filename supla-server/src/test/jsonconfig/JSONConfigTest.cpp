@@ -34,10 +34,11 @@ JSONConfigTest::~JSONConfigTest(void) {}
 TEST_F(JSONConfigTest, setItemValue_NullOrEmptyName) {
   JSONConfigStub config;
   EXPECT_TRUE(nullptr == config.set_item_value(nullptr, "abcd", cJSON_Number,
-                                               true, nullptr, 0));
+                                               true, nullptr, nullptr, 0));
 
   EXPECT_TRUE(nullptr == config.set_item_value(config.get_user_root(), "",
-                                               cJSON_Number, true, nullptr, 0));
+                                               cJSON_Number, true, nullptr,
+                                               nullptr, 0));
   char *json = config.get_user_config();
   ASSERT_TRUE(json != nullptr);
   EXPECT_STREQ(json, "{}");
@@ -48,7 +49,7 @@ TEST_F(JSONConfigTest, setItemValue_ItemNotExists_NoForce) {
   JSONConfigStub config;
   EXPECT_TRUE(nullptr == config.set_item_value(config.get_user_root(), "abcd",
                                                cJSON_Number, false, nullptr,
-                                               0));
+                                               nullptr, 0));
 
   char *json = config.get_user_config();
   ASSERT_TRUE(json != nullptr);
@@ -58,20 +59,20 @@ TEST_F(JSONConfigTest, setItemValue_ItemNotExists_NoForce) {
 
 TEST_F(JSONConfigTest, setItemValue_ItemNotExists_WithForce) {
   JSONConfigStub config;
-  cJSON *item1 = config.set_item_value(config.get_user_root(), "1",
-                                       cJSON_Number, true, nullptr, 15);
+  cJSON *item1 = config.set_item_value(
+      config.get_user_root(), "1", cJSON_Number, true, nullptr, nullptr, 15);
 
   cJSON *item2 = config.set_item_value(config.get_user_root(), "2",
-                                       cJSON_String, true, "xyz", 0);
+                                       cJSON_String, true, nullptr, "xyz", 0);
 
   cJSON *item3 = config.set_item_value(config.get_user_root(), "3", cJSON_True,
-                                       true, nullptr, 0);
+                                       true, nullptr, nullptr, 0);
 
   cJSON *item4 = config.set_item_value(config.get_user_root(), "4", cJSON_False,
-                                       true, nullptr, 0);
+                                       true, nullptr, nullptr, 0);
 
   cJSON *item5 = config.set_item_value(config.get_user_root(), "5", cJSON_NULL,
-                                       true, nullptr, 0);
+                                       true, nullptr, nullptr, 0);
 
   EXPECT_TRUE(item1 != nullptr);
   EXPECT_TRUE(item2 != nullptr);
@@ -90,16 +91,16 @@ TEST_F(JSONConfigTest, setItemValue_ItemExistsWithDifferentType_NoForce) {
   JSONConfigStub config;
   config.set_user_config("{\"a\":123}");
   EXPECT_TRUE(nullptr == config.set_item_value(config.get_user_root(), "a",
-                                               cJSON_String, false, "qwerty",
-                                               0));
+                                               cJSON_String, false, nullptr,
+                                               "qwerty", 0));
 }
 
 TEST_F(JSONConfigTest, setItemValue_ItemExistsWithDifferentType_Force) {
   JSONConfigStub config;
   config.set_user_config("{\"a\":123}");
   EXPECT_TRUE(nullptr != config.set_item_value(config.get_user_root(), "a",
-                                               cJSON_String, true, "qwerty",
-                                               0));
+                                               cJSON_String, true, nullptr,
+                                               "qwerty", 0));
 
   char *json = config.get_user_config();
   ASSERT_TRUE(json != nullptr);
@@ -113,7 +114,7 @@ TEST_F(JSONConfigTest, setItemValue_ItemExistsWithSameType_NoForce) {
   config.set_user_config("{\"a\":123}");
   EXPECT_TRUE(nullptr != config.set_item_value(config.get_user_root(), "a",
                                                cJSON_Number, false, nullptr,
-                                               55));
+                                               nullptr, 55));
 
   char *json = config.get_user_config();
   ASSERT_TRUE(json != nullptr);
@@ -123,8 +124,8 @@ TEST_F(JSONConfigTest, setItemValue_ItemExistsWithSameType_NoForce) {
   config.set_user_config("{\"a\":\"xyz\"}");
 
   EXPECT_TRUE(nullptr != config.set_item_value(config.get_user_root(), "a",
-                                               cJSON_String, false, "uiop",
-                                               55));
+                                               cJSON_String, false, nullptr,
+                                               "uiop", 55));
   json = config.get_user_config();
   ASSERT_TRUE(json != nullptr);
   EXPECT_STREQ(json, "{\"a\":\"uiop\"}");
@@ -134,7 +135,7 @@ TEST_F(JSONConfigTest, setItemValue_ItemExistsWithSameType_NoForce) {
 
   EXPECT_TRUE(nullptr != config.set_item_value(config.get_user_root(), "a",
                                                cJSON_False, false, nullptr,
-                                               55));
+                                               nullptr, 55));
 
   json = config.get_user_config();
   ASSERT_TRUE(json != nullptr);
@@ -142,11 +143,60 @@ TEST_F(JSONConfigTest, setItemValue_ItemExistsWithSameType_NoForce) {
   free(json);
 
   EXPECT_TRUE(nullptr != config.set_item_value(config.get_user_root(), "a",
-                                               cJSON_True, false, nullptr, 55));
+                                               cJSON_True, false, nullptr,
+                                               nullptr, 55));
 
   json = config.get_user_config();
   ASSERT_TRUE(json != nullptr);
   EXPECT_STREQ(json, "{\"a\":true}");
+  free(json);
+}
+
+TEST_F(JSONConfigTest, setObjectValue_WithDifferentType_NoForce) {
+  JSONConfigStub config;
+  config.set_user_config("{\"a\":123}");
+
+  cJSON *obj = cJSON_CreateObject();
+  cJSON_AddBoolToObject(obj, "xyz", cJSON_True);
+
+  ASSERT_TRUE(nullptr == config.set_item_value(config.get_user_root(), "a",
+                                               cJSON_Object, false, obj,
+                                               nullptr, 0));
+
+  cJSON_Delete(obj);
+}
+
+TEST_F(JSONConfigTest, setObjectValue_ItemExistsWithDifferentType_Force) {
+  JSONConfigStub config;
+  config.set_user_config("{\"a\":123}");
+
+  cJSON *obj = cJSON_CreateObject();
+  cJSON_AddBoolToObject(obj, "xyz", cJSON_True);
+
+  EXPECT_TRUE(nullptr != config.set_item_value(config.get_user_root(), "a",
+                                               cJSON_Object, true, obj, nullptr,
+                                               0));
+
+  char *json = config.get_user_config();
+  ASSERT_TRUE(json != nullptr);
+  EXPECT_STREQ(json, "{\"a\":{\"xyz\":true}}");
+  free(json);
+}
+
+TEST_F(JSONConfigTest, setObjectValue_WithSameType_NoForce) {
+  JSONConfigStub config;
+  config.set_user_config("{\"a\":{\"x\":123,\"y\":345}}");
+
+  cJSON *obj = cJSON_CreateObject();
+  cJSON_AddBoolToObject(obj, "xyz", cJSON_True);
+
+  EXPECT_TRUE(nullptr != config.set_item_value(config.get_user_root(), "a",
+                                               cJSON_Object, true, obj, nullptr,
+                                               0));
+
+  char *json = config.get_user_config();
+  ASSERT_TRUE(json != nullptr);
+  EXPECT_STREQ(json, "{\"a\":{\"xyz\":true}}");
   free(json);
 }
 
@@ -156,18 +206,19 @@ TEST_F(JSONConfigTest, mergeWithDelete) {
   JSONConfigStub cfg1;
   JSONConfigStub cfg2;
 
-  cfg1.set_item_value(cfg1.get_user_root(), "xyz", cJSON_String, true, "aaa",
-                      0);
-  cfg1.set_item_value(cfg1.get_user_root(), "a", cJSON_String, true, "iiii", 0);
+  cfg1.set_item_value(cfg1.get_user_root(), "xyz", cJSON_String, true, nullptr,
+                      "aaa", 0);
+  cfg1.set_item_value(cfg1.get_user_root(), "a", cJSON_String, true, nullptr,
+                      "iiii", 0);
   cfg1.set_item_value(cfg1.get_user_root(), "b", cJSON_Number, true, nullptr,
-                      155.20);
+                      nullptr, 155.20);
 
   cfg2.set_item_value(cfg2.get_user_root(), "uiop", cJSON_Number, true, nullptr,
-                      20);
+                      nullptr, 20);
   cfg2.set_item_value(cfg2.get_user_root(), "a", cJSON_Number, true, nullptr,
-                      30);
-  cfg2.set_item_value(cfg2.get_user_root(), "c", cJSON_String, true, "sxcde",
-                      0);
+                      nullptr, 30);
+  cfg2.set_item_value(cfg2.get_user_root(), "c", cJSON_String, true, nullptr,
+                      "sxcde", 0);
 
   char *str = cfg1.get_user_config();
   ASSERT_TRUE(str != nullptr);
@@ -196,10 +247,10 @@ TEST_F(JSONConfigTest, mergeWithoutDelete) {
   JSONConfigStub cfg2;
 
   cfg1.set_item_value(cfg1.get_user_root(), "b", cJSON_Number, true, nullptr,
-                      155.20);
+                      nullptr, 155.20);
 
   cfg2.set_item_value(cfg2.get_user_root(), "a", cJSON_Number, true, nullptr,
-                      30);
+                      nullptr, 30);
 
   char *str = cfg1.get_user_config();
   ASSERT_TRUE(str != nullptr);

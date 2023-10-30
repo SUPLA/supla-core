@@ -200,7 +200,7 @@ void hvac_config::set_channel_number(cJSON *root, int field,
   set_item_value(
       root, field_map.at(field).c_str(),
       channel_number == cfg_channel_number ? cJSON_NULL : cJSON_Number, true,
-      nullptr, cfg_channel_number);
+      nullptr, nullptr, cfg_channel_number);
 }
 
 bool hvac_config::get_channel_number(cJSON *root, int field,
@@ -300,19 +300,19 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
 
   set_item_value(
       user_root, field_map.at(FIELD_AUX_THERMOMETER_TYPE).c_str(), cJSON_String,
-      true, aux_thermometer_type_to_string(config->AuxThermometerType).c_str(),
-      0);
+      true, nullptr,
+      aux_thermometer_type_to_string(config->AuxThermometerType).c_str(), 0);
 
   set_item_value(user_root,
                  field_map.at(FIELD_AUX_MIN_MAX_SETPOINT_ENABLED).c_str(),
                  config->AuxMinMaxSetpointEnabled ? cJSON_True : cJSON_False,
-                 true, nullptr, 0);
+                 true, nullptr, nullptr, 0);
 
   set_item_value(
       user_root,
       field_map.at(FIELD_AUTO_USE_SEPARATE_HEAT_COOL_OUTPUTS).c_str(),
       config->AutoUseSeparateHeatCoolOutputs ? cJSON_True : cJSON_False, true,
-      nullptr, 0);
+      nullptr, nullptr, 0);
 
   set_channel_number(user_root, FIELD_BINARY_SENSOR_CHANNEL_NO,
                      config->BinarySensorChannelNo, channel_number);
@@ -321,7 +321,7 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
       user_root,
       field_map.at(FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED).c_str(),
       config->AntiFreezeAndOverheatProtectionEnabled ? cJSON_True : cJSON_False,
-      true, nullptr, 0);
+      true, nullptr, nullptr, 0);
 
   cJSON *algs = cJSON_GetObjectItem(
       properties_root, field_map.at(FIELD_AVAILABLE_ALGORITHMS).c_str());
@@ -341,26 +341,27 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
                          SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST);
 
   set_item_value(user_root, field_map.at(FIELD_USED_ALGORITHM).c_str(),
-                 cJSON_String, true,
+                 cJSON_String, true, nullptr,
                  alg_to_string(config->UsedAlgorithm).c_str(), 0);
 
   if (config->MinOffTimeS >= 0 && config->MinOffTimeS <= 600) {
     set_item_value(user_root, field_map.at(FIELD_MIN_OFF_TIME_S).c_str(),
-                   cJSON_Number, true, nullptr, config->MinOffTimeS);
+                   cJSON_Number, true, nullptr, nullptr, config->MinOffTimeS);
   }
 
   if (config->MinOnTimeS >= 0 && config->MinOnTimeS <= 600) {
     set_item_value(user_root, field_map.at(FIELD_MIN_ON_TIME_S).c_str(),
-                   cJSON_Number, true, nullptr, config->MinOnTimeS);
+                   cJSON_Number, true, nullptr, nullptr, config->MinOnTimeS);
   }
 
   if (config->OutputValueOnError >= -100 && config->OutputValueOnError <= 100) {
     set_item_value(user_root, field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR).c_str(),
-                   cJSON_Number, true, nullptr, config->OutputValueOnError);
+                   cJSON_Number, true, nullptr, nullptr,
+                   config->OutputValueOnError);
   }
 
   set_item_value(user_root, field_map.at(FIELD_SUBSUNCTION).c_str(),
-                 cJSON_String, true,
+                 cJSON_String, true, nullptr,
                  subfunction_to_string(config->Subfunction).c_str(), 0);
 
   set_item_value(
@@ -369,7 +370,7 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
           .c_str(),
       config->TemperatureSetpointChangeSwitchesToManualMode ? cJSON_True
                                                             : cJSON_False,
-      true, nullptr, 0);
+      true, nullptr, nullptr, 0);
 
   set_temperatures(config, user_root, 0xFFFFFFFF ^ readonly_temperatures);
 

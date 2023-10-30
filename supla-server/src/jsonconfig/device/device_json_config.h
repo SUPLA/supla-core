@@ -31,6 +31,9 @@ class device_json_config : public supla_json_config {
   static const std::map<unsigned _supla_int16_t, std::string>
       hone_screen_content_map;
   static const char contentAvailable[];
+  static const char disabledStr[];
+  static const char minAllowedTemperature[];
+  static const char maxAllowedTemperature[];
 
   std::string status_led_to_string(unsigned char status);
   unsigned char string_to_status_led(const std::string &status);
