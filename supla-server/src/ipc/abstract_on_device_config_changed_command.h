@@ -16,23 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_ABSTRACT_ON_DEVICE_SETTINGS_CHANGED_COMMAND_H_
-#define SUPLA_ABSTRACT_ON_DEVICE_SETTINGS_CHANGED_COMMAND_H_
+#ifndef SUPLA_ABSTRACT_ON_DEVICE_CONFIG_CHANGED_COMMAND_H_
+#define SUPLA_ABSTRACT_ON_DEVICE_CONFIG_CHANGED_COMMAND_H_
 
 #include <string>
 
 #include "ipc/abstract_ipc_command.h"
 
-class supla_abstract_on_device_settings_changed_command
+class supla_abstract_on_device_config_changed_command
     : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
   virtual const std::string get_command_name(void);
-  virtual void on_device_settings_changed(int user_id, int device_id) = 0;
+  virtual void on_device_config_changed(int user_id, int device_id) = 0;
 
  public:
-  explicit supla_abstract_on_device_settings_changed_command(
+  explicit supla_abstract_on_device_config_changed_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };
 
-#endif /* SUPLA_ABSTRACT_ON_DEVICE_SETTINGS_CHANGED_COMMAND_H_ */
+#endif /* SUPLA_ABSTRACT_ON_DEVICE_CONFIG_CHANGED_COMMAND_H_ */

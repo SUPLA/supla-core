@@ -16,21 +16,16 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_ON_DEVICE_SETTINGS_CHANGED_COMMAND_H_
-#define SUPLA_ON_DEVICE_SETTINGS_CHANGED_COMMAND_H_
+#include "on_device_config_changed_command.h"
 
-#include <ipc/abstract_on_device_settings_changed_command.h>
+#include "user.h"
 
-#include <string>
+supla_on_device_settings_changed_command::
+    supla_on_device_settings_changed_command(
+        supla_abstract_ipc_socket_adapter *socket_adapter)
+    : supla_abstract_on_device_config_changed_command(socket_adapter) {}
 
-class supla_on_device_settings_changed_command
-    : public supla_abstract_on_device_settings_changed_command {
- protected:
-  virtual void on_device_settings_changed(int user_id, int device_id);
-
- public:
-  explicit supla_on_device_settings_changed_command(
-      supla_abstract_ipc_socket_adapter *socket_adapter);
-};
-
-#endif /* SUPLA_ON_DEVICE_SETTINGS_CHANGED_COMMAND_H_ */
+void supla_on_device_settings_changed_command::on_device_config_changed(
+    int user_id, int device_id) {
+  supla_user::on_device_settings_changed(user_id, device_id, get_caller());
+}

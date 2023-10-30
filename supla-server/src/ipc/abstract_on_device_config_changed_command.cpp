@@ -16,21 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <ipc/abstract_on_device_settings_changed_command.h>
+#include "abstract_on_device_config_changed_command.h"
 
 using std::string;
 
-supla_abstract_on_device_settings_changed_command::
-    supla_abstract_on_device_settings_changed_command(
+supla_abstract_on_device_config_changed_command::
+    supla_abstract_on_device_config_changed_command(
         supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_ipc_command(socket_adapter) {}
 
-const string
-supla_abstract_on_device_settings_changed_command::get_command_name(void) {
-  return "USER-ON-DEVICE-SETTINGS-CHANGED:";
+const string supla_abstract_on_device_config_changed_command::get_command_name(
+    void) {
+  return "USER-ON-DEVICE-CONFIG-CHANGED:";
 }
 
-void supla_abstract_on_device_settings_changed_command::on_command_match(
+void supla_abstract_on_device_config_changed_command::on_command_match(
     const char *params) {
   int user_id = 0;
   int device_id = 0;
@@ -39,7 +39,7 @@ void supla_abstract_on_device_settings_changed_command::on_command_match(
     sscanf(params, "%i,%i", &user_id, &device_id);
 
     if (user_id && device_id) {
-      on_device_settings_changed(user_id, device_id);
+      on_device_config_changed(user_id, device_id);
       send_result("OK:", user_id);
       return;
     }

@@ -16,12 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "doubles/ipc/OnDeviceSettingsChangedCommandMock.h"
+#ifndef SUPLA_ON_DEVICE_CONFIG_CHANGED_COMMAND_H_
+#define SUPLA_ON_DEVICE_CONFIG_CHANGED_COMMAND_H_
 
-namespace testing {
+#include <string>
 
-OnDeviceSettingsChangedCommandMock::OnDeviceSettingsChangedCommandMock(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_on_device_settings_changed_command(socket_adapter) {}
+#include "ipc/abstract_on_device_config_changed_command.h"
 
-}  // namespace testing
+class supla_on_device_settings_changed_command
+    : public supla_abstract_on_device_config_changed_command {
+ protected:
+  virtual void on_device_config_changed(int user_id, int device_id);
+
+ public:
+  explicit supla_on_device_settings_changed_command(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
+};
+
+#endif /* SUPLA_ON_DEVICE_CONFIG_CHANGED_COMMAND_H_ */

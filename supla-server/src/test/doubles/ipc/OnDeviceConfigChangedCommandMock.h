@@ -16,16 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <ipc/on_device_settings_changed_command.h>
+#ifndef ON_DEVICE_CONFIG_CHANGED_COMMMAND_MOCK_H_
+#define ON_DEVICE_CONFIG_CHANGED_COMMMAND_MOCK_H_
 
-#include "user.h"
+#include <gmock/gmock.h>
 
-supla_on_device_settings_changed_command::
-    supla_on_device_settings_changed_command(
-        supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_on_device_settings_changed_command(socket_adapter) {}
+#include "ipc/abstract_on_device_config_changed_command.h"
 
-void supla_on_device_settings_changed_command::on_device_settings_changed(
-    int user_id, int device_id) {
-  supla_user::on_device_settings_changed(user_id, device_id, get_caller());
-}
+namespace testing {
+
+class OnDeviceConfigChangedCommandMock
+    : public supla_abstract_on_device_config_changed_command {
+ public:
+  explicit OnDeviceConfigChangedCommandMock(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
+
+  MOCK_METHOD2(on_device_config_changed, void(int user_id, int device_id));
+};
+
+} /* namespace testing */
+
+#endif /* ON_DEVICE_CONFIG_CHANGED_COMMMAND_MOCK_H_ */

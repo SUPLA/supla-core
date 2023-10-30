@@ -16,18 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ONDEVICESETTINGSCHANGEDCOMMANDTEST_H_
-#define ONDEVICESETTINGSCHANGEDCOMMANDTEST_H_
+#ifndef ONDEVICECONFIGCHANGEDCOMMANDTEST_H_
+#define ONDEVICECONFIGCHANGEDCOMMANDTEST_H_
 
-#include <doubles/ipc/OnDeviceSettingsChangedCommandMock.h>
+#include <doubles/ipc/OnDeviceConfigChangedCommandMock.h>
 
 #include "ipc/IpcCommandTest.h"
 
 namespace testing {
 
-class OnDeviceSettingsChangedCommandTest : public IpcCommandTest {
+class OnDeviceConfigChangedCommandTest : public IpcCommandTest {
  protected:
-  OnDeviceSettingsChangedCommandMock *cmd;
+  OnDeviceConfigChangedCommandMock *cmd;
   virtual supla_abstract_ipc_command *getCommand(void);
 
  public:
@@ -37,4 +37,4 @@ class OnDeviceSettingsChangedCommandTest : public IpcCommandTest {
 
 } /* namespace testing */
 
-#endif /* ONDEVICESETTINGSCHANGEDCOMMANDTEST_H_ */
+#endif /* ONDEVICECONFIGCHANGEDCOMMANDTEST_H_ */
