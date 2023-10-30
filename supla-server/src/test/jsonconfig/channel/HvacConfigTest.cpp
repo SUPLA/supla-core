@@ -61,10 +61,10 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
       str,
       "{\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
       "\"auxThermometerType\":\"GENERIC_HEATER\",\"auxMinMaxSetpointEnabled\":"
-      "false,\"binarySensorChannelNo\":3,"
-      "\"antiFreezeAndOverheatProtectionEnabled\":true,\"usedAlgorithm\":\"ON_"
-      "OFF_SETPOINT_MIDDLE\",\"minOffTimeS\":600,\"minOnTimeS\":10,"
-      "\"outputValueOnError\":55,\"subfunction\":\"COOL\","
+      "false,\"autoUseSeparateHeatCoolOutputs\":false,"
+      "\"binarySensorChannelNo\":3,\"antiFreezeAndOverheatProtectionEnabled\":"
+      "true,\"usedAlgorithm\":\"ON_OFF_SETPOINT_MIDDLE\",\"minOffTimeS\":600,"
+      "\"minOnTimeS\":10,\"outputValueOnError\":55,\"subfunction\":\"COOL\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":true,\"temperatures\":"
       "{\"freezeProtection\":1,\"eco\":2,\"comfort\":3,\"boost\":4,"
       "\"heatProtection\":5,\"histeresis\":6,\"belowAlarm\":7,\"aboveAlarm\":8,"
@@ -152,16 +152,17 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
 
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"mainThermometerChannelNo\":null,\"auxThermometerChannelNo\":"
-               "null,\"auxThermometerType\":\"NOT_SET\","
-               "\"auxMinMaxSetpointEnabled\":false,\"binarySensorChannelNo\":"
-               "null,\"antiFreezeAndOverheatProtectionEnabled\":false,"
-               "\"usedAlgorithm\":\"\",\"minOffTimeS\":0,\"minOnTimeS\":0,"
-               "\"outputValueOnError\":0,\"subfunction\":\"NOT_"
-               "SET\",\"temperatureSetpointChangeSwitchesToManualMode\":false,"
-               "\"temperatures\":{\"freezeProtection\":12345,\"eco\":0,"
-               "\"auxMinSetpoint\":-723}}");
+  EXPECT_STREQ(
+      str,
+      "{\"mainThermometerChannelNo\":null,\"auxThermometerChannelNo\":null,"
+      "\"auxThermometerType\":\"NOT_SET\",\"auxMinMaxSetpointEnabled\":false,"
+      "\"autoUseSeparateHeatCoolOutputs\":false,\"binarySensorChannelNo\":null,"
+      "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":\"\","
+      "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
+      "\"subfunction\":\"NOT_SET\","
+      "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
+      "\"temperatures\":{\"freezeProtection\":12345,\"eco\":0,"
+      "\"auxMinSetpoint\":-723}}");
 
   free(str);
 
@@ -218,7 +219,8 @@ TEST_F(HvacConfigTest, merge) {
       "\"temperatures\":{\"eco\":10,\"comfort\":0},\"binarySensorChannelNo\":"
       "null,\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
-      "\"auxMinMaxSetpointEnabled\":false}");
+      "\"auxMinMaxSetpointEnabled\":false,\"autoUseSeparateHeatCoolOutputs\":"
+      "false}");
 
   free(str);
 
