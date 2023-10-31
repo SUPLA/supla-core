@@ -16,27 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "on_device_config_changed_command.h"
+#ifndef ONCHANNELCONFIGCHANGEDCOMMANDTEST_H_
+#define ONCHANNELCONFIGCHANGEDCOMMANDTEST_H_
 
-#include "device/device.h"
-#include "user/user.h"
-#include "user/userdevices.h"
+#include "doubles/ipc/OnChannelConfigChangedCommandMock.h"
+#include "ipc/IpcCommandTest.h"
 
-using std::shared_ptr;
+namespace testing {
 
-supla_on_device_config_changed_command::supla_on_device_config_changed_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_on_device_config_changed_command(socket_adapter) {}
+class OnChannelConfigChangedCommandTest : public IpcCommandTest {
+ protected:
+  OnChannelConfigChangedCommandMock *cmd;
+  virtual supla_abstract_ipc_command *getCommand(void);
 
-void supla_on_device_config_changed_command::on_device_config_changed(
-    int user_id, int device_id) {
-  supla_user *user = supla_user::find(user_id, false);
-  if (!user) {
-    return;
-  }
+ public:
+  virtual void SetUp();
+  virtual void TearDown();
+};
 
-  shared_ptr<supla_device> device = user->get_devices()->get(device_id);
-  if (device) {
-    device->send_config_to_device();
-  }
-}
+} /* namespace testing */
+
+#endif /* ONCHANNELCONFIGCHANGEDCOMMANDTEST_H_ */

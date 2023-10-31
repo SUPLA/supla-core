@@ -16,27 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "on_device_config_changed_command.h"
+#ifndef ON_CHANNEL_CONFIG_CHANGED_COMMMAND_MOCK_H_
+#define ON_CHANNEL_CONFIG_CHANGED_COMMMAND_MOCK_H_
 
-#include "device/device.h"
-#include "user/user.h"
-#include "user/userdevices.h"
+#include <gmock/gmock.h>
 
-using std::shared_ptr;
+#include "ipc/abstract_on_channel_config_changed_command.h"
 
-supla_on_device_config_changed_command::supla_on_device_config_changed_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_on_device_config_changed_command(socket_adapter) {}
+namespace testing {
 
-void supla_on_device_config_changed_command::on_device_config_changed(
-    int user_id, int device_id) {
-  supla_user *user = supla_user::find(user_id, false);
-  if (!user) {
-    return;
-  }
+class OnChannelConfigChangedCommandMock
+    : public supla_abstract_on_channel_config_changed_command {
+ public:
+  explicit OnChannelConfigChangedCommandMock(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  shared_ptr<supla_device> device = user->get_devices()->get(device_id);
-  if (device) {
-    device->send_config_to_device();
-  }
-}
+  MOCK_METHOD6(on_channel_config_changed,
+               void(int user_id, int device_id, int channel_id, int type,
+                    int func, unsigned long long scope));
+};
+
+} /* namespace testing */
+
+#endif /* ON_CHANNEL_CONFIG_CHANGED_COMMMAND_MOCK_H_ */

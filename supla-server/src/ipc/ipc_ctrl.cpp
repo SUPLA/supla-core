@@ -48,6 +48,7 @@
 #include "ipc/is_channel_connected_command.h"
 #include "ipc/is_client_connected_command.h"
 #include "ipc/is_device_connected_command.h"
+#include "ipc/on_channel_config_changed_command.h"
 #include "ipc/on_device_config_changed_command.h"
 #include "ipc/on_device_deleted_command.h"
 #include "ipc/on_mqtt_settings_changed_command.h"
@@ -154,6 +155,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_on_device_deleted_command(socket_adapter));
   add_command(new supla_on_mqtt_settings_changed_command(socket_adapter));
   add_command(new supla_before_device_delete_command(socket_adapter));
+  add_command(new supla_on_channel_config_changed_command(socket_adapter));
   add_command(new supla_on_device_config_changed_command(socket_adapter));
   add_command(new supla_on_user_settings_changed_command(socket_adapter));
   add_command(new supla_before_channel_function_change_command(socket_adapter));

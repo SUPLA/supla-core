@@ -74,24 +74,8 @@ void supla_ch_set_channel_config::handle_call(
       });
 
   if (result.Result == SUPLA_CONFIG_RESULT_TRUE) {
-    device->get_user()->get_clients()->for_each(
-        [&](std::shared_ptr<supla_client> client, bool* will_continue) -> void {
-          client->get_channels()->channel_access(
-              channel_id, [&](supla_client_channel* channel) -> void {
-                channel->set_json_config(
-                    json_config ? new supla_json_config(json_config, true)
-                                : nullptr);
-
-                TSC_ChannelConfigUpdateOrResult cfg_result = {};
-                cfg_result.Result = SUPLA_CONFIG_RESULT_TRUE;
-                channel->get_config(&cfg_result.Config, request->ConfigType,
-                                    nullptr, 0);
-
-                client->get_connection()
-                    ->get_srpc_adapter()
-                    ->sc_async_channel_config_update_or_result(&cfg_result);
-              });
-        });
+    device->get_user()->get_clients()->update_json_config(
+        channel_id, request->ConfigType, json_config);
   }
 
   if (json_config) {

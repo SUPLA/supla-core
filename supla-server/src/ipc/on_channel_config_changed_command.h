@@ -16,27 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "on_device_config_changed_command.h"
+#ifndef SUPLA_ON_CHANNEL_CONFIG_CHANGED_COMMAND_H_
+#define SUPLA_ON_CHANNEL_CONFIG_CHANGED_COMMAND_H_
 
-#include "device/device.h"
-#include "user/user.h"
-#include "user/userdevices.h"
+#include <string>
 
-using std::shared_ptr;
+#include "ipc/abstract_on_channel_config_changed_command.h"
 
-supla_on_device_config_changed_command::supla_on_device_config_changed_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_on_device_config_changed_command(socket_adapter) {}
+class supla_on_channel_config_changed_command
+    : public supla_abstract_on_channel_config_changed_command {
+ protected:
+  virtual void on_channel_config_changed(int user_id, int device_id,
+                                         int channel_id, int type, int func,
+                                         unsigned long long scope);
 
-void supla_on_device_config_changed_command::on_device_config_changed(
-    int user_id, int device_id) {
-  supla_user *user = supla_user::find(user_id, false);
-  if (!user) {
-    return;
-  }
+ public:
+  explicit supla_on_channel_config_changed_command(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
+};
 
-  shared_ptr<supla_device> device = user->get_devices()->get(device_id);
-  if (device) {
-    device->send_config_to_device();
-  }
-}
+#endif /* SUPLA_ON_CHANNEL_CONFIG_CHANGED_COMMAND_H_ */

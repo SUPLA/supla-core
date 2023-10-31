@@ -462,17 +462,6 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
 }
 
 // static
-void supla_user::on_device_settings_changed(int UserID, int DeviceID,
-                                            const supla_caller &caller) {
-  supla_user *user = supla_user::find(UserID, false);
-
-  if (user) {
-    supla_mqtt_client_suite::globalInstance()->onDeviceSettingsChanged(
-        UserID, DeviceID);
-  }
-}
-
-// static
 void supla_user::reset_timezone(int user_id) {
   supla_user *user = supla_user::find(user_id, false);
 

@@ -45,6 +45,8 @@ class supla_user_clients : public supla_connection_objects {
   void set_channel_group_caption(int channel_group_id, char *caption);
   void set_location_caption(int location_id, char *caption);
   void set_scene_caption(int location_id, char *caption);
+  void update_json_config(int channel_id, unsigned char config_type,
+                          supla_json_config *json_config);
 };
 
 #endif /* USERCLIENTS_H_ */
