@@ -18,6 +18,8 @@
 
 #include "on_channel_config_changed_command.h"
 
+#include <memory>
+
 #include "device/device_dao.h"
 #include "mqtt/mqtt_client_suite.h"
 #include "user.h"

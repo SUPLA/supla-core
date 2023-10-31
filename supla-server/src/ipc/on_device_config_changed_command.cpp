@@ -18,6 +18,8 @@
 
 #include "on_device_config_changed_command.h"
 
+#include <memory>
+
 #include "device/device.h"
 #include "user/user.h"
 #include "user/userdevices.h"
