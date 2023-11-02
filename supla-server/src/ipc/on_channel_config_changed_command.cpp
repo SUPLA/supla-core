@@ -30,18 +30,7 @@ supla_on_channel_config_changed_command::
     supla_on_channel_config_changed_command(
         supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_on_channel_config_changed_command(socket_adapter) {}
-/*
- #define CONFIG_CHANGE_SCOPE_FUNCTION 0x1
-#define CONFIG_CHANGE_SCOPE_CAPTION 0x2
-#define CONFIG_CHANGE_SCOPE_LOCATION 0x4
-#define CONFIG_CHANGE_SCOPE_VISIBILITY 0x8
-#define CONFIG_CHANGE_SCOPE_ICON 0x10
-#define CONFIG_CHANGE_SCOPE_JSON_BASIC 0x20
-#define CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE 0x40
-#define CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE 0x80
-#define CONFIG_CHANGE_SCOPE_RELATIONS 0x100
 
- */
 void supla_on_channel_config_changed_command::on_channel_config_changed(
     int user_id, int device_id, int channel_id, int type, int func,
     unsigned long long scope) {
