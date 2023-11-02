@@ -63,7 +63,7 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
                 (scope & CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE))) {
       device->get_channels()->access_channel(
           channel_id, [&](supla_device_channel *channel) -> void {
-            channel->set_json_config(new supla_json_config(json_config));
+            channel->set_json_config(new supla_json_config(json_config, true));
 
             if (scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) {
               channel->send_config_to_device(SUPLA_CONFIG_TYPE_DEFAULT);
