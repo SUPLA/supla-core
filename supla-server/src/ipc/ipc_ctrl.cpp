@@ -26,6 +26,7 @@
 #include "ipc/before_channel_function_change_command.h"
 #include "ipc/before_device_delete_command.h"
 #include "ipc/client_reconnect_command.h"
+#include "ipc/device_set_time_command.h"
 #include "ipc/enter_cfg_mode_command.h"
 #include "ipc/execute_scene_command.h"
 #include "ipc/get_char_command.h"
@@ -161,6 +162,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_before_channel_function_change_command(socket_adapter));
   add_command(new supla_get_pn_limit_command(socket_adapter));
   add_command(new supla_on_vbt_changed_command(socket_adapter));
+  add_command(new supla_device_set_time_command(socket_adapter));
   add_command(new supla_send_push_command(socket_adapter));
 }
 
