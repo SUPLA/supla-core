@@ -124,8 +124,8 @@ TEST_F(DeviceConfigTest, allFields) {
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
                "{\"homeScreenContentAvailable\":[\"NONE\",\"TEMPERATURE\","
-               "\"HUMIDITY\",\"TIME\",\"TIME_DATE\",\"TEMPERATURE_TIME\","
-               "\"MAIN_AND_AUX_TEMPERATURE\"]}");
+               "\"TEMPERATURE_AND_HUMIDITY\",\"TIME\",\"TIME_DATE\","
+               "\"TEMPERATURE_TIME\",\"MAIN_AND_AUX_TEMPERATURE\"]}");
   free(str);
 }
 
@@ -353,8 +353,7 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
 
   const char properties[] =
       "{\"homeScreenContentAvailable\":[\"NONE\",\"TEMPERATURE\",\"MAIN_AND_"
-      "AUX_"
-      "TEMPERATURE\"]}";
+      "AUX_TEMPERATURE\"]}";
   cfg1.set_user_config(user_config);
   cfg1.set_properties(properties);
 
@@ -503,32 +502,34 @@ TEST_F(DeviceConfigTest, homeScreenMode) {
   EXPECT_STREQ(str, "{\"homeScreenContentAvailable\":[]}");
   free(str);
 
-  cfg1.set_user_config("{\"homeScreen\": {\"content\": \"HUMIDITY\"}}");
+  cfg1.set_user_config(
+      "{\"homeScreen\": {\"content\": \"TEMPERATURE_AND_HUMIDITY\"}}");
 
   EXPECT_TRUE(cfg1.get_home_screen_content(&content));
   EXPECT_EQ(content.HomeScreenContent,
-            SUPLA_DEVCFG_HOME_SCREEN_CONTENT_HUMIDITY);
+            SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_AND_HUMIDITY);
 
   sds_config = {};
   cfg1.get_config(&sds_config, nullptr);
   cfg2.set_config(&sds_config);
   str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str, "{\"homeScreen\":{\"content\":\"HUMIDITY\"}}");
+  EXPECT_STREQ(str,
+               "{\"homeScreen\":{\"content\":\"TEMPERATURE_AND_HUMIDITY\"}}");
   free(str);
 
   cfg1.set_user_config(
       "{\"homeScreen\": {\"content\": \"MAIN_AND_AUX_TEMPERATURE\"}}");
   cfg1.set_properties(
       "{\"homeScreenContentAvailable\":[\"MAIN_AND_AUX_TEMPERATURE\", "
-      "\"HUMIDITY\"]}");
+      "\"TEMPERATURE_AND_HUMIDITY\"]}");
 
   EXPECT_TRUE(cfg1.get_home_screen_content(&content));
   EXPECT_EQ(content.HomeScreenContent,
             SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE);
   EXPECT_EQ(content.ContentAvailable,
             SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE |
-                SUPLA_DEVCFG_HOME_SCREEN_CONTENT_HUMIDITY);
+                SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_AND_HUMIDITY);
 
   sds_config = {};
   cfg1.get_config(&sds_config, nullptr);
@@ -542,14 +543,15 @@ TEST_F(DeviceConfigTest, homeScreenMode) {
   str = cfg2.get_properties();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
-               "{\"homeScreenContentAvailable\":[\"HUMIDITY\",\"MAIN_AND_AUX_"
-               "TEMPERATURE\"]}");
+               "{\"homeScreenContentAvailable\":[\"TEMPERATURE_AND_HUMIDITY\","
+               "\"MAIN_AND_AUX_TEMPERATURE\"]}");
   free(str);
 }
 
 TEST_F(DeviceConfigTest, availableFields) {
   device_json_config cfg;
-  cfg.set_user_config("{\"homeScreen\": {\"content\": \"HUMIDITY\"}}");
+  cfg.set_user_config(
+      "{\"homeScreen\": {\"content\": \"TEMPERATURE_AND_HUMIDITY\"}}");
 
   EXPECT_EQ(cfg.get_available_fields(),
             SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT);
@@ -557,7 +559,8 @@ TEST_F(DeviceConfigTest, availableFields) {
   cfg.set_user_config(
       "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
       "\"userInterface\":{\"disabled\":false},\"automaticTimeSync\":true,"
-      "\"homeScreen\": {\"offDelay\":123,\"content\": \"HUMIDITY\"}}");
+      "\"homeScreen\": {\"offDelay\":123,\"content\": "
+      "\"TEMPERATURE_AND_HUMIDITY\"}}");
 
   EXPECT_EQ(cfg.get_available_fields(),
             SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |

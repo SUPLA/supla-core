@@ -582,8 +582,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   0x0040                                                   // ver. >= 12
                                                            // DEPRECATED
 #define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080  // ver. >= 17
-#define SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED \
-  0x0100  // ver. >= 21
+#define SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED 0x0100  // ver. >= 21
 // Free bits for future use:  0x0200, 0x0400, 0x0800
 #define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000    // ver. >= 15
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000  // ver. >= 15
@@ -1973,7 +1972,7 @@ typedef struct {
   char onOff;
   char command;  // RGBW_COMMAND_, requires
                  // SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED v. >= 21
-} TRGBW_Value;  // v. >= 10
+} TRGBW_Value;   // v. >= 10
 
 #define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1
 
@@ -2457,7 +2456,7 @@ typedef struct {
 
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_NONE (1ULL << 0)
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE (1ULL << 1)
-#define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_HUMIDITY (1ULL << 2)
+#define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_AND_HUMIDITY (1ULL << 2)
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME (1ULL << 3)
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME_DATE (1ULL << 4)
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_TIME (1ULL << 5)

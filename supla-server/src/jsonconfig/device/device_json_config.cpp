@@ -36,7 +36,8 @@ const map<unsigned _supla_int16_t, string>
     device_json_config::hone_screen_content_map = {
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_NONE, "NONE"},
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE, "TEMPERATURE"},
-        {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_HUMIDITY, "HUMIDITY"},
+        {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_AND_HUMIDITY,
+         "TEMPERATURE_AND_HUMIDITY"},
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME, "TIME"},
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME_DATE, "TIME_DATE"},
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_TIME, "TEMPERATURE_TIME"},
@@ -159,9 +160,8 @@ void device_json_config::set_user_interface_disabled(
             ui, maxAllowedTemperature,
             disabled->maxAllowedTemperatureSetpointFromLocalUI);
       } else {
-        cJSON_AddBoolToObject(
-            ui, disabledStr,
-            disabled->DisableUserInterface ? true : false);
+        cJSON_AddBoolToObject(ui, disabledStr,
+                              disabled->DisableUserInterface ? true : false);
       }
 
       set_item_value(
