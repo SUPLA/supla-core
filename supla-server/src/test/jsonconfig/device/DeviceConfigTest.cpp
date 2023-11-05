@@ -46,13 +46,27 @@ TEST_F(DeviceConfigTest, screenBrightness) {
   sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS;
   sds_cfg.ConfigSize = sizeof(TDeviceConfig_ScreenBrightness);
   ((TDeviceConfig_ScreenBrightness *)sds_cfg.Config)->Automatic = 1;
+  ((TDeviceConfig_ScreenBrightness *)sds_cfg.Config)->AdjustmentForAutomatic =
+      2;
 
   device_json_config cfg;
   cfg.set_config(&sds_cfg);
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str, "{\"screenBrightness\":\"auto\"}");
+  EXPECT_STREQ(str,
+               "{\"screenBrightness\":{\"level\":\"auto\",\"adjustment\":2}}");
   free(str);
+
+  cfg.set_user_config(
+      "{\"screenBrightness\":{\"level\":\"auto\",\"adjustment\":12}}");
+  cfg.get_config(&sds_cfg, nullptr);
+
+  EXPECT_EQ(((TDeviceConfig_ScreenBrightness *)sds_cfg.Config)->Automatic, 1);
+  EXPECT_EQ(((TDeviceConfig_ScreenBrightness *)sds_cfg.Config)
+                ->AdjustmentForAutomatic,
+            12);
+  EXPECT_EQ(
+      ((TDeviceConfig_ScreenBrightness *)sds_cfg.Config)->ScreenBrightness, 0);
 
   ((TDeviceConfig_ScreenBrightness *)sds_cfg.Config)->Automatic = 0;
   ((TDeviceConfig_ScreenBrightness *)sds_cfg.Config)->ScreenBrightness = 98;
@@ -60,7 +74,7 @@ TEST_F(DeviceConfigTest, screenBrightness) {
 
   str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str, "{\"screenBrightness\":98}");
+  EXPECT_STREQ(str, "{\"screenBrightness\":{\"level\":98}}");
   free(str);
 }
 
@@ -113,11 +127,11 @@ TEST_F(DeviceConfigTest, allFields) {
   cfg.set_config(&sds_cfg);
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":24,\"buttonVolume\":"
-      "100,\"userInterface\":{\"disabled\":false},\"automaticTimeSync\":true,"
-      "\"homeScreen\":{\"offDelay\":123,\"content\":\"TIME_DATE\"}}");
+  EXPECT_STREQ(str,
+               "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":{\"level\":"
+               "24},\"buttonVolume\":100,\"userInterface\":{\"disabled\":false}"
+               ",\"automaticTimeSync\":true,\"homeScreen\":{\"offDelay\":123,"
+               "\"content\":\"TIME_DATE\"}}");
   free(str);
 
   str = cfg.get_properties();
@@ -256,16 +270,17 @@ TEST_F(DeviceConfigTest, leaveOnly) {
   cfg.set_config(&sds_cfg);
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str,
-               "{\"statusLed\":\"ON_WHEN_CONNECTED\",\"screenBrightness\":100,"
-               "\"buttonVolume\":0,\"homeScreen\":{\"offDelay\":10}}");
+  EXPECT_STREQ(
+      str,
+      "{\"statusLed\":\"ON_WHEN_CONNECTED\",\"screenBrightness\":{\"level\":"
+      "100},\"buttonVolume\":0,\"homeScreen\":{\"offDelay\":10}}");
   free(str);
 
   cfg.leave_only_thise_fields(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS);
 
   str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str, "{\"screenBrightness\":100}");
+  EXPECT_STREQ(str, "{\"screenBrightness\":{\"level\":100}}");
   free(str);
 
   cfg.set_user_config("{\"screenBrightness\":24,\"a\":false}");
@@ -308,9 +323,10 @@ TEST_F(DeviceConfigTest, removeFields) {
   cfg.set_config(&sds_cfg);
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str,
-               "{\"statusLed\":\"ON_WHEN_CONNECTED\",\"screenBrightness\":100,"
-               "\"buttonVolume\":0,\"homeScreen\":{\"offDelay\":15}}");
+  EXPECT_STREQ(
+      str,
+      "{\"statusLed\":\"ON_WHEN_CONNECTED\",\"screenBrightness\":{\"level\":"
+      "100},\"buttonVolume\":0,\"homeScreen\":{\"offDelay\":15}}");
   free(str);
 
   cfg.remove_fields(SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
@@ -346,9 +362,10 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
   device_json_config cfg1, cfg2;
 
   const char user_config[] =
-      "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":24,\"buttonVolume\":"
-      "100,\"userInterface\":{\"disabled\":true},\"automaticTimeSync\":true,"
-      "\"homeScreen\":{\"offDelay\":123,\"content\":\"TIME_DATE\"}}";
+      "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":{\"level\":24},"
+      "\"buttonVolume\":100,\"userInterface\":{\"disabled\":true},"
+      "\"automaticTimeSync\":true,\"homeScreen\":{\"offDelay\":123,\"content\":"
+      "\"TIME_DATE\"}}";
   cfg1.set_user_config(user_config);
 
   const char properties[] =
@@ -388,7 +405,8 @@ TEST_F(DeviceConfigTest, getConfig_AutoBrightness) {
   TSDS_SetDeviceConfig sds_cfg = {};
   device_json_config cfg1, cfg2;
 
-  const char user_config[] = "{\"screenBrightness\":\"auto\"}";
+  const char user_config[] =
+      "{\"screenBrightness\":{\"level\":\"auto\",\"adjustment\":33}}";
   cfg1.set_user_config(user_config);
 
   unsigned _supla_int64_t fields_left = 0xFFFFFFFFFFFFFFFF;
@@ -557,8 +575,8 @@ TEST_F(DeviceConfigTest, availableFields) {
             SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT);
 
   cfg.set_user_config(
-      "{\"statusLed\":2,\"screenBrightness\":24,\"buttonVolume\":100,"
-      "\"userInterface\":{\"disabled\":false},\"automaticTimeSync\":true,"
+      "{\"statusLed\":2,\"screenBrightness\":{\"level\":24},\"buttonVolume\":"
+      "100,\"userInterface\":{\"disabled\":false},\"automaticTimeSync\":true,"
       "\"homeScreen\": {\"offDelay\":123,\"content\": "
       "\"TEMPERATURE_AND_HUMIDITY\"}}");
 

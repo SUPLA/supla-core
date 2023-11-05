@@ -44,16 +44,19 @@ const map<unsigned _supla_int16_t, string>
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE,
          "MAIN_AND_AUX_TEMPERATURE"}};
 
-const char device_json_config::contentAvailable[] =
+const char device_json_config::content_available[] =
     "homeScreenContentAvailable";
 
-const char device_json_config::disabledStr[] = "disabled";
+const char device_json_config::disabled_str[] = "disabled";
 
-const char device_json_config::minAllowedTemperature[] =
+const char device_json_config::min_allowed_temperature[] =
     "minAllowedTemperatureSetpointFromLocalUI";
 
-const char device_json_config::maxAllowedTemperature[] =
+const char device_json_config::max_allowed_temperature[] =
     "maxAllowedTemperatureSetpointFromLocalUI";
+
+const char device_json_config::level_str[] = "level";
+const char device_json_config::adjustment_str[] = "adjustment";
 
 device_json_config::device_json_config(void) : supla_json_config() {}
 
@@ -121,16 +124,21 @@ void device_json_config::set_status_led(TDeviceConfig_StatusLed *status_led) {
 void device_json_config::set_screen_brightness(
     TDeviceConfig_ScreenBrightness *brightness) {
   if (brightness) {
-    if (brightness->Automatic == 1) {
+    cJSON *br = cJSON_CreateObject();
+    if (br) {
+      if (brightness->Automatic == 1) {
+        set_item_value(br, level_str, cJSON_String, true, nullptr, "auto", 0);
+        set_item_value(br, adjustment_str, cJSON_Number, true, nullptr, nullptr,
+                       brightness->AdjustmentForAutomatic);
+      } else if (brightness->ScreenBrightness >= 0 &&
+                 brightness->ScreenBrightness <= 100) {
+        set_item_value(br, level_str, cJSON_Number, true, nullptr, nullptr,
+                       brightness->ScreenBrightness);
+      }
+
       set_item_value(get_user_root(),
                      field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS),
-                     cJSON_String, true, nullptr, "auto", 0);
-    } else if (brightness->ScreenBrightness >= 0 &&
-               brightness->ScreenBrightness <= 100) {
-      set_item_value(get_user_root(),
-                     field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS),
-                     cJSON_Number, true, nullptr, nullptr,
-                     brightness->ScreenBrightness);
+                     cJSON_Object, true, br, nullptr, 0);
     }
   }
 }
@@ -152,15 +160,15 @@ void device_json_config::set_user_interface_disabled(
     cJSON *ui = cJSON_CreateObject();
     if (ui) {
       if (disabled->DisableUserInterface == 2) {
-        cJSON_AddStringToObject(ui, disabledStr, "partial");
+        cJSON_AddStringToObject(ui, disabled_str, "partial");
         cJSON_AddNumberToObject(
-            ui, minAllowedTemperature,
+            ui, min_allowed_temperature,
             disabled->minAllowedTemperatureSetpointFromLocalUI);
         cJSON_AddNumberToObject(
-            ui, maxAllowedTemperature,
+            ui, max_allowed_temperature,
             disabled->maxAllowedTemperatureSetpointFromLocalUI);
       } else {
-        cJSON_AddBoolToObject(ui, disabledStr,
+        cJSON_AddBoolToObject(ui, disabled_str,
                               disabled->DisableUserInterface ? true : false);
       }
 
@@ -226,7 +234,7 @@ void device_json_config::set_home_screen_content(
   }
 
   cJSON *content_items =
-      cJSON_GetObjectItem(get_properties_root(), contentAvailable);
+      cJSON_GetObjectItem(get_properties_root(), content_available);
 
   if (content_items) {
     cJSON_DetachItemViaPointer(get_properties_root(), content_items);
@@ -234,7 +242,7 @@ void device_json_config::set_home_screen_content(
   }
 
   content_items =
-      cJSON_AddArrayToObject(get_properties_root(), contentAvailable);
+      cJSON_AddArrayToObject(get_properties_root(), content_available);
   if (content_items) {
     unsigned char size = sizeof(content->ContentAvailable) * 8;
     unsigned _supla_int64_t n = 1;
@@ -338,28 +346,33 @@ bool device_json_config::get_status_led(TDeviceConfig_StatusLed *status_led) {
 
 bool device_json_config::get_screen_brightness(
     TDeviceConfig_ScreenBrightness *brightness) {
-  double value = 0;
-  if (brightness &&
-      get_double(
-          get_user_root(),
-          field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS).c_str(),
-          &value) &&
-      value >= 0 && value <= 100) {
-    brightness->Automatic = 0;
-    brightness->ScreenBrightness = value;
-    return true;
+  if (!brightness) {
+    return false;
   }
 
-  std::string str_value;
-  if (brightness &&
-      get_string(
-          get_user_root(),
-          field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS).c_str(),
-          &str_value) &&
-      str_value == "auto") {
-    brightness->Automatic = 1;
-    brightness->ScreenBrightness = 0;
-    return true;
+  cJSON *parent = cJSON_GetObjectItem(
+      get_user_root(),
+      field_map.at(SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS).c_str());
+
+  if (parent) {
+    double value = 0;
+    if (get_double(parent, level_str, &value) && value >= 0 && value <= 100) {
+      brightness->Automatic = 0;
+      brightness->ScreenBrightness = value;
+      return true;
+    }
+
+    std::string str_value;
+    if (get_string(parent, level_str, &str_value) && str_value == "auto") {
+      brightness->Automatic = 1;
+      brightness->ScreenBrightness = 0;
+
+      if (get_double(parent, adjustment_str, &value)) {
+        brightness->AdjustmentForAutomatic = value;
+      }
+
+      return true;
+    }
   }
 
   return false;
@@ -394,13 +407,13 @@ bool device_json_config::get_user_interface_disabled(
     disabled->minAllowedTemperatureSetpointFromLocalUI = 0;
     disabled->maxAllowedTemperatureSetpointFromLocalUI = 0;
 
-    if (get_bool(parent, disabledStr, &bool_value)) {
+    if (get_bool(parent, disabled_str, &bool_value)) {
       disabled->DisableUserInterface = bool_value ? 1 : 0;
       return true;
-    } else if (get_string(parent, disabledStr, &str_value) &&
+    } else if (get_string(parent, disabled_str, &str_value) &&
                str_value == "partial" &&
-               get_double(parent, minAllowedTemperature, &dbl_min) &&
-               get_double(parent, maxAllowedTemperature, &dbl_max)) {
+               get_double(parent, min_allowed_temperature, &dbl_min) &&
+               get_double(parent, max_allowed_temperature, &dbl_max)) {
       disabled->DisableUserInterface = 2;
       disabled->minAllowedTemperatureSetpointFromLocalUI = dbl_min;
       disabled->maxAllowedTemperatureSetpointFromLocalUI = dbl_max;
@@ -459,7 +472,8 @@ bool device_json_config::get_home_screen_content(
 
     content->ContentAvailable = 0;
 
-    cJSON *modes = cJSON_GetObjectItem(get_properties_root(), contentAvailable);
+    cJSON *modes =
+        cJSON_GetObjectItem(get_properties_root(), content_available);
 
     if (modes && cJSON_IsArray(modes)) {
       result = true;
@@ -608,7 +622,7 @@ void device_json_config::leave_only_thise_fields(
   }
 
   if (!(fields & SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT)) {
-    cJSON *item = cJSON_GetObjectItem(get_properties_root(), contentAvailable);
+    cJSON *item = cJSON_GetObjectItem(get_properties_root(), content_available);
     if (item) {
       cJSON_DetachItemViaPointer(get_properties_root(), item);
       cJSON_Delete(item);
@@ -638,7 +652,7 @@ void device_json_config::remove_fields(unsigned _supla_int64_t fields) {
 void device_json_config::merge(supla_json_config *_dst) {
   device_json_config dst(_dst);
 
-  map<unsigned _supla_int16_t, string> props_fields = {{1, contentAvailable}};
+  map<unsigned _supla_int16_t, string> props_fields = {{1, content_available}};
   map<cJSON *, map<unsigned _supla_int16_t, string>> map;
 
   for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
