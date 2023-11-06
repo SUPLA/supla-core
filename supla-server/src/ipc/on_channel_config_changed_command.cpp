@@ -97,7 +97,7 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
     if ((scope & CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE) ||
         (scope & CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE)) {
       user->get_clients()->update_json_config(
-          channel_id, CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE, json_config);
+          channel_id, SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, json_config);
     }
   }
 
