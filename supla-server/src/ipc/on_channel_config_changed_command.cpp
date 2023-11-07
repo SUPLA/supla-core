@@ -49,6 +49,10 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
   supla_db_access_provider dba;
   supla_device_dao dao(&dba);
 
+  if (scope & CONFIG_CHANGE_SCOPE_FUNCTION) {
+    dao.erase_channel_properties(user_id, channel_id);
+  }
+
   supla_json_config *json_config =
       dao.get_channel_config(channel_id, nullptr, nullptr);
 

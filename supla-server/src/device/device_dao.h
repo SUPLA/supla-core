@@ -96,6 +96,8 @@ class supla_device_dao : public supla_abstract_device_dao {
   virtual void set_channel_properties(int user_id, int channel_id,
                                       supla_json_config *config);
 
+  virtual void erase_channel_properties(int user_id, int channel_id);
+
   virtual bool set_channel_config(int user_id, int channel_id,
                                   supla_json_config *config);
 

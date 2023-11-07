@@ -1071,6 +1071,34 @@ void supla_device_dao::set_channel_properties(int user_id, int channel_id,
   }
 }
 
+void supla_device_dao::erase_channel_properties(int user_id, int channel_id) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  MYSQL_STMT *stmt = nullptr;
+  MYSQL_BIND pbind[2];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
+
+  const char sql[] = "CALL `supla_update_channel_properties`(?, ?, NULL)";
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+}
+
 supla_json_config *supla_device_dao::get_channel_config(
     int channel_id, std::string *user_config_md5sum,
     std::string *properties_md5sum) {
