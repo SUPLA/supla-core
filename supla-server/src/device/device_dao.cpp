@@ -1090,7 +1090,7 @@ void supla_device_dao::erase_channel_properties(int user_id, int channel_id) {
 
   const char sql[] = "CALL `supla_update_channel_properties`(?, ?, NULL)";
 
-  if (dba->stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
     if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
   }
 
