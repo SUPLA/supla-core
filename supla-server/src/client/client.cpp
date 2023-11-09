@@ -26,6 +26,7 @@
 #include "clientlocation.h"
 #include "conn/authkey_cache.h"
 #include "db/database.h"
+#include "device/device_dao.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
@@ -244,6 +245,37 @@ void supla_client::on_device_channel_state_result(int ChannelID,
 
   srpc_csd_async_channel_state_result(
       get_connection()->get_srpc_adapter()->get_srpc(), &cstate);
+}
+
+void supla_client::send_device_config(int device_id,
+                                      unsigned _supla_int64_t fields) {
+  supla_db_access_provider dba;
+  supla_device_dao dao(&dba);
+
+  device_json_config *config =
+      dao.get_device_config(device_id, nullptr, nullptr);
+  if (config) {
+    unsigned _supla_int64_t available_fields = config->get_available_fields();
+    while (fields) {
+      TSDS_SetDeviceConfig sds_config = {};
+      config->get_config(&sds_config, fields, &fields);
+
+      TSC_DeviceConfigUpdateOrResult config = {};
+
+      config.DeviceId = device_id;
+      config.EndOfDataFlag = fields == 0 ? 1 : 0;
+      config.AvailableFields = available_fields;
+      config.Fields = sds_config.Fields;
+      config.ConfigSize = sds_config.ConfigSize;
+      memcpy(config.Config, sds_config.Config, SUPLA_DEVICE_CONFIG_MAXSIZE);
+
+      get_connection()
+          ->get_srpc_adapter()
+          ->sc_async_device_config_update_or_result(&config);
+    }
+
+    delete config;
+  }
 }
 
 void supla_client::set_channel_function(int ChannelId, int Func) {

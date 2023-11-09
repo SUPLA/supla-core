@@ -196,3 +196,8 @@ _supla_int_t supla_srpc_adapter::sd_async_channel_config_finished(
     TSD_ChannelConfigFinished *fin) {
   return srpc_sd_async_channel_config_finished(get_srpc(), fin);
 }
+
+_supla_int_t supla_srpc_adapter::sc_async_device_config_update_or_result(
+    TSC_DeviceConfigUpdateOrResult *config) {
+  return srpc_sc_async_device_config_update_or_result(get_srpc(), config);
+}

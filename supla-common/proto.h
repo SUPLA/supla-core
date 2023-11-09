@@ -291,9 +291,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE_OR_RESULT 1210    // ver. >= 21
 #define SUPLA_CS_CALL_SET_CHANNEL_CONFIG 1220                 // ver. >= 21
 #define SUPLA_CS_CALL_GET_DEVICE_CONFIG 1240                  // ver. >= 21
-#define SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE 1250               // ver. >= 21
-#define SUPLA_CS_CALL_SET_DEVICE_CONFIG 1260                  // ver. >= 21
-#define SUPLA_SC_CALL_SET_DEVICE_CONFIG_RESULT 1270           // ver. >= 21
+#define SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT 1250     // ver. >= 21
 
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
@@ -2385,9 +2383,9 @@ typedef struct {
   unsigned char zero[9];  // for future use
 } TSDS_SetDeviceConfigResult;
 
-// SUPLA_CS_CALL_SET_DEVICE_CONFIG
+// SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT
 typedef struct {
-  _supla_int_t ChannelId;       // Any channel ID belonging to the device
+  _supla_int_t DeviceId;
   unsigned char EndOfDataFlag;  // 1 - last message; 0 - more messages will come
   unsigned char zero[8];        // for future use
   unsigned _supla_int64_t
@@ -2395,28 +2393,14 @@ typedef struct {
   unsigned _supla_int64_t Fields;  // bit map of SUPLA_DEVICE_CONFIG_FIELD_
   unsigned _supla_int16_t ConfigSize;
   char Config[SUPLA_DEVICE_CONFIG_MAXSIZE];  // Last variable in struct!
-} TSCS_DeviceConfig;                         // v. >= 21
-
-// SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE
-typedef struct {
-  unsigned char Result;      // SUPLA_CONFIG_RESULT_*. It matters when it is a
-                             // response to SUPLA_CS_CALL_GET_DEVICE_CONFIG
-  TSCS_DeviceConfig Config;  // Last variable in struct!
-} TSC_DeviceConfigUpdate;
+} TSC_DeviceConfigUpdateOrResult;            // v. >= 21
 
 // SUPLA_CS_CALL_GET_DEVICE_CONFIG
 typedef struct {
-  _supla_int_t ChannelId;          // Any channel ID belonging to the device
+  _supla_int_t DeviceId;
   unsigned _supla_int64_t Fields;  // bit map of SUPLA_DEVICE_CONFIG_FIELD_
   unsigned char zero[8];           // for future use
 } TCS_GetDeviceConfigRequest;
-
-// SUPLA_SC_CALL_SET_DEVICE_CONFIG_RESULT
-typedef struct {
-  _supla_int_t ChannelId;  // Any channel ID belonging to the device
-  unsigned char Result;    // SUPLA_CONFIG_RESULT_*
-  unsigned char zero[8];   // for future use
-} TSC_SetDeviceConfigResult;
 
 #define SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED 0
 #define SUPLA_DEVCFG_STATUS_LED_OFF_WHEN_CONNECTED 1
