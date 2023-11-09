@@ -39,12 +39,24 @@ void supla_client_ch_get_device_config::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (rd->data.cs_get_device_config_request != nullptr) {
+    TSC_DeviceConfigUpdateOrResult result = {};
+    result.Result = SUPLA_CONFIG_RESULT_FALSE;
+
     TCS_GetDeviceConfigRequest* request = rd->data.cs_get_device_config_request;
     if (request->DeviceId) {
       if (client->get_channels()->get_any_channel_id_with_deviceid(
               request->DeviceId)) {
-        client->send_device_config(request->DeviceId, request->Fields);
+        result.Result =
+            client->send_device_config(request->DeviceId, request->Fields);
       }
+    } else {
+      result.Result = SUPLA_CONFIG_RESULT_DEVICE_NOT_FOUND;
+    }
+
+    if (result.Result != SUPLA_CONFIG_RESULT_TRUE) {
+      client->get_connection()
+          ->get_srpc_adapter()
+          ->sc_async_device_config_update_or_result(&result);
     }
   }
 }

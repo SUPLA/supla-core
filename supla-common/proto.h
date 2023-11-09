@@ -2383,7 +2383,6 @@ typedef struct {
   unsigned char zero[9];  // for future use
 } TSDS_SetDeviceConfigResult;
 
-// SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT
 typedef struct {
   _supla_int_t DeviceId;
   unsigned char EndOfDataFlag;  // 1 - last message; 0 - more messages will come
@@ -2393,7 +2392,14 @@ typedef struct {
   unsigned _supla_int64_t Fields;  // bit map of SUPLA_DEVICE_CONFIG_FIELD_
   unsigned _supla_int16_t ConfigSize;
   char Config[SUPLA_DEVICE_CONFIG_MAXSIZE];  // Last variable in struct!
-} TSC_DeviceConfigUpdateOrResult;            // v. >= 21
+} TSCS_DeviceConfig;                         // v. >= 21
+
+// SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT
+typedef struct {
+  unsigned char Result;      // SUPLA_CONFIG_RESULT_*. It matters when it is a
+                             // response to SUPLA_CS_CALL_GET_DEVICE_CONFIG
+  TSCS_DeviceConfig Config;  // Last variable in struct!
+} TSC_DeviceConfigUpdateOrResult;
 
 // SUPLA_CS_CALL_GET_DEVICE_CONFIG
 typedef struct {
@@ -2467,6 +2473,7 @@ typedef struct {
 #define SUPLA_CONFIG_RESULT_FUNCTION_NOT_SUPPORTED 4
 #define SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED 5
 #define SUPLA_CONFIG_RESULT_NOT_ALLOWED 6
+#define SUPLA_CONFIG_RESULT_DEVICE_NOT_FOUND 7
 
 // SUPLA_CS_CALL_GET_CHANNEL_CONFIG
 typedef struct {

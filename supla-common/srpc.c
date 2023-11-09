@@ -3218,14 +3218,15 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_device_config_request(
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_config_update_or_result(
     void *_srpc, TSC_DeviceConfigUpdateOrResult *config) {
-  if (config == NULL || config->ConfigSize > SUPLA_DEVICE_CONFIG_MAXSIZE) {
+  if (config == NULL ||
+      config->Config.ConfigSize > SUPLA_DEVICE_CONFIG_MAXSIZE) {
     return 0;
   }
 
-  return srpc_async_call(_srpc, SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT,
-                         (char *)config,
-                         sizeof(TSC_DeviceConfigUpdateOrResult) -
-                             SUPLA_DEVICE_CONFIG_MAXSIZE + config->ConfigSize);
+  return srpc_async_call(
+      _srpc, SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT, (char *)config,
+      sizeof(TSC_DeviceConfigUpdateOrResult) - SUPLA_DEVICE_CONFIG_MAXSIZE +
+          config->Config.ConfigSize);
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

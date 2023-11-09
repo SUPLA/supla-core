@@ -247,8 +247,10 @@ void supla_client::on_device_channel_state_result(int ChannelID,
       get_connection()->get_srpc_adapter()->get_srpc(), &cstate);
 }
 
-void supla_client::send_device_config(int device_id,
-                                      unsigned _supla_int64_t fields) {
+unsigned char supla_client::send_device_config(int device_id,
+                                               unsigned _supla_int64_t fields) {
+  unsigned char result_code = SUPLA_CONFIG_RESULT_FALSE;
+
   supla_db_access_provider dba;
   supla_device_dao dao(&dba);
 
@@ -260,22 +262,27 @@ void supla_client::send_device_config(int device_id,
       TSDS_SetDeviceConfig sds_config = {};
       config->get_config(&sds_config, fields, &fields);
 
-      TSC_DeviceConfigUpdateOrResult config = {};
+      TSC_DeviceConfigUpdateOrResult result = {};
 
-      config.DeviceId = device_id;
-      config.EndOfDataFlag = fields == 0 ? 1 : 0;
-      config.AvailableFields = available_fields;
-      config.Fields = sds_config.Fields;
-      config.ConfigSize = sds_config.ConfigSize;
-      memcpy(config.Config, sds_config.Config, SUPLA_DEVICE_CONFIG_MAXSIZE);
+      result.Config.DeviceId = device_id;
+      result.Config.EndOfDataFlag = fields == 0 ? 1 : 0;
+      result.Config.AvailableFields = available_fields;
+      result.Config.Fields = sds_config.Fields;
+      result.Config.ConfigSize = sds_config.ConfigSize;
+      memcpy(result.Config.Config, sds_config.Config,
+             SUPLA_DEVICE_CONFIG_MAXSIZE);
 
       get_connection()
           ->get_srpc_adapter()
-          ->sc_async_device_config_update_or_result(&config);
+          ->sc_async_device_config_update_or_result(&result);
+
+      result_code = SUPLA_CONFIG_RESULT_TRUE;
     }
 
     delete config;
   }
+
+  return result_code;
 }
 
 void supla_client::set_channel_function(int ChannelId, int Func) {

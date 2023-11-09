@@ -290,7 +290,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TChannelConfig_WeeklySchedule),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 
-  EXPECT_EQ((unsigned int)543, sizeof(TSC_DeviceConfigUpdateOrResult));
+  EXPECT_EQ((unsigned int)544, sizeof(TSC_DeviceConfigUpdateOrResult));
   EXPECT_EQ((unsigned int)20, sizeof(TCS_GetDeviceConfigRequest));
   EXPECT_EQ((unsigned int)9, sizeof(TCS_GetChannelConfigRequest));
   EXPECT_EQ((unsigned int)523, sizeof(TSCS_ChannelConfig));

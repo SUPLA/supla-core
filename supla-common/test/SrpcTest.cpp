@@ -3765,9 +3765,9 @@ SRPC_CALL_BASIC_TEST(srpc_cs_async_get_device_config_request,
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(
     srpc_sc_async_device_config_update_or_result,
     TSC_DeviceConfigUpdateOrResult,
-    SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT, 54, 566,
-    sc_device_config_update_or_result, SUPLA_DEVICE_CONFIG_MAXSIZE, Config,
-    ConfigSize);
+    SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT, 55, 567,
+    sc_device_config_update_or_result, SUPLA_DEVICE_CONFIG_MAXSIZE,
+    Config.Config, Config.ConfigSize);
 
 //---------------------------------------------------------
 // ACTION TRIGGER
