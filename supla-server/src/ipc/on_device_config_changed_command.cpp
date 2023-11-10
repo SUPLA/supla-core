@@ -41,4 +41,9 @@ void supla_on_device_config_changed_command::on_device_config_changed(
   if (device) {
     device->send_config_to_device();
   }
+
+  user->get_clients()->for_each([device_id](shared_ptr<supla_client> client,
+                                            bool *will_continue) -> void {
+    client->send_device_config(device_id, 0xFFFFFFFFFFFFFFFF);
+  });
 }

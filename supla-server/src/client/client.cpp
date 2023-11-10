@@ -249,6 +249,14 @@ void supla_client::on_device_channel_state_result(int ChannelID,
 
 unsigned char supla_client::send_device_config(int device_id,
                                                unsigned _supla_int64_t fields) {
+  if (get_protocol_version() < 21) {
+    return SUPLA_CONFIG_RESULT_FALSE;
+  }
+
+  if (!get_channels()->get_any_channel_id_with_deviceid(device_id)) {
+    return SUPLA_CONFIG_RESULT_DEVICE_NOT_FOUND;
+  }
+
   unsigned char result_code = SUPLA_CONFIG_RESULT_FALSE;
 
   supla_db_access_provider dba;
