@@ -83,7 +83,7 @@ typedef struct {
   jmethodID j_mid_on_zwave_assign_node_id_result;
   jmethodID j_mid_on_zwave_set_wake_up_time_result;
   jmethodID j_mid_on_channel_config_update_or_result;
-
+  jmethodID j_mid_on_device_config_update_or_result;
 } TAndroidSuplaClient;
 
 jstring new_string_utf(JNIEnv *env, char *string);
@@ -144,6 +144,10 @@ jint supla_GetEnumValue(JNIEnv *env, jobject obj, const char *cls_name,
                         const char *method);
 
 jint supla_GetEnumValue(JNIEnv *env, jobject obj, const char *cls_name);
+
+jobject supla_NewEnumSet(JNIEnv *env, const char *cls_name);
+
+void supla_AddItemToEnumSet(JNIEnv *env, jobject enum_set, jobject item);
 
 int supla_GetListSize(JNIEnv *env, jobject list);
 

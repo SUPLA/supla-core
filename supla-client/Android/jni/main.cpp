@@ -37,6 +37,7 @@ D | double
 
 #include "actions.h"
 #include "channel_config.h"
+#include "device_config.h"
 #include "proto.h"
 #include "srpc.h"
 #include "supla-client.h"
@@ -117,8 +118,6 @@ D | double
     env->CallVoidMethod(asc->j_obj, asc->j_mid_##jni_function_cb,      \
                         str ? new_string_utf(env, str) : NULL);        \
   }
-
-
 
 jfieldID supla_client_GetFieldID(JNIEnv *env, jclass c, const char *name,
                                  const char *type) {
@@ -1703,6 +1702,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
         supla_cb_on_zwave_set_wake_up_time_result;
 
     supla_channel_config_init(env, oclass, _asc, &sclient_cfg);
+    supla_device_config_init(env, oclass, _asc, &sclient_cfg);
 
     _asc->_supla_client = supla_client_init(&sclient_cfg);
 

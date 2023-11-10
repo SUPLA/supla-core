@@ -27,12 +27,12 @@
 jobject supla_config_result_to_jobject(JNIEnv *env, int result) {
   jclass result_cls = env->FindClass(
       "org/supla/"
-      "android/data/source/remote/ChannelConfigResult");
+      "android/data/source/remote/ConfigResult");
 
   jmethodID result_init =
       env->GetStaticMethodID(result_cls, "valueOf",
                              "(Ljava/lang/String;)Lorg/supla/android/data/"
-                             "source/remote/ChannelConfigResult;");
+                             "source/remote/ConfigResult;");
 
   char enum_name[30] = {};
 
@@ -57,6 +57,9 @@ jobject supla_config_result_to_jobject(JNIEnv *env, int result) {
       break;
     case SUPLA_CONFIG_RESULT_NOT_ALLOWED:
       snprintf(enum_name, sizeof(enum_name), "NOT_ALLOWED");
+      break;
+    case SUPLA_CONFIG_RESULT_DEVICE_NOT_FOUND:
+      snprintf(enum_name, sizeof(enum_name), "DEVICE_NOT_FOUND");
       break;
   }
 
@@ -123,7 +126,7 @@ void supla_channel_config_init(JNIEnv *env, jclass oclass,
   asc->j_mid_on_channel_config_update_or_result = env->GetMethodID(
       oclass, "onChannelConfigUpdateOrResult",
       "(Lorg/supla/android/data/source/remote/SuplaChannelConfig;Lorg/supla/"
-      "android/data/source/remote/ChannelConfigResult;)V");
+      "android/data/source/remote/ConfigResult;)V");
 
   sclient_cfg->cb_on_channel_config_update_or_result =
       supla_cb_on_channel_config_update_or_result;

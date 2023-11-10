@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_CONFIG_H_
-#define CHANNEL_CONFIG_H_
+#ifndef DEVICE_CONFIG_H_
+#define DEVICE_CONFIG_H_
 
 #include <jni.h>
 
@@ -29,23 +29,15 @@
 extern "C" {
 #endif
 
-jobject supla_config_result_to_jobject(JNIEnv *env, int result);
-
-void supla_channel_config_init(JNIEnv *env, jclass oclass,
-                               TAndroidSuplaClient *asc,
-                               TSuplaClientCfg *sclient_cfg);
+void supla_device_config_init(JNIEnv *env, jclass oclass,
+                              TAndroidSuplaClient *asc,
+                              TSuplaClientCfg *sclient_cfg);
 
 JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scGetChannelConfig(
-    JNIEnv *env, jobject thiz, jlong _asc, jint channel_id, jobject type);
-
-JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scSetChannelConfig(JNIEnv *env,
-                                                          jobject thiz,
-                                                          jlong _asc,
-                                                          jobject config);
+Java_org_supla_android_lib_SuplaClient_scGetDeviceConfig(
+    JNIEnv *env, jobject thiz, jlong _asc, jint channel_id, jobject fields);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /*CHANNEL_CONFIG_H_*/
+#endif /*DEVICE_CONFIG_H_*/

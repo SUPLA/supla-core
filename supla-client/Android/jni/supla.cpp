@@ -348,3 +348,30 @@ jobject supla_GetListItem(JNIEnv *env, jobject list, jint index) {
 
   return result;
 }
+
+jobject supla_NewEnumSet(JNIEnv *env, const char *enum_cls_name) {
+  jclass result_cls = env->FindClass("java/util/EnumSet");
+  jclass enum_cls = env->FindClass(enum_cls_name);
+
+  jmethodID result_init = env->GetStaticMethodID(
+      result_cls, "noneOf", "(Ljava/lang/Class;)Ljava/util/EnumSet;");
+
+  jobject result =
+      env->CallStaticObjectMethod(result_cls, result_init, enum_cls);
+
+  env->DeleteLocalRef(result_cls);
+  env->DeleteLocalRef(enum_cls);
+
+  return result;
+}
+
+void supla_AddItemToEnumSet(JNIEnv *env, jobject enum_set, jobject item) {
+  jclass enum_set_cls = env->FindClass("java/util/EnumSet");
+
+  jmethodID enum_set_add_method =
+      env->GetMethodID(enum_set_cls, "add", "(Ljava/lang/Object;)Z");
+
+  env->CallBooleanMethod(enum_set, enum_set_add_method, item);
+
+  env->DeleteLocalRef(enum_set_cls);
+}

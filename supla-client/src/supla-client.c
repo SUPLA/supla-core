@@ -1138,6 +1138,13 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
               rd.data.sc_channel_config_update_or_result);
         }
         break;
+      case SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT:
+        if (scd->cfg.cb_on_device_config_update_or_result) {
+          scd->cfg.cb_on_device_config_update_or_result(
+              scd, scd->cfg.user_data,
+              rd.data.sc_device_config_update_or_result);
+        }
+        break;
     }
 
     srpc_rd_free(&rd);
@@ -1968,6 +1975,20 @@ char supla_client_set_channel_config(void *_suplaclient,
   lck_lock(suplaclient->lck);
   result = srpc_cs_async_set_channel_config_request(
                suplaclient->srpc, config) == SUPLA_RESULT_FALSE
+               ? 0
+               : 1;
+  lck_unlock(suplaclient->lck);
+  return result;
+}
+
+char supla_client_get_device_config(void *_suplaclient,
+                                    TCS_GetDeviceConfigRequest *request) {
+  TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
+  char result = 0;
+
+  lck_lock(suplaclient->lck);
+  result = srpc_cs_async_get_device_config_request(
+               suplaclient->srpc, request) == SUPLA_RESULT_FALSE
                ? 0
                : 1;
   lck_unlock(suplaclient->lck);
