@@ -32,7 +32,7 @@ supla_client_ch_get_device_config::supla_client_ch_get_device_config(void)
 supla_client_ch_get_device_config::~supla_client_ch_get_device_config() {}
 
 bool supla_client_ch_get_device_config::can_handle_call(unsigned int call_id) {
-  return call_id == SUPLA_CS_CALL_GET_CHANNEL_CONFIG;
+  return call_id == SUPLA_CS_CALL_GET_DEVICE_CONFIG;
 }
 
 void supla_client_ch_get_device_config::handle_call(
