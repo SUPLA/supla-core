@@ -264,6 +264,7 @@ unsigned char supla_client::send_device_config(int device_id,
 
       TSC_DeviceConfigUpdateOrResult result = {};
 
+      result.Result = SUPLA_CONFIG_RESULT_TRUE;
       result.Config.DeviceId = device_id;
       result.Config.EndOfDataFlag = fields == 0 ? 1 : 0;
       result.Config.AvailableFields = available_fields;
@@ -276,7 +277,7 @@ unsigned char supla_client::send_device_config(int device_id,
           ->get_srpc_adapter()
           ->sc_async_device_config_update_or_result(&result);
 
-      result_code = SUPLA_CONFIG_RESULT_TRUE;
+      result_code = result.Result;
     }
 
     delete config;
