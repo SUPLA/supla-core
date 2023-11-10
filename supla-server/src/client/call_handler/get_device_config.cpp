@@ -44,11 +44,8 @@ void supla_client_ch_get_device_config::handle_call(
 
     TCS_GetDeviceConfigRequest* request = rd->data.cs_get_device_config_request;
     if (request->DeviceId) {
-      if (client->get_channels()->get_any_channel_id_with_deviceid(
-              request->DeviceId)) {
-        result.Result =
-            client->send_device_config(request->DeviceId, request->Fields);
-      }
+      result.Result =
+          client->send_device_config(request->DeviceId, request->Fields);
     } else {
       result.Result = SUPLA_CONFIG_RESULT_DEVICE_NOT_FOUND;
     }
