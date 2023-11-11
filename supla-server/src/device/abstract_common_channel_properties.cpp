@@ -207,7 +207,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
             if (json_config) {
               hvac_config config(json_config);
               TChannelConfig_HVAC hvac = {};
-              if (config.get_config(&hvac, get_channel_number())) {
+              if (config.get_config(&hvac, props->get_channel_number())) {
                 if (type == SUPLA_CHANNELTYPE_BINARYSENSOR) {
                   if (hvac.BinarySensorChannelNo == get_channel_number()) {
                     add_relation(relations, get_id(), props->get_id(),
