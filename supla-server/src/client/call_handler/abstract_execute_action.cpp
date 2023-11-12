@@ -19,7 +19,11 @@
 #include "client/call_handler/abstract_execute_action.h"
 
 #include "actions/action_executor.h"
+#include "actions/action_hvac_parameters.h"
+#include "actions/action_rgbw_parameters.h"
+#include "actions/action_rs_parameters.h"
 #include "log.h"
+
 using std::function;
 
 supla_ch_abstract_execute_action::supla_ch_abstract_execute_action(void)
@@ -45,8 +49,6 @@ void supla_ch_abstract_execute_action::execute_action(
     function<bool(int subject_type, int subject_id)> subject_exists,
     function<bool(int channel_id)> is_channel_online) {
   _subjectType_e subject_type = stUnknown;
-  TAction_RS_Parameters rs = {};
-  TAction_RGBW_Parameters rgbw = {};
 
   switch (action->SubjectType) {
     case ACTION_SUBJECT_TYPE_CHANNEL:
@@ -60,13 +62,14 @@ void supla_ch_abstract_execute_action::execute_action(
       break;
   }
 
+  supla_abstract_action_parameters* params = nullptr;
+
   switch (action->ActionId) {
     case ACTION_SHUT_PARTIALLY:
     case ACTION_REVEAL_PARTIALLY:
       if (action->ParamSize == sizeof(TAction_RS_Parameters)) {
-        TAction_RS_Parameters* p = (TAction_RS_Parameters*)action->Param;
-        rs.Percentage = p->Percentage;
-        rs.Delta = p->Delta;
+        params = new supla_action_rs_parameters(
+            (TAction_RS_Parameters*)action->Param);
       } else {
         send_result(action, srpc_adapter,
                     SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
@@ -75,12 +78,18 @@ void supla_ch_abstract_execute_action::execute_action(
       break;
     case ACTION_SET_RGBW_PARAMETERS:
       if (action->ParamSize == sizeof(TAction_RGBW_Parameters)) {
-        TAction_RGBW_Parameters* p = (TAction_RGBW_Parameters*)action->Param;
-        rgbw.Brightness = p->Brightness;
-        rgbw.Color = p->Color;
-        rgbw.ColorBrightness = p->ColorBrightness;
-        rgbw.ColorRandom = p->ColorRandom;
-        rgbw.OnOff = p->OnOff;
+        params = new supla_action_rgbw_parameters(
+            (TAction_RGBW_Parameters*)action->Param);
+      } else {
+        send_result(action, srpc_adapter,
+                    SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
+        return;
+      }
+      break;
+    case ACTION_HVAC_SET_PARAMETERS:
+      if (action->ParamSize == sizeof(TAction_HVAC_Parameters)) {
+        params = new supla_action_hvac_parameters(
+            (TAction_HVAC_Parameters*)action->Param);
       } else {
         send_result(action, srpc_adapter,
                     SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
@@ -93,18 +102,18 @@ void supla_ch_abstract_execute_action::execute_action(
       action->SubjectId == 0 ||
       !subject_exists(action->SubjectType, action->SubjectId)) {
     send_result(action, srpc_adapter, SUPLA_RESULTCODE_SUBJECT_NOT_FOUND);
-    return;
-  }
-
-  if (action->SubjectType == ACTION_SUBJECT_TYPE_CHANNEL &&
-      !is_channel_online(action->SubjectId)) {
+  } else if (action->SubjectType == ACTION_SUBJECT_TYPE_CHANNEL &&
+             !is_channel_online(action->SubjectId)) {
     send_result(action, srpc_adapter, SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE);
-    return;
+  } else {
+    aexec->execute_action(supla_caller(ctClient, client_id, client_name),
+                          user_id, action->ActionId, subject_type,
+                          action->SubjectId, nullptr, params, 0, 0, 0, nullptr);
+
+    send_result(action, srpc_adapter, SUPLA_RESULTCODE_TRUE);
   }
 
-  aexec->execute_action(supla_caller(ctClient, client_id, client_name), user_id,
-                        action->ActionId, subject_type, action->SubjectId,
-                        nullptr, &rs, &rgbw, 0, 0, 0, nullptr);
-
-  send_result(action, srpc_adapter, SUPLA_RESULTCODE_TRUE);
+  if (params) {
+    delete params;
+  }
 }

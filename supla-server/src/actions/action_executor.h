@@ -20,6 +20,8 @@
 #define ACTION_EXECUTOR_H_
 
 #include <functional>
+#include <map>
+#include <string>
 
 #include "actions/abstract_action_executor.h"
 
@@ -27,7 +29,7 @@ class supla_action_executor : public supla_abstract_action_executor {
  public:
   supla_action_executor(void);
 
-  virtual void set_on(bool on);
+  virtual void set_on(bool on, unsigned long long duration_ms);
   virtual void set_color(unsigned int color);
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
@@ -53,6 +55,13 @@ class supla_action_executor : public supla_abstract_action_executor {
   virtual void open_close();
   virtual void open_close_without_canceling_tasks();
   virtual void forward_outside(int cap);
+  virtual void hvac_set_parameters(supla_action_hvac_parameters *params);
+  virtual void hvac_switch_to_program_mode(void);
+  virtual void hvac_switch_to_manual_mode(void);
+  virtual void hvac_set_temperature(
+      supla_action_hvac_setpoint_temperature *temperature);
+  virtual void hvac_set_temperatures(
+      supla_action_hvac_setpoint_temperatures *temperatures);
 };
 
 #endif /*ACTION_EXECUTOR_H_*/

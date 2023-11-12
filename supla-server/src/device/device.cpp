@@ -26,7 +26,9 @@
 
 #include "db/database.h"
 #include "device/call_handler/call_handler_collection.h"
+#include "device/device_dao.h"
 #include "http/http_event_hub.h"
+#include "jsonconfig/device/device_json_config.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
@@ -149,4 +151,30 @@ bool supla_device::enter_cfg_mode(void) {
   }
 
   return false;
+}
+
+void supla_device::send_config_to_device(void) {
+  if (get_protocol_version() >= 21 &&
+      (get_flags() & SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED)) {
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+
+    device_json_config *config =
+        dao.get_device_config(get_id(), nullptr, nullptr);
+    if (config) {
+      unsigned _supla_int64_t fields = 0xFFFFFFFFFFFFFFFF;
+      unsigned _supla_int64_t available_fields = config->get_available_fields();
+      while (fields) {
+        TSDS_SetDeviceConfig sds_config = {};
+        config->get_config(&sds_config, fields, &fields);
+        sds_config.AvailableFields = available_fields;
+        sds_config.EndOfDataFlag = fields == 0 ? 1 : 0;
+        get_connection()
+            ->get_srpc_adapter()
+            ->sd_async_set_device_config_request(&sds_config);
+      }
+
+      delete config;
+    }
+  }
 }

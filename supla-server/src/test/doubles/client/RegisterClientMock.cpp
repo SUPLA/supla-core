@@ -18,6 +18,8 @@
 
 #include "doubles/client/RegisterClientMock.h"
 
+#include <memory>
+
 namespace testing {
 RegisterClientMock::RegisterClientMock(void)
     : supla_abstract_register_client() {}

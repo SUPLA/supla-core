@@ -24,10 +24,10 @@
 #include "actions/action_executor.h"
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
-#include "channeljsonconfig/channel_json_config_getter.h"
-#include "channeljsonconfig/controlling_the_gate_config.h"
 #include "device/channel_property_getter.h"
 #include "device/value/channel_gate_value.h"
+#include "jsonconfig/channel/channel_json_config_getter.h"
+#include "jsonconfig/channel/controlling_the_gate_config.h"
 #include "log.h"
 
 #define VERIFICATION_DELAY_US 60000000
@@ -37,9 +37,8 @@ supla_action_gate_openclose::supla_action_gate_openclose(
     supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_action_executor *action_executor,
     supla_abstract_channel_property_getter *property_getter,
-    abstract_channel_json_config_getter *json_config_getter, int user_id,
-    int device_id, int channel_id, unsigned int verification_delay_us,
-    bool open)
+    abstract_json_config_getter *json_config_getter, int user_id, int device_id,
+    int channel_id, unsigned int verification_delay_us, bool open)
     : supla_abstract_asynctask(queue, pool) {
   assert(action_executor);
   this->action_executor = action_executor;
@@ -52,7 +51,7 @@ supla_action_gate_openclose::supla_action_gate_openclose(
   this->attempt_count_left = 0;
   this->verification_delay_us = verification_delay_us;
 
-  channel_json_config *json_config = NULL;
+  supla_json_config *json_config = NULL;
   if (json_config_getter) {
     json_config =
         json_config_getter->get_config(user_id, device_id, channel_id);

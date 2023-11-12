@@ -396,8 +396,9 @@ bool dbcommon::get_db_version(char *buffer, int buffer_size) {
 
   MYSQL_STMT *stmt = NULL;
   if (stmt_execute((void **)&stmt,
-                   "SELECT MAX(version) FROM `migration_versions` ", NULL, 0,
-                   true)) {
+                   "SELECT MAX(REGEXP_REPLACE(version, '[a-zA-Z\\\\\\\\]+', "
+                   "'')) FROM `migration_versions`",
+                   NULL, 0, true)) {
     unsigned long size;
     MYSQL_BIND rbind[1];
     memset(rbind, 0, sizeof(rbind));

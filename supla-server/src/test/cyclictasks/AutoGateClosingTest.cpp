@@ -18,6 +18,8 @@
 
 #include "AutoGateClosingTest.h"
 
+#include <vector>
+
 #include "device/value/channel_gate_value.h"
 #include "doubles/cyclictasks/AutoGateClosingDaoMock.h"
 

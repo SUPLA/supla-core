@@ -18,6 +18,8 @@
 
 #include "scene/SceneObserverTest.h"
 
+#include <memory>
+
 namespace testing {
 
 using std::shared_ptr;

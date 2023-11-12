@@ -617,7 +617,7 @@ TEST_F(RegisterDeviceEssentialTest, cantUdateDevice) {
       .Times(1)
       .WillOnce(Return(false));
 
-  EXPECT_CALL(rd, on_registraction_success).Times(0);
+  EXPECT_CALL(rd, on_registration_success).Times(0);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
@@ -686,7 +686,7 @@ TEST_F(RegisterDeviceEssentialTest, cfgModeRequested) {
   EXPECT_CALL(dao, update_device).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(rd, is_prev_entering_cfg_mode).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(rd, on_registraction_success).Times(1);
+  EXPECT_CALL(rd, on_registration_success).Times(1);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
@@ -784,7 +784,7 @@ TEST_F(RegisterDeviceEssentialTest,
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(rd, on_registraction_success).Times(1);
+  EXPECT_CALL(rd, on_registration_success).Times(1);
   EXPECT_CALL(rd, is_prev_entering_cfg_mode).Times(0);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
@@ -890,7 +890,7 @@ TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(rd, on_registraction_success).Times(1);
+  EXPECT_CALL(rd, on_registration_success).Times(1);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
@@ -992,7 +992,7 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddChannel) {
   EXPECT_CALL(dao, on_new_device).Times(0);
   EXPECT_CALL(dao, update_device).Times(0);
 
-  EXPECT_CALL(rd, on_registraction_success).Times(0);
+  EXPECT_CALL(rd, on_registration_success).Times(0);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
@@ -1086,7 +1086,7 @@ TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
   EXPECT_CALL(dao, on_new_device).Times(1);
   EXPECT_CALL(dao, update_device).Times(0);
 
-  EXPECT_CALL(rd, on_registraction_success).Times(1);
+  EXPECT_CALL(rd, on_registration_success).Times(1);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)

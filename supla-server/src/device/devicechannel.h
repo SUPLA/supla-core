@@ -27,6 +27,7 @@
 #include "analyzer/voltage_analyzers.h"
 #include "caller.h"
 #include "channel_address.h"
+#include "device/abstract_common_channel_properties.h"
 #include "device/extended_value/channel_extended_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "device/value/channel_value.h"
@@ -34,7 +35,6 @@
 
 class supla_user;
 class supla_device;
-class channel_json_config;
 
 enum rsAction {
   rsActionStop,
@@ -47,12 +47,12 @@ enum rsAction {
   rsActionReveal
 };
 
-class supla_device_channel {
+class supla_device_channel : public supla_abstract_common_channel_properties {
  private:
   void *lck;
   supla_device *device;
   const int id;
-  const unsigned char number;
+  const unsigned char channel_number;
   const int type;
   int func;
   int param1;
@@ -65,15 +65,16 @@ class supla_device_channel {
   const bool hidden;
   bool offline;
   unsigned int flags;
+  unsigned int init_flags;
   TDSC_ChannelState *state;
   char value[SUPLA_CHANNELVALUE_SIZE];
   struct timeval value_valid_to;  // during offline
   supla_channel_extended_value *extended_value;
-  channel_json_config *json_config;
+  supla_json_config *json_config;
   supla_channel_extended_value *logger_purpose_extended_value;
   supla_voltage_analyzers voltage_analyzers;
 
-  void db_set_properties(channel_json_config *config);
+  void db_set_properties(supla_json_config *config);
   void db_set_params(int param1, int param2, int param3, int param4);
   supla_channel_value *_get_value(void);
 
@@ -84,12 +85,17 @@ class supla_device_channel {
                                  supla_channel_extended_value *new_value);
   supla_channel_extended_value *_get_extended_value(
       bool for_data_logger_purposes);
+
   void set_extended_value(TSuplaChannelExtendedValue *ev,
                           supla_channel_extended_value *new_value);
+  virtual void for_each(
+      std::function<void(supla_abstract_common_channel_properties *, bool *)>
+          on_channel_properties);
 
  public:
-  supla_device_channel(supla_device *device, int id, int number, int type,
-                       int func, int param1, int param2, int param3, int param4,
+  supla_device_channel(supla_device *device, int id,
+                       unsigned char channel_number, int type, int func,
+                       int param1, int param2, int param3, int param4,
                        const char *text_param1, const char *text_param2,
                        const char *text_param3, bool hidden, unsigned int flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
@@ -104,23 +110,24 @@ class supla_device_channel {
   void lock(void);
   void unlock(void);
   int get_id(void);
-  int get_number(void);
-  int get_user_id(void);
+  virtual int get_device_id(void);
+  virtual unsigned char get_channel_number(void);
+  virtual int get_user_id(void);
   supla_user *get_user();
   supla_device *get_device();
   int get_func(void);
   void set_func(int func);
-  int get_type(void);
-  int get_param1(void);
-  int get_param2(void);
-  int get_param3(void);
-  int get_param4(void);
+  virtual int get_type(void);
+  virtual int get_param1(void);
+  virtual int get_param2(void);
+  virtual int get_param3(void);
+  virtual int get_param4(void);
   const char *get_text_param1(void);
   const char *get_text_param2(void);
   const char *get_text_param3(void);
   bool is_hidden(void);
-  unsigned int get_flags();
-  void add_flags(unsigned int flags);
+  virtual unsigned int get_flags();
+  void add_init_flags(unsigned int flags);
   bool is_offline(void);
   bool set_offline(bool Offline);
   bool is_value_writable(void);
@@ -136,20 +143,21 @@ class supla_device_channel {
                          char color_brightness, char brightness, char on_off);
   void get_double(double *value);
   void get_char(char *value);
-  bool get_config(TSD_ChannelConfig *config, unsigned char config_type,
+  void get_config(TSD_ChannelConfig *config, unsigned char config_type,
                   unsigned _supla_int_t flags);
   void set_action_trigger_config(unsigned int capabilities,
                                  int related_channel_id,
                                  unsigned int disables_local_operation);
 
-  std::list<int> master_channel(void);
-  std::list<int> related_channel(void);
-  channel_json_config *get_json_config(void);
+  virtual supla_json_config *get_json_config(void);
+  void set_json_config(supla_json_config *json_config);
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);
   bool get_voltage_analyzers_with_any_sample_over_threshold(
       supla_voltage_analyzers *voltage_analyzers, bool reset);
+  void send_config_to_device(unsigned char config_type);
+  void send_config_to_device(void);
 
   template <typename T>
   T *get_value(void);

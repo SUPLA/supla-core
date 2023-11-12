@@ -27,7 +27,7 @@ supla_user_channelgroup::supla_user_channelgroup(
 }
 
 bool supla_user_channelgroup::remote_update_is_possible(void) { return false; }
-int supla_user_channelgroup::getGroupId() { return getId(); }
+int supla_user_channelgroup::getGroupId() { return get_id(); }
 int supla_user_channelgroup::getChannelId() { return ChannelId; }
 int supla_user_channelgroup::getDeviceId() { return DeviceId; }
-int supla_user_channelgroup::getExtraId() { return ChannelId; }
+int supla_user_channelgroup::get_extra_id() { return ChannelId; }

@@ -18,6 +18,8 @@
 
 #include <asynctask/AsyncTaskTest.h>
 
+#include <string>
+
 #include "log.h"
 
 namespace testing {

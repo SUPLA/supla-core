@@ -19,6 +19,8 @@
 #ifndef ASYNCTASK_TEST_H_
 #define ASYNCTASK_TEST_H_
 
+#include <memory>
+
 #include "asynctask_queue.h"
 #include "doubles/asynctask/AsyncTaskMock.h"
 #include "doubles/asynctask/AsyncTaskThreadPoolMock.h"

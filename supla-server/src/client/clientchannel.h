@@ -23,13 +23,16 @@
 
 #include "clientchannels.h"
 #include "clientobjcontaineritem.h"
+#include "device/abstract_common_channel_properties.h"
 #include "proto.h"
 
 class supla_client;
 class supla_client_channels;
 class supla_device;
-class supla_client_channel : public supla_client_objcontainer_item {
+class supla_client_channel : public supla_client_objcontainer_item,
+                             public supla_abstract_common_channel_properties {
  private:
+  unsigned char channel_number;
   int DeviceId;
   int LocationId;
   int Type;
@@ -47,6 +50,7 @@ class supla_client_channel : public supla_client_objcontainer_item {
   short ProductID;
   unsigned char ProtocolVersion;
   unsigned int Flags;
+  supla_json_config *json_config;
 
   // during offline
   char value[SUPLA_CHANNELVALUE_SIZE];
@@ -65,20 +69,27 @@ class supla_client_channel : public supla_client_objcontainer_item {
   bool get_cs_extended_value(std::shared_ptr<supla_device> device,
                              int channel_id,
                              TSC_SuplaChannelExtendedValue *cev);
+  virtual void for_each(
+      std::function<void(supla_abstract_common_channel_properties *, bool *)>
+          on_channel_properties);
+
+  unsigned char get_real_config_type(unsigned char config_type);
 
  public:
-  supla_client_channel(supla_client_channels *Container, int Id, int DeviceId,
+  supla_client_channel(supla_client_channels *Container, int Id,
+                       unsigned char channel_number, int DeviceId,
                        int LocationID, int Type, int Func, int Param1,
                        int Param2, int Param3, int Param4, char *TextParam1,
                        char *TextParam2, char *TextParam3, const char *Caption,
                        int AltIcon, int UserIcon, short ManufacturerID,
                        short ProductID, unsigned char ProtocolVersion,
-                       int Flags, int EmSubcFlags,
+                       unsigned int Flags, unsigned int EmSubcFlags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
                        unsigned _supla_int_t validity_time_sec,
-                       const char *user_config,
+                       const char *user_config, const char *properties,
                        const char *em_subc_user_config);
   virtual ~supla_client_channel(void);
+  virtual unsigned char get_channel_number(void);
   void mark_for_remote_update(int mark);
   bool remote_update_is_possible(void);
   void proto_get(TSC_SuplaChannel *channel, supla_client *client);
@@ -89,20 +100,32 @@ class supla_client_channel : public supla_client_objcontainer_item {
   void proto_get(TSC_SuplaChannelValue_B *channel_value, supla_client *client);
   bool proto_get(TSC_SuplaChannelExtendedValue *cev, supla_client *client);
   bool get_basic_cfg(TSC_ChannelBasicCfg *basic_cfg);
-  int getType();
-  int getFunc();
-  void setFunc(int Func);
+  virtual int get_type();
+  virtual int get_func();
+  virtual int get_param1();
+  virtual int get_param2();
+  virtual int get_param3();
+  virtual int get_param4();
+  virtual supla_json_config *get_json_config(void);
+  virtual void set_json_config(supla_json_config *json_config);
+  void set_func(int Func);
   void setCaption(const char *Caption);
-  int getDeviceId();
-  short getManufacturerID();
-  short getProductID();
-  int getFlags();
-  int getExtraId();
+  virtual int get_user_id();
+  virtual int get_device_id();
+  short get_manufacturer_id();
+  short get_product_id();
+  virtual unsigned int get_flags();
+  virtual int get_id();
+  virtual int get_extra_id();
 
   void setValueValidityTimeSec(unsigned _supla_int_t validity_time_sec);
   bool isValueValidityTimeSet();
   unsigned _supla_int64_t getValueValidityTimeUSec(void);
   void resetValueValidityTime(void);
+  void get_config(TSCS_ChannelConfig *config, unsigned char config_type,
+                  unsigned char *real_config_type, unsigned _supla_int_t flags);
+  int set_user_config(unsigned char config_type,
+                      unsigned _supla_int16_t config_size, char *config);
 };
 
 #endif /* CLIENTCHANNEL_H_ */

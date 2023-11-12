@@ -18,6 +18,8 @@
 
 #include "actions/abstract_action_executor.h"
 
+#include "actions/action_rgbw_parameters.h"
+#include "actions/action_rs_parameters.h"
 #include "converter/any_value_to_action_converter.h"
 
 using std::function;
@@ -136,9 +138,8 @@ void supla_abstract_action_executor::execute_action(
     const supla_caller &caller, int user_id, int action_id,
     _subjectType_e subject_type, int subject_id,
     supla_abstract_channel_property_getter *property_getter,
-    TAction_RS_Parameters *rs, TAction_RGBW_Parameters *rgbw,
-    int source_device_id, int source_channel_id, int cap,
-    map<string, string> *replacement_map) {
+    supla_abstract_action_parameters *params, int source_device_id,
+    int source_channel_id, int cap, map<string, string> *replacement_map) {
   if (action_id == 0 || subject_id == 0) {
     return;
   }
@@ -189,31 +190,48 @@ void supla_abstract_action_executor::execute_action(
       step_by_step();
       break;
     case ACTION_SHUT_PARTIALLY:
-    case ACTION_REVEAL_PARTIALLY: {
-      char percentage = rs->Percentage;
-      if (percentage > -1) {
-        if (action_id == ACTION_REVEAL_PARTIALLY) {
-          percentage = 100 - percentage;
-        }
+    case ACTION_REVEAL_PARTIALLY:
+      if (params) {
+        supla_action_rs_parameters *rs =
+            dynamic_cast<supla_action_rs_parameters *>(params);
+        if (rs) {
+          char percentage = rs->get_percentage();
 
-        shut(&percentage, rs->Delta > 0);
+          if (percentage > -1) {
+            if (action_id == ACTION_REVEAL_PARTIALLY) {
+              percentage = 100 - percentage;
+            }
+
+            shut(&percentage, rs->is_delta());
+          }
+        }
       }
-    } break;
+      break;
     case ACTION_TURN_ON:
-      set_on(true);
+      set_on(true, 0);
       break;
     case ACTION_TURN_OFF:
-      set_on(false);
+      set_on(false, 0);
       break;
-    case ACTION_SET_RGBW_PARAMETERS: {
-      if (rgbw && (rgbw->Brightness > -1 || rgbw->ColorBrightness > -1 ||
-                   rgbw->Color)) {
-        set_rgbw(rgbw->Color ? &rgbw->Color : NULL,
-                 rgbw->ColorBrightness > -1 ? &rgbw->ColorBrightness : NULL,
-                 rgbw->Brightness > -1 ? &rgbw->Brightness : NULL,
-                 rgbw->OnOff > -1 ? &rgbw->OnOff : NULL);
+    case ACTION_SET_RGBW_PARAMETERS:
+      if (params) {
+        supla_action_rgbw_parameters *rgbw =
+            dynamic_cast<supla_action_rgbw_parameters *>(params);
+
+        if (rgbw) {
+          TAction_RGBW_Parameters rgbw_p = rgbw->get_rgbw();
+
+          if (rgbw && (rgbw_p.Brightness > -1 || rgbw_p.ColorBrightness > -1 ||
+                       rgbw_p.Color)) {
+            set_rgbw(
+                rgbw_p.Color ? &rgbw_p.Color : nullptr,
+                rgbw_p.ColorBrightness > -1 ? &rgbw_p.ColorBrightness : nullptr,
+                rgbw_p.Brightness > -1 ? &rgbw_p.Brightness : nullptr,
+                rgbw_p.OnOff > -1 ? &rgbw_p.OnOff : nullptr);
+          }
+        }
       }
-    } break;
+      break;
     case ACTION_OPEN_CLOSE:
       open_close();
       break;
@@ -243,11 +261,47 @@ void supla_abstract_action_executor::execute_action(
       break;
     case ACTION_COPY:
       if (property_getter) {
-        copy(property_getter, source_device_id, source_channel_id);
+        copy(property_getter, source_device_id, source_channel_id);  // NOLINT
       }
       break;
     case ACTION_FORWARD_OUTSIDE:
       forward_outside(cap);
+      break;
+    case ACTION_HVAC_SET_PARAMETERS:
+      if (params) {
+        supla_action_hvac_parameters *hvac =
+            dynamic_cast<supla_action_hvac_parameters *>(params);
+
+        if (hvac && hvac->is_any_param_set()) {
+          hvac_set_parameters(hvac);
+        }
+      }
+      break;
+    case ACTION_HVAC_SWITCH_TO_MANUAL_MODE:
+      hvac_switch_to_manual_mode();
+      break;
+    case ACTION_HVAC_SWITCH_TO_PROGRAM_MODE:
+      hvac_switch_to_program_mode();
+      break;
+    case ACTION_HVAC_SET_TEMPERATURE:
+      if (params) {
+        supla_action_hvac_setpoint_temperature *t =
+            dynamic_cast<supla_action_hvac_setpoint_temperature *>(params);
+
+        if (t) {
+          hvac_set_temperature(t);
+        }
+      }
+      break;
+    case ACTION_HVAC_SET_TEMPERATURES:
+      if (params) {
+        supla_action_hvac_setpoint_temperatures *t =
+            dynamic_cast<supla_action_hvac_setpoint_temperatures *>(params);
+
+        if (t) {
+          hvac_set_temperatures(t);
+        }
+      }
       break;
   }
 }
@@ -264,20 +318,11 @@ void supla_abstract_action_executor::execute_action(
     return;
   }
 
-  TAction_RS_Parameters rs = {};
-  TAction_RGBW_Parameters rgbw = {};
   int source_device_id = 0;
   int source_channel_id = 0;
   int cap = 0;
 
   switch (action_id) {
-    case ACTION_SHUT_PARTIALLY:
-    case ACTION_REVEAL_PARTIALLY:
-      rs.Percentage = config->get_percentage();
-      break;
-    case ACTION_SET_RGBW_PARAMETERS:
-      rgbw = config->get_rgbw();
-      break;
     case ACTION_COPY:
       source_device_id = config->get_source_device_id();
       source_channel_id = config->get_source_channel_id();
@@ -287,9 +332,15 @@ void supla_abstract_action_executor::execute_action(
       break;
   }
 
+  supla_abstract_action_parameters *params = config->get_parameters();
+
   execute_action(caller, user_id, action_id, config->get_subject_type(),
-                 subject_id, property_getter, &rs, &rgbw, source_device_id,
+                 subject_id, property_getter, params, source_device_id,
                  source_channel_id, cap, replacement_map);
+
+  if (params) {
+    delete params;
+  }
 }
 
 void supla_abstract_action_executor::execute_action(

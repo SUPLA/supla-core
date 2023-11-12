@@ -28,9 +28,8 @@ extern "C" {
 #endif
 
 void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
-                                  int *action_id,
-                                  TAction_RS_Parameters **rs_param,
-                                  TAction_RGBW_Parameters **rgbw_param,
+                                  int *action_id, void **param,
+                                  unsigned _supla_int16_t *param_size,
                                   int *subject_type, int *subject_id);
 
 JNIEXPORT jboolean JNICALL

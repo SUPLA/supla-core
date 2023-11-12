@@ -19,6 +19,7 @@
 #include "AccessTokenProviderTest.h"
 
 #include <atomic>
+#include <string>
 
 #include "doubles/http/CurlAdapterMock.h"
 #include "log.h"

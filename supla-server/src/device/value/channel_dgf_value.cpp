@@ -35,7 +35,7 @@ const TDigiglass_Value *supla_channel_dgf_value::get_dgf_value(void) {
 
 void supla_channel_dgf_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
-    int param3, int param4, channel_json_config *json_config) {
+    int param3, int param4, supla_json_config *json_config) {
   ((TDigiglass_Value *)raw_value)->sectionCount = param1;
 }
 

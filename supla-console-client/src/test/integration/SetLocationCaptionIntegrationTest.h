@@ -19,6 +19,8 @@
 #ifndef SETLOCATIONCAPTIONINTEGRATIONTEST_H_
 #define SETLOCATIONCAPTIONINTEGRATIONTEST_H_
 
+#include <string>
+
 #include "SuperuserAuthorization.h"
 
 namespace testing {

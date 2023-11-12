@@ -19,6 +19,7 @@
 #ifndef ABSTRACTACTIONCONFIG_H_
 #define ABSTRACTACTIONCONFIG_H_
 
+#include "actions/abstract_action_parameters.h"
 #include "proto.h"
 
 enum _subjectType_e {
@@ -42,8 +43,8 @@ class abstract_action_config {
   virtual int get_source_device_id(void) = 0;
   virtual int get_source_channel_id(void) = 0;
 
-  virtual char get_percentage(void) = 0;
-  virtual TAction_RGBW_Parameters get_rgbw(void) = 0;
+  virtual supla_abstract_action_parameters* get_parameters(void) = 0;
+
   virtual int get_cap(void);
 };
 

@@ -26,6 +26,7 @@
 #include "ipc/before_channel_function_change_command.h"
 #include "ipc/before_device_delete_command.h"
 #include "ipc/client_reconnect_command.h"
+#include "ipc/device_set_time_command.h"
 #include "ipc/enter_cfg_mode_command.h"
 #include "ipc/execute_scene_command.h"
 #include "ipc/get_char_command.h"
@@ -33,6 +34,7 @@
 #include "ipc/get_double_command.h"
 #include "ipc/get_em_value_command.h"
 #include "ipc/get_humidity_command.h"
+#include "ipc/get_hvac_value_command.h"
 #include "ipc/get_ic_value_command.h"
 #include "ipc/get_pn_limit_command.h"
 #include "ipc/get_relay_value_command.h"
@@ -47,8 +49,9 @@
 #include "ipc/is_channel_connected_command.h"
 #include "ipc/is_client_connected_command.h"
 #include "ipc/is_device_connected_command.h"
+#include "ipc/on_channel_config_changed_command.h"
+#include "ipc/on_device_config_changed_command.h"
 #include "ipc/on_device_deleted_command.h"
-#include "ipc/on_device_settings_changed_command.h"
 #include "ipc/on_mqtt_settings_changed_command.h"
 #include "ipc/on_scene_added_command.h"
 #include "ipc/on_scene_changed_command.h"
@@ -86,6 +89,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_get_ic_value_command(socket_adapter));
   add_command(new supla_get_valve_value_command(socket_adapter));
   add_command(new supla_get_relay_value_command(socket_adapter));
+  add_command(new supla_get_hvac_value_command(socket_adapter));
   add_command(new supla_set_char_command(socket_adapter));
   add_command(new supla_set_cg_char_command(socket_adapter));
   add_command(new supla_set_rgbw_command(socket_adapter, true));
@@ -98,6 +102,10 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_action_command(socket_adapter, ACTION_OPEN));
   add_command(new supla_action_cg_command(socket_adapter, ACTION_CLOSE));
   add_command(new supla_action_command(socket_adapter, ACTION_CLOSE));
+  add_command(new supla_action_cg_command(socket_adapter, ACTION_TURN_ON));
+  add_command(new supla_action_command(socket_adapter, ACTION_TURN_ON));
+  add_command(new supla_action_cg_command(socket_adapter, ACTION_TURN_OFF));
+  add_command(new supla_action_command(socket_adapter, ACTION_TURN_OFF));
   add_command(new supla_action_cg_command(socket_adapter, ACTION_TOGGLE));
   add_command(new supla_action_command(socket_adapter, ACTION_TOGGLE));
   add_command(new supla_action_cg_command(socket_adapter, ACTION_STOP));
@@ -110,6 +118,27 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_action_command(socket_adapter, ACTION_DOWN_OR_STOP));
   add_command(new supla_action_cg_command(socket_adapter, ACTION_STEP_BY_STEP));
   add_command(new supla_action_command(socket_adapter, ACTION_STEP_BY_STEP));
+  add_command(
+      new supla_action_cg_command(socket_adapter, ACTION_HVAC_SET_PARAMETERS));
+  add_command(
+      new supla_action_command(socket_adapter, ACTION_HVAC_SET_PARAMETERS));
+
+  add_command(new supla_action_cg_command(socket_adapter,
+                                          ACTION_HVAC_SWITCH_TO_MANUAL_MODE));
+  add_command(new supla_action_command(socket_adapter,
+                                       ACTION_HVAC_SWITCH_TO_MANUAL_MODE));
+  add_command(new supla_action_cg_command(socket_adapter,
+                                          ACTION_HVAC_SWITCH_TO_PROGRAM_MODE));
+  add_command(new supla_action_command(socket_adapter,
+                                       ACTION_HVAC_SWITCH_TO_PROGRAM_MODE));
+  add_command(
+      new supla_action_cg_command(socket_adapter, ACTION_HVAC_SET_TEMPERATURE));
+  add_command(
+      new supla_action_command(socket_adapter, ACTION_HVAC_SET_TEMPERATURE));
+  add_command(new supla_action_cg_command(socket_adapter,
+                                          ACTION_HVAC_SET_TEMPERATURES));
+  add_command(
+      new supla_action_command(socket_adapter, ACTION_HVAC_SET_TEMPERATURES));
   add_command(new supla_reset_counters_command(socket_adapter));
   add_command(new supla_recalibrate_command(socket_adapter));
   add_command(new supla_get_status_command(socket_adapter));
@@ -127,11 +156,13 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_on_device_deleted_command(socket_adapter));
   add_command(new supla_on_mqtt_settings_changed_command(socket_adapter));
   add_command(new supla_before_device_delete_command(socket_adapter));
-  add_command(new supla_on_device_settings_changed_command(socket_adapter));
+  add_command(new supla_on_channel_config_changed_command(socket_adapter));
+  add_command(new supla_on_device_config_changed_command(socket_adapter));
   add_command(new supla_on_user_settings_changed_command(socket_adapter));
   add_command(new supla_before_channel_function_change_command(socket_adapter));
   add_command(new supla_get_pn_limit_command(socket_adapter));
   add_command(new supla_on_vbt_changed_command(socket_adapter));
+  add_command(new supla_device_set_time_command(socket_adapter));
   add_command(new supla_send_push_command(socket_adapter));
 }
 

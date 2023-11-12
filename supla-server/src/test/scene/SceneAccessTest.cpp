@@ -18,6 +18,8 @@
 
 #include "scene/SceneAccessTest.h"
 
+#include <memory>
+
 #include "scene/scene_search_condition.h"
 
 namespace testing {

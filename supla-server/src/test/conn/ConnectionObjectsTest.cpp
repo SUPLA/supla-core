@@ -19,6 +19,7 @@
 #include "ConnectionObjectsTest.h"
 
 #include <memory>
+#include <vector>
 
 #include "doubles/conn/ConnectionObjectMock.h"
 #include "doubles/conn/ConnectionObjectsMock.h"

@@ -18,6 +18,8 @@
 
 #include "ipc/GetSceneSummaryCommandTest.h"
 
+#include <string>
+
 namespace testing {
 
 using std::string;

@@ -16,6 +16,9 @@ RM := rm -rf
 -include src/scene/subdir.mk
 -include src/push/subdir.mk
 -include src/mqtt/subdir.mk
+-include src/jsonconfig/device/subdir.mk
+-include src/jsonconfig/channel/subdir.mk
+-include src/jsonconfig/subdir.mk
 -include src/json/subdir.mk
 -include src/ipc/subdir.mk
 -include src/http/subdir.mk
@@ -35,7 +38,6 @@ RM := rm -rf
 -include src/conn/subdir.mk
 -include src/client/call_handler/subdir.mk
 -include src/client/subdir.mk
--include src/channeljsonconfig/subdir.mk
 -include src/asynctask/subdir.mk
 -include src/astro/subdir.mk
 -include src/analyzer/subdir.mk

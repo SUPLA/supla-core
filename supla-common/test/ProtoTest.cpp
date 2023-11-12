@@ -82,6 +82,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)8608, sizeof(TSC_SuplaChannelGroupPack_B));
   EXPECT_EQ((unsigned int)9, sizeof(TSC_SuplaChannelGroupRelation));
   EXPECT_EQ((unsigned int)908, sizeof(TSC_SuplaChannelGroupRelationPack));
+  EXPECT_EQ((unsigned int)1108, sizeof(TSC_SuplaChannelRelationPack));
   EXPECT_EQ((unsigned int)275, sizeof(TCS_SuplaRegisterClient));
   EXPECT_EQ((unsigned int)340, sizeof(TCS_SuplaRegisterClient_B));
   EXPECT_EQ((unsigned int)575, sizeof(TCS_SuplaRegisterClient_C));
@@ -195,13 +196,38 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TRelayChannel_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
   EXPECT_EQ((unsigned int)6, sizeof(TDS_GetChannelConfigRequest));
-  EXPECT_EQ((unsigned int)136, sizeof(TSD_ChannelConfig));
-  EXPECT_LE(sizeof(TSD_ChannelConfig_StaircaseTimer),
+  EXPECT_EQ((unsigned int)520, sizeof(TSD_ChannelConfig));
+  EXPECT_EQ((unsigned int)520, sizeof(TSDS_SetChannelConfig));
+  EXPECT_EQ((unsigned int)3, sizeof(TSDS_SetChannelConfigResult));
+
+  EXPECT_EQ(sizeof(TChannelConfig_StaircaseTimer), 4);
+  EXPECT_LE(sizeof(TChannelConfig_StaircaseTimer),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
-  EXPECT_LE(sizeof(TSD_ChannelConfig_Rollershutter),
+
+  EXPECT_EQ(sizeof(TChannelConfig_Rollershutter), 8);
+  EXPECT_LE(sizeof(TChannelConfig_Rollershutter),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
-  EXPECT_LE(sizeof(TSD_ChannelConfig_ActionTrigger),
+
+  EXPECT_EQ(sizeof(TChannelConfig_ActionTrigger), 4);
+  EXPECT_LE(sizeof(TChannelConfig_ActionTrigger),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ((unsigned int)539, sizeof(TSDS_SetDeviceConfig));
+  EXPECT_EQ((unsigned int)10, sizeof(TSDS_SetDeviceConfigResult));
+  EXPECT_LE(sizeof(TDeviceConfig_StatusLed),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_ScreenBrightness),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_ButtonVolume),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_DisableUserInterface),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_AutomaticTimeSync),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_HomeScreenOffDelay),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_LE(sizeof(TDeviceConfig_HomeScreenContent),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   EXPECT_EQ((unsigned int)8, sizeof(TCalCfg_RollerShutterSettings));
   EXPECT_LE(sizeof(TCalCfg_RollerShutterSettings),
@@ -211,8 +237,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TCalCfg_FacadeBlindSettings),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 
-  EXPECT_EQ(static_cast<size_t>(13), sizeof(TSD_ChannelConfig_FacadeBlind));
-  EXPECT_LE(sizeof(TSD_ChannelConfig_FacadeBlind),
+  EXPECT_EQ(static_cast<size_t>(13), sizeof(TChannelConfig_FacadeBlind));
+  EXPECT_LE(sizeof(TChannelConfig_FacadeBlind),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 
   EXPECT_LE(sizeof(TDSC_RollerShutterValue),
@@ -252,6 +278,31 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ(sizeof(TDS_PushNotification), 399);
   EXPECT_EQ(sizeof(TCS_RegisterPnClientToken), 710);
   EXPECT_EQ(sizeof(TSC_RegisterPnClientTokenResult), 4);
+
+  EXPECT_EQ(sizeof(THVACValue), 8);
+  EXPECT_LE(sizeof(THVACValue), static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+
+  EXPECT_EQ(sizeof(TChannelConfig_HVAC), 127);
+  EXPECT_LE(sizeof(TChannelConfig_HVAC),
+            static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+
+  EXPECT_EQ(sizeof(TChannelConfig_WeeklySchedule), 356);
+  EXPECT_LE(sizeof(TChannelConfig_WeeklySchedule),
+            static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+
+  EXPECT_EQ((unsigned int)544, sizeof(TSC_DeviceConfigUpdateOrResult));
+  EXPECT_EQ((unsigned int)20, sizeof(TCS_GetDeviceConfigRequest));
+  EXPECT_EQ((unsigned int)9, sizeof(TCS_GetChannelConfigRequest));
+  EXPECT_EQ((unsigned int)523, sizeof(TSCS_ChannelConfig));
+  EXPECT_EQ((unsigned int)524, sizeof(TSC_ChannelConfigUpdateOrResult));
+
+  EXPECT_EQ(sizeof(TChannelConfig_BinarySensor), 32);
+  EXPECT_LE(sizeof(TChannelConfig_BinarySensor),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TChannelConfig_TemperatureAndHumidity), 32);
+  EXPECT_LE(sizeof(TChannelConfig_TemperatureAndHumidity),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 }
 
 TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {

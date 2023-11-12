@@ -29,7 +29,6 @@ src/amazon \
 src/analyzer \
 src/astro \
 src/asynctask \
-src/channeljsonconfig \
 src/client \
 src/client/call_handler \
 src/conn \
@@ -49,6 +48,9 @@ src/google \
 src/http \
 src/ipc \
 src/json \
+src/jsonconfig \
+src/jsonconfig/channel \
+src/jsonconfig/device \
 src/mqtt \
 src/push \
 src/scene \
@@ -59,11 +61,11 @@ src/test/actions \
 src/test/amazon \
 src/test/analyzer \
 src/test/asynctask \
-src/test/channeljsonconfig \
 src/test/client \
 src/test/conn \
 src/test/cyclictasks \
 src/test/device \
+src/test/device/call_handler \
 src/test/device/extended_value \
 src/test/device/value \
 src/test/distributedobjects \
@@ -71,7 +73,6 @@ src/test/doubles \
 src/test/doubles/actions \
 src/test/doubles/amazon \
 src/test/doubles/asynctask \
-src/test/doubles/channeljsonconfig \
 src/test/doubles/client \
 src/test/doubles/conn \
 src/test/doubles/cyclictasks \
@@ -84,6 +85,8 @@ src/test/doubles/http \
 src/test/doubles/integration/asynctask \
 src/test/doubles/integration/mqtt \
 src/test/doubles/ipc \
+src/test/doubles/jsonconfig \
+src/test/doubles/jsonconfig/channel \
 src/test/doubles/mqtt \
 src/test/doubles/push \
 src/test/doubles/scene \
@@ -104,9 +107,13 @@ src/test/integration/schedule \
 src/test/integration/vbt \
 src/test/integration/webhook \
 src/test/ipc \
+src/test/jsonconfig \
+src/test/jsonconfig/channel \
+src/test/jsonconfig/device \
 src/test/mqtt \
 src/test/push \
 src/test/scene \
+src/test/srpc \
 src/test/vbt \
 src/test/webhook \
 src/user \

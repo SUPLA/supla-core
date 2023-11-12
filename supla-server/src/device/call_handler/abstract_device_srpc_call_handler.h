@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_ABSTRACT_DEVICE_SRPC_CALL_HANDLER_H_
 #define SUPLA_CH_ABSTRACT_DEVICE_SRPC_CALL_HANDLER_H_
 
+#include <memory>
+
 #include "device.h"
 #include "srpc/abstract_srpc_call_hanlder.h"
 

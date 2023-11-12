@@ -135,6 +135,10 @@ bool supla_state_webhook_request::make_request(
       result = client.window_opening_sensor_report();
       break;
 
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+      result = client.hotel_card_sensor_report();
+      break;
+
     case SUPLA_CHANNELFNC_MAILSENSOR:
       result = client.mail_sensor_report();
       break;
@@ -265,6 +269,7 @@ bool supla_state_webhook_request::is_function_allowed(
         case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
         case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
         case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+        case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
         case SUPLA_CHANNELFNC_MAILSENSOR:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:

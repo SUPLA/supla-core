@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_REGISTER_DEVICE_H_
 #define SUPLA_CH_REGISTER_DEVICE_H_
 
+#include <memory>
+
 #include "device/call_handler/abstract_register_device.h"
 
 class supla_user;
@@ -33,7 +35,8 @@ class supla_register_device : public supla_abstract_register_device {
                                 bool *is_null);
 
   virtual bool is_prev_entering_cfg_mode(void);
-  virtual void on_registraction_success(void);
+  virtual void on_registration_success(void);
+  virtual void after_registration_success(void);
 
  public:
   supla_register_device(void);

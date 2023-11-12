@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "jsonconfig/channel/binary_sensor_config.h"
+
 supla_channel_binary_sensor_value::supla_channel_binary_sensor_value(void)
     : supla_channel_value() {}
 
@@ -40,13 +42,16 @@ bool supla_channel_binary_sensor_value::is_hi(void) { return raw_value[0] > 0; }
 
 void supla_channel_binary_sensor_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
-    int param3, int param4, channel_json_config *json_config) {
+    int param3, int param4, supla_json_config *json_config) {
   if (type == SUPLA_CHANNELTYPE_SENSORNC) {
     set_hi(!is_hi());
   }
 
-  if (param3 == 1) {  // inverted logic
-    set_hi(!is_hi());
+  if (json_config) {
+    binary_sensor_config cfg(json_config);
+    if (cfg.is_logic_inverted()) {
+      set_hi(!is_hi());
+    }
   }
 }
 
@@ -62,6 +67,7 @@ bool supla_channel_binary_sensor_value::is_function_supported(int func) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
     case SUPLA_CHANNELFNC_MAILSENSOR:
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
       return true;
   }
 

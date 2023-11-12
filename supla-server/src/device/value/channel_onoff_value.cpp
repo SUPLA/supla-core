@@ -58,7 +58,7 @@ void supla_channel_onoff_value::set_overcurrent_relay_off(bool active) {
 
 void supla_channel_onoff_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
-    int param3, int param4, channel_json_config *json_config) {
+    int param3, int param4, supla_json_config *json_config) {
   if (protocol_version < 15) {
     // https://forum.supla.org/viewtopic.php?f=6&t=8861
     for (short a = 1; a < SUPLA_CHANNELVALUE_SIZE; a++) {

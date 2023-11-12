@@ -35,6 +35,10 @@ const string supla_abstract_action_cg_command::get_command_name(void) {
       return "ACTION-CG-OPEN:";
     case ACTION_CLOSE:
       return "ACTION-CG-CLOSE:";
+    case ACTION_TURN_ON:
+      return "ACTION-CG-TURN-ON:";
+    case ACTION_TURN_OFF:
+      return "ACTION-CG-TURN-OFF:";
     case ACTION_TOGGLE:
       return "ACTION-CG-TOGGLE:";
     case ACTION_STOP:
@@ -49,6 +53,16 @@ const string supla_abstract_action_cg_command::get_command_name(void) {
       return "ACTION-CG-SBS:";
     case ACTION_SHUT_PARTIALLY:
       return "ACTION-CG-SHUT-PARTIALLY:";
+    case ACTION_HVAC_SET_PARAMETERS:
+      return "ACTION-CG-HVAC-SET-PARAMETERS:";
+    case ACTION_HVAC_SWITCH_TO_MANUAL_MODE:
+      return "ACTION-CG-HVAC-SWITCH-TO-MANUAL-MODE:";
+    case ACTION_HVAC_SWITCH_TO_PROGRAM_MODE:
+      return "ACTION-CG-HVAC-SWITCH-TO-PROGRAM-MODE:";
+    case ACTION_HVAC_SET_TEMPERATURE:
+      return "ACTION-CG-HVAC-SET-TEMPERATURE:";
+    case ACTION_HVAC_SET_TEMPERATURES:
+      return "ACTION-CG-HVAC-SET-TEMPERATURES:";
   }
   return "";
 }
@@ -108,6 +122,73 @@ void supla_abstract_action_cg_command::on_command_match(const char *params) {
     return;
   }
 
+  if (action == ACTION_HVAC_SET_PARAMETERS) {
+    TAction_HVAC_Parameters raw_hvac_params = {};
+    unsigned int mode = 0;
+    int heat = 0;
+    int cool = 0;
+    unsigned int flags = 0;
+
+    sscanf(params, "%i,%i,%u,%u,%i,%i,%u", &user_id, &group_id,
+           &raw_hvac_params.DurationSec, &mode, &heat, &cool, &flags);
+
+    if (user_id && group_id &&
+        (user = supla_user::find(user_id, false)) != NULL) {
+      raw_hvac_params.Mode = mode;
+      raw_hvac_params.SetpointTemperatureHeat = heat;
+      raw_hvac_params.SetpointTemperatureCool = cool;
+      raw_hvac_params.Flags = flags;
+      supla_action_hvac_parameters hvac_params(&raw_hvac_params);
+      bool result = action_hvac_set_parameters(user, group_id, &hvac_params);
+      _send_result(result, group_id);
+    } else {
+      send_result("UNKNOWN:", group_id);
+    }
+
+    return;
+  }
+
+  if (action == ACTION_HVAC_SET_TEMPERATURE) {
+    int temperature = 0;
+
+    sscanf(params, "%i,%i,%i", &user_id, &group_id, &temperature);
+
+    if (user_id && group_id &&
+        (user = supla_user::find(user_id, false)) != NULL) {
+      supla_action_hvac_setpoint_temperature t(temperature);
+      bool result = action_hvac_set_temperature(user, group_id, &t);
+      _send_result(result, group_id);
+    } else {
+      send_result("UNKNOWN:", group_id);
+    }
+
+    return;
+  }
+
+  if (action == ACTION_HVAC_SET_TEMPERATURES) {
+    short heat = 0;
+    short cool = 0;
+    unsigned int flags = 0;
+
+    sscanf(params, "%i,%i,%hi,%hi,%u", &user_id, &group_id, &heat, &cool,
+           &flags);
+
+    if (user_id && group_id &&
+        (user = supla_user::find(user_id, false)) != NULL) {
+      supla_action_hvac_setpoint_temperatures t(
+          flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET ? &heat
+                                                               : nullptr,
+          flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET ? &cool
+                                                               : nullptr);
+      bool result = action_hvac_set_temperatures(user, group_id, &t);
+      _send_result(result, group_id);
+    } else {
+      send_result("UNKNOWN:", group_id);
+    }
+
+    return;
+  }
+
   if (params) {
     sscanf(params, "%i,%i", &user_id, &group_id);
 
@@ -119,6 +200,12 @@ void supla_abstract_action_cg_command::on_command_match(const char *params) {
         case ACTION_OPEN:
         case ACTION_CLOSE:
           result = action_open_close(user, group_id, action == ACTION_OPEN);
+          break;
+        case ACTION_TURN_ON:
+          result = action_turn_on(user, group_id);
+          break;
+        case ACTION_TURN_OFF:
+          result = action_turn_off(user, group_id);
           break;
         case ACTION_TOGGLE:
           result = action_toggle(user, group_id);
@@ -134,6 +221,12 @@ void supla_abstract_action_cg_command::on_command_match(const char *params) {
           break;
         case ACTION_STEP_BY_STEP:
           result = action_step_by_step(user, group_id);
+          break;
+        case ACTION_HVAC_SWITCH_TO_MANUAL_MODE:
+          result = action_hvac_switch_to_manual_mode(user, group_id);
+          break;
+        case ACTION_HVAC_SWITCH_TO_PROGRAM_MODE:
+          result = action_hvac_switch_to_program_mode(user, group_id);
           break;
       }
 

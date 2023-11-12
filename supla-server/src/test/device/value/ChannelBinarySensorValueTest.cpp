@@ -20,6 +20,7 @@
 
 #include "device/value/channel_binary_sensor_value.h"
 #include "devicechannel.h"  // NOLINT
+#include "jsonconfig/channel/binary_sensor_config.h"
 
 namespace testing {
 
@@ -62,13 +63,18 @@ TEST_F(ChannelBinarySensorValueTest, applyChannelProperties) {
                              nullptr);
   EXPECT_FALSE(v.is_hi());
 
+  binary_sensor_config bin_cfg;
+  TChannelConfig_BinarySensor raw_cfg = {};
+  raw_cfg.InvertedLogic = 1;
+  bin_cfg.set_config(&raw_cfg);
+
   v.set_hi(true);
-  v.apply_channel_properties(SUPLA_CHANNELTYPE_SENSORNC, 0, 0, 0, 1, 0,
-                             nullptr);
+  v.apply_channel_properties(SUPLA_CHANNELTYPE_SENSORNC, 0, 0, 0, 0, 0,
+                             &bin_cfg);
   EXPECT_TRUE(v.is_hi());
 
   v.set_hi(true);
-  v.apply_channel_properties(0, 0, 0, 0, 1, 0, nullptr);
+  v.apply_channel_properties(0, 0, 0, 0, 0, 0, &bin_cfg);
   EXPECT_FALSE(v.is_hi());
 }
 

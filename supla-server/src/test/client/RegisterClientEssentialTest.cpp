@@ -18,6 +18,8 @@
 
 #include "client/RegisterClientEssentialTest.h"
 
+#include <string>
+
 namespace testing {
 
 using std::string;

@@ -18,6 +18,8 @@
 
 #include "http/HttpThrottlingTest.h"
 
+#include <string>
+
 #include "proto.h"
 
 namespace testing {

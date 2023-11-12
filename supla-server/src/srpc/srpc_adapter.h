@@ -70,8 +70,12 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
   virtual _supla_int_t sdc_async_get_user_localtime_result(
       TSDC_UserLocalTimeResult *localtime);
 
+  virtual _supla_int_t sc_async_channel_relation_pack_update(
+      TSC_SuplaChannelRelationPack *relation_pack);  // ver. >= 21
+
   virtual _supla_int_t sc_async_scene_pack_update(
       TSC_SuplaScenePack *scene_pack);  // ver. >= 18
+
   virtual _supla_int_t sc_async_scene_state_pack_update(
       TSC_SuplaSceneStatePack *scene_state_pack);  // ver. >= 18
 
@@ -128,6 +132,27 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sc_async_register_pn_client_token_result(
       TSC_RegisterPnClientTokenResult *result);  // ver. >= 20
+
+  virtual _supla_int_t sd_async_set_device_config_result(
+      TSDS_SetDeviceConfigResult *result);  // ver. >= 21
+
+  virtual _supla_int_t sd_async_set_device_config_request(
+      TSDS_SetDeviceConfig *config);  // ver. >= 21
+
+  virtual _supla_int_t sd_async_set_channel_config_result(
+      TSDS_SetChannelConfigResult *result);  // ver. >= 21
+
+  virtual _supla_int_t sd_async_set_channel_config_request(
+      TSDS_SetChannelConfig *config);  // ver. >= 21
+
+  virtual _supla_int_t sc_async_channel_config_update_or_result(
+      TSC_ChannelConfigUpdateOrResult *config);  // ver. >= 21
+
+  virtual _supla_int_t sd_async_channel_config_finished(
+      TSD_ChannelConfigFinished *fin);  // ver. >= 21
+
+  virtual _supla_int_t sc_async_device_config_update_or_result(
+      TSC_DeviceConfigUpdateOrResult *config);  // ver. >= 21
 };
 
 #endif /* SRPC_ADAPTER_H_ */

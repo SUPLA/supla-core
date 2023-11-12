@@ -136,7 +136,7 @@ bool supla_abstract_register_device::device_auth(void) {
                                 &location_enabled) == false) {
     send_result(SUPLA_RESULTCODE_BAD_CREDENTIALS);
     return false;
-  };
+  }
 
   if (register_device_e != nullptr &&
       false == authkey_auth(get_guid(), register_device_e->Email, get_authkey(),
@@ -152,7 +152,7 @@ bool supla_abstract_register_device::device_auth(void) {
 
     send_result(SUPLA_RESULTCODE_BAD_CREDENTIALS);
     return false;
-  };
+  }
 
   if (get_user_id() == 0) {
     send_result(SUPLA_RESULTCODE_BAD_CREDENTIALS);
@@ -258,7 +258,8 @@ bool supla_abstract_register_device::add_channels(void) {
       if (channel_type == 0) {
         int Param1 = 0;
         int Param2 = 0;
-        supla_device_channel::get_defaults(type, default_func, &Param1, &Param2);
+        supla_device_channel::get_defaults(type, default_func, &Param1,
+                                           &Param2);
 
         int channel_id = device_dao->add_channel(
             device_id, number, type, default_func, Param1, Param2,
@@ -437,7 +438,9 @@ void supla_abstract_register_device::register_device(
     resultcode = SUPLA_RESULTCODE_CFG_MODE_REQUESTED;
   }
 
-  on_registraction_success();
+  on_registration_success();
 
   send_result(resultcode);
+
+  after_registration_success();
 }

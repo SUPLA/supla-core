@@ -19,6 +19,9 @@
 #ifndef CONNECTION_OBJECTS_MOCK_H_
 #define CONNECTION_OBJECTS_MOCK_H_
 
+#include <memory>
+#include <vector>
+
 #include "conn/connection_objects.h"
 #include "gtest/gtest.h"  // NOLINT
 

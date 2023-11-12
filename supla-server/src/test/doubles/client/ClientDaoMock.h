@@ -21,6 +21,8 @@
 
 #include <gmock/gmock.h>
 
+#include <string>
+
 #include "client/abstract_client_dao.h"
 
 namespace testing {

@@ -34,7 +34,7 @@ class supla_client_channelgroup_relation
   supla_client_channelgroup_relation(supla_client_channelgroups *Container,
                                      int DeviceId, int ChannelId, int GroupId);
   bool remote_update_is_possible(void);
-  int getExtraId(void);
+  int get_extra_id(void);
   int getDeviceId(void);
   int getChannelId(void);
   int getGroupId(void);

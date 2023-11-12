@@ -20,8 +20,8 @@
 
 #include <string.h>
 
-#include "channeljsonconfig/impulse_counter_config.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "jsonconfig/channel/impulse_counter_config.h"
 
 supla_channel_ic_value::supla_channel_ic_value(void) : supla_channel_value() {
   memset(original_raw_value, 0, SUPLA_CHANNELVALUE_SIZE);
@@ -52,7 +52,7 @@ void supla_channel_ic_value::set_raw_value(
 
 void supla_channel_ic_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
-    int param3, int param4, channel_json_config *json_config) {
+    int param3, int param4, supla_json_config *json_config) {
   impulse_counter_config config(json_config);
 
   config.add_initial_value(
@@ -60,7 +60,7 @@ void supla_channel_ic_value::apply_channel_properties(
 }
 
 supla_channel_extended_value *supla_channel_ic_value::convert2extended(
-    channel_json_config *json_config, int func, const char *text_param1,
+    supla_json_config *json_config, int func, const char *text_param1,
     const char *text_param2, int param2, int param3,
     supla_channel_extended_value **data_logger_purpose) {
   impulse_counter_config config(json_config);

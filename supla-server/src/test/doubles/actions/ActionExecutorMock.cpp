@@ -29,10 +29,20 @@ using std::shared_ptr;
 using std::string;
 
 ActionExecutorMock::ActionExecutorMock() : supla_abstract_action_executor() {
+  temperature = nullptr;
+  temperatures = nullptr;
   clear();
 }
 
-ActionExecutorMock::~ActionExecutorMock() {}
+ActionExecutorMock::~ActionExecutorMock() {
+  if (temperature) {
+    delete temperature;
+  }
+
+  if (temperatures) {
+    delete temperatures;
+  }
+}
 
 shared_ptr<supla_device> ActionExecutorMock::get_device(void) {
   return supla_abstract_action_executor::get_device();
@@ -73,8 +83,22 @@ void ActionExecutorMock::clear(void) {
   this->closing_percentage = -1;
   this->rgbw_counter = 0;
   this->forward_outside_counter = 0;
+  this->hvac_set_parameters_counter = 0;
+  this->hvac_switch_to_program_mode_counter = 0;
+  this->hvac_switch_to_manual_mode_counter = 0;
+  this->hvac_set_temperature_counter = 0;
+  this->hvac_set_temperatures_counter = 0;
   this->rgbw_on_off = -1;
   this->delta = false;
+  if (this->temperature) {
+    delete this->temperature;
+    this->temperature = nullptr;
+  }
+
+  if (this->temperatures) {
+    delete this->temperatures;
+    this->temperatures = nullptr;
+  }
 }
 
 void ActionExecutorMock::addTime(void) {
@@ -83,7 +107,7 @@ void ActionExecutorMock::addTime(void) {
   times.push_back(now);
 }
 
-void ActionExecutorMock::set_on(bool on) {
+void ActionExecutorMock::set_on(bool on, unsigned long long duration_ms) {
   addTime();
   if (on) {
     on_counter++;
@@ -239,6 +263,55 @@ void ActionExecutorMock::forward_outside(int cap) {
   forward_outside_counter++;
 }
 
+void ActionExecutorMock::hvac_set_parameters(
+    supla_action_hvac_parameters *params) {
+  addTime();
+  hvac_set_parameters_counter++;
+}
+
+void ActionExecutorMock::hvac_switch_to_program_mode(void) {
+  addTime();
+  hvac_switch_to_program_mode_counter++;
+}
+
+void ActionExecutorMock::hvac_switch_to_manual_mode(void) {
+  addTime();
+  hvac_switch_to_manual_mode_counter++;
+}
+
+void ActionExecutorMock::hvac_set_temperature(
+    supla_action_hvac_setpoint_temperature *temperature) {
+  addTime();
+  hvac_set_temperature_counter++;
+
+  if (this->temperature) {
+    delete this->temperature;
+    this->temperature = nullptr;
+  }
+
+  if (temperature) {
+    this->temperature = dynamic_cast<supla_action_hvac_setpoint_temperature *>(
+        temperature->copy());
+  }
+}
+
+void ActionExecutorMock::hvac_set_temperatures(
+    supla_action_hvac_setpoint_temperatures *temperatures) {
+  addTime();
+  hvac_set_temperatures_counter++;
+
+  if (this->temperatures) {
+    delete this->temperatures;
+    this->temperatures = nullptr;
+  }
+
+  if (temperatures) {
+    this->temperatures =
+        dynamic_cast<supla_action_hvac_setpoint_temperatures *>(
+            temperatures->copy());
+  }
+}
+
 int ActionExecutorMock::getOnCounter(void) { return on_counter; }
 
 int ActionExecutorMock::getOffCounter(void) { return off_counter; }
@@ -303,6 +376,26 @@ int ActionExecutorMock::getOpenCloseWctCounter(void) {
 
 int ActionExecutorMock::getForwardOutsideCounter(void) {
   return forward_outside_counter;
+}
+
+int ActionExecutorMock::getHvacSetParametersCounter(void) {
+  return hvac_set_parameters_counter;
+}
+
+int ActionExecutorMock::getHvacSwitchToProgramModeCounter(void) {
+  return hvac_switch_to_program_mode_counter;
+}
+
+int ActionExecutorMock::getHvacSwitchToManualModeCounter(void) {
+  return hvac_switch_to_manual_mode_counter;
+}
+
+int ActionExecutorMock::getHvacSetTemperatureCounter(void) {
+  return hvac_set_temperature_counter;
+}
+
+int ActionExecutorMock::getHvacSetTemperaturesCounter(void) {
+  return hvac_set_temperatures_counter;
 }
 
 char ActionExecutorMock::getClosingPercentage(void) {
@@ -425,9 +518,39 @@ int ActionExecutorMock::counterSetCount(void) {
     result++;
   }
 
+  if (hvac_set_parameters_counter > 0) {
+    result++;
+  }
+
+  if (hvac_switch_to_program_mode_counter > 0) {
+    result++;
+  }
+
+  if (hvac_switch_to_manual_mode_counter > 0) {
+    result++;
+  }
+
+  if (hvac_set_temperature_counter > 0) {
+    result++;
+  }
+
+  if (hvac_set_temperatures_counter > 0) {
+    result++;
+  }
+
   return result;
 }
 
 list<struct timeval> ActionExecutorMock::getTimes(void) { return times; }
+
+supla_action_hvac_setpoint_temperature *
+ActionExecutorMock::getHvacSetpointTemperature(void) {
+  return temperature;
+}
+
+supla_action_hvac_setpoint_temperatures *
+ActionExecutorMock::getHvacSetpointTemperatures(void) {
+  return temperatures;
+}
 
 }  // namespace testing

@@ -22,8 +22,8 @@
 #include <map>
 #include <string>
 
-#include "channeljsonconfig/channel_json_config.h"
 #include "device/extended_value/channel_extended_value.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 
 class supla_channel_extended_value;
@@ -42,10 +42,10 @@ class supla_channel_value {
                                         unsigned char protocol_version,
                                         int param1, int param2, int param3,
                                         int param4,
-                                        channel_json_config *json_config);
+                                        supla_json_config *json_config);
   virtual std::map<std::string, std::string> get_replacement_map(void);
   virtual supla_channel_extended_value *convert2extended(
-      channel_json_config *json_config, int func, const char *text_param1,
+      supla_json_config *json_config, int func, const char *text_param1,
       const char *text_param2, int param2, int param3,
       supla_channel_extended_value **data_logger_purpose);
 };

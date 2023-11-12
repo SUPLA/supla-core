@@ -26,6 +26,7 @@
 #include "clientlocation.h"
 #include "conn/authkey_cache.h"
 #include "db/database.h"
+#include "device/device_dao.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
@@ -54,6 +55,11 @@ supla_client::supla_client(supla_connection *connection)
   this->name[0] = 0;
   this->superuser_authorized = false;
   this->access_id = 0;
+  this->channel_relation_remote_updater =
+      new supla_client_channel_relation_remote_updater(
+          connection->get_srpc_adapter());
+  this->channel_relations =
+      new supla_client_channel_reactions(channel_relation_remote_updater);
 }
 
 supla_client::~supla_client() {
@@ -63,6 +69,8 @@ supla_client::~supla_client() {
   delete scenes;
   delete scene_remote_updater;
   delete scene_dao;
+  delete channel_relations;
+  delete channel_relation_remote_updater;
 }
 
 supla_abstract_srpc_call_handler_collection *
@@ -158,6 +166,8 @@ void supla_client::remote_update_lists(void) {
     return;
 
   if (scenes->update_remote()) return;
+
+  if (channel_relations->update_remote()) return;
 }
 
 void supla_client::load_config(void) {
@@ -165,6 +175,7 @@ void supla_client::load_config(void) {
   channels->load();
   cgroups->load();
   scenes->load(get_user_id(), get_id());
+  channel_relations->load(channels);
 }
 
 void supla_client::get_next(void) { remote_update_lists(); }
@@ -234,6 +245,53 @@ void supla_client::on_device_channel_state_result(int ChannelID,
 
   srpc_csd_async_channel_state_result(
       get_connection()->get_srpc_adapter()->get_srpc(), &cstate);
+}
+
+unsigned char supla_client::send_device_config(int device_id,
+                                               unsigned _supla_int64_t fields) {
+  if (get_protocol_version() < 21) {
+    return SUPLA_CONFIG_RESULT_FALSE;
+  }
+
+  if (!get_channels()->get_any_channel_id_with_deviceid(device_id)) {
+    return SUPLA_CONFIG_RESULT_DEVICE_NOT_FOUND;
+  }
+
+  unsigned char result_code = SUPLA_CONFIG_RESULT_FALSE;
+
+  supla_db_access_provider dba;
+  supla_device_dao dao(&dba);
+
+  device_json_config *config =
+      dao.get_device_config(device_id, nullptr, nullptr);
+  if (config) {
+    unsigned _supla_int64_t available_fields = config->get_available_fields();
+    while (fields) {
+      TSDS_SetDeviceConfig sds_config = {};
+      config->get_config(&sds_config, fields, &fields);
+
+      TSC_DeviceConfigUpdateOrResult result = {};
+
+      result.Result = SUPLA_CONFIG_RESULT_TRUE;
+      result.Config.DeviceId = device_id;
+      result.Config.EndOfDataFlag = fields == 0 ? 1 : 0;
+      result.Config.AvailableFields = available_fields;
+      result.Config.Fields = sds_config.Fields;
+      result.Config.ConfigSize = sds_config.ConfigSize;
+      memcpy(result.Config.Config, sds_config.Config,
+             SUPLA_DEVICE_CONFIG_MAXSIZE);
+
+      get_connection()
+          ->get_srpc_adapter()
+          ->sc_async_device_config_update_or_result(&result);
+
+      result_code = result.Result;
+    }
+
+    delete config;
+  }
+
+  return result_code;
 }
 
 void supla_client::set_channel_function(int ChannelId, int Func) {

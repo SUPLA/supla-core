@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_DEVICE_CHANNEL_VALUE_CHANED_B_H_
 #define SUPLA_CH_DEVICE_CHANNEL_VALUE_CHANED_B_H_
 
+#include <memory>
+
 #include "device/call_handler/abstract_device_channel_value_changed.h"
 
 class supla_ch_device_channel_value_changed_b

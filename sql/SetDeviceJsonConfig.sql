@@ -1,0 +1,1 @@
+UPDATE supla_iodevice SET user_config = '{"a": 1, "b": "abcd", "c": true, "screenBrightness": 98, "buttonVolume": 15}', properties = '{"1":2,"homeScreenContentAvailable":["NONE","TEMPERATURE","MAIN_AND_AUX_TEMPERATURE"]}' WHERE id = 73;

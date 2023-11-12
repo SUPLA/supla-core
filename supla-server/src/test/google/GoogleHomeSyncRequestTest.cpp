@@ -18,6 +18,8 @@
 
 #include "GoogleHomeSyncRequestTest.h"
 
+#include <memory>
+
 #include "google/google_home_sync_request.h"
 #include "http/asynctask_http_thread_bucket.h"
 

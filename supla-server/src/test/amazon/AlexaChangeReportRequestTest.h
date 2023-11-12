@@ -19,6 +19,8 @@
 #ifndef ALEXA_CHANGE_REPORT_REQUEST_TEST_H_
 #define ALEXA_CHANGE_REPORT_REQUEST_TEST_H_
 
+#include <string>
+
 #include "asynctask/AsyncTaskTest.h"
 #include "caller.h"
 #include "device/value/channel_value.h"

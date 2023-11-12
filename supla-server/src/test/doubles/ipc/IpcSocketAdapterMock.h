@@ -22,6 +22,8 @@
 #include <gmock/gmock.h>
 #include <ipc/abstract_ipc_socket_adapter.h>
 
+#include <string>
+
 namespace testing {
 
 class IpcSocketAdapterMock : public supla_abstract_ipc_socket_adapter {

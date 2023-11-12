@@ -388,6 +388,10 @@ bool supla_state_webhook_client::window_opening_sensor_report() {
   return hi_report("OPENINGSENSOR_WINDOW");
 }
 
+bool supla_state_webhook_client::hotel_card_sensor_report() {
+  return hi_report("HOTELCARDSENSOR");
+}
+
 bool supla_state_webhook_client::mail_sensor_report() {
   return hi_report("MAILSENSOR");
 }

@@ -19,6 +19,8 @@
 #ifndef INTEGRATIONTEST_H_
 #define INTEGRATIONTEST_H_
 
+#include <string>
+
 #include "gtest/gtest.h"
 #include "supla-client.h"
 

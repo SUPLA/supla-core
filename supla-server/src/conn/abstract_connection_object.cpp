@@ -23,6 +23,7 @@
 #include "svrcfg.h"
 #include "user.h"
 
+using std::function;
 using std::shared_ptr;
 using std::weak_ptr;
 
@@ -33,6 +34,7 @@ supla_abstract_connection_object::supla_abstract_connection_object(
   this->lck = lck_init();
   this->ID = 0;
   this->registered = false;
+  this->multipart_call_store = nullptr;
   memset(this->guid, 0, SUPLA_GUID_SIZE);
   memset(this->authkey, 0, SUPLA_AUTHKEY_SIZE);
 
@@ -40,6 +42,9 @@ supla_abstract_connection_object::supla_abstract_connection_object(
 }
 
 supla_abstract_connection_object::~supla_abstract_connection_object() {
+  if (multipart_call_store) {
+    delete multipart_call_store;
+  }
   lck_free(this->lck);
 }
 
@@ -190,6 +195,16 @@ unsigned char supla_abstract_connection_object::get_protocol_version(void) {
   }
   unlock();
   return result;
+}
+
+void supla_abstract_connection_object::access_multipart_call_store(
+    function<void(supla_multipart_call_store *)> on_store) {
+  lock();
+  if (!multipart_call_store) {
+    multipart_call_store = new supla_multipart_call_store();
+  }
+  on_store(multipart_call_store);
+  unlock();
 }
 
 unsigned _supla_int64_t supla_abstract_connection_object::wait_time_usec() {

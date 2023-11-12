@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_GET_REGISTRATION_ENABLED_H_
 #define SUPLA_CH_GET_REGISTRATION_ENABLED_H_
 
+#include <memory>
+
 #include "srpc/abstract_srpc_call_hanlder.h"
 
 class supla_ch_get_registration_enabled

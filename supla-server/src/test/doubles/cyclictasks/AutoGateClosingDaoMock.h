@@ -21,6 +21,8 @@
 
 #include <gmock/gmock.h>
 
+#include <vector>
+
 #include "cyclictasks/abstract_auto_gate_closing_dao.h"
 
 namespace testing {

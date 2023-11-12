@@ -112,12 +112,12 @@ int supla_cahnnel_property_getter::_get_func(int user_id, int device_id,
   return result;
 }
 
-channel_json_config *supla_cahnnel_property_getter::_get_detached_json_config(
+supla_json_config *supla_cahnnel_property_getter::_get_detached_json_config(
     int user_id, int device_id, int channel_id) {
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
 
-  channel_json_config *result = nullptr;
+  supla_json_config *result = nullptr;
 
   if (device != nullptr) {
     device->get_channels()->access_channel(

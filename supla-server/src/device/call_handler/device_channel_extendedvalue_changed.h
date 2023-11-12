@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_DEVICE_CHANNEL_EXTENDEDVALUE_CHANED_H_
 #define SUPLA_CH_DEVICE_CHANNEL_EXTENDEDVALUE_CHANED_H_
 
+#include <memory>
+
 #include "device/call_handler/abstract_device_srpc_call_handler.h"
 
 class supla_ch_device_channel_extendedvalue_changed

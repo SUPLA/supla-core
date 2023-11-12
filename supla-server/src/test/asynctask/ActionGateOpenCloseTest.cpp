@@ -18,10 +18,12 @@
 
 #include "ActionGateOpenCloseTest.h"
 
+#include <memory>
+
 #include "actions/action_gate_openclose.h"
 #include "device/value/channel_gate_value.h"
-#include "doubles/channeljsonconfig/ChannelJSONConfigGetterStub.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
+#include "doubles/jsonconfig/channel/ChannelJSONConfigGetterStub.h"
 #include "log.h"
 
 namespace testing {
@@ -99,7 +101,7 @@ void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
   EXPECT_TRUE(config_getter != NULL);
 
   if (config_getter) {
-    channel_json_config *config = new channel_json_config();
+    supla_json_config *config = new supla_json_config();
     EXPECT_TRUE(config != NULL);
 
     if (config) {

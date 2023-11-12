@@ -23,6 +23,9 @@
 #include <map>
 #include <vector>
 
+#include "actions/action_hvac_parameters.h"
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
 #include "device/abstract_device_dao.h"
 #include "device/channel_fragment.h"
 #include "device/devicechannel.h"
@@ -39,8 +42,6 @@ class supla_device_channels {
 
   supla_device_channel *find_channel(int id);
   supla_device_channel *find_channel_by_number(int number);
-
-  std::list<int> mr_channel(int channel_id, bool master);
 
   void async_set_channel_value(supla_device_channel *channel,
                                const supla_caller &caller, int group_id,
@@ -67,6 +68,12 @@ class supla_device_channels {
                          int group_id, unsigned char eol, bool unknown,
                          bool open, bool cancel_tasks = true);
 
+  bool action_hvac(
+      const supla_caller &caller, int channel_id, int group_id,
+      unsigned char eol, unsigned int duration,
+      std::function<bool(supla_device_channel *, supla_channel_hvac_value *)>
+          on_value);
+
  public:
   explicit supla_device_channels(supla_abstract_device_dao *dao,
                                  supla_device *device,
@@ -78,7 +85,7 @@ class supla_device_channels {
   void access_channel(int channel_id,
                       std::function<void(supla_device_channel *)> on_channel);
 
-  void for_each_channel(std::function<void(supla_device_channel *)> on_channel);
+  void for_each(std::function<void(supla_device_channel *, bool *)> on_channel);
 
   bool get_channel_value(int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
                          char *online, unsigned _supla_int_t *validity_time_sec,
@@ -114,8 +121,8 @@ class supla_device_channels {
 
   bool get_dgf_transparency(int channel_id, unsigned short *mask);
 
-  std::list<int> master_channel(int channel_id);
-  std::list<int> related_channel(int channel_id);
+  std::vector<supla_channel_relation> get_channel_relations(
+      int channel_id, e_relation_kind kind);
   std::list<int> get_all_ids(void);
   int get_channel_id(unsigned char channel_number);
   bool channel_exists(int channel_id);
@@ -183,18 +190,37 @@ class supla_device_channels {
   bool action_open_close_without_canceling_tasks(const supla_caller &caller,
                                                  int channel_id, int group_id,
                                                  unsigned char eol);
+  bool action_hvac_set_parameters(const supla_caller &caller, int channel_id,
+                                  int group_id, unsigned char eol,
+                                  const supla_action_hvac_parameters *params);
+  bool action_hvac_switch_to_manual_mode(const supla_caller &caller,
+                                         int channel_id, int group_id,
+                                         unsigned char eol);
+  bool action_hvac_switch_to_program_mode(const supla_caller &caller,
+                                          int channel_id, int group_id,
+                                          unsigned char eol);
+  bool action_hvac_set_temperature(
+      const supla_caller &caller, int channel_id, int group_id,
+      unsigned char eol,
+      const supla_action_hvac_setpoint_temperature *temperature);
+  bool action_hvac_set_temperatures(
+      const supla_caller &caller, int channel_id, int group_id,
+      unsigned char eol,
+      const supla_action_hvac_setpoint_temperatures *temperatures);
   bool reset_counters(int channel_id);
   bool recalibrate(int channel_id, const supla_caller &caller,
                    bool superuser_authorized);
   void timer_arm(const supla_caller &caller, int channel_id, int group_id,
                  unsigned char eol, unsigned char On, unsigned int duration_ms);
-  channel_json_config *get_json_config(int channel_id);
+  supla_json_config *get_json_config(int channel_id);
   unsigned int get_value_validity_time_left_msec(void);
   void on_related_sensor_value_changed(int control_channel_id, int sensor_id,
                                        bool is_open);
 
   void get_channel_values(std::vector<supla_channel_value_envelope *> *result,
                           std::function<bool(supla_channel_value *)> filter);
+
+  void send_configs_to_device(void);
 
   void get_channel_extended_values(
       std::vector<supla_channel_extended_value_envelope *> *result,

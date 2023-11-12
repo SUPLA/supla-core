@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_SET_ACTIVITY_TIMEOUT_H_
 #define SUPLA_CH_SET_ACTIVITY_TIMEOUT_H_
 
+#include <memory>
+
 #include "srpc/abstract_srpc_call_hanlder.h"
 
 class supla_ch_set_activity_timeout : public supla_abstract_srpc_call_handler {

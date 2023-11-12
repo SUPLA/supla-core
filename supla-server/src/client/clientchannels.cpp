@@ -51,7 +51,7 @@ bool supla_client_channels::channel_exists(int ChannelID) {
 
   safe_array_lock(getArr());
 
-  if (find_channel(ChannelID) != NULL) result = true;
+  if (find_channel(ChannelID) != nullptr) result = true;
 
   safe_array_unlock(getArr());
 
@@ -59,7 +59,7 @@ bool supla_client_channels::channel_exists(int ChannelID) {
 }
 
 void supla_client_channels::_load(database *db, e_objc_scope scope) {
-  db->get_client_channels(getClient()->get_id(), NULL, this);
+  db->get_client_channels(getClient()->get_id(), nullptr, this);
 }
 
 void supla_client_channels::update_device_channels(int DeviceId) {
@@ -72,12 +72,12 @@ void supla_client_channels::update_device_channels(int DeviceId) {
   delete db;
 
   void *arr = getArr();
-  supla_client_channel *channel = NULL;
+  supla_client_channel *channel = nullptr;
 
   safe_array_lock(arr);
   for (int a = 0; a < safe_array_count(arr); a++) {
     channel = static_cast<supla_client_channel *>(safe_array_get(arr, a));
-    if (channel && channel->getDeviceId() == DeviceId) {
+    if (channel && channel->get_device_id() == DeviceId) {
       channel->mark_for_remote_update(OI_REMOTEUPDATE_DATA2);
     }
   }
@@ -88,7 +88,7 @@ template <typename TSuplaDataPack, class TObjClass>
 bool supla_client_channels::get_datapack_for_remote(
     supla_client_objcontainer_item *obj, void **data, int max_count) {
   TSuplaDataPack *pack = static_cast<TSuplaDataPack *>(*data);
-  if (pack == NULL) {
+  if (pack == nullptr) {
     pack = (TSuplaDataPack *)malloc(sizeof(TSuplaDataPack));
     memset(pack, 0, sizeof(TSuplaDataPack));
   }
@@ -114,7 +114,7 @@ bool supla_client_channels::get_ev_datapack_for_remote(
   TSC_SuplaChannelExtendedValuePack *pack =
       static_cast<TSC_SuplaChannelExtendedValuePack *>(*data);
 
-  if (pack != NULL) {
+  if (pack != nullptr) {
     if (pack->count >= SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT ||
         pack->pack_size < 0 ||
         pack->pack_size >= SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
@@ -130,14 +130,14 @@ bool supla_client_channels::get_ev_datapack_for_remote(
     _supla_int_t cev_size = sizeof(TSC_SuplaChannelExtendedValue) -
                             SUPLA_CHANNELEXTENDEDVALUE_SIZE + cev.value.size;
     if (cev_size + pack_size <= SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
-      if (pack == NULL) {
+      if (pack == nullptr) {
         pack = (TSC_SuplaChannelExtendedValuePack *)malloc(
             sizeof(TSC_SuplaChannelExtendedValuePack));
         memset(pack, 0, sizeof(TSC_SuplaChannelExtendedValuePack));
         *data = pack;
       }
 
-      if (pack != NULL) {
+      if (pack != nullptr) {
         memcpy(&pack->pack[pack->pack_size], &cev, cev_size);
         pack->pack_size += cev_size;
         pack->count++;
@@ -146,7 +146,7 @@ bool supla_client_channels::get_ev_datapack_for_remote(
     }
   }
 
-  if (pack != NULL) {
+  if (pack != nullptr) {
     pack->total_left++;
   }
 
@@ -189,7 +189,7 @@ bool supla_client_channels::get_data_for_remote(
           obj, data, SUPLA_CHANNELVALUE_PACK_MAXCOUNT);
 
     } else {
-      if (*data == NULL) {
+      if (*data == nullptr) {
         *data = malloc(sizeof(TSC_SuplaChannelValue));
       }
 
@@ -275,8 +275,8 @@ void supla_client_channels::set_channel_function(void *srpc, int ChannelId,
                                                  int Func) {
   supla_client_channel *channel = find_channel(ChannelId);
 
-  if (channel != NULL) {
-    channel->setFunc(Func);
+  if (channel != nullptr) {
+    channel->set_func(Func);
     remote_update(srpc);
   }
 }
@@ -285,7 +285,7 @@ void supla_client_channels::set_channel_caption(void *srpc, int ChannelId,
                                                 char *Caption) {
   supla_client_channel *channel = find_channel(ChannelId);
 
-  if (channel != NULL) {
+  if (channel != nullptr) {
     channel->setCaption(Caption);
     remote_update(srpc);
   }
@@ -295,7 +295,7 @@ unsigned _supla_int64_t supla_client_channels::value_validity_time_usec(void) {
   unsigned _supla_int64_t result = 0;
 
   void *arr = getArr();
-  supla_client_channel *channel = NULL;
+  supla_client_channel *channel = nullptr;
 
   safe_array_lock(arr);
   for (int a = 0; a < safe_array_count(arr); a++) {
@@ -314,7 +314,7 @@ unsigned _supla_int64_t supla_client_channels::value_validity_time_usec(void) {
 
 void supla_client_channels::update_expired(void *srpc) {
   void *arr = getArr();
-  supla_client_channel *channel = NULL;
+  supla_client_channel *channel = nullptr;
 
   safe_array_lock(arr);
   for (int a = 0; a < safe_array_count(arr); a++) {
@@ -331,13 +331,32 @@ void supla_client_channels::update_expired(void *srpc) {
   safe_array_unlock(arr);
 }
 
+void supla_client_channels::for_each(
+    function<void(supla_client_channel *, bool *will_continue)> on_channel) {
+  void *arr = getArr();
+  supla_client_channel *channel = nullptr;
+
+  safe_array_lock(arr);
+  bool will_continue = true;
+  for (int a = 0; a < safe_array_count(arr); a++) {
+    channel = static_cast<supla_client_channel *>(safe_array_get(arr, a));
+    if (channel) {
+      on_channel(channel, &will_continue);
+    }
+    if (!will_continue) {
+      break;
+    }
+  }
+  safe_array_unlock(arr);
+}
+
 void supla_client_channels::channel_access(
-    int channel_id, std::function<void(supla_client_channel *)> on_channel) {
+    int channel_id, function<void(supla_client_channel *)> on_channel) {
   safe_array_lock(getArr());
 
-  supla_client_channel *channel = NULL;
+  supla_client_channel *channel = nullptr;
 
-  if (NULL != (channel = find_channel(channel_id))) {
+  if (nullptr != (channel = find_channel(channel_id))) {
     on_channel(channel);
   }
 
@@ -350,7 +369,7 @@ void supla_client_channels::device_access(
 
   channel_access(channel_id,
                  [&device_id](supla_client_channel *channel) -> void {
-                   device_id = channel->getDeviceId();
+                   device_id = channel->get_device_id();
                  });
 
   if (!device_id) {
@@ -367,7 +386,7 @@ void supla_client_channels::device_access(
 int supla_client_channels::get_device_id(int channel_id) {
   int result = 0;
   channel_access(channel_id, [&result](supla_client_channel *channel) -> void {
-    result = channel->getDeviceId();
+    result = channel->get_device_id();
   });
 
   return result;
@@ -378,9 +397,22 @@ int supla_client_channels::get_any_channel_id_with_deviceid(int device_id) {
   safe_array_lock(getArr());
   supla_client_channel *channel = any_channel_with_deviceid(device_id);
   if (channel) {
-    result = channel->getId();
+    result = channel->get_id();
   }
   safe_array_unlock(getArr());
+
+  return result;
+}
+
+int supla_client_channels::get_channel_id(unsigned char channel_number) {
+  int result = 0;
+  for_each([&result, channel_number](supla_client_channel *channel,
+                                     bool *will_continue) -> void {
+    if (channel->get_channel_number() == channel_number) {
+      *will_continue = false;
+      result = channel->get_id();
+    }
+  });
 
   return result;
 }

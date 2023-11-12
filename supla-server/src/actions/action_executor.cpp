@@ -18,6 +18,8 @@
 
 #include "actions/action_executor.h"
 
+#include <memory>
+
 #include "http/http_event_hub.h"
 #include "mqtt/mqtt_client_suite.h"
 #include "push/pn_delivery_task.h"
@@ -32,7 +34,7 @@ using std::string;
 supla_action_executor::supla_action_executor(void)
     : supla_abstract_action_executor() {}
 
-void supla_action_executor::set_on(bool on) {
+void supla_action_executor::set_on(bool on, unsigned long long duration_ms) {
   execute_action([this, on](supla_user_channelgroups *channel_groups,
                             supla_device_channels *channels) -> void {
     if (channel_groups) {
@@ -296,4 +298,72 @@ void supla_action_executor::forward_outside(int cap) {
                                                device->get_id(),
                                                get_channel_id(), cap);
   }
+}
+
+void supla_action_executor::hvac_set_parameters(
+    supla_action_hvac_parameters *params) {
+  execute_action([&](supla_user_channelgroups *channel_groups,
+                     supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_hvac_set_parameters(get_caller(), get_group_id(),
+                                                 params);
+    } else {
+      channels->action_hvac_set_parameters(get_caller(), get_channel_id(), 0, 0,
+                                           params);
+    }
+  });
+}
+
+void supla_action_executor::hvac_switch_to_program_mode(void) {
+  execute_action([&](supla_user_channelgroups *channel_groups,
+                     supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_hvac_switch_to_program_mode(get_caller(),
+                                                         get_group_id());
+    } else {
+      channels->action_hvac_switch_to_program_mode(get_caller(),
+                                                   get_channel_id(), 0, 0);
+    }
+  });
+}
+
+void supla_action_executor::hvac_switch_to_manual_mode(void) {
+  execute_action([&](supla_user_channelgroups *channel_groups,
+                     supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_hvac_switch_to_manual_mode(get_caller(),
+                                                        get_group_id());
+    } else {
+      channels->action_hvac_switch_to_manual_mode(get_caller(),
+                                                  get_channel_id(), 0, 0);
+    }
+  });
+}
+
+void supla_action_executor::hvac_set_temperature(
+    supla_action_hvac_setpoint_temperature *temperature) {
+  execute_action([&](supla_user_channelgroups *channel_groups,
+                     supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_hvac_set_temperature(get_caller(), get_group_id(),
+                                                  temperature);
+    } else {
+      channels->action_hvac_set_temperature(get_caller(), get_channel_id(), 0,
+                                            0, temperature);
+    }
+  });
+}
+
+void supla_action_executor::hvac_set_temperatures(
+    supla_action_hvac_setpoint_temperatures *temperatures) {
+  execute_action([&](supla_user_channelgroups *channel_groups,
+                     supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_hvac_set_temperatures(get_caller(), get_group_id(),
+                                                   temperatures);
+    } else {
+      channels->action_hvac_set_temperatures(get_caller(), get_channel_id(), 0,
+                                             0, temperatures);
+    }
+  });
 }

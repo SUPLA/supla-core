@@ -18,6 +18,9 @@
 
 #include "PnLimitExceededTest.h"
 
+#include <string>
+#include <vector>
+
 #include "push/pn_limit_exceeded.h"
 
 namespace testing {

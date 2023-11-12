@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_ACTION_TRIGGER_H_
 #define SUPLA_CH_ACTION_TRIGGER_H_
 
+#include <memory>
+
 #include "device/call_handler/abstract_device_srpc_call_handler.h"
 
 class supla_ch_action_trigger : public supla_abstract_device_srpc_call_handler {

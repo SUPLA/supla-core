@@ -18,10 +18,10 @@
 
 #include "ChannelIcValueTest.h"
 
-#include "channeljsonconfig/impulse_counter_config.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_ic_value.h"
 #include "devicechannel.h"  // NOLINT
+#include "jsonconfig/channel/impulse_counter_config.h"
 
 namespace testing {
 

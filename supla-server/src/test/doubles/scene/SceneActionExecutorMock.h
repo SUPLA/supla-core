@@ -21,6 +21,8 @@
 
 #include <scene/scene_asynctask.h>
 
+#include <memory>
+
 #include "asynctask/abstract_asynctask.h"
 #include "doubles/actions/ActionExecutorMock.h"
 

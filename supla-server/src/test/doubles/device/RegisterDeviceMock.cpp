@@ -18,6 +18,8 @@
 
 #include "doubles/device/RegisterDeviceMock.h"
 
+#include <memory>
+
 namespace testing {
 RegisterDeviceMock::RegisterDeviceMock(void)
     : supla_abstract_register_device() {}

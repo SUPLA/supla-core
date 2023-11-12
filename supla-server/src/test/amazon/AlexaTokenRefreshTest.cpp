@@ -18,6 +18,8 @@
 
 #include "AlexaTokenRefreshTest.h"
 
+#include <memory>
+
 #include "amazon/alexa_change_report_request.h"
 #include "http/asynctask_http_thread_bucket.h"
 #include "log.h"
@@ -53,8 +55,8 @@ void AlexaTokenRefreshTest::httpCodeTest(int code) {
 
   supla_alexa_change_report_request *request =
       new supla_alexa_change_report_request(supla_caller(ctDevice), 1, 2, 567,
-                                             queue, pool, propertyGetter,
-                                             &credentials);
+                                            queue, pool, propertyGetter,
+                                            &credentials);
   request->set_delay_usec(0);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::FAILURE, 10000);
@@ -86,8 +88,8 @@ void AlexaTokenRefreshTest::badRequestTest(const string &exception,
 
   supla_alexa_change_report_request *request =
       new supla_alexa_change_report_request(supla_caller(ctDevice), 1, 2, 567,
-                                             queue, pool, propertyGetter,
-                                             &credentials);
+                                            queue, pool, propertyGetter,
+                                            &credentials);
   request->set_delay_usec(0);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::FAILURE, 10000);
@@ -185,8 +187,8 @@ TEST_F(AlexaTokenRefreshTest, expired) {
 
   supla_alexa_change_report_request *request =
       new supla_alexa_change_report_request(supla_caller(ctClient), 1, 2, 567,
-                                             queue, pool, propertyGetter,
-                                             &credentials);
+                                            queue, pool, propertyGetter,
+                                            &credentials);
   request->set_zulu_time("2019-02-01T12:09:33Z");
   request->set_message_id("29012dd1-33c7-6519-6e18-c4ee71d00487");
   request->set_delay_usec(0);
@@ -213,8 +215,8 @@ TEST_F(AlexaTokenRefreshTest, refreshTokenNotExists) {
 
   supla_alexa_change_report_request *request =
       new supla_alexa_change_report_request(supla_caller(ctDevice), 1, 2, 567,
-                                             queue, pool, propertyGetter,
-                                             &credentials);
+                                            queue, pool, propertyGetter,
+                                            &credentials);
   request->set_delay_usec(0);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::FAILURE, 10000);
@@ -310,8 +312,8 @@ TEST_F(AlexaTokenRefreshTest, theTokenHasChangedInTheMeantime) {
 
   supla_alexa_change_report_request *request =
       new supla_alexa_change_report_request(supla_caller(ctClient), 1, 2, 567,
-                                             queue, pool, propertyGetter,
-                                             &credentials);
+                                            queue, pool, propertyGetter,
+                                            &credentials);
   request->set_zulu_time("2019-02-01T12:09:33Z");
   request->set_message_id("29012dd1-33c7-6519-6e18-c4ee71d00487");
   request->set_delay_usec(0);

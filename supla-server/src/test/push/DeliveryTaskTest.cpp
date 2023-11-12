@@ -18,6 +18,10 @@
 
 #include "DeliveryTaskTest.h"
 
+#include <list>
+#include <memory>
+#include <vector>
+
 #include "gmock/gmock.h"
 #include "http/asynctask_http_thread_bucket.h"
 #include "push/pn_delivery_task.h"

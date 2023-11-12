@@ -41,7 +41,7 @@ class supla_channel_rs_value : public supla_channel_value {
                                         unsigned char protocol_version,
                                         int param1, int param2, int param3,
                                         int param4,
-                                        channel_json_config *json_config);
+                                        supla_json_config *json_config);
   static bool is_function_supported(int func);
 };
 

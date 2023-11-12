@@ -63,7 +63,7 @@ char s_worker::ipcc_get_opening_sensor_value() {
 
   if (sensor_channel.id != 0 && get_db()->get_channel(&sensor_channel) &&
       sensor_channel.param1 == get_params()->channel_id &&
-      (sensor_channel.type == SUPLA_CHANNELTYPE_SENSORNO ||
+      (sensor_channel.type == SUPLA_CHANNELTYPE_BINARYSENSOR ||
        sensor_channel.type == SUPLA_CHANNELTYPE_SENSORNC) &&
       get_ipcc()->is_connected(get_params()->user_id,
                                sensor_channel.iodevice_id) ==

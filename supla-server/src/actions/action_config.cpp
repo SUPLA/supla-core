@@ -22,6 +22,10 @@
 #include <strings.h>
 #include <time.h>
 
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
+#include "actions/action_rgbw_parameters.h"
+#include "actions/action_rs_parameters.h"
 #include "json/cJSON.h"
 #include "tools.h"
 
@@ -31,8 +35,7 @@ supla_action_config::supla_action_config(void) : abstract_action_config() {
   subject_id = 0;
   source_device_id = 0;
   source_channel_id = 0;
-  percentage = 0;
-  rgbw = {};
+  parameters = nullptr;
 }
 
 supla_action_config::supla_action_config(supla_action_config *src) {
@@ -41,11 +44,23 @@ supla_action_config::supla_action_config(supla_action_config *src) {
   subject_id = src->subject_id;
   source_device_id = src->source_device_id;
   source_channel_id = src->source_channel_id;
-  percentage = src->percentage;
-  rgbw = src->rgbw;
+  parameters = src->parameters ? src->parameters->copy() : nullptr;
 }
 
-supla_action_config::~supla_action_config(void) {}
+supla_action_config::supla_action_config(const supla_action_config &src) {
+  action_id = src.action_id;
+  subject_type = src.subject_type;
+  subject_id = src.subject_id;
+  source_device_id = src.source_device_id;
+  source_channel_id = src.source_channel_id;
+  parameters = src.parameters ? src.parameters->copy() : nullptr;
+}
+
+supla_action_config::~supla_action_config(void) {
+  if (parameters) {
+    delete parameters;
+  }
+}
 
 int supla_action_config::get_action_id(void) { return action_id; }
 
@@ -81,24 +96,17 @@ void supla_action_config::set_source_channel_id(int source_channel_id) {
   this->source_channel_id = source_channel_id;
 }
 
-char supla_action_config::get_percentage(void) { return percentage; }
-
-void supla_action_config::set_percentage(char percentage) {
-  this->percentage = percentage;
+supla_abstract_action_parameters *supla_action_config::get_parameters(void) {
+  return parameters ? parameters->copy() : nullptr;
 }
 
-TAction_RGBW_Parameters supla_action_config::get_rgbw(void) {
-  if (rgbw.ColorRandom) {
-    struct timeval now = {};
-    gettimeofday(&now, NULL);
-    unsigned int seed = now.tv_sec + now.tv_usec;
-    rgbw.Color = st_hue2rgb(rand_r(&seed) % 360);
+void supla_action_config::set_parameters(
+    supla_abstract_action_parameters *parameters) {
+  if (this->parameters) {
+    delete this->parameters;
   }
-  return rgbw;
-}
 
-void supla_action_config::set_rgbw(TAction_RGBW_Parameters rgbw) {
-  this->rgbw = rgbw;
+  this->parameters = parameters ? parameters->copy() : nullptr;
 }
 
 void supla_action_config::apply_json_params(const char *params) {
@@ -110,14 +118,16 @@ void supla_action_config::apply_json_params(const char *params) {
   cJSON *item = cJSON_GetObjectItem(root, "percentage");
 
   if (item) {
+    supla_action_rs_parameters p;
     if (cJSON_IsNumber(item)) {
       if (item->valuedouble < 0) {
-        set_percentage(0);
+        p.set_percentage(0);
       } else if (item->valuedouble > 100) {
-        set_percentage(100);
+        p.set_percentage(100);
       } else {
-        set_percentage(item->valuedouble);
+        p.set_percentage(item->valuedouble);
       }
+      set_parameters(&p);
     }
   }
 
@@ -133,52 +143,81 @@ void supla_action_config::apply_json_params(const char *params) {
     set_source_device_id(item->valuedouble);
   }
 
-  TAction_RGBW_Parameters rgbw = {};
-  bool rgbw_changed = false;
+  {
+    supla_action_rgbw_parameters rgbw;
+    bool rgbw_changed = false;
 
-  item = cJSON_GetObjectItem(root, "brightness");
-  if (item && cJSON_IsNumber(item)) {
-    if (item->valuedouble < 0) {
-      rgbw.Brightness = 0;
-    } else if (item->valuedouble > 100) {
-      rgbw.Brightness = 100;
-    } else {
-      rgbw.Brightness = item->valuedouble;
-    }
+    item = cJSON_GetObjectItem(root, "brightness");
+    if (item && cJSON_IsNumber(item)) {
+      if (item->valuedouble < 0) {
+        rgbw.set_brightness(0);
+      } else if (item->valuedouble > 100) {
+        rgbw.set_brightness(100);
+      } else {
+        rgbw.set_brightness(item->valuedouble);
+      }
 
-    rgbw_changed = true;
-  }
-
-  item = cJSON_GetObjectItem(root, "color_brightness");
-  if (item && cJSON_IsNumber(item)) {
-    if (item->valuedouble < 0) {
-      rgbw.ColorBrightness = 0;
-    } else if (item->valuedouble > 100) {
-      rgbw.ColorBrightness = 100;
-    } else {
-      rgbw.ColorBrightness = item->valuedouble;
-    }
-    rgbw_changed = true;
-  }
-
-  item = cJSON_GetObjectItem(root, "hue");
-  if (item) {
-    if (cJSON_IsNumber(item)) {
-      rgbw.Color = st_hue2rgb(item->valuedouble);
       rgbw_changed = true;
-    } else if (cJSON_IsString(item)) {
-      if (strncasecmp(cJSON_GetStringValue(item), "random", 255) == 0) {
-        rgbw.ColorRandom = true;
+    }
+
+    item = cJSON_GetObjectItem(root, "color_brightness");
+    if (item && cJSON_IsNumber(item)) {
+      if (item->valuedouble < 0) {
+        rgbw.set_color_brightness(0);
+      } else if (item->valuedouble > 100) {
+        rgbw.set_color_brightness(100);
+      } else {
+        rgbw.set_color_brightness(item->valuedouble);
+      }
+      rgbw_changed = true;
+    }
+
+    item = cJSON_GetObjectItem(root, "hue");
+    if (item) {
+      if (cJSON_IsNumber(item)) {
+        rgbw.set_color(st_hue2rgb(item->valuedouble));
         rgbw_changed = true;
-      } else if (strncasecmp(cJSON_GetStringValue(item), "white", 255) == 0) {
-        rgbw.Color = 0xFFFFFF;
-        rgbw_changed = true;
+      } else if (cJSON_IsString(item)) {
+        if (strncasecmp(cJSON_GetStringValue(item), "random", 255) == 0) {
+          rgbw.set_random_color(true);
+          rgbw_changed = true;
+        } else if (strncasecmp(cJSON_GetStringValue(item), "white", 255) == 0) {
+          rgbw.set_color(0xFFFFFF);
+          rgbw_changed = true;
+        }
       }
     }
+
+    if (rgbw_changed) {
+      set_parameters(&rgbw);
+    }
   }
 
-  if (rgbw_changed) {
-    set_rgbw(rgbw);
+  item = cJSON_GetObjectItem(root, "temperature");
+
+  if (item && cJSON_IsNumber(item)) {
+    supla_action_hvac_setpoint_temperature t(item->valueint);
+    set_parameters(&t);
+  }
+
+  {
+    supla_action_hvac_setpoint_temperatures hvac_temperatures;
+
+    item = cJSON_GetObjectItem(root, "temperatureHeat");
+
+    if ((item && cJSON_IsNumber(item))) {
+      hvac_temperatures.set_heating_temperature(item->valueint);
+    }
+
+    item = cJSON_GetObjectItem(root, "temperatureCool");
+
+    if ((item && cJSON_IsNumber(item))) {
+      hvac_temperatures.set_cooling_temperature(item->valueint);
+    }
+
+    if (hvac_temperatures.is_any_temperature_set()) {
+      set_parameters(&hvac_temperatures);
+    }
   }
 
   cJSON_Delete(root);
@@ -189,10 +228,19 @@ bool supla_action_config::operator==(const supla_action_config &config) const {
          subject_id == config.subject_id &&
          source_device_id == config.source_device_id &&
          source_channel_id == config.source_channel_id &&
-         percentage == config.percentage &&
-         rgbw.Brightness == config.rgbw.Brightness &&
-         rgbw.Color == config.rgbw.Color &&
-         rgbw.ColorBrightness == config.rgbw.ColorBrightness &&
-         rgbw.ColorRandom == config.rgbw.ColorRandom &&
-         rgbw.OnOff == config.rgbw.OnOff;
+         (parameters == config.parameters ||
+          (parameters != nullptr && config.parameters != nullptr &&
+           parameters->equal(config.parameters)));
+}
+
+supla_action_config &supla_action_config::operator=(
+    const supla_action_config &config) {
+  action_id = config.action_id;
+  subject_type = config.subject_type;
+  subject_id = config.subject_id;
+  source_device_id = config.source_device_id;
+  source_channel_id = config.source_channel_id;
+
+  set_parameters(config.parameters);
+  return *this;
 }

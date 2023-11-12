@@ -62,6 +62,11 @@ _supla_int_t supla_srpc_adapter::sdc_async_get_user_localtime_result(
   return srpc_sdc_async_get_user_localtime_result(get_srpc(), localtime);
 }
 
+_supla_int_t supla_srpc_adapter::sc_async_channel_relation_pack_update(
+    TSC_SuplaChannelRelationPack *relation_pack) {
+  return srpc_sc_async_channel_relation_pack_update(get_srpc(), relation_pack);
+}
+
 _supla_int_t supla_srpc_adapter::sc_async_scene_pack_update(
     TSC_SuplaScenePack *scene_pack) {
   return srpc_sc_async_scene_pack_update(get_srpc(), scene_pack);
@@ -160,4 +165,39 @@ _supla_int_t supla_srpc_adapter::sc_async_get_channel_value_result(
 _supla_int_t supla_srpc_adapter::sc_async_register_pn_client_token_result(
     TSC_RegisterPnClientTokenResult *result) {
   return srpc_sc_async_register_pn_client_token_result(get_srpc(), result);
+}
+
+_supla_int_t supla_srpc_adapter::sd_async_set_device_config_result(
+    TSDS_SetDeviceConfigResult *result) {
+  return srpc_sd_async_set_device_config_result(get_srpc(), result);
+}
+
+_supla_int_t supla_srpc_adapter::sd_async_set_device_config_request(
+    TSDS_SetDeviceConfig *config) {
+  return srpc_sd_async_set_device_config_request(get_srpc(), config);
+}
+
+_supla_int_t supla_srpc_adapter::sd_async_set_channel_config_result(
+    TSDS_SetChannelConfigResult *result) {
+  return srpc_sd_async_set_channel_config_result(get_srpc(), result);
+}
+
+_supla_int_t supla_srpc_adapter::sd_async_set_channel_config_request(
+    TSDS_SetChannelConfig *config) {
+  return srpc_sd_async_set_channel_config_request(get_srpc(), config);
+}
+
+_supla_int_t supla_srpc_adapter::sc_async_channel_config_update_or_result(
+    TSC_ChannelConfigUpdateOrResult *config) {
+  return srpc_sc_async_channel_config_update_or_result(get_srpc(), config);
+}
+
+_supla_int_t supla_srpc_adapter::sd_async_channel_config_finished(
+    TSD_ChannelConfigFinished *fin) {
+  return srpc_sd_async_channel_config_finished(get_srpc(), fin);
+}
+
+_supla_int_t supla_srpc_adapter::sc_async_device_config_update_or_result(
+    TSC_DeviceConfigUpdateOrResult *config) {
+  return srpc_sc_async_device_config_update_or_result(get_srpc(), config);
 }

@@ -18,12 +18,12 @@
 
 #include "google_home_state_report_request.h"
 
-#include "channeljsonconfig/google_home_config.h"
 #include "device/channel_property_getter.h"
 #include "google/google_home_client.h"
 #include "google/google_home_state_report_search_condition.h"
 #include "google/google_home_state_report_throttling.h"
 #include "http/asynctask_http_thread_pool.h"
+#include "jsonconfig/channel/google_home_config.h"
 #include "svrcfg.h"
 #include "user/user.h"
 
@@ -170,7 +170,7 @@ void supla_google_home_state_report_request::new_request(
 
   bool integration_disabled = false;
   {
-    channel_json_config *config = property_getter->get_detached_json_config();
+    supla_json_config *config = property_getter->get_detached_json_config();
     if (config) {
       google_home_config gh_config(config);
       integration_disabled = gh_config.is_integration_disabled();

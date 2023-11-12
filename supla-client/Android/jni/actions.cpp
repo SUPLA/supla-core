@@ -25,48 +25,93 @@
 #include "supla.h"
 
 void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
-                                  int *action_id,
-                                  TAction_RS_Parameters **rs_param,
-                                  TAction_RGBW_Parameters **rgbw_param,
+                                  int *action_id, void **param,
+                                  unsigned _supla_int16_t *param_size,
                                   int *subject_type, int *subject_id) {
   jclass cls = env->FindClass("org/supla/android/lib/actions/ActionParameters");
 
   jclass rs_cls = env->FindClass(
       "org/supla/android/lib/actions/RollerShutterActionParameters");
 
-  if (env->IsInstanceOf(action_params, rs_cls)) {
-    cls = rs_cls;
-    *rs_param = (TAction_RS_Parameters *)malloc(sizeof(TAction_RS_Parameters));
-
-    (*rs_param)->Percentage =
-        supla_CallShortMethod(env, cls, action_params, "getPercentage", "()S");
-
-    (*rs_param)->Delta =
-        supla_CallBooleanMethod(env, cls, action_params, "getDelta", "()Z");
-  }
-
   jclass rgbw_cls =
       env->FindClass("org/supla/android/lib/actions/RgbwActionParameters");
 
-  if (env->IsInstanceOf(action_params, rgbw_cls)) {
-    cls = rgbw_cls;
-    *rgbw_param =
-        (TAction_RGBW_Parameters *)malloc(sizeof(TAction_RGBW_Parameters));
+  jclass hvac_cls =
+      env->FindClass("org/supla/android/lib/actions/HvacActionParameters");
 
-    (*rgbw_param)->Brightness =
-        supla_CallShortMethod(env, cls, action_params, "getBrightness", "()S");
-    (*rgbw_param)->ColorBrightness = supla_CallShortMethod(
-        env, cls, action_params, "getColorBrightness", "()S");
-    (*rgbw_param)->Color =
-        (jlong)supla_CallLongMethod(env, cls, action_params, "getColor", "()J");
-    (*rgbw_param)->ColorRandom =
-        supla_CallBooleanMethod(env, cls, action_params, "getColorRandom",
-                                "()Z")
-            ? 1
-            : 0;
-    (*rgbw_param)->OnOff =
-        supla_CallBooleanMethod(env, cls, action_params, "getOnOff", "()Z") ? 1
-                                                                            : 0;
+  if (env->IsInstanceOf(action_params, rs_cls)) {
+    cls = rs_cls;
+    TAction_RS_Parameters *rs_param =
+        (TAction_RS_Parameters *)malloc(sizeof(TAction_RS_Parameters));
+    *rs_param = {};
+
+    rs_param->Percentage =
+        supla_CallShortMethod(env, cls, action_params, "getPercentage");
+
+    rs_param->Delta =
+        supla_CallBooleanMethod(env, cls, action_params, "getDelta");
+
+    *param = rs_param;
+    *param_size = sizeof(TAction_RS_Parameters);
+
+  } else if (env->IsInstanceOf(action_params, rgbw_cls)) {
+    cls = rgbw_cls;
+    TAction_RGBW_Parameters *rgbw_param =
+        (TAction_RGBW_Parameters *)malloc(sizeof(TAction_RGBW_Parameters));
+    *rgbw_param = {};
+
+    rgbw_param->Brightness =
+        supla_CallShortMethod(env, cls, action_params, "getBrightness");
+    rgbw_param->ColorBrightness =
+        supla_CallShortMethod(env, cls, action_params, "getColorBrightness");
+    rgbw_param->Color =
+        (jlong)supla_CallLongMethod(env, cls, action_params, "getColor");
+    rgbw_param->ColorRandom =
+        supla_CallBooleanMethod(env, cls, action_params, "getColorRandom") ? 1
+                                                                           : 0;
+    rgbw_param->OnOff =
+        supla_CallBooleanMethod(env, cls, action_params, "getOnOff") ? 1 : 0;
+
+    *param = rgbw_param;
+    *param_size = sizeof(TAction_RGBW_Parameters);
+
+  } else if (env->IsInstanceOf(action_params, hvac_cls)) {
+    cls = hvac_cls;
+    TAction_HVAC_Parameters *hvac_param =
+        (TAction_HVAC_Parameters *)malloc(sizeof(TAction_HVAC_Parameters));
+    *hvac_param = {};
+
+    jlong l = 0;
+    if (supla_CallLongObjectMethod(env, cls, action_params, "getDurationSec",
+                                   &l)) {
+      hvac_param->DurationSec = l;
+    }
+
+    jobject mode_enum = supla_CallObjectMethod(
+        env, cls, action_params, "getMode",
+        "()Lorg/supla/android/data/source/remote/hvac/SuplaHvacMode;");
+
+    if (!env->IsSameObject(mode_enum, nullptr)) {
+      hvac_param->Mode = supla_GetEnumValue(
+          env, mode_enum,
+          "org/supla/android/data/source/remote/hvac/SuplaHvacMode");
+    }
+    jshort s = 0;
+
+    if (supla_CallShortObjectMethod(env, cls, action_params,
+                                    "getSetpointTemperatureHeat", &s)) {
+      hvac_param->SetpointTemperatureHeat = s;
+      hvac_param->Flags |= SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET;
+    }
+
+    if (supla_CallShortObjectMethod(env, cls, action_params,
+                                    "getSetpointTemperatureCool", &s)) {
+      hvac_param->SetpointTemperatureCool = s;
+      hvac_param->Flags |= SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET;
+    }
+
+    *param = hvac_param;
+    *param_size = sizeof(TAction_HVAC_Parameters);
   }
 
   jclass action_id_cls =
@@ -77,7 +122,7 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
                              "()Lorg/supla/android/lib/actions/ActionId;");
 
   *action_id =
-      supla_CallIntMethod(env, action_id_cls, action_id_obj, "getValue", "()I");
+      supla_CallIntMethod(env, action_id_cls, action_id_obj, "getValue");
 
   jobject subject_type_obj =
       supla_CallObjectMethod(env, cls, action_params, "getSubjectType",
@@ -86,11 +131,10 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
   jclass subject_type_cls =
       env->FindClass("org/supla/android/lib/actions/SubjectType");
 
-  *subject_type = supla_CallIntMethod(env, subject_type_cls, subject_type_obj,
-                                      "getValue", "()I");
+  *subject_type =
+      supla_CallIntMethod(env, subject_type_cls, subject_type_obj, "getValue");
 
-  *subject_id =
-      supla_CallIntMethod(env, cls, action_params, "getSubjectId", "()I");
+  *subject_id = supla_CallIntMethod(env, cls, action_params, "getSubjectId");
 
   __android_log_print(ANDROID_LOG_DEBUG, log_tag, "Action ID: %i,%i,%i",
                       *action_id, *subject_type, *subject_id);
@@ -107,23 +151,19 @@ Java_org_supla_android_lib_SuplaClient_scExecuteAction(JNIEnv *env,
     int action_id = 0;
     int subject_type = 0;
     int subject_id = 0;
-    TAction_RS_Parameters *rs_param = NULL;
-    TAction_RGBW_Parameters *rgbw_param = NULL;
+    void *param = nullptr;
+    unsigned _supla_int16_t param_size = 0;
 
-    getActionExecutionCallParams(env, action_params, &action_id, &rs_param,
-                                 &rgbw_param, &subject_type, &subject_id);
+    getActionExecutionCallParams(env, action_params, &action_id, &param,
+                                 &param_size, &subject_type, &subject_id);
 
-    if (supla_client_execute_action(supla_client, action_id, rs_param,
-                                    rgbw_param, subject_type, subject_id) > 0) {
+    if (supla_client_execute_action(supla_client, action_id, param, param_size,
+                                    subject_type, subject_id) > 0) {
       result = JNI_TRUE;
     }
 
-    if (rs_param) {
-      free(rs_param);
-    }
-
-    if (rgbw_param) {
-      free(rgbw_param);
+    if (param) {
+      free(param);
     }
   }
 

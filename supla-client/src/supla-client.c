@@ -289,6 +289,23 @@ void supla_client_channelgroup_pack_update_b(
   srpc_cs_async_get_next(scd->srpc);
 }
 
+void supla_client_channel_relation_update(
+    TSuplaClientData *scd, TSC_SuplaChannelRelation *channel_relation) {
+  if (scd->cfg.cb_channel_relation_update)
+    scd->cfg.cb_channel_relation_update(scd, scd->cfg.user_data,
+                                        channel_relation);
+}
+
+void supla_client_channel_relation_pack_update(
+    TSuplaClientData *scd, TSC_SuplaChannelRelationPack *pack) {
+  int a;
+
+  for (a = 0; a < pack->count; a++)
+    supla_client_channel_relation_update(scd, &pack->items[a]);
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
 void supla_client_channelgroup_relation_update(
     TSuplaClientData *scd, TSC_SuplaChannelGroupRelation *channelgroup_relation,
     char gn) {
@@ -942,6 +959,12 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           supla_client_channel_value_update(scd, rd.data.sc_channel_value, 1);
         }
         break;
+      case SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE:
+        if (rd.data.sc_channel_relation_pack) {
+          supla_client_channel_relation_pack_update(
+              scd, rd.data.sc_channel_relation_pack);
+        }
+        break;
       case SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE:
         if (rd.data.sc_channelgroup_pack) {
           supla_client_channelgroup_pack_update(scd,
@@ -1106,6 +1129,20 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         if (scd->cfg.cb_on_get_channel_value_result) {
           scd->cfg.cb_on_get_channel_value_result(scd, scd->cfg.user_data,
                                                   rd.data.sc_get_value_result);
+        }
+        break;
+      case SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE_OR_RESULT:
+        if (scd->cfg.cb_on_channel_config_update_or_result) {
+          scd->cfg.cb_on_channel_config_update_or_result(
+              scd, scd->cfg.user_data,
+              rd.data.sc_channel_config_update_or_result);
+        }
+        break;
+      case SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT:
+        if (scd->cfg.cb_on_device_config_update_or_result) {
+          scd->cfg.cb_on_device_config_update_or_result(
+              scd, scd->cfg.user_data,
+              rd.data.sc_device_config_update_or_result);
         }
         break;
     }
@@ -1875,9 +1912,8 @@ char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
   return result;
 }
 
-char supla_client_execute_action(void *_suplaclient, int action_id,
-                                 TAction_RS_Parameters *rs_param,
-                                 TAction_RGBW_Parameters *rgbw_param,
+char supla_client_execute_action(void *_suplaclient, int action_id, void *param,
+                                 unsigned _supla_int16_t param_size,
                                  unsigned char subject_type, int subject_id) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
   char result = 0;
@@ -1889,20 +1925,9 @@ char supla_client_execute_action(void *_suplaclient, int action_id,
     action.SubjectType = subject_type;
     action.SubjectId = subject_id;
 
-    switch (action_id) {
-      case ACTION_SHUT_PARTIALLY:
-      case ACTION_REVEAL_PARTIALLY:
-        if (rs_param) {
-          action.ParamSize = sizeof(TAction_RS_Parameters);
-          memcpy(action.Param, rs_param, action.ParamSize);
-        }
-        break;
-      case ACTION_SET_RGBW_PARAMETERS:
-        if (rgbw_param) {
-          action.ParamSize = sizeof(TAction_RGBW_Parameters);
-          memcpy(action.Param, rgbw_param, action.ParamSize);
-        }
-        break;
+    if (param_size && param_size <= SUPLA_ACTION_PARAM_MAXSIZE) {
+      action.ParamSize = param_size;
+      memcpy(action.Param, param, param_size);
     }
 
     result = srpc_cs_async_execute_action(suplaclient->srpc, &action) ==
@@ -1922,6 +1947,48 @@ char supla_client_pn_register_client_token(void *_suplaclient,
   lck_lock(suplaclient->lck);
   result = srpc_cs_async_register_pn_client_token(suplaclient->srpc, reg) ==
                    SUPLA_RESULT_FALSE
+               ? 0
+               : 1;
+  lck_unlock(suplaclient->lck);
+  return result;
+}
+
+char supla_client_get_channel_config(void *_suplaclient,
+                                     TCS_GetChannelConfigRequest *request) {
+  TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
+  char result = 0;
+
+  lck_lock(suplaclient->lck);
+  result = srpc_cs_async_get_channel_config_request(
+               suplaclient->srpc, request) == SUPLA_RESULT_FALSE
+               ? 0
+               : 1;
+  lck_unlock(suplaclient->lck);
+  return result;
+}
+
+char supla_client_set_channel_config(void *_suplaclient,
+                                     TSCS_ChannelConfig *config) {
+  TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
+  char result = 0;
+
+  lck_lock(suplaclient->lck);
+  result = srpc_cs_async_set_channel_config_request(
+               suplaclient->srpc, config) == SUPLA_RESULT_FALSE
+               ? 0
+               : 1;
+  lck_unlock(suplaclient->lck);
+  return result;
+}
+
+char supla_client_get_device_config(void *_suplaclient,
+                                    TCS_GetDeviceConfigRequest *request) {
+  TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
+  char result = 0;
+
+  lck_lock(suplaclient->lck);
+  result = srpc_cs_async_get_device_config_request(
+               suplaclient->srpc, request) == SUPLA_RESULT_FALSE
                ? 0
                : 1;
   lck_unlock(suplaclient->lck);

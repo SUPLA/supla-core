@@ -525,6 +525,23 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_SC_CALL_REGISTER_PN_CLIENT_TOKEN_RESULT,
               SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION,
               SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT};
+
+    case 21:
+      return {SUPLA_DS_CALL_SET_CHANNEL_CONFIG,
+              SUPLA_SD_CALL_SET_CHANNEL_CONFIG_RESULT,
+              SUPLA_SD_CALL_SET_CHANNEL_CONFIG,
+              SUPLA_DS_CALL_SET_CHANNEL_CONFIG_RESULT,
+              SUPLA_DS_CALL_SET_DEVICE_CONFIG,
+              SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT,
+              SUPLA_SD_CALL_SET_DEVICE_CONFIG,
+              SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT,
+              SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE,
+              SUPLA_CS_CALL_GET_CHANNEL_CONFIG,
+              SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE_OR_RESULT,
+              SUPLA_CS_CALL_SET_CHANNEL_CONFIG,
+              SUPLA_CS_CALL_GET_DEVICE_CONFIG,
+              SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT,
+              SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED};
   }
 
   return {};
@@ -569,6 +586,12 @@ TEST_F(SrpcTest, call_allowed_v16) { srpcCallAllowed(16, get_call_ids(16)); }
 TEST_F(SrpcTest, call_allowed_v17) { srpcCallAllowed(17, get_call_ids(17)); }
 
 TEST_F(SrpcTest, call_allowed_v18) { srpcCallAllowed(18, get_call_ids(18)); }
+
+TEST_F(SrpcTest, call_allowed_v19) { srpcCallAllowed(19, get_call_ids(19)); }
+
+TEST_F(SrpcTest, call_allowed_v20) { srpcCallAllowed(20, get_call_ids(20)); }
+
+TEST_F(SrpcTest, call_allowed_v21) { srpcCallAllowed(21, get_call_ids(21)); }
 
 TEST_F(SrpcTest, call_not_allowed) {
   vector<int> all_calls;
@@ -2526,6 +2549,86 @@ TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_minimum_size) {
 }
 
 //---------------------------------------------------------
+// CHANNEL RELATION PACK
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, srpc_sc_async_channel_relation_pack_update_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelRelationPack, pack);
+
+  pack.count = SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channel_relation_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_sc_async_channel_relation_pack_update_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelRelationPack, pack);
+
+  pack.count = SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channel_relation_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_sc_async_channel_relation_pack_update_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelRelationPack, pack);
+
+  pack.count = SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT;
+
+  ASSERT_GT(srpc_sc_async_channel_relation_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE, 1131);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_relation_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_relation_pack, &pack,
+                      sizeof(TSC_SuplaChannelRelationPack)));
+
+  free(cr_rd.data.sc_channel_relation_pack);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_sc_async_channel_relation_pack_update_with_minimum_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelRelationPack, pack);
+
+  pack.count = 1;
+
+  ASSERT_GT(srpc_sc_async_channel_relation_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE, 42);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_relation_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_relation_pack, &pack,
+                      sizeof(TSC_SuplaChannelRelationPack) -
+                          ((SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT - 1) *
+                           sizeof(TSC_SuplaChannelRelation))));
+
+  free(cr_rd.data.sc_channelgroup_relation_pack);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
 // CHANNEL VALUE PACK
 //---------------------------------------------------------
 
@@ -3554,7 +3657,7 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_functions_result,
 // GET CHANNEL CONFIG
 //---------------------------------------------------------
 
-SRPC_CALL_BASIC_TEST(srpc_ds_async_get_channel_config,
+SRPC_CALL_BASIC_TEST(srpc_ds_async_get_channel_config_request,
                      TDS_GetChannelConfigRequest,
                      SUPLA_DS_CALL_GET_CHANNEL_CONFIG, 29,
                      ds_get_channel_config_request);
@@ -3562,9 +3665,109 @@ SRPC_CALL_BASIC_TEST(srpc_ds_async_get_channel_config,
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_config_result,
                                      TSD_ChannelConfig,
                                      SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT,
-                                     31, 159, sd_channel_config,
+                                     31, 543, sd_channel_config,
                                      SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
                                      ConfigSize);
+
+//---------------------------------------------------------
+// GET CHANNEL CONFIG
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_cs_async_get_channel_config_request,
+                     TCS_GetChannelConfigRequest,
+                     SUPLA_CS_CALL_GET_CHANNEL_CONFIG, 32,
+                     cs_get_channel_config_request);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(
+    srpc_sc_async_channel_config_update_or_result,
+    TSC_ChannelConfigUpdateOrResult,
+    SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE_OR_RESULT, 35, 547,
+    sc_channel_config_update_or_result, SUPLA_CHANNEL_CONFIG_MAXSIZE,
+    Config.Config, Config.ConfigSize);
+
+//---------------------------------------------------------
+// SET CHANNEL CONFIG
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_ds_async_set_channel_config_request,
+                                     TSDS_SetChannelConfig,
+                                     SUPLA_DS_CALL_SET_CHANNEL_CONFIG, 31, 543,
+                                     sds_set_channel_config_request,
+                                     SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
+                                     ConfigSize);
+
+SRPC_CALL_BASIC_TEST(srpc_ds_async_set_channel_config_result,
+                     TSDS_SetChannelConfigResult,
+                     SUPLA_DS_CALL_SET_CHANNEL_CONFIG_RESULT, 26,
+                     sds_set_channel_config_result);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_set_channel_config_request,
+                                     TSDS_SetChannelConfig,
+                                     SUPLA_SD_CALL_SET_CHANNEL_CONFIG, 31, 543,
+                                     sds_set_channel_config_request,
+                                     SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
+                                     ConfigSize);
+
+SRPC_CALL_BASIC_TEST(srpc_sd_async_set_channel_config_result,
+                     TSDS_SetChannelConfigResult,
+                     SUPLA_SD_CALL_SET_CHANNEL_CONFIG_RESULT, 26,
+                     sds_set_channel_config_result);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_set_channel_config_request,
+                                     TSCS_ChannelConfig,
+                                     SUPLA_CS_CALL_SET_CHANNEL_CONFIG, 34, 546,
+                                     scs_channel_config,
+                                     SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
+                                     ConfigSize);
+
+SRPC_CALL_BASIC_TEST(srpc_sd_async_channel_config_finished,
+                     TSD_ChannelConfigFinished,
+                     SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED, 24,
+                     sd_channel_config_finished);
+
+//---------------------------------------------------------
+// SET DEVICE CONFIG
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_ds_async_set_device_config_request,
+                                     TSDS_SetDeviceConfig,
+                                     SUPLA_DS_CALL_SET_DEVICE_CONFIG, 50, 562,
+                                     sds_set_channel_config_request,
+                                     SUPLA_DEVICE_CONFIG_MAXSIZE, Config,
+                                     ConfigSize);
+
+SRPC_CALL_BASIC_TEST(srpc_ds_async_set_device_config_result,
+                     TSDS_SetDeviceConfigResult,
+                     SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT, 33,
+                     sds_set_device_config_result);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_set_device_config_request,
+                                     TSDS_SetDeviceConfig,
+                                     SUPLA_SD_CALL_SET_DEVICE_CONFIG, 50, 562,
+                                     sds_set_device_config_request,
+                                     SUPLA_DEVICE_CONFIG_MAXSIZE, Config,
+                                     ConfigSize);
+
+SRPC_CALL_BASIC_TEST(srpc_sd_async_set_device_config_result,
+                     TSDS_SetDeviceConfigResult,
+                     SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT, 33,
+                     sds_set_device_config_result);
+
+//---------------------------------------------------------
+// GET DEVICE CONFIG
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_cs_async_get_device_config_request,
+                     TCS_GetDeviceConfigRequest,
+                     SUPLA_CS_CALL_GET_DEVICE_CONFIG, 43,
+                     cs_get_device_config_request);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(
+    srpc_sc_async_device_config_update_or_result,
+    TSC_DeviceConfigUpdateOrResult,
+    SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT, 55, 567,
+    sc_device_config_update_or_result, SUPLA_DEVICE_CONFIG_MAXSIZE,
+    Config.Config, Config.ConfigSize);
 
 //---------------------------------------------------------
 // ACTION TRIGGER

@@ -18,6 +18,8 @@
 
 #include "GoogleHomeCredentialsIntegrationTest.h"
 
+#include <string>
+
 #include "google/google_home_credentials.h"
 #include "log.h"
 #include "user.h"

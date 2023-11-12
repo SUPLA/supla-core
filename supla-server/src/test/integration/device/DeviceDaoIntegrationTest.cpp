@@ -20,6 +20,8 @@
 
 #include <string>
 
+#include "jsonconfig/channel/hvac_config.h"
+
 using std::string;
 
 namespace testing {
@@ -39,6 +41,7 @@ void DeviceDaoIntegrationTest::SetUp() {
   ASSERT_TRUE(dao != nullptr);
 
   initTestDatabase();
+  runSqlScript("SetDeviceJsonConfig.sql");
   Test::SetUp();
 }
 
@@ -54,6 +57,193 @@ void DeviceDaoIntegrationTest::TearDown() {
   }
 
   Test::TearDown();
+}
+
+TEST_F(DeviceDaoIntegrationTest, getDeviceConfig) {
+  string user_config_md5sum, properties_md5sum;
+  device_json_config *config =
+      dao->get_device_config(73, &user_config_md5sum, &properties_md5sum);
+  ASSERT_NE(config, nullptr);
+
+  EXPECT_EQ(user_config_md5sum, "426fe9ff7937ecc4fb1a223196965d68");
+  EXPECT_EQ(properties_md5sum, "c74065d79f3dbcf05899b6109fca2e2a");
+
+  char *str = config->get_user_config();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str,
+                 "{\"a\":1,\"b\":\"abcd\",\"c\":true,\"screenBrightness\":98,"
+                 "\"buttonVolume\":15}");
+
+    free(str);
+  }
+
+  str = config->get_properties();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str,
+                 "{\"1\":2,\"homeScreenContentAvailable\":[\"NONE\","
+                 "\"TEMPERATURE\",\"MAIN_AND_AUX_TEMPERATURE\"]}");
+
+    free(str);
+  }
+
+  delete config;
+}
+
+TEST_F(DeviceDaoIntegrationTest, setDeviceConfig) {
+  device_json_config cfg1;
+  cfg1.set_user_config(
+      "{\"buttonVolume\":100,\"homeScreen\":{\"content\":\"NONE\"}}");
+  cfg1.set_properties("{\"homeScreenContentAvailable\":[\"NONE\"]}");
+
+  EXPECT_TRUE(dao->set_device_config(
+      2, 73, &cfg1,
+      SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
+          SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
+          SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT));
+
+  EXPECT_TRUE(dao->set_device_config(
+      2, 73, &cfg1,
+      SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
+          SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
+          SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT));
+
+  device_json_config *cfg2 = dao->get_device_config(73, nullptr, nullptr);
+  ASSERT_NE(cfg2, nullptr);
+
+  char *str = cfg2->get_user_config();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str,
+                 "{\"a\":1,\"b\":\"abcd\",\"c\":true,\"screenBrightness\":98,"
+                 "\"buttonVolume\":100,\"homeScreen\":{\"content\":\"NONE\"}}");
+
+    free(str);
+  }
+
+  str = cfg2->get_properties();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str, "{\"1\":2,\"homeScreenContentAvailable\":[\"NONE\"]}");
+
+    free(str);
+  }
+
+  delete cfg2;
+
+  EXPECT_TRUE(dao->set_device_config(2, 73, &cfg1,
+                                     SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME));
+
+  cfg2 = dao->get_device_config(73, nullptr, nullptr);
+  ASSERT_NE(cfg2, nullptr);
+
+  str = cfg2->get_user_config();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str,
+                 "{\"a\":1,\"b\":\"abcd\",\"c\":true,\"buttonVolume\":100}");
+
+    free(str);
+  }
+
+  str = cfg2->get_properties();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str, "{\"1\":2}");
+
+    free(str);
+  }
+
+  delete cfg2;
+}
+
+TEST_F(DeviceDaoIntegrationTest, getChannelConfig) {
+  runSqlScript("SetChannelProperties.sql");
+
+  string user_config_md5sum, properties_md5sum;
+  supla_json_config *config =
+      dao->get_channel_config(144, &user_config_md5sum, &properties_md5sum);
+  ASSERT_NE(config, nullptr);
+
+  EXPECT_EQ(user_config_md5sum, "c4903ea1c9fe8f29c2031b5f08563d2c");
+  EXPECT_EQ(properties_md5sum, "b96c07e038d9463be22371342b40d0c3");
+
+  char *config_str = config->get_user_config();
+  EXPECT_NE(config_str, nullptr);
+  if (config_str) {
+    EXPECT_STREQ(config_str, "{\"pricePerUnit\":0.56,\"currency\":\"PLN\"}");
+    free(config_str);
+  }
+
+  char *properties_str = config->get_properties();
+  EXPECT_NE(properties_str, nullptr);
+  if (properties_str) {
+    EXPECT_STREQ(properties_str,
+                 "{\"countersAvailable\":[\"forwardActiveEnergy\","
+                 "\"reverseActiveEnergy\",\"forwardReactiveEnergy\","
+                 "\"reverseReactiveEnergy\",\"forwardActiveEnergyBalanced\","
+                 "\"reverseActiveEnergyBalanced\"]}");
+    free(properties_str);
+  }
+
+  delete config;
+}
+
+TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
+  TChannelConfig_HVAC ds_hvac = {};
+  ds_hvac.MainThermometerChannelNo = 1;
+  hvac_config cfg1;
+  cfg1.set_config(&ds_hvac, 0);
+
+  EXPECT_TRUE(dao->set_channel_config(2, 144, &cfg1));
+
+  supla_json_config *cfg2 = dao->get_channel_config(144, nullptr, nullptr);
+  ASSERT_NE(cfg2, nullptr);
+
+  char *str = cfg2->get_user_config();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(
+        str,
+        "{\"pricePerUnit\":0.56,\"currency\":\"PLN\","
+        "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":null,"
+        "\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelNo\":null,"
+        "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":"
+        "\"\",\"minOnTimeS\":0,\"minOffTimeS\":0,\"outputValueOnError\":0,"
+        "\"subfunction\":\"NOT_SET\","
+        "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
+        "\"auxMinMaxSetpointEnabled\":false,\"autoUseSeparateHeatCoolOutputs\":"
+        "false,\"temperatures\":{}}");
+    free(str);
+  }
+
+  str = cfg2->get_properties();
+  EXPECT_NE(str, nullptr);
+  if (str) {
+    EXPECT_STREQ(str, "{\"availableAlgorithms\":[],\"temperatures\":{}}");
+    free(str);
+  }
+
+  delete cfg2;
+}
+
+TEST_F(DeviceDaoIntegrationTest, setChannelProperties) {
+  supla_json_config cfg1;
+  cfg1.set_properties("{\"props\": 123}");
+  dao->set_channel_properties(2, 144, &cfg1);
+
+  supla_json_config *cfg2 = dao->get_channel_config(144, nullptr, nullptr);
+  ASSERT_NE(cfg2, nullptr);
+
+  char *prop_str = cfg2->get_properties();
+  EXPECT_NE(prop_str, nullptr);
+  if (prop_str) {
+    EXPECT_STREQ(prop_str, "{\"props\":123}");
+    free(prop_str);
+  }
+
+  delete cfg2;
 }
 
 TEST_F(DeviceDaoIntegrationTest, setAndUpdateChanneValue) {

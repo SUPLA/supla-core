@@ -6,28 +6,46 @@
 CPP_SRCS += \
 ../src/actions/abstract_action_config.cpp \
 ../src/actions/abstract_action_executor.cpp \
+../src/actions/abstract_action_parameters.cpp \
 ../src/actions/action_config.cpp \
 ../src/actions/action_executor.cpp \
 ../src/actions/action_gate_openclose.cpp \
 ../src/actions/action_gate_openclose_search_condition.cpp \
+../src/actions/action_hvac_parameters.cpp \
+../src/actions/action_hvac_setpoint_temperature.cpp \
+../src/actions/action_hvac_setpoint_temperatures.cpp \
+../src/actions/action_rgbw_parameters.cpp \
+../src/actions/action_rs_parameters.cpp \
 ../src/actions/action_trigger.cpp 
 
 CPP_DEPS += \
 ./src/actions/abstract_action_config.d \
 ./src/actions/abstract_action_executor.d \
+./src/actions/abstract_action_parameters.d \
 ./src/actions/action_config.d \
 ./src/actions/action_executor.d \
 ./src/actions/action_gate_openclose.d \
 ./src/actions/action_gate_openclose_search_condition.d \
+./src/actions/action_hvac_parameters.d \
+./src/actions/action_hvac_setpoint_temperature.d \
+./src/actions/action_hvac_setpoint_temperatures.d \
+./src/actions/action_rgbw_parameters.d \
+./src/actions/action_rs_parameters.d \
 ./src/actions/action_trigger.d 
 
 OBJS += \
 ./src/actions/abstract_action_config.o \
 ./src/actions/abstract_action_executor.o \
+./src/actions/abstract_action_parameters.o \
 ./src/actions/action_config.o \
 ./src/actions/action_executor.o \
 ./src/actions/action_gate_openclose.o \
 ./src/actions/action_gate_openclose_search_condition.o \
+./src/actions/action_hvac_parameters.o \
+./src/actions/action_hvac_setpoint_temperature.o \
+./src/actions/action_hvac_setpoint_temperatures.o \
+./src/actions/action_rgbw_parameters.o \
+./src/actions/action_rs_parameters.o \
 ./src/actions/action_trigger.o 
 
 
@@ -43,7 +61,7 @@ src/actions/%.o: ../src/actions/%.cpp src/actions/subdir.mk
 clean: clean-src-2f-actions
 
 clean-src-2f-actions:
-	-$(RM) ./src/actions/abstract_action_config.d ./src/actions/abstract_action_config.o ./src/actions/abstract_action_executor.d ./src/actions/abstract_action_executor.o ./src/actions/action_config.d ./src/actions/action_config.o ./src/actions/action_executor.d ./src/actions/action_executor.o ./src/actions/action_gate_openclose.d ./src/actions/action_gate_openclose.o ./src/actions/action_gate_openclose_search_condition.d ./src/actions/action_gate_openclose_search_condition.o ./src/actions/action_trigger.d ./src/actions/action_trigger.o
+	-$(RM) ./src/actions/abstract_action_config.d ./src/actions/abstract_action_config.o ./src/actions/abstract_action_executor.d ./src/actions/abstract_action_executor.o ./src/actions/abstract_action_parameters.d ./src/actions/abstract_action_parameters.o ./src/actions/action_config.d ./src/actions/action_config.o ./src/actions/action_executor.d ./src/actions/action_executor.o ./src/actions/action_gate_openclose.d ./src/actions/action_gate_openclose.o ./src/actions/action_gate_openclose_search_condition.d ./src/actions/action_gate_openclose_search_condition.o ./src/actions/action_hvac_parameters.d ./src/actions/action_hvac_parameters.o ./src/actions/action_hvac_setpoint_temperature.d ./src/actions/action_hvac_setpoint_temperature.o ./src/actions/action_hvac_setpoint_temperatures.d ./src/actions/action_hvac_setpoint_temperatures.o ./src/actions/action_rgbw_parameters.d ./src/actions/action_rgbw_parameters.o ./src/actions/action_rs_parameters.d ./src/actions/action_rs_parameters.o ./src/actions/action_trigger.d ./src/actions/action_trigger.o
 
 .PHONY: clean-src-2f-actions
 

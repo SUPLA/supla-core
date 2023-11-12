@@ -138,7 +138,7 @@ void channelio_mcp23008_execute(void *user_data, void *sthread);
 #endif
 
 char channelio_gpio_in(TDeviceChannel *channel, char port12) {
-  if (channel->type == SUPLA_CHANNELTYPE_SENSORNO ||
+  if (channel->type == SUPLA_CHANNELTYPE_BINARYSENSOR ||
       channel->type == SUPLA_CHANNELTYPE_SENSORNC ||
       ((channel->type == SUPLA_CHANNELTYPE_RELAYHFD4 ||
         channel->type == SUPLA_CHANNELTYPE_RELAYG5LA1A ||
@@ -219,7 +219,7 @@ void channelio_free(void) {
 char channelio_allowed_type(int type) {
   switch (type) {
     case SUPLA_CHANNELTYPE_RELAYHFD4:
-    case SUPLA_CHANNELTYPE_SENSORNO:
+    case SUPLA_CHANNELTYPE_BINARYSENSOR:
     case SUPLA_CHANNELTYPE_SENSORNC:
     case SUPLA_CHANNELTYPE_THERMOMETERDS18B20:
     case SUPLA_CHANNELTYPE_RELAYG5LA1A:
@@ -614,7 +614,7 @@ char channelio_get_cvalue(TDeviceChannel *channel,
   memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
 
   if (channel) {
-    if (channel->type == SUPLA_CHANNELTYPE_SENSORNO ||
+    if (channel->type == SUPLA_CHANNELTYPE_BINARYSENSOR ||
         channel->type == SUPLA_CHANNELTYPE_SENSORNC ||
         channel->type == SUPLA_CHANNELTYPE_RELAYHFD4 ||
         channel->type == SUPLA_CHANNELTYPE_RELAYG5LA1A) {
@@ -627,7 +627,7 @@ char channelio_get_cvalue(TDeviceChannel *channel,
         lck_lock(channel->gpio1_value.lck);
         value[0] = channel->gpio1_value.value;
         if (channel->driver == SUPLA_CHANNELDRIVER_MCP23008 &&
-            (channel->type == SUPLA_CHANNELTYPE_SENSORNO ||
+            (channel->type == SUPLA_CHANNELTYPE_BINARYSENSOR ||
              channel->type == SUPLA_CHANNELTYPE_SENSORNC)) {
           value[0] = channel->mcp23008.gpio.value;
         }
@@ -869,7 +869,7 @@ void channelio_mcp23008_iterate(void) {
   int a;
   for (a = 0; a < cio->channel_count; a++) {
     TDeviceChannel *ch = &cio->channels[a];
-    if (ch->type == SUPLA_CHANNELTYPE_SENSORNO ||
+    if (ch->type == SUPLA_CHANNELTYPE_BINARYSENSOR ||
         ch->type == SUPLA_CHANNELTYPE_SENSORNC) {
       unsigned char val = mcp23008_gpio_get_value(ch->mcp23008.port);
 

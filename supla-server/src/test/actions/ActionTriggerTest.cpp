@@ -376,4 +376,119 @@ TEST_F(ActionTriggerTest, interruptScene) {
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
+TEST_F(ActionTriggerTest, hvacSwitchToProgramMode) {
+  at_config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"channel\",\"subjectId\":20,\"action\":{\"id\":231}}}"
+      "}");
+
+  at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getHvacSwitchToProgramModeCounter(), 1);
+  EXPECT_EQ(aexec->get_channel_id(), 20);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
+}
+
+TEST_F(ActionTriggerTest, hvacSwitchToManualMode) {
+  at_config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"channel\",\"subjectId\":20,\"action\":{\"id\":232}}}"
+      "}");
+
+  at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getHvacSwitchToManualModeCounter(), 1);
+  EXPECT_EQ(aexec->get_channel_id(), 20);
+}
+
+TEST_F(ActionTriggerTest, hvacSetTemperature) {
+  at_config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"channel\",\"subjectId\":20,\"action\":{\"id\":234, "
+      "\"param\":{\"temperature\":1234}}}}}");
+
+  at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getHvacSetTemperatureCounter(), 1);
+  EXPECT_EQ(aexec->get_channel_id(), 20);
+  ASSERT_NE(aexec->getHvacSetpointTemperature(), nullptr);
+  EXPECT_EQ(aexec->getHvacSetpointTemperature()->get_temperature(), 1234);
+}
+
+TEST_F(ActionTriggerTest, hvacSetHeatingTemperature) {
+  at_config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"channel\",\"subjectId\":20,\"action\":{\"id\":233, "
+      "\"param\":{\"temperatureHeat\":1234}}}}}");
+
+  at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getHvacSetTemperaturesCounter(), 1);
+  EXPECT_EQ(aexec->get_channel_id(), 20);
+  ASSERT_NE(aexec->getHvacSetpointTemperatures(), nullptr);
+  short temperature = 0;
+  EXPECT_TRUE(aexec->getHvacSetpointTemperatures()->get_heating_temperature(
+      &temperature));
+  EXPECT_EQ(temperature, 1234);
+  EXPECT_FALSE(aexec->getHvacSetpointTemperatures()->get_cooling_temperature(
+      &temperature));
+}
+
+TEST_F(ActionTriggerTest, hvacSetCoolingTemperature) {
+  at_config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"channel\",\"subjectId\":20,\"action\":{\"id\":233, "
+      "\"param\":{\"temperatureCool\":1234}}}}}");
+
+  at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getHvacSetTemperaturesCounter(), 1);
+  EXPECT_EQ(aexec->get_channel_id(), 20);
+  ASSERT_NE(aexec->getHvacSetpointTemperatures(), nullptr);
+  short temperature = 0;
+  EXPECT_FALSE(aexec->getHvacSetpointTemperatures()->get_heating_temperature(
+      &temperature));
+  EXPECT_TRUE(aexec->getHvacSetpointTemperatures()->get_cooling_temperature(
+      &temperature));
+  EXPECT_EQ(temperature, 1234);
+}
+
+TEST_F(ActionTriggerTest, hvacSetHeatingAndCoolingTemperature) {
+  at_config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"channel\",\"subjectId\":20,\"action\":{\"id\":233, "
+      "\"param\":{\"temperatureHeat\":456,\"temperatureCool\":1234}}}}}");
+
+  at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getHvacSetTemperaturesCounter(), 1);
+  EXPECT_EQ(aexec->get_channel_id(), 20);
+  ASSERT_NE(aexec->getHvacSetpointTemperatures(), nullptr);
+  short temperature = 0;
+  EXPECT_TRUE(aexec->getHvacSetpointTemperatures()->get_heating_temperature(
+      &temperature));
+  EXPECT_EQ(temperature, 456);
+  EXPECT_TRUE(aexec->getHvacSetpointTemperatures()->get_cooling_temperature(
+      &temperature));
+  EXPECT_EQ(temperature, 1234);
+}
+
 } /* namespace testing */

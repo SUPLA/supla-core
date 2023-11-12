@@ -21,6 +21,9 @@
 
 #include <gmock/gmock.h>
 
+#include <string>
+#include <vector>
+
 #include "device/abstract_device_dao.h"
 
 namespace testing {
@@ -90,8 +93,30 @@ class DeviceDaoMock : public supla_abstract_device_dao {
 
   MOCK_METHOD2(on_channel_added, bool(int device_id, int channel_id));
 
+  MOCK_METHOD4(set_device_config,
+               bool(int user_id, int device_id, device_json_config *config,
+                    unsigned _supla_int16_t available_fields));
+
+  MOCK_METHOD3(get_device_config,
+               device_json_config *(int device_id,
+                                    std::string *user_config_md5sum,
+                                    std::string *properties_md5sum));
+
   MOCK_METHOD1(get_channels,
                std::vector<supla_device_channel *>(supla_device *device));
+
+  MOCK_METHOD3(set_channel_properties,
+               void(int user_id, int channel_id, supla_json_config *config));
+
+  MOCK_METHOD2(erase_channel_properties, void(int user_id, int channel_id));
+
+  MOCK_METHOD3(get_channel_config,
+               supla_json_config *(int channel_id,
+                                   std::string *user_config_md5sum,
+                                   std::string *properties_md5sum));
+
+  MOCK_METHOD3(set_channel_config,
+               bool(int user_id, int channel_id, supla_json_config *config));
 
   MOCK_METHOD4(update_channel_value,
                void(int channel_id, int user_id,

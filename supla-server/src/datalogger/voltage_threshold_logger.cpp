@@ -42,10 +42,10 @@ void supla_voltage_threshold_logger::run(
   std::vector<supla_voltage_analyzers> vas;
 
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-    (*uit)->get_devices()->for_each([&vas](shared_ptr<supla_device> device,
-                                           bool *will_continue) -> void {
-      device->get_channels()->for_each_channel(
-          [&vas](supla_device_channel *channel) -> void {
+    (*uit)->get_devices()->for_each(
+        [&vas](shared_ptr<supla_device> device, bool *will_continue) -> void {
+          device->get_channels()->for_each([&vas](supla_device_channel *channel,
+                                                  bool *will_continue) -> void {
             supla_voltage_analyzers voltage_analyzers;
 
             if (channel->get_voltage_analyzers_with_any_sample_over_threshold(
@@ -53,7 +53,7 @@ void supla_voltage_threshold_logger::run(
               vas.push_back(voltage_analyzers);
             }
           });
-    });
+        });
   }
 
   supla_voltage_threshold_logger_dao dao(dba);

@@ -28,7 +28,6 @@
 #elif defined(ARDUINO)
 void serialPrintLn(const char *);
 #elif defined(ESP_PLATFORM)
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include <esp_log.h>
 static const char *SUPLA_TAG = "SUPLA";
 #elif defined(SUPLA_DEVICE)

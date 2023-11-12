@@ -25,7 +25,12 @@
 #include "log.h"
 #include "proto.h"
 
+// ESP8266 and ESP32
 #if defined(ESP8266) || defined(ESP32)
+#define __EH_DISABLED
+#define SRPC_BUFFER_SIZE 256
+#define SRPC_QUEUE_SIZE 2
+#define SRPC_QUEUE_MIN_ALLOC_COUNT 2
 
 #if !defined(ESP32)
 #include <mem.h>
@@ -34,46 +39,33 @@
 
 #if defined(ARDUINO_ARCH_ESP8266)
 #include <ets_sys.h>
-#define __EH_DISABLED
 #elif defined(ARDUINO_ARCH_ESP32)
-#define __EH_DISABLED
 #else
+// ESP8266 nonos SDK target
 #include <user_interface.h>
 
 #include "espmissingincludes.h"
 #endif
 
-#ifndef SRPC_BUFFER_SIZE
-#define SRPC_BUFFER_SIZE 1024
-#endif /*SRPC_BUFFER_SIZE*/
-
-#ifndef SRPC_QUEUE_SIZE
-#define SRPC_QUEUE_SIZE 2
-#endif /*SRPC_QUEUE_SIZE*/
-
-#ifndef SRPC_QUEUE_MIN_ALLOC_COUNT
-#define SRPC_QUEUE_MIN_ALLOC_COUNT 2
-#endif /* SRPC_QUEUE_MIN_ALLOC_COUNT */
-
+// ARDUINO MEGA
 #elif defined(__AVR__)
-
 #define SRPC_BUFFER_SIZE 32
 #define SRPC_QUEUE_SIZE 1
 #define SRPC_QUEUE_MIN_ALLOC_COUNT 1
 #define __EH_DISABLED
 
+// OTHER SUPLA_DEVICE
+// Linux target, other?
 #elif defined(SUPLA_DEVICE)
-
-#ifndef SRPC_BUFFER_SIZE
 #define SRPC_BUFFER_SIZE 1024
-#endif /*SRPC_BUFFER_SIZE*/
-
 #define __EH_DISABLED
 
+// other not releated to supla-device
 #else
 #include <assert.h>
 #endif
 
+// ALL targets
 #ifndef SRPC_BUFFER_SIZE
 #define SRPC_BUFFER_SIZE 32768
 #endif /*SRPC_BUFFER_SIZE*/
@@ -1063,6 +1055,47 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               (TDS_PushNotification *)calloc(1, sizeof(TDS_PushNotification));
         }
         break;
+      case SUPLA_DS_CALL_SET_CHANNEL_CONFIG:
+      case SUPLA_SD_CALL_SET_CHANNEL_CONFIG:
+        if (srpc->sdp.data_size <= sizeof(TSDS_SetChannelConfig) &&
+            srpc->sdp.data_size >=
+                sizeof(TSDS_SetChannelConfig) - SUPLA_CHANNEL_CONFIG_MAXSIZE) {
+          rd->data.sds_set_channel_config_request =
+              (TSDS_SetChannelConfig *)malloc(sizeof(TSDS_SetChannelConfig));
+        }
+        break;
+      case SUPLA_DS_CALL_SET_CHANNEL_CONFIG_RESULT:
+      case SUPLA_SD_CALL_SET_CHANNEL_CONFIG_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSDS_SetChannelConfigResult)) {
+          rd->data.sds_set_channel_config_result =
+              (TSDS_SetChannelConfigResult *)malloc(
+                  sizeof(TSDS_SetChannelConfigResult));
+        }
+        break;
+      case SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED:
+        if (srpc->sdp.data_size == sizeof(TSD_ChannelConfigFinished)) {
+          rd->data.sd_channel_config_finished =
+              (TSD_ChannelConfigFinished *)malloc(
+                  sizeof(TSD_ChannelConfigFinished));
+        }
+        break;
+      case SUPLA_DS_CALL_SET_DEVICE_CONFIG:
+      case SUPLA_SD_CALL_SET_DEVICE_CONFIG:
+        if (srpc->sdp.data_size <= sizeof(TSDS_SetDeviceConfig) &&
+            srpc->sdp.data_size >=
+                sizeof(TSDS_SetDeviceConfig) - SUPLA_DEVICE_CONFIG_MAXSIZE) {
+          rd->data.sds_set_device_config_request =
+              (TSDS_SetDeviceConfig *)malloc(sizeof(TSDS_SetDeviceConfig));
+        }
+        break;
+      case SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT:
+      case SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSDS_SetDeviceConfigResult)) {
+          rd->data.sds_set_device_config_result =
+              (TSDS_SetDeviceConfigResult *)malloc(
+                  sizeof(TSDS_SetDeviceConfigResult));
+        }
+        break;
 #endif /*#ifndef SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT
@@ -1242,6 +1275,17 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
           rd->data.sc_channelgroup_relation_pack =
               (TSC_SuplaChannelGroupRelationPack *)calloc(
                   1, sizeof(TSC_SuplaChannelGroupRelationPack));
+        }
+        break;
+
+      case SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE:
+        if (srpc->sdp.data_size <= sizeof(TSC_SuplaChannelRelationPack) &&
+            srpc->sdp.data_size >= (sizeof(TSC_SuplaChannelRelationPack) -
+                                    (sizeof(TSC_SuplaChannelRelation) *
+                                     SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT))) {
+          rd->data.sc_channel_relation_pack =
+              (TSC_SuplaChannelRelationPack *)calloc(
+                  1, sizeof(TSC_SuplaChannelRelationPack));
         }
         break;
 
@@ -1524,6 +1568,46 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                   1, sizeof(TSC_RegisterPnClientTokenResult));
         }
         break;
+      case SUPLA_CS_CALL_SET_CHANNEL_CONFIG:
+        if (srpc->sdp.data_size <= sizeof(TSCS_ChannelConfig) &&
+            srpc->sdp.data_size >=
+                sizeof(TSCS_ChannelConfig) - SUPLA_CHANNEL_CONFIG_MAXSIZE) {
+          rd->data.scs_channel_config =
+              (TSCS_ChannelConfig *)malloc(sizeof(TSCS_ChannelConfig));
+        }
+        break;
+      case SUPLA_CS_CALL_GET_CHANNEL_CONFIG:
+        if (srpc->sdp.data_size == sizeof(TCS_GetChannelConfigRequest)) {
+          rd->data.cs_get_channel_config_request =
+              (TCS_GetChannelConfigRequest *)calloc(
+                  1, sizeof(TCS_GetChannelConfigRequest));
+        }
+        break;
+      case SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE_OR_RESULT:
+        if (srpc->sdp.data_size <= sizeof(TSC_ChannelConfigUpdateOrResult) &&
+            srpc->sdp.data_size >= (sizeof(TSC_ChannelConfigUpdateOrResult) -
+                                    SUPLA_CHANNEL_CONFIG_MAXSIZE)) {
+          rd->data.sc_channel_config_update_or_result =
+              (TSC_ChannelConfigUpdateOrResult *)calloc(
+                  1, sizeof(TSC_ChannelConfigUpdateOrResult));
+        }
+        break;
+      case SUPLA_CS_CALL_GET_DEVICE_CONFIG:
+        if (srpc->sdp.data_size == sizeof(TCS_GetDeviceConfigRequest)) {
+          rd->data.cs_get_device_config_request =
+              (TCS_GetDeviceConfigRequest *)malloc(
+                  sizeof(TCS_GetDeviceConfigRequest));
+        }
+        break;
+      case SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT:
+        if (srpc->sdp.data_size <= sizeof(TSC_DeviceConfigUpdateOrResult) &&
+            srpc->sdp.data_size >= sizeof(TSC_DeviceConfigUpdateOrResult) -
+                                       SUPLA_DEVICE_CONFIG_MAXSIZE) {
+          rd->data.sc_device_config_update_or_result =
+              (TSC_DeviceConfigUpdateOrResult *)malloc(
+                  sizeof(TSC_DeviceConfigUpdateOrResult));
+        }
+        break;
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
@@ -1690,6 +1774,22 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
     case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
     case SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT:
       return 20;
+    case SUPLA_DS_CALL_SET_CHANNEL_CONFIG:
+    case SUPLA_SD_CALL_SET_CHANNEL_CONFIG_RESULT:
+    case SUPLA_SD_CALL_SET_CHANNEL_CONFIG:
+    case SUPLA_DS_CALL_SET_CHANNEL_CONFIG_RESULT:
+    case SUPLA_DS_CALL_SET_DEVICE_CONFIG:
+    case SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT:
+    case SUPLA_SD_CALL_SET_DEVICE_CONFIG:
+    case SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT:
+    case SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE:
+    case SUPLA_CS_CALL_GET_CHANNEL_CONFIG:
+    case SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE_OR_RESULT:
+    case SUPLA_CS_CALL_SET_CHANNEL_CONFIG:
+    case SUPLA_CS_CALL_GET_DEVICE_CONFIG:
+    case SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT:
+    case SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED:
+      return 21;
   }
 
   return 255;
@@ -1711,6 +1811,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_async__call(void *_srpc,
                                                 char *data,
                                                 unsigned _supla_int_t data_size,
                                                 unsigned char *version) {
+  if (_srpc == NULL) {
+    return SUPLA_RESULT_FALSE;
+  }
+
   Tsrpc *srpc = (Tsrpc *)_srpc;
 
   if (!srpc_call_allowed(_srpc, call_id)) {
@@ -1756,6 +1860,10 @@ srpc_async_call(void *_srpc, unsigned _supla_int_t call_id, char *data,
 
 unsigned char SRPC_ICACHE_FLASH srpc_get_proto_version(void *_srpc) {
   unsigned char version;
+
+  if (_srpc == NULL) {
+    return 0;
+  }
 
   Tsrpc *srpc = (Tsrpc *)_srpc;
   lck_lock(srpc->lck);
@@ -2110,7 +2218,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_channel_functions_result(
                          (char *)result, size);
 }
 
-_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_get_channel_config(
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_get_channel_config_request(
     void *_srpc, TDS_GetChannelConfigRequest *request) {
   if (request == NULL) {
     return 0;
@@ -2130,6 +2238,102 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_channel_config_result(
                          (char *)config,
                          sizeof(TSD_ChannelConfig) -
                              SUPLA_CHANNEL_CONFIG_MAXSIZE + config->ConfigSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channel_config_request(
+    void *_srpc, TSDS_SetChannelConfig *config) {
+  if (config == NULL || config->ConfigSize > SUPLA_CHANNEL_CONFIG_MAXSIZE) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_SET_CHANNEL_CONFIG,
+                         (char *)config,
+                         sizeof(TSDS_SetChannelConfig) -
+                             SUPLA_CHANNEL_CONFIG_MAXSIZE + config->ConfigSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_channel_config_result(
+    void *_srpc, TSDS_SetChannelConfigResult *result) {
+  if (result == NULL) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_SET_CHANNEL_CONFIG_RESULT,
+                         (char *)result, sizeof(TSDS_SetChannelConfigResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_channel_config_request(
+    void *_srpc, TSDS_SetChannelConfig *config) {
+  if (config == NULL || config->ConfigSize > SUPLA_CHANNEL_CONFIG_MAXSIZE) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_SET_CHANNEL_CONFIG,
+                         (char *)config,
+                         sizeof(TSDS_SetChannelConfig) -
+                             SUPLA_CHANNEL_CONFIG_MAXSIZE + config->ConfigSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channel_config_result(
+    void *_srpc, TSDS_SetChannelConfigResult *result) {
+  if (result == NULL) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_SET_CHANNEL_CONFIG_RESULT,
+                         (char *)result, sizeof(TSDS_SetChannelConfigResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_channel_config_finished(
+    void *_srpc, TSD_ChannelConfigFinished *fin) {
+  if (fin == NULL) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED,
+                         (char *)fin, sizeof(TSD_ChannelConfigFinished));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_device_config_request(
+    void *_srpc, TSDS_SetDeviceConfig *config) {
+  if (config == NULL || config->ConfigSize > SUPLA_DEVICE_CONFIG_MAXSIZE) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_SET_DEVICE_CONFIG, (char *)config,
+                         sizeof(TSDS_SetDeviceConfig) -
+                             SUPLA_DEVICE_CONFIG_MAXSIZE + config->ConfigSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_device_config_result(
+    void *_srpc, TSDS_SetDeviceConfigResult *result) {
+  if (result == NULL) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT,
+                         (char *)result, sizeof(TSDS_SetDeviceConfigResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_device_config_request(
+    void *_srpc, TSDS_SetDeviceConfig *config) {
+  if (config == NULL || config->ConfigSize > SUPLA_DEVICE_CONFIG_MAXSIZE) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_SET_DEVICE_CONFIG, (char *)config,
+                         sizeof(TSDS_SetDeviceConfig) -
+                             SUPLA_DEVICE_CONFIG_MAXSIZE + config->ConfigSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_device_config_result(
+    void *_srpc, TSDS_SetDeviceConfigResult *result) {
+  if (result == NULL) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT,
+                         (char *)result, sizeof(TSDS_SetDeviceConfigResult));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH
@@ -2468,6 +2672,21 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_relation_pack_update(
 
   return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE,
                          (char *)channelgroup_relation_pack, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_relation_pack_update(
+    void *_srpc, TSC_SuplaChannelRelationPack *relation_pack) {
+  if (relation_pack->count < 1 ||
+      relation_pack->count > SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT) {
+    return 0;
+  }
+
+  unsigned _supla_int_t size =
+      sizeof(TSC_SuplaChannelRelationPack) - sizeof(relation_pack->items) +
+      (sizeof(TSC_SuplaChannelRelation) * relation_pack->count);
+
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNEL_RELATION_PACK_UPDATE,
+                         (char *)relation_pack, size);
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update(
@@ -2950,6 +3169,64 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_register_pn_client_token_result(
   return srpc_async_call(_srpc, SUPLA_SC_CALL_REGISTER_PN_CLIENT_TOKEN_RESULT,
                          (char *)result,
                          sizeof(TSC_RegisterPnClientTokenResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_channel_config_request(
+    void *_srpc, TCS_GetChannelConfigRequest *request) {
+  if (request == NULL) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_GET_CHANNEL_CONFIG,
+                         (char *)request, sizeof(TCS_GetChannelConfigRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_config_update_or_result(
+    void *_srpc, TSC_ChannelConfigUpdateOrResult *config) {
+  if (config == NULL ||
+      config->Config.ConfigSize > SUPLA_CHANNEL_CONFIG_MAXSIZE) {
+    return 0;
+  }
+
+  return srpc_async_call(
+      _srpc, SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE_OR_RESULT, (char *)config,
+      sizeof(TSC_ChannelConfigUpdateOrResult) - SUPLA_CHANNEL_CONFIG_MAXSIZE +
+          config->Config.ConfigSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_config_request(
+    void *_srpc, TSCS_ChannelConfig *config) {
+  if (config == NULL || config->ConfigSize > SUPLA_CHANNEL_CONFIG_MAXSIZE) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_SET_CHANNEL_CONFIG,
+                         (char *)config,
+                         sizeof(TSCS_ChannelConfig) -
+                             SUPLA_CHANNEL_CONFIG_MAXSIZE + config->ConfigSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_device_config_request(
+    void *_srpc, TCS_GetDeviceConfigRequest *request) {
+  if (request == NULL) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_GET_DEVICE_CONFIG,
+                         (char *)request, sizeof(TCS_GetDeviceConfigRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_config_update_or_result(
+    void *_srpc, TSC_DeviceConfigUpdateOrResult *config) {
+  if (config == NULL ||
+      config->Config.ConfigSize > SUPLA_DEVICE_CONFIG_MAXSIZE) {
+    return 0;
+  }
+
+  return srpc_async_call(
+      _srpc, SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT, (char *)config,
+      sizeof(TSC_DeviceConfigUpdateOrResult) - SUPLA_DEVICE_CONFIG_MAXSIZE +
+          config->Config.ConfigSize);
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

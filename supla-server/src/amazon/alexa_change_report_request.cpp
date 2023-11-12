@@ -21,9 +21,9 @@
 #include "amazon/alexa_change_report_search_condition.h"
 #include "amazon/alexa_change_report_throttling.h"
 #include "amazon/alexa_client.h"
-#include "channeljsonconfig/alexa_config.h"
 #include "device/channel_property_getter.h"
 #include "http/asynctask_http_thread_pool.h"
+#include "jsonconfig/channel/alexa_config.h"
 #include "svrcfg.h"
 #include "user/user.h"
 
@@ -93,6 +93,7 @@ bool supla_alexa_change_report_request::make_request(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
       client.add_contact_sensor();
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
@@ -141,6 +142,7 @@ bool supla_alexa_change_report_request::is_function_allowed(int func) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
       return true;
     default:
       return false;
@@ -167,7 +169,7 @@ void supla_alexa_change_report_request::new_request(const supla_caller &caller,
 
   bool integration_disabled = false;
   {
-    channel_json_config *config = property_getter->get_detached_json_config();
+    supla_json_config *config = property_getter->get_detached_json_config();
     if (config) {
       alexa_config a_config(config);
       integration_disabled = a_config.is_integration_disabled();

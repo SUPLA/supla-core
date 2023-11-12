@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_REGISTER_DEVICE_C_H_
 #define SUPLA_CH_REGISTER_DEVICE_C_H_
 
+#include <memory>
+
 #include "device/call_handler/abstract_device_srpc_call_handler.h"
 #include "device/call_handler/register_device.h"
 

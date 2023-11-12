@@ -63,7 +63,7 @@ bool supla_register_device::is_prev_entering_cfg_mode(void) {
   return false;
 }
 
-void supla_register_device::on_registraction_success(void) {
+void supla_register_device::on_registration_success(void) {
   shared_ptr<supla_device> device = get_device().lock();
 
   device->set_id(get_device_id());
@@ -94,6 +94,13 @@ void supla_register_device::on_registraction_success(void) {
 
   device->get_user()->on_device_registered(
       get_device_id(), supla_caller(ctDevice, get_device_id()));
+}
+
+void supla_register_device::after_registration_success(void) {
+  shared_ptr<supla_device> device = get_device().lock();
+
+  device->send_config_to_device();
+  device->get_channels()->send_configs_to_device();
 }
 
 void supla_register_device::register_device(

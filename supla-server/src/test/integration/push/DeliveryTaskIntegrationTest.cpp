@@ -18,6 +18,8 @@
 
 #include "integration/push/DeliveryTaskIntegrationTest.h"
 
+#include <memory>
+
 #include "doubles/push/PnThrottlingMock.h"
 #include "gmock/gmock.h"
 #include "http/asynctask_http_thread_bucket.h"

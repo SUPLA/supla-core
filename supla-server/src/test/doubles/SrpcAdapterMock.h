@@ -49,8 +49,12 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
   MOCK_METHOD1(sdc_async_get_user_localtime_result,
                _supla_int_t(TSDC_UserLocalTimeResult *localtime));
 
+  MOCK_METHOD1(sc_async_channel_relation_pack_update,
+               _supla_int_t(TSC_SuplaChannelRelationPack *relation_pack));
+
   MOCK_METHOD1(sc_async_scene_pack_update,
                _supla_int_t(TSC_SuplaScenePack *scene_pack));
+
   MOCK_METHOD1(sc_async_scene_state_pack_update,
                _supla_int_t(TSC_SuplaSceneStatePack *scene_status_pack));
 
@@ -107,6 +111,27 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
 
   MOCK_METHOD1(sc_async_register_pn_client_token_result,
                _supla_int_t(TSC_RegisterPnClientTokenResult *result));
+
+  MOCK_METHOD1(sd_async_set_device_config_result,
+               _supla_int_t(TSDS_SetDeviceConfigResult *result));
+
+  MOCK_METHOD1(sd_async_set_device_config_request,
+               _supla_int_t(TSDS_SetDeviceConfig *config));
+
+  MOCK_METHOD1(sd_async_set_channel_config_result,
+               _supla_int_t(TSDS_SetChannelConfigResult *result));
+
+  MOCK_METHOD1(sd_async_set_channel_config_request,
+               _supla_int_t(TSDS_SetChannelConfig *config));
+
+  MOCK_METHOD1(sc_async_channel_config_update_or_result,
+               _supla_int_t(TSC_ChannelConfigUpdateOrResult *config));
+
+  MOCK_METHOD1(sd_async_channel_config_finished,
+               _supla_int_t(TSD_ChannelConfigFinished *fin));
+
+  MOCK_METHOD1(sc_async_device_config_update_or_result,
+               _supla_int_t(TSC_DeviceConfigUpdateOrResult *config));
 };
 
 } /* namespace testing */

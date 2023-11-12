@@ -23,6 +23,7 @@
 #include "device/value/channel_em_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
+#include "device/value/channel_hvac_value.h"
 #include "device/value/channel_ic_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_openclosed_value.h"
@@ -97,6 +98,10 @@ supla_channel_value *supla_channel_value_factory::new_value(
 
   if (supla_channel_em_value::is_function_supported(func)) {
     return new supla_channel_em_value(value);
+  }
+
+  if (supla_channel_hvac_value::is_function_supported(func)) {
+    return new supla_channel_hvac_value(value);
   }
 
   return new supla_channel_value(value);

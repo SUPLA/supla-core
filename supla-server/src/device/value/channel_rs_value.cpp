@@ -87,7 +87,7 @@ void supla_channel_rs_value::update_sensor(supla_user *user,
 
 void supla_channel_rs_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
-    int param3, int param4, channel_json_config *json_config) {
+    int param3, int param4, supla_json_config *json_config) {
   ((TDSC_RollerShutterValue *)raw_value)->bottom_position = param4;
 }
 

@@ -21,9 +21,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "channeljsonconfig/action_trigger_config.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "jsonconfig/channel/action_trigger_config.h"
 #include "log.h"
 
 supla_mqtt_channel_message_provider::supla_mqtt_channel_message_provider(void)
@@ -39,8 +39,8 @@ void supla_mqtt_channel_message_provider::channel_type_to_string(
   // Names adapted to
   // https://github.com/SUPLA/supla-cloud/blob/b0afbfba770c4426154684668782aacbab82d0ee/src/SuplaBundle/Enums/ChannelType.php#L26
   switch (type) {
-    case SUPLA_CHANNELTYPE_SENSORNO:
-      snprintf(buf, buf_size, "SENSORNO");
+    case SUPLA_CHANNELTYPE_BINARYSENSOR:
+      snprintf(buf, buf_size, "BINARYSENSOR");
       break;
     case SUPLA_CHANNELTYPE_SENSORNC:
       snprintf(buf, buf_size, "SENSORNC");
@@ -244,6 +244,9 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       snprintf(buf, buf_size, "OPENINGSENSOR_WINDOW");
       break;
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+      snprintf(buf, buf_size, "HOTELCARDSENSOR");
+      break;
     case SUPLA_CHANNELFNC_MAILSENSOR:
       snprintf(buf, buf_size, "MAILSENSOR");
       break;
@@ -279,9 +282,6 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
       break;
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       snprintf(buf, buf_size, "IC_HEATMETER");
-      break;
-    case SUPLA_CHANNELFNC_THERMOSTAT:
-      snprintf(buf, buf_size, "THERMOSTAT");
       break;
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       snprintf(buf, buf_size, "THERMOSTATHEATPOLHOMEPLUS");
@@ -425,6 +425,9 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "Window opening sensor");
       break;
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Hotel card sensor");
+      break;
     case SUPLA_CHANNELFNC_MAILSENSOR:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Mail sensor");
       break;
@@ -458,9 +461,6 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
       break;
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Heat meter");
-      break;
-    case SUPLA_CHANNELFNC_THERMOSTAT:
-      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Thermostat");
       break;
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Home+ Heater");
@@ -977,15 +977,31 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
         char *device_class = NULL;
         char energy[] = "energy";
         char gas[] = "gas";
+        char water[] = "water";
 
         if (func == SUPLA_CHANNELFNC_IC_ELECTRICITY_METER &&
             (icv->get_custom_unit() == "kWh" ||
-             icv->get_custom_unit() == "Wh")) {
+             icv->get_custom_unit() == "Wh" ||
+             icv->get_custom_unit() == "MWh" ||
+             icv->get_custom_unit() == "MJ" ||
+             icv->get_custom_unit() == "GJ")) {
           device_class = energy;
         } else if (func == SUPLA_CHANNELFNC_IC_GAS_METER &&
                    (icv->get_custom_unit() == "m³" ||
-                    icv->get_custom_unit() == "ft³")) {
+                    icv->get_custom_unit() == "m3" ||
+                    icv->get_custom_unit() == "ft³" ||
+                    icv->get_custom_unit() == "ft3" ||
+                    icv->get_custom_unit() == "CCF")) {
           device_class = gas;
+        } else if (func == SUPLA_CHANNELFNC_IC_WATER_METER &&
+                   (icv->get_custom_unit() == "m³" ||
+                    icv->get_custom_unit() == "m3" ||
+                    icv->get_custom_unit() == "ft³" ||
+                    icv->get_custom_unit() == "ft3" ||
+                    icv->get_custom_unit() == "CCF" ||
+                    icv->get_custom_unit() == "L" ||
+                    icv->get_custom_unit() == "gal")) {
+          device_class = water;
         }
 
         result = ha_sensor(icv->get_custom_unit().c_str(), 3, 0, true,
@@ -1453,6 +1469,7 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
       break;
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
     case SUPLA_CHANNELFNC_MAILSENSOR:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
       return ha_binary_sensor(NULL, topic_prefix, topic_name, message,
                               message_size);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:

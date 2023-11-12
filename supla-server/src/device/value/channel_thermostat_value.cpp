@@ -42,7 +42,6 @@ double supla_channel_thermostat_value::get_preset_temperature(void) {
 // static
 bool supla_channel_thermostat_value::is_function_supported(int func) {
   switch (func) {
-    case SUPLA_CHANNELFNC_THERMOSTAT:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       return true;
   }
