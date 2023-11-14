@@ -137,6 +137,9 @@ void supla_mqtt_message_provider::get_mfr_name(int mfr_id, char *buf,
     case SUPLA_MFR_POLIER:
       snprintf(buf, buf_size, "Polier");
       break;
+    case SUPLA_MFR_ERGO_ENERGIA:
+      snprintf(buf, buf_size, "Ergo Energia");
+      break;
     default:
       buf[0] = 0;
       break;
