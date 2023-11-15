@@ -41,6 +41,7 @@ void supla_client_ch_get_device_config::handle_call(
   if (rd->data.cs_get_device_config_request != nullptr) {
     TSC_DeviceConfigUpdateOrResult result = {};
     result.Result = SUPLA_CONFIG_RESULT_FALSE;
+    result.Config.DeviceId = request->DeviceId;
 
     TCS_GetDeviceConfigRequest* request = rd->data.cs_get_device_config_request;
     if (request->DeviceId) {
