@@ -1608,12 +1608,11 @@ typedef struct {
 #define EM_VAR_CURRENT_OVER_65A 0x1000
 #define EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED 0x2000
 #define EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED 0x4000
-#define EM_VAR_ALL 0xFFFFFF
 
-#define EM_VAR_VOLTAGE_PHASE_ANGLE_12 0x10000  // ver. >= 21
-#define EM_VAR_VOLTAGE_PHASE_ANGLE_13 0x20000  // ver. >= 21
-#define EM_VAR_VOLTAGE_PHASE_SEQUENCE 0x40000  // ver. >= 21
-#define EM_VAR_CURRENT_PHASE_SEQUENCE 0x80000  // ver. >= 21
+#define EM_VAR_VOLTAGE_PHASE_ANGLE_12 0x10000  // ver. >= 22
+#define EM_VAR_VOLTAGE_PHASE_ANGLE_13 0x20000  // ver. >= 22
+#define EM_VAR_VOLTAGE_PHASE_SEQUENCE 0x40000  // ver. >= 22
+#define EM_VAR_CURRENT_PHASE_SEQUENCE 0x80000  // ver. >= 22
 
 #define EM_VAR_POWER_ACTIVE_KW 0x100000
 #define EM_VAR_POWER_REACTIVE_KVAR 0x200000
@@ -1715,7 +1714,7 @@ typedef struct {
   _supla_int_t m_count;
   TElectricityMeter_Measurement m[EM_MEASUREMENT_COUNT];  // Last variable in
                                                           // struct!
-} TElectricityMeter_ExtendedValue_V3;                     // v. >= 21
+} TElectricityMeter_ExtendedValue_V3;                     // v. >= 22
 
 #define EM_VALUE_FLAG_PHASE1_ON 0x01
 #define EM_VALUE_FLAG_PHASE2_ON 0x02
