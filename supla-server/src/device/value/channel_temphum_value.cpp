@@ -87,7 +87,7 @@ double supla_channel_temphum_value::get_humidity(void) {
 }
 
 void supla_channel_temphum_value::set_temperature(double temperature) {
-  if (temperature < incorrect_temperature() || temperature > 1000) {
+  if (temperature < incorrect_temperature()) {
     temperature = incorrect_temperature();
   }
 

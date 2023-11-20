@@ -20,10 +20,12 @@
 
 #include <memory>
 
+#include "client/client.h"
 #include "db/db_access_provider.h"
 #include "device.h"
 #include "device/device_dao.h"
 #include "jsonconfig/device/device_json_config.h"
+#include "user/user.h"
 
 using std::shared_ptr;
 
@@ -71,6 +73,11 @@ void supla_ch_set_device_config::handle_multipart_call(
 
   device->send_config_to_device();  // Regardless of the result, call
                                     // this method.
+
+  device->get_user()->get_clients()->for_each(
+      [&device](shared_ptr<supla_client> client, bool* will_continue) -> void {
+        client->send_device_config(device->get_id(), 0xFFFFFFFFFFFFFFFF);
+      });
 }
 
 void supla_ch_set_device_config::handle_call(
