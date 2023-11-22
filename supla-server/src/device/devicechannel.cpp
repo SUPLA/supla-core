@@ -811,6 +811,11 @@ void supla_device_channel::send_config_to_device(unsigned char config_type) {
 }
 
 void supla_device_channel::send_config_to_device(void) {
+  if (!(get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) ||
+      get_device()->get_protocol_version() < 21) {
+    return;
+  }
+
   send_config_to_device(SUPLA_CONFIG_TYPE_DEFAULT);
 
   if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
