@@ -136,6 +136,17 @@ void supla_device_channel::get_defaults(int type, int func, int *param1,
     *param1 = 7;
     *param2 = 60;  // 1:00
   }
+
+  switch (func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      *param1 = 6000;
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      *param1 = 500;
+      break;
+  }
 }
 
 // static
