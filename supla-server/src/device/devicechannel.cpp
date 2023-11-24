@@ -800,7 +800,8 @@ void supla_device_channel::send_config_to_device(unsigned char config_type) {
 
     get_config(&config, config_type, 0);
 
-    if (config.ConfigSize > 0) {
+    if (config.ConfigSize > 0 ||
+        (config.Func && config_type == SUPLA_CONFIG_TYPE_DEFAULT)) {
       get_device()
           ->get_connection()
           ->get_srpc_adapter()
