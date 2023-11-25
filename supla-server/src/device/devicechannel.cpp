@@ -136,6 +136,17 @@ void supla_device_channel::get_defaults(int type, int func, int *param1,
     *param1 = 7;
     *param2 = 60;  // 1:00
   }
+
+  switch (func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      *param1 = 6000;
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      *param1 = 500;
+      break;
+  }
 }
 
 // static
@@ -789,7 +800,8 @@ void supla_device_channel::send_config_to_device(unsigned char config_type) {
 
     get_config(&config, config_type, 0);
 
-    if (config.ConfigSize > 0) {
+    if (config.ConfigSize > 0 ||
+        (config.Func && config_type == SUPLA_CONFIG_TYPE_DEFAULT)) {
       get_device()
           ->get_connection()
           ->get_srpc_adapter()
@@ -800,6 +812,11 @@ void supla_device_channel::send_config_to_device(unsigned char config_type) {
 }
 
 void supla_device_channel::send_config_to_device(void) {
+  if (!(get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) ||
+      get_device()->get_protocol_version() < 21) {
+    return;
+  }
+
   send_config_to_device(SUPLA_CONFIG_TYPE_DEFAULT);
 
   if (get_type() == SUPLA_CHANNELTYPE_HVAC &&

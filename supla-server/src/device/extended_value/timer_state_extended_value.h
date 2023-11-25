@@ -39,7 +39,7 @@ class supla_timer_state_extended_value : public supla_channel_extended_value {
                                    supla_user *user);
   virtual ~supla_timer_state_extended_value(void);
 
-  virtual void set_raw_value(const TTimerState_ExtendedValue *value);
+  virtual void set_raw_value(const TTimerState_ExtendedValue *value, char type);
   virtual void set_raw_value(const TSuplaChannelExtendedValue *value);
   virtual bool get_raw_value(TTimerState_ExtendedValue *value);
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);

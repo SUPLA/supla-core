@@ -769,7 +769,8 @@ void supla_channelextendedvalue_set_object(
                  sizeof(TChannelState_ExtendedValue)) {
     channel_state = (TChannelState_ExtendedValue *)channel_extendedvalue->value;
 
-  } else if (channel_extendedvalue->type == EV_TYPE_TIMER_STATE_V1 &&
+  } else if ((channel_extendedvalue->type == EV_TYPE_TIMER_STATE_V1 ||
+              channel_extendedvalue->type == EV_TYPE_TIMER_STATE_V1_SEC) &&
              channel_extendedvalue->size <= sizeof(TTimerState_ExtendedValue) &&
              channel_extendedvalue->size >= sizeof(TTimerState_ExtendedValue) -
                                                 SUPLA_SENDER_NAME_MAXSIZE) {

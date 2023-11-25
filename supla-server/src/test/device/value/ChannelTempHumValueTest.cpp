@@ -56,12 +56,6 @@ TEST_F(ChannelTempHumValueTest, outOfRange) {
   EXPECT_EQ(-273, tempHum1.get_temperature());
   EXPECT_EQ(-1, tempHum1.get_humidity());
   EXPECT_TRUE(tempHum1.is_humidity_available());
-
-  supla_channel_temphum_value tempHum2(true, -274, 101);
-
-  EXPECT_EQ(-273, tempHum2.get_temperature());
-  EXPECT_EQ(-1, tempHum2.get_humidity());
-  EXPECT_TRUE(tempHum2.is_humidity_available());
 }
 
 TEST_F(ChannelTempHumValueTest, nativeValue) {

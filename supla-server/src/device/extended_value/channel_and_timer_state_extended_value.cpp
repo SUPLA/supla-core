@@ -53,7 +53,8 @@ void supla_channel_and_timer_state_extended_value::set_raw_value(
     const TChannelAndTimerState_ExtendedValue *value) {
   if (value) {
     channel.set_raw_value(&value->Channel);
-    supla_timer_state_extended_value::set_raw_value(&value->Timer);
+    supla_timer_state_extended_value::set_raw_value(&value->Timer,
+                                                    EV_TYPE_TIMER_STATE_V1);
   } else {
     channel.set_raw_value((TSuplaChannelExtendedValue *)nullptr);
     supla_timer_state_extended_value::set_raw_value(
