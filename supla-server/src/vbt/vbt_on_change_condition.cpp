@@ -124,6 +124,7 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_calculated_value, "calculated_value"},
         {var_name_heating, "heating"},
         {var_name_cooling, "cooling"},
+        {var_name_heating_or_cooling, "heating_or_cooling"},
         {var_name_is_on, "is_on"}};
 
     for (auto it = names.begin(); it != names.end(); ++it) {
@@ -301,6 +302,9 @@ bool supla_vbt_on_change_condition::get_number(supla_channel_value *value,
         break;
       case var_name_cooling:
         *result = hvac->is_cooling() ? 1 : 0;
+        break;
+      case var_name_heating_or_cooling:
+        *result = hvac->is_heating() || hvac->is_cooling() ? 1 : 0;
         break;
       case var_name_is_on:
         *result = hvac->is_on() ? 1 : 0;

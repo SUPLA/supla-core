@@ -1809,6 +1809,43 @@ TEST_F(OnChangeConditionTest, coolingChanged) {
   EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
 }
 
+TEST_F(OnChangeConditionTest, heatingOrCoolingChanged) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue *)raw_value)->IsOn = 1;
+  ((THVACValue *)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_COOLING;
+
+  supla_channel_hvac_value oldv, newv;
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change\":{\"name\":\"heating_or_cooling\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+
+  oldv.set_raw_value(raw_value);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+
+  ((THVACValue *)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_HEATING;
+  oldv.set_raw_value(raw_value);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+
+  ((THVACValue *)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_COOLING;
+  newv.set_raw_value(raw_value);
+
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+
+  ((THVACValue *)raw_value)->IsOn = 0;
+
+  newv.set_raw_value(raw_value);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
 TEST_F(OnChangeConditionTest, isOnChanged) {
   char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
   ((THVACValue *)raw_value)->IsOn = 1;

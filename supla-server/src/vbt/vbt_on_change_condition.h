@@ -67,6 +67,7 @@ enum _vbt_var_name_e {
   var_name_calculated_value,
   var_name_heating,
   var_name_cooling,
+  var_name_heating_or_cooling,
   var_name_is_on
 };
 
