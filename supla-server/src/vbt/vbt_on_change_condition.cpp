@@ -285,7 +285,7 @@ bool supla_vbt_on_change_condition::get_number(supla_channel_value *value,
                 : 0;
         break;
       default:
-        return vv->get_valve_value()->closed ? 1 : 0;
+        *result = vv->get_valve_value()->closed ? 1 : 0;
     }
 
     return true;
