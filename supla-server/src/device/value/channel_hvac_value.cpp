@@ -86,17 +86,17 @@ void supla_channel_hvac_value::set_flags(unsigned short flags) {
 }
 
 bool supla_channel_hvac_value::is_on(void) {
-  switch (get_mode()) {
-    case SUPLA_HVAC_MODE_OFF:
-    case SUPLA_HVAC_MODE_HEAT:
-    case SUPLA_HVAC_MODE_COOL:
-    case SUPLA_HVAC_MODE_AUTO:
-    case SUPLA_HVAC_MODE_FAN_ONLY:
-    case SUPLA_HVAC_MODE_DRY:
-      return true;
-  }
+  return ((THVACValue*)raw_value)->IsOn > 0;
+}
 
-  return false;
+bool supla_channel_hvac_value::is_heating(void) {
+  return ((THVACValue*)raw_value)->IsOn > 0 &&
+         (((THVACValue*)raw_value)->Flags & SUPLA_HVAC_VALUE_FLAG_HEATING);
+}
+
+bool supla_channel_hvac_value::is_cooling(void) {
+  return ((THVACValue*)raw_value)->IsOn > 0 &&
+         (((THVACValue*)raw_value)->Flags & SUPLA_HVAC_VALUE_FLAG_COOLING);
 }
 
 void supla_channel_hvac_value::turn_on(void) {
@@ -106,10 +106,18 @@ void supla_channel_hvac_value::turn_on(void) {
 void supla_channel_hvac_value::turn_off(void) { set_mode(SUPLA_HVAC_MODE_OFF); }
 
 void supla_channel_hvac_value::toggle(void) {
-  if (is_on() || get_mode() == SUPLA_HVAC_MODE_CMD_TURN_ON) {
-    turn_off();
-  } else {
-    turn_on();
+  switch (get_mode()) {
+    case SUPLA_HVAC_MODE_HEAT:
+    case SUPLA_HVAC_MODE_COOL:
+    case SUPLA_HVAC_MODE_AUTO:
+    case SUPLA_HVAC_MODE_FAN_ONLY:
+    case SUPLA_HVAC_MODE_DRY:
+    case SUPLA_HVAC_MODE_CMD_TURN_ON:
+      turn_off();
+      break;
+    default:
+      turn_on();
+      break;
   }
 }
 
