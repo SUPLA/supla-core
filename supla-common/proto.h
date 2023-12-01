@@ -414,7 +414,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_VALVE_OPENCLOSE 7000              // ver. >= 12
 #define SUPLA_CHANNELTYPE_VALVE_PERCENTAGE 7010             // ver. >= 12
 #define SUPLA_CHANNELTYPE_BRIDGE 8000                       // ver. >= 12
-#define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 21
+#define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 22
 #define SUPLA_CHANNELTYPE_ENGINE 10000                      // ver. >= 12
 #define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 16
 #define SUPLA_CHANNELTYPE_DIGIGLASS 12000                   // ver. >= 12
@@ -474,7 +474,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER 426       // ver. >= 21
 #define SUPLA_CHANNELFNC_VALVE_OPENCLOSE 500               // ver. >= 12
 #define SUPLA_CHANNELFNC_VALVE_PERCENTAGE 510              // ver. >= 12
-#define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520   // ver. >= 21
+#define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520   // ver. >= 22
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600     // ver. >= 12
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                 // ver. >= 16
 #define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800          // ver. >= 14
@@ -2679,11 +2679,6 @@ typedef struct {
 #define SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE (1ULL << 0)
 #define SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST (1ULL << 1)
 
-// TODO(klew): should we have separate structures for configuration specific
-// to selected algorithm? I.e. histeresis should be applicable to on/off
-// algorithm, while i.e. PID requires different parameters to work (or can
-// those be adjusted automatically by software?)
-
 // HVAC channel validation rules for thermometers:
 // - MainThermometerChannelNo must be set
 // - AuxThermometerChannelNo is validated and used only when
@@ -2815,6 +2810,59 @@ typedef struct {
   unsigned char Reserved[48];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
+
+
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_CHART_TYPE_LINEAR 0
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_CHART_TYPE_BAR 1
+
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_DATA_SOURCE_TYPE_MEASUREMENT 0
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_DATA_SOURCE_TYPE_INCREMENTAL 1
+
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_DOUBLE 0
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_INT64 1
+
+// General Purpose Mesurement channel config:
+// Calculated value is: (value / ValueDivider) + ValueOffset
+typedef struct {
+  // Value divider
+  unsigned _supla_int_t ValueDivider;  // 0.001 units; 0 is considered as 1
+  // Value offset
+  unsigned _supla_int_t ValueOffset;  // 0.001 units
+  // Display precicion
+  unsigned char ValuePrecision;  // 0 - 10 decimal points
+  // Display unit prefix
+  char UnitPrefix[9];  // UTF8 including the terminating null byte ('\0')
+  // Display unit suffix
+  char UnitSuffix[9];  // UTF8 including the terminating null byte ('\0')
+  // Keep history on server
+  unsigned char KeepHistory;  // 0 - no (default), 1 - yes
+  // Chart type linear/bar
+  unsigned char ChartType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_CHART_TYPE_*
+  // Data source type - incremental/ measurement
+  unsigned char
+      DataSourceType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_DATA_SOURCE_TYPE_*
+  // Fill missing data (for incremental type)
+  unsigned char FillMissingData;  // 0 - no (default), 1 - yes
+  // Include value offset in history
+  unsigned char IncludeValueOffsetInHistory;  // 0 - no (default), 1 - yes
+
+  // Readonly and default parameters
+  // Channel value format: int64, double
+  unsigned char ValueType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_*
+  // Default value divider
+  unsigned _supla_int_t DefaultValueDivider;  // 0.001 units; 0 is considered
+                                              // as 1
+  // Default value offset
+  unsigned _supla_int_t DefaultValueOffset;  // 0.001 units
+  // Default display precicion
+  unsigned char DefaultValuePrecision;  // 0 - 10 decimal points
+  // jednostka prefix
+  char DefaultUnitPrefix[9];  // UTF8 including the terminating null byte ('\0')
+  // jednostka suffix
+  char DefaultUnitSuffix[9];  // UTF8 including the terminating null byte ('\0')
+
+  unsigned char Reserved[8];
+} TChannelConfig_GeneralPurposeMeasuement;
 
 typedef struct {
   _supla_int_t ChannelID;
