@@ -2821,19 +2821,21 @@ typedef struct {
 #define SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_DOUBLE 0
 #define SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_INT64 1
 
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE 15
+
 // General Purpose Mesurement channel config:
-// Calculated value is: (value / ValueDivider) + ValueOffset
+// Calculated value is: (value / ValueDivider) + ValueAdded
 typedef struct {
   // Value divider
-  unsigned _supla_int_t ValueDivider;  // 0.001 units; 0 is considered as 1
-  // Value offset
-  unsigned _supla_int_t ValueOffset;  // 0.001 units
+  _supla_int_t ValueDivider;  // 0.001 units; 0 is considered as 1
+  // Value added
+  _supla_int64_t ValueAdded;  // 0.001 units
   // Display precicion
   unsigned char ValuePrecision;  // 0 - 10 decimal points
-  // Display unit prefix
-  char UnitPrefix[9];  // UTF8 including the terminating null byte ('\0')
-  // Display unit suffix
-  char UnitSuffix[9];  // UTF8 including the terminating null byte ('\0')
+  // Display unit prefix - UTF8 including the terminating null byte ('\0')
+  char UnitPrefix[SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE];
+  // Display unit suffix - UTF8 including the terminating null byte ('\0')
+  char UnitSuffix[SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE];
   // Keep history on server
   unsigned char KeepHistory;  // 0 - no (default), 1 - yes
   // Chart type linear/bar
@@ -2843,23 +2845,23 @@ typedef struct {
       DataSourceType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_DATA_SOURCE_TYPE_*
   // Fill missing data (for incremental type)
   unsigned char FillMissingData;  // 0 - no (default), 1 - yes
-  // Include value offset in history
-  unsigned char IncludeValueOffsetInHistory;  // 0 - no (default), 1 - yes
+  // Include value added in history
+  unsigned char IncludeValueAddedInHistory;  // 0 - no (default), 1 - yes
 
   // Readonly and default parameters
-  // Channel value format: int64, double
+  // Channel value[8] format: int64, double
   unsigned char ValueType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_*
   // Default value divider
-  unsigned _supla_int_t DefaultValueDivider;  // 0.001 units; 0 is considered
-                                              // as 1
-  // Default value offset
-  unsigned _supla_int_t DefaultValueOffset;  // 0.001 units
+  _supla_int_t DefaultValueDivider;  // 0.001 units; 0 is considered
+                                     // as 1
+  // Default value added
+  _supla_int64_t DefaultValueAdded;  // 0.001 units
   // Default display precicion
   unsigned char DefaultValuePrecision;  // 0 - 10 decimal points
-  // jednostka prefix
-  char DefaultUnitPrefix[9];  // UTF8 including the terminating null byte ('\0')
-  // jednostka suffix
-  char DefaultUnitSuffix[9];  // UTF8 including the terminating null byte ('\0')
+  // Default unit prefix - UTF8 including the terminating null byte ('\0')
+  char DefaultUnitPrefix[SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE];
+  // Default unit suffix - UTF8 including the terminating null byte ('\0')
+  char DefaultUnitSuffix[SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE];
 
   unsigned char Reserved[8];
 } TChannelConfig_GeneralPurposeMeasuement;
