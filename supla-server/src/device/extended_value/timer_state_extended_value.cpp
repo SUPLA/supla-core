@@ -111,15 +111,21 @@ void supla_timer_state_extended_value::update_time(void) {
     unsigned _supla_int64_t time =
         now.tv_sec * (unsigned _supla_int64_t)1000000 + now.tv_usec;
     time /= 1000;
-    time += value->RemainingTimeMs;
-    time /= 1000;
+
+    if (get_value_ptr()->type == EV_TYPE_TIMER_STATE_V1_SEC) {
+      time /= 1000;
+      time += value->RemainingTimeS;
+    } else {
+      time += value->RemainingTimeMs;
+      time /= 1000;
+    }
 
     value->CountdownEndsAt = time;
   }
 }
 
 void supla_timer_state_extended_value::set_raw_value(
-    const TTimerState_ExtendedValue *value) {
+    const TTimerState_ExtendedValue *value, char type) {
   if (value) {
     size_t sender_name_size = value->SenderNameSize;
     if (sender_name_size > SUPLA_SENDER_NAME_MAXSIZE) {
@@ -130,7 +136,7 @@ void supla_timer_state_extended_value::set_raw_value(
 
     TSuplaChannelExtendedValue *ev = _realloc(size);
     if (ev) {
-      ev->type = EV_TYPE_TIMER_STATE_V1;
+      ev->type = type;
       ev->size = size;
       memcpy(ev->value, value, size);
     }
@@ -144,7 +150,7 @@ void supla_timer_state_extended_value::set_raw_value(
   if (value && is_ev_type_supported(value->type) && valid_size(value->size) &&
       ((TTimerState_ExtendedValue *)value->value)->SenderNameSize <=
           SUPLA_SENDER_NAME_MAXSIZE) {
-    set_raw_value((TTimerState_ExtendedValue *)value->value);
+    set_raw_value((TTimerState_ExtendedValue *)value->value, value->type);
   } else {
     supla_channel_extended_value::set_raw_value(nullptr);
   }
@@ -183,7 +189,7 @@ supla_channel_extended_value *supla_timer_state_extended_value::copy(  // NOLINT
 
 // static
 bool supla_timer_state_extended_value::is_ev_type_supported(char type) {
-  return type == EV_TYPE_TIMER_STATE_V1;
+  return type == EV_TYPE_TIMER_STATE_V1 || type == EV_TYPE_TIMER_STATE_V1_SEC;
 }
 
 // static

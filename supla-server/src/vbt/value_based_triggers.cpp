@@ -122,14 +122,14 @@ void supla_value_based_triggers::on_channel_value_changed(
 
   lck_lock(lck);
   for (auto it = triggers.begin(); it != triggers.end(); ++it) {
-    if ((*it)->get_active_period().is_now_active(timezone.c_str(), latitude,
-                                                 longitude)) {
-      supla_vbt_condition_result m =
-          new_value || old_value
-              ? (*it)->are_conditions_met(channel_id, old_value, new_value)
-              : (*it)->are_conditions_met(channel_id, old_evalue, new_evalue);
+    supla_vbt_condition_result m =
+        new_value || old_value
+            ? (*it)->are_conditions_met(channel_id, old_value, new_value)
+            : (*it)->are_conditions_met(channel_id, old_evalue, new_evalue);
 
-      if (m.are_conditions_met()) {
+    if (m.are_conditions_met()) {
+      if ((*it)->get_active_period().is_now_active(timezone.c_str(), latitude,
+                                                   longitude)) {
         m.set_trigger(*it);
         matches.push_back(m);
       }

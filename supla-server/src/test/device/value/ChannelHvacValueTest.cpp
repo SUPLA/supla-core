@@ -34,17 +34,14 @@ TEST_F(ChannelHvacValueTest, mode) {
 
 TEST_F(ChannelHvacValueTest, turnOn) {
   supla_channel_hvac_value value;
-  EXPECT_FALSE(value.is_on());
+  EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_NOT_SET);
   value.turn_on();
-  EXPECT_FALSE(value.is_on());
   EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_CMD_TURN_ON);
 }
 
 TEST_F(ChannelHvacValueTest, turnOff) {
   supla_channel_hvac_value value;
-  EXPECT_FALSE(value.is_on());
   value.set_mode(SUPLA_HVAC_MODE_HEAT);
-  EXPECT_TRUE(value.is_on());
   value.turn_off();
   EXPECT_EQ(value.get_mode(), SUPLA_HVAC_MODE_OFF);
 }
@@ -79,6 +76,41 @@ TEST_F(ChannelHvacValueTest, clear) {
 
   value.get_raw_value(raw_value2);
   EXPECT_EQ(memcmp(raw_value1, raw_value2, SUPLA_CHANNELVALUE_SIZE), 0);
+}
+
+TEST_F(ChannelHvacValueTest, isOn) {
+  supla_channel_hvac_value value;
+  EXPECT_FALSE(value.is_on());
+
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue*)raw_value)->IsOn = 1;
+  value.set_raw_value(raw_value);
+
+  EXPECT_TRUE(value.is_on());
+}
+
+TEST_F(ChannelHvacValueTest, isHeating) {
+  supla_channel_hvac_value value;
+  EXPECT_FALSE(value.is_heating());
+
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue*)raw_value)->IsOn = 1;
+  ((THVACValue*)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_HEATING;
+  value.set_raw_value(raw_value);
+
+  EXPECT_TRUE(value.is_heating());
+}
+
+TEST_F(ChannelHvacValueTest, isCooling) {
+  supla_channel_hvac_value value;
+  EXPECT_FALSE(value.is_cooling());
+
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue*)raw_value)->IsOn = 1;
+  ((THVACValue*)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_COOLING;
+  value.set_raw_value(raw_value);
+
+  EXPECT_TRUE(value.is_cooling());
 }
 
 }  // namespace testing
