@@ -82,7 +82,7 @@ void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
                     int user_id, int device_id, int channel_id,
                     supla_channel_fragment *_fragment, bool *_connected) {
         *_fragment =
-            supla_channel_fragment(device_id, channel_id, 0, func, 0, false);
+            supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
         *_connected = online;
 
         return value;
@@ -257,8 +257,9 @@ TEST_F(GoogleHomeStateReportRequestTest, x403) {
       .Times(1)
       .WillOnce([](int user_id, int device_id, int channel_id,
                    supla_channel_fragment *_fragment, bool *_connected) {
-        *_fragment = supla_channel_fragment(
-            device_id, channel_id, 0, SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
+        *_fragment =
+            supla_channel_fragment(device_id, channel_id, 0, 0,
+                                   SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
         *_connected = false;
 
         return nullptr;
@@ -283,8 +284,9 @@ TEST_F(GoogleHomeStateReportRequestTest, x404) {
       .Times(1)
       .WillOnce([](int user_id, int device_id, int channel_id,
                    supla_channel_fragment *_fragment, bool *_connected) {
-        *_fragment = supla_channel_fragment(
-            device_id, channel_id, 0, SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
+        *_fragment =
+            supla_channel_fragment(device_id, channel_id, 0, 0,
+                                   SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
         *_connected = false;
 
         return nullptr;

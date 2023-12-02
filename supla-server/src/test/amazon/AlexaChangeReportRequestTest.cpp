@@ -74,7 +74,7 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
                     int user_id, int device_id, int channel_id,
                     supla_channel_fragment *_fragment, bool *_Reachable) {
         *_fragment =
-            supla_channel_fragment(device_id, channel_id, 0, func, 0, false);
+            supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
         *_Reachable = online;
 
         return value;
@@ -129,7 +129,7 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
                           int user_id, int device_id, int channel_id,
                           supla_channel_fragment *_fragment, bool *_Reachable) {
         *_fragment =
-            supla_channel_fragment(device_id, channel_id, 0, func, 0, false);
+            supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
         *_Reachable = online;
 
         return value;
