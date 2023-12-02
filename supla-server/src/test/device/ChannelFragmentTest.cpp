@@ -48,7 +48,7 @@ TEST_F(ChannelFragmentTest, constructorWithArgs) {
   supla_channel_fragment f2(12, 22, 1, 32, 42, 54, true);
   EXPECT_EQ(f2.get_device_id(), 12);
   EXPECT_EQ(f2.get_channel_id(), 22);
-  EXPECT_EQ(f1.get_channel_number(), 1);
+  EXPECT_EQ(f2.get_channel_number(), 1);
   EXPECT_EQ(f2.get_type(), 32);
   EXPECT_EQ(f2.get_function(), 42);
   EXPECT_EQ(f2.get_flags(), 54U);
