@@ -16,29 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTTCHANNELMESSAGEPROVIDERTEST_H_
-#define MQTTCHANNELMESSAGEPROVIDERTEST_H_
+#include "MqttChannelMessageProviderMock.h"
 
-#include "MqttMessageProviderTest.h"
-#include "doubles/mqtt/MqttChannelMessageProviderMock.h"
-#include "gtest/gtest.h"  // NOLINT
-#include "mqtt_db.h"
+MqttChannelMessageProviderMock::MqttChannelMessageProviderMock(void)
+    : supla_mqtt_channel_message_provider() {}
 
-namespace testing {
-
-class MqttChannelMessageProviderTest : public MqttMessageProviderTest {
- protected:
-  MqttChannelMessageProviderMock *provider;
-  void fillChannelData(_mqtt_db_data_row_channel_t *row_channel);
-  void electricityMeterTest(int channel_flags);
-
- public:
-  virtual void SetUp();
-  virtual void TearDown();
-  MqttChannelMessageProviderTest();
-  virtual ~MqttChannelMessageProviderTest();
-};
-
-} /* namespace testing */
-
-#endif /* MQTTCHANNELMESSAGEPROVIDERTEST_H_ */
+MqttChannelMessageProviderMock::~MqttChannelMessageProviderMock(void) {}
