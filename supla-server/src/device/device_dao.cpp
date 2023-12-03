@@ -1395,3 +1395,72 @@ void supla_device_dao::update_channel_extended_value(
     dba->disconnect();
   }
 }
+
+supla_channel_fragment supla_device_dao::get_channel_fragment(
+    int device_id, int channel_number) {
+  supla_channel_fragment result;
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return result;
+  }
+
+  MYSQL_STMT *stmt = nullptr;
+  const char sql[] =
+      "SELECT id, type, func, flags, hidden FROM `supla_dev_channel` WHERE "
+      "iodevice_id = ? AND channel_number = ? LIMIT 1";
+
+  MYSQL_BIND pbind[2] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&device_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&channel_number;
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+    MYSQL_BIND rbind[5] = {};
+
+    int channel_id = 0;
+    int type = 0;
+    int flags = 0;
+    int function = 0;
+    char hidden = 0;
+
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)&channel_id;
+
+    rbind[1].buffer_type = MYSQL_TYPE_LONG;
+    rbind[1].buffer = (char *)&type;
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&function;
+
+    rbind[3].buffer_type = MYSQL_TYPE_LONG;
+    rbind[3].buffer = (char *)&flags;
+
+    rbind[4].buffer_type = MYSQL_TYPE_TINY;
+    rbind[4].buffer = (char *)&hidden;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
+        result = supla_channel_fragment(device_id, channel_id, channel_number,
+                                        type, function, flags, hidden);
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
+}

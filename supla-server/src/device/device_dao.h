@@ -110,6 +110,9 @@ class supla_device_dao : public supla_abstract_device_dao {
   virtual supla_json_config *get_channel_config(int channel_id,
                                                 std::string *user_config_md5sum,
                                                 std::string *properties_md5sum);
+
+  virtual supla_channel_fragment get_channel_fragment(int device_id,
+                                                      int channel_number);
 };
 
 #endif /* SUPLA_DEVICE_DAO_H_ */

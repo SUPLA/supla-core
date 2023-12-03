@@ -126,6 +126,9 @@ class DeviceDaoMock : public supla_abstract_device_dao {
   MOCK_METHOD3(update_channel_extended_value,
                void(int channel_id, int user_id,
                     supla_channel_extended_value *ev));
+
+  MOCK_METHOD2(get_channel_fragment,
+               supla_channel_fragment(int device_id, int channel_number));
 };
 
 } /* namespace testing */

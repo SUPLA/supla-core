@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "device/channel_fragment.h"
 #include "device/extended_value/channel_extended_value.h"
 #include "jsonconfig/device/device_json_config.h"
 #include "jsonconfig/json_config.h"
@@ -115,6 +116,9 @@ class supla_abstract_device_dao {
   virtual supla_json_config *get_channel_config(
       int channel_id, std::string *user_config_md5sum,
       std::string *properties_md5sum) = 0;
+
+  virtual supla_channel_fragment get_channel_fragment(int device_id,
+                                                      int channel_number) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_DEVICE_DAO_H_ */
