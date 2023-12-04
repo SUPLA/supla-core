@@ -31,6 +31,8 @@ class supla_channel_hvac_value : public supla_channel_value {
   unsigned char get_mode(void);
   short get_temperature_heat(void);
   short get_temperature_cool(void);
+  short get_temperature(void);
+  double get_temperature_dbl(void);
   unsigned short get_flags(void);
 
   void set_mode(unsigned char mode);

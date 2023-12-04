@@ -51,6 +51,18 @@ short supla_channel_hvac_value::get_temperature_cool(void) {
   return ((THVACValue*)raw_value)->SetpointTemperatureCool;
 }
 
+short supla_channel_hvac_value::get_temperature(void) {
+  if (get_mode() == SUPLA_HVAC_MODE_COOL) {
+    return get_temperature_cool();
+  } else {
+    return get_temperature_heat();
+  }
+}
+
+double supla_channel_hvac_value::get_temperature_dbl(void) {
+  return get_temperature() / 100.00;
+}
+
 unsigned short supla_channel_hvac_value::get_flags(void) {
   return ((THVACValue*)raw_value)->Flags;
 }

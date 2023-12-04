@@ -113,4 +113,23 @@ TEST_F(ChannelHvacValueTest, isCooling) {
   EXPECT_TRUE(value.is_cooling());
 }
 
+TEST_F(ChannelHvacValueTest, getTemperature) {
+  supla_channel_hvac_value value;
+  EXPECT_EQ(value.get_temperature(), 0);
+  EXPECT_DOUBLE_EQ(value.get_temperature_dbl(), 0.0);
+
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue*)raw_value)->SetpointTemperatureCool = 1234;
+  ((THVACValue*)raw_value)->SetpointTemperatureHeat = 5678;
+  value.set_raw_value(raw_value);
+
+  EXPECT_EQ(value.get_temperature(), 5678);
+  EXPECT_DOUBLE_EQ(value.get_temperature_dbl(), 56.78);
+
+  value.set_mode(SUPLA_HVAC_MODE_COOL);
+
+  EXPECT_EQ(value.get_temperature(), 1234);
+  EXPECT_DOUBLE_EQ(value.get_temperature_dbl(), 12.34);
+}
+
 }  // namespace testing
