@@ -16,31 +16,31 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "channel_thermostat_value.h"
+#include "channel_hp_thermostat_value.h"
 
 #include <string.h>
 
-supla_channel_thermostat_value::supla_channel_thermostat_value(void)
+supla_channel_hp_thermostat_value::supla_channel_hp_thermostat_value(void)
     : supla_channel_value() {}
 
-supla_channel_thermostat_value::supla_channel_thermostat_value(
+supla_channel_hp_thermostat_value::supla_channel_hp_thermostat_value(
     char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {}
 
-bool supla_channel_thermostat_value::is_on(void) {
+bool supla_channel_hp_thermostat_value::is_on(void) {
   return ((TThermostat_Value *)raw_value)->IsOn > 0;
 }
 
-double supla_channel_thermostat_value::get_measured_temperature(void) {
+double supla_channel_hp_thermostat_value::get_measured_temperature(void) {
   return ((TThermostat_Value *)raw_value)->MeasuredTemperature * 0.01;
 }
 
-double supla_channel_thermostat_value::get_preset_temperature(void) {
+double supla_channel_hp_thermostat_value::get_preset_temperature(void) {
   return ((TThermostat_Value *)raw_value)->PresetTemperature * 0.01;
 }
 
 // static
-bool supla_channel_thermostat_value::is_function_supported(int func) {
+bool supla_channel_hp_thermostat_value::is_function_supported(int func) {
   switch (func) {
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       return true;

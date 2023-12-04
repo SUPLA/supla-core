@@ -16,19 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef THERMOSTAT_LOGGER_DAO_H_
-#define THERMOSTAT_LOGGER_DAO_H_
+#ifndef THERMOSTAT_LOGGER_H_
+#define THERMOSTAT_LOGGER_H_
 
-#include "db/abstract_db_access_provider.h"
-#include "device/value/channel_thermostat_value.h"
+#include <vector>
 
-class supla_thermostat_logger_dao {
- private:
-  supla_abstract_db_access_provider *dba;
+#include "cyclictasks/abstract_cyclictask.h"
+
+class supla_hp_thermostat_logger : public supla_abstract_cyclictask {
+ protected:
+  virtual unsigned int task_interval_sec(void);
+  virtual void run(const std::vector<supla_user *> *users,
+                   supla_abstract_db_access_provider *dba);
 
  public:
-  explicit supla_thermostat_logger_dao(supla_abstract_db_access_provider *dba);
-  void add(int channel_id, supla_channel_thermostat_value *th);
+  supla_hp_thermostat_logger();
+  virtual ~supla_hp_thermostat_logger();
 };
 
-#endif /* THERMOSTAT_LOGGER_DAO_H_ */
+#endif /* THERMOSTAT_LOGGER_H_ */

@@ -23,6 +23,7 @@
 #include "device/value/channel_em_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
+#include "device/value/channel_hp_thermostat_value.h"
 #include "device/value/channel_hvac_value.h"
 #include "device/value/channel_ic_value.h"
 #include "device/value/channel_onoff_value.h"
@@ -30,7 +31,6 @@
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
 #include "device/value/channel_temphum_value.h"
-#include "device/value/channel_thermostat_value.h"
 #include "device/value/channel_valve_value.h"
 
 supla_channel_value_factory::supla_channel_value_factory(void) {}
@@ -84,8 +84,8 @@ supla_channel_value *supla_channel_value_factory::new_value(
     return new supla_channel_openclosed_value(value);
   }
 
-  if (supla_channel_thermostat_value::is_function_supported(func)) {
-    return new supla_channel_thermostat_value(value);
+  if (supla_channel_hp_thermostat_value::is_function_supported(func)) {
+    return new supla_channel_hp_thermostat_value(value);
   }
 
   if (supla_channel_dgf_value::is_function_supported(func)) {

@@ -16,11 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "integration/datalogger/ThermostatLoggerDaoIntegrationTest.h"
+#include "ThermostatLoggerDaoIntegrationTest.h"
 
 #include <string>
 
-#include "device/value/channel_thermostat_value.h"
+#include "device/value/channel_hp_thermostat_value.h"
 
 using std::string;
 
@@ -37,7 +37,7 @@ ThermostatLoggerDaoIntegrationTest::~ThermostatLoggerDaoIntegrationTest() {}
 void ThermostatLoggerDaoIntegrationTest::SetUp() {
   dba = new supla_db_access_provider();
   ASSERT_TRUE(dba != nullptr);
-  dao = new supla_thermostat_logger_dao(dba);
+  dao = new supla_hp_thermostat_logger_dao(dba);
   ASSERT_TRUE(dao != nullptr);
 
   initTestDatabase();
@@ -71,7 +71,7 @@ TEST_F(ThermostatLoggerDaoIntegrationTest, add) {
   ((TThermostat_Value *)raw_value)->PresetTemperature = 2234;
   ((TThermostat_Value *)raw_value)->MeasuredTemperature = 2134;
 
-  supla_channel_thermostat_value tv(raw_value);
+  supla_channel_hp_thermostat_value tv(raw_value);
 
   dao->add(25, &tv);
 

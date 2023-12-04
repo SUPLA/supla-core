@@ -16,20 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_THERMOSTAT_VALUE_H_
-#define CHANNEL_THERMOSTAT_VALUE_H_
+#ifndef THERMOSTAT_LOGGER_DAO_H_
+#define THERMOSTAT_LOGGER_DAO_H_
 
-#include "device/value/channel_value.h"
+#include "db/abstract_db_access_provider.h"
+#include "device/value/channel_hp_thermostat_value.h"
 
-class supla_channel_thermostat_value : public supla_channel_value {
+class supla_hp_thermostat_logger_dao {
+ private:
+  supla_abstract_db_access_provider *dba;
+
  public:
-  supla_channel_thermostat_value(void);
-  explicit supla_channel_thermostat_value(
-      char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  bool is_on(void);
-  double get_measured_temperature(void);
-  double get_preset_temperature(void);
-  static bool is_function_supported(int func);
+  explicit supla_hp_thermostat_logger_dao(
+      supla_abstract_db_access_provider *dba);
+  void add(int channel_id, supla_channel_hp_thermostat_value *th);
 };
 
-#endif /*CHANNEL_THERMOSTAT_VALUE_H_*/
+#endif /* THERMOSTAT_LOGGER_DAO_H_ */

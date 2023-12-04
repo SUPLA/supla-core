@@ -26,12 +26,12 @@
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
+#include "device/value/channel_hp_thermostat_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_openclosed_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
 #include "device/value/channel_temphum_value.h"
-#include "device/value/channel_thermostat_value.h"
 #include "device/value/channel_valve_value.h"
 #include "log.h"
 
@@ -981,8 +981,8 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
                                       message_size);
 
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
-      supla_channel_thermostat_value *thermo_val =
-          dynamic_cast<supla_channel_thermostat_value *>(channel_value);
+      supla_channel_hp_thermostat_value *thermo_val =
+          dynamic_cast<supla_channel_hp_thermostat_value *>(channel_value);
 
       return get_onoff_message_at_index(thermo_val && thermo_val->is_on(),
                                         index, topic_prefix, topic_name,

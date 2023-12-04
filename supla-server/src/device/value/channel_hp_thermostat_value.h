@@ -16,22 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef THERMOSTAT_LOGGER_H_
-#define THERMOSTAT_LOGGER_H_
+#ifndef CHANNEL_HP_THERMOSTAT_VALUE_H_
+#define CHANNEL_HP_THERMOSTAT_VALUE_H_
 
-#include <vector>
+#include "device/value/channel_value.h"
 
-#include "cyclictasks/abstract_cyclictask.h"
-
-class supla_thermostat_logger : public supla_abstract_cyclictask {
- protected:
-  virtual unsigned int task_interval_sec(void);
-  virtual void run(const std::vector<supla_user *> *users,
-                   supla_abstract_db_access_provider *dba);
-
+class supla_channel_hp_thermostat_value : public supla_channel_value {
  public:
-  supla_thermostat_logger();
-  virtual ~supla_thermostat_logger();
+  supla_channel_hp_thermostat_value(void);
+  explicit supla_channel_hp_thermostat_value(
+      char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  bool is_on(void);
+  double get_measured_temperature(void);
+  double get_preset_temperature(void);
+  static bool is_function_supported(int func);
 };
 
-#endif /* THERMOSTAT_LOGGER_H_ */
+#endif /*CHANNEL_HP_THERMOSTAT_VALUE_H_*/
