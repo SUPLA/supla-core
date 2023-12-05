@@ -1222,4 +1222,78 @@ TEST_F(MqttChannelMessageProviderTest, thermostatWithoutHumidity) {
   ASSERT_FALSE(dataExists(provider));
 }
 
+TEST_F(MqttChannelMessageProviderTest, thermostatAuto) {
+  _mqtt_db_data_row_channel_t row_channel;
+  fillChannelData(&row_channel);
+  provider->set_data_row(&row_channel);
+
+  snprintf(row_channel.device_name, SUPLA_DEVICE_NAME_MAXSIZE, "THERMOBOX");
+  snprintf(row_channel.device_softver, SUPLA_SOFTVER_MAXSIZE, "23.11");
+  snprintf(row_channel.channel_caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "XYZ");
+
+  row_channel.device_enabled = true;
+  row_channel.channel_id = 754;
+  row_channel.channel_type = SUPLA_CHANNELTYPE_HVAC;
+  row_channel.channel_func = SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO;
+
+  TChannelConfig_HVAC raw_config = {};
+  raw_config.MainThermometerChannelNo = 15;
+  hvac_config hvac;
+  hvac.set_config(&raw_config, 0);
+  row_channel.json_config = hvac;
+
+  EXPECT_CALL(*provider, get_channel_fragment(Eq(555), Eq(15)))
+      .WillOnce(Return(supla_channel_fragment(
+          555, 1234, 15, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+          SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 0, false)));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "HVAC", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/type",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "HVAC_THERMOSTAT_AUTO", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/function",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "XYZ", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/caption",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "false", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/hidden",
+      row_channel.device_id, row_channel.channel_id));
+
+  const char haConfig[] =
+      "{\"~\":\"supla/7720767494dd87196e1896c7cbab707c/devices/555/channels/"
+      "754\",\"device\":{\"ids\":\"supla-iodevice-555\",\"mf\":\"AC "
+      "SOFTWARE\",\"name\":\"THERMOBOX\",\"sw\":\"23.11\"},\"name\":\"XYZ\","
+      "\"uniq_id\":\"supla_754\",\"qos\":0,\"ret\":false,\"opt\":false,\"avty_"
+      "t\":\"~/state/"
+      "connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\",\"act_t\":"
+      "\"~/state/action\",\"curr_temp_t\":\"supla/"
+      "7720767494dd87196e1896c7cbab707c/devices/555/channels/1234/state/"
+      "temperature\",\"current_humidity_topic\":\"supla/"
+      "7720767494dd87196e1896c7cbab707c/devices/555/channels/1234/state/"
+      "humidity\",\"min_temp\":\"0.00\",\"max_temp\":\"0.00\",\"modes\":["
+      "\"off\",\"auto\",\"heat\",\"cool\",\"heat_cool\"],\"mode_stat_t\":\"~/"
+      "state/mode\",\"mode_cmd_t\":\"~/"
+      "execute_action\",\"power_command_topic\":\"~/"
+      "execute_action\",\"pl_on\":\"TURN_ON\",\"pl_off\":\"TURN_OFF\",\"temp_"
+      "unit\":\"C\",\"temp_step\":\"0.1\",\"temp_hi_cmd_t\":\"~/set/"
+      "temperature_setpoint_cool\",\"temp_hi_stat_t\":\"~/state/"
+      "temperature_setpoint_cool\",\"temp_lo_cmd_t\":\"~/set/"
+      "temperature_setpoint_heat\",\"temp_lo_stat_t\":\"~/state/"
+      "temperature_setpoint_heat\"}";
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, haConfig, false,
+      "homeassistant/climate/7720767494dd87196e1896c7cbab707c/754/config"));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
 } /* namespace testing */

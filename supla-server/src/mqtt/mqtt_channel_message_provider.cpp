@@ -1568,8 +1568,20 @@ bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
   ha_json_set_string_param(root, "pl_off", "TURN_OFF");
   ha_json_set_string_param(root, "temp_unit", "C");
   ha_json_set_string_param(root, "temp_step", "0.1");
-  ha_json_set_short_topic(root, "temp_cmd_t", "set/temperature_setpoint");
-  ha_json_set_short_topic(root, "temp_stat_t", "state/temperature_setpoint");
+
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO) {
+    ha_json_set_short_topic(root, "temp_hi_cmd_t",
+                            "set/temperature_setpoint_cool");
+    ha_json_set_short_topic(root, "temp_hi_stat_t",
+                            "state/temperature_setpoint_cool");
+    ha_json_set_short_topic(root, "temp_lo_cmd_t",
+                            "set/temperature_setpoint_heat");
+    ha_json_set_short_topic(root, "temp_lo_stat_t",
+                            "state/temperature_setpoint_heat");
+  } else {
+    ha_json_set_short_topic(root, "temp_cmd_t", "set/temperature_setpoint");
+    ha_json_set_short_topic(root, "temp_stat_t", "state/temperature_setpoint");
+  }
 
   return ha_get_message(root, "climate", 0, false, topic_name, message,
                         message_size);
