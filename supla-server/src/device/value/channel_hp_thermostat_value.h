@@ -22,6 +22,8 @@
 #define HP_STATUS_POWERON 0x1
 #define HP_STATUS_PROGRAMMODE 0x4
 
+#include <string>
+
 #include "device/value/channel_value.h"
 
 class supla_channel_hp_thermostat_value : public supla_channel_value {

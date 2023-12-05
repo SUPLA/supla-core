@@ -62,7 +62,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {
   waitForConnection();
-  waitForPublications(725);
+  waitForPublications(734);
   // print_expected();
 
   const char *expectedData[] = {
@@ -1817,6 +1817,18 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
       "state/on",
       NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
+      "state/mode",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
+      "state/action",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
+      "state/temperature_setpoint",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
+      "state/temperature",
+      NULL,
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
       "type",
       "HVAC",
@@ -1849,6 +1861,21 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
       "state/connected",
       "false",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "state/mode",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "state/action",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "state/temperature_setpoint",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "state/temperature_setpoint_cool",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "state/temperature_setpoint_heat",
+      NULL,
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73229/"
       "type",
       "HUMIDITYANDTEMPSENSOR",
@@ -2832,7 +2859,7 @@ TEST_F(MqttPublisherIntegrationTest, actionTrigger) {
   }
 
   waitForConnection();
-  waitForPublications(725);
+  waitForPublications(734);
   getLibAdapter()->published_clear();
 
   dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())
