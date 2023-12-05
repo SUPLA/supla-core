@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+using std::string;
+
 supla_channel_hp_thermostat_value::supla_channel_hp_thermostat_value(void)
     : supla_channel_value() {}
 
@@ -37,6 +39,36 @@ double supla_channel_hp_thermostat_value::get_measured_temperature(void) {
 
 double supla_channel_hp_thermostat_value::get_preset_temperature(void) {
   return ((TThermostat_Value *)raw_value)->PresetTemperature * 0.01;
+}
+
+string supla_channel_hp_thermostat_value::get_home_assistant_mode(void) {
+  if (((TThermostat_Value *)raw_value)->Flags & HP_STATUS_PROGRAMMODE) {
+    return "auto";
+  } else if (((TThermostat_Value *)raw_value)->Flags & HP_STATUS_POWERON) {
+    return "heat";
+  }
+
+  return "off";
+}
+
+std::string supla_channel_hp_thermostat_value::get_home_assistant_action(void) {
+  if (((TThermostat_Value *)raw_value)->Flags & HP_STATUS_POWERON) {
+    return is_on() ? "heating" : "idle";
+  }
+
+  return "off";
+}
+
+string supla_channel_hp_thermostat_value::get_measured_temperature_str(void) {
+  char result[20] = {};
+  snprintf(result, sizeof(result), "%.2f", get_measured_temperature());
+  return result;
+}
+
+string supla_channel_hp_thermostat_value::get_preset_temperature_str(void) {
+  char result[20] = {};
+  snprintf(result, sizeof(result), "%.2f", get_preset_temperature());
+  return result;
 }
 
 // static

@@ -123,13 +123,56 @@ TEST_F(ChannelHvacValueTest, getTemperature) {
   ((THVACValue*)raw_value)->SetpointTemperatureHeat = 5678;
   value.set_raw_value(raw_value);
 
+  EXPECT_DOUBLE_EQ(value.get_temperature_cool_dbl(), 12.34);
+  EXPECT_EQ(value.get_temperature_cool_str(), "12.34");
+
+  EXPECT_DOUBLE_EQ(value.get_temperature_heat_dbl(), 56.78);
+  EXPECT_EQ(value.get_temperature_heat_str(), "56.78");
+
   EXPECT_EQ(value.get_temperature(), 5678);
   EXPECT_DOUBLE_EQ(value.get_temperature_dbl(), 56.78);
+  EXPECT_EQ(value.get_temperature_str(), "56.78");
 
   value.set_mode(SUPLA_HVAC_MODE_COOL);
 
   EXPECT_EQ(value.get_temperature(), 1234);
   EXPECT_DOUBLE_EQ(value.get_temperature_dbl(), 12.34);
+  EXPECT_EQ(value.get_temperature_str(), "12.34");
+}
+
+TEST_F(ChannelHvacValueTest, getHomeAssistantMode) {
+  supla_channel_hvac_value value;
+  EXPECT_EQ(value.get_home_assistant_mode(), "off");
+  value.set_mode(SUPLA_HVAC_MODE_HEAT);
+  EXPECT_EQ(value.get_home_assistant_mode(), "heat");
+  value.set_mode(SUPLA_HVAC_MODE_COOL);
+  EXPECT_EQ(value.get_home_assistant_mode(), "cool");
+  value.set_mode(SUPLA_HVAC_MODE_AUTO);
+  EXPECT_EQ(value.get_home_assistant_mode(), "heat_cool");
+  value.set_flags(SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE);
+  EXPECT_EQ(value.get_home_assistant_mode(), "auto");
+}
+
+TEST_F(ChannelHvacValueTest, getHomeAssistantAction) {
+  supla_channel_hvac_value value;
+
+  value.set_mode(SUPLA_HVAC_MODE_NOT_SET);
+  EXPECT_EQ(value.get_home_assistant_action(), "off");
+
+  value.set_mode(SUPLA_HVAC_MODE_OFF);
+  EXPECT_EQ(value.get_home_assistant_action(), "off");
+
+  value.set_flags(
+      SUPLA_HVAC_VALUE_FLAG_HEATING);  // It can heat regardless of the mode
+  EXPECT_EQ(value.get_home_assistant_action(), "heating");
+
+  value.set_flags(
+      SUPLA_HVAC_VALUE_FLAG_COOLING);  // It can cool regardless of the mode
+  EXPECT_EQ(value.get_home_assistant_action(), "cooling");
+
+  value.set_flags(0);
+  value.set_mode(SUPLA_HVAC_MODE_HEAT);
+  EXPECT_EQ(value.get_home_assistant_action(), "idle");
 }
 
 }  // namespace testing

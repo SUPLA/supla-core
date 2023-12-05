@@ -19,6 +19,9 @@
 #ifndef CHANNEL_HP_THERMOSTAT_VALUE_H_
 #define CHANNEL_HP_THERMOSTAT_VALUE_H_
 
+#define HP_STATUS_POWERON 0x1
+#define HP_STATUS_PROGRAMMODE 0x4
+
 #include "device/value/channel_value.h"
 
 class supla_channel_hp_thermostat_value : public supla_channel_value {
@@ -29,6 +32,10 @@ class supla_channel_hp_thermostat_value : public supla_channel_value {
   bool is_on(void);
   double get_measured_temperature(void);
   double get_preset_temperature(void);
+  std::string get_home_assistant_mode(void);
+  std::string get_home_assistant_action(void);
+  std::string get_measured_temperature_str(void);
+  std::string get_preset_temperature_str(void);
   static bool is_function_supported(int func);
 };
 

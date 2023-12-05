@@ -16,17 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_THERMOSTAT_VALUE_TEST_H_
-#define CHANNEL_THERMOSTAT_VALUE_TEST_H_
+#ifndef CHANNEL_HP_THERMOSTAT_VALUE_TEST_H_
+#define CHANNEL_HP_THERMOSTAT_VALUE_TEST_H_
 
 #include "gtest/gtest.h"
 
 namespace testing {
 
-class ChannelThermostatValueTest : public Test {
+class ChannelHpThermostatValueTest : public Test {
  public:
 };
 
 }  // namespace testing
 
-#endif /*CHANNEL_THERMOSTAT_VALUE_TEST_H_*/
+#endif /*CHANNEL_HP_THERMOSTAT_VALUE_TEST_H_*/

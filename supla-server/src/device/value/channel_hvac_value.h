@@ -19,6 +19,8 @@
 #ifndef CHANNEL_HVAC_VALUE_H_
 #define CHANNEL_HVAC_VALUE_H_
 
+#include <string>
+
 #include "device/value/channel_value.h"
 
 class supla_channel_hvac_value : public supla_channel_value {
@@ -30,9 +32,16 @@ class supla_channel_hvac_value : public supla_channel_value {
   void clear(void);
   unsigned char get_mode(void);
   short get_temperature_heat(void);
+  double get_temperature_heat_dbl(void);
+  std::string get_temperature_heat_str(void);
   short get_temperature_cool(void);
+  double get_temperature_cool_dbl(void);
+  std::string get_temperature_cool_str(void);
   short get_temperature(void);
   double get_temperature_dbl(void);
+  std::string get_temperature_str(void);
+  std::string get_home_assistant_mode(void);
+  std::string get_home_assistant_action(void);
   unsigned short get_flags(void);
 
   void set_mode(unsigned char mode);

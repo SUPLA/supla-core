@@ -22,6 +22,8 @@
 
 #include "proto.h"
 
+using std::string;
+
 supla_channel_hvac_value::supla_channel_hvac_value(void)
     : supla_channel_value() {}
 
@@ -47,8 +49,28 @@ short supla_channel_hvac_value::get_temperature_heat(void) {
   return ((THVACValue*)raw_value)->SetpointTemperatureHeat;
 }
 
+double supla_channel_hvac_value::get_temperature_heat_dbl(void) {
+  return get_temperature_heat() / 100.00;
+}
+
+std::string supla_channel_hvac_value::get_temperature_heat_str(void) {
+  char result[20] = {};
+  snprintf(result, sizeof(result), "%.2f", get_temperature_heat_dbl());
+  return result;
+}
+
 short supla_channel_hvac_value::get_temperature_cool(void) {
   return ((THVACValue*)raw_value)->SetpointTemperatureCool;
+}
+
+double supla_channel_hvac_value::get_temperature_cool_dbl(void) {
+  return get_temperature_cool() / 100.00;
+}
+
+string supla_channel_hvac_value::get_temperature_cool_str(void) {
+  char result[20] = {};
+  snprintf(result, sizeof(result), "%.2f", get_temperature_cool_dbl());
+  return result;
 }
 
 short supla_channel_hvac_value::get_temperature(void) {
@@ -61,6 +83,44 @@ short supla_channel_hvac_value::get_temperature(void) {
 
 double supla_channel_hvac_value::get_temperature_dbl(void) {
   return get_temperature() / 100.00;
+}
+
+string supla_channel_hvac_value::get_temperature_str(void) {
+  char result[20] = {};
+  snprintf(result, sizeof(result), "%.2f", get_temperature_dbl());
+  return result;
+}
+
+string supla_channel_hvac_value::get_home_assistant_mode(void) {
+  if (get_flags() & SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE) {
+    return "auto";
+  }
+
+  switch (get_mode()) {
+    case SUPLA_HVAC_MODE_HEAT:
+      return "heat";
+    case SUPLA_HVAC_MODE_COOL:
+      return "cool";
+    case SUPLA_HVAC_MODE_AUTO:
+      return "heat_cool";
+  }
+
+  return "off";
+}
+
+std::string supla_channel_hvac_value::get_home_assistant_action(void) {
+  unsigned short flags = get_flags();
+  unsigned char mode = get_mode();
+
+  if (flags & SUPLA_HVAC_VALUE_FLAG_HEATING) {
+    return "heating";
+  } else if (flags & SUPLA_HVAC_VALUE_FLAG_COOLING) {
+    return "cooling";
+  } else if (mode == SUPLA_HVAC_MODE_OFF || mode == SUPLA_HVAC_MODE_NOT_SET) {
+    return "off";
+  }
+
+  return "idle";
 }
 
 unsigned short supla_channel_hvac_value::get_flags(void) {
