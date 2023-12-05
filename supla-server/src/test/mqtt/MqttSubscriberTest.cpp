@@ -881,4 +881,68 @@ TEST_F(MqttSubscriberTest, setColor) {
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xAA05CC);
 }
 
+TEST_F(MqttSubscriberTest, setTemperatureSetpointHeat) {
+  waitForConnection();
+  waitForData(3);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperature).Times(0);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperatures(NotNull()))
+      .WillOnce([](supla_action_hvac_setpoint_temperatures *temperatures) {
+        short t = 0;
+        EXPECT_FALSE(temperatures->get_cooling_temperature(&t));
+        EXPECT_TRUE(temperatures->get_heating_temperature(&t));
+        EXPECT_EQ(t, 2234);
+      });
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "temperature_setpoint_heat",
+      "22.34");
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+}
+
+TEST_F(MqttSubscriberTest, setTemperatureSetpointCool) {
+  waitForConnection();
+  waitForData(3);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperature).Times(0);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperatures(NotNull()))
+      .WillOnce([](supla_action_hvac_setpoint_temperatures *temperatures) {
+        short t = 0;
+        EXPECT_FALSE(temperatures->get_heating_temperature(&t));
+        EXPECT_TRUE(temperatures->get_cooling_temperature(&t));
+
+        EXPECT_EQ(t, 123);
+      });
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "temperature_setpoint_cool",
+      "1.23");
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+}
+
+TEST_F(MqttSubscriberTest, setTemperatureSetpoint) {
+  waitForConnection();
+  waitForData(3);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperatures).Times(0);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperature(NotNull()))
+      .WillOnce([](supla_action_hvac_setpoint_temperature *temperature) {
+        EXPECT_EQ(temperature->get_temperature(), 123);
+      });
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "temperature_setpoint",
+      "1.23");
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+}
+
 } /* namespace testing */

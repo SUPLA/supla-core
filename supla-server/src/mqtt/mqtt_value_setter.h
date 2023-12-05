@@ -19,7 +19,7 @@
 #ifndef MQTT_CHANNEl_VALUE_SETTER_H_
 #define MQTT_CHANNEl_VALUE_SETTER_H_
 
-#include <actions/action_executor.h>
+#include "actions/action_executor.h"
 #include "mqtt_abstract_value_setter.h"
 #include "user.h"
 
@@ -29,7 +29,7 @@ class supla_mqtt_value_setter : public supla_mqtt_abstract_value_setter {
 
  protected:
   supla_action_executor *get_action_executor(void);
-  virtual   void set_on(bool on);
+  virtual void set_on(bool on);
   virtual void set_color(unsigned int color);
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
@@ -45,6 +45,10 @@ class supla_mqtt_value_setter : public supla_mqtt_abstract_value_setter {
   virtual void action_open(void);
   virtual void action_close(void);
   virtual void action_open_close(void);
+  virtual void action_hvac_set_temperature(
+      supla_action_hvac_setpoint_temperature *temperature);
+  virtual void action_hvac_set_temperatures(
+      supla_action_hvac_setpoint_temperatures *temperatures);
   virtual void refresh_all_existing(void);
 
  public:

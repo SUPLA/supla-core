@@ -18,6 +18,8 @@
 
 #include "mqtt_value_setter.h"
 
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
 #include "device.h"
 #include "mqtt_client_suite.h"
 #include "tools.h"
@@ -158,6 +160,22 @@ void supla_mqtt_value_setter::action_open_close(void) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->open_close();
+  }
+}
+
+void supla_mqtt_value_setter::action_hvac_set_temperature(
+    supla_action_hvac_setpoint_temperature *temperature) {
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->hvac_set_temperature(temperature);
+  }
+}
+
+void supla_mqtt_value_setter::action_hvac_set_temperatures(
+    supla_action_hvac_setpoint_temperatures *temperatures) {
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->hvac_set_temperatures(temperatures);
   }
 }
 
