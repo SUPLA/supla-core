@@ -80,7 +80,8 @@ class supla_mqtt_abstract_value_setter {
       supla_action_hvac_setpoint_temperatures *temperatures) = 0;
 
  public:
-  supla_mqtt_abstract_value_setter(supla_mqtt_client_settings *settings);
+  explicit supla_mqtt_abstract_value_setter(
+      supla_mqtt_client_settings *settings);
   virtual ~supla_mqtt_abstract_value_setter(void);
 
   void set_value(char *topic_name, size_t topic_name_size, char *message,
