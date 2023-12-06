@@ -19,7 +19,9 @@
 #include "MqttStateMessageProviderTest.h"
 
 #include "device/extended_value/channel_em_extended_value.h"
+#include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
@@ -1565,10 +1567,20 @@ TEST_F(MqttStateMessageProviderTest, thermostatHomePlus) {
   ((TThermostat_Value *)raw_value)->IsOn = 1;
   ((TThermostat_Value *)raw_value)->PresetTemperature = 1234;
   ((TThermostat_Value *)raw_value)->MeasuredTemperature = 4456;
-  ((TThermostat_Value *)raw_value)->Flags = HP_STATUS_POWERON;
 
   SetResultValue(SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS, true,
                  new supla_channel_hp_thermostat_value(raw_value));
+
+  TSuplaChannelExtendedValue ev = {};
+  TThermostat_ExtendedValue th_ev = {};
+  th_ev.Fields = THERMOSTAT_FIELD_Flags;
+  th_ev.Flags[4] = HP_STATUS_POWERON | HP_STATUS_HEATING;
+
+  srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev);
+
+  EXPECT_CALL(propertyGetter, _get_extended_value(Eq(123), Eq(456), Eq(789)))
+      .Times(1)
+      .WillOnce(Return(new supla_channel_thermostat_extended_value(&ev)));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"

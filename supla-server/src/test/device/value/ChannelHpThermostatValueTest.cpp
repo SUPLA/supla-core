@@ -57,37 +57,4 @@ TEST_F(ChannelHpThermostatValueTest, getTemperatures) {
   EXPECT_EQ(v1.get_measured_temperature_str(), "44.56");
 }
 
-TEST_F(ChannelHpThermostatValueTest, getHomeAssistantMode) {
-  supla_channel_hp_thermostat_value v;
-  EXPECT_EQ(v.get_home_assistant_mode(), "off");
-
-  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
-  ((TThermostat_Value *)raw_value)->Flags =
-      HP_STATUS_POWERON | HP_STATUS_PROGRAMMODE;
-  v.set_raw_value(raw_value);
-  EXPECT_EQ(v.get_home_assistant_mode(), "auto");
-
-  ((TThermostat_Value *)raw_value)->Flags = HP_STATUS_POWERON;
-  v.set_raw_value(raw_value);
-  EXPECT_EQ(v.get_home_assistant_mode(), "heat");
-}
-
-TEST_F(ChannelHpThermostatValueTest, getHomeAssistantAction) {
-  supla_channel_hp_thermostat_value v;
-  EXPECT_EQ(v.get_home_assistant_action(), "off");
-
-  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
-  ((TThermostat_Value *)raw_value)->IsOn = 1;
-  v.set_raw_value(raw_value);
-  EXPECT_EQ(v.get_home_assistant_action(), "off");
-
-  ((TThermostat_Value *)raw_value)->Flags = HP_STATUS_POWERON;
-  v.set_raw_value(raw_value);
-  EXPECT_EQ(v.get_home_assistant_action(), "heating");
-
-  ((TThermostat_Value *)raw_value)->IsOn = 0;
-  v.set_raw_value(raw_value);
-  EXPECT_EQ(v.get_home_assistant_action(), "idle");
-}
-
 }  // namespace testing

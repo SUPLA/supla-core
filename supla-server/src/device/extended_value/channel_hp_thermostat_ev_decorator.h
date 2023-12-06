@@ -16,24 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_HP_THERMOSTAT_VALUE_H_
-#define CHANNEL_HP_THERMOSTAT_VALUE_H_
+#ifndef CHANNEL_HP_THERMOSTAT_EXTENDED_VALUE_DECORATOR_H_
+#define CHANNEL_HP_THERMOSTAT_EXTENDED_VALUE_DECORATOR_H_
 
 #include <string>
 
-#include "device/value/channel_value.h"
+#include "device/extended_value/channel_thermostat_extended_value.h"
 
-class supla_channel_hp_thermostat_value : public supla_channel_value {
+#define HP_STATUS_POWERON 0x1
+#define HP_STATUS_PROGRAMMODE 0x4
+#define HP_STATUS_HEATING 0x80
+
+class supla_channel_hp_thermostat_ev_decorator {
+ private:
+  supla_channel_thermostat_extended_value *ev;
+
  public:
-  supla_channel_hp_thermostat_value(void);
-  explicit supla_channel_hp_thermostat_value(
-      char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  bool is_on(void);
-  double get_measured_temperature(void);
-  double get_preset_temperature(void);
-  std::string get_measured_temperature_str(void);
-  std::string get_preset_temperature_str(void);
-  static bool is_function_supported(int func);
+  explicit supla_channel_hp_thermostat_ev_decorator(
+      supla_channel_thermostat_extended_value *ev);
+  virtual ~supla_channel_hp_thermostat_ev_decorator(void);
+
+  std::string get_home_assistant_mode(void);
+  std::string get_home_assistant_action(void);
 };
 
-#endif /*CHANNEL_HP_THERMOSTAT_VALUE_H_*/
+#endif /*CHANNEL_HP_THERMOSTAT_EXTENDED_VALUE_DECORATOR_H_*/

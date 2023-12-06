@@ -22,7 +22,9 @@
 #include <string.h>
 
 #include "device/channel_fragment.h"
+#include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
@@ -937,6 +939,17 @@ bool supla_mqtt_abstract_state_message_provider::
   supla_channel_hp_thermostat_value *hp_val =
       dynamic_cast<supla_channel_hp_thermostat_value *>(channel_value);
 
+  if (channel_extended_value == nullptr) {
+    channel_extended_value = _get_channel_property_getter()->get_extended_value(
+        get_user_id(), get_device_id(), get_channel_id());
+  }
+
+  supla_channel_thermostat_extended_value *thev =
+      dynamic_cast<supla_channel_thermostat_extended_value *>(
+          channel_extended_value);
+
+  supla_channel_hp_thermostat_ev_decorator decorator(thev);
+
   switch (index) {
     case 1:
       return get_onoff_message_at_index(hp_val && hp_val->is_on(), index,
@@ -945,14 +958,14 @@ bool supla_mqtt_abstract_state_message_provider::
     case 2:
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
-          hp_val ? hp_val->get_home_assistant_mode().c_str() : nullptr, false,
+          thev ? decorator.get_home_assistant_mode().c_str() : nullptr, false,
           "devices/%i/channels/%i/state/mode", get_device_id(),
           get_channel_id());
       break;
     case 3:
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
-          hp_val ? hp_val->get_home_assistant_action().c_str() : nullptr, false,
+          thev ? decorator.get_home_assistant_action().c_str() : nullptr, false,
           "devices/%i/channels/%i/state/action", get_device_id(),
           get_channel_id());
       break;
