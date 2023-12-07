@@ -2842,18 +2842,21 @@ typedef struct {
   unsigned char KeepHistory;  // 0 - no (default), 1 - yes
   // Chart type linear/bar
   unsigned char ChartType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_CHART_TYPE_*
-  // Fill missing data (for incremental type)
-  unsigned char FillMissingData;  // 0 - no (default), 1 - yes
   // Include value added in history
   unsigned char IncludeValueAddedInHistory;  // 0 - no (default), 1 - yes
+                                             //
+  // Fill missing data (for incremental type)
+  unsigned char FillMissingData;  // 0 - no (default), 1 - yes
+  // Allow counter reset (for incremental type)
+  unsigned char AllowCounterReset;  // 0 - no (default), 1 - yes
 
   // Readonly and default parameters
   // Channel value[8] format: int64, double
   unsigned char ValueType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_*
-  // Data source type - incremental/ measurement
+  // Data source type - incremental/measurement
   unsigned char
       DataSourceType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_DATA_SOURCE_TYPE_*
-                       //
+
   // Default value divider
   _supla_int_t DefaultValueDivider;  // 0.001 units; 0 is considered
                                      // as 1
