@@ -1458,7 +1458,7 @@ bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
   if (index != 0) {
     return false;
   }
-  cJSON *root = ha_json_create_root(topic_prefix, NULL, NULL, false);
+  cJSON *root = ha_json_create_root(topic_prefix, NULL, NULL, true);
   if (!root) {
     return false;
   }
@@ -1473,9 +1473,6 @@ bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
   ha_json_set_retain(root);
   ha_json_set_optimistic(root);
 
-  ha_json_set_short_topic(root, "avty_t", "state/connected");
-  ha_json_set_string_param(root, "pl_avail", "true");
-  ha_json_set_string_param(root, "pl_not_avail", "false");
   ha_json_set_short_topic(root, "act_t", "state/action");
 
   bool temperature_topic_is_set = false;
@@ -1562,7 +1559,7 @@ bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
   cJSON_AddItemToObject(root, "modes", modes);
 
   ha_json_set_short_topic(root, "mode_stat_t", "state/mode");
-  ha_json_set_short_topic(root, "mode_cmd_t", "execute_action");
+  ha_json_set_short_topic(root, "mode_cmd_t", "set/mode");
   ha_json_set_short_topic(root, "power_command_topic", "execute_action");
   ha_json_set_string_param(root, "pl_on", "TURN_ON");
   ha_json_set_string_param(root, "pl_off", "TURN_OFF");
