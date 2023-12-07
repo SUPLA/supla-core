@@ -320,6 +320,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED 12
 #define SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED 13
 #define SUPLA_RESULTCODE_GUID_ERROR 14
+#define SUPLA_RESULTCODE_DEVICE_LOCKED 15                          // ver. >= 22
 #define SUPLA_RESULTCODE_REGISTRATION_DISABLED 17                  // ver. >= 7
 #define SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED 18                  // ver. >= 7
 #define SUPLA_RESULTCODE_AUTHKEY_ERROR 19                          // ver. >= 7
@@ -548,6 +549,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED 0x0020       // ver. >= 18
 #define SUPLA_DEVICE_FLAG_CALCFG_SET_TIME 0x0040          // ver. >= 21
 #define SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED 0x0080  // ver. >= 21
+#define SUPLA_DEVICE_FLAG_DEVICE_LOCKED 0x0100            // ver. >= 22
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
