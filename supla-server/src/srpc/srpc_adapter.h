@@ -153,6 +153,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sc_async_device_config_update_or_result(
       TSC_DeviceConfigUpdateOrResult *config);  // ver. >= 21
+
+  virtual _supla_int_t sd_async_device_calcfg_request(
+      TSD_DeviceCalCfgRequest *request);
 };
 
 #endif /* SRPC_ADAPTER_H_ */

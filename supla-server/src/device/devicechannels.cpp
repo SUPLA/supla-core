@@ -1263,6 +1263,38 @@ bool supla_device_channels::action_hvac_set_temperature(
     return false;
   }
 
+  bool result = false;
+
+  access_channel(
+      channel_id,
+      [&temperature, &result, this](supla_device_channel *channel) -> void {
+        if (channel->get_func() ==
+            SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS) {
+          TSD_DeviceCalCfgRequest req = {};
+          req.ChannelNumber = channel->get_channel_number();
+          req.Command = SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE;
+          req.DataSize = sizeof(TThermostatTemperatureCfg);
+
+          TThermostatTemperatureCfg *cfg =
+              (TThermostatTemperatureCfg *)req.Data;
+
+          cfg->Index = TEMPERATURE_INDEX1;
+          cfg->Temperature[0] = temperature->get_temperature();
+
+          if (device && device->get_connection()) {
+            result = device->get_connection()
+                         ->get_srpc_adapter()
+                         ->sd_async_device_calcfg_request(&req);
+          }
+
+          temperature = nullptr;
+        }
+      });
+
+  if (!temperature) {
+    return result;
+  }
+
   return action_hvac(
       caller, channel_id, group_id, eol, 0,
       [&](supla_device_channel *channel,
