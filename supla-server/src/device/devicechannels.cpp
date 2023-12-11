@@ -1222,6 +1222,56 @@ bool supla_device_channels::action_hvac_set_parameters(
     return false;
   }
 
+  bool hp_match = false;
+  bool result = hp_action(
+      channel_id, &hp_match,
+      [params, this](supla_device_channel *channel,
+                     TSD_DeviceCalCfgRequest *req) -> bool {
+        switch (params->get_mode()) {
+          case SUPLA_HVAC_MODE_HEAT:
+          case SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL:
+            req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
+            req->Data[0] = 1;
+            req->DataSize = 1;
+            break;
+          case SUPLA_HVAC_MODE_OFF:
+            req->Command = SUPLA_THERMOSTAT_CMD_TURNON;
+            req->Data[0] = 0;  // 0 == off
+            req->DataSize = 1;
+            break;
+          case SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE:
+            req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_AUTO;
+            req->Data[0] = 1;
+            req->DataSize = 1;
+            break;
+        }
+
+        if (params->get_flags() &
+            SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET) {
+          if (req->Command && device && device->get_connection()) {
+            device->get_connection()
+                ->get_srpc_adapter()
+                ->sd_async_device_calcfg_request(req);
+          }
+
+          req->Command = SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE;
+          req->DataSize = sizeof(TThermostatTemperatureCfg);
+
+          TThermostatTemperatureCfg *cfg =
+              (TThermostatTemperatureCfg *)req->Data;
+
+          memset(cfg, 0, sizeof(TThermostatTemperatureCfg));
+          cfg->Index = TEMPERATURE_INDEX1;
+          cfg->Temperature[0] = params->get_setpoint_temperature_heat();
+        }
+
+        return req->Command;
+      });
+
+  if (hp_match) {
+    return result;
+  }
+
   return action_hvac(caller, channel_id, group_id, eol,
                      params->get_duration_sec(),
                      [&](supla_device_channel *channel,
@@ -1232,9 +1282,52 @@ bool supla_device_channels::action_hvac_set_parameters(
                      });
 }
 
+bool supla_device_channels::hp_action(
+    int channel_id, bool *function_match,
+    function<bool(supla_device_channel *, TSD_DeviceCalCfgRequest *req)>
+        on_calcfg) {
+  bool result = false;
+
+  access_channel(channel_id,
+                 [&function_match, &result, on_calcfg,
+                  this](supla_device_channel *channel) -> void {
+                   if (channel->get_func() ==
+                       SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS) {
+                     *function_match = true;
+
+                     TSD_DeviceCalCfgRequest req = {};
+                     req.ChannelNumber = channel->get_channel_number();
+
+                     if (device && device->get_connection() &&
+                         on_calcfg(channel, &req) &&
+                         device->get_connection()
+                             ->get_srpc_adapter()
+                             ->sd_async_device_calcfg_request(&req)) {
+                       result = true;
+                     }
+                   }
+                 });
+
+  return result;
+}
+
 bool supla_device_channels::action_hvac_switch_to_manual_mode(
     const supla_caller &caller, int channel_id, int group_id,
     unsigned char eol) {
+  bool hp_match = false;
+  bool result = hp_action(
+      channel_id, &hp_match,
+      [](supla_device_channel *channel, TSD_DeviceCalCfgRequest *req) -> bool {
+        req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
+        req->Data[0] = 1;
+        req->DataSize = 1;
+        return true;
+      });
+
+  if (hp_match) {
+    return result;
+  }
+
   return action_hvac(caller, channel_id, group_id, eol, 0,
                      [&](supla_device_channel *channel,
                          supla_channel_hvac_value *value) -> bool {
@@ -1247,6 +1340,20 @@ bool supla_device_channels::action_hvac_switch_to_manual_mode(
 bool supla_device_channels::action_hvac_switch_to_program_mode(
     const supla_caller &caller, int channel_id, int group_id,
     unsigned char eol) {
+  bool hp_match = false;
+  bool result = hp_action(
+      channel_id, &hp_match,
+      [](supla_device_channel *channel, TSD_DeviceCalCfgRequest *req) -> bool {
+        req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_AUTO;
+        req->Data[0] = 1;
+        req->DataSize = 1;
+        return true;
+      });
+
+  if (hp_match) {
+    return result;
+  }
+
   return action_hvac(caller, channel_id, group_id, eol, 0,
                      [&](supla_device_channel *channel,
                          supla_channel_hvac_value *value) -> bool {
@@ -1263,35 +1370,23 @@ bool supla_device_channels::action_hvac_set_temperature(
     return false;
   }
 
-  bool result = false;
+  bool hp_match = false;
+  bool result = hp_action(
+      channel_id, &hp_match,
+      [temperature](supla_device_channel *channel,
+                    TSD_DeviceCalCfgRequest *req) -> bool {
+        req->Command = SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE;
+        req->DataSize = sizeof(TThermostatTemperatureCfg);
 
-  access_channel(
-      channel_id,
-      [&temperature, &result, this](supla_device_channel *channel) -> void {
-        if (channel->get_func() ==
-            SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS) {
-          TSD_DeviceCalCfgRequest req = {};
-          req.ChannelNumber = channel->get_channel_number();
-          req.Command = SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE;
-          req.DataSize = sizeof(TThermostatTemperatureCfg);
+        TThermostatTemperatureCfg *cfg = (TThermostatTemperatureCfg *)req->Data;
 
-          TThermostatTemperatureCfg *cfg =
-              (TThermostatTemperatureCfg *)req.Data;
+        cfg->Index = TEMPERATURE_INDEX1;
+        cfg->Temperature[0] = temperature->get_temperature();
 
-          cfg->Index = TEMPERATURE_INDEX1;
-          cfg->Temperature[0] = temperature->get_temperature();
-
-          if (device && device->get_connection()) {
-            result = device->get_connection()
-                         ->get_srpc_adapter()
-                         ->sd_async_device_calcfg_request(&req);
-          }
-
-          temperature = nullptr;
-        }
+        return true;
       });
 
-  if (!temperature) {
+  if (hp_match) {
     return result;
   }
 
