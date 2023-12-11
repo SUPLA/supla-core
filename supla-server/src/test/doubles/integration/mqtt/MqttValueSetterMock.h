@@ -106,6 +106,9 @@ class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
 
   MOCK_METHOD1(action_hvac_set_temperatures,
                void(supla_action_hvac_setpoint_temperatures *temperatures));
+
+  MOCK_METHOD1(action_hvac_set_parameters,
+               void(supla_action_hvac_parameters *params));
 };
 
 #endif /* MQTT_CHANNEL_VALUE_SETTER_MOCK_H_ */

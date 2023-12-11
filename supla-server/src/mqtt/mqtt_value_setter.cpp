@@ -171,6 +171,14 @@ void supla_mqtt_value_setter::action_hvac_set_temperature(
   }
 }
 
+void supla_mqtt_value_setter::action_hvac_set_parameters(
+    supla_action_hvac_parameters *params) {
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->hvac_set_parameters(params);
+  }
+}
+
 void supla_mqtt_value_setter::action_hvac_set_temperatures(
     supla_action_hvac_setpoint_temperatures *temperatures) {
   supla_action_executor *action = get_action_executor();

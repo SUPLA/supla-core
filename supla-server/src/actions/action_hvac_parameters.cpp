@@ -40,6 +40,11 @@ supla_action_hvac_parameters::supla_action_hvac_parameters(
   }
 }
 
+supla_action_hvac_parameters::supla_action_hvac_parameters(int mode) {
+  this->params = {};
+  this->params.Mode = mode;
+}
+
 supla_action_hvac_parameters::~supla_action_hvac_parameters(void) {}
 
 bool supla_action_hvac_parameters::equal(

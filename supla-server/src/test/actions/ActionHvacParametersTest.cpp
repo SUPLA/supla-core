@@ -27,6 +27,25 @@ ActionHvacParametersTest::ActionHvacParametersTest(void) {}
 
 ActionHvacParametersTest::~ActionHvacParametersTest(void) {}
 
+TEST_F(ActionHvacParametersTest, constructor) {
+  TAction_HVAC_Parameters p = {};
+  p.Mode = SUPLA_HVAC_MODE_COOL;
+  p.Flags = SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET;
+
+  supla_action_hvac_parameters c1(&p);
+  supla_action_hvac_parameters c2(p);
+  supla_action_hvac_parameters c3(SUPLA_HVAC_MODE_HEAT);
+
+  EXPECT_EQ(c1.get_mode(), SUPLA_HVAC_MODE_COOL);
+  EXPECT_EQ(c1.get_flags(), SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET);
+
+  EXPECT_EQ(c2.get_mode(), SUPLA_HVAC_MODE_COOL);
+  EXPECT_EQ(c2.get_flags(), SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET);
+
+  EXPECT_EQ(c3.get_mode(), SUPLA_HVAC_MODE_HEAT);
+  EXPECT_EQ(c3.get_flags(), 0);
+}
+
 TEST_F(ActionHvacParametersTest, applyOn_noChanges) {
   TAction_HVAC_Parameters p = {};
   supla_action_hvac_parameters hvac(&p);

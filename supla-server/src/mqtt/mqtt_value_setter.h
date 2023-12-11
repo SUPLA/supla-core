@@ -45,6 +45,7 @@ class supla_mqtt_value_setter : public supla_mqtt_abstract_value_setter {
   virtual void action_open(void);
   virtual void action_close(void);
   virtual void action_open_close(void);
+  virtual void action_hvac_set_parameters(supla_action_hvac_parameters *params);
   virtual void action_hvac_set_temperature(
       supla_action_hvac_setpoint_temperature *temperature);
   virtual void action_hvac_set_temperatures(

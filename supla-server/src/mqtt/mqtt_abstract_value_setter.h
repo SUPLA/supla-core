@@ -19,6 +19,7 @@
 #ifndef MQTT_ABSTRACT_CHANNEl_VALUE_SETTER_H_
 #define MQTT_ABSTRACT_CHANNEl_VALUE_SETTER_H_
 
+#include "actions/action_hvac_parameters.h"
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
 #include "mqtt_client_settings.h"
@@ -74,6 +75,8 @@ class supla_mqtt_abstract_value_setter {
   virtual void action_close(void) = 0;
   virtual void action_open_close(void) = 0;
   virtual void refresh_all_existing(void) = 0;
+  virtual void action_hvac_set_parameters(
+      supla_action_hvac_parameters *params) = 0;
   virtual void action_hvac_set_temperature(
       supla_action_hvac_setpoint_temperature *temperature) = 0;
   virtual void action_hvac_set_temperatures(

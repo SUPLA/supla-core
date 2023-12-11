@@ -107,7 +107,8 @@ bool supla_mqtt_abstract_value_setter::parse_action(void) {
       memcmp(topic_name, "execute_action", topic_name_size) == 0) {
     if (message_size == 7 && lc_equal("turn_on")) {
       set_on(true);
-    } else if (message_size == 8 && lc_equal("turn_off")) {
+    } else if ((message_size == 8 && lc_equal("turn_off")) ||
+               (message_size == 3 && lc_equal("off"))) {
       set_on(false);
     } else if (message_size == 6 && lc_equal("toggle")) {
       action_toggle();
@@ -133,6 +134,18 @@ bool supla_mqtt_abstract_value_setter::parse_action(void) {
       action_open();
     } else if (message_size == 5 && lc_equal("close")) {
       action_close();
+    } else if (message_size == 4 && lc_equal("auto")) {
+      supla_action_hvac_parameters p(SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE);
+      action_hvac_set_parameters(&p);
+    } else if (message_size == 4 && lc_equal("heat")) {
+      supla_action_hvac_parameters p(SUPLA_HVAC_MODE_HEAT);
+      action_hvac_set_parameters(&p);
+    } else if (message_size == 4 && lc_equal("cool")) {
+      supla_action_hvac_parameters p(SUPLA_HVAC_MODE_COOL);
+      action_hvac_set_parameters(&p);
+    } else if (message_size == 9 && lc_equal("heat_cool")) {
+      supla_action_hvac_parameters p(SUPLA_HVAC_MODE_AUTO);
+      action_hvac_set_parameters(&p);
     }
     return true;
   }
