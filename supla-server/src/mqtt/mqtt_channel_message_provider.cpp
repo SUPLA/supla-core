@@ -1559,7 +1559,7 @@ bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
   cJSON_AddItemToObject(root, "modes", modes);
 
   ha_json_set_short_topic(root, "mode_stat_t", "state/mode");
-  ha_json_set_short_topic(root, "mode_cmd_t", "set/mode");
+  ha_json_set_short_topic(root, "mode_cmd_t", "execute_action");
   ha_json_set_short_topic(root, "power_command_topic", "execute_action");
   ha_json_set_string_param(root, "pl_on", "TURN_ON");
   ha_json_set_string_param(root, "pl_off", "TURN_OFF");
