@@ -119,7 +119,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 21
+#define SUPLA_PROTO_VERSION 22
 #define SUPLA_PROTO_VERSION_MIN 1
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
@@ -320,6 +320,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED 12
 #define SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED 13
 #define SUPLA_RESULTCODE_GUID_ERROR 14
+#define SUPLA_RESULTCODE_DEVICE_LOCKED 15                          // ver. >= 22
 #define SUPLA_RESULTCODE_REGISTRATION_DISABLED 17                  // ver. >= 7
 #define SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED 18                  // ver. >= 7
 #define SUPLA_RESULTCODE_AUTHKEY_ERROR 19                          // ver. >= 7
@@ -414,7 +415,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_VALVE_OPENCLOSE 7000              // ver. >= 12
 #define SUPLA_CHANNELTYPE_VALVE_PERCENTAGE 7010             // ver. >= 12
 #define SUPLA_CHANNELTYPE_BRIDGE 8000                       // ver. >= 12
-#define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 21
+#define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 22
 #define SUPLA_CHANNELTYPE_ENGINE 10000                      // ver. >= 12
 #define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 16
 #define SUPLA_CHANNELTYPE_DIGIGLASS 12000                   // ver. >= 12
@@ -474,7 +475,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER 426       // ver. >= 21
 #define SUPLA_CHANNELFNC_VALVE_OPENCLOSE 500               // ver. >= 12
 #define SUPLA_CHANNELFNC_VALVE_PERCENTAGE 510              // ver. >= 12
-#define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520   // ver. >= 21
+#define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520   // ver. >= 22
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600     // ver. >= 12
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                 // ver. >= 16
 #define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800          // ver. >= 14
@@ -548,6 +549,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED 0x0020       // ver. >= 18
 #define SUPLA_DEVICE_FLAG_CALCFG_SET_TIME 0x0040          // ver. >= 21
 #define SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED 0x0080  // ver. >= 21
+#define SUPLA_DEVICE_FLAG_DEVICE_LOCKED 0x0100            // ver. >= 22
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
@@ -1608,13 +1610,21 @@ typedef struct {
 #define EM_VAR_CURRENT_OVER_65A 0x1000
 #define EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED 0x2000
 #define EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED 0x4000
-#define EM_VAR_ALL 0xFFFF
+
+#define EM_VAR_VOLTAGE_PHASE_ANGLE_12 0x10000  // ver. >= 22
+#define EM_VAR_VOLTAGE_PHASE_ANGLE_13 0x20000  // ver. >= 22
+#define EM_VAR_VOLTAGE_PHASE_SEQUENCE 0x40000  // ver. >= 22
+#define EM_VAR_CURRENT_PHASE_SEQUENCE 0x80000  // ver. >= 22
 
 #define EM_VAR_POWER_ACTIVE_KW 0x100000
 #define EM_VAR_POWER_REACTIVE_KVAR 0x200000
 #define EM_VAR_POWER_APPARENT_KVA 0x400000
 
-#ifdef __AVR__
+#define EM_PHASE_SEQUENCE_VOLTAGE 0x01
+#define EM_PHASE_SEQUENCE_CURRENT 0x02
+
+#if defined(__AVR__) || defined(ESP8266) || defined(ESP32) ||                  \
+    defined(ESP_PLATFORM) || defined(ARDUINO) || defined(SUPLA_DEVICE)
 #define EM_MEASUREMENT_COUNT 1
 #else
 #define EM_MEASUREMENT_COUNT 5
@@ -1670,6 +1680,43 @@ typedef struct {
   TElectricityMeter_Measurement m[EM_MEASUREMENT_COUNT];  // Last variable in
                                                           // struct!
 } TElectricityMeter_ExtendedValue_V2;                     // v. >= 12
+
+// [IODevice->Server->Client]
+typedef struct {
+  unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kWh
+  unsigned _supla_int64_t total_reverse_active_energy[3];    // * 0.00001 kWh
+  unsigned _supla_int64_t total_forward_reactive_energy[3];  // * 0.00001 kvarh
+  unsigned _supla_int64_t total_reverse_reactive_energy[3];  // * 0.00001 kvarh
+  unsigned _supla_int64_t
+      total_forward_active_energy_balanced;  // * 0.00001 kWh
+                                             // Vector phase-to-phase balancing
+  unsigned _supla_int64_t
+      total_reverse_active_energy_balanced;  // * 0.00001 kWh
+                                             // Vector phase-to-phase balancing
+
+  // Voltage phase angle between phase 1 and 2
+  unsigned _supla_int16_t voltage_phase_angle_12;   // * 0.1 degree, 0..360
+  // Voltage phase angle between phase 1 and 3
+  unsigned _supla_int16_t voltage_phase_angle_13;   // * 0.1 degree, 0..360
+  unsigned char phase_sequence;  // bit 0x1 - voltage, bit 0x2 current
+                                 // EM_PHASE_SEQUENCE_*
+                                 // bit value: 0 - 123 (clockwise)
+                                 // bit value: 1 - 132 (counter-clockwise)
+
+  // The price per unit, total cost and currency is overwritten by the server
+  // total_cost == SUM(total_forward_active_energy[n] * price_per_unit
+  _supla_int_t total_cost;           // * 0.01
+  _supla_int_t total_cost_balanced;  // * 0.01
+  _supla_int_t price_per_unit;       // * 0.0001
+  // Currency Code A https://www.nationsonline.org/oneworld/currencies.htm
+  char currency[3];
+
+  _supla_int_t measured_values;
+  _supla_int_t period;  // Approximate period between measurements in seconds
+  _supla_int_t m_count;
+  TElectricityMeter_Measurement m[EM_MEASUREMENT_COUNT];  // Last variable in
+                                                          // struct!
+} TElectricityMeter_ExtendedValue_V3;                     // v. >= 22
 
 #define EM_VALUE_FLAG_PHASE1_ON 0x01
 #define EM_VALUE_FLAG_PHASE2_ON 0x02
@@ -2634,11 +2681,6 @@ typedef struct {
 #define SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE (1ULL << 0)
 #define SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST (1ULL << 1)
 
-// TODO(klew): should we have separate structures for configuration specific
-// to selected algorithm? I.e. histeresis should be applicable to on/off
-// algorithm, while i.e. PID requires different parameters to work (or can
-// those be adjusted automatically by software?)
-
 // HVAC channel validation rules for thermometers:
 // - MainThermometerChannelNo must be set
 // - AuxThermometerChannelNo is validated and used only when
@@ -2770,6 +2812,65 @@ typedef struct {
   unsigned char Reserved[48];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
+
+
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_CHART_TYPE_LINEAR 0
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_CHART_TYPE_BAR 1
+
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_DATA_SOURCE_TYPE_MEASUREMENT 0
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_DATA_SOURCE_TYPE_INCREMENTAL 1
+
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_DOUBLE 0
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_INT64 1
+
+#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE 15
+
+// General Purpose Mesurement channel config:
+// Calculated value is: (value / ValueDivider) + ValueAdded
+typedef struct {
+  // Value divider
+  _supla_int_t ValueDivider;  // 0.001 units; 0 is considered as 1
+  // Value added
+  _supla_int64_t ValueAdded;  // 0.001 units
+  // Display precicion
+  unsigned char ValuePrecision;  // 0 - 10 decimal points
+  // Display unit prefix - UTF8 including the terminating null byte ('\0')
+  char UnitPrefix[SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE];
+  // Display unit suffix - UTF8 including the terminating null byte ('\0')
+  char UnitSuffix[SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE];
+  // Keep history on server
+  unsigned char KeepHistory;  // 0 - no (default), 1 - yes
+  // Chart type linear/bar
+  unsigned char ChartType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_CHART_TYPE_*
+  // Include value added in history
+  unsigned char IncludeValueAddedInHistory;  // 0 - no (default), 1 - yes
+                                             //
+  // Fill missing data (for incremental type)
+  unsigned char FillMissingData;  // 0 - no (default), 1 - yes
+  // Allow counter reset (for incremental type)
+  unsigned char AllowCounterReset;  // 0 - no (default), 1 - yes
+
+  // Readonly and default parameters
+  // Channel value[8] format: int64, double
+  unsigned char ValueType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_*
+  // Data source type - incremental/measurement
+  unsigned char
+      DataSourceType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_DATA_SOURCE_TYPE_*
+
+  // Default value divider
+  _supla_int_t DefaultValueDivider;  // 0.001 units; 0 is considered
+                                     // as 1
+  // Default value added
+  _supla_int64_t DefaultValueAdded;  // 0.001 units
+  // Default display precicion
+  unsigned char DefaultValuePrecision;  // 0 - 10 decimal points
+  // Default unit prefix - UTF8 including the terminating null byte ('\0')
+  char DefaultUnitPrefix[SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE];
+  // Default unit suffix - UTF8 including the terminating null byte ('\0')
+  char DefaultUnitSuffix[SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE];
+
+  unsigned char Reserved[8];
+} TChannelConfig_GeneralPurposeMeasuement;
 
 typedef struct {
   _supla_int_t ChannelID;

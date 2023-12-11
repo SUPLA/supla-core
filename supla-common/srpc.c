@@ -27,7 +27,9 @@
 
 // ESP8266 and ESP32
 #if defined(ESP8266) || defined(ESP32)
+#ifndef __EH_DISABLED
 #define __EH_DISABLED
+#endif /*__EH_DISABLED*/
 #define SRPC_BUFFER_SIZE 256
 #define SRPC_QUEUE_SIZE 2
 #define SRPC_QUEUE_MIN_ALLOC_COUNT 2
