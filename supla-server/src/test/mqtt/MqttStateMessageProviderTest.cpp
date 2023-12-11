@@ -638,7 +638,7 @@ TEST_F(MqttStateMessageProviderTest, electricityMeter) {
   SetResultValue(SUPLA_CHANNELFNC_ELECTRICITY_METER, true,
                  new supla_channel_value());
 
-  SetElectricityMeasurementResult(EM_VAR_ALL, 1);
+  SetElectricityMeasurementResult(0xFFFF, 1);
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -923,7 +923,7 @@ TEST_F(MqttStateMessageProviderTest, measurementUnitChangeTest) {
   SetResultValue(SUPLA_CHANNELFNC_ELECTRICITY_METER, true,
                  new supla_channel_value());
 
-  SetElectricityMeasurementResult(EM_VAR_ALL | EM_VAR_POWER_ACTIVE_KW |
+  SetElectricityMeasurementResult(0xFFFF | EM_VAR_POWER_ACTIVE_KW |
                                       EM_VAR_POWER_REACTIVE_KVAR |
                                       EM_VAR_POWER_APPARENT_KVA,
                                   1);
@@ -1283,7 +1283,7 @@ TEST_F(MqttStateMessageProviderTest, electricityMeterWithoutMeasurements) {
   SetResultValue(SUPLA_CHANNELFNC_ELECTRICITY_METER, true,
                  new supla_channel_value());
 
-  SetElectricityMeasurementResult(EM_VAR_ALL, 0);
+  SetElectricityMeasurementResult(0xFFFF, 0);
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
