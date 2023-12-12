@@ -35,11 +35,14 @@ supla_channel_hp_thermostat_ev_decorator::
 string supla_channel_hp_thermostat_ev_decorator::get_home_assistant_mode(void) {
   short flags = ev ? ev->get_flags(4) : 0;
 
-  if (flags & HP_STATUS_PROGRAMMODE) {
-    return "auto";
-  } else if (flags & HP_STATUS_POWERON) {
-    return "heat";
+  if (flags & HP_STATUS_POWERON) {
+    if (flags & HP_STATUS_PROGRAMMODE) {
+      return "auto";
+    } else if (flags & HP_STATUS_POWERON) {
+      return "heat";
+    }
   }
+
   return "off";
 }
 
