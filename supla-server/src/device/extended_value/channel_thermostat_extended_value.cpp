@@ -29,6 +29,11 @@ supla_channel_thermostat_extended_value::
     : supla_channel_extended_value(value) {}
 
 supla_channel_thermostat_extended_value::
+    supla_channel_thermostat_extended_value(
+        const supla_channel_extended_value *value)
+    : supla_channel_extended_value(value) {}
+
+supla_channel_thermostat_extended_value::
     ~supla_channel_thermostat_extended_value(void) {}
 
 short supla_channel_thermostat_extended_value::get_flags(unsigned char idx) {
@@ -44,6 +49,12 @@ short supla_channel_thermostat_extended_value::get_flags(unsigned char idx) {
   }
 
   return 0;
+}
+
+supla_channel_extended_value *
+supla_channel_thermostat_extended_value::copy(  // NOLINT
+    void) {                                     // NOLINT
+  return new supla_channel_thermostat_extended_value(this);
 }
 
 // static
