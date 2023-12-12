@@ -59,7 +59,7 @@ class supla_abstract_device_dao {
 
   virtual bool get_device_variables(int device_id, bool *device_enabled,
                                     int *original_location_id, int *location_id,
-                                    bool *location_enabled) = 0;
+                                    bool *location_enabled, int *flags) = 0;
 
   virtual int get_channel_id_and_type(int device_id, int channel_number,
                                       int *type) = 0;

@@ -290,7 +290,8 @@ int supla_device_dao::get_device_limit_left(int user_id) {
 bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
                                             int *original_location_id,
                                             int *location_id,
-                                            bool *location_enabled) {
+                                            bool *location_enabled,
+                                            int *flags) {
   if (device_id == 0) return false;
 
   MYSQL_STMT *stmt = nullptr;
@@ -304,18 +305,19 @@ bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
   int _original_location_id = 0;
   int _location_id = 0;
   int _location_enabled = 0;
+  int _flags = 0;
 
   bool result = false;
 
   if (dba->stmt_execute(
           (void **)&stmt,
           "SELECT CAST(d.`enabled` AS unsigned integer) `d_enabled`, "
-          "IFNULL(d.original_location_id, 0), IFNULL(d.location_id, "
-          "0), IFNULL(CAST(l.`enabled` AS unsigned integer), 0) "
-          "`l_enabled` FROM supla_iodevice d LEFT JOIN supla_location "
-          "l ON l.id = d.location_id WHERE d.id = ?",
+          "IFNULL(d.original_location_id, 0), IFNULL(d.location_id, 0), "
+          "IFNULL(CAST(l.`enabled` AS unsigned integer), 0) `l_enabled`, "
+          "IFNULL(d.flags, 0) FROM supla_iodevice d LEFT JOIN supla_location l "
+          "ON l.id = d.location_id WHERE d.id = ?",
           &pbind, 1, true)) {
-    MYSQL_BIND rbind[4];
+    MYSQL_BIND rbind[5];
     memset(rbind, 0, sizeof(rbind));
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -330,6 +332,9 @@ bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
     rbind[3].buffer_type = MYSQL_TYPE_LONG;
     rbind[3].buffer = (char *)&_location_enabled;
 
+    rbind[4].buffer_type = MYSQL_TYPE_LONG;
+    rbind[4].buffer = (char *)&_flags;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -341,6 +346,7 @@ bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
         *original_location_id = _original_location_id;
         *location_id = _location_id;
         *location_enabled = _location_enabled == 1;
+        *flags = _flags;
 
         result = true;
       }

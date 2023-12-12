@@ -370,9 +370,11 @@ void supla_abstract_register_device::register_device(
 
   device_id = device_dao->get_device_id(get_user_id(), get_guid());
 
+  int _device_flags = 0;
+
   if (device_id && !device_dao->get_device_variables(
                        device_id, &device_enabled, &_original_location_id,
-                       &_location_id, &location_enabled)) {
+                       &_location_id, &location_enabled, &_device_flags)) {
     supla_log(LOG_WARNING, "Unable to get variables for the device with id: %i",
               device_id);
     send_result(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE);
@@ -418,6 +420,11 @@ void supla_abstract_register_device::register_device(
       if (location_id == _location_id) _original_location_id = location_id;
     }
 
+    if ((_device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED) &&
+        !(device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED)) {
+      device_flags |= SUPLA_DEVICE_FLAG_DEVICE_LOCKED;
+    }
+
     if (!device_dao->update_device(
             device_id, _original_location_id, get_authkey(), get_name(),
             client_ipv4, get_softver(), get_srpc_adapter()->get_proto_version(),
@@ -436,6 +443,12 @@ void supla_abstract_register_device::register_device(
   if ((device_flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
       is_prev_entering_cfg_mode()) {
     resultcode = SUPLA_RESULTCODE_CFG_MODE_REQUESTED;
+  }
+
+  if ((device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED) &&
+      (new_device || (_device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED))) {
+    send_result(SUPLA_RESULTCODE_DEVICE_LOCKED);
+    return;
   }
 
   on_registration_success();
