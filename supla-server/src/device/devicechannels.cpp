@@ -1230,6 +1230,26 @@ bool supla_device_channels::action_hvac_set_parameters(
         switch (params->get_mode()) {
           case SUPLA_HVAC_MODE_HEAT:
           case SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL:
+          case SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE:
+            req->Command = SUPLA_THERMOSTAT_CMD_TURNON;
+            req->Data[0] = 1;  // 1 == on
+            req->DataSize = 1;
+
+            if (device && device->get_connection()) {
+              device->get_connection()
+                  ->get_srpc_adapter()
+                  ->sd_async_device_calcfg_request(req);
+            }
+
+            req->Command = 0;
+            req->Data[0] = 0;
+            req->DataSize = 0;
+            break;
+        }
+
+        switch (params->get_mode()) {
+          case SUPLA_HVAC_MODE_HEAT:
+          case SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL:
             req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
             req->Data[0] = 1;
             req->DataSize = 1;
