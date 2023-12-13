@@ -1796,13 +1796,15 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "hidden",
       "false",
       "homeassistant/climate/7450214b8189dc129301c2c922cdcfd0/16708/config",
-      "{\"~\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/"
+      "{\"avty\":{\"topic\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/"
+      "9934/channels/16708/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/"
+      "channels/"
       "16708\",\"device\":{\"ids\":\"supla-iodevice-9934\",\"mf\":\"Heatpol\","
       "\"name\":\"HEATPOL HOME+\",\"sw\":\"2.7.25\"},\"name\":\"Home+ "
       "Heater\",\"uniq_id\":\"supla_16708\",\"qos\":0,\"ret\":false,\"opt\":"
-      "false,\"avty_t\":\"~/state/"
-      "connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\",\"act_t\":"
-      "\"~/state/action\",\"curr_temp_t\":\"~/state/"
+      "false,\"act_t\":\"~/state/action\",\"curr_temp_t\":\"~/state/"
       "temperature\",\"current_humidity_topic\":\"None\",\"min_temp\":\"10\","
       "\"max_temp\":\"30\",\"modes\":[\"off\",\"auto\",\"heat\"],\"mode_stat_"
       "t\":\"~/state/mode\",\"mode_cmd_t\":\"~/"
@@ -1842,14 +1844,16 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "hidden",
       "false",
       "homeassistant/climate/7450214b8189dc129301c2c922cdcfd0/73228/config",
-      "{\"~\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/"
+      "{\"avty\":{\"topic\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/"
+      "23267/channels/73228/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/"
+      "channels/"
       "73228\",\"device\":{\"ids\":\"supla-iodevice-23267\",\"mf\":\"Zamel\","
       "\"name\":\"ZAMEL "
       "GKW-01\",\"sw\":\"23.11.01\"},\"name\":\"Thermostat\",\"uniq_id\":"
-      "\"supla_73228\",\"qos\":0,\"ret\":false,\"opt\":false,\"avty_t\":\"~/"
+      "\"supla_73228\",\"qos\":0,\"ret\":false,\"opt\":false,\"act_t\":\"~/"
       "state/"
-      "connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\",\"act_t\":"
-      "\"~/state/"
       "action\",\"curr_temp_t\":\"None\",\"current_humidity_topic\":\"None\","
       "\"min_temp\":\"5.00\",\"max_temp\":\"40.00\",\"modes\":[\"off\","
       "\"auto\",\"heat\"],\"mode_stat_t\":\"~/state/mode\",\"mode_cmd_t\":\"~/"
