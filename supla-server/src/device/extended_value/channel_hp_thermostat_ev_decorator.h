@@ -38,6 +38,11 @@ class supla_channel_hp_thermostat_ev_decorator {
 
   std::string get_home_assistant_mode(void);
   std::string get_home_assistant_action(void);
+  unsigned char get_hvac_mode(void);
+  unsigned short get_hvac_flags(void);
+  int get_state_flags(void);
+  bool is_program_mode(void);
+  bool is_heating(void);
 };
 
 #endif /*CHANNEL_HP_THERMOSTAT_EXTENDED_VALUE_DECORATOR_H_*/

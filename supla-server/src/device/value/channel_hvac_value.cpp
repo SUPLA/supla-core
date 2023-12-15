@@ -159,6 +159,10 @@ void supla_channel_hvac_value::set_flags(unsigned short flags) {
   ((THVACValue*)raw_value)->Flags = flags;
 }
 
+void supla_channel_hvac_value::set_on(unsigned char on) {
+  ((THVACValue*)raw_value)->IsOn = on;
+}
+
 bool supla_channel_hvac_value::is_on(void) {
   return ((THVACValue*)raw_value)->IsOn > 0;
 }

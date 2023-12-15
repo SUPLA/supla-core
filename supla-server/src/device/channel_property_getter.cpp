@@ -128,3 +128,17 @@ supla_json_config *supla_cahnnel_property_getter::_get_detached_json_config(
 
   return result;
 }
+
+int supla_cahnnel_property_getter::_get_channel_id(
+    int user_id, int device_id, unsigned char channel_number) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, 0);
+
+  int result = 0;
+
+  if (device != nullptr) {
+    result = device->get_channels()->get_channel_id(channel_number);
+  }
+
+  return result;
+}

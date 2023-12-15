@@ -36,6 +36,9 @@ class supla_cahnnel_property_getter
                                                        int device_id,
                                                        int channel_id);
 
+  virtual int _get_channel_id(int user_id, int device_id,
+                              unsigned char channel_number);
+
  public:
   virtual ~supla_cahnnel_property_getter(void);
 };

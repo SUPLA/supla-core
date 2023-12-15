@@ -50,6 +50,7 @@ class supla_channel_hvac_value : public supla_channel_value {
   void set_setpoint_temperature_heat_to_null(void);
   void set_setpoint_temperature_cool_to_null(void);
   void set_flags(unsigned short flags);
+  void set_on(unsigned char on);
   bool is_on(void);
   bool is_heating(void);
   bool is_cooling(void);
