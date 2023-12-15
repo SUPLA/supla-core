@@ -895,5 +895,14 @@ bool supla_device_channel::get_voltage_analyzers_with_any_sample_over_threshold(
 }
 
 supla_channel_value *supla_device_channel::_get_value(void) {
-  return supla_channel_value_factory::new_value(this);
+  char value[SUPLA_CHANNELVALUE_SIZE] = {};
+  get_value(value);
+  int func = get_func();
+
+  lock();
+  supla_channel_value *result = supla_channel_value_factory::new_value(
+      value, type, func, get_user(), param2, param3);
+  unlock();
+
+  return result;
 }
