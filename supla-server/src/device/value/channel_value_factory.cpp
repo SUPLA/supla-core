@@ -37,22 +37,31 @@ supla_channel_value_factory::supla_channel_value_factory(void) {}
 
 // static
 supla_channel_value *supla_channel_value_factory::new_value(
-    char value[SUPLA_CHANNELVALUE_SIZE], int type, int func, supla_user *user,
-    int param2, int param3) {
+    supla_device_channel *channel) {
+  if (!channel) {
+    return nullptr;
+  }
+
+  char value[SUPLA_CHANNELVALUE_SIZE] = {};
+  channel->get_value(value);
+
+  int func = channel->get_func();
+
   if (!func) {
     return new supla_channel_value(value);
   }
 
-  if (supla_channel_rs_value::is_function_supported(func)) {
+  if (supla_channel_rs_value::is_function_supported(channel->get_func())) {
     supla_channel_rs_value *rs_value = new supla_channel_rs_value(value);
-    rs_value->update_sensor(user, param2);
+    rs_value->update_sensor(channel->get_user(), channel->get_param2());
     return rs_value;
   }
 
   if (supla_channel_gate_value::is_function_supported(func)) {
     supla_channel_gate_value *gate_value = new supla_channel_gate_value(value);
 
-    gate_value->update_sensors(user, param2, param3);
+    gate_value->update_sensors(channel->get_user(), channel->get_param2(),
+                               channel->get_param3());
     return gate_value;
   }
 
@@ -69,7 +78,7 @@ supla_channel_value *supla_channel_value_factory::new_value(
   }
 
   if (supla_channel_temphum_value::is_function_supported(func)) {
-    return new supla_channel_temphum_value(type, func, value);
+    return new supla_channel_temphum_value(channel->get_type(), func, value);
   }
 
   if (supla_channel_binary_sensor_value::is_function_supported(func)) {
