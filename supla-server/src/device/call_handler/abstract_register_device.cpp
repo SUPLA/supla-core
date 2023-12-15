@@ -420,9 +420,10 @@ void supla_abstract_register_device::register_device(
       if (location_id == _location_id) _original_location_id = location_id;
     }
 
-    if ((_device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED) &&
-        !(device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED)) {
+    if (_device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED) {
       device_flags |= SUPLA_DEVICE_FLAG_DEVICE_LOCKED;
+    } else {
+      device_flags ^= device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED;
     }
 
     if (!device_dao->update_device(
