@@ -44,8 +44,8 @@ TEST_F(GetHvacValueCommandTest, getHvacValueWithSuccess) {
 
   supla_channel_hvac_value *hvac = new supla_channel_hvac_value(raw_value);
   hvac->set_mode(SUPLA_HVAC_MODE_COOL);
-  hvac->set_temperature_heat(12345);
-  hvac->set_temperature_cool(14567);
+  hvac->set_setpoint_temperature_heat(12345);
+  hvac->set_setpoint_temperature_cool(14567);
 
   EXPECT_CALL(*cmd, get_hvac_value(10, 20, 30)).WillOnce(Return(hvac));
 

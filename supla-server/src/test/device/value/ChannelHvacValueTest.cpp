@@ -65,8 +65,8 @@ TEST_F(ChannelHvacValueTest, clear) {
   char raw_value2[SUPLA_CHANNELVALUE_SIZE] = {};
 
   supla_channel_hvac_value value;
-  value.set_temperature_heat(1);
-  value.set_temperature_cool(2);
+  value.set_setpoint_temperature_heat(1);
+  value.set_setpoint_temperature_cool(2);
   value.turn_on();
 
   value.get_raw_value(raw_value2);
@@ -115,29 +115,29 @@ TEST_F(ChannelHvacValueTest, isCooling) {
 
 TEST_F(ChannelHvacValueTest, getTemperature) {
   supla_channel_hvac_value value;
-  EXPECT_EQ(value.get_temperature(), 0);
-  EXPECT_DOUBLE_EQ(value.get_temperature_dbl(), 0.0);
+  EXPECT_EQ(value.get_setpoint_temperature(), 0);
+  EXPECT_DOUBLE_EQ(value.get_setpoint_temperature_dbl(), 0.0);
 
   char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
   ((THVACValue*)raw_value)->SetpointTemperatureCool = 1234;
   ((THVACValue*)raw_value)->SetpointTemperatureHeat = 5678;
   value.set_raw_value(raw_value);
 
-  EXPECT_DOUBLE_EQ(value.get_temperature_cool_dbl(), 12.34);
-  EXPECT_EQ(value.get_temperature_cool_str(), "12.34");
+  EXPECT_DOUBLE_EQ(value.get_setpoint_temperature_cool_dbl(), 12.34);
+  EXPECT_EQ(value.get_setpoint_temperature_cool_str(), "12.34");
 
-  EXPECT_DOUBLE_EQ(value.get_temperature_heat_dbl(), 56.78);
-  EXPECT_EQ(value.get_temperature_heat_str(), "56.78");
+  EXPECT_DOUBLE_EQ(value.get_setpoint_temperature_heat_dbl(), 56.78);
+  EXPECT_EQ(value.get_setpoint_temperature_heat_str(), "56.78");
 
-  EXPECT_EQ(value.get_temperature(), 5678);
-  EXPECT_DOUBLE_EQ(value.get_temperature_dbl(), 56.78);
-  EXPECT_EQ(value.get_temperature_str(), "56.78");
+  EXPECT_EQ(value.get_setpoint_temperature(), 5678);
+  EXPECT_DOUBLE_EQ(value.get_setpoint_temperature_dbl(), 56.78);
+  EXPECT_EQ(value.get_setpoint_temperature_str(), "56.78");
 
   value.set_mode(SUPLA_HVAC_MODE_COOL);
 
-  EXPECT_EQ(value.get_temperature(), 1234);
-  EXPECT_DOUBLE_EQ(value.get_temperature_dbl(), 12.34);
-  EXPECT_EQ(value.get_temperature_str(), "12.34");
+  EXPECT_EQ(value.get_setpoint_temperature(), 1234);
+  EXPECT_DOUBLE_EQ(value.get_setpoint_temperature_dbl(), 12.34);
+  EXPECT_EQ(value.get_setpoint_temperature_str(), "12.34");
 }
 
 TEST_F(ChannelHvacValueTest, getHomeAssistantMode) {

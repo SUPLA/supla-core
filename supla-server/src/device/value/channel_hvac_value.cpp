@@ -45,49 +45,49 @@ unsigned char supla_channel_hvac_value::get_mode(void) {
   return ((THVACValue*)raw_value)->Mode;
 }
 
-short supla_channel_hvac_value::get_temperature_heat(void) {
+short supla_channel_hvac_value::get_setpoint_temperature_heat(void) {
   return ((THVACValue*)raw_value)->SetpointTemperatureHeat;
 }
 
-double supla_channel_hvac_value::get_temperature_heat_dbl(void) {
-  return get_temperature_heat() / 100.00;
+double supla_channel_hvac_value::get_setpoint_temperature_heat_dbl(void) {
+  return get_setpoint_temperature_heat() / 100.00;
 }
 
-std::string supla_channel_hvac_value::get_temperature_heat_str(void) {
+std::string supla_channel_hvac_value::get_setpoint_temperature_heat_str(void) {
   char result[20] = {};
-  snprintf(result, sizeof(result), "%.2f", get_temperature_heat_dbl());
+  snprintf(result, sizeof(result), "%.2f", get_setpoint_temperature_heat_dbl());
   return result;
 }
 
-short supla_channel_hvac_value::get_temperature_cool(void) {
+short supla_channel_hvac_value::get_setpoint_temperature_cool(void) {
   return ((THVACValue*)raw_value)->SetpointTemperatureCool;
 }
 
-double supla_channel_hvac_value::get_temperature_cool_dbl(void) {
-  return get_temperature_cool() / 100.00;
+double supla_channel_hvac_value::get_setpoint_temperature_cool_dbl(void) {
+  return get_setpoint_temperature_cool() / 100.00;
 }
 
-string supla_channel_hvac_value::get_temperature_cool_str(void) {
+string supla_channel_hvac_value::get_setpoint_temperature_cool_str(void) {
   char result[20] = {};
-  snprintf(result, sizeof(result), "%.2f", get_temperature_cool_dbl());
+  snprintf(result, sizeof(result), "%.2f", get_setpoint_temperature_cool_dbl());
   return result;
 }
 
-short supla_channel_hvac_value::get_temperature(void) {
+short supla_channel_hvac_value::get_setpoint_temperature(void) {
   if (get_mode() == SUPLA_HVAC_MODE_COOL) {
-    return get_temperature_cool();
+    return get_setpoint_temperature_cool();
   } else {
-    return get_temperature_heat();
+    return get_setpoint_temperature_heat();
   }
 }
 
-double supla_channel_hvac_value::get_temperature_dbl(void) {
-  return get_temperature() / 100.00;
+double supla_channel_hvac_value::get_setpoint_temperature_dbl(void) {
+  return get_setpoint_temperature() / 100.00;
 }
 
-string supla_channel_hvac_value::get_temperature_str(void) {
+string supla_channel_hvac_value::get_setpoint_temperature_str(void) {
   char result[20] = {};
-  snprintf(result, sizeof(result), "%.2f", get_temperature_dbl());
+  snprintf(result, sizeof(result), "%.2f", get_setpoint_temperature_dbl());
   return result;
 }
 
@@ -127,26 +127,28 @@ unsigned short supla_channel_hvac_value::get_flags(void) {
   return ((THVACValue*)raw_value)->Flags;
 }
 
-void supla_channel_hvac_value::set_temperature_heat(short temperature) {
+void supla_channel_hvac_value::set_setpoint_temperature_heat(
+    short temperature) {
   ((THVACValue*)raw_value)->SetpointTemperatureHeat = temperature;
   ((THVACValue*)raw_value)->Flags |=
       SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET;
 }
 
-void supla_channel_hvac_value::set_temperature_cool(short temperature) {
+void supla_channel_hvac_value::set_setpoint_temperature_cool(
+    short temperature) {
   ((THVACValue*)raw_value)->SetpointTemperatureCool = temperature;
   ((THVACValue*)raw_value)->Flags |=
       SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET;
 }
 
-void supla_channel_hvac_value::set_temperature_heat_to_null(void) {
+void supla_channel_hvac_value::set_setpoint_temperature_heat_to_null(void) {
   ((THVACValue*)raw_value)->SetpointTemperatureHeat = 0;
   ((THVACValue*)raw_value)->Flags ^=
       ((THVACValue*)raw_value)->Flags &
       SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET;
 }
 
-void supla_channel_hvac_value::set_temperature_cool_to_null(void) {
+void supla_channel_hvac_value::set_setpoint_temperature_cool_to_null(void) {
   ((THVACValue*)raw_value)->SetpointTemperatureCool = 0;
   ((THVACValue*)raw_value)->Flags ^=
       ((THVACValue*)raw_value)->Flags &

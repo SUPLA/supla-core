@@ -1013,7 +1013,7 @@ bool supla_mqtt_abstract_state_message_provider::
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
           hvac_val && channel_function != SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO
-              ? hvac_val->get_temperature_str().c_str()
+              ? hvac_val->get_setpoint_temperature_str().c_str()
               : nullptr,
           false, "devices/%i/channels/%i/state/temperature_setpoint",
           get_device_id(), get_channel_id());
@@ -1021,7 +1021,7 @@ bool supla_mqtt_abstract_state_message_provider::
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
           hvac_val && channel_function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO
-              ? hvac_val->get_temperature_cool_str().c_str()
+              ? hvac_val->get_setpoint_temperature_cool_str().c_str()
               : nullptr,
           false, "devices/%i/channels/%i/state/temperature_setpoint_cool",
           get_device_id(), get_channel_id());
@@ -1029,7 +1029,7 @@ bool supla_mqtt_abstract_state_message_provider::
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
           hvac_val && channel_function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO
-              ? hvac_val->get_temperature_heat_str().c_str()
+              ? hvac_val->get_setpoint_temperature_heat_str().c_str()
               : nullptr,
           false, "devices/%i/channels/%i/state/temperature_setpoint_heat",
           get_device_id(), get_channel_id());

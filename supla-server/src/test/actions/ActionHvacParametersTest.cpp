@@ -71,8 +71,8 @@ TEST_F(ActionHvacParametersTest, applyOn_mode) {
   hvac.apply_on(&v);
 
   EXPECT_EQ(v.get_mode(), SUPLA_HVAC_MODE_HEAT);
-  EXPECT_EQ(v.get_temperature_heat(), 0);
-  EXPECT_EQ(v.get_temperature_cool(), 0);
+  EXPECT_EQ(v.get_setpoint_temperature_heat(), 0);
+  EXPECT_EQ(v.get_setpoint_temperature_cool(), 0);
   EXPECT_EQ(v.get_flags(), 0);
 }
 
@@ -87,8 +87,8 @@ TEST_F(ActionHvacParametersTest, applyOn_tempMin) {
   hvac.apply_on(&v);
 
   EXPECT_EQ(v.get_mode(), 0);
-  EXPECT_EQ(v.get_temperature_heat(), 123);
-  EXPECT_EQ(v.get_temperature_cool(), 0);
+  EXPECT_EQ(v.get_setpoint_temperature_heat(), 123);
+  EXPECT_EQ(v.get_setpoint_temperature_cool(), 0);
   EXPECT_EQ(v.get_flags(), SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET);
 }
 
@@ -103,8 +103,8 @@ TEST_F(ActionHvacParametersTest, applyOn_tempMax) {
   hvac.apply_on(&v);
 
   EXPECT_EQ(v.get_mode(), 0);
-  EXPECT_EQ(v.get_temperature_heat(), 0);
-  EXPECT_EQ(v.get_temperature_cool(), 123);
+  EXPECT_EQ(v.get_setpoint_temperature_heat(), 0);
+  EXPECT_EQ(v.get_setpoint_temperature_cool(), 123);
   EXPECT_EQ(v.get_flags(), SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET);
 }
 
@@ -133,8 +133,8 @@ TEST_F(ActionHvacParametersTest, applyOn_allParams) {
   hvac.apply_on(&v);
 
   EXPECT_EQ(v.get_mode(), SUPLA_HVAC_MODE_COOL);
-  EXPECT_EQ(v.get_temperature_heat(), 123);
-  EXPECT_EQ(v.get_temperature_cool(), 33);
+  EXPECT_EQ(v.get_setpoint_temperature_heat(), 123);
+  EXPECT_EQ(v.get_setpoint_temperature_cool(), 33);
   EXPECT_EQ(v.get_flags(), SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET |
                                SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET |
                                SUPLA_HVAC_VALUE_FLAG_COOLING);
@@ -149,13 +149,13 @@ TEST_F(ActionHvacParametersTest, applyOn_minIsNull) {
 
   supla_action_hvac_parameters hvac(&p);
   supla_channel_hvac_value v;
-  v.set_temperature_heat(134);
-  v.set_temperature_cool(223);
+  v.set_setpoint_temperature_heat(134);
+  v.set_setpoint_temperature_cool(223);
 
   hvac.apply_on(&v);
 
-  EXPECT_EQ(v.get_temperature_heat(), 0);
-  EXPECT_EQ(v.get_temperature_cool(), 200);
+  EXPECT_EQ(v.get_setpoint_temperature_heat(), 0);
+  EXPECT_EQ(v.get_setpoint_temperature_cool(), 200);
   EXPECT_EQ(v.get_flags(), SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET);
 }
 
@@ -167,13 +167,13 @@ TEST_F(ActionHvacParametersTest, applyOn_maxIsNull) {
 
   supla_action_hvac_parameters hvac(&p);
   supla_channel_hvac_value v;
-  v.set_temperature_heat(134);
-  v.set_temperature_cool(223);
+  v.set_setpoint_temperature_heat(134);
+  v.set_setpoint_temperature_cool(223);
 
   hvac.apply_on(&v);
 
-  EXPECT_EQ(v.get_temperature_heat(), 100);
-  EXPECT_EQ(v.get_temperature_cool(), 0);
+  EXPECT_EQ(v.get_setpoint_temperature_heat(), 100);
+  EXPECT_EQ(v.get_setpoint_temperature_cool(), 0);
   EXPECT_EQ(v.get_flags(), SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET);
 }
 

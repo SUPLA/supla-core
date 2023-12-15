@@ -47,8 +47,9 @@ void supla_abstract_get_hvac_value_command::on_command_match(
 
         snprintf(buffer, sizeof(buffer), "VALUE:%i,%i,%i,%i,%i",
                  hvac_value->is_on() ? 1 : 0, hvac_value->get_mode(),
-                 hvac_value->get_temperature_heat(),
-                 hvac_value->get_temperature_cool(), hvac_value->get_flags());
+                 hvac_value->get_setpoint_temperature_heat(),
+                 hvac_value->get_setpoint_temperature_cool(),
+                 hvac_value->get_flags());
 
         delete hvac_value;
 

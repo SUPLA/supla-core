@@ -1399,7 +1399,8 @@ bool supla_device_channels::action_hvac_set_temperature(
         switch (channel->get_func()) {
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
           case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
-            value->set_temperature_heat(temperature->get_temperature());
+            value->set_setpoint_temperature_heat(
+                temperature->get_temperature());
             result = true;
             break;
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT: {
@@ -1409,10 +1410,12 @@ bool supla_device_channels::action_hvac_set_temperature(
               TChannelConfig_HVAC raw = {};
               if (hvac.get_config(&raw, channel->get_channel_number())) {
                 if (raw.Subfunction == SUPLA_HVAC_SUBFUNCTION_HEAT) {
-                  value->set_temperature_heat(temperature->get_temperature());
+                  value->set_setpoint_temperature_heat(
+                      temperature->get_temperature());
                   result = true;
                 } else if (raw.Subfunction == SUPLA_HVAC_SUBFUNCTION_COOL) {
-                  value->set_temperature_cool(temperature->get_temperature());
+                  value->set_setpoint_temperature_cool(
+                      temperature->get_temperature());
                   result = true;
                 }
               }
@@ -1441,12 +1444,12 @@ bool supla_device_channels::action_hvac_set_temperatures(
           value->clear();
           short temperature = 0;
           if (temperatures->get_heating_temperature(&temperature)) {
-            value->set_temperature_heat(temperature);
+            value->set_setpoint_temperature_heat(temperature);
             result = true;
           }
 
           if (temperatures->get_cooling_temperature(&temperature)) {
-            value->set_temperature_cool(temperature);
+            value->set_setpoint_temperature_cool(temperature);
             result = true;
           }
         }
