@@ -42,7 +42,7 @@ string supla_channel_hp_thermostat_ev_decorator::get_home_assistant_mode(void) {
   if (flags & HP_STATUS_POWERON) {
     if (flags & HP_STATUS_PROGRAMMODE) {
       return "auto";
-    } else if (flags & HP_STATUS_POWERON) {
+    } else {
       return "heat";
     }
   }
@@ -82,6 +82,5 @@ unsigned short supla_channel_hp_thermostat_ev_decorator::get_hvac_flags(void) {
 }
 
 bool supla_channel_hp_thermostat_ev_decorator::is_heating(void) {
-  short flags = get_state_flags();
-  return (flags & HP_STATUS_POWERON) && (flags & HP_STATUS_HEATING);
+  return get_state_flags() & HP_STATUS_HEATING;
 }
