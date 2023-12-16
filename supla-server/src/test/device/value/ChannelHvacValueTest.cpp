@@ -82,9 +82,7 @@ TEST_F(ChannelHvacValueTest, isOn) {
   supla_channel_hvac_value value;
   EXPECT_FALSE(value.is_on());
 
-  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
-  ((THVACValue*)raw_value)->IsOn = 1;
-  value.set_raw_value(raw_value);
+  value.set_on(5);
 
   EXPECT_TRUE(value.is_on());
 }
