@@ -35,7 +35,7 @@ supla_channel_hvac_value_with_temphum *
 supla_get_hvac_value_command::get_hvac_value(int user_id, int device_id,
                                              int channel_id) {
   supla_channel_fragment fragment;
-  supla_cahnnel_property_getter getter;
+  supla_channel_property_getter getter;
   supla_channel_value *result =
       getter.get_value(user_id, device_id, channel_id, &fragment, nullptr);
 

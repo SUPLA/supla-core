@@ -148,8 +148,8 @@ void supla_alexa_response_request::new_request(
     return;
   }
 
-  supla_cahnnel_property_getter *property_getter =
-      new supla_cahnnel_property_getter();
+  supla_channel_property_getter *property_getter =
+      new supla_channel_property_getter();
 
   int func =
       property_getter->get_func(user->getUserID(), device_id, channel_id);

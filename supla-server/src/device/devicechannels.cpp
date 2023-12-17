@@ -728,8 +728,8 @@ void supla_device_channels::action_trigger(TDS_ActionTrigger *at) {
   if (channel_id) {
     supla_action_executor *aexec = new supla_action_executor();
     action_trigger_config *at_config = new action_trigger_config(json_config);
-    supla_cahnnel_property_getter *property_getter =
-        new supla_cahnnel_property_getter();
+    supla_channel_property_getter *property_getter =
+        new supla_channel_property_getter();
 
     if (aexec && at_config && property_getter) {
       at_config->set_channel_id_if_subject_not_set(channel_id);

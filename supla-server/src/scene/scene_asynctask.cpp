@@ -217,8 +217,8 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
       return serNotExists;
     } else {
       supla_action_executor *action_executor = new supla_action_executor();
-      supla_cahnnel_property_getter *property_getter =
-          new supla_cahnnel_property_getter();
+      supla_channel_property_getter *property_getter =
+          new supla_channel_property_getter();
 
       supla_scene_asynctask *scene = new supla_scene_asynctask(
           caller, user_id, scene_id,

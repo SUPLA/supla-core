@@ -21,7 +21,7 @@
 
 #include "device/abstract_channel_property_getter.h"
 
-class supla_cahnnel_property_getter
+class supla_channel_property_getter
     : public supla_abstract_channel_property_getter {
  protected:
   virtual supla_channel_value *_get_value(int user_id, int device_id,
@@ -40,7 +40,7 @@ class supla_cahnnel_property_getter
                               unsigned char channel_number);
 
  public:
-  virtual ~supla_cahnnel_property_getter(void);
+  virtual ~supla_channel_property_getter(void);
 };
 
 #endif /*PROPERTY_GETTER_H_*/

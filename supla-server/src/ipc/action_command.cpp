@@ -143,8 +143,8 @@ bool supla_action_command::action_copy(int user_id, int device_id,
   if (action_executor) {
     action_executor->set_channel_id(user_id, device_id, channel_id);
 
-    supla_cahnnel_property_getter *property_getter =
-        new supla_cahnnel_property_getter();
+    supla_channel_property_getter *property_getter =
+        new supla_channel_property_getter();
     if (property_getter) {
       action_executor->copy(property_getter, source_device_id,
                             source_channel_id);
