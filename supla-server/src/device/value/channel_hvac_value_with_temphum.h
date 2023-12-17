@@ -31,7 +31,6 @@ class supla_channel_hvac_value_with_temphum : public supla_channel_hvac_value {
   supla_channel_hvac_value_with_temphum(void);
   explicit supla_channel_hvac_value_with_temphum(
       supla_channel_hvac_value *value);
-  virtual ~supla_channel_hvac_value_with_temphum(void);
 
   // !These methods do not affect raw_value!
   void set_temperature(short temperature);
@@ -40,7 +39,7 @@ class supla_channel_hvac_value_with_temphum : public supla_channel_hvac_value {
   short get_humidity(void);
   // ---------------------------------------
 
-  static void extend(supla_channel_value **value,
+  static void expand(supla_channel_value **value,
                      supla_channel_fragment *fragment,
                      supla_abstract_channel_property_getter *getter);
 };

@@ -41,9 +41,6 @@ supla_channel_hvac_value_with_temphum::supla_channel_hvac_value_with_temphum(
   humidity = supla_channel_temphum_value::incorrect_humidity();
 }
 
-supla_channel_hvac_value_with_temphum::~supla_channel_hvac_value_with_temphum(
-    void){};
-
 void supla_channel_hvac_value_with_temphum::set_temperature(short temperature) {
   this->temperature = temperature;
 }
@@ -61,7 +58,7 @@ short supla_channel_hvac_value_with_temphum::get_humidity(void) {
 }
 
 // static
-void supla_channel_hvac_value_with_temphum::extend(
+void supla_channel_hvac_value_with_temphum::expand(
     supla_channel_value **value, supla_channel_fragment *fragment,
     supla_abstract_channel_property_getter *getter) {
   if (!value || !*value || !getter || !getter->get_user_id() || !fragment) {
@@ -99,7 +96,9 @@ void supla_channel_hvac_value_with_temphum::extend(
                 dynamic_cast<supla_channel_temphum_value *>(th_value);
             if (temphum) {
               result->set_temperature(temphum->get_temperature() * 100.0);
-              result->set_humidity(temphum->get_humidity() * 100.0);
+              if (temphum->is_humidity_available()) {
+                result->set_humidity(temphum->get_humidity() * 100.0);
+              }
             }
             delete th_value;
           }
