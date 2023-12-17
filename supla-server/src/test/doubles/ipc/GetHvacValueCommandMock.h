@@ -31,9 +31,8 @@ class GetHvacValueCommandMock : public supla_abstract_get_hvac_value_command {
   explicit GetHvacValueCommandMock(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  MOCK_METHOD3(get_hvac_value,
-               supla_channel_hvac_value *(int user_id, int device_id,
-                                          int channel_id));
+  MOCK_METHOD3(get_hvac_value, supla_channel_hvac_value_with_temphum *(
+                                   int user_id, int device_id, int channel_id));
 };
 
 } /* namespace testing */

@@ -37,7 +37,7 @@ void supla_abstract_get_hvac_value_command::on_command_match(
     const char *params) {
   process_parameters(
       params, [this](int user_id, int device_id, int channel_id) -> bool {
-        supla_channel_hvac_value *hvac_value =
+        supla_channel_hvac_value_with_temphum *hvac_value =
             get_hvac_value(user_id, device_id, channel_id);
         if (!hvac_value) {
           return false;
@@ -45,11 +45,12 @@ void supla_abstract_get_hvac_value_command::on_command_match(
 
         char buffer[50] = {};
 
-        snprintf(buffer, sizeof(buffer), "VALUE:%i,%i,%i,%i,%i",
+        snprintf(buffer, sizeof(buffer), "VALUE:%i,%i,%i,%i,%i,%i,%i",
                  hvac_value->is_on() ? 1 : 0, hvac_value->get_mode(),
                  hvac_value->get_setpoint_temperature_heat(),
                  hvac_value->get_setpoint_temperature_cool(),
-                 hvac_value->get_flags());
+                 hvac_value->get_flags(), hvac_value->get_temperature(),
+                 hvac_value->get_humidity());
 
         delete hvac_value;
 

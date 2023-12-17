@@ -32,6 +32,13 @@ supla_channel_hvac_value_with_temphum::supla_channel_hvac_value_with_temphum(
 }
 
 supla_channel_hvac_value_with_temphum::supla_channel_hvac_value_with_temphum(
+    char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_channel_hvac_value(raw_value) {
+  temperature = supla_channel_temphum_value::incorrect_temperature();
+  humidity = supla_channel_temphum_value::incorrect_humidity();
+}
+
+supla_channel_hvac_value_with_temphum::supla_channel_hvac_value_with_temphum(
     supla_channel_hvac_value *value)
     : supla_channel_hvac_value() {
   if (value) {

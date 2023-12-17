@@ -20,6 +20,8 @@
 
 #include <memory>
 
+#include "device/channel_property_getter.h"
+#include "device/devicechannels.h"
 #include "device/value/channel_valve_value.h"
 #include "user.h"
 
@@ -29,14 +31,24 @@ supla_get_hvac_value_command::supla_get_hvac_value_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_get_hvac_value_command(socket_adapter) {}
 
-supla_channel_hvac_value *supla_get_hvac_value_command::get_hvac_value(
-    int user_id, int device_id, int channel_id) {
-  shared_ptr<supla_device> device =
-      supla_user::get_device(user_id, device_id, channel_id);
+supla_channel_hvac_value_with_temphum *
+supla_get_hvac_value_command::get_hvac_value(int user_id, int device_id,
+                                             int channel_id) {
+  supla_channel_fragment fragment;
+  supla_cahnnel_property_getter getter;
+  supla_channel_value *result =
+      getter.get_value(user_id, device_id, channel_id, &fragment, nullptr);
 
-  if (device != nullptr) {
-    return device->get_channels()->get_channel_value<supla_channel_hvac_value>(
-        channel_id);
+  if (result) {
+    supla_channel_hvac_value_with_temphum::expand(&result, &fragment, &getter);
+
+    supla_channel_hvac_value_with_temphum *temphum_val =
+        dynamic_cast<supla_channel_hvac_value_with_temphum *>(result);
+    if (!temphum_val) {
+      delete result;
+    }
+    return temphum_val;
   }
+
   return nullptr;
 }

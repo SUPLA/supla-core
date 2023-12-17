@@ -27,8 +27,9 @@
 class supla_get_hvac_value_command
     : public supla_abstract_get_hvac_value_command {
  protected:
-  virtual supla_channel_hvac_value *get_hvac_value(int user_id, int device_id,
-                                                   int channel_id);
+  virtual supla_channel_hvac_value_with_temphum *get_hvac_value(int user_id,
+                                                                int device_id,
+                                                                int channel_id);
 
  public:
   explicit supla_get_hvac_value_command(

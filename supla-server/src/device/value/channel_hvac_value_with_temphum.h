@@ -31,6 +31,8 @@ class supla_channel_hvac_value_with_temphum : public supla_channel_hvac_value {
   supla_channel_hvac_value_with_temphum(void);
   explicit supla_channel_hvac_value_with_temphum(
       supla_channel_hvac_value *value);
+  explicit supla_channel_hvac_value_with_temphum(
+      char raw_value[SUPLA_CHANNELVALUE_SIZE]);
 
   // !These methods do not affect raw_value!
   void set_temperature(short temperature);
