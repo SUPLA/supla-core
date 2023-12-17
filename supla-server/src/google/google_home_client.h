@@ -49,6 +49,7 @@ class supla_google_home_client : public supla_voice_assistant_client {
   void add_color_state(void);
   void add_gate_state(void);
   void add_roller_shutter_state(void);
+  void add_thermostat_state(void);
   bool state_report(void);
   bool sync(void);
 };

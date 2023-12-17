@@ -42,6 +42,7 @@ class supla_channel_hvac_value : public supla_channel_value {
   std::string get_setpoint_temperature_str(void);
   std::string get_home_assistant_mode(void);
   std::string get_home_assistant_action(void);
+  std::string get_google_home_mode(void);
   unsigned short get_flags(void);
 
   void set_mode(unsigned char mode);

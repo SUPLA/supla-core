@@ -108,6 +108,15 @@ string supla_channel_hvac_value::get_home_assistant_mode(void) {
   return "off";
 }
 
+string supla_channel_hvac_value::get_google_home_mode(void) {
+  string result = get_home_assistant_mode();
+  if (result == "heat_cool") {
+    result = "heatcool";
+  }
+
+  return result;
+}
+
 std::string supla_channel_hvac_value::get_home_assistant_action(void) {
   unsigned short flags = get_flags();
   unsigned char mode = get_mode();

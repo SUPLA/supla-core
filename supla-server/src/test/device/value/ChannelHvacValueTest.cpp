@@ -173,4 +173,17 @@ TEST_F(ChannelHvacValueTest, getHomeAssistantAction) {
   EXPECT_EQ(value.get_home_assistant_action(), "idle");
 }
 
+TEST_F(ChannelHvacValueTest, getGoogleHomeMode) {
+  supla_channel_hvac_value value;
+  EXPECT_EQ(value.get_google_home_mode(), "off");
+  value.set_mode(SUPLA_HVAC_MODE_HEAT);
+  EXPECT_EQ(value.get_google_home_mode(), "heat");
+  value.set_mode(SUPLA_HVAC_MODE_COOL);
+  EXPECT_EQ(value.get_google_home_mode(), "cool");
+  value.set_mode(SUPLA_HVAC_MODE_AUTO);
+  EXPECT_EQ(value.get_google_home_mode(), "heatcool");
+  value.set_flags(SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE);
+  EXPECT_EQ(value.get_google_home_mode(), "auto");
+}
+
 }  // namespace testing

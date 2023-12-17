@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "device/value/channel_gate_value.h"
+#include "device/value/channel_hvac_value_with_temphum.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
@@ -214,6 +215,20 @@ void supla_google_home_client::add_roller_shutter_state(void) {
                               : 0;
 
   add_open_percent_state(100 - shut_percentage);
+}
+
+void supla_google_home_client::add_thermostat_state(void) {
+  cJSON *state = (cJSON *)get_state_skeleton();
+  if (state) {
+    cJSON *json_color = cJSON_CreateObject();
+    if (json_color) {
+      supla_channel_hvac_value_with_temphum *v =
+          dynamic_cast<supla_channel_hvac_value_with_temphum *>(
+              get_channel_value());
+      if (v) {
+      }
+    }
+  }
 }
 
 bool supla_google_home_client::state_report(void) {
