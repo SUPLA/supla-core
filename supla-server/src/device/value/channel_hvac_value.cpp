@@ -101,7 +101,7 @@ string supla_channel_hvac_value::get_home_assistant_mode(void) {
       return "heat";
     case SUPLA_HVAC_MODE_COOL:
       return "cool";
-    case SUPLA_HVAC_MODE_AUTO:
+    case SUPLA_HVAC_MODE_HEAT_COOL:
       return "heat_cool";
   }
 
@@ -196,7 +196,7 @@ void supla_channel_hvac_value::toggle(void) {
   switch (get_mode()) {
     case SUPLA_HVAC_MODE_HEAT:
     case SUPLA_HVAC_MODE_COOL:
-    case SUPLA_HVAC_MODE_AUTO:
+    case SUPLA_HVAC_MODE_HEAT_COOL:
     case SUPLA_HVAC_MODE_FAN_ONLY:
     case SUPLA_HVAC_MODE_DRY:
     case SUPLA_HVAC_MODE_CMD_TURN_ON:
@@ -220,7 +220,7 @@ void supla_channel_hvac_value::switch_to_program(void) {
 bool supla_channel_hvac_value::is_function_supported(int func) {
   switch (func) {
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
     case SUPLA_CHANNELFNC_HVAC_DRYER:
     case SUPLA_CHANNELFNC_HVAC_FAN:

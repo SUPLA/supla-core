@@ -92,7 +92,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         break;
 
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
         supla_json_config *json_config = get_json_config();
@@ -200,7 +200,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         }
         switch (props->get_func()) {
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
           case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
 
             supla_json_config *json_config = props->get_json_config();

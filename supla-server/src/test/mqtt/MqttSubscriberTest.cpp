@@ -1028,7 +1028,7 @@ TEST_F(MqttSubscriberTest, heatCool) {
 
   EXPECT_CALL(*getValueSetter(), action_hvac_set_parameters(NotNull()))
       .WillOnce([](supla_action_hvac_parameters *params) {
-        EXPECT_EQ(params->get_mode(), SUPLA_HVAC_MODE_AUTO);
+        EXPECT_EQ(params->get_mode(), SUPLA_HVAC_MODE_HEAT_COOL);
       });
 
   getLibAdapter()->on_message_received(

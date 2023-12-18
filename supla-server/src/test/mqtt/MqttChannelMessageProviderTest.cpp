@@ -1226,7 +1226,7 @@ TEST_F(MqttChannelMessageProviderTest, thermostatWithoutHumidity) {
   ASSERT_FALSE(dataExists(provider));
 }
 
-TEST_F(MqttChannelMessageProviderTest, thermostatAuto) {
+TEST_F(MqttChannelMessageProviderTest, thermostatHeatCool) {
   _mqtt_db_data_row_channel_t row_channel;
   fillChannelData(&row_channel);
   provider->set_data_row(&row_channel);
@@ -1238,7 +1238,7 @@ TEST_F(MqttChannelMessageProviderTest, thermostatAuto) {
   row_channel.device_enabled = true;
   row_channel.channel_id = 754;
   row_channel.channel_type = SUPLA_CHANNELTYPE_HVAC;
-  row_channel.channel_func = SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO;
+  row_channel.channel_func = SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL;
 
   TChannelConfig_HVAC raw_config = {};
   raw_config.MainThermometerChannelNo = 15;

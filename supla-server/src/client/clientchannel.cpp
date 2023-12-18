@@ -282,7 +282,7 @@ bool supla_client_channel::remote_update_is_possible(void) {
   if (protocol_version >= 21) {
     switch (Func) {
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
         return true;

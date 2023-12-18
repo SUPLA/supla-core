@@ -1012,7 +1012,8 @@ bool supla_mqtt_abstract_state_message_provider::
     case 3:
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
-          hvac_val && channel_function != SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO
+          hvac_val &&
+                  channel_function != SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL
               ? hvac_val->get_setpoint_temperature_str().c_str()
               : nullptr,
           false, "devices/%i/channels/%i/state/temperature_setpoint",
@@ -1020,7 +1021,8 @@ bool supla_mqtt_abstract_state_message_provider::
     case 4:
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
-          hvac_val && channel_function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO
+          hvac_val &&
+                  channel_function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL
               ? hvac_val->get_setpoint_temperature_cool_str().c_str()
               : nullptr,
           false, "devices/%i/channels/%i/state/temperature_setpoint_cool",
@@ -1028,7 +1030,8 @@ bool supla_mqtt_abstract_state_message_provider::
     case 5:
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size,
-          hvac_val && channel_function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO
+          hvac_val &&
+                  channel_function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL
               ? hvac_val->get_setpoint_temperature_heat_str().c_str()
               : nullptr,
           false, "devices/%i/channels/%i/state/temperature_setpoint_heat",
@@ -1231,7 +1234,7 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
           index, topic_prefix, topic_name, message, message_size);
 
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
       return get_hvac_thermostat_message_at_index(

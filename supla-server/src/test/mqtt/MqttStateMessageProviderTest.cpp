@@ -1657,14 +1657,14 @@ TEST_F(MqttStateMessageProviderTest, hvacThermostat) {
   ASSERT_FALSE(dataExists(&provider));
 }
 
-TEST_F(MqttStateMessageProviderTest, hvacThermostatAuto) {
+TEST_F(MqttStateMessageProviderTest, hvacThermostatHeatCool) {
   char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
   ((THVACValue *)raw_value)->Mode = SUPLA_HVAC_MODE_HEAT;
   ((THVACValue *)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_HEATING;
   ((THVACValue *)raw_value)->SetpointTemperatureCool = 543;
   ((THVACValue *)raw_value)->SetpointTemperatureHeat = 2122;
 
-  SetResultValue(SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO, true,
+  SetResultValue(SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL, true,
                  new supla_channel_hvac_value(raw_value));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,

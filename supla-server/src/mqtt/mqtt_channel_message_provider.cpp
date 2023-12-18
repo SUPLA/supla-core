@@ -314,8 +314,8 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
       snprintf(buf, buf_size, "HVAC_THERMOSTAT");
       break;
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
-      snprintf(buf, buf_size, "HVAC_THERMOSTAT_AUTO");
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+      snprintf(buf, buf_size, "HVAC_THERMOSTAT_HEAT_COOL");
       break;
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
       snprintf(buf, buf_size, "HVAC_THERMOSTAT_DIFFERENTIAL");
@@ -502,7 +502,7 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Digiglass");
       break;
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Thermostat");
@@ -1541,18 +1541,18 @@ bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
   cJSON_AddItemToArray(modes, cJSON_CreateString("off"));
   cJSON_AddItemToArray(modes, cJSON_CreateString("auto"));
 
-  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO ||
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
       row->channel_func == SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS ||
       hvac_raw_cfg.Subfunction == SUPLA_HVAC_SUBFUNCTION_HEAT) {
     cJSON_AddItemToArray(modes, cJSON_CreateString("heat"));
   }
 
-  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO ||
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
       hvac_raw_cfg.Subfunction == SUPLA_HVAC_SUBFUNCTION_COOL) {
     cJSON_AddItemToArray(modes, cJSON_CreateString("cool"));
   }
 
-  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO) {
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL) {
     cJSON_AddItemToArray(modes, cJSON_CreateString("heat_cool"));
   }
 
@@ -1566,7 +1566,7 @@ bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
   ha_json_set_string_param(root, "temp_unit", "C");
   ha_json_set_string_param(root, "temp_step", "0.1");
 
-  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO) {
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL) {
     ha_json_set_short_topic(root, "temp_hi_cmd_t",
                             "set/temperature_setpoint_cool");
     ha_json_set_short_topic(root, "temp_hi_stat_t",
@@ -1721,7 +1721,7 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
       return ha_action_trigger(index, topic_prefix, topic_name, message,
                                message_size);
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:

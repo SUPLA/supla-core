@@ -468,7 +468,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_IC_SECONDS 360                    // ver. >= 21
 #define SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS 410   // ver. >= 11
 #define SUPLA_CHANNELFNC_HVAC_THERMOSTAT 420               // ver. >= 21
-#define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO 422          // ver. >= 21
+#define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL 422     // ver. >= 21
 #define SUPLA_CHANNELFNC_HVAC_DRYER 423                    // ver. >= 21
 #define SUPLA_CHANNELFNC_HVAC_FAN 424                      // ver. >= 21
 #define SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL 425  // ver. >= 21
@@ -786,7 +786,7 @@ typedef struct {
 #define SUPLA_HVAC_MODE_OFF 1
 #define SUPLA_HVAC_MODE_HEAT 2
 #define SUPLA_HVAC_MODE_COOL 3
-#define SUPLA_HVAC_MODE_AUTO 4
+#define SUPLA_HVAC_MODE_HEAT_COOL 4
 #define SUPLA_HVAC_MODE_FAN_ONLY 6
 #define SUPLA_HVAC_MODE_DRY 7
 // TURN ON mode is a command. Device will use it to turn on and then it will
@@ -1623,7 +1623,7 @@ typedef struct {
 #define EM_PHASE_SEQUENCE_VOLTAGE 0x01
 #define EM_PHASE_SEQUENCE_CURRENT 0x02
 
-#if defined(__AVR__) || defined(ESP8266) || defined(ESP32) ||                  \
+#if defined(__AVR__) || defined(ESP8266) || defined(ESP32) || \
     defined(ESP_PLATFORM) || defined(ARDUINO) || defined(SUPLA_DEVICE)
 #define EM_MEASUREMENT_COUNT 1
 #else
@@ -1695,9 +1695,9 @@ typedef struct {
                                              // Vector phase-to-phase balancing
 
   // Voltage phase angle between phase 1 and 2
-  unsigned _supla_int16_t voltage_phase_angle_12;   // * 0.1 degree, 0..360
+  unsigned _supla_int16_t voltage_phase_angle_12;  // * 0.1 degree, 0..360
   // Voltage phase angle between phase 1 and 3
-  unsigned _supla_int16_t voltage_phase_angle_13;   // * 0.1 degree, 0..360
+  unsigned _supla_int16_t voltage_phase_angle_13;  // * 0.1 degree, 0..360
   unsigned char phase_sequence;  // bit 0x1 - voltage, bit 0x2 current
                                  // EM_PHASE_SEQUENCE_*
                                  // bit value: 0 - 123 (clockwise)
@@ -2812,7 +2812,6 @@ typedef struct {
   unsigned char Reserved[48];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
-
 
 #define SUPLA_GENERAL_PURPOSE_MEASUEMENT_CHART_TYPE_LINEAR 0
 #define SUPLA_GENERAL_PURPOSE_MEASUEMENT_CHART_TYPE_BAR 1

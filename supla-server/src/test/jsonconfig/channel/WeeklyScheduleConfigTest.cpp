@@ -45,7 +45,7 @@ TEST_F(WeeklyScheduleConfigTest, setAndGetConfig) {
   sd_config1.Program[2].SetpointTemperatureHeat = 50;
   sd_config1.Program[2].SetpointTemperatureCool = 60;
 
-  sd_config1.Program[3].Mode = SUPLA_HVAC_MODE_AUTO;
+  sd_config1.Program[3].Mode = SUPLA_HVAC_MODE_HEAT_COOL;
   sd_config1.Program[3].SetpointTemperatureHeat = 70;
   sd_config1.Program[3].SetpointTemperatureCool = 80;
 

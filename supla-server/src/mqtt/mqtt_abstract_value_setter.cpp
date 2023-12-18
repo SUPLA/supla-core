@@ -144,7 +144,7 @@ bool supla_mqtt_abstract_value_setter::parse_action(void) {
       supla_action_hvac_parameters p(SUPLA_HVAC_MODE_COOL);
       action_hvac_set_parameters(&p);
     } else if (message_size == 9 && lc_equal("heat_cool")) {
-      supla_action_hvac_parameters p(SUPLA_HVAC_MODE_AUTO);
+      supla_action_hvac_parameters p(SUPLA_HVAC_MODE_HEAT_COOL);
       action_hvac_set_parameters(&p);
     }
     return true;
