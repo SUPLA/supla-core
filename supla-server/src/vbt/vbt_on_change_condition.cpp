@@ -24,7 +24,9 @@
 #include <string>
 
 #include "device/extended_value/channel_em_extended_value.h"
+#include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_hvac_value.h"
@@ -431,6 +433,25 @@ bool supla_vbt_on_change_condition::get_number(
         break;
       case var_name_calculated_value:
         *result = ic->get_calculated_value_dbl();
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  } else if (dynamic_cast<supla_channel_thermostat_extended_value *>(value)) {
+    supla_channel_thermostat_extended_value *thev =
+        dynamic_cast<supla_channel_thermostat_extended_value *>(value);
+
+    // Currently, only heatpol uses this, so we do not need to check the channel
+    // function.
+
+    supla_channel_hp_thermostat_ev_decorator decorator(thev);
+
+    switch (var_name) {
+      case var_name_heating:
+      case var_name_is_on:
+        *result = decorator.is_heating() ? 1 : 0;
         break;
       default:
         return false;
