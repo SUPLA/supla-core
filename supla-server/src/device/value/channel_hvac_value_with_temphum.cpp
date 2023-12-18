@@ -56,12 +56,20 @@ short supla_channel_hvac_value_with_temphum::get_temperature(void) {
   return temperature;
 }
 
+double supla_channel_hvac_value_with_temphum::get_temperature_dbl(void) {
+  return temperature / 100.00;
+}
+
 void supla_channel_hvac_value_with_temphum::set_humidity(short humidity) {
   this->humidity = humidity;
 }
 
 short supla_channel_hvac_value_with_temphum::get_humidity(void) {
   return humidity;
+}
+
+double supla_channel_hvac_value_with_temphum::get_humidity_dbl(void) {
+  return humidity / 100.00;
 }
 
 // static
