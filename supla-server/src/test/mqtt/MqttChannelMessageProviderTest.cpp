@@ -1257,7 +1257,7 @@ TEST_F(MqttChannelMessageProviderTest, thermostatHeatCool) {
       row_channel.device_id, row_channel.channel_id));
 
   ASSERT_TRUE(fetchAndCompare(
-      provider, NULL, "HVAC_THERMOSTAT_AUTO", false,
+      provider, NULL, "HVAC_THERMOSTAT_HEAT_COOL", false,
       "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/function",
       row_channel.device_id, row_channel.channel_id));
 
