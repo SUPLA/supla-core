@@ -21,6 +21,9 @@
 #include "device/value/channel_hvac_value.h"
 #include "devicechannel.h"  // NOLINT
 
+using std::map;
+using std::string;
+
 namespace testing {
 
 TEST_F(ChannelHvacValueTest, mode) {
@@ -184,6 +187,26 @@ TEST_F(ChannelHvacValueTest, getGoogleHomeMode) {
   EXPECT_EQ(value.get_google_home_mode(), "heatcool");
   value.set_flags(SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE);
   EXPECT_EQ(value.get_google_home_mode(), "auto");
+}
+
+TEST_F(ChannelHvacValueTest, replacementMap) {
+  supla_channel_hvac_value value;
+
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue*)raw_value)->SetpointTemperatureCool = 1234;
+  ((THVACValue*)raw_value)->SetpointTemperatureHeat = 5678;
+  value.set_raw_value(raw_value);
+  value.set_mode(SUPLA_HVAC_MODE_HEAT);
+  value.set_flags(SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR |
+                  SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR);
+
+  map<string, string> m = value.get_replacement_map();
+  EXPECT_EQ(m.size(), 5);
+  EXPECT_EQ(m["mode"], "HEAT");
+  EXPECT_EQ(m["setpoint_temperature_cool"], "12.34");
+  EXPECT_EQ(m["setpoint_temperature_heat"], "56.78");
+  EXPECT_EQ(m["heating_or_cooling"], "IDLE");
+  EXPECT_EQ(m["errors"], "THERMOMETER_ERROR, CLOCK_ERROR");
 }
 
 }  // namespace testing

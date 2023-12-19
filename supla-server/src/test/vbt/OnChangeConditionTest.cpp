@@ -370,6 +370,13 @@ TEST_F(OnChangeConditionTest, onChangeTo_allPredictedVarNames) {
   cJSON_Delete(json);
 
   EXPECT_EQ(c.get_var_name(), var_name_is_on);
+
+  json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":1,\"name\":\"is_any_error_set\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_is_any_error_set);
 }
 
 TEST_F(OnChangeConditionTest, onChange_allPredictedVarNames) {
@@ -626,6 +633,12 @@ TEST_F(OnChangeConditionTest, onChange_allPredictedVarNames) {
   cJSON_Delete(json);
 
   EXPECT_EQ(c.get_var_name(), var_name_is_on);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"is_any_error_set\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_is_any_error_set);
 }
 
 TEST_F(OnChangeConditionTest, boolValues) {
@@ -1869,6 +1882,35 @@ TEST_F(OnChangeConditionTest, isOnChanged) {
   EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
 
   ((THVACValue *)raw_value)->IsOn = 0;
+
+  newv.set_raw_value(raw_value);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, anyErrorChanged) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue *)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR;
+
+  supla_channel_hvac_value oldv, newv;
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{\"name\":\"is_any_error_set\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+
+  oldv.set_raw_value(raw_value);
+
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+
+  newv.set_raw_value(raw_value);
+
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+
+  ((THVACValue *)raw_value)->Flags = 0;
 
   newv.set_raw_value(raw_value);
 

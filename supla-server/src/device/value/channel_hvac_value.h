@@ -31,6 +31,7 @@ class supla_channel_hvac_value : public supla_channel_value {
 
   void clear(void);
   unsigned char get_mode(void);
+  std::string mode_to_string(void);
   short get_setpoint_temperature_heat(void);
   double get_setpoint_temperature_heat_dbl(void);
   std::string get_setpoint_temperature_heat_str(void);
@@ -44,6 +45,7 @@ class supla_channel_hvac_value : public supla_channel_value {
   std::string get_home_assistant_action(void);
   std::string get_google_home_mode(void);
   unsigned short get_flags(void);
+  bool is_any_error_set(void);
 
   void set_mode(unsigned char mode);
   void set_setpoint_temperature_heat(short temperature);
@@ -60,6 +62,8 @@ class supla_channel_hvac_value : public supla_channel_value {
   void toggle(void);
   void switch_to_manual(void);
   void switch_to_program(void);
+
+  virtual std::map<std::string, std::string> get_replacement_map(void);
 };
 
 #endif /*CHANNEL_HVAC_VALUE_H_*/

@@ -22,6 +22,7 @@
 
 #include "proto.h"
 
+using std::map;
 using std::string;
 
 supla_channel_hvac_value::supla_channel_hvac_value(void)
@@ -136,6 +137,11 @@ unsigned short supla_channel_hvac_value::get_flags(void) {
   return ((THVACValue*)raw_value)->Flags;
 }
 
+bool supla_channel_hvac_value::is_any_error_set(void) {
+  return (get_flags() & SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR) ||
+         (get_flags() & SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR);
+}
+
 void supla_channel_hvac_value::set_setpoint_temperature_heat(
     short temperature) {
   ((THVACValue*)raw_value)->SetpointTemperatureHeat = temperature;
@@ -214,6 +220,69 @@ void supla_channel_hvac_value::switch_to_manual(void) {
 
 void supla_channel_hvac_value::switch_to_program(void) {
   set_mode(SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE);
+}
+
+string supla_channel_hvac_value::mode_to_string(void) {
+  string mode;
+
+  switch (get_mode()) {
+    case SUPLA_HVAC_MODE_NOT_SET:
+      mode = "NOT_SET";
+      break;
+    case SUPLA_HVAC_MODE_OFF:
+      mode = "OFF";
+      break;
+    case SUPLA_HVAC_MODE_HEAT:
+      mode = "HEAT";
+      break;
+    case SUPLA_HVAC_MODE_COOL:
+      mode = "COOL";
+      break;
+    case SUPLA_HVAC_MODE_HEAT_COOL:
+      mode = "HEAT_COOL";
+      break;
+    case SUPLA_HVAC_MODE_FAN_ONLY:
+      mode = "FAN_ONLY";
+      break;
+    case SUPLA_HVAC_MODE_DRY:
+      mode = "DRY";
+      break;
+  }
+
+  return mode;
+}
+
+map<string, string> supla_channel_hvac_value::get_replacement_map(void) {
+  map<string, string> result = supla_channel_value::get_replacement_map();
+
+  result["mode"] = mode_to_string();
+  result["setpoint_temperature_heat"] = get_setpoint_temperature_heat_str();
+  result["setpoint_temperature_cool"] = get_setpoint_temperature_cool_str();
+
+  string heating_or_cooling = "IDLE";
+  if (is_heating()) {
+    heating_or_cooling = "HEATING";
+  } else if (is_cooling()) {
+    heating_or_cooling = "COOLING";
+  }
+
+  result["heating_or_cooling"] = heating_or_cooling;
+
+  std::string errors;
+  if (get_flags() & SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR) {
+    errors = "THERMOMETER_ERROR";
+  }
+
+  if (get_flags() & SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR) {
+    if (!errors.empty()) {
+      errors.append(", ");
+    }
+    errors.append("CLOCK_ERROR");
+  }
+
+  result["errors"] = errors;
+
+  return result;
 }
 
 // static
