@@ -32,7 +32,8 @@ supla_action_command::supla_action_command(
     supla_abstract_ipc_socket_adapter *socket_adapter, int action)
     : supla_abstract_action_command(socket_adapter, action) {}
 
-void supla_action_command::call_before(shared_ptr<supla_device> device) {
+void supla_action_command::call_before(shared_ptr<supla_device> device,
+                                       int channel_id) {
   // onChannelValueChangeEvent must be called before
   // action call for the potential report to contain
   // AlexaCorrelationToken / GoogleRequestId
@@ -47,7 +48,7 @@ bool supla_action_command::action_open_close(
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    call_before(device);
+    call_before(device, channel_id);
 
     if (open) {
       return device->get_channels()->action_open(get_caller(), channel_id, 0,
@@ -65,7 +66,7 @@ bool supla_action_command::action_turn_on(int user_id, int device_id,
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    call_before(device);
+    call_before(device, channel_id);
 
     return device->get_channels()->set_on(get_caller(), channel_id, 0, 1, true);
   }
@@ -77,7 +78,7 @@ bool supla_action_command::action_turn_off(int user_id, int device_id,
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    call_before(device);
+    call_before(device, channel_id);
 
     return device->get_channels()->set_on(get_caller(), channel_id, 0, 1,
                                           false);
@@ -173,7 +174,7 @@ bool supla_action_command::action_shut(int user_id, int device_id,
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    call_before(device);
+    call_before(device, channel_id);
 
     return device->get_channels()->action_shut(get_caller(), channel_id, 0, 0,
                                                percentage, delta);
@@ -188,7 +189,7 @@ bool supla_action_command::action_hvac_set_parameters(
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    call_before(device);
+    call_before(device, channel_id);
 
     return device->get_channels()->action_hvac_set_parameters(
         get_caller(), channel_id, 0, 1, params);
@@ -216,7 +217,7 @@ bool supla_action_command::action_hvac_switch_to_program_mode(int user_id,
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    call_before(device);
+    call_before(device, channel_id);
 
     return device->get_channels()->action_hvac_switch_to_program_mode(
         get_caller(), channel_id, 0, 1);
@@ -231,7 +232,7 @@ bool supla_action_command::action_hvac_set_temperature(
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    call_before(device);
+    call_before(device, channel_id);
 
     return device->get_channels()->action_hvac_set_temperature(
         get_caller(), channel_id, 0, 1, temperature);
@@ -246,7 +247,7 @@ bool supla_action_command::action_hvac_set_temperatures(
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    call_before(device);
+    call_before(device, channel_id);
 
     return device->get_channels()->action_hvac_set_temperatures(
         get_caller(), channel_id, 0, 1, temperatures);
