@@ -21,9 +21,13 @@
 
 #include <string>
 
+#include "device/device.h"
 #include "ipc/abstract_action_command.h"
 
 class supla_action_command : public supla_abstract_action_command {
+ private:
+  void call_before(std::shared_ptr<supla_device> device);
+
  protected:
   virtual bool action_open_close(int user_id, int device_id, int channel_id,
                                  bool open, const char *alexa_correlation_token,
