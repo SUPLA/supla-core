@@ -110,9 +110,12 @@ bool supla_google_home_state_report_request::make_request(
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
-      supla_channel_hvac_value_with_temphum::expand(&value, &fragment,
-                                                    get_property_getter());
-      client.set_channel_value(value);
+      if (online) {
+        supla_channel_hvac_value_with_temphum::expand(&value, &fragment,
+                                                      get_property_getter());
+        client.set_channel_value(value);
+      }
+
       client.add_thermostat_state();
       break;
     default:

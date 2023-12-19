@@ -220,36 +220,33 @@ void supla_google_home_client::add_roller_shutter_state(void) {
 void supla_google_home_client::add_thermostat_state(void) {
   cJSON *state = (cJSON *)get_state_skeleton();
   if (state) {
-    cJSON *json_color = cJSON_CreateObject();
-    if (json_color) {
-      supla_channel_hvac_value_with_temphum *v =
-          dynamic_cast<supla_channel_hvac_value_with_temphum *>(
-              get_channel_value());
-      if (v) {
-        cJSON_AddStringToObject(state, "thermostatMode",
-                                v->get_google_home_mode().c_str());
+    supla_channel_hvac_value_with_temphum *v =
+        dynamic_cast<supla_channel_hvac_value_with_temphum *>(
+            get_channel_value());
+    if (v) {
+      cJSON_AddStringToObject(state, "thermostatMode",
+                              v->get_google_home_mode().c_str());
 
-        if (v->get_mode() == SUPLA_HVAC_MODE_HEAT_COOL) {
-          cJSON_AddNumberToObject(state, "thermostatTemperatureSetpointHigh",
-                                  v->get_setpoint_temperature_cool_dbl());
-          cJSON_AddNumberToObject(state, "thermostatTemperatureSetpointLow",
-                                  v->get_setpoint_temperature_heat_dbl());
-        } else {
-          cJSON_AddNumberToObject(state, "thermostatTemperatureSetpoint",
-                                  v->get_setpoint_temperature_dbl());
-        }
+      if (v->get_mode() == SUPLA_HVAC_MODE_HEAT_COOL) {
+        cJSON_AddNumberToObject(state, "thermostatTemperatureSetpointHigh",
+                                v->get_setpoint_temperature_cool_dbl());
+        cJSON_AddNumberToObject(state, "thermostatTemperatureSetpointLow",
+                                v->get_setpoint_temperature_heat_dbl());
+      } else {
+        cJSON_AddNumberToObject(state, "thermostatTemperatureSetpoint",
+                                v->get_setpoint_temperature_dbl());
+      }
 
-        if (v->get_temperature() >
-            supla_channel_temphum_value::incorrect_temperature()) {
-          cJSON_AddNumberToObject(state, "thermostatTemperatureAmbient",
-                                  v->get_temperature_dbl());
-        }
+      if (v->get_temperature() >
+          supla_channel_temphum_value::incorrect_temperature()) {
+        cJSON_AddNumberToObject(state, "thermostatTemperatureAmbient",
+                                v->get_temperature_dbl());
+      }
 
-        if (v->get_humidity() >
-            supla_channel_temphum_value::incorrect_humidity()) {
-          cJSON_AddNumberToObject(state, "thermostatHumidityAmbient",
-                                  v->get_humidity_dbl());
-        }
+      if (v->get_humidity() >
+          supla_channel_temphum_value::incorrect_humidity()) {
+        cJSON_AddNumberToObject(state, "thermostatHumidityAmbient",
+                                v->get_humidity_dbl());
       }
     }
   }
