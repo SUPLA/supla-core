@@ -1257,8 +1257,7 @@ bool supla_device_channels::action_hvac_set_parameters(
                     supla_channel_thermostat_extended_value>(false);
             if (th) {
               supla_channel_hp_thermostat_ev_decorator decorator(th);
-              if (decorator.get_hvac_flags() &
-                  SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE) {
+              if (decorator.get_state_flags() & HP_STATUS_PROGRAMMODE) {
                 // When setting the temperature, force switching to manual mode.
                 req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
                 req->Data[0] = 0;  // Do not force the power on
@@ -1409,8 +1408,7 @@ bool supla_device_channels::action_hvac_set_temperature(
                     false);
         if (th) {
           supla_channel_hp_thermostat_ev_decorator decorator(th);
-          if (decorator.get_hvac_flags() &
-              SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE) {
+          if (decorator.get_state_flags() & HP_STATUS_PROGRAMMODE) {
             // When setting the temperature, force switching to manual mode.
             if (device && device->get_connection() &&
                 device->get_connection()
