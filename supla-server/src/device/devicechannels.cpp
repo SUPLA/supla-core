@@ -28,6 +28,7 @@
 #include "db/database.h"
 #include "device.h"
 #include "device/channel_property_getter.h"
+#include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_hvac_value.h"
 #include "device/value/channel_rgbw_value.h"
@@ -1229,7 +1230,28 @@ bool supla_device_channels::action_hvac_set_parameters(
       channel_id, &hp_match,
       [params, this](supla_device_channel *channel,
                      TSD_DeviceCalCfgRequest *req) -> bool {
-        switch (params->get_mode()) {
+        unsigned char mode = params->get_mode();
+
+        if (params->get_flags() &
+            SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET) {
+          supla_channel_thermostat_extended_value *th =
+              channel
+                  ->get_extended_value<supla_channel_thermostat_extended_value>(
+                      false);
+          if (th) {
+            supla_channel_hp_thermostat_ev_decorator decorator(th);
+            if (decorator.get_hvac_flags() &
+                SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE) {
+              mode = SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL;  // When setting the
+                                                            // temperature,
+                                                            // force switching
+                                                            // to manual mode.
+            }
+            delete th;
+          }
+        }
+
+        switch (mode) {
           case SUPLA_HVAC_MODE_HEAT:
           case SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL:
             req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
@@ -1375,8 +1397,8 @@ bool supla_device_channels::action_hvac_set_temperature(
   bool hp_match = false;
   bool result = hp_action(
       channel_id, &hp_match,
-      [temperature](supla_device_channel *channel,
-                    TSD_DeviceCalCfgRequest *req) -> bool {
+      [temperature, this](supla_device_channel *channel,
+                            TSD_DeviceCalCfgRequest *req) -> bool {
         req->Command = SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE;
         req->DataSize = sizeof(TThermostatTemperatureCfg);
 
@@ -1384,6 +1406,27 @@ bool supla_device_channels::action_hvac_set_temperature(
 
         cfg->Index = TEMPERATURE_INDEX1;
         cfg->Temperature[0] = temperature->get_temperature();
+
+        supla_channel_thermostat_extended_value *th =
+            channel
+                ->get_extended_value<supla_channel_thermostat_extended_value>(
+                    false);
+        if (th) {
+          supla_channel_hp_thermostat_ev_decorator decorator(th);
+          if (decorator.get_hvac_flags() &
+              SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE) {
+            // When setting the temperature, force switching to manual mode.
+            if (device && device->get_connection() &&
+                device->get_connection()
+                    ->get_srpc_adapter()
+                    ->sd_async_device_calcfg_request(req)) {
+              req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
+              req->Data[0] = 1;
+              req->DataSize = 1;
+            }
+          }
+          delete th;
+        }
 
         return true;
       });
