@@ -1201,14 +1201,16 @@ bool supla_device_channels::action_hvac(
   access_channel(channel_id, [&](supla_device_channel *channel) -> void {
     supla_channel_hvac_value *hvac_value =
         channel->get_value<supla_channel_hvac_value>();
-    if (hvac_value && on_value(channel, hvac_value)) {
-      char value[SUPLA_CHANNELVALUE_SIZE] = {};
-      hvac_value->get_raw_value(value);
-      delete hvac_value;
+    if (hvac_value) {
+      if (on_value(channel, hvac_value)) {
+        char value[SUPLA_CHANNELVALUE_SIZE] = {};
+        hvac_value->get_raw_value(value);
 
-      async_set_channel_value(channel, caller, group_id, eol, value, duration,
-                              false);
-      result = true;
+        async_set_channel_value(channel, caller, group_id, eol, value, duration,
+                                false);
+        result = true;
+      }
+      delete hvac_value;
     }
   });
 
