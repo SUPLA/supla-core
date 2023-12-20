@@ -1422,6 +1422,18 @@ bool supla_device_channels::action_hvac_set_temperature(
               delete json_config;
             }
           } break;
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL: {
+            if (value->get_mode() == SUPLA_HVAC_MODE_COOL) {
+              value->set_setpoint_temperature_cool(
+                  temperature->get_temperature());
+              result = true;
+            } else {
+              value->set_setpoint_temperature_heat(
+                  temperature->get_temperature());
+              result = true;
+            }
+
+          } break;
         }
 
         return result;
