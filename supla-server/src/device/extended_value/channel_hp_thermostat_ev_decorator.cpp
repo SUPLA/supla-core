@@ -74,7 +74,7 @@ unsigned short supla_channel_hp_thermostat_ev_decorator::get_hvac_flags(void) {
     result |= SUPLA_HVAC_VALUE_FLAG_HEATING;
   }
 
-  if (flags & HP_STATUS_PROGRAMMODE) {
+  if ((flags & HP_STATUS_PROGRAMMODE) && (flags & HP_STATUS_POWERON)) {
     result |= SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE;
   }
 
