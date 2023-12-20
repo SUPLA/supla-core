@@ -1406,8 +1406,7 @@ bool supla_device_channels::action_hvac_set_temperature(
                 temperature->get_temperature());
             result = true;
             break;
-          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL: {
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT: {
             supla_json_config *json_config = channel->get_json_config();
             if (json_config) {
               hvac_config hvac(json_config);
