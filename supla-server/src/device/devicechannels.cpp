@@ -1396,6 +1396,7 @@ bool supla_device_channels::action_hvac_set_temperature(
       caller, channel_id, group_id, eol, 0,
       [&](supla_device_channel *channel,
           supla_channel_hvac_value *value) -> bool {
+        unsigned char mode = value->get_mode();
         value->clear();
         bool result = false;
         switch (channel->get_func()) {
@@ -1405,7 +1406,8 @@ bool supla_device_channels::action_hvac_set_temperature(
                 temperature->get_temperature());
             result = true;
             break;
-          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT: {
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL: {
             supla_json_config *json_config = channel->get_json_config();
             if (json_config) {
               hvac_config hvac(json_config);
@@ -1425,7 +1427,7 @@ bool supla_device_channels::action_hvac_set_temperature(
             }
           } break;
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL: {
-            if (value->get_mode() == SUPLA_HVAC_MODE_COOL) {
+            if (mode == SUPLA_HVAC_MODE_COOL) {
               value->set_setpoint_temperature_cool(
                   temperature->get_temperature());
               result = true;
