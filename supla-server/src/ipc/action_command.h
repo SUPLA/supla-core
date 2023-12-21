@@ -19,6 +19,7 @@
 #ifndef SUPLA_ACTION_COMMAND_H_
 #define SUPLA_ACTION_COMMAND_H_
 
+#include <memory>
 #include <string>
 
 #include "device/device.h"

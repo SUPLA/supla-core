@@ -19,6 +19,7 @@
 #ifndef CHANNEL_HVAC_VALUE_H_
 #define CHANNEL_HVAC_VALUE_H_
 
+#include <map>
 #include <string>
 
 #include "device/value/channel_value.h"

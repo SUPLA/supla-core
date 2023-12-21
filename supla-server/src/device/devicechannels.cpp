@@ -1472,7 +1472,6 @@ bool supla_device_channels::action_hvac_set_temperature(
                   temperature->get_temperature());
               result = true;
             }
-
           } break;
         }
 
