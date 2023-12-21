@@ -123,7 +123,7 @@ TEST_F(ChannelHpThermostatEvDecoratorTest, getHvacFlags) {
   }
 
   {
-    native_th_ev.Flags[4] = HP_STATUS_PROGRAMMODE;
+    native_th_ev.Flags[4] = HP_STATUS_PROGRAMMODE | HP_STATUS_POWERON;
     srpc_evtool_v1_thermostatextended2extended(&native_th_ev, &native_ev);
     supla_channel_thermostat_extended_value ev(&native_ev);
     supla_channel_hp_thermostat_ev_decorator decorator(&ev);
@@ -132,13 +132,30 @@ TEST_F(ChannelHpThermostatEvDecoratorTest, getHvacFlags) {
   }
 
   {
-    native_th_ev.Flags[4] = HP_STATUS_PROGRAMMODE | HP_STATUS_HEATING;
+    native_th_ev.Flags[4] = HP_STATUS_PROGRAMMODE;
+    srpc_evtool_v1_thermostatextended2extended(&native_th_ev, &native_ev);
+    supla_channel_thermostat_extended_value ev(&native_ev);
+    supla_channel_hp_thermostat_ev_decorator decorator(&ev);
+    EXPECT_EQ(decorator.get_hvac_flags(), 0);
+  }
+
+  {
+    native_th_ev.Flags[4] =
+        HP_STATUS_PROGRAMMODE | HP_STATUS_HEATING | HP_STATUS_POWERON;
     srpc_evtool_v1_thermostatextended2extended(&native_th_ev, &native_ev);
     supla_channel_thermostat_extended_value ev(&native_ev);
     supla_channel_hp_thermostat_ev_decorator decorator(&ev);
     EXPECT_EQ(
         decorator.get_hvac_flags(),
         SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE | SUPLA_HVAC_VALUE_FLAG_HEATING);
+  }
+
+  {
+    native_th_ev.Flags[4] = HP_STATUS_PROGRAMMODE | HP_STATUS_HEATING;
+    srpc_evtool_v1_thermostatextended2extended(&native_th_ev, &native_ev);
+    supla_channel_thermostat_extended_value ev(&native_ev);
+    supla_channel_hp_thermostat_ev_decorator decorator(&ev);
+    EXPECT_EQ(decorator.get_hvac_flags(), SUPLA_HVAC_VALUE_FLAG_HEATING);
   }
 }
 
