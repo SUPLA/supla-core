@@ -24,6 +24,10 @@
 supla_alexa_change_report_throttling
     supla_alexa_change_report_throttling::instance;
 
+int supla_alexa_change_report_throttling::get_default_delay_time(int func) {
+  return 500000;  // 0.5 sek.
+}
+
 supla_alexa_change_report_throttling::supla_alexa_change_report_throttling()
     : supla_http_throttling() {}
 
