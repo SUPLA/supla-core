@@ -33,7 +33,7 @@ namespace testing {
 
 TEST_F(ChannelHvacValueWithTempHumTest, setGetTemperature) {
   supla_channel_hvac_value_with_temphum vth;
-  EXPECT_EQ(vth.get_temperature(),
+  EXPECT_EQ(vth.get_temperature_dbl(),
             supla_channel_temphum_value::incorrect_temperature());
   vth.set_temperature(123);
   EXPECT_EQ(vth.get_temperature(), 123);
@@ -41,7 +41,7 @@ TEST_F(ChannelHvacValueWithTempHumTest, setGetTemperature) {
 
 TEST_F(ChannelHvacValueWithTempHumTest, setGetHumidity) {
   supla_channel_hvac_value_with_temphum vth;
-  EXPECT_EQ(vth.get_humidity(),
+  EXPECT_EQ(vth.get_humidity_dbl(),
             supla_channel_temphum_value::incorrect_humidity());
   vth.set_humidity(321);
   EXPECT_EQ(vth.get_humidity(), 321);

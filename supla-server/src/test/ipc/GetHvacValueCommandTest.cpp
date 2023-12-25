@@ -69,7 +69,7 @@ TEST_F(GetHvacValueCommandTest, getHvacValueWithoutTemperatureAndHumidity) {
   EXPECT_CALL(*cmd, get_hvac_value(10, 20, 30)).WillOnce(Return(hvac));
 
   commandProcessingTest("GET-HVAC-VALUE:10,20,30\n",
-                        "VALUE:1,3,12345,14567,3,-273,-1\n");
+                        "VALUE:1,3,12345,14567,3,-27300,-100\n");
 }
 
 TEST_F(GetHvacValueCommandTest, getHvacValueWithoutHumidity) {
@@ -86,7 +86,7 @@ TEST_F(GetHvacValueCommandTest, getHvacValueWithoutHumidity) {
   EXPECT_CALL(*cmd, get_hvac_value(10, 20, 30)).WillOnce(Return(hvac));
 
   commandProcessingTest("GET-HVAC-VALUE:10,20,30\n",
-                        "VALUE:1,3,12345,14567,3,123,-1\n");
+                        "VALUE:1,3,12345,14567,3,123,-100\n");
 }
 
 TEST_F(GetHvacValueCommandTest, getHvacValueWithFilure) {
