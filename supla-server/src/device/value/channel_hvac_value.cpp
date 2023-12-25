@@ -133,6 +133,18 @@ std::string supla_channel_hvac_value::get_home_assistant_action(void) {
   return "idle";
 }
 
+string supla_channel_hvac_value::get_alexa_mode(void) {
+  switch (get_mode()) {
+    case SUPLA_HVAC_MODE_HEAT:
+    case SUPLA_HVAC_MODE_COOL:
+      return mode_to_string();
+    case SUPLA_HVAC_MODE_HEAT_COOL:
+      return "AUTO";
+  }
+
+  return "OFF";
+}
+
 unsigned short supla_channel_hvac_value::get_flags(void) {
   return ((THVACValue*)raw_value)->Flags;
 }

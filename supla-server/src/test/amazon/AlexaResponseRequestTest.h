@@ -23,6 +23,7 @@
 
 #include "asynctask/AsyncTaskTest.h"
 #include "caller.h"
+#include "device/extended_value/channel_extended_value.h"
 #include "device/value/channel_value.h"
 #include "doubles/amazon/AlexaCredentialsMock.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
@@ -44,6 +45,12 @@ class AlexaResponseRequestTest : public AsyncTaskTest {
 
   void makeTest(int func, bool online, supla_channel_value *value,
                 const char *expectedPayload);
+
+  void hvacThermostatTest(int func, bool online, supla_channel_value *hvacValue,
+                          supla_channel_value *tempHumValue,
+                          supla_channel_extended_value *extendedValue,
+                          const char *expectedPayload,
+                          const std::string &correlation_token);
 };
 
 } /* namespace testing */

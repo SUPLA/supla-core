@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "device/value/channel_binary_sensor_value.h"
+#include "device/value/channel_hvac_value_with_temphum.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
@@ -295,6 +296,59 @@ cJSON *supla_alexa_client::get_contact_sensor_properties(bool hi) {
     cJSON_AddStringToObject(props, "value", hi ? "NOT_DETECTED" : "DETECTED");
     cJSON_AddStringToObject(props, "timeOfSample", zulu_time.c_str());
     cJSON_AddNumberToObject(props, "uncertaintyInMilliseconds", 50);
+  }
+
+  return props;
+}
+
+cJSON *supla_alexa_client::get_thermostat_mode_properties(string mode) {
+  cJSON *props = cJSON_CreateObject();
+  if (props) {
+    cJSON_AddStringToObject(props, "namespace", "Alexa.ThermostatController");
+    cJSON_AddStringToObject(props, "name", "thermostatMode");
+    cJSON_AddStringToObject(props, "value", mode.c_str());
+    cJSON_AddStringToObject(props, "timeOfSample", zulu_time.c_str());
+    cJSON_AddNumberToObject(props, "uncertaintyInMilliseconds", 50);
+  }
+
+  return props;
+}
+
+cJSON *supla_alexa_client::get_thermostat_setpoint_properties(
+    string name, double temperature) {
+  cJSON *props = cJSON_CreateObject();
+  if (props) {
+    cJSON_AddStringToObject(props, "namespace", "Alexa.ThermostatController");
+    cJSON_AddStringToObject(props, "name", name.c_str());
+
+    cJSON *value = cJSON_CreateObject();
+    if (value) {
+      cJSON_AddNumberToObject(value, "value", temperature);
+      cJSON_AddStringToObject(value, "scale", "CELSIUS");
+      cJSON_AddItemToObject(props, "value", value);
+      cJSON_AddStringToObject(props, "timeOfSample", zulu_time.c_str());
+      cJSON_AddNumberToObject(props, "uncertaintyInMilliseconds", 50);
+    }
+  }
+
+  return props;
+}
+
+cJSON *supla_alexa_client::get_temperature_sensor_properties(
+    double temperature) {
+  cJSON *props = cJSON_CreateObject();
+  if (props) {
+    cJSON_AddStringToObject(props, "namespace", "Alexa.TemperatureSensor");
+    cJSON_AddStringToObject(props, "name", "temperature");
+
+    cJSON *value = cJSON_CreateObject();
+    if (value) {
+      cJSON_AddNumberToObject(value, "value", temperature);
+      cJSON_AddStringToObject(value, "scale", "CELSIUS");
+      cJSON_AddItemToObject(props, "value", value);
+      cJSON_AddStringToObject(props, "timeOfSample", zulu_time.c_str());
+      cJSON_AddNumberToObject(props, "uncertaintyInMilliseconds", 50);
+    }
   }
 
   return props;
@@ -726,6 +780,28 @@ void supla_alexa_client::add_contact_sensor(void) {
         dynamic_cast<supla_channel_binary_sensor_value *>(get_channel_value());
     if (bs_val) {
       add_props(get_contact_sensor_properties(bs_val->is_hi()));
+    }
+  }
+}
+
+void supla_alexa_client::add_thermostat_controller(void) {
+  if (is_channel_connected()) {
+    supla_channel_hvac_value_with_temphum *hvac_val =
+        dynamic_cast<supla_channel_hvac_value_with_temphum *>(
+            get_channel_value());
+    if (hvac_val) {
+      add_props(get_thermostat_mode_properties(hvac_val->get_alexa_mode()));
+      if (hvac_val->get_mode() == SUPLA_HVAC_MODE_HEAT_COOL) {
+        add_props(get_thermostat_setpoint_properties(
+            "lowerSetpoint", hvac_val->get_setpoint_temperature_heat_dbl()));
+        add_props(get_thermostat_setpoint_properties(
+            "upperSetpoint", hvac_val->get_setpoint_temperature_cool_dbl()));
+      } else {
+        add_props(get_thermostat_setpoint_properties(
+            "targetSetpoint", hvac_val->get_setpoint_temperature_dbl()));
+      }
+      add_props(
+          get_temperature_sensor_properties(hvac_val->get_temperature_dbl()));
     }
   }
 }

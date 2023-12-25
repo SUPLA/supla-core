@@ -191,6 +191,17 @@ TEST_F(ChannelHvacValueTest, getGoogleHomeMode) {
   EXPECT_EQ(value.get_google_home_mode(), "auto");
 }
 
+TEST_F(ChannelHvacValueTest, getAlexaMode) {
+  supla_channel_hvac_value value;
+  EXPECT_EQ(value.get_alexa_mode(), "OFF");
+  value.set_mode(SUPLA_HVAC_MODE_HEAT);
+  EXPECT_EQ(value.get_alexa_mode(), "HEAT");
+  value.set_mode(SUPLA_HVAC_MODE_COOL);
+  EXPECT_EQ(value.get_alexa_mode(), "COOL");
+  value.set_mode(SUPLA_HVAC_MODE_HEAT_COOL);
+  EXPECT_EQ(value.get_alexa_mode(), "AUTO");
+}
+
 TEST_F(ChannelHvacValueTest, replacementMap) {
   supla_channel_hvac_value value;
 

@@ -87,6 +87,9 @@ class supla_alexa_client : public supla_voice_assistant_client {
   cJSON *get_color_controller_properties(int color, short brightness);
   cJSON *get_range_controller_properties(short range);
   cJSON *get_percentage_controller_properties(short percentage);
+  cJSON *get_thermostat_mode_properties(std::string mode);
+  cJSON *get_thermostat_setpoint_properties(std::string name, double temperature);
+  cJSON *get_temperature_sensor_properties(double temperature);
   cJSON *get_contact_sensor_properties(bool hi);
   cJSON *get_endpoint_health_properties(bool ok);
   cJSON *get_header(const char name[], bool use_correlation_token);
@@ -115,6 +118,7 @@ class supla_alexa_client : public supla_voice_assistant_client {
   void add_range_controller(void);
   void add_percentage_controller(void);
   void add_contact_sensor(void);
+  void add_thermostat_controller(void);
 
   bool send_response(void);
   bool send_change_report(void);

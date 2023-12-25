@@ -27,15 +27,15 @@
 supla_channel_hvac_value_with_temphum::supla_channel_hvac_value_with_temphum(
     void)
     : supla_channel_hvac_value() {
-  temperature = supla_channel_temphum_value::incorrect_temperature();
-  humidity = supla_channel_temphum_value::incorrect_humidity();
+  temperature = supla_channel_temphum_value::incorrect_temperature() * 100.0;
+  humidity = supla_channel_temphum_value::incorrect_humidity() * 100.0;
 }
 
 supla_channel_hvac_value_with_temphum::supla_channel_hvac_value_with_temphum(
     char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_hvac_value(raw_value) {
-  temperature = supla_channel_temphum_value::incorrect_temperature();
-  humidity = supla_channel_temphum_value::incorrect_humidity();
+  temperature = supla_channel_temphum_value::incorrect_temperature() * 100.0;
+  humidity = supla_channel_temphum_value::incorrect_humidity() * 100.0;
 }
 
 supla_channel_hvac_value_with_temphum::supla_channel_hvac_value_with_temphum(
@@ -44,8 +44,8 @@ supla_channel_hvac_value_with_temphum::supla_channel_hvac_value_with_temphum(
   if (value) {
     value->get_raw_value(raw_value);
   }
-  temperature = supla_channel_temphum_value::incorrect_temperature();
-  humidity = supla_channel_temphum_value::incorrect_humidity();
+  temperature = supla_channel_temphum_value::incorrect_temperature() * 100.0;
+  humidity = supla_channel_temphum_value::incorrect_humidity() * 100.0;
 }
 
 void supla_channel_hvac_value_with_temphum::set_temperature(short temperature) {
