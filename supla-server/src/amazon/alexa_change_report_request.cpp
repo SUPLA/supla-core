@@ -23,6 +23,7 @@
 #include "amazon/alexa_client.h"
 #include "amazon/alexa_response_search_condition.h"
 #include "device/channel_property_getter.h"
+#include "device/value/channel_hvac_value_with_temphum.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "jsonconfig/channel/alexa_config.h"
 #include "svrcfg.h"
@@ -55,16 +56,16 @@ bool supla_alexa_change_report_request::make_request(
   set_zulu_time("");
   set_message_id("");
 
-  int func = 0;
+  supla_channel_fragment fragment;
   bool online = false;
 
-  supla_channel_value *value = get_channel_value(&func, &online);
+  supla_channel_value *value = get_channel_value(&fragment, &online);
 
   client.set_channel_connected(online);
   client.set_channel_value(value);
   client.set_cause_type(get_caller());
 
-  switch (func) {
+  switch (fragment.get_function()) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
@@ -100,6 +101,19 @@ bool supla_alexa_change_report_request::make_request(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       client.add_range_controller();
       client.add_percentage_controller();
+      break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      if (online) {
+        supla_channel_hvac_value_with_temphum::expand(&value, &fragment,
+                                                      get_property_getter());
+        client.set_channel_value(value);
+      }
+
+      client.add_thermostat_controller();
       break;
   }
 
@@ -144,6 +158,11 @@ bool supla_alexa_change_report_request::is_function_allowed(int func) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       return true;
     default:
       return false;

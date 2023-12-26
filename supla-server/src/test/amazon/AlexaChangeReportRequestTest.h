@@ -44,6 +44,11 @@ class AlexaChangeReportRequestTest : public AsyncTaskTest {
 
   void makeTest(int func, bool online, supla_channel_value *value,
                 const char *expectedPayload1, const char *expectedPayload2);
+
+  void hvacThermostatTest(int func, bool online, supla_channel_value *hvacValue,
+                          supla_channel_value *tempHumValue,
+                          supla_channel_extended_value *extendedValue,
+                          const char *expectedPayload);
 };
 
 } /* namespace testing */
