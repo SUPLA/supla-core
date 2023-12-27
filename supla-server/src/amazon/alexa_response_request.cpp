@@ -36,7 +36,8 @@ supla_alexa_response_request::supla_alexa_response_request(
     const string &correlation_token)
     : supla_alexa_request(supla_caller(), user_id, device_id, channel_id, queue,
                           pool, property_getter, credentials) {
-  set_delay_usec(1500000);  // 1.5 sec.
+  set_delay_usec(
+      5000000);  // 5 sec. - Try to send this request after ChangeReport.
   set_timeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
   this->correlation_token = correlation_token;
 }
