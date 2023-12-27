@@ -18,9 +18,9 @@
 
 #include "google_home_sync_request.h"
 
+#include "asynctask/voice_assistant_sync_thread_pool.h"
 #include "google/google_home_client.h"
 #include "google/google_home_sync_search_condition.h"
-#include "google/google_home_sync_thread_pool.h"
 #include "svrcfg.h"
 #include "user/user.h"
 
@@ -74,7 +74,7 @@ void supla_google_home_sync_request::new_request(supla_user *user) {
     supla_google_home_sync_request *request =
         new supla_google_home_sync_request(
             user->getUserID(), supla_asynctask_queue::global_instance(),
-            supla_google_home_sync_thread_pool::global_instance(),
+            supla_voice_assistant_sync_thread_pool::global_instance(),
             user->googleHomeCredentials());
 
     request->start();

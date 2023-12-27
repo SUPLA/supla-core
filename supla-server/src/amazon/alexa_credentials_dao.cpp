@@ -24,15 +24,27 @@
 
 using std::string;
 
+#define CLOUD_TOKEN_MAXSIZE 256
 #define ALEXA_TOKEN_MAXSIZE 1024
 #define ALEXA_REGION_MAXSIZE 5
 
 supla_amazon_alexa_credentials_dao::supla_amazon_alexa_credentials_dao(
     supla_abstract_db_access_provider *dba) {
   this->dba = dba;
+  this->release_dba = false;
 }
 
-supla_amazon_alexa_credentials_dao::~supla_amazon_alexa_credentials_dao() {}
+supla_amazon_alexa_credentials_dao::supla_amazon_alexa_credentials_dao(
+    supla_abstract_db_access_provider *dba, bool release_dba) {
+  this->dba = dba;
+  this->release_dba = release_dba;
+}
+
+supla_amazon_alexa_credentials_dao::~supla_amazon_alexa_credentials_dao() {
+  if (release_dba && dba) {
+    delete dba;
+  }
+}
 
 bool supla_amazon_alexa_credentials_dao::get(int user_id, string *access_token,
                                              string *refresh_token,
@@ -205,4 +217,58 @@ void supla_amazon_alexa_credentials_dao::remove(int user_id) {
   if (!already_connected) {
     dba->disconnect();
   }
+}
+
+string supla_amazon_alexa_credentials_dao::get_cloud_access_token(int user_id) {
+  string result = "";
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return result;
+  }
+
+  char sql[] = "CALL `supla_oauth_add_token_for_alexa_discover`(?)";
+
+  MYSQL_STMT *stmt = NULL;
+
+  MYSQL_BIND pbind = {};
+
+  pbind.buffer_type = MYSQL_TYPE_LONG;
+  pbind.buffer = (char *)&user_id;
+
+  if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
+    MYSQL_BIND rbind = {};
+
+    char access_token[CLOUD_TOKEN_MAXSIZE] = {};
+    unsigned long access_token_size = 0;
+    my_bool access_token_is_null = true;
+
+    rbind.buffer_type = MYSQL_TYPE_STRING;
+    rbind.buffer = access_token;
+    rbind.buffer_length = sizeof(access_token);
+    rbind.length = &access_token_size;
+    rbind.is_null = &access_token_is_null;
+
+    if (mysql_stmt_bind_result(stmt, &rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        dba->set_terminating_byte(access_token, sizeof(access_token),
+                                  access_token_size, access_token_is_null);
+
+        result.append(access_token);
+      }
+    }
+    mysql_stmt_close(stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
 }

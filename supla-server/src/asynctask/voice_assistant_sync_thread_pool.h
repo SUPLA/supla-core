@@ -23,10 +23,10 @@
 
 #include "http/asynctask_http_thread_pool.h"
 
-class supla_google_home_sync_thread_pool
+class supla_voice_assistant_sync_thread_pool
     : public supla_asynctask_http_thread_pool {
  private:
-  static supla_google_home_sync_thread_pool *_global_instance;
+  static supla_voice_assistant_sync_thread_pool *_global_instance;
 
  protected:
   virtual int tasks_per_thread(void);
@@ -34,9 +34,9 @@ class supla_google_home_sync_thread_pool
                                  size_t thread_count);
 
  public:
-  explicit supla_google_home_sync_thread_pool(supla_asynctask_queue *queue);
-  virtual ~supla_google_home_sync_thread_pool(void);
-  static supla_google_home_sync_thread_pool *global_instance(void);
+  explicit supla_voice_assistant_sync_thread_pool(supla_asynctask_queue *queue);
+  virtual ~supla_voice_assistant_sync_thread_pool(void);
+  static supla_voice_assistant_sync_thread_pool *global_instance(void);
   virtual std::string pool_name(void);
   virtual unsigned int thread_count_limit(void);
 };

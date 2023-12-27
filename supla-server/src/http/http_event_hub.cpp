@@ -19,6 +19,7 @@
 #include "http_event_hub.h"
 
 #include "amazon/alexa_change_report_request.h"
+#include "amazon/alexa_discover_request.h"
 #include "amazon/alexa_response_request.h"
 #include "google/google_home_state_report_request.h"
 #include "google/google_home_sync_request.h"
@@ -62,9 +63,10 @@ void supla_http_event_hub::on_user_reconnect(supla_user *user,
 }
 
 // static
-void supla_http_event_hub::on_google_home_sync_needed(
+void supla_http_event_hub::on_voice_assistant_sync_needed(
     supla_user *user, const supla_caller &caller) {
   supla_google_home_sync_request::new_request(user);
+  supla_alexa_discover_request::new_request(user);
 }
 
 // static

@@ -98,9 +98,9 @@ class supla_alexa_client : public supla_voice_assistant_client {
   cJSON *get_response(void);
   cJSON *get_change_report(void);
   cJSON *get_unrechable_error_response(void);
-  int perform_post_request(char *data, int *http_result_code);
+  int perform_post_request(const char *data, int *http_result_code);
   void refresh_token(void);
-  int perform_post_request(char *data);
+  int perform_post_request(const char *data);
 
  public:
   explicit supla_alexa_client(int channel_id,
@@ -123,6 +123,7 @@ class supla_alexa_client : public supla_voice_assistant_client {
 
   bool send_response(void);
   bool send_change_report(void);
+  bool send_payload(std::string payload);
 };
 
 #endif /* AMAZON_ALEXACLIENT_H_ */

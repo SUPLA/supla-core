@@ -39,7 +39,7 @@ class supla_http_event_hub {
 
   static void on_user_reconnect(supla_user *user, const supla_caller &caller);
 
-  static void on_google_home_sync_needed(supla_user *user,
+  static void on_voice_assistant_sync_needed(supla_user *user,
                                          const supla_caller &caller);
 
   static void on_actions_triggered(const supla_caller &caller, supla_user *user,

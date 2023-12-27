@@ -544,7 +544,7 @@ cJSON *supla_alexa_client::get_unrechable_error_response(void) {
   return root;
 }
 
-int supla_alexa_client::perform_post_request(char *data,
+int supla_alexa_client::perform_post_request(const char *data,
                                              int *http_result_code) {
   int result = POST_RESULT_UNKNOWN_ERROR;
 
@@ -665,7 +665,7 @@ void supla_alexa_client::refresh_token(void) {
   get_credentials()->refresh_unlock();
 }
 
-int supla_alexa_client::perform_post_request(char *data) {
+int supla_alexa_client::perform_post_request(const char *data) {
   if (!get_credentials()->is_access_token_exists()) {
     return POST_RESULT_TOKEN_DOES_NOT_EXISTS;
   }
@@ -850,4 +850,8 @@ bool supla_alexa_client::send_change_report(void) {
   }
 
   return result == POST_RESULT_SUCCESS;
+}
+
+bool supla_alexa_client::send_payload(std::string payload) {
+  return perform_post_request(payload.c_str()) == POST_RESULT_SUCCESS;
 }

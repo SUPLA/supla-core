@@ -818,7 +818,7 @@ void supla_user::set_caption(std::shared_ptr<supla_client> sender,
         break;
     }
 
-    supla_http_event_hub::on_google_home_sync_needed(
+    supla_http_event_hub::on_voice_assistant_sync_needed(
         this, supla_caller(ctClient, sender->get_id()));
   }
 
@@ -866,7 +866,7 @@ void supla_user::on_scene_changed(const supla_caller &caller, int user_id,
     user->reconnect(caller, false, true);
     supla_scene_asynctask::interrupt(supla_scene_asynctask::get_queue(),
                                      user_id, scene_id);
-    supla_http_event_hub::on_google_home_sync_needed(user, caller);
+    supla_http_event_hub::on_voice_assistant_sync_needed(user, caller);
   }
 }
 
