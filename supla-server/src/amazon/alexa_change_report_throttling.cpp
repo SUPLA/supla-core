@@ -25,6 +25,12 @@ supla_alexa_change_report_throttling
     supla_alexa_change_report_throttling::instance;
 
 int supla_alexa_change_report_throttling::get_default_delay_time(int func) {
+  if (func == SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS) {
+    // Heatpol send several reports with the old value before the target
+    // value is sent, so we add longer delays for them.
+    return 2500000;
+  }
+
   return 500000;  // 0.5 sek.
 }
 
