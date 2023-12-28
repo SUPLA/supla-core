@@ -68,7 +68,7 @@ bool supla_alexa_delete_request::make_request(
   }
 
   for (auto it = scene_ids.cbegin(); it != scene_ids.cend(); ++it) {
-    client.add_deleted_endpoint(*it, false);
+    client.add_deleted_endpoint(*it, true);
   }
   unlock();
 

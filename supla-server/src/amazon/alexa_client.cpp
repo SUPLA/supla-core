@@ -538,6 +538,7 @@ cJSON *supla_alexa_client::get_delete_report(void) {
 
         if (endpoints) {
           cJSON_AddItemToObject(payload, "endpoints", endpoints);
+          endpoints = nullptr;
         }
       }
     }
