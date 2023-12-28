@@ -18,6 +18,9 @@
 
 #include "AlexaDiscoverRequestTest.h"
 
+#include <memory>
+#include <string>
+
 #include "amazon/alexa_discover_request.h"
 #include "doubles/amazon/AlexaCredentialsDaoMock.h"
 #include "doubles/amazon/AlexaDiscoverPayloadObtainerMock.h"

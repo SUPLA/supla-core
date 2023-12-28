@@ -175,7 +175,7 @@ void supla_alexa_delete_request::new_request(supla_user *user, int channel_id,
 
   if (!channel_id) {
     return;
-  };
+  }
 
   vector<int> ids;
   ids.push_back(channel_id);
