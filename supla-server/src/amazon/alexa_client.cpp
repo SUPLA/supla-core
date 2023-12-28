@@ -382,7 +382,7 @@ cJSON *supla_alexa_client::get_header(const char ns[], const char name[],
   cJSON *header = cJSON_CreateObject();
   if (header) {
     cJSON_AddStringToObject(header, "messageId", message_id.c_str());
-    cJSON_AddStringToObject(header, "namespace", "Alexa");
+    cJSON_AddStringToObject(header, "namespace", ns);
     cJSON_AddStringToObject(header, "name", name);
     if (use_correlation_token && !correlation_token.empty()) {
       cJSON_AddStringToObject(header, "correlationToken",
