@@ -65,7 +65,7 @@ string supla_alexa_discover_payload_obtainer::obtain(
   cJSON_AddStringToObject(header, "payloadVersion", "3");
   cJSON_AddStringToObject(header, "messageId", get_message_id().c_str());
 
-  cJSON *payload = cJSON_AddObjectToObject(directive, "header");
+  cJSON *payload = cJSON_AddObjectToObject(directive, "payload");
   cJSON *scope = cJSON_AddObjectToObject(payload, "scope");
   cJSON_AddStringToObject(scope, "type", "BearerToken");
   cJSON_AddStringToObject(scope, "token", token.c_str());

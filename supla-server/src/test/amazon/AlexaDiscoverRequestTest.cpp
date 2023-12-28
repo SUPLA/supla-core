@@ -191,7 +191,7 @@ TEST_F(AlexaDiscoverRequestTest, obtaintWithSuccess) {
       set_opt_post_fields(StrEq(
           "{\"directive\":{\"header\":{\"namespace\":\"Alexa.Discovery\","
           "\"name\":\"Discover\",\"payloadVersion\":\"3\",\"messageId\":"
-          "\"0021d4c9-1052-c70e-a701-3f75fa4b7712\"},\"header\":{\"scope\":{"
+          "\"0021d4c9-1052-c70e-a701-3f75fa4b7712\"},\"payload\":{\"scope\":{"
           "\"type\":\"BearerToken\",\"token\":\"xyzabcd\"}}}}")))
       .Times(1);
 
