@@ -129,7 +129,7 @@ bool supla_alexa_delete_request::is_function_allowed(int func) {
 // static
 void supla_alexa_delete_request::new_request(supla_user *user, vector<int> ids,
                                              bool scene) {
-  if (user || !ids.size()) {
+  if (!user || !ids.size()) {
     return;
   }
 
