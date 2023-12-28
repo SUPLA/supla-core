@@ -19,6 +19,7 @@
 #include "http_event_hub.h"
 
 #include "amazon/alexa_change_report_request.h"
+#include "amazon/alexa_delete_request.h"
 #include "amazon/alexa_discover_request.h"
 #include "amazon/alexa_response_request.h"
 #include "google/google_home_state_report_request.h"
@@ -47,7 +48,13 @@ void supla_http_event_hub::on_channel_value_change(
 // static
 void supla_http_event_hub::on_channel_added(supla_user *user, int deviceId,
                                             const supla_caller &caller) {
-  supla_google_home_sync_request::new_request(user);
+  on_voice_assistant_sync_needed(user, caller);
+}
+
+// static
+void supla_http_event_hub::before_device_delete(supla_user *user, int deviceId,
+                                                const supla_caller &caller) {
+  supla_alexa_delete_request::new_request(user, deviceId, false);
 }
 
 // static
@@ -59,7 +66,7 @@ void supla_http_event_hub::on_device_deleted(supla_user *user, int deviceId,
 // static
 void supla_http_event_hub::on_user_reconnect(supla_user *user,
                                              const supla_caller &caller) {
-  supla_google_home_sync_request::new_request(user);
+  on_voice_assistant_sync_needed(user, caller);
 }
 
 // static
@@ -78,4 +85,11 @@ void supla_http_event_hub::on_actions_triggered(const supla_caller &caller,
     supla_state_webhook_request::new_request(caller, user, deviceId, channelId,
                                              actions);
   }
+}
+
+// static
+void supla_http_event_hub::on_scene_removed(supla_user *user, int sceneId,
+                                            const supla_caller &caller) {
+  supla_google_home_sync_request::new_request(user);
+  supla_alexa_delete_request::new_request(user, sceneId, true);
 }

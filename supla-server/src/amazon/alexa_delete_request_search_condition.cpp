@@ -16,15 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <ipc/on_scene_removed_command.h>
+#include "alexa_delete_request_search_condition.h"
 
-#include "user.h"
+#include "amazon/alexa_delete_request.h"
 
-supla_on_scene_removed_command::supla_on_scene_removed_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_on_scene_removed_command(socket_adapter) {}
+supla_alexa_delete_request_search_condition::
+    supla_alexa_delete_request_search_condition(int user_id) {
+  this->user_id = user_id;
+}
 
-void supla_on_scene_removed_command::on_scene_removed(int user_id,
-                                                      int scene_id) {
-  supla_user::on_scene_removed(get_caller(), user_id, scene_id);
+bool supla_alexa_delete_request_search_condition::condition_met(
+    supla_abstract_asynctask *task) {
+  supla_alexa_delete_request *request =
+      dynamic_cast<supla_alexa_delete_request *>(task);
+  return request && request->get_user_id() == user_id &&
+         request->get_state() == supla_asynctask_state::WAITING;
 }

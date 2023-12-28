@@ -28,6 +28,8 @@
 class supla_device_dao : public supla_abstract_device_dao {
  private:
   supla_abstract_db_access_provider *dba;
+  virtual std::vector<supla_channel_fragment> get_channel_fragments(
+      int device_id, int channel_number);
 
  public:
   explicit supla_device_dao(supla_abstract_db_access_provider *dba);
@@ -110,6 +112,9 @@ class supla_device_dao : public supla_abstract_device_dao {
   virtual supla_json_config *get_channel_config(int channel_id,
                                                 std::string *user_config_md5sum,
                                                 std::string *properties_md5sum);
+
+  virtual std::vector<supla_channel_fragment> get_channel_fragments(
+      int device_id);
 
   virtual supla_channel_fragment get_channel_fragment(int device_id,
                                                       int channel_number);

@@ -74,6 +74,7 @@ class supla_alexa_client : public supla_voice_assistant_client {
 
   int cause_type;
   cJSON *props_arr;
+  cJSON *endpoints;
   std::string zulu_time;
   std::string message_id;
   std::string correlation_token;
@@ -93,14 +94,18 @@ class supla_alexa_client : public supla_voice_assistant_client {
   cJSON *get_temperature_sensor_properties(double temperature);
   cJSON *get_contact_sensor_properties(bool hi);
   cJSON *get_endpoint_health_properties(bool ok);
+  cJSON *get_header(const char ns[], const char name[],
+                    bool use_correlation_token);
   cJSON *get_header(const char name[], bool use_correlation_token);
   cJSON *get_endpoint(void);
   cJSON *get_response(void);
   cJSON *get_change_report(void);
+  cJSON *get_delete_report(void);
   cJSON *get_unrechable_error_response(void);
   int perform_post_request(const char *data, int *http_result_code);
   void refresh_token(void);
   int perform_post_request(const char *data);
+  bool send_report(cJSON *root);
 
  public:
   explicit supla_alexa_client(int channel_id,
@@ -120,9 +125,11 @@ class supla_alexa_client : public supla_voice_assistant_client {
   void add_percentage_controller(void);
   void add_contact_sensor(void);
   void add_thermostat_controller(void);
+  void add_deleted_endpoint(int id, bool scene);
 
   bool send_response(void);
   bool send_change_report(void);
+  bool send_delete_report(void);
   bool send_payload(std::string payload);
 };
 

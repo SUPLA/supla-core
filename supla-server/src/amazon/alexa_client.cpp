@@ -91,6 +91,7 @@ supla_alexa_client::supla_alexa_client(
     : supla_voice_assistant_client(channel_id, curl_adapter, credentials) {
   cause_type = CAUSE_APP_INTERACTION;
   props_arr = nullptr;
+  endpoints = nullptr;
   this->zulu_time = zulu_time;
   this->message_id = message_id;
   this->correlation_token = correlation_token;
@@ -111,6 +112,10 @@ supla_alexa_client::supla_alexa_client(
 supla_alexa_client::~supla_alexa_client(void) {
   if (props_arr) {
     cJSON_Delete(props_arr);
+  }
+
+  if (endpoints) {
+    cJSON_Delete(endpoints);
   }
 }
 
@@ -372,7 +377,7 @@ cJSON *supla_alexa_client::get_endpoint_health_properties(bool ok) {
   return props;
 }
 
-cJSON *supla_alexa_client::get_header(const char name[],
+cJSON *supla_alexa_client::get_header(const char ns[], const char name[],
                                       bool use_correlation_token) {
   cJSON *header = cJSON_CreateObject();
   if (header) {
@@ -387,6 +392,11 @@ cJSON *supla_alexa_client::get_header(const char name[],
   }
 
   return header;
+}
+
+cJSON *supla_alexa_client::get_header(const char name[],
+                                      bool use_correlation_token) {
+  return get_header("Alexa", name, use_correlation_token);
 }
 
 cJSON *supla_alexa_client::get_endpoint(void) {
@@ -507,6 +517,31 @@ cJSON *supla_alexa_client::get_change_report(void) {
     }
   }
 
+  return root;
+}
+
+cJSON *supla_alexa_client::get_delete_report(void) {
+  cJSON *root = cJSON_CreateObject();
+  if (root) {
+    cJSON *event = cJSON_AddObjectToObject(root, "event");
+    if (event) {
+      cJSON *header = get_header("Alexa.Discovery", "DeleteReport", false);
+      if (header) {
+        cJSON_AddItemToObject(event, "header", header);
+      }
+
+      cJSON *payload = cJSON_AddObjectToObject(event, "payload");
+      if (payload) {
+        if (!endpoints) {
+          endpoints = cJSON_CreateArray();
+        }
+
+        if (endpoints) {
+          cJSON_AddItemToObject(payload, "endpoints", endpoints);
+        }
+      }
+    }
+  }
   return root;
 }
 
@@ -806,6 +841,18 @@ void supla_alexa_client::add_thermostat_controller(void) {
   }
 }
 
+void supla_alexa_client::add_deleted_endpoint(int id, bool scene) {
+  cJSON *deleted = cJSON_CreateObject();
+  cJSON_AddStringToObject(deleted, "endpointId",
+                          get_endpoint_id(id, 0, scene).c_str());
+
+  if (!endpoints) {
+    endpoints = cJSON_CreateArray();
+  }
+
+  cJSON_AddItemToArray(endpoints, deleted);
+}
+
 bool supla_alexa_client::send_response(void) {
   char *data = NULL;
   cJSON *root = NULL;
@@ -831,11 +878,8 @@ bool supla_alexa_client::send_response(void) {
   return result == POST_RESULT_SUCCESS;
 }
 
-// https://developer.amazon.com/docs/device-apis/alexa-interface.html#changereport
-bool supla_alexa_client::send_change_report(void) {
-  char *data = NULL;
-
-  cJSON *root = get_change_report();
+bool supla_alexa_client::send_report(cJSON *root) {
+  char *data = nullptr;
 
   if (root) {
     data = cJSON_PrintUnformatted(root);
@@ -850,6 +894,16 @@ bool supla_alexa_client::send_change_report(void) {
   }
 
   return result == POST_RESULT_SUCCESS;
+}
+
+// https://developer.amazon.com/docs/device-apis/alexa-interface.html#changereport
+bool supla_alexa_client::send_change_report(void) {
+  return send_report(get_change_report());
+}
+
+// https://developer.amazon.com/en-US/docs/alexa/device-apis/alexa-discovery.html#deletereport-event
+bool supla_alexa_client::send_delete_report(void) {
+  return send_report(get_delete_report());
 }
 
 bool supla_alexa_client::send_payload(std::string payload) {

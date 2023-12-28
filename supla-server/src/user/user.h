@@ -163,6 +163,8 @@ class supla_user {
 
   static void on_scene_changed(const supla_caller &caller, int user_id,
                                int scene_id);
+  static void on_scene_removed(const supla_caller &caller, int user_id,
+                               int scene_id);
   explicit supla_user(int UserID);
   supla_user(int UserID, const char *short_unique_id,
              const char *long_unique_id);

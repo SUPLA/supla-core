@@ -117,6 +117,9 @@ class supla_abstract_device_dao {
       int channel_id, std::string *user_config_md5sum,
       std::string *properties_md5sum) = 0;
 
+  virtual std::vector<supla_channel_fragment> get_channel_fragments(
+      int device_id) = 0;
+
   virtual supla_channel_fragment get_channel_fragment(int device_id,
                                                       int channel_number) = 0;
 };

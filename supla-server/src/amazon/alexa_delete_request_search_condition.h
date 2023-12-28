@@ -16,15 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <ipc/on_scene_removed_command.h>
+#ifndef ALEXA_DELETE_REQUEST_SEARCH_CONDITION_H_
+#define ALEXA_DELETE_REQUEST_SEARCH_CONDITION_H_
 
-#include "user.h"
+#include "asynctask/abstract_asynctask_search_condition.h"
 
-supla_on_scene_removed_command::supla_on_scene_removed_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_on_scene_removed_command(socket_adapter) {}
+class supla_alexa_delete_request_search_condition
+    : public supla_abstract_asynctask_search_condition {
+ private:
+  int user_id;
 
-void supla_on_scene_removed_command::on_scene_removed(int user_id,
-                                                      int scene_id) {
-  supla_user::on_scene_removed(get_caller(), user_id, scene_id);
-}
+ public:
+  explicit supla_alexa_delete_request_search_condition(int user_id);
+
+  virtual bool condition_met(supla_abstract_asynctask *task);
+};
+
+#endif /*ALEXA_DELETE_REQUEST_SEARCH_CONDITION_H_*/

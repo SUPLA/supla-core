@@ -68,35 +68,6 @@ string supla_alexa_discover_request::get_name(void) {
 }
 
 // static
-bool supla_alexa_discover_request::is_function_allowed(int func) {
-  switch (func) {
-    case SUPLA_CHANNELFNC_POWERSWITCH:
-    case SUPLA_CHANNELFNC_LIGHTSWITCH:
-    case SUPLA_CHANNELFNC_STAIRCASETIMER:
-    case SUPLA_CHANNELFNC_DIMMER:
-    case SUPLA_CHANNELFNC_RGBLIGHTING:
-    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
-    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
-    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
-    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
-    case SUPLA_CHANNELFNC_THERMOMETER:
-    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-      return true;
-    default:
-      return false;
-  }
-}
-
-// static
 void supla_alexa_discover_request::new_request(supla_user *user) {
   bool exists = false;
   supla_alexa_discover_request_search_condition cnd(user->getUserID());

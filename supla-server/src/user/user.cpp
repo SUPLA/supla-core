@@ -444,6 +444,11 @@ void supla_user::before_device_delete(int UserID, int DeviceID,
                                       const supla_caller &caller) {
   supla_mqtt_client_suite::globalInstance()->beforeDeviceDelete(UserID,
                                                                 DeviceID);
+
+  supla_user *user = supla_user::find(UserID, false);
+  if (user) {
+    supla_http_event_hub::before_device_delete(user, DeviceID, caller);
+  }
 }
 
 // static
@@ -454,7 +459,7 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
   if (user) {
     user->get_devices()->terminate(DeviceID);
 
-    supla_http_event_hub::on_device_deleted(user, 0, caller);
+    supla_http_event_hub::on_device_deleted(user, DeviceID, caller);
 
     supla_mqtt_client_suite::globalInstance()->onDeviceDeleted(UserID,
                                                                DeviceID);
@@ -867,6 +872,18 @@ void supla_user::on_scene_changed(const supla_caller &caller, int user_id,
     supla_scene_asynctask::interrupt(supla_scene_asynctask::get_queue(),
                                      user_id, scene_id);
     supla_http_event_hub::on_voice_assistant_sync_needed(user, caller);
+  }
+}
+
+// static
+void supla_user::on_scene_removed(const supla_caller &caller, int user_id,
+                                  int scene_id) {
+  supla_user *user = find(user_id, false);
+  if (user) {
+    user->reconnect(caller, false, true);
+    supla_scene_asynctask::interrupt(supla_scene_asynctask::get_queue(),
+                                     user_id, scene_id);
+    supla_http_event_hub::on_scene_removed(user, scene_id, caller);
   }
 }
 

@@ -1402,9 +1402,9 @@ void supla_device_dao::update_channel_extended_value(
   }
 }
 
-supla_channel_fragment supla_device_dao::get_channel_fragment(
+vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
     int device_id, int channel_number) {
-  supla_channel_fragment result;
+  vector<supla_channel_fragment> result;
 
   bool already_connected = dba->is_connected();
 
@@ -1415,7 +1415,7 @@ supla_channel_fragment supla_device_dao::get_channel_fragment(
   MYSQL_STMT *stmt = nullptr;
   const char sql[] =
       "SELECT id, type, func, flags, hidden FROM `supla_dev_channel` WHERE "
-      "iodevice_id = ? AND channel_number = ? LIMIT 1";
+      "iodevice_id = ? AND (channel_number = ? OR ? = -1)";
 
   MYSQL_BIND pbind[2] = {};
 
@@ -1455,9 +1455,12 @@ supla_channel_fragment supla_device_dao::get_channel_fragment(
     } else {
       mysql_stmt_store_result(stmt);
 
-      if (mysql_stmt_num_rows(stmt) == 1 && !mysql_stmt_fetch(stmt)) {
-        result = supla_channel_fragment(device_id, channel_id, channel_number,
-                                        type, function, flags, hidden);
+      if (mysql_stmt_num_rows(stmt) > 0) {
+        while (!mysql_stmt_fetch(stmt)) {
+          result.push_back(supla_channel_fragment(device_id, channel_id,
+                                                  channel_number, type,
+                                                  function, flags, hidden));
+        }
       }
     }
 
@@ -1468,5 +1471,23 @@ supla_channel_fragment supla_device_dao::get_channel_fragment(
     dba->disconnect();
   }
 
+  return result;
+}
+
+vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
+    int device_id) {
+  return get_channel_fragments(device_id, -1);
+}
+
+supla_channel_fragment supla_device_dao::get_channel_fragment(
+    int device_id, int channel_number) {
+  supla_channel_fragment result;
+  if (channel_number > -1) {
+    vector<supla_channel_fragment> fragments =
+        get_channel_fragments(device_id, channel_number);
+    if (fragments.size() > 0) {
+      result = fragments.front();
+    }
+  }
   return result;
 }
