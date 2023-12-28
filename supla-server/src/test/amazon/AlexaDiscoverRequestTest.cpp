@@ -84,7 +84,7 @@ TEST_F(AlexaDiscoverRequestTest, performFailed) {
 
 TEST_F(AlexaDiscoverRequestTest, http400) {
   EXPECT_CALL(credentials, is_access_token_exists)
-      .Times(2)
+      .Times(1)
       .WillOnce(Return(true));
 
   EXPECT_CALL(*curlAdapter, reset).Times(1);
