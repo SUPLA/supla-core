@@ -4,13 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/doubles/amazon/AlexaCredentialsMock.cpp 
+../src/test/doubles/amazon/AlexaCredentialsDaoMock.cpp \
+../src/test/doubles/amazon/AlexaCredentialsMock.cpp \
+../src/test/doubles/amazon/AlexaDiscoverPayloadObtainerMock.cpp 
 
 CPP_DEPS += \
-./src/test/doubles/amazon/AlexaCredentialsMock.d 
+./src/test/doubles/amazon/AlexaCredentialsDaoMock.d \
+./src/test/doubles/amazon/AlexaCredentialsMock.d \
+./src/test/doubles/amazon/AlexaDiscoverPayloadObtainerMock.d 
 
 OBJS += \
-./src/test/doubles/amazon/AlexaCredentialsMock.o 
+./src/test/doubles/amazon/AlexaCredentialsDaoMock.o \
+./src/test/doubles/amazon/AlexaCredentialsMock.o \
+./src/test/doubles/amazon/AlexaDiscoverPayloadObtainerMock.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -25,7 +31,7 @@ src/test/doubles/amazon/%.o: ../src/test/doubles/amazon/%.cpp src/test/doubles/a
 clean: clean-src-2f-test-2f-doubles-2f-amazon
 
 clean-src-2f-test-2f-doubles-2f-amazon:
-	-$(RM) ./src/test/doubles/amazon/AlexaCredentialsMock.d ./src/test/doubles/amazon/AlexaCredentialsMock.o
+	-$(RM) ./src/test/doubles/amazon/AlexaCredentialsDaoMock.d ./src/test/doubles/amazon/AlexaCredentialsDaoMock.o ./src/test/doubles/amazon/AlexaCredentialsMock.d ./src/test/doubles/amazon/AlexaCredentialsMock.o ./src/test/doubles/amazon/AlexaDiscoverPayloadObtainerMock.d ./src/test/doubles/amazon/AlexaDiscoverPayloadObtainerMock.o
 
 .PHONY: clean-src-2f-test-2f-doubles-2f-amazon
 
