@@ -38,6 +38,13 @@ supla_alexa_discover_payload_obtainer::~supla_alexa_discover_payload_obtainer(
   }
 }
 
+string supla_alexa_discover_payload_obtainer::get_message_id(void) {
+  char msgid[37] = {};
+  st_uuid_v4(msgid);
+
+  return msgid;
+}
+
 string supla_alexa_discover_payload_obtainer::obtain(
     int user_id, supla_abstract_curl_adapter *curl_adapter) {
   if (!curl_adapter || !dao) {
@@ -50,16 +57,13 @@ string supla_alexa_discover_payload_obtainer::obtain(
     return "";
   }
 
-  char msgid[37] = {};
-  st_uuid_v4(msgid);
-
   cJSON *json_root = cJSON_CreateObject();
   cJSON *directive = cJSON_AddObjectToObject(json_root, "directive");
   cJSON *header = cJSON_AddObjectToObject(directive, "header");
   cJSON_AddStringToObject(header, "namespace", "Alexa.Discovery");
   cJSON_AddStringToObject(header, "name", "Discover");
   cJSON_AddStringToObject(header, "payloadVersion", "3");
-  cJSON_AddStringToObject(header, "messageId", msgid);
+  cJSON_AddStringToObject(header, "messageId", get_message_id().c_str());
 
   cJSON *payload = cJSON_AddObjectToObject(directive, "header");
   cJSON *scope = cJSON_AddObjectToObject(payload, "scope");
@@ -82,54 +86,59 @@ string supla_alexa_discover_payload_obtainer::obtain(
   curl_adapter->set_opt_url(
       "https://kune6om4mlleevu2kh4vt2ic5i0otrmw.lambda-url.eu-west-1.on.aws");
 
-  if (curl_adapter->perform()) {
+  long response_code = 0;
+
+  if (curl_adapter->perform() &&
+      (response_code = curl_adapter->get_response_code()) == 200) {
     free(data);
     data = nullptr;
 
-    long response_code = curl_adapter->get_response_code();
+    cJSON *response = cJSON_Parse(request_result.c_str());
+    request_result.clear();
 
-    if (response_code == 200 && response_code == 202) {
-      cJSON *response = cJSON_Parse(request_result.c_str());
-      request_result.clear();
+    if (response) {
+      cJSON *event = cJSON_GetObjectItem(response, "event");
+      if (event) {
+        header = cJSON_GetObjectItem(event, "header");
+        if (header) {
+          cJSON *name = cJSON_GetObjectItem(header, "name");
+          cJSON *messageId = cJSON_GetObjectItem(header, "messageId");
 
-      if (response) {
-        cJSON *event = cJSON_GetObjectItem(response, "event");
-        if (event) {
-          header = cJSON_GetObjectItem(event, "header");
-          if (header) {
-            cJSON *name = cJSON_GetObjectItem(event, "name");
-            cJSON *messageId = cJSON_GetObjectItem(event, "messageId");
+          if (name && cJSON_IsString(name) && messageId &&
+              cJSON_IsString(messageId) &&
+              strncmp(cJSON_GetStringValue(name), "Discover.Response", 20) ==
+                  0) {
+            cJSON_SetValuestring(name, "AddOrUpdateReport");
+            cJSON_SetValuestring(messageId, get_message_id().c_str());
+            data = cJSON_PrintUnformatted(response);
 
-            if (name && cJSON_IsString(name) && messageId &&
-                cJSON_IsString(messageId)) {
-              st_uuid_v4(msgid);
-              cJSON_SetValuestring(name, "AddOrUpdateReport");
-              cJSON_SetValuestring(messageId, msgid);
-              data = cJSON_PrintUnformatted(response);
+            if (data) {
+              request_result = data;
+              free(data);
+              data = nullptr;
             }
           }
         }
-        cJSON_Delete(response);
-
-        if (data) {
-          supla_log(LOG_ERR,
-                    "The received payload for Alexa Discovery is empty or in "
-                    "the wrong format.");
-        }
       }
-    } else {
-      supla_log(LOG_ERR,
-                "Unsuccessful attempt to obtain a payload for Alexa Discovery. "
-                "Response code: %i",
-                response_code);
+      cJSON_Delete(response);
+
+      if (request_result.empty()) {
+        supla_log(LOG_ERR,
+                  "The received payload for Alexa Discovery is empty or in "
+                  "the wrong format.");
+      }
     }
-  }
 
-  if (data) {
-    request_result = data;
+  } else {
     free(data);
-    return request_result;
+    data = nullptr;
+    request_result.clear();
+
+    supla_log(LOG_ERR,
+              "Unsuccessful attempt to obtain a payload for Alexa Discovery. "
+              "Response code: %i",
+              response_code);
   }
 
-  return "";
+  return request_result;
 }

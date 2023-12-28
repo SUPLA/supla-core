@@ -16,25 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AMAZON_ALEXA_DISCOVER_PAYLOAD_OBTAINER_H_
-#define AMAZON_ALEXA_DISCOVER_PAYLOAD_OBTAINER_H_
+#include "doubles/amazon/AlexaCredentialsDaoMock.h"
 
-#include <string>
+namespace testing {
 
-#include "amazon/alexa_credentials_dao.h"
-#include "http/abstract_curl_adapter.h"
+AlexaCredentialsDaoMock::AlexaCredentialsDaoMock(
+    supla_abstract_db_access_provider *dba)
+    : supla_amazon_alexa_credentials_dao(dba) {}
 
-class supla_alexa_discover_payload_obtainer {
- private:
-  supla_amazon_alexa_credentials_dao *dao;
-  virtual std::string get_message_id(void);
+AlexaCredentialsDaoMock::AlexaCredentialsDaoMock(
+    supla_abstract_db_access_provider *dba, bool release_dba)
+    : supla_amazon_alexa_credentials_dao(dba, release_dba) {}
 
- public:
-  supla_alexa_discover_payload_obtainer(
-      supla_amazon_alexa_credentials_dao *dao);
-  virtual ~supla_alexa_discover_payload_obtainer(void);
+AlexaCredentialsDaoMock::~AlexaCredentialsDaoMock(void) {}
 
-  std::string obtain(int user_id, supla_abstract_curl_adapter *curl_adapter);
-};
-
-#endif /* AMAZON_ALEXA_DISCOVER_PAYLOAD_OBTAINER_H_ */
+}  // namespace testing

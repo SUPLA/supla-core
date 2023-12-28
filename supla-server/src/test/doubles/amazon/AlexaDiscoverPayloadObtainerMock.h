@@ -16,25 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AMAZON_ALEXA_DISCOVER_PAYLOAD_OBTAINER_H_
-#define AMAZON_ALEXA_DISCOVER_PAYLOAD_OBTAINER_H_
+#ifndef ALEXA_DISCOVER_PAYLOAD_OBTAINER_MOCK_H_
+#define ALEXA_DISCOVER_PAYLOAD_OBTAINER_MOCK_H_
+
+#include <gmock/gmock.h>
 
 #include <string>
 
-#include "amazon/alexa_credentials_dao.h"
-#include "http/abstract_curl_adapter.h"
+#include "amazon/alexa_discover_payload_obtainer.h"
 
-class supla_alexa_discover_payload_obtainer {
- private:
-  supla_amazon_alexa_credentials_dao *dao;
-  virtual std::string get_message_id(void);
+namespace testing {
 
+class AlexaDiscoverPayloadObtainerMock
+    : public supla_alexa_discover_payload_obtainer {
  public:
-  supla_alexa_discover_payload_obtainer(
+  explicit AlexaDiscoverPayloadObtainerMock(
       supla_amazon_alexa_credentials_dao *dao);
-  virtual ~supla_alexa_discover_payload_obtainer(void);
+  virtual ~AlexaDiscoverPayloadObtainerMock(void);
 
-  std::string obtain(int user_id, supla_abstract_curl_adapter *curl_adapter);
+  MOCK_METHOD0(get_message_id, std::string(void));
 };
 
-#endif /* AMAZON_ALEXA_DISCOVER_PAYLOAD_OBTAINER_H_ */
+} /* namespace testing */
+
+#endif /* ALEXA_DISCOVER_PAYLOAD_OBTAINER_MOCK_H_ */
