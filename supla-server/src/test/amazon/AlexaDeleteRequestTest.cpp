@@ -18,6 +18,9 @@
 
 #include "AlexaDeleteRequestTest.h"
 
+#include <memory>
+#include <vector>
+
 #include "amazon/alexa_delete_request.h"
 #include "http/asynctask_http_thread_bucket.h"
 
