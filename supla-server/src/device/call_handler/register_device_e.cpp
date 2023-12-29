@@ -56,10 +56,6 @@ void supla_ch_register_device_e::handle_call(
 
     supla_register_device regdev;
 
-    if (rd->data.ds_register_device_e->channel_count > SUPLA_CHANNELMAXCOUNT) {
-      rd->data.ds_register_device_e->channel_count = SUPLA_CHANNELMAXCOUNT;
-    }
-
     regdev.register_device(device, nullptr, rd->data.ds_register_device_e,
                            srpc_adapter,
                            device->get_connection()->get_client_sd(),
