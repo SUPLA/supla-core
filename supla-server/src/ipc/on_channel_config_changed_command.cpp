@@ -22,6 +22,7 @@
 
 #include "amazon/alexa_delete_request.h"
 #include "device/device_dao.h"
+#include "http/http_event_hub.h"
 #include "mqtt/mqtt_client_suite.h"
 #include "user.h"
 
@@ -40,12 +41,14 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
     return;
   }
 
-  supla_mqtt_client_suite::globalInstance()->onDeviceSettingsChanged(user_id,
-                                                                     device_id);
-
   if (scope & CONFIG_CHANGE_SCOPE_ALEXA_INTEGRATION_ENABLED) {
     supla_alexa_delete_request::new_request(user, channel_id, func);
   }
+
+  supla_http_event_hub::on_voice_assistant_sync_needed(user, get_caller());
+
+  supla_mqtt_client_suite::globalInstance()->onDeviceSettingsChanged(user_id,
+                                                                     device_id);
 
   if (type != SUPLA_CHANNELTYPE_HVAC) {
     return;
