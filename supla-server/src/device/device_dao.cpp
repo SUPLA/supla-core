@@ -1417,7 +1417,7 @@ vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
       "SELECT id, type, func, flags, hidden FROM `supla_dev_channel` WHERE "
       "iodevice_id = ? AND (channel_number = ? OR ? = -1)";
 
-  MYSQL_BIND pbind[2] = {};
+  MYSQL_BIND pbind[3] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&device_id;
@@ -1425,7 +1425,10 @@ vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&channel_number;
 
-  if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&channel_number;
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
     MYSQL_BIND rbind[5] = {};
 
     int channel_id = 0;
