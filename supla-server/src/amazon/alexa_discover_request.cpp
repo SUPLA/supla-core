@@ -52,7 +52,8 @@ bool supla_alexa_discover_request::make_request(
     return false;
   }
 
-  string payload = obtainer->obtain(get_user_id(), curl_adapter);
+  string payload =
+      obtainer->obtain(get_user_id(), get_credentials(), curl_adapter);
   if (payload.empty()) {
     return false;
   }

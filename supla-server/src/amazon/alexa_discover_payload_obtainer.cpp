@@ -45,9 +45,32 @@ string supla_alexa_discover_payload_obtainer::get_message_id(void) {
   return msgid;
 }
 
+cJSON *supla_alexa_discover_payload_obtainer::json_get_object(
+    cJSON *root, const char name[]) {
+  cJSON *obj = cJSON_GetObjectItem(root, name);
+  if (!obj) {
+    obj = cJSON_AddObjectToObject(root, name);
+  }
+
+  return obj;
+}
+
+void supla_alexa_discover_payload_obtainer::json_set_string(
+    cJSON *root, const char name[], const char value[]) {
+  cJSON *item = cJSON_GetObjectItem(root, name);
+  if (item) {
+    if (cJSON_IsString(item)) {
+      cJSON_SetValuestring(item, value);
+    }
+  } else {
+    cJSON_AddStringToObject(root, name, value);
+  }
+}
+
 string supla_alexa_discover_payload_obtainer::obtain(
-    int user_id, supla_abstract_curl_adapter *curl_adapter) {
-  if (!curl_adapter || !dao) {
+    int user_id, supla_amazon_alexa_credentials *credentials,
+    supla_abstract_curl_adapter *curl_adapter) {
+  if (!curl_adapter || !credentials || !dao) {
     return "";
   }
 
@@ -99,6 +122,16 @@ string supla_alexa_discover_payload_obtainer::obtain(
     if (response) {
       cJSON *event = cJSON_GetObjectItem(response, "event");
       if (event) {
+        payload = json_get_object(event, "payload");
+        if (payload) {
+          scope = json_get_object(payload, "scope");
+          if (scope) {
+            json_set_string(scope, "type", "BearerToken");
+            json_set_string(scope, "token",
+                            credentials->get_access_token().c_str());
+          }
+        }
+
         header = cJSON_GetObjectItem(event, "header");
         if (header) {
           cJSON *name = cJSON_GetObjectItem(header, "name");

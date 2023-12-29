@@ -168,7 +168,8 @@ TEST_F(AlexaDiscoverRequestTest, obtaintWithSuccess) {
           *result =
               "{\"event\":{\"header\":{\"namespace\":\"Alexa.Discovery\","
               "\"name\":\"Discover.Response\",\"payloadVersion\":\"3\","
-              "\"messageId\":\"4fdcc64b-206c-4f48-bb32-e0c13324efa5\"}}}";
+              "\"messageId\":\"4fdcc64b-206c-4f48-bb32-e0c13324efa5\"},"
+              "\"payload\":{\"endpoints\":[]}}}";
         });
 
     EXPECT_CALL(*curlAdapter, set_opt_write_data(NotNull()))
@@ -199,7 +200,9 @@ TEST_F(AlexaDiscoverRequestTest, obtaintWithSuccess) {
               set_opt_post_fields(StrEq(
                   "{\"event\":{\"header\":{\"namespace\":\"Alexa.Discovery\","
                   "\"name\":\"AddOrUpdateReport\",\"payloadVersion\":\"3\","
-                  "\"messageId\":\"0021d4c9-1052-c70e-a701-3f75fa4b7712\"}}}")))
+                  "\"messageId\":\"0021d4c9-1052-c70e-a701-3f75fa4b7712\"},"
+                  "\"payload\":{\"endpoints\":[],\"scope\":{\"type\":"
+                  "\"BearerToken\",\"token\":\"ACCESS-TOKEN\"}}}}")))
       .Times(1);
 
   EXPECT_CALL(

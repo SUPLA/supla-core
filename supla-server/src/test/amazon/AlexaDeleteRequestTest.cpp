@@ -67,13 +67,14 @@ TEST_F(AlexaDeleteRequestTest, makeRequestWithSuccess) {
       set_opt_post_fields(StrEq(
           "{\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-6519-6e18-"
           "c4ee71d00487\",\"namespace\":\"Alexa.Discovery\",\"name\":"
-          "\"DeleteReport\",\"payloadVersion\":\"3\"},\"payload\":{"
-          "\"endpoints\":[{\"endpointId\":\"qwerty-1\"},{\"endpointId\":"
-          "\"qwerty-2\"},{\"endpointId\":\"qwerty-3\"},{\"endpointId\":"
-          "\"qwerty-4\"},{\"endpointId\":\"qwerty-5\"},{\"endpointId\":"
-          "\"qwerty:scene-1\"},{\"endpointId\":\"qwerty:scene-2\"},{"
-          "\"endpointId\":\"qwerty:scene-3\"},{\"endpointId\":\"qwerty:scene-"
-          "4\"},{\"endpointId\":\"qwerty:scene-5\"}]}}}")))
+          "\"DeleteReport\",\"payloadVersion\":\"3\"},\"payload\":{\"scope\":{"
+          "\"type\":\"BearerToken\",\"token\":\"ACCESS-TOKEN\"},\"endpoints\":["
+          "{\"endpointId\":\"qwerty-1\"},{\"endpointId\":\"qwerty-2\"},{"
+          "\"endpointId\":\"qwerty-3\"},{\"endpointId\":\"qwerty-4\"},{"
+          "\"endpointId\":\"qwerty-5\"},{\"endpointId\":\"qwerty:scene-1\"},{"
+          "\"endpointId\":\"qwerty:scene-2\"},{\"endpointId\":\"qwerty:scene-"
+          "3\"},{\"endpointId\":\"qwerty:scene-4\"},{\"endpointId\":\"qwerty:"
+          "scene-5\"}]}}}")))
       .Times(1);
 
   std::vector<int> ids{1, 2, 3, 3, 4, 5, 4};

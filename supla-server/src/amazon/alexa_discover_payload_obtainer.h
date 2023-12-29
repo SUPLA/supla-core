@@ -21,20 +21,25 @@
 
 #include <string>
 
+#include "amazon/alexa_credentials.h"
 #include "amazon/alexa_credentials_dao.h"
 #include "http/abstract_curl_adapter.h"
+#include "json/cJSON.h"
 
 class supla_alexa_discover_payload_obtainer {
  private:
   supla_amazon_alexa_credentials_dao *dao;
   virtual std::string get_message_id(void);
+  cJSON *json_get_object(cJSON *root, const char name[]);
+  void json_set_string(cJSON *root, const char name[], const char value[]);
 
  public:
   supla_alexa_discover_payload_obtainer(
       supla_amazon_alexa_credentials_dao *dao);
   virtual ~supla_alexa_discover_payload_obtainer(void);
 
-  std::string obtain(int user_id, supla_abstract_curl_adapter *curl_adapter);
+  std::string obtain(int user_id, supla_amazon_alexa_credentials *credentials,
+                     supla_abstract_curl_adapter *curl_adapter);
 };
 
 #endif /* AMAZON_ALEXA_DISCOVER_PAYLOAD_OBTAINER_H_ */

@@ -532,6 +532,13 @@ cJSON *supla_alexa_client::get_delete_report(void) {
 
       cJSON *payload = cJSON_AddObjectToObject(event, "payload");
       if (payload) {
+        cJSON *scope = cJSON_AddObjectToObject(payload, "scope");
+        if (scope) {
+          cJSON_AddStringToObject(scope, "type", "BearerToken");
+          cJSON_AddStringToObject(
+              scope, "token", get_credentials()->get_access_token().c_str());
+        }
+
         if (!endpoints) {
           endpoints = cJSON_CreateArray();
         }
