@@ -70,6 +70,10 @@ void supla_ch_register_device_d::handle_call(
       register_device_e->channel_count =
           rd->data.ds_register_device_d->channel_count;
 
+      if (register_device_e->channel_count > SUPLA_CHANNELMAXCOUNT) {
+        register_device_e->channel_count = SUPLA_CHANNELMAXCOUNT;
+      }
+
       for (int c = 0; c < register_device_e->channel_count; c++) {
         memset(&register_device_e->channels[c], 0,
                sizeof(TDS_SuplaDeviceChannel_C));

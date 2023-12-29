@@ -68,6 +68,10 @@ void supla_ch_register_device_b::handle_call(
       register_device_c->channel_count =
           rd->data.ds_register_device_b->channel_count;
 
+      if (register_device_c->channel_count > SUPLA_CHANNELMAXCOUNT) {
+        register_device_c->channel_count = SUPLA_CHANNELMAXCOUNT;
+      }
+
       for (int c = 0; c < register_device_c->channel_count; c++) {
         memcpy(&register_device_c->channels[c],
                &rd->data.ds_register_device_b->channels[c],
