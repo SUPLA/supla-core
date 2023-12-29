@@ -36,7 +36,7 @@ supla_alexa_discover_request::supla_alexa_discover_request(
                           credentials) {
   this->obtainer = obtainer;
 
-  set_delay_usec(10000000);  // 10 sec.
+  set_delay_usec(60000000);  // 60 sec.
   set_timeout(scfg_int(CFG_ALEXA_DISCOVER_REQUEST_TIMEOUT) * 1000);
 }
 
