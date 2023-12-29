@@ -39,19 +39,58 @@ TEST_F(GetHvacValueCommandTest, noData) {
 }
 
 TEST_F(GetHvacValueCommandTest, getHvacValueWithSuccess) {
-  supla_channel_hvac_value *hvac = new supla_channel_hvac_value();
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue *)raw_value)->IsOn = 1;
+
+  supla_channel_hvac_value_with_temphum *hvac =
+      new supla_channel_hvac_value_with_temphum(raw_value);
   hvac->set_mode(SUPLA_HVAC_MODE_COOL);
-  hvac->set_temperature_heat(12345);
-  hvac->set_temperature_cool(14567);
+  hvac->set_setpoint_temperature_heat(12345);
+  hvac->set_setpoint_temperature_cool(14567);
+  hvac->set_temperature(12);
+  hvac->set_humidity(34);
 
   EXPECT_CALL(*cmd, get_hvac_value(10, 20, 30)).WillOnce(Return(hvac));
 
   commandProcessingTest("GET-HVAC-VALUE:10,20,30\n",
-                        "VALUE:1,3,12345,14567,3\n");
+                        "VALUE:1,3,12345,14567,3,12,34\n");
+}
+
+TEST_F(GetHvacValueCommandTest, getHvacValueWithoutTemperatureAndHumidity) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue *)raw_value)->IsOn = 1;
+
+  supla_channel_hvac_value_with_temphum *hvac =
+      new supla_channel_hvac_value_with_temphum(raw_value);
+  hvac->set_mode(SUPLA_HVAC_MODE_COOL);
+  hvac->set_setpoint_temperature_heat(12345);
+  hvac->set_setpoint_temperature_cool(14567);
+
+  EXPECT_CALL(*cmd, get_hvac_value(10, 20, 30)).WillOnce(Return(hvac));
+
+  commandProcessingTest("GET-HVAC-VALUE:10,20,30\n",
+                        "VALUE:1,3,12345,14567,3,-27300,-100\n");
+}
+
+TEST_F(GetHvacValueCommandTest, getHvacValueWithoutHumidity) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue *)raw_value)->IsOn = 1;
+
+  supla_channel_hvac_value_with_temphum *hvac =
+      new supla_channel_hvac_value_with_temphum(raw_value);
+  hvac->set_mode(SUPLA_HVAC_MODE_COOL);
+  hvac->set_setpoint_temperature_heat(12345);
+  hvac->set_setpoint_temperature_cool(14567);
+  hvac->set_temperature(123);
+
+  EXPECT_CALL(*cmd, get_hvac_value(10, 20, 30)).WillOnce(Return(hvac));
+
+  commandProcessingTest("GET-HVAC-VALUE:10,20,30\n",
+                        "VALUE:1,3,12345,14567,3,123,-100\n");
 }
 
 TEST_F(GetHvacValueCommandTest, getHvacValueWithFilure) {
-  supla_channel_hvac_value *hvac = nullptr;
+  supla_channel_hvac_value_with_temphum *hvac = nullptr;
   EXPECT_CALL(*cmd, get_hvac_value).WillOnce(Return(hvac));
   commandProcessingTest("GET-HVAC-VALUE:10,20,30\n", "UNKNOWN:30\n");
 }

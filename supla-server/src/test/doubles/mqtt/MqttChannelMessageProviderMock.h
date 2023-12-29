@@ -16,17 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_THERMOSTAT_VALUE_TEST_H_
-#define CHANNEL_THERMOSTAT_VALUE_TEST_H_
+#ifndef MQTTCHANNELMESSAGEPROVIDERMOCK_H_
+#define MQTTCHANNELMESSAGEPROVIDERMOCK_H_
 
-#include "gtest/gtest.h"
+#include "gmock/gmock.h"  // NOLINT
+#include "mqtt_channel_message_provider.h"
+#include "mqtt_db.h"
 
-namespace testing {
-
-class ChannelThermostatValueTest : public Test {
+class MqttChannelMessageProviderMock
+    : public supla_mqtt_channel_message_provider {
  public:
+  MqttChannelMessageProviderMock();
+  virtual ~MqttChannelMessageProviderMock();
+
+  MOCK_METHOD2(get_channel_fragment,
+               supla_channel_fragment(int device_id, int channel_number));
 };
 
-}  // namespace testing
-
-#endif /*CHANNEL_THERMOSTAT_VALUE_TEST_H_*/
+#endif /* MQTTCHANNELMESSAGEPROVIDERMOCK_H_ */

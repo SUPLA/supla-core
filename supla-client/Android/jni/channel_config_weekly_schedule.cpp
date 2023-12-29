@@ -36,8 +36,8 @@ jobject supla_cc_hvac_mode_to_jobject(JNIEnv *env, unsigned char mode) {
     case SUPLA_HVAC_MODE_COOL:
       snprintf(enum_name, sizeof(enum_name), "COOL");
       break;
-    case SUPLA_HVAC_MODE_AUTO:
-      snprintf(enum_name, sizeof(enum_name), "AUTO");
+    case SUPLA_HVAC_MODE_HEAT_COOL:
+      snprintf(enum_name, sizeof(enum_name), "HEAT_COOL");
       break;
     case SUPLA_HVAC_MODE_FAN_ONLY:
       snprintf(enum_name, sizeof(enum_name), "FAN_ONLY");

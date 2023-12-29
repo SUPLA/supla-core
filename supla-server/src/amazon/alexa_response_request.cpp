@@ -19,8 +19,8 @@
 #include "alexa_response_request.h"
 
 #include "amazon/alexa_client.h"
-#include "amazon/alexa_response_search_condition.h"
 #include "device/channel_property_getter.h"
+#include "device/value/channel_hvac_value_with_temphum.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "jsonconfig/channel/alexa_config.h"
 #include "svrcfg.h"
@@ -36,7 +36,8 @@ supla_alexa_response_request::supla_alexa_response_request(
     const string &correlation_token)
     : supla_alexa_request(supla_caller(), user_id, device_id, channel_id, queue,
                           pool, property_getter, credentials) {
-  set_delay_usec(1000000);  // 1 sec.
+  set_delay_usec(
+      5000000);  // 5 sec. - Try to send this request after ChangeReport.
   set_timeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
   this->correlation_token = correlation_token;
 }
@@ -65,17 +66,17 @@ bool supla_alexa_response_request::make_request(
   set_message_id("");
   correlation_token = "";
 
-  int func = 0;
+  supla_channel_fragment fragment;
   bool online = false;
 
-  supla_channel_value *value = get_channel_value(&func, &online);
+  supla_channel_value *value = get_channel_value(&fragment, &online);
 
   client.set_channel_connected(online);
   client.set_channel_value(value);
   client.set_subchannel_id(subchannel_id);
   client.set_cause_type(get_caller());
 
-  switch (func) {
+  switch (fragment.get_function()) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
@@ -96,6 +97,19 @@ bool supla_alexa_response_request::make_request(
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       client.add_percentage_controller();
+      break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      if (online) {
+        supla_channel_hvac_value_with_temphum::expand(&value, &fragment,
+                                                      get_property_getter());
+        client.set_channel_value(value);
+      }
+
+      client.add_thermostat_controller();
       break;
   }
 
@@ -118,6 +132,11 @@ bool supla_alexa_response_request::is_function_allowed(int func) {
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       return true;
     default:
       return false;
@@ -135,21 +154,12 @@ void supla_alexa_response_request::new_request(
     return;
   }
 
-  if (caller == ctDevice) {
-    supla_alexa_response_search_condition cnd(user->getUserID(), device_id,
-                                              channel_id);
-    supla_asynctask_queue::global_instance()->access_task(
-        &cnd, [](supla_abstract_asynctask *task) -> void {
-          task->set_delay_usec(0);
-        });
-  }
-
   if (correlation_token.size() == 0 || !is_caller_allowed(caller)) {
     return;
   }
 
-  supla_cahnnel_property_getter *property_getter =
-      new supla_cahnnel_property_getter();
+  supla_channel_property_getter *property_getter =
+      new supla_channel_property_getter();
 
   int func =
       property_getter->get_func(user->getUserID(), device_id, channel_id);

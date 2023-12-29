@@ -86,7 +86,7 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
                     int user_id, int device_id, int channel_id,
                     supla_channel_fragment *_fragment, bool *_connected) {
         *_fragment =
-            supla_channel_fragment(device_id, channel_id, 0, func, 0, false);
+            supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
         *_connected = online;
 
         return value;
@@ -117,7 +117,7 @@ void StateWebhookRequestTest::makeTest(
                                supla_channel_fragment *_fragment,
                                bool *_connected) {
         *_fragment =
-            supla_channel_fragment(device_id, channel_id, 0, func, 0, false);
+            supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
         *_connected = online;
 
         return new supla_channel_value();
@@ -963,7 +963,7 @@ TEST_F(StateWebhookRequestTest,
   em_ev.total_forward_active_energy_balanced = 100000;
   em_ev.total_reverse_active_energy_balanced = 100000;
 
-  em_ev.measured_values = EM_VAR_ALL | EM_VAR_POWER_ACTIVE_KW |
+  em_ev.measured_values = 0xFFFF | EM_VAR_POWER_ACTIVE_KW |
                           EM_VAR_POWER_REACTIVE_KVAR |
                           EM_VAR_POWER_APPARENT_KVA;
   em_ev.period = 1;
@@ -1023,7 +1023,7 @@ TEST_F(StateWebhookRequestTest, sendElectricityMeasurementReport_AllVars) {
   em_ev.total_forward_active_energy_balanced = 100000;
   em_ev.total_reverse_active_energy_balanced = 100000;
 
-  em_ev.measured_values = EM_VAR_ALL;
+  em_ev.measured_values = 0xFFFF;
   em_ev.period = 1;
   em_ev.m_count = 1;
 
@@ -1082,7 +1082,7 @@ TEST_F(StateWebhookRequestTest,
   em_ev.total_forward_active_energy_balanced = 100000;
   em_ev.total_reverse_active_energy_balanced = 100000;
 
-  em_ev.measured_values = EM_VAR_ALL;
+  em_ev.measured_values = 0xFFFF;
   em_ev.measured_values ^= EM_VAR_VOLTAGE;
   em_ev.measured_values ^= EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED;
   em_ev.period = 1;
@@ -1137,7 +1137,7 @@ TEST_F(StateWebhookRequestTest,
   em_ev.total_forward_active_energy_balanced = 100000;
   em_ev.total_reverse_active_energy_balanced = 100000;
 
-  em_ev.measured_values = EM_VAR_ALL;
+  em_ev.measured_values = 0xFFFF;
   em_ev.period = 1;
 
   char currency[] = "PLN";

@@ -40,6 +40,11 @@ supla_action_hvac_parameters::supla_action_hvac_parameters(
   }
 }
 
+supla_action_hvac_parameters::supla_action_hvac_parameters(int mode) {
+  this->params = {};
+  this->params.Mode = mode;
+}
+
 supla_action_hvac_parameters::~supla_action_hvac_parameters(void) {}
 
 bool supla_action_hvac_parameters::equal(
@@ -61,15 +66,15 @@ void supla_action_hvac_parameters::apply_on(
   value->set_mode(params.Mode);
 
   if (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET) {
-    value->set_temperature_heat(params.SetpointTemperatureHeat);
+    value->set_setpoint_temperature_heat(params.SetpointTemperatureHeat);
   } else {
-    value->set_temperature_heat_to_null();
+    value->set_setpoint_temperature_heat_to_null();
   }
 
   if (params.Flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET) {
-    value->set_temperature_cool(params.SetpointTemperatureCool);
+    value->set_setpoint_temperature_cool(params.SetpointTemperatureCool);
   } else {
-    value->set_temperature_cool_to_null();
+    value->set_setpoint_temperature_cool_to_null();
   }
 }
 

@@ -33,7 +33,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
 
   char *s_mqtt = "MQTT-BROKER";
-  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 46)
+  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 48)
   // This ensures that realloc will only be called once
   scfg_add_int_param(CFG_MQTT_KEEP_ALIVE_SEC, s_mqtt, "CFG_MQTT_KEEP_ALIVE_SEC",
                      30);
@@ -90,7 +90,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(CFG_HTTP_THREAD_COUNT_LIMIT, s_http, "thread_count_limit",
                      50);
   scfg_add_int_param(CFG_HTTP_REQUESTS_PER_THREAD, s_http,
-                     "requests_per_thread", 10);
+                     "requests_per_thread", 5);
   scfg_add_int_param(CFG_HTTP_THREAD_KEEP_ALIVE_SEC, s_http,
                      "thread_keep_alive", 10);
   scfg_add_int_param(CFG_HTTP_KEEP_ALIVE_MAX_THREAD_COUNT, s_http,
@@ -115,6 +115,10 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
                      4000);
   scfg_add_int_param(CFG_ALEXA_CHANGEREPORT_TIMEOUT, s_alexa,
                      "changereport_timeout", 30000);
+  scfg_add_int_param(CFG_ALEXA_DISCOVER_REQUEST_TIMEOUT, s_alexa,
+                     "discover_request_timeout", 30000);
+  scfg_add_int_param(CFG_ALEXA_DELETE_REQUEST_TIMEOUT, s_alexa,
+                     "delete_request_timeout", 30000);
 
   char *s_google_home = "GOOGLE-HOME";
   scfg_add_int_param(CFG_GOOGLE_HOME_SYNCREQUEST_TIMEOUT, s_google_home,

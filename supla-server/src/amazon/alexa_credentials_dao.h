@@ -25,11 +25,14 @@
 
 class supla_amazon_alexa_credentials_dao {
  private:
+  bool release_dba;
   supla_abstract_db_access_provider *dba;
 
  public:
   explicit supla_amazon_alexa_credentials_dao(
       supla_abstract_db_access_provider *dba);
+  supla_amazon_alexa_credentials_dao(supla_abstract_db_access_provider *dba,
+                                     bool release_dba);
 
   virtual ~supla_amazon_alexa_credentials_dao();
 
@@ -39,6 +42,7 @@ class supla_amazon_alexa_credentials_dao {
   virtual void set(int user_id, const std::string &access_token,
                    const std::string &refresh_token, int expires_in);
   virtual void remove(int user_id);
+  virtual std::string get_cloud_access_token(int user_id);
 };
 
 #endif /* AMAZON_ALEXA_CREDENTIALS_DAO_H_ */

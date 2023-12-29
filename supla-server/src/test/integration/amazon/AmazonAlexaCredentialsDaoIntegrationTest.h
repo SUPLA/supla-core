@@ -16,20 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_THERMOSTAT_VALUE_H_
-#define CHANNEL_THERMOSTAT_VALUE_H_
+#ifndef AmazonAlexaCredentialsDaoIntegrationTest_H_
+#define AmazonAlexaCredentialsDaoIntegrationTest_H_
 
-#include "device/value/channel_value.h"
+#include "db/db_access_provider.h"
+#include "integration/IntegrationTest.h"
 
-class supla_channel_thermostat_value : public supla_channel_value {
+namespace testing {
+
+class AmazonAlexaCredentialsDaoIntegrationTest : public IntegrationTest,
+                                                 public Test {
+ protected:
+  supla_db_access_provider dba;
+
  public:
-  supla_channel_thermostat_value(void);
-  explicit supla_channel_thermostat_value(
-      char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  bool is_on(void);
-  double get_measured_temperature(void);
-  double get_preset_temperature(void);
-  static bool is_function_supported(int func);
 };
 
-#endif /*CHANNEL_THERMOSTAT_VALUE_H_*/
+} /* namespace testing */
+
+#endif /* AmazonAlexaCredentialsDaoIntegrationTest_H_*/

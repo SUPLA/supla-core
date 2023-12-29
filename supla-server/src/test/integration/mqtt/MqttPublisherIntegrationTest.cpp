@@ -62,7 +62,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {
   waitForConnection();
-  waitForPublications(690);
+  waitForPublications(734);
   // print_expected();
 
   const char *expectedData[] = {
@@ -392,6 +392,20 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "11",
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/soft_ver",
       "2.7.25",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/enabled",
+      "true",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/last_connected",
+      "2023-12-03T19:29:27Z",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/last_ipv4",
+      "79.110.195.206",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/manufacturer",
+      "Zamel",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/name",
+      "ZAMEL GKW-01",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/proto_ver",
+      "21",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/soft_ver",
+      "23.11.01",
       "supla/bd6287c398bc81403c643410f5043d4e/devices/9236/enabled",
       "true",
       "supla/bd6287c398bc81403c643410f5043d4e/devices/9236/last_connected",
@@ -1239,8 +1253,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "1)\",\"uniq_id\":\"supla_966_16\",\"qos\":0,\"unit_of_meas\":\"%\","
       "\"stat_t\":\"~/state/phases/1/power_factor\",\"val_tpl\":\"{% if "
       "float(value, default=none) == None %}None{% else %}{{float(value) * "
-      "100.0 "
-      "| round(5)}}{% endif "
+      "100.0 | round(5)}}{% endif "
       "%}\",\"dev_cla\":\"power_factor\",\"state_class\":\"measurement\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_17/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
@@ -1395,8 +1408,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "2)\",\"uniq_id\":\"supla_966_28\",\"qos\":0,\"unit_of_meas\":\"%\","
       "\"stat_t\":\"~/state/phases/2/power_factor\",\"val_tpl\":\"{% if "
       "float(value, default=none) == None %}None{% else %}{{float(value) * "
-      "100.0 "
-      "| round(5)}}{% endif "
+      "100.0 | round(5)}}{% endif "
       "%}\",\"dev_cla\":\"power_factor\",\"state_class\":\"measurement\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_29/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
@@ -1551,8 +1563,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "3)\",\"uniq_id\":\"supla_966_40\",\"qos\":0,\"unit_of_meas\":\"%\","
       "\"stat_t\":\"~/state/phases/3/power_factor\",\"val_tpl\":\"{% if "
       "float(value, default=none) == None %}None{% else %}{{float(value) * "
-      "100.0 "
-      "| round(5)}}{% endif "
+      "100.0 | round(5)}}{% endif "
       "%}\",\"dev_cla\":\"power_factor\",\"state_class\":\"measurement\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_41/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
@@ -1784,12 +1795,181 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
       "hidden",
       "false",
+      "homeassistant/climate/7450214b8189dc129301c2c922cdcfd0/16708/config",
+      "{\"avty\":{\"topic\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/"
+      "9934/channels/16708/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/"
+      "channels/"
+      "16708\",\"device\":{\"ids\":\"supla-iodevice-9934\",\"mf\":\"Heatpol\","
+      "\"name\":\"HEATPOL HOME+\",\"sw\":\"2.7.25\"},\"name\":\"Home+ "
+      "Heater\",\"uniq_id\":\"supla_16708\",\"qos\":0,\"ret\":false,\"opt\":"
+      "false,\"act_t\":\"~/state/action\",\"curr_temp_t\":\"~/state/"
+      "temperature\",\"current_humidity_topic\":\"None\",\"min_temp\":\"10\","
+      "\"max_temp\":\"30\",\"modes\":[\"off\",\"auto\",\"heat\"],\"mode_stat_"
+      "t\":\"~/state/mode\",\"mode_cmd_t\":\"~/"
+      "execute_action\",\"power_command_topic\":\"~/"
+      "execute_action\",\"pl_on\":\"TURN_ON\",\"pl_off\":\"TURN_OFF\",\"temp_"
+      "unit\":\"C\",\"temp_step\":\"0.1\",\"temp_cmd_t\":\"~/set/"
+      "temperature_setpoint\",\"temp_stat_t\":\"~/state/"
+      "temperature_setpoint\"}",
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
       "state/connected",
       "false",
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
       "state/on",
       NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
+      "state/mode",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
+      "state/action",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
+      "state/temperature_setpoint",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
+      "state/temperature",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "type",
+      "HVAC",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "function",
+      "HVAC_THERMOSTAT",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "caption",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "hidden",
+      "false",
+      "homeassistant/climate/7450214b8189dc129301c2c922cdcfd0/73228/config",
+      "{\"avty\":{\"topic\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/"
+      "23267/channels/73228/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/"
+      "channels/"
+      "73228\",\"device\":{\"ids\":\"supla-iodevice-23267\",\"mf\":\"Zamel\","
+      "\"name\":\"ZAMEL "
+      "GKW-01\",\"sw\":\"23.11.01\"},\"name\":\"Thermostat\",\"uniq_id\":"
+      "\"supla_73228\",\"qos\":0,\"ret\":false,\"opt\":false,\"act_t\":\"~/"
+      "state/"
+      "action\",\"curr_temp_t\":\"None\",\"current_humidity_topic\":\"None\","
+      "\"min_temp\":\"5.00\",\"max_temp\":\"40.00\",\"modes\":[\"off\","
+      "\"auto\",\"heat\"],\"mode_stat_t\":\"~/state/mode\",\"mode_cmd_t\":\"~/"
+      "execute_action\",\"power_command_topic\":\"~/"
+      "execute_action\",\"pl_on\":\"TURN_ON\",\"pl_off\":\"TURN_OFF\",\"temp_"
+      "unit\":\"C\",\"temp_step\":\"0.1\",\"temp_cmd_t\":\"~/set/"
+      "temperature_setpoint\",\"temp_stat_t\":\"~/state/"
+      "temperature_setpoint\"}",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "state/connected",
+      "false",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "state/mode",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "state/action",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "state/temperature_setpoint",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "state/temperature_setpoint_cool",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73228/"
+      "state/temperature_setpoint_heat",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73229/"
+      "type",
+      "HUMIDITYANDTEMPSENSOR",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73229/"
+      "function",
+      "HUMIDITYANDTEMPERATURE",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73229/"
+      "caption",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73229/"
+      "hidden",
+      "false",
+      "homeassistant/sensor/7450214b8189dc129301c2c922cdcfd0/73229_0/config",
+      "{\"avty\":{\"topic\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/"
+      "23267/channels/73229/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/"
+      "channels/"
+      "73229\",\"device\":{\"ids\":\"supla-iodevice-23267\",\"mf\":\"Zamel\","
+      "\"name\":\"ZAMEL "
+      "GKW-01\",\"sw\":\"23.11.01\"},\"name\":\"Humidity\",\"uniq_id\":\"supla_"
+      "73229_0\",\"qos\":0,\"unit_of_meas\":\"%\",\"stat_t\":\"~/state/"
+      "humidity\",\"val_tpl\":\"{{ value | round(1,default=none) "
+      "}}\",\"state_class\":\"measurement\"}",
+      "homeassistant/sensor/7450214b8189dc129301c2c922cdcfd0/73229_1/config",
+      "{\"avty\":{\"topic\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/"
+      "23267/channels/73229/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/"
+      "channels/"
+      "73229\",\"device\":{\"ids\":\"supla-iodevice-23267\",\"mf\":\"Zamel\","
+      "\"name\":\"ZAMEL "
+      "GKW-01\",\"sw\":\"23.11.01\"},\"name\":\"Temperature\",\"uniq_id\":"
+      "\"supla_73229_1\",\"qos\":0,\"unit_of_meas\":\"°C\",\"stat_t\":\"~/"
+      "state/temperature\",\"val_tpl\":\"{{ value | round(1,default=none) "
+      "}}\",\"state_class\":\"measurement\"}",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73229/"
+      "state/connected",
+      "false",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73229/"
+      "state/humidity",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73229/"
+      "state/temperature",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73230/"
+      "type",
+      "THERMOMETER",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73230/"
+      "function",
+      "THERMOMETER",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73230/"
+      "caption",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73230/"
+      "hidden",
+      "false",
+      "homeassistant/sensor/7450214b8189dc129301c2c922cdcfd0/73230/config",
+      "{\"avty\":{\"topic\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/"
+      "23267/channels/73230/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/"
+      "channels/"
+      "73230\",\"device\":{\"ids\":\"supla-iodevice-23267\",\"mf\":\"Zamel\","
+      "\"name\":\"ZAMEL "
+      "GKW-01\",\"sw\":\"23.11.01\"},\"name\":\"Temperature\",\"uniq_id\":"
+      "\"supla_73230\",\"qos\":0,\"unit_of_meas\":\"°C\",\"stat_t\":\"~/state/"
+      "temperature\",\"val_tpl\":\"{{ value | round(1,default=none) "
+      "}}\",\"state_class\":\"measurement\"}",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73230/"
+      "state/connected",
+      "false",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73230/"
+      "state/temperature",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73231/"
+      "type",
+      "BINARYSENSOR",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73231/"
+      "function",
+      "NONE",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73231/"
+      "caption",
+      NULL,
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73231/"
+      "hidden",
+      "false",
+      "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73231/"
+      "state/connected",
+      "false",
       "supla/bd6287c398bc81403c643410f5043d4e/devices/9236/channels/15039/type",
       "BINARYSENSOR",
       "supla/bd6287c398bc81403c643410f5043d4e/devices/9236/channels/15039/"
@@ -2677,107 +2857,13 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
   verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
 }
 
-TEST_F(MqttPublisherIntegrationTest, deviceScope) {
-  waitForConnection();
-  waitForPublications(690);
-  getLibAdapter()->published_clear();
-
-  getDS()->on_userdata_changed(2487);
-  waitForPublications(30);
-  getLibAdapter()->published_clear();
-
-  getDS()->on_devicedata_changed(1802, 9717);
-  waitForPublications(21);
-
-  // print_expected();
-
-  const char *expectedData[] = {
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/enabled",
-      "true",
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/last_connected",
-      "2020-11-11T12:41:52Z",
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/last_ipv4",
-      "188.137.114.68",
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/manufacturer",
-      NULL,
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/name",
-      "IMPULSE COUNTER",
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/proto_ver",
-      "10",
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/soft_ver",
-      "2.7.2",
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/type",
-      "IMPULSECOUNTER",
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
-      "function",
-      "IC_ELECTRICITYMETER",
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
-      "caption",
-      NULL,
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
-      "hidden",
-      "false",
-      "homeassistant/sensor/64d3d5bd59eb5fe2b67bf4fe4d222905/16166_0/config",
-      "{\"avty\":{\"topic\":\"supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/"
-      "9717/channels/16166/state/"
-      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
-      "\"false\"},\"~\":\"supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/"
-      "channels/"
-      "16166\",\"device\":{\"ids\":\"supla-iodevice-9717\",\"mf\":\"\","
-      "\"name\":\"IMPULSE COUNTER\",\"sw\":\"2.7.2\"},\"name\":\"Electricity "
-      "meter "
-      "(Value)\",\"uniq_id\":\"supla_16166_0\",\"qos\":0,\"unit_of_meas\":"
-      "\"kWh\",\"stat_t\":\"~/state/calculated_value\",\"val_tpl\":\"{{ value "
-      "| round(3,default=none) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
-      "homeassistant/sensor/64d3d5bd59eb5fe2b67bf4fe4d222905/16166_1/config",
-      "{\"avty\":{\"topic\":\"supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/"
-      "9717/channels/16166/state/"
-      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
-      "\"false\"},\"~\":\"supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/"
-      "channels/"
-      "16166\",\"device\":{\"ids\":\"supla-iodevice-9717\",\"mf\":\"\","
-      "\"name\":\"IMPULSE COUNTER\",\"sw\":\"2.7.2\"},\"name\":\"Electricity "
-      "meter (Total "
-      "cost)\",\"uniq_id\":\"supla_16166_1\",\"qos\":0,\"unit_of_meas\":"
-      "\"PLN\",\"stat_t\":\"~/state/total_cost\",\"val_tpl\":\"{{ value | "
-      "round(2,default=none) "
-      "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"measurement\"}",
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
-      "state/connected",
-      "false",
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
-      "state/total_cost",
-      NULL,
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
-      "state/price_per_unit",
-      NULL,
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
-      "state/impulses_per_unit",
-      NULL,
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
-      "state/counter",
-      NULL,
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
-      "state/calculated_value",
-      NULL,
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
-      "state/currency",
-      NULL,
-      "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
-      "state/unit",
-      NULL};
-
-  verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
-}
-
 TEST_F(MqttPublisherIntegrationTest, actionTrigger) {
   if (!supla_user::find(3748, false)) {
     new supla_user(3748, "aa4f2278a5dbdcdb4fa52278dbdca54f", "");
   }
 
   waitForConnection();
-  waitForPublications(690);
+  waitForPublications(734);
   getLibAdapter()->published_clear();
 
   dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())

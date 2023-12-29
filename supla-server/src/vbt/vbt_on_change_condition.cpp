@@ -24,9 +24,12 @@
 #include <string>
 
 #include "device/extended_value/channel_em_extended_value.h"
+#include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
+#include "device/value/channel_hvac_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
@@ -120,7 +123,12 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_rae_sum, "rae_sum"},
         {var_name_rae_balanced, "rae_balanced"},
         {var_name_counter, "counter"},
-        {var_name_calculated_value, "calculated_value"}};
+        {var_name_calculated_value, "calculated_value"},
+        {var_name_heating, "heating"},
+        {var_name_cooling, "cooling"},
+        {var_name_heating_or_cooling, "heating_or_cooling"},
+        {var_name_is_on, "is_on"},
+        {var_name_is_any_error_set, "is_any_error_set"}};
 
     for (auto it = names.begin(); it != names.end(); ++it) {
       if (it->second == cJSON_GetStringValue(name_json)) {
@@ -281,7 +289,34 @@ bool supla_vbt_on_change_condition::get_number(supla_channel_value *value,
                 : 0;
         break;
       default:
-        return vv->get_valve_value()->closed ? 1 : 0;
+        *result = vv->get_valve_value()->closed ? 1 : 0;
+    }
+
+    return true;
+  }
+
+  if (dynamic_cast<supla_channel_hvac_value *>(value)) {
+    supla_channel_hvac_value *hvac =
+        dynamic_cast<supla_channel_hvac_value *>(value);
+
+    switch (var_name) {
+      case var_name_heating:
+        *result = hvac->is_heating() ? 1 : 0;
+        break;
+      case var_name_cooling:
+        *result = hvac->is_cooling() ? 1 : 0;
+        break;
+      case var_name_heating_or_cooling:
+        *result = hvac->is_heating() || hvac->is_cooling() ? 1 : 0;
+        break;
+      case var_name_is_on:
+        *result = hvac->is_on() ? 1 : 0;
+        break;
+      case var_name_is_any_error_set:
+        *result = hvac->is_any_error_set() ? 1 : 0;
+        break;
+      default:
+        return false;
     }
 
     return true;
@@ -402,6 +437,25 @@ bool supla_vbt_on_change_condition::get_number(
         break;
       case var_name_calculated_value:
         *result = ic->get_calculated_value_dbl();
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  } else if (dynamic_cast<supla_channel_thermostat_extended_value *>(value)) {
+    supla_channel_thermostat_extended_value *thev =
+        dynamic_cast<supla_channel_thermostat_extended_value *>(value);
+
+    // Currently, only heatpol uses this, so we do not need to check the channel
+    // function.
+
+    supla_channel_hp_thermostat_ev_decorator decorator(thev);
+
+    switch (var_name) {
+      case var_name_heating:
+      case var_name_is_on:
+        *result = decorator.is_heating() ? 1 : 0;
         break;
       default:
         return false;

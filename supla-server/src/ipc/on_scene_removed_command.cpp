@@ -17,6 +17,7 @@
  */
 
 #include <ipc/on_scene_removed_command.h>
+
 #include "user.h"
 
 supla_on_scene_removed_command::supla_on_scene_removed_command(
@@ -25,5 +26,5 @@ supla_on_scene_removed_command::supla_on_scene_removed_command(
 
 void supla_on_scene_removed_command::on_scene_removed(int user_id,
                                                       int scene_id) {
-  supla_user::on_scene_changed(get_caller(), user_id, scene_id);
+  supla_user::on_scene_removed(get_caller(), user_id, scene_id);
 }

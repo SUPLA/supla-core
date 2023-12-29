@@ -201,3 +201,8 @@ _supla_int_t supla_srpc_adapter::sc_async_device_config_update_or_result(
     TSC_DeviceConfigUpdateOrResult *config) {
   return srpc_sc_async_device_config_update_or_result(get_srpc(), config);
 }
+
+_supla_int_t supla_srpc_adapter::sd_async_device_calcfg_request(
+    TSD_DeviceCalCfgRequest *request) {
+  return srpc_sd_async_device_calcfg_request(get_srpc(), request);
+}

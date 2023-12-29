@@ -19,10 +19,13 @@
 #include "MqttStateMessageProviderTest.h"
 
 #include "device/extended_value/channel_em_extended_value.h"
+#include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
+#include "device/value/channel_hp_thermostat_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_openclosed_value.h"
 #include "device/value/channel_rgbw_value.h"
@@ -53,7 +56,7 @@ void MqttStateMessageProviderTest::SetResultValue(int func, bool connected,
                     int user_id, int device_id, int channel_id,
                     supla_channel_fragment *_fragment, bool *_connected) {
         *_fragment =
-            supla_channel_fragment(device_id, channel_id, 0, func, 0, false);
+            supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
         *_connected = connected;
         return value;
       });
@@ -635,7 +638,7 @@ TEST_F(MqttStateMessageProviderTest, electricityMeter) {
   SetResultValue(SUPLA_CHANNELFNC_ELECTRICITY_METER, true,
                  new supla_channel_value());
 
-  SetElectricityMeasurementResult(EM_VAR_ALL, 1);
+  SetElectricityMeasurementResult(0xFFFF, 1);
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -920,7 +923,7 @@ TEST_F(MqttStateMessageProviderTest, measurementUnitChangeTest) {
   SetResultValue(SUPLA_CHANNELFNC_ELECTRICITY_METER, true,
                  new supla_channel_value());
 
-  SetElectricityMeasurementResult(EM_VAR_ALL | EM_VAR_POWER_ACTIVE_KW |
+  SetElectricityMeasurementResult(0xFFFF | EM_VAR_POWER_ACTIVE_KW |
                                       EM_VAR_POWER_REACTIVE_KVAR |
                                       EM_VAR_POWER_APPARENT_KVA,
                                   1);
@@ -1280,7 +1283,7 @@ TEST_F(MqttStateMessageProviderTest, electricityMeterWithoutMeasurements) {
   SetResultValue(SUPLA_CHANNELFNC_ELECTRICITY_METER, true,
                  new supla_channel_value());
 
-  SetElectricityMeasurementResult(EM_VAR_ALL, 0);
+  SetElectricityMeasurementResult(0xFFFF, 0);
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -1555,6 +1558,144 @@ TEST_F(MqttStateMessageProviderTest, electricityMeterWithoutMeasurements) {
                               "456/channels/%i/state/phases/%i/"
                               "phase_angle",
                               789, 3));
+
+  ASSERT_FALSE(dataExists(&provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, thermostatHomePlus) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((TThermostat_Value *)raw_value)->IsOn = 1;
+  ((TThermostat_Value *)raw_value)->PresetTemperature = 1234;
+  ((TThermostat_Value *)raw_value)->MeasuredTemperature = 4456;
+
+  SetResultValue(SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS, true,
+                 new supla_channel_hp_thermostat_value(raw_value));
+
+  TSuplaChannelExtendedValue ev = {};
+  TThermostat_ExtendedValue th_ev = {};
+  th_ev.Fields = THERMOSTAT_FIELD_Flags;
+  th_ev.Flags[4] = HP_STATUS_POWERON | HP_STATUS_HEATING;
+
+  srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev);
+
+  EXPECT_CALL(propertyGetter, _get_extended_value(Eq(123), Eq(456), Eq(789)))
+      .Times(1)
+      .WillOnce(Return(new supla_channel_thermostat_extended_value(&ev)));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      &provider, NULL, "true", false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/on",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "heat", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/mode",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "heating", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/action",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "12.34", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "44.56", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature",
+                              789));
+
+  ASSERT_FALSE(dataExists(&provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, hvacThermostat) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue *)raw_value)->Mode = SUPLA_HVAC_MODE_HEAT;
+  ((THVACValue *)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_HEATING;
+  ((THVACValue *)raw_value)->SetpointTemperatureHeat = 2122;
+
+  SetResultValue(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
+                 new supla_channel_hvac_value(raw_value));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "heat", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/mode",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "heating", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/action",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "21.22", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, nullptr, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint_cool",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, nullptr, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint_heat",
+                              789));
+
+  ASSERT_FALSE(dataExists(&provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, hvacThermostatHeatCool) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue *)raw_value)->Mode = SUPLA_HVAC_MODE_HEAT;
+  ((THVACValue *)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_HEATING;
+  ((THVACValue *)raw_value)->SetpointTemperatureCool = 543;
+  ((THVACValue *)raw_value)->SetpointTemperatureHeat = 2122;
+
+  SetResultValue(SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL, true,
+                 new supla_channel_hvac_value(raw_value));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "heat", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/mode",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "heating", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/action",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, nullptr, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "5.43", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint_cool",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "21.22", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint_heat",
+                              789));
 
   ASSERT_FALSE(dataExists(&provider));
 }

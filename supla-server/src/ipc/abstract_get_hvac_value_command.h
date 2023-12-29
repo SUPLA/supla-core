@@ -21,15 +21,15 @@
 
 #include <string>
 
-#include "device/value/channel_hvac_value.h"
+#include "device/value/channel_hvac_value_with_temphum.h"
 #include "ipc/abstract_ipc_command.h"
 
 class supla_abstract_get_hvac_value_command
     : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual supla_channel_hvac_value *get_hvac_value(int user_id, int device_id,
-                                                   int channel_id) = 0;
+  virtual supla_channel_hvac_value_with_temphum *get_hvac_value(
+      int user_id, int device_id, int channel_id) = 0;
 
  public:
   explicit supla_abstract_get_hvac_value_command(

@@ -45,7 +45,7 @@ TEST_F(WeeklyScheduleConfigTest, setAndGetConfig) {
   sd_config1.Program[2].SetpointTemperatureHeat = 50;
   sd_config1.Program[2].SetpointTemperatureCool = 60;
 
-  sd_config1.Program[3].Mode = SUPLA_HVAC_MODE_AUTO;
+  sd_config1.Program[3].Mode = SUPLA_HVAC_MODE_HEAT_COOL;
   sd_config1.Program[3].SetpointTemperatureHeat = 70;
   sd_config1.Program[3].SetpointTemperatureCool = 80;
 
@@ -74,7 +74,7 @@ TEST_F(WeeklyScheduleConfigTest, setAndGetConfig) {
       "\"2\":{\"mode\":\"DRY\",\"setpointTemperatureHeat\":30,"
       "\"setpointTemperatureCool\":40},\"3\":{\"mode\":\"FAN_ONLY\","
       "\"setpointTemperatureHeat\":50,\"setpointTemperatureCool\":60},\"4\":{"
-      "\"mode\":\"AUTO\",\"setpointTemperatureHeat\":70,"
+      "\"mode\":\"HEAT_COOL\",\"setpointTemperatureHeat\":70,"
       "\"setpointTemperatureCool\":80}},\"quarters\":[0,1,2,3,4,5,6,7,8,9,10,"
       "11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,"
       "9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,"
@@ -187,7 +187,7 @@ TEST_F(WeeklyScheduleConfigTest, merge) {
       "\"2\":{\"mode\":\"DRY\",\"setpointTemperatureHeat\":30,"
       "\"setpointTemperatureCool\":40},\"3\":{\"mode\":\"FAN_ONLY\","
       "\"setpointTemperatureHeat\":50,\"setpointTemperatureCool\":60},\"4\":{"
-      "\"mode\":\"AUTO\",\"setpointTemperatureHeat\":70,"
+      "\"mode\":\"HEAT_COOL\",\"setpointTemperatureHeat\":70,"
       "\"setpointTemperatureCool\":80}},\"quarters\":[0,3,2,3,4,5,6,7,8,9,10,"
       "11,"
       "12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,"
@@ -221,7 +221,7 @@ TEST_F(WeeklyScheduleConfigTest, merge) {
       "\"mode\":\"DRY\",\"setpointTemperatureHeat\":300,"
       "\"setpointTemperatureCool\":400},\"3\":{\"mode\":\"FAN_ONLY\","
       "\"setpointTemperatureHeat\":500,\"setpointTemperatureCool\":600},\"4\":{"
-      "\"mode\":\"AUTO\",\"setpointTemperatureHeat\":700,"
+      "\"mode\":\"HEAT_COOL\",\"setpointTemperatureHeat\":700,"
       "\"setpointTemperatureCool\":800}},\"quarters\":[0,1,2,3,4,5,6,7,8,9,10,"
       "11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,"
       "9]}}");
@@ -238,7 +238,7 @@ TEST_F(WeeklyScheduleConfigTest, merge) {
       "\"2\":{\"mode\":\"DRY\",\"setpointTemperatureHeat\":300,"
       "\"setpointTemperatureCool\":400},\"3\":{\"mode\":\"FAN_ONLY\","
       "\"setpointTemperatureHeat\":500,\"setpointTemperatureCool\":600},"
-      "\"4\":{\"mode\":\"AUTO\",\"setpointTemperatureHeat\":700,"
+      "\"4\":{\"mode\":\"HEAT_COOL\",\"setpointTemperatureHeat\":700,"
       "\"setpointTemperatureCool\":800}},\"quarters\":[0,1,2,3,4,5,6,7,"
       "8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,"
       "1,2,3,4,5,6,7,8,9]}}");

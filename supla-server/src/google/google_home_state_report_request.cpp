@@ -19,6 +19,7 @@
 #include "google_home_state_report_request.h"
 
 #include "device/channel_property_getter.h"
+#include "device/value/channel_hvac_value_with_temphum.h"
 #include "google/google_home_client.h"
 #include "google/google_home_state_report_search_condition.h"
 #include "google/google_home_state_report_throttling.h"
@@ -69,17 +70,17 @@ bool supla_google_home_state_report_request::make_request(
 
   supla_google_home_client client(get_channel_id(), curl_adapter, credentials);
 
-  int func = 0;
+  supla_channel_fragment fragment;
   bool online = false;
 
-  supla_channel_value *value = get_channel_value(&func, &online);
+  supla_channel_value *value = get_channel_value(&fragment, &online);
 
   client.set_channel_connected(online);
   client.set_channel_value(value);
   client.set_request_id(get_request_id());
   set_request_id("");
 
-  switch (func) {
+  switch (fragment.get_function()) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
@@ -103,6 +104,19 @@ bool supla_google_home_state_report_request::make_request(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       client.add_gate_state();
+      break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      if (online) {
+        supla_channel_hvac_value_with_temphum::expand(&value, &fragment,
+                                                      get_property_getter());
+        client.set_channel_value(value);
+      }
+
+      client.add_thermostat_state();
       break;
     default:
       return false;
@@ -144,6 +158,11 @@ bool supla_google_home_state_report_request::is_function_allowed(int func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       return true;
     default:
       return false;
@@ -162,8 +181,8 @@ void supla_google_home_state_report_request::new_request(
     return;
   }
 
-  supla_cahnnel_property_getter *property_getter =
-      new supla_cahnnel_property_getter();
+  supla_channel_property_getter *property_getter =
+      new supla_channel_property_getter();
 
   int func =
       property_getter->get_func(user->getUserID(), device_id, channel_id);

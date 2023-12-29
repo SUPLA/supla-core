@@ -20,15 +20,15 @@
 #define MQTTCHANNELMESSAGEPROVIDERTEST_H_
 
 #include "MqttMessageProviderTest.h"
+#include "doubles/mqtt/MqttChannelMessageProviderMock.h"
 #include "gtest/gtest.h"  // NOLINT
-#include "mqtt_channel_message_provider.h"
 #include "mqtt_db.h"
 
 namespace testing {
 
 class MqttChannelMessageProviderTest : public MqttMessageProviderTest {
  protected:
-  supla_mqtt_channel_message_provider *provider;
+  MqttChannelMessageProviderMock *provider;
   void fillChannelData(_mqtt_db_data_row_channel_t *row_channel);
   void electricityMeterTest(int channel_flags);
 

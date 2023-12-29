@@ -158,7 +158,7 @@ void supla_value_based_triggers::on_channel_value_changed(
     const supla_caller &caller, int channel_id, supla_channel_value *old_value,
     supla_channel_value *new_value) {
   supla_action_executor exec;
-  supla_cahnnel_property_getter property_getter;
+  supla_channel_property_getter property_getter;
 
   on_channel_value_changed(caller, channel_id, old_value, new_value, &exec,
                            &property_getter);
@@ -179,7 +179,7 @@ void supla_value_based_triggers::on_channel_value_changed(
     supla_channel_extended_value *old_value,
     supla_channel_extended_value *new_value) {
   supla_action_executor exec;
-  supla_cahnnel_property_getter property_getter;
+  supla_channel_property_getter property_getter;
 
   on_channel_value_changed(caller, channel_id, old_value, new_value, &exec,
                            &property_getter);

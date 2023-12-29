@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "device/channel_fragment.h"
 #include "device/extended_value/channel_extended_value.h"
 #include "jsonconfig/device/device_json_config.h"
 #include "jsonconfig/json_config.h"
@@ -58,7 +59,7 @@ class supla_abstract_device_dao {
 
   virtual bool get_device_variables(int device_id, bool *device_enabled,
                                     int *original_location_id, int *location_id,
-                                    bool *location_enabled) = 0;
+                                    bool *location_enabled, int *flags) = 0;
 
   virtual int get_channel_id_and_type(int device_id, int channel_number,
                                       int *type) = 0;
@@ -115,6 +116,12 @@ class supla_abstract_device_dao {
   virtual supla_json_config *get_channel_config(
       int channel_id, std::string *user_config_md5sum,
       std::string *properties_md5sum) = 0;
+
+  virtual std::vector<supla_channel_fragment> get_channel_fragments(
+      int device_id) = 0;
+
+  virtual supla_channel_fragment get_channel_fragment(int device_id,
+                                                      int channel_number) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_DEVICE_DAO_H_ */

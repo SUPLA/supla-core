@@ -34,17 +34,23 @@ class supla_http_event_hub {
   static void on_channel_added(supla_user *user, int deviceId,
                                const supla_caller &caller);
 
+  static void before_device_delete(supla_user *user, int deviceId,
+                                   const supla_caller &caller);
+
   static void on_device_deleted(supla_user *user, int deviceId,
                                 const supla_caller &caller);
 
   static void on_user_reconnect(supla_user *user, const supla_caller &caller);
 
-  static void on_google_home_sync_needed(supla_user *user,
-                                         const supla_caller &caller);
+  static void on_voice_assistant_sync_needed(supla_user *user,
+                                             const supla_caller &caller);
 
   static void on_actions_triggered(const supla_caller &caller, supla_user *user,
                                    int deviceId, int channelId,
                                    unsigned int actions);
+
+  static void on_scene_removed(supla_user *user, int sceneId,
+                               const supla_caller &caller);
 };
 
 #endif /* HTTP_EVENT_HUB_H_ */

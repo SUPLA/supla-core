@@ -194,8 +194,8 @@ void supla_action_gate_openclose::open_close(const supla_caller &caller,
   cancel_tasks(user_id, device_id, channel_id);
 
   supla_action_executor *action_executor = new supla_action_executor();
-  supla_cahnnel_property_getter *property_getter =
-      new supla_cahnnel_property_getter();
+  supla_channel_property_getter *property_getter =
+      new supla_channel_property_getter();
   channel_json_config_getter *config_getter = new channel_json_config_getter();
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(

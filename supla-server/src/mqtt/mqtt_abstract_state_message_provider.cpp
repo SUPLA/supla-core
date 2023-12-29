@@ -22,16 +22,18 @@
 #include <string.h>
 
 #include "device/channel_fragment.h"
+#include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
+#include "device/value/channel_hp_thermostat_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_openclosed_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
 #include "device/value/channel_temphum_value.h"
-#include "device/value/channel_thermostat_value.h"
 #include "device/value/channel_valve_value.h"
 #include "log.h"
 
@@ -929,6 +931,116 @@ bool supla_mqtt_abstract_state_message_provider::
   return false;
 }
 
+bool supla_mqtt_abstract_state_message_provider::
+    get_hp_thermostat_message_at_index(unsigned short index,
+                                       const char *topic_prefix,
+                                       char **topic_name, void **message,
+                                       size_t *message_size) {
+  supla_channel_hp_thermostat_value *hp_val =
+      dynamic_cast<supla_channel_hp_thermostat_value *>(channel_value);
+
+  if (channel_extended_value == nullptr) {
+    channel_extended_value = _get_channel_property_getter()->get_extended_value(
+        get_user_id(), get_device_id(), get_channel_id());
+  }
+
+  supla_channel_thermostat_extended_value *thev =
+      dynamic_cast<supla_channel_thermostat_extended_value *>(
+          channel_extended_value);
+
+  supla_channel_hp_thermostat_ev_decorator decorator(thev);
+
+  switch (index) {
+    case 1:
+      return get_onoff_message_at_index(hp_val && hp_val->is_on(), index,
+                                        topic_prefix, topic_name, message,
+                                        message_size);
+    case 2:
+      return create_message(
+          topic_prefix, user_suid, topic_name, message, message_size,
+          thev ? decorator.get_home_assistant_mode().c_str() : nullptr, false,
+          "devices/%i/channels/%i/state/mode", get_device_id(),
+          get_channel_id());
+      break;
+    case 3:
+      return create_message(
+          topic_prefix, user_suid, topic_name, message, message_size,
+          thev ? decorator.get_home_assistant_action().c_str() : nullptr, false,
+          "devices/%i/channels/%i/state/action", get_device_id(),
+          get_channel_id());
+      break;
+    case 4:
+      return create_message(
+          topic_prefix, user_suid, topic_name, message, message_size,
+          hp_val ? hp_val->get_preset_temperature_str().c_str() : nullptr,
+          false, "devices/%i/channels/%i/state/temperature_setpoint",
+          get_device_id(), get_channel_id());
+    case 5:
+      return create_message(
+          topic_prefix, user_suid, topic_name, message, message_size,
+          hp_val ? hp_val->get_measured_temperature_str().c_str() : nullptr,
+          false, "devices/%i/channels/%i/state/temperature", get_device_id(),
+          get_channel_id());
+  }
+
+  return false;
+}
+
+bool supla_mqtt_abstract_state_message_provider::
+    get_hvac_thermostat_message_at_index(unsigned short index,
+                                         const char *topic_prefix,
+                                         char **topic_name, void **message,
+                                         size_t *message_size) {
+  supla_channel_hvac_value *hvac_val =
+      dynamic_cast<supla_channel_hvac_value *>(channel_value);
+
+  switch (index) {
+    case 1:
+      return create_message(
+          topic_prefix, user_suid, topic_name, message, message_size,
+          hvac_val ? hvac_val->get_home_assistant_mode().c_str() : nullptr,
+          false, "devices/%i/channels/%i/state/mode", get_device_id(),
+          get_channel_id());
+      break;
+    case 2:
+      return create_message(
+          topic_prefix, user_suid, topic_name, message, message_size,
+          hvac_val ? hvac_val->get_home_assistant_action().c_str() : nullptr,
+          false, "devices/%i/channels/%i/state/action", get_device_id(),
+          get_channel_id());
+      break;
+    case 3:
+      return create_message(
+          topic_prefix, user_suid, topic_name, message, message_size,
+          hvac_val &&
+                  channel_function != SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL
+              ? hvac_val->get_setpoint_temperature_str().c_str()
+              : nullptr,
+          false, "devices/%i/channels/%i/state/temperature_setpoint",
+          get_device_id(), get_channel_id());
+    case 4:
+      return create_message(
+          topic_prefix, user_suid, topic_name, message, message_size,
+          hvac_val &&
+                  channel_function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL
+              ? hvac_val->get_setpoint_temperature_cool_str().c_str()
+              : nullptr,
+          false, "devices/%i/channels/%i/state/temperature_setpoint_cool",
+          get_device_id(), get_channel_id());
+    case 5:
+      return create_message(
+          topic_prefix, user_suid, topic_name, message, message_size,
+          hvac_val &&
+                  channel_function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL
+              ? hvac_val->get_setpoint_temperature_heat_str().c_str()
+              : nullptr,
+          false, "devices/%i/channels/%i/state/temperature_setpoint_heat",
+          get_device_id(), get_channel_id());
+  }
+
+  return false;
+}
+
 bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
@@ -980,15 +1092,9 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
       return get_lck_message_at_index(index, topic_prefix, topic_name, message,
                                       message_size);
 
-    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
-      supla_channel_thermostat_value *thermo_val =
-          dynamic_cast<supla_channel_thermostat_value *>(channel_value);
-
-      return get_onoff_message_at_index(thermo_val && thermo_val->is_on(),
-                                        index, topic_prefix, topic_name,
-                                        message, message_size);
-    }
-
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      return get_hp_thermostat_message_at_index(index, topic_prefix, topic_name,
+                                                message, message_size);
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_STAIRCASETIMER: {
@@ -1125,6 +1231,13 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       return get_impulsecounter_message_at_index(
+          index, topic_prefix, topic_name, message, message_size);
+
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+      return get_hvac_thermostat_message_at_index(
           index, topic_prefix, topic_name, message, message_size);
   }
 

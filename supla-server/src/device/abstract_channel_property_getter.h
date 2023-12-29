@@ -46,6 +46,9 @@ class supla_abstract_channel_property_getter {
                                                        int device_id,
                                                        int channel_id) = 0;
 
+  virtual int _get_channel_id(int user_id, int device_id,
+                              unsigned char channel_number) = 0;
+
  public:
   supla_abstract_channel_property_getter();
   supla_abstract_channel_property_getter(int user_id, int device_id,
@@ -68,6 +71,8 @@ class supla_abstract_channel_property_getter {
 
   int get_func(void);
   int get_func(int user_id, int device_id, int channel_id);
+  int get_channel_id(unsigned char channel_number);
+  int get_channel_id(int user_id, int device_id, unsigned char channel_number);
 
   supla_json_config* get_detached_json_config(void);
   supla_json_config* get_detached_json_config(int user_id, int device_id,

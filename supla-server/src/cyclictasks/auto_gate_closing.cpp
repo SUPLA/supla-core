@@ -43,7 +43,7 @@ void supla_auto_gate_closing::release_dao(
 
 supla_abstract_channel_property_getter *
 supla_auto_gate_closing::get_property_getter(void) {
-  return new supla_cahnnel_property_getter();
+  return new supla_channel_property_getter();
 }
 
 void supla_auto_gate_closing::release_property_getter(

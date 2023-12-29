@@ -36,6 +36,9 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   void ha_json_set_retain(cJSON *root, bool retain = false);
   void ha_json_set_optimistic(cJSON *root, bool optimistic = false);
   void ha_json_set_topic_base(cJSON *root, const char *topic_prefix);
+  void ha_json_set_full_topic(int device_id, int channel_id, cJSON *root,
+                              const char *param_name, const char *topic_prefix,
+                              const char *topic_suffix);
   void ha_json_set_full_topic(cJSON *root, const char *param_name,
                               const char *topic_prefix,
                               const char *topic_suffix);
@@ -106,9 +109,15 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   bool ha_action_trigger(unsigned short index, const char *topic_prefix,
                          char **topic_name, void **message,
                          size_t *message_size);
+  bool ha_climate_thermostat(unsigned short index, const char *topic_prefix,
+                             char **topic_name, void **message,
+                             size_t *message_size);
   bool get_home_assistant_cfgitem(unsigned short index,
                                   const char *topic_prefix, char **topic_name,
                                   void **message, size_t *message_size);
+
+  virtual supla_channel_fragment get_channel_fragment(int device_id,
+                                                      int channel_number);
 
  public:
   supla_mqtt_channel_message_provider(void);

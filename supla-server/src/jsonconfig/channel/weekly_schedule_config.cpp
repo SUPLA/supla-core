@@ -85,8 +85,8 @@ string weekly_schedule_config::mode_to_string(unsigned char mode) {
       return "HEAT";
     case SUPLA_HVAC_MODE_COOL:
       return "COOL";
-    case SUPLA_HVAC_MODE_AUTO:
-      return "AUTO";
+    case SUPLA_HVAC_MODE_HEAT_COOL:
+      return "HEAT_COOL";
     case SUPLA_HVAC_MODE_FAN_ONLY:
       return "FAN_ONLY";
     case SUPLA_HVAC_MODE_DRY:
@@ -103,8 +103,8 @@ unsigned char weekly_schedule_config::string_to_mode(const std::string &mode) {
     return SUPLA_HVAC_MODE_HEAT;
   } else if (mode == "COOL") {
     return SUPLA_HVAC_MODE_COOL;
-  } else if (mode == "AUTO") {
-    return SUPLA_HVAC_MODE_AUTO;
+  } else if (mode == "HEAT_COOL") {
+    return SUPLA_HVAC_MODE_HEAT_COOL;
   } else if (mode == "FAN_ONLY") {
     return SUPLA_HVAC_MODE_FAN_ONLY;
   } else if (mode == "DRY") {

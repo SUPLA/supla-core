@@ -4,14 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/doubles/mqtt/MqttChannelMessageProviderMock.cpp \
 ../src/test/doubles/mqtt/MqttDataSourceMock.cpp \
 ../src/test/doubles/mqtt/MqttStateMessageProviderMock.cpp 
 
 CPP_DEPS += \
+./src/test/doubles/mqtt/MqttChannelMessageProviderMock.d \
 ./src/test/doubles/mqtt/MqttDataSourceMock.d \
 ./src/test/doubles/mqtt/MqttStateMessageProviderMock.d 
 
 OBJS += \
+./src/test/doubles/mqtt/MqttChannelMessageProviderMock.o \
 ./src/test/doubles/mqtt/MqttDataSourceMock.o \
 ./src/test/doubles/mqtt/MqttStateMessageProviderMock.o 
 
@@ -28,7 +31,7 @@ src/test/doubles/mqtt/%.o: ../src/test/doubles/mqtt/%.cpp src/test/doubles/mqtt/
 clean: clean-src-2f-test-2f-doubles-2f-mqtt
 
 clean-src-2f-test-2f-doubles-2f-mqtt:
-	-$(RM) ./src/test/doubles/mqtt/MqttDataSourceMock.d ./src/test/doubles/mqtt/MqttDataSourceMock.o ./src/test/doubles/mqtt/MqttStateMessageProviderMock.d ./src/test/doubles/mqtt/MqttStateMessageProviderMock.o
+	-$(RM) ./src/test/doubles/mqtt/MqttChannelMessageProviderMock.d ./src/test/doubles/mqtt/MqttChannelMessageProviderMock.o ./src/test/doubles/mqtt/MqttDataSourceMock.d ./src/test/doubles/mqtt/MqttDataSourceMock.o ./src/test/doubles/mqtt/MqttStateMessageProviderMock.d ./src/test/doubles/mqtt/MqttStateMessageProviderMock.o
 
 .PHONY: clean-src-2f-test-2f-doubles-2f-mqtt
 

@@ -29,7 +29,7 @@
 class supla_mqtt_state_message_provider
     : public supla_mqtt_abstract_state_message_provider {
  private:
-  supla_cahnnel_property_getter prop_getter;
+  supla_channel_property_getter prop_getter;
 
  protected:
   virtual const char *_get_user_suid(void);

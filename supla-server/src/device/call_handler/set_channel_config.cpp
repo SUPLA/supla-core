@@ -22,6 +22,7 @@
 
 #include "client/client.h"
 #include "device/device.h"
+#include "mqtt/mqtt_client_suite.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -76,6 +77,9 @@ void supla_ch_set_channel_config::handle_call(
   if (result.Result == SUPLA_CONFIG_RESULT_TRUE) {
     device->get_user()->get_clients()->update_json_config(
         channel_id, request->ConfigType, json_config);
+
+    supla_mqtt_client_suite::globalInstance()->onDeviceSettingsChanged(
+        device->get_user_id(), device->get_id());
   }
 
   if (json_config) {

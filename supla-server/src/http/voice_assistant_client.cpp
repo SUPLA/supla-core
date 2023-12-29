@@ -61,7 +61,8 @@ bool supla_voice_assistant_client::is_channel_connected(void) {
   return channel_connected;
 }
 
-string supla_voice_assistant_client::get_endpoint_id(void) {
+string supla_voice_assistant_client::get_endpoint_id(int id, int subchannel_id,
+                                                     bool scene) {
   string result;
 
   string uuid = credentials->get_user_short_unique_id();
@@ -69,13 +70,23 @@ string supla_voice_assistant_client::get_endpoint_id(void) {
     return result;
   }
 
-  result = uuid + "-" + std::to_string(channel_id);
+  result = uuid;
+
+  if (scene) {
+    result.append(":scene");
+  }
+
+  result.append("-" + std::to_string(id));
 
   if (subchannel_id) {
     result.append("-" + std::to_string(subchannel_id));
   }
 
   return result;
+}
+
+string supla_voice_assistant_client::get_endpoint_id(void) {
+  return get_endpoint_id(channel_id, subchannel_id, false);
 }
 
 void supla_voice_assistant_client::set_subchannel_id(short subchannel_id) {

@@ -26,8 +26,12 @@ class supla_channel_thermostat_extended_value
  public:
   explicit supla_channel_thermostat_extended_value(
       const TSuplaChannelExtendedValue *value);
+  explicit supla_channel_thermostat_extended_value(
+      const supla_channel_extended_value *value);
   virtual ~supla_channel_thermostat_extended_value(void);
+  short get_flags(unsigned char idx);
   static bool is_ev_type_supported(char type);
+  virtual supla_channel_extended_value *copy(void);  // NOLINT
 };
 
 #endif /*CHANNEL_THERMOSTAT_EXTENDED_VALUE_H_*/

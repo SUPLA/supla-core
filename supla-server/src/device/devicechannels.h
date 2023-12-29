@@ -74,6 +74,11 @@ class supla_device_channels {
       std::function<bool(supla_device_channel *, supla_channel_hvac_value *)>
           on_value);
 
+  bool hp_action(
+      int channel_id, bool *function_match,
+      std::function<bool(supla_device_channel *, TSD_DeviceCalCfgRequest *req)>
+          on_calcfg);
+
  public:
   explicit supla_device_channels(supla_abstract_device_dao *dao,
                                  supla_device *device,

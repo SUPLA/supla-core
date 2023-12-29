@@ -16,19 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "datalogger/thermostat_logger_dao.h"
+#include "hp_thermostat_logger_dao.h"
 
 #include <mysql.h>
 #include <stdio.h>
 #include <string.h>
 
-supla_thermostat_logger_dao::supla_thermostat_logger_dao(
+supla_hp_thermostat_logger_dao::supla_hp_thermostat_logger_dao(
     supla_abstract_db_access_provider *dba) {
   this->dba = dba;
 }
 
-void supla_thermostat_logger_dao::add(int channel_id,
-                                      supla_channel_thermostat_value *th) {
+void supla_hp_thermostat_logger_dao::add(
+    int channel_id, supla_channel_hp_thermostat_value *th) {
   if (!th || !channel_id) {
     return;
   }

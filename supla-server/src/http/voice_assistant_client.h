@@ -41,6 +41,7 @@ class supla_voice_assistant_client {
   supla_abstract_curl_adapter *get_curl_adapter(void);
   supla_http_oauth_credentials *get_credentials(void);
   bool is_channel_connected(void);
+  std::string get_endpoint_id(int id, int subchannel_id, bool scene);
   std::string get_endpoint_id(void);
 
  public:

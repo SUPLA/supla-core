@@ -56,10 +56,10 @@ class DeviceDaoMock : public supla_abstract_device_dao {
 
   MOCK_METHOD1(get_device_limit_left, int(int user_id));
 
-  MOCK_METHOD5(get_device_variables,
+  MOCK_METHOD6(get_device_variables,
                bool(int device_id, bool *device_enabled,
                     int *original_location_id, int *location_id,
-                    bool *location_enabled));
+                    bool *location_enabled, int *flags));
 
   MOCK_METHOD3(get_channel_id_and_type,
                int(int device_id, int channel_number, int *type));
@@ -126,6 +126,12 @@ class DeviceDaoMock : public supla_abstract_device_dao {
   MOCK_METHOD3(update_channel_extended_value,
                void(int channel_id, int user_id,
                     supla_channel_extended_value *ev));
+
+  MOCK_METHOD1(get_channel_fragments,
+               std::vector<supla_channel_fragment>(int device_id));
+
+  MOCK_METHOD2(get_channel_fragment,
+               supla_channel_fragment(int device_id, int channel_number));
 };
 
 } /* namespace testing */

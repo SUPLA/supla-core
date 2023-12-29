@@ -290,6 +290,24 @@ TEST_F(MqttSubscriberTest, turnOff) {
   ASSERT_EQ(getValueSetter()->getOffCounter(), 1);
 }
 
+TEST_F(MqttSubscriberTest, off) {
+  waitForConnection();
+  waitForData(3);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707D/devices/10/channels/1234/"
+      "execute_action",
+      "off");
+
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707D"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getOffCounter(), 1);
+}
+
 TEST_F(MqttSubscriberTest, toggle) {
   waitForConnection();
   waitForData(3);
@@ -879,6 +897,146 @@ TEST_F(MqttSubscriberTest, setColor) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorCounter(), 11);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xAA05CC);
+}
+
+TEST_F(MqttSubscriberTest, setTemperatureSetpointHeat) {
+  waitForConnection();
+  waitForData(3);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperature).Times(0);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperatures(NotNull()))
+      .WillOnce([](supla_action_hvac_setpoint_temperatures *temperatures) {
+        short t = 0;
+        EXPECT_FALSE(temperatures->get_cooling_temperature(&t));
+        EXPECT_TRUE(temperatures->get_heating_temperature(&t));
+        EXPECT_EQ(t, 2234);
+      });
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "temperature_setpoint_heat",
+      "22.34");
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+}
+
+TEST_F(MqttSubscriberTest, setTemperatureSetpointCool) {
+  waitForConnection();
+  waitForData(3);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperature).Times(0);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperatures(NotNull()))
+      .WillOnce([](supla_action_hvac_setpoint_temperatures *temperatures) {
+        short t = 0;
+        EXPECT_FALSE(temperatures->get_heating_temperature(&t));
+        EXPECT_TRUE(temperatures->get_cooling_temperature(&t));
+
+        EXPECT_EQ(t, 123);
+      });
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "temperature_setpoint_cool",
+      "1.23");
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+}
+
+TEST_F(MqttSubscriberTest, setTemperatureSetpoint) {
+  waitForConnection();
+  waitForData(3);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperatures).Times(0);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperature(NotNull()))
+      .WillOnce([](supla_action_hvac_setpoint_temperature *temperature) {
+        EXPECT_EQ(temperature->get_temperature(), 123);
+      });
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "temperature_setpoint",
+      "1.23");
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+}
+
+TEST_F(MqttSubscriberTest, _auto) {
+  waitForConnection();
+  waitForData(3);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperature).Times(0);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_parameters(NotNull()))
+      .WillOnce([](supla_action_hvac_parameters *params) {
+        EXPECT_EQ(params->get_mode(), SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE);
+      });
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "auto");
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+}
+
+TEST_F(MqttSubscriberTest, heat) {
+  waitForConnection();
+  waitForData(3);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperature).Times(0);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_parameters(NotNull()))
+      .WillOnce([](supla_action_hvac_parameters *params) {
+        EXPECT_EQ(params->get_mode(), SUPLA_HVAC_MODE_HEAT);
+      });
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "heat");
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+}
+
+TEST_F(MqttSubscriberTest, cool) {
+  waitForConnection();
+  waitForData(3);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperature).Times(0);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_parameters(NotNull()))
+      .WillOnce([](supla_action_hvac_parameters *params) {
+        EXPECT_EQ(params->get_mode(), SUPLA_HVAC_MODE_COOL);
+      });
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "cool");
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+}
+
+TEST_F(MqttSubscriberTest, heatCool) {
+  waitForConnection();
+  waitForData(3);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_temperature).Times(0);
+
+  EXPECT_CALL(*getValueSetter(), action_hvac_set_parameters(NotNull()))
+      .WillOnce([](supla_action_hvac_parameters *params) {
+        EXPECT_EQ(params->get_mode(), SUPLA_HVAC_MODE_HEAT_COOL);
+      });
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "heat_cool");
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 }
 
 } /* namespace testing */

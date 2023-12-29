@@ -19,6 +19,9 @@
 #ifndef CHANNEL_HVAC_VALUE_H_
 #define CHANNEL_HVAC_VALUE_H_
 
+#include <map>
+#include <string>
+
 #include "device/value/channel_value.h"
 
 class supla_channel_hvac_value : public supla_channel_value {
@@ -29,22 +32,40 @@ class supla_channel_hvac_value : public supla_channel_value {
 
   void clear(void);
   unsigned char get_mode(void);
-  short get_temperature_heat(void);
-  short get_temperature_cool(void);
+  std::string mode_to_string(void);
+  short get_setpoint_temperature_heat(void);
+  double get_setpoint_temperature_heat_dbl(void);
+  std::string get_setpoint_temperature_heat_str(void);
+  short get_setpoint_temperature_cool(void);
+  double get_setpoint_temperature_cool_dbl(void);
+  std::string get_setpoint_temperature_cool_str(void);
+  short get_setpoint_temperature(void);
+  double get_setpoint_temperature_dbl(void);
+  std::string get_setpoint_temperature_str(void);
+  std::string get_home_assistant_mode(void);
+  std::string get_home_assistant_action(void);
+  std::string get_google_home_mode(void);
+  std::string get_alexa_mode(void);
   unsigned short get_flags(void);
+  bool is_any_error_set(void);
 
   void set_mode(unsigned char mode);
-  void set_temperature_heat(short temperature);
-  void set_temperature_cool(short temperature);
-  void set_temperature_heat_to_null(void);
-  void set_temperature_cool_to_null(void);
+  void set_setpoint_temperature_heat(short temperature);
+  void set_setpoint_temperature_cool(short temperature);
+  void set_setpoint_temperature_heat_to_null(void);
+  void set_setpoint_temperature_cool_to_null(void);
   void set_flags(unsigned short flags);
+  void set_on(unsigned char on);
   bool is_on(void);
+  bool is_heating(void);
+  bool is_cooling(void);
   void turn_on(void);
   void turn_off(void);
   void toggle(void);
   void switch_to_manual(void);
   void switch_to_program(void);
+
+  virtual std::map<std::string, std::string> get_replacement_map(void);
 };
 
 #endif /*CHANNEL_HVAC_VALUE_H_*/

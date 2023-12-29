@@ -28,6 +28,7 @@
 #include "db/database.h"
 #include "device.h"
 #include "device/channel_property_getter.h"
+#include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_hvac_value.h"
 #include "device/value/channel_rgbw_value.h"
@@ -728,8 +729,8 @@ void supla_device_channels::action_trigger(TDS_ActionTrigger *at) {
   if (channel_id) {
     supla_action_executor *aexec = new supla_action_executor();
     action_trigger_config *at_config = new action_trigger_config(json_config);
-    supla_cahnnel_property_getter *property_getter =
-        new supla_cahnnel_property_getter();
+    supla_channel_property_getter *property_getter =
+        new supla_channel_property_getter();
 
     if (aexec && at_config && property_getter) {
       at_config->set_channel_id_if_subject_not_set(channel_id);
@@ -821,7 +822,7 @@ bool supla_device_channels::set_on(const supla_caller &caller, int channel_id,
       }
 
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
         supla_channel_hvac_value *hvac_value =
@@ -1201,14 +1202,16 @@ bool supla_device_channels::action_hvac(
   access_channel(channel_id, [&](supla_device_channel *channel) -> void {
     supla_channel_hvac_value *hvac_value =
         channel->get_value<supla_channel_hvac_value>();
-    if (hvac_value && on_value(channel, hvac_value)) {
-      char value[SUPLA_CHANNELVALUE_SIZE] = {};
-      hvac_value->get_raw_value(value);
-      delete hvac_value;
+    if (hvac_value) {
+      if (on_value(channel, hvac_value)) {
+        char value[SUPLA_CHANNELVALUE_SIZE] = {};
+        hvac_value->get_raw_value(value);
 
-      async_set_channel_value(channel, caller, group_id, eol, value, duration,
-                              false);
-      result = true;
+        async_set_channel_value(channel, caller, group_id, eol, value, duration,
+                                false);
+        result = true;
+      }
+      delete hvac_value;
     }
   });
 
@@ -1222,6 +1225,72 @@ bool supla_device_channels::action_hvac_set_parameters(
     return false;
   }
 
+  bool hp_match = false;
+  bool result = hp_action(
+      channel_id, &hp_match,
+      [params, this](supla_device_channel *channel,
+                     TSD_DeviceCalCfgRequest *req) -> bool {
+        switch (params->get_mode()) {
+          case SUPLA_HVAC_MODE_HEAT:
+          case SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL:
+            req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
+            req->Data[0] = 1;
+            req->DataSize = 1;
+            break;
+          case SUPLA_HVAC_MODE_OFF:
+            req->Command = SUPLA_THERMOSTAT_CMD_TURNON;
+            req->Data[0] = 0;  // 0 == off
+            req->DataSize = 1;
+            break;
+          case SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE:
+            req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_AUTO;
+            req->Data[0] = 1;
+            req->DataSize = 1;
+            break;
+        }
+
+        if (params->get_flags() &
+            SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET) {
+          if (req->Command != SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL) {
+            supla_channel_thermostat_extended_value *th =
+                channel->get_extended_value<
+                    supla_channel_thermostat_extended_value>(false);
+            if (th) {
+              supla_channel_hp_thermostat_ev_decorator decorator(th);
+              if (decorator.get_state_flags() & HP_STATUS_PROGRAMMODE) {
+                // When setting the temperature, force switching to manual mode.
+                req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
+                req->Data[0] = 0;  // Do not force the power on
+                req->DataSize = 1;
+              }
+              delete th;
+            }
+          }
+
+          if (req->Command && device && device->get_connection()) {
+            device->get_connection()
+                ->get_srpc_adapter()
+                ->sd_async_device_calcfg_request(req);
+          }
+
+          req->Command = SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE;
+          req->DataSize = sizeof(TThermostatTemperatureCfg);
+
+          TThermostatTemperatureCfg *cfg =
+              (TThermostatTemperatureCfg *)req->Data;
+
+          memset(cfg, 0, sizeof(TThermostatTemperatureCfg));
+          cfg->Index = TEMPERATURE_INDEX1;
+          cfg->Temperature[0] = params->get_setpoint_temperature_heat();
+        }
+
+        return req->Command;
+      });
+
+  if (hp_match) {
+    return result;
+  }
+
   return action_hvac(caller, channel_id, group_id, eol,
                      params->get_duration_sec(),
                      [&](supla_device_channel *channel,
@@ -1232,9 +1301,52 @@ bool supla_device_channels::action_hvac_set_parameters(
                      });
 }
 
+bool supla_device_channels::hp_action(
+    int channel_id, bool *function_match,
+    function<bool(supla_device_channel *, TSD_DeviceCalCfgRequest *req)>
+        on_calcfg) {
+  bool result = false;
+
+  access_channel(channel_id,
+                 [&function_match, &result, on_calcfg,
+                  this](supla_device_channel *channel) -> void {
+                   if (channel->get_func() ==
+                       SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS) {
+                     *function_match = true;
+
+                     TSD_DeviceCalCfgRequest req = {};
+                     req.ChannelNumber = channel->get_channel_number();
+
+                     if (device && device->get_connection() &&
+                         on_calcfg(channel, &req) &&
+                         device->get_connection()
+                             ->get_srpc_adapter()
+                             ->sd_async_device_calcfg_request(&req)) {
+                       result = true;
+                     }
+                   }
+                 });
+
+  return result;
+}
+
 bool supla_device_channels::action_hvac_switch_to_manual_mode(
     const supla_caller &caller, int channel_id, int group_id,
     unsigned char eol) {
+  bool hp_match = false;
+  bool result = hp_action(
+      channel_id, &hp_match,
+      [](supla_device_channel *channel, TSD_DeviceCalCfgRequest *req) -> bool {
+        req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
+        req->Data[0] = 1;
+        req->DataSize = 1;
+        return true;
+      });
+
+  if (hp_match) {
+    return result;
+  }
+
   return action_hvac(caller, channel_id, group_id, eol, 0,
                      [&](supla_device_channel *channel,
                          supla_channel_hvac_value *value) -> bool {
@@ -1247,6 +1359,20 @@ bool supla_device_channels::action_hvac_switch_to_manual_mode(
 bool supla_device_channels::action_hvac_switch_to_program_mode(
     const supla_caller &caller, int channel_id, int group_id,
     unsigned char eol) {
+  bool hp_match = false;
+  bool result = hp_action(
+      channel_id, &hp_match,
+      [](supla_device_channel *channel, TSD_DeviceCalCfgRequest *req) -> bool {
+        req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_AUTO;
+        req->Data[0] = 1;
+        req->DataSize = 1;
+        return true;
+      });
+
+  if (hp_match) {
+    return result;
+  }
+
   return action_hvac(caller, channel_id, group_id, eol, 0,
                      [&](supla_device_channel *channel,
                          supla_channel_hvac_value *value) -> bool {
@@ -1263,16 +1389,58 @@ bool supla_device_channels::action_hvac_set_temperature(
     return false;
   }
 
+  bool hp_match = false;
+  bool result = hp_action(
+      channel_id, &hp_match,
+      [temperature, this](supla_device_channel *channel,
+                          TSD_DeviceCalCfgRequest *req) -> bool {
+        req->Command = SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE;
+        req->DataSize = sizeof(TThermostatTemperatureCfg);
+
+        TThermostatTemperatureCfg *cfg = (TThermostatTemperatureCfg *)req->Data;
+
+        cfg->Index = TEMPERATURE_INDEX1;
+        cfg->Temperature[0] = temperature->get_temperature();
+
+        supla_channel_thermostat_extended_value *th =
+            channel
+                ->get_extended_value<supla_channel_thermostat_extended_value>(
+                    false);
+        if (th) {
+          supla_channel_hp_thermostat_ev_decorator decorator(th);
+          if (decorator.get_state_flags() & HP_STATUS_PROGRAMMODE) {
+            // When setting the temperature, force switching to manual mode.
+            if (device && device->get_connection() &&
+                device->get_connection()
+                    ->get_srpc_adapter()
+                    ->sd_async_device_calcfg_request(req)) {
+              req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
+              req->Data[0] = 0;  // Do not force the power on
+              req->DataSize = 1;
+            }
+          }
+          delete th;
+        }
+
+        return true;
+      });
+
+  if (hp_match) {
+    return result;
+  }
+
   return action_hvac(
       caller, channel_id, group_id, eol, 0,
       [&](supla_device_channel *channel,
           supla_channel_hvac_value *value) -> bool {
+        unsigned char mode = value->get_mode();
         value->clear();
         bool result = false;
         switch (channel->get_func()) {
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
           case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
-            value->set_temperature_heat(temperature->get_temperature());
+            value->set_setpoint_temperature_heat(
+                temperature->get_temperature());
             result = true;
             break;
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT: {
@@ -1282,14 +1450,27 @@ bool supla_device_channels::action_hvac_set_temperature(
               TChannelConfig_HVAC raw = {};
               if (hvac.get_config(&raw, channel->get_channel_number())) {
                 if (raw.Subfunction == SUPLA_HVAC_SUBFUNCTION_HEAT) {
-                  value->set_temperature_heat(temperature->get_temperature());
+                  value->set_setpoint_temperature_heat(
+                      temperature->get_temperature());
                   result = true;
                 } else if (raw.Subfunction == SUPLA_HVAC_SUBFUNCTION_COOL) {
-                  value->set_temperature_cool(temperature->get_temperature());
+                  value->set_setpoint_temperature_cool(
+                      temperature->get_temperature());
                   result = true;
                 }
               }
               delete json_config;
+            }
+          } break;
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL: {
+            if (mode == SUPLA_HVAC_MODE_COOL) {
+              value->set_setpoint_temperature_cool(
+                  temperature->get_temperature());
+              result = true;
+            } else {
+              value->set_setpoint_temperature_heat(
+                  temperature->get_temperature());
+              result = true;
             }
           } break;
         }
@@ -1310,16 +1491,16 @@ bool supla_device_channels::action_hvac_set_temperatures(
       [&](supla_device_channel *channel,
           supla_channel_hvac_value *value) -> bool {
         bool result = false;
-        if (channel->get_func() == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO) {
+        if (channel->get_func() == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL) {
           value->clear();
           short temperature = 0;
           if (temperatures->get_heating_temperature(&temperature)) {
-            value->set_temperature_heat(temperature);
+            value->set_setpoint_temperature_heat(temperature);
             result = true;
           }
 
           if (temperatures->get_cooling_temperature(&temperature)) {
-            value->set_temperature_cool(temperature);
+            value->set_setpoint_temperature_cool(temperature);
             result = true;
           }
         }
@@ -1343,7 +1524,7 @@ void supla_device_channels::timer_arm(const supla_caller &caller,
         value[0] = on ? 1 : 0;
         break;
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_AUTO:
+      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
         supla_channel_hvac_value *hvac_value =
             channel->get_value<supla_channel_hvac_value>();

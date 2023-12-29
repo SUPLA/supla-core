@@ -25,9 +25,9 @@
 
 using std::shared_ptr;
 
-supla_cahnnel_property_getter::~supla_cahnnel_property_getter(void) {}
+supla_channel_property_getter::~supla_channel_property_getter(void) {}
 
-supla_channel_value *supla_cahnnel_property_getter::_get_value(
+supla_channel_value *supla_channel_property_getter::_get_value(
     int user_id, int device_id, int channel_id,
     supla_channel_fragment *fragment, bool *online) {
   supla_channel_value *result = nullptr;
@@ -62,7 +62,7 @@ supla_channel_value *supla_cahnnel_property_getter::_get_value(
 }
 
 supla_channel_extended_value *
-supla_cahnnel_property_getter::_get_extended_value(int user_id, int device_id,
+supla_channel_property_getter::_get_extended_value(int user_id, int device_id,
                                                    int channel_id) {
   supla_user *user = supla_user::get_user(user_id);
 
@@ -86,7 +86,7 @@ supla_cahnnel_property_getter::_get_extended_value(int user_id, int device_id,
   return result;
 }
 
-int supla_cahnnel_property_getter::_get_func(int user_id, int device_id,
+int supla_channel_property_getter::_get_func(int user_id, int device_id,
                                              int channel_id) {
   int result = 0;
   supla_user *user = supla_user::get_user(user_id);
@@ -112,7 +112,7 @@ int supla_cahnnel_property_getter::_get_func(int user_id, int device_id,
   return result;
 }
 
-supla_json_config *supla_cahnnel_property_getter::_get_detached_json_config(
+supla_json_config *supla_channel_property_getter::_get_detached_json_config(
     int user_id, int device_id, int channel_id) {
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
@@ -124,6 +124,20 @@ supla_json_config *supla_cahnnel_property_getter::_get_detached_json_config(
         channel_id, [&result](supla_device_channel *channel) -> void {
           result = channel->get_json_config();
         });
+  }
+
+  return result;
+}
+
+int supla_channel_property_getter::_get_channel_id(
+    int user_id, int device_id, unsigned char channel_number) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, 0);
+
+  int result = 0;
+
+  if (device != nullptr) {
+    result = device->get_channels()->get_channel_id(channel_number);
   }
 
   return result;

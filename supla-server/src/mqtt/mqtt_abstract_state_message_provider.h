@@ -137,6 +137,16 @@ class supla_mqtt_abstract_state_message_provider
                                              char **topic_name, void **message,
                                              size_t *message_size);
 
+  bool get_hp_thermostat_message_at_index(unsigned short index,
+                                          const char *topic_prefix,
+                                          char **topic_name, void **message,
+                                          size_t *message_size);
+
+  bool get_hvac_thermostat_message_at_index(unsigned short index,
+                                            const char *topic_prefix,
+                                            char **topic_name, void **message,
+                                            size_t *message_size);
+
  public:
   supla_mqtt_abstract_state_message_provider(void);
   virtual ~supla_mqtt_abstract_state_message_provider(void);

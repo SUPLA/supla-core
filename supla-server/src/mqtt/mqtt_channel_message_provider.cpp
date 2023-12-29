@@ -24,7 +24,9 @@
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "jsonconfig/channel/action_trigger_config.h"
+#include "jsonconfig/channel/hvac_config.h"
 #include "log.h"
+#include "user/user.h"
 
 supla_mqtt_channel_message_provider::supla_mqtt_channel_message_provider(void)
     : supla_mqtt_message_provider() {
@@ -147,6 +149,9 @@ void supla_mqtt_channel_message_provider::channel_type_to_string(
     case SUPLA_CHANNELTYPE_DIGIGLASS:
       snprintf(buf, buf_size, "DIGIGLASS");
       break;
+    case SUPLA_CHANNELTYPE_HVAC:
+      snprintf(buf, buf_size, "HVAC");
+      break;
     default:
       buf[0] = 0;
       break;
@@ -159,7 +164,6 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
   // https://github.com/SUPLA/supla-cloud/blob/b0afbfba770c4426154684668782aacbab82d0ee/src/SuplaBundle/Enums/ChannelFunction.php#L28
 
   switch (func) {
-    default:
     case SUPLA_CHANNELFNC_NONE:
       snprintf(buf, buf_size, "NONE");
       break;
@@ -307,6 +311,19 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
       snprintf(buf, buf_size, "DIGIGLASS_VERTICAL");
       break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+      snprintf(buf, buf_size, "HVAC_THERMOSTAT");
+      break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+      snprintf(buf, buf_size, "HVAC_THERMOSTAT_HEAT_COOL");
+      break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+      snprintf(buf, buf_size, "HVAC_THERMOSTAT_DIFFERENTIAL");
+      break;
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+      snprintf(buf, buf_size, "HVAC_DOMESTIC_HOT_WATER");
+      break;
+    default:
       buf[0] = 0;
       break;
   }
@@ -484,6 +501,13 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
     case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Digiglass");
       break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Thermostat");
+      break;
+    default:
       caption_out[0] = 0;
       break;
   }
@@ -552,19 +576,27 @@ void supla_mqtt_channel_message_provider::ha_json_set_short_topic(
 }
 
 void supla_mqtt_channel_message_provider::ha_json_set_full_topic(
-    cJSON *root, const char *param_name, const char *topic_prefix,
-    const char *topic_suffix) {
+    int device_id, int channel_id, cJSON *root, const char *param_name,
+    const char *topic_prefix, const char *topic_suffix) {
   char *topic_name = NULL;
 
   create_message(topic_prefix, row->user_suid, &topic_name, NULL, NULL, NULL,
-                 false, "devices/%i/channels/%i/%s", row->device_id,
-                 row->channel_id, topic_suffix);
+                 false, "devices/%i/channels/%i/%s", device_id, channel_id,
+                 topic_suffix);
 
   if (topic_name) {
     cJSON_AddStringToObject(root, param_name, topic_name);
     free(topic_name);
   }
 }
+
+void supla_mqtt_channel_message_provider::ha_json_set_full_topic(
+    cJSON *root, const char *param_name, const char *topic_prefix,
+    const char *topic_suffix) {
+  ha_json_set_full_topic(row->device_id, row->channel_id, root, param_name,
+                         topic_prefix, topic_suffix);
+}
+
 void supla_mqtt_channel_message_provider::ha_json_set_qos(cJSON *root,
                                                           int qos) {
   cJSON_AddNumberToObject(root, "qos", qos);
@@ -1408,6 +1440,150 @@ bool supla_mqtt_channel_message_provider::ha_action_trigger(
                            message_size, cap);
 }
 
+supla_channel_fragment
+supla_mqtt_channel_message_provider::get_channel_fragment(int device_id,
+                                                          int channel_number) {
+  supla_channel_fragment result;
+  supla_user *user = supla_user::find(row->user_id, false);
+  if (user) {
+    result = user->get_devices()->get_channel_fragment_with_number(
+        device_id, channel_number, true);
+  }
+  return result;
+}
+
+bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  if (index != 0) {
+    return false;
+  }
+  cJSON *root = ha_json_create_root(topic_prefix, NULL, NULL, true);
+  if (!root) {
+    return false;
+  }
+
+  TChannelConfig_HVAC hvac_raw_cfg = {};
+
+  if (row->channel_func != SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS) {
+    hvac_config cfg(&row->json_config);
+    cfg.get_config(&hvac_raw_cfg, row->channel_number);
+  }
+
+  ha_json_set_retain(root);
+  ha_json_set_optimistic(root);
+
+  ha_json_set_short_topic(root, "act_t", "state/action");
+
+  bool temperature_topic_is_set = false;
+  bool humidity_topic_is_set = false;
+
+  if (row->channel_func == SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS) {
+    ha_json_set_short_topic(root, "curr_temp_t", "state/temperature");
+    temperature_topic_is_set = true;
+  } else {
+    if (hvac_raw_cfg.MainThermometerChannelId != row->channel_number) {
+      supla_channel_fragment f = get_channel_fragment(
+          row->device_id, hvac_raw_cfg.MainThermometerChannelNo);
+      if (f.get_channel_id()) {
+        switch (f.get_function()) {
+          case SUPLA_CHANNELFNC_THERMOMETER:
+          case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+            ha_json_set_full_topic(row->device_id, f.get_channel_id(), root,
+                                   "curr_temp_t", topic_prefix,
+                                   "state/temperature");
+            temperature_topic_is_set = true;
+            break;
+        }
+
+        switch (f.get_function()) {
+          case SUPLA_CHANNELFNC_HUMIDITY:
+          case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+            ha_json_set_full_topic(row->device_id, f.get_channel_id(), root,
+                                   "current_humidity_topic", topic_prefix,
+                                   "state/humidity");
+            humidity_topic_is_set = true;
+            break;
+        }
+      }
+    }
+  }
+
+  if (!temperature_topic_is_set) {
+    ha_json_set_string_param(root, "curr_temp_t", "None");
+  }
+
+  if (!humidity_topic_is_set) {
+    ha_json_set_string_param(root, "current_humidity_topic", "None");
+  }
+
+  if (row->channel_func == SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS) {
+    ha_json_set_string_param(root, "min_temp", "10");
+    ha_json_set_string_param(root, "max_temp", "30");
+  } else {
+    char min_temp[30] = {};
+    snprintf(min_temp, sizeof(min_temp), "%.2f",
+             (hvac_raw_cfg.Temperatures.Index & TEMPERATURE_ROOM_MIN)
+                 ? hvac_raw_cfg.Temperatures.Temperature[10] / 100.00
+                 : 0);
+    ha_json_set_string_param(root, "min_temp", min_temp);
+
+    char max_temp[30] = {};
+    snprintf(max_temp, sizeof(max_temp), "%.2f",
+             (hvac_raw_cfg.Temperatures.Index & TEMPERATURE_ROOM_MAX)
+                 ? hvac_raw_cfg.Temperatures.Temperature[11] / 100.00
+                 : 0);
+    ha_json_set_string_param(root, "max_temp", max_temp);
+  }
+
+  cJSON *modes = cJSON_CreateArray();
+
+  cJSON_AddItemToArray(modes, cJSON_CreateString("off"));
+  cJSON_AddItemToArray(modes, cJSON_CreateString("auto"));
+
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
+      row->channel_func == SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS ||
+      hvac_raw_cfg.Subfunction == SUPLA_HVAC_SUBFUNCTION_HEAT) {
+    cJSON_AddItemToArray(modes, cJSON_CreateString("heat"));
+  }
+
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
+      hvac_raw_cfg.Subfunction == SUPLA_HVAC_SUBFUNCTION_COOL) {
+    cJSON_AddItemToArray(modes, cJSON_CreateString("cool"));
+  }
+
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL) {
+    cJSON_AddItemToArray(modes, cJSON_CreateString("heat_cool"));
+  }
+
+  cJSON_AddItemToObject(root, "modes", modes);
+
+  ha_json_set_short_topic(root, "mode_stat_t", "state/mode");
+  ha_json_set_short_topic(root, "mode_cmd_t", "execute_action");
+  ha_json_set_short_topic(root, "power_command_topic", "execute_action");
+  ha_json_set_string_param(root, "pl_on", "TURN_ON");
+  ha_json_set_string_param(root, "pl_off", "TURN_OFF");
+  ha_json_set_string_param(root, "temp_unit", "C");
+  ha_json_set_string_param(root, "temp_step", "0.1");
+
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL) {
+    ha_json_set_short_topic(root, "temp_hi_cmd_t",
+                            "set/temperature_setpoint_cool");
+    ha_json_set_short_topic(root, "temp_hi_stat_t",
+                            "state/temperature_setpoint_cool");
+    ha_json_set_short_topic(root, "temp_lo_cmd_t",
+                            "set/temperature_setpoint_heat");
+    ha_json_set_short_topic(root, "temp_lo_stat_t",
+                            "state/temperature_setpoint_heat");
+  } else {
+    ha_json_set_short_topic(root, "temp_cmd_t", "set/temperature_setpoint");
+    ha_json_set_short_topic(root, "temp_stat_t", "state/temperature_setpoint");
+  }
+
+  return ha_get_message(root, "climate", 0, false, topic_name, message,
+                        message_size);
+}
+
 bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
@@ -1544,6 +1720,13 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_ACTIONTRIGGER:
       return ha_action_trigger(index, topic_prefix, topic_name, message,
                                message_size);
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      return ha_climate_thermostat(index, topic_prefix, topic_name, message,
+                                   message_size);
   }
   return false;
 }

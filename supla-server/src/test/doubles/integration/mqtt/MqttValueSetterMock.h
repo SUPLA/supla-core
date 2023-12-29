@@ -19,6 +19,8 @@
 #ifndef MQTT_CHANNEL_VALUE_SETTER_MOCK_H_
 #define MQTT_CHANNEL_VALUE_SETTER_MOCK_H_
 
+#include <gmock/gmock.h>
+
 #include "mqtt_abstract_value_setter.h"
 
 class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
@@ -98,6 +100,15 @@ class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
   bool suidEqualTo(const char *suid);
   bool deviceEqualTo(int device_id);
   bool channelEqualTo(int channel_id);
+
+  MOCK_METHOD1(action_hvac_set_temperature,
+               void(supla_action_hvac_setpoint_temperature *temperature));
+
+  MOCK_METHOD1(action_hvac_set_temperatures,
+               void(supla_action_hvac_setpoint_temperatures *temperatures));
+
+  MOCK_METHOD1(action_hvac_set_parameters,
+               void(supla_action_hvac_parameters *params));
 };
 
 #endif /* MQTT_CHANNEL_VALUE_SETTER_MOCK_H_ */

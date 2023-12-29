@@ -16,19 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef THERMOSTAT_LOGGER_DAO_H_
-#define THERMOSTAT_LOGGER_DAO_H_
+#ifndef ALEXA_DISCOVER_REQUEST_SEARCH_CONDITION_H_
+#define ALEXA_DISCOVER_REQUEST_SEARCH_CONDITION_H_
 
-#include "db/abstract_db_access_provider.h"
-#include "device/value/channel_thermostat_value.h"
+#include "asynctask/abstract_asynctask_search_condition.h"
 
-class supla_thermostat_logger_dao {
+class supla_alexa_discover_request_search_condition
+    : public supla_abstract_asynctask_search_condition {
  private:
-  supla_abstract_db_access_provider *dba;
+  int user_id;
 
  public:
-  explicit supla_thermostat_logger_dao(supla_abstract_db_access_provider *dba);
-  void add(int channel_id, supla_channel_thermostat_value *th);
+  explicit supla_alexa_discover_request_search_condition(int user_id);
+
+  virtual bool condition_met(supla_abstract_asynctask *task);
 };
 
-#endif /* THERMOSTAT_LOGGER_DAO_H_ */
+#endif /*ALEXA_DISCOVER_REQUEST_SEARCH_CONDITION_H_*/

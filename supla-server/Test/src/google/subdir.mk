@@ -11,8 +11,7 @@ CPP_SRCS += \
 ../src/google/google_home_state_report_search_condition.cpp \
 ../src/google/google_home_state_report_throttling.cpp \
 ../src/google/google_home_sync_request.cpp \
-../src/google/google_home_sync_search_condition.cpp \
-../src/google/google_home_sync_thread_pool.cpp 
+../src/google/google_home_sync_search_condition.cpp 
 
 CPP_DEPS += \
 ./src/google/google_home_client.d \
@@ -22,8 +21,7 @@ CPP_DEPS += \
 ./src/google/google_home_state_report_search_condition.d \
 ./src/google/google_home_state_report_throttling.d \
 ./src/google/google_home_sync_request.d \
-./src/google/google_home_sync_search_condition.d \
-./src/google/google_home_sync_thread_pool.d 
+./src/google/google_home_sync_search_condition.d 
 
 OBJS += \
 ./src/google/google_home_client.o \
@@ -33,8 +31,7 @@ OBJS += \
 ./src/google/google_home_state_report_search_condition.o \
 ./src/google/google_home_state_report_throttling.o \
 ./src/google/google_home_sync_request.o \
-./src/google/google_home_sync_search_condition.o \
-./src/google/google_home_sync_thread_pool.o 
+./src/google/google_home_sync_search_condition.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -49,7 +46,7 @@ src/google/%.o: ../src/google/%.cpp src/google/subdir.mk
 clean: clean-src-2f-google
 
 clean-src-2f-google:
-	-$(RM) ./src/google/google_home_client.d ./src/google/google_home_client.o ./src/google/google_home_credentials.d ./src/google/google_home_credentials.o ./src/google/google_home_credentials_dao.d ./src/google/google_home_credentials_dao.o ./src/google/google_home_state_report_request.d ./src/google/google_home_state_report_request.o ./src/google/google_home_state_report_search_condition.d ./src/google/google_home_state_report_search_condition.o ./src/google/google_home_state_report_throttling.d ./src/google/google_home_state_report_throttling.o ./src/google/google_home_sync_request.d ./src/google/google_home_sync_request.o ./src/google/google_home_sync_search_condition.d ./src/google/google_home_sync_search_condition.o ./src/google/google_home_sync_thread_pool.d ./src/google/google_home_sync_thread_pool.o
+	-$(RM) ./src/google/google_home_client.d ./src/google/google_home_client.o ./src/google/google_home_credentials.d ./src/google/google_home_credentials.o ./src/google/google_home_credentials_dao.d ./src/google/google_home_credentials_dao.o ./src/google/google_home_state_report_request.d ./src/google/google_home_state_report_request.o ./src/google/google_home_state_report_search_condition.d ./src/google/google_home_state_report_search_condition.o ./src/google/google_home_state_report_throttling.d ./src/google/google_home_state_report_throttling.o ./src/google/google_home_sync_request.d ./src/google/google_home_sync_request.o ./src/google/google_home_sync_search_condition.d ./src/google/google_home_sync_search_condition.o
 
 .PHONY: clean-src-2f-google
 

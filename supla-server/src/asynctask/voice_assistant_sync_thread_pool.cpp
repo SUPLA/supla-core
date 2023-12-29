@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "google/google_home_sync_thread_pool.h"
+#include "voice_assistant_sync_thread_pool.h"
 
 #include <string>
 
@@ -24,37 +24,38 @@
 
 using std::string;
 
-// Separate pool for google sync as http sync requests take a few seconds.
+// Separate pool for voice assistant as http sync requests take a few seconds.
 
-supla_google_home_sync_thread_pool
-    *supla_google_home_sync_thread_pool::_global_instance = NULL;
+supla_voice_assistant_sync_thread_pool
+    *supla_voice_assistant_sync_thread_pool::_global_instance = NULL;
 
-supla_google_home_sync_thread_pool::supla_google_home_sync_thread_pool(
+supla_voice_assistant_sync_thread_pool::supla_voice_assistant_sync_thread_pool(
     supla_asynctask_queue *queue)
     : supla_asynctask_http_thread_pool(queue) {}
 
-supla_google_home_sync_thread_pool::~supla_google_home_sync_thread_pool(void) {}
+supla_voice_assistant_sync_thread_pool::~supla_voice_assistant_sync_thread_pool(
+    void) {}
 
-unsigned int supla_google_home_sync_thread_pool::thread_count_limit(void) {
+unsigned int supla_voice_assistant_sync_thread_pool::thread_count_limit(void) {
   return 10;
 }
 
-int supla_google_home_sync_thread_pool::tasks_per_thread(void) { return 1; }
+int supla_voice_assistant_sync_thread_pool::tasks_per_thread(void) { return 1; }
 
-bool supla_google_home_sync_thread_pool::should_keep_alive(
+bool supla_voice_assistant_sync_thread_pool::should_keep_alive(
     unsigned long long usec_since_last_exec, size_t thread_count) {
   return false;
 }
 
-string supla_google_home_sync_thread_pool::pool_name(void) {
-  return "GoogleHomeSyncPool";
+string supla_voice_assistant_sync_thread_pool::pool_name(void) {
+  return "VoiceAssistantSyncPool";
 }
 
 // static
-supla_google_home_sync_thread_pool *
-supla_google_home_sync_thread_pool::global_instance(void) {
+supla_voice_assistant_sync_thread_pool *
+supla_voice_assistant_sync_thread_pool::global_instance(void) {
   if (_global_instance == nullptr) {
-    _global_instance = new supla_google_home_sync_thread_pool(
+    _global_instance = new supla_voice_assistant_sync_thread_pool(
         supla_asynctask_queue::global_instance());
   }
 

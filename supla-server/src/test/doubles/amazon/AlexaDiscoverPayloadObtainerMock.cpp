@@ -16,22 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef THERMOSTAT_LOGGER_H_
-#define THERMOSTAT_LOGGER_H_
+#include "AlexaDiscoverPayloadObtainerMock.h"
 
-#include <vector>
+namespace testing {
 
-#include "cyclictasks/abstract_cyclictask.h"
+AlexaDiscoverPayloadObtainerMock::AlexaDiscoverPayloadObtainerMock(
+    supla_amazon_alexa_credentials_dao *dao)
+    : supla_alexa_discover_payload_obtainer(dao) {}
 
-class supla_thermostat_logger : public supla_abstract_cyclictask {
- protected:
-  virtual unsigned int task_interval_sec(void);
-  virtual void run(const std::vector<supla_user *> *users,
-                   supla_abstract_db_access_provider *dba);
+AlexaDiscoverPayloadObtainerMock::~AlexaDiscoverPayloadObtainerMock(void) {}
 
- public:
-  supla_thermostat_logger();
-  virtual ~supla_thermostat_logger();
-};
-
-#endif /* THERMOSTAT_LOGGER_H_ */
+}  // namespace testing

@@ -27,9 +27,9 @@
 #include "accept_loop.h"
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
+#include "asynctask/voice_assistant_sync_thread_pool.h"
 #include "cyclictasks/agent.h"
 #include "db/database.h"
-#include "google/google_home_sync_thread_pool.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "ipc/ipcsocket.h"
 #include "lck.h"
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
   // ASYNCTASK QUEUE
   supla_asynctask_queue::global_instance();
   supla_asynctask_default_thread_pool::global_instance();
-  supla_google_home_sync_thread_pool::global_instance();
+  supla_voice_assistant_sync_thread_pool::global_instance();
   supla_asynctask_http_thread_pool::global_instance();
   supla_pn_delivery_task_thread_pool::global_instance();
 

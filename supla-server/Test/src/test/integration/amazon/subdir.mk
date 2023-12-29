@@ -4,12 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/integration/amazon/AmazonAlexaCredentialsDaoIntegrationTest.cpp \
 ../src/test/integration/amazon/AmazonAlexaCredentialsIntegrationTest.cpp 
 
 CPP_DEPS += \
+./src/test/integration/amazon/AmazonAlexaCredentialsDaoIntegrationTest.d \
 ./src/test/integration/amazon/AmazonAlexaCredentialsIntegrationTest.d 
 
 OBJS += \
+./src/test/integration/amazon/AmazonAlexaCredentialsDaoIntegrationTest.o \
 ./src/test/integration/amazon/AmazonAlexaCredentialsIntegrationTest.o 
 
 
@@ -25,7 +28,7 @@ src/test/integration/amazon/%.o: ../src/test/integration/amazon/%.cpp src/test/i
 clean: clean-src-2f-test-2f-integration-2f-amazon
 
 clean-src-2f-test-2f-integration-2f-amazon:
-	-$(RM) ./src/test/integration/amazon/AmazonAlexaCredentialsIntegrationTest.d ./src/test/integration/amazon/AmazonAlexaCredentialsIntegrationTest.o
+	-$(RM) ./src/test/integration/amazon/AmazonAlexaCredentialsDaoIntegrationTest.d ./src/test/integration/amazon/AmazonAlexaCredentialsDaoIntegrationTest.o ./src/test/integration/amazon/AmazonAlexaCredentialsIntegrationTest.d ./src/test/integration/amazon/AmazonAlexaCredentialsIntegrationTest.o
 
 .PHONY: clean-src-2f-test-2f-integration-2f-amazon
 

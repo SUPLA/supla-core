@@ -31,6 +31,7 @@ class supla_action_hvac_parameters : public supla_abstract_action_parameters {
   supla_action_hvac_parameters(void);
   explicit supla_action_hvac_parameters(const TAction_HVAC_Parameters &params);
   explicit supla_action_hvac_parameters(const TAction_HVAC_Parameters *params);
+  explicit supla_action_hvac_parameters(int mode);
   virtual ~supla_action_hvac_parameters(void);
   virtual bool equal(supla_abstract_action_parameters *params) const;
   virtual supla_abstract_action_parameters *copy(void) const;  // NOLINT
