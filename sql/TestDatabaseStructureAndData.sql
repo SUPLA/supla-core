@@ -2291,7 +2291,7 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
 DELIMITER ;;
 CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_oauth_add_token_for_alexa_discover`(IN `_user_id` INT)
 BEGIN
@@ -2306,7 +2306,7 @@ BEGIN
           ORDER BY expires_at DESC LIMIT 1;
 
    
-   SELECT t.token INTO token FROM `supla_oauth_access_tokens` t WHERE t.client_id IS NULL AND name = 'ALEXA DISCOVER' AND user_id = _user_id AND expires_at - UNIX_TIMESTAMP() >= 60;
+   SELECT t.token INTO token FROM `supla_oauth_access_tokens` t WHERE t.client_id = client_id AND name = 'ALEXA DISCOVER' AND user_id = _user_id AND expires_at - UNIX_TIMESTAMP() >= 60;
 
    IF token IS NOT NULL THEN
      SELECT token;
@@ -2321,8 +2321,8 @@ BEGIN
      IF client_id > 0 THEN
        SET token = CONCAT(token, '.', svr);
     
-       INSERT INTO `supla_oauth_access_tokens`(`client_id`, `user_id`, `token`, `expires_at`, `scope`, `name`, `access_id`) VALUES 
-           (client_id, _user_id, token, UNIX_TIMESTAMP()+3600, 'channels_r iodevices_r locations_r account_r scenes_r', 'ALEXA DISCOVER', NULL);
+       INSERT INTO `supla_oauth_access_tokens`(`client_id`, `user_id`, `token`, `expires_at`, `scope`, `name`, `access_id`, `issuer_browser_string`) VALUES 
+           (client_id, _user_id, token, UNIX_TIMESTAMP()+3600, 'channels_r iodevices_r locations_r account_r scenes_r', 'ALEXA DISCOVER', NULL, 'supla-server');
     
        SELECT token;
      END IF;
@@ -3137,4 +3137,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-12-28 13:28:57
+-- Dump completed on 2023-12-29 13:23:49
