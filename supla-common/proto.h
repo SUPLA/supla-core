@@ -2813,16 +2813,16 @@ typedef struct {
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
 
-#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_CHART_TYPE_LINEAR 0
-#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_CHART_TYPE_BAR 1
+#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_LINEAR 0
+#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_BAR 1
 
-#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_DATA_SOURCE_TYPE_MEASUREMENT 0
-#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_DATA_SOURCE_TYPE_INCREMENTAL 1
+#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_DATA_SOURCE_TYPE_MEASUREMENT 0
+#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_DATA_SOURCE_TYPE_INCREMENTAL 1
 
-#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_DOUBLE 0
-#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_INT64 1
+#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_VALUE_TYPE_DOUBLE 0
+#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_VALUE_TYPE_INT64 1
 
-#define SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE 15
+#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE 15
 
 // General Purpose Mesurement channel config:
 // Calculated value is: (value / ValueDivider) + ValueAdded
@@ -2834,13 +2834,13 @@ typedef struct {
   // Display precicion
   unsigned char ValuePrecision;  // 0 - 10 decimal points
   // Display unit prefix - UTF8 including the terminating null byte ('\0')
-  char UnitPrefix[SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE];
+  char UnitPrefix[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
   // Display unit suffix - UTF8 including the terminating null byte ('\0')
-  char UnitSuffix[SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE];
+  char UnitSuffix[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
   // Keep history on server
   unsigned char KeepHistory;  // 0 - no (default), 1 - yes
   // Chart type linear/bar
-  unsigned char ChartType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_CHART_TYPE_*
+  unsigned char ChartType;  // SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_*
   // Include value added in history
   unsigned char IncludeValueAddedInHistory;  // 0 - no (default), 1 - yes
                                              //
@@ -2851,10 +2851,10 @@ typedef struct {
 
   // Readonly and default parameters
   // Channel value[8] format: int64, double
-  unsigned char ValueType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_VALUE_TYPE_*
+  unsigned char ValueType;  // SUPLA_GENERAL_PURPOSE_MEASUREMENT_VALUE_TYPE_*
   // Data source type - incremental/measurement
   unsigned char
-      DataSourceType;  // SUPLA_GENERAL_PURPOSE_MEASUEMENT_DATA_SOURCE_TYPE_*
+      DataSourceType;  // SUPLA_GENERAL_PURPOSE_MEASUREMENT_DATA_SOURCE_TYPE_*
 
   // Default value divider
   _supla_int_t DefaultValueDivider;  // 0.001 units; 0 is considered
@@ -2864,9 +2864,9 @@ typedef struct {
   // Default display precicion
   unsigned char DefaultValuePrecision;  // 0 - 10 decimal points
   // Default unit prefix - UTF8 including the terminating null byte ('\0')
-  char DefaultUnitPrefix[SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE];
+  char DefaultUnitPrefix[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
   // Default unit suffix - UTF8 including the terminating null byte ('\0')
-  char DefaultUnitSuffix[SUPLA_GENERAL_PURPOSE_MEASUEMENT_UNIT_DATA_SIZE];
+  char DefaultUnitSuffix[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
 
   unsigned char Reserved[8];
 } TChannelConfig_GeneralPurposeMeasuement;
