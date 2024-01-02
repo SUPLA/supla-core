@@ -78,7 +78,7 @@ class supla_alexa_client : public supla_voice_assistant_client {
   std::string zulu_time;
   std::string message_id;
   std::string correlation_token;
-  const char *get_error_string(const int code);
+  const char *get_error_code_str(const int code);
   int get_error_code(const char *code);
   supla_amazon_alexa_credentials *get_alexa_credentials(void);
   void add_props(cJSON *props);
@@ -102,7 +102,8 @@ class supla_alexa_client : public supla_voice_assistant_client {
   cJSON *get_change_report(void);
   cJSON *get_delete_report(void);
   cJSON *get_unrechable_error_response(void);
-  int perform_post_request(const char *data, int *http_result_code);
+  int perform_post_request(const char *data, int *http_result_code,
+                           std::string *error_description);
   void refresh_token(void);
   int perform_post_request(const char *data);
   bool send_report(cJSON *root);
