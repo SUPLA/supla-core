@@ -500,7 +500,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEROOFWINDOW 0x00008000      // ver. >= 13
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEFACADEBLIND 0x00010000     // ver. >= 17
 #define SUPLA_BIT_FUNC_HVAC_THERMOSTAT 0x00020000               // ver. >= 21
-#define SUPLA_BIT_FUNC_HVAC_THERMOSTAT_AUTO 0x00040000          // ver. >= 21
+#define SUPLA_BIT_FUNC_HVAC_THERMOSTAT_HEAT_COOL 0x00040000     // ver. >= 21
 #define SUPLA_BIT_FUNC_HVAC_THERMOSTAT_DIFFERENTIAL 0x00080000  // ver. >= 21
 #define SUPLA_BIT_FUNC_HVAC_DOMESTIC_HOT_WATER 0x00100000       // ver. >= 21
 
@@ -2140,10 +2140,10 @@ typedef struct {
 #define TEMPERATURE_HISTERESIS_MIN (1ULL << 14)
 // Maximum histereis value
 #define TEMPERATURE_HISTERESIS_MAX (1ULL << 15)
-// Minimum temperature offset in AUTO mode
-#define TEMPERATURE_AUTO_OFFSET_MIN (1ULL << 16)
-// Maximum temperature offset in AUTO mode
-#define TEMPERATURE_AUTO_OFFSET_MAX (1ULL << 17)
+// Minimum temperature offset in HEAT_COOL mode
+#define TEMPERATURE_HEAT_COOL_OFFSET_MIN (1ULL << 16)
+// Maximum temperature offset in HEAT_COOL mode
+#define TEMPERATURE_HEAT_COOL_OFFSET_MAX (1ULL << 17)
 // 6 values left for future use
 
 #define SUPLA_TEMPERATURE_INVALID_INT16 -32768
@@ -2155,7 +2155,7 @@ typedef struct {
   _supla_int16_t Temperature[24];
 } THVACTemperatureCfg;
 
-// Thermostat configuration commands - ver. >= 11
+// Heatpol: Thermostat configuration commands - ver. >= 11
 #define SUPLA_THERMOSTAT_CMD_TURNON 1
 #define SUPLA_THERMOSTAT_CMD_SET_MODE_AUTO 2
 #define SUPLA_THERMOSTAT_CMD_SET_MODE_COOL 3
@@ -2695,7 +2695,7 @@ typedef struct {
 //     AuxThermometerChannelNo is ignored, it can be set to 0.
 
 // HVAC channel validation for AntiFreezeAndOverheatProtectionEnabled:
-// - function is available for channel functions: HEAT, COOL, AUTO
+// - function is available for channel functions: HEAT, COOL, HEAT_COOL
 // - for other channel functions, this parameter is ignored
 // - AntiFreeze/Overheat protection always use MainThermometerChannelNo as
 //     temperature source
@@ -2730,8 +2730,8 @@ typedef struct {
 // - Temperatures (t_min, t_max) in "Auto Constrain" means:
 //     TEMPERATURE_ROOM_MIN <= t_min <= TEMPERATURE_ROOM_MAX AND
 //     TEMPERATURE_ROOM_MIN <= t_max <= TEMPERATURE_ROOM_MAX AND
-//     (t_max - t_min >= TEMPERATURE_AUTO_OFFSET_MIN) AND
-//     (t_max - t_min <= TEMPERATURE_AUTO_OFFSET_MAX)
+//     (t_max - t_min >= TEMPERATURE_HEAT_COOL_OFFSET_MIN) AND
+//     (t_max - t_min <= TEMPERATURE_HEAT_COOL_OFFSET_MAX)
 
 // TEMPERATURE_FREEZE_PROTECTION - has to be in Room Constrain when
 //   AntiFreezeAndOverheatProtectionEnabled is set
@@ -2739,7 +2739,7 @@ typedef struct {
 // TEMPERATURE_COMFORT - has to be in Room Constrain
 // TEMPERATURE_BOOST - has to be in Room Constrain
 // TEMPERATURE_HEAT_PROTECTION - has to be in Room Constrain when function
-//   is COOL or AUTO
+//   is COOL or HEAT_COOL
 // TEMPERATURE_HISTERESIS - has to be
 //   TEMPERATURE_HISTERESIS_MIN <= t <= TEMPERATURE_HISTERESIS_MAX
 // TEMPERATURE_BELOW_ALARM - has to be in Room Constrain
@@ -2754,7 +2754,7 @@ typedef struct {
 // TEMPERATURE_ROOM_MIN < TEMPERATURE_ROOM_MAX
 // TEMPERATURE_AUX_MIN < TEMPERATURE_AUX_MAX
 // TEMPERATURE_HISTERESIS_MIN < TEMPERATURE_HISTERESIS_MAX
-// TEMPERATURE_AUTO_OFFSET_MIN < TEMPERATURE_AUTO_OFFSET_MAX
+// TEMPERATURE_HEAT_COOL_OFFSET_MIN < TEMPERATURE_HEAT_COOL_OFFSET_MAX
 
 // Subfunction for SUPLA_CHANNELFNC_HVAC_THERMOSTAT
 // Other channel functions dont' use subfunction setting (yet)
@@ -2804,11 +2804,11 @@ typedef struct {
   unsigned char TemperatureSetpointChangeSwitchesToManualMode;  // 0 - off,
                                                                 // 1 - on (def)
   unsigned char AuxMinMaxSetpointEnabled;  // 0 - off (default), 1 - on
-  // For AUTO thermostats we have two outpus. They can either use
+  // For HEAT_COOL thermostats we have two outpus. They can either use
   // shared output for heating/cooling action and second output for heat vs
   // cool mode selection, or they can use separate outputs - one for heating
   // and one for cooling
-  unsigned char AutoUseSeparateHeatCoolOutputs;  // 0 - off (default), 1 - on
+  unsigned char UseSeparateHeatCoolOutputs;  // 0 - off (default), 1 - on
   unsigned char Reserved[48];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
