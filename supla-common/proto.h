@@ -2869,7 +2869,7 @@ typedef struct {
   char DefaultUnitSuffix[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
 
   unsigned char Reserved[8];
-} TChannelConfig_GeneralPurposeMeasuement;
+} TChannelConfig_GeneralPurposeMeasurement;
 
 typedef struct {
   _supla_int_t ChannelID;
