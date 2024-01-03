@@ -61,7 +61,7 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
       str,
       "{\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
       "\"auxThermometerType\":\"GENERIC_HEATER\",\"auxMinMaxSetpointEnabled\":"
-      "false,\"autoUseSeparateHeatCoolOutputs\":false,"
+      "false,\"useSeparateHeatCoolOutputs\":false,"
       "\"binarySensorChannelNo\":3,\"antiFreezeAndOverheatProtectionEnabled\":"
       "true,\"usedAlgorithm\":\"ON_OFF_SETPOINT_MIDDLE\",\"minOffTimeS\":600,"
       "\"minOnTimeS\":10,\"outputValueOnError\":55,\"subfunction\":\"COOL\","
@@ -81,7 +81,7 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
       "{\"availableAlgorithms\":[\"ON_OFF_SETPOINT_MIDDLE\",\"ON_OFF_SETPOINT_"
       "AT_MOST\"],\"temperatures\":{\"roomMin\":11,\"roomMax\":12,\"auxMin\":"
       "13,\"auxMax\":14,\"histeresisMin\":15,\"histeresisMax\":16,"
-      "\"autoOffsetMin\":17,\"autoOffsetMax\":18}}");
+      "\"heatCoolOffsetMin\":17,\"heatCoolOffsetMax\":18}}");
 
   config2.set_properties(str);
   free(str);
@@ -156,7 +156,7 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
       str,
       "{\"mainThermometerChannelNo\":null,\"auxThermometerChannelNo\":null,"
       "\"auxThermometerType\":\"NOT_SET\",\"auxMinMaxSetpointEnabled\":false,"
-      "\"autoUseSeparateHeatCoolOutputs\":false,\"binarySensorChannelNo\":null,"
+      "\"useSeparateHeatCoolOutputs\":false,\"binarySensorChannelNo\":null,"
       "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":\"\","
       "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
       "\"subfunction\":\"NOT_SET\","
@@ -193,7 +193,7 @@ TEST_F(HvacConfigTest, merge) {
       "10,\"availableAlgorithms\":[\"ON_OFF_SETPOINT_MIDDLE\"],"
       "\"temperatures\":{\"roomMin\":11,\"roomMax\":12,\"auxMin\":13,"
       "\"auxMax\":14,\"histeresisMin\":15,\"histeresisMax\":16,"
-      "\"autoOffsetMin\":17,\"autoOffsetMax\":18}}");
+      "\"heatCoolOffsetMin\":17,\"heatCoolOffsetMax\":18}}");
 
   TChannelConfig_HVAC ds_hvac = {};
 
@@ -219,7 +219,7 @@ TEST_F(HvacConfigTest, merge) {
       "\"temperatures\":{\"eco\":10,\"comfort\":0},\"binarySensorChannelNo\":"
       "null,\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
-      "\"auxMinMaxSetpointEnabled\":false,\"autoUseSeparateHeatCoolOutputs\":"
+      "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":"
       "false}");
 
   free(str);
@@ -228,7 +228,7 @@ TEST_F(HvacConfigTest, merge) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"1\":10,\"availableAlgorithms\":[],\"temperatures\":{"
-               "\"autoOffsetMin\":0,\"autoOffsetMax\":19}}");
+               "\"heatCoolOffsetMin\":0,\"heatCoolOffsetMax\":19}}");
 
   free(str);
 }

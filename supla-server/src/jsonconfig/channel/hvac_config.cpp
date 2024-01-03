@@ -34,7 +34,7 @@ using std::string;
 #define FIELD_SUBSUNCTION 11
 #define FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE 12
 #define FIELD_AUX_MIN_MAX_SETPOINT_ENABLED 13
-#define FIELD_AUTO_USE_SEPARATE_HEAT_COOL_OUTPUTS 14
+#define FIELD_USE_SEPARATE_HEAT_COOL_OUTPUTS 14
 #define FIELD_TEMPERATURES 15
 
 const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
@@ -42,8 +42,7 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_AUX_THERMOMETER_CHANNEL_NO, "auxThermometerChannelNo"},
     {FIELD_AUX_THERMOMETER_TYPE, "auxThermometerType"},
     {FIELD_AUX_MIN_MAX_SETPOINT_ENABLED, "auxMinMaxSetpointEnabled"},
-    {FIELD_AUTO_USE_SEPARATE_HEAT_COOL_OUTPUTS,
-     "autoUseSeparateHeatCoolOutputs"},
+    {FIELD_USE_SEPARATE_HEAT_COOL_OUTPUTS, "useSeparateHeatCoolOutputs"},
     {FIELD_BINARY_SENSOR_CHANNEL_NO, "binarySensorChannelNo"},
     {FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED,
      "antiFreezeAndOverheatProtectionEnabled"},
@@ -74,14 +73,14 @@ const map<unsigned int, string> hvac_config::temperatures_map = {
     {TEMPERATURE_AUX_MAX, "auxMax"},
     {TEMPERATURE_HISTERESIS_MIN, "histeresisMin"},
     {TEMPERATURE_HISTERESIS_MAX, "histeresisMax"},
-    {TEMPERATURE_AUTO_OFFSET_MIN, "autoOffsetMin"},
-    {TEMPERATURE_AUTO_OFFSET_MAX, "autoOffsetMax"}};
+    {TEMPERATURE_HEAT_COOL_OFFSET_MIN, "heatCoolOffsetMin"},
+    {TEMPERATURE_HEAT_COOL_OFFSET_MAX, "heatCoolOffsetMax"}};
 
 const unsigned int hvac_config::readonly_temperatures =
     TEMPERATURE_ROOM_MIN | TEMPERATURE_ROOM_MAX | TEMPERATURE_AUX_MIN |
     TEMPERATURE_AUX_MAX | TEMPERATURE_HISTERESIS_MIN |
-    TEMPERATURE_HISTERESIS_MAX | TEMPERATURE_AUTO_OFFSET_MIN |
-    TEMPERATURE_AUTO_OFFSET_MAX;
+    TEMPERATURE_HISTERESIS_MAX | TEMPERATURE_HEAT_COOL_OFFSET_MIN |
+    TEMPERATURE_HEAT_COOL_OFFSET_MAX;
 
 hvac_config::hvac_config(void) : supla_json_config() {}
 
@@ -308,11 +307,10 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
                  config->AuxMinMaxSetpointEnabled ? cJSON_True : cJSON_False,
                  true, nullptr, nullptr, 0);
 
-  set_item_value(
-      user_root,
-      field_map.at(FIELD_AUTO_USE_SEPARATE_HEAT_COOL_OUTPUTS).c_str(),
-      config->AutoUseSeparateHeatCoolOutputs ? cJSON_True : cJSON_False, true,
-      nullptr, nullptr, 0);
+  set_item_value(user_root,
+                 field_map.at(FIELD_USE_SEPARATE_HEAT_COOL_OUTPUTS).c_str(),
+                 config->UseSeparateHeatCoolOutputs ? cJSON_True : cJSON_False,
+                 true, nullptr, nullptr, 0);
 
   set_channel_number(user_root, FIELD_BINARY_SENSOR_CHANNEL_NO,
                      config->BinarySensorChannelNo, channel_number);
@@ -423,9 +421,9 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
   }
 
   if (get_bool(user_root,
-               field_map.at(FIELD_AUTO_USE_SEPARATE_HEAT_COOL_OUTPUTS).c_str(),
+               field_map.at(FIELD_USE_SEPARATE_HEAT_COOL_OUTPUTS).c_str(),
                &bool_value)) {
-    config->AutoUseSeparateHeatCoolOutputs = bool_value ? 1 : 0;
+    config->UseSeparateHeatCoolOutputs = bool_value ? 1 : 0;
     result = true;
   }
 
