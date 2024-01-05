@@ -415,7 +415,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_VALVE_OPENCLOSE 7000              // ver. >= 12
 #define SUPLA_CHANNELTYPE_VALVE_PERCENTAGE 7010             // ver. >= 12
 #define SUPLA_CHANNELTYPE_BRIDGE 8000                       // ver. >= 12
-#define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 22
+#define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 23
+#define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER 9010        // ver. >= 23
 #define SUPLA_CHANNELTYPE_ENGINE 10000                      // ver. >= 12
 #define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 16
 #define SUPLA_CHANNELTYPE_DIGIGLASS 12000                   // ver. >= 12
@@ -475,7 +476,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER 426       // ver. >= 21
 #define SUPLA_CHANNELFNC_VALVE_OPENCLOSE 500               // ver. >= 12
 #define SUPLA_CHANNELFNC_VALVE_PERCENTAGE 510              // ver. >= 12
-#define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520   // ver. >= 22
+#define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520   // ver. >= 23
+#define SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER 530         // ver. >= 23
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600     // ver. >= 12
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                 // ver. >= 16
 #define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800          // ver. >= 14
@@ -2815,12 +2817,7 @@ typedef struct {
 
 #define SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_LINEAR 0
 #define SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_BAR 1
-
-#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_DATA_SOURCE_TYPE_MEASUREMENT 0
-#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_DATA_SOURCE_TYPE_INCREMENTAL 1
-
-#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_VALUE_TYPE_DOUBLE 0
-#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_VALUE_TYPE_INT64 1
+#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_CANDLE 2
 
 #define SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE 15
 
@@ -2839,23 +2836,10 @@ typedef struct {
   char UnitSuffix[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
   // Keep history on server
   unsigned char KeepHistory;  // 0 - no (default), 1 - yes
-  // Chart type linear/bar
+  // Chart type linear/bar/candle
   unsigned char ChartType;  // SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_*
-  // Include value added in history
-  unsigned char IncludeValueAddedInHistory;  // 0 - no (default), 1 - yes
-                                             //
-  // Fill missing data (for incremental type)
-  unsigned char FillMissingData;  // 0 - no (default), 1 - yes
-  // Allow counter reset (for incremental type)
-  unsigned char AllowCounterReset;  // 0 - no (default), 1 - yes
 
   // Readonly and default parameters
-  // Channel value[8] format: int64, double
-  unsigned char ValueType;  // SUPLA_GENERAL_PURPOSE_MEASUREMENT_VALUE_TYPE_*
-  // Data source type - incremental/measurement
-  unsigned char
-      DataSourceType;  // SUPLA_GENERAL_PURPOSE_MEASUREMENT_DATA_SOURCE_TYPE_*
-
   // Default value divider
   _supla_int_t DefaultValueDivider;  // 0.001 units; 0 is considered
                                      // as 1
@@ -2869,7 +2853,52 @@ typedef struct {
   char DefaultUnitSuffix[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
 
   unsigned char Reserved[8];
-} TChannelConfig_GeneralPurposeMeasurement;
+} TChannelConfig_GeneralPurposeMeasurement;  // v. >= 23
+
+#define SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_LINEAR 0
+#define SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_BAR 1
+
+#define SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE 15
+
+// General Purpose Meter channel config:
+// Calculated value is: (value / ValueDivider) + ValueAdded
+typedef struct {
+  // Value divider
+  _supla_int_t ValueDivider;  // 0.001 units; 0 is considered as 1
+  // Value added
+  _supla_int64_t ValueAdded;  // 0.001 units
+  // Display precicion
+  unsigned char ValuePrecision;  // 0 - 10 decimal points
+  // Display unit prefix - UTF8 including the terminating null byte ('\0')
+  char UnitPrefix[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
+  // Display unit suffix - UTF8 including the terminating null byte ('\0')
+  char UnitSuffix[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
+  // Keep history on server
+  unsigned char KeepHistory;  // 0 - no (default), 1 - yes
+  // Chart type linear/bar/candle
+  unsigned char ChartType;  // SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_*
+  // Include value added in history
+  unsigned char IncludeValueAddedInHistory;  // 0 - no (default), 1 - yes
+  // Fill missing data
+  unsigned char FillMissingData;  // 0 - no (default), 1 - yes
+  // Allow counter reset
+  unsigned char AllowCounterReset;  // 0 - no (default), 1 - yes
+
+  // Readonly and default parameters
+  // Default value divider
+  _supla_int_t DefaultValueDivider;  // 0.001 units; 0 is considered
+                                     // as 1
+  // Default value added
+  _supla_int64_t DefaultValueAdded;  // 0.001 units
+  // Default display precicion
+  unsigned char DefaultValuePrecision;  // 0 - 10 decimal points
+  // Default unit prefix - UTF8 including the terminating null byte ('\0')
+  char DefaultUnitPrefix[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
+  // Default unit suffix - UTF8 including the terminating null byte ('\0')
+  char DefaultUnitSuffix[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
+
+  unsigned char Reserved[8];
+} TChannelConfig_GeneralPurposeMeter;  // v. >= 23
 
 typedef struct {
   _supla_int_t ChannelID;
