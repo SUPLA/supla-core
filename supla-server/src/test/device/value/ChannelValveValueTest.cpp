@@ -18,6 +18,8 @@
 
 #include "ChannelValveValueTest.h"
 
+#include <string>
+
 #include "device/value/channel_valve_value.h"
 
 using std::map;

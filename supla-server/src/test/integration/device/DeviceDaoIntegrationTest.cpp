@@ -213,7 +213,7 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
         "\"\",\"minOnTimeS\":0,\"minOffTimeS\":0,\"outputValueOnError\":0,"
         "\"subfunction\":\"NOT_SET\","
         "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
-        "\"auxMinMaxSetpointEnabled\":false,\"autoUseSeparateHeatCoolOutputs\":"
+        "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":"
         "false,\"temperatures\":{}}");
     free(str);
   }
