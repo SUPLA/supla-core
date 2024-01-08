@@ -20,6 +20,9 @@
 
 #include "device/value/channel_valve_value.h"
 
+using std::map;
+using std::string;
+
 namespace testing {
 
 TEST_F(ChannelValveValueTest, voidConstructor) {
@@ -67,6 +70,23 @@ TEST_F(ChannelValveValueTest, setterAndGetter) {
 
   EXPECT_EQ(vv2.closed, (unsigned char)20);
   EXPECT_EQ(vv2.flags, (unsigned char)10);
+}
+
+TEST_F(ChannelValveValueTest, replacementMap) {
+  supla_channel_valve_value v;
+
+  map<string, string> m = v.get_replacement_map();
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_EQ(m["is_closed_manually"], "No");
+
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((TValve_Value*)raw_value)->closed = 1;
+  ((TValve_Value*)raw_value)->flags = SUPLA_VALVE_FLAG_MANUALLY_CLOSED;
+  v.set_raw_value(raw_value);
+
+  m = v.get_replacement_map();
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_EQ(m["is_closed_manually"], "Yes");
 }
 
 }  // namespace testing
