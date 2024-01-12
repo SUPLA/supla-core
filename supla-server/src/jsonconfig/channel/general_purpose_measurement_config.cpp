@@ -21,11 +21,11 @@
 using std::map;
 using std::string;
 
-#define FIELD_GPM_CHART_TYPE 1
+#define FIELD_MEASUREMENT_CHART_TYPE 1
 
 const map<unsigned _supla_int16_t, string>
     general_purpose_measurement_config::field_map = {
-        {FIELD_GPM_CHART_TYPE, "chartType"}};
+        {FIELD_MEASUREMENT_CHART_TYPE, "chartType"}};
 
 general_purpose_measurement_config::general_purpose_measurement_config(
     supla_json_config *root)
@@ -94,7 +94,7 @@ void general_purpose_measurement_config::set_config(
       config->DefaultValuePrecision, default_unit_before_value,
       default_unit_after_value);
 
-  set_item_value(user_root, field_map.at(FIELD_GPM_CHART_TYPE).c_str(),
+  set_item_value(user_root, field_map.at(FIELD_MEASUREMENT_CHART_TYPE).c_str(),
                  cJSON_String, true, nullptr,
                  chart_type_to_string(config->ChartType).c_str(), 0);
 }
@@ -133,6 +133,14 @@ bool general_purpose_measurement_config::get_config(
            default_unit_before_value.c_str());
   snprintf(config->DefaultUnitAfterValue, sizeof(config->DefaultUnitAfterValue),
            "%s", default_unit_after_value.c_str());
+
+  string str_value;
+
+  if (get_string(user_root, field_map.at(FIELD_MEASUREMENT_CHART_TYPE).c_str(),
+                 &str_value)) {
+    config->ChartType = string_to_chart_type(str_value);
+    result = true;
+  }
 
   return result;
 }
