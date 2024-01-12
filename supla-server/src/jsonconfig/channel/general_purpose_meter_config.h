@@ -19,6 +19,7 @@
 #ifndef GENERAL_PURPOSE_METER_CONFIG_H_
 #define GENERAL_PURPOSE_METER_CONFIG_H_
 
+#include <map>
 #include <string>
 
 #include "jsonconfig/channel/general_purpose_base_config.h"

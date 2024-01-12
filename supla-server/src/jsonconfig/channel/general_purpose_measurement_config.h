@@ -19,6 +19,9 @@
 #ifndef GENERAL_PURPOSE_MEASUREMENT_CONFIG_H_
 #define GENERAL_PURPOSE_MEASUREMENT_CONFIG_H_
 
+#include <map>
+#include <string>
+
 #include "jsonconfig/channel/general_purpose_base_config.h"
 
 class general_purpose_measurement_config : public general_purpose_base_config {
