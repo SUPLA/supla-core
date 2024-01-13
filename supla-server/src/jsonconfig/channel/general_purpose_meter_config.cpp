@@ -21,10 +21,11 @@
 using std::map;
 using std::string;
 
-#define FIELD_METER_CHART_TYPE 1
-#define FIELD_INCLUDE_VALUE_ADDED_IN_HISTORY 2
-#define FIELD_FILL_MISSING_DATA 3
-#define FIELD_ALLOW_COUNTER_RESET 4
+// Keys cannot overlap with general_purpose_base_config::field_map keys
+#define FIELD_METER_CHART_TYPE 1000
+#define FIELD_INCLUDE_VALUE_ADDED_IN_HISTORY 1001
+#define FIELD_FILL_MISSING_DATA 1002
+#define FIELD_ALLOW_COUNTER_RESET 1003
 
 const map<unsigned _supla_int16_t, string>
     general_purpose_meter_config::field_map = {

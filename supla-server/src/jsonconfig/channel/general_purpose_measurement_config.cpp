@@ -21,7 +21,8 @@
 using std::map;
 using std::string;
 
-#define FIELD_MEASUREMENT_CHART_TYPE 1
+// Keys cannot overlap with general_purpose_base_config::field_map keys
+#define FIELD_MEASUREMENT_CHART_TYPE 1000
 
 const map<unsigned _supla_int16_t, string>
     general_purpose_measurement_config::field_map = {
