@@ -24,17 +24,17 @@ using std::string;
 #define FIELD_VALUE_DIVIDER 1
 #define FIELD_VALUE_MULTIPLIER 2
 #define FIELD_VALUE_ADDED 3
-#define FIELD_VALUE_PRECISION 3
-#define FIELD_UNIT_BEFORE_VALUE 4
-#define FIELD_UNIT_AFTER_VALUE 5
-#define FIELD_KEEP_HISTORY 6
+#define FIELD_VALUE_PRECISION 4
+#define FIELD_UNIT_BEFORE_VALUE 5
+#define FIELD_UNIT_AFTER_VALUE 6
+#define FIELD_KEEP_HISTORY 7
 
-#define FIELD_DEFAULT_VALUE_DIVIDER 7
-#define FIELD_DEFAULT_VALUE_ADDED 8
-#define FIELD_DEFAULT_VALUE_MULTIPLIER 9
-#define FIELD_DEFAULT_VALUE_PRECISION 10
-#define FIELD_DEFAULT_UNIT_BEFORE_VALUE 11
-#define FIELD_DEFAULT_UNIT_AFTER_VALUE 12
+#define FIELD_DEFAULT_VALUE_DIVIDER 8
+#define FIELD_DEFAULT_VALUE_ADDED 9
+#define FIELD_DEFAULT_VALUE_MULTIPLIER 10
+#define FIELD_DEFAULT_VALUE_PRECISION 11
+#define FIELD_DEFAULT_UNIT_BEFORE_VALUE 12
+#define FIELD_DEFAULT_UNIT_AFTER_VALUE 13
 
 const map<unsigned _supla_int16_t, string>
     general_purpose_base_config::field_map = {
@@ -47,6 +47,7 @@ const map<unsigned _supla_int16_t, string>
         {FIELD_KEEP_HISTORY, "keepHistory"},
         {FIELD_DEFAULT_VALUE_DIVIDER, "defaultValueDivider"},
         {FIELD_DEFAULT_VALUE_MULTIPLIER, "defaultValueMultiplier"},
+        {FIELD_DEFAULT_VALUE_ADDED, "defaultValueAdded"},
         {FIELD_DEFAULT_VALUE_PRECISION, "defaultValuePrecision"},
         {FIELD_DEFAULT_UNIT_BEFORE_VALUE, "defaultUnitBeforeValue"},
         {FIELD_DEFAULT_UNIT_AFTER_VALUE, "defaultUnitAfterValue"}};
