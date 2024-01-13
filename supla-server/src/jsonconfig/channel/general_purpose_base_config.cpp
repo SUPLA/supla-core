@@ -91,8 +91,10 @@ void general_purpose_base_config::set_config(
   set_item_value(user_root, field_map.at(FIELD_VALUE_ADDED).c_str(),
                  cJSON_Number, true, nullptr, nullptr, value_added);
 
-  set_item_value(user_root, field_map.at(FIELD_VALUE_PRECISION).c_str(),
-                 cJSON_Number, true, nullptr, nullptr, value_precision);
+  if (value_precision >= 0 && value_precision <= 10) {
+    set_item_value(user_root, field_map.at(FIELD_VALUE_PRECISION).c_str(),
+                   cJSON_Number, true, nullptr, nullptr, value_precision);
+  }
 
   set_item_value(user_root, field_map.at(FIELD_UNIT_BEFORE_VALUE).c_str(),
                  cJSON_String, true, nullptr, unit_before_value.c_str(), 0);
@@ -116,9 +118,11 @@ void general_purpose_base_config::set_config(
                  field_map.at(FIELD_DEFAULT_VALUE_ADDED).c_str(), cJSON_Number,
                  true, nullptr, nullptr, default_value_added);
 
-  set_item_value(properties_root,
-                 field_map.at(FIELD_DEFAULT_VALUE_PRECISION).c_str(),
-                 cJSON_Number, true, nullptr, nullptr, default_value_precision);
+  if (default_value_precision >= 0 && default_value_precision <= 10) {
+    set_item_value(
+        properties_root, field_map.at(FIELD_DEFAULT_VALUE_PRECISION).c_str(),
+        cJSON_Number, true, nullptr, nullptr, default_value_precision);
+  }
 
   set_item_value(
       properties_root, field_map.at(FIELD_DEFAULT_UNIT_BEFORE_VALUE).c_str(),
@@ -184,7 +188,8 @@ bool general_purpose_base_config::get_config(
 
   if (value_precision) {
     if (get_double(user_root, field_map.at(FIELD_VALUE_PRECISION).c_str(),
-                   &dbl_value)) {
+                   &dbl_value) &&
+        dbl_value >= 0 && dbl_value <= 10) {
       *value_precision = dbl_value;
       result = true;
     } else {
@@ -224,7 +229,7 @@ bool general_purpose_base_config::get_config(
     }
   }
 
-  if (value_divider) {
+  if (default_value_divider) {
     if (get_double(properties_root,
                    field_map.at(FIELD_DEFAULT_VALUE_DIVIDER).c_str(),
                    &dbl_value)) {
@@ -235,7 +240,7 @@ bool general_purpose_base_config::get_config(
     }
   }
 
-  if (value_multiplier) {
+  if (default_value_multiplier) {
     if (get_double(properties_root,
                    field_map.at(FIELD_DEFAULT_VALUE_MULTIPLIER).c_str(),
                    &dbl_value)) {
@@ -246,7 +251,7 @@ bool general_purpose_base_config::get_config(
     }
   }
 
-  if (value_added) {
+  if (default_value_added) {
     if (get_double(properties_root,
                    field_map.at(FIELD_DEFAULT_VALUE_ADDED).c_str(),
                    &dbl_value)) {
@@ -257,18 +262,19 @@ bool general_purpose_base_config::get_config(
     }
   }
 
-  if (value_precision) {
+  if (default_value_precision) {
     if (get_double(properties_root,
                    field_map.at(FIELD_DEFAULT_VALUE_PRECISION).c_str(),
-                   &dbl_value)) {
-      *value_precision = dbl_value;
+                   &dbl_value) &&
+        dbl_value >= 0 && dbl_value <= 10) {
+      *default_value_precision = dbl_value;
       result = true;
     } else {
-      *value_precision = 0;
+      *default_value_precision = 0;
     }
   }
 
-  if (unit_before_value) {
+  if (default_unit_before_value) {
     if (get_string(properties_root,
                    field_map.at(FIELD_DEFAULT_UNIT_BEFORE_VALUE).c_str(),
                    &str_value)) {
@@ -279,7 +285,7 @@ bool general_purpose_base_config::get_config(
     }
   }
 
-  if (unit_after_value) {
+  if (default_unit_after_value) {
     if (get_string(properties_root,
                    field_map.at(FIELD_DEFAULT_UNIT_AFTER_VALUE).c_str(),
                    &str_value)) {
