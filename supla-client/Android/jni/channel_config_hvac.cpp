@@ -179,11 +179,11 @@ jobject supla_cc_vhac_temperatures_to_jobject(
   jobject histeresis_max = supla_cc_vhac_get_temperature_jobject(
       env, temperatures, TEMPERATURE_HISTERESIS_MAX);
 
-  jobject auto_offset_min = supla_cc_vhac_get_temperature_jobject(
-      env, temperatures, TEMPERATURE_AUTO_OFFSET_MIN);
+  jobject heat_cool_offset_min = supla_cc_vhac_get_temperature_jobject(
+      env, temperatures, TEMPERATURE_HEAT_COOL_OFFSET_MIN);
 
-  jobject auto_offset_max = supla_cc_vhac_get_temperature_jobject(
-      env, temperatures, TEMPERATURE_AUTO_OFFSET_MAX);
+  jobject heat_cool_offset_max = supla_cc_vhac_get_temperature_jobject(
+      env, temperatures, TEMPERATURE_HEAT_COOL_OFFSET_MAX);
 
   jclass temperatures_cls = env->FindClass(
       "org/supla/android/data/source/remote/hvac/SuplaHvacTemperatures");
@@ -200,7 +200,7 @@ jobject supla_cc_vhac_temperatures_to_jobject(
       temperatures_cls, method_init, freeze_protection, eco, comfort, boost,
       heat_protection, hysteresis, below_alarm, above_alarm, aux_min_setpoint,
       aux_max_setpoint, room_min, room_max, aux_min, aux_max, histeresis_min,
-      histeresis_max, auto_offset_min, auto_offset_max);
+      histeresis_max, heat_cool_offset_min, heat_cool_offset_max);
 
   env->DeleteLocalRef(temperatures_cls);
 
