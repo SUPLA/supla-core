@@ -21,6 +21,8 @@
 #include <android/log.h>
 #include <stdlib.h>
 
+#include "channel_config_general_purpose_measurement.h"
+#include "channel_config_general_purpose_meter.h"
 #include "channel_config_hvac.h"
 #include "channel_config_weekly_schedule.h"
 
@@ -87,6 +89,23 @@ jobject supla_channel_config_to_jobject(JNIEnv *env,
           return supla_cc_weekly_schedule_to_jobject(
               env, config->ChannelId, config->Func,
               (TChannelConfig_WeeklySchedule *)config->Config);
+        }
+        break;
+      case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
+        if (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
+            sizeof(TChannelConfig_GeneralPurposeMeasurement) ==
+                config->ConfigSize) {
+          return supla_cc_gp_measurement_to_jobject(
+              env, config->ChannelId, config->Func,
+              (TChannelConfig_GeneralPurposeMeasurement *)config->Config);
+        }
+        break;
+      case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
+        if (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
+            sizeof(TChannelConfig_GeneralPurposeMeter) == config->ConfigSize) {
+          return supla_cc_gp_meter_to_jobject(
+              env, config->ChannelId, config->Func,
+              (TChannelConfig_GeneralPurposeMeter *)config->Config);
         }
         break;
     }

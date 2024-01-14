@@ -29,6 +29,8 @@ LOCAL_SRC_FILES := supla.cpp \
     channel_config.cpp \
     channel_config_hvac.cpp \
     channel_config_weekly_schedule.cpp \
+    channel_config_general_purpose_measurement.cpp \
+    channel_config_general_purpose_meter.cpp \
     device_config.cpp \
     ../../src/cfg.c \
     ../../src/eh.c \
