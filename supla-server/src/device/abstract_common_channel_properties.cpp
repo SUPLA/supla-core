@@ -25,6 +25,8 @@
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/alt_weekly_schedule_config.h"
 #include "jsonconfig/channel/binary_sensor_config.h"
+#include "jsonconfig/channel/general_purpose_measurement_config.h"
+#include "jsonconfig/channel/general_purpose_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/temp_hum_config.h"
 #include "proto.h"
@@ -353,6 +355,15 @@ void supla_abstract_common_channel_properties::get_config(
     JSON_TO_CONFIG(binary_sensor_config, TChannelConfig_BinarySensor, config,
                    config_size);
     return;
+  } else if (get_type() == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT) {
+    JSON_TO_CONFIG(general_purpose_measurement_config,
+                   TChannelConfig_GeneralPurposeMeasurement, config,
+                   config_size);
+    return;
+  } else if (get_type() == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER) {
+    JSON_TO_CONFIG(general_purpose_meter_config,
+                   TChannelConfig_GeneralPurposeMeter, config, config_size);
+    return;
   }
 
   switch (get_func()) {
@@ -445,6 +456,14 @@ int supla_abstract_common_channel_properties::set_user_config(
     json_config = new temp_hum_config();
     static_cast<temp_hum_config *>(json_config)
         ->set_config((TChannelConfig_TemperatureAndHumidity *)config);
+  } else if (type == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT) {
+    json_config = new general_purpose_measurement_config();
+    static_cast<general_purpose_measurement_config *>(json_config)
+        ->set_config((TChannelConfig_GeneralPurposeMeasurement *)config);
+  } else if (type == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER) {
+    json_config = new general_purpose_meter_config();
+    static_cast<general_purpose_meter_config *>(json_config)
+        ->set_config((TChannelConfig_GeneralPurposeMeter *)config);
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }
