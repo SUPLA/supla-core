@@ -2831,7 +2831,7 @@ typedef struct {
   // Value added
   _supla_int64_t ValueAdded;  // 0.001 units
   // Display precicion
-  unsigned char ValuePrecision;  // 0 - 10 decimal points
+  unsigned char ValuePrecision;  // 0 - 4 decimal points
   // Display unit (before value) - UTF8 including the terminating null byte '\0'
   char UnitBeforeValue[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
   // Display unit (after value) - UTF8 including the terminating null byte '\0'
@@ -2851,7 +2851,7 @@ typedef struct {
   // Default value added
   _supla_int64_t DefaultValueAdded;  // 0.001 units
   // Default display precicion
-  unsigned char DefaultValuePrecision;  // 0 - 10 decimal points
+  unsigned char DefaultValuePrecision;  // 0 - 4 decimal points
   // Default unit (before value) - UTF8 including the terminating null byte '\0'
   char DefaultUnitBeforeValue[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
   // Default unit (after value) - UTF8 including the terminating null byte '\0'
@@ -2864,8 +2864,8 @@ typedef struct {
 #define SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_INCREMENT 1
 #define SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_DECREMENT 2
 
-#define SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_LINEAR 0
-#define SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_BAR 1
+#define SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_BAR 0
+#define SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_LINEAR 1
 
 #define SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE 15
 
@@ -2882,7 +2882,7 @@ typedef struct {
   // Value added
   _supla_int64_t ValueAdded;  // 0.001 units
   // Display precicion
-  unsigned char ValuePrecision;  // 0 - 10 decimal points
+  unsigned char ValuePrecision;  // 0 - 4 decimal points
   // Display unit (before value) - UTF8 including the terminating null byte '\0'
   char UnitBeforeValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
   // Display unit (after value) - UTF8 including the terminating null byte '\0'
@@ -2897,6 +2897,7 @@ typedef struct {
   unsigned char IncludeValueAddedInHistory;  // 0 - no (default), 1 - yes
   // Fill missing data
   unsigned char FillMissingData;  // 0 - no (default), 1 - yes
+
   // Readonly and default parameters
   // Default value divider
   _supla_int_t DefaultValueDivider;  // 0.001 units; 0 is considered as 1
@@ -2905,7 +2906,7 @@ typedef struct {
   // Default value added
   _supla_int64_t DefaultValueAdded;  // 0.001 units
   // Default display precicion
-  unsigned char DefaultValuePrecision;  // 0 - 10 decimal points
+  unsigned char DefaultValuePrecision;  // 0 - 4 decimal points
   // Default unit (before value) - UTF8 including the terminating null byte '\0'
   char DefaultUnitBeforeValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
   // Default unit (after value) - UTF8 including the terminating null byte '\0'
