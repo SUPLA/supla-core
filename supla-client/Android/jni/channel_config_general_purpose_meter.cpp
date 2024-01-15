@@ -26,10 +26,10 @@ jobject supla_cc_gp_meter_char_type_to_object(JNIEnv *env,
                                               unsigned char chart_type) {
   char enum_name[20] = {};
 
-  if (chart_type == SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_BAR) {
-    snprintf(enum_name, sizeof(enum_name), "BAR");
-  } else {
+  if (chart_type == SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_LINEAR) {
     snprintf(enum_name, sizeof(enum_name), "LINEAR");
+  } else {
+    snprintf(enum_name, sizeof(enum_name), "BAR");
   }
 
   return supla_NewEnum(env,
