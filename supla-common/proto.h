@@ -2869,10 +2869,6 @@ typedef struct {
 
 #define SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE 15
 
-#define SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_INCREMENT_DECREMENT 0
-#define SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_INCREMENT 1
-#define SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_DECREMENT 2
-
 // General Purpose Meter channel config:
 // Calculated value is: (value / ValueDivider) * ValueMultiplier + ValueAdded
 typedef struct {
