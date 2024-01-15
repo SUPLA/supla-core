@@ -2831,7 +2831,7 @@ typedef struct {
   // Value added
   _supla_int64_t ValueAdded;  // 0.001 units
   // Display precicion
-  unsigned char ValuePrecision;  // 0 - 10 decimal points
+  unsigned char ValuePrecision;  // 0 - 4 decimal points
   // Display unit (before value) - UTF8 including the terminating null byte '\0'
   char UnitBeforeValue[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
   // Display unit (after value) - UTF8 including the terminating null byte '\0'
@@ -2851,7 +2851,7 @@ typedef struct {
   // Default value added
   _supla_int64_t DefaultValueAdded;  // 0.001 units
   // Default display precicion
-  unsigned char DefaultValuePrecision;  // 0 - 10 decimal points
+  unsigned char DefaultValuePrecision;  // 0 - 4 decimal points
   // Default unit (before value) - UTF8 including the terminating null byte '\0'
   char DefaultUnitBeforeValue[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
   // Default unit (after value) - UTF8 including the terminating null byte '\0'
@@ -2860,10 +2860,14 @@ typedef struct {
   unsigned char Reserved[8];
 } TChannelConfig_GeneralPurposeMeasurement;  // v. >= 23
 
-#define SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_LINEAR 0
-#define SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_BAR 1
+#define SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_BAR 0
+#define SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_LINEAR 1
 
 #define SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE 15
+
+#define SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_INCREMENT_DECREMENT 0
+#define SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_INCREMENT 1
+#define SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_DECREMENT 2
 
 // General Purpose Meter channel config:
 // Calculated value is: (value / ValueDivider) * ValueMultiplier + ValueAdded
@@ -2875,7 +2879,7 @@ typedef struct {
   // Value added
   _supla_int64_t ValueAdded;  // 0.001 units
   // Display precicion
-  unsigned char ValuePrecision;  // 0 - 10 decimal points
+  unsigned char ValuePrecision;  // 0 - 4 decimal points
   // Display unit (before value) - UTF8 including the terminating null byte '\0'
   char UnitBeforeValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
   // Display unit (after value) - UTF8 including the terminating null byte '\0'
@@ -2891,7 +2895,7 @@ typedef struct {
   // Fill missing data
   unsigned char FillMissingData;  // 0 - no (default), 1 - yes
   // Allow counter reset
-  unsigned char AllowCounterReset;  // 0 - no (default), 1 - yes
+  unsigned char CounterType;  // SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_*
 
   // Readonly and default parameters
   // Default value divider
@@ -2901,12 +2905,11 @@ typedef struct {
   // Default value added
   _supla_int64_t DefaultValueAdded;  // 0.001 units
   // Default display precicion
-  unsigned char DefaultValuePrecision;  // 0 - 10 decimal points
+  unsigned char DefaultValuePrecision;  // 0 - 4 decimal points
   // Default unit (before value) - UTF8 including the terminating null byte '\0'
   char DefaultUnitBeforeValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
   // Default unit (after value) - UTF8 including the terminating null byte '\0'
   char DefaultUnitAfterValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
-  char AlwaysDecrement;  // 0 - false (default), 1 - true
 
   unsigned char Reserved[8];
 } TChannelConfig_GeneralPurposeMeter;  // v. >= 23
