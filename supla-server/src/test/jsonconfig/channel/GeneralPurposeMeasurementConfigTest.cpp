@@ -41,6 +41,7 @@ TEST_F(GeneralPurposeMeasurementConfigTest, setAndGetConfig) {
   raw1.ValuePrecision = 5;
   snprintf(raw1.UnitBeforeValue, sizeof(raw1.UnitBeforeValue), "ABCD");
   snprintf(raw1.UnitAfterValue, sizeof(raw1.UnitAfterValue), "EFGH");
+  raw1.NoSpaceAfterValue = 1;
   raw1.KeepHistory = 1;
   raw1.ChartType = SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_CANDLE;
   raw1.DefaultValueDivider = 78;
@@ -57,11 +58,11 @@ TEST_F(GeneralPurposeMeasurementConfigTest, setAndGetConfig) {
 
   char *str = config1.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"valueDivider\":12,\"valueMultiplier\":34,\"valueAdded\":56,"
-      "\"valuePrecision\":5,\"unitBeforeValue\":\"ABCD\",\"unitAfterValue\":"
-      "\"EFGH\",\"keepHistory\":true,\"chartType\":\"CANDLE\"}");
+  EXPECT_STREQ(str,
+               "{\"valueDivider\":12,\"valueMultiplier\":34,\"valueAdded\":56,"
+               "\"valuePrecision\":5,\"unitBeforeValue\":\"ABCD\","
+               "\"unitAfterValue\":\"EFGH\",\"noSpaceAfterValue\":true,"
+               "\"keepHistory\":true,\"chartType\":\"CANDLE\"}");
 
   general_purpose_measurement_config config2;
   config2.set_user_config(str);

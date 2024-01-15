@@ -2836,6 +2836,8 @@ typedef struct {
   char UnitBeforeValue[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
   // Display unit (after value) - UTF8 including the terminating null byte '\0'
   char UnitAfterValue[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
+  unsigned char
+      NoSpaceAfterValue;  // 0 - with space (default), 1 - without space
   // Keep history on server
   unsigned char KeepHistory;  // 0 - no (default), 1 - yes
   // Chart type linear/bar/candle
@@ -2878,6 +2880,8 @@ typedef struct {
   char UnitBeforeValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
   // Display unit (after value) - UTF8 including the terminating null byte '\0'
   char UnitAfterValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
+  unsigned char
+      NoSpaceAfterValue;  // 0 - with space (default), 1 - without space
   // Keep history on server
   unsigned char KeepHistory;  // 0 - no (default), 1 - yes
   // Chart type linear/bar/candle
@@ -2902,6 +2906,7 @@ typedef struct {
   char DefaultUnitBeforeValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
   // Default unit (after value) - UTF8 including the terminating null byte '\0'
   char DefaultUnitAfterValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
+  char AlwaysDecrement;  // 0 - false (default), 1 - true
 
   unsigned char Reserved[8];
 } TChannelConfig_GeneralPurposeMeter;  // v. >= 23

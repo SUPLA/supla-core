@@ -32,21 +32,20 @@ class general_purpose_base_config : public supla_json_config {
  protected:
   std::map<unsigned _supla_int16_t, std::string> get_field_map(void);
 
-  void set_config(_supla_int_t value_divider, _supla_int_t value_multiplier,
-                  _supla_int64_t value_added, unsigned char value_precision,
-                  const std::string &unit_before_value,
-                  const std::string &unit_after_value,
-                  unsigned char keep_history,
-                  _supla_int_t default_value_divider,
-                  _supla_int_t default_value_multiplier,
-                  _supla_int64_t default_value_added,
-                  unsigned char default_value_precision,
-                  const std::string &default_unit_before_value,
-                  const std::string &default_unit_after_value);
+  void set_config(
+      _supla_int_t value_divider, _supla_int_t value_multiplier,
+      _supla_int64_t value_added, unsigned char value_precision,
+      const std::string &unit_before_value, const std::string &unit_after_value,
+      unsigned char no_space_after_value, unsigned char keep_history,
+      _supla_int_t default_value_divider, _supla_int_t default_value_multiplier,
+      _supla_int64_t default_value_added, unsigned char default_value_precision,
+      const std::string &default_unit_before_value,
+      const std::string &default_unit_after_value);
 
   bool get_config(_supla_int_t *value_divider, _supla_int_t *value_multiplier,
                   _supla_int64_t *value_added, unsigned char *value_precision,
                   std::string *unit_before_value, std::string *unit_after_value,
+                  unsigned char *no_space_after_value,
                   unsigned char *keep_history,
                   _supla_int_t *default_value_divider,
                   _supla_int_t *default_value_multiplier,

@@ -90,10 +90,10 @@ void general_purpose_measurement_config::set_config(
   general_purpose_base_config::set_config(
       config->ValueDivider, config->ValueMultiplier, config->ValueAdded,
       config->ValuePrecision, unit_before_value, unit_after_value,
-      config->KeepHistory, config->DefaultValueDivider,
-      config->DefaultValueMultiplier, config->DefaultValueAdded,
-      config->DefaultValuePrecision, default_unit_before_value,
-      default_unit_after_value);
+      config->NoSpaceAfterValue, config->KeepHistory,
+      config->DefaultValueDivider, config->DefaultValueMultiplier,
+      config->DefaultValueAdded, config->DefaultValuePrecision,
+      default_unit_before_value, default_unit_after_value);
 
   set_item_value(user_root, field_map.at(FIELD_MEASUREMENT_CHART_TYPE).c_str(),
                  cJSON_String, true, nullptr,
@@ -119,10 +119,10 @@ bool general_purpose_measurement_config::get_config(
   result = general_purpose_base_config::get_config(
       &config->ValueDivider, &config->ValueMultiplier, &config->ValueAdded,
       &config->ValuePrecision, &unit_before_value, &unit_after_value,
-      &config->KeepHistory, &config->DefaultValueDivider,
-      &config->DefaultValueMultiplier, &config->DefaultValueAdded,
-      &config->DefaultValuePrecision, &default_unit_before_value,
-      &default_unit_after_value);
+      &config->NoSpaceAfterValue, &config->KeepHistory,
+      &config->DefaultValueDivider, &config->DefaultValueMultiplier,
+      &config->DefaultValueAdded, &config->DefaultValuePrecision,
+      &default_unit_before_value, &default_unit_after_value);
 
   snprintf(config->UnitBeforeValue, sizeof(config->UnitBeforeValue), "%s",
            unit_before_value.c_str());

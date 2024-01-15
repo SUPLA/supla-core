@@ -27,14 +27,15 @@ using std::string;
 #define FIELD_VALUE_PRECISION 4
 #define FIELD_UNIT_BEFORE_VALUE 5
 #define FIELD_UNIT_AFTER_VALUE 6
-#define FIELD_KEEP_HISTORY 7
+#define FIELD_NO_SPACE_AFTER_VALUE 7
+#define FIELD_KEEP_HISTORY 8
 
-#define FIELD_DEFAULT_VALUE_DIVIDER 8
-#define FIELD_DEFAULT_VALUE_ADDED 9
-#define FIELD_DEFAULT_VALUE_MULTIPLIER 10
-#define FIELD_DEFAULT_VALUE_PRECISION 11
-#define FIELD_DEFAULT_UNIT_BEFORE_VALUE 12
-#define FIELD_DEFAULT_UNIT_AFTER_VALUE 13
+#define FIELD_DEFAULT_VALUE_DIVIDER 9
+#define FIELD_DEFAULT_VALUE_ADDED 10
+#define FIELD_DEFAULT_VALUE_MULTIPLIER 11
+#define FIELD_DEFAULT_VALUE_PRECISION 12
+#define FIELD_DEFAULT_UNIT_BEFORE_VALUE 13
+#define FIELD_DEFAULT_UNIT_AFTER_VALUE 14
 
 const map<unsigned _supla_int16_t, string>
     general_purpose_base_config::field_map = {
@@ -44,6 +45,7 @@ const map<unsigned _supla_int16_t, string>
         {FIELD_VALUE_PRECISION, "valuePrecision"},
         {FIELD_UNIT_BEFORE_VALUE, "unitBeforeValue"},
         {FIELD_UNIT_AFTER_VALUE, "unitAfterValue"},
+        {FIELD_NO_SPACE_AFTER_VALUE, "noSpaceAfterValue"},
         {FIELD_KEEP_HISTORY, "keepHistory"},
         {FIELD_DEFAULT_VALUE_DIVIDER, "defaultValueDivider"},
         {FIELD_DEFAULT_VALUE_MULTIPLIER, "defaultValueMultiplier"},
@@ -68,9 +70,9 @@ void general_purpose_base_config::set_config(
     _supla_int_t value_divider, _supla_int_t value_multiplier,
     _supla_int64_t value_added, unsigned char value_precision,
     const std::string &unit_before_value, const std::string &unit_after_value,
-    unsigned char keep_history, _supla_int_t default_value_divider,
-    _supla_int_t default_value_multiplier, _supla_int64_t default_value_added,
-    unsigned char default_value_precision,
+    unsigned char no_space_after_value, unsigned char keep_history,
+    _supla_int_t default_value_divider, _supla_int_t default_value_multiplier,
+    _supla_int64_t default_value_added, unsigned char default_value_precision,
     const std::string &default_unit_before_value,
     const std::string &default_unit_after_value) {
   cJSON *user_root = get_user_root();
@@ -102,6 +104,10 @@ void general_purpose_base_config::set_config(
 
   set_item_value(user_root, field_map.at(FIELD_UNIT_AFTER_VALUE).c_str(),
                  cJSON_String, true, nullptr, unit_after_value.c_str(), 0);
+
+  set_item_value(user_root, field_map.at(FIELD_NO_SPACE_AFTER_VALUE).c_str(),
+                 no_space_after_value ? cJSON_True : cJSON_False, true, nullptr,
+                 nullptr, 0);
 
   set_item_value(user_root, field_map.at(FIELD_KEEP_HISTORY).c_str(),
                  keep_history ? cJSON_True : cJSON_False, true, nullptr,
@@ -138,9 +144,9 @@ bool general_purpose_base_config::get_config(
     _supla_int_t *value_divider, _supla_int_t *value_multiplier,
     _supla_int64_t *value_added, unsigned char *value_precision,
     std::string *unit_before_value, std::string *unit_after_value,
-    unsigned char *keep_history, _supla_int_t *default_value_divider,
-    _supla_int_t *default_value_multiplier, _supla_int64_t *default_value_added,
-    unsigned char *default_value_precision,
+    unsigned char *no_space_after_value, unsigned char *keep_history,
+    _supla_int_t *default_value_divider, _supla_int_t *default_value_multiplier,
+    _supla_int64_t *default_value_added, unsigned char *default_value_precision,
     std::string *default_unit_before_value,
     std::string *default_unit_after_value) {
   bool result = false;
@@ -221,6 +227,14 @@ bool general_purpose_base_config::get_config(
   }
 
   bool bool_value = false;
+
+  if (no_space_after_value) {
+    if (get_bool(user_root, field_map.at(FIELD_NO_SPACE_AFTER_VALUE).c_str(),
+                 &bool_value)) {
+      *no_space_after_value = bool_value ? 1 : 0;
+      result = true;
+    }
+  }
 
   if (keep_history) {
     if (get_bool(user_root, field_map.at(FIELD_KEEP_HISTORY).c_str(),

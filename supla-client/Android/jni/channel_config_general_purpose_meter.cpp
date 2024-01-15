@@ -47,9 +47,9 @@ jobject supla_cc_gp_meter_to_jobject(
 
   jmethodID method_init = env->GetMethodID(
       config_cls, "<init>",
-      "(ILjava/lang/Integer;IIIILjava/lang/String;Ljava/lang/String;ZIILjava/"
+      "(ILjava/lang/Integer;IIIILjava/lang/String;Ljava/lang/String;ZZIILjava/"
       "lang/String;Ljava/lang/String;Lorg/supla/android/data/source/remote/gpm/"
-      "SuplaChannelConfigMeterChartType;ZZZ)V");
+      "SuplaChannelConfigMeterChartType;ZZZZ)V");
 
   jint value_precision = config->ValuePrecision;
 
@@ -75,13 +75,15 @@ jobject supla_cc_gp_meter_to_jobject(
       config_cls, method_init, channel_id, supla_NewInt(env, func),
       (jint)config->ValueDivider, (jint)config->ValueMultiplier,
       (jlong)config->ValueAdded, value_precision, unit_before_value,
-      unit_after_value, config->KeepHistory ? JNI_TRUE : JNI_FALSE,
+      unit_after_value, config->NoSpaceAfterValue ? JNI_TRUE : JNI_FALSE,
+      config->KeepHistory ? JNI_TRUE : JNI_FALSE,
       (jint)config->DefaultValueDivider, (jint)config->DefaultValueMultiplier,
       default_unit_before_value, default_unit_after_value, chart_type,
       unit_after_value,
       config->IncludeValueAddedInHistory ? JNI_TRUE : JNI_FALSE,
       config->FillMissingData ? JNI_TRUE : JNI_FALSE,
-      config->AllowCounterReset ? JNI_TRUE : JNI_FALSE);
+      config->AllowCounterReset ? JNI_TRUE : JNI_FALSE,
+      config->AlwaysDecrement ? JNI_TRUE : JNI_FALSE);
 
   env->DeleteLocalRef(config_cls);
 
