@@ -25,16 +25,14 @@ using std::string;
 #define FIELD_METER_CHART_TYPE 1000
 #define FIELD_INCLUDE_VALUE_ADDED_IN_HISTORY 1001
 #define FIELD_FILL_MISSING_DATA 1002
-#define FIELD_ALLOW_COUNTER_RESET 1003
-#define FIELD_ALWAYS_DECREMENT 1004
+#define FIELD_COUNTER_TYPE 1003
 
 const map<unsigned _supla_int16_t, string>
     general_purpose_meter_config::field_map = {
         {FIELD_METER_CHART_TYPE, "chartType"},
         {FIELD_INCLUDE_VALUE_ADDED_IN_HISTORY, "includeValueAddedInHistory"},
         {FIELD_FILL_MISSING_DATA, "fillMissingData"},
-        {FIELD_ALLOW_COUNTER_RESET, "allowCounterReset"},
-        {FIELD_ALWAYS_DECREMENT, "alwaysDecrement"}};
+        {FIELD_COUNTER_TYPE, "counterType"}};
 
 general_purpose_meter_config::general_purpose_meter_config(
     supla_json_config *root)
@@ -69,6 +67,29 @@ unsigned char general_purpose_meter_config::string_to_chart_type(
   }
 
   return SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_LINEAR;
+}
+
+string general_purpose_meter_config::counter_type_to_string(
+    unsigned char counter_type) {
+  switch (counter_type) {
+    case SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_INCREMENT:
+      return "ALWAYS_INCREMENT";
+    case SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_DECREMENT:
+      return "ALWAYS_DECREMENT";
+  }
+
+  return "INCREMENT_AND_DECREMENT";
+}
+
+unsigned char general_purpose_meter_config::string_to_counter_type(
+    const string &chart_type) {
+  if (chart_type == "ALWAYS_INCREMENT") {
+    return SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_INCREMENT;
+  } else if (chart_type == "ALWAYS_DECREMENT") {
+    return SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_DECREMENT;
+  }
+
+  return SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_INCREMENT_DECREMENT;
 }
 
 void general_purpose_meter_config::set_config(
@@ -112,13 +133,9 @@ void general_purpose_meter_config::set_config(
                  config->FillMissingData ? cJSON_True : cJSON_False, true,
                  nullptr, nullptr, 0);
 
-  set_item_value(user_root, field_map.at(FIELD_ALLOW_COUNTER_RESET).c_str(),
-                 config->AllowCounterReset ? cJSON_True : cJSON_False, true,
-                 nullptr, nullptr, 0);
-
-  set_item_value(user_root, field_map.at(FIELD_ALWAYS_DECREMENT).c_str(),
-                 config->AlwaysDecrement ? cJSON_True : cJSON_False, true,
-                 nullptr, nullptr, 0);
+  set_item_value(user_root, field_map.at(FIELD_COUNTER_TYPE).c_str(),
+                 cJSON_String, true, nullptr,
+                 counter_type_to_string(config->CounterType).c_str(), 0);
 }
 
 bool general_purpose_meter_config::get_config(
@@ -179,15 +196,9 @@ bool general_purpose_meter_config::get_config(
     result = true;
   }
 
-  if (get_bool(user_root, field_map.at(FIELD_ALLOW_COUNTER_RESET).c_str(),
-               &bool_value)) {
-    config->AllowCounterReset = bool_value ? 1 : 0;
-    result = true;
-  }
-
-  if (get_bool(user_root, field_map.at(FIELD_ALWAYS_DECREMENT).c_str(),
-               &bool_value)) {
-    config->AlwaysDecrement = bool_value ? 1 : 0;
+  if (get_string(user_root, field_map.at(FIELD_COUNTER_TYPE).c_str(),
+                 &str_value)) {
+    config->CounterType = string_to_counter_type(str_value);
     result = true;
   }
 

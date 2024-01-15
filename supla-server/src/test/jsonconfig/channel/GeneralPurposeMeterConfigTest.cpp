@@ -39,6 +39,7 @@ TEST_F(GeneralPurposeMeterConfigTest, setAndGetConfig) {
   raw1.ValuePrecision = 5;
   snprintf(raw1.UnitBeforeValue, sizeof(raw1.UnitBeforeValue), "ABCD");
   snprintf(raw1.UnitAfterValue, sizeof(raw1.UnitAfterValue), "EFGH");
+  raw1.CounterType = SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_INCREMENT;
   raw1.NoSpaceAfterValue = 1;
   raw1.KeepHistory = 1;
   raw1.ChartType = SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_BAR;
@@ -48,8 +49,7 @@ TEST_F(GeneralPurposeMeterConfigTest, setAndGetConfig) {
   raw1.DefaultValuePrecision = 9;
   raw1.IncludeValueAddedInHistory = 1;
   raw1.FillMissingData = 1;
-  raw1.AllowCounterReset = 1;
-  raw1.AlwaysDecrement = 1;
+
   snprintf(raw1.DefaultUnitBeforeValue, sizeof(raw1.DefaultUnitBeforeValue),
            "XCVB");
   snprintf(raw1.DefaultUnitAfterValue, sizeof(raw1.DefaultUnitAfterValue),
@@ -66,7 +66,7 @@ TEST_F(GeneralPurposeMeterConfigTest, setAndGetConfig) {
       "\"valuePrecision\":5,\"unitBeforeValue\":\"ABCD\",\"unitAfterValue\":"
       "\"EFGH\",\"noSpaceAfterValue\":true,\"keepHistory\":true,\"chartType\":"
       "\"BAR\",\"includeValueAddedInHistory\":true,\"fillMissingData\":true,"
-      "\"allowCounterReset\":true,\"alwaysDecrement\":true}");
+      "\"counterType\":\"ALWAYS_INCREMENT\"}");
 
   general_purpose_meter_config config2;
   config2.set_user_config(str);
@@ -103,7 +103,7 @@ TEST_F(GeneralPurposeMeterConfigTest, booleans) {
       "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
       "\"noSpaceAfterValue\":false,\"keepHistory\":false,\"chartType\":"
       "\"LINEAR\",\"includeValueAddedInHistory\":false,\"fillMissingData\":"
-      "false,\"allowCounterReset\":false,\"alwaysDecrement\":false}");
+      "false,\"counterType\":\"INCREMENT_AND_DECREMENT\"}");
   free(str);
 
   raw.KeepHistory = 1;
@@ -111,13 +111,13 @@ TEST_F(GeneralPurposeMeterConfigTest, booleans) {
 
   str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
-               "\"valuePrecision\":0,\"unitBeforeValue\":\"\","
-               "\"unitAfterValue\":\"\",\"noSpaceAfterValue\":false,"
-               "\"chartType\":\"LINEAR\",\"includeValueAddedInHistory\":false,"
-               "\"fillMissingData\":false,\"allowCounterReset\":false,"
-               "\"alwaysDecrement\":false,\"keepHistory\":true}");
+  EXPECT_STREQ(
+      str,
+      "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
+      "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
+      "\"noSpaceAfterValue\":false,\"chartType\":\"LINEAR\","
+      "\"includeValueAddedInHistory\":false,\"fillMissingData\":false,"
+      "\"counterType\":\"INCREMENT_AND_DECREMENT\",\"keepHistory\":true}");
   free(str);
 
   raw.KeepHistory = 0;
@@ -126,13 +126,13 @@ TEST_F(GeneralPurposeMeterConfigTest, booleans) {
 
   str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
-               "\"valuePrecision\":0,\"unitBeforeValue\":\"\","
-               "\"unitAfterValue\":\"\",\"noSpaceAfterValue\":false,"
-               "\"chartType\":\"LINEAR\",\"fillMissingData\":false,"
-               "\"allowCounterReset\":false,\"alwaysDecrement\":false,"
-               "\"keepHistory\":false,\"includeValueAddedInHistory\":true}");
+  EXPECT_STREQ(
+      str,
+      "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
+      "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
+      "\"noSpaceAfterValue\":false,\"chartType\":\"LINEAR\","
+      "\"fillMissingData\":false,\"counterType\":\"INCREMENT_AND_DECREMENT\","
+      "\"keepHistory\":false,\"includeValueAddedInHistory\":true}");
   free(str);
 
   raw.IncludeValueAddedInHistory = 0;
@@ -145,39 +145,9 @@ TEST_F(GeneralPurposeMeterConfigTest, booleans) {
       str,
       "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
       "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
-      "\"noSpaceAfterValue\":false,\"chartType\":\"LINEAR\","
-      "\"allowCounterReset\":false,\"alwaysDecrement\":false,\"keepHistory\":"
-      "false,\"includeValueAddedInHistory\":false,\"fillMissingData\":true}");
-  free(str);
-
-  raw.FillMissingData = 0;
-  raw.AllowCounterReset = 1;
-  config.set_config(&raw);
-
-  str = config.get_user_config();
-  ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
-               "\"valuePrecision\":0,\"unitBeforeValue\":\"\","
-               "\"unitAfterValue\":\"\",\"noSpaceAfterValue\":false,"
-               "\"chartType\":\"LINEAR\",\"alwaysDecrement\":false,"
-               "\"keepHistory\":false,\"includeValueAddedInHistory\":false,"
-               "\"fillMissingData\":false,\"allowCounterReset\":true}");
-  free(str);
-
-  raw.AllowCounterReset = 0;
-  raw.AlwaysDecrement = 1;
-  config.set_config(&raw);
-
-  str = config.get_user_config();
-  ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
-      "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
-      "\"noSpaceAfterValue\":false,\"chartType\":\"LINEAR\",\"keepHistory\":"
-      "false,\"includeValueAddedInHistory\":false,\"fillMissingData\":false,"
-      "\"allowCounterReset\":false,\"alwaysDecrement\":true}");
+      "\"noSpaceAfterValue\":false,\"chartType\":\"LINEAR\",\"counterType\":"
+      "\"INCREMENT_AND_DECREMENT\",\"keepHistory\":false,"
+      "\"includeValueAddedInHistory\":false,\"fillMissingData\":true}");
   free(str);
 }
 
@@ -187,8 +157,7 @@ TEST_F(GeneralPurposeMeterConfigTest, merge) {
       "{\"a\":\"b\",\"valueDivider\":12,\"valueMultiplier\":34,\"valueAdded\":"
       "56,\"valuePrecision\":5,\"unitBeforeValue\":\"ABCD\",\"unitAfterValue\":"
       "\"EFGH\",\"keepHistory\":true,\"chartType\":\"BAR\","
-      "\"includeValueAddedInHistory\":true,\"fillMissingData\":true,"
-      "\"allowCounterReset\":true}");
+      "\"includeValueAddedInHistory\":true,\"fillMissingData\":true}");
   config1.set_properties(
       "{\"x\":\"y\",\"defaultValueDivider\":78,\"defaultValueMultiplier\":910,"
       "\"defaultValueAdded\":1112,\"defaultValuePrecision\":9,"

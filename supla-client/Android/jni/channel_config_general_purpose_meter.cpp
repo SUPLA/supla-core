@@ -38,6 +38,28 @@ jobject supla_cc_gp_meter_char_type_to_object(JNIEnv *env,
                        enum_name);
 }
 
+jobject supla_cc_gp_meter_counter_type_to_object(JNIEnv *env,
+                                                 unsigned char counter_type) {
+  char enum_name[20] = {};
+
+  switch (counter_type) {
+    case SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_INCREMENT:
+      snprintf(enum_name, sizeof(enum_name), "ALWAYS_INCREMENT");
+      break;
+    case SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_DECREMENT:
+      snprintf(enum_name, sizeof(enum_name), "ALWAYS_DECREMENT");
+      break;
+    default:
+      snprintf(enum_name, sizeof(enum_name), "INCREMENT_AND_DECREMENT");
+      break;
+  }
+
+  return supla_NewEnum(env,
+                       "org/supla/android/data/source/remote/gpm/"
+                       "SuplaChannelConfigMeterChartType",
+                       enum_name);
+}
+
 jobject supla_cc_gp_meter_to_jobject(
     JNIEnv *env, _supla_int_t channel_id, _supla_int_t func,
     TChannelConfig_GeneralPurposeMeter *config) {
@@ -47,9 +69,14 @@ jobject supla_cc_gp_meter_to_jobject(
 
   jmethodID method_init = env->GetMethodID(
       config_cls, "<init>",
-      "(ILjava/lang/Integer;IIIILjava/lang/String;Ljava/lang/String;ZZIILjava/"
-      "lang/String;Ljava/lang/String;Lorg/supla/android/data/source/remote/gpm/"
-      "SuplaChannelConfigMeterChartType;ZZZZ)V");
+      "(Lorg/supla/android/data/source/remote/gpm/"
+      "SuplaChannelConfigMeterChartType;ILjava/lang/Integer;IIIILjava/lang/"
+      "String;Ljava/lang/String;ZZIILjava/lang/String;Ljava/lang/String;Lorg/"
+      "supla/android/data/source/remote/gpm/"
+      "SuplaChannelConfigMeterChartType;ZZ)V");
+
+  jobject counter_type =
+      supla_cc_gp_meter_counter_type_to_object(env, config->CounterType);
 
   jint value_precision = config->ValuePrecision;
 
@@ -73,7 +100,7 @@ jobject supla_cc_gp_meter_to_jobject(
 
   jobject result = env->NewObject(
       config_cls, method_init, channel_id, supla_NewInt(env, func),
-      (jint)config->ValueDivider, (jint)config->ValueMultiplier,
+      counter_type, (jint)config->ValueDivider, (jint)config->ValueMultiplier,
       (jlong)config->ValueAdded, value_precision, unit_before_value,
       unit_after_value, config->NoSpaceAfterValue ? JNI_TRUE : JNI_FALSE,
       config->KeepHistory ? JNI_TRUE : JNI_FALSE,
@@ -81,9 +108,7 @@ jobject supla_cc_gp_meter_to_jobject(
       default_unit_before_value, default_unit_after_value, chart_type,
       unit_after_value,
       config->IncludeValueAddedInHistory ? JNI_TRUE : JNI_FALSE,
-      config->FillMissingData ? JNI_TRUE : JNI_FALSE,
-      config->AllowCounterReset ? JNI_TRUE : JNI_FALSE,
-      config->AlwaysDecrement ? JNI_TRUE : JNI_FALSE);
+      config->FillMissingData ? JNI_TRUE : JNI_FALSE);
 
   env->DeleteLocalRef(config_cls);
 

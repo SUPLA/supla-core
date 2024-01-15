@@ -30,6 +30,8 @@ class general_purpose_meter_config : public general_purpose_base_config {
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
   std::string chart_type_to_string(unsigned char chart_type);
   unsigned char string_to_chart_type(const std::string &chart_type);
+  std::string counter_type_to_string(unsigned char counter_type);
+  unsigned char string_to_counter_type(const std::string &counter_type);
 
  public:
   explicit general_purpose_meter_config(supla_json_config *root);
