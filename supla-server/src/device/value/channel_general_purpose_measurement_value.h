@@ -19,10 +19,10 @@
 #ifndef CHANNEL_GENERAL_PURPOSE_MEASUREMENT_VALUE_H_
 #define CHANNEL_GENERAL_PURPOSE_MEASUREMENT_VALUE_H_
 
-#include "device/value/channel_value.h"
+#include "device/value/channel_general_purpose_base_value.h"
 
 class supla_channel_general_purpose_measurement_value
-    : public supla_channel_value {
+    : public supla_channel_general_purpose_base_value {
  public:
   supla_channel_general_purpose_measurement_value();
   explicit supla_channel_general_purpose_measurement_value(

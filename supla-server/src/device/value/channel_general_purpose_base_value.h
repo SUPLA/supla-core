@@ -16,18 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_GENERAL_PURPOSE_METER_VALUE_H_
-#define CHANNEL_GENERAL_PURPOSE_METER_VALUE_H_
+#ifndef CHANNEL_GENERAL_PURPOSE_BASE_VALUE_H_
+#define CHANNEL_GENERAL_PURPOSE_BASE_VALUE_H_
 
-#include "device/value/channel_general_purpose_base_value.h"
+#include "device/value/channel_value.h"
 
-class supla_channel_general_purpose_meter_value
-    : public supla_channel_general_purpose_base_value {
+class supla_channel_general_purpose_base_value : public supla_channel_value {
  public:
-  supla_channel_general_purpose_meter_value();
-  explicit supla_channel_general_purpose_meter_value(
+  supla_channel_general_purpose_base_value();
+  explicit supla_channel_general_purpose_base_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  static bool is_function_supported(int func);
+
+  virtual void apply_channel_properties(int type,
+                                        unsigned char protocol_version,
+                                        int param1, int param2, int param3,
+                                        int param4,
+                                        supla_json_config *json_config);
+
+  virtual double get_value(void);
+  virtual void set_value(double value);
 };
 
-#endif /*CHANNEL_GENERAL_PURPOSE_METER_VALUE_H_*/
+#endif /*CHANNEL_GENERAL_PURPOSE_BASE_VALUE_H_*/

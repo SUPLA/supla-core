@@ -57,6 +57,10 @@ class general_purpose_base_config : public supla_json_config {
  public:
   explicit general_purpose_base_config(supla_json_config *root);
   general_purpose_base_config(void);
+
+  double get_value_divider(void);
+  double get_value_multiplier(void);
+  double get_value_added(void);
 };
 
 #endif /* GENERAL_PURPOSE_BASE_CONFIG_H_ */

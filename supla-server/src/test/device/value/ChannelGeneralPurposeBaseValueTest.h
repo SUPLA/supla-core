@@ -16,19 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "channel_general_purpose_meter_value.h"
+#ifndef CHANNEL_GENERAL_PURPOSE_BASE_VALUE_TEST_H_
+#define CHANNEL_GENERAL_PURPOSE_BASE_VALUE_TEST_H_
 
-supla_channel_general_purpose_meter_value::
-    supla_channel_general_purpose_meter_value()
-    : supla_channel_general_purpose_base_value() {}
+#include "gtest/gtest.h"
 
-supla_channel_general_purpose_meter_value::
-    supla_channel_general_purpose_meter_value(
-        const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_general_purpose_base_value(raw_value) {}
+namespace testing {
 
-// static
-bool supla_channel_general_purpose_meter_value::is_function_supported(
-    int func) {
-  return func == SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT;
-}
+class ChannelGeneralPurposeBaseValueTest : public Test {
+ public:
+};
+
+}  // namespace testing
+
+#endif /*CHANNEL_GENERAL_PURPOSE_BASE_VALUE_TEST_H_*/

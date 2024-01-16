@@ -313,3 +313,24 @@ bool general_purpose_base_config::get_config(
 
   return result;
 }
+
+double general_purpose_base_config::get_value_divider(void) {
+  double dbl_value = 0;
+  get_double(get_user_root(), field_map.at(FIELD_VALUE_DIVIDER).c_str(),
+             &dbl_value);
+  return dbl_value * 0.001;
+}
+
+double general_purpose_base_config::get_value_multiplier(void) {
+  double dbl_value = 0;
+  get_double(get_user_root(), field_map.at(FIELD_VALUE_MULTIPLIER).c_str(),
+             &dbl_value);
+  return dbl_value * 0.001;
+}
+
+double general_purpose_base_config::get_value_added(void) {
+  double dbl_value = 0;
+  get_double(get_user_root(), field_map.at(FIELD_VALUE_ADDED).c_str(),
+             &dbl_value);
+  return dbl_value * 0.001;
+}
