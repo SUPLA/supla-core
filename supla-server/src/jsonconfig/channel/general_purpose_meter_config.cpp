@@ -63,10 +63,10 @@ string general_purpose_meter_config::chart_type_to_string(
 unsigned char general_purpose_meter_config::string_to_chart_type(
     const string &chart_type) {
   if (chart_type == "LINEAR") {
-    return SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_LINEAR;
+    return SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_LINEAR;
   }
 
-  return SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_BAR;
+  return SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_BAR;
 }
 
 string general_purpose_meter_config::counter_type_to_string(

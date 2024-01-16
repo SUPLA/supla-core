@@ -87,6 +87,8 @@ TEST_F(GeneralPurposeMeterConfigTest, setAndGetConfig) {
 
   EXPECT_EQ(memcmp(&raw1, &raw2, sizeof(TChannelConfig_GeneralPurposeMeter)),
             0);
+
+  supla_log(LOG_DEBUG, "%i,%i", raw1.ChartType, raw2.ChartType);
 }
 
 TEST_F(GeneralPurposeMeterConfigTest, booleans) {
@@ -102,7 +104,7 @@ TEST_F(GeneralPurposeMeterConfigTest, booleans) {
       "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
       "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
       "\"noSpaceAfterValue\":false,\"keepHistory\":false,\"chartType\":"
-      "\"LINEAR\",\"includeValueAddedInHistory\":false,\"fillMissingData\":"
+      "\"BAR\",\"includeValueAddedInHistory\":false,\"fillMissingData\":"
       "false,\"counterType\":\"INCREMENT_AND_DECREMENT\"}");
   free(str);
 
@@ -115,7 +117,7 @@ TEST_F(GeneralPurposeMeterConfigTest, booleans) {
       str,
       "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
       "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
-      "\"noSpaceAfterValue\":false,\"chartType\":\"LINEAR\","
+      "\"noSpaceAfterValue\":false,\"chartType\":\"BAR\","
       "\"includeValueAddedInHistory\":false,\"fillMissingData\":false,"
       "\"counterType\":\"INCREMENT_AND_DECREMENT\",\"keepHistory\":true}");
   free(str);
@@ -130,7 +132,7 @@ TEST_F(GeneralPurposeMeterConfigTest, booleans) {
       str,
       "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
       "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
-      "\"noSpaceAfterValue\":false,\"chartType\":\"LINEAR\","
+      "\"noSpaceAfterValue\":false,\"chartType\":\"BAR\","
       "\"fillMissingData\":false,\"counterType\":\"INCREMENT_AND_DECREMENT\","
       "\"keepHistory\":false,\"includeValueAddedInHistory\":true}");
   free(str);
@@ -145,7 +147,7 @@ TEST_F(GeneralPurposeMeterConfigTest, booleans) {
       str,
       "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
       "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
-      "\"noSpaceAfterValue\":false,\"chartType\":\"LINEAR\",\"counterType\":"
+      "\"noSpaceAfterValue\":false,\"chartType\":\"BAR\",\"counterType\":"
       "\"INCREMENT_AND_DECREMENT\",\"keepHistory\":false,"
       "\"includeValueAddedInHistory\":false,\"fillMissingData\":true}");
   free(str);

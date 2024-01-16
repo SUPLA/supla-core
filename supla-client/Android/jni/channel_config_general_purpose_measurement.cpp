@@ -27,14 +27,14 @@ jobject supla_cc_gp_measurement_char_type_to_object(JNIEnv *env,
   char enum_name[20] = {};
 
   switch (chart_type) {
-    case SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_LINEAR:
-      snprintf(enum_name, sizeof(enum_name), "LINEAR");
+    case SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_BAR:
+      snprintf(enum_name, sizeof(enum_name), "BAR");
       break;
     case SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_CANDLE:
       snprintf(enum_name, sizeof(enum_name), "CANDLE");
       break;
     default:
-      snprintf(enum_name, sizeof(enum_name), "BAR");
+      snprintf(enum_name, sizeof(enum_name), "LINEAR");
       break;
   }
 

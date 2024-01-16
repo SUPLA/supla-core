@@ -48,23 +48,23 @@ void general_purpose_measurement_config::merge(supla_json_config *_dst) {
 string general_purpose_measurement_config::chart_type_to_string(
     unsigned char chart_type) {
   switch (chart_type) {
-    case SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_LINEAR:
-      return "LINEAR";
+    case SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_BAR:
+      return "BAR";
     case SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_CANDLE:
       return "CANDLE";
   }
-  return "BAR";
+  return "LINEAR";
 }
 
 unsigned char general_purpose_measurement_config::string_to_chart_type(
     const string &chart_type) {
-  if (chart_type == "LINEAR") {
-    return SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_LINEAR;
+  if (chart_type == "BAR") {
+    return SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_BAR;
   } else if (chart_type == "CANDLE") {
     return SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_CANDLE;
   }
 
-  return SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_BAR;
+  return SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_LINEAR;
 }
 
 void general_purpose_measurement_config::set_config(
