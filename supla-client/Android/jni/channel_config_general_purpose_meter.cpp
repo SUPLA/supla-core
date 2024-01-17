@@ -105,8 +105,8 @@ jobject supla_cc_gp_meter_to_jobject(
       config->KeepHistory ? JNI_TRUE : JNI_FALSE,
       (jint)config->DefaultValueDivider, (jint)config->DefaultValueMultiplier,
       (jlong)config->DefaultValueAdded, (jint)config->DefaultValuePrecision,
-      default_unit_before_value, default_unit_after_value, chart_type,
-      config->RefreshIntervalMs,
+      default_unit_before_value, default_unit_after_value,
+      config->RefreshIntervalMs, chart_type,
       config->IncludeValueAddedInHistory ? JNI_TRUE : JNI_FALSE,
       config->FillMissingData ? JNI_TRUE : JNI_FALSE);
 
