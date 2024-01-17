@@ -40,7 +40,7 @@ jobject supla_cc_gp_meter_char_type_to_object(JNIEnv *env,
 
 jobject supla_cc_gp_meter_counter_type_to_object(JNIEnv *env,
                                                  unsigned char counter_type) {
-  char enum_name[20] = {};
+  char enum_name[30] = {};
 
   switch (counter_type) {
     case SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_INCREMENT:
