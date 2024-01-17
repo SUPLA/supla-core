@@ -94,7 +94,7 @@ void general_purpose_base_config::set_config(
   set_item_value(user_root, field_map.at(FIELD_VALUE_ADDED).c_str(),
                  cJSON_Number, true, nullptr, nullptr, value_added);
 
-  if (value_precision >= 0 && value_precision <= 10) {
+  if (value_precision >= 0 && value_precision <= 4) {
     set_item_value(user_root, field_map.at(FIELD_VALUE_PRECISION).c_str(),
                    cJSON_Number, true, nullptr, nullptr, value_precision);
   }
@@ -125,7 +125,7 @@ void general_purpose_base_config::set_config(
                  field_map.at(FIELD_DEFAULT_VALUE_ADDED).c_str(), cJSON_Number,
                  true, nullptr, nullptr, default_value_added);
 
-  if (default_value_precision >= 0 && default_value_precision <= 10) {
+  if (default_value_precision >= 0 && default_value_precision <= 4) {
     set_item_value(
         properties_root, field_map.at(FIELD_DEFAULT_VALUE_PRECISION).c_str(),
         cJSON_Number, true, nullptr, nullptr, default_value_precision);
