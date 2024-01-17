@@ -56,7 +56,7 @@ jobject supla_cc_gp_meter_counter_type_to_object(JNIEnv *env,
 
   return supla_NewEnum(env,
                        "org/supla/android/data/source/remote/gpm/"
-                       "SuplaChannelConfigMeterChartType",
+                       "SuplaChannelConfigMeterCounterType",
                        enum_name);
 }
 
@@ -105,7 +105,6 @@ jobject supla_cc_gp_meter_to_jobject(
       (jint)config->DefaultValueDivider, (jint)config->DefaultValueMultiplier,
       (jlong)config->DefaultValueAdded, (jint)config->DefaultValuePrecision,
       default_unit_before_value, default_unit_after_value, chart_type,
-      unit_after_value,
       config->IncludeValueAddedInHistory ? JNI_TRUE : JNI_FALSE,
       config->FillMissingData ? JNI_TRUE : JNI_FALSE);
 
