@@ -2837,6 +2837,8 @@ typedef struct {
   // Display unit (after value) - UTF8 including the terminating null byte '\0'
   char UnitAfterValue[SUPLA_GENERAL_PURPOSE_UNIT_SIZE];
   unsigned char
+      NoSpaceBeforeValue;  // 0 - with space (default), 1 - without space
+  unsigned char
       NoSpaceAfterValue;  // 0 - with space (default), 1 - without space
   // Keep history on server
   unsigned char KeepHistory;  // 0 - no (default), 1 - yes
@@ -2889,6 +2891,8 @@ typedef struct {
   char UnitBeforeValue[SUPLA_GENERAL_PURPOSE_UNIT_SIZE];
   // Display unit (after value) - UTF8 including the terminating null byte '\0'
   char UnitAfterValue[SUPLA_GENERAL_PURPOSE_UNIT_SIZE];
+  unsigned char
+      NoSpaceBeforeValue;  // 0 - with space (default), 1 - without space
   unsigned char
       NoSpaceAfterValue;  // 0 - with space (default), 1 - without space
   // Keep history on server
