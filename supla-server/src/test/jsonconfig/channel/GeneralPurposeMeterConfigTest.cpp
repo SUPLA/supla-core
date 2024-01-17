@@ -36,17 +36,19 @@ TEST_F(GeneralPurposeMeterConfigTest, setAndGetConfig) {
   raw1.ValueDivider = 12;
   raw1.ValueMultiplier = 34;
   raw1.ValueAdded = 56;
-  raw1.ValuePrecision = 5;
+  raw1.ValuePrecision = 4;
   snprintf(raw1.UnitBeforeValue, sizeof(raw1.UnitBeforeValue), "ABCD");
   snprintf(raw1.UnitAfterValue, sizeof(raw1.UnitAfterValue), "EFGH");
   raw1.CounterType = SUPLA_GENERAL_PURPOSE_METER_COUNTER_TYPE_ALWAYS_INCREMENT;
+  raw1.NoSpaceBeforeValue = 1;
   raw1.NoSpaceAfterValue = 1;
   raw1.KeepHistory = 1;
+  raw1.RefreshIntervalMs = 345;
   raw1.ChartType = SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_BAR;
   raw1.DefaultValueDivider = 78;
   raw1.DefaultValueMultiplier = 910;
   raw1.DefaultValueAdded = 1112;
-  raw1.DefaultValuePrecision = 9;
+  raw1.DefaultValuePrecision = 2;
   raw1.IncludeValueAddedInHistory = 1;
   raw1.FillMissingData = 1;
 
@@ -63,9 +65,10 @@ TEST_F(GeneralPurposeMeterConfigTest, setAndGetConfig) {
   EXPECT_STREQ(
       str,
       "{\"valueDivider\":12,\"valueMultiplier\":34,\"valueAdded\":56,"
-      "\"valuePrecision\":5,\"unitBeforeValue\":\"ABCD\",\"unitAfterValue\":"
-      "\"EFGH\",\"noSpaceAfterValue\":true,\"keepHistory\":true,\"chartType\":"
-      "\"BAR\",\"includeValueAddedInHistory\":true,\"fillMissingData\":true,"
+      "\"valuePrecision\":4,\"unitBeforeValue\":\"ABCD\",\"unitAfterValue\":"
+      "\"EFGH\",\"noSpaceBeforeValue\":true,\"noSpaceAfterValue\":true,"
+      "\"keepHistory\":true,\"refreshIntervalMs\":345,\"chartType\":\"BAR\","
+      "\"includeValueAddedInHistory\":true,\"fillMissingData\":true,"
       "\"counterType\":\"ALWAYS_INCREMENT\"}");
 
   general_purpose_meter_config config2;
@@ -76,7 +79,7 @@ TEST_F(GeneralPurposeMeterConfigTest, setAndGetConfig) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"defaultValueDivider\":78,\"defaultValueMultiplier\":910,"
-               "\"defaultValueAdded\":1112,\"defaultValuePrecision\":9,"
+               "\"defaultValueAdded\":1112,\"defaultValuePrecision\":2,"
                "\"defaultUnitBeforeValue\":\"XCVB\",\"defaultUnitAfterValue\":"
                "\"GHJK\"}");
 
@@ -87,8 +90,6 @@ TEST_F(GeneralPurposeMeterConfigTest, setAndGetConfig) {
 
   EXPECT_EQ(memcmp(&raw1, &raw2, sizeof(TChannelConfig_GeneralPurposeMeter)),
             0);
-
-  supla_log(LOG_DEBUG, "%i,%i", raw1.ChartType, raw2.ChartType);
 }
 
 TEST_F(GeneralPurposeMeterConfigTest, booleans) {
@@ -103,9 +104,10 @@ TEST_F(GeneralPurposeMeterConfigTest, booleans) {
       str,
       "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
       "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
-      "\"noSpaceAfterValue\":false,\"keepHistory\":false,\"chartType\":"
-      "\"BAR\",\"includeValueAddedInHistory\":false,\"fillMissingData\":"
-      "false,\"counterType\":\"INCREMENT_AND_DECREMENT\"}");
+      "\"noSpaceBeforeValue\":false,\"noSpaceAfterValue\":false,"
+      "\"keepHistory\":false,\"refreshIntervalMs\":0,\"chartType\":\"BAR\","
+      "\"includeValueAddedInHistory\":false,\"fillMissingData\":false,"
+      "\"counterType\":\"INCREMENT_AND_DECREMENT\"}");
   free(str);
 
   raw.KeepHistory = 1;
@@ -117,7 +119,8 @@ TEST_F(GeneralPurposeMeterConfigTest, booleans) {
       str,
       "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
       "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
-      "\"noSpaceAfterValue\":false,\"chartType\":\"BAR\","
+      "\"noSpaceBeforeValue\":false,\"noSpaceAfterValue\":false,"
+      "\"refreshIntervalMs\":0,\"chartType\":\"BAR\","
       "\"includeValueAddedInHistory\":false,\"fillMissingData\":false,"
       "\"counterType\":\"INCREMENT_AND_DECREMENT\",\"keepHistory\":true}");
   free(str);
@@ -132,9 +135,10 @@ TEST_F(GeneralPurposeMeterConfigTest, booleans) {
       str,
       "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
       "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
-      "\"noSpaceAfterValue\":false,\"chartType\":\"BAR\","
-      "\"fillMissingData\":false,\"counterType\":\"INCREMENT_AND_DECREMENT\","
-      "\"keepHistory\":false,\"includeValueAddedInHistory\":true}");
+      "\"noSpaceBeforeValue\":false,\"noSpaceAfterValue\":false,"
+      "\"refreshIntervalMs\":0,\"chartType\":\"BAR\",\"fillMissingData\":false,"
+      "\"counterType\":\"INCREMENT_AND_DECREMENT\",\"keepHistory\":false,"
+      "\"includeValueAddedInHistory\":true}");
   free(str);
 
   raw.IncludeValueAddedInHistory = 0;
@@ -147,9 +151,42 @@ TEST_F(GeneralPurposeMeterConfigTest, booleans) {
       str,
       "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
       "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
-      "\"noSpaceAfterValue\":false,\"chartType\":\"BAR\",\"counterType\":"
+      "\"noSpaceBeforeValue\":false,\"noSpaceAfterValue\":false,"
+      "\"refreshIntervalMs\":0,\"chartType\":\"BAR\",\"counterType\":"
       "\"INCREMENT_AND_DECREMENT\",\"keepHistory\":false,"
       "\"includeValueAddedInHistory\":false,\"fillMissingData\":true}");
+  free(str);
+
+  raw.FillMissingData = 0;
+  raw.NoSpaceBeforeValue = 1;
+  config.set_config(&raw);
+
+  str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
+      "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
+      "\"noSpaceAfterValue\":false,\"refreshIntervalMs\":0,\"chartType\":"
+      "\"BAR\",\"counterType\":\"INCREMENT_AND_DECREMENT\",\"keepHistory\":"
+      "false,\"includeValueAddedInHistory\":false,\"noSpaceBeforeValue\":true,"
+      "\"fillMissingData\":false}");
+  free(str);
+
+  raw.NoSpaceBeforeValue = 0;
+  raw.NoSpaceAfterValue = 1;
+  config.set_config(&raw);
+
+  str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"valueDivider\":0,\"valueMultiplier\":0,\"valueAdded\":0,"
+      "\"valuePrecision\":0,\"unitBeforeValue\":\"\",\"unitAfterValue\":\"\","
+      "\"refreshIntervalMs\":0,\"chartType\":\"BAR\",\"counterType\":"
+      "\"INCREMENT_AND_DECREMENT\",\"keepHistory\":false,"
+      "\"includeValueAddedInHistory\":false,\"fillMissingData\":false,"
+      "\"noSpaceBeforeValue\":false,\"noSpaceAfterValue\":true}");
   free(str);
 }
 

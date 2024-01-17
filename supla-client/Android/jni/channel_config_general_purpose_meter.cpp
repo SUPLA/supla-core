@@ -71,7 +71,7 @@ jobject supla_cc_gp_meter_to_jobject(
       config_cls, "<init>",
       "(ILjava/lang/Integer;Lorg/supla/android/data/source/remote/gpm/"
       "SuplaChannelConfigMeterCounterType;IIJILjava/lang/String;Ljava/lang/"
-      "String;ZZIIJILjava/lang/String;Ljava/lang/String;Lorg/supla/android/"
+      "String;ZZZIIJILjava/lang/String;Ljava/lang/String;ILorg/supla/android/"
       "data/source/remote/gpm/SuplaChannelConfigMeterChartType;ZZ)V");
 
   jobject counter_type =
@@ -100,11 +100,13 @@ jobject supla_cc_gp_meter_to_jobject(
       counter_type, (jint)config->ValueDivider, (jint)config->ValueMultiplier,
       (jlong)config->ValueAdded, (jint)config->ValuePrecision,
       unit_before_value, unit_after_value,
+      config->NoSpaceBeforeValue ? JNI_TRUE : JNI_FALSE,
       config->NoSpaceAfterValue ? JNI_TRUE : JNI_FALSE,
       config->KeepHistory ? JNI_TRUE : JNI_FALSE,
       (jint)config->DefaultValueDivider, (jint)config->DefaultValueMultiplier,
       (jlong)config->DefaultValueAdded, (jint)config->DefaultValuePrecision,
       default_unit_before_value, default_unit_after_value, chart_type,
+      config->RefreshIntervalMs,
       config->IncludeValueAddedInHistory ? JNI_TRUE : JNI_FALSE,
       config->FillMissingData ? JNI_TRUE : JNI_FALSE);
 

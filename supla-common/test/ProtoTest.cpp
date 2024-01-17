@@ -304,11 +304,11 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TChannelConfig_TemperatureAndHumidity),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  EXPECT_EQ(sizeof(TChannelConfig_GeneralPurposeMeasurement), 105);
+  EXPECT_EQ(sizeof(TChannelConfig_GeneralPurposeMeasurement), 108);
   EXPECT_LE(sizeof(TChannelConfig_GeneralPurposeMeasurement),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  EXPECT_EQ(sizeof(TChannelConfig_GeneralPurposeMeter), 109);
+  EXPECT_EQ(sizeof(TChannelConfig_GeneralPurposeMeter), 111);
   EXPECT_LE(sizeof(TChannelConfig_GeneralPurposeMeter),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 }

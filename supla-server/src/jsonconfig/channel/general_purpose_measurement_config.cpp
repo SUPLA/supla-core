@@ -90,7 +90,8 @@ void general_purpose_measurement_config::set_config(
   general_purpose_base_config::set_config(
       config->ValueDivider, config->ValueMultiplier, config->ValueAdded,
       config->ValuePrecision, unit_before_value, unit_after_value,
-      config->NoSpaceAfterValue, config->KeepHistory,
+      config->NoSpaceBeforeValue, config->NoSpaceAfterValue,
+      config->KeepHistory, config->RefreshIntervalMs,
       config->DefaultValueDivider, config->DefaultValueMultiplier,
       config->DefaultValueAdded, config->DefaultValuePrecision,
       default_unit_before_value, default_unit_after_value);
@@ -119,7 +120,8 @@ bool general_purpose_measurement_config::get_config(
   result = general_purpose_base_config::get_config(
       &config->ValueDivider, &config->ValueMultiplier, &config->ValueAdded,
       &config->ValuePrecision, &unit_before_value, &unit_after_value,
-      &config->NoSpaceAfterValue, &config->KeepHistory,
+      &config->NoSpaceBeforeValue, &config->NoSpaceAfterValue,
+      &config->KeepHistory, &config->RefreshIntervalMs,
       &config->DefaultValueDivider, &config->DefaultValueMultiplier,
       &config->DefaultValueAdded, &config->DefaultValuePrecision,
       &default_unit_before_value, &default_unit_after_value);

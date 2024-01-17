@@ -38,16 +38,18 @@ TEST_F(GeneralPurposeMeasurementConfigTest, setAndGetConfig) {
   raw1.ValueDivider = 12;
   raw1.ValueMultiplier = 34;
   raw1.ValueAdded = 56;
-  raw1.ValuePrecision = 5;
+  raw1.ValuePrecision = 4;
   snprintf(raw1.UnitBeforeValue, sizeof(raw1.UnitBeforeValue), "ABCD");
   snprintf(raw1.UnitAfterValue, sizeof(raw1.UnitAfterValue), "EFGH");
+  raw1.NoSpaceBeforeValue = 1;
   raw1.NoSpaceAfterValue = 1;
   raw1.KeepHistory = 1;
   raw1.ChartType = SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_CANDLE;
   raw1.DefaultValueDivider = 78;
   raw1.DefaultValueMultiplier = 910;
   raw1.DefaultValueAdded = 1112;
-  raw1.DefaultValuePrecision = 9;
+  raw1.DefaultValuePrecision = 3;
+  raw1.RefreshIntervalMs = 123;
   snprintf(raw1.DefaultUnitBeforeValue, sizeof(raw1.DefaultUnitBeforeValue),
            "XCVB");
   snprintf(raw1.DefaultUnitAfterValue, sizeof(raw1.DefaultUnitAfterValue),
@@ -60,9 +62,10 @@ TEST_F(GeneralPurposeMeasurementConfigTest, setAndGetConfig) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"valueDivider\":12,\"valueMultiplier\":34,\"valueAdded\":56,"
-               "\"valuePrecision\":5,\"unitBeforeValue\":\"ABCD\","
-               "\"unitAfterValue\":\"EFGH\",\"noSpaceAfterValue\":true,"
-               "\"keepHistory\":true,\"chartType\":\"CANDLE\"}");
+               "\"valuePrecision\":4,\"unitBeforeValue\":\"ABCD\","
+               "\"unitAfterValue\":\"EFGH\",\"noSpaceBeforeValue\":true,"
+               "\"noSpaceAfterValue\":true,\"keepHistory\":true,"
+               "\"refreshIntervalMs\":123,\"chartType\":\"CANDLE\"}");
 
   general_purpose_measurement_config config2;
   config2.set_user_config(str);
@@ -72,7 +75,7 @@ TEST_F(GeneralPurposeMeasurementConfigTest, setAndGetConfig) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"defaultValueDivider\":78,\"defaultValueMultiplier\":910,"
-               "\"defaultValueAdded\":1112,\"defaultValuePrecision\":9,"
+               "\"defaultValueAdded\":1112,\"defaultValuePrecision\":3,"
                "\"defaultUnitBeforeValue\":\"XCVB\",\"defaultUnitAfterValue\":"
                "\"GHJK\"}");
 

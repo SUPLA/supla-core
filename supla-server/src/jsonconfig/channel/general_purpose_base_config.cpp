@@ -27,15 +27,17 @@ using std::string;
 #define FIELD_VALUE_PRECISION 4
 #define FIELD_UNIT_BEFORE_VALUE 5
 #define FIELD_UNIT_AFTER_VALUE 6
-#define FIELD_NO_SPACE_AFTER_VALUE 7
-#define FIELD_KEEP_HISTORY 8
+#define FIELD_NO_SPACE_BEFORE_VALUE 7
+#define FIELD_NO_SPACE_AFTER_VALUE 8
+#define FIELD_KEEP_HISTORY 9
+#define FIELD_REFRESH_INTERVAL_MS 10
 
-#define FIELD_DEFAULT_VALUE_DIVIDER 9
-#define FIELD_DEFAULT_VALUE_ADDED 10
-#define FIELD_DEFAULT_VALUE_MULTIPLIER 11
-#define FIELD_DEFAULT_VALUE_PRECISION 12
-#define FIELD_DEFAULT_UNIT_BEFORE_VALUE 13
-#define FIELD_DEFAULT_UNIT_AFTER_VALUE 14
+#define FIELD_DEFAULT_VALUE_DIVIDER 11
+#define FIELD_DEFAULT_VALUE_ADDED 12
+#define FIELD_DEFAULT_VALUE_MULTIPLIER 13
+#define FIELD_DEFAULT_VALUE_PRECISION 14
+#define FIELD_DEFAULT_UNIT_BEFORE_VALUE 15
+#define FIELD_DEFAULT_UNIT_AFTER_VALUE 16
 
 const map<unsigned _supla_int16_t, string>
     general_purpose_base_config::field_map = {
@@ -45,8 +47,10 @@ const map<unsigned _supla_int16_t, string>
         {FIELD_VALUE_PRECISION, "valuePrecision"},
         {FIELD_UNIT_BEFORE_VALUE, "unitBeforeValue"},
         {FIELD_UNIT_AFTER_VALUE, "unitAfterValue"},
+        {FIELD_NO_SPACE_BEFORE_VALUE, "noSpaceBeforeValue"},
         {FIELD_NO_SPACE_AFTER_VALUE, "noSpaceAfterValue"},
         {FIELD_KEEP_HISTORY, "keepHistory"},
+        {FIELD_REFRESH_INTERVAL_MS, "refreshIntervalMs"},
         {FIELD_DEFAULT_VALUE_DIVIDER, "defaultValueDivider"},
         {FIELD_DEFAULT_VALUE_MULTIPLIER, "defaultValueMultiplier"},
         {FIELD_DEFAULT_VALUE_ADDED, "defaultValueAdded"},
@@ -70,7 +74,8 @@ void general_purpose_base_config::set_config(
     _supla_int_t value_divider, _supla_int_t value_multiplier,
     _supla_int64_t value_added, unsigned char value_precision,
     const std::string &unit_before_value, const std::string &unit_after_value,
-    unsigned char no_space_after_value, unsigned char keep_history,
+    unsigned char no_space_before_value, unsigned char no_space_after_value,
+    unsigned char keep_history, unsigned _supla_int16_t refresh_interval_ms,
     _supla_int_t default_value_divider, _supla_int_t default_value_multiplier,
     _supla_int64_t default_value_added, unsigned char default_value_precision,
     const std::string &default_unit_before_value,
@@ -105,6 +110,10 @@ void general_purpose_base_config::set_config(
   set_item_value(user_root, field_map.at(FIELD_UNIT_AFTER_VALUE).c_str(),
                  cJSON_String, true, nullptr, unit_after_value.c_str(), 0);
 
+  set_item_value(user_root, field_map.at(FIELD_NO_SPACE_BEFORE_VALUE).c_str(),
+                 no_space_before_value ? cJSON_True : cJSON_False, true,
+                 nullptr, nullptr, 0);
+
   set_item_value(user_root, field_map.at(FIELD_NO_SPACE_AFTER_VALUE).c_str(),
                  no_space_after_value ? cJSON_True : cJSON_False, true, nullptr,
                  nullptr, 0);
@@ -112,6 +121,9 @@ void general_purpose_base_config::set_config(
   set_item_value(user_root, field_map.at(FIELD_KEEP_HISTORY).c_str(),
                  keep_history ? cJSON_True : cJSON_False, true, nullptr,
                  nullptr, 0);
+
+  set_item_value(user_root, field_map.at(FIELD_REFRESH_INTERVAL_MS).c_str(),
+                 cJSON_Number, true, nullptr, nullptr, refresh_interval_ms);
 
   set_item_value(properties_root,
                  field_map.at(FIELD_DEFAULT_VALUE_DIVIDER).c_str(),
@@ -144,7 +156,8 @@ bool general_purpose_base_config::get_config(
     _supla_int_t *value_divider, _supla_int_t *value_multiplier,
     _supla_int64_t *value_added, unsigned char *value_precision,
     std::string *unit_before_value, std::string *unit_after_value,
-    unsigned char *no_space_after_value, unsigned char *keep_history,
+    unsigned char *no_space_before_value, unsigned char *no_space_after_value,
+    unsigned char *keep_history, unsigned _supla_int16_t *refresh_interval_ms,
     _supla_int_t *default_value_divider, _supla_int_t *default_value_multiplier,
     _supla_int64_t *default_value_added, unsigned char *default_value_precision,
     std::string *default_unit_before_value,
@@ -228,6 +241,14 @@ bool general_purpose_base_config::get_config(
 
   bool bool_value = false;
 
+  if (no_space_before_value) {
+    if (get_bool(user_root, field_map.at(FIELD_NO_SPACE_BEFORE_VALUE).c_str(),
+                 &bool_value)) {
+      *no_space_before_value = bool_value ? 1 : 0;
+      result = true;
+    }
+  }
+
   if (no_space_after_value) {
     if (get_bool(user_root, field_map.at(FIELD_NO_SPACE_AFTER_VALUE).c_str(),
                  &bool_value)) {
@@ -241,6 +262,16 @@ bool general_purpose_base_config::get_config(
                  &bool_value)) {
       *keep_history = bool_value ? 1 : 0;
       result = true;
+    }
+  }
+
+  if (refresh_interval_ms) {
+    if (get_double(user_root, field_map.at(FIELD_REFRESH_INTERVAL_MS).c_str(),
+                   &dbl_value)) {
+      *refresh_interval_ms = dbl_value;
+      result = true;
+    } else {
+      *refresh_interval_ms = 0;
     }
   }
 

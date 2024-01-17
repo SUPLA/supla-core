@@ -54,7 +54,7 @@ jobject supla_cc_gp_measurement_to_jobject(
   jmethodID method_init = env->GetMethodID(
       config_cls, "<init>",
       "(ILjava/lang/Integer;IIJILjava/lang/String;Ljava/lang/"
-      "String;ZZIIJILjava/lang/String;Ljava/lang/String;Lorg/supla/android/"
+      "String;ZZZIIJILjava/lang/String;Ljava/lang/String;ILorg/supla/android/"
       "data/source/remote/gpm/SuplaChannelConfigMeasurementChartType;)V");
 
   config->UnitBeforeValue[sizeof(config->UnitBeforeValue) - 1] = 0;
@@ -80,11 +80,13 @@ jobject supla_cc_gp_measurement_to_jobject(
       (jint)config->ValueDivider, (jint)config->ValueMultiplier,
       (jlong)config->ValueAdded, (jint)config->ValuePrecision,
       unit_before_value, unit_after_value,
+      config->NoSpaceBeforeValue ? JNI_TRUE : JNI_FALSE,
       config->NoSpaceAfterValue ? JNI_TRUE : JNI_FALSE,
       config->KeepHistory ? JNI_TRUE : JNI_FALSE,
       (jint)config->DefaultValueDivider, (jint)config->DefaultValueMultiplier,
       (jlong)config->DefaultValueAdded, (jint)config->DefaultValuePrecision,
-      default_unit_before_value, default_unit_after_value, chart_type);
+      default_unit_before_value, default_unit_after_value,
+      config->RefreshIntervalMs, chart_type);
 
   env->DeleteLocalRef(config_cls);
 
