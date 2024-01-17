@@ -2819,7 +2819,7 @@ typedef struct {
 #define SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_BAR 1
 #define SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_CANDLE 2
 
-#define SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE 15
+#define SUPLA_GENERAL_PURPOSE_UNIT_SIZE 15
 
 // General Purpose Mesurement channel config:
 // Calculated value is: (value / ValueDivider) * ValueMultiplier + ValueAdded
@@ -2833,15 +2833,19 @@ typedef struct {
   // Display precicion
   unsigned char ValuePrecision;  // 0 - 4 decimal points
   // Display unit (before value) - UTF8 including the terminating null byte '\0'
-  char UnitBeforeValue[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
+  char UnitBeforeValue[SUPLA_GENERAL_PURPOSE_UNIT_SIZE];
   // Display unit (after value) - UTF8 including the terminating null byte '\0'
-  char UnitAfterValue[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
+  char UnitAfterValue[SUPLA_GENERAL_PURPOSE_UNIT_SIZE];
   unsigned char
       NoSpaceAfterValue;  // 0 - with space (default), 1 - without space
   // Keep history on server
   unsigned char KeepHistory;  // 0 - no (default), 1 - yes
   // Chart type linear/bar/candle
   unsigned char ChartType;  // SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_*
+  // Channel refresh interval [ms], allowed range 1 .. 65535
+  // Actual channel implementation may enforce minimum value
+  // 0 - default - implementation dependent
+  unsigned _supla_int16_t RefreshIntervalMs;
 
   // Readonly and default parameters
   // Default value divider
@@ -2853,9 +2857,9 @@ typedef struct {
   // Default display precicion
   unsigned char DefaultValuePrecision;  // 0 - 4 decimal points
   // Default unit (before value) - UTF8 including the terminating null byte '\0'
-  char DefaultUnitBeforeValue[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
+  char DefaultUnitBeforeValue[SUPLA_GENERAL_PURPOSE_UNIT_SIZE];
   // Default unit (after value) - UTF8 including the terminating null byte '\0'
-  char DefaultUnitAfterValue[SUPLA_GENERAL_PURPOSE_MEASUREMENT_UNIT_DATA_SIZE];
+  char DefaultUnitAfterValue[SUPLA_GENERAL_PURPOSE_UNIT_SIZE];
 
   unsigned char Reserved[8];
 } TChannelConfig_GeneralPurposeMeasurement;  // v. >= 23
@@ -2866,8 +2870,6 @@ typedef struct {
 
 #define SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_BAR 0
 #define SUPLA_GENERAL_PURPOSE_METER_CHART_TYPE_LINEAR 1
-
-#define SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE 15
 
 // General Purpose Meter channel config:
 // Calculated value is: (value / ValueDivider) * ValueMultiplier + ValueAdded
@@ -2884,9 +2886,9 @@ typedef struct {
   // Display precicion
   unsigned char ValuePrecision;  // 0 - 4 decimal points
   // Display unit (before value) - UTF8 including the terminating null byte '\0'
-  char UnitBeforeValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
+  char UnitBeforeValue[SUPLA_GENERAL_PURPOSE_UNIT_SIZE];
   // Display unit (after value) - UTF8 including the terminating null byte '\0'
-  char UnitAfterValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
+  char UnitAfterValue[SUPLA_GENERAL_PURPOSE_UNIT_SIZE];
   unsigned char
       NoSpaceAfterValue;  // 0 - with space (default), 1 - without space
   // Keep history on server
@@ -2897,6 +2899,10 @@ typedef struct {
   unsigned char IncludeValueAddedInHistory;  // 0 - no (default), 1 - yes
   // Fill missing data
   unsigned char FillMissingData;  // 0 - no (default), 1 - yes
+  // Channel refresh interval [ms], allowed range 1 .. 65535
+  // Actual channel implementation may enforce minimum value
+  // 0 - default - implementation dependent
+  unsigned _supla_int16_t RefreshIntervalMs;
 
   // Readonly and default parameters
   // Default value divider
@@ -2908,9 +2914,9 @@ typedef struct {
   // Default display precicion
   unsigned char DefaultValuePrecision;  // 0 - 4 decimal points
   // Default unit (before value) - UTF8 including the terminating null byte '\0'
-  char DefaultUnitBeforeValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
+  char DefaultUnitBeforeValue[SUPLA_GENERAL_PURPOSE_UNIT_SIZE];
   // Default unit (after value) - UTF8 including the terminating null byte '\0'
-  char DefaultUnitAfterValue[SUPLA_GENERAL_PURPOSE_METER_UNIT_DATA_SIZE];
+  char DefaultUnitAfterValue[SUPLA_GENERAL_PURPOSE_UNIT_SIZE];
 
   unsigned char Reserved[8];
 } TChannelConfig_GeneralPurposeMeter;  // v. >= 23
