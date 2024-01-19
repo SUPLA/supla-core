@@ -27,7 +27,7 @@ class SetChannelFunctionIntegrationTest : public GetChannelBasicCfg {
  private:
   unsigned char match;
   void channelMatch(TSC_SetChannelFunctionResult *result,
-                    TSC_SuplaChannel_D *channel);
+                    TSC_SuplaChannel_E *channel);
 
  protected:
   unsigned char expectedResultCode;
@@ -39,7 +39,7 @@ class SetChannelFunctionIntegrationTest : public GetChannelBasicCfg {
   SetChannelFunctionIntegrationTest();
   virtual ~SetChannelFunctionIntegrationTest();
   virtual void onChannelFunctionSetResult(TSC_SetChannelFunctionResult *result);
-  virtual void channelUpdate(TSC_SuplaChannel_D *channel);
+  virtual void channelUpdate(TSC_SuplaChannel_E *channel);
 };
 
 } /* namespace testing */

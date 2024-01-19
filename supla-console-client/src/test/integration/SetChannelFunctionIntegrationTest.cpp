@@ -32,7 +32,7 @@ SetChannelFunctionIntegrationTest::SetChannelFunctionIntegrationTest() {
 SetChannelFunctionIntegrationTest::~SetChannelFunctionIntegrationTest() {}
 
 void SetChannelFunctionIntegrationTest::channelMatch(
-    TSC_SetChannelFunctionResult *result, TSC_SuplaChannel_D *channel) {
+    TSC_SetChannelFunctionResult *result, TSC_SuplaChannel_E *channel) {
   if (result) {
     ASSERT_EQ(result->ResultCode, expectedResultCode);
     ASSERT_EQ(result->ChannelID, expectedChannelID);
@@ -57,7 +57,7 @@ void SetChannelFunctionIntegrationTest::onChannelFunctionSetResult(
 }
 
 void SetChannelFunctionIntegrationTest::channelUpdate(
-    TSC_SuplaChannel_D *channel) {
+    TSC_SuplaChannel_E *channel) {
   ASSERT_FALSE(channel == NULL);
   channelMatch(NULL, channel);
 }
