@@ -69,9 +69,9 @@ jobject supla_cc_gp_meter_to_jobject(
 
   jmethodID method_init = env->GetMethodID(
       config_cls, "<init>",
-      "(ILjava/lang/Integer;IIJILjava/lang/String;Ljava/lang/"
-      "String;ZZZIIJILjava/lang/String;Ljava/lang/String;JLorg/supla/android/"
-      "data/source/remote/gpm/SuplaChannelConfigMeterCounterType;ILorg/supla/"
+      "(ILjava/lang/Integer;JIIJILjava/lang/String;Ljava/lang/"
+      "String;ZZZIIJILjava/lang/String;Ljava/lang/String;ILorg/supla/android/"
+      "data/source/remote/gpm/SuplaChannelConfigMeterCounterType;Lorg/supla/"
       "android/data/source/remote/gpm/SuplaChannelConfigMeterChartType;ZZ)V");
 
   jobject counter_type =
