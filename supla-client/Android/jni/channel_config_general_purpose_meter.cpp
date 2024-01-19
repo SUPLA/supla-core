@@ -69,10 +69,10 @@ jobject supla_cc_gp_meter_to_jobject(
 
   jmethodID method_init = env->GetMethodID(
       config_cls, "<init>",
-      "(ILjava/lang/Integer;JLorg/supla/android/data/source/remote/gpm/"
-      "SuplaChannelConfigMeterCounterType;IIJILjava/lang/String;Ljava/lang/"
-      "String;ZZZIIJILjava/lang/String;Ljava/lang/String;ILorg/supla/android/"
-      "data/source/remote/gpm/SuplaChannelConfigMeterChartType;ZZ)V");
+      "(ILjava/lang/Integer;IIJILjava/lang/String;Ljava/lang/"
+      "String;ZZZIIJILjava/lang/String;Ljava/lang/String;JLorg/supla/android/"
+      "data/source/remote/gpm/SuplaChannelConfigMeterCounterType;ILorg/supla/"
+      "android/data/source/remote/gpm/SuplaChannelConfigMeterChartType;ZZ)V");
 
   jobject counter_type =
       supla_cc_gp_meter_counter_type_to_object(env, config->CounterType);
@@ -97,7 +97,7 @@ jobject supla_cc_gp_meter_to_jobject(
 
   jobject result = env->NewObject(
       config_cls, method_init, channel_id, supla_NewInt(env, func), crc32,
-      counter_type, (jint)config->ValueDivider, (jint)config->ValueMultiplier,
+      (jint)config->ValueDivider, (jint)config->ValueMultiplier,
       (jlong)config->ValueAdded, (jint)config->ValuePrecision,
       unit_before_value, unit_after_value,
       config->NoSpaceBeforeValue ? JNI_TRUE : JNI_FALSE,
@@ -106,7 +106,7 @@ jobject supla_cc_gp_meter_to_jobject(
       (jint)config->DefaultValueDivider, (jint)config->DefaultValueMultiplier,
       (jlong)config->DefaultValueAdded, (jint)config->DefaultValuePrecision,
       default_unit_before_value, default_unit_after_value,
-      config->RefreshIntervalMs, chart_type,
+      config->RefreshIntervalMs, counter_type, chart_type,
       config->IncludeValueAddedInHistory ? JNI_TRUE : JNI_FALSE,
       config->FillMissingData ? JNI_TRUE : JNI_FALSE);
 
