@@ -28,7 +28,7 @@ extern "C" {
 #endif
 
 jobject supla_cc_gp_meter_to_jobject(
-    JNIEnv *env, _supla_int_t channel_id, _supla_int_t func,
+    JNIEnv *env, _supla_int_t channel_id, _supla_int_t func, jlong crc32,
     TChannelConfig_GeneralPurposeMeter *config);
 
 #ifdef __cplusplus

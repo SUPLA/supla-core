@@ -390,7 +390,7 @@ jobject supla_channelvalue_to_jobject(void *_suplaclient, void *user_data,
 }
 
 void supla_cb_channel_update(void *_suplaclient, void *user_data,
-                             TSC_SuplaChannel_D *channel) {
+                             TSC_SuplaChannel_E *channel) {
   // int a;
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
@@ -454,6 +454,9 @@ void supla_cb_channel_update(void *_suplaclient, void *user_data,
 
     fid = supla_client_GetFieldID(env, cch, "ProtocolVersion", "I");
     env->SetIntField(ch, fid, channel->ProtocolVersion);
+
+    fid = supla_client_GetFieldID(env, cch, "DefaultConfigCRC32", "J");
+    env->SetLongField(ch, fid, channel->DefaultConfigCRC32);
 
     supla_android_client(asc, asc->j_mid_channel_update, ch);
   }

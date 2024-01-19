@@ -208,13 +208,14 @@ jobject supla_cc_vhac_temperatures_to_jobject(
 }
 
 jobject supla_cc_hvac_to_jobject(JNIEnv *env, _supla_int_t channel_id,
-                                 _supla_int_t func, TChannelConfig_HVAC *hvac) {
+                                 _supla_int_t func, jlong crc32,
+                                 TChannelConfig_HVAC *hvac) {
   jclass config_cls = env->FindClass(
       "org/supla/android/data/source/remote/hvac/SuplaChannelHvacConfig");
 
   jmethodID method_init = env->GetMethodID(
       config_cls, "<init>",
-      "(ILjava/lang/Integer;IILorg/supla/android/data/source/remote/hvac/"
+      "(ILjava/lang/Integer;JIILorg/supla/android/data/source/remote/hvac/"
       "SuplaHvacThermometerType;ZLjava/util/List;Lorg/supla/android/data/"
       "source/remote/hvac/SuplaHvacAlgorithm;IIILorg/supla/android/data/source/"
       "remote/hvac/ThermostatSubfunction;ZLorg/supla/android/data/source/"
@@ -240,7 +241,7 @@ jobject supla_cc_hvac_to_jobject(JNIEnv *env, _supla_int_t channel_id,
       supla_cc_vhac_temperatures_to_jobject(env, &hvac->Temperatures);
 
   jobject result = env->NewObject(
-      config_cls, method_init, channel_id, supla_NewInt(env, func),
+      config_cls, method_init, channel_id, supla_NewInt(env, func), crc32,
       (jint)hvac->MainThermometerChannelId, (jint)hvac->AuxThermometerChannelId,
       aux_thermometer_type,
       hvac->AntiFreezeAndOverheatProtectionEnabled ? JNI_TRUE : JNI_FALSE,

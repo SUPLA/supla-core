@@ -25,6 +25,7 @@
 #include "log.h"
 #include "srpc.h"
 #include "supla-socket.h"
+#include "tools.h"
 
 typedef struct {
   void *ssd;
@@ -232,8 +233,8 @@ void supla_client_locationpack_update(TSuplaClientData *scd,
   srpc_cs_async_get_next(scd->srpc);
 }
 
-void supla_client_channel_update_d(TSuplaClientData *scd,
-                                   TSC_SuplaChannel_D *channel, char gn) {
+void supla_client_channel_update_e(TSuplaClientData *scd,
+                                   TSC_SuplaChannel_E *channel, char gn) {
   supla_client_set_str(channel->Caption, &channel->CaptionSize,
                        SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
@@ -528,6 +529,37 @@ void supla_client_channel_c2d(TSC_SuplaChannel_C *c, TSC_SuplaChannel_D *d) {
   memcpy(d->value.sub_value, c->value.sub_value, SUPLA_CHANNELVALUE_SIZE);
 }
 
+void supla_client_channel_d2e(TSC_SuplaChannel_D *d, TSC_SuplaChannel_E *e) {
+  e->EOL = d->EOL;
+  e->Id = d->Id;
+  e->DeviceID = d->DeviceID;
+  e->LocationID = d->LocationID;
+  e->Func = d->Func;
+  e->AltIcon = d->AltIcon;
+  e->Type = d->Type;
+  e->Flags = d->Flags;
+  e->UserIcon = d->UserIcon;
+  e->ManufacturerID = d->ManufacturerID;
+  e->ProductID = d->ProductID;
+  e->ProtocolVersion = d->ProtocolVersion;
+  e->online = d->online;
+  e->CaptionSize = d->CaptionSize;
+  e->DefaultConfigCRC32 = 0;
+  memcpy(e->Caption, d->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
+
+  e->value.sub_value_type = SUBV_TYPE_NOT_SET_OR_OFFLINE;
+  memcpy(e->value.value, d->value.value, SUPLA_CHANNELVALUE_SIZE);
+  memcpy(e->value.sub_value, d->value.sub_value, SUPLA_CHANNELVALUE_SIZE);
+}
+
+void supla_client_channel_update_d(TSuplaClientData *scd,
+                                   TSC_SuplaChannel_D *channel_d, char gn) {
+  TSC_SuplaChannel_E channel_e = {};
+
+  supla_client_channel_d2e(channel_d, &channel_e);
+  supla_client_channel_update_e(scd, &channel_e, gn);
+}
+
 void supla_client_channel_update_c(TSuplaClientData *scd,
                                    TSC_SuplaChannel_C *channel_c, char gn) {
   TSC_SuplaChannel_D channel_d = {};
@@ -590,6 +622,16 @@ void supla_client_channelpack_update_d(TSuplaClientData *scd,
 
   for (a = 0; a < pack->count; a++)
     supla_client_channel_update_d(scd, &pack->items[a], 0);
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
+void supla_client_channelpack_update_e(TSuplaClientData *scd,
+                                       TSC_SuplaChannelPack_E *pack) {
+  int a;
+
+  for (a = 0; a < pack->count; a++)
+    supla_client_channel_update_e(scd, &pack->items[a], 0);
 
   srpc_cs_async_get_next(scd->srpc);
 }
@@ -914,26 +956,6 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           supla_client_locationpack_update(scd, rd.data.sc_location_pack);
         }
         break;
-      case SUPLA_SC_CALL_CHANNEL_UPDATE:
-        if (rd.data.sc_channel) {
-          supla_client_channel_update(scd, rd.data.sc_channel, 1);
-        }
-        break;
-      case SUPLA_SC_CALL_CHANNEL_UPDATE_B:
-        if (rd.data.sc_channel_b) {
-          supla_client_channel_update_b(scd, rd.data.sc_channel_b, 1);
-        }
-        break;
-      case SUPLA_SC_CALL_CHANNEL_UPDATE_C:
-        if (rd.data.sc_channel_c) {
-          supla_client_channel_update_c(scd, rd.data.sc_channel_c, 1);
-        }
-        break;
-      case SUPLA_SC_CALL_CHANNEL_UPDATE_D:
-        if (rd.data.sc_channel_d) {
-          supla_client_channel_update_d(scd, rd.data.sc_channel_d, 1);
-        }
-        break;
       case SUPLA_SC_CALL_CHANNELPACK_UPDATE:
         if (rd.data.sc_channel_pack) {
           supla_client_channelpack_update(scd, rd.data.sc_channel_pack);
@@ -1133,9 +1155,16 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         break;
       case SUPLA_SC_CALL_CHANNEL_CONFIG_UPDATE_OR_RESULT:
         if (scd->cfg.cb_on_channel_config_update_or_result) {
+          unsigned _supla_int_t crc32 = 0;
+          if (srpc_get_proto_version(_srpc) >= 23) {
+            crc32 = st_crc32_checksum(
+                (unsigned char *)
+                    rd.data.sc_channel_config_update_or_result->Config.Config,
+                rd.data.sc_channel_config_update_or_result->Config.ConfigSize);
+          }
           scd->cfg.cb_on_channel_config_update_or_result(
               scd, scd->cfg.user_data,
-              rd.data.sc_channel_config_update_or_result);
+              rd.data.sc_channel_config_update_or_result, crc32);
         }
         break;
       case SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT:

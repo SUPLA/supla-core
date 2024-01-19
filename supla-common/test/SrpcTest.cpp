@@ -416,7 +416,6 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT,
               SUPLA_SC_CALL_LOCATION_UPDATE,
               SUPLA_SC_CALL_LOCATIONPACK_UPDATE,
-              SUPLA_SC_CALL_CHANNEL_UPDATE,
               SUPLA_SC_CALL_CHANNELPACK_UPDATE,
               SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE,
               SUPLA_CS_CALL_GET_NEXT,
@@ -439,8 +438,7 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED,
               SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT};
     case 8:
-      return {SUPLA_SC_CALL_CHANNELPACK_UPDATE_B,
-              SUPLA_SC_CALL_CHANNEL_UPDATE_B};
+      return {SUPLA_SC_CALL_CHANNELPACK_UPDATE_B};
     case 9:
       return {SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B,
               SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE,
@@ -459,8 +457,7 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST,
               SUPLA_DS_CALL_DEVICE_CALCFG_RESULT,
               SUPLA_SC_CALL_CHANNELPACK_UPDATE_C,
-              SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B,
-              SUPLA_SC_CALL_CHANNEL_UPDATE_C};
+              SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B};
     case 11:
       return {SUPLA_DCS_CALL_GET_USER_LOCALTIME,
               SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
@@ -492,8 +489,7 @@ vector<int> SrpcTest::get_call_ids(int version) {
       return {SUPLA_CS_CALL_SET_LOCATION_CAPTION,
               SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT};
     case 15:
-      return {SUPLA_SC_CALL_CHANNEL_UPDATE_D,
-              SUPLA_SC_CALL_CHANNELPACK_UPDATE_D,
+      return {SUPLA_SC_CALL_CHANNELPACK_UPDATE_D,
               SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE_B,
               SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B};
 
@@ -542,6 +538,8 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_CS_CALL_GET_DEVICE_CONFIG,
               SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT,
               SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED};
+    case 23:
+      return {SUPLA_SC_CALL_CHANNELPACK_UPDATE_E};
   }
 
   return {};
@@ -2185,29 +2183,6 @@ TEST_F(SrpcTest, call_locationpack_update_with_full_size) {
 }
 
 //---------------------------------------------------------
-// CHANNEL UPDATE
-//---------------------------------------------------------
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update,
-                                  TSC_SuplaChannel,
-                                  SUPLA_SC_CALL_CHANNEL_UPDATE, 57, 458,
-                                  sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
-
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_b,
-                                  TSC_SuplaChannel_B,
-                                  SUPLA_SC_CALL_CHANNEL_UPDATE_B, 66, 467,
-                                  sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
-
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_c,
-                                  TSC_SuplaChannel_C,
-                                  SUPLA_SC_CALL_CHANNEL_UPDATE_C, 82, 483,
-                                  sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
-
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_d,
-                                  TSC_SuplaChannel_D,
-                                  SUPLA_SC_CALL_CHANNEL_UPDATE_D, 83, 484,
-                                  sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
-
-//---------------------------------------------------------
 // CHANNEL PACK UPDATE
 //---------------------------------------------------------
 
@@ -2229,6 +2204,11 @@ SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
     srpc_sc_async_channelpack_update_d, TSC_SuplaChannelPack_D,
     TSC_SuplaChannel_D, SUPLA_SC_CALL_CHANNELPACK_UPDATE_D, 8790, 9251,
     sc_channel_pack_d);
+
+SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
+    srpc_sc_async_channelpack_update_e, TSC_SuplaChannelPack_E,
+    TSC_SuplaChannel_E, SUPLA_SC_CALL_CHANNELPACK_UPDATE_E, 8866, 9331,
+    sc_channel_pack_e);
 
 //---------------------------------------------------------
 // CHANNEL VALUE UPDATE

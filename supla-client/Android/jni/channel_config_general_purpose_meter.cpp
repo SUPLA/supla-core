@@ -61,7 +61,7 @@ jobject supla_cc_gp_meter_counter_type_to_object(JNIEnv *env,
 }
 
 jobject supla_cc_gp_meter_to_jobject(
-    JNIEnv *env, _supla_int_t channel_id, _supla_int_t func,
+    JNIEnv *env, _supla_int_t channel_id, _supla_int_t func, jlong crc32,
     TChannelConfig_GeneralPurposeMeter *config) {
   jclass config_cls = env->FindClass(
       "org/supla/android/data/source/remote/gpm/"
@@ -69,7 +69,7 @@ jobject supla_cc_gp_meter_to_jobject(
 
   jmethodID method_init = env->GetMethodID(
       config_cls, "<init>",
-      "(ILjava/lang/Integer;Lorg/supla/android/data/source/remote/gpm/"
+      "(ILjava/lang/Integer;JLorg/supla/android/data/source/remote/gpm/"
       "SuplaChannelConfigMeterCounterType;IIJILjava/lang/String;Ljava/lang/"
       "String;ZZZIIJILjava/lang/String;Ljava/lang/String;ILorg/supla/android/"
       "data/source/remote/gpm/SuplaChannelConfigMeterChartType;ZZ)V");
@@ -96,7 +96,7 @@ jobject supla_cc_gp_meter_to_jobject(
       supla_cc_gp_meter_char_type_to_object(env, config->ChartType);
 
   jobject result = env->NewObject(
-      config_cls, method_init, channel_id, supla_NewInt(env, func),
+      config_cls, method_init, channel_id, supla_NewInt(env, func), crc32,
       counter_type, (jint)config->ValueDivider, (jint)config->ValueMultiplier,
       (jlong)config->ValueAdded, (jint)config->ValuePrecision,
       unit_before_value, unit_after_value,

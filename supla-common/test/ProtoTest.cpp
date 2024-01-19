@@ -74,8 +74,11 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)444, sizeof(TSC_SuplaChannel_B));
   EXPECT_EQ((unsigned int)8888, sizeof(TSC_SuplaChannelPack_B));
   EXPECT_EQ((unsigned int)460, sizeof(TSC_SuplaChannel_C));
+  EXPECT_EQ((unsigned int)461, sizeof(TSC_SuplaChannel_D));
+  EXPECT_EQ((unsigned int)465, sizeof(TSC_SuplaChannel_E));
   EXPECT_EQ((unsigned int)9208, sizeof(TSC_SuplaChannelPack_C));
   EXPECT_EQ((unsigned int)9228, sizeof(TSC_SuplaChannelPack_D));
+  EXPECT_EQ((unsigned int)9308, sizeof(TSC_SuplaChannelPack_E));
   EXPECT_EQ((unsigned int)426, sizeof(TSC_SuplaChannelGroup));
   EXPECT_EQ((unsigned int)8528, sizeof(TSC_SuplaChannelGroupPack));
   EXPECT_EQ((unsigned int)430, sizeof(TSC_SuplaChannelGroup_B));

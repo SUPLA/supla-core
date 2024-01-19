@@ -232,7 +232,7 @@ jobject supla_cc_ws_quarters_to_jobject(JNIEnv *env,
 
 jobject supla_cc_weekly_schedule_to_jobject(JNIEnv *env,
                                             _supla_int_t channel_id,
-                                            _supla_int_t func,
+                                            _supla_int_t func, jlong crc32,
                                             TChannelConfig_WeeklySchedule *ws) {
   jclass config_cls = env->FindClass(
       "org/supla/android/data/source/remote/hvac/"
@@ -240,15 +240,15 @@ jobject supla_cc_weekly_schedule_to_jobject(JNIEnv *env,
 
   jmethodID method_init = env->GetMethodID(
       config_cls, "<init>",
-      "(ILjava/lang/Integer;Ljava/util/List;Ljava/util/List;)V");
+      "(ILjava/lang/Integer;JLjava/util/List;Ljava/util/List;)V");
 
   jobject program_configurations =
       supla_cc_ws_program_configurations_to_jobject(env, ws);
   jobject schedule = supla_cc_ws_quarters_to_jobject(env, ws);
 
-  jobject result =
-      env->NewObject(config_cls, method_init, channel_id,
-                     supla_NewInt(env, func), program_configurations, schedule);
+  jobject result = env->NewObject(config_cls, method_init, channel_id,
+                                  supla_NewInt(env, func), crc32,
+                                  program_configurations, schedule);
 
   env->DeleteLocalRef(config_cls);
   env->DeleteLocalRef(program_configurations);
