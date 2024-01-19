@@ -226,7 +226,7 @@ void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
                                                          e_objc_scope scope) {
   if (data_type & OI_REMOTEUPDATE_DATA1) {
     if (getClient()->get_protocol_version() >= 23) {
-      set_pack_eol<TSC_SuplaChannelPack_D>(data);
+      set_pack_eol<TSC_SuplaChannelPack_E>(data);
       srpc_sc_async_channelpack_update_e(
           srpc, static_cast<TSC_SuplaChannelPack_E *>(data));
 
