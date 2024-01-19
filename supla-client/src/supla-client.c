@@ -976,6 +976,11 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           supla_client_channelpack_update_d(scd, rd.data.sc_channel_pack_d);
         }
         break;
+      case SUPLA_SC_CALL_CHANNELPACK_UPDATE_E:
+        if (rd.data.sc_channel_pack_e) {
+          supla_client_channelpack_update_e(scd, rd.data.sc_channel_pack_e);
+        }
+        break;
       case SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE:
         if (rd.data.sc_channel_value) {
           supla_client_channel_value_update(scd, rd.data.sc_channel_value, 1);
