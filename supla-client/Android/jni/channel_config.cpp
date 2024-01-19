@@ -116,9 +116,9 @@ jobject supla_channel_config_to_jobject(JNIEnv *env, TSCS_ChannelConfig *config,
       "android/data/source/remote/SuplaChannelConfig");
 
   jmethodID init_method =
-      env->GetMethodID(config_cls, "<init>", "(ILjava/lang/Integer;)V");
+      env->GetMethodID(config_cls, "<init>", "(ILjava/lang/Integer;J)V");
   return env->NewObject(config_cls, init_method, config->ChannelId,
-                        supla_NewInt(env, config->Func));
+                        supla_NewInt(env, config->Func), crc32);
 }
 
 void supla_cb_on_channel_config_update_or_result(
