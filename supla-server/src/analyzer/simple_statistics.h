@@ -22,19 +22,23 @@
 #define SIMPLE_STATISTICS_H_
 class supla_simple_statiscics {
  private:
+  double first;
   double min;
   double max;
   double avg;
   double sum;
+  double last;
   unsigned int count;
   struct timeval first_update_time;
 
  public:
   supla_simple_statiscics(void);
   virtual ~supla_simple_statiscics(void);
+  double get_first(void);
   double get_min(void);
   double get_max(void);
   double get_avg(void);
+  double get_last(void);
   unsigned int get_sample_count(void);
   virtual void add_sample(double value);
   unsigned int get_total_time_msec(void);

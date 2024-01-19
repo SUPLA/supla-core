@@ -19,15 +19,19 @@
 #include "analyzer/simple_statistics.h"
 
 supla_simple_statiscics::supla_simple_statiscics() {
+  first = 0;
   min = 0;
   max = 0;
   avg = 0;
   sum = 0;
+  last = 0;
   count = 0;
   first_update_time = {};
 }
 
 supla_simple_statiscics::~supla_simple_statiscics(void) {}
+
+double supla_simple_statiscics::get_first(void) { return first; }
 
 double supla_simple_statiscics::get_min(void) { return min; }
 
@@ -35,10 +39,13 @@ double supla_simple_statiscics::get_max(void) { return max; }
 
 double supla_simple_statiscics::get_avg(void) { return avg; }
 
+double supla_simple_statiscics::get_last(void) { return last; }
+
 unsigned int supla_simple_statiscics::get_sample_count(void) { return count; }
 
 void supla_simple_statiscics::add_sample(double value) {
   if (count == 0) {
+    first = value;
     min = value;
     max = value;
     gettimeofday(&first_update_time, nullptr);
@@ -50,16 +57,19 @@ void supla_simple_statiscics::add_sample(double value) {
     }
   }
 
+  last = value;
   sum += value;
   count++;
   avg = sum / count;
 }
 
 void supla_simple_statiscics::reset(void) {
+  first = 0;
   min = 0;
   max = 0;
   avg = 0;
   sum = 0;
+  last = 0;
   count = 0;
   first_update_time = {};
 }

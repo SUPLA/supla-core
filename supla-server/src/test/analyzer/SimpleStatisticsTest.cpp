@@ -59,6 +59,28 @@ TEST_F(SimpleStatisticsTest, avg) {
   EXPECT_EQ(stat.get_avg(), 0);
 }
 
+TEST_F(SimpleStatisticsTest, firstAndLast) {
+  EXPECT_EQ(stat.get_first(), 0);
+  EXPECT_EQ(stat.get_last(), 0);
+  EXPECT_EQ(stat.get_sample_count(), 0);
+  stat.add_sample(100);
+  EXPECT_EQ(stat.get_first(), 100);
+  EXPECT_EQ(stat.get_last(), 100);
+  EXPECT_EQ(stat.get_sample_count(), 1);
+  stat.add_sample(101);
+  EXPECT_EQ(stat.get_first(), 100);
+  EXPECT_EQ(stat.get_last(), 101);
+  EXPECT_EQ(stat.get_sample_count(), 2);
+  stat.add_sample(103);
+  EXPECT_EQ(stat.get_first(), 100);
+  EXPECT_EQ(stat.get_last(), 103);
+  EXPECT_EQ(stat.get_sample_count(), 3);
+  stat.reset();
+  EXPECT_EQ(stat.get_sample_count(), 0);
+  EXPECT_EQ(stat.get_first(), 0);
+  EXPECT_EQ(stat.get_last(), 0);
+}
+
 TEST_F(SimpleStatisticsTest, totalTime) {
   EXPECT_EQ(stat.get_total_time_msec(), 0);
   stat.reset();
@@ -80,14 +102,18 @@ TEST_F(SimpleStatisticsTest, totalTime) {
 TEST_F(SimpleStatisticsTest, reset) {
   stat.add_sample(5);
   EXPECT_EQ(stat.get_sample_count(), 1);
+  EXPECT_EQ(stat.get_first(), 5);
   EXPECT_EQ(stat.get_min(), 5);
   EXPECT_EQ(stat.get_max(), 5);
   EXPECT_EQ(stat.get_avg(), 5);
+  EXPECT_EQ(stat.get_last(), 5);
   stat.reset();
   EXPECT_EQ(stat.get_sample_count(), 0);
+  EXPECT_EQ(stat.get_first(), 0);
   EXPECT_EQ(stat.get_min(), 0);
   EXPECT_EQ(stat.get_max(), 0);
   EXPECT_EQ(stat.get_avg(), 0);
+  EXPECT_EQ(stat.get_last(), 0);
 }
 
 }  // namespace testing
