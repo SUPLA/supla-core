@@ -150,6 +150,41 @@ void supla_device_channel::get_defaults(int type, int func, int *param1,
 }
 
 // static
+void supla_device_channel::trim_alt_icon_index(int func,
+                                               unsigned char *alt_icon) {
+  if (!alt_icon) {
+    return;
+  }
+
+  int max = 0;
+
+  switch (func) {
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+      max = 4;
+      break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      max = 4;
+      break;
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+      max = 2;
+      break;
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+    case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
+    case SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL:
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+      max = 1;
+      break;
+  }
+
+  if (*alt_icon > max) {
+    *alt_icon = max;
+  }
+}
+
+// static
 int supla_device_channel::func_list_filter(int func_list, int type) {
   switch (type) {
     case SUPLA_CHANNELTYPE_ACTIONTRIGGER:

@@ -105,6 +105,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   virtual ~supla_device_channel();
 
   static void get_defaults(int type, int func, int *param1, int *param2);
+  static void trim_alt_icon_index(int func, unsigned char *alt_icon);
   static int func_list_filter(int func_list, int type);
 
   void lock(void);

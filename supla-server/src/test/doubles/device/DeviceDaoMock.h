@@ -85,9 +85,9 @@ class DeviceDaoMock : public supla_abstract_device_dao {
                     const char *authkey, const char *name, unsigned int ipv4,
                     const char *softver, int proto_version, int flags));
 
-  MOCK_METHOD9(add_channel,
-               int(int device_id, int channel_number, int type, int func,
-                   int param1, int param2, int flist, int flags, int user_id));
+  MOCK_METHOD10(add_channel, int(int device_id, int channel_number, int type,
+                                 int func, int param1, int param2, int flist,
+                                 int flags, int alt_icon, int user_id));
 
   MOCK_METHOD1(on_new_device, bool(int device_id));
 

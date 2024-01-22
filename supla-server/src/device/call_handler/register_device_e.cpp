@@ -23,9 +23,9 @@
 
 #include <memory>
 
-#include "device/call_handler/register_device.h"
 #include "log.h"
 #include "proto.h"
+#include "srpc/abstract_srpc_call_hanlder_collection.h"
 
 using std::shared_ptr;
 
@@ -48,18 +48,58 @@ void supla_ch_register_device_e::handle_call(
   supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_E");
 
   if (rd->data.ds_register_device_e != nullptr) {
-    rd->data.ds_register_device_e->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
-    rd->data.ds_register_device_e->Name[SUPLA_DEVICE_NAME_MAXSIZE - 1] = 0;
-    rd->data.ds_register_device_e->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = 0;
-    rd->data.ds_register_device_e->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] =
-        0;
+    TDS_SuplaRegisterDevice_F* register_device_f =
+        (TDS_SuplaRegisterDevice_F*)malloc(sizeof(TDS_SuplaRegisterDevice_F));
+    if (register_device_f != nullptr) {
+      memset(register_device_f, 0, sizeof(TDS_SuplaRegisterDevice_E));
 
-    supla_register_device regdev;
+      memcpy(register_device_f->Email, rd->data.ds_register_device_e->Email,
+             SUPLA_EMAIL_MAXSIZE);
+      memcpy(register_device_f->AuthKey, rd->data.ds_register_device_e->AuthKey,
+             SUPLA_AUTHKEY_SIZE);
 
-    regdev.register_device(device, nullptr, rd->data.ds_register_device_e,
-                           srpc_adapter,
-                           device->get_connection()->get_client_sd(),
-                           device->get_connection()->get_client_ipv4(),
-                           device->get_connection()->get_activity_timeout());
+      memcpy(register_device_f->GUID, rd->data.ds_register_device_e->GUID,
+             SUPLA_GUID_SIZE);
+      memcpy(register_device_f->Name, rd->data.ds_register_device_e->Name,
+             SUPLA_DEVICE_NAME_MAXSIZE);
+      memcpy(register_device_f->SoftVer, rd->data.ds_register_device_e->SoftVer,
+             SUPLA_SOFTVER_MAXSIZE);
+      memcpy(register_device_f->ServerName,
+             rd->data.ds_register_device_e->ServerName,
+             SUPLA_SERVER_NAME_MAXSIZE);
+
+      register_device_f->Flags = rd->data.ds_register_device_e->Flags;
+      register_device_f->ManufacturerID =
+          rd->data.ds_register_device_e->ManufacturerID;
+      register_device_f->ProductID = rd->data.ds_register_device_e->ProductID;
+
+      register_device_f->channel_count =
+          rd->data.ds_register_device_e->channel_count;
+
+      for (int c = 0; c < register_device_f->channel_count; c++) {
+        memset(&register_device_f->channels[c], 0,
+               sizeof(TDS_SuplaDeviceChannel_C));
+        register_device_f->channels[c].Number =
+            rd->data.ds_register_device_e->channels[c].Number;
+        register_device_f->channels[c].Type =
+            rd->data.ds_register_device_e->channels[c].Type;
+        register_device_f->channels[c].FuncList =
+            rd->data.ds_register_device_e->channels[c].FuncList;
+        register_device_f->channels[c].Default =
+            rd->data.ds_register_device_e->channels[c].Default;
+        register_device_f->channels[c].Flags =
+            rd->data.ds_register_device_e->channels[c].Flags;
+        memcpy(register_device_f->channels[c].value,
+               rd->data.ds_register_device_e->channels[c].value,
+               SUPLA_CHANNELVALUE_SIZE);
+      }
+
+      free(rd->data.ds_register_device_e);
+      rd->data.ds_register_device_f = register_device_f;
+
+      device->get_srpc_call_handler_collection()->handle_call(
+          device, srpc_adapter, rd, SUPLA_DS_CALL_REGISTER_DEVICE_F,
+          proto_version);
+    }
   }
 }
