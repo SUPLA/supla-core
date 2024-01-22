@@ -592,7 +592,7 @@ int supla_device_dao::add_channel(int device_id, int channel_number, int type,
     const char sql[] = "CALL`supla_add_channel`(?,?,?,?,0,?,?,?,?,?,?)";
 
     MYSQL_STMT *stmt = NULL;
-    if (!dba->stmt_execute((void **)&stmt, sql, pbind, 9, true)) {
+    if (!dba->stmt_execute((void **)&stmt, sql, pbind, 10, true)) {
       if (stmt != NULL) mysql_stmt_close(stmt);
       return 0;
     }
