@@ -44,10 +44,15 @@ void supla_channel_general_purpose_base_value::apply_channel_properties(
 
   double value = get_value();
   double divider = config.get_value_divider();
+  double multiplier = config.get_value_multiplier();
 
   if (divider) {
     value /= divider;
   }
 
-  set_value(value * config.get_value_multiplier() + config.get_value_added());
+  if (multiplier) {
+    value *= multiplier;
+  }
+
+  set_value(value + config.get_value_added());
 }
