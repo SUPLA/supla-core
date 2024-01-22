@@ -39,7 +39,7 @@ bool supla_ch_register_device_f::is_registration_required(void) {
 }
 
 bool supla_ch_register_device_f::can_handle_call(unsigned int call_id) {
-  return call_id == SUPLA_DS_CALL_REGISTER_DEVICE_E;
+  return call_id == SUPLA_DS_CALL_REGISTER_DEVICE_F;
 }
 
 void supla_ch_register_device_f::handle_call(
