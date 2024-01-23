@@ -57,6 +57,8 @@ supla_device_channels::supla_device_channels(
     unsigned char number = 0;
     unsigned int action_trigger_caps = 0;
     unsigned int flags = 0;
+    bool offline = false;
+
     TActionTriggerProperties at_orops = {};
 
     if (schannel_b != nullptr) {
@@ -70,6 +72,7 @@ supla_device_channels::supla_device_channels(
       action_trigger_caps = schannel_d[a].ActionTriggerCaps;
       at_orops = schannel_d[a].actionTriggerProperties;
       flags = schannel_d[a].Flags;
+      offline = schannel_d[a].Offline > 0;
     }
 
     int channel_id = get_channel_id(number);
@@ -77,7 +80,10 @@ supla_device_channels::supla_device_channels(
     supla_device_channel *channel = find_channel(channel_id);
 
     if (channel) {
-      channel->set_value(value, nullptr, nullptr);
+      channel->set_value(
+          value,
+          schannel_b == nullptr ? &schannel_d[a].ValueValidityTimeSec : nullptr,
+          schannel_b == nullptr ? &offline : nullptr);
       channel->add_init_flags(flags);
 
       if (type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {

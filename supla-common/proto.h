@@ -845,7 +845,10 @@ typedef struct {
   };
 
   _supla_int_t Default;
-  _supla_int_t Flags;
+  _supla_int64_t Flags;
+
+  unsigned char Offline;
+  unsigned _supla_int_t ValueValidityTimeSec;
 
   union {
     char value[SUPLA_CHANNELVALUE_SIZE];
@@ -853,7 +856,7 @@ typedef struct {
     THVACValue hvacValue;
   };
 
-  unsigned char AltIcon;
+  unsigned char DefaultIcon;
 
 } TDS_SuplaDeviceChannel_D;  // ver. >= 23
 
@@ -1200,7 +1203,7 @@ typedef struct {
   _supla_int16_t ProductID;
   unsigned _supla_int_t DefaultConfigCRC32;
 
-  unsigned _supla_int_t Flags;
+  unsigned _supla_int64_t Flags;
   unsigned char ProtocolVersion;
   char online;
 

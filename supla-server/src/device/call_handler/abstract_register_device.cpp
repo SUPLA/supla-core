@@ -225,7 +225,7 @@ bool supla_abstract_register_device::add_channels(void) {
       _supla_int_t type = 0;
       _supla_int_t func_list = 0;
       _supla_int_t default_func = 0;
-      _supla_int_t channel_flags = 0;
+      _supla_int64_t channel_flags = 0;
       unsigned char alt_icon = 0;
 
       if (dev_channels_b != nullptr) {
@@ -239,7 +239,7 @@ bool supla_abstract_register_device::add_channels(void) {
         func_list = dev_channels_d[a].FuncList;
         default_func = dev_channels_d[a].Default;
         channel_flags = dev_channels_d[a].Flags;
-        alt_icon = dev_channels_d[a].AltIcon;
+        alt_icon = dev_channels_d[a].DefaultIcon;
       }
 
       if (type == 0) {

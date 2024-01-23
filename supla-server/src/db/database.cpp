@@ -309,7 +309,10 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
     int id = 0, channel_number = 0, type = 0, func = 0, param1 = 0, param2 = 0,
         param3 = 0, param4 = 0, iodevice_id = 0, location_id = 0, alt_icon = 0,
-        user_icon = 0, protocol_version = 0, flags = 0, em_subc_flags = 0;
+        user_icon = 0, protocol_version = 0;
+
+    unsigned _supla_int64_t flags = 0, em_subc_flags = 0;
+
     short manufacturer_id = 0;
     short product_id = 0;
     char text_param1[256];
@@ -414,10 +417,10 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     rbind[18].buffer_type = MYSQL_TYPE_LONG;
     rbind[18].buffer = (char *)&protocol_version;
 
-    rbind[19].buffer_type = MYSQL_TYPE_LONG;
+    rbind[19].buffer_type = MYSQL_TYPE_LONGLONG;
     rbind[19].buffer = (char *)&flags;
 
-    rbind[20].buffer_type = MYSQL_TYPE_LONG;
+    rbind[20].buffer_type = MYSQL_TYPE_LONGLONG;
     rbind[20].buffer = (char *)&em_subc_flags;
 
     rbind[21].buffer_type = MYSQL_TYPE_BLOB;
@@ -1123,7 +1126,7 @@ void database::update_channel_params(int channel_id, int user_id, int param1,
 }
 
 void database::update_channel_flags(int channel_id, int user_id,
-                                    unsigned int flags) {
+                                    unsigned _supla_int64_t flags) {
   MYSQL_STMT *stmt = NULL;
   MYSQL_BIND pbind[6];
   memset(pbind, 0, sizeof(pbind));
@@ -1134,7 +1137,7 @@ void database::update_channel_flags(int channel_id, int user_id,
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&user_id;
 
-  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer_type = MYSQL_TYPE_LONGLONG;
   pbind[2].buffer = (char *)&flags;
 
   const char sql[] = "CALL `supla_update_channel_flags`(?, ?, ?)";

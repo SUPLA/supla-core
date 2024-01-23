@@ -46,7 +46,8 @@ supla_device_channel::supla_device_channel(
     supla_device *device, int id, unsigned char channel_number, int type,
     int func, int param1, int param2, int param3, int param4,
     const char *text_param1, const char *text_param2, const char *text_param3,
-    bool hidden, unsigned int flags, const char value[SUPLA_CHANNELVALUE_SIZE],
+    bool hidden, unsigned _supla_int64_t flags,
+    const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec,
     supla_channel_extended_value *extended_value, const char *user_config,
     const char *properties)
@@ -252,14 +253,14 @@ int supla_device_channel::get_param4(void) { return param4; }
 
 bool supla_device_channel::is_hidden(void) { return hidden; }
 
-unsigned int supla_device_channel::get_flags() {
+unsigned _supla_int64_t supla_device_channel::get_flags() {
   lock();
   int result = flags;
   unlock();
   return result;
 }
 
-void supla_device_channel::add_init_flags(unsigned int flags) {
+void supla_device_channel::add_init_flags(unsigned _supla_int64_t flags) {
   if ((init_flags | flags) != init_flags) {
     init_flags |= flags;
     lock();

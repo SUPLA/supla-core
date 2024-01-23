@@ -555,7 +555,7 @@ bool supla_device_dao::update_device(int device_id, int original_location_id,
 
 int supla_device_dao::add_channel(int device_id, int channel_number, int type,
                                   int func, int param1, int param2, int flist,
-                                  int flags, int alt_icon, int user_id) {
+								  _supla_int64_t flags, int alt_icon, int user_id) {
   MYSQL_BIND pbind[10] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -582,7 +582,7 @@ int supla_device_dao::add_channel(int device_id, int channel_number, int type,
   pbind[7].buffer_type = MYSQL_TYPE_LONG;
   pbind[7].buffer = (char *)&flist;
 
-  pbind[8].buffer_type = MYSQL_TYPE_LONG;
+  pbind[8].buffer_type = MYSQL_TYPE_LONGLONG;
   pbind[8].buffer = (char *)&flags;
 
   pbind[9].buffer_type = MYSQL_TYPE_LONG;

@@ -1014,12 +1014,12 @@ TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
   TDS_SuplaRegisterDevice_F register_device_f = {};
   register_device_f.channel_count = 2;
   register_device_f.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
-  register_device_f.channels[0].AltIcon = 1;
+  register_device_f.channels[0].DefaultIcon = 1;
 
   register_device_f.channels[1].Number = 1;
   register_device_f.channels[1].Type = SUPLA_CHANNELTYPE_HVAC;
   register_device_f.channels[1].Default = SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
-  register_device_f.channels[1].AltIcon = 3;
+  register_device_f.channels[1].DefaultIcon = 3;
 
   register_device_f.GUID[0] = 1;
   register_device_f.AuthKey[0] = 2;

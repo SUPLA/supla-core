@@ -71,7 +71,8 @@ class database : public svrdb {
 
   void update_channel_params(int channel_id, int user_id, int param1,
                              int param2, int param3, int param4);
-  void update_channel_flags(int channel_id, int user_id, unsigned int flags);
+  void update_channel_flags(int channel_id, int user_id,
+                            unsigned _supla_int64_t flags);
 };
 
 #endif /* DATABASE_H_ */

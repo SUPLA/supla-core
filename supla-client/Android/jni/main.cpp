@@ -449,8 +449,8 @@ void supla_cb_channel_update(void *_suplaclient, void *user_data,
     fid = supla_client_GetFieldID(env, cch, "UserIcon", "I");
     env->SetIntField(ch, fid, channel->UserIcon);
 
-    fid = supla_client_GetFieldID(env, cch, "Flags", "I");
-    env->SetIntField(ch, fid, channel->Flags);
+    fid = supla_client_GetFieldID(env, cch, "Flags", "J");
+    env->SetLongField(ch, fid, channel->Flags);
 
     fid = supla_client_GetFieldID(env, cch, "ProtocolVersion", "I");
     env->SetIntField(ch, fid, channel->ProtocolVersion);

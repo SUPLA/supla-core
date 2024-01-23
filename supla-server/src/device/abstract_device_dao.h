@@ -78,8 +78,8 @@ class supla_abstract_device_dao {
                              int proto_version, int flags) = 0;
 
   virtual int add_channel(int device_id, int channel_number, int type, int func,
-                          int param1, int param2, int flist, int flags,
-                          int alt_icon, int user_id) = 0;
+                          int param1, int param2, int flist,
+                          _supla_int64_t flags, int alt_icon, int user_id) = 0;
 
   virtual bool on_new_device(int device_id) = 0;
 

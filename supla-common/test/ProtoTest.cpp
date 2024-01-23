@@ -51,12 +51,12 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)1940, sizeof(TDS_SuplaRegisterDevice));
   EXPECT_EQ((unsigned int)21, sizeof(TDS_SuplaDeviceChannel_B));
   EXPECT_EQ((unsigned int)25, sizeof(TDS_SuplaDeviceChannel_C));
-  EXPECT_EQ((unsigned int)26, sizeof(TDS_SuplaDeviceChannel_D));
+  EXPECT_EQ((unsigned int)35, sizeof(TDS_SuplaDeviceChannel_D));
   EXPECT_EQ((unsigned int)2964, sizeof(TDS_SuplaRegisterDevice_B));
   EXPECT_EQ((unsigned int)3029, sizeof(TDS_SuplaRegisterDevice_C));
   EXPECT_EQ((unsigned int)3264, sizeof(TDS_SuplaRegisterDevice_D));
   EXPECT_EQ((unsigned int)3784, sizeof(TDS_SuplaRegisterDevice_E));
-  EXPECT_EQ((unsigned int)3912, sizeof(TDS_SuplaRegisterDevice_F));
+  EXPECT_EQ((unsigned int)5064, sizeof(TDS_SuplaRegisterDevice_F));
   EXPECT_EQ((unsigned int)7, sizeof(TSD_SuplaRegisterDeviceResult));
   EXPECT_EQ((unsigned int)9, sizeof(TDS_SuplaDeviceChannelValue));
   EXPECT_EQ((unsigned int)10, sizeof(TDS_SuplaDeviceChannelValue_B));
@@ -77,10 +77,10 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)8888, sizeof(TSC_SuplaChannelPack_B));
   EXPECT_EQ((unsigned int)460, sizeof(TSC_SuplaChannel_C));
   EXPECT_EQ((unsigned int)461, sizeof(TSC_SuplaChannel_D));
-  EXPECT_EQ((unsigned int)465, sizeof(TSC_SuplaChannel_E));
+  EXPECT_EQ((unsigned int)469, sizeof(TSC_SuplaChannel_E));
   EXPECT_EQ((unsigned int)9208, sizeof(TSC_SuplaChannelPack_C));
   EXPECT_EQ((unsigned int)9228, sizeof(TSC_SuplaChannelPack_D));
-  EXPECT_EQ((unsigned int)9308, sizeof(TSC_SuplaChannelPack_E));
+  EXPECT_EQ((unsigned int)9388, sizeof(TSC_SuplaChannelPack_E));
   EXPECT_EQ((unsigned int)426, sizeof(TSC_SuplaChannelGroup));
   EXPECT_EQ((unsigned int)8528, sizeof(TSC_SuplaChannelGroupPack));
   EXPECT_EQ((unsigned int)430, sizeof(TSC_SuplaChannelGroup_B));

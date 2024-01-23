@@ -64,8 +64,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   char *text_param3;
   const bool hidden;
   bool offline;
-  unsigned int flags;
-  unsigned int init_flags;
+  unsigned _supla_int64_t flags;
+  unsigned _supla_int64_t init_flags;
   TDSC_ChannelState *state;
   char value[SUPLA_CHANNELVALUE_SIZE];
   struct timeval value_valid_to;  // during offline
@@ -97,7 +97,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
                        unsigned char channel_number, int type, int func,
                        int param1, int param2, int param3, int param4,
                        const char *text_param1, const char *text_param2,
-                       const char *text_param3, bool hidden, unsigned int flags,
+                       const char *text_param3, bool hidden,
+                       unsigned _supla_int64_t flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
                        unsigned _supla_int_t validity_time_sec,
                        supla_channel_extended_value *extended_value,
@@ -127,8 +128,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   const char *get_text_param2(void);
   const char *get_text_param3(void);
   bool is_hidden(void);
-  virtual unsigned int get_flags();
-  void add_init_flags(unsigned int flags);
+  virtual unsigned _supla_int64_t get_flags();
+  void add_init_flags(unsigned _supla_int64_t flags);
   bool is_offline(void);
   bool set_offline(bool Offline);
   bool is_value_writable(void);
