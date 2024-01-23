@@ -787,6 +787,8 @@ bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
     unsigned long caption_size = 0;
     my_bool caption_is_null = true;
 
+    _supla_int64_t channel_flags = 0;
+
     rbind[0].buffer_type = MYSQL_TYPE_STRING;
     rbind[0].buffer = cfg->DeviceName;
     rbind[0].buffer_length = sizeof(cfg->DeviceName);
@@ -823,8 +825,8 @@ bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
     rbind[9].buffer_type = MYSQL_TYPE_LONG;
     rbind[9].buffer = (char *)&cfg->FuncList;
 
-    rbind[10].buffer_type = MYSQL_TYPE_LONG;
-    rbind[10].buffer = (char *)&cfg->ChannelFlags;
+    rbind[10].buffer_type = MYSQL_TYPE_LONGLONG;
+    rbind[10].buffer = (char *)&channel_flags;
 
     rbind[11].buffer_type = MYSQL_TYPE_STRING;
     rbind[11].buffer = cfg->Caption;
@@ -848,6 +850,7 @@ bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
         set_terminating_byte(cfg->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                              caption_size, caption_is_null);
 
+        cfg->ChannelFlags = channel_flags & 0xFFFFFFFF;
         cfg->CaptionSize =
             strnlen(cfg->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) + 1;
 
