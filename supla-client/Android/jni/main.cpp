@@ -900,8 +900,8 @@ void supla_cb_channelgroup_update(void *_suplaclient, void *user_data,
     fid = supla_client_GetFieldID(env, cchg, "UserIcon", "I");
     env->SetIntField(chg, fid, channel_group->UserIcon);
 
-    fid = supla_client_GetFieldID(env, cchg, "Flags", "I");
-    env->SetIntField(chg, fid, channel_group->Flags);
+    fid = supla_client_GetFieldID(env, cchg, "Flags", "J");
+    env->SetLongField(chg, fid, channel_group->Flags);
 
     fid = supla_client_GetFieldID(env, cchg, "Caption", "Ljava/lang/String;");
     env->SetObjectField(chg, fid, new_string_utf(env, channel_group->Caption));
