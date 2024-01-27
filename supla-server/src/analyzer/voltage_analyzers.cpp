@@ -147,7 +147,7 @@ void supla_voltage_analyzers::reset(void) {
   }
 }
 
-supla_abstract_data_analyzer *supla_voltage_analyzers::copy(void) {
+supla_abstract_data_analyzer *supla_voltage_analyzers::copy(void) {  // NOLINT
   supla_voltage_analyzers *result =
       new supla_voltage_analyzers(get_channel_id());
 

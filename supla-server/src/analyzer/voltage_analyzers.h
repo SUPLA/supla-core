@@ -46,7 +46,7 @@ class supla_voltage_analyzers : public supla_abstract_data_analyzer {
 
   virtual void reset(void);
   virtual bool is_any_data_for_logging_purpose(void);
-  virtual supla_abstract_data_analyzer *copy(void);  // NO LINT
+  virtual supla_abstract_data_analyzer *copy(void);  // NOLINT
 };
 
 #endif /*VOLTAGE_ANALYZERS_H_*/

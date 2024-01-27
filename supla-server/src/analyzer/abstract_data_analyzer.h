@@ -40,7 +40,7 @@ class supla_abstract_data_analyzer {
 
   virtual void reset(void) = 0;
   virtual bool is_any_data_for_logging_purpose(void) = 0;
-  virtual supla_abstract_data_analyzer *copy(void) = 0;  // NO LINT
+  virtual supla_abstract_data_analyzer *copy(void) = 0;  // NOLINT
 };
 
 #endif /*ABSTRACT_DATA_ANALYZER_H_*/
