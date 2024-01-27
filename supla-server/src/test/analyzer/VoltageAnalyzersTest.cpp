@@ -19,6 +19,7 @@
 #include "test/analyzer/VoltageAnalyzersTest.h"
 
 #include "device/extended_value/channel_em_extended_value.h"
+#include "jsonconfig/channel/electricity_meter_config.h"
 #include "srpc/srpc.h"
 
 namespace testing {
@@ -158,7 +159,7 @@ TEST_F(VoltageAnalyzersTest, thresholdsAreNotSet) {
   ASSERT_TRUE(vas.get_phase3() == nullptr);
 }
 
-TEST_F(VoltageAnalyzersTest, assignmentOperator) {
+TEST_F(VoltageAnalyzersTest, copy) {
   TElectricityMeter_ExtendedValue_V2 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].voltage[0] = 31055;
@@ -180,25 +181,28 @@ TEST_F(VoltageAnalyzersTest, assignmentOperator) {
 
   vas.set_channel_id(12345);
 
-  supla_voltage_analyzers vas2 = vas;
+  supla_voltage_analyzers *vas2 =
+      dynamic_cast<supla_voltage_analyzers *>(vas.copy());
+  ASSERT_TRUE(vas2 != nullptr);
 
-  ASSERT_TRUE(vas2.get_phase1() != nullptr);
-  ASSERT_TRUE(vas2.get_phase2() != nullptr);
-  ASSERT_TRUE(vas2.get_phase3() != nullptr);
+  ASSERT_TRUE(vas2->get_phase1() != nullptr);
+  ASSERT_TRUE(vas2->get_phase2() != nullptr);
+  ASSERT_TRUE(vas2->get_phase3() != nullptr);
 
-  EXPECT_TRUE(vas2.get_phase1() != vas.get_phase1());
-  EXPECT_TRUE(vas2.get_phase2() != vas.get_phase2());
-  EXPECT_TRUE(vas2.get_phase3() != vas.get_phase3());
+  EXPECT_TRUE(vas2->get_phase1() != vas.get_phase1());
+  EXPECT_TRUE(vas2->get_phase2() != vas.get_phase2());
+  EXPECT_TRUE(vas2->get_phase3() != vas.get_phase3());
 
-  EXPECT_EQ(vas2.get_phase1()->get_max(), vas.get_phase1()->get_max());
-  EXPECT_EQ(vas2.get_phase2()->get_max(), vas.get_phase2()->get_max());
-  EXPECT_EQ(vas2.get_phase3()->get_max(), vas.get_phase3()->get_max());
+  EXPECT_EQ(vas2->get_phase1()->get_max(), vas.get_phase1()->get_max());
+  EXPECT_EQ(vas2->get_phase2()->get_max(), vas.get_phase2()->get_max());
+  EXPECT_EQ(vas2->get_phase3()->get_max(), vas.get_phase3()->get_max());
 
-  EXPECT_EQ(vas2.get_channel_id(), vas.get_channel_id());
+  EXPECT_EQ(vas2->get_channel_id(), vas.get_channel_id());
+  delete vas2;
 }
 
 TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
-  EXPECT_FALSE(vas.is_any_sample_over_threshold());
+  EXPECT_FALSE(vas.is_any_data_for_logging_purpose());
 
   TElectricityMeter_ExtendedValue_V2 em_ev = {};
   em_ev.m_count = 1;
@@ -223,9 +227,9 @@ TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   EXPECT_EQ(vas.get_phase2()->get_above_count(), 0);
   EXPECT_EQ(vas.get_phase3()->get_above_count(), 0);
 
-  EXPECT_TRUE(vas.is_any_sample_over_threshold());
+  EXPECT_TRUE(vas.is_any_data_for_logging_purpose());
   vas.reset();
-  EXPECT_FALSE(vas.is_any_sample_over_threshold());
+  EXPECT_FALSE(vas.is_any_data_for_logging_purpose());
 
   em_ev.m[0].voltage[0] = 20000;
   em_ev.m[0].voltage[1] = 31055;
@@ -241,9 +245,9 @@ TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   EXPECT_EQ(vas.get_phase2()->get_above_count(), 1);
   EXPECT_EQ(vas.get_phase3()->get_above_count(), 0);
 
-  EXPECT_TRUE(vas.is_any_sample_over_threshold());
+  EXPECT_TRUE(vas.is_any_data_for_logging_purpose());
   vas.reset();
-  EXPECT_FALSE(vas.is_any_sample_over_threshold());
+  EXPECT_FALSE(vas.is_any_data_for_logging_purpose());
 
   em_ev.m[0].voltage[1] = 20000;
   em_ev.m[0].voltage[2] = 31055;
@@ -259,9 +263,9 @@ TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   EXPECT_EQ(vas.get_phase2()->get_above_count(), 0);
   EXPECT_EQ(vas.get_phase3()->get_above_count(), 1);
 
-  EXPECT_TRUE(vas.is_any_sample_over_threshold());
+  EXPECT_TRUE(vas.is_any_data_for_logging_purpose());
   vas.reset();
-  EXPECT_FALSE(vas.is_any_sample_over_threshold());
+  EXPECT_FALSE(vas.is_any_data_for_logging_purpose());
 }
 
 }  // namespace testing

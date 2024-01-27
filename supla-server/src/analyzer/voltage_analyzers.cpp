@@ -19,22 +19,17 @@
 #include "analyzer/voltage_analyzers.h"
 
 #include "device/extended_value/channel_em_extended_value.h"
+#include "jsonconfig/channel/electricity_meter_config.h"
 #include "srpc/srpc.h"
 
-supla_voltage_analyzers::supla_voltage_analyzers() {
-  channel_id = 0;
-  phase1 = nullptr;
-  phase2 = nullptr;
-  phase3 = nullptr;
-}
+supla_voltage_analyzers::supla_voltage_analyzers(void)
+    : supla_abstract_data_analyzer() {}
 
-supla_voltage_analyzers::supla_voltage_analyzers(
-    const supla_voltage_analyzers &analyzers) {
-  channel_id = 0;
+supla_voltage_analyzers::supla_voltage_analyzers(int channel_id)
+    : supla_abstract_data_analyzer(channel_id) {
   phase1 = nullptr;
   phase2 = nullptr;
   phase3 = nullptr;
-  *this = analyzers;
 }
 
 supla_voltage_analyzers::~supla_voltage_analyzers(void) {
@@ -50,12 +45,6 @@ supla_voltage_analyzers::~supla_voltage_analyzers(void) {
     delete phase3;
   }
 }
-
-void supla_voltage_analyzers::set_channel_id(int channel_id) {
-  this->channel_id = channel_id;
-}
-
-int supla_voltage_analyzers::get_channel_id(void) { return channel_id; }
 
 supla_voltage_analyzer *supla_voltage_analyzers::get_phase1(void) {
   return phase1;
@@ -83,43 +72,50 @@ void supla_voltage_analyzers::add_sample(double lower_voltage_threshold,
 }
 
 void supla_voltage_analyzers::add_samples(
-    int channel_flags, electricity_meter_config *config,
-    supla_channel_em_extended_value *extended_value) {
+    int channel_flags, supla_json_config *config,
+    supla_channel_extended_value *extended_value) {
   double lower_voltage_threshold = 0;
   double upper_voltage_threshold = 0;
+  supla_channel_em_extended_value *em_ev = nullptr;
 
-  if (!config || !extended_value) {
+  if (!config || !extended_value ||
+      !(em_ev =
+            dynamic_cast<supla_channel_em_extended_value *>(extended_value))) {
     return;
   }
 
-  lower_voltage_threshold = config->get_lower_voltage_threshold();
-  upper_voltage_threshold = config->get_upper_voltage_threshold();
+  electricity_meter_config em_config(config);
+
+  lower_voltage_threshold = em_config.get_lower_voltage_threshold();
+  upper_voltage_threshold = em_config.get_upper_voltage_threshold();
 
   if (!lower_voltage_threshold && !upper_voltage_threshold) {
     return;
   }
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
-  if (extended_value->get_raw_value(&em_ev) &&
-      (em_ev.measured_values & EM_VAR_VOLTAGE) && em_ev.m_count > 0) {
+  TElectricityMeter_ExtendedValue_V2 em_ev_raw = {};
+  if (em_ev->get_raw_value(&em_ev_raw) &&
+      (em_ev_raw.measured_values & EM_VAR_VOLTAGE) && em_ev_raw.m_count > 0) {
     if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED)) {
       add_sample(lower_voltage_threshold, upper_voltage_threshold,
-                 em_ev.m[0].voltage[0] / 100.00, &phase1);
+                 em_ev_raw.m[0].voltage[0] / 100.00, &phase1);
     }
 
     if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED)) {
       add_sample(lower_voltage_threshold, upper_voltage_threshold,
-                 em_ev.m[0].voltage[1] / 100.00, &phase2);
+                 em_ev_raw.m[0].voltage[1] / 100.00, &phase2);
     }
 
     if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED)) {
       add_sample(lower_voltage_threshold, upper_voltage_threshold,
-                 em_ev.m[0].voltage[2] / 100.00, &phase3);
+                 em_ev_raw.m[0].voltage[2] / 100.00, &phase3);
     }
   }
 }
 
-bool supla_voltage_analyzers::is_any_sample_over_threshold(void) {
+void supla_voltage_analyzers::add_samples(supla_channel_value *value) {}
+
+bool supla_voltage_analyzers::is_any_data_for_logging_purpose(void) {
   if (phase1 &&
       (phase1->get_below_count() > 0 || phase1->get_above_count() > 0)) {
     return true;
@@ -151,45 +147,24 @@ void supla_voltage_analyzers::reset(void) {
   }
 }
 
-supla_voltage_analyzers &supla_voltage_analyzers::operator=(
-    const supla_voltage_analyzers &analyzers) {
-  channel_id = analyzers.channel_id;
+supla_abstract_data_analyzer *supla_voltage_analyzers::copy(void) {
+  supla_voltage_analyzers *result =
+      new supla_voltage_analyzers(get_channel_id());
 
-  if (phase1 && !analyzers.phase1) {
-    delete phase1;
-    phase1 = nullptr;
+  if (phase1) {
+    result->phase1 = new supla_voltage_analyzer();
+    *result->phase1 = *phase1;
   }
 
-  if (phase2 && !analyzers.phase2) {
-    delete phase2;
-    phase2 = nullptr;
+  if (phase2) {
+    result->phase2 = new supla_voltage_analyzer();
+    *result->phase2 = *phase2;
   }
 
-  if (phase3 && !analyzers.phase3) {
-    delete phase3;
-    phase3 = nullptr;
+  if (phase3) {
+    result->phase3 = new supla_voltage_analyzer();
+    *result->phase3 = *phase3;
   }
 
-  if (analyzers.phase1) {
-    if (!phase1) {
-      phase1 = new supla_voltage_analyzer();
-    }
-    *phase1 = *analyzers.phase1;
-  }
-
-  if (analyzers.phase2) {
-    if (!phase2) {
-      phase2 = new supla_voltage_analyzer();
-    }
-    *phase2 = *analyzers.phase2;
-  }
-
-  if (analyzers.phase3) {
-    if (!phase3) {
-      phase3 = new supla_voltage_analyzer();
-    }
-    *phase3 = *analyzers.phase3;
-  }
-
-  return *this;
+  return result;
 }

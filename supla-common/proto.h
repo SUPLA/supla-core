@@ -953,7 +953,7 @@ typedef struct {
   unsigned char channel_count;
   TDS_SuplaDeviceChannel_D
       channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
-} TDS_SuplaRegisterDevice_F;            // ver. >= 32
+} TDS_SuplaRegisterDevice_F;            // ver. >= 23
 
 typedef struct {
   // server -> device

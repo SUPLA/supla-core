@@ -27,6 +27,7 @@
 #include "client.h"
 #include "db/database.h"
 #include "device/devicechannel.h"
+#include "jsonconfig/channel/electricity_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
 #include "log.h"
 #include "proto.h"

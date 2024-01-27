@@ -39,18 +39,18 @@ unsigned int supla_voltage_threshold_logger::task_interval_sec(void) {
 
 void supla_voltage_threshold_logger::run(
     const vector<supla_user *> *users, supla_abstract_db_access_provider *dba) {
-  std::vector<supla_voltage_analyzers> vas;
+  std::vector<supla_voltage_analyzers *> vas;
 
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
     (*uit)->get_devices()->for_each(
         [&vas](shared_ptr<supla_device> device, bool *will_continue) -> void {
           device->get_channels()->for_each([&vas](supla_device_channel *channel,
                                                   bool *will_continue) -> void {
-            supla_voltage_analyzers voltage_analyzers;
+            supla_voltage_analyzers *analyzers =
+                channel->get_data_analyzer<supla_voltage_analyzers>(true, true);
 
-            if (channel->get_voltage_analyzers_with_any_sample_over_threshold(
-                    &voltage_analyzers, true)) {
-              vas.push_back(voltage_analyzers);
+            if (analyzers) {
+              vas.push_back(analyzers);
             }
           });
         });
@@ -59,6 +59,7 @@ void supla_voltage_threshold_logger::run(
   supla_voltage_threshold_logger_dao dao(dba);
 
   for (auto it = vas.begin(); it != vas.end(); ++it) {
-    dao.add(&(*it));
+    dao.add(*it);
+    delete *it;
   }
 }

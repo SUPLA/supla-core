@@ -23,6 +23,7 @@
 
 #include <memory>
 
+#include "analyzer/data_analyzer_factory.h"
 #include "db/database.h"
 #include "device.h"
 #include "device/device_dao.h"
@@ -30,6 +31,7 @@
 #include "device/extended_value/channel_extended_value_factory.h"
 #include "device/value/channel_value_factory.h"
 #include "jsonconfig/channel/action_trigger_config.h"
+#include "jsonconfig/channel/electricity_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/impulse_counter_config.h"
 #include "jsonconfig/channel/weekly_schedule_config.h"
@@ -39,6 +41,7 @@
 #include "value/channel_openclosed_value.h"
 #include "vbt/value_based_triggers.h"
 
+using std::function;
 using std::list;
 using std::shared_ptr;
 
@@ -75,6 +78,7 @@ supla_device_channel::supla_device_channel(
   this->value_valid_to.tv_usec = 0;
   this->json_config = nullptr;
   this->state = nullptr;
+  this->data_analyzer = nullptr;
 
   if (validity_time_sec > 0) {
     gettimeofday(&value_valid_to, nullptr);
@@ -90,7 +94,7 @@ supla_device_channel::supla_device_channel(
     set_json_config(json_config);
   }
 
-  voltage_analyzers.set_channel_id(id);
+  data_analyzer = supla_data_analyzer_factory::new_analyzer(id, func);
 }
 
 supla_device_channel::~supla_device_channel() {
@@ -122,6 +126,10 @@ supla_device_channel::~supla_device_channel() {
 
   if (state) {
     delete state;
+  }
+
+  if (data_analyzer) {
+    delete data_analyzer;
   }
 
   lck_free(lck);
@@ -232,7 +240,14 @@ int supla_device_channel::get_user_id(void) {
 
 void supla_device_channel::set_func(int func) {
   lock();
-  this->func = func;
+  if (this->func != func) {
+    this->func = func;
+
+    if (data_analyzer) {
+      delete data_analyzer;
+      data_analyzer = supla_data_analyzer_factory::new_analyzer(id, func);
+    }
+  }
   unlock();
 }
 
@@ -530,6 +545,10 @@ bool supla_device_channel::set_value(
     significant_change = true;
   }
 
+  if (data_analyzer) {
+    data_analyzer->add_samples(new_value);
+  }
+
   unlock();
 
   if (differ || validity_time_sec) {
@@ -658,13 +677,15 @@ void supla_device_channel::set_extended_value(
         logger_purpose_extended_value = em->copy();
       }
 
-      voltage_analyzers.add_samples(flags, config, em);
-
       delete config;
     }
   }
 
   extended_value = new_value;
+
+  if (data_analyzer && new_value) {
+    data_analyzer->add_samples(flags, json_config, new_value);
+  }
 
   if (new_value &&
       (!old_value || (old_value && new_value->is_differ(old_value)))) {
@@ -700,7 +721,7 @@ void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
 }
 
 void supla_device_channel::for_each(
-    std::function<void(supla_abstract_common_channel_properties *, bool *)>
+    function<void(supla_abstract_common_channel_properties *, bool *)>
         on_channel_properties) {
   get_device()->get_channels()->for_each(
       [&](supla_device_channel *channel, bool *will_continue) -> void {
@@ -914,17 +935,12 @@ bool supla_device_channel::get_state(TDSC_ChannelState *state) {
   return result;
 }
 
-bool supla_device_channel::get_voltage_analyzers_with_any_sample_over_threshold(
-    supla_voltage_analyzers *voltage_analyzers, bool reset) {
-  bool result = false;
+supla_abstract_data_analyzer *supla_device_channel::_get_data_analyzer(
+    function<bool(supla_abstract_data_analyzer *analyzer)> on_data_analyzer) {
+  supla_abstract_data_analyzer *result = nullptr;
   lock();
-  if (this->voltage_analyzers.is_any_sample_over_threshold()) {
-    *voltage_analyzers = this->voltage_analyzers;
-    result = true;
-  }
-
-  if (reset) {
-    this->voltage_analyzers.reset();
+  if (data_analyzer && on_data_analyzer(data_analyzer)) {
+    result = data_analyzer->copy();
   }
   unlock();
   return result;

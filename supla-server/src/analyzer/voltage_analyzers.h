@@ -16,17 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "analyzer/abstract_data_analyzer.h"
 #include "analyzer/voltage_analyzer.h"
-#include "jsonconfig/channel/electricity_meter_config.h"
-#include "proto.h"
 
 #ifndef VOLTAGE_ANALYZERS_H_
 #define VOLTAGE_ANALYZERS_H_
 
-class supla_channel_em_extended_value;
-class supla_voltage_analyzers {
+class supla_voltage_analyzers : public supla_abstract_data_analyzer {
  private:
-  int channel_id;
   supla_voltage_analyzer *phase1;
   supla_voltage_analyzer *phase2;
   supla_voltage_analyzer *phase3;
@@ -36,20 +33,20 @@ class supla_voltage_analyzers {
 
  public:
   supla_voltage_analyzers(void);
-  supla_voltage_analyzers(const supla_voltage_analyzers &analyzers);  // NO LINT
+  explicit supla_voltage_analyzers(int channel_id);
   virtual ~supla_voltage_analyzers(void);
-  void set_channel_id(int channel_id);
-  int get_channel_id(void);
+
   supla_voltage_analyzer *get_phase1(void);
   supla_voltage_analyzer *get_phase2(void);
   supla_voltage_analyzer *get_phase3(void);
-  void add_samples(int channel_flags, electricity_meter_config *config,
-                   supla_channel_em_extended_value *extended_value);
 
-  bool is_any_sample_over_threshold(void);
-  void reset(void);
+  virtual void add_samples(supla_channel_value *value);
+  virtual void add_samples(int channel_flags, supla_json_config *config,
+                           supla_channel_extended_value *extended_value);
 
-  supla_voltage_analyzers &operator=(const supla_voltage_analyzers &analyzers);
+  virtual void reset(void);
+  virtual bool is_any_data_for_logging_purpose(void);
+  virtual supla_abstract_data_analyzer *copy(void);  // NO LINT
 };
 
 #endif /*VOLTAGE_ANALYZERS_H_*/

@@ -24,7 +24,7 @@
 #include <map>
 #include <vector>
 
-#include "analyzer/voltage_analyzers.h"
+#include "analyzer/abstract_data_analyzer.h"
 #include "caller.h"
 #include "channel_address.h"
 #include "device/abstract_common_channel_properties.h"
@@ -72,7 +72,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   supla_channel_extended_value *extended_value;
   supla_json_config *json_config;
   supla_channel_extended_value *logger_purpose_extended_value;
-  supla_voltage_analyzers voltage_analyzers;
+  supla_abstract_data_analyzer *data_analyzer;
 
   void db_set_properties(supla_json_config *config);
   void db_set_params(int param1, int param2, int param3, int param4);
@@ -156,8 +156,9 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);
-  bool get_voltage_analyzers_with_any_sample_over_threshold(
-      supla_voltage_analyzers *voltage_analyzers, bool reset);
+  supla_abstract_data_analyzer *_get_data_analyzer(
+      std::function<bool(supla_abstract_data_analyzer *analyzer)>
+          on_data_analyzer);
   void send_config_to_device(unsigned char config_type);
   void send_config_to_device(void);
 
@@ -166,6 +167,9 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
 
   template <typename T>
   T *get_extended_value(bool for_data_logger_purposes);
+
+  template <typename T>
+  T *get_data_analyzer(bool containts_data_for_logging_purpose, bool reset);
 };
 
 template <typename T>
@@ -179,6 +183,31 @@ T *supla_device_channel::get_value(void) {
     return expected;
   }
   return nullptr;
+}
+
+template <typename T>
+T *supla_device_channel::get_data_analyzer(
+    bool containts_data_for_logging_purpose, bool reset) {
+  supla_abstract_data_analyzer *analyzer =
+      _get_data_analyzer([reset, containts_data_for_logging_purpose](
+                             supla_abstract_data_analyzer *analyzer) -> bool {
+        if ((!containts_data_for_logging_purpose ||
+             analyzer->is_any_data_for_logging_purpose()) &&
+            dynamic_cast<T *>(analyzer)) {
+          if (reset) {
+            analyzer->reset();
+          }
+
+          return true;
+        }
+        return false;
+      });
+
+  T *result = dynamic_cast<T *>(analyzer);
+  if (!result && analyzer) {
+    delete analyzer;
+  }
+  return result;
 }
 
 template <typename T>
