@@ -18,6 +18,7 @@
 
 #include "data_analyzer_factory.h"
 
+#include "analyzer/general_purpose_measurement_analyzer.h"
 #include "analyzer/voltage_analyzers.h"
 
 supla_data_analyzer_factory::supla_data_analyzer_factory() {}
@@ -30,6 +31,8 @@ supla_abstract_data_analyzer *supla_data_analyzer_factory::new_analyzer(
   switch (func) {
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
       return new supla_voltage_analyzers(channel_id);
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
+      return new supla_general_purpose_measurement_analyzer(channel_id);
   }
 
   return nullptr;
