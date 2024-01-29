@@ -48,9 +48,9 @@ TEST_F(VoltageAnalyzersTest, onePhase) {
   config.set_user_config(
       "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
 
-  vas.add_samples(SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
-                      SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED,
-                  &config, &em);
+  vas.add_sample(SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
+                     SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED,
+                 &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() != nullptr);
   EXPECT_TRUE(vas.get_phase2() == nullptr);
@@ -80,7 +80,7 @@ TEST_F(VoltageAnalyzersTest, threePhases) {
   config.set_user_config(
       "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
 
-  vas.add_samples(0, &config, &em);
+  vas.add_sample(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() != nullptr);
   ASSERT_TRUE(vas.get_phase2() != nullptr);
@@ -112,7 +112,7 @@ TEST_F(VoltageAnalyzersTest, noMeasurements) {
   config.set_user_config(
       "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
 
-  vas.add_samples(0, &config, &em);
+  vas.add_sample(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() == nullptr);
   ASSERT_TRUE(vas.get_phase2() == nullptr);
@@ -129,7 +129,7 @@ TEST_F(VoltageAnalyzersTest, voltageIsNotMeasured) {
   config.set_user_config(
       "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
 
-  vas.add_samples(0, &config, &em);
+  vas.add_sample(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() == nullptr);
   ASSERT_TRUE(vas.get_phase2() == nullptr);
@@ -152,7 +152,7 @@ TEST_F(VoltageAnalyzersTest, thresholdsAreNotSet) {
   config.set_user_config(
       "{\"lowerVoltageThreshold\":0,\"upperVoltageThreshold\":0}");
 
-  vas.add_samples(0, &config, &em);
+  vas.add_sample(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() == nullptr);
   ASSERT_TRUE(vas.get_phase2() == nullptr);
@@ -173,7 +173,7 @@ TEST_F(VoltageAnalyzersTest, copy) {
   config.set_user_config(
       "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
 
-  vas.add_samples(0, &config, &em);
+  vas.add_sample(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() != nullptr);
   ASSERT_TRUE(vas.get_phase2() != nullptr);
@@ -217,7 +217,7 @@ TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   config.set_user_config(
       "{\"lowerVoltageThreshold\":100,\"upperVoltageThreshold\":300}");
 
-  vas.add_samples(0, &config, &em);
+  vas.add_sample(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() != nullptr);
   ASSERT_TRUE(vas.get_phase2() != nullptr);
@@ -235,7 +235,7 @@ TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   em_ev.m[0].voltage[1] = 31055;
 
   em.set_raw_value(&em_ev);
-  vas.add_samples(0, &config, &em);
+  vas.add_sample(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() != nullptr);
   ASSERT_TRUE(vas.get_phase2() != nullptr);
@@ -253,7 +253,7 @@ TEST_F(VoltageAnalyzersTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   em_ev.m[0].voltage[2] = 31055;
 
   em.set_raw_value(&em_ev);
-  vas.add_samples(0, &config, &em);
+  vas.add_sample(0, &config, &em);
 
   ASSERT_TRUE(vas.get_phase1() != nullptr);
   ASSERT_TRUE(vas.get_phase2() != nullptr);

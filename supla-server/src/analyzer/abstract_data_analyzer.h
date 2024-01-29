@@ -34,9 +34,9 @@ class supla_abstract_data_analyzer {
   void set_channel_id(int channel_id);
   int get_channel_id(void);
 
-  virtual void add_samples(supla_channel_value *value) = 0;
-  virtual void add_samples(int channel_flags, supla_json_config *config,
-                           supla_channel_extended_value *extended_value) = 0;
+  virtual void add_sample(supla_channel_value *value) = 0;
+  virtual void add_sample(int channel_flags, supla_json_config *config,
+                          supla_channel_extended_value *extended_value) = 0;
 
   virtual void reset(void) = 0;
   virtual bool is_any_data_for_logging_purpose(void) = 0;

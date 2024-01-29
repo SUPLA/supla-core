@@ -31,7 +31,7 @@ supla_general_purpose_measurement_analyzer::
 supla_general_purpose_measurement_analyzer::
     ~supla_general_purpose_measurement_analyzer(void) {}
 
-void supla_general_purpose_measurement_analyzer::add_samples(
+void supla_general_purpose_measurement_analyzer::add_sample(
     supla_channel_value *value) {
   supla_channel_general_purpose_measurement_value *gpm_val =
       dynamic_cast<supla_channel_general_purpose_measurement_value *>(value);
@@ -40,7 +40,7 @@ void supla_general_purpose_measurement_analyzer::add_samples(
   }
 }
 
-void supla_general_purpose_measurement_analyzer::add_samples(
+void supla_general_purpose_measurement_analyzer::add_sample(
     int channel_flags, supla_json_config *config,
     supla_channel_extended_value *extended_value) {}
 

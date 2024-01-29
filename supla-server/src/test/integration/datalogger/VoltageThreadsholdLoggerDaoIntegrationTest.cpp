@@ -85,9 +85,9 @@ TEST_F(VoltageThreadsholdLoggerDaoIntegrationTest, add) {
 
   supla_channel_em_extended_value em(&em_ev, "", 0);
 
-  vas.add_samples(0, &config, &em);
+  vas.add_sample(0, &config, &em);
   usleep(2000000);
-  vas.add_samples(0, &config, &em);
+  vas.add_sample(0, &config, &em);
 
   em_ev.m[0].voltage[0] = 1051;
   em_ev.m[0].voltage[1] = 1552;
@@ -95,9 +95,9 @@ TEST_F(VoltageThreadsholdLoggerDaoIntegrationTest, add) {
 
   em.set_raw_value(&em_ev);
 
-  vas.add_samples(0, &config, &em);
+  vas.add_sample(0, &config, &em);
   usleep(1000000);
-  vas.add_samples(0, &config, &em);
+  vas.add_sample(0, &config, &em);
 
   dao->add(&vas);
 

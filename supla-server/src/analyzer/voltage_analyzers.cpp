@@ -71,7 +71,7 @@ void supla_voltage_analyzers::add_sample(double lower_voltage_threshold,
   (*va)->add_sample(voltage);
 }
 
-void supla_voltage_analyzers::add_samples(
+void supla_voltage_analyzers::add_sample(
     int channel_flags, supla_json_config *config,
     supla_channel_extended_value *extended_value) {
   double lower_voltage_threshold = 0;
@@ -113,7 +113,7 @@ void supla_voltage_analyzers::add_samples(
   }
 }
 
-void supla_voltage_analyzers::add_samples(supla_channel_value *value) {}
+void supla_voltage_analyzers::add_sample(supla_channel_value *value) {}
 
 bool supla_voltage_analyzers::is_any_data_for_logging_purpose(void) {
   if (phase1 &&
