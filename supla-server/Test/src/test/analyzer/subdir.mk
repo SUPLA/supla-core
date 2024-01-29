@@ -4,16 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/analyzer/GeneralPurposeMeasurementAnalyzerTest.cpp \
 ../src/test/analyzer/SimpleStatisticsTest.cpp \
 ../src/test/analyzer/VoltageAnalyzerTest.cpp \
 ../src/test/analyzer/VoltageAnalyzersTest.cpp 
 
 CPP_DEPS += \
+./src/test/analyzer/GeneralPurposeMeasurementAnalyzerTest.d \
 ./src/test/analyzer/SimpleStatisticsTest.d \
 ./src/test/analyzer/VoltageAnalyzerTest.d \
 ./src/test/analyzer/VoltageAnalyzersTest.d 
 
 OBJS += \
+./src/test/analyzer/GeneralPurposeMeasurementAnalyzerTest.o \
 ./src/test/analyzer/SimpleStatisticsTest.o \
 ./src/test/analyzer/VoltageAnalyzerTest.o \
 ./src/test/analyzer/VoltageAnalyzersTest.o 
@@ -31,7 +34,7 @@ src/test/analyzer/%.o: ../src/test/analyzer/%.cpp src/test/analyzer/subdir.mk
 clean: clean-src-2f-test-2f-analyzer
 
 clean-src-2f-test-2f-analyzer:
-	-$(RM) ./src/test/analyzer/SimpleStatisticsTest.d ./src/test/analyzer/SimpleStatisticsTest.o ./src/test/analyzer/VoltageAnalyzerTest.d ./src/test/analyzer/VoltageAnalyzerTest.o ./src/test/analyzer/VoltageAnalyzersTest.d ./src/test/analyzer/VoltageAnalyzersTest.o
+	-$(RM) ./src/test/analyzer/GeneralPurposeMeasurementAnalyzerTest.d ./src/test/analyzer/GeneralPurposeMeasurementAnalyzerTest.o ./src/test/analyzer/SimpleStatisticsTest.d ./src/test/analyzer/SimpleStatisticsTest.o ./src/test/analyzer/VoltageAnalyzerTest.d ./src/test/analyzer/VoltageAnalyzerTest.o ./src/test/analyzer/VoltageAnalyzersTest.d ./src/test/analyzer/VoltageAnalyzersTest.o
 
 .PHONY: clean-src-2f-test-2f-analyzer
 
