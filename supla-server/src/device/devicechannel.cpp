@@ -936,11 +936,15 @@ bool supla_device_channel::get_state(TDSC_ChannelState *state) {
 }
 
 supla_abstract_data_analyzer *supla_device_channel::_get_data_analyzer(
+    bool reset,
     function<bool(supla_abstract_data_analyzer *analyzer)> on_data_analyzer) {
   supla_abstract_data_analyzer *result = nullptr;
   lock();
   if (data_analyzer && on_data_analyzer(data_analyzer)) {
     result = data_analyzer->copy();
+    if (reset) {
+      data_analyzer->reset();
+    }
   }
   unlock();
   return result;
