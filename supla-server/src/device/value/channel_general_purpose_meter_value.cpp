@@ -30,5 +30,5 @@ supla_channel_general_purpose_meter_value::
 // static
 bool supla_channel_general_purpose_meter_value::is_function_supported(
     int func) {
-  return func == SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT;
+  return func == SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER;
 }
