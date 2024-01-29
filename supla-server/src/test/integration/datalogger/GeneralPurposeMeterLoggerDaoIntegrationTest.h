@@ -16,21 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_GENERAL_PURPOSE_METER_VALUE_H_
-#define CHANNEL_GENERAL_PURPOSE_METER_VALUE_H_
+#ifndef GeneralPurposeMeterLoggerDaoIntegrationTest_H_
+#define GeneralPurposeMeterLoggerDaoIntegrationTest_H_
 
-#include "device/value/channel_general_purpose_base_value.h"
+#include "datalogger/general_purpose_meter_logger_dao.h"
+#include "db/db_access_provider.h"
+#include "integration/IntegrationTest.h"
 
-class supla_channel_general_purpose_meter_value
-    : public supla_channel_general_purpose_base_value {
- private:
-  double original_value;
+namespace testing {
+
+class GeneralPurposeMeterLoggerDaoIntegrationTest : public IntegrationTest,
+                                                    public Test {
+ protected:
+  supla_db_access_provider *dba;
+  supla_general_purpose_meter_logger_dao *dao;
 
  public:
-  supla_channel_general_purpose_meter_value();
-  explicit supla_channel_general_purpose_meter_value(
-      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  static bool is_function_supported(int func);
+  GeneralPurposeMeterLoggerDaoIntegrationTest();
+  virtual ~GeneralPurposeMeterLoggerDaoIntegrationTest();
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
-#endif /*CHANNEL_GENERAL_PURPOSE_METER_VALUE_H_*/
+} /* namespace testing */
+
+#endif /* GeneralPurposeMeterLoggerDaoIntegrationTest_H_ */

@@ -16,21 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_GENERAL_PURPOSE_METER_VALUE_H_
-#define CHANNEL_GENERAL_PURPOSE_METER_VALUE_H_
+#ifndef GENERAL_PURPOSE_METER_LOGGER_H_
+#define GENERAL_PURPOSE_METER_LOGGER_H_
 
-#include "device/value/channel_general_purpose_base_value.h"
+#include <vector>
 
-class supla_channel_general_purpose_meter_value
-    : public supla_channel_general_purpose_base_value {
- private:
-  double original_value;
+#include "cyclictasks/abstract_cyclictask.h"
+
+class supla_general_purpose_meter_logger : public supla_abstract_cyclictask {
+ protected:
+  virtual unsigned int task_interval_sec(void);
+  virtual void run(const std::vector<supla_user *> *users,
+                   supla_abstract_db_access_provider *dba);
 
  public:
-  supla_channel_general_purpose_meter_value();
-  explicit supla_channel_general_purpose_meter_value(
-      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  static bool is_function_supported(int func);
+  supla_general_purpose_meter_logger();
+  virtual ~supla_general_purpose_meter_logger();
 };
 
-#endif /*CHANNEL_GENERAL_PURPOSE_METER_VALUE_H_*/
+#endif /* GENERAL_PURPOSE_METER_LOGGER_H_ */

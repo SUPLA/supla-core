@@ -3138,3 +3138,11 @@ DELIMITER ;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2023-12-29 13:23:49
+
+CREATE TABLE supla_gp_measurement_log (channel_id INT NOT NULL, date DATETIME NOT NULL COMMENT '(DC2Type:stringdatetime)', open_value DOUBLE PRECISION NOT NULL, close_value DOUBLE PRECISION NOT NULL, avg_value DOUBLE PRECISION NOT NULL, max_value DOUBLE PRECISION NOT NULL, min_value DOUBLE PRECISION NOT NULL, PRIMARY KEY(channel_id, date)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_general_ci` ENGINE = InnoDB;
+
+CREATE TABLE supla_gp_meter_log (channel_id INT NOT NULL, date DATETIME NOT NULL COMMENT '(DC2Type:stringdatetime)', value DOUBLE PRECISION NOT NULL, PRIMARY KEY(channel_id, date)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_general_ci` ENGINE = InnoDB;
+
+CREATE PROCEDURE `supla_add_gp_measurement_log_item`(IN `_channel_id` INT, IN `_open_value` DOUBLE, IN `_close_value` DOUBLE, IN `_avg_value` DOUBLE, IN `_max_value` DOUBLE, IN `_min_value` DOUBLE) NOT DETERMINISTIC CONTAINS SQL SQL SECURITY DEFINER INSERT INTO `supla_gp_measurement_log`(`channel_id`, `date`, `open_value`, `close_value`, `avg_value`, `max_value`, `min_value`) VALUES (_channel_id, NOW(),_open_value, _close_value, _avg_value, _max_value, _min_value);
+
+CREATE PROCEDURE `supla_add_gp_meter_log_item`(IN `_channel_id` INT, IN `_value` DOUBLE) NOT DETERMINISTIC CONTAINS SQL SQL SECURITY DEFINER INSERT INTO `supla_gp_meter_log`(`channel_id`, `date`, `value`) VALUES (_channel_id, NOW(), _value);

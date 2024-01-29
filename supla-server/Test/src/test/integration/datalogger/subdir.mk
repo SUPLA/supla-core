@@ -5,6 +5,8 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.cpp \
+../src/test/integration/datalogger/GeneralPurposeMeasurementLoggerDaoIntegrationTest.cpp \
+../src/test/integration/datalogger/GeneralPurposeMeterLoggerDaoIntegrationTest.cpp \
 ../src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.cpp \
 ../src/test/integration/datalogger/TemperatureLoggerDaoIntegrationTest.cpp \
 ../src/test/integration/datalogger/ThermostatLoggerDaoIntegrationTest.cpp \
@@ -12,6 +14,8 @@ CPP_SRCS += \
 
 CPP_DEPS += \
 ./src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.d \
+./src/test/integration/datalogger/GeneralPurposeMeasurementLoggerDaoIntegrationTest.d \
+./src/test/integration/datalogger/GeneralPurposeMeterLoggerDaoIntegrationTest.d \
 ./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.d \
 ./src/test/integration/datalogger/TemperatureLoggerDaoIntegrationTest.d \
 ./src/test/integration/datalogger/ThermostatLoggerDaoIntegrationTest.d \
@@ -19,6 +23,8 @@ CPP_DEPS += \
 
 OBJS += \
 ./src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.o \
+./src/test/integration/datalogger/GeneralPurposeMeasurementLoggerDaoIntegrationTest.o \
+./src/test/integration/datalogger/GeneralPurposeMeterLoggerDaoIntegrationTest.o \
 ./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.o \
 ./src/test/integration/datalogger/TemperatureLoggerDaoIntegrationTest.o \
 ./src/test/integration/datalogger/ThermostatLoggerDaoIntegrationTest.o \
@@ -37,7 +43,7 @@ src/test/integration/datalogger/%.o: ../src/test/integration/datalogger/%.cpp sr
 clean: clean-src-2f-test-2f-integration-2f-datalogger
 
 clean-src-2f-test-2f-integration-2f-datalogger:
-	-$(RM) ./src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/TemperatureLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/TemperatureLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/ThermostatLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/ThermostatLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/VoltageThreadsholdLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/VoltageThreadsholdLoggerDaoIntegrationTest.o
+	-$(RM) ./src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/ElectricityLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/GeneralPurposeMeasurementLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/GeneralPurposeMeasurementLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/GeneralPurposeMeterLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/GeneralPurposeMeterLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/ImpulseLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/TemperatureLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/TemperatureLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/ThermostatLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/ThermostatLoggerDaoIntegrationTest.o ./src/test/integration/datalogger/VoltageThreadsholdLoggerDaoIntegrationTest.d ./src/test/integration/datalogger/VoltageThreadsholdLoggerDaoIntegrationTest.o
 
 .PHONY: clean-src-2f-test-2f-integration-2f-datalogger
 

@@ -22,6 +22,8 @@
 
 #include "cyclictasks/auto_gate_closing.h"
 #include "datalogger/electricity_logger.h"
+#include "datalogger/general_purpose_measurement_logger.h"
+#include "datalogger/general_purpose_meter_logger.h"
 #include "datalogger/hp_thermostat_logger.h"
 #include "datalogger/impulse_logger.h"
 #include "datalogger/temperature_logger.h"
@@ -38,6 +40,8 @@ supla_cyclictasks_agent::supla_cyclictasks_agent() {
   add(new supla_hp_thermostat_logger());
   add(new supla_voltage_threshold_logger());
   add(new supla_auto_gate_closing());
+  add(new supla_general_purpose_measurement_logger());
+  add(new supla_general_purpose_meter_logger());
 
   this->sthread = nullptr;
   sthread_simple_run(loop, this, 0, &sthread);
