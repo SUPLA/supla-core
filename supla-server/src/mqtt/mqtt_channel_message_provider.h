@@ -112,6 +112,8 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   bool ha_climate_thermostat(unsigned short index, const char *topic_prefix,
                              char **topic_name, void **message,
                              size_t *message_size);
+  bool ha_gpm(unsigned short index, const char *topic_prefix, char **topic_name,
+              void **message, size_t *message_size);
   bool get_home_assistant_cfgitem(unsigned short index,
                                   const char *topic_prefix, char **topic_name,
                                   void **message, size_t *message_size);

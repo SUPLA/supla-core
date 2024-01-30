@@ -380,3 +380,36 @@ bool general_purpose_base_config::keep_history(void) {
 
   return result;
 }
+
+string general_purpose_base_config::get_unit(void) {
+  string result;
+
+  cJSON *user_root = get_user_root();
+  if (!user_root) {
+    return result;
+  }
+
+  if (!get_string(user_root, field_map.at(FIELD_UNIT_AFTER_VALUE).c_str(),
+                  &result)) {
+    result.clear();
+  }
+
+  return result;
+}
+
+unsigned char general_purpose_base_config::get_precision(void) {
+  double result = 0;
+
+  cJSON *user_root = get_user_root();
+  if (!user_root) {
+    return result;
+  }
+
+  if (!get_double(user_root, field_map.at(FIELD_VALUE_PRECISION).c_str(),
+                  &result) ||
+      result < 0 || result > 10) {
+    result = 0;
+  }
+
+  return result;
+}

@@ -24,9 +24,12 @@
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "jsonconfig/channel/action_trigger_config.h"
+#include "jsonconfig/channel/general_purpose_measurement_config.h"
 #include "jsonconfig/channel/hvac_config.h"
 #include "log.h"
 #include "user/user.h"
+
+using std::string;
 
 supla_mqtt_channel_message_provider::supla_mqtt_channel_message_provider(void)
     : supla_mqtt_message_provider() {
@@ -139,6 +142,9 @@ void supla_mqtt_channel_message_provider::channel_type_to_string(
       break;
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
       snprintf(buf, buf_size, "GENERAL_PURPOSE_MEASUREMENT");
+      break;
+    case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
+      snprintf(buf, buf_size, "GENERAL_PURPOSE_METER");
       break;
     case SUPLA_CHANNELTYPE_ENGINE:
       snprintf(buf, buf_size, "ENGINE");
@@ -298,6 +304,9 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
       break;
     case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
       snprintf(buf, buf_size, "GENERAL_PURPOSE_MEASUREMENT");
+      break;
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
+      snprintf(buf, buf_size, "GENERAL_PURPOSE_METER");
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED:
       snprintf(buf, buf_size, "CONTROLLINGTHEENGINESPEED");
@@ -489,6 +498,10 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
     case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "General purpose measurement");
+      break;
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "General purpose meter");
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
@@ -1584,6 +1597,35 @@ bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
                         message_size);
 }
 
+bool supla_mqtt_channel_message_provider::ha_gpm(unsigned short index,
+                                                 const char *topic_prefix,
+                                                 char **topic_name,
+                                                 void **message,
+                                                 size_t *message_size) {
+  if (index != 0) {
+    return false;
+  }
+
+  general_purpose_measurement_config cfg(&row->json_config);
+
+  string val_tmpl = "{% if value == 'nan' %}none{% else %}";
+
+  if (cfg.get_precision() > 0) {
+    val_tmpl.append("value | round(");
+    val_tmpl.append(std::to_string(cfg.get_precision()));
+    val_tmpl.append(",default=none)");
+  } else {
+    val_tmpl.append("value | int");
+  }
+
+  val_tmpl.append("{% endif %}");
+
+  return ha_sensor(cfg.get_unit().c_str(), 0, 0, false, "state/value", NULL,
+                   NULL, val_tmpl.c_str(), NULL,
+                   row->channel_func == SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER,
+                   topic_prefix, topic_name, message, message_size);
+}
+
 bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
@@ -1727,6 +1769,9 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       return ha_climate_thermostat(index, topic_prefix, topic_name, message,
                                    message_size);
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
+      return ha_gpm(index, topic_prefix, topic_name, message, message_size);
   }
   return false;
 }

@@ -65,6 +65,8 @@ class general_purpose_base_config : public supla_json_config {
   double get_value_multiplier(void);
   double get_value_added(void);
   bool keep_history(void);
+  std::string get_unit(void);
+  unsigned char get_precision(void);
 };
 
 #endif /* GENERAL_PURPOSE_BASE_CONFIG_H_ */

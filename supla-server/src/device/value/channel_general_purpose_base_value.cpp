@@ -18,16 +18,28 @@
 
 #include "channel_general_purpose_base_value.h"
 
+#include <math.h>
+
 #include "jsonconfig/channel/general_purpose_base_config.h"
+
+using std::string;
 
 supla_channel_general_purpose_base_value::
     supla_channel_general_purpose_base_value()
-    : supla_channel_value() {}
+    : supla_channel_value() {
+  base_value = 0;
+}
 
 supla_channel_general_purpose_base_value::
     supla_channel_general_purpose_base_value(
         const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    : supla_channel_value(raw_value) {
+  base_value = 0;
+}
+
+double supla_channel_general_purpose_base_value::get_base_value(void) {
+  return base_value;
+}
 
 double supla_channel_general_purpose_base_value::get_value(void) {
   return *(double *)raw_value;
@@ -43,16 +55,46 @@ void supla_channel_general_purpose_base_value::apply_channel_properties(
   general_purpose_base_config config(json_config);
 
   double value = get_value();
-  double divider = config.get_value_divider();
-  double multiplier = config.get_value_multiplier();
+  base_value = value;
 
-  if (divider) {
-    value /= divider;
+  if (value != NAN) {
+    double divider = config.get_value_divider();
+    double multiplier = config.get_value_multiplier();
+
+    if (divider) {
+      value /= divider;
+    }
+
+    if (multiplier) {
+      value *= multiplier;
+    }
+
+    set_value(value + config.get_value_added());
   }
+}
 
-  if (multiplier) {
-    value *= multiplier;
+string supla_channel_general_purpose_base_value::value_to_str(double value,
+                                                              string *nan) {
+  if (value == NAN) {
+    return nan ? *nan : "nan";
+  } else {
+    return std::to_string(value);
   }
+}
 
-  set_value(value + config.get_value_added());
+string supla_channel_general_purpose_base_value::get_base_value_str() {
+  return value_to_str(base_value, nullptr);
+}
+
+string supla_channel_general_purpose_base_value::get_base_value_str(
+    string nan) {
+  return value_to_str(base_value, &nan);
+}
+
+string supla_channel_general_purpose_base_value::get_value_str() {
+  return value_to_str(get_value(), nullptr);
+}
+
+string supla_channel_general_purpose_base_value::get_value_str(string nan) {
+  return value_to_str(get_value(), &nan);
 }
