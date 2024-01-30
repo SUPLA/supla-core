@@ -869,7 +869,7 @@ bool supla_mqtt_channel_message_provider::ha_sensor(
     ha_json_set_string_param(root, "val_tpl", value_tmpl);
   } else {
     char tpl[50];
-    snprintf(tpl, sizeof(tpl), "{{ value | round(%i,default=none) }}",
+    snprintf(tpl, sizeof(tpl), "{{ value | round(%i,default=None) }}",
              precision);
 
     ha_json_set_string_param(root, "val_tpl", tpl);
@@ -1262,7 +1262,7 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
       return ha_phase_sensor(
           index, phase, "%", 3, "state/phases/%i/power_factor",
           "Power factor - Phase %i",
-          "{% if float(value, default=none) == None %}None{% else "
+          "{% if float(value, default=None) == None %}None{% else "
           "%}{{float(value) * 100.0 | round(5)}}{% endif %}",
           "power_factor", false, topic_prefix, topic_name, message,
           message_size);
@@ -1609,7 +1609,8 @@ bool supla_mqtt_channel_message_provider::ha_gpm(unsigned short index,
   general_purpose_measurement_config cfg(&row->json_config);
 
   string val_tmpl =
-      "{% if float(value, default=none) == None %}None{% else %}{{";
+      "{% if float(value, default=None) == None or value == 'nan' %}None{% "
+      "else %}{{";
 
   if (cfg.get_precision() > 0) {
     val_tmpl.append("value | round(");
