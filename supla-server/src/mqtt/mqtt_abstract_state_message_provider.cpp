@@ -1266,8 +1266,9 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
       return get_hvac_thermostat_message_at_index(
           index, topic_prefix, topic_name, message, message_size);
-    case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
-    case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
+
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
       return get_gpm_message_at_index(index, topic_prefix, topic_name, message,
                                       message_size);
       break;
