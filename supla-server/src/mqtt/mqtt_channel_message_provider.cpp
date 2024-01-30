@@ -994,8 +994,8 @@ bool supla_mqtt_channel_message_provider::ha_roller_shutter(
 
   ha_json_set_string_param(
       root, "pos_tpl",
-      "{% if value | is_defined %}{% if value | int < 0 %}0{% elif value | int > "
-      "100 %}100{% else %}{{value | int}}{% endif %}{% else %}0{% endif %}");
+      "{% if int(value, default=0) <= 0 %}0{% elif value | int > 100 "
+      "%}100{% else %}{{value | int}}{% endif %}");
 
   return ha_get_message(root, "cover", 0, false, topic_name, message,
                         message_size);
@@ -1608,12 +1608,13 @@ bool supla_mqtt_channel_message_provider::ha_gpm(unsigned short index,
 
   general_purpose_measurement_config cfg(&row->json_config);
 
-  string val_tmpl = "{% if value == 'nan' %}None{% else %}{{";
+  string val_tmpl =
+      "{% if float(value, default=none) == None %}None{% else %}{{";
 
   if (cfg.get_precision() > 0) {
     val_tmpl.append("value | round(");
     val_tmpl.append(std::to_string(cfg.get_precision()));
-    val_tmpl.append(",default=none)");
+    val_tmpl.append(")");
   } else {
     val_tmpl.append("value | int");
   }
