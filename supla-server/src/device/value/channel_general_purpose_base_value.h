@@ -25,7 +25,6 @@
 
 class supla_channel_general_purpose_base_value : public supla_channel_value {
  private:
-  double base_value;
   std::string value_to_str(double value, std::string *nan);
 
  public:
@@ -39,11 +38,8 @@ class supla_channel_general_purpose_base_value : public supla_channel_value {
                                         int param4,
                                         supla_json_config *json_config);
 
-  virtual double get_base_value(void);
   virtual double get_value(void);
   virtual void set_value(double value);
-  std::string get_base_value_str();
-  std::string get_base_value_str(std::string nan);
   std::string get_value_str();
   std::string get_value_str(std::string nan);
 };

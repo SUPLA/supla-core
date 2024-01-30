@@ -1048,21 +1048,12 @@ bool supla_mqtt_abstract_state_message_provider::get_gpm_message_at_index(
   supla_channel_general_purpose_base_value *gpm_val =
       dynamic_cast<supla_channel_general_purpose_base_value *>(channel_value);
 
-  switch (index) {
-    case 1:
-      return create_message(
-          topic_prefix, user_suid, topic_name, message, message_size,
-          gpm_val ? gpm_val->get_base_value_str().c_str() : nullptr, false,
-          "devices/%i/channels/%i/state/base_value", get_device_id(),
-          get_channel_id());
-      break;
-    case 2:
-      return create_message(
-          topic_prefix, user_suid, topic_name, message, message_size,
-          gpm_val ? gpm_val->get_value_str().c_str() : nullptr, false,
-          "devices/%i/channels/%i/state/value", get_device_id(),
-          get_channel_id());
-      break;
+  if (index == 1) {
+    return create_message(topic_prefix, user_suid, topic_name, message,
+                          message_size,
+                          gpm_val ? gpm_val->get_value_str().c_str() : nullptr,
+                          false, "devices/%i/channels/%i/state/value",
+                          get_device_id(), get_channel_id());
   }
 
   return false;

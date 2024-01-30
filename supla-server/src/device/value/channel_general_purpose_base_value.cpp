@@ -26,20 +26,12 @@ using std::string;
 
 supla_channel_general_purpose_base_value::
     supla_channel_general_purpose_base_value()
-    : supla_channel_value() {
-  base_value = 0;
-}
+    : supla_channel_value() {}
 
 supla_channel_general_purpose_base_value::
     supla_channel_general_purpose_base_value(
         const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {
-  base_value = 0;
-}
-
-double supla_channel_general_purpose_base_value::get_base_value(void) {
-  return base_value;
-}
+    : supla_channel_value(raw_value) {}
 
 double supla_channel_general_purpose_base_value::get_value(void) {
   return *(double *)raw_value;
@@ -55,7 +47,6 @@ void supla_channel_general_purpose_base_value::apply_channel_properties(
   general_purpose_base_config config(json_config);
 
   double value = get_value();
-  base_value = value;
 
   if (value != NAN) {
     double divider = config.get_value_divider();
@@ -80,15 +71,6 @@ string supla_channel_general_purpose_base_value::value_to_str(double value,
   } else {
     return std::to_string(value);
   }
-}
-
-string supla_channel_general_purpose_base_value::get_base_value_str() {
-  return value_to_str(base_value, nullptr);
-}
-
-string supla_channel_general_purpose_base_value::get_base_value_str(
-    string nan) {
-  return value_to_str(base_value, &nan);
 }
 
 string supla_channel_general_purpose_base_value::get_value_str() {
