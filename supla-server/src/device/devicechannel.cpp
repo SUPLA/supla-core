@@ -546,7 +546,7 @@ bool supla_device_channel::set_value(
   }
 
   if (data_analyzer) {
-    data_analyzer->add_sample(new_value);
+    data_analyzer->add_sample(new_value, json_config);
   }
 
   unlock();

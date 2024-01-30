@@ -19,6 +19,7 @@
 #include "general_purpose_measurement_analyzer.h"
 
 #include "device/value/channel_general_purpose_measurement_value.h"
+#include "jsonconfig/channel/general_purpose_base_config.h"
 
 supla_general_purpose_measurement_analyzer::
     supla_general_purpose_measurement_analyzer(void)
@@ -32,11 +33,14 @@ supla_general_purpose_measurement_analyzer::
     ~supla_general_purpose_measurement_analyzer(void) {}
 
 void supla_general_purpose_measurement_analyzer::add_sample(
-    supla_channel_value *value) {
+    supla_channel_value *value, supla_json_config *config) {
   supla_channel_general_purpose_measurement_value *gpm_val =
       dynamic_cast<supla_channel_general_purpose_measurement_value *>(value);
   if (gpm_val) {
-    supla_simple_statiscics::add_sample(gpm_val->get_value());
+    general_purpose_base_config gp_config(config);
+    if (gp_config.keep_history()) {
+      supla_simple_statiscics::add_sample(gpm_val->get_value());
+    }
   }
 }
 

@@ -365,3 +365,18 @@ double general_purpose_base_config::get_value_added(void) {
              &dbl_value);
   return dbl_value * 0.001;
 }
+
+bool general_purpose_base_config::keep_history(void) {
+  bool result = 0;
+
+  cJSON *user_root = get_user_root();
+  if (!user_root) {
+    return result;
+  }
+
+  if (!get_bool(user_root, field_map.at(FIELD_KEEP_HISTORY).c_str(), &result)) {
+    return false;
+  }
+
+  return result;
+}

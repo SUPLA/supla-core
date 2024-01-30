@@ -40,7 +40,8 @@ class supla_voltage_analyzers : public supla_abstract_data_analyzer {
   supla_voltage_analyzer *get_phase2(void);
   supla_voltage_analyzer *get_phase3(void);
 
-  virtual void add_sample(supla_channel_value *value);
+  virtual void add_sample(supla_channel_value *value,
+                          supla_json_config *config);
   virtual void add_sample(int channel_flags, supla_json_config *config,
                           supla_channel_extended_value *extended_value);
 

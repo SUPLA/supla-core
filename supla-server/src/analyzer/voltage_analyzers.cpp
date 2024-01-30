@@ -113,7 +113,8 @@ void supla_voltage_analyzers::add_sample(
   }
 }
 
-void supla_voltage_analyzers::add_sample(supla_channel_value *value) {}
+void supla_voltage_analyzers::add_sample(supla_channel_value *value,
+                                         supla_json_config *config) {}
 
 bool supla_voltage_analyzers::is_any_data_for_logging_purpose(void) {
   if (phase1 &&
