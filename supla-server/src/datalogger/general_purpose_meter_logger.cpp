@@ -24,6 +24,7 @@
 
 #include "datalogger/general_purpose_meter_logger_dao.h"
 #include "device/device.h"
+#include "jsonconfig/channel/general_purpose_meter_config.h"
 
 using std::shared_ptr;
 using std::vector;
@@ -45,14 +46,28 @@ void supla_general_purpose_meter_logger::run(
   supla_general_purpose_meter_logger_dao dao(dba);
 
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-    (*uit)->get_devices()->for_each([&env](shared_ptr<supla_device> device,
-                                           bool *will_continue) -> void {
-      device->get_channels()->get_channel_values(
-          &env, [](supla_channel_value *value) -> bool {
-            return dynamic_cast<supla_channel_general_purpose_meter_value *>(
-                       value) != nullptr;
-          });
-    });
+    (*uit)->get_devices()->for_each(
+        [&env](shared_ptr<supla_device> device, bool *will_continue) -> void {
+          device->get_channels()->get_channel_values(
+              &env,
+              [](supla_device_channel *channel,
+                 supla_channel_value *value) -> bool {
+                bool keep_history = false;
+
+                if (dynamic_cast<supla_channel_general_purpose_meter_value *>(
+                        value)) {
+                  supla_json_config *config = channel->get_json_config();
+                  if (config) {
+                    general_purpose_meter_config gpm_config(config);
+                    keep_history = gpm_config.keep_history();
+
+                    delete config;
+                  }
+                }
+
+                return keep_history;
+              });
+        });
   }
 
   for (auto it = env.cbegin(); it != env.cend(); ++it) {
@@ -60,7 +75,10 @@ void supla_general_purpose_meter_logger::run(
         dynamic_cast<supla_channel_general_purpose_meter_value *>(
             (*it)->get_value());
 
-    dao.add((*it)->get_channel_id(), value);
+    if (value->get_value() == value->get_value()) {  // value != value == NAN
+      dao.add((*it)->get_channel_id(), value);
+    }
+
     delete *it;
   }
 }

@@ -222,8 +222,10 @@ class supla_device_channels {
   void on_related_sensor_value_changed(int control_channel_id, int sensor_id,
                                        bool is_open);
 
-  void get_channel_values(std::vector<supla_channel_value_envelope *> *result,
-                          std::function<bool(supla_channel_value *)> filter);
+  void get_channel_values(
+      std::vector<supla_channel_value_envelope *> *result,
+      std::function<bool(supla_device_channel *channel, supla_channel_value *)>
+          filter);
 
   void send_configs_to_device(void);
 
