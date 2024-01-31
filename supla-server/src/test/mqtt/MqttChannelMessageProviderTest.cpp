@@ -1303,4 +1303,130 @@ TEST_F(MqttChannelMessageProviderTest, thermostatHeatCool) {
   ASSERT_FALSE(dataExists(provider));
 }
 
+TEST_F(MqttChannelMessageProviderTest, generalPurposeMeasurement) {
+  _mqtt_db_data_row_channel_t row_channel;
+  fillChannelData(&row_channel);
+  provider->set_data_row(&row_channel);
+
+  snprintf(row_channel.device_name, SUPLA_DEVICE_NAME_MAXSIZE, "DIY GPM");
+  snprintf(row_channel.device_softver, SUPLA_SOFTVER_MAXSIZE, "24.01");
+  snprintf(row_channel.channel_caption, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+           "My Measurement");
+
+  row_channel.device_enabled = true;
+  row_channel.channel_id = 123;
+  row_channel.channel_type = SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT;
+  row_channel.channel_func = SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT;
+
+  TChannelConfig_GeneralPurposeMeasurement raw_config = {};
+  snprintf(raw_config.UnitBeforeValue, sizeof(raw_config.UnitBeforeValue),
+           "uBefore");
+  snprintf(raw_config.UnitAfterValue, sizeof(raw_config.UnitAfterValue),
+           "uAfter");
+  general_purpose_measurement_config cfg;
+  cfg.set_config(&raw_config);
+  row_channel.json_config = cfg;
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "GENERAL_PURPOSE_MEASUREMENT", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/type",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "GENERAL_PURPOSE_MEASUREMENT", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/function",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "My Measurement", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/caption",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "false", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/hidden",
+      row_channel.device_id, row_channel.channel_id));
+
+  const char haConfig[] =
+      "{\"avty\":{\"topic\":\"supla/7720767494dd87196e1896c7cbab707c/devices/"
+      "555/channels/123/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/7720767494dd87196e1896c7cbab707c/devices/555/"
+      "channels/123\",\"device\":{\"ids\":\"supla-iodevice-555\",\"mf\":\"AC "
+      "SOFTWARE\",\"name\":\"DIY GPM\",\"sw\":\"24.01\"},\"name\":\"My "
+      "Measurement\",\"uniq_id\":\"supla_123\",\"qos\":0,\"unit_of_meas\":"
+      "\"uAfter\",\"stat_t\":\"~/state/value\",\"val_tpl\":\"{% if "
+      "float(value, default=None) == None or value == 'nan' %}None{% else "
+      "%}{{value | int}}{% endif %}\",\"state_class\":\"measurement\"}";
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, haConfig, false,
+      "homeassistant/sensor/7720767494dd87196e1896c7cbab707c/123/config"));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttChannelMessageProviderTest, generalPurposeMeter) {
+  _mqtt_db_data_row_channel_t row_channel;
+  fillChannelData(&row_channel);
+  provider->set_data_row(&row_channel);
+
+  snprintf(row_channel.device_name, SUPLA_DEVICE_NAME_MAXSIZE, "DIY GPM");
+  snprintf(row_channel.device_softver, SUPLA_SOFTVER_MAXSIZE, "24.01");
+  snprintf(row_channel.channel_caption, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+           "My Meter");
+
+  row_channel.device_enabled = true;
+  row_channel.channel_id = 123;
+  row_channel.channel_type = SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER;
+  row_channel.channel_func = SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER;
+
+  TChannelConfig_GeneralPurposeMeasurement raw_config = {};
+  snprintf(raw_config.UnitBeforeValue, sizeof(raw_config.UnitBeforeValue),
+           "uBefore");
+  snprintf(raw_config.UnitAfterValue, sizeof(raw_config.UnitAfterValue),
+           "uAfter");
+  general_purpose_measurement_config cfg;
+  cfg.set_config(&raw_config);
+  row_channel.json_config = cfg;
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "GENERAL_PURPOSE_METER", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/type",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "GENERAL_PURPOSE_METER", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/function",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "My Meter", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/caption",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "false", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/hidden",
+      row_channel.device_id, row_channel.channel_id));
+
+  const char haConfig[] =
+      "{\"avty\":{\"topic\":\"supla/7720767494dd87196e1896c7cbab707c/devices/"
+      "555/channels/123/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/7720767494dd87196e1896c7cbab707c/devices/555/"
+      "channels/123\",\"device\":{\"ids\":\"supla-iodevice-555\",\"mf\":\"AC "
+      "SOFTWARE\",\"name\":\"DIY GPM\",\"sw\":\"24.01\"},\"name\":\"My "
+      "Meter\",\"uniq_id\":\"supla_123\",\"qos\":0,\"unit_of_meas\":\"uAfter\","
+      "\"stat_t\":\"~/state/value\",\"val_tpl\":\"{% if float(value, "
+      "default=None) == None or value == 'nan' %}None{% else %}{{value | "
+      "int}}{% endif %}\",\"state_class\":\"total_increasing\"}";
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, haConfig, false,
+      "homeassistant/sensor/7720767494dd87196e1896c7cbab707c/123/config"));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
 } /* namespace testing */
