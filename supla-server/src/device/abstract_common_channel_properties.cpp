@@ -478,6 +478,8 @@ int supla_abstract_common_channel_properties::set_user_config(
       if (json_config) {
         set_json_config(json_config);
       }
+    } else {
+      delete json_config;
     }
   }
 
