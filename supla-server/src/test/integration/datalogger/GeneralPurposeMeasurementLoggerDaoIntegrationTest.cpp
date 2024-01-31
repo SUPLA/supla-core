@@ -18,9 +18,12 @@
 
 #include "integration/datalogger/GeneralPurposeMeasurementLoggerDaoIntegrationTest.h"
 
+#include <math.h>
+
 #include <string>
 
 #include "device/value/channel_general_purpose_measurement_value.h"
+#include "jsonconfig/channel/general_purpose_measurement_config.h"
 
 using std::string;
 
@@ -71,14 +74,26 @@ TEST_F(GeneralPurposeMeasurementLoggerDaoIntegrationTest, add) {
   supla_general_purpose_measurement_analyzer analyzer(234);
   supla_channel_general_purpose_measurement_value value;
 
+  general_purpose_measurement_config cfg;
+  TChannelConfig_GeneralPurposeMeasurement raw_config = {};
+
+  value.set_value(23.34);
+  analyzer.add_sample(&value, &cfg);
+
+  raw_config.KeepHistory = 1;
+  cfg.set_config(&raw_config);
+
+  value.set_value(NAN);
+  analyzer.add_sample(&value, &cfg);
+
   value.set_value(123.34);
-  analyzer.add_sample(&value);
+  analyzer.add_sample(&value, &cfg);
 
   value.set_value(4);
-  analyzer.add_sample(&value);
+  analyzer.add_sample(&value, &cfg);
 
   value.set_value(15);
-  analyzer.add_sample(&value);
+  analyzer.add_sample(&value, &cfg);
 
   dao->add(&analyzer);
 

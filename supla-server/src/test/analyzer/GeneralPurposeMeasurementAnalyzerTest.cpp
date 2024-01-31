@@ -16,45 +16,76 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "GeneralPurposeMeasurementAnalyzerTest.h"
+
+#include <math.h>
+
 #include "device/value/channel_general_purpose_measurement_value.h"
-#include "test/analyzer/GeneralPurposeMeasurementAnaluzerTest.h"
+#include "jsonconfig/channel/general_purpose_meter_config.h"
 
 namespace testing {
 
 TEST_F(GeneralPurposeMeasurementAnalyzerTest, addSample) {
   EXPECT_EQ(analyzer.get_sample_count(), 0);
   supla_channel_general_purpose_measurement_value value;
+  general_purpose_meter_config cfg;
+  TChannelConfig_GeneralPurposeMeter raw_config = {};
+
+  value.set_value(33.45);
+  analyzer.add_sample(&value, &cfg);
+
+  raw_config.KeepHistory = 1;
+  cfg.set_config(&raw_config);
+
+  value.set_value(NAN);
+  analyzer.add_sample(&value, &cfg);
+
   value.set_value(123.45);
-  analyzer.add_sample(&value);
+  analyzer.add_sample(&value, &cfg);
   value.set_value(56.78);
-  analyzer.add_sample(&value);
+  analyzer.add_sample(&value, &cfg);
   EXPECT_EQ(analyzer.get_sample_count(), 2);
   EXPECT_EQ(analyzer.get_first(), 123.45);
   EXPECT_EQ(analyzer.get_last(), 56.78);
 }
 
 TEST_F(GeneralPurposeMeasurementAnalyzerTest, reset) {
+  general_purpose_meter_config cfg;
+  TChannelConfig_GeneralPurposeMeter raw_config = {};
+  raw_config.KeepHistory = 1;
+  cfg.set_config(&raw_config);
+
   supla_channel_general_purpose_measurement_value value;
   value.set_value(1);
-  analyzer.add_sample(&value);
+  analyzer.add_sample(&value, &cfg);
   EXPECT_EQ(analyzer.get_sample_count(), 1);
   analyzer.reset();
   EXPECT_EQ(analyzer.get_sample_count(), 0);
 }
 
 TEST_F(GeneralPurposeMeasurementAnalyzerTest, anyDataForLogger) {
+  general_purpose_meter_config cfg;
+  TChannelConfig_GeneralPurposeMeter raw_config = {};
+  raw_config.KeepHistory = 1;
+  cfg.set_config(&raw_config);
+
   EXPECT_FALSE(analyzer.is_any_data_for_logging_purpose());
   supla_channel_general_purpose_measurement_value value;
   value.set_value(1);
-  analyzer.add_sample(&value);
+  analyzer.add_sample(&value, &cfg);
   EXPECT_TRUE(analyzer.is_any_data_for_logging_purpose());
 }
 
 TEST_F(GeneralPurposeMeasurementAnalyzerTest, copy) {
+  general_purpose_meter_config cfg;
+  TChannelConfig_GeneralPurposeMeter raw_config = {};
+  raw_config.KeepHistory = 1;
+  cfg.set_config(&raw_config);
+
   analyzer.set_channel_id(456);
   supla_channel_general_purpose_measurement_value value;
   value.set_value(567);
-  analyzer.add_sample(&value);
+  analyzer.add_sample(&value, &cfg);
 
   supla_abstract_data_analyzer *c = analyzer.copy();
   ASSERT_TRUE(c != nullptr);
