@@ -38,7 +38,8 @@ void supla_general_purpose_measurement_analyzer::add_sample(
     supla_channel_value *value, supla_json_config *config) {
   supla_channel_general_purpose_measurement_value *gpm_val =
       dynamic_cast<supla_channel_general_purpose_measurement_value *>(value);
-  if (gpm_val && gpm_val->get_value() != NAN) {
+  if (gpm_val &&
+      gpm_val->get_value() == gpm_val->get_value()) {  // value != value == NAN
     general_purpose_base_config gp_config(config);
     if (gp_config.keep_history()) {
       supla_simple_statiscics::add_sample(gpm_val->get_value());
