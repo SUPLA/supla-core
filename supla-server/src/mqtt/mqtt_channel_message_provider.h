@@ -19,6 +19,8 @@
 #ifndef MQTT_CHANNEL_MESSAGE_PROVIDER_H_
 #define MQTT_CHANNEL_MESSAGE_PROVIDER_H_
 
+#include <string>
+
 #include "json/cJSON.h"
 #include "mqtt_db.h"
 #include "mqtt_message_provider.h"
