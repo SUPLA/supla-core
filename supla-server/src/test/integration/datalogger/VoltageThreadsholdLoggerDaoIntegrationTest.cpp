@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include "analyzer/electricity_analyzer.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "jsonconfig/channel/electricity_meter_config.h"
 #include "srpc/srpc.h"
@@ -74,7 +75,7 @@ TEST_F(VoltageThreadsholdLoggerDaoIntegrationTest, add) {
   config.set_user_config(
       "{\"lowerVoltageThreshold\":200,\"upperVoltageThreshold\":300}");
 
-  supla_voltage_analyzers vas(234);
+  supla_electricity_analyzer vas(234);
 
   TElectricityMeter_ExtendedValue_V2 em_ev = {};
   em_ev.m_count = 1;

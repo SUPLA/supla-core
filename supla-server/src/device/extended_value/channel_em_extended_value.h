@@ -26,7 +26,6 @@
 #include "device/extended_value/channel_extended_value.h"
 
 class channel_json_config;
-class supla_voltage_analyzers;
 class supla_channel_em_extended_value : public supla_channel_extended_value,
                                         private supla_channel_billing_value {
  private:

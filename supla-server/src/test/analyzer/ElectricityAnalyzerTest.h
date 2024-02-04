@@ -16,19 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VOLTAGE_ANALYZERS_TEST_H_
-#define VOLTAGE_ANALYZERS_TEST_H_
+#ifndef ELECTRICITY_ANALYZER_TEST_H_
+#define ELECTRICITY_ANALYZER_TEST_H_
 
-#include "analyzer/voltage_analyzers.h"
+#include "analyzer/electricity_analyzer.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
 
-class VoltageAnalyzersTest : public Test {
+class ElectricityAnalyzerTest : public Test {
  public:
-  supla_voltage_analyzers vas;
+  supla_electricity_analyzer ea;
 };
 
 }  // namespace testing
 
-#endif /* VOLTAGE_ANALYZERS_TEST_H_ */
+#endif /* ELECTRICITY_ANALYZER_TEST_H_ */

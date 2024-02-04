@@ -21,7 +21,7 @@
 
 #include <mysql.h>
 
-#include "analyzer/voltage_analyzers.h"
+#include "analyzer/electricity_analyzer.h"
 #include "db/abstract_db_access_provider.h"
 
 class supla_voltage_threshold_logger_dao {
@@ -34,7 +34,7 @@ class supla_voltage_threshold_logger_dao {
  public:
   explicit supla_voltage_threshold_logger_dao(
       supla_abstract_db_access_provider *dba);
-  void add(supla_voltage_analyzers *vas);
+  void add(supla_electricity_analyzer *vas);
 };
 
 #endif /* VOLTAGE_THRESHOLD_LOGGER_DAO_H_ */

@@ -20,7 +20,6 @@
 
 #include <string.h>
 
-#include "analyzer/voltage_analyzers.h"
 #include "db/db_access_provider.h"
 #include "device/device_dao.h"
 #include "jsonconfig/channel/electricity_meter_config.h"
