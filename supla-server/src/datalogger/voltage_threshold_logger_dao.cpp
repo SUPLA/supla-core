@@ -148,8 +148,8 @@ void supla_voltage_threshold_logger_dao::add(supla_voltage_analyzers *vas) {
   MYSQL_TIME time = {};
 
   if (get_utc_timestamp(&time)) {
-    add(&time, vas->get_channel_id(), 1, vas->get_phase1());
-    add(&time, vas->get_channel_id(), 2, vas->get_phase2());
-    add(&time, vas->get_channel_id(), 3, vas->get_phase3());
+    add(&time, vas->get_channel_id(), 1, vas->get_aberration_phase1());
+    add(&time, vas->get_channel_id(), 2, vas->get_aberration_phase2());
+    add(&time, vas->get_channel_id(), 3, vas->get_aberration_phase3());
   }
 }

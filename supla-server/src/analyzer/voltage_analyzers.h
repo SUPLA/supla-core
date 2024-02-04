@@ -37,9 +37,9 @@ class supla_voltage_analyzers : public supla_abstract_data_analyzer {
   explicit supla_voltage_analyzers(int channel_id);
   virtual ~supla_voltage_analyzers(void);
 
-  supla_voltage_aberration_analyzer *get_phase1(void);
-  supla_voltage_aberration_analyzer *get_phase2(void);
-  supla_voltage_aberration_analyzer *get_phase3(void);
+  supla_voltage_aberration_analyzer *get_aberration_phase1(void);
+  supla_voltage_aberration_analyzer *get_aberration_phase2(void);
+  supla_voltage_aberration_analyzer *get_aberration_phase3(void);
 
   virtual void add_sample(supla_channel_value *value,
                           supla_json_config *config);

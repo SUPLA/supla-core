@@ -46,15 +46,15 @@ supla_voltage_analyzers::~supla_voltage_analyzers(void) {
   }
 }
 
-supla_voltage_aberration_analyzer *supla_voltage_analyzers::get_phase1(void) {
+supla_voltage_aberration_analyzer *supla_voltage_analyzers::get_aberration_phase1(void) {
   return phase1;
 }
 
-supla_voltage_aberration_analyzer *supla_voltage_analyzers::get_phase2(void) {
+supla_voltage_aberration_analyzer *supla_voltage_analyzers::get_aberration_phase2(void) {
   return phase2;
 }
 
-supla_voltage_aberration_analyzer *supla_voltage_analyzers::get_phase3(void) {
+supla_voltage_aberration_analyzer *supla_voltage_analyzers::get_aberration_phase3(void) {
   return phase3;
 }
 
