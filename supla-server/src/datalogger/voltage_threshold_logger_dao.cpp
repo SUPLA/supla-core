@@ -59,7 +59,7 @@ bool supla_voltage_threshold_logger_dao::get_utc_timestamp(MYSQL_TIME *time) {
 
 void supla_voltage_threshold_logger_dao::add(MYSQL_TIME *time, int channel_id,
                                              char phase,
-                                             supla_voltage_analyzer *va) {
+                                             supla_voltage_aberration_analyzer *va) {
   if (!va || (va->get_below_count() == 0 && va->get_above_count() == 0)) {
     return;
   }

@@ -28,7 +28,7 @@ class supla_voltage_threshold_logger_dao {
  private:
   supla_abstract_db_access_provider *dba;
   void add(MYSQL_TIME *time, int channel_id, char phase,
-           supla_voltage_analyzer *va);
+           supla_voltage_aberration_analyzer *va);
   bool get_utc_timestamp(MYSQL_TIME *time);
 
  public:

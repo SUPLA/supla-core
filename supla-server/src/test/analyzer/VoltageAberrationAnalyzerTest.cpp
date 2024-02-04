@@ -16,11 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "test/analyzer/VoltageAnalyzerTest.h"
+#include "VoltageAberrationAnalyzerTest.h"
 
 namespace testing {
 
-TEST_F(VoltageAnalyzerTest, belowCounter) {
+TEST_F(VoltageAberrationAnalyzerTest, belowCounter) {
   EXPECT_EQ(va.get_below_count(), 0);
   va.set_lower_threshold(1);
   va.add_sample(-1);
@@ -36,7 +36,7 @@ TEST_F(VoltageAnalyzerTest, belowCounter) {
   EXPECT_EQ(va.get_sample_count(), 6);
 }
 
-TEST_F(VoltageAnalyzerTest, aboveCounter) {
+TEST_F(VoltageAberrationAnalyzerTest, aboveCounter) {
   EXPECT_EQ(va.get_above_count(), 0);
   va.set_upper_threshold(5);
   va.add_sample(-1);
@@ -55,7 +55,7 @@ TEST_F(VoltageAnalyzerTest, aboveCounter) {
   EXPECT_EQ(va.get_sample_count(), 8);
 }
 
-TEST_F(VoltageAnalyzerTest, timeAbove) {
+TEST_F(VoltageAberrationAnalyzerTest, timeAbove) {
   va.set_upper_threshold(5);
   va.add_sample(6);
   usleep(70000);
@@ -78,7 +78,7 @@ TEST_F(VoltageAnalyzerTest, timeAbove) {
   EXPECT_LT(va.get_total_time_msec(), 290);
 }
 
-TEST_F(VoltageAnalyzerTest, timeBelow) {
+TEST_F(VoltageAberrationAnalyzerTest, timeBelow) {
   va.set_lower_threshold(5);
   va.add_sample(4);
   usleep(70000);
@@ -101,7 +101,7 @@ TEST_F(VoltageAnalyzerTest, timeBelow) {
   EXPECT_LT(va.get_total_time_msec(), 290);
 }
 
-TEST_F(VoltageAnalyzerTest, reset) {
+TEST_F(VoltageAberrationAnalyzerTest, reset) {
   va.set_lower_threshold(5);
   va.set_upper_threshold(5);
   va.add_sample(4);

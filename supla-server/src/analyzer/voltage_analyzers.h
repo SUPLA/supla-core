@@ -16,29 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <analyzer/voltage_aberrarton_analyzer.h>
+
 #include "analyzer/abstract_data_analyzer.h"
-#include "analyzer/voltage_analyzer.h"
 
 #ifndef VOLTAGE_ANALYZERS_H_
 #define VOLTAGE_ANALYZERS_H_
 
 class supla_voltage_analyzers : public supla_abstract_data_analyzer {
  private:
-  supla_voltage_analyzer *phase1;
-  supla_voltage_analyzer *phase2;
-  supla_voltage_analyzer *phase3;
+  supla_voltage_aberration_analyzer *phase1;
+  supla_voltage_aberration_analyzer *phase2;
+  supla_voltage_aberration_analyzer *phase3;
   void add_sample(double lower_voltage_threshold,
                   double upper_voltage_threshold, double voltage,
-                  supla_voltage_analyzer **va);
+                  supla_voltage_aberration_analyzer **va);
 
  public:
   supla_voltage_analyzers(void);
   explicit supla_voltage_analyzers(int channel_id);
   virtual ~supla_voltage_analyzers(void);
 
-  supla_voltage_analyzer *get_phase1(void);
-  supla_voltage_analyzer *get_phase2(void);
-  supla_voltage_analyzer *get_phase3(void);
+  supla_voltage_aberration_analyzer *get_phase1(void);
+  supla_voltage_aberration_analyzer *get_phase2(void);
+  supla_voltage_aberration_analyzer *get_phase3(void);
 
   virtual void add_sample(supla_channel_value *value,
                           supla_json_config *config);

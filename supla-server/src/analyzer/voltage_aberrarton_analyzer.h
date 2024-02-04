@@ -18,10 +18,10 @@
 
 #include "analyzer/simple_statistics.h"
 
-#ifndef VOLTAGE_ANALYZER_H_
-#define VOLTAGE_ANALYZER_H_
+#ifndef VOLTAGE_ABERRATION_ANALYZER_H_
+#define VOLTAGE_ABERRATION_ANALYZER_H_
 
-class supla_voltage_analyzer : public supla_simple_statiscics {
+class supla_voltage_aberration_analyzer : public supla_simple_statiscics {
  private:
   double lower_threshold;
   double upper_threshold;
@@ -38,8 +38,8 @@ class supla_voltage_analyzer : public supla_simple_statiscics {
   unsigned int time_below_diff(void);
 
  public:
-  supla_voltage_analyzer(void);
-  virtual ~supla_voltage_analyzer(void);
+  supla_voltage_aberration_analyzer(void);
+  virtual ~supla_voltage_aberration_analyzer(void);
 
   void set_lower_threshold(double lower_threshold);
   void set_upper_threshold(double upper_threshold);
@@ -55,4 +55,4 @@ class supla_voltage_analyzer : public supla_simple_statiscics {
   virtual void reset(void);
 };
 
-#endif /*VOLTAGE_ANALYZER_H_*/
+#endif /*VOLTAGE_ABERRATION_ANALYZER_H_*/

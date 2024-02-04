@@ -46,24 +46,23 @@ supla_voltage_analyzers::~supla_voltage_analyzers(void) {
   }
 }
 
-supla_voltage_analyzer *supla_voltage_analyzers::get_phase1(void) {
+supla_voltage_aberration_analyzer *supla_voltage_analyzers::get_phase1(void) {
   return phase1;
 }
 
-supla_voltage_analyzer *supla_voltage_analyzers::get_phase2(void) {
+supla_voltage_aberration_analyzer *supla_voltage_analyzers::get_phase2(void) {
   return phase2;
 }
 
-supla_voltage_analyzer *supla_voltage_analyzers::get_phase3(void) {
+supla_voltage_aberration_analyzer *supla_voltage_analyzers::get_phase3(void) {
   return phase3;
 }
 
-void supla_voltage_analyzers::add_sample(double lower_voltage_threshold,
-                                         double upper_voltage_threshold,
-                                         double voltage,
-                                         supla_voltage_analyzer **va) {
+void supla_voltage_analyzers::add_sample(
+    double lower_voltage_threshold, double upper_voltage_threshold,
+    double voltage, supla_voltage_aberration_analyzer **va) {
   if (*va == nullptr) {
-    *va = new supla_voltage_analyzer();
+    *va = new supla_voltage_aberration_analyzer();
     (*va)->set_lower_threshold(lower_voltage_threshold);
     (*va)->set_upper_threshold(upper_voltage_threshold);
   }
@@ -153,17 +152,17 @@ supla_abstract_data_analyzer *supla_voltage_analyzers::copy(void) {  // NOLINT
       new supla_voltage_analyzers(get_channel_id());
 
   if (phase1) {
-    result->phase1 = new supla_voltage_analyzer();
+    result->phase1 = new supla_voltage_aberration_analyzer();
     *result->phase1 = *phase1;
   }
 
   if (phase2) {
-    result->phase2 = new supla_voltage_analyzer();
+    result->phase2 = new supla_voltage_aberration_analyzer();
     *result->phase2 = *phase2;
   }
 
   if (phase3) {
-    result->phase3 = new supla_voltage_analyzer();
+    result->phase3 = new supla_voltage_aberration_analyzer();
     *result->phase3 = *phase3;
   }
 
