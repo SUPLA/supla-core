@@ -36,7 +36,7 @@ class electricity_meter_config : public supla_json_config {
   static const char disabled_phases_key[];
   static const char voltage_logger_enabled_key[];
   static const char current_logger_enabled_key[];
-  static const char power_logger_enabled_key[];
+  static const char power_active_logger_enabled_key[];
   static const std::map<int, std::string> var_map;
 
  protected:
@@ -69,7 +69,7 @@ class electricity_meter_config : public supla_json_config {
 
   bool is_voltage_logger_enabled(void);
   bool is_current_logger_enabled(void);
-  bool is_power_logger_enabled(void);
+  bool is_power_active_logger_enabled(void);
 };
 
 #endif /* ELECTRICITYMETERCONFIG_H_ */

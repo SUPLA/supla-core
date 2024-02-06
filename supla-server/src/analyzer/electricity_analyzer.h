@@ -17,6 +17,7 @@
  */
 
 #include "analyzer/abstract_data_analyzer.h"
+#include "analyzer/simple_statistics.h"
 #include "analyzer/voltage_aberrarton_analyzer.h"
 
 #ifndef VOLTAGE_ANALYZERS_H_
@@ -27,9 +28,25 @@ class supla_electricity_analyzer : public supla_abstract_data_analyzer {
   supla_voltage_aberration_analyzer *aberration_phase1;
   supla_voltage_aberration_analyzer *aberration_phase2;
   supla_voltage_aberration_analyzer *aberration_phase3;
+
+  supla_simple_statiscics *voltage_phase1;
+  supla_simple_statiscics *voltage_phase2;
+  supla_simple_statiscics *voltage_phase3;
+
+  supla_simple_statiscics *current_phase1;
+  supla_simple_statiscics *current_phase2;
+  supla_simple_statiscics *current_phase3;
+
+  supla_simple_statiscics *power_active_phase1;
+  supla_simple_statiscics *power_active_phase2;
+  supla_simple_statiscics *power_active_phase3;
+
   void add_sample(double lower_voltage_threshold,
                   double upper_voltage_threshold, double voltage,
                   supla_voltage_aberration_analyzer **va);
+
+  void add_sample(bool logger_enabled, double sample,
+                  supla_simple_statiscics **sa);
 
  public:
   supla_electricity_analyzer(void);
@@ -40,12 +57,33 @@ class supla_electricity_analyzer : public supla_abstract_data_analyzer {
   supla_voltage_aberration_analyzer *get_aberration_phase2(void);
   supla_voltage_aberration_analyzer *get_aberration_phase3(void);
 
+  supla_simple_statiscics *get_voltage_phase1(void);
+  supla_simple_statiscics *get_voltage_phase2(void);
+  supla_simple_statiscics *get_voltage_phase3(void);
+
+  supla_simple_statiscics *get_current_phase1(void);
+  supla_simple_statiscics *get_current_phase2(void);
+  supla_simple_statiscics *get_current_phase3(void);
+
+  supla_simple_statiscics *get_power_active_phase1(void);
+  supla_simple_statiscics *get_power_active_phase2(void);
+  supla_simple_statiscics *get_power_active_phase3(void);
+
   virtual void add_sample(supla_channel_value *value,
                           supla_json_config *config);
   virtual void add_sample(int channel_flags, supla_json_config *config,
                           supla_channel_extended_value *extended_value);
 
+  virtual void reset_aberrations(void);
+  virtual void reset_voltage(void);
+  virtual void reset_current(void);
+  virtual void reset_power_active(void);
   virtual void reset(void);
+
+  virtual bool is_any_aberration_for_logging_purpose(void);
+  virtual bool is_any_voltage_for_logging_purpose(void);
+  virtual bool is_any_current_for_logging_purpose(void);
+  virtual bool is_any_power_active_for_logging_purpose(void);
   virtual bool is_any_data_for_logging_purpose(void);
   virtual supla_abstract_data_analyzer *copy(void);  // NOLINT
 };

@@ -903,11 +903,11 @@ TEST_F(ElectricityMeterConfigTest, isCurrentLoggerEnabled) {
   EXPECT_TRUE(config.is_current_logger_enabled());
 }
 
-TEST_F(ElectricityMeterConfigTest, isPowerLoggerEnabled) {
+TEST_F(ElectricityMeterConfigTest, isPowerActiveLoggerEnabled) {
   electricity_meter_config config;
-  EXPECT_FALSE(config.is_power_logger_enabled());
-  config.set_user_config("{\"powerLoggerEnabled\":true}");
-  EXPECT_TRUE(config.is_power_logger_enabled());
+  EXPECT_FALSE(config.is_power_active_logger_enabled());
+  config.set_user_config("{\"powerActiveLoggerEnabled\":true}");
+  EXPECT_TRUE(config.is_power_active_logger_enabled());
 }
 
 } /* namespace testing */
