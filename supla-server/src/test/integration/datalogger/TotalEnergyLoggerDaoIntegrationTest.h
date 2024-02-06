@@ -16,22 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ELECTRICITY_LOGGER_H_
-#define ELECTRICITY_LOGGER_H_
+#ifndef TotalEnergyLoggerDaoTest_H_
+#define TotalEnergyLoggerDaoTest_H_
 
-#include <vector>
+#include "datalogger/total_energy_logger_dao.h"
+#include "db/db_access_provider.h"
+#include "integration/IntegrationTest.h"
 
-#include "cyclictasks/abstract_cyclictask.h"
+namespace testing {
 
-class supla_electricity_logger : public supla_abstract_cyclictask {
+class TotalEnergyLoggerDaoIntegrationTest : public IntegrationTest,
+                                            public Test {
  protected:
-  virtual unsigned int task_interval_sec(void);
-  virtual void run(const std::vector<supla_user *> *users,
-                   supla_abstract_db_access_provider *dba);
+  supla_db_access_provider *dba;
+  supla_total_energy_logger_dao *dao;
 
  public:
-  supla_electricity_logger();
-  virtual ~supla_electricity_logger();
+  TotalEnergyLoggerDaoIntegrationTest();
+  virtual ~TotalEnergyLoggerDaoIntegrationTest();
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
-#endif /* ELECTRICITY_LOGGER_H_ */
+} /* namespace testing */
+
+#endif /* TotalEnergyLoggerDaoTest_H_ */

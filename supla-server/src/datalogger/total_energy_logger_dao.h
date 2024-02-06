@@ -16,28 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ElectricityLoggerDaoTest_H_
-#define ElectricityLoggerDaoTest_H_
+#ifndef TOTAL_ENERGY_LOGGER_DAO_H_
+#define TOTAL_ENERGY_LOGGER_DAO_H_
 
-#include "datalogger/electricity_logger_dao.h"
-#include "db/db_access_provider.h"
-#include "integration/IntegrationTest.h"
+#include "db/abstract_db_access_provider.h"
+#include "proto.h"
 
-namespace testing {
-
-class ElectricityLoggerDaoIntegrationTest : public IntegrationTest,
-                                            public Test {
- protected:
-  supla_db_access_provider *dba;
-  supla_electricity_logger_dao *dao;
+class supla_total_energy_logger_dao {
+ private:
+  supla_abstract_db_access_provider *dba;
+  void set_longlong(unsigned _supla_int64_t *v, void *pbind,
+                    bool *not_null_flag);
 
  public:
-  ElectricityLoggerDaoIntegrationTest();
-  virtual ~ElectricityLoggerDaoIntegrationTest();
-  virtual void SetUp();
-  virtual void TearDown();
+  explicit supla_total_energy_logger_dao(
+      supla_abstract_db_access_provider *dba);
+  void add(int channel_id, TElectricityMeter_ExtendedValue_V2 *em_ev);
 };
 
-} /* namespace testing */
-
-#endif /* ElectricityLoggerDaoTest_H_ */
+#endif /* TOTAL_ENERGY_LOGGER_DAO_H_ */

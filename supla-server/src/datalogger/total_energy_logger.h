@@ -16,21 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ELECTRICITY_LOGGER_DAO_H_
-#define ELECTRICITY_LOGGER_DAO_H_
+#ifndef TOTAL_ENERGY_LOGGER_H_
+#define TOTAL_ENERGY_LOGGER_H_
 
-#include "db/abstract_db_access_provider.h"
-#include "proto.h"
+#include <vector>
 
-class supla_electricity_logger_dao {
- private:
-  supla_abstract_db_access_provider *dba;
-  void set_longlong(unsigned _supla_int64_t *v, void *pbind,
-                    bool *not_null_flag);
+#include "cyclictasks/abstract_cyclictask.h"
+
+class supla_total_energy_logger : public supla_abstract_cyclictask {
+ protected:
+  virtual unsigned int task_interval_sec(void);
+  virtual void run(const std::vector<supla_user *> *users,
+                   supla_abstract_db_access_provider *dba);
 
  public:
-  explicit supla_electricity_logger_dao(supla_abstract_db_access_provider *dba);
-  void add(int channel_id, TElectricityMeter_ExtendedValue_V2 *em_ev);
+  supla_total_energy_logger();
+  virtual ~supla_total_energy_logger();
 };
 
-#endif /* ELECTRICITY_LOGGER_DAO_H_ */
+#endif /* TOTAL_ENERGY_LOGGER_H_ */

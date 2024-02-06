@@ -4,8 +4,6 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/datalogger/electricity_logger.cpp \
-../src/datalogger/electricity_logger_dao.cpp \
 ../src/datalogger/general_purpose_measurement_logger.cpp \
 ../src/datalogger/general_purpose_measurement_logger_dao.cpp \
 ../src/datalogger/general_purpose_meter_logger.cpp \
@@ -16,12 +14,12 @@ CPP_SRCS += \
 ../src/datalogger/impulse_logger_dao.cpp \
 ../src/datalogger/temperature_logger.cpp \
 ../src/datalogger/temperature_logger_dao.cpp \
+../src/datalogger/total_energy_logger.cpp \
+../src/datalogger/total_energy_logger_dao.cpp \
 ../src/datalogger/voltage_threshold_logger.cpp \
 ../src/datalogger/voltage_threshold_logger_dao.cpp 
 
 CPP_DEPS += \
-./src/datalogger/electricity_logger.d \
-./src/datalogger/electricity_logger_dao.d \
 ./src/datalogger/general_purpose_measurement_logger.d \
 ./src/datalogger/general_purpose_measurement_logger_dao.d \
 ./src/datalogger/general_purpose_meter_logger.d \
@@ -32,12 +30,12 @@ CPP_DEPS += \
 ./src/datalogger/impulse_logger_dao.d \
 ./src/datalogger/temperature_logger.d \
 ./src/datalogger/temperature_logger_dao.d \
+./src/datalogger/total_energy_logger.d \
+./src/datalogger/total_energy_logger_dao.d \
 ./src/datalogger/voltage_threshold_logger.d \
 ./src/datalogger/voltage_threshold_logger_dao.d 
 
 OBJS += \
-./src/datalogger/electricity_logger.o \
-./src/datalogger/electricity_logger_dao.o \
 ./src/datalogger/general_purpose_measurement_logger.o \
 ./src/datalogger/general_purpose_measurement_logger_dao.o \
 ./src/datalogger/general_purpose_meter_logger.o \
@@ -48,6 +46,8 @@ OBJS += \
 ./src/datalogger/impulse_logger_dao.o \
 ./src/datalogger/temperature_logger.o \
 ./src/datalogger/temperature_logger_dao.o \
+./src/datalogger/total_energy_logger.o \
+./src/datalogger/total_energy_logger_dao.o \
 ./src/datalogger/voltage_threshold_logger.o \
 ./src/datalogger/voltage_threshold_logger_dao.o 
 
@@ -64,7 +64,7 @@ src/datalogger/%.o: ../src/datalogger/%.cpp src/datalogger/subdir.mk
 clean: clean-src-2f-datalogger
 
 clean-src-2f-datalogger:
-	-$(RM) ./src/datalogger/electricity_logger.d ./src/datalogger/electricity_logger.o ./src/datalogger/electricity_logger_dao.d ./src/datalogger/electricity_logger_dao.o ./src/datalogger/general_purpose_measurement_logger.d ./src/datalogger/general_purpose_measurement_logger.o ./src/datalogger/general_purpose_measurement_logger_dao.d ./src/datalogger/general_purpose_measurement_logger_dao.o ./src/datalogger/general_purpose_meter_logger.d ./src/datalogger/general_purpose_meter_logger.o ./src/datalogger/general_purpose_meter_logger_dao.d ./src/datalogger/general_purpose_meter_logger_dao.o ./src/datalogger/hp_thermostat_logger.d ./src/datalogger/hp_thermostat_logger.o ./src/datalogger/hp_thermostat_logger_dao.d ./src/datalogger/hp_thermostat_logger_dao.o ./src/datalogger/impulse_logger.d ./src/datalogger/impulse_logger.o ./src/datalogger/impulse_logger_dao.d ./src/datalogger/impulse_logger_dao.o ./src/datalogger/temperature_logger.d ./src/datalogger/temperature_logger.o ./src/datalogger/temperature_logger_dao.d ./src/datalogger/temperature_logger_dao.o ./src/datalogger/voltage_threshold_logger.d ./src/datalogger/voltage_threshold_logger.o ./src/datalogger/voltage_threshold_logger_dao.d ./src/datalogger/voltage_threshold_logger_dao.o
+	-$(RM) ./src/datalogger/general_purpose_measurement_logger.d ./src/datalogger/general_purpose_measurement_logger.o ./src/datalogger/general_purpose_measurement_logger_dao.d ./src/datalogger/general_purpose_measurement_logger_dao.o ./src/datalogger/general_purpose_meter_logger.d ./src/datalogger/general_purpose_meter_logger.o ./src/datalogger/general_purpose_meter_logger_dao.d ./src/datalogger/general_purpose_meter_logger_dao.o ./src/datalogger/hp_thermostat_logger.d ./src/datalogger/hp_thermostat_logger.o ./src/datalogger/hp_thermostat_logger_dao.d ./src/datalogger/hp_thermostat_logger_dao.o ./src/datalogger/impulse_logger.d ./src/datalogger/impulse_logger.o ./src/datalogger/impulse_logger_dao.d ./src/datalogger/impulse_logger_dao.o ./src/datalogger/temperature_logger.d ./src/datalogger/temperature_logger.o ./src/datalogger/temperature_logger_dao.d ./src/datalogger/temperature_logger_dao.o ./src/datalogger/total_energy_logger.d ./src/datalogger/total_energy_logger.o ./src/datalogger/total_energy_logger_dao.d ./src/datalogger/total_energy_logger_dao.o ./src/datalogger/voltage_threshold_logger.d ./src/datalogger/voltage_threshold_logger.o ./src/datalogger/voltage_threshold_logger_dao.d ./src/datalogger/voltage_threshold_logger_dao.o
 
 .PHONY: clean-src-2f-datalogger
 

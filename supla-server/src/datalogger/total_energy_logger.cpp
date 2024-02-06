@@ -16,11 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "datalogger/electricity_logger.h"
+#include "total_energy_logger.h"
 
 #include <memory>
 
-#include "datalogger/electricity_logger_dao.h"
+#include "datalogger/total_energy_logger_dao.h"
 #include "device/device.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "safearray.h"
@@ -30,15 +30,15 @@ using std::shared_ptr;
 using std::vector;
 using std::weak_ptr;
 
-supla_electricity_logger::supla_electricity_logger()
+supla_total_energy_logger::supla_total_energy_logger()
     : supla_abstract_cyclictask() {}
 
-supla_electricity_logger::~supla_electricity_logger() {}
+supla_total_energy_logger::~supla_total_energy_logger() {}
 
-unsigned int supla_electricity_logger::task_interval_sec(void) { return 600; }
+unsigned int supla_total_energy_logger::task_interval_sec(void) { return 600; }
 
-void supla_electricity_logger::run(const vector<supla_user *> *users,
-                                   supla_abstract_db_access_provider *dba) {
+void supla_total_energy_logger::run(const vector<supla_user *> *users,
+                                    supla_abstract_db_access_provider *dba) {
   std::vector<supla_channel_extended_value_envelope *> env;
 
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
@@ -54,7 +54,7 @@ void supla_electricity_logger::run(const vector<supla_user *> *users,
         });
   }
 
-  supla_electricity_logger_dao dao(dba);
+  supla_total_energy_logger_dao dao(dba);
 
   for (auto it = env.begin(); it != env.end(); ++it) {
     supla_channel_em_extended_value *emv =

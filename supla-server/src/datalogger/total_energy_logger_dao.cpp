@@ -16,18 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "datalogger/electricity_logger_dao.h"
+#include "total_energy_logger_dao.h"
 
 #include <mysql.h>
 
-supla_electricity_logger_dao::supla_electricity_logger_dao(
+supla_total_energy_logger_dao::supla_total_energy_logger_dao(
     supla_abstract_db_access_provider *dba) {
   this->dba = dba;
 }
 
-void supla_electricity_logger_dao::set_longlong(unsigned _supla_int64_t *v,
-                                                void *pbind,
-                                                bool *not_null_flag) {
+void supla_total_energy_logger_dao::set_longlong(unsigned _supla_int64_t *v,
+                                                 void *pbind,
+                                                 bool *not_null_flag) {
   if (*v == 0) {
     ((MYSQL_BIND *)pbind)->buffer_type = MYSQL_TYPE_NULL;
   } else {
@@ -39,7 +39,7 @@ void supla_electricity_logger_dao::set_longlong(unsigned _supla_int64_t *v,
   }
 }
 
-void supla_electricity_logger_dao::add(
+void supla_total_energy_logger_dao::add(
     int channel_id, TElectricityMeter_ExtendedValue_V2 *em_ev) {
   if (!em_ev) {
     return;

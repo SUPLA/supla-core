@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "integration/datalogger/ElectricityLoggerDaoIntegrationTest.h"
+#include "TotalEnergyLoggerDaoIntegrationTest.h"
 
 #include <string>
 
@@ -24,25 +24,25 @@ using std::string;
 
 namespace testing {
 
-ElectricityLoggerDaoIntegrationTest::ElectricityLoggerDaoIntegrationTest()
+TotalEnergyLoggerDaoIntegrationTest::TotalEnergyLoggerDaoIntegrationTest()
     : IntegrationTest(), Test() {
   dba = nullptr;
   dao = nullptr;
 }
 
-ElectricityLoggerDaoIntegrationTest::~ElectricityLoggerDaoIntegrationTest() {}
+TotalEnergyLoggerDaoIntegrationTest::~TotalEnergyLoggerDaoIntegrationTest() {}
 
-void ElectricityLoggerDaoIntegrationTest::SetUp() {
+void TotalEnergyLoggerDaoIntegrationTest::SetUp() {
   dba = new supla_db_access_provider();
   ASSERT_TRUE(dba != nullptr);
-  dao = new supla_electricity_logger_dao(dba);
+  dao = new supla_total_energy_logger_dao(dba);
   ASSERT_TRUE(dao != nullptr);
 
   initTestDatabase();
   Test::SetUp();
 }
 
-void ElectricityLoggerDaoIntegrationTest::TearDown() {
+void TotalEnergyLoggerDaoIntegrationTest::TearDown() {
   if (dao) {
     delete dao;
     dao = nullptr;
@@ -56,7 +56,7 @@ void ElectricityLoggerDaoIntegrationTest::TearDown() {
   Test::TearDown();
 }
 
-TEST_F(ElectricityLoggerDaoIntegrationTest, add) {
+TEST_F(TotalEnergyLoggerDaoIntegrationTest, add) {
   ASSERT_TRUE(dba->connect());
 
   string result;

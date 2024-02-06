@@ -21,12 +21,12 @@
 #include <unistd.h>
 
 #include "cyclictasks/auto_gate_closing.h"
-#include "datalogger/electricity_logger.h"
 #include "datalogger/general_purpose_measurement_logger.h"
 #include "datalogger/general_purpose_meter_logger.h"
 #include "datalogger/hp_thermostat_logger.h"
 #include "datalogger/impulse_logger.h"
 #include "datalogger/temperature_logger.h"
+#include "datalogger/total_energy_logger.h"
 #include "datalogger/voltage_threshold_logger.h"
 #include "db/db_access_provider.h"
 #include "sthread.h"
@@ -34,7 +34,7 @@
 using std::vector;
 
 supla_cyclictasks_agent::supla_cyclictasks_agent() {
-  add(new supla_electricity_logger());
+  add(new supla_total_energy_logger());
   add(new supla_impulse_logger());
   add(new supla_temperature_logger());
   add(new supla_hp_thermostat_logger());
