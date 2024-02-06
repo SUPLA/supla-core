@@ -56,6 +56,18 @@ const char electricity_meter_config::lower_voltage_threshold_key[] =
 // static
 const char electricity_meter_config::disabled_phases_key[] = "disabledPhases";
 
+// static
+const char electricity_meter_config::voltage_logger_enabled_key[] =
+    "voltageLoggerEnabled";
+
+// static
+const char electricity_meter_config::current_logger_enabled_key[] =
+    "currentLoggerEnabled";
+
+// static
+const char electricity_meter_config::power_logger_enabled_key[] =
+    "powerLoggerEnabled";
+
 electricity_meter_config::electricity_meter_config(void)
     : supla_json_config() {}
 
@@ -189,6 +201,18 @@ bool electricity_meter_config::is_phase_disabled(unsigned char phase) {
   }
 
   return false;
+}
+
+bool electricity_meter_config::is_voltage_logger_enabled(void) {
+  return get_bool(voltage_logger_enabled_key);
+}
+
+bool electricity_meter_config::is_current_logger_enabled(void) {
+  return get_bool(current_logger_enabled_key);
+}
+
+bool electricity_meter_config::is_power_logger_enabled(void) {
+  return get_bool(power_logger_enabled_key);
 }
 
 _supla_int64_t electricity_meter_config::get_initial_value(

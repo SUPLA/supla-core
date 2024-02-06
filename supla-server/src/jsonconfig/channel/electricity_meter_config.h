@@ -34,6 +34,9 @@ class electricity_meter_config : public supla_json_config {
   static const char upper_voltage_threshold_key[];
   static const char lower_voltage_threshold_key[];
   static const char disabled_phases_key[];
+  static const char voltage_logger_enabled_key[];
+  static const char current_logger_enabled_key[];
+  static const char power_logger_enabled_key[];
   static const std::map<int, std::string> var_map;
 
  protected:
@@ -63,6 +66,10 @@ class electricity_meter_config : public supla_json_config {
 
   void add_initial_values(int flags, TElectricityMeter_ExtendedValue_V2 *em_ev);
   void add_initial_value(unsigned _supla_int_t *total_forward_active_energy);
+
+  bool is_voltage_logger_enabled(void);
+  bool is_current_logger_enabled(void);
+  bool is_power_logger_enabled(void);
 };
 
 #endif /* ELECTRICITYMETERCONFIG_H_ */

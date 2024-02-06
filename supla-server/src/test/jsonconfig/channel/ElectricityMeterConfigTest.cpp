@@ -889,4 +889,25 @@ TEST_F(ElectricityMeterConfigTest, disabledPhases) {
                 SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED);
 }
 
+TEST_F(ElectricityMeterConfigTest, isVoltageLoggerEnabled) {
+  electricity_meter_config config;
+  EXPECT_FALSE(config.is_voltage_logger_enabled());
+  config.set_user_config("{\"voltageLoggerEnabled\":true}");
+  EXPECT_TRUE(config.is_voltage_logger_enabled());
+}
+
+TEST_F(ElectricityMeterConfigTest, isCurrentLoggerEnabled) {
+  electricity_meter_config config;
+  EXPECT_FALSE(config.is_current_logger_enabled());
+  config.set_user_config("{\"currentLoggerEnabled\":true}");
+  EXPECT_TRUE(config.is_current_logger_enabled());
+}
+
+TEST_F(ElectricityMeterConfigTest, isPowerLoggerEnabled) {
+  electricity_meter_config config;
+  EXPECT_FALSE(config.is_power_logger_enabled());
+  config.set_user_config("{\"powerLoggerEnabled\":true}");
+  EXPECT_TRUE(config.is_power_logger_enabled());
+}
+
 } /* namespace testing */
