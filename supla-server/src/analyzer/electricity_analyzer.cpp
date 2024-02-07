@@ -216,20 +216,19 @@ void supla_electricity_analyzer::add_sample(
     if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED)) {
       if (em_ev_raw.measured_values & EM_VAR_VOLTAGE) {
         add_sample(lower_voltage_threshold, upper_voltage_threshold,
-                   em_ev_raw.m[0].voltage[0] / 100.00, &aberration_phase1);
+                   em_ev->get_voltage(1), &aberration_phase1);
 
-        add_sample(voltage_logger_enabled, em_ev_raw.m[0].voltage[0] / 100.00,
+        add_sample(voltage_logger_enabled, em_ev->get_voltage(1),
                    &voltage_phase1);
       }
 
       if (em_ev_raw.measured_values & EM_VAR_CURRENT) {
-        add_sample(current_logger_enabled, em_ev_raw.m[0].current[0] / 1000.00,
+        add_sample(current_logger_enabled, em_ev->get_current(1),
                    &current_phase1);
       }
 
       if (em_ev_raw.measured_values & EM_VAR_POWER_ACTIVE) {
-        add_sample(power_logger_enabled,
-                   em_ev_raw.m[0].power_active[0] / 1000000.00,
+        add_sample(power_logger_enabled, em_ev->get_power_active(1),
                    &power_active_phase1);
       }
     }
@@ -237,20 +236,19 @@ void supla_electricity_analyzer::add_sample(
     if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED)) {
       if (em_ev_raw.measured_values & EM_VAR_VOLTAGE) {
         add_sample(lower_voltage_threshold, upper_voltage_threshold,
-                   em_ev_raw.m[0].voltage[1] / 100.00, &aberration_phase2);
+                   em_ev->get_voltage(2), &aberration_phase2);
 
-        add_sample(voltage_logger_enabled, em_ev_raw.m[0].voltage[1] / 100.00,
+        add_sample(voltage_logger_enabled, em_ev->get_voltage(2),
                    &voltage_phase2);
       }
 
       if (em_ev_raw.measured_values & EM_VAR_CURRENT) {
-        add_sample(current_logger_enabled, em_ev_raw.m[0].current[1] / 1000.00,
+        add_sample(current_logger_enabled, em_ev->get_current(2),
                    &current_phase2);
       }
 
       if (em_ev_raw.measured_values & EM_VAR_POWER_ACTIVE) {
-        add_sample(power_logger_enabled,
-                   em_ev_raw.m[0].power_active[1] / 1000000.00,
+        add_sample(power_logger_enabled, em_ev->get_power_active(2),
                    &power_active_phase2);
       }
     }
@@ -258,19 +256,18 @@ void supla_electricity_analyzer::add_sample(
     if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED)) {
       if (em_ev_raw.measured_values & EM_VAR_VOLTAGE) {
         add_sample(lower_voltage_threshold, upper_voltage_threshold,
-                   em_ev_raw.m[0].voltage[2] / 100.00, &aberration_phase3);
-        add_sample(voltage_logger_enabled, em_ev_raw.m[0].voltage[2] / 100.00,
+                   em_ev->get_voltage(3), &aberration_phase3);
+        add_sample(voltage_logger_enabled, em_ev->get_voltage(3),
                    &voltage_phase3);
       }
 
       if (em_ev_raw.measured_values & EM_VAR_CURRENT) {
-        add_sample(current_logger_enabled, em_ev_raw.m[0].current[2] / 1000.00,
+        add_sample(current_logger_enabled, em_ev->get_current(3),
                    &current_phase3);
       }
 
       if (em_ev_raw.measured_values & EM_VAR_POWER_ACTIVE) {
-        add_sample(power_logger_enabled,
-                   em_ev_raw.m[0].power_active[2] / 1000000.00,
+        add_sample(power_logger_enabled, em_ev->get_power_active(3),
                    &power_active_phase3);
       }
     }
