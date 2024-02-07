@@ -70,21 +70,24 @@ void supla_abstract_electricity_logger_dao::add(MYSQL_TIME *time,
                                                 int channel_id, char phase,
                                                 supla_simple_statiscics *stat,
                                                 const string &procedure,
-                                                const string &format) {
+                                                unsigned char precision) {
   if (!stat || !stat->get_sample_count() || procedure.empty() || !phase) {
     return;
   }
 
   MYSQL_BIND pbind[6] = {};
 
+  char format[10] = {};
+  snprintf(format, sizeof(format), "%%0.%if", precision);
+
   char min[20] = {};
-  snprintf(min, sizeof(min), format.c_str(), stat->get_min());
+  snprintf(min, sizeof(min), format, stat->get_min());
 
   char max[20] = {};
-  snprintf(max, sizeof(max), format.c_str(), stat->get_max());
+  snprintf(max, sizeof(max), format, stat->get_max());
 
   char avg[20] = {};
-  snprintf(avg, sizeof(avg), format.c_str(), stat->get_avg());
+  snprintf(avg, sizeof(avg), format, stat->get_avg());
 
   pbind[0].buffer_type = MYSQL_TYPE_DATETIME;
   pbind[0].buffer = (char *)time;

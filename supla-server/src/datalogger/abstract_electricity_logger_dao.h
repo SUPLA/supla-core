@@ -34,7 +34,7 @@ class supla_abstract_electricity_logger_dao {
   bool get_utc_timestamp(MYSQL_TIME *time);
   void add(MYSQL_TIME *time, int channel_id, char phase,
            supla_simple_statiscics *stat, const std::string &procedure,
-           const std::string &format);
+           unsigned char precision);
 
  public:
   supla_abstract_electricity_logger_dao(supla_abstract_db_access_provider *dba);

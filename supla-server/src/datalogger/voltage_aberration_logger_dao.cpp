@@ -45,13 +45,13 @@ void supla_voltage_aberration_logger_dao::add(
   int max_sec_below = va->get_max_msec_below() / 1000;
 
   char min_voltage[10] = {};
-  snprintf(min_voltage, sizeof(min_voltage), "%07.2f", va->get_min());
+  snprintf(min_voltage, sizeof(min_voltage), "%0.2f", va->get_min());
 
   char max_voltage[10] = {};
-  snprintf(max_voltage, sizeof(max_voltage), "%07.2f", va->get_max());
+  snprintf(max_voltage, sizeof(max_voltage), "%0.2f", va->get_max());
 
   char avg_voltage[10] = {};
-  snprintf(avg_voltage, sizeof(avg_voltage), "%07.2f", va->get_avg());
+  snprintf(avg_voltage, sizeof(avg_voltage), "%0.2f", va->get_avg());
 
   int measurement_time_sec = va->get_total_time_msec() / 1000;
 

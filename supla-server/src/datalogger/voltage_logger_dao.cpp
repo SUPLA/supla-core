@@ -35,15 +35,15 @@ void supla_voltage_logger_dao::add(supla_electricity_analyzer *vas) {
 
   if (get_utc_timestamp(&time)) {
     string procedure = "supla_add_em_voltage_log_item";
-    string format = "%03.2f";
+
     supla_abstract_electricity_logger_dao::add(&time, vas->get_channel_id(), 1,
                                                vas->get_voltage_phase1(),
-                                               procedure, format);
+                                               procedure, 2);
     supla_abstract_electricity_logger_dao::add(&time, vas->get_channel_id(), 2,
                                                vas->get_voltage_phase1(),
-                                               procedure, format);
+                                               procedure, 2);
     supla_abstract_electricity_logger_dao::add(&time, vas->get_channel_id(), 3,
                                                vas->get_voltage_phase1(),
-                                               procedure, format);
+                                               procedure, 2);
   }
 }
