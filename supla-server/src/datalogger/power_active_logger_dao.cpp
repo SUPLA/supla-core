@@ -18,6 +18,8 @@
 
 #include "power_active_logger_dao.h"
 
+#include <string>
+
 #include "log.h"
 
 using std::string;

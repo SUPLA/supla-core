@@ -18,6 +18,8 @@
 
 #include "abstract_electricity_logger_dao.h"
 
+#include <string.h>
+
 #include "log.h"
 
 using std::string;

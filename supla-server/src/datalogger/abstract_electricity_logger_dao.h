@@ -20,7 +20,8 @@
 #define ABSTRACT_ELECTRICITY_LOGGER_DAO_H_
 
 #include <mysql.h>
-#include <string.h>
+
+#include <string>
 
 #include "analyzer/electricity_analyzer.h"
 #include "db/abstract_db_access_provider.h"
@@ -37,7 +38,8 @@ class supla_abstract_electricity_logger_dao {
            unsigned char precision);
 
  public:
-  supla_abstract_electricity_logger_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_abstract_electricity_logger_dao(
+      supla_abstract_db_access_provider *dba);
   virtual ~supla_abstract_electricity_logger_dao();
 
   virtual void add(supla_electricity_analyzer *analyzer) = 0;
