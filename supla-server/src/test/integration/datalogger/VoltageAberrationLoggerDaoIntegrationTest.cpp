@@ -67,7 +67,8 @@ TEST_F(VoltageAberrationLoggerDaoIntegrationTest, add) {
   ASSERT_TRUE(dba->connect());
 
   string result;
-  sqlQuery("SELECT count(*) as count FROM supla_em_voltage_log", &result);
+  sqlQuery("SELECT count(*) as count FROM supla_em_voltage_aberration_log",
+           &result);
 
   EXPECT_EQ(result, "count\n0\n");
 
@@ -108,8 +109,9 @@ TEST_F(VoltageAberrationLoggerDaoIntegrationTest, add) {
       "SELECT channel_id, phase_no, count_total, count_above, count_below, "
       "sec_above, sec_below, max_sec_above, max_sec_below, min_voltage, "
       "max_voltage, avg_voltage, measurement_time_sec FROM "
-      "supla_em_voltage_log WHERE date >= DATE_ADD(UTC_TIMESTAMP(), INTERVAL "
-      "-2 SECOND) AND date <= DATE_ADD(UTC_TIMESTAMP(), INTERVAL 2 SECOND)",
+      "supla_em_voltage_aberration_log WHERE date >= DATE_ADD(UTC_TIMESTAMP(), "
+      "INTERVAL -2 SECOND) AND date <= DATE_ADD(UTC_TIMESTAMP(), INTERVAL 2 "
+      "SECOND)",
       &result);
 
   EXPECT_EQ(result,
