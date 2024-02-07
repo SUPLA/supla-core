@@ -16,17 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "datalogger/voltage_threshold_logger_dao.h"
+#include "voltage_aberration_logger_dao.h"
 
 #include <string.h>
 
 #include "log.h"
 
-supla_voltage_threshold_logger_dao::supla_voltage_threshold_logger_dao(
+supla_voltage_aberration_logger_dao::supla_voltage_aberration_logger_dao(
     supla_abstract_db_access_provider *dba)
     : supla_abstract_electricity_logger_dao(dba) {}
 
-void supla_voltage_threshold_logger_dao::add(
+void supla_voltage_aberration_logger_dao::add(
     MYSQL_TIME *time, int channel_id, char phase,
     supla_voltage_aberration_analyzer *va) {
   if (!va || (va->get_below_count() == 0 && va->get_above_count() == 0)) {
@@ -110,7 +110,7 @@ void supla_voltage_threshold_logger_dao::add(
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }
 
-void supla_voltage_threshold_logger_dao::add(supla_electricity_analyzer *vas) {
+void supla_voltage_aberration_logger_dao::add(supla_electricity_analyzer *vas) {
   if (!vas) {
     return;
   }

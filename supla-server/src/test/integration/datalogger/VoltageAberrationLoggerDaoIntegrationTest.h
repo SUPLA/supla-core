@@ -16,26 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VOLTAGE_THRESHOLD_LOGGER_H_
-#define VOLTAGE_THRESHOLD_LOGGER_H_
+#ifndef VoltageAberrationLoggerDaoTest_H_
+#define VoltageAberrationLoggerDaoTest_H_
 
-#include <vector>
+#include "datalogger/voltage_aberration_logger_dao.h"
+#include "db/db_access_provider.h"
+#include "integration/IntegrationTest.h"
 
-#include "datalogger/abstract_electricity_logger.h"
+namespace testing {
 
-class supla_voltage_threshold_logger
-    : public supla_abstract_electricity_logger {
+class VoltageAberrationLoggerDaoIntegrationTest : public IntegrationTest,
+                                                  public Test {
  protected:
-  virtual unsigned int task_interval_sec(void);
-  virtual bool is_any_data_for_logging_purposes(
-      supla_electricity_analyzer *analyzer);
-  virtual void reset(supla_electricity_analyzer *analyzer);
-  virtual supla_abstract_electricity_logger_dao *get_dao(
-      supla_abstract_db_access_provider *dba);
+  supla_db_access_provider *dba;
+  supla_voltage_aberration_logger_dao *dao;
 
  public:
-  supla_voltage_threshold_logger();
-  virtual ~supla_voltage_threshold_logger();
+  VoltageAberrationLoggerDaoIntegrationTest();
+  virtual ~VoltageAberrationLoggerDaoIntegrationTest();
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
-#endif /* VOLTAGE_THRESHOLD_LOGGER_H_ */
+} /* namespace testing */
+
+#endif /* VoltageAberrationLoggerDaoTest_H_ */

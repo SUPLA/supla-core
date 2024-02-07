@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "integration/datalogger/VoltageThreadsholdLoggerDaoIntegrationTest.h"
+#include "VoltageAberrationLoggerDaoIntegrationTest.h"
 
 #include <string>
 
@@ -29,27 +29,27 @@ using std::string;
 
 namespace testing {
 
-VoltageThreadsholdLoggerDaoIntegrationTest::
-    VoltageThreadsholdLoggerDaoIntegrationTest()
+VoltageAberrationLoggerDaoIntegrationTest::
+    VoltageAberrationLoggerDaoIntegrationTest()
     : IntegrationTest(), Test() {
   dba = nullptr;
   dao = nullptr;
 }
 
-VoltageThreadsholdLoggerDaoIntegrationTest::
-    ~VoltageThreadsholdLoggerDaoIntegrationTest() {}
+VoltageAberrationLoggerDaoIntegrationTest::
+    ~VoltageAberrationLoggerDaoIntegrationTest() {}
 
-void VoltageThreadsholdLoggerDaoIntegrationTest::SetUp() {
+void VoltageAberrationLoggerDaoIntegrationTest::SetUp() {
   dba = new supla_db_access_provider();
   ASSERT_TRUE(dba != nullptr);
-  dao = new supla_voltage_threshold_logger_dao(dba);
+  dao = new supla_voltage_aberration_logger_dao(dba);
   ASSERT_TRUE(dao != nullptr);
 
   initTestDatabase();
   Test::SetUp();
 }
 
-void VoltageThreadsholdLoggerDaoIntegrationTest::TearDown() {
+void VoltageAberrationLoggerDaoIntegrationTest::TearDown() {
   if (dao) {
     delete dao;
     dao = nullptr;
@@ -63,7 +63,7 @@ void VoltageThreadsholdLoggerDaoIntegrationTest::TearDown() {
   Test::TearDown();
 }
 
-TEST_F(VoltageThreadsholdLoggerDaoIntegrationTest, add) {
+TEST_F(VoltageAberrationLoggerDaoIntegrationTest, add) {
   ASSERT_TRUE(dba->connect());
 
   string result;

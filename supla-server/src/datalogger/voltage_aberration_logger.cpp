@@ -16,30 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "datalogger/voltage_threshold_logger.h"
+#include "voltage_aberration_logger.h"
 
-#include "datalogger/voltage_threshold_logger_dao.h"
+#include "datalogger/voltage_aberration_logger_dao.h"
 
-supla_voltage_threshold_logger::supla_voltage_threshold_logger()
+supla_voltage_aberration_logger::supla_voltage_aberration_logger()
     : supla_abstract_electricity_logger() {}
 
-supla_voltage_threshold_logger::~supla_voltage_threshold_logger() {}
+supla_voltage_aberration_logger::~supla_voltage_aberration_logger() {}
 
-unsigned int supla_voltage_threshold_logger::task_interval_sec(void) {
+unsigned int supla_voltage_aberration_logger::task_interval_sec(void) {
   return 600;
 }
 
-bool supla_voltage_threshold_logger::is_any_data_for_logging_purposes(
+bool supla_voltage_aberration_logger::is_any_data_for_logging_purposes(
     supla_electricity_analyzer *analyzer) {
   return analyzer->is_any_aberration_for_logging_purpose();
 }
 
-void supla_voltage_threshold_logger::reset(
+void supla_voltage_aberration_logger::reset(
     supla_electricity_analyzer *analyzer) {
   analyzer->reset_aberrations();
 }
 
-supla_abstract_electricity_logger_dao *supla_voltage_threshold_logger::get_dao(
+supla_abstract_electricity_logger_dao *supla_voltage_aberration_logger::get_dao(
     supla_abstract_db_access_provider *dba) {
-  return new supla_voltage_threshold_logger_dao(dba);
+  return new supla_voltage_aberration_logger_dao(dba);
 }

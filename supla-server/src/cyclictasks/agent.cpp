@@ -29,8 +29,8 @@
 #include "datalogger/power_active_logger.h"
 #include "datalogger/temperature_logger.h"
 #include "datalogger/total_energy_logger.h"
+#include "datalogger/voltage_aberration_logger.h"
 #include "datalogger/voltage_logger.h"
-#include "datalogger/voltage_threshold_logger.h"
 #include "db/db_access_provider.h"
 #include "sthread.h"
 
@@ -41,7 +41,7 @@ supla_cyclictasks_agent::supla_cyclictasks_agent() {
   add(new supla_impulse_logger());
   add(new supla_temperature_logger());
   add(new supla_hp_thermostat_logger());
-  add(new supla_voltage_threshold_logger());
+  add(new supla_voltage_aberration_logger());
   add(new supla_voltage_logger());
   add(new supla_current_logger());
   add(new supla_power_active_logger());
