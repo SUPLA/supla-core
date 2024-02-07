@@ -17,7 +17,7 @@
  */
 
 #ifndef VoltageLoggerDaoTest_H_
-#define VoltageDaoTest_H_
+#define VoltageLoggerDaoTest_H_
 
 #include "datalogger/voltage_logger_dao.h"
 #include "db/db_access_provider.h"
@@ -39,4 +39,4 @@ class VoltageLoggerDaoIntegrationTest : public IntegrationTest, public Test {
 
 } /* namespace testing */
 
-#endif /* VoltageAberrationLoggerDaoTest_H_ */
+#endif /* VoltageLoggerDaoTest_H_ */
