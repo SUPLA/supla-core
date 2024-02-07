@@ -112,7 +112,7 @@ string supla_fcm_client::get_message_id(const string &request_result) {
   return result;
 }
 
-bool supla_fcm_client::_send(supla_pn_gateway_access_token *token,
+bool supla_fcm_client::_send(supla_remote_gateway_access_token *token,
                              supla_pn_recipient *recipient) {
   get_curl_adapter()->append_header("Content-Type: application/json");
   string _token = "Authorization: Bearer " + token->get_token();

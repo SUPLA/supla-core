@@ -16,15 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef PUSH_NOTIFICATION_GATEWAY_ACCESS_TOKEN_H_
-#define PUSH_NOTIFICATION_GATEWAY_ACCESS_TOKEN_H_
+#ifndef REMOTE_GATEWAY_ACCESS_TOKEN_H_
+#define REMOTE_GATEWAY_ACCESS_TOKEN_H_
 
 #include <map>
 #include <string>
 
 #include "push/pn_recipients.h"
 
-class supla_pn_gateway_access_token {
+class supla_remote_gateway_access_token {
  private:
   struct timeval expires_at;
   std::string production_url;
@@ -35,12 +35,12 @@ class supla_pn_gateway_access_token {
   std::map<std::string, std::string> extra_fields;
 
  public:
-  supla_pn_gateway_access_token(void);
-  supla_pn_gateway_access_token(const std::string &production_url,
-                                const std::string &development_url,
-                                const std::string &token, int expires_in,
-                                _platform_e platform, int app_id);
-  virtual ~supla_pn_gateway_access_token(void);
+  supla_remote_gateway_access_token(void);
+  supla_remote_gateway_access_token(const std::string &production_url,
+                                    const std::string &development_url,
+                                    const std::string &token, int expires_in,
+                                    _platform_e platform, int app_id);
+  virtual ~supla_remote_gateway_access_token(void);
 
   _platform_e get_platform(void);
   int get_app_id(void);
@@ -54,4 +54,4 @@ class supla_pn_gateway_access_token {
   std::string get_extra_field(std::string name);
 };
 
-#endif /* PUSH_NOTIFICATION_GATEWAY_ACCESS_TOKEN_H_ */
+#endif /* REMOTE_GATEWAY_ACCESS_TOKEN_H_ */

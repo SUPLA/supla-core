@@ -82,7 +82,7 @@ char *supla_apns_client::get_payload(void) {
   return result;
 }
 
-bool supla_apns_client::_send(supla_pn_gateway_access_token *token,
+bool supla_apns_client::_send(supla_remote_gateway_access_token *token,
                               supla_pn_recipient *recipient) {
   get_curl_adapter()->append_header("content-type: application/json");
 

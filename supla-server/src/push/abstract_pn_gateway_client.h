@@ -40,7 +40,7 @@ class supla_abstract_pn_gateway_client {
                 const std::string &key_name, cJSON *parent);
 
   virtual _platform_e get_platform(void) = 0;
-  virtual bool _send(supla_pn_gateway_access_token *token,
+  virtual bool _send(supla_remote_gateway_access_token *token,
                      supla_pn_recipient *recipient) = 0;
 
  public:

@@ -133,7 +133,7 @@ int supla_remote_gateway_access_token_provider::
 }
 
 void supla_remote_gateway_access_token_provider::process_result(
-    vector<supla_pn_gateway_access_token> *tokens, _platform_e platform,
+    vector<supla_remote_gateway_access_token> *tokens, _platform_e platform,
     cJSON *platform_json, cJSON *app_json) {
   if (!app_json || !app_json->string) {
     return;
@@ -183,7 +183,7 @@ void supla_remote_gateway_access_token_provider::process_result(
   string token = cJSON_GetStringValue(token_item);
 
   if (!url.empty() && !token.empty() && expires_in_item->valueint > 0) {
-    supla_pn_gateway_access_token t(
+    supla_remote_gateway_access_token t(
         url, devel_url, token, expires_in_item->valueint, platform, app_id);
 
     if (!bundle_id.empty()) {
@@ -195,7 +195,7 @@ void supla_remote_gateway_access_token_provider::process_result(
 }
 
 void supla_remote_gateway_access_token_provider::process_result(
-    vector<supla_pn_gateway_access_token> *tokens, _platform_e platform,
+    vector<supla_remote_gateway_access_token> *tokens, _platform_e platform,
     const string &platform_name, cJSON *root) {
   cJSON *platform_json = cJSON_GetObjectItem(root, platform_name.c_str());
   if (!platform_json) {
@@ -210,7 +210,7 @@ void supla_remote_gateway_access_token_provider::process_result(
 }
 
 void supla_remote_gateway_access_token_provider::get_new_tokens(
-    vector<supla_pn_gateway_access_token> *tokens) {
+    vector<supla_remote_gateway_access_token> *tokens) {
   curl_adapter->reset();
 
   string auth = "Authorization: Bearer ";
@@ -260,7 +260,7 @@ bool supla_remote_gateway_access_token_provider::refresh(void) {
   bool result = false;
   string token;
 
-  vector<supla_pn_gateway_access_token> tokens;
+  vector<supla_remote_gateway_access_token> tokens;
 
   lck_lock(refresh_lck);
   struct timeval now = {};
@@ -301,10 +301,10 @@ bool supla_remote_gateway_access_token_provider::refresh(void) {
   return result;
 }
 
-supla_pn_gateway_access_token
+supla_remote_gateway_access_token
 supla_remote_gateway_access_token_provider::get_token(_platform_e platform,
                                                       int app_id) {
-  supla_pn_gateway_access_token result;
+  supla_remote_gateway_access_token result;
 
   lck_lock(data_lck);
   for (auto it = tokens.begin(); it != tokens.end(); ++it) {

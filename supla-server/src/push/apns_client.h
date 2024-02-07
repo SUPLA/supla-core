@@ -25,7 +25,7 @@
 
 class supla_apns_client : public supla_abstract_pn_gateway_client {
  protected:
-  virtual bool _send(supla_pn_gateway_access_token *token,
+  virtual bool _send(supla_remote_gateway_access_token *token,
                      supla_pn_recipient *recipient);
   _platform_e get_platform(void);
   char *get_payload(void);

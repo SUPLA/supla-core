@@ -64,7 +64,7 @@ bool supla_abstract_pn_gateway_client::send(void) {
       continue;
     }
 
-    supla_pn_gateway_access_token token =
+    supla_remote_gateway_access_token token =
         token_provider->get_token(get_platform(), recipient->get_app_id());
 
     curl_adapter->reset();

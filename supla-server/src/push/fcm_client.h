@@ -28,7 +28,7 @@ class supla_fcm_client : public supla_abstract_pn_gateway_client {
   virtual _platform_e get_platform(void);
   char *get_payload(supla_pn_recipient *recipient);
   std::string get_message_id(const std::string &request_result);
-  virtual bool _send(supla_pn_gateway_access_token *token,
+  virtual bool _send(supla_remote_gateway_access_token *token,
                      supla_pn_recipient *recipient);
 
  public:

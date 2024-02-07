@@ -23,8 +23,8 @@
 #include <vector>
 
 #include "http/curl_adapter.h"
+#include "http/remote_gateway_access_token.h"
 #include "json/cJSON.h"
-#include "push/pn_gateway_access_token.h"
 #include "push/pn_recipients.h"
 
 class supla_remote_gateway_access_token_provider {
@@ -33,16 +33,16 @@ class supla_remote_gateway_access_token_provider {
   void *refresh_lck;
   struct timeval last_refresh_attpemt_time;
   void *thread;
-  std::vector<supla_pn_gateway_access_token> tokens;
+  std::vector<supla_remote_gateway_access_token> tokens;
 
-  void process_result(std::vector<supla_pn_gateway_access_token> *tokens,
+  void process_result(std::vector<supla_remote_gateway_access_token> *tokens,
                       _platform_e platform, cJSON *platform_json,
                       cJSON *app_json);
 
-  void process_result(std::vector<supla_pn_gateway_access_token> *tokens,
+  void process_result(std::vector<supla_remote_gateway_access_token> *tokens,
                       _platform_e platform, const std::string &platform_name,
                       cJSON *root);
-  void get_new_tokens(std::vector<supla_pn_gateway_access_token> *tokens);
+  void get_new_tokens(std::vector<supla_remote_gateway_access_token> *tokens);
 
   static void _service_loop(void *_provider, void *sthread);
   void service_loop();
@@ -62,8 +62,8 @@ class supla_remote_gateway_access_token_provider {
   virtual void start_service(void);
   void stop_service(void);
 
-  virtual supla_pn_gateway_access_token get_token(_platform_e platform,
-                                                  int app_id);
+  virtual supla_remote_gateway_access_token get_token(_platform_e platform,
+                                                      int app_id);
   size_t get_token_count(void);
   bool is_any_token_available(void);
   bool is_service_running(void);
