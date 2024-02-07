@@ -146,13 +146,6 @@ void supla_remote_gateway_access_token_provider::process_result(
     return;
   }
 
-  cJSON *url_item = cJSON_GetObjectItem(app_json, "url");
-  if (!url_item || !cJSON_IsString(url_item)) {
-    return;
-  }
-
-  cJSON *devel_url_item = cJSON_GetObjectItem(app_json, "development_url");
-
   cJSON *token_item = cJSON_GetObjectItem(app_json, "token");
   if (!token_item || !cJSON_IsString(token_item)) {
     return;
@@ -176,13 +169,23 @@ void supla_remote_gateway_access_token_provider::process_result(
     }
   }
 
-  string url = cJSON_GetStringValue(url_item);
-  string devel_url = devel_url_item && cJSON_IsString(devel_url_item)
-                         ? cJSON_GetStringValue(devel_url_item)
-                         : "";
+  cJSON *devel_url_item = cJSON_GetObjectItem(app_json, "development_url");
+  cJSON *url_item = cJSON_GetObjectItem(app_json, "url");
+
+  string url, devel_url;
+
+  if (url_item && cJSON_IsString(url_item)) {
+    url = cJSON_GetStringValue(url_item);
+  }
+
+  if (devel_url_item && cJSON_IsString(devel_url_item)) {
+    devel_url = cJSON_GetStringValue(devel_url_item);
+  }
+
   string token = cJSON_GetStringValue(token_item);
 
-  if (!url.empty() && !token.empty() && expires_in_item->valueint > 0) {
+  if ((!url.empty() || platform == platform_homegraph) && !token.empty() &&
+      expires_in_item->valueint > 0) {
     supla_remote_gateway_access_token t(
         url, devel_url, token, expires_in_item->valueint, platform, app_id);
 
@@ -221,7 +224,7 @@ void supla_remote_gateway_access_token_provider::get_new_tokens(
 
   curl_adapter->append_header(auth.c_str());
 
-  string url = "https://autodiscover.supla.org/pn-token";
+  string url = "https://autodiscover.supla.org/service-tokens";
 
   curl_adapter->set_opt_url(url.c_str());
 
@@ -234,8 +237,8 @@ void supla_remote_gateway_access_token_provider::get_new_tokens(
 
   if (curl_adapter->get_response_code() != 200) {
     supla_log(LOG_ERR,
-              "An attempt to obtain tokens for PUSH gateways from the AD "
-              "server failed. Result code: %i",
+              "An attempt to obtain remote gateway token from the AD server "
+              "failed. Result code: %i",
               curl_adapter->get_response_code());
     return;
   }
@@ -244,15 +247,16 @@ void supla_remote_gateway_access_token_provider::get_new_tokens(
   request_result = "";
 
   if (root) {
-    process_result(tokens, platform_push_android, "android", root);
-    process_result(tokens, platform_push_ios, "ios", root);
+    process_result(tokens, platform_push_android, "push_android", root);
+    process_result(tokens, platform_push_ios, "push_ios", root);
+    process_result(tokens, platform_homegraph, "homegraph", root);
 
     cJSON_Delete(root);
   }
 
   if (!tokens->size()) {
     supla_log(LOG_ERR,
-              "Could not get any token for PUSH gateway from AD server.");
+              "Could not get any token for any remote gateway from AD server.");
   }
 }
 

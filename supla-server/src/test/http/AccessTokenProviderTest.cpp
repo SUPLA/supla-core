@@ -54,9 +54,6 @@ void AccessTokenProviderTest::TearDown(void) {
   Test::TearDown();
 }
 
-#if SUPLA_PROTO_VERSION > 20
-Remove this macro
-
 TEST_F(AccessTokenProviderTest, defaults) {
   EXPECT_FALSE(provider->is_service_running());
   EXPECT_FALSE(provider->is_any_token_available());
@@ -73,7 +70,7 @@ TEST_F(AccessTokenProviderTest, refreshThrottling) {
         string token = "abcd" + std::to_string(n);
         n++;
         *request_result =
-            "{\"android\":{\"0\":{\"token\":\"" + token +
+            "{\"push_android\":{\"0\":{\"token\":\"" + token +
             "\",\"url\":\"https://push.supla.org\",\"expires_in\":1}}}";
       });
 
@@ -81,8 +78,8 @@ TEST_F(AccessTokenProviderTest, refreshThrottling) {
     provider->refresh();
   }
 
-  supla_pn_gateway_access_token token =
-      provider->get_token(platform_android, 0);
+  supla_remote_gateway_access_token token =
+      provider->get_token(platform_push_android, 0);
   EXPECT_EQ(token.get_token(), "abcd1");
   EXPECT_TRUE(token.is_valid());
 
@@ -92,7 +89,7 @@ TEST_F(AccessTokenProviderTest, refreshThrottling) {
     provider->refresh();
   }
 
-  token = provider->get_token(platform_android, 0);
+  token = provider->get_token(platform_push_android, 0);
 
   EXPECT_EQ(token.get_token(), "abcd2");
   EXPECT_TRUE(token.is_valid());
@@ -109,7 +106,7 @@ TEST_F(AccessTokenProviderTest, refreshByServiceWithShortExpirationPeriod) {
         string token = "abcd" + std::to_string(n);
         n++;
         *request_result =
-            "{\"android\":{\"0\":{\"token\":\"" + token +
+            "{\"push_android\":{\"0\":{\"token\":\"" + token +
             "\",\"url\":\"https://push.supla.org\",\"expires_in\":1}}}";
       });
 
@@ -130,7 +127,7 @@ TEST_F(AccessTokenProviderTest, refreshByServiceWithLongExpirationPeriod) {
   EXPECT_CALL(*curlAdapter, set_opt_write_data)
       .WillOnce([](string *request_result) {
         *request_result =
-            "{\"android\":{\"0\":{\"token\":\"123\",\"url\":\"https://"
+            "{\"push_android\":{\"0\":{\"token\":\"123\",\"url\":\"https://"
             "push.supla.org\",\"expires_in\":3600}}}";
       });
 
@@ -139,7 +136,7 @@ TEST_F(AccessTokenProviderTest, refreshByServiceWithLongExpirationPeriod) {
   usleep(2500000);
   provider->stop_service();
   EXPECT_FALSE(provider->is_service_running());
-  EXPECT_EQ(provider->get_token(platform_android, 0).get_token(), "123");
+  EXPECT_EQ(provider->get_token(platform_push_android, 0).get_token(), "123");
 }
 
 TEST_F(AccessTokenProviderTest, nextRefreshFailed) {
@@ -153,7 +150,7 @@ TEST_F(AccessTokenProviderTest, nextRefreshFailed) {
         n++;
         if (n == 1) {
           *request_result =
-              "{\"android\":{\"0\":{\"token\":\"1\",\"url\":\"https://"
+              "{\"push_android\":{\"0\":{\"token\":\"1\",\"url\":\"https://"
               "push.supla.org\",\"expires_in\":1}}}";
         }
       });
@@ -165,7 +162,7 @@ TEST_F(AccessTokenProviderTest, nextRefreshFailed) {
   EXPECT_FALSE(provider->is_service_running());
   EXPECT_GE(n, 3);
   EXPECT_LE(n, 4);
-  EXPECT_EQ(provider->get_token(platform_android, 0).get_token(), "1");
+  EXPECT_EQ(provider->get_token(platform_push_android, 0).get_token(), "1");
 }
 
 TEST_F(AccessTokenProviderTest, timeMargin) {
@@ -181,7 +178,7 @@ TEST_F(AccessTokenProviderTest, timeMargin) {
         string token = std::to_string(n);
         n++;
         *request_result =
-            "{\"android\":{\"0\":{\"token\":\"" + token +
+            "{\"push_android\":{\"0\":{\"token\":\"" + token +
             "\",\"url\":\"https://push.supla.org\",\"expires_in\":100}}}";
       });
 
@@ -206,22 +203,23 @@ TEST_F(AccessTokenProviderTest, multipleTokensAndOneSoonExpired) {
         n++;
         if (n.load() == 1) {
           *request_result =
-              "{\"android\":{\"0\":{\"token\":\"abcd1\",\"expires_in\":3600,"
-              "\"url\":\"https://"
+              "{\"push_android\":{\"0\":{\"token\":\"abcd1\",\"expires_in\":"
+              "3600,\"url\":\"https://"
               "push1.supla.org\"},\"1\":{\"token\":\"abcd2\",\"expires_in\":"
               "3700,\"url\":\"https://"
               "push2.supla.org\"},\"2\":{\"token\":\"abcd3\",\"expires_in\":"
               "3800,\"url\":\"https://"
-              "push3.supla.org\"}},\"ios\":{\"0\":{\"token\":\"abcd4\","
+              "push3.supla.org\"}},\"push_ios\":{\"0\":{\"token\":\"abcd4\","
               "\"expires_in\":1,\"url\":\"https://"
               "push4.supla.org\",\"bundle_id\":\"bid1\"},\"1\":{\"token\":"
               "\"abcd5\",\"expires_in\":4000,\"url\":\"https://"
               "push5.supla.org\",\"bundle_id\":\"bid2\"},\"2\":{\"token\":"
               "\"abcd6\",\"expires_in\":4100,\"url\":\"https://"
-              "push6.supla.org\",\"bundle_id\":\"bid3\"}}}";
+              "push6.supla.org\",\"bundle_id\":\"bid3\"}},\"homegraph\":{\"0\":"
+              "{\"token\":\"XyZ123\",\"expires_in\":4000}}}";
         } else {
           *request_result =
-              "{\"ios\":{\"0\":{\"token\":\"XyZ\",\"url\":\"https://"
+              "{\"push_ios\":{\"0\":{\"token\":\"XyZ\",\"url\":\"https://"
               "push.supla.org\",\"development_url\":\"https://"
               "push-devel.supla.org\",\"expires_in\":100,\"bundle_id\":"
               "\"bid1\"}}}";
@@ -234,79 +232,86 @@ TEST_F(AccessTokenProviderTest, multipleTokensAndOneSoonExpired) {
   usleep(500000);
 
   EXPECT_EQ(n.load(), 1);
-  EXPECT_EQ(provider->get_token_count(), 6);
+  EXPECT_EQ(provider->get_token_count(), 7);
 
-  supla_pn_gateway_access_token token =
-      provider->get_token(platform_android, 0);
+  supla_remote_gateway_access_token token =
+      provider->get_token(platform_push_android, 0);
   EXPECT_GE(token.get_expires_in(), 3599);
   EXPECT_LE(token.get_expires_in(), 3600);
   EXPECT_EQ(token.get_token(), "abcd1");
   EXPECT_EQ(token.get_url(true), "https://push1.supla.org");
   EXPECT_EQ(token.get_url(false), "https://push1.supla.org");
 
-  token = provider->get_token(platform_android, 1);
+  token = provider->get_token(platform_push_android, 1);
   EXPECT_GE(token.get_expires_in(), 3699);
   EXPECT_LE(token.get_expires_in(), 3700);
   EXPECT_EQ(token.get_token(), "abcd2");
   EXPECT_EQ(token.get_url(true), "https://push2.supla.org");
   EXPECT_EQ(token.get_url(false), "https://push2.supla.org");
 
-  token = provider->get_token(platform_android, 2);
+  token = provider->get_token(platform_push_android, 2);
   EXPECT_GE(token.get_expires_in(), 3799);
   EXPECT_LE(token.get_expires_in(), 3800);
   EXPECT_EQ(token.get_token(), "abcd3");
   EXPECT_EQ(token.get_url(true), "https://push3.supla.org");
   EXPECT_EQ(token.get_url(false), "https://push3.supla.org");
 
-  token = provider->get_token(platform_ios, 0);
+  token = provider->get_token(platform_push_ios, 0);
   EXPECT_GE(token.get_expires_in(), 0);
   EXPECT_LE(token.get_expires_in(), 1);
   EXPECT_EQ(token.get_token(), "abcd4");
   EXPECT_EQ(token.get_url(true), "https://push4.supla.org");
   EXPECT_EQ(token.get_url(false), "https://push4.supla.org");
 
-  token = provider->get_token(platform_ios, 1);
+  token = provider->get_token(platform_push_ios, 1);
   EXPECT_GE(token.get_expires_in(), 3999);
   EXPECT_LE(token.get_expires_in(), 4000);
   EXPECT_EQ(token.get_token(), "abcd5");
   EXPECT_EQ(token.get_url(true), "https://push5.supla.org");
   EXPECT_EQ(token.get_url(false), "https://push5.supla.org");
 
-  token = provider->get_token(platform_ios, 2);
+  token = provider->get_token(platform_push_ios, 2);
   EXPECT_GE(token.get_expires_in(), 3099);
   EXPECT_LE(token.get_expires_in(), 4100);
   EXPECT_EQ(token.get_token(), "abcd6");
   EXPECT_EQ(token.get_url(true), "https://push6.supla.org");
   EXPECT_EQ(token.get_url(false), "https://push6.supla.org");
 
+  token = provider->get_token(platform_homegraph, 0);
+  EXPECT_GE(token.get_expires_in(), 3999);
+  EXPECT_LE(token.get_expires_in(), 4000);
+  EXPECT_EQ(token.get_token(), "XyZ123");
+  EXPECT_TRUE(token.get_url(true).empty());
+  EXPECT_TRUE(token.get_url(false).empty());
+
   usleep(3000000);
   provider->stop_service();
   EXPECT_FALSE(provider->is_service_running());
 
-  EXPECT_EQ(provider->get_token_count(), 6);
+  EXPECT_EQ(provider->get_token_count(), 7);
 
-  token = provider->get_token(platform_android, 0);
+  token = provider->get_token(platform_push_android, 0);
   EXPECT_GE(token.get_expires_in(), 3595);
   EXPECT_LE(token.get_expires_in(), 3598);
   EXPECT_EQ(token.get_token(), "abcd1");
   EXPECT_EQ(token.get_url(true), "https://push1.supla.org");
   EXPECT_EQ(token.get_url(false), "https://push1.supla.org");
 
-  token = provider->get_token(platform_android, 1);
+  token = provider->get_token(platform_push_android, 1);
   EXPECT_GE(token.get_expires_in(), 3695);
   EXPECT_LE(token.get_expires_in(), 3698);
   EXPECT_EQ(token.get_token(), "abcd2");
   EXPECT_EQ(token.get_url(true), "https://push2.supla.org");
   EXPECT_EQ(token.get_url(false), "https://push2.supla.org");
 
-  token = provider->get_token(platform_android, 2);
+  token = provider->get_token(platform_push_android, 2);
   EXPECT_GE(token.get_expires_in(), 3795);
   EXPECT_LE(token.get_expires_in(), 3798);
   EXPECT_EQ(token.get_token(), "abcd3");
   EXPECT_EQ(token.get_url(true), "https://push3.supla.org");
   EXPECT_EQ(token.get_url(false), "https://push3.supla.org");
 
-  token = provider->get_token(platform_ios, 0);
+  token = provider->get_token(platform_push_ios, 0);
   EXPECT_GE(token.get_expires_in(), 95);
   EXPECT_LE(token.get_expires_in(), 100);
   EXPECT_EQ(token.get_token(), "XyZ");
@@ -314,7 +319,7 @@ TEST_F(AccessTokenProviderTest, multipleTokensAndOneSoonExpired) {
   EXPECT_EQ(token.get_url(false), "https://push.supla.org");
   EXPECT_EQ(token.get_extra_field("bundle_id"), "bid1");
 
-  token = provider->get_token(platform_ios, 1);
+  token = provider->get_token(platform_push_ios, 1);
   EXPECT_GE(token.get_expires_in(), 3995);
   EXPECT_LE(token.get_expires_in(), 3998);
   EXPECT_EQ(token.get_token(), "abcd5");
@@ -322,14 +327,20 @@ TEST_F(AccessTokenProviderTest, multipleTokensAndOneSoonExpired) {
   EXPECT_EQ(token.get_url(false), "https://push5.supla.org");
   EXPECT_EQ(token.get_extra_field("bundle_id"), "bid2");
 
-  token = provider->get_token(platform_ios, 2);
+  token = provider->get_token(platform_push_ios, 2);
   EXPECT_GE(token.get_expires_in(), 4095);
   EXPECT_LE(token.get_expires_in(), 4098);
   EXPECT_EQ(token.get_token(), "abcd6");
   EXPECT_EQ(token.get_url(true), "https://push6.supla.org");
   EXPECT_EQ(token.get_url(false), "https://push6.supla.org");
   EXPECT_EQ(token.get_extra_field("bundle_id"), "bid3");
+
+  token = provider->get_token(platform_homegraph, 0);
+  EXPECT_GE(token.get_expires_in(), 3995);
+  EXPECT_LE(token.get_expires_in(), 3998);
+  EXPECT_EQ(token.get_token(), "XyZ123");
+  EXPECT_TRUE(token.get_url(true).empty());
+  EXPECT_TRUE(token.get_url(false).empty());
 }
-#endif
 
 } /* namespace testing */

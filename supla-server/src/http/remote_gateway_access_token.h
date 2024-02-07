@@ -26,6 +26,7 @@ enum _platform_e {
   platform_unknown = 0,
   platform_push_ios = 1,
   platform_push_android = 2,
+  platform_homegraph = 3
 };
 
 class supla_remote_gateway_access_token {
