@@ -22,7 +22,11 @@
 #include <map>
 #include <string>
 
-#include "push/pn_recipients.h"
+enum _platform_e {
+  platform_unknown = 0,
+  platform_ios = 1,
+  platform_android = 2,
+};
 
 class supla_remote_gateway_access_token {
  private:
