@@ -131,14 +131,14 @@ bool supla_pn_delivery_task::make_request(
     }
   }
 
-  if (push->get_recipients().count(platform_android) > 0) {
+  if (push->get_recipients().count(platform_push_android) > 0) {
     supla_fcm_client client(curl_adapter, token_provider, push);
 
     fcm_recipients = true;
     fcm_result = client.send();
   }
 
-  if (push->get_recipients().count(platform_ios) > 0) {
+  if (push->get_recipients().count(platform_push_ios) > 0) {
     supla_apns_client client(curl_adapter, token_provider, push);
 
     apns_recipients = true;

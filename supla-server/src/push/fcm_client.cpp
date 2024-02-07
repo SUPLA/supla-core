@@ -36,7 +36,7 @@ supla_fcm_client::supla_fcm_client(
 
 supla_fcm_client::~supla_fcm_client(void) {}
 
-_platform_e supla_fcm_client::get_platform(void) { return platform_android; }
+_platform_e supla_fcm_client::get_platform(void) { return platform_push_android; }
 
 char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
   cJSON *root = cJSON_CreateObject();

@@ -164,7 +164,7 @@ void supla_remote_gateway_access_token_provider::process_result(
   }
 
   string bundle_id;
-  if (platform == platform_ios) {
+  if (platform == platform_push_ios) {
     cJSON *bundle_id_item = cJSON_GetObjectItem(app_json, "bundle_id");
     if (!bundle_id_item || !cJSON_IsString(bundle_id_item)) {
       return;
@@ -244,8 +244,8 @@ void supla_remote_gateway_access_token_provider::get_new_tokens(
   request_result = "";
 
   if (root) {
-    process_result(tokens, platform_android, "android", root);
-    process_result(tokens, platform_ios, "ios", root);
+    process_result(tokens, platform_push_android, "android", root);
+    process_result(tokens, platform_push_ios, "ios", root);
 
     cJSON_Delete(root);
   }

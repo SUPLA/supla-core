@@ -34,7 +34,7 @@ supla_apns_client::supla_apns_client(
 
 supla_apns_client::~supla_apns_client(void) {}
 
-_platform_e supla_apns_client::get_platform(void) { return platform_ios; }
+_platform_e supla_apns_client::get_platform(void) { return platform_push_ios; }
 
 char *supla_apns_client::get_payload(void) {
   cJSON *payload = cJSON_CreateObject();

@@ -103,11 +103,11 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
   supla_pn_recipient *r2 = new supla_pn_recipient(1, 5, false, "2568548549");
   supla_pn_recipient *r3 = new supla_pn_recipient(1, 5, true, "ybuabnuf548549");
 
-  push->get_recipients().add(r1, platform_android);
+  push->get_recipients().add(r1, platform_push_android);
 
-  push->get_recipients().add(r2, platform_ios);
+  push->get_recipients().add(r2, platform_push_ios);
 
-  push->get_recipients().add(r3, platform_ios);
+  push->get_recipients().add(r3, platform_push_ios);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
               append_header(StrEq("Content-Type: application/json")))
@@ -185,7 +185,7 @@ TEST_F(DeliveryTaskTest, fcmMessageId) {
   push->set_body("B");
 
   supla_pn_recipient *r = new supla_pn_recipient(1, 0, false, "0956469");
-  push->get_recipients().add(r, platform_android);
+  push->get_recipients().add(r, platform_push_android);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_write_data)
       .WillOnce([this](string *request_result) {
@@ -207,7 +207,7 @@ TEST_F(DeliveryTaskTest, apnsMessageId) {
   push->set_body("B");
 
   supla_pn_recipient *r = new supla_pn_recipient(1, 5, false, "0956469");
-  push->get_recipients().add(r, platform_ios);
+  push->get_recipients().add(r, platform_push_ios);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_header_data)
       .WillOnce([this](std::list<std::string> *data) {
@@ -229,7 +229,7 @@ TEST_F(DeliveryTaskTest, fcmRecipientDoesNotExist) {
   push->set_body("B");
 
   supla_pn_recipient *r = new supla_pn_recipient(1, 0, false, "0956469");
-  push->get_recipients().add(r, platform_android);
+  push->get_recipients().add(r, platform_push_android);
   EXPECT_TRUE(r->is_exists());
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, get_response_code)
@@ -250,7 +250,7 @@ TEST_F(DeliveryTaskTest, apnsRecipientDoesNotExist) {
   push->set_body("B");
 
   supla_pn_recipient *r = new supla_pn_recipient(1, 5, false, "0956469");
-  push->get_recipients().add(r, platform_ios);
+  push->get_recipients().add(r, platform_push_ios);
   EXPECT_TRUE(r->is_exists());
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, get_response_code)

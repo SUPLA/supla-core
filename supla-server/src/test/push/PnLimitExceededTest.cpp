@@ -47,7 +47,7 @@ TEST_F(PnLimitExceededTest, initializationWithTheSourceMessage) {
   src->set_localized_body_args(args);
   src->set_sound(15);
   src->get_recipients().add(new supla_pn_recipient(10, 0, false, "ancd"),
-                            platform_android);
+                            platform_push_android);
   src->set_replacement_map(&replacement_map);
 
   supla_pn_limit_exceeded push(src, 150);
@@ -65,7 +65,7 @@ TEST_F(PnLimitExceededTest, initializationWithTheSourceMessage) {
   EXPECT_EQ(args.at(0), "150");
 
   push.get_recipients().add(new supla_pn_recipient(20, 0, false, "xyz"),
-                            platform_android);
+                            platform_push_android);
   EXPECT_EQ(push.get_recipients().total_count(), 2);
 }
 
@@ -84,7 +84,7 @@ TEST_F(PnLimitExceededTest, immutable) {
   push.set_localized_body_args(args);
   push.set_sound(15);
   push.get_recipients().add(new supla_pn_recipient(10, 0, false, "ancd"),
-                            platform_android);
+                            platform_push_android);
   push.set_replacement_map(replacement_map);
 
   args = push.get_localized_body_args();
