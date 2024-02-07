@@ -525,13 +525,13 @@ LOCK TABLES `supla_em_log` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `supla_em_voltage_log`
+-- Table structure for table `supla_em_voltage_aberration_log`
 --
 
-DROP TABLE IF EXISTS `supla_em_voltage_log`;
+DROP TABLE IF EXISTS `supla_em_voltage_aberration_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `supla_em_voltage_log` (
+CREATE TABLE `supla_em_voltage_aberration_log` (
   `channel_id` int(11) NOT NULL,
   `date` datetime NOT NULL COMMENT '(DC2Type:stringdatetime)',
   `phase_no` tinyint(4) NOT NULL COMMENT '(DC2Type:tinyint)',
@@ -551,12 +551,12 @@ CREATE TABLE `supla_em_voltage_log` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `supla_em_voltage_log`
+-- Dumping data for table `supla_em_voltage_aberration_log`
 --
 
-LOCK TABLES `supla_em_voltage_log` WRITE;
-/*!40000 ALTER TABLE `supla_em_voltage_log` DISABLE KEYS */;
-/*!40000 ALTER TABLE `supla_em_voltage_log` ENABLE KEYS */;
+LOCK TABLES `supla_em_voltage_aberration_log` WRITE;
+/*!40000 ALTER TABLE `supla_em_voltage_aberration_log` DISABLE KEYS */;
+/*!40000 ALTER TABLE `supla_em_voltage_aberration_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1908,7 +1908,7 @@ DELIMITER ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
 DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_add_em_voltage_log_item`(
+CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_add_em_voltage_aberration_log_item`(
                 IN `_date` DATETIME, 
                 IN `_channel_id` INT(11), 
                 IN `_phase_no` TINYINT,
@@ -1926,7 +1926,7 @@ CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_add_em_voltage_log_item`(
             )
     NO SQL
 BEGIN
-            INSERT INTO `supla_em_voltage_log` (`date`,channel_id, phase_no, count_total, count_above, count_below, sec_above, sec_below, max_sec_above, max_sec_below, min_voltage, max_voltage, avg_voltage, measurement_time_sec)
+            INSERT INTO `supla_em_voltage_aberration_log` (`date`,channel_id, phase_no, count_total, count_above, count_below, sec_above, sec_below, max_sec_above, max_sec_below, min_voltage, max_voltage, avg_voltage, measurement_time_sec)
                                         VALUES (_date,_channel_id,_phase_no,_count_total,_count_above,_count_below,_sec_above,_sec_below,_max_sec_above,_max_sec_below,_min_voltage,_max_voltage,_avg_voltage,_measurement_time_sec);
 
             END ;;
@@ -3146,3 +3146,43 @@ CREATE TABLE supla_gp_meter_log (channel_id INT NOT NULL, date DATETIME NOT NULL
 CREATE PROCEDURE `supla_add_gp_measurement_log_item`(IN `_channel_id` INT, IN `_open_value` DOUBLE, IN `_close_value` DOUBLE, IN `_avg_value` DOUBLE, IN `_max_value` DOUBLE, IN `_min_value` DOUBLE) NOT DETERMINISTIC CONTAINS SQL SQL SECURITY DEFINER INSERT INTO `supla_gp_measurement_log`(`channel_id`, `date`, `open_value`, `close_value`, `avg_value`, `max_value`, `min_value`) VALUES (_channel_id, NOW(),_open_value, _close_value, _avg_value, _max_value, _min_value);
 
 CREATE PROCEDURE `supla_add_gp_meter_log_item`(IN `_channel_id` INT, IN `_value` DOUBLE) NOT DETERMINISTIC CONTAINS SQL SQL SECURITY DEFINER INSERT INTO `supla_gp_meter_log`(`channel_id`, `date`, `value`) VALUES (_channel_id, NOW(), _value);
+DELIMITER ||
+CREATE TABLE supla_em_voltage_log (channel_id INT NOT NULL, date DATETIME NOT NULL COMMENT '(DC2Type:stringdatetime)', phase_no TINYINT NOT NULL COMMENT '(DC2Type:tinyint)', min NUMERIC(5, 2) NOT NULL, max NUMERIC(5, 2) NOT NULL, avg NUMERIC(5, 2) NOT NULL, PRIMARY KEY(channel_id, date, phase_no)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB||
+            CREATE PROCEDURE `supla_add_em_voltage_log_item`(
+                IN `_date` DATETIME, 
+                IN `_channel_id` INT(11), 
+                IN `_phase_no` TINYINT,
+                IN `_min` NUMERIC(5,2),
+                IN `_max` NUMERIC(5,2),
+                IN `_avg` NUMERIC(5,2)
+            ) NO SQL BEGIN
+            INSERT INTO `supla_em_voltage_log` (`date`,channel_id, phase_no, min, max, avg)
+                                        VALUES (_date,_channel_id,_phase_no,_min,_max,_avg);
+
+            END||
+CREATE TABLE supla_em_current_log (channel_id INT NOT NULL, date DATETIME NOT NULL COMMENT '(DC2Type:stringdatetime)', phase_no TINYINT NOT NULL COMMENT '(DC2Type:tinyint)', min NUMERIC(6, 3) NOT NULL, max NUMERIC(6, 3) NOT NULL, avg NUMERIC(6, 3) NOT NULL, PRIMARY KEY(channel_id, date, phase_no)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB||
+            CREATE PROCEDURE `supla_add_em_current_log_item`(
+                IN `_date` DATETIME, 
+                IN `_channel_id` INT(11), 
+                IN `_phase_no` TINYINT,
+                IN `_min` NUMERIC(6,3),
+                IN `_max` NUMERIC(6,3),
+                IN `_avg` NUMERIC(6,3)
+            ) NO SQL BEGIN
+            INSERT INTO `supla_em_current_log` (`date`,channel_id, phase_no, min, max, avg)
+                                        VALUES (_date,_channel_id,_phase_no,_min,_max,_avg);
+
+            END||
+CREATE TABLE supla_em_power_active_log (channel_id INT NOT NULL, date DATETIME NOT NULL COMMENT '(DC2Type:stringdatetime)', phase_no TINYINT NOT NULL COMMENT '(DC2Type:tinyint)', min NUMERIC(11, 5) NOT NULL, max NUMERIC(11, 5) NOT NULL, avg NUMERIC(11, 5) NOT NULL, PRIMARY KEY(channel_id, date, phase_no)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB||
+            CREATE PROCEDURE `supla_add_em_power_active_log_item`(
+                IN `_date` DATETIME, 
+                IN `_channel_id` INT(11), 
+                IN `_phase_no` TINYINT,
+                IN `_min` NUMERIC(11,5),
+                IN `_max` NUMERIC(11,5),
+                IN `_avg` NUMERIC(11,5)
+            ) NO SQL BEGIN
+            INSERT INTO `supla_em_power_active_log` (`date`,channel_id, phase_no, min, max, avg)
+                                        VALUES (_date,_channel_id,_phase_no,_min,_max,_avg);
+
+            END||
