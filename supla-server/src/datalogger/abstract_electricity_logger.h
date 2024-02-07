@@ -16,26 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VOLTAGE_THRESHOLD_LOGGER_H_
-#define VOLTAGE_THRESHOLD_LOGGER_H_
+#ifndef ABSTRACT_ELECTRICITY_LOGGER_H_
+#define ABSTRACT_ELECTRICITY_LOGGER_H_
 
 #include <vector>
 
-#include "datalogger/abstract_electricity_logger.h"
+#include "analyzer/electricity_analyzer.h"
+#include "cyclictasks/abstract_cyclictask.h"
+#include "datalogger/abstract_electricity_logger_dao.h"
 
-class supla_voltage_threshold_logger
-    : public supla_abstract_electricity_logger {
+class supla_abstract_electricity_logger : public supla_abstract_cyclictask {
  protected:
-  virtual unsigned int task_interval_sec(void);
+  virtual void run(const std::vector<supla_user *> *users,
+                   supla_abstract_db_access_provider *dba);
   virtual bool is_any_data_for_logging_purposes(
-      supla_electricity_analyzer *analyzer);
-  virtual void reset(supla_electricity_analyzer *analyzer);
+      supla_electricity_analyzer *analyzer) = 0;
+  virtual void reset(supla_electricity_analyzer *analyzer) = 0;
   virtual supla_abstract_electricity_logger_dao *get_dao(
-      supla_abstract_db_access_provider *dba);
+      supla_abstract_db_access_provider *dba) = 0;
 
  public:
-  supla_voltage_threshold_logger();
-  virtual ~supla_voltage_threshold_logger();
+  supla_abstract_electricity_logger();
+  virtual ~supla_abstract_electricity_logger();
 };
 
-#endif /* VOLTAGE_THRESHOLD_LOGGER_H_ */
+#endif /* ABSTRACT_ELECTRICITY_LOGGER_H_ */

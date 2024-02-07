@@ -16,15 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VOLTAGE_THRESHOLD_LOGGER_H_
-#define VOLTAGE_THRESHOLD_LOGGER_H_
+#ifndef VOLTAGE_LOGGER_H_
+#define VOLTAGE_LOGGER_H_
 
 #include <vector>
 
 #include "datalogger/abstract_electricity_logger.h"
 
-class supla_voltage_threshold_logger
-    : public supla_abstract_electricity_logger {
+class supla_voltage_logger : public supla_abstract_electricity_logger {
  protected:
   virtual unsigned int task_interval_sec(void);
   virtual bool is_any_data_for_logging_purposes(
@@ -34,8 +33,8 @@ class supla_voltage_threshold_logger
       supla_abstract_db_access_provider *dba);
 
  public:
-  supla_voltage_threshold_logger();
-  virtual ~supla_voltage_threshold_logger();
+  supla_voltage_logger();
+  virtual ~supla_voltage_logger();
 };
 
-#endif /* VOLTAGE_THRESHOLD_LOGGER_H_ */
+#endif /* VOLTAGE_LOGGER_H_ */

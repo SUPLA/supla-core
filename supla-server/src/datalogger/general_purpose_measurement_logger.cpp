@@ -44,20 +44,33 @@ void supla_general_purpose_measurement_logger::run(
   std::vector<supla_general_purpose_measurement_analyzer *> analyzers;
 
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-    (*uit)->get_devices()->for_each([&analyzers](
+    (*uit)->get_devices()->for_each([&analyzers, this](
                                         shared_ptr<supla_device> device,
                                         bool *will_continue) -> void {
-      device->get_channels()->for_each([&analyzers](
+      device->get_channels()->for_each([&analyzers, this](
                                            supla_device_channel *channel,
                                            bool *will_continue) -> void {
-        supla_general_purpose_measurement_analyzer *analyzer =
-            channel
-                ->get_data_analyzer<supla_general_purpose_measurement_analyzer>(
-                    true, true);
-
-        if (analyzer) {
-          analyzers.push_back(analyzer);
-        }
+        channel->access_data_analyzer([&analyzers,
+                                       this](supla_abstract_data_analyzer
+                                                 *analyzer) -> void {
+          supla_general_purpose_measurement_analyzer *gpm_analyzer =
+              dynamic_cast<supla_general_purpose_measurement_analyzer *>(
+                  analyzer);
+          if (gpm_analyzer) {
+            supla_abstract_data_analyzer *copy = analyzer->copy();
+            if (copy) {
+              supla_general_purpose_measurement_analyzer *gpm_analyzer_copy =
+                  dynamic_cast<supla_general_purpose_measurement_analyzer *>(
+                      copy);
+              if (gpm_analyzer_copy) {
+                analyzers.push_back(gpm_analyzer_copy);
+                analyzer->reset();
+              } else {
+                delete copy;
+              }
+            }
+          }
+        });
       });
     });
   }

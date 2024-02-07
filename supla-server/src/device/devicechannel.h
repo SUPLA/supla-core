@@ -156,9 +156,9 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);
-  supla_abstract_data_analyzer *_get_data_analyzer(
-      bool reset, std::function<bool(supla_abstract_data_analyzer *analyzer)>
-                      on_data_analyzer);
+  void access_data_analyzer(
+      std::function<void(supla_abstract_data_analyzer *analyzer)>
+          on_data_analyzer);
   void send_config_to_device(unsigned char config_type);
   void send_config_to_device(void);
 
@@ -167,9 +167,6 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
 
   template <typename T>
   T *get_extended_value(bool for_data_logger_purposes);
-
-  template <typename T>
-  T *get_data_analyzer(bool containts_data_for_logging_purpose, bool reset);
 };
 
 template <typename T>
@@ -183,25 +180,6 @@ T *supla_device_channel::get_value(void) {
     return expected;
   }
   return nullptr;
-}
-
-template <typename T>
-T *supla_device_channel::get_data_analyzer(
-    bool containts_data_for_logging_purpose, bool reset) {
-  supla_abstract_data_analyzer *analyzer = _get_data_analyzer(
-      reset,
-      [containts_data_for_logging_purpose](
-          supla_abstract_data_analyzer *analyzer) -> bool {
-        return (!containts_data_for_logging_purpose ||
-                analyzer->is_any_data_for_logging_purpose()) &&
-               dynamic_cast<T *>(analyzer);
-      });
-
-  T *result = dynamic_cast<T *>(analyzer);
-  if (!result && analyzer) {
-    delete analyzer;
-  }
-  return result;
 }
 
 template <typename T>

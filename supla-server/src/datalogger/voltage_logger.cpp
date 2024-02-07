@@ -16,26 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VOLTAGE_THRESHOLD_LOGGER_H_
-#define VOLTAGE_THRESHOLD_LOGGER_H_
+#include "datalogger/voltage_logger.h"
 
-#include <vector>
+#include "datalogger/voltage_logger_dao.h"
 
-#include "datalogger/abstract_electricity_logger.h"
+supla_voltage_logger::supla_voltage_logger()
+    : supla_abstract_electricity_logger() {}
 
-class supla_voltage_threshold_logger
-    : public supla_abstract_electricity_logger {
- protected:
-  virtual unsigned int task_interval_sec(void);
-  virtual bool is_any_data_for_logging_purposes(
-      supla_electricity_analyzer *analyzer);
-  virtual void reset(supla_electricity_analyzer *analyzer);
-  virtual supla_abstract_electricity_logger_dao *get_dao(
-      supla_abstract_db_access_provider *dba);
+supla_voltage_logger::~supla_voltage_logger() {}
 
- public:
-  supla_voltage_threshold_logger();
-  virtual ~supla_voltage_threshold_logger();
-};
+unsigned int supla_voltage_logger::task_interval_sec(void) { return 180; }
 
-#endif /* VOLTAGE_THRESHOLD_LOGGER_H_ */
+bool supla_voltage_logger::is_any_data_for_logging_purposes(
+    supla_electricity_analyzer *analyzer) {
+  return analyzer->is_any_voltage_for_logging_purpose();
+}
+
+void supla_voltage_logger::reset(supla_electricity_analyzer *analyzer) {
+  analyzer->reset_voltage();
+}
+
+supla_abstract_electricity_logger_dao *supla_voltage_logger::get_dao(
+    supla_abstract_db_access_provider *dba) {
+  return new supla_voltage_logger_dao(dba);
+}

@@ -16,21 +16,31 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VOLTAGE_THRESHOLD_LOGGER_DAO_H_
-#define VOLTAGE_THRESHOLD_LOGGER_DAO_H_
+#ifndef ABSTRACT_ELECTRICITY_LOGGER_DAO_H_
+#define ABSTRACT_ELECTRICITY_LOGGER_DAO_H_
 
-#include "datalogger/abstract_electricity_logger_dao.h"
+#include <mysql.h>
+#include <string.h>
 
-class supla_voltage_threshold_logger_dao
-    : public supla_abstract_electricity_logger_dao {
+#include "analyzer/electricity_analyzer.h"
+#include "db/abstract_db_access_provider.h"
+
+class supla_abstract_electricity_logger_dao {
  private:
+  supla_abstract_db_access_provider *dba;
+
+ protected:
+  supla_abstract_db_access_provider *get_dba(void);
+  bool get_utc_timestamp(MYSQL_TIME *time);
   void add(MYSQL_TIME *time, int channel_id, char phase,
-           supla_voltage_aberration_analyzer *va);
+           supla_simple_statiscics *stat, const std::string &procedure,
+           const std::string &format);
 
  public:
-  explicit supla_voltage_threshold_logger_dao(
-      supla_abstract_db_access_provider *dba);
-  virtual void add(supla_electricity_analyzer *vas);
+  supla_abstract_electricity_logger_dao(supla_abstract_db_access_provider *dba);
+  virtual ~supla_abstract_electricity_logger_dao();
+
+  virtual void add(supla_electricity_analyzer *analyzer) = 0;
 };
 
-#endif /* VOLTAGE_THRESHOLD_LOGGER_DAO_H_ */
+#endif /* ABSTRACT_ELECTRICITY_LOGGER_DAO_H_ */

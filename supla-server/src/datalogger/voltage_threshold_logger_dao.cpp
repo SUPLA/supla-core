@@ -23,39 +23,8 @@
 #include "log.h"
 
 supla_voltage_threshold_logger_dao::supla_voltage_threshold_logger_dao(
-    supla_abstract_db_access_provider *dba) {
-  this->dba = dba;
-}
-
-bool supla_voltage_threshold_logger_dao::get_utc_timestamp(MYSQL_TIME *time) {
-  MYSQL_STMT *stmt = NULL;
-
-  bool result = false;
-
-  if (dba->stmt_execute((void **)&stmt, "SELECT UTC_TIMESTAMP()", nullptr, 0,
-                        true)) {
-    MYSQL_BIND rbind = {};
-
-    rbind.buffer_type = MYSQL_TYPE_DATETIME;
-    rbind.buffer = time;
-    rbind.buffer_length = sizeof(MYSQL_TIME);
-
-    if (mysql_stmt_bind_result(stmt, &rbind)) {
-      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                mysql_stmt_error(stmt));
-    } else {
-      mysql_stmt_store_result(stmt);
-
-      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
-        result = true;
-      }
-    }
-
-    mysql_stmt_close(stmt);
-  }
-
-  return result;
-}
+    supla_abstract_db_access_provider *dba)
+    : supla_abstract_electricity_logger_dao(dba) {}
 
 void supla_voltage_threshold_logger_dao::add(
     MYSQL_TIME *time, int channel_id, char phase,
@@ -132,10 +101,11 @@ void supla_voltage_threshold_logger_dao::add(
   pbind[13].buffer = (char *)&measurement_time_sec;
 
   const char sql[] =
-      "CALL `supla_add_em_voltage_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+      "CALL "
+      "`supla_add_em_voltage_aberration_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 14, true);
+  get_dba()->stmt_execute((void **)&stmt, sql, pbind, 14, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }
