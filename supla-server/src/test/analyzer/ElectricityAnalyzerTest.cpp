@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <analyzer/ElectricityAnalyzerTest.h>
+#include "ElectricityAnalyzerTest.h"
 
 #include "device/extended_value/channel_em_extended_value.h"
 #include "jsonconfig/channel/electricity_meter_config.h"
@@ -57,7 +57,7 @@ TEST_F(ElectricityAnalyzerTest, aberrationOnePhase) {
   EXPECT_TRUE(ea.get_aberration_phase3() == nullptr);
 
   EXPECT_EQ(ea.get_aberration_phase1()->get_above_count(), 1);
-  EXPECT_EQ(ea.get_aberration_phase1()->get_max(), 310.55);
+  EXPECT_DOUBLE_EQ(ea.get_aberration_phase1()->get_max(), 310.55);
 }
 
 TEST_F(ElectricityAnalyzerTest, aberrationThreePhases) {
@@ -87,13 +87,13 @@ TEST_F(ElectricityAnalyzerTest, aberrationThreePhases) {
   ASSERT_TRUE(ea.get_aberration_phase3() != nullptr);
 
   EXPECT_EQ(ea.get_aberration_phase1()->get_above_count(), 1);
-  EXPECT_EQ(ea.get_aberration_phase1()->get_max(), 310.55);
+  EXPECT_DOUBLE_EQ(ea.get_aberration_phase1()->get_max(), 310.55);
 
   EXPECT_EQ(ea.get_aberration_phase2()->get_above_count(), 1);
-  EXPECT_EQ(ea.get_aberration_phase2()->get_max(), 315.55);
+  EXPECT_DOUBLE_EQ(ea.get_aberration_phase2()->get_max(), 315.55);
 
   EXPECT_EQ(ea.get_aberration_phase3()->get_above_count(), 1);
-  EXPECT_EQ(ea.get_aberration_phase3()->get_max(), 320.55);
+  EXPECT_DOUBLE_EQ(ea.get_aberration_phase3()->get_max(), 320.55);
 }
 
 TEST_F(ElectricityAnalyzerTest, noMeasurements) {
@@ -237,33 +237,33 @@ TEST_F(ElectricityAnalyzerTest, copy) {
   EXPECT_TRUE(ea2->get_power_active_phase2() != ea.get_power_active_phase2());
   EXPECT_TRUE(ea2->get_power_active_phase3() != ea.get_power_active_phase3());
 
-  EXPECT_EQ(ea2->get_aberration_phase1()->get_max(),
-            ea.get_aberration_phase1()->get_max());
-  EXPECT_EQ(ea2->get_aberration_phase2()->get_max(),
-            ea.get_aberration_phase2()->get_max());
-  EXPECT_EQ(ea2->get_aberration_phase3()->get_max(),
-            ea.get_aberration_phase3()->get_max());
+  EXPECT_DOUBLE_EQ(ea2->get_aberration_phase1()->get_max(),
+                   ea.get_aberration_phase1()->get_max());
+  EXPECT_DOUBLE_EQ(ea2->get_aberration_phase2()->get_max(),
+                   ea.get_aberration_phase2()->get_max());
+  EXPECT_DOUBLE_EQ(ea2->get_aberration_phase3()->get_max(),
+                   ea.get_aberration_phase3()->get_max());
 
-  EXPECT_EQ(ea2->get_voltage_phase1()->get_max(),
-            ea.get_voltage_phase1()->get_max());
-  EXPECT_EQ(ea2->get_voltage_phase2()->get_max(),
-            ea.get_voltage_phase2()->get_max());
-  EXPECT_EQ(ea2->get_voltage_phase3()->get_max(),
-            ea.get_voltage_phase3()->get_max());
+  EXPECT_DOUBLE_EQ(ea2->get_voltage_phase1()->get_max(),
+                   ea.get_voltage_phase1()->get_max());
+  EXPECT_DOUBLE_EQ(ea2->get_voltage_phase2()->get_max(),
+                   ea.get_voltage_phase2()->get_max());
+  EXPECT_DOUBLE_EQ(ea2->get_voltage_phase3()->get_max(),
+                   ea.get_voltage_phase3()->get_max());
 
-  EXPECT_EQ(ea2->get_current_phase1()->get_max(),
-            ea.get_current_phase1()->get_max());
-  EXPECT_EQ(ea2->get_current_phase2()->get_max(),
-            ea.get_current_phase2()->get_max());
-  EXPECT_EQ(ea2->get_current_phase3()->get_max(),
-            ea.get_current_phase3()->get_max());
+  EXPECT_DOUBLE_EQ(ea2->get_current_phase1()->get_max(),
+                   ea.get_current_phase1()->get_max());
+  EXPECT_DOUBLE_EQ(ea2->get_current_phase2()->get_max(),
+                   ea.get_current_phase2()->get_max());
+  EXPECT_DOUBLE_EQ(ea2->get_current_phase3()->get_max(),
+                   ea.get_current_phase3()->get_max());
 
-  EXPECT_EQ(ea2->get_power_active_phase1()->get_max(),
-            ea.get_power_active_phase1()->get_max());
-  EXPECT_EQ(ea2->get_power_active_phase2()->get_max(),
-            ea.get_power_active_phase2()->get_max());
-  EXPECT_EQ(ea2->get_power_active_phase3()->get_max(),
-            ea.get_power_active_phase3()->get_max());
+  EXPECT_DOUBLE_EQ(ea2->get_power_active_phase1()->get_max(),
+                   ea.get_power_active_phase1()->get_max());
+  EXPECT_DOUBLE_EQ(ea2->get_power_active_phase2()->get_max(),
+                   ea.get_power_active_phase2()->get_max());
+  EXPECT_DOUBLE_EQ(ea2->get_power_active_phase3()->get_max(),
+                   ea.get_power_active_phase3()->get_max());
 
   EXPECT_EQ(ea2->get_channel_id(), ea.get_channel_id());
   delete ea2;
@@ -452,7 +452,7 @@ TEST_F(ElectricityAnalyzerTest, voltage) {
   EXPECT_TRUE(ea.is_any_voltage_for_logging_purpose());
 
   EXPECT_EQ(ea.get_voltage_phase1()->get_sample_count(), 1);
-  EXPECT_EQ(ea.get_voltage_phase1()->get_max(), 310.55);
+  EXPECT_DOUBLE_EQ(ea.get_voltage_phase1()->get_max(), 310.55);
 
   ea.add_sample(SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
                     SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED,
@@ -475,13 +475,13 @@ TEST_F(ElectricityAnalyzerTest, voltage) {
   EXPECT_TRUE(ea.is_any_voltage_for_logging_purpose());
 
   EXPECT_EQ(ea.get_voltage_phase1()->get_sample_count(), 1);
-  EXPECT_EQ(ea.get_voltage_phase1()->get_max(), 310.55);
+  EXPECT_DOUBLE_EQ(ea.get_voltage_phase1()->get_max(), 310.55);
 
   EXPECT_EQ(ea.get_voltage_phase2()->get_sample_count(), 1);
-  EXPECT_EQ(ea.get_voltage_phase2()->get_max(), 315.55);
+  EXPECT_DOUBLE_EQ(ea.get_voltage_phase2()->get_max(), 315.55);
 
   EXPECT_EQ(ea.get_voltage_phase3()->get_sample_count(), 1);
-  EXPECT_EQ(ea.get_voltage_phase3()->get_max(), 320.55);
+  EXPECT_DOUBLE_EQ(ea.get_voltage_phase3()->get_max(), 320.55);
 
   ea.reset_voltage();
   EXPECT_FALSE(ea.is_any_voltage_for_logging_purpose());
@@ -516,13 +516,14 @@ TEST_F(ElectricityAnalyzerTest, current) {
                 &config, &em);
 
   ASSERT_TRUE(ea.get_current_phase1() != nullptr);
+
   EXPECT_TRUE(ea.get_current_phase2() == nullptr);
   EXPECT_TRUE(ea.get_current_phase3() == nullptr);
   EXPECT_TRUE(ea.is_any_data_for_logging_purpose());
   EXPECT_TRUE(ea.is_any_current_for_logging_purpose());
 
   EXPECT_EQ(ea.get_current_phase1()->get_sample_count(), 1);
-  EXPECT_EQ(ea.get_current_phase1()->get_max(), 31.055);
+  EXPECT_DOUBLE_EQ(ea.get_current_phase1()->get_max(), 31.055);
 
   ea.add_sample(SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
                     SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED,
@@ -545,16 +546,24 @@ TEST_F(ElectricityAnalyzerTest, current) {
   EXPECT_TRUE(ea.is_any_current_for_logging_purpose());
 
   EXPECT_EQ(ea.get_current_phase1()->get_sample_count(), 1);
-  EXPECT_EQ(ea.get_current_phase1()->get_max(), 31.055);
+  EXPECT_DOUBLE_EQ(ea.get_current_phase1()->get_max(), 31.055);
 
   EXPECT_EQ(ea.get_current_phase2()->get_sample_count(), 1);
-  EXPECT_EQ(ea.get_current_phase2()->get_max(), 31.555);
+  EXPECT_DOUBLE_EQ(ea.get_current_phase2()->get_max(), 31.555);
 
   EXPECT_EQ(ea.get_current_phase3()->get_sample_count(), 1);
-  EXPECT_EQ(ea.get_current_phase3()->get_max(), 32.055);
+  EXPECT_DOUBLE_EQ(ea.get_current_phase3()->get_max(), 32.055);
 
   ea.reset_current();
   EXPECT_FALSE(ea.is_any_current_for_logging_purpose());
+
+  em_ev.measured_values = EM_VAR_CURRENT_OVER_65A;
+  em.set_raw_value(&em_ev);
+
+  ea.add_sample(0, &config, &em);
+
+  ASSERT_TRUE(ea.get_current_phase1() != nullptr);
+  EXPECT_DOUBLE_EQ(ea.get_current_phase1()->get_max(), 310.55);
 }
 
 TEST_F(ElectricityAnalyzerTest, powerActive) {
@@ -592,7 +601,7 @@ TEST_F(ElectricityAnalyzerTest, powerActive) {
   EXPECT_TRUE(ea.is_any_power_active_for_logging_purpose());
 
   EXPECT_EQ(ea.get_power_active_phase1()->get_sample_count(), 1);
-  EXPECT_EQ(ea.get_power_active_phase1()->get_max(), 0.31055);
+  EXPECT_DOUBLE_EQ(ea.get_power_active_phase1()->get_max(), 3.1055);
 
   ea.add_sample(SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
                     SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED,
@@ -615,16 +624,24 @@ TEST_F(ElectricityAnalyzerTest, powerActive) {
   EXPECT_TRUE(ea.is_any_power_active_for_logging_purpose());
 
   EXPECT_EQ(ea.get_power_active_phase1()->get_sample_count(), 1);
-  EXPECT_EQ(ea.get_power_active_phase1()->get_max(), 0.31055);
+  EXPECT_DOUBLE_EQ(ea.get_power_active_phase1()->get_max(), 3.1055);
 
   EXPECT_EQ(ea.get_power_active_phase2()->get_sample_count(), 1);
-  EXPECT_EQ(ea.get_power_active_phase2()->get_max(), 0.31555);
+  EXPECT_DOUBLE_EQ(ea.get_power_active_phase2()->get_max(), 3.1555);
 
   EXPECT_EQ(ea.get_power_active_phase3()->get_sample_count(), 1);
-  EXPECT_EQ(ea.get_power_active_phase3()->get_max(), 0.32055);
+  EXPECT_DOUBLE_EQ(ea.get_power_active_phase3()->get_max(), 3.2055);
 
   ea.reset_power_active();
   EXPECT_FALSE(ea.is_any_current_for_logging_purpose());
+
+  em_ev.measured_values |= EM_VAR_POWER_ACTIVE_KW;
+  em.set_raw_value(&em_ev);
+
+  ea.add_sample(0, &config, &em);
+
+  ASSERT_TRUE(ea.get_power_active_phase1() != nullptr);
+  EXPECT_DOUBLE_EQ(ea.get_power_active_phase1()->get_max(), 3105.5);
 }
 
 }  // namespace testing

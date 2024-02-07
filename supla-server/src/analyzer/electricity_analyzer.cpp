@@ -222,7 +222,8 @@ void supla_electricity_analyzer::add_sample(
                    &voltage_phase1);
       }
 
-      if (em_ev_raw.measured_values & EM_VAR_CURRENT) {
+      if ((em_ev_raw.measured_values & EM_VAR_CURRENT) ||
+          (em_ev_raw.measured_values & EM_VAR_CURRENT_OVER_65A)) {
         add_sample(current_logger_enabled, em_ev->get_current(1),
                    &current_phase1);
       }
@@ -242,7 +243,8 @@ void supla_electricity_analyzer::add_sample(
                    &voltage_phase2);
       }
 
-      if (em_ev_raw.measured_values & EM_VAR_CURRENT) {
+      if ((em_ev_raw.measured_values & EM_VAR_CURRENT) ||
+          (em_ev_raw.measured_values & EM_VAR_CURRENT_OVER_65A)) {
         add_sample(current_logger_enabled, em_ev->get_current(2),
                    &current_phase2);
       }
@@ -261,7 +263,8 @@ void supla_electricity_analyzer::add_sample(
                    &voltage_phase3);
       }
 
-      if (em_ev_raw.measured_values & EM_VAR_CURRENT) {
+      if ((em_ev_raw.measured_values & EM_VAR_CURRENT) ||
+          (em_ev_raw.measured_values & EM_VAR_CURRENT_OVER_65A)) {
         add_sample(current_logger_enabled, em_ev->get_current(3),
                    &current_phase3);
       }
