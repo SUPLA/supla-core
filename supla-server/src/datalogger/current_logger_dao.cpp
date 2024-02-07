@@ -42,10 +42,10 @@ void supla_current_logger_dao::add(supla_electricity_analyzer *vas) {
                                                vas->get_current_phase1(),
                                                procedure, 3);
     supla_abstract_electricity_logger_dao::add(&time, vas->get_channel_id(), 2,
-                                               vas->get_current_phase1(),
+                                               vas->get_current_phase2(),
                                                procedure, 3);
     supla_abstract_electricity_logger_dao::add(&time, vas->get_channel_id(), 3,
-                                               vas->get_current_phase1(),
+                                               vas->get_current_phase3(),
                                                procedure, 3);
   }
 }

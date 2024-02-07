@@ -42,10 +42,10 @@ void supla_voltage_logger_dao::add(supla_electricity_analyzer *vas) {
                                                vas->get_voltage_phase1(),
                                                procedure, 2);
     supla_abstract_electricity_logger_dao::add(&time, vas->get_channel_id(), 2,
-                                               vas->get_voltage_phase1(),
+                                               vas->get_voltage_phase2(),
                                                procedure, 2);
     supla_abstract_electricity_logger_dao::add(&time, vas->get_channel_id(), 3,
-                                               vas->get_voltage_phase1(),
+                                               vas->get_voltage_phase3(),
                                                procedure, 2);
   }
 }
