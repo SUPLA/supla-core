@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef PUSH_NOTIFICATION_GATEWAY_ACCESS_TOKEN_PROVIDER_H_
-#define PUSH_NOTIFICATION_GATEWAY_ACCESS_TOKEN_PROVIDER_H_
+#ifndef REMOTE_GATEWAY_ACCESS_TOKEN_PROVIDER_H_
+#define REMOTE_GATEWAY_ACCESS_TOKEN_PROVIDER_H_
 
 #include <string>
 #include <vector>
@@ -27,7 +27,7 @@
 #include "push/pn_gateway_access_token.h"
 #include "push/pn_recipients.h"
 
-class supla_pn_gateway_access_token_provider {
+class supla_remote_gateway_access_token_provider {
  private:
   void *data_lck;
   void *refresh_lck;
@@ -46,7 +46,7 @@ class supla_pn_gateway_access_token_provider {
 
   static void _service_loop(void *_provider, void *sthread);
   void service_loop();
-  static supla_pn_gateway_access_token_provider instance;
+  static supla_remote_gateway_access_token_provider instance;
 
  protected:
   supla_abstract_curl_adapter *curl_adapter;
@@ -57,8 +57,8 @@ class supla_pn_gateway_access_token_provider {
   bool refresh(void);
 
  public:
-  supla_pn_gateway_access_token_provider(void);
-  virtual ~supla_pn_gateway_access_token_provider(void);
+  supla_remote_gateway_access_token_provider(void);
+  virtual ~supla_remote_gateway_access_token_provider(void);
   virtual void start_service(void);
   void stop_service(void);
 
@@ -68,7 +68,7 @@ class supla_pn_gateway_access_token_provider {
   bool is_any_token_available(void);
   bool is_service_running(void);
 
-  static supla_pn_gateway_access_token_provider *global_instance(void);
+  static supla_remote_gateway_access_token_provider *global_instance(void);
 };
 
-#endif /* PUSH_NOTIFICATION_GATEWAY_ACCESS_TOKEN_PROVIDER_H_ */
+#endif /* REMOTE_GATEWAY_ACCESS_TOKEN_PROVIDER_H_ */

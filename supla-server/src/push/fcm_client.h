@@ -33,7 +33,7 @@ class supla_fcm_client : public supla_abstract_pn_gateway_client {
 
  public:
   supla_fcm_client(supla_abstract_curl_adapter *curl_adapter,
-                   supla_pn_gateway_access_token_provider *token_provider,
+                   supla_remote_gateway_access_token_provider *token_provider,
                    supla_push_notification *push);
   virtual ~supla_fcm_client(void);
 };

@@ -23,13 +23,13 @@
 #include <vector>
 
 #include "http/abstract_curl_adapter.h"
+#include "http/remote_gateway_access_token_provider.h"
 #include "json/cJSON.h"
-#include "push/pn_gateway_access_token_provider.h"
 #include "push/push_notification.h"
 
 class supla_abstract_pn_gateway_client {
  private:
-  supla_pn_gateway_access_token_provider *token_provider;
+  supla_remote_gateway_access_token_provider *token_provider;
   supla_push_notification *push;
   supla_abstract_curl_adapter *curl_adapter;
 
@@ -46,7 +46,7 @@ class supla_abstract_pn_gateway_client {
  public:
   supla_abstract_pn_gateway_client(
       supla_abstract_curl_adapter *curl_adapter,
-      supla_pn_gateway_access_token_provider *token_provider,
+      supla_remote_gateway_access_token_provider *token_provider,
       supla_push_notification *push);
   virtual ~supla_abstract_pn_gateway_client(void);
   bool send(void);

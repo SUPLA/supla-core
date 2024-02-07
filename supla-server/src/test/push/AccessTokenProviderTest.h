@@ -19,8 +19,8 @@
 #ifndef ACCESS_TOKEN_PROVIDER_TEST_H_
 #define ACCESS_TOKEN_PROVIDER_TEST_H_
 
+#include "doubles/http/AccessTokenProviderMock.h"
 #include "doubles/http/CurlAdapterMock.h"
-#include "doubles/push/AccessTokenProviderMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace testing {

@@ -31,13 +31,13 @@
 #include "cyclictasks/agent.h"
 #include "db/database.h"
 #include "http/asynctask_http_thread_pool.h"
+#include "http/remote_gateway_access_token_provider.h"
 #include "ipc/ipcsocket.h"
 #include "lck.h"
 #include "log.h"
 #include "mqtt_client_suite.h"
 #include "proto.h"
 #include "push/pn_delivery_task_thread_pool.h"
-#include "push/pn_gateway_access_token_provider.h"
 #include "serverstatus.h"
 #include "srpc/srpc.h"
 #include "sthread.h"
@@ -101,7 +101,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Start service only when the server configuration is already loaded.
-  supla_pn_gateway_access_token_provider::global_instance()->start_service();
+  supla_remote_gateway_access_token_provider::global_instance()
+      ->start_service();
 
   supla_log(LOG_INFO, "SSL version: %s", OpenSSL_version(OPENSSL_VERSION));
 
@@ -207,7 +208,7 @@ int main(int argc, char *argv[]) {
   supla_mqtt_client_suite::globalInstanceRelease();
   // -----------------------------------------------
 
-  supla_pn_gateway_access_token_provider::global_instance()
+  supla_remote_gateway_access_token_provider::global_instance()
       ->stop_service();  // Stop the service before calling
                          // curl_global_cleanup()
 

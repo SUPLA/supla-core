@@ -4,14 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/doubles/http/AccessTokenProviderMock.cpp \
 ../src/test/doubles/http/CurlAdapterMock.cpp \
 ../src/test/doubles/http/HttphrottlingMock.cpp 
 
 CPP_DEPS += \
+./src/test/doubles/http/AccessTokenProviderMock.d \
 ./src/test/doubles/http/CurlAdapterMock.d \
 ./src/test/doubles/http/HttphrottlingMock.d 
 
 OBJS += \
+./src/test/doubles/http/AccessTokenProviderMock.o \
 ./src/test/doubles/http/CurlAdapterMock.o \
 ./src/test/doubles/http/HttphrottlingMock.o 
 
@@ -28,7 +31,7 @@ src/test/doubles/http/%.o: ../src/test/doubles/http/%.cpp src/test/doubles/http/
 clean: clean-src-2f-test-2f-doubles-2f-http
 
 clean-src-2f-test-2f-doubles-2f-http:
-	-$(RM) ./src/test/doubles/http/CurlAdapterMock.d ./src/test/doubles/http/CurlAdapterMock.o ./src/test/doubles/http/HttphrottlingMock.d ./src/test/doubles/http/HttphrottlingMock.o
+	-$(RM) ./src/test/doubles/http/AccessTokenProviderMock.d ./src/test/doubles/http/AccessTokenProviderMock.o ./src/test/doubles/http/CurlAdapterMock.d ./src/test/doubles/http/CurlAdapterMock.o ./src/test/doubles/http/HttphrottlingMock.d ./src/test/doubles/http/HttphrottlingMock.o
 
 .PHONY: clean-src-2f-test-2f-doubles-2f-http
 

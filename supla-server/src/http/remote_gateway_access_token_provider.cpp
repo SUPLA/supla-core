@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "pn_gateway_access_token_provider.h"
+#include "remote_gateway_access_token_provider.h"
 
 #include <unistd.h>
 
@@ -33,11 +33,11 @@ using std::string;
 using std::vector;
 
 // static
-supla_pn_gateway_access_token_provider
-    supla_pn_gateway_access_token_provider::instance;
+supla_remote_gateway_access_token_provider
+    supla_remote_gateway_access_token_provider::instance;
 
-supla_pn_gateway_access_token_provider::supla_pn_gateway_access_token_provider(
-    void) {
+supla_remote_gateway_access_token_provider::
+    supla_remote_gateway_access_token_provider(void) {
   this->curl_adapter = nullptr;
   this->refresh_lck = lck_init();
   this->data_lck = lck_init();
@@ -45,8 +45,8 @@ supla_pn_gateway_access_token_provider::supla_pn_gateway_access_token_provider(
   this->thread = nullptr;
 }
 
-supla_pn_gateway_access_token_provider::~supla_pn_gateway_access_token_provider(
-    void) {
+supla_remote_gateway_access_token_provider::
+    ~supla_remote_gateway_access_token_provider(void) {
   stop_service();
 
   if (curl_adapter) {
@@ -58,15 +58,16 @@ supla_pn_gateway_access_token_provider::~supla_pn_gateway_access_token_provider(
   lck_free(refresh_lck);
 }
 
-long long supla_pn_gateway_access_token_provider::service_tick_time_usec(void) {
+long long supla_remote_gateway_access_token_provider::service_tick_time_usec(
+    void) {
   return 1000000;
 }
 
 // static
-void supla_pn_gateway_access_token_provider::_service_loop(void *_provider,
-                                                           void *sthread) {
-  supla_pn_gateway_access_token_provider *provider =
-      static_cast<supla_pn_gateway_access_token_provider *>(_provider);
+void supla_remote_gateway_access_token_provider::_service_loop(void *_provider,
+                                                               void *sthread) {
+  supla_remote_gateway_access_token_provider *provider =
+      static_cast<supla_remote_gateway_access_token_provider *>(_provider);
   if (!provider) {
     return;
   }
@@ -86,7 +87,7 @@ void supla_pn_gateway_access_token_provider::_service_loop(void *_provider,
   }
 }
 
-void supla_pn_gateway_access_token_provider::service_loop(void) {
+void supla_remote_gateway_access_token_provider::service_loop(void) {
   struct timeval now = {};
   gettimeofday(&now, nullptr);
 
@@ -107,7 +108,7 @@ void supla_pn_gateway_access_token_provider::service_loop(void) {
   }
 }
 
-void supla_pn_gateway_access_token_provider::start_service(void) {
+void supla_remote_gateway_access_token_provider::start_service(void) {
   if (thread) {
     return;
   }
@@ -115,23 +116,23 @@ void supla_pn_gateway_access_token_provider::start_service(void) {
   sthread_simple_run(_service_loop, this, 0, &thread);
 }
 
-void supla_pn_gateway_access_token_provider::stop_service(void) {
+void supla_remote_gateway_access_token_provider::stop_service(void) {
   if (thread) {
     sthread_twf(thread, false);
     thread = nullptr;
   }
 }
 
-int supla_pn_gateway_access_token_provider::refresh_time_margin_secs(void) {
+int supla_remote_gateway_access_token_provider::refresh_time_margin_secs(void) {
   return 300;
 }
 
-int supla_pn_gateway_access_token_provider::min_secs_between_refresh_attempts(
-    void) {
+int supla_remote_gateway_access_token_provider::
+    min_secs_between_refresh_attempts(void) {
   return 60;
 }
 
-void supla_pn_gateway_access_token_provider::process_result(
+void supla_remote_gateway_access_token_provider::process_result(
     vector<supla_pn_gateway_access_token> *tokens, _platform_e platform,
     cJSON *platform_json, cJSON *app_json) {
   if (!app_json || !app_json->string) {
@@ -193,7 +194,7 @@ void supla_pn_gateway_access_token_provider::process_result(
   }
 }
 
-void supla_pn_gateway_access_token_provider::process_result(
+void supla_remote_gateway_access_token_provider::process_result(
     vector<supla_pn_gateway_access_token> *tokens, _platform_e platform,
     const string &platform_name, cJSON *root) {
   cJSON *platform_json = cJSON_GetObjectItem(root, platform_name.c_str());
@@ -208,7 +209,7 @@ void supla_pn_gateway_access_token_provider::process_result(
   }
 }
 
-void supla_pn_gateway_access_token_provider::get_new_tokens(
+void supla_remote_gateway_access_token_provider::get_new_tokens(
     vector<supla_pn_gateway_access_token> *tokens) {
   curl_adapter->reset();
 
@@ -255,7 +256,7 @@ void supla_pn_gateway_access_token_provider::get_new_tokens(
   }
 }
 
-bool supla_pn_gateway_access_token_provider::refresh(void) {
+bool supla_remote_gateway_access_token_provider::refresh(void) {
   bool result = false;
   string token;
 
@@ -300,8 +301,9 @@ bool supla_pn_gateway_access_token_provider::refresh(void) {
   return result;
 }
 
-supla_pn_gateway_access_token supla_pn_gateway_access_token_provider::get_token(
-    _platform_e platform, int app_id) {
+supla_pn_gateway_access_token
+supla_remote_gateway_access_token_provider::get_token(_platform_e platform,
+                                                      int app_id) {
   supla_pn_gateway_access_token result;
 
   lck_lock(data_lck);
@@ -316,23 +318,23 @@ supla_pn_gateway_access_token supla_pn_gateway_access_token_provider::get_token(
   return result;
 }
 
-size_t supla_pn_gateway_access_token_provider::get_token_count(void) {
+size_t supla_remote_gateway_access_token_provider::get_token_count(void) {
   lck_lock(data_lck);
   size_t result = tokens.size();
   lck_unlock(data_lck);
   return result;
 }
 
-bool supla_pn_gateway_access_token_provider::is_any_token_available(void) {
+bool supla_remote_gateway_access_token_provider::is_any_token_available(void) {
   return get_token_count() > 0;
 }
 
-bool supla_pn_gateway_access_token_provider::is_service_running(void) {
+bool supla_remote_gateway_access_token_provider::is_service_running(void) {
   return thread != nullptr;
 }
 
 // static
-supla_pn_gateway_access_token_provider *
-supla_pn_gateway_access_token_provider::global_instance(void) {
+supla_remote_gateway_access_token_provider *
+supla_remote_gateway_access_token_provider::global_instance(void) {
   return &instance;
 }

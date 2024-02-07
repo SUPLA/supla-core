@@ -34,7 +34,7 @@ using std::string;
 supla_pn_delivery_task::supla_pn_delivery_task(
     int user_id, supla_asynctask_queue *queue,
     supla_abstract_asynctask_thread_pool *pool, supla_push_notification *push,
-    supla_pn_gateway_access_token_provider *token_provider,
+    supla_remote_gateway_access_token_provider *token_provider,
     supla_pn_throttling *throttling)
     : supla_asynctask_http_request(supla_caller(), user_id, 0, 0, queue, pool,
                                    nullptr) {
@@ -179,7 +179,7 @@ void supla_pn_delivery_task::start_delivering(int user_id,
   supla_pn_delivery_task *task = new supla_pn_delivery_task(
       user_id, supla_asynctask_queue::global_instance(),
       supla_pn_delivery_task_thread_pool::global_instance(), push,
-      supla_pn_gateway_access_token_provider::global_instance(),
+      supla_remote_gateway_access_token_provider::global_instance(),
       supla_pn_throttling::get_instance());
   task->start();
 }

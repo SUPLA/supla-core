@@ -23,7 +23,7 @@ using std::vector;
 
 supla_abstract_pn_gateway_client::supla_abstract_pn_gateway_client(
     supla_abstract_curl_adapter *curl_adapter,
-    supla_pn_gateway_access_token_provider *token_provider,
+    supla_remote_gateway_access_token_provider *token_provider,
     supla_push_notification *push) {
   this->curl_adapter = curl_adapter;
   this->token_provider = token_provider;

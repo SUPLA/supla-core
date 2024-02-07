@@ -16,22 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "doubles/push/AccessTokenProviderMock.h"
+#ifndef ACCESS_TOKEN_PROVIDER_MOCK_H_
+#define ACCESS_TOKEN_PROVIDER_MOCK_H_
+
+#include <gmock/gmock.h>
+
+#include "http/remote_gateway_access_token_provider.h"
 
 namespace testing {
 
-using std::shared_ptr;
+class AccessTokenProviderMock
+    : public supla_remote_gateway_access_token_provider {
+ public:
+  explicit AccessTokenProviderMock(supla_abstract_curl_adapter *curl_adapter);
+  virtual ~AccessTokenProviderMock();
 
-AccessTokenProviderMock::AccessTokenProviderMock(
-    supla_abstract_curl_adapter *curl_adapter)
-    : supla_pn_gateway_access_token_provider() {
-  this->curl_adapter = curl_adapter;
-}
+  MOCK_METHOD0(min_secs_between_refresh_attempts, int(void));
+  MOCK_METHOD0(refresh_time_margin_secs, int(void));
+  MOCK_METHOD0(service_tick_time_usec, long long(void));
 
-AccessTokenProviderMock::~AccessTokenProviderMock() {}
+  void refresh(void);
+};
 
-void AccessTokenProviderMock::refresh(void) {
-  supla_pn_gateway_access_token_provider::refresh();
-}
+} /* namespace testing */
 
-}  // namespace testing
+#endif /* ACCESS_TOKEN_PROVIDER_MOCK_H_ */
