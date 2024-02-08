@@ -186,10 +186,12 @@ void supla_device_channel::trim_alt_icon_index(int func,
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
       max = 1;
       break;
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
+      max = 31;
   }
 
   if (*alt_icon > max) {
-    *alt_icon = max;
+    *alt_icon = 0;
   }
 }
 
