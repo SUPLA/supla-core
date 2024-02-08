@@ -133,7 +133,8 @@ TEST_F(GoogleHomeSyncRequestTest, directSyncWithSuccess) {
 
   EXPECT_CALL(credentials, is_access_token_exists).WillRepeatedly(Return(true));
 
-  EXPECT_CALL(credentials, get_user_long_unique_id).WillRepeatedly(Return("zxcvbnm"));
+  EXPECT_CALL(credentials, get_user_long_unique_id)
+      .WillRepeatedly(Return("zxcvbnm"));
 
   EXPECT_CALL(*curlAdapter, set_opt_post_fields)
       .Times(1)
