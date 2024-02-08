@@ -23,10 +23,12 @@
 
 #include "google/google_home_credentials.h"
 #include "http/asynctask_http_request.h"
+#include "http/remote_gateway_access_token_provider.h"
 
 class supla_google_home_sync_request : public supla_asynctask_http_request {
  private:
   supla_google_home_credentials *credentials;
+  supla_remote_gateway_access_token_provider *token_provider;
 
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
@@ -35,9 +37,11 @@ class supla_google_home_sync_request : public supla_asynctask_http_request {
   virtual unsigned long long get_cfg_long_request_time_usec(void);
 
  public:
-  supla_google_home_sync_request(int user_id, supla_asynctask_queue *queue,
-                                 supla_abstract_asynctask_thread_pool *pool,
-                                 supla_google_home_credentials *credentials);
+  supla_google_home_sync_request(
+      int user_id, supla_asynctask_queue *queue,
+      supla_abstract_asynctask_thread_pool *pool,
+      supla_google_home_credentials *credentials,
+      supla_remote_gateway_access_token_provider *token_provider);
 
   static void new_request(supla_user *user);
 };

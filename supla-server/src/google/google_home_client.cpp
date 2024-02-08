@@ -32,9 +32,12 @@ using std::string;
 
 supla_google_home_client::supla_google_home_client(
     int channel_id, supla_abstract_curl_adapter *curl_adapter,
-    supla_google_home_credentials *credentials)
+    supla_google_home_credentials *credentials,
+    supla_remote_gateway_access_token homegraph_token)
     : supla_voice_assistant_client(channel_id, curl_adapter, credentials) {
+  this->homegraph_token = homegraph_token;
   this->json_states = cJSON_CreateObject();
+  this->sync_intent = false;
 }
 
 supla_google_home_client::~supla_google_home_client(void) {
@@ -62,16 +65,40 @@ bool supla_google_home_client::perform_post_request(cJSON *json_data,
   cJSON_Delete((cJSON *)json_data);
 
   if (data) {
+    get_curl_adapter()->reset();
+
     string request_result;
     string token = "Authorization: Bearer ";
-    token.append(get_credentials()->get_access_token());
 
-    get_curl_adapter()->reset();
-    get_curl_adapter()->set_opt_url(
-        "https://"
-        "odokilkqoesh73zfznmiupey4a0uugaz.lambda-url.eu-west-1.on.aws/");
+    if (homegraph_token.is_valid()) {
+      supla_log(LOG_DEBUG, "HomeBridge direct access.");
+
+      string url = "https://homegraph.googleapis.com/";
+
+      if (sync_intent) {
+        url.append("v1/devices:requestSync");
+      } else {
+        url.append("v1/devices:reportStateAndNotification");
+      }
+
+      token.append(homegraph_token.get_token());
+      get_curl_adapter()->set_opt_url(url.c_str());
+
+    } else {
+      supla_log(LOG_DEBUG, "HomeBridge access via AWS Lambda.");
+
+      token.append(get_credentials()->get_access_token());
+      get_curl_adapter()->set_opt_url(
+          "https://"
+          "odokilkqoesh73zfznmiupey4a0uugaz.lambda-url.eu-west-1.on.aws/");
+    }
+
     get_curl_adapter()->append_header("Content-Type: application/json");
-    get_curl_adapter()->append_header(token.c_str());
+
+    if (!token.empty()) {
+      get_curl_adapter()->append_header(token.c_str());
+    }
+
     get_curl_adapter()->set_opt_post_fields(data);
 
     get_curl_adapter()->set_opt_write_data(&request_result);
@@ -287,6 +314,7 @@ bool supla_google_home_client::sync(void) {
 
   if (header) {
     cJSON_AddStringToObject(header, "intent", "action.devices.SYNC");
+    sync_intent = true;
     int http_result_code = 0;
     if (perform_post_request(header, &http_result_code)) {
       return http_result_code >= 200 && http_result_code <= 206;

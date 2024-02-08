@@ -23,11 +23,13 @@
 
 #include "google/google_home_credentials.h"
 #include "http/asynctask_http_request.h"
+#include "http/remote_gateway_access_token_provider.h"
 
 class supla_google_home_state_report_request
     : public supla_asynctask_http_request {
  private:
   supla_google_home_credentials *credentials;
+  supla_remote_gateway_access_token_provider *token_provider;
   std::string request_id;
 
  protected:
@@ -42,6 +44,7 @@ class supla_google_home_state_report_request
       supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_channel_property_getter *property_getter,
       supla_google_home_credentials *credentials,
+      supla_remote_gateway_access_token_provider *token_provider,
       const std::string &request_id);
 
   static bool is_caller_allowed(const supla_caller &caller);
