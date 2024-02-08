@@ -129,13 +129,11 @@ TEST_F(GoogleHomeSyncRequestTest, syncSuccessful) {
 TEST_F(GoogleHomeSyncRequestTest, directSyncWithSuccess) {
   tokenProvider->refresh();
 
-  string expectedPayload =
-      "{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\",\"agentUserId\":"
-      "\"zxcvbnm\",\"intent\":\"action.devices.SYNC\"}";
+  string expectedPayload = "{\"agentUserId\":\"zxcvbnm\"}";
 
   EXPECT_CALL(credentials, is_access_token_exists).WillRepeatedly(Return(true));
 
-  EXPECT_CALL(credentials, get_user_long_unique_id).WillOnce(Return("zxcvbnm"));
+  EXPECT_CALL(credentials, get_user_long_unique_id).WillRepeatedly(Return("zxcvbnm"));
 
   EXPECT_CALL(*curlAdapter, set_opt_post_fields)
       .Times(1)

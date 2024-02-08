@@ -61,7 +61,17 @@ bool supla_google_home_client::perform_post_request(cJSON *json_data,
     return false;
   }
 
-  char *data = cJSON_PrintUnformatted(json_data);
+  char *data = nullptr;
+
+  if (sync_intent && homegraph_token.is_valid()) {
+    cJSON_Delete(json_data);
+    json_data = cJSON_CreateObject();
+    cJSON_AddStringToObject(
+        json_data, "agentUserId",
+        get_credentials()->get_user_long_unique_id().c_str());
+  }
+
+  data = cJSON_PrintUnformatted(json_data);
   cJSON_Delete((cJSON *)json_data);
 
   if (data) {
