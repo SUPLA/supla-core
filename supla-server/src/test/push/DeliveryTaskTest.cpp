@@ -54,9 +54,10 @@ void DeliveryTaskTest::SetUp(void) {
   ON_CALL(*tokenProviderCurlAdapter, set_opt_write_data)
       .WillByDefault([this](string *request_result) {
         *request_result =
-            "{\"android\":{\"0\":{\"token\":\"tokenXyz\",\"expires_in\":3600,"
+            "{\"push_android\":{\"0\":{\"token\":\"tokenXyz\",\"expires_in\":"
+            "3600,"
             "\"url\":\"https://"
-            "push-fcm.supla.org\"}},\"ios\":{\"5\":{\"token\":\"xcvbn\","
+            "push-fcm.supla.org\"}},\"push_ios\":{\"5\":{\"token\":\"xcvbn\","
             "\"expires_in\":3600,\"bundle_id\":\"com.supla\",\"url\":\"https://"
             "push-apns.supla.org/{device_token}\",\"development_url\":\"https:/"
             "/devel-push-apns.supla.org/{device_token}\"}}}";
