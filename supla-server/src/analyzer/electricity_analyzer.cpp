@@ -213,7 +213,8 @@ void supla_electricity_analyzer::add_sample(
 
   TElectricityMeter_ExtendedValue_V2 em_ev_raw = {};
   if (em_ev->get_raw_value(&em_ev_raw) && em_ev_raw.m_count > 0) {
-    if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED)) {
+    if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED) &&
+        !em_config.is_phase_disabled(1)) {
       if (em_ev_raw.measured_values & EM_VAR_VOLTAGE) {
         add_sample(lower_voltage_threshold, upper_voltage_threshold,
                    em_ev->get_voltage(1), &aberration_phase1);
@@ -234,7 +235,8 @@ void supla_electricity_analyzer::add_sample(
       }
     }
 
-    if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED)) {
+    if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED) &&
+        !em_config.is_phase_disabled(2)) {
       if (em_ev_raw.measured_values & EM_VAR_VOLTAGE) {
         add_sample(lower_voltage_threshold, upper_voltage_threshold,
                    em_ev->get_voltage(2), &aberration_phase2);
@@ -255,7 +257,8 @@ void supla_electricity_analyzer::add_sample(
       }
     }
 
-    if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED)) {
+    if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED) &&
+        !em_config.is_phase_disabled(3)) {
       if (em_ev_raw.measured_values & EM_VAR_VOLTAGE) {
         add_sample(lower_voltage_threshold, upper_voltage_threshold,
                    em_ev->get_voltage(3), &aberration_phase3);

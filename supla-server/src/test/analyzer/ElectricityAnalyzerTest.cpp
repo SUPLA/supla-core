@@ -644,4 +644,82 @@ TEST_F(ElectricityAnalyzerTest, powerActive) {
   EXPECT_DOUBLE_EQ(ea.get_power_active_phase1()->get_max(), 3105.5);
 }
 
+TEST_F(ElectricityAnalyzerTest, phaseDisabled) {
+  EXPECT_TRUE(ea.get_voltage_phase1() == nullptr);
+  EXPECT_TRUE(ea.get_voltage_phase2() == nullptr);
+  EXPECT_TRUE(ea.get_voltage_phase3() == nullptr);
+
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  em_ev.m_count = 1;
+  em_ev.m[0].voltage[0] = 31055;
+  em_ev.m[0].voltage[1] = 31555;
+  em_ev.m[0].voltage[2] = 32055;
+  em_ev.measured_values = EM_VAR_VOLTAGE;
+
+  supla_channel_em_extended_value em(&em_ev, nullptr, 0);
+
+  electricity_meter_config config;
+  ea.add_sample(0, &config, &em);
+
+  EXPECT_FALSE(ea.is_any_data_for_logging_purpose());
+  EXPECT_FALSE(ea.is_any_voltage_for_logging_purpose());
+
+  config.set_user_config("{\"voltageLoggerEnabled\":true}");
+
+  ea.add_sample(0, &config, &em);
+
+  ASSERT_TRUE(ea.get_voltage_phase1() != nullptr);
+  ASSERT_TRUE(ea.get_voltage_phase2() != nullptr);
+  ASSERT_TRUE(ea.get_voltage_phase3() != nullptr);
+
+  ea.reset();
+  EXPECT_FALSE(ea.is_any_data_for_logging_purpose());
+
+  config.set_user_config(
+      "{\"voltageLoggerEnabled\":true,\"disabledPhases\":[1]}");
+
+  ea.add_sample(0, &config, &em);
+
+  EXPECT_EQ(ea.get_voltage_phase1()->get_sample_count(), 0);
+  EXPECT_EQ(ea.get_voltage_phase2()->get_sample_count(), 1);
+  EXPECT_EQ(ea.get_voltage_phase3()->get_sample_count(), 1);
+
+  ea.reset();
+
+  EXPECT_FALSE(ea.is_any_data_for_logging_purpose());
+
+  config.set_user_config(
+      "{\"voltageLoggerEnabled\":true,\"disabledPhases\":[2]}");
+
+  ea.add_sample(0, &config, &em);
+
+  EXPECT_EQ(ea.get_voltage_phase1()->get_sample_count(), 1);
+  EXPECT_EQ(ea.get_voltage_phase2()->get_sample_count(), 0);
+  EXPECT_EQ(ea.get_voltage_phase3()->get_sample_count(), 1);
+
+  ea.reset();
+
+  EXPECT_FALSE(ea.is_any_data_for_logging_purpose());
+
+  config.set_user_config(
+      "{\"voltageLoggerEnabled\":true,\"disabledPhases\":[3]}");
+
+  ea.add_sample(0, &config, &em);
+
+  EXPECT_EQ(ea.get_voltage_phase1()->get_sample_count(), 1);
+  EXPECT_EQ(ea.get_voltage_phase2()->get_sample_count(), 1);
+  EXPECT_EQ(ea.get_voltage_phase3()->get_sample_count(), 0);
+
+  ea.reset();
+
+  EXPECT_FALSE(ea.is_any_data_for_logging_purpose());
+
+  config.set_user_config(
+      "{\"voltageLoggerEnabled\":true,\"disabledPhases\":[1,2,3]}");
+
+  ea.add_sample(0, &config, &em);
+
+  EXPECT_FALSE(ea.is_any_data_for_logging_purpose());
+}
+
 }  // namespace testing
