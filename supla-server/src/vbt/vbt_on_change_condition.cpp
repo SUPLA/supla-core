@@ -29,6 +29,7 @@
 #include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
+#include "device/value/channel_general_purpose_base_value.h"
 #include "device/value/channel_hvac_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
@@ -319,6 +320,12 @@ bool supla_vbt_on_change_condition::get_number(supla_channel_value *value,
         return false;
     }
 
+    return true;
+  }
+
+  if (dynamic_cast<supla_channel_general_purpose_base_value *>(value)) {
+    *result = dynamic_cast<supla_channel_general_purpose_base_value *>(value)
+                  ->get_value();
     return true;
   }
 
