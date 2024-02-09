@@ -50,8 +50,13 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
   supla_mqtt_client_suite::globalInstance()->onDeviceSettingsChanged(user_id,
                                                                      device_id);
 
-  if (type != SUPLA_CHANNELTYPE_HVAC) {
-    return;
+  switch (type) {
+    case SUPLA_CHANNELTYPE_HVAC:
+    case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
+    case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
+      break;
+    default:
+      return;
   }
 
   supla_db_access_provider dba;
