@@ -205,14 +205,14 @@ Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
 extern "C" JNIEXPORT void JNICALL
 Java_org_supla_android_lib_singlecall_SingleCall_registerPushNotificationClientToken(
     JNIEnv *env, jobject thiz, jobject context, jobject auth_info, jint app_id,
-    jstring token) {
+    jstring token, jstring profile_name) {
   TCS_ClientAuthorizationDetails auth_details = {};
   int protocol_version = 0;
   getAuthDetails(env, context, auth_info, &auth_details, &protocol_version);
 
   TCS_PnClientToken pn_token = {};
 
-  set_token_details(env, &pn_token, app_id, token);
+  set_token_details(env, &pn_token, app_id, token, profile_name);
 
   supla_single_call single_call(&auth_details, protocol_version);
   int result = single_call.register_pn_client_token(&pn_token);
