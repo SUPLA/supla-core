@@ -36,7 +36,7 @@ supla_apns_client::~supla_apns_client(void) {}
 
 _platform_e supla_apns_client::get_platform(void) { return platform_push_ios; }
 
-char *supla_apns_client::get_payload(void) {
+char *supla_apns_client::get_payload(supla_pn_recipient *recipient) {
   cJSON *payload = cJSON_CreateObject();
   cJSON *aps = cJSON_CreateObject();
   cJSON *alert = cJSON_CreateObject();
@@ -74,6 +74,12 @@ char *supla_apns_client::get_payload(void) {
   }
 
   cJSON_AddItemToObject(payload, "aps", aps);
+
+  if (!recipient->get_profile_name().empty()) {
+    cJSON_AddStringToObject(payload, "profileName",
+                            recipient->get_profile_name().c_str());
+  }
+
   cJSON_AddItemToObject(aps, "alert", alert);
   cJSON_AddStringToObject(aps, "sound", "default");
 
@@ -108,7 +114,7 @@ bool supla_apns_client::_send(supla_remote_gateway_access_token *token,
 
   get_curl_adapter()->set_opt_url(endpoint.c_str());
 
-  char *payload = get_payload();
+  char *payload = get_payload(recipient);
   get_curl_adapter()->set_opt_post_fields(payload);
 
   string request_result;

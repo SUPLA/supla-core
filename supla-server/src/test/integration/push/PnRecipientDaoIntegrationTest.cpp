@@ -70,7 +70,7 @@ TEST_F(PnRecipientDaoIntegrationTest, remove) {
 
   EXPECT_EQ(result, "push_token\nabcd\n");
 
-  supla_pn_recipient r1(3, 0, false, "abcd");
+  supla_pn_recipient r1(3, 0, false, "abcd", "");
   dao->remove(2, &r1);
 
   result = "";
@@ -79,7 +79,7 @@ TEST_F(PnRecipientDaoIntegrationTest, remove) {
 
   EXPECT_EQ(result, "push_token\nabcd\n");
 
-  supla_pn_recipient r2(24, 0, false, "abcd");
+  supla_pn_recipient r2(24, 0, false, "abcd", "");
   dao->remove(2, &r2);
 
   result = "";
@@ -146,6 +146,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithAid) {
   EXPECT_EQ(recipient->get_app_id(), 0);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_profile_name(), "");
 
   recipient = recipients.get(platform_push_ios, 1);
   ASSERT_TRUE(recipient != nullptr);
@@ -155,6 +156,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithAid) {
   EXPECT_EQ(recipient->get_app_id(), 0);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_profile_name(), "My Profile XYZ");
 
   aids.push_back(2);
 
@@ -205,6 +207,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithAid) {
   EXPECT_EQ(recipient->get_app_id(), 0);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_profile_name(), "My Profile XYZ");
 }
 
 TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCid) {
@@ -235,6 +238,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCid) {
   EXPECT_EQ(recipient->get_app_id(), 0);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_profile_name(), "My Profile XYZ");
 }
 
 TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCidAndAid) {
@@ -284,6 +288,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCidAndAid) {
   EXPECT_EQ(recipient->get_app_id(), 0);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_profile_name(), "My Profile XYZ");
 }
 
 TEST_F(PnRecipientDaoIntegrationTest, inactiveForTwoMonths) {

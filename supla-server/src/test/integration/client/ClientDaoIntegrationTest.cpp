@@ -65,34 +65,44 @@ TEST_F(ClientDaoIntegrationTest,
 
   EXPECT_EQ(result, "id\n1\n");
   result = "";
-  dao->update_client_push_notification_client_token(2, 1, "abcd", 2, 3, true);
+  dao->update_client_push_notification_client_token(2, 1, "abcd", 2, 3, true,
+                                                    "default");
 
   sqlQuery(
-      "SELECT push_token,platform,app_id,devel_env FROM supla_client WHERE id "
-      "= 1",
+      "SELECT push_token,platform,app_id,devel_env,profile_name FROM "
+      "supla_client WHERE id = 1",
       &result);
-  EXPECT_EQ(result, "push_token\tplatform\tapp_id\tdevel_env\nabcd\t2\t3\t1\n");
+  EXPECT_EQ(result,
+            "push_token\tplatform\tapp_id\tdevel_env\tprofile_"
+            "name\nabcd\t2\t3\t1\tdefault\n");
   result = "";
 
-  dao->update_client_push_notification_client_token(2, 1, "", 1, 2, false);
+  dao->update_client_push_notification_client_token(2, 1, "", 1, 2, false,
+                                                    nullptr);
 
   sqlQuery(
-      "SELECT push_token,platform,app_id,devel_env FROM supla_client WHERE id "
-      "= 1",
+      "SELECT push_token,platform,app_id,devel_env,profile_name FROM "
+      "supla_client WHERE id = 1",
       &result);
-  EXPECT_EQ(result, "push_token\tplatform\tapp_id\tdevel_env\nNULL\t1\t2\t0\n");
+  EXPECT_EQ(result,
+            "push_token\tplatform\tapp_id\tdevel_env\tprofile_"
+            "name\nNULL\t1\t2\t0\tNULL\n");
 }
 
 TEST_F(ClientDaoIntegrationTest, removePushNotificationClientTokenWithNull) {
-  dao->update_client_push_notification_client_token(2, 1, "abcd", 2, 3, true);
-  dao->update_client_push_notification_client_token(2, 1, nullptr, 2, 3, true);
+  dao->update_client_push_notification_client_token(2, 1, "abcd", 2, 3, true,
+                                                    nullptr);
+  dao->update_client_push_notification_client_token(2, 1, nullptr, 2, 3, true,
+                                                    nullptr);
 
   string result;
   sqlQuery(
-      "SELECT push_token,platform,app_id,devel_env FROM supla_client WHERE id "
-      "= 1",
+      "SELECT push_token,platform,app_id,devel_env,profile_name FROM "
+      "supla_client WHERE id = 1",
       &result);
-  EXPECT_EQ(result, "push_token\tplatform\tapp_id\tdevel_env\nNULL\t2\t3\t1\n");
+  EXPECT_EQ(result,
+            "push_token\tplatform\tapp_id\tdevel_env\tprofile_"
+            "name\nNULL\t2\t3\t1\tNULL\n");
 }
 
 } /* namespace testing */

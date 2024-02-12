@@ -22,12 +22,14 @@ using std::string;
 
 supla_pn_recipient::supla_pn_recipient(int client_id, int app_id,
                                        bool development_env,
-                                       const string& token) {
+                                       const string& token,
+                                       const std::string& profile_name) {
   this->client_id = client_id;
   this->token = token;
   this->app_id = app_id;
   this->development_env = development_env;
   this->exists = true;
+  this->profile_name = profile_name;
 }
 
 supla_pn_recipient::supla_pn_recipient(supla_pn_recipient* recipient) {
@@ -57,3 +59,7 @@ bool supla_pn_recipient::is_exists(void) { return exists; }
 bool supla_pn_recipient::is_development_env(void) { return development_env; }
 
 void supla_pn_recipient::set_exists(bool exists) { this->exists = exists; }
+
+const std::string& supla_pn_recipient::get_profile_name(void) {
+  return profile_name;
+}

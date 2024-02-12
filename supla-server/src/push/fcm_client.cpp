@@ -50,6 +50,18 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
   cJSON_AddItemToObject(message, "android", android);
   cJSON_AddStringToObject(android, "priority", "high");
 
+  cJSON *data = cJSON_CreateObject();
+  if (!recipient->get_profile_name().empty()) {
+    cJSON_AddStringToObject(data, "profileName",
+                            recipient->get_profile_name().c_str());
+  }
+
+  if (cJSON_GetArraySize(data)) {
+    cJSON_AddItemToObject(message, "data", data);
+  } else {
+    cJSON_Delete(data);
+  }
+
   cJSON *notification = cJSON_CreateObject();
   cJSON_AddItemToObject(android, "notification", notification);
 

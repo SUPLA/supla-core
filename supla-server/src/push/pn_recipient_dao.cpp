@@ -21,6 +21,7 @@
 #include <string>
 
 #include "log.h"
+#include "proto.h"
 
 using std::string;
 
@@ -81,9 +82,10 @@ void supla_pn_recipient_dao::get_recipients(const char *sql, MYSQL_BIND *pbind,
   MYSQL_STMT *stmt = NULL;
 
   if (dba->stmt_execute((void **)&stmt, sql, pbind, pbind_size, true)) {
-    MYSQL_BIND rbind[5] = {};
+    MYSQL_BIND rbind[6] = {};
 
-    char token[256] = {};
+    char token[SUPLA_PN_CLIENT_TOKEN_MAXSIZE] = {};
+    char profile_name[SUPLA_PN_PROFILE_NAME_MAXSIZE] = {};
     int client_id = 0;
     char platform = 0;
     int app_id = 0;
@@ -91,6 +93,9 @@ void supla_pn_recipient_dao::get_recipients(const char *sql, MYSQL_BIND *pbind,
 
     unsigned long token_len = 0;
     my_bool token_is_null = false;
+
+    unsigned long profile_name_len = 0;
+    my_bool profile_name_is_null = false;
 
     rbind[0].buffer_type = MYSQL_TYPE_STRING;
     rbind[0].buffer = token;
@@ -114,6 +119,12 @@ void supla_pn_recipient_dao::get_recipients(const char *sql, MYSQL_BIND *pbind,
     rbind[4].buffer = &devel_env;
     rbind[4].buffer_length = sizeof(devel_env);
 
+    rbind[5].buffer_type = MYSQL_TYPE_STRING;
+    rbind[5].buffer = profile_name;
+    rbind[5].buffer_length = sizeof(profile_name);
+    rbind[5].length = &profile_name_len;
+    rbind[5].is_null = &profile_name_is_null;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -124,8 +135,10 @@ void supla_pn_recipient_dao::get_recipients(const char *sql, MYSQL_BIND *pbind,
         while (!mysql_stmt_fetch(stmt)) {
           dba->set_terminating_byte(token, sizeof(token), token_len,
                                     token_is_null);
-          supla_pn_recipient *recipient =
-              new supla_pn_recipient(client_id, app_id, devel_env > 0, token);
+          dba->set_terminating_byte(profile_name, sizeof(profile_name),
+                                    profile_name_len, profile_name_is_null);
+          supla_pn_recipient *recipient = new supla_pn_recipient(
+              client_id, app_id, devel_env > 0, token, profile_name);
           if (recipient) {
             recipients->add(recipient, static_cast<_platform_e>(platform));
           }
@@ -145,8 +158,8 @@ void supla_pn_recipient_dao::get_recipients(int user_id,
                                             int push_notification_id,
                                             supla_pn_recipients *recipients) {
   const char sql[] =
-      "SELECT c.push_token, c.id, c.platform, c.app_id, c.devel_env FROM "
-      "supla_client c, supla_rel_aid_pushnotification p, "
+      "SELECT c.push_token, c.id, c.platform, c.app_id, c.devel_env, "
+      "c.profile_name FROM supla_client c, supla_rel_aid_pushnotification p, "
       "supla_v_accessid_active a WHERE p.push_notification_id = ? AND "
       "c.user_id = ? AND c.access_id = p.access_id AND c.push_token IS NOT "
       "NULL AND c.access_id = a.id AND c.enabled = 1 AND a.enabled = 1 AND "
@@ -174,12 +187,13 @@ void supla_pn_recipient_dao::get_recipients(int user_id,
   }
 
   string sql =
-      "SELECT c.push_token, c.id, c.platform, c.app_id, c.devel_env FROM "
-      "supla_client c, supla_v_accessid_active a WHERE c.user_id = ? AND "
-      "c.push_token IS NOT NULL AND c.access_id = a.id AND c.enabled = 1 AND "
-      "a.enabled = 1 AND a.is_now_active = 1 AND (c.platform = 1 OR c.platform "
-      "= 2) AND TIMESTAMPDIFF(MONTH, c.push_token_update_time, "
-      "UTC_TIMESTAMP()) < 2 AND ((c.access_id != 0 AND c.access_id IN (0";
+      "SELECT c.push_token, c.id, c.platform, c.app_id, c.devel_env, "
+      "c.profile_name FROM supla_client c, supla_v_accessid_active a WHERE "
+      "c.user_id = ? AND c.push_token IS NOT NULL AND c.access_id = a.id AND "
+      "c.enabled = 1 AND a.enabled = 1 AND a.is_now_active = 1 AND (c.platform "
+      "= 1 OR c.platform = 2) AND TIMESTAMPDIFF(MONTH, "
+      "c.push_token_update_time, UTC_TIMESTAMP()) < 2 AND ((c.access_id != 0 "
+      "AND c.access_id IN (0";
 
   for (size_t a = 0; a < aids.size(); a++) {
     sql.append(",?");

@@ -29,10 +29,11 @@ class supla_pn_recipient {
   std::string message_id;
   bool exists;
   bool development_env;
+  std::string profile_name;
 
  public:
   supla_pn_recipient(int client_id, int app_id, bool development_env,
-                     const std::string& token);
+                     const std::string& token, const std::string& profile_name);
   explicit supla_pn_recipient(supla_pn_recipient* recipient);
   virtual ~supla_pn_recipient(void);
 
@@ -44,6 +45,7 @@ class supla_pn_recipient {
   bool is_exists(void);
   bool is_development_env(void);
   void set_exists(bool exists);
+  const std::string& get_profile_name(void);
 };
 
 #endif /* PUSH_NOTIFICATION_RECIPIENT_H_ */

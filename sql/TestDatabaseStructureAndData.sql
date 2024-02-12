@@ -270,6 +270,7 @@ CREATE TABLE `supla_client` (
   `platform` tinyint(3) unsigned DEFAULT NULL COMMENT '(DC2Type:tinyint)',
   `app_id` int(11) NOT NULL DEFAULT 0,
   `devel_env` tinyint(1) NOT NULL DEFAULT 0,
+  `profile_name` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UNIQUE_CLIENTAPP` (`user_id`,`guid`),
   KEY `IDX_5430007F4FEA67CF` (`access_id`),
@@ -285,7 +286,7 @@ CREATE TABLE `supla_client` (
 
 LOCK TABLES `supla_client` WRITE;
 /*!40000 ALTER TABLE `supla_client` DISABLE KEYS */;
-INSERT INTO `supla_client` VALUES (1,2,'\0	\n\r','Console Test Client',1,2130706433,'2020-04-16 18:21:15',2130706433,'2020-04-16 18:21:15','1.0-Linux',12,2,'$2a$04$yhIgHxTc7MFQnXTS2qdbmOWorpu7NVMR.IL1YyaJ0YPxD6P26MeaC',NULL,NULL,NULL,NULL,NULL,0,0);
+INSERT INTO `supla_client` VALUES (1,2,'\0	\n\r','Console Test Client',1,2130706433,'2020-04-16 18:21:15',2130706433,'2020-04-16 18:21:15','1.0-Linux',12,2,'$2a$04$yhIgHxTc7MFQnXTS2qdbmOWorpu7NVMR.IL1YyaJ0YPxD6P26MeaC',NULL,NULL,NULL,NULL,NULL,0,0,NULL);
 /*!40000 ALTER TABLE `supla_client` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2915,15 +2916,7 @@ DELIMITER ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
 DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_update_push_notification_client_token`(IN `_user_id` INT, IN `_client_id` INT, IN `_token` VARCHAR(255) CHARSET utf8mb4, IN `_platform` TINYINT, IN `_app_id` INT, IN `_devel_env` TINYINT)
-UPDATE supla_client SET 
-   push_token = _token,
-   push_token_update_time = UTC_TIMESTAMP(),
-   platform = _platform,
-   app_id = _app_id,
-   devel_env = _devel_env
-WHERE id = _client_id
- AND user_id = _user_id ;;
+CREATE PROCEDURE `supla_update_push_notification_client_token`(IN `_user_id` INT, IN `_client_id` INT, IN `_token` VARCHAR(255) CHARSET utf8mb4, IN `_platform` TINYINT, IN `_app_id` INT, IN `_devel_env` TINYINT, IN `_profile_name` VARCHAR(50) CHARSET utf8mb4) NOT DETERMINISTIC CONTAINS SQL SQL SECURITY DEFINER UPDATE supla_client SET push_token = _token, push_token_update_time = UTC_TIMESTAMP(), platform = _platform, app_id = _app_id, devel_env = _devel_env, profile_name = _profile_name WHERE id = _client_id AND user_id = _user_id;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;

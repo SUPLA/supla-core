@@ -100,9 +100,11 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
   push->set_localized_body_args(bargs);
 
   supla_pn_recipient *r1 = new supla_pn_recipient(
-      1, 0, false, "0956469ed2650ed09534e4193ef8028f950");
-  supla_pn_recipient *r2 = new supla_pn_recipient(1, 5, false, "2568548549");
-  supla_pn_recipient *r3 = new supla_pn_recipient(1, 5, true, "ybuabnuf548549");
+      1, 0, false, "0956469ed2650ed09534e4193ef8028f950", "My Profile 123");
+  supla_pn_recipient *r2 =
+      new supla_pn_recipient(1, 5, false, "2568548549", "ABCD");
+  supla_pn_recipient *r3 =
+      new supla_pn_recipient(1, 5, true, "ybuabnuf548549", "ABCD");
 
   push->get_recipients().add(r1, platform_push_android);
 
@@ -128,7 +130,9 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
           "\"android\":{\"priority\":\"high\",\"notification\":{\"title\":"
           "\"TiTle\",\"body\":\"BoDy\",\"title_loc_key\":\"Localized "
           "Title\",\"title_loc_args\":[\"t1\",\"t2\"],\"body_loc_key\":"
-          "\"Localized Body\",\"body_loc_args\":[\"b1\",\"b2\"]}}}}")))
+          "\"Localized "
+          "Body\",\"body_loc_args\":[\"b1\",\"b2\"]}},\"data\":{"
+          "\"profileName\":\"My Profile 123\"}}}")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
@@ -166,11 +170,13 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
           "{\"aps\":{\"alert\":{\"title\":\"TiTle\",\"body\":\"BoDy\",\"title-"
           "loc-key\":\"Localized "
           "Title\",\"title-loc-args\":[\"t1\",\"t2\"],\"loc-key\":\"Localized "
-          "Body\",\"loc-args\":[\"b1\",\"b2\"]},\"sound\":\"default\"}}")))
+          "Body\",\"loc-args\":[\"b1\",\"b2\"]},\"sound\":\"default\"},"
+          "\"profileName\":\"ABCD\"}")))
       .Times(2);
 
   shared_ptr<supla_abstract_asynctask> task =
-      (new supla_pn_delivery_task(1, queue, pool, push, provider, &throttling))
+      (new supla_pn_delivery_task(supla_caller(ctClient, 123), 1, queue, pool,
+                                  push, provider, &throttling))
           ->start();
 
   WaitForState(task, supla_asynctask_state::SUCCESS, 1000000);
@@ -185,7 +191,7 @@ TEST_F(DeliveryTaskTest, fcmMessageId) {
   push->set_title("T");
   push->set_body("B");
 
-  supla_pn_recipient *r = new supla_pn_recipient(1, 0, false, "0956469");
+  supla_pn_recipient *r = new supla_pn_recipient(1, 0, false, "0956469", "");
   push->get_recipients().add(r, platform_push_android);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_write_data)
@@ -194,7 +200,8 @@ TEST_F(DeliveryTaskTest, fcmMessageId) {
       });
 
   shared_ptr<supla_abstract_asynctask> task =
-      (new supla_pn_delivery_task(1, queue, pool, push, provider, &throttling))
+      (new supla_pn_delivery_task(supla_caller(ctDevice, 567), 1, queue, pool,
+                                  push, provider, &throttling))
           ->start();
 
   WaitForState(task, supla_asynctask_state::SUCCESS, 1000000);
@@ -207,7 +214,7 @@ TEST_F(DeliveryTaskTest, apnsMessageId) {
   push->set_title("T");
   push->set_body("B");
 
-  supla_pn_recipient *r = new supla_pn_recipient(1, 5, false, "0956469");
+  supla_pn_recipient *r = new supla_pn_recipient(1, 5, false, "0956469", "");
   push->get_recipients().add(r, platform_push_ios);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_header_data)
@@ -216,7 +223,8 @@ TEST_F(DeliveryTaskTest, apnsMessageId) {
       });
 
   shared_ptr<supla_abstract_asynctask> task =
-      (new supla_pn_delivery_task(1, queue, pool, push, provider, &throttling))
+      (new supla_pn_delivery_task(supla_caller(ctIPC), 1, queue, pool, push,
+                                  provider, &throttling))
           ->start();
 
   WaitForState(task, supla_asynctask_state::SUCCESS, 1000000);
@@ -229,7 +237,7 @@ TEST_F(DeliveryTaskTest, fcmRecipientDoesNotExist) {
   push->set_title("T");
   push->set_body("B");
 
-  supla_pn_recipient *r = new supla_pn_recipient(1, 0, false, "0956469");
+  supla_pn_recipient *r = new supla_pn_recipient(1, 0, false, "0956469", "");
   push->get_recipients().add(r, platform_push_android);
   EXPECT_TRUE(r->is_exists());
 
@@ -237,7 +245,8 @@ TEST_F(DeliveryTaskTest, fcmRecipientDoesNotExist) {
       .WillRepeatedly(Return(404));
 
   shared_ptr<supla_abstract_asynctask> task =
-      (new supla_pn_delivery_task(1, queue, pool, push, provider, &throttling))
+      (new supla_pn_delivery_task(supla_caller(ctIPC), 1, queue, pool, push,
+                                  provider, &throttling))
           ->start();
 
   WaitForState(task, supla_asynctask_state::FAILURE, 1000000);
@@ -250,7 +259,7 @@ TEST_F(DeliveryTaskTest, apnsRecipientDoesNotExist) {
   push->set_title("T");
   push->set_body("B");
 
-  supla_pn_recipient *r = new supla_pn_recipient(1, 5, false, "0956469");
+  supla_pn_recipient *r = new supla_pn_recipient(1, 5, false, "0956469", "");
   push->get_recipients().add(r, platform_push_ios);
   EXPECT_TRUE(r->is_exists());
 
@@ -263,7 +272,8 @@ TEST_F(DeliveryTaskTest, apnsRecipientDoesNotExist) {
       });
 
   shared_ptr<supla_abstract_asynctask> task =
-      (new supla_pn_delivery_task(1, queue, pool, push, provider, &throttling))
+      (new supla_pn_delivery_task(supla_caller(ctIPC), 1, queue, pool, push,
+                                  provider, &throttling))
           ->start();
 
   WaitForState(task, supla_asynctask_state::FAILURE, 1000000);
