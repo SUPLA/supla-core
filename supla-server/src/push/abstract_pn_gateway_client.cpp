@@ -22,9 +22,10 @@ using std::string;
 using std::vector;
 
 supla_abstract_pn_gateway_client::supla_abstract_pn_gateway_client(
-    supla_abstract_curl_adapter *curl_adapter,
+    const supla_caller &caller, supla_abstract_curl_adapter *curl_adapter,
     supla_remote_gateway_access_token_provider *token_provider,
     supla_push_notification *push) {
+  this->caller = caller;
   this->curl_adapter = curl_adapter;
   this->token_provider = token_provider;
   this->push = push;
@@ -50,6 +51,10 @@ void supla_abstract_pn_gateway_client::add_args(const vector<string> &args,
   for (auto it = args.begin(); it != args.end(); ++it) {
     cJSON_AddItemToArray(arr, cJSON_CreateString(it->c_str()));
   }
+}
+
+const supla_caller &supla_abstract_pn_gateway_client::get_caller(void) {
+  return caller;
 }
 
 bool supla_abstract_pn_gateway_client::send(void) {

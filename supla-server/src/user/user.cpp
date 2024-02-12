@@ -605,7 +605,7 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
 
 void supla_user::on_channel_become_online(int DeviceId, int ChannelId) {
   supla_http_event_hub::on_channel_value_change(
-      this, DeviceId, ChannelId, supla_caller(ctDevice, DeviceId));
+      this, DeviceId, ChannelId, supla_caller(ctChannel, ChannelId));
   supla_mqtt_client_suite::globalInstance()->onChannelStateChanged(
       getUserID(), DeviceId, ChannelId);
 }

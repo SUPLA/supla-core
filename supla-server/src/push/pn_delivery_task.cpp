@@ -32,11 +32,11 @@ using std::map;
 using std::string;
 
 supla_pn_delivery_task::supla_pn_delivery_task(
-    int user_id, supla_asynctask_queue *queue,
+    const supla_caller &caller, int user_id, supla_asynctask_queue *queue,
     supla_abstract_asynctask_thread_pool *pool, supla_push_notification *push,
     supla_remote_gateway_access_token_provider *token_provider,
     supla_pn_throttling *throttling)
-    : supla_asynctask_http_request(supla_caller(), user_id, 0, 0, queue, pool,
+    : supla_asynctask_http_request(caller, user_id, 0, 0, queue, pool,
                                    nullptr) {
   this->push = push;
   this->token_provider = token_provider;
@@ -132,14 +132,14 @@ bool supla_pn_delivery_task::make_request(
   }
 
   if (push->get_recipients().count(platform_push_android) > 0) {
-    supla_fcm_client client(curl_adapter, token_provider, push);
+    supla_fcm_client client(get_caller(), curl_adapter, token_provider, push);
 
     fcm_recipients = true;
     fcm_result = client.send();
   }
 
   if (push->get_recipients().count(platform_push_ios) > 0) {
-    supla_apns_client client(curl_adapter, token_provider, push);
+    supla_apns_client client(get_caller(), curl_adapter, token_provider, push);
 
     apns_recipients = true;
     apns_result = client.send();
@@ -174,10 +174,11 @@ bool supla_pn_delivery_task::make_request(
 }
 
 // static
-void supla_pn_delivery_task::start_delivering(int user_id,
+void supla_pn_delivery_task::start_delivering(const supla_caller &caller,
+                                              int user_id,
                                               supla_push_notification *push) {
   supla_pn_delivery_task *task = new supla_pn_delivery_task(
-      user_id, supla_asynctask_queue::global_instance(),
+      caller, user_id, supla_asynctask_queue::global_instance(),
       supla_pn_delivery_task_thread_pool::global_instance(), push,
       supla_remote_gateway_access_token_provider::global_instance(),
       supla_pn_throttling::get_instance());
@@ -186,7 +187,7 @@ void supla_pn_delivery_task::start_delivering(int user_id,
 
 // static
 void supla_pn_delivery_task::start_delivering(
-    int user_id, int push_notification_id,
+    const supla_caller &caller, int user_id, int push_notification_id,
     map<string, string> *replacement_map) {
   if (!push_notification_id) {
     return;
@@ -195,13 +196,14 @@ void supla_pn_delivery_task::start_delivering(
       new supla_push_notification(push_notification_id);
   push->set_replacement_map(replacement_map);
 
-  start_delivering(user_id, push);
+  start_delivering(caller, user_id, push);
 }
 
 // static
-bool supla_pn_delivery_task::start_delivering(int user_id, const char *json) {
+bool supla_pn_delivery_task::start_delivering(const supla_caller &caller,
+                                              int user_id, const char *json) {
   supla_push_notification *push = new supla_push_notification();
   bool result = push->apply_json(user_id, json);
-  start_delivering(user_id, push);
+  start_delivering(caller, user_id, push);
   return result;
 }

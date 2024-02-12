@@ -245,7 +245,7 @@ void supla_abstract_action_executor::execute_action(
       disable();
       break;
     case ACTION_SEND:
-      send(replacement_map);
+      send(caller, replacement_map);
       break;
     case ACTION_INTERRUPT:
       interrupt();

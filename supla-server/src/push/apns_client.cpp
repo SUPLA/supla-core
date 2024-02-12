@@ -27,10 +27,11 @@ using std::list;
 using std::string;
 
 supla_apns_client::supla_apns_client(
-    supla_abstract_curl_adapter *curl_adapter,
+    const supla_caller &caller, supla_abstract_curl_adapter *curl_adapter,
     supla_remote_gateway_access_token_provider *token_provider,
     supla_push_notification *push)
-    : supla_abstract_pn_gateway_client(curl_adapter, token_provider, push) {}
+    : supla_abstract_pn_gateway_client(caller, curl_adapter, token_provider,
+                                       push) {}
 
 supla_apns_client::~supla_apns_client(void) {}
 
@@ -78,6 +79,14 @@ char *supla_apns_client::get_payload(supla_pn_recipient *recipient) {
   if (!recipient->get_profile_name().empty()) {
     cJSON_AddStringToObject(payload, "profileName",
                             recipient->get_profile_name().c_str());
+  }
+
+  if (get_caller().get_id()) {
+    if (get_caller() == ctDevice) {
+      cJSON_AddNumberToObject(payload, "deviceId", get_caller().get_id());
+    } else if (get_caller() == ctChannel) {
+      cJSON_AddNumberToObject(payload, "channelId", get_caller().get_id());
+    }
   }
 
   cJSON_AddItemToObject(aps, "alert", alert);

@@ -135,6 +135,7 @@ bool supla_google_home_state_report_request::is_caller_allowed(
     const supla_caller &caller) {
   switch (caller.get_type()) {
     case ctDevice:
+    case ctChannel:
     case ctClient:
     case ctIPC:
     case ctMQTT:

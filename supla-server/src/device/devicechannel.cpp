@@ -606,20 +606,20 @@ void supla_device_channel::on_value_changed(supla_channel_value *old_value,
   }
 
   get_device()->get_user()->on_channel_value_changed(
-      supla_caller(ctDevice, get_device()->get_id()), get_device()->get_id(),
-      get_id(), false, significant_change);
+      supla_caller(ctChannel, get_id()), get_device()->get_id(), get_id(),
+      false, significant_change);
 
   if (convertible2extended) {
     get_device()->get_user()->on_channel_value_changed(
-        supla_caller(ctDevice, get_device()->get_id()), get_device()->get_id(),
-        get_id(), true);
+        supla_caller(ctChannel, get_id()), get_device()->get_id(), get_id(),
+        true);
   }
 
   get_device()
       ->get_user()
       ->get_value_based_triggers()
-      ->on_channel_value_changed(supla_caller(ctDevice, get_device()->get_id()),
-                                 get_id(), old_value, new_value);
+      ->on_channel_value_changed(supla_caller(ctChannel, get_id()), get_id(),
+                                 old_value, new_value);
 }
 
 void supla_device_channel::on_extended_value_changed(
@@ -628,8 +628,8 @@ void supla_device_channel::on_extended_value_changed(
   get_device()
       ->get_user()
       ->get_value_based_triggers()
-      ->on_channel_value_changed(supla_caller(ctDevice, get_device()->get_id()),
-                                 get_id(), old_value, new_value);
+      ->on_channel_value_changed(supla_caller(ctChannel, get_id()), get_id(),
+                                 old_value, new_value);
 }
 
 void supla_device_channel::set_extended_value(

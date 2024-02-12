@@ -100,11 +100,12 @@ TEST_F(DeliveryTaskIntegrationTest, notificationLoadedFromDatabase) {
               set_opt_url(StrEq("https://push-fcm.supla.org")))
       .Times(1);
 
-  EXPECT_CALL(*deliveryTaskCurlAdapter,
-              set_opt_post_fields(StrEq(
-                  "{\"message\":{\"token\":\"Token "
-                  "1\",\"android\":{\"priority\":\"high\",\"notification\":{"
-                  "\"title\":\"Abcd\",\"body\":\"Efgh\"}}}}")))
+  EXPECT_CALL(
+      *deliveryTaskCurlAdapter,
+      set_opt_post_fields(StrEq(
+          "{\"message\":{\"token\":\"Token "
+          "1\",\"android\":{\"priority\":\"high\",\"notification\":{\"title\":"
+          "\"Abcd\",\"body\":\"Efgh\"}},\"data\":{\"channelId\":345}}}")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
@@ -149,17 +150,17 @@ TEST_F(DeliveryTaskIntegrationTest, notificationLoadedFromDatabase) {
               set_opt_url(StrEq("https://devel-push-apns.supla.org/Token%203")))
       .Times(1);
 
-  EXPECT_CALL(
-      *deliveryTaskCurlAdapter,
-      set_opt_post_fields(StrEq("{\"aps\":{\"alert\":{\"title\":\"Abcd\","
-                                "\"body\":\"Efgh\"},\"sound\":\"default\"}}")))
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              set_opt_post_fields(
+                  StrEq("{\"aps\":{\"alert\":{\"title\":\"Abcd\",\"body\":"
+                        "\"Efgh\"},\"sound\":\"default\"},\"channelId\":345}")))
       .Times(2);
 
   PnThrottlingMock throttling;
   EXPECT_CALL(throttling, is_delivery_possible).WillRepeatedly(Return(true));
 
   shared_ptr<supla_abstract_asynctask> task =
-      (new supla_pn_delivery_task(2, queue, pool,
+      (new supla_pn_delivery_task(supla_caller(ctChannel, 345), 2, queue, pool,
                                   new supla_push_notification(5), provider,
                                   &throttling))
           ->start();

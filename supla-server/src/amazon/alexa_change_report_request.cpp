@@ -125,6 +125,7 @@ bool supla_alexa_change_report_request::is_caller_allowed(
     const supla_caller &caller) {
   switch (caller.get_type()) {
     case ctDevice:
+    case ctChannel:
     case ctClient:
     case ctAmazonAlexa:
     case ctIPC:

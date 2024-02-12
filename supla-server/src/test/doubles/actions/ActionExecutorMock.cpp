@@ -220,6 +220,7 @@ void ActionExecutorMock::disable(void) {
 }
 
 void ActionExecutorMock::send(
+    const supla_caller &caller,
     std::map<std::string, std::string> *replacement_map) {
   addTime();
   sent_counter++;

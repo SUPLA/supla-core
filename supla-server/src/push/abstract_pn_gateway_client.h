@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "caller.h"
 #include "http/abstract_curl_adapter.h"
 #include "http/remote_gateway_access_token_provider.h"
 #include "json/cJSON.h"
@@ -29,6 +30,7 @@
 
 class supla_abstract_pn_gateway_client {
  private:
+  supla_caller caller;
   supla_remote_gateway_access_token_provider *token_provider;
   supla_push_notification *push;
   supla_abstract_curl_adapter *curl_adapter;
@@ -42,10 +44,11 @@ class supla_abstract_pn_gateway_client {
   virtual _platform_e get_platform(void) = 0;
   virtual bool _send(supla_remote_gateway_access_token *token,
                      supla_pn_recipient *recipient) = 0;
+  const supla_caller &get_caller(void);
 
  public:
   supla_abstract_pn_gateway_client(
-      supla_abstract_curl_adapter *curl_adapter,
+      const supla_caller &caller, supla_abstract_curl_adapter *curl_adapter,
       supla_remote_gateway_access_token_provider *token_provider,
       supla_push_notification *push);
   virtual ~supla_abstract_pn_gateway_client(void);

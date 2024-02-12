@@ -31,7 +31,8 @@ enum _callerType_e {
   ctGoogleHome,
   ctActionTrigger,
   ctScene,
-  ctCyclicTask
+  ctCyclicTask,
+  ctChannel
 };
 
 class supla_caller {
