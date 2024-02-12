@@ -58,15 +58,17 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
   }
 
   if (get_caller().get_id()) {
+    string id = std::to_string(get_caller().get_id());
+
     if (get_caller() == ctDevice) {
-      cJSON_AddNumberToObject(data, "deviceId", get_caller().get_id());
+      cJSON_AddStringToObject(data, "deviceId", id.c_str());
     } else if (get_caller() == ctChannel) {
-      cJSON_AddNumberToObject(data, "channelId", get_caller().get_id());
+      cJSON_AddStringToObject(data, "channelId", id.c_str());
     }
   }
 
   if (cJSON_GetArraySize(data)) {
-    cJSON_AddItemToObject(message, "data", data);
+    cJSON_AddItemToObject(android, "data", data);
   } else {
     cJSON_Delete(data);
   }
