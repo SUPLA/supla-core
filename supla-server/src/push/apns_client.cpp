@@ -60,7 +60,7 @@ char *supla_apns_client::get_payload(supla_pn_recipient *recipient) {
 
   if (get_push_notification()->get_localized_title_args().size()) {
     add_args(get_push_notification()->get_localized_title_args(),
-             "title-loc-args", alert);
+             "title-loc-args", alert, false);
   }
 
   if (!get_push_notification()->get_localized_body().empty()) {
@@ -71,7 +71,7 @@ char *supla_apns_client::get_payload(supla_pn_recipient *recipient) {
 
   if (get_push_notification()->get_localized_body_args().size()) {
     add_args(get_push_notification()->get_localized_body_args(), "loc-args",
-             alert);
+             alert, false);
   }
 
   cJSON_AddItemToObject(payload, "aps", aps);

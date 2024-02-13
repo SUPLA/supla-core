@@ -3086,6 +3086,7 @@ typedef struct {
 #define PLATFORM_UNKNOWN 0
 #define PLATFORM_IOS 1
 #define PLATFORM_ANDROID 2
+#define PLATFORM_HOMEGRAPH 3 // v. >= 23
 
 typedef struct {
   unsigned char DevelopmentEnv;

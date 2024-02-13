@@ -82,7 +82,7 @@ void supla_pn_recipient_dao::get_recipients(const char *sql, MYSQL_BIND *pbind,
   MYSQL_STMT *stmt = NULL;
 
   if (dba->stmt_execute((void **)&stmt, sql, pbind, pbind_size, true)) {
-    MYSQL_BIND rbind[6] = {};
+    MYSQL_BIND rbind[7] = {};
 
     char token[SUPLA_PN_CLIENT_TOKEN_MAXSIZE] = {};
     char profile_name[SUPLA_PN_PROFILE_NAME_MAXSIZE] = {};
@@ -90,6 +90,7 @@ void supla_pn_recipient_dao::get_recipients(const char *sql, MYSQL_BIND *pbind,
     char platform = 0;
     int app_id = 0;
     char devel_env = 0;
+    int protocol_version = 0;
 
     unsigned long token_len = 0;
     my_bool token_is_null = false;
@@ -125,6 +126,10 @@ void supla_pn_recipient_dao::get_recipients(const char *sql, MYSQL_BIND *pbind,
     rbind[5].length = &profile_name_len;
     rbind[5].is_null = &profile_name_is_null;
 
+    rbind[6].buffer_type = MYSQL_TYPE_LONG;
+    rbind[6].buffer = &protocol_version;
+    rbind[6].buffer_length = sizeof(protocol_version);
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -137,8 +142,9 @@ void supla_pn_recipient_dao::get_recipients(const char *sql, MYSQL_BIND *pbind,
                                     token_is_null);
           dba->set_terminating_byte(profile_name, sizeof(profile_name),
                                     profile_name_len, profile_name_is_null);
-          supla_pn_recipient *recipient = new supla_pn_recipient(
-              client_id, app_id, devel_env > 0, token, profile_name);
+          supla_pn_recipient *recipient =
+              new supla_pn_recipient(client_id, app_id, devel_env > 0, token,
+                                     profile_name, protocol_version);
           if (recipient) {
             recipients->add(recipient, static_cast<_platform_e>(platform));
           }
@@ -159,12 +165,13 @@ void supla_pn_recipient_dao::get_recipients(int user_id,
                                             supla_pn_recipients *recipients) {
   const char sql[] =
       "SELECT c.push_token, c.id, c.platform, c.app_id, c.devel_env, "
-      "c.profile_name FROM supla_client c, supla_rel_aid_pushnotification p, "
-      "supla_v_accessid_active a WHERE p.push_notification_id = ? AND "
-      "c.user_id = ? AND c.access_id = p.access_id AND c.push_token IS NOT "
-      "NULL AND c.access_id = a.id AND c.enabled = 1 AND a.enabled = 1 AND "
-      "a.is_now_active = 1 AND TIMESTAMPDIFF(MONTH, c.push_token_update_time, "
-      "UTC_TIMESTAMP()) < 2 AND (c.platform = 1 OR c.platform = 2)";
+      "c.profile_name, c.protocol_version FROM supla_client c, "
+      "supla_rel_aid_pushnotification p, supla_v_accessid_active a WHERE "
+      "p.push_notification_id = ? AND c.user_id = ? AND c.access_id = "
+      "p.access_id AND c.push_token IS NOT NULL AND c.access_id = a.id AND "
+      "c.enabled = 1 AND a.enabled = 1 AND a.is_now_active = 1 AND "
+      "TIMESTAMPDIFF(MONTH, c.push_token_update_time, UTC_TIMESTAMP()) < 2 AND "
+      "(c.platform = 1 OR c.platform = 2)";
 
   MYSQL_BIND pbind[2] = {};
 
@@ -188,12 +195,12 @@ void supla_pn_recipient_dao::get_recipients(int user_id,
 
   string sql =
       "SELECT c.push_token, c.id, c.platform, c.app_id, c.devel_env, "
-      "c.profile_name FROM supla_client c, supla_v_accessid_active a WHERE "
-      "c.user_id = ? AND c.push_token IS NOT NULL AND c.access_id = a.id AND "
-      "c.enabled = 1 AND a.enabled = 1 AND a.is_now_active = 1 AND (c.platform "
-      "= 1 OR c.platform = 2) AND TIMESTAMPDIFF(MONTH, "
-      "c.push_token_update_time, UTC_TIMESTAMP()) < 2 AND ((c.access_id != 0 "
-      "AND c.access_id IN (0";
+      "c.profile_name, c.protocol_version FROM supla_client c, "
+      "supla_v_accessid_active a WHERE c.user_id = ? AND c.push_token IS NOT "
+      "NULL AND c.access_id = a.id AND c.enabled = 1 AND a.enabled = 1 AND "
+      "a.is_now_active = 1 AND (c.platform = 1 OR c.platform = 2) AND "
+      "TIMESTAMPDIFF(MONTH, c.push_token_update_time, UTC_TIMESTAMP()) < 2 AND "
+      "((c.access_id != 0 AND c.access_id IN (0";
 
   for (size_t a = 0; a < aids.size(); a++) {
     sql.append(",?");

@@ -39,7 +39,8 @@ class supla_abstract_pn_gateway_client {
   supla_push_notification *get_push_notification(void);
   supla_abstract_curl_adapter *get_curl_adapter(void);
   void add_args(const std::vector<std::string> &args,
-                const std::string &key_name, cJSON *parent);
+                const std::string &key_name, cJSON *parent,
+                bool use_strings_instead_of_array);
 
   virtual _platform_e get_platform(void) = 0;
   virtual bool _send(supla_remote_gateway_access_token *token,

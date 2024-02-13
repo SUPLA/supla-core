@@ -67,14 +67,16 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
     }
   }
 
-  if (cJSON_GetArraySize(data)) {
-    cJSON_AddItemToObject(android, "data", data);
-  } else {
-    cJSON_Delete(data);
-  }
+  cJSON *notification = nullptr;
 
-  cJSON *notification = cJSON_CreateObject();
-  cJSON_AddItemToObject(android, "notification", notification);
+  bool ge23 = recipient->get_protocol_version() >= 23;
+
+  if (ge23) {
+    notification = data;
+  } else {
+    notification = cJSON_CreateObject();
+    cJSON_AddItemToObject(android, "notification", notification);
+  }
 
   if (!get_push_notification()->get_title().empty()) {
     cJSON_AddStringToObject(notification, "title",
@@ -94,7 +96,7 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
 
   if (get_push_notification()->get_localized_title_args().size()) {
     add_args(get_push_notification()->get_localized_title_args(),
-             "title_loc_args", notification);
+             ge23 ? "title_loc_arg" : "title_loc_args", notification, ge23);
   }
 
   if (!get_push_notification()->get_localized_body().empty()) {
@@ -105,7 +107,13 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
 
   if (get_push_notification()->get_localized_body_args().size()) {
     add_args(get_push_notification()->get_localized_body_args(),
-             "body_loc_args", notification);
+             ge23 ? "body_loc_arg" : "body_loc_args", notification, ge23);
+  }
+
+  if (cJSON_GetArraySize(data)) {
+    cJSON_AddItemToObject(android, "data", data);
+  } else {
+    cJSON_Delete(data);
   }
 
   char *payload = cJSON_PrintUnformatted(root);
