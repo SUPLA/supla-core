@@ -46,6 +46,7 @@ bool supla_get_gpm_value_command::get_gpm_value(int user_id, int device_id,
 
     if (gpm_val) {
       *value = gpm_val->get_value();
+      result = true;
     }
 
     delete channel_value;
