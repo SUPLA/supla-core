@@ -188,6 +188,10 @@ void supla_device_channel::trim_alt_icon_index(int func,
       break;
     case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
       max = 31;
+      break;
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
+      max = 13;
+      break;
   }
 
   if (*alt_icon > max) {
