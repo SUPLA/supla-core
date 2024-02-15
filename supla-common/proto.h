@@ -367,7 +367,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 #define SUPLA_CHANNELVALUE_SIZE 8
 
-#ifdef __AVR__
+#if defined(__AVR__) || defined(ESP8266) || defined(ESP32) || \
+    defined(ESP_PLATFORM) || defined(ARDUINO) || defined(SUPLA_DEVICE)
 #define SUPLA_CHANNELEXTENDEDVALUE_SIZE 256
 #else
 #define SUPLA_CHANNELEXTENDEDVALUE_SIZE 1024
