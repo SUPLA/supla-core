@@ -56,7 +56,7 @@ void supla_general_purpose_measurement_logger::run(
           supla_general_purpose_measurement_analyzer *gpm_analyzer =
               dynamic_cast<supla_general_purpose_measurement_analyzer *>(
                   analyzer);
-          if (gpm_analyzer) {
+          if (gpm_analyzer && gpm_analyzer->is_any_data_for_logging_purpose()) {
             supla_abstract_data_analyzer *copy = analyzer->copy();
             if (copy) {
               supla_general_purpose_measurement_analyzer *gpm_analyzer_copy =
