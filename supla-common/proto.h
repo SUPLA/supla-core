@@ -367,7 +367,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 #define SUPLA_CHANNELVALUE_SIZE 8
 
-#ifdef __AVR__
+#if defined(__AVR__) || defined(ESP8266) || defined(ESP32) || \
+    defined(ESP_PLATFORM) || defined(ARDUINO) || defined(SUPLA_DEVICE)
 #define SUPLA_CHANNELEXTENDEDVALUE_SIZE 256
 #else
 #define SUPLA_CHANNELEXTENDEDVALUE_SIZE 1024
@@ -543,6 +544,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_COMELIT 14
 #define SUPLA_MFR_POLIER 15
 #define SUPLA_MFR_ERGO_ENERGIA 16
+#define SUPLA_MFR_SOMEF 17
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
 #define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010    // ver. >= 17
