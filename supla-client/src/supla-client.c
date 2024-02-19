@@ -547,7 +547,7 @@ void supla_client_channel_d2e(TSC_SuplaChannel_D *d, TSC_SuplaChannel_E *e) {
   e->DefaultConfigCRC32 = 0;
   memcpy(e->Caption, d->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
-  e->value.sub_value_type = SUBV_TYPE_NOT_SET_OR_OFFLINE;
+  e->value.sub_value_type = d->value.sub_value_type;
   memcpy(e->value.value, d->value.value, SUPLA_CHANNELVALUE_SIZE);
   memcpy(e->value.sub_value, d->value.sub_value, SUPLA_CHANNELVALUE_SIZE);
 }
