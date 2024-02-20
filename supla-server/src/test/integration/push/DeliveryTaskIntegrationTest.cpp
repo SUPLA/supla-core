@@ -150,10 +150,11 @@ TEST_F(DeliveryTaskIntegrationTest, notificationLoadedFromDatabase) {
               set_opt_url(StrEq("https://devel-push-apns.supla.org/Token%203")))
       .Times(1);
 
-  EXPECT_CALL(*deliveryTaskCurlAdapter,
-              set_opt_post_fields(
-                  StrEq("{\"aps\":{\"alert\":{\"title\":\"Abcd\",\"body\":"
-                        "\"Efgh\"},\"sound\":\"default\"},\"channelId\":345}")))
+  EXPECT_CALL(
+      *deliveryTaskCurlAdapter,
+      set_opt_post_fields(StrEq(
+          "{\"aps\":{\"alert\":{\"title\":\"Abcd\",\"body\":\"Efgh\"},"
+          "\"sound\":\"default\",\"content-available\":1},\"channelId\":345}")))
       .Times(2);
 
   PnThrottlingMock throttling;

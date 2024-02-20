@@ -170,8 +170,8 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
           "{\"aps\":{\"alert\":{\"title\":\"TiTle\",\"body\":\"BoDy\",\"title-"
           "loc-key\":\"Localized "
           "Title\",\"title-loc-args\":[\"t1\",\"t2\"],\"loc-key\":\"Localized "
-          "Body\",\"loc-args\":[\"b1\",\"b2\"]},\"sound\":\"default\"},"
-          "\"profileName\":\"ABCD\"}")))
+          "Body\",\"loc-args\":[\"b1\",\"b2\"]},\"sound\":\"default\","
+          "\"content-available\":1},\"profileName\":\"ABCD\"}")))
       .Times(2);
 
   shared_ptr<supla_abstract_asynctask> task =

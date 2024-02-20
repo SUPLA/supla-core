@@ -91,6 +91,7 @@ char *supla_apns_client::get_payload(supla_pn_recipient *recipient) {
 
   cJSON_AddItemToObject(aps, "alert", alert);
   cJSON_AddStringToObject(aps, "sound", "default");
+  cJSON_AddNumberToObject(aps, "content-available", 1);
 
   char *result = cJSON_PrintUnformatted(payload);
   cJSON_Delete(payload);
