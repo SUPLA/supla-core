@@ -28,7 +28,8 @@ namespace testing {
 class SetLocationCaptionIntegrationTest : public SuperuserAuthorization {
  private:
   unsigned char match;
-  void locationMatch(TSC_SetCaptionResult *result, TSC_SuplaLocation *location);
+  void locationMatch(TSCD_SetCaptionResult *result,
+                     TSC_SuplaLocation *location);
 
  protected:
   unsigned char expectedResultCode;
@@ -40,7 +41,7 @@ class SetLocationCaptionIntegrationTest : public SuperuserAuthorization {
  public:
   SetLocationCaptionIntegrationTest();
   virtual ~SetLocationCaptionIntegrationTest();
-  virtual void onLocationCaptionSetResult(TSC_SetCaptionResult *result);
+  virtual void onLocationCaptionSetResult(TSCD_SetCaptionResult *result);
   virtual void locationUpdate(TSC_SuplaLocation *location);
 };
 

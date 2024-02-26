@@ -35,6 +35,7 @@ class supla_general_purpose_measurement_analyzer
                           supla_json_config *config);
   virtual void add_sample(int channel_flags, supla_json_config *config,
                           supla_channel_extended_value *extended_value);
+  virtual void add_sample(double sample);
 
   virtual void reset(void);
   virtual bool is_any_data_for_logging_purpose(void);

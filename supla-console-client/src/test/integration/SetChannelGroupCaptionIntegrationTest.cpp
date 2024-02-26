@@ -35,7 +35,7 @@ SetChannelGroupCaptionIntegrationTest::
     ~SetChannelGroupCaptionIntegrationTest() {}
 
 void SetChannelGroupCaptionIntegrationTest::channelGroupMatch(
-    TSC_SetCaptionResult *result, TSC_SuplaChannelGroup_B *channel_group) {
+    TSCD_SetCaptionResult *result, TSC_SuplaChannelGroup_B *channel_group) {
   if (result) {
     ASSERT_EQ(result->ResultCode, expectedResultCode);
     ASSERT_EQ(result->ID, expectedChannelGroupID);
@@ -58,7 +58,7 @@ void SetChannelGroupCaptionIntegrationTest::channelGroupMatch(
 }
 
 void SetChannelGroupCaptionIntegrationTest::onChannelGroupCaptionSetResult(
-    TSC_SetCaptionResult *result) {
+    TSCD_SetCaptionResult *result) {
   ASSERT_FALSE(result == NULL);
   channelGroupMatch(result, NULL);
 }

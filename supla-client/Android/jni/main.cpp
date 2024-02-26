@@ -1119,7 +1119,7 @@ void supla_cb_on_channel_function_set_result(
 }
 
 void supla_cb_on_channel_caption_set_result(void *_suplaclient, void *user_data,
-                                            TSC_SetCaptionResult *result) {
+                                            TSCD_SetCaptionResult *result) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -1133,7 +1133,7 @@ void supla_cb_on_channel_caption_set_result(void *_suplaclient, void *user_data,
 }
 
 void supla_cb_on_channel_group_caption_set_result(
-    void *_suplaclient, void *user_data, TSC_SetCaptionResult *result) {
+    void *_suplaclient, void *user_data, TSCD_SetCaptionResult *result) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -1149,7 +1149,7 @@ void supla_cb_on_channel_group_caption_set_result(
 
 void supla_cb_on_location_caption_set_result(void *_suplaclient,
                                              void *user_data,
-                                             TSC_SetCaptionResult *result) {
+                                             TSCD_SetCaptionResult *result) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -1163,7 +1163,7 @@ void supla_cb_on_location_caption_set_result(void *_suplaclient,
 }
 
 void supla_cb_on_scene_caption_set_result(void *_suplaclient, void *user_data,
-                                          TSC_SetCaptionResult *result) {
+                                          TSCD_SetCaptionResult *result) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 

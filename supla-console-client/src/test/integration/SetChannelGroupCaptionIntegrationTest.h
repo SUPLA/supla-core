@@ -28,7 +28,7 @@ namespace testing {
 class SetChannelGroupCaptionIntegrationTest : public GetChannelBasicCfg {
  private:
   unsigned char match;
-  void channelGroupMatch(TSC_SetCaptionResult *result,
+  void channelGroupMatch(TSCD_SetCaptionResult *result,
                          TSC_SuplaChannelGroup_B *channel_group);
 
  protected:
@@ -41,7 +41,7 @@ class SetChannelGroupCaptionIntegrationTest : public GetChannelBasicCfg {
  public:
   SetChannelGroupCaptionIntegrationTest();
   virtual ~SetChannelGroupCaptionIntegrationTest();
-  virtual void onChannelGroupCaptionSetResult(TSC_SetCaptionResult *result);
+  virtual void onChannelGroupCaptionSetResult(TSCD_SetCaptionResult *result);
   virtual void channelGroupUpdate(TSC_SuplaChannelGroup_B *channel_group);
 };
 

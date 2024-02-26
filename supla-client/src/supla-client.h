@@ -82,7 +82,7 @@ typedef void (*_suplaclient_cb_on_channel_basic_cfg)(void *_suplaclient,
 typedef void (*_suplaclient_cb_on_channel_function_set_result)(
     void *_suplaclient, void *user_data, TSC_SetChannelFunctionResult *result);
 typedef void (*_suplaclient_cb_on_caption_set_result)(
-    void *_suplaclient, void *user_data, TSC_SetCaptionResult *result);
+    void *_suplaclient, void *user_data, TSCD_SetCaptionResult *result);
 typedef void (*_suplaclient_cb_on_clients_reconnect_request_result)(
     void *_suplaclient, void *user_data,
     TSC_ClientsReconnectRequestResult *result);

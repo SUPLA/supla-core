@@ -34,7 +34,7 @@ SetLocationCaptionIntegrationTest::SetLocationCaptionIntegrationTest() {
 SetLocationCaptionIntegrationTest::~SetLocationCaptionIntegrationTest() {}
 
 void SetLocationCaptionIntegrationTest::locationMatch(
-    TSC_SetCaptionResult *result, TSC_SuplaLocation *location) {
+    TSCD_SetCaptionResult *result, TSC_SuplaLocation *location) {
   if (result) {
     ASSERT_EQ(result->ResultCode, expectedResultCode);
     ASSERT_EQ(result->ID, expectedLocationID);
@@ -57,7 +57,7 @@ void SetLocationCaptionIntegrationTest::locationMatch(
 }
 
 void SetLocationCaptionIntegrationTest::onLocationCaptionSetResult(
-    TSC_SetCaptionResult *result) {
+    TSCD_SetCaptionResult *result) {
   ASSERT_FALSE(result == NULL);
   locationMatch(result, NULL);
 }
