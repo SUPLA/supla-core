@@ -771,14 +771,14 @@ void supla_user::set_channel_function(std::shared_ptr<supla_client> sender,
   sender->set_channel_function_result(&result);
 }
 
-void supla_user::set_caption(std::shared_ptr<supla_client> sender,
-                             TCS_SetCaption *caption, int call_id) {
-  if (sender == nullptr || caption == NULL) {
+void supla_user::set_caption(const supla_caller &caller, bool is_authorized,
+                             int id, void *srpc, TDCS_SetCaption *caption,
+                             int call_id, bool only_when_null) {
+  if (caption == nullptr || srpc == nullptr) {
     return;
   }
 
-  TSC_SetCaptionResult result;
-  memset(&result, 0, sizeof(TSC_SetCaptionResult));
+  TSCD_SetCaptionResult result = {};
   result.ID = caption->ID;
   memcpy(result.Caption, caption->Caption, SUPLA_CAPTION_MAXSIZE);
   result.CaptionSize = caption->CaptionSize;
@@ -787,14 +787,14 @@ void supla_user::set_caption(std::shared_ptr<supla_client> sender,
   }
   result.ResultCode = SUPLA_RESULTCODE_UNKNOWN_ERROR;
 
-  if (!sender->is_superuser_authorized()) {
+  if (!is_authorized) {
     result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
-  } else {
+  } else if (id) {
     database *db = new database();
 
     if (db->connect()) {
-      if (db->set_caption(getUserID(), caption->ID, caption->Caption,
-                          call_id)) {
+      if (db->set_caption(getUserID(), id, caption->Caption, call_id,
+                          only_when_null)) {
         result.ResultCode = SUPLA_RESULTCODE_TRUE;
       } else {
         result.ResultCode = SUPLA_RESULTCODE_UNKNOWN_ERROR;
@@ -805,31 +805,28 @@ void supla_user::set_caption(std::shared_ptr<supla_client> sender,
     delete db;
   }
 
-  void *srpc = sender->get_connection()->get_srpc_adapter()->get_srpc();
-
   if (result.ResultCode == SUPLA_RESULTCODE_TRUE) {
     switch (call_id) {
-      case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
-        clients->set_channel_caption(caption->ID, caption->Caption);
+      case SUPLA_DCS_CALL_SET_CHANNEL_CAPTION:
+        clients->set_channel_caption(id, caption->Caption);
         break;
       case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
-        clients->set_channel_group_caption(caption->ID, caption->Caption);
+        clients->set_channel_group_caption(id, caption->Caption);
         break;
       case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
-        clients->set_location_caption(caption->ID, caption->Caption);
+        clients->set_location_caption(id, caption->Caption);
         break;
       case SUPLA_CS_CALL_SET_SCENE_CAPTION:
-        clients->set_scene_caption(caption->ID, caption->Caption);
+        clients->set_scene_caption(id, caption->Caption);
         break;
     }
 
-    supla_http_event_hub::on_voice_assistant_sync_needed(
-        this, supla_caller(ctClient, sender->get_id()));
+    supla_http_event_hub::on_voice_assistant_sync_needed(this, caller);
   }
 
   switch (call_id) {
-    case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
-      srpc_sc_async_set_channel_caption_result(srpc, &result);
+    case SUPLA_DCS_CALL_SET_CHANNEL_CAPTION:
+      srpc_scd_async_set_channel_caption_result(srpc, &result);
       break;
     case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
       srpc_sc_async_set_channel_group_caption_result(srpc, &result);

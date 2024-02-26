@@ -156,8 +156,8 @@ union TsrpcDataPacketData {
   TSC_ChannelBasicCfg *sc_channel_basic_cfg;
   TCS_SetChannelFunction *cs_set_channel_function;
   TSC_SetChannelFunctionResult *sc_set_channel_function_result;
-  TCS_SetCaption *cs_set_caption;
-  TSC_SetCaptionResult *sc_set_caption_result;
+  TDCS_SetCaption *dcs_set_caption;
+  TSCD_SetCaptionResult *scd_set_caption_result;
   TSC_ClientsReconnectRequestResult *sc_clients_reconnect_result;
   TCS_SetRegistrationEnabled *cs_set_registration_enabled;
   TSC_SetRegistrationEnabledResult *sc_set_registration_enabled_result;
@@ -250,6 +250,11 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_csd_async_get_channel_state(
     void *_srpc, TCSD_ChannelStateRequest *request);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_csd_async_channel_state_result(void *_srpc, TDSC_ChannelState *state);
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_dcs_async_set_channel_caption(void *_srpc, TDCS_SetCaption *caption);
+_supla_int_t SRPC_ICACHE_FLASH srpc_scd_async_set_channel_caption_result(
+    void *_srpc, TSCD_SetCaptionResult *caption);
 
 #ifndef SRPC_EXCLUDE_DEVICE
 // device <-> server
@@ -414,21 +419,17 @@ srpc_cs_async_set_channel_function(void *_srpc, TCS_SetChannelFunction *func);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_function_result(
     void *_srpc, TSC_SetChannelFunctionResult *result);
 _supla_int_t SRPC_ICACHE_FLASH
-srpc_cs_async_set_channel_caption(void *_srpc, TCS_SetCaption *caption);
-_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_caption_result(
-    void *_srpc, TSC_SetCaptionResult *caption);
-_supla_int_t SRPC_ICACHE_FLASH
-srpc_cs_async_set_channel_group_caption(void *_srpc, TCS_SetCaption *caption);
+srpc_cs_async_set_channel_group_caption(void *_srpc, TDCS_SetCaption *caption);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_group_caption_result(
-    void *_srpc, TSC_SetCaptionResult *caption);
+    void *_srpc, TSCD_SetCaptionResult *caption);
 _supla_int_t SRPC_ICACHE_FLASH
-srpc_cs_async_set_location_caption(void *_srpc, TCS_SetCaption *caption);
+srpc_cs_async_set_location_caption(void *_srpc, TDCS_SetCaption *caption);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_location_caption_result(
-    void *_srpc, TSC_SetCaptionResult *caption);
+    void *_srpc, TSCD_SetCaptionResult *caption);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_scene_caption(
-    void *_srpc, TCS_SetCaption *caption);  // ver. >= 19
+    void *_srpc, TDCS_SetCaption *caption);  // ver. >= 19
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_scene_caption_result(
-    void *_srpc, TSC_SetCaptionResult *caption);  // ver. >= 19
+    void *_srpc, TSCD_SetCaptionResult *caption);  // ver. >= 19
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_clients_reconnect_request(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_clients_reconnect_request_result(

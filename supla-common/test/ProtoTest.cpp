@@ -160,8 +160,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)1, sizeof(TSC_SetRegistrationEnabledResult));
   EXPECT_EQ((unsigned int)4, sizeof(TCS_DeviceReconnectRequest));
   EXPECT_EQ((unsigned int)5, sizeof(TSC_DeviceReconnectRequestResult));
-  EXPECT_EQ((unsigned int)409, sizeof(TCS_SetCaption));
-  EXPECT_EQ((unsigned int)410, sizeof(TSC_SetCaptionResult));
+  EXPECT_EQ((unsigned int)409, sizeof(TDCS_SetCaption));
+  EXPECT_EQ((unsigned int)410, sizeof(TSCD_SetCaptionResult));
   EXPECT_EQ((unsigned int)513, sizeof(TSD_ChannelFunctions));
   EXPECT_EQ((unsigned int)58, sizeof(TCalCfg_ZWave_Node));
   EXPECT_LE(sizeof(TCalCfg_ZWave_Node),

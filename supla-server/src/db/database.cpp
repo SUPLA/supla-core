@@ -934,11 +934,9 @@ bool database::get_channel_type_funclist_and_device_id(int UserID,
   return result;
 }
 
-bool database::set_caption(int UserID, int ID, char *Caption, int call_id) {
-  MYSQL_BIND pbind[3];
-  memset(pbind, 0, sizeof(pbind));
-
-  my_bool caption_is_null = true;
+bool database::set_caption(int UserID, int ID, char *Caption, int call_id,
+                           bool only_when_not_null) {
+  MYSQL_BIND pbind[4] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&UserID;
@@ -946,28 +944,28 @@ bool database::set_caption(int UserID, int ID, char *Caption, int call_id) {
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&ID;
 
-  pbind[2].is_null = &caption_is_null;
   pbind[2].buffer_type = MYSQL_TYPE_STRING;
   pbind[2].buffer_length =
       Caption == NULL ? 0 : strnlen(Caption, SUPLA_CAPTION_MAXSIZE);
+  pbind[2].buffer = Caption;
 
-  if (pbind[2].buffer_length > 0) {
-    pbind[2].buffer = Caption;
-    caption_is_null = false;
-  }
+  char wnn = only_when_not_null ? 1 : 0;
+
+  pbind[3].buffer_type = MYSQL_TYPE_TINY;
+  pbind[3].buffer = (char *)&wnn;
 
   bool result = false;
   MYSQL_STMT *stmt = NULL;
 
   char *sql = nullptr;
 
-  char sql_c[] = "CALL `supla_set_channel_caption`(?,?,?)";
+  char sql_c[] = "CALL `supla_set_channel_caption`(?,?,?,?)";
   char sql_cg[] = "CALL `supla_set_channel_group_caption`(?,?,?)";
   char sql_l[] = "CALL `supla_set_location_caption`(?,?,?)";
   char sql_s[] = "CALL `supla_set_scene_caption`(?,?,?)";
 
   switch (call_id) {
-    case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
+    case SUPLA_DCS_CALL_SET_CHANNEL_CAPTION:
       sql = sql_c;
       break;
     case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
@@ -981,7 +979,9 @@ bool database::set_caption(int UserID, int ID, char *Caption, int call_id) {
       break;
   }
 
-  if (sql && stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
+  if (sql && stmt_execute((void **)&stmt, sql, pbind,
+                          call_id == SUPLA_DCS_CALL_SET_CHANNEL_CAPTION ? 4 : 3,
+                          true)) {
     result = true;
   }
 

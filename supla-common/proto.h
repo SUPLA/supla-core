@@ -253,8 +253,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT 610     // ver. >= 12
 #define SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS 620               // ver. >= 12
 #define SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT 630        // ver. >= 12
-#define SUPLA_CS_CALL_SET_CHANNEL_CAPTION 640                 // ver. >= 12
-#define SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT 650          // ver. >= 12
+#define SUPLA_DCS_CALL_SET_CHANNEL_CAPTION 640                // ver. >= 12
+#define SUPLA_SCD_CALL_SET_CHANNEL_CAPTION_RESULT 650         // ver. >= 12
 #define SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION 642           // ver. >= 20
 #define SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT 652    // ver. >= 20
 #define SUPLA_CS_CALL_SET_LOCATION_CAPTION 645                // ver. >= 14
@@ -2424,19 +2424,27 @@ typedef struct {
 } TSC_SetChannelFunctionResult;  // v. >= 12
 
 typedef struct {
-  _supla_int_t ID;
+  union {
+    unsigned char ChannelNumber;
+    _supla_int_t ID;
+  };
+
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
   char Caption[SUPLA_CAPTION_MAXSIZE];  // Last variable in struct!
-} TCS_SetCaption;                       // v. >= 12
+} TDCS_SetCaption;                      // v. >= 12
 
 typedef struct {
-  _supla_int_t ID;
+  union {
+    unsigned char ChannelNumber;
+    _supla_int_t ID;
+  };
+
   unsigned char ResultCode;
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
   char Caption[SUPLA_CAPTION_MAXSIZE];  // Last variable in struct!
-} TSC_SetCaptionResult;                 // v. >= 12
+} TSCD_SetCaptionResult;                // v. >= 12
 
 typedef struct {
   unsigned char ResultCode;
@@ -3088,7 +3096,7 @@ typedef struct {
 #define PLATFORM_UNKNOWN 0
 #define PLATFORM_IOS 1
 #define PLATFORM_ANDROID 2
-#define PLATFORM_HOMEGRAPH 3 // v. >= 23
+#define PLATFORM_HOMEGRAPH 3  // v. >= 23
 
 typedef struct {
   unsigned char DevelopmentEnv;

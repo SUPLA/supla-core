@@ -470,8 +470,8 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,
               SUPLA_CS_CALL_SET_CHANNEL_FUNCTION,
               SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT,
-              SUPLA_CS_CALL_SET_CHANNEL_CAPTION,
-              SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT,
+              SUPLA_DCS_CALL_SET_CHANNEL_CAPTION,
+              SUPLA_SCD_CALL_SET_CHANNEL_CAPTION_RESULT,
               SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST,
               SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT,
               SUPLA_CS_CALL_SET_REGISTRATION_ENABLED,
@@ -3609,16 +3609,16 @@ SRPC_CALL_BASIC_TEST(srpc_sc_async_set_channel_function_result,
 // SET CHANNEL CAPTION
 //---------------------------------------------------------
 
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_channel_caption,
-                                  TCS_SetCaption,
-                                  SUPLA_CS_CALL_SET_CHANNEL_CAPTION, 31, 432,
-                                  cs_set_caption,
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_dcs_async_set_channel_caption,
+                                  TDCS_SetCaption,
+                                  SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, 31, 432,
+                                  dcs_set_caption,
                                   SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_channel_caption_result,
-                                  TSC_SetCaptionResult,
-                                  SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT, 32,
-                                  433, sc_set_caption_result,
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_scd_async_set_channel_caption_result,
+                                  TSCD_SetCaptionResult,
+                                  SUPLA_SCD_CALL_SET_CHANNEL_CAPTION_RESULT, 32,
+                                  433, scd_set_caption_result,
                                   SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
@@ -3626,30 +3626,30 @@ SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_channel_caption_result,
 //---------------------------------------------------------
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_channel_group_caption,
-                                  TCS_SetCaption,
+                                  TDCS_SetCaption,
                                   SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION, 31,
-                                  432, cs_set_caption,
+                                  432, dcs_set_caption,
                                   SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE);
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(
-    srpc_sc_async_set_channel_group_caption_result, TSC_SetCaptionResult,
+    srpc_sc_async_set_channel_group_caption_result, TSCD_SetCaptionResult,
     SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT, 32, 433,
-    sc_set_caption_result, SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE);
+    scd_set_caption_result, SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
 // SET LOCATION CAPTION
 //---------------------------------------------------------
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_location_caption,
-                                  TCS_SetCaption,
+                                  TDCS_SetCaption,
                                   SUPLA_CS_CALL_SET_LOCATION_CAPTION, 31, 432,
-                                  cs_set_caption,
+                                  dcs_set_caption,
                                   SUPLA_LOCATION_CAPTION_MAXSIZE);
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_location_caption_result,
-                                  TSC_SetCaptionResult,
+                                  TSCD_SetCaptionResult,
                                   SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT, 32,
-                                  433, sc_set_caption_result,
+                                  433, scd_set_caption_result,
                                   SUPLA_LOCATION_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
@@ -3657,14 +3657,14 @@ SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_location_caption_result,
 //---------------------------------------------------------
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_scene_caption,
-                                  TCS_SetCaption,
+                                  TDCS_SetCaption,
                                   SUPLA_CS_CALL_SET_SCENE_CAPTION, 31, 432,
-                                  cs_set_caption, SUPLA_SCENE_CAPTION_MAXSIZE);
+                                  dcs_set_caption, SUPLA_SCENE_CAPTION_MAXSIZE);
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_scene_caption_result,
-                                  TSC_SetCaptionResult,
+                                  TSCD_SetCaptionResult,
                                   SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT, 32,
-                                  433, sc_set_caption_result,
+                                  433, scd_set_caption_result,
                                   SUPLA_SCENE_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
