@@ -61,6 +61,16 @@ TEST_F(GeneralPurposeMeasurementAnalyzerTest, reset) {
   EXPECT_EQ(analyzer.get_sample_count(), 1);
   analyzer.reset();
   EXPECT_EQ(analyzer.get_sample_count(), 0);
+
+  analyzer.add_sample(10);
+  usleep(1000001);
+
+  analyzer.reset();
+
+  analyzer.add_sample(20);
+  usleep(1000001);
+
+  EXPECT_EQ(analyzer.get_time_weighted_avg(), 20);
 }
 
 TEST_F(GeneralPurposeMeasurementAnalyzerTest, anyDataForLogger) {

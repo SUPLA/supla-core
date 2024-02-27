@@ -79,8 +79,6 @@ double supla_general_purpose_measurement_analyzer::get_time_weighted_avg(void) {
     double sample_sum = this->sample_sum;
 
     if (!isnan(any_last)) {
-      struct timeval now = {};
-      gettimeofday(&now, nullptr);
       long long time_diff =
           std::chrono::duration_cast<std::chrono::seconds>(
               std::chrono::steady_clock::now() - last_sample_time)
@@ -115,6 +113,7 @@ void supla_general_purpose_measurement_analyzer::reset(void) {
   any_last = NAN;
   last_sample_time = {};
   time_sum = 0;
+  sample_sum = 0;
 }
 
 supla_abstract_data_analyzer *supla_general_purpose_measurement_analyzer::copy(
