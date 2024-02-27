@@ -123,7 +123,7 @@ TEST_F(SetLocationCaptionIntegrationTest, SetFewViarintsOfCaption) {
 
   iterateUntilDefaultTimeout();
 
-  ASSERT_EQ(dbGetCaption(expectedLocationID).compare("caption\nNULL\n"), 0);
+  ASSERT_EQ(dbGetCaption(expectedLocationID).compare("caption\n\n"), 0);
 
   // Emoji -----------------
   reconnect();
