@@ -18,14 +18,17 @@
 
 #include "analyzer/simple_statistics.h"
 
+#include <math.h>
+
 supla_simple_statiscics::supla_simple_statiscics() {
-  first = 0;
-  min = 0;
-  max = 0;
-  avg = 0;
+  first = NAN;
+  min = NAN;
+  max = NAN;
+  avg = NAN;
   sum = 0;
-  last = 0;
+  last = NAN;
   count = 0;
+  non_nan_count = 0;
   first_update_time = {};
 }
 
@@ -43,33 +46,44 @@ double supla_simple_statiscics::get_last(void) { return last; }
 
 unsigned int supla_simple_statiscics::get_sample_count(void) { return count; }
 
+unsigned int supla_simple_statiscics::get_non_nan_sample_count(void) {
+  return non_nan_count;
+}
+
 void supla_simple_statiscics::add_sample(double value) {
   if (count == 0) {
-    first = value;
-    min = value;
-    max = value;
     gettimeofday(&first_update_time, nullptr);
-  } else {
-    if (value < min) {
-      min = value;
-    } else if (value > max) {
-      max = value;
-    }
   }
 
-  last = value;
-  sum += value;
+  if (!isnan(value)) {
+    if (isnan(min) || value < min) {
+      min = value;
+    }
+
+    if (isnan(max) || value > max) {
+      max = value;
+    }
+
+    if (isnan(first)) {
+      first = value;
+    }
+
+    non_nan_count++;
+    sum += value;
+    avg = sum / non_nan_count;
+    last = value;
+  }
+
   count++;
-  avg = sum / count;
 }
 
 void supla_simple_statiscics::reset(void) {
-  first = 0;
-  min = 0;
-  max = 0;
-  avg = 0;
+  first = NAN;
+  min = NAN;
+  max = NAN;
+  avg = NAN;
   sum = 0;
-  last = 0;
+  last = NAN;
   count = 0;
   first_update_time = {};
 }

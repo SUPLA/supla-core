@@ -64,7 +64,7 @@ void supla_general_purpose_measurement_logger::run(
                       copy);
               if (gpm_analyzer_copy) {
                 analyzers.push_back(gpm_analyzer_copy);
-                double last = gpm_analyzer->get_last();
+                double last = gpm_analyzer->get_any_last();
                 gpm_analyzer->reset();
                 gpm_analyzer->add_sample(last);
               } else {

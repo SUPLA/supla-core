@@ -44,7 +44,7 @@ TEST_F(GeneralPurposeMeasurementAnalyzerTest, addSample) {
   analyzer.add_sample(&value, &cfg);
   value.set_value(56.78);
   analyzer.add_sample(&value, &cfg);
-  EXPECT_EQ(analyzer.get_sample_count(), 2);
+  EXPECT_EQ(analyzer.get_non_nan_sample_count(), 2);
   EXPECT_EQ(analyzer.get_first(), 123.45);
   EXPECT_EQ(analyzer.get_last(), 56.78);
 }
@@ -73,6 +73,8 @@ TEST_F(GeneralPurposeMeasurementAnalyzerTest, anyDataForLogger) {
   supla_channel_general_purpose_measurement_value value;
   value.set_value(1);
   analyzer.add_sample(&value, &cfg);
+  EXPECT_FALSE(analyzer.is_any_data_for_logging_purpose());
+  usleep(1000001);
   EXPECT_TRUE(analyzer.is_any_data_for_logging_purpose());
 }
 
@@ -101,6 +103,32 @@ TEST_F(GeneralPurposeMeasurementAnalyzerTest, copy) {
   }
 
   delete c;
+}
+
+TEST_F(GeneralPurposeMeasurementAnalyzerTest, avg) {
+  analyzer.add_sample(10);
+  usleep(1000001);
+
+  EXPECT_EQ(analyzer.get_avg(), 10);
+  EXPECT_EQ(analyzer.get_time_weighted_avg(), 10);
+
+  analyzer.add_sample(20);
+  usleep(1000001);
+
+  EXPECT_EQ(analyzer.get_avg(), 15);
+  EXPECT_EQ(analyzer.get_time_weighted_avg(), 15);
+
+  analyzer.add_sample(30);
+  usleep(1000001);
+
+  EXPECT_EQ(analyzer.get_avg(), 20);
+  EXPECT_EQ(analyzer.get_time_weighted_avg(), 20);
+
+  usleep(1000001);
+
+  EXPECT_EQ(analyzer.get_avg(), 20);
+  EXPECT_GE(analyzer.get_time_weighted_avg(), 22.4);
+  EXPECT_LE(analyzer.get_time_weighted_avg(), 22.6);
 }
 
 }  // namespace testing

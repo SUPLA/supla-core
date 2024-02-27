@@ -25,11 +25,21 @@
 
 supla_general_purpose_measurement_analyzer::
     supla_general_purpose_measurement_analyzer(void)
-    : supla_simple_statiscics(), supla_abstract_data_analyzer() {}
+    : supla_simple_statiscics(), supla_abstract_data_analyzer() {
+  any_last = NAN;
+  last_sample_time = {};
+  time_sum = 0;
+  sample_sum = 0;
+}
 
 supla_general_purpose_measurement_analyzer::
     supla_general_purpose_measurement_analyzer(int channel_id)
-    : supla_simple_statiscics(), supla_abstract_data_analyzer(channel_id) {}
+    : supla_simple_statiscics(), supla_abstract_data_analyzer(channel_id) {
+  any_last = NAN;
+  last_sample_time = {};
+  time_sum = 0;
+  sample_sum = 0;
+}
 
 supla_general_purpose_measurement_analyzer::
     ~supla_general_purpose_measurement_analyzer(void) {}
@@ -47,9 +57,44 @@ void supla_general_purpose_measurement_analyzer::add_sample(
 }
 
 void supla_general_purpose_measurement_analyzer::add_sample(double sample) {
-  if (sample == sample) {  // value != value == NAN
-    supla_simple_statiscics::add_sample(sample);
+  supla_simple_statiscics::add_sample(sample);
+  struct timeval now = {};
+  gettimeofday(&now, nullptr);
+
+  if (!isnan(any_last)) {
+    __time_t time_diff = now.tv_sec - last_sample_time.tv_sec;
+    time_sum += time_diff;
+    sample_sum += any_last * time_diff;
   }
+
+  any_last = sample;
+  last_sample_time = now;
+}
+
+double supla_general_purpose_measurement_analyzer::get_time_weighted_avg(void) {
+  if (last_sample_time.tv_sec) {
+    __time_t time_diff = 0;
+    __time_t time_sum = this->time_sum;
+    double sample_sum = this->sample_sum;
+
+    if (!isnan(any_last)) {
+      struct timeval now = {};
+      gettimeofday(&now, nullptr);
+      time_diff = now.tv_sec - last_sample_time.tv_sec;
+      time_sum += time_diff;
+      sample_sum += any_last * time_diff;
+    }
+
+    if (time_sum > 0) {
+      return sample_sum / time_sum;
+    }
+  }
+
+  return NAN;
+}
+
+double supla_general_purpose_measurement_analyzer::get_any_last(void) {
+  return any_last;
 }
 
 void supla_general_purpose_measurement_analyzer::add_sample(
@@ -58,11 +103,14 @@ void supla_general_purpose_measurement_analyzer::add_sample(
 
 bool supla_general_purpose_measurement_analyzer::
     is_any_data_for_logging_purpose(void) {
-  return supla_simple_statiscics::get_sample_count() > 0;
+  return !isnan(get_time_weighted_avg());
 }
 
 void supla_general_purpose_measurement_analyzer::reset(void) {
   supla_simple_statiscics::reset();
+  any_last = NAN;
+  last_sample_time = {};
+  time_sum = 0;
 }
 
 supla_abstract_data_analyzer *supla_general_purpose_measurement_analyzer::copy(

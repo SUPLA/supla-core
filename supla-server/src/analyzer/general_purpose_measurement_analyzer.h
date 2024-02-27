@@ -26,6 +26,10 @@ class supla_general_purpose_measurement_analyzer
     : public supla_simple_statiscics,
       public supla_abstract_data_analyzer {
  private:
+  double any_last, sample_sum;
+  struct timeval last_sample_time;
+  __time_t time_sum;
+
  public:
   supla_general_purpose_measurement_analyzer(void);
   explicit supla_general_purpose_measurement_analyzer(int channel_id);
@@ -36,6 +40,9 @@ class supla_general_purpose_measurement_analyzer
   virtual void add_sample(int channel_flags, supla_json_config *config,
                           supla_channel_extended_value *extended_value);
   virtual void add_sample(double sample);
+
+  double get_time_weighted_avg(void);
+  double get_any_last(void);
 
   virtual void reset(void);
   virtual bool is_any_data_for_logging_purpose(void);

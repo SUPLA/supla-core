@@ -39,7 +39,7 @@ void supla_general_purpose_measurement_logger_dao::add(
   int channel_id = analyzer->get_channel_id();
   double first = analyzer->get_first();
   double last = analyzer->get_last();
-  double avg = analyzer->get_avg();
+  double avg = analyzer->get_time_weighted_avg();
   double min = analyzer->get_min();
   double max = analyzer->get_max();
 

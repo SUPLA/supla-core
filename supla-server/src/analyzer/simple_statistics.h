@@ -29,6 +29,7 @@ class supla_simple_statiscics {
   double sum;
   double last;
   unsigned int count;
+  unsigned int non_nan_count;
   struct timeval first_update_time;
 
  public:
@@ -40,6 +41,7 @@ class supla_simple_statiscics {
   double get_avg(void);
   double get_last(void);
   unsigned int get_sample_count(void);
+  unsigned int get_non_nan_sample_count(void);
   virtual void add_sample(double value);
   unsigned int get_total_time_msec(void);
   virtual void reset(void);
