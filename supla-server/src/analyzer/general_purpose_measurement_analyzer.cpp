@@ -58,11 +58,13 @@ void supla_general_purpose_measurement_analyzer::add_sample(
 
 void supla_general_purpose_measurement_analyzer::add_sample(double sample) {
   supla_simple_statiscics::add_sample(sample);
-  struct timeval now = {};
-  gettimeofday(&now, nullptr);
+  auto now = std::chrono::steady_clock::now();
 
   if (!isnan(any_last)) {
-    __time_t time_diff = now.tv_sec - last_sample_time.tv_sec;
+    long long time_diff =
+        std::chrono::duration_cast<std::chrono::seconds>(
+            std::chrono::steady_clock::now() - last_sample_time)
+            .count();
     time_sum += time_diff;
     sample_sum += any_last * time_diff;
   }
@@ -72,15 +74,17 @@ void supla_general_purpose_measurement_analyzer::add_sample(double sample) {
 }
 
 double supla_general_purpose_measurement_analyzer::get_time_weighted_avg(void) {
-  if (last_sample_time.tv_sec) {
-    __time_t time_diff = 0;
-    __time_t time_sum = this->time_sum;
+  if (last_sample_time != std::chrono::steady_clock::time_point()) {
+    long long time_sum = this->time_sum;
     double sample_sum = this->sample_sum;
 
     if (!isnan(any_last)) {
       struct timeval now = {};
       gettimeofday(&now, nullptr);
-      time_diff = now.tv_sec - last_sample_time.tv_sec;
+      long long time_diff =
+          std::chrono::duration_cast<std::chrono::seconds>(
+              std::chrono::steady_clock::now() - last_sample_time)
+              .count();
       time_sum += time_diff;
       sample_sum += any_last * time_diff;
     }

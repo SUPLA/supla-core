@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <chrono>
+
 #include "analyzer/abstract_data_analyzer.h"
 #include "analyzer/simple_statistics.h"
 
@@ -27,8 +29,8 @@ class supla_general_purpose_measurement_analyzer
       public supla_abstract_data_analyzer {
  private:
   double any_last, sample_sum;
-  struct timeval last_sample_time;
-  __time_t time_sum;
+  std::chrono::steady_clock::time_point last_sample_time;
+  long long time_sum;
 
  public:
   supla_general_purpose_measurement_analyzer(void);
