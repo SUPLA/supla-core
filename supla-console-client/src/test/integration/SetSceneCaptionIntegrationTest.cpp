@@ -122,7 +122,7 @@ TEST_F(SetSceneCaptionIntegrationTest, SetFewViarintsOfCaption) {
 
   iterateUntilDefaultTimeout();
 
-  ASSERT_EQ(dbGetCaption(expectedSceneID).compare("caption\nNULL\n"), 0);
+  ASSERT_EQ(dbGetCaption(expectedSceneID).compare("caption\n\n"), 0);
 
   // Emoji -----------------
   reconnect();

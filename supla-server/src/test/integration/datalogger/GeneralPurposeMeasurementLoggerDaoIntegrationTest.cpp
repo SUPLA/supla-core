@@ -86,14 +86,22 @@ TEST_F(GeneralPurposeMeasurementLoggerDaoIntegrationTest, add) {
   value.set_value(NAN);
   analyzer.add_sample(&value, &cfg);
 
+  usleep(1000001);
+
   value.set_value(123.34);
   analyzer.add_sample(&value, &cfg);
+
+  usleep(1000001);
 
   value.set_value(4);
   analyzer.add_sample(&value, &cfg);
 
+  usleep(1000001);
+
   value.set_value(15);
   analyzer.add_sample(&value, &cfg);
+
+  usleep(1000001);  // For avg to be available, you must wait at least a second.
 
   dao->add(&analyzer);
 

@@ -126,7 +126,7 @@ TEST_F(SetChannelGroupCaptionIntegrationTest, SetFewViarintsOfCaption) {
 
   iterateUntilDefaultTimeout();
 
-  ASSERT_EQ(dbGetCaption(expectedChannelGroupID).compare("caption\nNULL\n"), 0);
+  ASSERT_EQ(dbGetCaption(expectedChannelGroupID).compare("caption\n\n"), 0);
 
   // Emoji -----------------
   reconnect();
