@@ -51,10 +51,12 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)1940, sizeof(TDS_SuplaRegisterDevice));
   EXPECT_EQ((unsigned int)21, sizeof(TDS_SuplaDeviceChannel_B));
   EXPECT_EQ((unsigned int)25, sizeof(TDS_SuplaDeviceChannel_C));
+  EXPECT_EQ((unsigned int)35, sizeof(TDS_SuplaDeviceChannel_D));
   EXPECT_EQ((unsigned int)2964, sizeof(TDS_SuplaRegisterDevice_B));
   EXPECT_EQ((unsigned int)3029, sizeof(TDS_SuplaRegisterDevice_C));
   EXPECT_EQ((unsigned int)3264, sizeof(TDS_SuplaRegisterDevice_D));
   EXPECT_EQ((unsigned int)3784, sizeof(TDS_SuplaRegisterDevice_E));
+  EXPECT_EQ((unsigned int)5064, sizeof(TDS_SuplaRegisterDevice_F));
   EXPECT_EQ((unsigned int)7, sizeof(TSD_SuplaRegisterDeviceResult));
   EXPECT_EQ((unsigned int)9, sizeof(TDS_SuplaDeviceChannelValue));
   EXPECT_EQ((unsigned int)10, sizeof(TDS_SuplaDeviceChannelValue_B));
@@ -74,8 +76,11 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)444, sizeof(TSC_SuplaChannel_B));
   EXPECT_EQ((unsigned int)8888, sizeof(TSC_SuplaChannelPack_B));
   EXPECT_EQ((unsigned int)460, sizeof(TSC_SuplaChannel_C));
+  EXPECT_EQ((unsigned int)461, sizeof(TSC_SuplaChannel_D));
+  EXPECT_EQ((unsigned int)469, sizeof(TSC_SuplaChannel_E));
   EXPECT_EQ((unsigned int)9208, sizeof(TSC_SuplaChannelPack_C));
   EXPECT_EQ((unsigned int)9228, sizeof(TSC_SuplaChannelPack_D));
+  EXPECT_EQ((unsigned int)9388, sizeof(TSC_SuplaChannelPack_E));
   EXPECT_EQ((unsigned int)426, sizeof(TSC_SuplaChannelGroup));
   EXPECT_EQ((unsigned int)8528, sizeof(TSC_SuplaChannelGroupPack));
   EXPECT_EQ((unsigned int)430, sizeof(TSC_SuplaChannelGroup_B));
@@ -155,8 +160,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)1, sizeof(TSC_SetRegistrationEnabledResult));
   EXPECT_EQ((unsigned int)4, sizeof(TCS_DeviceReconnectRequest));
   EXPECT_EQ((unsigned int)5, sizeof(TSC_DeviceReconnectRequestResult));
-  EXPECT_EQ((unsigned int)409, sizeof(TCS_SetCaption));
-  EXPECT_EQ((unsigned int)410, sizeof(TSC_SetCaptionResult));
+  EXPECT_EQ((unsigned int)409, sizeof(TDCS_SetCaption));
+  EXPECT_EQ((unsigned int)410, sizeof(TSCD_SetCaptionResult));
   EXPECT_EQ((unsigned int)513, sizeof(TSD_ChannelFunctions));
   EXPECT_EQ((unsigned int)58, sizeof(TCalCfg_ZWave_Node));
   EXPECT_LE(sizeof(TCalCfg_ZWave_Node),
@@ -302,6 +307,14 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   EXPECT_EQ(sizeof(TChannelConfig_TemperatureAndHumidity), 32);
   EXPECT_LE(sizeof(TChannelConfig_TemperatureAndHumidity),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TChannelConfig_GeneralPurposeMeasurement), 108);
+  EXPECT_LE(sizeof(TChannelConfig_GeneralPurposeMeasurement),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TChannelConfig_GeneralPurposeMeter), 111);
+  EXPECT_LE(sizeof(TChannelConfig_GeneralPurposeMeter),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 }
 

@@ -184,6 +184,13 @@ jobject getRollerShutterPositionObject(JNIEnv *env, jint position) {
   return env->NewObject(cls, methodID, nullptr, true);
 }
 
+jobject getDoubleValueObject(JNIEnv *env, jdouble value) {
+  jclass cls = env->FindClass("org/supla/android/lib/singlecall/DoubleValue");
+  jmethodID methodID = env->GetMethodID(cls, "<init>", "(D)V");
+
+  return env->NewObject(cls, methodID, value);
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
     JNIEnv *env, jobject thiz, jobject context, jobject auth_info,
@@ -205,14 +212,14 @@ Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
 extern "C" JNIEXPORT void JNICALL
 Java_org_supla_android_lib_singlecall_SingleCall_registerPushNotificationClientToken(
     JNIEnv *env, jobject thiz, jobject context, jobject auth_info, jint app_id,
-    jstring token) {
+    jstring token, jstring profile_name) {
   TCS_ClientAuthorizationDetails auth_details = {};
   int protocol_version = 0;
   getAuthDetails(env, context, auth_info, &auth_details, &protocol_version);
 
   TCS_PnClientToken pn_token = {};
 
-  set_token_details(env, &pn_token, app_id, token);
+  set_token_details(env, &pn_token, app_id, token, profile_name);
 
   supla_single_call single_call(&auth_details, protocol_version);
   int result = single_call.register_pn_client_token(&pn_token);
@@ -265,6 +272,9 @@ Java_org_supla_android_lib_singlecall_SingleCall_getChannelValue(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       return getRollerShutterPositionObject(env, vresult.Value.value[0]);
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
+      return getDoubleValueObject(env, *(double *)vresult.Value.value);
   }
 
   return getChannelValueObject(env);

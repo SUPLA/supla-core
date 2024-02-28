@@ -21,6 +21,8 @@
 #include <android/log.h>
 #include <stdlib.h>
 
+#include "channel_config_general_purpose_measurement.h"
+#include "channel_config_general_purpose_meter.h"
 #include "channel_config_hvac.h"
 #include "channel_config_weekly_schedule.h"
 
@@ -69,8 +71,8 @@ jobject supla_config_result_to_jobject(JNIEnv *env, int result) {
                                            env->NewStringUTF(enum_name));
 }
 
-jobject supla_channel_config_to_jobject(JNIEnv *env,
-                                        TSCS_ChannelConfig *config) {
+jobject supla_channel_config_to_jobject(JNIEnv *env, TSCS_ChannelConfig *config,
+                                        unsigned _supla_int_t crc32) {
   if (config && config->ConfigSize) {
     switch (config->Func) {
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
@@ -79,14 +81,31 @@ jobject supla_channel_config_to_jobject(JNIEnv *env,
         if (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
             sizeof(TChannelConfig_HVAC) == config->ConfigSize) {
           return supla_cc_hvac_to_jobject(
-              env, config->ChannelId, config->Func,
+              env, config->ChannelId, config->Func, crc32,
               (TChannelConfig_HVAC *)config->Config);
         } else if (config->ConfigType == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
                    sizeof(TChannelConfig_WeeklySchedule) ==
                        config->ConfigSize) {
           return supla_cc_weekly_schedule_to_jobject(
-              env, config->ChannelId, config->Func,
+              env, config->ChannelId, config->Func, crc32,
               (TChannelConfig_WeeklySchedule *)config->Config);
+        }
+        break;
+      case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
+        if (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
+            sizeof(TChannelConfig_GeneralPurposeMeasurement) ==
+                config->ConfigSize) {
+          return supla_cc_gp_measurement_to_jobject(
+              env, config->ChannelId, config->Func, crc32,
+              (TChannelConfig_GeneralPurposeMeasurement *)config->Config);
+        }
+        break;
+      case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
+        if (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
+            sizeof(TChannelConfig_GeneralPurposeMeter) == config->ConfigSize) {
+          return supla_cc_gp_meter_to_jobject(
+              env, config->ChannelId, config->Func, crc32,
+              (TChannelConfig_GeneralPurposeMeter *)config->Config);
         }
         break;
     }
@@ -97,21 +116,22 @@ jobject supla_channel_config_to_jobject(JNIEnv *env,
       "android/data/source/remote/SuplaChannelConfig");
 
   jmethodID init_method =
-      env->GetMethodID(config_cls, "<init>", "(ILjava/lang/Integer;)V");
+      env->GetMethodID(config_cls, "<init>", "(ILjava/lang/Integer;J)V");
   return env->NewObject(config_cls, init_method, config->ChannelId,
-                        supla_NewInt(env, config->Func));
+                        supla_NewInt(env, config->Func), crc32);
 }
 
 void supla_cb_on_channel_config_update_or_result(
     void *_suplaclient, void *user_data,
-    TSC_ChannelConfigUpdateOrResult *config) {
+    TSC_ChannelConfigUpdateOrResult *config, unsigned _supla_int_t crc32) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
   jobject jresult = supla_config_result_to_jobject(env, config->Result);
-  jobject jconfig = config->Result == SUPLA_CONFIG_RESULT_TRUE
-                        ? supla_channel_config_to_jobject(env, &config->Config)
-                        : env->NewGlobalRef(nullptr);
+  jobject jconfig =
+      config->Result == SUPLA_CONFIG_RESULT_TRUE
+          ? supla_channel_config_to_jobject(env, &config->Config, crc32)
+          : env->NewGlobalRef(nullptr);
 
   env->CallVoidMethod(asc->j_obj, asc->j_mid_on_channel_config_update_or_result,
                       jconfig, jresult);

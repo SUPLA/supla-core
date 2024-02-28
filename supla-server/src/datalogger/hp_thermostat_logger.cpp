@@ -43,7 +43,9 @@ void supla_hp_thermostat_logger::run(const vector<supla_user *> *users,
     (*uit)->get_devices()->for_each([&env](shared_ptr<supla_device> device,
                                            bool *will_continue) -> void {
       device->get_channels()->get_channel_values(
-          &env, [](supla_channel_value *value) -> bool {
+          &env,
+          [](supla_device_channel *channel,
+             supla_channel_value *value) -> bool {
             return dynamic_cast<supla_channel_hp_thermostat_value *>(value) !=
                    nullptr;
           });

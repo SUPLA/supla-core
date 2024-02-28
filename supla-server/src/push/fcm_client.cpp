@@ -29,14 +29,17 @@ using std::smatch;
 using std::string;
 
 supla_fcm_client::supla_fcm_client(
-    supla_abstract_curl_adapter *curl_adapter,
-    supla_pn_gateway_access_token_provider *token_provider,
+    const supla_caller &caller, supla_abstract_curl_adapter *curl_adapter,
+    supla_remote_gateway_access_token_provider *token_provider,
     supla_push_notification *push)
-    : supla_abstract_pn_gateway_client(curl_adapter, token_provider, push) {}
+    : supla_abstract_pn_gateway_client(caller, curl_adapter, token_provider,
+                                       push) {}
 
 supla_fcm_client::~supla_fcm_client(void) {}
 
-_platform_e supla_fcm_client::get_platform(void) { return platform_android; }
+_platform_e supla_fcm_client::get_platform(void) {
+  return platform_push_android;
+}
 
 char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
   cJSON *root = cJSON_CreateObject();
@@ -48,8 +51,32 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
   cJSON_AddItemToObject(message, "android", android);
   cJSON_AddStringToObject(android, "priority", "high");
 
-  cJSON *notification = cJSON_CreateObject();
-  cJSON_AddItemToObject(android, "notification", notification);
+  cJSON *data = cJSON_CreateObject();
+  if (!recipient->get_profile_name().empty()) {
+    cJSON_AddStringToObject(data, "profileName",
+                            recipient->get_profile_name().c_str());
+  }
+
+  if (get_caller().get_id()) {
+    string id = std::to_string(get_caller().get_id());
+
+    if (get_caller() == ctDevice) {
+      cJSON_AddStringToObject(data, "deviceId", id.c_str());
+    } else if (get_caller() == ctChannel) {
+      cJSON_AddStringToObject(data, "channelId", id.c_str());
+    }
+  }
+
+  cJSON *notification = nullptr;
+
+  bool ge23 = recipient->get_protocol_version() >= 23;
+
+  if (ge23) {
+    notification = data;
+  } else {
+    notification = cJSON_CreateObject();
+    cJSON_AddItemToObject(android, "notification", notification);
+  }
 
   if (!get_push_notification()->get_title().empty()) {
     cJSON_AddStringToObject(notification, "title",
@@ -69,7 +96,7 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
 
   if (get_push_notification()->get_localized_title_args().size()) {
     add_args(get_push_notification()->get_localized_title_args(),
-             "title_loc_args", notification);
+             ge23 ? "title_loc_arg" : "title_loc_args", notification, ge23);
   }
 
   if (!get_push_notification()->get_localized_body().empty()) {
@@ -80,7 +107,13 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
 
   if (get_push_notification()->get_localized_body_args().size()) {
     add_args(get_push_notification()->get_localized_body_args(),
-             "body_loc_args", notification);
+             ge23 ? "body_loc_arg" : "body_loc_args", notification, ge23);
+  }
+
+  if (cJSON_GetArraySize(data)) {
+    cJSON_AddItemToObject(android, "data", data);
+  } else {
+    cJSON_Delete(data);
   }
 
   char *payload = cJSON_PrintUnformatted(root);
@@ -112,7 +145,7 @@ string supla_fcm_client::get_message_id(const string &request_result) {
   return result;
 }
 
-bool supla_fcm_client::_send(supla_pn_gateway_access_token *token,
+bool supla_fcm_client::_send(supla_remote_gateway_access_token *token,
                              supla_pn_recipient *recipient) {
   get_curl_adapter()->append_header("Content-Type: application/json");
   string _token = "Authorization: Bearer " + token->get_token();

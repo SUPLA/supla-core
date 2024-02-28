@@ -309,7 +309,10 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
     int id = 0, channel_number = 0, type = 0, func = 0, param1 = 0, param2 = 0,
         param3 = 0, param4 = 0, iodevice_id = 0, location_id = 0, alt_icon = 0,
-        user_icon = 0, protocol_version = 0, flags = 0, em_subc_flags = 0;
+        user_icon = 0, protocol_version = 0;
+
+    unsigned _supla_int64_t flags = 0, em_subc_flags = 0;
+
     short manufacturer_id = 0;
     short product_id = 0;
     char text_param1[256];
@@ -414,10 +417,10 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     rbind[18].buffer_type = MYSQL_TYPE_LONG;
     rbind[18].buffer = (char *)&protocol_version;
 
-    rbind[19].buffer_type = MYSQL_TYPE_LONG;
+    rbind[19].buffer_type = MYSQL_TYPE_LONGLONG;
     rbind[19].buffer = (char *)&flags;
 
-    rbind[20].buffer_type = MYSQL_TYPE_LONG;
+    rbind[20].buffer_type = MYSQL_TYPE_LONGLONG;
     rbind[20].buffer = (char *)&em_subc_flags;
 
     rbind[21].buffer_type = MYSQL_TYPE_BLOB;
@@ -784,6 +787,8 @@ bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
     unsigned long caption_size = 0;
     my_bool caption_is_null = true;
 
+    _supla_int64_t channel_flags = 0;
+
     rbind[0].buffer_type = MYSQL_TYPE_STRING;
     rbind[0].buffer = cfg->DeviceName;
     rbind[0].buffer_length = sizeof(cfg->DeviceName);
@@ -820,8 +825,8 @@ bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
     rbind[9].buffer_type = MYSQL_TYPE_LONG;
     rbind[9].buffer = (char *)&cfg->FuncList;
 
-    rbind[10].buffer_type = MYSQL_TYPE_LONG;
-    rbind[10].buffer = (char *)&cfg->ChannelFlags;
+    rbind[10].buffer_type = MYSQL_TYPE_LONGLONG;
+    rbind[10].buffer = (char *)&channel_flags;
 
     rbind[11].buffer_type = MYSQL_TYPE_STRING;
     rbind[11].buffer = cfg->Caption;
@@ -845,6 +850,7 @@ bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
         set_terminating_byte(cfg->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                              caption_size, caption_is_null);
 
+        cfg->ChannelFlags = channel_flags & 0xFFFFFFFF;
         cfg->CaptionSize =
             strnlen(cfg->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) + 1;
 
@@ -928,11 +934,9 @@ bool database::get_channel_type_funclist_and_device_id(int UserID,
   return result;
 }
 
-bool database::set_caption(int UserID, int ID, char *Caption, int call_id) {
-  MYSQL_BIND pbind[3];
-  memset(pbind, 0, sizeof(pbind));
-
-  my_bool caption_is_null = true;
+bool database::set_caption(int UserID, int ID, char *Caption, int call_id,
+                           bool only_when_not_null) {
+  MYSQL_BIND pbind[4] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&UserID;
@@ -940,28 +944,28 @@ bool database::set_caption(int UserID, int ID, char *Caption, int call_id) {
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&ID;
 
-  pbind[2].is_null = &caption_is_null;
   pbind[2].buffer_type = MYSQL_TYPE_STRING;
   pbind[2].buffer_length =
       Caption == NULL ? 0 : strnlen(Caption, SUPLA_CAPTION_MAXSIZE);
+  pbind[2].buffer = Caption;
 
-  if (pbind[2].buffer_length > 0) {
-    pbind[2].buffer = Caption;
-    caption_is_null = false;
-  }
+  char wnn = only_when_not_null ? 1 : 0;
+
+  pbind[3].buffer_type = MYSQL_TYPE_TINY;
+  pbind[3].buffer = (char *)&wnn;
 
   bool result = false;
   MYSQL_STMT *stmt = NULL;
 
   char *sql = nullptr;
 
-  char sql_c[] = "CALL `supla_set_channel_caption`(?,?,?)";
+  char sql_c[] = "CALL `supla_set_channel_caption`(?,?,?,?)";
   char sql_cg[] = "CALL `supla_set_channel_group_caption`(?,?,?)";
   char sql_l[] = "CALL `supla_set_location_caption`(?,?,?)";
   char sql_s[] = "CALL `supla_set_scene_caption`(?,?,?)";
 
   switch (call_id) {
-    case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
+    case SUPLA_DCS_CALL_SET_CHANNEL_CAPTION:
       sql = sql_c;
       break;
     case SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION:
@@ -975,8 +979,10 @@ bool database::set_caption(int UserID, int ID, char *Caption, int call_id) {
       break;
   }
 
-  if (sql && stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
-    result = true;
+  if (sql && stmt_execute((void **)&stmt, sql, pbind,
+                          call_id == SUPLA_DCS_CALL_SET_CHANNEL_CAPTION ? 4 : 3,
+                          true)) {
+    result = mysql_stmt_affected_rows(stmt) == 1;
   }
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
@@ -1123,7 +1129,7 @@ void database::update_channel_params(int channel_id, int user_id, int param1,
 }
 
 void database::update_channel_flags(int channel_id, int user_id,
-                                    unsigned int flags) {
+                                    unsigned _supla_int64_t flags) {
   MYSQL_STMT *stmt = NULL;
   MYSQL_BIND pbind[6];
   memset(pbind, 0, sizeof(pbind));
@@ -1134,7 +1140,7 @@ void database::update_channel_flags(int channel_id, int user_id,
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&user_id;
 
-  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer_type = MYSQL_TYPE_LONGLONG;
   pbind[2].buffer = (char *)&flags;
 
   const char sql[] = "CALL `supla_update_channel_flags`(?, ?, ?)";

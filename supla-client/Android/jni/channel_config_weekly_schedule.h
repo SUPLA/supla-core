@@ -29,7 +29,7 @@ extern "C" {
 
 jobject supla_cc_weekly_schedule_to_jobject(JNIEnv *env,
                                             _supla_int_t channel_id,
-                                            _supla_int_t func,
+                                            _supla_int_t, jlong crc32,
                                             TChannelConfig_WeeklySchedule *ws);
 
 bool supla_cc_jobject_to_weekly_schedule(JNIEnv *env, jobject object,

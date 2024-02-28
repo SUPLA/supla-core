@@ -152,8 +152,9 @@ class supla_user {
 
   void set_channel_function(std::shared_ptr<supla_client> sender,
                             TCS_SetChannelFunction *func);
-  void set_caption(std::shared_ptr<supla_client> sender,
-                   TCS_SetCaption *caption, int call_id);
+  void set_caption(const supla_caller &caller, bool is_authorized, int id,
+                   void *srpc, TDCS_SetCaption *caption, int call_id,
+                   bool only_when_null);
 
   supla_amazon_alexa_credentials *amazonAlexaCredentials(void);
   supla_google_home_credentials *googleHomeCredentials(void);

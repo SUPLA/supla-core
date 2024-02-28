@@ -416,7 +416,6 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT,
               SUPLA_SC_CALL_LOCATION_UPDATE,
               SUPLA_SC_CALL_LOCATIONPACK_UPDATE,
-              SUPLA_SC_CALL_CHANNEL_UPDATE,
               SUPLA_SC_CALL_CHANNELPACK_UPDATE,
               SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE,
               SUPLA_CS_CALL_GET_NEXT,
@@ -439,8 +438,7 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED,
               SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT};
     case 8:
-      return {SUPLA_SC_CALL_CHANNELPACK_UPDATE_B,
-              SUPLA_SC_CALL_CHANNEL_UPDATE_B};
+      return {SUPLA_SC_CALL_CHANNELPACK_UPDATE_B};
     case 9:
       return {SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B,
               SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE,
@@ -459,8 +457,7 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST,
               SUPLA_DS_CALL_DEVICE_CALCFG_RESULT,
               SUPLA_SC_CALL_CHANNELPACK_UPDATE_C,
-              SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B,
-              SUPLA_SC_CALL_CHANNEL_UPDATE_C};
+              SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B};
     case 11:
       return {SUPLA_DCS_CALL_GET_USER_LOCALTIME,
               SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
@@ -473,8 +470,8 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,
               SUPLA_CS_CALL_SET_CHANNEL_FUNCTION,
               SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT,
-              SUPLA_CS_CALL_SET_CHANNEL_CAPTION,
-              SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT,
+              SUPLA_DCS_CALL_SET_CHANNEL_CAPTION,
+              SUPLA_SCD_CALL_SET_CHANNEL_CAPTION_RESULT,
               SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST,
               SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT,
               SUPLA_CS_CALL_SET_REGISTRATION_ENABLED,
@@ -492,8 +489,7 @@ vector<int> SrpcTest::get_call_ids(int version) {
       return {SUPLA_CS_CALL_SET_LOCATION_CAPTION,
               SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT};
     case 15:
-      return {SUPLA_SC_CALL_CHANNEL_UPDATE_D,
-              SUPLA_SC_CALL_CHANNELPACK_UPDATE_D,
+      return {SUPLA_SC_CALL_CHANNELPACK_UPDATE_D,
               SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE_B,
               SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B};
 
@@ -542,6 +538,9 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_CS_CALL_GET_DEVICE_CONFIG,
               SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT,
               SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED};
+    case 23:
+      return {SUPLA_SC_CALL_CHANNELPACK_UPDATE_E,
+              SUPLA_DS_CALL_REGISTER_DEVICE_F};
   }
 
   return {};
@@ -1498,6 +1497,93 @@ TEST_F(SrpcTest, call_registerdevice_e_wrong_size) {
   srpc = NULL;
 }
 
+TEST_F(SrpcTest, call_registerdevice_f) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_F, registerdevice);
+
+  registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT;
+
+  ASSERT_GT(srpc_ds_async_registerdevice_f(srpc, &registerdevice), 0);
+  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_F, 5087);
+
+  ASSERT_FALSE(cr_rd.data.ds_register_device_f == NULL);
+  ASSERT_EQ(memcmp(cr_rd.data.ds_register_device_f, &registerdevice,
+                   sizeof(TDS_SuplaRegisterDevice_F)),
+            0);
+
+  free(cr_rd.data.ds_register_device_e);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerdevice_f_one_channel) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_F, registerdevice);
+
+  registerdevice.channels[0].Number = 1;
+  registerdevice.channels[0].Type = 1;
+  registerdevice.channel_count = 1;
+
+  ASSERT_GT(srpc_ds_async_registerdevice_f(srpc, &registerdevice), 0);
+  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_F, 642);
+
+  ASSERT_FALSE(cr_rd.data.ds_register_device_f == NULL);
+  ASSERT_EQ(memcmp(cr_rd.data.ds_register_device_f, &registerdevice,
+                   sizeof(TDS_SuplaRegisterDevice_F) -
+                       (sizeof(TDS_SuplaDeviceChannel_D) *
+                        (SUPLA_CHANNELMAXCOUNT - 1))),
+            0);
+
+  free(cr_rd.data.ds_register_device_f);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerdevice_f_without_channels) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_F, registerdevice);
+
+  registerdevice.channel_count = 0;
+
+  ASSERT_GT(srpc_ds_async_registerdevice_f(srpc, &registerdevice), 0);
+  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_F, 607);
+
+  ASSERT_FALSE(cr_rd.data.ds_register_device_f == NULL);
+  ASSERT_EQ(
+      memcmp(cr_rd.data.ds_register_device_f, &registerdevice,
+             sizeof(TDS_SuplaRegisterDevice_F) -
+                 (sizeof(TDS_SuplaDeviceChannel_D) * (SUPLA_CHANNELMAXCOUNT))),
+      0);
+
+  free(cr_rd.data.ds_register_device_f);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerdevice_f_wrong_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_F, registerdevice);
+
+  registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_ds_async_registerdevice_f(srpc, &registerdevice), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
 TEST_F(SrpcTest, call_registerdevice_result) {
   data_read_result = -1;
   srpc = srpcInit();
@@ -2185,29 +2271,6 @@ TEST_F(SrpcTest, call_locationpack_update_with_full_size) {
 }
 
 //---------------------------------------------------------
-// CHANNEL UPDATE
-//---------------------------------------------------------
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update,
-                                  TSC_SuplaChannel,
-                                  SUPLA_SC_CALL_CHANNEL_UPDATE, 57, 458,
-                                  sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
-
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_b,
-                                  TSC_SuplaChannel_B,
-                                  SUPLA_SC_CALL_CHANNEL_UPDATE_B, 66, 467,
-                                  sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
-
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_c,
-                                  TSC_SuplaChannel_C,
-                                  SUPLA_SC_CALL_CHANNEL_UPDATE_C, 82, 483,
-                                  sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
-
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_d,
-                                  TSC_SuplaChannel_D,
-                                  SUPLA_SC_CALL_CHANNEL_UPDATE_D, 83, 484,
-                                  sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
-
-//---------------------------------------------------------
 // CHANNEL PACK UPDATE
 //---------------------------------------------------------
 
@@ -2229,6 +2292,11 @@ SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
     srpc_sc_async_channelpack_update_d, TSC_SuplaChannelPack_D,
     TSC_SuplaChannel_D, SUPLA_SC_CALL_CHANNELPACK_UPDATE_D, 8790, 9251,
     sc_channel_pack_d);
+
+SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
+    srpc_sc_async_channelpack_update_e, TSC_SuplaChannelPack_E,
+    TSC_SuplaChannel_E, SUPLA_SC_CALL_CHANNELPACK_UPDATE_E, 8942, 9411,
+    sc_channel_pack_e);
 
 //---------------------------------------------------------
 // CHANNEL VALUE UPDATE
@@ -3541,16 +3609,16 @@ SRPC_CALL_BASIC_TEST(srpc_sc_async_set_channel_function_result,
 // SET CHANNEL CAPTION
 //---------------------------------------------------------
 
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_channel_caption,
-                                  TCS_SetCaption,
-                                  SUPLA_CS_CALL_SET_CHANNEL_CAPTION, 31, 432,
-                                  cs_set_caption,
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_dcs_async_set_channel_caption,
+                                  TDCS_SetCaption,
+                                  SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, 31, 432,
+                                  dcs_set_caption,
                                   SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
-SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_channel_caption_result,
-                                  TSC_SetCaptionResult,
-                                  SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT, 32,
-                                  433, sc_set_caption_result,
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_scd_async_set_channel_caption_result,
+                                  TSCD_SetCaptionResult,
+                                  SUPLA_SCD_CALL_SET_CHANNEL_CAPTION_RESULT, 32,
+                                  433, scd_set_caption_result,
                                   SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
@@ -3558,30 +3626,30 @@ SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_channel_caption_result,
 //---------------------------------------------------------
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_channel_group_caption,
-                                  TCS_SetCaption,
+                                  TDCS_SetCaption,
                                   SUPLA_CS_CALL_SET_CHANNEL_GROUP_CAPTION, 31,
-                                  432, cs_set_caption,
+                                  432, dcs_set_caption,
                                   SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE);
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(
-    srpc_sc_async_set_channel_group_caption_result, TSC_SetCaptionResult,
+    srpc_sc_async_set_channel_group_caption_result, TSCD_SetCaptionResult,
     SUPLA_SC_CALL_SET_CHANNEL_GROUP_CAPTION_RESULT, 32, 433,
-    sc_set_caption_result, SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE);
+    scd_set_caption_result, SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
 // SET LOCATION CAPTION
 //---------------------------------------------------------
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_location_caption,
-                                  TCS_SetCaption,
+                                  TDCS_SetCaption,
                                   SUPLA_CS_CALL_SET_LOCATION_CAPTION, 31, 432,
-                                  cs_set_caption,
+                                  dcs_set_caption,
                                   SUPLA_LOCATION_CAPTION_MAXSIZE);
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_location_caption_result,
-                                  TSC_SetCaptionResult,
+                                  TSCD_SetCaptionResult,
                                   SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT, 32,
-                                  433, sc_set_caption_result,
+                                  433, scd_set_caption_result,
                                   SUPLA_LOCATION_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
@@ -3589,14 +3657,14 @@ SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_location_caption_result,
 //---------------------------------------------------------
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_scene_caption,
-                                  TCS_SetCaption,
+                                  TDCS_SetCaption,
                                   SUPLA_CS_CALL_SET_SCENE_CAPTION, 31, 432,
-                                  cs_set_caption, SUPLA_SCENE_CAPTION_MAXSIZE);
+                                  dcs_set_caption, SUPLA_SCENE_CAPTION_MAXSIZE);
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_scene_caption_result,
-                                  TSC_SetCaptionResult,
+                                  TSCD_SetCaptionResult,
                                   SUPLA_SC_CALL_SET_SCENE_CAPTION_RESULT, 32,
-                                  433, sc_set_caption_result,
+                                  433, scd_set_caption_result,
                                   SUPLA_SCENE_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------

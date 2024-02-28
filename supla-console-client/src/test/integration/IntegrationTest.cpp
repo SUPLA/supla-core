@@ -76,23 +76,23 @@ void integration_test_on_channel_function_set_result(
 }
 
 void integration_test_on_channel_caption_set_result(
-    void *_suplaclient, void *instance, TSC_SetCaptionResult *result) {
+    void *_suplaclient, void *instance, TSCD_SetCaptionResult *result) {
   static_cast<IntegrationTest *>(instance)->onChannelCaptionSetResult(result);
 }
 
 void integration_test_on_channel_group_caption_set_result(
-    void *_suplaclient, void *instance, TSC_SetCaptionResult *result) {
+    void *_suplaclient, void *instance, TSCD_SetCaptionResult *result) {
   static_cast<IntegrationTest *>(instance)->onChannelGroupCaptionSetResult(
       result);
 }
 
 void integration_test_on_location_caption_set_result(
-    void *_suplaclient, void *instance, TSC_SetCaptionResult *result) {
+    void *_suplaclient, void *instance, TSCD_SetCaptionResult *result) {
   static_cast<IntegrationTest *>(instance)->onLocationCaptionSetResult(result);
 }
 
 void integration_test_on_scene_caption_set_result(
-    void *_suplaclient, void *instance, TSC_SetCaptionResult *result) {
+    void *_suplaclient, void *instance, TSCD_SetCaptionResult *result) {
   static_cast<IntegrationTest *>(instance)->onSceneCaptionSetResult(result);
 }
 
@@ -102,7 +102,7 @@ void integration_test_on_channel_basic_cfg(void *_suplaclient, void *instance,
 }
 
 void integration_test_channel_update(void *_suplaclient, void *instance,
-                                     TSC_SuplaChannel_D *channel) {
+                                     TSC_SuplaChannel_E *channel) {
   static_cast<IntegrationTest *>(instance)->channelUpdate(channel);
 }
 
@@ -347,19 +347,20 @@ void IntegrationTest::onSuperuserAuthorizationResult(bool authorized,
 void IntegrationTest::onChannelFunctionSetResult(
     TSC_SetChannelFunctionResult *result) {}
 
-void IntegrationTest::onChannelCaptionSetResult(TSC_SetCaptionResult *result) {}
-
-void IntegrationTest::onChannelGroupCaptionSetResult(
-    TSC_SetCaptionResult *result) {}
-
-void IntegrationTest::onLocationCaptionSetResult(TSC_SetCaptionResult *result) {
+void IntegrationTest::onChannelCaptionSetResult(TSCD_SetCaptionResult *result) {
 }
 
-void IntegrationTest::onSceneCaptionSetResult(TSC_SetCaptionResult *result) {}
+void IntegrationTest::onChannelGroupCaptionSetResult(
+    TSCD_SetCaptionResult *result) {}
+
+void IntegrationTest::onLocationCaptionSetResult(
+    TSCD_SetCaptionResult *result) {}
+
+void IntegrationTest::onSceneCaptionSetResult(TSCD_SetCaptionResult *result) {}
 
 void IntegrationTest::onChannelBasicCfg(TSC_ChannelBasicCfg *cfg) {}
 
-void IntegrationTest::channelUpdate(TSC_SuplaChannel_D *channel) {}
+void IntegrationTest::channelUpdate(TSC_SuplaChannel_E *channel) {}
 
 void IntegrationTest::channelGroupUpdate(
     TSC_SuplaChannelGroup_B *channel_group) {}

@@ -61,7 +61,8 @@ class database : public svrdb {
                                                int *Type,
                                                unsigned int *FuncList,
                                                int *DeviceID);
-  bool set_caption(int UserID, int ID, char *Caption, int call_id);
+  bool set_caption(int UserID, int ID, char *Caption, int call_id,
+                   bool only_when_not_null);
   bool channel_belong_to_group(int channel_id);
   bool channel_has_schedule(int channel_id);
   bool channel_is_associated_with_scene(int channel_id);
@@ -71,7 +72,8 @@ class database : public svrdb {
 
   void update_channel_params(int channel_id, int user_id, int param1,
                              int param2, int param3, int param4);
-  void update_channel_flags(int channel_id, int user_id, unsigned int flags);
+  void update_channel_flags(int channel_id, int user_id,
+                            unsigned _supla_int64_t flags);
 };
 
 #endif /* DATABASE_H_ */

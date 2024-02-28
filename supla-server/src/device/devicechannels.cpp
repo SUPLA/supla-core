@@ -45,7 +45,7 @@ using std::vector;
 
 supla_device_channels::supla_device_channels(
     supla_abstract_device_dao *dao, supla_device *device,
-    TDS_SuplaDeviceChannel_B *schannel_b, TDS_SuplaDeviceChannel_C *schannel_c,
+    TDS_SuplaDeviceChannel_B *schannel_b, TDS_SuplaDeviceChannel_D *schannel_d,
     int channel_count) {
   this->device = device;
 
@@ -57,6 +57,8 @@ supla_device_channels::supla_device_channels(
     unsigned char number = 0;
     unsigned int action_trigger_caps = 0;
     unsigned int flags = 0;
+    bool offline = false;
+
     TActionTriggerProperties at_orops = {};
 
     if (schannel_b != nullptr) {
@@ -64,12 +66,13 @@ supla_device_channels::supla_device_channels(
       value = schannel_b[a].value;
       number = schannel_b[a].Number;
     } else {
-      type = schannel_c[a].Type;
-      value = schannel_c[a].value;
-      number = schannel_c[a].Number;
-      action_trigger_caps = schannel_c[a].ActionTriggerCaps;
-      at_orops = schannel_c[a].actionTriggerProperties;
-      flags = schannel_c[a].Flags;
+      type = schannel_d[a].Type;
+      value = schannel_d[a].value;
+      number = schannel_d[a].Number;
+      action_trigger_caps = schannel_d[a].ActionTriggerCaps;
+      at_orops = schannel_d[a].actionTriggerProperties;
+      flags = schannel_d[a].Flags;
+      offline = schannel_d[a].Offline > 0;
     }
 
     int channel_id = get_channel_id(number);
@@ -77,7 +80,10 @@ supla_device_channels::supla_device_channels(
     supla_device_channel *channel = find_channel(channel_id);
 
     if (channel) {
-      channel->set_value(value, nullptr, nullptr);
+      channel->set_value(
+          value,
+          schannel_b == nullptr ? &schannel_d[a].ValueValidityTimeSec : nullptr,
+          schannel_b == nullptr ? &offline : nullptr);
       channel->add_init_flags(flags);
 
       if (type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
@@ -385,14 +391,14 @@ bool supla_device_channels::is_channel_online(int channel_id) {
 
 void supla_device_channels::on_device_registered(
     supla_user *user, int device_id, TDS_SuplaDeviceChannel_B *schannel_b,
-    TDS_SuplaDeviceChannel_C *schannel_c, int count) {
+    TDS_SuplaDeviceChannel_D *schannel_d, int count) {
   int channel_id = 0;
 
   for (int a = 0; a < count; a++) {
     if (schannel_b != nullptr) {
       channel_id = get_channel_id(schannel_b[a].Number);
     } else {
-      channel_id = get_channel_id(schannel_c[a].Number);
+      channel_id = get_channel_id(schannel_d[a].Number);
     }
 
     if (channel_id > 0) {
@@ -555,11 +561,12 @@ bool supla_device_channels::set_device_channel_rgbw_value(
 
 void supla_device_channels::get_channel_values(
     vector<supla_channel_value_envelope *> *result,
-    function<bool(supla_channel_value *)> filter) {
+    function<bool(supla_device_channel *channel, supla_channel_value *)>
+        filter) {
   for (auto it = channels.begin(); it != channels.end(); ++it) {
     supla_channel_value *value = (*it)->get_value<supla_channel_value>();
     if (value) {
-      if (filter(value)) {
+      if (filter(*it, value)) {
         result->push_back(
             new supla_channel_value_envelope((*it)->get_id(), value));
       } else {

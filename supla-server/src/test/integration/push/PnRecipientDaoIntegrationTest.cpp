@@ -70,7 +70,7 @@ TEST_F(PnRecipientDaoIntegrationTest, remove) {
 
   EXPECT_EQ(result, "push_token\nabcd\n");
 
-  supla_pn_recipient r1(3, 0, false, "abcd");
+  supla_pn_recipient r1(3, 0, false, "abcd", "", 0);
   dao->remove(2, &r1);
 
   result = "";
@@ -79,7 +79,7 @@ TEST_F(PnRecipientDaoIntegrationTest, remove) {
 
   EXPECT_EQ(result, "push_token\nabcd\n");
 
-  supla_pn_recipient r2(24, 0, false, "abcd");
+  supla_pn_recipient r2(24, 0, false, "abcd", "", 0);
   dao->remove(2, &r2);
 
   result = "";
@@ -100,7 +100,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipients) {
   dao->get_recipients(2, 5, &recipients);
   EXPECT_EQ(recipients.total_count(), 3);
 
-  supla_pn_recipient *recipient = recipients.get(platform_android, 0);
+  supla_pn_recipient *recipient = recipients.get(platform_push_android, 0);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 1");
@@ -109,16 +109,17 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipients) {
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_FALSE(recipient->is_development_env());
 
-  recipient = recipients.get(platform_ios, 0);
+  recipient = recipients.get(platform_push_ios, 0);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 2");
   EXPECT_EQ(recipient->get_client_id(), 24);
   EXPECT_EQ(recipient->get_app_id(), 200);
+  EXPECT_EQ(recipient->get_protocol_version(), 20);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_FALSE(recipient->is_development_env());
 
-  recipient = recipients.get(platform_ios, 1);
+  recipient = recipients.get(platform_push_ios, 1);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 3");
@@ -138,7 +139,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithAid) {
   dao->get_recipients(2, aids, cids, &recipients);
   EXPECT_EQ(recipients.total_count(), 2);
 
-  supla_pn_recipient *recipient = recipients.get(platform_ios, 0);
+  supla_pn_recipient *recipient = recipients.get(platform_push_ios, 0);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 4");
@@ -146,8 +147,9 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithAid) {
   EXPECT_EQ(recipient->get_app_id(), 0);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_profile_name(), "");
 
-  recipient = recipients.get(platform_ios, 1);
+  recipient = recipients.get(platform_push_ios, 1);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 5");
@@ -155,13 +157,14 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithAid) {
   EXPECT_EQ(recipient->get_app_id(), 0);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_profile_name(), "My Profile XYZ");
 
   aids.push_back(2);
 
   dao->get_recipients(2, aids, cids, &recipients);
   EXPECT_EQ(recipients.total_count(), 5);
 
-  recipient = recipients.get(platform_android, 0);
+  recipient = recipients.get(platform_push_android, 0);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 1");
@@ -170,7 +173,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithAid) {
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_FALSE(recipient->is_development_env());
 
-  recipient = recipients.get(platform_ios, 0);
+  recipient = recipients.get(platform_push_ios, 0);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 2");
@@ -179,7 +182,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithAid) {
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_FALSE(recipient->is_development_env());
 
-  recipient = recipients.get(platform_ios, 1);
+  recipient = recipients.get(platform_push_ios, 1);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 3");
@@ -188,7 +191,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithAid) {
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
 
-  recipient = recipients.get(platform_ios, 2);
+  recipient = recipients.get(platform_push_ios, 2);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 4");
@@ -197,7 +200,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithAid) {
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
 
-  recipient = recipients.get(platform_ios, 3);
+  recipient = recipients.get(platform_push_ios, 3);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 5");
@@ -205,6 +208,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithAid) {
   EXPECT_EQ(recipient->get_app_id(), 0);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_profile_name(), "My Profile XYZ");
 }
 
 TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCid) {
@@ -218,7 +222,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCid) {
   dao->get_recipients(2, aids, cids, &recipients);
   EXPECT_EQ(recipients.total_count(), 2);
 
-  supla_pn_recipient *recipient = recipients.get(platform_android, 0);
+  supla_pn_recipient *recipient = recipients.get(platform_push_android, 0);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 1");
@@ -227,7 +231,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCid) {
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_FALSE(recipient->is_development_env());
 
-  recipient = recipients.get(platform_ios, 0);
+  recipient = recipients.get(platform_push_ios, 0);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 5");
@@ -235,6 +239,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCid) {
   EXPECT_EQ(recipient->get_app_id(), 0);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_profile_name(), "My Profile XYZ");
 }
 
 TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCidAndAid) {
@@ -249,7 +254,7 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCidAndAid) {
   dao->get_recipients(2, aids, cids, &recipients);
   EXPECT_EQ(recipients.total_count(), 4);
 
-  supla_pn_recipient *recipient = recipients.get(platform_android, 0);
+  supla_pn_recipient *recipient = recipients.get(platform_push_android, 0);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 1");
@@ -257,8 +262,9 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCidAndAid) {
   EXPECT_EQ(recipient->get_app_id(), 0);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_FALSE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_protocol_version(), 12);
 
-  recipient = recipients.get(platform_ios, 0);
+  recipient = recipients.get(platform_push_ios, 0);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 2");
@@ -266,8 +272,9 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCidAndAid) {
   EXPECT_EQ(recipient->get_app_id(), 200);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_FALSE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_protocol_version(), 20);
 
-  recipient = recipients.get(platform_ios, 1);
+  recipient = recipients.get(platform_push_ios, 1);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 4");
@@ -275,8 +282,9 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCidAndAid) {
   EXPECT_EQ(recipient->get_app_id(), 0);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_protocol_version(), 12);
 
-  recipient = recipients.get(platform_ios, 2);
+  recipient = recipients.get(platform_push_ios, 2);
   ASSERT_TRUE(recipient != nullptr);
 
   EXPECT_EQ(recipient->get_token(), "Token 5");
@@ -284,6 +292,8 @@ TEST_F(PnRecipientDaoIntegrationTest, getRecipientsWithCidAndAid) {
   EXPECT_EQ(recipient->get_app_id(), 0);
   EXPECT_TRUE(recipient->is_exists());
   EXPECT_TRUE(recipient->is_development_env());
+  EXPECT_EQ(recipient->get_profile_name(), "My Profile XYZ");
+  EXPECT_EQ(recipient->get_protocol_version(), 12);
 }
 
 TEST_F(PnRecipientDaoIntegrationTest, inactiveForTwoMonths) {

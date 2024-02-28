@@ -47,12 +47,12 @@ void RegisterDeviceEssentialTest::SetUp() {
 }
 
 TEST_F(RegisterDeviceEssentialTest, deviceLimitExceded) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "bill@microsoft.com");
 
   EXPECT_CALL(dao, get_device_limit_left(55)).Times(1).WillOnce(Return(0));
@@ -71,19 +71,19 @@ TEST_F(RegisterDeviceEssentialTest, deviceLimitExceded) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceEssentialTest, noLocationAvailable) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "bill@microsoft.com");
 
   EXPECT_CALL(dao, get_device_limit_left(55)).Times(1).WillOnce(Return(1));
@@ -106,19 +106,19 @@ TEST_F(RegisterDeviceEssentialTest, noLocationAvailable) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceEssentialTest, failedToAddDevice) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "bill@microsoft.com");
 
   EXPECT_CALL(dao, get_device_limit_left(55)).Times(1).WillOnce(Return(1));
@@ -142,19 +142,19 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddDevice) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceEssentialTest, gettingDeviceVariablesFailed) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -196,19 +196,19 @@ TEST_F(RegisterDeviceEssentialTest, gettingDeviceVariablesFailed) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceEssentialTest, deviceExistsAndIsDisabled) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -252,19 +252,19 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndIsDisabled) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceEssentialTest, deviceExistsAndLocationIsDisabled) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -308,7 +308,7 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndLocationIsDisabled) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -316,12 +316,12 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndLocationIsDisabled) {
 
 TEST_F(RegisterDeviceEssentialTest, deviceHasLostItsLocation) {
   // Theoretically, this should not happen
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -366,7 +366,7 @@ TEST_F(RegisterDeviceEssentialTest, deviceHasLostItsLocation) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -424,12 +424,12 @@ TEST_F(RegisterDeviceEssentialTest, locationConflict) {
 }
 
 TEST_F(RegisterDeviceEssentialTest, wrongNumberOfChannels) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -476,23 +476,23 @@ TEST_F(RegisterDeviceEssentialTest, wrongNumberOfChannels) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceEssentialTest, channelTypeChanged) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
-  register_device_e.channel_count = 2;
-  register_device_e.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
-  register_device_e.channels[1].Number = 1;
-  register_device_e.channels[1].Type = SUPLA_CHANNELTYPE_DIMMER;
+  TDS_SuplaRegisterDevice_F register_device_f = {};
+  register_device_f.channel_count = 2;
+  register_device_f.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+  register_device_f.channels[1].Number = 1;
+  register_device_f.channels[1].Type = SUPLA_CHANNELTYPE_DIMMER;
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -553,24 +553,24 @@ TEST_F(RegisterDeviceEssentialTest, channelTypeChanged) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceEssentialTest, cantUdateDevice) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "cheops@giza.com");
 
-  snprintf(register_device_e.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
+  snprintf(register_device_f.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
 
-  snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
+  snprintf(register_device_f.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
   EXPECT_CALL(dba, start_transaction).Times(1);
@@ -630,25 +630,25 @@ TEST_F(RegisterDeviceEssentialTest, cantUdateDevice) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceEssentialTest, cfgModeRequested) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
-  register_device_e.Flags = SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
+  register_device_f.Flags = SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "cheops@giza.com");
 
-  snprintf(register_device_e.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
+  snprintf(register_device_f.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
 
-  snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
+  snprintf(register_device_f.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("cheops@giza.com")))
@@ -698,7 +698,7 @@ TEST_F(RegisterDeviceEssentialTest, cfgModeRequested) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_EQ(55, rd.get_device_id());
@@ -708,22 +708,22 @@ TEST_F(RegisterDeviceEssentialTest, cfgModeRequested) {
 
 TEST_F(RegisterDeviceEssentialTest,
        successFullRegistrationWithExistingDeviceAndChannels) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
-  register_device_e.channel_count = 2;
-  register_device_e.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
-  register_device_e.channels[1].Number = 1;
-  register_device_e.channels[1].Type = SUPLA_CHANNELTYPE_DIMMER;
+  TDS_SuplaRegisterDevice_F register_device_f = {};
+  register_device_f.channel_count = 2;
+  register_device_f.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+  register_device_f.channels[1].Number = 1;
+  register_device_f.channels[1].Type = SUPLA_CHANNELTYPE_DIMMER;
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
-  register_device_e.Flags = 778899 & ~SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
+  register_device_f.Flags = 778899 & ~SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "cheops@giza.com");
 
-  snprintf(register_device_e.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
+  snprintf(register_device_f.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
 
-  snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
+  snprintf(register_device_f.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
   EXPECT_CALL(dba, start_transaction).Times(1);
@@ -797,7 +797,7 @@ TEST_F(RegisterDeviceEssentialTest,
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_EQ(55, rd.get_device_id());
@@ -806,23 +806,23 @@ TEST_F(RegisterDeviceEssentialTest,
 }
 
 TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
-  register_device_e.channel_count = 2;
-  register_device_e.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
-  register_device_e.channels[1].Number = 1;
-  register_device_e.channels[1].Type = SUPLA_CHANNELTYPE_DIMMER;
-  register_device_e.channels[1].Default = SUPLA_CHANNELFNC_DIMMER;
+  TDS_SuplaRegisterDevice_F register_device_f = {};
+  register_device_f.channel_count = 2;
+  register_device_f.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+  register_device_f.channels[1].Number = 1;
+  register_device_f.channels[1].Type = SUPLA_CHANNELTYPE_DIMMER;
+  register_device_f.channels[1].Default = SUPLA_CHANNELFNC_DIMMER;
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
-  register_device_e.Flags = 778899;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
+  register_device_f.Flags = 778899;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "cheops@giza.com");
 
-  snprintf(register_device_e.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
+  snprintf(register_device_f.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
 
-  snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
+  snprintf(register_device_f.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
   EXPECT_CALL(dba, start_transaction).Times(1);
@@ -878,7 +878,7 @@ TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
       });
 
   EXPECT_CALL(dao, add_channel(55, 1, SUPLA_CHANNELTYPE_DIMMER,
-                               SUPLA_CHANNELFNC_DIMMER, 0, 0, 0, 0, 25))
+                               SUPLA_CHANNELFNC_DIMMER, 0, 0, 0, 0, 0, 25))
       .Times(1)
       .WillOnce(Return(456));
 
@@ -902,7 +902,7 @@ TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_EQ(55, rd.get_device_id());
@@ -911,23 +911,23 @@ TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
 }
 
 TEST_F(RegisterDeviceEssentialTest, failedToAddChannel) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
-  register_device_e.channel_count = 2;
-  register_device_e.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
-  register_device_e.channels[1].Number = 1;
-  register_device_e.channels[1].Type = SUPLA_CHANNELTYPE_DIMMER;
-  register_device_e.channels[1].Default = SUPLA_CHANNELFNC_DIMMER;
+  TDS_SuplaRegisterDevice_F register_device_f = {};
+  register_device_f.channel_count = 2;
+  register_device_f.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+  register_device_f.channels[1].Number = 1;
+  register_device_f.channels[1].Type = SUPLA_CHANNELTYPE_DIMMER;
+  register_device_f.channels[1].Default = SUPLA_CHANNELFNC_DIMMER;
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
-  register_device_e.Flags = 778899;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
+  register_device_f.Flags = 778899;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "cheops@giza.com");
 
-  snprintf(register_device_e.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
+  snprintf(register_device_f.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
 
-  snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
+  snprintf(register_device_f.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
   EXPECT_CALL(dba, start_transaction).Times(1);
@@ -983,7 +983,7 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddChannel) {
       });
 
   EXPECT_CALL(dao, add_channel(55, 1, SUPLA_CHANNELTYPE_DIMMER,
-                               SUPLA_CHANNELFNC_DIMMER, 0, 0, 0, 0, 25))
+                               SUPLA_CHANNELFNC_DIMMER, 0, 0, 0, 0, 0, 25))
       .Times(1)
       .WillOnce(Return(0));
 
@@ -1004,32 +1004,35 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddChannel) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
-  register_device_e.channel_count = 2;
-  register_device_e.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
-  register_device_e.channels[1].Number = 1;
-  register_device_e.channels[1].Type = SUPLA_CHANNELTYPE_DIMMER;
-  register_device_e.channels[1].Default = SUPLA_CHANNELFNC_DIMMER;
+  TDS_SuplaRegisterDevice_F register_device_f = {};
+  register_device_f.channel_count = 2;
+  register_device_f.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+  register_device_f.channels[0].DefaultIcon = 1;
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
-  register_device_e.Flags = 778899;
-  register_device_e.ManufacturerID = SUPLA_MFR_ACSOFTWARE;
-  register_device_e.ProductID = 177;
+  register_device_f.channels[1].Number = 1;
+  register_device_f.channels[1].Type = SUPLA_CHANNELTYPE_HVAC;
+  register_device_f.channels[1].Default = SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
+  register_device_f.channels[1].DefaultIcon = 3;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
+  register_device_f.Flags = 778899;
+  register_device_f.ManufacturerID = SUPLA_MFR_ACSOFTWARE;
+  register_device_f.ProductID = 177;
+
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "cheops@giza.com");
 
-  snprintf(register_device_e.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
+  snprintf(register_device_f.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
 
-  snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
+  snprintf(register_device_f.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
   EXPECT_CALL(dba, start_transaction).Times(1);
@@ -1070,12 +1073,13 @@ TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
       });
 
   EXPECT_CALL(dao,
-              add_channel(55, 0, SUPLA_CHANNELTYPE_RELAY, 0, 0, 0, 0, 0, 25))
+              add_channel(55, 0, SUPLA_CHANNELTYPE_RELAY, 0, 0, 0, 0, 0, 0, 25))
       .Times(1)
       .WillOnce(Return(1));
 
-  EXPECT_CALL(dao, add_channel(55, 1, SUPLA_CHANNELTYPE_DIMMER,
-                               SUPLA_CHANNELFNC_DIMMER, 0, 0, 0, 0, 25))
+  EXPECT_CALL(dao,
+              add_channel(55, 1, SUPLA_CHANNELTYPE_HVAC,
+                          SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 0, 0, 0, 0, 3, 25))
       .Times(1)
       .WillOnce(Return(2));
 
@@ -1098,7 +1102,7 @@ TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_EQ(55, rd.get_device_id());
@@ -1107,18 +1111,18 @@ TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
 }
 
 TEST_F(RegisterDeviceEssentialTest, existingDeviceIsLocked) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
-  register_device_e.Flags = SUPLA_DEVICE_FLAG_DEVICE_LOCKED;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
+  register_device_f.Flags = SUPLA_DEVICE_FLAG_DEVICE_LOCKED;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "cheops@giza.com");
 
-  snprintf(register_device_e.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
+  snprintf(register_device_f.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
 
-  snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
+  snprintf(register_device_f.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
   EXPECT_CALL(dba, start_transaction).Times(1);
@@ -1172,25 +1176,25 @@ TEST_F(RegisterDeviceEssentialTest, existingDeviceIsLocked) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceEssentialTest, existingDeviceServerSideIsLocked) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
-  register_device_e.Flags = SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
+  register_device_f.Flags = SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "cheops@giza.com");
 
-  snprintf(register_device_e.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
+  snprintf(register_device_f.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
 
-  snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
+  snprintf(register_device_f.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
   EXPECT_CALL(dba, start_transaction).Times(1);
@@ -1248,20 +1252,20 @@ TEST_F(RegisterDeviceEssentialTest, existingDeviceServerSideIsLocked) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceEssentialTest, addLockedDevice) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
-  register_device_e.Flags = SUPLA_DEVICE_FLAG_DEVICE_LOCKED;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
+  register_device_f.Flags = SUPLA_DEVICE_FLAG_DEVICE_LOCKED;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "cheops@giza.com");
 
   EXPECT_CALL(dba, start_transaction).Times(1);
@@ -1309,26 +1313,26 @@ TEST_F(RegisterDeviceEssentialTest, addLockedDevice) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceEssentialTest, unlockDevice) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
-  register_device_e.Flags = SUPLA_DEVICE_FLAG_DEVICE_LOCKED |
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
+  register_device_f.Flags = SUPLA_DEVICE_FLAG_DEVICE_LOCKED |
                             SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "cheops@giza.com");
 
-  snprintf(register_device_e.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
+  snprintf(register_device_f.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
 
-  snprintf(register_device_e.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
+  snprintf(register_device_f.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
            "Torch Switch");
 
   EXPECT_CALL(dba, start_transaction).Times(1);
@@ -1385,7 +1389,7 @@ TEST_F(RegisterDeviceEssentialTest, unlockDevice) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 169,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
 
   EXPECT_LT(usecFromSetUp(), rd.get_hold_time_on_failure_usec());

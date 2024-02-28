@@ -41,13 +41,24 @@ void GoogleHomeStateReportRequestTest::SetUp(void) {
   curlAdapter = new CurlAdapterMock();
   propertyGetter = new ChannelPropertyGetterMock();
 
+  tokenProviderCurlAdapter = new CurlAdapterMock();
+  tokenProvider = new AccessTokenProviderMock(tokenProviderCurlAdapter);
+
+  ON_CALL(*tokenProviderCurlAdapter, perform).WillByDefault(Return(true));
+  ON_CALL(*tokenProviderCurlAdapter, get_response_code)
+      .WillByDefault(Return(200));
+
+  ON_CALL(*tokenProviderCurlAdapter, set_opt_write_data)
+      .WillByDefault([this](string *request_result) {
+        *request_result =
+            "{\"homegraph\":{\"0\":{\"token\":\"directTokenXyz\",\"expires_"
+            "in\":3600}}}";
+      });
+
   EXPECT_CALL(*pool, get_bucket)
       .WillOnce(Return(new supla_asynctask_http_thread_bucket(curlAdapter)));
 
   EXPECT_CALL(credentials, is_access_token_exists).WillRepeatedly(Return(true));
-
-  EXPECT_CALL(credentials, get_access_token)
-      .WillRepeatedly(Return("MyAccessTokenXYZ"));
 
   EXPECT_CALL(credentials, get_user_long_unique_id)
       .WillRepeatedly(Return("zxcvbnm"));
@@ -55,20 +66,8 @@ void GoogleHomeStateReportRequestTest::SetUp(void) {
   EXPECT_CALL(credentials, get_user_short_unique_id)
       .WillRepeatedly(Return("qwerty"));
 
-  EXPECT_CALL(
-      *curlAdapter,
-      set_opt_url(StrEq(
-          "https://"
-          "odokilkqoesh73zfznmiupey4a0uugaz.lambda-url.eu-west-1.on.aws/")))
-      .Times(1);
-
   EXPECT_CALL(*curlAdapter,
               append_header(StrEq("Content-Type: application/json")))
-      .Times(1)
-      .WillOnce(Return(true));
-
-  EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Authorization: Bearer MyAccessTokenXYZ")))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -77,10 +76,56 @@ void GoogleHomeStateReportRequestTest::SetUp(void) {
   ON_CALL(*curlAdapter, get_response_code).WillByDefault(Return(200));
 }
 
+void GoogleHomeStateReportRequestTest::TearDown(void) {
+  if (tokenProvider) {
+    delete tokenProvider;
+    tokenProvider = nullptr;
+  }
+
+  if (tokenProviderCurlAdapter) {
+    delete tokenProviderCurlAdapter;
+    tokenProviderCurlAdapter = nullptr;
+  }
+
+  AsyncTaskTest::TearDown();
+}
+
+void GoogleHomeStateReportRequestTest::expectToken(bool direct) {
+  if (direct) {
+    EXPECT_CALL(*curlAdapter,
+                set_opt_url(StrEq("https://homegraph.googleapis.com/v1/"
+                                  "devices:reportStateAndNotification")))
+        .Times(1);
+
+    EXPECT_CALL(*curlAdapter,
+                append_header(StrEq("Authorization: Bearer directTokenXyz")))
+        .Times(1)
+        .WillOnce(Return(true));
+  } else {
+    EXPECT_CALL(credentials, get_access_token)
+        .WillRepeatedly(Return("MyAccessTokenXYZ"));
+
+    EXPECT_CALL(
+        *curlAdapter,
+        set_opt_url(StrEq(
+            "https://"
+            "odokilkqoesh73zfznmiupey4a0uugaz.lambda-url.eu-west-1.on.aws/")))
+        .Times(1);
+
+    EXPECT_CALL(*curlAdapter,
+                append_header(StrEq("Authorization: Bearer MyAccessTokenXYZ")))
+        .Times(1)
+        .WillOnce(Return(true));
+  }
+}
+
 void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
                                                 supla_channel_value *value,
                                                 const char *expectedPayload,
-                                                const string &request_id) {
+                                                const string &request_id,
+                                                bool direct) {
+  expectToken(direct);
+
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
       .Times(1)
@@ -97,10 +142,14 @@ void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
   EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
       .Times(1);
 
+  if (direct) {
+    tokenProvider->refresh();
+  }
+
   supla_google_home_state_report_request *request =
       new supla_google_home_state_report_request(
           supla_caller(ctDevice), 1, 2, 10, queue, pool, propertyGetter,
-          &credentials, request_id);
+          &credentials, tokenProvider, request_id);
   request->set_delay_usec(1);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
@@ -110,7 +159,7 @@ void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
                                                 supla_channel_value *value,
                                                 const char *expectedPayload) {
   makeTest(func, online, value, expectedPayload,
-           "e2de5bc6-65a8-48e5-b919-8a48e86ad64a");
+           "e2de5bc6-65a8-48e5-b919-8a48e86ad64a", false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, onOff_Disconnected) {
@@ -130,7 +179,8 @@ TEST_F(GoogleHomeStateReportRequestTest, onOff_Connected) {
       "}";
 
   makeTest(SUPLA_CHANNELFNC_LIGHTSWITCH, true,
-           new supla_channel_onoff_value(true), expectedPayload, "REQID");
+           new supla_channel_onoff_value(true), expectedPayload, "REQID",
+           false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, brightness_Disconnected) {
@@ -153,7 +203,7 @@ TEST_F(GoogleHomeStateReportRequestTest, brightness_Connected) {
   rgbw.brightness = 55;
 
   makeTest(SUPLA_CHANNELFNC_DIMMER, true, new supla_channel_rgbw_value(&rgbw),
-           expectedPayload, "REQID");
+           expectedPayload, "REQID", false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, colorAndBrightness_Disconnected) {
@@ -183,7 +233,8 @@ TEST_F(GoogleHomeStateReportRequestTest, colorAndBrightness_Connected) {
   rgbw.B = 0xCC;
 
   makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, true,
-           new supla_channel_rgbw_value(&rgbw), expectedPayload, "REQID");
+           new supla_channel_rgbw_value(&rgbw), expectedPayload, "REQID",
+           false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, color_Disconnected) {
@@ -215,7 +266,8 @@ TEST_F(GoogleHomeStateReportRequestTest, color_Connected) {
   rgbw.B = 0x22;
 
   makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, true,
-           new supla_channel_rgbw_value(&rgbw), expectedPayload, "REQID");
+           new supla_channel_rgbw_value(&rgbw), expectedPayload, "REQID",
+           false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, rollershutter_Disconnected) {
@@ -241,7 +293,7 @@ TEST_F(GoogleHomeStateReportRequestTest, rollershutter_Connected) {
   rs.position = 55;
 
   makeTest(SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER, true,
-           new supla_channel_rs_value(&rs), expectedPayload, "REQID");
+           new supla_channel_rs_value(&rs), expectedPayload, "REQID", false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, rollershutter_80) {
@@ -254,14 +306,16 @@ TEST_F(GoogleHomeStateReportRequestTest, rollershutter_80) {
   rs.position = 80;
 
   makeTest(SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER, true,
-           new supla_channel_rs_value(&rs), expectedPayload, "REQID");
+           new supla_channel_rs_value(&rs), expectedPayload, "REQID", false);
 }
 
 void GoogleHomeStateReportRequestTest::makeHvacThermostatTest(
     int func, bool online, supla_channel_value *hvacValue,
     supla_channel_value *tempHumValue,
     supla_channel_extended_value *extendedValue, const char *expectedPayload,
-    const string &request_id) {
+    const string &request_id, bool direct) {
+  expectToken(direct);
+
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
       .Times(1)
@@ -305,7 +359,7 @@ void GoogleHomeStateReportRequestTest::makeHvacThermostatTest(
   supla_google_home_state_report_request *request =
       new supla_google_home_state_report_request(
           supla_caller(ctDevice), 1, 2, 10, queue, pool, propertyGetter,
-          &credentials, request_id);
+          &credentials, tokenProvider, request_id);
   request->set_delay_usec(1);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
@@ -328,7 +382,7 @@ TEST_F(GoogleHomeStateReportRequestTest, thermostat) {
   makeHvacThermostatTest(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
                          new supla_channel_hvac_value(raw_value),
                          new supla_channel_temphum_value(true, 22.30, 45),
-                         nullptr, expectedPayload, "REQID");
+                         nullptr, expectedPayload, "REQID", false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, thermostat_Disconnected) {
@@ -343,7 +397,7 @@ TEST_F(GoogleHomeStateReportRequestTest, thermostat_Disconnected) {
   hvac.get_raw_value(raw_value);
 
   makeHvacThermostatTest(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, false, nullptr,
-                         nullptr, nullptr, expectedPayload, "REQID");
+                         nullptr, nullptr, expectedPayload, "REQID", false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, thermostatHeatCool) {
@@ -365,7 +419,7 @@ TEST_F(GoogleHomeStateReportRequestTest, thermostatHeatCool) {
   makeHvacThermostatTest(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
                          new supla_channel_hvac_value(raw_value),
                          new supla_channel_temphum_value(true, 22.30, 45),
-                         nullptr, expectedPayload, "REQID");
+                         nullptr, expectedPayload, "REQID", false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, thermostatHeatPol) {
@@ -389,7 +443,7 @@ TEST_F(GoogleHomeStateReportRequestTest, thermostatHeatPol) {
       SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS, true,
       new supla_channel_hp_thermostat_value(raw_value), nullptr,
       new supla_channel_thermostat_extended_value(&native_ev), expectedPayload,
-      "REQID");
+      "REQID", false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, thermostatHeatPol_Disconnected) {
@@ -398,10 +452,13 @@ TEST_F(GoogleHomeStateReportRequestTest, thermostatHeatPol_Disconnected) {
       "\"devices\":{\"states\":{\"qwerty-10\":{\"online\":false}}}}}";
 
   makeHvacThermostatTest(SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS, false,
-                         nullptr, nullptr, nullptr, expectedPayload, "REQID");
+                         nullptr, nullptr, nullptr, expectedPayload, "REQID",
+                         false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, x403) {
+  expectToken(false);
+
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
       .Times(1)
@@ -422,13 +479,15 @@ TEST_F(GoogleHomeStateReportRequestTest, x403) {
   supla_google_home_state_report_request *request =
       new supla_google_home_state_report_request(
           supla_caller(ctDevice), 1, 2, 10, queue, pool, propertyGetter,
-          &credentials, "");
+          &credentials, tokenProvider, "");
   request->set_delay_usec(1);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::FAILURE, 10000);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, x404) {
+  expectToken(false);
+
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
       .Times(1)
@@ -449,10 +508,20 @@ TEST_F(GoogleHomeStateReportRequestTest, x404) {
   supla_google_home_state_report_request *request =
       new supla_google_home_state_report_request(
           supla_caller(ctDevice), 1, 2, 10, queue, pool, propertyGetter,
-          &credentials, "");
+          &credentials, tokenProvider, "");
   request->set_delay_usec(1);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::FAILURE, 10000);
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, onOff_Connected_Direct) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\",\"payload\":{"
+      "\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,\"on\":true}}}}"
+      "}";
+
+  makeTest(SUPLA_CHANNELFNC_LIGHTSWITCH, true,
+           new supla_channel_onoff_value(true), expectedPayload, "REQID", true);
 }
 
 }  // namespace testing

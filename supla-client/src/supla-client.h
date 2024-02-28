@@ -38,7 +38,7 @@ typedef void (*_suplaclient_cb_location_update)(void *_suplaclient,
                                                 TSC_SuplaLocation *location);
 typedef void (*_suplaclient_cb_channel_update)(void *_suplaclient,
                                                void *user_data,
-                                               TSC_SuplaChannel_D *channel);
+                                               TSC_SuplaChannel_E *channel);
 typedef void (*_suplaclient_cb_channelgroup_update)(
     void *_suplaclient, void *user_data,
     TSC_SuplaChannelGroup_B *channel_group);
@@ -82,7 +82,7 @@ typedef void (*_suplaclient_cb_on_channel_basic_cfg)(void *_suplaclient,
 typedef void (*_suplaclient_cb_on_channel_function_set_result)(
     void *_suplaclient, void *user_data, TSC_SetChannelFunctionResult *result);
 typedef void (*_suplaclient_cb_on_caption_set_result)(
-    void *_suplaclient, void *user_data, TSC_SetCaptionResult *result);
+    void *_suplaclient, void *user_data, TSCD_SetCaptionResult *result);
 typedef void (*_suplaclient_cb_on_clients_reconnect_request_result)(
     void *_suplaclient, void *user_data,
     TSC_ClientsReconnectRequestResult *result);
@@ -121,7 +121,7 @@ typedef void (*_suplaclient_cb_on_get_channel_value_get_result)(
 
 typedef void (*_suplaclient_cb_on_channel_config_update_or_result)(
     void *_suplaclient, void *user_data,
-    TSC_ChannelConfigUpdateOrResult *config);
+    TSC_ChannelConfigUpdateOrResult *config, unsigned _supla_int_t crc32);
 
 typedef void (*_suplaclient_cb_on_device_config_update_or_result)(
     void *_suplaclient, void *user_data,

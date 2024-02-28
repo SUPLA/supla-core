@@ -83,7 +83,7 @@ class supla_device_channels {
   explicit supla_device_channels(supla_abstract_device_dao *dao,
                                  supla_device *device,
                                  TDS_SuplaDeviceChannel_B *schannel_b,
-                                 TDS_SuplaDeviceChannel_C *schannel_c,
+                                 TDS_SuplaDeviceChannel_D *schannel_d,
                                  int channel_count);
   virtual ~supla_device_channels();
 
@@ -111,7 +111,7 @@ class supla_device_channels {
 
   void on_device_registered(supla_user *user, int device_id,
                             TDS_SuplaDeviceChannel_B *schannel_b,
-                            TDS_SuplaDeviceChannel_C *schannel_c, int count);
+                            TDS_SuplaDeviceChannel_D *schannel_d, int count);
 
   void set_device_channel_value(const supla_caller &caller, int channel_id,
                                 int group_id, unsigned char eol,
@@ -222,8 +222,10 @@ class supla_device_channels {
   void on_related_sensor_value_changed(int control_channel_id, int sensor_id,
                                        bool is_open);
 
-  void get_channel_values(std::vector<supla_channel_value_envelope *> *result,
-                          std::function<bool(supla_channel_value *)> filter);
+  void get_channel_values(
+      std::vector<supla_channel_value_envelope *> *result,
+      std::function<bool(supla_device_channel *channel, supla_channel_value *)>
+          filter);
 
   void send_configs_to_device(void);
 

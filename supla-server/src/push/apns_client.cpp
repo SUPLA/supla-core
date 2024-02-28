@@ -27,16 +27,17 @@ using std::list;
 using std::string;
 
 supla_apns_client::supla_apns_client(
-    supla_abstract_curl_adapter *curl_adapter,
-    supla_pn_gateway_access_token_provider *token_provider,
+    const supla_caller &caller, supla_abstract_curl_adapter *curl_adapter,
+    supla_remote_gateway_access_token_provider *token_provider,
     supla_push_notification *push)
-    : supla_abstract_pn_gateway_client(curl_adapter, token_provider, push) {}
+    : supla_abstract_pn_gateway_client(caller, curl_adapter, token_provider,
+                                       push) {}
 
 supla_apns_client::~supla_apns_client(void) {}
 
-_platform_e supla_apns_client::get_platform(void) { return platform_ios; }
+_platform_e supla_apns_client::get_platform(void) { return platform_push_ios; }
 
-char *supla_apns_client::get_payload(void) {
+char *supla_apns_client::get_payload(supla_pn_recipient *recipient) {
   cJSON *payload = cJSON_CreateObject();
   cJSON *aps = cJSON_CreateObject();
   cJSON *alert = cJSON_CreateObject();
@@ -59,7 +60,7 @@ char *supla_apns_client::get_payload(void) {
 
   if (get_push_notification()->get_localized_title_args().size()) {
     add_args(get_push_notification()->get_localized_title_args(),
-             "title-loc-args", alert);
+             "title-loc-args", alert, false);
   }
 
   if (!get_push_notification()->get_localized_body().empty()) {
@@ -70,19 +71,34 @@ char *supla_apns_client::get_payload(void) {
 
   if (get_push_notification()->get_localized_body_args().size()) {
     add_args(get_push_notification()->get_localized_body_args(), "loc-args",
-             alert);
+             alert, false);
   }
 
   cJSON_AddItemToObject(payload, "aps", aps);
+
+  if (!recipient->get_profile_name().empty()) {
+    cJSON_AddStringToObject(payload, "profileName",
+                            recipient->get_profile_name().c_str());
+  }
+
+  if (get_caller().get_id()) {
+    if (get_caller() == ctDevice) {
+      cJSON_AddNumberToObject(payload, "deviceId", get_caller().get_id());
+    } else if (get_caller() == ctChannel) {
+      cJSON_AddNumberToObject(payload, "channelId", get_caller().get_id());
+    }
+  }
+
   cJSON_AddItemToObject(aps, "alert", alert);
   cJSON_AddStringToObject(aps, "sound", "default");
+  cJSON_AddNumberToObject(aps, "content-available", 1);
 
   char *result = cJSON_PrintUnformatted(payload);
   cJSON_Delete(payload);
   return result;
 }
 
-bool supla_apns_client::_send(supla_pn_gateway_access_token *token,
+bool supla_apns_client::_send(supla_remote_gateway_access_token *token,
                               supla_pn_recipient *recipient) {
   get_curl_adapter()->append_header("content-type: application/json");
 
@@ -108,7 +124,7 @@ bool supla_apns_client::_send(supla_pn_gateway_access_token *token,
 
   get_curl_adapter()->set_opt_url(endpoint.c_str());
 
-  char *payload = get_payload();
+  char *payload = get_payload(recipient);
   get_curl_adapter()->set_opt_post_fields(payload);
 
   string request_result;

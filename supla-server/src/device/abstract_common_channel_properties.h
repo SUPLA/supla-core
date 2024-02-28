@@ -42,7 +42,7 @@ class supla_abstract_common_channel_properties {
   virtual int get_user_id(void) = 0;
   virtual int get_type(void) = 0;
   virtual int get_func(void) = 0;
-  virtual unsigned int get_flags(void) = 0;
+  virtual unsigned _supla_int64_t get_flags(void) = 0;
   virtual int get_param1(void) = 0;
   virtual int get_param2(void) = 0;
   virtual int get_param3(void) = 0;

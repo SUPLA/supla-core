@@ -108,7 +108,8 @@ class supla_abstract_action_executor {
   virtual void step_by_step(void) = 0;
   virtual void enable(void) = 0;
   virtual void disable(void) = 0;
-  virtual void send(std::map<std::string, std::string> *replacement_map) = 0;
+  virtual void send(const supla_caller &caller,
+                    std::map<std::string, std::string> *replacement_map) = 0;
   virtual void execute(void) = 0;
   virtual void interrupt(void) = 0;
   virtual void interrupt_and_execute(void) = 0;

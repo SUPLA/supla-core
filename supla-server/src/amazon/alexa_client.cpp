@@ -119,7 +119,7 @@ supla_alexa_client::~supla_alexa_client(void) {
   }
 }
 
-const char *supla_alexa_client::get_error_string(const int code) {
+const char *supla_alexa_client::get_error_code_str(const int code) {
   int n = 0;
   while (alexa_codes[n].str) {
     if (alexa_codes[n].code == code) {
@@ -588,8 +588,13 @@ cJSON *supla_alexa_client::get_unrechable_error_response(void) {
 }
 
 int supla_alexa_client::perform_post_request(const char *data,
-                                             int *http_result_code) {
+                                             int *http_result_code,
+                                             string *error_description) {
   int result = POST_RESULT_UNKNOWN_ERROR;
+
+  if (error_description) {
+    error_description->clear();
+  }
 
   if (http_result_code) {
     *http_result_code = 0;
@@ -638,6 +643,13 @@ int supla_alexa_client::perform_post_request(const char *data,
             cJSON *code = cJSON_GetObjectItem(payload, "code");
             if (code) {
               result = get_error_code(cJSON_GetStringValue(code));
+            }
+
+            if (error_description) {
+              cJSON *description = cJSON_GetObjectItem(payload, "description");
+              if (description && cJSON_IsString(description)) {
+                *error_description = cJSON_GetStringValue(description);
+              }
             }
           }
           cJSON_Delete(root);
@@ -721,7 +733,9 @@ int supla_alexa_client::perform_post_request(const char *data) {
   }
 
   int http_result_code = 0;
-  int result = perform_post_request(data, &http_result_code);
+  string error_description;
+  int result =
+      perform_post_request(data, &http_result_code, &error_description);
   // https://developer.amazon.com/en-US/docs/alexa/smarthome/send-events.html
   // 401 Unauthorized == INVALID_ACCESS_TOKEN_EXCEPTION
   if (result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION ||
@@ -729,7 +743,8 @@ int supla_alexa_client::perform_post_request(const char *data) {
     if (!refresh_attempt) {
       refresh_attempt = true;
       refresh_token();
-      result = perform_post_request(data, &http_result_code);
+      result =
+          perform_post_request(data, &http_result_code, &error_description);
     }
   }
 
@@ -749,9 +764,9 @@ int supla_alexa_client::perform_post_request(const char *data) {
   if (result != POST_RESULT_SUCCESS) {
     supla_log(LOG_ERR,
               "Alexa event gateway client error (UserID: %i, httpCode: %i, "
-              "Result: %i): %s",
+              "Result: %i): %s \"%s\"",
               get_credentials()->get_user_id(), http_result_code, result,
-              get_error_string(result));
+              get_error_code_str(result), error_description.c_str());
   }
 
   return result;

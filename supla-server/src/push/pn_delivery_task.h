@@ -24,7 +24,7 @@
 
 #include "db/db_access_provider.h"
 #include "http/asynctask_http_request.h"
-#include "push/pn_gateway_access_token_provider.h"
+#include "http/remote_gateway_access_token_provider.h"
 #include "push/pn_recipient_dao.h"
 #include "push/pn_throttling.h"
 #include "push/push_notification.h"
@@ -32,7 +32,7 @@
 class supla_pn_delivery_task : public supla_asynctask_http_request {
  private:
   supla_push_notification *push;
-  supla_pn_gateway_access_token_provider *token_provider;
+  supla_remote_gateway_access_token_provider *token_provider;
   supla_db_access_provider *dba;
   supla_pn_recipient_dao *recipient_dao;
   supla_pn_throttling *throttling;
@@ -45,18 +45,20 @@ class supla_pn_delivery_task : public supla_asynctask_http_request {
   virtual unsigned long long get_cfg_long_request_time_usec(void);
 
  public:
-  supla_pn_delivery_task(int user_id, supla_asynctask_queue *queue,
-                         supla_abstract_asynctask_thread_pool *pool,
-                         supla_push_notification *push,
-                         supla_pn_gateway_access_token_provider *token_provider,
-                         supla_pn_throttling *throttling);
+  supla_pn_delivery_task(
+      const supla_caller &caller, int user_id, supla_asynctask_queue *queue,
+      supla_abstract_asynctask_thread_pool *pool, supla_push_notification *push,
+      supla_remote_gateway_access_token_provider *token_provider,
+      supla_pn_throttling *throttling);
   virtual ~supla_pn_delivery_task(void);
 
-  static void start_delivering(int user_id, supla_push_notification *push);
+  static void start_delivering(const supla_caller &caller, int user_id,
+                               supla_push_notification *push);
   static void start_delivering(
-      int user_id, int push_notification_id,
+      const supla_caller &caller, int user_id, int push_notification_id,
       std::map<std::string, std::string> *replacement_map);
-  static bool start_delivering(int user_id, const char *json);
+  static bool start_delivering(const supla_caller &caller, int user_id,
+                               const char *json);
 };
 
 #endif /* PUSH_NOTIFICATION_DELIVERY_TASK_H_ */

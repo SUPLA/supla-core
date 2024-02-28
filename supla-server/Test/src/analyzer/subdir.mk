@@ -4,19 +4,28 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/analyzer/abstract_data_analyzer.cpp \
+../src/analyzer/data_analyzer_factory.cpp \
+../src/analyzer/electricity_analyzer.cpp \
+../src/analyzer/general_purpose_measurement_analyzer.cpp \
 ../src/analyzer/simple_statistics.cpp \
-../src/analyzer/voltage_analyzer.cpp \
-../src/analyzer/voltage_analyzers.cpp 
+../src/analyzer/voltage_aberration_analyzer.cpp 
 
 CPP_DEPS += \
+./src/analyzer/abstract_data_analyzer.d \
+./src/analyzer/data_analyzer_factory.d \
+./src/analyzer/electricity_analyzer.d \
+./src/analyzer/general_purpose_measurement_analyzer.d \
 ./src/analyzer/simple_statistics.d \
-./src/analyzer/voltage_analyzer.d \
-./src/analyzer/voltage_analyzers.d 
+./src/analyzer/voltage_aberration_analyzer.d 
 
 OBJS += \
+./src/analyzer/abstract_data_analyzer.o \
+./src/analyzer/data_analyzer_factory.o \
+./src/analyzer/electricity_analyzer.o \
+./src/analyzer/general_purpose_measurement_analyzer.o \
 ./src/analyzer/simple_statistics.o \
-./src/analyzer/voltage_analyzer.o \
-./src/analyzer/voltage_analyzers.o 
+./src/analyzer/voltage_aberration_analyzer.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -31,7 +40,7 @@ src/analyzer/%.o: ../src/analyzer/%.cpp src/analyzer/subdir.mk
 clean: clean-src-2f-analyzer
 
 clean-src-2f-analyzer:
-	-$(RM) ./src/analyzer/simple_statistics.d ./src/analyzer/simple_statistics.o ./src/analyzer/voltage_analyzer.d ./src/analyzer/voltage_analyzer.o ./src/analyzer/voltage_analyzers.d ./src/analyzer/voltage_analyzers.o
+	-$(RM) ./src/analyzer/abstract_data_analyzer.d ./src/analyzer/abstract_data_analyzer.o ./src/analyzer/data_analyzer_factory.d ./src/analyzer/data_analyzer_factory.o ./src/analyzer/electricity_analyzer.d ./src/analyzer/electricity_analyzer.o ./src/analyzer/general_purpose_measurement_analyzer.d ./src/analyzer/general_purpose_measurement_analyzer.o ./src/analyzer/simple_statistics.d ./src/analyzer/simple_statistics.o ./src/analyzer/voltage_aberration_analyzer.d ./src/analyzer/voltage_aberration_analyzer.o
 
 .PHONY: clean-src-2f-analyzer
 

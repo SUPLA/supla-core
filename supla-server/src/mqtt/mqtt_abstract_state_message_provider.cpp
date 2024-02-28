@@ -28,6 +28,7 @@
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
+#include "device/value/channel_general_purpose_base_value.h"
 #include "device/value/channel_hp_thermostat_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_openclosed_value.h"
@@ -1041,6 +1042,23 @@ bool supla_mqtt_abstract_state_message_provider::
   return false;
 }
 
+bool supla_mqtt_abstract_state_message_provider::get_gpm_message_at_index(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  supla_channel_general_purpose_base_value *gpm_val =
+      dynamic_cast<supla_channel_general_purpose_base_value *>(channel_value);
+
+  if (index == 1) {
+    return create_message(topic_prefix, user_suid, topic_name, message,
+                          message_size,
+                          gpm_val ? gpm_val->get_value_str().c_str() : nullptr,
+                          false, "devices/%i/channels/%i/state/value",
+                          get_device_id(), get_channel_id());
+  }
+
+  return false;
+}
+
 bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
@@ -1239,6 +1257,12 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
       return get_hvac_thermostat_message_at_index(
           index, topic_prefix, topic_name, message, message_size);
+
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
+      return get_gpm_message_at_index(index, topic_prefix, topic_name, message,
+                                      message_size);
+      break;
   }
 
   return false;

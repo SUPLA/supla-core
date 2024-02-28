@@ -19,6 +19,8 @@
 #include "MqttChannelMessageProviderTest.h"
 
 #include "gmock/gmock.h"
+#include "jsonconfig/channel/general_purpose_measurement_config.h"
+#include "jsonconfig/channel/general_purpose_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
 
 namespace testing {
@@ -153,7 +155,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
         "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Total "
         "cost)\",\"uniq_id\":\"supla_754_0\",\"qos\":0,\"unit_of_meas\":\"\","
         "\"stat_t\":\"~/state/total_cost\",\"val_tpl\":\"{{ value | "
-        "round(2,default=none) "
+        "round(2,default=None) "
         "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"measurement\"}";
 
     ASSERT_TRUE(fetchAndCompare(
@@ -172,7 +174,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
         "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Total cost - "
         "balanced)\",\"uniq_id\":\"supla_754_1\",\"qos\":0,\"unit_of_meas\":"
         "\"\",\"stat_t\":\"~/state/total_cost_balanced\",\"val_tpl\":\"{{ "
-        "value | round(2,default=none) "
+        "value | round(2,default=None) "
         "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"measurement\"}";
 
     ASSERT_TRUE(fetchAndCompare(
@@ -192,7 +194,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
         "energy)\",\"uniq_id\":\"supla_754_2\",\"qos\":0,\"unit_of_meas\":"
         "\"kWh\",\"stat_t\":\"~/state/"
         "total_forward_active_energy\",\"val_tpl\":\"{{ value | "
-        "round(5,default=none) "
+        "round(5,default=None) "
         "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
     ASSERT_TRUE(fetchAndCompare(
@@ -212,7 +214,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
         "energy)\",\"uniq_id\":\"supla_754_3\",\"qos\":0,\"unit_of_meas\":"
         "\"kWh\",\"stat_t\":\"~/state/"
         "total_reverse_active_energy\",\"val_tpl\":\"{{ value | "
-        "round(5,default=none) "
+        "round(5,default=None) "
         "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
     ASSERT_TRUE(fetchAndCompare(
@@ -232,7 +234,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
         "balanced)\",\"uniq_id\":\"supla_754_4\",\"qos\":0,\"unit_of_meas\":"
         "\"kWh\",\"stat_t\":\"~/state/"
         "total_forward_active_energy_balanced\",\"val_tpl\":\"{{ value | "
-        "round(5,default=none) "
+        "round(5,default=None) "
         "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
     ASSERT_TRUE(fetchAndCompare(
@@ -252,7 +254,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
         "balanced)\",\"uniq_id\":\"supla_754_5\",\"qos\":0,\"unit_of_meas\":"
         "\"kWh\",\"stat_t\":\"~/state/"
         "total_reverse_active_energy_balanced\",\"val_tpl\":\"{{ value | "
-        "round(5,default=none) "
+        "round(5,default=None) "
         "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
     ASSERT_TRUE(fetchAndCompare(
@@ -275,7 +277,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "1)\",\"uniq_id\":\"supla_754_6\",\"qos\":0,\"unit_of_meas\":\"kWh\","
           "\"stat_t\":\"~/state/phases/1/"
           "total_forward_active_energy\",\"val_tpl\":\"{{ value | "
-          "round(5,default=none) "
+          "round(5,default=None) "
           "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
@@ -298,7 +300,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "1)\",\"uniq_id\":\"supla_754_7\",\"qos\":0,\"unit_of_meas\":\"kWh\","
           "\"stat_t\":\"~/state/phases/1/"
           "total_reverse_active_energy\",\"val_tpl\":\"{{ value | "
-          "round(5,default=none) "
+          "round(5,default=None) "
           "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
@@ -321,7 +323,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "1)\",\"uniq_id\":\"supla_754_8\",\"qos\":0,\"unit_of_meas\":"
           "\"kvarh\",\"stat_t\":\"~/state/phases/1/"
           "total_forward_reactive_energy\",\"val_tpl\":\"{{ value | "
-          "round(5,default=none) "
+          "round(5,default=None) "
           "}}\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
@@ -344,7 +346,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "1)\",\"uniq_id\":\"supla_754_9\",\"qos\":0,\"unit_of_meas\":"
           "\"kvarh\",\"stat_t\":\"~/state/phases/1/"
           "total_reverse_reactive_energy\",\"val_tpl\":\"{{ value | "
-          "round(5,default=none) "
+          "round(5,default=None) "
           "}}\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
@@ -365,7 +367,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Frequency - Phase "
           "1)\",\"uniq_id\":\"supla_754_10\",\"qos\":0,\"unit_of_meas\":\"Hz\","
           "\"stat_t\":\"~/state/phases/1/frequency\",\"val_tpl\":\"{{ value | "
-          "round(2,default=none) }}\",\"state_class\":\"measurement\"}";
+          "round(2,default=None) }}\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -385,7 +387,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Voltage - Phase "
           "1)\",\"uniq_id\":\"supla_754_11\",\"qos\":0,\"unit_of_meas\":\"V\","
           "\"stat_t\":\"~/state/phases/1/voltage\",\"val_tpl\":\"{{ value | "
-          "round(2,default=none) "
+          "round(2,default=None) "
           "}}\",\"dev_cla\":\"voltage\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
@@ -406,7 +408,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Current - Phase "
           "1)\",\"uniq_id\":\"supla_754_12\",\"qos\":0,\"unit_of_meas\":\"A\","
           "\"stat_t\":\"~/state/phases/1/current\",\"val_tpl\":\"{{ value | "
-          "round(3,default=none) "
+          "round(3,default=None) "
           "}}\",\"dev_cla\":\"current\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
@@ -427,7 +429,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power active - Phase "
           "1)\",\"uniq_id\":\"supla_754_13\",\"qos\":0,\"unit_of_meas\":\"W\","
           "\"stat_t\":\"~/state/phases/1/power_active\",\"val_tpl\":\"{{ value "
-          "| round(5,default=none) "
+          "| round(5,default=None) "
           "}}\",\"dev_cla\":\"power\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
@@ -448,7 +450,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power reactive - Phase "
           "1)\",\"uniq_id\":\"supla_754_14\",\"qos\":0,\"unit_of_meas\":"
           "\"var\",\"stat_t\":\"~/state/phases/1/"
-          "power_reactive\",\"val_tpl\":\"{{ value | round(5,default=none) "
+          "power_reactive\",\"val_tpl\":\"{{ value | round(5,default=None) "
           "}}\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
@@ -469,7 +471,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power apparent - Phase "
           "1)\",\"uniq_id\":\"supla_754_15\",\"qos\":0,\"unit_of_meas\":\"VA\","
           "\"stat_t\":\"~/state/phases/1/power_apparent\",\"val_tpl\":\"{{ "
-          "value | round(5,default=none) }}\",\"state_class\":\"measurement\"}";
+          "value | round(5,default=None) }}\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -489,7 +491,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power factor - Phase "
           "1)\",\"uniq_id\":\"supla_754_16\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/1/"
-          "power_factor\",\"val_tpl\":\"{% if float(value, default=none) == "
+          "power_factor\",\"val_tpl\":\"{% if float(value, default=None) == "
           "None %}None{% else %}{{float(value) * 100.0 | round(5)}}{% endif "
           "%}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
@@ -512,7 +514,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Phase angle - Phase "
           "1)\",\"uniq_id\":\"supla_754_17\",\"qos\":0,\"unit_of_meas\":\"°\","
           "\"stat_t\":\"~/state/phases/1/phase_angle\",\"val_tpl\":\"{{ value "
-          "| round(1,default=none) }}\",\"state_class\":\"measurement\"}";
+          "| round(1,default=None) }}\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -537,7 +539,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "2)\",\"uniq_id\":\"supla_754_18\",\"qos\":0,\"unit_of_meas\":"
           "\"kWh\",\"stat_t\":\"~/state/phases/2/"
           "total_forward_active_energy\",\"val_tpl\":\"{{ value | "
-          "round(5,default=none) "
+          "round(5,default=None) "
           "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
@@ -560,7 +562,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "2)\",\"uniq_id\":\"supla_754_19\",\"qos\":0,\"unit_of_meas\":"
           "\"kWh\",\"stat_t\":\"~/state/phases/2/"
           "total_reverse_active_energy\",\"val_tpl\":\"{{ value | "
-          "round(5,default=none) "
+          "round(5,default=None) "
           "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
@@ -583,7 +585,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "2)\",\"uniq_id\":\"supla_754_20\",\"qos\":0,\"unit_of_meas\":"
           "\"kvarh\",\"stat_t\":\"~/state/phases/2/"
           "total_forward_reactive_energy\",\"val_tpl\":\"{{ value | "
-          "round(5,default=none) "
+          "round(5,default=None) "
           "}}\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
@@ -606,7 +608,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "2)\",\"uniq_id\":\"supla_754_21\",\"qos\":0,\"unit_of_meas\":"
           "\"kvarh\",\"stat_t\":\"~/state/phases/2/"
           "total_reverse_reactive_energy\",\"val_tpl\":\"{{ value | "
-          "round(5,default=none) "
+          "round(5,default=None) "
           "}}\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
@@ -627,7 +629,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Frequency - Phase "
           "2)\",\"uniq_id\":\"supla_754_22\",\"qos\":0,\"unit_of_meas\":\"Hz\","
           "\"stat_t\":\"~/state/phases/2/frequency\",\"val_tpl\":\"{{ value | "
-          "round(2,default=none) }}\",\"state_class\":\"measurement\"}";
+          "round(2,default=None) }}\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -647,7 +649,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Voltage - Phase "
           "2)\",\"uniq_id\":\"supla_754_23\",\"qos\":0,\"unit_of_meas\":\"V\","
           "\"stat_t\":\"~/state/phases/2/voltage\",\"val_tpl\":\"{{ value | "
-          "round(2,default=none) "
+          "round(2,default=None) "
           "}}\",\"dev_cla\":\"voltage\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
@@ -668,7 +670,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Current - Phase "
           "2)\",\"uniq_id\":\"supla_754_24\",\"qos\":0,\"unit_of_meas\":\"A\","
           "\"stat_t\":\"~/state/phases/2/current\",\"val_tpl\":\"{{ value | "
-          "round(3,default=none) "
+          "round(3,default=None) "
           "}}\",\"dev_cla\":\"current\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
@@ -689,7 +691,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power active - Phase "
           "2)\",\"uniq_id\":\"supla_754_25\",\"qos\":0,\"unit_of_meas\":\"W\","
           "\"stat_t\":\"~/state/phases/2/power_active\",\"val_tpl\":\"{{ value "
-          "| round(5,default=none) "
+          "| round(5,default=None) "
           "}}\",\"dev_cla\":\"power\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
@@ -710,7 +712,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power reactive - Phase "
           "2)\",\"uniq_id\":\"supla_754_26\",\"qos\":0,\"unit_of_meas\":"
           "\"var\",\"stat_t\":\"~/state/phases/2/"
-          "power_reactive\",\"val_tpl\":\"{{ value | round(5,default=none) "
+          "power_reactive\",\"val_tpl\":\"{{ value | round(5,default=None) "
           "}}\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
@@ -731,7 +733,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power apparent - Phase "
           "2)\",\"uniq_id\":\"supla_754_27\",\"qos\":0,\"unit_of_meas\":\"VA\","
           "\"stat_t\":\"~/state/phases/2/power_apparent\",\"val_tpl\":\"{{ "
-          "value | round(5,default=none) }}\",\"state_class\":\"measurement\"}";
+          "value | round(5,default=None) }}\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -751,7 +753,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power factor - Phase "
           "2)\",\"uniq_id\":\"supla_754_28\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/2/"
-          "power_factor\",\"val_tpl\":\"{% if float(value, default=none) == "
+          "power_factor\",\"val_tpl\":\"{% if float(value, default=None) == "
           "None %}None{% else %}{{float(value) * 100.0 | round(5)}}{% endif "
           "%}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
@@ -774,7 +776,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Phase angle - Phase "
           "2)\",\"uniq_id\":\"supla_754_29\",\"qos\":0,\"unit_of_meas\":\"°\","
           "\"stat_t\":\"~/state/phases/2/phase_angle\",\"val_tpl\":\"{{ value "
-          "| round(1,default=none) }}\",\"state_class\":\"measurement\"}";
+          "| round(1,default=None) }}\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -800,7 +802,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "3)\",\"uniq_id\":\"supla_754_30\",\"qos\":0,\"unit_of_meas\":"
           "\"kWh\",\"stat_t\":\"~/state/phases/3/"
           "total_forward_active_energy\",\"val_tpl\":\"{{ value | "
-          "round(5,default=none) "
+          "round(5,default=None) "
           "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
@@ -823,7 +825,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "3)\",\"uniq_id\":\"supla_754_31\",\"qos\":0,\"unit_of_meas\":"
           "\"kWh\",\"stat_t\":\"~/state/phases/3/"
           "total_reverse_active_energy\",\"val_tpl\":\"{{ value | "
-          "round(5,default=none) "
+          "round(5,default=None) "
           "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
@@ -846,7 +848,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "3)\",\"uniq_id\":\"supla_754_32\",\"qos\":0,\"unit_of_meas\":"
           "\"kvarh\",\"stat_t\":\"~/state/phases/3/"
           "total_forward_reactive_energy\",\"val_tpl\":\"{{ value | "
-          "round(5,default=none) "
+          "round(5,default=None) "
           "}}\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
@@ -869,7 +871,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "3)\",\"uniq_id\":\"supla_754_33\",\"qos\":0,\"unit_of_meas\":"
           "\"kvarh\",\"stat_t\":\"~/state/phases/3/"
           "total_reverse_reactive_energy\",\"val_tpl\":\"{{ value | "
-          "round(5,default=none) "
+          "round(5,default=None) "
           "}}\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
@@ -890,7 +892,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Frequency - Phase "
           "3)\",\"uniq_id\":\"supla_754_34\",\"qos\":0,\"unit_of_meas\":\"Hz\","
           "\"stat_t\":\"~/state/phases/3/frequency\",\"val_tpl\":\"{{ value | "
-          "round(2,default=none) }}\",\"state_class\":\"measurement\"}";
+          "round(2,default=None) }}\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -910,7 +912,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Voltage - Phase "
           "3)\",\"uniq_id\":\"supla_754_35\",\"qos\":0,\"unit_of_meas\":\"V\","
           "\"stat_t\":\"~/state/phases/3/voltage\",\"val_tpl\":\"{{ value | "
-          "round(2,default=none) "
+          "round(2,default=None) "
           "}}\",\"dev_cla\":\"voltage\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
@@ -931,7 +933,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Current - Phase "
           "3)\",\"uniq_id\":\"supla_754_36\",\"qos\":0,\"unit_of_meas\":\"A\","
           "\"stat_t\":\"~/state/phases/3/current\",\"val_tpl\":\"{{ value | "
-          "round(3,default=none) "
+          "round(3,default=None) "
           "}}\",\"dev_cla\":\"current\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
@@ -952,7 +954,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power active - Phase "
           "3)\",\"uniq_id\":\"supla_754_37\",\"qos\":0,\"unit_of_meas\":\"W\","
           "\"stat_t\":\"~/state/phases/3/power_active\",\"val_tpl\":\"{{ value "
-          "| round(5,default=none) "
+          "| round(5,default=None) "
           "}}\",\"dev_cla\":\"power\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
@@ -973,7 +975,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power reactive - Phase "
           "3)\",\"uniq_id\":\"supla_754_38\",\"qos\":0,\"unit_of_meas\":"
           "\"var\",\"stat_t\":\"~/state/phases/3/"
-          "power_reactive\",\"val_tpl\":\"{{ value | round(5,default=none) "
+          "power_reactive\",\"val_tpl\":\"{{ value | round(5,default=None) "
           "}}\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
@@ -994,7 +996,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power apparent - Phase "
           "3)\",\"uniq_id\":\"supla_754_39\",\"qos\":0,\"unit_of_meas\":\"VA\","
           "\"stat_t\":\"~/state/phases/3/power_apparent\",\"val_tpl\":\"{{ "
-          "value | round(5,default=none) }}\",\"state_class\":\"measurement\"}";
+          "value | round(5,default=None) }}\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -1014,7 +1016,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power factor - Phase "
           "3)\",\"uniq_id\":\"supla_754_40\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/3/"
-          "power_factor\",\"val_tpl\":\"{% if float(value, default=none) == "
+          "power_factor\",\"val_tpl\":\"{% if float(value, default=None) == "
           "None %}None{% else %}{{float(value) * 100.0 | round(5)}}{% endif "
           "%}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
@@ -1037,7 +1039,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Phase angle - Phase "
           "3)\",\"uniq_id\":\"supla_754_41\",\"qos\":0,\"unit_of_meas\":\"°\","
           "\"stat_t\":\"~/state/phases/3/phase_angle\",\"val_tpl\":\"{{ value "
-          "| round(1,default=none) }}\",\"state_class\":\"measurement\"}";
+          "| round(1,default=None) }}\",\"state_class\":\"measurement\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -1297,6 +1299,132 @@ TEST_F(MqttChannelMessageProviderTest, thermostatHeatCool) {
   ASSERT_TRUE(fetchAndCompare(
       provider, NULL, haConfig, false,
       "homeassistant/climate/7720767494dd87196e1896c7cbab707c/754/config"));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttChannelMessageProviderTest, generalPurposeMeasurement) {
+  _mqtt_db_data_row_channel_t row_channel;
+  fillChannelData(&row_channel);
+  provider->set_data_row(&row_channel);
+
+  snprintf(row_channel.device_name, SUPLA_DEVICE_NAME_MAXSIZE, "DIY GPM");
+  snprintf(row_channel.device_softver, SUPLA_SOFTVER_MAXSIZE, "24.01");
+  snprintf(row_channel.channel_caption, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+           "My Measurement");
+
+  row_channel.device_enabled = true;
+  row_channel.channel_id = 123;
+  row_channel.channel_type = SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT;
+  row_channel.channel_func = SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT;
+
+  TChannelConfig_GeneralPurposeMeasurement raw_config = {};
+  snprintf(raw_config.UnitBeforeValue, sizeof(raw_config.UnitBeforeValue),
+           "uBefore");
+  snprintf(raw_config.UnitAfterValue, sizeof(raw_config.UnitAfterValue),
+           "uAfter");
+  general_purpose_measurement_config cfg;
+  cfg.set_config(&raw_config);
+  row_channel.json_config = cfg;
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "GENERAL_PURPOSE_MEASUREMENT", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/type",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "GENERAL_PURPOSE_MEASUREMENT", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/function",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "My Measurement", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/caption",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "false", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/hidden",
+      row_channel.device_id, row_channel.channel_id));
+
+  const char haConfig[] =
+      "{\"avty\":{\"topic\":\"supla/7720767494dd87196e1896c7cbab707c/devices/"
+      "555/channels/123/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/7720767494dd87196e1896c7cbab707c/devices/555/"
+      "channels/123\",\"device\":{\"ids\":\"supla-iodevice-555\",\"mf\":\"AC "
+      "SOFTWARE\",\"name\":\"DIY GPM\",\"sw\":\"24.01\"},\"name\":\"My "
+      "Measurement\",\"uniq_id\":\"supla_123\",\"qos\":0,\"unit_of_meas\":"
+      "\"uAfter\",\"stat_t\":\"~/state/value\",\"val_tpl\":\"{% if "
+      "float(value, default=None) == None or value == 'nan' %}None{% else "
+      "%}{{value | int}}{% endif %}\",\"state_class\":\"measurement\"}";
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, haConfig, false,
+      "homeassistant/sensor/7720767494dd87196e1896c7cbab707c/123/config"));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttChannelMessageProviderTest, generalPurposeMeter) {
+  _mqtt_db_data_row_channel_t row_channel;
+  fillChannelData(&row_channel);
+  provider->set_data_row(&row_channel);
+
+  snprintf(row_channel.device_name, SUPLA_DEVICE_NAME_MAXSIZE, "DIY GPM");
+  snprintf(row_channel.device_softver, SUPLA_SOFTVER_MAXSIZE, "24.01");
+  snprintf(row_channel.channel_caption, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+           "My Meter");
+
+  row_channel.device_enabled = true;
+  row_channel.channel_id = 123;
+  row_channel.channel_type = SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER;
+  row_channel.channel_func = SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER;
+
+  TChannelConfig_GeneralPurposeMeasurement raw_config = {};
+  snprintf(raw_config.UnitBeforeValue, sizeof(raw_config.UnitBeforeValue),
+           "uBefore");
+  snprintf(raw_config.UnitAfterValue, sizeof(raw_config.UnitAfterValue),
+           "uAfter");
+  general_purpose_measurement_config cfg;
+  cfg.set_config(&raw_config);
+  row_channel.json_config = cfg;
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "GENERAL_PURPOSE_METER", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/type",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "GENERAL_PURPOSE_METER", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/function",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "My Meter", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/caption",
+      row_channel.device_id, row_channel.channel_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "false", false,
+      "supla/7720767494dd87196e1896c7cbab707c/devices/%i/channels/%i/hidden",
+      row_channel.device_id, row_channel.channel_id));
+
+  const char haConfig[] =
+      "{\"avty\":{\"topic\":\"supla/7720767494dd87196e1896c7cbab707c/devices/"
+      "555/channels/123/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/7720767494dd87196e1896c7cbab707c/devices/555/"
+      "channels/123\",\"device\":{\"ids\":\"supla-iodevice-555\",\"mf\":\"AC "
+      "SOFTWARE\",\"name\":\"DIY GPM\",\"sw\":\"24.01\"},\"name\":\"My "
+      "Meter\",\"uniq_id\":\"supla_123\",\"qos\":0,\"unit_of_meas\":\"uAfter\","
+      "\"stat_t\":\"~/state/value\",\"val_tpl\":\"{% if float(value, "
+      "default=None) == None or value == 'nan' %}None{% else %}{{value | "
+      "int}}{% endif %}\",\"state_class\":\"total_increasing\"}";
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, haConfig, false,
+      "homeassistant/sensor/7720767494dd87196e1896c7cbab707c/123/config"));
 
   ASSERT_FALSE(dataExists(provider));
 }

@@ -390,7 +390,7 @@ jobject supla_channelvalue_to_jobject(void *_suplaclient, void *user_data,
 }
 
 void supla_cb_channel_update(void *_suplaclient, void *user_data,
-                             TSC_SuplaChannel_D *channel) {
+                             TSC_SuplaChannel_E *channel) {
   // int a;
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
@@ -449,11 +449,14 @@ void supla_cb_channel_update(void *_suplaclient, void *user_data,
     fid = supla_client_GetFieldID(env, cch, "UserIcon", "I");
     env->SetIntField(ch, fid, channel->UserIcon);
 
-    fid = supla_client_GetFieldID(env, cch, "Flags", "I");
-    env->SetIntField(ch, fid, channel->Flags);
+    fid = supla_client_GetFieldID(env, cch, "Flags", "J");
+    env->SetLongField(ch, fid, channel->Flags);
 
     fid = supla_client_GetFieldID(env, cch, "ProtocolVersion", "I");
     env->SetIntField(ch, fid, channel->ProtocolVersion);
+
+    fid = supla_client_GetFieldID(env, cch, "DefaultConfigCRC32", "J");
+    env->SetLongField(ch, fid, channel->DefaultConfigCRC32);
 
     supla_android_client(asc, asc->j_mid_channel_update, ch);
   }
@@ -897,8 +900,8 @@ void supla_cb_channelgroup_update(void *_suplaclient, void *user_data,
     fid = supla_client_GetFieldID(env, cchg, "UserIcon", "I");
     env->SetIntField(chg, fid, channel_group->UserIcon);
 
-    fid = supla_client_GetFieldID(env, cchg, "Flags", "I");
-    env->SetIntField(chg, fid, channel_group->Flags);
+    fid = supla_client_GetFieldID(env, cchg, "Flags", "J");
+    env->SetLongField(chg, fid, channel_group->Flags);
 
     fid = supla_client_GetFieldID(env, cchg, "Caption", "Ljava/lang/String;");
     env->SetObjectField(chg, fid, new_string_utf(env, channel_group->Caption));
@@ -1116,7 +1119,7 @@ void supla_cb_on_channel_function_set_result(
 }
 
 void supla_cb_on_channel_caption_set_result(void *_suplaclient, void *user_data,
-                                            TSC_SetCaptionResult *result) {
+                                            TSCD_SetCaptionResult *result) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -1130,7 +1133,7 @@ void supla_cb_on_channel_caption_set_result(void *_suplaclient, void *user_data,
 }
 
 void supla_cb_on_channel_group_caption_set_result(
-    void *_suplaclient, void *user_data, TSC_SetCaptionResult *result) {
+    void *_suplaclient, void *user_data, TSCD_SetCaptionResult *result) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -1146,7 +1149,7 @@ void supla_cb_on_channel_group_caption_set_result(
 
 void supla_cb_on_location_caption_set_result(void *_suplaclient,
                                              void *user_data,
-                                             TSC_SetCaptionResult *result) {
+                                             TSCD_SetCaptionResult *result) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -1160,7 +1163,7 @@ void supla_cb_on_location_caption_set_result(void *_suplaclient,
 }
 
 void supla_cb_on_scene_caption_set_result(void *_suplaclient, void *user_data,
-                                          TSC_SetCaptionResult *result) {
+                                          TSCD_SetCaptionResult *result) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 

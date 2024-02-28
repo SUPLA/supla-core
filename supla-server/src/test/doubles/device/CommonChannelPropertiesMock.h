@@ -37,7 +37,7 @@ class CommonChannelPropertiesMock
   MOCK_METHOD0(get_device_id, int());
   MOCK_METHOD0(get_type, int());
   MOCK_METHOD0(get_func, int());
-  MOCK_METHOD0(get_flags, unsigned int());
+  MOCK_METHOD0(get_flags, unsigned _supla_int64_t());
   MOCK_METHOD0(get_param1, int());
   MOCK_METHOD0(get_param2, int());
   MOCK_METHOD0(get_param3, int());

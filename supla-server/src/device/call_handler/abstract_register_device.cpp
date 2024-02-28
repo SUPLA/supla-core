@@ -35,7 +35,7 @@ supla_abstract_register_device::supla_abstract_register_device(void)
     : supla_abstract_register_object() {
   channel_count = 0;
   register_device_c = nullptr;
-  register_device_e = nullptr;
+  register_device_f = nullptr;
   location_id = 0;
   device_flags = 0;
   manufacturer_id = 0;
@@ -83,8 +83,8 @@ TDS_SuplaDeviceChannel_B *supla_abstract_register_device::get_channels_b(void) {
   return register_device_c ? register_device_c->channels : nullptr;
 }
 
-TDS_SuplaDeviceChannel_C *supla_abstract_register_device::get_channels_c(void) {
-  return register_device_e ? register_device_e->channels : nullptr;
+TDS_SuplaDeviceChannel_D *supla_abstract_register_device::get_channels_d(void) {
+  return register_device_f ? register_device_f->channels : nullptr;
 }
 
 void supla_abstract_register_device::set_hold_time_on_failure_usec(
@@ -138,8 +138,8 @@ bool supla_abstract_register_device::device_auth(void) {
     return false;
   }
 
-  if (register_device_e != nullptr &&
-      false == authkey_auth(get_guid(), register_device_e->Email, get_authkey(),
+  if (register_device_f != nullptr &&
+      false == authkey_auth(get_guid(), register_device_f->Email, get_authkey(),
                             get_user_id_ptr())) {
     supla_log(LOG_INFO,
               "(AUTHKEY_AUTH) Bad device credentials. ClientSD: %i "
@@ -173,7 +173,7 @@ bool supla_abstract_register_device::add_device(void) {
     return false;
   }
 
-  if (location_id == 0 && register_device_e != nullptr) {
+  if (location_id == 0 && register_device_f != nullptr) {
     if ((location_id = device_dao->get_location_id(get_user_id(), true)) != 0) {
       location_enabled = true;
 
@@ -213,7 +213,7 @@ bool supla_abstract_register_device::add_channels(void) {
   int channel_type = 0;
 
   TDS_SuplaDeviceChannel_B *dev_channels_b = get_channels_b();
-  TDS_SuplaDeviceChannel_C *dev_channels_c = get_channels_c();
+  TDS_SuplaDeviceChannel_D *dev_channels_d = get_channels_d();
 
   for (int a = 0; a < SUPLA_CHANNELMAXCOUNT; a++) {
     if (a >= channel_count) {
@@ -225,7 +225,8 @@ bool supla_abstract_register_device::add_channels(void) {
       _supla_int_t type = 0;
       _supla_int_t func_list = 0;
       _supla_int_t default_func = 0;
-      _supla_int_t channel_flags = 0;
+      _supla_int64_t channel_flags = 0;
+      unsigned char alt_icon = 0;
 
       if (dev_channels_b != nullptr) {
         number = dev_channels_b[a].Number;
@@ -233,11 +234,12 @@ bool supla_abstract_register_device::add_channels(void) {
         func_list = dev_channels_b[a].FuncList;
         default_func = dev_channels_b[a].Default;
       } else {
-        number = dev_channels_c[a].Number;
-        type = dev_channels_c[a].Type;
-        func_list = dev_channels_c[a].FuncList;
-        default_func = dev_channels_c[a].Default;
-        channel_flags = dev_channels_c[a].Flags;
+        number = dev_channels_d[a].Number;
+        type = dev_channels_d[a].Type;
+        func_list = dev_channels_d[a].FuncList;
+        default_func = dev_channels_d[a].Default;
+        channel_flags = dev_channels_d[a].Flags;
+        alt_icon = dev_channels_d[a].DefaultIcon;
       }
 
       if (type == 0) {
@@ -260,11 +262,12 @@ bool supla_abstract_register_device::add_channels(void) {
         int Param2 = 0;
         supla_device_channel::get_defaults(type, default_func, &Param1,
                                            &Param2);
+        supla_device_channel::trim_alt_icon_index(default_func, &alt_icon);
 
         int channel_id = device_dao->add_channel(
             device_id, number, type, default_func, Param1, Param2,
             supla_device_channel::func_list_filter(func_list, type),
-            channel_flags, get_user_id());
+            channel_flags, alt_icon, get_user_id());
 
         if (channel_id == 0) {
           processed_count = -1;
@@ -292,7 +295,7 @@ bool supla_abstract_register_device::add_channels(void) {
 
 void supla_abstract_register_device::register_device(
     weak_ptr<supla_device> device, TDS_SuplaRegisterDevice_C *register_device_c,
-    TDS_SuplaRegisterDevice_E *register_device_e,
+    TDS_SuplaRegisterDevice_F *register_device_f,
     supla_abstract_srpc_adapter *srpc_adapter,
     supla_abstract_db_access_provider *dba,
     supla_abstract_connection_dao *conn_dao,
@@ -300,7 +303,7 @@ void supla_abstract_register_device::register_device(
     unsigned char activity_timeout) {
   this->device = device;
   this->register_device_c = register_device_c;
-  this->register_device_e = register_device_e;
+  this->register_device_f = register_device_f;
   set_srpc_adapter(srpc_adapter);
   set_dba(dba);
   set_conn_dao(conn_dao);
@@ -326,14 +329,14 @@ void supla_abstract_register_device::register_device(
     channel_count = register_device_c->channel_count;
     location_id = register_device_c->LocationID;
   } else {
-    set_guid(register_device_e->GUID);
-    set_authkey(register_device_e->AuthKey);
-    set_name(register_device_e->Name);
-    set_softver(register_device_e->SoftVer);
-    device_flags = register_device_e->Flags;
-    channel_count = register_device_e->channel_count;
-    manufacturer_id = register_device_e->ManufacturerID;
-    product_id = register_device_e->ProductID;
+    set_guid(register_device_f->GUID);
+    set_authkey(register_device_f->AuthKey);
+    set_name(register_device_f->Name);
+    set_softver(register_device_f->SoftVer);
+    device_flags = register_device_f->Flags;
+    channel_count = register_device_f->channel_count;
+    manufacturer_id = register_device_f->ManufacturerID;
+    product_id = register_device_f->ProductID;
   }
 
   if (strnlen(get_name(), SUPLA_DEVICE_NAME_MAXSIZE - 1) < 1) {
@@ -345,7 +348,7 @@ void supla_abstract_register_device::register_device(
     return;
   }
 
-  if (register_device_e != nullptr && !is_valid_authkey()) {
+  if (register_device_f != nullptr && !is_valid_authkey()) {
     send_result(SUPLA_RESULTCODE_AUTHKEY_ERROR);
     return;
   }

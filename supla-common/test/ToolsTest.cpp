@@ -17,6 +17,7 @@
  */
 
 #include "ToolsTest.h"
+
 #include "gtest/gtest.h"  // NOLINT
 #include "tools.h"        // NOLINT
 
@@ -264,6 +265,12 @@ TEST_F(ToolsTest, st_rgb2hsv) {
   ASSERT_EQ(270, (int)hsv.h);
   ASSERT_EQ(50, (int)(hsv.s * 100));
   ASSERT_EQ(49, (int)(hsv.v * 100));
+}
+
+TEST_F(ToolsTest, st_crc32) {
+  char str[] = "1234";
+  EXPECT_EQ(st_crc32_checksum((const uint8_t *)str, 4), 2615402659);
+  EXPECT_EQ(st_crc32_checksum((const uint8_t *)str, 0), 0);
 }
 
 }  // namespace

@@ -50,8 +50,8 @@ void supla_ch_device_channel_extendedvalue_changed::handle_call(
           channel_id, &rd->data.ds_device_channel_extendedvalue->value);
 
       device->get_user()->on_channel_value_changed(
-          supla_caller(ctDevice, device->get_id()), device->get_id(),
-          channel_id, true);
+          supla_caller(ctChannel, channel_id), device->get_id(), channel_id,
+          true);
     }
   }
 }

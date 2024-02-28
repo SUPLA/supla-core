@@ -34,10 +34,13 @@ supla_google_home_state_report_request::supla_google_home_state_report_request(
     const supla_caller &caller, int user_id, int device_id, int channel_id,
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_channel_property_getter *property_getter,
-    supla_google_home_credentials *credentials, const string &request_id)
+    supla_google_home_credentials *credentials,
+    supla_remote_gateway_access_token_provider *token_provider,
+    const string &request_id)
     : supla_asynctask_http_request(supla_caller(), user_id, device_id,
                                    channel_id, queue, pool, property_getter) {
   this->credentials = credentials;
+  this->token_provider = token_provider;
   this->request_id = request_id;
 
   set_timeout(scfg_int(CFG_GOOGLE_HOME_STATEREPORT_TIMEOUT) * 1000);
@@ -68,7 +71,9 @@ bool supla_google_home_state_report_request::make_request(
     return false;
   }
 
-  supla_google_home_client client(get_channel_id(), curl_adapter, credentials);
+  supla_google_home_client client(
+      get_channel_id(), curl_adapter, credentials,
+      token_provider->get_token(platform_homegraph, 0));
 
   supla_channel_fragment fragment;
   bool online = false;
@@ -130,6 +135,7 @@ bool supla_google_home_state_report_request::is_caller_allowed(
     const supla_caller &caller) {
   switch (caller.get_type()) {
     case ctDevice:
+    case ctChannel:
     case ctClient:
     case ctIPC:
     case ctMQTT:
@@ -233,7 +239,9 @@ void supla_google_home_state_report_request::new_request(
           caller, user->getUserID(), device_id, channel_id,
           supla_asynctask_queue::global_instance(),
           supla_asynctask_http_thread_pool::global_instance(), property_getter,
-          user->googleHomeCredentials(), request_id);
+          user->googleHomeCredentials(),
+          supla_remote_gateway_access_token_provider::global_instance(),
+          request_id);
 
   request->set_priority(90);
   request->set_delay_usec(delay_time_usec);

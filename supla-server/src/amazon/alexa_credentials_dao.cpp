@@ -251,8 +251,11 @@ string supla_amazon_alexa_credentials_dao::get_cloud_access_token(int user_id) {
     rbind.is_null = &access_token_is_null;
 
     if (mysql_stmt_bind_result(stmt, &rbind)) {
-      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                mysql_stmt_error(stmt));
+      // 2052 == Prepared statement contains no metadata
+      if (2052 != mysql_stmt_errno(stmt)) {
+        supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                  mysql_stmt_error(stmt));
+      }
     } else {
       mysql_stmt_store_result(stmt);
 

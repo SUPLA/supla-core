@@ -26,7 +26,7 @@ RegisterDeviceWithEmailAuthTest::RegisterDeviceWithEmailAuthTest()
 RegisterDeviceWithEmailAuthTest::~RegisterDeviceWithEmailAuthTest() {}
 
 TEST_F(RegisterDeviceWithEmailAuthTest, invalidGUID) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
@@ -38,16 +38,16 @@ TEST_F(RegisterDeviceWithEmailAuthTest, invalidGUID) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 234,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceWithEmailAuthTest, invalidAuthkey) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
+  register_device_f.GUID[0] = 1;
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
@@ -59,17 +59,17 @@ TEST_F(RegisterDeviceWithEmailAuthTest, invalidAuthkey) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 234,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceWithEmailAuthTest, dbaConnectionFailed) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(false));
   EXPECT_CALL(dba, is_connected).Times(1).WillOnce(Return(false));
@@ -86,19 +86,19 @@ TEST_F(RegisterDeviceWithEmailAuthTest, dbaConnectionFailed) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 234,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceWithEmailAuthTest, emailNotFound) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -119,19 +119,19 @@ TEST_F(RegisterDeviceWithEmailAuthTest, emailNotFound) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 234,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceWithEmailAuthTest, getObjectIdWithFail) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -154,7 +154,7 @@ TEST_F(RegisterDeviceWithEmailAuthTest, getObjectIdWithFail) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 234,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
@@ -162,12 +162,12 @@ TEST_F(RegisterDeviceWithEmailAuthTest, getObjectIdWithFail) {
 
 TEST_F(RegisterDeviceWithEmailAuthTest,
        deviceNotExistsAndRegistrationDisabled) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(rd, get_user_id_by_email(StrEq("elon@spacex.com")))
@@ -203,19 +203,19 @@ TEST_F(RegisterDeviceWithEmailAuthTest,
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 234,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceWithEmailAuthTest, getAuthKeyWithFail) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -251,19 +251,19 @@ TEST_F(RegisterDeviceWithEmailAuthTest, getAuthKeyWithFail) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 234,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceWithEmailAuthTest, missingKeyAndRegistrationDisabled) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -307,19 +307,19 @@ TEST_F(RegisterDeviceWithEmailAuthTest, missingKeyAndRegistrationDisabled) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 234,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
 TEST_F(RegisterDeviceWithEmailAuthTest, incorrectAuthKey) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -358,20 +358,19 @@ TEST_F(RegisterDeviceWithEmailAuthTest, incorrectAuthKey) {
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 234,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceWithEmailAuthTest,
-       correctAuthKeyAndRegistrtionDisabled) {
-  TDS_SuplaRegisterDevice_E register_device_e = {};
+TEST_F(RegisterDeviceWithEmailAuthTest, correctAuthKeyAndRegistrtionDisabled) {
+  TDS_SuplaRegisterDevice_F register_device_f = {};
 
-  register_device_e.GUID[0] = 1;
-  register_device_e.AuthKey[0] = 2;
+  register_device_f.GUID[0] = 1;
+  register_device_f.AuthKey[0] = 2;
 
-  snprintf(register_device_e.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+  snprintf(register_device_f.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "elon@spacex.com");
 
   EXPECT_CALL(dba, connect).Times(1).WillOnce(Return(true));
@@ -410,7 +409,7 @@ TEST_F(RegisterDeviceWithEmailAuthTest,
         return 0;
       });
 
-  rd.register_device(nullptr, &register_device_e, &srpcAdapter, &dba, &dao, 234,
+  rd.register_device(nullptr, &register_device_f, &srpcAdapter, &dba, &dao, 234,
                      4567, 20);
 
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());

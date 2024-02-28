@@ -33,7 +33,7 @@ class supla_abstract_register_device
   std::weak_ptr<supla_device> device;
   unsigned char channel_count;
   TDS_SuplaRegisterDevice_C *register_device_c;
-  TDS_SuplaRegisterDevice_E *register_device_e;
+  TDS_SuplaRegisterDevice_F *register_device_f;
   int location_id;
   int device_flags;
   short manufacturer_id;
@@ -57,7 +57,7 @@ class supla_abstract_register_device
  protected:
   void register_device(std::weak_ptr<supla_device> device,
                        TDS_SuplaRegisterDevice_C *register_device_c,
-                       TDS_SuplaRegisterDevice_E *register_device_e,
+                       TDS_SuplaRegisterDevice_F *register_device_f,
                        supla_abstract_srpc_adapter *srpc_adapter,
                        supla_abstract_db_access_provider *dba,
                        supla_abstract_connection_dao *conn_dao,
@@ -76,7 +76,7 @@ class supla_abstract_register_device
   int get_location_id(void);
   int get_channel_count(void);
   TDS_SuplaDeviceChannel_B *get_channels_b(void);
-  TDS_SuplaDeviceChannel_C *get_channels_c(void);
+  TDS_SuplaDeviceChannel_D *get_channels_d(void);
   void set_hold_time_on_failure_usec(__useconds_t hold_time_on_failure_usec);
 
  public:

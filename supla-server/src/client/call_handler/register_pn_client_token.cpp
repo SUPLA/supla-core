@@ -89,7 +89,7 @@ void supla_ch_register_pn_client_token::handle_call(
       token->Token[token->TokenSize > 1 ? token->TokenSize - 1 : 0] = 0;
       client_dao.update_client_push_notification_client_token(
           user_id, client_id, (char*)token->Token, token->Platform,
-          token->AppId, token->DevelopmentEnv);
+          token->AppId, token->DevelopmentEnv, (char*)token->ProfileName);
       result.ResultCode = SUPLA_RESULTCODE_TRUE;
     }
   }
