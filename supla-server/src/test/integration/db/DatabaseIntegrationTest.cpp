@@ -49,7 +49,8 @@ TEST_F(DatabaseIntegrationTest, setDeviceChannelCaption) {
 
   snprintf(caption, sizeof(caption), "ABCD");
 
-  db.set_caption(2, 167, caption, SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, false);
+  EXPECT_TRUE(db.set_caption(2, 167, caption,
+                             SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, false));
 
   result = "";
   sqlQuery("SELECT caption FROM supla_dev_channel WHERE id = 167", &result);
@@ -58,7 +59,10 @@ TEST_F(DatabaseIntegrationTest, setDeviceChannelCaption) {
   snprintf(caption, sizeof(caption), "%s", "");
 
   result = "";
-  db.set_caption(2, 167, caption, SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, false);
+  EXPECT_TRUE(db.set_caption(2, 167, caption,
+                             SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, false));
+  EXPECT_FALSE(db.set_caption(2, 167, caption,
+                              SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, false));
 
   sqlQuery("SELECT caption FROM supla_dev_channel WHERE id = 167", &result);
 
@@ -74,7 +78,10 @@ TEST_F(DatabaseIntegrationTest, setDeviceChannelCaptionOnlyWhenNull) {
   EXPECT_EQ(result, "caption\nNULL\n");
 
   snprintf(caption, sizeof(caption), "ABCD");
-  db.set_caption(2, 140, caption, SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, true);
+  EXPECT_TRUE(db.set_caption(2, 140, caption,
+                             SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, true));
+  EXPECT_FALSE(db.set_caption(2, 140, caption,
+                              SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, true));
 
   result = "";
   sqlQuery("SELECT caption FROM supla_dev_channel WHERE id = 140", &result);
@@ -83,13 +90,15 @@ TEST_F(DatabaseIntegrationTest, setDeviceChannelCaptionOnlyWhenNull) {
   snprintf(caption, sizeof(caption), "XYZ");
 
   result = "";
-  db.set_caption(2, 140, caption, SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, true);
+  EXPECT_FALSE(db.set_caption(2, 140, caption,
+                              SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, true));
 
   sqlQuery("SELECT caption FROM supla_dev_channel WHERE id = 140", &result);
   EXPECT_EQ(result, "caption\nABCD\n");
 
   result = "";
-  db.set_caption(2, 140, caption, SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, false);
+  EXPECT_TRUE(db.set_caption(2, 140, caption,
+                             SUPLA_DCS_CALL_SET_CHANNEL_CAPTION, false));
 
   sqlQuery("SELECT caption FROM supla_dev_channel WHERE id = 140", &result);
   EXPECT_EQ(result, "caption\nXYZ\n");
