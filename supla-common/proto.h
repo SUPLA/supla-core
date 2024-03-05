@@ -3017,6 +3017,45 @@ typedef struct {
   unsigned char Reserved[8];
 } TChannelConfig_GeneralPurposeMeter;  // v. >= 23
 
+#define EM_CT_TYPE_100A_33mA  (1ULL << 0)
+#define EM_CT_TYPE_200A_66mA  (1ULL << 1)
+#define EM_CT_TYPE_400A_133mA (1ULL << 2)
+
+#define EM_PHASE_LED_TYPE_OFF                       (1ULL << 0)
+#define EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE          (1ULL << 1)
+#define EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE_INVERTED (1ULL << 2)
+// Voltage level:
+//  - PhaseLedParam1 - "low threshold", units 0.01 V.
+//    When voltage < low threshold -> blue LED
+//  - PhaseLedParam2 - "high threshold", units 0.01 V.
+//    When voltage > high threshold -> red LED
+//  - Voltage between low and high threshold -> green LED
+#define EM_PHASE_LED_TYPE_VOLTAGE_LEVEL             (1ULL << 3)
+// Active power direction:
+//  - PhaseLedParam1 - "low threshold", units 0.01 kW.
+//    When power < low threshold -> green LED.
+//  - PhaseLedParam2 - "high threshold", units 0.01 kW.
+//    When power > high threshold -> red LED
+#define EM_PHASE_LED_TYPE_POWER_ACTIVE_DIRECTION    (1ULL << 4)
+
+// Electricity meter channel config
+typedef struct {
+  // Selected CT type
+  unsigned _supla_int64_t UsedCTType;  // EM_CT_TYPE_
+  // Selected phase LED type
+  unsigned _supla_int64_t UsedPhaseLedType;  // EM_PHASE_LED_TYPE_*
+
+  // Phase LED params (actual meaning depends on phase LED type)
+  _supla_int_t PhaseLedParam1;
+  _supla_int_t PhaseLedParam2;
+
+  // readonly, device capabilities
+  unsigned _supla_int64_t AvailableCTTypes;
+  unsigned _supla_int64_t AvailablePhaseLedTypes;
+
+  unsigned char Reserved[8];
+} TChannelConfig_ElectricityMeter;  // v. >= 23
+
 typedef struct {
   _supla_int_t ChannelID;
   union {
