@@ -95,9 +95,9 @@ bool supla_mqtt_client_datasource::context_should_be_opened(void) {
       gettimeofday(&now, NULL);
 
       unsigned long long time_diff =
-          ((now.tv_sec * 1000000UL + now.tv_usec) -
-           (id.time.tv_sec * 1000000UL + id.time.tv_usec)) /
-          1000;
+          ((now.tv_sec * 1000000ULL + now.tv_usec) -
+           (id.time.tv_sec * 1000000ULL + id.time.tv_usec)) /
+          1000ULL;
 
       if (time_diff >= WARNING_TIME_MSEC) {
         supla_log(LOG_WARNING,

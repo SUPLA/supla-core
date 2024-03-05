@@ -255,8 +255,8 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
         gettimeofday(&now, nullptr);
 
         iterate = should_keep_alive(
-            (now.tv_sec * 1000000UL + now.tv_usec) -
-                (last_exec_time.tv_sec * 1000000UL + last_exec_time.tv_usec),
+            (now.tv_sec * 1000000ULL + now.tv_usec) -
+                (last_exec_time.tv_sec * 1000000ULL + last_exec_time.tv_usec),
             threads.size());
       }
     }

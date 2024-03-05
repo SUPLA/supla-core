@@ -910,9 +910,10 @@ unsigned int supla_device_channel::get_value_validity_time_left_msec(void) {
     struct timeval now;
     gettimeofday(&now, nullptr);
 
-    unsigned long long now_msec = (now.tv_sec * 1000UL + now.tv_usec / 1000UL);
+    unsigned long long now_msec =
+        (now.tv_sec * 1000ULL + now.tv_usec / 1000ULL);
     unsigned long long valid_to_msec =
-        (value_valid_to.tv_sec * 1000UL + value_valid_to.tv_usec / 1000UL);
+        (value_valid_to.tv_sec * 1000ULL + value_valid_to.tv_usec / 1000ULL);
 
     if (now_msec < valid_to_msec) {
       result = valid_to_msec - now_msec;
