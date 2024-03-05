@@ -116,8 +116,8 @@ void supla_abstract_asynctask::set_delay_usec(long long delay_usec) {
   this->delay_usec = delay_usec;
 
   if (delay_usec > 0) {
-    execution_start_time.tv_sec += delay_usec / 1000000;
-    execution_start_time.tv_usec += delay_usec % 1000000;
+    execution_start_time.tv_sec += delay_usec / 1000000LL;
+    execution_start_time.tv_usec += delay_usec % 1000000LL;
   }
 
   unlock();
@@ -151,8 +151,8 @@ long long supla_abstract_asynctask::time_diff_usec(struct timeval *now,
   lock();
   long long result = _default;
   if (then->tv_sec || then->tv_usec) {
-    result = (then->tv_sec * (long long)1000000 + then->tv_usec) -
-             (now->tv_sec * (long long)1000000 + now->tv_usec);
+    result = (then->tv_sec * 1000000LL + then->tv_usec) -
+             (now->tv_sec * 1000000LL + now->tv_usec);
   }
   unlock();
 
