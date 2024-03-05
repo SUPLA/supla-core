@@ -56,9 +56,9 @@ unsigned int supla_voltage_aberration_analyzer::time_diff(struct timeval *tv) {
   if (tv->tv_sec != 0 || tv->tv_usec != 0) {
     struct timeval now = {};
     gettimeofday(&now, nullptr);
-    return ((now.tv_sec * 1000000UL + now.tv_usec) -
-            (tv->tv_sec * 1000000UL + tv->tv_usec)) /
-           1000UL;
+    return ((now.tv_sec * 1000000ULL + now.tv_usec) -
+            (tv->tv_sec * 1000000ULL + tv->tv_usec)) /
+           1000ULL;
   }
   return 0;
 }

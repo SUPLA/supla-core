@@ -93,10 +93,10 @@ unsigned int supla_simple_statiscics::get_total_time_msec(void) {
     struct timeval now = {};
     gettimeofday(&now, nullptr);
 
-    return ((now.tv_sec * 1000000UL + now.tv_usec) -
-            (first_update_time.tv_sec * 1000000UL +
+    return ((now.tv_sec * 1000000ULL + now.tv_usec) -
+            (first_update_time.tv_sec * 1000000ULL +
              first_update_time.tv_usec)) /
-           1000UL;
+           1000ULL;
   }
 
   return 0;

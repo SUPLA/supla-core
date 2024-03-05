@@ -108,7 +108,7 @@ void supla_timer_state_extended_value::update_time(void) {
     struct timeval now;
     gettimeofday(&now, nullptr);
 
-    unsigned _supla_int64_t time = now.tv_sec * 1000000UL + now.tv_usec;
+    unsigned _supla_int64_t time = now.tv_sec * 1000000ULL + now.tv_usec;
     time /= 1000;
 
     if (get_value_ptr()->type == EV_TYPE_TIMER_STATE_V1_SEC) {
