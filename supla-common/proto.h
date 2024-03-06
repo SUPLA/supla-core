@@ -481,7 +481,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                 // ver. >= 16
 #define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800          // ver. >= 14
 #define SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL 810            // ver. >= 14
-#define SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND 900     // ver. >= 17
+#define SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND 900     // ver. >= 24
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -1840,12 +1840,12 @@ typedef struct {
 
 #define SUPLA_FACADEBLIND_TYPE_STANDS_IN_POSITION_WHILE_TILTING 1
 #define SUPLA_FACADEBLIND_TYPE_CHANGES_POSITION_WHILE_TILTING 2
-#define SUPLA_FACADEBLINE_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED 3
+#define SUPLA_FACADEBLIND_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED 3
 
 // Roller shutter channel value payload
 // Device -> Server -> Client
 typedef struct {
-  signed char position;  // -1 == calibration. -1 - 100%, DSC
+  signed char position;  // -1 == calibration. -1, 0% (open) - 100% (closed) DSC
   char reserved1;
   signed char bottom_position;  // Percentage points to the windowsill, SC
   _supla_int16_t flags;         // DSC
@@ -1863,20 +1863,18 @@ typedef struct {
                          // 3 - DOWN_OR_STOP
                          // 4 - UP_OR_STOP
                          // 5 - STEP_BY_STEP
-                         // 10-110 - target position + 10
+                         // 10-110 - target position + 10 (0 open, 100 closed)
   char reserved[7];
 } TCSD_RollerShutterValue;
 
 // Facade blind channel value payload
 // Device -> Server -> Client
 typedef struct {
-  signed char position;  // -1 == calibration. -1 - 100%, DSC
-  signed char tilt;      // -1 == not used/calibration, -1 - 100%, DSC
+  signed char position;  // -1 == calibration. -1, 0% (open) - 100% (closed) DSC
+  signed char tilt;      // -1 == not used/calibration, -1, 0% - 100%, DSC
   char reserved;
   _supla_int16_t flags;             // DSC
-  unsigned char tilt_0_angle;       // SC
-  unsigned char tilt_100_angle;     // SC
-  unsigned char facade_blind_type;  // DSC SUPLA_FACADEBLIND_TYPE_*
+  char reserved2[3];
 } TDSC_FacadeBlindValue;
 
 // Facade blind channel value payload
@@ -1889,7 +1887,7 @@ typedef struct {
                          // 3 - DOWN_OR_STOP
                          // 4 - UP_OR_STOP
                          // 5 - STEP_BY_STEP
-                         // 10-110 - target position + 10
+                         // 10-110 - target position + 10 (0 open, 100 closed)
   signed char tilt;      // -1 - not set (actual behavior is device specific)
                          // 10-110 - target position + 10
   char reserved[6];
@@ -2041,13 +2039,6 @@ typedef struct {
   _supla_int_t FullOpeningTimeMS;
   _supla_int_t FullClosingTimeMS;
 } TCalCfg_RollerShutterSettings;
-
-typedef struct {
-  _supla_int_t FullOpeningTimeMS;
-  _supla_int_t FullClosingTimeMS;
-  _supla_int_t TiltingTimeMS;
-  unsigned char FacadeBlindType;  // SUPLA_FACADEBLIND_TYPE_
-} TCalCfg_FacadeBlindSettings;    // v. >= 21
 
 #define RGBW_BRIGHTNESS_ONOFF 0x1
 #define RGBW_COLOR_ONOFF 0x2
@@ -2687,21 +2678,32 @@ typedef struct {
 typedef struct {
   _supla_int_t ClosingTimeMS;
   _supla_int_t OpeningTimeMS;
+  unsigned char MotorUpsideDown;  // 0 - false, 1 - true
+  unsigned char ButtonsUpsideDown;  // 0 - false, 1 - true
+  signed char TimeMargin;  // -1 default (device specific), 0 - no margin,
+                           // > 0 - % of opening/closing time added on extreme
+                           // positions
 } TChannelConfig_Rollershutter;  // v. >= 16
 
 typedef struct {
   _supla_int_t ClosingTimeMS;
   _supla_int_t OpeningTimeMS;
   _supla_int_t TiltingTimeMS;
+  unsigned char MotorUpsideDown;  // 0 - false, 1 - true
+  unsigned char ButtonsUpsideDown;  // 0 - false, 1 - true
+  signed char TimeMargin;  // -1 default (device specific), 0 - no margin,
+                           // > 0 - % of opening/closing time added on extreme
+                           // positions
+  unsigned char Tilt0Angle;    // 0 - 360 - degree corresponding to tilt 0
+  unsigned char Tilt100Angle;  // 0 - 360 - degree corresponding to tilt 100
   unsigned char FacadeBlindType;  // SUPLA_FACADEBLIND_TYPE_
-} TChannelConfig_FacadeBlind;     // v. >= 21
+} TChannelConfig_FacadeBlind;     // v. >= 24
 
 typedef struct {
   unsigned _supla_int_t ActiveActions;
 } TChannelConfig_ActionTrigger;  // v. >= 16
 
 // Weekly schedule definition for HVAC channel
-
 typedef struct {
   unsigned char Mode;  // for HVAC: SUPLA_HVAC_MODE_
   union {
