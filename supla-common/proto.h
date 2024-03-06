@@ -3032,9 +3032,9 @@ typedef struct {
 //  - Voltage between low and high threshold -> green LED
 #define EM_PHASE_LED_TYPE_VOLTAGE_LEVEL             (1ULL << 3)
 // Active power direction:
-//  - PhaseLedParam1 - "low threshold", units 0.01 kW.
+//  - PhaseLedParam1 - "low threshold", units 0.01 W.
 //    When power < low threshold -> green LED.
-//  - PhaseLedParam2 - "high threshold", units 0.01 kW.
+//  - PhaseLedParam2 - "high threshold", units 0.01 W.
 //    When power > high threshold -> red LED
 #define EM_PHASE_LED_TYPE_POWER_ACTIVE_DIRECTION    (1ULL << 4)
 
