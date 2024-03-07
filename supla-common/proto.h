@@ -2753,9 +2753,14 @@ typedef struct {
 // Device doesn't apply this inverted logic on communication towards server.
 // It is used only for interanal purposes and for other external interfaces
 // like MQTT
+// FilteringTimeMs is used to configure how long device should wait for stable
+// input signal before changing it's state. If value is set to 0, then field
+// is not used by device and server should ignore it. Device may impose minimum
+// and maximum values for this field.
 typedef struct {
   unsigned char InvertedLogic;  // 0 - not inverted, 1 - inverted
-  unsigned char Reserved[31];
+  unsigned _supla_int16_t FilteringTimeMs;  // 0 - not used, > 0 - time in ms
+  unsigned char Reserved[29];
 } TChannelConfig_BinarySensor;  // v. >= 21
 
 // Not set is set when there is no thermometer for "AUX" available
@@ -3053,7 +3058,7 @@ typedef struct {
   unsigned _supla_int64_t AvailableCTTypes;
   unsigned _supla_int64_t AvailablePhaseLedTypes;
 
-  unsigned char Reserved[8];
+  unsigned char Reserved[32];
 } TChannelConfig_ElectricityMeter;  // v. >= 23
 
 typedef struct {
