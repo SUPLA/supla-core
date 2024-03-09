@@ -85,6 +85,7 @@ void supla_simple_statiscics::reset(void) {
   sum = 0;
   last = NAN;
   count = 0;
+  non_nan_count = 0;
   first_update_time = {};
 }
 
