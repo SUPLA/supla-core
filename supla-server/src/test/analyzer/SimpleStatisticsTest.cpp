@@ -51,14 +51,20 @@ TEST_F(SimpleStatisticsTest, max) {
 TEST_F(SimpleStatisticsTest, avg) {
   EXPECT_TRUE(isnan(stat.get_avg()));
   EXPECT_EQ(stat.get_sample_count(), 0);
+  EXPECT_EQ(stat.get_non_nan_sample_count(), 0);
   stat.add_sample(100);
   EXPECT_EQ(stat.get_avg(), 100);
   stat.add_sample(200);
   EXPECT_EQ(stat.get_avg(), 150);
   EXPECT_EQ(stat.get_sample_count(), 2);
+  EXPECT_EQ(stat.get_non_nan_sample_count(), 2);
   stat.reset();
   EXPECT_EQ(stat.get_sample_count(), 0);
+  EXPECT_EQ(stat.get_non_nan_sample_count(), 0);
   EXPECT_TRUE(isnan(stat.get_avg()));
+  stat.add_sample(NAN);
+  EXPECT_EQ(stat.get_sample_count(), 1);
+  EXPECT_EQ(stat.get_non_nan_sample_count(), 0);
 }
 
 TEST_F(SimpleStatisticsTest, firstAndLast) {
