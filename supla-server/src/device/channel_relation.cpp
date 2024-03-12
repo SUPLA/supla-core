@@ -20,8 +20,6 @@
 
 #include "distributedobjects/dobject_change_indicator.h"
 
-using std::vector;
-
 supla_channel_relation::supla_channel_relation(int channel_id, int parent_id,
                                                short relation_type)
     : supla_dobject(channel_id) {
@@ -58,22 +56,4 @@ void supla_channel_relation::convert(TSC_SuplaChannelRelation *dest) {
   dest->Id = get_id();
   dest->ParentId = get_parent_id();
   dest->Type = get_relation_type();
-}
-
-// static
-bool supla_channel_relation::equal(vector<supla_channel_relation> *r1,
-                                   vector<supla_channel_relation> *r2) {
-  if (!r1 || !r2 || r1->size() != r2->size()) {
-    return false;
-  }
-
-  for (size_t a = 0; a < r1->size(); a++) {
-    if (r1->at(a).get_id() != r2->at(a).get_id() ||
-        r1->at(a).get_parent_id() != r2->at(a).get_parent_id() ||
-        r1->at(a).get_relation_type() != r2->at(a).get_relation_type()) {
-      return false;
-    }
-  }
-
-  return true;
 }
