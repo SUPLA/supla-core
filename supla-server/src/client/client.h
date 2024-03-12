@@ -106,6 +106,8 @@ class supla_client : public supla_abstract_connection_object {
   void set_channel_group_caption(int ChannelGroupId, char *Caption);
   void set_location_caption(int LocationId, char *Caption);
   void set_scene_caption(int scene_id, char *caption);
+  void update_json_config(int channel_id, unsigned char config_type,
+                          supla_json_config *json_config);
 
   virtual ~supla_client();
 };
