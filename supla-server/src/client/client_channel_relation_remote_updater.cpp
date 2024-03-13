@@ -47,8 +47,6 @@ bool supla_client_channel_relation_remote_updater::pre_transaction_verification(
 
 bool supla_client_channel_relation_remote_updater::on_transaction_begin(
     supla_dobject *object, int protocol_version) {
-  first = nullptr;
-
   if (!relation_pack) {
     relation_pack = new TSC_SuplaChannelRelationPack();
   }
@@ -101,4 +99,6 @@ void supla_client_channel_relation_remote_updater::on_transaction_end(
     delete relation_pack;
     relation_pack = NULL;
   }
+
+  first = nullptr;
 }
