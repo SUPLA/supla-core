@@ -26,6 +26,7 @@ supla_client_channel_relation_remote_updater::
         supla_abstract_srpc_adapter *srpc_adapter)
     : supla_abstract_dobject_remote_updater(srpc_adapter) {
   relation_pack = nullptr;
+  first = nullptr;
 }
 
 supla_client_channel_relation_remote_updater::
@@ -38,11 +39,16 @@ bool supla_client_channel_relation_remote_updater::is_protocol_version_allowed(
 
 bool supla_client_channel_relation_remote_updater::pre_transaction_verification(
     supla_dobject *object, bool first) {
+  if (first) {
+    this->first = object;
+  }
   return true;
 }
 
 bool supla_client_channel_relation_remote_updater::on_transaction_begin(
     supla_dobject *object, int protocol_version) {
+  first = nullptr;
+
   if (!relation_pack) {
     relation_pack = new TSC_SuplaChannelRelationPack();
   }
@@ -70,7 +76,7 @@ bool supla_client_channel_relation_remote_updater::prepare_the_update(
   if (relation_pack) {
     result = supla_srpc_adapter::datapack_add<TSC_SuplaChannelRelationPack,
                                               TSC_SuplaChannelRelation>(
-        relation_pack, SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT,
+        relation_pack, SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT, object == first,
         [relation](TSC_SuplaChannelRelation *sc_relation) -> void {
           relation->convert(sc_relation);
         });
@@ -88,7 +94,7 @@ void supla_client_channel_relation_remote_updater::on_transaction_end(
   if (relation_pack) {
     if (relation_pack->count) {
       supla_srpc_adapter::datapack_set_eol<TSC_SuplaChannelRelationPack>(
-          relation_pack);
+          relation_pack, true);
       srpc_adapter->sc_async_channel_relation_pack_update(relation_pack);
     }
 
