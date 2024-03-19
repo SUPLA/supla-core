@@ -2694,8 +2694,10 @@ typedef struct {
   signed char TimeMargin;  // -1 default (device specific), 0 - no margin,
                            // > 0 - % of opening/closing time added on extreme
                            // positions
-  unsigned char Tilt0Angle;    // 0 - 360 - degree corresponding to tilt 0
-  unsigned char Tilt100Angle;  // 0 - 360 - degree corresponding to tilt 100
+  unsigned _supla_int16_t
+      Tilt0Angle; // 0 - 360 - degree corresponding to tilt 0
+  unsigned _supla_int16_t
+      Tilt100Angle;               // 0 - 360 - degree corresponding to tilt 100
   unsigned char FacadeBlindType;  // SUPLA_FACADEBLIND_TYPE_
 } TChannelConfig_FacadeBlind;     // v. >= 24
 
