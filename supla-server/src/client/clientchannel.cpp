@@ -208,8 +208,8 @@ unsigned _supla_int64_t supla_client_channel::getValueValidityTimeUSec(void) {
     gettimeofday(&now, nullptr);
 
     _supla_int64_t result =
-        (value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec) -
-        (now.tv_sec * 1000000 + now.tv_usec);
+        (value_valid_to.tv_sec * 1000000LL + value_valid_to.tv_usec) -
+        (now.tv_sec * 1000000LL + now.tv_usec);
     if (result > 0) {
       return result;
     }

@@ -318,12 +318,12 @@ bool supla_device_channel::is_offline(void) {
     struct timeval now;
     gettimeofday(&now, nullptr);
 
-    result =
-        (now.tv_sec * 1000000 + now.tv_usec) -
-                    (value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec) >
-                0
-            ? true
-            : false;
+    result = (now.tv_sec * 1000000LL + now.tv_usec) -
+                         (value_valid_to.tv_sec * 1000000LL +
+                          value_valid_to.tv_usec) >
+                     0
+                 ? true
+                 : false;
   }
   unlock();
 
@@ -521,8 +521,8 @@ bool supla_device_channel::set_value(
     struct timeval now;
     gettimeofday(&now, nullptr);
 
-    if ((value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec) -
-            (now.tv_sec * 1000000 + now.tv_usec) >
+    if ((value_valid_to.tv_sec * 1000000LL + value_valid_to.tv_usec) -
+            (now.tv_sec * 1000000LL + now.tv_usec) >
         0) {
       unlock();
       return false;
@@ -910,9 +910,10 @@ unsigned int supla_device_channel::get_value_validity_time_left_msec(void) {
     struct timeval now;
     gettimeofday(&now, nullptr);
 
-    unsigned long long now_msec = (now.tv_sec * 1000 + now.tv_usec / 1000);
+    unsigned long long now_msec =
+        (now.tv_sec * 1000ULL + now.tv_usec / 1000ULL);
     unsigned long long valid_to_msec =
-        (value_valid_to.tv_sec * 1000 + value_valid_to.tv_usec / 1000);
+        (value_valid_to.tv_sec * 1000ULL + value_valid_to.tv_usec / 1000ULL);
 
     if (now_msec < valid_to_msec) {
       result = valid_to_msec - now_msec;

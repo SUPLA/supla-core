@@ -948,11 +948,10 @@ void supla_cb_channel_relation_update(
   if (asc->j_mid_channel_update) {
     jclass cls = env->FindClass("org/supla/android/lib/SuplaChannelRelation");
 
-    jmethodID methodID = env->GetMethodID(cls, "<init>", "(IISZ)V");
-    jobject rel =
-        env->NewObject(cls, methodID, channel_relation->Id,
-                       channel_relation->ParentId, channel_relation->Type,
-                       channel_relation->EOL == 1 ? JNI_TRUE : JNI_FALSE);
+    jmethodID methodID = env->GetMethodID(cls, "<init>", "(IISB)V");
+    jobject rel = env->NewObject(cls, methodID, channel_relation->Id,
+                                 channel_relation->ParentId,
+                                 channel_relation->Type, channel_relation->EOL);
 
     supla_android_client(asc, asc->j_mid_channel_relation_update, rel);
   }

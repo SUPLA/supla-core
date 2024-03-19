@@ -27,7 +27,7 @@ supla_multipart_call::supla_multipart_call(unsigned int call_id,
   struct timeval now = {};
   gettimeofday(&now, nullptr);
 
-  expires_at = now.tv_sec * 1000000 + now.tv_usec + expire_in_msec * 1000;
+  expires_at = now.tv_sec * 1000000LL + now.tv_usec + expire_in_msec * 1000LL;
 }
 
 supla_multipart_call::~supla_multipart_call() {
@@ -40,7 +40,7 @@ bool supla_multipart_call::is_expired(void) {
   struct timeval now = {};
   gettimeofday(&now, nullptr);
 
-  unsigned long long now_usec = now.tv_sec * 1000000 + now.tv_usec;
+  unsigned long long now_usec = now.tv_sec * 1000000ULL + now.tv_usec;
   return now_usec >= expires_at;
 }
 

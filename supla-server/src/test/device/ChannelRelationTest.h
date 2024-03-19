@@ -16,25 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "metrics.h"
+#ifndef CHANNEL_RELATION_TEST_H_
+#define CHANNEL_RELATION_TEST_H_
 
-#include <sys/time.h>
+#include "gtest/gtest.h"  // NOLINT
 
-using std::function;
+namespace testing {
 
-supla_metrics::supla_metrics(void) {}
+class ChannelRelationTest : public Test {
+ public:
+};
 
-supla_metrics::~supla_metrics(void) {}
+} /* namespace testing */
 
-// static
-unsigned long long supla_metrics::measure_the_time_in_usec(
-    function<void(void)> func) {
-  struct timeval before = {};
-  struct timeval now = {};
-  gettimeofday(&before, nullptr);
-  func();
-  gettimeofday(&now, nullptr);
-
-  return (now.tv_sec * 1000000ULL + now.tv_usec) -
-         (before.tv_sec * 1000000ULL + before.tv_usec);
-}
+#endif /* CHANNEL_RELATION_TEST_H_ */

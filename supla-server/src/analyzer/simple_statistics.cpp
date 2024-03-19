@@ -85,6 +85,7 @@ void supla_simple_statiscics::reset(void) {
   sum = 0;
   last = NAN;
   count = 0;
+  non_nan_count = 0;
   first_update_time = {};
 }
 
@@ -93,9 +94,10 @@ unsigned int supla_simple_statiscics::get_total_time_msec(void) {
     struct timeval now = {};
     gettimeofday(&now, nullptr);
 
-    return ((now.tv_sec * 1000000 + now.tv_usec) -
-            (first_update_time.tv_sec * 1000000 + first_update_time.tv_usec)) /
-           1000;
+    return ((now.tv_sec * 1000000ULL + now.tv_usec) -
+            (first_update_time.tv_sec * 1000000ULL +
+             first_update_time.tv_usec)) /
+           1000ULL;
   }
 
   return 0;

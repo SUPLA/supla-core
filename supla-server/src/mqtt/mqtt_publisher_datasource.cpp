@@ -276,9 +276,9 @@ bool supla_mqtt_publisher_datasource::fetch_actions(char **topic_name,
   if (queue_size > 0) {
     actions = triggered_actions.front();
     unsigned long long time_diff =
-        ((now.tv_sec * 1000000 + now.tv_usec) -
-         (actions.time.tv_sec * 1000000 + actions.time.tv_usec)) /
-        1000;
+        ((now.tv_sec * 1000000ULL + now.tv_usec) -
+         (actions.time.tv_sec * 1000000ULL + actions.time.tv_usec)) /
+        1000ULL;
 
     if (time_diff >= ACTION_TIMEOUT_MSEC) {
       triggered_actions.pop_front();
