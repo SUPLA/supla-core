@@ -25,6 +25,7 @@ class supla_client_channel_relation_remote_updater
     : public supla_abstract_dobject_remote_updater {
  private:
   TSC_SuplaChannelRelationPack *relation_pack;
+  supla_dobject *first;
 
  protected:
   virtual bool is_protocol_version_allowed(int protocol_version);

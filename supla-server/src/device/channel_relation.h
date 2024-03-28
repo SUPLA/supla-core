@@ -19,6 +19,8 @@
 #ifndef SUPLA_CHANNEL_RELATION_H_
 #define SUPLA_CHANNEL_RELATION_H_
 
+#include <vector>
+
 #include "distributedobjects/dobject.h"
 #include "proto.h"
 
@@ -38,6 +40,8 @@ class supla_channel_relation : public supla_dobject {
   void set_relation_type(short relation_type);
 
   void convert(TSC_SuplaChannelRelation *dest);
+  static bool equal(std::vector<supla_channel_relation> *r1,
+                    std::vector<supla_channel_relation> *r2);
 };
 
 #endif /* SUPLA_CHANNEL_RELATION_H_ */

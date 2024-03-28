@@ -32,8 +32,6 @@ supla_client_channel_reactions::supla_client_channel_reactions(
 supla_client_channel_reactions::~supla_client_channel_reactions() {}
 
 void supla_client_channel_reactions::load(supla_client_channels *channels) {
-  clear();
-
   vector<supla_channel_relation> relations;
 
   channels->for_each(
@@ -41,7 +39,12 @@ void supla_client_channel_reactions::load(supla_client_channels *channels) {
         channel->get_channel_relations(&relations, relation_any);
       });
 
+  lock();
+  clear();
+
   for (auto it = relations.begin(); it != relations.end(); ++it) {
     add(new supla_channel_relation(&(*it), true));
   }
+
+  unlock();
 }

@@ -108,7 +108,7 @@ bool supla_client_scene_remote_updater::prepare_the_update(
     if (ind->is_scene_changed()) {
       result =
           supla_srpc_adapter::datapack_add<TSC_SuplaScenePack, TSC_SuplaScene>(
-              scene_pack, SUPLA_SCENE_PACK_MAXCOUNT,
+              scene_pack, SUPLA_SCENE_PACK_MAXCOUNT, false,
               [scene](TSC_SuplaScene *sc_scene) -> void {
                 scene->convert(sc_scene);
               });
@@ -122,7 +122,7 @@ bool supla_client_scene_remote_updater::prepare_the_update(
     if (ind->is_state_changed()) {
       result = supla_srpc_adapter::datapack_add<TSC_SuplaSceneStatePack,
                                                 TSC_SuplaSceneState>(
-          state_pack, SUPLA_SCENE_STATE_PACK_MAXCOUNT,
+          state_pack, SUPLA_SCENE_STATE_PACK_MAXCOUNT, false,
           [scene](TSC_SuplaSceneState *sc_state) -> void {
             scene->convert(sc_state);
           });
@@ -141,7 +141,8 @@ void supla_client_scene_remote_updater::on_transaction_end(
     supla_abstract_srpc_adapter *srpc_adapter) {
   if (scene_pack) {
     if (scene_pack->count) {
-      supla_srpc_adapter::datapack_set_eol<TSC_SuplaScenePack>(scene_pack);
+      supla_srpc_adapter::datapack_set_eol<TSC_SuplaScenePack>(scene_pack,
+                                                               false);
       srpc_adapter->sc_async_scene_pack_update(scene_pack);
     }
 
@@ -151,7 +152,8 @@ void supla_client_scene_remote_updater::on_transaction_end(
 
   if (state_pack) {
     if (state_pack->count) {
-      supla_srpc_adapter::datapack_set_eol<TSC_SuplaSceneStatePack>(state_pack);
+      supla_srpc_adapter::datapack_set_eol<TSC_SuplaSceneStatePack>(state_pack,
+                                                                    false);
       srpc_adapter->sc_async_scene_state_pack_update(state_pack);
     }
     delete state_pack;
