@@ -18,6 +18,8 @@
 
 #include "ChannelRelationTest.h"
 
+#include <vector>
+
 #include "device/channel_relation.h"
 
 namespace testing {

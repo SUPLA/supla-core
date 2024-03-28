@@ -22,6 +22,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <vector>
+
 #include "client/call_handler/call_handler_collection.h"
 #include "clientlocation.h"
 #include "conn/authkey_cache.h"
