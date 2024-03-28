@@ -23,17 +23,20 @@
 
 #include "abstract_srpc_adapter.h"
 
+#define START_OF_LIST_BIT 0x2
+#define END_OF_LIST_BIT 0x1
+
 class supla_srpc_adapter : public supla_abstract_srpc_adapter {
  public:
   explicit supla_srpc_adapter(void *srpc);
   virtual ~supla_srpc_adapter();
 
   template <typename TSuplaDataPack, typename TSuplaDataPackItem>
-  static bool datapack_add(TSuplaDataPack *pack, int max_count,
+  static bool datapack_add(TSuplaDataPack *pack, int max_count, bool SOL,
                            std::function<void(TSuplaDataPackItem *)> fill) {
     if (pack->count < max_count) {
       fill(&pack->items[pack->count]);
-      pack->items[pack->count].EOL = 0;
+      pack->items[pack->count].EOL = SOL ? START_OF_LIST_BIT : 0;
       pack->count++;
       return true;
     } else {
@@ -43,9 +46,16 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
   }
 
   template <typename TSuplaDataPack>
-  static void datapack_set_eol(TSuplaDataPack *pack) {
+  static void datapack_set_eol(TSuplaDataPack *pack, bool set_bit) {
     if (pack && pack->count > 0) {
-      if (pack->total_left == 0) pack->items[pack->count - 1].EOL = 1;
+      if (pack->total_left == 0) {
+        if (set_bit) {
+          pack->items[pack->count - 1].EOL |= END_OF_LIST_BIT;
+
+        } else {
+          pack->items[pack->count - 1].EOL = 1;
+        }
+      }
     }
   }
 
