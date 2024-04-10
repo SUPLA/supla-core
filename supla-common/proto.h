@@ -1838,6 +1838,7 @@ typedef struct {
 #define RS_VALUE_FLAG_MOTOR_PROBLEM 0x8
 #define RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS 0x10
 
+#define SUPLA_FACADEBLIND_TYPE_UNKNOWN 0
 #define SUPLA_FACADEBLIND_TYPE_STANDS_IN_POSITION_WHILE_TILTING 1
 #define SUPLA_FACADEBLIND_TYPE_CHANGES_POSITION_WHILE_TILTING 2
 #define SUPLA_FACADEBLIND_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED 3
@@ -1873,7 +1874,7 @@ typedef struct {
   signed char position;  // -1 == calibration. -1, 0% (open) - 100% (closed) DSC
   signed char tilt;      // -1 == not used/calibration, -1, 0% - 100%, DSC
   char reserved;
-  _supla_int16_t flags;             // DSC
+  _supla_int16_t flags;  // DSC
   char reserved2[3];
 } TDSC_FacadeBlindValue;
 
@@ -2678,7 +2679,7 @@ typedef struct {
 typedef struct {
   _supla_int_t ClosingTimeMS;
   _supla_int_t OpeningTimeMS;
-  unsigned char MotorUpsideDown;  // 0 - false, 1 - true
+  unsigned char MotorUpsideDown;    // 0 - false, 1 - true
   unsigned char ButtonsUpsideDown;  // 0 - false, 1 - true
   signed char TimeMargin;  // -1 default (device specific), 0 - no margin,
                            // > 0 - % of opening/closing time added on extreme
@@ -2689,13 +2690,13 @@ typedef struct {
   _supla_int_t ClosingTimeMS;
   _supla_int_t OpeningTimeMS;
   _supla_int_t TiltingTimeMS;
-  unsigned char MotorUpsideDown;  // 0 - false, 1 - true
+  unsigned char MotorUpsideDown;    // 0 - false, 1 - true
   unsigned char ButtonsUpsideDown;  // 0 - false, 1 - true
   signed char TimeMargin;  // -1 default (device specific), 0 - no margin,
                            // > 0 - % of opening/closing time added on extreme
                            // positions
   unsigned _supla_int16_t
-      Tilt0Angle; // 0 - 360 - degree corresponding to tilt 0
+      Tilt0Angle;  // 0 - 360 - degree corresponding to tilt 0
   unsigned _supla_int16_t
       Tilt100Angle;               // 0 - 360 - degree corresponding to tilt 100
   unsigned char FacadeBlindType;  // SUPLA_FACADEBLIND_TYPE_
@@ -2762,7 +2763,7 @@ typedef struct {
 // is not used by device and server should ignore it. Device may impose minimum
 // and maximum values for this field.
 typedef struct {
-  unsigned char InvertedLogic;  // 0 - not inverted, 1 - inverted
+  unsigned char InvertedLogic;              // 0 - not inverted, 1 - inverted
   unsigned _supla_int16_t FilteringTimeMs;  // 0 - not used, > 0 - time in ms
   unsigned char Reserved[29];
 } TChannelConfig_BinarySensor;  // v. >= 21
@@ -3026,12 +3027,12 @@ typedef struct {
   unsigned char Reserved[8];
 } TChannelConfig_GeneralPurposeMeter;  // v. >= 23
 
-#define EM_CT_TYPE_100A_33mA  (1ULL << 0)
-#define EM_CT_TYPE_200A_66mA  (1ULL << 1)
+#define EM_CT_TYPE_100A_33mA (1ULL << 0)
+#define EM_CT_TYPE_200A_66mA (1ULL << 1)
 #define EM_CT_TYPE_400A_133mA (1ULL << 2)
 
-#define EM_PHASE_LED_TYPE_OFF                       (1ULL << 0)
-#define EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE          (1ULL << 1)
+#define EM_PHASE_LED_TYPE_OFF (1ULL << 0)
+#define EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE (1ULL << 1)
 #define EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE_INVERTED (1ULL << 2)
 // Voltage level:
 //  - PhaseLedParam1 - "low threshold", units 0.01 V.
@@ -3039,13 +3040,13 @@ typedef struct {
 //  - PhaseLedParam2 - "high threshold", units 0.01 V.
 //    When voltage > high threshold -> red LED
 //  - Voltage between low and high threshold -> green LED
-#define EM_PHASE_LED_TYPE_VOLTAGE_LEVEL             (1ULL << 3)
+#define EM_PHASE_LED_TYPE_VOLTAGE_LEVEL (1ULL << 3)
 // Active power direction:
 //  - PhaseLedParam1 - "low threshold", units 0.01 W.
 //    When power < low threshold -> green LED.
 //  - PhaseLedParam2 - "high threshold", units 0.01 W.
 //    When power > high threshold -> red LED
-#define EM_PHASE_LED_TYPE_POWER_ACTIVE_DIRECTION    (1ULL << 4)
+#define EM_PHASE_LED_TYPE_POWER_ACTIVE_DIRECTION (1ULL << 4)
 
 // Electricity meter channel config
 typedef struct {
