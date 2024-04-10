@@ -43,6 +43,7 @@ class shading_system_base_config : public supla_json_config {
  public:
   explicit shading_system_base_config(supla_json_config *root);
   shading_system_base_config(void);
+  unsigned int get_value_duration(void);
 };
 
 #endif /* SHADING_SYSTEM_BASE_CONFIG_H_ */

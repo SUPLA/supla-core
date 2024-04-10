@@ -196,4 +196,14 @@ TEST_F(RollershutterConfigTest, merge) {
   free(str);
 }
 
+TEST_F(RollershutterConfigTest, duration) {
+  roller_shutter_config config;
+  TChannelConfig_Rollershutter raw = {};
+  raw.ClosingTimeMS = 5000;
+  raw.OpeningTimeMS = 11000;
+  config.set_config(&raw);
+
+  EXPECT_EQ(config.get_value_duration(), 110<<16|50);
+}
+
 } /* namespace testing */

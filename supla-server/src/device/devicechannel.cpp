@@ -34,6 +34,7 @@
 #include "jsonconfig/channel/electricity_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/impulse_counter_config.h"
+#include "jsonconfig/channel/shading_system_base_config.h"
 #include "jsonconfig/channel/weekly_schedule_config.h"
 #include "jsonconfig/device/device_json_config.h"
 #include "lck.h"
@@ -837,9 +838,10 @@ unsigned int supla_device_channel::get_value_duration(void) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW: {
       unsigned int result = 0;
 
-      result = (unsigned short)get_param1();
-      result <<= 16;
-      result |= (unsigned short)param3;
+      lock();
+      shading_system_base_config config(json_config);
+      result = config.get_value_duration();
+      unlock();
 
       return result;
     }

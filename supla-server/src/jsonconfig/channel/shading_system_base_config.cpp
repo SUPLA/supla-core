@@ -145,3 +145,22 @@ bool shading_system_base_config::get_config(_supla_int_t *closing_time_ms,
 
   return result;
 }
+
+unsigned int shading_system_base_config::get_value_duration(void) {
+  unsigned int result = 0;
+
+  _supla_int_t closing_time_ms = 0;
+  _supla_int_t opening_time_ms = 0;
+
+  if (get_config(&closing_time_ms, &opening_time_ms, nullptr, nullptr,
+                 nullptr)) {
+    opening_time_ms /= 100;
+    closing_time_ms /= 100;
+
+    result = opening_time_ms & 0xFFFF;
+    result <<= 16;
+    result |= closing_time_ms & 0xFFFF;
+  }
+
+  return result;
+}

@@ -28,6 +28,7 @@
 #include "jsonconfig/channel/general_purpose_measurement_config.h"
 #include "jsonconfig/channel/general_purpose_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "jsonconfig/channel/roller_shutter_config.h"
 #include "jsonconfig/channel/temp_hum_config.h"
 #include "proto.h"
 
@@ -375,13 +376,10 @@ void supla_abstract_common_channel_properties::get_config(
     } break;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW: {
-      *config_size = sizeof(TChannelConfig_Rollershutter);
-      TChannelConfig_Rollershutter *cfg =
-          (TChannelConfig_Rollershutter *)config;
-      cfg->OpeningTimeMS = get_param1() * 100;
-      cfg->ClosingTimeMS = get_param3() * 100;
-    } break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      JSON_TO_CONFIG(roller_shutter_config, TChannelConfig_Rollershutter,
+                     config, config_size);
+      break;
 
     case SUPLA_CHANNELFNC_ACTIONTRIGGER: {
       *config_size = sizeof(TChannelConfig_ActionTrigger);
