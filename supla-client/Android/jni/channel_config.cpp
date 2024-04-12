@@ -21,9 +21,11 @@
 #include <android/log.h>
 #include <stdlib.h>
 
+#include "channel_config_facade_blind.h"
 #include "channel_config_general_purpose_measurement.h"
 #include "channel_config_general_purpose_meter.h"
 #include "channel_config_hvac.h"
+#include "channel_config_roller_shutter.h"
 #include "channel_config_weekly_schedule.h"
 
 jobject supla_config_result_to_jobject(JNIEnv *env, int result) {
@@ -106,6 +108,23 @@ jobject supla_channel_config_to_jobject(JNIEnv *env, TSCS_ChannelConfig *config,
           return supla_cc_gp_meter_to_jobject(
               env, config->ChannelId, config->Func, crc32,
               (TChannelConfig_GeneralPurposeMeter *)config->Config);
+        }
+        break;
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+        if (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
+            sizeof(TChannelConfig_Rollershutter) == config->ConfigSize) {
+          return supla_cc_rs_to_jobject(
+              env, config->ChannelId, config->Func, crc32,
+              (TChannelConfig_Rollershutter *)config->Config);
+        }
+        break;
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+        if (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
+            sizeof(TChannelConfig_FacadeBlind) == config->ConfigSize) {
+          return supla_cc_fb_to_jobject(
+              env, config->ChannelId, config->Func, crc32,
+              (TChannelConfig_FacadeBlind *)config->Config);
         }
         break;
     }

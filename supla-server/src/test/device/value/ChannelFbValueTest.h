@@ -16,26 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef FACADE_BLIND_CONFIG_H_
-#define FACADE_BLIND_CONFIG_H_
+#ifndef CHANNEL_FB_VALUE_TEST_H_
+#define CHANNEL_FB_VALUE_TEST_H_
 
-#include <map>
-#include <string>
+#include "gtest/gtest.h"
 
-#include "jsonconfig/channel/roller_shutter_config.h"
+namespace testing {
 
-class facade_blind_config : public roller_shutter_config {
- private:
-  static const std::map<unsigned _supla_int16_t, std::string> field_map;
-  std::string type_to_string(unsigned char type);
-  unsigned char string_to_type(const std::string &type);
-
+class ChannelFbValueTest : public Test {
  public:
-  explicit facade_blind_config(supla_json_config *root);
-  facade_blind_config(void);
-  virtual void merge(supla_json_config *dst);
-  void set_config(TChannelConfig_FacadeBlind *config);
-  bool get_config(TChannelConfig_FacadeBlind *config);
 };
 
-#endif /* FACADE_BLIND_CONFIG_H_ */
+}  // namespace testing
+
+#endif /*CHANNEL_FB_VALUE_TEST_H_*/

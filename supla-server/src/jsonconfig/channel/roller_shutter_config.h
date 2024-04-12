@@ -19,15 +19,33 @@
 #ifndef ROLLER_SHUTTER_CONFIG_H_
 #define ROLLER_SHUTTER_CONFIG_H_
 
-#include "jsonconfig/channel/shading_system_base_config.h"
+#include <map>
+#include <string>
 
-class roller_shutter_config : public shading_system_base_config {
+#include "jsonconfig/json_config.h"
+
+class roller_shutter_config : public supla_json_config {
+ private:
+  static const std::map<unsigned _supla_int16_t, std::string> field_map;
+
+ protected:
+  std::map<unsigned _supla_int16_t, std::string> get_field_map(void);
+
+  void set_config(_supla_int_t closing_time_ms, _supla_int_t opening_time_ms,
+                  unsigned char motor_upside_down,
+                  unsigned char buttons_upside_down, signed char time_margin);
+
+  bool get_config(_supla_int_t *closing_time_ms, _supla_int_t *opening_time_ms,
+                  unsigned char *motor_upside_down,
+                  unsigned char *buttons_upside_down, signed char *time_margin);
+
  public:
   explicit roller_shutter_config(supla_json_config *root);
   roller_shutter_config(void);
   virtual void merge(supla_json_config *dst);
   void set_config(TChannelConfig_Rollershutter *config);
   bool get_config(TChannelConfig_Rollershutter *config);
+  unsigned int get_value_duration(void);
 };
 
 #endif /* ROLLER_SHUTTER_CONFIG_H_ */

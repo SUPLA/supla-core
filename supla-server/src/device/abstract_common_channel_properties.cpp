@@ -25,6 +25,7 @@
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/alt_weekly_schedule_config.h"
 #include "jsonconfig/channel/binary_sensor_config.h"
+#include "jsonconfig/channel/facade_blind_config.h"
 #include "jsonconfig/channel/general_purpose_measurement_config.h"
 #include "jsonconfig/channel/general_purpose_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
@@ -79,6 +80,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         break;
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
         add_relation(relations, get_param2(), get_id(),
                      CHANNEL_RELATION_TYPE_OPENING_SENSOR);
         break;
@@ -379,6 +381,11 @@ void supla_abstract_common_channel_properties::get_config(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       JSON_TO_CONFIG(roller_shutter_config, TChannelConfig_Rollershutter,
                      config, config_size);
+      break;
+
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      JSON_TO_CONFIG(facade_blind_config, TChannelConfig_FacadeBlind, config,
+                     config_size);
       break;
 
     case SUPLA_CHANNELFNC_ACTIONTRIGGER: {

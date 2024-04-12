@@ -21,6 +21,7 @@
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_dgf_value.h"
 #include "device/value/channel_em_value.h"
+#include "device/value/channel_fb_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
 #include "device/value/channel_general_purpose_measurement_value.h"
@@ -49,6 +50,10 @@ supla_channel_value *supla_channel_value_factory::new_value(
     supla_channel_rs_value *rs_value = new supla_channel_rs_value(value);
     rs_value->update_sensor(user, param2);
     return rs_value;
+  }
+
+  if (supla_channel_fb_value::is_function_supported(func)) {
+    return new supla_channel_fb_value(value);
   }
 
   if (supla_channel_gate_value::is_function_supported(func)) {

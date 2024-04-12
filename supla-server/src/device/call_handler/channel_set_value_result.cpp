@@ -97,6 +97,9 @@ void supla_ch_channel_set_value_result::handle_call(
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
           event.Event = SUPLA_EVENT_CONTROLLINGTHEROOFWINDOW;
           break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEFACADEBLIND;
+          break;
         case SUPLA_CHANNELFNC_POWERSWITCH:
           event.Event = SUPLA_EVENT_POWERONOFF;
           break;

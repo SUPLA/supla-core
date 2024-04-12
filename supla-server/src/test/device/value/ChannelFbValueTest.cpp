@@ -16,26 +16,34 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef FACADE_BLIND_CONFIG_H_
-#define FACADE_BLIND_CONFIG_H_
+#include "ChannelFbValueTest.h"
 
-#include <map>
-#include <string>
+#include "device/value/channel_fb_value.h"
 
-#include "jsonconfig/channel/roller_shutter_config.h"
+namespace testing {
 
-class facade_blind_config : public roller_shutter_config {
- private:
-  static const std::map<unsigned _supla_int16_t, std::string> field_map;
-  std::string type_to_string(unsigned char type);
-  unsigned char string_to_type(const std::string &type);
+TEST_F(ChannelFbValueTest, setterAndGetter) {
+  TDSC_FacadeBlindValue value = {};
 
- public:
-  explicit facade_blind_config(supla_json_config *root);
-  facade_blind_config(void);
-  virtual void merge(supla_json_config *dst);
-  void set_config(TChannelConfig_FacadeBlind *config);
-  bool get_config(TChannelConfig_FacadeBlind *config);
-};
+  value.tilt = 1;
+  value.flags = 2;
+  value.position = 3;
 
-#endif /* FACADE_BLIND_CONFIG_H_ */
+  supla_channel_fb_value v1(&value);
+  EXPECT_EQ(memcmp(v1.get_fb_value(), &value, sizeof(TDSC_FacadeBlindValue)),
+            0);
+
+  supla_channel_fb_value v2(v1.get_fb_value());
+
+  EXPECT_EQ(memcmp(v2.get_fb_value(), v1.get_fb_value(),
+                   sizeof(TDSC_RollerShutterValue)),
+            0);
+
+  value.position = 50;
+  v2.set_fb_value(&value);
+  value.position = 100;
+
+  EXPECT_EQ(v2.get_fb_value()->position, 50);
+}
+
+}  // namespace testing

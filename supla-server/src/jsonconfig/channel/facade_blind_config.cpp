@@ -32,10 +32,10 @@ const map<unsigned _supla_int16_t, string> facade_blind_config::field_map = {
     {FIELD_TILT100_ANGLE, "tilt100Angle"},
     {FIELD_FACADE_BLIND_TYPE, "fasadeBlindType"}};
 
-facade_blind_config::facade_blind_config(void) : shading_system_base_config() {}
+facade_blind_config::facade_blind_config(void) : roller_shutter_config() {}
 
 facade_blind_config::facade_blind_config(supla_json_config *root)
-    : shading_system_base_config(root) {}
+    : roller_shutter_config(root) {}
 
 void facade_blind_config::merge(supla_json_config *_dst) {
   map<unsigned _supla_int16_t, string> fmap = get_field_map();
@@ -80,7 +80,7 @@ void facade_blind_config::set_config(TChannelConfig_FacadeBlind *config) {
     return;
   }
 
-  shading_system_base_config::set_config(
+  roller_shutter_config::set_config(
       config->ClosingTimeMS, config->OpeningTimeMS, config->MotorUpsideDown,
       config->ButtonsUpsideDown, config->TimeMargin);
 
@@ -114,7 +114,7 @@ bool facade_blind_config::get_config(TChannelConfig_FacadeBlind *config) {
     return result;
   }
 
-  if (shading_system_base_config::get_config(
+  if (roller_shutter_config::get_config(
           &config->ClosingTimeMS, &config->OpeningTimeMS,
           &config->MotorUpsideDown, &config->ButtonsUpsideDown,
           &config->TimeMargin)) {

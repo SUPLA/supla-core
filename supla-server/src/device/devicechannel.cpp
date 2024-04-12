@@ -34,7 +34,7 @@
 #include "jsonconfig/channel/electricity_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/impulse_counter_config.h"
-#include "jsonconfig/channel/shading_system_base_config.h"
+#include "jsonconfig/channel/roller_shutter_config.h"
 #include "jsonconfig/channel/weekly_schedule_config.h"
 #include "jsonconfig/device/device_json_config.h"
 #include "lck.h"
@@ -773,6 +773,7 @@ bool supla_device_channel::is_value_writable(void) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_DIMMER:
@@ -797,6 +798,7 @@ bool supla_device_channel::is_char_value_writable(void) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
@@ -835,11 +837,12 @@ unsigned int supla_device_channel::get_value_duration(void) {
       return get_param1() * 100;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW: {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND: {
       unsigned int result = 0;
 
       lock();
-      shading_system_base_config config(json_config);
+      roller_shutter_config config(json_config);
       result = config.get_value_duration();
       unlock();
 

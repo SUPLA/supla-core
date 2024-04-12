@@ -16,26 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef FACADE_BLIND_CONFIG_H_
-#define FACADE_BLIND_CONFIG_H_
+#ifndef CHANNEL_CONFIG_ROLLER_SHUTTER_H_
+#define CHANNEL_CONFIG_ROLLER_SHUTTER_H_
 
-#include <map>
-#include <string>
+#include <jni.h>
 
-#include "jsonconfig/channel/roller_shutter_config.h"
+#include "proto.h"
 
-class facade_blind_config : public roller_shutter_config {
- private:
-  static const std::map<unsigned _supla_int16_t, std::string> field_map;
-  std::string type_to_string(unsigned char type);
-  unsigned char string_to_type(const std::string &type);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
- public:
-  explicit facade_blind_config(supla_json_config *root);
-  facade_blind_config(void);
-  virtual void merge(supla_json_config *dst);
-  void set_config(TChannelConfig_FacadeBlind *config);
-  bool get_config(TChannelConfig_FacadeBlind *config);
-};
+jobject supla_cc_rs_to_jobject(JNIEnv *env, _supla_int_t channel_id,
+                               _supla_int_t func, jlong crc32,
+                               TChannelConfig_Rollershutter *config);
 
-#endif /* FACADE_BLIND_CONFIG_H_ */
+#ifdef __cplusplus
+}
+#endif
+#endif /*CHANNEL_CONFIG_ROLLER_SHUTTER_H_*/

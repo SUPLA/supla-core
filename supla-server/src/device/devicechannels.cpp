@@ -995,6 +995,7 @@ bool supla_device_channels::rs_action(const supla_caller &caller,
         switch (channel->get_func()) {
           case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
           case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+          case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
 
             switch (action) {
               case rsActionStop:
