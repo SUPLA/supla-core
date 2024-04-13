@@ -526,7 +526,7 @@ TEST_F(MqttSubscriberTest, setClosingPercentage) {
   waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
-  ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
+  EXPECT_TRUE(getValueSetter()->getShadingSystemParams() == nullptr);
 
   getLibAdapter()->on_message_received(
       "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
@@ -538,7 +538,8 @@ TEST_F(MqttSubscriberTest, setClosingPercentage) {
       getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
-  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 34);
+  ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), 34);
 
   getValueSetter()->clear();
 
@@ -556,7 +557,8 @@ TEST_F(MqttSubscriberTest, setClosingPercentage) {
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
-  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 0);
+  ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), 0);
 
   getLibAdapter()->on_message_received(
       "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
@@ -565,7 +567,8 @@ TEST_F(MqttSubscriberTest, setClosingPercentage) {
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 2);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
-  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 33);
+  ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), 33);
 
   getLibAdapter()->on_message_received(
       "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
@@ -574,7 +577,8 @@ TEST_F(MqttSubscriberTest, setClosingPercentage) {
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 3);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
-  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 100);
+  ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), 100);
 
   getValueSetter()->clear();
 
@@ -585,7 +589,7 @@ TEST_F(MqttSubscriberTest, setClosingPercentage) {
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
-  ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
+  EXPECT_TRUE(getValueSetter()->getShadingSystemParams() == nullptr);
 }
 
 TEST_F(MqttSubscriberTest, setOpeningPercentage) {
@@ -593,7 +597,7 @@ TEST_F(MqttSubscriberTest, setOpeningPercentage) {
   waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
-  ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
+  EXPECT_TRUE(getValueSetter()->getShadingSystemParams() == nullptr);
 
   getLibAdapter()->on_message_received(
       "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
@@ -605,7 +609,8 @@ TEST_F(MqttSubscriberTest, setOpeningPercentage) {
       getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
-  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 55);
+  ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), 55);
 
   getValueSetter()->clear();
 
@@ -623,7 +628,8 @@ TEST_F(MqttSubscriberTest, setOpeningPercentage) {
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
-  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 100);
+  ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), 100);
 
   getLibAdapter()->on_message_received(
       "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
@@ -632,7 +638,8 @@ TEST_F(MqttSubscriberTest, setOpeningPercentage) {
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 2);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
-  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 67);
+  ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), 67);
 
   getLibAdapter()->on_message_received(
       "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
@@ -641,7 +648,8 @@ TEST_F(MqttSubscriberTest, setOpeningPercentage) {
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 3);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
-  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 0);
+  ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), 0);
 
   getValueSetter()->clear();
 
@@ -652,7 +660,7 @@ TEST_F(MqttSubscriberTest, setOpeningPercentage) {
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
-  ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
+  EXPECT_TRUE(getValueSetter()->getShadingSystemParams() == nullptr);
 }
 
 TEST_F(MqttSubscriberTest, setBrightness) {

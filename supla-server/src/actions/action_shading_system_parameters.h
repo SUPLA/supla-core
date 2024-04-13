@@ -26,10 +26,13 @@ class supla_action_shading_system_parameters
     : public supla_abstract_action_parameters {
  private:
   TAction_ShadingSystem_Parameters params;
+  char percentage_to_position(char percentage) const;
+  char clamp(char percentage);
 
  public:
   supla_action_shading_system_parameters(void);
-  explicit supla_action_shading_system_parameters(char percentage);
+  supla_action_shading_system_parameters(char percentage, char tilt,
+                                         bool delta);
   explicit supla_action_shading_system_parameters(
       const TAction_ShadingSystem_Parameters &params);
   explicit supla_action_shading_system_parameters(
@@ -39,9 +42,14 @@ class supla_action_shading_system_parameters
   virtual supla_abstract_action_parameters *copy(void) const;  // NOLINT
 
   char get_percentage(void) const;
+  char get_tilt(void) const;
   void set_percentage(char percentage);
+  void set_tilt(char tilt);
   bool is_delta(void) const;
+
   TAction_ShadingSystem_Parameters get_params(void);
+  bool apply_on_value(int action, char value[SUPLA_CHANNELVALUE_SIZE], int func,
+                      unsigned _supla_int64_t flags) const;
 };
 
 #endif /* ACTION_RS_PARAMETERS_H_ */

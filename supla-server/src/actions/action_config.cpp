@@ -116,19 +116,28 @@ void supla_action_config::apply_json_params(const char *params) {
   }
 
   cJSON *item = cJSON_GetObjectItem(root, "percentage");
+  cJSON *tilt_item = cJSON_GetObjectItem(root, "tilt");
 
-  if (item) {
+  if (item && !cJSON_IsNumber(item)) {
+    item = nullptr;
+  }
+
+  if (tilt_item && !cJSON_IsNumber(tilt_item)) {
+    tilt_item = nullptr;
+  }
+
+  if (item || tilt_item) {
     supla_action_shading_system_parameters p;
-    if (cJSON_IsNumber(item)) {
-      if (item->valuedouble < 0) {
-        p.set_percentage(0);
-      } else if (item->valuedouble > 100) {
-        p.set_percentage(100);
-      } else {
-        p.set_percentage(item->valuedouble);
-      }
-      set_parameters(&p);
+
+    if (item) {
+      p.set_percentage(item->valuedouble);
     }
+
+    if (tilt_item) {
+      p.set_tilt(tilt_item->valuedouble);
+    }
+
+    set_parameters(&p);
   }
 
   item = cJSON_GetObjectItem(root, "sourceChannelId");

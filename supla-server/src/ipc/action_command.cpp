@@ -168,16 +168,16 @@ bool supla_action_command::action_copy(int user_id, int device_id,
   return result;
 }
 
-bool supla_action_command::action_shut(int user_id, int device_id,
-                                       int channel_id, const char *percentage,
-                                       bool delta) {
+bool supla_action_command::action_shut(
+    int user_id, int device_id, int channel_id,
+    const supla_action_shading_system_parameters *params) {
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
     call_before(device, channel_id);
 
     return device->get_channels()->action_shut(get_caller(), channel_id, 0, 0,
-                                               percentage, delta);
+                                               params);
   }
 
   return false;

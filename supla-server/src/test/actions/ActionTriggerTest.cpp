@@ -165,7 +165,8 @@ TEST_F(ActionTriggerTest, revealPartially) {
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 1);
-  EXPECT_EQ(aexec->getClosingPercentage(), 89);
+  ASSERT_TRUE(aexec->getShadingSystemParams() != nullptr);
+  EXPECT_EQ(aexec->getShadingSystemParams()->get_percentage(), 89);
   EXPECT_EQ(aexec->get_channel_id(), 4);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }

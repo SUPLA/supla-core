@@ -26,10 +26,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 MqttValueSetterMock::MqttValueSetterMock(supla_mqtt_client_settings *settings)
     : supla_mqtt_abstract_value_setter(settings) {
+  ss_params = nullptr;
   clear();
 }
 
-MqttValueSetterMock::~MqttValueSetterMock(void) {}
+MqttValueSetterMock::~MqttValueSetterMock(void) { clear(); }
 
 void MqttValueSetterMock::clear(void) {
   this->on_counter = 0;
@@ -53,7 +54,11 @@ void MqttValueSetterMock::clear(void) {
   this->color = 0x01FFFFFF;
   this->brightness = -1;
   this->color_brightness = -1;
-  this->closing_percentage = -1;
+
+  if (ss_params) {
+    delete ss_params;
+    ss_params = nullptr;
+  }
 }
 
 void MqttValueSetterMock::set_on(bool on) {
@@ -81,10 +86,18 @@ void MqttValueSetterMock::set_color_brightness(char brightness) {
 
 void MqttValueSetterMock::action_toggle(void) { toggle_counter++; }
 
-void MqttValueSetterMock::action_shut(const char *closingPercentage) {
+void MqttValueSetterMock::action_shut(
+    const supla_action_shading_system_parameters *params) {
   shut_counter++;
-  if (closingPercentage) {
-    closing_percentage = *closingPercentage;
+
+  if (ss_params) {
+    delete ss_params;
+    ss_params = nullptr;
+  }
+
+  if (params) {
+    ss_params =
+        dynamic_cast<supla_action_shading_system_parameters *>(params->copy());
   }
 }
 
@@ -160,8 +173,9 @@ int MqttValueSetterMock::getRefreshAllExistingCounter(void) {
   return refresh_all_existing_counter;
 }
 
-char MqttValueSetterMock::getClosingPercentage(void) {
-  return closing_percentage;
+const supla_action_shading_system_parameters *
+MqttValueSetterMock::getShadingSystemParams(void) {
+  return ss_params;
 }
 
 unsigned int MqttValueSetterMock::getColor(void) { return color; }

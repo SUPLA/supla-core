@@ -27,7 +27,7 @@ ActionConfigTest::ActionConfigTest(void) {}
 
 ActionConfigTest::~ActionConfigTest(void) {}
 
-char ActionConfigTest::get_percentage(void) {
+char ActionConfigTest::get_percentage_and_tilt(char *tilt) {
   TAction_ShadingSystem_Parameters result = {};
 
   supla_abstract_action_parameters *params = config.get_parameters();
@@ -43,13 +43,17 @@ char ActionConfigTest::get_percentage(void) {
     delete params;
   }
 
+  if (tilt) {
+    *tilt = result.Tilt;
+  }
+
   return result.Percentage;
 }
 
-void ActionConfigTest::set_percentage(supla_action_config *config,
-                                      char percentage) {
-  supla_action_shading_system_parameters rs(percentage);
-  config->set_parameters(&rs);
+void ActionConfigTest::set_percentage_and_tilt(supla_action_config *config,
+                                               char percentage, char tilt) {
+  supla_action_shading_system_parameters ss(percentage, tilt, false);
+  config->set_parameters(&ss);
 }
 
 TAction_RGBW_Parameters ActionConfigTest::get_rgbw(void) {
@@ -106,10 +110,13 @@ TEST_F(ActionConfigTest, sourceChannelId) {
   EXPECT_EQ(config.get_source_channel_id(), 125);
 }
 
-TEST_F(ActionConfigTest, percentage) {
-  EXPECT_EQ(get_percentage(), 0);
-  set_percentage(&config, 22);
-  EXPECT_EQ(get_percentage(), 22);
+TEST_F(ActionConfigTest, percentageAndTilt) {
+  char tilt = -1;
+  EXPECT_EQ(get_percentage_and_tilt(&tilt), 0);
+  EXPECT_EQ(tilt, 0);
+  set_percentage_and_tilt(&config, 22, 5);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt), 22);
+  EXPECT_EQ(tilt, 5);
 }
 
 TEST_F(ActionConfigTest, rgbw) {
@@ -130,20 +137,42 @@ TEST_F(ActionConfigTest, rgbw) {
   EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 }
 
-TEST_F(ActionConfigTest, jsonPercentage) {
-  EXPECT_EQ(get_percentage(), 0);
+TEST_F(ActionConfigTest, jsonPercentageAndTilt) {
+  char tilt = -1;
+  EXPECT_EQ(get_percentage_and_tilt(&tilt), 0);
+  EXPECT_EQ(tilt, 0);
 
   config.apply_json_params("{\"percentage\":45}");
-  EXPECT_EQ(get_percentage(), 45);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt), 45);
+  EXPECT_EQ(tilt, -1);
 
   config.apply_json_params("{\"perCentaGe\":80}");
-  EXPECT_EQ(get_percentage(), 80);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt), 80);
+  EXPECT_EQ(tilt, -1);
 
   config.apply_json_params("{\"percentage\":110}");
-  EXPECT_EQ(get_percentage(), 100);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt), 100);
+  EXPECT_EQ(tilt, -1);
 
-  config.apply_json_params("{\"percentage\":-1}");
-  EXPECT_EQ(get_percentage(), 0);
+  config.apply_json_params("{\"percentage\":-2}");
+  EXPECT_EQ(get_percentage_and_tilt(&tilt), -1);
+  EXPECT_EQ(tilt, -1);
+
+  config.apply_json_params("{\"tilt\":45}");
+  EXPECT_EQ(get_percentage_and_tilt(&tilt), -1);
+  EXPECT_EQ(tilt, 45);
+
+  config.apply_json_params("{\"tIlT\":80}");
+  EXPECT_EQ(get_percentage_and_tilt(&tilt), -1);
+  EXPECT_EQ(tilt, 80);
+
+  config.apply_json_params("{\"tilt\":110}");
+  EXPECT_EQ(get_percentage_and_tilt(&tilt), -1);
+  EXPECT_EQ(tilt, 100);
+
+  config.apply_json_params("{\"tilt\":-2}");
+  EXPECT_EQ(get_percentage_and_tilt(&tilt), -1);
+  EXPECT_EQ(tilt, -1);
 }
 
 TEST_F(ActionConfigTest, jsonSourceChannelId) {
@@ -254,7 +283,7 @@ TEST_F(ActionConfigTest, equalityOperator) {
   c1.set_subject_id(3);
   c1.set_source_device_id(4);
   c1.set_source_channel_id(5);
-  set_percentage(&c1, 6);
+  set_percentage_and_tilt(&c1, 6, -1);
 
   TAction_RGBW_Parameters rgbw = {};
   rgbw.Brightness = 1;
@@ -269,7 +298,7 @@ TEST_F(ActionConfigTest, equalityOperator) {
   c2.set_subject_id(3);
   c2.set_source_device_id(4);
   c2.set_source_channel_id(5);
-  set_percentage(&c2, 6);
+  set_percentage_and_tilt(&c2, 6, -1);
 
   EXPECT_TRUE(c1 == c2);
 
@@ -298,9 +327,9 @@ TEST_F(ActionConfigTest, equalityOperator) {
   c1.set_source_channel_id(5);
   EXPECT_TRUE(c1 == c2);
 
-  set_percentage(&c1, 5);
+  set_percentage_and_tilt(&c1, 5, -1);
   EXPECT_FALSE(c1 == c2);
-  set_percentage(&c1, 6);
+  set_percentage_and_tilt(&c1, 6, -1);
   EXPECT_TRUE(c1 == c2);
 
   set_rgbw(&c1, rgbw);
@@ -349,7 +378,7 @@ TEST_F(ActionConfigTest, constructorWithArg) {
   c1.set_subject_id(3);
   c1.set_source_device_id(4);
   c1.set_source_channel_id(5);
-  set_percentage(&c1, 6);
+  set_percentage_and_tilt(&c1, 6, -1);
 
   supla_action_config *c2 = new supla_action_config(&c1);
   EXPECT_TRUE(c1 == *c2);
@@ -363,7 +392,7 @@ TEST_F(ActionConfigTest, copyAndCompare) {
   c1.set_subject_id(3);
   c1.set_source_device_id(4);
   c1.set_source_channel_id(5);
-  set_percentage(&c1, 6);
+  set_percentage_and_tilt(&c1, 6, -1);
 
   supla_action_config c2;
   c2 = c1;

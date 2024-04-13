@@ -62,7 +62,7 @@ class supla_user_channelgroups : public supla_objcontainer {
                       TCS_DeviceCalCfgRequest_B *request);
   bool action_toggle(const supla_caller &caller, int GroupID);
   bool action_shut(const supla_caller &caller, int GroupID,
-                   const char *closing_percentage, bool delta);
+                   const supla_action_shading_system_parameters *params);
   bool action_reveal(const supla_caller &caller, int GroupID);
   bool action_up(const supla_caller &caller, int GroupID);
   bool action_down(const supla_caller &caller, int GroupID);

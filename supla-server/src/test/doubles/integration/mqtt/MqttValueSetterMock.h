@@ -47,7 +47,7 @@ class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
   unsigned int color;
   char brightness;
   char color_brightness;
-  char closing_percentage;
+  supla_action_shading_system_parameters *ss_params;
 
  protected:
   virtual void set_on(bool on);
@@ -55,7 +55,8 @@ class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
   virtual void action_toggle(void);
-  virtual void action_shut(const char *closingPercentage);
+  virtual void action_shut(
+      const supla_action_shading_system_parameters *params);
   virtual void action_reveal(void);
   virtual void action_up(void);
   virtual void action_down(void);
@@ -92,7 +93,7 @@ class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
   int getCloseCounter(void);
   int getOpenCloseCounter(void);
   int getRefreshAllExistingCounter(void);
-  char getClosingPercentage(void);
+  const supla_action_shading_system_parameters *getShadingSystemParams(void);
   unsigned int getColor(void);
   char getBrightness(void);
   char getColorBrightness(void);

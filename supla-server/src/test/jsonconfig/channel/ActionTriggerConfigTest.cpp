@@ -409,7 +409,7 @@ TEST_F(ActionTriggerConfigTest, getPercentage) {
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":110}}}}}");
 
-  EXPECT_NO_PARAMS(config);
+  EXPECT_EQ(get_ss_params(config).Percentage, 100);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"

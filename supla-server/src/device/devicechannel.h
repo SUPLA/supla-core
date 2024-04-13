@@ -36,17 +36,6 @@
 class supla_user;
 class supla_device;
 
-enum rsAction {
-  rsActionStop,
-  rsActionDown,
-  rsActionUp,
-  rsActionDownOrStop,
-  rsActionUpOrStop,
-  rsActionStepByStep,
-  rsActionShut,
-  rsActionReveal
-};
-
 class supla_device_channel : public supla_abstract_common_channel_properties {
  private:
   void *lck;

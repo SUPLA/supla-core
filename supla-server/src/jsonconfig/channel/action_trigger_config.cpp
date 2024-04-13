@@ -381,14 +381,25 @@ supla_abstract_action_parameters *action_trigger_config::get_parameters(
   return result;
 }
 
-supla_abstract_action_parameters *action_trigger_config::get_rs(void) {
+supla_abstract_action_parameters *action_trigger_config::get_shading_system(
+    void) {
   return action_trigger_config::get_parameters(
       [](cJSON *param) -> supla_abstract_action_parameters * {
         cJSON *percentage = cJSON_GetObjectItem(param, "percentage");
-        if (percentage && cJSON_IsNumber(percentage) &&
-            percentage->valueint >= 0 && percentage->valueint <= 100) {
+        cJSON *tilt = cJSON_GetObjectItem(param, "tilt");
+
+        if (percentage && !cJSON_IsNumber(percentage)) {
+          percentage = nullptr;
+        }
+
+        if (tilt && !cJSON_IsNumber(tilt)) {
+          tilt = nullptr;
+        }
+
+        if (percentage || tilt) {
           return new supla_action_shading_system_parameters(
-              percentage->valueint);
+              percentage ? percentage->valueint : -1,
+              tilt ? tilt->valueint : -1, false);
         }
         return nullptr;
       });
@@ -483,7 +494,7 @@ supla_abstract_action_parameters *action_trigger_config::get_temperatures(
 }
 
 supla_abstract_action_parameters *action_trigger_config::get_parameters(void) {
-  supla_abstract_action_parameters *result = get_rs();
+  supla_abstract_action_parameters *result = get_shading_system();
   if (!result) {
     result = get_rgbw();
   }

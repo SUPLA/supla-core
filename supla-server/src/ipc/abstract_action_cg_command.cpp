@@ -94,8 +94,8 @@ void supla_abstract_action_cg_command::on_command_match(const char *params) {
 
     if (user_id && group_id &&
         (user = supla_user::find(user_id, false)) != NULL) {
-      char _percentage = percentage;
-      bool result = action_shut(user, group_id, &_percentage, delta > 0);
+      supla_action_shading_system_parameters params(percentage, -1, delta > 0);
+      bool result = action_shut(user, group_id, &params);
       _send_result(result, group_id);
     } else {
       send_result("UNKNOWN:", group_id);

@@ -174,9 +174,11 @@ void supla_abstract_action_executor::execute_action(
     case ACTION_CLOSE:
       close();
       break;
-    case ACTION_SHUT:
-      shut(NULL, false);
-      break;
+    case ACTION_SHUT: {
+      supla_action_shading_system_parameters params;
+      params.set_percentage(100);
+      shut(&params);
+    } break;
     case ACTION_REVEAL:
       reveal();
       break;
@@ -195,15 +197,14 @@ void supla_abstract_action_executor::execute_action(
         supla_action_shading_system_parameters *ssp =
             dynamic_cast<supla_action_shading_system_parameters *>(params);
         if (ssp) {
-          char percentage = ssp->get_percentage();
+          supla_action_shading_system_parameters _ssp = *ssp;
 
-          if (percentage > -1) {
-            if (action_id == ACTION_REVEAL_PARTIALLY) {
-              percentage = 100 - percentage;
-            }
-
-            shut(&percentage, ssp->is_delta());
+          if (action_id == ACTION_REVEAL_PARTIALLY &&
+              _ssp.get_percentage() > -1 && _ssp.get_percentage() <= 100) {
+            _ssp.set_percentage(100 - _ssp.get_percentage());
           }
+
+          shut(&_ssp);
         }
       }
       break;

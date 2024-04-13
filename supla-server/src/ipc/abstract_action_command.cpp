@@ -91,9 +91,8 @@ void supla_abstract_action_command::on_command_match(const char *params) {
            &percentage, &delta);
 
     if (user_id && device_id && channel_id) {
-      char _percentage = percentage;
-      bool result =
-          action_shut(user_id, device_id, channel_id, &_percentage, delta > 0);
+      supla_action_shading_system_parameters params(percentage, -1, delta > 0);
+      bool result = action_shut(user_id, device_id, channel_id, &params);
       _send_result(result, channel_id);
     } else {
       send_result("UNKNOWN:", channel_id);

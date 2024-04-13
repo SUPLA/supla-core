@@ -323,8 +323,12 @@ TEST_F(ActionCommandTest, badParams) {
 TEST_F(ActionCommandTest, ShutPartiallyWithDelta) {
   StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
   cmd = &c;
-  EXPECT_CALL(c, action_shut(10, 20, 30, Pointee(Eq(35)), true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(c, action_shut(10, 20, 30, NotNull()))
+      .WillOnce([](int user_id, int device_id, int channel_id,
+                   const supla_action_shading_system_parameters *params) {
+        EXPECT_EQ(params->get_percentage(), 35);
+        return true;
+      });
 
   commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,1\n", "OK:30\n");
 }
@@ -332,8 +336,12 @@ TEST_F(ActionCommandTest, ShutPartiallyWithDelta) {
 TEST_F(ActionCommandTest, ShutPartiallyWithoutDelta) {
   StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
   cmd = &c;
-  EXPECT_CALL(c, action_shut(10, 20, 30, Pointee(Eq(35)), false))
-      .WillOnce(Return(true));
+  EXPECT_CALL(c, action_shut(10, 20, 30, NotNull()))
+      .WillOnce([](int user_id, int device_id, int channel_id,
+                   const supla_action_shading_system_parameters *params) {
+        EXPECT_EQ(params->get_percentage(), 35);
+        return true;
+      });
 
   commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,0\n", "OK:30\n");
 }
@@ -341,8 +349,12 @@ TEST_F(ActionCommandTest, ShutPartiallyWithoutDelta) {
 TEST_F(ActionCommandTest, ShutPartiallyWithFaulure) {
   StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
   cmd = &c;
-  EXPECT_CALL(c, action_shut(10, 20, 30, Pointee(Eq(35)), false))
-      .WillOnce(Return(false));
+  EXPECT_CALL(c, action_shut(10, 20, 30, NotNull()))
+      .WillOnce([](int user_id, int device_id, int channel_id,
+                   const supla_action_shading_system_parameters *params) {
+        EXPECT_EQ(params->get_percentage(), 35);
+        return false;
+      });
 
   commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,0\n", "FAIL:30\n");
 }

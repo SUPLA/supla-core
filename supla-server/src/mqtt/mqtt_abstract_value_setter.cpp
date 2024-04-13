@@ -95,8 +95,9 @@ bool supla_mqtt_abstract_value_setter::parse_perecntage(void) {
     if (!closing_percentage) {
       _percent = 100 - _percent;
     }
-    char percent = _percent;
-    action_shut(&percent);
+    supla_action_shading_system_parameters params;
+    params.set_percentage(_percent);
+    action_shut(&params);
   }
 
   return true;

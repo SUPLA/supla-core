@@ -1403,6 +1403,8 @@ typedef struct {
 #define ACTION_UP_OR_STOP 140
 #define ACTION_DOWN_OR_STOP 150
 #define ACTION_STEP_BY_STEP 160
+#define ACTION_UP 170
+#define ACTION_DOWN 180
 #define ACTION_ENABLE 200
 #define ACTION_DISABLE 210
 #define ACTION_SEND 220
@@ -1422,7 +1424,8 @@ typedef struct {
 typedef struct {
   char Percentage;
   char Delta;  // If delta> 0 then the Percentage variable is seen as delta.
-  char Reserved[14];
+  signed char Tilt;
+  char Reserved[13];
 } TAction_ShadingSystem_Parameters;  // ver. >= 19
 
 typedef struct {

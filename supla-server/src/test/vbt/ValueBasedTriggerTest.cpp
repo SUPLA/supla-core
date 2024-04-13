@@ -124,7 +124,7 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   main_ac.set_subject_id(3);
   main_ac.set_source_device_id(4);
   main_ac.set_source_channel_id(5);
-  supla_action_shading_system_parameters ss(6);
+  supla_action_shading_system_parameters ss(6, -1, false);
   main_ac.set_parameters(&ss);
 
   supla_value_based_trigger main(

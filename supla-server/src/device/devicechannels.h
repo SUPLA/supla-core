@@ -26,6 +26,7 @@
 #include "actions/action_hvac_parameters.h"
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
+#include "actions/action_shading_system_parameters.h"
 #include "device/abstract_device_dao.h"
 #include "device/channel_fragment.h"
 #include "device/devicechannel.h"
@@ -61,9 +62,14 @@ class supla_device_channels {
                                      bool cancel_tasks = true);
   bool set_on(const supla_caller &caller, int channel_id, int group_id,
               unsigned char eol, bool on, bool toggle);
-  bool rs_action(const supla_caller &caller, int channel_id, int group_id,
-                 unsigned char eol, rsAction action,
-                 const char *closing_percentage, bool delta);
+  bool shading_system_action(
+      const supla_caller &caller, int channel_id, int group_id,
+      unsigned char eol, int action,
+      const supla_action_shading_system_parameters *params);
+
+  bool shading_system_action(const supla_caller &caller, int channel_id,
+                             int group_id, unsigned char eol, int action);
+
   bool action_open_close(const supla_caller &caller, int channel_id,
                          int group_id, unsigned char eol, bool unknown,
                          bool open, bool cancel_tasks = true);
@@ -169,8 +175,8 @@ class supla_device_channels {
   bool action_toggle(const supla_caller &caller, int channel_id, int group_id,
                      unsigned char eol);
   bool action_shut(const supla_caller &caller, int channel_id, int group_id,
-                   unsigned char eol, const char *closing_percentage,
-                   bool action);
+                   unsigned char eol,
+                   const supla_action_shading_system_parameters *params);
   bool action_reveal(const supla_caller &caller, int channel_id, int group_id,
                      unsigned char eol);
   bool action_up(const supla_caller &caller, int channel_id, int group_id,

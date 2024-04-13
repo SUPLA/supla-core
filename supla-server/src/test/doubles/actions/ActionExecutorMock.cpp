@@ -31,18 +31,11 @@ using std::string;
 ActionExecutorMock::ActionExecutorMock() : supla_abstract_action_executor() {
   temperature = nullptr;
   temperatures = nullptr;
+  ss_params = nullptr;
   clear();
 }
 
-ActionExecutorMock::~ActionExecutorMock() {
-  if (temperature) {
-    delete temperature;
-  }
-
-  if (temperatures) {
-    delete temperatures;
-  }
-}
+ActionExecutorMock::~ActionExecutorMock() { clear(); }
 
 shared_ptr<supla_device> ActionExecutorMock::get_device(void) {
   return supla_abstract_action_executor::get_device();
@@ -80,7 +73,7 @@ void ActionExecutorMock::clear(void) {
   this->color = 0x01FFFFFF;
   this->brightness = -1;
   this->color_brightness = -1;
-  this->closing_percentage = -1;
+  this->ss_params = nullptr;
   this->rgbw_counter = 0;
   this->forward_outside_counter = 0;
   this->hvac_set_parameters_counter = 0;
@@ -89,7 +82,7 @@ void ActionExecutorMock::clear(void) {
   this->hvac_set_temperature_counter = 0;
   this->hvac_set_temperatures_counter = 0;
   this->rgbw_on_off = -1;
-  this->delta = false;
+
   if (this->temperature) {
     delete this->temperature;
     this->temperature = nullptr;
@@ -98,6 +91,11 @@ void ActionExecutorMock::clear(void) {
   if (this->temperatures) {
     delete this->temperatures;
     this->temperatures = nullptr;
+  }
+
+  if (ss_params) {
+    delete ss_params;
+    ss_params = nullptr;
   }
 }
 
@@ -160,13 +158,20 @@ void ActionExecutorMock::toggle(void) {
   toggle_counter++;
 }
 
-void ActionExecutorMock::shut(const char *closingPercentage, bool delta) {
+void ActionExecutorMock::shut(
+    const supla_action_shading_system_parameters *params) {
   addTime();
   shut_counter++;
-  if (closingPercentage) {
-    closing_percentage = *closingPercentage;
+
+  if (ss_params) {
+    delete ss_params;
+    ss_params = nullptr;
   }
-  this->delta = delta;
+
+  if (params) {
+    ss_params =
+        dynamic_cast<supla_action_shading_system_parameters *>(params->copy());
+  }
 }
 
 void ActionExecutorMock::reveal(void) {
@@ -399,8 +404,9 @@ int ActionExecutorMock::getHvacSetTemperaturesCounter(void) {
   return hvac_set_temperatures_counter;
 }
 
-char ActionExecutorMock::getClosingPercentage(void) {
-  return closing_percentage;
+const supla_action_shading_system_parameters *
+ActionExecutorMock::getShadingSystemParams(void) {
+  return ss_params;
 }
 
 unsigned int ActionExecutorMock::getColor(void) { return color; }
@@ -410,8 +416,6 @@ char ActionExecutorMock::getBrightness(void) { return brightness; }
 char ActionExecutorMock::getColorBrightness(void) { return color_brightness; }
 
 char ActionExecutorMock::getRGBWOnOff(void) { return rgbw_on_off; }
-
-bool ActionExecutorMock::getDelta(void) { return delta; }
 
 int ActionExecutorMock::counterSetCount(void) {
   int result = 0;

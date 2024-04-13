@@ -22,6 +22,7 @@
 #include "actions/action_hvac_parameters.h"
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
+#include "actions/action_shading_system_parameters.h"
 #include "mqtt_client_settings.h"
 #include "stddef.h"
 
@@ -63,7 +64,8 @@ class supla_mqtt_abstract_value_setter {
   virtual void set_brightness(char brightness) = 0;
   virtual void set_color_brightness(char brightness) = 0;
   virtual void action_toggle(void) = 0;
-  virtual void action_shut(const char *closingPercentage) = 0;
+  virtual void action_shut(
+      const supla_action_shading_system_parameters *params) = 0;
   virtual void action_reveal(void) = 0;
   virtual void action_up(void) = 0;
   virtual void action_down(void) = 0;
