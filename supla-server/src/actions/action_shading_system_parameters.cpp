@@ -16,26 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "action_rs_parameters.h"
+#include "action_shading_system_parameters.h"
 
-supla_action_rs_parameters::supla_action_rs_parameters(void)
+supla_action_shading_system_parameters::supla_action_shading_system_parameters(
+    void)
     : supla_abstract_action_parameters() {
   params = {};
 }
 
-supla_action_rs_parameters::supla_action_rs_parameters(char percentage)
+supla_action_shading_system_parameters::supla_action_shading_system_parameters(
+    char percentage)
     : supla_abstract_action_parameters() {
   params = {};
   params.Percentage = percentage;
 }
 
-supla_action_rs_parameters::supla_action_rs_parameters(
+supla_action_shading_system_parameters::supla_action_shading_system_parameters(
     const TAction_ShadingSystem_Parameters &params)
     : supla_abstract_action_parameters() {
   this->params = params;
 }
 
-supla_action_rs_parameters::supla_action_rs_parameters(
+supla_action_shading_system_parameters::supla_action_shading_system_parameters(
     const TAction_ShadingSystem_Parameters *params)
     : supla_abstract_action_parameters() {
   this->params = {};
@@ -44,33 +46,35 @@ supla_action_rs_parameters::supla_action_rs_parameters(
   }
 }
 
-supla_action_rs_parameters::~supla_action_rs_parameters(void) {}
+supla_action_shading_system_parameters::~supla_action_shading_system_parameters(
+    void) {}
 
-bool supla_action_rs_parameters::equal(
+bool supla_action_shading_system_parameters::equal(
     supla_abstract_action_parameters *params) const {
-  supla_action_rs_parameters *p =
-      dynamic_cast<supla_action_rs_parameters *>(params);
+  supla_action_shading_system_parameters *p =
+      dynamic_cast<supla_action_shading_system_parameters *>(params);
   return p && p->get_percentage() == get_percentage() &&
          p->is_delta() == is_delta();
 }
 
-supla_abstract_action_parameters *supla_action_rs_parameters::copy(
-    void) const {                                 // NOLINT
-  return new supla_action_rs_parameters(params);  // NOLINT
+supla_abstract_action_parameters *supla_action_shading_system_parameters::copy(
+    void) const {                                             // NOLINT
+  return new supla_action_shading_system_parameters(params);  // NOLINT
 }
 
-char supla_action_rs_parameters::get_percentage(void) const {
+char supla_action_shading_system_parameters::get_percentage(void) const {
   return params.Percentage;
 }
 
-void supla_action_rs_parameters::set_percentage(char percentage) {
+void supla_action_shading_system_parameters::set_percentage(char percentage) {
   params.Percentage = percentage;
 }
 
-bool supla_action_rs_parameters::is_delta(void) const {
+bool supla_action_shading_system_parameters::is_delta(void) const {
   return params.Delta > 0;
 }
 
-TAction_ShadingSystem_Parameters supla_action_rs_parameters::get_rs(void) {
+TAction_ShadingSystem_Parameters
+supla_action_shading_system_parameters::get_params(void) {
   return params;
 }

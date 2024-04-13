@@ -25,7 +25,7 @@
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
 #include "actions/action_rgbw_parameters.h"
-#include "actions/action_rs_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 #include "json/cJSON.h"
 #include "tools.h"
 
@@ -118,7 +118,7 @@ void supla_action_config::apply_json_params(const char *params) {
   cJSON *item = cJSON_GetObjectItem(root, "percentage");
 
   if (item) {
-    supla_action_rs_parameters p;
+    supla_action_shading_system_parameters p;
     if (cJSON_IsNumber(item)) {
       if (item->valuedouble < 0) {
         p.set_percentage(0);

@@ -18,9 +18,8 @@
 
 #include "client/call_handler/call_handler_collection.h"
 
-#include <call_handler/execute_action_with_auth.h>
-#include <call_handler/register_client_a.h>
-
+#include "call_handler/execute_action_with_auth.h"
+#include "call_handler/register_client_a.h"
 #include "client/call_handler/calcfg_request.h"
 #include "client/call_handler/calcfg_request_b.h"
 #include "client/call_handler/channel_set_value.h"

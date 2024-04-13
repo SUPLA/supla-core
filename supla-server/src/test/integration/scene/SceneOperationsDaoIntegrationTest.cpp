@@ -19,7 +19,7 @@
 #include "SceneOperationsDaoIntegrationTest.h"
 
 #include "actions/action_rgbw_parameters.h"
-#include "actions/action_rs_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 #include "log.h"  // NOLINT
 
 namespace testing {
@@ -75,11 +75,12 @@ char SceneOperationsDaoIntegrationTest::get_percentage(
     supla_abstract_action_parameters *params = config->get_parameters();
     EXPECT_NE(params, nullptr);
     if (params) {
-      supla_action_rs_parameters *rsp =
-          dynamic_cast<supla_action_rs_parameters *>(params);
-      EXPECT_NE(rsp, nullptr);
-      if (rsp) {
-        result = dynamic_cast<supla_action_rs_parameters *>(params)->get_rs();
+      supla_action_shading_system_parameters *ssp =
+          dynamic_cast<supla_action_shading_system_parameters *>(params);
+      EXPECT_NE(ssp, nullptr);
+      if (ssp) {
+        result = dynamic_cast<supla_action_shading_system_parameters *>(params)
+                     ->get_params();
       }
 
       delete params;

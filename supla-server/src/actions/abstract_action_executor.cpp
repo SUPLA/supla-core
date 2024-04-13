@@ -16,10 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "actions/abstract_action_executor.h"
+#include "abstract_action_executor.h"
 
 #include "actions/action_rgbw_parameters.h"
-#include "actions/action_rs_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 #include "converter/any_value_to_action_converter.h"
 
 using std::function;
@@ -192,17 +192,17 @@ void supla_abstract_action_executor::execute_action(
     case ACTION_SHUT_PARTIALLY:
     case ACTION_REVEAL_PARTIALLY:
       if (params) {
-        supla_action_rs_parameters *rs =
-            dynamic_cast<supla_action_rs_parameters *>(params);
-        if (rs) {
-          char percentage = rs->get_percentage();
+        supla_action_shading_system_parameters *ssp =
+            dynamic_cast<supla_action_shading_system_parameters *>(params);
+        if (ssp) {
+          char percentage = ssp->get_percentage();
 
           if (percentage > -1) {
             if (action_id == ACTION_REVEAL_PARTIALLY) {
               percentage = 100 - percentage;
             }
 
-            shut(&percentage, rs->is_delta());
+            shut(&percentage, ssp->is_delta());
           }
         }
       }

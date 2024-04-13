@@ -22,25 +22,26 @@
 #include "actions/abstract_action_parameters.h"
 #include "proto.h"
 
-class supla_action_rs_parameters : public supla_abstract_action_parameters {
+class supla_action_shading_system_parameters
+    : public supla_abstract_action_parameters {
  private:
   TAction_ShadingSystem_Parameters params;
 
  public:
-  supla_action_rs_parameters(void);
-  explicit supla_action_rs_parameters(char percentage);
-  explicit supla_action_rs_parameters(
+  supla_action_shading_system_parameters(void);
+  explicit supla_action_shading_system_parameters(char percentage);
+  explicit supla_action_shading_system_parameters(
       const TAction_ShadingSystem_Parameters &params);
-  explicit supla_action_rs_parameters(
+  explicit supla_action_shading_system_parameters(
       const TAction_ShadingSystem_Parameters *params);
-  virtual ~supla_action_rs_parameters(void);
+  virtual ~supla_action_shading_system_parameters(void);
   virtual bool equal(supla_abstract_action_parameters *params) const;
   virtual supla_abstract_action_parameters *copy(void) const;  // NOLINT
 
   char get_percentage(void) const;
   void set_percentage(char percentage);
   bool is_delta(void) const;
-  TAction_ShadingSystem_Parameters get_rs(void);
+  TAction_ShadingSystem_Parameters get_params(void);
 };
 
 #endif /* ACTION_RS_PARAMETERS_H_ */

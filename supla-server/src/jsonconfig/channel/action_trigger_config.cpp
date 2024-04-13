@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "jsonconfig/channel/action_trigger_config.h"
+#include "action_trigger_config.h"
 
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
 #include "actions/action_rgbw_parameters.h"
-#include "actions/action_rs_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 #include "proto.h"
 #include "tools.h"
 
@@ -387,7 +387,8 @@ supla_abstract_action_parameters *action_trigger_config::get_rs(void) {
         cJSON *percentage = cJSON_GetObjectItem(param, "percentage");
         if (percentage && cJSON_IsNumber(percentage) &&
             percentage->valueint >= 0 && percentage->valueint <= 100) {
-          return new supla_action_rs_parameters(percentage->valueint);
+          return new supla_action_shading_system_parameters(
+              percentage->valueint);
         }
         return nullptr;
       });

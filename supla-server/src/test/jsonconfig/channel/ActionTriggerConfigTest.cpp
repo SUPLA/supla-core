@@ -22,7 +22,7 @@
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
 #include "actions/action_rgbw_parameters.h"
-#include "actions/action_rs_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 
 namespace testing {
 
@@ -64,11 +64,11 @@ resultCls *ActionTriggerConfigTest::get_params(action_trigger_config *config) {
 TAction_ShadingSystem_Parameters ActionTriggerConfigTest::get_ss_params(
     action_trigger_config *config) {
   TAction_ShadingSystem_Parameters result = {};
-  supla_action_rs_parameters *rsp =
-      get_params<supla_action_rs_parameters>(config);
-  if (rsp) {
-    result = rsp->get_rs();
-    delete rsp;
+  supla_action_shading_system_parameters *ssp =
+      get_params<supla_action_shading_system_parameters>(config);
+  if (ssp) {
+    result = ssp->get_params();
+    delete ssp;
   }
 
   return result;

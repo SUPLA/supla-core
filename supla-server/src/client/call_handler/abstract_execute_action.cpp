@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "client/call_handler/abstract_execute_action.h"
+#include "abstract_execute_action.h"
 
 #include "actions/action_executor.h"
 #include "actions/action_hvac_parameters.h"
 #include "actions/action_rgbw_parameters.h"
-#include "actions/action_rs_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 #include "log.h"
 
 using std::function;
@@ -68,7 +68,7 @@ void supla_ch_abstract_execute_action::execute_action(
     case ACTION_SHUT_PARTIALLY:
     case ACTION_REVEAL_PARTIALLY:
       if (action->ParamSize == sizeof(TAction_ShadingSystem_Parameters)) {
-        params = new supla_action_rs_parameters(
+        params = new supla_action_shading_system_parameters(
             (TAction_ShadingSystem_Parameters*)action->Param);
       } else {
         send_result(action, srpc_adapter,

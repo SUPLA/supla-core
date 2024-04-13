@@ -19,7 +19,7 @@
 #include "ActionConfigTest.h"
 
 #include "actions/action_rgbw_parameters.h"
-#include "actions/action_rs_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 
 namespace testing {
 
@@ -32,11 +32,12 @@ char ActionConfigTest::get_percentage(void) {
 
   supla_abstract_action_parameters *params = config.get_parameters();
   if (params) {
-    supla_action_rs_parameters *rsp =
-        dynamic_cast<supla_action_rs_parameters *>(params);
-    EXPECT_NE(rsp, nullptr);
-    if (rsp) {
-      result = dynamic_cast<supla_action_rs_parameters *>(params)->get_rs();
+    supla_action_shading_system_parameters *ssp =
+        dynamic_cast<supla_action_shading_system_parameters *>(params);
+    EXPECT_NE(ssp, nullptr);
+    if (ssp) {
+      result = dynamic_cast<supla_action_shading_system_parameters *>(params)
+                   ->get_params();
     }
 
     delete params;
@@ -47,7 +48,7 @@ char ActionConfigTest::get_percentage(void) {
 
 void ActionConfigTest::set_percentage(supla_action_config *config,
                                       char percentage) {
-  supla_action_rs_parameters rs(percentage);
+  supla_action_shading_system_parameters rs(percentage);
   config->set_parameters(&rs);
 }
 
