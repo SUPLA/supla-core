@@ -56,7 +56,7 @@ jobject supla_cc_fb_to_jobject(JNIEnv *env, _supla_int_t channel_id,
 
   jmethodID method_init = env->GetMethodID(
       config_cls, "<init>",
-      "(ILjava/lang/Integer;JIIIZZIII;ILorg/supla/android/data/source/remote/"
+      "(ILjava/lang/Integer;JIIIZZIIILorg/supla/android/data/source/remote/"
       "rollershutter/SuplaFacadeBlindType;)V");
 
   jint timeMargin = config->TimeMargin;
