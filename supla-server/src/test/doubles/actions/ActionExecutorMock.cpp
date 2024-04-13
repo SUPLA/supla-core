@@ -73,7 +73,6 @@ void ActionExecutorMock::clear(void) {
   this->color = 0x01FFFFFF;
   this->brightness = -1;
   this->color_brightness = -1;
-  this->ss_params = nullptr;
   this->rgbw_counter = 0;
   this->forward_outside_counter = 0;
   this->hvac_set_parameters_counter = 0;
