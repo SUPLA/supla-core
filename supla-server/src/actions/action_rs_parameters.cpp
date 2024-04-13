@@ -30,13 +30,13 @@ supla_action_rs_parameters::supla_action_rs_parameters(char percentage)
 }
 
 supla_action_rs_parameters::supla_action_rs_parameters(
-    const TAction_RS_Parameters &params)
+    const TAction_ShadingSystem_Parameters &params)
     : supla_abstract_action_parameters() {
   this->params = params;
 }
 
 supla_action_rs_parameters::supla_action_rs_parameters(
-    const TAction_RS_Parameters *params)
+    const TAction_ShadingSystem_Parameters *params)
     : supla_abstract_action_parameters() {
   this->params = {};
   if (params) {
@@ -71,6 +71,6 @@ bool supla_action_rs_parameters::is_delta(void) const {
   return params.Delta > 0;
 }
 
-TAction_RS_Parameters supla_action_rs_parameters::get_rs(void) {
+TAction_ShadingSystem_Parameters supla_action_rs_parameters::get_rs(void) {
   return params;
 }

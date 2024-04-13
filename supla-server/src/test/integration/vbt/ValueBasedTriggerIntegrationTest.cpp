@@ -170,7 +170,7 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
     EXPECT_EQ(t->get_action_config().get_subject_type(), stChannel);
     EXPECT_EQ(t->get_action_config().get_subject_id(), 173);
     EXPECT_EQ(t->get_action_config().get_action_id(), ACTION_SHUT_PARTIALLY);
-    TAction_RS_Parameters rs = {};
+    TAction_ShadingSystem_Parameters rs = {};
     supla_abstract_action_parameters *params =
         t->get_action_config().get_parameters();
     if (params) {

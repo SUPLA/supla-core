@@ -68,7 +68,7 @@ void SceneOperationsDaoIntegrationTest::EXPECT_NO_PARAMS(
 
 char SceneOperationsDaoIntegrationTest::get_percentage(
     supla_action_config *config) {
-  TAction_RS_Parameters result = {};
+  TAction_ShadingSystem_Parameters result = {};
 
   EXPECT_NE(config, nullptr);
   if (config) {

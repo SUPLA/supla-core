@@ -264,10 +264,10 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)901, sizeof(TCS_ActionWithAuth));
   EXPECT_EQ((unsigned int)13, sizeof(TSC_ActionExecutionResult));
 
-  EXPECT_EQ((unsigned int)16, sizeof(TAction_RS_Parameters));
+  EXPECT_EQ((unsigned int)16, sizeof(TAction_ShadingSystem_Parameters));
   EXPECT_EQ((unsigned int)16, sizeof(TAction_RGBW_Parameters));
 
-  EXPECT_LE(sizeof(TAction_RS_Parameters),
+  EXPECT_LE(sizeof(TAction_ShadingSystem_Parameters),
             (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
   EXPECT_LE(sizeof(TAction_RGBW_Parameters),
             (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);

@@ -61,9 +61,9 @@ resultCls *ActionTriggerConfigTest::get_params(action_trigger_config *config) {
   return nullptr;
 }
 
-TAction_RS_Parameters ActionTriggerConfigTest::get_rs_params(
+TAction_ShadingSystem_Parameters ActionTriggerConfigTest::get_ss_params(
     action_trigger_config *config) {
-  TAction_RS_Parameters result = {};
+  TAction_ShadingSystem_Parameters result = {};
   supla_action_rs_parameters *rsp =
       get_params<supla_action_rs_parameters>(config);
   if (rsp) {
@@ -403,7 +403,7 @@ TEST_F(ActionTriggerConfigTest, getPercentage) {
 
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(get_rs_params(config).Percentage, 98);
+  EXPECT_EQ(get_ss_params(config).Percentage, 98);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
@@ -415,7 +415,7 @@ TEST_F(ActionTriggerConfigTest, getPercentage) {
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":0}}}}}");
 
-  EXPECT_EQ(get_rs_params(config).Percentage, 0);
+  EXPECT_EQ(get_ss_params(config).Percentage, 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
@@ -589,7 +589,7 @@ TEST_F(ActionTriggerConfigTest, actionRevealPartially) {
   EXPECT_EQ(config->get_subject_id(), 3611);
   EXPECT_EQ(config->get_source_device_id(), 0);
   EXPECT_EQ(config->get_source_channel_id(), 0);
-  EXPECT_EQ(get_rs_params(config).Percentage, 65);
+  EXPECT_EQ(get_ss_params(config).Percentage, 65);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;
@@ -609,7 +609,7 @@ TEST_F(ActionTriggerConfigTest, actionShutPartially) {
   EXPECT_EQ(config->get_action_id(), ACTION_SHUT_PARTIALLY);
   EXPECT_EQ(config->get_subject_id(), 45678);
   EXPECT_EQ(config->get_source_channel_id(), 0);
-  EXPECT_EQ(get_rs_params(config).Percentage, 20);
+  EXPECT_EQ(get_ss_params(config).Percentage, 20);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;

@@ -28,7 +28,7 @@ ActionConfigTest::ActionConfigTest(void) {}
 ActionConfigTest::~ActionConfigTest(void) {}
 
 char ActionConfigTest::get_percentage(void) {
-  TAction_RS_Parameters result = {};
+  TAction_ShadingSystem_Parameters result = {};
 
   supla_abstract_action_parameters *params = config.get_parameters();
   if (params) {

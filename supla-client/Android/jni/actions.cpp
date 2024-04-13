@@ -30,8 +30,8 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
                                   int *subject_type, int *subject_id) {
   jclass cls = env->FindClass("org/supla/android/lib/actions/ActionParameters");
 
-  jclass rs_cls = env->FindClass(
-      "org/supla/android/lib/actions/RollerShutterActionParameters");
+  jclass ss_cls = env->FindClass(
+      "org/supla/android/lib/actions/ShadingSystemActionParameters");
 
   jclass rgbw_cls =
       env->FindClass("org/supla/android/lib/actions/RgbwActionParameters");
@@ -39,20 +39,21 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
   jclass hvac_cls =
       env->FindClass("org/supla/android/lib/actions/HvacActionParameters");
 
-  if (env->IsInstanceOf(action_params, rs_cls)) {
-    cls = rs_cls;
-    TAction_RS_Parameters *rs_param =
-        (TAction_RS_Parameters *)malloc(sizeof(TAction_RS_Parameters));
-    *rs_param = {};
+  if (env->IsInstanceOf(action_params, ss_cls)) {
+    cls = ss_cls;
+    TAction_ShadingSystem_Parameters *ss_param =
+        (TAction_ShadingSystem_Parameters *)malloc(
+            sizeof(TAction_ShadingSystem_Parameters));
+    *ss_param = {};
 
-    rs_param->Percentage =
+    ss_param->Percentage =
         supla_CallShortMethod(env, cls, action_params, "getPercentage");
 
-    rs_param->Delta =
+    ss_param->Delta =
         supla_CallBooleanMethod(env, cls, action_params, "getDelta");
 
-    *param = rs_param;
-    *param_size = sizeof(TAction_RS_Parameters);
+    *param = ss_param;
+    *param_size = sizeof(TAction_ShadingSystem_Parameters);
 
   } else if (env->IsInstanceOf(action_params, rgbw_cls)) {
     cls = rgbw_cls;

@@ -34,7 +34,7 @@ class ActionTriggerConfigTest : public Test {
   ActionTriggerConfigTest(void);
   virtual ~ActionTriggerConfigTest(void);
   void EXPECT_NO_PARAMS(action_trigger_config *config);
-  TAction_RS_Parameters get_rs_params(action_trigger_config *config);
+  TAction_ShadingSystem_Parameters get_ss_params(action_trigger_config *config);
   TAction_RGBW_Parameters get_rgbw_params(action_trigger_config *config);
 };
 

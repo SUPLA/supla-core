@@ -67,9 +67,9 @@ void supla_ch_abstract_execute_action::execute_action(
   switch (action->ActionId) {
     case ACTION_SHUT_PARTIALLY:
     case ACTION_REVEAL_PARTIALLY:
-      if (action->ParamSize == sizeof(TAction_RS_Parameters)) {
+      if (action->ParamSize == sizeof(TAction_ShadingSystem_Parameters)) {
         params = new supla_action_rs_parameters(
-            (TAction_RS_Parameters*)action->Param);
+            (TAction_ShadingSystem_Parameters*)action->Param);
       } else {
         send_result(action, srpc_adapter,
                     SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
