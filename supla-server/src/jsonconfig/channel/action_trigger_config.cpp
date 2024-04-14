@@ -385,23 +385,7 @@ supla_abstract_action_parameters *action_trigger_config::get_shading_system(
     void) {
   return action_trigger_config::get_parameters(
       [](cJSON *param) -> supla_abstract_action_parameters * {
-        cJSON *percentage = cJSON_GetObjectItem(param, "percentage");
-        cJSON *tilt = cJSON_GetObjectItem(param, "tilt");
-
-        if (percentage && !cJSON_IsNumber(percentage)) {
-          percentage = nullptr;
-        }
-
-        if (tilt && !cJSON_IsNumber(tilt)) {
-          tilt = nullptr;
-        }
-
-        if (percentage || tilt) {
-          return new supla_action_shading_system_parameters(
-              percentage ? percentage->valueint : -1,
-              tilt ? tilt->valueint : -1, false);
-        }
-        return nullptr;
+        return supla_action_shading_system_parameters::create_from_json(param);
       });
 }
 

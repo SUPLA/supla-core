@@ -18,6 +18,8 @@
 
 #include "action_shading_system_parameters.h"
 
+#include <string.h>
+
 supla_action_shading_system_parameters::supla_action_shading_system_parameters(
     void)
     : supla_abstract_action_parameters() {
@@ -27,12 +29,12 @@ supla_action_shading_system_parameters::supla_action_shading_system_parameters(
 }
 
 supla_action_shading_system_parameters::supla_action_shading_system_parameters(
-    char percentage, char tilt, bool delta)
+    char percentage, char tilt, unsigned char flags)
     : supla_abstract_action_parameters() {
   params = {};
   set_percentage(percentage);
   set_tilt(tilt);
-  params.Delta = delta ? 1 : 0;
+  params.Flags = flags;
 }
 
 supla_action_shading_system_parameters::supla_action_shading_system_parameters(
@@ -58,7 +60,7 @@ bool supla_action_shading_system_parameters::equal(
   supla_action_shading_system_parameters *p =
       dynamic_cast<supla_action_shading_system_parameters *>(params);
   return p && p->get_percentage() == get_percentage() &&
-         p->get_tilt() == get_tilt() && p->is_delta() == is_delta();
+         p->get_tilt() == get_tilt() && p->get_flags() == get_flags();
 }
 
 supla_abstract_action_parameters *supla_action_shading_system_parameters::copy(
@@ -82,8 +84,12 @@ void supla_action_shading_system_parameters::set_tilt(char tilt) {
   params.Tilt = clamp(tilt);
 }
 
-bool supla_action_shading_system_parameters::is_delta(void) const {
-  return params.Delta > 0;
+unsigned char supla_action_shading_system_parameters::get_flags(void) const {
+  return params.Flags;
+}
+
+void supla_action_shading_system_parameters::set_flags(unsigned char flags) {
+  params.Flags = flags;
 }
 
 TAction_ShadingSystem_Parameters
@@ -91,7 +97,7 @@ supla_action_shading_system_parameters::get_params(void) {
   return params;
 }
 
-char supla_action_shading_system_parameters::clamp(char percentage) {
+char supla_action_shading_system_parameters::clamp(char percentage) const {
   if (percentage < -1) {
     percentage = -1;
   } else if (percentage > 100) {
@@ -114,6 +120,23 @@ char supla_action_shading_system_parameters::percentage_to_position(
   return percentage + 10;
 }
 
+char supla_action_shading_system_parameters::add_delta(char current,
+                                                       char delta) const {
+  if (current > 100) {
+    current = 100;
+  } else if (current < 0) {
+    current = 0;
+  }
+
+  if (delta + current > 100) {
+    return 100;
+  } else if (delta + current < 0) {
+    return 0;
+  }
+
+  return delta + current;
+}
+
 bool supla_action_shading_system_parameters::apply_on_value(
     int action, char value[SUPLA_CHANNELVALUE_SIZE], int func,
     unsigned _supla_int64_t flags) const {
@@ -129,6 +152,7 @@ bool supla_action_shading_system_parameters::apply_on_value(
   }
 
   char position = -1;
+  char tilt_position = -1;
 
   switch (action) {
     case ACTION_STOP:
@@ -157,30 +181,20 @@ bool supla_action_shading_system_parameters::apply_on_value(
       break;
     case ACTION_SHUT: {
       char percentage = get_percentage();
+      char tilt = get_tilt();
 
-      if (is_delta()) {
-        char current = 0;
+      if (flags & SSP_FLAG_PERCENTAGE_AS_DELTA) {
+        percentage =
+            add_delta(((TDSC_RollerShutterValue *)value)->position, percentage);
+      }
 
-        if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND) {
-          current = ((TCSD_FacadeBlindValue *)value)->position;
-        } else {
-          current = ((TCSD_RollerShutterValue *)value)->position;
-        }
-
-        if (current > 100) {
-          current = 100;
-        } else if (current < 0) {
-          current = 0;
-        }
-
-        if (percentage + current > 100) {
-          percentage = 100;
-        } else if (percentage + current < 0) {
-          percentage = 0;
-        }
+      if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND &&
+          (flags & SSP_FLAG_TILT_AS_DELTA)) {
+        tilt = add_delta(((TDSC_FacadeBlindValue *)value)->tilt, tilt);
       }
 
       position = percentage_to_position(percentage);
+      tilt_position = percentage_to_position(tilt);
     }
 
     break;
@@ -189,16 +203,70 @@ bool supla_action_shading_system_parameters::apply_on_value(
       break;
   }
 
+  memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+
   if (position >= -1 && position <= 110) {
     if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND) {
-      ((TCSD_FacadeBlindValue *)value)->position = position;
-      ((TCSD_FacadeBlindValue *)value)->tilt =
-          percentage_to_position(get_tilt());
+      if (tilt_position >= -1 && tilt_position <= 110) {
+        ((TCSD_FacadeBlindValue *)value)->position = position;
+        ((TCSD_FacadeBlindValue *)value)->tilt = tilt_position;
+        result = true;
+      }
     } else {
       ((TCSD_RollerShutterValue *)value)->position = position;
+      result = true;
+    }
+  }
+
+  return result;
+}
+
+// static
+supla_action_shading_system_parameters *
+supla_action_shading_system_parameters::create_from_json(cJSON *root) {
+  supla_action_shading_system_parameters *result = nullptr;
+
+  cJSON *item = cJSON_GetObjectItem(root, "percentage");
+
+  bool percentageAsDelta = false;
+  bool tiltAsDelta = false;
+
+  if (!item) {
+    item = cJSON_GetObjectItem(root, "percentageDelta");
+    percentageAsDelta = true;
+  }
+
+  cJSON *tilt_item = cJSON_GetObjectItem(root, "tilt");
+
+  if (!tilt_item) {
+    tilt_item = cJSON_GetObjectItem(root, "tiltDelta");
+    tiltAsDelta = true;
+  }
+
+  if (item && !cJSON_IsNumber(item)) {
+    item = nullptr;
+  }
+
+  if (tilt_item && !cJSON_IsNumber(tilt_item)) {
+    tilt_item = nullptr;
+  }
+
+  if (item || tilt_item) {
+    result = new supla_action_shading_system_parameters();
+
+    if (item) {
+      result->set_percentage(item->valuedouble);
+      if (percentageAsDelta) {
+        result->set_flags(result->get_flags() | SSP_FLAG_PERCENTAGE_AS_DELTA);
+      }
     }
 
-    result = true;
+    if (tilt_item) {
+      result->set_tilt(tilt_item->valuedouble);
+      if (tiltAsDelta) {
+        result->set_flags(result->get_flags() | SSP_FLAG_TILT_AS_DELTA);
+      }
+    }
   }
 
   return result;

@@ -1421,9 +1421,12 @@ typedef struct {
 #define ACTION_COPY 10100
 #define ACTION_FORWARD_OUTSIDE 10000
 
+#define SSP_FLAG_PERCENTAGE_AS_DELTA (1 << 0)
+#define SSP_FLAG_TILT_AS_DELTA (1 << 1)
+
 typedef struct {
   char Percentage;
-  char Delta;  // If delta> 0 then the Percentage variable is seen as delta.
+  unsigned char Flags;  // SSP_FLAG_
   signed char Tilt;
   char Reserved[13];
 } TAction_ShadingSystem_Parameters;  // ver. >= 19

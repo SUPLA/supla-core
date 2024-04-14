@@ -51,8 +51,19 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
 
     ss_param->Tilt = supla_CallShortMethod(env, cls, action_params, "getTilt");
 
-    ss_param->Delta =
-        supla_CallBooleanMethod(env, cls, action_params, "getDelta");
+    jboolean percentage_as_delta = supla_CallBooleanMethod(
+        env, cls, action_params, "getPercentageAsDelta");
+
+    jboolean tilt_as_delta =
+        supla_CallBooleanMethod(env, cls, action_params, "getTiltAsDelta");
+
+    if (percentage_as_delta) {
+      ss_param->Flags |= SSP_FLAG_PERCENTAGE_AS_DELTA;
+    }
+
+    if (tilt_as_delta) {
+      ss_param->Flags |= SSP_FLAG_TILT_AS_DELTA;
+    }
 
     *param = ss_param;
     *param_size = sizeof(TAction_ShadingSystem_Parameters);
