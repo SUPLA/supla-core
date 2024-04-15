@@ -27,7 +27,8 @@ ActionConfigTest::ActionConfigTest(void) {}
 
 ActionConfigTest::~ActionConfigTest(void) {}
 
-char ActionConfigTest::get_percentage_and_tilt(char *tilt) {
+char ActionConfigTest::get_percentage_and_tilt(char *tilt,
+                                               unsigned char *flags) {
   TAction_ShadingSystem_Parameters result = {};
 
   supla_abstract_action_parameters *params = config.get_parameters();
@@ -47,12 +48,16 @@ char ActionConfigTest::get_percentage_and_tilt(char *tilt) {
     *tilt = result.Tilt;
   }
 
+  if (flags) {
+    *flags = result.Flags;
+  }
+
   return result.Percentage;
 }
 
 void ActionConfigTest::set_percentage_and_tilt(supla_action_config *config,
                                                char percentage, char tilt) {
-  supla_action_shading_system_parameters ss(percentage, tilt, false);
+  supla_action_shading_system_parameters ss(percentage, tilt, 0);
   config->set_parameters(&ss);
 }
 
@@ -112,11 +117,14 @@ TEST_F(ActionConfigTest, sourceChannelId) {
 
 TEST_F(ActionConfigTest, percentageAndTilt) {
   char tilt = -1;
-  EXPECT_EQ(get_percentage_and_tilt(&tilt), 0);
+  unsigned char flags = 0;
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), 0);
   EXPECT_EQ(tilt, 0);
+  EXPECT_EQ(flags, 0);
   set_percentage_and_tilt(&config, 22, 5);
-  EXPECT_EQ(get_percentage_and_tilt(&tilt), 22);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), 22);
   EXPECT_EQ(tilt, 5);
+  EXPECT_EQ(flags, 0);
 }
 
 TEST_F(ActionConfigTest, rgbw) {
@@ -139,40 +147,70 @@ TEST_F(ActionConfigTest, rgbw) {
 
 TEST_F(ActionConfigTest, jsonPercentageAndTilt) {
   char tilt = -1;
-  EXPECT_EQ(get_percentage_and_tilt(&tilt), 0);
+  unsigned char flags = 0;
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), 0);
   EXPECT_EQ(tilt, 0);
+  EXPECT_EQ(flags, 0);
 
   config.apply_json_params("{\"percentage\":45}");
-  EXPECT_EQ(get_percentage_and_tilt(&tilt), 45);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), 45);
   EXPECT_EQ(tilt, -1);
+  EXPECT_EQ(flags, 0);
 
   config.apply_json_params("{\"perCentaGe\":80}");
-  EXPECT_EQ(get_percentage_and_tilt(&tilt), 80);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), 80);
   EXPECT_EQ(tilt, -1);
+  EXPECT_EQ(flags, 0);
 
   config.apply_json_params("{\"percentage\":110}");
-  EXPECT_EQ(get_percentage_and_tilt(&tilt), 100);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), 100);
   EXPECT_EQ(tilt, -1);
+  EXPECT_EQ(flags, 0);
 
   config.apply_json_params("{\"percentage\":-2}");
-  EXPECT_EQ(get_percentage_and_tilt(&tilt), -1);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), -1);
   EXPECT_EQ(tilt, -1);
+  EXPECT_EQ(flags, 0);
 
   config.apply_json_params("{\"tilt\":45}");
-  EXPECT_EQ(get_percentage_and_tilt(&tilt), -1);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), -1);
   EXPECT_EQ(tilt, 45);
+  EXPECT_EQ(flags, 0);
 
   config.apply_json_params("{\"tIlT\":80}");
-  EXPECT_EQ(get_percentage_and_tilt(&tilt), -1);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), -1);
   EXPECT_EQ(tilt, 80);
+  EXPECT_EQ(flags, 0);
 
   config.apply_json_params("{\"tilt\":110}");
-  EXPECT_EQ(get_percentage_and_tilt(&tilt), -1);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), -1);
   EXPECT_EQ(tilt, 100);
+  EXPECT_EQ(flags, 0);
 
   config.apply_json_params("{\"tilt\":-2}");
-  EXPECT_EQ(get_percentage_and_tilt(&tilt), -1);
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), -1);
   EXPECT_EQ(tilt, -1);
+  EXPECT_EQ(flags, 0);
+
+  config.apply_json_params("{\"percentage\":25,\"tilt\":50}");
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), 25);
+  EXPECT_EQ(tilt, 50);
+  EXPECT_EQ(flags, 0);
+
+  config.apply_json_params("{\"percentageDelta\":45}");
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), 45);
+  EXPECT_EQ(tilt, -1);
+  EXPECT_EQ(flags, SSP_FLAG_PERCENTAGE_AS_DELTA);
+
+  config.apply_json_params("{\"tiltDelta\":80}");
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), -1);
+  EXPECT_EQ(tilt, 80);
+  EXPECT_EQ(flags, SSP_FLAG_TILT_AS_DELTA);
+
+  config.apply_json_params("{\"percentageDelta\":25,\"tiltDelta\":50}");
+  EXPECT_EQ(get_percentage_and_tilt(&tilt, &flags), 25);
+  EXPECT_EQ(tilt, 50);
+  EXPECT_EQ(flags, SSP_FLAG_PERCENTAGE_AS_DELTA | SSP_FLAG_TILT_AS_DELTA);
 }
 
 TEST_F(ActionConfigTest, jsonSourceChannelId) {

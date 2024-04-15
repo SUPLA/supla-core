@@ -32,7 +32,7 @@ class ActionConfigTest : public Test {
   ActionConfigTest(void);
   virtual ~ActionConfigTest(void);
 
-  char get_percentage_and_tilt(char *tile);
+  char get_percentage_and_tilt(char *tile, unsigned char *flags);
   void set_percentage_and_tilt(supla_action_config *config, char percentage,
                                char tilt);
   TAction_RGBW_Parameters get_rgbw(void);

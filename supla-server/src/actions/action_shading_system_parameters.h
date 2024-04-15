@@ -26,9 +26,12 @@
 class supla_action_shading_system_parameters
     : public supla_abstract_action_parameters {
  private:
-  TAction_ShadingSystem_Parameters params;
+  char percentage;
+  char tilt;
+  unsigned char flags;
+
   char percentage_to_position(char percentage) const;
-  char clamp(char percentage) const;
+  char clamp(char percentage, bool delta) const;
   char add_delta(char current, char delta) const;
 
  public:

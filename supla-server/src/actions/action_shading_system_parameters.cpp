@@ -20,35 +20,43 @@
 
 #include <string.h>
 
+#include "log.h"
+
 supla_action_shading_system_parameters::supla_action_shading_system_parameters(
     void)
     : supla_abstract_action_parameters() {
-  params = {};
-  params.Percentage = -1;
-  params.Tilt = -1;
+  percentage = -1;
+  tilt = -1;
+  flags = 0;
 }
 
 supla_action_shading_system_parameters::supla_action_shading_system_parameters(
     char percentage, char tilt, unsigned char flags)
     : supla_abstract_action_parameters() {
-  params = {};
-  set_percentage(percentage);
-  set_tilt(tilt);
-  params.Flags = flags;
+  this->percentage = percentage;
+  this->tilt = tilt;
+  this->flags = flags;
 }
 
 supla_action_shading_system_parameters::supla_action_shading_system_parameters(
     const TAction_ShadingSystem_Parameters &params)
     : supla_abstract_action_parameters() {
-  this->params = params;
+  percentage = params.Percentage;
+  tilt = params.Tilt;
+  flags = params.Flags;
 }
 
 supla_action_shading_system_parameters::supla_action_shading_system_parameters(
     const TAction_ShadingSystem_Parameters *params)
     : supla_abstract_action_parameters() {
-  this->params = {};
+  percentage = -1;
+  tilt = -1;
+  flags = 0;
+
   if (params) {
-    this->params = *params;
+    percentage = params->Percentage;
+    tilt = params->Tilt;
+    flags = params->Flags;
   }
 }
 
@@ -64,41 +72,51 @@ bool supla_action_shading_system_parameters::equal(
 }
 
 supla_abstract_action_parameters *supla_action_shading_system_parameters::copy(
-    void) const {                                             // NOLINT
-  return new supla_action_shading_system_parameters(params);  // NOLINT
+    void) const {  // NOLINT
+  supla_action_shading_system_parameters *result =
+      new supla_action_shading_system_parameters();
+  result->percentage = percentage;
+  result->tilt = tilt;
+  result->flags = flags;
+  return result;
 }
 
 char supla_action_shading_system_parameters::get_percentage(void) const {
-  return params.Percentage;
+  return clamp(percentage, flags & SSP_FLAG_PERCENTAGE_AS_DELTA);
 }
 
 char supla_action_shading_system_parameters::get_tilt(void) const {
-  return params.Tilt;
+  return clamp(tilt, flags & SSP_FLAG_TILT_AS_DELTA);
 }
 
 void supla_action_shading_system_parameters::set_percentage(char percentage) {
-  params.Percentage = clamp(percentage);
+  this->percentage = percentage;
 }
 
 void supla_action_shading_system_parameters::set_tilt(char tilt) {
-  params.Tilt = clamp(tilt);
+  this->tilt = tilt;
 }
 
 unsigned char supla_action_shading_system_parameters::get_flags(void) const {
-  return params.Flags;
+  return flags;
 }
 
 void supla_action_shading_system_parameters::set_flags(unsigned char flags) {
-  params.Flags = flags;
+  this->flags = flags;
 }
 
 TAction_ShadingSystem_Parameters
 supla_action_shading_system_parameters::get_params(void) {
-  return params;
+  TAction_ShadingSystem_Parameters p = {};
+  p.Percentage = get_percentage();
+  p.Tilt = get_tilt();
+  p.Flags = get_flags();
+  return p;
 }
 
-char supla_action_shading_system_parameters::clamp(char percentage) const {
-  if (percentage < -1) {
+char supla_action_shading_system_parameters::clamp(char percentage,
+                                                   bool delta) const {
+  if (percentage < -1 && !delta) {
     percentage = -1;
   } else if (percentage > 100) {
     percentage = 100;
@@ -237,7 +255,7 @@ supla_action_shading_system_parameters::create_from_json(cJSON *root) {
   }
 
   cJSON *tilt_item = cJSON_GetObjectItem(root, "tilt");
-
+  supla_log(LOG_DEBUG, "tilt: %x", tilt_item);
   if (!tilt_item) {
     tilt_item = cJSON_GetObjectItem(root, "tiltDelta");
     tiltAsDelta = true;
@@ -255,14 +273,15 @@ supla_action_shading_system_parameters::create_from_json(cJSON *root) {
     result = new supla_action_shading_system_parameters();
 
     if (item) {
-      result->set_percentage(item->valuedouble);
+      result->set_percentage(item->valueint);
       if (percentageAsDelta) {
         result->set_flags(result->get_flags() | SSP_FLAG_PERCENTAGE_AS_DELTA);
       }
     }
 
     if (tilt_item) {
-      result->set_tilt(tilt_item->valuedouble);
+      result->set_tilt(tilt_item->valueint);
+      supla_log(LOG_DEBUG, "tilt: %i", tilt_item->valueint);
       if (tiltAsDelta) {
         result->set_flags(result->get_flags() | SSP_FLAG_TILT_AS_DELTA);
       }
