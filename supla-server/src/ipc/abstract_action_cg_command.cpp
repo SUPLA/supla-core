@@ -88,13 +88,19 @@ void supla_abstract_action_cg_command::on_command_match(const char *params) {
 
   if (action == ACTION_SHUT_PARTIALLY) {
     int percentage = 0;
-    int delta = false;
+    int percentage_as_delta = 0;
+    int tilt = 0;
+    int tilt_as_delta = 0;
 
-    sscanf(params, "%i,%i,%i,%i", &user_id, &group_id, &percentage, &delta);
+    sscanf(params, "%i,%i,%i,%i,%i,%i", &user_id, &group_id, &percentage,
+           &percentage_as_delta, &tilt, &tilt_as_delta);
 
     if (user_id && group_id &&
         (user = supla_user::find(user_id, false)) != NULL) {
-      supla_action_shading_system_parameters params(percentage, -1, delta > 0);
+      supla_action_shading_system_parameters params(
+          percentage, tilt,
+          (percentage_as_delta ? SSP_FLAG_PERCENTAGE_AS_DELTA : 0) |
+              (tilt_as_delta ? SSP_FLAG_TILT_AS_DELTA : 0));
       bool result = action_shut(user, group_id, &params);
       _send_result(result, group_id);
     } else {

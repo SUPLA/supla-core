@@ -327,10 +327,14 @@ TEST_F(ActionCommandTest, ShutPartiallyWithDelta) {
       .WillOnce([](int user_id, int device_id, int channel_id,
                    const supla_action_shading_system_parameters *params) {
         EXPECT_EQ(params->get_percentage(), 35);
+        EXPECT_EQ(params->get_tilt(), 20);
+        EXPECT_EQ(params->get_flags(),
+                  SSP_FLAG_PERCENTAGE_AS_DELTA | SSP_FLAG_TILT_AS_DELTA);
         return true;
       });
 
-  commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,1\n", "OK:30\n");
+  commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,1,20,1\n",
+                        "OK:30\n");
 }
 
 TEST_F(ActionCommandTest, ShutPartiallyWithoutDelta) {
@@ -340,10 +344,13 @@ TEST_F(ActionCommandTest, ShutPartiallyWithoutDelta) {
       .WillOnce([](int user_id, int device_id, int channel_id,
                    const supla_action_shading_system_parameters *params) {
         EXPECT_EQ(params->get_percentage(), 35);
+        EXPECT_EQ(params->get_tilt(), 11);
+        EXPECT_EQ(params->get_flags(), 0);
         return true;
       });
 
-  commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,0\n", "OK:30\n");
+  commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,0,11,0\n",
+                        "OK:30\n");
 }
 
 TEST_F(ActionCommandTest, ShutPartiallyWithFaulure) {

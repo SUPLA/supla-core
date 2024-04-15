@@ -289,10 +289,13 @@ TEST_F(ActionCgCommandTest, ShutPartiallyWithDelta) {
       .WillOnce([](supla_user *user, int group_id,
                    const supla_action_shading_system_parameters *params) {
         EXPECT_EQ(params->get_percentage(), 50);
+        EXPECT_EQ(params->get_tilt(), 7);
+        EXPECT_EQ(params->get_flags(),
+                  SSP_FLAG_PERCENTAGE_AS_DELTA | SSP_FLAG_TILT_AS_DELTA);
         return true;
       });
 
-  commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,1\n", "OK:30\n");
+  commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,1,7,1\n", "OK:30\n");
 }
 
 TEST_F(ActionCgCommandTest, ShutPartiallyWithoutDelta) {
@@ -302,10 +305,13 @@ TEST_F(ActionCgCommandTest, ShutPartiallyWithoutDelta) {
       .WillOnce([](supla_user *user, int group_id,
                    const supla_action_shading_system_parameters *params) {
         EXPECT_EQ(params->get_percentage(), 50);
+        EXPECT_EQ(params->get_tilt(), 17);
+        EXPECT_EQ(params->get_flags(), 0);
         return true;
       });
 
-  commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,0\n", "OK:30\n");
+  commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,0,17,0\n",
+                        "OK:30\n");
 }
 
 TEST_F(ActionCgCommandTest, ShutPartiallyWithFilure) {
