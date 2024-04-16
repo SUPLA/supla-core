@@ -35,6 +35,9 @@ class supla_channel_fb_value : public supla_channel_value {
                                         int param4,
                                         supla_json_config *json_config);
   static bool is_function_supported(int func);
+  char get_position(void);
+  char get_tilt(void);
+  double get_tilt_angle(supla_json_config *config);
 };
 
 #endif /*CHANNEL_FB_VALUE_H_*/

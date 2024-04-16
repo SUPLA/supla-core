@@ -18,6 +18,9 @@
 
 #include "channel_fb_value.h"
 
+#include "jsonconfig/channel/facade_blind_config.h"
+#include "log.h"
+
 using std::shared_ptr;
 
 supla_channel_fb_value::supla_channel_fb_value(
@@ -37,6 +40,32 @@ const TDSC_FacadeBlindValue *supla_channel_fb_value::get_fb_value(void) {
 void supla_channel_fb_value::set_fb_value(TDSC_FacadeBlindValue *value) {
   memset(raw_value, 0, sizeof(raw_value));
   memcpy(raw_value, value, sizeof(TDSC_FacadeBlindValue));
+}
+
+char supla_channel_fb_value::get_position(void) {
+  return ((TDSC_FacadeBlindValue *)raw_value)->position;
+}
+
+char supla_channel_fb_value::get_tilt(void) {
+  return ((TDSC_FacadeBlindValue *)raw_value)->tilt;
+}
+
+double supla_channel_fb_value::get_tilt_angle(supla_json_config *config) {
+  double angle0 = 0;
+  double angle100 = 180;
+
+  if (config) {
+    facade_blind_config fb_config(config);
+
+    TChannelConfig_FacadeBlind raw_config = {};
+    if (fb_config.get_config(&raw_config) &&
+        raw_config.Tilt0Angle != raw_config.Tilt100Angle) {
+      angle0 = raw_config.Tilt0Angle;
+      angle100 = raw_config.Tilt100Angle;
+    }
+  }
+
+  return angle0 + (angle100 - angle0) / 100.0 * get_tilt();
 }
 
 void supla_channel_fb_value::apply_channel_properties(
