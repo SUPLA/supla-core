@@ -50,6 +50,22 @@ map<unsigned _supla_int16_t, string> roller_shutter_config::get_field_map(
   return field_map;
 }
 
+string roller_shutter_config::time_margin_to_string(char time_margin) {
+  if (time_margin == -1) {
+    return "DEVICE_SPECIFIC";
+  }
+
+  return "";
+}
+
+char roller_shutter_config::string_to_time_margin(const string &tm) {
+  if (tm == "DEVICE_SPECIFIC") {
+    return -1;
+  }
+
+  return 0;
+}
+
 void roller_shutter_config::set_config(_supla_int_t closing_time_ms,
                                        _supla_int_t opening_time_ms,
                                        unsigned char motor_upside_down,
@@ -66,17 +82,28 @@ void roller_shutter_config::set_config(_supla_int_t closing_time_ms,
   set_item_value(user_root, field_map.at(FIELD_OPENING_TIME_MS).c_str(),
                  cJSON_Number, true, nullptr, nullptr, opening_time_ms);
 
-  set_item_value(user_root, field_map.at(FIELD_MOTOR_UPSIDE_DOWN).c_str(),
-                 motor_upside_down ? cJSON_True : cJSON_False, true, nullptr,
-                 nullptr, 0);
+  if (motor_upside_down) {
+    set_item_value(user_root, field_map.at(FIELD_MOTOR_UPSIDE_DOWN).c_str(),
+                   motor_upside_down == 2 ? cJSON_True : cJSON_False, true,
+                   nullptr, nullptr, 0);
+  }
 
-  set_item_value(user_root, field_map.at(FIELD_BUTTONS_UPSIDE_DOWN).c_str(),
-                 buttons_upside_down ? cJSON_True : cJSON_False, true, nullptr,
-                 nullptr, 0);
+  if (buttons_upside_down) {
+    set_item_value(user_root, field_map.at(FIELD_BUTTONS_UPSIDE_DOWN).c_str(),
+                   buttons_upside_down == 2 ? cJSON_True : cJSON_False, true,
+                   nullptr, nullptr, 0);
+  }
 
-  if (time_margin >= -1 && time_margin <= 100) {
-    set_item_value(user_root, field_map.at(FIELD_TIME_MARGIN).c_str(),
-                   cJSON_Number, true, nullptr, nullptr, time_margin);
+  if (time_margin) {
+    if (time_margin == -1) {
+      set_item_value(user_root, field_map.at(FIELD_TIME_MARGIN).c_str(),
+                     cJSON_String, true, nullptr,
+                     time_margin_to_string(time_margin).c_str(), 0);
+
+    } else if (time_margin >= 1 && time_margin <= 101) {
+      set_item_value(user_root, field_map.at(FIELD_TIME_MARGIN).c_str(),
+                     cJSON_Number, true, nullptr, nullptr, time_margin - 1);
+    }
   }
 }
 
@@ -119,31 +146,36 @@ bool roller_shutter_config::get_config(_supla_int_t *closing_time_ms,
   if (motor_upside_down) {
     if (get_bool(user_root, field_map.at(FIELD_MOTOR_UPSIDE_DOWN).c_str(),
                  &bool_value)) {
-      *motor_upside_down = bool_value ? 1 : 0;
+      *motor_upside_down = bool_value ? 2 : 1;
       result = true;
     } else {
-      *motor_upside_down = false;
+      *motor_upside_down = 0;
     }
   }
 
   if (buttons_upside_down) {
     if (get_bool(user_root, field_map.at(FIELD_BUTTONS_UPSIDE_DOWN).c_str(),
                  &bool_value)) {
-      *buttons_upside_down = bool_value ? 1 : 0;
+      *buttons_upside_down = bool_value ? 2 : 1;
       result = true;
     } else {
-      *buttons_upside_down = false;
+      *buttons_upside_down = 0;
     }
   }
+
+  string str_value;
 
   if (time_margin) {
     if (get_double(user_root, field_map.at(FIELD_TIME_MARGIN).c_str(),
                    &dbl_value) &&
-        dbl_value >= -1 && dbl_value <= 100) {
-      *time_margin = dbl_value;
+        dbl_value >= 0 && dbl_value <= 100) {
+      *time_margin = dbl_value + 1;
       result = true;
+    } else if (get_string(user_root, field_map.at(FIELD_TIME_MARGIN).c_str(),
+                          &str_value)) {
+      *time_margin = string_to_time_margin(str_value);
     } else {
-      *time_margin = -1;
+      *time_margin = 0;
     }
   }
 

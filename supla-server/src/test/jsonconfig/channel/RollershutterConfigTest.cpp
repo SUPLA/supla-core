@@ -37,8 +37,8 @@ TEST_F(RollershutterConfigTest, setGetRawConfig) {
   TChannelConfig_Rollershutter raw = {};
   raw.ClosingTimeMS = 123;
   raw.OpeningTimeMS = 345;
-  raw.MotorUpsideDown = 1;
-  raw.ButtonsUpsideDown = 1;
+  raw.MotorUpsideDown = 2;
+  raw.ButtonsUpsideDown = 2;
   raw.TimeMargin = -1;
 
   config.set_config(&raw);
@@ -48,8 +48,8 @@ TEST_F(RollershutterConfigTest, setGetRawConfig) {
 
   EXPECT_EQ(raw.ClosingTimeMS, 123);
   EXPECT_EQ(raw.OpeningTimeMS, 345);
-  EXPECT_EQ(raw.MotorUpsideDown, 1);
-  EXPECT_EQ(raw.ButtonsUpsideDown, 1);
+  EXPECT_EQ(raw.MotorUpsideDown, 2);
+  EXPECT_EQ(raw.ButtonsUpsideDown, 2);
   EXPECT_EQ(raw.TimeMargin, -1);
 
   char *str = config.get_user_config();
@@ -57,7 +57,7 @@ TEST_F(RollershutterConfigTest, setGetRawConfig) {
   EXPECT_STREQ(
       str,
       "{\"closingTimeMS\":123,\"openingTimeMS\":345,\"motorUpsideDown\":true,"
-      "\"buttonsUpsideDown\":true,\"timeMargin\":-1}");
+      "\"buttonsUpsideDown\":true,\"timeMargin\":\"DEVICE_SPECIFIC\"}");
   free(str);
 }
 
@@ -69,10 +69,7 @@ TEST_F(RollershutterConfigTest, buttonsUpsidedown) {
 
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"closingTimeMS\":0,\"openingTimeMS\":0,\"motorUpsideDown\":false,"
-      "\"buttonsUpsideDown\":false,\"timeMargin\":0}");
+  EXPECT_STREQ(str, "{\"closingTimeMS\":0,\"openingTimeMS\":0}");
   free(str);
 
   raw.ButtonsUpsideDown = 1;
@@ -81,22 +78,22 @@ TEST_F(RollershutterConfigTest, buttonsUpsidedown) {
 
   str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"closingTimeMS\":0,\"openingTimeMS\":0,\"motorUpsideDown\":"
-               "false,\"timeMargin\":0,\"buttonsUpsideDown\":true}");
+  EXPECT_STREQ(
+      str,
+      "{\"closingTimeMS\":0,\"openingTimeMS\":0,\"buttonsUpsideDown\":false}");
   free(str);
 
   config.set_user_config("{\"buttonsUpsideDown\":false}");
   raw = {};
   config.get_config(&raw);
 
-  EXPECT_EQ(raw.ButtonsUpsideDown, 0);
+  EXPECT_EQ(raw.ButtonsUpsideDown, 1);
 
   config.set_user_config("{\"buttonsUpsideDown\":true}");
   raw = {};
   config.get_config(&raw);
 
-  EXPECT_EQ(raw.ButtonsUpsideDown, 1);
+  EXPECT_EQ(raw.ButtonsUpsideDown, 2);
 }
 
 TEST_F(RollershutterConfigTest, motorUpsidedown) {
@@ -107,10 +104,7 @@ TEST_F(RollershutterConfigTest, motorUpsidedown) {
 
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"closingTimeMS\":0,\"openingTimeMS\":0,\"motorUpsideDown\":false,"
-      "\"buttonsUpsideDown\":false,\"timeMargin\":0}");
+  EXPECT_STREQ(str, "{\"closingTimeMS\":0,\"openingTimeMS\":0}");
   free(str);
 
   raw.MotorUpsideDown = 1;
@@ -119,46 +113,60 @@ TEST_F(RollershutterConfigTest, motorUpsidedown) {
 
   str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"closingTimeMS\":0,\"openingTimeMS\":0,\"buttonsUpsideDown\":"
-               "false,\"timeMargin\":0,\"motorUpsideDown\":true}");
+  EXPECT_STREQ(
+      str,
+      "{\"closingTimeMS\":0,\"openingTimeMS\":0,\"motorUpsideDown\":false}");
   free(str);
 
   config.set_user_config("{\"motorUpsideDown\":false}");
   raw = {};
   config.get_config(&raw);
 
-  EXPECT_EQ(raw.MotorUpsideDown, 0);
+  EXPECT_EQ(raw.MotorUpsideDown, 1);
 
   config.set_user_config("{\"motorUpsideDown\":true}");
   raw = {};
   config.get_config(&raw);
 
-  EXPECT_EQ(raw.MotorUpsideDown, 1);
+  EXPECT_EQ(raw.MotorUpsideDown, 2);
 }
 
 TEST_F(RollershutterConfigTest, timeMarginEdges) {
-  for (int a = -2; a < 102; a++) {
-    roller_shutter_config config;
-    TChannelConfig_Rollershutter raw = {};
-    raw.TimeMargin = a;
+  roller_shutter_config config;
+  TChannelConfig_Rollershutter raw = {};
+  config.set_config(&raw);
+
+  char *str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{\"closingTimeMS\":0,\"openingTimeMS\":0}");
+  free(str);
+
+  raw.TimeMargin = -1;
+  config.set_config(&raw);
+  config.get_config(&raw);
+  EXPECT_EQ(raw.TimeMargin, -1);
+
+  str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"closingTimeMS\":0,\"openingTimeMS\":0,\"timeMargin\":"
+               "\"DEVICE_SPECIFIC\"}");
+  free(str);
+
+  for (int a = 0; a < 100; a++) {
+    raw.TimeMargin = a + 1;
     config.set_config(&raw);
     config.get_config(&raw);
 
-    EXPECT_EQ(raw.TimeMargin, a < -1 || a > 100 ? -1 : a);
+    EXPECT_EQ(raw.TimeMargin, a + 1);
 
     string user_config =
-        "{\"closingTimeMS\":0,\"openingTimeMS\":0,\"motorUpsideDown\":false,"
-        "\"buttonsUpsideDown\":false";
+        "{\"closingTimeMS\":0,\"openingTimeMS\":0,\"timeMargin\":";
 
-    if (a >= -1 && a <= 100) {
-      user_config.append(",\"timeMargin\":");
-      user_config.append(std::to_string(a));
-    }
-
+    user_config.append(std::to_string(a));
     user_config.append("}");
 
-    char *str = config.get_user_config();
+    str = config.get_user_config();
     ASSERT_NE(str, nullptr);
     EXPECT_STREQ(str, user_config.c_str());
     bool equal = strncmp(str, user_config.c_str(), user_config.size()) == 0;
@@ -194,6 +202,22 @@ TEST_F(RollershutterConfigTest, merge) {
       "105}");
 
   free(str);
+
+  config1.set_user_config(
+      "{\"a\":\"b\",\"closingTimeMS\":0,\"openingTimeMS\":0}");
+
+  raw = {};
+  raw.ClosingTimeMS = 5;
+  raw.OpeningTimeMS = 10;
+
+  config2.set_config(&raw);
+  config2.merge(&config1);
+
+  str = config1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{\"a\":\"b\",\"closingTimeMS\":5,\"openingTimeMS\":10}");
+
+  free(str);
 }
 
 TEST_F(RollershutterConfigTest, duration) {
@@ -203,7 +227,7 @@ TEST_F(RollershutterConfigTest, duration) {
   raw.OpeningTimeMS = 11000;
   config.set_config(&raw);
 
-  EXPECT_EQ(config.get_value_duration(), 110<<16|50);
+  EXPECT_EQ(config.get_value_duration(), 110 << 16 | 50);
 }
 
 } /* namespace testing */

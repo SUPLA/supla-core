@@ -27,6 +27,8 @@
 class roller_shutter_config : public supla_json_config {
  private:
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
+  std::string time_margin_to_string(char time_margin);
+  char string_to_time_margin(const std::string &tm);
 
  protected:
   std::map<unsigned _supla_int16_t, std::string> get_field_map(void);

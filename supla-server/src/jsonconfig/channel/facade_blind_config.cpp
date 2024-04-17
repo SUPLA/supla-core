@@ -87,12 +87,12 @@ void facade_blind_config::set_config(TChannelConfig_FacadeBlind *config) {
   set_item_value(user_root, field_map.at(FIELD_TILTING_TIME_MS).c_str(),
                  cJSON_Number, true, nullptr, nullptr, config->TiltingTimeMS);
 
-  if (config->Tilt0Angle >= 0 && config->Tilt0Angle <= 360) {
+  if (config->Tilt0Angle >= 0 && config->Tilt0Angle <= 180) {
     set_item_value(user_root, field_map.at(FIELD_TILT0_ANGLE).c_str(),
                    cJSON_Number, true, nullptr, nullptr, config->Tilt0Angle);
   }
 
-  if (config->Tilt100Angle >= 0 && config->Tilt100Angle <= 360) {
+  if (config->Tilt100Angle >= 0 && config->Tilt100Angle <= 180) {
     set_item_value(user_root, field_map.at(FIELD_TILT100_ANGLE).c_str(),
                    cJSON_Number, true, nullptr, nullptr, config->Tilt100Angle);
   }

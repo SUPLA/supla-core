@@ -38,7 +38,7 @@ TEST_F(FacadeBlindConfigTest, setGetRawConfig) {
   raw.ClosingTimeMS = 23;
   raw.OpeningTimeMS = 45;
   raw.MotorUpsideDown = 2;
-  raw.ButtonsUpsideDown = 3;
+  raw.ButtonsUpsideDown = 2;
   raw.TimeMargin = 5;
   raw.TiltingTimeMS = 789;
   raw.Tilt0Angle = 8;
@@ -52,8 +52,8 @@ TEST_F(FacadeBlindConfigTest, setGetRawConfig) {
 
   EXPECT_EQ(raw.ClosingTimeMS, 23);
   EXPECT_EQ(raw.OpeningTimeMS, 45);
-  EXPECT_EQ(raw.MotorUpsideDown, 1);
-  EXPECT_EQ(raw.ButtonsUpsideDown, 1);
+  EXPECT_EQ(raw.MotorUpsideDown, 2);
+  EXPECT_EQ(raw.ButtonsUpsideDown, 2);
   EXPECT_EQ(raw.TimeMargin, 5);
   EXPECT_EQ(raw.TiltingTimeMS, 789);
   EXPECT_EQ(raw.Tilt0Angle, 8);
@@ -65,40 +65,48 @@ TEST_F(FacadeBlindConfigTest, setGetRawConfig) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"closingTimeMS\":23,\"openingTimeMS\":45,\"motorUpsideDown\":"
-               "true,\"buttonsUpsideDown\":true,\"timeMargin\":5,"
+               "true,\"buttonsUpsideDown\":true,\"timeMargin\":4,"
                "\"tiltingTimeMS\":789,\"tilt0Angle\":8,\"tilt100Angle\":9,"
                "\"fasadeBlindType\":\"TILTS_ONLY_WHEN_FULLY_CLOSED\"}");
   free(str);
 }
 
-TEST_F(FacadeBlindConfigTest, tilt0AngleEdges) {
-  for (int a = -2; a < 362; a++) {
-    facade_blind_config config;
-    TChannelConfig_FacadeBlind raw = {};
-    raw.Tilt0Angle = a;
-    config.set_config(&raw);
-    config.get_config(&raw);
+TEST_F(FacadeBlindConfigTest, tiltAngleEdges) {
+  for (int a = -2; a < 182; a++) {
+    for (int b = -2; b < 182; b++) {
+      facade_blind_config config;
+      TChannelConfig_FacadeBlind raw = {};
+      raw.Tilt0Angle = a;
+      raw.Tilt100Angle = b;
+      config.set_config(&raw);
+      config.get_config(&raw);
 
-    EXPECT_EQ(raw.Tilt0Angle, a < 0 || a > 360 ? 0 : a);
+      EXPECT_EQ(raw.Tilt0Angle, a < 0 || a > 180 ? 0 : a);
+      EXPECT_EQ(raw.Tilt100Angle, b < 0 || b > 180 ? 0 : b);
 
-    string user_config =
-        "{\"closingTimeMS\":0,\"openingTimeMS\":0,\"motorUpsideDown\":false,"
-        "\"buttonsUpsideDown\":false,\"timeMargin\":0,\"tiltingTimeMS\":0";
+      string user_config =
+          "{\"closingTimeMS\":0,\"openingTimeMS\":0,\"tiltingTimeMS\":0";
 
-    if (a >= 0 && a <= 360) {
-      user_config.append(",\"tilt0Angle\":");
-      user_config.append(std::to_string(a));
+      if (a >= 0 && a <= 180) {
+        user_config.append(",\"tilt0Angle\":");
+        user_config.append(std::to_string(a));
+      }
+
+      if (b >= 0 && b <= 180) {
+        user_config.append(",\"tilt100Angle\":");
+        user_config.append(std::to_string(b));
+      }
+
+      user_config.append(",\"fasadeBlindType\":\"UNKNOWN\"}");
+
+      char *str = config.get_user_config();
+      ASSERT_NE(str, nullptr);
+      EXPECT_STREQ(str, user_config.c_str());
+      bool equal = strncmp(str, user_config.c_str(), user_config.size()) == 0;
+      free(str);
+
+      ASSERT_TRUE(equal);
     }
-
-    user_config.append(",\"tilt100Angle\":0,\"fasadeBlindType\":\"UNKNOWN\"}");
-
-    char *str = config.get_user_config();
-    ASSERT_NE(str, nullptr);
-    EXPECT_STREQ(str, user_config.c_str());
-    bool equal = strncmp(str, user_config.c_str(), user_config.size()) == 0;
-    free(str);
-
-    ASSERT_TRUE(equal);
   }
 }
 
