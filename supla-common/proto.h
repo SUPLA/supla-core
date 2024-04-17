@@ -2686,26 +2686,28 @@ typedef struct {
 typedef struct {
   _supla_int_t ClosingTimeMS;
   _supla_int_t OpeningTimeMS;
-  unsigned char MotorUpsideDown;    // 0 - false, 1 - true
-  unsigned char ButtonsUpsideDown;  // 0 - false, 1 - true
-  signed char TimeMargin;  // -1 default (device specific), 0 - no margin,
-                           // > 0 - % of opening/closing time added on extreme
-                           // positions
+  unsigned char MotorUpsideDown;    // 0 - not set/not used, 1 - false, 2 - true
+  unsigned char ButtonsUpsideDown;  // 0 - not set/not used, 1 - false, 2 - true
+  signed char TimeMargin;  // -1 default (device specific), 0 - not set/not used
+                           // 1 - no margin,
+                           // > 1 - 51% of opening/closing time added on extreme
+                           // positions - value should be decremented by 1.
 } TChannelConfig_Rollershutter;  // v. >= 16
 
 typedef struct {
   _supla_int_t ClosingTimeMS;
   _supla_int_t OpeningTimeMS;
   _supla_int_t TiltingTimeMS;
-  unsigned char MotorUpsideDown;    // 0 - false, 1 - true
-  unsigned char ButtonsUpsideDown;  // 0 - false, 1 - true
-  signed char TimeMargin;  // -1 default (device specific), 0 - no margin,
-                           // > 0 - % of opening/closing time added on extreme
-                           // positions
+  unsigned char MotorUpsideDown;    // 0 - not set/not used, 1 - false, 2 - true
+  unsigned char ButtonsUpsideDown;  // 0 - not set/not used, 1 - false, 2 - true
+  signed char TimeMargin;  // -1 default (device specific), 0 - not set/not used
+                           // 1 - no margin,
+                           // > 1 - 51% of opening/closing time added on extreme
+                           // positions - value should be decremented by 1.
   unsigned _supla_int16_t
-      Tilt0Angle;  // 0 - 360 - degree corresponding to tilt 0
+      Tilt0Angle;  // 0 - 180 - degree corresponding to tilt 0
   unsigned _supla_int16_t
-      Tilt100Angle;               // 0 - 360 - degree corresponding to tilt 100
+      Tilt100Angle;               // 0 - 180 - degree corresponding to tilt 100
   unsigned char FacadeBlindType;  // SUPLA_FACADEBLIND_TYPE_
 } TChannelConfig_FacadeBlind;     // v. >= 24
 
