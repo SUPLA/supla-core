@@ -469,6 +469,15 @@ int supla_abstract_common_channel_properties::set_user_config(
     json_config = new general_purpose_meter_config();
     static_cast<general_purpose_meter_config *>(json_config)
         ->set_config((TChannelConfig_GeneralPurposeMeter *)config);
+  } else if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER ||
+             func == SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW) {
+    json_config = new roller_shutter_config();
+    static_cast<roller_shutter_config *>(json_config)
+        ->set_config((TChannelConfig_Rollershutter *)config);
+  } else if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND) {
+    json_config = new facade_blind_config();
+    static_cast<facade_blind_config *>(json_config)
+        ->set_config((TChannelConfig_FacadeBlind *)config);
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }
