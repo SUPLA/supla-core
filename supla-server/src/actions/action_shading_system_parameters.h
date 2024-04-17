@@ -40,6 +40,7 @@ class supla_action_shading_system_parameters
                                          unsigned char flags);
   explicit supla_action_shading_system_parameters(
       const TAction_ShadingSystem_Parameters &params);
+  explicit supla_action_shading_system_parameters(cJSON *root);
   explicit supla_action_shading_system_parameters(
       const TAction_ShadingSystem_Parameters *params);
   virtual ~supla_action_shading_system_parameters(void);
@@ -52,12 +53,11 @@ class supla_action_shading_system_parameters
   void set_tilt(char tilt);
   unsigned char get_flags(void) const;
   void set_flags(unsigned char flags);
+  bool is_any_param_set();
 
   TAction_ShadingSystem_Parameters get_params(void);
   bool apply_on_value(int action, char value[SUPLA_CHANNELVALUE_SIZE], int func,
-                      unsigned _supla_int64_t flags) const;
-
-  static supla_action_shading_system_parameters *create_from_json(cJSON *root);
+                      unsigned _supla_int64_t channel_flags) const;
 };
 
 #endif /* ACTION_RS_PARAMETERS_H_ */

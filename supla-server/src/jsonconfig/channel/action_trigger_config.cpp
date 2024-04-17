@@ -385,7 +385,13 @@ supla_abstract_action_parameters *action_trigger_config::get_shading_system(
     void) {
   return action_trigger_config::get_parameters(
       [](cJSON *param) -> supla_abstract_action_parameters * {
-        return supla_action_shading_system_parameters::create_from_json(param);
+        supla_action_shading_system_parameters *result =
+            new supla_action_shading_system_parameters(param);
+        if (!result->is_any_param_set()) {
+          delete result;
+          result = nullptr;
+        }
+        return result;
       });
 }
 

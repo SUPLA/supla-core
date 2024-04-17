@@ -116,11 +116,11 @@ void supla_action_config::apply_json_params(const char *params) {
   }
 
   supla_action_shading_system_parameters *ss_params =
-      supla_action_shading_system_parameters::create_from_json(root);
-  if (ss_params) {
+      new supla_action_shading_system_parameters(root);
+  if (ss_params->is_any_param_set()) {
     set_parameters(ss_params);
-    delete ss_params;
   }
+  delete ss_params;
 
   cJSON *item = cJSON_GetObjectItem(root, "sourceChannelId");
 
