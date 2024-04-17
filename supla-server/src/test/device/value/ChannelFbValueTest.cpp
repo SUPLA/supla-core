@@ -19,10 +19,11 @@
 #include "ChannelFbValueTest.h"
 
 #include "device/value/channel_fb_value.h"
+#include "jsonconfig/channel/facade_blind_config.h"
 
 namespace testing {
 
-TEST_F(ChannelFbValueTest, setterAndGetter) {
+TEST_F(ChannelFbValueTest, rawValueSetterAndGetter) {
   TDSC_FacadeBlindValue value = {};
 
   value.tilt = 1;
@@ -44,6 +45,36 @@ TEST_F(ChannelFbValueTest, setterAndGetter) {
   value.position = 100;
 
   EXPECT_EQ(v2.get_fb_value()->position, 50);
+}
+
+TEST_F(ChannelFbValueTest, getPosition) {
+  TDSC_FacadeBlindValue raw = {};
+  raw.position = 55;
+
+  supla_channel_fb_value value(&raw);
+  EXPECT_EQ(value.get_position(), 55);
+}
+
+TEST_F(ChannelFbValueTest, getTilt) {
+  TDSC_FacadeBlindValue raw = {};
+  raw.tilt = 15;
+
+  supla_channel_fb_value value(&raw);
+  EXPECT_EQ(value.get_tilt(), 15);
+}
+
+TEST_F(ChannelFbValueTest, getTiltAngle) {
+  TDSC_FacadeBlindValue raw = {};
+  raw.tilt = 10;
+
+  facade_blind_config cfg;
+  cfg.set_user_config("{\"tilt0Angle\":5,\"tilt100Angle\":25}");
+
+  supla_channel_fb_value value(&raw);
+  EXPECT_EQ(value.get_tilt_angle(&cfg), 7);
+
+  cfg.set_user_config("{\"tilt0Angle\":25,\"tilt100Angle\":5}");
+  EXPECT_EQ(value.get_tilt_angle(&cfg), 23);
 }
 
 }  // namespace testing
