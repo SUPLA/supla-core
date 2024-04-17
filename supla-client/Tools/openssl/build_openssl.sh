@@ -6,8 +6,8 @@
 set -e
 
 # Defaults
-SDK="16.4"
-OPENSSL="3.0.8"
+SDK="17.4"
+OPENSSL="3.0.13"
 THREADS=4
 
 temp_clean() {
@@ -70,7 +70,6 @@ build() {
     ./Configure iossimulator-xcrun -mios-simulator-version-min=8.2 "--prefix=${INSTALL_PATH}" "-arch ${ARCH}" "-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDK_VERSION}.sdk" &> ${LOG_FILE}
     RC=$?
   else 
-    sed -ie "s!static volatile sig_atomic_t intr_signal;!static volatile intr_signal;!" "crypto/ui/ui_openssl.c"
     ./Configure iphoneos-cross -miphoneos-version-min=8.2 "--prefix=${INSTALL_PATH}" "-arch ${ARCH}" "-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDK_VERSION}.sdk" &> ${LOG_FILE}
     RC=$?
   fi
