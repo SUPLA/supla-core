@@ -27,7 +27,7 @@ using std::string;
 #define FIELD_FACADE_BLIND_TYPE 103
 
 const map<unsigned _supla_int16_t, string> facade_blind_config::field_map = {
-    {FIELD_TILTING_TIME_MS, "tiltingTimeMS"},
+    {FIELD_TILTING_TIME_MS, "tiltingTimeMs"},
     {FIELD_TILT0_ANGLE, "tilt0Angle"},
     {FIELD_TILT100_ANGLE, "tilt100Angle"},
     {FIELD_FACADE_BLIND_TYPE, "fasadeBlindType"}};

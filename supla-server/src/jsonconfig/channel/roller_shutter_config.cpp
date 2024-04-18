@@ -28,8 +28,8 @@ using std::string;
 #define FIELD_TIME_MARGIN 5
 
 const map<unsigned _supla_int16_t, string> roller_shutter_config::field_map = {
-    {FIELD_CLOSING_TIME_MS, "closingTimeMS"},
-    {FIELD_OPENING_TIME_MS, "openingTimeMS"},
+    {FIELD_CLOSING_TIME_MS, "closingTimeMs"},
+    {FIELD_OPENING_TIME_MS, "openingTimeMs"},
     {FIELD_MOTOR_UPSIDE_DOWN, "motorUpsideDown"},
     {FIELD_BUTTONS_UPSIDE_DOWN, "buttonsUpsideDown"},
     {FIELD_TIME_MARGIN, "timeMargin"}};

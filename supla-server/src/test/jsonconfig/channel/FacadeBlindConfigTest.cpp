@@ -64,9 +64,9 @@ TEST_F(FacadeBlindConfigTest, setGetRawConfig) {
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
-               "{\"closingTimeMS\":23,\"openingTimeMS\":45,\"motorUpsideDown\":"
+               "{\"closingTimeMs\":23,\"openingTimeMs\":45,\"motorUpsideDown\":"
                "true,\"buttonsUpsideDown\":true,\"timeMargin\":4,"
-               "\"tiltingTimeMS\":789,\"tilt0Angle\":8,\"tilt100Angle\":9,"
+               "\"tiltingTimeMs\":789,\"tilt0Angle\":8,\"tilt100Angle\":9,"
                "\"fasadeBlindType\":\"TILTS_ONLY_WHEN_FULLY_CLOSED\"}");
   free(str);
 }
@@ -85,7 +85,7 @@ TEST_F(FacadeBlindConfigTest, tiltAngleEdges) {
       EXPECT_EQ(raw.Tilt100Angle, b < 0 || b > 180 ? 0 : b);
 
       string user_config =
-          "{\"closingTimeMS\":0,\"openingTimeMS\":0,\"tiltingTimeMS\":0";
+          "{\"closingTimeMs\":0,\"openingTimeMs\":0,\"tiltingTimeMs\":0";
 
       if (a >= 0 && a <= 180) {
         user_config.append(",\"tilt0Angle\":");
@@ -114,9 +114,9 @@ TEST_F(FacadeBlindConfigTest, merge) {
   facade_blind_config config1;
 
   config1.set_user_config(
-      "{\"a\":\"b\",\"closingTimeMS\":0,\"openingTimeMS\":0,"
+      "{\"a\":\"b\",\"closingTimeMs\":0,\"openingTimeMs\":0,"
       "\"motorUpsideDown\":false,\"buttonsUpsideDown\":false,\"timeMargin\":0,"
-      "\"tiltingTimeMS\":0,\"tilt0Angle\":0,\"tilt100Angle\":0,"
+      "\"tiltingTimeMs\":0,\"tilt0Angle\":0,\"tilt100Angle\":0,"
       "\"fasadeBlindType\":\"UNKNOWN\"}");
 
   TChannelConfig_FacadeBlind raw = {};
@@ -130,9 +130,9 @@ TEST_F(FacadeBlindConfigTest, merge) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
-      "{\"a\":\"b\",\"closingTimeMS\":0,\"openingTimeMS\":0,"
+      "{\"a\":\"b\",\"closingTimeMs\":0,\"openingTimeMs\":0,"
       "\"motorUpsideDown\":false,\"buttonsUpsideDown\":false,\"timeMargin\":0,"
-      "\"tiltingTimeMS\":0,\"tilt0Angle\":0,\"tilt100Angle\":0,"
+      "\"tiltingTimeMs\":0,\"tilt0Angle\":0,\"tilt100Angle\":0,"
       "\"fasadeBlindType\":\"TILTS_ONLY_WHEN_FULLY_CLOSED\"}");
 
   free(str);
