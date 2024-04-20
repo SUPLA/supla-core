@@ -834,7 +834,7 @@ bool supla_mqtt_channel_message_provider::ha_rgb(int sub_id, bool set_sub_id,
 
 bool supla_mqtt_channel_message_provider::ha_binary_sensor(
     const char *device_class, const char *topic_prefix, char **topic_name,
-    void **message, size_t *message_size) {
+    void **message, size_t *message_size, bool invert) {
   // https://www.home-assistant.io/integrations/binary_sensor
 
   cJSON *root = ha_json_create_root(topic_prefix);
@@ -843,8 +843,15 @@ bool supla_mqtt_channel_message_provider::ha_binary_sensor(
   }
 
   ha_json_set_short_topic(root, "stat_t", "state/hi");
-  ha_json_set_string_param(root, "pl_on", "false");
-  ha_json_set_string_param(root, "pl_off", "true");
+
+  if (invert) {
+    ha_json_set_string_param(root, "pl_on", "true");
+    ha_json_set_string_param(root, "pl_off", "false");
+  } else {
+    ha_json_set_string_param(root, "pl_on", "false");
+    ha_json_set_string_param(root, "pl_off", "true");
+  }
+
   if (device_class) {
     ha_json_set_string_param(root, "device_class", device_class);
   }
@@ -1699,22 +1706,22 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
     case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
       return ha_binary_sensor(NULL, topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, true);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
       return ha_binary_sensor("opening", topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, false);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
       return ha_binary_sensor("garage_door", topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, false);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
       return ha_binary_sensor("door", topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, false);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       return ha_binary_sensor("window", topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, false);
     case SUPLA_CHANNELFNC_POWERSWITCH:
       return ha_light_or_powerswitch(false, topic_prefix, topic_name, message,
                                      message_size);

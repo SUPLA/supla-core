@@ -1990,7 +1990,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "15039\",\"device\":{\"ids\":\"supla-iodevice-9236\",\"mf\":\"\","
       "\"name\":\"HOME\",\"sw\":\"1.6.1\"},\"name\":\"No liquid "
       "sensor\",\"uniq_id\":\"supla_15039\",\"qos\":0,\"stat_t\":\"~/state/"
-      "hi\",\"pl_on\":\"false\",\"pl_off\":\"true\"}",
+      "hi\",\"pl_on\":\"true\",\"pl_off\":\"false\"}",
       "supla/bd6287c398bc81403c643410f5043d4e/devices/9236/channels/15039/"
       "state/connected",
       "false",
@@ -2223,7 +2223,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "\"name\":\"SONOFF-gate-p5-DS18B20 "
       "by@Zybi\",\"sw\":\"2.0\"},\"name\":\"Mail "
       "sensor\",\"uniq_id\":\"supla_7212\",\"qos\":0,\"stat_t\":\"~/state/"
-      "hi\",\"pl_on\":\"false\",\"pl_off\":\"true\"}",
+      "hi\",\"pl_on\":\"true\",\"pl_off\":\"false\"}",
       "supla/4b2bb30d2db31cf5809ede445862f6d7/devices/5761/channels/7212/state/"
       "connected",
       "false",
