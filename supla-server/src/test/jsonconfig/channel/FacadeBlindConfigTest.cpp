@@ -67,7 +67,7 @@ TEST_F(FacadeBlindConfigTest, setGetRawConfig) {
                "{\"closingTimeMs\":23,\"openingTimeMs\":45,\"motorUpsideDown\":"
                "true,\"buttonsUpsideDown\":true,\"timeMargin\":4,"
                "\"tiltingTimeMs\":789,\"tilt0Angle\":8,\"tilt100Angle\":9,"
-               "\"fasadeBlindType\":\"TILTS_ONLY_WHEN_FULLY_CLOSED\"}");
+               "\"facadeBlindType\":\"TILTS_ONLY_WHEN_FULLY_CLOSED\"}");
   free(str);
 }
 
@@ -97,7 +97,7 @@ TEST_F(FacadeBlindConfigTest, tiltAngleEdges) {
         user_config.append(std::to_string(b));
       }
 
-      user_config.append(",\"fasadeBlindType\":\"UNKNOWN\"}");
+      user_config.append(",\"facadeBlindType\":\"UNKNOWN\"}");
 
       char *str = config.get_user_config();
       ASSERT_NE(str, nullptr);
@@ -117,7 +117,7 @@ TEST_F(FacadeBlindConfigTest, merge) {
       "{\"a\":\"b\",\"closingTimeMs\":0,\"openingTimeMs\":0,"
       "\"motorUpsideDown\":false,\"buttonsUpsideDown\":false,\"timeMargin\":0,"
       "\"tiltingTimeMs\":0,\"tilt0Angle\":0,\"tilt100Angle\":0,"
-      "\"fasadeBlindType\":\"UNKNOWN\"}");
+      "\"facadeBlindType\":\"UNKNOWN\"}");
 
   TChannelConfig_FacadeBlind raw = {};
   raw.FacadeBlindType = SUPLA_FACADEBLIND_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED;
@@ -133,7 +133,7 @@ TEST_F(FacadeBlindConfigTest, merge) {
       "{\"a\":\"b\",\"closingTimeMs\":0,\"openingTimeMs\":0,"
       "\"motorUpsideDown\":false,\"buttonsUpsideDown\":false,\"timeMargin\":0,"
       "\"tiltingTimeMs\":0,\"tilt0Angle\":0,\"tilt100Angle\":0,"
-      "\"fasadeBlindType\":\"TILTS_ONLY_WHEN_FULLY_CLOSED\"}");
+      "\"facadeBlindType\":\"TILTS_ONLY_WHEN_FULLY_CLOSED\"}");
 
   free(str);
 }
