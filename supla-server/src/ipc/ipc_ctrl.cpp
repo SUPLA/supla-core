@@ -123,6 +123,9 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_action_cg_command(socket_adapter, ACTION_STEP_BY_STEP));
   add_command(new supla_action_command(socket_adapter, ACTION_STEP_BY_STEP));
   add_command(
+      new supla_action_cg_command(socket_adapter, ACTION_SHUT_PARTIALLY));
+  add_command(new supla_action_command(socket_adapter, ACTION_SHUT_PARTIALLY));
+  add_command(
       new supla_action_cg_command(socket_adapter, ACTION_HVAC_SET_PARAMETERS));
   add_command(
       new supla_action_command(socket_adapter, ACTION_HVAC_SET_PARAMETERS));
