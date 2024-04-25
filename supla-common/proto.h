@@ -482,6 +482,11 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800          // ver. >= 14
 #define SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL 810            // ver. >= 14
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND 900     // ver. >= 24
+#define SUPLA_CHANNELFNC_TERRACE_AWNING 910                // ver. >= 24
+#define SUPLA_CHANNELFNC_PROJECTOR_SCREEN 920              // ver. >= 24
+#define SUPLA_CHANNELFNC_CURTAIN 930                       // ver. >= 24
+#define SUPLA_CHANNELFNC_VERTICAL_BLIND 940                // ver. >= 24
+#define SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR 950            // ver. >= 24
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -504,14 +509,24 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_BIT_FUNC_HVAC_THERMOSTAT_HEAT_COOL 0x00040000     // ver. >= 21
 #define SUPLA_BIT_FUNC_HVAC_THERMOSTAT_DIFFERENTIAL 0x00080000  // ver. >= 21
 #define SUPLA_BIT_FUNC_HVAC_DOMESTIC_HOT_WATER 0x00100000       // ver. >= 21
+#define SUPLA_BIT_FUNC_TERRACE_AWNING 0x00200000                // ver. >= 24
+#define SUPLA_BIT_FUNC_PROJECTOR_SCREEN 0x00400000              // ver. >= 24
+#define SUPLA_BIT_FUNC_CURTAIN 0x00800000                       // ver. >= 24
+#define SUPLA_BIT_FUNC_VERTICAL_BLIND 0x01000000                // ver. >= 24
+#define SUPLA_BIT_FUNC_ROLLER_GARAGE_DOOR 0x02000000            // ver. >= 24
 
 #define SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK 10
 #define SUPLA_EVENT_CONTROLLINGTHEGATE 20
 #define SUPLA_EVENT_CONTROLLINGTHEGARAGEDOOR 30
 #define SUPLA_EVENT_CONTROLLINGTHEDOORLOCK 40
 #define SUPLA_EVENT_CONTROLLINGTHEROLLERSHUTTER 50
+#define SUPLA_EVENT_TERRACE_AWNING 51             // ver. >= 24
+#define SUPLA_EVENT_CURTAIN 52                    // ver. >= 24
+#define SUPLA_EVENT_PROJECTOR_SCREEN 53           // ver. >= 24
+#define SUPLA_EVENT_ROLLER_GARAGE_DOOR 54         // ver. >= 24
 #define SUPLA_EVENT_CONTROLLINGTHEROOFWINDOW 55
-#define SUPLA_EVENT_CONTROLLINGTHEFACADEBLIND 56
+#define SUPLA_EVENT_CONTROLLINGTHEFACADEBLIND 56  // ver. >= 24
+#define SUPLA_EVENT_VERTICAL_BLIND 57             // ver. >= 24
 #define SUPLA_EVENT_POWERONOFF 60
 #define SUPLA_EVENT_LIGHTONOFF 70
 #define SUPLA_EVENT_STAIRCASETIMERONOFF 80       // ver. >= 9
@@ -1845,10 +1860,10 @@ typedef struct {
 #define RS_VALUE_FLAG_MOTOR_PROBLEM 0x8
 #define RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS 0x10
 
-#define SUPLA_FACADEBLIND_TYPE_UNKNOWN 0
-#define SUPLA_FACADEBLIND_TYPE_STANDS_IN_POSITION_WHILE_TILTING 1
-#define SUPLA_FACADEBLIND_TYPE_CHANGES_POSITION_WHILE_TILTING 2
-#define SUPLA_FACADEBLIND_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED 3
+#define SUPLA_TILT_CONTROL_TYPE_UNKNOWN 0
+#define SUPLA_TILT_CONTROL_TYPE_STANDS_IN_POSITION_WHILE_TILTING 1
+#define SUPLA_TILT_CONTROL_TYPE_CHANGES_POSITION_WHILE_TILTING 2
+#define SUPLA_TILT_CONTROL_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED 3
 
 // Roller shutter channel value payload
 // Device -> Server -> Client
@@ -1862,18 +1877,28 @@ typedef struct {
   char reserved4;
 } TDSC_RollerShutterValue;
 
+typedef TDSC_RollerShutterValue TDSC_TerraceAwningValue;
+typedef TDSC_RollerShutterValue TDSC_ProjectorScreen;
+typedef TDSC_RollerShutterValue TDSC_CurtainValue;
+typedef TDSC_RollerShutterValue TDSC_RollerGarageDoor;
+
 // Roller shutter channel value payload
 // Client -> Server -> Device
 typedef struct {
   signed char position;  // 0 - STOP
-                         // 1 - DOWN
-                         // 2 - UP
-                         // 3 - DOWN_OR_STOP
-                         // 4 - UP_OR_STOP
+                         // 1 - DOWN (CLOSE)
+                         // 2 - UP (OPEN)
+                         // 3 - DOWN_OR_STOP (CLOSE_OR_STOP)
+                         // 4 - UP_OR_STOP (OPEN_OR_STOP)
                          // 5 - STEP_BY_STEP
                          // 10-110 - target position + 10 (0 open, 100 closed)
   char reserved[7];
 } TCSD_RollerShutterValue;
+
+typedef TCSD_RollerShutterValue TCSD_TerraceAwningValue;
+typedef TCSD_RollerShutterValue TCSD_ProjectorScreen;
+typedef TCSD_RollerShutterValue TCSD_CurtainValue;
+typedef TCSD_RollerShutterValue TCSD_RollerGarageDoor;
 
 // Facade blind channel value payload
 // Device -> Server -> Client
@@ -1885,21 +1910,25 @@ typedef struct {
   char reserved2[3];
 } TDSC_FacadeBlindValue;
 
+typedef TDSC_FacadeBlindValue TDSC_VerticalBlindValue;
+
 // Facade blind channel value payload
 // Client -> Server -> Device
 typedef struct {
   signed char position;  // -1 - not set (actual behavior is device specific)
                          // 0 - STOP
-                         // 1 - DOWN
-                         // 2 - UP
-                         // 3 - DOWN_OR_STOP
-                         // 4 - UP_OR_STOP
+                         // 1 - DOWN (CLOSE)
+                         // 2 - UP (OPEN)
+                         // 3 - DOWN_OR_STOP (CLOSE_OR_STOP)
+                         // 4 - UP_OR_STOP (OPEN_OR_STOP)
                          // 5 - STEP_BY_STEP
                          // 10-110 - target position + 10 (0 open, 100 closed)
   signed char tilt;      // -1 - not set (actual behavior is device specific)
                          // 10-110 - target position + 10
   char reserved[6];
 } TCSD_FacadeBlindValue;
+
+typedef TCSD_FacadeBlindValue TCSD_VerticalBlindValue;
 
 typedef struct {
   unsigned _supla_int64_t calculated_value;  // * 0.001
@@ -2692,7 +2721,15 @@ typedef struct {
                            // 1 - no margin,
                            // > 1 - 51% of opening/closing time added on extreme
                            // positions - value should be decremented by 1.
-} TChannelConfig_Rollershutter;  // v. >= 16
+  unsigned char VisualizationType;  // 0 - default, other values depends on
+                                    // Cloud and App support
+  unsigned char Reserved[32];
+} TChannelConfig_RollerShutter;  // v. >= 16
+
+typedef TChannelConfig_RollerShutter TChannelConfig_TerraceAwning;
+typedef TChannelConfig_RollerShutter TChannelConfig_ProjectorScreen;
+typedef TChannelConfig_RollerShutter TChannelConfig_Curtain;
+typedef TChannelConfig_RollerShutter TChannelConfig_RollerGarageDoor;
 
 typedef struct {
   _supla_int_t ClosingTimeMS;
@@ -2708,8 +2745,13 @@ typedef struct {
       Tilt0Angle;  // 0 - 180 - degree corresponding to tilt 0
   unsigned _supla_int16_t
       Tilt100Angle;               // 0 - 180 - degree corresponding to tilt 100
-  unsigned char FacadeBlindType;  // SUPLA_FACADEBLIND_TYPE_
+  unsigned char TiltControlType;  // SUPLA_TILT_CONTROL_TYPE_
+  unsigned char VisualizationType;  // 0 - default, other values depends on
+                                    // Cloud and App support
+  unsigned char Reserved[32];
 } TChannelConfig_FacadeBlind;     // v. >= 24
+
+typedef TChannelConfig_FacadeBlind TChannelConfig_VerticalBlind;
 
 typedef struct {
   unsigned _supla_int_t ActiveActions;
