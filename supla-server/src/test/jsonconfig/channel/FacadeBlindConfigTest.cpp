@@ -43,7 +43,7 @@ TEST_F(FacadeBlindConfigTest, setGetRawConfig) {
   raw.TiltingTimeMS = 789;
   raw.Tilt0Angle = 8;
   raw.Tilt100Angle = 9;
-  raw.FacadeBlindType = SUPLA_FACADEBLIND_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED;
+  raw.TiltControlType = SUPLA_TILT_CONTROL_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED;
 
   config.set_config(&raw);
 
@@ -58,8 +58,8 @@ TEST_F(FacadeBlindConfigTest, setGetRawConfig) {
   EXPECT_EQ(raw.TiltingTimeMS, 789);
   EXPECT_EQ(raw.Tilt0Angle, 8);
   EXPECT_EQ(raw.Tilt100Angle, 9);
-  EXPECT_EQ(raw.FacadeBlindType,
-            SUPLA_FACADEBLIND_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED);
+  EXPECT_EQ(raw.TiltControlType,
+            SUPLA_TILT_CONTROL_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED);
 
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
@@ -67,7 +67,7 @@ TEST_F(FacadeBlindConfigTest, setGetRawConfig) {
                "{\"closingTimeMs\":23,\"openingTimeMs\":45,\"motorUpsideDown\":"
                "true,\"buttonsUpsideDown\":true,\"timeMargin\":4,"
                "\"tiltingTimeMs\":789,\"tilt0Angle\":8,\"tilt100Angle\":9,"
-               "\"facadeBlindType\":\"TILTS_ONLY_WHEN_FULLY_CLOSED\"}");
+               "\"tiltControlType\":\"TILTS_ONLY_WHEN_FULLY_CLOSED\"}");
   free(str);
 }
 
@@ -97,7 +97,7 @@ TEST_F(FacadeBlindConfigTest, tiltAngleEdges) {
         user_config.append(std::to_string(b));
       }
 
-      user_config.append(",\"facadeBlindType\":\"UNKNOWN\"}");
+      user_config.append(",\"tiltControlType\":\"UNKNOWN\"}");
 
       char *str = config.get_user_config();
       ASSERT_NE(str, nullptr);
@@ -117,10 +117,10 @@ TEST_F(FacadeBlindConfigTest, merge) {
       "{\"a\":\"b\",\"closingTimeMs\":0,\"openingTimeMs\":0,"
       "\"motorUpsideDown\":false,\"buttonsUpsideDown\":false,\"timeMargin\":0,"
       "\"tiltingTimeMs\":0,\"tilt0Angle\":0,\"tilt100Angle\":0,"
-      "\"facadeBlindType\":\"UNKNOWN\"}");
+      "\"tiltControlType\":\"UNKNOWN\"}");
 
   TChannelConfig_FacadeBlind raw = {};
-  raw.FacadeBlindType = SUPLA_FACADEBLIND_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED;
+  raw.TiltControlType = SUPLA_TILT_CONTROL_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED;
 
   facade_blind_config config2;
   config2.set_config(&raw);
@@ -133,7 +133,7 @@ TEST_F(FacadeBlindConfigTest, merge) {
       "{\"a\":\"b\",\"closingTimeMs\":0,\"openingTimeMs\":0,"
       "\"motorUpsideDown\":false,\"buttonsUpsideDown\":false,\"timeMargin\":0,"
       "\"tiltingTimeMs\":0,\"tilt0Angle\":0,\"tilt100Angle\":0,"
-      "\"facadeBlindType\":\"TILTS_ONLY_WHEN_FULLY_CLOSED\"}");
+      "\"tiltControlType\":\"TILTS_ONLY_WHEN_FULLY_CLOSED\"}");
 
   free(str);
 }

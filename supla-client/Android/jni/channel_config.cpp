@@ -113,10 +113,10 @@ jobject supla_channel_config_to_jobject(JNIEnv *env, TSCS_ChannelConfig *config,
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
         if (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
-            sizeof(TChannelConfig_Rollershutter) == config->ConfigSize) {
+            sizeof(TChannelConfig_RollerShutter) == config->ConfigSize) {
           return supla_cc_rs_to_jobject(
               env, config->ChannelId, config->Func, crc32,
-              (TChannelConfig_Rollershutter *)config->Config);
+              (TChannelConfig_RollerShutter *)config->Config);
         }
         break;
       case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:

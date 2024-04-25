@@ -26,14 +26,14 @@ jobject supla_cc_fb_type_to_object(JNIEnv *env, unsigned char type) {
   char enum_name[40] = {};
 
   switch (type) {
-    case SUPLA_FACADEBLIND_TYPE_STANDS_IN_POSITION_WHILE_TILTING:
+    case SUPLA_TILT_CONTROL_TYPE_STANDS_IN_POSITION_WHILE_TILTING:
       snprintf(enum_name, sizeof(enum_name),
                "STANDS_IN_POSITION_WHILE_TILTING");
       break;
-    case SUPLA_FACADEBLIND_TYPE_CHANGES_POSITION_WHILE_TILTING:
+    case SUPLA_TILT_CONTROL_TYPE_CHANGES_POSITION_WHILE_TILTING:
       snprintf(enum_name, sizeof(enum_name), "CHANGES_POSITION_WHILE_TILTING");
       break;
-    case SUPLA_FACADEBLIND_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED:
+    case SUPLA_TILT_CONTROL_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED:
       snprintf(enum_name, sizeof(enum_name), "TILTS_ONLY_WHEN_FULLY_CLOSED");
       break;
     default:
@@ -43,7 +43,7 @@ jobject supla_cc_fb_type_to_object(JNIEnv *env, unsigned char type) {
 
   return supla_NewEnum(
       env,
-      "org/supla/android/data/source/remote/rollershutter/SuplaFacadeBlindType",
+      "org/supla/android/data/source/remote/rollershutter/SuplaTiltControlType",
       enum_name);
 }
 
@@ -57,13 +57,13 @@ jobject supla_cc_fb_to_jobject(JNIEnv *env, _supla_int_t channel_id,
   jmethodID method_init = env->GetMethodID(
       config_cls, "<init>",
       "(ILjava/lang/Integer;JIIIZZIIILorg/supla/android/data/source/remote/"
-      "rollershutter/SuplaFacadeBlindType;)V");
+      "rollershutter/SuplaTiltControlType;)V");
 
   jint timeMargin = config->TimeMargin;
   jint tilt0Angle = config->Tilt0Angle;
   jint tilt100Angle = config->Tilt100Angle;
 
-  jobject fb_type = supla_cc_fb_type_to_object(env, config->FacadeBlindType);
+  jobject fb_type = supla_cc_fb_type_to_object(env, config->TiltControlType);
 
   jobject result = env->NewObject(
       config_cls, method_init, channel_id, supla_NewInt(env, func), crc32,

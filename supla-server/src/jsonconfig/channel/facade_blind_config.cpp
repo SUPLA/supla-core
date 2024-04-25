@@ -24,13 +24,13 @@ using std::string;
 #define FIELD_TILTING_TIME_MS 100
 #define FIELD_TILT0_ANGLE 101
 #define FIELD_TILT100_ANGLE 102
-#define FIELD_FACADE_BLIND_TYPE 103
+#define FIELD_TILT_CONTROL_TYPE 103
 
 const map<unsigned _supla_int16_t, string> facade_blind_config::field_map = {
     {FIELD_TILTING_TIME_MS, "tiltingTimeMs"},
     {FIELD_TILT0_ANGLE, "tilt0Angle"},
     {FIELD_TILT100_ANGLE, "tilt100Angle"},
-    {FIELD_FACADE_BLIND_TYPE, "facadeBlindType"}};
+    {FIELD_TILT_CONTROL_TYPE, "tiltControlType"}};
 
 facade_blind_config::facade_blind_config(void) : roller_shutter_config() {}
 
@@ -47,11 +47,11 @@ void facade_blind_config::merge(supla_json_config *_dst) {
 
 string facade_blind_config::type_to_string(unsigned char type) {
   switch (type) {
-    case SUPLA_FACADEBLIND_TYPE_STANDS_IN_POSITION_WHILE_TILTING:
+    case SUPLA_TILT_CONTROL_TYPE_STANDS_IN_POSITION_WHILE_TILTING:
       return "STANDS_IN_POSITION_WHILE_TILTING";
-    case SUPLA_FACADEBLIND_TYPE_CHANGES_POSITION_WHILE_TILTING:
+    case SUPLA_TILT_CONTROL_TYPE_CHANGES_POSITION_WHILE_TILTING:
       return "CHANGES_POSITION_WHILE_TILTING";
-    case SUPLA_FACADEBLIND_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED:
+    case SUPLA_TILT_CONTROL_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED:
       return "TILTS_ONLY_WHEN_FULLY_CLOSED";
   }
 
@@ -60,14 +60,14 @@ string facade_blind_config::type_to_string(unsigned char type) {
 
 unsigned char facade_blind_config::string_to_type(const string &type) {
   if (type == "STANDS_IN_POSITION_WHILE_TILTING") {
-    return SUPLA_FACADEBLIND_TYPE_STANDS_IN_POSITION_WHILE_TILTING;
+    return SUPLA_TILT_CONTROL_TYPE_STANDS_IN_POSITION_WHILE_TILTING;
   } else if (type == "CHANGES_POSITION_WHILE_TILTING") {
-    return SUPLA_FACADEBLIND_TYPE_CHANGES_POSITION_WHILE_TILTING;
+    return SUPLA_TILT_CONTROL_TYPE_CHANGES_POSITION_WHILE_TILTING;
   } else if (type == "TILTS_ONLY_WHEN_FULLY_CLOSED") {
-    return SUPLA_FACADEBLIND_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED;
+    return SUPLA_TILT_CONTROL_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED;
   }
 
-  return SUPLA_FACADEBLIND_TYPE_UNKNOWN;
+  return SUPLA_TILT_CONTROL_TYPE_UNKNOWN;
 }
 
 void facade_blind_config::set_config(TChannelConfig_FacadeBlind *config) {
@@ -97,9 +97,9 @@ void facade_blind_config::set_config(TChannelConfig_FacadeBlind *config) {
                    cJSON_Number, true, nullptr, nullptr, config->Tilt100Angle);
   }
 
-  set_item_value(user_root, field_map.at(FIELD_FACADE_BLIND_TYPE).c_str(),
+  set_item_value(user_root, field_map.at(FIELD_TILT_CONTROL_TYPE).c_str(),
                  cJSON_String, true, nullptr,
-                 type_to_string(config->FacadeBlindType).c_str(), 0);
+                 type_to_string(config->TiltControlType).c_str(), 0);
 }
 
 bool facade_blind_config::get_config(TChannelConfig_FacadeBlind *config) {
@@ -150,9 +150,9 @@ bool facade_blind_config::get_config(TChannelConfig_FacadeBlind *config) {
   }
 
   std::string str_value;
-  if (get_string(user_root, field_map.at(FIELD_FACADE_BLIND_TYPE).c_str(),
+  if (get_string(user_root, field_map.at(FIELD_TILT_CONTROL_TYPE).c_str(),
                  &str_value)) {
-    config->FacadeBlindType = string_to_type(str_value);
+    config->TiltControlType = string_to_type(str_value);
     result = true;
   }
 

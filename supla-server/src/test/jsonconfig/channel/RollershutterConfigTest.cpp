@@ -34,7 +34,7 @@ RollershutterConfigTest::~RollershutterConfigTest(void) {}
 
 TEST_F(RollershutterConfigTest, setGetRawConfig) {
   roller_shutter_config config;
-  TChannelConfig_Rollershutter raw = {};
+  TChannelConfig_RollerShutter raw = {};
   raw.ClosingTimeMS = 123;
   raw.OpeningTimeMS = 345;
   raw.MotorUpsideDown = 2;
@@ -63,7 +63,7 @@ TEST_F(RollershutterConfigTest, setGetRawConfig) {
 
 TEST_F(RollershutterConfigTest, buttonsUpsidedown) {
   roller_shutter_config config;
-  TChannelConfig_Rollershutter raw = {};
+  TChannelConfig_RollerShutter raw = {};
 
   config.set_config(&raw);
 
@@ -98,7 +98,7 @@ TEST_F(RollershutterConfigTest, buttonsUpsidedown) {
 
 TEST_F(RollershutterConfigTest, motorUpsidedown) {
   roller_shutter_config config;
-  TChannelConfig_Rollershutter raw = {};
+  TChannelConfig_RollerShutter raw = {};
 
   config.set_config(&raw);
 
@@ -133,7 +133,7 @@ TEST_F(RollershutterConfigTest, motorUpsidedown) {
 
 TEST_F(RollershutterConfigTest, timeMarginEdges) {
   roller_shutter_config config;
-  TChannelConfig_Rollershutter raw = {};
+  TChannelConfig_RollerShutter raw = {};
   config.set_config(&raw);
 
   char *str = config.get_user_config();
@@ -184,7 +184,7 @@ TEST_F(RollershutterConfigTest, merge) {
       "\"motorUpsideDown\":false,\"buttonsUpsideDown\":false,\"timeMargin\":"
       "105}");
 
-  TChannelConfig_Rollershutter raw = {};
+  TChannelConfig_RollerShutter raw = {};
   raw.ClosingTimeMS = 50;
   raw.OpeningTimeMS = 110;
   raw.TimeMargin = -2;
@@ -222,7 +222,7 @@ TEST_F(RollershutterConfigTest, merge) {
 
 TEST_F(RollershutterConfigTest, duration) {
   roller_shutter_config config;
-  TChannelConfig_Rollershutter raw = {};
+  TChannelConfig_RollerShutter raw = {};
   raw.ClosingTimeMS = 5000;
   raw.OpeningTimeMS = 11000;
   config.set_config(&raw);

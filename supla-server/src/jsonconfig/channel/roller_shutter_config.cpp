@@ -201,7 +201,7 @@ unsigned int roller_shutter_config::get_value_duration(void) {
   return result;
 }
 
-void roller_shutter_config::set_config(TChannelConfig_Rollershutter *config) {
+void roller_shutter_config::set_config(TChannelConfig_RollerShutter *config) {
   if (config) {
     set_config(config->ClosingTimeMS, config->OpeningTimeMS,
                config->MotorUpsideDown, config->ButtonsUpsideDown,
@@ -209,7 +209,7 @@ void roller_shutter_config::set_config(TChannelConfig_Rollershutter *config) {
   }
 }
 
-bool roller_shutter_config::get_config(TChannelConfig_Rollershutter *config) {
+bool roller_shutter_config::get_config(TChannelConfig_RollerShutter *config) {
   if (config) {
     return get_config(&config->ClosingTimeMS, &config->OpeningTimeMS,
                       &config->MotorUpsideDown, &config->ButtonsUpsideDown,

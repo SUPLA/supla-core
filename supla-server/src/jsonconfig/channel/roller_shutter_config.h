@@ -45,8 +45,8 @@ class roller_shutter_config : public supla_json_config {
   explicit roller_shutter_config(supla_json_config *root);
   roller_shutter_config(void);
   virtual void merge(supla_json_config *dst);
-  void set_config(TChannelConfig_Rollershutter *config);
-  bool get_config(TChannelConfig_Rollershutter *config);
+  void set_config(TChannelConfig_RollerShutter *config);
+  bool get_config(TChannelConfig_RollerShutter *config);
   unsigned int get_value_duration(void);
 };
 

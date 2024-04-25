@@ -29,7 +29,7 @@ extern "C" {
 
 jobject supla_cc_rs_to_jobject(JNIEnv *env, _supla_int_t channel_id,
                                _supla_int_t func, jlong crc32,
-                               TChannelConfig_Rollershutter *config);
+                               TChannelConfig_RollerShutter *config);
 
 #ifdef __cplusplus
 }

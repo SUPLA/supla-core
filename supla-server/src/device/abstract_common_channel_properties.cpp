@@ -379,7 +379,7 @@ void supla_abstract_common_channel_properties::get_config(
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      JSON_TO_CONFIG(roller_shutter_config, TChannelConfig_Rollershutter,
+      JSON_TO_CONFIG(roller_shutter_config, TChannelConfig_RollerShutter,
                      config, config_size);
       break;
 
@@ -473,7 +473,7 @@ int supla_abstract_common_channel_properties::set_user_config(
              func == SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW) {
     json_config = new roller_shutter_config();
     static_cast<roller_shutter_config *>(json_config)
-        ->set_config((TChannelConfig_Rollershutter *)config);
+        ->set_config((TChannelConfig_RollerShutter *)config);
   } else if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND) {
     json_config = new facade_blind_config();
     static_cast<facade_blind_config *>(json_config)
