@@ -215,6 +215,9 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       snprintf(buf, buf_size, "CONTROLLINGTHEROOFWINDOW");
       break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      snprintf(buf, buf_size, "CONTROLLINGTHEFACADEBLIND");
+      break;
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
       snprintf(buf, buf_size, "OPENINGSENSOR_ROLLERSHUTTER");
       break;
@@ -406,6 +409,10 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "Roller shutter operation");
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Facade blind operation");
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
@@ -978,9 +985,11 @@ bool supla_mqtt_channel_message_provider::ha_door(const char *topic_prefix,
                         message_size);
 }
 
-bool supla_mqtt_channel_message_provider::ha_roller_shutter(
-    const char *topic_prefix, char **topic_name, void **message,
-    size_t *message_size) {
+bool supla_mqtt_channel_message_provider::ha_cover(const char *topic_prefix,
+                                                   char **topic_name,
+                                                   void **message,
+                                                   size_t *message_size,
+                                                   bool tilting) {
   // https://www.home-assistant.io/integrations/cover.mqtt
 
   cJSON *root = ha_json_create_root(topic_prefix, NULL, NULL, false);
@@ -1010,6 +1019,16 @@ bool supla_mqtt_channel_message_provider::ha_roller_shutter(
       root, "pos_tpl",
       "{% if int(value, default=0) <= 0 %}0{% elif value | int > 100 "
       "%}100{% else %}{{value | int}}{% endif %}");
+
+  if (tilting) {
+    ha_json_set_short_topic(root, "tilt_cmd_t", "set/tilt");
+    ha_json_set_short_topic(root, "tilt_status_t", "state/tilt");
+
+    ha_json_set_string_param(
+        root, "tilt_status_tpl",
+        "{% if int(value, default=0) <= 0 %}0{% elif value | int > 100 "
+        "%}100{% else %}{{value | int}}{% endif %}");
+  }
 
   return ha_get_message(root, "cover", 0, false, topic_name, message,
                         message_size);
@@ -1682,7 +1701,10 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
       return ha_door(topic_prefix, topic_name, message, message_size);
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      return ha_roller_shutter(topic_prefix, topic_name, message, message_size);
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      return ha_cover(
+          topic_prefix, topic_name, message, message_size,
+          row->channel_func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND);
     case SUPLA_CHANNELFNC_THERMOMETER:
       return ha_sensor_temperature(0, false, topic_prefix, topic_name, message,
                                    message_size);

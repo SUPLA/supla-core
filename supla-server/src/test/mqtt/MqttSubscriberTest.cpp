@@ -540,6 +540,7 @@ TEST_F(MqttSubscriberTest, setClosingPercentage) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
   ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), 34);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_tilt(), -1);
 
   getValueSetter()->clear();
 
@@ -656,6 +657,81 @@ TEST_F(MqttSubscriberTest, setOpeningPercentage) {
   getLibAdapter()->on_message_received(
       "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
       "opening_percentage",
+      "110");
+
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+  EXPECT_TRUE(getValueSetter()->getShadingSystemParams() == nullptr);
+}
+
+TEST_F(MqttSubscriberTest, setTilt) {
+  waitForConnection();
+  waitForData(3);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+  EXPECT_TRUE(getValueSetter()->getShadingSystemParams() == nullptr);
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "tilt",
+      "34.56");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), -1);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_tilt(), 34);
+
+  getValueSetter()->clear();
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "tilt",
+      "-10");
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "tilt",
+      "0");
+
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), -1);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_tilt(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "tilt",
+      "33");
+
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 2);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), -1);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_tilt(), 33);
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "tilt",
+      "100");
+
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 3);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_TRUE(getValueSetter()->getShadingSystemParams() != nullptr);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_percentage(), -1);
+  ASSERT_EQ(getValueSetter()->getShadingSystemParams()->get_tilt(), 100);
+
+  getValueSetter()->clear();
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "tilt",
       "110");
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 0);

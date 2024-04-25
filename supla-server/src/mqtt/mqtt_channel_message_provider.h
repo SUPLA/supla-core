@@ -91,8 +91,8 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
                size_t *message_size, const char *device_class);
   bool ha_door(const char *topic_prefix, char **topic_name, void **message,
                size_t *message_size);
-  bool ha_roller_shutter(const char *topic_prefix, char **topic_name,
-                         void **message, size_t *message_size);
+  bool ha_cover(const char *topic_prefix, char **topic_name,
+                         void **message, size_t *message_size, bool tilting);
   bool ha_impulse_counter(unsigned short index, const char *topic_prefix,
                           char **topic_name, void **message,
                           size_t *message_size, int func);

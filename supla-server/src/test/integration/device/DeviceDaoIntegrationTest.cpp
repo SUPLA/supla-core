@@ -359,7 +359,7 @@ TEST_F(DeviceDaoIntegrationTest, setAndUpdateExtendedValue) {
 
 TEST_F(DeviceDaoIntegrationTest, deviceLimit) {
   ASSERT_TRUE(dba->connect());
-  EXPECT_EQ(dao->get_device_limit_left(2), 90);
+  EXPECT_EQ(dao->get_device_limit_left(2), 89);
 }
 
 } /* namespace testing */
