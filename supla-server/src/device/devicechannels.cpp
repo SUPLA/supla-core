@@ -1018,6 +1018,13 @@ bool supla_device_channels::shading_system_action(const supla_caller &caller,
 bool supla_device_channels::action_shut(
     const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
     const supla_action_shading_system_parameters *params) {
+  supla_action_shading_system_parameters _params;
+  _params.set_percentage(100);
+
+  if (params == nullptr) {
+    params = &_params;
+  }
+
   return shading_system_action(caller, channel_id, group_id, eol, ACTION_SHUT,
                                params);
 }
