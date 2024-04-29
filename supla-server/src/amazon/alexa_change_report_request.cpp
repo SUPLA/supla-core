@@ -99,6 +99,7 @@ bool supla_alexa_change_report_request::make_request(
       client.add_contact_sensor();
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
       client.add_range_controller();
       client.add_percentage_controller();
       break;
@@ -158,6 +159,7 @@ bool supla_alexa_change_report_request::is_function_allowed(int func) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
     case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:

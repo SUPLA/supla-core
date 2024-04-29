@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "device/value/channel_binary_sensor_value.h"
+#include "device/value/channel_fb_value.h"
 #include "device/value/channel_hvac_value_with_temphum.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
@@ -825,9 +826,16 @@ void supla_alexa_client::add_percentage_controller(void) {
   if (is_channel_connected()) {
     supla_channel_rs_value *rs_val =
         dynamic_cast<supla_channel_rs_value *>(get_channel_value());
-    if (rs_val) {
+
+    supla_channel_fb_value *fb_val = nullptr;
+
+    if (!fb_val) {
+      fb_val = dynamic_cast<supla_channel_fb_value *>(get_channel_value());
+    }
+
+    if (rs_val || fb_val) {
       add_props(get_percentage_controller_properties(
-          rs_val->get_rs_value()->position));
+          rs_val ? rs_val->get_rs_value()->position : fb_val->get_position()));
     }
   }
 }
