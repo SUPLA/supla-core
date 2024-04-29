@@ -1024,6 +1024,12 @@ bool supla_mqtt_channel_message_provider::ha_cover(const char *topic_prefix,
     ha_json_set_short_topic(root, "tilt_cmd_t", "set/tilt");
     ha_json_set_short_topic(root, "tilt_status_t", "state/tilt");
 
+    ha_json_set_int_param(root, "tilt_min", 100);
+    ha_json_set_int_param(root, "tilt_max", 0);
+
+    ha_json_set_int_param(root, "tilt_opnd_val", 0);
+    ha_json_set_int_param(root, "tilt_clsd_val", 100);
+
     ha_json_set_string_param(
         root, "tilt_status_tpl",
         "{% if int(value, default=0) <= 0 %}0{% elif value | int > 100 "

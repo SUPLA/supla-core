@@ -688,7 +688,8 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "tpl\":\"{% if int(value, default=0) <= 0 %}0{% elif value | int > 100 "
       "%}100{% else %}{{value | int}}{% endif "
       "%}\",\"tilt_cmd_t\":\"~/set/tilt\",\"tilt_status_t\":\"~/state/"
-      "tilt\",\"tilt_status_tpl\":\"{% if int(value, default=0) <= 0 %}0{% "
+      "tilt\",\"tilt_min\":100,\"tilt_max\":0,\"tilt_opnd_val\":0,\"tilt_clsd_"
+      "val\":100,\"tilt_status_tpl\":\"{% if int(value, default=0) <= 0 %}0{% "
       "elif value | int > 100 %}100{% else %}{{value | int}}{% endif %}\"}",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/channels/87235/"
       "state/connected",
