@@ -27,6 +27,7 @@
 class supla_alexa_response_request : public supla_alexa_request {
  private:
   std::string correlation_token;
+  bool postponed;
 
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
@@ -39,6 +40,8 @@ class supla_alexa_response_request : public supla_alexa_request {
       supla_abstract_channel_property_getter *property_getter,
       supla_amazon_alexa_credentials *credentials,
       const std::string &correlation_token);
+  void mark_as_postponed(void);
+  bool is_postponed(void);
 
   static bool is_caller_allowed(const supla_caller &caller);
   static bool is_function_allowed(int func);

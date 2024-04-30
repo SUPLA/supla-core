@@ -36,6 +36,7 @@ supla_alexa_response_request::supla_alexa_response_request(
     const string &correlation_token)
     : supla_alexa_request(supla_caller(), user_id, device_id, channel_id, queue,
                           pool, property_getter, credentials) {
+  postponed = false;
   set_delay_usec(
       5000000);  // 5 sec. - Try to send this request after ChangeReport.
   set_timeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
@@ -44,6 +45,20 @@ supla_alexa_response_request::supla_alexa_response_request(
 
 string supla_alexa_response_request::get_name(void) {
   return "Alexa Response Request";
+}
+
+void supla_alexa_response_request::mark_as_postponed(void) {
+  lock();
+  postponed = true;
+  unlock();
+}
+
+bool supla_alexa_response_request::is_postponed(void) {
+  lock();
+  bool result = postponed;
+  unlock();
+
+  return result;
 }
 
 bool supla_alexa_response_request::make_request(
