@@ -27,22 +27,30 @@
 #include "webhook/state_webhook_request.h"
 
 // static
-void supla_http_event_hub::on_channel_value_change(
-    supla_user *user, int deviceId, int channelId, const supla_caller &caller,
-    const char correlationToken[], const char googleRequestId[]) {
-  supla_alexa_response_request::new_request(
-      caller, user, deviceId, channelId,
-      correlationToken ? correlationToken : "");
-
+void supla_http_event_hub::on_channel_value_change(supla_user *user,
+                                                   int deviceId, int channelId,
+                                                   const supla_caller &caller) {
   supla_alexa_change_report_request::new_request(caller, user, deviceId,
                                                  channelId);
 
-  supla_google_home_state_report_request::new_request(
-      caller, user, deviceId, channelId,
-      googleRequestId ? googleRequestId : "");
-
   supla_state_webhook_request::new_request(caller, user, deviceId, channelId,
                                            0);
+}
+
+// static
+void supla_http_event_hub::on_value_change_request(
+    supla_user *user, int deviceId, int channelId, const supla_caller &caller,
+    supla_alexa_correlation_token *correlationToken,
+    const char googleRequestId[]) {
+  if (correlationToken) {
+    supla_alexa_response_request::new_request(caller, user, deviceId, channelId,
+                                              correlationToken);
+  }
+
+  if (googleRequestId) {
+    supla_google_home_state_report_request::new_request(
+        caller, user, deviceId, channelId, googleRequestId);
+  }
 }
 
 // static

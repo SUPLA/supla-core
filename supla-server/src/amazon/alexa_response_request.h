@@ -21,12 +21,14 @@
 
 #include <string>
 
+#include "amazon/alexa_correlation_token.h"
 #include "amazon/alexa_credentials.h"
 #include "amazon/alexa_request.h"
+#include "device/value/channel_value.h"
 
 class supla_alexa_response_request : public supla_alexa_request {
  private:
-  std::string correlation_token;
+  supla_alexa_correlation_token *correlation_token;
 
  protected:
   virtual bool make_request(supla_abstract_curl_adapter *curl_adapter);
@@ -38,14 +40,16 @@ class supla_alexa_response_request : public supla_alexa_request {
       supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_channel_property_getter *property_getter,
       supla_amazon_alexa_credentials *credentials,
-      const std::string &correlation_token);
+      supla_alexa_correlation_token *correlation_token);
+
+  ~supla_alexa_response_request(void);
 
   static bool is_caller_allowed(const supla_caller &caller);
   static bool is_function_allowed(int func);
 
   static void new_request(const supla_caller &caller, supla_user *user,
                           int device_id, int channel_id,
-                          const std::string &correlation_token);
+                          supla_alexa_correlation_token *correlation_token);
 };
 
 #endif /* ALEXA_RESPONSE_REQUEST_H_ */

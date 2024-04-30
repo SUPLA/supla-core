@@ -39,8 +39,16 @@ bool supla_set_rgbw_command::set_channel_rgbw_value(
   if (device != nullptr) {
     // set_device_channel_char_value for the potential report to contain
     // AlexaCorrelationToken / GoogleRequestId
-    supla_http_event_hub::on_channel_value_change(
-        user, device_id, channel_id, get_caller(), alexa_correlation_token,
+
+    supla_alexa_correlation_token *_alexa_correlation_token =
+        supla_alexa_correlation_token::new_token(alexa_correlation_token, 0,
+                                                 nullptr);
+
+    if (_alexa_correlation_token) {
+    }
+
+    supla_http_event_hub::on_value_change_request(
+        user, device_id, channel_id, get_caller(), _alexa_correlation_token,
         google_request_id);
 
     return device->get_channels()->set_device_channel_rgbw_value(

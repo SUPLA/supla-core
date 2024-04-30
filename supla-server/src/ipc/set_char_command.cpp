@@ -40,9 +40,11 @@ bool supla_set_char_command::set_channel_char_value(
     // onChannelValueChangeEvent must be called before
     // set_device_channel_char_value for the potential report to contain
     // AlexaCorrelationToken / GoogleRequestId
-    supla_http_event_hub::on_channel_value_change(
+    supla_http_event_hub::on_value_change_request(
         device->get_user(), device->get_id(), channel_id, get_caller(),
-        alexa_correlation_token, google_request_id);
+        supla_alexa_correlation_token::new_token(alexa_correlation_token, 0,
+                                                 nullptr),
+        google_request_id);
 
     return device->get_channels()->set_device_channel_char_value(
         get_caller(), channel_id, 0, false, value);

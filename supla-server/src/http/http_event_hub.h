@@ -21,15 +21,20 @@
 
 #include <string>
 
+#include "amazon/alexa_correlation_token.h"
 #include "caller.h"
 #include "user/user.h"
 
 class supla_http_event_hub {
  public:
   static void on_channel_value_change(supla_user *user, int deviceId,
-                                      int channelId, const supla_caller &caller,
-                                      const char correlationToken[] = nullptr,
-                                      const char googleRequestId[] = nullptr);
+                                      int channelId,
+                                      const supla_caller &caller);
+
+  static void on_value_change_request(
+      supla_user *user, int deviceId, int channelId, const supla_caller &caller,
+      supla_alexa_correlation_token *correlationToken,
+      const char googleRequestId[]);
 
   static void on_channel_added(supla_user *user, int deviceId,
                                const supla_caller &caller);

@@ -21,6 +21,7 @@
 #include <memory>
 
 #include "actions/action_executor.h"
+#include "amazon/alexa_correlation_token.h"
 #include "device.h"
 #include "device/channel_property_getter.h"
 #include "http/http_event_hub.h"
@@ -32,14 +33,17 @@ supla_action_command::supla_action_command(
     supla_abstract_ipc_socket_adapter *socket_adapter, int action)
     : supla_abstract_action_command(socket_adapter, action) {}
 
-void supla_action_command::call_before(shared_ptr<supla_device> device,
-                                       int channel_id) {
+void supla_action_command::call_before(
+    shared_ptr<supla_device> device, int channel_id,
+    const supla_abstract_action_parameters *action_params) {
   // onChannelValueChangeEvent must be called before
   // action call for the potential report to contain
   // AlexaCorrelationToken / GoogleRequestId
-  supla_http_event_hub::on_channel_value_change(
+  supla_http_event_hub::on_value_change_request(
       device->get_user(), device->get_id(), channel_id, get_caller(),
-      get_alexa_correlation_token(), get_google_request_id());
+      supla_alexa_correlation_token::new_token(get_alexa_correlation_token(),
+                                               get_action_id(), action_params),
+      get_google_request_id());
 }
 
 bool supla_action_command::action_open_close(
@@ -174,7 +178,7 @@ bool supla_action_command::action_shut(
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    call_before(device, channel_id);
+    call_before(device, channel_id, params);
 
     return device->get_channels()->action_shut(get_caller(), channel_id, 0, 0,
                                                params);
@@ -189,7 +193,7 @@ bool supla_action_command::action_hvac_set_parameters(
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    call_before(device, channel_id);
+    call_before(device, channel_id, params);
 
     return device->get_channels()->action_hvac_set_parameters(
         get_caller(), channel_id, 0, 1, params);

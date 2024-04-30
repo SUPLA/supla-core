@@ -33,13 +33,18 @@ supla_alexa_response_request::supla_alexa_response_request(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_channel_property_getter *property_getter,
     supla_amazon_alexa_credentials *credentials,
-    const string &correlation_token)
+    supla_alexa_correlation_token *correlation_token)
     : supla_alexa_request(supla_caller(), user_id, device_id, channel_id, queue,
                           pool, property_getter, credentials) {
-  set_delay_usec(
-      5000000);  // 5 sec. - Try to send this request after ChangeReport.
+  set_delay_usec(1);
   set_timeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
   this->correlation_token = correlation_token;
+}
+
+supla_alexa_response_request::~supla_alexa_response_request(void) {
+  if (correlation_token) {
+    delete correlation_token;
+  }
 }
 
 string supla_alexa_response_request::get_name(void) {
@@ -48,23 +53,16 @@ string supla_alexa_response_request::get_name(void) {
 
 bool supla_alexa_response_request::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
-  if (!get_credentials()->is_access_token_exists()) {
+  if (!get_credentials()->is_access_token_exists() || !correlation_token ||
+      correlation_token->get_token().empty()) {
     return false;
-  }
-
-  size_t sub_pos = correlation_token.find("::SUB=");
-  int subchannel_id = 0;
-  if (sub_pos != string::npos) {
-    subchannel_id = std::stoi(correlation_token.substr(sub_pos + 6));
-    correlation_token = correlation_token.substr(0, sub_pos);
   }
 
   supla_alexa_client client(get_channel_id(), curl_adapter, get_credentials(),
                             get_zulu_time(), get_message_id(),
-                            correlation_token);
+                            correlation_token->get_token());
   set_zulu_time("");
   set_message_id("");
-  correlation_token = "";
 
   supla_channel_fragment fragment;
   bool online = false;
@@ -72,8 +70,10 @@ bool supla_alexa_response_request::make_request(
   supla_channel_value *value = get_channel_value(&fragment, &online);
 
   client.set_channel_connected(online);
+  correlation_token->apply_expected(value);
   client.set_channel_value(value);
-  client.set_subchannel_id(subchannel_id);
+
+  client.set_subchannel_id(correlation_token->get_subchannel_id());
   client.set_cause_type(get_caller());
 
   switch (fragment.get_function()) {
@@ -89,9 +89,9 @@ bool supla_alexa_response_request::make_request(
       client.add_color_controller_properties();
       break;
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-      if (subchannel_id == 1) {
+      if (correlation_token->get_subchannel_id() == 1) {
         client.add_color_controller_properties();
-      } else if (subchannel_id == 2) {
+      } else if (correlation_token->get_subchannel_id() == 2) {
         client.add_brightness_controller_properties();
       }
       break;
@@ -150,43 +150,42 @@ bool supla_alexa_response_request::is_function_allowed(int func) {
 // static
 void supla_alexa_response_request::new_request(
     const supla_caller &caller, supla_user *user, int device_id, int channel_id,
-    const string &correlation_token) {
-  if (!user || !user->amazonAlexaCredentials() ||
-      !user->amazonAlexaCredentials()->is_access_token_exists()) {
-    return;
-  }
+    supla_alexa_correlation_token *correlation_token) {
+  if (user && user->amazonAlexaCredentials() &&
+      user->amazonAlexaCredentials()->is_access_token_exists() &&
+      correlation_token && is_caller_allowed(caller)) {
+    supla_channel_property_getter *property_getter =
+        new supla_channel_property_getter();
 
-  if (correlation_token.size() == 0 || !is_caller_allowed(caller)) {
-    return;
-  }
+    int func =
+        property_getter->get_func(user->getUserID(), device_id, channel_id);
 
-  supla_channel_property_getter *property_getter =
-      new supla_channel_property_getter();
-
-  int func =
-      property_getter->get_func(user->getUserID(), device_id, channel_id);
-
-  bool integration_disabled = false;
-  {
-    supla_json_config *config = property_getter->get_detached_json_config();
-    if (config) {
-      alexa_config a_config(config);
-      integration_disabled = a_config.is_integration_disabled();
-      delete config;
+    bool integration_disabled = false;
+    {
+      supla_json_config *config = property_getter->get_detached_json_config();
+      if (config) {
+        alexa_config a_config(config);
+        integration_disabled = a_config.is_integration_disabled();
+        delete config;
+      }
     }
-  }
 
-  if (!is_function_allowed(func) || integration_disabled) {
+    if (is_function_allowed(func) && !integration_disabled) {
+      supla_alexa_response_request *request = new supla_alexa_response_request(
+          caller, user->getUserID(), device_id, channel_id,
+          supla_asynctask_queue::global_instance(),
+          supla_asynctask_http_thread_pool::global_instance(), property_getter,
+          user->amazonAlexaCredentials(), correlation_token);
+
+      request->set_priority(80);
+      request->start();
+      return;
+    }
+
     delete property_getter;
-    return;
   }
 
-  supla_alexa_response_request *request = new supla_alexa_response_request(
-      caller, user->getUserID(), device_id, channel_id,
-      supla_asynctask_queue::global_instance(),
-      supla_asynctask_http_thread_pool::global_instance(), property_getter,
-      user->amazonAlexaCredentials(), correlation_token);
-
-  request->set_priority(90);
-  request->start();
+  if (correlation_token) {
+    delete correlation_token;
+  }
 }

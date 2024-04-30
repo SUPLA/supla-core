@@ -28,6 +28,8 @@ supla_abstract_action_command::supla_abstract_action_command(
   this->action = action;
 }
 
+int supla_abstract_action_command::get_action_id(void) { return action; }
+
 const string supla_abstract_action_command::get_command_name(void) {
   switch (action) {
     case ACTION_OPEN:

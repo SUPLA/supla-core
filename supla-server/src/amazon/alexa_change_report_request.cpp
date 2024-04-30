@@ -21,7 +21,6 @@
 #include "amazon/alexa_change_report_search_condition.h"
 #include "amazon/alexa_change_report_throttling.h"
 #include "amazon/alexa_client.h"
-#include "amazon/alexa_response_search_condition.h"
 #include "device/channel_property_getter.h"
 #include "device/value/channel_hvac_value_with_temphum.h"
 #include "http/asynctask_http_thread_pool.h"
@@ -229,14 +228,7 @@ void supla_alexa_change_report_request::new_request(const supla_caller &caller,
           supla_asynctask_http_thread_pool::global_instance(), property_getter,
           user->amazonAlexaCredentials());
 
-  request->set_priority(80);
+  request->set_priority(90);
   request->set_delay_usec(delay_time_usec);
   request->start();
-
-  supla_alexa_response_search_condition rcnd(user->getUserID(), device_id,
-                                             channel_id);
-  supla_asynctask_queue::global_instance()->access_task(
-      &rcnd, [delay_time_usec](supla_abstract_asynctask *task) -> void {
-        task->set_delay_usec(delay_time_usec + 100000);
-      });
 }

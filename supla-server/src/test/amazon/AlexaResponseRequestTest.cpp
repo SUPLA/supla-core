@@ -94,7 +94,8 @@ void AlexaResponseRequestTest::makeTest(int func, bool online,
 
   supla_alexa_response_request *request = new supla_alexa_response_request(
       supla_caller(), 1, 2, 15, queue, pool, propertyGetter, &credentials,
-      correlation_token);
+      supla_alexa_correlation_token::new_token(correlation_token.c_str(), 0,
+                                               nullptr));
   request->set_delay_usec(1);
   request->set_message_id("29012dd1-33c7-6519-6e18-c4ee71d00487");
   request->set_zulu_time("2019-02-01T12:09:33Z");
@@ -390,7 +391,8 @@ void AlexaResponseRequestTest::hvacThermostatTest(
 
   supla_alexa_response_request *request = new supla_alexa_response_request(
       supla_caller(), 1, 2, 15, queue, pool, propertyGetter, &credentials,
-      correlation_token);
+      supla_alexa_correlation_token::new_token(correlation_token.c_str(), 0,
+                                               nullptr));
   request->set_delay_usec(1);
   request->set_message_id("29012dd1-33c7-6519-6e18-c4ee71d00487");
   request->set_zulu_time("2019-02-01T12:09:33Z");
