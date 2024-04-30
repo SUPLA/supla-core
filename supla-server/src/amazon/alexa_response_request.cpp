@@ -36,7 +36,9 @@ supla_alexa_response_request::supla_alexa_response_request(
     supla_alexa_correlation_token *correlation_token)
     : supla_alexa_request(supla_caller(), user_id, device_id, channel_id, queue,
                           pool, property_getter, credentials) {
-  set_delay_usec(1);
+  set_delay_usec(
+      5000000);  // 5 sec. - Try to send this request after ChangeReport.
+
   set_timeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
   this->correlation_token = correlation_token;
 }
@@ -177,7 +179,7 @@ void supla_alexa_response_request::new_request(
           supla_asynctask_http_thread_pool::global_instance(), property_getter,
           user->amazonAlexaCredentials(), correlation_token);
 
-      request->set_priority(80);
+      request->set_priority(90);
       request->start();
       return;
     }
