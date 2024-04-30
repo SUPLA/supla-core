@@ -34,8 +34,10 @@ void supla_http_event_hub::on_channel_value_change(
       caller, user, deviceId, channelId,
       correlationToken ? correlationToken : "");
 
-  supla_alexa_change_report_request::new_request(caller, user, deviceId,
-                                                 channelId);
+  if (!correlationToken || !correlationToken[0]) {
+    supla_alexa_change_report_request::new_request(caller, user, deviceId,
+                                                   channelId);
+  }
 
   supla_google_home_state_report_request::new_request(
       caller, user, deviceId, channelId,
