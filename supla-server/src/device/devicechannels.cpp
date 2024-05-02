@@ -35,6 +35,7 @@
 #include "device/value/channel_valve_value.h"
 #include "jsonconfig/channel/controlling_the_gate_config.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "jsonconfig/channel/roller_shutter_config.h"
 #include "log.h"
 
 using std::function;
@@ -303,13 +304,22 @@ bool supla_device_channels::recalibrate(int channel_id,
     request.SenderID = caller.convert_to_sender_id();
     request.SuperUserAuthorized = superuser_authorized;
 
-    TCalCfg_RollerShutterSettings *settings =
-        (TCalCfg_RollerShutterSettings *)request.Data;
-    request.DataSize = sizeof(TCalCfg_RollerShutterSettings);
-    request.DataType = SUPLA_CALCFG_DATATYPE_RS_SETTINGS;
+    if (channel->get_func() == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER) {
+      TCalCfg_RollerShutterSettings *settings =
+          (TCalCfg_RollerShutterSettings *)request.Data;
 
-    settings->FullOpeningTimeMS = channel->get_param1() * 100;
-    settings->FullClosingTimeMS = channel->get_param3() * 100;
+      request.DataSize = sizeof(TCalCfg_RollerShutterSettings);
+      request.DataType = SUPLA_CALCFG_DATATYPE_RS_SETTINGS;
+
+      supla_json_config *config = channel->get_json_config();
+      if (config) {
+        roller_shutter_config rs_cfg(config);
+        TChannelConfig_RollerShutter raw_cfg = {};
+        rs_cfg.get_config(&raw_cfg);
+        settings->FullOpeningTimeMS = raw_cfg.OpeningTimeMS;
+        settings->FullClosingTimeMS = raw_cfg.ClosingTimeMS;
+      }
+    }
 
     srpc_sd_async_device_calcfg_request(get_srpc(), &request);
     return true;
@@ -1212,7 +1222,8 @@ bool supla_device_channels::action_hvac_set_parameters(
             if (th) {
               supla_channel_hp_thermostat_ev_decorator decorator(th);
               if (decorator.get_state_flags() & HP_STATUS_PROGRAMMODE) {
-                // When setting the temperature, force switching to manual mode.
+                // When setting the temperature, force switching to manual
+                // mode.
                 req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
                 req->Data[0] = 0;  // Do not force the power on
                 req->DataSize = 1;
