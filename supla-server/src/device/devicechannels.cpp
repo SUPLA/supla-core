@@ -325,6 +325,7 @@ bool supla_device_channels::recalibrate(int channel_id,
         rs_cfg.get_config(&raw_cfg);
         settings->FullOpeningTimeMS = raw_cfg.OpeningTimeMS;
         settings->FullClosingTimeMS = raw_cfg.ClosingTimeMS;
+        delete config;
       }
     }
 
