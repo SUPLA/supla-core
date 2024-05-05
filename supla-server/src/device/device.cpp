@@ -102,6 +102,16 @@ bool supla_device::funclist_contains_function(int funcList, int func) {
       return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEFACADEBLIND) > 0;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEROOFWINDOW) > 0;
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+      return (funcList & SUPLA_BIT_FUNC_TERRACE_AWNING) > 0;
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+      return (funcList & SUPLA_BIT_FUNC_PROJECTOR_SCREEN) > 0;
+    case SUPLA_CHANNELFNC_CURTAIN:
+      return (funcList & SUPLA_BIT_FUNC_CURTAIN) > 0;
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+      return (funcList & SUPLA_BIT_FUNC_VERTICAL_BLIND) > 0;
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+      return (funcList & SUPLA_BIT_FUNC_ROLLER_GARAGE_DOOR) > 0;
     case SUPLA_CHANNELFNC_POWERSWITCH:
       return (funcList & SUPLA_BIT_FUNC_POWERSWITCH) > 0;
     case SUPLA_CHANNELFNC_LIGHTSWITCH:

@@ -144,13 +144,27 @@ bool supla_state_webhook_request::make_request(
       break;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      result = client.roller_shutter_report();
+      result = client.shut_report("CONTROLLINGTHEROLLERSHUTTER");
       break;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      result = client.roof_window_report();
+      result = client.shut_report("CONTROLLINGTHEROOFWINDOW");
       break;
-
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+      result = client.shut_report("TERRACE_AWNING");
+      break;
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+      result = client.shut_report("PROJECTOR_SCREEN");
+      break;
+    case SUPLA_CHANNELFNC_CURTAIN:
+      result = client.shut_report("CURTAIN");
+      break;
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+      result = client.shut_report("VERTICAL_BLIND");
+      break;
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+      result = client.shut_report("ROLLER_GARAGE_DOOR");
+      break;
     case SUPLA_CHANNELFNC_WINDSENSOR:
       result = client.wind_sensor_report();
       break;

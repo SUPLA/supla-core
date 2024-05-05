@@ -304,7 +304,14 @@ bool supla_device_channels::recalibrate(int channel_id,
     request.SenderID = caller.convert_to_sender_id();
     request.SuperUserAuthorized = superuser_authorized;
 
-    if (channel->get_func() == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER) {
+    int func = channel->get_func();
+
+    if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER ||
+        func == SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW ||
+        func == SUPLA_CHANNELFNC_TERRACE_AWNING ||
+        func == SUPLA_CHANNELFNC_PROJECTOR_SCREEN ||
+        func == SUPLA_CHANNELFNC_CURTAIN ||
+        func == SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR) {
       TCalCfg_RollerShutterSettings *settings =
           (TCalCfg_RollerShutterSettings *)request.Data;
 

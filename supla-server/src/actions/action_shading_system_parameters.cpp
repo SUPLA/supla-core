@@ -216,6 +216,11 @@ bool supla_action_shading_system_parameters::apply_on_value(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+    case SUPLA_CHANNELFNC_CURTAIN:
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
       break;
     default:
       return result;
@@ -252,13 +257,15 @@ bool supla_action_shading_system_parameters::apply_on_value(
 
       if (get_flags() & SSP_FLAG_PERCENTAGE_AS_DELTA) {
         percentage =
-            add_delta(func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND
+            add_delta((func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND ||
+                       func == SUPLA_CHANNELFNC_VERTICAL_BLIND)
                           ? ((TDSC_FacadeBlindValue *)value)->position
                           : ((TDSC_RollerShutterValue *)value)->position,
                       percentage);
       }
 
-      if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND &&
+      if ((func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND ||
+           func == SUPLA_CHANNELFNC_VERTICAL_BLIND) &&
           (get_flags() & SSP_FLAG_TILT_AS_DELTA)) {
         tilt = add_delta(((TDSC_FacadeBlindValue *)value)->tilt, tilt);
       }
@@ -276,7 +283,8 @@ bool supla_action_shading_system_parameters::apply_on_value(
   memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
 
   if (position >= -1 && position <= 110) {
-    if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND) {
+    if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND ||
+        func == SUPLA_CHANNELFNC_VERTICAL_BLIND) {
       if (tilt_position >= -1 && tilt_position <= 110) {
         ((TCSD_FacadeBlindValue *)value)->position = position;
         ((TCSD_FacadeBlindValue *)value)->tilt = tilt_position;

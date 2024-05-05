@@ -218,6 +218,21 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
       snprintf(buf, buf_size, "CONTROLLINGTHEFACADEBLIND");
       break;
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+      snprintf(buf, buf_size, "TERRACE_AWNING");
+      break;
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+      snprintf(buf, buf_size, "PROJECTOR_SCREEN");
+      break;
+    case SUPLA_CHANNELFNC_CURTAIN:
+      snprintf(buf, buf_size, "CURTAIN");
+      break;
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+      snprintf(buf, buf_size, "VERTICAL_BLIND");
+      break;
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+      snprintf(buf, buf_size, "ROLLER_GARAGE_DOOR");
+      break;
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
       snprintf(buf, buf_size, "OPENINGSENSOR_ROLLERSHUTTER");
       break;
@@ -425,6 +440,22 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "Roof window opening sensor");
+      break;
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Terrace awning");
+      break;
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Projector screen");
+      break;
+    case SUPLA_CHANNELFNC_CURTAIN:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Curtain");
+      break;
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Vertical blind");
+      break;
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Roller garage door");
       break;
     case SUPLA_CHANNELFNC_POWERSWITCH:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "On/Off switch");

@@ -76,6 +76,7 @@ void supla_channel_fb_value::apply_channel_properties(
 bool supla_channel_fb_value::is_function_supported(int func) {
   switch (func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
       return true;
   }
 

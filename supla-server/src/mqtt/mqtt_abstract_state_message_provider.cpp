@@ -1136,9 +1136,14 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
   switch (channel_function) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+    case SUPLA_CHANNELFNC_CURTAIN:
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
       return get_rs_message_at_index(index, topic_prefix, topic_name, message,
                                      message_size);
     case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
       return get_fb_message_at_index(index, topic_prefix, topic_name, message,
                                      message_size);
 
