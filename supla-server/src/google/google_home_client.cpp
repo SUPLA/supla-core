@@ -20,6 +20,7 @@
 
 #include <string.h>
 
+#include "device/value/channel_fb_value.h"
 #include "device/value/channel_gate_value.h"
 #include "device/value/channel_hvac_value_with_temphum.h"
 #include "device/value/channel_onoff_value.h"
@@ -252,6 +253,31 @@ void supla_google_home_client::add_roller_shutter_state(void) {
                               : 0;
 
   add_open_percent_state(100 - shut_percentage);
+}
+
+void supla_google_home_client::add_facade_blind_state(void) {
+  supla_channel_fb_value *v =
+      dynamic_cast<supla_channel_fb_value *>(get_channel_value());
+
+  short shut_percentage = 0;
+  short tilt = 0;
+
+  if (v && is_channel_connected()) {
+    if (v->get_fb_value()->position >= 0 &&
+        v->get_fb_value()->position <= 100) {
+      shut_percentage = v->get_fb_value()->position;
+    }
+
+    if (v->get_fb_value()->tilt >= 0 && v->get_fb_value()->tilt <= 100) {
+      tilt = v->get_fb_value()->tilt;
+    }
+  }
+
+  cJSON *state = (cJSON *)get_state_skeleton();
+  if (state) {
+    cJSON_AddNumberToObject(state, "openPercent", 100 - shut_percentage);
+    cJSON_AddNumberToObject(state, "rotationPercent", 100 - tilt);
+  }
 }
 
 void supla_google_home_client::add_thermostat_state(void) {

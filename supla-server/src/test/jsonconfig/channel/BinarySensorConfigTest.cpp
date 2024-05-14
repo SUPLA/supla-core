@@ -42,6 +42,20 @@ TEST_F(BinarySensorConfigTest, isInvertedLogic) {
   EXPECT_TRUE(config.is_logic_inverted());
 }
 
+TEST_F(BinarySensorConfigTest, filteringTimeMs) {
+  binary_sensor_config config;
+
+  EXPECT_FALSE(config.is_logic_inverted());
+
+  config.set_user_config("{\"filteringTimeMs\":0}");
+
+  EXPECT_EQ(config.get_filtering_time_ms(), 0);
+
+  config.set_user_config("{\"filteringTimeMs\":123}");
+
+  EXPECT_EQ(config.get_filtering_time_ms(), 123);
+}
+
 TEST_F(BinarySensorConfigTest, setGetRawConfig) {
   binary_sensor_config config;
 
@@ -49,26 +63,31 @@ TEST_F(BinarySensorConfigTest, setGetRawConfig) {
 
   TChannelConfig_BinarySensor raw = {};
   raw.InvertedLogic = 1;
+  raw.FilteringTimeMs = 22;
   config.set_config(&raw);
 
   EXPECT_TRUE(config.is_logic_inverted());
+  EXPECT_EQ(config.get_filtering_time_ms(), 22);
 
   raw = {};
   config.get_config(&raw);
   EXPECT_EQ(raw.InvertedLogic, 1);
+  EXPECT_EQ(raw.FilteringTimeMs, 22);
 
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str, "{\"invertedLogic\":true}");
+  EXPECT_STREQ(str, "{\"invertedLogic\":true,\"filteringTimeMs\":22}");
   free(str);
 }
 
 TEST_F(BinarySensorConfigTest, merge) {
   binary_sensor_config config1;
-  config1.set_user_config("{\"a\":\"b\", \"invertedLogic\": false}");
+  config1.set_user_config(
+      "{\"a\":\"b\", \"invertedLogic\": false,\"filteringTimeMs\":0}");
 
   TChannelConfig_BinarySensor raw_bin = {};
   raw_bin.InvertedLogic = 1;
+  raw_bin.FilteringTimeMs = 5;
 
   binary_sensor_config config2;
   config2.set_config(&raw_bin);
@@ -76,7 +95,8 @@ TEST_F(BinarySensorConfigTest, merge) {
 
   char *str = config1.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str, "{\"a\":\"b\",\"invertedLogic\":true}");
+  EXPECT_STREQ(str,
+               "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":5}");
 
   free(str);
 }

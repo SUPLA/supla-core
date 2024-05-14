@@ -22,7 +22,7 @@
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
 #include "actions/action_rgbw_parameters.h"
-#include "actions/action_rs_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 
 namespace testing {
 
@@ -61,14 +61,14 @@ resultCls *ActionTriggerConfigTest::get_params(action_trigger_config *config) {
   return nullptr;
 }
 
-TAction_RS_Parameters ActionTriggerConfigTest::get_rs_params(
+TAction_ShadingSystem_Parameters ActionTriggerConfigTest::get_ss_params(
     action_trigger_config *config) {
-  TAction_RS_Parameters result = {};
-  supla_action_rs_parameters *rsp =
-      get_params<supla_action_rs_parameters>(config);
-  if (rsp) {
-    result = rsp->get_rs();
-    delete rsp;
+  TAction_ShadingSystem_Parameters result = {};
+  supla_action_shading_system_parameters *ssp =
+      get_params<supla_action_shading_system_parameters>(config);
+  if (ssp) {
+    result = ssp->get_params();
+    delete ssp;
   }
 
   return result;
@@ -403,25 +403,128 @@ TEST_F(ActionTriggerConfigTest, getPercentage) {
 
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(get_rs_params(config).Percentage, 98);
+  EXPECT_EQ(get_ss_params(config).Percentage, 98);
+  EXPECT_EQ(get_ss_params(config).Flags, 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":110}}}}}");
 
-  EXPECT_NO_PARAMS(config);
+  EXPECT_EQ(get_ss_params(config).Percentage, 100);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":-2}}}}}");
+
+  EXPECT_EQ(get_ss_params(config).Percentage, -1);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":0}}}}}");
 
-  EXPECT_EQ(get_rs_params(config).Percentage, 0);
+  EXPECT_EQ(get_ss_params(config).Percentage, 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentag\":10}}}}}");
 
   EXPECT_NO_PARAMS(config);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentageDelta\":15}}}}"
+      "}");
+
+  EXPECT_EQ(get_ss_params(config).Percentage, 15);
+  EXPECT_EQ(get_ss_params(config).Flags, SSP_FLAG_PERCENTAGE_AS_DELTA);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentageDelta\":-15}}}}"
+      "}");
+
+  EXPECT_EQ(get_ss_params(config).Percentage, -15);
+  EXPECT_EQ(get_ss_params(config).Flags, SSP_FLAG_PERCENTAGE_AS_DELTA);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, getTilt) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"tilt\":98}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(get_ss_params(config).Tilt, 98);
+  EXPECT_EQ(get_ss_params(config).Flags, 0);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"tilt\":110}}}}}");
+
+  EXPECT_EQ(get_ss_params(config).Tilt, 100);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"tilt\":-2}}}}}");
+
+  EXPECT_EQ(get_ss_params(config).Tilt, -1);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"tilt\":0}}}}}");
+
+  EXPECT_EQ(get_ss_params(config).Tilt, 0);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"tiltDelta\":15}}}}"
+      "}");
+
+  EXPECT_EQ(get_ss_params(config).Tilt, 15);
+  EXPECT_EQ(get_ss_params(config).Flags, SSP_FLAG_TILT_AS_DELTA);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"tiltDelta\":-15}}}}"
+      "}");
+
+  EXPECT_EQ(get_ss_params(config).Tilt, -15);
+  EXPECT_EQ(get_ss_params(config).Flags, SSP_FLAG_TILT_AS_DELTA);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, getTiltAndPercentage) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":20, "
+      "\"tilt\":98}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(get_ss_params(config).Tilt, 98);
+  EXPECT_EQ(get_ss_params(config).Percentage, 20);
+  EXPECT_EQ(get_ss_params(config).Flags, 0);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentageDelta\":20, "
+      "\"tiltDelta\":98}}}}}");
+
+  EXPECT_EQ(get_ss_params(config).Tilt, 98);
+  EXPECT_EQ(get_ss_params(config).Percentage, 20);
+  EXPECT_EQ(get_ss_params(config).Flags,
+            SSP_FLAG_PERCENTAGE_AS_DELTA | SSP_FLAG_TILT_AS_DELTA);
 
   delete config;
 }
@@ -589,7 +692,7 @@ TEST_F(ActionTriggerConfigTest, actionRevealPartially) {
   EXPECT_EQ(config->get_subject_id(), 3611);
   EXPECT_EQ(config->get_source_device_id(), 0);
   EXPECT_EQ(config->get_source_channel_id(), 0);
-  EXPECT_EQ(get_rs_params(config).Percentage, 65);
+  EXPECT_EQ(get_ss_params(config).Percentage, 65);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;
@@ -609,7 +712,7 @@ TEST_F(ActionTriggerConfigTest, actionShutPartially) {
   EXPECT_EQ(config->get_action_id(), ACTION_SHUT_PARTIALLY);
   EXPECT_EQ(config->get_subject_id(), 45678);
   EXPECT_EQ(config->get_source_channel_id(), 0);
-  EXPECT_EQ(get_rs_params(config).Percentage, 20);
+  EXPECT_EQ(get_ss_params(config).Percentage, 20);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;

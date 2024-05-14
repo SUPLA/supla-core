@@ -109,16 +109,14 @@ void supla_action_executor::toggle(void) {
   });
 }
 
-void supla_action_executor::shut(const char *closingPercentage, bool delta) {
-  execute_action([this, closingPercentage, delta](
-                     supla_user_channelgroups *channel_groups,
-                     supla_device_channels *channels) -> void {
+void supla_action_executor::shut(
+    const supla_action_shading_system_parameters *params) {
+  execute_action([this, params](supla_user_channelgroups *channel_groups,
+                                supla_device_channels *channels) -> void {
     if (channel_groups) {
-      channel_groups->action_shut(get_caller(), get_group_id(),
-                                  closingPercentage, delta);
+      channel_groups->action_shut(get_caller(), get_group_id(), params);
     } else {
-      channels->action_shut(get_caller(), get_channel_id(), 0, 0,
-                            closingPercentage, delta);
+      channels->action_shut(get_caller(), get_channel_id(), 0, 0, params);
     }
   });
 }

@@ -22,9 +22,11 @@ using std::map;
 using std::string;
 
 #define FIELD_INVERTED_LOGIC 1
+#define FIELD_FILTERING_TIME_MS 2
 
 const map<unsigned _supla_int16_t, string> binary_sensor_config::field_map = {
-    {FIELD_INVERTED_LOGIC, "invertedLogic"}};
+    {FIELD_INVERTED_LOGIC, "invertedLogic"},
+    {FIELD_FILTERING_TIME_MS, "filteringTimeMs"}};
 
 binary_sensor_config::binary_sensor_config(void) : supla_json_config() {}
 
@@ -50,6 +52,9 @@ void binary_sensor_config::set_config(TChannelConfig_BinarySensor *config) {
   set_item_value(root, field_map.at(FIELD_INVERTED_LOGIC).c_str(),
                  config->InvertedLogic ? cJSON_True : cJSON_False, true,
                  nullptr, nullptr, 0);
+
+  set_item_value(root, field_map.at(FIELD_FILTERING_TIME_MS).c_str(),
+                 cJSON_Number, true, nullptr, nullptr, config->FilteringTimeMs);
 }
 
 bool binary_sensor_config::get_config(TChannelConfig_BinarySensor *config) {
@@ -64,13 +69,24 @@ bool binary_sensor_config::get_config(TChannelConfig_BinarySensor *config) {
     return false;
   }
 
+  bool result = false;
+
   bool bool_value;
   if (get_bool(root, field_map.at(FIELD_INVERTED_LOGIC).c_str(), &bool_value)) {
     config->InvertedLogic = bool_value ? 1 : 0;
-    return true;
+    result = true;
   }
 
-  return false;
+  double dbl_value = 0;
+  if (get_double(root, field_map.at(FIELD_FILTERING_TIME_MS).c_str(),
+                 &dbl_value)) {
+    config->FilteringTimeMs = dbl_value;
+    result = true;
+  } else {
+    config->FilteringTimeMs = 0;
+  }
+
+  return result;
 }
 
 bool binary_sensor_config::is_logic_inverted(void) {
@@ -79,4 +95,12 @@ bool binary_sensor_config::is_logic_inverted(void) {
     return config.InvertedLogic;
   }
   return false;
+}
+
+int binary_sensor_config::get_filtering_time_ms(void) {
+  TChannelConfig_BinarySensor config = {};
+  if (get_config(&config)) {
+    return config.FilteringTimeMs;
+  }
+  return 0;
 }

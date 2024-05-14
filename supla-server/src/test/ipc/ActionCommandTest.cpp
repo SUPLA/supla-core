@@ -323,26 +323,45 @@ TEST_F(ActionCommandTest, badParams) {
 TEST_F(ActionCommandTest, ShutPartiallyWithDelta) {
   StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
   cmd = &c;
-  EXPECT_CALL(c, action_shut(10, 20, 30, Pointee(Eq(35)), true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(c, action_shut(10, 20, 30, NotNull()))
+      .WillOnce([](int user_id, int device_id, int channel_id,
+                   const supla_action_shading_system_parameters *params) {
+        EXPECT_EQ(params->get_percentage(), 35);
+        EXPECT_EQ(params->get_tilt(), 20);
+        EXPECT_EQ(params->get_flags(),
+                  SSP_FLAG_PERCENTAGE_AS_DELTA | SSP_FLAG_TILT_AS_DELTA);
+        return true;
+      });
 
-  commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,1\n", "OK:30\n");
+  commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,1,20,1\n",
+                        "OK:30\n");
 }
 
 TEST_F(ActionCommandTest, ShutPartiallyWithoutDelta) {
   StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
   cmd = &c;
-  EXPECT_CALL(c, action_shut(10, 20, 30, Pointee(Eq(35)), false))
-      .WillOnce(Return(true));
+  EXPECT_CALL(c, action_shut(10, 20, 30, NotNull()))
+      .WillOnce([](int user_id, int device_id, int channel_id,
+                   const supla_action_shading_system_parameters *params) {
+        EXPECT_EQ(params->get_percentage(), 35);
+        EXPECT_EQ(params->get_tilt(), 11);
+        EXPECT_EQ(params->get_flags(), 0);
+        return true;
+      });
 
-  commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,0\n", "OK:30\n");
+  commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,0,11,0\n",
+                        "OK:30\n");
 }
 
 TEST_F(ActionCommandTest, ShutPartiallyWithFaulure) {
   StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
   cmd = &c;
-  EXPECT_CALL(c, action_shut(10, 20, 30, Pointee(Eq(35)), false))
-      .WillOnce(Return(false));
+  EXPECT_CALL(c, action_shut(10, 20, 30, NotNull()))
+      .WillOnce([](int user_id, int device_id, int channel_id,
+                   const supla_action_shading_system_parameters *params) {
+        EXPECT_EQ(params->get_percentage(), 35);
+        return false;
+      });
 
   commandProcessingTest("ACTION-SHUT-PARTIALLY:10,20,30,35,0\n", "FAIL:30\n");
 }

@@ -94,18 +94,19 @@ TEST_F(ActionExecutionIntegrationTest, rollerShutterIncorrectParameters) {
 }
 
 TEST_F(ActionExecutionIntegrationTest, shutPartiallyWithSuccess) {
-  TAction_RS_Parameters rs = {};
-  rs.Percentage = 10;
+  TAction_ShadingSystem_Parameters ss = {};
+  ss.Percentage = 10;
 
   // The server version on the day of test preparation does not check group
   // function. If starts checking, it will be necessary to add the appropriate
   // group to the database before performing the test.
 
   ASSERT_FALSE(sclient == NULL);
-  ASSERT_GT(supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, &rs,
-                                        sizeof(TAction_RS_Parameters),
-                                        ACTION_SUBJECT_TYPE_CHANNEL_GROUP, 1),
-            0);
+  ASSERT_GT(
+      supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, &ss,
+                                  sizeof(TAction_ShadingSystem_Parameters),
+                                  ACTION_SUBJECT_TYPE_CHANNEL_GROUP, 1),
+      0);
   iterateUntilDefaultTimeout();
 
   ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_TRUE);
@@ -150,18 +151,19 @@ TEST_F(ActionExecutionIntegrationTest, setBrightnessWithSuccess) {
 }
 
 TEST_F(ActionExecutionIntegrationTest, channelIsOffline) {
-  TAction_RS_Parameters rs = {};
-  rs.Percentage = 10;
+  TAction_ShadingSystem_Parameters ss = {};
+  ss.Percentage = 10;
 
   // The server version on the day of test preparation does not check group
   // function. If starts checking, it will be necessary to add the appropriate
   // group to the database before performing the test.
 
   ASSERT_FALSE(sclient == NULL);
-  ASSERT_GT(supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, &rs,
-                                        sizeof(TAction_RS_Parameters),
-                                        ACTION_SUBJECT_TYPE_CHANNEL, 303),
-            0);
+  ASSERT_GT(
+      supla_client_execute_action(sclient, ACTION_SHUT_PARTIALLY, &ss,
+                                  sizeof(TAction_ShadingSystem_Parameters),
+                                  ACTION_SUBJECT_TYPE_CHANNEL, 303),
+      0);
   iterateUntilDefaultTimeout();
 
   ASSERT_EQ(result.ResultCode, SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE);

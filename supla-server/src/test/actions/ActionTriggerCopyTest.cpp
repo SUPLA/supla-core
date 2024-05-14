@@ -109,7 +109,8 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 1);
-  EXPECT_EQ(aexec->getClosingPercentage(), 0);
+  ASSERT_TRUE(aexec->getShadingSystemParams() != nullptr);
+  EXPECT_EQ(aexec->getShadingSystemParams()->get_percentage(), 0);
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
@@ -129,7 +130,8 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   at->execute_actions(7, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 2);
-  EXPECT_EQ(aexec->getClosingPercentage(), 45);
+  ASSERT_TRUE(aexec->getShadingSystemParams() != nullptr);
+  EXPECT_EQ(aexec->getShadingSystemParams()->get_percentage(), 45);
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 7));
@@ -144,7 +146,8 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   EXPECT_EQ(property_getter->get_channel_id(), 68);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 3);
-  EXPECT_EQ(aexec->getClosingPercentage(), 80);
+  ASSERT_TRUE(aexec->getShadingSystemParams() != nullptr);
+  EXPECT_EQ(aexec->getShadingSystemParams()->get_percentage(), 80);
   EXPECT_EQ(property_getter->get_device_id(), 0);
   EXPECT_EQ(aexec->get_channel_id(), 455);
   EXPECT_EQ(aexec->get_group_id(), 0);

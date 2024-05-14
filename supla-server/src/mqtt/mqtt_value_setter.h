@@ -34,7 +34,8 @@ class supla_mqtt_value_setter : public supla_mqtt_abstract_value_setter {
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
   virtual void action_toggle(void);
-  virtual void action_shut(const char *closingPercentage);
+  virtual void action_shut(
+      const supla_action_shading_system_parameters *params);
   virtual void action_reveal(void);
   virtual void action_up(void);
   virtual void action_down(void);

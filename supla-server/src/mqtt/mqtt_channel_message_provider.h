@@ -72,8 +72,8 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   bool ha_rgb(int sub_id, bool set_sub_id, const char *topic_prefix,
               char **topic_name, void **message, size_t *message_size);
   bool ha_binary_sensor(const char *device_class, const char *topic_prefix,
-                        char **topic_name, void **message,
-                        size_t *message_size);
+                        char **topic_name, void **message, size_t *message_size,
+                        bool invert);
 
   bool ha_sensor(const char *unit, int precision, int sub_id, bool set_sub_id,
                  const char *state_topic, const char *name_if_empty,
@@ -91,8 +91,8 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
                size_t *message_size, const char *device_class);
   bool ha_door(const char *topic_prefix, char **topic_name, void **message,
                size_t *message_size);
-  bool ha_roller_shutter(const char *topic_prefix, char **topic_name,
-                         void **message, size_t *message_size);
+  bool ha_cover(const char *topic_prefix, char **topic_name,
+                         void **message, size_t *message_size, bool tilting);
   bool ha_impulse_counter(unsigned short index, const char *topic_prefix,
                           char **topic_name, void **message,
                           size_t *message_size, int func);

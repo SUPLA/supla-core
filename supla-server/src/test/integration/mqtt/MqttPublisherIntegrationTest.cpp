@@ -62,7 +62,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {
   waitForConnection();
-  waitForPublications(734);
+  waitForPublications(751);
   // print_expected();
 
   const char *expectedData[] = {
@@ -196,6 +196,20 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/12/soft_ver",
       "2.7.2",
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/enabled",
+      "true",
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/last_connected",
+      "2024-04-25T12:21:31Z",
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/last_ipv4",
+      "5.173.234.167",
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/manufacturer",
+      "Zamel",
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/name",
+      "ZAMEL mSRW-01",
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/proto_ver",
+      "23",
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/soft_ver",
+      "2.8.59",
       "supla/61b2f9bdb22d3bd6336bb235bcb1b77e/devices/14/enabled",
       "true",
       "supla/61b2f9bdb22d3bd6336bb235bcb1b77e/devices/14/last_connected",
@@ -647,6 +661,50 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       NULL,
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/12/channels/20/state/"
       "shut",
+      NULL,
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/channels/87235/"
+      "type",
+      "RELAY",
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/channels/87235/"
+      "function",
+      "CONTROLLINGTHEFACADEBLIND",
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/channels/87235/"
+      "caption",
+      NULL,
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/channels/87235/"
+      "hidden",
+      "false",
+      "homeassistant/cover/8ce92cb8c9f6db6b65703d2703691700/87235/config",
+      "{\"~\":\"supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/channels/"
+      "87235\",\"device\":{\"ids\":\"supla-iodevice-25691\",\"mf\":\"Zamel\","
+      "\"name\":\"ZAMEL mSRW-01\",\"sw\":\"2.8.59\"},\"name\":\"Facade blind "
+      "operation\",\"uniq_id\":\"supla_87235\",\"qos\":0,\"ret\":false,\"opt\":"
+      "false,\"cmd_t\":\"~/"
+      "execute_action\",\"dev_cla\":\"shutter\",\"pl_open\":\"REVEAL\",\"pl_"
+      "cls\":\"SHUT\",\"pl_stop\":\"STOP\",\"set_pos_t\":\"~/set/"
+      "closing_percentage\",\"pos_t\":\"~/state/"
+      "shut\",\"pos_open\":0,\"pos_clsd\":100,\"avty_t\":\"~/state/"
+      "connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\",\"pos_"
+      "tpl\":\"{% if int(value, default=0) <= 0 %}0{% elif value | int > 100 "
+      "%}100{% else %}{{value | int}}{% endif "
+      "%}\",\"tilt_cmd_t\":\"~/set/tilt\",\"tilt_status_t\":\"~/state/"
+      "tilt\",\"tilt_min\":100,\"tilt_max\":0,\"tilt_opnd_val\":0,\"tilt_clsd_"
+      "val\":100,\"tilt_status_tpl\":\"{% if int(value, default=0) <= 0 %}0{% "
+      "elif value | int > 100 %}100{% else %}{{value | int}}{% endif %}\"}",
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/channels/87235/"
+      "state/connected",
+      "false",
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/channels/87235/"
+      "state/hi",
+      NULL,
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/channels/87235/"
+      "state/is_calibrating",
+      NULL,
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/channels/87235/"
+      "state/shut",
+      NULL,
+      "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/channels/87235/"
+      "state/tilt",
       NULL,
       "supla/61b2f9bdb22d3bd6336bb235bcb1b77e/devices/14/channels/23/type",
       "THERMOMETERDS18B20",
@@ -1990,7 +2048,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "15039\",\"device\":{\"ids\":\"supla-iodevice-9236\",\"mf\":\"\","
       "\"name\":\"HOME\",\"sw\":\"1.6.1\"},\"name\":\"No liquid "
       "sensor\",\"uniq_id\":\"supla_15039\",\"qos\":0,\"stat_t\":\"~/state/"
-      "hi\",\"pl_on\":\"false\",\"pl_off\":\"true\"}",
+      "hi\",\"pl_on\":\"true\",\"pl_off\":\"false\"}",
       "supla/bd6287c398bc81403c643410f5043d4e/devices/9236/channels/15039/"
       "state/connected",
       "false",
@@ -2223,7 +2281,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "\"name\":\"SONOFF-gate-p5-DS18B20 "
       "by@Zybi\",\"sw\":\"2.0\"},\"name\":\"Mail "
       "sensor\",\"uniq_id\":\"supla_7212\",\"qos\":0,\"stat_t\":\"~/state/"
-      "hi\",\"pl_on\":\"false\",\"pl_off\":\"true\"}",
+      "hi\",\"pl_on\":\"true\",\"pl_off\":\"false\"}",
       "supla/4b2bb30d2db31cf5809ede445862f6d7/devices/5761/channels/7212/state/"
       "connected",
       "false",
@@ -2862,7 +2920,7 @@ TEST_F(MqttPublisherIntegrationTest, actionTrigger) {
   }
 
   waitForConnection();
-  waitForPublications(734);
+  waitForPublications(751);
   getLibAdapter()->published_clear();
 
   dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())

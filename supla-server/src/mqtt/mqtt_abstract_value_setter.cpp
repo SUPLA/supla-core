@@ -79,9 +79,14 @@ bool supla_mqtt_abstract_value_setter::parse_on(void) {
 
 bool supla_mqtt_abstract_value_setter::parse_perecntage(void) {
   bool closing_percentage = false;
+  bool tilt = false;
 
-  if (topic_name_size == 22 &&
-      memcmp(topic_name, "set/closing_percentage", topic_name_size) == 0) {
+  if (topic_name_size == 8 &&
+      memcmp(topic_name, "set/tilt", topic_name_size) == 0) {
+    tilt = true;
+  } else if (topic_name_size == 22 &&
+             memcmp(topic_name, "set/closing_percentage", topic_name_size) ==
+                 0) {
     closing_percentage = true;
   } else if (topic_name_size != 22 ||
              memcmp(topic_name, "set/opening_percentage", topic_name_size) !=
@@ -92,11 +97,19 @@ bool supla_mqtt_abstract_value_setter::parse_perecntage(void) {
   bool err = false;
   int _percent = str2int(message, message_size, &err);
   if (!err && _percent >= 0 && _percent <= 100) {
-    if (!closing_percentage) {
-      _percent = 100 - _percent;
+    supla_action_shading_system_parameters params;
+
+    if (tilt) {
+      params.set_tilt(_percent);
+      params.set_percentage(-1);
+    } else {
+      if (!closing_percentage) {
+        _percent = 100 - _percent;
+      }
+      params.set_percentage(_percent);
     }
-    char percent = _percent;
-    action_shut(&percent);
+
+    action_shut(&params);
   }
 
   return true;

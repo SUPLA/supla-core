@@ -106,6 +106,9 @@ bool supla_google_home_state_report_request::make_request(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       client.add_roller_shutter_state();
       break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      client.add_facade_blind_state();
+      break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       client.add_gate_state();
@@ -162,6 +165,7 @@ bool supla_google_home_state_report_request::is_function_allowed(int func) {
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:

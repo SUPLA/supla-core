@@ -35,8 +35,9 @@ class supla_action_cg_command : public supla_abstract_action_cg_command {
   virtual bool action_step_by_step(supla_user *user, int group_id);
   virtual bool action_copy(supla_user *user, int group_id, int source_device_id,
                            int source_channel_id);
-  virtual bool action_shut(supla_user *user, int group_id,
-                           const char *percentage, bool delta);
+  virtual bool action_shut(
+      supla_user *user, int group_id,
+      const supla_action_shading_system_parameters *params);
   virtual bool action_hvac_set_parameters(
       supla_user *user, int group_id,
       const supla_action_hvac_parameters *params);

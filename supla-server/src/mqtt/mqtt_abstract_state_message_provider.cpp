@@ -26,6 +26,7 @@
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
+#include "device/value/channel_fb_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
 #include "device/value/channel_general_purpose_base_value.h"
@@ -172,48 +173,86 @@ void supla_mqtt_abstract_state_message_provider::get_valve_closed(
   }
 }
 
-bool supla_mqtt_abstract_state_message_provider::get_rs_message_at_index(
-    unsigned short index, const char *topic_prefix, char **topic_name,
-    void **message, size_t *message_size) {
-  supla_channel_rs_value *rs_val = nullptr;
-
-  if (index >= 1 && index <= 3) {
-    rs_val = dynamic_cast<supla_channel_rs_value *>(channel_value);
-  }
-
+bool supla_mqtt_abstract_state_message_provider::
+    get_shading_system_message_at_index(unsigned short index,
+                                        const char *topic_prefix,
+                                        char **topic_name, void **message,
+                                        size_t *message_size, bool closed,
+                                        bool is_calibrating, int position) {
   char value[50];
   value[0] = 0;
 
   switch (index) {
     case 1:
-      return create_message(
-          topic_prefix, user_suid, topic_name, message, message_size,
-          rs_val && rs_val->get_opening_sensor_level() == rsl_closed ? "true"
-                                                                     : "false",
-          false, "devices/%i/channels/%i/state/hi", get_device_id(),
-          get_channel_id());
+      return create_message(topic_prefix, user_suid, topic_name, message,
+                            message_size, closed ? "true" : "false", false,
+                            "devices/%i/channels/%i/state/hi", get_device_id(),
+                            get_channel_id());
     case 2:
-      return create_message(
-          topic_prefix, user_suid, topic_name, message, message_size,
-          rs_val && rs_val->get_rs_value()->position == -1 ? "true" : "false",
-          false, "devices/%i/channels/%i/state/is_calibrating", get_device_id(),
-          get_channel_id());
-    case 3: {
-      short shut = rs_val ? rs_val->get_rs_value()->position : 0;
-      if (shut < 0) {
-        shut = 0;
-      } else if (shut > 100) {
-        shut = 100;
+      return create_message(topic_prefix, user_suid, topic_name, message,
+                            message_size, position == -1 ? "true" : "false",
+                            false,
+                            "devices/%i/channels/%i/state/is_calibrating",
+                            get_device_id(), get_channel_id());
+    case 3:
+    case 4: {
+      if (position < 0) {
+        position = 0;
+      } else if (position > 100) {
+        position = 100;
       }
-      snprintf(value, sizeof(value), "%i", shut);
+      snprintf(value, sizeof(value), "%i", position);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
-                            "devices/%i/channels/%i/state/shut",
-                            get_device_id(), get_channel_id());
+                            "devices/%i/channels/%i/state/%s", get_device_id(),
+                            get_channel_id(), index == 3 ? "shut" : "tilt");
     }
   }
 
   return false;
+}
+
+bool supla_mqtt_abstract_state_message_provider::get_rs_message_at_index(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  if (index < 1 || index > 3) {
+    return false;
+  }
+
+  supla_channel_rs_value *rs_val =
+      dynamic_cast<supla_channel_rs_value *>(channel_value);
+
+  if (rs_val) {
+    return get_shading_system_message_at_index(
+        index, topic_prefix, topic_name, message, message_size,
+        rs_val->get_opening_sensor_level() == rsl_closed,
+        rs_val->get_rs_value()->position == -1,
+        rs_val->get_rs_value()->position);
+  }
+
+  return get_shading_system_message_at_index(
+      index, topic_prefix, topic_name, message, message_size, false, false, 0);
+}
+
+bool supla_mqtt_abstract_state_message_provider::get_fb_message_at_index(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  if (index < 1 || index > 4) {
+    return false;
+  }
+
+  supla_channel_fb_value *fb_val =
+      dynamic_cast<supla_channel_fb_value *>(channel_value);
+
+  if (fb_val) {
+    return get_shading_system_message_at_index(
+        index, topic_prefix, topic_name, message, message_size,
+        fb_val->get_position() >= 100, fb_val->get_position() == -1,
+        index == 4 ? fb_val->get_tilt() : fb_val->get_position());
+  }
+
+  return get_shading_system_message_at_index(
+      index, topic_prefix, topic_name, message, message_size, false, false, 0);
 }
 
 bool supla_mqtt_abstract_state_message_provider::get_lck_message_at_index(
@@ -1097,7 +1136,15 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
   switch (channel_function) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+    case SUPLA_CHANNELFNC_CURTAIN:
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
       return get_rs_message_at_index(index, topic_prefix, topic_name, message,
+                                     message_size);
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+      return get_fb_message_at_index(index, topic_prefix, topic_name, message,
                                      message_size);
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
@@ -1151,6 +1198,7 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     case SUPLA_CHANNELFNC_MAILSENSOR:
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
     case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+    case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
       return get_sensor_message_at_index(index, topic_prefix, topic_name,
                                          message, message_size);
 

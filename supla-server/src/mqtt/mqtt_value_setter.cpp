@@ -86,10 +86,11 @@ void supla_mqtt_value_setter::action_toggle(void) {
   }
 }
 
-void supla_mqtt_value_setter::action_shut(const char *closingPercentage) {
+void supla_mqtt_value_setter::action_shut(
+    const supla_action_shading_system_parameters *params) {
   supla_action_executor *action = get_action_executor();
   if (action) {
-    action->shut(closingPercentage, false);
+    action->shut(params);
   }
 }
 

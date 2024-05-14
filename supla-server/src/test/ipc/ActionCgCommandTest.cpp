@@ -285,26 +285,44 @@ TEST_F(ActionCgCommandTest, badParams) {
 TEST_F(ActionCgCommandTest, ShutPartiallyWithDelta) {
   StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
   cmd = &c;
-  EXPECT_CALL(c, action_shut(user, 30, Pointee(Eq(50)), true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(c, action_shut(user, 30, NotNull()))
+      .WillOnce([](supla_user *user, int group_id,
+                   const supla_action_shading_system_parameters *params) {
+        EXPECT_EQ(params->get_percentage(), 50);
+        EXPECT_EQ(params->get_tilt(), 7);
+        EXPECT_EQ(params->get_flags(),
+                  SSP_FLAG_PERCENTAGE_AS_DELTA | SSP_FLAG_TILT_AS_DELTA);
+        return true;
+      });
 
-  commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,1\n", "OK:30\n");
+  commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,1,7,1\n", "OK:30\n");
 }
 
 TEST_F(ActionCgCommandTest, ShutPartiallyWithoutDelta) {
   StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
   cmd = &c;
-  EXPECT_CALL(c, action_shut(user, 30, Pointee(Eq(50)), false))
-      .WillOnce(Return(true));
+  EXPECT_CALL(c, action_shut(user, 30, NotNull()))
+      .WillOnce([](supla_user *user, int group_id,
+                   const supla_action_shading_system_parameters *params) {
+        EXPECT_EQ(params->get_percentage(), 50);
+        EXPECT_EQ(params->get_tilt(), 17);
+        EXPECT_EQ(params->get_flags(), 0);
+        return true;
+      });
 
-  commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,0\n", "OK:30\n");
+  commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,0,17,0\n",
+                        "OK:30\n");
 }
 
 TEST_F(ActionCgCommandTest, ShutPartiallyWithFilure) {
   StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SHUT_PARTIALLY);
   cmd = &c;
-  EXPECT_CALL(c, action_shut(user, 30, Pointee(Eq(50)), false))
-      .WillOnce(Return(false));
+  EXPECT_CALL(c, action_shut(user, 30, NotNull()))
+      .WillOnce([](supla_user *user, int group_id,
+                   const supla_action_shading_system_parameters *params) {
+        EXPECT_EQ(params->get_percentage(), 50);
+        return false;
+      });
 
   commandProcessingTest("ACTION-CG-SHUT-PARTIALLY:10,30,50,0\n", "FAIL:30\n");
 }

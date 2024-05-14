@@ -16,10 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "actions/abstract_action_executor.h"
+#include "abstract_action_executor.h"
 
 #include "actions/action_rgbw_parameters.h"
-#include "actions/action_rs_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 #include "converter/any_value_to_action_converter.h"
 
 using std::function;
@@ -174,9 +174,11 @@ void supla_abstract_action_executor::execute_action(
     case ACTION_CLOSE:
       close();
       break;
-    case ACTION_SHUT:
-      shut(NULL, false);
-      break;
+    case ACTION_SHUT: {
+      supla_action_shading_system_parameters params;
+      params.set_percentage(100);
+      shut(&params);
+    } break;
     case ACTION_REVEAL:
       reveal();
       break;
@@ -192,18 +194,17 @@ void supla_abstract_action_executor::execute_action(
     case ACTION_SHUT_PARTIALLY:
     case ACTION_REVEAL_PARTIALLY:
       if (params) {
-        supla_action_rs_parameters *rs =
-            dynamic_cast<supla_action_rs_parameters *>(params);
-        if (rs) {
-          char percentage = rs->get_percentage();
+        supla_action_shading_system_parameters *ssp =
+            dynamic_cast<supla_action_shading_system_parameters *>(params);
+        if (ssp) {
+          supla_action_shading_system_parameters _ssp = *ssp;
 
-          if (percentage > -1) {
-            if (action_id == ACTION_REVEAL_PARTIALLY) {
-              percentage = 100 - percentage;
-            }
-
-            shut(&percentage, rs->is_delta());
+          if (action_id == ACTION_REVEAL_PARTIALLY &&
+              _ssp.get_percentage() > -1 && _ssp.get_percentage() <= 100) {
+            _ssp.set_percentage(100 - _ssp.get_percentage());
           }
+
+          shut(&_ssp);
         }
       }
       break;

@@ -209,8 +209,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TChannelConfig_StaircaseTimer),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  EXPECT_EQ(sizeof(TChannelConfig_Rollershutter), 8);
-  EXPECT_LE(sizeof(TChannelConfig_Rollershutter),
+  EXPECT_EQ(sizeof(TChannelConfig_RollerShutter), 44);
+  EXPECT_LE(sizeof(TChannelConfig_RollerShutter),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
   EXPECT_EQ(sizeof(TChannelConfig_ActionTrigger), 4);
@@ -238,11 +238,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TCalCfg_RollerShutterSettings),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  EXPECT_EQ(static_cast<size_t>(13), sizeof(TCalCfg_FacadeBlindSettings));
-  EXPECT_LE(sizeof(TCalCfg_FacadeBlindSettings),
-            static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
-
-  EXPECT_EQ(static_cast<size_t>(13), sizeof(TChannelConfig_FacadeBlind));
+  EXPECT_EQ(static_cast<size_t>(53), sizeof(TChannelConfig_FacadeBlind));
   EXPECT_LE(sizeof(TChannelConfig_FacadeBlind),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 
@@ -268,10 +264,10 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)901, sizeof(TCS_ActionWithAuth));
   EXPECT_EQ((unsigned int)13, sizeof(TSC_ActionExecutionResult));
 
-  EXPECT_EQ((unsigned int)16, sizeof(TAction_RS_Parameters));
+  EXPECT_EQ((unsigned int)16, sizeof(TAction_ShadingSystem_Parameters));
   EXPECT_EQ((unsigned int)16, sizeof(TAction_RGBW_Parameters));
 
-  EXPECT_LE(sizeof(TAction_RS_Parameters),
+  EXPECT_LE(sizeof(TAction_ShadingSystem_Parameters),
             (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
   EXPECT_LE(sizeof(TAction_RGBW_Parameters),
             (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);

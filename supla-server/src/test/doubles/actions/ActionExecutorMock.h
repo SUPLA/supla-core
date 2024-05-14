@@ -64,14 +64,13 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   unsigned int color;
   char brightness;
   char color_brightness;
-  char closing_percentage;
   char rgbw_on_off;
-  bool delta;
   std::list<struct timeval> times;
   std::map<std::string, std::string> replacement_map;
   void addTime(void);
   supla_action_hvac_setpoint_temperature *temperature;
   supla_action_hvac_setpoint_temperatures *temperatures;
+  supla_action_shading_system_parameters *ss_params;
 
  public:
   ActionExecutorMock();
@@ -86,7 +85,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
                         char *brightness, char *on_off);
   virtual void toggle(void);
-  virtual void shut(const char *closingPercentage, bool delta);
+  virtual void shut(const supla_action_shading_system_parameters *params);
   virtual void reveal(void);
   virtual void up(void);
   virtual void down(void);
@@ -146,12 +145,11 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int getHvacSwitchToManualModeCounter(void);
   int getHvacSetTemperatureCounter(void);
   int getHvacSetTemperaturesCounter(void);
-  char getClosingPercentage(void);
+  const supla_action_shading_system_parameters *getShadingSystemParams(void);
   unsigned int getColor(void);
   char getBrightness(void);
   char getColorBrightness(void);
   char getRGBWOnOff(void);
-  bool getDelta(void);
   std::list<struct timeval> getTimes(void);
   supla_action_hvac_setpoint_temperature *getHvacSetpointTemperature(void);
   supla_action_hvac_setpoint_temperatures *getHvacSetpointTemperatures(void);

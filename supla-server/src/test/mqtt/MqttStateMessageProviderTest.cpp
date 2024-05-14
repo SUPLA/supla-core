@@ -23,6 +23,7 @@
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
+#include "device/value/channel_fb_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
 #include "device/value/channel_hp_thermostat_value.h"
@@ -184,6 +185,76 @@ TEST_F(MqttStateMessageProviderTest, rollerShutterDisconnected) {
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, NULL, false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
                               "456/channels/%i/state/shut",
+                              789));
+
+  ASSERT_FALSE(dataExists(&provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, facadeBlindConnected) {
+  TDSC_FacadeBlindValue fb = {};
+  fb.position = 90;
+  fb.tilt = 15;
+  SetResultValue(SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND, true,
+                 new supla_channel_fb_value(&fb));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      &provider, NULL, "false", false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/hi",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "false", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/is_calibrating",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "90", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/shut",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "15", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/tilt",
+                              789));
+
+  ASSERT_FALSE(dataExists(&provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, facadeBlindDisconnected) {
+  TDSC_FacadeBlindValue fb = {};
+  fb.position = -1;
+  fb.tilt = -1;
+  SetResultValue(SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND, false,
+                 new supla_channel_fb_value(&fb));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "false", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      &provider, NULL, NULL, false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/hi",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/is_calibrating",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/shut",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/tilt",
                               789));
 
   ASSERT_FALSE(dataExists(&provider));

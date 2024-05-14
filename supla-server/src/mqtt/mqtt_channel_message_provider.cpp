@@ -215,6 +215,24 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       snprintf(buf, buf_size, "CONTROLLINGTHEROOFWINDOW");
       break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      snprintf(buf, buf_size, "CONTROLLINGTHEFACADEBLIND");
+      break;
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+      snprintf(buf, buf_size, "TERRACE_AWNING");
+      break;
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+      snprintf(buf, buf_size, "PROJECTOR_SCREEN");
+      break;
+    case SUPLA_CHANNELFNC_CURTAIN:
+      snprintf(buf, buf_size, "CURTAIN");
+      break;
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+      snprintf(buf, buf_size, "VERTICAL_BLIND");
+      break;
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+      snprintf(buf, buf_size, "ROLLER_GARAGE_DOOR");
+      break;
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
       snprintf(buf, buf_size, "OPENINGSENSOR_ROLLERSHUTTER");
       break;
@@ -256,6 +274,9 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
       break;
     case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
       snprintf(buf, buf_size, "HOTELCARDSENSOR");
+      break;
+    case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
+      snprintf(buf, buf_size, "ALARMARMAMENTSENSOR");
       break;
     case SUPLA_CHANNELFNC_MAILSENSOR:
       snprintf(buf, buf_size, "MAILSENSOR");
@@ -404,6 +425,10 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "Roller shutter operation");
       break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Facade blind operation");
+      break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "Roof window operation");
@@ -415,6 +440,22 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "Roof window opening sensor");
+      break;
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Terrace awning");
+      break;
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Projector screen");
+      break;
+    case SUPLA_CHANNELFNC_CURTAIN:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Curtain");
+      break;
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Vertical blind");
+      break;
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Roller garage door");
       break;
     case SUPLA_CHANNELFNC_POWERSWITCH:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "On/Off switch");
@@ -453,6 +494,10 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
       break;
     case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Hotel card sensor");
+      break;
+    case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Alarm armament sensor");
       break;
     case SUPLA_CHANNELFNC_MAILSENSOR:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Mail sensor");
@@ -827,7 +872,7 @@ bool supla_mqtt_channel_message_provider::ha_rgb(int sub_id, bool set_sub_id,
 
 bool supla_mqtt_channel_message_provider::ha_binary_sensor(
     const char *device_class, const char *topic_prefix, char **topic_name,
-    void **message, size_t *message_size) {
+    void **message, size_t *message_size, bool invert) {
   // https://www.home-assistant.io/integrations/binary_sensor
 
   cJSON *root = ha_json_create_root(topic_prefix);
@@ -836,8 +881,15 @@ bool supla_mqtt_channel_message_provider::ha_binary_sensor(
   }
 
   ha_json_set_short_topic(root, "stat_t", "state/hi");
-  ha_json_set_string_param(root, "pl_on", "false");
-  ha_json_set_string_param(root, "pl_off", "true");
+
+  if (invert) {
+    ha_json_set_string_param(root, "pl_on", "true");
+    ha_json_set_string_param(root, "pl_off", "false");
+  } else {
+    ha_json_set_string_param(root, "pl_on", "false");
+    ha_json_set_string_param(root, "pl_off", "true");
+  }
+
   if (device_class) {
     ha_json_set_string_param(root, "device_class", device_class);
   }
@@ -964,9 +1016,11 @@ bool supla_mqtt_channel_message_provider::ha_door(const char *topic_prefix,
                         message_size);
 }
 
-bool supla_mqtt_channel_message_provider::ha_roller_shutter(
-    const char *topic_prefix, char **topic_name, void **message,
-    size_t *message_size) {
+bool supla_mqtt_channel_message_provider::ha_cover(const char *topic_prefix,
+                                                   char **topic_name,
+                                                   void **message,
+                                                   size_t *message_size,
+                                                   bool tilting) {
   // https://www.home-assistant.io/integrations/cover.mqtt
 
   cJSON *root = ha_json_create_root(topic_prefix, NULL, NULL, false);
@@ -996,6 +1050,22 @@ bool supla_mqtt_channel_message_provider::ha_roller_shutter(
       root, "pos_tpl",
       "{% if int(value, default=0) <= 0 %}0{% elif value | int > 100 "
       "%}100{% else %}{{value | int}}{% endif %}");
+
+  if (tilting) {
+    ha_json_set_short_topic(root, "tilt_cmd_t", "set/tilt");
+    ha_json_set_short_topic(root, "tilt_status_t", "state/tilt");
+
+    ha_json_set_int_param(root, "tilt_min", 100);
+    ha_json_set_int_param(root, "tilt_max", 0);
+
+    ha_json_set_int_param(root, "tilt_opnd_val", 0);
+    ha_json_set_int_param(root, "tilt_clsd_val", 100);
+
+    ha_json_set_string_param(
+        root, "tilt_status_tpl",
+        "{% if int(value, default=0) <= 0 %}0{% elif value | int > 100 "
+        "%}100{% else %}{{value | int}}{% endif %}");
+  }
 
   return ha_get_message(root, "cover", 0, false, topic_name, message,
                         message_size);
@@ -1668,7 +1738,10 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
       return ha_door(topic_prefix, topic_name, message, message_size);
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      return ha_roller_shutter(topic_prefix, topic_name, message, message_size);
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      return ha_cover(
+          topic_prefix, topic_name, message, message_size,
+          row->channel_func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND);
     case SUPLA_CHANNELFNC_THERMOMETER:
       return ha_sensor_temperature(0, false, topic_prefix, topic_name, message,
                                    message_size);
@@ -1690,23 +1763,24 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
     case SUPLA_CHANNELFNC_MAILSENSOR:
     case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+    case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
       return ha_binary_sensor(NULL, topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, true);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
       return ha_binary_sensor("opening", topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, false);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
       return ha_binary_sensor("garage_door", topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, false);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
       return ha_binary_sensor("door", topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, false);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       return ha_binary_sensor("window", topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, false);
     case SUPLA_CHANNELFNC_POWERSWITCH:
       return ha_light_or_powerswitch(false, topic_prefix, topic_name, message,
                                      message_size);

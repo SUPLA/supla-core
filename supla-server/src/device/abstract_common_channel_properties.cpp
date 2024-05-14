@@ -25,9 +25,11 @@
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/alt_weekly_schedule_config.h"
 #include "jsonconfig/channel/binary_sensor_config.h"
+#include "jsonconfig/channel/facade_blind_config.h"
 #include "jsonconfig/channel/general_purpose_measurement_config.h"
 #include "jsonconfig/channel/general_purpose_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "jsonconfig/channel/roller_shutter_config.h"
 #include "jsonconfig/channel/temp_hum_config.h"
 #include "proto.h"
 
@@ -375,13 +377,20 @@ void supla_abstract_common_channel_properties::get_config(
     } break;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW: {
-      *config_size = sizeof(TChannelConfig_Rollershutter);
-      TChannelConfig_Rollershutter *cfg =
-          (TChannelConfig_Rollershutter *)config;
-      cfg->OpeningTimeMS = get_param1() * 100;
-      cfg->ClosingTimeMS = get_param3() * 100;
-    } break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+    case SUPLA_CHANNELFNC_CURTAIN:
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+      JSON_TO_CONFIG(roller_shutter_config, TChannelConfig_RollerShutter,
+                     config, config_size);
+      break;
+
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+      JSON_TO_CONFIG(facade_blind_config, TChannelConfig_FacadeBlind, config,
+                     config_size);
+      break;
 
     case SUPLA_CHANNELFNC_ACTIONTRIGGER: {
       *config_size = sizeof(TChannelConfig_ActionTrigger);
@@ -464,6 +473,20 @@ int supla_abstract_common_channel_properties::set_user_config(
     json_config = new general_purpose_meter_config();
     static_cast<general_purpose_meter_config *>(json_config)
         ->set_config((TChannelConfig_GeneralPurposeMeter *)config);
+  } else if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER ||
+             func == SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW ||
+             func == SUPLA_CHANNELFNC_TERRACE_AWNING ||
+             func == SUPLA_CHANNELFNC_PROJECTOR_SCREEN ||
+             func == SUPLA_CHANNELFNC_CURTAIN ||
+             func == SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR) {
+    json_config = new roller_shutter_config();
+    static_cast<roller_shutter_config *>(json_config)
+        ->set_config((TChannelConfig_RollerShutter *)config);
+  } else if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND ||
+             func == SUPLA_CHANNELFNC_VERTICAL_BLIND) {
+    json_config = new facade_blind_config();
+    static_cast<facade_blind_config *>(json_config)
+        ->set_config((TChannelConfig_FacadeBlind *)config);
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }

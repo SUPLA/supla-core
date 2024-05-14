@@ -21,6 +21,7 @@
 #include "amazon/alexa_change_report_search_condition.h"
 #include "amazon/alexa_change_report_throttling.h"
 #include "amazon/alexa_client.h"
+#include "amazon/alexa_response_request.h"
 #include "amazon/alexa_response_search_condition.h"
 #include "device/channel_property_getter.h"
 #include "device/value/channel_hvac_value_with_temphum.h"
@@ -99,6 +100,7 @@ bool supla_alexa_change_report_request::make_request(
       client.add_contact_sensor();
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
       client.add_range_controller();
       client.add_percentage_controller();
       break;
@@ -158,6 +160,7 @@ bool supla_alexa_change_report_request::is_function_allowed(int func) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
     case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
@@ -232,9 +235,10 @@ void supla_alexa_change_report_request::new_request(const supla_caller &caller,
   request->start();
 
   supla_alexa_response_search_condition rcnd(user->getUserID(), device_id,
-                                             channel_id);
+                                             channel_id, true);
   supla_asynctask_queue::global_instance()->access_task(
       &rcnd, [delay_time_usec](supla_abstract_asynctask *task) -> void {
         task->set_delay_usec(delay_time_usec + 100000);
+        dynamic_cast<supla_alexa_response_request *>(task)->mark_as_postponed();
       });
 }

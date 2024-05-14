@@ -20,7 +20,7 @@
 
 #include <string>
 
-#include "actions/action_rs_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 #include "doubles/actions/ActionExecutorMock.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "vbt/value_based_trigger.h"
@@ -124,8 +124,8 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   main_ac.set_subject_id(3);
   main_ac.set_source_device_id(4);
   main_ac.set_source_channel_id(5);
-  supla_action_rs_parameters rs(6);
-  main_ac.set_parameters(&rs);
+  supla_action_shading_system_parameters ss(6, -1, false);
+  main_ac.set_parameters(&ss);
 
   supla_value_based_trigger main(
       5, 10, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
@@ -179,8 +179,8 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
         5, 10, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
 
     supla_action_config ac(&main_ac);
-    rs.set_percentage(50);
-    ac.set_parameters(&rs);
+    ss.set_percentage(50);
+    ac.set_parameters(&ss);
     supla_value_based_trigger t2(5, 10, ac, "{\"on_change_to\":{\"eq\":1}}",
                                  supla_active_period());
 

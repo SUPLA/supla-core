@@ -44,7 +44,6 @@ class supla_state_webhook_client {
   bool report_with_number(const char *function, const char *name);
   bool on_report(const char *function);
   bool hi_report(const char *function);
-  bool shut_report(const char *function);
   bool temperature_and_humidity_report(const char *function, bool temperature,
                                        bool humidity);
   bool dimmer_and_rgb_report(const char *function, bool rgb, bool white);
@@ -77,8 +76,7 @@ class supla_state_webhook_client {
   bool window_opening_sensor_report(void);
   bool hotel_card_sensor_report(void);
   bool mail_sensor_report(void);
-  bool roller_shutter_report(void);
-  bool roof_window_report(void);
+  bool shut_report(const char *function);
   bool wind_sensor_report();
   bool pressure_sensor_report();
   bool rain_sensor_report();

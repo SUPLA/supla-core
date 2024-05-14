@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "integration/vbt/ValueBasedTriggerIntegrationTest.h"
+#include "ValueBasedTriggerIntegrationTest.h"
 
 #include <memory>
 #include <string>
 
-#include "actions/action_rs_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "doubles/actions/ActionExecutorMock.h"
@@ -170,16 +170,17 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
     EXPECT_EQ(t->get_action_config().get_subject_type(), stChannel);
     EXPECT_EQ(t->get_action_config().get_subject_id(), 173);
     EXPECT_EQ(t->get_action_config().get_action_id(), ACTION_SHUT_PARTIALLY);
-    TAction_RS_Parameters rs = {};
+    TAction_ShadingSystem_Parameters ss = {};
     supla_abstract_action_parameters *params =
         t->get_action_config().get_parameters();
     if (params) {
-      if (dynamic_cast<supla_action_rs_parameters *>(params)) {
-        rs = dynamic_cast<supla_action_rs_parameters *>(params)->get_rs();
+      if (dynamic_cast<supla_action_shading_system_parameters *>(params)) {
+        ss = dynamic_cast<supla_action_shading_system_parameters *>(params)
+                 ->get_params();
       }
       delete params;
     }
-    EXPECT_EQ(rs.Percentage, 45);
+    EXPECT_EQ(ss.Percentage, 45);
     EXPECT_EQ(t->get_on_change_cnd().get_op(), op_eq);
     EXPECT_EQ(t->get_on_change_cnd().get_value(), 1);
   }

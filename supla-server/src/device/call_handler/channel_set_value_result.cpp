@@ -97,6 +97,24 @@ void supla_ch_channel_set_value_result::handle_call(
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
           event.Event = SUPLA_EVENT_CONTROLLINGTHEROOFWINDOW;
           break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEFACADEBLIND;
+          break;
+        case SUPLA_CHANNELFNC_TERRACE_AWNING:
+          event.Event = SUPLA_EVENT_TERRACE_AWNING;
+          break;
+        case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+          event.Event = SUPLA_EVENT_PROJECTOR_SCREEN;
+          break;
+        case SUPLA_CHANNELFNC_CURTAIN:
+          event.Event = SUPLA_EVENT_CURTAIN;
+          break;
+        case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+          event.Event = SUPLA_EVENT_VERTICAL_BLIND;
+          break;
+        case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+          event.Event = SUPLA_EVENT_ROLLER_GARAGE_DOOR;
+          break;
         case SUPLA_CHANNELFNC_POWERSWITCH:
           event.Event = SUPLA_EVENT_POWERONOFF;
           break;

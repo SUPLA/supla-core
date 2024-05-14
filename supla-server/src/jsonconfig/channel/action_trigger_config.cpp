@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "jsonconfig/channel/action_trigger_config.h"
+#include "action_trigger_config.h"
 
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
 #include "actions/action_rgbw_parameters.h"
-#include "actions/action_rs_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 #include "proto.h"
 #include "tools.h"
 
@@ -381,15 +381,17 @@ supla_abstract_action_parameters *action_trigger_config::get_parameters(
   return result;
 }
 
-supla_abstract_action_parameters *action_trigger_config::get_rs(void) {
+supla_abstract_action_parameters *action_trigger_config::get_shading_system(
+    void) {
   return action_trigger_config::get_parameters(
       [](cJSON *param) -> supla_abstract_action_parameters * {
-        cJSON *percentage = cJSON_GetObjectItem(param, "percentage");
-        if (percentage && cJSON_IsNumber(percentage) &&
-            percentage->valueint >= 0 && percentage->valueint <= 100) {
-          return new supla_action_rs_parameters(percentage->valueint);
+        supla_action_shading_system_parameters *result =
+            new supla_action_shading_system_parameters(param);
+        if (!result->is_any_param_set()) {
+          delete result;
+          result = nullptr;
         }
-        return nullptr;
+        return result;
       });
 }
 
@@ -482,7 +484,7 @@ supla_abstract_action_parameters *action_trigger_config::get_temperatures(
 }
 
 supla_abstract_action_parameters *action_trigger_config::get_parameters(void) {
-  supla_abstract_action_parameters *result = get_rs();
+  supla_abstract_action_parameters *result = get_shading_system();
   if (!result) {
     result = get_rgbw();
   }

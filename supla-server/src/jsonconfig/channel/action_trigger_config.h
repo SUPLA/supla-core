@@ -61,7 +61,7 @@ class action_trigger_config : public abstract_action_config,
   int get_source_id(const char *key);
   int active_cap;
   int channel_id_if_subject_not_set;
-  supla_abstract_action_parameters *get_rs(void);
+  supla_abstract_action_parameters *get_shading_system(void);
   supla_abstract_action_parameters *get_rgbw(void);
   supla_abstract_action_parameters *get_temperature(void);
   supla_abstract_action_parameters *get_temperatures(void);

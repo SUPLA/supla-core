@@ -37,6 +37,7 @@ class binary_sensor_config : public supla_json_config {
   bool get_config(TChannelConfig_BinarySensor *config);
 
   bool is_logic_inverted(void);
+  int get_filtering_time_ms(void);
 };
 
 #endif /* BINARY_SENSOR_CONFIG_H_ */

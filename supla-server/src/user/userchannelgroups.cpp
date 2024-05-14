@@ -211,16 +211,15 @@ bool supla_user_channelgroups::action_toggle(const supla_caller &caller,
       });
 }
 
-bool supla_user_channelgroups::action_shut(const supla_caller &caller,
-                                           int GroupID,
-                                           const char *closing_percentage,
-                                           bool delta) {
+bool supla_user_channelgroups::action_shut(
+    const supla_caller &caller, int GroupID,
+    const supla_action_shading_system_parameters *params) {
   return for_each_channel(
       GroupID,
-      [caller, GroupID, closing_percentage, delta](
-          supla_device *device, int channelId, char EOL) -> bool {
-        return device->get_channels()->action_shut(
-            caller, channelId, GroupID, EOL, closing_percentage, delta);
+      [caller, GroupID, params](supla_device *device, int channelId,
+                                char EOL) -> bool {
+        return device->get_channels()->action_shut(caller, channelId, GroupID,
+                                                   EOL, params);
       });
 }
 

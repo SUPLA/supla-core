@@ -22,6 +22,7 @@
 
 #include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_thermostat_extended_value.h"
+#include "device/value/channel_fb_value.h"
 #include "device/value/channel_hp_thermostat_value.h"
 #include "device/value/channel_hvac_value.h"
 #include "device/value/channel_onoff_value.h"
@@ -80,11 +81,6 @@ void GoogleHomeStateReportRequestTest::TearDown(void) {
   if (tokenProvider) {
     delete tokenProvider;
     tokenProvider = nullptr;
-  }
-
-  if (tokenProviderCurlAdapter) {
-    delete tokenProviderCurlAdapter;
-    tokenProviderCurlAdapter = nullptr;
   }
 
   AsyncTaskTest::TearDown();
@@ -307,6 +303,34 @@ TEST_F(GoogleHomeStateReportRequestTest, rollershutter_80) {
 
   makeTest(SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER, true,
            new supla_channel_rs_value(&rs), expectedPayload, "REQID", false);
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, facadeblind_Disconnected) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\",\"agentUserId\":"
+      "\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{\"qwerty-10\":{"
+      "\"online\":false,\"openPercent\":100,\"rotationPercent\":100}}}}}";
+
+  TDSC_FacadeBlindValue fb = {};
+  fb.position = 56;
+  fb.tilt = 14;
+
+  makeTest(SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND, false,
+           new supla_channel_fb_value(&fb), expectedPayload);
+}
+
+TEST_F(GoogleHomeStateReportRequestTest, facadeblind_Connected) {
+  const char expectedPayload[] =
+      "{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\",\"payload\":{"
+      "\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,\"openPercent\":"
+      "44,\"rotationPercent\":86}}}}}";
+
+  TDSC_FacadeBlindValue fb = {};
+  fb.position = 56;
+  fb.tilt = 14;
+
+  makeTest(SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND, true,
+           new supla_channel_fb_value(&fb), expectedPayload, "REQID", false);
 }
 
 void GoogleHomeStateReportRequestTest::makeHvacThermostatTest(

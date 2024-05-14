@@ -35,6 +35,7 @@
 #include "device/value/channel_valve_value.h"
 #include "jsonconfig/channel/controlling_the_gate_config.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "jsonconfig/channel/roller_shutter_config.h"
 #include "log.h"
 
 using std::function;
@@ -303,13 +304,30 @@ bool supla_device_channels::recalibrate(int channel_id,
     request.SenderID = caller.convert_to_sender_id();
     request.SuperUserAuthorized = superuser_authorized;
 
-    TCalCfg_RollerShutterSettings *settings =
-        (TCalCfg_RollerShutterSettings *)request.Data;
-    request.DataSize = sizeof(TCalCfg_RollerShutterSettings);
-    request.DataType = SUPLA_CALCFG_DATATYPE_RS_SETTINGS;
+    int func = channel->get_func();
 
-    settings->FullOpeningTimeMS = channel->get_param1() * 100;
-    settings->FullClosingTimeMS = channel->get_param3() * 100;
+    if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER ||
+        func == SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW ||
+        func == SUPLA_CHANNELFNC_TERRACE_AWNING ||
+        func == SUPLA_CHANNELFNC_PROJECTOR_SCREEN ||
+        func == SUPLA_CHANNELFNC_CURTAIN ||
+        func == SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR) {
+      TCalCfg_RollerShutterSettings *settings =
+          (TCalCfg_RollerShutterSettings *)request.Data;
+
+      request.DataSize = sizeof(TCalCfg_RollerShutterSettings);
+      request.DataType = SUPLA_CALCFG_DATATYPE_RS_SETTINGS;
+
+      supla_json_config *config = channel->get_json_config();
+      if (config) {
+        roller_shutter_config rs_cfg(config);
+        TChannelConfig_RollerShutter raw_cfg = {};
+        rs_cfg.get_config(&raw_cfg);
+        settings->FullOpeningTimeMS = raw_cfg.OpeningTimeMS;
+        settings->FullClosingTimeMS = raw_cfg.ClosingTimeMS;
+        delete config;
+      }
+    }
 
     srpc_sd_async_device_calcfg_request(get_srpc(), &request);
     return true;
@@ -980,152 +998,99 @@ bool supla_device_channels::action_toggle(const supla_caller &caller,
   return set_on(caller, channel_id, group_id, eol, false, true);
 }
 
-bool supla_device_channels::rs_action(const supla_caller &caller,
-                                      int channel_id, int group_id,
-                                      unsigned char eol, rsAction action,
-                                      const char *closing_percentage,
-                                      bool delta) {
+bool supla_device_channels::shading_system_action(
+    const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
+    int action, const supla_action_shading_system_parameters *params) {
   bool result = false;
+
+  if (!params) {
+    return result;
+  }
+
   access_channel(
       channel_id,
-      [&result, this, caller, group_id, eol, action, closing_percentage,
-       delta](supla_device_channel *channel) -> void {
-        char v = -1;
+      [&result, this, caller, group_id, eol, action,
+       params](supla_device_channel *channel) -> void {
+        char value[SUPLA_CHANNELVALUE_SIZE] = {};
+        channel->get_value(value);
 
-        switch (channel->get_func()) {
-          case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-          case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-
-            switch (action) {
-              case rsActionStop:
-                v = 0;
-                break;
-              case rsActionDown:
-                v = 1;
-                break;
-              case rsActionUp:
-                v = 2;
-                break;
-              case rsActionDownOrStop:
-                if (channel->get_flags() &
-                    SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
-                  v = 3;
-                }
-                break;
-              case rsActionUpOrStop:
-                if (channel->get_flags() &
-                    SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
-                  v = 4;
-                }
-                break;
-              case rsActionStepByStep:
-                if (channel->get_flags() &
-                    SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
-                  v = 5;
-                }
-                break;
-              case rsActionShut:
-                if (closing_percentage) {
-                  int percentage = *closing_percentage;
-
-                  if (delta) {
-                    char current = 0;
-                    channel->get_char(&current);
-                    if (current > 100) {
-                      current = 100;
-                    } else if (current < 0) {
-                      current = 0;
-                    }
-
-                    if (*closing_percentage + current > 100) {
-                      percentage = 100;
-                    } else if (*closing_percentage + current < 0) {
-                      percentage = 0;
-                    }
-                  }
-
-                  if (percentage > 100) {
-                    v = 110;
-                  } else if (percentage < 0) {
-                    v = 10;
-                  } else {
-                    v = percentage + 10;
-                  }
-                } else {
-                  v = 110;
-                }
-                break;
-              case rsActionReveal:
-                v = 10;
-                break;
-            }
-            if (v >= 0 && v <= 110) {
-              result = set_device_channel_char_value(caller, channel, group_id,
-                                                     eol, v);
-            }
-            break;
+        if (params->apply_on_value(action, value, channel->get_func(),
+                                   channel->get_flags())) {
+          async_set_channel_value(channel, caller, group_id, eol, value, true);
+          result = true;
         }
       });
 
   return result;
 }
 
-bool supla_device_channels::action_shut(const supla_caller &caller,
-                                        int channel_id, int group_id,
-                                        unsigned char eol,
-                                        const char *closing_percentage,
-                                        bool delta) {
-  return rs_action(caller, channel_id, group_id, eol, rsActionShut,
-                   closing_percentage, delta);
+bool supla_device_channels::shading_system_action(const supla_caller &caller,
+                                                  int channel_id, int group_id,
+                                                  unsigned char eol,
+                                                  int action) {
+  supla_action_shading_system_parameters params;
+  return shading_system_action(caller, channel_id, group_id, eol, action,
+                               &params);
+}
+
+bool supla_device_channels::action_shut(
+    const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
+    const supla_action_shading_system_parameters *params) {
+  supla_action_shading_system_parameters _params;
+  _params.set_percentage(100);
+
+  if (params == nullptr) {
+    params = &_params;
+  }
+
+  return shading_system_action(caller, channel_id, group_id, eol, ACTION_SHUT,
+                               params);
 }
 
 bool supla_device_channels::action_reveal(const supla_caller &caller,
                                           int channel_id, int group_id,
                                           unsigned char eol) {
-  return rs_action(caller, channel_id, group_id, eol, rsActionReveal, nullptr,
-                   false);
+  return shading_system_action(caller, channel_id, group_id, eol,
+                               ACTION_REVEAL);
 }
 
 bool supla_device_channels::action_stop(const supla_caller &caller,
                                         int channel_id, int group_id,
                                         unsigned char eol) {
-  return rs_action(caller, channel_id, group_id, eol, rsActionStop, nullptr,
-                   false);
+  return shading_system_action(caller, channel_id, group_id, eol, ACTION_STOP);
 }
 
 bool supla_device_channels::action_up(const supla_caller &caller,
                                       int channel_id, int group_id,
                                       unsigned char eol) {
-  return rs_action(caller, channel_id, group_id, eol, rsActionUp, nullptr,
-                   false);
+  return shading_system_action(caller, channel_id, group_id, eol, ACTION_UP);
 }
 
 bool supla_device_channels::action_down(const supla_caller &caller,
                                         int channel_id, int group_id,
                                         unsigned char eol) {
-  return rs_action(caller, channel_id, group_id, eol, rsActionDown, nullptr,
-                   false);
+  return shading_system_action(caller, channel_id, group_id, eol, ACTION_DOWN);
 }
 
 bool supla_device_channels::action_up_or_stop(const supla_caller &caller,
                                               int channel_id, int group_id,
                                               unsigned char eol) {
-  return rs_action(caller, channel_id, group_id, eol, rsActionUpOrStop, nullptr,
-                   false);
+  return shading_system_action(caller, channel_id, group_id, eol,
+                               ACTION_UP_OR_STOP);
 }
 
 bool supla_device_channels::action_down_or_stop(const supla_caller &caller,
                                                 int channel_id, int group_id,
                                                 unsigned char eol) {
-  return rs_action(caller, channel_id, group_id, eol, rsActionDownOrStop,
-                   nullptr, false);
+  return shading_system_action(caller, channel_id, group_id, eol,
+                               ACTION_DOWN_OR_STOP);
 }
 
 bool supla_device_channels::action_step_by_step(const supla_caller &caller,
                                                 int channel_id, int group_id,
                                                 unsigned char eol) {
-  return rs_action(caller, channel_id, group_id, eol, rsActionStepByStep,
-                   nullptr, false);
+  return shading_system_action(caller, channel_id, group_id, eol,
+                               ACTION_STEP_BY_STEP);
 }
 
 bool supla_device_channels::action_open_close(const supla_caller &caller,
@@ -1265,7 +1230,8 @@ bool supla_device_channels::action_hvac_set_parameters(
             if (th) {
               supla_channel_hp_thermostat_ev_decorator decorator(th);
               if (decorator.get_state_flags() & HP_STATUS_PROGRAMMODE) {
-                // When setting the temperature, force switching to manual mode.
+                // When setting the temperature, force switching to manual
+                // mode.
                 req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
                 req->Data[0] = 0;  // Do not force the power on
                 req->DataSize = 1;
