@@ -60,8 +60,8 @@ class supla_device_dao : public supla_abstract_device_dao {
                                     int *original_location_id, int *location_id,
                                     bool *location_enabled, int *flags);
 
-  virtual int get_channel_id_and_type(int device_id, int channel_number,
-                                      int *type);
+  virtual int get_channel_properties(int device_id, int channel_number,
+                                     int *type, int *flist);
 
   virtual int get_device_channel_count(int device_id);
 
@@ -109,6 +109,9 @@ class supla_device_dao : public supla_abstract_device_dao {
 
   virtual void update_channel_extended_value(int channel_id, int user_id,
                                              supla_channel_extended_value *ev);
+
+  virtual void update_channel_functions(int channel_id, int user_id, int flist);
+
   virtual supla_json_config *get_channel_config(int channel_id,
                                                 std::string *user_config_md5sum,
                                                 std::string *properties_md5sum);
