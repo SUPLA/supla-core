@@ -529,16 +529,16 @@ TEST_F(RegisterDeviceEssentialTest, channelTypeChanged) {
 
   EXPECT_CALL(dao, get_device_channel_count(55)).Times(0);
 
-  EXPECT_CALL(dao, get_channel_id_and_type(55, 0, NotNull()))
+  EXPECT_CALL(dao, get_channel_properties(55, 0, NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([](int device_id, int channel_number, int *type) {
+      .WillOnce([](int device_id, int channel_number, int *type, int *flist) {
         *type = SUPLA_CHANNELTYPE_RELAY;
         return 1;
       });
 
-  EXPECT_CALL(dao, get_channel_id_and_type(55, 1, NotNull()))
+  EXPECT_CALL(dao, get_channel_properties(55, 1, NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([](int device_id, int channel_number, int *type) {
+      .WillOnce([](int device_id, int channel_number, int *type, int *flist) {
         *type = SUPLA_CHANNELTYPE_RELAY;
         return 2;
       });
@@ -711,6 +711,7 @@ TEST_F(RegisterDeviceEssentialTest,
   TDS_SuplaRegisterDevice_F register_device_f = {};
   register_device_f.channel_count = 2;
   register_device_f.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+  register_device_f.channels[0].FuncList = 0x2;
   register_device_f.channels[1].Number = 1;
   register_device_f.channels[1].Type = SUPLA_CHANNELTYPE_DIMMER;
 
@@ -764,17 +765,19 @@ TEST_F(RegisterDeviceEssentialTest,
 
   EXPECT_CALL(dao, get_device_channel_count(55)).Times(1).WillOnce(Return(2));
 
-  EXPECT_CALL(dao, get_channel_id_and_type(55, 0, NotNull()))
+  EXPECT_CALL(dao, get_channel_properties(55, 0, NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([](int device_id, int channel_number, int *type) {
+      .WillOnce([](int device_id, int channel_number, int *type, int *flist) {
         *type = SUPLA_CHANNELTYPE_RELAY;
+        *flist = 0x1;
         return 1;
       });
 
-  EXPECT_CALL(dao, get_channel_id_and_type(55, 1, NotNull()))
+  EXPECT_CALL(dao, get_channel_properties(55, 1, NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([](int device_id, int channel_number, int *type) {
+      .WillOnce([](int device_id, int channel_number, int *type, int *flist) {
         *type = SUPLA_CHANNELTYPE_DIMMER;
+        *flist = 0x1 | 0x2 | 0x4;
         return 2;
       });
 
@@ -783,6 +786,8 @@ TEST_F(RegisterDeviceEssentialTest,
                                  StrEq("22.09"), SUPLA_PROTO_VERSION, 778899))
       .Times(1)
       .WillOnce(Return(true));
+
+  EXPECT_CALL(dao, update_channel_functions(1, 25, 0x1 | 0x2)).Times(1);
 
   EXPECT_CALL(rd, on_registration_success).Times(1);
   EXPECT_CALL(rd, is_prev_entering_cfg_mode).Times(0);
@@ -863,16 +868,16 @@ TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
 
   EXPECT_CALL(dao, get_device_channel_count(55)).Times(1).WillOnce(Return(2));
 
-  EXPECT_CALL(dao, get_channel_id_and_type(55, 0, NotNull()))
+  EXPECT_CALL(dao, get_channel_properties(55, 0, NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([](int device_id, int channel_number, int *type) {
+      .WillOnce([](int device_id, int channel_number, int *type, int *flist) {
         *type = SUPLA_CHANNELTYPE_RELAY;
         return 1;
       });
 
-  EXPECT_CALL(dao, get_channel_id_and_type(55, 1, NotNull()))
+  EXPECT_CALL(dao, get_channel_properties(55, 1, NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([](int device_id, int channel_number, int *type) {
+      .WillOnce([](int device_id, int channel_number, int *type, int *flist) {
         *type = 0;
         return 0;
       });
@@ -968,16 +973,16 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddChannel) {
 
   EXPECT_CALL(dao, get_device_channel_count).Times(0);
 
-  EXPECT_CALL(dao, get_channel_id_and_type(55, 0, NotNull()))
+  EXPECT_CALL(dao, get_channel_properties(55, 0, NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([](int device_id, int channel_number, int *type) {
+      .WillOnce([](int device_id, int channel_number, int *type, int *flist) {
         *type = SUPLA_CHANNELTYPE_RELAY;
         return 1;
       });
 
-  EXPECT_CALL(dao, get_channel_id_and_type(55, 1, NotNull()))
+  EXPECT_CALL(dao, get_channel_properties(55, 1, NotNull(), NotNull()))
       .Times(1)
-      .WillOnce([](int device_id, int channel_number, int *type) {
+      .WillOnce([](int device_id, int channel_number, int *type, int *flist) {
         *type = 0;
         return 0;
       });
@@ -1065,9 +1070,9 @@ TEST_F(RegisterDeviceEssentialTest, addDeviceAndChannels) {
 
   EXPECT_CALL(dao, add_device(25)).Times(1).WillOnce(Return(55));
 
-  EXPECT_CALL(dao, get_channel_id_and_type(55, _, NotNull()))
+  EXPECT_CALL(dao, get_channel_properties(55, _, NotNull(), NotNull()))
       .Times(2)
-      .WillOnce([](int device_id, int channel_number, int *type) {
+      .WillOnce([](int device_id, int channel_number, int *type, int *flist) {
         *type = 0;
         return 0;
       });

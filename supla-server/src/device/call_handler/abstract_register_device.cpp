@@ -210,7 +210,6 @@ bool supla_abstract_register_device::add_device(void) {
 
 bool supla_abstract_register_device::add_channels(void) {
   int processed_count = 0;
-  int channel_type = 0;
 
   TDS_SuplaDeviceChannel_B *dev_channels_b = get_channels_b();
   TDS_SuplaDeviceChannel_D *dev_channels_d = get_channels_d();
@@ -224,9 +223,12 @@ bool supla_abstract_register_device::add_channels(void) {
       unsigned char number = 0;
       _supla_int_t type = 0;
       _supla_int_t func_list = 0;
+      _supla_int_t db_func_list = 0;
       _supla_int_t default_func = 0;
       _supla_int64_t channel_flags = 0;
       unsigned char alt_icon = 0;
+      int db_channel_type = 0;
+      int channel_id = 0;
 
       if (dev_channels_b != nullptr) {
         number = dev_channels_b[a].Number;
@@ -246,9 +248,9 @@ bool supla_abstract_register_device::add_channels(void) {
         break;
       }
 
-      if (device_dao->get_channel_id_and_type(device_id, number,
-                                              &channel_type) == 0) {
-        channel_type = 0;
+      if ((channel_id = device_dao->get_channel_properties(
+               device_id, number, &db_channel_type, &db_func_list)) == 0) {
+        db_channel_type = 0;
       }
 
       if (type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
@@ -257,16 +259,17 @@ bool supla_abstract_register_device::add_channels(void) {
         default_func = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
       }
 
-      if (channel_type == 0) {
+      supla_device_channel::func_list_filter(func_list, type);
+
+      if (db_channel_type == 0) {
         int Param1 = 0;
         int Param2 = 0;
         supla_device_channel::get_defaults(type, default_func, &Param1,
                                            &Param2);
         supla_device_channel::trim_alt_icon_index(default_func, &alt_icon);
 
-        int channel_id = device_dao->add_channel(
-            device_id, number, type, default_func, Param1, Param2,
-            supla_device_channel::func_list_filter(func_list, type),
+        channel_id = device_dao->add_channel(
+            device_id, number, type, default_func, Param1, Param2, func_list,
             channel_flags, alt_icon, get_user_id());
 
         if (channel_id == 0) {
@@ -277,9 +280,12 @@ bool supla_abstract_register_device::add_channels(void) {
           device_dao->on_channel_added(device_id, channel_id);
         }
 
-      } else if (channel_type != type) {
+      } else if (db_channel_type != type) {
         processed_count = -1;
         break;
+      } else if ((db_func_list | func_list) != db_func_list) {
+        device_dao->update_channel_functions(channel_id, get_user_id(),
+                                             db_func_list | func_list);
       }
     }
   }

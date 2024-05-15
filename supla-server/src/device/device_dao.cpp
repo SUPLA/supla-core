@@ -358,8 +358,8 @@ bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
   return result;
 }
 
-int supla_device_dao::get_channel_id_and_type(int device_id, int channel_number,
-                                              int *type) {
+int supla_device_dao::get_channel_properties(int device_id, int channel_number,
+                                             int *type, int *flist) {
   MYSQL_BIND pbind[2] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -370,14 +370,17 @@ int supla_device_dao::get_channel_id_and_type(int device_id, int channel_number,
 
   MYSQL_STMT *stmt = NULL;
   int id = 0;
-  int _type;
+  int _type = 0;
+  int _flist = 0;
 
-  if (type == NULL) type = &_type;
+  if (type == nullptr) type = &_type;
+  if (flist == nullptr) flist = &_flist;
 
-  if (!dba->stmt_get_int((void **)&stmt, &id, type, NULL, NULL,
-                         "SELECT `id`, `type` FROM `supla_dev_channel` WHERE "
-                         "`iodevice_id` = ? AND `channel_number` = ?",
-                         pbind, 2)) {
+  if (!dba->stmt_get_int(
+          (void **)&stmt, &id, type, flist, NULL,
+          "SELECT `id`, `type`, `flist` FROM `supla_dev_channel` WHERE "
+          "`iodevice_id` = ? AND `channel_number` = ?",
+          pbind, 2)) {
     id = 0;
   }
 
@@ -601,7 +604,7 @@ int supla_device_dao::add_channel(int device_id, int channel_number, int type,
     if (stmt != NULL) mysql_stmt_close(stmt);
   }
 
-  return get_channel_id_and_type(device_id, channel_number, nullptr);
+  return get_channel_properties(device_id, channel_number, nullptr, nullptr);
 }
 
 bool supla_device_dao::on_new_device(int device_id) {
@@ -1399,6 +1402,37 @@ void supla_device_dao::update_channel_extended_value(
 
   if (buffer) {
     delete[] buffer;
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+}
+
+void supla_device_dao::update_channel_functions(int channel_id, int user_id,
+                                                int flist) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  MYSQL_STMT *stmt = nullptr;
+  MYSQL_BIND pbind[3] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&flist;
+
+  const char sql[] = "CALL `supla_update_channel_functions`(?, ?, ?)";
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
   }
 
   if (!already_connected) {
