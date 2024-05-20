@@ -1609,10 +1609,10 @@ typedef struct {
 
   _supla_int_t result_code;
   _supla_int_t ClientID;
-  short LocationCount;
-  short ChannelCount;
-  short ChannelGroupCount;
-  short SceneCount;
+  _supla_int16_t LocationCount;
+  _supla_int16_t ChannelCount;
+  _supla_int16_t ChannelGroupCount;
+  _supla_int16_t SceneCount;
   _supla_int_t Flags;
   unsigned char activity_timeout;
   unsigned char version;
@@ -2025,7 +2025,7 @@ typedef struct {
 typedef struct {
   unsigned char ResetCounter;          // 0 - NO, 1 - YES
   unsigned char SetTime;               // 0 - NO, 1 - YES
-  unsigned short LightSourceLifespan;  // 0 - 65535 hours
+  unsigned _supla_int16_t LightSourceLifespan;  // 0 - 65535 hours
 } TCalCfg_LightSourceLifespan;
 
 // CALCFG == CALIBRATION / CONFIG
@@ -2141,7 +2141,7 @@ typedef struct {
 
 typedef struct {
   char hi;  // actual state of relay  - 0 turned off, >= 1 - turned on
-  unsigned short flags;  // SUPLA_RELAY_FLAG_*
+  unsigned _supla_int16_t flags;  // SUPLA_RELAY_FLAG_*
 } TRelayChannel_Value;   // v. >= 15
 
 #define DIGIGLASS_TOO_LONG_OPERATION_WARNING 0x1
@@ -2151,12 +2151,12 @@ typedef struct {
 typedef struct {
   unsigned char flags;
   unsigned char sectionCount;  // 1 - 16 Filled by server
-  unsigned short mask;         // bit mask. 0 - opaque, 1 - transparent
+  unsigned _supla_int16_t mask;         // bit mask. 0 - opaque, 1 - transparent
 } TDigiglass_Value;            // v. >= 14
 
 typedef struct {
-  unsigned short mask;  // Bit mask. 0 - opaque, 1 - transparent
-  unsigned short
+  unsigned _supla_int16_t mask;  // Bit mask. 0 - opaque, 1 - transparent
+  unsigned _supla_int16_t
       active_bits;          // Specifies which bits of the mask are not skipped
 } TCSD_Digiglass_NewValue;  // v. >= 14
 
@@ -2386,10 +2386,10 @@ typedef struct {
   unsigned _supla_int_t ConnectionUptime;  // sec.
   unsigned char BatteryHealth;
   unsigned char LastConnectionResetCause;  // SUPLA_LASTCONNECTIONRESETCAUSE_*
-  unsigned short LightSourceLifespan;      // 0 - 65535 hours
+  unsigned _supla_int16_t LightSourceLifespan;      // 0 - 65535 hours
   union {
-    short LightSourceLifespanLeft;  // -327,67 - 100.00% LightSourceLifespan *
-                                    // 0.01
+    _supla_int16_t LightSourceLifespanLeft;  // -327,67 - 100.00%
+                                             // LightSourceLifespan * 0.01
     _supla_int_t LightSourceOperatingTime;  // -3932100sec. - 3932100sec.
   };
   char EmptySpace[2];  // Empty space for future use
