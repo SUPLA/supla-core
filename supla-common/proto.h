@@ -581,10 +581,13 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   (1ULL << 3)  // v. >= 21
 // type: TDeviceConfig_AutomaticTimeSync
 #define SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC (1ULL << 4)  // v. >= 21
-// type: TDeviceConfig_HomeScreenDelay
+// type: TDeviceConfig_HomeScreenOffDelay
 #define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY (1ULL << 5)  // v. >= 21
 // type: TDeviceConfig_HomeScreenContent
 #define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT (1ULL << 6)  // v. >= 21
+// type: TDeviceConfig_HomeScreenOffDelayType
+#define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE \
+  (1ULL << 7)  // v. >= 24
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
@@ -1606,10 +1609,10 @@ typedef struct {
 
   _supla_int_t result_code;
   _supla_int_t ClientID;
-  short LocationCount;
-  short ChannelCount;
-  short ChannelGroupCount;
-  short SceneCount;
+  _supla_int16_t LocationCount;
+  _supla_int16_t ChannelCount;
+  _supla_int16_t ChannelGroupCount;
+  _supla_int16_t SceneCount;
   _supla_int_t Flags;
   unsigned char activity_timeout;
   unsigned char version;
@@ -2022,7 +2025,7 @@ typedef struct {
 typedef struct {
   unsigned char ResetCounter;          // 0 - NO, 1 - YES
   unsigned char SetTime;               // 0 - NO, 1 - YES
-  unsigned short LightSourceLifespan;  // 0 - 65535 hours
+  unsigned _supla_int16_t LightSourceLifespan;  // 0 - 65535 hours
 } TCalCfg_LightSourceLifespan;
 
 // CALCFG == CALIBRATION / CONFIG
@@ -2138,7 +2141,7 @@ typedef struct {
 
 typedef struct {
   char hi;  // actual state of relay  - 0 turned off, >= 1 - turned on
-  unsigned short flags;  // SUPLA_RELAY_FLAG_*
+  unsigned _supla_int16_t flags;  // SUPLA_RELAY_FLAG_*
 } TRelayChannel_Value;   // v. >= 15
 
 #define DIGIGLASS_TOO_LONG_OPERATION_WARNING 0x1
@@ -2148,12 +2151,12 @@ typedef struct {
 typedef struct {
   unsigned char flags;
   unsigned char sectionCount;  // 1 - 16 Filled by server
-  unsigned short mask;         // bit mask. 0 - opaque, 1 - transparent
+  unsigned _supla_int16_t mask;         // bit mask. 0 - opaque, 1 - transparent
 } TDigiglass_Value;            // v. >= 14
 
 typedef struct {
-  unsigned short mask;  // Bit mask. 0 - opaque, 1 - transparent
-  unsigned short
+  unsigned _supla_int16_t mask;  // Bit mask. 0 - opaque, 1 - transparent
+  unsigned _supla_int16_t
       active_bits;          // Specifies which bits of the mask are not skipped
 } TCSD_Digiglass_NewValue;  // v. >= 14
 
@@ -2383,10 +2386,10 @@ typedef struct {
   unsigned _supla_int_t ConnectionUptime;  // sec.
   unsigned char BatteryHealth;
   unsigned char LastConnectionResetCause;  // SUPLA_LASTCONNECTIONRESETCAUSE_*
-  unsigned short LightSourceLifespan;      // 0 - 65535 hours
+  unsigned _supla_int16_t LightSourceLifespan;      // 0 - 65535 hours
   union {
-    short LightSourceLifespanLeft;  // -327,67 - 100.00% LightSourceLifespan *
-                                    // 0.01
+    _supla_int16_t LightSourceLifespanLeft;  // -327,67 - 100.00%
+                                             // LightSourceLifespan * 0.01
     _supla_int_t LightSourceOperatingTime;  // -3932100sec. - 3932100sec.
   };
   char EmptySpace[2];  // Empty space for future use
@@ -2615,6 +2618,14 @@ typedef struct {
                                                 // 0 - disabled
 } TDeviceConfig_HomeScreenOffDelay;             // v. >= 21
 
+
+#define SUPLA_DEVCFG_HOME_SCREEN_OFF_DELAY_TYPE_ALWAYS_ENABLED    0
+#define SUPLA_DEVCFG_HOME_SCREEN_OFF_DELAY_TYPE_ENABLED_WHEN_DARK 1
+typedef struct {
+  unsigned char
+      HomeScreenOffDelayType;  // SUPLA_DEVCFG_HOME_SCREEN_OFF_DELAY_TYPE_
+} TDeviceConfig_HomeScreenOffDelayType;  // v. >= 24
+
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_NONE (1ULL << 0)
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE (1ULL << 1)
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_AND_HUMIDITY (1ULL << 2)
@@ -2624,7 +2635,7 @@ typedef struct {
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE (1ULL << 6)
 
 typedef struct {
-  // bitfield with all available modes (reported by device, readonly for other
+  // bit field with all available modes (reported by device, readonly for other
   // components)
   unsigned _supla_int64_t ContentAvailable;
   // configured mode (settable)
