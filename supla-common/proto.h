@@ -581,10 +581,13 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   (1ULL << 3)  // v. >= 21
 // type: TDeviceConfig_AutomaticTimeSync
 #define SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC (1ULL << 4)  // v. >= 21
-// type: TDeviceConfig_HomeScreenDelay
+// type: TDeviceConfig_HomeScreenOffDelay
 #define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY (1ULL << 5)  // v. >= 21
 // type: TDeviceConfig_HomeScreenContent
 #define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT (1ULL << 6)  // v. >= 21
+// type: TDeviceConfig_HomeScreenOffDelayType
+#define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE \
+  (1ULL << 7)  // v. >= 24
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
@@ -2615,6 +2618,14 @@ typedef struct {
                                                 // 0 - disabled
 } TDeviceConfig_HomeScreenOffDelay;             // v. >= 21
 
+
+#define SUPLA_DEVCFG_HOME_SCREEN_OFF_DELAY_TYPE_ALWAYS_ENABLED    0
+#define SUPLA_DEVCFG_HOME_SCREEN_OFF_DELAY_TYPE_ENABLED_WHEN_DARK 1
+typedef struct {
+  unsigned char
+      HomeScreenOffDelayType;  // SUPLA_DEVCFG_HOME_SCREEN_OFF_DELAY_TYPE_
+} TDeviceConfig_HomeScreenOffDelayType;  // v. >= 24
+
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_NONE (1ULL << 0)
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE (1ULL << 1)
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_AND_HUMIDITY (1ULL << 2)
@@ -2624,7 +2635,7 @@ typedef struct {
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE (1ULL << 6)
 
 typedef struct {
-  // bitfield with all available modes (reported by device, readonly for other
+  // bit field with all available modes (reported by device, readonly for other
   // components)
   unsigned _supla_int64_t ContentAvailable;
   // configured mode (settable)
