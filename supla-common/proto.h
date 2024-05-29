@@ -121,12 +121,16 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 #define SUPLA_PROTO_VERSION 24
 #define SUPLA_PROTO_VERSION_MIN 1
-#if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
-#define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
-#elif defined(ARDUINO) || \
-    defined(SUPLA_DEVICE)         // Other Arduino compilations and SUPLA_DEVICE
-#define SUPLA_MAX_DATA_SIZE 3264  // Registration header + 128 channels x 21 B
+
+#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO) || defined(SUPLA_DEVICE)
+// All Arduino IDE and SuplaDevice compilations
+// Max packet size was reduced and register device is now send in chunks:
+// first is header, then channel data
+// SUPLA_MAX_DATA_SIZE should be bigger then calcfg, device config, channel
+// config MAXSIZE. Otherwise sending will fail
+#define SUPLA_MAX_DATA_SIZE 600  // Registration header without channels
 #elif defined(ESP8266)
+// supla-espressif-esp compilations
 #define SUPLA_MAX_DATA_SIZE 1536
 #else
 #define SUPLA_MAX_DATA_SIZE 10240
@@ -953,6 +957,26 @@ typedef struct {
   TDS_SuplaDeviceChannel_C
       channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
 } TDS_SuplaRegisterDevice_E;            // ver. >= 10
+
+typedef struct {
+  // device -> server
+
+  char Email[SUPLA_EMAIL_MAXSIZE];  // UTF8
+  char AuthKey[SUPLA_AUTHKEY_SIZE];
+
+  char GUID[SUPLA_GUID_SIZE];
+
+  char Name[SUPLA_DEVICE_NAME_MAXSIZE];  // UTF8
+  char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+
+  char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
+
+  _supla_int_t Flags;  // SUPLA_DEVICE_FLAG_*
+  _supla_int16_t ManufacturerID;
+  _supla_int16_t ProductID;
+
+  unsigned char channel_count;
+} TDS_SuplaRegisterDeviceHeader_A;
 
 typedef struct {
   // device -> server
