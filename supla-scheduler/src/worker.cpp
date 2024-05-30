@@ -95,6 +95,12 @@ bool s_worker::ipcc_get_char_value(char *value) {
                                     get_params()->channel_id, value);
 }
 
+bool s_worker::ipcc_get_fb_value(char *position, char *tilt) {
+  return get_ipcc()->get_fb_value(get_params()->user_id,
+                                  get_params()->iodevice_id,
+                                  get_params()->channel_id, position, tilt);
+}
+
 bool s_worker::ipcc_get_rgbw_value(int *color, char *color_brightness,
                                    char *brightness) {
   return get_ipcc()->get_rgbw_value(
@@ -133,6 +139,15 @@ bool s_worker::ipcc_action_copy(int sourceDeviceId, int sourceChannelId) {
       get_params()->user_id, get_params()->iodevice_id,
       get_params()->channel_id, get_params()->channel_group_id, sourceDeviceId,
       sourceChannelId);
+}
+
+bool s_worker::ipcc_action_shut_partially(char percentage,
+                                          bool percentage_as_delta, char tilt,
+                                          bool tilt_as_delta) {
+  return get_ipcc()->action_shut_partially(
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, get_params()->channel_group_id, percentage,
+      percentage_as_delta, tilt, tilt_as_delta);
 }
 
 bool s_worker::ipcc_execute_scene(void) {
