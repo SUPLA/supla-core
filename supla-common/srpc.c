@@ -2081,14 +2081,14 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_e(
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_in_chunks(
-    void *_srpc, TDS_SuplaRegisterDeviceHeader_A *registerdevice,
+    void *_srpc, TDS_SuplaRegisterDeviceHeader *registerdevice,
     TDS_SuplaDeviceChannel_D *(*get_channel_data_callback)(int)) {
   if (_srpc == NULL) {
     return SUPLA_RESULT_FALSE;
   }
 
   _supla_int_t full_size =
-      sizeof(TDS_SuplaRegisterDeviceHeader_A) +
+      sizeof(TDS_SuplaRegisterDeviceHeader) +
       (sizeof(TDS_SuplaDeviceChannel_D) * registerdevice->channel_count);
 
   Tsrpc *srpc = (Tsrpc *)_srpc;
@@ -2114,13 +2114,13 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_in_chunks(
   if (SUPLA_RESULT_TRUE ==
       sproto_set_data(&srpc->sdp,
                       (char *)registerdevice,
-                      sizeof(TDS_SuplaRegisterDeviceHeader_A),
+                      sizeof(TDS_SuplaRegisterDeviceHeader),
                       call_id)) {
     srpc->sdp.data_size = full_size;
 
     unsigned _supla_int_t header_size = sizeof(TSuplaDataPacket);
     header_size -= SUPLA_MAX_DATA_SIZE;
-    header_size += sizeof(TDS_SuplaRegisterDeviceHeader_A);
+    header_size += sizeof(TDS_SuplaRegisterDeviceHeader);
     srpc->params.data_write(
         (char *)&srpc->sdp, header_size, srpc->params.user_params);
     // send channels here

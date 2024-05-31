@@ -976,7 +976,7 @@ typedef struct {
   _supla_int16_t ProductID;
 
   unsigned char channel_count;
-} TDS_SuplaRegisterDeviceHeader_A;
+} TDS_SuplaRegisterDeviceHeader;
 
 typedef struct {
   // device -> server
