@@ -2082,17 +2082,17 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_e(
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_in_chunks(
     void *_srpc, TDS_SuplaRegisterDeviceHeader_A *registerdevice,
-    TDS_SuplaDeviceChannel_C *(*get_channel_data_callback)(int)) {
+    TDS_SuplaDeviceChannel_D *(*get_channel_data_callback)(int)) {
   if (_srpc == NULL) {
     return SUPLA_RESULT_FALSE;
   }
 
   _supla_int_t full_size =
       sizeof(TDS_SuplaRegisterDeviceHeader_A) +
-      (sizeof(TDS_SuplaDeviceChannel_C) * registerdevice->channel_count);
+      (sizeof(TDS_SuplaDeviceChannel_D) * registerdevice->channel_count);
 
   Tsrpc *srpc = (Tsrpc *)_srpc;
-  const int call_id = SUPLA_DS_CALL_REGISTER_DEVICE_E;
+  const int call_id = SUPLA_DS_CALL_REGISTER_DEVICE_F;
 
   if (!srpc_call_allowed(_srpc, call_id)) {
     if (srpc->params.on_min_version_required != NULL) {
@@ -2124,9 +2124,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_in_chunks(
     srpc->params.data_write(
         (char *)&srpc->sdp, header_size, srpc->params.user_params);
     // send channels here
-    const unsigned _supla_int_t channel_size = sizeof(TDS_SuplaDeviceChannel_C);
+    const unsigned _supla_int_t channel_size = sizeof(TDS_SuplaDeviceChannel_D);
     for (int i = 0; i < registerdevice->channel_count; i++) {
-      TDS_SuplaDeviceChannel_C *data = get_channel_data_callback(i);
+      TDS_SuplaDeviceChannel_D *data = get_channel_data_callback(i);
       if (data == NULL) continue;
       srpc->params.data_write(
           (char *)data, channel_size, srpc->params.user_params);
