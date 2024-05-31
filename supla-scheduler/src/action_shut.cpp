@@ -45,4 +45,8 @@ bool s_worker_action_shut::get_expected(char *percentage,
   return true;
 }
 
+bool s_worker_action_shut::do_action(void) {
+  return worker->ipcc_set_char_value(1);
+}
+
 REGISTER_ACTION(s_worker_action_shut, ACTION_SHUT);

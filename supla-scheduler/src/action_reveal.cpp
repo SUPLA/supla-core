@@ -45,4 +45,8 @@ bool s_worker_action_reveal::get_expected(char *percentage,
   return true;
 }
 
+bool s_worker_action_reveal::do_action(void) {
+  return worker->ipcc_set_char_value(2);
+}
+
 REGISTER_ACTION(s_worker_action_reveal, ACTION_REVEAL);

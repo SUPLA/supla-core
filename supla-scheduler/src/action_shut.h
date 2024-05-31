@@ -22,6 +22,9 @@
 #include "abstract_action_shut_partially.h"
 
 class s_worker_action_shut : public s_abstract_action_shut_partially {
+ protected:
+  virtual bool do_action(void);
+
  public:
   explicit s_worker_action_shut(s_abstract_worker *worker);
   virtual ~s_worker_action_shut(void);
