@@ -213,7 +213,7 @@ bool ipc_client::get_fb_value(int user_id, int device_id, int channel_id,
   if (position == nullptr || tilt == nullptr ||
       !get_value(cmd_get_fb_value, user_id, device_id, channel_id) ||
       sscanf(&buffer[strnlen(ipc_result_value, 255)], "%i,%i,%f", &_position,
-             &_tilt, &angle) != 1)
+             &_tilt, &angle) != 3)
     return false;
 
   if (_position >= 0 && _position <= 100) {
