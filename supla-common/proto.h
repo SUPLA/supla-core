@@ -524,10 +524,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_EVENT_CONTROLLINGTHEGARAGEDOOR 30
 #define SUPLA_EVENT_CONTROLLINGTHEDOORLOCK 40
 #define SUPLA_EVENT_CONTROLLINGTHEROLLERSHUTTER 50
-#define SUPLA_EVENT_TERRACE_AWNING 51             // ver. >= 24
-#define SUPLA_EVENT_CURTAIN 52                    // ver. >= 24
-#define SUPLA_EVENT_PROJECTOR_SCREEN 53           // ver. >= 24
-#define SUPLA_EVENT_ROLLER_GARAGE_DOOR 54         // ver. >= 24
+#define SUPLA_EVENT_TERRACE_AWNING 51      // ver. >= 24
+#define SUPLA_EVENT_CURTAIN 52             // ver. >= 24
+#define SUPLA_EVENT_PROJECTOR_SCREEN 53    // ver. >= 24
+#define SUPLA_EVENT_ROLLER_GARAGE_DOOR 54  // ver. >= 24
 #define SUPLA_EVENT_CONTROLLINGTHEROOFWINDOW 55
 #define SUPLA_EVENT_CONTROLLINGTHEFACADEBLIND 56  // ver. >= 24
 #define SUPLA_EVENT_VERTICAL_BLIND 57             // ver. >= 24
@@ -872,7 +872,8 @@ typedef struct {
   _supla_int_t Default;
   _supla_int64_t Flags;
 
-  unsigned char Offline;
+  unsigned char
+      Offline;  // If true, the ValidityTimeSec and value variables are ignored.
   unsigned _supla_int_t ValueValidityTimeSec;
 
   union {
@@ -2047,8 +2048,8 @@ typedef struct {
 } TCalCfg_ProgressReport;
 
 typedef struct {
-  unsigned char ResetCounter;          // 0 - NO, 1 - YES
-  unsigned char SetTime;               // 0 - NO, 1 - YES
+  unsigned char ResetCounter;                   // 0 - NO, 1 - YES
+  unsigned char SetTime;                        // 0 - NO, 1 - YES
   unsigned _supla_int16_t LightSourceLifespan;  // 0 - 65535 hours
 } TCalCfg_LightSourceLifespan;
 
@@ -2166,7 +2167,7 @@ typedef struct {
 typedef struct {
   char hi;  // actual state of relay  - 0 turned off, >= 1 - turned on
   unsigned _supla_int16_t flags;  // SUPLA_RELAY_FLAG_*
-} TRelayChannel_Value;   // v. >= 15
+} TRelayChannel_Value;            // v. >= 15
 
 #define DIGIGLASS_TOO_LONG_OPERATION_WARNING 0x1
 #define DIGIGLASS_PLANNED_REGENERATION_IN_PROGRESS 0x2
@@ -2174,9 +2175,9 @@ typedef struct {
 
 typedef struct {
   unsigned char flags;
-  unsigned char sectionCount;  // 1 - 16 Filled by server
-  unsigned _supla_int16_t mask;         // bit mask. 0 - opaque, 1 - transparent
-} TDigiglass_Value;            // v. >= 14
+  unsigned char sectionCount;    // 1 - 16 Filled by server
+  unsigned _supla_int16_t mask;  // bit mask. 0 - opaque, 1 - transparent
+} TDigiglass_Value;              // v. >= 14
 
 typedef struct {
   unsigned _supla_int16_t mask;  // Bit mask. 0 - opaque, 1 - transparent
@@ -2410,11 +2411,11 @@ typedef struct {
   unsigned _supla_int_t ConnectionUptime;  // sec.
   unsigned char BatteryHealth;
   unsigned char LastConnectionResetCause;  // SUPLA_LASTCONNECTIONRESETCAUSE_*
-  unsigned _supla_int16_t LightSourceLifespan;      // 0 - 65535 hours
+  unsigned _supla_int16_t LightSourceLifespan;  // 0 - 65535 hours
   union {
     _supla_int16_t LightSourceLifespanLeft;  // -327,67 - 100.00%
                                              // LightSourceLifespan * 0.01
-    _supla_int_t LightSourceOperatingTime;  // -3932100sec. - 3932100sec.
+    _supla_int_t LightSourceOperatingTime;   // -3932100sec. - 3932100sec.
   };
   char EmptySpace[2];  // Empty space for future use
 } TDSC_ChannelState;   // v. >= 12 Device -> Server -> Client
@@ -2642,8 +2643,7 @@ typedef struct {
                                                 // 0 - disabled
 } TDeviceConfig_HomeScreenOffDelay;             // v. >= 21
 
-
-#define SUPLA_DEVCFG_HOME_SCREEN_OFF_DELAY_TYPE_ALWAYS_ENABLED    0
+#define SUPLA_DEVCFG_HOME_SCREEN_OFF_DELAY_TYPE_ALWAYS_ENABLED 0
 #define SUPLA_DEVCFG_HOME_SCREEN_OFF_DELAY_TYPE_ENABLED_WHEN_DARK 1
 typedef struct {
   unsigned char
@@ -2784,7 +2784,7 @@ typedef struct {
   unsigned char VisualizationType;  // 0 - default, other values depends on
                                     // Cloud and App support
   unsigned char Reserved[32];
-} TChannelConfig_FacadeBlind;     // v. >= 24
+} TChannelConfig_FacadeBlind;  // v. >= 24
 
 typedef TChannelConfig_FacadeBlind TChannelConfig_VerticalBlind;
 
