@@ -87,6 +87,8 @@ supla_device_channels::supla_device_channels(
                                ? &schannel_d[a].ValueValidityTimeSec
                                : nullptr,
                            schannel_b == nullptr ? &offline : nullptr);
+      } else {
+        channel->set_offline(offline);
       }
 
       channel->add_init_flags(flags);
