@@ -342,15 +342,17 @@ void supla_client::connection_will_close(void) {
 }
 
 unsigned _supla_int64_t supla_client::wait_time_usec() {
-  unsigned _supla_int64_t time = channels->value_validity_time_usec();
-  if (time > 0 && time < 120000000) {
-    if (time < 1000000) {
-      return 1000000;
+  unsigned _supla_int64_t result =
+      supla_abstract_connection_object::wait_time_usec();
+  unsigned _supla_int64_t validity_time = channels->value_validity_time_usec();
+  if (validity_time > 0) {
+    validity_time += 500000;
+    if (validity_time < result) {
+      return validity_time;
     }
-    return time + 500000;
   }
 
-  return 120000000;
+  return result;
 }
 
 void supla_client::update_json_config(int channel_id, unsigned char config_type,

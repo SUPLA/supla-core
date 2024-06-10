@@ -51,6 +51,7 @@ using std::weak_ptr;
 
 #define ACTIVITY_TIMEOUT 120
 #define UNHANDLED_CALL_MAXCOUNT 5
+#define WAIT_USEC_MIN 100000
 
 void *supla_connection::reg_pending_arr = nullptr;
 unsigned int supla_connection::local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
@@ -340,7 +341,7 @@ void supla_connection::execute(void *sthread) {
   supla_log(LOG_DEBUG, "Connection Started %i, secure=%i", sthread,
             ssocket_is_secure(ssd));
 
-  int wait_usec = 1000000;
+  int wait_usec = WAIT_USEC_MIN;
 
   while (sthread_isterminated(sthread) == 0) {
     eh_wait(eh, wait_usec);
@@ -382,6 +383,10 @@ void supla_connection::execute(void *sthread) {
         if (wait_usec > time_to_inactive) {
           wait_usec = time_to_inactive;
         }
+      }
+
+      if (wait_usec < WAIT_USEC_MIN) {
+        wait_usec = WAIT_USEC_MIN;
       }
     }
   }
