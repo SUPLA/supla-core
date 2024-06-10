@@ -353,6 +353,15 @@ bool supla_device_channels::set_channel_value(
   return false;
 }
 
+bool supla_device_channels::set_channel_offline(int channel_id, bool offline) {
+  supla_device_channel *channel = find_channel(channel_id);
+  if (channel) {
+    return channel->set_offline(offline);
+  }
+
+  return false;
+}
+
 void supla_device_channels::set_channel_extendedvalue(
     int channel_id, TSuplaChannelExtendedValue *ev) {
   supla_device_channel *channel = find_channel(channel_id);
