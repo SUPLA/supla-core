@@ -111,7 +111,7 @@ class supla_device_channels {
   bool set_channel_value(int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
                          const unsigned _supla_int_t *validity_time_sec,
                          bool *offline);
-  bool set_channel_offlineee(int channel_id, bool offline);
+  bool set_channel_offline(int channel_id, bool offline);
   void set_channel_extendedvalue(int channel_id,
                                  TSuplaChannelExtendedValue *ev);
 
