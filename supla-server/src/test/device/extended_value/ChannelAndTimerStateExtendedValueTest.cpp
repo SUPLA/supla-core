@@ -142,6 +142,12 @@ TEST_F(ChannelAndTimerStateExtendedValueTest, copy) {
   EXPECT_TRUE(copy->get_raw_value(&ev_raw3));
   EXPECT_EQ(memcmp(&ev_raw2, &ev_raw3, sizeof(TSuplaChannelExtendedValue)), 0);
 
+  char *buffer = new char[copy->get_value_size()];
+  copy->get_value(buffer);
+
+  EXPECT_EQ(memcmp(buffer, ev_raw2.value, copy->get_value_size()), 0);
+
+  delete[] buffer;
   delete copy;
 }
 

@@ -92,8 +92,6 @@ TEST_F(ChannelStateExtendedValueTest, copy) {
 
   TestHelper::randomize(ev_raw1.value, ev_raw1.size);
 
-  ((TTimerState_ExtendedValue *)ev_raw1.value)->SenderNameSize = 0;
-
   supla_channel_state_extended_value ev(&ev_raw1);
 
   supla_channel_state_extended_value *copy =
@@ -106,6 +104,13 @@ TEST_F(ChannelStateExtendedValueTest, copy) {
   copy->get_raw_value(&ev2);
 
   EXPECT_EQ(memcmp(&ev1, &ev2, sizeof(TSuplaChannelExtendedValue)), 0);
+
+  char *buffer = new char[copy->get_value_size()];
+  copy->get_value(buffer);
+
+  EXPECT_EQ(memcmp(ev_raw1.value, buffer, copy->get_value_size()), 0);
+
+  delete[] buffer;
 
   delete copy;
 }
