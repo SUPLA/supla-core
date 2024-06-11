@@ -120,7 +120,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   virtual unsigned _supla_int64_t get_flags();
   void add_init_flags(unsigned _supla_int64_t flags);
   bool is_offline(void);
-  bool set_offline(bool Offline);
+  bool set_offline(bool offline, bool raise_change_event);
   bool is_value_writable(void);
   bool is_char_value_writable(void);
   bool is_rgbw_value_writable(void);

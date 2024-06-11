@@ -82,7 +82,7 @@ supla_device_channels::supla_device_channels(
 
     if (channel) {
       if (offline) {
-        channel->set_offline(true);
+        channel->set_offline(true, false);
       } else {
         channel->set_value(value,
                            schannel_b == nullptr
@@ -356,7 +356,7 @@ bool supla_device_channels::set_channel_value(
 bool supla_device_channels::set_channel_offline(int channel_id, bool offline) {
   supla_device_channel *channel = find_channel(channel_id);
   if (channel) {
-    return channel->set_offline(offline);
+    return channel->set_offline(offline, true);
   }
 
   return false;
