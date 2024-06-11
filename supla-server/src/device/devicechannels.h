@@ -89,7 +89,7 @@ class supla_device_channels {
   explicit supla_device_channels(supla_abstract_device_dao *dao,
                                  supla_device *device,
                                  TDS_SuplaDeviceChannel_B *schannel_b,
-                                 TDS_SuplaDeviceChannel_D *schannel_d,
+                                 TDS_SuplaDeviceChannel_E *schannel_e,
                                  int channel_count);
   virtual ~supla_device_channels();
 
@@ -117,7 +117,7 @@ class supla_device_channels {
 
   void on_device_registered(supla_user *user, int device_id,
                             TDS_SuplaDeviceChannel_B *schannel_b,
-                            TDS_SuplaDeviceChannel_D *schannel_d, int count);
+                            TDS_SuplaDeviceChannel_E *schannel_e, int count);
 
   void set_device_channel_value(const supla_caller &caller, int channel_id,
                                 int group_id, unsigned char eol,

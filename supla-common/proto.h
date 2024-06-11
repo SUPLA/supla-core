@@ -119,7 +119,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 24
+#define SUPLA_PROTO_VERSION 25
 #define SUPLA_PROTO_VERSION_MIN 1
 
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO) || defined(SUPLA_DEVICE)
@@ -189,6 +189,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_REGISTER_DEVICE_E 69  // ver. >= 10
 #define SUPLA_SD_CALL_REGISTER_DEVICE_RESULT 70
 #define SUPLA_DS_CALL_REGISTER_DEVICE_F 75  // ver. >= 23
+#define SUPLA_DS_CALL_REGISTER_DEVICE_G 76  // ver. >= 25
 #define SUPLA_CS_CALL_REGISTER_CLIENT 80
 #define SUPLA_CS_CALL_REGISTER_CLIENT_B 85  // ver. >= 6
 #define SUPLA_CS_CALL_REGISTER_CLIENT_C 86  // ver. >= 7
@@ -889,6 +890,35 @@ typedef struct {
 typedef struct {
   // device -> server
 
+  unsigned char Number;
+  _supla_int_t Type;
+
+  union {
+    _supla_int_t FuncList;
+    unsigned _supla_int_t ActionTriggerCaps;  // ver. >= 16
+  };
+
+  _supla_int_t Default;
+  _supla_int64_t Flags;
+
+  unsigned char
+      Offline;  // If true, the ValidityTimeSec and value variables are ignored.
+  unsigned _supla_int_t ValueValidityTimeSec;
+
+  union {
+    char value[SUPLA_CHANNELVALUE_SIZE];
+    TActionTriggerProperties actionTriggerProperties;  // ver. >= 16
+    THVACValue hvacValue;
+  };
+
+  unsigned char DefaultIcon;
+  unsigned char SubDeviceId;
+
+} TDS_SuplaDeviceChannel_E;  // ver. >= 25
+
+typedef struct {
+  // device -> server
+
   _supla_int_t LocationID;
   char LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE];  // UTF8
 
@@ -1002,6 +1032,28 @@ typedef struct {
 } TDS_SuplaRegisterDevice_F;            // ver. >= 23
 
 typedef struct {
+  // device -> server
+
+  char Email[SUPLA_EMAIL_MAXSIZE];  // UTF8
+  char AuthKey[SUPLA_AUTHKEY_SIZE];
+
+  char GUID[SUPLA_GUID_SIZE];
+
+  char Name[SUPLA_DEVICE_NAME_MAXSIZE];  // UTF8
+  char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+
+  char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
+
+  _supla_int_t Flags;  // SUPLA_DEVICE_FLAG_*
+  _supla_int16_t ManufacturerID;
+  _supla_int16_t ProductID;
+
+  unsigned char channel_count;
+  TDS_SuplaDeviceChannel_E
+      channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
+} TDS_SuplaRegisterDevice_G;            // ver. >= 25
+
+typedef struct {
   // server -> device
 
   _supla_int_t result_code;
@@ -1009,6 +1061,24 @@ typedef struct {
   unsigned char version;
   unsigned char version_min;
 } TSD_SuplaRegisterDeviceResult;
+
+#define CHANNEL_REPORT_CHANNEL_ALREADY_REGISTERED (1 << 0)
+#define CHANNEL_REPORT_INCORRECT_CHANNEL_TYPE (1 << 1)
+
+typedef struct {
+  // server -> device
+
+  _supla_int_t result_code;
+  unsigned char activity_timeout;
+  unsigned char version;
+  unsigned char version_min;
+
+  unsigned char channel_count;
+  unsigned char
+      channel_report[256];  // One byte per channel. The meaning of the bits is
+                            // determined by CHANNEL_REPORT_*.
+
+} TSD_SuplaRegisterDeviceResult_B;  // ver. >= 25
 
 typedef struct {
   // device -> server
@@ -1021,7 +1091,7 @@ typedef struct {
   // device -> server
 
   unsigned char ChannelNumber;
-  unsigned char Offline;
+  unsigned char Offline; // If true, the value variable is ignored.
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TDS_SuplaDeviceChannelValue_B;  // v. >= 12
 
@@ -1029,7 +1099,7 @@ typedef struct {
   // device -> server
 
   unsigned char ChannelNumber;
-  unsigned char Offline;
+  unsigned char Offline; // If true, the ValidityTimeSec and value variables are ignored.
   unsigned _supla_int_t ValidityTimeSec;
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TDS_SuplaDeviceChannelValue_C;  // v. >= 12

@@ -40,6 +40,7 @@
 #include "device/call_handler/register_device_d.h"
 #include "device/call_handler/register_device_e.h"
 #include "device/call_handler/register_device_f.h"
+#include "device/call_handler/register_device_g.h"
 #include "device/call_handler/register_push_notification.h"
 #include "device/call_handler/send_push_notification.h"
 #include "device/call_handler/set_channel_caption.h"
@@ -61,6 +62,7 @@ supla_device_call_handler_collection::supla_device_call_handler_collection(void)
   add_handler(new supla_ch_device_calcfg_result());
   add_handler(new supla_ch_get_channel_functions());
   add_handler(new supla_ch_get_channel_config());
+  add_handler(new supla_ch_register_device_g);
   add_handler(new supla_ch_register_device_f);
   add_handler(new supla_ch_register_device_e);
   add_handler(new supla_ch_register_device_d);

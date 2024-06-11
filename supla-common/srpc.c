@@ -939,6 +939,16 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_DS_CALL_REGISTER_DEVICE_G:  // ver. >= 25
+
+        if (VALID_SIZE(TDS_SuplaRegisterDevice_G, TDS_SuplaDeviceChannel_E,
+                       channel_count, SUPLA_CHANNELMAXCOUNT)) {
+          rd->data.ds_register_device_g = (TDS_SuplaRegisterDevice_G *)calloc(
+              1, sizeof(TDS_SuplaRegisterDevice_G));
+        }
+
+        break;
+
       case SUPLA_SD_CALL_REGISTER_DEVICE_RESULT:
 
         if (srpc->sdp.data_size == sizeof(TSD_SuplaRegisterDeviceResult))
@@ -1759,6 +1769,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
     case SUPLA_SC_CALL_CHANNELPACK_UPDATE_E:
     case SUPLA_DS_CALL_REGISTER_DEVICE_F:
       return 23;
+    case SUPLA_DS_CALL_REGISTER_DEVICE_G:
+      return 25;
   }
 
   return 255;
@@ -2007,7 +2019,6 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_scd_async_set_channel_caption_result(
       _srpc, result, SUPLA_SCD_CALL_SET_CHANNEL_CAPTION_RESULT);
 }
 
-
 #ifndef SRPC_EXCLUDE_DEVICE
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url(
     void *_srpc, TDS_FirmwareUpdateParams *params) {
@@ -2112,27 +2123,25 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_in_chunks(
   sproto_sdp_init(srpc->proto, &srpc->sdp);
 
   if (SUPLA_RESULT_TRUE ==
-      sproto_set_data(&srpc->sdp,
-                      (char *)registerdevice,
-                      sizeof(TDS_SuplaRegisterDeviceHeader),
-                      call_id)) {
+      sproto_set_data(&srpc->sdp, (char *)registerdevice,
+                      sizeof(TDS_SuplaRegisterDeviceHeader), call_id)) {
     srpc->sdp.data_size = full_size;
 
     unsigned _supla_int_t header_size = sizeof(TSuplaDataPacket);
     header_size -= SUPLA_MAX_DATA_SIZE;
     header_size += sizeof(TDS_SuplaRegisterDeviceHeader);
-    srpc->params.data_write(
-        (char *)&srpc->sdp, header_size, srpc->params.user_params);
+    srpc->params.data_write((char *)&srpc->sdp, header_size,
+                            srpc->params.user_params);
     // send channels here
     const unsigned _supla_int_t channel_size = sizeof(TDS_SuplaDeviceChannel_D);
     for (int i = 0; i < registerdevice->channel_count; i++) {
       TDS_SuplaDeviceChannel_D *data = get_channel_data_callback(i);
       if (data == NULL) continue;
-      srpc->params.data_write(
-          (char *)data, channel_size, srpc->params.user_params);
+      srpc->params.data_write((char *)data, channel_size,
+                              srpc->params.user_params);
     }
-    srpc->params.data_write(
-        sproto_tag, SUPLA_TAG_SIZE, srpc->params.user_params);
+    srpc->params.data_write(sproto_tag, SUPLA_TAG_SIZE,
+                            srpc->params.user_params);
 
     return lck_unlock_r(srpc->lck, srpc->sdp.rr_id);
   }
@@ -2149,6 +2158,19 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_f(
   if (size > sizeof(TDS_SuplaRegisterDevice_F)) return 0;
 
   return srpc_async_call(_srpc, SUPLA_DS_CALL_REGISTER_DEVICE_F,
+                         (char *)registerdevice, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_g(
+    void *_srpc, TDS_SuplaRegisterDevice_G *registerdevice) {
+  _supla_int_t size =
+      sizeof(TDS_SuplaRegisterDevice_G) -
+      (sizeof(TDS_SuplaDeviceChannel_E) * SUPLA_CHANNELMAXCOUNT) +
+      (sizeof(TDS_SuplaDeviceChannel_E) * registerdevice->channel_count);
+
+  if (size > sizeof(TDS_SuplaRegisterDevice_G)) return 0;
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_REGISTER_DEVICE_G,
                          (char *)registerdevice, size);
 }
 
