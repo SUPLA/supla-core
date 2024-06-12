@@ -313,6 +313,7 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue_B *value,
         true);
     if (result) {
       setValueValidityTimeSec(validity_time_sec);
+      memcpy(this->value, value->value, SUPLA_CHANNELVALUE_SIZE);
     }
   }
 
