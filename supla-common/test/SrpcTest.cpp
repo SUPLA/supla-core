@@ -1710,7 +1710,7 @@ TEST_F(SrpcTest, call_registerdevice_result) {
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_registerdevice_result_b,
                                      TSD_SuplaRegisterDeviceResult_B,
                                      SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B, 32,
-                                     287, sd_register_device_result_b,
+                                     288, sd_register_device_result_b,
                                      CHANNEL_REPORT_MAXSIZE, channel_report,
                                      channel_report_size);
 
