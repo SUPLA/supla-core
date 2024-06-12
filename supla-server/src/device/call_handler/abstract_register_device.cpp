@@ -26,6 +26,7 @@
 #include "conn/authkey_cache.h"
 #include "device/device.h"
 #include "device/devicechannel.h"
+#include "json/cJSON.h"
 #include "log.h"
 
 using std::shared_ptr;
@@ -43,6 +44,7 @@ supla_abstract_register_device::supla_abstract_register_device(void)
   device_id = 0;
 
   location_enabled = false;
+  channel_addition_blocked = false;
   new_device = false;
   device_enabled = true;
   channel_added = false;
@@ -121,11 +123,32 @@ void supla_abstract_register_device::send_result(int resultcode) {
     usleep(get_hold_time_on_failure_usec());
   }
 
+  unsigned char channel_report[CHANNEL_REPORT_MAXSIZE] = {};
+  unsigned short channel_report_size = 0;
+
+  if (resultcode == SUPLA_RESULTCODE_CHANNEL_CONFLICT) {
+    prepare_channel_report(&channel_report_size, channel_report);
+
+    if (channel_report && get_srpc_adapter()->get_proto_version() >= 25) {
+      TSD_SuplaRegisterDeviceResult_B srdr;
+      srdr.result_code = resultcode;
+      srdr.activity_timeout = get_activity_timeout();
+      srdr.version_min = SUPLA_PROTO_VERSION_MIN;
+      srdr.version = SUPLA_PROTO_VERSION;
+      srdr.channel_report_size = channel_report_size;
+      memcpy(srdr.channel_report, channel_report, CHANNEL_REPORT_MAXSIZE);
+
+      get_srpc_adapter()->sd_async_registerdevice_result_b(&srdr);
+      return;
+    }
+  }
+
   TSD_SuplaRegisterDeviceResult srdr;
   srdr.result_code = resultcode;
   srdr.activity_timeout = get_activity_timeout();
   srdr.version_min = SUPLA_PROTO_VERSION_MIN;
   srdr.version = SUPLA_PROTO_VERSION;
+
   get_srpc_adapter()->sd_async_registerdevice_result(&srdr);
 }
 
@@ -208,81 +231,141 @@ bool supla_abstract_register_device::add_device(void) {
   return false;
 }
 
+void supla_abstract_register_device::prepare_channel_report(
+    unsigned short *channel_report_size,
+    unsigned char channel_report[CHANNEL_REPORT_MAXSIZE]) {
+  TDS_SuplaDeviceChannel_B *dev_channels_b = get_channels_b();
+  TDS_SuplaDeviceChannel_E *dev_channels_e = get_channels_e();
+
+  std::vector<supla_channel_fragment> fragments =
+      device_dao->get_channel_fragments(device_id);
+
+  for (auto it = fragments.begin(); it != fragments.end(); ++it) {
+    bool exists = false;
+    unsigned char number = 0;
+    _supla_int_t type = 0;
+
+    for (int a = 0; a < SUPLA_CHANNELMAXCOUNT && a < channel_count; a++) {
+      if (dev_channels_b != nullptr) {
+        number = dev_channels_b[a].Number;
+        type = dev_channels_b[a].Type;
+      } else {
+        number = dev_channels_e[a].Number;
+        type = dev_channels_e[a].Type;
+      }
+
+      if (number == it->get_channel_number()) {
+        exists = true;
+        break;
+      }
+    }
+
+    cJSON *json = cJSON_CreateObject();
+    number = it->get_channel_number();
+
+    if (number < CHANNEL_REPORT_MAXSIZE) {
+      channel_report[number] |= CHANNEL_REPORT_CHANNEL_REGISTERED;
+
+      if (exists && type != it->get_type()) {
+        channel_report[number] |= CHANNEL_REPORT_INCORRECT_CHANNEL_TYPE;
+        cJSON_AddNumberToObject(json, "type", type);
+      }
+
+      if (number >= *channel_report_size) {
+        *channel_report_size = number + 1;
+      }
+    }
+
+    if (!exists) {
+      cJSON_AddBoolToObject(json, "missing", true);
+    }
+
+    if (cJSON_GetArraySize(json)) {
+      char *details = cJSON_PrintUnformatted(json);
+      device_dao->update_channel_conflict_details(device_id, number, details);
+      free(details);
+    }
+
+    cJSON_Delete(json);
+  }
+}
+
 bool supla_abstract_register_device::add_channels(void) {
   int processed_count = 0;
 
   TDS_SuplaDeviceChannel_B *dev_channels_b = get_channels_b();
   TDS_SuplaDeviceChannel_E *dev_channels_e = get_channels_e();
 
-  for (int a = 0; a < SUPLA_CHANNELMAXCOUNT; a++) {
-    if (a >= channel_count) {
-      break;
+  for (int a = 0; a < SUPLA_CHANNELMAXCOUNT && a < channel_count; a++) {
+    processed_count++;
+
+    unsigned char number = 0;
+    _supla_int_t type = 0;
+    _supla_int_t func_list = 0;
+    _supla_int_t db_func_list = 0;
+    _supla_int_t default_func = 0;
+    _supla_int64_t channel_flags = 0;
+    unsigned char alt_icon = 0;
+    unsigned short sub_channel_id = 0;
+    int db_channel_type = 0;
+    int channel_id = 0;
+
+    if (dev_channels_b != nullptr) {
+      number = dev_channels_b[a].Number;
+      type = dev_channels_b[a].Type;
+      func_list = dev_channels_b[a].FuncList;
+      default_func = dev_channels_b[a].Default;
     } else {
-      processed_count++;
+      number = dev_channels_e[a].Number;
+      type = dev_channels_e[a].Type;
+      func_list = dev_channels_e[a].FuncList;
+      default_func = dev_channels_e[a].Default;
+      channel_flags = dev_channels_e[a].Flags;
+      alt_icon = dev_channels_e[a].DefaultIcon;
+      sub_channel_id = dev_channels_e[a].SubDeviceId;
+    }
 
-      unsigned char number = 0;
-      _supla_int_t type = 0;
-      _supla_int_t func_list = 0;
-      _supla_int_t db_func_list = 0;
-      _supla_int_t default_func = 0;
-      _supla_int64_t channel_flags = 0;
-      unsigned char alt_icon = 0;
-      unsigned short sub_channel_id = 0;
-      int db_channel_type = 0;
-      int channel_id = 0;
+    if (type == 0) {
+      break;
+    }
 
-      if (dev_channels_b != nullptr) {
-        number = dev_channels_b[a].Number;
-        type = dev_channels_b[a].Type;
-        func_list = dev_channels_b[a].FuncList;
-        default_func = dev_channels_b[a].Default;
+    if ((channel_id = device_dao->get_channel_properties(
+             device_id, number, &db_channel_type, &db_func_list)) == 0) {
+      db_channel_type = 0;
+    }
+
+    if (type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+        default_func == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
+      // Issue #115
+      default_func = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
+    }
+
+    supla_device_channel::func_list_filter(func_list, type);
+
+    if (db_channel_type == 0) {
+      int Param1 = 0;
+      int Param2 = 0;
+      supla_device_channel::get_defaults(type, default_func, &Param1, &Param2);
+      supla_device_channel::trim_alt_icon_index(default_func, &alt_icon);
+
+      if (channel_addition_blocked) {
+        channel_id = 0;
       } else {
-        number = dev_channels_e[a].Number;
-        type = dev_channels_e[a].Type;
-        func_list = dev_channels_e[a].FuncList;
-        default_func = dev_channels_e[a].Default;
-        channel_flags = dev_channels_e[a].Flags;
-        alt_icon = dev_channels_e[a].DefaultIcon;
-        sub_channel_id = dev_channels_e[a].SubDeviceId;
-      }
-
-      if (type == 0) {
-        break;
-      }
-
-      if ((channel_id = device_dao->get_channel_properties(
-               device_id, number, &db_channel_type, &db_func_list)) == 0) {
-        db_channel_type = 0;
-      }
-
-      if (type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
-          default_func == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
-        // Issue #115
-        default_func = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
-      }
-
-      supla_device_channel::func_list_filter(func_list, type);
-
-      if (db_channel_type == 0) {
-        int Param1 = 0;
-        int Param2 = 0;
-        supla_device_channel::get_defaults(type, default_func, &Param1,
-                                           &Param2);
-        supla_device_channel::trim_alt_icon_index(default_func, &alt_icon);
-
         channel_id = device_dao->add_channel(
             device_id, number, type, default_func, Param1, Param2, func_list,
             channel_flags, alt_icon, sub_channel_id, get_user_id());
+      }
 
-        if (channel_id == 0) {
-          processed_count = -1;
-          break;
-        } else {
-          channel_added = true;
-          device_dao->on_channel_added(device_id, channel_id);
-        }
+      if (channel_id == 0) {
+        processed_count = -1;
+        break;
+      } else {
+        channel_added = true;
+        device_dao->on_channel_added(device_id, channel_id);
+      }
 
-      } else if (db_channel_type != type) {
+    } else {
+      if (db_channel_type != type) {
         processed_count = -1;
         break;
       } else if ((db_func_list | func_list) != db_func_list) {
@@ -383,9 +466,10 @@ void supla_abstract_register_device::register_device(
 
   int _device_flags = 0;
 
-  if (device_id && !device_dao->get_device_variables(
-                       device_id, &device_enabled, &_original_location_id,
-                       &_location_id, &location_enabled, &_device_flags)) {
+  if (device_id &&
+      !device_dao->get_device_variables(
+          device_id, &device_enabled, &_original_location_id, &_location_id,
+          &location_enabled, &_device_flags, &channel_addition_blocked)) {
     supla_log(LOG_WARNING, "Unable to get variables for the device with id: %i",
               device_id);
     send_result(SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE);

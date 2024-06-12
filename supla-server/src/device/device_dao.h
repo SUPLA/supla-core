@@ -58,7 +58,8 @@ class supla_device_dao : public supla_abstract_device_dao {
 
   virtual bool get_device_variables(int device_id, bool *device_enabled,
                                     int *original_location_id, int *location_id,
-                                    bool *location_enabled, int *flags);
+                                    bool *location_enabled, int *flags,
+                                    bool *channel_addition_blocked);
 
   virtual int get_channel_properties(int device_id, int channel_number,
                                      int *type, int *flist);
@@ -122,6 +123,10 @@ class supla_device_dao : public supla_abstract_device_dao {
 
   virtual supla_channel_fragment get_channel_fragment(int device_id,
                                                       int channel_number);
+
+  virtual void update_channel_conflict_details(int device_id,
+                                               int channel_number,
+                                               char *details);
 };
 
 #endif /* SUPLA_DEVICE_DAO_H_ */

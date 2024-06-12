@@ -188,8 +188,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_REGISTER_DEVICE_D 68  // ver. >= 7
 #define SUPLA_DS_CALL_REGISTER_DEVICE_E 69  // ver. >= 10
 #define SUPLA_SD_CALL_REGISTER_DEVICE_RESULT 70
-#define SUPLA_DS_CALL_REGISTER_DEVICE_F 75  // ver. >= 23
-#define SUPLA_DS_CALL_REGISTER_DEVICE_G 76  // ver. >= 25
+#define SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B 71  // ver. >= 25
+#define SUPLA_DS_CALL_REGISTER_DEVICE_F 75         // ver. >= 23
+#define SUPLA_DS_CALL_REGISTER_DEVICE_G 76         // ver. >= 25
 #define SUPLA_CS_CALL_REGISTER_CLIENT 80
 #define SUPLA_CS_CALL_REGISTER_CLIENT_B 85  // ver. >= 6
 #define SUPLA_CS_CALL_REGISTER_CLIENT_C 86  // ver. >= 7
@@ -1062,8 +1063,9 @@ typedef struct {
   unsigned char version_min;
 } TSD_SuplaRegisterDeviceResult;
 
-#define CHANNEL_REPORT_CHANNEL_ALREADY_REGISTERED (1 << 0)
+#define CHANNEL_REPORT_CHANNEL_REGISTERED (1 << 0)
 #define CHANNEL_REPORT_INCORRECT_CHANNEL_TYPE (1 << 1)
+#define CHANNEL_REPORT_MAXSIZE 256
 
 typedef struct {
   // server -> device
@@ -1073,10 +1075,10 @@ typedef struct {
   unsigned char version;
   unsigned char version_min;
 
-  unsigned char channel_count;
-  unsigned char
-      channel_report[256];  // One byte per channel. The meaning of the bits is
-                            // determined by CHANNEL_REPORT_*.
+  unsigned _supla_int16_t channel_report_size;
+  unsigned char channel_report
+      [CHANNEL_REPORT_MAXSIZE];  // One byte per channel. The meaning of the
+                                 // bits is determined by CHANNEL_REPORT_*.
 
 } TSD_SuplaRegisterDeviceResult_B;  // ver. >= 25
 
@@ -1091,7 +1093,7 @@ typedef struct {
   // device -> server
 
   unsigned char ChannelNumber;
-  unsigned char Offline; // If true, the value variable is ignored.
+  unsigned char Offline;  // If true, the value variable is ignored.
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TDS_SuplaDeviceChannelValue_B;  // v. >= 12
 
@@ -1099,7 +1101,8 @@ typedef struct {
   // device -> server
 
   unsigned char ChannelNumber;
-  unsigned char Offline; // If true, the ValidityTimeSec and value variables are ignored.
+  unsigned char
+      Offline;  // If true, the ValidityTimeSec and value variables are ignored.
   unsigned _supla_int_t ValidityTimeSec;
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TDS_SuplaDeviceChannelValue_C;  // v. >= 12

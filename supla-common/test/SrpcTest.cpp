@@ -543,7 +543,8 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_DS_CALL_REGISTER_DEVICE_F};
 
     case 25:
-      return {SUPLA_DS_CALL_REGISTER_DEVICE_G};
+      return {SUPLA_DS_CALL_REGISTER_DEVICE_G,
+              SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B};
   }
 
   return {};
@@ -594,6 +595,10 @@ TEST_F(SrpcTest, call_allowed_v19) { srpcCallAllowed(19, get_call_ids(19)); }
 TEST_F(SrpcTest, call_allowed_v20) { srpcCallAllowed(20, get_call_ids(20)); }
 
 TEST_F(SrpcTest, call_allowed_v21) { srpcCallAllowed(21, get_call_ids(21)); }
+
+TEST_F(SrpcTest, call_allowed_v23) { srpcCallAllowed(23, get_call_ids(23)); }
+
+TEST_F(SrpcTest, call_allowed_v25) { srpcCallAllowed(25, get_call_ids(25)); }
 
 TEST_F(SrpcTest, call_not_allowed) {
   vector<int> all_calls;
@@ -1701,6 +1706,13 @@ TEST_F(SrpcTest, call_registerdevice_result) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_registerdevice_result_b,
+                                     TSD_SuplaRegisterDeviceResult_B,
+                                     SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B, 32,
+                                     287, sd_register_device_result_b,
+                                     CHANNEL_REPORT_MAXSIZE, channel_report,
+                                     channel_report_size);
 
 //---------------------------------------------------------
 // DS CHANNEL VALUE CHANGED

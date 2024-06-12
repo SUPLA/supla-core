@@ -44,12 +44,18 @@ class supla_abstract_register_device
   bool new_device;
   bool device_enabled;
   bool channel_added;
+  bool channel_addition_blocked;
   int _location_id;
   int _original_location_id;
 
   supla_abstract_device_dao *device_dao;
 
+  void prepare_channel_report(
+      unsigned short *channel_report_size,
+      unsigned char channel_report[CHANNEL_REPORT_MAXSIZE]);
+
   void send_result(int resultcode);
+
   bool device_auth(void);
   bool add_device(void);
   bool add_channels(void);

@@ -179,11 +179,12 @@ TEST_F(RegisterDeviceEssentialTest, gettingDeviceVariablesFailed) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) { return false; });
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) { return false; });
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
@@ -233,11 +234,12 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndIsDisabled) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *device_enabled = false;
         return true;
       });
@@ -289,11 +291,12 @@ TEST_F(RegisterDeviceEssentialTest, deviceExistsAndLocationIsDisabled) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_enabled = false;
         return true;
       });
@@ -346,11 +349,12 @@ TEST_F(RegisterDeviceEssentialTest, deviceHasLostItsLocation) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_id = 0;
         *location_enabled = true;
         return true;
@@ -394,11 +398,12 @@ TEST_F(RegisterDeviceEssentialTest, locationConflict) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(_, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_id = 45;
         *original_location_id = 46;
         *location_enabled = true;
@@ -454,11 +459,12 @@ TEST_F(RegisterDeviceEssentialTest, wrongNumberOfChannels) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_id = 155;
         *location_enabled = true;
         return true;
@@ -466,13 +472,24 @@ TEST_F(RegisterDeviceEssentialTest, wrongNumberOfChannels) {
 
   EXPECT_CALL(dao, get_device_channel_count(55)).Times(1).WillOnce(Return(1));
 
-  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+  EXPECT_CALL(dao, get_channel_fragments(55))
       .Times(1)
-      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+      .WillOnce(Return(
+          std::vector<supla_channel_fragment>{supla_channel_fragment()}));
+
+  EXPECT_CALL(
+      dao, update_channel_conflict_details(55, 0, StrEq("{\"missing\":true}")))
+      .Times(1);
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result_b(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult_B *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_CHANNEL_CONFLICT, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
         EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        EXPECT_EQ(1, result->channel_report_size);
+        EXPECT_EQ(CHANNEL_REPORT_CHANNEL_REGISTERED, result->channel_report[0]);
         return 0;
       });
 
@@ -517,11 +534,12 @@ TEST_F(RegisterDeviceEssentialTest, channelTypeChanged) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_id = 155;
         *location_enabled = true;
         return true;
@@ -543,13 +561,30 @@ TEST_F(RegisterDeviceEssentialTest, channelTypeChanged) {
         return 2;
       });
 
-  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+  EXPECT_CALL(dao, get_channel_fragments(55))
       .Times(1)
-      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+      .WillOnce(Return(std::vector<supla_channel_fragment>{
+          supla_channel_fragment(55, 1, 0, SUPLA_CHANNELTYPE_RELAY, 0, 0,
+                                 false),
+          supla_channel_fragment(55, 2, 1, SUPLA_CHANNELTYPE_RELAY, 0, 0,
+                                 false)}));
+
+  EXPECT_CALL(dao,
+              update_channel_conflict_details(55, 1, StrEq("{\"type\":4000}")))
+      .Times(1);
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result_b(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult_B *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_CHANNEL_CONFLICT, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
         EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        EXPECT_EQ(2, result->channel_report_size);
+        EXPECT_EQ(CHANNEL_REPORT_CHANNEL_REGISTERED, result->channel_report[0]);
+        EXPECT_EQ(CHANNEL_REPORT_CHANNEL_REGISTERED |
+                      CHANNEL_REPORT_INCORRECT_CHANNEL_TYPE,
+                  result->channel_report[1]);
         return 0;
       });
 
@@ -599,11 +634,12 @@ TEST_F(RegisterDeviceEssentialTest, cantUdateDevice) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_id = 155;
         *location_enabled = true;
         return true;
@@ -673,11 +709,12 @@ TEST_F(RegisterDeviceEssentialTest, cfgModeRequested) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_id = 155;
         *location_enabled = true;
         return true;
@@ -753,11 +790,12 @@ TEST_F(RegisterDeviceEssentialTest,
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_id = 155;
         *location_enabled = true;
         return true;
@@ -856,11 +894,12 @@ TEST_F(RegisterDeviceEssentialTest, addChannelsToExistingDevice) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_id = 155;
         *location_enabled = true;
         return true;
@@ -961,11 +1000,12 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddChannel) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_id = 155;
         *location_enabled = true;
         return true;
@@ -999,13 +1039,110 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddChannel) {
 
   EXPECT_CALL(rd, on_registration_success).Times(0);
 
-  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+  EXPECT_CALL(dao, get_channel_fragments(55))
       .Times(1)
-      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+      .WillOnce(
+          Return(std::vector<supla_channel_fragment>{supla_channel_fragment(
+              55, 1, 0, SUPLA_CHANNELTYPE_RELAY, 0, 0, false)}));
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result_b(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult_B *result) {
         EXPECT_EQ(SUPLA_RESULTCODE_CHANNEL_CONFLICT, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
         EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        EXPECT_EQ(1, result->channel_report_size);
+        EXPECT_EQ(CHANNEL_REPORT_CHANNEL_REGISTERED, result->channel_report[0]);
+        return 0;
+      });
+
+  rd.register_device(nullptr, &register_device_g, &srpcAdapter, &dba, &dao, 169,
+                     4567, 20);
+
+  EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
+}
+
+TEST_F(RegisterDeviceEssentialTest, channelAdditionBlocked) {
+  TDS_SuplaRegisterDevice_G register_device_g = {};
+  register_device_g.channel_count = 1;
+  register_device_g.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+
+  register_device_g.GUID[0] = 1;
+  register_device_g.AuthKey[0] = 2;
+  register_device_g.Flags = 778899;
+
+  snprintf(register_device_g.Email, SUPLA_EMAIL_MAXSIZE, "%s",
+           "cheops@giza.com");
+
+  snprintf(register_device_g.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", "22.09");
+
+  snprintf(register_device_g.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s",
+           "Torch Switch");
+
+  EXPECT_CALL(dba, start_transaction).Times(1);
+  EXPECT_CALL(dba, rollback).Times(1);
+  EXPECT_CALL(dba, commit).Times(0);
+
+  EXPECT_CALL(rd, get_user_id_by_email(StrEq("cheops@giza.com")))
+      .Times(1)
+      .WillOnce(Return(25));
+
+  EXPECT_CALL(rd, get_object_id(25, _, _))
+      .Times(1)
+      .WillOnce([](int user_id, const char guid[SUPLA_GUID_SIZE], int *id) {
+        *id = 55;
+        return true;
+      });
+
+  EXPECT_CALL(rd, get_authkey_hash(55, NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce(
+          [](int id, char authkey_hash[BCRYPT_HASH_MAXSIZE], bool *is_null) {
+            *is_null = true;
+            return true;
+          });
+
+  EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
+
+  EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
+                                        NotNull(), NotNull(), NotNull()))
+      .Times(1)
+      .WillOnce([](int device_id, bool *device_enabled,
+                   int *original_location_id, int *location_id,
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
+        *location_id = 155;
+        *location_enabled = true;
+        *channel_addition_blocked = true;
+        return true;
+      });
+
+  EXPECT_CALL(dao, get_device_channel_count).Times(0);
+
+  EXPECT_CALL(dao, add_channel_a).Times(0);
+
+  EXPECT_CALL(dao, add_channel_b).Times(0);
+
+  EXPECT_CALL(dao, on_channel_added).Times(0);
+
+  EXPECT_CALL(dao, on_new_device).Times(0);
+  EXPECT_CALL(dao, update_device).Times(0);
+
+  EXPECT_CALL(rd, on_registration_success).Times(0);
+
+  EXPECT_CALL(dao, get_channel_fragments(55))
+      .Times(1)
+      .WillOnce(Return(std::vector<supla_channel_fragment>{}));
+
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result_b(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult_B *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_CHANNEL_CONFLICT, result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        EXPECT_EQ(0, result->channel_report_size);
         return 0;
       });
 
@@ -1161,11 +1298,12 @@ TEST_F(RegisterDeviceEssentialTest, existingDeviceIsLocked) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_id = 155;
         *location_enabled = true;
         *flags = SUPLA_DEVICE_FLAG_DEVICE_LOCKED;
@@ -1233,11 +1371,12 @@ TEST_F(RegisterDeviceEssentialTest, existingDeviceServerSideIsLocked) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_id = 155;
         *location_enabled = true;
         *flags = SUPLA_DEVICE_FLAG_DEVICE_LOCKED;
@@ -1371,11 +1510,12 @@ TEST_F(RegisterDeviceEssentialTest, unlockDevice) {
   EXPECT_CALL(dao, get_device_id(_, _)).Times(1).WillOnce(Return(55));
 
   EXPECT_CALL(dao, get_device_variables(55, NotNull(), NotNull(), NotNull(),
-                                        NotNull(), NotNull()))
+                                        NotNull(), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int device_id, bool *device_enabled,
                    int *original_location_id, int *location_id,
-                   bool *location_enabled, int *flags) {
+                   bool *location_enabled, int *flags,
+                   bool *channel_addition_blocked) {
         *location_id = 155;
         *location_enabled = true;
         *flags = 0;

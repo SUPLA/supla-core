@@ -59,6 +59,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)5064, sizeof(TDS_SuplaRegisterDevice_F));
   EXPECT_EQ((unsigned int)5192, sizeof(TDS_SuplaRegisterDevice_G));
   EXPECT_EQ((unsigned int)7, sizeof(TSD_SuplaRegisterDeviceResult));
+  EXPECT_EQ((unsigned int)263, sizeof(TSD_SuplaRegisterDeviceResult_B));
   EXPECT_EQ((unsigned int)9, sizeof(TDS_SuplaDeviceChannelValue));
   EXPECT_EQ((unsigned int)10, sizeof(TDS_SuplaDeviceChannelValue_B));
   EXPECT_EQ((unsigned int)14, sizeof(TDS_SuplaDeviceChannelValue_C));
