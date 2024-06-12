@@ -18,6 +18,8 @@
 
 #include "AccessTokenProviderMock.h"
 
+#include <memory>
+
 namespace testing {
 
 using std::shared_ptr;
