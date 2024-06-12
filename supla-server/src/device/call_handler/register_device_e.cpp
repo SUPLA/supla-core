@@ -51,7 +51,7 @@ void supla_ch_register_device_e::handle_call(
     TDS_SuplaRegisterDevice_F* register_device_f =
         (TDS_SuplaRegisterDevice_F*)malloc(sizeof(TDS_SuplaRegisterDevice_F));
     if (register_device_f != nullptr) {
-      memset(register_device_f, 0, sizeof(TDS_SuplaRegisterDevice_E));
+      memset(register_device_f, 0, sizeof(TDS_SuplaRegisterDevice_F));
 
       memcpy(register_device_f->Email, rd->data.ds_register_device_e->Email,
              SUPLA_EMAIL_MAXSIZE);
@@ -78,7 +78,7 @@ void supla_ch_register_device_e::handle_call(
 
       for (int c = 0; c < register_device_f->channel_count; c++) {
         memset(&register_device_f->channels[c], 0,
-               sizeof(TDS_SuplaDeviceChannel_C));
+               sizeof(TDS_SuplaDeviceChannel_D));
         register_device_f->channels[c].Number =
             rd->data.ds_register_device_e->channels[c].Number;
         register_device_f->channels[c].Type =
