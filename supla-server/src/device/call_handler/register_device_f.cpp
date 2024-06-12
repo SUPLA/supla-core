@@ -94,6 +94,8 @@ void supla_ch_register_device_f::handle_call(
             rd->data.ds_register_device_f->channels[c].Offline;
         register_device_g->channels[c].ValueValidityTimeSec =
             rd->data.ds_register_device_f->channels[c].ValueValidityTimeSec;
+        register_device_g->channels[c].DefaultIcon =
+            rd->data.ds_register_device_f->channels[c].DefaultIcon;
         memcpy(register_device_g->channels[c].value,
                rd->data.ds_register_device_f->channels[c].value,
                SUPLA_CHANNELVALUE_SIZE);
