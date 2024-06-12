@@ -2193,6 +2193,11 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_registerdevice_result(
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_registerdevice_result_b(
     void *_srpc, TSD_SuplaRegisterDeviceResult_B *registerdevice_result) {
+  if (!registerdevice_result ||
+      registerdevice_result->channel_report_size > CHANNEL_REPORT_MAXSIZE) {
+    return 0;
+  }
+
   _supla_int_t size = sizeof(TSD_SuplaRegisterDeviceResult_B) -
                       CHANNEL_REPORT_MAXSIZE +
                       registerdevice_result->channel_report_size;
