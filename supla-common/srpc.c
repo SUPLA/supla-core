@@ -2158,6 +2158,63 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_in_chunks(
   return lck_unlock_r(srpc->lck, SUPLA_RESULT_FALSE);
 }
 
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_in_chunks_g(
+    void *_srpc, TDS_SuplaRegisterDeviceHeader *registerdevice,
+    TDS_SuplaDeviceChannel_E *(*get_channel_data_callback)(int)) {
+  if (_srpc == NULL) {
+    return SUPLA_RESULT_FALSE;
+  }
+
+  _supla_int_t full_size =
+      sizeof(TDS_SuplaRegisterDeviceHeader) +
+      (sizeof(TDS_SuplaDeviceChannel_E) * registerdevice->channel_count);
+
+  Tsrpc *srpc = (Tsrpc *)_srpc;
+  const int call_id = SUPLA_DS_CALL_REGISTER_DEVICE_G;
+
+  if (!srpc_call_allowed(_srpc, call_id)) {
+    if (srpc->params.on_min_version_required != NULL) {
+      srpc->params.on_min_version_required(
+          _srpc, call_id, srpc_call_min_version_required(_srpc, call_id),
+          srpc->params.user_params);
+    }
+    return SUPLA_RESULT_FALSE;
+  }
+
+  if (srpc->params.before_async_call != NULL) {
+    srpc->params.before_async_call(_srpc, call_id, srpc->params.user_params);
+  }
+
+  lck_lock(srpc->lck);
+
+  sproto_sdp_init(srpc->proto, &srpc->sdp);
+
+  if (SUPLA_RESULT_TRUE ==
+      sproto_set_data(&srpc->sdp, (char *)registerdevice,
+                      sizeof(TDS_SuplaRegisterDeviceHeader), call_id)) {
+    srpc->sdp.data_size = full_size;
+
+    unsigned _supla_int_t header_size = sizeof(TSuplaDataPacket);
+    header_size -= SUPLA_MAX_DATA_SIZE;
+    header_size += sizeof(TDS_SuplaRegisterDeviceHeader);
+    srpc->params.data_write((char *)&srpc->sdp, header_size,
+                            srpc->params.user_params);
+    // send channels here
+    const unsigned _supla_int_t channel_size = sizeof(TDS_SuplaDeviceChannel_E);
+    for (int i = 0; i < registerdevice->channel_count; i++) {
+      TDS_SuplaDeviceChannel_E *data = get_channel_data_callback(i);
+      if (data == NULL) continue;
+      srpc->params.data_write((char *)data, channel_size,
+                              srpc->params.user_params);
+    }
+    srpc->params.data_write(sproto_tag, SUPLA_TAG_SIZE,
+                            srpc->params.user_params);
+
+    return lck_unlock_r(srpc->lck, srpc->sdp.rr_id);
+  }
+  return lck_unlock_r(srpc->lck, SUPLA_RESULT_FALSE);
+}
+
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_f(
     void *_srpc, TDS_SuplaRegisterDevice_F *registerdevice) {
   _supla_int_t size =

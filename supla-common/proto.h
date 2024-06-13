@@ -885,7 +885,6 @@ typedef struct {
   };
 
   unsigned char DefaultIcon;
-
 } TDS_SuplaDeviceChannel_D;  // ver. >= 23
 
 typedef struct {
@@ -913,8 +912,7 @@ typedef struct {
   };
 
   unsigned char DefaultIcon;
-  unsigned char SubDeviceId;
-
+  unsigned char SubDeviceId;  // 0 - no subdevice, 1..255 - subdevice id
 } TDS_SuplaDeviceChannel_E;  // ver. >= 25
 
 typedef struct {
