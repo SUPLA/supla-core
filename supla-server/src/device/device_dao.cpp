@@ -1461,8 +1461,9 @@ vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
 
   MYSQL_STMT *stmt = nullptr;
   const char sql[] =
-      "SELECT id, type, func, flags, hidden FROM `supla_dev_channel` WHERE "
-      "iodevice_id = ? AND (channel_number = ? OR ? = -1)";
+      "SELECT id, channel_number, type, func, flags, hidden FROM "
+      "`supla_dev_channel` WHERE iodevice_id = ? AND (channel_number = ? OR ? "
+      "= -1)";
 
   MYSQL_BIND pbind[3] = {};
 
@@ -1476,9 +1477,10 @@ vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
   pbind[2].buffer = (char *)&channel_number;
 
   if (dba->stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
-    MYSQL_BIND rbind[5] = {};
+    MYSQL_BIND rbind[6] = {};
 
     int channel_id = 0;
+    int number = 0;
     int type = 0;
     int flags = 0;
     int function = 0;
@@ -1488,16 +1490,19 @@ vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
     rbind[0].buffer = (char *)&channel_id;
 
     rbind[1].buffer_type = MYSQL_TYPE_LONG;
-    rbind[1].buffer = (char *)&type;
+    rbind[1].buffer = (char *)&number;
 
     rbind[2].buffer_type = MYSQL_TYPE_LONG;
-    rbind[2].buffer = (char *)&function;
+    rbind[2].buffer = (char *)&type;
 
     rbind[3].buffer_type = MYSQL_TYPE_LONG;
-    rbind[3].buffer = (char *)&flags;
+    rbind[3].buffer = (char *)&function;
 
-    rbind[4].buffer_type = MYSQL_TYPE_TINY;
-    rbind[4].buffer = (char *)&hidden;
+    rbind[4].buffer_type = MYSQL_TYPE_LONG;
+    rbind[4].buffer = (char *)&flags;
+
+    rbind[5].buffer_type = MYSQL_TYPE_TINY;
+    rbind[5].buffer = (char *)&hidden;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -1507,9 +1512,8 @@ vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
 
       if (mysql_stmt_num_rows(stmt) > 0) {
         while (!mysql_stmt_fetch(stmt)) {
-          result.push_back(supla_channel_fragment(device_id, channel_id,
-                                                  channel_number, type,
-                                                  function, flags, hidden));
+          result.push_back(supla_channel_fragment(
+              device_id, channel_id, number, type, function, flags, hidden));
         }
       }
     }
