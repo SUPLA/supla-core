@@ -569,11 +569,14 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_SOMEF 17
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
-#define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010    // ver. >= 17
-#define SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED 0x0020       // ver. >= 18
-#define SUPLA_DEVICE_FLAG_CALCFG_SET_TIME 0x0040          // ver. >= 21
-#define SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED 0x0080  // ver. >= 21
-#define SUPLA_DEVICE_FLAG_DEVICE_LOCKED 0x0100            // ver. >= 22
+#define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010     // ver. >= 17
+#define SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED 0x0020        // ver. >= 18
+#define SUPLA_DEVICE_FLAG_CALCFG_SET_TIME 0x0040           // ver. >= 21
+#define SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED 0x0080   // ver. >= 21
+#define SUPLA_DEVICE_FLAG_DEVICE_LOCKED 0x0100             // ver. >= 22
+#define SUPLA_DEVICE_FLAG_CALCFG_SUBDEVICE_PAIRING 0x0200  // ver. >= 25
+#define SUPLA_DEVICE_FLAG_CALCFG_IDENTIFY_DEVICE 0x0400    // ver. >= 25
+#define SUPLA_DEVICE_FLAG_CALCFG_RESET_DEVICE 0x0800       // ver. >= 25
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
@@ -612,10 +615,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080  // ver. >= 17
 #define SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED 0x0100  // ver. >= 21
 // Free bits for future use:  0x0200, 0x0400, 0x0800
-#define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000    // ver. >= 15
-#define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000  // ver. >= 15
-#define SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE 0x4000     // ver. >= 15
-// Free bits for future use: 0x8000
+#define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000              // ver. >= 15
+#define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000            // ver. >= 15
+#define SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE 0x4000               // ver. >= 15
+#define SUPLA_CHANNEL_FLAG_CALCFG_IDENTIFY_SUBDEVICE 0x8000        // ver. >= 25
 #define SUPLA_CHANNEL_FLAG_CHANNELSTATE 0x00010000                 // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED 0x00020000           // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED 0x00040000           // ver. >= 12
@@ -630,9 +633,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE_deprecated \
   0x04000000  // ver. >= 12  DEPRECATED
 #define SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE \
-  0x08000000                                           // ver. >= 21
-#define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE 0x10000000  // ver. >= 21
-#define SUPLA_CHANNEL_FLAG_HAS_PARENT 0x20000000       // ver. >= 21
+  0x08000000                                                  // ver. >= 21
+#define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE 0x10000000         // ver. >= 21
+#define SUPLA_CHANNEL_FLAG_HAS_PARENT 0x20000000              // ver. >= 21
+#define SUPLA_CHANNEL_FLAG_CALCFG_RESET_SUBDEVICE 0x40000000  // ver. >= 25
 #pragma pack(push, 1)
 
 typedef struct {
@@ -2073,6 +2077,11 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_RECALIBRATE 8000                 // v. >= 15
 #define SUPLA_CALCFG_CMD_ENTER_CFG_MODE 9000              // v. >= 17
 #define SUPLA_CALCFG_CMD_SET_TIME 9100                    // v. >= 21
+#define SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING 9200     // v. >= 25
+#define SUPLA_CALCFG_CMD_IDENTIFY_DEVICE 9300             // v. >= 25
+#define SUPLA_CALCFG_CMD_IDENTIFY_SUBDEBVICE 9310         // v. >= 25
+#define SUPLA_CALCFG_CMD_RESET_DEVICE 9400                // v. >= 25
+#define SUPLA_CALCFG_CMD_RESET_SUBDEVICE 9410             // v. >= 25
 
 #define SUPLA_CALCFG_DATATYPE_RS_SETTINGS 1000
 #define SUPLA_CALCFG_DATATYPE_FB_SETTINGS 1100  // v. >= 17
@@ -2123,6 +2132,29 @@ typedef struct {
   unsigned char SetTime;                        // 0 - NO, 1 - YES
   unsigned _supla_int16_t LightSourceLifespan;  // 0 - 65535 hours
 } TCalCfg_LightSourceLifespan;
+
+#define SUPLA_CALCFG_SUBDEVICE_NAME_MAXSIZE 128
+
+// Subdevice Pairing result is send in TDS_DeviceCalCfgResult. Possible values:
+// SUPLA_CALCFG_RESULT_FALSE - procedure was not started, error
+// SUPLA_CALCFG_RESULT_TRUE - procedure was started successfully
+// SUPLA_CALCFG_RESULT_DONE - procedure is finished
+// SUPLA_CALCFG_RESULT_IN_PROGRESS - pairing procedure wasn't started, becaue
+//   another procedure is in progress
+// SUPLA_CALCFG_RESULT_UNAUTHORIZED - unauthorized
+// In all above cases, TCalCfg_SubdevicePairingResult is included in
+// TDS_DeviceCalCfgResult. ElapsedTimeSec will contain time in seconds since
+// current (or other) pairing procedure was started
+// Name field will be included when result is SUPLA_CALCFG_RESULT_DONE and
+// when new subdevice was successfully paired. When DONE is received with
+// empty name, it means that subdevice was not paired
+typedef struct {
+  unsigned _supla_int16_t
+      ElapsedTimeSec;      // Time in seconds since procedure was started
+  unsigned char NameSize;  // including the terminating null byte ('\0')
+  char Name[SUPLA_CALCFG_SUBDEVICE_NAME_MAXSIZE];  // UTF8. Last variable in
+                                                   // struct!
+} TCalCfg_SubdevicePairingResult;                  // v. >= 25
 
 // CALCFG == CALIBRATION / CONFIG
 typedef struct {
@@ -2453,8 +2485,14 @@ typedef struct {
 #define SUPLA_CHANNELSTATE_FIELD_BATTERYHEALTH 0x0200
 #define SUPLA_CHANNELSTATE_FIELD_BRIDGENODEONLINE 0x0400
 #define SUPLA_CHANNELSTATE_FIELD_LASTCONNECTIONRESETCAUSE 0x0800
+// LIGHTSOURCELIFESPAN, LIGHTSOURCEOPERATINGTIME, and OPERATINGTIME are
+// mutually exclusive. Use only one of them.
 #define SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCELIFESPAN 0x1000
 #define SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCEOPERATINGTIME 0x2000
+#define SUPLA_CHANNELSTATE_FIELD_OPERATINGTIME 0x4000
+// SWITCHCYCLECOUNT and defualtIconField are is mutually exclusive. Use only one
+// of them.
+#define SUPLA_CHANNELSTATE_FIELD_SWITCHCYCLECOUNT 0x8000
 
 #define SUPLA_LASTCONNECTIONRESETCAUSE_UNKNOWN 0
 #define SUPLA_LASTCONNECTIONRESETCAUSE_ACTIVITY_TIMEOUT 1
@@ -2468,8 +2506,11 @@ typedef struct {
     _supla_int_t ChannelID;       // Server -> Client
     unsigned char ChannelNumber;  // Device -> Server
   };
-  _supla_int_t Fields;
-  _supla_int_t defaultIconField;  // SUPLA_CHANNELSTATE_FIELD_*
+  _supla_int_t Fields;            // SUPLA_CHANNELSTATE_FIELD_*
+  union {
+    _supla_int_t defaultIconField;
+    unsigned _supla_int_t SwitchCycleCount;
+  };
   unsigned _supla_int_t IPv4;
   unsigned char MAC[6];
   unsigned char BatteryLevel;    // 0 - 100%
@@ -2487,6 +2528,7 @@ typedef struct {
     _supla_int16_t LightSourceLifespanLeft;  // -327,67 - 100.00%
                                              // LightSourceLifespan * 0.01
     _supla_int_t LightSourceOperatingTime;   // -3932100sec. - 3932100sec.
+    unsigned _supla_int_t OperatingTime;     // time in seconds
   };
   char EmptySpace[2];  // Empty space for future use
 } TDSC_ChannelState;   // v. >= 12 Device -> Server -> Client
