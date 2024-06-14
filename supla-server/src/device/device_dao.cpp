@@ -1562,7 +1562,7 @@ void supla_device_dao::update_channel_conflict_details(int device_id,
 
   pbind[2].buffer_type = MYSQL_TYPE_STRING;
   pbind[2].buffer = details;
-  pbind[2].buffer_length = 256;
+  pbind[2].buffer_length = strnlen(details, 256);
 
   const char sql[] = "CALL `supla_update_channel_conflict_details`(?, ?, ?)";
 
