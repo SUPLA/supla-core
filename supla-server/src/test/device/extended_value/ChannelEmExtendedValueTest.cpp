@@ -35,6 +35,34 @@ TEST_F(ChannelEmExtendedValueTest, defaults) {
   EXPECT_EQ(ev.get_price_per_unit(), 0.0);
 }
 
+TEST_F(ChannelEmExtendedValueTest, defaultConstructor) {
+  TSuplaChannelExtendedValue ev_raw1 = {};
+  TSuplaChannelExtendedValue ev_raw2 = {};
+
+  ev_raw1.size = sizeof(TElectricityMeter_ExtendedValue_V2);
+  ev_raw1.type = -1;
+
+  TestHelper::randomize(ev_raw1.value, ev_raw1.size);
+
+  ((TElectricityMeter_ExtendedValue_V2 *)ev_raw1.value)->m_count =
+      EM_MEASUREMENT_COUNT;
+
+  {
+    supla_channel_em_extended_value v(&ev_raw1);
+    EXPECT_FALSE(v.get_raw_value(&ev_raw2));
+  }
+
+  ev_raw1.size = sizeof(TElectricityMeter_ExtendedValue_V2);
+  ev_raw1.type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2;
+
+  {
+    supla_channel_em_extended_value v(&ev_raw1);
+    EXPECT_TRUE(v.get_raw_value(&ev_raw2));
+  }
+
+  EXPECT_EQ(memcmp(&ev_raw1, &ev_raw2, sizeof(TSuplaChannelExtendedValue)), 0);
+}
+
 TEST_F(ChannelEmExtendedValueTest, converstionV1toV2) {
   TElectricityMeter_ExtendedValue v1 = {};
   TSuplaChannelExtendedValue value = {};
@@ -156,7 +184,7 @@ TEST_F(ChannelEmExtendedValueTest, copy) {
   delete copy;
 }
 
-TEST_F(ChannelEmExtendedValueTest, recalculate) {
+TEST_F(ChannelEmExtendedValueTest, calculate) {
   TElectricityMeter_ExtendedValue_V2 v2 = {};
 
   v2.total_forward_active_energy[2] = 5000000;
@@ -175,21 +203,12 @@ TEST_F(ChannelEmExtendedValueTest, recalculate) {
   ev.get_raw_value(&v2);
   v2.total_forward_active_energy[1] = 5000000;
   v2.total_forward_active_energy_balanced = 9000000;
-  ev.set_raw_value(&v2);
+  supla_channel_em_extended_value ev2(&v2, "EUR", 245);
 
-  EXPECT_EQ(ev.get_currency(), "EUR");
-  EXPECT_DOUBLE_EQ(ev.get_total_cost(), 2.45);
-  EXPECT_DOUBLE_EQ(ev.get_total_cost_balanced(), 2.20);
-  EXPECT_DOUBLE_EQ(ev.get_price_per_unit(), 0.0245);
-
-  v2.price_per_unit = 0;
-  memset(v2.currency, 0, 3);
-
-  ev.set_raw_value(&v2);
-  EXPECT_EQ(ev.get_currency(), "");
-  EXPECT_DOUBLE_EQ(ev.get_total_cost(), 0.0);
-  EXPECT_DOUBLE_EQ(ev.get_total_cost_balanced(), 0.0);
-  EXPECT_DOUBLE_EQ(ev.get_price_per_unit(), 0);
+  EXPECT_EQ(ev2.get_currency(), "EUR");
+  EXPECT_DOUBLE_EQ(ev2.get_total_cost(), 2.45);
+  EXPECT_DOUBLE_EQ(ev2.get_total_cost_balanced(), 2.20);
+  EXPECT_DOUBLE_EQ(ev2.get_price_per_unit(), 0.0245);
 }
 
 TEST_F(ChannelEmExtendedValueTest, voltage) {
@@ -318,6 +337,44 @@ TEST_F(ChannelEmExtendedValueTest, powerApparent_kVA) {
   EXPECT_DOUBLE_EQ(ev.get_power_apparent(2), 58912.98);
   EXPECT_DOUBLE_EQ(ev.get_power_apparent(3), 58766.30);
   EXPECT_DOUBLE_EQ(ev.get_power_apparent_sum(), 130025.06);
+}
+
+TEST_F(ChannelEmExtendedValueTest, forwardActiveEnergy) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.total_forward_active_energy[0] = 122001;
+  v2.total_forward_active_energy[1] = 233002;
+  v2.total_forward_active_energy[2] = 344003;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_fae(1), 1.22001);
+  EXPECT_DOUBLE_EQ(ev.get_fae(2), 2.33002);
+  EXPECT_DOUBLE_EQ(ev.get_fae(3), 3.44003);
+  EXPECT_DOUBLE_EQ(ev.get_fae_sum(), 6.99006);
+}
+
+TEST_F(ChannelEmExtendedValueTest, reverseActiveEnergy) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.total_reverse_active_energy[0] = 122002;
+  v2.total_reverse_active_energy[1] = 233004;
+  v2.total_reverse_active_energy[2] = 344006;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_rae(1), 1.22002);
+  EXPECT_DOUBLE_EQ(ev.get_rae(2), 2.33004);
+  EXPECT_DOUBLE_EQ(ev.get_rae(3), 3.44006);
+  EXPECT_DOUBLE_EQ(ev.get_rae_sum(), 6.99012);
+}
+
+TEST_F(ChannelEmExtendedValueTest, forwardActiveEnergyBalanced) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.total_forward_active_energy_balanced = 123456;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_fae_balanced(), 1.23456);
+}
+
+TEST_F(ChannelEmExtendedValueTest, reverseActiveEnergyBalanced) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+  v2.total_reverse_active_energy_balanced = 223456;
+  supla_channel_em_extended_value ev(&v2, nullptr, 0);
+  EXPECT_DOUBLE_EQ(ev.get_rae_balanced(), 2.23456);
 }
 
 }  // namespace testing

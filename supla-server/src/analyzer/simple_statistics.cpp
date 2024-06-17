@@ -18,16 +18,23 @@
 
 #include "analyzer/simple_statistics.h"
 
+#include <math.h>
+
 supla_simple_statiscics::supla_simple_statiscics() {
-  min = 0;
-  max = 0;
-  avg = 0;
+  first = NAN;
+  min = NAN;
+  max = NAN;
+  avg = NAN;
   sum = 0;
+  last = NAN;
   count = 0;
+  non_nan_count = 0;
   first_update_time = {};
 }
 
 supla_simple_statiscics::~supla_simple_statiscics(void) {}
+
+double supla_simple_statiscics::get_first(void) { return first; }
 
 double supla_simple_statiscics::get_min(void) { return min; }
 
@@ -35,32 +42,50 @@ double supla_simple_statiscics::get_max(void) { return max; }
 
 double supla_simple_statiscics::get_avg(void) { return avg; }
 
+double supla_simple_statiscics::get_last(void) { return last; }
+
 unsigned int supla_simple_statiscics::get_sample_count(void) { return count; }
+
+unsigned int supla_simple_statiscics::get_non_nan_sample_count(void) {
+  return non_nan_count;
+}
 
 void supla_simple_statiscics::add_sample(double value) {
   if (count == 0) {
-    min = value;
-    max = value;
     gettimeofday(&first_update_time, nullptr);
-  } else {
-    if (value < min) {
-      min = value;
-    } else if (value > max) {
-      max = value;
-    }
   }
 
-  sum += value;
+  if (!isnan(value)) {
+    if (isnan(min) || value < min) {
+      min = value;
+    }
+
+    if (isnan(max) || value > max) {
+      max = value;
+    }
+
+    if (isnan(first)) {
+      first = value;
+    }
+
+    non_nan_count++;
+    sum += value;
+    avg = sum / non_nan_count;
+    last = value;
+  }
+
   count++;
-  avg = sum / count;
 }
 
 void supla_simple_statiscics::reset(void) {
-  min = 0;
-  max = 0;
-  avg = 0;
+  first = NAN;
+  min = NAN;
+  max = NAN;
+  avg = NAN;
   sum = 0;
+  last = NAN;
   count = 0;
+  non_nan_count = 0;
   first_update_time = {};
 }
 
@@ -69,9 +94,10 @@ unsigned int supla_simple_statiscics::get_total_time_msec(void) {
     struct timeval now = {};
     gettimeofday(&now, nullptr);
 
-    return ((now.tv_sec * 1000000 + now.tv_usec) -
-            (first_update_time.tv_sec * 1000000 + first_update_time.tv_usec)) /
-           1000;
+    return ((now.tv_sec * 1000000ULL + now.tv_usec) -
+            (first_update_time.tv_sec * 1000000ULL +
+             first_update_time.tv_usec)) /
+           1000ULL;
   }
 
   return 0;

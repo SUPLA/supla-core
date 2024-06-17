@@ -28,7 +28,7 @@ namespace testing {
 class SetSceneCaptionIntegrationTest : public SuperuserAuthorization {
  private:
   unsigned char match;
-  void sceneMatch(TSC_SetCaptionResult *result, TSC_SuplaScene *scene);
+  void sceneMatch(TSCD_SetCaptionResult *result, TSC_SuplaScene *scene);
 
  protected:
   unsigned char expectedResultCode;
@@ -40,7 +40,7 @@ class SetSceneCaptionIntegrationTest : public SuperuserAuthorization {
  public:
   SetSceneCaptionIntegrationTest();
   virtual ~SetSceneCaptionIntegrationTest();
-  virtual void onSceneCaptionSetResult(TSC_SetCaptionResult *result);
+  virtual void onSceneCaptionSetResult(TSCD_SetCaptionResult *result);
   virtual void sceneUpdate(TSC_SuplaScene *scene);
 };
 

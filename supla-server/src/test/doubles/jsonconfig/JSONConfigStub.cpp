@@ -32,10 +32,10 @@ cJSON *JSONConfigStub::get_user_root(void) {
 }
 
 cJSON *JSONConfigStub::set_item_value(cJSON *parent, const std::string &name,
-                                      int type, bool force,
+                                      int type, bool force, cJSON *obj,
                                       const char *string_value,
                                       double number_value) {
-  return supla_json_config::set_item_value(parent, name, type, force,
+  return supla_json_config::set_item_value(parent, name, type, force, obj,
                                            string_value, number_value);
 }
 

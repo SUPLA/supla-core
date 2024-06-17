@@ -35,9 +35,9 @@ supla_objcontainer *supla_objcontainer_item::getContainer(void) {
   return Container;
 }
 
-int supla_objcontainer_item::getId() { return Id; }
+int supla_objcontainer_item::get_id() { return Id; }
 
-int supla_objcontainer_item::getExtraId() { return -1; }
+int supla_objcontainer_item::get_extra_id() { return -1; }
 
 void supla_objcontainer_item::mark_for_remote_update(int mark) {
   if (remote_update_is_possible()) {

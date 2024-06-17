@@ -211,16 +211,15 @@ bool supla_user_channelgroups::action_toggle(const supla_caller &caller,
       });
 }
 
-bool supla_user_channelgroups::action_shut(const supla_caller &caller,
-                                           int GroupID,
-                                           const char *closing_percentage,
-                                           bool delta) {
+bool supla_user_channelgroups::action_shut(
+    const supla_caller &caller, int GroupID,
+    const supla_action_shading_system_parameters *params) {
   return for_each_channel(
       GroupID,
-      [caller, GroupID, closing_percentage, delta](
-          supla_device *device, int channelId, char EOL) -> bool {
-        return device->get_channels()->action_shut(
-            caller, channelId, GroupID, EOL, closing_percentage, delta);
+      [caller, GroupID, params](supla_device *device, int channelId,
+                                char EOL) -> bool {
+        return device->get_channels()->action_shut(caller, channelId, GroupID,
+                                                   EOL, params);
       });
 }
 
@@ -321,5 +320,53 @@ bool supla_user_channelgroups::action_open_close(const supla_caller &caller,
       [caller, GroupID](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->action_open_close(caller, channelId,
                                                          GroupID, EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_hvac_set_parameters(
+    const supla_caller &caller, int group_id,
+    const supla_action_hvac_parameters *params) {
+  return for_each_channel(
+      group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
+        return device->get_channels()->action_hvac_set_parameters(
+            caller, channel_id, group_id, eol, params);
+      });
+}
+
+bool supla_user_channelgroups::action_hvac_switch_to_program_mode(
+    const supla_caller &caller, int group_id) {
+  return for_each_channel(
+      group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
+        return device->get_channels()->action_hvac_switch_to_program_mode(
+            caller, channel_id, group_id, eol);
+      });
+}
+
+bool supla_user_channelgroups::action_hvac_switch_to_manual_mode(
+    const supla_caller &caller, int group_id) {
+  return for_each_channel(
+      group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
+        return device->get_channels()->action_hvac_switch_to_manual_mode(
+            caller, channel_id, group_id, eol);
+      });
+}
+
+bool supla_user_channelgroups::action_hvac_set_temperatures(
+    const supla_caller &caller, int group_id,
+    const supla_action_hvac_setpoint_temperatures *temperatures) {
+  return for_each_channel(
+      group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
+        return device->get_channels()->action_hvac_set_temperatures(
+            caller, channel_id, group_id, eol, temperatures);
+      });
+}
+
+bool supla_user_channelgroups::action_hvac_set_temperature(
+    const supla_caller &caller, int group_id,
+    const supla_action_hvac_setpoint_temperature *temperature) {
+  return for_each_channel(
+      group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
+        return device->get_channels()->action_hvac_set_temperature(
+            caller, channel_id, group_id, eol, temperature);
       });
 }

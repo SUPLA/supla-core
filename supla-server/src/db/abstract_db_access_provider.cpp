@@ -21,3 +21,19 @@
 supla_abstract_db_access_provider::supla_abstract_db_access_provider(void) {}
 
 supla_abstract_db_access_provider::~supla_abstract_db_access_provider(void) {}
+
+time_t supla_abstract_db_access_provider::mytime_to_time_t(MYSQL_TIME *time) {
+  if (!time) {
+    return 0;
+  }
+
+  struct tm timeinfo = {};
+  timeinfo.tm_year = time->year - 1900;
+  timeinfo.tm_mon = time->month - 1;
+  timeinfo.tm_mday = time->day;
+  timeinfo.tm_hour = time->hour;
+  timeinfo.tm_min = time->minute;
+  timeinfo.tm_sec = time->second;
+
+  return mktime(&timeinfo);
+}

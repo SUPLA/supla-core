@@ -22,7 +22,10 @@
 #include <string>
 #include <vector>
 
+#include "device/channel_fragment.h"
+#include "device/extended_value/channel_extended_value.h"
 #include "jsonconfig/device/device_json_config.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 #include "tools.h"
 
@@ -56,10 +59,10 @@ class supla_abstract_device_dao {
 
   virtual bool get_device_variables(int device_id, bool *device_enabled,
                                     int *original_location_id, int *location_id,
-                                    bool *location_enabled) = 0;
+                                    bool *location_enabled, int *flags) = 0;
 
-  virtual int get_channel_id_and_type(int device_id, int channel_number,
-                                      int *type) = 0;
+  virtual int get_channel_properties(int device_id, int channel_number,
+                                     int *type, int *flist) = 0;
 
   virtual int get_device_channel_count(int device_id) = 0;
 
@@ -75,22 +78,53 @@ class supla_abstract_device_dao {
                              int proto_version, int flags) = 0;
 
   virtual int add_channel(int device_id, int channel_number, int type, int func,
-                          int param1, int param2, int flist, int flags,
-                          int user_id) = 0;
+                          int param1, int param2, int flist,
+                          _supla_int64_t flags, int alt_icon, int user_id) = 0;
 
   virtual bool on_new_device(int device_id) = 0;
 
   virtual bool on_channel_added(int device_id, int channel_id) = 0;
 
   virtual bool set_device_config(int user_id, int device_id,
-                                 device_json_config *config) = 0;
+                                 device_json_config *config,
+                                 unsigned _supla_int16_t available_fields) = 0;
 
-  virtual device_json_config *get_device_config(int device_id,
-                                                std::string *md5sum) = 0;
+  virtual device_json_config *get_device_config(
+      int device_id, std::string *user_config_md5sum,
+      std::string *properties_md5sum) = 0;
 
   // Perhaps this method should be added to the repository
   virtual std::vector<supla_device_channel *> get_channels(
       supla_device *device) = 0;
+
+  // The following methods should be moved to channel_dao
+  virtual void set_channel_properties(int user_id, int channel_id,
+                                      supla_json_config *config) = 0;
+
+  virtual void erase_channel_properties(int user_id, int channel_id) = 0;
+
+  virtual bool set_channel_config(int user_id, int channel_id,
+                                  supla_json_config *config) = 0;
+
+  virtual void update_channel_value(
+      int channel_id, int user_id, const char value[SUPLA_CHANNELVALUE_SIZE],
+      unsigned _supla_int_t validity_time_sec) = 0;
+
+  virtual void update_channel_extended_value(
+      int channel_id, int user_id, supla_channel_extended_value *ev) = 0;
+
+  virtual void update_channel_functions(int channel_id, int user_id,
+                                        int flist) = 0;
+
+  virtual supla_json_config *get_channel_config(
+      int channel_id, std::string *user_config_md5sum,
+      std::string *properties_md5sum) = 0;
+
+  virtual std::vector<supla_channel_fragment> get_channel_fragments(
+      int device_id) = 0;
+
+  virtual supla_channel_fragment get_channel_fragment(int device_id,
+                                                      int channel_number) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_DEVICE_DAO_H_ */

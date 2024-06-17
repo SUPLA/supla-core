@@ -24,8 +24,14 @@
 #include <string>
 
 #include "device/extended_value/channel_em_extended_value.h"
+#include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
+#include "device/extended_value/channel_ic_extended_value.h"
+#include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
+#include "device/value/channel_fb_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
+#include "device/value/channel_general_purpose_base_value.h"
+#include "device/value/channel_hvac_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
@@ -42,6 +48,7 @@ supla_vbt_on_change_condition::supla_vbt_on_change_condition(void) {
   resume_op = op_unknown;
   resume_value = 0;
   paused = false;
+  on_change = false;
 }
 
 supla_vbt_on_change_condition::~supla_vbt_on_change_condition(void) {}
@@ -67,14 +74,14 @@ bool supla_vbt_on_change_condition::is_paused(void) const { return paused; }
 void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
   op = op_unknown;
 
-  cJSON *root = cJSON_GetObjectItem(json, "on_change_to");
-  if (!root) {
-    return;
-  }
+  cJSON *root = cJSON_GetObjectItem(json, "on_change");
+  on_change = root != nullptr;
 
-  if (!get_operator_and_value(root, &op, &value)) {
-    op = op_unknown;
-    return;
+  if (!root) {
+    root = cJSON_GetObjectItem(json, "on_change_to");
+    if (!root) {
+      return;
+    }
   }
 
   cJSON *name_json = cJSON_GetObjectItem(root, "name");
@@ -106,7 +113,24 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_power_apparent_sum, "power_apparent_sum"},
         {var_name_power_apparent1, "power_apparent1"},
         {var_name_power_apparent2, "power_apparent2"},
-        {var_name_power_apparent3, "power_apparent3"}};
+        {var_name_power_apparent3, "power_apparent3"},
+        {var_name_fae1, "fae1"},
+        {var_name_fae2, "fae2"},
+        {var_name_fae3, "fae3"},
+        {var_name_fae_sum, "fae_sum"},
+        {var_name_fae_balanced, "fae_balanced"},
+        {var_name_rae1, "rae1"},
+        {var_name_rae2, "rae2"},
+        {var_name_rae3, "rae3"},
+        {var_name_rae_sum, "rae_sum"},
+        {var_name_rae_balanced, "rae_balanced"},
+        {var_name_counter, "counter"},
+        {var_name_calculated_value, "calculated_value"},
+        {var_name_heating, "heating"},
+        {var_name_cooling, "cooling"},
+        {var_name_heating_or_cooling, "heating_or_cooling"},
+        {var_name_is_on, "is_on"},
+        {var_name_is_any_error_set, "is_any_error_set"}};
 
     for (auto it = names.begin(); it != names.end(); ++it) {
       if (it->second == cJSON_GetStringValue(name_json)) {
@@ -114,6 +138,15 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         break;
       }
     }
+  }
+
+  if (on_change) {
+    return;
+  }
+
+  if (!get_operator_and_value(root, &op, &value)) {
+    op = op_unknown;
+    return;
   }
 
   cJSON *resume_json = cJSON_GetObjectItem(root, "resume");
@@ -213,25 +246,39 @@ bool supla_vbt_on_change_condition::get_number(supla_channel_value *value,
     return true;
   }
 
+  if (dynamic_cast<supla_channel_fb_value *>(value)) {
+    *result =
+        dynamic_cast<supla_channel_fb_value *>(value)->get_fb_value()->position;
+    return true;
+  }
+
   if (dynamic_cast<supla_channel_temphum_value *>(value)) {
     supla_channel_temphum_value *temphum =
         dynamic_cast<supla_channel_temphum_value *>(value);
 
     switch (var_name) {
-      case var_name_temperature:
-        *result = temphum->get_temperature();
-        break;
-      case var_name_humidity:
-        if (!temphum->is_humidity_available()) {
-          return false;
+      case var_name_temperature: {
+        double temperature = temphum->get_temperature();
+        if (temperature >
+            supla_channel_temphum_value::incorrect_temperature()) {
+          *result = temperature;
+          return true;
         }
-        *result = temphum->get_humidity();
+      } break;
+      case var_name_humidity:
+        if (temphum->is_humidity_available()) {
+          double humidity = temphum->get_humidity();
+          if (humidity > supla_channel_temphum_value::incorrect_humidity()) {
+            *result = temphum->get_humidity();
+            return true;
+          }
+        }
         break;
       default:
-        return false;
+        break;
     }
 
-    return true;
+    return false;
   }
 
   if (dynamic_cast<supla_channel_valve_value *>(value)) {
@@ -250,9 +297,42 @@ bool supla_vbt_on_change_condition::get_number(supla_channel_value *value,
                 : 0;
         break;
       default:
-        return vv->get_valve_value()->closed ? 1 : 0;
+        *result = vv->get_valve_value()->closed ? 1 : 0;
     }
 
+    return true;
+  }
+
+  if (dynamic_cast<supla_channel_hvac_value *>(value)) {
+    supla_channel_hvac_value *hvac =
+        dynamic_cast<supla_channel_hvac_value *>(value);
+
+    switch (var_name) {
+      case var_name_heating:
+        *result = hvac->is_heating() ? 1 : 0;
+        break;
+      case var_name_cooling:
+        *result = hvac->is_cooling() ? 1 : 0;
+        break;
+      case var_name_heating_or_cooling:
+        *result = hvac->is_heating() || hvac->is_cooling() ? 1 : 0;
+        break;
+      case var_name_is_on:
+        *result = hvac->is_on() ? 1 : 0;
+        break;
+      case var_name_is_any_error_set:
+        *result = hvac->is_any_error_set() ? 1 : 0;
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  }
+
+  if (dynamic_cast<supla_channel_general_purpose_base_value *>(value)) {
+    *result = dynamic_cast<supla_channel_general_purpose_base_value *>(value)
+                  ->get_value();
     return true;
   }
 
@@ -326,6 +406,71 @@ bool supla_vbt_on_change_condition::get_number(
       case var_name_power_apparent3:
         *result = em->get_power_apparent(3);
         break;
+      case var_name_fae1:
+        *result = em->get_fae(1);
+        break;
+      case var_name_fae2:
+        *result = em->get_fae(2);
+        break;
+      case var_name_fae3:
+        *result = em->get_fae(3);
+        break;
+      case var_name_fae_sum:
+        *result = em->get_fae_sum();
+        break;
+      case var_name_fae_balanced:
+        *result = em->get_fae_balanced();
+        break;
+      case var_name_rae1:
+        *result = em->get_rae(1);
+        break;
+      case var_name_rae2:
+        *result = em->get_rae(2);
+        break;
+      case var_name_rae3:
+        *result = em->get_rae(3);
+        break;
+      case var_name_rae_sum:
+        *result = em->get_rae_sum();
+        break;
+      case var_name_rae_balanced:
+        *result = em->get_rae_balanced();
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  } else if (dynamic_cast<supla_channel_ic_extended_value *>(value)) {
+    supla_channel_ic_extended_value *ic =
+        dynamic_cast<supla_channel_ic_extended_value *>(value);
+
+    switch (var_name) {
+      case var_name_counter:
+        *result = ic->get_counter();
+        break;
+      case var_name_calculated_value:
+        *result = ic->get_calculated_value_dbl();
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  } else if (dynamic_cast<supla_channel_thermostat_extended_value *>(value)) {
+    supla_channel_thermostat_extended_value *thev =
+        dynamic_cast<supla_channel_thermostat_extended_value *>(value);
+
+    // Currently, only heatpol uses this, so we do not need to check the channel
+    // function.
+
+    supla_channel_hp_thermostat_ev_decorator decorator(thev);
+
+    switch (var_name) {
+      case var_name_heating:
+      case var_name_is_on:
+        *result = decorator.is_heating() ? 1 : 0;
+        break;
       default:
         return false;
     }
@@ -354,25 +499,30 @@ bool supla_vbt_on_change_condition::is_condition_met(_vbt_operator_e op,
 
 bool supla_vbt_on_change_condition::is_condition_met(double old_value,
                                                      double new_value) {
-  bool result = is_condition_met(op, old_value, new_value, value);
+  if (on_change) {
+    return fabs(new_value - old_value) > 0.000001;
+  }
 
   if (paused) {
-    if (result) {
+    if (is_condition_met(resume_op, old_value, new_value, resume_value)) {
       paused = false;
     }
-    return false;
+  } else {
+    bool result = is_condition_met(op, old_value, new_value, value);
+
+    if (result && resume_op != op_unknown) {
+      paused = true;
+    }
+
+    return result;
   }
 
-  if (result && resume_op != op_unknown) {
-    paused = true;
-  }
-
-  return result;
+  return false;
 }
 
 bool supla_vbt_on_change_condition::is_condition_met(
     supla_channel_value *old_value, supla_channel_value *new_value) {
-  if (op == op_unknown) {
+  if (!on_change && op == op_unknown) {
     return false;
   }
 
@@ -393,7 +543,7 @@ bool supla_vbt_on_change_condition::is_condition_met(
 bool supla_vbt_on_change_condition::is_condition_met(
     supla_channel_extended_value *old_value,
     supla_channel_extended_value *new_value) {
-  if (op == op_unknown) {
+  if (!on_change && op == op_unknown) {
     return false;
   }
 

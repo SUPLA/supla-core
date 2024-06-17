@@ -53,6 +53,10 @@ supla_asynctask_queue::~supla_asynctask_queue(void) {
     lck_unlock(lck);
 
     if (pool) {
+      pool->terminate();  // Prevents to pure virtual method call. (This can
+                          // happen if terminate is called from a thread_pool
+                          // class destructor)
+
       // We can remove outside of lck because pools are only deleted here.
       delete pool;
     }

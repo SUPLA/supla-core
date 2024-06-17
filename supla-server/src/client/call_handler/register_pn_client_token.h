@@ -35,6 +35,7 @@ class supla_ch_register_pn_client_token
   supla_ch_register_pn_client_token(void);
   virtual ~supla_ch_register_pn_client_token();
   virtual bool can_handle_call(unsigned int call_id);
+  virtual bool is_registration_required(void);
 };
 
 #endif /* SUPLA_CH_REGISTER_PN_CLIENT_TOKEN_H_*/

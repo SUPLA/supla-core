@@ -35,11 +35,11 @@ const char controlling_the_gate_config::state_verification_method_active_key[] =
     "stateVerificationMethodActive";
 
 controlling_the_gate_config::controlling_the_gate_config(void)
-    : channel_json_config() {}
+    : supla_json_config() {}
 
 controlling_the_gate_config::controlling_the_gate_config(
-    channel_json_config *root)
-    : channel_json_config(root) {}
+    supla_json_config *root)
+    : supla_json_config(root) {}
 
 int controlling_the_gate_config::get_number_of_attempts(const char *key) {
   cJSON *root = get_user_root();

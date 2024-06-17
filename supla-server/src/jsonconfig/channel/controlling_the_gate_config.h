@@ -21,10 +21,10 @@
 
 #include <string>
 
-#include "jsonconfig/channel/channel_json_config.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 
-class controlling_the_gate_config : public channel_json_config {
+class controlling_the_gate_config : public supla_json_config {
  private:
   static const char number_of_attempts_to_open_key[];
   static const char number_of_attempts_to_close_key[];
@@ -33,7 +33,7 @@ class controlling_the_gate_config : public channel_json_config {
 
  protected:
  public:
-  explicit controlling_the_gate_config(channel_json_config *root);
+  explicit controlling_the_gate_config(supla_json_config *root);
   controlling_the_gate_config(void);
   int get_number_of_attempts_to_open(void);
   int get_number_of_attempts_to_close(void);

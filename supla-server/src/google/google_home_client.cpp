@@ -20,7 +20,9 @@
 
 #include <string.h>
 
+#include "device/value/channel_fb_value.h"
 #include "device/value/channel_gate_value.h"
+#include "device/value/channel_hvac_value_with_temphum.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
@@ -31,9 +33,12 @@ using std::string;
 
 supla_google_home_client::supla_google_home_client(
     int channel_id, supla_abstract_curl_adapter *curl_adapter,
-    supla_google_home_credentials *credentials)
+    supla_google_home_credentials *credentials,
+    supla_remote_gateway_access_token homegraph_token)
     : supla_voice_assistant_client(channel_id, curl_adapter, credentials) {
+  this->homegraph_token = homegraph_token;
   this->json_states = cJSON_CreateObject();
+  this->sync_intent = false;
 }
 
 supla_google_home_client::~supla_google_home_client(void) {
@@ -57,20 +62,54 @@ bool supla_google_home_client::perform_post_request(cJSON *json_data,
     return false;
   }
 
-  char *data = cJSON_PrintUnformatted(json_data);
+  char *data = nullptr;
+
+  if (sync_intent && homegraph_token.is_valid()) {
+    cJSON_Delete(json_data);
+    json_data = cJSON_CreateObject();
+    cJSON_AddStringToObject(
+        json_data, "agentUserId",
+        get_credentials()->get_user_long_unique_id().c_str());
+  }
+
+  data = cJSON_PrintUnformatted(json_data);
   cJSON_Delete((cJSON *)json_data);
 
   if (data) {
+    get_curl_adapter()->reset();
+
     string request_result;
     string token = "Authorization: Bearer ";
-    token.append(get_credentials()->get_access_token());
 
-    get_curl_adapter()->reset();
-    get_curl_adapter()->set_opt_url(
-        "https://"
-        "odokilkqoesh73zfznmiupey4a0uugaz.lambda-url.eu-west-1.on.aws/");
+    if (homegraph_token.is_valid()) {
+      supla_log(LOG_DEBUG, "HomeBridge direct access.");
+
+      string url = "https://homegraph.googleapis.com/";
+
+      if (sync_intent) {
+        url.append("v1/devices:requestSync");
+      } else {
+        url.append("v1/devices:reportStateAndNotification");
+      }
+
+      token.append(homegraph_token.get_token());
+      get_curl_adapter()->set_opt_url(url.c_str());
+
+    } else {
+      supla_log(LOG_DEBUG, "HomeBridge access via AWS Lambda.");
+
+      token.append(get_credentials()->get_access_token());
+      get_curl_adapter()->set_opt_url(
+          "https://"
+          "odokilkqoesh73zfznmiupey4a0uugaz.lambda-url.eu-west-1.on.aws/");
+    }
+
     get_curl_adapter()->append_header("Content-Type: application/json");
-    get_curl_adapter()->append_header(token.c_str());
+
+    if (!token.empty()) {
+      get_curl_adapter()->append_header(token.c_str());
+    }
+
     get_curl_adapter()->set_opt_post_fields(data);
 
     get_curl_adapter()->set_opt_write_data(&request_result);
@@ -216,6 +255,66 @@ void supla_google_home_client::add_roller_shutter_state(void) {
   add_open_percent_state(100 - shut_percentage);
 }
 
+void supla_google_home_client::add_facade_blind_state(void) {
+  supla_channel_fb_value *v =
+      dynamic_cast<supla_channel_fb_value *>(get_channel_value());
+
+  short shut_percentage = 0;
+  short tilt = 0;
+
+  if (v && is_channel_connected()) {
+    if (v->get_fb_value()->position >= 0 &&
+        v->get_fb_value()->position <= 100) {
+      shut_percentage = v->get_fb_value()->position;
+    }
+
+    if (v->get_fb_value()->tilt >= 0 && v->get_fb_value()->tilt <= 100) {
+      tilt = v->get_fb_value()->tilt;
+    }
+  }
+
+  cJSON *state = (cJSON *)get_state_skeleton();
+  if (state) {
+    cJSON_AddNumberToObject(state, "openPercent", 100 - shut_percentage);
+    cJSON_AddNumberToObject(state, "rotationPercent", 100 - tilt);
+  }
+}
+
+void supla_google_home_client::add_thermostat_state(void) {
+  cJSON *state = (cJSON *)get_state_skeleton();
+  if (state) {
+    supla_channel_hvac_value_with_temphum *v =
+        dynamic_cast<supla_channel_hvac_value_with_temphum *>(
+            get_channel_value());
+    if (v) {
+      cJSON_AddStringToObject(state, "thermostatMode",
+                              v->get_google_home_mode().c_str());
+
+      if (v->get_mode() == SUPLA_HVAC_MODE_HEAT_COOL) {
+        cJSON_AddNumberToObject(state, "thermostatTemperatureSetpointHigh",
+                                v->get_setpoint_temperature_cool_dbl());
+        cJSON_AddNumberToObject(state, "thermostatTemperatureSetpointLow",
+                                v->get_setpoint_temperature_heat_dbl());
+      } else {
+        cJSON_AddNumberToObject(state, "thermostatTemperatureSetpoint",
+                                v->get_setpoint_temperature_dbl());
+      }
+
+      if (v->get_temperature() >
+          supla_channel_temphum_value::incorrect_temperature()) {
+        cJSON_AddNumberToObject(state, "thermostatTemperatureAmbient",
+                                v->get_temperature_dbl());
+      }
+
+      if (v->get_humidity() >
+          supla_channel_temphum_value::incorrect_humidity()) {
+        cJSON_AddNumberToObject(state, "thermostatHumidityAmbient",
+                                v->get_humidity_dbl());
+      }
+    }
+  }
+}
+
 bool supla_google_home_client::state_report(void) {
   cJSON *report = (cJSON *)get_header();
 
@@ -251,6 +350,7 @@ bool supla_google_home_client::sync(void) {
 
   if (header) {
     cJSON_AddStringToObject(header, "intent", "action.devices.SYNC");
+    sync_intent = true;
     int http_result_code = 0;
     if (perform_post_request(header, &http_result_code)) {
       return http_result_code >= 200 && http_result_code <= 206;

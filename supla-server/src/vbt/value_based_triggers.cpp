@@ -18,6 +18,8 @@
 
 #include "value_based_triggers.h"
 
+#include <string>
+
 #include "actions/action_executor.h"
 #include "db/db_access_provider.h"
 #include "device/channel_property_getter.h"
@@ -114,6 +116,10 @@ void supla_value_based_triggers::on_channel_value_changed(
     supla_abstract_channel_property_getter *property_getter) {
   vector<supla_vbt_condition_result> matches;
 
+  double latitude = 0;
+  double longitude = 0;
+  std::string timezone = user->get_timezone(&latitude, &longitude);
+
   lck_lock(lck);
   for (auto it = triggers.begin(); it != triggers.end(); ++it) {
     supla_vbt_condition_result m =
@@ -122,16 +128,20 @@ void supla_value_based_triggers::on_channel_value_changed(
             : (*it)->are_conditions_met(channel_id, old_evalue, new_evalue);
 
     if (m.are_conditions_met()) {
-      m.set_trigger(*it);
-      matches.push_back(m);
+      if ((*it)->get_active_period().is_now_active(timezone.c_str(), latitude,
+                                                   longitude)) {
+        m.set_trigger(*it);
+        matches.push_back(m);
+      }
     }
   }
   lck_unlock(lck);
 
   // We fire triggers only after leaving the lock.
   for (auto it = matches.begin(); it != matches.end(); ++it) {
+    auto replacement_map = it->get_replacement_map();
     it->get_trigger()->fire(caller, user->getUserID(), action_executor,
-                            property_getter, it->get_replacement_map());
+                            property_getter, &replacement_map);
   }
 }
 
@@ -148,7 +158,7 @@ void supla_value_based_triggers::on_channel_value_changed(
     const supla_caller &caller, int channel_id, supla_channel_value *old_value,
     supla_channel_value *new_value) {
   supla_action_executor exec;
-  supla_cahnnel_property_getter property_getter;
+  supla_channel_property_getter property_getter;
 
   on_channel_value_changed(caller, channel_id, old_value, new_value, &exec,
                            &property_getter);
@@ -169,7 +179,7 @@ void supla_value_based_triggers::on_channel_value_changed(
     supla_channel_extended_value *old_value,
     supla_channel_extended_value *new_value) {
   supla_action_executor exec;
-  supla_cahnnel_property_getter property_getter;
+  supla_channel_property_getter property_getter;
 
   on_channel_value_changed(caller, channel_id, old_value, new_value, &exec,
                            &property_getter);

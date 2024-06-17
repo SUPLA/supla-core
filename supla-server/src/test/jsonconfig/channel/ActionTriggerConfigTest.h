@@ -20,14 +20,22 @@
 #define ACTIONTRIGGERCONFIGTEST_H_
 
 #include "gtest/gtest.h"  // NOLINT
+#include "jsonconfig/channel/action_trigger_config.h"
+#include "proto.h"
 
 namespace testing {
 
 class ActionTriggerConfigTest : public Test {
  protected:
+  template <class resultCls>
+  resultCls *get_params(action_trigger_config *config);
+
  public:
   ActionTriggerConfigTest(void);
   virtual ~ActionTriggerConfigTest(void);
+  void EXPECT_NO_PARAMS(action_trigger_config *config);
+  TAction_ShadingSystem_Parameters get_ss_params(action_trigger_config *config);
+  TAction_RGBW_Parameters get_rgbw_params(action_trigger_config *config);
 };
 
 } /* namespace testing */

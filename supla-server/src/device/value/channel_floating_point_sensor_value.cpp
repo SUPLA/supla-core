@@ -54,7 +54,7 @@ bool supla_channel_floating_point_sensor_value::is_function_supported(
     case SUPLA_CHANNELFNC_WINDSENSOR:
     case SUPLA_CHANNELFNC_PRESSURESENSOR:
     case SUPLA_CHANNELFNC_RAINSENSOR:
-    case SUPLA_CHANNELTYPE_WEIGHTSENSOR:
+    case SUPLA_CHANNELFNC_WEIGHTSENSOR:
       return true;
   }
 

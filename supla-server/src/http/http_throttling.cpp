@@ -43,6 +43,12 @@ unsigned int supla_http_throttling::get_counter_threadshold(int func) {
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
       return 20;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      return 10;
   }
   return 5;
 }
@@ -77,8 +83,8 @@ int supla_http_throttling::get_delay_time(int channel_id, int func) {
   }
 
   it->counter++;
-  long long time_diff = (now.tv_sec * 1000000 + now.tv_usec) -
-                        (it->last.tv_sec * 1000000 + it->last.tv_usec);
+  long long time_diff = (now.tv_sec * 1000000LL + now.tv_usec) -
+                        (it->last.tv_sec * 1000000LL + it->last.tv_usec);
 
   if (time_diff >= get_reset_time_us(func)) {
     it->counter = 1;

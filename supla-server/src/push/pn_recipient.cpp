@@ -22,12 +22,16 @@ using std::string;
 
 supla_pn_recipient::supla_pn_recipient(int client_id, int app_id,
                                        bool development_env,
-                                       const string& token) {
+                                       const string& token,
+                                       const std::string& profile_name,
+                                       int protocol_version) {
   this->client_id = client_id;
   this->token = token;
   this->app_id = app_id;
   this->development_env = development_env;
   this->exists = true;
+  this->profile_name = profile_name;
+  this->protocol_version = protocol_version;
 }
 
 supla_pn_recipient::supla_pn_recipient(supla_pn_recipient* recipient) {
@@ -36,6 +40,7 @@ supla_pn_recipient::supla_pn_recipient(supla_pn_recipient* recipient) {
   this->app_id = recipient->app_id;
   this->development_env = recipient->development_env;
   this->exists = recipient->exists;
+  this->protocol_version = recipient->protocol_version;
 }
 
 supla_pn_recipient::~supla_pn_recipient(void) {}
@@ -57,3 +62,9 @@ bool supla_pn_recipient::is_exists(void) { return exists; }
 bool supla_pn_recipient::is_development_env(void) { return development_env; }
 
 void supla_pn_recipient::set_exists(bool exists) { this->exists = exists; }
+
+const std::string& supla_pn_recipient::get_profile_name(void) {
+  return profile_name;
+}
+
+int supla_pn_recipient::get_protocol_version(void) { return protocol_version; }

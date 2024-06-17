@@ -67,11 +67,13 @@ class IntegrationTest : public Test {
   virtual void onRegistrationError(int code);
   virtual void onSuperuserAuthorizationResult(bool authorized, int code);
   virtual void onChannelFunctionSetResult(TSC_SetChannelFunctionResult *result);
-  virtual void onChannelCaptionSetResult(TSC_SetCaptionResult *result);
-  virtual void onLocationCaptionSetResult(TSC_SetCaptionResult *result);
-  virtual void onSceneCaptionSetResult(TSC_SetCaptionResult *result);
+  virtual void onChannelCaptionSetResult(TSCD_SetCaptionResult *result);
+  virtual void onChannelGroupCaptionSetResult(TSCD_SetCaptionResult *result);
+  virtual void onLocationCaptionSetResult(TSCD_SetCaptionResult *result);
+  virtual void onSceneCaptionSetResult(TSCD_SetCaptionResult *result);
   virtual void onChannelBasicCfg(TSC_ChannelBasicCfg *cfg);
-  virtual void channelUpdate(TSC_SuplaChannel_D *channel);
+  virtual void channelUpdate(TSC_SuplaChannel_E *channel);
+  virtual void channelGroupUpdate(TSC_SuplaChannelGroup_B *channel_group);
   virtual void locationUpdate(TSC_SuplaLocation *location);
   virtual void sceneUpdate(TSC_SuplaScene *scene);
   virtual void onRegistrationEnabled(TSDC_RegistrationEnabled *reg_enabled);

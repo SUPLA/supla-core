@@ -16,8 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "jsonconfig/channel/action_trigger_config.h"
+#include "action_trigger_config.h"
 
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
+#include "actions/action_rgbw_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 #include "proto.h"
 #include "tools.h"
 
@@ -57,13 +61,13 @@ const char action_trigger_config::actions_key[] = "actions";
 const char action_trigger_config::param_key[] = "param";
 
 action_trigger_config::action_trigger_config(void)
-    : abstract_action_config(), channel_json_config() {
+    : abstract_action_config(), supla_json_config() {
   active_cap = 0;
   channel_id_if_subject_not_set = 0;
 }
 
-action_trigger_config::action_trigger_config(channel_json_config *root)
-    : abstract_action_config(), channel_json_config(root) {
+action_trigger_config::action_trigger_config(supla_json_config *root)
+    : abstract_action_config(), supla_json_config(root) {
   active_cap = 0;
   channel_id_if_subject_not_set = 0;
 }
@@ -113,6 +117,8 @@ _subjectType_e action_trigger_config::get_subject_type(int cap) {
     return stScene;
   } else if (equal_ci(subjectType, "schedule")) {
     return stSchedule;
+  } else if (equal_ci(subjectType, "notification")) {
+    return stPushNotification;
   } else if (channel_id_if_subject_not_set) {
     cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
     if (action) {
@@ -350,86 +356,145 @@ cJSON *action_trigger_config::get_cap_user_config(int cap) {
   return cJSON_GetObjectItem(actions, it->second.c_str());
 }
 
-char action_trigger_config::get_percentage(void) {
-  char result = -1;
-
+supla_abstract_action_parameters *action_trigger_config::get_parameters(
+    function<supla_abstract_action_parameters *(cJSON *)> on_json_param) {
   if (!active_cap) {
-    return result;
+    return nullptr;
   }
 
   cJSON *cap_cfg = get_cap_user_config(active_cap);
 
   if (!cap_cfg) {
-    return result;
+    return nullptr;
   }
 
+  supla_abstract_action_parameters *result = nullptr;
   cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
 
   if (action) {
     cJSON *param = cJSON_GetObjectItem(action, "param");
     if (param) {
-      cJSON *percentage = cJSON_GetObjectItem(param, "percentage");
-      if (percentage && cJSON_IsNumber(percentage) &&
-          percentage->valueint >= 0 && percentage->valueint <= 100) {
-        result = percentage->valueint;
-      }
+      result = on_json_param(param);
     }
   }
 
   return result;
 }
 
-TAction_RGBW_Parameters action_trigger_config::get_rgbw(void) {
-  TAction_RGBW_Parameters result = {.Brightness = -1,
-                                    .ColorBrightness = -1,
-                                    .Color = 0,
-                                    .ColorRandom = false,
-                                    .OnOff = false};
-  if (!active_cap) {
-    return result;
-  }
-
-  cJSON *cap_cfg = get_cap_user_config(active_cap);
-
-  if (!cap_cfg) {
-    return result;
-  }
-
-  cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
-
-  if (action) {
-    cJSON *param = cJSON_GetObjectItem(action, "param");
-    if (param) {
-      cJSON *item = cJSON_GetObjectItem(param, "brightness");
-      if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
-          item->valueint <= 100) {
-        result.Brightness = item->valueint;
-      }
-
-      item = cJSON_GetObjectItem(param, "color_brightness");
-      if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
-          item->valueint <= 100) {
-        result.ColorBrightness = item->valueint;
-      }
-
-      item = cJSON_GetObjectItem(param, "hue");
-      if (item) {
-        if (cJSON_IsNumber(item)) {
-          result.Color = st_hue2rgb(item->valuedouble);
-        } else if (equal_ci(item, "white")) {
-          result.Color = 0xFFFFFF;
-        } else if (equal_ci(item, "random")) {
-          while (!result.Color) {
-            struct timeval time = {};
-            gettimeofday(&time, nullptr);
-            unsigned int seed = time.tv_sec + time.tv_usec;
-            result.Color = st_hue2rgb(rand_r(&seed) % 360);
-          }
-
-          result.ColorRandom = true;
+supla_abstract_action_parameters *action_trigger_config::get_shading_system(
+    void) {
+  return action_trigger_config::get_parameters(
+      [](cJSON *param) -> supla_abstract_action_parameters * {
+        supla_action_shading_system_parameters *result =
+            new supla_action_shading_system_parameters(param);
+        if (!result->is_any_param_set()) {
+          delete result;
+          result = nullptr;
         }
-      }
-    }
+        return result;
+      });
+}
+
+supla_abstract_action_parameters *action_trigger_config::get_rgbw(void) {
+  return action_trigger_config::get_parameters(
+      [&](cJSON *param) -> supla_abstract_action_parameters * {
+        supla_action_rgbw_parameters *result =
+            new supla_action_rgbw_parameters();
+        result->set_brightness(-1);
+        result->set_color_brightness(-1);
+
+        bool any_set = false;
+
+        cJSON *item = cJSON_GetObjectItem(param, "brightness");
+        if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
+            item->valueint <= 100) {
+          result->set_brightness(item->valueint);
+          any_set = true;
+        }
+
+        item = cJSON_GetObjectItem(param, "color_brightness");
+        if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
+            item->valueint <= 100) {
+          result->set_color_brightness(item->valueint);
+          any_set = true;
+        }
+
+        item = cJSON_GetObjectItem(param, "hue");
+        if (item) {
+          if (cJSON_IsNumber(item)) {
+            result->set_color(st_hue2rgb(item->valuedouble));
+            any_set = true;
+          } else if (equal_ci(item, "white")) {
+            result->set_color(0xFFFFFF);
+            any_set = true;
+          } else if (equal_ci(item, "random")) {
+            result->set_random_color(true);
+            any_set = true;
+          }
+        }
+
+        if (!any_set) {
+          delete result;
+          result = nullptr;
+        }
+
+        return result;
+      });
+}
+
+supla_abstract_action_parameters *action_trigger_config::get_temperature(void) {
+  return action_trigger_config::get_parameters(
+      [](cJSON *param) -> supla_abstract_action_parameters * {
+        cJSON *temperature = cJSON_GetObjectItem(param, "temperature");
+        if (temperature && cJSON_IsNumber(temperature)) {
+          return new supla_action_hvac_setpoint_temperature(
+              temperature->valueint);
+        }
+        return nullptr;
+      });
+}
+
+supla_abstract_action_parameters *action_trigger_config::get_temperatures(
+    void) {
+  return action_trigger_config::get_parameters(
+      [](cJSON *param) -> supla_abstract_action_parameters * {
+        supla_action_hvac_setpoint_temperatures *temperatures =
+            new supla_action_hvac_setpoint_temperatures();
+
+        cJSON *item = cJSON_GetObjectItem(param, "temperatureHeat");
+
+        if (item && cJSON_IsNumber(item)) {
+          temperatures->set_heating_temperature(item->valueint);
+        }
+
+        item = cJSON_GetObjectItem(param, "temperatureCool");
+
+        if (item && cJSON_IsNumber(item)) {
+          temperatures->set_cooling_temperature(item->valueint);
+        }
+
+        if (temperatures->is_any_temperature_set()) {
+          return temperatures;
+        } else {
+          delete temperatures;
+        }
+
+        return nullptr;
+      });
+}
+
+supla_abstract_action_parameters *action_trigger_config::get_parameters(void) {
+  supla_abstract_action_parameters *result = get_shading_system();
+  if (!result) {
+    result = get_rgbw();
+  }
+
+  if (!result) {
+    result = get_temperature();
+  }
+
+  if (!result) {
+    result = get_temperatures();
   }
 
   return result;

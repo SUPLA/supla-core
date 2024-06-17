@@ -22,7 +22,7 @@
 #include "device/channel_fragment.h"
 #include "device/extended_value/channel_extended_value.h"
 #include "device/value/channel_value.h"
-#include "jsonconfig/channel/channel_json_config.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 
 class supla_abstract_channel_property_getter {
@@ -42,9 +42,12 @@ class supla_abstract_channel_property_getter {
   virtual supla_channel_extended_value* _get_extended_value(int user_id,
                                                             int device_id,
                                                             int channel_id) = 0;
-  virtual channel_json_config* _get_detached_json_config(int user_id,
-                                                         int device_id,
-                                                         int channel_id) = 0;
+  virtual supla_json_config* _get_detached_json_config(int user_id,
+                                                       int device_id,
+                                                       int channel_id) = 0;
+
+  virtual int _get_channel_id(int user_id, int device_id,
+                              unsigned char channel_number) = 0;
 
  public:
   supla_abstract_channel_property_getter();
@@ -68,10 +71,12 @@ class supla_abstract_channel_property_getter {
 
   int get_func(void);
   int get_func(int user_id, int device_id, int channel_id);
+  int get_channel_id(unsigned char channel_number);
+  int get_channel_id(int user_id, int device_id, unsigned char channel_number);
 
-  channel_json_config* get_detached_json_config(void);
-  channel_json_config* get_detached_json_config(int user_id, int device_id,
-                                                int channel_id);
+  supla_json_config* get_detached_json_config(void);
+  supla_json_config* get_detached_json_config(int user_id, int device_id,
+                                              int channel_id);
 
   int get_user_id(void);
   int get_device_id(void);

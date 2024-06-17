@@ -27,10 +27,12 @@ class supla_alexa_response_search_condition
   int user_id;
   int device_id;
   int channel_id;
+  bool not_postponed;
 
  public:
   explicit supla_alexa_response_search_condition(int user_id, int device_id,
-                                                 int channel_id);
+                                                 int channel_id,
+                                                 bool not_postponed);
 
   virtual bool condition_met(supla_abstract_asynctask *task);
 };

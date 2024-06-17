@@ -60,7 +60,7 @@ TEST_F(ChannelDgfValueTest, applyChannelProperties) {
   dgf.sectionCount = 3;
 
   supla_channel_dgf_value v(&dgf);
-  v.apply_channel_properties(0, 0, 10, 0, 0, 0, nullptr, nullptr);
+  v.apply_channel_properties(0, 0, 10, 0, 0, 0, nullptr);
 
   EXPECT_EQ(v.get_dgf_value()->flags, 1);
   EXPECT_EQ(v.get_dgf_value()->mask, 2);

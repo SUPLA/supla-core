@@ -23,7 +23,7 @@
 #include "asynctask/abstract_asynctask.h"
 #include "caller.h"
 #include "device/abstract_channel_property_getter.h"
-#include "jsonconfig/channel/abstract_channel_json_config_getter.h"
+#include "jsonconfig/abstract_json_config_getter.h"
 
 class supla_action_gate_openclose : public supla_abstract_asynctask {
  private:
@@ -51,7 +51,7 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
       supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_action_executor *action_executor,
       supla_abstract_channel_property_getter *property_getter,
-      abstract_channel_json_config_getter *json_config_getter, int user_id,
+      abstract_json_config_getter *json_config_getter, int user_id,
       int device_id, int channel_id, unsigned int verification_delay_us,
       bool open);
   virtual ~supla_action_gate_openclose(void);

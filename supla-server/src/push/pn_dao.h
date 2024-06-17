@@ -30,13 +30,13 @@ class supla_pn_dao {
   explicit supla_pn_dao(supla_abstract_db_access_provider *dba);
   virtual ~supla_pn_dao(void);
   bool get(int user_id, supla_push_notification *push);
+  bool get_date_time(int user_id, supla_push_notification *push);
 
   int get_limit(int user_id);  // I have doubts whether geting limits of sent
                                // messages should be in pn_dao or user_dao.
   int get_device_managed_push_id(int user_id, int device_id, int channel_id);
-  void register_device_managed_push(int user_id, int device_id,
-                                         int channel_id, bool sm_title,
-                                         bool sm_body, bool sm_sound);
+  void register_device_managed_push(int user_id, int device_id, int channel_id,
+                                    bool sm_title, bool sm_body, bool sm_sound);
 };
 
 #endif /* PUSH_NOTIFICATION_DAO_H_ */

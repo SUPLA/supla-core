@@ -21,23 +21,33 @@
 #include <unistd.h>
 
 #include "cyclictasks/auto_gate_closing.h"
-#include "datalogger/electricity_logger.h"
+#include "datalogger/current_logger.h"
+#include "datalogger/general_purpose_measurement_logger.h"
+#include "datalogger/general_purpose_meter_logger.h"
+#include "datalogger/hp_thermostat_logger.h"
 #include "datalogger/impulse_logger.h"
+#include "datalogger/power_active_logger.h"
 #include "datalogger/temperature_logger.h"
-#include "datalogger/thermostat_logger.h"
-#include "datalogger/voltage_threshold_logger.h"
+#include "datalogger/total_energy_logger.h"
+#include "datalogger/voltage_aberration_logger.h"
+#include "datalogger/voltage_logger.h"
 #include "db/db_access_provider.h"
 #include "sthread.h"
 
 using std::vector;
 
 supla_cyclictasks_agent::supla_cyclictasks_agent() {
-  add(new supla_electricity_logger());
+  add(new supla_total_energy_logger());
   add(new supla_impulse_logger());
   add(new supla_temperature_logger());
-  add(new supla_thermostat_logger());
-  add(new supla_voltage_threshold_logger());
+  add(new supla_hp_thermostat_logger());
+  add(new supla_voltage_aberration_logger());
+  add(new supla_voltage_logger());
+  add(new supla_current_logger());
+  add(new supla_power_active_logger());
   add(new supla_auto_gate_closing());
+  add(new supla_general_purpose_measurement_logger());
+  add(new supla_general_purpose_meter_logger());
 
   this->sthread = nullptr;
   sthread_simple_run(loop, this, 0, &sthread);

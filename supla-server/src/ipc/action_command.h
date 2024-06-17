@@ -19,15 +19,22 @@
 #ifndef SUPLA_ACTION_COMMAND_H_
 #define SUPLA_ACTION_COMMAND_H_
 
+#include <memory>
 #include <string>
 
+#include "device/device.h"
 #include "ipc/abstract_action_command.h"
 
 class supla_action_command : public supla_abstract_action_command {
+ private:
+  void call_before(std::shared_ptr<supla_device> device, int channel_id);
+
  protected:
   virtual bool action_open_close(int user_id, int device_id, int channel_id,
                                  bool open, const char *alexa_correlation_token,
                                  const char *google_request_id);
+  virtual bool action_turn_on(int user_id, int device_id, int channel_id);
+  virtual bool action_turn_off(int user_id, int device_id, int channel_id);
   virtual bool action_toggle(int user_id, int device_id, int channel_id);
   virtual bool action_stop(int user_id, int device_id, int channel_id);
   virtual bool action_up_or_stop(int user_id, int device_id, int channel_id);
@@ -35,8 +42,22 @@ class supla_action_command : public supla_abstract_action_command {
   virtual bool action_step_by_step(int user_id, int device_id, int channel_id);
   virtual bool action_copy(int user_id, int device_id, int channel_id,
                            int source_device_id, int source_channel_id);
-  virtual bool action_shut(int user_id, int device_id, int channel_id,
-                           const char *percentage, bool delta);
+  virtual bool action_shut(
+      int user_id, int device_id, int channel_id,
+      const supla_action_shading_system_parameters *params);
+  virtual bool action_hvac_set_parameters(
+      int user_id, int device_id, int channel_id,
+      const supla_action_hvac_parameters *params);
+  virtual bool action_hvac_switch_to_manual_mode(int user_id, int device_id,
+                                                 int channel_id);
+  virtual bool action_hvac_switch_to_program_mode(int user_id, int device_id,
+                                                  int channel_id);
+  virtual bool action_hvac_set_temperature(
+      int user_id, int device_id, int channel_id,
+      const supla_action_hvac_setpoint_temperature *temperature);
+  virtual bool action_hvac_set_temperatures(
+      int user_id, int device_id, int channel_id,
+      const supla_action_hvac_setpoint_temperatures *temperatures);
 
  public:
   explicit supla_action_command(

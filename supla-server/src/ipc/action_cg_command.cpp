@@ -39,6 +39,14 @@ bool supla_action_cg_command::action_open_close(supla_user *user, int group_id,
   return result;
 }
 
+bool supla_action_cg_command::action_turn_off(supla_user *user, int group_id) {
+  return user->get_channel_groups()->set_on(get_caller(), group_id, false);
+}
+
+bool supla_action_cg_command::action_turn_on(supla_user *user, int group_id) {
+  return user->get_channel_groups()->set_on(get_caller(), group_id, true);
+}
+
 bool supla_action_cg_command::action_toggle(supla_user *user, int group_id) {
   return user->get_channel_groups()->action_toggle(get_caller(), group_id);
 }
@@ -74,8 +82,8 @@ bool supla_action_cg_command::action_copy(supla_user *user, int group_id,
   if (action_executor) {
     action_executor->set_group_id(user->getUserID(), group_id);
 
-    supla_cahnnel_property_getter *property_getter =
-        new supla_cahnnel_property_getter();
+    supla_channel_property_getter *property_getter =
+        new supla_channel_property_getter();
     if (property_getter) {
       action_executor->copy(property_getter, source_device_id,
                             source_channel_id);
@@ -90,8 +98,42 @@ bool supla_action_cg_command::action_copy(supla_user *user, int group_id,
   return result;
 }
 
-bool supla_action_cg_command::action_shut(supla_user *user, int group_id,
-                                          const char *percentage, bool delta) {
+bool supla_action_cg_command::action_shut(
+    supla_user *user, int group_id,
+    const supla_action_shading_system_parameters *params) {
   return user->get_channel_groups()->action_shut(get_caller(), group_id,
-                                                 percentage, delta);
+                                                 params);
+}
+
+bool supla_action_cg_command::action_hvac_set_parameters(
+    supla_user *user, int group_id,
+    const supla_action_hvac_parameters *params) {
+  return user->get_channel_groups()->action_hvac_set_parameters(
+      get_caller(), group_id, params);
+}
+
+bool supla_action_cg_command::action_hvac_switch_to_manual_mode(
+    supla_user *user, int group_id) {
+  return user->get_channel_groups()->action_hvac_switch_to_manual_mode(
+      get_caller(), group_id);
+}
+
+bool supla_action_cg_command::action_hvac_switch_to_program_mode(
+    supla_user *user, int group_id) {
+  return user->get_channel_groups()->action_hvac_switch_to_program_mode(
+      get_caller(), group_id);
+}
+
+bool supla_action_cg_command::action_hvac_set_temperature(
+    supla_user *user, int group_id,
+    const supla_action_hvac_setpoint_temperature *temperature) {
+  return user->get_channel_groups()->action_hvac_set_temperature(
+      get_caller(), group_id, temperature);
+}
+
+bool supla_action_cg_command::action_hvac_set_temperatures(
+    supla_user *user, int group_id,
+    const supla_action_hvac_setpoint_temperatures *temperatures) {
+  return user->get_channel_groups()->action_hvac_set_temperatures(
+      get_caller(), group_id, temperatures);
 }

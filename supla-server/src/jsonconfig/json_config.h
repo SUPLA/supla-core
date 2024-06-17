@@ -29,12 +29,16 @@
 class supla_json_config {
  private:
   cJSON *user_root;
+  cJSON *properties_root;
+
   supla_json_config *root;
+  void json_clear(void);
 
  protected:
   supla_json_config *get_root(void);
   cJSON *get_user_root(void);
-
+  cJSON *get_properties_root(void);
+  cJSON *get_user_root_with_key(const char *key, bool force);
   bool equal_ci(const char *str1, const char *str2);
   bool equal_ci(cJSON *item, const char *str);
 
@@ -49,7 +53,7 @@ class supla_json_config {
   bool get_string(cJSON *parent, const char *key, std::string *value);
 
   cJSON *set_item_value(cJSON *parent, const std::string &name, int type,
-                        bool force, const char *string_value,
+                        bool force, cJSON *obj, const char *string_value,
                         double number_value);
 
   bool merge(cJSON *src_parent, cJSON *dst_parent,
@@ -66,8 +70,11 @@ class supla_json_config {
   bool is_root_exists(void);
   void set_user_config(const char *config);
   char *get_user_config(void);
+  void set_properties(const char *config);
+  char *get_properties(void);
 
   supla_json_config &operator=(const supla_json_config &json_config);
+  virtual void merge(supla_json_config *dst);
 };
 
 #endif /* JSON_CONFIG_H_ */

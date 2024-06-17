@@ -65,3 +65,8 @@ valgrind-suppressions.cfg
 
 # coredumps
 /supla-server/coredump/*
+
+# supla client builds
+supla-client/Tools/openssl/openssl-*
+supla-client/Release/LibSuplaClient.xcframework
+supla-client/Tools/openssl/LibSsl.xcframework

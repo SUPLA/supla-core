@@ -32,7 +32,7 @@ SetChannelFunctionIntegrationTest::SetChannelFunctionIntegrationTest() {
 SetChannelFunctionIntegrationTest::~SetChannelFunctionIntegrationTest() {}
 
 void SetChannelFunctionIntegrationTest::channelMatch(
-    TSC_SetChannelFunctionResult *result, TSC_SuplaChannel_D *channel) {
+    TSC_SetChannelFunctionResult *result, TSC_SuplaChannel_E *channel) {
   if (result) {
     ASSERT_EQ(result->ResultCode, expectedResultCode);
     ASSERT_EQ(result->ChannelID, expectedChannelID);
@@ -44,8 +44,8 @@ void SetChannelFunctionIntegrationTest::channelMatch(
     }
   }
 
-  if (match & 0x1 &&
-      (match & 0x2 || expectedResultCode != SUPLA_RESULTCODE_TRUE)) {
+  if ((match & 0x1) &&
+      ((match & 0x2) || expectedResultCode != SUPLA_RESULTCODE_TRUE)) {
     cancelIteration();
   }
 }
@@ -57,7 +57,7 @@ void SetChannelFunctionIntegrationTest::onChannelFunctionSetResult(
 }
 
 void SetChannelFunctionIntegrationTest::channelUpdate(
-    TSC_SuplaChannel_D *channel) {
+    TSC_SuplaChannel_E *channel) {
   ASSERT_FALSE(channel == NULL);
   channelMatch(NULL, channel);
 }
@@ -204,9 +204,6 @@ TEST_F(SetChannelFunctionIntegrationTest,
   iterateUntilDefaultTimeout();
 }
 
-#if SUPLA_PROTO_VERSION > 20
-Remove this macro
-
 TEST_F(SetChannelFunctionIntegrationTest,
        SetTheFunctionForChannelAssociatedWithPush) {
   runSqlScript("DeleteSceneOperaionsWithChannelId303.sql");
@@ -260,7 +257,6 @@ TEST_F(SetChannelFunctionIntegrationTest,
 
   iterateUntilDefaultTimeout();
 }
-#endif
 
 TEST_F(SetChannelFunctionIntegrationTest,
        SetTheFunctionForChannelAssociatedWithTheActionTrigger) {

@@ -18,10 +18,12 @@
 
 #include "test/analyzer/SimpleStatisticsTest.h"
 
+#include <math.h>
+
 namespace testing {
 
 TEST_F(SimpleStatisticsTest, min) {
-  EXPECT_EQ(stat.get_min(), 0);
+  EXPECT_TRUE(isnan(stat.get_min()));
   EXPECT_EQ(stat.get_sample_count(), 0);
   stat.add_sample(100);
   EXPECT_EQ(stat.get_min(), 100);
@@ -30,11 +32,11 @@ TEST_F(SimpleStatisticsTest, min) {
   EXPECT_EQ(stat.get_sample_count(), 2);
   stat.reset();
   EXPECT_EQ(stat.get_sample_count(), 0);
-  EXPECT_EQ(stat.get_min(), 0);
+  EXPECT_TRUE(isnan(stat.get_min()));
 }
 
 TEST_F(SimpleStatisticsTest, max) {
-  EXPECT_EQ(stat.get_max(), 0);
+  EXPECT_TRUE(isnan(stat.get_max()));
   EXPECT_EQ(stat.get_sample_count(), 0);
   stat.add_sample(100);
   EXPECT_EQ(stat.get_max(), 100);
@@ -43,20 +45,48 @@ TEST_F(SimpleStatisticsTest, max) {
   EXPECT_EQ(stat.get_sample_count(), 2);
   stat.reset();
   EXPECT_EQ(stat.get_sample_count(), 0);
-  EXPECT_EQ(stat.get_max(), 0);
+  EXPECT_TRUE(isnan(stat.get_max()));
 }
 
 TEST_F(SimpleStatisticsTest, avg) {
-  EXPECT_EQ(stat.get_avg(), 0);
+  EXPECT_TRUE(isnan(stat.get_avg()));
   EXPECT_EQ(stat.get_sample_count(), 0);
+  EXPECT_EQ(stat.get_non_nan_sample_count(), 0);
   stat.add_sample(100);
   EXPECT_EQ(stat.get_avg(), 100);
   stat.add_sample(200);
   EXPECT_EQ(stat.get_avg(), 150);
   EXPECT_EQ(stat.get_sample_count(), 2);
+  EXPECT_EQ(stat.get_non_nan_sample_count(), 2);
   stat.reset();
   EXPECT_EQ(stat.get_sample_count(), 0);
-  EXPECT_EQ(stat.get_avg(), 0);
+  EXPECT_EQ(stat.get_non_nan_sample_count(), 0);
+  EXPECT_TRUE(isnan(stat.get_avg()));
+  stat.add_sample(NAN);
+  EXPECT_EQ(stat.get_sample_count(), 1);
+  EXPECT_EQ(stat.get_non_nan_sample_count(), 0);
+}
+
+TEST_F(SimpleStatisticsTest, firstAndLast) {
+  EXPECT_TRUE(isnan(stat.get_first()));
+  EXPECT_TRUE(isnan(stat.get_last()));
+  EXPECT_EQ(stat.get_sample_count(), 0);
+  stat.add_sample(100);
+  EXPECT_EQ(stat.get_first(), 100);
+  EXPECT_EQ(stat.get_last(), 100);
+  EXPECT_EQ(stat.get_sample_count(), 1);
+  stat.add_sample(101);
+  EXPECT_EQ(stat.get_first(), 100);
+  EXPECT_EQ(stat.get_last(), 101);
+  EXPECT_EQ(stat.get_sample_count(), 2);
+  stat.add_sample(103);
+  EXPECT_EQ(stat.get_first(), 100);
+  EXPECT_EQ(stat.get_last(), 103);
+  EXPECT_EQ(stat.get_sample_count(), 3);
+  stat.reset();
+  EXPECT_EQ(stat.get_sample_count(), 0);
+  EXPECT_TRUE(isnan(stat.get_first()));
+  EXPECT_TRUE(isnan(stat.get_last()));
 }
 
 TEST_F(SimpleStatisticsTest, totalTime) {
@@ -80,14 +110,38 @@ TEST_F(SimpleStatisticsTest, totalTime) {
 TEST_F(SimpleStatisticsTest, reset) {
   stat.add_sample(5);
   EXPECT_EQ(stat.get_sample_count(), 1);
+  EXPECT_EQ(stat.get_first(), 5);
   EXPECT_EQ(stat.get_min(), 5);
   EXPECT_EQ(stat.get_max(), 5);
   EXPECT_EQ(stat.get_avg(), 5);
+  EXPECT_EQ(stat.get_last(), 5);
   stat.reset();
   EXPECT_EQ(stat.get_sample_count(), 0);
-  EXPECT_EQ(stat.get_min(), 0);
-  EXPECT_EQ(stat.get_max(), 0);
-  EXPECT_EQ(stat.get_avg(), 0);
+  EXPECT_TRUE(isnan(stat.get_first()));
+  EXPECT_TRUE(isnan(stat.get_min()));
+  EXPECT_TRUE(isnan(stat.get_max()));
+  EXPECT_TRUE(isnan(stat.get_avg()));
+  EXPECT_TRUE(isnan(stat.get_last()));
+}
+
+TEST_F(SimpleStatisticsTest, nan) {
+  stat.add_sample(NAN);
+  stat.add_sample(10);
+  stat.add_sample(NAN);
+  stat.add_sample(5);
+  stat.add_sample(NAN);
+  stat.add_sample(15);
+  stat.add_sample(NAN);
+  stat.add_sample(8);
+  stat.add_sample(NAN);
+
+  EXPECT_EQ(stat.get_first(), 10);
+  EXPECT_EQ(stat.get_min(), 5);
+  EXPECT_EQ(stat.get_max(), 15);
+  EXPECT_EQ(stat.get_last(), 8);
+  EXPECT_DOUBLE_EQ(stat.get_avg(), 9.5);
+  EXPECT_EQ(stat.get_sample_count(), 9);
+  EXPECT_EQ(stat.get_non_nan_sample_count(), 4);
 }
 
 }  // namespace testing

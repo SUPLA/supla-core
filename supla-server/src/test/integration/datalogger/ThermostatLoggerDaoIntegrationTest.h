@@ -19,7 +19,7 @@
 #ifndef ThermostatLoggerDaoTest_H_
 #define ThermostatLoggerDaoTest_H_
 
-#include "datalogger/thermostat_logger_dao.h"
+#include "datalogger/hp_thermostat_logger_dao.h"
 #include "db/db_access_provider.h"
 #include "integration/IntegrationTest.h"
 
@@ -28,7 +28,7 @@ namespace testing {
 class ThermostatLoggerDaoIntegrationTest : public IntegrationTest, public Test {
  protected:
   supla_db_access_provider *dba;
-  supla_thermostat_logger_dao *dao;
+  supla_hp_thermostat_logger_dao *dao;
 
  public:
   ThermostatLoggerDaoIntegrationTest();

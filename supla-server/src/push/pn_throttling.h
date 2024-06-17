@@ -45,8 +45,8 @@ class supla_pn_throttling {
   virtual ~supla_pn_throttling(void);
   unsigned int get_time_window_sec(void);
 
-  bool is_delivery_possible(int user_id, bool *first_time_exceeded,
-                            unsigned int *limit);
+  virtual bool is_delivery_possible(int user_id, bool *first_time_exceeded,
+                                    unsigned int *limit);
   size_t get_user_count(void);
   unsigned int get_count(int user_id);
   unsigned int get_limit(int user_id, long *left);

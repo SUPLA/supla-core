@@ -21,10 +21,10 @@
 
 #include <string>
 
-#include "jsonconfig/channel/channel_json_config.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 
-class impulse_counter_config : public channel_json_config {
+class impulse_counter_config : public supla_json_config {
  private:
   static const char initial_value_key[];
   static const char impulses_per_unit_key[];
@@ -34,7 +34,7 @@ class impulse_counter_config : public channel_json_config {
 
  protected:
  public:
-  explicit impulse_counter_config(channel_json_config *root);
+  explicit impulse_counter_config(supla_json_config *root);
   impulse_counter_config(void);
   bool should_be_added_to_history(void);
   double get_initial_value(void);

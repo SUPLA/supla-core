@@ -38,13 +38,16 @@ typedef void (*_suplaclient_cb_location_update)(void *_suplaclient,
                                                 TSC_SuplaLocation *location);
 typedef void (*_suplaclient_cb_channel_update)(void *_suplaclient,
                                                void *user_data,
-                                               TSC_SuplaChannel_D *channel);
+                                               TSC_SuplaChannel_E *channel);
 typedef void (*_suplaclient_cb_channelgroup_update)(
     void *_suplaclient, void *user_data,
     TSC_SuplaChannelGroup_B *channel_group);
 typedef void (*_suplaclient_cb_channelgroup_relation_update)(
     void *_suplaclient, void *user_data,
     TSC_SuplaChannelGroupRelation *channelgroup_relation);
+typedef void (*_suplaclient_cb_channel_relation_update)(
+    void *_suplaclient, void *user_data,
+    TSC_SuplaChannelRelation *channel_relation);
 typedef void (*_suplaclient_cb_scene_update)(void *_suplaclient,
                                              void *user_data,
                                              TSC_SuplaScene *scene);
@@ -79,7 +82,7 @@ typedef void (*_suplaclient_cb_on_channel_basic_cfg)(void *_suplaclient,
 typedef void (*_suplaclient_cb_on_channel_function_set_result)(
     void *_suplaclient, void *user_data, TSC_SetChannelFunctionResult *result);
 typedef void (*_suplaclient_cb_on_caption_set_result)(
-    void *_suplaclient, void *user_data, TSC_SetCaptionResult *result);
+    void *_suplaclient, void *user_data, TSCD_SetCaptionResult *result);
 typedef void (*_suplaclient_cb_on_clients_reconnect_request_result)(
     void *_suplaclient, void *user_data,
     TSC_ClientsReconnectRequestResult *result);
@@ -115,6 +118,14 @@ typedef void (*_suplaclient_cb_on_action_execution_result)(
 
 typedef void (*_suplaclient_cb_on_get_channel_value_get_result)(
     void *_suplaclient, void *user_data, TSC_GetChannelValueResult *result);
+
+typedef void (*_suplaclient_cb_on_channel_config_update_or_result)(
+    void *_suplaclient, void *user_data,
+    TSC_ChannelConfigUpdateOrResult *config, unsigned _supla_int_t crc32);
+
+typedef void (*_suplaclient_cb_on_device_config_update_or_result)(
+    void *_suplaclient, void *user_data,
+    TSC_DeviceConfigUpdateOrResult *config);
 
 typedef struct {
   char clientGUID[SUPLA_GUID_SIZE];
@@ -152,6 +163,8 @@ typedef struct {
   _suplaclient_cb_channel_update cb_channel_update;
   _suplaclient_cb_channel_value_update cb_channel_value_update;
   _suplaclient_cb_channel_extendedvalue_update cb_channel_extendedvalue_update;
+
+  _suplaclient_cb_channel_relation_update cb_channel_relation_update;
 
   _suplaclient_cb_channelgroup_update cb_channelgroup_update;
   _suplaclient_cb_channelgroup_relation_update cb_channelgroup_relation_update;
@@ -201,6 +214,10 @@ typedef struct {
   _suplaclient_cb_on_action_execution_result cb_on_action_execution_result;
   _suplaclient_cb_on_get_channel_value_get_result
       cb_on_get_channel_value_result;
+  _suplaclient_cb_on_channel_config_update_or_result
+      cb_on_channel_config_update_or_result;
+  _suplaclient_cb_on_device_config_update_or_result
+      cb_on_device_config_update_or_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus
@@ -283,13 +300,21 @@ char supla_client_set_dgf_transparency(void *_suplaclient, int channelID,
 int supla_client_get_time_diff(void *_suplaclient);
 char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
                             unsigned int durationMS);
-char supla_client_execute_action(void *_suplaclient, int action_id,
-                                 TAction_RS_Parameters *rs_param,
-                                 TAction_RGBW_Parameters *rgbw_param,
+char supla_client_execute_action(void *_suplaclient, int action_id, void *param,
+                                 unsigned _supla_int16_t param_size,
                                  unsigned char subject_type, int subject_id);
 
 char supla_client_pn_register_client_token(void *_suplaclient,
                                            TCS_RegisterPnClientToken *reg);
+
+char supla_client_get_channel_config(void *_suplaclient,
+                                     TCS_GetChannelConfigRequest *request);
+
+char supla_client_set_channel_config(void *_suplaclient,
+                                     TSCS_ChannelConfig *config);
+
+char supla_client_get_device_config(void *_suplaclient,
+                                    TCS_GetDeviceConfigRequest *request);
 
 _supla_int_t srpc_evtool_value_get(TSuplaChannelExtendedValue *ev,
                                    unsigned short index,
@@ -305,6 +330,18 @@ _supla_int_t srpc_evtool_v1_extended2icextended(
 
 _supla_int_t srpc_evtool_v1_extended2thermostatextended(
     const TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev);
+
+_supla_int_t supla_single_call_execute_action(
+    TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
+    TCS_Action *action);
+
+_supla_int_t supla_single_call_register_pn_client_token(
+    TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
+    TCS_PnClientToken *token);
+
+_supla_int_t supla_single_call_get_channel_value(
+    TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
+    int channel_id, TSC_GetChannelValueResult *vresult);
 
 #ifdef __cplusplus
 }

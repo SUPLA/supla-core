@@ -22,14 +22,9 @@
 #include <map>
 #include <vector>
 
+#include "http/remote_gateway_access_token.h"
 #include "json/cJSON.h"
 #include "push/pn_recipient.h"
-
-enum _platform_e {
-  platform_unknown = 0,
-  platform_ios = 1,
-  platform_android = 2,
-};
 
 class supla_pn_recipients {
  private:

@@ -33,7 +33,7 @@ void PnThrootlingIntegrationTest::SetUp() {
 }
 
 TEST_F(PnThrootlingIntegrationTest, defaultWindowTime) {
-  PnThrootlingStub t;
+  PnThrottlingStub t;
   EXPECT_EQ(t.get_time_window_sec(), 3600);
 }
 
@@ -42,7 +42,7 @@ TEST_F(PnThrootlingIntegrationTest, userId2) {
   unsigned int limit = 0;
   bool delivery_possible = false;
 
-  PnThrootlingStub t;
+  PnThrottlingStub t;
   t.set_time_window_sec(2);
 
   for (unsigned int a = 1; a < 100; a++) {
@@ -76,7 +76,7 @@ TEST_F(PnThrootlingIntegrationTest, changeLimits) {
   bool first_time_exceeded = false;
   unsigned int limit = 0;
 
-  PnThrootlingStub t;
+  PnThrottlingStub t;
   t.set_time_window_sec(2);
   EXPECT_EQ(t.get_user_count(), 0);
   t.is_delivery_possible(2, &first_time_exceeded, &limit);
@@ -95,7 +95,7 @@ TEST_F(PnThrootlingIntegrationTest, changeLimits) {
 }
 
 TEST_F(PnThrootlingIntegrationTest, nonExistentUser) {
-  PnThrootlingStub t;
+  PnThrottlingStub t;
   EXPECT_EQ(t.get_user_count(), 0);
   bool first_time_exceeded = false;
   unsigned int limit = 0;
@@ -108,7 +108,7 @@ TEST_F(PnThrootlingIntegrationTest, nonExistentUser) {
 
 TEST_F(PnThrootlingIntegrationTest, multipleUsers) {
   runSqlScript("AddUsersWithDifferentPnLimits.sql");
-  PnThrootlingStub t;
+  PnThrottlingStub t;
 
   bool first_time_exceeded = false;
   unsigned int limit = 0;
@@ -145,7 +145,7 @@ TEST_F(PnThrootlingIntegrationTest, multipleUsers) {
 }
 
 TEST_F(PnThrootlingIntegrationTest, resetBeforeExceedingTheLimit) {
-  PnThrootlingStub t;
+  PnThrottlingStub t;
   t.set_time_window_sec(2);
 
   EXPECT_TRUE(t.is_delivery_possible(2, nullptr, nullptr));
@@ -159,7 +159,7 @@ TEST_F(PnThrootlingIntegrationTest, resetBeforeExceedingTheLimit) {
 
 TEST_F(PnThrootlingIntegrationTest, getUserLimit) {
   long left = 0;
-  PnThrootlingStub t;
+  PnThrottlingStub t;
   EXPECT_EQ(t.get_user_count(), 0);
   EXPECT_EQ(t.get_limit(2, &left), 20);
   EXPECT_EQ(left, 20);

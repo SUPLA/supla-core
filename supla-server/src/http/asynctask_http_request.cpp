@@ -102,6 +102,20 @@ supla_channel_value *supla_asynctask_http_request::get_channel_value(
   return nullptr;
 }
 
+supla_channel_value *supla_asynctask_http_request::get_channel_value(
+    supla_channel_fragment *fragment, bool *online) {
+  if (online) {
+    *online = false;
+  }
+
+  if (property_getter) {
+    return property_getter->get_value(user_id, device_id, channel_id, fragment,
+                                      online);
+  }
+
+  return nullptr;
+}
+
 supla_channel_extended_value *
 supla_asynctask_http_request::get_channel_extended_value(void) {
   if (property_getter) {

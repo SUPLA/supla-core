@@ -32,11 +32,11 @@ bool supla_client_channelgroup_relation::remote_update_is_possible(void) {
   return true;
 }
 
-int supla_client_channelgroup_relation::getExtraId() { return GroupId; }
+int supla_client_channelgroup_relation::get_extra_id() { return GroupId; }
 
 int supla_client_channelgroup_relation::getDeviceId() { return DeviceId; }
 
-int supla_client_channelgroup_relation::getChannelId(void) { return getId(); }
+int supla_client_channelgroup_relation::getChannelId(void) { return get_id(); }
 
 int supla_client_channelgroup_relation::getGroupId(void) { return GroupId; }
 
@@ -45,5 +45,5 @@ void supla_client_channelgroup_relation::proto_get(
   memset(group_relation, 0, sizeof(TSC_SuplaChannelGroupRelation));
 
   group_relation->ChannelGroupID = GroupId;
-  group_relation->ChannelID = getId();
+  group_relation->ChannelID = get_id();
 }

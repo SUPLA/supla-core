@@ -27,6 +27,7 @@ class supla_alexa_change_report_throttling : public supla_http_throttling {
  public:
   supla_alexa_change_report_throttling(void);
   virtual ~supla_alexa_change_report_throttling(void);
+  virtual int get_default_delay_time(int func);
 
   static supla_alexa_change_report_throttling *get_instance(void);
 };

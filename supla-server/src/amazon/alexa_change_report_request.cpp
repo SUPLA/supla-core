@@ -21,7 +21,10 @@
 #include "amazon/alexa_change_report_search_condition.h"
 #include "amazon/alexa_change_report_throttling.h"
 #include "amazon/alexa_client.h"
+#include "amazon/alexa_response_request.h"
+#include "amazon/alexa_response_search_condition.h"
 #include "device/channel_property_getter.h"
+#include "device/value/channel_hvac_value_with_temphum.h"
 #include "http/asynctask_http_thread_pool.h"
 #include "jsonconfig/channel/alexa_config.h"
 #include "svrcfg.h"
@@ -54,16 +57,16 @@ bool supla_alexa_change_report_request::make_request(
   set_zulu_time("");
   set_message_id("");
 
-  int func = 0;
+  supla_channel_fragment fragment;
   bool online = false;
 
-  supla_channel_value *value = get_channel_value(&func, &online);
+  supla_channel_value *value = get_channel_value(&fragment, &online);
 
   client.set_channel_connected(online);
   client.set_channel_value(value);
   client.set_cause_type(get_caller());
 
-  switch (func) {
+  switch (fragment.get_function()) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
@@ -93,11 +96,26 @@ bool supla_alexa_change_report_request::make_request(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
       client.add_contact_sensor();
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
       client.add_range_controller();
       client.add_percentage_controller();
+      break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      if (online) {
+        supla_channel_hvac_value_with_temphum::expand(&value, &fragment,
+                                                      get_property_getter());
+        client.set_channel_value(value);
+      }
+
+      client.add_thermostat_controller();
       break;
   }
 
@@ -109,6 +127,7 @@ bool supla_alexa_change_report_request::is_caller_allowed(
     const supla_caller &caller) {
   switch (caller.get_type()) {
     case ctDevice:
+    case ctChannel:
     case ctClient:
     case ctAmazonAlexa:
     case ctIPC:
@@ -141,6 +160,13 @@ bool supla_alexa_change_report_request::is_function_allowed(int func) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       return true;
     default:
       return false;
@@ -159,15 +185,15 @@ void supla_alexa_change_report_request::new_request(const supla_caller &caller,
     return;
   }
 
-  supla_cahnnel_property_getter *property_getter =
-      new supla_cahnnel_property_getter();
+  supla_channel_property_getter *property_getter =
+      new supla_channel_property_getter();
 
   int func =
       property_getter->get_func(user->getUserID(), device_id, channel_id);
 
   bool integration_disabled = false;
   {
-    channel_json_config *config = property_getter->get_detached_json_config();
+    supla_json_config *config = property_getter->get_detached_json_config();
     if (config) {
       alexa_config a_config(config);
       integration_disabled = a_config.is_integration_disabled();
@@ -204,7 +230,15 @@ void supla_alexa_change_report_request::new_request(const supla_caller &caller,
           supla_asynctask_http_thread_pool::global_instance(), property_getter,
           user->amazonAlexaCredentials());
 
-  request->set_priority(90);
+  request->set_priority(80);
   request->set_delay_usec(delay_time_usec);
   request->start();
+
+  supla_alexa_response_search_condition rcnd(user->getUserID(), device_id,
+                                             channel_id, true);
+  supla_asynctask_queue::global_instance()->access_task(
+      &rcnd, [delay_time_usec](supla_abstract_asynctask *task) -> void {
+        task->set_delay_usec(delay_time_usec + 100000);
+        dynamic_cast<supla_alexa_response_request *>(task)->mark_as_postponed();
+      });
 }

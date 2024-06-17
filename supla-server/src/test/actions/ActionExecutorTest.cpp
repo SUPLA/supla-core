@@ -52,7 +52,7 @@ void ActionExecutorTest::SetUp() {
     char value[SUPLA_CHANNELVALUE_SIZE] = {};
     supla_device_channel *channel = new supla_device_channel(
         device, 89, 0, 0, 0, 0, 0, 0, 0, nullptr, nullptr, nullptr, 0, 0, value,
-        0, nullptr, nullptr);
+        0, nullptr, nullptr, nullptr);
 
     result.push_back(channel);
 
@@ -220,7 +220,7 @@ TEST_F(ActionExecutorTest, disableSchedule) {
 TEST_F(ActionExecutorTest, sendPush) {
   supla_action_config config;
   config.set_subject_id(155);
-  config.set_subject_type(stPushNotifiction);
+  config.set_subject_type(stPushNotification);
   config.set_action_id(ACTION_SEND);
 
   ChannelPropertyGetterMock property_getter;

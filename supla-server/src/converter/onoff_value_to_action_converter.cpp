@@ -26,7 +26,7 @@ bool onoff_value_to_action_converter::convert(
       dynamic_cast<supla_channel_onoff_value *>(value);
 
   if (onoff && action_executor) {
-    action_executor->set_on(onoff->is_on());
+    action_executor->set_on(onoff->is_on(), 0);
     return true;
   }
   return false;

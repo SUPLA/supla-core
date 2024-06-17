@@ -20,7 +20,7 @@
 
 #include <assert.h>
 
-#include <regex> // NOLINT
+#include <regex>  // NOLINT
 
 #include "log.h"
 #include "svrcfg.h"
@@ -135,6 +135,7 @@ bool supla_curl_adapter::perform(void) {
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "supla-server");
   curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT,
                    scfg_int(CFG_HTTP_CONNECTION_TIMEOUT));
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, scfg_int(CFG_HTTP_TIMEOUT));
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
                    supla_curl_adapter::write_callback);
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION,
@@ -157,4 +158,8 @@ long supla_curl_adapter::get_response_code(void) {
   long http_code = 0;
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
   return http_code;
+}
+
+void supla_curl_adapter::cancel(void) {
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 1);
 }

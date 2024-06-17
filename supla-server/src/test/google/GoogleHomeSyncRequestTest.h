@@ -23,6 +23,7 @@
 
 #include "asynctask/AsyncTaskTest.h"
 #include "doubles/google/GoogleHomeCredentialsMock.h"
+#include "doubles/http/AccessTokenProviderMock.h"
 #include "doubles/http/CurlAdapterMock.h"
 
 namespace testing {
@@ -31,9 +32,12 @@ class GoogleHomeSyncRequestTest : public AsyncTaskTest {
  protected:
   GoogleHomeCredentialsMock credentials;
   CurlAdapterMock *curlAdapter;
+  CurlAdapterMock *tokenProviderCurlAdapter;
+  AccessTokenProviderMock *tokenProvider;
 
  public:
   virtual void SetUp(void);
+  virtual void TearDown(void);
 };
 
 } /* namespace testing */

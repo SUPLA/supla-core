@@ -22,6 +22,7 @@
 #include <string>
 
 #include "google/google_home_credentials.h"
+#include "http/remote_gateway_access_token_provider.h"
 #include "http/voice_assistant_client.h"
 #include "json/cJSON.h"
 
@@ -29,6 +30,8 @@ class supla_google_home_client : public supla_voice_assistant_client {
  private:
   cJSON *json_states;
   std::string request_id;
+  supla_remote_gateway_access_token homegraph_token;
+  bool sync_intent;
 
   supla_google_home_credentials *get_gh_credentials(void);
   bool perform_post_request(cJSON *json_data, int *http_result_code);
@@ -38,9 +41,10 @@ class supla_google_home_client : public supla_voice_assistant_client {
   void add_open_percent_state(short open_percent);
 
  public:
-  explicit supla_google_home_client(int channel_id,
-                                    supla_abstract_curl_adapter *curl_adapter,
-                                    supla_google_home_credentials *credentials);
+  explicit supla_google_home_client(
+      int channel_id, supla_abstract_curl_adapter *curl_adapter,
+      supla_google_home_credentials *credentials,
+      supla_remote_gateway_access_token homegraph_token);
   virtual ~supla_google_home_client(void);
 
   void set_request_id(const std::string &request_id);
@@ -49,6 +53,8 @@ class supla_google_home_client : public supla_voice_assistant_client {
   void add_color_state(void);
   void add_gate_state(void);
   void add_roller_shutter_state(void);
+  void add_facade_blind_state(void);
+  void add_thermostat_state(void);
   bool state_report(void);
   bool sync(void);
 };

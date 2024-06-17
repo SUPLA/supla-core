@@ -90,9 +90,10 @@ class ClientDaoMock : public supla_abstract_client_dao {
 
   MOCK_METHOD2(scene_exists, bool(int client_id, int scene_id));
 
-  MOCK_METHOD6(update_client_push_notification_client_token,
+  MOCK_METHOD7(update_client_push_notification_client_token,
                void(int user_id, int client_id, const char *token, int platform,
-                    int app_id, bool development_env));
+                    int app_id, bool development_env,
+                    const char *profile_name));
 };
 
 } /* namespace testing */

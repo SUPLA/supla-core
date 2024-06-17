@@ -23,6 +23,29 @@
 
 namespace testing {
 
+TEST_F(ChannelStateExtendedValueTest, defaultConstructor) {
+  TSuplaChannelExtendedValue ev_raw1 = {};
+  TSuplaChannelExtendedValue ev_raw2 = {};
+
+  ev_raw1.size = sizeof(TChannelState_ExtendedValue);
+
+  TestHelper::randomize(ev_raw1.value, ev_raw1.size);
+
+  {
+    supla_channel_state_extended_value v(&ev_raw1);
+    EXPECT_FALSE(v.get_raw_value(&ev_raw2));
+  }
+
+  ev_raw1.type = EV_TYPE_CHANNEL_STATE_V1;
+
+  {
+    supla_channel_state_extended_value v(&ev_raw1);
+    EXPECT_TRUE(v.get_raw_value(&ev_raw2));
+  }
+
+  EXPECT_EQ(memcmp(&ev_raw1, &ev_raw2, sizeof(TSuplaChannelExtendedValue)), 0);
+}
+
 TEST_F(ChannelStateExtendedValueTest, nulls) {
   supla_channel_state_extended_value ev(nullptr);
 

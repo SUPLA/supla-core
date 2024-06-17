@@ -113,8 +113,8 @@ void supla_client_objcontainer::on_value_changed(void *srpc, int Id,
 
   for (int a = 0; a < safe_array_count(arr); a++) {
     obj = static_cast<supla_client_objcontainer_item *>(safe_array_get(arr, a));
-    if (obj && obj->getExtraId() == ExtraId &&
-        (Id == 0 || obj->getId() == Id)) {
+    if (obj && obj->get_extra_id() == ExtraId &&
+        (Id == 0 || obj->get_id() == Id)) {
       obj->mark_for_remote_update(data_type);
       r = true;
     }

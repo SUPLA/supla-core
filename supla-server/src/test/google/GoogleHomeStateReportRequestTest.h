@@ -22,9 +22,11 @@
 #include <string>
 
 #include "asynctask/AsyncTaskTest.h"
+#include "device/extended_value/channel_extended_value.h"
 #include "device/value/channel_value.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "doubles/google/GoogleHomeCredentialsMock.h"
+#include "doubles/http/AccessTokenProviderMock.h"
 #include "doubles/http/CurlAdapterMock.h"
 
 namespace testing {
@@ -34,13 +36,24 @@ class GoogleHomeStateReportRequestTest : public AsyncTaskTest {
   GoogleHomeCredentialsMock credentials;
   CurlAdapterMock *curlAdapter;
   ChannelPropertyGetterMock *propertyGetter;
+  CurlAdapterMock *tokenProviderCurlAdapter;
+  AccessTokenProviderMock *tokenProvider;
+  void expectToken(bool direct);
 
  public:
   virtual void SetUp(void);
+  virtual void TearDown(void);
   void makeTest(int func, bool online, supla_channel_value *value,
-                const char *expectedPayload, const std::string &request_id);
+                const char *expectedPayload, const std::string &request_id,
+                bool direct);
   void makeTest(int func, bool online, supla_channel_value *value,
                 const char *expectedPayload);
+  void makeHvacThermostatTest(int func, bool online,
+                              supla_channel_value *hvacValue,
+                              supla_channel_value *tempHumValue,
+                              supla_channel_extended_value *extendedValue,
+                              const char *expectedPayload,
+                              const std::string &request_id, bool direct);
 };
 
 } /* namespace testing */

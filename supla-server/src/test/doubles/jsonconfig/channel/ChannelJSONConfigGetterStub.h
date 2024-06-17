@@ -16,26 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_JSON_CONFIG_GETTER_STUB_H_
-#define CHANNEL_JSON_CONFIG_GETTER_STUB_H_
+#ifndef supla_json_config_GETTER_STUB_H_
+#define supla_json_config_GETTER_STUB_H_
 
-#include "jsonconfig/channel/abstract_channel_json_config_getter.h"
+#include "jsonconfig/abstract_json_config_getter.h"
 
 namespace testing {
 
-class ChannelJSONConfigGetterStub : public abstract_channel_json_config_getter {
+class ChannelJSONConfigGetterStub : public abstract_json_config_getter {
  private:
-  channel_json_config *config;
+  supla_json_config *config;
 
  protected:
  public:
   ChannelJSONConfigGetterStub(void);
   virtual ~ChannelJSONConfigGetterStub(void);
-  void set_config(channel_json_config *config);
-  virtual channel_json_config *get_config(int user_id, int device_id,
-                                          int channel_id);
+  void set_config(supla_json_config *config);
+  virtual supla_json_config *get_config(int user_id, int device_id,
+                                        int channel_id);
 };
 
 } /* namespace testing */
 
-#endif /* CHANNEL_JSON_CONFIG_GETTER_STUB_H_ */
+#endif /* supla_json_config_GETTER_STUB_H_ */

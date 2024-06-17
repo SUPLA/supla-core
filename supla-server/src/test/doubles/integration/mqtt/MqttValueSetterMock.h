@@ -19,6 +19,8 @@
 #ifndef MQTT_CHANNEL_VALUE_SETTER_MOCK_H_
 #define MQTT_CHANNEL_VALUE_SETTER_MOCK_H_
 
+#include <gmock/gmock.h>
+
 #include "mqtt_abstract_value_setter.h"
 
 class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
@@ -45,7 +47,7 @@ class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
   unsigned int color;
   char brightness;
   char color_brightness;
-  char closing_percentage;
+  supla_action_shading_system_parameters *ss_params;
 
  protected:
   virtual void set_on(bool on);
@@ -53,7 +55,8 @@ class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
   virtual void action_toggle(void);
-  virtual void action_shut(const char *closingPercentage);
+  virtual void action_shut(
+      const supla_action_shading_system_parameters *params);
   virtual void action_reveal(void);
   virtual void action_up(void);
   virtual void action_down(void);
@@ -90,7 +93,7 @@ class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
   int getCloseCounter(void);
   int getOpenCloseCounter(void);
   int getRefreshAllExistingCounter(void);
-  char getClosingPercentage(void);
+  const supla_action_shading_system_parameters *getShadingSystemParams(void);
   unsigned int getColor(void);
   char getBrightness(void);
   char getColorBrightness(void);
@@ -98,6 +101,15 @@ class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
   bool suidEqualTo(const char *suid);
   bool deviceEqualTo(int device_id);
   bool channelEqualTo(int channel_id);
+
+  MOCK_METHOD1(action_hvac_set_temperature,
+               void(supla_action_hvac_setpoint_temperature *temperature));
+
+  MOCK_METHOD1(action_hvac_set_temperatures,
+               void(supla_action_hvac_setpoint_temperatures *temperatures));
+
+  MOCK_METHOD1(action_hvac_set_parameters,
+               void(supla_action_hvac_parameters *params));
 };
 
 #endif /* MQTT_CHANNEL_VALUE_SETTER_MOCK_H_ */

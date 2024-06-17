@@ -28,25 +28,37 @@
 class device_json_config : public supla_json_config {
  private:
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
+  static const std::map<unsigned _supla_int16_t, std::string>
+      hone_screen_content_map;
+  static const char content_available[];
+  static const char disabled_str[];
+  static const char min_allowed_temperature[];
+  static const char max_allowed_temperature[];
+  static const char level_str[];
+  static const char adjustment_str[];
 
   std::string status_led_to_string(unsigned char status);
   unsigned char string_to_status_led(const std::string &status);
-  std::string screen_saver_mode_to_string(unsigned char status);
-  unsigned char string_to_screen_saver_mode(const std::string &status);
+  std::string home_screen_content_to_string(unsigned char status);
+  unsigned char string_to_home_screen_content(const std::string &status);
 
   void set_status_led(TDeviceConfig_StatusLed *status_led);
   void set_screen_brightness(TDeviceConfig_ScreenBrightness *brightness);
   void set_button_volume(TDeviceConfig_ButtonVolume *volume);
-  void set_local_config_disabled(TDeviceConfig_DisableLocalConfig *disabled);
-  void set_timezone_offset(TDeviceConfig_TimezoneOffset *offset);
+  void set_user_interface_disabled(
+      TDeviceConfig_DisableUserInterface *disabled);
   void set_automatic_time_sync(TDeviceConfig_AutomaticTimeSync *time_sync);
-  void set_screen_saver_delay(TDeviceConfig_ScreensaverDelay *delay);
-  void set_screen_saver_mode(TDeviceConfig_ScreensaverMode *mode);
+  cJSON *get_root(bool create, unsigned _supla_int64_t field);
+  void set_home_screen_off_delay(TDeviceConfig_HomeScreenOffDelay *delay);
+  void set_home_screen_content(TDeviceConfig_HomeScreenContent *content);
+  void remove_empty_sub_roots();
 
  public:
   device_json_config(void);
+  explicit device_json_config(supla_json_config *root);
   virtual ~device_json_config(void);
   void set_config(TSDS_SetDeviceConfig *config);
+  unsigned _supla_int64_t get_available_fields(void);
   void get_config(TSDS_SetDeviceConfig *config, unsigned _supla_int64_t fields,
                   unsigned _supla_int64_t *fields_left);
   void get_config(TSDS_SetDeviceConfig *config,
@@ -54,15 +66,14 @@ class device_json_config : public supla_json_config {
   void leave_only_thise_fields(unsigned _supla_int64_t fields);
   void remove_fields(unsigned _supla_int64_t fields);
   virtual void merge(supla_json_config *dst);
-  bool is_local_config_disabled(void);
   bool get_screen_brightness(TDeviceConfig_ScreenBrightness *brightness);
   bool get_button_volume(TDeviceConfig_ButtonVolume *volume);
-  bool get_local_config_disabled(TDeviceConfig_DisableLocalConfig *disabled);
-  bool get_timezone_offset(TDeviceConfig_TimezoneOffset *offset);
+  bool get_user_interface_disabled(
+      TDeviceConfig_DisableUserInterface *disabled);
   bool get_automatic_time_sync(TDeviceConfig_AutomaticTimeSync *time_sync);
-  bool get_screen_saver_delay(TDeviceConfig_ScreensaverDelay *delay);
+  bool get_home_screen_off_delay(TDeviceConfig_HomeScreenOffDelay *delay);
   bool get_status_led(TDeviceConfig_StatusLed *status_led);
-  bool get_screen_saver_mode(TDeviceConfig_ScreensaverMode *mode);
+  bool get_home_screen_content(TDeviceConfig_HomeScreenContent *content);
 };
 
 #endif /* DEVICE_JSON_CONFIG_H_ */

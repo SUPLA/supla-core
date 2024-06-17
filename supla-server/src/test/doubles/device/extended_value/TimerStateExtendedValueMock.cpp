@@ -26,4 +26,9 @@ TimerStateExtendedValueMock::TimerStateExtendedValueMock(
 
 TimerStateExtendedValueMock::~TimerStateExtendedValueMock(void) {}
 
+void TimerStateExtendedValueMock::set_raw_value_with_update(
+    const TSuplaChannelExtendedValue *value, supla_user *user) {
+  supla_timer_state_extended_value::set_raw_value_with_update(value, user);
+}
+
 }  // namespace testing

@@ -135,18 +135,36 @@ bool supla_state_webhook_request::make_request(
       result = client.window_opening_sensor_report();
       break;
 
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+      result = client.hotel_card_sensor_report();
+      break;
+
     case SUPLA_CHANNELFNC_MAILSENSOR:
       result = client.mail_sensor_report();
       break;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      result = client.roller_shutter_report();
+      result = client.shut_report("CONTROLLINGTHEROLLERSHUTTER");
       break;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      result = client.roof_window_report();
+      result = client.shut_report("CONTROLLINGTHEROOFWINDOW");
       break;
-
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+      result = client.shut_report("TERRACE_AWNING");
+      break;
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+      result = client.shut_report("PROJECTOR_SCREEN");
+      break;
+    case SUPLA_CHANNELFNC_CURTAIN:
+      result = client.shut_report("CURTAIN");
+      break;
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+      result = client.shut_report("VERTICAL_BLIND");
+      break;
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+      result = client.shut_report("ROLLER_GARAGE_DOOR");
+      break;
     case SUPLA_CHANNELFNC_WINDSENSOR:
       result = client.wind_sensor_report();
       break;
@@ -209,6 +227,7 @@ bool supla_state_webhook_request::is_caller_allowed(
     const supla_caller &caller) {
   switch (caller.get_type()) {
     case ctDevice:
+    case ctChannel:
     case ctClient:
     case ctAmazonAlexa:
     case ctGoogleHome:
@@ -265,6 +284,7 @@ bool supla_state_webhook_request::is_function_allowed(
         case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
         case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
         case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+        case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
         case SUPLA_CHANNELFNC_MAILSENSOR:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
@@ -287,8 +307,8 @@ void supla_state_webhook_request::new_request(const supla_caller &caller,
     return;
   }
 
-  supla_cahnnel_property_getter *property_getter =
-      new supla_cahnnel_property_getter();
+  supla_channel_property_getter *property_getter =
+      new supla_channel_property_getter();
   int func =
       property_getter->get_func(user->getUserID(), device_id, channel_id);
 

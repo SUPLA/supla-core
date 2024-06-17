@@ -19,6 +19,8 @@
 #ifndef DATABASE_H_
 #define DATABASE_H_
 
+#include <string>
+
 #include "client.h"
 #include "device.h"
 #include "proto.h"
@@ -32,6 +34,9 @@ class database : public svrdb {
   bool get_user_uniqueid(int UserID, char *id, bool longid);
 
   int get_user_id_by_suid(const char *suid);
+
+  std::string get_user_timezone(int user_id, double *latitude,
+                                double *longitude);
 
   void get_client_locations(int ClientID, supla_client_locations *locs);
   void get_client_channels(int ClientID, int *DeviceID,
@@ -56,23 +61,19 @@ class database : public svrdb {
                                                int *Type,
                                                unsigned int *FuncList,
                                                int *DeviceID);
-  bool set_caption(int UserID, int ID, char *Caption, int call_id);
+  bool set_caption(int UserID, int ID, char *Caption, int call_id,
+                   bool only_when_not_null);
   bool channel_belong_to_group(int channel_id);
   bool channel_has_schedule(int channel_id);
   bool channel_is_associated_with_scene(int channel_id);
   bool channel_is_associated_with_vbt(int channel_id);
   bool channel_is_associated_with_push(int channel_id);
   bool channel_is_associated_with_action_trigger(int UserID, int ChannelID);
-  void update_channel_value(int channel_id, int user_id,
-                            const char value[SUPLA_CHANNELVALUE_SIZE],
-                            unsigned _supla_int_t validity_time_sec);
-
-  void update_channel_properties(int channel_id, int user_id,
-                                 const char *properties);
 
   void update_channel_params(int channel_id, int user_id, int param1,
                              int param2, int param3, int param4);
-  void update_channel_flags(int channel_id, int user_id, unsigned int flags);
+  void update_channel_flags(int channel_id, int user_id,
+                            unsigned _supla_int64_t flags);
 };
 
 #endif /* DATABASE_H_ */

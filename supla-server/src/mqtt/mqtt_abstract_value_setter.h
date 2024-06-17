@@ -19,6 +19,10 @@
 #ifndef MQTT_ABSTRACT_CHANNEl_VALUE_SETTER_H_
 #define MQTT_ABSTRACT_CHANNEl_VALUE_SETTER_H_
 
+#include "actions/action_hvac_parameters.h"
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
+#include "actions/action_shading_system_parameters.h"
 #include "mqtt_client_settings.h"
 #include "stddef.h"
 
@@ -42,6 +46,7 @@ class supla_mqtt_abstract_value_setter {
   bool parse_action(void);
   bool parse_brightness(void);
   bool parse_color(void);
+  bool parse_temperature(void);
   int str2int(const char *str, size_t len, bool *err);
   unsigned int hex2int(const char *str, size_t len, bool *err);
   void suid_free(void);
@@ -59,7 +64,8 @@ class supla_mqtt_abstract_value_setter {
   virtual void set_brightness(char brightness) = 0;
   virtual void set_color_brightness(char brightness) = 0;
   virtual void action_toggle(void) = 0;
-  virtual void action_shut(const char *closingPercentage) = 0;
+  virtual void action_shut(
+      const supla_action_shading_system_parameters *params) = 0;
   virtual void action_reveal(void) = 0;
   virtual void action_up(void) = 0;
   virtual void action_down(void) = 0;
@@ -71,9 +77,15 @@ class supla_mqtt_abstract_value_setter {
   virtual void action_close(void) = 0;
   virtual void action_open_close(void) = 0;
   virtual void refresh_all_existing(void) = 0;
+  virtual void action_hvac_set_parameters(
+      supla_action_hvac_parameters *params) = 0;
+  virtual void action_hvac_set_temperature(
+      supla_action_hvac_setpoint_temperature *temperature) = 0;
+  virtual void action_hvac_set_temperatures(
+      supla_action_hvac_setpoint_temperatures *temperatures) = 0;
 
  public:
-  supla_mqtt_abstract_value_setter(
+  explicit supla_mqtt_abstract_value_setter(
       supla_mqtt_client_settings *settings);
   virtual ~supla_mqtt_abstract_value_setter(void);
 

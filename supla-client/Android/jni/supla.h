@@ -22,6 +22,19 @@
 #include <jni.h>
 
 extern char log_tag[];
+extern JavaVM *java_vm;
+
+#define ASC_VAR_DECLARATION(...)                               \
+  TAndroidSuplaClient *asc = (TAndroidSuplaClient *)user_data; \
+  if (asc == NULL) {                                           \
+    return __VA_ARGS__;                                        \
+  }
+
+#define ENV_VAR_DECLARATION(...)           \
+  JNIEnv *env = supla_client_get_env(asc); \
+  if (env == NULL) {                       \
+    return __VA_ARGS__;                    \
+  }
 
 typedef struct {
   void *_supla_client;
@@ -42,6 +55,7 @@ typedef struct {
   jmethodID j_mid_on_event;
   jmethodID j_mid_on_registration_enabled;
   jmethodID j_mid_on_min_version_required;
+  jmethodID j_mid_channel_relation_update;
   jmethodID j_mid_channelgroup_update;
   jmethodID j_mid_channelgroup_relation_update;
   jmethodID j_mid_scene_update;
@@ -68,10 +82,15 @@ typedef struct {
   jmethodID j_mid_on_zwave_wake_up_settings_report;
   jmethodID j_mid_on_zwave_assign_node_id_result;
   jmethodID j_mid_on_zwave_set_wake_up_time_result;
-
+  jmethodID j_mid_on_channel_config_update_or_result;
+  jmethodID j_mid_on_device_config_update_or_result;
 } TAndroidSuplaClient;
 
+jstring new_string_utf(JNIEnv *env, char *string);
+
 void *supla_client_ptr(jlong _asc);
+
+JNIEnv *supla_client_get_env(TAndroidSuplaClient *asc);
 
 void supla_GetStringUtfChars(JNIEnv *env, jstring jstr, char *buff,
                              size_t size);
@@ -83,19 +102,55 @@ jobject supla_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                const char *method_name, const char *type);
 
 jlong supla_CallLongMethod(JNIEnv *env, jclass cls, jobject obj,
-                           const char *method_name, const char *type);
+                           const char *method_name);
+
+bool supla_CallLongObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                                const char *method_name, jlong *result);
 
 jint supla_CallIntMethod(JNIEnv *env, jclass cls, jobject obj,
-                         const char *method_name, const char *type);
+                         const char *method_name);
+
+bool supla_CallIntObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                               const char *method_name, jint *result);
 
 jshort supla_CallShortMethod(JNIEnv *env, jclass cls, jobject obj,
-                             const char *method_name, const char *type);
+                             const char *method_name);
+
+bool supla_CallShortObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                                 const char *method_name, jshort *result);
 
 jboolean supla_CallBooleanMethod(JNIEnv *env, jclass cls, jobject obj,
-                                 const char *method_name, const char *type);
+                                 const char *method_name);
+
+jdouble supla_CallDoubleMethod(JNIEnv *env, jclass cls, jobject obj,
+                               const char *method_name);
+
+bool supla_CallDoubleObjectMethod(JNIEnv *env, jclass cls, jobject obj,
+                                  const char *method_name, jdouble *result);
+
+jobject supla_NewShort(JNIEnv *env, jshort value);
 
 jobject supla_NewInt(JNIEnv *env, jint value);
 
 jobject supla_NewDouble(JNIEnv *env, jdouble value);
+
+jobject supla_NewArrayList(JNIEnv *env);
+
+void supla_AddItemToArrayList(JNIEnv *env, jobject arr, jobject item);
+
+jobject supla_NewEnum(JNIEnv *env, const char *cls_name, const char *enum_name);
+
+jint supla_GetEnumValue(JNIEnv *env, jobject obj, const char *cls_name,
+                        const char *method);
+
+jint supla_GetEnumValue(JNIEnv *env, jobject obj, const char *cls_name);
+
+jobject supla_NewEnumSet(JNIEnv *env, const char *cls_name);
+
+void supla_AddItemToEnumSet(JNIEnv *env, jobject enum_set, jobject item);
+
+int supla_GetListSize(JNIEnv *env, jobject list);
+
+jobject supla_GetListItem(JNIEnv *env, jobject list, jint index);
 
 #endif /*SUPLA_H_*/

@@ -16,11 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "integration/vbt/ValueBasedTriggerIntegrationTest.h"
+#include "ValueBasedTriggerIntegrationTest.h"
 
 #include <memory>
 #include <string>
 
+#include "actions/action_shading_system_parameters.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "doubles/actions/ActionExecutorMock.h"
@@ -138,9 +139,11 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadThenDisableThenEnableThenModify) {
 }
 
 TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
+  runSqlScript("SetVbtActivityConditions.sql");
+
   supla_value_based_triggers triggers(user);
   triggers.load();
-
+  //
   EXPECT_EQ(triggers.count(), 7);
 
   shared_ptr<supla_value_based_trigger> t = triggers.get(20);
@@ -153,6 +156,10 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
     EXPECT_EQ(t->get_action_config().get_action_id(), ACTION_TURN_ON);
     EXPECT_EQ(t->get_on_change_cnd().get_op(), op_eq);
     EXPECT_EQ(t->get_on_change_cnd().get_value(), 1);
+
+    supla_active_period p(1692551804, 1692626454, ",14,",
+                          "[[{\"afterSunset\": 15}]]");
+    EXPECT_TRUE(p == t->get_active_period());
   }
 
   t = triggers.get(21);
@@ -163,7 +170,17 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
     EXPECT_EQ(t->get_action_config().get_subject_type(), stChannel);
     EXPECT_EQ(t->get_action_config().get_subject_id(), 173);
     EXPECT_EQ(t->get_action_config().get_action_id(), ACTION_SHUT_PARTIALLY);
-    EXPECT_EQ(t->get_action_config().get_percentage(), 45);
+    TAction_ShadingSystem_Parameters ss = {};
+    supla_abstract_action_parameters *params =
+        t->get_action_config().get_parameters();
+    if (params) {
+      if (dynamic_cast<supla_action_shading_system_parameters *>(params)) {
+        ss = dynamic_cast<supla_action_shading_system_parameters *>(params)
+                 ->get_params();
+      }
+      delete params;
+    }
+    EXPECT_EQ(ss.Percentage, 45);
     EXPECT_EQ(t->get_on_change_cnd().get_op(), op_eq);
     EXPECT_EQ(t->get_on_change_cnd().get_value(), 1);
   }
@@ -209,7 +226,7 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
   if (t) {
     EXPECT_EQ(t->get_id(), 32);
     EXPECT_EQ(t->get_channel_id(), 141);
-    EXPECT_EQ(t->get_action_config().get_subject_type(), stPushNotifiction);
+    EXPECT_EQ(t->get_action_config().get_subject_type(), stPushNotification);
     EXPECT_EQ(t->get_action_config().get_subject_id(), 500);
     EXPECT_EQ(t->get_action_config().get_action_id(), ACTION_SEND);
     EXPECT_EQ(t->get_on_change_cnd().get_op(), op_eq);
@@ -221,13 +238,87 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
   if (t) {
     EXPECT_EQ(t->get_id(), 33);
     EXPECT_EQ(t->get_channel_id(), 158);
-    EXPECT_EQ(t->get_action_config().get_subject_type(), stPushNotifiction);
+    EXPECT_EQ(t->get_action_config().get_subject_type(), stPushNotification);
     EXPECT_EQ(t->get_action_config().get_subject_id(), 500);
     EXPECT_EQ(t->get_action_config().get_action_id(), ACTION_SEND);
     EXPECT_EQ(t->get_on_change_cnd().get_op(), op_ge);
     EXPECT_EQ(t->get_on_change_cnd().get_value(), 50);
     EXPECT_EQ(t->get_on_change_cnd().get_var_name(), var_name_humidity);
   }
+}
+
+TEST_F(ValueBasedTriggerIntegrationTest, deleteFirst) {
+  supla_value_based_triggers triggers(user);
+  triggers.load();
+
+  EXPECT_EQ(triggers.count(), 7);
+
+  auto t = triggers.get(20);
+  EXPECT_TRUE(t != nullptr);
+
+  runSqlScript("DeleteVbtFirst.sql");
+
+  triggers.load();
+  EXPECT_EQ(triggers.count(), 6);
+  t = triggers.get(20);
+  EXPECT_TRUE(t == nullptr);
+}
+
+TEST_F(ValueBasedTriggerIntegrationTest, deleteVbt22) {
+  supla_value_based_triggers triggers(user);
+  triggers.load();
+
+  EXPECT_EQ(triggers.count(), 7);
+
+  auto t = triggers.get(22);
+  EXPECT_TRUE(t != nullptr);
+
+  runSqlScript("DeleteVbt22.sql");
+
+  triggers.load();
+  EXPECT_EQ(triggers.count(), 6);
+
+  t = triggers.get(22);
+  EXPECT_TRUE(t == nullptr);
+}
+
+TEST_F(ValueBasedTriggerIntegrationTest, deleteLast) {
+  supla_value_based_triggers triggers(user);
+  triggers.load();
+
+  EXPECT_EQ(triggers.count(), 7);
+
+  auto t = triggers.get(33);
+  EXPECT_TRUE(t != nullptr);
+
+  runSqlScript("DeleteVbtLast.sql");
+
+  triggers.load();
+  EXPECT_EQ(triggers.count(), 6);
+
+  t = triggers.get(33);
+  EXPECT_TRUE(t == nullptr);
+}
+
+TEST_F(ValueBasedTriggerIntegrationTest, delete31and32) {
+  supla_value_based_triggers triggers(user);
+  triggers.load();
+  EXPECT_EQ(triggers.count(), 7);
+
+  auto t = triggers.get(31);
+  EXPECT_TRUE(t != nullptr);
+  t = triggers.get(32);
+  EXPECT_TRUE(t != nullptr);
+
+  runSqlScript("DeleteVbt31and32.sql");
+
+  triggers.load();
+  EXPECT_EQ(triggers.count(), 5);
+
+  t = triggers.get(31);
+  EXPECT_TRUE(t == nullptr);
+  t = triggers.get(32);
+  EXPECT_TRUE(t == nullptr);
 }
 
 TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel140) {

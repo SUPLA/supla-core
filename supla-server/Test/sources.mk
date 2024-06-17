@@ -27,6 +27,7 @@ src \
 src/actions \
 src/amazon \
 src/analyzer \
+src/astro \
 src/asynctask \
 src/client \
 src/client/call_handler \
@@ -36,6 +37,7 @@ src/converter \
 src/crypt_blowfish \
 src/cyclictasks \
 src/datalogger \
+src/date \
 src/db \
 src/device \
 src/device/call_handler \
@@ -46,9 +48,9 @@ src/google \
 src/http \
 src/ipc \
 src/json \
+src/jsonconfig \
 src/jsonconfig/channel \
 src/jsonconfig/device \
-src/jsonconfig \
 src/mqtt \
 src/push \
 src/scene \
@@ -96,6 +98,7 @@ src/test/integration/amazon \
 src/test/integration/client \
 src/test/integration/cyclictasks \
 src/test/integration/datalogger \
+src/test/integration/db \
 src/test/integration/device \
 src/test/integration/google \
 src/test/integration/mqtt \

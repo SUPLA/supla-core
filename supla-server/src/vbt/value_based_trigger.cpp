@@ -23,7 +23,7 @@
 
 supla_value_based_trigger::supla_value_based_trigger(
     int id, int channel_id, const supla_action_config &action_config,
-    const char *conditions) {
+    const char *conditions, const supla_active_period &active_period) {
   this->id = id;
   this->channel_id = channel_id;
   this->action_config = action_config;
@@ -33,6 +33,7 @@ supla_value_based_trigger::supla_value_based_trigger(
   this->fire_counter = 0;
   this->fire_count_limit = 5;
   this->time_window_sec = 5;
+  this->active_period = active_period;
 
   cJSON *json = nullptr;
 
@@ -64,6 +65,7 @@ supla_vbt_condition_result supla_value_based_trigger::are_conditions_met(
   bool cnd_met = channel_id == this->channel_id &&
                  on_change_cnd.is_condition_met(old_value, new_value);
   supla_vbt_condition_result result(cnd_met);
+  result.set_replacement_map(new_value->get_replacement_map());
   return result;
 }
 
@@ -71,7 +73,7 @@ void supla_value_based_trigger::fire(
     const supla_caller &caller, int user_id,
     supla_abstract_action_executor *action_executor,
     supla_abstract_channel_property_getter *property_getter,
-    const std::map<std::string, std::string> &replacement_map) {
+    std::map<std::string, std::string> *replacement_map) {
   struct timeval now = {};
   gettimeofday(&now, nullptr);
 
@@ -116,7 +118,7 @@ void supla_value_based_trigger::fire(
   }
 
   action_executor->execute_action(caller, user_id, &action_config,
-                                  property_getter, &replacement_map);
+                                  property_getter, replacement_map);
 }
 
 int supla_value_based_trigger::get_id(void) { return id; }
@@ -158,11 +160,16 @@ supla_value_based_trigger::get_on_change_cnd(void) {
   return on_change_cnd;
 }
 
+const supla_active_period &supla_value_based_trigger::get_active_period(void) {
+  return active_period;
+}
+
 bool supla_value_based_trigger::equal(
     const supla_value_based_trigger &trigger) const {
   return id == trigger.id && channel_id == trigger.channel_id &&
          on_change_cnd == trigger.on_change_cnd &&
-         action_config == trigger.action_config;
+         action_config == trigger.action_config &&
+         active_period == trigger.active_period;
 }
 
 bool supla_value_based_trigger::operator==(

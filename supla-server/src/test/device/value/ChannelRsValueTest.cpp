@@ -54,7 +54,7 @@ TEST_F(ChannelRsValueTest, applyChannelProperties) {
   value.position = 3;
 
   supla_channel_rs_value v(&value);
-  v.apply_channel_properties(0, 0, 0, 0, 0, 10, nullptr, nullptr);
+  v.apply_channel_properties(0, 0, 0, 0, 0, 10, nullptr);
 
   EXPECT_EQ(v.get_rs_value()->bottom_position, 10);
   EXPECT_EQ(v.get_rs_value()->flags, 2);

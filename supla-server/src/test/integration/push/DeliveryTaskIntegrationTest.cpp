@@ -20,6 +20,7 @@
 
 #include <memory>
 
+#include "doubles/push/PnThrottlingMock.h"
 #include "gmock/gmock.h"
 #include "http/asynctask_http_thread_bucket.h"
 #include "push/pn_delivery_task.h"
@@ -54,9 +55,10 @@ void DeliveryTaskIntegrationTest::SetUp(void) {
   ON_CALL(*tokenProviderCurlAdapter, set_opt_write_data)
       .WillByDefault([this](string *request_result) {
         *request_result =
-            "{\"android\":{\"0\":{\"token\":\"tokenXyz\",\"expires_in\":3600,"
+            "{\"push_android\":{\"0\":{\"token\":\"tokenXyz\",\"expires_in\":"
+            "3600,"
             "\"url\":\"https://"
-            "push-fcm.supla.org\"}},\"ios\":{\"0\":{\"token\":\"xcvbn\","
+            "push-fcm.supla.org\"}},\"push_ios\":{\"0\":{\"token\":\"xcvbn\","
             "\"expires_in\":3600,\"bundle_id\":\"com.supla\",\"url\":\"https://"
             "push-apns.supla.org/{device_token}\",\"development_url\":\"https:/"
             "/devel-push-apns.supla.org/"
@@ -100,9 +102,10 @@ TEST_F(DeliveryTaskIntegrationTest, notificationLoadedFromDatabase) {
 
   EXPECT_CALL(
       *deliveryTaskCurlAdapter,
-      set_opt_post_fields(StrEq("{\"message\":{\"token\":\"Token "
-                                "1\",\"android\":{\"notification\":{\"title\":"
-                                "\"Abcd\",\"body\":\"Efgh\"}}}}")))
+      set_opt_post_fields(StrEq(
+          "{\"message\":{\"token\":\"Token "
+          "1\",\"android\":{\"priority\":\"high\",\"notification\":{\"title\":"
+          "\"Abcd\",\"body\":\"Efgh\"},\"data\":{\"channelId\":\"345\"}}}}")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
@@ -129,6 +132,10 @@ TEST_F(DeliveryTaskIntegrationTest, notificationLoadedFromDatabase) {
               append_header(StrEq("apns-push-type: alert")))
       .Times(2);
 
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(StrEq("apns-priority: 10")))
+      .Times(2);
+
   EXPECT_CALL(*deliveryTaskCurlAdapter, escape(StrEq("Token 2")))
       .WillOnce(Return("Token%202"));
 
@@ -146,12 +153,17 @@ TEST_F(DeliveryTaskIntegrationTest, notificationLoadedFromDatabase) {
   EXPECT_CALL(
       *deliveryTaskCurlAdapter,
       set_opt_post_fields(StrEq(
-          "{\"aps\":{\"alert\":{\"title\":\"Abcd\",\"body\":\"Efgh\"}}}")))
+          "{\"aps\":{\"alert\":{\"title\":\"Abcd\",\"body\":\"Efgh\"},"
+          "\"sound\":\"default\",\"content-available\":1},\"channelId\":345}")))
       .Times(2);
 
+  PnThrottlingMock throttling;
+  EXPECT_CALL(throttling, is_delivery_possible).WillRepeatedly(Return(true));
+
   shared_ptr<supla_abstract_asynctask> task =
-      (new supla_pn_delivery_task(2, queue, pool,
-                                  new supla_push_notification(5), provider))
+      (new supla_pn_delivery_task(supla_caller(ctChannel, 345), 2, queue, pool,
+                                  new supla_push_notification(5), provider,
+                                  &throttling))
           ->start();
 
   WaitForState(task, supla_asynctask_state::SUCCESS, 1000000);

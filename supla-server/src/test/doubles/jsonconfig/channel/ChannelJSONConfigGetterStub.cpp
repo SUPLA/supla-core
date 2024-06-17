@@ -29,7 +29,7 @@ ChannelJSONConfigGetterStub::~ChannelJSONConfigGetterStub(void) {
   }
 }
 
-void ChannelJSONConfigGetterStub::set_config(channel_json_config *config) {
+void ChannelJSONConfigGetterStub::set_config(supla_json_config *config) {
   if (this->config) {
     delete this->config;
   }
@@ -37,10 +37,10 @@ void ChannelJSONConfigGetterStub::set_config(channel_json_config *config) {
   this->config = config;
 }
 
-channel_json_config *ChannelJSONConfigGetterStub::get_config(int user_id,
-                                                             int device_id,
-                                                             int channel_id) {
-  return new channel_json_config(config, true);
+supla_json_config *ChannelJSONConfigGetterStub::get_config(int user_id,
+                                                           int device_id,
+                                                           int channel_id) {
+  return new supla_json_config(config, true);
 }
 
 }  // namespace testing

@@ -19,16 +19,77 @@
 #include "ActionTriggerConfigTest.h"
 
 #include "TestHelper.h"
-#include "jsonconfig/channel/action_trigger_config.h"
-#include "proto.h"
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
+#include "actions/action_rgbw_parameters.h"
+#include "actions/action_shading_system_parameters.h"
 
 namespace testing {
 
 ActionTriggerConfigTest::ActionTriggerConfigTest(void) {}
+
 ActionTriggerConfigTest::~ActionTriggerConfigTest(void) {}
 
+void ActionTriggerConfigTest::EXPECT_NO_PARAMS(action_trigger_config *config) {
+  EXPECT_NE(config, nullptr);
+  if (config) {
+    supla_abstract_action_parameters *params = config->get_parameters();
+    EXPECT_EQ(params, nullptr);
+    if (params) {
+      delete params;
+    }
+  }
+}
+
+template <class resultCls>
+resultCls *ActionTriggerConfigTest::get_params(action_trigger_config *config) {
+  EXPECT_NE(config, nullptr);
+  if (config) {
+    supla_abstract_action_parameters *params = config->get_parameters();
+    EXPECT_NE(params, nullptr);
+    if (params) {
+      resultCls *result = dynamic_cast<resultCls *>(params);
+      EXPECT_NE(result, nullptr);
+      if (!result) {
+        delete params;
+        return nullptr;
+      }
+      return result;
+    }
+  }
+
+  return nullptr;
+}
+
+TAction_ShadingSystem_Parameters ActionTriggerConfigTest::get_ss_params(
+    action_trigger_config *config) {
+  TAction_ShadingSystem_Parameters result = {};
+  supla_action_shading_system_parameters *ssp =
+      get_params<supla_action_shading_system_parameters>(config);
+  if (ssp) {
+    result = ssp->get_params();
+    delete ssp;
+  }
+
+  return result;
+}
+
+TAction_RGBW_Parameters ActionTriggerConfigTest::get_rgbw_params(
+    action_trigger_config *config) {
+  TAction_RGBW_Parameters result = {};
+  supla_action_rgbw_parameters *rgbwp =
+      get_params<supla_action_rgbw_parameters>(config);
+
+  if (rgbwp) {
+    result = rgbwp->get_rgbw();
+    delete rgbwp;
+  }
+
+  return result;
+}
+
 TEST_F(ActionTriggerConfigTest, root) {
-  channel_json_config *c1 = new channel_json_config();
+  supla_json_config *c1 = new supla_json_config();
   action_trigger_config *c2 = new action_trigger_config(c1);
 
   EXPECT_TRUE(c1 != NULL);
@@ -334,33 +395,136 @@ TEST_F(ActionTriggerConfigTest, getPercentage) {
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":98}}}}}");
 
-  EXPECT_EQ(config->get_percentage(), -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_percentage(), -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_percentage(), 98);
+  EXPECT_EQ(get_ss_params(config).Percentage, 98);
+  EXPECT_EQ(get_ss_params(config).Flags, 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":110}}}}}");
 
-  EXPECT_EQ(config->get_percentage(), -1);
+  EXPECT_EQ(get_ss_params(config).Percentage, 100);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":-2}}}}}");
+
+  EXPECT_EQ(get_ss_params(config).Percentage, -1);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":0}}}}}");
 
-  EXPECT_EQ(config->get_percentage(), 0);
+  EXPECT_EQ(get_ss_params(config).Percentage, 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentag\":10}}}}}");
 
-  EXPECT_EQ(config->get_percentage(), -1);
+  EXPECT_NO_PARAMS(config);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentageDelta\":15}}}}"
+      "}");
+
+  EXPECT_EQ(get_ss_params(config).Percentage, 15);
+  EXPECT_EQ(get_ss_params(config).Flags, SSP_FLAG_PERCENTAGE_AS_DELTA);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentageDelta\":-15}}}}"
+      "}");
+
+  EXPECT_EQ(get_ss_params(config).Percentage, -15);
+  EXPECT_EQ(get_ss_params(config).Flags, SSP_FLAG_PERCENTAGE_AS_DELTA);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, getTilt) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"tilt\":98}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(get_ss_params(config).Tilt, 98);
+  EXPECT_EQ(get_ss_params(config).Flags, 0);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"tilt\":110}}}}}");
+
+  EXPECT_EQ(get_ss_params(config).Tilt, 100);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"tilt\":-2}}}}}");
+
+  EXPECT_EQ(get_ss_params(config).Tilt, -1);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"tilt\":0}}}}}");
+
+  EXPECT_EQ(get_ss_params(config).Tilt, 0);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"tiltDelta\":15}}}}"
+      "}");
+
+  EXPECT_EQ(get_ss_params(config).Tilt, 15);
+  EXPECT_EQ(get_ss_params(config).Flags, SSP_FLAG_TILT_AS_DELTA);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"tiltDelta\":-15}}}}"
+      "}");
+
+  EXPECT_EQ(get_ss_params(config).Tilt, -15);
+  EXPECT_EQ(get_ss_params(config).Flags, SSP_FLAG_TILT_AS_DELTA);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, getTiltAndPercentage) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":20, "
+      "\"tilt\":98}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(get_ss_params(config).Tilt, 98);
+  EXPECT_EQ(get_ss_params(config).Percentage, 20);
+  EXPECT_EQ(get_ss_params(config).Flags, 0);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentageDelta\":20, "
+      "\"tiltDelta\":98}}}}}");
+
+  EXPECT_EQ(get_ss_params(config).Tilt, 98);
+  EXPECT_EQ(get_ss_params(config).Percentage, 20);
+  EXPECT_EQ(get_ss_params(config).Flags,
+            SSP_FLAG_PERCENTAGE_AS_DELTA | SSP_FLAG_TILT_AS_DELTA);
 
   delete config;
 }
@@ -375,29 +539,29 @@ TEST_F(ActionTriggerConfigTest, getBrightness) {
 
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_rgbw().Brightness, -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_rgbw().Brightness, 15);
+  EXPECT_EQ(get_rgbw_params(config).Brightness, 15);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightness\":110}}}}}");
 
-  EXPECT_EQ(config->get_rgbw().Brightness, -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightness\":0}}}}}");
 
-  EXPECT_EQ(config->get_rgbw().Brightness, 0);
+  EXPECT_EQ(get_rgbw_params(config).Brightness, 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightnes\":15}}}}}");
 
-  EXPECT_EQ(config->get_rgbw().Brightness, -1);
+  EXPECT_NO_PARAMS(config);
 
   delete config;
 }
@@ -412,32 +576,32 @@ TEST_F(ActionTriggerConfigTest, getColorBrightness) {
       "}");
 
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(config->get_rgbw().ColorBrightness, -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_rgbw().ColorBrightness, 15);
+  EXPECT_EQ(get_rgbw_params(config).ColorBrightness, 15);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":110}}}"
       "}}");
 
-  EXPECT_EQ(config->get_rgbw().ColorBrightness, -1);
+  EXPECT_NO_PARAMS(config);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":0}}}}"
       "}");
 
-  EXPECT_EQ(config->get_rgbw().ColorBrightness, 0);
+  EXPECT_EQ(get_rgbw_params(config).ColorBrightness, 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightnes\":15}}}}"
       "}");
 
-  EXPECT_EQ(config->get_rgbw().ColorBrightness, -1);
+  EXPECT_NO_PARAMS(config);
 
   delete config;
 }
@@ -452,36 +616,35 @@ TEST_F(ActionTriggerConfigTest, getColor) {
       "}");
 
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(config->get_rgbw().Color, (unsigned int)0);
-
-  EXPECT_FALSE(config->get_rgbw().ColorRandom);
+  EXPECT_NO_PARAMS(config);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_rgbw().Color, (unsigned int)0xFF9400);
+  EXPECT_FALSE(get_rgbw_params(config).ColorRandom);
+  EXPECT_EQ(get_rgbw_params(config).Color, (unsigned int)0xFF9400);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":\"random\"}}}}"
       "}");
 
-  unsigned int color = config->get_rgbw().Color;
+  unsigned int color = get_rgbw_params(config).Color;
   int a = 0;
   for (a = 0; a < 10; a++) {
-    if (color != config->get_rgbw().Color) {
+    if (color != get_rgbw_params(config).Color) {
       break;
     }
   }
   EXPECT_NE(a, 10);
 
-  EXPECT_TRUE(config->get_rgbw().ColorRandom);
+  EXPECT_TRUE(get_rgbw_params(config).ColorRandom);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":\"white\"}}}}"
       "}");
 
-  EXPECT_EQ(config->get_rgbw().Color, (unsigned int)0xFFFFFF);
+  EXPECT_EQ(get_rgbw_params(config).Color, (unsigned int)0xFFFFFF);
 
   delete config;
 }
@@ -505,7 +668,7 @@ TEST_F(ActionTriggerConfigTest, actionSetRGBW) {
   EXPECT_EQ(config->get_source_channel_id(), 0);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
-  TAction_RGBW_Parameters rgbw = config->get_rgbw();
+  TAction_RGBW_Parameters rgbw = get_rgbw_params(config);
   EXPECT_EQ(rgbw.Brightness, (char)-1);
   EXPECT_EQ(rgbw.ColorBrightness, (char)44);
   EXPECT_EQ(rgbw.Color, (unsigned int)0xFF002A);
@@ -529,7 +692,7 @@ TEST_F(ActionTriggerConfigTest, actionRevealPartially) {
   EXPECT_EQ(config->get_subject_id(), 3611);
   EXPECT_EQ(config->get_source_device_id(), 0);
   EXPECT_EQ(config->get_source_channel_id(), 0);
-  EXPECT_EQ(config->get_percentage(), 65);
+  EXPECT_EQ(get_ss_params(config).Percentage, 65);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;
@@ -549,7 +712,7 @@ TEST_F(ActionTriggerConfigTest, actionShutPartially) {
   EXPECT_EQ(config->get_action_id(), ACTION_SHUT_PARTIALLY);
   EXPECT_EQ(config->get_subject_id(), 45678);
   EXPECT_EQ(config->get_source_channel_id(), 0);
-  EXPECT_EQ(config->get_percentage(), 20);
+  EXPECT_EQ(get_ss_params(config).Percentage, 20);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;
@@ -742,6 +905,229 @@ TEST_F(ActionTriggerConfigTest, setSubjectIdIfNotSet) {
   EXPECT_EQ(config->get_action_id(), ACTION_FORWARD_OUTSIDE);
 
   delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, sendPush) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"notification\",\"subjectId\":272,\"action\":{\"id\":220,\"param\":{"
+      "\"title\":\"Test 123\",\"body\":\"ABCD\",\"accessIds\":[5]}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_SEND);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stPushNotification);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, hvacSwitchToProgramMode) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"channel\",\"subjectId\":272,\"action\":{\"id\":231,\"param\":{}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_PROGRAM_MODE);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, hvacSwitchToManualMode) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"channel\",\"subjectId\":272,\"action\":{\"id\":232,\"param\":{}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, hvacSetTemperature) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"channel\",\"subjectId\":272,\"action\":{\"id\":234,\"param\":{"
+      "\"temperature\":123}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SET_TEMPERATURE);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  supla_action_hvac_setpoint_temperature *temperature =
+      get_params<supla_action_hvac_setpoint_temperature>(config);
+
+  if (temperature) {
+    EXPECT_EQ(temperature->get_temperature(), 123);
+    delete temperature;
+  }
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, hvacSetHeatingTemperature) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"channel\",\"subjectId\":272,\"action\":{\"id\":232,\"param\":{"
+      "\"temperatureHeat\":123}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  supla_action_hvac_setpoint_temperatures *temperature =
+      get_params<supla_action_hvac_setpoint_temperatures>(config);
+
+  if (temperature) {
+    short t = 0;
+    EXPECT_TRUE(temperature->get_heating_temperature(&t));
+    EXPECT_EQ(t, 123);
+    EXPECT_FALSE(temperature->get_cooling_temperature(&t));
+    delete temperature;
+  }
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, hvacSetCoolingTemperature) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"channel\",\"subjectId\":272,\"action\":{\"id\":232,\"param\":{"
+      "\"temperatureCool\":123}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  supla_action_hvac_setpoint_temperatures *temperature =
+      get_params<supla_action_hvac_setpoint_temperatures>(config);
+
+  if (temperature) {
+    short t = 0;
+    EXPECT_FALSE(temperature->get_heating_temperature(&t));
+    t = 0;
+    EXPECT_TRUE(temperature->get_cooling_temperature(&t));
+    EXPECT_EQ(t, 123);
+    delete temperature;
+  }
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, hvacSetHeatingAndCoolingTemperature) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TURN_ON\":{\"subjectType\":"
+      "\"channel\",\"subjectId\":272,\"action\":{\"id\":232,\"param\":{"
+      "\"temperatureHeat\":123,\"temperatureCool\":-123}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
+  config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  EXPECT_EQ(config->get_subject_id(), 272);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  supla_action_hvac_setpoint_temperatures *temperature =
+      get_params<supla_action_hvac_setpoint_temperatures>(config);
+
+  if (temperature) {
+    short t = 0;
+    EXPECT_TRUE(temperature->get_heating_temperature(&t));
+    EXPECT_EQ(t, 123);
+    EXPECT_TRUE(temperature->get_cooling_temperature(&t));
+    EXPECT_EQ(t, -123);
+    delete temperature;
+  }
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, copy) {
+  action_trigger_config c1, c2;
+
+  c1.set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":11}}}}}");
+
+  c1.set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  c1.set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  c2 = c1;
+
+  EXPECT_EQ(c1.get_action_id(), c2.get_action_id());
+  EXPECT_EQ(c1.get_subject_type(), c2.get_subject_type());
+  EXPECT_EQ(c1.get_subject_id(), c2.get_subject_id());
+  EXPECT_EQ(c1.get_source_device_id(), c2.get_source_device_id());
+  EXPECT_EQ(c1.get_source_channel_id(), c2.get_source_channel_id());
+  EXPECT_EQ(c1.get_capabilities(), c2.get_capabilities());
+  EXPECT_EQ(c1.get_caps_that_disables_local_operation(),
+            c2.get_caps_that_disables_local_operation());
+  EXPECT_EQ(c1.get_active_actions(), c2.get_active_actions());
+  EXPECT_EQ(c1.get_cap(), c2.get_cap());
+
+  supla_abstract_action_parameters *p1 = c1.get_parameters();
+  ASSERT_NE(p1, nullptr);
+
+  supla_abstract_action_parameters *p2 = c2.get_parameters();
+  EXPECT_NE(p2, nullptr);
+
+  if (p1 && p2) {
+    EXPECT_TRUE(p1->equal(p2));
+  }
+
+  if (p1) {
+    delete p1;
+  }
+
+  if (p2) {
+    delete p2;
+  }
 }
 
 } /* namespace testing */

@@ -23,6 +23,7 @@ class supla_asynctask_thread_bucket {
  public:
   supla_asynctask_thread_bucket(void);
   virtual ~supla_asynctask_thread_bucket(void);
+  virtual void thread_will_terminate(void);
 };
 
 #endif /*ASYNCTASK_THREAD_STORAGE_H_*/

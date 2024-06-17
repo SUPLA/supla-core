@@ -32,6 +32,7 @@ typedef struct {
   int channel_group_id;
   int scene_id;
   int schedule_id;
+  int push_notification_id;
   int action_id;
   char action_param[SCENE_ACTION_PARAM_MAXSIZE];
   unsigned long action_param_len;
@@ -69,10 +70,10 @@ supla_scene_operations *supla_scene_operations_dao::get_scene_operations(
   MYSQL_STMT *stmt = NULL;
   const char sql[] =
       "SELECT o.`channel_id`, o.`channel_group_id`, o.`scene_id`, "
-      "o.`schedule_id`, o.`action`, o.`action_param`, o.`delay_ms` FROM "
-      "`supla_scene_operation` o LEFT JOIN `supla_scene` s ON s.`id` = "
-      "o.`owning_scene_id` WHERE s.`id` = ? AND s.`enabled` = 1 ORDER BY "
-      "o.`id` ASC";
+      "o.`schedule_id`, o.`push_notification_id`, o.`action`, "
+      "o.`action_param`, o.`delay_ms` FROM `supla_scene_operation` o LEFT JOIN "
+      "`supla_scene` s ON s.`id` = o.`owning_scene_id` WHERE s.`id` = ? AND "
+      "s.`enabled` = 1 ORDER BY o.`id` ASC";
 
   MYSQL_BIND pbind[1];
   memset(pbind, 0, sizeof(pbind));
@@ -81,7 +82,7 @@ supla_scene_operations *supla_scene_operations_dao::get_scene_operations(
   pbind[0].buffer = (char *)&scene_id;
 
   if (dba->stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    MYSQL_BIND rbind[7];
+    MYSQL_BIND rbind[8];
     memset(rbind, 0, sizeof(rbind));
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -101,18 +102,22 @@ supla_scene_operations *supla_scene_operations_dao::get_scene_operations(
     rbind[3].buffer_length = sizeof(int);
 
     rbind[4].buffer_type = MYSQL_TYPE_LONG;
-    rbind[4].buffer = (char *)&row.action_id;
+    rbind[4].buffer = (char *)&row.push_notification_id;
     rbind[4].buffer_length = sizeof(int);
 
-    rbind[5].buffer_type = MYSQL_TYPE_STRING;
-    rbind[5].buffer = row.action_param;
-    rbind[5].buffer_length = sizeof(row.action_param);
-    rbind[5].length = &row.action_param_len;
-    rbind[5].is_null = &row.action_param_is_null;
+    rbind[5].buffer_type = MYSQL_TYPE_LONG;
+    rbind[5].buffer = (char *)&row.action_id;
+    rbind[5].buffer_length = sizeof(int);
 
-    rbind[6].buffer_type = MYSQL_TYPE_LONG;
-    rbind[6].buffer = (char *)&row.delay_ms;
-    rbind[6].buffer_length = sizeof(int);
+    rbind[6].buffer_type = MYSQL_TYPE_STRING;
+    rbind[6].buffer = row.action_param;
+    rbind[6].buffer_length = sizeof(row.action_param);
+    rbind[6].length = &row.action_param_len;
+    rbind[6].is_null = &row.action_param_is_null;
+
+    rbind[7].buffer_type = MYSQL_TYPE_LONG;
+    rbind[7].buffer = (char *)&row.delay_ms;
+    rbind[7].buffer_length = sizeof(int);
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -141,6 +146,9 @@ supla_scene_operations *supla_scene_operations_dao::get_scene_operations(
             } else if (row.schedule_id) {
               config.set_subject_id(row.schedule_id);
               config.set_subject_type(stSchedule);
+            } else if (row.push_notification_id) {
+              config.set_subject_id(row.push_notification_id);
+              config.set_subject_type(stPushNotification);
             }
 
             config.set_action_id(row.action_id);

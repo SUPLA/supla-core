@@ -17,7 +17,9 @@
  */
 #include <userdevices.h>
 
+#include "db/db_access_provider.h"
 #include "device/device.h"
+#include "device/device_dao.h"
 
 using std::dynamic_pointer_cast;
 using std::function;
@@ -78,6 +80,46 @@ std::shared_ptr<supla_device> supla_user_devices::get(int device_id,
   }
 
   return nullptr;
+}
+
+supla_channel_fragment supla_user_devices::get_channel_fragment_with_number(
+    int device_id, unsigned char channel_number,
+    bool load_from_database_if_necessary) {
+  supla_channel_fragment result;
+
+  lock();
+  for (auto it = channel_fragments.begin(); it != channel_fragments.end();
+       ++it) {
+    if (it->get_device_id() == device_id &&
+        it->get_channel_number() == channel_number) {
+      result = *it;
+      break;
+    }
+  }
+  unlock();
+
+  if (result.get_channel_id() == 0 && load_from_database_if_necessary) {
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+    result = dao.get_channel_fragment(device_id, channel_number);
+
+    if (result.get_channel_id()) {
+      lock();
+      for (auto it = channel_fragments.begin(); it != channel_fragments.end();
+           ++it) {
+        if (it->get_channel_id() == result.get_channel_id()) {
+          it = channel_fragments.erase(it);
+          break;
+        }
+      }
+
+      channel_fragments.push_back(result);
+
+      unlock();
+    }
+  }
+
+  return result;
 }
 
 supla_channel_fragment supla_user_devices::get_channel_fragment(

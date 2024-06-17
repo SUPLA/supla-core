@@ -33,6 +33,8 @@ class supla_channel_and_timer_state_extended_value
       const TSuplaChannelExtendedValue *value);
 
  public:
+  explicit supla_channel_and_timer_state_extended_value(
+      const TSuplaChannelExtendedValue *value);
   supla_channel_and_timer_state_extended_value(
       const TSuplaChannelExtendedValue *value, supla_user *user);
   virtual ~supla_channel_and_timer_state_extended_value(void);

@@ -25,14 +25,15 @@
 
 class supla_apns_client : public supla_abstract_pn_gateway_client {
  protected:
-  virtual bool _send(supla_pn_gateway_access_token *token,
+  virtual bool _send(supla_remote_gateway_access_token *token,
                      supla_pn_recipient *recipient);
   _platform_e get_platform(void);
-  char *get_payload(void);
+  char *get_payload(supla_pn_recipient *recipient);
 
  public:
-  supla_apns_client(supla_abstract_curl_adapter *curl_adapter,
-                    supla_pn_gateway_access_token_provider *token_provider,
+  supla_apns_client(const supla_caller &caller,
+                    supla_abstract_curl_adapter *curl_adapter,
+                    supla_remote_gateway_access_token_provider *token_provider,
                     supla_push_notification *push);
   virtual ~supla_apns_client(void);
 };

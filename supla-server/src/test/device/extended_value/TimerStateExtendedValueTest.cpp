@@ -26,6 +26,34 @@
 
 namespace testing {
 
+TEST_F(TimerStateExtendedValueTest, defaultConstructor) {
+  TSuplaChannelExtendedValue ev_raw1 = {};
+  TSuplaChannelExtendedValue ev_raw2 = {};
+
+  ev_raw1.size = sizeof(TTimerState_ExtendedValue);
+
+  TestHelper::randomize(ev_raw1.value, ev_raw1.size);
+
+  ((TTimerState_ExtendedValue *)ev_raw1.value)->SenderNameSize =
+      sizeof(((TTimerState_ExtendedValue *)ev_raw1.value)->SenderName);
+
+  ev_raw1.type = 0;
+
+  {
+    supla_timer_state_extended_value v(&ev_raw1);
+    EXPECT_FALSE(v.get_raw_value(&ev_raw2));
+  }
+
+  ev_raw1.type = EV_TYPE_TIMER_STATE_V1;
+
+  {
+    supla_timer_state_extended_value v(&ev_raw1);
+    EXPECT_TRUE(v.get_raw_value(&ev_raw2));
+  }
+
+  EXPECT_EQ(memcmp(&ev_raw1, &ev_raw2, sizeof(TSuplaChannelExtendedValue)), 0);
+}
+
 TEST_F(TimerStateExtendedValueTest, nulls) {
   supla_timer_state_extended_value ev(nullptr, nullptr);
 
@@ -122,14 +150,14 @@ TEST_F(TimerStateExtendedValueTest, withSenderNameAndSenderId) {
   memcpy(((TTimerState_ExtendedValue *)ev_raw1.value)->SenderName, sender_name,
          sizeof(sender_name));
 
-  TimerStateExtendedValueMock ev(nullptr, user);
+  TimerStateExtendedValueMock ev(nullptr, nullptr);
 
   char new_name[] = "NaMe";
 
-  EXPECT_CALL(ev, get_sender_name(Eq(12345))).WillOnce(Return(new_name));
-  EXPECT_CALL(ev, get_sender_name(Eq(8910))).WillOnce(Return(""));
+  EXPECT_CALL(ev, get_sender_name(_, Eq(12345))).WillOnce(Return(new_name));
+  EXPECT_CALL(ev, get_sender_name(_, Eq(8910))).WillOnce(Return(""));
 
-  ev.set_raw_value(&ev_raw1);
+  ev.set_raw_value_with_update(&ev_raw1, user);
 
   TTimerState_ExtendedValue ts = {};
   EXPECT_TRUE(ev.get_raw_value(&ts));
@@ -146,7 +174,7 @@ TEST_F(TimerStateExtendedValueTest, withSenderNameAndSenderId) {
                                      sizeof(new_name));
 
   ((TTimerState_ExtendedValue *)ev_raw1.value)->SenderID = 8910;
-  ev.set_raw_value(&ev_raw1);
+  ev.set_raw_value_with_update(&ev_raw1, user);
   EXPECT_TRUE(ev.get_raw_value(&ts));
   EXPECT_EQ(ts.SenderNameSize, 0);
   EXPECT_STREQ(ts.SenderName, "");
@@ -161,7 +189,7 @@ TEST_F(TimerStateExtendedValueTest, withSenderNameAndSenderId) {
   delete user;
 }
 
-TEST_F(TimerStateExtendedValueTest, countdownEndsAt) {
+TEST_F(TimerStateExtendedValueTest, countdownEndsAt_milliseconds) {
   TSuplaChannelExtendedValue ev_raw1 = {};
   ev_raw1.size = sizeof(TTimerState_ExtendedValue) - SUPLA_SENDER_NAME_MAXSIZE;
   ev_raw1.type = EV_TYPE_TIMER_STATE_V1;
@@ -177,6 +205,24 @@ TEST_F(TimerStateExtendedValueTest, countdownEndsAt) {
 
   EXPECT_GE(ts.CountdownEndsAt, now.tv_sec + 2);
   EXPECT_LE(ts.CountdownEndsAt, now.tv_sec + 3);
+}
+
+TEST_F(TimerStateExtendedValueTest, countdownEndsAt_seconds) {
+  TSuplaChannelExtendedValue ev_raw1 = {};
+  ev_raw1.size = sizeof(TTimerState_ExtendedValue) - SUPLA_SENDER_NAME_MAXSIZE;
+  ev_raw1.type = EV_TYPE_TIMER_STATE_V1_SEC;
+  ((TTimerState_ExtendedValue *)ev_raw1.value)->RemainingTimeS = 3;
+
+  supla_timer_state_extended_value ev(&ev_raw1, nullptr);
+
+  TTimerState_ExtendedValue ts = {};
+  EXPECT_TRUE(ev.get_raw_value(&ts));
+
+  struct timeval now;
+  gettimeofday(&now, nullptr);
+
+  EXPECT_GE(ts.CountdownEndsAt, now.tv_sec + 3);
+  EXPECT_LE(ts.CountdownEndsAt, now.tv_sec + 4);
 }
 
 TEST_F(TimerStateExtendedValueTest, copy) {

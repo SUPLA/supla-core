@@ -25,38 +25,49 @@
 #include "supla-client.h"
 #include "supla.h"
 
+void set_token_details(JNIEnv *env, TCS_PnClientToken *pn_token, jint app_id,
+                       jstring token, jstring profile_name) {
+  pn_token->Platform = PLATFORM_ANDROID;
+  pn_token->AppId = app_id;
+  char *tkn = token ? (char *)env->GetStringUTFChars(token, 0) : nullptr;
+
+  if (tkn) {
+    pn_token->TokenSize = strnlen(tkn, SUPLA_PN_CLIENT_TOKEN_MAXSIZE) + 1;
+    pn_token->RealTokenSize = strnlen(tkn, 4096) + 1;
+
+    if (pn_token->TokenSize > SUPLA_PN_CLIENT_TOKEN_MAXSIZE) {
+      pn_token->TokenSize = SUPLA_PN_CLIENT_TOKEN_MAXSIZE;
+    }
+
+    snprintf((char *)pn_token->Token, pn_token->TokenSize, "%s", tkn);
+    env->ReleaseStringUTFChars(token, tkn);
+
+    char *pn = profile_name ? (char *)env->GetStringUTFChars(profile_name, 0)
+                            : nullptr;
+    if (pn) {
+      snprintf((char *)pn_token->ProfileName, sizeof(pn_token->ProfileName),
+               "%s", pn);
+      env->ReleaseStringUTFChars(profile_name, pn);
+    }
+  }
+}
+
 JNIEXPORT jboolean JNICALL
 Java_org_supla_android_lib_SuplaClient_scRegisterPushNotificationClientToken(
-    JNIEnv *env, jobject thiz, jlong _asc, jint app_id, jstring token) {
+    JNIEnv *env, jobject thiz, jlong _asc, jint app_id, jstring token,
+    jstring profile_name) {
   jboolean result = JNI_FALSE;
 
   void *supla_client = supla_client_ptr(_asc);
 
   if (supla_client) {
-    char *tkn = token ? (char *)env->GetStringUTFChars(token, 0) : nullptr;
-
     TCS_RegisterPnClientToken reg = {};
-    reg.Platform = PLATFORM_ANDROID;
-    reg.AppId = app_id;
 
-    if (tkn) {
-      reg.TokenSize = strnlen(tkn, SUPLA_PN_CLIENT_TOKEN_MAXSIZE) + 1;
-      reg.RealTokenSize = strnlen(tkn, 4096) + 1;
-
-      if (reg.TokenSize > SUPLA_PN_CLIENT_TOKEN_MAXSIZE) {
-        reg.TokenSize = SUPLA_PN_CLIENT_TOKEN_MAXSIZE;
-      }
-
-      snprintf((char *)reg.Token, reg.TokenSize, "%s", tkn);
-    }
+    set_token_details(env, &reg.Token, app_id, token, profile_name);
 
     result = supla_client_pn_register_client_token(supla_client, &reg) == 1
                  ? JNI_TRUE
                  : JNI_FALSE;
-
-    if (tkn) {
-      env->ReleaseStringUTFChars(token, tkn);
-    }
   }
 
   return result;

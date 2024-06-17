@@ -43,8 +43,8 @@ class supla_objcontainer_item {
   supla_objcontainer_item(supla_objcontainer *Container, int Id);
   virtual ~supla_objcontainer_item(void);
   supla_objcontainer *getContainer(void);
-  int getId();
-  virtual int getExtraId();
+  virtual int get_id();
+  virtual int get_extra_id();
   virtual bool remote_update_is_possible(void) = 0;
   virtual void mark_for_remote_update(int mark);
   virtual void unmark_for_remote_update(int unmark);

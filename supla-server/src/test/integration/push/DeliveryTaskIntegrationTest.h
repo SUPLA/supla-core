@@ -22,8 +22,8 @@
 #include <string>
 
 #include "asynctask/AsyncTaskTest.h"
+#include "doubles/http/AccessTokenProviderMock.h"
 #include "doubles/http/CurlAdapterMock.h"
-#include "doubles/push/AccessTokenProviderMock.h"
 #include "integration/IntegrationTest.h"
 
 namespace testing {

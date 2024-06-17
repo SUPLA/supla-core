@@ -36,11 +36,12 @@ char supla_objcontainer::arr_findcmp(void *ptr, void *_f) {
   _t_objc_search_fields *f = static_cast<_t_objc_search_fields *>(_f);
 
   if (f->extra_id_instead_id) {
-    return f->id == item->getExtraId();
+    return f->id == item->get_extra_id();
   }
 
-  return (f->id == item->getId() &&
-          (!f->use_both || (f->use_both && f->extra_id == item->getExtraId())))
+  return (f->id == item->get_id() &&
+          (!f->use_both ||
+           (f->use_both && f->extra_id == item->get_extra_id())))
              ? 1
              : 0;
 }
@@ -119,8 +120,8 @@ bool supla_objcontainer::add(supla_objcontainer_item *obj, e_objc_scope scope) {
 
   _t_objc_search_fields f;
 
-  f.id = obj->getId();
-  f.extra_id = obj->getExtraId();
+  f.id = obj->get_id();
+  f.extra_id = obj->get_extra_id();
   f.use_both = id_cmp_use_both[scope];
   f.extra_id_instead_id = false;
 

@@ -35,6 +35,6 @@ unsigned long long supla_metrics::measure_the_time_in_usec(
   func();
   gettimeofday(&now, nullptr);
 
-  return (now.tv_sec * 1000000UL + now.tv_usec) -
-         (before.tv_sec * 1000000UL + before.tv_usec);
+  return (now.tv_sec * 1000000ULL + now.tv_usec) -
+         (before.tv_sec * 1000000ULL + before.tv_usec);
 }

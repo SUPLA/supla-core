@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include "actions/action_shading_system_parameters.h"
 #include "doubles/actions/ActionExecutorMock.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "vbt/value_based_trigger.h"
@@ -35,7 +36,7 @@ ValueBasedTriggerTest::~ValueBasedTriggerTest() {}
 
 TEST_F(ValueBasedTriggerTest, defaultLimits) {
   supla_action_config main_ac;
-  supla_value_based_trigger t(1, 2, main_ac, "");
+  supla_value_based_trigger t(1, 2, main_ac, "", supla_active_period());
 
   EXPECT_EQ(t.get_time_window_sec(), 5);
   EXPECT_EQ(t.get_fire_count_limit(), 5);
@@ -44,7 +45,7 @@ TEST_F(ValueBasedTriggerTest, defaultLimits) {
 
 TEST_F(ValueBasedTriggerTest, changeLimits) {
   supla_action_config main_ac;
-  supla_value_based_trigger t(1, 2, main_ac, "");
+  supla_value_based_trigger t(1, 2, main_ac, "", supla_active_period());
 
   t.set_time_window_sec(10);
   t.set_fire_count_limit(6);
@@ -60,7 +61,7 @@ TEST_F(ValueBasedTriggerTest, tooFastFiring) {
   main_ac.set_action_id(ACTION_TURN_ON);
   main_ac.set_subject_id(140);
   main_ac.set_subject_type(stChannel);
-  supla_value_based_trigger t(1, 2, main_ac, "");
+  supla_value_based_trigger t(1, 2, main_ac, "", supla_active_period());
   t.set_min_time_between_firing_usec(200000);
 
   ActionExecutorMock actionExecutor;
@@ -70,7 +71,7 @@ TEST_F(ValueBasedTriggerTest, tooFastFiring) {
   for (int a = 0; a < 100; a++) {
     usleep(10);
     t.fire(supla_caller(ctIPC), 2, &actionExecutor, &propertyGetter,
-           replacement_map);
+           &replacement_map);
   }
 
   EXPECT_EQ(actionExecutor.counterSetCount(), 1);
@@ -78,7 +79,7 @@ TEST_F(ValueBasedTriggerTest, tooFastFiring) {
   usleep(t.get_min_time_between_firing_usec() + 1);
 
   t.fire(supla_caller(ctIPC), 2, &actionExecutor, &propertyGetter,
-         replacement_map);
+         &replacement_map);
 
   EXPECT_EQ(actionExecutor.counterSetCount(), 1);
   EXPECT_EQ(actionExecutor.getOnCounter(), 2);
@@ -89,7 +90,7 @@ TEST_F(ValueBasedTriggerTest, tooManyFiresInAcertainAmountOfTime) {
   main_ac.set_action_id(ACTION_TURN_ON);
   main_ac.set_subject_id(140);
   main_ac.set_subject_type(stChannel);
-  supla_value_based_trigger t(1, 2, main_ac, "");
+  supla_value_based_trigger t(1, 2, main_ac, "", supla_active_period());
   t.set_min_time_between_firing_usec(0);
   t.set_time_window_sec(1);
 
@@ -99,7 +100,7 @@ TEST_F(ValueBasedTriggerTest, tooManyFiresInAcertainAmountOfTime) {
 
   for (unsigned int a = 0; a <= t.get_fire_count_limit() + 10; a++) {
     t.fire(supla_caller(ctIPC), 2, &actionExecutor, &propertyGetter,
-           replacement_map);
+           &replacement_map);
   }
 
   EXPECT_EQ(actionExecutor.counterSetCount(), 1);
@@ -109,7 +110,7 @@ TEST_F(ValueBasedTriggerTest, tooManyFiresInAcertainAmountOfTime) {
 
   for (unsigned int a = 0; a <= t.get_fire_count_limit() + 10; a++) {
     t.fire(supla_caller(ctIPC), 2, &actionExecutor, &propertyGetter,
-           replacement_map);
+           &replacement_map);
   }
 
   EXPECT_EQ(actionExecutor.counterSetCount(), 1);
@@ -123,17 +124,18 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   main_ac.set_subject_id(3);
   main_ac.set_source_device_id(4);
   main_ac.set_source_channel_id(5);
-  main_ac.set_percentage(6);
+  supla_action_shading_system_parameters ss(6, -1, false);
+  main_ac.set_parameters(&ss);
 
-  supla_value_based_trigger main(5, 10, main_ac,
-                                 "{\"on_change_to\":{\"eq\":1}}");
+  supla_value_based_trigger main(
+      5, 10, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
 
   {
-    supla_value_based_trigger t1(5, 10, main_ac,
-                                 "{\"on_change_to\":{\"eq\":1}}");
+    supla_value_based_trigger t1(
+        5, 10, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
 
-    supla_value_based_trigger t2(6, 10, main_ac,
-                                 "{\"on_change_to\":{\"eq\":1}}");
+    supla_value_based_trigger t2(
+        6, 10, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
 
     EXPECT_TRUE(main == t1);
     EXPECT_TRUE(main == &t1);
@@ -147,11 +149,11 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, main_ac,
-                                 "{\"on_change_to\":{\"eq\":1}}");
+    supla_value_based_trigger t1(
+        5, 10, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
 
-    supla_value_based_trigger t2(5, 11, main_ac,
-                                 "{\"on_change_to\":{\"eq\":1}}");
+    supla_value_based_trigger t2(
+        5, 11, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
 
     EXPECT_TRUE(main == t1);
     EXPECT_FALSE(main != t1);
@@ -160,11 +162,11 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, main_ac,
-                                 "{\"on_change_to\":{\"eq\":1}}");
+    supla_value_based_trigger t1(
+        5, 10, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
 
-    supla_value_based_trigger t2(5, 10, main_ac,
-                                 "{\"on_change_to\":{\"eq\":1}}");
+    supla_value_based_trigger t2(
+        5, 10, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
 
     EXPECT_TRUE(main == t1);
     EXPECT_FALSE(main != t1);
@@ -173,12 +175,14 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, main_ac,
-                                 "{\"on_change_to\":{\"eq\":1}}");
+    supla_value_based_trigger t1(
+        5, 10, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
 
     supla_action_config ac(&main_ac);
-    ac.set_percentage(50);
-    supla_value_based_trigger t2(5, 10, ac, "{\"on_change_to\":{\"eq\":1}}");
+    ss.set_percentage(50);
+    ac.set_parameters(&ss);
+    supla_value_based_trigger t2(5, 10, ac, "{\"on_change_to\":{\"eq\":1}}",
+                                 supla_active_period());
 
     EXPECT_TRUE(main == t1);
     EXPECT_FALSE(main != t1);
@@ -187,11 +191,11 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, main_ac,
-                                 "{\"on_change_to\":{\"eq\":1}}");
+    supla_value_based_trigger t1(
+        5, 10, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
 
-    supla_value_based_trigger t2(5, 10, main_ac,
-                                 "{\"on_change_to\":{\"eq\":1}}");
+    supla_value_based_trigger t2(
+        5, 10, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
 
     EXPECT_TRUE(main == t1);
     EXPECT_FALSE(main != t1);
@@ -200,11 +204,11 @@ TEST_F(ValueBasedTriggerTest, equalityOperator) {
   }
 
   {
-    supla_value_based_trigger t1(5, 10, main_ac,
-                                 "{\"on_change_to\":{\"eq\":1}}");
+    supla_value_based_trigger t1(
+        5, 10, main_ac, "{\"on_change_to\":{\"eq\":1}}", supla_active_period());
 
-    supla_value_based_trigger t2(5, 10, main_ac,
-                                 "{\"on_change_to\":{\"ne\":1}}");
+    supla_value_based_trigger t2(
+        5, 10, main_ac, "{\"on_change_to\":{\"ne\":1}}", supla_active_period());
 
     EXPECT_TRUE(main == t1);
     EXPECT_FALSE(main != t1);

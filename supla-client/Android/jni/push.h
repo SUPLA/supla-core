@@ -29,7 +29,11 @@ extern "C" {
 
 JNIEXPORT jboolean JNICALL
 Java_org_supla_android_lib_SuplaClient_scRegisterPushNotificationClientToken(
-    JNIEnv *env, jobject thiz, jlong _asc, jint app_id, jstring token);
+    JNIEnv *env, jobject thiz, jlong _asc, jint app_id, jstring token,
+    jstring profile_name);
+
+void set_token_details(JNIEnv *env, TCS_PnClientToken *pn_token, jint app_id,
+                       jstring token, jstring profile_name);
 
 #ifdef __cplusplus
 }

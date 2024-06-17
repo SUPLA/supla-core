@@ -32,6 +32,7 @@ class supla_asynctask_http_thread_bucket
       supla_abstract_curl_adapter *curl_adapter);
   supla_abstract_curl_adapter *get_adapter(void);
   virtual ~supla_asynctask_http_thread_bucket(void);
+  virtual void thread_will_terminate(void);
 };
 
 #endif /*ASYNCTASK_HTTP_THREAD_BUCKET_H_*/

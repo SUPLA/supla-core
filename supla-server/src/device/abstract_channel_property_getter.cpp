@@ -104,6 +104,20 @@ int supla_abstract_channel_property_getter::get_func(int user_id, int device_id,
   return get_func();
 }
 
+int supla_abstract_channel_property_getter::get_channel_id(
+    int user_id, int device_id, unsigned char channel_number) {
+  if (user_id && device_id) {
+    return _get_channel_id(user_id, device_id, channel_number);
+  }
+
+  return 0;
+}
+
+int supla_abstract_channel_property_getter::get_channel_id(
+    unsigned char channel_number) {
+  return get_channel_id(user_id, device_id, channel_number);
+}
+
 supla_channel_extended_value*
 supla_abstract_channel_property_getter::get_extended_value(void) {
   return _get_extended_value(user_id, device_id, channel_id);
@@ -120,12 +134,12 @@ supla_abstract_channel_property_getter::get_extended_value(int user_id,
   return get_extended_value();
 }
 
-channel_json_config*
+supla_json_config*
 supla_abstract_channel_property_getter::get_detached_json_config(void) {
   return _get_detached_json_config(user_id, device_id, channel_id);
 }
 
-channel_json_config*
+supla_json_config*
 supla_abstract_channel_property_getter::get_detached_json_config(
     int user_id, int device_id, int channel_id) {
   this->user_id = user_id;

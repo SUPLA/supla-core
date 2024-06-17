@@ -21,13 +21,41 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "log.h"
+
 supla_channel_thermostat_extended_value::
     supla_channel_thermostat_extended_value(
         const TSuplaChannelExtendedValue *value)
     : supla_channel_extended_value(value) {}
 
 supla_channel_thermostat_extended_value::
+    supla_channel_thermostat_extended_value(
+        const supla_channel_extended_value *value)
+    : supla_channel_extended_value(value) {}
+
+supla_channel_thermostat_extended_value::
     ~supla_channel_thermostat_extended_value(void) {}
+
+short supla_channel_thermostat_extended_value::get_flags(unsigned char idx) {
+  if (get_value_size() >= 57) {  // 57 is the minimum number of bytes needed to
+                                 // cover the Flags array.
+    TThermostat_ExtendedValue *th =
+        (TThermostat_ExtendedValue *)get_value_ptr()->value;
+
+    if ((th->Fields & THERMOSTAT_FIELD_Flags) &&
+        idx < sizeof(th->Flags) / sizeof(th->Flags[0])) {
+      return th->Flags[idx];
+    }
+  }
+
+  return 0;
+}
+
+supla_channel_extended_value *
+supla_channel_thermostat_extended_value::copy(  // NOLINT
+    void) {                                     // NOLINT
+  return new supla_channel_thermostat_extended_value(this);
+}
 
 // static
 bool supla_channel_thermostat_extended_value::is_ev_type_supported(char type) {

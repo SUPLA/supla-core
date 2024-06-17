@@ -19,17 +19,17 @@
 #ifndef CHANNELJSONCONFIGGETTER_H_
 #define CHANNELJSONCONFIGGETTER_H_
 
-#include "jsonconfig/channel/abstract_channel_json_config_getter.h"
+#include "jsonconfig/abstract_json_config_getter.h"
 
-class channel_json_config_getter : public abstract_channel_json_config_getter {
+class channel_json_config_getter : public abstract_json_config_getter {
  private:
  protected:
  public:
   channel_json_config_getter(void);
   virtual ~channel_json_config_getter(void);
 
-  virtual channel_json_config *get_config(int user_id, int device_id,
-                                          int channel_id);
+  virtual supla_json_config *get_config(int user_id, int device_id,
+                                        int channel_id);
 };
 
 #endif /* CHANNELJSONCONFIGGETTER_H_ */

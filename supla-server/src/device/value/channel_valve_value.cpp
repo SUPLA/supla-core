@@ -20,6 +20,9 @@
 
 #include <string.h>
 
+using std::map;
+using std::string;
+
 supla_channel_valve_value::supla_channel_valve_value()
     : supla_channel_value() {}
 
@@ -43,6 +46,17 @@ const TValve_Value *supla_channel_valve_value::get_valve_value(void) {
 void supla_channel_valve_value::set_valve_value(TValve_Value *value) {
   memset(raw_value, 0, sizeof(raw_value));
   memcpy(raw_value, value, sizeof(TValve_Value));
+}
+
+map<string, string> supla_channel_valve_value::get_replacement_map(void) {
+  map<string, string> result = supla_channel_value::get_replacement_map();
+  result["is_closed_manually"] =
+      get_valve_value()->closed &&
+              (get_valve_value()->flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED)
+          ? "Yes"
+          : "No";
+
+  return result;
 }
 
 // static

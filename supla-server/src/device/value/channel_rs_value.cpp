@@ -87,8 +87,7 @@ void supla_channel_rs_value::update_sensor(supla_user *user,
 
 void supla_channel_rs_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
-    int param3, int param4, channel_json_config *json_config,
-    _logger_purpose_t *logger_data) {
+    int param3, int param4, supla_json_config *json_config) {
   ((TDSC_RollerShutterValue *)raw_value)->bottom_position = param4;
 }
 
@@ -97,6 +96,10 @@ bool supla_channel_rs_value::is_function_supported(int func) {
   switch (func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+    case SUPLA_CHANNELFNC_CURTAIN:
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
       return true;
   }
 

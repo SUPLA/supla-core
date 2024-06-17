@@ -23,17 +23,20 @@
 
 #include "abstract_srpc_adapter.h"
 
+#define START_OF_LIST_BIT 0x2
+#define END_OF_LIST_BIT 0x1
+
 class supla_srpc_adapter : public supla_abstract_srpc_adapter {
  public:
   explicit supla_srpc_adapter(void *srpc);
   virtual ~supla_srpc_adapter();
 
   template <typename TSuplaDataPack, typename TSuplaDataPackItem>
-  static bool datapack_add(TSuplaDataPack *pack, int max_count,
+  static bool datapack_add(TSuplaDataPack *pack, int max_count, bool SOL,
                            std::function<void(TSuplaDataPackItem *)> fill) {
     if (pack->count < max_count) {
       fill(&pack->items[pack->count]);
-      pack->items[pack->count].EOL = 0;
+      pack->items[pack->count].EOL = SOL ? START_OF_LIST_BIT : 0;
       pack->count++;
       return true;
     } else {
@@ -43,9 +46,16 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
   }
 
   template <typename TSuplaDataPack>
-  static void datapack_set_eol(TSuplaDataPack *pack) {
+  static void datapack_set_eol(TSuplaDataPack *pack, bool set_bit) {
     if (pack && pack->count > 0) {
-      if (pack->total_left == 0) pack->items[pack->count - 1].EOL = 1;
+      if (pack->total_left == 0) {
+        if (set_bit) {
+          pack->items[pack->count - 1].EOL |= END_OF_LIST_BIT;
+
+        } else {
+          pack->items[pack->count - 1].EOL = 1;
+        }
+      }
     }
   }
 
@@ -70,8 +80,12 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
   virtual _supla_int_t sdc_async_get_user_localtime_result(
       TSDC_UserLocalTimeResult *localtime);
 
+  virtual _supla_int_t sc_async_channel_relation_pack_update(
+      TSC_SuplaChannelRelationPack *relation_pack);  // ver. >= 21
+
   virtual _supla_int_t sc_async_scene_pack_update(
       TSC_SuplaScenePack *scene_pack);  // ver. >= 18
+
   virtual _supla_int_t sc_async_scene_state_pack_update(
       TSC_SuplaSceneStatePack *scene_state_pack);  // ver. >= 18
 
@@ -126,11 +140,32 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
   virtual _supla_int_t sc_async_get_channel_value_result(
       TSC_GetChannelValueResult *result);  // ver. >= 19
 
+  virtual _supla_int_t sc_async_register_pn_client_token_result(
+      TSC_RegisterPnClientTokenResult *result);  // ver. >= 20
+
   virtual _supla_int_t sd_async_set_device_config_result(
       TSDS_SetDeviceConfigResult *result);  // ver. >= 21
 
   virtual _supla_int_t sd_async_set_device_config_request(
       TSDS_SetDeviceConfig *config);  // ver. >= 21
+
+  virtual _supla_int_t sd_async_set_channel_config_result(
+      TSDS_SetChannelConfigResult *result);  // ver. >= 21
+
+  virtual _supla_int_t sd_async_set_channel_config_request(
+      TSDS_SetChannelConfig *config);  // ver. >= 21
+
+  virtual _supla_int_t sc_async_channel_config_update_or_result(
+      TSC_ChannelConfigUpdateOrResult *config);  // ver. >= 21
+
+  virtual _supla_int_t sd_async_channel_config_finished(
+      TSD_ChannelConfigFinished *fin);  // ver. >= 21
+
+  virtual _supla_int_t sc_async_device_config_update_or_result(
+      TSC_DeviceConfigUpdateOrResult *config);  // ver. >= 21
+
+  virtual _supla_int_t sd_async_device_calcfg_request(
+      TSD_DeviceCalCfgRequest *request);
 };
 
 #endif /* SRPC_ADAPTER_H_ */

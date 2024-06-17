@@ -26,6 +26,7 @@
 
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
+#include "device/value/channel_fb_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
 #include "device/value/channel_onoff_value.h"
@@ -388,6 +389,10 @@ bool supla_state_webhook_client::window_opening_sensor_report() {
   return hi_report("OPENINGSENSOR_WINDOW");
 }
 
+bool supla_state_webhook_client::hotel_card_sensor_report() {
+  return hi_report("HOTELCARDSENSOR");
+}
+
 bool supla_state_webhook_client::mail_sensor_report() {
   return hi_report("MAILSENSOR");
 }
@@ -396,11 +401,24 @@ bool supla_state_webhook_client::shut_report(const char *function) {
   supla_channel_rs_value *rs_val =
       dynamic_cast<supla_channel_rs_value *>(channel_value);
 
+  supla_channel_fb_value *fb_val = nullptr;
+
+  if (!rs_val) {
+    fb_val = dynamic_cast<supla_channel_fb_value *>(channel_value);
+  }
+
   cJSON *root = get_header(function);
   if (root) {
     cJSON *state = cJSON_CreateObject();
     if (state) {
-      char shut = rs_val ? rs_val->get_rs_value()->position : 0;
+      char shut = 0;
+      if (rs_val) {
+        shut = rs_val->get_rs_value()->position;
+      } else if (fb_val) {
+        shut = fb_val->get_position();
+        cJSON_AddNumberToObject(
+            state, "tilt", fb_val->get_tilt() >= 0 ? fb_val->get_tilt() : 0);
+      }
 
       cJSON_AddNumberToObject(state, "shut", shut >= 0 ? shut : 0);
       cJSON_AddBoolToObject(state, "is_calibrating", shut < 0);
@@ -414,14 +432,6 @@ bool supla_state_webhook_client::shut_report(const char *function) {
   }
 
   return false;
-}
-
-bool supla_state_webhook_client::roller_shutter_report() {
-  return shut_report("CONTROLLINGTHEROLLERSHUTTER");
-}
-
-bool supla_state_webhook_client::roof_window_report() {
-  return shut_report("CONTROLLINGTHEROOFWINDOW");
 }
 
 bool supla_state_webhook_client::wind_sensor_report() {

@@ -22,11 +22,11 @@
 #include <map>
 #include <string>
 
-#include "jsonconfig/channel/channel_json_config.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 
 class supla_channel_em_extended_value;
-class electricity_meter_config : public channel_json_config {
+class electricity_meter_config : public supla_json_config {
  private:
   static const char counters_available_key[];
   static const char em_initial_values_key[];
@@ -34,6 +34,9 @@ class electricity_meter_config : public channel_json_config {
   static const char upper_voltage_threshold_key[];
   static const char lower_voltage_threshold_key[];
   static const char disabled_phases_key[];
+  static const char voltage_logger_enabled_key[];
+  static const char current_logger_enabled_key[];
+  static const char power_active_logger_enabled_key[];
   static const std::map<int, std::string> var_map;
 
  protected:
@@ -45,7 +48,7 @@ class electricity_meter_config : public channel_json_config {
   void add_initial_value(int var, int flags, unsigned _supla_int64_t value[]);
 
  public:
-  explicit electricity_meter_config(channel_json_config *root);
+  explicit electricity_meter_config(supla_json_config *root);
   electricity_meter_config(void);
   bool should_be_added_to_history(void);
   double get_upper_voltage_threshold(void);
@@ -63,6 +66,10 @@ class electricity_meter_config : public channel_json_config {
 
   void add_initial_values(int flags, TElectricityMeter_ExtendedValue_V2 *em_ev);
   void add_initial_value(unsigned _supla_int_t *total_forward_active_energy);
+
+  bool is_voltage_logger_enabled(void);
+  bool is_current_logger_enabled(void);
+  bool is_power_active_logger_enabled(void);
 };
 
 #endif /* ELECTRICITYMETERCONFIG_H_ */

@@ -23,7 +23,7 @@
 #define DATE_STRING_MAXSIZE 21
 
 #include "db/svrdb.h"
-#include "jsonconfig/channel/channel_json_config.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 #include "user.h"
 
@@ -73,7 +73,7 @@ typedef struct {
   char channel_text_param1[256];
   char channel_text_param2[256];
   char channel_text_param3[256];
-  channel_json_config json_config;
+  supla_json_config json_config;
 } _mqtt_db_data_row_channel_t;
 
 class supla_mqtt_db : public svrdb {

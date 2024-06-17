@@ -24,8 +24,16 @@ LOCAL_CFLAGS += -DNOMYSQL -DSRPC_WITHOUT_IN_QUEUE -DSRPC_WITHOUT_OUT_QUEUE -DSPR
 LOCAL_SRC_FILES := supla.cpp \
     main.cpp \
     actions.cpp \
-    singlecall.cpp \
+    single_call.cpp \
     push.cpp \
+    channel_config.cpp \
+    channel_config_hvac.cpp \
+    channel_config_weekly_schedule.cpp \
+    channel_config_general_purpose_measurement.cpp \
+    channel_config_general_purpose_meter.cpp \
+    channel_config_roller_shutter.cpp \
+    channel_config_facade_blind.cpp \
+    device_config.cpp \
     ../../src/cfg.c \
     ../../src/eh.c \
     ../../src/ini.c \

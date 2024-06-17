@@ -85,6 +85,9 @@ char *st_get_authkey_hash_hex(const char AuthKey[SUPLA_AUTHKEY_SIZE]);
 
 #endif
 
+unsigned _supla_int_t st_crc32_checksum(const unsigned char *data,
+                                        size_t length);
+
 #ifdef __OPENSSL_TOOLS
 char *st_openssl_base64_encode(const char *src, int src_len);
 char *st_openssl_base64_decode(const char *src, int src_len, int *dst_len);

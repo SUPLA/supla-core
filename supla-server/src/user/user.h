@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "amazon/alexa_credentials.h"
@@ -47,6 +48,10 @@ class supla_user {
   char *short_unique_id;
   char *long_unique_id;
   void *lck;
+
+  std::string timezone;
+  double latitude;
+  double longitude;
 
   static struct timeval metric_tv;
   static unsigned int client_add_metric;
@@ -111,8 +116,7 @@ class supla_user {
                                    const supla_caller &caller);
   static void on_device_deleted(int UserID, int DeviceID,
                                 const supla_caller &caller);
-  static void on_device_settings_changed(int UserID, int DeviceID,
-                                         const supla_caller &caller);
+  static void reset_timezone(int user_id);
   static unsigned int total_cd_count(bool client);
   static void log_metrics(int min_interval_sec);
 
@@ -148,8 +152,9 @@ class supla_user {
 
   void set_channel_function(std::shared_ptr<supla_client> sender,
                             TCS_SetChannelFunction *func);
-  void set_caption(std::shared_ptr<supla_client> sender,
-                   TCS_SetCaption *caption, int call_id);
+  void set_caption(const supla_caller &caller, bool is_authorized, int id,
+                   void *srpc, TDCS_SetCaption *caption, int call_id,
+                   bool only_when_null);
 
   supla_amazon_alexa_credentials *amazonAlexaCredentials(void);
   supla_google_home_credentials *googleHomeCredentials(void);
@@ -159,10 +164,13 @@ class supla_user {
 
   static void on_scene_changed(const supla_caller &caller, int user_id,
                                int scene_id);
+  static void on_scene_removed(const supla_caller &caller, int user_id,
+                               int scene_id);
   explicit supla_user(int UserID);
   supla_user(int UserID, const char *short_unique_id,
              const char *long_unique_id);
   supla_user_channelgroups *get_channel_groups(void);
+  std::string get_timezone(double *latitude, double *longitude);
   virtual ~supla_user();
 };
 

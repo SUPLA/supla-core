@@ -18,9 +18,9 @@
 
 #include "google_home_sync_request.h"
 
+#include "asynctask/voice_assistant_sync_thread_pool.h"
 #include "google/google_home_client.h"
 #include "google/google_home_sync_search_condition.h"
-#include "google/google_home_sync_thread_pool.h"
 #include "svrcfg.h"
 #include "user/user.h"
 
@@ -29,10 +29,12 @@ using std::string;
 supla_google_home_sync_request::supla_google_home_sync_request(
     int user_id, supla_asynctask_queue *queue,
     supla_abstract_asynctask_thread_pool *pool,
-    supla_google_home_credentials *credentials)
+    supla_google_home_credentials *credentials,
+    supla_remote_gateway_access_token_provider *token_provider)
     : supla_asynctask_http_request(supla_caller(), user_id, 0, 0, queue, pool,
                                    nullptr) {
   this->credentials = credentials;
+  this->token_provider = token_provider;
 
   set_delay_usec(10000000);  // 10 sec.
   set_timeout(scfg_int(CFG_GOOGLE_HOME_SYNCREQUEST_TIMEOUT) * 1000);
@@ -50,7 +52,9 @@ string supla_google_home_sync_request::get_name(void) {
 bool supla_google_home_sync_request::make_request(
     supla_abstract_curl_adapter *curl_adapter) {
   if (credentials->is_access_token_exists()) {
-    supla_google_home_client client(0, curl_adapter, credentials);
+    supla_google_home_client client(
+        0, curl_adapter, credentials,
+        token_provider->get_token(platform_homegraph, 0));
     return client.sync();
   }
 
@@ -74,8 +78,9 @@ void supla_google_home_sync_request::new_request(supla_user *user) {
     supla_google_home_sync_request *request =
         new supla_google_home_sync_request(
             user->getUserID(), supla_asynctask_queue::global_instance(),
-            supla_google_home_sync_thread_pool::global_instance(),
-            user->googleHomeCredentials());
+            supla_voice_assistant_sync_thread_pool::global_instance(),
+            user->googleHomeCredentials(),
+            supla_remote_gateway_access_token_provider::global_instance());
 
     request->start();
   }

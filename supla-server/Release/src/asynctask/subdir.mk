@@ -11,7 +11,8 @@ CPP_SRCS += \
 ../src/asynctask/asynctask_default_thread_pool.cpp \
 ../src/asynctask/asynctask_queue.cpp \
 ../src/asynctask/asynctask_state.cpp \
-../src/asynctask/asynctask_thread_bucket.cpp 
+../src/asynctask/asynctask_thread_bucket.cpp \
+../src/asynctask/voice_assistant_sync_thread_pool.cpp 
 
 CPP_DEPS += \
 ./src/asynctask/abstract_asynctask.d \
@@ -21,7 +22,8 @@ CPP_DEPS += \
 ./src/asynctask/asynctask_default_thread_pool.d \
 ./src/asynctask/asynctask_queue.d \
 ./src/asynctask/asynctask_state.d \
-./src/asynctask/asynctask_thread_bucket.d 
+./src/asynctask/asynctask_thread_bucket.d \
+./src/asynctask/voice_assistant_sync_thread_pool.d 
 
 OBJS += \
 ./src/asynctask/abstract_asynctask.o \
@@ -31,14 +33,15 @@ OBJS += \
 ./src/asynctask/asynctask_default_thread_pool.o \
 ./src/asynctask/asynctask_queue.o \
 ./src/asynctask/asynctask_state.o \
-./src/asynctask/asynctask_thread_bucket.o 
+./src/asynctask/asynctask_thread_bucket.o \
+./src/asynctask/voice_assistant_sync_thread_pool.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
 src/asynctask/%.o: ../src/asynctask/%.cpp src/asynctask/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__BCRYPT=1 -D__SUPLA_SERVER=1 -DSPROTO_WITHOUT_OUT_BUFFER -DSRPC_WITHOUT_OUT_QUEUE -DUSE_DEPRECATED_EMEV_V1 -D__OPENSSL_TOOLS=1 -I$(INCMYSQL) -I../src/mqtt -I../src/client -I../src/user -I../src/device -I../src -I$(SSLDIR)/include -O2 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -std=c++11 -fPIE -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	g++ -D__BCRYPT=1 -DUSE_OS_TZDB=1 -D__SUPLA_SERVER=1 -DSPROTO_WITHOUT_OUT_BUFFER -DSRPC_WITHOUT_OUT_QUEUE -DUSE_DEPRECATED_EMEV_V1 -D__OPENSSL_TOOLS=1 -I$(INCMYSQL) -I../src/mqtt -I../src/client -I../src/user -I../src/device -I../src -I$(SSLDIR)/include -O2 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -std=c++11 -fPIE -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
@@ -46,7 +49,7 @@ src/asynctask/%.o: ../src/asynctask/%.cpp src/asynctask/subdir.mk
 clean: clean-src-2f-asynctask
 
 clean-src-2f-asynctask:
-	-$(RM) ./src/asynctask/abstract_asynctask.d ./src/asynctask/abstract_asynctask.o ./src/asynctask/abstract_asynctask_observer.d ./src/asynctask/abstract_asynctask_observer.o ./src/asynctask/abstract_asynctask_search_condition.d ./src/asynctask/abstract_asynctask_search_condition.o ./src/asynctask/abstract_asynctask_thread_pool.d ./src/asynctask/abstract_asynctask_thread_pool.o ./src/asynctask/asynctask_default_thread_pool.d ./src/asynctask/asynctask_default_thread_pool.o ./src/asynctask/asynctask_queue.d ./src/asynctask/asynctask_queue.o ./src/asynctask/asynctask_state.d ./src/asynctask/asynctask_state.o ./src/asynctask/asynctask_thread_bucket.d ./src/asynctask/asynctask_thread_bucket.o
+	-$(RM) ./src/asynctask/abstract_asynctask.d ./src/asynctask/abstract_asynctask.o ./src/asynctask/abstract_asynctask_observer.d ./src/asynctask/abstract_asynctask_observer.o ./src/asynctask/abstract_asynctask_search_condition.d ./src/asynctask/abstract_asynctask_search_condition.o ./src/asynctask/abstract_asynctask_thread_pool.d ./src/asynctask/abstract_asynctask_thread_pool.o ./src/asynctask/asynctask_default_thread_pool.d ./src/asynctask/asynctask_default_thread_pool.o ./src/asynctask/asynctask_queue.d ./src/asynctask/asynctask_queue.o ./src/asynctask/asynctask_state.d ./src/asynctask/asynctask_state.o ./src/asynctask/asynctask_thread_bucket.d ./src/asynctask/asynctask_thread_bucket.o ./src/asynctask/voice_assistant_sync_thread_pool.d ./src/asynctask/voice_assistant_sync_thread_pool.o
 
 .PHONY: clean-src-2f-asynctask
 

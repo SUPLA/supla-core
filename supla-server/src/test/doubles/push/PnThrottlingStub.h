@@ -23,10 +23,10 @@
 
 namespace testing {
 
-class PnThrootlingStub : public supla_pn_throttling {
+class PnThrottlingStub : public supla_pn_throttling {
  public:
-  PnThrootlingStub();
-  virtual ~PnThrootlingStub();
+  PnThrottlingStub();
+  virtual ~PnThrottlingStub();
 
   void set_time_window_sec(unsigned int time_window_sec);
 };

@@ -24,7 +24,12 @@
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "jsonconfig/channel/action_trigger_config.h"
+#include "jsonconfig/channel/general_purpose_measurement_config.h"
+#include "jsonconfig/channel/hvac_config.h"
 #include "log.h"
+#include "user/user.h"
+
+using std::string;
 
 supla_mqtt_channel_message_provider::supla_mqtt_channel_message_provider(void)
     : supla_mqtt_message_provider() {
@@ -39,8 +44,8 @@ void supla_mqtt_channel_message_provider::channel_type_to_string(
   // Names adapted to
   // https://github.com/SUPLA/supla-cloud/blob/b0afbfba770c4426154684668782aacbab82d0ee/src/SuplaBundle/Enums/ChannelType.php#L26
   switch (type) {
-    case SUPLA_CHANNELTYPE_SENSORNO:
-      snprintf(buf, buf_size, "SENSORNO");
+    case SUPLA_CHANNELTYPE_BINARYSENSOR:
+      snprintf(buf, buf_size, "BINARYSENSOR");
       break;
     case SUPLA_CHANNELTYPE_SENSORNC:
       snprintf(buf, buf_size, "SENSORNC");
@@ -138,6 +143,9 @@ void supla_mqtt_channel_message_provider::channel_type_to_string(
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
       snprintf(buf, buf_size, "GENERAL_PURPOSE_MEASUREMENT");
       break;
+    case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
+      snprintf(buf, buf_size, "GENERAL_PURPOSE_METER");
+      break;
     case SUPLA_CHANNELTYPE_ENGINE:
       snprintf(buf, buf_size, "ENGINE");
       break;
@@ -146,6 +154,9 @@ void supla_mqtt_channel_message_provider::channel_type_to_string(
       break;
     case SUPLA_CHANNELTYPE_DIGIGLASS:
       snprintf(buf, buf_size, "DIGIGLASS");
+      break;
+    case SUPLA_CHANNELTYPE_HVAC:
+      snprintf(buf, buf_size, "HVAC");
       break;
     default:
       buf[0] = 0;
@@ -159,7 +170,6 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
   // https://github.com/SUPLA/supla-cloud/blob/b0afbfba770c4426154684668782aacbab82d0ee/src/SuplaBundle/Enums/ChannelFunction.php#L28
 
   switch (func) {
-    default:
     case SUPLA_CHANNELFNC_NONE:
       snprintf(buf, buf_size, "NONE");
       break;
@@ -205,6 +215,24 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       snprintf(buf, buf_size, "CONTROLLINGTHEROOFWINDOW");
       break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      snprintf(buf, buf_size, "CONTROLLINGTHEFACADEBLIND");
+      break;
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+      snprintf(buf, buf_size, "TERRACE_AWNING");
+      break;
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+      snprintf(buf, buf_size, "PROJECTOR_SCREEN");
+      break;
+    case SUPLA_CHANNELFNC_CURTAIN:
+      snprintf(buf, buf_size, "CURTAIN");
+      break;
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+      snprintf(buf, buf_size, "VERTICAL_BLIND");
+      break;
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+      snprintf(buf, buf_size, "ROLLER_GARAGE_DOOR");
+      break;
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
       snprintf(buf, buf_size, "OPENINGSENSOR_ROLLERSHUTTER");
       break;
@@ -244,6 +272,12 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       snprintf(buf, buf_size, "OPENINGSENSOR_WINDOW");
       break;
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+      snprintf(buf, buf_size, "HOTELCARDSENSOR");
+      break;
+    case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
+      snprintf(buf, buf_size, "ALARMARMAMENTSENSOR");
+      break;
     case SUPLA_CHANNELFNC_MAILSENSOR:
       snprintf(buf, buf_size, "MAILSENSOR");
       break;
@@ -280,9 +314,6 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       snprintf(buf, buf_size, "IC_HEATMETER");
       break;
-    case SUPLA_CHANNELFNC_THERMOSTAT:
-      snprintf(buf, buf_size, "THERMOSTAT");
-      break;
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       snprintf(buf, buf_size, "THERMOSTATHEATPOLHOMEPLUS");
       break;
@@ -294,6 +325,9 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
       break;
     case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
       snprintf(buf, buf_size, "GENERAL_PURPOSE_MEASUREMENT");
+      break;
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
+      snprintf(buf, buf_size, "GENERAL_PURPOSE_METER");
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED:
       snprintf(buf, buf_size, "CONTROLLINGTHEENGINESPEED");
@@ -307,6 +341,19 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
       snprintf(buf, buf_size, "DIGIGLASS_VERTICAL");
       break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+      snprintf(buf, buf_size, "HVAC_THERMOSTAT");
+      break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+      snprintf(buf, buf_size, "HVAC_THERMOSTAT_HEAT_COOL");
+      break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+      snprintf(buf, buf_size, "HVAC_THERMOSTAT_DIFFERENTIAL");
+      break;
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+      snprintf(buf, buf_size, "HVAC_DOMESTIC_HOT_WATER");
+      break;
+    default:
       buf[0] = 0;
       break;
   }
@@ -378,6 +425,10 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "Roller shutter operation");
       break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Facade blind operation");
+      break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "Roof window operation");
@@ -389,6 +440,22 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "Roof window opening sensor");
+      break;
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Terrace awning");
+      break;
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Projector screen");
+      break;
+    case SUPLA_CHANNELFNC_CURTAIN:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Curtain");
+      break;
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Vertical blind");
+      break;
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Roller garage door");
       break;
     case SUPLA_CHANNELFNC_POWERSWITCH:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "On/Off switch");
@@ -425,6 +492,13 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "Window opening sensor");
       break;
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Hotel card sensor");
+      break;
+    case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Alarm armament sensor");
+      break;
     case SUPLA_CHANNELFNC_MAILSENSOR:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Mail sensor");
       break;
@@ -459,9 +533,6 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Heat meter");
       break;
-    case SUPLA_CHANNELFNC_THERMOSTAT:
-      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Thermostat");
-      break;
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Home+ Heater");
       break;
@@ -472,6 +543,10 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
     case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
                "General purpose measurement");
+      break;
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "General purpose meter");
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
@@ -484,6 +559,13 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
     case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Digiglass");
       break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Thermostat");
+      break;
+    default:
       caption_out[0] = 0;
       break;
   }
@@ -552,19 +634,27 @@ void supla_mqtt_channel_message_provider::ha_json_set_short_topic(
 }
 
 void supla_mqtt_channel_message_provider::ha_json_set_full_topic(
-    cJSON *root, const char *param_name, const char *topic_prefix,
-    const char *topic_suffix) {
+    int device_id, int channel_id, cJSON *root, const char *param_name,
+    const char *topic_prefix, const char *topic_suffix) {
   char *topic_name = NULL;
 
   create_message(topic_prefix, row->user_suid, &topic_name, NULL, NULL, NULL,
-                 false, "devices/%i/channels/%i/%s", row->device_id,
-                 row->channel_id, topic_suffix);
+                 false, "devices/%i/channels/%i/%s", device_id, channel_id,
+                 topic_suffix);
 
   if (topic_name) {
     cJSON_AddStringToObject(root, param_name, topic_name);
     free(topic_name);
   }
 }
+
+void supla_mqtt_channel_message_provider::ha_json_set_full_topic(
+    cJSON *root, const char *param_name, const char *topic_prefix,
+    const char *topic_suffix) {
+  ha_json_set_full_topic(row->device_id, row->channel_id, root, param_name,
+                         topic_prefix, topic_suffix);
+}
+
 void supla_mqtt_channel_message_provider::ha_json_set_qos(cJSON *root,
                                                           int qos) {
   cJSON_AddNumberToObject(root, "qos", qos);
@@ -782,7 +872,7 @@ bool supla_mqtt_channel_message_provider::ha_rgb(int sub_id, bool set_sub_id,
 
 bool supla_mqtt_channel_message_provider::ha_binary_sensor(
     const char *device_class, const char *topic_prefix, char **topic_name,
-    void **message, size_t *message_size) {
+    void **message, size_t *message_size, bool invert) {
   // https://www.home-assistant.io/integrations/binary_sensor
 
   cJSON *root = ha_json_create_root(topic_prefix);
@@ -791,8 +881,15 @@ bool supla_mqtt_channel_message_provider::ha_binary_sensor(
   }
 
   ha_json_set_short_topic(root, "stat_t", "state/hi");
-  ha_json_set_string_param(root, "pl_on", "false");
-  ha_json_set_string_param(root, "pl_off", "true");
+
+  if (invert) {
+    ha_json_set_string_param(root, "pl_on", "true");
+    ha_json_set_string_param(root, "pl_off", "false");
+  } else {
+    ha_json_set_string_param(root, "pl_on", "false");
+    ha_json_set_string_param(root, "pl_off", "true");
+  }
+
   if (device_class) {
     ha_json_set_string_param(root, "device_class", device_class);
   }
@@ -824,7 +921,7 @@ bool supla_mqtt_channel_message_provider::ha_sensor(
     ha_json_set_string_param(root, "val_tpl", value_tmpl);
   } else {
     char tpl[50];
-    snprintf(tpl, sizeof(tpl), "{{ value | round(%i,default=none) }}",
+    snprintf(tpl, sizeof(tpl), "{{ value | round(%i,default=None) }}",
              precision);
 
     ha_json_set_string_param(root, "val_tpl", tpl);
@@ -919,9 +1016,11 @@ bool supla_mqtt_channel_message_provider::ha_door(const char *topic_prefix,
                         message_size);
 }
 
-bool supla_mqtt_channel_message_provider::ha_roller_shutter(
-    const char *topic_prefix, char **topic_name, void **message,
-    size_t *message_size) {
+bool supla_mqtt_channel_message_provider::ha_cover(const char *topic_prefix,
+                                                   char **topic_name,
+                                                   void **message,
+                                                   size_t *message_size,
+                                                   bool tilting) {
   // https://www.home-assistant.io/integrations/cover.mqtt
 
   cJSON *root = ha_json_create_root(topic_prefix, NULL, NULL, false);
@@ -949,8 +1048,24 @@ bool supla_mqtt_channel_message_provider::ha_roller_shutter(
 
   ha_json_set_string_param(
       root, "pos_tpl",
-      "{% if value is defined %}{% if value | int < 0 %}0{% elif value | int > "
-      "100 %}100{% else %}{{value | int}}{% endif %}{% else %}0{% endif %}");
+      "{% if int(value, default=0) <= 0 %}0{% elif value | int > 100 "
+      "%}100{% else %}{{value | int}}{% endif %}");
+
+  if (tilting) {
+    ha_json_set_short_topic(root, "tilt_cmd_t", "set/tilt");
+    ha_json_set_short_topic(root, "tilt_status_t", "state/tilt");
+
+    ha_json_set_int_param(root, "tilt_min", 100);
+    ha_json_set_int_param(root, "tilt_max", 0);
+
+    ha_json_set_int_param(root, "tilt_opnd_val", 0);
+    ha_json_set_int_param(root, "tilt_clsd_val", 100);
+
+    ha_json_set_string_param(
+        root, "tilt_status_tpl",
+        "{% if int(value, default=0) <= 0 %}0{% elif value | int > 100 "
+        "%}100{% else %}{{value | int}}{% endif %}");
+  }
 
   return ha_get_message(root, "cover", 0, false, topic_name, message,
                         message_size);
@@ -977,15 +1092,31 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
         char *device_class = NULL;
         char energy[] = "energy";
         char gas[] = "gas";
+        char water[] = "water";
 
         if (func == SUPLA_CHANNELFNC_IC_ELECTRICITY_METER &&
             (icv->get_custom_unit() == "kWh" ||
-             icv->get_custom_unit() == "Wh")) {
+             icv->get_custom_unit() == "Wh" ||
+             icv->get_custom_unit() == "MWh" ||
+             icv->get_custom_unit() == "MJ" ||
+             icv->get_custom_unit() == "GJ")) {
           device_class = energy;
         } else if (func == SUPLA_CHANNELFNC_IC_GAS_METER &&
                    (icv->get_custom_unit() == "m³" ||
-                    icv->get_custom_unit() == "ft³")) {
+                    icv->get_custom_unit() == "m3" ||
+                    icv->get_custom_unit() == "ft³" ||
+                    icv->get_custom_unit() == "ft3" ||
+                    icv->get_custom_unit() == "CCF")) {
           device_class = gas;
+        } else if (func == SUPLA_CHANNELFNC_IC_WATER_METER &&
+                   (icv->get_custom_unit() == "m³" ||
+                    icv->get_custom_unit() == "m3" ||
+                    icv->get_custom_unit() == "ft³" ||
+                    icv->get_custom_unit() == "ft3" ||
+                    icv->get_custom_unit() == "CCF" ||
+                    icv->get_custom_unit() == "L" ||
+                    icv->get_custom_unit() == "gal")) {
+          device_class = water;
         }
 
         result = ha_sensor(icv->get_custom_unit().c_str(), 3, 0, true,
@@ -1201,7 +1332,7 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
       return ha_phase_sensor(
           index, phase, "%", 3, "state/phases/%i/power_factor",
           "Power factor - Phase %i",
-          "{% if float(value, default=none) == None %}None{% else "
+          "{% if float(value, default=None) == None %}None{% else "
           "%}{{float(value) * 100.0 | round(5)}}{% endif %}",
           "power_factor", false, topic_prefix, topic_name, message,
           message_size);
@@ -1392,6 +1523,181 @@ bool supla_mqtt_channel_message_provider::ha_action_trigger(
                            message_size, cap);
 }
 
+supla_channel_fragment
+supla_mqtt_channel_message_provider::get_channel_fragment(int device_id,
+                                                          int channel_number) {
+  supla_channel_fragment result;
+  supla_user *user = supla_user::find(row->user_id, false);
+  if (user) {
+    result = user->get_devices()->get_channel_fragment_with_number(
+        device_id, channel_number, true);
+  }
+  return result;
+}
+
+bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  if (index != 0) {
+    return false;
+  }
+  cJSON *root = ha_json_create_root(topic_prefix, NULL, NULL, true);
+  if (!root) {
+    return false;
+  }
+
+  TChannelConfig_HVAC hvac_raw_cfg = {};
+
+  if (row->channel_func != SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS) {
+    hvac_config cfg(&row->json_config);
+    cfg.get_config(&hvac_raw_cfg, row->channel_number);
+  }
+
+  ha_json_set_retain(root);
+  ha_json_set_optimistic(root);
+
+  ha_json_set_short_topic(root, "act_t", "state/action");
+
+  bool temperature_topic_is_set = false;
+  bool humidity_topic_is_set = false;
+
+  if (row->channel_func == SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS) {
+    ha_json_set_short_topic(root, "curr_temp_t", "state/temperature");
+    temperature_topic_is_set = true;
+  } else {
+    if (hvac_raw_cfg.MainThermometerChannelId != row->channel_number) {
+      supla_channel_fragment f = get_channel_fragment(
+          row->device_id, hvac_raw_cfg.MainThermometerChannelNo);
+      if (f.get_channel_id()) {
+        switch (f.get_function()) {
+          case SUPLA_CHANNELFNC_THERMOMETER:
+          case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+            ha_json_set_full_topic(row->device_id, f.get_channel_id(), root,
+                                   "curr_temp_t", topic_prefix,
+                                   "state/temperature");
+            temperature_topic_is_set = true;
+            break;
+        }
+
+        switch (f.get_function()) {
+          case SUPLA_CHANNELFNC_HUMIDITY:
+          case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+            ha_json_set_full_topic(row->device_id, f.get_channel_id(), root,
+                                   "current_humidity_topic", topic_prefix,
+                                   "state/humidity");
+            humidity_topic_is_set = true;
+            break;
+        }
+      }
+    }
+  }
+
+  if (!temperature_topic_is_set) {
+    ha_json_set_string_param(root, "curr_temp_t", "None");
+  }
+
+  if (!humidity_topic_is_set) {
+    ha_json_set_string_param(root, "current_humidity_topic", "None");
+  }
+
+  if (row->channel_func == SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS) {
+    ha_json_set_string_param(root, "min_temp", "10");
+    ha_json_set_string_param(root, "max_temp", "30");
+  } else {
+    char min_temp[30] = {};
+    snprintf(min_temp, sizeof(min_temp), "%.2f",
+             (hvac_raw_cfg.Temperatures.Index & TEMPERATURE_ROOM_MIN)
+                 ? hvac_raw_cfg.Temperatures.Temperature[10] / 100.00
+                 : 0);
+    ha_json_set_string_param(root, "min_temp", min_temp);
+
+    char max_temp[30] = {};
+    snprintf(max_temp, sizeof(max_temp), "%.2f",
+             (hvac_raw_cfg.Temperatures.Index & TEMPERATURE_ROOM_MAX)
+                 ? hvac_raw_cfg.Temperatures.Temperature[11] / 100.00
+                 : 0);
+    ha_json_set_string_param(root, "max_temp", max_temp);
+  }
+
+  cJSON *modes = cJSON_CreateArray();
+
+  cJSON_AddItemToArray(modes, cJSON_CreateString("off"));
+  cJSON_AddItemToArray(modes, cJSON_CreateString("auto"));
+
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
+      row->channel_func == SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS ||
+      hvac_raw_cfg.Subfunction == SUPLA_HVAC_SUBFUNCTION_HEAT) {
+    cJSON_AddItemToArray(modes, cJSON_CreateString("heat"));
+  }
+
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
+      hvac_raw_cfg.Subfunction == SUPLA_HVAC_SUBFUNCTION_COOL) {
+    cJSON_AddItemToArray(modes, cJSON_CreateString("cool"));
+  }
+
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL) {
+    cJSON_AddItemToArray(modes, cJSON_CreateString("heat_cool"));
+  }
+
+  cJSON_AddItemToObject(root, "modes", modes);
+
+  ha_json_set_short_topic(root, "mode_stat_t", "state/mode");
+  ha_json_set_short_topic(root, "mode_cmd_t", "execute_action");
+  ha_json_set_short_topic(root, "power_command_topic", "execute_action");
+  ha_json_set_string_param(root, "pl_on", "TURN_ON");
+  ha_json_set_string_param(root, "pl_off", "TURN_OFF");
+  ha_json_set_string_param(root, "temp_unit", "C");
+  ha_json_set_string_param(root, "temp_step", "0.1");
+
+  if (row->channel_func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL) {
+    ha_json_set_short_topic(root, "temp_hi_cmd_t",
+                            "set/temperature_setpoint_cool");
+    ha_json_set_short_topic(root, "temp_hi_stat_t",
+                            "state/temperature_setpoint_cool");
+    ha_json_set_short_topic(root, "temp_lo_cmd_t",
+                            "set/temperature_setpoint_heat");
+    ha_json_set_short_topic(root, "temp_lo_stat_t",
+                            "state/temperature_setpoint_heat");
+  } else {
+    ha_json_set_short_topic(root, "temp_cmd_t", "set/temperature_setpoint");
+    ha_json_set_short_topic(root, "temp_stat_t", "state/temperature_setpoint");
+  }
+
+  return ha_get_message(root, "climate", 0, false, topic_name, message,
+                        message_size);
+}
+
+bool supla_mqtt_channel_message_provider::ha_gpm(unsigned short index,
+                                                 const char *topic_prefix,
+                                                 char **topic_name,
+                                                 void **message,
+                                                 size_t *message_size) {
+  if (index != 0) {
+    return false;
+  }
+
+  general_purpose_measurement_config cfg(&row->json_config);
+
+  string val_tmpl =
+      "{% if float(value, default=None) == None or value == 'nan' %}None{% "
+      "else %}{{";
+
+  if (cfg.get_precision() > 0) {
+    val_tmpl.append("value | round(");
+    val_tmpl.append(std::to_string(cfg.get_precision()));
+    val_tmpl.append(")");
+  } else {
+    val_tmpl.append("value | int");
+  }
+
+  val_tmpl.append("}}{% endif %}");
+
+  return ha_sensor(cfg.get_unit().c_str(), 0, 0, false, "state/value", NULL,
+                   NULL, val_tmpl.c_str(), NULL,
+                   row->channel_func == SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER,
+                   topic_prefix, topic_name, message, message_size);
+}
+
 bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
@@ -1432,7 +1738,10 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
       return ha_door(topic_prefix, topic_name, message, message_size);
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      return ha_roller_shutter(topic_prefix, topic_name, message, message_size);
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      return ha_cover(
+          topic_prefix, topic_name, message, message_size,
+          row->channel_func == SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND);
     case SUPLA_CHANNELFNC_THERMOMETER:
       return ha_sensor_temperature(0, false, topic_prefix, topic_name, message,
                                    message_size);
@@ -1453,23 +1762,25 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
       break;
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
     case SUPLA_CHANNELFNC_MAILSENSOR:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+    case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
       return ha_binary_sensor(NULL, topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, true);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
       return ha_binary_sensor("opening", topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, false);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
       return ha_binary_sensor("garage_door", topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, false);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
       return ha_binary_sensor("door", topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, false);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       return ha_binary_sensor("window", topic_prefix, topic_name, message,
-                              message_size);
+                              message_size, false);
     case SUPLA_CHANNELFNC_POWERSWITCH:
       return ha_light_or_powerswitch(false, topic_prefix, topic_name, message,
                                      message_size);
@@ -1527,6 +1838,16 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_ACTIONTRIGGER:
       return ha_action_trigger(index, topic_prefix, topic_name, message,
                                message_size);
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      return ha_climate_thermostat(index, topic_prefix, topic_name, message,
+                                   message_size);
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
+      return ha_gpm(index, topic_prefix, topic_name, message, message_size);
   }
   return false;
 }

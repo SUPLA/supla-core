@@ -20,10 +20,12 @@
 
 #include <memory>
 
+#include "client/client.h"
 #include "db/db_access_provider.h"
 #include "device.h"
 #include "device/device_dao.h"
 #include "jsonconfig/device/device_json_config.h"
+#include "user/user.h"
 
 using std::shared_ptr;
 
@@ -44,35 +46,22 @@ void supla_ch_set_device_config::handle_multipart_call(
   TSDS_SetDeviceConfigResult result = {};
   result.Result = SUPLA_CONFIG_RESULT_FALSE;
 
-  {
-    device_json_config* config =
-        dao.get_device_config(device->get_id(), nullptr);
-    if (config) {
-      if (config->is_local_config_disabled()) {
-        result.Result = SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED;
-      }
-      delete config;
-    }
-  }
+  TSDS_SetDeviceConfig config = {};
+  device_json_config json_config;
+  unsigned _supla_int16_t fields = 0;
+  unsigned _supla_int16_t available_fields = 0;
 
-  if (result.Result != SUPLA_CONFIG_RESULT_LOCAL_CONFIG_DISABLED) {
-    TSDS_SetDeviceConfig config = {};
-    device_json_config json_config;
-    unsigned _supla_int16_t all_fields = 0;
-
-    while (mp_call->part_pop(&config)) {
-      json_config.set_config(&config);
-      all_fields |= config.Fields;
-      if (config.EndOfDataFlag) {
-        json_config.leave_only_thise_fields(all_fields);
-        json_config.remove_fields(
-            SUPLA_DEVICE_CONFIG_FIELD_DISABLE_LOCAL_CONFIG);
-        if (dao.set_device_config(device->get_user_id(), device->get_id(),
-                                  &json_config)) {
-          result.Result = SUPLA_CONFIG_RESULT_TRUE;
-        }
-        break;
+  while (mp_call->part_pop(&config)) {
+    json_config.set_config(&config);
+    fields |= config.Fields;
+    available_fields |= config.AvailableFields;
+    if (config.EndOfDataFlag) {
+      json_config.leave_only_thise_fields(fields);
+      if (dao.set_device_config(device->get_user_id(), device->get_id(),
+                                &json_config, available_fields)) {
+        result.Result = SUPLA_CONFIG_RESULT_TRUE;
       }
+      break;
     }
   }
 
@@ -82,8 +71,13 @@ void supla_ch_set_device_config::handle_multipart_call(
       ->get_srpc_adapter()
       ->sd_async_set_device_config_result(&result);
 
-  device->send_device_config_to_device();  // Regardless of the result, call
-                                           // this method.
+  device->send_config_to_device();  // Regardless of the result, call
+                                    // this method.
+
+  device->get_user()->get_clients()->for_each(
+      [&device](shared_ptr<supla_client> client, bool* will_continue) -> void {
+        client->send_device_config(device->get_id(), 0xFFFFFFFFFFFFFFFF);
+      });
 }
 
 void supla_ch_set_device_config::handle_call(

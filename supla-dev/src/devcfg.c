@@ -34,8 +34,8 @@ char DEVICE_AUTHKEY[SUPLA_AUTHKEY_SIZE];
  * Use type names to process supla configuration file
  */
 static int decode_channel_type(const char *type) {
-  if (strcasecmp(type, "SENSORNO") == 0) {
-    return SUPLA_CHANNELTYPE_SENSORNO;
+  if (strcasecmp(type, "BINARYSENSOR") == 0) {
+    return SUPLA_CHANNELTYPE_BINARYSENSOR;
   } else if (strcasecmp(type, "SENSORNC") == 0) {
     return SUPLA_CHANNELTYPE_SENSORNC;
   } else if (strcasecmp(type, "RELAYHFD4") == 0) {

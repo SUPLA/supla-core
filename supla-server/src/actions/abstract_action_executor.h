@@ -24,6 +24,10 @@
 #include <string>
 
 #include "abstract_action_config.h"
+#include "actions/abstract_action_parameters.h"
+#include "actions/action_hvac_parameters.h"
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
 #include "caller.h"
 #include "device.h"
 #include "device/abstract_channel_property_getter.h"
@@ -76,27 +80,26 @@ class supla_abstract_action_executor {
                       abstract_action_config *config,
                       supla_abstract_channel_property_getter *property_getter);
 
-  void execute_action(
-      const supla_caller &caller, int user_id, abstract_action_config *config,
-      supla_abstract_channel_property_getter *property_getter,
-      const std::map<std::string, std::string> *replacement_map);
+  void execute_action(const supla_caller &caller, int user_id,
+                      abstract_action_config *config,
+                      supla_abstract_channel_property_getter *property_getter,
+                      std::map<std::string, std::string> *replacement_map);
 
-  void execute_action(
-      const supla_caller &caller, int user_id, int action_id,
-      _subjectType_e subject_type, int subject_id,
-      supla_abstract_channel_property_getter *property_getter,
-      TAction_RS_Parameters *rs, TAction_RGBW_Parameters *rgbw,
-      int source_device_id, int source_channel_id, int cap,
-      const std::map<std::string, std::string> *replacement_map);
+  void execute_action(const supla_caller &caller, int user_id, int action_id,
+                      _subjectType_e subject_type, int subject_id,
+                      supla_abstract_channel_property_getter *property_getter,
+                      supla_abstract_action_parameters *params,
+                      int source_device_id, int source_channel_id, int cap,
+                      std::map<std::string, std::string> *replacement_map);
 
-  virtual void set_on(bool on) = 0;
+  virtual void set_on(bool on, unsigned long long duration_ms) = 0;
   virtual void set_color(unsigned int color) = 0;
   virtual void set_brightness(char brightness) = 0;
   virtual void set_color_brightness(char brightness) = 0;
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
                         char *brightness, char *on_off) = 0;
   virtual void toggle(void) = 0;
-  virtual void shut(const char *closingPercentage, bool delta) = 0;
+  virtual void shut(const supla_action_shading_system_parameters *params) = 0;
   virtual void reveal(void) = 0;
   virtual void up(void) = 0;
   virtual void down(void) = 0;
@@ -105,8 +108,8 @@ class supla_abstract_action_executor {
   virtual void step_by_step(void) = 0;
   virtual void enable(void) = 0;
   virtual void disable(void) = 0;
-  virtual void send(
-      const std::map<std::string, std::string> *replacement_map) = 0;
+  virtual void send(const supla_caller &caller,
+                    std::map<std::string, std::string> *replacement_map) = 0;
   virtual void execute(void) = 0;
   virtual void interrupt(void) = 0;
   virtual void interrupt_and_execute(void) = 0;
@@ -116,6 +119,14 @@ class supla_abstract_action_executor {
   virtual void open_close(void) = 0;
   virtual void open_close_without_canceling_tasks(void) = 0;
   virtual void forward_outside(int cap) = 0;
+  virtual void hvac_set_parameters(supla_action_hvac_parameters *params) = 0;
+  virtual void hvac_switch_to_program_mode(void) = 0;
+  virtual void hvac_switch_to_manual_mode(void) = 0;
+  virtual void hvac_set_temperature(
+      supla_action_hvac_setpoint_temperature *temperature) = 0;
+  virtual void hvac_set_temperatures(
+      supla_action_hvac_setpoint_temperatures *temperatures) = 0;
+
   void copy(supla_abstract_channel_property_getter *property_getter,  // NOLINT
             int source_device_id, int source_channel_id);             // NOLINT
 };

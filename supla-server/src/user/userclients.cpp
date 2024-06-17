@@ -114,3 +114,12 @@ void supla_user_clients::set_scene_caption(int scene_id, char *caption) {
     client->set_scene_caption(scene_id, caption);
   });
 }
+
+void supla_user_clients::update_json_config(int channel_id,
+                                            unsigned char config_type,
+                                            supla_json_config *json_config) {
+  for_each(
+      [&](std::shared_ptr<supla_client> client, bool *will_continue) -> void {
+        client->update_json_config(channel_id, config_type, json_config);
+      });
+}

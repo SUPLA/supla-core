@@ -34,7 +34,7 @@ SetSceneCaptionIntegrationTest::SetSceneCaptionIntegrationTest()
 
 SetSceneCaptionIntegrationTest::~SetSceneCaptionIntegrationTest() {}
 
-void SetSceneCaptionIntegrationTest::sceneMatch(TSC_SetCaptionResult *result,
+void SetSceneCaptionIntegrationTest::sceneMatch(TSCD_SetCaptionResult *result,
                                                 TSC_SuplaScene *scene) {
   if (result) {
     ASSERT_EQ(result->ResultCode, expectedResultCode);
@@ -58,7 +58,7 @@ void SetSceneCaptionIntegrationTest::sceneMatch(TSC_SetCaptionResult *result,
 }
 
 void SetSceneCaptionIntegrationTest::onSceneCaptionSetResult(
-    TSC_SetCaptionResult *result) {
+    TSCD_SetCaptionResult *result) {
   ASSERT_FALSE(result == NULL);
   sceneMatch(result, NULL);
 }
@@ -122,7 +122,7 @@ TEST_F(SetSceneCaptionIntegrationTest, SetFewViarintsOfCaption) {
 
   iterateUntilDefaultTimeout();
 
-  ASSERT_EQ(dbGetCaption(expectedSceneID).compare("caption\nNULL\n"), 0);
+  ASSERT_EQ(dbGetCaption(expectedSceneID).compare("caption\n\n"), 0);
 
   // Emoji -----------------
   reconnect();
@@ -136,7 +136,7 @@ TEST_F(SetSceneCaptionIntegrationTest, SetFewViarintsOfCaption) {
   iterateUntilDefaultTimeout();
 
   // FullSize -----------------
-  // Database field is limited to 100 characters
+  // Database field is limited to 255 characters
 
   reconnect();
   superuserAuthorize();

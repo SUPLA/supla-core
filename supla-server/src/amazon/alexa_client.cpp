@@ -21,6 +21,8 @@
 #include <string.h>
 
 #include "device/value/channel_binary_sensor_value.h"
+#include "device/value/channel_fb_value.h"
+#include "device/value/channel_hvac_value_with_temphum.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
@@ -90,6 +92,7 @@ supla_alexa_client::supla_alexa_client(
     : supla_voice_assistant_client(channel_id, curl_adapter, credentials) {
   cause_type = CAUSE_APP_INTERACTION;
   props_arr = nullptr;
+  endpoints = nullptr;
   this->zulu_time = zulu_time;
   this->message_id = message_id;
   this->correlation_token = correlation_token;
@@ -111,9 +114,13 @@ supla_alexa_client::~supla_alexa_client(void) {
   if (props_arr) {
     cJSON_Delete(props_arr);
   }
+
+  if (endpoints) {
+    cJSON_Delete(endpoints);
+  }
 }
 
-const char *supla_alexa_client::get_error_string(const int code) {
+const char *supla_alexa_client::get_error_code_str(const int code) {
   int n = 0;
   while (alexa_codes[n].str) {
     if (alexa_codes[n].code == code) {
@@ -300,6 +307,59 @@ cJSON *supla_alexa_client::get_contact_sensor_properties(bool hi) {
   return props;
 }
 
+cJSON *supla_alexa_client::get_thermostat_mode_properties(string mode) {
+  cJSON *props = cJSON_CreateObject();
+  if (props) {
+    cJSON_AddStringToObject(props, "namespace", "Alexa.ThermostatController");
+    cJSON_AddStringToObject(props, "name", "thermostatMode");
+    cJSON_AddStringToObject(props, "value", mode.c_str());
+    cJSON_AddStringToObject(props, "timeOfSample", zulu_time.c_str());
+    cJSON_AddNumberToObject(props, "uncertaintyInMilliseconds", 50);
+  }
+
+  return props;
+}
+
+cJSON *supla_alexa_client::get_thermostat_setpoint_properties(
+    string name, double temperature) {
+  cJSON *props = cJSON_CreateObject();
+  if (props) {
+    cJSON_AddStringToObject(props, "namespace", "Alexa.ThermostatController");
+    cJSON_AddStringToObject(props, "name", name.c_str());
+
+    cJSON *value = cJSON_CreateObject();
+    if (value) {
+      cJSON_AddNumberToObject(value, "value", temperature);
+      cJSON_AddStringToObject(value, "scale", "CELSIUS");
+      cJSON_AddItemToObject(props, "value", value);
+      cJSON_AddStringToObject(props, "timeOfSample", zulu_time.c_str());
+      cJSON_AddNumberToObject(props, "uncertaintyInMilliseconds", 50);
+    }
+  }
+
+  return props;
+}
+
+cJSON *supla_alexa_client::get_temperature_sensor_properties(
+    double temperature) {
+  cJSON *props = cJSON_CreateObject();
+  if (props) {
+    cJSON_AddStringToObject(props, "namespace", "Alexa.TemperatureSensor");
+    cJSON_AddStringToObject(props, "name", "temperature");
+
+    cJSON *value = cJSON_CreateObject();
+    if (value) {
+      cJSON_AddNumberToObject(value, "value", temperature);
+      cJSON_AddStringToObject(value, "scale", "CELSIUS");
+      cJSON_AddItemToObject(props, "value", value);
+      cJSON_AddStringToObject(props, "timeOfSample", zulu_time.c_str());
+      cJSON_AddNumberToObject(props, "uncertaintyInMilliseconds", 50);
+    }
+  }
+
+  return props;
+}
+
 cJSON *supla_alexa_client::get_endpoint_health_properties(bool ok) {
   cJSON *props = cJSON_CreateObject();
   if (props) {
@@ -318,12 +378,12 @@ cJSON *supla_alexa_client::get_endpoint_health_properties(bool ok) {
   return props;
 }
 
-cJSON *supla_alexa_client::get_header(const char name[],
+cJSON *supla_alexa_client::get_header(const char ns[], const char name[],
                                       bool use_correlation_token) {
   cJSON *header = cJSON_CreateObject();
   if (header) {
     cJSON_AddStringToObject(header, "messageId", message_id.c_str());
-    cJSON_AddStringToObject(header, "namespace", "Alexa");
+    cJSON_AddStringToObject(header, "namespace", ns);
     cJSON_AddStringToObject(header, "name", name);
     if (use_correlation_token && !correlation_token.empty()) {
       cJSON_AddStringToObject(header, "correlationToken",
@@ -333,6 +393,11 @@ cJSON *supla_alexa_client::get_header(const char name[],
   }
 
   return header;
+}
+
+cJSON *supla_alexa_client::get_header(const char name[],
+                                      bool use_correlation_token) {
+  return get_header("Alexa", name, use_correlation_token);
 }
 
 cJSON *supla_alexa_client::get_endpoint(void) {
@@ -456,6 +521,39 @@ cJSON *supla_alexa_client::get_change_report(void) {
   return root;
 }
 
+cJSON *supla_alexa_client::get_delete_report(void) {
+  cJSON *root = cJSON_CreateObject();
+  if (root) {
+    cJSON *event = cJSON_AddObjectToObject(root, "event");
+    if (event) {
+      cJSON *header = get_header("Alexa.Discovery", "DeleteReport", false);
+      if (header) {
+        cJSON_AddItemToObject(event, "header", header);
+      }
+
+      cJSON *payload = cJSON_AddObjectToObject(event, "payload");
+      if (payload) {
+        cJSON *scope = cJSON_AddObjectToObject(payload, "scope");
+        if (scope) {
+          cJSON_AddStringToObject(scope, "type", "BearerToken");
+          cJSON_AddStringToObject(
+              scope, "token", get_credentials()->get_access_token().c_str());
+        }
+
+        if (!endpoints) {
+          endpoints = cJSON_CreateArray();
+        }
+
+        if (endpoints) {
+          cJSON_AddItemToObject(payload, "endpoints", endpoints);
+          endpoints = nullptr;
+        }
+      }
+    }
+  }
+  return root;
+}
+
 cJSON *supla_alexa_client::get_unrechable_error_response(void) {
   cJSON *root = cJSON_CreateObject();
   if (root) {
@@ -490,9 +588,14 @@ cJSON *supla_alexa_client::get_unrechable_error_response(void) {
   return root;
 }
 
-int supla_alexa_client::perform_post_request(char *data,
-                                             int *http_result_code) {
+int supla_alexa_client::perform_post_request(const char *data,
+                                             int *http_result_code,
+                                             string *error_description) {
   int result = POST_RESULT_UNKNOWN_ERROR;
+
+  if (error_description) {
+    error_description->clear();
+  }
 
   if (http_result_code) {
     *http_result_code = 0;
@@ -541,6 +644,13 @@ int supla_alexa_client::perform_post_request(char *data,
             cJSON *code = cJSON_GetObjectItem(payload, "code");
             if (code) {
               result = get_error_code(cJSON_GetStringValue(code));
+            }
+
+            if (error_description) {
+              cJSON *description = cJSON_GetObjectItem(payload, "description");
+              if (description && cJSON_IsString(description)) {
+                *error_description = cJSON_GetStringValue(description);
+              }
             }
           }
           cJSON_Delete(root);
@@ -611,7 +721,7 @@ void supla_alexa_client::refresh_token(void) {
   get_credentials()->refresh_unlock();
 }
 
-int supla_alexa_client::perform_post_request(char *data) {
+int supla_alexa_client::perform_post_request(const char *data) {
   if (!get_credentials()->is_access_token_exists()) {
     return POST_RESULT_TOKEN_DOES_NOT_EXISTS;
   }
@@ -624,7 +734,9 @@ int supla_alexa_client::perform_post_request(char *data) {
   }
 
   int http_result_code = 0;
-  int result = perform_post_request(data, &http_result_code);
+  string error_description;
+  int result =
+      perform_post_request(data, &http_result_code, &error_description);
   // https://developer.amazon.com/en-US/docs/alexa/smarthome/send-events.html
   // 401 Unauthorized == INVALID_ACCESS_TOKEN_EXCEPTION
   if (result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION ||
@@ -632,7 +744,8 @@ int supla_alexa_client::perform_post_request(char *data) {
     if (!refresh_attempt) {
       refresh_attempt = true;
       refresh_token();
-      result = perform_post_request(data, &http_result_code);
+      result =
+          perform_post_request(data, &http_result_code, &error_description);
     }
   }
 
@@ -652,9 +765,9 @@ int supla_alexa_client::perform_post_request(char *data) {
   if (result != POST_RESULT_SUCCESS) {
     supla_log(LOG_ERR,
               "Alexa event gateway client error (UserID: %i, httpCode: %i, "
-              "Result: %i): %s",
+              "Result: %i): %s \"%s\"",
               get_credentials()->get_user_id(), http_result_code, result,
-              get_error_string(result));
+              get_error_code_str(result), error_description.c_str());
   }
 
   return result;
@@ -702,9 +815,16 @@ void supla_alexa_client::add_range_controller(void) {
   if (is_channel_connected()) {
     supla_channel_rs_value *rs_val =
         dynamic_cast<supla_channel_rs_value *>(get_channel_value());
-    if (rs_val) {
-      add_props(
-          get_range_controller_properties(rs_val->get_rs_value()->position));
+
+    supla_channel_fb_value *fb_val = nullptr;
+
+    if (!rs_val) {
+      fb_val = dynamic_cast<supla_channel_fb_value *>(get_channel_value());
+    }
+
+    if (rs_val || fb_val) {
+      add_props(get_range_controller_properties(
+          rs_val ? rs_val->get_rs_value()->position : fb_val->get_position()));
     }
   }
 }
@@ -713,9 +833,16 @@ void supla_alexa_client::add_percentage_controller(void) {
   if (is_channel_connected()) {
     supla_channel_rs_value *rs_val =
         dynamic_cast<supla_channel_rs_value *>(get_channel_value());
-    if (rs_val) {
+
+    supla_channel_fb_value *fb_val = nullptr;
+
+    if (!rs_val) {
+      fb_val = dynamic_cast<supla_channel_fb_value *>(get_channel_value());
+    }
+
+    if (rs_val || fb_val) {
       add_props(get_percentage_controller_properties(
-          rs_val->get_rs_value()->position));
+          rs_val ? rs_val->get_rs_value()->position : fb_val->get_position()));
     }
   }
 }
@@ -728,6 +855,40 @@ void supla_alexa_client::add_contact_sensor(void) {
       add_props(get_contact_sensor_properties(bs_val->is_hi()));
     }
   }
+}
+
+void supla_alexa_client::add_thermostat_controller(void) {
+  if (is_channel_connected()) {
+    supla_channel_hvac_value_with_temphum *hvac_val =
+        dynamic_cast<supla_channel_hvac_value_with_temphum *>(
+            get_channel_value());
+    if (hvac_val) {
+      add_props(get_thermostat_mode_properties(hvac_val->get_alexa_mode()));
+      if (hvac_val->get_mode() == SUPLA_HVAC_MODE_HEAT_COOL) {
+        add_props(get_thermostat_setpoint_properties(
+            "lowerSetpoint", hvac_val->get_setpoint_temperature_heat_dbl()));
+        add_props(get_thermostat_setpoint_properties(
+            "upperSetpoint", hvac_val->get_setpoint_temperature_cool_dbl()));
+      } else {
+        add_props(get_thermostat_setpoint_properties(
+            "targetSetpoint", hvac_val->get_setpoint_temperature_dbl()));
+      }
+      add_props(
+          get_temperature_sensor_properties(hvac_val->get_temperature_dbl()));
+    }
+  }
+}
+
+void supla_alexa_client::add_deleted_endpoint(int id, bool scene) {
+  cJSON *deleted = cJSON_CreateObject();
+  cJSON_AddStringToObject(deleted, "endpointId",
+                          get_endpoint_id(id, 0, scene).c_str());
+
+  if (!endpoints) {
+    endpoints = cJSON_CreateArray();
+  }
+
+  cJSON_AddItemToArray(endpoints, deleted);
 }
 
 bool supla_alexa_client::send_response(void) {
@@ -755,11 +916,8 @@ bool supla_alexa_client::send_response(void) {
   return result == POST_RESULT_SUCCESS;
 }
 
-// https://developer.amazon.com/docs/device-apis/alexa-interface.html#changereport
-bool supla_alexa_client::send_change_report(void) {
-  char *data = NULL;
-
-  cJSON *root = get_change_report();
+bool supla_alexa_client::send_report(cJSON *root) {
+  char *data = nullptr;
 
   if (root) {
     data = cJSON_PrintUnformatted(root);
@@ -774,4 +932,18 @@ bool supla_alexa_client::send_change_report(void) {
   }
 
   return result == POST_RESULT_SUCCESS;
+}
+
+// https://developer.amazon.com/docs/device-apis/alexa-interface.html#changereport
+bool supla_alexa_client::send_change_report(void) {
+  return send_report(get_change_report());
+}
+
+// https://developer.amazon.com/en-US/docs/alexa/device-apis/alexa-discovery.html#deletereport-event
+bool supla_alexa_client::send_delete_report(void) {
+  return send_report(get_delete_report());
+}
+
+bool supla_alexa_client::send_payload(std::string payload) {
+  return perform_post_request(payload.c_str()) == POST_RESULT_SUCCESS;
 }

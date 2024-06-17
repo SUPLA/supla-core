@@ -41,7 +41,7 @@ TEST_F(GetEmValueCommandTest, noData) {
 TEST_F(GetEmValueCommandTest, getEmValueWithSuccess) {
   TElectricityMeter_ExtendedValue_V2 em_ev = {};
 
-  em_ev.measured_values = EM_VAR_ALL;
+  em_ev.measured_values = 0xFFFF;
   em_ev.m_count = 1;
   em_ev.m[0].freq = 1;
   em_ev.m[0].voltage[0] = 2;

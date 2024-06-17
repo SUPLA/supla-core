@@ -56,13 +56,13 @@ class DeviceDaoMock : public supla_abstract_device_dao {
 
   MOCK_METHOD1(get_device_limit_left, int(int user_id));
 
-  MOCK_METHOD5(get_device_variables,
+  MOCK_METHOD6(get_device_variables,
                bool(int device_id, bool *device_enabled,
                     int *original_location_id, int *location_id,
-                    bool *location_enabled));
+                    bool *location_enabled, int *flags));
 
-  MOCK_METHOD3(get_channel_id_and_type,
-               int(int device_id, int channel_number, int *type));
+  MOCK_METHOD4(get_channel_properties,
+               int(int device_id, int channel_number, int *type, int *flist));
 
   MOCK_METHOD1(get_device_channel_count, int(int device_id));
 
@@ -85,22 +85,57 @@ class DeviceDaoMock : public supla_abstract_device_dao {
                     const char *authkey, const char *name, unsigned int ipv4,
                     const char *softver, int proto_version, int flags));
 
-  MOCK_METHOD9(add_channel,
-               int(int device_id, int channel_number, int type, int func,
-                   int param1, int param2, int flist, int flags, int user_id));
+  MOCK_METHOD10(add_channel,
+                int(int device_id, int channel_number, int type, int func,
+                    int param1, int param2, int flist, _supla_int64_t flags,
+                    int alt_icon, int user_id));
 
   MOCK_METHOD1(on_new_device, bool(int device_id));
 
   MOCK_METHOD2(on_channel_added, bool(int device_id, int channel_id));
 
-  MOCK_METHOD3(set_device_config,
-               bool(int user_id, int device_id, device_json_config *config));
+  MOCK_METHOD4(set_device_config,
+               bool(int user_id, int device_id, device_json_config *config,
+                    unsigned _supla_int16_t available_fields));
 
-  MOCK_METHOD2(get_device_config,
-               device_json_config *(int device_id, std::string *md5sum));
+  MOCK_METHOD3(get_device_config,
+               device_json_config *(int device_id,
+                                    std::string *user_config_md5sum,
+                                    std::string *properties_md5sum));
 
   MOCK_METHOD1(get_channels,
                std::vector<supla_device_channel *>(supla_device *device));
+
+  MOCK_METHOD3(set_channel_properties,
+               void(int user_id, int channel_id, supla_json_config *config));
+
+  MOCK_METHOD2(erase_channel_properties, void(int user_id, int channel_id));
+
+  MOCK_METHOD3(get_channel_config,
+               supla_json_config *(int channel_id,
+                                   std::string *user_config_md5sum,
+                                   std::string *properties_md5sum));
+
+  MOCK_METHOD3(set_channel_config,
+               bool(int user_id, int channel_id, supla_json_config *config));
+
+  MOCK_METHOD4(update_channel_value,
+               void(int channel_id, int user_id,
+                    const char value[SUPLA_CHANNELVALUE_SIZE],
+                    unsigned _supla_int_t validity_time_sec));
+
+  MOCK_METHOD3(update_channel_extended_value,
+               void(int channel_id, int user_id,
+                    supla_channel_extended_value *ev));
+
+  MOCK_METHOD3(update_channel_functions,
+               void(int channel_id, int user_id, int flist));
+
+  MOCK_METHOD1(get_channel_fragments,
+               std::vector<supla_channel_fragment>(int device_id));
+
+  MOCK_METHOD2(get_channel_fragment,
+               supla_channel_fragment(int device_id, int channel_number));
 };
 
 } /* namespace testing */

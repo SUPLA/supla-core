@@ -22,9 +22,10 @@ using std::string;
 using std::vector;
 
 supla_abstract_pn_gateway_client::supla_abstract_pn_gateway_client(
-    supla_abstract_curl_adapter *curl_adapter,
-    supla_pn_gateway_access_token_provider *token_provider,
+    const supla_caller &caller, supla_abstract_curl_adapter *curl_adapter,
+    supla_remote_gateway_access_token_provider *token_provider,
     supla_push_notification *push) {
+  this->caller = caller;
   this->curl_adapter = curl_adapter;
   this->token_provider = token_provider;
   this->push = push;
@@ -42,14 +43,29 @@ supla_abstract_curl_adapter *supla_abstract_pn_gateway_client::get_curl_adapter(
   return curl_adapter;
 }
 
-void supla_abstract_pn_gateway_client::add_args(const vector<string> &args,
-                                                const string &key_name,
-                                                cJSON *parent) {
-  cJSON *arr = cJSON_AddArrayToObject(parent, key_name.c_str());
+void supla_abstract_pn_gateway_client::add_args(
+    const vector<string> &args, const string &key_name, cJSON *parent,
+    bool use_strings_instead_of_array) {
+  if (use_strings_instead_of_array) {
+    int n = 1;
+    for (auto it = args.begin(); it != args.end(); ++it) {
+      string name = key_name;
+      name.append(std::to_string(n));
+      cJSON_AddItemToObject(parent, name.c_str(),
+                            cJSON_CreateString(it->c_str()));
+      n++;
+    }
+  } else {
+    cJSON *arr = cJSON_AddArrayToObject(parent, key_name.c_str());
 
-  for (auto it = args.begin(); it != args.end(); ++it) {
-    cJSON_AddItemToArray(arr, cJSON_CreateString(it->c_str()));
+    for (auto it = args.begin(); it != args.end(); ++it) {
+      cJSON_AddItemToArray(arr, cJSON_CreateString(it->c_str()));
+    }
   }
+}
+
+const supla_caller &supla_abstract_pn_gateway_client::get_caller(void) {
+  return caller;
 }
 
 bool supla_abstract_pn_gateway_client::send(void) {
@@ -64,7 +80,7 @@ bool supla_abstract_pn_gateway_client::send(void) {
       continue;
     }
 
-    supla_pn_gateway_access_token token =
+    supla_remote_gateway_access_token token =
         token_provider->get_token(get_platform(), recipient->get_app_id());
 
     curl_adapter->reset();

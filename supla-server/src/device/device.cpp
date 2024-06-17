@@ -98,8 +98,20 @@ bool supla_device::funclist_contains_function(int funcList, int func) {
       return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEDOORLOCK) > 0;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEFACADEBLIND) > 0;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEROOFWINDOW) > 0;
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+      return (funcList & SUPLA_BIT_FUNC_TERRACE_AWNING) > 0;
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+      return (funcList & SUPLA_BIT_FUNC_PROJECTOR_SCREEN) > 0;
+    case SUPLA_CHANNELFNC_CURTAIN:
+      return (funcList & SUPLA_BIT_FUNC_CURTAIN) > 0;
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+      return (funcList & SUPLA_BIT_FUNC_VERTICAL_BLIND) > 0;
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+      return (funcList & SUPLA_BIT_FUNC_ROLLER_GARAGE_DOOR) > 0;
     case SUPLA_CHANNELFNC_POWERSWITCH:
       return (funcList & SUPLA_BIT_FUNC_POWERSWITCH) > 0;
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
@@ -153,17 +165,21 @@ bool supla_device::enter_cfg_mode(void) {
   return false;
 }
 
-void supla_device::send_device_config_to_device(void) {
-  if (get_protocol_version() >= 21) {
+void supla_device::send_config_to_device(void) {
+  if (get_protocol_version() >= 21 &&
+      (get_flags() & SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED)) {
     supla_db_access_provider dba;
     supla_device_dao dao(&dba);
 
-    device_json_config *config = dao.get_device_config(get_id(), nullptr);
+    device_json_config *config =
+        dao.get_device_config(get_id(), nullptr, nullptr);
     if (config) {
       unsigned _supla_int64_t fields = 0xFFFFFFFFFFFFFFFF;
+      unsigned _supla_int64_t available_fields = config->get_available_fields();
       while (fields) {
         TSDS_SetDeviceConfig sds_config = {};
         config->get_config(&sds_config, fields, &fields);
+        sds_config.AvailableFields = available_fields;
         sds_config.EndOfDataFlag = fields == 0 ? 1 : 0;
         get_connection()
             ->get_srpc_adapter()

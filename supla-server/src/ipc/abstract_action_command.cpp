@@ -19,7 +19,6 @@
 #include "ipc/abstract_action_command.h"
 
 #include "actions/abstract_action_config.h"
-#include "proto.h"
 
 using std::string;
 
@@ -35,6 +34,10 @@ const string supla_abstract_action_command::get_command_name(void) {
       return "ACTION-OPEN:";
     case ACTION_CLOSE:
       return "ACTION-CLOSE:";
+    case ACTION_TURN_ON:
+      return "ACTION-TURN-ON:";
+    case ACTION_TURN_OFF:
+      return "ACTION-TURN-OFF:";
     case ACTION_TOGGLE:
       return "ACTION-TOGGLE:";
     case ACTION_STOP:
@@ -49,6 +52,16 @@ const string supla_abstract_action_command::get_command_name(void) {
       return "ACTION-SBS:";
     case ACTION_SHUT_PARTIALLY:
       return "ACTION-SHUT-PARTIALLY:";
+    case ACTION_HVAC_SET_PARAMETERS:
+      return "ACTION-HVAC-SET-PARAMETERS:";
+    case ACTION_HVAC_SWITCH_TO_MANUAL_MODE:
+      return "ACTION-HVAC-SWITCH-TO-MANUAL-MODE:";
+    case ACTION_HVAC_SWITCH_TO_PROGRAM_MODE:
+      return "ACTION-HVAC-SWITCH-TO-PROGRAM-MODE:";
+    case ACTION_HVAC_SET_TEMPERATURE:
+      return "ACTION-HVAC-SET-TEMPERATURE:";
+    case ACTION_HVAC_SET_TEMPERATURES:
+      return "ACTION-HVAC-SET-TEMPERATURES:";
   }
   return "";
 }
@@ -66,21 +79,25 @@ void supla_abstract_action_command::on_command_match(const char *params) {
     send_result("UNKNOWN:0");
     return;
   }
+  int user_id = 0;
+  int device_id = 0;
+  int channel_id = 0;
 
   if (action == ACTION_SHUT_PARTIALLY) {
-    int user_id = 0;
-    int device_id = 0;
-    int channel_id = 0;
     int percentage = 0;
-    int delta = 0;
+    int percentage_as_delta = 0;
+    int tilt = 0;
+    int tilt_as_delta = 0;
 
-    sscanf(params, "%i,%i,%i,%i,%i", &user_id, &device_id, &channel_id,
-           &percentage, &delta);
+    sscanf(params, "%i,%i,%i,%i,%i,%i,%i", &user_id, &device_id, &channel_id,
+           &percentage, &percentage_as_delta, &tilt, &tilt_as_delta);
 
     if (user_id && device_id && channel_id) {
-      char _percentage = percentage;
-      bool result =
-          action_shut(user_id, device_id, channel_id, &_percentage, delta > 0);
+      supla_action_shading_system_parameters params(
+          percentage, tilt,
+          (percentage_as_delta ? SSP_FLAG_PERCENTAGE_AS_DELTA : 0) |
+              (tilt_as_delta ? SSP_FLAG_TILT_AS_DELTA : 0));
+      bool result = action_shut(user_id, device_id, channel_id, &params);
       _send_result(result, channel_id);
     } else {
       send_result("UNKNOWN:", channel_id);
@@ -90,9 +107,6 @@ void supla_abstract_action_command::on_command_match(const char *params) {
   }
 
   if (action == ACTION_COPY) {
-    int user_id = 0;
-    int device_id = 0;
-    int channel_id = 0;
     int source_device_id = 0;
     int source_channel_id = 0;
 
@@ -102,6 +116,74 @@ void supla_abstract_action_command::on_command_match(const char *params) {
     if (user_id && device_id && channel_id && source_channel_id) {
       bool result = action_copy(user_id, device_id, channel_id,
                                 source_device_id, source_channel_id);
+      _send_result(result, channel_id);
+    } else {
+      send_result("UNKNOWN:", channel_id);
+    }
+
+    return;
+  }
+
+  if (action == ACTION_HVAC_SET_PARAMETERS) {
+    TAction_HVAC_Parameters raw_hvac_params = {};
+    unsigned int mode = 0;
+    int heat = 0;
+    int cool = 0;
+    unsigned int flags = 0;
+
+    sscanf(params, "%i,%i,%i,%u,%u,%i,%i,%u", &user_id, &device_id, &channel_id,
+           &raw_hvac_params.DurationSec, &mode, &heat, &cool, &flags);
+
+    if (user_id && device_id && channel_id) {
+      raw_hvac_params.Mode = mode;
+      raw_hvac_params.SetpointTemperatureHeat = heat;
+      raw_hvac_params.SetpointTemperatureCool = cool;
+      raw_hvac_params.Flags = flags;
+      supla_action_hvac_parameters hvac_params(&raw_hvac_params);
+      bool result = action_hvac_set_parameters(user_id, device_id, channel_id,
+                                               &hvac_params);
+      _send_result(result, channel_id);
+    } else {
+      send_result("UNKNOWN:", channel_id);
+    }
+
+    return;
+  }
+
+  if (action == ACTION_HVAC_SET_TEMPERATURE) {
+    int temperature = 0;
+
+    sscanf(params, "%i,%i,%i,%i", &user_id, &device_id, &channel_id,
+           &temperature);
+
+    if (user_id && device_id && channel_id) {
+      supla_action_hvac_setpoint_temperature t(temperature);
+      bool result =
+          action_hvac_set_temperature(user_id, device_id, channel_id, &t);
+      _send_result(result, channel_id);
+    } else {
+      send_result("UNKNOWN:", channel_id);
+    }
+
+    return;
+  }
+
+  if (action == ACTION_HVAC_SET_TEMPERATURES) {
+    short heat = 0;
+    short cool = 0;
+    unsigned int flags = 0;
+
+    sscanf(params, "%i,%i,%i,%hi,%hi,%u", &user_id, &device_id, &channel_id,
+           &heat, &cool, &flags);
+
+    if (user_id && device_id && channel_id) {
+      supla_action_hvac_setpoint_temperatures t(
+          flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET ? &heat
+                                                               : nullptr,
+          flags & SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET ? &cool
+                                                               : nullptr);
+      bool result =
+          action_hvac_set_temperatures(user_id, device_id, channel_id, &t);
       _send_result(result, channel_id);
     } else {
       send_result("UNKNOWN:", channel_id);
@@ -121,6 +203,12 @@ void supla_abstract_action_command::on_command_match(const char *params) {
                 user_id, device_id, channel_id, action == ACTION_OPEN,
                 get_alexa_correlation_token(), get_google_request_id());
             break;
+          case ACTION_TURN_ON:
+            result = action_turn_on(user_id, device_id, channel_id);
+            break;
+          case ACTION_TURN_OFF:
+            result = action_turn_off(user_id, device_id, channel_id);
+            break;
           case ACTION_TOGGLE:
             result = action_toggle(user_id, device_id, channel_id);
             break;
@@ -135,6 +223,14 @@ void supla_abstract_action_command::on_command_match(const char *params) {
             break;
           case ACTION_STEP_BY_STEP:
             result = action_step_by_step(user_id, device_id, channel_id);
+            break;
+          case ACTION_HVAC_SWITCH_TO_MANUAL_MODE:
+            result = action_hvac_switch_to_manual_mode(user_id, device_id,
+                                                       channel_id);
+            break;
+          case ACTION_HVAC_SWITCH_TO_PROGRAM_MODE:
+            result = action_hvac_switch_to_program_mode(user_id, device_id,
+                                                        channel_id);
             break;
         }
 

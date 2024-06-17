@@ -12,6 +12,8 @@ CPP_SRCS += \
 ../src/http/http_event_hub.cpp \
 ../src/http/http_throttling.cpp \
 ../src/http/oauth_credentials.cpp \
+../src/http/remote_gateway_access_token.cpp \
+../src/http/remote_gateway_access_token_provider.cpp \
 ../src/http/voice_assistant_client.cpp 
 
 CPP_DEPS += \
@@ -23,6 +25,8 @@ CPP_DEPS += \
 ./src/http/http_event_hub.d \
 ./src/http/http_throttling.d \
 ./src/http/oauth_credentials.d \
+./src/http/remote_gateway_access_token.d \
+./src/http/remote_gateway_access_token_provider.d \
 ./src/http/voice_assistant_client.d 
 
 OBJS += \
@@ -34,6 +38,8 @@ OBJS += \
 ./src/http/http_event_hub.o \
 ./src/http/http_throttling.o \
 ./src/http/oauth_credentials.o \
+./src/http/remote_gateway_access_token.o \
+./src/http/remote_gateway_access_token_provider.o \
 ./src/http/voice_assistant_client.o 
 
 
@@ -41,7 +47,7 @@ OBJS += \
 src/http/%.o: ../src/http/%.cpp src/http/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__DEBUG=1 -D__SUPLA_SERVER=1 -DUSE_DEPRECATED_EMEV_V1 -D__TEST=1 -D__OPENSSL_TOOLS=1 -D__BCRYPT=1 -I../src -I../src/asynctask -I../src/mqtt -I$(INCMYSQL) -I../src/user -I../src/device -I../src/client -I$(SSLDIR)/include -I../src/test -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -std=c++11 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	g++ -D__DEBUG=1 -DUSE_OS_TZDB=1 -D__SUPLA_SERVER=1 -DUSE_DEPRECATED_EMEV_V1 -D__TEST=1 -D__OPENSSL_TOOLS=1 -D__BCRYPT=1 -I../src -I../src/asynctask -I../src/mqtt -I$(INCMYSQL) -I../src/user -I../src/device -I../src/client -I$(SSLDIR)/include -I../src/test -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -std=c++11 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
@@ -49,7 +55,7 @@ src/http/%.o: ../src/http/%.cpp src/http/subdir.mk
 clean: clean-src-2f-http
 
 clean-src-2f-http:
-	-$(RM) ./src/http/abstract_curl_adapter.d ./src/http/abstract_curl_adapter.o ./src/http/asynctask_http_request.d ./src/http/asynctask_http_request.o ./src/http/asynctask_http_thread_bucket.d ./src/http/asynctask_http_thread_bucket.o ./src/http/asynctask_http_thread_pool.d ./src/http/asynctask_http_thread_pool.o ./src/http/curl_adapter.d ./src/http/curl_adapter.o ./src/http/http_event_hub.d ./src/http/http_event_hub.o ./src/http/http_throttling.d ./src/http/http_throttling.o ./src/http/oauth_credentials.d ./src/http/oauth_credentials.o ./src/http/voice_assistant_client.d ./src/http/voice_assistant_client.o
+	-$(RM) ./src/http/abstract_curl_adapter.d ./src/http/abstract_curl_adapter.o ./src/http/asynctask_http_request.d ./src/http/asynctask_http_request.o ./src/http/asynctask_http_thread_bucket.d ./src/http/asynctask_http_thread_bucket.o ./src/http/asynctask_http_thread_pool.d ./src/http/asynctask_http_thread_pool.o ./src/http/curl_adapter.d ./src/http/curl_adapter.o ./src/http/http_event_hub.d ./src/http/http_event_hub.o ./src/http/http_throttling.d ./src/http/http_throttling.o ./src/http/oauth_credentials.d ./src/http/oauth_credentials.o ./src/http/remote_gateway_access_token.d ./src/http/remote_gateway_access_token.o ./src/http/remote_gateway_access_token_provider.d ./src/http/remote_gateway_access_token_provider.o ./src/http/voice_assistant_client.d ./src/http/voice_assistant_client.o
 
 .PHONY: clean-src-2f-http
 

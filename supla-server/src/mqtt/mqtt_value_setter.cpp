@@ -18,6 +18,8 @@
 
 #include "mqtt_value_setter.h"
 
+#include "actions/action_hvac_setpoint_temperature.h"
+#include "actions/action_hvac_setpoint_temperatures.h"
 #include "device.h"
 #include "mqtt_client_suite.h"
 #include "tools.h"
@@ -52,7 +54,7 @@ supla_action_executor *supla_mqtt_value_setter::get_action_executor(void) {
 void supla_mqtt_value_setter::set_on(bool on) {
   supla_action_executor *action = get_action_executor();
   if (action) {
-    action->set_on(on);
+    action->set_on(on, 0);
   }
 }
 
@@ -84,10 +86,11 @@ void supla_mqtt_value_setter::action_toggle(void) {
   }
 }
 
-void supla_mqtt_value_setter::action_shut(const char *closingPercentage) {
+void supla_mqtt_value_setter::action_shut(
+    const supla_action_shading_system_parameters *params) {
   supla_action_executor *action = get_action_executor();
   if (action) {
-    action->shut(closingPercentage, false);
+    action->shut(params);
   }
 }
 
@@ -158,6 +161,30 @@ void supla_mqtt_value_setter::action_open_close(void) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->open_close();
+  }
+}
+
+void supla_mqtt_value_setter::action_hvac_set_temperature(
+    supla_action_hvac_setpoint_temperature *temperature) {
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->hvac_set_temperature(temperature);
+  }
+}
+
+void supla_mqtt_value_setter::action_hvac_set_parameters(
+    supla_action_hvac_parameters *params) {
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->hvac_set_parameters(params);
+  }
+}
+
+void supla_mqtt_value_setter::action_hvac_set_temperatures(
+    supla_action_hvac_setpoint_temperatures *temperatures) {
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->hvac_set_temperatures(temperatures);
   }
 }
 

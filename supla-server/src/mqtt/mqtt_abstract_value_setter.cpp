@@ -24,7 +24,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <string>
+
 #include "log.h"
+
+using std::string;
 
 supla_mqtt_abstract_value_setter::supla_mqtt_abstract_value_setter(
     supla_mqtt_client_settings *settings) {
@@ -75,9 +79,14 @@ bool supla_mqtt_abstract_value_setter::parse_on(void) {
 
 bool supla_mqtt_abstract_value_setter::parse_perecntage(void) {
   bool closing_percentage = false;
+  bool tilt = false;
 
-  if (topic_name_size == 22 &&
-      memcmp(topic_name, "set/closing_percentage", topic_name_size) == 0) {
+  if (topic_name_size == 8 &&
+      memcmp(topic_name, "set/tilt", topic_name_size) == 0) {
+    tilt = true;
+  } else if (topic_name_size == 22 &&
+             memcmp(topic_name, "set/closing_percentage", topic_name_size) ==
+                 0) {
     closing_percentage = true;
   } else if (topic_name_size != 22 ||
              memcmp(topic_name, "set/opening_percentage", topic_name_size) !=
@@ -88,11 +97,19 @@ bool supla_mqtt_abstract_value_setter::parse_perecntage(void) {
   bool err = false;
   int _percent = str2int(message, message_size, &err);
   if (!err && _percent >= 0 && _percent <= 100) {
-    if (!closing_percentage) {
-      _percent = 100 - _percent;
+    supla_action_shading_system_parameters params;
+
+    if (tilt) {
+      params.set_tilt(_percent);
+      params.set_percentage(-1);
+    } else {
+      if (!closing_percentage) {
+        _percent = 100 - _percent;
+      }
+      params.set_percentage(_percent);
     }
-    char percent = _percent;
-    action_shut(&percent);
+
+    action_shut(&params);
   }
 
   return true;
@@ -103,7 +120,8 @@ bool supla_mqtt_abstract_value_setter::parse_action(void) {
       memcmp(topic_name, "execute_action", topic_name_size) == 0) {
     if (message_size == 7 && lc_equal("turn_on")) {
       set_on(true);
-    } else if (message_size == 8 && lc_equal("turn_off")) {
+    } else if ((message_size == 8 && lc_equal("turn_off")) ||
+               (message_size == 3 && lc_equal("off"))) {
       set_on(false);
     } else if (message_size == 6 && lc_equal("toggle")) {
       action_toggle();
@@ -129,6 +147,18 @@ bool supla_mqtt_abstract_value_setter::parse_action(void) {
       action_open();
     } else if (message_size == 5 && lc_equal("close")) {
       action_close();
+    } else if (message_size == 4 && lc_equal("auto")) {
+      supla_action_hvac_parameters p(SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE);
+      action_hvac_set_parameters(&p);
+    } else if (message_size == 4 && lc_equal("heat")) {
+      supla_action_hvac_parameters p(SUPLA_HVAC_MODE_HEAT);
+      action_hvac_set_parameters(&p);
+    } else if (message_size == 4 && lc_equal("cool")) {
+      supla_action_hvac_parameters p(SUPLA_HVAC_MODE_COOL);
+      action_hvac_set_parameters(&p);
+    } else if (message_size == 9 && lc_equal("heat_cool")) {
+      supla_action_hvac_parameters p(SUPLA_HVAC_MODE_HEAT_COOL);
+      action_hvac_set_parameters(&p);
     }
     return true;
   }
@@ -222,6 +252,46 @@ bool supla_mqtt_abstract_value_setter::parse_color(void) {
   }
 
   return false;
+}
+
+bool supla_mqtt_abstract_value_setter::parse_temperature(void) {
+  bool heat_cool = true;
+  bool heat = false;
+
+  if (topic_name_size == 29 &&
+      memcmp(topic_name, "set/temperature_setpoint_heat", topic_name_size) ==
+          0) {
+    heat = true;
+  } else if (topic_name_size == 24 &&
+             memcmp(topic_name, "set/temperature_setpoint", topic_name_size) ==
+                 0) {
+    heat_cool = false;
+  } else if (topic_name_size != 29 ||
+             memcmp(topic_name, "set/temperature_setpoint_cool",
+                    topic_name_size) != 0) {
+    return false;
+  }
+
+  double temperature = 0;
+  try {
+    temperature = std::stod(string(message, message_size));
+  } catch (...) {
+    return false;
+  }
+
+  if (heat_cool) {
+    short t = temperature * 100;
+    supla_action_hvac_setpoint_temperatures cls(heat ? &t : nullptr,
+                                                heat ? nullptr : &t);
+    action_hvac_set_temperatures(&cls);
+
+  } else {
+    short t = temperature * 100;
+    supla_action_hvac_setpoint_temperature cls(t);
+    action_hvac_set_temperature(&cls);
+  }
+
+  return true;
 }
 
 int supla_mqtt_abstract_value_setter::str2int(const char *str, size_t len,
@@ -472,6 +542,10 @@ void supla_mqtt_abstract_value_setter::set_value(char *topic_name,
   }
 
   if (parse_color()) {
+    return;
+  }
+
+  if (parse_temperature()) {
     return;
   }
 

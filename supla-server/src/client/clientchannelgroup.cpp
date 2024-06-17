@@ -45,7 +45,7 @@ supla_client_channelgroup::~supla_client_channelgroup(void) {
 
 bool supla_client_channelgroup::add_relation(
     supla_client_channelgroup_relation *cg_rel) {
-  if (cg_rel->getGroupId() != getId()) {
+  if (cg_rel->getGroupId() != get_id()) {
     return false;
   }
 
@@ -83,6 +83,12 @@ bool supla_client_channelgroup::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+    case SUPLA_CHANNELFNC_TERRACE_AWNING:
+    case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+    case SUPLA_CHANNELFNC_CURTAIN:
+    case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+    case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_DIMMER:
@@ -102,7 +108,7 @@ bool supla_client_channelgroup::remote_update_is_possible(void) {
 void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup *group) {
   memset(group, 0, sizeof(TSC_SuplaChannelGroup));
 
-  group->Id = getId();
+  group->Id = get_id();
   group->LocationID = LocationID;
   group->Func = Func;
   group->AltIcon = AltIcon;
@@ -116,7 +122,7 @@ void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup *group) {
 void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup_B *group) {
   memset(group, 0, sizeof(TSC_SuplaChannelGroup_B));
 
-  group->Id = getId();
+  group->Id = get_id();
   group->LocationID = LocationID;
   group->Func = Func;
   group->AltIcon = AltIcon;

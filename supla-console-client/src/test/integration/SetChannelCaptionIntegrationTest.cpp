@@ -32,7 +32,7 @@ SetChannelCaptionIntegrationTest::SetChannelCaptionIntegrationTest() {
 SetChannelCaptionIntegrationTest::~SetChannelCaptionIntegrationTest() {}
 
 void SetChannelCaptionIntegrationTest::channelMatch(
-    TSC_SetCaptionResult *result, TSC_SuplaChannel_D *channel) {
+    TSCD_SetCaptionResult *result, TSC_SuplaChannel_E *channel) {
   if (result) {
     ASSERT_EQ(result->ResultCode, expectedResultCode);
     ASSERT_EQ(result->ID, expectedChannelID);
@@ -55,13 +55,13 @@ void SetChannelCaptionIntegrationTest::channelMatch(
 }
 
 void SetChannelCaptionIntegrationTest::onChannelCaptionSetResult(
-    TSC_SetCaptionResult *result) {
+    TSCD_SetCaptionResult *result) {
   ASSERT_FALSE(result == NULL);
   channelMatch(result, NULL);
 }
 
 void SetChannelCaptionIntegrationTest::channelUpdate(
-    TSC_SuplaChannel_D *channel) {
+    TSC_SuplaChannel_E *channel) {
   ASSERT_FALSE(channel == NULL);
   channelMatch(NULL, channel);
 }

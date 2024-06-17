@@ -22,7 +22,12 @@
 
 namespace testing {
 
-MqttClientTest::MqttClientTest() : Test() {}
+MqttClientTest::MqttClientTest() : Test() {
+  iniSettings = nullptr;
+  libraryAdapter = nullptr;
+  dataSource = nullptr;
+  client = nullptr;
+}
 
 MqttClientTest::~MqttClientTest() {}
 

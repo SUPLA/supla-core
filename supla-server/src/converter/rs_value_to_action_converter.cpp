@@ -28,7 +28,9 @@ bool rs_value_to_action_converter::convert(
   if (rs_value && action_executor) {
     char position = rs_value->get_rs_value()->position;
     if (position >= 0 && position <= 100) {
-      action_executor->shut(&position, false);
+      supla_action_shading_system_parameters params;
+      params.set_percentage(position);
+      action_executor->shut(&params);
     }
   }
   return false;

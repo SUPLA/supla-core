@@ -57,7 +57,17 @@ class supla_mqtt_abstract_state_message_provider
   void get_rgb(char *buf, size_t buf_size);
   void get_valve_closed(char *buf, size_t buf_size);
 
+  bool get_shading_system_message_at_index(unsigned short index,
+                                           const char *topic_prefix,
+                                           char **topic_name, void **message,
+                                           size_t *message_size, bool closed,
+                                           bool is_calibrating, int position);
+
   bool get_rs_message_at_index(unsigned short index, const char *topic_prefix,
+                               char **topic_name, void **message,
+                               size_t *message_size);
+
+  bool get_fb_message_at_index(unsigned short index, const char *topic_prefix,
                                char **topic_name, void **message,
                                size_t *message_size);
 
@@ -136,6 +146,20 @@ class supla_mqtt_abstract_state_message_provider
                                              const char *topic_prefix,
                                              char **topic_name, void **message,
                                              size_t *message_size);
+
+  bool get_hp_thermostat_message_at_index(unsigned short index,
+                                          const char *topic_prefix,
+                                          char **topic_name, void **message,
+                                          size_t *message_size);
+
+  bool get_hvac_thermostat_message_at_index(unsigned short index,
+                                            const char *topic_prefix,
+                                            char **topic_name, void **message,
+                                            size_t *message_size);
+
+  bool get_gpm_message_at_index(unsigned short index, const char *topic_prefix,
+                                char **topic_name, void **message,
+                                size_t *message_size);
 
  public:
   supla_mqtt_abstract_state_message_provider(void);
