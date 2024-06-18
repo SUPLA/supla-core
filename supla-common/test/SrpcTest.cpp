@@ -598,7 +598,9 @@ TEST_F(SrpcTest, call_allowed_v21) { srpcCallAllowed(21, get_call_ids(21)); }
 
 TEST_F(SrpcTest, call_allowed_v23) { srpcCallAllowed(23, get_call_ids(23)); }
 
+#if SUPLA_PROTO_VERSION >= 25
 TEST_F(SrpcTest, call_allowed_v25) { srpcCallAllowed(25, get_call_ids(25)); }
+#endif /*SUPLA_PROTO_VERSION >= 25*/
 
 TEST_F(SrpcTest, call_not_allowed) {
   vector<int> all_calls;
@@ -1592,6 +1594,7 @@ TEST_F(SrpcTest, call_registerdevice_f_wrong_size) {
   srpc = NULL;
 }
 
+#if SUPLA_PROTO_VERSION >= 25
 TEST_F(SrpcTest, call_registerdevice_g) {
   data_read_result = -1;
   srpc = srpcInit();
@@ -1678,6 +1681,7 @@ TEST_F(SrpcTest, call_registerdevice_g_wrong_size) {
   srpc_free(srpc);
   srpc = NULL;
 }
+#endif /*SUPLA_PROTO_VERSION >= 25*/
 
 TEST_F(SrpcTest, call_registerdevice_result) {
   data_read_result = -1;
@@ -1707,13 +1711,14 @@ TEST_F(SrpcTest, call_registerdevice_result) {
   srpc = NULL;
 }
 
+#if SUPLA_PROTO_VERSION >= 25
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_registerdevice_result_b,
                                      TSD_SuplaRegisterDeviceResult_B,
                                      SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B, 32,
                                      288, sd_register_device_result_b,
                                      CHANNEL_REPORT_MAXSIZE, channel_report,
                                      channel_report_size);
-
+#endif /*SUPLA_PROTO_VERSION >= 25*/
 //---------------------------------------------------------
 // DS CHANNEL VALUE CHANGED
 //---------------------------------------------------------
