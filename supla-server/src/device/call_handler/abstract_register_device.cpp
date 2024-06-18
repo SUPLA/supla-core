@@ -23,6 +23,8 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#include <vector>
+
 #include "conn/authkey_cache.h"
 #include "device/device.h"
 #include "device/devicechannel.h"

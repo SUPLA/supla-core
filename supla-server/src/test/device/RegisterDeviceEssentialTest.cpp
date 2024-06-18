@@ -18,6 +18,8 @@
 
 #include "device/RegisterDeviceEssentialTest.h"
 
+#include <vector>
+
 namespace testing {
 
 RegisterDeviceEssentialTest::RegisterDeviceEssentialTest()
