@@ -560,16 +560,16 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
     return -1;
   }
 
-  int isConnected = 0;
-  int flagsCopy = 0;
+  int is_connected = 0;
+  int flags_copy = 0;
 
   if (conn_timeout_ms > 0) {
-    flagsCopy = fcntl(ssd->supla_socket.sfd, F_GETFL, 0);
+    flags_copy = fcntl(ssd->supla_socket.sfd, F_GETFL, 0);
     fcntl(ssd->supla_socket.sfd, F_SETFL, O_NONBLOCK);
   }
 
   if (connect(ssd->supla_socket.sfd, res->ai_addr, res->ai_addrlen) == 0) {
-    isConnected = 1;
+    is_connected = 1;
   }
 
   if (conn_timeout_ms > 0) {
@@ -587,14 +587,14 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
           getsockopt(ssd->supla_socket.sfd, SOL_SOCKET, SO_ERROR, &error, &len);
 
         if (retval == 0 && error == 0) {
-          isConnected = 1;
+          is_connected = 1;
         }
       }
     }
-    fcntl(ssd->supla_socket.sfd, F_SETFL, flagsCopy);
+    fcntl(ssd->supla_socket.sfd, F_SETFL, flags_copy);
   }
 
-  if (!isConnected) {
+  if (!is_connected) {
 #ifdef _WIN32
     shutdown(ssd->supla_socket.sfd, SD_SEND);
     closesocket(ssd->supla_socket.sfd);
