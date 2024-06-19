@@ -194,7 +194,7 @@ jobject getDoubleValueObject(JNIEnv *env, jdouble value) {
 extern "C" JNIEXPORT void JNICALL
 Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
     JNIEnv *env, jobject thiz, jobject context, jobject auth_info,
-    jobject action_params) {
+    jobject action_params, jint conn_timeout_ms) {
   TCS_ClientAuthorizationDetails auth_details = {};
   int protocol_version = 0;
   getAuthDetails(env, context, auth_info, &auth_details, &protocol_version);
@@ -202,7 +202,8 @@ Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
   TCS_Action action = {};
   actionParamsToAction(env, action_params, &action);
 
-  supla_single_call single_call(&auth_details, protocol_version);
+  supla_single_call single_call(&auth_details, protocol_version,
+                                conn_timeout_ms);
   int result = single_call.execute_action(&action);
   if (result != SUPLA_RESULTCODE_TRUE) {
     throwResultException(env, result);
@@ -212,7 +213,7 @@ Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
 extern "C" JNIEXPORT void JNICALL
 Java_org_supla_android_lib_singlecall_SingleCall_registerPushNotificationClientToken(
     JNIEnv *env, jobject thiz, jobject context, jobject auth_info, jint app_id,
-    jstring token, jstring profile_name) {
+    jstring token, jstring profile_name, jint conn_timeout_ms) {
   TCS_ClientAuthorizationDetails auth_details = {};
   int protocol_version = 0;
   getAuthDetails(env, context, auth_info, &auth_details, &protocol_version);
@@ -221,7 +222,8 @@ Java_org_supla_android_lib_singlecall_SingleCall_registerPushNotificationClientT
 
   set_token_details(env, &pn_token, app_id, token, profile_name);
 
-  supla_single_call single_call(&auth_details, protocol_version);
+  supla_single_call single_call(&auth_details, protocol_version,
+                                conn_timeout_ms);
   int result = single_call.register_pn_client_token(&pn_token);
   if (result != SUPLA_RESULTCODE_TRUE) {
     throwResultException(env, result);
@@ -231,12 +233,13 @@ Java_org_supla_android_lib_singlecall_SingleCall_registerPushNotificationClientT
 extern "C" JNIEXPORT jobject JNICALL
 Java_org_supla_android_lib_singlecall_SingleCall_getChannelValue(
     JNIEnv *env, jobject thiz, jobject context, jobject auth_info,
-    jint channel_id) {
+    jint channel_id, jint conn_timeout_ms) {
   TCS_ClientAuthorizationDetails auth_details = {};
   int protocol_version = 0;
   getAuthDetails(env, context, auth_info, &auth_details, &protocol_version);
 
-  supla_single_call single_call(&auth_details, protocol_version);
+  supla_single_call single_call(&auth_details, protocol_version,
+                                conn_timeout_ms);
 
   TSC_GetChannelValueResult vresult = {};
   int r = single_call.get_channel_value(channel_id, &vresult);
