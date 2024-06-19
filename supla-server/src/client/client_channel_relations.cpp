@@ -39,6 +39,10 @@ void supla_client_channel_reactions::load(supla_client_channels *channels) {
         channel->get_channel_relations(&relations, relation_any);
       });
 
+  // A temporary solution to the problem of clearing the list on the application
+  // side when the channel relations has been deleted.
+  relations.push_back(supla_channel_relation(0, 0, relation_any));
+
   lock();
   clear();
 
