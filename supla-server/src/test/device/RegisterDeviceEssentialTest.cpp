@@ -18,6 +18,8 @@
 
 #include "device/RegisterDeviceEssentialTest.h"
 
+#include <vector>
+
 namespace testing {
 
 RegisterDeviceEssentialTest::RegisterDeviceEssentialTest()
@@ -481,6 +483,7 @@ TEST_F(RegisterDeviceEssentialTest, wrongNumberOfChannels) {
       dao, update_channel_conflict_details(55, 0, StrEq("{\"missing\":true}")))
       .Times(1);
 
+#if SUPLA_PROTO_VERSION >= 25
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result_b(_))
       .Times(1)
       .WillOnce([](TSD_SuplaRegisterDeviceResult_B *result) {
@@ -492,6 +495,17 @@ TEST_F(RegisterDeviceEssentialTest, wrongNumberOfChannels) {
         EXPECT_EQ(CHANNEL_REPORT_CHANNEL_REGISTERED, result->channel_report[0]);
         return 0;
       });
+#else
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_CHANNEL_CONFLICT, result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+#endif /*SUPLA_PROTO_VERSION >= 25*/
 
   rd.register_device(nullptr, &register_device_g, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
@@ -573,6 +587,7 @@ TEST_F(RegisterDeviceEssentialTest, channelTypeChanged) {
               update_channel_conflict_details(55, 1, StrEq("{\"type\":4000}")))
       .Times(1);
 
+#if SUPLA_PROTO_VERSION >= 25
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result_b(_))
       .Times(1)
       .WillOnce([](TSD_SuplaRegisterDeviceResult_B *result) {
@@ -587,6 +602,17 @@ TEST_F(RegisterDeviceEssentialTest, channelTypeChanged) {
                   result->channel_report[1]);
         return 0;
       });
+#else
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_CHANNEL_CONFLICT, result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+#endif /*SUPLA_PROTO_VERSION >= 25*/
 
   rd.register_device(nullptr, &register_device_g, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
@@ -1045,6 +1071,7 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddChannel) {
           Return(std::vector<supla_channel_fragment>{supla_channel_fragment(
               55, 1, 0, SUPLA_CHANNELTYPE_RELAY, 0, 0, false)}));
 
+#if SUPLA_PROTO_VERSION >= 25
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result_b(_))
       .Times(1)
       .WillOnce([](TSD_SuplaRegisterDeviceResult_B *result) {
@@ -1056,6 +1083,17 @@ TEST_F(RegisterDeviceEssentialTest, failedToAddChannel) {
         EXPECT_EQ(CHANNEL_REPORT_CHANNEL_REGISTERED, result->channel_report[0]);
         return 0;
       });
+#else
+  EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
+      .Times(1)
+      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(SUPLA_RESULTCODE_CHANNEL_CONFLICT, result->result_code);
+        EXPECT_EQ(20, result->activity_timeout);
+        EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+        EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+        return 0;
+      });
+#endif /*SUPLA_PROTO_VERSION >= 25*/
 
   rd.register_device(nullptr, &register_device_g, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
@@ -1135,6 +1173,7 @@ TEST_F(RegisterDeviceEssentialTest, channelAdditionBlocked) {
       .Times(1)
       .WillOnce(Return(std::vector<supla_channel_fragment>{}));
 
+#if SUPLA_PROTO_VERSION >= 25
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result_b(_))
       .Times(1)
       .WillOnce([](TSD_SuplaRegisterDeviceResult_B *result) {
@@ -1145,6 +1184,8 @@ TEST_F(RegisterDeviceEssentialTest, channelAdditionBlocked) {
         EXPECT_EQ(0, result->channel_report_size);
         return 0;
       });
+#else
+#endif /*SUPLA_PROTO_VERSION >= 25*/
 
   rd.register_device(nullptr, &register_device_g, &srpcAdapter, &dba, &dao, 169,
                      4567, 20);
