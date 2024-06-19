@@ -505,7 +505,7 @@ void ssocket_close(void *_ssd) {
 }
 
 int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
-                                  int *err) {
+                                  int *err, int conn_timeout_ms) {
   struct in6_addr serveraddr;
   struct addrinfo hints, *res = NULL;
 
@@ -563,32 +563,37 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
   int isConnected = 0;
   int flagsCopy = 0;
 
-  flagsCopy = fcntl(ssd->supla_socket.sfd, F_GETFL, 0);
-  fcntl(ssd->supla_socket.sfd, F_SETFL, O_NONBLOCK);
+  if (conn_timeout_ms > 0) {
+    flagsCopy = fcntl(ssd->supla_socket.sfd, F_GETFL, 0);
+    fcntl(ssd->supla_socket.sfd, F_SETFL, O_NONBLOCK);
+  }
+
   if (connect(ssd->supla_socket.sfd, res->ai_addr, res->ai_addrlen) == 0) {
     isConnected = 1;
   }
 
-  int error = errno;
+  if (conn_timeout_ms > 0) {
+    int error = errno;
 
-  if (errno == EWOULDBLOCK || errno == EINPROGRESS) {
-    struct pollfd pfd = {};
-    pfd.fd = ssd->supla_socket.sfd;
-    pfd.events = POLLOUT;
+    if (errno == EWOULDBLOCK || errno == EINPROGRESS) {
+      struct pollfd pfd = {};
+      pfd.fd = ssd->supla_socket.sfd;
+      pfd.events = POLLOUT;
 
-    const int TIMEOUTMS = 3000;
-
-    int result = poll(&pfd, 1, TIMEOUTMS);
-    if (result > 0) {
-      socklen_t len = sizeof(error);
-      int retval =
+      int result = poll(&pfd, 1, conn_timeout_ms);
+      if (result > 0) {
+        socklen_t len = sizeof(error);
+        int retval =
           getsockopt(ssd->supla_socket.sfd, SOL_SOCKET, SO_ERROR, &error, &len);
 
-      if (retval == 0 && error == 0) {
-        isConnected = 1;
+        if (retval == 0 && error == 0) {
+          isConnected = 1;
+        }
       }
     }
+    fcntl(ssd->supla_socket.sfd, F_SETFL, flagsCopy);
   }
+
   if (!isConnected) {
 #ifdef _WIN32
     shutdown(ssd->supla_socket.sfd, SD_SEND);
@@ -607,7 +612,6 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
   }
 
   freeaddrinfo(res);
-  fcntl(ssd->supla_socket.sfd, F_SETFL, flagsCopy);
 
 #ifdef _WIN32
   if (ssd->secure == 0) {
@@ -658,12 +662,15 @@ void *ssocket_client_init(const char host[], int port, unsigned char secure) {
 }
 
 unsigned char ssocket_client_connect(void *_ssd, const char *state_file,
-                                     int *err) {
+                                     int *err, int conn_timeout_ms) {
   TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
 
   ssocket_supla_socket_close(&ssd->supla_socket);
 
-  if (ssocket_client_openconnection(_ssd, state_file, err) == -1) return 0;
+  if (ssocket_client_openconnection(_ssd, state_file, err, conn_timeout_ms) ==
+      -1) {
+    return 0;
+  }
 
   if (ssd->secure == 0) return 1;
 
