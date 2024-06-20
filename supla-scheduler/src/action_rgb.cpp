@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <ctime>
+
 #include "json/cJSON.h"
 #include "log.h"
 #include "tools.h"
