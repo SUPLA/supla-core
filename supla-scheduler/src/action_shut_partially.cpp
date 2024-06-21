@@ -26,24 +26,8 @@
 
 s_worker_action_shut_partially::s_worker_action_shut_partially(
     s_abstract_worker *worker)
-    : s_abstract_rs_action(worker) {}
+    : s_abstract_action_shut_partially(worker) {}
 
-bool s_worker_action_shut_partially::get_expected_value(char *expected_value) {
-  if (!parse_percentage(expected_value)) {
-    return false;
-  }
-
-  return true;
-}
-
-bool s_worker_action_shut_partially::do_action() {
-  char percent = 0;
-
-  if (parse_percentage(&percent)) {
-    return worker->ipcc_set_char_value(percent + 10);  // 10 == 0%, 110 == 100%
-  }
-
-  return false;
-}
+s_worker_action_shut_partially::~s_worker_action_shut_partially(void) {}
 
 REGISTER_ACTION(s_worker_action_shut_partially, ACTION_SHUT_PARTIALLY);

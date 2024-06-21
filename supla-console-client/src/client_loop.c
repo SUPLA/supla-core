@@ -16,12 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "client_loop.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include "client_loop.h"
 #include "clientcfg.h"
 #include "supla-client-lib/log.h"
 #include "supla-client-lib/srpc.h"
@@ -256,7 +257,7 @@ void client_loop(void *user_data, void *sthread) {
   while (sthread_isterminated(sthread) == 0) {
     supla_log(LOG_INFO, "Connecting...");
 
-    if (0 == supla_client_connect(sclient)) {
+    if (0 == supla_client_connect(sclient, 0)) {
       usleep(2000000);
     } else {
       while (sthread_isterminated(sthread) == 0 &&

@@ -21,9 +21,12 @@
 #include <string>
 
 #include "action_copy.h"
+#include "action_reveal.h"
+#include "action_reveal_partially.h"
 #include "action_rgb.h"
 #include "action_set.h"
 #include "action_shut.h"
+#include "action_shut_partially.h"
 
 namespace testing {
 
@@ -54,6 +57,8 @@ void ActionParamTest::SetUp() {
   ON_CALL(*worker, ipcc_set_digiglass_value).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_get_digiglass_value).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_action_copy).WillByDefault(Return(false));
+  ON_CALL(*worker, ipcc_get_fb_value).WillByDefault(Return(false));
+  ON_CALL(*worker, ipcc_action_shut_partially).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_execute_scene).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_interrupt_scene).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_interrupt_and_execute_scene)
@@ -66,51 +71,438 @@ void ActionParamTest::TearDown() {
   delete worker;
 }
 
-TEST_F(ActionParamTest, parsePercentage) {
+TEST_F(ActionParamTest, shutPartiallyParameters) {
+  s_worker_action_shut_partially *action =
+      new s_worker_action_shut_partially(worker);
+  EXPECT_FALSE(action == NULL);
+
+  if (action) {
+    char percentage = 0;
+    bool percentage_as_delta = false;
+    char tilt = 0;
+    bool tilt_as_delta = false;
+
+    string action_param;
+
+    action_param = "{}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_FALSE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                      &tilt_as_delta));
+
+    EXPECT_EQ(percentage, -1);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, -1);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentage\":15}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, 15);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, -1);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"tilt\":20}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, -1);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, 20);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentageDelta\":-10}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, -10);
+    EXPECT_TRUE(percentage_as_delta);
+    EXPECT_EQ(tilt, -1);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"tiltDelta\":-25}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, -1);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, -25);
+    EXPECT_TRUE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentage\":25,\"tilt\":17}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, 25);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, 17);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentageDelta\":25,\"tiltDelta\":17}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, 25);
+    EXPECT_TRUE(percentage_as_delta);
+    EXPECT_EQ(tilt, 17);
+    EXPECT_TRUE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentage\":25,\"tiltDelta\":17}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, 25);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, 17);
+    EXPECT_TRUE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentageDelta\":25,\"tilt\":17}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, 25);
+    EXPECT_TRUE(percentage_as_delta);
+    EXPECT_EQ(tilt, 17);
+    EXPECT_FALSE(tilt_as_delta);
+
+    delete action;
+  }
+}
+
+TEST_F(ActionParamTest, shutParameters) {
   s_worker_action_shut *action = new s_worker_action_shut(worker);
   EXPECT_FALSE(action == NULL);
 
   if (action) {
-    char p = 0;
+    char percentage = 0;
+    bool percentage_as_delta = false;
+    char tilt = 0;
+    bool tilt_as_delta = false;
+
     string action_param;
 
-    action_param = "{\"percentage\":45}";
+    action_param = "{}";
     EXPECT_CALL(*worker, get_action_param)
         .WillRepeatedly(Return(action_param.c_str()));
 
-    EXPECT_TRUE(action->parse_percentage(&p));
-    EXPECT_EQ(p, 45);
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
 
-    p = 0;
-    action_param = "{\"perCentaGe\":80}";
+    EXPECT_EQ(percentage, 100);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, -1);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentage\":15,\"tilt\":15}";
     EXPECT_CALL(*worker, get_action_param)
         .WillRepeatedly(Return(action_param.c_str()));
 
-    EXPECT_TRUE(action->parse_percentage(&p));
-    EXPECT_EQ(p, 80);
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
 
-    action_param = "{\"percentage\":110}";
+    EXPECT_EQ(percentage, 100);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, -1);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentageDelta\":25,\"tiltDelta\":17}";
     EXPECT_CALL(*worker, get_action_param)
         .WillRepeatedly(Return(action_param.c_str()));
 
-    EXPECT_FALSE(action->parse_percentage(&p));
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
 
-    action_param = "{\"percentage\":-1}";
+    EXPECT_EQ(percentage, 100);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, -1);
+    EXPECT_FALSE(tilt_as_delta);
+
+    delete action;
+  }
+}
+
+TEST_F(ActionParamTest, revealPartiallyParameters) {
+  s_worker_action_reveal_partially *action =
+      new s_worker_action_reveal_partially(worker);
+  EXPECT_FALSE(action == NULL);
+
+  if (action) {
+    char percentage = 0;
+    bool percentage_as_delta = false;
+    char tilt = 0;
+    bool tilt_as_delta = false;
+
+    string action_param;
+
+    action_param = "{\"percentage\":15}";
     EXPECT_CALL(*worker, get_action_param)
         .WillRepeatedly(Return(action_param.c_str()));
 
-    EXPECT_FALSE(action->parse_percentage(&p));
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
 
-    action_param = "";
+    EXPECT_EQ(percentage, 85);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, -1);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"tilt\":20}";
     EXPECT_CALL(*worker, get_action_param)
         .WillRepeatedly(Return(action_param.c_str()));
 
-    EXPECT_FALSE(action->parse_percentage(&p));
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
 
+    EXPECT_EQ(percentage, -1);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, 80);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentageDelta\":-10}";
     EXPECT_CALL(*worker, get_action_param)
-        .WillRepeatedly(Return((const char *)NULL));
+        .WillRepeatedly(Return(action_param.c_str()));
 
-    EXPECT_FALSE(action->parse_percentage(&p));
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, 10);
+    EXPECT_TRUE(percentage_as_delta);
+    EXPECT_EQ(tilt, -1);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"tiltDelta\":25}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, -1);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, -25);
+    EXPECT_TRUE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentage\":25,\"tilt\":17}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, 75);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, 83);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentageDelta\":25,\"tiltDelta\":17}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, -25);
+    EXPECT_TRUE(percentage_as_delta);
+    EXPECT_EQ(tilt, -17);
+    EXPECT_TRUE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentage\":25,\"tiltDelta\":17}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, 75);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, -17);
+    EXPECT_TRUE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentageDelta\":25,\"tilt\":17}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, -25);
+    EXPECT_TRUE(percentage_as_delta);
+    EXPECT_EQ(tilt, 83);
+    EXPECT_FALSE(tilt_as_delta);
+
+    delete action;
+  }
+}
+
+TEST_F(ActionParamTest, revealParameters) {
+  s_worker_action_reveal *action = new s_worker_action_reveal(worker);
+  EXPECT_FALSE(action == NULL);
+
+  if (action) {
+    char percentage = 0;
+    bool percentage_as_delta = false;
+    char tilt = 0;
+    bool tilt_as_delta = false;
+
+    string action_param;
+
+    action_param = "{}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, 0);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, -1);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentage\":15,\"tilt\":15}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, 0);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, -1);
+    EXPECT_FALSE(tilt_as_delta);
+
+    percentage = 0;
+    percentage_as_delta = false;
+    tilt = 0;
+    tilt_as_delta = false;
+
+    action_param = "{\"percentageDelta\":25,\"tiltDelta\":17}";
+    EXPECT_CALL(*worker, get_action_param)
+        .WillRepeatedly(Return(action_param.c_str()));
+
+    EXPECT_TRUE(action->get_expected(&percentage, &percentage_as_delta, &tilt,
+                                     &tilt_as_delta));
+
+    EXPECT_EQ(percentage, 0);
+    EXPECT_FALSE(percentage_as_delta);
+    EXPECT_EQ(tilt, -1);
+    EXPECT_FALSE(tilt_as_delta);
 
     delete action;
   }

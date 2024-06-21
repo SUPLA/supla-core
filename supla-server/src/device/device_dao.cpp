@@ -290,8 +290,8 @@ int supla_device_dao::get_device_limit_left(int user_id) {
 bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
                                             int *original_location_id,
                                             int *location_id,
-                                            bool *location_enabled,
-                                            int *flags) {
+                                            bool *location_enabled, int *flags,
+                                            bool *channel_addition_blocked) {
   if (device_id == 0) return false;
 
   MYSQL_STMT *stmt = nullptr;
@@ -306,6 +306,7 @@ bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
   int _location_id = 0;
   int _location_enabled = 0;
   int _flags = 0;
+  int _channel_addition_blocked = 0;
 
   bool result = false;
 
@@ -314,10 +315,11 @@ bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
           "SELECT CAST(d.`enabled` AS unsigned integer) `d_enabled`, "
           "IFNULL(d.original_location_id, 0), IFNULL(d.location_id, 0), "
           "IFNULL(CAST(l.`enabled` AS unsigned integer), 0) `l_enabled`, "
-          "IFNULL(d.flags, 0) FROM supla_iodevice d LEFT JOIN supla_location l "
-          "ON l.id = d.location_id WHERE d.id = ?",
+          "IFNULL(d.flags, 0), IFNULL(d.channel_addition_blocked, 0) FROM "
+          "supla_iodevice d LEFT JOIN supla_location l ON l.id = d.location_id "
+          "WHERE d.id = ?",
           &pbind, 1, true)) {
-    MYSQL_BIND rbind[5];
+    MYSQL_BIND rbind[6];
     memset(rbind, 0, sizeof(rbind));
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -335,6 +337,9 @@ bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
     rbind[4].buffer_type = MYSQL_TYPE_LONG;
     rbind[4].buffer = (char *)&_flags;
 
+    rbind[5].buffer_type = MYSQL_TYPE_LONG;
+    rbind[5].buffer = (char *)&_channel_addition_blocked;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -346,6 +351,7 @@ bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
         *original_location_id = _original_location_id;
         *location_id = _location_id;
         *location_enabled = _location_enabled == 1;
+        *channel_addition_blocked = _channel_addition_blocked == 1;
         *flags = _flags;
 
         result = true;
@@ -559,8 +565,8 @@ bool supla_device_dao::update_device(int device_id, int original_location_id,
 int supla_device_dao::add_channel(int device_id, int channel_number, int type,
                                   int func, int param1, int param2, int flist,
                                   _supla_int64_t flags, int alt_icon,
-                                  int user_id) {
-  MYSQL_BIND pbind[10] = {};
+                                  unsigned short sub_device_id, int user_id) {
+  MYSQL_BIND pbind[11] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&type;
@@ -592,11 +598,14 @@ int supla_device_dao::add_channel(int device_id, int channel_number, int type,
   pbind[9].buffer_type = MYSQL_TYPE_LONG;
   pbind[9].buffer = (char *)&alt_icon;
 
+  pbind[10].buffer_type = MYSQL_TYPE_SHORT;
+  pbind[10].buffer = (char *)&sub_device_id;
+
   {
-    const char sql[] = "CALL`supla_add_channel`(?,?,?,?,0,?,?,?,?,?,?)";
+    const char sql[] = "CALL`supla_add_channel`(?,?,?,?,0,?,?,?,?,?,?,?)";
 
     MYSQL_STMT *stmt = NULL;
-    if (!dba->stmt_execute((void **)&stmt, sql, pbind, 10, true)) {
+    if (!dba->stmt_execute((void **)&stmt, sql, pbind, 11, true)) {
       if (stmt != NULL) mysql_stmt_close(stmt);
       return 0;
     }
@@ -1452,8 +1461,9 @@ vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
 
   MYSQL_STMT *stmt = nullptr;
   const char sql[] =
-      "SELECT id, type, func, flags, hidden FROM `supla_dev_channel` WHERE "
-      "iodevice_id = ? AND (channel_number = ? OR ? = -1)";
+      "SELECT id, channel_number, type, func, flags, hidden FROM "
+      "`supla_dev_channel` WHERE iodevice_id = ? AND (channel_number = ? OR ? "
+      "= -1)";
 
   MYSQL_BIND pbind[3] = {};
 
@@ -1467,9 +1477,10 @@ vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
   pbind[2].buffer = (char *)&channel_number;
 
   if (dba->stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
-    MYSQL_BIND rbind[5] = {};
+    MYSQL_BIND rbind[6] = {};
 
     int channel_id = 0;
+    int number = 0;
     int type = 0;
     int flags = 0;
     int function = 0;
@@ -1479,16 +1490,19 @@ vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
     rbind[0].buffer = (char *)&channel_id;
 
     rbind[1].buffer_type = MYSQL_TYPE_LONG;
-    rbind[1].buffer = (char *)&type;
+    rbind[1].buffer = (char *)&number;
 
     rbind[2].buffer_type = MYSQL_TYPE_LONG;
-    rbind[2].buffer = (char *)&function;
+    rbind[2].buffer = (char *)&type;
 
     rbind[3].buffer_type = MYSQL_TYPE_LONG;
-    rbind[3].buffer = (char *)&flags;
+    rbind[3].buffer = (char *)&function;
 
-    rbind[4].buffer_type = MYSQL_TYPE_TINY;
-    rbind[4].buffer = (char *)&hidden;
+    rbind[4].buffer_type = MYSQL_TYPE_LONG;
+    rbind[4].buffer = (char *)&flags;
+
+    rbind[5].buffer_type = MYSQL_TYPE_TINY;
+    rbind[5].buffer = (char *)&hidden;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -1498,9 +1512,8 @@ vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
 
       if (mysql_stmt_num_rows(stmt) > 0) {
         while (!mysql_stmt_fetch(stmt)) {
-          result.push_back(supla_channel_fragment(device_id, channel_id,
-                                                  channel_number, type,
-                                                  function, flags, hidden));
+          result.push_back(supla_channel_fragment(
+              device_id, channel_id, number, type, function, flags, hidden));
         }
       }
     }
@@ -1531,4 +1544,37 @@ supla_channel_fragment supla_device_dao::get_channel_fragment(
     }
   }
   return result;
+}
+
+void supla_device_dao::update_channel_conflict_details(int device_id,
+                                                       int channel_number,
+                                                       char *details) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  MYSQL_STMT *stmt = nullptr;
+  MYSQL_BIND pbind[3] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&device_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&channel_number;
+
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = details;
+  pbind[2].buffer_length = strnlen(details, 256);
+
+  const char sql[] = "CALL `supla_update_channel_conflict_details`(?, ?, ?)";
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
 }

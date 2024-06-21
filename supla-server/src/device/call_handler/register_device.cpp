@@ -73,7 +73,7 @@ void supla_register_device::on_registration_success(void) {
   device->set_flags(get_device_flags());
 
   supla_device_channels *channels = new supla_device_channels(
-      get_device_dao(), device.get(), get_channels_b(), get_channels_d(),
+      get_device_dao(), device.get(), get_channels_b(), get_channels_e(),
       get_channel_count());
   device->set_channels(channels);
 
@@ -84,7 +84,7 @@ void supla_register_device::on_registration_success(void) {
                                                             get_device_id());
 
   device->get_channels()->on_device_registered(
-      device->get_user(), get_device_id(), get_channels_b(), get_channels_d(),
+      device->get_user(), get_device_id(), get_channels_b(), get_channels_e(),
       get_channel_count());
 
   if (is_channel_added()) {
@@ -106,7 +106,7 @@ void supla_register_device::after_registration_success(void) {
 void supla_register_device::register_device(
     std::weak_ptr<supla_device> device,
     TDS_SuplaRegisterDevice_C *register_device_c,
-    TDS_SuplaRegisterDevice_F *register_device_f,
+    TDS_SuplaRegisterDevice_G *register_device_g,
     supla_abstract_srpc_adapter *srpc_adapter, int client_sd, int client_ipv4,
     unsigned char activity_timeout) {
   {
@@ -122,7 +122,7 @@ void supla_register_device::register_device(
   supla_device_dao device_dao(&dba);
 
   supla_abstract_register_device::register_device(
-      device, register_device_c, register_device_f, srpc_adapter, &dba,
+      device, register_device_c, register_device_g, srpc_adapter, &dba,
       &conn_dao, &device_dao, client_sd, client_ipv4, activity_timeout);
 
   // Disconnect the database connection before calling

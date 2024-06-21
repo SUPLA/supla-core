@@ -119,6 +119,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
   virtual _supla_int_t sd_async_registerdevice_result(
       TSD_SuplaRegisterDeviceResult *result);
 
+  virtual _supla_int_t sd_async_registerdevice_result_b(
+      TSD_SuplaRegisterDeviceResult_B *result);
+
   virtual _supla_int_t sc_async_registerclient_result(
       TSC_SuplaRegisterClientResult *result);
 

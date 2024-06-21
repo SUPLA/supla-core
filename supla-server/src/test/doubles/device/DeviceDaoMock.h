@@ -56,10 +56,11 @@ class DeviceDaoMock : public supla_abstract_device_dao {
 
   MOCK_METHOD1(get_device_limit_left, int(int user_id));
 
-  MOCK_METHOD6(get_device_variables,
+  MOCK_METHOD7(get_device_variables,
                bool(int device_id, bool *device_enabled,
                     int *original_location_id, int *location_id,
-                    bool *location_enabled, int *flags));
+                    bool *location_enabled, int *flags,
+                    bool *channel_addition_blocked));
 
   MOCK_METHOD4(get_channel_properties,
                int(int device_id, int channel_number, int *type, int *flist));
@@ -85,10 +86,18 @@ class DeviceDaoMock : public supla_abstract_device_dao {
                     const char *authkey, const char *name, unsigned int ipv4,
                     const char *softver, int proto_version, int flags));
 
-  MOCK_METHOD10(add_channel,
+  MOCK_METHOD10(add_channel_a,
                 int(int device_id, int channel_number, int type, int func,
                     int param1, int param2, int flist, _supla_int64_t flags,
                     int alt_icon, int user_id));
+
+  MOCK_METHOD4(add_channel_b, int(int device_id, int channel_number,
+                                  unsigned short sub_device_id, int user_id));
+
+  virtual int add_channel(int device_id, int channel_number, int type, int func,
+                          int param1, int param2, int flist,
+                          _supla_int64_t flags, int alt_icon,
+                          unsigned short sub_device_id, int user_id);
 
   MOCK_METHOD1(on_new_device, bool(int device_id));
 
@@ -136,6 +145,9 @@ class DeviceDaoMock : public supla_abstract_device_dao {
 
   MOCK_METHOD2(get_channel_fragment,
                supla_channel_fragment(int device_id, int channel_number));
+
+  MOCK_METHOD3(update_channel_conflict_details,
+               void(int device_id, int channel_number, char *details));
 };
 
 } /* namespace testing */

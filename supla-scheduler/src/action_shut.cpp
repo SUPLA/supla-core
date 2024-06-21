@@ -25,14 +25,27 @@
 #include "log.h"
 
 s_worker_action_shut::s_worker_action_shut(s_abstract_worker *worker)
-    : s_abstract_rs_action(worker) {}
+    : s_abstract_action_shut_partially(worker) {}
 
-bool s_worker_action_shut::get_expected_value(char *expected_value) {
-  *expected_value = 100;
+s_worker_action_shut::~s_worker_action_shut(void) {}
+
+bool s_worker_action_shut::get_expected(char *percentage,
+                                        bool *percentage_as_delta, char *tilt,
+                                        bool *tilt_as_delta) {
+  if (percentage == nullptr || percentage_as_delta == nullptr ||
+      tilt == nullptr || tilt_as_delta == nullptr) {
+    return false;
+  }
+
+  *percentage = 100;
+  *percentage_as_delta = false;
+  *tilt = -1;
+  *tilt_as_delta = false;
+
   return true;
 }
 
-bool s_worker_action_shut::do_action() {
+bool s_worker_action_shut::do_action(void) {
   return worker->ipcc_set_char_value(1);
 }
 

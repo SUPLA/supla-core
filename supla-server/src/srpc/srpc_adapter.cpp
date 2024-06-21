@@ -127,6 +127,11 @@ _supla_int_t supla_srpc_adapter::sd_async_registerdevice_result(
   return srpc_sd_async_registerdevice_result(get_srpc(), result);
 }
 
+_supla_int_t supla_srpc_adapter::sd_async_registerdevice_result_b(
+    TSD_SuplaRegisterDeviceResult_B *result) {
+  return srpc_sd_async_registerdevice_result_b(get_srpc(), result);
+}
+
 _supla_int_t supla_srpc_adapter::sc_async_registerclient_result(
     TSC_SuplaRegisterClientResult *result) {
   return srpc_sc_async_registerclient_result(get_srpc(), result);

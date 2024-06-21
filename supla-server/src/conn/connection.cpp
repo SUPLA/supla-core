@@ -51,6 +51,7 @@ using std::weak_ptr;
 
 #define ACTIVITY_TIMEOUT 120
 #define UNHANDLED_CALL_MAXCOUNT 5
+#define WAIT_USEC_MIN 100000
 
 void *supla_connection::reg_pending_arr = nullptr;
 unsigned int supla_connection::local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
@@ -340,8 +341,10 @@ void supla_connection::execute(void *sthread) {
   supla_log(LOG_DEBUG, "Connection Started %i, secure=%i", sthread,
             ssocket_is_secure(ssd));
 
+  int wait_usec = WAIT_USEC_MIN;
+
   while (sthread_isterminated(sthread) == 0) {
-    eh_wait(eh, object == nullptr ? 1000000 : object->wait_time_usec());
+    eh_wait(eh, wait_usec);
 
     if (srpc_iterate(_srpc) == SUPLA_RESULT_FALSE) {
       // supla_log(LOG_DEBUG, "srpc_iterate(_srpc) == SUPLA_RESULT_FALSE");
@@ -362,7 +365,10 @@ void supla_connection::execute(void *sthread) {
     } else {
       object->iterate();
 
-      if (object->get_activity_delay() >= get_activity_timeout()) {
+      int time_to_inactive =
+          get_activity_timeout() - object->get_activity_delay();
+
+      if (time_to_inactive <= 0) {
         if (object->is_sleeping_object()) {
           supla_log(LOG_DEBUG, "Sleeping device %i", sthread);
         } else {
@@ -371,6 +377,16 @@ void supla_connection::execute(void *sthread) {
                     object->get_activity_delay());
         }
         break;
+      } else {
+        wait_usec = object->wait_time_usec();
+        time_to_inactive *= 1000000;
+        if (wait_usec > time_to_inactive) {
+          wait_usec = time_to_inactive;
+        }
+      }
+
+      if (wait_usec < WAIT_USEC_MIN) {
+        wait_usec = WAIT_USEC_MIN;
       }
     }
   }

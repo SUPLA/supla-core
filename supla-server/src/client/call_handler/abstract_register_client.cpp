@@ -152,8 +152,10 @@ void supla_abstract_register_client::send_result(int resultcode) {
   // !After srpc_async_registerclient_result
   if (resultcode == SUPLA_RESULTCODE_TRUE) {
     remote_update_lists();
-    supla_log(LOG_INFO, "Client registered. ClientSD: %i Protocol Version: %i",
-              get_client_sd(), get_srpc_adapter()->get_proto_version());
+    supla_log(LOG_INFO,
+              "Client registered. ClientSD: %i ID: %i Protocol Version: %i",
+              get_client_sd(), get_client_id(),
+              get_srpc_adapter()->get_proto_version());
   } else {
     usleep(get_hold_time_on_failure_usec());
   }

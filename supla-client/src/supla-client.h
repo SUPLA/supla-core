@@ -228,7 +228,7 @@ void supla_client_set_str(char *str, unsigned int *size, unsigned int max);
 void *supla_client_init(TSuplaClientCfg *sclient_cfg);
 void supla_client_free(void *_scd);
 int supla_client_get_id(void *_suplaclient);
-char supla_client_connect(void *_suplaclient);
+char supla_client_connect(void *_suplaclient, int conn_timeout_ms);
 char supla_client_connected(void *_suplaclient);
 char supla_client_registered(void *_suplaclient);
 void supla_client_disconnect(void *_suplaclient);

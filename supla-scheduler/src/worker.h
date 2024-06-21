@@ -37,6 +37,7 @@ class s_worker : public s_abstract_worker {
 
   virtual char ipcc_get_opening_sensor_value(void);
   virtual bool ipcc_set_char_value(char value);
+  virtual bool ipcc_get_fb_value(char *position, char *tilt);
   virtual bool ipcc_get_char_value(char *value);
   virtual bool ipcc_get_rgbw_value(int *color, char *color_brightness,
                                    char *brightness);
@@ -46,6 +47,9 @@ class s_worker : public s_abstract_worker {
   virtual bool ipcc_set_digiglass_value(int active_bits, int mask);
   virtual bool ipcc_get_digiglass_value(int *mask);
   virtual bool ipcc_action_copy(int sourceDeviceId, int sourceChannelId);
+  virtual bool ipcc_action_shut_partially(char percentage,
+                                          bool percentage_as_delta, char tilt,
+                                          bool tilt_as_delta);
   virtual bool ipcc_execute_scene(void);
   virtual bool ipcc_interrupt_scene(void);
   virtual bool ipcc_interrupt_and_execute_scene(void);

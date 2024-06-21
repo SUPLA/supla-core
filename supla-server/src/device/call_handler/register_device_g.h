@@ -15,35 +15,27 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-#ifndef HTTP_THROTTLING_H_
-#define HTTP_THROTTLING_H_
 
-#include <sys/time.h>
+#ifndef SUPLA_CH_REGISTER_DEVICE_G_H_
+#define SUPLA_CH_REGISTER_DEVICE_G_H_
 
-#include <cstddef>
-#include <list>
+#include <memory>
 
-class supla_http_throttling {
- private:
-  typedef struct {
-    int channel_id;
-    struct timeval last;
-    unsigned int counter;
-  } item_t;
+#include "device/call_handler/abstract_device_srpc_call_handler.h"
 
-  std::list<item_t> items;
-  void *lck;
+class supla_ch_register_device_g
+    : public supla_abstract_device_srpc_call_handler {
+ protected:
+  virtual void handle_call(std::shared_ptr<supla_device> device,
+                           supla_abstract_srpc_adapter* srpc_adapter,
+                           TsrpcReceivedData* rd, unsigned int call_id,
+                           unsigned char proto_version);
 
  public:
-  supla_http_throttling(void);
-  virtual ~supla_http_throttling(void);
-  int get_delay_time(int channel_id, int func);
-
-  virtual int get_default_delay_time(int func);
-  virtual int get_delay_time_over_threadshold(int func);
-  virtual int get_reset_time_us(int func);
-  virtual unsigned int get_counter_threadshold(int func);
-  size_t get_size(void);
+  supla_ch_register_device_g(void);
+  virtual ~supla_ch_register_device_g();
+  virtual bool is_registration_required(void);
+  virtual bool can_handle_call(unsigned int call_id);
 };
 
-#endif /* HTTP_THROTTLING_H_ */
+#endif /* SUPLA_CH_REGISTER_DEVICE_G_H_*/

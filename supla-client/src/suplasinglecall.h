@@ -30,6 +30,7 @@ class supla_single_call {
  private:
   TCS_ClientAuthorizationDetails auth_details;
   int protocol_version;
+  int conn_timeout_ms;
   void *ssd;
   void *srpc;
   TEventHandler *eh;
@@ -59,7 +60,7 @@ class supla_single_call {
 
  public:
   supla_single_call(TCS_ClientAuthorizationDetails *auth_details,
-                    int protocol_version);
+                    int protocol_version, int conn_timeout_ms);
   virtual ~supla_single_call();
   unsigned char get_min_version_number(void);
   int execute_action(TCS_Action *action);

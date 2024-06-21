@@ -269,7 +269,7 @@ void IntegrationTest::iterateUntilTimeout(bool doRegister,
   if (sclient == NULL || 0 == supla_client_connected(sclient)) {
     clientFree();
     clientInit();
-    if (0 == supla_client_connect(sclient)) {
+    if (0 == supla_client_connect(sclient, 0)) {
       clientFree();
       return;
     }

@@ -26,28 +26,32 @@
 
 s_worker_action_reveal_partially::s_worker_action_reveal_partially(
     s_abstract_worker *worker)
-    : s_abstract_rs_action(worker) {}
+    : s_abstract_action_shut_partially(worker) {}
 
-bool s_worker_action_reveal_partially::get_expected_value(
-    char *expected_value) {
-  if (!parse_percentage(expected_value)) {
+s_worker_action_reveal_partially::~s_worker_action_reveal_partially(void) {}
+
+bool s_worker_action_reveal_partially::get_expected(char *percentage,
+                                                    bool *percentage_as_delta,
+                                                    char *tilt,
+                                                    bool *tilt_as_delta) {
+  if (!s_abstract_action_shut_partially::get_expected(
+          percentage, percentage_as_delta, tilt, tilt_as_delta)) {
     return false;
   }
 
-  *expected_value = 100 - *expected_value;
-  return true;
-}
-
-bool s_worker_action_reveal_partially::do_action() {
-  char percent = 0;
-
-  if (parse_percentage(&percent)) {
-    percent = 110 - percent;  // 10 == 0%, 110 == 100%
-
-    return worker->ipcc_set_char_value(percent);
+  if (*percentage_as_delta) {
+    *percentage *= -1;
+  } else if (*percentage != -1) {
+    *percentage = 100 - *percentage;
   }
 
-  return false;
+  if (*tilt_as_delta) {
+    *tilt *= -1;
+  } else if (*tilt != -1) {
+    *tilt = 100 - *tilt;
+  }
+
+  return true;
 }
 
 REGISTER_ACTION(s_worker_action_reveal_partially, ACTION_REVEAL_PARTIALLY);

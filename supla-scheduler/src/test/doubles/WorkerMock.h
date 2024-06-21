@@ -46,6 +46,10 @@ class WorkerMock : public s_abstract_worker {
   MOCK_METHOD2(ipcc_set_digiglass_value, bool(int active_bits, int mask));
   MOCK_METHOD1(ipcc_get_digiglass_value, bool(int *mask));
   MOCK_METHOD2(ipcc_action_copy, bool(int sourceDeviceId, int sourceChannelId));
+  MOCK_METHOD2(ipcc_get_fb_value, bool(char *position, char *tilt));
+  MOCK_METHOD4(ipcc_action_shut_partially,
+               bool(char percentage, bool percentage_as_delta, char tilt,
+                    bool tilt_as_delta));
   MOCK_METHOD0(ipcc_execute_scene, bool(void));
   MOCK_METHOD0(ipcc_interrupt_scene, bool(void));
   MOCK_METHOD0(ipcc_interrupt_and_execute_scene, bool(void));

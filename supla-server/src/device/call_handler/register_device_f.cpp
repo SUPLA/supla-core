@@ -26,6 +26,7 @@
 #include "device/call_handler/register_device.h"
 #include "log.h"
 #include "proto.h"
+#include "srpc/abstract_srpc_call_hanlder_collection.h"
 
 using std::shared_ptr;
 
@@ -48,18 +49,64 @@ void supla_ch_register_device_f::handle_call(
   supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_F");
 
   if (rd->data.ds_register_device_f != nullptr) {
-    rd->data.ds_register_device_f->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
-    rd->data.ds_register_device_f->Name[SUPLA_DEVICE_NAME_MAXSIZE - 1] = 0;
-    rd->data.ds_register_device_f->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = 0;
-    rd->data.ds_register_device_f->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] =
-        0;
+    TDS_SuplaRegisterDevice_G* register_device_g =
+        (TDS_SuplaRegisterDevice_G*)malloc(sizeof(TDS_SuplaRegisterDevice_G));
+    if (register_device_g != nullptr) {
+      memset(register_device_g, 0, sizeof(TDS_SuplaRegisterDevice_G));
 
-    supla_register_device regdev;
+      memcpy(register_device_g->Email, rd->data.ds_register_device_f->Email,
+             SUPLA_EMAIL_MAXSIZE);
+      memcpy(register_device_g->AuthKey, rd->data.ds_register_device_f->AuthKey,
+             SUPLA_AUTHKEY_SIZE);
 
-    regdev.register_device(device, nullptr, rd->data.ds_register_device_f,
-                           srpc_adapter,
-                           device->get_connection()->get_client_sd(),
-                           device->get_connection()->get_client_ipv4(),
-                           device->get_connection()->get_activity_timeout());
+      memcpy(register_device_g->GUID, rd->data.ds_register_device_f->GUID,
+             SUPLA_GUID_SIZE);
+      memcpy(register_device_g->Name, rd->data.ds_register_device_f->Name,
+             SUPLA_DEVICE_NAME_MAXSIZE);
+      memcpy(register_device_g->SoftVer, rd->data.ds_register_device_f->SoftVer,
+             SUPLA_SOFTVER_MAXSIZE);
+      memcpy(register_device_g->ServerName,
+             rd->data.ds_register_device_f->ServerName,
+             SUPLA_SERVER_NAME_MAXSIZE);
+
+      register_device_g->Flags = rd->data.ds_register_device_f->Flags;
+      register_device_g->ManufacturerID =
+          rd->data.ds_register_device_f->ManufacturerID;
+      register_device_g->ProductID = rd->data.ds_register_device_f->ProductID;
+
+      register_device_g->channel_count =
+          rd->data.ds_register_device_f->channel_count;
+
+      for (int c = 0; c < register_device_g->channel_count; c++) {
+        memset(&register_device_g->channels[c], 0,
+               sizeof(TDS_SuplaDeviceChannel_E));
+        register_device_g->channels[c].Number =
+            rd->data.ds_register_device_f->channels[c].Number;
+        register_device_g->channels[c].Type =
+            rd->data.ds_register_device_f->channels[c].Type;
+        register_device_g->channels[c].FuncList =
+            rd->data.ds_register_device_f->channels[c].FuncList;
+        register_device_g->channels[c].Default =
+            rd->data.ds_register_device_f->channels[c].Default;
+        register_device_g->channels[c].Flags =
+            rd->data.ds_register_device_f->channels[c].Flags;
+        register_device_g->channels[c].Offline =
+            rd->data.ds_register_device_f->channels[c].Offline;
+        register_device_g->channels[c].ValueValidityTimeSec =
+            rd->data.ds_register_device_f->channels[c].ValueValidityTimeSec;
+        register_device_g->channels[c].DefaultIcon =
+            rd->data.ds_register_device_f->channels[c].DefaultIcon;
+        memcpy(register_device_g->channels[c].value,
+               rd->data.ds_register_device_f->channels[c].value,
+               SUPLA_CHANNELVALUE_SIZE);
+      }
+
+      free(rd->data.ds_register_device_f);
+      rd->data.ds_register_device_g = register_device_g;
+
+      device->get_srpc_call_handler_collection()->handle_call(
+          device, srpc_adapter, rd, SUPLA_DS_CALL_REGISTER_DEVICE_G,
+          proto_version);
+    }
   }
 }

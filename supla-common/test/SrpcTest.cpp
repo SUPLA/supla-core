@@ -541,6 +541,10 @@ vector<int> SrpcTest::get_call_ids(int version) {
     case 23:
       return {SUPLA_SC_CALL_CHANNELPACK_UPDATE_E,
               SUPLA_DS_CALL_REGISTER_DEVICE_F};
+
+    case 25:
+      return {SUPLA_DS_CALL_REGISTER_DEVICE_G,
+              SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B};
   }
 
   return {};
@@ -591,6 +595,12 @@ TEST_F(SrpcTest, call_allowed_v19) { srpcCallAllowed(19, get_call_ids(19)); }
 TEST_F(SrpcTest, call_allowed_v20) { srpcCallAllowed(20, get_call_ids(20)); }
 
 TEST_F(SrpcTest, call_allowed_v21) { srpcCallAllowed(21, get_call_ids(21)); }
+
+TEST_F(SrpcTest, call_allowed_v23) { srpcCallAllowed(23, get_call_ids(23)); }
+
+#if SUPLA_PROTO_VERSION >= 25
+TEST_F(SrpcTest, call_allowed_v25) { srpcCallAllowed(25, get_call_ids(25)); }
+#endif /*SUPLA_PROTO_VERSION >= 25*/
 
 TEST_F(SrpcTest, call_not_allowed) {
   vector<int> all_calls;
@@ -1584,6 +1594,95 @@ TEST_F(SrpcTest, call_registerdevice_f_wrong_size) {
   srpc = NULL;
 }
 
+#if SUPLA_PROTO_VERSION >= 25
+TEST_F(SrpcTest, call_registerdevice_g) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_G, registerdevice);
+
+  registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT;
+
+  ASSERT_GT(srpc_ds_async_registerdevice_g(srpc, &registerdevice), 0);
+  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_G, 5215);
+
+  ASSERT_FALSE(cr_rd.data.ds_register_device_g == NULL);
+  ASSERT_EQ(memcmp(cr_rd.data.ds_register_device_g, &registerdevice,
+                   sizeof(TDS_SuplaRegisterDevice_G)),
+            0);
+
+  free(cr_rd.data.ds_register_device_e);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerdevice_g_one_channel) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_G, registerdevice);
+
+  registerdevice.channels[0].Number = 1;
+  registerdevice.channels[0].Type = 1;
+  registerdevice.channel_count = 1;
+
+  ASSERT_GT(srpc_ds_async_registerdevice_g(srpc, &registerdevice), 0);
+  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_G, 643);
+
+  ASSERT_FALSE(cr_rd.data.ds_register_device_g == NULL);
+  ASSERT_EQ(memcmp(cr_rd.data.ds_register_device_g, &registerdevice,
+                   sizeof(TDS_SuplaRegisterDevice_G) -
+                       (sizeof(TDS_SuplaDeviceChannel_E) *
+                        (SUPLA_CHANNELMAXCOUNT - 1))),
+            0);
+
+  free(cr_rd.data.ds_register_device_g);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerdevice_g_without_channels) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_G, registerdevice);
+
+  registerdevice.channel_count = 0;
+
+  ASSERT_GT(srpc_ds_async_registerdevice_g(srpc, &registerdevice), 0);
+  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_G, 607);
+
+  ASSERT_FALSE(cr_rd.data.ds_register_device_g == NULL);
+  ASSERT_EQ(
+      memcmp(cr_rd.data.ds_register_device_g, &registerdevice,
+             sizeof(TDS_SuplaRegisterDevice_G) -
+                 (sizeof(TDS_SuplaDeviceChannel_E) * (SUPLA_CHANNELMAXCOUNT))),
+      0);
+
+  free(cr_rd.data.ds_register_device_g);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerdevice_g_wrong_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_G, registerdevice);
+
+  registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_ds_async_registerdevice_g(srpc, &registerdevice), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+#endif /*SUPLA_PROTO_VERSION >= 25*/
+
 TEST_F(SrpcTest, call_registerdevice_result) {
   data_read_result = -1;
   srpc = srpcInit();
@@ -1612,6 +1711,14 @@ TEST_F(SrpcTest, call_registerdevice_result) {
   srpc = NULL;
 }
 
+#if SUPLA_PROTO_VERSION >= 25
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_registerdevice_result_b,
+                                     TSD_SuplaRegisterDeviceResult_B,
+                                     SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B, 32,
+                                     288, sd_register_device_result_b,
+                                     CHANNEL_REPORT_MAXSIZE, channel_report,
+                                     channel_report_size);
+#endif /*SUPLA_PROTO_VERSION >= 25*/
 //---------------------------------------------------------
 // DS CHANNEL VALUE CHANGED
 //---------------------------------------------------------

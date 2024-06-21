@@ -97,7 +97,7 @@ void supla_client_channel_relation_remote_updater::on_transaction_end(
     }
 
     delete relation_pack;
-    relation_pack = NULL;
+    relation_pack = nullptr;
   }
 
   first = nullptr;

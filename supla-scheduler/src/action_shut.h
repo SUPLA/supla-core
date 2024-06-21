@@ -19,16 +19,17 @@
 #ifndef ACTION_SHUT_H_
 #define ACTION_SHUT_H_
 
-#include "abstract_rs_action.h"
+#include "abstract_action_shut_partially.h"
 
-class s_worker_action_shut : public s_abstract_rs_action {
- private:
+class s_worker_action_shut : public s_abstract_action_shut_partially {
  protected:
-  virtual bool get_expected_value(char *expected_value);
-  virtual bool do_action();
+  virtual bool do_action(void);
 
  public:
   explicit s_worker_action_shut(s_abstract_worker *worker);
+  virtual ~s_worker_action_shut(void);
+  virtual bool get_expected(char *percentage, bool *percentage_as_delta,
+                            char *tilt, bool *tilt_as_delta);
 };
 
 #endif /*ACTION_SHUT_H_*/

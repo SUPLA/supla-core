@@ -16,23 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_RS_ACTION_H_
-#define ABSTRACT_RS_ACTION_H_
+#ifndef ABSTRACT_ACTION_SHUT_PARTIALLY_H_
+#define ABSTRACT_ACTION_SHUT_PARTIALLY_H_
 
 #include "action.h"
 
-class s_abstract_rs_action : public s_worker_action {
+class s_abstract_action_shut_partially : public s_worker_action {
  protected:
   virtual bool is_action_allowed(void);
   int try_limit(void);
   int waiting_time_to_retry(void);
   int waiting_time_to_check(void);
   bool result_success(int *fail_result_code);
-  virtual bool get_expected_value(char *expected_value) = 0;
+  virtual bool do_action();
 
  public:
-  bool parse_percentage(char *percent);
-  explicit s_abstract_rs_action(s_abstract_worker *worker);
+  explicit s_abstract_action_shut_partially(s_abstract_worker *worker);
+  virtual ~s_abstract_action_shut_partially(void) = 0;
+  virtual bool get_expected(char *percentage, bool *percentage_as_delta,
+                            char *tilt, bool *tilt_as_delta);
 };
 
-#endif /* ABSTRACT_RS_ACTION_H_ */
+#endif /* ABSTRACT_ACTION_SHUT_PARTIALLY_H_*/

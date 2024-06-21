@@ -44,7 +44,7 @@ class supla_register_device : public supla_abstract_register_device {
 
   void register_device(std::weak_ptr<supla_device> device,
                        TDS_SuplaRegisterDevice_C *register_device_c,
-                       TDS_SuplaRegisterDevice_F *register_device_f,
+                       TDS_SuplaRegisterDevice_G *register_device_g,
                        supla_abstract_srpc_adapter *srpc_adapter, int client_sd,
                        int client_ipv4, unsigned char activity_timeout);
 };

@@ -59,7 +59,8 @@ class supla_abstract_device_dao {
 
   virtual bool get_device_variables(int device_id, bool *device_enabled,
                                     int *original_location_id, int *location_id,
-                                    bool *location_enabled, int *flags) = 0;
+                                    bool *location_enabled, int *flags,
+                                    bool *channel_addition_blocked) = 0;
 
   virtual int get_channel_properties(int device_id, int channel_number,
                                      int *type, int *flist) = 0;
@@ -79,7 +80,8 @@ class supla_abstract_device_dao {
 
   virtual int add_channel(int device_id, int channel_number, int type, int func,
                           int param1, int param2, int flist,
-                          _supla_int64_t flags, int alt_icon, int user_id) = 0;
+                          _supla_int64_t flags, int alt_icon,
+                          unsigned short sub_device_id, int user_id) = 0;
 
   virtual bool on_new_device(int device_id) = 0;
 
@@ -125,6 +127,10 @@ class supla_abstract_device_dao {
 
   virtual supla_channel_fragment get_channel_fragment(int device_id,
                                                       int channel_number) = 0;
+
+  virtual void update_channel_conflict_details(int device_id,
+                                               int channel_number,
+                                               char *details) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_DEVICE_DAO_H_ */

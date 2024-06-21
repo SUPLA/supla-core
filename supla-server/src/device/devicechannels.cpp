@@ -46,7 +46,7 @@ using std::vector;
 
 supla_device_channels::supla_device_channels(
     supla_abstract_device_dao *dao, supla_device *device,
-    TDS_SuplaDeviceChannel_B *schannel_b, TDS_SuplaDeviceChannel_D *schannel_d,
+    TDS_SuplaDeviceChannel_B *schannel_b, TDS_SuplaDeviceChannel_E *schannel_e,
     int channel_count) {
   this->device = device;
 
@@ -67,13 +67,13 @@ supla_device_channels::supla_device_channels(
       value = schannel_b[a].value;
       number = schannel_b[a].Number;
     } else {
-      type = schannel_d[a].Type;
-      value = schannel_d[a].value;
-      number = schannel_d[a].Number;
-      action_trigger_caps = schannel_d[a].ActionTriggerCaps;
-      at_orops = schannel_d[a].actionTriggerProperties;
-      flags = schannel_d[a].Flags;
-      offline = schannel_d[a].Offline > 0;
+      type = schannel_e[a].Type;
+      value = schannel_e[a].value;
+      number = schannel_e[a].Number;
+      action_trigger_caps = schannel_e[a].ActionTriggerCaps;
+      at_orops = schannel_e[a].actionTriggerProperties;
+      flags = schannel_e[a].Flags;
+      offline = schannel_e[a].Offline > 0;
     }
 
     int channel_id = get_channel_id(number);
@@ -81,10 +81,16 @@ supla_device_channels::supla_device_channels(
     supla_device_channel *channel = find_channel(channel_id);
 
     if (channel) {
-      channel->set_value(
-          value,
-          schannel_b == nullptr ? &schannel_d[a].ValueValidityTimeSec : nullptr,
-          schannel_b == nullptr ? &offline : nullptr);
+      if (offline) {
+        channel->set_offline(true, false);
+      } else {
+        channel->set_value(value,
+                           schannel_b == nullptr
+                               ? &schannel_e[a].ValueValidityTimeSec
+                               : nullptr,
+                           schannel_b == nullptr ? &offline : nullptr);
+      }
+
       channel->add_init_flags(flags);
 
       if (type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
@@ -347,6 +353,15 @@ bool supla_device_channels::set_channel_value(
   return false;
 }
 
+bool supla_device_channels::set_channel_offline(int channel_id, bool offline) {
+  supla_device_channel *channel = find_channel(channel_id);
+  if (channel) {
+    return channel->set_offline(offline, true);
+  }
+
+  return false;
+}
+
 void supla_device_channels::set_channel_extendedvalue(
     int channel_id, TSuplaChannelExtendedValue *ev) {
   supla_device_channel *channel = find_channel(channel_id);
@@ -409,14 +424,14 @@ bool supla_device_channels::is_channel_online(int channel_id) {
 
 void supla_device_channels::on_device_registered(
     supla_user *user, int device_id, TDS_SuplaDeviceChannel_B *schannel_b,
-    TDS_SuplaDeviceChannel_D *schannel_d, int count) {
+    TDS_SuplaDeviceChannel_E *schannel_e, int count) {
   int channel_id = 0;
 
   for (int a = 0; a < count; a++) {
     if (schannel_b != nullptr) {
       channel_id = get_channel_id(schannel_b[a].Number);
     } else {
-      channel_id = get_channel_id(schannel_d[a].Number);
+      channel_id = get_channel_id(schannel_e[a].Number);
     }
 
     if (channel_id > 0) {

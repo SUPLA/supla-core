@@ -313,8 +313,9 @@ const char *supla_device_channel::get_text_param2(void) { return text_param2; }
 const char *supla_device_channel::get_text_param3(void) { return text_param3; }
 
 bool supla_device_channel::is_offline(void) {
-  bool result = offline;
   lock();
+  bool result = offline;
+
   if (offline && (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec)) {
     struct timeval now;
     gettimeofday(&now, nullptr);
@@ -331,7 +332,7 @@ bool supla_device_channel::is_offline(void) {
   return result;
 }
 
-bool supla_device_channel::set_offline(bool offline) {
+bool supla_device_channel::set_offline(bool offline, bool raise_change_event) {
   bool result = false;
   lock();
   if (this->offline != offline) {
@@ -339,6 +340,11 @@ bool supla_device_channel::set_offline(bool offline) {
     result = true;
   }
   unlock();
+
+  if (result && raise_change_event) {
+    on_value_changed(nullptr, nullptr, true, false);
+  }
+
   return result;
 }
 
@@ -517,6 +523,12 @@ bool supla_device_channel::set_value(
     const char value[SUPLA_CHANNELVALUE_SIZE],
     const unsigned _supla_int_t *validity_time_sec, bool *offline) {
   lock();
+
+  if ((!offline || *offline) && this->offline) {
+    unlock();
+    return false;
+  }
+
   if (validity_time_sec == nullptr &&
       (value_valid_to.tv_usec || value_valid_to.tv_sec)) {
     struct timeval now;
@@ -551,7 +563,7 @@ bool supla_device_channel::set_value(
   bool significant_change = false;
   bool differ = new_value->is_differ(old_value, &significant_change);
 
-  if (offline && set_offline(*offline)) {
+  if (offline && set_offline(*offline, false)) {
     differ = true;
     significant_change = true;
   }
@@ -624,11 +636,13 @@ void supla_device_channel::on_value_changed(supla_channel_value *old_value,
         true);
   }
 
-  get_device()
-      ->get_user()
-      ->get_value_based_triggers()
-      ->on_channel_value_changed(supla_caller(ctChannel, get_id()), get_id(),
-                                 old_value, new_value);
+  if (old_value && new_value) {
+    get_device()
+        ->get_user()
+        ->get_value_based_triggers()
+        ->on_channel_value_changed(supla_caller(ctChannel, get_id()), get_id(),
+                                   old_value, new_value);
+  }
 }
 
 void supla_device_channel::on_extended_value_changed(

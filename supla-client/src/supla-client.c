@@ -1287,7 +1287,7 @@ void supla_client_disconnect(void *_suplaclient) {
   }
 }
 
-char supla_client_connect(void *_suplaclient) {
+char supla_client_connect(void *_suplaclient, int conn_timeout_ms) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
   supla_client_disconnect(_suplaclient);
 
@@ -1295,7 +1295,8 @@ char supla_client_connect(void *_suplaclient) {
 
   int err = 0;
 
-  if (ssocket_client_connect(suplaclient->ssd, NULL, &err) == 1) {
+  if (ssocket_client_connect(suplaclient->ssd, NULL, &err, conn_timeout_ms) ==
+      1) {
     suplaclient->eh = eh_init();
     TsrpcParams srpc_params;
     srpc_params_init(&srpc_params);

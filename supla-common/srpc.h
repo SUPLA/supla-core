@@ -102,7 +102,9 @@ union TsrpcDataPacketData {
   TDS_SuplaRegisterDevice_D *ds_register_device_d;
   TDS_SuplaRegisterDevice_E *ds_register_device_e;
   TDS_SuplaRegisterDevice_F *ds_register_device_f;
+  TDS_SuplaRegisterDevice_G *ds_register_device_g;
   TSD_SuplaRegisterDeviceResult *sd_register_device_result;
+  TSD_SuplaRegisterDeviceResult_B *sd_register_device_result_b;
   TCS_SuplaRegisterClient *cs_register_client;
   TCS_SuplaRegisterClient_B *cs_register_client_b;
   TCS_SuplaRegisterClient_C *cs_register_client_c;
@@ -270,8 +272,21 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_e(
     void *_srpc, TDS_SuplaRegisterDevice_E *registerdevice);  // ver. >= 10
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_f(
     void *_srpc, TDS_SuplaRegisterDevice_F *registerdevice);  // ver. >= 23
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_g(
+    void *_srpc, TDS_SuplaRegisterDevice_G *registerdevice);  // ver. >= 25
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_registerdevice_result(
     void *_srpc, TSD_SuplaRegisterDeviceResult *registerdevice_result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_registerdevice_result_b(
+    void *_srpc,
+    TSD_SuplaRegisterDeviceResult_B *registerdevice_result);  // ver. >= 25
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_in_chunks(
+    void *_srpc,
+    TDS_SuplaRegisterDeviceHeader *registerdevice,
+    TDS_SuplaDeviceChannel_D *(*get_channel_data_callback)(int));  // ver. >= 23
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_in_chunks_g(
+    void *_srpc, TDS_SuplaRegisterDeviceHeader *registerdevice,
+    TDS_SuplaDeviceChannel_E *(*get_channel_data_callback)(int));  // ver. >= 25
+
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed(
     void *_srpc, unsigned char channel_number, char *value);
 _supla_int_t SRPC_ICACHE_FLASH

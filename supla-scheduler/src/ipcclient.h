@@ -48,6 +48,8 @@ class ipc_client {
   bool get_double_value(int user_id, int device_id, int channel_id,
                         double *value);
   bool get_char_value(int user_id, int device_id, int channel_id, char *value);
+  bool get_fb_value(int user_id, int device_id, int channel_id, char *position,
+                    char *tilt);
   bool get_rgbw_value(int user_id, int device_id, int channel_id, int *color,
                       char *color_brightness, char *brightness);
   bool get_valve_value(int user_id, int device_id, int channel_id,
@@ -65,6 +67,10 @@ class ipc_client {
   bool action_copy(int user_id, int device_id, int channel_id,
                    int channel_group_id, int source_device_id,
                    int source_channel_id);
+  bool action_shut_partially(int user_id, int device_id, int channel_id,
+                             int channel_group_id, char percentage,
+                             bool percentage_as_delta, char tilt,
+                             bool tilt_as_delta);
   bool execute_scene(int user_id, int scene_id);
   bool interrupt_scene(int user_id, int scene_id);
   bool interrupt_and_execute_scene(int user_id, int scene_id);

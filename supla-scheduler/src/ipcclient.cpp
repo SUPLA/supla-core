@@ -44,6 +44,7 @@ const char cmd_get_char_value[] = "GET-CHAR-VALUE";
 const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE";
 const char cmd_get_valve_value[] = "GET-VALVE-VALUE";
 const char cmd_get_digiglass_value[] = "GET-DIGIGLASS-VALUE";
+const char cmd_get_fb_value[] = "GET-FACADE-BLIND-VALUE";
 
 const char cmd_set_char_value[] = "SET-CHAR-VALUE";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE";
@@ -51,6 +52,8 @@ const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE";
 const char cmd_set_cg_char_value[] = "SET-CG-CHAR-VALUE";
 const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE";
 const char cmd_set_digiglass_value[] = "SET-DIGIGLASS-VALUE";
+const char cmd_action_shut_partially[] = "ACTION-SHUT-PARTIALLY";
+const char cmd_action_cg_shut_partially[] = "ACTION-CG-SHUT-PARTIALLY";
 
 const char cmd_action_copy[] = "ACTION-COPY";
 const char cmd_action_cg_copy[] = "ACTION-CG-COPY";
@@ -202,6 +205,32 @@ bool ipc_client::get_char_value(int user_id, int device_id, int channel_id,
   return true;
 }
 
+bool ipc_client::get_fb_value(int user_id, int device_id, int channel_id,
+                              char *position, char *tilt) {
+  float angle = 0;
+  int _position = 0;
+  int _tilt = 0;
+  if (position == nullptr || tilt == nullptr ||
+      !get_value(cmd_get_fb_value, user_id, device_id, channel_id) ||
+      sscanf(&buffer[strnlen(ipc_result_value, 255)], "%i,%i,%f", &_position,
+             &_tilt, &angle) != 3)
+    return false;
+
+  if (_position >= 0 && _position <= 100) {
+    *position = _position;
+  } else {
+    *position = -1;
+  }
+
+  if (_tilt >= 0 && _tilt <= 100) {
+    *tilt = _tilt;
+  } else {
+    *tilt = -1;
+  }
+
+  return true;
+}
+
 bool ipc_client::get_rgbw_value(int user_id, int device_id, int channel_id,
                                 int *color, char *color_brightness,
                                 char *brightness) {
@@ -325,6 +354,29 @@ bool ipc_client::action_copy(int user_id, int device_id, int channel_id,
 
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
   // supla_log(LOG_DEBUG, "IPC %i %s", sfd, buffer);
+  return check_set_result();
+}
+
+bool ipc_client::action_shut_partially(int user_id, int device_id,
+                                       int channel_id, int channel_group_id,
+                                       char percentage,
+                                       bool percentage_as_delta, char tilt,
+                                       bool tilt_as_delta) {
+  if (!ipc_connect()) return false;
+
+  if (channel_group_id) {
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,%i\n",
+             cmd_action_cg_shut_partially, user_id, channel_group_id,
+             percentage, percentage_as_delta, tilt, tilt_as_delta);
+  } else {
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,%i,%i\n",
+             cmd_action_shut_partially, user_id, device_id, channel_id,
+             percentage, percentage_as_delta, tilt, tilt_as_delta);
+  }
+
+  // supla_log(LOG_DEBUG, "IPC %i %s", sfd, buffer);
+  send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
+
   return check_set_result();
 }
 

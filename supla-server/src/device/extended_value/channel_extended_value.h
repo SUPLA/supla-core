@@ -50,7 +50,7 @@ class supla_channel_extended_value {
   virtual size_t get_value_size(void);
   virtual bool is_differ(supla_channel_extended_value *value);
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
-  void get_value(char *buffer);
+  virtual void get_value(char *buffer);
   virtual std::map<std::string, std::string> get_replacement_map(void);
 };
 

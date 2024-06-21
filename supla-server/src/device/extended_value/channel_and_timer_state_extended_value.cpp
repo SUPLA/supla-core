@@ -101,6 +101,13 @@ bool supla_channel_and_timer_state_extended_value::get_raw_value(
   return false;
 }
 
+void supla_channel_and_timer_state_extended_value::get_value(char *buffer) {
+  channel.get_value(buffer);
+
+  memcpy(&buffer[channel.get_value_size()], get_value_ptr()->value,
+         supla_timer_state_extended_value::get_value_size());
+}
+
 // static
 bool supla_channel_and_timer_state_extended_value::is_ev_type_supported(
     char type) {
@@ -111,7 +118,7 @@ supla_channel_extended_value *
 supla_channel_and_timer_state_extended_value::copy(  // NOLINT
     void) {                                          // NOLINT
 
-  TChannelAndTimerState_ExtendedValue val;
+  TChannelAndTimerState_ExtendedValue val = {};
   get_raw_value(&val);
 
   supla_channel_and_timer_state_extended_value *result =

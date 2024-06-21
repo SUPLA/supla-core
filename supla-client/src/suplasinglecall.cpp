@@ -29,9 +29,11 @@ using std::function;
 #define RESPONSE_TIMEOUT_USEC 5000000
 
 supla_single_call::supla_single_call(
-    TCS_ClientAuthorizationDetails *auth_details, int protocol_version) {
+    TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
+    int conn_timeout_ms) {
   this->auth_details = *auth_details;
   this->protocol_version = protocol_version;
+  this->conn_timeout_ms = conn_timeout_ms;
   ssd = nullptr;
   srpc = nullptr;
   eh = nullptr;
@@ -95,7 +97,7 @@ int supla_single_call::connect(void) {
 
   ssd = ssocket_client_init(auth_details.ServerName, 2016, 1);
 
-  if (ssocket_client_connect(ssd, nullptr, &err)) {
+  if (ssocket_client_connect(ssd, nullptr, &err, conn_timeout_ms)) {
     eh = eh_init();
     eh_add_fd(eh, ssocket_get_fd(ssd));
 
@@ -283,21 +285,24 @@ int supla_single_call::get_channel_value(int channel_id,
 
 extern "C" _supla_int_t supla_single_call_execute_action(
     TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
-    TCS_Action *action) {
-  supla_single_call single_call(auth_details, protocol_version);
+    int conn_timeout_ms, TCS_Action *action) {
+  supla_single_call single_call(auth_details, protocol_version,
+                                conn_timeout_ms);
   return single_call.execute_action(action);
 }
 
 extern "C" _supla_int_t supla_single_call_register_pn_client_token(
     TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
-    TCS_PnClientToken *token) {
-  supla_single_call single_call(auth_details, protocol_version);
+    int conn_timeout_ms, TCS_PnClientToken *token) {
+  supla_single_call single_call(auth_details, protocol_version,
+                                conn_timeout_ms);
   return single_call.register_pn_client_token(token);
 }
 
 extern "C" _supla_int_t supla_single_call_get_channel_value(
     TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
-    int channel_id, TSC_GetChannelValueResult *vresult) {
-  supla_single_call single_call(auth_details, protocol_version);
+    int conn_timeout_ms, int channel_id, TSC_GetChannelValueResult *vresult) {
+  supla_single_call single_call(auth_details, protocol_version,
+                                conn_timeout_ms);
   return single_call.get_channel_value(channel_id, vresult);
 }
