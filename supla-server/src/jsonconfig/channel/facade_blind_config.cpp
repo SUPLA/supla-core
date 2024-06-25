@@ -114,10 +114,25 @@ bool facade_blind_config::get_config(TChannelConfig_FacadeBlind *config) {
     return result;
   }
 
-  if (roller_shutter_config::get_config(
-          &config->ClosingTimeMS, &config->OpeningTimeMS,
-          &config->MotorUpsideDown, &config->ButtonsUpsideDown,
-          &config->TimeMargin)) {
+  // Referring to the TChannelConfig_FacadeBlind structure via pointers on ARM
+  // processors results in application interruption (SIGBUS). Therefore, we use
+  // additional intermediate variables.
+
+  _supla_int_t closing_time_ms = 0;
+  _supla_int_t opening_time_ms = 0;
+  unsigned char motor_upside_down = 0;
+  unsigned char buttons_upside_down = 0;
+  signed char time_margin = 0;
+
+  if (roller_shutter_config::get_config(&closing_time_ms, &opening_time_ms,
+                                        &motor_upside_down,
+                                        &buttons_upside_down, &time_margin)) {
+    config->ClosingTimeMS = closing_time_ms;
+    config->OpeningTimeMS = opening_time_ms;
+    config->MotorUpsideDown = motor_upside_down;
+    config->ButtonsUpsideDown = buttons_upside_down;
+    config->TimeMargin = time_margin;
+
     result = true;
   }
 
