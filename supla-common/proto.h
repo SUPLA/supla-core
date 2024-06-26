@@ -561,14 +561,17 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_SOMEF 17
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
-#define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010     // ver. >= 17
-#define SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED 0x0020        // ver. >= 18
-#define SUPLA_DEVICE_FLAG_CALCFG_SET_TIME 0x0040           // ver. >= 21
-#define SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED 0x0080   // ver. >= 21
-#define SUPLA_DEVICE_FLAG_DEVICE_LOCKED 0x0100             // ver. >= 22
-#define SUPLA_DEVICE_FLAG_CALCFG_SUBDEVICE_PAIRING 0x0200  // ver. >= 25
-#define SUPLA_DEVICE_FLAG_CALCFG_IDENTIFY_DEVICE 0x0400    // ver. >= 25
-#define SUPLA_DEVICE_FLAG_CALCFG_RESET_DEVICE 0x0800       // ver. >= 25
+#define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010          // ver. >= 17
+#define SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED 0x0020             // ver. >= 18
+#define SUPLA_DEVICE_FLAG_CALCFG_SET_TIME 0x0040                // ver. >= 21
+#define SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED 0x0080        // ver. >= 21
+#define SUPLA_DEVICE_FLAG_DEVICE_LOCKED 0x0100                  // ver. >= 22
+#define SUPLA_DEVICE_FLAG_CALCFG_SUBDEVICE_PAIRING 0x0200       // ver. >= 25
+#define SUPLA_DEVICE_FLAG_CALCFG_IDENTIFY_DEVICE 0x0400         // ver. >= 25
+#define SUPLA_DEVICE_FLAG_CALCFG_RESET_DEVICE 0x0800            // ver. >= 25
+#define SUPLA_DEVICE_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION 0x1000  // ver. >= 25
+#define SUPLA_DEVICE_FLAG_BLOCK_ADDING_CHANNELS_AFTER_DELETION                 \
+  0x2000  // ver. >= 25
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
