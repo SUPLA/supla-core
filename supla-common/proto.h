@@ -119,7 +119,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 24
+#define SUPLA_PROTO_VERSION 25
 #define SUPLA_PROTO_VERSION_MIN 1
 
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO) || defined(SUPLA_DEVICE)
@@ -589,6 +589,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // type: TDeviceConfig_HomeScreenOffDelayType
 #define SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE \
   (1ULL << 7)  // v. >= 24
+// type: TDeviceConfig_PowerStatusLed
+#define SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED (1ULL << 8)  // v. >= 25
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
@@ -1073,7 +1075,6 @@ typedef struct {
   unsigned char channel_report
       [CHANNEL_REPORT_MAXSIZE];  // One byte per channel. The meaning of the
                                  // bits is determined by CHANNEL_REPORT_*.
-
 } TSD_SuplaRegisterDeviceResult_B;  // ver. >= 25
 
 typedef struct {
@@ -2719,6 +2720,13 @@ typedef struct {
   unsigned char StatusLedType;  // SUPLA_DEVCFG_STATUS_LED_
 } TDeviceConfig_StatusLed;      // v. >= 21
 
+#define SUPLA_DEVCFG_POWER_STATUS_LED_ENABLED 0
+#define SUPLA_DEVCFG_POWER_STATUS_LED_DISABLED 1
+
+typedef struct {
+  unsigned char PowerStatusLedType;  // SUPLA_DEVCFG_POWER_STATUS_LED_
+} TDeviceConfig_PowerStatusLed;      // v. >= 25
+
 typedef struct {
   unsigned char ScreenBrightness;  // 0-100%
   unsigned char Automatic;         // 0 - false; 1 - true
@@ -3057,6 +3065,35 @@ typedef struct {
 #define SUPLA_HVAC_SUBFUNCTION_HEAT 1
 #define SUPLA_HVAC_SUBFUNCTION_COOL 2
 
+// Readonly bit definitions for HVAC channel config
+#define SUPLA_HVAC_RO_PARAM_BIT_MAIN_THERMOMETER (1ULL << 0)
+#define SUPLA_HVAC_RO_PARAM_BIT_AUX_THERMOMETER (1ULL << 1)
+#define SUPLA_HVAC_RO_PARAM_BIT_BINARY_SENSOR (1ULL << 2)
+#define SUPLA_HVAC_RO_PARAM_BIT_AUX_THERMOMETER_TYPE (1ULL << 3)
+#define SUPLA_HVAC_RO_PARAM_BIT_ANTI_FREEZE_PROTECTION (1ULL << 4)
+#define SUPLA_HVAC_RO_PARAM_BIT_USED_ALGORITHM (1ULL << 5)
+#define SUPLA_HVAC_RO_PARAM_BIT_MIN_ON_TIME_S (1ULL << 6)
+#define SUPLA_HVAC_RO_PARAM_BIT_MIN_OFF_TIME_S (1ULL << 7)
+#define SUPLA_HVAC_RO_PARAM_BIT_OUTPUT_VALUE_ON_ERROR (1ULL << 8)
+#define SUPLA_HVAC_RO_PARAM_BIT_SUBFUNCTION (1ULL << 9)
+#define \
+  SUPLA_HVAC_RO_PARAM_BIT_TEMPERATURE_SETPOINT_CHANGE_SWITCH_TO_MANUAL_MODE \
+  (1ULL << 10)
+#define SUPLA_HVAC_RO_PARAM_BIT_AUX_MIN_MAX_SETPOINT_ENABLED (1ULL << 11)
+#define SUPLA_HAVC_RO_PARAM_BIT_USE_SEPARATE_HEAT_COOL_OUTPUTS (1ULL << 12)
+
+// Readonly bit definitions for temperatures structure
+#define SUPLA_HAVC_RO_PARAM_BIT_TEMPERATURE_FREEZE_PROTECTION (1ULL << 13)
+#define SUPLA_HAVC_RO_PARAM_BIT_TEMPERATURE_ECO (1ULL << 14)
+#define SUPLA_HAVC_RO_PARAM_BIT_TEMPERATURE_COMFORT (1ULL << 15)
+#define SUPLA_HAVC_RO_PARAM_BIT_TEMPERATURE_BOOST (1ULL << 16)
+#define SUPLA_HAVC_RO_PARAM_BIT_TEMPERATURE_HEAT_PROTECTION (1ULL << 17)
+#define SUPLA_HAVC_RO_PARAM_BIT_TEMPERATURE_HISTERESIS (1ULL << 18)
+#define SUPLA_HAVC_RO_PARAM_BIT_TEMPERATURE_BELOW_ALARM (1ULL << 19)
+#define SUPLA_HAVC_RO_PARAM_BIT_TEMPERATURE_ABOVE_ALARM (1ULL << 20)
+#define SUPLA_HAVC_RO_PARAM_BIT_TEMPERATURE_AUX_MIN_SETPOINT (1ULL << 21)
+#define SUPLA_HAVC_RO_PARAM_BIT_TEMPERATURE_AUX_MAX_SETPOINT (1ULL << 22)
+
 typedef struct {
   union {
     _supla_int_t MainThermometerChannelId;
@@ -3104,7 +3141,8 @@ typedef struct {
   // cool mode selection, or they can use separate outputs - one for heating
   // and one for cooling
   unsigned char UseSeparateHeatCoolOutputs;  // 0 - off (default), 1 - on
-  unsigned char Reserved[48];
+  unsigned _supla_int64_t ReadonlyParameters;  // SUPLA_HVAC_RO_PARAM_BIT_
+  unsigned char Reserved[40];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
 
