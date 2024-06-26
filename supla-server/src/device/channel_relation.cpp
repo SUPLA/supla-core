@@ -18,6 +18,8 @@
 
 #include "device/channel_relation.h"
 
+#include <cstddef>
+
 #include "distributedobjects/dobject_change_indicator.h"
 
 using std::vector;

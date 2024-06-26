@@ -273,6 +273,11 @@ void *ssocket_server_init(const char cert[], const char key[], int port,
       ssd = NULL;
     }
 
+    if (ssd) {
+        SSL_CTX_set_min_proto_version(ssd->ctx, TLS1_VERSION);
+        SSL_CTX_set_max_proto_version(ssd->ctx, TLS1_3_VERSION);
+    }
+
 #endif /*ifdef NOSSL*/
   }
 

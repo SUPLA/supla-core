@@ -20,6 +20,7 @@
 
 #include <sys/time.h>
 
+#include <cstddef>
 #include <list>
 
 class supla_http_throttling {

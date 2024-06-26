@@ -117,14 +117,45 @@ bool general_purpose_measurement_config::get_config(
   string unit_before_value, unit_after_value, default_unit_before_value,
       default_unit_after_value;
 
+  // Referring to the TChannelConfig_GeneralPurposeMeasurement structure via
+  // pointers on ARM processors results in application interruption (SIGBUS).
+  // Therefore, we use additional intermediate variables.
+
+  _supla_int_t value_divider = 0;
+  _supla_int_t value_multiplier = 0;
+  _supla_int64_t value_added = 0;
+  unsigned char value_precision = 0;
+  unsigned char no_space_before_value = 0;
+  unsigned char no_space_after_value = 0;
+  unsigned char keep_history = 0;
+  unsigned _supla_int16_t refresh_interval_ms = 0;
+  _supla_int_t default_value_divider = 0;
+  _supla_int_t default_value_multiplier = 0;
+  _supla_int64_t default_value_added = 0;
+  unsigned char default_value_precision = 0;
+
   result = general_purpose_base_config::get_config(
-      &config->ValueDivider, &config->ValueMultiplier, &config->ValueAdded,
-      &config->ValuePrecision, &unit_before_value, &unit_after_value,
-      &config->NoSpaceBeforeValue, &config->NoSpaceAfterValue,
-      &config->KeepHistory, &config->RefreshIntervalMs,
-      &config->DefaultValueDivider, &config->DefaultValueMultiplier,
-      &config->DefaultValueAdded, &config->DefaultValuePrecision,
-      &default_unit_before_value, &default_unit_after_value);
+      &value_divider, &value_multiplier, &value_added, &value_precision,
+      &unit_before_value, &unit_after_value, &no_space_before_value,
+      &no_space_after_value, &keep_history, &refresh_interval_ms,
+      &default_value_divider, &default_value_multiplier, &default_value_added,
+      &default_value_precision, &default_unit_before_value,
+      &default_unit_after_value);
+
+  if (result) {
+    config->ValueDivider = value_divider;
+    config->ValueMultiplier = value_multiplier;
+    config->ValueAdded = value_added;
+    config->ValuePrecision = value_precision;
+    config->NoSpaceBeforeValue = no_space_before_value;
+    config->NoSpaceAfterValue = no_space_after_value;
+    config->KeepHistory = keep_history;
+    config->RefreshIntervalMs = refresh_interval_ms;
+    config->DefaultValueDivider = default_value_divider;
+    config->DefaultValueMultiplier = default_value_multiplier;
+    config->DefaultValueAdded = default_value_added;
+    config->DefaultValuePrecision = default_value_precision;
+  }
 
   snprintf(config->UnitBeforeValue, sizeof(config->UnitBeforeValue), "%s",
            unit_before_value.c_str());

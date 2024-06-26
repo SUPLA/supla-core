@@ -1761,11 +1761,13 @@ Java_org_supla_android_lib_SuplaClient_scGetId(JNIEnv *env, jobject thiz,
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_org_supla_android_lib_SuplaClient_scConnect(JNIEnv *env, jobject thiz,
-                                                 jlong _asc) {
+                                                 jlong _asc,
+                                                 jint conn_timeout_ms) {
   void *supla_client = supla_client_ptr(_asc);
 
   if (supla_client)
-    return supla_client_connect(supla_client) == 1 ? JNI_TRUE : JNI_FALSE;
+    return supla_client_connect(supla_client, conn_timeout_ms) == 1 ? JNI_TRUE
+                                                                    : JNI_FALSE;
 
   return JNI_FALSE;
 };
