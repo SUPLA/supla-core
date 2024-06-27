@@ -1548,7 +1548,7 @@ typedef struct {
 typedef struct {
   char Brightness;       // -1 == Ignore
   char ColorBrightness;  // -1 == Ignore
-  unsigned int Color;    // 0 == Ignore
+  unsigned _supla_int_t Color;    // 0 == Ignore
   char ColorRandom;
   char OnOff;
   char Reserved[8];
@@ -2320,7 +2320,7 @@ typedef struct {
   TThermostatValueGroup Group[4];
 } TThermostat_ScheduleCfg;  // v. >= 11
 
-// Tempeature definitions for Heatpol thermostat
+// Temperature definitions for Heatpol thermostat
 // TThermostatTemperatureCfg
 #define TEMPERATURE_INDEX1 0x0001
 #define TEMPERATURE_INDEX2 0x0002
@@ -2340,7 +2340,7 @@ typedef struct {
   unsigned _supla_int16_t Temperature[10];
 } TThermostatTemperatureCfg;
 
-// Tempeature definitions for HVAC
+// Temperature definitions for HVAC
 // THVACTemperatureCfg
 // Below values are settable by user in UI
 // Temperature below which heating will be enabled as a freeze protection
@@ -2627,11 +2627,11 @@ typedef struct {
 } TSC_SetRegistrationEnabledResult;  // v. >= 12
 
 typedef struct {
-  int DeviceID;
+  _supla_int_t DeviceID;
 } TCS_DeviceReconnectRequest;  // v. >= 12
 
 typedef struct {
-  int DeviceID;
+  _supla_int_t DeviceID;
   unsigned char ResultCode;
 } TSC_DeviceReconnectRequestResult;  // v. >= 12
 
@@ -3068,32 +3068,56 @@ typedef struct {
 #define SUPLA_HVAC_SUBFUNCTION_HEAT 1
 #define SUPLA_HVAC_SUBFUNCTION_COOL 2
 
-// Readonly bit definitions for HVAC channel config
-#define SUPLA_HVAC_RO_PARAM_BIT_MAIN_THERMOMETER (1ULL << 0)
-#define SUPLA_HVAC_RO_PARAM_BIT_AUX_THERMOMETER (1ULL << 1)
-#define SUPLA_HVAC_RO_PARAM_BIT_BINARY_SENSOR (1ULL << 2)
-#define SUPLA_HVAC_RO_PARAM_BIT_AUX_THERMOMETER_TYPE (1ULL << 3)
-#define SUPLA_HVAC_RO_PARAM_BIT_ANTI_FREEZE_PROTECTION (1ULL << 4)
-#define SUPLA_HVAC_RO_PARAM_BIT_USED_ALGORITHM (1ULL << 5)
-#define SUPLA_HVAC_RO_PARAM_BIT_MIN_ON_TIME_S (1ULL << 6)
-#define SUPLA_HVAC_RO_PARAM_BIT_MIN_OFF_TIME_S (1ULL << 7)
-#define SUPLA_HVAC_RO_PARAM_BIT_OUTPUT_VALUE_ON_ERROR (1ULL << 8)
-#define SUPLA_HVAC_RO_PARAM_BIT_SUBFUNCTION (1ULL << 9)
-#define SUPLA_HVAC_RO_PARAM_BIT_TEMPERATURE_SETPOINT_CHANGE (1ULL << 10)
-#define SUPLA_HVAC_RO_PARAM_BIT_AUX_MIN_MAX_SETPOINT_ENABLED (1ULL << 11)
-#define SUPLA_HVAC_RO_PARAM_BIT_USE_SEPARATE_HEAT_COOL_OUTPUTS (1ULL << 12)
-
-// Readonly bit definitions for temperatures structure
-#define SUPLA_HVAC_RO_PARAM_BIT_TEMPERATURE_FREEZE_PROTECTION (1ULL << 13)
-#define SUPLA_HVAC_RO_PARAM_BIT_TEMPERATURE_ECO (1ULL << 14)
-#define SUPLA_HVAC_RO_PARAM_BIT_TEMPERATURE_COMFORT (1ULL << 15)
-#define SUPLA_HVAC_RO_PARAM_BIT_TEMPERATURE_BOOST (1ULL << 16)
-#define SUPLA_HVAC_RO_PARAM_BIT_TEMPERATURE_HEAT_PROTECTION (1ULL << 17)
-#define SUPLA_HVAC_RO_PARAM_BIT_TEMPERATURE_HISTERESIS (1ULL << 18)
-#define SUPLA_HVAC_RO_PARAM_BIT_TEMPERATURE_BELOW_ALARM (1ULL << 19)
-#define SUPLA_HVAC_RO_PARAM_BIT_TEMPERATURE_ABOVE_ALARM (1ULL << 20)
-#define SUPLA_HVAC_RO_PARAM_BIT_TEMPERATURE_AUX_MIN_SETPOINT (1ULL << 21)
-#define SUPLA_HVAC_RO_PARAM_BIT_TEMPERATURE_AUX_MAX_SETPOINT (1ULL << 22)
+typedef struct {
+  unsigned _supla_int_t MainThermometerChannelNoReadonly : 1;
+  unsigned _supla_int_t MainThermometerChannelNoHidden : 1;
+  unsigned _supla_int_t AuxThermometerChannelNoReadonly : 1;
+  unsigned _supla_int_t AuxThermometerChannelNoHidden : 1;
+  unsigned _supla_int_t BinarySensorChannelNoReadonly : 1;
+  unsigned _supla_int_t BinarySensorChannelNoHidden : 1;
+  unsigned _supla_int_t AuxThermometerTypeReadonly : 1;
+  unsigned _supla_int_t AuxThermometerTypeHidden : 1;
+  unsigned _supla_int_t AntiFreezeAndOverheatProtectionEnabledReadonly : 1;
+  unsigned _supla_int_t AntiFreezeAndOverheatProtectionEnabledHidden : 1;
+  unsigned _supla_int_t UsedAlgorithmReadonly : 1;
+  unsigned _supla_int_t UsedAlgorithmHidden : 1;
+  unsigned _supla_int_t MinOnTimeSReadonly : 1;
+  unsigned _supla_int_t MinOnTimeSHidden : 1;
+  unsigned _supla_int_t MinOffTimeSReadonly : 1;
+  unsigned _supla_int_t MinOffTimeSHidden : 1;
+  unsigned _supla_int_t OutputValueOnErrorReadonly : 1;
+  unsigned _supla_int_t OutputValueOnErrorHidden : 1;
+  unsigned _supla_int_t SubfunctionReadonly : 1;
+  unsigned _supla_int_t SubfunctionHidden : 1;
+  unsigned _supla_int_t
+      TemperatureSetpointChangeSwitchesToManualModeReadonly : 1;
+  unsigned _supla_int_t TemperatureSetpointChangeSwitchesToManualModeHidden : 1;
+  unsigned _supla_int_t AuxMinMaxSetpointEnabledReadonly : 1;
+  unsigned _supla_int_t AuxMinMaxSetpointEnabledHidden : 1;
+  unsigned _supla_int_t UseSeparateHeatCoolOutputsReadonly : 1;
+  unsigned _supla_int_t UseSeparateHeatCoolOutputsHidden : 1;
+  unsigned _supla_int_t TemperaturesFreezeProtectionReadonly : 1;
+  unsigned _supla_int_t TemperaturesFreezeProtectionHidden : 1;
+  unsigned _supla_int_t TemperaturesEcoReadonly : 1;
+  unsigned _supla_int_t TemperaturesEcoHidden : 1;
+  unsigned _supla_int_t TemperaturesComfortReadonly : 1;
+  unsigned _supla_int_t TemperaturesComfortHidden : 1;
+  unsigned _supla_int_t TemperaturesBoostReadonly : 1;
+  unsigned _supla_int_t TemperaturesBoostHidden : 1;
+  unsigned _supla_int_t TemperaturesHeatProtectionReadonly : 1;
+  unsigned _supla_int_t TemperaturesHeatProtectionHidden : 1;
+  unsigned _supla_int_t TemperaturesHisteresisReadonly : 1;
+  unsigned _supla_int_t TemperaturesHisteresisHidden : 1;
+  unsigned _supla_int_t TemperaturesBelowAlarmReadonly : 1;
+  unsigned _supla_int_t TemperaturesBelowAlarmHidden : 1;
+  unsigned _supla_int_t TemperaturesAboveAlarmReadonly : 1;
+  unsigned _supla_int_t TemperaturesAboveAlarmHidden : 1;
+  unsigned _supla_int_t TemperaturesAuxMinSetpointReadonly : 1;
+  unsigned _supla_int_t TemperaturesAuxMinSetpointHidden : 1;
+  unsigned _supla_int_t TemperaturesAuxMaxSetpointReadonly : 1;
+  unsigned _supla_int_t TemperaturesAuxMaxSetpointHidden : 1;
+  unsigned _supla_int_t Reserved : 18;
+} HvacParameterFlags;
 
 typedef struct {
   union {
@@ -3106,15 +3130,15 @@ typedef struct {
   union {
     _supla_int_t AuxThermometerChannelId;
     unsigned char
-        AuxThermometerChannelNo;  // If the channel number points to itself, it
-                                  // means that the aux thermometer is not set.
+      AuxThermometerChannelNo;  // If the channel number points to itself, it
+                                // means that the aux thermometer is not set.
   };
 
   union {
     _supla_int_t BinarySensorChannelId;
     unsigned char
-        BinarySensorChannelNo;  // If the channel number points to itself, it
-                                // means that the binary sensor is not set.
+      BinarySensorChannelNo;  // If the channel number points to itself, it
+                              // means that the binary sensor is not set.
   };
 
   // SUPLA_HVAC_AUX_THERMOMETER_TYPE_
@@ -3142,8 +3166,8 @@ typedef struct {
   // cool mode selection, or they can use separate outputs - one for heating
   // and one for cooling
   unsigned char UseSeparateHeatCoolOutputs;  // 0 - off (default), 1 - on
-  unsigned _supla_int64_t ReadonlyParameters;  // SUPLA_HVAC_RO_PARAM_BIT_
-  unsigned char Reserved[40];
+  HvacParameterFlags ParameterFlags;
+  unsigned char Reserved[48 - sizeof(HvacParameterFlags)];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
 
