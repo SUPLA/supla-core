@@ -61,6 +61,7 @@
 #include "ipc/on_state_webhook_changed_command.h"
 #include "ipc/on_user_settings_changed_command.h"
 #include "ipc/on_vbt_changed_command.h"
+#include "ipc/pair_subdevice_command.h"
 #include "ipc/recalibrate_command.h"
 #include "ipc/reset_counters_command.h"
 #include "ipc/send_push_command.h"
@@ -148,6 +149,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
       new supla_action_command(socket_adapter, ACTION_HVAC_SET_TEMPERATURES));
   add_command(new supla_reset_counters_command(socket_adapter));
   add_command(new supla_recalibrate_command(socket_adapter));
+  add_command(new supla_pair_subdevice_command(socket_adapter));
   add_command(new supla_get_status_command(socket_adapter));
   add_command(new supla_enter_cfg_mode_command(socket_adapter));
   add_command(new supla_execute_scene_command(socket_adapter));

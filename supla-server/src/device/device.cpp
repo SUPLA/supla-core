@@ -190,3 +190,19 @@ void supla_device::send_config_to_device(void) {
     }
   }
 }
+
+bool supla_device::pair_subdevice(const supla_caller &caller) {
+  if (get_connection() &&
+      (get_flags() & SUPLA_DEVICE_FLAG_CALCFG_SUBDEVICE_PAIRING)) {
+    TSD_DeviceCalCfgRequest request = {};
+
+    request.Command = SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING;
+    request.SenderID = caller.convert_to_sender_id();
+
+    get_connection()->get_srpc_adapter()->sd_async_device_calcfg_request(
+        &request);
+    return true;
+  }
+
+  return false;
+}
