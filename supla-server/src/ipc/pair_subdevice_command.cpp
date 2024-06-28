@@ -33,7 +33,7 @@ bool supla_pair_subdevice_command::pair_subdevice(int user_id, int device_id) {
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, 0);
   if (device != nullptr) {
-    return device->pair_subdevice(get_caller());
+    return device->pair_subdevice(get_caller(), true);
   }
   return false;
 }

@@ -63,7 +63,7 @@ class supla_device : public supla_abstract_connection_object {
 
   bool enter_cfg_mode(void);
   void send_config_to_device(void);
-  bool pair_subdevice(const supla_caller &caller);
+  bool pair_subdevice(const supla_caller &caller, bool superuser_authorized);
 };
 
 #endif /* DEVICE_H_ */
