@@ -196,6 +196,7 @@ bool supla_device::pair_subdevice(const supla_caller &caller) {
       (get_flags() & SUPLA_DEVICE_FLAG_CALCFG_SUBDEVICE_PAIRING)) {
     TSD_DeviceCalCfgRequest request = {};
 
+    request.ChannelNumber = -1;
     request.Command = SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING;
     request.SenderID = caller.convert_to_sender_id();
 
