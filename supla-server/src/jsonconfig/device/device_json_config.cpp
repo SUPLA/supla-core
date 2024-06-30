@@ -30,7 +30,8 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
     {SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE, "userInterface"},
     {SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC, "automaticTimeSync"},
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY, "offDelay"},
-    {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT, "content"}};
+    {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT, "content"},
+    {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE, "offDelayType"}};
 
 const map<unsigned _supla_int16_t, string>
     device_json_config::hone_screen_content_map = {
@@ -196,7 +197,8 @@ cJSON *device_json_config::get_root(bool create,
   cJSON *root = get_user_root();
 
   if (field != SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY &&
-      field != SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT) {
+      field != SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT &&
+      field != SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE) {
     return root;
   }
 
@@ -219,6 +221,21 @@ void device_json_config::set_home_screen_off_delay(
         get_root(true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY),
         field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY),
         cJSON_Number, true, nullptr, nullptr, delay->HomeScreenOffDelayS);
+  }
+}
+
+void device_json_config::set_home_screen_off_delay_type(
+    TDeviceConfig_HomeScreenOffDelayType *type) {
+  if (type) {
+    set_item_value(
+        get_root(true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE),
+        field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE),
+        cJSON_String, true, nullptr,
+        type->HomeScreenOffDelayType ==
+                SUPLA_DEVCFG_HOME_SCREEN_OFF_DELAY_TYPE_ENABLED_WHEN_DARK
+            ? "ENABLED_WHEN_DARK"
+            : "ALWAYS_ENABLED",
+        0);
   }
 }
 
@@ -323,6 +340,12 @@ void device_json_config::set_config(TSDS_SetDeviceConfig *config) {
           if (left >= (size = sizeof(TDeviceConfig_HomeScreenContent))) {
             set_home_screen_content(
                 static_cast<TDeviceConfig_HomeScreenContent *>(ptr));
+          }
+          break;
+        case SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE:
+          if (left >= (size = sizeof(TDeviceConfig_HomeScreenOffDelayType))) {
+            set_home_screen_off_delay_type(
+                static_cast<TDeviceConfig_HomeScreenOffDelayType *>(ptr));
           }
           break;
       }
@@ -454,6 +477,29 @@ bool device_json_config::get_home_screen_off_delay(
   return false;
 }
 
+bool device_json_config::get_home_screen_off_delay_type(
+    TDeviceConfig_HomeScreenOffDelayType *type) {
+  if (type) {
+    string str_value;
+
+    if (get_string(
+            get_root(false,
+                     SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE),
+            field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE)
+                .c_str(),
+            &str_value)) {
+      type->HomeScreenOffDelayType =
+          str_value == "ENABLED_WHEN_DARK"
+              ? SUPLA_DEVCFG_HOME_SCREEN_OFF_DELAY_TYPE_ENABLED_WHEN_DARK
+              : SUPLA_DEVCFG_HOME_SCREEN_OFF_DELAY_TYPE_ALWAYS_ENABLED;
+
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool device_json_config::get_home_screen_content(
     TDeviceConfig_HomeScreenContent *content) {
   std::string str_value;
@@ -569,6 +615,12 @@ void device_json_config::get_config(TSDS_SetDeviceConfig *config,
               left >= (size = sizeof(TDeviceConfig_HomeScreenContent)) &&
               get_home_screen_content(
                   static_cast<TDeviceConfig_HomeScreenContent *>(ptr));
+          break;
+        case SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE:
+          field_set =
+              left >= (size = sizeof(TDeviceConfig_HomeScreenOffDelayType)) &&
+              get_home_screen_off_delay_type(
+                  static_cast<TDeviceConfig_HomeScreenOffDelayType *>(ptr));
           break;
       }
 

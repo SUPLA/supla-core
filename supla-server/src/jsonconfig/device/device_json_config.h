@@ -50,6 +50,8 @@ class device_json_config : public supla_json_config {
   void set_automatic_time_sync(TDeviceConfig_AutomaticTimeSync *time_sync);
   cJSON *get_root(bool create, unsigned _supla_int64_t field);
   void set_home_screen_off_delay(TDeviceConfig_HomeScreenOffDelay *delay);
+  void set_home_screen_off_delay_type(
+      TDeviceConfig_HomeScreenOffDelayType *type);
   void set_home_screen_content(TDeviceConfig_HomeScreenContent *content);
   void remove_empty_sub_roots();
 
@@ -74,6 +76,8 @@ class device_json_config : public supla_json_config {
   bool get_home_screen_off_delay(TDeviceConfig_HomeScreenOffDelay *delay);
   bool get_status_led(TDeviceConfig_StatusLed *status_led);
   bool get_home_screen_content(TDeviceConfig_HomeScreenContent *content);
+  bool get_home_screen_off_delay_type(
+      TDeviceConfig_HomeScreenOffDelayType *type);
 };
 
 #endif /* DEVICE_JSON_CONFIG_H_ */
