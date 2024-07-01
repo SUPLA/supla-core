@@ -2129,13 +2129,13 @@ typedef struct {
   unsigned _supla_int16_t LightSourceLifespan;  // 0 - 65535 hours
 } TCalCfg_LightSourceLifespan;
 
-#define SUPLA_CALCFG_SUBDEVICE_NAME_MAXSIZE 128
+#define SUPLA_CALCFG_SUBDEVICE_NAME_MAXSIZE 120
 
 // Subdevice Pairing result is send in TDS_DeviceCalCfgResult. Possible values:
 // SUPLA_CALCFG_RESULT_FALSE - procedure was not started, error
 // SUPLA_CALCFG_RESULT_TRUE - procedure was started successfully
 // SUPLA_CALCFG_RESULT_DONE - procedure is finished
-// SUPLA_CALCFG_RESULT_IN_PROGRESS - pairing procedure wasn't started, becaue
+// SUPLA_CALCFG_RESULT_IN_PROGRESS - pairing procedure wasn't started, because
 //   another procedure is in progress
 // SUPLA_CALCFG_RESULT_UNAUTHORIZED - unauthorized
 // In all above cases, TCalCfg_SubdevicePairingResult is included in
@@ -2144,9 +2144,21 @@ typedef struct {
 // Name field will be included when result is SUPLA_CALCFG_RESULT_DONE and
 // when new subdevice was successfully paired. When DONE is received with
 // empty name, it means that subdevice was not paired
+
+#define SUPLA_CALCFG_PAIRINGRESULT_PROCEDURE_STARTED 0
+#define SUPLA_CALCFG_PAIRINGRESULT_ONGOING 1
+#define SUPLA_CALCFG_PAIRINGRESULT_NO_NEW_DEVICE_FOUND 2
+#define SUPLA_CALCFG_PAIRINGRESULT_SUCCESS 3
+#define SUPLA_CALCFG_PAIRINGRESULT_DEVICE_NOT_SUPPORTED 4
+#define SUPLA_CALCFG_PAIRINGRESULT_CHANNEL_LIMIT_EXCEEDED 5
+#define SUPLA_CALCFG_PAIRINGRESULT_NOT_STARTED_NOT_READY 6
+#define SUPLA_CALCFG_PAIRINGRESULT_NOT_STARTED_BUSY 7
+
 typedef struct {
   unsigned _supla_int16_t
       ElapsedTimeSec;      // Time in seconds since procedure was started
+  unsigned _supla_int16_t MaximumDurationSec;  // Time in seconds
+  unsigned char PairingResult;    // SUPLA_CALCFG_PAIRINGRESULT_
   unsigned char NameSize;  // including the terminating null byte ('\0')
   char Name[SUPLA_CALCFG_SUBDEVICE_NAME_MAXSIZE];  // UTF8. Last variable in
                                                    // struct!
