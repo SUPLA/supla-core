@@ -2135,7 +2135,7 @@ typedef struct {
 // SUPLA_CALCFG_RESULT_FALSE - procedure was not started, error
 // SUPLA_CALCFG_RESULT_TRUE - procedure was started successfully
 // SUPLA_CALCFG_RESULT_DONE - procedure is finished
-// SUPLA_CALCFG_RESULT_IN_PROGRESS - pairing procedure wasn't started, becasue
+// SUPLA_CALCFG_RESULT_IN_PROGRESS - pairing procedure wasn't started, because
 //   another procedure is in progress
 // SUPLA_CALCFG_RESULT_UNAUTHORIZED - unauthorized
 // In all above cases, TCalCfg_SubdevicePairingResult is included in
