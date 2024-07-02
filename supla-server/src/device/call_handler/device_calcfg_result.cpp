@@ -22,9 +22,12 @@
 
 #include "client.h"
 #include "device.h"
+#include "device/device_dao.h"
+#include "json/cJSON.h"
 #include "user.h"
 
 using std::shared_ptr;
+using std::string;
 
 supla_ch_device_calcfg_result::supla_ch_device_calcfg_result(void)
     : supla_abstract_device_srpc_call_handler() {}
@@ -33,6 +36,17 @@ supla_ch_device_calcfg_result::~supla_ch_device_calcfg_result() {}
 
 bool supla_ch_device_calcfg_result::can_handle_call(unsigned int call_id) {
   return call_id == SUPLA_DS_CALL_DEVICE_CALCFG_RESULT;
+}
+
+void supla_ch_device_calcfg_result::get_time_string(char* buffer,
+                                                    size_t buffer_size,
+                                                    int inc_seconds) {
+  std::time_t now = std::time(nullptr);
+  now += inc_seconds;
+  std::tm utc_time;
+  gmtime_r(&now, &utc_time);
+  std::strftime(buffer, buffer_size, "%Y-%m-%dT%H:%M:%SZ",
+                &utc_time);  // ISO 8601 UTC
 }
 
 void supla_ch_device_calcfg_result::handle_call(
@@ -75,6 +89,105 @@ void supla_ch_device_calcfg_result::handle_call(
         }
         break;
     }
+  }
+
+  cJSON* json = cJSON_CreateObject();
+  char buffer[25] = {};
+
+  get_time_string(buffer, sizeof(buffer), 0);
+  cJSON_AddStringToObject(json, "time", buffer);
+
+  if (rd->data.ds_device_calcfg_result->Command ==
+      SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING) {
+    string result;
+    switch (rd->data.ds_device_calcfg_result->Result) {
+      case SUPLA_CALCFG_RESULT_NOT_SUPPORTED:
+        result = "NOT_SUPPORTED";
+        break;
+      case SUPLA_CALCFG_RESULT_UNAUTHORIZED:
+        result = "UNAUTHORIZED";
+        break;
+      case SUPLA_CALCFG_RESULT_TRUE:
+        break;
+      default:
+        result = "CMD_RESULT_";
+        result.append(std::to_string(rd->data.ds_device_calcfg_result->Result));
+        break;
+    }
+
+    if (rd->data.ds_device_calcfg_result->Result == SUPLA_CALCFG_RESULT_TRUE &&
+        rd->data.ds_device_calcfg_result->DataSize >=
+            sizeof(TCalCfg_SubdevicePairingResult) -
+                SUPLA_CALCFG_SUBDEVICE_NAME_MAXSIZE &&
+        rd->data.ds_device_calcfg_result->DataSize <=
+            sizeof(TCalCfg_SubdevicePairingResult)) {
+      TCalCfg_SubdevicePairingResult* pairing_result =
+          (TCalCfg_SubdevicePairingResult*)
+              rd->data.ds_device_calcfg_result->Data;
+
+      int name_size = pairing_result->NameSize;
+      if (name_size > SUPLA_CALCFG_SUBDEVICE_NAME_MAXSIZE) {
+        name_size = SUPLA_CALCFG_SUBDEVICE_NAME_MAXSIZE;
+      }
+
+      if (name_size < 1) {
+        name_size = 1;
+      }
+
+      pairing_result->Name[name_size - 1] = 0;
+      cJSON_AddStringToObject(json, "name", pairing_result->Name);
+
+      get_time_string(buffer, sizeof(buffer),
+                      pairing_result->ElapsedTimeSec * -1);
+      cJSON_AddStringToObject(json, "startedAt", buffer);
+
+      get_time_string(
+          buffer, sizeof(buffer),
+          pairing_result->MaximumDurationSec - pairing_result->ElapsedTimeSec);
+
+      cJSON_AddStringToObject(json, "timeoutAt", buffer);
+
+      switch (pairing_result->PairingResult) {
+        case SUPLA_CALCFG_PAIRINGRESULT_PROCEDURE_STARTED:
+          result = "PROCEDURE_STARTED";
+          break;
+        case SUPLA_CALCFG_PAIRINGRESULT_ONGOING:
+          result = "ONGOING";
+          break;
+        case SUPLA_CALCFG_PAIRINGRESULT_NO_NEW_DEVICE_FOUND:
+          result = "NO_NEW_DEVICE_FOUND";
+          break;
+        case SUPLA_CALCFG_PAIRINGRESULT_SUCCESS:
+          result = "SUCCESS";
+          break;
+        case SUPLA_CALCFG_PAIRINGRESULT_DEVICE_NOT_SUPPORTED:
+          result = "NOT_SUPPORTED";
+          break;
+        case SUPLA_CALCFG_PAIRINGRESULT_RESOURCES_LIMIT_EXCEEDED:
+          result = "RESOURCES_LIMIT_EXCEEDED";
+          break;
+        case SUPLA_CALCFG_PAIRINGRESULT_NOT_STARTED_NOT_READY:
+          result = "NOT_STARTED_NOT_READY";
+          break;
+        case SUPLA_CALCFG_PAIRINGRESULT_NOT_STARTED_BUSY:
+          result = "NOT_STARTED_BUSY";
+          break;
+        default:
+          result = "RAIRING_RESULT_";
+          result.append(std::to_string(pairing_result->PairingResult));
+          break;
+      }
+    }
+
+    cJSON_AddStringToObject(json, "result", result.c_str());
+    char* json_str = cJSON_PrintUnformatted(json);
+    cJSON_Delete(json);
+
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+    dao.update_device_pairing_result(device->get_id(), json_str);
+
+    free(json_str);
   }
 
   shared_ptr<supla_client> client = device->get_user()->get_clients()->get(

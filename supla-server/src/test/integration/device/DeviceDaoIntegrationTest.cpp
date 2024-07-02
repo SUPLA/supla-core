@@ -362,4 +362,66 @@ TEST_F(DeviceDaoIntegrationTest, deviceLimit) {
   EXPECT_EQ(dao->get_device_limit_left(2), 89);
 }
 
+TEST_F(DeviceDaoIntegrationTest, updateChannelConflictDetails) {
+  string result = "";
+
+  sqlQuery("SELECT conflict_details FROM supla_dev_channel WHERE id = 311",
+           &result);
+
+  EXPECT_EQ(result, "conflict_details\nNULL\n");
+
+  char details[] = "{type=\"10\"}";
+
+  dao->update_channel_conflict_details(146, 3, details);
+
+  result = "";
+  sqlQuery("SELECT conflict_details FROM supla_dev_channel WHERE id = 311",
+           &result);
+
+  EXPECT_EQ(result, "conflict_details\n{type=\"10\"}\n");
+
+  result = "";
+  sqlQuery(
+      "SELECT COUNT(*) c FROM supla_dev_channel WHERE conflict_details IS NOT "
+      "NULL",
+      &result);
+
+  EXPECT_EQ(result, "c\n1\n");
+}
+
+TEST_F(DeviceDaoIntegrationTest, updateDevicePairingResult) {
+  string result = "";
+
+  sqlQuery("SELECT pairing_result FROM supla_iodevice WHERE id = 146", &result);
+
+  EXPECT_EQ(result, "pairing_result\nNULL\n");
+
+  char pairing_result[] = "{result=\"SUCCESS\"}";
+
+  dao->update_device_pairing_result(146, pairing_result);
+
+  result = "";
+  sqlQuery("SELECT pairing_result FROM supla_iodevice WHERE id = 146", &result);
+
+  EXPECT_EQ(result, "pairing_result\n{result=\"SUCCESS\"}\n");
+
+  result = "";
+  sqlQuery(
+      "SELECT COUNT(*) c FROM supla_iodevice WHERE pairing_result IS NOT "
+      "NULL",
+      &result);
+
+  EXPECT_EQ(result, "c\n1\n");
+
+  dao->update_device_pairing_result(146, nullptr);
+
+  result = "";
+  sqlQuery(
+      "SELECT COUNT(*) c FROM supla_iodevice WHERE pairing_result IS NOT "
+      "NULL",
+      &result);
+
+  EXPECT_EQ(result, "c\n0\n");
+}
+
 } /* namespace testing */

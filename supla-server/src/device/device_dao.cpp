@@ -1578,3 +1578,38 @@ void supla_device_dao::update_channel_conflict_details(int device_id,
     dba->disconnect();
   }
 }
+
+void supla_device_dao::update_device_pairing_result(int device_id,
+                                                    char *pairing_result) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  MYSQL_STMT *stmt = nullptr;
+  MYSQL_BIND pbind[2] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&device_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_STRING;
+
+  my_bool is_null = pairing_result == nullptr;
+  pbind[1].is_null = &is_null;
+
+  if (!is_null) {
+    pbind[1].buffer = pairing_result;
+    pbind[1].buffer_length = strnlen(pairing_result, 512);
+  }
+
+  const char sql[] = "CALL `supla_update_device_pairing_result`(?, ?)";
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+}
