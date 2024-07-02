@@ -19,6 +19,7 @@
 #include "device/call_handler/device_calcfg_result.h"
 
 #include <memory>
+#include <string>
 
 #include "client.h"
 #include "device.h"
