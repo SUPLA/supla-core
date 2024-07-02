@@ -2132,25 +2132,17 @@ typedef struct {
 #define SUPLA_CALCFG_SUBDEVICE_NAME_MAXSIZE 120
 
 // Subdevice Pairing result is send in TDS_DeviceCalCfgResult. Possible values:
-// SUPLA_CALCFG_RESULT_FALSE - procedure was not started, error
-// SUPLA_CALCFG_RESULT_TRUE - procedure was started successfully
-// SUPLA_CALCFG_RESULT_DONE - procedure is finished
-// SUPLA_CALCFG_RESULT_IN_PROGRESS - pairing procedure wasn't started, because
-//   another procedure is in progress
+// SUPLA_CALCFG_RESULT_TRUE - paring result/status is in Data
 // SUPLA_CALCFG_RESULT_UNAUTHORIZED - unauthorized
-// In all above cases, TCalCfg_SubdevicePairingResult is included in
-// TDS_DeviceCalCfgResult. ElapsedTimeSec will contain time in seconds since
-// current (or other) pairing procedure was started
-// Name field will be included when result is SUPLA_CALCFG_RESULT_DONE and
-// when new subdevice was successfully paired. When DONE is received with
-// empty name, it means that subdevice was not paired
-
+// SUPLA_CALCFG_RESULT_NOT_SUPPORTED - not supported
+// Only in case of TRUE, TCalCfg_SubdevicePairingResult is included in
+// TDS_DeviceCalCfgResult.
 #define SUPLA_CALCFG_PAIRINGRESULT_PROCEDURE_STARTED 0
 #define SUPLA_CALCFG_PAIRINGRESULT_ONGOING 1
 #define SUPLA_CALCFG_PAIRINGRESULT_NO_NEW_DEVICE_FOUND 2
 #define SUPLA_CALCFG_PAIRINGRESULT_SUCCESS 3
 #define SUPLA_CALCFG_PAIRINGRESULT_DEVICE_NOT_SUPPORTED 4
-#define SUPLA_CALCFG_PAIRINGRESULT_CHANNEL_LIMIT_EXCEEDED 5
+#define SUPLA_CALCFG_PAIRINGRESULT_RESOURCES_LIMIT_EXCEEDED 5
 #define SUPLA_CALCFG_PAIRINGRESULT_NOT_STARTED_NOT_READY 6
 #define SUPLA_CALCFG_PAIRINGRESULT_NOT_STARTED_BUSY 7
 
