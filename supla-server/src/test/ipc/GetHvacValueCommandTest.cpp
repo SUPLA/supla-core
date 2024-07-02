@@ -89,6 +89,19 @@ TEST_F(GetHvacValueCommandTest, getHvacValueWithoutHumidity) {
                         "VALUE:1,3,12345,14567,3,123,-100\n");
 }
 
+TEST_F(GetHvacValueCommandTest, isOn) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue *)raw_value)->IsOn = 55;
+
+  supla_channel_hvac_value_with_temphum *hvac =
+      new supla_channel_hvac_value_with_temphum(raw_value);
+
+  EXPECT_CALL(*cmd, get_hvac_value(10, 20, 30)).WillOnce(Return(hvac));
+
+  commandProcessingTest("GET-HVAC-VALUE:10,20,30\n",
+                        "VALUE:55,0,0,0,0,-27300,-100\n");
+}
+
 TEST_F(GetHvacValueCommandTest, getHvacValueWithFilure) {
   supla_channel_hvac_value_with_temphum *hvac = nullptr;
   EXPECT_CALL(*cmd, get_hvac_value).WillOnce(Return(hvac));
