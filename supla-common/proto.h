@@ -485,6 +485,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_CURTAIN 930                       // ver. >= 24
 #define SUPLA_CHANNELFNC_VERTICAL_BLIND 940                // ver. >= 24
 #define SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR 950            // ver. >= 24
+#define SUPLA_CHANNELFNC_PUMPSWITCH 960                    // ver. >= 25
+#define SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH 970        // ver. >= 25
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -512,6 +514,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_BIT_FUNC_CURTAIN 0x00800000                       // ver. >= 24
 #define SUPLA_BIT_FUNC_VERTICAL_BLIND 0x01000000                // ver. >= 24
 #define SUPLA_BIT_FUNC_ROLLER_GARAGE_DOOR 0x02000000            // ver. >= 24
+#define SUPLA_BIT_FUNC_PUMPSWITCH 0x04000000                    // ver. >= 25
+#define SUPLA_BIT_FUNC_HEATORCOLDSOURCESWITCH 0x08000000        // ver. >= 25
 
 #define SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK 10
 #define SUPLA_EVENT_CONTROLLINGTHEGATE 20
@@ -3171,7 +3175,35 @@ typedef struct {
   // and one for cooling
   unsigned char UseSeparateHeatCoolOutputs;  // 0 - off (default), 1 - on
   HvacParameterFlags ParameterFlags;
-  unsigned char Reserved[48 - sizeof(HvacParameterFlags)];
+
+  union {
+    _supla_int_t MasterThermostatChannelId;
+    struct {
+      unsigned char MasterThermostatIsSet;  // 0 - no; 1 - yes
+      unsigned char MasterThermostatChannelNo;
+    };  // v. >= 25
+  };
+
+  union {
+    _supla_int_t HeatOrColdSourceSwitchChannelId;
+    struct {
+      unsigned char HeatOrColdSourceSwitchIsSet;  // 0 - no; 1 - yes
+      unsigned char HeatOrColdSourceSwitchChannelNo;
+    };  // v. >= 25
+  };
+
+  union {
+    _supla_int_t PumpSwitchChannelId;
+    struct {
+      unsigned char PumpSwitchIsSet;  // 0 - no; 1 - yes
+      unsigned char PumpSwitchChannelNo;
+    };  // v. >= 25
+  };
+
+  unsigned char Reserved[48 - sizeof(HvacParameterFlags) -
+                         sizeof(MasterThermostatChannelId) -
+                         sizeof(HeatOrColdSourceSwitchChannelId) -
+                         sizeof(PumpSwitchChannelId)];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
 
