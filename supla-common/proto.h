@@ -3124,7 +3124,13 @@ typedef struct {
   unsigned _supla_int_t TemperaturesAuxMinSetpointHidden : 1;
   unsigned _supla_int_t TemperaturesAuxMaxSetpointReadonly : 1;
   unsigned _supla_int_t TemperaturesAuxMaxSetpointHidden : 1;
-  unsigned _supla_int_t Reserved : 18;
+  unsigned _supla_int_t MasterThermostatChannelNoReadonly : 1;
+  unsigned _supla_int_t MasterThermostatChannelNoHidden : 1;
+  unsigned _supla_int_t HeatOrColdSourceSwitchReadonly : 1;
+  unsigned _supla_int_t HeatOrColdSourceSwitchHidden : 1;
+  unsigned _supla_int_t PumpSwitchReadonly : 1;
+  unsigned _supla_int_t PumpSwitchHidden : 1;
+  unsigned _supla_int_t Reserved : 12;
 } HvacParameterFlags;
 
 typedef struct {
