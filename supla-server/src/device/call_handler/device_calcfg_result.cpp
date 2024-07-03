@@ -63,43 +63,14 @@ void supla_ch_device_calcfg_result::handle_call(
     return;
   }
 
-  int channel_id = device->get_channels()->get_channel_id(
-      rd->data.ds_device_calcfg_result->ChannelNumber);
-
-  if (channel_id == 0) {
-    return;
-  }
-
-  if (rd->data.ds_device_calcfg_result->DataSize >=
-          (sizeof(TCalCfg_ZWave_Node) - ZWAVE_NODE_NAME_MAXSIZE) &&
-      rd->data.ds_device_calcfg_result->DataSize <=
-          sizeof(TCalCfg_ZWave_Node)) {
-    switch (rd->data.ds_device_calcfg_result->Command) {
-      case SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE:
-      case SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST:
-        TCalCfg_ZWave_Node* node =
-            (TCalCfg_ZWave_Node*)rd->data.ds_device_calcfg_result->Data;
-        if (node->Flags & ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED) {
-          node->ChannelID =
-              device->get_channels()->get_channel_id(node->ChannelNumber);
-          if (node->ChannelID == 0) {
-            node->Flags ^= ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED;
-          }
-        } else {
-          node->ChannelID = 0;
-        }
-        break;
-    }
-  }
-
-  cJSON* json = cJSON_CreateObject();
-  char buffer[25] = {};
-
-  get_time_string(buffer, sizeof(buffer), 0);
-  cJSON_AddStringToObject(json, "time", buffer);
-
   if (rd->data.ds_device_calcfg_result->Command ==
       SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING) {
+    cJSON* json = cJSON_CreateObject();
+    char buffer[25] = {};
+
+    get_time_string(buffer, sizeof(buffer), 0);
+    cJSON_AddStringToObject(json, "time", buffer);
+
     string result;
     switch (rd->data.ds_device_calcfg_result->Result) {
       case SUPLA_CALCFG_RESULT_NOT_SUPPORTED:
@@ -189,6 +160,35 @@ void supla_ch_device_calcfg_result::handle_call(
     dao.update_device_pairing_result(device->get_id(), json_str);
 
     free(json_str);
+  }
+
+  int channel_id = device->get_channels()->get_channel_id(
+      rd->data.ds_device_calcfg_result->ChannelNumber);
+
+  if (channel_id == 0) {
+    return;
+  }
+
+  if (rd->data.ds_device_calcfg_result->DataSize >=
+          (sizeof(TCalCfg_ZWave_Node) - ZWAVE_NODE_NAME_MAXSIZE) &&
+      rd->data.ds_device_calcfg_result->DataSize <=
+          sizeof(TCalCfg_ZWave_Node)) {
+    switch (rd->data.ds_device_calcfg_result->Command) {
+      case SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE:
+      case SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST:
+        TCalCfg_ZWave_Node* node =
+            (TCalCfg_ZWave_Node*)rd->data.ds_device_calcfg_result->Data;
+        if (node->Flags & ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED) {
+          node->ChannelID =
+              device->get_channels()->get_channel_id(node->ChannelNumber);
+          if (node->ChannelID == 0) {
+            node->Flags ^= ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED;
+          }
+        } else {
+          node->ChannelID = 0;
+        }
+        break;
+    }
   }
 
   shared_ptr<supla_client> client = device->get_user()->get_clients()->get(
