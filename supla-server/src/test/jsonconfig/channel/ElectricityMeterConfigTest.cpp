@@ -910,4 +910,98 @@ TEST_F(ElectricityMeterConfigTest, isPowerActiveLoggerEnabled) {
   EXPECT_TRUE(config.is_power_active_logger_enabled());
 }
 
+TEST_F(ElectricityMeterConfigTest, setAndGetConfig) {
+  TChannelConfig_ElectricityMeter em_cfg1 = {};
+  em_cfg1.UsedCTType = EM_CT_TYPE_200A_66mA;
+  em_cfg1.UsedPhaseLedType = EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE;
+  em_cfg1.PhaseLedParam1 = 15;
+  em_cfg1.PhaseLedParam2 = 46;
+  em_cfg1.AvailableCTTypes =
+      EM_CT_TYPE_100A_33mA | EM_CT_TYPE_200A_66mA | EM_CT_TYPE_400A_133mA;
+  em_cfg1.AvailablePhaseLedTypes = EM_PHASE_LED_TYPE_OFF |
+                                   EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE |
+                                   EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE_INVERTED |
+                                   EM_PHASE_LED_TYPE_VOLTAGE_LEVEL |
+                                   EM_PHASE_LED_TYPE_POWER_ACTIVE_DIRECTION;
+
+  electricity_meter_config config1;
+  config1.set_config(&em_cfg1);
+
+  char *str = config1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"usedCTType\":\"200A_66mA\",\"usedPhaseLedType\":\"VOLTAGE_"
+               "PRESENCE\",\"phaseLedParam1\":15,\"phaseLedParam2\":46}");
+
+  electricity_meter_config config2;
+  config2.set_user_config(str);
+  free(str);
+
+  str = config1.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"availableCTTypes\":[\"100A_33mA\",\"200A_66mA\",\"400A_133mA\"],"
+      "\"availablePhaseLedTypes\":[\"OFF\",\"VOLTAGE_PRESENCE\",\"VOLTAGE_"
+      "PRESENCE_INVERTED\",\"VOLTAGE_LEVEL\",\"POWER_ACTIVE_DIRECTION\"]}");
+
+  config2.set_properties(str);
+  free(str);
+
+  TChannelConfig_ElectricityMeter em_cfg2 = {};
+  config2.get_config(&em_cfg2);
+
+  EXPECT_EQ(memcmp(&em_cfg1, &em_cfg2, sizeof(TChannelConfig_ElectricityMeter)),
+            0);
+}
+
+TEST_F(ElectricityMeterConfigTest, merge) {
+  electricity_meter_config config1;
+  config1.set_user_config(
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":100.123,"
+      "\"reverseActiveEnergy\":201.167,\"forwardReactiveEnergy\":1200.0001,"
+      "\"reverseReactiveEnergy\":30001.1234,\"forwardActiveEnergyBalanced\":0."
+      "00002,\"reverseActiveEnergyBalanced\":123.678},\"phaseLedParam2\":46}");
+
+  config1.set_properties(
+      "{\"countersAvailable\":[\"reverseActiveEnergy\"],\"availableCTTypes\":["
+      "\"100A_33mA\"]}");
+
+  TChannelConfig_ElectricityMeter em_cfg = {};
+  em_cfg.UsedCTType = EM_CT_TYPE_400A_133mA;
+  em_cfg.UsedPhaseLedType = EM_PHASE_LED_TYPE_OFF;
+  em_cfg.PhaseLedParam1 = 123.45;
+  em_cfg.PhaseLedParam2 = 567.20;
+  em_cfg.AvailableCTTypes = EM_CT_TYPE_200A_66mA | EM_CT_TYPE_400A_133mA;
+  em_cfg.AvailablePhaseLedTypes =
+      EM_PHASE_LED_TYPE_OFF | EM_PHASE_LED_TYPE_POWER_ACTIVE_DIRECTION;
+
+  electricity_meter_config config2;
+  config2.set_config(&em_cfg);
+  config2.merge(&config1);
+
+  char *str = config1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":100.123,"
+      "\"reverseActiveEnergy\":201.167,\"forwardReactiveEnergy\":1200.0001,"
+      "\"reverseReactiveEnergy\":30001.1234,\"forwardActiveEnergyBalanced\":2e-"
+      "05,\"reverseActiveEnergyBalanced\":123.678},\"phaseLedParam2\":567,"
+      "\"usedCTType\":\"400A_133mA\",\"usedPhaseLedType\":\"OFF\","
+      "\"phaseLedParam1\":123}");
+
+  free(str);
+
+  str = config1.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"countersAvailable\":[\"reverseActiveEnergy\"],\"availableCTTypes\":["
+      "\"200A_66mA\",\"400A_133mA\"],\"availablePhaseLedTypes\":[\"OFF\","
+      "\"POWER_ACTIVE_DIRECTION\"]}");
+
+  free(str);
+}
+
 } /* namespace testing */

@@ -25,6 +25,7 @@
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/alt_weekly_schedule_config.h"
 #include "jsonconfig/channel/binary_sensor_config.h"
+#include "jsonconfig/channel/electricity_meter_config.h"
 #include "jsonconfig/channel/facade_blind_config.h"
 #include "jsonconfig/channel/general_purpose_measurement_config.h"
 #include "jsonconfig/channel/general_purpose_meter_config.h"
@@ -415,6 +416,10 @@ void supla_abstract_common_channel_properties::get_config(
       JSON_TO_CONFIG(temp_hum_config, TChannelConfig_TemperatureAndHumidity,
                      config, config_size);
       break;
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+      JSON_TO_CONFIG(electricity_meter_config, TChannelConfig_ElectricityMeter,
+                     config, config_size);
+      break;
   }
 }
 
@@ -487,6 +492,10 @@ int supla_abstract_common_channel_properties::set_user_config(
     json_config = new facade_blind_config();
     static_cast<facade_blind_config *>(json_config)
         ->set_config((TChannelConfig_FacadeBlind *)config);
+  } else if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+    json_config = new electricity_meter_config(nullptr);
+    static_cast<electricity_meter_config *>(json_config)
+        ->set_config((TChannelConfig_ElectricityMeter *)config);
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }
