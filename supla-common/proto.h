@@ -3207,9 +3207,9 @@ typedef struct {
   };
 
   unsigned char Reserved[48 - sizeof(HvacParameterFlags) -
-                         sizeof(MasterThermostatChannelId) -
-                         sizeof(HeatOrColdSourceSwitchChannelId) -
-                         sizeof(PumpSwitchChannelId)];
+                         sizeof(_supla_int_t) -
+                         sizeof(_supla_int_t) -
+                         sizeof(_supla_int_t)];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
 
