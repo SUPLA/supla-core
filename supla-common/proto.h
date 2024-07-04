@@ -2781,6 +2781,7 @@ typedef struct {
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME_DATE (1ULL << 4)
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_TIME (1ULL << 5)
 #define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE (1ULL << 6)
+#define SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MODE_OR_TEMPERATURE (1ULL << 7)
 
 typedef struct {
   // bit field with all available modes (reported by device, readonly for other
