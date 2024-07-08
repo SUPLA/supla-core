@@ -939,8 +939,7 @@ TEST_F(StateWebhookRequestTest,
       "\"totalReverseReactiveEnergy\":1}],\"totalForwardActiveEnergyBalanced\":"
       "1,\"totalReverseActiveEnergyBalanced\":1,\"connected\":true}}";
 
-  TElectricityMeter_ExtendedValue_V2 em_ev;
-  memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
   em_ev.m[0].freq = 6001;
 
@@ -999,8 +998,7 @@ TEST_F(StateWebhookRequestTest, sendElectricityMeasurementReport_AllVars) {
       "\"totalReverseReactiveEnergy\":1}],\"totalForwardActiveEnergyBalanced\":"
       "1,\"totalReverseActiveEnergyBalanced\":1,\"connected\":true}}";
 
-  TElectricityMeter_ExtendedValue_V2 em_ev;
-  memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
   em_ev.m[0].freq = 6001;
 
@@ -1058,8 +1056,7 @@ TEST_F(StateWebhookRequestTest,
       "\"totalReverseReactiveEnergy\":1}],\"totalReverseActiveEnergyBalanced\":"
       "1,\"connected\":true}}";
 
-  TElectricityMeter_ExtendedValue_V2 em_ev;
-  memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
   em_ev.m[0].freq = 6001;
 
@@ -1124,8 +1121,7 @@ TEST_F(StateWebhookRequestTest,
       "\"totalReverseReactiveEnergy\":1}],\"totalForwardActiveEnergyBalanced\":"
       "1,\"totalReverseActiveEnergyBalanced\":1,\"connected\":true}}";
 
-  TElectricityMeter_ExtendedValue_V2 em_ev;
-  memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
   for (int p = 0; p < 3; p++) {
     em_ev.total_forward_active_energy[p] = 100000;

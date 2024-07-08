@@ -499,7 +499,7 @@ void supla_cb_channel_value_update(void *_suplaclient, void *user_data,
 
 void supla_channel_em_addsummary(TAndroidSuplaClient *asc, JNIEnv *env,
                                  jobject parent, jclass parent_cls,
-                                 TElectricityMeter_ExtendedValue_V2 *em_ev,
+                                 TElectricityMeter_ExtendedValue_V3 *em_ev,
                                  jint phase) {
   jclass cls = env->FindClass(
       "org/supla/android/lib/SuplaChannelElectricityMeterValue$Summary");
@@ -523,7 +523,7 @@ void supla_channel_em_addsummary(TAndroidSuplaClient *asc, JNIEnv *env,
 
 void supla_channel_em_addmeasurement(TAndroidSuplaClient *asc, JNIEnv *env,
                                      jobject parent, jclass parent_cls,
-                                     TElectricityMeter_ExtendedValue_V2 *em_ev,
+                                     TElectricityMeter_ExtendedValue_V3 *em_ev,
                                      jint phase, int midx) {
   jclass cls = env->FindClass(
 
@@ -548,7 +548,7 @@ void supla_channel_em_addmeasurement(TAndroidSuplaClient *asc, JNIEnv *env,
 
 jobject supla_channelelectricitymetervalue_to_jobject(
     TAndroidSuplaClient *asc, JNIEnv *env,
-    TElectricityMeter_ExtendedValue_V2 *em_ev) {
+    TElectricityMeter_ExtendedValue_V3 *em_ev) {
   int a = 0;
   int b = 0;
 
@@ -558,13 +558,17 @@ jobject supla_channelelectricitymetervalue_to_jobject(
 
   jlong fae_b = em_ev->total_forward_active_energy_balanced;
   jlong rae_b = em_ev->total_reverse_active_energy_balanced;
+  jint voltage_phase_angle_12 = em_ev->voltage_phase_angle_12;
+  jint voltage_phase_angle_13 = em_ev->voltage_phase_angle_13;
+  jint phase_sequence = em_ev->phase_sequence;
 
   jclass cls =
       env->FindClass("org/supla/android/lib/SuplaChannelElectricityMeterValue");
   jmethodID methodID =
       env->GetMethodID(cls, "<init>", "(IIIILjava/lang/String;JJ)V");
   jobject val = env->NewObject(
-      cls, methodID, em_ev->measured_values, em_ev->period, em_ev->total_cost,
+      cls, methodID, em_ev->measured_values, voltage_phase_angle_12,
+      voltage_phase_angle_13, phase_sequence, em_ev->period, em_ev->total_cost,
       em_ev->price_per_unit, new_string_utf(env, currency), fae_b, rae_b);
 
   for (a = 0; a < 3; a++) {
@@ -732,14 +736,15 @@ void supla_channelextendedvalue_set_object(
   TChannelState_ExtendedValue *channel_state = NULL;
   TTimerState_ExtendedValue *timer_state = NULL;
 
-  if (channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
-    TElectricityMeter_ExtendedValue_V2 em_ev;
+  if (channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2 ||
+      channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V3) {
+    TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
-    if (srpc_evtool_v2_extended2emextended(channel_extendedvalue, &em_ev) ==
-        1) {
+    if (srpc_evtool_extended2emextended_latest(channel_extendedvalue, &em_ev)) {
       fid = supla_client_GetFieldID(
           env, cls, "ElectricityMeterValue",
           "Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;");
+
       jobject chv =
           supla_channelelectricitymetervalue_to_jobject(asc, env, &em_ev);
       env->SetObjectField(obj, fid, chv);

@@ -684,7 +684,7 @@ void supla_device_channel::set_extended_value(
       }
 
       {
-        TElectricityMeter_ExtendedValue_V2 em_ev;
+        TElectricityMeter_ExtendedValue_V3 em_ev;
         if (em->get_raw_value(&em_ev)) {
           config->add_initial_values(flags, &em_ev);
 

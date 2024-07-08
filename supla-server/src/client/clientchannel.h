@@ -67,8 +67,8 @@ class supla_client_channel : public supla_client_objcontainer_item,
   void proto_get_value(TSuplaChannelValue *value, char *online,
                        supla_client *client);
   bool get_cs_extended_value(std::shared_ptr<supla_device> device,
-                             int channel_id,
-                             TSC_SuplaChannelExtendedValue *cev);
+                             int channel_id, TSC_SuplaChannelExtendedValue *cev,
+                             unsigned char protocol_version);
   virtual void for_each(
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties);

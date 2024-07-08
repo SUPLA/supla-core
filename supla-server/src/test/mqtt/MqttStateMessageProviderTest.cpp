@@ -85,8 +85,7 @@ void MqttStateMessageProviderTest::SetElectricityMeasurementResult(
       .Times(1)
       .WillOnce([measured_values, m_count](int user_id, int device_id,
                                            int channel_id) {
-        TElectricityMeter_ExtendedValue_V2 em_ev;
-        memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+        TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
         em_ev.m[0].freq = 4997;
 

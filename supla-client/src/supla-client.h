@@ -320,9 +320,9 @@ _supla_int_t srpc_evtool_value_get(TSuplaChannelExtendedValue *ev,
                                    unsigned short index,
                                    TSuplaChannelExtendedValue *dest);
 
-_supla_int_t srpc_evtool_v2_extended2emextended(
+_supla_int_t srpc_evtool_extended2emextended(
     const TSuplaChannelExtendedValue *ev,
-    TElectricityMeter_ExtendedValue_V2 *em_ev);
+    TElectricityMeter_ExtendedValue_V3 *em_ev);
 
 _supla_int_t srpc_evtool_v1_extended2icextended(
     const TSuplaChannelExtendedValue *ev,

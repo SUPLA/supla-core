@@ -675,7 +675,7 @@ bool supla_mqtt_abstract_state_message_provider::
   supla_channel_em_extended_value *emv =
       dynamic_cast<supla_channel_em_extended_value *>(channel_extended_value);
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
   if (emv) {
     emv->get_raw_value(&em_ev);

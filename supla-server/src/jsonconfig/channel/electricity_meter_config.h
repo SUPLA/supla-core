@@ -70,7 +70,7 @@ class electricity_meter_config : public supla_json_config {
                          unsigned _supla_int64_t *value);
   void add_initial_value(int var, unsigned _supla_int64_t *value);
 
-  void add_initial_values(int flags, TElectricityMeter_ExtendedValue_V2 *em_ev);
+  void add_initial_values(int flags, TElectricityMeter_ExtendedValue_V3 *em_ev);
   void add_initial_value(unsigned _supla_int_t *total_forward_active_energy);
 
   bool is_voltage_logger_enabled(void);

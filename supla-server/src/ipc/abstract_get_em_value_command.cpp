@@ -41,7 +41,7 @@ void supla_abstract_get_em_value_command::on_command_match(const char *params) {
           return false;
         }
 
-        TElectricityMeter_ExtendedValue_V2 em_ev = {};
+        TElectricityMeter_ExtendedValue_V3 em_ev = {};
         emv->get_raw_value(&em_ev);
 
         unsigned int current1 = em_ev.m[0].current[0];

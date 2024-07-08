@@ -118,7 +118,7 @@ void client_loop_channel_value_update(void *_suplaclient, void *sthread,
 void client_loop_channel_extendedalue_update(
     void *_suplaclient, void *sthread,
     TSC_SuplaChannelExtendedValue *channel_extendedvalue) {
-  TElectricityMeter_ExtendedValue_V2 em_ev;
+  TElectricityMeter_ExtendedValue_V3 em_ev;
   TSC_ImpulseCounter_ExtendedValue ic_ev;
   int a;
   if (srpc_evtool_v1_extended2icextended(&channel_extendedvalue->value,
@@ -133,8 +133,8 @@ void client_loop_channel_extendedalue_update(
     supla_log(LOG_DEBUG, "couter=%i", ic_ev.counter);
     supla_log(LOG_DEBUG, "calculated_value=%i", ic_ev.calculated_value);
 
-  } else if (srpc_evtool_v2_extended2emextended(&channel_extendedvalue->value,
-                                                &em_ev) == 1) {
+  } else if (srpc_evtool_extended2emextended_latest(
+                 &channel_extendedvalue->value, &em_ev) == 1) {
     supla_log(LOG_DEBUG, "*************************");
     supla_log(LOG_DEBUG, "m_count=%i", em_ev.m_count);
     supla_log(LOG_DEBUG, "measured_values=%i", em_ev.measured_values);

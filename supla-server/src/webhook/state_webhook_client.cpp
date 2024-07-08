@@ -528,7 +528,7 @@ bool supla_state_webhook_client::electricity_measurement_report(void) {
               channel_extended_value);
 
       if (channel_connected && emv != nullptr) {
-        TElectricityMeter_ExtendedValue_V2 em_ev;
+        TElectricityMeter_ExtendedValue_V3 em_ev;
         emv->get_raw_value(&em_ev);
 
         if ((em_ev.measured_values & EM_VAR_CURRENT_OVER_65A) &&

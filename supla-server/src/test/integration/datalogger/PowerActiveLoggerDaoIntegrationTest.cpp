@@ -74,7 +74,7 @@ TEST_F(PowerActiveLoggerDaoIntegrationTest, add) {
 
   supla_electricity_analyzer vas(234);
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].power_active[0] = 410551;
   em_ev.m[0].power_active[1] = 415552;

@@ -112,6 +112,10 @@ static_assert((139 +
                sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT) ==
               sizeof(TElectricityMeter_ExtendedValue_V2));
 
+static_assert((144 +
+               sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT) ==
+              sizeof(TElectricityMeter_ExtendedValue_V3));
+
 static_assert((unsigned int)5 == sizeof(TElectricityMeter_Value));
 static_assert((unsigned int)40 == sizeof(TSC_ImpulseCounter_ExtendedValue));
 static_assert((unsigned int)8 == sizeof(TSC_ImpulseCounter_Value));
@@ -133,6 +137,8 @@ static_assert(sizeof(TElectricityMeter_Value) <=
 // int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
 static_assert(sizeof(TElectricityMeter_ExtendedValue_V2) <=
+              (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+static_assert(sizeof(TElectricityMeter_ExtendedValue_V3) <=
               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 static_assert((unsigned int)4 == sizeof(TThermostat_Time));
 static_assert((unsigned int)246 == sizeof(TThermostat_ExtendedValue));
@@ -299,7 +305,6 @@ static_assert(SUPLA_CHANNELEXTENDEDVALUE_SIZE == 1024);
 static_assert(1029 == sizeof(TSuplaChannelExtendedValue));
 #endif
 
-
 // Proto checks for structs not used in supla-device and which are failing
 // on supla-device compilation
 #if !defined(__AVR__) && !defined(ESP8266) && !defined(ESP32) && \
@@ -309,4 +314,3 @@ static_assert(sizeof(TChannelAndTimerState_ExtendedValue) <=
               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 static_assert(sizeof(TSC_GetChannelValueResult) == 1055);
 #endif
-

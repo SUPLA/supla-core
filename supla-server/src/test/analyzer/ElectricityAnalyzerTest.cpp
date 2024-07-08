@@ -35,7 +35,7 @@ TEST_F(ElectricityAnalyzerTest, aberrationOnePhase) {
   EXPECT_TRUE(ea.get_aberration_phase2() == nullptr);
   EXPECT_TRUE(ea.get_aberration_phase3() == nullptr);
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].voltage[0] = 31055;
   em_ev.m[0].voltage[1] = 31555;
@@ -65,7 +65,7 @@ TEST_F(ElectricityAnalyzerTest, aberrationThreePhases) {
   EXPECT_TRUE(ea.get_aberration_phase2() == nullptr);
   EXPECT_TRUE(ea.get_aberration_phase3() == nullptr);
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].voltage[0] = 31055;
   em_ev.m[0].voltage[1] = 31555;
@@ -73,7 +73,7 @@ TEST_F(ElectricityAnalyzerTest, aberrationThreePhases) {
   em_ev.measured_values = EM_VAR_VOLTAGE;
 
   TSuplaChannelExtendedValue ev = {};
-  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  srpc_evtool_v3_emextended2extended(&em_ev, &ev);
   supla_channel_em_extended_value em(&ev, nullptr, 0);
 
   electricity_meter_config config;
@@ -97,7 +97,7 @@ TEST_F(ElectricityAnalyzerTest, aberrationThreePhases) {
 }
 
 TEST_F(ElectricityAnalyzerTest, noMeasurements) {
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 0;
   em_ev.m[0].voltage[0] = 31055;
   em_ev.m[0].voltage[1] = 31555;
@@ -105,7 +105,7 @@ TEST_F(ElectricityAnalyzerTest, noMeasurements) {
   em_ev.measured_values = EM_VAR_VOLTAGE;
 
   TSuplaChannelExtendedValue ev = {};
-  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  srpc_evtool_v3_emextended2extended(&em_ev, &ev);
   supla_channel_em_extended_value em(&ev, nullptr, 0);
 
   electricity_meter_config config;
@@ -120,7 +120,7 @@ TEST_F(ElectricityAnalyzerTest, noMeasurements) {
 }
 
 TEST_F(ElectricityAnalyzerTest, voltageIsNotMeasured) {
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
 
   supla_channel_em_extended_value em(&em_ev, nullptr, 0);
@@ -137,7 +137,7 @@ TEST_F(ElectricityAnalyzerTest, voltageIsNotMeasured) {
 }
 
 TEST_F(ElectricityAnalyzerTest, thresholdsAreNotSet) {
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].voltage[0] = 31055;
   em_ev.m[0].voltage[1] = 31555;
@@ -145,7 +145,7 @@ TEST_F(ElectricityAnalyzerTest, thresholdsAreNotSet) {
   em_ev.measured_values = EM_VAR_VOLTAGE;
 
   TSuplaChannelExtendedValue ev = {};
-  srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  srpc_evtool_v3_emextended2extended(&em_ev, &ev);
   supla_channel_em_extended_value em(&ev, nullptr, 0);
 
   electricity_meter_config config;
@@ -160,7 +160,7 @@ TEST_F(ElectricityAnalyzerTest, thresholdsAreNotSet) {
 }
 
 TEST_F(ElectricityAnalyzerTest, copy) {
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].voltage[0] = 31055;
   em_ev.m[0].voltage[1] = 31555;
@@ -270,7 +270,7 @@ TEST_F(ElectricityAnalyzerTest, copy) {
 }
 
 TEST_F(ElectricityAnalyzerTest, reset) {
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].voltage[0] = 31055;
   em_ev.m[0].voltage[1] = 31555;
@@ -351,7 +351,7 @@ TEST_F(ElectricityAnalyzerTest, reset) {
 TEST_F(ElectricityAnalyzerTest, resetTestAndCheckingIfAnyThresholdIsExceeded) {
   EXPECT_FALSE(ea.is_any_data_for_logging_purpose());
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].voltage[0] = 31055;
   em_ev.m[0].voltage[1] = 20000;
@@ -424,7 +424,7 @@ TEST_F(ElectricityAnalyzerTest, voltage) {
   EXPECT_FALSE(ea.is_any_data_for_logging_purpose());
   EXPECT_FALSE(ea.is_any_voltage_for_logging_purpose());
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].voltage[0] = 31055;
   em_ev.m[0].voltage[1] = 31555;
@@ -494,7 +494,7 @@ TEST_F(ElectricityAnalyzerTest, current) {
   EXPECT_FALSE(ea.is_any_data_for_logging_purpose());
   EXPECT_FALSE(ea.is_any_current_for_logging_purpose());
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].current[0] = 31055;
   em_ev.m[0].current[1] = 31555;
@@ -573,7 +573,7 @@ TEST_F(ElectricityAnalyzerTest, powerActive) {
   EXPECT_FALSE(ea.is_any_data_for_logging_purpose());
   EXPECT_FALSE(ea.is_any_power_active_for_logging_purpose());
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].power_active[0] = 310550;
   em_ev.m[0].power_active[1] = 315550;
@@ -649,7 +649,7 @@ TEST_F(ElectricityAnalyzerTest, phaseDisabled) {
   EXPECT_TRUE(ea.get_voltage_phase2() == nullptr);
   EXPECT_TRUE(ea.get_voltage_phase3() == nullptr);
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].voltage[0] = 31055;
   em_ev.m[0].voltage[1] = 31555;

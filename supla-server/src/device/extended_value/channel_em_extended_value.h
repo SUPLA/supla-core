@@ -29,7 +29,7 @@ class channel_json_config;
 class supla_channel_em_extended_value : public supla_channel_extended_value,
                                         private supla_channel_billing_value {
  private:
-  void set_raw_value(const TElectricityMeter_ExtendedValue_V2 *_value,
+  void set_raw_value(const TElectricityMeter_ExtendedValue_V3 *_value,
                      const char *text_param1, int *param2);
   void set_raw_value(const TSuplaChannelExtendedValue *value,
                      const char *text_param1, int *param2);
@@ -39,8 +39,9 @@ class supla_channel_em_extended_value : public supla_channel_extended_value,
       const TSuplaChannelExtendedValue *value);
   supla_channel_em_extended_value(const TSuplaChannelExtendedValue *value,
                                   const char *text_param1, int param2);
+
   supla_channel_em_extended_value(
-      const TElectricityMeter_ExtendedValue_V2 *value, const char *text_param1,
+      const TElectricityMeter_ExtendedValue_V3 *value, const char *text_param1,
       int param2);
   virtual ~supla_channel_em_extended_value(void);
 
@@ -70,9 +71,11 @@ class supla_channel_em_extended_value : public supla_channel_extended_value,
   double get_rae_balanced(void);
 
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
-  virtual bool get_raw_value(TElectricityMeter_ExtendedValue_V2 *value);
+  virtual bool get_raw_value(TSuplaChannelExtendedValue *value,
+                             unsigned char protocol_version);
+  virtual bool get_raw_value(TElectricityMeter_ExtendedValue_V3 *value);
   virtual void set_raw_value(const TSuplaChannelExtendedValue *value);
-  virtual void set_raw_value(const TElectricityMeter_ExtendedValue_V2 *value);
+  virtual void set_raw_value(const TElectricityMeter_ExtendedValue_V3 *value);
 
   static bool is_function_supported(int func);
   static bool is_ev_type_supported(char type);

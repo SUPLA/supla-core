@@ -113,6 +113,11 @@ bool supla_channel_extended_value::get_raw_value(
   return false;
 }
 
+bool supla_channel_extended_value::get_raw_value(
+    TSuplaChannelExtendedValue *value, unsigned char protocol_version) {
+  return get_raw_value(value);
+}
+
 void supla_channel_extended_value::set_raw_value(
     const TSuplaChannelExtendedValue *value) {
   if (value) {

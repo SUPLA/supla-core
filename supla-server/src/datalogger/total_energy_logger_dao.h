@@ -31,7 +31,7 @@ class supla_total_energy_logger_dao {
  public:
   explicit supla_total_energy_logger_dao(
       supla_abstract_db_access_provider *dba);
-  void add(int channel_id, TElectricityMeter_ExtendedValue_V2 *em_ev);
+  void add(int channel_id, TElectricityMeter_ExtendedValue_V3 *em_ev);
 };
 
 #endif /* TOTAL_ENERGY_LOGGER_DAO_H_ */

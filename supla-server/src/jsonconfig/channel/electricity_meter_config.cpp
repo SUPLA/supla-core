@@ -417,7 +417,7 @@ void electricity_meter_config::add_initial_value(
 }
 
 void electricity_meter_config::add_initial_values(
-    int flags, TElectricityMeter_ExtendedValue_V2 *em_ev) {
+    int flags, TElectricityMeter_ExtendedValue_V3 *em_ev) {
   if (!em_ev) {
     return;
   }

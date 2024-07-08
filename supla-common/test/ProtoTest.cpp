@@ -111,6 +111,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)62, sizeof(TElectricityMeter_Measurement));
   EXPECT_EQ((unsigned int)429, sizeof(TElectricityMeter_ExtendedValue));
   EXPECT_EQ((unsigned int)449, sizeof(TElectricityMeter_ExtendedValue_V2));
+  EXPECT_EQ((unsigned int)454, sizeof(TElectricityMeter_ExtendedValue_V3));
   EXPECT_EQ((unsigned int)5, sizeof(TElectricityMeter_Value));
   EXPECT_EQ((unsigned int)40, sizeof(TSC_ImpulseCounter_ExtendedValue));
   EXPECT_EQ((unsigned int)8, sizeof(TSC_ImpulseCounter_Value));
@@ -132,6 +133,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TElectricityMeter_ExtendedValue),
             (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
   EXPECT_LE(sizeof(TElectricityMeter_ExtendedValue_V2),
+            (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+  EXPECT_LE(sizeof(TElectricityMeter_ExtendedValue_V3),
             (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
   EXPECT_EQ((unsigned int)4, sizeof(TThermostat_Time));

@@ -574,7 +574,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_FLAG_CALCFG_IDENTIFY_DEVICE 0x0400         // ver. >= 25
 #define SUPLA_DEVICE_FLAG_CALCFG_RESET_DEVICE 0x0800            // ver. >= 25
 #define SUPLA_DEVICE_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION 0x1000  // ver. >= 25
-#define SUPLA_DEVICE_FLAG_BLOCK_ADDING_CHANNELS_AFTER_DELETION                 \
+#define SUPLA_DEVICE_FLAG_BLOCK_ADDING_CHANNELS_AFTER_DELETION \
   0x2000  // ver. >= 25
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
@@ -715,7 +715,10 @@ typedef struct {
 #ifdef USE_DEPRECATED_EMEV_V1
 #define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 10
 #endif /*USE_DEPRECATED_EMEV_V1*/
+#ifdef USE_DEPRECATED_EMEV_V2
 #define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2 12
+#endif /*USE_DEPRECATED_EMEV_V2*/
+#define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V3 14
 #define EV_TYPE_IMPULSE_COUNTER_DETAILS_V1 20
 #define EV_TYPE_THERMOSTAT_DETAILS_V1 30
 #define EV_TYPE_CHANNEL_STATE_V1 40
@@ -918,7 +921,7 @@ typedef struct {
 
   unsigned char DefaultIcon;
   unsigned char SubDeviceId;  // 0 - no subdevice, 1..255 - subdevice id
-} TDS_SuplaDeviceChannel_E;  // ver. >= 25
+} TDS_SuplaDeviceChannel_E;   // ver. >= 25
 
 typedef struct {
   // device -> server
@@ -1080,8 +1083,8 @@ typedef struct {
 
   unsigned _supla_int16_t channel_report_size;
   unsigned char channel_report
-      [CHANNEL_REPORT_MAXSIZE];  // One byte per channel. The meaning of the
-                                 // bits is determined by CHANNEL_REPORT_*.
+      [CHANNEL_REPORT_MAXSIZE];     // One byte per channel. The meaning of the
+                                    // bits is determined by CHANNEL_REPORT_*.
 } TSD_SuplaRegisterDeviceResult_B;  // ver. >= 25
 
 typedef struct {
@@ -1554,9 +1557,9 @@ typedef struct {
 } TAction_ShadingSystem_Parameters;  // ver. >= 19
 
 typedef struct {
-  char Brightness;       // -1 == Ignore
-  char ColorBrightness;  // -1 == Ignore
-  unsigned _supla_int_t Color;    // 0 == Ignore
+  char Brightness;              // -1 == Ignore
+  char ColorBrightness;         // -1 == Ignore
+  unsigned _supla_int_t Color;  // 0 == Ignore
   char ColorRandom;
   char OnOff;
   char Reserved[8];
@@ -1826,10 +1829,10 @@ typedef struct {
 #define EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED 0x2000
 #define EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED 0x4000
 
-#define EM_VAR_VOLTAGE_PHASE_ANGLE_12 0x10000  // ver. >= 22
-#define EM_VAR_VOLTAGE_PHASE_ANGLE_13 0x20000  // ver. >= 22
-#define EM_VAR_VOLTAGE_PHASE_SEQUENCE 0x40000  // ver. >= 22
-#define EM_VAR_CURRENT_PHASE_SEQUENCE 0x80000  // ver. >= 22
+#define EM_VAR_VOLTAGE_PHASE_ANGLE_12 0x10000  // ver. >= 25
+#define EM_VAR_VOLTAGE_PHASE_ANGLE_13 0x20000  // ver. >= 25
+#define EM_VAR_VOLTAGE_PHASE_SEQUENCE 0x40000  // ver. >= 25
+#define EM_VAR_CURRENT_PHASE_SEQUENCE 0x80000  // ver. >= 25
 
 #define EM_VAR_POWER_ACTIVE_KW 0x100000
 #define EM_VAR_POWER_REACTIVE_KVAR 0x200000
@@ -1868,6 +1871,7 @@ typedef struct {
 } TElectricityMeter_ExtendedValue;                        // v. >= 10
 #endif /*USE_DEPRECATED_EMEV_V1*/
 
+#ifdef USE_DEPRECATED_EMEV_V2
 // [IODevice->Server->Client]
 typedef struct {
   unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kWh
@@ -1895,6 +1899,7 @@ typedef struct {
   TElectricityMeter_Measurement m[EM_MEASUREMENT_COUNT];  // Last variable in
                                                           // struct!
 } TElectricityMeter_ExtendedValue_V2;                     // v. >= 12
+#endif /*USE_DEPRECATED_EMEV_V2*/
 
 // [IODevice->Server->Client]
 typedef struct {
@@ -1931,7 +1936,7 @@ typedef struct {
   _supla_int_t m_count;
   TElectricityMeter_Measurement m[EM_MEASUREMENT_COUNT];  // Last variable in
                                                           // struct!
-} TElectricityMeter_ExtendedValue_V3;                     // v. >= 22
+} TElectricityMeter_ExtendedValue_V3;                     // v. >= 25
 
 #define EM_VALUE_FLAG_PHASE1_ON 0x01
 #define EM_VALUE_FLAG_PHASE2_ON 0x02
@@ -2156,9 +2161,9 @@ typedef struct {
 
 typedef struct {
   unsigned _supla_int16_t
-      ElapsedTimeSec;      // Time in seconds since procedure was started
+      ElapsedTimeSec;  // Time in seconds since procedure was started
   unsigned _supla_int16_t MaximumDurationSec;  // Time in seconds
-  unsigned char PairingResult;    // SUPLA_CALCFG_PAIRINGRESULT_
+  unsigned char PairingResult;                 // SUPLA_CALCFG_PAIRINGRESULT_
   unsigned char NameSize;  // including the terminating null byte ('\0')
   char Name[SUPLA_CALCFG_SUBDEVICE_NAME_MAXSIZE];  // UTF8. Last variable in
                                                    // struct!
@@ -2514,7 +2519,7 @@ typedef struct {
     _supla_int_t ChannelID;       // Server -> Client
     unsigned char ChannelNumber;  // Device -> Server
   };
-  _supla_int_t Fields;            // SUPLA_CHANNELSTATE_FIELD_*
+  _supla_int_t Fields;  // SUPLA_CHANNELSTATE_FIELD_*
   union {
     _supla_int_t defaultIconField;
     unsigned _supla_int_t SwitchCycleCount;
@@ -3149,15 +3154,15 @@ typedef struct {
   union {
     _supla_int_t AuxThermometerChannelId;
     unsigned char
-      AuxThermometerChannelNo;  // If the channel number points to itself, it
-                                // means that the aux thermometer is not set.
+        AuxThermometerChannelNo;  // If the channel number points to itself, it
+                                  // means that the aux thermometer is not set.
   };
 
   union {
     _supla_int_t BinarySensorChannelId;
     unsigned char
-      BinarySensorChannelNo;  // If the channel number points to itself, it
-                              // means that the binary sensor is not set.
+        BinarySensorChannelNo;  // If the channel number points to itself, it
+                                // means that the binary sensor is not set.
   };
 
   // SUPLA_HVAC_AUX_THERMOMETER_TYPE_
@@ -3212,8 +3217,7 @@ typedef struct {
   };
 
   unsigned char Reserved[48 - sizeof(HvacParameterFlags) -
-                         sizeof(_supla_int_t) -
-                         sizeof(_supla_int_t) -
+                         sizeof(_supla_int_t) - sizeof(_supla_int_t) -
                          sizeof(_supla_int_t)];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21

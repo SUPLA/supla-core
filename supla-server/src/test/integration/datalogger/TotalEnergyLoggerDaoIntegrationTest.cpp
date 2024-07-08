@@ -64,7 +64,7 @@ TEST_F(TotalEnergyLoggerDaoIntegrationTest, add) {
 
   EXPECT_EQ(result, "count\n0\n");
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
   em_ev.total_forward_active_energy[0] = 1;
   em_ev.total_reverse_active_energy[0] = 2;

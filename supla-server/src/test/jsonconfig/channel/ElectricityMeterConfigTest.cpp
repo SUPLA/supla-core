@@ -85,7 +85,7 @@ TEST_F(ElectricityMeterConfigTest, emEvSetAvailableCounters) {
   electricity_meter_config *config = new electricity_meter_config();
   ASSERT_TRUE(config != NULL);
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.measured_values = EM_VAR_REVERSE_ACTIVE_ENERGY;
 
   supla_channel_em_extended_value em(&em_ev, nullptr, 0);
@@ -399,7 +399,7 @@ TEST_F(ElectricityMeterConfigTest, threePhases) {
   delete config;
 }
 
-TEST_F(ElectricityMeterConfigTest, extendedValue_V2) {
+TEST_F(ElectricityMeterConfigTest, extendedValue_V3) {
   electricity_meter_config *config = new electricity_meter_config();
   ASSERT_TRUE(config != NULL);
 
@@ -415,7 +415,7 @@ TEST_F(ElectricityMeterConfigTest, extendedValue_V2) {
       EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED));
 
   {
-    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
     config->add_initial_values(0, &em_ev);
 
@@ -442,7 +442,7 @@ TEST_F(ElectricityMeterConfigTest, extendedValue_V2) {
   EXPECT_TRUE(config->update_available_counters(0xFFFFFFFF));
 
   {
-    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
     config->add_initial_values(0, &em_ev);
 
@@ -467,7 +467,7 @@ TEST_F(ElectricityMeterConfigTest, extendedValue_V2) {
   }
 
   {
-    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
     em_ev.total_forward_active_energy[0] = 1;
     em_ev.total_forward_active_energy[1] = 2;
@@ -515,7 +515,7 @@ TEST_F(ElectricityMeterConfigTest, extendedValue_V2) {
       "}");
 
   {
-    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
     config->add_initial_values(0, &em_ev);
 
@@ -557,9 +557,9 @@ TEST_F(ElectricityMeterConfigTest, channelExtendedValue_EV) {
       EM_VAR_REVERSE_ACTIVE_ENERGY | EM_VAR_REVERSE_REACTIVE_ENERGY |
       EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED));
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
-  config->add_initial_values(0, (TElectricityMeter_ExtendedValue_V2 *)nullptr);
+  config->add_initial_values(0, (TElectricityMeter_ExtendedValue_V3 *)nullptr);
   config->add_initial_values(0, &em_ev);
 
   {
@@ -597,7 +597,7 @@ TEST_F(ElectricityMeterConfigTest, addToEachPhaseSeparately) {
   EXPECT_TRUE(
       config->update_available_counters(EM_VAR_REVERSE_REACTIVE_ENERGY));
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
   config->add_initial_values(0, &em_ev);
 
@@ -619,7 +619,7 @@ TEST_F(ElectricityMeterConfigTest, overValue) {
   EXPECT_TRUE(
       config->update_available_counters(EM_VAR_REVERSE_REACTIVE_ENERGY));
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
   em_ev.total_reverse_reactive_energy[0] = 0xFFFFFFFFFFFFFF00;
 
@@ -643,7 +643,7 @@ TEST_F(ElectricityMeterConfigTest, substractionAboveValue) {
   EXPECT_TRUE(
       config->update_available_counters(EM_VAR_REVERSE_REACTIVE_ENERGY));
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
   em_ev.total_reverse_reactive_energy[0] = 1000037448;
   em_ev.total_reverse_reactive_energy[1] = 1;
@@ -668,7 +668,7 @@ TEST_F(ElectricityMeterConfigTest, substractionWithEqualPhases) {
   EXPECT_TRUE(
       config->update_available_counters(EM_VAR_REVERSE_REACTIVE_ENERGY));
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
   em_ev.total_reverse_reactive_energy[0] = 10000005;
   em_ev.total_reverse_reactive_energy[1] = 10000005;
@@ -692,7 +692,7 @@ TEST_F(ElectricityMeterConfigTest, substractonWithPhaseImbalance) {
 
   EXPECT_TRUE(config->update_available_counters(EM_VAR_FORWARD_ACTIVE_ENERGY));
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   TElectricityMeter_Value value = {};
 
   em_ev.total_forward_active_energy[0] = 64066352;
