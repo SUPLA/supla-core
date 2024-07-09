@@ -214,7 +214,9 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
         "\"subfunction\":\"NOT_SET\","
         "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
         "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":"
-        "false,\"temperatures\":{}}");
+        "false,\"temperatures\":{},\"masterThermostatChannelNo\":null,"
+        "\"heatOrColdSourceSwitchChannelNo\":null,\"pumpSwitchChannelNo\":"
+        "null}");
     free(str);
   }
 
