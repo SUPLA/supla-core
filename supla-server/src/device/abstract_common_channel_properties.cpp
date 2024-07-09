@@ -264,7 +264,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                     add_relation(relations, get_id(), props->get_id(),
                                  CHANNEL_RELATION_TYPE_DEFAULT);
                   }
-                } else
+                } else {
                   switch (func) {
                     case SUPLA_CHANNELFNC_THERMOMETER:
                     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
@@ -313,6 +313,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                       }
                       break;
                   }
+                }
               }
               delete json_config;
             }

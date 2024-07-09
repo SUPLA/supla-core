@@ -95,6 +95,7 @@ electricity_meter_config::electricity_meter_config(supla_json_config *root)
 int electricity_meter_config::get_available_counters(void) {
   cJSON *root = get_properties_root();
   if (!root) {
+    return 0;
   }
 
   cJSON *available = cJSON_GetObjectItem(root, counters_available_key);

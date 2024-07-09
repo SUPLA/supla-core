@@ -39,8 +39,36 @@ TEST_F(ChannelEmExtendedValueTest, defaultConstructor) {
   TSuplaChannelExtendedValue ev_raw1 = {};
   TSuplaChannelExtendedValue ev_raw2 = {};
 
-  ev_raw1.size = sizeof(TElectricityMeter_ExtendedValue_V2);
+  ev_raw1.size = sizeof(TElectricityMeter_ExtendedValue_V3);
   ev_raw1.type = -1;
+
+  TestHelper::randomize(ev_raw1.value, ev_raw1.size);
+
+  ((TElectricityMeter_ExtendedValue_V3 *)ev_raw1.value)->m_count =
+      EM_MEASUREMENT_COUNT;
+
+  {
+    supla_channel_em_extended_value v(&ev_raw1);
+    EXPECT_FALSE(v.get_raw_value(&ev_raw2));
+  }
+
+  ev_raw1.size = sizeof(TElectricityMeter_ExtendedValue_V3);
+  ev_raw1.type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V3;
+
+  {
+    supla_channel_em_extended_value v(&ev_raw1);
+    EXPECT_TRUE(v.get_raw_value(&ev_raw2));
+  }
+
+  EXPECT_EQ(memcmp(&ev_raw1, &ev_raw2, sizeof(TSuplaChannelExtendedValue)), 0);
+}
+
+TEST_F(ChannelEmExtendedValueTest, setV2GetV3) {
+  TSuplaChannelExtendedValue ev_raw1 = {};
+  TSuplaChannelExtendedValue ev_raw2 = {};
+
+  ev_raw1.size = sizeof(TElectricityMeter_ExtendedValue_V2);
+  ev_raw1.type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2;
 
   TestHelper::randomize(ev_raw1.value, ev_raw1.size);
 
@@ -49,18 +77,12 @@ TEST_F(ChannelEmExtendedValueTest, defaultConstructor) {
 
   {
     supla_channel_em_extended_value v(&ev_raw1);
-    EXPECT_FALSE(v.get_raw_value(&ev_raw2));
-  }
-
-  ev_raw1.size = sizeof(TElectricityMeter_ExtendedValue_V2);
-  ev_raw1.type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2;
-
-  {
-    supla_channel_em_extended_value v(&ev_raw1);
     EXPECT_TRUE(v.get_raw_value(&ev_raw2));
   }
 
-  EXPECT_EQ(memcmp(&ev_raw1, &ev_raw2, sizeof(TSuplaChannelExtendedValue)), 0);
+  ASSERT_EQ(ev_raw2.type, EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V3);
+  EXPECT_EQ(((TElectricityMeter_ExtendedValue_V2 *)ev_raw1.value)->total_cost,
+            ((TElectricityMeter_ExtendedValue_V3 *)ev_raw2.value)->total_cost);
 }
 
 TEST_F(ChannelEmExtendedValueTest, converstionV1toV3) {
@@ -96,7 +118,32 @@ TEST_F(ChannelEmExtendedValueTest, converstionV1toV3) {
             v3.m[EM_MEASUREMENT_COUNT - 1].phase_angle[2]);
 }
 
-TEST_F(ChannelEmExtendedValueTest, converstionV2toV3) { EXPECT_TRUE(false); }
+TEST_F(ChannelEmExtendedValueTest, converstionV2toV3) {
+  TElectricityMeter_ExtendedValue_V2 v2 = {};
+
+  v2.total_forward_active_energy[0] = 300000;
+  v2.m[EM_MEASUREMENT_COUNT - 1].phase_angle[2] = 45;
+  v2.m_count = EM_MEASUREMENT_COUNT;
+
+  TSuplaChannelExtendedValue value = {};
+  srpc_evtool_v2_emextended2extended(&v2, &value);
+
+  supla_channel_em_extended_value ev(&value, "PLN", 1234);
+
+  TElectricityMeter_ExtendedValue_V3 v3 = {};
+  ev.get_raw_value(&v3);
+
+  EXPECT_EQ(v3.currency[0], 'P');
+  EXPECT_EQ(v3.currency[1], 'L');
+  EXPECT_EQ(v3.currency[2], 'N');
+  EXPECT_EQ(v3.total_cost, 37);
+
+  EXPECT_EQ(v2.m_count, v3.m_count);
+  EXPECT_EQ(v2.total_forward_active_energy[0],
+            v3.total_forward_active_energy[0]);
+  EXPECT_EQ(v2.m[EM_MEASUREMENT_COUNT - 1].phase_angle[2],
+            v3.m[EM_MEASUREMENT_COUNT - 1].phase_angle[2]);
+}
 
 TEST_F(ChannelEmExtendedValueTest, verifyGetters) {
   TElectricityMeter_ExtendedValue_V3 v3 = {};
@@ -377,6 +424,25 @@ TEST_F(ChannelEmExtendedValueTest, reverseActiveEnergyBalanced) {
   v3.total_reverse_active_energy_balanced = 223456;
   supla_channel_em_extended_value ev(&v3, nullptr, 0);
   EXPECT_DOUBLE_EQ(ev.get_rae_balanced(), 2.23456);
+}
+
+TEST_F(ChannelEmExtendedValueTest, dependsOnProtocolVersion) {
+  TElectricityMeter_ExtendedValue_V3 v3 = {};
+  supla_channel_em_extended_value ev(&v3, nullptr, 0);
+
+  TSuplaChannelExtendedValue value = {};
+
+  EXPECT_TRUE(ev.get_raw_value(&value, 0));
+  EXPECT_EQ(value.type, EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V3);
+
+  EXPECT_TRUE(ev.get_raw_value(&value, 12));
+  EXPECT_EQ(value.type, EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1);
+
+  EXPECT_TRUE(ev.get_raw_value(&value, 24));
+  EXPECT_EQ(value.type, EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2);
+
+  EXPECT_TRUE(ev.get_raw_value(&value, 25));
+  EXPECT_EQ(value.type, EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V3);
 }
 
 }  // namespace testing
