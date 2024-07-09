@@ -223,7 +223,11 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
   str = cfg2->get_properties();
   EXPECT_NE(str, nullptr);
   if (str) {
-    EXPECT_STREQ(str, "{\"availableAlgorithms\":[],\"temperatures\":{}}");
+    EXPECT_STREQ(str,
+                 "{\"availableAlgorithms\":[],\"temperatures\":{},"
+                 "\"hiddenConfigFields\":[],\"readOnlyConfigFields\":[],"
+                 "\"hiddenTempretureConfigFields\":[],"
+                 "\"readOnlyTempretureConfigFields\":[]}");
     free(str);
   }
 
