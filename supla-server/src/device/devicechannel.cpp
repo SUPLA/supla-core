@@ -754,6 +754,15 @@ void supla_device_channel::for_each(
       });
 }
 
+unsigned char supla_device_channel::get_protocol_version(void) {
+  if (get_device() && get_device()->get_connection()) {
+    return get_device() &&
+           get_device()->get_connection()->get_protocol_version();
+  }
+
+  return 0;
+}
+
 void supla_device_channel::assign_rgbw_value(
     char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness,
     char brightness, char on_off) {

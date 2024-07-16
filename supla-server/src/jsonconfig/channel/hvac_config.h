@@ -44,7 +44,7 @@ class hvac_config : public supla_json_config {
                           unsigned char cfg_channel_number,
                           unsigned char channel_number);
   bool get_channel_number(cJSON *root, int field, unsigned char channel_number,
-                          unsigned char *result);
+                          unsigned char *result, bool *is_null);
   void set_temperatures(TChannelConfig_HVAC *config, cJSON *root,
                         unsigned int filter);
   bool get_temperatures(TChannelConfig_HVAC *config, cJSON *root,

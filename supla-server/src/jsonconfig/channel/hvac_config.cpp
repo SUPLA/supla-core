@@ -221,7 +221,11 @@ void hvac_config::set_channel_number(cJSON *root, int field,
 
 bool hvac_config::get_channel_number(cJSON *root, int field,
                                      unsigned char channel_number,
-                                     unsigned char *result) {
+                                     unsigned char *result, bool *is_null) {
+  if (is_null) {
+    *is_null = false;
+  }
+
   double dbl_value = 0;
   if (get_double(root, field_map.at(field).c_str(), &dbl_value)) {
     *result = dbl_value;
@@ -230,7 +234,14 @@ bool hvac_config::get_channel_number(cJSON *root, int field,
 
   *result = channel_number;
   cJSON *item = cJSON_GetObjectItem(root, field_map.at(field).c_str());
-  return item != nullptr && cJSON_IsNull(item);
+  if (item != nullptr && cJSON_IsNull(item)) {
+    if (is_null) {
+      *is_null = true;
+    }
+    return true;
+  }
+
+  return false;
 }
 
 void hvac_config::set_temperatures(TChannelConfig_HVAC *config, cJSON *root,
@@ -787,12 +798,14 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
   bool result = false;
 
   if (get_channel_number(user_root, FIELD_MAIN_THERMOMETER_CHANNEL_NO,
-                         channel_number, &config->MainThermometerChannelNo)) {
+                         channel_number, &config->MainThermometerChannelNo,
+                         nullptr)) {
     result = true;
   }
 
   if (get_channel_number(user_root, FIELD_AUX_THERMOMETER_CHANNEL_NO,
-                         channel_number, &config->AuxThermometerChannelNo)) {
+                         channel_number, &config->AuxThermometerChannelNo,
+                         nullptr)) {
     result = true;
   }
 
@@ -819,7 +832,8 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
   }
 
   if (get_channel_number(user_root, FIELD_BINARY_SENSOR_CHANNEL_NO,
-                         channel_number, &config->BinarySensorChannelNo)) {
+                         channel_number, &config->BinarySensorChannelNo,
+                         nullptr)) {
     result = true;
   }
 
@@ -890,22 +904,33 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
     result = true;
   }
 
+  bool is_null = false;
+
   if (get_channel_number(user_root, FIELD_MASTER_THERMOSTAT_CHANNEL_NO,
-                         channel_number, &config->MasterThermostatChannelNo)) {
-    config->MasterThermostatIsSet = 1;
+                         channel_number, &config->MasterThermostatChannelNo,
+                         &is_null)) {
+    if (!is_null) {
+      config->MasterThermostatIsSet = 1;
+    }
+
     result = true;
   }
 
   if (get_channel_number(user_root, FIELD_HEAT_OR_COLD_SOURCE_SWITCH,
                          channel_number,
-                         &config->HeatOrColdSourceSwitchChannelNo)) {
-    config->HeatOrColdSourceSwitchIsSet = 1;
+                         &config->HeatOrColdSourceSwitchChannelNo, &is_null)) {
+    if (!is_null) {
+      config->HeatOrColdSourceSwitchIsSet = 1;
+    }
+
     result = true;
   }
 
   if (get_channel_number(user_root, FIELD_PUMP_SWITCH, channel_number,
-                         &config->PumpSwitchChannelNo)) {
-    config->PumpSwitchIsSet = 1;
+                         &config->PumpSwitchChannelNo, &is_null)) {
+    if (!is_null) {
+      config->PumpSwitchIsSet = 1;
+    }
     result = true;
   }
 

@@ -67,6 +67,8 @@ void supla_abstract_common_channel_properties::get_channel_relations(
     return;
   }
 
+  unsigned char protocol_version = get_protocol_version();
+
   if (kind == relation_any || kind == relation_with_sub_channel) {
     switch (get_func()) {
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
@@ -120,9 +122,15 @@ void supla_abstract_common_channel_properties::get_channel_relations(
             bool find_sensor =
                 hvac.BinarySensorChannelNo != get_channel_number();
 
-            bool find_master = hvac.MasterThermostatIsSet;
-            bool find_heat_or_cool_source = hvac.HeatOrColdSourceSwitchIsSet;
-            bool find_pump_switch = hvac.PumpSwitchIsSet;
+            bool find_master = false;
+            bool find_heat_or_cool_source = false;
+            bool find_pump_switch = false;
+
+            if (protocol_version >= 25) {
+              find_master = hvac.MasterThermostatIsSet;
+              find_heat_or_cool_source = hvac.HeatOrColdSourceSwitchIsSet;
+              find_pump_switch = hvac.PumpSwitchIsSet;
+            }
 
             for_each([&](supla_abstract_common_channel_properties *props,
                          bool *will_continue) -> void {
@@ -289,7 +297,8 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
                     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
                     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
-                      if (hvac.MasterThermostatIsSet &&
+                      if (protocol_version >= 25 &&
+                          hvac.MasterThermostatIsSet &&
                           hvac.MasterThermostatChannelNo ==
                               get_channel_number()) {
                         add_relation(relations, get_id(), props->get_id(),
@@ -297,7 +306,8 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                       }
                       break;
                     case SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH:
-                      if (hvac.HeatOrColdSourceSwitchIsSet &&
+                      if (protocol_version >= 25 &&
+                          hvac.HeatOrColdSourceSwitchIsSet &&
                           hvac.HeatOrColdSourceSwitchChannelNo ==
                               get_channel_number()) {
                         add_relation(
@@ -306,7 +316,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                       }
                       break;
                     case SUPLA_CHANNELFNC_PUMPSWITCH:
-                      if (hvac.PumpSwitchIsSet &&
+                      if (protocol_version >= 25 && hvac.PumpSwitchIsSet &&
                           hvac.PumpSwitchChannelNo == get_channel_number()) {
                         add_relation(relations, get_id(), props->get_id(),
                                      CHANNEL_RELATION_TYPE_PUMP_SWITCH);

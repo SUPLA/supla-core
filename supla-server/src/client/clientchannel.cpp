@@ -42,7 +42,7 @@ supla_client_channel::supla_client_channel(
     int DeviceId, int LocationID, int Type, int Func, int Param1, int Param2,
     int Param3, int Param4, char *TextParam1, char *TextParam2,
     char *TextParam3, const char *Caption, int AltIcon, int UserIcon,
-    short ManufacturerID, short ProductID, unsigned char ProtocolVersion,
+    short ManufacturerID, short ProductID, unsigned char DeviceProtocolVersion,
     unsigned _supla_int64_t Flags, unsigned _supla_int64_t EmSubcFlags,
     const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec, const char *user_config,
@@ -65,7 +65,7 @@ supla_client_channel::supla_client_channel(
   this->UserIcon = UserIcon;
   this->ManufacturerID = ManufacturerID;
   this->ProductID = ProductID;
-  this->ProtocolVersion = ProtocolVersion;
+  this->DeviceProtocolVersion = DeviceProtocolVersion;
   this->Flags = Flags;
   this->json_config = nullptr;
 
@@ -358,7 +358,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
   channel->Func = Func;
   channel->LocationID = this->LocationId;
   channel->AltIcon = this->AltIcon;
-  channel->ProtocolVersion = this->ProtocolVersion;
+  channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags() & 0xFFFFFFFF;
 
   proto_get_value(&channel->value, &channel->online, client);
@@ -380,7 +380,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
   channel->UserIcon = this->UserIcon;
   channel->ManufacturerID = this->ManufacturerID;
   channel->ProductID = this->ProductID;
-  channel->ProtocolVersion = this->ProtocolVersion;
+  channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags() & 0xFFFFFFFF;
 
   proto_get_value(&channel->value, &channel->online, client);
@@ -402,7 +402,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
   channel->UserIcon = this->UserIcon;
   channel->ManufacturerID = this->ManufacturerID;
   channel->ProductID = this->ProductID;
-  channel->ProtocolVersion = this->ProtocolVersion;
+  channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags() & 0xFFFFFFFF;
 
   proto_get_value(&channel->value, &channel->online, client);
@@ -424,7 +424,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_E *channel,
   channel->UserIcon = this->UserIcon;
   channel->ManufacturerID = this->ManufacturerID;
   channel->ProductID = this->ProductID;
-  channel->ProtocolVersion = this->ProtocolVersion;
+  channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags();
 
   TSCS_ChannelConfig config = {};
@@ -615,4 +615,15 @@ int supla_client_channel::set_user_config(unsigned char config_type,
                                           char *config) {
   return supla_abstract_common_channel_properties::set_user_config(
       get_real_config_type(config_type), config_size, config);
+}
+
+unsigned char supla_client_channel::get_protocol_version(void) {
+  supla_client_channels *channels =
+      dynamic_cast<supla_client_channels *>(getContainer());
+  if (channels && channels->getClient() &&
+      channels->getClient()->get_connection()) {
+    return channels->getClient()->get_connection()->get_protocol_version();
+  }
+
+  return 0;
 }

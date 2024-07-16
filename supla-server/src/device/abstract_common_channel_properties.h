@@ -50,6 +50,7 @@ class supla_abstract_common_channel_properties {
   virtual supla_json_config *get_json_config(void) = 0;
   virtual void set_json_config(supla_json_config *config) = 0;
   virtual unsigned char get_channel_number(void) = 0;
+  virtual unsigned char get_protocol_version(void) = 0;
 
   virtual void for_each(
       std::function<void(supla_abstract_common_channel_properties *, bool *)>

@@ -48,7 +48,7 @@ class supla_client_channel : public supla_client_objcontainer_item,
   int UserIcon;
   short ManufacturerID;
   short ProductID;
-  unsigned char ProtocolVersion;
+  unsigned char DeviceProtocolVersion;
   unsigned _supla_int64_t Flags;
   supla_json_config *json_config;
 
@@ -74,6 +74,9 @@ class supla_client_channel : public supla_client_objcontainer_item,
           on_channel_properties);
 
   unsigned char get_real_config_type(unsigned char config_type);
+
+ protected:
+  virtual unsigned char get_protocol_version(void);
 
  public:
   supla_client_channel(
