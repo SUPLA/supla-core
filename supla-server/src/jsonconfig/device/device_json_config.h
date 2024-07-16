@@ -29,7 +29,7 @@ class device_json_config : public supla_json_config {
  private:
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
   static const std::map<unsigned _supla_int16_t, std::string>
-      hone_screen_content_map;
+      home_screen_content_map;
   static const char content_available[];
   static const char disabled_str[];
   static const char min_allowed_temperature[];

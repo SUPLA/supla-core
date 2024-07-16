@@ -34,7 +34,7 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE, "offDelayType"}};
 
 const map<unsigned _supla_int16_t, string>
-    device_json_config::hone_screen_content_map = {
+    device_json_config::home_screen_content_map = {
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_NONE, "NONE"},
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE, "TEMPERATURE"},
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_AND_HUMIDITY,
@@ -43,7 +43,9 @@ const map<unsigned _supla_int16_t, string>
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME_DATE, "TIME_DATE"},
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_TIME, "TEMPERATURE_TIME"},
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE,
-         "MAIN_AND_AUX_TEMPERATURE"}};
+         "MAIN_AND_AUX_TEMPERATURE"},
+        {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MODE_OR_TEMPERATURE,
+         "MODE_OR_TEMPERATURE"}};
 
 const char device_json_config::content_available[] =
     "homeScreenContentAvailable";
@@ -90,8 +92,8 @@ unsigned char device_json_config::string_to_status_led(
 
 string device_json_config::home_screen_content_to_string(
     unsigned char content) {
-  for (auto it = hone_screen_content_map.cbegin();
-       it != hone_screen_content_map.cend(); ++it) {
+  for (auto it = home_screen_content_map.cbegin();
+       it != home_screen_content_map.cend(); ++it) {
     if (it->first == content) {
       return it->second;
     }
@@ -102,8 +104,8 @@ string device_json_config::home_screen_content_to_string(
 
 unsigned char device_json_config::string_to_home_screen_content(
     const std::string &content) {
-  for (auto it = hone_screen_content_map.cbegin();
-       it != hone_screen_content_map.cend(); ++it) {
+  for (auto it = home_screen_content_map.cbegin();
+       it != home_screen_content_map.cend(); ++it) {
     if (it->second == content) {
       return it->first;
     }

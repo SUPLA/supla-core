@@ -141,10 +141,11 @@ TEST_F(DeviceConfigTest, allFields) {
 
   str = cfg.get_properties();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str,
-               "{\"homeScreenContentAvailable\":[\"NONE\",\"TEMPERATURE\","
-               "\"TEMPERATURE_AND_HUMIDITY\",\"TIME\",\"TIME_DATE\","
-               "\"TEMPERATURE_TIME\",\"MAIN_AND_AUX_TEMPERATURE\"]}");
+  EXPECT_STREQ(
+      str,
+      "{\"homeScreenContentAvailable\":[\"NONE\",\"TEMPERATURE\",\"TEMPERATURE_"
+      "AND_HUMIDITY\",\"TIME\",\"TIME_DATE\",\"TEMPERATURE_TIME\",\"MAIN_AND_"
+      "AUX_TEMPERATURE\",\"MODE_OR_TEMPERATURE\"]}");
   free(str);
 }
 
