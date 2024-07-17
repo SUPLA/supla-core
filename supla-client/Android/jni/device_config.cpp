@@ -39,7 +39,8 @@ unsigned _supla_int64_t all_content_types[] = {
     SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME,
     SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME_DATE,
     SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TEMPERATURE_TIME,
-    SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE};
+    SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE,
+    SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MODE_OR_TEMPERATURE};
 
 jobject supla_device_config_field_to_object(JNIEnv *env,
                                             unsigned _supla_int64_t field) {
@@ -204,6 +205,8 @@ jobject home_screen_content_to_jobject(JNIEnv *env,
       return supla_NewEnum(env, cls_name, "TEMPERATURE_TIME");
     case SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MAIN_AND_AUX_TEMPERATURE:
       return supla_NewEnum(env, cls_name, "MAIN_AND_AUX_TEMPERATURE");
+    case SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MODE_OR_TEMPERATURE:
+      return supla_NewEnum(env, cls_name, "MODE_OR_TEMPERATURE");
   }
 
   return env->NewGlobalRef(nullptr);
