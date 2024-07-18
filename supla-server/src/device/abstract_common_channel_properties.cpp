@@ -189,7 +189,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                       SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH) {
                     add_relation(
                         relations, props->get_id(), get_id(),
-                        CHANNEL_RELATION_TYPE_HEAR_OR_COLD_SOURCE_SWITCH);
+                        CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
                   }
                   find_heat_or_cool_source = false;
                 }
@@ -312,7 +312,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                               get_channel_number()) {
                         add_relation(
                             relations, get_id(), props->get_id(),
-                            CHANNEL_RELATION_TYPE_HEAR_OR_COLD_SOURCE_SWITCH);
+                            CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
                       }
                       break;
                     case SUPLA_CHANNELFNC_PUMPSWITCH:
