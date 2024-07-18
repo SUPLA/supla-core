@@ -283,7 +283,7 @@ TEST_F(CommonChannelPropertiesTest,
   EXPECT_EQ(rel2.at(0).get_id(), 5001);
   EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
   EXPECT_EQ(rel2.at(0).get_relation_type(),
-            CHANNEL_RELATION_TYPE_HEAR_OR_COLD_SOURCE_SWITCH);
+            CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
 }
 
 TEST_F(CommonChannelPropertiesTest,
@@ -337,7 +337,7 @@ TEST_F(CommonChannelPropertiesTest,
   EXPECT_EQ(rel2.at(0).get_id(), 5001);
   EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
   EXPECT_EQ(rel2.at(0).get_relation_type(),
-            CHANNEL_RELATION_TYPE_HEAR_OR_COLD_SOURCE_SWITCH);
+            CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
 }
 
 TEST_F(CommonChannelPropertiesTest,
