@@ -544,7 +544,8 @@ vector<int> SrpcTest::get_call_ids(int version) {
 
     case 25:
       return {SUPLA_DS_CALL_REGISTER_DEVICE_G,
-              SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B};
+              SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B,
+              SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS};
   }
 
   return {};
@@ -4390,5 +4391,16 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sc_async_get_channel_value_result,
                                      1078, sc_get_value_result,
                                      SUPLA_CHANNELEXTENDEDVALUE_SIZE,
                                      ExtendedValue.value, ExtendedValue.size);
+
+//---------------------------------------------------------
+// SET SUBDEVICE DETAILS
+//---------------------------------------------------------
+
+#if SUPLA_PROTO_VERSION >= 25
+SRPC_CALL_BASIC_TEST(srpc_ds_async_set_subdevice_details, TDS_SubdeviceDetails,
+                     SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS, 348,
+                     ds_subdevice_details);
+
+#endif /*SUPLA_PROTO_VERSION >= 25*/
 
 }  // namespace
