@@ -256,7 +256,7 @@ static_assert(sizeof(TDS_RegisterPushNotification) == 11);
 static_assert(sizeof(TDS_PushNotification) == 399);
 static_assert(sizeof(TCS_RegisterPnClientToken) == 710);
 static_assert(sizeof(TSC_RegisterPnClientTokenResult) == 4);
-static_assert(sizeof(TDS_SubdeviceDetails) == 323);
+static_assert(sizeof(TDS_SubdeviceDetails) == 325);
 static_assert(sizeof(THVACValue) == 8);
 static_assert(sizeof(THVACValue) <= SUPLA_CHANNELVALUE_SIZE);
 static_assert(sizeof(TChannelConfig_HVAC) == 127);

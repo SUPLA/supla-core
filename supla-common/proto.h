@@ -129,9 +129,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // SUPLA_MAX_DATA_SIZE should be bigger then calcfg, device config, channel
 // config MAXSIZE. Otherwise sending will fail
 #define SUPLA_MAX_DATA_SIZE 600  // Registration header without channels
-#define USE_DEPRECATED_EMEV_V2   // Temperary, will be removed
+#define USE_DEPRECATED_EMEV_V2   // Temporary. It will be removed.
 #elif defined(ESP8266)
-#define USE_DEPRECATED_EMEV_V2   // Temperary, will be removed
+#define USE_DEPRECATED_EMEV_V2  // Temporary. It will be removed.
 // supla-espressif-esp compilations
 #define SUPLA_MAX_DATA_SIZE 1536
 #else
@@ -3476,17 +3476,24 @@ typedef struct {
                            SUPLA_PN_BODY_MAXSIZE];  // Last variable in struct!
 } TDS_PushNotification;
 
-#define SUPLA_SUBDEVICE_PRODUCT_CODE_MAXSIZE 50
-#define SUPLA_SUBDEVICE_SERIAL_NUMBER_MAXSIZE 50
+#define SUPLA_SUBDEVICE_PRODUCT_CODE_MAXSIZE 51
+#define SUPLA_SUBDEVICE_SERIAL_NUMBER_MAXSIZE 51
 
 typedef struct {
   // device -> server
   unsigned char SubDeviceId;
 
-  char Name[SUPLA_DEVICE_NAME_MAXSIZE];  // UTF8 - 201 B
-  char SoftVer[SUPLA_SOFTVER_MAXSIZE];  // 21 B
-  char ProductCode[SUPLA_SUBDEVICE_PRODUCT_CODE_MAXSIZE];
-  char SerialNumber[SUPLA_SUBDEVICE_SERIAL_NUMBER_MAXSIZE];
+  char Name[SUPLA_DEVICE_NAME_MAXSIZE];  // UTF8 - 201 B including the
+                                         // terminating null byte ('\0').
+  char SoftVer[SUPLA_SOFTVER_MAXSIZE];   //  21 B including the terminating null
+                                         //  byte ('\0').
+  char ProductCode[SUPLA_SUBDEVICE_PRODUCT_CODE_MAXSIZE];  // 51 B including the
+                                                           // terminating null
+                                                           // byte ('\0').
+  char
+      SerialNumber[SUPLA_SUBDEVICE_SERIAL_NUMBER_MAXSIZE];  // 51 B including
+                                                            // the terminating
+                                                            // null byte ('\0').
 } TDS_SubdeviceDetails;
 
 #define SUPLA_PN_CLIENT_TOKEN_MAXSIZE 256
