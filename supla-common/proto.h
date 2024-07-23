@@ -2682,6 +2682,7 @@ typedef struct {
 // For SUPLA_CHANNELFNC_HVAC_THERMOSTAT, ALT weekly schedule is used for
 // cooling subfuction, while standard weelkly schedule is used for heating
 #define SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE 3
+#define SUPLA_CONFIG_TYPE_OCR 4
 
 /********************************************
  * DEVICE CONFIG STRUCTURES
@@ -3371,6 +3372,31 @@ typedef struct {
 
   unsigned char Reserved[32];
 } TChannelConfig_ElectricityMeter;  // v. >= 23
+
+#define SUPLA_OCR_AUTHKEY_SIZE 33
+
+#define OCR_LIGHTING_MODE_OFF (1ULL << 0)
+#define OCR_LIGHTING_MODE_ALWAYS_ON (1ULL << 1)
+#define OCR_LIGHTING_MODE_AUTO (1ULL << 2)
+
+typedef struct {
+  char AuthKey[SUPLA_OCR_AUTHKEY_SIZE];  // Set by the server. Alphanumeric null
+                                         // terminated string.
+  char Host[SUPLA_URL_HOST_MAXSIZE];     // Set by the server. Including the
+                                         // terminating null byte ('\0').
+
+  unsigned _supla_int_t
+      PhotoIntervalSec;  // 0 - Disabled. The server may discard the
+                         // value if it considers the frequency to be
+                         // too high or too low. The server can set
+                         // the accepted value.
+  unsigned _supla_int64_t LightingMode;  // OCR_LIGHTING_MODE *
+  unsigned char LightingLevel;           // 1-100%
+
+  // readonly, device capabilities
+  unsigned _supla_int64_t AvailableLightingModes;
+  unsigned char Reserved[128];
+} TChannelConfig_OCR;
 
 typedef struct {
   _supla_int_t ChannelID;

@@ -30,6 +30,7 @@
 #include "jsonconfig/channel/general_purpose_measurement_config.h"
 #include "jsonconfig/channel/general_purpose_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "jsonconfig/channel/ocr_config.h"
 #include "jsonconfig/channel/roller_shutter_config.h"
 #include "jsonconfig/channel/temp_hum_config.h"
 #include "proto.h"
@@ -394,6 +395,9 @@ void supla_abstract_common_channel_properties::get_config(
 
       return;
     }
+  } else if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+             config_type == SUPLA_CONFIG_TYPE_OCR) {
+    JSON_TO_CONFIG(ocr_config, TChannelConfig_OCR, config, config_size);
   }
 
   if (config_type != SUPLA_CONFIG_TYPE_DEFAULT) {
@@ -587,6 +591,11 @@ int supla_abstract_common_channel_properties::set_user_config(
     json_config = new electricity_meter_config(nullptr);
     static_cast<electricity_meter_config *>(json_config)
         ->set_config((TChannelConfig_ElectricityMeter *)config);
+  } else if (type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+             config_type == SUPLA_CONFIG_TYPE_OCR) {
+    json_config = new ocr_config(nullptr);
+    static_cast<ocr_config *>(json_config)
+        ->set_config((TChannelConfig_OCR *)config);
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }

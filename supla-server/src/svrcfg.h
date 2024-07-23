@@ -80,15 +80,18 @@ extern "C" {
 #define CFG_LIMIT_CONCURRENT_REGISTRATIONS 38
 #define CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE 39
 
-#define CFG_MQTT_ENABLED 40
-#define CFG_MQTT_HOST 41
-#define CFG_MQTT_PORT 42
-#define CFG_MQTT_USERNAME 43
-#define CFG_MQTT_PASSWORD 44
-#define CFG_MQTT_PREFIX 45
-#define CFG_MQTT_SSL 46
-#define CFG_MQTT_CLIENTID 47
-#define CFG_MQTT_KEEP_ALIVE_SEC 48
+#define CFG_OCR_HOST 40
+#define CFG_OCR_MIN_INTERVAL_SEC 41
+
+#define CFG_MQTT_ENABLED 42
+#define CFG_MQTT_HOST 43
+#define CFG_MQTT_PORT 44
+#define CFG_MQTT_USERNAME 45
+#define CFG_MQTT_PASSWORD 46
+#define CFG_MQTT_PREFIX 47
+#define CFG_MQTT_SSL 48
+#define CFG_MQTT_CLIENTID 49
+#define CFG_MQTT_KEEP_ALIVE_SEC 50
 
 extern char* svrcfg_oauth_url_base64;
 extern int svrcfg_oauth_url_base64_len;
