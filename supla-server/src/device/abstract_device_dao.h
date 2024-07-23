@@ -134,6 +134,9 @@ class supla_abstract_device_dao {
 
   virtual void update_device_pairing_result(int device_id,
                                             char *pairing_result) = 0;
+
+  virtual void set_subdevice_details(int device_id,
+                                     TDS_SubdeviceDetails *details) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_DEVICE_DAO_H_ */

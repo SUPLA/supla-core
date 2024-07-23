@@ -151,6 +151,9 @@ class DeviceDaoMock : public supla_abstract_device_dao {
 
   MOCK_METHOD2(update_device_pairing_result,
                void(int device_id, char *pairing_result));
+
+  MOCK_METHOD2(set_subdevice_details,
+               void(int device_id, TDS_SubdeviceDetails *details));
 };
 
 } /* namespace testing */

@@ -1613,3 +1613,55 @@ void supla_device_dao::update_device_pairing_result(int device_id,
     dba->disconnect();
   }
 }
+
+void supla_device_dao::set_subdevice_details(int device_id,
+                                             TDS_SubdeviceDetails *details) {
+  if (!device_id || !details) {
+    return;
+  }
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  int subdevice_id = details->SubDeviceId;
+
+  MYSQL_STMT *stmt = nullptr;
+  MYSQL_BIND pbind[6] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&subdevice_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&device_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = details->Name;
+  pbind[2].buffer_length = strnlen(details->Name, sizeof(details->Name));
+
+  pbind[3].buffer_type = MYSQL_TYPE_STRING;
+  pbind[3].buffer = details->SoftVer;
+  pbind[3].buffer_length = strnlen(details->SoftVer, sizeof(details->SoftVer));
+
+  pbind[4].buffer_type = MYSQL_TYPE_STRING;
+  pbind[4].buffer = details->ProductCode;
+  pbind[4].buffer_length =
+      strnlen(details->ProductCode, sizeof(details->ProductCode));
+
+  pbind[5].buffer_type = MYSQL_TYPE_STRING;
+  pbind[5].buffer = details->SerialNumber;
+  pbind[5].buffer_length =
+      strnlen(details->SerialNumber, sizeof(details->SerialNumber));
+
+  const char sql[] = "CALL `supla_update_subdevice`(?, ?, ?, ?, ?, ?)";
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 6, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+}
