@@ -430,4 +430,54 @@ TEST_F(DeviceDaoIntegrationTest, updateDevicePairingResult) {
   EXPECT_EQ(result, "c\n0\n");
 }
 
+TEST_F(DeviceDaoIntegrationTest, subDevice) {
+  string result = "";
+  sqlQuery("SELECT COUNT(*) c FROM supla_subdevice", &result);
+  EXPECT_EQ(result, "c\n0\n");
+
+  TDS_SubdeviceDetails details = {};
+  details.SubDeviceId = 15;
+  snprintf(details.SerialNumber, sizeof(details.SerialNumber), "%s", "SN");
+  dao->set_subdevice_details(83, &details);
+  dao->set_subdevice_details(83, &details);
+
+  result = "";
+  sqlQuery(
+      "SELECT name, software_version, product_code, serial_number FROM "
+      "supla_subdevice WHERE id = 15 AND iodevice_id = 83 AND reg_date >= "
+      "UTC_TIMESTAMP() AND updated_at IS NULL",
+      &result);
+  EXPECT_EQ(result,
+            "name\tsoftware_version\tproduct_code\tserial_"
+            "number\nNULL\tNULL\tNULL\tSN\n");
+
+  snprintf(details.Name, sizeof(details.Name), "%s", "Nnaamme");
+  snprintf(details.ProductCode, sizeof(details.ProductCode), "%s", "Coode");
+  snprintf(details.SoftVer, sizeof(details.SoftVer), "%s", "SV");
+
+  dao->set_subdevice_details(83, &details);
+
+  snprintf(details.SoftVer, sizeof(details.SoftVer), "%s", "1.0");
+
+  dao->set_subdevice_details(84, &details);
+
+  result = "";
+  sqlQuery(
+      "SELECT name, software_version, product_code, serial_number FROM "
+      "supla_subdevice WHERE id = 15 AND iodevice_id = 83 AND updated_at >= "
+      "UTC_TIMESTAMP()",
+      &result);
+  EXPECT_EQ(result,
+            "name\tsoftware_version\tproduct_code\tserial_"
+            "number\nNnaamme\tSV\tCoode\tSN\n");
+  result = "";
+  sqlQuery(
+      "SELECT name, software_version, product_code, serial_number FROM "
+      "supla_subdevice",
+      &result);
+  EXPECT_EQ(result,
+            "name\tsoftware_version\tproduct_code\tserial_"
+            "number\nNnaamme\tSV\tCoode\tSN\nNnaamme\t1.0\tCoode\tSN\n");
+}
+
 } /* namespace testing */

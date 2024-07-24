@@ -3632,6 +3632,7 @@ ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 ALTER TABLE `supla_iodevice` ADD `pairing_result` VARCHAR(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `channel_addition_blocked`;
 DROP PROCEDURE IF EXISTS `supla_update_device_pairing_result`;
 CREATE PROCEDURE `supla_update_device_pairing_result`(IN `_iodevice_id` INT, IN `_pairing_result` VARCHAR(512) CHARSET utf8mb4) NOT DETERMINISTIC CONTAINS SQL SQL SECURITY DEFINER UPDATE `supla_iodevice` SET `pairing_result` = _pairing_result WHERE `id` = _iodevice_id;
+
 --
 -- Final view structure for view `supla_v_accessid_active`
 --
@@ -3820,5 +3821,24 @@ CREATE PROCEDURE `supla_update_device_pairing_result`(IN `_iodevice_id` INT, IN 
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+DELIMITER ;;
+CREATE TABLE supla_subdevice (id INT NOT NULL, iodevice_id INT NOT NULL, reg_date DATETIME NOT NULL COMMENT '(DC2Type:utcdatetime)', updated_at DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', name VARCHAR(200) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, software_version VARCHAR(20) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, product_code VARCHAR(50) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, serial_number VARCHAR(50) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, INDEX IDX_698D8D2F125F95D6 (iodevice_id), PRIMARY KEY(id, iodevice_id)) DEFAULT CHARACTER SET utf8 COLLATE `utf8_unicode_ci` ENGINE = InnoDB;;
+ALTER TABLE supla_subdevice ADD CONSTRAINT FK_698D8D2F125F95D6 FOREIGN KEY (iodevice_id) REFERENCES supla_iodevice (id) ON DELETE CASCADE;;
+CREATE PROCEDURE `supla_update_subdevice`(IN `_id` INT, IN `_iodevice_id` INT, IN `_name` VARCHAR(200), IN `_software_version` VARCHAR(20), IN `_product_code` VARCHAR(50), IN `_serial_number` VARCHAR(50)) NOT DETERMINISTIC CONTAINS SQL SQL SECURITY DEFINER
+BEGIN
+UPDATE supla_subdevice SET updated_at = UTC_TIMESTAMP()
+WHERE id = _id
+       AND iodevice_id = _iodevice_id
+       AND (!(name <=> NULLIF(_name, ''))
+            OR !(software_version <=> NULLIF(_software_version, ''))
+            OR !(product_code <=> NULLIF(_product_code, ''))
+            OR !(serial_number <=> NULLIF(_serial_number, '')));
+
+INSERT INTO supla_subdevice (id, iodevice_id, reg_date, name, software_version, product_code, serial_number)
+VALUES (_id, _iodevice_id, UTC_TIMESTAMP(), NULLIF(_name, ''), NULLIF(_software_version, ''), NULLIF(_product_code, ''), NULLIF(_serial_number, ''))
+    ON DUPLICATE KEY UPDATE name = NULLIF(_name, ''), software_version = NULLIF(_software_version, ''), product_code = NULLIF(_product_code, ''), serial_number = NULLIF(_serial_number, '');
+END;;
+
 
 -- Dump completed on 2024-07-02 22:29:54
