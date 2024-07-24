@@ -693,7 +693,12 @@ void supla_client_dao::update_client_push_notification_client_token(
       "CALL `supla_update_push_notification_client_token`(?,?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 7, true);
+  if (!dba->stmt_execute((void **)&stmt, sql, pbind, 7, true)) {
+    supla_log(LOG_ERR,
+              "Failed to update push notification client token. ClientID: %i, "
+              "Platform: %i,%i",
+              platform, _platform);
+  }
 
   if (stmt != nullptr) {
     mysql_stmt_close(stmt);
