@@ -20,10 +20,9 @@
 
 #include <memory>
 
-#include "client/client.h"
+#include "db/db_access_provider.h"
 #include "device/device.h"
-#include "mqtt/mqtt_client_suite.h"
-#include "user/user.h"
+#include "device/device_dao.h"
 
 using std::shared_ptr;
 
@@ -48,4 +47,9 @@ void supla_ch_set_subdevice_details::handle_call(
   details->ProductCode[sizeof(details->ProductCode) - 1] = 0;
   details->SerialNumber[sizeof(details->SerialNumber) - 1] = 0;
   details->SoftVer[sizeof(details->SoftVer) - 1] = 0;
+
+  supla_db_access_provider dba;
+  supla_device_dao dao(&dba);
+
+  dao.set_subdevice_details(device->get_id(), details);
 }
