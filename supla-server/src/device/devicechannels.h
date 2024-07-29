@@ -85,6 +85,9 @@ class supla_device_channels {
       std::function<bool(supla_device_channel *, TSD_DeviceCalCfgRequest *req)>
           on_calcfg);
 
+  bool calcfg_cmd(int channel_id, unsigned _supla_int64_t flag,
+                  bool superuser_authorized, _supla_int_t cmd);
+
  public:
   explicit supla_device_channels(supla_abstract_device_dao *dao,
                                  supla_device *device,
@@ -219,6 +222,7 @@ class supla_device_channels {
       unsigned char eol,
       const supla_action_hvac_setpoint_temperatures *temperatures);
   bool reset_counters(int channel_id);
+  bool take_ocr_photo(int channel_id);
   bool recalibrate(int channel_id, const supla_caller &caller,
                    bool superuser_authorized);
   void timer_arm(const supla_caller &caller, int channel_id, int group_id,

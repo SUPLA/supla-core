@@ -2095,6 +2095,7 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_IDENTIFY_SUBDEBVICE 9310         // v. >= 25
 #define SUPLA_CALCFG_CMD_RESET_DEVICE 9400                // v. >= 25
 #define SUPLA_CALCFG_CMD_RESET_SUBDEVICE 9410             // v. >= 25
+#define SUPLA_CALCFG_CMD_TAKE_OCR_PHOTO 9420              // v. >= 25
 
 #define SUPLA_CALCFG_DATATYPE_RS_SETTINGS 1000
 #define SUPLA_CALCFG_DATATYPE_FB_SETTINGS 1100  // v. >= 17

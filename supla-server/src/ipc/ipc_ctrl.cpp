@@ -71,6 +71,7 @@
 #include "ipc/set_char_command.h"
 #include "ipc/set_digiglass_value_command.h"
 #include "ipc/set_rgbw_command.h"
+#include "ipc/take_ocr_photo_command.h"
 #include "ipc/user_reconnect_command.h"
 #include "sthread.h"
 
@@ -175,6 +176,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_on_vbt_changed_command(socket_adapter));
   add_command(new supla_device_set_time_command(socket_adapter));
   add_command(new supla_send_push_command(socket_adapter));
+  add_command(new supla_take_ocr_photo_command(socket_adapter));
 }
 
 supla_ipc_ctrl::~supla_ipc_ctrl() {}
