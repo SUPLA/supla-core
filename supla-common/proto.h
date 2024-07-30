@@ -576,7 +576,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_FLAG_DEVICE_LOCKED 0x0100                  // ver. >= 22
 #define SUPLA_DEVICE_FLAG_CALCFG_SUBDEVICE_PAIRING 0x0200       // ver. >= 25
 #define SUPLA_DEVICE_FLAG_CALCFG_IDENTIFY_DEVICE 0x0400         // ver. >= 25
-#define SUPLA_DEVICE_FLAG_CALCFG_RESET_DEVICE 0x0800            // ver. >= 25
+#define SUPLA_DEVICE_FLAG_CALCFG_RESTART_DEVICE 0x0800          // ver. >= 25
 #define SUPLA_DEVICE_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION 0x1000  // ver. >= 25
 #define SUPLA_DEVICE_FLAG_BLOCK_ADDING_CHANNELS_AFTER_DELETION \
   0x2000  // ver. >= 25
@@ -638,10 +638,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE_deprecated \
   0x04000000  // ver. >= 12  DEPRECATED
 #define SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE \
-  0x08000000                                                  // ver. >= 21
-#define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE 0x10000000         // ver. >= 21
-#define SUPLA_CHANNEL_FLAG_HAS_PARENT 0x20000000              // ver. >= 21
-#define SUPLA_CHANNEL_FLAG_CALCFG_RESET_SUBDEVICE 0x40000000  // ver. >= 25
+  0x08000000                                                    // ver. >= 21
+#define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE 0x10000000           // ver. >= 21
+#define SUPLA_CHANNEL_FLAG_HAS_PARENT 0x20000000                // ver. >= 21
+#define SUPLA_CHANNEL_FLAG_CALCFG_RESTART_SUBDEVICE 0x40000000  // ver. >= 25
 #pragma pack(push, 1)
 
 typedef struct {
@@ -2093,8 +2093,8 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING 9200     // v. >= 25
 #define SUPLA_CALCFG_CMD_IDENTIFY_DEVICE 9300             // v. >= 25
 #define SUPLA_CALCFG_CMD_IDENTIFY_SUBDEVICE 9310          // v. >= 25
-#define SUPLA_CALCFG_CMD_RESET_DEVICE 9400                // v. >= 25
-#define SUPLA_CALCFG_CMD_RESET_SUBDEVICE 9410             // v. >= 25
+#define SUPLA_CALCFG_CMD_RESTART_DEVICE 9400              // v. >= 25
+#define SUPLA_CALCFG_CMD_RESTART_SUBDEVICE 9410           // v. >= 25
 #define SUPLA_CALCFG_CMD_TAKE_OCR_PHOTO 9420              // v. >= 25
 
 #define SUPLA_CALCFG_DATATYPE_RS_SETTINGS 1000
