@@ -54,11 +54,7 @@ void supla_abstract_get_hvac_value_command::on_command_match(
 
         delete hvac_value;
 
-        if (buffer) {
-          send_result(buffer);
-          return true;
-        }
-
-        return false;
+        send_result(buffer);
+        return true;
       });
 }
