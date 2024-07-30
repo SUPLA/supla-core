@@ -46,6 +46,8 @@
 #include "ipc/get_temperature_command.h"
 #include "ipc/get_valve_value_command.h"
 #include "ipc/gh_cred_changed_command.h"
+#include "ipc/identify_device_command.h"
+#include "ipc/identify_subdevice_command.h"
 #include "ipc/interrupt_and_execute_scene_command.h"
 #include "ipc/interrupt_scene_command.h"
 #include "ipc/is_channel_connected_command.h"
@@ -65,6 +67,8 @@
 #include "ipc/pair_subdevice_command.h"
 #include "ipc/recalibrate_command.h"
 #include "ipc/reset_counters_command.h"
+#include "ipc/restart_device_command.h"
+#include "ipc/restart_subdevice_command.h"
 #include "ipc/send_push_command.h"
 #include "ipc/set_cg_char_command.h"
 #include "ipc/set_cg_rgbw_command.h"
@@ -177,6 +181,10 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_device_set_time_command(socket_adapter));
   add_command(new supla_send_push_command(socket_adapter));
   add_command(new supla_take_ocr_photo_command(socket_adapter));
+  add_command(new supla_identify_device_command(socket_adapter));
+  add_command(new supla_identify_subdevice_command(socket_adapter));
+  add_command(new supla_restart_device_command(socket_adapter));
+  add_command(new supla_restart_subdevice_command(socket_adapter));
 }
 
 supla_ipc_ctrl::~supla_ipc_ctrl() {}

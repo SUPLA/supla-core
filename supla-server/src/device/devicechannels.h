@@ -223,6 +223,8 @@ class supla_device_channels {
       const supla_action_hvac_setpoint_temperatures *temperatures);
   bool reset_counters(int channel_id);
   bool take_ocr_photo(int channel_id);
+  bool restart_subdevice(int channel_id);
+  bool identify_subdevice(int channel_id);
   bool recalibrate(int channel_id, const supla_caller &caller,
                    bool superuser_authorized);
   void timer_arm(const supla_caller &caller, int channel_id, int group_id,

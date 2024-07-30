@@ -213,3 +213,30 @@ bool supla_device::pair_subdevice(const supla_caller &caller,
 
   return false;
 }
+
+bool supla_device::calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd) {
+  if (get_flags() & flag) {
+    TSD_DeviceCalCfgRequest request = {};
+
+    request.ChannelNumber = -1;
+    request.Command = cmd;
+    request.SenderID = 0;
+    request.SuperUserAuthorized = 1;
+
+    get_connection()->get_srpc_adapter()->sd_async_device_calcfg_request(
+        &request);
+    return true;
+  }
+
+  return false;
+}
+
+bool supla_device::calcfg_identify(void) {
+  return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_IDENTIFY_DEVICE,
+                    SUPLA_CALCFG_CMD_IDENTIFY_DEVICE);
+}
+
+bool supla_device::calcfg_restart(void) {
+  return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_RESTART_DEVICE,
+                    SUPLA_CALCFG_CMD_RESTART_DEVICE);
+}
