@@ -281,6 +281,19 @@ static_assert(sizeof(TChannelConfig_GeneralPurposeMeasurement) <=
 static_assert(sizeof(TChannelConfig_GeneralPurposeMeter) == 111);
 static_assert(sizeof(TChannelConfig_GeneralPurposeMeter) <=
               (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+static_assert(sizeof(TChannelConfig_OCR) == 291);
+static_assert(sizeof(TChannelConfig_OCR) <=
+              (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+static_assert(sizeof(TChannelConfig_ImpulseCounter) == 52);
+static_assert(sizeof(TChannelConfig_ImpulseCounter) <=
+              (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+static_assert(sizeof(TChannelConfig_ElectricityMeter) == 72);
+static_assert(sizeof(TChannelConfig_ElectricityMeter) <=
+              (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+static_assert(sizeof(TChannelConfig_PowerSwitch) == 42);
+static_assert(sizeof(TChannelConfig_PowerSwitch) <=
+              (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
 static_assert(SUPLA_CHANNEL_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
 static_assert(SUPLA_LOCATION_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
 static_assert(SUPLA_SCENE_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);

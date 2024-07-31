@@ -319,6 +319,22 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
   EXPECT_EQ(sizeof(TDS_SubdeviceDetails), 325);
+
+  EXPECT_EQ(sizeof(TChannelConfig_OCR), 291);
+  EXPECT_LE(sizeof(TChannelConfig_OCR),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TChannelConfig_ImpulseCounter), 52);
+  EXPECT_LE(sizeof(TChannelConfig_ImpulseCounter),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TChannelConfig_ElectricityMeter), 72);
+  EXPECT_LE(sizeof(TChannelConfig_ElectricityMeter),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TChannelConfig_PowerSwitch), 42);
+  EXPECT_LE(sizeof(TChannelConfig_PowerSwitch),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 }
 
 TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {

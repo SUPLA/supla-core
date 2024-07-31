@@ -32,13 +32,15 @@ using std::vector;
 #define FIELD_LIGHTING_MODE 3
 #define FIELD_LIGHTING_LEVEL 4
 #define FIELD_AVAILABLE_LGHTING_MODES 5
+#define FIELD_MAXIMUM_INCREMENT 6
 
 const map<unsigned _supla_int16_t, string> ocr_config::field_map = {
     {FIELD_AUTHKEY, "authKey"},
     {FIELD_PHOTO_INTERVAL_SEC, "photoIntervalSec"},
     {FIELD_LIGHTING_MODE, "lightingMode"},
     {FIELD_LIGHTING_LEVEL, "lightingLevel"},
-    {FIELD_AVAILABLE_LGHTING_MODES, "availableLightingModes"}};
+    {FIELD_AVAILABLE_LGHTING_MODES, "availableLightingModes"},
+    {FIELD_MAXIMUM_INCREMENT, "maximumIncrement"}};
 
 ocr_config::ocr_config(supla_json_config *root) : supla_json_config(root) {}
 
@@ -141,6 +143,10 @@ void ocr_config::set_config(TChannelConfig_OCR *config) {
                    cJSON_Number, true, nullptr, nullptr, config->LightingLevel);
   }
 
+  set_item_value(user_root, field_map.at(FIELD_MAXIMUM_INCREMENT).c_str(),
+                 cJSON_Number, true, nullptr, nullptr,
+                 config->MaximumIncrement);
+
   cJSON *properties_root = _get_properties_root();
   if (!properties_root) {
     return;
@@ -213,6 +219,12 @@ bool ocr_config::get_config(TChannelConfig_OCR *config) {
                  &dbl_value) &&
       dbl_value >= 0) {
     config->LightingLevel = dbl_value;
+    result = true;
+  }
+
+  if (get_double(user_root, field_map.at(FIELD_MAXIMUM_INCREMENT).c_str(),
+                 &dbl_value)) {
+    config->MaximumIncrement = dbl_value;
     result = true;
   }
 

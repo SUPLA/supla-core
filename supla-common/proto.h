@@ -3377,6 +3377,17 @@ typedef struct {
   unsigned char Reserved[32];
 } TChannelConfig_ElectricityMeter;  // v. >= 23
 
+typedef struct {
+  _supla_int_t PricePerUnit;  // * 0.0001
+  // Currency Code A https://www.nationsonline.org/oneworld/currencies.htm
+  char Currency[3];
+  char CustomUnit[9];  // UTF8 including the terminating null byte ('\0')
+
+  _supla_int_t ImpulsesPerUnit;
+
+  unsigned char Reserved[32];
+} TChannelConfig_ImpulseCounter;  // v. >= 25
+
 #define SUPLA_OCR_AUTHKEY_SIZE 33
 
 #define OCR_LIGHTING_MODE_OFF (1ULL << 0)
@@ -3394,13 +3405,28 @@ typedef struct {
                          // value if it considers the frequency to be
                          // too high or too low. The server can set
                          // the accepted value.
-  unsigned _supla_int64_t LightingMode;  // OCR_LIGHTING_MODE *
-  unsigned char LightingLevel;           // 1-100%
+  unsigned _supla_int64_t LightingMode;      // OCR_LIGHTING_MODE *
+  unsigned char LightingLevel;               // 1-100%
+  unsigned _supla_int64_t MaximumIncrement;  // Maximum impulse increment
+                                             // between shots. 0 == Unspecified
 
   // readonly, device capabilities
   unsigned _supla_int64_t AvailableLightingModes;
   unsigned char Reserved[128];
-} TChannelConfig_OCR;
+} TChannelConfig_OCR;  // v. >= 25
+
+typedef struct {
+  // If OvercurrentMaxAllowed == 0, then overcurrent settings are not available.
+  // If OvercurrentThreshold == 0, then overcurrent protection is disabled.
+  unsigned _supla_int_t OvercurrentThreshold;   // in 0.01 A
+  unsigned _supla_int_t OvercurrentMaxAllowed;  // in 0.01 A, readonly
+  unsigned char RelatedMeterIsSet;              // readonly, 1 - true, 0 - false
+  unsigned char RelatedMeterChannelNo;  // readonly, provides channel number of
+                                        // related meter if RelatedMeterIsSet
+  unsigned char Reserved[32];
+} TChannelConfig_PowerSwitch;  // v. >= 25
+
+typedef TChannelConfig_PowerSwitch TChannelConfig_LightSwitch;
 
 typedef struct {
   _supla_int_t ChannelID;

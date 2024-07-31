@@ -86,13 +86,14 @@ TEST_F(OcrConfigTest, setAndGet) {
   raw1.LightingMode = OCR_LIGHTING_MODE_ALWAYS_ON;
   raw1.LightingLevel = 30;
   raw1.PhotoIntervalSec = 1;
+  raw1.MaximumIncrement = 45;
   cfg.set_config(&raw1);
 
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str,
                "{\"ocr\":{\"photoIntervalSec\":60,\"lightingMode\":\"ALWAYS_"
-               "ON\",\"lightingLevel\":30}}");
+               "ON\",\"lightingLevel\":30,\"maximumIncrement\":45}}");
   free(str);
 
   str = cfg.get_properties();
