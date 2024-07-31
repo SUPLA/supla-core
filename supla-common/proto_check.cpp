@@ -284,7 +284,7 @@ static_assert(sizeof(TChannelConfig_GeneralPurposeMeter) <=
 static_assert(sizeof(TChannelConfig_OCR) == 291);
 static_assert(sizeof(TChannelConfig_OCR) <=
               (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
-static_assert(sizeof(TChannelConfig_ImpulseCounter) == 52);
+static_assert(sizeof(TChannelConfig_ImpulseCounter) == 61);
 static_assert(sizeof(TChannelConfig_ImpulseCounter) <=
               (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 static_assert(sizeof(TChannelConfig_ElectricityMeter) == 72);

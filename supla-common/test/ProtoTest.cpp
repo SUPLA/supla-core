@@ -324,7 +324,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TChannelConfig_OCR),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  EXPECT_EQ(sizeof(TChannelConfig_ImpulseCounter), 52);
+  EXPECT_EQ(sizeof(TChannelConfig_ImpulseCounter), 61);
   EXPECT_LE(sizeof(TChannelConfig_ImpulseCounter),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
