@@ -209,12 +209,6 @@ bool ocr_config::get_config(TChannelConfig_OCR *config) {
     result = true;
   }
 
-  unsigned int min_interval_sec = scfg_int(CFG_OCR_MIN_INTERVAL_SEC);
-
-  if (config->PhotoIntervalSec < min_interval_sec) {
-    config->PhotoIntervalSec = min_interval_sec;
-  }
-
   if (get_string(user_root, field_map.at(FIELD_LIGHTING_MODE).c_str(),
                  &str_value)) {
     config->LightingMode = string_lighting_mode(str_value);
