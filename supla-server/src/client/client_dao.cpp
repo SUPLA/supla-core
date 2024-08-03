@@ -697,8 +697,7 @@ void supla_client_dao::update_client_push_notification_client_token(
     supla_log(LOG_ERR,
               "Failed to update push notification client token. ClientID: %i, "
               "Platform: %i,%i",
-			  client_id,
-              platform, _platform);
+              client_id, platform, _platform);
   }
 
   if (stmt != nullptr) {
