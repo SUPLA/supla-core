@@ -60,8 +60,7 @@ void supla_channel_ic_value::apply_channel_properties(
 }
 
 supla_channel_extended_value *supla_channel_ic_value::convert2extended(
-    supla_json_config *json_config, int func, const char *text_param1,
-    const char *text_param2, int param2, int param3,
+    supla_json_config *json_config, int func,
     supla_channel_extended_value **data_logger_purpose) {
   impulse_counter_config config(json_config);
 
@@ -81,11 +80,10 @@ supla_channel_extended_value *supla_channel_ic_value::convert2extended(
         config.should_be_added_to_history()
             ? &ic_value
             : reinterpret_cast<TDS_ImpulseCounter_Value *>(original_raw_value),
-        text_param1, text_param2, param2, param3);
+        json_config);
   }
 
-  return new supla_channel_ic_extended_value(func, &ic_value, text_param1,
-                                             text_param2, param2, param3);
+  return new supla_channel_ic_extended_value(func, &ic_value, json_config);
 }
 
 // static

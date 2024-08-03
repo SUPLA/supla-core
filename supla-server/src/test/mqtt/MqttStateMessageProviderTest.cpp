@@ -70,12 +70,13 @@ void MqttStateMessageProviderTest::SetIcMeasurementResult(void) {
         TDS_ImpulseCounter_Value ic_val;
         ic_val.counter = 1230;
 
-        char customUnit[] = "m3";
-        char currency[] = "EUR";
+        supla_json_config cfg;
+        cfg.set_user_config(
+            "{\"currency\":\"EUR\",\"unit\":\"m3\",\"pricePerUnit\":10000,"
+            "\"impulsesPerUnit\":1000}");
 
         return new supla_channel_ic_extended_value(
-            SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, currency, customUnit, 10000,
-            1000);
+            SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, &cfg);
       });
 }
 

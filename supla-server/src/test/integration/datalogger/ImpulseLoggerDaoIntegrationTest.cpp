@@ -68,8 +68,11 @@ TEST_F(ImpulseLoggerDaoIntegrationTest, add) {
 
   ic_val.counter = 4;
 
+  supla_json_config cfg;
+  cfg.set_user_config("{\"impulsesPerUnit\":2}");
+
   supla_channel_ic_extended_value icv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                      &ic_val, nullptr, nullptr, 0, 2);
+                                      &ic_val, &cfg);
 
   dao->add(11, &icv);
 

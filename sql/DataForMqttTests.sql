@@ -318,7 +318,7 @@ INSERT INTO `supla_dev_channel` (`id`, `type`, `func`, `param1`, `param2`, `capt
 (7341, 1000, 120, 7340, 0, NULL, 0, NULL, NULL, NULL, 1414, 1, 5823, 0, 0, 0, NULL, 0, NULL),
 (8453, 1000, 100, 0, 0, NULL, 1, NULL, NULL, NULL, 3741, 1, 6361, 0, 0, 0, NULL, 0, NULL),
 (9202, 5010, 330, 0, 0, NULL, 3, NULL, NULL, NULL, 53, 0, 6688, 0, 0, 1, NULL, 0, NULL),
-(9203, 5010, 320, 20300, 20500, NULL, 107, 'PLN', NULL, NULL, 53, 1, 6688, 0, 0, 0, NULL, 0, NULL),
+(9203, 5010, 320, 20300, 20500, NULL, 107, NULL, NULL, NULL, 53, 1, 6688, 0, 0, 0, NULL, 0, NULL),
 (10259, 1020, 210, 0, 0, NULL, 0, NULL, NULL, NULL, 431, 2, 7212, 0, 0, 0, NULL, 0, NULL),
 (12048, 3044, 260, 0, 0, NULL, 0, NULL, NULL, NULL, 1017, 0, 7878, 0, 0, 0, NULL, 0, NULL),
 (15039, 1000, 80, 0, 0, NULL, 1, NULL, NULL, NULL, 1347, 5, 9236, 0, 0, 0, NULL, 0, NULL),
@@ -326,7 +326,7 @@ INSERT INTO `supla_dev_channel` (`id`, `type`, `func`, `param1`, `param2`, `capt
 (15596, 7000, 500, 0, 0, NULL, 0, NULL, NULL, NULL, 1792, 0, 9480, 0, 0, 0, NULL, 65536, NULL),
 (16054, 3048, 270, 0, 0, NULL, 0, NULL, NULL, NULL, 3411, 2, 9665, 0, NULL, 0, NULL, 0, NULL),
 (16055, 3042, 250, 0, 0, NULL, 0, NULL, NULL, NULL, 3411, 3, 9665, 0, NULL, 0, NULL, 0, NULL),
-(16166, 5010, 315, 0, 0, NULL, 1000, 'PLN', NULL, NULL, 1802, 0, 9717, 0, 0, 0, NULL, 0, NULL),
+(16166, 5010, 315, 0, 0, NULL, 1000, NULL, NULL, NULL, 1802, 0, 9717, 0, 0, 0, NULL, 0, NULL),
 (16708, 6010, 410, 0, 0, NULL, 0, NULL, NULL, NULL, 1238, 0, 9934, 0, 0, 0, NULL, 0, NULL),
 (17748, 1020, 220, 0, 0, NULL, 0, NULL, NULL, NULL, 2487, 0, 10190, 0, 0, 0, NULL, 0, NULL),
 (17749, 1020, 220, 0, 0, NULL, 0, NULL, NULL, NULL, 2487, 1, 10190, 0, 0, 0, NULL, 0, NULL),
@@ -352,3 +352,6 @@ INSERT INTO `supla_dev_channel` (`id`, `type`, `func`, `param1`, `param2`, `capt
 
 INSERT INTO `supla_dev_channel` (`id`, `iodevice_id`, `user_id`, `channel_number`, `caption`, `type`, `func`, `flist`, `param1`, `param2`, `param3`, `text_param1`, `text_param2`, `text_param3`, `alt_icon`, `hidden`, `location_id`, `flags`, `user_icon_id`, `user_config`, `param4`, `properties`) VALUES
 (87235, 25691, 48, 0, NULL, 2900, 900, 65552, 0, 0, 0, NULL, NULL, NULL, 0, 0, 44, 134303872, NULL, '{\"closingTimeMs\":17800,\"openingTimeMs\":17800,\"motorUpsideDown\":false,\"buttonsUpsideDown\":true,\"tiltingTimeMs\":2400,\"tilt0Angle\":0,\"tilt100Angle\":180,\"fasadeBlindType\":\"CHANGES_POSITION_WHILE_TILTING\",\"facadeBlindType\":\"CHANGES_POSITION_WHILE_TILTING\",\"timeMargin\":1}', 0, '{}');
+
+UPDATE `supla_dev_channel` SET user_config = '{\"currency\": \"PLN\"}' WHERE id = 9203;
+UPDATE `supla_dev_channel` SET user_config = '{\"currency\": \"PLN\"}' WHERE id = 16166;

@@ -25,7 +25,8 @@ namespace testing {
 
 TEST_F(ChannelIcExtendedValueTest, defaults) {
   TDS_ImpulseCounter_Value ic_val = {};
-  supla_channel_ic_extended_value ev(0, &ic_val, "", "", 0, 0);
+  supla_json_config cfg;
+  supla_channel_ic_extended_value ev(0, &ic_val, nullptr);
 
   EXPECT_EQ(ev.get_total_cost(), 0);
   EXPECT_EQ(ev.get_price_per_unit(), 0);
@@ -63,28 +64,28 @@ TEST_F(ChannelIcExtendedValueTest, defaultContructor) {
 TEST_F(ChannelIcExtendedValueTest, electricityMeterDefaults) {
   TDS_ImpulseCounter_Value ic_val = {};
   supla_channel_ic_extended_value ev(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                     &ic_val, "", "", 0, 0);
+                                     &ic_val, nullptr);
   EXPECT_EQ(ev.get_custom_unit(), "kWh");
 }
 
 TEST_F(ChannelIcExtendedValueTest, gasMeterDefaults) {
   TDS_ImpulseCounter_Value ic_val = {};
-  supla_channel_ic_extended_value ev(SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, "",
-                                     "", 0, 0);
+  supla_channel_ic_extended_value ev(SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val,
+                                     nullptr);
   EXPECT_EQ(ev.get_custom_unit(), "m³");
 }
 
 TEST_F(ChannelIcExtendedValueTest, gasWaterDefaults) {
   TDS_ImpulseCounter_Value ic_val = {};
   supla_channel_ic_extended_value ev(SUPLA_CHANNELFNC_IC_WATER_METER, &ic_val,
-                                     "", "", 0, 0);
+                                     nullptr);
   EXPECT_EQ(ev.get_custom_unit(), "m³");
 }
 
 TEST_F(ChannelIcExtendedValueTest, gasHeatDefaults) {
   TDS_ImpulseCounter_Value ic_val = {};
   supla_channel_ic_extended_value ev(SUPLA_CHANNELFNC_IC_HEAT_METER, &ic_val,
-                                     "", "", 0, 0);
+                                     nullptr);
   EXPECT_EQ(ev.get_custom_unit(), "GJ");
 }
 
@@ -92,8 +93,13 @@ TEST_F(ChannelIcExtendedValueTest, vefityAllGetters) {
   TDS_ImpulseCounter_Value ic_val = {};
   ic_val.counter = 150;
 
+  supla_json_config cfg;
+  cfg.set_user_config(
+      "{\"currency\":\"PLN\",\"unit\":\"Unit\",\"pricePerUnit\":45000,"
+      "\"impulsesPerUnit\":10}");
+
   supla_channel_ic_extended_value ev(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                     &ic_val, "PLN", "Unit", 45000, 10);
+                                     &ic_val, &cfg);
 
   EXPECT_EQ(ev.get_total_cost(), 6750);
   EXPECT_EQ(ev.get_price_per_unit(), 45000);
@@ -109,8 +115,13 @@ TEST_F(ChannelIcExtendedValueTest, copy) {
   TDS_ImpulseCounter_Value ic_val = {};
   ic_val.counter = 150;
 
+  supla_json_config cfg;
+  cfg.set_user_config(
+      "{\"currency\":\"PLN\",\"unit\":\"Unit\",\"pricePerUnit\":45000,"
+      "\"impulsesPerUnit\":10}");
+
   supla_channel_ic_extended_value ev(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                     &ic_val, "PLN", "Unit", 45000, 10);
+                                     &ic_val, &cfg);
 
   supla_channel_ic_extended_value *copy =
       dynamic_cast<supla_channel_ic_extended_value *>(ev.copy());

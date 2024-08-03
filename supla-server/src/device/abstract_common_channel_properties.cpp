@@ -30,6 +30,7 @@
 #include "jsonconfig/channel/general_purpose_measurement_config.h"
 #include "jsonconfig/channel/general_purpose_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "jsonconfig/channel/impulse_counter_config.h"
 #include "jsonconfig/channel/ocr_config.h"
 #include "jsonconfig/channel/roller_shutter_config.h"
 #include "jsonconfig/channel/temp_hum_config.h"
@@ -462,6 +463,10 @@ void supla_abstract_common_channel_properties::get_config(
     JSON_TO_CONFIG(general_purpose_meter_config,
                    TChannelConfig_GeneralPurposeMeter, config, config_size);
     return;
+  } else if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+    JSON_TO_CONFIG(impulse_counter_config, TChannelConfig_ImpulseCounter,
+                   config, config_size);
+    return;
   }
 
   switch (get_func()) {
@@ -596,6 +601,12 @@ int supla_abstract_common_channel_properties::set_user_config(
     json_config = new ocr_config(nullptr);
     static_cast<ocr_config *>(json_config)
         ->set_config((TChannelConfig_OCR *)config);
+  } else if (type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+             config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
+             config_size == sizeof(TChannelConfig_ImpulseCounter)) {
+    json_config = new impulse_counter_config();
+    static_cast<impulse_counter_config *>(json_config)
+        ->set_config((TChannelConfig_ImpulseCounter *)config);
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }

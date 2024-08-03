@@ -798,11 +798,13 @@ TEST_F(StateWebhookRequestTest,
   TDS_ImpulseCounter_Value ic_val;
   ic_val.counter = 1000000;
 
-  char currency[] = "PLN";
-  char unit[] = "GJ";
+  supla_json_config cfg;
+  cfg.set_user_config(
+      "{\"currency\":\"PLN\",\"unit\":\"GJ\",\"pricePerUnit\":5555,"
+      "\"impulsesPerUnit\":1000}");
 
   supla_channel_ic_extended_value *icv = new supla_channel_ic_extended_value(
-      SUPLA_CHANNELFNC_IC_HEAT_METER, &ic_val, currency, unit, 5555, 1000);
+      SUPLA_CHANNELFNC_IC_HEAT_METER, &ic_val, &cfg);
 
   makeTest(SUPLA_CHANNELFNC_IC_HEAT_METER, true, icv, expectedPayload);
 }
@@ -830,11 +832,13 @@ TEST_F(StateWebhookRequestTest,
   TDS_ImpulseCounter_Value ic_val;
   ic_val.counter = 1000000;
 
-  char currency[] = "PLN";
-  char unit[] = "m3";
+  supla_json_config cfg;
+  cfg.set_user_config(
+      "{\"currency\":\"PLN\",\"unit\":\"m3\",\"pricePerUnit\":5555,"
+      "\"impulsesPerUnit\":1000}");
 
   supla_channel_ic_extended_value *icv = new supla_channel_ic_extended_value(
-      SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, currency, unit, 5555, 1000);
+      SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, &cfg);
 
   makeTest(SUPLA_CHANNELFNC_IC_GAS_METER, true, icv, expectedPayload);
 }
@@ -862,11 +866,13 @@ TEST_F(StateWebhookRequestTest,
   TDS_ImpulseCounter_Value ic_val;
   ic_val.counter = 1000000;
 
-  char currency[] = "PLN";
-  char unit[] = "m3";
+  supla_json_config cfg;
+  cfg.set_user_config(
+      "{\"currency\":\"PLN\",\"unit\":\"m3\",\"pricePerUnit\":5555,"
+      "\"impulsesPerUnit\":1000}");
 
   supla_channel_ic_extended_value *icv = new supla_channel_ic_extended_value(
-      SUPLA_CHANNELFNC_IC_WATER_METER, &ic_val, currency, unit, 5555, 1000);
+      SUPLA_CHANNELFNC_IC_WATER_METER, &ic_val, &cfg);
 
   makeTest(SUPLA_CHANNELFNC_IC_WATER_METER, true, icv, expectedPayload);
 }
@@ -895,12 +901,13 @@ TEST_F(StateWebhookRequestTest,
   TDS_ImpulseCounter_Value ic_val;
   ic_val.counter = 1000000;
 
-  char currency[] = "PLN";
-  char unit[] = "kWh";
+  supla_json_config cfg;
+  cfg.set_user_config(
+      "{\"currency\":\"PLN\",\"unit\":\"kWh\",\"pricePerUnit\":5555,"
+      "\"impulsesPerUnit\":1000}");
 
-  supla_channel_ic_extended_value *icv =
-      new supla_channel_ic_extended_value(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                          &ic_val, currency, unit, 5555, 1000);
+  supla_channel_ic_extended_value *icv = new supla_channel_ic_extended_value(
+      SUPLA_CHANNELFNC_IC_ELECTRICITY_METER, &ic_val, &cfg);
 
   makeTest(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER, true, icv, expectedPayload);
 }

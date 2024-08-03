@@ -585,8 +585,7 @@ bool supla_device_channel::set_value(
   }
 
   supla_channel_extended_value *eval = new_value->convert2extended(
-      json_config, func, text_param1, text_param2, param2, param3,
-      &logger_purpose_extended_value);
+      json_config, func, &logger_purpose_extended_value);
 
   if (eval) {
     set_extended_value(nullptr, eval);

@@ -3384,8 +3384,8 @@ typedef struct {
   char CustomUnit[9];  // UTF8 including the terminating null byte ('\0')
 
   _supla_int_t ImpulsesPerUnit;
-  _supla_int64_t ValueAdded;   // 0.001 units
-  unsigned char AddToHistory;  // 0 - False, 1 - True
+  _supla_int64_t InitialValue;  // 0.001 units
+  unsigned char AddToHistory;   // 0 - False, 1 - True
 
   unsigned char Reserved[32];
 } TChannelConfig_ImpulseCounter;  // v. >= 25

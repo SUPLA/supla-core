@@ -27,6 +27,7 @@
 #include "device/value/channel_rs_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "device/value/channel_valve_value.h"
+#include "jsonconfig/json_config.h"
 #include "vbt/vbt_on_change_condition.h"
 
 namespace testing {
@@ -1607,11 +1608,16 @@ TEST_F(OnChangeConditionTest, icCounter) {
   TDS_ImpulseCounter_Value ic_val2 = {};
   ic_val1.counter = 151;
 
+  supla_json_config cfg;
+  cfg.set_user_config(
+      "{\"currency\":\"PLN\",\"unit\":\"Unit\",\"pricePerUnit\":45000,"
+      "\"impulsesPerUnit\":10}");
+
   supla_channel_ic_extended_value newv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                       &ic_val1, "PLN", "Unit", 45000, 10);
+                                       &ic_val1, &cfg);
 
   supla_channel_ic_extended_value oldv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                       &ic_val2, "PLN", "Unit", 45000, 10);
+                                       &ic_val2, &cfg);
 
   supla_vbt_on_change_condition c;
 
@@ -1628,11 +1634,16 @@ TEST_F(OnChangeConditionTest, icCalculatedValue) {
   TDS_ImpulseCounter_Value ic_val2 = {};
   ic_val1.counter = 151;
 
+  supla_json_config cfg;
+  cfg.set_user_config(
+      "{\"currency\":\"PLN\",\"unit\":\"Unit\",\"pricePerUnit\":45000,"
+      "\"impulsesPerUnit\":10}");
+
   supla_channel_ic_extended_value newv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                       &ic_val1, "PLN", "Unit", 45000, 10);
+                                       &ic_val1, &cfg);
 
   supla_channel_ic_extended_value oldv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                       &ic_val2, "PLN", "Unit", 45000, 10);
+                                       &ic_val2, &cfg);
 
   supla_vbt_on_change_condition c;
 

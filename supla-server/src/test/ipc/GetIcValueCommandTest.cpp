@@ -42,8 +42,13 @@ TEST_F(GetIcValueCommandTest, getIcmValueWithSuccess) {
   TDS_ImpulseCounter_Value ic_val = {};
   ic_val.counter = 10000;
 
+  supla_json_config cfg;
+  cfg.set_user_config(
+      "{\"currency\":\"PLN\",\"unit\":\"\",\"pricePerUnit\":500,"
+      "\"impulsesPerUnit\":1000}");
+
   supla_channel_ic_extended_value *icv = new supla_channel_ic_extended_value(
-      SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, "PLN", "", 500, 1000);
+      SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, &cfg);
 
   EXPECT_CALL(*cmd, get_ic_extended_value(10, 20, 30)).WillOnce(Return(icv));
 
