@@ -313,6 +313,32 @@ TEST_F(ImpulseCounterConfigTest, setGetRawConfig) {
   free(str);
 }
 
-TEST_F(ImpulseCounterConfigTest, merge) {}
+TEST_F(ImpulseCounterConfigTest, merge) {
+  impulse_counter_config config1;
+
+  config1.set_user_config(
+      "{\"a\":\"b\",\"pricePerUnit\":12345,\"currency\":\"EUR\",\"unit\":"
+      "\"CUnit\",\"impulsesPerUnit\":5678,\"initialValue\":8765,"
+      "\"addToHistory\":true}");
+
+  TChannelConfig_ImpulseCounter raw = {};
+  raw.ImpulsesPerUnit = 6000;
+  raw.Currency[0] = 'P';
+  raw.Currency[1] = 'L';
+  raw.Currency[2] = 'N';
+
+  impulse_counter_config config2;
+  config2.set_config(&raw);
+  config2.merge(&config1);
+
+  char *str = config1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"a\":\"b\",\"pricePerUnit\":0,\"currency\":\"PLN\",\"unit\":\"\","
+      "\"impulsesPerUnit\":6000,\"initialValue\":0,\"addToHistory\":false}");
+
+  free(str);
+}
 
 } /* namespace testing */
