@@ -131,7 +131,7 @@ void supla_abstract_register_device::send_result(int resultcode) {
   if (resultcode == SUPLA_RESULTCODE_CHANNEL_CONFLICT) {
     prepare_channel_report(&channel_report_size, channel_report);
 
-    if (channel_report && get_srpc_adapter()->get_proto_version() >= 25) {
+    if (get_srpc_adapter()->get_proto_version() >= 25) {
       TSD_SuplaRegisterDeviceResult_B srdr;
       srdr.result_code = resultcode;
       srdr.activity_timeout = get_activity_timeout();
