@@ -3422,9 +3422,10 @@ typedef struct {
   // If OvercurrentThreshold == 0, then overcurrent protection is disabled.
   unsigned _supla_int_t OvercurrentThreshold;   // in 0.01 A
   unsigned _supla_int_t OvercurrentMaxAllowed;  // in 0.01 A, readonly
-  unsigned char RelatedMeterIsSet;              // readonly, 1 - true, 0 - false
-  unsigned char RelatedMeterChannelNo;  // readonly, provides channel number of
-                                        // related meter if RelatedMeterIsSet
+  unsigned char DefaultRelatedMeterIsSet;       // readonly, 1 - true, 0 - false
+  unsigned char
+      DefaultRelatedMeterChannelNo;  // readonly, provides channel number of
+                                     // related meter if RelatedMeterIsSet
   unsigned char Reserved[32];
 } TChannelConfig_PowerSwitch;  // v. >= 25
 
