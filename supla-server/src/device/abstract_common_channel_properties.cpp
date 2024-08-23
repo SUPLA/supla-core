@@ -628,3 +628,25 @@ int supla_abstract_common_channel_properties::set_user_config(
 
   return result;
 }
+
+int supla_abstract_common_channel_properties::get_channel_id(
+    unsigned char number) {
+  if (get_channel_number() == number) {
+    return get_id();
+  }
+
+  int result = 0;
+
+  for_each(
+      [this, number, &result](supla_abstract_common_channel_properties *props,
+                              bool *will_continue) -> void {
+        if (get_device_id() == props->get_device_id() &&
+            number == props->get_channel_number()) {
+          result = props->get_id();
+        }
+
+        *will_continue = !result;
+      });
+
+  return result;
+}
