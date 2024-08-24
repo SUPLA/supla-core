@@ -38,6 +38,7 @@ class power_switch_config : public supla_json_config {
                   supla_abstract_common_channel_properties *props);
   bool get_config(TChannelConfig_PowerSwitch *config);
   virtual void merge(supla_json_config *dst);
+  int get_related_meter_channel_id(void);
 };
 
 #endif /* POWER_SWITCH_CONFIG_H_ */

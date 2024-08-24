@@ -29,6 +29,7 @@
 #include "device/devicechannel.h"
 #include "jsonconfig/channel/electricity_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "jsonconfig/channel/power_switch_config.h"
 #include "log.h"
 #include "proto.h"
 #include "safearray.h"
@@ -497,12 +498,14 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     switch (get_func()) {
       case SUPLA_CHANNELFNC_POWERSWITCH:
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
-        ChannelId = Param1;  // Associated measurement channel
-        break;
-
-      case SUPLA_CHANNELFNC_STAIRCASETIMER:
-        ChannelId = Param2;  // Associated measurement channel
-        break;
+      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+        supla_json_config *json_config = get_json_config();
+        if (json_config) {
+          power_switch_config config(json_config);
+          ChannelId = config.get_related_meter_channel_id();
+          delete json_config;
+        }
+      } break;
     }
 
     if (ChannelId) {

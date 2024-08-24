@@ -151,3 +151,15 @@ void power_switch_config::merge(supla_json_config *_dst) {
                              false);
   }
 }
+
+int power_switch_config::get_related_meter_channel_id(void) {
+  cJSON *user_root = get_user_root();
+  if (user_root) {
+    double dbl_value = 0;
+    if (get_double(user_root, related_meter_channel_id_field, &dbl_value)) {
+      return dbl_value;
+    }
+  }
+
+  return 0;
+}

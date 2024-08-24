@@ -201,4 +201,15 @@ TEST_F(PowerSwitchConfigTest, merge) {
   free(str);
 }
 
+TEST_F(PowerSwitchConfigTest, getRelatedMeterChannelId) {
+  power_switch_config config;
+  EXPECT_EQ(config.get_related_meter_channel_id(), 0);
+
+  config.set_user_config("{\"relatedMeterChannelId\":null}");
+  EXPECT_EQ(config.get_related_meter_channel_id(), 0);
+
+  config.set_user_config("{\"relatedMeterChannelId\":12345}");
+  EXPECT_EQ(config.get_related_meter_channel_id(), 12345);
+}
+
 } /* namespace testing */

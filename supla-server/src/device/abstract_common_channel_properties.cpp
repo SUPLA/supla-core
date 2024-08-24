@@ -32,6 +32,7 @@
 #include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/impulse_counter_config.h"
 #include "jsonconfig/channel/ocr_config.h"
+#include "jsonconfig/channel/power_switch_config.h"
 #include "jsonconfig/channel/roller_shutter_config.h"
 #include "jsonconfig/channel/temp_hum_config.h"
 #include "proto.h"
@@ -90,15 +91,16 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         break;
 
       case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH: {
-        add_relation(relations, get_param1(), get_id(),
-                     CHANNEL_RELATION_TYPE_METER);
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+        supla_json_config *json_config = get_json_config();
+        if (json_config) {
+          power_switch_config config(json_config);
+          add_relation(relations, config.get_related_meter_channel_id(),
+                       get_id(), CHANNEL_RELATION_TYPE_METER);
+          delete json_config;
+        }
       } break;
-
-      case SUPLA_CHANNELFNC_STAIRCASETIMER:
-        add_relation(relations, get_param2(), get_id(),
-                     CHANNEL_RELATION_TYPE_METER);
-        break;
 
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
@@ -607,6 +609,14 @@ int supla_abstract_common_channel_properties::set_user_config(
     json_config = new impulse_counter_config();
     static_cast<impulse_counter_config *>(json_config)
         ->set_config((TChannelConfig_ImpulseCounter *)config);
+  } else if ((func == SUPLA_CHANNELFNC_POWERSWITCH ||
+              func == SUPLA_CHANNELFNC_LIGHTSWITCH ||
+              func == SUPLA_CHANNELFNC_STAIRCASETIMER) &&
+             config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
+             config_size == sizeof(TChannelConfig_PowerSwitch)) {
+    json_config = new power_switch_config();
+    static_cast<power_switch_config *>(json_config)
+        ->set_config((TChannelConfig_PowerSwitch *)config, this);
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }
