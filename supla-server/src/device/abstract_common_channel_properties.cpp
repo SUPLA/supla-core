@@ -239,8 +239,27 @@ void supla_abstract_common_channel_properties::get_channel_relations(
       case SUPLA_CHANNELFNC_IC_GAS_METER:
       case SUPLA_CHANNELFNC_IC_WATER_METER:
       case SUPLA_CHANNELFNC_IC_HEAT_METER:
-        add_relation(relations, get_id(), get_param4(),
-                     CHANNEL_RELATION_TYPE_METER);
+
+        for_each([&](supla_abstract_common_channel_properties *props,
+                     bool *will_continue) -> void {
+          switch (props->get_func()) {
+            case SUPLA_CHANNELFNC_POWERSWITCH:
+            case SUPLA_CHANNELFNC_LIGHTSWITCH:
+            case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+              supla_json_config *json_config = props->get_json_config();
+              if (json_config) {
+                power_switch_config config(json_config);
+                add_relation(relations, get_id(),
+                             config.get_related_meter_channel_id(),
+                             CHANNEL_RELATION_TYPE_METER);
+                delete json_config;
+              }
+
+            }
+
+            break;
+          }
+        });
         break;
     }
 
