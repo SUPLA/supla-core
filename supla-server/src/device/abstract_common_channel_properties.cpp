@@ -254,7 +254,6 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                              CHANNEL_RELATION_TYPE_METER);
                 delete json_config;
               }
-
             }
 
             break;
