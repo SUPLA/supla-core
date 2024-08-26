@@ -249,9 +249,12 @@ void supla_abstract_common_channel_properties::get_channel_relations(
               supla_json_config *json_config = props->get_json_config();
               if (json_config) {
                 power_switch_config config(json_config);
-                add_relation(relations, get_id(),
-                             config.get_related_meter_channel_id(),
-                             CHANNEL_RELATION_TYPE_METER);
+
+                if (config.get_related_meter_channel_id() == get_id()) {
+                  add_relation(relations, get_id(), props->get_id(),
+                               CHANNEL_RELATION_TYPE_METER);
+                }
+
                 delete json_config;
               }
             }
