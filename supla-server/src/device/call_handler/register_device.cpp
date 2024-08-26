@@ -80,8 +80,8 @@ void supla_register_device::on_registration_success(void) {
   device->set_registered(true);
 
   supla_user::add_device(device, get_user_id());
-  device->get_user()->get_clients()->update_device_channels(get_location_id(),
-                                                            get_device_id());
+  device->get_user()->get_clients()->update_device_channels(
+      get_location_id(), get_device_id(), is_new_device());
 
   device->get_channels()->on_device_registered(
       device->get_user(), get_device_id(), get_channels_b(), get_channels_e(),

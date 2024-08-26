@@ -62,11 +62,12 @@ void supla_user_clients::set_channel_function(int channel_id, int func) {
   });
 }
 
-void supla_user_clients::update_device_channels(int location_id,
-                                                int device_id) {
-  for_each([location_id, device_id](shared_ptr<supla_client> client,
-                                    bool *will_continue) -> void {
-    client->update_device_channels(location_id, device_id);
+void supla_user_clients::update_device_channels(int location_id, int device_id,
+                                                bool with_channel_relations) {
+  for_each([location_id, device_id, with_channel_relations](
+               shared_ptr<supla_client> client, bool *will_continue) -> void {
+    client->update_device_channels(location_id, device_id,
+                                   with_channel_relations);
   });
 }
 

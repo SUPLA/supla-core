@@ -138,9 +138,15 @@ bool supla_client::is_superuser_authorized(void) {
   return result;
 }
 
-void supla_client::update_device_channels(int LocationID, int DeviceID) {
+void supla_client::update_device_channels(int LocationID, int DeviceID,
+                                          bool IncludeChannelRelations) {
   if (locations->location_exists(LocationID)) {
     channels->update_device_channels(DeviceID);
+
+    if (IncludeChannelRelations) {
+      channel_relations->load(channels);
+    }
+
     remote_update_lists();
   }
 }

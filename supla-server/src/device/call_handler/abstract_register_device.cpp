@@ -386,6 +386,8 @@ bool supla_abstract_register_device::add_channels(void) {
   return true;
 }
 
+bool supla_abstract_register_device::is_new_device(void) { return new_device; }
+
 void supla_abstract_register_device::register_device(
     weak_ptr<supla_device> device, TDS_SuplaRegisterDevice_C *register_device_c,
     TDS_SuplaRegisterDevice_G *register_device_g,

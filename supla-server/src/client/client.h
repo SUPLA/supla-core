@@ -63,6 +63,7 @@ class supla_client : public supla_abstract_connection_object {
   void remote_update_lists(void);
   void set_name(const char *name);
   void set_access_id(int access_id);
+  void update_channel_relations(void);
 
  public:
   explicit supla_client(supla_connection *connection);
@@ -85,7 +86,8 @@ class supla_client : public supla_abstract_connection_object {
                            bool *connection_failed);
   void revoke_superuser_authorization(void);
   bool is_superuser_authorized(void);
-  void update_device_channels(int LocationID, int DeviceID);
+  void update_device_channels(int LocationID, int DeviceID,
+                              bool IncludeChannelRelations);
   void on_channel_value_changed(int DeviceId, int ChannelId = 0,
                                 bool Extended = false);
   void get_next(void);
