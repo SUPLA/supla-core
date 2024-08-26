@@ -670,7 +670,7 @@ bool supla_device_dao::set_device_config(
 
       pbind[2].buffer_type = MYSQL_TYPE_STRING;
       pbind[2].buffer = (char *)user_config_str;
-      pbind[2].buffer_length = strnlen(user_config_str, 4096);
+      pbind[2].buffer_length = strnlen(user_config_str, 8192);
 
       pbind[3].buffer_type = MYSQL_TYPE_STRING;
       pbind[3].buffer = (char *)user_config_md5sum.c_str();
@@ -753,7 +753,7 @@ device_json_config *supla_device_dao::get_device_config(
   pbind.buffer = (char *)&device_id;
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
-    char user_config[4097] = {};
+    char user_config[8193] = {};
     char user_config_md5[33] = {};
     char properties[2049] = {};
     char properties_md5[33] = {};
@@ -883,7 +883,7 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
     unsigned long text_param2_size = 0;
     unsigned long text_param3_size = 0;
 
-    char user_config[4097] = {};
+    char user_config[8193] = {};
     char properties[2049] = {};
 
     unsigned long user_config_size = 0;
@@ -1143,7 +1143,7 @@ supla_json_config *supla_device_dao::get_channel_config(
   pbind.buffer = (char *)&channel_id;
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
-    char user_config[4097] = {};
+    char user_config[8193] = {};
     char user_config_md5[33] = {};
 
     char properties[2049] = {};
@@ -1266,7 +1266,7 @@ bool supla_device_dao::set_channel_config(int user_id, int channel_id,
 
       pbind[2].buffer_type = MYSQL_TYPE_STRING;
       pbind[2].buffer = (char *)user_config_str;
-      pbind[2].buffer_length = strnlen(user_config_str, 4096);
+      pbind[2].buffer_length = strnlen(user_config_str, 8192);
 
       pbind[3].buffer_type = MYSQL_TYPE_STRING;
       pbind[3].buffer = (char *)user_config_md5sum.c_str();
@@ -1274,7 +1274,7 @@ bool supla_device_dao::set_channel_config(int user_id, int channel_id,
 
       pbind[4].buffer_type = MYSQL_TYPE_STRING;
       pbind[4].buffer = (char *)properties_str;
-      pbind[4].buffer_length = strnlen(properties_str, 4096);
+      pbind[4].buffer_length = strnlen(properties_str, 8192);
 
       pbind[5].buffer_type = MYSQL_TYPE_STRING;
       pbind[5].buffer = (char *)properties_md5sum.c_str();

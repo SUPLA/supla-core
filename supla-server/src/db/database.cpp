@@ -319,9 +319,9 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     char text_param2[256];
     char text_param3[256];
 
-    char user_config[4097] = {};
+    char user_config[8193] = {};
     char properties[2049] = {};
-    char em_subc_user_config[4097] = {};
+    char em_subc_user_config[8193] = {};
 
     unsigned long caption_size = 0;
     unsigned long text_param1_size = 0;
@@ -1049,7 +1049,7 @@ bool database::channel_is_associated_with_action_trigger(int UserID,
     MYSQL_BIND rbind[2] = {};
 
     char properties[2049] = {};
-    char user_config[4097] = {};
+    char user_config[8193] = {};
 
     unsigned long user_config_size = 0;
     unsigned long properties_size = 0;
