@@ -21,6 +21,7 @@
 #include <string>
 
 #include "jsonconfig/channel/hvac_config.h"
+#include "log.h"
 
 using std::string;
 
@@ -470,6 +471,14 @@ TEST_F(DeviceDaoIntegrationTest, subDevice) {
   EXPECT_EQ(result,
             "name\tsoftware_version\tproduct_code\tserial_"
             "number\nNnaamme\tSV\tCoode\tSN\n");
+
+  result = "";
+  sqlQuery("SELECT *, UTC_TIMESTAMP() FROM supla_subdevice", &result);
+
+  // For some reason this test sometimes fails when run from Done. We need more
+  // information.
+  supla_log(LOG_DEBUG, "%s", result.c_str());
+
   result = "";
   sqlQuery(
       "SELECT name, software_version, product_code, serial_number FROM "
