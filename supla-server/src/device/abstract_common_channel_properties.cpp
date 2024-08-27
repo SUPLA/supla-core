@@ -91,8 +91,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         break;
 
       case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+      case SUPLA_CHANNELFNC_LIGHTSWITCH: {
         supla_json_config *json_config = get_json_config();
         if (json_config) {
           power_switch_config config(json_config);
@@ -542,6 +541,11 @@ void supla_abstract_common_channel_properties::get_config(
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
       JSON_TO_CONFIG(electricity_meter_config, TChannelConfig_ElectricityMeter,
                      config, config_size);
+      break;
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      JSON_TO_CONFIG(power_switch_config, TChannelConfig_PowerSwitch, config,
+                     config_size);
       break;
   }
 }
