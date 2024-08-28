@@ -35,13 +35,14 @@ class supla_device : public supla_abstract_connection_object {
   int flags;
   static supla_device_call_handler_collection call_handler_collection;
   supla_device_channels *channels;
-  bool calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd);
+  bool calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd,
+                  bool important_for_sleepers);
 
  protected:
   friend class supla_register_device;
   friend class supla_ch_device_calcfg_result;
 
-  bool entering_cfg_mode_in_progress;
+  int last_calcfg_command_importatnt_for_sleepers;
 
   void set_flags(int flags);
   void set_channels(supla_device_channels *channels);

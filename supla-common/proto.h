@@ -354,6 +354,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_NOT_REGISTERED 39                        // ver. >= 20
 #define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_VBT 40   // >= 20
 #define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_PUSH 41  // >= 20
+#define SUPLA_RESULTCODE_RESTART_REQUESTED 42                     // ver. >= 25
+#define SUPLA_RESULTCODE_IDENTIFY_REQUESTED 43                    // ver. >= 25
+#define SUPLA_RESULTCODE_MALFORMED_EMAIL 44                       // ver. >= ?
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0         // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1       // ver. >= 10

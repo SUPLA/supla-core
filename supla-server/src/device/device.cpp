@@ -44,7 +44,7 @@ supla_device_call_handler_collection supla_device::call_handler_collection;
 
 supla_device::supla_device(supla_connection *connection)
     : supla_abstract_connection_object(connection) {
-  this->entering_cfg_mode_in_progress = false;
+  this->last_calcfg_command_importatnt_for_sleepers = 0;
   this->channels = nullptr;
   this->flags = 0;
 }
@@ -149,8 +149,6 @@ supla_device_channels *supla_device::get_channels(void) { return channels; }
 
 bool supla_device::enter_cfg_mode(void) {
   if (flags & SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE) {
-    entering_cfg_mode_in_progress = true;
-
     TSD_DeviceCalCfgRequest request = {};
 
     request.ChannelNumber = -1;
@@ -159,6 +157,9 @@ bool supla_device::enter_cfg_mode(void) {
 
     srpc_sd_async_device_calcfg_request(
         get_connection()->get_srpc_adapter()->get_srpc(), &request);
+
+    last_calcfg_command_importatnt_for_sleepers = request.Command;
+
     return true;
   }
 
@@ -214,7 +215,8 @@ bool supla_device::pair_subdevice(const supla_caller &caller,
   return false;
 }
 
-bool supla_device::calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd) {
+bool supla_device::calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd,
+                              bool importat_for_sleepers) {
   if (get_flags() & flag) {
     TSD_DeviceCalCfgRequest request = {};
 
@@ -225,6 +227,11 @@ bool supla_device::calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd) {
 
     get_connection()->get_srpc_adapter()->sd_async_device_calcfg_request(
         &request);
+
+    if (importat_for_sleepers) {
+      last_calcfg_command_importatnt_for_sleepers = cmd;
+    }
+
     return true;
   }
 
@@ -233,10 +240,10 @@ bool supla_device::calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd) {
 
 bool supla_device::calcfg_identify(void) {
   return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_IDENTIFY_DEVICE,
-                    SUPLA_CALCFG_CMD_IDENTIFY_DEVICE);
+                    SUPLA_CALCFG_CMD_IDENTIFY_DEVICE, true);
 }
 
 bool supla_device::calcfg_restart(void) {
   return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_RESTART_DEVICE,
-                    SUPLA_CALCFG_CMD_RESTART_DEVICE);
+                    SUPLA_CALCFG_CMD_RESTART_DEVICE, true);
 }

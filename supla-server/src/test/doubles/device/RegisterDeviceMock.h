@@ -45,7 +45,7 @@ class RegisterDeviceMock : public supla_abstract_register_device {
   MOCK_METHOD3(get_authkey_hash,
                bool(int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
                     bool *is_null));
-  MOCK_METHOD0(is_prev_entering_cfg_mode, bool(void));
+  MOCK_METHOD0(get_last_calcfg_command_importatnt_for_sleepers, int(void));
   MOCK_METHOD0(on_registration_success, void(void));
   MOCK_METHOD0(after_registration_success, void(void));
 

@@ -58,9 +58,8 @@ void supla_ch_device_calcfg_result::handle_call(
   }
 
   if (rd->data.ds_device_calcfg_result->Command ==
-      SUPLA_CALCFG_CMD_ENTER_CFG_MODE) {
-    device->entering_cfg_mode_in_progress = false;
-    return;
+      device->last_calcfg_command_importatnt_for_sleepers) {
+    device->last_calcfg_command_importatnt_for_sleepers = 0;
   }
 
   if (rd->data.ds_device_calcfg_result->Command ==
