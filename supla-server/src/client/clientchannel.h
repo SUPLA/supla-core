@@ -79,17 +79,19 @@ class supla_client_channel : public supla_client_objcontainer_item,
   virtual unsigned char get_protocol_version(void);
 
  public:
-  supla_client_channel(
-      supla_client_channels *Container, int Id, unsigned char channel_number,
-      int DeviceId, int LocationID, int Type, int Func, int Param1, int Param2,
-      int Param3, int Param4, char *TextParam1, char *TextParam2,
-      char *TextParam3, const char *Caption, int AltIcon, int UserIcon,
-      short ManufacturerID, short ProductID, unsigned char ProtocolVersion,
-      unsigned _supla_int64_t Flags, unsigned _supla_int64_t EmSubcFlags,
-      const char value[SUPLA_CHANNELVALUE_SIZE],
-      unsigned _supla_int_t validity_time_sec, const char *user_config,
-      const char *properties, const char *em_subc_user_config);
+  supla_client_channel(supla_client_channels *Container, int Id,
+                       unsigned char channel_number, int DeviceId,
+                       int LocationID, int Type, int Func, int Param1,
+                       int Param2, int Param3, int Param4, char *TextParam1,
+                       char *TextParam2, char *TextParam3, const char *Caption,
+                       int AltIcon, int UserIcon, short ManufacturerID,
+                       short ProductID, unsigned char ProtocolVersion,
+                       unsigned _supla_int64_t Flags,
+                       const char value[SUPLA_CHANNELVALUE_SIZE],
+                       unsigned _supla_int_t validity_time_sec,
+                       const char *user_config, const char *properties);
   virtual ~supla_client_channel(void);
+  void after_all_channels_loaded(void);
   virtual unsigned char get_channel_number(void);
   void mark_for_remote_update(int mark);
   bool remote_update_is_possible(void);

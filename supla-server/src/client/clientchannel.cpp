@@ -44,10 +44,9 @@ supla_client_channel::supla_client_channel(
     int Param3, int Param4, char *TextParam1, char *TextParam2,
     char *TextParam3, const char *Caption, int AltIcon, int UserIcon,
     short ManufacturerID, short ProductID, unsigned char DeviceProtocolVersion,
-    unsigned _supla_int64_t Flags, unsigned _supla_int64_t EmSubcFlags,
-    const char value[SUPLA_CHANNELVALUE_SIZE],
+    unsigned _supla_int64_t Flags, const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec, const char *user_config,
-    const char *properties, const char *em_subc_user_config)
+    const char *properties)
     : supla_client_objcontainer_item(Container, Id, Caption),
       supla_abstract_common_channel_properties() {
   this->channel_number = channel_number;
@@ -70,10 +69,6 @@ supla_client_channel::supla_client_channel(
   this->Flags = Flags;
   this->json_config = nullptr;
 
-  this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED;
-  this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
-  this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
-
   supla_json_config *json_config = new supla_json_config();
   json_config->set_user_config(user_config);
   json_config->set_properties(properties);
@@ -83,9 +78,6 @@ supla_client_channel::supla_client_channel(
     electricity_meter_config *config = new electricity_meter_config();
 
     config->set_user_config(user_config);
-    this->Flags |= config->get_channel_user_flags();
-
-    config->set_user_config(em_subc_user_config);
     this->Flags |= config->get_channel_user_flags();
 
     delete config;
@@ -114,6 +106,42 @@ supla_client_channel::~supla_client_channel(void) {
   }
 
   delete json_config;
+}
+
+void supla_client_channel::after_all_channels_loaded(void) {
+  unsigned _supla_int64_t Flags = 0;
+  switch (get_func()) {
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+      int meter_channel_id = 0;
+      supla_json_config *json_config = get_json_config();
+      if (json_config) {
+        power_switch_config config(json_config);
+        meter_channel_id = config.get_related_meter_channel_id();
+        delete json_config;
+      }
+
+      if (meter_channel_id) {
+        for_each([meter_channel_id, &Flags](
+                     supla_abstract_common_channel_properties *props,
+                     bool *will_continue) -> void {
+          if (props->get_id() == meter_channel_id) {
+            int F = props->get_flags();
+            Flags |= F & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED;
+            Flags |= F & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
+            Flags |= F & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
+
+            *will_continue = false;
+          }
+        });
+      }
+    } break;
+  }
+
+  if (Flags) {
+    this->Flags |= Flags;
+  }
 }
 
 unsigned char supla_client_channel::get_channel_number(void) {

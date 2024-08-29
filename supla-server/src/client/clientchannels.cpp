@@ -60,6 +60,16 @@ bool supla_client_channels::channel_exists(int ChannelID) {
 
 void supla_client_channels::_load(database *db, e_objc_scope scope) {
   db->get_client_channels(getClient()->get_id(), nullptr, this);
+
+  safe_array_lock(getArr());
+  for (int a = 0; a < safe_array_count(getArr()); a++) {
+    supla_client_channel *channel =
+        static_cast<supla_client_channel *>(safe_array_get(getArr(), a));
+    if (channel) {
+      channel->after_all_channels_loaded();
+    }
+  }
+  safe_array_unlock(getArr());
 }
 
 void supla_client_channels::update_device_channels(int DeviceId) {
