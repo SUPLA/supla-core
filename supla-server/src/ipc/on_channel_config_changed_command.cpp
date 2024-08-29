@@ -55,6 +55,12 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
       break;
+    case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
+      scope =
+          scope &
+          CONFIG_CHANGE_SCOPE_OCR;  // In the case of a pulse counter with OCR,
+                                    // we only react to changes in the OCR area.
+      break;
     default:
       return;
   }
@@ -77,7 +83,8 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
     } else if (json_config &&
                ((scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) ||
                 (scope & CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE) ||
-                (scope & CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE))) {
+                (scope & CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE) ||
+                (scope & CONFIG_CHANGE_SCOPE_OCR))) {
       device->get_channels()->access_channel(
           channel_id, [&](supla_device_channel *channel) -> void {
             channel->set_json_config(new supla_json_config(json_config, true));
@@ -93,6 +100,10 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
             if (scope & CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE) {
               channel->send_config_to_device(
                   SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE);
+            }
+
+            if (scope & CONFIG_CHANGE_SCOPE_OCR) {
+              channel->send_config_to_device(SUPLA_CONFIG_TYPE_OCR);
             }
           });
     }
