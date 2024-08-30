@@ -49,6 +49,7 @@ class CommonChannelPropertiesMock
                void(std::function<
                     void(supla_abstract_common_channel_properties *, bool *)>
                         on_channel_properties));
+  MOCK_METHOD0(get_protocol_version, unsigned char());
 };
 
 } /* namespace testing */

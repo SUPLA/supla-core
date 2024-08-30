@@ -38,6 +38,7 @@
 									<listOptionValue builtIn="false" value="SPROTO_WITHOUT_OUT_BUFFER"/>
 									<listOptionValue builtIn="false" value="SRPC_WITHOUT_OUT_QUEUE"/>
 									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V1"/>
+									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V2"/>
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
 									<listOptionValue builtIn="false" value="__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE)"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
@@ -68,6 +69,7 @@
 									<listOptionValue builtIn="false" value="SPROTO_WITHOUT_OUT_BUFFER"/>
 									<listOptionValue builtIn="false" value="SRPC_WITHOUT_OUT_QUEUE"/>
 									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V1"/>
+									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V2"/>
 									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
 									<listOptionValue builtIn="false" value="__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE)"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
@@ -156,6 +158,7 @@
 									<listOptionValue builtIn="false" value="SPROTO_WITHOUT_OUT_BUFFER"/>
 									<listOptionValue builtIn="false" value="SRPC_WITHOUT_OUT_QUEUE"/>
 									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V1"/>
+									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V2"/>
 									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
 								</option>
 								<option id="gnu.c.compiler.option.misc.randomization.1679568385" name="Address randomization (-fPIE)" superClass="gnu.c.compiler.option.misc.randomization" useByScannerDiscovery="false" value="true" valueType="boolean"/>
@@ -180,6 +183,7 @@
 									<listOptionValue builtIn="false" value="SPROTO_WITHOUT_OUT_BUFFER"/>
 									<listOptionValue builtIn="false" value="SRPC_WITHOUT_OUT_QUEUE"/>
 									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V1"/>
+									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V2"/>
 									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.1957512620" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-fsigned-char -c -fmessage-length=0 -fstack-protector-all -std=c++11" valueType="string"/>
@@ -261,6 +265,7 @@
 									<listOptionValue builtIn="false" value="USE_OS_TZDB=1"/>
 									<listOptionValue builtIn="false" value="__SUPLA_SERVER=1"/>
 									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V1"/>
+									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V2"/>
 									<listOptionValue builtIn="false" value="__TEST=1"/>
 									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
@@ -288,6 +293,7 @@
 									<listOptionValue builtIn="false" value="USE_OS_TZDB=1"/>
 									<listOptionValue builtIn="false" value="__SUPLA_SERVER=1"/>
 									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V1"/>
+									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V2"/>
 									<listOptionValue builtIn="false" value="__TEST=1"/>
 									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>

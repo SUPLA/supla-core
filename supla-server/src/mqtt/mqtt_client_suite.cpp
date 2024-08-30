@@ -224,6 +224,11 @@ void supla_mqtt_client_suite::onDeviceDeleted(int UserID, int DeviceID) {
   }
 }
 
+void supla_mqtt_client_suite::onChannelDeleted(int UserID, int DeviceID,
+                                               int ChannelId) {
+  onDeviceDeleted(UserID, DeviceID);
+}
+
 void supla_mqtt_client_suite::onActionsTriggered(int UserID, int DeviceID,
                                                  int ChannelID,
                                                  unsigned int Actions) {

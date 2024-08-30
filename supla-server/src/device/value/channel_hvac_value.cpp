@@ -190,8 +190,11 @@ void supla_channel_hvac_value::set_on(unsigned char on) {
   ((THVACValue*)raw_value)->IsOn = on;
 }
 
-bool supla_channel_hvac_value::is_on(void) {
-  return ((THVACValue*)raw_value)->IsOn > 0;
+unsigned char supla_channel_hvac_value::is_on(void) {
+  if (((THVACValue*)raw_value)->IsOn > 101) {
+    return 101;
+  }
+  return ((THVACValue*)raw_value)->IsOn;
 }
 
 bool supla_channel_hvac_value::is_heating(void) {

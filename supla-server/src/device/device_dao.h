@@ -127,6 +127,12 @@ class supla_device_dao : public supla_abstract_device_dao {
   virtual void update_channel_conflict_details(int device_id,
                                                int channel_number,
                                                char *details);
+
+  virtual void update_device_pairing_result(int device_id,
+                                            char *pairing_result);
+
+  virtual void set_subdevice_details(int device_id,
+                                     TDS_SubdeviceDetails *details);
 };
 
 #endif /* SUPLA_DEVICE_DAO_H_ */

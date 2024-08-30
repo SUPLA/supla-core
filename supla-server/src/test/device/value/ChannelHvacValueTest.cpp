@@ -90,6 +90,15 @@ TEST_F(ChannelHvacValueTest, isOn) {
   value.set_on(5);
 
   EXPECT_TRUE(value.is_on());
+  EXPECT_EQ(value.is_on(), 5);
+
+  value.set_on(102);
+
+  EXPECT_EQ(value.is_on(), 101);
+
+  value.set_on(0);
+  EXPECT_FALSE(value.is_on());
+  EXPECT_EQ(value.is_on(), 0);
 }
 
 TEST_F(ChannelHvacValueTest, isHeating) {

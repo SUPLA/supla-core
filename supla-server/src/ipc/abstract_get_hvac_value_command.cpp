@@ -46,7 +46,7 @@ void supla_abstract_get_hvac_value_command::on_command_match(
         char buffer[50] = {};
 
         snprintf(buffer, sizeof(buffer), "VALUE:%i,%i,%i,%i,%i,%i,%i",
-                 hvac_value->is_on() ? 1 : 0, hvac_value->get_mode(),
+                 hvac_value->is_on(), hvac_value->get_mode(),
                  hvac_value->get_setpoint_temperature_heat(),
                  hvac_value->get_setpoint_temperature_cool(),
                  hvac_value->get_flags(), hvac_value->get_temperature(),
@@ -54,11 +54,7 @@ void supla_abstract_get_hvac_value_command::on_command_match(
 
         delete hvac_value;
 
-        if (buffer) {
-          send_result(buffer);
-          return true;
-        }
-
-        return false;
+        send_result(buffer);
+        return true;
       });
 }

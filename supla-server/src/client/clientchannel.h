@@ -48,7 +48,7 @@ class supla_client_channel : public supla_client_objcontainer_item,
   int UserIcon;
   short ManufacturerID;
   short ProductID;
-  unsigned char ProtocolVersion;
+  unsigned char DeviceProtocolVersion;
   unsigned _supla_int64_t Flags;
   supla_json_config *json_config;
 
@@ -67,26 +67,31 @@ class supla_client_channel : public supla_client_objcontainer_item,
   void proto_get_value(TSuplaChannelValue *value, char *online,
                        supla_client *client);
   bool get_cs_extended_value(std::shared_ptr<supla_device> device,
-                             int channel_id,
-                             TSC_SuplaChannelExtendedValue *cev);
+                             int channel_id, TSC_SuplaChannelExtendedValue *cev,
+                             unsigned char protocol_version);
   virtual void for_each(
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties);
 
   unsigned char get_real_config_type(unsigned char config_type);
 
+ protected:
+  virtual unsigned char get_protocol_version(void);
+
  public:
-  supla_client_channel(
-      supla_client_channels *Container, int Id, unsigned char channel_number,
-      int DeviceId, int LocationID, int Type, int Func, int Param1, int Param2,
-      int Param3, int Param4, char *TextParam1, char *TextParam2,
-      char *TextParam3, const char *Caption, int AltIcon, int UserIcon,
-      short ManufacturerID, short ProductID, unsigned char ProtocolVersion,
-      unsigned _supla_int64_t Flags, unsigned _supla_int64_t EmSubcFlags,
-      const char value[SUPLA_CHANNELVALUE_SIZE],
-      unsigned _supla_int_t validity_time_sec, const char *user_config,
-      const char *properties, const char *em_subc_user_config);
+  supla_client_channel(supla_client_channels *Container, int Id,
+                       unsigned char channel_number, int DeviceId,
+                       int LocationID, int Type, int Func, int Param1,
+                       int Param2, int Param3, int Param4, char *TextParam1,
+                       char *TextParam2, char *TextParam3, const char *Caption,
+                       int AltIcon, int UserIcon, short ManufacturerID,
+                       short ProductID, unsigned char ProtocolVersion,
+                       unsigned _supla_int64_t Flags,
+                       const char value[SUPLA_CHANNELVALUE_SIZE],
+                       unsigned _supla_int_t validity_time_sec,
+                       const char *user_config, const char *properties);
   virtual ~supla_client_channel(void);
+  void after_all_channels_loaded(void);
   virtual unsigned char get_channel_number(void);
   void mark_for_remote_update(int mark);
   bool remote_update_is_possible(void);

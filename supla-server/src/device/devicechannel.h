@@ -81,6 +81,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties);
 
+  virtual unsigned char get_protocol_version(void);
+
  public:
   supla_device_channel(supla_device *device, int id,
                        unsigned char channel_number, int type, int func,

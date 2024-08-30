@@ -320,9 +320,9 @@ _supla_int_t srpc_evtool_value_get(TSuplaChannelExtendedValue *ev,
                                    unsigned short index,
                                    TSuplaChannelExtendedValue *dest);
 
-_supla_int_t srpc_evtool_v2_extended2emextended(
+_supla_int_t srpc_evtool_extended2emextended(
     const TSuplaChannelExtendedValue *ev,
-    TElectricityMeter_ExtendedValue_V2 *em_ev);
+    TElectricityMeter_ExtendedValue_V3 *em_ev);
 
 _supla_int_t srpc_evtool_v1_extended2icextended(
     const TSuplaChannelExtendedValue *ev,
@@ -333,15 +333,15 @@ _supla_int_t srpc_evtool_v1_extended2thermostatextended(
 
 _supla_int_t supla_single_call_execute_action(
     TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
-    TCS_Action *action);
+    int conn_timeout_ms, TCS_Action *action);
 
 _supla_int_t supla_single_call_register_pn_client_token(
     TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
-    TCS_PnClientToken *token);
+    int conn_timeout_ms, TCS_PnClientToken *token);
 
 _supla_int_t supla_single_call_get_channel_value(
     TCS_ClientAuthorizationDetails *auth_details, int protocol_version,
-    int channel_id, TSC_GetChannelValueResult *vresult);
+    int conn_timeout_ms, int channel_id, TSC_GetChannelValueResult *vresult);
 
 #ifdef __cplusplus
 }

@@ -37,6 +37,15 @@ using std::string;
 #define FIELD_USE_SEPARATE_HEAT_COOL_OUTPUTS 14
 #define FIELD_TEMPERATURES 15
 
+#define FIELD_MASTER_THERMOSTAT_CHANNEL_NO 16
+#define FIELD_HEAT_OR_COLD_SOURCE_SWITCH 17
+#define FIELD_PUMP_SWITCH 18
+
+#define FIELD_HIDDEN_CONFIG_FIELDS 19
+#define FIELD_READONLY_CONFIG_FIELDS 20
+#define FIELD_HIDDEN_TEMPERATURE_CONFIG_FIELDS 21
+#define FIELD_READONLY_TEMPERATURE_CONFIG_FIELDS 22
+
 const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_MAIN_THERMOMETER_CHANNEL_NO, "mainThermometerChannelNo"},
     {FIELD_AUX_THERMOMETER_CHANNEL_NO, "auxThermometerChannelNo"},
@@ -54,7 +63,15 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_SUBSUNCTION, "subfunction"},
     {FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE,
      "temperatureSetpointChangeSwitchesToManualMode"},
-    {FIELD_TEMPERATURES, "temperatures"}};
+    {FIELD_TEMPERATURES, "temperatures"},
+    {FIELD_MASTER_THERMOSTAT_CHANNEL_NO, "masterThermostatChannelNo"},
+    {FIELD_HEAT_OR_COLD_SOURCE_SWITCH, "heatOrColdSourceSwitchChannelNo"},
+    {FIELD_PUMP_SWITCH, "pumpSwitchChannelNo"},
+    {FIELD_HIDDEN_CONFIG_FIELDS, "hiddenConfigFields"},
+    {FIELD_READONLY_CONFIG_FIELDS, "readOnlyConfigFields"},
+    {FIELD_HIDDEN_TEMPERATURE_CONFIG_FIELDS, "hiddenTempretureConfigFields"},
+    {FIELD_READONLY_TEMPERATURE_CONFIG_FIELDS,
+     "readOnlyTempretureConfigFields"}};
 
 const map<unsigned int, string> hvac_config::temperatures_map = {
     {TEMPERATURE_FREEZE_PROTECTION, "freezeProtection"},
@@ -204,7 +221,11 @@ void hvac_config::set_channel_number(cJSON *root, int field,
 
 bool hvac_config::get_channel_number(cJSON *root, int field,
                                      unsigned char channel_number,
-                                     unsigned char *result) {
+                                     unsigned char *result, bool *is_null) {
+  if (is_null) {
+    *is_null = false;
+  }
+
   double dbl_value = 0;
   if (get_double(root, field_map.at(field).c_str(), &dbl_value)) {
     *result = dbl_value;
@@ -213,7 +234,14 @@ bool hvac_config::get_channel_number(cJSON *root, int field,
 
   *result = channel_number;
   cJSON *item = cJSON_GetObjectItem(root, field_map.at(field).c_str());
-  return item != nullptr && cJSON_IsNull(item);
+  if (item != nullptr && cJSON_IsNull(item)) {
+    if (is_null) {
+      *is_null = true;
+    }
+    return true;
+  }
+
+  return false;
 }
 
 void hvac_config::set_temperatures(TChannelConfig_HVAC *config, cJSON *root,
@@ -370,9 +398,383 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
                                                             : cJSON_False,
       true, nullptr, nullptr, 0);
 
+  set_channel_number(user_root, FIELD_MASTER_THERMOSTAT_CHANNEL_NO,
+                     config->MasterThermostatIsSet
+                         ? config->MasterThermostatChannelNo
+                         : channel_number,
+                     channel_number);
+
+  set_channel_number(user_root, FIELD_HEAT_OR_COLD_SOURCE_SWITCH,
+                     config->HeatOrColdSourceSwitchIsSet
+                         ? config->HeatOrColdSourceSwitchChannelNo
+                         : channel_number,
+                     channel_number);
+
+  set_channel_number(
+      user_root, FIELD_PUMP_SWITCH,
+      config->PumpSwitchIsSet ? config->PumpSwitchChannelNo : channel_number,
+      channel_number);
+
   set_temperatures(config, user_root, 0xFFFFFFFF ^ readonly_temperatures);
 
   set_temperatures(config, properties_root, readonly_temperatures);
+
+  cJSON *readonly = cJSON_CreateArray();
+  cJSON *hidden = cJSON_CreateArray();
+
+  if (config->ParameterFlags.MainThermometerChannelNoReadonly) {
+    cJSON_AddItemToArray(
+        readonly, cJSON_CreateString(
+                      field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_NO).c_str()));
+  }
+
+  if (config->ParameterFlags.MainThermometerChannelNoHidden) {
+    cJSON_AddItemToArray(
+        hidden, cJSON_CreateString(
+                    field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_NO).c_str()));
+  }
+
+  if (config->ParameterFlags.AuxThermometerChannelNoReadonly) {
+    cJSON_AddItemToArray(
+        readonly, cJSON_CreateString(
+                      field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_NO).c_str()));
+  }
+
+  if (config->ParameterFlags.AuxThermometerChannelNoHidden) {
+    cJSON_AddItemToArray(
+        hidden, cJSON_CreateString(
+                    field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_NO).c_str()));
+  }
+
+  if (config->ParameterFlags.BinarySensorChannelNoReadonly) {
+    cJSON_AddItemToArray(
+        readonly, cJSON_CreateString(
+                      field_map.at(FIELD_BINARY_SENSOR_CHANNEL_NO).c_str()));
+  }
+
+  if (config->ParameterFlags.BinarySensorChannelNoHidden) {
+    cJSON_AddItemToArray(
+        hidden, cJSON_CreateString(
+                    field_map.at(FIELD_BINARY_SENSOR_CHANNEL_NO).c_str()));
+  }
+
+  if (config->ParameterFlags.AuxThermometerTypeReadonly) {
+    cJSON_AddItemToArray(
+        readonly,
+        cJSON_CreateString(field_map.at(FIELD_AUX_THERMOMETER_TYPE).c_str()));
+  }
+
+  if (config->ParameterFlags.AuxThermometerTypeHidden) {
+    cJSON_AddItemToArray(
+        hidden,
+        cJSON_CreateString(field_map.at(FIELD_AUX_THERMOMETER_TYPE).c_str()));
+  }
+
+  if (config->ParameterFlags.AntiFreezeAndOverheatProtectionEnabledReadonly) {
+    cJSON_AddItemToArray(
+        readonly,
+        cJSON_CreateString(
+            field_map.at(FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED)
+                .c_str()));
+  }
+
+  if (config->ParameterFlags.AntiFreezeAndOverheatProtectionEnabledHidden) {
+    cJSON_AddItemToArray(
+        hidden,
+        cJSON_CreateString(
+            field_map.at(FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED)
+                .c_str()));
+  }
+
+  if (config->ParameterFlags.UsedAlgorithmReadonly) {
+    cJSON_AddItemToArray(
+        readonly,
+        cJSON_CreateString(field_map.at(FIELD_USED_ALGORITHM).c_str()));
+  }
+
+  if (config->ParameterFlags.UsedAlgorithmHidden) {
+    cJSON_AddItemToArray(
+        hidden, cJSON_CreateString(field_map.at(FIELD_USED_ALGORITHM).c_str()));
+  }
+
+  if (config->ParameterFlags.MinOnTimeSReadonly) {
+    cJSON_AddItemToArray(
+        readonly,
+        cJSON_CreateString(field_map.at(FIELD_MIN_ON_TIME_S).c_str()));
+  }
+
+  if (config->ParameterFlags.MinOnTimeSHidden) {
+    cJSON_AddItemToArray(
+        hidden, cJSON_CreateString(field_map.at(FIELD_MIN_ON_TIME_S).c_str()));
+  }
+
+  if (config->ParameterFlags.MinOffTimeSReadonly) {
+    cJSON_AddItemToArray(
+        readonly,
+        cJSON_CreateString(field_map.at(FIELD_MIN_OFF_TIME_S).c_str()));
+  }
+
+  if (config->ParameterFlags.MinOffTimeSHidden) {
+    cJSON_AddItemToArray(
+        hidden, cJSON_CreateString(field_map.at(FIELD_MIN_OFF_TIME_S).c_str()));
+  }
+
+  if (config->ParameterFlags.OutputValueOnErrorReadonly) {
+    cJSON_AddItemToArray(
+        readonly,
+        cJSON_CreateString(field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR).c_str()));
+  }
+
+  if (config->ParameterFlags.OutputValueOnErrorHidden) {
+    cJSON_AddItemToArray(
+        hidden,
+        cJSON_CreateString(field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR).c_str()));
+  }
+
+  if (config->ParameterFlags.SubfunctionReadonly) {
+    cJSON_AddItemToArray(
+        readonly, cJSON_CreateString(field_map.at(FIELD_SUBSUNCTION).c_str()));
+  }
+
+  if (config->ParameterFlags.SubfunctionHidden) {
+    cJSON_AddItemToArray(
+        hidden, cJSON_CreateString(field_map.at(FIELD_SUBSUNCTION).c_str()));
+  }
+
+  if (config->ParameterFlags.AuxMinMaxSetpointEnabledReadonly) {
+    cJSON_AddItemToArray(
+        readonly,
+        cJSON_CreateString(
+            field_map.at(FIELD_AUX_MIN_MAX_SETPOINT_ENABLED).c_str()));
+  }
+
+  if (config->ParameterFlags.AuxMinMaxSetpointEnabledHidden) {
+    cJSON_AddItemToArray(
+        hidden, cJSON_CreateString(
+                    field_map.at(FIELD_AUX_MIN_MAX_SETPOINT_ENABLED).c_str()));
+  }
+
+  if (config->ParameterFlags.UseSeparateHeatCoolOutputsReadonly) {
+    cJSON_AddItemToArray(
+        readonly,
+        cJSON_CreateString(
+            field_map.at(FIELD_USE_SEPARATE_HEAT_COOL_OUTPUTS).c_str()));
+  }
+
+  if (config->ParameterFlags.UseSeparateHeatCoolOutputsHidden) {
+    cJSON_AddItemToArray(
+        hidden,
+        cJSON_CreateString(
+            field_map.at(FIELD_USE_SEPARATE_HEAT_COOL_OUTPUTS).c_str()));
+  }
+
+  if (config->ParameterFlags.MasterThermostatChannelNoReadonly) {
+    cJSON_AddItemToArray(
+        readonly,
+        cJSON_CreateString(
+            field_map.at(FIELD_MASTER_THERMOSTAT_CHANNEL_NO).c_str()));
+  }
+
+  if (config->ParameterFlags.MasterThermostatChannelNoHidden) {
+    cJSON_AddItemToArray(
+        hidden, cJSON_CreateString(
+                    field_map.at(FIELD_MASTER_THERMOSTAT_CHANNEL_NO).c_str()));
+  }
+
+  if (config->ParameterFlags.HeatOrColdSourceSwitchReadonly) {
+    cJSON_AddItemToArray(
+        readonly, cJSON_CreateString(
+                      field_map.at(FIELD_HEAT_OR_COLD_SOURCE_SWITCH).c_str()));
+  }
+
+  if (config->ParameterFlags.HeatOrColdSourceSwitchHidden) {
+    cJSON_AddItemToArray(
+        hidden, cJSON_CreateString(
+                    field_map.at(FIELD_HEAT_OR_COLD_SOURCE_SWITCH).c_str()));
+  }
+
+  if (config->ParameterFlags.PumpSwitchReadonly) {
+    cJSON_AddItemToArray(
+        readonly, cJSON_CreateString(field_map.at(FIELD_PUMP_SWITCH).c_str()));
+  }
+
+  if (config->ParameterFlags.PumpSwitchHidden) {
+    cJSON_AddItemToArray(
+        hidden, cJSON_CreateString(field_map.at(FIELD_PUMP_SWITCH).c_str()));
+  }
+
+  if (config->ParameterFlags
+          .TemperatureSetpointChangeSwitchesToManualModeReadonly) {
+    cJSON_AddItemToArray(
+        readonly,
+        cJSON_CreateString(
+            field_map
+                .at(FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE)
+                .c_str()));
+  }
+
+  if (config->ParameterFlags
+          .TemperatureSetpointChangeSwitchesToManualModeHidden) {
+    cJSON_AddItemToArray(
+        hidden,
+        cJSON_CreateString(
+            field_map
+                .at(FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE)
+                .c_str()));
+  }
+
+  set_item_value(properties_root,
+                 field_map.at(FIELD_READONLY_CONFIG_FIELDS).c_str(),
+                 cJSON_Object, true, readonly, nullptr, 0);
+
+  set_item_value(properties_root,
+                 field_map.at(FIELD_HIDDEN_CONFIG_FIELDS).c_str(), cJSON_Object,
+                 true, hidden, nullptr, 0);
+
+  cJSON *temperature_readonly = cJSON_CreateArray();
+  cJSON *temperature_hidden = cJSON_CreateArray();
+
+  if (config->ParameterFlags.TemperaturesFreezeProtectionReadonly) {
+    cJSON_AddItemToArray(
+        temperature_readonly,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_FREEZE_PROTECTION).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesFreezeProtectionHidden) {
+    cJSON_AddItemToArray(
+        temperature_hidden,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_FREEZE_PROTECTION).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesEcoReadonly) {
+    cJSON_AddItemToArray(
+        temperature_readonly,
+        cJSON_CreateString(temperatures_map.at(TEMPERATURE_ECO).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesEcoHidden) {
+    cJSON_AddItemToArray(
+        temperature_hidden,
+        cJSON_CreateString(temperatures_map.at(TEMPERATURE_ECO).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesComfortReadonly) {
+    cJSON_AddItemToArray(
+        temperature_readonly,
+        cJSON_CreateString(temperatures_map.at(TEMPERATURE_COMFORT).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesComfortHidden) {
+    cJSON_AddItemToArray(
+        temperature_hidden,
+        cJSON_CreateString(temperatures_map.at(TEMPERATURE_COMFORT).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesBoostReadonly) {
+    cJSON_AddItemToArray(
+        temperature_readonly,
+        cJSON_CreateString(temperatures_map.at(TEMPERATURE_BOOST).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesBoostHidden) {
+    cJSON_AddItemToArray(
+        temperature_hidden,
+        cJSON_CreateString(temperatures_map.at(TEMPERATURE_BOOST).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesHeatProtectionReadonly) {
+    cJSON_AddItemToArray(
+        temperature_readonly,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_HEAT_PROTECTION).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesHeatProtectionHidden) {
+    cJSON_AddItemToArray(
+        temperature_hidden,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_HEAT_PROTECTION).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesHisteresisReadonly) {
+    cJSON_AddItemToArray(
+        temperature_readonly,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_HISTERESIS).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesHisteresisHidden) {
+    cJSON_AddItemToArray(
+        temperature_hidden,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_HISTERESIS).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesBelowAlarmReadonly) {
+    cJSON_AddItemToArray(
+        temperature_readonly,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_BELOW_ALARM).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesBelowAlarmHidden) {
+    cJSON_AddItemToArray(
+        temperature_hidden,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_BELOW_ALARM).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesAboveAlarmReadonly) {
+    cJSON_AddItemToArray(
+        temperature_readonly,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_ABOVE_ALARM).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesAboveAlarmHidden) {
+    cJSON_AddItemToArray(
+        temperature_hidden,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_ABOVE_ALARM).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesAuxMinSetpointReadonly) {
+    cJSON_AddItemToArray(
+        temperature_readonly,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_AUX_MIN_SETPOINT).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesAuxMinSetpointHidden) {
+    cJSON_AddItemToArray(
+        temperature_hidden,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_AUX_MIN_SETPOINT).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesAuxMaxSetpointReadonly) {
+    cJSON_AddItemToArray(
+        temperature_readonly,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_AUX_MAX_SETPOINT).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesAuxMaxSetpointHidden) {
+    cJSON_AddItemToArray(
+        temperature_hidden,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_AUX_MAX_SETPOINT).c_str()));
+  }
+
+  set_item_value(properties_root,
+                 field_map.at(FIELD_READONLY_TEMPERATURE_CONFIG_FIELDS).c_str(),
+                 cJSON_Object, true, temperature_readonly, nullptr, 0);
+
+  set_item_value(properties_root,
+                 field_map.at(FIELD_HIDDEN_TEMPERATURE_CONFIG_FIELDS).c_str(),
+                 cJSON_Object, true, temperature_hidden, nullptr, 0);
 }
 
 bool hvac_config::get_config(TChannelConfig_HVAC *config,
@@ -396,12 +798,14 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
   bool result = false;
 
   if (get_channel_number(user_root, FIELD_MAIN_THERMOMETER_CHANNEL_NO,
-                         channel_number, &config->MainThermometerChannelNo)) {
+                         channel_number, &config->MainThermometerChannelNo,
+                         nullptr)) {
     result = true;
   }
 
   if (get_channel_number(user_root, FIELD_AUX_THERMOMETER_CHANNEL_NO,
-                         channel_number, &config->AuxThermometerChannelNo)) {
+                         channel_number, &config->AuxThermometerChannelNo,
+                         nullptr)) {
     result = true;
   }
 
@@ -428,7 +832,8 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
   }
 
   if (get_channel_number(user_root, FIELD_BINARY_SENSOR_CHANNEL_NO,
-                         channel_number, &config->BinarySensorChannelNo)) {
+                         channel_number, &config->BinarySensorChannelNo,
+                         nullptr)) {
     result = true;
   }
 
@@ -499,12 +904,330 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
     result = true;
   }
 
+  bool is_null = false;
+
+  if (get_channel_number(user_root, FIELD_MASTER_THERMOSTAT_CHANNEL_NO,
+                         channel_number, &config->MasterThermostatChannelNo,
+                         &is_null)) {
+    if (!is_null) {
+      config->MasterThermostatIsSet = 1;
+    }
+
+    result = true;
+  }
+
+  if (get_channel_number(user_root, FIELD_HEAT_OR_COLD_SOURCE_SWITCH,
+                         channel_number,
+                         &config->HeatOrColdSourceSwitchChannelNo, &is_null)) {
+    if (!is_null) {
+      config->HeatOrColdSourceSwitchIsSet = 1;
+    }
+
+    result = true;
+  }
+
+  if (get_channel_number(user_root, FIELD_PUMP_SWITCH, channel_number,
+                         &config->PumpSwitchChannelNo, &is_null)) {
+    if (!is_null) {
+      config->PumpSwitchIsSet = 1;
+    }
+    result = true;
+  }
+
   if (get_temperatures(config, user_root, 0xFFFFFFFF ^ readonly_temperatures)) {
     result = true;
   }
 
   if (get_temperatures(config, properties_root, readonly_temperatures)) {
     result = true;
+  }
+
+  cJSON *fields = cJSON_GetObjectItem(
+      properties_root, field_map.at(FIELD_READONLY_CONFIG_FIELDS).c_str());
+
+  if (fields && cJSON_IsArray(fields)) {
+    result = true;
+
+    for (int a = 0; a < cJSON_GetArraySize(fields); a++) {
+      cJSON *item = cJSON_GetArrayItem(fields, a);
+      if (item && cJSON_IsString(item)) {
+        char *str = cJSON_GetStringValue(item);
+        if (!str) {
+          continue;
+        }
+
+        if (str == field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_NO)) {
+          config->ParameterFlags.MainThermometerChannelNoReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_NO)) {
+          config->ParameterFlags.AuxThermometerChannelNoReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_BINARY_SENSOR_CHANNEL_NO)) {
+          config->ParameterFlags.BinarySensorChannelNoReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_AUX_THERMOMETER_TYPE)) {
+          config->ParameterFlags.AuxThermometerTypeReadonly = 1;
+        }
+
+        if (str ==
+            field_map.at(FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED)) {
+          config->ParameterFlags
+              .AntiFreezeAndOverheatProtectionEnabledReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_USED_ALGORITHM)) {
+          config->ParameterFlags.UsedAlgorithmReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_MIN_ON_TIME_S)) {
+          config->ParameterFlags.MinOnTimeSReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_MIN_OFF_TIME_S)) {
+          config->ParameterFlags.MinOffTimeSReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR)) {
+          config->ParameterFlags.OutputValueOnErrorReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_SUBSUNCTION)) {
+          config->ParameterFlags.SubfunctionReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_AUX_MIN_MAX_SETPOINT_ENABLED)) {
+          config->ParameterFlags.AuxMinMaxSetpointEnabledReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_USE_SEPARATE_HEAT_COOL_OUTPUTS)) {
+          config->ParameterFlags.UseSeparateHeatCoolOutputsReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_MASTER_THERMOSTAT_CHANNEL_NO)) {
+          config->ParameterFlags.MasterThermostatChannelNoReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_HEAT_OR_COLD_SOURCE_SWITCH)) {
+          config->ParameterFlags.HeatOrColdSourceSwitchReadonly = 1;
+        }
+
+        if (str == field_map.at(FIELD_PUMP_SWITCH)) {
+          config->ParameterFlags.PumpSwitchReadonly = 1;
+        }
+
+        if (str ==
+            field_map.at(
+                FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE)) {
+          config->ParameterFlags
+              .TemperatureSetpointChangeSwitchesToManualModeReadonly = 1;
+        }
+      }
+    }
+  }
+
+  fields = cJSON_GetObjectItem(
+      properties_root, field_map.at(FIELD_HIDDEN_CONFIG_FIELDS).c_str());
+
+  if (fields && cJSON_IsArray(fields)) {
+    result = true;
+
+    for (int a = 0; a < cJSON_GetArraySize(fields); a++) {
+      cJSON *item = cJSON_GetArrayItem(fields, a);
+      if (item && cJSON_IsString(item)) {
+        char *str = cJSON_GetStringValue(item);
+        if (!str) {
+          continue;
+        }
+
+        if (str == field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_NO)) {
+          config->ParameterFlags.MainThermometerChannelNoHidden = 1;
+        }
+
+        if (str == field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_NO)) {
+          config->ParameterFlags.AuxThermometerChannelNoHidden = 1;
+        }
+
+        if (str == field_map.at(FIELD_BINARY_SENSOR_CHANNEL_NO)) {
+          config->ParameterFlags.BinarySensorChannelNoHidden = 1;
+        }
+
+        if (str == field_map.at(FIELD_AUX_THERMOMETER_TYPE)) {
+          config->ParameterFlags.AuxThermometerTypeHidden = 1;
+        }
+
+        if (str ==
+            field_map.at(FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED)) {
+          config->ParameterFlags.AntiFreezeAndOverheatProtectionEnabledHidden =
+              1;
+        }
+
+        if (str == field_map.at(FIELD_USED_ALGORITHM)) {
+          config->ParameterFlags.UsedAlgorithmHidden = 1;
+        }
+
+        if (str == field_map.at(FIELD_MIN_ON_TIME_S)) {
+          config->ParameterFlags.MinOnTimeSHidden = 1;
+        }
+
+        if (str == field_map.at(FIELD_MIN_OFF_TIME_S)) {
+          config->ParameterFlags.MinOffTimeSHidden = 1;
+        }
+
+        if (str == field_map.at(FIELD_OUTPUT_VALUE_ON_ERROR)) {
+          config->ParameterFlags.OutputValueOnErrorHidden = 1;
+        }
+
+        if (str == field_map.at(FIELD_SUBSUNCTION)) {
+          config->ParameterFlags.SubfunctionHidden = 1;
+        }
+
+        if (str == field_map.at(FIELD_AUX_MIN_MAX_SETPOINT_ENABLED)) {
+          config->ParameterFlags.AuxMinMaxSetpointEnabledHidden = 1;
+        }
+
+        if (str == field_map.at(FIELD_USE_SEPARATE_HEAT_COOL_OUTPUTS)) {
+          config->ParameterFlags.UseSeparateHeatCoolOutputsHidden = 1;
+        }
+
+        if (str == field_map.at(FIELD_MASTER_THERMOSTAT_CHANNEL_NO)) {
+          config->ParameterFlags.MasterThermostatChannelNoHidden = 1;
+        }
+
+        if (str == field_map.at(FIELD_HEAT_OR_COLD_SOURCE_SWITCH)) {
+          config->ParameterFlags.HeatOrColdSourceSwitchHidden = 1;
+        }
+
+        if (str == field_map.at(FIELD_PUMP_SWITCH)) {
+          config->ParameterFlags.PumpSwitchHidden = 1;
+        }
+
+        if (str ==
+            field_map.at(
+                FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE)) {
+          config->ParameterFlags
+              .TemperatureSetpointChangeSwitchesToManualModeHidden = 1;
+        }
+      }
+    }
+  }
+
+  fields = cJSON_GetObjectItem(
+      properties_root,
+      field_map.at(FIELD_READONLY_TEMPERATURE_CONFIG_FIELDS).c_str());
+
+  if (fields && cJSON_IsArray(fields)) {
+    result = true;
+
+    for (int a = 0; a < cJSON_GetArraySize(fields); a++) {
+      cJSON *item = cJSON_GetArrayItem(fields, a);
+      if (item && cJSON_IsString(item)) {
+        char *str = cJSON_GetStringValue(item);
+        if (!str) {
+          continue;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_FREEZE_PROTECTION)) {
+          config->ParameterFlags.TemperaturesFreezeProtectionReadonly = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_ECO)) {
+          config->ParameterFlags.TemperaturesEcoReadonly = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_COMFORT)) {
+          config->ParameterFlags.TemperaturesComfortReadonly = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_BOOST)) {
+          config->ParameterFlags.TemperaturesBoostReadonly = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_HEAT_PROTECTION)) {
+          config->ParameterFlags.TemperaturesHeatProtectionReadonly = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_HISTERESIS)) {
+          config->ParameterFlags.TemperaturesHisteresisReadonly = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_BELOW_ALARM)) {
+          config->ParameterFlags.TemperaturesBelowAlarmReadonly = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_ABOVE_ALARM)) {
+          config->ParameterFlags.TemperaturesAboveAlarmReadonly = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_AUX_MIN_SETPOINT)) {
+          config->ParameterFlags.TemperaturesAuxMinSetpointReadonly = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_AUX_MAX_SETPOINT)) {
+          config->ParameterFlags.TemperaturesAuxMaxSetpointReadonly = 1;
+        }
+      }
+    }
+  }
+
+  fields = cJSON_GetObjectItem(
+      properties_root,
+      field_map.at(FIELD_HIDDEN_TEMPERATURE_CONFIG_FIELDS).c_str());
+
+  if (fields && cJSON_IsArray(fields)) {
+    result = true;
+
+    for (int a = 0; a < cJSON_GetArraySize(fields); a++) {
+      cJSON *item = cJSON_GetArrayItem(fields, a);
+      if (item && cJSON_IsString(item)) {
+        char *str = cJSON_GetStringValue(item);
+        if (!str) {
+          continue;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_FREEZE_PROTECTION)) {
+          config->ParameterFlags.TemperaturesFreezeProtectionHidden = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_ECO)) {
+          config->ParameterFlags.TemperaturesEcoHidden = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_COMFORT)) {
+          config->ParameterFlags.TemperaturesComfortHidden = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_BOOST)) {
+          config->ParameterFlags.TemperaturesBoostHidden = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_HEAT_PROTECTION)) {
+          config->ParameterFlags.TemperaturesHeatProtectionHidden = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_HISTERESIS)) {
+          config->ParameterFlags.TemperaturesHisteresisHidden = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_BELOW_ALARM)) {
+          config->ParameterFlags.TemperaturesBelowAlarmHidden = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_ABOVE_ALARM)) {
+          config->ParameterFlags.TemperaturesAboveAlarmHidden = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_AUX_MIN_SETPOINT)) {
+          config->ParameterFlags.TemperaturesAuxMinSetpointHidden = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_AUX_MAX_SETPOINT)) {
+          config->ParameterFlags.TemperaturesAuxMaxSetpointHidden = 1;
+        }
+      }
+    }
   }
 
   return result;

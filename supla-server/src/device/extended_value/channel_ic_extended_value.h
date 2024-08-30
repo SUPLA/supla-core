@@ -23,6 +23,7 @@
 
 #include "device/extended_value/channel_billing_value.h"
 #include "device/extended_value/channel_extended_value.h"
+#include "jsonconfig/json_config.h"
 
 class supla_channel_ic_extended_value : public supla_channel_extended_value,
                                         private supla_channel_billing_value {
@@ -31,9 +32,7 @@ class supla_channel_ic_extended_value : public supla_channel_extended_value,
       const TSuplaChannelExtendedValue *value);
   supla_channel_ic_extended_value(int func,
                                   const TDS_ImpulseCounter_Value *ic_val,
-                                  const char *text_param1,
-                                  const char *text_param2, int param2,
-                                  int param3);
+                                  supla_json_config *json_config);
   virtual ~supla_channel_ic_extended_value(void);
   virtual void set_raw_value(const TSuplaChannelExtendedValue *value);
   _supla_int_t get_total_cost(void);

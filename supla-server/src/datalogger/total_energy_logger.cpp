@@ -61,7 +61,7 @@ void supla_total_energy_logger::run(const vector<supla_user *> *users,
         dynamic_cast<supla_channel_em_extended_value *>(
             (*it)->get_extended_value());
 
-    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    TElectricityMeter_ExtendedValue_V3 em_ev = {};
     emv->get_raw_value(&em_ev);
 
     bool ne_zero = false;

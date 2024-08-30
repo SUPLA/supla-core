@@ -54,13 +54,15 @@ bool supla_register_device::get_authkey_hash(
   return get_device_dao()->get_authkey_hash(id, authkey_hash, is_null);
 }
 
-bool supla_register_device::is_prev_entering_cfg_mode(void) {
+int supla_register_device::get_last_calcfg_command_importatnt_for_sleepers(
+    void) {
   supla_user *user = supla_user::find(get_user_id(), true);
   if (user) {
     shared_ptr<supla_device> prev = user->get_devices()->get(get_device_id());
-    return prev != nullptr && prev->entering_cfg_mode_in_progress;
+    return prev != nullptr ? prev->last_calcfg_command_importatnt_for_sleepers
+                           : 0;
   }
-  return false;
+  return 0;
 }
 
 void supla_register_device::on_registration_success(void) {
@@ -80,8 +82,8 @@ void supla_register_device::on_registration_success(void) {
   device->set_registered(true);
 
   supla_user::add_device(device, get_user_id());
-  device->get_user()->get_clients()->update_device_channels(get_location_id(),
-                                                            get_device_id());
+  device->get_user()->get_clients()->update_device_channels(
+      get_location_id(), get_device_id(), is_new_device());
 
   device->get_channels()->on_device_registered(
       device->get_user(), get_device_id(), get_channels_b(), get_channels_e(),

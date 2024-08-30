@@ -30,6 +30,8 @@ CPP_SRCS += \
 ../src/test/ipc/GetTemperatureCommandTest.cpp \
 ../src/test/ipc/GetValveValueCommandTest.cpp \
 ../src/test/ipc/GhCredChangedCommandTest.cpp \
+../src/test/ipc/IdentifyDeviceCommandTest.cpp \
+../src/test/ipc/IdentifySubDeviceCommandTest.cpp \
 ../src/test/ipc/InterruptAndExecuteSceneCommandTest.cpp \
 ../src/test/ipc/InterruptSceneCommandTest.cpp \
 ../src/test/ipc/IpcCommandTest.cpp \
@@ -38,6 +40,7 @@ CPP_SRCS += \
 ../src/test/ipc/IsClientConnectedCommandTest.cpp \
 ../src/test/ipc/IsDeviceConnectedCommandTest.cpp \
 ../src/test/ipc/OnChannelConfigChangedCommandTest.cpp \
+../src/test/ipc/OnChannelDeletedCommandTest.cpp \
 ../src/test/ipc/OnDeviceConfigChangedCommandTest.cpp \
 ../src/test/ipc/OnDeviceDeletedCommandTest.cpp \
 ../src/test/ipc/OnMqttSettingsChangedCommandTest.cpp \
@@ -47,14 +50,18 @@ CPP_SRCS += \
 ../src/test/ipc/OnStateWebhookChangedCommandTest.cpp \
 ../src/test/ipc/OnUserSettingsChangedCommandTest.cpp \
 ../src/test/ipc/OnVbtChangedCommandTest.cpp \
+../src/test/ipc/PairSubdeviceCommandTest.cpp \
 ../src/test/ipc/RecalibrateCommandTest.cpp \
 ../src/test/ipc/ResetCountersCommandTest.cpp \
+../src/test/ipc/RestartDeviceCommandTest.cpp \
+../src/test/ipc/RestartSubDeviceCommandTest.cpp \
 ../src/test/ipc/SendPushCommandTest.cpp \
 ../src/test/ipc/SetCgCharCommandTest.cpp \
 ../src/test/ipc/SetCgRGBWCommandTest.cpp \
 ../src/test/ipc/SetCharCommandTest.cpp \
 ../src/test/ipc/SetDigiglassValueCommandTest.cpp \
 ../src/test/ipc/SetRGBWCommandTest.cpp \
+../src/test/ipc/TakeOcrPhotoCommandTest.cpp \
 ../src/test/ipc/UserReconnectCommandTest.cpp 
 
 CPP_DEPS += \
@@ -84,6 +91,8 @@ CPP_DEPS += \
 ./src/test/ipc/GetTemperatureCommandTest.d \
 ./src/test/ipc/GetValveValueCommandTest.d \
 ./src/test/ipc/GhCredChangedCommandTest.d \
+./src/test/ipc/IdentifyDeviceCommandTest.d \
+./src/test/ipc/IdentifySubDeviceCommandTest.d \
 ./src/test/ipc/InterruptAndExecuteSceneCommandTest.d \
 ./src/test/ipc/InterruptSceneCommandTest.d \
 ./src/test/ipc/IpcCommandTest.d \
@@ -92,6 +101,7 @@ CPP_DEPS += \
 ./src/test/ipc/IsClientConnectedCommandTest.d \
 ./src/test/ipc/IsDeviceConnectedCommandTest.d \
 ./src/test/ipc/OnChannelConfigChangedCommandTest.d \
+./src/test/ipc/OnChannelDeletedCommandTest.d \
 ./src/test/ipc/OnDeviceConfigChangedCommandTest.d \
 ./src/test/ipc/OnDeviceDeletedCommandTest.d \
 ./src/test/ipc/OnMqttSettingsChangedCommandTest.d \
@@ -101,14 +111,18 @@ CPP_DEPS += \
 ./src/test/ipc/OnStateWebhookChangedCommandTest.d \
 ./src/test/ipc/OnUserSettingsChangedCommandTest.d \
 ./src/test/ipc/OnVbtChangedCommandTest.d \
+./src/test/ipc/PairSubdeviceCommandTest.d \
 ./src/test/ipc/RecalibrateCommandTest.d \
 ./src/test/ipc/ResetCountersCommandTest.d \
+./src/test/ipc/RestartDeviceCommandTest.d \
+./src/test/ipc/RestartSubDeviceCommandTest.d \
 ./src/test/ipc/SendPushCommandTest.d \
 ./src/test/ipc/SetCgCharCommandTest.d \
 ./src/test/ipc/SetCgRGBWCommandTest.d \
 ./src/test/ipc/SetCharCommandTest.d \
 ./src/test/ipc/SetDigiglassValueCommandTest.d \
 ./src/test/ipc/SetRGBWCommandTest.d \
+./src/test/ipc/TakeOcrPhotoCommandTest.d \
 ./src/test/ipc/UserReconnectCommandTest.d 
 
 OBJS += \
@@ -138,6 +152,8 @@ OBJS += \
 ./src/test/ipc/GetTemperatureCommandTest.o \
 ./src/test/ipc/GetValveValueCommandTest.o \
 ./src/test/ipc/GhCredChangedCommandTest.o \
+./src/test/ipc/IdentifyDeviceCommandTest.o \
+./src/test/ipc/IdentifySubDeviceCommandTest.o \
 ./src/test/ipc/InterruptAndExecuteSceneCommandTest.o \
 ./src/test/ipc/InterruptSceneCommandTest.o \
 ./src/test/ipc/IpcCommandTest.o \
@@ -146,6 +162,7 @@ OBJS += \
 ./src/test/ipc/IsClientConnectedCommandTest.o \
 ./src/test/ipc/IsDeviceConnectedCommandTest.o \
 ./src/test/ipc/OnChannelConfigChangedCommandTest.o \
+./src/test/ipc/OnChannelDeletedCommandTest.o \
 ./src/test/ipc/OnDeviceConfigChangedCommandTest.o \
 ./src/test/ipc/OnDeviceDeletedCommandTest.o \
 ./src/test/ipc/OnMqttSettingsChangedCommandTest.o \
@@ -155,14 +172,18 @@ OBJS += \
 ./src/test/ipc/OnStateWebhookChangedCommandTest.o \
 ./src/test/ipc/OnUserSettingsChangedCommandTest.o \
 ./src/test/ipc/OnVbtChangedCommandTest.o \
+./src/test/ipc/PairSubdeviceCommandTest.o \
 ./src/test/ipc/RecalibrateCommandTest.o \
 ./src/test/ipc/ResetCountersCommandTest.o \
+./src/test/ipc/RestartDeviceCommandTest.o \
+./src/test/ipc/RestartSubDeviceCommandTest.o \
 ./src/test/ipc/SendPushCommandTest.o \
 ./src/test/ipc/SetCgCharCommandTest.o \
 ./src/test/ipc/SetCgRGBWCommandTest.o \
 ./src/test/ipc/SetCharCommandTest.o \
 ./src/test/ipc/SetDigiglassValueCommandTest.o \
 ./src/test/ipc/SetRGBWCommandTest.o \
+./src/test/ipc/TakeOcrPhotoCommandTest.o \
 ./src/test/ipc/UserReconnectCommandTest.o 
 
 
@@ -170,7 +191,7 @@ OBJS += \
 src/test/ipc/%.o: ../src/test/ipc/%.cpp src/test/ipc/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__DEBUG=1 -DUSE_OS_TZDB=1 -D__SUPLA_SERVER=1 -DUSE_DEPRECATED_EMEV_V1 -D__TEST=1 -D__OPENSSL_TOOLS=1 -D__BCRYPT=1 -I../src -I../src/asynctask -I../src/mqtt -I$(INCMYSQL) -I../src/user -I../src/device -I../src/client -I$(SSLDIR)/include -I../src/test -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -std=c++11 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	g++ -D__DEBUG=1 -DUSE_OS_TZDB=1 -D__SUPLA_SERVER=1 -DUSE_DEPRECATED_EMEV_V1 -DUSE_DEPRECATED_EMEV_V2 -D__TEST=1 -D__OPENSSL_TOOLS=1 -D__BCRYPT=1 -I../src -I../src/asynctask -I../src/mqtt -I$(INCMYSQL) -I../src/user -I../src/device -I../src/client -I$(SSLDIR)/include -I../src/test -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -std=c++11 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
@@ -178,7 +199,7 @@ src/test/ipc/%.o: ../src/test/ipc/%.cpp src/test/ipc/subdir.mk
 clean: clean-src-2f-test-2f-ipc
 
 clean-src-2f-test-2f-ipc:
-	-$(RM) ./src/test/ipc/ActionCgCommandTest.d ./src/test/ipc/ActionCgCommandTest.o ./src/test/ipc/ActionCommandTest.d ./src/test/ipc/ActionCommandTest.o ./src/test/ipc/AlexaCredChangedCommandTest.d ./src/test/ipc/AlexaCredChangedCommandTest.o ./src/test/ipc/BeforeChannelFunctionChangeCommandTest.d ./src/test/ipc/BeforeChannelFunctionChangeCommandTest.o ./src/test/ipc/BeforeDeviceDeleteCommandTest.d ./src/test/ipc/BeforeDeviceDeleteCommandTest.o ./src/test/ipc/ClientReconnectCommandTest.d ./src/test/ipc/ClientReconnectCommandTest.o ./src/test/ipc/DeviceSetTimeCommandTest.d ./src/test/ipc/DeviceSetTimeCommandTest.o ./src/test/ipc/EnterCfgModeCommandTest.d ./src/test/ipc/EnterCfgModeCommandTest.o ./src/test/ipc/ExecuteSceneCommandTest.d ./src/test/ipc/ExecuteSceneCommandTest.o ./src/test/ipc/GetCharCommandTest.d ./src/test/ipc/GetCharCommandTest.o ./src/test/ipc/GetDigiglassValueCommandTest.d ./src/test/ipc/GetDigiglassValueCommandTest.o ./src/test/ipc/GetDoubleCommandTest.d ./src/test/ipc/GetDoubleCommandTest.o ./src/test/ipc/GetEmValueCommandTest.d ./src/test/ipc/GetEmValueCommandTest.o ./src/test/ipc/GetFacadeBlindValueCommandTest.d ./src/test/ipc/GetFacadeBlindValueCommandTest.o ./src/test/ipc/GetGpmValueCommandTest.d ./src/test/ipc/GetGpmValueCommandTest.o ./src/test/ipc/GetHumidityCommandTest.d ./src/test/ipc/GetHumidityCommandTest.o ./src/test/ipc/GetHvacValueCommandTest.d ./src/test/ipc/GetHvacValueCommandTest.o ./src/test/ipc/GetIcValueCommandTest.d ./src/test/ipc/GetIcValueCommandTest.o ./src/test/ipc/GetPnLimitCommandTest.d ./src/test/ipc/GetPnLimitCommandTest.o ./src/test/ipc/GetRGBWCommandTest.d ./src/test/ipc/GetRGBWCommandTest.o ./src/test/ipc/GetRelayValueCommandTest.d ./src/test/ipc/GetRelayValueCommandTest.o ./src/test/ipc/GetSceneSummaryCommandTest.d ./src/test/ipc/GetSceneSummaryCommandTest.o ./src/test/ipc/GetStatusCommandTest.d ./src/test/ipc/GetStatusCommandTest.o ./src/test/ipc/GetTemperatureCommandTest.d ./src/test/ipc/GetTemperatureCommandTest.o ./src/test/ipc/GetValveValueCommandTest.d ./src/test/ipc/GetValveValueCommandTest.o ./src/test/ipc/GhCredChangedCommandTest.d ./src/test/ipc/GhCredChangedCommandTest.o ./src/test/ipc/InterruptAndExecuteSceneCommandTest.d ./src/test/ipc/InterruptAndExecuteSceneCommandTest.o ./src/test/ipc/InterruptSceneCommandTest.d ./src/test/ipc/InterruptSceneCommandTest.o ./src/test/ipc/IpcCommandTest.d ./src/test/ipc/IpcCommandTest.o ./src/test/ipc/IpcCtrlTest.d ./src/test/ipc/IpcCtrlTest.o ./src/test/ipc/IsChannelConnectedCommandTest.d ./src/test/ipc/IsChannelConnectedCommandTest.o ./src/test/ipc/IsClientConnectedCommandTest.d ./src/test/ipc/IsClientConnectedCommandTest.o ./src/test/ipc/IsDeviceConnectedCommandTest.d ./src/test/ipc/IsDeviceConnectedCommandTest.o ./src/test/ipc/OnChannelConfigChangedCommandTest.d ./src/test/ipc/OnChannelConfigChangedCommandTest.o ./src/test/ipc/OnDeviceConfigChangedCommandTest.d ./src/test/ipc/OnDeviceConfigChangedCommandTest.o ./src/test/ipc/OnDeviceDeletedCommandTest.d ./src/test/ipc/OnDeviceDeletedCommandTest.o ./src/test/ipc/OnMqttSettingsChangedCommandTest.d ./src/test/ipc/OnMqttSettingsChangedCommandTest.o ./src/test/ipc/OnSceneAddedCommandTest.d ./src/test/ipc/OnSceneAddedCommandTest.o ./src/test/ipc/OnSceneChangedCommandTest.d ./src/test/ipc/OnSceneChangedCommandTest.o ./src/test/ipc/OnSceneRemovedCommandTest.d ./src/test/ipc/OnSceneRemovedCommandTest.o ./src/test/ipc/OnStateWebhookChangedCommandTest.d ./src/test/ipc/OnStateWebhookChangedCommandTest.o ./src/test/ipc/OnUserSettingsChangedCommandTest.d ./src/test/ipc/OnUserSettingsChangedCommandTest.o ./src/test/ipc/OnVbtChangedCommandTest.d ./src/test/ipc/OnVbtChangedCommandTest.o ./src/test/ipc/RecalibrateCommandTest.d ./src/test/ipc/RecalibrateCommandTest.o ./src/test/ipc/ResetCountersCommandTest.d ./src/test/ipc/ResetCountersCommandTest.o ./src/test/ipc/SendPushCommandTest.d ./src/test/ipc/SendPushCommandTest.o ./src/test/ipc/SetCgCharCommandTest.d ./src/test/ipc/SetCgCharCommandTest.o ./src/test/ipc/SetCgRGBWCommandTest.d ./src/test/ipc/SetCgRGBWCommandTest.o ./src/test/ipc/SetCharCommandTest.d ./src/test/ipc/SetCharCommandTest.o ./src/test/ipc/SetDigiglassValueCommandTest.d ./src/test/ipc/SetDigiglassValueCommandTest.o ./src/test/ipc/SetRGBWCommandTest.d ./src/test/ipc/SetRGBWCommandTest.o ./src/test/ipc/UserReconnectCommandTest.d ./src/test/ipc/UserReconnectCommandTest.o
+	-$(RM) ./src/test/ipc/ActionCgCommandTest.d ./src/test/ipc/ActionCgCommandTest.o ./src/test/ipc/ActionCommandTest.d ./src/test/ipc/ActionCommandTest.o ./src/test/ipc/AlexaCredChangedCommandTest.d ./src/test/ipc/AlexaCredChangedCommandTest.o ./src/test/ipc/BeforeChannelFunctionChangeCommandTest.d ./src/test/ipc/BeforeChannelFunctionChangeCommandTest.o ./src/test/ipc/BeforeDeviceDeleteCommandTest.d ./src/test/ipc/BeforeDeviceDeleteCommandTest.o ./src/test/ipc/ClientReconnectCommandTest.d ./src/test/ipc/ClientReconnectCommandTest.o ./src/test/ipc/DeviceSetTimeCommandTest.d ./src/test/ipc/DeviceSetTimeCommandTest.o ./src/test/ipc/EnterCfgModeCommandTest.d ./src/test/ipc/EnterCfgModeCommandTest.o ./src/test/ipc/ExecuteSceneCommandTest.d ./src/test/ipc/ExecuteSceneCommandTest.o ./src/test/ipc/GetCharCommandTest.d ./src/test/ipc/GetCharCommandTest.o ./src/test/ipc/GetDigiglassValueCommandTest.d ./src/test/ipc/GetDigiglassValueCommandTest.o ./src/test/ipc/GetDoubleCommandTest.d ./src/test/ipc/GetDoubleCommandTest.o ./src/test/ipc/GetEmValueCommandTest.d ./src/test/ipc/GetEmValueCommandTest.o ./src/test/ipc/GetFacadeBlindValueCommandTest.d ./src/test/ipc/GetFacadeBlindValueCommandTest.o ./src/test/ipc/GetGpmValueCommandTest.d ./src/test/ipc/GetGpmValueCommandTest.o ./src/test/ipc/GetHumidityCommandTest.d ./src/test/ipc/GetHumidityCommandTest.o ./src/test/ipc/GetHvacValueCommandTest.d ./src/test/ipc/GetHvacValueCommandTest.o ./src/test/ipc/GetIcValueCommandTest.d ./src/test/ipc/GetIcValueCommandTest.o ./src/test/ipc/GetPnLimitCommandTest.d ./src/test/ipc/GetPnLimitCommandTest.o ./src/test/ipc/GetRGBWCommandTest.d ./src/test/ipc/GetRGBWCommandTest.o ./src/test/ipc/GetRelayValueCommandTest.d ./src/test/ipc/GetRelayValueCommandTest.o ./src/test/ipc/GetSceneSummaryCommandTest.d ./src/test/ipc/GetSceneSummaryCommandTest.o ./src/test/ipc/GetStatusCommandTest.d ./src/test/ipc/GetStatusCommandTest.o ./src/test/ipc/GetTemperatureCommandTest.d ./src/test/ipc/GetTemperatureCommandTest.o ./src/test/ipc/GetValveValueCommandTest.d ./src/test/ipc/GetValveValueCommandTest.o ./src/test/ipc/GhCredChangedCommandTest.d ./src/test/ipc/GhCredChangedCommandTest.o ./src/test/ipc/IdentifyDeviceCommandTest.d ./src/test/ipc/IdentifyDeviceCommandTest.o ./src/test/ipc/IdentifySubDeviceCommandTest.d ./src/test/ipc/IdentifySubDeviceCommandTest.o ./src/test/ipc/InterruptAndExecuteSceneCommandTest.d ./src/test/ipc/InterruptAndExecuteSceneCommandTest.o ./src/test/ipc/InterruptSceneCommandTest.d ./src/test/ipc/InterruptSceneCommandTest.o ./src/test/ipc/IpcCommandTest.d ./src/test/ipc/IpcCommandTest.o ./src/test/ipc/IpcCtrlTest.d ./src/test/ipc/IpcCtrlTest.o ./src/test/ipc/IsChannelConnectedCommandTest.d ./src/test/ipc/IsChannelConnectedCommandTest.o ./src/test/ipc/IsClientConnectedCommandTest.d ./src/test/ipc/IsClientConnectedCommandTest.o ./src/test/ipc/IsDeviceConnectedCommandTest.d ./src/test/ipc/IsDeviceConnectedCommandTest.o ./src/test/ipc/OnChannelConfigChangedCommandTest.d ./src/test/ipc/OnChannelConfigChangedCommandTest.o ./src/test/ipc/OnChannelDeletedCommandTest.d ./src/test/ipc/OnChannelDeletedCommandTest.o ./src/test/ipc/OnDeviceConfigChangedCommandTest.d ./src/test/ipc/OnDeviceConfigChangedCommandTest.o ./src/test/ipc/OnDeviceDeletedCommandTest.d ./src/test/ipc/OnDeviceDeletedCommandTest.o ./src/test/ipc/OnMqttSettingsChangedCommandTest.d ./src/test/ipc/OnMqttSettingsChangedCommandTest.o ./src/test/ipc/OnSceneAddedCommandTest.d ./src/test/ipc/OnSceneAddedCommandTest.o ./src/test/ipc/OnSceneChangedCommandTest.d ./src/test/ipc/OnSceneChangedCommandTest.o ./src/test/ipc/OnSceneRemovedCommandTest.d ./src/test/ipc/OnSceneRemovedCommandTest.o ./src/test/ipc/OnStateWebhookChangedCommandTest.d ./src/test/ipc/OnStateWebhookChangedCommandTest.o ./src/test/ipc/OnUserSettingsChangedCommandTest.d ./src/test/ipc/OnUserSettingsChangedCommandTest.o ./src/test/ipc/OnVbtChangedCommandTest.d ./src/test/ipc/OnVbtChangedCommandTest.o ./src/test/ipc/PairSubdeviceCommandTest.d ./src/test/ipc/PairSubdeviceCommandTest.o ./src/test/ipc/RecalibrateCommandTest.d ./src/test/ipc/RecalibrateCommandTest.o ./src/test/ipc/ResetCountersCommandTest.d ./src/test/ipc/ResetCountersCommandTest.o ./src/test/ipc/RestartDeviceCommandTest.d ./src/test/ipc/RestartDeviceCommandTest.o ./src/test/ipc/RestartSubDeviceCommandTest.d ./src/test/ipc/RestartSubDeviceCommandTest.o ./src/test/ipc/SendPushCommandTest.d ./src/test/ipc/SendPushCommandTest.o ./src/test/ipc/SetCgCharCommandTest.d ./src/test/ipc/SetCgCharCommandTest.o ./src/test/ipc/SetCgRGBWCommandTest.d ./src/test/ipc/SetCgRGBWCommandTest.o ./src/test/ipc/SetCharCommandTest.d ./src/test/ipc/SetCharCommandTest.o ./src/test/ipc/SetDigiglassValueCommandTest.d ./src/test/ipc/SetDigiglassValueCommandTest.o ./src/test/ipc/SetRGBWCommandTest.d ./src/test/ipc/SetRGBWCommandTest.o ./src/test/ipc/TakeOcrPhotoCommandTest.d ./src/test/ipc/TakeOcrPhotoCommandTest.o ./src/test/ipc/UserReconnectCommandTest.d ./src/test/ipc/UserReconnectCommandTest.o
 
 .PHONY: clean-src-2f-test-2f-ipc
 

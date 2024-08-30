@@ -1080,8 +1080,7 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
     memset(&v, 0, sizeof(TDS_ImpulseCounter_Value));
 
     supla_channel_ic_extended_value *icv = new supla_channel_ic_extended_value(
-        row->channel_func, &v, row->channel_text_param1,
-        row->channel_text_param2, row->channel_param2, row->channel_param3);
+        row->channel_func, &v, &row->json_config);
 
     if (icv == NULL) {
       return false;

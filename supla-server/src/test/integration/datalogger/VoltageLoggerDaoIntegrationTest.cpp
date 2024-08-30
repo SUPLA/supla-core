@@ -74,7 +74,7 @@ TEST_F(VoltageLoggerDaoIntegrationTest, add) {
 
   supla_electricity_analyzer vas(234);
 
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
   em_ev.m_count = 1;
   em_ev.m[0].voltage[0] = 31055;
   em_ev.m[0].voltage[1] = 31555;

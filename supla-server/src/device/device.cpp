@@ -44,7 +44,7 @@ supla_device_call_handler_collection supla_device::call_handler_collection;
 
 supla_device::supla_device(supla_connection *connection)
     : supla_abstract_connection_object(connection) {
-  this->entering_cfg_mode_in_progress = false;
+  this->last_calcfg_command_importatnt_for_sleepers = 0;
   this->channels = nullptr;
   this->flags = 0;
 }
@@ -149,8 +149,6 @@ supla_device_channels *supla_device::get_channels(void) { return channels; }
 
 bool supla_device::enter_cfg_mode(void) {
   if (flags & SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE) {
-    entering_cfg_mode_in_progress = true;
-
     TSD_DeviceCalCfgRequest request = {};
 
     request.ChannelNumber = -1;
@@ -159,6 +157,9 @@ bool supla_device::enter_cfg_mode(void) {
 
     srpc_sd_async_device_calcfg_request(
         get_connection()->get_srpc_adapter()->get_srpc(), &request);
+
+    last_calcfg_command_importatnt_for_sleepers = request.Command;
+
     return true;
   }
 
@@ -189,4 +190,60 @@ void supla_device::send_config_to_device(void) {
       delete config;
     }
   }
+}
+
+bool supla_device::pair_subdevice(const supla_caller &caller,
+                                  bool superuser_authorized) {
+  if (get_connection() &&
+      (get_flags() & SUPLA_DEVICE_FLAG_CALCFG_SUBDEVICE_PAIRING)) {
+    TSD_DeviceCalCfgRequest request = {};
+
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+    dao.update_device_pairing_result(get_id(), nullptr);
+
+    request.ChannelNumber = -1;
+    request.Command = SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING;
+    request.SenderID = caller.convert_to_sender_id();
+    request.SuperUserAuthorized = superuser_authorized ? 1 : 0;
+
+    get_connection()->get_srpc_adapter()->sd_async_device_calcfg_request(
+        &request);
+    return true;
+  }
+
+  return false;
+}
+
+bool supla_device::calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd,
+                              bool importat_for_sleepers) {
+  if (get_flags() & flag) {
+    TSD_DeviceCalCfgRequest request = {};
+
+    request.ChannelNumber = -1;
+    request.Command = cmd;
+    request.SenderID = 0;
+    request.SuperUserAuthorized = 1;
+
+    get_connection()->get_srpc_adapter()->sd_async_device_calcfg_request(
+        &request);
+
+    if (importat_for_sleepers) {
+      last_calcfg_command_importatnt_for_sleepers = cmd;
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+bool supla_device::calcfg_identify(void) {
+  return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_IDENTIFY_DEVICE,
+                    SUPLA_CALCFG_CMD_IDENTIFY_DEVICE, true);
+}
+
+bool supla_device::calcfg_restart(void) {
+  return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_RESTART_DEVICE,
+                    SUPLA_CALCFG_CMD_RESTART_DEVICE, true);
 }

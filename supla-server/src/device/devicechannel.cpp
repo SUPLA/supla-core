@@ -585,8 +585,7 @@ bool supla_device_channel::set_value(
   }
 
   supla_channel_extended_value *eval = new_value->convert2extended(
-      json_config, func, text_param1, text_param2, param2, param3,
-      &logger_purpose_extended_value);
+      json_config, func, &logger_purpose_extended_value);
 
   if (eval) {
     set_extended_value(nullptr, eval);
@@ -684,7 +683,7 @@ void supla_device_channel::set_extended_value(
       }
 
       {
-        TElectricityMeter_ExtendedValue_V2 em_ev;
+        TElectricityMeter_ExtendedValue_V3 em_ev;
         if (em->get_raw_value(&em_ev)) {
           config->add_initial_values(flags, &em_ev);
 
@@ -752,6 +751,15 @@ void supla_device_channel::for_each(
       [&](supla_device_channel *channel, bool *will_continue) -> void {
         on_channel_properties(channel, will_continue);
       });
+}
+
+unsigned char supla_device_channel::get_protocol_version(void) {
+  if (get_device() && get_device()->get_connection()) {
+    return get_device() &&
+           get_device()->get_connection()->get_protocol_version();
+  }
+
+  return 0;
 }
 
 void supla_device_channel::assign_rgbw_value(
@@ -926,6 +934,9 @@ void supla_device_channel::send_config_to_device(void) {
     if (get_func() == SUPLA_CHANNELFNC_HVAC_THERMOSTAT) {
       send_config_to_device(SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE);
     }
+  } else if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+             get_device()->get_protocol_version() >= 25) {
+    send_config_to_device(SUPLA_CONFIG_TYPE_OCR);
   }
 
   TSD_ChannelConfigFinished fin = {};

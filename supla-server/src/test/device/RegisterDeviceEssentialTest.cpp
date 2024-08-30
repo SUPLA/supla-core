@@ -698,7 +698,8 @@ TEST_F(RegisterDeviceEssentialTest, cantUdateDevice) {
   EXPECT_GE(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
 }
 
-TEST_F(RegisterDeviceEssentialTest, cfgModeRequested) {
+void RegisterDeviceEssentialTest::CalcfgForSleepersTest(
+    int command, int expected_result_code) {
   TDS_SuplaRegisterDevice_G register_device_g = {};
 
   register_device_g.GUID[0] = 1;
@@ -748,13 +749,15 @@ TEST_F(RegisterDeviceEssentialTest, cfgModeRequested) {
 
   EXPECT_CALL(dao, update_device).Times(1).WillOnce(Return(true));
 
-  EXPECT_CALL(rd, is_prev_entering_cfg_mode).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(rd, get_last_calcfg_command_importatnt_for_sleepers)
+      .Times(1)
+      .WillOnce(Return(command));
   EXPECT_CALL(rd, on_registration_success).Times(1);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)
-      .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
-        EXPECT_EQ(SUPLA_RESULTCODE_CFG_MODE_REQUESTED, result->result_code);
+      .WillOnce([expected_result_code](TSD_SuplaRegisterDeviceResult *result) {
+        EXPECT_EQ(expected_result_code, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
         EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
@@ -767,6 +770,21 @@ TEST_F(RegisterDeviceEssentialTest, cfgModeRequested) {
   EXPECT_EQ(55, rd.get_device_id());
   EXPECT_FALSE(rd.is_channel_added());
   EXPECT_LT(usecFromSetUp(), rd.get_hold_time_on_failure_usec());
+}
+
+TEST_F(RegisterDeviceEssentialTest, cfgModeRequested) {
+  CalcfgForSleepersTest(SUPLA_CALCFG_CMD_ENTER_CFG_MODE,
+                        SUPLA_RESULTCODE_CFG_MODE_REQUESTED);
+}
+
+TEST_F(RegisterDeviceEssentialTest, restartRequested) {
+  CalcfgForSleepersTest(SUPLA_CALCFG_CMD_RESTART_DEVICE,
+                        SUPLA_RESULTCODE_RESTART_REQUESTED);
+}
+
+TEST_F(RegisterDeviceEssentialTest, identifyRequested) {
+  CalcfgForSleepersTest(SUPLA_CALCFG_CMD_IDENTIFY_DEVICE,
+                        SUPLA_RESULTCODE_IDENTIFY_REQUESTED);
 }
 
 TEST_F(RegisterDeviceEssentialTest,
@@ -854,7 +872,7 @@ TEST_F(RegisterDeviceEssentialTest,
   EXPECT_CALL(dao, update_channel_functions(1, 25, 0x1 | 0x2)).Times(1);
 
   EXPECT_CALL(rd, on_registration_success).Times(1);
-  EXPECT_CALL(rd, is_prev_entering_cfg_mode).Times(0);
+  EXPECT_CALL(rd, get_last_calcfg_command_importatnt_for_sleepers).Times(0);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)

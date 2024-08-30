@@ -281,18 +281,18 @@ void database::get_client_channels(int ClientID, int *DeviceID,
       "SELECT `id`, `channel_number`, `type`, `func`, `param1`, `param2`, "
       "`param3`, `param4`, `text_param1`, `text_param2`, `text_param3`, "
       "`iodevice_id`, `location_id`, `caption`, `alt_icon`, `user_icon_id`, "
-      "`manufacturer_id`, `product_id`, `protocol_version`, `flags`, "
-      "`em_subc_flags`, `value`, `validity_time_sec` + 2, `user_config`, "
-      "`properties`, `em_subc_user_config` FROM `supla_v_client_channel` WHERE "
-      "`client_id` = ? ORDER BY `iodevice_id`, `channel_number`";
+      "`manufacturer_id`, `product_id`, `protocol_version`, `flags`, `value`, "
+      "`validity_time_sec` + 2, `user_config`, `properties` FROM "
+      "`supla_v_client_channel` WHERE `client_id` = ? ORDER BY `iodevice_id`, "
+      "`channel_number`";
   const char sql2[] =
       "SELECT `id`, `channel_number`, `type`, `func`, `param1`, `param2`, "
       "`param3`, `param4`, `text_param1`, `text_param2`, `text_param3`, "
       "`iodevice_id`, `location_id`, `caption`, `alt_icon`, `user_icon_id`, "
-      "`manufacturer_id`, `product_id`, `protocol_version`, `flags`, "
-      "`em_subc_flags`, `value`, `validity_time_sec` + 2, `user_config`, "
-      "`properties`, `em_subc_user_config` FROM `supla_v_client_channel` WHERE "
-      "`client_id` = ? AND `iodevice_id` = ? ORDER BY `channel_number`";
+      "`manufacturer_id`, `product_id`, `protocol_version`, `flags`, `value`, "
+      "`validity_time_sec` + 2, `user_config`, `properties` FROM "
+      "`supla_v_client_channel` WHERE `client_id` = ? AND `iodevice_id` = ? "
+      "ORDER BY `channel_number`";
 
   MYSQL_BIND pbind[2];
   memset(pbind, 0, sizeof(pbind));
@@ -305,13 +305,13 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
   if (stmt_execute((void **)&stmt, DeviceID ? sql2 : sql1, pbind,
                    DeviceID ? 2 : 1, true)) {
-    MYSQL_BIND rbind[26] = {};
+    MYSQL_BIND rbind[24] = {};
 
     int id = 0, channel_number = 0, type = 0, func = 0, param1 = 0, param2 = 0,
         param3 = 0, param4 = 0, iodevice_id = 0, location_id = 0, alt_icon = 0,
         user_icon = 0, protocol_version = 0;
 
-    unsigned _supla_int64_t flags = 0, em_subc_flags = 0;
+    unsigned _supla_int64_t flags = 0;
 
     short manufacturer_id = 0;
     short product_id = 0;
@@ -319,9 +319,8 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     char text_param2[256];
     char text_param3[256];
 
-    char user_config[4097] = {};
+    char user_config[8193] = {};
     char properties[2049] = {};
-    char em_subc_user_config[4097] = {};
 
     unsigned long caption_size = 0;
     unsigned long text_param1_size = 0;
@@ -329,7 +328,6 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     unsigned long text_param3_size = 0;
     unsigned long user_config_size = 0;
     unsigned long properties_size = 0;
-    unsigned long em_subc_user_config_size = 0;
 
     my_bool caption_is_null = true;
     my_bool text_param1_is_null = true;
@@ -337,7 +335,6 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     my_bool text_param3_is_null = true;
     my_bool user_config_is_null = true;
     my_bool properties_are_null = true;
-    my_bool em_subc_user_config_is_null = true;
 
     char caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
 
@@ -420,36 +417,27 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     rbind[19].buffer_type = MYSQL_TYPE_LONGLONG;
     rbind[19].buffer = (char *)&flags;
 
-    rbind[20].buffer_type = MYSQL_TYPE_LONGLONG;
-    rbind[20].buffer = (char *)&em_subc_flags;
+    rbind[20].buffer_type = MYSQL_TYPE_BLOB;
+    rbind[20].buffer = value;
+    rbind[20].buffer_length = SUPLA_CHANNELVALUE_SIZE;
+    rbind[20].is_null = &value_is_null;
 
-    rbind[21].buffer_type = MYSQL_TYPE_BLOB;
-    rbind[21].buffer = value;
-    rbind[21].buffer_length = SUPLA_CHANNELVALUE_SIZE;
-    rbind[21].is_null = &value_is_null;
+    rbind[21].buffer_type = MYSQL_TYPE_LONG;
+    rbind[21].buffer = (char *)&validity_time_sec;
+    rbind[21].buffer_length = sizeof(unsigned _supla_int_t);
+    rbind[21].is_null = &validity_time_is_null;
 
-    rbind[22].buffer_type = MYSQL_TYPE_LONG;
-    rbind[22].buffer = (char *)&validity_time_sec;
-    rbind[22].buffer_length = sizeof(unsigned _supla_int_t);
-    rbind[22].is_null = &validity_time_is_null;
+    rbind[22].buffer_type = MYSQL_TYPE_STRING;
+    rbind[22].buffer = user_config;
+    rbind[22].is_null = &user_config_is_null;
+    rbind[22].buffer_length = sizeof(user_config) - 1;
+    rbind[22].length = &user_config_size;
 
     rbind[23].buffer_type = MYSQL_TYPE_STRING;
-    rbind[23].buffer = user_config;
-    rbind[23].is_null = &user_config_is_null;
-    rbind[23].buffer_length = sizeof(user_config) - 1;
-    rbind[23].length = &user_config_size;
-
-    rbind[24].buffer_type = MYSQL_TYPE_STRING;
-    rbind[24].buffer = properties;
-    rbind[24].is_null = &properties_are_null;
-    rbind[24].buffer_length = sizeof(properties) - 1;
-    rbind[24].length = &properties_size;
-
-    rbind[25].buffer_type = MYSQL_TYPE_STRING;
-    rbind[25].buffer = em_subc_user_config;
-    rbind[25].is_null = &em_subc_user_config_is_null;
-    rbind[25].buffer_length = sizeof(em_subc_user_config) - 1;
-    rbind[25].length = &em_subc_user_config_size;
+    rbind[23].buffer = properties;
+    rbind[23].is_null = &properties_are_null;
+    rbind[23].buffer_length = sizeof(properties) - 1;
+    rbind[23].length = &properties_size;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -483,11 +471,9 @@ void database::get_client_channels(int ClientID, int *DeviceID,
               text_param2_is_null ? nullptr : text_param2,
               text_param3_is_null ? nullptr : text_param3,
               caption_is_null ? nullptr : caption, alt_icon, user_icon,
-              manufacturer_id, product_id, protocol_version, flags,
-              em_subc_flags, value, validity_time_sec,
-              user_config_is_null ? nullptr : user_config,
-              properties_are_null ? nullptr : properties,
-              em_subc_user_config_is_null ? nullptr : em_subc_user_config);
+              manufacturer_id, product_id, protocol_version, flags, value,
+              validity_time_sec, user_config_is_null ? nullptr : user_config,
+              properties_are_null ? nullptr : properties);
 
           if (!channels->add(channel)) {
             delete channel;
@@ -1049,7 +1035,7 @@ bool database::channel_is_associated_with_action_trigger(int UserID,
     MYSQL_BIND rbind[2] = {};
 
     char properties[2049] = {};
-    char user_config[4097] = {};
+    char user_config[8193] = {};
 
     unsigned long user_config_size = 0;
     unsigned long properties_size = 0;

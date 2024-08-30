@@ -19,6 +19,7 @@
 #ifndef IMPULSECOUNTERCONFIG_H_
 #define IMPULSECOUNTERCONFIG_H_
 
+#include <map>
 #include <string>
 
 #include "jsonconfig/json_config.h"
@@ -26,13 +27,16 @@
 
 class impulse_counter_config : public supla_json_config {
  private:
-  static const char initial_value_key[];
-  static const char impulses_per_unit_key[];
-  static const char add_to_history_key[];
-
-  double get_double_value(const char *key, double min, double max);
+  static const std::map<unsigned _supla_int16_t, std::string> field_map;
+  double get_double_value(const char *key, double min, double max,
+                          double multiplier);
+  bool get_custom_unit(cJSON *user_root, char custom_unit[9],
+                       int use_defaults_for_function);
+  bool get_currency(cJSON *user_root, std::string *currency);
 
  protected:
+  std::map<unsigned _supla_int16_t, std::string> get_field_map(void);
+
  public:
   explicit impulse_counter_config(supla_json_config *root);
   impulse_counter_config(void);
@@ -40,6 +44,13 @@ class impulse_counter_config : public supla_json_config {
   double get_initial_value(void);
   unsigned int get_impulses_per_unit(void);
   void add_initial_value(unsigned _supla_int64_t *counter);
+  void get_custom_unit(char custom_unit[9], int use_defaults_for_function);
+  int get_price_per_unit(void);
+  std::string get_currency(void);
+
+  virtual void merge(supla_json_config *_dst);
+  void set_config(TChannelConfig_ImpulseCounter *config);
+  bool get_config(TChannelConfig_ImpulseCounter *config);
 };
 
 #endif /* IMPULSECOUNTERCONFIG_H_ */

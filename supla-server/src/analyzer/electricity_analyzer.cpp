@@ -211,7 +211,7 @@ void supla_electricity_analyzer::add_sample(
   bool current_logger_enabled = em_config.is_current_logger_enabled();
   bool power_logger_enabled = em_config.is_power_active_logger_enabled();
 
-  TElectricityMeter_ExtendedValue_V2 em_ev_raw = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev_raw = {};
   if (em_ev->get_raw_value(&em_ev_raw) && em_ev_raw.m_count > 0) {
     if (!(channel_flags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED) &&
         !em_config.is_phase_disabled(1)) {

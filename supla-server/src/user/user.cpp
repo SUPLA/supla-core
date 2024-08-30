@@ -466,6 +466,21 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
   }
 }
 
+void supla_user::on_channel_deleted(int user_id, int device_id, int channel_id,
+                                    const supla_caller &caller) {
+  supla_user *user = supla_user::find(user_id, false);
+
+  if (user) {
+    user->get_devices()->terminate(device_id);
+
+    supla_http_event_hub::on_channel_deleted(user, device_id, channel_id,
+                                             caller);
+
+    supla_mqtt_client_suite::globalInstance()->onChannelDeleted(
+        user_id, device_id, channel_id);
+  }
+}
+
 // static
 void supla_user::reset_timezone(int user_id) {
   supla_user *user = supla_user::find(user_id, false);

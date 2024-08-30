@@ -48,7 +48,7 @@ TEST_F(ChannelIcValueTest, icValueConstructor) {
 
 TEST_F(ChannelIcValueTest, applyChannelProperties) {
   impulse_counter_config config;
-  config.set_user_config("{\"impulsesPerUnit\":5, \"initialValue\":100}");
+  config.set_user_config("{\"impulsesPerUnit\":5, \"initialValue\":100000}");
 
   const TDS_ImpulseCounter_Value icval = {};
   supla_channel_ic_value v1(&icval);
@@ -59,21 +59,26 @@ TEST_F(ChannelIcValueTest, applyChannelProperties) {
 }
 
 TEST_F(ChannelIcValueTest, convertToExtended) {
-  impulse_counter_config config;
-  config.set_user_config(
-      "{\"impulsesPerUnit\":5, \"initialValue\":100,\"addToHistory\":false}");
+  impulse_counter_config config1;
+  config1.set_user_config(
+      "{\"impulsesPerUnit\":5, "
+      "\"initialValue\":100000,\"addToHistory\":false}");
 
   const TDS_ImpulseCounter_Value icval = {};
   supla_channel_ic_value v1(&icval);
 
   EXPECT_EQ(v1.get_ic_value()->counter, 0);
-  v1.apply_channel_properties(0, 0, 0, 0, 0, 0, &config);
+  v1.apply_channel_properties(0, 0, 0, 0, 0, 0, &config1);
   EXPECT_EQ(v1.get_ic_value()->counter, 500);
 
+  impulse_counter_config config2;
+  config2.set_user_config(
+      "{\"impulsesPerUnit\":10,\"initialValue\":50000,\"addToHistory\":false,"
+      "\"unit\":\"Unit\",\"currency\":\"PLN\",\"pricePerUnit\":45000}");
+
   supla_channel_extended_value *data_logger_purpose = nullptr;
-  supla_channel_extended_value *ev =
-      v1.convert2extended(&config, SUPLA_CHANNELFNC_IC_ELECTRICITY_METER, "PLN",
-                          "Unit", 45000, 10, &data_logger_purpose);
+  supla_channel_extended_value *ev = v1.convert2extended(
+      &config2, SUPLA_CHANNELFNC_IC_ELECTRICITY_METER, &data_logger_purpose);
 
   EXPECT_TRUE(data_logger_purpose != nullptr);
   EXPECT_TRUE(ev != nullptr);
@@ -113,7 +118,7 @@ TEST_F(ChannelIcValueTest, convertToExtended) {
     delete data_logger_purpose;
   }
 
-  config.set_user_config(
+  config1.set_user_config(
       "{\"impulsesPerUnit\":5, \"initialValue\":100,\"addToHistory\":true}");
 
   EXPECT_EQ(v1.get_ic_value()->counter, 500);

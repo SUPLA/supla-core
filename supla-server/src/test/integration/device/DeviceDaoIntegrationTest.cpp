@@ -21,6 +21,7 @@
 #include <string>
 
 #include "jsonconfig/channel/hvac_config.h"
+#include "log.h"
 
 using std::string;
 
@@ -214,14 +215,20 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
         "\"subfunction\":\"NOT_SET\","
         "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
         "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":"
-        "false,\"temperatures\":{}}");
+        "false,\"temperatures\":{},\"masterThermostatChannelNo\":null,"
+        "\"heatOrColdSourceSwitchChannelNo\":null,\"pumpSwitchChannelNo\":"
+        "null}");
     free(str);
   }
 
   str = cfg2->get_properties();
   EXPECT_NE(str, nullptr);
   if (str) {
-    EXPECT_STREQ(str, "{\"availableAlgorithms\":[],\"temperatures\":{}}");
+    EXPECT_STREQ(str,
+                 "{\"availableAlgorithms\":[],\"temperatures\":{},"
+                 "\"hiddenConfigFields\":[],\"readOnlyConfigFields\":[],"
+                 "\"hiddenTempretureConfigFields\":[],"
+                 "\"readOnlyTempretureConfigFields\":[]}");
     free(str);
   }
 
@@ -360,6 +367,126 @@ TEST_F(DeviceDaoIntegrationTest, setAndUpdateExtendedValue) {
 TEST_F(DeviceDaoIntegrationTest, deviceLimit) {
   ASSERT_TRUE(dba->connect());
   EXPECT_EQ(dao->get_device_limit_left(2), 89);
+}
+
+TEST_F(DeviceDaoIntegrationTest, updateChannelConflictDetails) {
+  string result = "";
+
+  sqlQuery("SELECT conflict_details FROM supla_dev_channel WHERE id = 311",
+           &result);
+
+  EXPECT_EQ(result, "conflict_details\nNULL\n");
+
+  char details[] = "{type=\"10\"}";
+
+  dao->update_channel_conflict_details(146, 3, details);
+
+  result = "";
+  sqlQuery("SELECT conflict_details FROM supla_dev_channel WHERE id = 311",
+           &result);
+
+  EXPECT_EQ(result, "conflict_details\n{type=\"10\"}\n");
+
+  result = "";
+  sqlQuery(
+      "SELECT COUNT(*) c FROM supla_dev_channel WHERE conflict_details IS NOT "
+      "NULL",
+      &result);
+
+  EXPECT_EQ(result, "c\n1\n");
+}
+
+TEST_F(DeviceDaoIntegrationTest, updateDevicePairingResult) {
+  string result = "";
+
+  sqlQuery("SELECT pairing_result FROM supla_iodevice WHERE id = 146", &result);
+
+  EXPECT_EQ(result, "pairing_result\nNULL\n");
+
+  char pairing_result[] = "{result=\"SUCCESS\"}";
+
+  dao->update_device_pairing_result(146, pairing_result);
+
+  result = "";
+  sqlQuery("SELECT pairing_result FROM supla_iodevice WHERE id = 146", &result);
+
+  EXPECT_EQ(result, "pairing_result\n{result=\"SUCCESS\"}\n");
+
+  result = "";
+  sqlQuery(
+      "SELECT COUNT(*) c FROM supla_iodevice WHERE pairing_result IS NOT "
+      "NULL",
+      &result);
+
+  EXPECT_EQ(result, "c\n1\n");
+
+  dao->update_device_pairing_result(146, nullptr);
+
+  result = "";
+  sqlQuery(
+      "SELECT COUNT(*) c FROM supla_iodevice WHERE pairing_result IS NOT "
+      "NULL",
+      &result);
+
+  EXPECT_EQ(result, "c\n0\n");
+}
+
+TEST_F(DeviceDaoIntegrationTest, subDevice) {
+  string result = "";
+  sqlQuery("SELECT COUNT(*) c FROM supla_subdevice", &result);
+  EXPECT_EQ(result, "c\n0\n");
+
+  TDS_SubdeviceDetails details = {};
+  details.SubDeviceId = 15;
+  snprintf(details.SerialNumber, sizeof(details.SerialNumber), "%s", "SN");
+  dao->set_subdevice_details(83, &details);
+  dao->set_subdevice_details(83, &details);
+
+  result = "";
+  sqlQuery(
+      "SELECT name, software_version, product_code, serial_number FROM "
+      "supla_subdevice WHERE id = 15 AND iodevice_id = 83 AND reg_date >= "
+      "UTC_TIMESTAMP() AND updated_at IS NULL",
+      &result);
+  EXPECT_EQ(result,
+            "name\tsoftware_version\tproduct_code\tserial_"
+            "number\nNULL\tNULL\tNULL\tSN\n");
+
+  snprintf(details.Name, sizeof(details.Name), "%s", "Nnaamme");
+  snprintf(details.ProductCode, sizeof(details.ProductCode), "%s", "Coode");
+  snprintf(details.SoftVer, sizeof(details.SoftVer), "%s", "SV");
+
+  dao->set_subdevice_details(83, &details);
+
+  snprintf(details.SoftVer, sizeof(details.SoftVer), "%s", "1.0");
+
+  dao->set_subdevice_details(84, &details);
+
+  result = "";
+  sqlQuery(
+      "SELECT name, software_version, product_code, serial_number FROM "
+      "supla_subdevice WHERE id = 15 AND iodevice_id = 83 AND updated_at >= "
+      "UTC_TIMESTAMP()",
+      &result);
+  EXPECT_EQ(result,
+            "name\tsoftware_version\tproduct_code\tserial_"
+            "number\nNnaamme\tSV\tCoode\tSN\n");
+
+  result = "";
+  sqlQuery("SELECT *, UTC_TIMESTAMP() FROM supla_subdevice", &result);
+
+  // For some reason this test sometimes fails when run from Done. We need more
+  // information.
+  supla_log(LOG_DEBUG, "%s", result.c_str());
+
+  result = "";
+  sqlQuery(
+      "SELECT name, software_version, product_code, serial_number FROM "
+      "supla_subdevice",
+      &result);
+  EXPECT_EQ(result,
+            "name\tsoftware_version\tproduct_code\tserial_"
+            "number\nNnaamme\tSV\tCoode\tSN\nNnaamme\t1.0\tCoode\tSN\n");
 }
 
 } /* namespace testing */

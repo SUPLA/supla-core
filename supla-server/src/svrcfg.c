@@ -33,7 +33,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
 
   char *s_mqtt = "MQTT-BROKER";
-  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 48)
+  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 49)
   // This ensures that realloc will only be called once
   scfg_add_int_param(CFG_MQTT_KEEP_ALIVE_SEC, s_mqtt, "CFG_MQTT_KEEP_ALIVE_SEC",
                      30);
@@ -149,6 +149,14 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
                      "concurrent_registrations", 50);
   scfg_add_int_param(CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE, s_limit,
                      "authkey_auth_cache_size", 2000);
+
+  char *s_ocr = "OCR";
+
+  char ocr_host[SUPLA_URL_HOST_MAXSIZE];
+  snprintf(ocr_host, SUPLA_URL_HOST_MAXSIZE, "ocr.supla.org");
+  scfg_add_str_param(CFG_OCR_HOST, s_ocr, "host", ocr_host);
+
+  scfg_add_int_param(CFG_OCR_MIN_INTERVAL_SEC, s_ocr, "min_interval_sec", 60);
 
 #ifdef __TEST
   result = scfg_load(argc, argv, "/etc/supla-server/supla-test.cfg");

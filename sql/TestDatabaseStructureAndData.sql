@@ -1,8 +1,8 @@
--- MySQL dump 10.19  Distrib 10.3.39-MariaDB, for debian-linux-gnu (x86_64)
+-- MariaDB dump 10.19  Distrib 10.11.6-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: supla_test
 -- ------------------------------------------------------
--- Server version	10.3.39-MariaDB-0+deb10u2-log
+-- Server version	10.11.6-MariaDB-0+deb12u1-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -25,17 +25,17 @@ DROP TABLE IF EXISTS `esp_update`;
 CREATE TABLE `esp_update` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `device_id` int(11) NOT NULL,
-  `device_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `device_name` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   `platform` tinyint(4) NOT NULL,
-  `latest_software_version` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `latest_software_version` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   `fparam1` int(11) NOT NULL,
   `fparam2` int(11) NOT NULL,
   `fparam3` int(11) NOT NULL DEFAULT 0,
   `fparam4` int(11) NOT NULL DEFAULT 0,
   `protocols` tinyint(4) NOT NULL,
-  `host` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `host` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   `port` int(11) NOT NULL,
-  `path` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `path` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   `is_synced` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `device_name` (`device_name`),
@@ -55,7 +55,83 @@ CREATE TABLE `esp_update` (
 
 LOCK TABLES `esp_update` WRITE;
 /*!40000 ALTER TABLE `esp_update` DISABLE KEYS */;
-INSERT INTO `esp_update` VALUES (77,0,'SUPLA-GATE-MODULE',1,'2.0.1',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=gate_module2_wroom_user2.2048.new.5.bin',1),(78,0,'SUPLA-GATE-MODULE',1,'2.0.1',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=gate_module2_wroom_user1.2048.new.5.bin',1),(79,0,'NICE Wi-Fi',1,'2.7.28',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_sbw_01_2728_user2.2048_DIO.new.5.bin',1),(80,0,'NICE Wi-Fi',1,'2.7.28',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_sbw_01_2728_user1.2048_DIO.new.5.bin',1),(81,0,'NICE Wi-Fi SBP-01',1,'2.7.28',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_sbw_01_2728_user2.2048_DIO.new.5.bin',1),(82,0,'NICE Wi-Fi SBP-01',1,'2.7.28',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_sbw_01_2728_user1.2048_DIO.new.5.bin',1),(83,0,'NICE Wi-Fi SCREEN',1,'2.8.47',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_srw_01_2847_user2.2048_DIO.new.5.sdk3x.bin',1),(84,0,'NICE Wi-Fi SCREEN',1,'2.8.47',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_srw_01_2847_user1.2048_DIO.new.5.sdk3x.bin',1),(85,0,'ZAMEL SRW-03',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_03_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(86,0,'ZAMEL SRW-03',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_03_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(87,0,'ZAMEL ROW-02 FIX',1,'9.9.9',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_01to02_user2.2048_DIO.new.5.bin',1),(88,0,'ZAMEL ROW-02 FIX',1,'9.9.9',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_01to02_user1.2048_DIO.new.5.bin',1),(89,0,'PEVEKO VALVE',1,'2.7.21',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=peveko_valve_user2.2048_DIO.new.5.bin',1),(90,0,'PEVEKO VALVE',1,'2.7.21',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=peveko_valve_user1.2048_DIO.new.5.bin',1),(91,0,'VARILIGHT V-PRO SMART',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=vl_dimmer_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(92,0,'VARILIGHT V-PRO SMART',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=vl_dimmer_2848_user1.2048_DIO.new.5.sdk3x.bin',1),(93,0,'ZAMEL SRW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(94,0,'ZAMEL SRW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(95,0,'ZAMEL SBW-01',1,'2.7.24',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_sbw_01_2724_user2.2048_DIO.new.5.bin',1),(96,0,'ZAMEL SBW-01',1,'2.7.24',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_sbw_01_2724_user1.2048_DIO.new.5.bin',1),(97,0,'ZAMEL SBW-02',1,'2.7.24',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_sbw_02_2724_user2.2048_DIO.new.5.bin',1),(98,0,'ZAMEL SBW-02',1,'2.7.24',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_sbw_02_2724_user1.2048_DIO.new.5.bin',1),(99,0,'ZAMEL ROW-02',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(100,0,'ZAMEL ROW-02',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(101,0,'ZAMEL ROW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_01_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(102,0,'ZAMEL ROW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_01_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(103,0,'ZAMEL LIW-01',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_liw_01_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(104,0,'ZAMEL LIW-01',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_liw_01_2848_user1.2048_DIO.new.5.sdk3x.bin',1),(105,0,'ZAMEL SLW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_slw_01_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(106,0,'ZAMEL SLW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_slw_01_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(107,0,'ZAMEL SLW-02',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_slw_02_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(108,0,'ZAMEL SLW-02',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_slw_02_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(109,0,'ZAMEL ROW-01/16A',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_16A_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(110,0,'ZAMEL ROW-01/16A',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_16A_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(111,0,'ZAMEL ROW-04',1,'2.7.25',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_04m_2725_user2.2048_DIO.new.5.bin',1),(112,0,'ZAMEL ROW-04',1,'2.7.25',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_04m_2725_user1.2048_DIO.new.5.bin',1),(113,0,'ZAMEL ROW-04m',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_04m_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(114,0,'ZAMEL ROW-04m',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_04m_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(115,0,'UV TRONIC',1,'2.7.25',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=uvtronic_2725_user2.2048_DIO.new.5.bin',1),(116,0,'UV TRONIC',1,'2.7.25',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=uvtronic_2725_user1.2048_DIO.new.5.bin',1),(117,0,'ZAMEL MEW-01',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_mew_01_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(118,0,'ZAMEL MEW-01',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_mew_01_2848_user1.2048_DIO.new.5.sdk3x.bin',1),(119,0,'HEATPOL HOME+',1,'2.7.26',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=hp_homeplus_2726_user2.2048_DIO.new.5.bin',1),(120,0,'HEATPOL HOME+',1,'2.7.26',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=hp_homeplus_2726_user1.2048_DIO.new.5.bin',1),(121,0,'ZAMEL SRW-02m',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_02m_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(122,0,'ZAMEL SRW-02m',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_02m_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(123,0,'ZAMEL SRW-02',1,'2.7.25',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_02m_2725_user2.2048_DIO.new.5.bin',1),(124,0,'ZAMEL SRW-02',1,'2.7.25',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_02m_2725_user1.2048_DIO.new.5.bin',1),(125,0,'ZAMEL PNW-01',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_pnw_01_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(126,0,'ZAMEL PNW-01',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_pnw_01_2848_user1.2048_DIO.new.5.sdk3x.bin',1),(127,0,'ZAMEL DIW-01',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_diw_01_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(128,0,'ZAMEL DIW-01',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_diw_01_2848_user1.2048_DIO.new.5.sdk3x.bin',1),(129,0,'ZAMEL LEW-01',1,'2.8.7',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_lew_01_287_user2.2048_DIO.new.5.sdk3x.bin',1),(130,0,'ZAMEL LEW-01',1,'2.8.7',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_lew_01_287_user1.2048_DIO.new.5.sdk3x.bin',1),(131,0,'ZAMEL mROW-02',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_mini_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(132,0,'ZAMEL mROW-02',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_mini_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(133,0,'ZAMEL ROW-02m',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02m_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(134,0,'ZAMEL ROW-02m',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02m_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(135,0,'Comelit WREL205',1,'2.8.46',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_mini_comelit_2846_user2.2048_DIO.new.5.sdk3x.bin',1),(136,0,'Comelit WREL205',1,'2.8.46',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_mini_comelit_2846_user1.2048_DIO.new.5.sdk3x.bin',1),(137,0,'Comelit WDIM100',1,'2.8.36',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_diw_01_comelit_2836_user2.2048_DIO.new.5.sdk3x.bin',1),(138,0,'Comelit WDIM100',1,'2.8.36',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_diw_01_comelit_2836_user1.2048_DIO.new.5.sdk3x.bin',1),(139,0,'Comelit WMIS300',1,'2.8.29',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_mew_01_comelit_2829_user2.2048_DIO.new.5.sdk3x.bin',1),(140,0,'Comelit WMIS300',1,'2.8.29',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_mew_01_comelit_2829_user1.2048_DIO.new.5.sdk3x.bin',1),(141,0,'Comelit WREL116',1,'2.8.47',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_16A_comelit_2847_user2.2048_DIO.new.5.sdk3x.bin',1),(142,0,'Comelit WREL116',1,'2.8.47',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_16A_comelit_2847_user1.2048_DIO.new.5.sdk3x.bin',1),(143,0,'ZAMEL mSRW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_mini_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(144,0,'ZAMEL mSRW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_mini_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(145,0,'Comelit WTAP100',1,'2.8.46',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_mini_comelit_2846_user2.2048_DIO.new.5.sdk3x.bin',1),(146,0,'Comelit WTAP100',1,'2.8.46',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_mini_comelit_2846_user1.2048_DIO.new.5.sdk3x.bin',1),(147,0,'ZAMEL ROW-07',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_07_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(148,0,'ZAMEL ROW-07',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_07_2848_user1.2048_DIO.new.5.sdk3x.bin',1),(149,0,'ZAMEL OSW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_osw_01_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(150,0,'ZAMEL OSW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_osw_01_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(151,0,'VARILIGHT V-PRO SMART',1,'2.8.48',5,0,1,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=vl_dimmer_pic13_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(152,0,'VARILIGHT V-PRO SMART',1,'2.8.48',5,1,1,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=vl_dimmer_pic13_2848_user1.2048_DIO.new.5.sdk3x.bin',1);
+INSERT INTO `esp_update` VALUES
+(77,0,'SUPLA-GATE-MODULE',1,'2.0.1',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=gate_module2_wroom_user2.2048.new.5.bin',1),
+(78,0,'SUPLA-GATE-MODULE',1,'2.0.1',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=gate_module2_wroom_user1.2048.new.5.bin',1),
+(79,0,'NICE Wi-Fi',1,'2.7.28',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_sbw_01_2728_user2.2048_DIO.new.5.bin',1),
+(80,0,'NICE Wi-Fi',1,'2.7.28',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_sbw_01_2728_user1.2048_DIO.new.5.bin',1),
+(81,0,'NICE Wi-Fi SBP-01',1,'2.7.28',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_sbw_01_2728_user2.2048_DIO.new.5.bin',1),
+(82,0,'NICE Wi-Fi SBP-01',1,'2.7.28',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_sbw_01_2728_user1.2048_DIO.new.5.bin',1),
+(83,0,'NICE Wi-Fi SCREEN',1,'2.8.47',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_srw_01_2847_user2.2048_DIO.new.5.sdk3x.bin',1),
+(84,0,'NICE Wi-Fi SCREEN',1,'2.8.47',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_srw_01_2847_user1.2048_DIO.new.5.sdk3x.bin',1),
+(85,0,'ZAMEL SRW-03',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_03_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(86,0,'ZAMEL SRW-03',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_03_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(87,0,'ZAMEL ROW-02 FIX',1,'9.9.9',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_01to02_user2.2048_DIO.new.5.bin',1),
+(88,0,'ZAMEL ROW-02 FIX',1,'9.9.9',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_01to02_user1.2048_DIO.new.5.bin',1),
+(89,0,'PEVEKO VALVE',1,'2.7.21',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=peveko_valve_user2.2048_DIO.new.5.bin',1),
+(90,0,'PEVEKO VALVE',1,'2.7.21',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=peveko_valve_user1.2048_DIO.new.5.bin',1),
+(91,0,'VARILIGHT V-PRO SMART',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=vl_dimmer_2848_user2.2048_DIO.new.5.sdk3x.bin',1),
+(92,0,'VARILIGHT V-PRO SMART',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=vl_dimmer_2848_user1.2048_DIO.new.5.sdk3x.bin',1),
+(93,0,'ZAMEL SRW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(94,0,'ZAMEL SRW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(95,0,'ZAMEL SBW-01',1,'2.7.24',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_sbw_01_2724_user2.2048_DIO.new.5.bin',1),
+(96,0,'ZAMEL SBW-01',1,'2.7.24',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_sbw_01_2724_user1.2048_DIO.new.5.bin',1),
+(97,0,'ZAMEL SBW-02',1,'2.7.24',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_sbw_02_2724_user2.2048_DIO.new.5.bin',1),
+(98,0,'ZAMEL SBW-02',1,'2.7.24',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_sbw_02_2724_user1.2048_DIO.new.5.bin',1),
+(99,0,'ZAMEL ROW-02',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(100,0,'ZAMEL ROW-02',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(101,0,'ZAMEL ROW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_01_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(102,0,'ZAMEL ROW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_01_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(103,0,'ZAMEL LIW-01',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_liw_01_2848_user2.2048_DIO.new.5.sdk3x.bin',1),
+(104,0,'ZAMEL LIW-01',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_liw_01_2848_user1.2048_DIO.new.5.sdk3x.bin',1),
+(105,0,'ZAMEL SLW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_slw_01_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(106,0,'ZAMEL SLW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_slw_01_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(107,0,'ZAMEL SLW-02',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_slw_02_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(108,0,'ZAMEL SLW-02',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_slw_02_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(109,0,'ZAMEL ROW-01/16A',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_16A_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(110,0,'ZAMEL ROW-01/16A',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_16A_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(111,0,'ZAMEL ROW-04',1,'2.7.25',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_04m_2725_user2.2048_DIO.new.5.bin',1),
+(112,0,'ZAMEL ROW-04',1,'2.7.25',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_04m_2725_user1.2048_DIO.new.5.bin',1),
+(113,0,'ZAMEL ROW-04m',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_04m_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(114,0,'ZAMEL ROW-04m',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_04m_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(115,0,'UV TRONIC',1,'2.7.25',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=uvtronic_2725_user2.2048_DIO.new.5.bin',1),
+(116,0,'UV TRONIC',1,'2.7.25',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=uvtronic_2725_user1.2048_DIO.new.5.bin',1),
+(117,0,'ZAMEL MEW-01',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_mew_01_2848_user2.2048_DIO.new.5.sdk3x.bin',1),
+(118,0,'ZAMEL MEW-01',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_mew_01_2848_user1.2048_DIO.new.5.sdk3x.bin',1),
+(119,0,'HEATPOL HOME+',1,'2.7.26',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=hp_homeplus_2726_user2.2048_DIO.new.5.bin',1),
+(120,0,'HEATPOL HOME+',1,'2.7.26',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=hp_homeplus_2726_user1.2048_DIO.new.5.bin',1),
+(121,0,'ZAMEL SRW-02m',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_02m_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(122,0,'ZAMEL SRW-02m',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_02m_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(123,0,'ZAMEL SRW-02',1,'2.7.25',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_02m_2725_user2.2048_DIO.new.5.bin',1),
+(124,0,'ZAMEL SRW-02',1,'2.7.25',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_02m_2725_user1.2048_DIO.new.5.bin',1),
+(125,0,'ZAMEL PNW-01',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_pnw_01_2848_user2.2048_DIO.new.5.sdk3x.bin',1),
+(126,0,'ZAMEL PNW-01',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_pnw_01_2848_user1.2048_DIO.new.5.sdk3x.bin',1),
+(127,0,'ZAMEL DIW-01',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_diw_01_2848_user2.2048_DIO.new.5.sdk3x.bin',1),
+(128,0,'ZAMEL DIW-01',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_diw_01_2848_user1.2048_DIO.new.5.sdk3x.bin',1),
+(129,0,'ZAMEL LEW-01',1,'2.8.7',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_lew_01_287_user2.2048_DIO.new.5.sdk3x.bin',1),
+(130,0,'ZAMEL LEW-01',1,'2.8.7',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_lew_01_287_user1.2048_DIO.new.5.sdk3x.bin',1),
+(131,0,'ZAMEL mROW-02',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_mini_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(132,0,'ZAMEL mROW-02',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_mini_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(133,0,'ZAMEL ROW-02m',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02m_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(134,0,'ZAMEL ROW-02m',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02m_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(135,0,'Comelit WREL205',1,'2.8.46',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_mini_comelit_2846_user2.2048_DIO.new.5.sdk3x.bin',1),
+(136,0,'Comelit WREL205',1,'2.8.46',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_mini_comelit_2846_user1.2048_DIO.new.5.sdk3x.bin',1),
+(137,0,'Comelit WDIM100',1,'2.8.36',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_diw_01_comelit_2836_user2.2048_DIO.new.5.sdk3x.bin',1),
+(138,0,'Comelit WDIM100',1,'2.8.36',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_diw_01_comelit_2836_user1.2048_DIO.new.5.sdk3x.bin',1),
+(139,0,'Comelit WMIS300',1,'2.8.29',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_mew_01_comelit_2829_user2.2048_DIO.new.5.sdk3x.bin',1),
+(140,0,'Comelit WMIS300',1,'2.8.29',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_mew_01_comelit_2829_user1.2048_DIO.new.5.sdk3x.bin',1),
+(141,0,'Comelit WREL116',1,'2.8.47',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_16A_comelit_2847_user2.2048_DIO.new.5.sdk3x.bin',1),
+(142,0,'Comelit WREL116',1,'2.8.47',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_16A_comelit_2847_user1.2048_DIO.new.5.sdk3x.bin',1),
+(143,0,'ZAMEL mSRW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_mini_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(144,0,'ZAMEL mSRW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_mini_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(145,0,'Comelit WTAP100',1,'2.8.46',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_mini_comelit_2846_user2.2048_DIO.new.5.sdk3x.bin',1),
+(146,0,'Comelit WTAP100',1,'2.8.46',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_mini_comelit_2846_user1.2048_DIO.new.5.sdk3x.bin',1),
+(147,0,'ZAMEL ROW-07',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_07_2848_user2.2048_DIO.new.5.sdk3x.bin',1),
+(148,0,'ZAMEL ROW-07',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_07_2848_user1.2048_DIO.new.5.sdk3x.bin',1),
+(149,0,'ZAMEL OSW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_osw_01_2850_user2.2048_DIO.new.5.sdk3x.bin',1),
+(150,0,'ZAMEL OSW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_osw_01_2850_user1.2048_DIO.new.5.sdk3x.bin',1),
+(151,0,'VARILIGHT V-PRO SMART',1,'2.8.48',5,0,1,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=vl_dimmer_pic13_2848_user2.2048_DIO.new.5.sdk3x.bin',1),
+(152,0,'VARILIGHT V-PRO SMART',1,'2.8.48',5,1,1,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=vl_dimmer_pic13_2848_user1.2048_DIO.new.5.sdk3x.bin',1);
 /*!40000 ALTER TABLE `esp_update` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -107,7 +183,132 @@ CREATE TABLE `migration_versions` (
 
 LOCK TABLES `migration_versions` WRITE;
 /*!40000 ALTER TABLE `migration_versions` DISABLE KEYS */;
-INSERT INTO `migration_versions` VALUES ('SuplaBundle\\Migrations\\Migration\\Version20170101000000','2022-05-04 19:26:18',NULL),('SuplaBundle\\Migrations\\Migration\\Version20170414101854','2022-05-04 19:26:19',NULL),('SuplaBundle\\Migrations\\Migration\\Version20170612204116','2022-05-04 19:26:19',NULL),('SuplaBundle\\Migrations\\Migration\\Version20170818114139','2022-05-04 19:26:20',NULL),('SuplaBundle\\Migrations\\Migration\\Version20171013140904','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20171208222022','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20171210105120','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180108224520','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180113234138','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180116184415','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180203231115','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180208145738','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180224184251','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180324222844','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180326134725','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180403175932','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180403203101','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180403211558','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180411202101','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180411203913','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180416201401','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180423121539','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180507095139','2022-05-04 19:26:21',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180518131234','2022-05-04 19:26:22',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180707221458','2022-05-04 19:26:22',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180717094843','2022-05-04 19:26:22',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180723132652','2022-05-04 19:26:22',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180807083217','2022-05-04 19:26:22',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180812205513','2022-05-04 19:26:22',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180814155501','2022-05-04 19:26:22',NULL),('SuplaBundle\\Migrations\\Migration\\Version20180914222230','2022-05-04 19:26:23',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181001221229','2022-05-04 19:26:23',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181007112610','2022-05-04 19:26:23',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181019115859','2022-05-04 19:26:23',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181024164957','2022-05-04 19:26:24',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181025171850','2022-05-04 19:26:24',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181026171557','2022-05-04 19:26:24',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181105144611','2022-05-04 19:26:24',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181126225634','2022-05-04 19:26:24',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181129170610','2022-05-04 19:26:24',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181129195431','2022-05-04 19:26:25',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181129231132','2022-05-04 19:26:25',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181204174603','2022-05-04 19:26:25',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181205092324','2022-05-04 19:26:25',NULL),('SuplaBundle\\Migrations\\Migration\\Version20181222001450','2022-05-04 19:26:25',NULL),('SuplaBundle\\Migrations\\Migration\\Version20190105130410','2022-05-04 19:26:25',NULL),('SuplaBundle\\Migrations\\Migration\\Version20190117075805','2022-05-04 19:26:25',NULL),('SuplaBundle\\Migrations\\Migration\\Version20190219184847','2022-05-04 19:26:25',NULL),('SuplaBundle\\Migrations\\Migration\\Version20190325215115','2022-05-04 19:26:25',NULL),('SuplaBundle\\Migrations\\Migration\\Version20190401151822','2022-05-04 19:26:25',NULL),('SuplaBundle\\Migrations\\Migration\\Version20190720215803','2022-05-04 19:26:25',NULL),('SuplaBundle\\Migrations\\Migration\\Version20190813232026','2022-05-04 19:26:25',NULL),('SuplaBundle\\Migrations\\Migration\\Version20190815154016','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20191226160845','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200108201101','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200123235701','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200124084227','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200204170901','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200210145902','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200229122103','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200322123636','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200412183701','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200414213205','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200416225304','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200419190150','2022-05-04 19:26:26',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200430113342','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200514132030','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200515102311','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200518171230','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200724155001','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200807131101','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200811141801','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200813113801','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200813133501','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20200911231401','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20201113112233','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20201213133718','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20201214102230','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20210105164727','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20210118124714','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20210228201414','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20210323095216','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20210419201821','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20210525104812','2022-05-04 19:26:27',NULL),('SuplaBundle\\Migrations\\Migration\\Version20210915221319','2022-05-04 19:26:28',NULL),('SuplaBundle\\Migrations\\Migration\\Version20210917203710','2022-05-04 19:26:28',NULL),('SuplaBundle\\Migrations\\Migration\\Version20211005074509','2022-05-04 19:26:28',NULL),('SuplaBundle\\Migrations\\Migration\\Version20211108120835','2022-05-04 19:26:28',NULL),('SuplaBundle\\Migrations\\Migration\\Version20211123193415','2022-05-04 19:26:28',NULL),('SuplaBundle\\Migrations\\Migration\\Version20211205215406','2022-05-04 19:26:28',NULL),('SuplaBundle\\Migrations\\Migration\\Version20211218174444','2022-05-04 19:26:28',NULL),('SuplaBundle\\Migrations\\Migration\\Version20220208164512','2022-05-04 19:26:28',NULL),('SuplaBundle\\Migrations\\Migration\\Version20220222110707','2022-05-04 19:57:43',NULL),('SuplaBundle\\Migrations\\Migration\\Version20220309061811','2022-05-04 19:57:43',NULL),('SuplaBundle\\Migrations\\Migration\\Version20220309061812','2022-05-04 19:57:43',NULL),('SuplaBundle\\Migrations\\Migration\\Version20220404100406','2022-07-19 21:40:53',NULL),('SuplaBundle\\Migrations\\Migration\\Version20220718203129','2022-07-19 21:40:53',NULL),('SuplaBundle\\Migrations\\Migration\\Version20220719210858','2022-07-19 21:40:53',NULL),('SuplaBundle\\Migrations\\Migration\\Version20220929090847','2022-10-23 10:37:57',NULL),('SuplaBundle\\Migrations\\Migration\\Version20221005003914','2022-10-23 10:37:57',NULL),('SuplaBundle\\Migrations\\Migration\\Version20221010103958','2022-10-23 10:37:58',NULL),('SuplaBundle\\Migrations\\Migration\\Version20221020225729','2022-10-23 10:53:42',NULL),('SuplaBundle\\Migrations\\Migration\\Version20221124222346','2022-12-17 13:47:15',NULL),('SuplaBundle\\Migrations\\Migration\\Version20221219113615','2023-04-28 22:09:37',NULL),('SuplaBundle\\Migrations\\Migration\\Version20230322172549','2023-04-28 22:09:37',NULL),('SuplaBundle\\Migrations\\Migration\\Version20230426212833','2023-04-28 22:09:37',NULL),('SuplaBundle\\Migrations\\Migration\\Version20230427200016','2023-04-28 22:09:38',NULL),('SuplaBundle\\Migrations\\Migration\\Version20230427222824','2023-07-09 19:12:41',NULL),('SuplaBundle\\Migrations\\Migration\\Version20230529143433','2023-07-09 19:12:41',NULL),('SuplaBundle\\Migrations\\Migration\\Version20230604004315','2023-11-05 18:45:17',63),('SuplaBundle\\Migrations\\Migration\\Version20230612185931','2023-07-09 19:12:41',NULL),('SuplaBundle\\Migrations\\Migration\\Version20230714142433','2023-11-05 18:45:17',114),('SuplaBundle\\Migrations\\Migration\\Version20230815145146','2023-11-05 18:45:17',145),('SuplaBundle\\Migrations\\Migration\\Version20230926065848','2023-11-05 18:45:18',2),('SuplaBundle\\Migrations\\Migration\\Version20231103121340','2023-11-05 18:45:18',182),('SuplaBundle\\Migrations\\Migration\\Version20231219083453','2023-12-28 13:22:39',25),('SuplaBundle\\Migrations\\Migration\\Version20231221114509','2024-04-25 16:37:55',496),('SuplaBundle\\Migrations\\Migration\\Version20240117202218','2024-04-25 16:37:56',253),('SuplaBundle\\Migrations\\Migration\\Version20240327152635','2024-04-25 16:37:56',5),('SuplaBundle\\Migrations\\Migration\\Version20240415113159','2024-04-25 16:37:56',7),('SuplaBundle\\Migrations\\Migration\\Version20240607174322','2024-06-18 13:14:56',7);
+INSERT INTO `migration_versions` VALUES
+('SuplaBundle\\Migrations\\Migration\\Version20170101000000','2022-05-04 19:26:18',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20170414101854','2022-05-04 19:26:19',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20170612204116','2022-05-04 19:26:19',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20170818114139','2022-05-04 19:26:20',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20171013140904','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20171208222022','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20171210105120','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180108224520','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180113234138','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180116184415','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180203231115','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180208145738','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180224184251','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180324222844','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180326134725','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180403175932','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180403203101','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180403211558','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180411202101','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180411203913','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180416201401','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180423121539','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180507095139','2022-05-04 19:26:21',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180518131234','2022-05-04 19:26:22',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180707221458','2022-05-04 19:26:22',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180717094843','2022-05-04 19:26:22',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180723132652','2022-05-04 19:26:22',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180807083217','2022-05-04 19:26:22',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180812205513','2022-05-04 19:26:22',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180814155501','2022-05-04 19:26:22',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20180914222230','2022-05-04 19:26:23',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181001221229','2022-05-04 19:26:23',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181007112610','2022-05-04 19:26:23',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181019115859','2022-05-04 19:26:23',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181024164957','2022-05-04 19:26:24',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181025171850','2022-05-04 19:26:24',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181026171557','2022-05-04 19:26:24',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181105144611','2022-05-04 19:26:24',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181126225634','2022-05-04 19:26:24',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181129170610','2022-05-04 19:26:24',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181129195431','2022-05-04 19:26:25',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181129231132','2022-05-04 19:26:25',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181204174603','2022-05-04 19:26:25',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181205092324','2022-05-04 19:26:25',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20181222001450','2022-05-04 19:26:25',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20190105130410','2022-05-04 19:26:25',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20190117075805','2022-05-04 19:26:25',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20190219184847','2022-05-04 19:26:25',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20190325215115','2022-05-04 19:26:25',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20190401151822','2022-05-04 19:26:25',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20190720215803','2022-05-04 19:26:25',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20190813232026','2022-05-04 19:26:25',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20190815154016','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20191226160845','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200108201101','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200123235701','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200124084227','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200204170901','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200210145902','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200229122103','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200322123636','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200412183701','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200414213205','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200416225304','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200419190150','2022-05-04 19:26:26',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200430113342','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200514132030','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200515102311','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200518171230','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200724155001','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200807131101','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200811141801','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200813113801','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200813133501','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20200911231401','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20201113112233','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20201213133718','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20201214102230','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20210105164727','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20210118124714','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20210228201414','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20210323095216','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20210419201821','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20210525104812','2022-05-04 19:26:27',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20210915221319','2022-05-04 19:26:28',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20210917203710','2022-05-04 19:26:28',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20211005074509','2022-05-04 19:26:28',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20211108120835','2022-05-04 19:26:28',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20211123193415','2022-05-04 19:26:28',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20211205215406','2022-05-04 19:26:28',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20211218174444','2022-05-04 19:26:28',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20220208164512','2022-05-04 19:26:28',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20220222110707','2022-05-04 19:57:43',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20220309061811','2022-05-04 19:57:43',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20220309061812','2022-05-04 19:57:43',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20220404100406','2022-07-19 21:40:53',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20220718203129','2022-07-19 21:40:53',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20220719210858','2022-07-19 21:40:53',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20220929090847','2022-10-23 10:37:57',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20221005003914','2022-10-23 10:37:57',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20221010103958','2022-10-23 10:37:58',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20221020225729','2022-10-23 10:53:42',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20221124222346','2022-12-17 13:47:15',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20221219113615','2023-04-28 22:09:37',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20230322172549','2023-04-28 22:09:37',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20230426212833','2023-04-28 22:09:37',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20230427200016','2023-04-28 22:09:38',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20230427222824','2023-07-09 19:12:41',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20230529143433','2023-07-09 19:12:41',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20230604004315','2023-11-05 18:45:17',63),
+('SuplaBundle\\Migrations\\Migration\\Version20230612185931','2023-07-09 19:12:41',NULL),
+('SuplaBundle\\Migrations\\Migration\\Version20230714142433','2023-11-05 18:45:17',114),
+('SuplaBundle\\Migrations\\Migration\\Version20230815145146','2023-11-05 18:45:17',145),
+('SuplaBundle\\Migrations\\Migration\\Version20230926065848','2023-11-05 18:45:18',2),
+('SuplaBundle\\Migrations\\Migration\\Version20231103121340','2023-11-05 18:45:18',182),
+('SuplaBundle\\Migrations\\Migration\\Version20231219083453','2023-12-28 13:22:39',25),
+('SuplaBundle\\Migrations\\Migration\\Version20231221114509','2024-04-25 16:37:55',496),
+('SuplaBundle\\Migrations\\Migration\\Version20240117202218','2024-04-25 16:37:56',253),
+('SuplaBundle\\Migrations\\Migration\\Version20240327152635','2024-04-25 16:37:56',5),
+('SuplaBundle\\Migrations\\Migration\\Version20240415113159','2024-04-25 16:37:56',7),
+('SuplaBundle\\Migrations\\Migration\\Version20240607174322','2024-07-02 22:29:05',49),
+('SuplaBundle\\Migrations\\Migration\\Version20240701141901','2024-07-02 22:29:05',49),
+('SuplaBundle\\Migrations\\Migration\\Version20240802194013','2024-08-02 22:29:05',49),
+('SuplaBundle\\Migrations\\Migration\\Version20240824185033','2024-08-25 12:12:05',49),
+('SuplaBundle\\Migrations\\Migration\\Version20240825110557','2024-08-25 12:12:05',49);
 /*!40000 ALTER TABLE `migration_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -130,7 +331,7 @@ CREATE TABLE `supla_accessid` (
   PRIMARY KEY (`id`),
   KEY `IDX_A5549B6CA76ED395` (`user_id`),
   CONSTRAINT `FK_A5549B6CA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -139,7 +340,8 @@ CREATE TABLE `supla_accessid` (
 
 LOCK TABLES `supla_accessid` WRITE;
 /*!40000 ALTER TABLE `supla_accessid` DISABLE KEYS */;
-INSERT INTO `supla_accessid` VALUES (2,2,'3311dbb5','Access Identifier #1',1,NULL,NULL,NULL);
+INSERT INTO `supla_accessid` VALUES
+(2,2,'3311dbb5','Access Identifier #1',1,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `supla_accessid` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -161,7 +363,7 @@ CREATE TABLE `supla_amazon_alexa` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UNIQ_290228F0A76ED395` (`user_id`),
   CONSTRAINT `FK_290228F0A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -195,7 +397,7 @@ CREATE TABLE `supla_audit` (
   KEY `supla_audit_created_at_idx` (`created_at`),
   KEY `supla_audit_int_param` (`int_param`),
   CONSTRAINT `FK_EFE348F4A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -204,7 +406,44 @@ CREATE TABLE `supla_audit` (
 
 LOCK TABLES `supla_audit` WRITE;
 /*!40000 ALTER TABLE `supla_audit` DISABLE KEYS */;
-INSERT INTO `supla_audit` VALUES (1,NULL,2,'2020-04-16 08:55:27',2457392666,'',0),(2,NULL,2,'2020-04-16 08:55:32',2457392666,'',0),(3,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),(4,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),(5,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),(6,NULL,2,'2020-04-16 08:55:46',2457392666,'',0),(7,NULL,2,'2020-04-16 14:05:47',2457392666,'test@supla.org',2),(8,NULL,7,'2020-04-16 14:06:28',NULL,'test@supla.org',1),(9,2,1,'2020-04-16 14:13:12',2457392666,'test@supla.org',NULL),(10,NULL,2,'2020-04-16 14:24:06',2457392666,'',0),(11,NULL,2,'2020-04-16 14:24:07',2457392666,'',0),(12,2,2,'2020-04-16 20:08:42',2457392666,'test@supla.org',2),(13,2,2,'2020-04-16 20:08:49',2457392666,'test@supla.org',2),(14,2,1,'2020-04-16 20:09:18',2457392666,'test@supla.org',NULL),(15,NULL,2,'2020-05-19 20:55:27',2457392666,'',0),(16,NULL,2,'2020-05-19 20:55:27',2457392666,'',0),(17,NULL,2,'2020-05-19 20:55:28',2457392666,'',0),(18,2,1,'2022-05-04 19:30:21',2457392666,'test@supla.org',NULL),(19,2,1,'2022-05-07 11:50:42',2457392666,'test@supla.org',NULL),(20,NULL,2,'2022-05-07 15:10:43',2457392666,'',0),(21,NULL,2,'2022-05-07 15:10:50',2457392666,'',0),(22,NULL,2,'2022-05-07 15:10:57',2457392666,'',0),(23,NULL,2,'2022-05-07 15:11:04',2457392666,'',0),(24,NULL,2,'2022-05-07 15:11:11',2457392666,'',0),(25,NULL,2,'2022-05-07 15:11:18',2457392666,'',0),(26,NULL,2,'2022-05-07 15:11:25',2457392666,'',0),(27,2,2,'2022-05-07 15:11:35',2457392666,'test@supla.org',2),(28,2,1,'2022-05-07 15:11:44',2457392666,'test@supla.org',NULL),(29,NULL,2,'2022-07-19 21:40:58',2457392666,'',0),(30,NULL,2,'2022-07-19 21:41:00',2457392666,'',0),(31,NULL,2,'2022-12-17 13:47:22',2457392666,'',0),(32,NULL,2,'2022-12-17 13:47:29',2457392666,'',0),(33,2,1,'2023-04-28 22:10:00',2457392666,'test@supla.org',NULL),(34,2,1,'2023-04-28 22:23:45',2457392666,'test@supla.org',NULL),(35,NULL,2,'2023-12-28 12:22:35',95261797,'',0),(36,NULL,2,'2023-12-28 12:22:35',95261797,'',0),(37,NULL,2,'2023-12-28 12:22:36',95261797,'',0);
+INSERT INTO `supla_audit` VALUES
+(1,NULL,2,'2020-04-16 08:55:27',2457392666,'',0),
+(2,NULL,2,'2020-04-16 08:55:32',2457392666,'',0),
+(3,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),
+(4,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),
+(5,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),
+(6,NULL,2,'2020-04-16 08:55:46',2457392666,'',0),
+(7,NULL,2,'2020-04-16 14:05:47',2457392666,'test@supla.org',2),
+(8,NULL,7,'2020-04-16 14:06:28',NULL,'test@supla.org',1),
+(9,2,1,'2020-04-16 14:13:12',2457392666,'test@supla.org',NULL),
+(10,NULL,2,'2020-04-16 14:24:06',2457392666,'',0),
+(11,NULL,2,'2020-04-16 14:24:07',2457392666,'',0),
+(12,2,2,'2020-04-16 20:08:42',2457392666,'test@supla.org',2),
+(13,2,2,'2020-04-16 20:08:49',2457392666,'test@supla.org',2),
+(14,2,1,'2020-04-16 20:09:18',2457392666,'test@supla.org',NULL),
+(15,NULL,2,'2020-05-19 20:55:27',2457392666,'',0),
+(16,NULL,2,'2020-05-19 20:55:27',2457392666,'',0),
+(17,NULL,2,'2020-05-19 20:55:28',2457392666,'',0),
+(18,2,1,'2022-05-04 19:30:21',2457392666,'test@supla.org',NULL),
+(19,2,1,'2022-05-07 11:50:42',2457392666,'test@supla.org',NULL),
+(20,NULL,2,'2022-05-07 15:10:43',2457392666,'',0),
+(21,NULL,2,'2022-05-07 15:10:50',2457392666,'',0),
+(22,NULL,2,'2022-05-07 15:10:57',2457392666,'',0),
+(23,NULL,2,'2022-05-07 15:11:04',2457392666,'',0),
+(24,NULL,2,'2022-05-07 15:11:11',2457392666,'',0),
+(25,NULL,2,'2022-05-07 15:11:18',2457392666,'',0),
+(26,NULL,2,'2022-05-07 15:11:25',2457392666,'',0),
+(27,2,2,'2022-05-07 15:11:35',2457392666,'test@supla.org',2),
+(28,2,1,'2022-05-07 15:11:44',2457392666,'test@supla.org',NULL),
+(29,NULL,2,'2022-07-19 21:40:58',2457392666,'',0),
+(30,NULL,2,'2022-07-19 21:41:00',2457392666,'',0),
+(31,NULL,2,'2022-12-17 13:47:22',2457392666,'',0),
+(32,NULL,2,'2022-12-17 13:47:29',2457392666,'',0),
+(33,2,1,'2023-04-28 22:10:00',2457392666,'test@supla.org',NULL),
+(34,2,1,'2023-04-28 22:23:45',2457392666,'test@supla.org',NULL),
+(35,NULL,2,'2023-12-28 12:22:35',95261797,'',0),
+(36,NULL,2,'2023-12-28 12:22:35',95261797,'',0),
+(37,NULL,2,'2023-12-28 12:22:36',95261797,'',0);
 /*!40000 ALTER TABLE `supla_audit` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -230,7 +469,7 @@ CREATE TABLE `supla_auto_gate_closing` (
   KEY `IDX_E176CB9FA76ED395` (`user_id`),
   CONSTRAINT `FK_E176CB9F72F5A1AA` FOREIGN KEY (`channel_id`) REFERENCES `supla_dev_channel` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_E176CB9FA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -277,7 +516,7 @@ CREATE TABLE `supla_client` (
   KEY `IDX_5430007FA76ED395` (`user_id`),
   CONSTRAINT `FK_5430007F4FEA67CF` FOREIGN KEY (`access_id`) REFERENCES `supla_accessid` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_5430007FA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -286,7 +525,8 @@ CREATE TABLE `supla_client` (
 
 LOCK TABLES `supla_client` WRITE;
 /*!40000 ALTER TABLE `supla_client` DISABLE KEYS */;
-INSERT INTO `supla_client` VALUES (1,2,'\0	\n\r','Console Test Client',1,2130706433,'2020-04-16 18:21:15',2130706433,'2020-04-16 18:21:15','1.0-Linux',12,2,'$2a$04$yhIgHxTc7MFQnXTS2qdbmOWorpu7NVMR.IL1YyaJ0YPxD6P26MeaC',NULL,NULL,NULL,NULL,NULL,0,0,NULL);
+INSERT INTO `supla_client` VALUES
+(1,2,'\0	\n\r','Console Test Client',1,2130706433,'2020-04-16 18:21:15',2130706433,'2020-04-16 18:21:15','1.0-Linux',12,2,'$2a$04$yhIgHxTc7MFQnXTS2qdbmOWorpu7NVMR.IL1YyaJ0YPxD6P26MeaC',NULL,NULL,NULL,NULL,NULL,0,0,NULL);
 /*!40000 ALTER TABLE `supla_client` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -320,6 +560,8 @@ CREATE TABLE `supla_dev_channel` (
   `user_config` varchar(4096) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `param4` int(11) NOT NULL DEFAULT 0,
   `properties` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sub_device_id` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `conflict_details` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UNIQUE_CHANNEL` (`iodevice_id`,`channel_number`),
   KEY `IDX_81E928C9125F95D6` (`iodevice_id`),
@@ -334,7 +576,7 @@ CREATE TABLE `supla_dev_channel` (
   CONSTRAINT `FK_81E928C964D218E` FOREIGN KEY (`location_id`) REFERENCES `supla_location` (`id`),
   CONSTRAINT `FK_81E928C9A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`),
   CONSTRAINT `FK_81E928C9CB4C938` FOREIGN KEY (`user_icon_id`) REFERENCES `supla_user_icons` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=87236 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=87236 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -343,7 +585,52 @@ CREATE TABLE `supla_dev_channel` (
 
 LOCK TABLES `supla_dev_channel` WRITE;
 /*!40000 ALTER TABLE `supla_dev_channel` DISABLE KEYS */;
-INSERT INTO `supla_dev_channel` VALUES (2,2,2,0,NULL,6010,410,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(140,73,2,0,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(141,73,2,1,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(142,73,2,2,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(143,73,2,3,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(144,74,2,0,'',5000,310,0,0,5600,0,'PLN',NULL,NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0.56,\"currency\":\"PLN\"}',0,NULL),(146,76,2,0,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(157,83,2,0,'',3000,40,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'{\"temperatureAdjustment\":0}',0,NULL),(158,83,2,1,'',3020,45,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'{\"humidityAdjustment\":0,\"temperatureAdjustment\":0}',0,NULL),(159,83,2,2,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(160,83,2,3,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(161,83,2,4,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(162,83,2,5,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(163,83,2,6,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(164,83,2,7,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(165,83,2,8,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(166,83,2,9,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(167,83,2,10,'Szlaban',2900,20,239,500,0,0,NULL,NULL,NULL,2,0,NULL,0,NULL,'{\"openingSensorChannelId\":null,\"openingSensorSecondaryChannelId\":null,\"relayTimeMs\":500,\"timeSettingAvailable\":true}',0,NULL),(168,83,2,11,'',2900,90,239,500,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'{\"openingSensorChannelId\":null,\"relayTimeMs\":500,\"timeSettingAvailable\":true}',0,NULL),(169,83,2,12,NULL,4010,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL),(170,83,2,13,'',4000,180,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL),(171,83,2,14,'',4020,200,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL),(172,83,2,15,'',2900,130,239,0,0,0,NULL,NULL,NULL,4,0,NULL,0,NULL,'[]',0,NULL),(173,83,2,16,'',2900,110,16,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'{\"openingTimeS\":30,\"closingTimeS\":40,\"timeSettingAvailable\":true,\"openingSensorChannelId\":null,\"openingTimeMs\":30000,\"closingTimeMs\":40000}',0,NULL),(174,83,2,17,'',2900,20,239,500,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'{\"openingSensorChannelId\":null,\"openingSensorSecondaryChannelId\":null,\"relayTimeMs\":500,\"timeSettingAvailable\":true}',0,NULL),(175,83,2,18,'',2900,30,239,500,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'{\"openingSensorChannelId\":null,\"relayTimeMs\":500,\"timeSettingAvailable\":true}',0,NULL),(176,84,2,0,'',5010,315,0,7508272,5500,1000,'PLN',NULL,NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0.55,\"impulsesPerUnit\":1000,\"currency\":\"PLN\",\"unit\":null,\"initialValue\":75082.72}',0,NULL),(177,83,2,19,'',3044,260,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL),(178,83,2,20,'',3050,280,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL),(179,83,2,21,'',3042,250,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL),(180,83,2,22,'',3048,270,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL),(282,135,2,0,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL),(283,135,2,1,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL),(288,84,2,1,NULL,5010,315,0,0,0,1,NULL,'impl',NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0,\"impulsesPerUnit\":1,\"currency\":null,\"unit\":\"impl\",\"initialValue\":0}',0,NULL),(289,84,2,2,'Overflow counter ❤️',5010,315,0,0,0,1,NULL,'x',NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0,\"impulsesPerUnit\":1,\"currency\":null,\"unit\":\"x\",\"initialValue\":0}',0,NULL),(290,84,2,3,NULL,5010,315,0,0,0,1,NULL,'sec',NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0,\"impulsesPerUnit\":1,\"currency\":null,\"unit\":\"sec\",\"initialValue\":0}',0,NULL),(291,84,2,4,NULL,5010,315,0,0,0,1,NULL,'n',NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0,\"impulsesPerUnit\":1,\"currency\":null,\"unit\":\"n\",\"initialValue\":0}',0,NULL),(296,84,2,5,NULL,5010,315,0,0,0,1,NULL,'Byte',NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0,\"impulsesPerUnit\":1,\"currency\":null,\"unit\":\"Byte\",\"initialValue\":0}',0,NULL),(301,142,2,0,NULL,7000,500,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,65536,NULL,'[]',0,NULL),(303,144,2,0,NULL,8000,110,48,0,0,0,NULL,NULL,NULL,NULL,0,NULL,1,NULL,'{\"openingTimeS\":0,\"closingTimeS\":0,\"timeSettingAvailable\":true,\"openingSensorChannelId\":null,\"openingTimeMs\":0,\"closingTimeMs\":0}',0,NULL),(308,146,2,0,NULL,2900,20,15,500,310,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'{\"openingSensorChannelId\":310,\"openingSensorSecondaryChannelId\":null,\"relayTimeMs\":500,\"timeSettingAvailable\":true}',0,NULL),(309,146,2,1,NULL,2900,10,15,6000,311,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'{\"openingSensorChannelId\":311,\"relayTimeMs\":6000,\"timeSettingAvailable\":true}',0,NULL),(310,146,2,2,NULL,1000,60,0,308,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'{\"controllingChannelId\":308,\"controllingSecondaryChannelId\":null,\"invertedLogic\":false}',0,NULL),(311,146,2,3,NULL,1000,50,0,309,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'{\"controllingChannelId\":309,\"invertedLogic\":false}',0,NULL),(87235,25691,2,0,NULL,2900,900,65552,0,0,0,NULL,NULL,NULL,0,0,2,134303872,NULL,'{\"closingTimeMs\":17800,\"openingTimeMs\":17800,\"motorUpsideDown\":false,\"buttonsUpsideDown\":true,\"tiltingTimeMs\":2400,\"tilt0Angle\":0,\"tilt100Angle\":180,\"fasadeBlindType\":\"CHANGES_POSITION_WHILE_TILTING\",\"facadeBlindType\":\"CHANGES_POSITION_WHILE_TILTING\",\"timeMargin\":1}',0,'{}');
+INSERT INTO `supla_dev_channel` VALUES
+(2,2,2,0,NULL,6010,410,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(140,73,2,0,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(141,73,2,1,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(142,73,2,2,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(143,73,2,3,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(144,74,2,0,'',5000,310,0,0,5600,0,'PLN',NULL,NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0.56,\"currency\":\"PLN\"}',0,NULL,0,NULL),
+(146,76,2,0,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(157,83,2,0,'',3000,40,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'{\"temperatureAdjustment\":0}',0,NULL,0,NULL),
+(158,83,2,1,'',3020,45,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'{\"humidityAdjustment\":0,\"temperatureAdjustment\":0}',0,NULL,0,NULL),
+(159,83,2,2,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(160,83,2,3,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(161,83,2,4,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(162,83,2,5,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(163,83,2,6,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(164,83,2,7,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(165,83,2,8,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(166,83,2,9,NULL,1000,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(167,83,2,10,'Szlaban',2900,20,239,500,0,0,NULL,NULL,NULL,2,0,NULL,0,NULL,'{\"openingSensorChannelId\":null,\"openingSensorSecondaryChannelId\":null,\"relayTimeMs\":500,\"timeSettingAvailable\":true}',0,NULL,0,NULL),
+(168,83,2,11,'',2900,90,239,500,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'{\"openingSensorChannelId\":null,\"relayTimeMs\":500,\"timeSettingAvailable\":true}',0,NULL,0,NULL),
+(169,83,2,12,NULL,4010,0,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(170,83,2,13,'',4000,180,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(171,83,2,14,'',4020,200,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(172,83,2,15,'',2900,130,239,0,0,0,NULL,NULL,NULL,4,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(173,83,2,16,'',2900,110,16,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'{\"openingTimeS\":30,\"closingTimeS\":40,\"timeSettingAvailable\":true,\"openingSensorChannelId\":null,\"openingTimeMs\":30000,\"closingTimeMs\":40000}',0,NULL,0,NULL),
+(174,83,2,17,'',2900,20,239,500,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'{\"openingSensorChannelId\":null,\"openingSensorSecondaryChannelId\":null,\"relayTimeMs\":500,\"timeSettingAvailable\":true}',0,NULL,0,NULL),
+(175,83,2,18,'',2900,30,239,500,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'{\"openingSensorChannelId\":null,\"relayTimeMs\":500,\"timeSettingAvailable\":true}',0,NULL,0,NULL),
+(176,84,2,0,'',5010,315,0,7508272,5500,1000,'PLN',NULL,NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0.55,\"impulsesPerUnit\":1000,\"currency\":\"PLN\",\"unit\":null,\"initialValue\":75082.72}',0,NULL,0,NULL),
+(177,83,2,19,'',3044,260,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(178,83,2,20,'',3050,280,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(179,83,2,21,'',3042,250,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(180,83,2,22,'',3048,270,0,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(282,135,2,0,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(283,135,2,1,NULL,2900,140,96,0,0,0,NULL,NULL,NULL,0,0,NULL,0,NULL,'[]',0,NULL,0,NULL),
+(288,84,2,1,NULL,5010,315,0,0,0,1,NULL,'impl',NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0,\"impulsesPerUnit\":1,\"currency\":null,\"unit\":\"impl\",\"initialValue\":0}',0,NULL,0,NULL),
+(289,84,2,2,'Overflow counter ❤️',5010,315,0,0,0,1,NULL,'x',NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0,\"impulsesPerUnit\":1,\"currency\":null,\"unit\":\"x\",\"initialValue\":0}',0,NULL,0,NULL),
+(290,84,2,3,NULL,5010,315,0,0,0,1,NULL,'sec',NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0,\"impulsesPerUnit\":1,\"currency\":null,\"unit\":\"sec\",\"initialValue\":0}',0,NULL,0,NULL),
+(291,84,2,4,NULL,5010,315,0,0,0,1,NULL,'n',NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0,\"impulsesPerUnit\":1,\"currency\":null,\"unit\":\"n\",\"initialValue\":0}',0,NULL,0,NULL),
+(296,84,2,5,NULL,5010,315,0,0,0,1,NULL,'Byte',NULL,0,0,NULL,0,NULL,'{\"pricePerUnit\":0,\"impulsesPerUnit\":1,\"currency\":null,\"unit\":\"Byte\",\"initialValue\":0}',0,NULL,0,NULL),
+(301,142,2,0,NULL,7000,500,0,0,0,0,NULL,NULL,NULL,NULL,0,NULL,65536,NULL,'[]',0,NULL,0,NULL),
+(303,144,2,0,NULL,8000,110,48,0,0,0,NULL,NULL,NULL,NULL,0,NULL,1,NULL,'{\"openingTimeS\":0,\"closingTimeS\":0,\"timeSettingAvailable\":true,\"openingSensorChannelId\":null,\"openingTimeMs\":0,\"closingTimeMs\":0}',0,NULL,0,NULL),
+(308,146,2,0,NULL,2900,20,15,500,310,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'{\"openingSensorChannelId\":310,\"openingSensorSecondaryChannelId\":null,\"relayTimeMs\":500,\"timeSettingAvailable\":true}',0,NULL,0,NULL),
+(309,146,2,1,NULL,2900,10,15,6000,311,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'{\"openingSensorChannelId\":311,\"relayTimeMs\":6000,\"timeSettingAvailable\":true}',0,NULL,0,NULL),
+(310,146,2,2,NULL,1000,60,0,308,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'{\"controllingChannelId\":308,\"controllingSecondaryChannelId\":null,\"invertedLogic\":false}',0,NULL,0,NULL),
+(311,146,2,3,NULL,1000,50,0,309,0,0,NULL,NULL,NULL,NULL,0,NULL,0,NULL,'{\"controllingChannelId\":309,\"invertedLogic\":false}',0,NULL,0,NULL),
+(87235,25691,2,0,NULL,2900,900,65552,0,0,0,NULL,NULL,NULL,0,0,2,134303872,NULL,'{\"closingTimeMs\":17800,\"openingTimeMs\":17800,\"motorUpsideDown\":false,\"buttonsUpsideDown\":true,\"tiltingTimeMs\":2400,\"tilt0Angle\":0,\"tilt100Angle\":180,\"fasadeBlindType\":\"CHANGES_POSITION_WHILE_TILTING\",\"tiltControlType\":\"CHANGES_POSITION_WHILE_TILTING\",\"timeMargin\":1}',0,'{}',0,NULL);
 /*!40000 ALTER TABLE `supla_dev_channel` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -364,7 +651,7 @@ CREATE TABLE `supla_dev_channel_extended_value` (
   KEY `IDX_3207F134A76ED395` (`user_id`),
   CONSTRAINT `FK_3207F13472F5A1AA` FOREIGN KEY (`channel_id`) REFERENCES `supla_dev_channel` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_3207F134A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -399,7 +686,7 @@ CREATE TABLE `supla_dev_channel_group` (
   CONSTRAINT `FK_6B2EFCE564D218E` FOREIGN KEY (`location_id`) REFERENCES `supla_location` (`id`),
   CONSTRAINT `FK_6B2EFCE5A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`),
   CONSTRAINT `FK_6B2EFCE5CB4C938` FOREIGN KEY (`user_icon_id`) REFERENCES `supla_user_icons` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -408,7 +695,8 @@ CREATE TABLE `supla_dev_channel_group` (
 
 LOCK TABLES `supla_dev_channel_group` WRITE;
 /*!40000 ALTER TABLE `supla_dev_channel_group` DISABLE KEYS */;
-INSERT INTO `supla_dev_channel_group` VALUES (1,2,'',140,0,2,0,NULL);
+INSERT INTO `supla_dev_channel_group` VALUES
+(1,2,'',140,0,2,0,NULL);
 /*!40000 ALTER TABLE `supla_dev_channel_group` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -429,7 +717,7 @@ CREATE TABLE `supla_dev_channel_value` (
   KEY `IDX_1B99E014A76ED395` (`user_id`),
   CONSTRAINT `FK_1B99E01472F5A1AA` FOREIGN KEY (`channel_id`) REFERENCES `supla_dev_channel` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_1B99E014A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -476,7 +764,7 @@ CREATE TABLE `supla_direct_link` (
   CONSTRAINT `FK_6AE7809F89E4AAEE` FOREIGN KEY (`channel_group_id`) REFERENCES `supla_dev_channel_group` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_6AE7809FA40BC2D5` FOREIGN KEY (`schedule_id`) REFERENCES `supla_schedule` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_6AE7809FA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -540,7 +828,7 @@ CREATE TABLE `supla_em_log` (
   `fae_balanced` bigint(20) DEFAULT NULL,
   `rae_balanced` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`channel_id`,`date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -602,7 +890,7 @@ CREATE TABLE `supla_em_voltage_aberration_log` (
   `avg_voltage` decimal(7,2) NOT NULL,
   `measurement_time_sec` int(11) NOT NULL,
   PRIMARY KEY (`channel_id`,`date`,`phase_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -687,7 +975,7 @@ CREATE TABLE `supla_google_home` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UNIQ_98090074A76ED395` (`user_id`),
   CONSTRAINT `FK_98090074A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -764,7 +1052,7 @@ CREATE TABLE `supla_ic_log` (
   `counter` bigint(20) NOT NULL,
   `calculated_value` bigint(20) NOT NULL,
   PRIMARY KEY (`channel_id`,`date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -804,6 +1092,7 @@ CREATE TABLE `supla_iodevice` (
   `product_id` smallint(6) DEFAULT NULL,
   `user_config` varchar(4096) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `properties` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `channel_addition_blocked` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UNIQUE_USER_GUID` (`user_id`,`guid`),
   KEY `IDX_793D49D64D218E` (`location_id`),
@@ -812,7 +1101,7 @@ CREATE TABLE `supla_iodevice` (
   CONSTRAINT `FK_793D49D64D218E` FOREIGN KEY (`location_id`) REFERENCES `supla_location` (`id`),
   CONSTRAINT `FK_793D49DA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`),
   CONSTRAINT `FK_793D49DF142C1A4` FOREIGN KEY (`original_location_id`) REFERENCES `supla_location` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25692 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25692 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -821,7 +1110,18 @@ CREATE TABLE `supla_iodevice` (
 
 LOCK TABLES `supla_iodevice` WRITE;
 /*!40000 ALTER TABLE `supla_iodevice` DISABLE KEYS */;
-INSERT INTO `supla_iodevice` VALUES (2,2,2,'+��_����\"Ң�Y�]N','HEATPOL HOME+',1,NULL,'2019-02-25 10:12:48',2457392666,'2019-02-27 12:08:08',2457392666,'2.7.4',11,NULL,'$2a$04$ZF0woWUjKtVluzQ5LQ4M8e1lBYN.Qne20EK.O/tFVItZL9QzYviM6',0,0,0,NULL,NULL),(73,2,2,'���g����%�[�/','ZAMEL ROW-04m',1,NULL,'2019-08-06 10:45:49',2457392666,'2019-12-03 12:23:30',2457392666,'2.7.5',7,NULL,'$2a$04$UMltnzqt78XvZkfo.PNUH.BrPk6ycsmJesV1cfpSG7afIEyEsoFgO',0,4,0,NULL,NULL),(74,2,2,'|��m��RP�.{��','ZAMEL MEW-01',1,NULL,'2019-08-06 10:48:09',2457392666,'2020-04-16 14:07:33',2457392666,'2.7.10',10,NULL,'$2a$04$VkijuJV2SYMeDvD3P0ObT.qzEitqHeciTOsY8xVadLx7c1VrOXajS',0,4,1000,NULL,NULL),(76,2,2,'��E#�}�y�*��X�','ZAMEL ROW-16A',1,NULL,'2019-09-11 10:49:23',2457392666,'2019-10-24 14:23:35',2457392666,'2.7.10',7,NULL,'$2a$04$q4FXGId6iPdd6R7Xm2bGhONeOXfxlT0Ekfzhw33rpu00K7ECoI06K',0,4,0,NULL,NULL),(83,2,2,'�I���!޹�.5','ARDUINO',1,NULL,'2019-10-17 10:20:52',2457392666,'2019-11-21 18:19:08',2457392666,'1.6.1',11,NULL,NULL,0,0,0,NULL,NULL),(84,2,2,'�=�2OI���w�(','ZAMEL LIW-01',1,NULL,'2019-10-23 09:05:04',2457392666,'2020-04-16 14:06:32',2457392666,'2.7.16',10,NULL,'$2a$04$AsyFsH3lcFOno0UvpzkIX.uSoTMq/bg4cYi7oJygbqnCkEcIRfWjy',0,4,1010,NULL,NULL),(135,2,2,'n>�]#\"��WE_{���','ZAMEL ROW-02m',1,NULL,'2019-11-06 11:34:47',2457392666,'2019-11-06 11:35:15',2457392666,'2.7.13',7,NULL,'$2a$04$X13wWD0Y0qgQmf/HV.UeOO5V1t2lQhdzJ7DZv89Nt.uQW1tTavWnK',0,4,0,NULL,NULL),(142,2,2,'��z�R��#:��Ӫ.','PEVEKO VALVE',1,NULL,'2020-01-28 16:43:24',2457392666,'2020-01-28 19:44:35',2457392666,'2.7.16',11,NULL,'$2a$04$gccY4TpEEbPYRavhkWugiu8.jglxjjW5rZ.kvtLCSyP3ZgoMcsesa',0,10,1,NULL,NULL),(144,2,2,'�e���j�ߜ�T�@��','FAKRO BRIDGE',1,NULL,'2020-02-19 20:25:39',2457392666,'2020-03-13 23:53:48',1332661374,'2.7.16',12,NULL,'$2a$04$QFl5vYuSP6b5Tzowv4odAugs92Fr0aO.5BizMmaxpe2DAb/jh63Q.',0,9,1,NULL,NULL),(146,2,2,'����)>]��}��5L','ZAMEL SBW-02',1,NULL,'2020-03-01 13:35:51',1332661374,'2020-03-03 20:04:14',1332661374,'2.7.16',7,NULL,'$2a$04$k5z2Tv6fEfRVfvTNAczLX.LqPO.6OKA.hU4/PH.xU4LGtFfazutG6',0,4,0,NULL,NULL),(25691,2,2,'\\h��jO[B۔\r�m��','ZAMEL mSRW-01',1,NULL,'2024-04-17 11:14:56',95287582,'2024-04-25 12:21:31',95283879,'2.8.59',23,NULL,'$2a$04$K0GNvjyon/fDTCyQnIZZmeeHZ3bV6OJ9FoajZGjVFIE/E1BJsKXJ.',16,4,4000,NULL,NULL);
+INSERT INTO `supla_iodevice` VALUES
+(2,2,2,'+��_����\"Ң�Y�]N','HEATPOL HOME+',1,NULL,'2019-02-25 10:12:48',2457392666,'2019-02-27 12:08:08',2457392666,'2.7.4',11,NULL,'$2a$04$ZF0woWUjKtVluzQ5LQ4M8e1lBYN.Qne20EK.O/tFVItZL9QzYviM6',0,0,0,NULL,NULL,0),
+(73,2,2,'���g����%�[�/','ZAMEL ROW-04m',1,NULL,'2019-08-06 10:45:49',2457392666,'2019-12-03 12:23:30',2457392666,'2.7.5',7,NULL,'$2a$04$UMltnzqt78XvZkfo.PNUH.BrPk6ycsmJesV1cfpSG7afIEyEsoFgO',0,4,0,NULL,NULL,0),
+(74,2,2,'|��m��RP�.{��','ZAMEL MEW-01',1,NULL,'2019-08-06 10:48:09',2457392666,'2020-04-16 14:07:33',2457392666,'2.7.10',10,NULL,'$2a$04$VkijuJV2SYMeDvD3P0ObT.qzEitqHeciTOsY8xVadLx7c1VrOXajS',0,4,1000,NULL,NULL,0),
+(76,2,2,'��E#�}�y�*��X�','ZAMEL ROW-16A',1,NULL,'2019-09-11 10:49:23',2457392666,'2019-10-24 14:23:35',2457392666,'2.7.10',7,NULL,'$2a$04$q4FXGId6iPdd6R7Xm2bGhONeOXfxlT0Ekfzhw33rpu00K7ECoI06K',0,4,0,NULL,NULL,0),
+(83,2,2,'�I���!޹�.5','ARDUINO',1,NULL,'2019-10-17 10:20:52',2457392666,'2019-11-21 18:19:08',2457392666,'1.6.1',11,NULL,NULL,0,0,0,NULL,NULL,0),
+(84,2,2,'�=�2OI���w�(','ZAMEL LIW-01',1,NULL,'2019-10-23 09:05:04',2457392666,'2020-04-16 14:06:32',2457392666,'2.7.16',10,NULL,'$2a$04$AsyFsH3lcFOno0UvpzkIX.uSoTMq/bg4cYi7oJygbqnCkEcIRfWjy',0,4,1010,NULL,NULL,0),
+(135,2,2,'n>�]#\"��WE_{���','ZAMEL ROW-02m',1,NULL,'2019-11-06 11:34:47',2457392666,'2019-11-06 11:35:15',2457392666,'2.7.13',7,NULL,'$2a$04$X13wWD0Y0qgQmf/HV.UeOO5V1t2lQhdzJ7DZv89Nt.uQW1tTavWnK',0,4,0,NULL,NULL,0),
+(142,2,2,'��z�R��#:��Ӫ.','PEVEKO VALVE',1,NULL,'2020-01-28 16:43:24',2457392666,'2020-01-28 19:44:35',2457392666,'2.7.16',11,NULL,'$2a$04$gccY4TpEEbPYRavhkWugiu8.jglxjjW5rZ.kvtLCSyP3ZgoMcsesa',0,10,1,NULL,NULL,0),
+(144,2,2,'�e���j�ߜ�T�@��','FAKRO BRIDGE',1,NULL,'2020-02-19 20:25:39',2457392666,'2020-03-13 23:53:48',1332661374,'2.7.16',12,NULL,'$2a$04$QFl5vYuSP6b5Tzowv4odAugs92Fr0aO.5BizMmaxpe2DAb/jh63Q.',0,9,1,NULL,NULL,0),
+(146,2,2,'����)>]��}��5L','ZAMEL SBW-02',1,NULL,'2020-03-01 13:35:51',1332661374,'2020-03-03 20:04:14',1332661374,'2.7.16',7,NULL,'$2a$04$k5z2Tv6fEfRVfvTNAczLX.LqPO.6OKA.hU4/PH.xU4LGtFfazutG6',0,4,0,NULL,NULL,0),
+(25691,2,2,'\\h��jO[B۔\r�m��','ZAMEL mSRW-01',1,NULL,'2024-04-17 11:14:56',95287582,'2024-04-25 12:21:31',95283879,'2.8.59',23,NULL,'$2a$04$K0GNvjyon/fDTCyQnIZZmeeHZ3bV6OJ9FoajZGjVFIE/E1BJsKXJ.',16,4,4000,NULL,NULL,0);
 /*!40000 ALTER TABLE `supla_iodevice` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -841,7 +1141,7 @@ CREATE TABLE `supla_location` (
   PRIMARY KEY (`id`),
   KEY `IDX_3698128EA76ED395` (`user_id`),
   CONSTRAINT `FK_3698128EA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -850,7 +1150,9 @@ CREATE TABLE `supla_location` (
 
 LOCK TABLES `supla_location` WRITE;
 /*!40000 ALTER TABLE `supla_location` DISABLE KEYS */;
-INSERT INTO `supla_location` VALUES (2,2,'8aea','Location #1',1),(3,2,'4b15','Location #2',1);
+INSERT INTO `supla_location` VALUES
+(2,2,'8aea','Location #1',1),
+(3,2,'4b15','Location #2',1);
 /*!40000 ALTER TABLE `supla_location` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -886,7 +1188,7 @@ CREATE TABLE `supla_oauth_access_tokens` (
   CONSTRAINT `FK_2402564BA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_2402564BCA22CF77` FOREIGN KEY (`api_client_authorization_id`) REFERENCES `supla_oauth_client_authorizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_2402564BD2B4D7C8` FOREIGN KEY (`issued_with_refresh_token_id`) REFERENCES `supla_oauth_refresh_tokens` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -895,7 +1197,11 @@ CREATE TABLE `supla_oauth_access_tokens` (
 
 LOCK TABLES `supla_oauth_access_tokens` WRITE;
 /*!40000 ALTER TABLE `supla_oauth_access_tokens` DISABLE KEYS */;
-INSERT INTO `supla_oauth_access_tokens` VALUES (11,1,2,'NzAwNzhjMzg4NmQzMGNjYmUyZDUxYTAwYjY0YTY1MTU2Y2E4YTg3NjQ2ZTAzZWZlMzc1YmVjNTFmMjNiMTBlMg.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1682749924,'channels_ea channelgroups_ea channels_files scenes_ea accessids_r accessids_rw account_r account_rw channels_r channels_rw channelgroups_r channelgroups_rw clientapps_r clientapps_rw directlinks_r directlinks_rw iodevices_r iodevices_rw locations_r locations_rw scenes_r scenes_rw schedules_r schedules_rw',NULL,NULL,NULL,NULL,2457392666,'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'),(12,1,2,'NzA5YjY1OTE3MWZhM2RmYmE5ZWMzMTE0ZTZmMjJmNzEwZTUxZDM1NjQzNmY3Njc0ZDQxZTExMDE0NGE0NGU4Yw.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1682749924,'channels_files',NULL,NULL,NULL,NULL,2457392666,'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'),(13,1,2,'ZmUxMjI4N2ZiN2QzN2YxNTM2YjdjMDZhOGVlMDFjYmI1Y2ViOWZlYzAxZTRhMWRiNDJhNDJhYjBiYjI0NTU3Yw.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1682751786,'channels_ea channelgroups_ea channels_files scenes_ea accessids_r accessids_rw account_r account_rw channels_r channels_rw channelgroups_r channelgroups_rw clientapps_r clientapps_rw directlinks_r directlinks_rw iodevices_r iodevices_rw locations_r locations_rw scenes_r scenes_rw schedules_r schedules_rw',NULL,NULL,NULL,NULL,2457392666,'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'),(14,1,2,'OWVlY2YyM2RlN2E2ZGM5YzEzMWQ0ODcxNWNlOWZmNzk5MzIxNGM2N2M5YjUyN2NlYzc1NmM2NjAxNTFmODFkNw.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1682751786,'channels_files',NULL,NULL,NULL,NULL,2457392666,'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36');
+INSERT INTO `supla_oauth_access_tokens` VALUES
+(11,1,2,'NzAwNzhjMzg4NmQzMGNjYmUyZDUxYTAwYjY0YTY1MTU2Y2E4YTg3NjQ2ZTAzZWZlMzc1YmVjNTFmMjNiMTBlMg.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1682749924,'channels_ea channelgroups_ea channels_files scenes_ea accessids_r accessids_rw account_r account_rw channels_r channels_rw channelgroups_r channelgroups_rw clientapps_r clientapps_rw directlinks_r directlinks_rw iodevices_r iodevices_rw locations_r locations_rw scenes_r scenes_rw schedules_r schedules_rw',NULL,NULL,NULL,NULL,2457392666,'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'),
+(12,1,2,'NzA5YjY1OTE3MWZhM2RmYmE5ZWMzMTE0ZTZmMjJmNzEwZTUxZDM1NjQzNmY3Njc0ZDQxZTExMDE0NGE0NGU4Yw.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1682749924,'channels_files',NULL,NULL,NULL,NULL,2457392666,'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'),
+(13,1,2,'ZmUxMjI4N2ZiN2QzN2YxNTM2YjdjMDZhOGVlMDFjYmI1Y2ViOWZlYzAxZTRhMWRiNDJhNDJhYjBiYjI0NTU3Yw.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1682751786,'channels_ea channelgroups_ea channels_files scenes_ea accessids_r accessids_rw account_r account_rw channels_r channels_rw channelgroups_r channelgroups_rw clientapps_r clientapps_rw directlinks_r directlinks_rw iodevices_r iodevices_rw locations_r locations_rw scenes_r scenes_rw schedules_r schedules_rw',NULL,NULL,NULL,NULL,2457392666,'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'),
+(14,1,2,'OWVlY2YyM2RlN2E2ZGM5YzEzMWQ0ODcxNWNlOWZmNzk5MzIxNGM2N2M5YjUyN2NlYzc1NmM2NjAxNTFmODFkNw.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1682751786,'channels_files',NULL,NULL,NULL,NULL,2457392666,'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36');
 /*!40000 ALTER TABLE `supla_oauth_access_tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -920,7 +1226,7 @@ CREATE TABLE `supla_oauth_auth_codes` (
   KEY `IDX_48E00E5DA76ED395` (`user_id`),
   CONSTRAINT `FK_48E00E5D19EB6921` FOREIGN KEY (`client_id`) REFERENCES `supla_oauth_clients` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_48E00E5DA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -952,7 +1258,7 @@ CREATE TABLE `supla_oauth_client_authorizations` (
   KEY `IDX_6B78739619EB6921` (`client_id`),
   CONSTRAINT `FK_6B78739619EB6921` FOREIGN KEY (`client_id`) REFERENCES `supla_oauth_clients` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_6B787396A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -988,7 +1294,7 @@ CREATE TABLE `supla_oauth_clients` (
   KEY `supla_oauth_clients_random_id_idx` (`random_id`),
   KEY `supla_oauth_clients_type_idx` (`type`),
   CONSTRAINT `FK_4035AD80A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -997,7 +1303,8 @@ CREATE TABLE `supla_oauth_clients` (
 
 LOCK TABLES `supla_oauth_clients` WRITE;
 /*!40000 ALTER TABLE `supla_oauth_clients` DISABLE KEYS */;
-INSERT INTO `supla_oauth_clients` VALUES (1,'60xt2173qw84s8s80kock480scos4ck884o844k0sg8kw8g8o0','a:0:{}','ohrnj61b63kgcooo084kcsosowcs4kgggow8owokw8s0w4c04','a:2:{i:0;s:8:\"password\";i:1;s:13:\"refresh_token\";}',1,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `supla_oauth_clients` VALUES
+(1,'60xt2173qw84s8s80kock480scos4ck884o844k0sg8kw8g8o0','a:0:{}','ohrnj61b63kgcooo084kcsosowcs4kgggow8owokw8s0w4c04','a:2:{i:0;s:8:\"password\";i:1;s:13:\"refresh_token\";}',1,NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `supla_oauth_clients` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1024,7 +1331,7 @@ CREATE TABLE `supla_oauth_refresh_tokens` (
   CONSTRAINT `FK_B809538C19EB6921` FOREIGN KEY (`client_id`) REFERENCES `supla_oauth_clients` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_B809538CA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_B809538CCA22CF77` FOREIGN KEY (`api_client_authorization_id`) REFERENCES `supla_oauth_client_authorizations` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1059,7 +1366,7 @@ CREATE TABLE `supla_push_notification` (
   CONSTRAINT `FK_2B227408125F95D6` FOREIGN KEY (`iodevice_id`) REFERENCES `supla_iodevice` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_2B22740872F5A1AA` FOREIGN KEY (`channel_id`) REFERENCES `supla_dev_channel` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_2B227408A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1086,7 +1393,7 @@ CREATE TABLE `supla_rel_aid_pushnotification` (
   KEY `IDX_4A24B3E04FEA67CF` (`access_id`),
   CONSTRAINT `FK_4A24B3E04E328CBE` FOREIGN KEY (`push_notification_id`) REFERENCES `supla_push_notification` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_4A24B3E04FEA67CF` FOREIGN KEY (`access_id`) REFERENCES `supla_accessid` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1113,7 +1420,7 @@ CREATE TABLE `supla_rel_aidloc` (
   KEY `IDX_2B1590414FEA67CF` (`access_id`),
   CONSTRAINT `FK_2B1590414FEA67CF` FOREIGN KEY (`access_id`) REFERENCES `supla_accessid` (`id`),
   CONSTRAINT `FK_2B15904164D218E` FOREIGN KEY (`location_id`) REFERENCES `supla_location` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1122,7 +1429,9 @@ CREATE TABLE `supla_rel_aidloc` (
 
 LOCK TABLES `supla_rel_aidloc` WRITE;
 /*!40000 ALTER TABLE `supla_rel_aidloc` DISABLE KEYS */;
-INSERT INTO `supla_rel_aidloc` VALUES (2,2),(3,2);
+INSERT INTO `supla_rel_aidloc` VALUES
+(2,2),
+(3,2);
 /*!40000 ALTER TABLE `supla_rel_aidloc` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1141,7 +1450,7 @@ CREATE TABLE `supla_rel_cg` (
   KEY `IDX_BE981CD7FE54D947` (`group_id`),
   CONSTRAINT `FK_BE981CD772F5A1AA` FOREIGN KEY (`channel_id`) REFERENCES `supla_dev_channel` (`id`),
   CONSTRAINT `FK_BE981CD7FE54D947` FOREIGN KEY (`group_id`) REFERENCES `supla_dev_channel_group` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1150,7 +1459,9 @@ CREATE TABLE `supla_rel_cg` (
 
 LOCK TABLES `supla_rel_cg` WRITE;
 /*!40000 ALTER TABLE `supla_rel_cg` DISABLE KEYS */;
-INSERT INTO `supla_rel_cg` VALUES (140,1),(142,1);
+INSERT INTO `supla_rel_cg` VALUES
+(140,1),
+(142,1);
 /*!40000 ALTER TABLE `supla_rel_cg` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1179,7 +1490,7 @@ CREATE TABLE `supla_scene` (
   CONSTRAINT `FK_A482585764D218E` FOREIGN KEY (`location_id`) REFERENCES `supla_location` (`id`),
   CONSTRAINT `FK_A4825857A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`),
   CONSTRAINT `FK_A4825857CB4C938` FOREIGN KEY (`user_icon_id`) REFERENCES `supla_user_icons` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1188,7 +1499,15 @@ CREATE TABLE `supla_scene` (
 
 LOCK TABLES `supla_scene` WRITE;
 /*!40000 ALTER TABLE `supla_scene` DISABLE KEYS */;
-INSERT INTO `supla_scene` VALUES (1,2,2,'Scene #1',1,NULL,0,1000,0,NULL),(2,2,2,'Scene #2',1,NULL,0,5000,0,NULL),(3,2,2,'Scene #3',1,NULL,0,0,0,NULL),(4,2,3,'Scene #4',1,NULL,0,0,0,NULL),(5,2,2,'Scene #5',1,NULL,0,0,0,NULL),(6,2,2,'Scene #6',1,NULL,0,5000,0,NULL),(7,2,2,'Scene #7',1,NULL,0,0,0,'{\"alexa\":{\"alexaDisabled\":false},\"googleHome\":{\"googleHomeDisabled\":false,\"needsUserConfirmation\":false,\"pin\":null}}'),(8,2,2,'Scene #8',1,NULL,0,0,0,NULL);
+INSERT INTO `supla_scene` VALUES
+(1,2,2,'Scene #1',1,NULL,0,1000,0,NULL),
+(2,2,2,'Scene #2',1,NULL,0,5000,0,NULL),
+(3,2,2,'Scene #3',1,NULL,0,0,0,NULL),
+(4,2,3,'Scene #4',1,NULL,0,0,0,NULL),
+(5,2,2,'Scene #5',1,NULL,0,0,0,NULL),
+(6,2,2,'Scene #6',1,NULL,0,5000,0,NULL),
+(7,2,2,'Scene #7',1,NULL,0,0,0,'{\"alexa\":{\"alexaDisabled\":false},\"googleHome\":{\"googleHomeDisabled\":false,\"needsUserConfirmation\":false,\"pin\":null}}'),
+(8,2,2,'Scene #8',1,NULL,0,0,0,NULL);
 /*!40000 ALTER TABLE `supla_scene` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1225,7 +1544,7 @@ CREATE TABLE `supla_scene_operation` (
   CONSTRAINT `FK_64A50CF589E4AAEE` FOREIGN KEY (`channel_group_id`) REFERENCES `supla_dev_channel_group` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_64A50CF5A40BC2D5` FOREIGN KEY (`schedule_id`) REFERENCES `supla_schedule` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_64A50CF5E019BC26` FOREIGN KEY (`owning_scene_id`) REFERENCES `supla_scene` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1234,7 +1553,22 @@ CREATE TABLE `supla_scene_operation` (
 
 LOCK TABLES `supla_scene_operation` WRITE;
 /*!40000 ALTER TABLE `supla_scene_operation` DISABLE KEYS */;
-INSERT INTO `supla_scene_operation` VALUES (17,1,140,NULL,NULL,60,NULL,0,0,0,NULL,NULL),(18,1,308,NULL,NULL,10,NULL,1000,1000,0,NULL,NULL),(19,1,170,NULL,NULL,80,'{\"brightness\":10}',0,0,0,NULL,NULL),(20,2,142,NULL,NULL,60,NULL,0,0,0,NULL,NULL),(21,2,140,NULL,NULL,70,NULL,5000,5000,0,NULL,NULL),(22,3,NULL,1,NULL,60,NULL,0,0,0,NULL,NULL),(23,3,171,NULL,NULL,80,'{\"brightness\":6,\"hue\":240,\"color_brightness\":10}',0,0,0,NULL,NULL),(24,3,NULL,NULL,1,3000,NULL,0,0,0,NULL,NULL),(26,5,173,NULL,NULL,50,'{\"percentage\":15}',0,0,0,NULL,NULL),(27,5,303,NULL,NULL,51,'{\"percentage\":25}',0,0,0,NULL,NULL),(28,6,171,NULL,NULL,80,'{\"brightness\":50,\"hue\":\"white\",\"color_brightness\":5}',0,0,0,NULL,NULL),(29,6,171,NULL,NULL,80,'{\"brightness\":20,\"hue\":\"random\",\"color_brightness\":15}',5000,5000,0,NULL,NULL),(30,4,140,NULL,NULL,10100,'{\"sourceDeviceId\":73,\"sourceChannelId\":143}',0,0,0,NULL,NULL),(33,7,NULL,NULL,NULL,200,NULL,0,0,0,1,NULL),(34,8,NULL,NULL,NULL,210,NULL,0,0,0,1,NULL);
+INSERT INTO `supla_scene_operation` VALUES
+(17,1,140,NULL,NULL,60,NULL,0,0,0,NULL,NULL),
+(18,1,308,NULL,NULL,10,NULL,1000,1000,0,NULL,NULL),
+(19,1,170,NULL,NULL,80,'{\"brightness\":10}',0,0,0,NULL,NULL),
+(20,2,142,NULL,NULL,60,NULL,0,0,0,NULL,NULL),
+(21,2,140,NULL,NULL,70,NULL,5000,5000,0,NULL,NULL),
+(22,3,NULL,1,NULL,60,NULL,0,0,0,NULL,NULL),
+(23,3,171,NULL,NULL,80,'{\"brightness\":6,\"hue\":240,\"color_brightness\":10}',0,0,0,NULL,NULL),
+(24,3,NULL,NULL,1,3000,NULL,0,0,0,NULL,NULL),
+(26,5,173,NULL,NULL,50,'{\"percentage\":15}',0,0,0,NULL,NULL),
+(27,5,303,NULL,NULL,51,'{\"percentage\":25}',0,0,0,NULL,NULL),
+(28,6,171,NULL,NULL,80,'{\"brightness\":50,\"hue\":\"white\",\"color_brightness\":5}',0,0,0,NULL,NULL),
+(29,6,171,NULL,NULL,80,'{\"brightness\":20,\"hue\":\"random\",\"color_brightness\":15}',5000,5000,0,NULL,NULL),
+(30,4,140,NULL,NULL,10100,'{\"sourceDeviceId\":73,\"sourceChannelId\":143}',0,0,0,NULL,NULL),
+(33,7,NULL,NULL,NULL,200,NULL,0,0,0,1,NULL),
+(34,8,NULL,NULL,NULL,210,NULL,0,0,0,1,NULL);
 /*!40000 ALTER TABLE `supla_scene_operation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1271,7 +1605,7 @@ CREATE TABLE `supla_schedule` (
   CONSTRAINT `FK_323E8ABE72F5A1AA` FOREIGN KEY (`channel_id`) REFERENCES `supla_dev_channel` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_323E8ABE89E4AAEE` FOREIGN KEY (`channel_group_id`) REFERENCES `supla_dev_channel_group` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_323E8ABEA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1280,7 +1614,8 @@ CREATE TABLE `supla_schedule` (
 
 LOCK TABLES `supla_schedule` WRITE;
 /*!40000 ALTER TABLE `supla_schedule` DISABLE KEYS */;
-INSERT INTO `supla_schedule` VALUES (1,2,140,'daily','2023-04-28 22:10:42',NULL,1,'2024-04-28 22:00:00','Turn off at midnight',1,NULL,NULL,'[{\"crontab\":\"0 0 * * *\",\"action\":{\"id\":70,\"name\":\"TURN_OFF\",\"nameSlug\":\"turn-off\",\"caption\":\"Off\",\"param\":null}}]');
+INSERT INTO `supla_schedule` VALUES
+(1,2,140,'daily','2023-04-28 22:10:42',NULL,1,'2024-07-05 22:00:00','Turn off at midnight',1,NULL,NULL,'[{\"crontab\":\"0 0 * * *\",\"action\":{\"id\":70,\"name\":\"TURN_OFF\",\"nameSlug\":\"turn-off\",\"caption\":\"Off\",\"param\":null}}]');
 /*!40000 ALTER TABLE `supla_schedule` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1312,7 +1647,7 @@ CREATE TABLE `supla_scheduled_executions` (
   KEY `fetched_timestamp_idx` (`fetched_timestamp`),
   KEY `consumed_idx` (`consumed`),
   CONSTRAINT `FK_FB21DBDCA40BC2D5` FOREIGN KEY (`schedule_id`) REFERENCES `supla_schedule` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1321,7 +1656,22 @@ CREATE TABLE `supla_scheduled_executions` (
 
 LOCK TABLES `supla_scheduled_executions` WRITE;
 /*!40000 ALTER TABLE `supla_scheduled_executions` DISABLE KEYS */;
-INSERT INTO `supla_scheduled_executions` VALUES (1,1,'2023-04-29 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),(2,1,'2023-04-30 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),(3,1,'2023-05-01 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),(4,1,'2024-04-25 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),(5,1,'2024-04-26 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),(6,1,'2024-04-27 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),(7,1,'2024-04-28 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),(8,1,'2024-04-29 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),(9,1,'2024-04-30 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL);
+INSERT INTO `supla_scheduled_executions` VALUES
+(1,1,'2023-04-29 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(2,1,'2023-04-30 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(3,1,'2023-05-01 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(4,1,'2024-04-25 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(5,1,'2024-04-26 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(6,1,'2024-04-27 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(7,1,'2024-04-28 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(8,1,'2024-04-29 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(9,1,'2024-04-30 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(10,1,'2024-07-02 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(11,1,'2024-07-03 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(12,1,'2024-07-04 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(13,1,'2024-07-05 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(14,1,'2024-07-06 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL),
+(15,1,'2024-07-07 22:00:00',NULL,NULL,NULL,NULL,0,NULL,70,NULL);
 /*!40000 ALTER TABLE `supla_scheduled_executions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1338,7 +1688,7 @@ CREATE TABLE `supla_settings_string` (
   `value` varchar(1024) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UNIQ_814604C95E237E06` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1372,7 +1722,7 @@ CREATE TABLE `supla_state_webhooks` (
   KEY `IDX_3C9361E0A76ED395` (`user_id`),
   CONSTRAINT `FK_3C9361E019EB6921` FOREIGN KEY (`client_id`) REFERENCES `supla_oauth_clients` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_3C9361E0A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1396,7 +1746,7 @@ CREATE TABLE `supla_temperature_log` (
   `date` datetime NOT NULL COMMENT '(DC2Type:stringdatetime)',
   `temperature` decimal(8,4) NOT NULL,
   PRIMARY KEY (`channel_id`,`date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1421,7 +1771,7 @@ CREATE TABLE `supla_temphumidity_log` (
   `temperature` decimal(8,4) NOT NULL,
   `humidity` decimal(8,4) NOT NULL,
   PRIMARY KEY (`channel_id`,`date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1447,7 +1797,7 @@ CREATE TABLE `supla_thermostat_log` (
   `measured_temperature` decimal(5,2) NOT NULL,
   `preset_temperature` decimal(5,2) NOT NULL,
   PRIMARY KEY (`channel_id`,`date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1514,7 +1864,7 @@ CREATE TABLE `supla_user` (
   UNIQUE KEY `UNIQ_71BAEAC6AB4C1E2D` (`long_unique_id`),
   KEY `client_reg_enabled_idx` (`client_reg_enabled`),
   KEY `iodevice_reg_enabled_idx` (`iodevice_reg_enabled`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1523,7 +1873,8 @@ CREATE TABLE `supla_user` (
 
 LOCK TABLES `supla_user` WRITE;
 /*!40000 ALTER TABLE `supla_user` DISABLE KEYS */;
-INSERT INTO `supla_user` VALUES (2,'6d4e39883a09d3baffe9e15b5fedc152','090874ade7b4e23aef2330e81cd4784cc3badcb0b6df34c8a0be0d91ded0b5567fde8b36bf920c5a2e1ead39aa4494d3d262a1cc4a6a93225a15fec85265858f85936af20236cb7b50a8e9a420897c966cbe22f2e55275f033b6b2b10e2b5136bcb31fcb','af52uahn388cg0kggw4008swkgc0s04','test@supla.org','$2y$13$991OYKopr/P1IPP6AvarJ.12b7edDIeuRSxz/xJKrf4K1RFrvZxwu',1,'2020-04-16 14:07:33',NULL,NULL,10,10,100,200,'Europe/Berlin',20,NULL,NULL,NULL,20,10,1,0,NULL,NULL,50,20,'pl',NULL,50,NULL,0,NULL,20,'{}',20,200,20,50,52.500000,13.366660);
+INSERT INTO `supla_user` VALUES
+(2,'6d4e39883a09d3baffe9e15b5fedc152','090874ade7b4e23aef2330e81cd4784cc3badcb0b6df34c8a0be0d91ded0b5567fde8b36bf920c5a2e1ead39aa4494d3d262a1cc4a6a93225a15fec85265858f85936af20236cb7b50a8e9a420897c966cbe22f2e55275f033b6b2b10e2b5136bcb31fcb','af52uahn388cg0kggw4008swkgc0s04','test@supla.org','$2y$13$991OYKopr/P1IPP6AvarJ.12b7edDIeuRSxz/xJKrf4K1RFrvZxwu',1,'2020-04-16 14:07:33',NULL,NULL,10,10,100,200,'Europe/Berlin',20,NULL,NULL,NULL,20,10,1,0,NULL,NULL,50,20,'pl',NULL,50,NULL,0,NULL,20,'{}',20,200,20,50,52.500000,13.366660);
 /*!40000 ALTER TABLE `supla_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1549,7 +1900,7 @@ CREATE TABLE `supla_user_icons` (
   PRIMARY KEY (`id`),
   KEY `IDX_27B32ACA76ED395` (`user_id`),
   CONSTRAINT `FK_EEB07467A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1805,7 +2156,7 @@ CREATE TABLE `supla_value_based_trigger` (
   CONSTRAINT `FK_1DFF99CA89E4AAEE` FOREIGN KEY (`channel_group_id`) REFERENCES `supla_dev_channel_group` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_1DFF99CAA40BC2D5` FOREIGN KEY (`schedule_id`) REFERENCES `supla_schedule` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_1DFF99CAA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1831,7 +2182,7 @@ ALTER DATABASE `supla_test` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
 DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` FUNCTION `supla_current_weekday_hour`(`user_timezone` VARCHAR(50)) RETURNS varchar(3) CHARSET utf8mb4
+CREATE DEFINER=`supla`@`localhost` FUNCTION `supla_current_weekday_hour`(`user_timezone` VARCHAR(50)) RETURNS varchar(3) CHARSET utf8mb4 COLLATE utf8mb4_general_ci
 BEGIN
             DECLARE current_weekday INT;
             DECLARE current_hour INT;
@@ -1846,7 +2197,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP FUNCTION IF EXISTS `supla_is_now_active` */;
@@ -1858,8 +2209,7 @@ ALTER DATABASE `supla_test` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
 DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` FUNCTION `supla_is_now_active`(
-    `active_from` DATETIME,
+CREATE DEFINER=`supla`@`localhost` FUNCTION `supla_is_now_active`(`active_from` DATETIME,
     `active_to` DATETIME,
     `active_hours` VARCHAR(768),
     `user_timezone` VARCHAR(50)
@@ -1891,7 +2241,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP FUNCTION IF EXISTS `version_to_int` */;
@@ -1954,7 +2304,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_add_channel` */;
@@ -1965,9 +2315,9 @@ ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
 DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_add_channel`(IN `_type` INT, IN `_func` INT, IN `_param1` INT, IN `_param2` INT, IN `_param3` INT, IN `_user_id` INT, IN `_channel_number` INT, IN `_iodevice_id` INT, IN `_flist` INT, IN `_flags` INT, IN `_alt_icon` INT)
+CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_add_channel`(IN `_type` INT, IN `_func` INT, IN `_param1` INT, IN `_param2` INT, IN `_param3` INT, IN `_user_id` INT, IN `_channel_number` INT, IN `_iodevice_id` INT, IN `_flist` INT, IN `_flags` INT, IN `_alt_icon` INT, IN `_sub_device_id` SMALLINT UNSIGNED)
     NO SQL
-BEGIN INSERT INTO `supla_dev_channel` (`type`, `func`, `param1`, `param2`, `param3`, `user_id`, `channel_number`, `iodevice_id`, `flist`, `flags`, `alt_icon`) VALUES (_type, _func, _param1, _param2, _param3, _user_id, _channel_number, _iodevice_id, _flist, _flags, _alt_icon); END ;;
+BEGIN INSERT INTO `supla_dev_channel` (`type`, `func`, `param1`, `param2`, `param3`, `user_id`, `channel_number`, `iodevice_id`, `flist`, `flags`, `alt_icon`, `sub_device_id`) VALUES (_type, _func, _param1, _param2, _param3, _user_id, _channel_number, _iodevice_id, _flist, _flags, _alt_icon, _sub_device_id); END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2007,7 +2357,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_add_em_current_log_item` */;
@@ -2067,7 +2417,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_add_em_power_active_log_item` */;
@@ -2221,7 +2571,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_add_iodevice` */;
@@ -2256,7 +2606,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_add_temperature_log_item` */;
@@ -2280,7 +2630,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_add_temphumidity_log_item` */;
@@ -2306,7 +2656,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_add_thermostat_log_item` */;
@@ -2326,7 +2676,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_disable_schedule` */;
@@ -2345,7 +2695,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_enable_schedule` */;
@@ -2364,7 +2714,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_get_device_firmware_url` */;
@@ -2422,7 +2772,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_mark_gate_closed` */;
@@ -2448,7 +2798,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_mark_gate_open` */;
@@ -2462,7 +2812,7 @@ ALTER DATABASE `supla_test` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ;
 DELIMITER ;;
 CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_mark_gate_open`(IN `_channel_id` INT)
 BEGIN
-    -- We assume the server will mark open gates at least every minute.
+    
     UPDATE
         `supla_auto_gate_closing`
     SET
@@ -2494,7 +2844,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_mqtt_broker_auth` */;
@@ -2558,7 +2908,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_oauth_add_token_for_alexa_discover` */;
@@ -2610,7 +2960,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_oauth_add_token_for_app` */;
@@ -2645,7 +2995,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_on_channeladded` */;
@@ -2671,7 +3021,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_on_newclient` */;
@@ -2692,7 +3042,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_on_newdevice` */;
@@ -2713,7 +3063,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_register_device_managed_push` */;
@@ -2759,7 +3109,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_remove_push_recipients` */;
@@ -2778,7 +3128,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_set_channel_caption` */;
@@ -2816,7 +3166,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_set_channel_group_caption` */;
@@ -2836,7 +3186,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_set_channel_json_config` */;
@@ -2877,7 +3227,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_set_device_json_config` */;
@@ -2914,7 +3264,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_set_registration_enabled` */;
@@ -2934,7 +3284,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_set_scene_caption` */;
@@ -2954,7 +3304,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_update_amazon_alexa` */;
@@ -2974,7 +3324,24 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `supla_update_channel_conflict_details` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_update_channel_conflict_details`(IN `_iodevice_id` INT, IN `_channel_number` INT, IN `_details` VARCHAR(256) CHARSET utf8mb4)
+UPDATE `supla_dev_channel` SET `conflict_details` = _details WHERE `iodevice_id` = _iodevice_id AND `channel_number` = _channel_number ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_update_channel_extended_value` */;
@@ -3009,7 +3376,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_update_channel_flags` */;
@@ -3029,7 +3396,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_update_channel_params` */;
@@ -3066,7 +3433,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_update_channel_properties` */;
@@ -3092,7 +3459,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_update_channel_value` */;
@@ -3131,7 +3498,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_update_client` */;
@@ -3168,7 +3535,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_update_google_home` */;
@@ -3188,11 +3555,10 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_update_iodevice` */;
-ALTER DATABASE `supla_test` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -3200,9 +3566,7 @@ ALTER DATABASE `supla_test` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
 DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_update_iodevice`(IN `_name` VARCHAR(100) CHARSET utf8mb4, IN `_last_ipv4` INT(10) UNSIGNED, 
-  IN `_software_version` VARCHAR(20) CHARSET utf8, IN `_protocol_version` INT(11), IN `_original_location_id` INT(11), 
-  IN `_auth_key` VARCHAR(64) CHARSET utf8, IN `_id` INT(11), IN `_flags` INT(11))
+CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_update_iodevice`(IN `_name` VARCHAR(100) CHARSET utf8mb4, IN `_last_ipv4` INT(10) UNSIGNED, IN `_software_version` VARCHAR(20) CHARSET utf8, IN `_protocol_version` INT(11), IN `_original_location_id` INT(11), IN `_auth_key` VARCHAR(64) CHARSET utf8, IN `_id` INT(11), IN `_flags` INT(11))
     NO SQL
 BEGIN
 UPDATE `supla_iodevice`
@@ -3213,18 +3577,23 @@ SET
 `software_version` = _software_version,
 `protocol_version` = _protocol_version,
 original_location_id = _original_location_id,
-`flags` = IFNULL(`flags`, 0) | IFNULL(_flags, 0) WHERE `id` = _id;
+`flags` = IFNULL(`flags`, 0) | IFNULL(_flags, 0),
+channel_addition_blocked = 0
+WHERE `id` = _id;
+
 IF _auth_key IS NOT NULL THEN
   UPDATE `supla_iodevice`
   SET `auth_key` = _auth_key WHERE `id` = _id AND `auth_key` IS NULL;
 END IF;
+
+UPDATE `supla_dev_channel` SET conflict_details = NULL WHERE `iodevice_id` = _id AND conflict_details IS NOT NULL;
+
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `supla_update_push_notification_client_token` */;
@@ -3261,16 +3630,12 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-ALTER DATABASE `supla_test` CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 
+ALTER TABLE `supla_iodevice` ADD `pairing_result` VARCHAR(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `channel_addition_blocked`;
+DROP PROCEDURE IF EXISTS `supla_update_device_pairing_result`;
+CREATE PROCEDURE `supla_update_device_pairing_result`(IN `_iodevice_id` INT, IN `_pairing_result` VARCHAR(512) CHARSET utf8mb4) NOT DETERMINISTIC CONTAINS SQL SQL SECURITY DEFINER UPDATE `supla_iodevice` SET `pairing_result` = _pairing_result WHERE `id` = _iodevice_id;
 
-ALTER TABLE supla_iodevice ADD channel_addition_blocked TINYINT(1) DEFAULT '0' NOT NULL;
-ALTER TABLE supla_dev_channel ADD sub_device_id SMALLINT NOT NULL DEFAULT '0' NOT NULL;
-ALTER TABLE supla_dev_channel ADD conflict_details VARCHAR(256) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`;
-DROP PROCEDURE IF EXISTS `supla_add_channel`;
-DELIMITER ;;
-CREATE PROCEDURE `supla_add_channel`(IN `_type` INT, IN `_func` INT, IN `_param1` INT, IN `_param2` INT, IN `_param3` INT, IN `_user_id` INT, IN `_channel_number` INT, IN `_iodevice_id` INT, IN `_flist` INT, IN `_flags` INT, IN `_alt_icon` INT, IN `_sub_device_id` SMALLINT UNSIGNED) NOT DETERMINISTIC NO SQL SQL SECURITY DEFINER BEGIN INSERT INTO `supla_dev_channel` (`type`, `func`, `param1`, `param2`, `param3`, `user_id`, `channel_number`, `iodevice_id`, `flist`, `flags`, `alt_icon`, `sub_device_id`) VALUES (_type, _func, _param1, _param2, _param3, _user_id, _channel_number, _iodevice_id, _flist, _flags, _alt_icon, _sub_device_id); END;;
-DELIMITER ;
 --
 -- Final view structure for view `supla_v_accessid_active`
 --
@@ -3460,4 +3825,23 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-25 16:51:32
+DELIMITER ;;
+CREATE TABLE supla_subdevice (id INT NOT NULL, iodevice_id INT NOT NULL, reg_date DATETIME NOT NULL COMMENT '(DC2Type:utcdatetime)', updated_at DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', name VARCHAR(200) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, software_version VARCHAR(20) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, product_code VARCHAR(50) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, serial_number VARCHAR(50) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, INDEX IDX_698D8D2F125F95D6 (iodevice_id), PRIMARY KEY(id, iodevice_id)) DEFAULT CHARACTER SET utf8 COLLATE `utf8_unicode_ci` ENGINE = InnoDB;;
+ALTER TABLE supla_subdevice ADD CONSTRAINT FK_698D8D2F125F95D6 FOREIGN KEY (iodevice_id) REFERENCES supla_iodevice (id) ON DELETE CASCADE;;
+CREATE PROCEDURE `supla_update_subdevice`(IN `_id` INT, IN `_iodevice_id` INT, IN `_name` VARCHAR(200), IN `_software_version` VARCHAR(20), IN `_product_code` VARCHAR(50), IN `_serial_number` VARCHAR(50)) NOT DETERMINISTIC CONTAINS SQL SQL SECURITY DEFINER
+BEGIN
+UPDATE supla_subdevice SET updated_at = UTC_TIMESTAMP()
+WHERE id = _id
+       AND iodevice_id = _iodevice_id
+       AND (!(name <=> NULLIF(_name, ''))
+            OR !(software_version <=> NULLIF(_software_version, ''))
+            OR !(product_code <=> NULLIF(_product_code, ''))
+            OR !(serial_number <=> NULLIF(_serial_number, '')));
+
+INSERT INTO supla_subdevice (id, iodevice_id, reg_date, name, software_version, product_code, serial_number)
+VALUES (_id, _iodevice_id, UTC_TIMESTAMP(), NULLIF(_name, ''), NULLIF(_software_version, ''), NULLIF(_product_code, ''), NULLIF(_serial_number, ''))
+    ON DUPLICATE KEY UPDATE name = NULLIF(_name, ''), software_version = NULLIF(_software_version, ''), product_code = NULLIF(_product_code, ''), serial_number = NULLIF(_serial_number, '');
+END;;
+
+
+-- Dump completed on 2024-07-02 22:29:54

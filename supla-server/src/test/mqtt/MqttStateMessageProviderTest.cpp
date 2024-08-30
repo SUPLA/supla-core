@@ -70,12 +70,13 @@ void MqttStateMessageProviderTest::SetIcMeasurementResult(void) {
         TDS_ImpulseCounter_Value ic_val;
         ic_val.counter = 1230;
 
-        char customUnit[] = "m3";
-        char currency[] = "EUR";
+        supla_json_config cfg;
+        cfg.set_user_config(
+            "{\"currency\":\"EUR\",\"unit\":\"m3\",\"pricePerUnit\":10000,"
+            "\"impulsesPerUnit\":1000}");
 
         return new supla_channel_ic_extended_value(
-            SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, currency, customUnit, 10000,
-            1000);
+            SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val, &cfg);
       });
 }
 
@@ -85,8 +86,7 @@ void MqttStateMessageProviderTest::SetElectricityMeasurementResult(
       .Times(1)
       .WillOnce([measured_values, m_count](int user_id, int device_id,
                                            int channel_id) {
-        TElectricityMeter_ExtendedValue_V2 em_ev;
-        memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+        TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
         em_ev.m[0].freq = 4997;
 

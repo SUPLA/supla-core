@@ -37,7 +37,13 @@ class electricity_meter_config : public supla_json_config {
   static const char voltage_logger_enabled_key[];
   static const char current_logger_enabled_key[];
   static const char power_active_logger_enabled_key[];
-  static const std::map<int, std::string> var_map;
+  static const std::map<int, std::string> em_var_map;
+  static const std::map<unsigned _supla_int16_t, std::string> field_map;
+
+  std::string ct_type_to_string(unsigned _supla_int64_t type);
+  unsigned _supla_int64_t string_to_ct_type(const std::string &str);
+  std::string led_type_to_string(unsigned _supla_int64_t type);
+  unsigned _supla_int64_t string_to_led_type(const std::string &str);
 
  protected:
   int get_available_counters(void);
@@ -64,12 +70,17 @@ class electricity_meter_config : public supla_json_config {
                          unsigned _supla_int64_t *value);
   void add_initial_value(int var, unsigned _supla_int64_t *value);
 
-  void add_initial_values(int flags, TElectricityMeter_ExtendedValue_V2 *em_ev);
+  void add_initial_values(int flags, TElectricityMeter_ExtendedValue_V3 *em_ev);
   void add_initial_value(unsigned _supla_int_t *total_forward_active_energy);
 
   bool is_voltage_logger_enabled(void);
   bool is_current_logger_enabled(void);
   bool is_power_active_logger_enabled(void);
+
+  void set_config(TChannelConfig_ElectricityMeter *config);
+  bool get_config(TChannelConfig_ElectricityMeter *config);
+
+  virtual void merge(supla_json_config *dst);
 };
 
 #endif /* ELECTRICITYMETERCONFIG_H_ */

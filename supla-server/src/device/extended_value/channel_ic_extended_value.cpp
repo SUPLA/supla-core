@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "jsonconfig/channel/impulse_counter_config.h"
 #include "srpc/srpc.h"
 
 using std::string;
@@ -32,8 +33,8 @@ supla_channel_ic_extended_value::supla_channel_ic_extended_value(
 }
 
 supla_channel_ic_extended_value::supla_channel_ic_extended_value(
-    int func, const TDS_ImpulseCounter_Value *ic_val, const char *text_param1,
-    const char *text_param2, int param2, int param3)
+    int func, const TDS_ImpulseCounter_Value *ic_val,
+    supla_json_config *json_config)
     : supla_channel_extended_value(), supla_channel_billing_value() {
   TSC_ImpulseCounter_ExtendedValue ic_ev = {};
 
@@ -43,36 +44,22 @@ supla_channel_ic_extended_value::supla_channel_ic_extended_value(
 
   ic_ev.counter = ic_val ? ic_val->counter : 0;
 
-  if (text_param2 && strnlen(text_param2, 9) < 9) {
-    snprintf(ic_ev.custom_unit, sizeof(ic_ev.custom_unit), "%s", text_param2);
-  }
+  impulse_counter_config ic_cfg(json_config);
+  ic_cfg.get_custom_unit(ic_ev.custom_unit, func);
 
-  if (strnlen(ic_ev.custom_unit, 9) == 0) {
-    switch (func) {
-      case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-        snprintf(ic_ev.custom_unit, 9, "kWh");  // NOLINT
-        break;
-      case SUPLA_CHANNELFNC_IC_GAS_METER:
-      case SUPLA_CHANNELFNC_IC_WATER_METER:
-        // UTF(³) == 0xc2b3
-        snprintf(ic_ev.custom_unit, 9, "m%c%c", 0xc2, 0xb3);  // NOLINT
-        break;
-      case SUPLA_CHANNELFNC_IC_HEAT_METER:
-        snprintf(ic_ev.custom_unit, 9, "GJ");  // NOLINT
-        break;
-    }
-  }
+  unsigned int impulses_per_unit = ic_cfg.get_impulses_per_unit();
 
-  if (param3 > 0) {
-    ic_ev.impulses_per_unit = param3;
+  if (impulses_per_unit > 0) {
+    ic_ev.impulses_per_unit = impulses_per_unit;
   }
 
   ic_ev.calculated_value = ic_ev.impulses_per_unit > 0
                                ? ic_ev.counter * 1000 / ic_ev.impulses_per_unit
                                : 0;
 
-  get_cost_and_currency(text_param1, param2, ic_ev.currency, &ic_ev.total_cost,
-                        &ic_ev.price_per_unit,
+  get_cost_and_currency(ic_cfg.get_currency().c_str(),
+                        ic_cfg.get_price_per_unit(), ic_ev.currency,
+                        &ic_ev.total_cost, &ic_ev.price_per_unit,
                         ic_ev.calculated_value / 1000.00);
 
   TSuplaChannelExtendedValue ev = {};
@@ -168,7 +155,7 @@ supla_channel_extended_value *supla_channel_ic_extended_value::
     supla_channel_ic_extended_value::copy(  // NOLINT
         void) {                             // NOLINT
   supla_channel_ic_extended_value *result =
-      new supla_channel_ic_extended_value(0, nullptr, nullptr, nullptr, 0, 0);
+      new supla_channel_ic_extended_value(0, nullptr, nullptr);
   result->set_raw_value(get_value_ptr());
   return result;
 }

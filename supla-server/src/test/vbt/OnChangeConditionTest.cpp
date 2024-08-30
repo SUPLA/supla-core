@@ -27,6 +27,7 @@
 #include "device/value/channel_rs_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "device/value/channel_valve_value.h"
+#include "jsonconfig/json_config.h"
 #include "vbt/vbt_on_change_condition.h"
 
 namespace testing {
@@ -1025,15 +1026,15 @@ TEST_F(OnChangeConditionTest, humidity) {
 }
 
 TEST_F(OnChangeConditionTest, avgVoltage) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].voltage[0] = 24000;
-  v2b.m[0].voltage[1] = 23000;
-  v2b.m[0].voltage[2] = 22000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].voltage[0] = 24000;
+  v3b.m[0].voltage[1] = 23000;
+  v3b.m[0].voltage[2] = 22000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1046,13 +1047,13 @@ TEST_F(OnChangeConditionTest, avgVoltage) {
 }
 
 TEST_F(OnChangeConditionTest, voltage1) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].voltage[0] = 24000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].voltage[0] = 24000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1065,13 +1066,13 @@ TEST_F(OnChangeConditionTest, voltage1) {
 }
 
 TEST_F(OnChangeConditionTest, voltage2) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].voltage[1] = 23000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].voltage[1] = 23000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1084,13 +1085,13 @@ TEST_F(OnChangeConditionTest, voltage2) {
 }
 
 TEST_F(OnChangeConditionTest, voltage3) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].voltage[2] = 22000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].voltage[2] = 22000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1103,15 +1104,15 @@ TEST_F(OnChangeConditionTest, voltage3) {
 }
 
 TEST_F(OnChangeConditionTest, currentSum) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].current[0] = 10000;
-  v2b.m[0].current[1] = 20000;
-  v2b.m[0].current[2] = 30000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].current[0] = 10000;
+  v3b.m[0].current[1] = 20000;
+  v3b.m[0].current[2] = 30000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1124,13 +1125,13 @@ TEST_F(OnChangeConditionTest, currentSum) {
 }
 
 TEST_F(OnChangeConditionTest, current1) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].current[0] = 10000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].current[0] = 10000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1143,13 +1144,13 @@ TEST_F(OnChangeConditionTest, current1) {
 }
 
 TEST_F(OnChangeConditionTest, current2) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].current[1] = 20000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].current[1] = 20000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1162,13 +1163,13 @@ TEST_F(OnChangeConditionTest, current2) {
 }
 
 TEST_F(OnChangeConditionTest, current3) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].current[2] = 30000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].current[2] = 30000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1181,15 +1182,15 @@ TEST_F(OnChangeConditionTest, current3) {
 }
 
 TEST_F(OnChangeConditionTest, powerActiveSum) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].power_active[0] = 1000000;
-  v2b.m[0].power_active[1] = 2000000;
-  v2b.m[0].power_active[2] = 3000000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].power_active[0] = 1000000;
+  v3b.m[0].power_active[1] = 2000000;
+  v3b.m[0].power_active[2] = 3000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1202,13 +1203,13 @@ TEST_F(OnChangeConditionTest, powerActiveSum) {
 }
 
 TEST_F(OnChangeConditionTest, powerActive1) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].power_active[0] = 1000000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].power_active[0] = 1000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1221,13 +1222,13 @@ TEST_F(OnChangeConditionTest, powerActive1) {
 }
 
 TEST_F(OnChangeConditionTest, powerActive2) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].power_active[1] = 2000000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].power_active[1] = 2000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1240,13 +1241,13 @@ TEST_F(OnChangeConditionTest, powerActive2) {
 }
 
 TEST_F(OnChangeConditionTest, powerActive3) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].power_active[2] = 3000000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].power_active[2] = 3000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1259,15 +1260,15 @@ TEST_F(OnChangeConditionTest, powerActive3) {
 }
 
 TEST_F(OnChangeConditionTest, powerRectiveSum) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].power_reactive[0] = 1000000;
-  v2b.m[0].power_reactive[1] = 2000000;
-  v2b.m[0].power_reactive[2] = 3000000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].power_reactive[0] = 1000000;
+  v3b.m[0].power_reactive[1] = 2000000;
+  v3b.m[0].power_reactive[2] = 3000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1280,13 +1281,13 @@ TEST_F(OnChangeConditionTest, powerRectiveSum) {
 }
 
 TEST_F(OnChangeConditionTest, powerRective1) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].power_reactive[0] = 1000000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].power_reactive[0] = 1000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1299,13 +1300,13 @@ TEST_F(OnChangeConditionTest, powerRective1) {
 }
 
 TEST_F(OnChangeConditionTest, powerReactive2) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].power_reactive[1] = 2000000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].power_reactive[1] = 2000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1318,13 +1319,13 @@ TEST_F(OnChangeConditionTest, powerReactive2) {
 }
 
 TEST_F(OnChangeConditionTest, powerRective3) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].power_reactive[2] = 3000000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].power_reactive[2] = 3000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1337,15 +1338,15 @@ TEST_F(OnChangeConditionTest, powerRective3) {
 }
 
 TEST_F(OnChangeConditionTest, powerApparentSum) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].power_apparent[0] = 1000000;
-  v2b.m[0].power_apparent[1] = 2000000;
-  v2b.m[0].power_apparent[2] = 3000000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].power_apparent[0] = 1000000;
+  v3b.m[0].power_apparent[1] = 2000000;
+  v3b.m[0].power_apparent[2] = 3000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1358,13 +1359,13 @@ TEST_F(OnChangeConditionTest, powerApparentSum) {
 }
 
 TEST_F(OnChangeConditionTest, powerApparent1) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].power_apparent[0] = 1000000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].power_apparent[0] = 1000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1377,13 +1378,13 @@ TEST_F(OnChangeConditionTest, powerApparent1) {
 }
 
 TEST_F(OnChangeConditionTest, powerApparent2) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].power_apparent[1] = 2000000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].power_apparent[1] = 2000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1396,13 +1397,13 @@ TEST_F(OnChangeConditionTest, powerApparent2) {
 }
 
 TEST_F(OnChangeConditionTest, powerApparent3) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
-  v2b.m_count = 1;
-  v2b.m[0].power_apparent[2] = 3000000;
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
+  v3b.m_count = 1;
+  v3b.m[0].power_apparent[2] = 3000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1415,13 +1416,13 @@ TEST_F(OnChangeConditionTest, powerApparent3) {
 }
 
 TEST_F(OnChangeConditionTest, forwardActiveEnergy1) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
 
-  v2b.total_forward_active_energy[0] = 1000000;
+  v3b.total_forward_active_energy[0] = 1000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1433,13 +1434,13 @@ TEST_F(OnChangeConditionTest, forwardActiveEnergy1) {
 }
 
 TEST_F(OnChangeConditionTest, forwardActiveEnergy2) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
 
-  v2b.total_forward_active_energy[1] = 2000000;
+  v3b.total_forward_active_energy[1] = 2000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1451,13 +1452,13 @@ TEST_F(OnChangeConditionTest, forwardActiveEnergy2) {
 }
 
 TEST_F(OnChangeConditionTest, forwardActiveEnergy3) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
 
-  v2b.total_forward_active_energy[2] = 3000000;
+  v3b.total_forward_active_energy[2] = 3000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1469,15 +1470,15 @@ TEST_F(OnChangeConditionTest, forwardActiveEnergy3) {
 }
 
 TEST_F(OnChangeConditionTest, forwardActiveEnergySum) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
 
-  v2b.total_forward_active_energy[0] = 1000000;
-  v2b.total_forward_active_energy[1] = 2000000;
-  v2b.total_forward_active_energy[2] = 3000000;
+  v3b.total_forward_active_energy[0] = 1000000;
+  v3b.total_forward_active_energy[1] = 2000000;
+  v3b.total_forward_active_energy[2] = 3000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1490,13 +1491,13 @@ TEST_F(OnChangeConditionTest, forwardActiveEnergySum) {
 }
 
 TEST_F(OnChangeConditionTest, forwardActiveEnergyBalanced) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
 
-  v2b.total_forward_active_energy_balanced = 3300000;
+  v3b.total_forward_active_energy_balanced = 3300000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1509,13 +1510,13 @@ TEST_F(OnChangeConditionTest, forwardActiveEnergyBalanced) {
 }
 
 TEST_F(OnChangeConditionTest, reverseActiveEnergy1) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
 
-  v2b.total_reverse_active_energy[0] = 1000000;
+  v3b.total_reverse_active_energy[0] = 1000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1527,13 +1528,13 @@ TEST_F(OnChangeConditionTest, reverseActiveEnergy1) {
 }
 
 TEST_F(OnChangeConditionTest, reverseActiveEnergy2) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
 
-  v2b.total_reverse_active_energy[1] = 2000000;
+  v3b.total_reverse_active_energy[1] = 2000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1545,13 +1546,13 @@ TEST_F(OnChangeConditionTest, reverseActiveEnergy2) {
 }
 
 TEST_F(OnChangeConditionTest, reverseActiveEnergy3) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
 
-  v2b.total_reverse_active_energy[2] = 3000000;
+  v3b.total_reverse_active_energy[2] = 3000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1563,15 +1564,15 @@ TEST_F(OnChangeConditionTest, reverseActiveEnergy3) {
 }
 
 TEST_F(OnChangeConditionTest, reverseActiveEnergySum) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
 
-  v2b.total_reverse_active_energy[0] = 1000000;
-  v2b.total_reverse_active_energy[1] = 2000000;
-  v2b.total_reverse_active_energy[2] = 3000000;
+  v3b.total_reverse_active_energy[0] = 1000000;
+  v3b.total_reverse_active_energy[1] = 2000000;
+  v3b.total_reverse_active_energy[2] = 3000000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1584,13 +1585,13 @@ TEST_F(OnChangeConditionTest, reverseActiveEnergySum) {
 }
 
 TEST_F(OnChangeConditionTest, reversectiveEnergyBalanced) {
-  TElectricityMeter_ExtendedValue_V2 v2a = {};
-  TElectricityMeter_ExtendedValue_V2 v2b = {};
+  TElectricityMeter_ExtendedValue_V3 v3a = {};
+  TElectricityMeter_ExtendedValue_V3 v3b = {};
 
-  v2b.total_reverse_active_energy_balanced = 3300000;
+  v3b.total_reverse_active_energy_balanced = 3300000;
 
-  supla_channel_em_extended_value oldv(&v2a, nullptr, 0);
-  supla_channel_em_extended_value newv(&v2b, nullptr, 0);
+  supla_channel_em_extended_value oldv(&v3a, nullptr, 0);
+  supla_channel_em_extended_value newv(&v3b, nullptr, 0);
 
   supla_vbt_on_change_condition c;
 
@@ -1607,11 +1608,16 @@ TEST_F(OnChangeConditionTest, icCounter) {
   TDS_ImpulseCounter_Value ic_val2 = {};
   ic_val1.counter = 151;
 
+  supla_json_config cfg;
+  cfg.set_user_config(
+      "{\"currency\":\"PLN\",\"unit\":\"Unit\",\"pricePerUnit\":45000,"
+      "\"impulsesPerUnit\":10}");
+
   supla_channel_ic_extended_value newv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                       &ic_val1, "PLN", "Unit", 45000, 10);
+                                       &ic_val1, &cfg);
 
   supla_channel_ic_extended_value oldv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                       &ic_val2, "PLN", "Unit", 45000, 10);
+                                       &ic_val2, &cfg);
 
   supla_vbt_on_change_condition c;
 
@@ -1628,11 +1634,16 @@ TEST_F(OnChangeConditionTest, icCalculatedValue) {
   TDS_ImpulseCounter_Value ic_val2 = {};
   ic_val1.counter = 151;
 
+  supla_json_config cfg;
+  cfg.set_user_config(
+      "{\"currency\":\"PLN\",\"unit\":\"Unit\",\"pricePerUnit\":45000,"
+      "\"impulsesPerUnit\":10}");
+
   supla_channel_ic_extended_value newv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                       &ic_val1, "PLN", "Unit", 45000, 10);
+                                       &ic_val1, &cfg);
 
   supla_channel_ic_extended_value oldv(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
-                                       &ic_val2, "PLN", "Unit", 45000, 10);
+                                       &ic_val2, &cfg);
 
   supla_vbt_on_change_condition c;
 

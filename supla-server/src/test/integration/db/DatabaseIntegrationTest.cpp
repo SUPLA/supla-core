@@ -20,6 +20,8 @@
 
 #include <string>
 
+#include "conn/connection_dao.h"
+
 using std::string;
 
 namespace testing {
@@ -102,6 +104,28 @@ TEST_F(DatabaseIntegrationTest, setDeviceChannelCaptionOnlyWhenNull) {
 
   sqlQuery("SELECT caption FROM supla_dev_channel WHERE id = 140", &result);
   EXPECT_EQ(result, "caption\nXYZ\n");
+}
+
+TEST_F(DatabaseIntegrationTest, ayz) {
+  supla_db_access_provider dba;
+  supla_connection_dao dao(&dba);
+
+  char email[] = "test@supla.org...";
+  email[14] = 0;
+
+  EXPECT_EQ(2, dao.get_user_id_by_email(email));
+
+  email[14] = 239;
+  email[15] = 187;
+  email[16] = 191;
+
+  EXPECT_EQ(2, dao.get_user_id_by_email(email));
+
+  email[14] = 238;
+  email[15] = 187;
+  email[16] = 191;
+
+  EXPECT_EQ(0, dao.get_user_id_by_email(email));
 }
 
 } /* namespace testing */

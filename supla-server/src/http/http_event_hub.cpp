@@ -66,6 +66,13 @@ void supla_http_event_hub::on_device_deleted(supla_user *user, int deviceId,
 }
 
 // static
+void supla_http_event_hub::on_channel_deleted(supla_user *user, int device_id,
+                                              int channel_id,
+                                              const supla_caller &caller) {
+  supla_google_home_sync_request::new_request(user);
+}
+
+// static
 void supla_http_event_hub::on_user_reconnect(supla_user *user,
                                              const supla_caller &caller) {
   on_voice_assistant_sync_needed(user, caller);

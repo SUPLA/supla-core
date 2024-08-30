@@ -46,12 +46,15 @@
 #include "ipc/get_temperature_command.h"
 #include "ipc/get_valve_value_command.h"
 #include "ipc/gh_cred_changed_command.h"
+#include "ipc/identify_device_command.h"
+#include "ipc/identify_subdevice_command.h"
 #include "ipc/interrupt_and_execute_scene_command.h"
 #include "ipc/interrupt_scene_command.h"
 #include "ipc/is_channel_connected_command.h"
 #include "ipc/is_client_connected_command.h"
 #include "ipc/is_device_connected_command.h"
 #include "ipc/on_channel_config_changed_command.h"
+#include "ipc/on_channel_deleted_command.h"
 #include "ipc/on_device_config_changed_command.h"
 #include "ipc/on_device_deleted_command.h"
 #include "ipc/on_mqtt_settings_changed_command.h"
@@ -61,14 +64,18 @@
 #include "ipc/on_state_webhook_changed_command.h"
 #include "ipc/on_user_settings_changed_command.h"
 #include "ipc/on_vbt_changed_command.h"
+#include "ipc/pair_subdevice_command.h"
 #include "ipc/recalibrate_command.h"
 #include "ipc/reset_counters_command.h"
+#include "ipc/restart_device_command.h"
+#include "ipc/restart_subdevice_command.h"
 #include "ipc/send_push_command.h"
 #include "ipc/set_cg_char_command.h"
 #include "ipc/set_cg_rgbw_command.h"
 #include "ipc/set_char_command.h"
 #include "ipc/set_digiglass_value_command.h"
 #include "ipc/set_rgbw_command.h"
+#include "ipc/take_ocr_photo_command.h"
 #include "ipc/user_reconnect_command.h"
 #include "sthread.h"
 
@@ -148,6 +155,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
       new supla_action_command(socket_adapter, ACTION_HVAC_SET_TEMPERATURES));
   add_command(new supla_reset_counters_command(socket_adapter));
   add_command(new supla_recalibrate_command(socket_adapter));
+  add_command(new supla_pair_subdevice_command(socket_adapter));
   add_command(new supla_get_status_command(socket_adapter));
   add_command(new supla_enter_cfg_mode_command(socket_adapter));
   add_command(new supla_execute_scene_command(socket_adapter));
@@ -161,6 +169,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_on_state_webhook_changed_command(socket_adapter));
   add_command(new supla_get_scene_summary_command(socket_adapter));
   add_command(new supla_on_device_deleted_command(socket_adapter));
+  add_command(new supla_on_channel_deleted_command(socket_adapter));
   add_command(new supla_on_mqtt_settings_changed_command(socket_adapter));
   add_command(new supla_before_device_delete_command(socket_adapter));
   add_command(new supla_on_channel_config_changed_command(socket_adapter));
@@ -171,6 +180,11 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_on_vbt_changed_command(socket_adapter));
   add_command(new supla_device_set_time_command(socket_adapter));
   add_command(new supla_send_push_command(socket_adapter));
+  add_command(new supla_take_ocr_photo_command(socket_adapter));
+  add_command(new supla_identify_device_command(socket_adapter));
+  add_command(new supla_identify_subdevice_command(socket_adapter));
+  add_command(new supla_restart_device_command(socket_adapter));
+  add_command(new supla_restart_subdevice_command(socket_adapter));
 }
 
 supla_ipc_ctrl::~supla_ipc_ctrl() {}

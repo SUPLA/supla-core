@@ -112,7 +112,9 @@ void supla_abstract_register_device::send_result(int resultcode) {
   }
 
   if (resultcode == SUPLA_RESULTCODE_TRUE ||
-      resultcode == SUPLA_RESULTCODE_CFG_MODE_REQUESTED) {
+      resultcode == SUPLA_RESULTCODE_CFG_MODE_REQUESTED ||
+      resultcode == SUPLA_RESULTCODE_RESTART_REQUESTED ||
+      resultcode == SUPLA_RESULTCODE_IDENTIFY_REQUESTED) {
     supla_log(LOG_INFO,
               "Device registered. ID: %i, ClientSD: %i Protocol Version: %i "
               "ThreadID: %i GUID: %02X%02X%02X%02X ResultCode: %i",
@@ -131,7 +133,7 @@ void supla_abstract_register_device::send_result(int resultcode) {
   if (resultcode == SUPLA_RESULTCODE_CHANNEL_CONFLICT) {
     prepare_channel_report(&channel_report_size, channel_report);
 
-    if (channel_report && get_srpc_adapter()->get_proto_version() >= 25) {
+    if (get_srpc_adapter()->get_proto_version() >= 25) {
       TSD_SuplaRegisterDeviceResult_B srdr;
       srdr.result_code = resultcode;
       srdr.activity_timeout = get_activity_timeout();
@@ -386,6 +388,8 @@ bool supla_abstract_register_device::add_channels(void) {
   return true;
 }
 
+bool supla_abstract_register_device::is_new_device(void) { return new_device; }
+
 void supla_abstract_register_device::register_device(
     weak_ptr<supla_device> device, TDS_SuplaRegisterDevice_C *register_device_c,
     TDS_SuplaRegisterDevice_G *register_device_g,
@@ -538,9 +542,18 @@ void supla_abstract_register_device::register_device(
 
   int resultcode = SUPLA_RESULTCODE_TRUE;
 
-  if ((device_flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
-      is_prev_entering_cfg_mode()) {
-    resultcode = SUPLA_RESULTCODE_CFG_MODE_REQUESTED;
+  if ((device_flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED)) {
+    switch (get_last_calcfg_command_importatnt_for_sleepers()) {
+      case SUPLA_CALCFG_CMD_ENTER_CFG_MODE:
+        resultcode = SUPLA_RESULTCODE_CFG_MODE_REQUESTED;
+        break;
+      case SUPLA_CALCFG_CMD_RESTART_DEVICE:
+        resultcode = SUPLA_RESULTCODE_RESTART_REQUESTED;
+        break;
+      case SUPLA_CALCFG_CMD_IDENTIFY_DEVICE:
+        resultcode = SUPLA_RESULTCODE_IDENTIFY_REQUESTED;
+        break;
+    }
   }
 
   if ((device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED) &&

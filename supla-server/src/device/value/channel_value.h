@@ -45,8 +45,7 @@ class supla_channel_value {
                                         supla_json_config *json_config);
   virtual std::map<std::string, std::string> get_replacement_map(void);
   virtual supla_channel_extended_value *convert2extended(
-      supla_json_config *json_config, int func, const char *text_param1,
-      const char *text_param2, int param2, int param3,
+      supla_json_config *json_config, int func,
       supla_channel_extended_value **data_logger_purpose);
 };
 

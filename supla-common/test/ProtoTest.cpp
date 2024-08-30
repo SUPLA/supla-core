@@ -111,6 +111,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)62, sizeof(TElectricityMeter_Measurement));
   EXPECT_EQ((unsigned int)429, sizeof(TElectricityMeter_ExtendedValue));
   EXPECT_EQ((unsigned int)449, sizeof(TElectricityMeter_ExtendedValue_V2));
+  EXPECT_EQ((unsigned int)454, sizeof(TElectricityMeter_ExtendedValue_V3));
   EXPECT_EQ((unsigned int)5, sizeof(TElectricityMeter_Value));
   EXPECT_EQ((unsigned int)40, sizeof(TSC_ImpulseCounter_ExtendedValue));
   EXPECT_EQ((unsigned int)8, sizeof(TSC_ImpulseCounter_Value));
@@ -132,6 +133,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TElectricityMeter_ExtendedValue),
             (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
   EXPECT_LE(sizeof(TElectricityMeter_ExtendedValue_V2),
+            (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+  EXPECT_LE(sizeof(TElectricityMeter_ExtendedValue_V3),
             (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
   EXPECT_EQ((unsigned int)4, sizeof(TThermostat_Time));
@@ -313,6 +316,24 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   EXPECT_EQ(sizeof(TChannelConfig_GeneralPurposeMeter), 111);
   EXPECT_LE(sizeof(TChannelConfig_GeneralPurposeMeter),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TDS_SubdeviceDetails), 325);
+
+  EXPECT_EQ(sizeof(TChannelConfig_OCR), 291);
+  EXPECT_LE(sizeof(TChannelConfig_OCR),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TChannelConfig_ImpulseCounter), 61);
+  EXPECT_LE(sizeof(TChannelConfig_ImpulseCounter),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TChannelConfig_ElectricityMeter), 72);
+  EXPECT_LE(sizeof(TChannelConfig_ElectricityMeter),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TChannelConfig_PowerSwitch), 42);
+  EXPECT_LE(sizeof(TChannelConfig_PowerSwitch),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 }
 

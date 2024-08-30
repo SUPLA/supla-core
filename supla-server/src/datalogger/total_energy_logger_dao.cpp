@@ -40,7 +40,7 @@ void supla_total_energy_logger_dao::set_longlong(unsigned _supla_int64_t *v,
 }
 
 void supla_total_energy_logger_dao::add(
-    int channel_id, TElectricityMeter_ExtendedValue_V2 *em_ev) {
+    int channel_id, TElectricityMeter_ExtendedValue_V3 *em_ev) {
   if (!em_ev) {
     return;
   }

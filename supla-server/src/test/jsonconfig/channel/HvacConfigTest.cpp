@@ -35,6 +35,12 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   ds_hvac1.MainThermometerChannelNo = 1;
   ds_hvac1.AuxThermometerChannelNo = 2;
   ds_hvac1.BinarySensorChannelNo = 3;
+  ds_hvac1.MasterThermostatIsSet = 1;
+  ds_hvac1.MasterThermostatChannelNo = 4;
+  ds_hvac1.HeatOrColdSourceSwitchIsSet = 1;
+  ds_hvac1.HeatOrColdSourceSwitchChannelNo = 5;
+  ds_hvac1.PumpSwitchIsSet = 1;
+  ds_hvac1.PumpSwitchChannelNo = 6;
   ds_hvac1.AuxThermometerType = SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_HEATER;
   ds_hvac1.AntiFreezeAndOverheatProtectionEnabled = true;
   ds_hvac1.AvailableAlgorithms = 0xFFFF;
@@ -61,14 +67,16 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
       str,
       "{\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
       "\"auxThermometerType\":\"GENERIC_HEATER\",\"auxMinMaxSetpointEnabled\":"
-      "false,\"useSeparateHeatCoolOutputs\":false,"
-      "\"binarySensorChannelNo\":3,\"antiFreezeAndOverheatProtectionEnabled\":"
-      "true,\"usedAlgorithm\":\"ON_OFF_SETPOINT_MIDDLE\",\"minOffTimeS\":600,"
-      "\"minOnTimeS\":10,\"outputValueOnError\":55,\"subfunction\":\"COOL\","
-      "\"temperatureSetpointChangeSwitchesToManualMode\":true,\"temperatures\":"
-      "{\"freezeProtection\":1,\"eco\":2,\"comfort\":3,\"boost\":4,"
-      "\"heatProtection\":5,\"histeresis\":6,\"belowAlarm\":7,\"aboveAlarm\":8,"
-      "\"auxMinSetpoint\":9,\"auxMaxSetpoint\":10}}");
+      "false,\"useSeparateHeatCoolOutputs\":false,\"binarySensorChannelNo\":3,"
+      "\"antiFreezeAndOverheatProtectionEnabled\":true,\"usedAlgorithm\":\"ON_"
+      "OFF_SETPOINT_MIDDLE\",\"minOffTimeS\":600,\"minOnTimeS\":10,"
+      "\"outputValueOnError\":55,\"subfunction\":\"COOL\","
+      "\"temperatureSetpointChangeSwitchesToManualMode\":true,"
+      "\"masterThermostatChannelNo\":4,\"heatOrColdSourceSwitchChannelNo\":5,"
+      "\"pumpSwitchChannelNo\":6,\"temperatures\":{\"freezeProtection\":1,"
+      "\"eco\":2,\"comfort\":3,\"boost\":4,\"heatProtection\":5,\"histeresis\":"
+      "6,\"belowAlarm\":7,\"aboveAlarm\":8,\"auxMinSetpoint\":9,"
+      "\"auxMaxSetpoint\":10}}");
 
   hvac_config config2;
   config2.set_user_config(str);
@@ -76,12 +84,14 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
 
   str = config1.get_properties();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"availableAlgorithms\":[\"ON_OFF_SETPOINT_MIDDLE\",\"ON_OFF_SETPOINT_"
-      "AT_MOST\"],\"temperatures\":{\"roomMin\":11,\"roomMax\":12,\"auxMin\":"
-      "13,\"auxMax\":14,\"histeresisMin\":15,\"histeresisMax\":16,"
-      "\"heatCoolOffsetMin\":17,\"heatCoolOffsetMax\":18}}");
+  EXPECT_STREQ(str,
+               "{\"availableAlgorithms\":[\"ON_OFF_SETPOINT_MIDDLE\",\"ON_OFF_"
+               "SETPOINT_AT_MOST\"],\"temperatures\":{\"roomMin\":11,"
+               "\"roomMax\":12,\"auxMin\":13,\"auxMax\":14,\"histeresisMin\":"
+               "15,\"histeresisMax\":16,\"heatCoolOffsetMin\":17,"
+               "\"heatCoolOffsetMax\":18},\"readOnlyConfigFields\":[],"
+               "\"hiddenConfigFields\":[],\"readOnlyTempretureConfigFields\":[]"
+               ",\"hiddenTempretureConfigFields\":[]}");
 
   config2.set_properties(str);
   free(str);
@@ -161,8 +171,9 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
       "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
       "\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
-      "\"temperatures\":{\"freezeProtection\":12345,\"eco\":0,"
-      "\"auxMinSetpoint\":-723}}");
+      "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
+      "null,\"pumpSwitchChannelNo\":null,\"temperatures\":{"
+      "\"freezeProtection\":12345,\"eco\":0,\"auxMinSetpoint\":-723}}");
 
   free(str);
 
@@ -170,7 +181,9 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"availableAlgorithms\":[],\"temperatures\":{"
-               "\"histeresisMax\":-28910}}");
+               "\"histeresisMax\":-28910},\"readOnlyConfigFields\":[],"
+               "\"hiddenConfigFields\":[],\"readOnlyTempretureConfigFields\":[]"
+               ",\"hiddenTempretureConfigFields\":[]}");
 
   free(str);
 }
@@ -203,6 +216,7 @@ TEST_F(HvacConfigTest, merge) {
   ds_hvac.Temperatures.Index |= 1ULL << 17;
   ds_hvac.Temperatures.Temperature[1] = 10;
   ds_hvac.Temperatures.Temperature[17] = 19;
+  ds_hvac.ParameterFlags.AntiFreezeAndOverheatProtectionEnabledHidden = 1;
 
   hvac_config config2;
   config2.set_config(&ds_hvac, 0);
@@ -219,16 +233,144 @@ TEST_F(HvacConfigTest, merge) {
       "\"temperatures\":{\"eco\":10,\"comfort\":0},\"binarySensorChannelNo\":"
       "null,\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
-      "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":"
-      "false}");
+      "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":false,"
+      "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
+      "null,\"pumpSwitchChannelNo\":null}");
 
   free(str);
 
   str = config1.get_properties();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"1\":10,\"availableAlgorithms\":[],\"temperatures\":{"
-               "\"heatCoolOffsetMin\":0,\"heatCoolOffsetMax\":19}}");
+  EXPECT_STREQ(
+      str,
+      "{\"1\":10,\"availableAlgorithms\":[],\"temperatures\":{"
+      "\"heatCoolOffsetMin\":0,\"heatCoolOffsetMax\":19},"
+      "\"hiddenConfigFields\":[\"antiFreezeAndOverheatProtectionEnabled\"],"
+      "\"readOnlyConfigFields\":[],\"hiddenTempretureConfigFields\":[],"
+      "\"readOnlyTempretureConfigFields\":[]}");
+
+  free(str);
+}
+
+TEST_F(HvacConfigTest, setAndGetParameterFlags) {
+  for (int a = 0; a < 20; a++) {
+    TChannelConfig_HVAC ds_hvac1 = {};
+    TestHelper::randomize((char *)&ds_hvac1.ParameterFlags,
+                          sizeof(sizeof(HvacParameterFlags)));
+
+    hvac_config config1;
+    config1.set_config(&ds_hvac1, 0);
+
+    char *str = config1.get_user_config();
+    ASSERT_NE(str, nullptr);
+    hvac_config config2;
+    config2.set_user_config(str);
+    free(str);
+
+    str = config1.get_properties();
+    ASSERT_NE(str, nullptr);
+    config2.set_properties(str);
+    free(str);
+
+    TChannelConfig_HVAC ds_hvac2 = {};
+    config2.get_config(&ds_hvac2, 0);
+
+    ds_hvac1.ParameterFlags.Reserved = 0;
+
+    ASSERT_EQ(memcmp(&ds_hvac1.ParameterFlags, &ds_hvac2.ParameterFlags,
+                     sizeof(HvacParameterFlags)),
+              0);
+  }
+}
+
+TEST_F(HvacConfigTest, allParameterFlagsSet) {
+  TChannelConfig_HVAC ds_hvac = {};
+
+  ds_hvac.ParameterFlags.MainThermometerChannelNoReadonly = 1;
+  ds_hvac.ParameterFlags.MainThermometerChannelNoHidden = 1;
+  ds_hvac.ParameterFlags.AuxThermometerChannelNoReadonly = 1;
+  ds_hvac.ParameterFlags.AuxThermometerChannelNoHidden = 1;
+  ds_hvac.ParameterFlags.BinarySensorChannelNoReadonly = 1;
+  ds_hvac.ParameterFlags.BinarySensorChannelNoHidden = 1;
+  ds_hvac.ParameterFlags.AuxThermometerTypeReadonly = 1;
+  ds_hvac.ParameterFlags.AuxThermometerTypeHidden = 1;
+  ds_hvac.ParameterFlags.AntiFreezeAndOverheatProtectionEnabledReadonly = 1;
+  ds_hvac.ParameterFlags.AntiFreezeAndOverheatProtectionEnabledHidden = 1;
+  ds_hvac.ParameterFlags.UsedAlgorithmReadonly = 1;
+  ds_hvac.ParameterFlags.UsedAlgorithmHidden = 1;
+  ds_hvac.ParameterFlags.MinOnTimeSReadonly = 1;
+  ds_hvac.ParameterFlags.MinOnTimeSHidden = 1;
+  ds_hvac.ParameterFlags.MinOffTimeSReadonly = 1;
+  ds_hvac.ParameterFlags.MinOffTimeSHidden = 1;
+  ds_hvac.ParameterFlags.OutputValueOnErrorReadonly = 1;
+  ds_hvac.ParameterFlags.OutputValueOnErrorHidden = 1;
+  ds_hvac.ParameterFlags.SubfunctionReadonly = 1;
+  ds_hvac.ParameterFlags.SubfunctionHidden = 1;
+  ds_hvac.ParameterFlags.TemperatureSetpointChangeSwitchesToManualModeReadonly =
+      1;
+  ds_hvac.ParameterFlags.TemperatureSetpointChangeSwitchesToManualModeHidden =
+      1;
+  ds_hvac.ParameterFlags.AuxMinMaxSetpointEnabledReadonly = 1;
+  ds_hvac.ParameterFlags.AuxMinMaxSetpointEnabledHidden = 1;
+  ds_hvac.ParameterFlags.UseSeparateHeatCoolOutputsReadonly = 1;
+  ds_hvac.ParameterFlags.UseSeparateHeatCoolOutputsHidden = 1;
+  ds_hvac.ParameterFlags.TemperaturesFreezeProtectionReadonly = 1;
+  ds_hvac.ParameterFlags.TemperaturesFreezeProtectionHidden = 1;
+  ds_hvac.ParameterFlags.TemperaturesEcoReadonly = 1;
+  ds_hvac.ParameterFlags.TemperaturesEcoHidden = 1;
+  ds_hvac.ParameterFlags.TemperaturesComfortReadonly = 1;
+  ds_hvac.ParameterFlags.TemperaturesComfortHidden = 1;
+  ds_hvac.ParameterFlags.TemperaturesBoostReadonly = 1;
+  ds_hvac.ParameterFlags.TemperaturesBoostHidden = 1;
+  ds_hvac.ParameterFlags.TemperaturesHeatProtectionReadonly = 1;
+  ds_hvac.ParameterFlags.TemperaturesHeatProtectionHidden = 1;
+  ds_hvac.ParameterFlags.TemperaturesHisteresisReadonly = 1;
+  ds_hvac.ParameterFlags.TemperaturesHisteresisHidden = 1;
+  ds_hvac.ParameterFlags.TemperaturesBelowAlarmReadonly = 1;
+  ds_hvac.ParameterFlags.TemperaturesBelowAlarmHidden = 1;
+  ds_hvac.ParameterFlags.TemperaturesAboveAlarmReadonly = 1;
+  ds_hvac.ParameterFlags.TemperaturesAboveAlarmHidden = 1;
+  ds_hvac.ParameterFlags.TemperaturesAuxMinSetpointReadonly = 1;
+  ds_hvac.ParameterFlags.TemperaturesAuxMinSetpointHidden = 1;
+  ds_hvac.ParameterFlags.TemperaturesAuxMaxSetpointReadonly = 1;
+  ds_hvac.ParameterFlags.TemperaturesAuxMaxSetpointHidden = 1;
+  ds_hvac.ParameterFlags.MasterThermostatChannelNoReadonly = 1;
+  ds_hvac.ParameterFlags.MasterThermostatChannelNoHidden = 1;
+  ds_hvac.ParameterFlags.HeatOrColdSourceSwitchReadonly = 1;
+  ds_hvac.ParameterFlags.HeatOrColdSourceSwitchHidden = 1;
+  ds_hvac.ParameterFlags.PumpSwitchReadonly = 1;
+  ds_hvac.ParameterFlags.PumpSwitchHidden = 1;
+
+  hvac_config config;
+  config.set_config(&ds_hvac, 0);
+
+  char *str = config.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"availableAlgorithms\":[],\"temperatures\":{},"
+      "\"readOnlyConfigFields\":[\"mainThermometerChannelNo\","
+      "\"auxThermometerChannelNo\",\"binarySensorChannelNo\","
+      "\"auxThermometerType\",\"antiFreezeAndOverheatProtectionEnabled\","
+      "\"usedAlgorithm\",\"minOnTimeS\",\"minOffTimeS\",\"outputValueOnError\","
+      "\"subfunction\",\"auxMinMaxSetpointEnabled\","
+      "\"useSeparateHeatCoolOutputs\",\"masterThermostatChannelNo\","
+      "\"heatOrColdSourceSwitchChannelNo\",\"pumpSwitchChannelNo\","
+      "\"temperatureSetpointChangeSwitchesToManualMode\"],"
+      "\"hiddenConfigFields\":[\"mainThermometerChannelNo\","
+      "\"auxThermometerChannelNo\",\"binarySensorChannelNo\","
+      "\"auxThermometerType\",\"antiFreezeAndOverheatProtectionEnabled\","
+      "\"usedAlgorithm\",\"minOnTimeS\",\"minOffTimeS\",\"outputValueOnError\","
+      "\"subfunction\",\"auxMinMaxSetpointEnabled\","
+      "\"useSeparateHeatCoolOutputs\",\"masterThermostatChannelNo\","
+      "\"heatOrColdSourceSwitchChannelNo\",\"pumpSwitchChannelNo\","
+      "\"temperatureSetpointChangeSwitchesToManualMode\"],"
+      "\"readOnlyTempretureConfigFields\":[\"freezeProtection\",\"eco\","
+      "\"comfort\",\"boost\",\"heatProtection\",\"histeresis\",\"belowAlarm\","
+      "\"aboveAlarm\",\"auxMinSetpoint\",\"auxMaxSetpoint\"],"
+      "\"hiddenTempretureConfigFields\":[\"freezeProtection\",\"eco\","
+      "\"comfort\",\"boost\",\"heatProtection\",\"histeresis\",\"belowAlarm\","
+      "\"aboveAlarm\",\"auxMinSetpoint\",\"auxMaxSetpoint\"]}");
 
   free(str);
 }

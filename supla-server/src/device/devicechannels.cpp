@@ -278,22 +278,43 @@ bool supla_device_channels::get_relay_value(int channel_id,
   return false;
 }
 
-bool supla_device_channels::reset_counters(int channel_id) {
+bool supla_device_channels::calcfg_cmd(int channel_id,
+                                       unsigned _supla_int64_t flag,
+                                       bool superuser_authorized,
+                                       _supla_int_t cmd) {
   supla_device_channel *channel = find_channel(channel_id);
 
-  if (channel &&
-      (channel->get_flags() & SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS)) {
+  if (channel && ((!flag || (channel->get_flags() & flag)))) {
     TSD_DeviceCalCfgRequest request = {};
 
     request.ChannelNumber = channel->get_channel_number();
-    request.Command = SUPLA_CALCFG_CMD_RESET_COUNTERS;
-    request.SuperUserAuthorized = true;
+    request.Command = cmd;
+    request.SuperUserAuthorized = superuser_authorized;
 
     srpc_sd_async_device_calcfg_request(get_srpc(), &request);
     return true;
   }
 
   return false;
+}
+
+bool supla_device_channels::reset_counters(int channel_id) {
+  return calcfg_cmd(channel_id, SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS, true,
+                    SUPLA_CALCFG_CMD_RESET_COUNTERS);
+}
+
+bool supla_device_channels::take_ocr_photo(int channel_id) {
+  return calcfg_cmd(channel_id, 0, true, SUPLA_CALCFG_CMD_TAKE_OCR_PHOTO);
+}
+
+bool supla_device_channels::restart_subdevice(int channel_id) {
+  return calcfg_cmd(channel_id, SUPLA_CHANNEL_FLAG_CALCFG_RESTART_SUBDEVICE,
+                    true, SUPLA_CALCFG_CMD_RESTART_SUBDEVICE);
+}
+
+bool supla_device_channels::identify_subdevice(int channel_id) {
+  return calcfg_cmd(channel_id, SUPLA_CHANNEL_FLAG_CALCFG_IDENTIFY_SUBDEVICE,
+                    true, SUPLA_CALCFG_CMD_IDENTIFY_SUBDEVICE);
 }
 
 bool supla_device_channels::recalibrate(int channel_id,

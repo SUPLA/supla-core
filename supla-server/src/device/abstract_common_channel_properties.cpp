@@ -25,10 +25,14 @@
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/alt_weekly_schedule_config.h"
 #include "jsonconfig/channel/binary_sensor_config.h"
+#include "jsonconfig/channel/electricity_meter_config.h"
 #include "jsonconfig/channel/facade_blind_config.h"
 #include "jsonconfig/channel/general_purpose_measurement_config.h"
 #include "jsonconfig/channel/general_purpose_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "jsonconfig/channel/impulse_counter_config.h"
+#include "jsonconfig/channel/ocr_config.h"
+#include "jsonconfig/channel/power_switch_config.h"
 #include "jsonconfig/channel/roller_shutter_config.h"
 #include "jsonconfig/channel/temp_hum_config.h"
 #include "proto.h"
@@ -66,6 +70,8 @@ void supla_abstract_common_channel_properties::get_channel_relations(
     return;
   }
 
+  unsigned char protocol_version = get_protocol_version();
+
   if (kind == relation_any || kind == relation_with_sub_channel) {
     switch (get_func()) {
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
@@ -85,15 +91,16 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         break;
 
       case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH: {
-        add_relation(relations, get_param1(), get_id(),
-                     CHANNEL_RELATION_TYPE_METER);
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+        supla_json_config *json_config = get_json_config();
+        if (json_config) {
+          power_switch_config config(json_config);
+          add_relation(relations, config.get_related_meter_channel_id(),
+                       get_id(), CHANNEL_RELATION_TYPE_METER);
+          delete json_config;
+        }
       } break;
-
-      case SUPLA_CHANNELFNC_STAIRCASETIMER:
-        add_relation(relations, get_param2(), get_id(),
-                     CHANNEL_RELATION_TYPE_METER);
-        break;
 
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
@@ -118,6 +125,16 @@ void supla_abstract_common_channel_properties::get_channel_relations(
 
             bool find_sensor =
                 hvac.BinarySensorChannelNo != get_channel_number();
+
+            bool find_master = false;
+            bool find_heat_or_cool_source = false;
+            bool find_pump_switch = false;
+
+            if (protocol_version >= 25) {
+              find_master = hvac.MasterThermostatIsSet;
+              find_heat_or_cool_source = hvac.HeatOrColdSourceSwitchIsSet;
+              find_pump_switch = hvac.PumpSwitchIsSet;
+            }
 
             for_each([&](supla_abstract_common_channel_properties *props,
                          bool *will_continue) -> void {
@@ -154,6 +171,41 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                   }
                   find_sensor = false;
                 }
+
+                if (find_master && hvac.MasterThermostatChannelNo ==
+                                       props->get_channel_number()) {
+                  switch (props->get_func()) {
+                    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+                    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+                    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+                    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+                      add_relation(relations, props->get_id(), get_id(),
+                                   CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
+                      break;
+                  }
+                  find_master = false;
+                }
+
+                if (find_heat_or_cool_source &&
+                    hvac.HeatOrColdSourceSwitchChannelNo ==
+                        props->get_channel_number()) {
+                  if (props->get_func() ==
+                      SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH) {
+                    add_relation(
+                        relations, props->get_id(), get_id(),
+                        CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
+                  }
+                  find_heat_or_cool_source = false;
+                }
+
+                if (find_pump_switch &&
+                    hvac.PumpSwitchChannelNo == props->get_channel_number()) {
+                  if (props->get_func() == SUPLA_CHANNELFNC_PUMPSWITCH) {
+                    add_relation(relations, props->get_id(), get_id(),
+                                 CHANNEL_RELATION_TYPE_PUMP_SWITCH);
+                  }
+                  find_pump_switch = false;
+                }
               }
 
               *will_continue = find_main || find_aux;
@@ -187,14 +239,41 @@ void supla_abstract_common_channel_properties::get_channel_relations(
       case SUPLA_CHANNELFNC_IC_GAS_METER:
       case SUPLA_CHANNELFNC_IC_WATER_METER:
       case SUPLA_CHANNELFNC_IC_HEAT_METER:
-        add_relation(relations, get_id(), get_param4(),
-                     CHANNEL_RELATION_TYPE_METER);
+
+        for_each([&](supla_abstract_common_channel_properties *props,
+                     bool *will_continue) -> void {
+          switch (props->get_func()) {
+            case SUPLA_CHANNELFNC_POWERSWITCH:
+            case SUPLA_CHANNELFNC_LIGHTSWITCH:
+            case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+              supla_json_config *json_config = props->get_json_config();
+              if (json_config) {
+                power_switch_config config(json_config);
+
+                if (config.get_related_meter_channel_id() == get_id()) {
+                  add_relation(relations, get_id(), props->get_id(),
+                               CHANNEL_RELATION_TYPE_METER);
+                }
+
+                delete json_config;
+              }
+            }
+
+            break;
+          }
+        });
         break;
     }
 
     if (type == SUPLA_CHANNELTYPE_BINARYSENSOR ||
         func == SUPLA_CHANNELFNC_THERMOMETER ||
-        func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE) {
+        func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE ||
+        func == SUPLA_CHANNELFNC_PUMPSWITCH ||
+        func == SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH ||
+        func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT ||
+        func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
+        func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL ||
+        func == SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER) {
       int device_id = get_device_id();
 
       for_each([&](supla_abstract_common_channel_properties *props,
@@ -205,6 +284,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         switch (props->get_func()) {
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
           case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+          case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
           case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
 
             supla_json_config *json_config = props->get_json_config();
@@ -218,18 +298,55 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                                  CHANNEL_RELATION_TYPE_DEFAULT);
                   }
                 } else {
-                  if (hvac.MainThermometerChannelNo == get_channel_number()) {
-                    add_relation(relations, get_id(), props->get_id(),
-                                 CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
-                  }
+                  switch (func) {
+                    case SUPLA_CHANNELFNC_THERMOMETER:
+                    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+                      if (hvac.MainThermometerChannelNo ==
+                          get_channel_number()) {
+                        add_relation(relations, get_id(), props->get_id(),
+                                     CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
+                      }
 
-                  if (hvac.AuxThermometerType >=
-                          SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
-                      hvac.AuxThermometerType <=
-                          SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER &&
-                      hvac.AuxThermometerChannelNo == get_channel_number()) {
-                    add_relation(relations, get_id(), props->get_id(),
-                                 hvac.AuxThermometerType + 3);
+                      if (hvac.AuxThermometerType >=
+                              SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
+                          hvac.AuxThermometerType <=
+                              SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER &&
+                          hvac.AuxThermometerChannelNo ==
+                              get_channel_number()) {
+                        add_relation(relations, get_id(), props->get_id(),
+                                     hvac.AuxThermometerType + 3);
+                      }
+                      break;
+
+                    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+                    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+                    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+                    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+                      if (protocol_version >= 25 &&
+                          hvac.MasterThermostatIsSet &&
+                          hvac.MasterThermostatChannelNo ==
+                              get_channel_number()) {
+                        add_relation(relations, get_id(), props->get_id(),
+                                     CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
+                      }
+                      break;
+                    case SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH:
+                      if (protocol_version >= 25 &&
+                          hvac.HeatOrColdSourceSwitchIsSet &&
+                          hvac.HeatOrColdSourceSwitchChannelNo ==
+                              get_channel_number()) {
+                        add_relation(
+                            relations, get_id(), props->get_id(),
+                            CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
+                      }
+                      break;
+                    case SUPLA_CHANNELFNC_PUMPSWITCH:
+                      if (protocol_version >= 25 && hvac.PumpSwitchIsSet &&
+                          hvac.PumpSwitchChannelNo == get_channel_number()) {
+                        add_relation(relations, get_id(), props->get_id(),
+                                     CHANNEL_RELATION_TYPE_PUMP_SWITCH);
+                      }
+                      break;
                   }
                 }
               }
@@ -302,6 +419,9 @@ void supla_abstract_common_channel_properties::get_config(
 
       return;
     }
+  } else if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+             config_type == SUPLA_CONFIG_TYPE_OCR) {
+    JSON_TO_CONFIG(ocr_config, TChannelConfig_OCR, config, config_size);
   }
 
   if (config_type != SUPLA_CONFIG_TYPE_DEFAULT) {
@@ -366,6 +486,10 @@ void supla_abstract_common_channel_properties::get_config(
     JSON_TO_CONFIG(general_purpose_meter_config,
                    TChannelConfig_GeneralPurposeMeter, config, config_size);
     return;
+  } else if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+    JSON_TO_CONFIG(impulse_counter_config, TChannelConfig_ImpulseCounter,
+                   config, config_size);
+    return;
   }
 
   switch (get_func()) {
@@ -414,6 +538,15 @@ void supla_abstract_common_channel_properties::get_config(
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
       JSON_TO_CONFIG(temp_hum_config, TChannelConfig_TemperatureAndHumidity,
                      config, config_size);
+      break;
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+      JSON_TO_CONFIG(electricity_meter_config, TChannelConfig_ElectricityMeter,
+                     config, config_size);
+      break;
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      JSON_TO_CONFIG(power_switch_config, TChannelConfig_PowerSwitch, config,
+                     config_size);
       break;
   }
 }
@@ -487,6 +620,29 @@ int supla_abstract_common_channel_properties::set_user_config(
     json_config = new facade_blind_config();
     static_cast<facade_blind_config *>(json_config)
         ->set_config((TChannelConfig_FacadeBlind *)config);
+  } else if (type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+    json_config = new electricity_meter_config(nullptr);
+    static_cast<electricity_meter_config *>(json_config)
+        ->set_config((TChannelConfig_ElectricityMeter *)config);
+  } else if (type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+             config_type == SUPLA_CONFIG_TYPE_OCR) {
+    json_config = new ocr_config(nullptr);
+    static_cast<ocr_config *>(json_config)
+        ->set_config((TChannelConfig_OCR *)config);
+  } else if (type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+             config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
+             config_size == sizeof(TChannelConfig_ImpulseCounter)) {
+    json_config = new impulse_counter_config();
+    static_cast<impulse_counter_config *>(json_config)
+        ->set_config((TChannelConfig_ImpulseCounter *)config);
+  } else if ((func == SUPLA_CHANNELFNC_POWERSWITCH ||
+              func == SUPLA_CHANNELFNC_LIGHTSWITCH ||
+              func == SUPLA_CHANNELFNC_STAIRCASETIMER) &&
+             config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
+             config_size == sizeof(TChannelConfig_PowerSwitch)) {
+    json_config = new power_switch_config();
+    static_cast<power_switch_config *>(json_config)
+        ->set_config((TChannelConfig_PowerSwitch *)config, this);
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }
@@ -505,6 +661,28 @@ int supla_abstract_common_channel_properties::set_user_config(
       delete json_config;
     }
   }
+
+  return result;
+}
+
+int supla_abstract_common_channel_properties::get_channel_id(
+    unsigned char number) {
+  if (get_channel_number() == number) {
+    return get_id();
+  }
+
+  int result = 0;
+
+  for_each(
+      [this, number, &result](supla_abstract_common_channel_properties *props,
+                              bool *will_continue) -> void {
+        if (get_device_id() == props->get_device_id() &&
+            number == props->get_channel_number()) {
+          result = props->get_id();
+        }
+
+        *will_continue = !result;
+      });
 
   return result;
 }

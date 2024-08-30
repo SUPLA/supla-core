@@ -29,6 +29,7 @@
 #include "device/devicechannel.h"
 #include "jsonconfig/channel/electricity_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "jsonconfig/channel/power_switch_config.h"
 #include "log.h"
 #include "proto.h"
 #include "safearray.h"
@@ -42,11 +43,10 @@ supla_client_channel::supla_client_channel(
     int DeviceId, int LocationID, int Type, int Func, int Param1, int Param2,
     int Param3, int Param4, char *TextParam1, char *TextParam2,
     char *TextParam3, const char *Caption, int AltIcon, int UserIcon,
-    short ManufacturerID, short ProductID, unsigned char ProtocolVersion,
-    unsigned _supla_int64_t Flags, unsigned _supla_int64_t EmSubcFlags,
-    const char value[SUPLA_CHANNELVALUE_SIZE],
+    short ManufacturerID, short ProductID, unsigned char DeviceProtocolVersion,
+    unsigned _supla_int64_t Flags, const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec, const char *user_config,
-    const char *properties, const char *em_subc_user_config)
+    const char *properties)
     : supla_client_objcontainer_item(Container, Id, Caption),
       supla_abstract_common_channel_properties() {
   this->channel_number = channel_number;
@@ -65,13 +65,9 @@ supla_client_channel::supla_client_channel(
   this->UserIcon = UserIcon;
   this->ManufacturerID = ManufacturerID;
   this->ProductID = ProductID;
-  this->ProtocolVersion = ProtocolVersion;
+  this->DeviceProtocolVersion = DeviceProtocolVersion;
   this->Flags = Flags;
   this->json_config = nullptr;
-
-  this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED;
-  this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
-  this->Flags |= EmSubcFlags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
 
   supla_json_config *json_config = new supla_json_config();
   json_config->set_user_config(user_config);
@@ -82,9 +78,6 @@ supla_client_channel::supla_client_channel(
     electricity_meter_config *config = new electricity_meter_config();
 
     config->set_user_config(user_config);
-    this->Flags |= config->get_channel_user_flags();
-
-    config->set_user_config(em_subc_user_config);
     this->Flags |= config->get_channel_user_flags();
 
     delete config;
@@ -113,6 +106,42 @@ supla_client_channel::~supla_client_channel(void) {
   }
 
   delete json_config;
+}
+
+void supla_client_channel::after_all_channels_loaded(void) {
+  unsigned _supla_int64_t Flags = 0;
+  switch (get_func()) {
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+      int meter_channel_id = 0;
+      supla_json_config *json_config = get_json_config();
+      if (json_config) {
+        power_switch_config config(json_config);
+        meter_channel_id = config.get_related_meter_channel_id();
+        delete json_config;
+      }
+
+      if (meter_channel_id) {
+        for_each([meter_channel_id, &Flags](
+                     supla_abstract_common_channel_properties *props,
+                     bool *will_continue) -> void {
+          if (props->get_id() == meter_channel_id) {
+            int F = props->get_flags();
+            Flags |= F & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED;
+            Flags |= F & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
+            Flags |= F & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
+
+            *will_continue = false;
+          }
+        });
+      }
+    } break;
+  }
+
+  if (Flags) {
+    this->Flags |= Flags;
+  }
 }
 
 unsigned char supla_client_channel::get_channel_number(void) {
@@ -358,7 +387,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
   channel->Func = Func;
   channel->LocationID = this->LocationId;
   channel->AltIcon = this->AltIcon;
-  channel->ProtocolVersion = this->ProtocolVersion;
+  channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags() & 0xFFFFFFFF;
 
   proto_get_value(&channel->value, &channel->online, client);
@@ -380,7 +409,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
   channel->UserIcon = this->UserIcon;
   channel->ManufacturerID = this->ManufacturerID;
   channel->ProductID = this->ProductID;
-  channel->ProtocolVersion = this->ProtocolVersion;
+  channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags() & 0xFFFFFFFF;
 
   proto_get_value(&channel->value, &channel->online, client);
@@ -402,7 +431,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
   channel->UserIcon = this->UserIcon;
   channel->ManufacturerID = this->ManufacturerID;
   channel->ProductID = this->ProductID;
-  channel->ProtocolVersion = this->ProtocolVersion;
+  channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags() & 0xFFFFFFFF;
 
   proto_get_value(&channel->value, &channel->online, client);
@@ -424,7 +453,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_E *channel,
   channel->UserIcon = this->UserIcon;
   channel->ManufacturerID = this->ManufacturerID;
   channel->ProductID = this->ProductID;
-  channel->ProtocolVersion = this->ProtocolVersion;
+  channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags();
 
   TSCS_ChannelConfig config = {};
@@ -455,7 +484,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannelValue_B *channel_value,
 
 bool supla_client_channel::get_cs_extended_value(
     shared_ptr<supla_device> device, int channel_id,
-    TSC_SuplaChannelExtendedValue *cev) {
+    TSC_SuplaChannelExtendedValue *cev, unsigned char protocol_version) {
   supla_channel_extended_value *extended_value = nullptr;
   device->get_channels()->access_channel(
       channel_id, [&extended_value](supla_device_channel *channel) -> void {
@@ -464,7 +493,7 @@ bool supla_client_channel::get_cs_extended_value(
       });
   if (extended_value) {
     cev->Id = channel_id;
-    extended_value->get_raw_value(&cev->value);
+    extended_value->get_raw_value(&cev->value, protocol_version);
     delete extended_value;
     return true;
   }
@@ -487,7 +516,8 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
         client->get_user()->get_devices()->get(DeviceId);
 
     if (device != nullptr) {
-      cev_exists = get_cs_extended_value(device, ChannelId, cev);
+      cev_exists = get_cs_extended_value(device, ChannelId, cev,
+                                         client->get_protocol_version());
     }
 
     device = nullptr;
@@ -496,12 +526,14 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     switch (get_func()) {
       case SUPLA_CHANNELFNC_POWERSWITCH:
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
-        ChannelId = Param1;  // Associated measurement channel
-        break;
-
-      case SUPLA_CHANNELFNC_STAIRCASETIMER:
-        ChannelId = Param2;  // Associated measurement channel
-        break;
+      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+        supla_json_config *json_config = get_json_config();
+        if (json_config) {
+          power_switch_config config(json_config);
+          ChannelId = config.get_related_meter_channel_id();
+          delete json_config;
+        }
+      } break;
     }
 
     if (ChannelId) {
@@ -509,7 +541,8 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
 
       if (device != nullptr) {
         TSC_SuplaChannelExtendedValue second_cev = {};
-        if (get_cs_extended_value(device, ChannelId, &second_cev)) {
+        if (get_cs_extended_value(device, ChannelId, &second_cev,
+                                  client->get_protocol_version())) {
           if (client->get_protocol_version() >= 17) {
             srpc_evtool_value_add(&cev->value, &second_cev.value);
           } else {
@@ -613,4 +646,15 @@ int supla_client_channel::set_user_config(unsigned char config_type,
                                           char *config) {
   return supla_abstract_common_channel_properties::set_user_config(
       get_real_config_type(config_type), config_size, config);
+}
+
+unsigned char supla_client_channel::get_protocol_version(void) {
+  supla_client_channels *channels =
+      dynamic_cast<supla_client_channels *>(getContainer());
+  if (channels && channels->getClient() &&
+      channels->getClient()->get_connection()) {
+    return channels->getClient()->get_connection()->get_protocol_version();
+  }
+
+  return 0;
 }

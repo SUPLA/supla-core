@@ -39,7 +39,7 @@ TEST_F(GetEmValueCommandTest, noData) {
 }
 
 TEST_F(GetEmValueCommandTest, getEmValueWithSuccess) {
-  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
 
   em_ev.measured_values = 0xFFFF;
   em_ev.m_count = 1;

@@ -62,6 +62,7 @@ class supla_mqtt_client_suite {
   void beforeChannelFunctionChange(int UserID, int ChannelID);
   void beforeDeviceDelete(int UserID, int DeviceID);
   void onDeviceDeleted(int UserID, int DeviceID);
+  void onChannelDeleted(int UserID, int DeviceID, int ChannelId);
   void onActionsTriggered(int UserID, int DeviceID, int ChannelID,
                           unsigned int Actions);
 };

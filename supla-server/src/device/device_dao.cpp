@@ -670,7 +670,7 @@ bool supla_device_dao::set_device_config(
 
       pbind[2].buffer_type = MYSQL_TYPE_STRING;
       pbind[2].buffer = (char *)user_config_str;
-      pbind[2].buffer_length = strnlen(user_config_str, 4096);
+      pbind[2].buffer_length = strnlen(user_config_str, 8192);
 
       pbind[3].buffer_type = MYSQL_TYPE_STRING;
       pbind[3].buffer = (char *)user_config_md5sum.c_str();
@@ -753,7 +753,7 @@ device_json_config *supla_device_dao::get_device_config(
   pbind.buffer = (char *)&device_id;
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
-    char user_config[4097] = {};
+    char user_config[8193] = {};
     char user_config_md5[33] = {};
     char properties[2049] = {};
     char properties_md5[33] = {};
@@ -883,7 +883,7 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
     unsigned long text_param2_size = 0;
     unsigned long text_param3_size = 0;
 
-    char user_config[4097] = {};
+    char user_config[8193] = {};
     char properties[2049] = {};
 
     unsigned long user_config_size = 0;
@@ -1143,7 +1143,7 @@ supla_json_config *supla_device_dao::get_channel_config(
   pbind.buffer = (char *)&channel_id;
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
-    char user_config[4097] = {};
+    char user_config[8193] = {};
     char user_config_md5[33] = {};
 
     char properties[2049] = {};
@@ -1266,7 +1266,7 @@ bool supla_device_dao::set_channel_config(int user_id, int channel_id,
 
       pbind[2].buffer_type = MYSQL_TYPE_STRING;
       pbind[2].buffer = (char *)user_config_str;
-      pbind[2].buffer_length = strnlen(user_config_str, 4096);
+      pbind[2].buffer_length = strnlen(user_config_str, 8192);
 
       pbind[3].buffer_type = MYSQL_TYPE_STRING;
       pbind[3].buffer = (char *)user_config_md5sum.c_str();
@@ -1274,7 +1274,7 @@ bool supla_device_dao::set_channel_config(int user_id, int channel_id,
 
       pbind[4].buffer_type = MYSQL_TYPE_STRING;
       pbind[4].buffer = (char *)properties_str;
-      pbind[4].buffer_length = strnlen(properties_str, 4096);
+      pbind[4].buffer_length = strnlen(properties_str, 8192);
 
       pbind[5].buffer_type = MYSQL_TYPE_STRING;
       pbind[5].buffer = (char *)properties_md5sum.c_str();
@@ -1571,6 +1571,93 @@ void supla_device_dao::update_channel_conflict_details(int device_id,
   const char sql[] = "CALL `supla_update_channel_conflict_details`(?, ?, ?)";
 
   if (dba->stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+}
+
+void supla_device_dao::update_device_pairing_result(int device_id,
+                                                    char *pairing_result) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  MYSQL_STMT *stmt = nullptr;
+  MYSQL_BIND pbind[2] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&device_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_STRING;
+
+  my_bool is_null = pairing_result == nullptr;
+  pbind[1].is_null = &is_null;
+
+  if (!is_null) {
+    pbind[1].buffer = pairing_result;
+    pbind[1].buffer_length = strnlen(pairing_result, 512);
+  }
+
+  const char sql[] = "CALL `supla_update_device_pairing_result`(?, ?)";
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+}
+
+void supla_device_dao::set_subdevice_details(int device_id,
+                                             TDS_SubdeviceDetails *details) {
+  if (!device_id || !details) {
+    return;
+  }
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  int subdevice_id = details->SubDeviceId;
+
+  MYSQL_STMT *stmt = nullptr;
+  MYSQL_BIND pbind[6] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&subdevice_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&device_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = details->Name;
+  pbind[2].buffer_length = strnlen(details->Name, sizeof(details->Name));
+
+  pbind[3].buffer_type = MYSQL_TYPE_STRING;
+  pbind[3].buffer = details->SoftVer;
+  pbind[3].buffer_length = strnlen(details->SoftVer, sizeof(details->SoftVer));
+
+  pbind[4].buffer_type = MYSQL_TYPE_STRING;
+  pbind[4].buffer = details->ProductCode;
+  pbind[4].buffer_length =
+      strnlen(details->ProductCode, sizeof(details->ProductCode));
+
+  pbind[5].buffer_type = MYSQL_TYPE_STRING;
+  pbind[5].buffer = details->SerialNumber;
+  pbind[5].buffer_length =
+      strnlen(details->SerialNumber, sizeof(details->SerialNumber));
+
+  const char sql[] = "CALL `supla_update_subdevice`(?, ?, ?, ?, ?, ?)";
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 6, true)) {
     if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
   }
 

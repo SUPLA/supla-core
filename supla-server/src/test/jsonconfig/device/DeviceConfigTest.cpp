@@ -86,7 +86,8 @@ TEST_F(DeviceConfigTest, allFields) {
                    SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE |
                    SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY |
-                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT;
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT |
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE;
 
   ((TDeviceConfig_StatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
       ->StatusLedType = SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF;
@@ -123,23 +124,28 @@ TEST_F(DeviceConfigTest, allFields) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenContent);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenOffDelayType);
+  ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
+
   device_json_config cfg;
   cfg.set_config(&sds_cfg);
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str,
-               "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":{\"level\":"
-               "24},\"buttonVolume\":100,\"userInterface\":{\"disabled\":false}"
-               ",\"automaticTimeSync\":true,\"homeScreen\":{\"offDelay\":123,"
-               "\"content\":\"TIME_DATE\"}}");
+  EXPECT_STREQ(
+      str,
+      "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":{\"level\":24},"
+      "\"buttonVolume\":100,\"userInterface\":{\"disabled\":false},"
+      "\"automaticTimeSync\":true,\"homeScreen\":{\"offDelay\":123,\"content\":"
+      "\"TIME_DATE\",\"offDelayType\":\"ALWAYS_ENABLED\"}}");
   free(str);
 
   str = cfg.get_properties();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str,
-               "{\"homeScreenContentAvailable\":[\"NONE\",\"TEMPERATURE\","
-               "\"TEMPERATURE_AND_HUMIDITY\",\"TIME\",\"TIME_DATE\","
-               "\"TEMPERATURE_TIME\",\"MAIN_AND_AUX_TEMPERATURE\"]}");
+  EXPECT_STREQ(
+      str,
+      "{\"homeScreenContentAvailable\":[\"NONE\",\"TEMPERATURE\",\"TEMPERATURE_"
+      "AND_HUMIDITY\",\"TIME\",\"TIME_DATE\",\"TEMPERATURE_TIME\",\"MAIN_AND_"
+      "AUX_TEMPERATURE\",\"MODE_OR_TEMPERATURE\"]}");
   free(str);
 }
 

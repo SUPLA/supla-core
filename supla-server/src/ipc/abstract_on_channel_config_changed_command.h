@@ -33,6 +33,7 @@
 #define CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE 0x80
 #define CONFIG_CHANGE_SCOPE_RELATIONS 0x100
 #define CONFIG_CHANGE_SCOPE_ALEXA_INTEGRATION_ENABLED 0x200
+#define CONFIG_CHANGE_SCOPE_OCR 0x400
 
 class supla_abstract_on_channel_config_changed_command
     : public supla_abstract_ipc_command {

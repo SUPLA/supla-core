@@ -20,6 +20,7 @@
 #define CHANNEL_EXTENDED_VALUE_H_
 
 #include <stddef.h>
+
 #include <map>
 #include <string>
 
@@ -50,6 +51,8 @@ class supla_channel_extended_value {
   virtual size_t get_value_size(void);
   virtual bool is_differ(supla_channel_extended_value *value);
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
+  virtual bool get_raw_value(TSuplaChannelExtendedValue *value,
+                             unsigned char protocol_version);
   virtual void get_value(char *buffer);
   virtual std::map<std::string, std::string> get_replacement_map(void);
 };

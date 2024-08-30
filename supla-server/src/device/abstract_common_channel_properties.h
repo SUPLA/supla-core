@@ -37,19 +37,7 @@ class supla_abstract_common_channel_properties {
                     int channel_id, int parent_id, short relation_type);
 
  protected:
-  virtual int get_id(void) = 0;
-  virtual int get_device_id(void) = 0;
-  virtual int get_user_id(void) = 0;
-  virtual int get_type(void) = 0;
-  virtual int get_func(void) = 0;
-  virtual unsigned _supla_int64_t get_flags(void) = 0;
-  virtual int get_param1(void) = 0;
-  virtual int get_param2(void) = 0;
-  virtual int get_param3(void) = 0;
-  virtual int get_param4(void) = 0;
-  virtual supla_json_config *get_json_config(void) = 0;
-  virtual void set_json_config(supla_json_config *config) = 0;
-  virtual unsigned char get_channel_number(void) = 0;
+  virtual unsigned char get_protocol_version(void) = 0;
 
   virtual void for_each(
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
@@ -66,6 +54,21 @@ class supla_abstract_common_channel_properties {
  public:
   supla_abstract_common_channel_properties(void);
   virtual ~supla_abstract_common_channel_properties(void);
+
+  virtual int get_id(void) = 0;
+  virtual int get_device_id(void) = 0;
+  virtual int get_user_id(void) = 0;
+  virtual int get_type(void) = 0;
+  virtual int get_func(void) = 0;
+  virtual unsigned _supla_int64_t get_flags(void) = 0;
+  virtual int get_param1(void) = 0;
+  virtual int get_param2(void) = 0;
+  virtual int get_param3(void) = 0;
+  virtual int get_param4(void) = 0;
+  virtual supla_json_config *get_json_config(void) = 0;
+  virtual void set_json_config(supla_json_config *config) = 0;
+  virtual unsigned char get_channel_number(void) = 0;
+  virtual int get_channel_id(unsigned char number);
 
   std::vector<supla_channel_relation> get_channel_relations(
       e_relation_kind kind);

@@ -70,13 +70,14 @@ class supla_abstract_register_device
                        supla_abstract_device_dao *device_dao, int client_sd,
                        int client_ipv4, unsigned char activity_timeout);
 
-  virtual bool is_prev_entering_cfg_mode(void) = 0;
+  virtual int get_last_calcfg_command_importatnt_for_sleepers(void) = 0;
   virtual void on_registration_success(void) = 0;
   virtual void after_registration_success(void) = 0;
 
   supla_abstract_device_dao *get_device_dao(void);
   std::weak_ptr<supla_device> get_device(void);
   bool is_channel_added(void);
+  bool is_new_device(void);
   int get_device_id(void);
   int get_device_flags(void);
   int get_location_id(void);

@@ -20,19 +20,37 @@
 
 #include <limits.h>
 
+#include <vector>
+
 #include "device/extended_value/channel_em_extended_value.h"
 #include "srpc/srpc.h"
 
 using std::map;
 using std::string;
+using std::vector;
 
-const map<int, string> electricity_meter_config::var_map = {
+const map<int, string> electricity_meter_config::em_var_map = {
     {EM_VAR_FORWARD_ACTIVE_ENERGY, "forwardActiveEnergy"},
     {EM_VAR_REVERSE_ACTIVE_ENERGY, "reverseActiveEnergy"},
     {EM_VAR_FORWARD_REACTIVE_ENERGY, "forwardReactiveEnergy"},
     {EM_VAR_REVERSE_REACTIVE_ENERGY, "reverseReactiveEnergy"},
     {EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED, "forwardActiveEnergyBalanced"},
     {EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED, "reverseActiveEnergyBalanced"}};
+
+#define FIELD_USED_CT_TYPE 1
+#define FIELD_USED_PHASE_LED_TYPE 2
+#define FIELD_PHASE_LED_PARAM1 3
+#define FIELD_PHASE_LED_PARAM2 4
+#define FIELD_AVAILABLE_CT_TYPES 5
+#define FIELD_AVAILABLE_PHASE_LED_TYPES 6
+
+const map<unsigned _supla_int16_t, string> electricity_meter_config::field_map =
+    {{FIELD_USED_CT_TYPE, "usedCTType"},
+     {FIELD_USED_PHASE_LED_TYPE, "usedPhaseLedType"},
+     {FIELD_PHASE_LED_PARAM1, "phaseLedParam1"},
+     {FIELD_PHASE_LED_PARAM2, "phaseLedParam2"},
+     {FIELD_AVAILABLE_CT_TYPES, "availableCTTypes"},
+     {FIELD_AVAILABLE_PHASE_LED_TYPES, "availablePhaseLedTypes"}};
 
 // static
 const char electricity_meter_config::counters_available_key[] =
@@ -91,7 +109,7 @@ int electricity_meter_config::get_available_counters(void) {
   for (int a = 0; a < asize; a++) {
     cJSON *item = cJSON_GetArrayItem(available, a);
     if (item && cJSON_IsString(item)) {
-      for (auto it = var_map.cbegin(); it != var_map.cend(); ++it) {
+      for (auto it = em_var_map.cbegin(); it != em_var_map.cend(); ++it) {
         if (equal_ci(item, it->second.c_str())) {
           result |= it->first;
         }
@@ -118,7 +136,7 @@ bool electricity_meter_config::update_available_counters(int measured_values) {
 
   bool result = false;
 
-  for (auto it = var_map.cbegin(); it != var_map.cend(); ++it) {
+  for (auto it = em_var_map.cbegin(); it != em_var_map.cend(); ++it) {
     if ((measured_values & it->first) &&
         (available_counters & it->first) == 0) {
       if (!available) {
@@ -221,7 +239,7 @@ _supla_int64_t electricity_meter_config::get_initial_value(
     *initial_value_for_all_phases = true;
   }
 
-  if (var_map.find(var) == var_map.end() ||
+  if (em_var_map.find(var) == em_var_map.end() ||
       (get_available_counters() & var) == 0) {
     return 0;
   }
@@ -233,10 +251,10 @@ _supla_int64_t electricity_meter_config::get_initial_value(
 
   cJSON *initial_values = cJSON_GetObjectItem(root, em_initial_values_key);
   if (initial_values) {
-    auto it = var_map.find(var);
+    auto it = em_var_map.find(var);
 
     cJSON *initial_value = cJSON_GetObjectItem(
-        initial_values, it == var_map.end() ? nullptr : it->second.c_str());
+        initial_values, it == em_var_map.end() ? nullptr : it->second.c_str());
     if (initial_value) {
       if (cJSON_IsObject(initial_value)) {
         if (initial_value_for_all_phases) {
@@ -400,7 +418,7 @@ void electricity_meter_config::add_initial_value(
 }
 
 void electricity_meter_config::add_initial_values(
-    int flags, TElectricityMeter_ExtendedValue_V2 *em_ev) {
+    int flags, TElectricityMeter_ExtendedValue_V3 *em_ev) {
   if (!em_ev) {
     return;
   }
@@ -443,4 +461,212 @@ void electricity_meter_config::add_initial_value(
 
     *total_forward_active_energy += initial_value;
   }
+}
+
+string electricity_meter_config::ct_type_to_string(
+    unsigned _supla_int64_t type) {
+  switch (type) {
+    case EM_CT_TYPE_100A_33mA:
+      return "100A_33mA";
+    case EM_CT_TYPE_200A_66mA:
+      return "200A_66mA";
+    case EM_CT_TYPE_400A_133mA:
+      return "400A_133mA";
+  }
+
+  return "";
+}
+
+unsigned _supla_int64_t
+electricity_meter_config::string_to_ct_type(const std::string &str) {
+  if (str == "100A_33mA") {
+    return EM_CT_TYPE_100A_33mA;
+  } else if (str == "200A_66mA") {
+    return EM_CT_TYPE_200A_66mA;
+  } else if (str == "400A_133mA") {
+    return EM_CT_TYPE_400A_133mA;
+  }
+
+  return 0;
+}
+
+string electricity_meter_config::led_type_to_string(
+    unsigned _supla_int64_t type) {
+  switch (type) {
+    case EM_PHASE_LED_TYPE_OFF:
+      return "OFF";
+    case EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE:
+      return "VOLTAGE_PRESENCE";
+    case EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE_INVERTED:
+      return "VOLTAGE_PRESENCE_INVERTED";
+    case EM_PHASE_LED_TYPE_VOLTAGE_LEVEL:
+      return "VOLTAGE_LEVEL";
+    case EM_PHASE_LED_TYPE_POWER_ACTIVE_DIRECTION:
+      return "POWER_ACTIVE_DIRECTION";
+  }
+
+  return "";
+}
+
+unsigned _supla_int64_t
+electricity_meter_config::string_to_led_type(const std::string &str) {
+  if (str == "OFF") {
+    return EM_PHASE_LED_TYPE_OFF;
+  } else if (str == "VOLTAGE_PRESENCE") {
+    return EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE;
+  } else if (str == "VOLTAGE_PRESENCE_INVERTED") {
+    return EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE_INVERTED;
+  } else if (str == "VOLTAGE_LEVEL") {
+    return EM_PHASE_LED_TYPE_VOLTAGE_LEVEL;
+  } else if (str == "POWER_ACTIVE_DIRECTION") {
+    return EM_PHASE_LED_TYPE_POWER_ACTIVE_DIRECTION;
+  }
+
+  return 0;
+}
+
+void electricity_meter_config::set_config(
+    TChannelConfig_ElectricityMeter *config) {
+  if (!config) {
+    return;
+  }
+
+  cJSON *user_root = get_user_root();
+  if (!user_root) {
+    return;
+  }
+
+  cJSON *properties_root = get_properties_root();
+  if (!properties_root) {
+    return;
+  }
+
+  set_item_value(user_root, field_map.at(FIELD_USED_CT_TYPE).c_str(),
+                 cJSON_String, true, nullptr,
+                 ct_type_to_string(config->UsedCTType).c_str(), 0);
+
+  set_item_value(user_root, field_map.at(FIELD_USED_PHASE_LED_TYPE).c_str(),
+                 cJSON_String, true, nullptr,
+                 led_type_to_string(config->UsedPhaseLedType).c_str(), 0);
+
+  set_item_value(user_root, field_map.at(FIELD_PHASE_LED_PARAM1).c_str(),
+                 cJSON_Number, true, nullptr, nullptr, config->PhaseLedParam1);
+
+  set_item_value(user_root, field_map.at(FIELD_PHASE_LED_PARAM2).c_str(),
+                 cJSON_Number, true, nullptr, nullptr, config->PhaseLedParam2);
+
+  vector<unsigned _supla_int64_t> ct_types = {
+      EM_CT_TYPE_100A_33mA, EM_CT_TYPE_200A_66mA, EM_CT_TYPE_400A_133mA};
+  cJSON *ct_types_arr = cJSON_CreateArray();
+
+  for (auto it = ct_types.cbegin(); it != ct_types.cend(); ++it) {
+    if (config->AvailableCTTypes & (*it)) {
+      cJSON_AddItemToArray(ct_types_arr,
+                           cJSON_CreateString(ct_type_to_string(*it).c_str()));
+    }
+  }
+
+  set_item_value(properties_root,
+                 field_map.at(FIELD_AVAILABLE_CT_TYPES).c_str(), cJSON_Object,
+                 true, ct_types_arr, nullptr, 0);
+
+  vector<unsigned _supla_int64_t> led_types = {
+      EM_PHASE_LED_TYPE_OFF, EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE,
+      EM_PHASE_LED_TYPE_VOLTAGE_PRESENCE_INVERTED,
+      EM_PHASE_LED_TYPE_VOLTAGE_LEVEL,
+      EM_PHASE_LED_TYPE_POWER_ACTIVE_DIRECTION};
+  cJSON *led_types_arr = cJSON_CreateArray();
+
+  for (auto it = led_types.cbegin(); it != led_types.cend(); ++it) {
+    if (config->AvailablePhaseLedTypes & (*it)) {
+      cJSON_AddItemToArray(led_types_arr,
+                           cJSON_CreateString(led_type_to_string(*it).c_str()));
+    }
+  }
+
+  set_item_value(properties_root,
+                 field_map.at(FIELD_AVAILABLE_PHASE_LED_TYPES).c_str(),
+                 cJSON_Object, true, led_types_arr, nullptr, 0);
+}
+
+bool electricity_meter_config::get_config(
+    TChannelConfig_ElectricityMeter *config) {
+  if (!config) {
+    return false;
+  }
+
+  cJSON *user_root = get_user_root();
+  if (!user_root) {
+    return false;
+  }
+
+  *config = {};
+
+  cJSON *properties_root = get_properties_root();
+  if (!properties_root) {
+    return false;
+  }
+
+  bool result = false;
+
+  std::string str_value;
+  if (get_string(user_root, field_map.at(FIELD_USED_CT_TYPE).c_str(),
+                 &str_value)) {
+    config->UsedCTType = string_to_ct_type(str_value);
+    result = true;
+  }
+
+  if (get_string(user_root, field_map.at(FIELD_USED_PHASE_LED_TYPE).c_str(),
+                 &str_value)) {
+    config->UsedPhaseLedType = string_to_led_type(str_value);
+    result = true;
+  }
+
+  double dbl_value = 0;
+  if (get_double(user_root, field_map.at(FIELD_PHASE_LED_PARAM1).c_str(),
+                 &dbl_value)) {
+    config->PhaseLedParam1 = dbl_value;
+    result = true;
+  }
+
+  if (get_double(user_root, field_map.at(FIELD_PHASE_LED_PARAM2).c_str(),
+                 &dbl_value)) {
+    config->PhaseLedParam2 = dbl_value;
+    result = true;
+  }
+
+  for (char x = 0; x < 2; x++) {
+    cJSON *available = cJSON_GetObjectItem(
+        properties_root,
+        field_map
+            .at(x ? FIELD_AVAILABLE_CT_TYPES : FIELD_AVAILABLE_PHASE_LED_TYPES)
+            .c_str());
+
+    if (cJSON_IsArray(available)) {
+      result = true;
+      int asize = cJSON_GetArraySize(available);
+
+      for (int a = 0; a < asize; a++) {
+        cJSON *item = cJSON_GetArrayItem(available, a);
+        if (item && cJSON_IsString(item)) {
+          const char *str = cJSON_GetStringValue(item);
+          if (x) {
+            config->AvailableCTTypes |= string_to_ct_type(str);
+          } else {
+            config->AvailablePhaseLedTypes |= string_to_led_type(str);
+          }
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+void electricity_meter_config::merge(supla_json_config *_dst) {
+  electricity_meter_config dst(_dst);
+  supla_json_config::merge(get_user_root(), dst.get_user_root(), field_map,
+                           true);
+  supla_json_config::merge(get_properties_root(), dst.get_properties_root(),
+                           field_map, true);
 }
