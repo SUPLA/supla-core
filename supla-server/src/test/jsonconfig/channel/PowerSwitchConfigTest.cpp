@@ -71,12 +71,14 @@ TEST_F(PowerSwitchConfigTest, relatedMeterChannelId) {
 
     EXPECT_CALL(props1, for_each)
         .WillOnce(
-            [&props2](std::function<void(
+            [&props2](bool any_device,
+                      std::function<void(
                           supla_abstract_common_channel_properties *, bool *)>
                           on_channel_properties) {
               bool will_continue = true;
               on_channel_properties(&props2, &will_continue);
               EXPECT_FALSE(will_continue);
+              EXPECT_FALSE(any_device);
             });
   }
 

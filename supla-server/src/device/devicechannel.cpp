@@ -745,12 +745,28 @@ void supla_device_channel::set_extended_value(TSuplaChannelExtendedValue *ev) {
 }
 
 void supla_device_channel::for_each(
+    bool any_device,
     function<void(supla_abstract_common_channel_properties *, bool *)>
         on_channel_properties) {
   get_device()->get_channels()->for_each(
-      [&](supla_device_channel *channel, bool *will_continue) -> void {
+      [on_channel_properties](supla_device_channel *channel,
+                              bool *will_continue) -> void {
         on_channel_properties(channel, will_continue);
       });
+
+  if (any_device && get_user()) {
+    get_user()->get_devices()->for_each(
+        [this, on_channel_properties](shared_ptr<supla_device> device,
+                                      bool *will_continue) -> void {
+          if (device->get_id() != get_id()) {
+            device->get_channels()->for_each(
+                [on_channel_properties](supla_device_channel *channel,
+                                        bool *will_continue) -> void {
+                  on_channel_properties(channel, will_continue);
+                });
+          }
+        });
+  }
 }
 
 unsigned char supla_device_channel::get_protocol_version(void) {
