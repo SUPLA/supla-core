@@ -45,9 +45,10 @@ class CommonChannelPropertiesMock
   MOCK_METHOD0(get_json_config, supla_json_config *(void));
   MOCK_METHOD1(set_json_config, void(supla_json_config *));
   MOCK_METHOD0(get_channel_number, unsigned char());
-  MOCK_METHOD1(for_each,
-               void(std::function<
-                    void(supla_abstract_common_channel_properties *, bool *)>
+  MOCK_METHOD2(for_each,
+               void(bool any_device,
+                    std::function<void(
+                        supla_abstract_common_channel_properties *, bool *)>
                         on_channel_properties));
   MOCK_METHOD0(get_protocol_version, unsigned char());
 };

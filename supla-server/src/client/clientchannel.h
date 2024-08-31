@@ -70,6 +70,7 @@ class supla_client_channel : public supla_client_objcontainer_item,
                              int channel_id, TSC_SuplaChannelExtendedValue *cev,
                              unsigned char protocol_version);
   virtual void for_each(
+      bool any_device,
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties);
 

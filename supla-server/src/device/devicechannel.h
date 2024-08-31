@@ -78,6 +78,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   void set_extended_value(TSuplaChannelExtendedValue *ev,
                           supla_channel_extended_value *new_value);
   virtual void for_each(
+      bool any_device,
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties);
 

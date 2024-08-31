@@ -160,11 +160,13 @@ TEST_F(CommonChannelPropertiesTest,
 
   EXPECT_CALL(mock, for_each)
       .WillRepeatedly(
-          [&](std::function<void(supla_abstract_common_channel_properties *,
+          [&](bool any_device,
+              std::function<void(supla_abstract_common_channel_properties *,
                                  bool *)>
                   on_channel_properties) {
             bool will_continue = true;
             on_channel_properties(&related_props_mock, &will_continue);
+            EXPECT_FALSE(any_device);
           });
 
   vector<supla_channel_relation> rel1, rel2;
@@ -214,11 +216,13 @@ TEST_F(CommonChannelPropertiesTest,
 
   EXPECT_CALL(mock, for_each)
       .WillRepeatedly(
-          [&](std::function<void(supla_abstract_common_channel_properties *,
+          [&](bool any_device,
+              std::function<void(supla_abstract_common_channel_properties *,
                                  bool *)>
                   on_channel_properties) {
             bool will_continue = true;
             on_channel_properties(&related_props_mock, &will_continue);
+            EXPECT_FALSE(any_device);
           });
 
   vector<supla_channel_relation> rel1, rel2;
@@ -266,11 +270,13 @@ TEST_F(CommonChannelPropertiesTest,
 
   EXPECT_CALL(mock, for_each)
       .WillRepeatedly(
-          [&](std::function<void(supla_abstract_common_channel_properties *,
+          [&](bool any_device,
+              std::function<void(supla_abstract_common_channel_properties *,
                                  bool *)>
                   on_channel_properties) {
             bool will_continue = true;
             on_channel_properties(&related_props_mock, &will_continue);
+            EXPECT_FALSE(any_device);
           });
 
   vector<supla_channel_relation> rel1, rel2;
@@ -320,11 +326,13 @@ TEST_F(CommonChannelPropertiesTest,
 
   EXPECT_CALL(mock, for_each)
       .WillRepeatedly(
-          [&](std::function<void(supla_abstract_common_channel_properties *,
+          [&](bool any_device,
+              std::function<void(supla_abstract_common_channel_properties *,
                                  bool *)>
                   on_channel_properties) {
             bool will_continue = true;
             on_channel_properties(&related_props_mock, &will_continue);
+            EXPECT_FALSE(any_device);
           });
 
   vector<supla_channel_relation> rel1, rel2;
@@ -372,11 +380,13 @@ TEST_F(CommonChannelPropertiesTest,
 
   EXPECT_CALL(mock, for_each)
       .WillRepeatedly(
-          [&](std::function<void(supla_abstract_common_channel_properties *,
+          [&](bool any_device,
+              std::function<void(supla_abstract_common_channel_properties *,
                                  bool *)>
                   on_channel_properties) {
             bool will_continue = true;
             on_channel_properties(&related_props_mock, &will_continue);
+            EXPECT_FALSE(any_device);
           });
 
   vector<supla_channel_relation> rel1, rel2;
@@ -425,11 +435,13 @@ TEST_F(CommonChannelPropertiesTest,
 
   EXPECT_CALL(mock, for_each)
       .WillRepeatedly(
-          [&](std::function<void(supla_abstract_common_channel_properties *,
+          [&](bool any_device,
+              std::function<void(supla_abstract_common_channel_properties *,
                                  bool *)>
                   on_channel_properties) {
             bool will_continue = true;
             on_channel_properties(&related_props_mock, &will_continue);
+            EXPECT_FALSE(any_device);
           });
 
   vector<supla_channel_relation> rel1, rel2;

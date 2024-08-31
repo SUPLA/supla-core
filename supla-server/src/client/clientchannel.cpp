@@ -123,18 +123,19 @@ void supla_client_channel::after_all_channels_loaded(void) {
       }
 
       if (meter_channel_id) {
-        for_each([meter_channel_id, &Flags](
+        for_each(true,
+                 [meter_channel_id, &Flags](
                      supla_abstract_common_channel_properties *props,
                      bool *will_continue) -> void {
-          if (props->get_id() == meter_channel_id) {
-            int F = props->get_flags();
-            Flags |= F & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED;
-            Flags |= F & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
-            Flags |= F & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
+                   if (props->get_id() == meter_channel_id) {
+                     int F = props->get_flags();
+                     Flags |= F & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED;
+                     Flags |= F & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED;
+                     Flags |= F & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED;
 
-            *will_continue = false;
-          }
-        });
+                     *will_continue = false;
+                   }
+                 });
       }
     } break;
   }
@@ -587,12 +588,15 @@ bool supla_client_channel::get_basic_cfg(TSC_ChannelBasicCfg *basic_cfg) {
 }
 
 void supla_client_channel::for_each(
+    bool any_device,
     std::function<void(supla_abstract_common_channel_properties *, bool *)>
         on_channel_properties) {
   dynamic_cast<supla_client_channels *>(getContainer())
       ->for_each(
           [&](supla_client_channel *channel, bool *will_continue) -> void {
-            on_channel_properties(channel, will_continue);
+            if (any_device || get_device_id() == channel->get_device_id()) {
+              on_channel_properties(channel, will_continue);
+            }
           });
 }
 

@@ -40,6 +40,7 @@ class supla_abstract_common_channel_properties {
   virtual unsigned char get_protocol_version(void) = 0;
 
   virtual void for_each(
+      bool any_device,
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
           on_channel_properties) = 0;
 
