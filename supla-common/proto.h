@@ -845,7 +845,7 @@ typedef struct {
 #define SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL 10
 
 typedef struct {
-  unsigned char IsOn;  // DS: 0/1 (or 0..100 ?)
+  unsigned char IsOn;  // DS: 0/1 (for on/off) or 2..102 (for 0-100%)
   unsigned char Mode;  // SUPLA_HVAC_MODE_
   _supla_int16_t
       SetpointTemperatureHeat;  // * 0.01 Celcius degree - used for heating
@@ -3013,6 +3013,7 @@ typedef struct {
 #define SUPLA_HVAC_ALGORITHM_NOT_SET 0
 #define SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE (1ULL << 0)
 #define SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST (1ULL << 1)
+#define SUPLA_HVAC_ALGORITHM_PID (1ULL << 2)
 
 // HVAC channel validation rules for thermometers:
 // - MainThermometerChannelNo must be set
