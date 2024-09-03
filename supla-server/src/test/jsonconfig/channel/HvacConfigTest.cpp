@@ -86,7 +86,7 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"availableAlgorithms\":[\"ON_OFF_SETPOINT_MIDDLE\",\"ON_OFF_"
-               "SETPOINT_AT_MOST\"],\"temperatures\":{\"roomMin\":11,"
+               "SETPOINT_AT_MOST\",\"PID\"],\"temperatures\":{\"roomMin\":11,"
                "\"roomMax\":12,\"auxMin\":13,\"auxMax\":14,\"histeresisMin\":"
                "15,\"histeresisMax\":16,\"heatCoolOffsetMin\":17,"
                "\"heatCoolOffsetMax\":18},\"readOnlyConfigFields\":[],"
@@ -108,7 +108,8 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   }
 
   ds_hvac1.AvailableAlgorithms = SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE |
-                                 SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST;
+                                 SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST |
+                                 SUPLA_HVAC_ALGORITHM_PID;
 
   EXPECT_EQ(memcmp(&ds_hvac1, &ds_hvac2, sizeof(TChannelConfig_HVAC)), 0);
 

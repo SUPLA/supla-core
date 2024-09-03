@@ -144,6 +144,8 @@ string hvac_config::alg_to_string(unsigned _supla_int16_t alg) {
       return "ON_OFF_SETPOINT_MIDDLE";
     case SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST:
       return "ON_OFF_SETPOINT_AT_MOST";
+    case SUPLA_HVAC_ALGORITHM_PID:
+      return "PID";
   }
   return "";
 }
@@ -153,6 +155,8 @@ unsigned _supla_int16_t hvac_config::string_to_alg(const string &alg) {
     return SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_MIDDLE;
   } else if (alg == "ON_OFF_SETPOINT_AT_MOST") {
     return SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST;
+  } else if (alg == "PID") {
+    return SUPLA_HVAC_ALGORITHM_PID;
   }
 
   return 0;
@@ -365,6 +369,8 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
 
   add_algorithm_to_array(user_root, algs, config,
                          SUPLA_HVAC_ALGORITHM_ON_OFF_SETPOINT_AT_MOST);
+
+  add_algorithm_to_array(user_root, algs, config, SUPLA_HVAC_ALGORITHM_PID);
 
   set_item_value(user_root, field_map.at(FIELD_USED_ALGORITHM).c_str(),
                  cJSON_String, true, nullptr,
