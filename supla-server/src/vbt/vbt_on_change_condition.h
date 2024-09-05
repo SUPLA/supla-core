@@ -69,7 +69,11 @@ enum _vbt_var_name_e {
   var_name_cooling,
   var_name_heating_or_cooling,
   var_name_is_on,
-  var_name_is_any_error_set
+  var_name_is_any_error_set,
+  var_name_calibration_failed,
+  var_name_calibration_lost,
+  var_name_motor_problem,
+  var_name_calibration_in_progress
 };
 
 enum _vbt_operator_e { op_unknown, op_eq, op_ne, op_le, op_lt, op_gt, op_ge };
