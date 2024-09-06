@@ -678,7 +678,7 @@ bool supla_device_dao::set_device_config(
 
       pbind[4].buffer_type = MYSQL_TYPE_STRING;
       pbind[4].buffer = (char *)properties_str;
-      pbind[4].buffer_length = strnlen(properties_str, 2048);
+      pbind[4].buffer_length = strnlen(properties_str, 8192);
 
       pbind[5].buffer_type = MYSQL_TYPE_STRING;
       pbind[5].buffer = (char *)properties_md5sum.c_str();
@@ -755,7 +755,7 @@ device_json_config *supla_device_dao::get_device_config(
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
     char user_config[8193] = {};
     char user_config_md5[33] = {};
-    char properties[2049] = {};
+    char properties[8193] = {};
     char properties_md5[33] = {};
 
     unsigned long user_config_size = 0;
@@ -884,7 +884,7 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
     unsigned long text_param3_size = 0;
 
     char user_config[8193] = {};
-    char properties[2049] = {};
+    char properties[8193] = {};
 
     unsigned long user_config_size = 0;
     unsigned long properties_size = 0;
@@ -1078,7 +1078,7 @@ void supla_device_dao::set_channel_properties(int user_id, int channel_id,
 
   pbind[2].buffer_type = MYSQL_TYPE_STRING;
   pbind[2].buffer = (char *)properties;
-  pbind[2].buffer_length = strnlen(properties, 2049);
+  pbind[2].buffer_length = strnlen(properties, 8193);
 
   const char sql[] = "CALL `supla_update_channel_properties`(?, ?, ?)";
 
@@ -1146,7 +1146,7 @@ supla_json_config *supla_device_dao::get_channel_config(
     char user_config[8193] = {};
     char user_config_md5[33] = {};
 
-    char properties[2049] = {};
+    char properties[8193] = {};
     char properties_md5[33] = {};
 
     unsigned long user_config_size = 0;
