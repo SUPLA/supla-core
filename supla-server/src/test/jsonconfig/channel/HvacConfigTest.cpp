@@ -84,14 +84,15 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
 
   str = config1.get_properties();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"availableAlgorithms\":[\"ON_OFF_SETPOINT_MIDDLE\",\"ON_OFF_"
-               "SETPOINT_AT_MOST\",\"PID\"],\"temperatures\":{\"roomMin\":11,"
-               "\"roomMax\":12,\"auxMin\":13,\"auxMax\":14,\"histeresisMin\":"
-               "15,\"histeresisMax\":16,\"heatCoolOffsetMin\":17,"
-               "\"heatCoolOffsetMax\":18},\"readOnlyConfigFields\":[],"
-               "\"hiddenConfigFields\":[],\"readOnlyTempretureConfigFields\":[]"
-               ",\"hiddenTempretureConfigFields\":[]}");
+  EXPECT_STREQ(
+      str,
+      "{\"availableAlgorithms\":[\"ON_OFF_SETPOINT_MIDDLE\",\"ON_OFF_"
+      "SETPOINT_AT_MOST\",\"PID\"],\"temperatures\":{\"roomMin\":11,"
+      "\"roomMax\":12,\"auxMin\":13,\"auxMax\":14,\"histeresisMin\":"
+      "15,\"histeresisMax\":16,\"heatCoolOffsetMin\":17,"
+      "\"heatCoolOffsetMax\":18},\"readOnlyConfigFields\":[],"
+      "\"hiddenConfigFields\":[],\"readOnlyTemperatureConfigFields\":[]"
+      ",\"hiddenTemperatureConfigFields\":[]}");
 
   config2.set_properties(str);
   free(str);
@@ -180,11 +181,12 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
 
   str = config.get_properties();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"availableAlgorithms\":[],\"temperatures\":{"
-               "\"histeresisMax\":-28910},\"readOnlyConfigFields\":[],"
-               "\"hiddenConfigFields\":[],\"readOnlyTempretureConfigFields\":[]"
-               ",\"hiddenTempretureConfigFields\":[]}");
+  EXPECT_STREQ(
+      str,
+      "{\"availableAlgorithms\":[],\"temperatures\":{"
+      "\"histeresisMax\":-28910},\"readOnlyConfigFields\":[],"
+      "\"hiddenConfigFields\":[],\"readOnlyTemperatureConfigFields\":[]"
+      ",\"hiddenTemperatureConfigFields\":[]}");
 
   free(str);
 }
@@ -247,8 +249,8 @@ TEST_F(HvacConfigTest, merge) {
       "{\"1\":10,\"availableAlgorithms\":[],\"temperatures\":{"
       "\"heatCoolOffsetMin\":0,\"heatCoolOffsetMax\":19},"
       "\"hiddenConfigFields\":[\"antiFreezeAndOverheatProtectionEnabled\"],"
-      "\"readOnlyConfigFields\":[],\"hiddenTempretureConfigFields\":[],"
-      "\"readOnlyTempretureConfigFields\":[]}");
+      "\"readOnlyConfigFields\":[],\"hiddenTemperatureConfigFields\":[],"
+      "\"readOnlyTemperatureConfigFields\":[]}");
 
   free(str);
 }
@@ -366,10 +368,10 @@ TEST_F(HvacConfigTest, allParameterFlagsSet) {
       "\"useSeparateHeatCoolOutputs\",\"masterThermostatChannelNo\","
       "\"heatOrColdSourceSwitchChannelNo\",\"pumpSwitchChannelNo\","
       "\"temperatureSetpointChangeSwitchesToManualMode\"],"
-      "\"readOnlyTempretureConfigFields\":[\"freezeProtection\",\"eco\","
+      "\"readOnlyTemperatureConfigFields\":[\"freezeProtection\",\"eco\","
       "\"comfort\",\"boost\",\"heatProtection\",\"histeresis\",\"belowAlarm\","
       "\"aboveAlarm\",\"auxMinSetpoint\",\"auxMaxSetpoint\"],"
-      "\"hiddenTempretureConfigFields\":[\"freezeProtection\",\"eco\","
+      "\"hiddenTemperatureConfigFields\":[\"freezeProtection\",\"eco\","
       "\"comfort\",\"boost\",\"heatProtection\",\"histeresis\",\"belowAlarm\","
       "\"aboveAlarm\",\"auxMinSetpoint\",\"auxMaxSetpoint\"]}");
 

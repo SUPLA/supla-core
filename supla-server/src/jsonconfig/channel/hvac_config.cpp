@@ -69,9 +69,9 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_PUMP_SWITCH, "pumpSwitchChannelNo"},
     {FIELD_HIDDEN_CONFIG_FIELDS, "hiddenConfigFields"},
     {FIELD_READONLY_CONFIG_FIELDS, "readOnlyConfigFields"},
-    {FIELD_HIDDEN_TEMPERATURE_CONFIG_FIELDS, "hiddenTempretureConfigFields"},
+    {FIELD_HIDDEN_TEMPERATURE_CONFIG_FIELDS, "hiddenTemperatureConfigFields"},
     {FIELD_READONLY_TEMPERATURE_CONFIG_FIELDS,
-     "readOnlyTempretureConfigFields"}};
+     "readOnlyTemperatureConfigFields"}};
 
 const map<unsigned int, string> hvac_config::temperatures_map = {
     {TEMPERATURE_FREEZE_PROTECTION, "freezeProtection"},
