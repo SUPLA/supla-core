@@ -3828,7 +3828,7 @@ CREATE PROCEDURE `supla_update_device_pairing_result`(IN `_iodevice_id` INT, IN 
 DELIMITER ;;
 CREATE TABLE supla_subdevice (id INT NOT NULL, iodevice_id INT NOT NULL, reg_date DATETIME NOT NULL COMMENT '(DC2Type:utcdatetime)', updated_at DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', name VARCHAR(200) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, software_version VARCHAR(20) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, product_code VARCHAR(50) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, serial_number VARCHAR(50) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, INDEX IDX_698D8D2F125F95D6 (iodevice_id), PRIMARY KEY(id, iodevice_id)) DEFAULT CHARACTER SET utf8 COLLATE `utf8_unicode_ci` ENGINE = InnoDB;;
 ALTER TABLE supla_subdevice ADD CONSTRAINT FK_698D8D2F125F95D6 FOREIGN KEY (iodevice_id) REFERENCES supla_iodevice (id) ON DELETE CASCADE;;
-PROCEDURE `supla_update_subdevice` (IN `_id` INT, IN `_iodevice_id` INT, IN `_name` VARCHAR(200) CHARSET utf8mb4, IN `_software_version` VARCHAR(20) CHARSET utf8mb4, IN `_product_code` VARCHAR(50) CHARSET utf8mb4, IN `_serial_number` VARCHAR(50) CHARSET utf8mb4)   BEGIN
+CREATE PROCEDURE `supla_update_subdevice` (IN `_id` INT, IN `_iodevice_id` INT, IN `_name` VARCHAR(200) CHARSET utf8mb4, IN `_software_version` VARCHAR(20) CHARSET utf8mb4, IN `_product_code` VARCHAR(50) CHARSET utf8mb4, IN `_serial_number` VARCHAR(50) CHARSET utf8mb4)   BEGIN
 UPDATE supla_subdevice SET updated_at = UTC_TIMESTAMP()
 WHERE id = _id
        AND iodevice_id = _iodevice_id
