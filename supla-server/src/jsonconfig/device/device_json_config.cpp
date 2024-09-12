@@ -92,20 +92,12 @@ unsigned char device_json_config::string_to_status_led(
 }
 
 string device_json_config::power_status_led_to_string(unsigned char status) {
-  if (status == SUPLA_DEVCFG_POWER_STATUS_LED_ENABLED) {
-    return "ENABLED";
-  }
-
-  return "DISABLED";
+  return status ? "DISABLED" : "ENABLED";
 }
 
 unsigned char device_json_config::string_to_power_status_led(
     const std::string &status) {
-  if (status == "ENABLED") {
-    return SUPLA_DEVCFG_POWER_STATUS_LED_ENABLED;
-  }
-
-  return SUPLA_DEVCFG_POWER_STATUS_LED_DISABLED;
+  return status == "DISABLED" ? 1 : 0;
 }
 
 string device_json_config::home_screen_content_to_string(
@@ -144,13 +136,11 @@ void device_json_config::set_status_led(TDeviceConfig_StatusLed *status_led) {
 
 void device_json_config::set_power_status_led(
     TDeviceConfig_PowerStatusLed *status_led) {
-  if (status_led && status_led->PowerStatusLedType >= 0 &&
-      status_led->PowerStatusLedType <= 1) {
-    set_item_value(
-        get_user_root(),
-        field_map.at(SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED), cJSON_String,
-        true, nullptr,
-        power_status_led_to_string(status_led->PowerStatusLedType).c_str(), 0);
+  if (status_led && status_led->Disabled >= 0 && status_led->Disabled <= 1) {
+    set_item_value(get_user_root(),
+                   field_map.at(SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED),
+                   cJSON_String, true, nullptr,
+                   power_status_led_to_string(status_led->Disabled).c_str(), 0);
   }
 }
 
@@ -413,7 +403,7 @@ bool device_json_config::get_power_status_led(
           get_user_root(),
           field_map.at(SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED).c_str(),
           &str_value)) {
-    status_led->PowerStatusLedType = string_to_power_status_led(str_value);
+    status_led->Disabled = string_to_power_status_led(str_value);
     return true;
   }
   return false;

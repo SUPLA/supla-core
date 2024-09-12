@@ -2749,12 +2749,9 @@ typedef struct {
   unsigned char StatusLedType;  // SUPLA_DEVCFG_STATUS_LED_
 } TDeviceConfig_StatusLed;      // v. >= 21
 
-#define SUPLA_DEVCFG_POWER_STATUS_LED_ENABLED 0
-#define SUPLA_DEVCFG_POWER_STATUS_LED_DISABLED 1
-
 typedef struct {
-  unsigned char PowerStatusLedType;  // SUPLA_DEVCFG_POWER_STATUS_LED_
-} TDeviceConfig_PowerStatusLed;      // v. >= 25
+  unsigned char Disabled;        // 1 - true; 0 - false
+} TDeviceConfig_PowerStatusLed;  // v. >= 25
 
 typedef struct {
   unsigned char ScreenBrightness;  // 0-100%

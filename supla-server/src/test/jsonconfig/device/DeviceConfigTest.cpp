@@ -129,7 +129,7 @@ TEST_F(DeviceConfigTest, allFields) {
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   ((TDeviceConfig_PowerStatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
-      ->PowerStatusLedType = SUPLA_DEVCFG_POWER_STATUS_LED_ENABLED;
+      ->Disabled = 0;
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_PowerStatusLed);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
@@ -516,8 +516,7 @@ TEST_F(DeviceConfigTest, powerStatusLED) {
   cfg1.set_user_config("{\"powerStatusLed\": \"DISABLED\"}");
 
   EXPECT_TRUE(cfg1.get_power_status_led(&status_led));
-  EXPECT_EQ(status_led.PowerStatusLedType,
-            SUPLA_DEVCFG_POWER_STATUS_LED_DISABLED);
+  EXPECT_EQ(status_led.Disabled, 1);
 
   TSDS_SetDeviceConfig sds_config = {};
   cfg1.get_config(&sds_config, nullptr);
@@ -530,8 +529,7 @@ TEST_F(DeviceConfigTest, powerStatusLED) {
   cfg1.set_user_config("{\"powerStatusLed\": \"ENABLED\"}");
 
   EXPECT_TRUE(cfg1.get_power_status_led(&status_led));
-  EXPECT_EQ(status_led.PowerStatusLedType,
-            SUPLA_DEVCFG_POWER_STATUS_LED_ENABLED);
+  EXPECT_EQ(status_led.Disabled, 0);
 
   sds_config = {};
   cfg1.get_config(&sds_config, nullptr);
