@@ -565,7 +565,7 @@ jobject supla_channelelectricitymetervalue_to_jobject(
   jclass cls =
       env->FindClass("org/supla/android/lib/SuplaChannelElectricityMeterValue");
   jmethodID methodID =
-      env->GetMethodID(cls, "<init>", "(IIIILjava/lang/String;JJ)V");
+      env->GetMethodID(cls, "<init>", "(IIIIIIILjava/lang/String;JJ)V");
   jobject val = env->NewObject(
       cls, methodID, em_ev->measured_values, voltage_phase_angle_12,
       voltage_phase_angle_13, phase_sequence, em_ev->period, em_ev->total_cost,
