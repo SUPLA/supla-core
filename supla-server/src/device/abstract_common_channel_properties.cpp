@@ -178,7 +178,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
                       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
                       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
-                        add_relation(relations, props->get_id(), get_id(),
+                        add_relation(relations, get_id(), props->get_id(),
                                      CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
                         break;
                     }
@@ -300,7 +300,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                         case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
                           if (hvac.MainThermometerChannelNo ==
                               get_channel_number()) {
-                            add_relation(relations, get_id(), props->get_id(),
+                            add_relation(relations, props->get_id(), get_id(),
                                          CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
                           }
 
