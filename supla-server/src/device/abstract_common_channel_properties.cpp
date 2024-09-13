@@ -143,7 +143,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                     if (props->get_func() == SUPLA_CHANNELFNC_THERMOMETER ||
                         props->get_func() ==
                             SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE) {
-                      add_relation(relations, props->get_id(), get_id(),
+                      add_relation(relations, get_id(), props->get_id(),
                                    CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
                     }
 
@@ -326,7 +326,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                               hvac.MasterThermostatChannelNo ==
                                   get_channel_number()) {
                             add_relation(
-                                relations, get_id(), props->get_id(),
+                                relations, props->get_id(), get_id(),
                                 CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
                           }
                           break;
