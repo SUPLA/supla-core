@@ -206,7 +206,8 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                     find_pump_switch = false;
                   }
 
-                  *will_continue = find_main || find_aux;
+                  *will_continue = find_main || find_aux || find_master ||
+                                   find_heat_or_cool_source;
                 });
           }
           delete json_config;
