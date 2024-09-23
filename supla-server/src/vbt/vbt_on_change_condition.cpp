@@ -135,6 +135,9 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_calibration_lost, "calibration_lost"},
         {var_name_motor_problem, "motor_problem"},
         {var_name_calibration_in_progress, "calibration_in_progress"},
+        {var_name_is_battery_cover_open, "is_battery_cover_open"},
+        {var_name_thermometer_error, "thermometer_error"},
+        {var_name_clock_error, "clock_error"},
     };
 
     for (auto it = names.begin(); it != names.end(); ++it) {
@@ -360,6 +363,15 @@ bool supla_vbt_on_change_condition::get_number(supla_channel_value *value,
         break;
       case var_name_is_any_error_set:
         *result = hvac->is_any_error_set() ? 1 : 0;
+        break;
+      case var_name_is_battery_cover_open:
+        *result = hvac->is_battery_cover_open() ? 1 : 0;
+        break;
+      case var_name_thermometer_error:
+        *result = hvac->thermometer_error() ? 1 : 0;
+        break;
+      case var_name_clock_error:
+        *result = hvac->clock_error() ? 1 : 0;
         break;
       default:
         return false;

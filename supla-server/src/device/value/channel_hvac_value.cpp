@@ -149,9 +149,20 @@ unsigned short supla_channel_hvac_value::get_flags(void) {
   return ((THVACValue*)raw_value)->Flags;
 }
 
+bool supla_channel_hvac_value::is_battery_cover_open(void) {
+  return get_flags() & SUPLA_HVAC_VALUE_FLAG_BATTERY_COVER_OPEN;
+}
+
+bool supla_channel_hvac_value::clock_error(void) {
+  return get_flags() & SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR;
+}
+
+bool supla_channel_hvac_value::thermometer_error(void) {
+  return get_flags() & SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR;
+}
+
 bool supla_channel_hvac_value::is_any_error_set(void) {
-  return (get_flags() & SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR) ||
-         (get_flags() & SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR);
+  return thermometer_error() || clock_error() || is_battery_cover_open();
 }
 
 void supla_channel_hvac_value::set_setpoint_temperature_heat(

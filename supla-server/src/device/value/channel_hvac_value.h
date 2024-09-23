@@ -48,6 +48,9 @@ class supla_channel_hvac_value : public supla_channel_value {
   std::string get_alexa_mode(void);
   unsigned short get_flags(void);
   bool is_any_error_set(void);
+  bool is_battery_cover_open(void);
+  bool clock_error(void);
+  bool thermometer_error(void);
 
   void set_mode(unsigned char mode);
   void set_setpoint_temperature_heat(short temperature);
