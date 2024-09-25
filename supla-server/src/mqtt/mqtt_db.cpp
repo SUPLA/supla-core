@@ -86,11 +86,11 @@ typedef struct {
   unsigned long channel_text_param3_len;
   my_bool channel_text_param3_is_null;
 
-  char channel_properties[2049];
+  char channel_properties[8193];
   unsigned long channel_properties_len;
   my_bool channel_properties_is_null;
 
-  char channel_user_config[4097];
+  char channel_user_config[8193];
   unsigned long channel_user_config_len;
   my_bool channel_user_config_is_null;
 } _mqtt_db_channelquery_t;

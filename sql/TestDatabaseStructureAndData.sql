@@ -308,7 +308,8 @@ INSERT INTO `migration_versions` VALUES
 ('SuplaBundle\\Migrations\\Migration\\Version20240701141901','2024-07-02 22:29:05',49),
 ('SuplaBundle\\Migrations\\Migration\\Version20240802194013','2024-08-02 22:29:05',49),
 ('SuplaBundle\\Migrations\\Migration\\Version20240824185033','2024-08-25 12:12:05',49),
-('SuplaBundle\\Migrations\\Migration\\Version20240825110557','2024-08-25 12:12:05',49);
+('SuplaBundle\\Migrations\\Migration\\Version20240825110557','2024-08-25 12:12:05',49),
+('SuplaBundle\\Migrations\\Migration\\Version20240906073433','2024-09-06 16:46:05',49);
 /*!40000 ALTER TABLE `migration_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3828,15 +3829,14 @@ CREATE PROCEDURE `supla_update_device_pairing_result`(IN `_iodevice_id` INT, IN 
 DELIMITER ;;
 CREATE TABLE supla_subdevice (id INT NOT NULL, iodevice_id INT NOT NULL, reg_date DATETIME NOT NULL COMMENT '(DC2Type:utcdatetime)', updated_at DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', name VARCHAR(200) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, software_version VARCHAR(20) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, product_code VARCHAR(50) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, serial_number VARCHAR(50) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, INDEX IDX_698D8D2F125F95D6 (iodevice_id), PRIMARY KEY(id, iodevice_id)) DEFAULT CHARACTER SET utf8 COLLATE `utf8_unicode_ci` ENGINE = InnoDB;;
 ALTER TABLE supla_subdevice ADD CONSTRAINT FK_698D8D2F125F95D6 FOREIGN KEY (iodevice_id) REFERENCES supla_iodevice (id) ON DELETE CASCADE;;
-CREATE PROCEDURE `supla_update_subdevice`(IN `_id` INT, IN `_iodevice_id` INT, IN `_name` VARCHAR(200), IN `_software_version` VARCHAR(20), IN `_product_code` VARCHAR(50), IN `_serial_number` VARCHAR(50)) NOT DETERMINISTIC CONTAINS SQL SQL SECURITY DEFINER
-BEGIN
+CREATE PROCEDURE `supla_update_subdevice` (IN `_id` INT, IN `_iodevice_id` INT, IN `_name` VARCHAR(200) CHARSET utf8mb4, IN `_software_version` VARCHAR(20) CHARSET utf8mb4, IN `_product_code` VARCHAR(50) CHARSET utf8mb4, IN `_serial_number` VARCHAR(50) CHARSET utf8mb4)   BEGIN
 UPDATE supla_subdevice SET updated_at = UTC_TIMESTAMP()
 WHERE id = _id
        AND iodevice_id = _iodevice_id
-       AND (!(name <=> NULLIF(_name, ''))
-            OR !(software_version <=> NULLIF(_software_version, ''))
-            OR !(product_code <=> NULLIF(_product_code, ''))
-            OR !(serial_number <=> NULLIF(_serial_number, '')));
+       AND (!(name <=> NULLIF(_name, '') COLLATE utf8mb4_unicode_ci)
+            OR !(software_version <=> NULLIF(_software_version, '') COLLATE utf8mb4_unicode_ci)
+            OR !(product_code <=> NULLIF(_product_code, '') COLLATE utf8mb4_unicode_ci)
+            OR !(serial_number <=> NULLIF(_serial_number, '') COLLATE utf8mb4_unicode_ci));
 
 INSERT INTO supla_subdevice (id, iodevice_id, reg_date, name, software_version, product_code, serial_number)
 VALUES (_id, _iodevice_id, UTC_TIMESTAMP(), NULLIF(_name, ''), NULLIF(_software_version, ''), NULLIF(_product_code, ''), NULLIF(_serial_number, ''))

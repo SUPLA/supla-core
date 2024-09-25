@@ -81,6 +81,7 @@ TEST_F(DeviceConfigTest, screenBrightness) {
 TEST_F(DeviceConfigTest, allFields) {
   TSDS_SetDeviceConfig sds_cfg = {};
   sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
+                   SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED |
                    SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
                    SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
                    SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE |
@@ -127,16 +128,21 @@ TEST_F(DeviceConfigTest, allFields) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenOffDelayType);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
+  ((TDeviceConfig_PowerStatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->Disabled = 0;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_PowerStatusLed);
+  ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
+
   device_json_config cfg;
   cfg.set_config(&sds_cfg);
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":{\"level\":24},"
-      "\"buttonVolume\":100,\"userInterface\":{\"disabled\":false},"
-      "\"automaticTimeSync\":true,\"homeScreen\":{\"offDelay\":123,\"content\":"
-      "\"TIME_DATE\",\"offDelayType\":\"ALWAYS_ENABLED\"}}");
+  EXPECT_STREQ(str,
+               "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":{\"level\":"
+               "24},\"buttonVolume\":100,\"userInterface\":{\"disabled\":false}"
+               ",\"automaticTimeSync\":true,\"homeScreen\":{\"offDelay\":123,"
+               "\"content\":\"TIME_DATE\",\"offDelayType\":\"ALWAYS_ENABLED\"},"
+               "\"powerStatusLed\":\"ENABLED\"}");
   free(str);
 
   str = cfg.get_properties();
@@ -371,7 +377,7 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
       "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":{\"level\":24},"
       "\"buttonVolume\":100,\"userInterface\":{\"disabled\":true},"
       "\"automaticTimeSync\":true,\"homeScreen\":{\"offDelay\":123,\"content\":"
-      "\"TIME_DATE\"}}";
+      "\"TIME_DATE\"},\"powerStatusLed\":\"ENABLED\"}";
   cfg1.set_user_config(user_config);
 
   const char properties[] =
@@ -386,6 +392,7 @@ TEST_F(DeviceConfigTest, getConfig_AllFields) {
   EXPECT_EQ(fields_left, 0);
   EXPECT_EQ(sds_cfg.Fields,
             SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
+                SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED |
                 SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
                 SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
                 SUPLA_DEVICE_CONFIG_FIELD_DISABLE_USER_INTERFACE |
@@ -499,6 +506,37 @@ TEST_F(DeviceConfigTest, statusLED) {
   str = cfg2.get_user_config();
   ASSERT_TRUE(str != nullptr);
   EXPECT_STREQ(str, "{\"statusLed\":\"OFF_WHEN_CONNECTED\"}");
+  free(str);
+}
+
+TEST_F(DeviceConfigTest, powerStatusLED) {
+  TDeviceConfig_PowerStatusLed status_led = {};
+  device_json_config cfg1;
+  device_json_config cfg2;
+  cfg1.set_user_config("{\"powerStatusLed\": \"DISABLED\"}");
+
+  EXPECT_TRUE(cfg1.get_power_status_led(&status_led));
+  EXPECT_EQ(status_led.Disabled, 1);
+
+  TSDS_SetDeviceConfig sds_config = {};
+  cfg1.get_config(&sds_config, nullptr);
+  cfg2.set_config(&sds_config);
+  char *str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"powerStatusLed\":\"DISABLED\"}");
+  free(str);
+
+  cfg1.set_user_config("{\"powerStatusLed\": \"ENABLED\"}");
+
+  EXPECT_TRUE(cfg1.get_power_status_led(&status_led));
+  EXPECT_EQ(status_led.Disabled, 0);
+
+  sds_config = {};
+  cfg1.get_config(&sds_config, nullptr);
+  cfg2.set_config(&sds_config);
+  str = cfg2.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"powerStatusLed\":\"ENABLED\"}");
   free(str);
 }
 

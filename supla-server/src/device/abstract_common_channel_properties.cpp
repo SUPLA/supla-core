@@ -178,7 +178,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
                       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
                       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
-                        add_relation(relations, props->get_id(), get_id(),
+                        add_relation(relations, get_id(), props->get_id(),
                                      CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
                         break;
                     }
@@ -206,7 +206,9 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                     find_pump_switch = false;
                   }
 
-                  *will_continue = find_main || find_aux;
+                  *will_continue = find_main || find_aux || find_sensor ||
+                                   find_master || find_heat_or_cool_source ||
+                                   find_pump_switch;
                 });
           }
           delete json_config;
@@ -324,7 +326,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                               hvac.MasterThermostatChannelNo ==
                                   get_channel_number()) {
                             add_relation(
-                                relations, get_id(), props->get_id(),
+                                relations, props->get_id(), get_id(),
                                 CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
                           }
                           break;

@@ -18,6 +18,10 @@
 
 #include "OnChangeConditionTest.h"
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
@@ -29,6 +33,10 @@
 #include "device/value/channel_valve_value.h"
 #include "jsonconfig/json_config.h"
 #include "vbt/vbt_on_change_condition.h"
+
+using std::map;
+using std::string;
+using std::vector;
 
 namespace testing {
 
@@ -378,6 +386,54 @@ TEST_F(OnChangeConditionTest, onChangeTo_allPredictedVarNames) {
   cJSON_Delete(json);
 
   EXPECT_EQ(c.get_var_name(), var_name_is_any_error_set);
+
+  json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":1,\"name\":\"calibration_failed\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_calibration_failed);
+
+  json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":1,\"name\":\"calibration_lost\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_calibration_lost);
+
+  json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"motor_problem\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_motor_problem);
+
+  json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":1,\"name\":\"calibration_in_progress\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_calibration_in_progress);
+
+  json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":1,\"name\":\"is_battery_cover_open\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_is_battery_cover_open);
+
+  json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":1,\"name\":\"thermometer_error\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_thermometer_error);
+
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"clock_error\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_clock_error);
 }
 
 TEST_F(OnChangeConditionTest, onChange_allPredictedVarNames) {
@@ -640,6 +696,48 @@ TEST_F(OnChangeConditionTest, onChange_allPredictedVarNames) {
   cJSON_Delete(json);
 
   EXPECT_EQ(c.get_var_name(), var_name_is_any_error_set);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"calibration_failed\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_calibration_failed);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"calibration_lost\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_calibration_lost);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"motor_problem\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_motor_problem);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"calibration_in_progress\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_calibration_in_progress);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"is_battery_cover_open\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_is_battery_cover_open);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"thermometer_error\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_thermometer_error);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"clock_error\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_clock_error);
 }
 
 TEST_F(OnChangeConditionTest, boolValues) {
@@ -1899,33 +1997,107 @@ TEST_F(OnChangeConditionTest, isOnChanged) {
   EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
 }
 
-TEST_F(OnChangeConditionTest, anyErrorChanged) {
-  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
-  ((THVACValue *)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR;
+TEST_F(OnChangeConditionTest, anyErrorChanged_hvac) {
+  const vector<unsigned _supla_int16_t> flags = {
+      SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR,
+      SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR,
+      SUPLA_HVAC_VALUE_FLAG_BATTERY_COVER_OPEN};
 
-  supla_channel_hvac_value oldv, newv;
+  for (auto it = flags.cbegin(); it != flags.cend(); ++it) {
+    char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+    ((THVACValue *)raw_value)->Flags = *it;
 
-  supla_vbt_on_change_condition c;
+    supla_channel_hvac_value oldv, newv;
 
-  cJSON *json = cJSON_Parse("{\"on_change\":{\"name\":\"is_any_error_set\"}}");
-  c.apply_json_config(json);
-  cJSON_Delete(json);
+    supla_vbt_on_change_condition c;
 
-  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+    cJSON *json =
+        cJSON_Parse("{\"on_change\":{\"name\":\"is_any_error_set\"}}");
+    c.apply_json_config(json);
+    cJSON_Delete(json);
 
-  oldv.set_raw_value(raw_value);
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
 
-  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+    oldv.set_raw_value(raw_value);
 
-  newv.set_raw_value(raw_value);
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
 
-  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+    newv.set_raw_value(raw_value);
 
-  ((THVACValue *)raw_value)->Flags = 0;
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
 
-  newv.set_raw_value(raw_value);
+    ((THVACValue *)raw_value)->Flags = 0;
 
-  EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+    newv.set_raw_value(raw_value);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
+}
+
+TEST_F(OnChangeConditionTest, rollerShutterErrors) {
+  const map<_supla_int16_t, string> flag_map = {
+      {RS_VALUE_FLAG_CALIBRATION_FAILED, "calibration_failed"},
+      {RS_VALUE_FLAG_CALIBRATION_LOST, "calibration_lost"},
+      {RS_VALUE_FLAG_MOTOR_PROBLEM, "motor_problem"}};
+
+  for (auto it = flag_map.cbegin(); it != flag_map.cend(); ++it) {
+    char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+    supla_channel_rs_value oldv(raw_value);
+    supla_channel_rs_value newv(raw_value);
+
+    ((TDSC_RollerShutterValue *)raw_value)->flags = it->first;
+
+    supla_vbt_on_change_condition c;
+
+    cJSON *json =
+        cJSON_Parse("{\"on_change\":{\"name\":\"is_any_error_set\"}}");
+    c.apply_json_config(json);
+    cJSON_Delete(json);
+
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+
+    oldv.set_raw_value(raw_value);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+
+    newv.set_raw_value(raw_value);
+
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+
+    ((TDSC_RollerShutterValue *)raw_value)->flags = 0;
+
+    newv.set_raw_value(raw_value);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+
+    oldv.set_raw_value(raw_value);
+
+    string json_str = "{\"on_change\":{\"name\":\"";
+    json_str.append(it->second);
+    json_str.append("\"}}");
+
+    json = cJSON_Parse(json_str.c_str());
+    c.apply_json_config(json);
+    cJSON_Delete(json);
+
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+
+    ((TDSC_RollerShutterValue *)raw_value)->flags = it->first;
+
+    oldv.set_raw_value(raw_value);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+
+    newv.set_raw_value(raw_value);
+
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+
+    ((TDSC_RollerShutterValue *)raw_value)->flags = 0;
+
+    newv.set_raw_value(raw_value);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
 }
 
 }  // namespace testing

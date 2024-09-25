@@ -39,10 +39,13 @@ class device_json_config : public supla_json_config {
 
   std::string status_led_to_string(unsigned char status);
   unsigned char string_to_status_led(const std::string &status);
+  std::string power_status_led_to_string(unsigned char status);
+  unsigned char string_to_power_status_led(const std::string &status);
   std::string home_screen_content_to_string(unsigned char status);
   unsigned char string_to_home_screen_content(const std::string &status);
 
   void set_status_led(TDeviceConfig_StatusLed *status_led);
+  void set_power_status_led(TDeviceConfig_PowerStatusLed *status_led);
   void set_screen_brightness(TDeviceConfig_ScreenBrightness *brightness);
   void set_button_volume(TDeviceConfig_ButtonVolume *volume);
   void set_user_interface_disabled(
@@ -75,6 +78,7 @@ class device_json_config : public supla_json_config {
   bool get_automatic_time_sync(TDeviceConfig_AutomaticTimeSync *time_sync);
   bool get_home_screen_off_delay(TDeviceConfig_HomeScreenOffDelay *delay);
   bool get_status_led(TDeviceConfig_StatusLed *status_led);
+  bool get_power_status_led(TDeviceConfig_PowerStatusLed *status_led);
   bool get_home_screen_content(TDeviceConfig_HomeScreenContent *content);
   bool get_home_screen_off_delay_type(
       TDeviceConfig_HomeScreenOffDelayType *type);

@@ -130,7 +130,15 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_cooling, "cooling"},
         {var_name_heating_or_cooling, "heating_or_cooling"},
         {var_name_is_on, "is_on"},
-        {var_name_is_any_error_set, "is_any_error_set"}};
+        {var_name_is_any_error_set, "is_any_error_set"},
+        {var_name_calibration_failed, "calibration_failed"},
+        {var_name_calibration_lost, "calibration_lost"},
+        {var_name_motor_problem, "motor_problem"},
+        {var_name_calibration_in_progress, "calibration_in_progress"},
+        {var_name_is_battery_cover_open, "is_battery_cover_open"},
+        {var_name_thermometer_error, "thermometer_error"},
+        {var_name_clock_error, "clock_error"},
+    };
 
     for (auto it = names.begin(); it != names.end(); ++it) {
       if (it->second == cJSON_GetStringValue(name_json)) {
@@ -241,8 +249,41 @@ bool supla_vbt_on_change_condition::get_number(supla_channel_value *value,
   }
 
   if (dynamic_cast<supla_channel_rs_value *>(value)) {
-    *result =
-        dynamic_cast<supla_channel_rs_value *>(value)->get_rs_value()->position;
+    supla_channel_rs_value *rs = dynamic_cast<supla_channel_rs_value *>(value);
+
+    switch (var_name) {
+      case var_name_calibration_failed:
+        *result = rs->get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_FAILED
+                      ? 1
+                      : 0;
+        break;
+      case var_name_calibration_lost:
+        *result =
+            rs->get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_LOST ? 1 : 0;
+        break;
+      case var_name_motor_problem:
+        *result =
+            rs->get_rs_value()->flags & RS_VALUE_FLAG_MOTOR_PROBLEM ? 1 : 0;
+        break;
+      case var_name_calibration_in_progress:
+        *result =
+            rs->get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS
+                ? 1
+                : 0;
+        break;
+      case var_name_is_any_error_set:
+        *result =
+            ((rs->get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_FAILED) ||
+             (rs->get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_LOST) ||
+             (rs->get_rs_value()->flags & RS_VALUE_FLAG_MOTOR_PROBLEM))
+                ? 1
+                : 0;
+        break;
+      default:
+        *result = rs->get_rs_value()->position;
+        break;
+    }
+
     return true;
   }
 
@@ -322,6 +363,15 @@ bool supla_vbt_on_change_condition::get_number(supla_channel_value *value,
         break;
       case var_name_is_any_error_set:
         *result = hvac->is_any_error_set() ? 1 : 0;
+        break;
+      case var_name_is_battery_cover_open:
+        *result = hvac->is_battery_cover_open() ? 1 : 0;
+        break;
+      case var_name_thermometer_error:
+        *result = hvac->thermometer_error() ? 1 : 0;
+        break;
+      case var_name_clock_error:
+        *result = hvac->clock_error() ? 1 : 0;
         break;
       default:
         return false;

@@ -328,6 +328,14 @@ bool supla_client_channel::remote_update_is_possible(void) {
     }
   }
 
+  if (protocol_version >= 25) {
+    switch (Func) {
+      case SUPLA_CHANNELFNC_PUMPSWITCH:
+      case SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH:
+        return true;
+    }
+  }
+
   return Type == SUPLA_CHANNELTYPE_BRIDGE && Func == 0;
 }
 

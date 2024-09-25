@@ -31,7 +31,8 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
     {SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC, "automaticTimeSync"},
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY, "offDelay"},
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT, "content"},
-    {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE, "offDelayType"}};
+    {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE, "offDelayType"},
+    {SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED, "powerStatusLed"}};
 
 const map<unsigned _supla_int16_t, string>
     device_json_config::home_screen_content_map = {
@@ -90,6 +91,15 @@ unsigned char device_json_config::string_to_status_led(
   return SUPLA_DEVCFG_STATUS_LED_ON_WHEN_CONNECTED;
 }
 
+string device_json_config::power_status_led_to_string(unsigned char status) {
+  return status ? "DISABLED" : "ENABLED";
+}
+
+unsigned char device_json_config::string_to_power_status_led(
+    const std::string &status) {
+  return status == "DISABLED" ? 1 : 0;
+}
+
 string device_json_config::home_screen_content_to_string(
     unsigned char content) {
   for (auto it = home_screen_content_map.cbegin();
@@ -121,6 +131,16 @@ void device_json_config::set_status_led(TDeviceConfig_StatusLed *status_led) {
                    field_map.at(SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED),
                    cJSON_String, true, nullptr,
                    status_led_to_string(status_led->StatusLedType).c_str(), 0);
+  }
+}
+
+void device_json_config::set_power_status_led(
+    TDeviceConfig_PowerStatusLed *status_led) {
+  if (status_led && status_led->Disabled >= 0 && status_led->Disabled <= 1) {
+    set_item_value(get_user_root(),
+                   field_map.at(SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED),
+                   cJSON_String, true, nullptr,
+                   power_status_led_to_string(status_led->Disabled).c_str(), 0);
   }
 }
 
@@ -350,6 +370,12 @@ void device_json_config::set_config(TSDS_SetDeviceConfig *config) {
                 static_cast<TDeviceConfig_HomeScreenOffDelayType *>(ptr));
           }
           break;
+        case SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED:
+          if (left >= (size = sizeof(TDeviceConfig_PowerStatusLed))) {
+            set_power_status_led(
+                static_cast<TDeviceConfig_PowerStatusLed *>(ptr));
+          }
+          break;
       }
 
       offset += size;
@@ -364,6 +390,20 @@ bool device_json_config::get_status_led(TDeviceConfig_StatusLed *status_led) {
                  field_map.at(SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED).c_str(),
                  &str_value)) {
     status_led->StatusLedType = string_to_status_led(str_value);
+    return true;
+  }
+  return false;
+}
+
+bool device_json_config::get_power_status_led(
+    TDeviceConfig_PowerStatusLed *status_led) {
+  std::string str_value;
+  if (status_led &&
+      get_string(
+          get_user_root(),
+          field_map.at(SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED).c_str(),
+          &str_value)) {
+    status_led->Disabled = string_to_power_status_led(str_value);
     return true;
   }
   return false;
@@ -623,6 +663,11 @@ void device_json_config::get_config(TSDS_SetDeviceConfig *config,
               left >= (size = sizeof(TDeviceConfig_HomeScreenOffDelayType)) &&
               get_home_screen_off_delay_type(
                   static_cast<TDeviceConfig_HomeScreenOffDelayType *>(ptr));
+          break;
+        case SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED:
+          field_set = left >= (size = sizeof(TDeviceConfig_PowerStatusLed)) &&
+                      get_power_status_led(
+                          static_cast<TDeviceConfig_PowerStatusLed *>(ptr));
           break;
       }
 

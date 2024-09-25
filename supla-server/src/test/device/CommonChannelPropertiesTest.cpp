@@ -176,8 +176,8 @@ TEST_F(CommonChannelPropertiesTest,
   EXPECT_EQ(rel1.size(), 0);
 
   ASSERT_EQ(rel2.size(), 1);
-  EXPECT_EQ(rel2.at(0).get_id(), 5001);
-  EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
+  EXPECT_EQ(rel2.at(0).get_id(), 5000);
+  EXPECT_EQ(rel2.at(0).get_parent_id(), 5001);
   EXPECT_EQ(rel2.at(0).get_relation_type(),
             CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
 }
@@ -232,8 +232,8 @@ TEST_F(CommonChannelPropertiesTest,
   EXPECT_EQ(rel1.size(), 0);
 
   ASSERT_EQ(rel2.size(), 1);
-  EXPECT_EQ(rel2.at(0).get_id(), 5001);
-  EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
+  EXPECT_EQ(rel2.at(0).get_id(), 5000);
+  EXPECT_EQ(rel2.at(0).get_parent_id(), 5001);
   EXPECT_EQ(rel2.at(0).get_relation_type(),
             CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
 }

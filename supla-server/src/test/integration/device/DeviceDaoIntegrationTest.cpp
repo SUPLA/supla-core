@@ -21,7 +21,6 @@
 #include <string>
 
 #include "jsonconfig/channel/hvac_config.h"
-#include "log.h"
 
 using std::string;
 
@@ -227,8 +226,8 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
     EXPECT_STREQ(str,
                  "{\"availableAlgorithms\":[],\"temperatures\":{},"
                  "\"hiddenConfigFields\":[],\"readOnlyConfigFields\":[],"
-                 "\"hiddenTempretureConfigFields\":[],"
-                 "\"readOnlyTempretureConfigFields\":[]}");
+                 "\"hiddenTemperatureConfigFields\":[],"
+                 "\"readOnlyTemperatureConfigFields\":[]}");
     free(str);
   }
 
@@ -446,7 +445,7 @@ TEST_F(DeviceDaoIntegrationTest, subDevice) {
   sqlQuery(
       "SELECT name, software_version, product_code, serial_number FROM "
       "supla_subdevice WHERE id = 15 AND iodevice_id = 83 AND reg_date >= "
-      "UTC_TIMESTAMP() AND updated_at IS NULL",
+      "DATE_ADD(UTC_TIMESTAMP(), INTERVAL -1 SECOND) AND updated_at IS NULL",
       &result);
   EXPECT_EQ(result,
             "name\tsoftware_version\tproduct_code\tserial_"
@@ -466,18 +465,11 @@ TEST_F(DeviceDaoIntegrationTest, subDevice) {
   sqlQuery(
       "SELECT name, software_version, product_code, serial_number FROM "
       "supla_subdevice WHERE id = 15 AND iodevice_id = 83 AND updated_at >= "
-      "UTC_TIMESTAMP()",
+      "DATE_ADD(UTC_TIMESTAMP(), INTERVAL -1 SECOND)",
       &result);
   EXPECT_EQ(result,
             "name\tsoftware_version\tproduct_code\tserial_"
             "number\nNnaamme\tSV\tCoode\tSN\n");
-
-  result = "";
-  sqlQuery("SELECT *, UTC_TIMESTAMP() FROM supla_subdevice", &result);
-
-  // For some reason this test sometimes fails when run from Done. We need more
-  // information.
-  supla_log(LOG_DEBUG, "%s", result.c_str());
 
   result = "";
   sqlQuery(
