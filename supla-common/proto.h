@@ -3094,6 +3094,10 @@ typedef struct {
 #define SUPLA_HVAC_SUBFUNCTION_HEAT 1
 #define SUPLA_HVAC_SUBFUNCTION_COOL 2
 
+#define SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_NOT_SUPPORTED 0
+#define SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_ROOM_TEMPERATURE 1
+#define SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_AUX_HEATER_COOLER_TEMPERATURE 2
+
 typedef struct {
   unsigned _supla_int_t MainThermometerChannelNoReadonly : 1;
   unsigned _supla_int_t MainThermometerChannelNoHidden : 1;
@@ -3224,9 +3228,15 @@ typedef struct {
     };  // v. >= 25
   };
 
+  // TemperatureControlType allows to switch between work based on main
+  // thermometer (room) and aux thermometer (heater/cooler).
+  // Option is available only for SUPLA_CHANNELFNC_HVAC_THERMOSTAT
+  // If set to 0, then it is not supported.
+  unsigned char TemperatureControlType;  // SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_
+
   unsigned char Reserved[48 - sizeof(HvacParameterFlags) -
                          sizeof(_supla_int_t) - sizeof(_supla_int_t) -
-                         sizeof(_supla_int_t)];
+                         sizeof(_supla_int_t) - sizeof(unsigned char)];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
 
