@@ -403,6 +403,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_RAINSENSOR 3048             // ver. >= 8
 #define SUPLA_CHANNELTYPE_WEIGHTSENSOR 3050           // ver. >= 8
 #define SUPLA_CHANNELTYPE_WEATHER_STATION 3100        // ver. >= 8
+#define SUPLA_CHANNELTYPE_CONTAINER 3200              // ver. >= 26
 
 #define SUPLA_CHANNELTYPE_DIMMER 4000            // ver. >= 4
 #define SUPLA_CHANNELTYPE_RGBLEDCONTROLLER 4010  // ver. >= 4
@@ -493,6 +494,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR 950            // ver. >= 24
 #define SUPLA_CHANNELFNC_PUMPSWITCH 960                    // ver. >= 25
 #define SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH 970        // ver. >= 25
+#define SUPLA_CHANNELFNC_CONTAINER 980                     // ver. >= 26
+#define SUPLA_CHANNELFNC_CONTAINER_FILL_SENSOR 990         // ver. >= 26
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -570,6 +573,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_ERGO_ENERGIA 16
 #define SUPLA_MFR_SOMEF 17
 #define SUPLA_MFR_AURATON 18
+#define SUPLA_MFR_HPD 19
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
 #define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010          // ver. >= 17
@@ -2311,6 +2315,10 @@ typedef struct {
 } TCSD_Digiglass_NewValue;  // v. >= 14
 
 typedef struct {
+  unsigned char level;      // 0 - unknown; 1-101 - container fill level 0-100%
+} TContainerChannel_Value;  // v. >= 26
+
+typedef struct {
   unsigned char sec;        // 0-59
   unsigned char min;        // 0-59
   unsigned char hour;       // 0-24
@@ -2381,6 +2389,9 @@ typedef struct {
 // Histeresis value - i.e. heating will be enabled when current temperature
 // is histeresis/2 lower than current setpoint.
 #define TEMPERATURE_HISTERESIS (1ULL << 5)
+// AUX histeresis value - used to determine heating based on AUX temperature
+// If aux histeresis is missing, then TEMPERATURE_HISTERESIS is used
+#define TEMPERATURE_AUX_HISTERESIS (1ULL << 18)
 // Turns on "alarm" when temperature is below this value. Can be visual effect
 // or sound (if device is capable). It can also send AT to server (TBD)
 #define TEMPERATURE_BELOW_ALARM (1ULL << 6)
@@ -2411,7 +2422,7 @@ typedef struct {
 #define TEMPERATURE_HEAT_COOL_OFFSET_MIN (1ULL << 16)
 // Maximum temperature offset in HEAT_COOL mode
 #define TEMPERATURE_HEAT_COOL_OFFSET_MAX (1ULL << 17)
-// 6 values left for future use
+// 5 values left for future use (value << 18 is defined earlier)
 
 #define SUPLA_TEMPERATURE_INVALID_INT16 -32768
 
@@ -2981,7 +2992,7 @@ typedef struct {
 } TChannelConfig_TemperatureAndHumidity;  // v. >= 21
 
 // ChannelConfig for all binary sensors (all functions valid for
-// SUPLA_CHANNELTYPE_BINARYSENSOR)
+// SUPLA_CHANNELTYPE_BINARYSENSOR except Container Fill Sensor)
 // Device doesn't apply this inverted logic on communication towards server.
 // It is used only for interanal purposes and for other external interfaces
 // like MQTT
@@ -2994,6 +3005,20 @@ typedef struct {
   unsigned _supla_int16_t FilteringTimeMs;  // 0 - not used, > 0 - time in ms
   unsigned char Reserved[29];
 } TChannelConfig_BinarySensor;  // v. >= 21
+
+typedef struct {
+  unsigned char InvertedLogic;              // 0 - not inverted, 1 - inverted
+  unsigned _supla_int16_t FilteringTimeMs;  // 0 - not used, > 0 - time in ms
+  unsigned char FillLevel;  // 0 - unknown, 1-101 - fill level in 0-100 %
+  union {
+    _supla_int_t ContainerChannelId;
+    struct {
+      unsigned char ContainerIsSet;  // 0 - no; 1 - yes
+      unsigned char ContainerChannelNo;
+    };
+  };
+  unsigned char Reserved[24];
+} TChannelConfig_ContainerFillSensor;  // v. >= 26
 
 // Not set is set when there is no thermometer for "AUX" available
 // at all.
@@ -3072,7 +3097,7 @@ typedef struct {
 // TEMPERATURE_BOOST - has to be in Room Constrain
 // TEMPERATURE_HEAT_PROTECTION - has to be in Room Constrain when function
 //   is COOL or HEAT_COOL
-// TEMPERATURE_HISTERESIS - has to be
+// TEMPERATURE_HISTERESIS and TEMPERATURE_AUX_HISTERESIS - has to be
 //   TEMPERATURE_HISTERESIS_MIN <= t <= TEMPERATURE_HISTERESIS_MAX
 // TEMPERATURE_BELOW_ALARM - has to be in Room Constrain
 // TEMPERATURE_ABOVE_ALARM - has to be in Room Constrain
@@ -3152,7 +3177,9 @@ typedef struct {
   unsigned _supla_int_t HeatOrColdSourceSwitchHidden : 1;
   unsigned _supla_int_t PumpSwitchReadonly : 1;
   unsigned _supla_int_t PumpSwitchHidden : 1;
-  unsigned _supla_int_t Reserved : 12;
+  unsigned _supla_int_t TemperaturesAuxHisteresisReadonly : 1;
+  unsigned _supla_int_t TemperaturesAuxHisteresisHidden : 1;
+  unsigned _supla_int_t Reserved : 10;
 } HvacParameterFlags;
 
 typedef struct {
@@ -3401,6 +3428,27 @@ typedef struct {
 
   unsigned char Reserved[32];
 } TChannelConfig_ImpulseCounter;  // v. >= 25
+
+typedef struct {
+  signed char WarningLevel;  // 0 - not set
+                             // 1 to 101 - warning when level is >= than
+                             //            configured level 0-100%
+                             // -1 to -101 - warning when level is <= than
+                             //              configured level 0-100%
+  signed char AlarmLevel;    // 0 - not set
+                             // 1 to 101 - alarm when level is >= than
+                             //            configured level 0-100%
+                             // -1 to -101 - alarm when level is <= than
+                             //              configured level 0-100%
+
+  unsigned char VisualizationType;   // 0 - default, other values depends on
+                                     // Cloud and App support,
+                                     // 1 - septic tank
+                                     // 2 - rainwater tank
+                                     // 3 - coal container (tbd)
+                                     // 4 - salt container (tbd)
+  unsigned char Reserved[32];
+} TChannelConfig_Container;  // v. >= 25
 
 #define SUPLA_OCR_AUTHKEY_SIZE 33
 
