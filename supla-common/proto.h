@@ -2389,6 +2389,9 @@ typedef struct {
 // Histeresis value - i.e. heating will be enabled when current temperature
 // is histeresis/2 lower than current setpoint.
 #define TEMPERATURE_HISTERESIS (1ULL << 5)
+// AUX histeresis value - used to determine heating based on AUX temperature
+// If aux histeresis is missing, then TEMPERATURE_HISTERESIS is used
+#define TEMPERATURE_AUX_HISTERESIS (1ULL << 18)
 // Turns on "alarm" when temperature is below this value. Can be visual effect
 // or sound (if device is capable). It can also send AT to server (TBD)
 #define TEMPERATURE_BELOW_ALARM (1ULL << 6)
@@ -2419,7 +2422,7 @@ typedef struct {
 #define TEMPERATURE_HEAT_COOL_OFFSET_MIN (1ULL << 16)
 // Maximum temperature offset in HEAT_COOL mode
 #define TEMPERATURE_HEAT_COOL_OFFSET_MAX (1ULL << 17)
-// 6 values left for future use
+// 5 values left for future use (value << 18 is defined earlier)
 
 #define SUPLA_TEMPERATURE_INVALID_INT16 -32768
 
@@ -3094,7 +3097,7 @@ typedef struct {
 // TEMPERATURE_BOOST - has to be in Room Constrain
 // TEMPERATURE_HEAT_PROTECTION - has to be in Room Constrain when function
 //   is COOL or HEAT_COOL
-// TEMPERATURE_HISTERESIS - has to be
+// TEMPERATURE_HISTERESIS and TEMPERATURE_AUX_HISTERESIS - has to be
 //   TEMPERATURE_HISTERESIS_MIN <= t <= TEMPERATURE_HISTERESIS_MAX
 // TEMPERATURE_BELOW_ALARM - has to be in Room Constrain
 // TEMPERATURE_ABOVE_ALARM - has to be in Room Constrain
@@ -3174,7 +3177,9 @@ typedef struct {
   unsigned _supla_int_t HeatOrColdSourceSwitchHidden : 1;
   unsigned _supla_int_t PumpSwitchReadonly : 1;
   unsigned _supla_int_t PumpSwitchHidden : 1;
-  unsigned _supla_int_t Reserved : 12;
+  unsigned _supla_int_t TemperaturesAuxHisteresisReadonly : 1;
+  unsigned _supla_int_t TemperaturesAuxHisteresisHidden : 1;
+  unsigned _supla_int_t Reserved : 10;
 } HvacParameterFlags;
 
 typedef struct {
