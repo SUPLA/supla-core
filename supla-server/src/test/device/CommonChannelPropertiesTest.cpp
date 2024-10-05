@@ -26,7 +26,7 @@ namespace testing {
 
 using std::vector;
 
-TEST_F(CommonChannelPropertiesTest, append) {
+TEST_F(CommonChannelPropertiesTest, appendRelationList) {
   vector<supla_channel_relation> rel;
 
   rel.push_back(supla_channel_relation(10, 20, CHANNEL_RELATION_TYPE_METER));
@@ -55,7 +55,7 @@ TEST_F(CommonChannelPropertiesTest, append) {
             CHANNEL_RELATION_TYPE_OPENING_SENSOR);
 }
 
-TEST_F(CommonChannelPropertiesTest, duplicates) {
+TEST_F(CommonChannelPropertiesTest, preventingDuplicateRelations) {
   vector<supla_channel_relation> rel1, rel2;
 
   {
