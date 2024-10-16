@@ -456,4 +456,80 @@ TEST_F(CommonChannelPropertiesTest,
   EXPECT_EQ(rel2.at(0).get_relation_type(), CHANNEL_RELATION_TYPE_PUMP_SWITCH);
 }
 
+TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_OpeningSensor) {
+  vector<int> functions = {SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK,
+                           SUPLA_CHANNELFNC_CONTROLLINGTHEGATE,
+                           SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR,
+                           SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK,
+                           SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER,
+                           SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW};
+
+  for (auto it = functions.cbegin(); it != functions.cend(); ++it) {
+    CommonChannelPropertiesMock mock;
+
+    bool shutter = *it == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER ||
+                   *it == SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW;
+
+    EXPECT_CALL(mock, get_func).WillOnce(Return(*it));
+
+    EXPECT_CALL(mock, get_id).WillRepeatedly(Return(*it + 10));
+    EXPECT_CALL(mock, get_param2).WillOnce(Return(*it + 100));
+
+    if (!shutter) {
+      EXPECT_CALL(mock, get_param3).WillOnce(Return(*it + 200));
+    }
+
+    vector<supla_channel_relation> rel;
+    mock.get_channel_relations(&rel, relation_with_sub_channel);
+
+    EXPECT_EQ(rel.size(), shutter ? 1 : 2);
+
+    EXPECT_EQ(rel.at(0).get_id(), *it + 100);
+    EXPECT_EQ(rel.at(0).get_parent_id(), *it + 10);
+    EXPECT_EQ(rel.at(0).get_relation_type(),
+              CHANNEL_RELATION_TYPE_OPENING_SENSOR);
+
+    if (!shutter) {
+      EXPECT_EQ(rel.at(1).get_id(), *it + 200);
+      EXPECT_EQ(rel.at(1).get_parent_id(), *it + 10);
+      EXPECT_EQ(rel.at(1).get_relation_type(),
+                CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR);
+    }
+  }
+}
+
+TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_OpeningSensor) {
+  vector<int> functions = {SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY,
+                           SUPLA_CHANNELFNC_OPENINGSENSOR_GATE,
+                           SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR,
+                           SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR,
+                           SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER,
+                           SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW};
+
+  for (auto it = functions.cbegin(); it != functions.cend(); ++it) {
+    CommonChannelPropertiesMock mock;
+
+    EXPECT_CALL(mock, get_func).WillOnce(Return(*it));
+
+    EXPECT_CALL(mock, get_id).WillRepeatedly(Return(*it + 10));
+    EXPECT_CALL(mock, get_param1).WillOnce(Return(*it + 100));
+    EXPECT_CALL(mock, get_param2).WillOnce(Return(*it + 200));
+
+    vector<supla_channel_relation> rel;
+    mock.get_channel_relations(&rel, relation_with_parent_channel);
+
+    EXPECT_EQ(rel.size(), 2);
+
+    EXPECT_EQ(rel.at(0).get_id(), *it + 10);
+    EXPECT_EQ(rel.at(0).get_parent_id(), *it + 100);
+    EXPECT_EQ(rel.at(0).get_relation_type(),
+              CHANNEL_RELATION_TYPE_OPENING_SENSOR);
+
+    EXPECT_EQ(rel.at(1).get_id(), *it + 10);
+    EXPECT_EQ(rel.at(1).get_parent_id(), *it + 200);
+    EXPECT_EQ(rel.at(1).get_relation_type(),
+              CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR);
+  }
+}
+
 } /* namespace testing */
