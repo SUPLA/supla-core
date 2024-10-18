@@ -49,6 +49,8 @@ supla_cyclictasks_agent::supla_cyclictasks_agent() {
   add(new supla_auto_gate_closing());
   add(new supla_general_purpose_measurement_logger());
   add(new supla_general_purpose_meter_logger());
+
+  // Refreshing tokens at the end
   add(new supla_alexa_access_token_refresh_agent());
 
   this->sthread = nullptr;
