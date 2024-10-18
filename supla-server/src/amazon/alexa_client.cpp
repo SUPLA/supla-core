@@ -20,6 +20,7 @@
 
 #include <string.h>
 
+#include "alexa_access_token_refresh_agent.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_fb_value.h"
 #include "device/value/channel_hvac_value_with_temphum.h"
@@ -738,10 +739,7 @@ int supla_alexa_client::perform_post_request(const char *data) {
 
   if (http_result_code == 403 || http_result_code == 404 ||
       result == POST_RESULT_SKILL_DISABLED_EXCEPTION ||
-      result == POST_RESULT_SKILL_NOT_FOUND_EXCEPTION ||
-      ((result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION ||
-        http_result_code == 401) &&
-       get_credentials()->expires_in() <= -600)) {
+      result == POST_RESULT_SKILL_NOT_FOUND_EXCEPTION) {
     get_alexa_credentials()->remove();
     return result;
   }
