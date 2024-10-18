@@ -737,9 +737,7 @@ int supla_alexa_client::perform_post_request(const char *data) {
   // 403 Forbidden == SKILL_NEVER_ENABLED_EXCEPTION
   // 404 Not Found == SKILL_NOT_FOUND_EXCEPTION
 
-  if (http_result_code == 403 || http_result_code == 404 ||
-      result == POST_RESULT_SKILL_DISABLED_EXCEPTION ||
-      result == POST_RESULT_SKILL_NOT_FOUND_EXCEPTION) {
+  if (result == POST_RESULT_SKILL_DISABLED_EXCEPTION) {
     get_alexa_credentials()->remove();
     return result;
   }
