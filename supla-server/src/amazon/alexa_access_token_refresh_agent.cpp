@@ -33,7 +33,7 @@ supla_alexa_access_token_refresh_agent::
     ~supla_alexa_access_token_refresh_agent() {}
 
 unsigned int supla_alexa_access_token_refresh_agent::task_interval_sec(void) {
-  return 300;
+  return 60;
 }
 bool supla_alexa_access_token_refresh_agent::user_access_needed(void) {
   return true;
