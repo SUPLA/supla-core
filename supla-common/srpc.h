@@ -214,6 +214,7 @@ char SRPC_ICACHE_FLASH srpc_output_dataexists(void *_srpc);
 unsigned char SRPC_ICACHE_FLASH srpc_out_queue_item_count(void *srpc);
 
 char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc);
+char SRPC_ICACHE_FLASH srpc_iterate_device(void *_srpc);
 
 char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                                     unsigned _supla_int_t rr_id);
