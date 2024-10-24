@@ -104,7 +104,6 @@ class supla_alexa_client : public supla_voice_assistant_client {
   cJSON *get_unrechable_error_response(void);
   int perform_post_request(const char *data, int *http_result_code,
                            std::string *error_description);
-  void refresh_token(void);
   int perform_post_request(const char *data);
   bool send_report(cJSON *root);
 
@@ -116,6 +115,7 @@ class supla_alexa_client : public supla_voice_assistant_client {
                               const std::string &message_id,
                               const std::string &correlation_token);
   virtual ~supla_alexa_client(void);
+  void refresh_token(void);
   void set_cause_type(int cause_type);
   void set_cause_type(const supla_caller &caller);
 

@@ -570,6 +570,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_ERGO_ENERGIA 16
 #define SUPLA_MFR_SOMEF 17
 #define SUPLA_MFR_AURATON 18
+#define SUPLA_MFR_HPD 19
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
 #define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010          // ver. >= 17
@@ -2381,6 +2382,9 @@ typedef struct {
 // Histeresis value - i.e. heating will be enabled when current temperature
 // is histeresis/2 lower than current setpoint.
 #define TEMPERATURE_HISTERESIS (1ULL << 5)
+// AUX histeresis value - used to determine heating based on AUX temperature
+// If aux histeresis is missing, then TEMPERATURE_HISTERESIS is used
+#define TEMPERATURE_AUX_HISTERESIS (1ULL << 18)
 // Turns on "alarm" when temperature is below this value. Can be visual effect
 // or sound (if device is capable). It can also send AT to server (TBD)
 #define TEMPERATURE_BELOW_ALARM (1ULL << 6)
@@ -2411,7 +2415,7 @@ typedef struct {
 #define TEMPERATURE_HEAT_COOL_OFFSET_MIN (1ULL << 16)
 // Maximum temperature offset in HEAT_COOL mode
 #define TEMPERATURE_HEAT_COOL_OFFSET_MAX (1ULL << 17)
-// 6 values left for future use
+// 5 values left for future use (value << 18 is defined earlier)
 
 #define SUPLA_TEMPERATURE_INVALID_INT16 -32768
 
@@ -3072,7 +3076,7 @@ typedef struct {
 // TEMPERATURE_BOOST - has to be in Room Constrain
 // TEMPERATURE_HEAT_PROTECTION - has to be in Room Constrain when function
 //   is COOL or HEAT_COOL
-// TEMPERATURE_HISTERESIS - has to be
+// TEMPERATURE_HISTERESIS and TEMPERATURE_AUX_HISTERESIS - has to be
 //   TEMPERATURE_HISTERESIS_MIN <= t <= TEMPERATURE_HISTERESIS_MAX
 // TEMPERATURE_BELOW_ALARM - has to be in Room Constrain
 // TEMPERATURE_ABOVE_ALARM - has to be in Room Constrain
@@ -3093,6 +3097,10 @@ typedef struct {
 #define SUPLA_HVAC_SUBFUNCTION_NOT_SET 0
 #define SUPLA_HVAC_SUBFUNCTION_HEAT 1
 #define SUPLA_HVAC_SUBFUNCTION_COOL 2
+
+#define SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_NOT_SUPPORTED 0
+#define SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_ROOM_TEMPERATURE 1
+#define SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_AUX_HEATER_COOLER_TEMPERATURE 2
 
 typedef struct {
   unsigned _supla_int_t MainThermometerChannelNoReadonly : 1;
@@ -3148,7 +3156,9 @@ typedef struct {
   unsigned _supla_int_t HeatOrColdSourceSwitchHidden : 1;
   unsigned _supla_int_t PumpSwitchReadonly : 1;
   unsigned _supla_int_t PumpSwitchHidden : 1;
-  unsigned _supla_int_t Reserved : 12;
+  unsigned _supla_int_t TemperaturesAuxHisteresisReadonly : 1;
+  unsigned _supla_int_t TemperaturesAuxHisteresisHidden : 1;
+  unsigned _supla_int_t Reserved : 10;
 } HvacParameterFlags;
 
 typedef struct {
@@ -3224,9 +3234,15 @@ typedef struct {
     };  // v. >= 25
   };
 
+  // TemperatureControlType allows to switch between work based on main
+  // thermometer (room) and aux thermometer (heater/cooler).
+  // Option is available only for SUPLA_CHANNELFNC_HVAC_THERMOSTAT
+  // If set to 0, then it is not supported.
+  unsigned char TemperatureControlType;  // SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_
+
   unsigned char Reserved[48 - sizeof(HvacParameterFlags) -
                          sizeof(_supla_int_t) - sizeof(_supla_int_t) -
-                         sizeof(_supla_int_t)];
+                         sizeof(_supla_int_t) - sizeof(unsigned char)];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
 
