@@ -2386,7 +2386,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed_c(
     unsigned char offline, unsigned _supla_int_t validity_time_sec) {
   TDS_SuplaDeviceChannelValue_C ncsc;
   ncsc.ChannelNumber = channel_number;
-  ncsc.Offline = !!offline;
+  if (offline > 2) {
+    offline = 1;
+  }
+  ncsc.Offline = offline;
   ncsc.ValidityTimeSec = validity_time_sec;
   memcpy(ncsc.value, value, SUPLA_CHANNELVALUE_SIZE);
 
