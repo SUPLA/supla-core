@@ -16,15 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ALEXA_ACCESS_TOKEN_REFRESH_AGENT_H_
-#define ALEXA_ACCESS_TOKEN_REFRESH_AGENT_H_
+#ifndef ALEXA_ACCESS_TOKEN_REFRESH_CYCLICTASK_H_
+#define ALEXA_ACCESS_TOKEN_REFRESH_CYCLICTASK_H_
 
 #include <map>
 #include <vector>
 
 #include "cyclictasks/abstract_cyclictask.h"
 
-class supla_alexa_access_token_refresh_agent
+class supla_alexa_access_token_refresh_cyclictask
     : public supla_abstract_cyclictask {
  private:
   std::map<int, int> attempts;
@@ -39,8 +39,8 @@ class supla_alexa_access_token_refresh_agent
   virtual bool user_access_needed(void);
 
  public:
-  supla_alexa_access_token_refresh_agent();
-  virtual ~supla_alexa_access_token_refresh_agent();
+  supla_alexa_access_token_refresh_cyclictask();
+  virtual ~supla_alexa_access_token_refresh_cyclictask();
 };
 
-#endif /* ALEXA_ACCESS_TOKEN_REFRESH_AGENT_H_ */
+#endif /* ALEXA_ACCESS_TOKEN_REFRESH_CYCLICTASK_H_ */

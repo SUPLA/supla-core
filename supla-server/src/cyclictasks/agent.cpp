@@ -20,7 +20,7 @@
 
 #include <unistd.h>
 
-#include "amazon/alexa_access_token_refresh_agent.h"
+#include "amazon/alexa_access_token_refresh_cyclictask.h"
 #include "cyclictasks/auto_gate_closing.h"
 #include "datalogger/current_logger.h"
 #include "datalogger/general_purpose_measurement_logger.h"
@@ -51,7 +51,7 @@ supla_cyclictasks_agent::supla_cyclictasks_agent() {
   add(new supla_general_purpose_meter_logger());
 
   // Refreshing tokens at the end
-  add(new supla_alexa_access_token_refresh_agent());
+  add(new supla_alexa_access_token_refresh_cyclictask());
 
   this->sthread = nullptr;
   sthread_simple_run(loop, this, 0, &sthread);
