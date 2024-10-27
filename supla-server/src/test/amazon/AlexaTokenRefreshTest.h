@@ -23,16 +23,12 @@
 
 #include "asynctask/AsyncTaskTest.h"
 #include "doubles/amazon/AlexaCredentialsMock.h"
-#include "doubles/device/ChannelPropertyGetterMock.h"
-#include "doubles/http/CurlAdapterMock.h"
 
 namespace testing {
 
 class AlexaTokenRefreshTest : public AsyncTaskTest {
  protected:
   AlexaCredentialsMock credentials;
-  ChannelPropertyGetterMock *propertyGetter;
-  CurlAdapterMock *curlAdapter;
 
  public:
   virtual void SetUp(void);

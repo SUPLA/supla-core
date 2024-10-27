@@ -19,11 +19,13 @@
 #include "AmazonAlexaCredentialsDaoIntegrationTest.h"
 
 #include <string>
+#include <vector>
 
 #include "amazon/alexa_credentials_dao.h"
 #include "log.h"
 
 using std::string;
+using std::vector;
 
 namespace testing {
 
@@ -55,6 +57,25 @@ TEST_F(AmazonAlexaCredentialsDaoIntegrationTest, getCloudToken) {
   EXPECT_EQ(token1.compare(token1.length() - expected_suffix.length(),
                            expected_suffix.length(), expected_suffix),
             0);
+}
+
+TEST_F(AmazonAlexaCredentialsDaoIntegrationTest, getUsersWithCredentials) {
+  initTestDatabase();
+
+  string result;
+  sqlQuery("SELECT count(*) as count FROM supla_amazon_alexa", &result);
+
+  EXPECT_EQ(result, "count\n0\n");
+
+  runSqlScript("AddAlexaCredentialsForMultipleUsers.sql");
+
+  supla_amazon_alexa_credentials_dao dao(&dba);
+
+  vector<int> users = dao.get_users_with_credentials();
+  EXPECT_EQ(users.size(), 3);
+  EXPECT_EQ(users.at(0), 48);
+  EXPECT_EQ(users.at(1), 53);
+  EXPECT_EQ(users.at(2), 117);
 }
 
 } /* namespace testing */

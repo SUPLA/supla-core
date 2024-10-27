@@ -206,7 +206,36 @@ TEST_F(AuthkeyCacheTest, authkeyNullTest) {
   EXPECT_EQ(0, cache.get_size());
 
   EXPECT_TRUE(cache.authkey_auth(guid, email, authkey, &user_id,
-                                  []() -> bool { return true; }));
+                                 []() -> bool { return true; }));
+  EXPECT_EQ(1, cache.get_size());
+}
+
+TEST_F(AuthkeyCacheTest, emailWithCaseInsensitive) {
+  AuthkeyCacheStub cache;
+
+  char guid[SUPLA_GUID_SIZE] = {};
+  char email[SUPLA_EMAIL_MAXSIZE] = {};
+  char authkey[SUPLA_AUTHKEY_SIZE] = {};
+  int user_id = 10;
+
+  int db_auth_counter = 0;
+
+  snprintf(email, SUPLA_EMAIL_MAXSIZE, "%s", "abcd@efgh.pl");
+
+  EXPECT_TRUE(
+      cache.authkey_auth(guid, email, authkey, &user_id,
+                         [&db_auth_counter]() -> bool { return true; }));
+
+  EXPECT_EQ(1, cache.get_size());
+
+  user_id = 0;
+  snprintf(email, SUPLA_EMAIL_MAXSIZE, "%s", "aBcD@eFgh.pL");
+
+  EXPECT_TRUE(
+      cache.authkey_auth(guid, email, authkey, &user_id,
+                         [&db_auth_counter]() -> bool { return false; }));
+
+  EXPECT_EQ(10, user_id);
   EXPECT_EQ(1, cache.get_size());
 }
 

@@ -18,6 +18,7 @@
 
 #include "conn/authkey_cache.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -94,12 +95,18 @@ bool supla_authkey_cache::authkey_auth(const char guid[SUPLA_GUID_SIZE],
   int cache_size_limit = get_cache_size_limit();
 
   if (cache_size_limit > 0) {
+    char lc_email[SUPLA_EMAIL_MAXSIZE] = {};
+    unsigned short len = strnlen(email, SUPLA_EMAIL_MAXSIZE);
+    for (unsigned short a = 0; a < len; a++) {
+      lc_email[a] = tolower(email[a]);
+    }
+
     safe_array_lock(items);
 
     for (int a = 0; a < safe_array_count(items); a++) {
       authkey_cache_item_t *i =
           static_cast<authkey_cache_item_t *>(safe_array_get(items, a));
-      if (i && strncmp(i->email, email, SUPLA_EMAIL_MAXSIZE) == 0 &&
+      if (i && strncmp(i->email, lc_email, SUPLA_EMAIL_MAXSIZE) == 0 &&
           memcmp(i->guid, guid, SUPLA_GUID_SIZE) == 0 &&
           memcmp(i->authkey, authkey, SUPLA_AUTHKEY_SIZE) == 0) {
         bool result = i->result;
@@ -139,14 +146,14 @@ bool supla_authkey_cache::authkey_auth(const char guid[SUPLA_GUID_SIZE],
       memcpy(i->authkey, authkey, SUPLA_AUTHKEY_SIZE);
 
       if (i->email == NULL) {
-        i->email = strndup(email, SUPLA_EMAIL_MAXSIZE);
+        i->email = strndup(lc_email, SUPLA_EMAIL_MAXSIZE);
       } else {
-        int len1 = strnlen(email, SUPLA_EMAIL_MAXSIZE);
+        int len1 = strnlen(lc_email, SUPLA_EMAIL_MAXSIZE);
         int len2 = strnlen(i->email, SUPLA_EMAIL_MAXSIZE);
         if (len1 > len2) {
           i->email = (char *)realloc(i->email, len1 + 1);
         }
-        snprintf(i->email, len1 + 1, "%s", email);
+        snprintf(i->email, len1 + 1, "%s", lc_email);
       }
 
       i->result = result;

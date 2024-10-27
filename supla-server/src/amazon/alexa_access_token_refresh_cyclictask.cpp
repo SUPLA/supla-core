@@ -16,31 +16,49 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "alexa_access_token_refresh_agent.h"
+#include "alexa_access_token_refresh_cyclictask.h"
 
 #include <memory>
+#include <string>
 
 #include "alexa_client.h"
+#include "alexa_credentials_dao.h"
+#include "db/abstract_db_access_provider.h"
 #include "http/curl_adapter.h"
 #include "user/user.h"
 
 using std::string;
 using std::vector;
 
-supla_alexa_access_token_refresh_agent::supla_alexa_access_token_refresh_agent()
-    : supla_abstract_cyclictask() {}
+supla_alexa_access_token_refresh_cyclictask::
+    supla_alexa_access_token_refresh_cyclictask()
+    : supla_abstract_cyclictask() {
+  // Load all users who have credentials. If all user devices are offline and
+  // the server is restarted, there is a risk that the token will not refresh in
+  // time.
 
-supla_alexa_access_token_refresh_agent::
-    ~supla_alexa_access_token_refresh_agent() {}
+  supla_db_access_provider dba;
+  supla_amazon_alexa_credentials_dao dao(&dba);
 
-unsigned int supla_alexa_access_token_refresh_agent::task_interval_sec(void) {
+  vector<int> users = dao.get_users_with_credentials();
+  for (auto it = users.cbegin(); it != users.cend(); ++it) {
+    supla_user::find(*it, true);
+  }
+}
+
+supla_alexa_access_token_refresh_cyclictask::
+    ~supla_alexa_access_token_refresh_cyclictask() {}
+
+unsigned int supla_alexa_access_token_refresh_cyclictask::task_interval_sec(
+    void) {
   return 60;
 }
-bool supla_alexa_access_token_refresh_agent::user_access_needed(void) {
+bool supla_alexa_access_token_refresh_cyclictask::user_access_needed(void) {
   return true;
 }
 
-int supla_alexa_access_token_refresh_agent::get_attempt_count(int user_id) {
+int supla_alexa_access_token_refresh_cyclictask::get_attempt_count(
+    int user_id) {
   auto it = attempts.find(user_id);
   if (it != attempts.end()) {
     return it->second;
@@ -49,7 +67,7 @@ int supla_alexa_access_token_refresh_agent::get_attempt_count(int user_id) {
   return 0;
 }
 
-void supla_alexa_access_token_refresh_agent::inc_attempts(int user_id) {
+void supla_alexa_access_token_refresh_cyclictask::inc_attempts(int user_id) {
   auto it = attempts.find(user_id);
   if (it == attempts.end()) {
     attempts[user_id] = 1;
@@ -58,14 +76,14 @@ void supla_alexa_access_token_refresh_agent::inc_attempts(int user_id) {
   }
 }
 
-void supla_alexa_access_token_refresh_agent::erase_attempts(int user_id) {
+void supla_alexa_access_token_refresh_cyclictask::erase_attempts(int user_id) {
   auto it = attempts.find(user_id);
   if (it != attempts.end()) {
     attempts.erase(it);
   }
 }
 
-void supla_alexa_access_token_refresh_agent::run(
+void supla_alexa_access_token_refresh_cyclictask::run(
     const vector<supla_user *> *users, supla_abstract_db_access_provider *dba) {
   supla_curl_adapter curl_adapter;
 

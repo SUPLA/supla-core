@@ -20,7 +20,6 @@
 
 #include <string.h>
 
-#include "alexa_access_token_refresh_agent.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_fb_value.h"
 #include "device/value/channel_hvac_value_with_temphum.h"
