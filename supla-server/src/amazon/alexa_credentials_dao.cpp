@@ -23,6 +23,7 @@
 #include "log.h"
 
 using std::string;
+using std::vector;
 
 #define CLOUD_TOKEN_MAXSIZE 256
 #define ALEXA_TOKEN_MAXSIZE 1024
@@ -266,6 +267,52 @@ string supla_amazon_alexa_credentials_dao::get_cloud_access_token(int user_id) {
         result.append(access_token);
       }
     }
+    mysql_stmt_close(stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
+}
+
+vector<int> supla_amazon_alexa_credentials_dao::get_users_with_credentials(
+    void) {
+  vector<int> result;
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return result;
+  }
+
+  MYSQL_STMT *stmt = NULL;
+  const char sql[] =
+      "SELECT user_id FROM `supla_amazon_alexa` WHERE LENGTH(access_token) > 0 "
+      "ORDER BY user_id";
+
+  if (dba->stmt_execute((void **)&stmt, sql, nullptr, 0, true)) {
+    MYSQL_BIND rbind = {};
+
+    int user_id = 0;
+
+    rbind.buffer_type = MYSQL_TYPE_LONG;
+    rbind.buffer = (char *)&user_id;
+
+    if (mysql_stmt_bind_result(stmt, &rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0) {
+        while (!mysql_stmt_fetch(stmt)) {
+          result.push_back(user_id);
+        }
+      }
+    }
+
     mysql_stmt_close(stmt);
   }
 

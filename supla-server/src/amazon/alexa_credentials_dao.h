@@ -20,6 +20,7 @@
 #define AMAZON_ALEXA_CREDENTIALS_DAO_H_
 
 #include <string>
+#include <vector>
 
 #include "db/abstract_db_access_provider.h"
 
@@ -43,6 +44,7 @@ class supla_amazon_alexa_credentials_dao {
                    const std::string &refresh_token, int expires_in);
   virtual void remove(int user_id);
   virtual std::string get_cloud_access_token(int user_id);
+  virtual std::vector<int> get_users_with_credentials(void);
 };
 
 #endif /* AMAZON_ALEXA_CREDENTIALS_DAO_H_ */
