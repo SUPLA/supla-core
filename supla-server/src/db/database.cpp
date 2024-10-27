@@ -678,58 +678,53 @@ void database::get_client_channel_group_relations(
 bool database::superuser_authorization(
     int UserID, const char email[SUPLA_EMAIL_MAXSIZE],
     const char password[SUPLA_PASSWORD_MAXSIZE]) {
-  MYSQL_STMT *stmt = NULL;
+  if (!email || !password) {
+    return false;
+  }
 
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
+  char rw_email[SUPLA_EMAIL_MAXSIZE] = {};
+  memcpy(rw_email, email, SUPLA_EMAIL_MAXSIZE);
+
+  MYSQL_STMT *stmt = NULL;
+  MYSQL_BIND pbind[2] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&UserID;
 
+  pbind[1].buffer_type = MYSQL_TYPE_STRING;
+  pbind[1].buffer_length =
+      email == NULL ? 0 : strnlen(email, SUPLA_EMAIL_MAXSIZE);
+  pbind[1].buffer = rw_email;
+
   bool result = false;
 
   if (stmt_execute((void **)&stmt,
-                   "SELECT email, password FROM supla_user WHERE id = ?", pbind,
-                   1, true)) {
-    MYSQL_BIND rbind[2];
-    memset(rbind, 0, sizeof(rbind));
+                   "SELECT password FROM supla_user WHERE id = ? AND email = ?",
+                   pbind, 2, true)) {
+    MYSQL_BIND rbind = {};
 
-    char buffer_email[256];
-    unsigned long email_size = 0;
-    my_bool email_is_null = true;
+    char db_password[65];
+    unsigned long db_password_size = 0;
+    my_bool db_password_is_null = true;
 
-    char buffer_password[65];
-    unsigned long password_size = 0;
-    my_bool password_is_null = true;
+    rbind.buffer_type = MYSQL_TYPE_STRING;
+    rbind.buffer = db_password;
+    rbind.buffer_length = sizeof(db_password);
+    rbind.length = &db_password_size;
+    rbind.is_null = &db_password_is_null;
 
-    rbind[0].buffer_type = MYSQL_TYPE_STRING;
-    rbind[0].buffer = buffer_email;
-    rbind[0].buffer_length = sizeof(buffer_email);
-    rbind[0].length = &email_size;
-    rbind[0].is_null = &email_is_null;
-
-    rbind[1].buffer_type = MYSQL_TYPE_STRING;
-    rbind[1].buffer = buffer_password;
-    rbind[1].buffer_length = sizeof(buffer_password);
-    rbind[1].length = &password_size;
-    rbind[1].is_null = &password_is_null;
-
-    if (mysql_stmt_bind_result(stmt, rbind)) {
+    if (mysql_stmt_bind_result(stmt, &rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
     } else {
       mysql_stmt_store_result(stmt);
 
       if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt) &&
-          !email_is_null && !password_is_null &&
-          email_size < rbind[0].buffer_length &&
-          password_size < rbind[1].buffer_length) {
-        buffer_email[email_size] = 0;
-        buffer_password[password_size] = 0;
+          !db_password_is_null && db_password_size < rbind.buffer_length) {
+        db_password[db_password_size] = 0;
 
-        if (strncmp(email, buffer_email, email_size) == 0 &&
-            st_bcrypt_check(password, buffer_password, password_size) == 1) {
-          result = 1;
+        if (st_bcrypt_check(password, db_password, db_password_size) == 1) {
+          result = true;
         }
       }
     }
