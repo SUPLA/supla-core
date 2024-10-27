@@ -20,6 +20,7 @@
 #define ALEXA_ACCESS_TOKEN_REFRESH_AGENT_H_
 
 #include <map>
+#include <vector>
 
 #include "cyclictasks/abstract_cyclictask.h"
 
@@ -27,7 +28,7 @@ class supla_alexa_access_token_refresh_agent
     : public supla_abstract_cyclictask {
  private:
   std::map<int, int> attempts;
-  int get_attempt_count(int user_id) ;
+  int get_attempt_count(int user_id);
   void inc_attempts(int user_id);
   void erase_attempts(int user_id);
 

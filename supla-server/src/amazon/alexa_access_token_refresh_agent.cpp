@@ -19,6 +19,7 @@
 #include "alexa_access_token_refresh_agent.h"
 
 #include <memory>
+#include <string>
 
 #include "alexa_client.h"
 #include "http/curl_adapter.h"
