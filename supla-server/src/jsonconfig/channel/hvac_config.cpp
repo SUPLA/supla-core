@@ -91,7 +91,8 @@ const map<unsigned int, string> hvac_config::temperatures_map = {
     {TEMPERATURE_HISTERESIS_MIN, "histeresisMin"},
     {TEMPERATURE_HISTERESIS_MAX, "histeresisMax"},
     {TEMPERATURE_HEAT_COOL_OFFSET_MIN, "heatCoolOffsetMin"},
-    {TEMPERATURE_HEAT_COOL_OFFSET_MAX, "heatCoolOffsetMax"}};
+    {TEMPERATURE_HEAT_COOL_OFFSET_MAX, "heatCoolOffsetMax"},
+    {TEMPERATURE_AUX_HISTERESIS, "auxHisteresis"}};
 
 const unsigned int hvac_config::readonly_temperatures =
     TEMPERATURE_ROOM_MIN | TEMPERATURE_ROOM_MAX | TEMPERATURE_AUX_MIN |
@@ -718,6 +719,20 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
             temperatures_map.at(TEMPERATURE_HISTERESIS).c_str()));
   }
 
+  if (config->ParameterFlags.TemperaturesAuxHisteresisReadonly) {
+    cJSON_AddItemToArray(
+        temperature_readonly,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_AUX_HISTERESIS).c_str()));
+  }
+
+  if (config->ParameterFlags.TemperaturesAuxHisteresisHidden) {
+    cJSON_AddItemToArray(
+        temperature_hidden,
+        cJSON_CreateString(
+            temperatures_map.at(TEMPERATURE_AUX_HISTERESIS).c_str()));
+  }
+
   if (config->ParameterFlags.TemperaturesBelowAlarmReadonly) {
     cJSON_AddItemToArray(
         temperature_readonly,
@@ -1159,6 +1174,10 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
           config->ParameterFlags.TemperaturesHisteresisReadonly = 1;
         }
 
+        if (str == temperatures_map.at(TEMPERATURE_AUX_HISTERESIS)) {
+          config->ParameterFlags.TemperaturesAuxHisteresisReadonly = 1;
+        }
+
         if (str == temperatures_map.at(TEMPERATURE_BELOW_ALARM)) {
           config->ParameterFlags.TemperaturesBelowAlarmReadonly = 1;
         }
@@ -1215,6 +1234,10 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
 
         if (str == temperatures_map.at(TEMPERATURE_HISTERESIS)) {
           config->ParameterFlags.TemperaturesHisteresisHidden = 1;
+        }
+
+        if (str == temperatures_map.at(TEMPERATURE_AUX_HISTERESIS)) {
+          config->ParameterFlags.TemperaturesAuxHisteresisHidden = 1;
         }
 
         if (str == temperatures_map.at(TEMPERATURE_BELOW_ALARM)) {

@@ -76,7 +76,7 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
       "\"pumpSwitchChannelNo\":6,\"temperatures\":{\"freezeProtection\":1,"
       "\"eco\":2,\"comfort\":3,\"boost\":4,\"heatProtection\":5,\"histeresis\":"
       "6,\"belowAlarm\":7,\"aboveAlarm\":8,\"auxMinSetpoint\":9,"
-      "\"auxMaxSetpoint\":10}}");
+      "\"auxMaxSetpoint\":10,\"auxHisteresis\":19}}");
 
   hvac_config config2;
   config2.set_user_config(str);
@@ -329,6 +329,8 @@ TEST_F(HvacConfigTest, allParameterFlagsSet) {
   ds_hvac.ParameterFlags.TemperaturesHeatProtectionHidden = 1;
   ds_hvac.ParameterFlags.TemperaturesHisteresisReadonly = 1;
   ds_hvac.ParameterFlags.TemperaturesHisteresisHidden = 1;
+  ds_hvac.ParameterFlags.TemperaturesAuxHisteresisReadonly = 1;
+  ds_hvac.ParameterFlags.TemperaturesAuxHisteresisHidden = 1;
   ds_hvac.ParameterFlags.TemperaturesBelowAlarmReadonly = 1;
   ds_hvac.ParameterFlags.TemperaturesBelowAlarmHidden = 1;
   ds_hvac.ParameterFlags.TemperaturesAboveAlarmReadonly = 1;
@@ -369,11 +371,12 @@ TEST_F(HvacConfigTest, allParameterFlagsSet) {
       "\"heatOrColdSourceSwitchChannelNo\",\"pumpSwitchChannelNo\","
       "\"temperatureSetpointChangeSwitchesToManualMode\"],"
       "\"readOnlyTemperatureConfigFields\":[\"freezeProtection\",\"eco\","
-      "\"comfort\",\"boost\",\"heatProtection\",\"histeresis\",\"belowAlarm\","
-      "\"aboveAlarm\",\"auxMinSetpoint\",\"auxMaxSetpoint\"],"
-      "\"hiddenTemperatureConfigFields\":[\"freezeProtection\",\"eco\","
-      "\"comfort\",\"boost\",\"heatProtection\",\"histeresis\",\"belowAlarm\","
-      "\"aboveAlarm\",\"auxMinSetpoint\",\"auxMaxSetpoint\"]}");
+      "\"comfort\",\"boost\",\"heatProtection\",\"histeresis\","
+      "\"auxHisteresis\",\"belowAlarm\",\"aboveAlarm\",\"auxMinSetpoint\","
+      "\"auxMaxSetpoint\"],\"hiddenTemperatureConfigFields\":["
+      "\"freezeProtection\",\"eco\",\"comfort\",\"boost\",\"heatProtection\","
+      "\"histeresis\",\"auxHisteresis\",\"belowAlarm\",\"aboveAlarm\","
+      "\"auxMinSetpoint\",\"auxMaxSetpoint\"]}");
 
   free(str);
 }
