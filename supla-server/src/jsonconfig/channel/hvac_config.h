@@ -37,6 +37,9 @@ class hvac_config : public supla_json_config {
   std::string subfunction_to_string(unsigned char subfunction);
   unsigned char string_to_subfunction(const std::string &subfunction);
   std::string temperature_key_to_string(unsigned int temperature_key);
+  std::string temperature_control_type_to_string(unsigned char type);
+  unsigned char string_to_temperature_control_type(const std::string &type);
+
   void add_algorithm_to_array(cJSON *root, cJSON *algs,
                               TChannelConfig_HVAC *config,
                               unsigned _supla_int16_t alg);

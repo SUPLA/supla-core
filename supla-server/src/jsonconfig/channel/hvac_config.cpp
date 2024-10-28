@@ -40,11 +40,12 @@ using std::string;
 #define FIELD_MASTER_THERMOSTAT_CHANNEL_NO 16
 #define FIELD_HEAT_OR_COLD_SOURCE_SWITCH 17
 #define FIELD_PUMP_SWITCH 18
+#define FIELD_TEMPERATURE_CONTROL_TYPE 19
 
-#define FIELD_HIDDEN_CONFIG_FIELDS 19
-#define FIELD_READONLY_CONFIG_FIELDS 20
-#define FIELD_HIDDEN_TEMPERATURE_CONFIG_FIELDS 21
-#define FIELD_READONLY_TEMPERATURE_CONFIG_FIELDS 22
+#define FIELD_HIDDEN_CONFIG_FIELDS 20
+#define FIELD_READONLY_CONFIG_FIELDS 21
+#define FIELD_HIDDEN_TEMPERATURE_CONFIG_FIELDS 22
+#define FIELD_READONLY_TEMPERATURE_CONFIG_FIELDS 23
 
 const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_MAIN_THERMOMETER_CHANNEL_NO, "mainThermometerChannelNo"},
@@ -67,6 +68,7 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_MASTER_THERMOSTAT_CHANNEL_NO, "masterThermostatChannelNo"},
     {FIELD_HEAT_OR_COLD_SOURCE_SWITCH, "heatOrColdSourceSwitchChannelNo"},
     {FIELD_PUMP_SWITCH, "pumpSwitchChannelNo"},
+    {FIELD_TEMPERATURE_CONTROL_TYPE, "temperatureControlType"},
     {FIELD_HIDDEN_CONFIG_FIELDS, "hiddenConfigFields"},
     {FIELD_READONLY_CONFIG_FIELDS, "readOnlyConfigFields"},
     {FIELD_HIDDEN_TEMPERATURE_CONFIG_FIELDS, "hiddenTemperatureConfigFields"},
@@ -183,8 +185,7 @@ unsigned char hvac_config::string_to_subfunction(const string &subfunction) {
   return SUPLA_HVAC_SUBFUNCTION_NOT_SET;
 }
 
-std::string hvac_config::temperature_key_to_string(
-    unsigned int temperature_key) {
+string hvac_config::temperature_key_to_string(unsigned int temperature_key) {
   for (auto it = temperatures_map.cbegin(); it != temperatures_map.cend();
        ++it) {
     if (it->first == temperature_key) {
@@ -192,6 +193,28 @@ std::string hvac_config::temperature_key_to_string(
     }
   }
   return "";
+}
+
+string hvac_config::temperature_control_type_to_string(unsigned char type) {
+  switch (type) {
+    case SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_ROOM_TEMPERATURE:
+      return "ROOM_TEMPERATURE";
+    case SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_AUX_HEATER_COOLER_TEMPERATURE:
+      return "AUX_HEATER_COOLER_TEMPERATURE";
+  }
+
+  return "NOT_SUPPORTED";
+}
+
+unsigned char hvac_config::string_to_temperature_control_type(
+    const string &type) {
+  if (type == "ROOM_TEMPERATURE") {
+    return SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_ROOM_TEMPERATURE;
+  } else if (type == "AUX_HEATER_COOLER_TEMPERATURE") {
+    return SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_AUX_HEATER_COOLER_TEMPERATURE;
+  }
+
+  return SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_NOT_SUPPORTED;
 }
 
 void hvac_config::merge(supla_json_config *_dst) {
@@ -421,6 +444,13 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
       user_root, FIELD_PUMP_SWITCH,
       config->PumpSwitchIsSet ? config->PumpSwitchChannelNo : channel_number,
       channel_number);
+
+  set_item_value(
+      user_root, field_map.at(FIELD_TEMPERATURE_CONTROL_TYPE).c_str(),
+      cJSON_String, true, nullptr,
+      temperature_control_type_to_string(config->TemperatureControlType)
+          .c_str(),
+      0);
 
   set_temperatures(config, user_root, 0xFFFFFFFF ^ readonly_temperatures);
 
@@ -830,7 +860,7 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
     result = true;
   }
 
-  std::string str_value;
+  string str_value;
   if (get_string(user_root, field_map.at(FIELD_AUX_THERMOMETER_TYPE).c_str(),
                  &str_value)) {
     config->AuxThermometerType = string_to_aux_thermometer_type(str_value);
@@ -952,6 +982,14 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
     if (!is_null) {
       config->PumpSwitchIsSet = 1;
     }
+    result = true;
+  }
+
+  if (get_string(user_root,
+                 field_map.at(FIELD_TEMPERATURE_CONTROL_TYPE).c_str(),
+                 &str_value)) {
+    config->TemperatureControlType =
+        string_to_temperature_control_type(str_value);
     result = true;
   }
 
