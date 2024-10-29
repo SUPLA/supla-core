@@ -42,6 +42,7 @@ class supla_channel_and_timer_state_extended_value
   virtual size_t get_value_size(void);
   virtual void set_raw_value(const TSuplaChannelExtendedValue *value);
   virtual void set_raw_value(const TChannelAndTimerState_ExtendedValue *value);
+  virtual bool get_raw_value(TChannelState_ExtendedValue *value);
   virtual bool get_raw_value(TChannelAndTimerState_ExtendedValue *value);
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
   virtual void get_value(char *buffer);

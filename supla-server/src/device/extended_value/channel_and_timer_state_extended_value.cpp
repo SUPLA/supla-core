@@ -85,6 +85,17 @@ bool supla_channel_and_timer_state_extended_value::get_raw_value(
 }
 
 bool supla_channel_and_timer_state_extended_value::get_raw_value(
+    TChannelState_ExtendedValue *value) {
+  if (!value) {
+    return false;
+  }
+
+  memset(value, 0, sizeof(TChannelState_ExtendedValue));
+
+  return channel.get_raw_value(value);
+}
+
+bool supla_channel_and_timer_state_extended_value::get_raw_value(
     TSuplaChannelExtendedValue *value) {
   if (!value) {
     return false;

@@ -415,6 +415,20 @@ TEST_F(OnChangeConditionTest, onChangeTo_allPredictedVarNames) {
 
   EXPECT_EQ(c.get_var_name(), var_name_calibration_in_progress);
 
+  json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":100,\"name\":\"battery_level\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_battery_level);
+
+  json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"battery_powered\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_battery_powered);
+
   json = cJSON_Parse(
       "{\"on_change_to\":{\"eq\":1,\"name\":\"is_battery_cover_open\"}}");
   c.apply_json_config(json);
@@ -720,6 +734,18 @@ TEST_F(OnChangeConditionTest, onChange_allPredictedVarNames) {
   cJSON_Delete(json);
 
   EXPECT_EQ(c.get_var_name(), var_name_calibration_in_progress);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"battery_powered\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_battery_powered);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"battery_level\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_battery_level);
 
   json = cJSON_Parse("{\"on_change\":{\"name\":\"is_battery_cover_open\"}}");
   c.apply_json_config(json);
