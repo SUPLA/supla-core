@@ -151,4 +151,36 @@ TEST_F(ChannelAndTimerStateExtendedValueTest, copy) {
   delete copy;
 }
 
+TEST_F(ChannelAndTimerStateExtendedValueTest, mergeOldIfNeeded) {
+  TSuplaChannelExtendedValue raw = {};
+  raw.type = EV_TYPE_CHANNEL_AND_TIMER_STATE_V1;
+  raw.size = sizeof(TChannelAndTimerState_ExtendedValue);
+
+  TSuplaChannelExtendedValue old_raw = {};
+  old_raw.type = EV_TYPE_CHANNEL_AND_TIMER_STATE_V1;
+  old_raw.size = sizeof(TChannelAndTimerState_ExtendedValue);
+
+  ((TChannelAndTimerState_ExtendedValue *)old_raw.value)->Channel.Fields =
+      SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
+  ((TChannelAndTimerState_ExtendedValue *)old_raw.value)->Channel.BatteryLevel =
+      33;
+
+  ((TChannelAndTimerState_ExtendedValue *)raw.value)->Channel.Fields =
+      SUPLA_CHANNELSTATE_FIELD_MAC;
+
+  supla_channel_and_timer_state_extended_value old_value(&old_raw);
+  supla_channel_and_timer_state_extended_value value(&raw);
+
+  value.merge_old_if_needed(&old_value);
+  TChannelAndTimerState_ExtendedValue cs = {};
+  value.get_raw_value(&cs);
+
+  EXPECT_EQ(
+      SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL | SUPLA_CHANNELSTATE_FIELD_MAC,
+      cs.Channel.Fields);
+  EXPECT_EQ(((TChannelAndTimerState_ExtendedValue *)old_raw.value)
+                ->Channel.BatteryLevel,
+            cs.Channel.BatteryLevel);
+}
+
 }  // namespace testing

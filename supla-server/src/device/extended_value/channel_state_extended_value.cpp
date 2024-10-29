@@ -88,3 +88,21 @@ supla_channel_state_extended_value::copy(  // NOLINT
     void) {                                // NOLINT
   return new supla_channel_state_extended_value(get_value_ptr());
 }
+
+void supla_channel_state_extended_value::merge_old_if_needed(
+    supla_channel_extended_value *old) {
+  if (dynamic_cast<supla_channel_state_extended_value *>(old)) {
+    TChannelState_ExtendedValue raw, old_raw = {};
+    dynamic_cast<supla_channel_state_extended_value *>(old)->get_raw_value(
+        &old_raw);
+
+    get_raw_value(&raw);
+
+    if (!(raw.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL) &&
+        (old_raw.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL)) {
+      raw.Fields |= SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
+      raw.BatteryLevel = old_raw.BatteryLevel;
+      set_raw_value(&raw);
+    }
+  }
+}

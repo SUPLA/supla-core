@@ -115,4 +115,55 @@ TEST_F(ChannelStateExtendedValueTest, copy) {
   delete copy;
 }
 
+TEST_F(ChannelStateExtendedValueTest, mergeOldIfNeeded) {
+  TSuplaChannelExtendedValue raw = {};
+  raw.type = EV_TYPE_CHANNEL_STATE_V1;
+  raw.size = sizeof(TChannelState_ExtendedValue);
+
+  TSuplaChannelExtendedValue old_raw = {};
+  old_raw.type = EV_TYPE_CHANNEL_STATE_V1;
+  old_raw.size = sizeof(TChannelState_ExtendedValue);
+
+  ((TChannelState_ExtendedValue *)raw.value)->Fields =
+      SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
+  ((TChannelState_ExtendedValue *)raw.value)->BatteryLevel = 33;
+
+  supla_channel_state_extended_value old_value(&old_raw);
+  supla_channel_state_extended_value value(&raw);
+
+  value.merge_old_if_needed(&old_value);
+  TChannelState_ExtendedValue cs = {};
+  value.get_raw_value(&cs);
+
+  EXPECT_EQ(((TChannelState_ExtendedValue *)raw.value)->Fields, cs.Fields);
+  EXPECT_EQ(((TChannelState_ExtendedValue *)raw.value)->BatteryLevel,
+            cs.BatteryLevel);
+
+  ((TChannelState_ExtendedValue *)old_raw.value)->Fields =
+      SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
+  ((TChannelState_ExtendedValue *)old_raw.value)->BatteryLevel = 50;
+
+  old_value.set_raw_value(&old_raw);
+
+  value.merge_old_if_needed(&old_value);
+  value.get_raw_value(&cs);
+
+  EXPECT_EQ(((TChannelState_ExtendedValue *)raw.value)->Fields, cs.Fields);
+  EXPECT_EQ(((TChannelState_ExtendedValue *)raw.value)->BatteryLevel,
+            cs.BatteryLevel);
+
+  ((TChannelState_ExtendedValue *)raw.value)->Fields =
+      SUPLA_CHANNELSTATE_FIELD_IPV4;
+
+  value.set_raw_value(&raw);
+  value.merge_old_if_needed(&old_value);
+  value.get_raw_value(&cs);
+
+  EXPECT_EQ(
+      SUPLA_CHANNELSTATE_FIELD_IPV4 | SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL,
+      cs.Fields);
+  EXPECT_EQ(((TChannelState_ExtendedValue *)old_raw.value)->BatteryLevel,
+            cs.BatteryLevel);
+}
+
 }  // namespace testing

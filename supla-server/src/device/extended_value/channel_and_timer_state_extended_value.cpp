@@ -139,3 +139,12 @@ supla_channel_and_timer_state_extended_value::copy(  // NOLINT
 
   return result;
 }
+
+void supla_channel_and_timer_state_extended_value::merge_old_if_needed(
+    supla_channel_extended_value *old) {
+  if (dynamic_cast<supla_channel_and_timer_state_extended_value *>(old)) {
+    channel.merge_old_if_needed(
+        &dynamic_cast<supla_channel_and_timer_state_extended_value *>(old)
+             ->channel);
+  }
+}
