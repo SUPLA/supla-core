@@ -42,11 +42,10 @@ void supla_ch_channel_state_result::handle_call(
     int channel_id = device->get_channels()->get_channel_id(
         rd->data.dsc_channel_state->ChannelNumber);
     if (channel_id != 0) {
-      if (rd->data.dsc_channel_state->ReceiverID == 0) {
-        device->get_channels()->set_channel_state(channel_id,
-                                                  rd->data.dsc_channel_state);
+      device->get_channels()->set_channel_state(channel_id,
+                                                rd->data.dsc_channel_state);
 
-      } else {
+      if (rd->data.dsc_channel_state->ReceiverID != 0) {
         shared_ptr<supla_client> client =
             device->get_user()->get_clients()->get(
                 rd->data.dsc_channel_state->ReceiverID);
