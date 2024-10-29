@@ -417,6 +417,25 @@ void supla_client_channel_extendedvalue_update(
   if (scd->cfg.cb_channel_extendedvalue_update)
     scd->cfg.cb_channel_extendedvalue_update(scd, scd->cfg.user_data,
                                              channel_extendedvalue);
+
+  if (scd->cfg.cb_on_device_channel_state) {
+    if (channel_extendedvalue->value.type == EV_TYPE_CHANNEL_STATE_V1 &&
+        channel_extendedvalue->value.size ==
+            sizeof(TChannelState_ExtendedValue)) {
+      scd->cfg.cb_on_device_channel_state(
+          scd, scd->cfg.user_data,
+          (TDSC_ChannelState *)channel_extendedvalue->value.value);
+    } else if (channel_extendedvalue->value.type ==
+                   EV_TYPE_CHANNEL_AND_TIMER_STATE_V1 &&
+               channel_extendedvalue->value.size ==
+                   sizeof(TChannelAndTimerState_ExtendedValue)) {
+      scd->cfg.cb_on_device_channel_state(
+          scd, scd->cfg.user_data,
+          &((TChannelAndTimerState_ExtendedValue *)
+                channel_extendedvalue->value.value)
+               ->Channel);
+    }
+  }
 }
 
 void supla_client_channelvalue_pack_update(TSuplaClientData *scd,
