@@ -98,10 +98,23 @@ void supla_channel_state_extended_value::merge_old_if_needed(
 
     get_raw_value(&raw);
 
+    bool merged = false;
+
     if (!(raw.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL) &&
         (old_raw.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL)) {
       raw.Fields |= SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
       raw.BatteryLevel = old_raw.BatteryLevel;
+      merged = true;
+    }
+
+    if (!(raw.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED) &&
+        (old_raw.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED)) {
+      raw.Fields |= SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED;
+      raw.BatteryPowered = old_raw.BatteryPowered;
+      merged = true;
+    }
+
+    if (merged) {
       set_raw_value(&raw);
     }
   }

@@ -115,7 +115,7 @@ TEST_F(ChannelStateExtendedValueTest, copy) {
   delete copy;
 }
 
-TEST_F(ChannelStateExtendedValueTest, mergeOldIfNeeded) {
+TEST_F(ChannelStateExtendedValueTest, mergeOldIfNeeded_BatteryLevel) {
   TSuplaChannelExtendedValue raw = {};
   raw.type = EV_TYPE_CHANNEL_STATE_V1;
   raw.size = sizeof(TChannelState_ExtendedValue);
@@ -164,6 +164,56 @@ TEST_F(ChannelStateExtendedValueTest, mergeOldIfNeeded) {
       cs.Fields);
   EXPECT_EQ(((TChannelState_ExtendedValue *)old_raw.value)->BatteryLevel,
             cs.BatteryLevel);
+}
+
+TEST_F(ChannelStateExtendedValueTest, mergeOldIfNeeded_BatteryPowered) {
+  TSuplaChannelExtendedValue raw = {};
+  raw.type = EV_TYPE_CHANNEL_STATE_V1;
+  raw.size = sizeof(TChannelState_ExtendedValue);
+
+  TSuplaChannelExtendedValue old_raw = {};
+  old_raw.type = EV_TYPE_CHANNEL_STATE_V1;
+  old_raw.size = sizeof(TChannelState_ExtendedValue);
+
+  ((TChannelState_ExtendedValue *)raw.value)->Fields =
+      SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED;
+  ((TChannelState_ExtendedValue *)raw.value)->BatteryPowered = 1;
+
+  supla_channel_state_extended_value old_value(&old_raw);
+  supla_channel_state_extended_value value(&raw);
+
+  value.merge_old_if_needed(&old_value);
+  TChannelState_ExtendedValue cs = {};
+  value.get_raw_value(&cs);
+
+  EXPECT_EQ(((TChannelState_ExtendedValue *)raw.value)->Fields, cs.Fields);
+  EXPECT_EQ(((TChannelState_ExtendedValue *)raw.value)->BatteryLevel,
+            cs.BatteryLevel);
+
+  ((TChannelState_ExtendedValue *)old_raw.value)->Fields =
+      SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED;
+
+  old_value.set_raw_value(&old_raw);
+
+  value.merge_old_if_needed(&old_value);
+  value.get_raw_value(&cs);
+
+  EXPECT_EQ(((TChannelState_ExtendedValue *)raw.value)->Fields, cs.Fields);
+  EXPECT_EQ(((TChannelState_ExtendedValue *)raw.value)->BatteryPowered,
+            cs.BatteryPowered);
+
+  ((TChannelState_ExtendedValue *)raw.value)->Fields =
+      SUPLA_CHANNELSTATE_FIELD_MAC;
+
+  value.set_raw_value(&raw);
+  value.merge_old_if_needed(&old_value);
+  value.get_raw_value(&cs);
+
+  EXPECT_EQ(
+      SUPLA_CHANNELSTATE_FIELD_MAC | SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED,
+      cs.Fields);
+  EXPECT_EQ(((TChannelState_ExtendedValue *)old_raw.value)->BatteryPowered,
+            cs.BatteryPowered);
 }
 
 }  // namespace testing
