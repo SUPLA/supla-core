@@ -707,8 +707,14 @@ void supla_device_channel::set_extended_value(
 
   extended_value = new_value;
 
-  if (data_analyzer && new_value) {
-    data_analyzer->add_sample(flags, json_config, new_value);
+  if (new_value) {
+    if (old_value) {
+      new_value->merge_old_if_needed(old_value);
+    }
+
+    if (data_analyzer) {
+      data_analyzer->add_sample(flags, json_config, new_value);
+    }
   }
 
   if (new_value &&
@@ -724,11 +730,6 @@ void supla_device_channel::set_extended_value(
   unlock();
 
   if (new_value) {  // That means there are differences
-
-    if (old_value) {
-      new_value->merge_old_if_needed(old_value);
-    }
-
     supla_db_access_provider dba;
     supla_device_dao dao(&dba);
     dao.update_channel_extended_value(get_id(), get_user_id(), new_value);
