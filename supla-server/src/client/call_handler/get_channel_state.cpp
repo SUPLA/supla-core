@@ -46,7 +46,9 @@ void supla_ch_get_channel_state::handle_call(
             client->get_user()->get_devices()->get(device_id);
         if (device != nullptr) {
           TDSC_ChannelState state = {};
-          if (device->get_channels()->get_channel_state(request->ChannelID,
+
+          if ((device->get_flags() & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
+              device->get_channels()->get_channel_state(request->ChannelID,
                                                         &state)) {
             client->on_device_channel_state_result(request->ChannelID, &state);
           } else {

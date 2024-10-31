@@ -55,6 +55,7 @@ class supla_channel_extended_value {
                              unsigned char protocol_version);
   virtual void get_value(char *buffer);
   virtual std::map<std::string, std::string> get_replacement_map(void);
+  virtual void merge_old_if_needed(supla_channel_extended_value *old);
 };
 
 #endif /*CHANNEL_EXTENDED_VALUE_H_*/

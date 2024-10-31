@@ -74,6 +74,8 @@ enum _vbt_var_name_e {
   var_name_calibration_lost,
   var_name_motor_problem,
   var_name_calibration_in_progress,
+  var_name_battery_level,
+  var_name_battery_powered,
   var_name_is_battery_cover_open,
   var_name_thermometer_error,
   var_name_clock_error,

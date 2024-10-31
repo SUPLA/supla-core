@@ -166,3 +166,6 @@ map<string, string> supla_channel_extended_value::get_replacement_map(void) {
   map<string, string> result;
   return result;
 }
+
+void supla_channel_extended_value::merge_old_if_needed(
+    supla_channel_extended_value *old) {}

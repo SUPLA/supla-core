@@ -85,6 +85,17 @@ bool supla_channel_and_timer_state_extended_value::get_raw_value(
 }
 
 bool supla_channel_and_timer_state_extended_value::get_raw_value(
+    TChannelState_ExtendedValue *value) {
+  if (!value) {
+    return false;
+  }
+
+  memset(value, 0, sizeof(TChannelState_ExtendedValue));
+
+  return channel.get_raw_value(value);
+}
+
+bool supla_channel_and_timer_state_extended_value::get_raw_value(
     TSuplaChannelExtendedValue *value) {
   if (!value) {
     return false;
@@ -127,4 +138,13 @@ supla_channel_and_timer_state_extended_value::copy(  // NOLINT
   result->set_raw_value(&val);
 
   return result;
+}
+
+void supla_channel_and_timer_state_extended_value::merge_old_if_needed(
+    supla_channel_extended_value *old) {
+  if (dynamic_cast<supla_channel_and_timer_state_extended_value *>(old)) {
+    channel.merge_old_if_needed(
+        &dynamic_cast<supla_channel_and_timer_state_extended_value *>(old)
+             ->channel);
+  }
 }

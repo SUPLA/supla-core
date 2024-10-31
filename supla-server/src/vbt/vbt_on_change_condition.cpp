@@ -23,9 +23,11 @@
 #include <map>
 #include <string>
 
+#include "device/extended_value/channel_and_timer_state_extended_value.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "device/extended_value/channel_state_extended_value.h"
 #include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_fb_value.h"
@@ -135,6 +137,8 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_calibration_lost, "calibration_lost"},
         {var_name_motor_problem, "motor_problem"},
         {var_name_calibration_in_progress, "calibration_in_progress"},
+        {var_name_battery_level, "battery_level"},
+        {var_name_battery_powered, "battery_powered"},
         {var_name_is_battery_cover_open, "is_battery_cover_open"},
         {var_name_thermometer_error, "thermometer_error"},
         {var_name_clock_error, "clock_error"},
@@ -526,6 +530,33 @@ bool supla_vbt_on_change_condition::get_number(
     }
 
     return true;
+  } else if (dynamic_cast<supla_channel_state_extended_value *>(value) ||
+             dynamic_cast<supla_channel_and_timer_state_extended_value *>(
+                 value)) {
+    TChannelState_ExtendedValue raw = {};
+
+    if (dynamic_cast<supla_channel_state_extended_value *>(value)) {
+      dynamic_cast<supla_channel_state_extended_value *>(value)->get_raw_value(
+          &raw);
+    } else {
+      dynamic_cast<supla_channel_and_timer_state_extended_value *>(value)
+          ->get_raw_value(&raw);
+    }
+
+    switch (var_name) {
+      case var_name_battery_level:
+        if (raw.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL) {
+          *result = raw.BatteryLevel;
+          return true;
+        }
+        break;
+      case var_name_battery_powered:
+        if (raw.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED) {
+          *result = raw.BatteryPowered ? 1 : 0;
+          return true;
+        }
+        break;
+    }
   }
 
   return false;

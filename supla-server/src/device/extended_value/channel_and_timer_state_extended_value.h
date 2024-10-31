@@ -42,11 +42,13 @@ class supla_channel_and_timer_state_extended_value
   virtual size_t get_value_size(void);
   virtual void set_raw_value(const TSuplaChannelExtendedValue *value);
   virtual void set_raw_value(const TChannelAndTimerState_ExtendedValue *value);
+  virtual bool get_raw_value(TChannelState_ExtendedValue *value);
   virtual bool get_raw_value(TChannelAndTimerState_ExtendedValue *value);
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
   virtual void get_value(char *buffer);
   static bool is_ev_type_supported(char type);
   virtual supla_channel_extended_value *copy(void);  // NOLINT
+  virtual void merge_old_if_needed(supla_channel_extended_value *old);
 };
 
 #endif /*CHANNEL_AND_TIMER_STATE_EXTENDED_VALUE_H_*/
