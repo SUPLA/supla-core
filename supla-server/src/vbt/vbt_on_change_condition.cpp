@@ -556,6 +556,8 @@ bool supla_vbt_on_change_condition::get_number(
           return true;
         }
         break;
+      default:
+        return false;
     }
   }
 
