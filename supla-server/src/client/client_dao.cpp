@@ -694,10 +694,15 @@ void supla_client_dao::update_client_push_notification_client_token(
 
   MYSQL_STMT *stmt = nullptr;
   if (!dba->stmt_execute((void **)&stmt, sql, pbind, 7, true)) {
+    char pn_hex[SUPLA_PN_PROFILE_NAME_MAXSIZE * 2] = {};
+    if (pbind[6].buffer_length) {
+      st_bin2hex(pn_hex, profile_name, pbind[6].buffer_length);
+    }
+
     supla_log(LOG_ERR,
               "Failed to update push notification client token in database. "
-              "ClientID: %i, Platform: %i,%i, AppId: %i",
-              client_id, platform, _platform, app_id);
+              "ClientID: %i, Platform: %i,%i, AppId: %i Profile name hex [%s]",
+              client_id, platform, _platform, app_id, pn_hex);
   }
 
   if (stmt != nullptr) {
