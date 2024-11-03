@@ -38,7 +38,104 @@ TEST_F(GetChannelStateCommandTest, noData) {
   EXPECT_FALSE(cmd->process_command(buffer, sizeof(buffer), 0));
 }
 
-TEST_F(GetChannelStateCommandTest, getChannelStateWithSuccess) {}
+TEST_F(GetChannelStateCommandTest, getChannelStateWithSuccess) {
+  EXPECT_CALL(*cmd, get_channel_state(NotNull(), 10, 20, 30, false, false))
+      .WillOnce([](TDSC_ChannelState *state, int user_id, int device_id,
+                   int channel_id, bool send_reqest,
+                   bool get_from_extended_value) {
+        state->Fields = 0xFFFFFFFF;
+        state->defaultIconField = 8;
+        state->SwitchCycleCount = 15;
+        state->IPv4 = 1593737281;
+        state->MAC[0] = 0xAA;
+        state->MAC[1] = 0xBB;
+        state->MAC[2] = 0xCC;
+        state->MAC[3] = 0xDD;
+        state->MAC[4] = 0xEE;
+        state->MAC[5] = 0xFF;
+        state->BatteryLevel = 88;
+        state->BatteryPowered = 1;
+        state->WiFiRSSI = 45;
+        state->WiFiSignalStrength = 80;
+        state->BridgeNodeOnline = 1;
+        state->BridgeNodeSignalStrength = 12;
+        state->Uptime = 1000;
+        state->ConnectionUptime = 999;
+        state->BatteryHealth = 123;
+        state->LastConnectionResetCause = 2;
+        state->LightSourceLifespan = 5;
+        state->LightSourceLifespanLeft = -10;
+        state->LightSourceOperatingTime = -11;
+        state->OperatingTime = 400;
+
+        return true;
+      });
+
+  commandProcessingTest("GET-CHANNEL-STATE:10,20,30,0,0\n",
+                        "STATE:30,,15,94.254.128.65,AA:BB:CC:DD:EE:FF,88,1,45,"
+                        "80,1,12,1000,999,123,2,,,,\n");
+}
+
+TEST_F(GetChannelStateCommandTest,
+       getChannelStateWithSuccess_LightSourceLifespan) {
+  EXPECT_CALL(*cmd, get_channel_state(NotNull(), 10, 20, 30, false, false))
+      .WillOnce([](TDSC_ChannelState *state, int user_id, int device_id,
+                   int channel_id, bool send_reqest,
+                   bool get_from_extended_value) {
+        state->Fields = SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCELIFESPAN;
+        state->LightSourceLifespan = 5;
+        state->LightSourceLifespanLeft = -10;
+        return true;
+      });
+
+  commandProcessingTest("GET-CHANNEL-STATE:10,20,30,0,0\n",
+                        "STATE:30,0,,,,,,,,,,,,,,5,-10,,\n");
+}
+
+TEST_F(GetChannelStateCommandTest,
+       getChannelStateWithSuccess_LightSourceOperatingTime) {
+  EXPECT_CALL(*cmd, get_channel_state(NotNull(), 10, 20, 30, false, false))
+      .WillOnce([](TDSC_ChannelState *state, int user_id, int device_id,
+                   int channel_id, bool send_reqest,
+                   bool get_from_extended_value) {
+        state->Fields = SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCEOPERATINGTIME;
+        state->LightSourceOperatingTime = -11;
+        return true;
+      });
+
+  commandProcessingTest("GET-CHANNEL-STATE:10,20,30,0,0\n",
+                        "STATE:30,0,,,,,,,,,,,,,,,,-11,\n");
+}
+
+TEST_F(GetChannelStateCommandTest, getChannelStateWithSuccess_OperatingTime) {
+  EXPECT_CALL(*cmd, get_channel_state(NotNull(), 10, 20, 30, false, false))
+      .WillOnce([](TDSC_ChannelState *state, int user_id, int device_id,
+                   int channel_id, bool send_reqest,
+                   bool get_from_extended_value) {
+        state->Fields = SUPLA_CHANNELSTATE_FIELD_OPERATINGTIME;
+        state->OperatingTime = 400;
+        return true;
+      });
+
+  commandProcessingTest("GET-CHANNEL-STATE:10,20,30,0,0\n",
+                        "STATE:30,0,,,,,,,,,,,,,,,,,400\n");
+}
+
+TEST_F(GetChannelStateCommandTest, send_reqest) {
+  EXPECT_CALL(*cmd, get_channel_state(NotNull(), 10, 20, 30, true, false))
+      .WillOnce(Return(true));
+
+  commandProcessingTest("GET-CHANNEL-STATE:10,20,30,1,0\n",
+                        "STATE:30,0,,,,,,,,,,,,,,,,,\n");
+}
+
+TEST_F(GetChannelStateCommandTest, get_from_extended_value) {
+  EXPECT_CALL(*cmd, get_channel_state(NotNull(), 10, 20, 30, false, true))
+      .WillOnce(Return(true));
+
+  commandProcessingTest("GET-CHANNEL-STATE:10,20,30,0,1\n",
+                        "STATE:30,0,,,,,,,,,,,,,,,,,\n");
+}
 
 TEST_F(GetChannelStateCommandTest, getChannelStateWithFilure) {
   EXPECT_CALL(*cmd, get_channel_state).WillOnce(Return(false));

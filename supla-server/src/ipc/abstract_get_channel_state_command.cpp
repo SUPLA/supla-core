@@ -81,15 +81,11 @@ void supla_abstract_get_channel_state_command::on_command_match(
 
         char mac[18] = {};
 
-        if (state.Fields & SUPLA_CHANNELSTATE_FIELD_IPV4) {
+        if (state.Fields & SUPLA_CHANNELSTATE_FIELD_MAC) {
           snprintf(mac, sizeof(mac), "%02X:%02X:%02X:%02X:%02X:%02X",
                    (unsigned char)state.MAC[0], (unsigned char)state.MAC[1],
                    (unsigned char)state.MAC[2], (unsigned char)state.MAC[3],
                    (unsigned char)state.MAC[4], (unsigned char)state.MAC[5]);
-
-          for (unsigned char a = 0; a < sizeof(mac); a++) {
-            if (mac[a] == ',') mac[a] = '!';
-          }
         }
 
         result.append(mac);
@@ -160,6 +156,10 @@ void supla_abstract_get_channel_state_command::on_command_match(
               SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCEOPERATINGTIME) &&
             !(state.Fields & SUPLA_CHANNELSTATE_FIELD_OPERATINGTIME)) {
           result.append(std::to_string(state.LightSourceLifespan));
+          result.append(",");
+          result.append(std::to_string(state.LightSourceLifespanLeft));
+        } else {
+          result.append(",");
         }
 
         result.append(",");
@@ -179,6 +179,8 @@ void supla_abstract_get_channel_state_command::on_command_match(
             (state.Fields & SUPLA_CHANNELSTATE_FIELD_OPERATINGTIME)) {
           result.append(std::to_string(state.OperatingTime));
         }
+
+        send_result(result.c_str());
 
       } else {
         send_result("NOT-AVAILABLE:", channel_id);
