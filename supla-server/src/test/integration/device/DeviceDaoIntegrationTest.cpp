@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include "device/extended_value/channel_state_extended_value.h"
 #include "jsonconfig/channel/hvac_config.h"
 
 using std::string;
@@ -215,8 +216,8 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
         "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
         "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":"
         "false,\"temperatures\":{},\"masterThermostatChannelNo\":null,"
-        "\"heatOrColdSourceSwitchChannelNo\":null,\"pumpSwitchChannelNo\":"
-        "null}");
+        "\"heatOrColdSourceSwitchChannelNo\":null,\"pumpSwitchChannelNo\":null,"
+        "\"temperatureControlType\":\"NOT_SUPPORTED\"}");
     free(str);
   }
 
@@ -479,6 +480,18 @@ TEST_F(DeviceDaoIntegrationTest, subDevice) {
   EXPECT_EQ(result,
             "name\tsoftware_version\tproduct_code\tserial_"
             "number\nNnaamme\tSV\tCoode\tSN\nNnaamme\t1.0\tCoode\tSN\n");
+}
+
+TEST_F(DeviceDaoIntegrationTest, getExtendedValue) {
+  runSqlScript("InsertExtendedValue.sql");
+
+  EXPECT_EQ(dao->get_channel_extended_value(1, 2), nullptr);
+  supla_channel_extended_value *value = dao->get_channel_extended_value(2, 140);
+
+  ASSERT_NE(value, nullptr);
+  EXPECT_NE(dynamic_cast<supla_channel_state_extended_value *>(value), nullptr);
+
+  delete value;
 }
 
 } /* namespace testing */

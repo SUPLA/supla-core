@@ -154,6 +154,9 @@ class DeviceDaoMock : public supla_abstract_device_dao {
 
   MOCK_METHOD2(set_subdevice_details,
                void(int device_id, TDS_SubdeviceDetails *details));
+
+  MOCK_METHOD2(get_channel_extended_value,
+               supla_channel_extended_value *(int user_id, int channel_id));
 };
 
 } /* namespace testing */

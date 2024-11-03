@@ -137,6 +137,9 @@ class supla_abstract_device_dao {
 
   virtual void set_subdevice_details(int device_id,
                                      TDS_SubdeviceDetails *details) = 0;
+
+  virtual supla_channel_extended_value *get_channel_extended_value(
+      int user_id, int channel_id) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_DEVICE_DAO_H_ */
