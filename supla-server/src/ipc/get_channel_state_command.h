@@ -16,27 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GET_CHANNEL_STATE_COMMMAND_MOCK_H_
-#define GET_CHANNEL_STATE_COMMMAND_MOCK_H_
+#ifndef SUPLA_GET_CHANNEL_STATE_COMMAND_H_
+#define SUPLA_GET_CHANNEL_STATE_COMMAND_H_
 
-#include <gmock/gmock.h>
+#include <string>
 
 #include "ipc/abstract_get_channel_state_command.h"
 
-namespace testing {
-
-class GetChannelStateCommandMock
+class supla_get_channel_state_command
     : public supla_abstract_get_channel_state_command {
- public:
-  explicit GetChannelStateCommandMock(
-      supla_abstract_ipc_socket_adapter *socket_adapter);
+ protected:
+  virtual bool get_channel_state(TDSC_ChannelState *state, int user_id,
+                                 int device_id, int channel_id,
+                                 bool send_request,
+                                 bool get_from_extended_value);
 
-  MOCK_METHOD6(get_channel_state,
-               bool(TDSC_ChannelState *state, int user_id, int device_id,
-                    int channel_id, bool send_request,
-                    bool get_from_extended_value));
+ public:
+  explicit supla_get_channel_state_command(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
 };
 
-} /* namespace testing */
-
-#endif /* GET_CHANNEL_STATE_COMMMAND_MOCK_H_ */
+#endif /* SUPLA_GET_CHANNEL_STATE_COMMAND_H_ */

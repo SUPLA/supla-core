@@ -41,7 +41,7 @@ TEST_F(GetChannelStateCommandTest, noData) {
 TEST_F(GetChannelStateCommandTest, getChannelStateWithSuccess) {
   EXPECT_CALL(*cmd, get_channel_state(NotNull(), 10, 20, 30, false, false))
       .WillOnce([](TDSC_ChannelState *state, int user_id, int device_id,
-                   int channel_id, bool send_reqest,
+                   int channel_id, bool send_request,
                    bool get_from_extended_value) {
         state->Fields = 0xFFFFFFFF;
         state->defaultIconField = 8;
@@ -80,7 +80,7 @@ TEST_F(GetChannelStateCommandTest,
        getChannelStateWithSuccess_LightSourceLifespan) {
   EXPECT_CALL(*cmd, get_channel_state(NotNull(), 10, 20, 30, false, false))
       .WillOnce([](TDSC_ChannelState *state, int user_id, int device_id,
-                   int channel_id, bool send_reqest,
+                   int channel_id, bool send_request,
                    bool get_from_extended_value) {
         state->Fields = SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCELIFESPAN;
         state->LightSourceLifespan = 5;
@@ -96,7 +96,7 @@ TEST_F(GetChannelStateCommandTest,
        getChannelStateWithSuccess_LightSourceOperatingTime) {
   EXPECT_CALL(*cmd, get_channel_state(NotNull(), 10, 20, 30, false, false))
       .WillOnce([](TDSC_ChannelState *state, int user_id, int device_id,
-                   int channel_id, bool send_reqest,
+                   int channel_id, bool send_request,
                    bool get_from_extended_value) {
         state->Fields = SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCEOPERATINGTIME;
         state->LightSourceOperatingTime = -11;
@@ -110,7 +110,7 @@ TEST_F(GetChannelStateCommandTest,
 TEST_F(GetChannelStateCommandTest, getChannelStateWithSuccess_OperatingTime) {
   EXPECT_CALL(*cmd, get_channel_state(NotNull(), 10, 20, 30, false, false))
       .WillOnce([](TDSC_ChannelState *state, int user_id, int device_id,
-                   int channel_id, bool send_reqest,
+                   int channel_id, bool send_request,
                    bool get_from_extended_value) {
         state->Fields = SUPLA_CHANNELSTATE_FIELD_OPERATINGTIME;
         state->OperatingTime = 400;
@@ -121,7 +121,7 @@ TEST_F(GetChannelStateCommandTest, getChannelStateWithSuccess_OperatingTime) {
                         "STATE:30,0,,,,,,,,,,,,,,,,,400\n");
 }
 
-TEST_F(GetChannelStateCommandTest, send_reqest) {
+TEST_F(GetChannelStateCommandTest, send_request) {
   EXPECT_CALL(*cmd, get_channel_state(NotNull(), 10, 20, 30, true, false))
       .WillOnce(Return(true));
 

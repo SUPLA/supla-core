@@ -30,7 +30,7 @@ class supla_abstract_get_channel_state_command
   virtual void on_command_match(const char *params);
   virtual bool get_channel_state(TDSC_ChannelState *state, int user_id,
                                  int device_id, int channel_id,
-                                 bool send_reqest,
+                                 bool send_request,
                                  bool get_from_extended_value) = 0;
 
  public:
