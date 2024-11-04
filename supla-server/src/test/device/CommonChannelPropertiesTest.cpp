@@ -18,12 +18,16 @@
 
 #include "CommonChannelPropertiesTest.h"
 
+#include <string>
 #include <vector>
 
 #include "doubles/device/CommonChannelPropertiesMock.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "jsonconfig/channel/power_switch_config.h"
+
 namespace testing {
 
+using std::string;
 using std::vector;
 
 TEST_F(CommonChannelPropertiesTest, appendRelationList) {
@@ -529,6 +533,100 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_OpeningSensor) {
     EXPECT_EQ(rel.at(1).get_parent_id(), *it + 200);
     EXPECT_EQ(rel.at(1).get_relation_type(),
               CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR);
+  }
+}
+
+TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_Meter) {
+  vector<int> functions = {SUPLA_CHANNELFNC_POWERSWITCH,
+                           SUPLA_CHANNELFNC_LIGHTSWITCH,
+                           SUPLA_CHANNELFNC_STAIRCASETIMER};
+
+  for (auto it = functions.cbegin(); it != functions.cend(); ++it) {
+    CommonChannelPropertiesMock mock;
+
+    string json =
+        "{\"relatedMeterChannelId\":" + std::to_string(*it + 100) + "}";
+
+    power_switch_config json_config;
+    json_config.set_user_config(json.c_str());
+
+    EXPECT_CALL(mock, get_func).WillOnce(Return(*it));
+    EXPECT_CALL(mock, get_id).WillRepeatedly(Return(*it + 10));
+    EXPECT_CALL(mock, get_json_config).WillRepeatedly(Return(&json_config));
+
+    vector<supla_channel_relation> rel;
+    mock.get_channel_relations(&rel, relation_with_sub_channel);
+
+    EXPECT_EQ(rel.size(), 1);
+
+    EXPECT_EQ(rel.at(0).get_id(), *it + 100);
+    EXPECT_EQ(rel.at(0).get_parent_id(), *it + 10);
+    EXPECT_EQ(rel.at(0).get_relation_type(), CHANNEL_RELATION_TYPE_METER);
+  }
+}
+
+TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_Meter) {
+  vector<int> functions = {
+      SUPLA_CHANNELFNC_ELECTRICITY_METER, SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
+      SUPLA_CHANNELFNC_IC_GAS_METER, SUPLA_CHANNELFNC_IC_WATER_METER,
+      SUPLA_CHANNELFNC_IC_HEAT_METER};
+
+  for (auto it = functions.cbegin(); it != functions.cend(); ++it) {
+    CommonChannelPropertiesMock mock;
+
+    EXPECT_CALL(mock, get_func).WillOnce(Return(*it));
+    EXPECT_CALL(mock, get_id).WillRepeatedly(Return(*it + 10));
+
+    EXPECT_CALL(mock, for_each)
+        .WillRepeatedly(
+            [&](bool any_device,
+                std::function<void(supla_abstract_common_channel_properties *,
+                                   bool *)>
+                    on_channel_properties) {
+              bool will_continue = true;
+              vector<int> master_functions = {SUPLA_CHANNELFNC_POWERSWITCH,
+                                              SUPLA_CHANNELFNC_LIGHTSWITCH,
+                                              SUPLA_CHANNELFNC_STAIRCASETIMER};
+              for (auto mit = master_functions.cbegin();
+                   mit != master_functions.cend(); ++mit) {
+                CommonChannelPropertiesMock related_props_mock;
+
+                string json =
+                    "{\"relatedMeterChannelId\":" + std::to_string(*it + 10) +
+                    "}";
+
+                power_switch_config json_config;
+                json_config.set_user_config(json.c_str());
+
+                EXPECT_CALL(related_props_mock, get_json_config)
+                    .WillRepeatedly(Return(&json_config));
+                EXPECT_CALL(related_props_mock, get_id)
+                    .WillRepeatedly(Return(*mit + 100));
+                EXPECT_CALL(related_props_mock, get_func)
+                    .WillRepeatedly(Return(*mit));
+
+                on_channel_properties(&related_props_mock, &will_continue);
+              }
+
+              EXPECT_TRUE(any_device);
+            });
+
+    vector<supla_channel_relation> rel;
+    mock.get_channel_relations(&rel, relation_with_parent_channel);
+
+    ASSERT_EQ(rel.size(), 3);
+
+    EXPECT_EQ(rel.at(0).get_id(), *it + 10);
+    EXPECT_EQ(rel.at(0).get_parent_id(), SUPLA_CHANNELFNC_POWERSWITCH + 100);
+    EXPECT_EQ(rel.at(0).get_relation_type(), CHANNEL_RELATION_TYPE_METER);
+
+    EXPECT_EQ(rel.at(1).get_id(), *it + 10);
+    EXPECT_EQ(rel.at(1).get_parent_id(), SUPLA_CHANNELFNC_LIGHTSWITCH + 100);
+    EXPECT_EQ(rel.at(1).get_relation_type(), CHANNEL_RELATION_TYPE_METER);
+
+    EXPECT_EQ(rel.at(2).get_id(), *it + 10);
+    EXPECT_EQ(rel.at(2).get_parent_id(), SUPLA_CHANNELFNC_STAIRCASETIMER + 100);
+    EXPECT_EQ(rel.at(2).get_relation_type(), CHANNEL_RELATION_TYPE_METER);
   }
 }
 
