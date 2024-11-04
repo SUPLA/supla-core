@@ -154,13 +154,13 @@ TEST_F(CommonChannelPropertiesTest,
   EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
   EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5000));
 
-  hvac_config config;
-  TChannelConfig_HVAC hvac = {};
-  hvac.MasterThermostatIsSet = 1;
-  config.set_config(&hvac, 10);
-
-  EXPECT_CALL(mock, get_json_config)
-      .WillRepeatedly(Return(new hvac_config(&config)));
+  EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
+    hvac_config *config = new hvac_config();
+    TChannelConfig_HVAC hvac = {};
+    hvac.MasterThermostatIsSet = 1;
+    config->set_config(&hvac, 10);
+    return config;
+  });
 
   EXPECT_CALL(mock, for_each)
       .WillRepeatedly(
@@ -197,13 +197,13 @@ TEST_F(CommonChannelPropertiesTest,
   EXPECT_CALL(related_props_mock, get_func)
       .WillRepeatedly(Return(SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
 
-  hvac_config config;
-  TChannelConfig_HVAC hvac = {};
-  hvac.MasterThermostatIsSet = 1;
-  config.set_config(&hvac, 10);
-
-  EXPECT_CALL(related_props_mock, get_json_config)
-      .WillRepeatedly(Return(new hvac_config(&config)));
+  EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
+    hvac_config *config = new hvac_config();
+    TChannelConfig_HVAC hvac = {};
+    hvac.MasterThermostatIsSet = 1;
+    config->set_config(&hvac, 10);
+    return config;
+  });
 
   CommonChannelPropertiesMock mock;
   unsigned char version = 23;
@@ -264,13 +264,13 @@ TEST_F(CommonChannelPropertiesTest,
   EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
   EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5000));
 
-  hvac_config config;
-  TChannelConfig_HVAC hvac = {};
-  hvac.HeatOrColdSourceSwitchIsSet = 1;
-  config.set_config(&hvac, 10);
-
-  EXPECT_CALL(mock, get_json_config)
-      .WillRepeatedly(Return(new hvac_config(&config)));
+  EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
+    hvac_config *config = new hvac_config();
+    TChannelConfig_HVAC hvac = {};
+    hvac.HeatOrColdSourceSwitchIsSet = 1;
+    config->set_config(&hvac, 10);
+    return config;
+  });
 
   EXPECT_CALL(mock, for_each)
       .WillRepeatedly(
@@ -307,13 +307,13 @@ TEST_F(CommonChannelPropertiesTest,
   EXPECT_CALL(related_props_mock, get_func)
       .WillRepeatedly(Return(SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
 
-  hvac_config config;
-  TChannelConfig_HVAC hvac = {};
-  hvac.HeatOrColdSourceSwitchIsSet = 1;
-  config.set_config(&hvac, 10);
-
-  EXPECT_CALL(related_props_mock, get_json_config)
-      .WillRepeatedly(Return(new hvac_config(&config)));
+  EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
+    hvac_config *config = new hvac_config();
+    TChannelConfig_HVAC hvac = {};
+    hvac.HeatOrColdSourceSwitchIsSet = 1;
+    config->set_config(&hvac, 10);
+    return config;
+  });
 
   CommonChannelPropertiesMock mock;
   unsigned char version = 23;
@@ -374,13 +374,13 @@ TEST_F(CommonChannelPropertiesTest,
   EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
   EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5000));
 
-  hvac_config config;
-  TChannelConfig_HVAC hvac = {};
-  hvac.PumpSwitchIsSet = 1;
-  config.set_config(&hvac, 10);
-
-  EXPECT_CALL(mock, get_json_config)
-      .WillRepeatedly(Return(new hvac_config(&config)));
+  EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
+    hvac_config *config = new hvac_config();
+    TChannelConfig_HVAC hvac = {};
+    hvac.PumpSwitchIsSet = 1;
+    config->set_config(&hvac, 10);
+    return config;
+  });
 
   EXPECT_CALL(mock, for_each)
       .WillRepeatedly(
@@ -416,13 +416,13 @@ TEST_F(CommonChannelPropertiesTest,
   EXPECT_CALL(related_props_mock, get_func)
       .WillRepeatedly(Return(SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
 
-  hvac_config config;
-  TChannelConfig_HVAC hvac = {};
-  hvac.PumpSwitchIsSet = 1;
-  config.set_config(&hvac, 10);
-
-  EXPECT_CALL(related_props_mock, get_json_config)
-      .WillRepeatedly(Return(new hvac_config(&config)));
+  EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
+    hvac_config *config = new hvac_config();
+    TChannelConfig_HVAC hvac = {};
+    hvac.PumpSwitchIsSet = 1;
+    config->set_config(&hvac, 10);
+    return config;
+  });
 
   CommonChannelPropertiesMock mock;
   unsigned char version = 23;
@@ -544,15 +544,17 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_Meter) {
   for (auto it = functions.cbegin(); it != functions.cend(); ++it) {
     CommonChannelPropertiesMock mock;
 
-    string json =
-        "{\"relatedMeterChannelId\":" + std::to_string(*it + 100) + "}";
-
-    power_switch_config json_config;
-    json_config.set_user_config(json.c_str());
-
     EXPECT_CALL(mock, get_func).WillOnce(Return(*it));
     EXPECT_CALL(mock, get_id).WillRepeatedly(Return(*it + 10));
-    EXPECT_CALL(mock, get_json_config).WillRepeatedly(Return(&json_config));
+
+    EXPECT_CALL(mock, get_json_config).WillRepeatedly([it]() {
+      string json =
+          "{\"relatedMeterChannelId\":" + std::to_string(*it + 100) + "}";
+
+      power_switch_config *json_config = new power_switch_config();
+      json_config->set_user_config(json.c_str());
+      return json_config;
+    });
 
     vector<supla_channel_relation> rel;
     mock.get_channel_relations(&rel, relation_with_sub_channel);
@@ -591,15 +593,16 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_Meter) {
                    mit != master_functions.cend(); ++mit) {
                 CommonChannelPropertiesMock related_props_mock;
 
-                string json =
-                    "{\"relatedMeterChannelId\":" + std::to_string(*it + 10) +
-                    "}";
-
-                power_switch_config json_config;
-                json_config.set_user_config(json.c_str());
-
                 EXPECT_CALL(related_props_mock, get_json_config)
-                    .WillRepeatedly(Return(&json_config));
+                    .WillRepeatedly([it]() {
+                      string json = "{\"relatedMeterChannelId\":" +
+                                    std::to_string(*it + 10) + "}";
+                      power_switch_config *json_config =
+                          new power_switch_config();
+                      json_config->set_user_config(json.c_str());
+                      return json_config;
+                    });
+
                 EXPECT_CALL(related_props_mock, get_id)
                     .WillRepeatedly(Return(*mit + 100));
                 EXPECT_CALL(related_props_mock, get_func)
