@@ -52,7 +52,7 @@ void DeliveryTaskTest::SetUp(void) {
       .WillByDefault(Return(200));
 
   ON_CALL(*tokenProviderCurlAdapter, set_opt_write_data)
-      .WillByDefault([this](string *request_result) {
+      .WillByDefault([this](int instance_id, string *request_result) {
         *request_result =
             "{\"push_android\":{\"0\":{\"token\":\"tokenXyz\",\"expires_in\":"
             "3600,"
@@ -60,7 +60,11 @@ void DeliveryTaskTest::SetUp(void) {
             "push-fcm.supla.org\"}},\"push_ios\":{\"5\":{\"token\":\"xcvbn\","
             "\"expires_in\":3600,\"bundle_id\":\"com.supla\",\"url\":\"https://"
             "push-apns.supla.org/{device_token}\",\"development_url\":\"https:/"
-            "/devel-push-apns.supla.org/{device_token}\"}}}";
+            "/devel-push-apns.supla.org/{device_token}\"}, "
+            "\"6\":{\"token\":\"xcooo\",\"expires_in\":3600,\"bundle_id\":"
+            "\"com.supla\",\"url\":\"https://push-apns.supla.org/"
+            "{device_token}\",\"development_url\":\"https://"
+            "devel-push-apns.supla.org/{device_token}\"}}}";
       });
 
   provider->refresh();
@@ -76,7 +80,8 @@ void DeliveryTaskTest::SetUp(void) {
           new supla_asynctask_http_thread_bucket(deliveryTaskCurlAdapter)));
 
   ON_CALL(*deliveryTaskCurlAdapter, escape)
-      .WillByDefault([](const std::string &str) { return str; });
+      .WillByDefault(
+          [](int instance_id, const std::string &str) { return str; });
 
   ON_CALL(throttling, is_delivery_possible).WillByDefault(Return(true));
 }
@@ -104,7 +109,7 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
   supla_pn_recipient *r2 =
       new supla_pn_recipient(1, 5, false, "2568548549", "ABCD", 0);
   supla_pn_recipient *r3 =
-      new supla_pn_recipient(1, 5, true, "ybuabnuf548549", "ABCD", 0);
+      new supla_pn_recipient(1, 6, true, "ybuabnuf548549", "ABCD", 0);
 
   push->get_recipients().add(r1, platform_push_android);
 
@@ -113,66 +118,107 @@ TEST_F(DeliveryTaskTest, recipientsFromAndroidAndiOsPlatforms) {
   push->get_recipients().add(r3, platform_push_ios);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1);
   EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("Authorization: Bearer tokenXyz")))
-      .Times(1);
-
-  EXPECT_CALL(*deliveryTaskCurlAdapter,
-              set_opt_url(StrEq("https://push-fcm.supla.org")))
-      .Times(1);
-
-  EXPECT_CALL(
-      *deliveryTaskCurlAdapter,
-      set_opt_post_fields(StrEq(
-          "{\"message\":{\"token\":\"0956469ed2650ed09534e4193ef8028f950\","
-          "\"android\":{\"priority\":\"high\",\"notification\":{\"title\":"
-          "\"TiTle\",\"body\":\"BoDy\",\"title_loc_key\":\"Localized "
-          "Title\",\"title_loc_args\":[\"t1\",\"t2\"],\"body_loc_key\":"
-          "\"Localized "
-          "Body\",\"body_loc_args\":[\"b1\",\"b2\"]},\"data\":{\"profileName\":"
-          "\"My Profile 123\"}}}}")))
+              append_header(Eq(0), StrEq("Authorization: Bearer tokenXyz")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("content-type: application/json")))
-      .Times(2);
-
-  EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("authorization: bearer xcvbn")))
-      .Times(2);
-
-  EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("apns-topic: com.supla")))
-      .Times(2);
-
-  EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("apns-push-type: alert")))
-      .Times(2);
-
-  EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("apns-priority: 10")))
-      .Times(2);
-
-  EXPECT_CALL(*deliveryTaskCurlAdapter,
-              set_opt_url(StrEq("https://push-apns.supla.org/2568548549")))
+              set_opt_url(Eq(0), StrEq("https://push-fcm.supla.org")))
       .Times(1);
 
   EXPECT_CALL(
       *deliveryTaskCurlAdapter,
-      set_opt_url(StrEq("https://devel-push-apns.supla.org/ybuabnuf548549")))
+      set_opt_post_fields(
+          Eq(0),
+          StrEq(
+              "{\"message\":{\"token\":\"0956469ed2650ed09534e4193ef8028f950\","
+              "\"android\":{\"priority\":\"high\",\"notification\":{\"title\":"
+              "\"TiTle\",\"body\":\"BoDy\",\"title_loc_key\":\"Localized "
+              "Title\",\"title_loc_args\":[\"t1\",\"t2\"],\"body_loc_key\":"
+              "\"Localized "
+              "Body\",\"body_loc_args\":[\"b1\",\"b2\"]},\"data\":{"
+              "\"profileName\":"
+              "\"My Profile 123\"}}}}")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(5), StrEq("content-type: application/json")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(6), StrEq("content-type: application/json")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(5), StrEq("authorization: bearer xcvbn")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(6), StrEq("authorization: bearer xcooo")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(5), StrEq("apns-topic: com.supla")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(6), StrEq("apns-topic: com.supla")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(5), StrEq("apns-push-type: alert")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(6), StrEq("apns-push-type: alert")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(5), StrEq("apns-priority: 10")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(6), StrEq("apns-priority: 10")))
       .Times(1);
 
   EXPECT_CALL(
       *deliveryTaskCurlAdapter,
-      set_opt_post_fields(StrEq(
-          "{\"aps\":{\"alert\":{\"title\":\"TiTle\",\"body\":\"BoDy\",\"title-"
-          "loc-key\":\"Localized "
-          "Title\",\"title-loc-args\":[\"t1\",\"t2\"],\"loc-key\":\"Localized "
-          "Body\",\"loc-args\":[\"b1\",\"b2\"]},\"sound\":\"default\","
-          "\"content-available\":1},\"profileName\":\"ABCD\"}")))
-      .Times(2);
+      set_opt_url(Eq(5), StrEq("https://push-apns.supla.org/2568548549")))
+      .Times(1);
+
+  EXPECT_CALL(
+      *deliveryTaskCurlAdapter,
+      set_opt_url(Eq(6),
+                  StrEq("https://devel-push-apns.supla.org/ybuabnuf548549")))
+      .Times(1);
+
+  EXPECT_CALL(
+      *deliveryTaskCurlAdapter,
+      set_opt_post_fields(
+          Eq(5),
+          StrEq("{\"aps\":{\"alert\":{\"title\":\"TiTle\",\"body\":\"BoDy\","
+                "\"title-"
+                "loc-key\":\"Localized "
+                "Title\",\"title-loc-args\":[\"t1\",\"t2\"],\"loc-key\":"
+                "\"Localized "
+                "Body\",\"loc-args\":[\"b1\",\"b2\"]},\"sound\":\"default\","
+                "\"content-available\":1},\"profileName\":\"ABCD\"}")))
+      .Times(1);
+
+  EXPECT_CALL(
+      *deliveryTaskCurlAdapter,
+      set_opt_post_fields(
+          Eq(6),
+          StrEq("{\"aps\":{\"alert\":{\"title\":\"TiTle\",\"body\":\"BoDy\","
+                "\"title-"
+                "loc-key\":\"Localized "
+                "Title\",\"title-loc-args\":[\"t1\",\"t2\"],\"loc-key\":"
+                "\"Localized "
+                "Body\",\"loc-args\":[\"b1\",\"b2\"]},\"sound\":\"default\","
+                "\"content-available\":1},\"profileName\":\"ABCD\"}")))
+      .Times(1);
 
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctClient, 123), 1, queue, pool,
@@ -206,15 +252,18 @@ TEST_F(DeliveryTaskTest, protocolVersionGe23) {
 
   EXPECT_CALL(
       *deliveryTaskCurlAdapter,
-      set_opt_post_fields(StrEq(
-          "{\"message\":{\"token\":\"0956469ed2650ed09534e4193ef8028f950\","
-          "\"android\":{\"priority\":\"high\",\"data\":{\"profileName\":\"My "
-          "Profile "
-          "123\",\"title\":\"TiTle\",\"body\":\"BoDy\",\"title_loc_key\":"
-          "\"Localized "
-          "Title\",\"title_loc_arg1\":\"t1\",\"title_loc_arg2\":\"t2\","
-          "\"body_loc_key\":\"Localized "
-          "Body\",\"body_loc_arg1\":\"b1\",\"body_loc_arg2\":\"b2\"}}}}")))
+      set_opt_post_fields(
+          Eq(0),
+          StrEq(
+              "{\"message\":{\"token\":\"0956469ed2650ed09534e4193ef8028f950\","
+              "\"android\":{\"priority\":\"high\",\"data\":{\"profileName\":"
+              "\"My "
+              "Profile "
+              "123\",\"title\":\"TiTle\",\"body\":\"BoDy\",\"title_loc_key\":"
+              "\"Localized "
+              "Title\",\"title_loc_arg1\":\"t1\",\"title_loc_arg2\":\"t2\","
+              "\"body_loc_key\":\"Localized "
+              "Body\",\"body_loc_arg1\":\"b1\",\"body_loc_arg2\":\"b2\"}}}}")))
       .Times(1);
 
   shared_ptr<supla_abstract_asynctask> task =
@@ -234,7 +283,7 @@ TEST_F(DeliveryTaskTest, fcmMessageId) {
   push->get_recipients().add(r, platform_push_android);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_write_data)
-      .WillOnce([this](string *request_result) {
+      .WillOnce([this](int instance_id, string *request_result) {
         *request_result = "{\"name\":\"projects/abcdfg/messages/MsgId123\"}";
       });
 
@@ -257,7 +306,7 @@ TEST_F(DeliveryTaskTest, apnsMessageId) {
   push->get_recipients().add(r, platform_push_ios);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_header_data)
-      .WillOnce([this](std::list<std::string> *data) {
+      .WillOnce([this](int instance_id, std::list<std::string> *data) {
         data->push_back("apns-id: APNS-ID");
       });
 
@@ -306,7 +355,7 @@ TEST_F(DeliveryTaskTest, apnsRecipientDoesNotExist) {
       .WillRepeatedly(Return(400));
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_write_data)
-      .WillOnce([this](string *request_result) {
+      .WillOnce([this](int instance_id, string *request_result) {
         *request_result = "{\"reason\":\"BadDeviceToken\"}";
       });
 

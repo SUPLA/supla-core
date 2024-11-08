@@ -29,23 +29,23 @@
 namespace testing {
 
 class CurlAdapterMock : public supla_abstract_curl_adapter {
- private:
- protected:
  public:
   CurlAdapterMock(void);
   virtual ~CurlAdapterMock(void);
 
   MOCK_METHOD0(reset, void(void));
-  MOCK_METHOD1(set_opt_url, void(const char *url));
-  MOCK_METHOD1(set_opt_post_fields, void(const char *fields));
-  MOCK_METHOD1(set_opt_header_data, void(std::list<std::string> *data));
-  MOCK_METHOD1(set_opt_write_data, void(std::string *data));
-  MOCK_METHOD1(set_opt_verbose, void(bool on));
-  MOCK_METHOD1(set_opt_custom_request, void(const char *method));
-  MOCK_METHOD1(append_header, bool(const char *string));
-  MOCK_METHOD0(perform, bool(void));
-  MOCK_METHOD0(get_response_code, long(void));
-  MOCK_METHOD1(escape, std::string(const std::string &str));
+  MOCK_METHOD2(set_opt_url, void(int instance_id, const char *url));
+  MOCK_METHOD2(set_opt_post_fields, void(int instance_id, const char *fields));
+  MOCK_METHOD2(set_opt_header_data,
+               void(int instance_id, std::list<std::string> *data));
+  MOCK_METHOD2(set_opt_write_data, void(int instance_id, std::string *data));
+  MOCK_METHOD2(set_opt_verbose, void(int instance_id, bool on));
+  MOCK_METHOD2(set_opt_custom_request,
+               void(int instance_id, const char *method));
+  MOCK_METHOD2(append_header, bool(int instance_id, const char *string));
+  MOCK_METHOD1(perform, bool(int instance_id));
+  MOCK_METHOD1(get_response_code, long(int instance_id));
+  MOCK_METHOD2(escape, std::string(int instance_id, const std::string &str));
   MOCK_METHOD0(cancel, void(void));
 };
 

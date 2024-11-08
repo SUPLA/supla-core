@@ -50,7 +50,7 @@ void GoogleHomeStateReportRequestTest::SetUp(void) {
       .WillByDefault(Return(200));
 
   ON_CALL(*tokenProviderCurlAdapter, set_opt_write_data)
-      .WillByDefault([this](string *request_result) {
+      .WillByDefault([this](int instance_id, string *request_result) {
         *request_result =
             "{\"homegraph\":{\"0\":{\"token\":\"directTokenXyz\",\"expires_"
             "in\":3600}}}";
@@ -68,7 +68,7 @@ void GoogleHomeStateReportRequestTest::SetUp(void) {
       .WillRepeatedly(Return("qwerty"));
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -89,27 +89,28 @@ void GoogleHomeStateReportRequestTest::TearDown(void) {
 void GoogleHomeStateReportRequestTest::expectToken(bool direct) {
   if (direct) {
     EXPECT_CALL(*curlAdapter,
-                set_opt_url(StrEq("https://homegraph.googleapis.com/v1/"
-                                  "devices:reportStateAndNotification")))
+                set_opt_url(Eq(0), StrEq("https://homegraph.googleapis.com/v1/"
+                                         "devices:reportStateAndNotification")))
         .Times(1);
 
-    EXPECT_CALL(*curlAdapter,
-                append_header(StrEq("Authorization: Bearer directTokenXyz")))
+    EXPECT_CALL(
+        *curlAdapter,
+        append_header(Eq(0), StrEq("Authorization: Bearer directTokenXyz")))
         .Times(1)
         .WillOnce(Return(true));
   } else {
     EXPECT_CALL(credentials, get_access_token)
         .WillRepeatedly(Return("MyAccessTokenXYZ"));
 
-    EXPECT_CALL(
-        *curlAdapter,
-        set_opt_url(StrEq(
-            "https://"
-            "odokilkqoesh73zfznmiupey4a0uugaz.lambda-url.eu-west-1.on.aws/")))
+    EXPECT_CALL(*curlAdapter,
+                set_opt_url(Eq(0), StrEq("https://"
+                                         "odokilkqoesh73zfznmiupey4a0uugaz."
+                                         "lambda-url.eu-west-1.on.aws/")))
         .Times(1);
 
-    EXPECT_CALL(*curlAdapter,
-                append_header(StrEq("Authorization: Bearer MyAccessTokenXYZ")))
+    EXPECT_CALL(
+        *curlAdapter,
+        append_header(Eq(0), StrEq("Authorization: Bearer MyAccessTokenXYZ")))
         .Times(1)
         .WillOnce(Return(true));
   }
@@ -135,7 +136,7 @@ void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
         return value;
       });
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   if (direct) {
@@ -377,7 +378,7 @@ void GoogleHomeStateReportRequestTest::makeHvacThermostatTest(
     }
   }
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   supla_google_home_state_report_request *request =

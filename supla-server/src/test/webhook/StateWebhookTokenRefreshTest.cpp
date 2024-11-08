@@ -64,19 +64,20 @@ TEST_F(StateWebhookTokenRefreshTest, expired) {
       .WillRepeatedly(Return("MyRefreshTokenXYZ"));
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(2)
       .WillRepeatedly(Return(true));
 
-  EXPECT_CALL(*curlAdapter, set_opt_custom_request(StrEq("PUT"))).Times(1);
+  EXPECT_CALL(*curlAdapter, set_opt_custom_request(Eq(0), StrEq("PUT")))
+      .Times(1);
 
   EXPECT_CALL(*curlAdapter,
-              set_opt_url(StrEq("https://webhook.test.io/endpoint")))
+              set_opt_url(Eq(0), StrEq("https://webhook.test.io/endpoint")))
       .Times(2);
 
   EXPECT_CALL(*curlAdapter, set_opt_write_data)
       .Times(1)
-      .WillOnce([](string *request_result) {
+      .WillOnce([](int instance_id, string *request_result) {
         *request_result =
             "{\"accessToken\": \"newAccessToken\", \"expiresIn\": "
             "12345,\"refreshToken\": \"newRefreshToken\"}";
@@ -86,7 +87,8 @@ TEST_F(StateWebhookTokenRefreshTest, expired) {
       "{\"refreshToken\":\"MyRefreshTokenXYZ\",\"userShortUniqueId\":"
       "\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\"}";
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(postPayload1))).Times(1);
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(postPayload1)))
+      .Times(1);
 
   EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(200));
 
@@ -102,8 +104,9 @@ TEST_F(StateWebhookTokenRefreshTest, expired) {
         .WillRepeatedly(Return("newAccessToken"));
   }
 
-  EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Authorization: Bearer newAccessToken")))
+  EXPECT_CALL(
+      *curlAdapter,
+      append_header(Eq(0), StrEq("Authorization: Bearer newAccessToken")))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -112,7 +115,8 @@ TEST_F(StateWebhookTokenRefreshTest, expired) {
       "\"channelId\":567,\"channelFunction\":\"ACTION_TRIGGER\",\"timestamp\":"
       "1679859036,\"triggered_actions\":[\"HOLD\"]}";
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(postPayload2))).Times(1);
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(postPayload2)))
+      .Times(1);
 
   EXPECT_CALL(*curlAdapter, reset).Times(2);
 
@@ -181,20 +185,21 @@ TEST_F(StateWebhookTokenRefreshTest, theTokenHasChangedInTheMeantime) {
   EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(200));
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1)
       .WillOnce(Return(true));
 
   EXPECT_CALL(*curlAdapter,
-              set_opt_url(StrEq("https://webhook.test.io/endpoint")))
+              set_opt_url(Eq(0), StrEq("https://webhook.test.io/endpoint")))
       .Times(1);
 
   EXPECT_CALL(credentials, get_user_short_unique_id)
       .Times(1)
       .WillOnce(Return("dc85740d-cb27-405b-9da3-e8be5c71ae5b"));
 
-  EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Authorization: Bearer AccessTokenEFGH")))
+  EXPECT_CALL(
+      *curlAdapter,
+      append_header(Eq(0), StrEq("Authorization: Bearer AccessTokenEFGH")))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -203,7 +208,8 @@ TEST_F(StateWebhookTokenRefreshTest, theTokenHasChangedInTheMeantime) {
       "\"channelId\":567,\"channelFunction\":\"ACTION_TRIGGER\",\"timestamp\":"
       "1679859036,\"triggered_actions\":[\"HOLD\"]}";
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(postPayload2))).Times(1);
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(postPayload2)))
+      .Times(1);
 
   EXPECT_CALL(*curlAdapter, perform).Times(1).WillOnce(Return(true));
 

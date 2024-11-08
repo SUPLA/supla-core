@@ -39,7 +39,7 @@ void GoogleHomeSyncRequestTest::SetUp(void) {
       .WillByDefault(Return(200));
 
   ON_CALL(*tokenProviderCurlAdapter, set_opt_write_data)
-      .WillByDefault([this](string *request_result) {
+      .WillByDefault([this](int instance_id, string *request_result) {
         *request_result =
             "{\"homegraph\":{\"0\":{\"token\":\"directTokenXyz\",\"expires_"
             "in\":3600}}}";
@@ -90,7 +90,7 @@ TEST_F(GoogleHomeSyncRequestTest, syncSuccessful) {
 
   EXPECT_CALL(*curlAdapter, set_opt_post_fields)
       .Times(1)
-      .WillOnce([&expectedPayload](const char *fields) {
+      .WillOnce([&expectedPayload](int instance_id, const char *fields) {
         expectedPayload.replace(14, 36, string(fields).substr(14, 36));
         EXPECT_TRUE(fields == expectedPayload);
       });
@@ -99,18 +99,21 @@ TEST_F(GoogleHomeSyncRequestTest, syncSuccessful) {
 
   EXPECT_CALL(
       *curlAdapter,
-      set_opt_url(StrEq(
-          "https://"
-          "odokilkqoesh73zfznmiupey4a0uugaz.lambda-url.eu-west-1.on.aws/")))
+      set_opt_url(
+          Eq(0),
+          StrEq(
+              "https://"
+              "odokilkqoesh73zfznmiupey4a0uugaz.lambda-url.eu-west-1.on.aws/")))
       .Times(1);
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Authorization: Bearer MyAccessTokenXYZ")))
+  EXPECT_CALL(
+      *curlAdapter,
+      append_header(Eq(0), StrEq("Authorization: Bearer MyAccessTokenXYZ")))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -138,25 +141,28 @@ TEST_F(GoogleHomeSyncRequestTest, directSyncWithSuccess) {
 
   EXPECT_CALL(*curlAdapter, set_opt_post_fields)
       .Times(1)
-      .WillOnce([&expectedPayload](const char *fields) {
+      .WillOnce([&expectedPayload](int instance_id, const char *fields) {
         expectedPayload.replace(14, 36, string(fields).substr(14, 36));
         EXPECT_TRUE(fields == expectedPayload);
       });
 
   EXPECT_CALL(*curlAdapter, reset).Times(1);
 
-  EXPECT_CALL(*curlAdapter,
-              set_opt_url(StrEq(
-                  "https://homegraph.googleapis.com/v1/devices:requestSync")))
+  EXPECT_CALL(
+      *curlAdapter,
+      set_opt_url(
+          Eq(0),
+          StrEq("https://homegraph.googleapis.com/v1/devices:requestSync")))
       .Times(1);
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Authorization: Bearer directTokenXyz")))
+  EXPECT_CALL(
+      *curlAdapter,
+      append_header(Eq(0), StrEq("Authorization: Bearer directTokenXyz")))
       .Times(1)
       .WillOnce(Return(true));
 

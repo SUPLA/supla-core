@@ -16,31 +16,33 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_CURL_ADAPTER_H_
-#define ABSTRACT_CURL_ADAPTER_H_
+#ifndef CURL_INSTANCE_H_
+#define CURL_INSTANCE_H_
+
+#include <curl/curl.h>
 
 #include <list>
 #include <string>
 
-class supla_abstract_curl_adapter {
+class supla_curl_instance {
+ private:
+  int id;
+  std::string *write_data_ptr;
+  std::list<std::string> *header_data_ptr;
+  std::string url;
+  CURL *curl;
+  struct curl_slist *header;
+  static size_t write_callback(void *contents, size_t size, size_t nmemb,
+                               void *userp);
+  static size_t header_callback(void *contents, size_t size, size_t nmemb,
+                                void *userp);
+
  public:
-  supla_abstract_curl_adapter(void);
-  virtual ~supla_abstract_curl_adapter(void);
+  explicit supla_curl_instance(int id);
+  virtual ~supla_curl_instance(void);
 
-  virtual void reset(void) = 0;
-  virtual void set_opt_url(int instance_id, const char *url) = 0;
-  virtual void set_opt_post_fields(int instance_id, const char *fields) = 0;
-  virtual void set_opt_write_data(int instance_id, std::string *data) = 0;
-  virtual void set_opt_header_data(int instance_id,
-                                   std::list<std::string> *data) = 0;
-  virtual void set_opt_verbose(int instance_id, bool on) = 0;
-  virtual void set_opt_custom_request(int instance_id, const char *method) = 0;
-  virtual bool append_header(int instance_id, const char *string) = 0;
-  virtual bool perform(int instance_id) = 0;
-  virtual long get_response_code(int instance_id) = 0;
-  virtual std::string escape(int instance_id, const std::string &str) = 0;
-  virtual void cancel(void) = 0;
-
+  int get_id(void);
+  void reset(void);
   void set_opt_url(const char *url);
   void set_opt_post_fields(const char *fields);
   void set_opt_write_data(std::string *data);
@@ -51,6 +53,7 @@ class supla_abstract_curl_adapter {
   bool perform(void);
   long get_response_code(void);
   std::string escape(const std::string &str);
+  void cancel(void);
 };
 
-#endif /* ABSTRACT_CURL_ADAPTER_H_ */
+#endif /* CURL_INSTANCE_H_ */
