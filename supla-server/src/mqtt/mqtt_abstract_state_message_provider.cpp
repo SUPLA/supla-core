@@ -1076,6 +1076,25 @@ bool supla_mqtt_abstract_state_message_provider::
               : nullptr,
           false, "devices/%i/channels/%i/state/temperature_setpoint_heat",
           get_device_id(), get_channel_id());
+    case 6:
+      return create_message(
+          topic_prefix, user_suid, topic_name, message, message_size,
+          hvac_val ? (hvac_val->is_on() == 1 || hvac_val->is_on() > 2 ? "true"
+                                                                      : "false")
+                   : nullptr,
+          false, "devices/%i/channels/%i/state/is_on", get_device_id(),
+          get_channel_id());
+    case 7: {
+      char value[50] = {};
+      if (hvac_val && hvac_val->is_on() > 1) {
+        snprintf(value, sizeof(value), "%i", hvac_val->is_on() - 2);
+      }
+
+      return create_message(topic_prefix, user_suid, topic_name, message,
+                            message_size, value[0] ? value : nullptr, false,
+                            "devices/%i/channels/%i/state/percentage",
+                            get_device_id(), get_channel_id());
+    }
   }
 
   return false;

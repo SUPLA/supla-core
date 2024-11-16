@@ -202,8 +202,8 @@ void supla_channel_hvac_value::set_on(unsigned char on) {
 }
 
 unsigned char supla_channel_hvac_value::is_on(void) {
-  if (((THVACValue*)raw_value)->IsOn > 101) {
-    return 101;
+  if (((THVACValue*)raw_value)->IsOn > 102) {
+    return 102;
   }
   return ((THVACValue*)raw_value)->IsOn;
 }
