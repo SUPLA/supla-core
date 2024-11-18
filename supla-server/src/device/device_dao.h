@@ -136,6 +136,9 @@ class supla_device_dao : public supla_abstract_device_dao {
 
   virtual supla_channel_extended_value *get_channel_extended_value(
       int user_id, int channel_id);
+
+  virtual void update_channel_state(int channel_id, int user_id,
+                                    supla_channel_state *state);
 };
 
 #endif /* SUPLA_DEVICE_DAO_H_ */

@@ -1731,3 +1731,46 @@ supla_channel_extended_value *supla_device_dao::get_channel_extended_value(
 
   return result;
 }
+
+void supla_device_dao::update_channel_state(int channel_id, int user_id,
+                                            supla_channel_state *state) {
+  if (!channel_id || !user_id || !state) {
+    return;
+  }
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return;
+  }
+
+  char *json = state->get_json();
+  if (!json) {
+    return;
+  }
+
+  MYSQL_STMT *stmt = nullptr;
+  MYSQL_BIND pbind[4] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = (char *)json;
+  pbind[2].buffer_length = strnlen(json, 1024);
+
+  const char sql[] = "CALL `supla_update_channel_state`(?, ?, ?)";
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+
+  free(json);
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+}
