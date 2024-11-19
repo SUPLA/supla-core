@@ -3846,7 +3846,7 @@ END;;
 
 CREATE TABLE supla_dev_channel_state (channel_id INT NOT NULL, user_id INT NOT NULL, update_time DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', state TEXT CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, INDEX IDX_A57D6ADBA76ED395 (user_id), PRIMARY KEY(channel_id)) DEFAULT CHARACTER SET utf8 COLLATE `utf8_unicode_ci` ENGINE = InnoDB;;
 
-DROP PROCEDURE IF EXISTS `supla_update_subdevice`;;
+DROP PROCEDURE IF EXISTS `supla_update_channel_state`;;
 
 CREATE PROCEDURE `supla_update_channel_state`(
     IN `_id` INT,
