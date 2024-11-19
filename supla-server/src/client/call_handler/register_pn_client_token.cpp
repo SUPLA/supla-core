@@ -87,6 +87,8 @@ void supla_ch_register_pn_client_token::handle_call(
     }
     if (reg->Token.TokenSize <= SUPLA_PN_CLIENT_TOKEN_MAXSIZE) {
       token->Token[token->TokenSize > 1 ? token->TokenSize - 1 : 0] = 0;
+      token->ProfileName[SUPLA_PN_PROFILE_NAME_MAXSIZE - 1] = 0;
+
       client_dao.update_client_push_notification_client_token(
           user_id, client_id, (char*)token->Token, token->Platform,
           token->AppId, token->DevelopmentEnv, (char*)token->ProfileName);

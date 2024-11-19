@@ -92,9 +92,9 @@ TEST_F(ChannelHvacValueTest, isOn) {
   EXPECT_TRUE(value.is_on());
   EXPECT_EQ(value.is_on(), 5);
 
-  value.set_on(102);
+  value.set_on(103);
 
-  EXPECT_EQ(value.is_on(), 101);
+  EXPECT_EQ(value.is_on(), 102);
 
   value.set_on(0);
   EXPECT_FALSE(value.is_on());

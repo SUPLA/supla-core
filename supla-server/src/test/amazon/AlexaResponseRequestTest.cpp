@@ -59,12 +59,12 @@ void AlexaResponseRequestTest::makeTest(int func, bool online,
                                         const char *expectedPayload,
                                         const string &correlation_token) {
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1)
       .WillOnce(Return(true));
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Authorization: Bearer ACCESS-TOKEN")))
+              append_header(Eq(0), StrEq("Authorization: Bearer ACCESS-TOKEN")))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -85,11 +85,12 @@ void AlexaResponseRequestTest::makeTest(int func, bool online,
 
   EXPECT_CALL(credentials, get_region).WillRepeatedly(Return("eu"));
 
-  EXPECT_CALL(*curlAdapter,
-              set_opt_url(StrEq("https://api.eu.amazonalexa.com/v3/events")))
+  EXPECT_CALL(
+      *curlAdapter,
+      set_opt_url(Eq(0), StrEq("https://api.eu.amazonalexa.com/v3/events")))
       .Times(1);
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   supla_alexa_response_request *request = new supla_alexa_response_request(
@@ -331,12 +332,12 @@ void AlexaResponseRequestTest::hvacThermostatTest(
     supla_channel_extended_value *extendedValue, const char *expectedPayload,
     const string &correlation_token) {
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1)
       .WillOnce(Return(true));
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Authorization: Bearer ACCESS-TOKEN")))
+              append_header(Eq(0), StrEq("Authorization: Bearer ACCESS-TOKEN")))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -381,11 +382,12 @@ void AlexaResponseRequestTest::hvacThermostatTest(
 
   EXPECT_CALL(credentials, get_region).WillRepeatedly(Return("eu"));
 
-  EXPECT_CALL(*curlAdapter,
-              set_opt_url(StrEq("https://api.eu.amazonalexa.com/v3/events")))
+  EXPECT_CALL(
+      *curlAdapter,
+      set_opt_url(Eq(0), StrEq("https://api.eu.amazonalexa.com/v3/events")))
       .Times(1);
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   supla_alexa_response_request *request = new supla_alexa_response_request(

@@ -100,47 +100,54 @@ char *supla_apns_client::get_payload(supla_pn_recipient *recipient) {
 
 bool supla_apns_client::_send(supla_remote_gateway_access_token *token,
                               supla_pn_recipient *recipient) {
-  get_curl_adapter()->append_header("content-type: application/json");
+  get_curl_adapter()->append_header(recipient->get_app_id(),
+                                    "content-type: application/json");
 
   string _token = "authorization: bearer " + token->get_token();
-  get_curl_adapter()->append_header(_token.c_str());
+  get_curl_adapter()->append_header(recipient->get_app_id(), _token.c_str());
 
   string topic = "apns-topic: " + token->get_extra_field("bundle_id");
-  get_curl_adapter()->append_header(topic.c_str());
+  get_curl_adapter()->append_header(recipient->get_app_id(), topic.c_str());
 
-  get_curl_adapter()->append_header("apns-push-type: alert");
-  get_curl_adapter()->append_header("apns-priority: 10");
+  get_curl_adapter()->append_header(recipient->get_app_id(),
+                                    "apns-push-type: alert");
+  get_curl_adapter()->append_header(recipient->get_app_id(),
+                                    "apns-priority: 10");
 
   string endpoint = token->get_url(recipient->is_development_env());
   size_t pos = endpoint.find("{device_token}");
   if (pos != std::string::npos) {
     endpoint.replace(pos, std::string("{device_token}").length(),
-                     get_curl_adapter()->escape(recipient->get_token()));
+                     get_curl_adapter()->escape(recipient->get_app_id(),
+                                                recipient->get_token()));
   } else {
     supla_log(LOG_ERR, "Url %s does not contain the string {device_token}",
               endpoint.c_str());
     return false;
   }
 
-  get_curl_adapter()->set_opt_url(endpoint.c_str());
+  get_curl_adapter()->set_opt_url(recipient->get_app_id(), endpoint.c_str());
 
   char *payload = get_payload(recipient);
-  get_curl_adapter()->set_opt_post_fields(payload);
+  get_curl_adapter()->set_opt_post_fields(recipient->get_app_id(), payload);
 
   string request_result;
   list<string> header;
-  get_curl_adapter()->set_opt_write_data(&request_result);
-  get_curl_adapter()->set_opt_header_data(&header);
+  get_curl_adapter()->set_opt_write_data(recipient->get_app_id(),
+                                         &request_result);
+  get_curl_adapter()->set_opt_header_data(recipient->get_app_id(), &header);
 
-  bool result = get_curl_adapter()->perform();
+  bool result = get_curl_adapter()->perform(recipient->get_app_id());
   free(payload);
 
   if (result) {
-    result = get_curl_adapter()->get_response_code() == 200;
+    result =
+        get_curl_adapter()->get_response_code(recipient->get_app_id()) == 200;
     if (!result) {
       string reason;
 
-      if (get_curl_adapter()->get_response_code() == 400) {
+      if (get_curl_adapter()->get_response_code(recipient->get_app_id()) ==
+          400) {
         cJSON *response_json = cJSON_Parse(request_result.c_str());
         if (response_json) {
           cJSON *reason_json = cJSON_GetObjectItem(response_json, "reason");
@@ -151,15 +158,15 @@ bool supla_apns_client::_send(supla_remote_gateway_access_token *token,
         }
       }
 
-      if (reason == "BadDeviceToken" ||
-          get_curl_adapter()->get_response_code() == 410) {
+      if (reason == "BadDeviceToken" || get_curl_adapter()->get_response_code(
+                                            recipient->get_app_id()) == 410) {
         recipient->set_exists(false);
       } else {
-        supla_log(LOG_ERR,
-                  "The APNs server returned an unexpected code: %i%s%s",
-                  get_curl_adapter()->get_response_code(),
-                  reason.empty() ? "" : ", reason: ",
-                  reason.empty() ? "" : reason.c_str());
+        supla_log(
+            LOG_ERR, "The APNs server returned an unexpected code: %i%s%s",
+            get_curl_adapter()->get_response_code(recipient->get_app_id()),
+            reason.empty() ? "" : ", reason: ",
+            reason.empty() ? "" : reason.c_str());
       }
 
     } else {

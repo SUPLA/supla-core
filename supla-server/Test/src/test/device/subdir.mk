@@ -7,6 +7,7 @@ CPP_SRCS += \
 ../src/test/device/ChannelFragmentTest.cpp \
 ../src/test/device/ChannelPropertyGetterTest.cpp \
 ../src/test/device/ChannelRelationTest.cpp \
+../src/test/device/ChannelStateTest.cpp \
 ../src/test/device/CommonChannelPropertiesTest.cpp \
 ../src/test/device/RegisterDeviceEssentialTest.cpp \
 ../src/test/device/RegisterDeviceTest.cpp \
@@ -17,6 +18,7 @@ CPP_DEPS += \
 ./src/test/device/ChannelFragmentTest.d \
 ./src/test/device/ChannelPropertyGetterTest.d \
 ./src/test/device/ChannelRelationTest.d \
+./src/test/device/ChannelStateTest.d \
 ./src/test/device/CommonChannelPropertiesTest.d \
 ./src/test/device/RegisterDeviceEssentialTest.d \
 ./src/test/device/RegisterDeviceTest.d \
@@ -27,6 +29,7 @@ OBJS += \
 ./src/test/device/ChannelFragmentTest.o \
 ./src/test/device/ChannelPropertyGetterTest.o \
 ./src/test/device/ChannelRelationTest.o \
+./src/test/device/ChannelStateTest.o \
 ./src/test/device/CommonChannelPropertiesTest.o \
 ./src/test/device/RegisterDeviceEssentialTest.o \
 ./src/test/device/RegisterDeviceTest.o \
@@ -46,7 +49,7 @@ src/test/device/%.o: ../src/test/device/%.cpp src/test/device/subdir.mk
 clean: clean-src-2f-test-2f-device
 
 clean-src-2f-test-2f-device:
-	-$(RM) ./src/test/device/ChannelFragmentTest.d ./src/test/device/ChannelFragmentTest.o ./src/test/device/ChannelPropertyGetterTest.d ./src/test/device/ChannelPropertyGetterTest.o ./src/test/device/ChannelRelationTest.d ./src/test/device/ChannelRelationTest.o ./src/test/device/CommonChannelPropertiesTest.d ./src/test/device/CommonChannelPropertiesTest.o ./src/test/device/RegisterDeviceEssentialTest.d ./src/test/device/RegisterDeviceEssentialTest.o ./src/test/device/RegisterDeviceTest.d ./src/test/device/RegisterDeviceTest.o ./src/test/device/RegisterDeviceWithEmailAuthTest.d ./src/test/device/RegisterDeviceWithEmailAuthTest.o ./src/test/device/RegisterDeviceWithLocationAuthTest.d ./src/test/device/RegisterDeviceWithLocationAuthTest.o
+	-$(RM) ./src/test/device/ChannelFragmentTest.d ./src/test/device/ChannelFragmentTest.o ./src/test/device/ChannelPropertyGetterTest.d ./src/test/device/ChannelPropertyGetterTest.o ./src/test/device/ChannelRelationTest.d ./src/test/device/ChannelRelationTest.o ./src/test/device/ChannelStateTest.d ./src/test/device/ChannelStateTest.o ./src/test/device/CommonChannelPropertiesTest.d ./src/test/device/CommonChannelPropertiesTest.o ./src/test/device/RegisterDeviceEssentialTest.d ./src/test/device/RegisterDeviceEssentialTest.o ./src/test/device/RegisterDeviceTest.d ./src/test/device/RegisterDeviceTest.o ./src/test/device/RegisterDeviceWithEmailAuthTest.d ./src/test/device/RegisterDeviceWithEmailAuthTest.o ./src/test/device/RegisterDeviceWithLocationAuthTest.d ./src/test/device/RegisterDeviceWithLocationAuthTest.o
 
 .PHONY: clean-src-2f-test-2f-device
 

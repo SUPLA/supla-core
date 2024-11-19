@@ -60,12 +60,12 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
                                             const supla_caller &caller,
                                             const std::string &region) {
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1)
       .WillOnce(Return(true));
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Authorization: Bearer ACCESS-TOKEN")))
+              append_header(Eq(0), StrEq("Authorization: Bearer ACCESS-TOKEN")))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -93,9 +93,9 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
   }
   expected_url.append(".amazonalexa.com/v3/events");
 
-  EXPECT_CALL(*curlAdapter, set_opt_url(StrEq(expected_url))).Times(1);
+  EXPECT_CALL(*curlAdapter, set_opt_url(Eq(0), StrEq(expected_url))).Times(1);
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   supla_alexa_change_report_request *request =
@@ -115,12 +115,12 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
   EXPECT_CALL(*curlAdapter, reset).Times(2);
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(2)
       .WillRepeatedly(Return(true));
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Authorization: Bearer ACCESS-TOKEN")))
+              append_header(Eq(0), StrEq("Authorization: Bearer ACCESS-TOKEN")))
       .Times(2)
       .WillRepeatedly(Return(true));
 
@@ -141,14 +141,15 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
 
   EXPECT_CALL(credentials, get_region).WillRepeatedly(Return(""));
 
-  EXPECT_CALL(*curlAdapter,
-              set_opt_url(StrEq("https://api.amazonalexa.com/v3/events")))
+  EXPECT_CALL(
+      *curlAdapter,
+      set_opt_url(Eq(0), StrEq("https://api.amazonalexa.com/v3/events")))
       .Times(2);
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload1)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload1)))
       .Times(1);
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload2)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload2)))
       .Times(1);
 
   supla_alexa_change_report_request *request =
@@ -498,12 +499,12 @@ void AlexaChangeReportRequestTest::hvacThermostatTest(
     supla_channel_value *tempHumValue,
     supla_channel_extended_value *extendedValue, const char *expectedPayload) {
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1)
       .WillOnce(Return(true));
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Authorization: Bearer ACCESS-TOKEN")))
+              append_header(Eq(0), StrEq("Authorization: Bearer ACCESS-TOKEN")))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -551,9 +552,9 @@ void AlexaChangeReportRequestTest::hvacThermostatTest(
   string expected_url = "https://api";
   expected_url.append(".amazonalexa.com/v3/events");
 
-  EXPECT_CALL(*curlAdapter, set_opt_url(StrEq(expected_url))).Times(1);
+  EXPECT_CALL(*curlAdapter, set_opt_url(Eq(0), StrEq(expected_url))).Times(1);
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   supla_alexa_change_report_request *request =

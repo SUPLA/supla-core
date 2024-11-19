@@ -1725,6 +1725,16 @@ TEST_F(MqttStateMessageProviderTest, hvacThermostat) {
                               "456/channels/%i/state/temperature_setpoint_heat",
                               789));
 
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "false", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/is_on",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, nullptr, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/percentage",
+                              789));
+
   ASSERT_FALSE(dataExists(&provider));
 }
 
@@ -1766,6 +1776,172 @@ TEST_F(MqttStateMessageProviderTest, hvacThermostatHeatCool) {
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "21.22", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
                               "456/channels/%i/state/temperature_setpoint_heat",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "false", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/is_on",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, nullptr, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/percentage",
+                              789));
+
+  ASSERT_FALSE(dataExists(&provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, hvacIsOn) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue *)raw_value)->Mode = SUPLA_HVAC_MODE_HEAT;
+  ((THVACValue *)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_HEATING;
+  ((THVACValue *)raw_value)->IsOn = 1;
+
+  SetResultValue(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
+                 new supla_channel_hvac_value(raw_value));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "heat", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/mode",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "heating", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/action",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "0.00", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, nullptr, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint_cool",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, nullptr, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint_heat",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/is_on",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, nullptr, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/percentage",
+                              789));
+
+  ASSERT_FALSE(dataExists(&provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, hvacPercentage_0) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue *)raw_value)->Mode = SUPLA_HVAC_MODE_HEAT;
+  ((THVACValue *)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_HEATING;
+  ((THVACValue *)raw_value)->IsOn = 2;
+
+  SetResultValue(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
+                 new supla_channel_hvac_value(raw_value));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "heat", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/mode",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "heating", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/action",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "0.00", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, nullptr, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint_cool",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, nullptr, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint_heat",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "false", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/is_on",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "0", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/percentage",
+                              789));
+
+  ASSERT_FALSE(dataExists(&provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, hvacPercentage_100) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue *)raw_value)->Mode = SUPLA_HVAC_MODE_HEAT;
+  ((THVACValue *)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_HEATING;
+  ((THVACValue *)raw_value)->IsOn = 102;
+
+  SetResultValue(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
+                 new supla_channel_hvac_value(raw_value));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "heat", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/mode",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "heating", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/action",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "0.00", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, nullptr, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint_cool",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, nullptr, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/temperature_setpoint_heat",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/is_on",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(&provider, NULL, "100", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/percentage",
                               789));
 
   ASSERT_FALSE(dataExists(&provider));

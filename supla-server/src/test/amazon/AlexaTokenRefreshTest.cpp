@@ -50,7 +50,7 @@ TEST_F(AlexaTokenRefreshTest, skillDisabledException) {
   EXPECT_CALL(*curlAdapter, perform).WillRepeatedly(Return(true));
 
   EXPECT_CALL(*curlAdapter, set_opt_write_data)
-      .WillRepeatedly([](string *request_result) {
+      .WillRepeatedly([](int instance_id, string *request_result) {
         request_result->append(
             "{\"payload\": {\"code\": \"SKILL_DISABLED_EXCEPTION\"}}");
       });
@@ -83,10 +83,11 @@ TEST_F(AlexaTokenRefreshTest, refresh) {
 
   EXPECT_CALL(credentials, refresh_lock).Times(1);
 
-  EXPECT_CALL(curlAdapter,
-              set_opt_url(StrEq(
-                  "https://xatgh8yc1j.execute-api.eu-west-1.amazonaws.com/"
-                  "default/amazonRefreshTokenBridge")))
+  EXPECT_CALL(
+      curlAdapter,
+      set_opt_url(
+          Eq(0), StrEq("https://xatgh8yc1j.execute-api.eu-west-1.amazonaws.com/"
+                       "default/amazonRefreshTokenBridge")))
       .Times(1);
 
   EXPECT_CALL(credentials, get_refresh_token)
@@ -94,13 +95,14 @@ TEST_F(AlexaTokenRefreshTest, refresh) {
 
   const char postPayload1[] = "{\"refresh_token\":\"MyRefreshTokenXYZ\"}";
 
-  EXPECT_CALL(curlAdapter, set_opt_post_fields(StrEq(postPayload1))).Times(1);
+  EXPECT_CALL(curlAdapter, set_opt_post_fields(Eq(0), StrEq(postPayload1)))
+      .Times(1);
 
   EXPECT_CALL(curlAdapter, get_response_code).WillRepeatedly(Return(200));
 
   EXPECT_CALL(curlAdapter, set_opt_write_data)
       .Times(1)
-      .WillOnce([](string *request_result) {
+      .WillOnce([](int instance_id, string *request_result) {
         *request_result =
             "{\"access_token\": \"newAccessToken\", \"expires_in\": "
             "12345,\"refresh_token\": \"newRefreshToken\"}";

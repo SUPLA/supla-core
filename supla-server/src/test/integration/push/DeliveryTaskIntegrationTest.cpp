@@ -53,7 +53,7 @@ void DeliveryTaskIntegrationTest::SetUp(void) {
       .WillByDefault(Return(200));
 
   ON_CALL(*tokenProviderCurlAdapter, set_opt_write_data)
-      .WillByDefault([this](string *request_result) {
+      .WillByDefault([this](int instance_id, string *request_result) {
         *request_result =
             "{\"push_android\":{\"0\":{\"token\":\"tokenXyz\",\"expires_in\":"
             "3600,"
@@ -90,72 +90,98 @@ TEST_F(DeliveryTaskIntegrationTest, notificationLoadedFromDatabase) {
   runSqlScript("AddPushNotification.sql");
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1);
   EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("Authorization: Bearer tokenXyz")))
+              append_header(Eq(0), StrEq("Authorization: Bearer tokenXyz")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
-              set_opt_url(StrEq("https://push-fcm.supla.org")))
+              set_opt_url(Eq(0), StrEq("https://push-fcm.supla.org")))
       .Times(1);
 
   EXPECT_CALL(
       *deliveryTaskCurlAdapter,
-      set_opt_post_fields(StrEq(
-          "{\"message\":{\"token\":\"Token "
-          "1\",\"android\":{\"priority\":\"high\",\"notification\":{\"title\":"
-          "\"Abcd\",\"body\":\"Efgh\"},\"data\":{\"channelId\":\"345\"}}}}")))
+      set_opt_post_fields(Eq(0), StrEq("{\"message\":{\"token\":\"Token "
+                                       "1\",\"android\":{\"priority\":\"high\","
+                                       "\"notification\":{\"title\":"
+                                       "\"Abcd\",\"body\":\"Efgh\"},\"data\":{"
+                                       "\"channelId\":\"345\"}}}}")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("content-type: application/json")))
-      .Times(2);
-
-  EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("authorization: bearer xcvbn")))
+              append_header(Eq(0), StrEq("content-type: application/json")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("authorization: bearer xcvbn200")))
+              append_header(Eq(200), StrEq("content-type: application/json")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("apns-topic: com.supla")))
+              append_header(Eq(0), StrEq("authorization: bearer xcvbn")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("apns-topic: com.supla.200")))
+              append_header(Eq(200), StrEq("authorization: bearer xcvbn200")))
       .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("apns-push-type: alert")))
-      .Times(2);
+              append_header(Eq(0), StrEq("apns-topic: com.supla")))
+      .Times(1);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter,
-              append_header(StrEq("apns-priority: 10")))
-      .Times(2);
+              append_header(Eq(200), StrEq("apns-topic: com.supla.200")))
+      .Times(1);
 
-  EXPECT_CALL(*deliveryTaskCurlAdapter, escape(StrEq("Token 2")))
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(0), StrEq("apns-push-type: alert")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(200), StrEq("apns-push-type: alert")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(0), StrEq("apns-priority: 10")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter,
+              append_header(Eq(200), StrEq("apns-priority: 10")))
+      .Times(1);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter, escape(Eq(200), StrEq("Token 2")))
       .WillOnce(Return("Token%202"));
 
-  EXPECT_CALL(*deliveryTaskCurlAdapter,
-              set_opt_url(StrEq("https://push-apns.supla.org/Token%202")))
+  EXPECT_CALL(
+      *deliveryTaskCurlAdapter,
+      set_opt_url(Eq(200), StrEq("https://push-apns.supla.org/Token%202")))
       .Times(1);
 
-  EXPECT_CALL(*deliveryTaskCurlAdapter, escape(StrEq("Token 3")))
+  EXPECT_CALL(*deliveryTaskCurlAdapter, escape(Eq(0), StrEq("Token 3")))
       .WillOnce(Return("Token%203"));
 
-  EXPECT_CALL(*deliveryTaskCurlAdapter,
-              set_opt_url(StrEq("https://devel-push-apns.supla.org/Token%203")))
+  EXPECT_CALL(
+      *deliveryTaskCurlAdapter,
+      set_opt_url(Eq(0), StrEq("https://devel-push-apns.supla.org/Token%203")))
       .Times(1);
 
   EXPECT_CALL(
       *deliveryTaskCurlAdapter,
-      set_opt_post_fields(StrEq(
-          "{\"aps\":{\"alert\":{\"title\":\"Abcd\",\"body\":\"Efgh\"},"
-          "\"sound\":\"default\",\"content-available\":1},\"channelId\":345}")))
-      .Times(2);
+      set_opt_post_fields(
+          Eq(0),
+          StrEq("{\"aps\":{\"alert\":{\"title\":\"Abcd\",\"body\":\"Efgh\"},"
+                "\"sound\":\"default\",\"content-available\":1},\"channelId\":"
+                "345}")))
+      .Times(1);
+
+  EXPECT_CALL(
+      *deliveryTaskCurlAdapter,
+      set_opt_post_fields(
+          Eq(200),
+          StrEq("{\"aps\":{\"alert\":{\"title\":\"Abcd\",\"body\":\"Efgh\"},"
+                "\"sound\":\"default\",\"content-available\":1},\"channelId\":"
+                "345}")))
+      .Times(1);
 
   PnThrottlingMock throttling;
   EXPECT_CALL(throttling, is_delivery_possible).WillRepeatedly(Return(true));

@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "device/channel_fragment.h"
+#include "device/channel_state.h"
 #include "device/extended_value/channel_extended_value.h"
 #include "jsonconfig/device/device_json_config.h"
 #include "jsonconfig/json_config.h"
@@ -137,6 +138,12 @@ class supla_abstract_device_dao {
 
   virtual void set_subdevice_details(int device_id,
                                      TDS_SubdeviceDetails *details) = 0;
+
+  virtual supla_channel_extended_value *get_channel_extended_value(
+      int user_id, int channel_id) = 0;
+
+  virtual void update_channel_state(int channel_id, int user_id,
+                                    supla_channel_state *state) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_DEVICE_DAO_H_ */
