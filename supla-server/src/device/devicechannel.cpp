@@ -708,10 +708,6 @@ void supla_device_channel::set_extended_value(
   extended_value = new_value;
 
   if (new_value) {
-    if (old_value) {
-      new_value->merge_old_if_needed(old_value);
-    }
-
     if (data_analyzer) {
       data_analyzer->add_sample(flags, json_config, new_value);
     }
