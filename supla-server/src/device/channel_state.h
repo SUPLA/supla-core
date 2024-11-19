@@ -33,12 +33,15 @@ class supla_channel_state : supla_json_helper {
   void apply_json(const char *json);
 
  public:
+  supla_channel_state(void);
   explicit supla_channel_state(TDSC_ChannelState *state);
   explicit supla_channel_state(const char *json);
   virtual ~supla_channel_state();
 
   const TDSC_ChannelState *get_state(void);
   char *get_json(void);
+  void merge_old_if_needed(supla_channel_state *old);
+  bool equal_fields(supla_channel_state *state);
 };
 
 #endif /* CHANNEL_STATE_H_ */

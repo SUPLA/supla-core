@@ -992,20 +992,36 @@ unsigned int supla_device_channel::get_value_validity_time_left_msec(void) {
 }
 
 void supla_device_channel::set_state(TDSC_ChannelState *state) {
+  supla_channel_state new_state(state);
+  supla_channel_state old_state;
+  bool differ = false;
+
   lock();
   if (this->state == nullptr) {
-    this->state = new TDSC_ChannelState();
+    this->state = new supla_channel_state();
   }
 
-  *this->state = *state;
+  old_state = *this->state;
+  new_state.merge_old_if_needed(&old_state);
+
+  if (!new_state.equal_fields(&old_state)) {
+    *this->state = new_state;
+    differ = true;
+  }
   unlock();
+
+  if (differ) {
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+    dao.update_channel_state(get_id(), get_user_id(), &new_state);
+  }
 }
 
 bool supla_device_channel::get_state(TDSC_ChannelState *state) {
   bool result = false;
   lock();
   if (this->state) {
-    *state = *this->state;
+    *state = *this->state->get_state();
     result = true;
   }
   unlock();

@@ -66,9 +66,11 @@ const map<unsigned _supla_int16_t, string> supla_channel_state::field_map = {
     {JSON_FIELD_OPERATING_TIME, "operatingTime"},
 };
 
+supla_channel_state::supla_channel_state(void) { state = {}; }
+
 supla_channel_state::supla_channel_state(TDSC_ChannelState *state)
     : supla_json_helper() {
-  memcpy(&this->state, state, sizeof(TDSC_ChannelState));
+  this->state = *state;
 }
 
 supla_channel_state::supla_channel_state(const char *json)
@@ -78,6 +80,21 @@ supla_channel_state::supla_channel_state(const char *json)
 }
 
 supla_channel_state::~supla_channel_state() {}
+
+bool supla_channel_state::equal_fields(supla_channel_state *state) {
+  if (!state) {
+    return false;
+  }
+
+  unsigned char skip_leading_bytes =
+      sizeof(this->state.ReceiverID) + sizeof(this->state.ChannelID);
+  unsigned char skip_trailing_bytes = sizeof(this->state.EmptySpace);
+
+  return memcmp(&((char *)&this->state)[skip_leading_bytes],
+                &((char *)&state->state)[skip_leading_bytes],
+                sizeof(TDSC_ChannelState) - skip_leading_bytes -
+                    skip_trailing_bytes) == 0;
+}
 
 const string supla_channel_state::reset_cause_to_string(
     unsigned char reset_cause) {
@@ -387,3 +404,17 @@ char *supla_channel_state::get_json(void) {
 }
 
 const TDSC_ChannelState *supla_channel_state::get_state(void) { return &state; }
+
+void supla_channel_state::merge_old_if_needed(supla_channel_state *old) {
+  if (!(state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL) &&
+      (old->state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL)) {
+    state.Fields |= SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
+    state.BatteryLevel = old->state.BatteryLevel;
+  }
+
+  if (!(state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED) &&
+      (old->state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED)) {
+    state.Fields |= SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED;
+    state.BatteryPowered = old->state.BatteryPowered;
+  }
+}

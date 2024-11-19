@@ -28,6 +28,7 @@
 #include "caller.h"
 #include "channel_address.h"
 #include "device/abstract_common_channel_properties.h"
+#include "device/channel_state.h"
 #include "device/extended_value/channel_extended_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "device/value/channel_value.h"
@@ -55,7 +56,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   bool offline;
   unsigned _supla_int64_t flags;
   unsigned _supla_int64_t init_flags;
-  TDSC_ChannelState *state;
+  supla_channel_state *state;
   char value[SUPLA_CHANNELVALUE_SIZE];
   struct timeval value_valid_to;  // during offline
   supla_channel_extended_value *extended_value;

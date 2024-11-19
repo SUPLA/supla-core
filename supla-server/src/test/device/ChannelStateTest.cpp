@@ -18,6 +18,7 @@
 
 #include "ChannelStateTest.h"
 
+#include "TestHelper.h"
 #include "device/channel_state.h"
 
 namespace testing {
@@ -295,6 +296,118 @@ TEST_F(ChannelStateTest, lastConnectionResetCauseIntToJsonAndBack) {
   EXPECT_EQ(state2.get_state()->Fields, raw.Fields);
   EXPECT_EQ(state2.get_state()->LastConnectionResetCause,
             raw.LastConnectionResetCause);
+}
+
+TEST_F(ChannelStateTest, mergeIfNeeded_batteryLevel) {
+  TDSC_ChannelState raw = {};
+  TDSC_ChannelState old_raw = {};
+
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
+  raw.BatteryLevel = 33;
+
+  supla_channel_state state(&raw);
+
+  {
+    supla_channel_state old_state(&old_raw);
+    state.merge_old_if_needed(&old_state);
+  }
+
+  EXPECT_EQ(state.get_state()->Fields, SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL);
+  EXPECT_EQ(state.get_state()->BatteryLevel, 33);
+
+  old_raw.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
+  old_raw.BatteryLevel = 50;
+
+  {
+    supla_channel_state old_state(&old_raw);
+    state.merge_old_if_needed(&old_state);
+  }
+
+  EXPECT_EQ(state.get_state()->Fields, SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL);
+  EXPECT_EQ(state.get_state()->BatteryLevel, 33);
+
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_IPV4;
+
+  {
+    state = supla_channel_state(&raw);
+    supla_channel_state old_state(&old_raw);
+    state.merge_old_if_needed(&old_state);
+  }
+
+  EXPECT_EQ(
+      state.get_state()->Fields,
+      SUPLA_CHANNELSTATE_FIELD_IPV4 | SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL);
+  EXPECT_EQ(state.get_state()->BatteryLevel, 50);
+}
+
+TEST_F(ChannelStateTest, mergeIfNeeded_batteryPowered) {
+  TDSC_ChannelState raw = {};
+  TDSC_ChannelState old_raw = {};
+
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED;
+  raw.BatteryPowered = 1;
+
+  supla_channel_state state(&raw);
+
+  {
+    supla_channel_state old_state(&old_raw);
+    state.merge_old_if_needed(&old_state);
+  }
+
+  EXPECT_EQ(state.get_state()->Fields, SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED);
+  EXPECT_EQ(state.get_state()->BatteryPowered, 1);
+
+  old_raw.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED;
+
+  {
+    supla_channel_state old_state(&old_raw);
+    state.merge_old_if_needed(&old_state);
+  }
+
+  EXPECT_EQ(state.get_state()->Fields, SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED);
+  EXPECT_EQ(state.get_state()->BatteryPowered, 1);
+
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_MAC;
+
+  {
+    state = supla_channel_state(&raw);
+    supla_channel_state old_state(&old_raw);
+    state.merge_old_if_needed(&old_state);
+  }
+
+  EXPECT_EQ(
+      state.get_state()->Fields,
+      SUPLA_CHANNELSTATE_FIELD_MAC | SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED);
+  EXPECT_EQ(state.get_state()->BatteryPowered, 0);
+}
+
+TEST_F(ChannelStateTest, equalFields) {
+  TDSC_ChannelState raw1 = {};
+
+  TestHelper::randomize((char *)&raw1, sizeof(TDSC_ChannelState));
+  TDSC_ChannelState raw2 = raw1;
+  raw1.ReceiverID++;
+  raw1.ChannelID++;
+  raw1.EmptySpace[0]++;
+
+  supla_channel_state state1(&raw1);
+
+  supla_channel_state state2(&raw2);
+  EXPECT_TRUE(state1.equal_fields(&state2));
+
+  unsigned char skip_leading_bytes =
+      sizeof(raw1.ReceiverID) + sizeof(raw1.ChannelID);
+  unsigned char skip_trailing_bytes = sizeof(raw1.EmptySpace);
+
+  for (unsigned int a = 0; a < sizeof(TDSC_ChannelState) -
+                                   (skip_leading_bytes + skip_trailing_bytes);
+       a++) {
+    TDSC_ChannelState raw3 = raw1;
+    ((char *)&raw3)[skip_leading_bytes + a]++;
+    supla_channel_state state3(&raw3);
+
+    EXPECT_FALSE(state1.equal_fields(&state3));
+  }
 }
 
 } /* namespace testing */
