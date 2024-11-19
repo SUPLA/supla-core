@@ -46,13 +46,12 @@ void supla_ch_channel_state_result::handle_call(
                                                 rd->data.dsc_channel_state);
 
       if (rd->data.dsc_channel_state->ReceiverID != 0) {
-        shared_ptr<supla_client> client =
-            device->get_user()->get_clients()->get(
-                rd->data.dsc_channel_state->ReceiverID);
-        if (client != nullptr) {
-          client->on_device_channel_state_result(channel_id,
-                                                 rd->data.dsc_channel_state);
-        }
+        device->get_user()->get_clients()->for_each(
+            [channel_id, rd](shared_ptr<supla_client> client,
+                             bool* will_continue) -> void {
+              client->on_device_channel_state_result(
+                  channel_id, rd->data.dsc_channel_state);
+            });
       }
     }
   }
