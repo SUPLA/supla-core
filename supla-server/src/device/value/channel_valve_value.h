@@ -35,6 +35,7 @@ class supla_channel_valve_value : public supla_channel_value {
   void set_valve_value(TValve_Value *value);
   virtual std::map<std::string, std::string> get_replacement_map(void);
   static bool is_function_supported(int func);
+  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 
 #endif /*CHANNEL_VALVE_VALUE_H_*/

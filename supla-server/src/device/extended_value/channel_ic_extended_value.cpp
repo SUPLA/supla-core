@@ -177,3 +177,19 @@ bool supla_channel_ic_extended_value::is_function_supported(int func) {
 bool supla_channel_ic_extended_value::is_ev_type_supported(char type) {
   return type == EV_TYPE_IMPULSE_COUNTER_DETAILS_V1;
 }
+
+bool supla_channel_ic_extended_value::get_vbt_value(_vbt_var_name_e var_name,
+                                                    double *value) {
+  switch (var_name) {
+    case var_name_counter:
+      *value = get_counter();
+      break;
+    case var_name_calculated_value:
+      *value = get_calculated_value_dbl();
+      break;
+    default:
+      return false;
+  }
+
+  return true;
+}

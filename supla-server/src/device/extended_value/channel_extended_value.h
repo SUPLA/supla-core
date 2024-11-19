@@ -25,8 +25,9 @@
 #include <string>
 
 #include "proto.h"
+#include "vbt/vbt_value.h"
 
-class supla_channel_extended_value {
+class supla_channel_extended_value : public supla_vbt_value {
  private:
   size_t real_size = 0;
   TSuplaChannelExtendedValue
@@ -54,7 +55,6 @@ class supla_channel_extended_value {
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value,
                              unsigned char protocol_version);
   virtual void get_value(char *buffer);
-  virtual std::map<std::string, std::string> get_replacement_map(void);
 };
 
 #endif /*CHANNEL_EXTENDED_VALUE_H_*/

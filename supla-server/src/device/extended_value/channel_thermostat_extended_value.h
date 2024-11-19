@@ -32,6 +32,7 @@ class supla_channel_thermostat_extended_value
   short get_flags(unsigned char idx);
   static bool is_ev_type_supported(char type);
   virtual supla_channel_extended_value *copy(void);  // NOLINT
+  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 
 #endif /*CHANNEL_THERMOSTAT_EXTENDED_VALUE_H_*/

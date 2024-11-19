@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "device/channel_state.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
@@ -2124,6 +2125,60 @@ TEST_F(OnChangeConditionTest, rollerShutterErrors) {
 
     EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
   }
+}
+
+TEST_F(OnChangeConditionTest, batteryLevelChanged) {
+  TDSC_ChannelState raw = {};
+  supla_channel_state olds(&raw);
+
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
+  raw.BatteryLevel = 5;
+
+  supla_channel_state news(&raw);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{\"name\":\"battery_level\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_FALSE(c.is_condition_met(&olds, &news));
+
+  olds = news;
+
+  EXPECT_FALSE(c.is_condition_met(&olds, &news));
+
+  raw.BatteryLevel = 6;
+  news = supla_channel_state(&raw);
+
+  EXPECT_TRUE(c.is_condition_met(&olds, &news));
+}
+
+TEST_F(OnChangeConditionTest, batteryPoweredStateChanged) {
+  TDSC_ChannelState raw = {};
+  supla_channel_state olds(&raw);
+
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED;
+  raw.BatteryPowered = 1;
+
+  supla_channel_state news(&raw);
+
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{\"name\":\"battery_powered\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_FALSE(c.is_condition_met(&olds, &news));
+
+  olds = news;
+
+  EXPECT_FALSE(c.is_condition_met(&olds, &news));
+
+  raw.BatteryPowered = 0;
+  news = supla_channel_state(&raw);
+
+  EXPECT_TRUE(c.is_condition_met(&olds, &news));
 }
 
 }  // namespace testing

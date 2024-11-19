@@ -74,3 +74,9 @@ bool supla_channel_binary_sensor_value::is_function_supported(int func) {
 
   return false;
 }
+
+bool supla_channel_binary_sensor_value::get_vbt_value(_vbt_var_name_e var_name,
+                                                      double *value) {
+  *value = is_hi() ? 1.0 : 0.0;
+  return true;
+}

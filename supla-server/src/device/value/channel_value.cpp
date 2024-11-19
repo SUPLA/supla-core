@@ -23,12 +23,13 @@
 using std::map;
 using std::string;
 
-supla_channel_value::supla_channel_value(void) {
+supla_channel_value::supla_channel_value(void) : supla_vbt_value() {
   memset(this->raw_value, 0, SUPLA_CHANNELVALUE_SIZE);
 }
 
 supla_channel_value::supla_channel_value(
-    const char raw_value[SUPLA_CHANNELVALUE_SIZE]) {
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_vbt_value() {
   memcpy(this->raw_value, raw_value, SUPLA_CHANNELVALUE_SIZE);
 }
 

@@ -50,18 +50,7 @@ supla_value_based_trigger::supla_value_based_trigger(
 supla_value_based_trigger::~supla_value_based_trigger(void) {}
 
 supla_vbt_condition_result supla_value_based_trigger::are_conditions_met(
-    int channel_id, supla_channel_value *old_value,
-    supla_channel_value *new_value) {
-  bool cnd_met = channel_id == this->channel_id &&
-                 on_change_cnd.is_condition_met(old_value, new_value);
-  supla_vbt_condition_result result(cnd_met);
-  result.set_replacement_map(new_value->get_replacement_map());
-  return result;
-}
-
-supla_vbt_condition_result supla_value_based_trigger::are_conditions_met(
-    int channel_id, supla_channel_extended_value *old_value,
-    supla_channel_extended_value *new_value) {
+    int channel_id, supla_vbt_value *old_value, supla_vbt_value *new_value) {
   bool cnd_met = channel_id == this->channel_id &&
                  on_change_cnd.is_condition_met(old_value, new_value);
   supla_vbt_condition_result result(cnd_met);

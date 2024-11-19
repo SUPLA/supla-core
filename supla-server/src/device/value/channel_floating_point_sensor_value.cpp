@@ -60,3 +60,9 @@ bool supla_channel_floating_point_sensor_value::is_function_supported(
 
   return false;
 }
+
+bool supla_channel_floating_point_sensor_value::get_vbt_value(
+    _vbt_var_name_e var_name, double *value) {
+  *value = get_value();
+  return true;
+}

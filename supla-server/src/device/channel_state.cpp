@@ -418,3 +418,25 @@ void supla_channel_state::merge_old_if_needed(supla_channel_state *old) {
     state.BatteryPowered = old->state.BatteryPowered;
   }
 }
+
+bool supla_channel_state::get_vbt_value(_vbt_var_name_e var_name,
+                                        double *value) {
+  switch (var_name) {
+    case var_name_battery_level:
+      if (state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL) {
+        *value = state.BatteryLevel;
+        return true;
+      }
+      break;
+    case var_name_battery_powered:
+      if (state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED) {
+        *value = state.BatteryPowered ? 1 : 0;
+        return true;
+      }
+      break;
+    default:
+      return false;
+  }
+
+  return false;
+}

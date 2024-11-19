@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "log.h"
 
 supla_channel_thermostat_extended_value::
@@ -60,4 +61,23 @@ supla_channel_thermostat_extended_value::copy(  // NOLINT
 // static
 bool supla_channel_thermostat_extended_value::is_ev_type_supported(char type) {
   return type == EV_TYPE_THERMOSTAT_DETAILS_V1;
+}
+
+bool supla_channel_thermostat_extended_value::get_vbt_value(
+    _vbt_var_name_e var_name, double *value) {
+  // Currently, only heatpol uses this, so we do not need to check the channel
+  // function.
+
+  supla_channel_hp_thermostat_ev_decorator decorator(this);
+
+  switch (var_name) {
+    case var_name_heating:
+    case var_name_is_on:
+      *value = decorator.is_heating() ? 1 : 0;
+      break;
+    default:
+      return false;
+  }
+
+  return true;
 }

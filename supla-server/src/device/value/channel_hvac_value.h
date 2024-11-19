@@ -69,6 +69,7 @@ class supla_channel_hvac_value : public supla_channel_value {
   void switch_to_program(void);
 
   virtual std::map<std::string, std::string> get_replacement_map(void);
+  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 
 #endif /*CHANNEL_HVAC_VALUE_H_*/

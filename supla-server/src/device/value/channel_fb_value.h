@@ -38,6 +38,7 @@ class supla_channel_fb_value : public supla_channel_value {
   char get_position(void);
   char get_tilt(void);
   double get_tilt_angle(supla_json_config *config);
+  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 
 #endif /*CHANNEL_FB_VALUE_H_*/

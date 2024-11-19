@@ -52,6 +52,7 @@ class supla_channel_temphum_value : public supla_channel_value {
   static int incorrect_temperature(void);
   static int incorrect_humidity(void);
   static bool is_function_supported(int func);
+  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 
 #endif /* CHANNEL_TEMPHUM_VALUE_H_ */

@@ -16,21 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_FLOATING_POINT_SENSOR_VALUE_H_
-#define CHANNEL_FLOATING_POINT_SENSOR_VALUE_H_
+#include "vbt_value.h"
 
-#include "device/value/channel_value.h"
+using std::map;
+using std::string;
 
-class supla_channel_floating_point_sensor_value : public supla_channel_value {
- public:
-  supla_channel_floating_point_sensor_value(void);
-  explicit supla_channel_floating_point_sensor_value(
-      char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  explicit supla_channel_floating_point_sensor_value(double value);
-  void set_value(double value);
-  double get_value(void);
-  static bool is_function_supported(int func);
-  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
-};
+supla_vbt_value::supla_vbt_value(void) {}
 
-#endif /*CHANNEL_FLOATING_POINT_SENSOR_VALUE_H_*/
+supla_vbt_value::~supla_vbt_value(void) {}
+
+bool supla_vbt_value::get_vbt_value(_vbt_var_name_e var_name, double *value) {
+  return false;
+}
+
+map<string, string> supla_vbt_value::get_replacement_map(void) {
+  map<string, string> result;
+  return result;
+}

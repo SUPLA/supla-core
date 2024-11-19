@@ -23,8 +23,9 @@
 #include <string>
 
 #include "json/json_helper.h"
+#include "vbt/vbt_value.h"
 
-class supla_channel_state : supla_json_helper {
+class supla_channel_state : supla_json_helper, public supla_vbt_value {
  private:
   TDSC_ChannelState state;
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
@@ -42,6 +43,7 @@ class supla_channel_state : supla_json_helper {
   char *get_json(void);
   void merge_old_if_needed(supla_channel_state *old);
   bool equal_fields(supla_channel_state *state);
+  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 
 #endif /* CHANNEL_STATE_H_ */

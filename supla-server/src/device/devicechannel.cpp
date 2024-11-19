@@ -636,22 +636,16 @@ void supla_device_channel::on_value_changed(supla_channel_value *old_value,
   }
 
   if (old_value && new_value) {
-    get_device()
-        ->get_user()
-        ->get_value_based_triggers()
-        ->on_channel_value_changed(supla_caller(ctChannel, get_id()), get_id(),
-                                   old_value, new_value);
+    get_device()->get_user()->get_value_based_triggers()->on_value_changed(
+        supla_caller(ctChannel, get_id()), get_id(), old_value, new_value);
   }
 }
 
 void supla_device_channel::on_extended_value_changed(
     supla_channel_extended_value *old_value,
     supla_channel_extended_value *new_value) {
-  get_device()
-      ->get_user()
-      ->get_value_based_triggers()
-      ->on_channel_value_changed(supla_caller(ctChannel, get_id()), get_id(),
-                                 old_value, new_value);
+  get_device()->get_user()->get_value_based_triggers()->on_value_changed(
+      supla_caller(ctChannel, get_id()), get_id(), old_value, new_value);
 }
 
 void supla_device_channel::set_extended_value(
@@ -1010,6 +1004,9 @@ void supla_device_channel::set_state(TDSC_ChannelState *state) {
     supla_db_access_provider dba;
     supla_device_dao dao(&dba);
     dao.update_channel_state(get_id(), get_user_id(), &new_state);
+
+    get_device()->get_user()->get_value_based_triggers()->on_value_changed(
+        supla_caller(ctChannel, get_id()), get_id(), &old_state, &new_state);
   }
 }
 
