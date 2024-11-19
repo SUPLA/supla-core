@@ -29,7 +29,6 @@
 #include "ipc/device_set_time_command.h"
 #include "ipc/enter_cfg_mode_command.h"
 #include "ipc/execute_scene_command.h"
-#include "ipc/get_channel_state_command.h"
 #include "ipc/get_char_command.h"
 #include "ipc/get_digiglass_value_command.h"
 #include "ipc/get_double_command.h"
@@ -90,7 +89,6 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_is_channel_connected_command(socket_adapter));
   add_command(new supla_user_reconnect_command(socket_adapter));
   add_command(new supla_client_reconnect_command(socket_adapter));
-  add_command(new supla_get_channel_state_command(socket_adapter));
   add_command(new supla_get_double_command(socket_adapter));
   add_command(new supla_get_temperature_command(socket_adapter));
   add_command(new supla_get_humidity_command(socket_adapter));
