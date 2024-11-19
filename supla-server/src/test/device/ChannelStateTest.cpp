@@ -410,4 +410,31 @@ TEST_F(ChannelStateTest, equalFields) {
   }
 }
 
+TEST_F(ChannelStateTest, getVbtValue) {
+  TDSC_ChannelState raw = {};
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL |
+               SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED;
+  supla_channel_state state(&raw);
+
+  double value = 0;
+  EXPECT_FALSE(state.get_vbt_value(var_name_none, &value));
+
+  EXPECT_TRUE(state.get_vbt_value(var_name_battery_level, &value));
+  EXPECT_EQ(value, 0);
+
+  EXPECT_TRUE(state.get_vbt_value(var_name_battery_powered, &value));
+  EXPECT_EQ(value, 0);
+
+  raw.BatteryLevel = 22;
+  raw.BatteryPowered = 1;
+
+  state = supla_channel_state(&raw);
+
+  EXPECT_TRUE(state.get_vbt_value(var_name_battery_level, &value));
+  EXPECT_EQ(value, 22);
+
+  EXPECT_TRUE(state.get_vbt_value(var_name_battery_powered, &value));
+  EXPECT_EQ(value, 1);
+}
+
 } /* namespace testing */

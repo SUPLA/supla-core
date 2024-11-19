@@ -91,4 +91,35 @@ TEST_F(ChannelValveValueTest, replacementMap) {
   EXPECT_EQ(m["is_closed_manually"], "Yes");
 }
 
+TEST_F(ChannelValveValueTest, getVbtValue) {
+  supla_channel_valve_value value;
+  TValve_Value raw = {};
+
+  double vbt_value = 0;
+  EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_flooding, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_manually_closed, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  raw.closed = 1;
+  value.set_valve_value(&raw);
+  EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  raw.closed = 0;
+  raw.flags = SUPLA_VALVE_FLAG_FLOODING;
+  value.set_valve_value(&raw);
+  EXPECT_TRUE(value.get_vbt_value(var_name_flooding, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  raw.flags = SUPLA_VALVE_FLAG_MANUALLY_CLOSED;
+  value.set_valve_value(&raw);
+  EXPECT_TRUE(value.get_vbt_value(var_name_manually_closed, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+}
+
 }  // namespace testing

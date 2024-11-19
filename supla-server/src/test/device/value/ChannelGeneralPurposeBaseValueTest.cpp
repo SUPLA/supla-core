@@ -49,4 +49,13 @@ TEST_F(ChannelGeneralPurposeBaseValueTest, applyChannelProperties) {
   EXPECT_DOUBLE_EQ(val.get_value(), 29.68);
 }
 
+TEST_F(ChannelGeneralPurposeBaseValueTest, getVbtValue) {
+  supla_channel_general_purpose_base_value value;
+  value.set_value(12.34);
+
+  double vbt_value = 0;
+  EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_EQ(vbt_value, 12.34);
+}
+
 }  // namespace testing

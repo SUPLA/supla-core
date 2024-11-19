@@ -94,4 +94,18 @@ TEST_F(ChannelOnOffValueTest, applyChannelProperties) {
   }
 }
 
+TEST_F(ChannelOnOffValueTest, getVbtValue) {
+  supla_channel_onoff_value value;
+
+  double vbt_value = 0;
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  value.set_on(true);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+}
+
 }  // namespace testing

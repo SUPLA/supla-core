@@ -77,4 +77,15 @@ TEST_F(ChannelFbValueTest, getTiltAngle) {
   EXPECT_EQ(value.get_tilt_angle(&cfg), 23);
 }
 
+TEST_F(ChannelFbValueTest, getVbtValue) {
+  TDSC_FacadeBlindValue raw = {};
+  raw.position = 55;
+
+  supla_channel_fb_value value(&raw);
+
+  double vbt_value = 0;
+  EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_EQ(vbt_value, 55);
+}
+
 }  // namespace testing

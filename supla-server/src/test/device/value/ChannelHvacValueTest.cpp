@@ -231,4 +231,94 @@ TEST_F(ChannelHvacValueTest, replacementMap) {
   EXPECT_EQ(m["errors"], "THERMOMETER_ERROR, CLOCK_ERROR");
 }
 
+TEST_F(ChannelHvacValueTest, getVbtValue) {
+  supla_channel_hvac_value value;
+
+  double vbt_value = 0;
+  EXPECT_FALSE(value.get_vbt_value(var_name_none, &vbt_value));
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_heating, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_cooling, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_heating_or_cooling, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_on, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_any_error_set, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_battery_cover_open, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_thermometer_error, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_clock_error, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((THVACValue*)raw_value)->IsOn = 1;
+  ((THVACValue*)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_HEATING;
+  value.set_raw_value(raw_value);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_heating, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_heating_or_cooling, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  memset(raw_value, 0, sizeof(raw_value));
+  ((THVACValue*)raw_value)->IsOn = 1;
+  ((THVACValue*)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_COOLING;
+  value.set_raw_value(raw_value);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_cooling, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_heating_or_cooling, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  memset(raw_value, 0, sizeof(raw_value));
+  ((THVACValue*)raw_value)->IsOn = 1;
+  value.set_raw_value(raw_value);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_on, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  memset(raw_value, 0, sizeof(raw_value));
+  ((THVACValue*)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_BATTERY_COVER_OPEN;
+  value.set_raw_value(raw_value);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_battery_cover_open, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_any_error_set, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  memset(raw_value, 0, sizeof(raw_value));
+  ((THVACValue*)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR;
+  value.set_raw_value(raw_value);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_thermometer_error, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_any_error_set, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  memset(raw_value, 0, sizeof(raw_value));
+  ((THVACValue*)raw_value)->Flags = SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR;
+  value.set_raw_value(raw_value);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_clock_error, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_any_error_set, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+}
+
 }  // namespace testing

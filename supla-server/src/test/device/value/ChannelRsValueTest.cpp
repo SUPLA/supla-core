@@ -61,4 +61,66 @@ TEST_F(ChannelRsValueTest, applyChannelProperties) {
   EXPECT_EQ(v.get_rs_value()->position, 3);
 }
 
+TEST_F(ChannelRsValueTest, getVbtValue) {
+  TDSC_RollerShutterValue raw = {};
+  raw.position = 25;
+  supla_channel_rs_value value(&raw);
+
+  double vbt_value = 0;
+  EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_EQ(vbt_value, 25);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_calibration_failed, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_calibration_lost, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_calibration_lost, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_motor_problem, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(
+      value.get_vbt_value(var_name_calibration_in_progress, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_any_error_set, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  raw.flags = RS_VALUE_FLAG_CALIBRATION_FAILED;
+  value = supla_channel_rs_value(&raw);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_calibration_failed, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_any_error_set, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  raw.flags = RS_VALUE_FLAG_CALIBRATION_LOST;
+  value = supla_channel_rs_value(&raw);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_calibration_lost, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_any_error_set, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  raw.flags = RS_VALUE_FLAG_MOTOR_PROBLEM;
+  value = supla_channel_rs_value(&raw);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_motor_problem, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_any_error_set, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+
+  raw.flags = RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS;
+  value = supla_channel_rs_value(&raw);
+
+  EXPECT_TRUE(
+      value.get_vbt_value(var_name_calibration_in_progress, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+  EXPECT_TRUE(value.get_vbt_value(var_name_is_any_error_set, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+}
+
 }  // namespace testing

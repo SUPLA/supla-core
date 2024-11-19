@@ -10,6 +10,7 @@ CPP_SRCS += \
 ../src/test/device/extended_value/ChannelHpThermostatEvDecoratorTest.cpp \
 ../src/test/device/extended_value/ChannelIcExtendedValueTest.cpp \
 ../src/test/device/extended_value/ChannelStateExtendedValueTest.cpp \
+../src/test/device/extended_value/ThermostatExtendedValueTest.cpp \
 ../src/test/device/extended_value/TimerStateExtendedValueTest.cpp 
 
 CPP_DEPS += \
@@ -19,6 +20,7 @@ CPP_DEPS += \
 ./src/test/device/extended_value/ChannelHpThermostatEvDecoratorTest.d \
 ./src/test/device/extended_value/ChannelIcExtendedValueTest.d \
 ./src/test/device/extended_value/ChannelStateExtendedValueTest.d \
+./src/test/device/extended_value/ThermostatExtendedValueTest.d \
 ./src/test/device/extended_value/TimerStateExtendedValueTest.d 
 
 OBJS += \
@@ -28,6 +30,7 @@ OBJS += \
 ./src/test/device/extended_value/ChannelHpThermostatEvDecoratorTest.o \
 ./src/test/device/extended_value/ChannelIcExtendedValueTest.o \
 ./src/test/device/extended_value/ChannelStateExtendedValueTest.o \
+./src/test/device/extended_value/ThermostatExtendedValueTest.o \
 ./src/test/device/extended_value/TimerStateExtendedValueTest.o 
 
 
@@ -43,7 +46,7 @@ src/test/device/extended_value/%.o: ../src/test/device/extended_value/%.cpp src/
 clean: clean-src-2f-test-2f-device-2f-extended_value
 
 clean-src-2f-test-2f-device-2f-extended_value:
-	-$(RM) ./src/test/device/extended_value/ChannelAndTimerStateExtendedValueTest.d ./src/test/device/extended_value/ChannelAndTimerStateExtendedValueTest.o ./src/test/device/extended_value/ChannelBillingValueTest.d ./src/test/device/extended_value/ChannelBillingValueTest.o ./src/test/device/extended_value/ChannelEmExtendedValueTest.d ./src/test/device/extended_value/ChannelEmExtendedValueTest.o ./src/test/device/extended_value/ChannelHpThermostatEvDecoratorTest.d ./src/test/device/extended_value/ChannelHpThermostatEvDecoratorTest.o ./src/test/device/extended_value/ChannelIcExtendedValueTest.d ./src/test/device/extended_value/ChannelIcExtendedValueTest.o ./src/test/device/extended_value/ChannelStateExtendedValueTest.d ./src/test/device/extended_value/ChannelStateExtendedValueTest.o ./src/test/device/extended_value/TimerStateExtendedValueTest.d ./src/test/device/extended_value/TimerStateExtendedValueTest.o
+	-$(RM) ./src/test/device/extended_value/ChannelAndTimerStateExtendedValueTest.d ./src/test/device/extended_value/ChannelAndTimerStateExtendedValueTest.o ./src/test/device/extended_value/ChannelBillingValueTest.d ./src/test/device/extended_value/ChannelBillingValueTest.o ./src/test/device/extended_value/ChannelEmExtendedValueTest.d ./src/test/device/extended_value/ChannelEmExtendedValueTest.o ./src/test/device/extended_value/ChannelHpThermostatEvDecoratorTest.d ./src/test/device/extended_value/ChannelHpThermostatEvDecoratorTest.o ./src/test/device/extended_value/ChannelIcExtendedValueTest.d ./src/test/device/extended_value/ChannelIcExtendedValueTest.o ./src/test/device/extended_value/ChannelStateExtendedValueTest.d ./src/test/device/extended_value/ChannelStateExtendedValueTest.o ./src/test/device/extended_value/ThermostatExtendedValueTest.d ./src/test/device/extended_value/ThermostatExtendedValueTest.o ./src/test/device/extended_value/TimerStateExtendedValueTest.d ./src/test/device/extended_value/TimerStateExtendedValueTest.o
 
 .PHONY: clean-src-2f-test-2f-device-2f-extended_value
 
