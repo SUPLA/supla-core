@@ -24,7 +24,7 @@
 namespace testing {
 
 TEST_F(ChannelAvailabilityStatusTest, defaultConstructor) {
-  channel_availability_status status;
+  supla_channel_availability_status status;
   EXPECT_TRUE(status.is_online());
   EXPECT_FALSE(status.is_offline());
   EXPECT_FALSE(status.is_online_but_not_available());
@@ -34,7 +34,7 @@ TEST_F(ChannelAvailabilityStatusTest, defaultConstructor) {
 }
 
 TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOffline) {
-  channel_availability_status status1(0, true);
+  supla_channel_availability_status status1(0, true);
   EXPECT_TRUE(status1.is_online());
   EXPECT_FALSE(status1.is_offline());
   EXPECT_FALSE(status1.is_online_but_not_available());
@@ -42,7 +42,7 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOffline) {
   EXPECT_EQ(status1.get_proto_online(), 1);
   EXPECT_EQ(status1.get_proto_offline(), 0);
 
-  channel_availability_status status2(1, true);
+  supla_channel_availability_status status2(1, true);
   EXPECT_FALSE(status2.is_online());
   EXPECT_TRUE(status2.is_offline());
   EXPECT_FALSE(status2.is_online_but_not_available());
@@ -50,7 +50,7 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOffline) {
   EXPECT_EQ(status2.get_proto_online(), 0);
   EXPECT_EQ(status2.get_proto_offline(), 1);
 
-  channel_availability_status status3(2, true);
+  supla_channel_availability_status status3(2, true);
   EXPECT_FALSE(status3.is_online());
   EXPECT_FALSE(status3.is_offline());
   EXPECT_TRUE(status3.is_online_but_not_available());
@@ -58,7 +58,7 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOffline) {
   EXPECT_EQ(status3.get_proto_online(), 2);
   EXPECT_EQ(status3.get_proto_offline(), 2);
 
-  channel_availability_status status4(3, true);
+  supla_channel_availability_status status4(3, true);
   EXPECT_FALSE(status4.is_online());
   EXPECT_TRUE(status4.is_offline());
   EXPECT_FALSE(status4.is_online_but_not_available());
@@ -68,7 +68,7 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOffline) {
 }
 
 TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOnline) {
-  channel_availability_status status1(1, false);
+  supla_channel_availability_status status1(1, false);
   EXPECT_TRUE(status1.is_online());
   EXPECT_FALSE(status1.is_offline());
   EXPECT_FALSE(status1.is_online_but_not_available());
@@ -76,7 +76,7 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOnline) {
   EXPECT_EQ(status1.get_proto_online(), 1);
   EXPECT_EQ(status1.get_proto_offline(), 0);
 
-  channel_availability_status status2(0, false);
+  supla_channel_availability_status status2(0, false);
   EXPECT_FALSE(status2.is_online());
   EXPECT_TRUE(status2.is_offline());
   EXPECT_FALSE(status2.is_online_but_not_available());
@@ -84,7 +84,7 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOnline) {
   EXPECT_EQ(status2.get_proto_online(), 0);
   EXPECT_EQ(status2.get_proto_offline(), 1);
 
-  channel_availability_status status3(2, false);
+  supla_channel_availability_status status3(2, false);
   EXPECT_FALSE(status3.is_online());
   EXPECT_FALSE(status3.is_offline());
   EXPECT_TRUE(status3.is_online_but_not_available());
@@ -92,7 +92,7 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOnline) {
   EXPECT_EQ(status3.get_proto_online(), 2);
   EXPECT_EQ(status3.get_proto_offline(), 2);
 
-  channel_availability_status status4(3, false);
+  supla_channel_availability_status status4(3, false);
   EXPECT_TRUE(status4.is_online());
   EXPECT_FALSE(status4.is_offline());
   EXPECT_FALSE(status4.is_online_but_not_available());
@@ -102,7 +102,7 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOnline) {
 }
 
 TEST_F(ChannelAvailabilityStatusTest, set_proto_offline) {
-  channel_availability_status status;
+  supla_channel_availability_status status;
 
   status.set_proto_offline(0);
   EXPECT_TRUE(status.is_online());
@@ -138,7 +138,7 @@ TEST_F(ChannelAvailabilityStatusTest, set_proto_offline) {
 }
 
 TEST_F(ChannelAvailabilityStatusTest, set_proto_online) {
-  channel_availability_status status;
+  supla_channel_availability_status status;
 
   status.set_proto_online(1);
   EXPECT_TRUE(status.is_online());
@@ -174,15 +174,35 @@ TEST_F(ChannelAvailabilityStatusTest, set_proto_online) {
 }
 
 TEST_F(ChannelAvailabilityStatusTest, compare) {
-  channel_availability_status status1(0, 0);
-  channel_availability_status status2(1, 0);
-  channel_availability_status status3(2, 0);
-  channel_availability_status status4(0, 1);
+  supla_channel_availability_status status1(0, 0);
+  supla_channel_availability_status status2(1, 0);
+  supla_channel_availability_status status3(2, 0);
+  supla_channel_availability_status status4(0, 1);
 
   EXPECT_NE(status1, status2);
   EXPECT_NE(status1, status3);
   EXPECT_NE(status1, status4);
   EXPECT_EQ(status2, status4);
+}
+
+TEST_F(ChannelAvailabilityStatusTest, set_offline) {
+  supla_channel_availability_status status;
+
+  status.set_offline(false);
+  EXPECT_TRUE(status.is_online());
+  EXPECT_FALSE(status.is_offline());
+  EXPECT_FALSE(status.is_online_but_not_available());
+
+  EXPECT_EQ(status.get_proto_online(), 1);
+  EXPECT_EQ(status.get_proto_offline(), 0);
+
+  status.set_offline(true);
+  EXPECT_FALSE(status.is_online());
+  EXPECT_TRUE(status.is_offline());
+  EXPECT_FALSE(status.is_online_but_not_available());
+
+  EXPECT_EQ(status.get_proto_online(), 0);
+  EXPECT_EQ(status.get_proto_offline(), 1);
 }
 
 } /* namespace testing */

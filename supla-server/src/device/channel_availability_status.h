@@ -16,16 +16,16 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_AVAILABILITY_STATUS_H_
-#define CHANNEL_AVAILABILITY_STATUS_H_
+#ifndef SUPLA_CHANNEL_AVAILABILITY_STATUS_H_
+#define SUPLA_CHANNEL_AVAILABILITY_STATUS_H_
 
-class channel_availability_status {
+class supla_channel_availability_status {
  private:
   char proto_offline;  // 0 - ONLINE, 1 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
  public:
-  channel_availability_status(void);
-  channel_availability_status(char status, bool proto_offline);
-  virtual ~channel_availability_status(void);
+  supla_channel_availability_status(void);
+  supla_channel_availability_status(char status, bool proto_offline);
+  virtual ~supla_channel_availability_status(void);
 
   bool is_online(void) const;
   bool is_offline(void) const;
@@ -37,8 +37,10 @@ class channel_availability_status {
   void set_proto_online(char online);
   void set_proto_offline(char offline);
 
-  bool operator==(const channel_availability_status &status) const;
-  bool operator!=(const channel_availability_status &status) const;
+  void set_offline(bool offline);
+
+  bool operator==(const supla_channel_availability_status &status) const;
+  bool operator!=(const supla_channel_availability_status &status) const;
 };
 
-#endif /* CHANNEL_AVAILABILITY_STATUS_H_ */
+#endif /* SUPLA_CHANNEL_AVAILABILITY_STATUS_H_ */

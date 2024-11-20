@@ -18,12 +18,12 @@
 
 #include "channel_availability_status.h"
 
-channel_availability_status::channel_availability_status(void) {
+supla_channel_availability_status::supla_channel_availability_status(void) {
   proto_offline = 0;
 }
 
-channel_availability_status::channel_availability_status(char status,
-                                                         bool proto_offline) {
+supla_channel_availability_status::supla_channel_availability_status(
+    char status, bool proto_offline) {
   this->proto_offline = 0;
   if (proto_offline) {
     set_proto_offline(status);
@@ -32,21 +32,22 @@ channel_availability_status::channel_availability_status(char status,
   }
 }
 
-channel_availability_status::~channel_availability_status(void) {}
+supla_channel_availability_status::~supla_channel_availability_status(void) {}
 
-bool channel_availability_status::is_online(void) const {
+bool supla_channel_availability_status::is_online(void) const {
   return proto_offline == 0;
 }
 
-bool channel_availability_status::is_offline(void) const {
+bool supla_channel_availability_status::is_offline(void) const {
   return proto_offline == 1;
 }
 
-bool channel_availability_status::is_online_but_not_available(void) const {
+bool supla_channel_availability_status::is_online_but_not_available(
+    void) const {
   return proto_offline == 2;
 }
 
-char channel_availability_status::get_proto_online(void) const {
+char supla_channel_availability_status::get_proto_online(void) const {
   if (proto_offline == 2) {
     return proto_offline;
   }
@@ -54,11 +55,11 @@ char channel_availability_status::get_proto_online(void) const {
   return !proto_offline;
 }
 
-char channel_availability_status::get_proto_offline(void) const {
+char supla_channel_availability_status::get_proto_offline(void) const {
   return proto_offline;
 }
 
-void channel_availability_status::set_proto_online(char online) {
+void supla_channel_availability_status::set_proto_online(char online) {
   if (online == 2) {
     proto_offline = 2;
   } else {
@@ -66,7 +67,7 @@ void channel_availability_status::set_proto_online(char online) {
   }
 }
 
-void channel_availability_status::set_proto_offline(char offline) {
+void supla_channel_availability_status::set_proto_offline(char offline) {
   if (offline == 2) {
     proto_offline = 2;
   } else {
@@ -74,12 +75,16 @@ void channel_availability_status::set_proto_offline(char offline) {
   }
 }
 
-bool channel_availability_status::operator==(
-    const channel_availability_status &status) const {
+void supla_channel_availability_status::set_offline(bool offline) {
+  proto_offline = offline ? 1 : 0;
+}
+
+bool supla_channel_availability_status::operator==(
+    const supla_channel_availability_status &status) const {
   return this->proto_offline == status.proto_offline;
 }
 
-bool channel_availability_status::operator!=(
-    const channel_availability_status &status) const {
+bool supla_channel_availability_status::operator!=(
+    const supla_channel_availability_status &status) const {
   return this->proto_offline != status.proto_offline;
 }
