@@ -67,7 +67,8 @@ void supla_channel_rs_value::update_sensor(supla_user *user,
     if (device != nullptr) {
       supla_device_channels *channels = device->get_channels();
 
-      if (channels->is_channel_online(opening_sensor_channel_id)) {
+      if (channels->get_channel_availability_status(opening_sensor_channel_id)
+              .is_online()) {
         int func = channels->get_channel_func(opening_sensor_channel_id);
 
         switch (func) {

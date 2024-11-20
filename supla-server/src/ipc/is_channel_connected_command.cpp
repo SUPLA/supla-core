@@ -34,7 +34,9 @@ bool supla_is_channel_connected_command::is_channel_online(int user_id,
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    return device->get_channels()->is_channel_online(channel_id);
+    return device->get_channels()
+        ->get_channel_availability_status(channel_id)
+        .is_online();
   }
   return false;
 }

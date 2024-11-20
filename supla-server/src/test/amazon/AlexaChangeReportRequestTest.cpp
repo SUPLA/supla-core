@@ -76,10 +76,11 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
       .Times(1)
       .WillOnce([func, online, value](
                     int user_id, int device_id, int channel_id,
-                    supla_channel_fragment *_fragment, bool *_Reachable) {
+                    supla_channel_fragment *_fragment,
+                    supla_channel_availability_status *status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
-        *_Reachable = online;
+        status->set_offline(!online);
 
         return value;
       });
@@ -131,10 +132,11 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
       .Times(1)
       .WillRepeatedly([func, online, value](
                           int user_id, int device_id, int channel_id,
-                          supla_channel_fragment *_fragment, bool *_Reachable) {
+                          supla_channel_fragment *_fragment,
+                          supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
-        *_Reachable = online;
+        _status->set_offline(!online);
 
         return value;
       });
@@ -515,10 +517,11 @@ void AlexaChangeReportRequestTest::hvacThermostatTest(
       .Times(1)
       .WillOnce([func, online, hvacValue](
                     int user_id, int device_id, int channel_id,
-                    supla_channel_fragment *_fragment, bool *_Reachable) {
+                    supla_channel_fragment *_fragment,
+                    supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
-        *_Reachable = online;
+        _status->set_offline(!online);
 
         return hvacValue;
       });

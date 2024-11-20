@@ -72,7 +72,8 @@ supla_device_channel::supla_device_channel(
   this->text_param3 = text_param3 ? strndup(text_param3, 255) : nullptr;
   this->flags = flags;
   this->init_flags = flags;
-  this->offline = flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION;
+  availability_status.set_offline(
+      flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION);
   this->extended_value = extended_value;
   this->logger_purpose_extended_value = nullptr;
   this->value_valid_to.tv_sec = 0;
@@ -312,31 +313,33 @@ const char *supla_device_channel::get_text_param2(void) { return text_param2; }
 
 const char *supla_device_channel::get_text_param3(void) { return text_param3; }
 
-bool supla_device_channel::is_offline(void) {
+supla_channel_availability_status supla_device_channel::get_availability_status(
+    void) {
   lock();
-  bool result = offline;
+  supla_channel_availability_status result = availability_status;
 
-  if (offline && (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec)) {
+  if (result.is_offline() &&
+      (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec)) {
     struct timeval now;
     gettimeofday(&now, nullptr);
 
-    result = (now.tv_sec * 1000000LL + now.tv_usec) -
-                         (value_valid_to.tv_sec * 1000000LL +
-                          value_valid_to.tv_usec) >
-                     0
-                 ? true
-                 : false;
+    if (!(now.tv_sec * 1000000LL + now.tv_usec) -
+            (value_valid_to.tv_sec * 1000000LL + value_valid_to.tv_usec) >
+        0) {
+      result.set_offline(false);
+    }
   }
   unlock();
 
   return result;
 }
 
-bool supla_device_channel::set_offline(bool offline, bool raise_change_event) {
+bool supla_device_channel::set_availability_status(
+    const supla_channel_availability_status &status, bool raise_change_event) {
   bool result = false;
   lock();
-  if (this->offline != offline) {
-    this->offline = offline;
+  if (availability_status != status) {
+    availability_status = status;
     result = true;
   }
   unlock();
@@ -521,10 +524,11 @@ void supla_device_channel::set_action_trigger_config(
 
 bool supla_device_channel::set_value(
     const char value[SUPLA_CHANNELVALUE_SIZE],
-    const unsigned _supla_int_t *validity_time_sec, bool *offline) {
+    const unsigned _supla_int_t *validity_time_sec,
+    supla_channel_availability_status *status) {
   lock();
 
-  if ((!offline || *offline) && this->offline) {
+  if ((!status || status->is_offline()) && availability_status.is_offline()) {
     unlock();
     return false;
   }
@@ -563,7 +567,7 @@ bool supla_device_channel::set_value(
   bool significant_change = false;
   bool differ = new_value->is_differ(old_value, &significant_change);
 
-  if (offline && set_offline(*offline, false)) {
+  if (status && set_availability_status(*status, false)) {
     differ = true;
     significant_change = true;
   }

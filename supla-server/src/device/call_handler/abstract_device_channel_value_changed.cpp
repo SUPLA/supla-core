@@ -47,10 +47,13 @@ void supla_ch_abstract_device_channel_value_changed::on_channel_value_changed(
     return;
   }
 
-  if (offline) {
-    device->get_channels()->set_channel_offline(channel_id, true);
+  supla_channel_availability_status status;
+  status.set_proto_offline(offline);
+
+  if (status.is_offline()) {
+    device->get_channels()->set_channel_availability_status(channel_id, status);
   } else {
     device->get_channels()->set_channel_value(channel_id, value,
-                                              validity_time_sec, &offline);
+                                              validity_time_sec, &status);
   }
 }

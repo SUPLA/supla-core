@@ -76,11 +76,12 @@ bool supla_google_home_state_report_request::make_request(
       token_provider->get_token(platform_homegraph, 0));
 
   supla_channel_fragment fragment;
-  bool online = false;
+  supla_channel_availability_status status;
+  status.set_offline(true);
 
-  supla_channel_value *value = get_channel_value(&fragment, &online);
+  supla_channel_value *value = get_channel_value(&fragment, &status);
 
-  client.set_channel_connected(online);
+  client.set_channel_connected(status.is_online());
   client.set_channel_value(value);
   client.set_request_id(get_request_id());
   set_request_id("");
@@ -118,7 +119,7 @@ bool supla_google_home_state_report_request::make_request(
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
-      if (online) {
+      if (status.is_online()) {
         supla_channel_hvac_value_with_temphum::expand(&value, &fragment,
                                                       get_property_getter());
         client.set_channel_value(value);

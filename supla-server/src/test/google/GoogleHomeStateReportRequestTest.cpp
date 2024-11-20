@@ -128,10 +128,11 @@ void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
       .Times(1)
       .WillOnce([func, online, value](
                     int user_id, int device_id, int channel_id,
-                    supla_channel_fragment *_fragment, bool *_connected) {
+                    supla_channel_fragment *_fragment,
+                    supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
-        *_connected = online;
+        _status->set_offline(!online);
 
         return value;
       });
@@ -346,10 +347,11 @@ void GoogleHomeStateReportRequestTest::makeHvacThermostatTest(
       .Times(1)
       .WillOnce([func, online, hvacValue](
                     int user_id, int device_id, int channel_id,
-                    supla_channel_fragment *_fragment, bool *_connected) {
+                    supla_channel_fragment *_fragment,
+                    supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
-        *_connected = online;
+        _status->set_offline(!online);
 
         return hvacValue;
       });
@@ -488,11 +490,12 @@ TEST_F(GoogleHomeStateReportRequestTest, x403) {
               _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int user_id, int device_id, int channel_id,
-                   supla_channel_fragment *_fragment, bool *_connected) {
+                   supla_channel_fragment *_fragment,
+                   supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0,
                                    SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
-        *_connected = false;
+        _status->set_offline(true);
 
         return nullptr;
       });
@@ -517,11 +520,12 @@ TEST_F(GoogleHomeStateReportRequestTest, x404) {
               _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int user_id, int device_id, int channel_id,
-                   supla_channel_fragment *_fragment, bool *_connected) {
+                   supla_channel_fragment *_fragment,
+                   supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0,
                                    SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
-        *_connected = false;
+        _status->set_offline(true);
 
         return nullptr;
       });

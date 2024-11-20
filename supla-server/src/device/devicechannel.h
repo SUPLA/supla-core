@@ -27,6 +27,7 @@
 #include "analyzer/abstract_data_analyzer.h"
 #include "caller.h"
 #include "channel_address.h"
+#include "channel_availability_status.h"
 #include "device/abstract_common_channel_properties.h"
 #include "device/channel_state.h"
 #include "device/extended_value/channel_extended_value.h"
@@ -53,7 +54,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   char *text_param2;
   char *text_param3;
   const bool hidden;
-  bool offline;
+  supla_channel_availability_status availability_status;
   unsigned _supla_int64_t flags;
   unsigned _supla_int64_t init_flags;
   supla_channel_state *state;
@@ -123,8 +124,9 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   bool is_hidden(void);
   virtual unsigned _supla_int64_t get_flags();
   void add_init_flags(unsigned _supla_int64_t flags);
-  bool is_offline(void);
-  bool set_offline(bool offline, bool raise_change_event);
+  supla_channel_availability_status get_availability_status(void);
+  bool set_availability_status(const supla_channel_availability_status &status,
+                               bool raise_change_event);
   bool is_value_writable(void);
   bool is_char_value_writable(void);
   bool is_rgbw_value_writable(void);
@@ -132,7 +134,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   unsigned _supla_int_t get_value_validity_time_sec(void);
   void get_value(char value[SUPLA_CHANNELVALUE_SIZE]);
   bool set_value(const char value[SUPLA_CHANNELVALUE_SIZE],
-                 const unsigned _supla_int_t *validity_time_sec, bool *offline);
+                 const unsigned _supla_int_t *validity_time_sec,
+                 supla_channel_availability_status *status);
   void set_extended_value(TSuplaChannelExtendedValue *ev);
   void assign_rgbw_value(char value[SUPLA_CHANNELVALUE_SIZE], int color,
                          char color_brightness, char brightness, char on_off);

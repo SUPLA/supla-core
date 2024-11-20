@@ -58,7 +58,7 @@ supla_device_channels::supla_device_channels(
     unsigned char number = 0;
     unsigned int action_trigger_caps = 0;
     unsigned int flags = 0;
-    bool offline = false;
+    supla_channel_availability_status status;
 
     TActionTriggerProperties at_orops = {};
 
@@ -73,7 +73,7 @@ supla_device_channels::supla_device_channels(
       action_trigger_caps = schannel_e[a].ActionTriggerCaps;
       at_orops = schannel_e[a].actionTriggerProperties;
       flags = schannel_e[a].Flags;
-      offline = schannel_e[a].Offline > 0;
+      status.set_proto_offline(schannel_e[a].Offline);
     }
 
     int channel_id = get_channel_id(number);
@@ -81,14 +81,14 @@ supla_device_channels::supla_device_channels(
     supla_device_channel *channel = find_channel(channel_id);
 
     if (channel) {
-      if (offline) {
-        channel->set_offline(true, false);
+      if (status.is_offline()) {
+        channel->set_availability_status(status, false);
       } else {
         channel->set_value(value,
                            schannel_b == nullptr
                                ? &schannel_e[a].ValueValidityTimeSec
                                : nullptr,
-                           schannel_b == nullptr ? &offline : nullptr);
+                           schannel_b == nullptr ? &status : nullptr);
       }
 
       channel->add_init_flags(flags);
@@ -164,7 +164,8 @@ void supla_device_channels::for_each(
 }
 
 bool supla_device_channels::get_channel_value(
-    int channel_id, char value[SUPLA_CHANNELVALUE_SIZE], char *online,
+    int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
+    supla_channel_availability_status *status,
     unsigned _supla_int_t *validity_time_sec,
     supla_channel_extended_value **extended_value, int *function,
     bool for_client) {
@@ -172,8 +173,8 @@ bool supla_device_channels::get_channel_value(
 
   if (channel) {
     channel->get_value(value);
-    if (online) {
-      *online = channel->is_offline() ? 0 : 1;
+    if (status) {
+      *status = channel->get_availability_status();
     }
 
     if (validity_time_sec) {
@@ -365,22 +366,25 @@ bool supla_device_channels::recalibrate(int channel_id,
 
 bool supla_device_channels::set_channel_value(
     int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
-    const unsigned _supla_int_t *validity_time_sec, bool *offline) {
+    const unsigned _supla_int_t *validity_time_sec,
+    supla_channel_availability_status *status) {
   supla_device_channel *channel = find_channel(channel_id);
   if (channel) {
-    return channel->set_value(value, validity_time_sec, offline);
+    return channel->set_value(value, validity_time_sec, status);
   }
 
   return false;
 }
 
-bool supla_device_channels::set_channel_offline(int channel_id, bool offline) {
-  supla_device_channel *channel = find_channel(channel_id);
-  if (channel) {
-    return channel->set_offline(offline, true);
-  }
+bool supla_device_channels::set_channel_availability_status(
+    int channel_id, const supla_channel_availability_status &status) {
+  bool result = false;
+  access_channel(channel_id,
+                 [&result, status](supla_device_channel *channel) -> void {
+                   result = channel->set_availability_status(status, true);
+                 });
 
-  return false;
+  return result;
 }
 
 void supla_device_channels::set_channel_extendedvalue(
@@ -438,9 +442,15 @@ bool supla_device_channels::channel_exists(int channel_id) {
   return find_channel(channel_id) != nullptr;
 }
 
-bool supla_device_channels::is_channel_online(int channel_id) {
-  supla_device_channel *channel = find_channel(channel_id);
-  return channel && !channel->is_offline();
+supla_channel_availability_status
+supla_device_channels::get_channel_availability_status(int channel_id) {
+  supla_channel_availability_status result;
+  result.set_offline(true);
+
+  access_channel(channel_id, [&result](supla_device_channel *channel) -> void {
+    result = channel->get_availability_status();
+  });
+  return result;
 }
 
 void supla_device_channels::on_device_registered(

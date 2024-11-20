@@ -323,12 +323,13 @@ std::shared_ptr<supla_client> supla_user::get_client(int user_id,
 bool supla_user::get_channel_value(
     int device_id, int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
     char sub_value[SUPLA_CHANNELVALUE_SIZE], char *sub_value_type,
-    supla_channel_extended_value **extended_value, int *function, char *online,
+    supla_channel_extended_value **extended_value, int *function,
+    supla_channel_availability_status *status,
     unsigned _supla_int_t *validity_time_sec, bool for_client) {
   memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
   memset(sub_value, 0, SUPLA_CHANNELVALUE_SIZE);
-  if (online) {
-    *online = 0;
+  if (status) {
+    status->set_offline(true);
   }
 
   shared_ptr<supla_device> device = devices->get(device_id);
@@ -337,7 +338,7 @@ bool supla_user::get_channel_value(
   }
 
   if (!device->get_channels()->get_channel_value(
-          channel_id, value, online, validity_time_sec, extended_value,
+          channel_id, value, status, validity_time_sec, extended_value,
           function, for_client)) {
     return false;
   }
@@ -352,13 +353,14 @@ bool supla_user::get_channel_value(
     }
 
     char _value[SUPLA_CHANNELVALUE_SIZE] = {};
-    char sub_channel_online = 0;
+    supla_channel_availability_status sub_channel_status;
+    sub_channel_status.set_offline(true);
     int func = 0;
 
     if (related_device->get_channels()->get_channel_value(
-            it->get_id(), _value, &sub_channel_online, nullptr, nullptr, &func,
+            it->get_id(), _value, &sub_channel_status, nullptr, nullptr, &func,
             for_client) &&
-        sub_channel_online) {
+        sub_channel_status.is_online()) {
       switch (it->get_relation_type()) {
         case CHANNEL_RELATION_TYPE_OPENING_SENSOR:
           sub_value[0] = _value[0];
