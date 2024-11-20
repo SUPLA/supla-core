@@ -353,8 +353,7 @@ bool supla_user::get_channel_value(
     }
 
     char _value[SUPLA_CHANNELVALUE_SIZE] = {};
-    supla_channel_availability_status sub_channel_status;
-    sub_channel_status.set_offline(true);
+    supla_channel_availability_status sub_channel_status(true);
     int func = 0;
 
     if (related_device->get_channels()->get_channel_value(

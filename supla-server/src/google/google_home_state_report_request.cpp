@@ -76,8 +76,7 @@ bool supla_google_home_state_report_request::make_request(
       token_provider->get_token(platform_homegraph, 0));
 
   supla_channel_fragment fragment;
-  supla_channel_availability_status status;
-  status.set_offline(true);
+  supla_channel_availability_status status(true);
 
   supla_channel_value *value = get_channel_value(&fragment, &status);
 

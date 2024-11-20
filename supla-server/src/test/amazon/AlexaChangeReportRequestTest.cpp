@@ -77,10 +77,10 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
       .WillOnce([func, online, value](
                     int user_id, int device_id, int channel_id,
                     supla_channel_fragment *_fragment,
-                    supla_channel_availability_status *status) {
+                    supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
-        status->set_offline(!online);
+        _status->set_offline(!online);
 
         return value;
       });

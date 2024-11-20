@@ -45,8 +45,7 @@ void supla_client_channelgroup_value::proto_get(
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
   channel_value->Id = get_id();
 
-  supla_channel_availability_status status;
-  status.set_offline(true);
+  supla_channel_availability_status status(true);
 
   getContainer()->getClient()->get_user()->get_channel_value(
       DeviceId, get_id(), channel_value->value.value,
@@ -61,8 +60,7 @@ void supla_client_channelgroup_value::proto_get(
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue_B));
   channel_value->Id = get_id();
 
-  supla_channel_availability_status status;
-  status.set_offline(true);
+  supla_channel_availability_status status(true);
 
   getContainer()->getClient()->get_user()->get_channel_value(
       DeviceId, get_id(), channel_value->value.value,

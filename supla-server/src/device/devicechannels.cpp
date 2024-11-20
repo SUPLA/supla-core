@@ -444,8 +444,7 @@ bool supla_device_channels::channel_exists(int channel_id) {
 
 supla_channel_availability_status
 supla_device_channels::get_channel_availability_status(int channel_id) {
-  supla_channel_availability_status result;
-  result.set_offline(true);
+  supla_channel_availability_status result(true);
 
   access_channel(channel_id, [&result](supla_device_channel *channel) -> void {
     result = channel->get_availability_status();

@@ -25,6 +25,7 @@ class supla_channel_availability_status {
  public:
   supla_channel_availability_status(void);
   supla_channel_availability_status(char status, bool proto_offline);
+  explicit supla_channel_availability_status(bool offline);
   virtual ~supla_channel_availability_status(void);
 
   bool is_online(void) const;

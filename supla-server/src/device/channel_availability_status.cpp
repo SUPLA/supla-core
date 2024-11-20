@@ -23,6 +23,11 @@ supla_channel_availability_status::supla_channel_availability_status(void) {
 }
 
 supla_channel_availability_status::supla_channel_availability_status(
+    bool offline) {
+  proto_offline = offline ? 1 : 0;
+}
+
+supla_channel_availability_status::supla_channel_availability_status(
     char status, bool proto_offline) {
   this->proto_offline = 0;
   if (proto_offline) {

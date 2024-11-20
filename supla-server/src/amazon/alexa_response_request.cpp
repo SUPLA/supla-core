@@ -83,9 +83,7 @@ bool supla_alexa_response_request::make_request(
 
   supla_channel_fragment fragment;
 
-  supla_channel_availability_status status;
-  status.set_offline(true);
-
+  supla_channel_availability_status status(true);
   supla_channel_value *value = get_channel_value(&fragment, &status);
 
   client.set_channel_connected(status.is_online());

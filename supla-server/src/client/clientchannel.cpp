@@ -384,8 +384,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel *channel,
   channel->Func = Func;
   channel->LocationID = this->LocationId;
 
-  supla_channel_availability_status status;
-  status.set_offline(true);
+  supla_channel_availability_status status(true);
 
   proto_get_value(&channel->value, &status, client);
   channel->online = status.get_proto_online();
@@ -405,8 +404,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
   channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags() & 0xFFFFFFFF;
 
-  supla_channel_availability_status status;
-  status.set_offline(true);
+  supla_channel_availability_status status(true);
 
   proto_get_value(&channel->value, &status, client);
   channel->online = status.get_proto_online();
@@ -431,8 +429,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
   channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags() & 0xFFFFFFFF;
 
-  supla_channel_availability_status status;
-  status.set_offline(true);
+  supla_channel_availability_status status(true);
 
   proto_get_value(&channel->value, &status, client);
   channel->online = status.get_proto_online();
@@ -457,8 +454,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
   channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags() & 0xFFFFFFFF;
 
-  supla_channel_availability_status status;
-  status.set_offline(true);
+  supla_channel_availability_status status(true);
 
   proto_get_value(&channel->value, &status, client);
   channel->online = status.get_proto_online();
@@ -489,8 +485,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_E *channel,
   channel->DefaultConfigCRC32 = st_crc32_checksum(
       (const unsigned char *)config.Config, config.ConfigSize);
 
-  supla_channel_availability_status status;
-  status.set_offline(true);
+  supla_channel_availability_status status(true);
 
   proto_get_value(&channel->value, &status, client);
   channel->online = status.get_proto_online();
@@ -504,8 +499,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
   channel_value->Id = get_id();
 
-  supla_channel_availability_status status;
-  status.set_offline(true);
+  supla_channel_availability_status status(true);
 
   proto_get_value(&channel_value->value, &status, client);
   channel_value->online = status.get_proto_online();
@@ -516,8 +510,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannelValue_B *channel_value,
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue_B));
   channel_value->Id = get_id();
 
-  supla_channel_availability_status status;
-  status.set_offline(true);
+  supla_channel_availability_status status(true);
 
   proto_get_value(&channel_value->value, &status, client);
   channel_value->online = status.get_proto_online();
