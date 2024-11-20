@@ -8,6 +8,7 @@ CPP_SRCS += \
 ../src/device/abstract_common_channel_properties.cpp \
 ../src/device/abstract_device_dao.cpp \
 ../src/device/channel_address.cpp \
+../src/device/channel_availability_status.cpp \
 ../src/device/channel_fragment.cpp \
 ../src/device/channel_property_getter.cpp \
 ../src/device/channel_relation.cpp \
@@ -22,6 +23,7 @@ CPP_DEPS += \
 ./src/device/abstract_common_channel_properties.d \
 ./src/device/abstract_device_dao.d \
 ./src/device/channel_address.d \
+./src/device/channel_availability_status.d \
 ./src/device/channel_fragment.d \
 ./src/device/channel_property_getter.d \
 ./src/device/channel_relation.d \
@@ -36,6 +38,7 @@ OBJS += \
 ./src/device/abstract_common_channel_properties.o \
 ./src/device/abstract_device_dao.o \
 ./src/device/channel_address.o \
+./src/device/channel_availability_status.o \
 ./src/device/channel_fragment.o \
 ./src/device/channel_property_getter.o \
 ./src/device/channel_relation.o \
@@ -58,7 +61,7 @@ src/device/%.o: ../src/device/%.cpp src/device/subdir.mk
 clean: clean-src-2f-device
 
 clean-src-2f-device:
-	-$(RM) ./src/device/abstract_channel_property_getter.d ./src/device/abstract_channel_property_getter.o ./src/device/abstract_common_channel_properties.d ./src/device/abstract_common_channel_properties.o ./src/device/abstract_device_dao.d ./src/device/abstract_device_dao.o ./src/device/channel_address.d ./src/device/channel_address.o ./src/device/channel_fragment.d ./src/device/channel_fragment.o ./src/device/channel_property_getter.d ./src/device/channel_property_getter.o ./src/device/channel_relation.d ./src/device/channel_relation.o ./src/device/channel_state.d ./src/device/channel_state.o ./src/device/device.d ./src/device/device.o ./src/device/device_dao.d ./src/device/device_dao.o ./src/device/devicechannel.d ./src/device/devicechannel.o ./src/device/devicechannels.d ./src/device/devicechannels.o
+	-$(RM) ./src/device/abstract_channel_property_getter.d ./src/device/abstract_channel_property_getter.o ./src/device/abstract_common_channel_properties.d ./src/device/abstract_common_channel_properties.o ./src/device/abstract_device_dao.d ./src/device/abstract_device_dao.o ./src/device/channel_address.d ./src/device/channel_address.o ./src/device/channel_availability_status.d ./src/device/channel_availability_status.o ./src/device/channel_fragment.d ./src/device/channel_fragment.o ./src/device/channel_property_getter.d ./src/device/channel_property_getter.o ./src/device/channel_relation.d ./src/device/channel_relation.o ./src/device/channel_state.d ./src/device/channel_state.o ./src/device/device.d ./src/device/device.o ./src/device/device_dao.d ./src/device/device_dao.o ./src/device/devicechannel.d ./src/device/devicechannel.o ./src/device/devicechannels.d ./src/device/devicechannels.o
 
 .PHONY: clean-src-2f-device
 
