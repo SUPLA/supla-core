@@ -564,7 +564,7 @@ bool supla_device_dao::update_device(int device_id, int original_location_id,
 
 int supla_device_dao::add_channel(int device_id, int channel_number, int type,
                                   int func, int param1, int param2, int flist,
-                                  _supla_int64_t flags, int alt_icon,
+                                  unsigned _supla_int64_t flags, int alt_icon,
                                   unsigned short sub_device_id, int user_id) {
   MYSQL_BIND pbind[11] = {};
 
@@ -873,7 +873,7 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
     int number = 0;
     int id = 0;
     int hidden = 0;
-    int flags = 0;
+    unsigned _supla_int64_t flags = 0;
 
     char text_param1[256] = {};
     char text_param2[256] = {};
@@ -950,7 +950,7 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
     rbind[11].buffer_type = MYSQL_TYPE_LONG;
     rbind[11].buffer = (char *)&hidden;
 
-    rbind[12].buffer_type = MYSQL_TYPE_LONG;
+    rbind[12].buffer_type = MYSQL_TYPE_LONGLONG;
     rbind[12].buffer = (char *)&flags;
 
     rbind[13].buffer_type = MYSQL_TYPE_BLOB;
@@ -1482,7 +1482,7 @@ vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
     int channel_id = 0;
     int number = 0;
     int type = 0;
-    int flags = 0;
+    unsigned _supla_int64_t flags = 0;
     int function = 0;
     char hidden = 0;
 
@@ -1498,7 +1498,7 @@ vector<supla_channel_fragment> supla_device_dao::get_channel_fragments(
     rbind[3].buffer_type = MYSQL_TYPE_LONG;
     rbind[3].buffer = (char *)&function;
 
-    rbind[4].buffer_type = MYSQL_TYPE_LONG;
+    rbind[4].buffer_type = MYSQL_TYPE_LONGLONG;
     rbind[4].buffer = (char *)&flags;
 
     rbind[5].buffer_type = MYSQL_TYPE_TINY;

@@ -33,7 +33,7 @@ supla_channel_fragment::supla_channel_fragment() {
 supla_channel_fragment::supla_channel_fragment(int device_id, int channel_id,
                                                unsigned char channel_number,
                                                int type, int function,
-                                               unsigned int flags,
+											   unsigned _supla_int64_t flags,
                                                bool _is_hidden) {
   this->device_id = device_id;
   this->channel_id = channel_id;
@@ -56,7 +56,7 @@ int supla_channel_fragment::get_type(void) { return type; }
 
 int supla_channel_fragment::get_function(void) { return function; }
 
-unsigned int supla_channel_fragment::get_flags(void) { return flags; }
+unsigned _supla_int64_t supla_channel_fragment::get_flags(void) { return flags; }
 
 void supla_channel_fragment::set_function(int function) {
   this->function = function;
