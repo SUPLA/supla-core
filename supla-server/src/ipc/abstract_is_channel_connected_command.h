@@ -21,6 +21,7 @@
 
 #include <string>
 
+#include "device/channel_availability_status.h"
 #include "ipc/abstract_ipc_command.h"
 
 class supla_abstract_is_channel_connected_command
@@ -28,8 +29,8 @@ class supla_abstract_is_channel_connected_command
  protected:
   virtual void on_command_match(const char *params);
   virtual const std::string get_command_name(void);
-  virtual bool is_channel_online(int user_id, int device_id,
-                                 int channel_id) = 0;
+  virtual supla_channel_availability_status get_availability_status(
+      int user_id, int device_id, int channel_id) = 0;
 
  public:
   explicit supla_abstract_is_channel_connected_command(

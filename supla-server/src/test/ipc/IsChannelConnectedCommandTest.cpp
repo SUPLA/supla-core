@@ -39,27 +39,37 @@ TEST_F(IsChannelConnectedCommandTest, noData) {
 }
 
 TEST_F(IsChannelConnectedCommandTest, connected) {
-  EXPECT_CALL(*cmd, is_channel_online(10, 20, 30)).WillOnce(Return(true));
+  EXPECT_CALL(*cmd, get_availability_status(10, 20, 30))
+      .WillOnce(Return(supla_channel_availability_status(false)));
   commandProcessingTest("IS-CHANNEL-CONNECTED:10,20,30\n", "CONNECTED:30\n");
 }
 
+TEST_F(IsChannelConnectedCommandTest, connected_but_not_available) {
+  EXPECT_CALL(*cmd, get_availability_status(10, 20, 30))
+      .WillOnce(Return(supla_channel_availability_status(
+          supla_channel_availability_status(2, true))));
+  commandProcessingTest("IS-CHANNEL-CONNECTED:10,20,30\n",
+                        "CONNECTED_BUT_NOT_AVAILABLE:30\n");
+}
+
 TEST_F(IsChannelConnectedCommandTest, disconnected) {
-  EXPECT_CALL(*cmd, is_channel_online(10, 20, 30)).WillOnce(Return(false));
+  EXPECT_CALL(*cmd, get_availability_status(10, 20, 30))
+      .WillOnce(Return(supla_channel_availability_status(true)));
   commandProcessingTest("IS-CHANNEL-CONNECTED:10,20,30\n", "DISCONNECTED:30\n");
 }
 
 TEST_F(IsChannelConnectedCommandTest, noParams) {
-  EXPECT_CALL(*cmd, is_channel_online).Times(0);
+  EXPECT_CALL(*cmd, get_availability_status).Times(0);
   commandProcessingTest("IS-CHANNEL-CONNECTED:\n", "DISCONNECTED:0\n");
 }
 
 TEST_F(IsChannelConnectedCommandTest, paramsWithZeros) {
-  EXPECT_CALL(*cmd, is_channel_online).Times(0);
+  EXPECT_CALL(*cmd, get_availability_status).Times(0);
   commandProcessingTest("IS-CHANNEL-CONNECTED:0,0,0\n", "DISCONNECTED:0\n");
 }
 
 TEST_F(IsChannelConnectedCommandTest, badParams) {
-  EXPECT_CALL(*cmd, is_channel_online).Times(0);
+  EXPECT_CALL(*cmd, get_availability_status).Times(0);
   commandProcessingTest("IS-CHANNEL-CONNECTED:a,10,b\n", "DISCONNECTED:0\n");
 }
 

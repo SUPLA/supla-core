@@ -31,8 +31,9 @@ class IsChannelConnectedCommandMock
   explicit IsChannelConnectedCommandMock(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  MOCK_METHOD3(is_channel_online,
-               bool(int user_id, int device_id, int channel_id));
+  MOCK_METHOD3(get_availability_status,
+               supla_channel_availability_status(int user_id, int device_id,
+                                                 int channel_id));
 };
 
 } /* namespace testing */

@@ -26,7 +26,8 @@
 class supla_is_channel_connected_command
     : public supla_abstract_is_channel_connected_command {
  protected:
-  virtual bool is_channel_online(int user_id, int device_id, int channel_id);
+  virtual supla_channel_availability_status get_availability_status(
+      int user_id, int device_id, int channel_id);
 
  public:
   explicit supla_is_channel_connected_command(

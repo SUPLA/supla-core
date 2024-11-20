@@ -28,15 +28,17 @@ supla_is_channel_connected_command::supla_is_channel_connected_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_is_channel_connected_command(socket_adapter) {}
 
-bool supla_is_channel_connected_command::is_channel_online(int user_id,
-                                                           int device_id,
-                                                           int channel_id) {
+supla_channel_availability_status
+supla_is_channel_connected_command::get_availability_status(int user_id,
+                                                            int device_id,
+                                                            int channel_id) {
+  supla_channel_availability_status result(true);
+
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    return device->get_channels()
-        ->get_channel_availability_status(channel_id)
-        .is_online();
+    result =
+        device->get_channels()->get_channel_availability_status(channel_id);
   }
-  return false;
+  return result;
 }
