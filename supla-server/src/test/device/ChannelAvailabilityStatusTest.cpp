@@ -35,20 +35,20 @@ TEST_F(ChannelAvailabilityStatusTest, defaultConstructor) {
 
 TEST_F(ChannelAvailabilityStatusTest, constructorWithBool) {
   supla_channel_availability_status status1(true);
-  EXPECT_TRUE(status1.is_online());
-  EXPECT_FALSE(status1.is_offline());
-  EXPECT_FALSE(status1.is_online_but_not_available());
-
-  EXPECT_EQ(status1.get_proto_online(), 1);
-  EXPECT_EQ(status1.get_proto_offline(), 0);
-
-  supla_channel_availability_status status2(false);
   EXPECT_FALSE(status2.is_online());
   EXPECT_TRUE(status2.is_offline());
   EXPECT_FALSE(status2.is_online_but_not_available());
 
   EXPECT_EQ(status1.get_proto_online(), 0);
   EXPECT_EQ(status1.get_proto_offline(), 1);
+
+  supla_channel_availability_status status2(false);
+  EXPECT_TRUE(status1.is_online());
+  EXPECT_FALSE(status1.is_offline());
+  EXPECT_FALSE(status1.is_online_but_not_available());
+
+  EXPECT_EQ(status1.get_proto_online(), 1);
+  EXPECT_EQ(status1.get_proto_offline(), 0);
 }
 
 TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOffline) {
