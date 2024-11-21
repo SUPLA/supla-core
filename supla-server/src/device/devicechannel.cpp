@@ -54,7 +54,7 @@ supla_device_channel::supla_device_channel(
     const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec,
     supla_channel_extended_value *extended_value, const char *user_config,
-    const char *properties)
+    const char *properties, supla_channel_state *state)
     : supla_abstract_common_channel_properties(),
       id(id),
       channel_number(channel_number),
@@ -81,6 +81,7 @@ supla_device_channel::supla_device_channel(
   this->json_config = nullptr;
   this->state = nullptr;
   this->data_analyzer = nullptr;
+  this->state = state;
 
   if (validity_time_sec > 0) {
     gettimeofday(&value_valid_to, nullptr);
@@ -1019,6 +1020,7 @@ bool supla_device_channel::get_state(TDSC_ChannelState *state) {
   lock();
   if (this->state) {
     *state = *this->state->get_state();
+    state->ChannelID = get_id();
     result = true;
   }
   unlock();

@@ -848,9 +848,10 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
       "c.`channel_number`, c.`id`, c.`hidden`, c.`flags`, v.`value`, CASE WHEN "
       "v.`valid_to` >= UTC_TIMESTAMP() THEN TIME_TO_SEC(TIMEDIFF(v.`valid_to`, "
       "UTC_TIMESTAMP())) + 2 ELSE NULL END, ev.`type`, ev.`value`, "
-      "c.`user_config`, c.`properties` FROM `supla_dev_channel` c  LEFT JOIN "
-      "`supla_dev_channel_value` v ON v.channel_id = c.id LEFT JOIN "
-      "`supla_dev_channel_extended_value` ev ON ev.channel_id = c.id WHERE "
+      "c.`user_config`, c.`properties`, s.`state` FROM `supla_dev_channel` c  "
+      "LEFT JOIN `supla_dev_channel_value` v ON v.channel_id = c.id LEFT JOIN "
+      "`supla_dev_channel_extended_value` ev ON ev.channel_id = c.id LEFT JOIN "
+      "`supla_dev_channel_state` s ON s.channel_id = c.id WHERE "
       "c.`iodevice_id` = ? ORDER BY c.`channel_number`";
 
   MYSQL_BIND pbind = {};
@@ -862,7 +863,7 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
     my_bool is_null[11] = {};
-    MYSQL_BIND rbind[19] = {};
+    MYSQL_BIND rbind[20] = {};
 
     int type = 0;
     int func = 0;
@@ -898,6 +899,10 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
     TSuplaChannelExtendedValue ev = {};
     unsigned long ev_value_size = 0;
     my_bool ev_value_is_null = true;
+
+    char state[1025] = {};
+    unsigned long state_size = 0;
+    my_bool state_is_null = true;
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&type;
@@ -985,6 +990,12 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
     rbind[18].buffer_length = sizeof(properties) - 1;
     rbind[18].length = &properties_size;
 
+    rbind[19].buffer_type = MYSQL_TYPE_STRING;
+    rbind[19].buffer = state;
+    rbind[19].is_null = &state_is_null;
+    rbind[19].buffer_length = sizeof(state) - 1;
+    rbind[19].length = &state_size;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -1004,6 +1015,8 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
           if (is_null[8] == true) text_param3_size = 0;
           if (is_null[9] == true) user_config_size = 0;
           if (is_null[10] == true) properties_size = 0;
+          if (ev_value_is_null) ev_value_size = 0;
+          if (state_is_null) state_size = 0;
 
           text_param1[text_param1_size] = 0;
           text_param2[text_param2_size] = 0;
@@ -1022,7 +1035,7 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
 
           supla_channel_extended_value *extended_value = nullptr;
 
-          if (!ev_value_is_null && ev_value_size > 0) {
+          if (ev_value_size) {
             ev.size = ev_value_size;
             extended_value =
                 supla_channel_extended_value_factory::new_value(&ev);
@@ -1030,12 +1043,19 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
 
           ev = {};
 
+          supla_channel_state *channel_state = nullptr;
+
+          if (state_size > 2) {  // "{}" == 2
+            state[state_size] = 0;
+            channel_state = new supla_channel_state(state);
+          }
+
           supla_device_channel *channel = new supla_device_channel(
               device, id, number, type, func, param1, param2, param3, param4,
               text_param1, text_param2, text_param3, hidden > 0, flags, value,
               validity_time_sec, extended_value,
               user_config_size ? user_config : nullptr,
-              properties_size ? properties : nullptr);
+              properties_size ? properties : nullptr, channel_state);
 
           result.push_back(channel);
         }

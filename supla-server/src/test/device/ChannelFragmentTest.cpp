@@ -63,7 +63,7 @@ TEST_F(ChannelFragmentTest, channelAssignment) {
                                SUPLA_CHANNELFNC_ACTIONTRIGGER, 0, 0, 0, 0,
                                nullptr, nullptr, nullptr, false,
                                SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE, value, 0,
-                               nullptr, nullptr, nullptr);
+                               nullptr, nullptr, nullptr, nullptr);
 
   supla_channel_fragment f;
   f = &channel;

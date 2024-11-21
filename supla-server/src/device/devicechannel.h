@@ -96,7 +96,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
                        const char value[SUPLA_CHANNELVALUE_SIZE],
                        unsigned _supla_int_t validity_time_sec,
                        supla_channel_extended_value *extended_value,
-                       const char *user_config, const char *properties);
+                       const char *user_config, const char *properties,
+                       supla_channel_state *state);
   virtual ~supla_device_channel();
 
   static void get_defaults(int type, int func, int *param1, int *param2);

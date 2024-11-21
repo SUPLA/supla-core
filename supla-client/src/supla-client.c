@@ -1078,6 +1078,9 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         if (scd->cfg.cb_on_device_channel_state && rd.data.dsc_channel_state) {
           scd->cfg.cb_on_device_channel_state(scd, scd->cfg.user_data,
                                               rd.data.dsc_channel_state);
+
+          srpc_cs_async_get_next(scd->srpc);  // It is used when sending states
+                                              // right after registration.
         }
         break;
       case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
