@@ -389,6 +389,27 @@ jobject supla_channelvalue_to_jobject(void *_suplaclient, void *user_data,
   return val;
 }
 
+jobject supla_online_to_joblect(JNIEnv *env, char online) {
+  char enum_name[30] = {};
+
+  switch (online) {
+    case 1:
+      snprintf(enum_name, sizeof(enum_name), "ONLINE");
+      break;
+    case 2:
+      snprintf(enum_name, sizeof(enum_name), "ONLINE_BUT_NOT_AVAILABLE");
+      break;
+    default:
+      snprintf(enum_name, sizeof(enum_name), "OFFLINE");
+      break;
+  }
+
+  return supla_NewEnum(env,
+                       "org.supla.android.data.source.remote.channel."
+                       "SuplaChannelAvailabilityStatus",
+                       enum_name);
+}
+
 void supla_cb_channel_update(void *_suplaclient, void *user_data,
                              TSC_SuplaChannel_E *channel) {
   // int a;
@@ -431,8 +452,10 @@ void supla_cb_channel_update(void *_suplaclient, void *user_data,
     fid = supla_client_GetFieldID(env, cch, "ProductID", "S");
     env->SetShortField(ch, fid, channel->ProductID);
 
-    fid = supla_client_GetFieldID(env, cch, "OnLine", "Z");
-    env->SetBooleanField(ch, fid, channel->online == 1 ? JNI_TRUE : JNI_FALSE);
+    fid = supla_client_GetFieldID(env, cch, "AvailabilityStatus",
+                                  "Lorg.supla.android.data.source.remote."
+                                  "channel.SuplaChannelAvailabilityStatus;");
+    env->SetObjectField(ch, fid, supla_online_to_joblect(env, channel->online));
 
     fid = supla_client_GetFieldID(env, cch, "Value",
                                   "Lorg/supla/android/lib/SuplaChannelValue;");
@@ -483,12 +506,15 @@ void supla_cb_channel_value_update(void *_suplaclient, void *user_data,
     fid = supla_client_GetFieldID(env, cval, "Id", "I");
     env->SetIntField(val, fid, channel_value->Id);
 
-    fid = supla_client_GetFieldID(env, cval, "OnLine", "Z");
-    env->SetBooleanField(val, fid,
-                         channel_value->online == 1 ? JNI_TRUE : JNI_FALSE);
+    fid = supla_client_GetFieldID(env, cval, "AvailabilityStatus",
+                                  "Lorg.supla.android.data.source.remote."
+                                  "channel.SuplaChannelAvailabilityStatus;");
+    env->SetObjectField(val, fid,
+                        supla_online_to_joblect(env, channel_value->online));
 
     fid = supla_client_GetFieldID(env, cval, "Value",
                                   "Lorg/supla/android/lib/SuplaChannelValue;");
+
     jobject chv = supla_channelvalue_to_jobject(_suplaclient, user_data,
                                                 &channel_value->value);
     env->SetObjectField(val, fid, chv);
