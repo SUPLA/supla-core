@@ -18,10 +18,12 @@
 
 #include "ClientDaoIntegrationTest.h"
 
+#include <list>
 #include <string>
 
 namespace testing {
 
+using std::list;
 using std::string;
 
 ClientDaoIntegrationTest::ClientDaoIntegrationTest()
@@ -103,6 +105,25 @@ TEST_F(ClientDaoIntegrationTest, removePushNotificationClientTokenWithNull) {
   EXPECT_EQ(result,
             "push_token\tplatform\tapp_id\tdevel_env\tprofile_"
             "name\nNULL\t2\t3\t1\tNULL\n");
+}
+
+TEST_F(ClientDaoIntegrationTest, getClientsState) {
+  runSqlScript("AddChannelState.sql");
+  list<supla_channel_state *> result = dao->get_chanels_state(2, 1);
+  ASSERT_EQ(result.size(), 2);
+
+  supla_channel_state *state = result.front();
+
+  EXPECT_EQ(state->get_state()->Uptime, 41850);
+
+  delete state;
+  result.pop_front();
+
+  state = result.front();
+
+  EXPECT_EQ(state->get_state()->Uptime, 41847);
+
+  delete state;
 }
 
 } /* namespace testing */

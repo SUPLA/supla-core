@@ -156,6 +156,7 @@ static_assert(sizeof(TThermostatTemperatureCfg) <=
               (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 static_assert((unsigned int)63 == sizeof(TSDC_UserLocalTimeResult));
 static_assert((unsigned int)50 == sizeof(TDSC_ChannelState));
+static_assert((unsigned int)1008 == sizeof(TSC_SuplaChannelStatePack));
 static_assert(sizeof(TDSC_ChannelState) <= SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 static_assert((unsigned int)8 == sizeof(TCSD_ChannelStateRequest));
 static_assert((unsigned int)8 == sizeof(TCS_SetChannelFunction));

@@ -192,6 +192,7 @@ union TsrpcDataPacketData {
   TSC_DeviceConfigUpdateOrResult *sc_device_config_update_or_result;
   TCS_GetDeviceConfigRequest *cs_get_device_config_request;
   TDS_SubdeviceDetails *ds_subdevice_details;
+  TSC_SuplaChannelStatePack *sc_channel_state_pack;
 };
 
 typedef struct {
@@ -345,8 +346,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_device_config_request(
     void *_srpc, TSDS_SetDeviceConfig *config);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_device_config_result(
     void *_srpc, TSDS_SetDeviceConfigResult *result);
-_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_subdevice_details(
-    void *_srpc, TDS_SubdeviceDetails *reg);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_set_subdevice_details(void *_srpc, TDS_SubdeviceDetails *reg);
 #endif /*SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT
@@ -404,6 +405,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update_b(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelextendedvalue_pack_update(
     void *_srpc,
     TSC_SuplaChannelExtendedValuePack *extendedvalue_pack);  // ver. >= 10
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_state_pack_update(
+    void *_srpc, TSC_SuplaChannelStatePack *state_pack);  // ver. >= 26
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_next(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_event(void *_srpc,
                                                    TSC_SuplaEvent *event);

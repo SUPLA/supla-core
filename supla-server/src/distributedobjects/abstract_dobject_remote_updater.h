@@ -34,7 +34,6 @@ class supla_abstract_dobject_remote_updater {
 
  protected:
   supla_abstract_srpc_adapter *get_srpc_adapter(void);
-  virtual bool is_protocol_version_allowed(int protocol_version) = 0;
 
   virtual bool on_transaction_begin(supla_dobject *object,
                                     int protocol_version) = 0;
@@ -53,6 +52,7 @@ class supla_abstract_dobject_remote_updater {
   bool is_update_possible(void);
   virtual bool pre_transaction_verification(supla_dobject *object,
                                             bool first) = 0;
+  virtual bool is_protocol_version_allowed(int protocol_version) = 0;
   void update(supla_dobject *object);
   bool is_transaction_rejected(void);
   bool is_transaction_should_end(void);

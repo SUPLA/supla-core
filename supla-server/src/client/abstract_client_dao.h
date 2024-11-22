@@ -19,8 +19,10 @@
 #ifndef SUPLA_ABSTRACT_CLIENT_DAO_H_
 #define SUPLA_ABSTRACT_CLIENT_DAO_H_
 
+#include <list>
 #include <string>
 
+#include "device/channel_state.h"
 #include "proto.h"
 #include "tools.h"
 
@@ -81,6 +83,9 @@ class supla_abstract_client_dao {
   virtual void update_client_push_notification_client_token(
       int user_id, int client_id, const char *token, int platform, int app_id,
       bool development_env, const char *profile_name) = 0;
+
+  virtual std::list<supla_channel_state *> get_chanels_state(int user_id,
+                                                             int client_id) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_CLIENT_DAO_H_ */

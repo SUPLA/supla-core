@@ -218,21 +218,6 @@ bool supla_client_channels::get_data_for_remote(
     if (getClient()->get_protocol_version() >= 10) {
       return get_ev_datapack_for_remote(obj, data);
     }
-  } else if (data_type & OI_REMOTEUPDATE_DATA4) {
-    shared_ptr<supla_device> device =
-        getClient()->get_user()->get_devices()->get(
-            static_cast<supla_client_channel *>(obj)->get_device_id());
-    if (device) {
-      TDSC_ChannelState *state =
-          (TDSC_ChannelState *)malloc(sizeof(TDSC_ChannelState));
-      *state = {};
-      if (device->get_channels()->get_channel_state(
-              static_cast<supla_client_channel *>(obj)->get_id(), state)) {
-        *data = state;
-        return true;
-      }
-      free(state);
-    }
   }
 
   return false;
@@ -291,17 +276,13 @@ void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
   } else if (data_type & OI_REMOTEUPDATE_DATA3) {
     srpc_sc_async_channelextendedvalue_pack_update(
         srpc, static_cast<TSC_SuplaChannelExtendedValuePack *>(data));
-  } else if (data_type & OI_REMOTEUPDATE_DATA4) {
-    srpc_csd_async_channel_state_result(srpc,
-                                        static_cast<TDSC_ChannelState *>(data));
   }
 
   free(data);
 }
 
 int supla_client_channels::available_data_types_for_remote(e_objc_scope scope) {
-  return OI_REMOTEUPDATE_DATA1 | OI_REMOTEUPDATE_DATA2 | OI_REMOTEUPDATE_DATA3 |
-         OI_REMOTEUPDATE_DATA4;
+  return OI_REMOTEUPDATE_DATA1 | OI_REMOTEUPDATE_DATA2 | OI_REMOTEUPDATE_DATA3;
 }
 
 void supla_client_channels::on_channel_value_changed(void *srpc, int DeviceId,

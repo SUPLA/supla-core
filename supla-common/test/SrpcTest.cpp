@@ -546,6 +546,9 @@ vector<int> SrpcTest::get_call_ids(int version) {
       return {SUPLA_DS_CALL_REGISTER_DEVICE_G,
               SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B,
               SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS};
+
+    case 26:
+      return {SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE};
   }
 
   return {};
@@ -599,9 +602,9 @@ TEST_F(SrpcTest, call_allowed_v21) { srpcCallAllowed(21, get_call_ids(21)); }
 
 TEST_F(SrpcTest, call_allowed_v23) { srpcCallAllowed(23, get_call_ids(23)); }
 
-#if SUPLA_PROTO_VERSION >= 25
 TEST_F(SrpcTest, call_allowed_v25) { srpcCallAllowed(25, get_call_ids(25)); }
-#endif /*SUPLA_PROTO_VERSION >= 25*/
+
+TEST_F(SrpcTest, call_allowed_v26) { srpcCallAllowed(26, get_call_ids(26)); }
 
 TEST_F(SrpcTest, call_not_allowed) {
   vector<int> all_calls;
@@ -2906,6 +2909,86 @@ TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_full_size) {
                       sizeof(TSC_SuplaChannelExtendedValuePack)));
 
   free(cr_rd.data.sc_channelextendedvalue_pack);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// CHANNEL STATE PACK
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, srpc_sc_async_channel_state_pack_update_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelStatePack, pack);
+
+  pack.count = SUPLA_CHANNEL_STATE_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channel_state_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_sc_async_channel_state_pack_update_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelStatePack, pack);
+
+  pack.count = SUPLA_CHANNEL_STATE_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channel_state_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_sc_async_channel_state_pack_update_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelStatePack, pack);
+
+  pack.count = SUPLA_CHANNEL_STATE_PACK_MAXCOUNT;
+
+  ASSERT_GT(srpc_sc_async_channel_state_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE, 1031);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_state_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_state_pack, &pack,
+                      sizeof(TSC_SuplaChannelStatePack)));
+
+  free(cr_rd.data.sc_channel_state_pack);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, srpc_sc_async_channel_state_pack_update_with_minimum_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelStatePack, pack);
+
+  pack.count = 1;
+
+  ASSERT_GT(srpc_sc_async_channel_state_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE, 81);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_state_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_state_pack, &pack,
+                      sizeof(TSC_SuplaChannelStatePack) -
+                          ((SUPLA_CHANNEL_STATE_PACK_MAXCOUNT - 1) *
+                           sizeof(TDSC_ChannelState))));
+
+  free(cr_rd.data.sc_channel_state_pack);
   srpc_free(srpc);
   srpc = NULL;
 }

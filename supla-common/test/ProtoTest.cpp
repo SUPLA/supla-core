@@ -155,6 +155,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)63, sizeof(TSDC_UserLocalTimeResult));
 
   EXPECT_EQ((unsigned int)50, sizeof(TDSC_ChannelState));
+  EXPECT_EQ((unsigned int)1008, sizeof(TSC_SuplaChannelStatePack));
   EXPECT_EQ((unsigned int)8, sizeof(TCSD_ChannelStateRequest));
   EXPECT_EQ((unsigned int)8, sizeof(TCS_SetChannelFunction));
   EXPECT_EQ((unsigned int)9, sizeof(TSC_SetChannelFunctionResult));

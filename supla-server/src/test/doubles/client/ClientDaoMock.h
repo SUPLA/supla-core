@@ -21,6 +21,7 @@
 
 #include <gmock/gmock.h>
 
+#include <list>
 #include <string>
 
 #include "client/abstract_client_dao.h"
@@ -94,6 +95,9 @@ class ClientDaoMock : public supla_abstract_client_dao {
                void(int user_id, int client_id, const char *token, int platform,
                     int app_id, bool development_env,
                     const char *profile_name));
+
+  MOCK_METHOD2(get_chanels_state,
+               std::list<supla_channel_state *>(int user_id, int client_id));
 };
 
 } /* namespace testing */

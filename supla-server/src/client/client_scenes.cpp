@@ -48,10 +48,10 @@ supla_client_scenes::~supla_client_scenes() {
 }
 
 void supla_client_scenes::load(int user_id, int client_id) {
-  lock();
-  clear();
   list<supla_client_scene *> scenes = dao->get_all_scenes(user_id, client_id);
 
+  lock();
+  clear();
   for (auto it = scenes.begin(); it != scenes.end(); ++it) {
     if (queue) {
       supla_scene_search_condition cnd(user_id, (*it)->get_id(), false);

@@ -49,6 +49,7 @@ supla_client::supla_client(supla_connection *connection)
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);
   this->cgroups = new supla_client_channelgroups(this);
+  this->client_dao = new supla_client_dao(&dba);
   this->scene_dao = new supla_client_scene_dao(&dba);
   this->scene_remote_updater =
       new supla_client_scene_remote_updater(connection->get_srpc_adapter());
@@ -62,6 +63,12 @@ supla_client::supla_client(supla_connection *connection)
           connection->get_srpc_adapter());
   this->channel_relations =
       new supla_client_channel_reactions(channel_relation_remote_updater);
+
+  this->channel_state_remote_updater =
+      new supla_client_channel_state_remote_updater(
+          connection->get_srpc_adapter());
+  this->channels_state =
+      new supla_client_channels_state(channel_state_remote_updater, client_dao);
 }
 
 supla_client::~supla_client() {
@@ -71,8 +78,11 @@ supla_client::~supla_client() {
   delete scenes;
   delete scene_remote_updater;
   delete scene_dao;
+  delete client_dao;
   delete channel_relations;
   delete channel_relation_remote_updater;
+  delete channels_state;
+  delete channel_state_remote_updater;
 }
 
 supla_abstract_srpc_call_handler_collection *
@@ -176,6 +186,8 @@ void supla_client::remote_update_lists(void) {
   if (scenes->update_remote()) return;
 
   if (channel_relations->update_remote()) return;
+
+  if (channels_state->update_remote()) return;
 }
 
 void supla_client::load_config(void) {

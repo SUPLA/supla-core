@@ -16,25 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_DISTRIBUTED_OBJECT_H_
-#define SUPLA_DISTRIBUTED_OBJECT_H_
+#ifndef SUPLA_CLIENT_CHANNELS_STATE_H_
+#define SUPLA_CLIENT_CHANNELS_STATE_H_
 
-#include <list>
+#include "client/abstract_client_dao.h"
+#include "distributedobjects/dobjects.h"
+#include "proto.h"
 
-#include "distributedobjects/dobject_change_indicator.h"
-
-class supla_dobject {
+class supla_client_channels;
+class supla_client_channels_state : public supla_dobjects {
  private:
-  int id;
-  supla_dobject_change_indicator *change_indicator;
+  supla_abstract_client_dao *dao;
 
- protected:
  public:
-  explicit supla_dobject(int id);
-  virtual ~supla_dobject();
-  void set_change_indicator(supla_dobject_change_indicator *change_indicator);
-  const supla_dobject_change_indicator *get_change_indicator(void);
-  virtual int get_id(void);
+  explicit supla_client_channels_state(
+      supla_abstract_dobject_remote_updater *updater,
+      supla_abstract_client_dao *dao);
+  virtual ~supla_client_channels_state();
+  void load(int client_protocol_version, int user_id, int client_id);
+  virtual bool update_remote(void);
 };
 
-#endif /* SUPLA_DISTRIBUTED_OBJECT_H_ */
+#endif /* SUPLA_CLIENT_CHANNELS_STATE_H_ */

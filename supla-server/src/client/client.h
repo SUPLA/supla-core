@@ -26,6 +26,9 @@
 
 #include "client/client_channel_relation_remote_updater.h"
 #include "client/client_channel_relations.h"
+#include "client/client_channel_state_remote_updater.h"
+#include "client/client_channels_state.h"
+#include "client/client_dao.h"
 #include "client/client_scene_dao.h"
 #include "client/client_scene_remote_updater.h"
 #include "client/client_scenes.h"
@@ -45,6 +48,7 @@ class supla_client : public supla_abstract_connection_object {
   int access_id;
   static supla_client_call_handler_collection call_handler_collection;
   supla_db_access_provider dba;
+  supla_client_dao *client_dao;
   supla_client_locations *locations;
   supla_client_channels *channels;
   supla_client_channelgroups *cgroups;
@@ -53,6 +57,8 @@ class supla_client : public supla_abstract_connection_object {
   supla_client_scene_dao *scene_dao;
   supla_client_channel_reactions *channel_relations;
   supla_client_channel_relation_remote_updater *channel_relation_remote_updater;
+  supla_client_channels_state *channels_state;
+  supla_client_channel_state_remote_updater *channel_state_remote_updater;
 
  protected:
   friend class supla_register_client;

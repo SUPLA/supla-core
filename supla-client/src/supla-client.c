@@ -474,6 +474,19 @@ void supla_client_channelextendedvalue_pack_update(
   srpc_cs_async_get_next(scd->srpc);
 }
 
+void supla_client_channel_state_pack_update(TSuplaClientData *scd,
+                                            TSC_SuplaChannelStatePack *pack) {
+  if (scd->cfg.cb_on_device_channel_state && pack &&
+      pack->count <= SUPLA_CHANNEL_STATE_PACK_MAXCOUNT) {
+    for (int a = 0; a < pack->count; a++) {
+      scd->cfg.cb_on_device_channel_state(scd, scd->cfg.user_data,
+                                          &pack->items[a]);
+    }
+  }
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
 void supla_client_channel_a2b(TSC_SuplaChannel *a, TSC_SuplaChannel_B *b) {
   b->EOL = a->EOL;
   b->Id = a->Id;
@@ -1039,6 +1052,12 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
               scd, rd.data.sc_channelextendedvalue_pack);
         }
         break;
+      case SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE:
+        if (rd.data.sc_channel_state_pack) {
+          supla_client_channel_state_pack_update(scd,
+                                                 rd.data.sc_channel_state_pack);
+        }
+        break;
       case SUPLA_SC_CALL_EVENT:
         if (rd.data.sc_event) {
           supla_client_on_event(scd, rd.data.sc_event);
@@ -1078,9 +1097,6 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         if (scd->cfg.cb_on_device_channel_state && rd.data.dsc_channel_state) {
           scd->cfg.cb_on_device_channel_state(scd, scd->cfg.user_data,
                                               rd.data.dsc_channel_state);
-
-          srpc_cs_async_get_next(scd->srpc);  // It is used when sending states
-                                              // right after registration.
         }
         break;
       case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
