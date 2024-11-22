@@ -22,10 +22,13 @@
 #include <map>
 #include <string>
 
+#include "distributedobjects/dobject.h"
 #include "json/json_helper.h"
 #include "vbt/vbt_value.h"
 
-class supla_channel_state : supla_json_helper, public supla_vbt_value {
+class supla_channel_state : supla_json_helper,
+                            public supla_vbt_value,
+                            public supla_dobject {
  private:
   TDSC_ChannelState state;
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
@@ -35,6 +38,7 @@ class supla_channel_state : supla_json_helper, public supla_vbt_value {
 
  public:
   supla_channel_state(void);
+  supla_channel_state(const char *json, int channel_id);
   explicit supla_channel_state(TDSC_ChannelState *state);
   explicit supla_channel_state(const char *json);
   virtual ~supla_channel_state();
@@ -44,6 +48,7 @@ class supla_channel_state : supla_json_helper, public supla_vbt_value {
   void merge_old_if_needed(supla_channel_state *old);
   bool equal_fields(supla_channel_state *state);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
+  virtual int get_id(void);
 };
 
 #endif /* CHANNEL_STATE_H_ */

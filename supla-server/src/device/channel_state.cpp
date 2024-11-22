@@ -66,15 +66,25 @@ const map<unsigned _supla_int16_t, string> supla_channel_state::field_map = {
     {JSON_FIELD_OPERATING_TIME, "operatingTime"},
 };
 
-supla_channel_state::supla_channel_state(void) { state = {}; }
+supla_channel_state::supla_channel_state(void)
+    : supla_json_helper(), supla_vbt_value(), supla_dobject(0) {
+  state = {};
+}
+
+supla_channel_state::supla_channel_state(const char *json, int channel_id)
+    : supla_json_helper(), supla_vbt_value(), supla_dobject(0) {
+  state = {};
+  apply_json(json);
+  state.ChannelID = channel_id;
+}
 
 supla_channel_state::supla_channel_state(TDSC_ChannelState *state)
-    : supla_json_helper() {
+    : supla_json_helper(), supla_vbt_value(), supla_dobject(0) {
   this->state = *state;
 }
 
 supla_channel_state::supla_channel_state(const char *json)
-    : supla_json_helper() {
+    : supla_json_helper(), supla_vbt_value(), supla_dobject(0) {
   state = {};
   apply_json(json);
 }
@@ -157,7 +167,7 @@ void supla_channel_state::apply_json(const char *json) {
     struct in_addr addr = {};
     if (inet_pton(AF_INET, str_val.c_str(), &addr) == 1) {
       state.Fields |= SUPLA_CHANNELSTATE_FIELD_IPV4;
-      state.IPv4 = ntohl(addr.s_addr);
+      state.IPv4 = addr.s_addr;
     }
   }
 
@@ -283,7 +293,7 @@ char *supla_channel_state::get_json(void) {
 
   if (state.Fields & SUPLA_CHANNELSTATE_FIELD_IPV4) {
     struct in_addr addr;
-    addr.s_addr = htonl(state.IPv4);
+    addr.s_addr = state.IPv4;
 
     char ipv4[INET_ADDRSTRLEN] = {};
 
@@ -440,3 +450,5 @@ bool supla_channel_state::get_vbt_value(_vbt_var_name_e var_name,
 
   return false;
 }
+
+int supla_channel_state::get_id(void) { return state.ChannelID; }

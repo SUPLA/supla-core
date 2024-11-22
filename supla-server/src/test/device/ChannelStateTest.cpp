@@ -27,7 +27,7 @@ TEST_F(ChannelStateTest, ffffffff_rawToJsonAndBack) {
   TDSC_ChannelState raw = {};
   raw.Fields = 0xFFFFFFFF;
   raw.defaultIconField = 1;
-  raw.IPv4 = 3232238100;
+  raw.IPv4 = 336242880;
   for (unsigned char a = 0; a < sizeof(raw.MAC); a++) {
     raw.MAC[a] = 0xFA + a;
   }
