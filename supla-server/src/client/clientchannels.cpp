@@ -225,7 +225,7 @@ bool supla_client_channels::get_data_for_remote(
     if (device) {
       TDSC_ChannelState *state =
           (TDSC_ChannelState *)malloc(sizeof(TDSC_ChannelState));
-      state = {};
+      *state = {};
       if (device->get_channels()->get_channel_state(
               static_cast<supla_client_channel *>(obj)->get_id(), state)) {
         *data = state;
