@@ -20,9 +20,9 @@
 
 #include <list>
 
-#include "client/client_scene_change_indicator.h"
 #include "client/clientchannel.h"
 #include "device/channel_state.h"
+#include "distributedobjects/dobject_change_indicator.h"
 
 using std::list;
 
@@ -46,7 +46,7 @@ void supla_client_channels_state::load(int client_protocol_version, int user_id,
   lock();
   clear();
   for (auto it = cs.begin(); it != cs.end(); ++it) {
-    (*it)->set_change_indicator(new supla_client_scene_change_indicator());
+    (*it)->set_change_indicator(new supla_dobject_change_indicator(true));
     add(*it);
   }
 
