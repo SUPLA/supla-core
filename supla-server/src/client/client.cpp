@@ -196,7 +196,7 @@ void supla_client::load_config(void) {
   cgroups->load();
   scenes->load(get_user_id(), get_id());
   channel_relations->load(channels);
-  channels_state->load(get_protocol_version(), get_id());
+  channels_state->load(get_protocol_version(), get_user_id(), get_id());
 }
 
 void supla_client::get_next(void) { remote_update_lists(); }
