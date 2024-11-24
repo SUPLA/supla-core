@@ -79,21 +79,21 @@ D | double
     return JNI_FALSE;                                                 \
   }
 
-#define JNI_FUNCTION_IString(jni_function_suffix, supla_client_function)   \
-  extern "C" JNIEXPORT jboolean JNICALL                                    \
-      Java_org_supla_android_lib_SuplaClient_##jni_function_suffix(        \
-          JNIEnv *env, jobject thiz, jlong _asc, jint i1, jstring s1) {    \
-    jboolean result = JNI_FALSE;                                           \
-    const char *str = env->GetStringUTFChars(s1, 0);                       \
-    if (str) {                                                             \
-      void *supla_client = supla_client_ptr(_asc);                         \
-      if (supla_client) {                                                  \
-        result = supla_client_function(supla_client, i1, str) ? JNI_TRUE   \
-                                                              : JNI_FALSE; \
-      }                                                                    \
-      env->ReleaseStringUTFChars(s1, str);                                 \
-    }                                                                      \
-    return result;                                                         \
+#define JNI_FUNCTION_IString(jni_function_suffix, supla_client_function,       \
+                             string_max_size)                                  \
+  extern "C" JNIEXPORT jboolean JNICALL                                        \
+      Java_org_supla_android_lib_SuplaClient_##jni_function_suffix(            \
+          JNIEnv *env, jobject thiz, jlong _asc, jint i1, jstring s1) {        \
+    jboolean result = JNI_FALSE;                                               \
+    void *supla_client = supla_client_ptr(_asc);                               \
+    if (supla_client) {                                                        \
+      char str[string_max_size] = {};                                          \
+      supla_GetStringUtfChars(env, s1, str, sizeof(str));                      \
+      result =                                                                 \
+          supla_client_function(supla_client, i1, str) ? JNI_TRUE : JNI_FALSE; \
+    }                                                                          \
+                                                                               \
+    return result;                                                             \
   }
 
 #define JNI_CALLBACK_I(jni_function_cb)                                \
@@ -1554,7 +1554,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
                            SUPLA_EMAIL_MAXSIZE);
 
     supla_stringobj2buffer(env, cfg, jcs, "Password", sclient_cfg.Password,
-                           SUPLA_EMAIL_MAXSIZE);
+                           SUPLA_PASSWORD_MAXSIZE);
 
     supla_stringobj2buffer(env, cfg, jcs, "Name", sclient_cfg.Name,
                            SUPLA_CLIENT_NAME_MAXSIZE);
@@ -2047,21 +2047,16 @@ Java_org_supla_android_lib_SuplaClient_scSuperUserAuthorizationRequest(
   void *supla_client = supla_client_ptr(_asc);
 
   if (supla_client) {
-    char *eml = (char *)env->GetStringUTFChars(email, 0);
-    char *pwd = (char *)env->GetStringUTFChars(password, 0);
+    char eml[SUPLA_EMAIL_MAXSIZE] = {};
+    char pwd[SUPLA_PASSWORD_MAXSIZE] = {};
+
+    supla_GetStringUtfChars(env, email, eml, sizeof(eml));
+    supla_GetStringUtfChars(env, password, pwd, sizeof(pwd));
 
     result = supla_client_superuser_authorization_request(supla_client, eml,
                                                           pwd) == 1
                  ? JNI_TRUE
                  : JNI_FALSE;
-
-    if (eml) {
-      env->ReleaseStringUTFChars(email, eml);
-    }
-
-    if (pwd) {
-      env->ReleaseStringUTFChars(password, pwd);
-    }
   }
 
   return result;
@@ -2076,14 +2071,18 @@ JNI_FUNCTION_I(scGetChannelBasicCfg, supla_client_get_channel_basic_cfg);
 
 JNI_FUNCTION_II(scSetChannelFunction, supla_client_set_channel_function);
 
-JNI_FUNCTION_IString(scSetChannelCaption, supla_client_set_channel_caption);
+JNI_FUNCTION_IString(scSetChannelCaption, supla_client_set_channel_caption,
+                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
 JNI_FUNCTION_IString(scSetChannelGroupCaption,
-                     supla_client_set_channel_group_caption);
+                     supla_client_set_channel_group_caption,
+                     SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE);
 
-JNI_FUNCTION_IString(scSetLocationCaption, supla_client_set_location_caption);
+JNI_FUNCTION_IString(scSetLocationCaption, supla_client_set_location_caption,
+                     SUPLA_LOCATION_CAPTION_MAXSIZE);
 
-JNI_FUNCTION_IString(scSetSceneCaption, supla_client_set_scene_caption);
+JNI_FUNCTION_IString(scSetSceneCaption, supla_client_set_scene_caption,
+                     SUPLA_SCENE_CAPTION_MAXSIZE);
 
 JNI_FUNCTION_V(scReconnectAllClients, supla_client_reconnect_all_clients);
 

@@ -42,13 +42,8 @@ void set_token_details(JNIEnv *env, TCS_PnClientToken *pn_token, jint app_id,
     snprintf((char *)pn_token->Token, pn_token->TokenSize, "%s", tkn);
     env->ReleaseStringUTFChars(token, tkn);
 
-    char *pn = profile_name ? (char *)env->GetStringUTFChars(profile_name, 0)
-                            : nullptr;
-    if (pn) {
-      snprintf((char *)pn_token->ProfileName, sizeof(pn_token->ProfileName),
-               "%s", pn);
-      env->ReleaseStringUTFChars(profile_name, pn);
-    }
+    supla_GetStringUtfChars(env, profile_name, (char *)pn_token->ProfileName,
+                            SUPLA_PN_PROFILE_NAME_MAXSIZE);
   }
 }
 
