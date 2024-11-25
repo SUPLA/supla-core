@@ -35,8 +35,8 @@
 #include "jsonconfig/channel/power_switch_config.h"
 #include "jsonconfig/channel/roller_shutter_config.h"
 #include "jsonconfig/channel/temp_hum_config.h"
+#include "log.h"
 #include "proto.h"
-
 using std::vector;
 
 supla_abstract_common_channel_properties::
@@ -106,113 +106,104 @@ void supla_abstract_common_channel_properties::get_channel_relations(
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
+        TChannelConfig_HVAC hvac = {};
+        bool hvac_config_get_success = false;
         supla_json_config *json_config = get_json_config();
         if (json_config) {
           hvac_config config(json_config);
-          TChannelConfig_HVAC hvac = {};
-          if (config.get_config(&hvac, get_channel_number())) {
-            bool find_main =
-                hvac.MainThermometerChannelNo != get_channel_number();
-
-            bool find_aux =
-                hvac.AuxThermometerType >=
-                    SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
-                hvac.AuxThermometerType <=
-                    SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER &&
-                hvac.AuxThermometerChannelNo != get_channel_number();
-
-            bool find_sensor =
-                hvac.BinarySensorChannelNo != get_channel_number();
-
-            bool find_master = false;
-            bool find_heat_or_cool_source = false;
-            bool find_pump_switch = false;
-
-            if (protocol_version >= 25) {
-              find_master = hvac.MasterThermostatIsSet;
-              find_heat_or_cool_source = hvac.HeatOrColdSourceSwitchIsSet;
-              find_pump_switch = hvac.PumpSwitchIsSet;
-            }
-
-            for_each(
-                false,
-                [&](supla_abstract_common_channel_properties *props,
-                    bool *will_continue) -> void {
-                  if (find_main && hvac.MainThermometerChannelNo ==
-                                       props->get_channel_number()) {
-                    if (props->get_func() == SUPLA_CHANNELFNC_THERMOMETER ||
-                        props->get_func() ==
-                            SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE) {
-                      add_relation(relations, props->get_id(), get_id(),
-                                   CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
-                    }
-
-                    find_main = false;
-                  }
-
-                  if (find_aux && hvac.AuxThermometerChannelNo ==
-                                      props->get_channel_number()) {
-                    if (props->get_func() == SUPLA_CHANNELFNC_THERMOMETER ||
-                        props->get_func() ==
-                            SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE) {
-                      add_relation(relations, props->get_id(), get_id(),
-                                   hvac.AuxThermometerType + 3);
-                    }
-
-                    find_aux = false;
-                  }
-
-                  if (find_sensor && hvac.BinarySensorChannelNo ==
-                                         props->get_channel_number()) {
-                    if (props->get_type() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
-                      add_relation(relations, props->get_id(), get_id(),
-                                   CHANNEL_RELATION_TYPE_DEFAULT);
-                    }
-                    find_sensor = false;
-                  }
-
-                  if (find_master && hvac.MasterThermostatChannelNo ==
-                                         props->get_channel_number()) {
-                    switch (props->get_func()) {
-                      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-                      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
-                      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
-                      case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
-                        add_relation(relations, get_id(), props->get_id(),
-                                     CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
-                        break;
-                    }
-                    find_master = false;
-                  }
-
-                  if (find_heat_or_cool_source &&
-                      hvac.HeatOrColdSourceSwitchChannelNo ==
-                          props->get_channel_number()) {
-                    if (props->get_func() ==
-                        SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH) {
-                      add_relation(
-                          relations, props->get_id(), get_id(),
-                          CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
-                    }
-                    find_heat_or_cool_source = false;
-                  }
-
-                  if (find_pump_switch &&
-                      hvac.PumpSwitchChannelNo == props->get_channel_number()) {
-                    if (props->get_func() == SUPLA_CHANNELFNC_PUMPSWITCH) {
-                      add_relation(relations, props->get_id(), get_id(),
-                                   CHANNEL_RELATION_TYPE_PUMP_SWITCH);
-                    }
-                    find_pump_switch = false;
-                  }
-
-                  *will_continue = find_main || find_aux || find_sensor ||
-                                   find_master || find_heat_or_cool_source ||
-                                   find_pump_switch;
-                });
-          }
+          hvac_config_get_success =
+              config.get_config(&hvac, get_channel_number());
           delete json_config;
         }
+
+        for_each(
+            false,
+            [&](supla_abstract_common_channel_properties *props,
+                bool *will_continue) -> void {
+              if (hvac_config_get_success) {
+                if (hvac.MainThermometerChannelNo != get_channel_number() &&
+                    hvac.MainThermometerChannelNo ==
+                        props->get_channel_number() &&
+                    (props->get_func() == SUPLA_CHANNELFNC_THERMOMETER ||
+                     props->get_func() ==
+                         SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
+                  add_relation(relations, props->get_id(), get_id(),
+                               CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
+                }
+
+                if (hvac.AuxThermometerType >=
+                        SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
+                    hvac.AuxThermometerType <=
+                        SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER &&
+                    hvac.AuxThermometerChannelNo != get_channel_number() &&
+                    hvac.AuxThermometerChannelNo ==
+                        props->get_channel_number() &&
+                    (props->get_func() == SUPLA_CHANNELFNC_THERMOMETER ||
+                     props->get_func() ==
+                         SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
+                  add_relation(relations, props->get_id(), get_id(),
+                               hvac.AuxThermometerType + 3);
+                }
+
+                if (hvac.BinarySensorChannelNo != get_channel_number() &&
+                    hvac.BinarySensorChannelNo == props->get_channel_number() &&
+                    props->get_type() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
+                  add_relation(relations, props->get_id(), get_id(),
+                               CHANNEL_RELATION_TYPE_DEFAULT);
+                }
+
+                if (protocol_version >= 25) {
+                  if (hvac.HeatOrColdSourceSwitchIsSet &&
+                      hvac.HeatOrColdSourceSwitchChannelNo ==
+                          props->get_channel_number() &&
+                      props->get_func() ==
+                          SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH) {
+                    add_relation(
+                        relations, props->get_id(), get_id(),
+                        CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
+                  }
+
+                  if (hvac.PumpSwitchIsSet &&
+                      hvac.PumpSwitchChannelNo == props->get_channel_number() &&
+                      props->get_func() == SUPLA_CHANNELFNC_PUMPSWITCH) {
+                    add_relation(relations, props->get_id(), get_id(),
+                                 CHANNEL_RELATION_TYPE_PUMP_SWITCH);
+                  }
+                }
+              }
+
+              if (protocol_version >= 25) {
+                switch (props->get_func()) {
+                  case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+                  case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+                  case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+                  case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
+                    supla_json_config *props_json_config =
+                        props->get_json_config();
+                    if (props_json_config) {
+                      hvac_config props_config(props_json_config);
+                      TChannelConfig_HVAC props_hvac = {};
+
+                      if (props_config.get_config(
+                              &props_hvac, props->get_channel_number())) {
+                        if (props_hvac.MasterThermostatIsSet &&
+                            props_hvac.MasterThermostatChannelNo ==
+                                get_channel_number()) {
+                          add_relation(relations, props->get_id(), get_id(),
+                                       CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
+                        }
+                      }
+
+                      delete props_json_config;
+                    }
+
+                  }
+
+                  break;
+                }
+              }
+            });
+
       } break;
     }
   }
@@ -267,15 +258,47 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         break;
     }
 
+    if (protocol_version >= 25 &&
+        (func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT ||
+         func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
+         func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL ||
+         func == SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER)) {
+      TChannelConfig_HVAC hvac = {};
+      supla_json_config *json_config = get_json_config();
+      if (json_config) {
+        hvac_config config(json_config);
+        if (config.get_config(&hvac, get_channel_number()) &&
+            hvac.MasterThermostatIsSet) {
+          for_each(false,
+                   [&](supla_abstract_common_channel_properties *props,
+                       bool *will_continue) -> void {
+                     switch (func) {
+                       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+                       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+                       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+                       case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+
+                         if (hvac.MasterThermostatChannelNo ==
+                             props->get_channel_number()) {
+                           add_relation(
+                               relations, get_id(), props->get_id(),
+                               CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
+                           *will_continue = false;
+                         }
+
+                         break;
+                     }
+                   });
+        }
+        delete json_config;
+      }
+    }
+
     if (type == SUPLA_CHANNELTYPE_BINARYSENSOR ||
         func == SUPLA_CHANNELFNC_THERMOMETER ||
         func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE ||
         func == SUPLA_CHANNELFNC_PUMPSWITCH ||
-        func == SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH ||
-        func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT ||
-        func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
-        func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL ||
-        func == SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER) {
+        func == SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH) {
       for_each(
           false,
           [&](supla_abstract_common_channel_properties *props,
@@ -286,11 +309,12 @@ void supla_abstract_common_channel_properties::get_channel_relations(
               case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
               case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
 
-                supla_json_config *json_config = props->get_json_config();
-                if (json_config) {
-                  hvac_config config(json_config);
+                supla_json_config *props_json_config = props->get_json_config();
+                if (props_json_config) {
+                  hvac_config props_config(props_json_config);
                   TChannelConfig_HVAC hvac = {};
-                  if (config.get_config(&hvac, props->get_channel_number())) {
+                  if (props_config.get_config(&hvac,
+                                              props->get_channel_number())) {
                     if (type == SUPLA_CHANNELTYPE_BINARYSENSOR) {
                       if (hvac.BinarySensorChannelNo == get_channel_number()) {
                         add_relation(relations, get_id(), props->get_id(),
@@ -316,20 +340,6 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                                          hvac.AuxThermometerType + 3);
                           }
                           break;
-
-                        case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-                        case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
-                        case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
-                        case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
-                          if (protocol_version >= 25 &&
-                              hvac.MasterThermostatIsSet &&
-                              hvac.MasterThermostatChannelNo ==
-                                  get_channel_number()) {
-                            add_relation(
-                                relations, props->get_id(), get_id(),
-                                CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
-                          }
-                          break;
                         case SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH:
                           if (protocol_version >= 25 &&
                               hvac.HeatOrColdSourceSwitchIsSet &&
@@ -351,9 +361,8 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                       }
                     }
                   }
-                  delete json_config;
+                  delete props_json_config;
                 }
-
                 break;
             }
           });

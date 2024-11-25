@@ -134,330 +134,373 @@ TEST_F(CommonChannelPropertiesTest, preventingDuplicateRelations) {
 
 TEST_F(CommonChannelPropertiesTest,
        protocolVersionDependedRelationWithSubchannel_MasterThermostat) {
-  CommonChannelPropertiesMock related_props_mock;
+  vector<int> functions = {SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL,
+                           SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER};
 
-  EXPECT_CALL(related_props_mock, get_id).WillRepeatedly(Return(5001));
-  EXPECT_CALL(related_props_mock, get_device_id).WillRepeatedly(Return(5));
-  EXPECT_CALL(related_props_mock, get_func)
-      .WillRepeatedly(Return(SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  for (auto it = functions.cbegin(); it != functions.cend(); ++it) {
+    for (auto rit = functions.cbegin(); rit != functions.cend(); ++rit) {
+      CommonChannelPropertiesMock related_props_mock;
 
-  CommonChannelPropertiesMock mock;
-  unsigned char version = 23;
+      EXPECT_CALL(related_props_mock, get_id).WillRepeatedly(Return(5001));
+      EXPECT_CALL(related_props_mock, get_device_id).WillRepeatedly(Return(5));
+      EXPECT_CALL(related_props_mock, get_func).WillRepeatedly(Return(*it));
+      EXPECT_CALL(related_props_mock, get_channel_number)
+          .WillRepeatedly(Return(10));
+      CommonChannelPropertiesMock mock;
+      unsigned char version = 23;
 
-  EXPECT_CALL(mock, get_func)
-      .WillRepeatedly(Return(SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
-  EXPECT_CALL(mock, get_protocol_version).WillRepeatedly([&version]() {
-    version++;
-    return version;
-  });
-  EXPECT_CALL(mock, get_channel_number).WillRepeatedly(Return(10));
-  EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
-  EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5000));
+      EXPECT_CALL(mock, get_func).WillRepeatedly(Return(*rit));
+      EXPECT_CALL(mock, get_protocol_version).WillRepeatedly([&version]() {
+        version++;
+        return version;
+      });
 
-  EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
-    hvac_config *config = new hvac_config();
-    TChannelConfig_HVAC hvac = {};
-    hvac.MasterThermostatIsSet = 1;
-    config->set_config(&hvac, 10);
-    return config;
-  });
+      EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
+      EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5000));
 
-  EXPECT_CALL(mock, for_each)
-      .WillRepeatedly(
-          [&](bool any_device,
-              std::function<void(supla_abstract_common_channel_properties *,
-                                 bool *)>
-                  on_channel_properties) {
-            bool will_continue = true;
-            on_channel_properties(&related_props_mock, &will_continue);
-            EXPECT_FALSE(any_device);
-          });
+      EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
+        hvac_config *config = new hvac_config();
+        TChannelConfig_HVAC hvac = {};
+        hvac.MasterThermostatIsSet = 1;
+        config->set_config(&hvac, 5);
+        return config;
+      });
 
-  vector<supla_channel_relation> rel1, rel2;
-  mock.get_channel_relations(&rel1, relation_with_sub_channel);
-  mock.get_channel_relations(&rel2, relation_with_sub_channel);
+      EXPECT_CALL(mock, for_each)
+          .WillRepeatedly(
+              [&](bool any_device,
+                  std::function<void(supla_abstract_common_channel_properties *,
+                                     bool *)>
+                      on_channel_properties) {
+                bool will_continue = true;
+                on_channel_properties(&related_props_mock, &will_continue);
+                EXPECT_FALSE(any_device);
+              });
 
-  EXPECT_EQ(rel1.size(), 0);
+      vector<supla_channel_relation> rel1, rel2;
+      mock.get_channel_relations(&rel1, relation_with_sub_channel);
+      mock.get_channel_relations(&rel2, relation_with_sub_channel);
 
-  ASSERT_EQ(rel2.size(), 1);
-  EXPECT_EQ(rel2.at(0).get_id(), 5000);
-  EXPECT_EQ(rel2.at(0).get_parent_id(), 5001);
-  EXPECT_EQ(rel2.at(0).get_relation_type(),
-            CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
+      EXPECT_EQ(rel1.size(), 0);
+
+      ASSERT_EQ(rel2.size(), 1);
+      EXPECT_EQ(rel2.at(0).get_id(), 5001);
+      EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
+      EXPECT_EQ(rel2.at(0).get_relation_type(),
+                CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
+    }
+  }
 }
 
 TEST_F(CommonChannelPropertiesTest,
        protocolVersionDependedRelationWithParentChannel_MasterThermostat) {
-  CommonChannelPropertiesMock related_props_mock;
+  vector<int> functions = {SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL,
+                           SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER};
 
-  EXPECT_CALL(related_props_mock, get_id).WillRepeatedly(Return(5000));
-  EXPECT_CALL(related_props_mock, get_device_id).WillRepeatedly(Return(5));
-  EXPECT_CALL(related_props_mock, get_channel_number)
-      .WillRepeatedly(Return(10));
-  EXPECT_CALL(related_props_mock, get_func)
-      .WillRepeatedly(Return(SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  for (auto it = functions.cbegin(); it != functions.cend(); ++it) {
+    for (auto rit = functions.cbegin(); rit != functions.cend(); ++rit) {
+      CommonChannelPropertiesMock related_props_mock;
 
-  EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
-    hvac_config *config = new hvac_config();
-    TChannelConfig_HVAC hvac = {};
-    hvac.MasterThermostatIsSet = 1;
-    config->set_config(&hvac, 10);
-    return config;
-  });
+      EXPECT_CALL(related_props_mock, get_id).WillRepeatedly(Return(5000));
+      EXPECT_CALL(related_props_mock, get_device_id).WillRepeatedly(Return(5));
+      EXPECT_CALL(related_props_mock, get_channel_number)
+          .WillRepeatedly(Return(10));
+      EXPECT_CALL(related_props_mock, get_func).WillRepeatedly(Return(*it));
 
-  CommonChannelPropertiesMock mock;
-  unsigned char version = 23;
+      CommonChannelPropertiesMock mock;
+      unsigned char version = 23;
 
-  EXPECT_CALL(mock, get_func)
-      .WillRepeatedly(Return(SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
-  EXPECT_CALL(mock, get_protocol_version).WillRepeatedly([&version]() {
-    version++;
-    return version;
-  });
+      EXPECT_CALL(mock, get_func).WillRepeatedly(Return(*rit));
+      EXPECT_CALL(mock, get_channel_number).WillRepeatedly(Return(5));
+      EXPECT_CALL(mock, get_protocol_version).WillRepeatedly([&version]() {
+        version++;
+        return version;
+      });
 
-  EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
-  EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5001));
+      EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
+        hvac_config *config = new hvac_config();
+        TChannelConfig_HVAC hvac = {};
+        hvac.MasterThermostatIsSet = 1;
+        hvac.MasterThermostatChannelNo = 10;
+        config->set_config(&hvac, 5);
+        return config;
+      });
 
-  EXPECT_CALL(mock, for_each)
-      .WillRepeatedly(
-          [&](bool any_device,
-              std::function<void(supla_abstract_common_channel_properties *,
-                                 bool *)>
-                  on_channel_properties) {
-            bool will_continue = true;
-            on_channel_properties(&related_props_mock, &will_continue);
-            EXPECT_FALSE(any_device);
-          });
+      EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
+      EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5001));
 
-  vector<supla_channel_relation> rel1, rel2;
-  mock.get_channel_relations(&rel1, relation_with_parent_channel);
-  mock.get_channel_relations(&rel2, relation_with_parent_channel);
+      EXPECT_CALL(mock, for_each)
+          .WillRepeatedly(
+              [&](bool any_device,
+                  std::function<void(supla_abstract_common_channel_properties *,
+                                     bool *)>
+                      on_channel_properties) {
+                bool will_continue = true;
+                on_channel_properties(&related_props_mock, &will_continue);
+                EXPECT_FALSE(any_device);
+              });
 
-  EXPECT_EQ(rel1.size(), 0);
+      vector<supla_channel_relation> rel1, rel2;
+      mock.get_channel_relations(&rel1, relation_with_parent_channel);
+      mock.get_channel_relations(&rel2, relation_with_parent_channel);
 
-  ASSERT_EQ(rel2.size(), 1);
-  EXPECT_EQ(rel2.at(0).get_id(), 5000);
-  EXPECT_EQ(rel2.at(0).get_parent_id(), 5001);
-  EXPECT_EQ(rel2.at(0).get_relation_type(),
-            CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
+      EXPECT_EQ(rel1.size(), 0);
+
+      ASSERT_EQ(rel2.size(), 1);
+      EXPECT_EQ(rel2.at(0).get_id(), 5001);
+      EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
+      EXPECT_EQ(rel2.at(0).get_relation_type(),
+                CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
+    }
+  }
 }
 
 TEST_F(CommonChannelPropertiesTest,
        protocolVersionDependedRelationWithSubchannel_HeatOrColdSource) {
-  CommonChannelPropertiesMock related_props_mock;
+  vector<int> functions = {SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL,
+                           SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER};
 
-  EXPECT_CALL(related_props_mock, get_id).WillRepeatedly(Return(5001));
-  EXPECT_CALL(related_props_mock, get_device_id).WillRepeatedly(Return(5));
-  EXPECT_CALL(related_props_mock, get_func)
-      .WillRepeatedly(Return(SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH));
+  for (auto it = functions.cbegin(); it != functions.cend(); ++it) {
+    CommonChannelPropertiesMock related_props_mock;
 
-  CommonChannelPropertiesMock mock;
-  unsigned char version = 23;
+    EXPECT_CALL(related_props_mock, get_id).WillRepeatedly(Return(5001));
+    EXPECT_CALL(related_props_mock, get_device_id).WillRepeatedly(Return(5));
+    EXPECT_CALL(related_props_mock, get_func)
+        .WillRepeatedly(Return(SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH));
 
-  EXPECT_CALL(mock, get_func)
-      .WillRepeatedly(Return(SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
-  EXPECT_CALL(mock, get_protocol_version).WillRepeatedly([&version]() {
-    version++;
-    return version;
-  });
-  EXPECT_CALL(mock, get_channel_number).WillRepeatedly(Return(10));
-  EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
-  EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5000));
+    CommonChannelPropertiesMock mock;
+    unsigned char version = 23;
 
-  EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
-    hvac_config *config = new hvac_config();
-    TChannelConfig_HVAC hvac = {};
-    hvac.HeatOrColdSourceSwitchIsSet = 1;
-    config->set_config(&hvac, 10);
-    return config;
-  });
+    EXPECT_CALL(mock, get_func).WillRepeatedly(Return(*it));
+    EXPECT_CALL(mock, get_protocol_version).WillRepeatedly([&version]() {
+      version++;
+      return version;
+    });
+    EXPECT_CALL(mock, get_channel_number).WillRepeatedly(Return(10));
+    EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
+    EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5000));
 
-  EXPECT_CALL(mock, for_each)
-      .WillRepeatedly(
-          [&](bool any_device,
-              std::function<void(supla_abstract_common_channel_properties *,
-                                 bool *)>
-                  on_channel_properties) {
-            bool will_continue = true;
-            on_channel_properties(&related_props_mock, &will_continue);
-            EXPECT_FALSE(any_device);
-          });
+    EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
+      hvac_config *config = new hvac_config();
+      TChannelConfig_HVAC hvac = {};
+      hvac.HeatOrColdSourceSwitchIsSet = 1;
+      config->set_config(&hvac, 10);
+      return config;
+    });
 
-  vector<supla_channel_relation> rel1, rel2;
-  mock.get_channel_relations(&rel1, relation_with_sub_channel);
-  mock.get_channel_relations(&rel2, relation_with_sub_channel);
+    EXPECT_CALL(mock, for_each)
+        .WillRepeatedly(
+            [&](bool any_device,
+                std::function<void(supla_abstract_common_channel_properties *,
+                                   bool *)>
+                    on_channel_properties) {
+              bool will_continue = true;
+              on_channel_properties(&related_props_mock, &will_continue);
+              EXPECT_FALSE(any_device);
+            });
 
-  EXPECT_EQ(rel1.size(), 0);
+    vector<supla_channel_relation> rel1, rel2;
+    mock.get_channel_relations(&rel1, relation_with_sub_channel);
+    mock.get_channel_relations(&rel2, relation_with_sub_channel);
 
-  ASSERT_EQ(rel2.size(), 1);
-  EXPECT_EQ(rel2.at(0).get_id(), 5001);
-  EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
-  EXPECT_EQ(rel2.at(0).get_relation_type(),
-            CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
+    EXPECT_EQ(rel1.size(), 0);
+
+    ASSERT_EQ(rel2.size(), 1);
+    EXPECT_EQ(rel2.at(0).get_id(), 5001);
+    EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
+    EXPECT_EQ(rel2.at(0).get_relation_type(),
+              CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
+  }
 }
 
 TEST_F(CommonChannelPropertiesTest,
        protocolVersionDependedRelationWithParentChannel_HeatOrColdSource) {
-  CommonChannelPropertiesMock related_props_mock;
+  vector<int> functions = {SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL,
+                           SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER};
 
-  EXPECT_CALL(related_props_mock, get_id).WillRepeatedly(Return(5000));
-  EXPECT_CALL(related_props_mock, get_device_id).WillRepeatedly(Return(5));
-  EXPECT_CALL(related_props_mock, get_channel_number)
-      .WillRepeatedly(Return(10));
-  EXPECT_CALL(related_props_mock, get_func)
-      .WillRepeatedly(Return(SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  for (auto it = functions.cbegin(); it != functions.cend(); ++it) {
+    CommonChannelPropertiesMock related_props_mock;
 
-  EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
-    hvac_config *config = new hvac_config();
-    TChannelConfig_HVAC hvac = {};
-    hvac.HeatOrColdSourceSwitchIsSet = 1;
-    config->set_config(&hvac, 10);
-    return config;
-  });
+    EXPECT_CALL(related_props_mock, get_id).WillRepeatedly(Return(5000));
+    EXPECT_CALL(related_props_mock, get_device_id).WillRepeatedly(Return(5));
+    EXPECT_CALL(related_props_mock, get_channel_number)
+        .WillRepeatedly(Return(10));
+    EXPECT_CALL(related_props_mock, get_func).WillRepeatedly(Return(*it));
 
-  CommonChannelPropertiesMock mock;
-  unsigned char version = 23;
+    EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
+      hvac_config *config = new hvac_config();
+      TChannelConfig_HVAC hvac = {};
+      hvac.HeatOrColdSourceSwitchIsSet = 1;
+      config->set_config(&hvac, 10);
+      return config;
+    });
 
-  EXPECT_CALL(mock, get_func)
-      .WillRepeatedly(Return(SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH));
-  EXPECT_CALL(mock, get_protocol_version).WillRepeatedly([&version]() {
-    version++;
-    return version;
-  });
+    CommonChannelPropertiesMock mock;
+    unsigned char version = 23;
 
-  EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
-  EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5001));
+    EXPECT_CALL(mock, get_func)
+        .WillRepeatedly(Return(SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH));
+    EXPECT_CALL(mock, get_protocol_version).WillRepeatedly([&version]() {
+      version++;
+      return version;
+    });
 
-  EXPECT_CALL(mock, for_each)
-      .WillRepeatedly(
-          [&](bool any_device,
-              std::function<void(supla_abstract_common_channel_properties *,
-                                 bool *)>
-                  on_channel_properties) {
-            bool will_continue = true;
-            on_channel_properties(&related_props_mock, &will_continue);
-            EXPECT_FALSE(any_device);
-          });
+    EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
+    EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5001));
 
-  vector<supla_channel_relation> rel1, rel2;
-  mock.get_channel_relations(&rel1, relation_with_parent_channel);
-  mock.get_channel_relations(&rel2, relation_with_parent_channel);
+    EXPECT_CALL(mock, for_each)
+        .WillRepeatedly(
+            [&](bool any_device,
+                std::function<void(supla_abstract_common_channel_properties *,
+                                   bool *)>
+                    on_channel_properties) {
+              bool will_continue = true;
+              on_channel_properties(&related_props_mock, &will_continue);
+              EXPECT_FALSE(any_device);
+            });
 
-  EXPECT_EQ(rel1.size(), 0);
+    vector<supla_channel_relation> rel1, rel2;
+    mock.get_channel_relations(&rel1, relation_with_parent_channel);
+    mock.get_channel_relations(&rel2, relation_with_parent_channel);
 
-  ASSERT_EQ(rel2.size(), 1);
-  EXPECT_EQ(rel2.at(0).get_id(), 5001);
-  EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
-  EXPECT_EQ(rel2.at(0).get_relation_type(),
-            CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
+    EXPECT_EQ(rel1.size(), 0);
+
+    ASSERT_EQ(rel2.size(), 1);
+    EXPECT_EQ(rel2.at(0).get_id(), 5001);
+    EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
+    EXPECT_EQ(rel2.at(0).get_relation_type(),
+              CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
+  }
 }
 
 TEST_F(CommonChannelPropertiesTest,
        protocolVersionDependedRelationWithSubchannel_PumpSwitch) {
-  CommonChannelPropertiesMock related_props_mock;
+  vector<int> functions = {SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL,
+                           SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER};
 
-  EXPECT_CALL(related_props_mock, get_id).WillRepeatedly(Return(5001));
-  EXPECT_CALL(related_props_mock, get_device_id).WillRepeatedly(Return(5));
-  EXPECT_CALL(related_props_mock, get_func)
-      .WillRepeatedly(Return(SUPLA_CHANNELFNC_PUMPSWITCH));
+  for (auto it = functions.cbegin(); it != functions.cend(); ++it) {
+    CommonChannelPropertiesMock related_props_mock;
 
-  CommonChannelPropertiesMock mock;
-  unsigned char version = 23;
+    EXPECT_CALL(related_props_mock, get_id).WillRepeatedly(Return(5001));
+    EXPECT_CALL(related_props_mock, get_device_id).WillRepeatedly(Return(5));
+    EXPECT_CALL(related_props_mock, get_func)
+        .WillRepeatedly(Return(SUPLA_CHANNELFNC_PUMPSWITCH));
 
-  EXPECT_CALL(mock, get_func)
-      .WillRepeatedly(Return(SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
-  EXPECT_CALL(mock, get_protocol_version).WillRepeatedly([&version]() {
-    version++;
-    return version;
-  });
-  EXPECT_CALL(mock, get_channel_number).WillRepeatedly(Return(10));
-  EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
-  EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5000));
+    CommonChannelPropertiesMock mock;
+    unsigned char version = 23;
 
-  EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
-    hvac_config *config = new hvac_config();
-    TChannelConfig_HVAC hvac = {};
-    hvac.PumpSwitchIsSet = 1;
-    config->set_config(&hvac, 10);
-    return config;
-  });
+    EXPECT_CALL(mock, get_func).WillRepeatedly(Return(*it));
+    EXPECT_CALL(mock, get_protocol_version).WillRepeatedly([&version]() {
+      version++;
+      return version;
+    });
+    EXPECT_CALL(mock, get_channel_number).WillRepeatedly(Return(10));
+    EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
+    EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5000));
 
-  EXPECT_CALL(mock, for_each)
-      .WillRepeatedly(
-          [&](bool any_device,
-              std::function<void(supla_abstract_common_channel_properties *,
-                                 bool *)>
-                  on_channel_properties) {
-            bool will_continue = true;
-            on_channel_properties(&related_props_mock, &will_continue);
-            EXPECT_FALSE(any_device);
-          });
+    EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
+      hvac_config *config = new hvac_config();
+      TChannelConfig_HVAC hvac = {};
+      hvac.PumpSwitchIsSet = 1;
+      config->set_config(&hvac, 10);
+      return config;
+    });
 
-  vector<supla_channel_relation> rel1, rel2;
-  mock.get_channel_relations(&rel1, relation_with_sub_channel);
-  mock.get_channel_relations(&rel2, relation_with_sub_channel);
+    EXPECT_CALL(mock, for_each)
+        .WillRepeatedly(
+            [&](bool any_device,
+                std::function<void(supla_abstract_common_channel_properties *,
+                                   bool *)>
+                    on_channel_properties) {
+              bool will_continue = true;
+              on_channel_properties(&related_props_mock, &will_continue);
+              EXPECT_FALSE(any_device);
+            });
 
-  EXPECT_EQ(rel1.size(), 0);
+    vector<supla_channel_relation> rel1, rel2;
+    mock.get_channel_relations(&rel1, relation_with_sub_channel);
+    mock.get_channel_relations(&rel2, relation_with_sub_channel);
 
-  ASSERT_EQ(rel2.size(), 1);
-  EXPECT_EQ(rel2.at(0).get_id(), 5001);
-  EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
-  EXPECT_EQ(rel2.at(0).get_relation_type(), CHANNEL_RELATION_TYPE_PUMP_SWITCH);
+    EXPECT_EQ(rel1.size(), 0);
+
+    ASSERT_EQ(rel2.size(), 1);
+    EXPECT_EQ(rel2.at(0).get_id(), 5001);
+    EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
+    EXPECT_EQ(rel2.at(0).get_relation_type(),
+              CHANNEL_RELATION_TYPE_PUMP_SWITCH);
+  }
 }
 
 TEST_F(CommonChannelPropertiesTest,
        protocolVersionDependedRelationWithParentChannel_PumpSwitch) {
-  CommonChannelPropertiesMock related_props_mock;
+  vector<int> functions = {SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL,
+                           SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER};
 
-  EXPECT_CALL(related_props_mock, get_id).WillRepeatedly(Return(5000));
-  EXPECT_CALL(related_props_mock, get_device_id).WillRepeatedly(Return(5));
-  EXPECT_CALL(related_props_mock, get_channel_number)
-      .WillRepeatedly(Return(10));
-  EXPECT_CALL(related_props_mock, get_func)
-      .WillRepeatedly(Return(SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  for (auto it = functions.cbegin(); it != functions.cend(); ++it) {
+    CommonChannelPropertiesMock related_props_mock;
 
-  EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
-    hvac_config *config = new hvac_config();
-    TChannelConfig_HVAC hvac = {};
-    hvac.PumpSwitchIsSet = 1;
-    config->set_config(&hvac, 10);
-    return config;
-  });
+    EXPECT_CALL(related_props_mock, get_id).WillRepeatedly(Return(5000));
+    EXPECT_CALL(related_props_mock, get_device_id).WillRepeatedly(Return(5));
+    EXPECT_CALL(related_props_mock, get_channel_number)
+        .WillRepeatedly(Return(10));
+    EXPECT_CALL(related_props_mock, get_func).WillRepeatedly(Return(*it));
 
-  CommonChannelPropertiesMock mock;
-  unsigned char version = 23;
+    EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
+      hvac_config *config = new hvac_config();
+      TChannelConfig_HVAC hvac = {};
+      hvac.PumpSwitchIsSet = 1;
+      config->set_config(&hvac, 10);
+      return config;
+    });
 
-  EXPECT_CALL(mock, get_func)
-      .WillRepeatedly(Return(SUPLA_CHANNELFNC_PUMPSWITCH));
-  EXPECT_CALL(mock, get_protocol_version).WillRepeatedly([&version]() {
-    version++;
-    return version;
-  });
+    CommonChannelPropertiesMock mock;
+    unsigned char version = 23;
 
-  EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
-  EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5001));
+    EXPECT_CALL(mock, get_func)
+        .WillRepeatedly(Return(SUPLA_CHANNELFNC_PUMPSWITCH));
+    EXPECT_CALL(mock, get_protocol_version).WillRepeatedly([&version]() {
+      version++;
+      return version;
+    });
 
-  EXPECT_CALL(mock, for_each)
-      .WillRepeatedly(
-          [&](bool any_device,
-              std::function<void(supla_abstract_common_channel_properties *,
-                                 bool *)>
-                  on_channel_properties) {
-            bool will_continue = true;
-            on_channel_properties(&related_props_mock, &will_continue);
-            EXPECT_FALSE(any_device);
-          });
+    EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
+    EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5001));
 
-  vector<supla_channel_relation> rel1, rel2;
-  mock.get_channel_relations(&rel1, relation_with_parent_channel);
-  mock.get_channel_relations(&rel2, relation_with_parent_channel);
+    EXPECT_CALL(mock, for_each)
+        .WillRepeatedly(
+            [&](bool any_device,
+                std::function<void(supla_abstract_common_channel_properties *,
+                                   bool *)>
+                    on_channel_properties) {
+              bool will_continue = true;
+              on_channel_properties(&related_props_mock, &will_continue);
+              EXPECT_FALSE(any_device);
+            });
 
-  EXPECT_EQ(rel1.size(), 0);
+    vector<supla_channel_relation> rel1, rel2;
+    mock.get_channel_relations(&rel1, relation_with_parent_channel);
+    mock.get_channel_relations(&rel2, relation_with_parent_channel);
 
-  ASSERT_EQ(rel2.size(), 1);
-  EXPECT_EQ(rel2.at(0).get_id(), 5001);
-  EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
-  EXPECT_EQ(rel2.at(0).get_relation_type(), CHANNEL_RELATION_TYPE_PUMP_SWITCH);
+    EXPECT_EQ(rel1.size(), 0);
+
+    ASSERT_EQ(rel2.size(), 1);
+    EXPECT_EQ(rel2.at(0).get_id(), 5001);
+    EXPECT_EQ(rel2.at(0).get_parent_id(), 5000);
+    EXPECT_EQ(rel2.at(0).get_relation_type(),
+              CHANNEL_RELATION_TYPE_PUMP_SWITCH);
+  }
 }
 
 TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_OpeningSensor) {
