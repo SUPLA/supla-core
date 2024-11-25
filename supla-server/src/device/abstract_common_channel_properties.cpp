@@ -196,14 +196,12 @@ void supla_abstract_common_channel_properties::get_channel_relations(
 
                       delete props_json_config;
                     }
-
                   }
 
                   break;
                 }
               }
             });
-
       } break;
     }
   }
