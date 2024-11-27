@@ -72,6 +72,11 @@ _supla_int_t supla_srpc_adapter::sc_async_scene_pack_update(
   return srpc_sc_async_scene_pack_update(get_srpc(), scene_pack);
 }
 
+_supla_int_t supla_srpc_adapter::sc_async_channel_state_pack_update(
+    TSC_SuplaChannelStatePack *state_pack) {
+  return srpc_sc_async_channel_state_pack_update(get_srpc(), state_pack);
+}
+
 _supla_int_t supla_srpc_adapter::sc_async_scene_state_pack_update(
     TSC_SuplaSceneStatePack *scene_state_pack) {
   return srpc_sc_async_scene_state_pack_update(get_srpc(), scene_state_pack);

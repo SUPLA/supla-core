@@ -108,11 +108,9 @@ shared_ptr<supla_value_based_trigger> supla_value_based_triggers::get(int id) {
   return result;
 }
 
-void supla_value_based_triggers::on_channel_value_changed(
-    const supla_caller &caller, int channel_id, supla_channel_value *old_value,
-    supla_channel_value *new_value, supla_channel_extended_value *old_evalue,
-    supla_channel_extended_value *new_evalue,
-    supla_abstract_action_executor *action_executor,
+void supla_value_based_triggers::on_value_changed(
+    const supla_caller &caller, int channel_id, supla_vbt_value *old_value,
+    supla_vbt_value *new_value, supla_abstract_action_executor *action_executor,
     supla_abstract_channel_property_getter *property_getter) {
   vector<supla_vbt_condition_result> matches;
 
@@ -123,9 +121,7 @@ void supla_value_based_triggers::on_channel_value_changed(
   lck_lock(lck);
   for (auto it = triggers.begin(); it != triggers.end(); ++it) {
     supla_vbt_condition_result m =
-        new_value || old_value
-            ? (*it)->are_conditions_met(channel_id, old_value, new_value)
-            : (*it)->are_conditions_met(channel_id, old_evalue, new_evalue);
+        (*it)->are_conditions_met(channel_id, old_value, new_value);
 
     if (m.are_conditions_met()) {
       if ((*it)->get_active_period().is_now_active(timezone.c_str(), latitude,
@@ -145,42 +141,13 @@ void supla_value_based_triggers::on_channel_value_changed(
   }
 }
 
-void supla_value_based_triggers::on_channel_value_changed(
-    const supla_caller &caller, int channel_id, supla_channel_value *old_value,
-    supla_channel_value *new_value,
-    supla_abstract_action_executor *action_executor,
-    supla_abstract_channel_property_getter *property_getter) {
-  on_channel_value_changed(caller, channel_id, old_value, new_value, nullptr,
-                           nullptr, action_executor, property_getter);
-}
-
-void supla_value_based_triggers::on_channel_value_changed(
-    const supla_caller &caller, int channel_id, supla_channel_value *old_value,
-    supla_channel_value *new_value) {
+void supla_value_based_triggers::on_value_changed(const supla_caller &caller,
+                                                  int channel_id,
+                                                  supla_vbt_value *old_value,
+                                                  supla_vbt_value *new_value) {
   supla_action_executor exec;
   supla_channel_property_getter property_getter;
 
-  on_channel_value_changed(caller, channel_id, old_value, new_value, &exec,
-                           &property_getter);
-}
-
-void supla_value_based_triggers::on_channel_value_changed(
-    const supla_caller &caller, int channel_id,
-    supla_channel_extended_value *old_value,
-    supla_channel_extended_value *new_value,
-    supla_abstract_action_executor *action_executor,
-    supla_abstract_channel_property_getter *property_getter) {
-  on_channel_value_changed(caller, channel_id, nullptr, nullptr, old_value,
-                           new_value, action_executor, property_getter);
-}
-
-void supla_value_based_triggers::on_channel_value_changed(
-    const supla_caller &caller, int channel_id,
-    supla_channel_extended_value *old_value,
-    supla_channel_extended_value *new_value) {
-  supla_action_executor exec;
-  supla_channel_property_getter property_getter;
-
-  on_channel_value_changed(caller, channel_id, old_value, new_value, &exec,
-                           &property_getter);
+  on_value_changed(caller, channel_id, old_value, new_value, &exec,
+                   &property_getter);
 }

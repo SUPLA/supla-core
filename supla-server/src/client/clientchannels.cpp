@@ -26,6 +26,7 @@
 
 #include "clientchannel.h"
 #include "db/database.h"
+#include "device/device.h"
 #include "log.h"
 #include "safearray.h"
 #include "srpc/srpc.h"

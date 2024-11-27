@@ -78,3 +78,9 @@ bool supla_channel_onoff_value::is_function_supported(int func) {
 
   return false;
 }
+
+bool supla_channel_onoff_value::get_vbt_value(_vbt_var_name_e var_name,
+                                              double *value) {
+  *value = is_on() ? 1 : 0;
+  return true;
+}

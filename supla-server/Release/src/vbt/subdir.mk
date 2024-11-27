@@ -8,21 +8,24 @@ CPP_SRCS += \
 ../src/vbt/value_based_trigger_dao.cpp \
 ../src/vbt/value_based_triggers.cpp \
 ../src/vbt/vbt_condition_result.cpp \
-../src/vbt/vbt_on_change_condition.cpp 
+../src/vbt/vbt_on_change_condition.cpp \
+../src/vbt/vbt_value.cpp 
 
 CPP_DEPS += \
 ./src/vbt/value_based_trigger.d \
 ./src/vbt/value_based_trigger_dao.d \
 ./src/vbt/value_based_triggers.d \
 ./src/vbt/vbt_condition_result.d \
-./src/vbt/vbt_on_change_condition.d 
+./src/vbt/vbt_on_change_condition.d \
+./src/vbt/vbt_value.d 
 
 OBJS += \
 ./src/vbt/value_based_trigger.o \
 ./src/vbt/value_based_trigger_dao.o \
 ./src/vbt/value_based_triggers.o \
 ./src/vbt/vbt_condition_result.o \
-./src/vbt/vbt_on_change_condition.o 
+./src/vbt/vbt_on_change_condition.o \
+./src/vbt/vbt_value.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -37,7 +40,7 @@ src/vbt/%.o: ../src/vbt/%.cpp src/vbt/subdir.mk
 clean: clean-src-2f-vbt
 
 clean-src-2f-vbt:
-	-$(RM) ./src/vbt/value_based_trigger.d ./src/vbt/value_based_trigger.o ./src/vbt/value_based_trigger_dao.d ./src/vbt/value_based_trigger_dao.o ./src/vbt/value_based_triggers.d ./src/vbt/value_based_triggers.o ./src/vbt/vbt_condition_result.d ./src/vbt/vbt_condition_result.o ./src/vbt/vbt_on_change_condition.d ./src/vbt/vbt_on_change_condition.o
+	-$(RM) ./src/vbt/value_based_trigger.d ./src/vbt/value_based_trigger.o ./src/vbt/value_based_trigger_dao.d ./src/vbt/value_based_trigger_dao.o ./src/vbt/value_based_triggers.d ./src/vbt/value_based_triggers.o ./src/vbt/vbt_condition_result.d ./src/vbt/vbt_condition_result.o ./src/vbt/vbt_on_change_condition.d ./src/vbt/vbt_on_change_condition.o ./src/vbt/vbt_value.d ./src/vbt/vbt_value.o
 
 .PHONY: clean-src-2f-vbt
 

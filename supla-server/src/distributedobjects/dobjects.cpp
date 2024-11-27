@@ -128,3 +128,7 @@ bool supla_dobjects::object_exists(int id) {
                 [&result](supla_dobject *object) -> void { result = true; });
   return result;
 }
+
+supla_abstract_dobject_remote_updater *supla_dobjects::get_updater(void) {
+  return updater;
+}

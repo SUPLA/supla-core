@@ -29,6 +29,7 @@
 #include "svrcfg.h"
 #include "tools.h"
 
+using std::list;
 using std::string;
 
 supla_client_dao::supla_client_dao(supla_abstract_db_access_provider *dba)
@@ -694,10 +695,15 @@ void supla_client_dao::update_client_push_notification_client_token(
 
   MYSQL_STMT *stmt = nullptr;
   if (!dba->stmt_execute((void **)&stmt, sql, pbind, 7, true)) {
+    char pn_hex[SUPLA_PN_PROFILE_NAME_MAXSIZE * 2] = {};
+    if (pbind[6].buffer_length) {
+      st_bin2hex(pn_hex, profile_name, pbind[6].buffer_length);
+    }
+
     supla_log(LOG_ERR,
               "Failed to update push notification client token in database. "
-              "ClientID: %i, Platform: %i,%i, AppId: %i",
-              client_id, platform, _platform, app_id);
+              "ClientID: %i, Platform: %i,%i, AppId: %i Profile name hex [%s]",
+              client_id, platform, _platform, app_id, pn_hex);
   }
 
   if (stmt != nullptr) {
@@ -707,4 +713,74 @@ void supla_client_dao::update_client_push_notification_client_token(
   if (!already_connected) {
     dba->disconnect();
   }
+}
+
+list<supla_channel_state *> supla_client_dao::get_chanels_state(int user_id,
+                                                                int client_id) {
+  list<supla_channel_state *> result;
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return result;
+  }
+
+  MYSQL_STMT *stmt = NULL;
+  const char sql[] =
+      "SELECT id, s.state FROM supla_v_client_channel c LEFT JOIN "
+      "supla_dev_channel_state s ON c.id = s.channel_id WHERE c.user_id = ? "
+      "AND c.client_id = ? AND LENGTH(s.state) > 2 ORDER BY c.id";
+
+  MYSQL_BIND pbind[2] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&user_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&client_id;
+
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+    MYSQL_BIND rbind[2] = {};
+
+    char state[1025] = {};
+    unsigned long state_size = 0;
+    my_bool state_is_null = true;
+
+    int id = 0;
+
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)&id;
+    rbind[0].buffer_length = sizeof(int);
+
+    rbind[1].buffer_type = MYSQL_TYPE_STRING;
+    rbind[1].buffer = state;
+    rbind[1].is_null = &state_is_null;
+    rbind[1].buffer_length = sizeof(state) - 1;
+    rbind[1].length = &state_size;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0) {
+        while (!mysql_stmt_fetch(stmt)) {
+          if (state_is_null) state_size = 0;
+          if (state_size > 0) {
+            state[state_size] = 0;
+            result.push_back(new supla_channel_state(state, id));
+          }
+        }
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
 }

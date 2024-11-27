@@ -58,11 +58,11 @@ bool supla_alexa_change_report_request::make_request(
   set_message_id("");
 
   supla_channel_fragment fragment;
-  bool online = false;
 
-  supla_channel_value *value = get_channel_value(&fragment, &online);
+  supla_channel_availability_status status(true);
+  supla_channel_value *value = get_channel_value(&fragment, &status);
 
-  client.set_channel_connected(online);
+  client.set_channel_connected(status.is_online());
   client.set_channel_value(value);
   client.set_cause_type(get_caller());
 
@@ -109,7 +109,7 @@ bool supla_alexa_change_report_request::make_request(
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
-      if (online) {
+      if (status.is_online()) {
         supla_channel_hvac_value_with_temphum::expand(&value, &fragment,
                                                       get_property_getter());
         client.set_channel_value(value);

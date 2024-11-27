@@ -274,9 +274,9 @@ void *ssocket_server_init(const char cert[], const char key[], int port,
     }
 
     if (ssd) {
-        SSL_CTX_set_min_proto_version(ssd->ctx, TLS1_VERSION);
-        SSL_CTX_set_max_proto_version(ssd->ctx, TLS1_3_VERSION);
-        SSL_CTX_set_security_level(ssd->ctx, 0);
+      SSL_CTX_set_min_proto_version(ssd->ctx, TLS1_VERSION);
+      SSL_CTX_set_max_proto_version(ssd->ctx, TLS1_3_VERSION);
+      SSL_CTX_set_security_level(ssd->ctx, 0);
     }
 
 #endif /*ifdef NOSSL*/
@@ -333,6 +333,12 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
 
     client_sd = accept(ssd->supla_socket.sfd, (struct sockaddr *)&addr, &len);
 
+    char client_ip[INET_ADDRSTRLEN] = {};
+    if (inet_ntop(AF_INET, &addr.sin_addr, client_ip, INET_ADDRSTRLEN) ==
+        NULL) {
+      client_ip[0] = 0;
+    }
+
     if (client_sd == -1) {
       if (errno != EAGAIN && errno != ECONNABORTED) {
         ssocket_last_accept_errno = errno;
@@ -340,12 +346,10 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
       }
 
       supla_log(LOG_ERR, "Connection accept error %i, %s:%d",
-                ssocket_last_accept_errno, inet_ntoa(addr.sin_addr),
-                ntohs(addr.sin_port));
+                ssocket_last_accept_errno, client_ip, ntohs(addr.sin_port));
     } else {
       supla_log(LOG_INFO, "Connection accepted: %s:%d ClientSD: %i Secure: %i",
-                inet_ntoa(addr.sin_addr), ntohs(addr.sin_port), client_sd,
-                ssd->secure);
+                client_ip, ntohs(addr.sin_port), client_sd, ssd->secure);
 
       supla_socket = malloc(sizeof(TSuplaSocket));
 
@@ -589,8 +593,8 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
       int result = poll(&pfd, 1, conn_timeout_ms);
       if (result > 0) {
         socklen_t len = sizeof(error);
-        int retval =
-          getsockopt(ssd->supla_socket.sfd, SOL_SOCKET, SO_ERROR, &error, &len);
+        int retval = getsockopt(ssd->supla_socket.sfd, SOL_SOCKET, SO_ERROR,
+                                &error, &len);
 
         if (retval == 0 && error == 0) {
           is_connected = 1;

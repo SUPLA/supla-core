@@ -117,22 +117,53 @@ JNIEnv *supla_client_get_env(TAndroidSuplaClient *asc) {
   return NULL;
 }
 
+jint supla_GetStringLenght(JNIEnv *env, jstring jstr) {
+  jclass cls = env->FindClass("java/lang/String");
+  jmethodID method_id = env->GetMethodID(cls, "length", "()I");
+  jint result = env->CallIntMethod(jstr, method_id);
+  env->DeleteLocalRef(cls);
+
+  return result;
+}
+
+jstring supla_SubString(JNIEnv *env, jstring jstr, jint start, jint end) {
+  jclass cls = env->FindClass("java/lang/String");
+  jmethodID method_id =
+      env->GetMethodID(cls, "substring", "(II)Ljava/lang/String;");
+  jstring result = (jstring)env->CallObjectMethod(jstr, method_id, start, end);
+  env->DeleteLocalRef(cls);
+
+  return result;
+}
+
 void supla_GetStringUtfChars(JNIEnv *env, jstring jstr, char *buff,
                              size_t size) {
-  const char *str = env->GetStringUTFChars(jstr, 0);
+  memset(buff, 0, size);
 
-  if (str) {
-    size_t len = strnlen(str, size);
-    if (len > size - 1) {
-      len = size - 1;
+  jint len = supla_GetStringLenght(env, jstr);
+  if (len > size - 1) {
+    len = size - 1;
+  }
+
+  while (len > 0) {
+    jstring sub_str = supla_SubString(env, jstr, 0, len);
+    len--;
+
+    const char *cstring = env->GetStringUTFChars(sub_str, 0);
+
+    if (cstring) {
+      size_t cstring_len = strnlen(cstring, size);
+      if (cstring_len < size) {
+        memcpy(buff, cstring, cstring_len);
+        len = 0;
+      }
+
+      env->ReleaseStringUTFChars(sub_str, cstring);
+    } else {
+      len = 0;
     }
 
-    memcpy(buff, str, len);
-    buff[size - 1] = 0;
-
-    env->ReleaseStringUTFChars(jstr, str);
-  } else {
-    memset(buff, 0, size);
+    env->DeleteLocalRef(sub_str);
   }
 }
 

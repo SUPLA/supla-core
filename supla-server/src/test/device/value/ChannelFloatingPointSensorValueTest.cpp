@@ -59,4 +59,14 @@ TEST_F(ChannelFloatingPointSensorValueTest, setterAndGetter) {
   EXPECT_EQ(v2.get_value(), 11.22);
 }
 
+TEST_F(ChannelFloatingPointSensorValueTest, getVbtValue) {
+  supla_channel_floating_point_sensor_value value;
+  value.set_value(11.22);
+
+  double vbt_value = 0;
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_EQ(vbt_value, 11.22);
+}
+
 }  // namespace testing

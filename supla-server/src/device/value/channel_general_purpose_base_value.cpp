@@ -80,3 +80,9 @@ string supla_channel_general_purpose_base_value::get_value_str() {
 string supla_channel_general_purpose_base_value::get_value_str(string nan) {
   return value_to_str(get_value(), &nan);
 }
+
+bool supla_channel_general_purpose_base_value::get_vbt_value(
+    _vbt_var_name_e var_name, double *value) {
+  *value = get_value();
+  return true;
+}

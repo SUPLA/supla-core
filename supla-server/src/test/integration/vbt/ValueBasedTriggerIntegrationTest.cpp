@@ -331,8 +331,8 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel140) {
   ActionExecutorMock actionExecutor;
   ChannelPropertyGetterMock propertyGetter;
 
-  triggers.on_channel_value_changed(supla_caller(ctIPC), 140, &oldv, &newv,
-                                    &actionExecutor, &propertyGetter);
+  triggers.on_value_changed(supla_caller(ctIPC), 140, &oldv, &newv,
+                            &actionExecutor, &propertyGetter);
 
   EXPECT_EQ(actionExecutor.counterSetCount(), 3);
   EXPECT_EQ(actionExecutor.getOnCounter(), 1);
@@ -350,8 +350,8 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel141) {
   ActionExecutorMock actionExecutor;
   ChannelPropertyGetterMock propertyGetter;
 
-  triggers.on_channel_value_changed(supla_caller(ctIPC), 141, &oldv, &newv,
-                                    &actionExecutor, &propertyGetter);
+  triggers.on_value_changed(supla_caller(ctIPC), 141, &oldv, &newv,
+                            &actionExecutor, &propertyGetter);
 
   EXPECT_EQ(actionExecutor.counterSetCount(), 3);
   EXPECT_EQ(actionExecutor.getExecuteCounter(), 1);
@@ -368,8 +368,8 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel158) {
   ActionExecutorMock actionExecutor;
   ChannelPropertyGetterMock propertyGetter;
 
-  triggers.on_channel_value_changed(supla_caller(ctIPC), 158, &oldv, &newv,
-                                    &actionExecutor, &propertyGetter);
+  triggers.on_value_changed(supla_caller(ctIPC), 158, &oldv, &newv,
+                            &actionExecutor, &propertyGetter);
 
   EXPECT_EQ(actionExecutor.get_push_notification_id(), 500);
   EXPECT_EQ(actionExecutor.getSentCounter(), 1);

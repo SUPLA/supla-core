@@ -62,6 +62,9 @@ class supla_abstract_srpc_adapter {
   virtual _supla_int_t sc_async_scene_state_pack_update(
       TSC_SuplaSceneStatePack *scene_state_pack) = 0;  // ver. >= 18
 
+  virtual _supla_int_t sc_async_channel_state_pack_update(
+      TSC_SuplaChannelStatePack *state_pack) = 0;  // ver. >= 26
+
   virtual _supla_int_t sd_async_get_firmware_update_url_result(
       TSD_FirmwareUpdate_UrlResult *result) = 0;
 

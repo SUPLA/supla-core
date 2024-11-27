@@ -143,4 +143,24 @@ TEST_F(ChannelRgbwValueTest, gettersAndSetters) {
   EXPECT_EQ(v2.get_color(), 0x112233);
 }
 
+TEST_F(ChannelRgbwValueTest, getVbtValue) {
+  supla_channel_rgbw_value value;
+
+  double vbt_value = 0;
+  EXPECT_FALSE(value.get_vbt_value(var_name_none, &vbt_value));
+
+  value.set_color(1234);
+  value.set_brightness(21);
+  value.set_color_brightness(35);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_color, &vbt_value));
+  EXPECT_EQ(vbt_value, 1234);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_brightness, &vbt_value));
+  EXPECT_EQ(vbt_value, 21);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_color_brightness, &vbt_value));
+  EXPECT_EQ(vbt_value, 35);
+}
+
 }  // namespace testing

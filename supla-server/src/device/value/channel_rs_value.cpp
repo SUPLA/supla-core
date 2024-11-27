@@ -67,7 +67,8 @@ void supla_channel_rs_value::update_sensor(supla_user *user,
     if (device != nullptr) {
       supla_device_channels *channels = device->get_channels();
 
-      if (channels->is_channel_online(opening_sensor_channel_id)) {
+      if (channels->get_channel_availability_status(opening_sensor_channel_id)
+              .is_online()) {
         int func = channels->get_channel_func(opening_sensor_channel_id);
 
         switch (func) {
@@ -104,4 +105,35 @@ bool supla_channel_rs_value::is_function_supported(int func) {
   }
 
   return false;
+}
+
+bool supla_channel_rs_value::get_vbt_value(_vbt_var_name_e var_name,
+                                           double *value) {
+  switch (var_name) {
+    case var_name_calibration_failed:
+      *value = get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_FAILED ? 1 : 0;
+      break;
+    case var_name_calibration_lost:
+      *value = get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_LOST ? 1 : 0;
+      break;
+    case var_name_motor_problem:
+      *value = get_rs_value()->flags & RS_VALUE_FLAG_MOTOR_PROBLEM ? 1 : 0;
+      break;
+    case var_name_calibration_in_progress:
+      *value =
+          get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS ? 1 : 0;
+      break;
+    case var_name_is_any_error_set:
+      *value = ((get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_FAILED) ||
+                (get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_LOST) ||
+                (get_rs_value()->flags & RS_VALUE_FLAG_MOTOR_PROBLEM))
+                   ? 1
+                   : 0;
+      break;
+    default:
+      *value = get_rs_value()->position;
+      break;
+  }
+
+  return true;
 }

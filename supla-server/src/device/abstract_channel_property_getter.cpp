@@ -37,24 +37,25 @@ supla_abstract_channel_property_getter::
     ~supla_abstract_channel_property_getter() {}
 
 supla_channel_value* supla_abstract_channel_property_getter::get_value(
-    supla_channel_fragment* fragment, bool* online) {
+    supla_channel_fragment* fragment,
+    supla_channel_availability_status* status) {
   if (!user_id || (!device_id && !channel_id)) {
     return nullptr;
   }
 
   supla_channel_value* result =
-      _get_value(user_id, device_id, channel_id, fragment, online);
-  if (result == nullptr && online) {
-    *online = false;
+      _get_value(user_id, device_id, channel_id, fragment, status);
+  if (result == nullptr && status) {
+    status->set_offline(true);
   }
 
   return result;
 }
 
 supla_channel_value* supla_abstract_channel_property_getter::get_value(
-    int* func, bool* online) {
+    int* func, supla_channel_availability_status* status) {
   supla_channel_fragment fragment;
-  supla_channel_value* result = get_value(func ? &fragment : nullptr, online);
+  supla_channel_value* result = get_value(func ? &fragment : nullptr, status);
 
   if (func) {
     *func = fragment.get_function();
@@ -68,22 +69,24 @@ supla_channel_value* supla_abstract_channel_property_getter::get_value(void) {
 }
 
 supla_channel_value* supla_abstract_channel_property_getter::get_value(
-    int user_id, int device_id, int channel_id, int* func, bool* online) {
+    int user_id, int device_id, int channel_id, int* func,
+    supla_channel_availability_status* status) {
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
 
-  return get_value(func, online);
+  return get_value(func, status);
 }
 
 supla_channel_value* supla_abstract_channel_property_getter::get_value(
     int user_id, int device_id, int channel_id,
-    supla_channel_fragment* fragment, bool* online) {
+    supla_channel_fragment* fragment,
+    supla_channel_availability_status* status) {
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
 
-  return get_value(fragment, online);
+  return get_value(fragment, status);
 }
 
 supla_channel_value* supla_abstract_channel_property_getter::get_value(

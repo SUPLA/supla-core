@@ -78,4 +78,16 @@ TEST_F(ChannelBinarySensorValueTest, applyChannelProperties) {
   EXPECT_FALSE(v.is_hi());
 }
 
+TEST_F(ChannelBinarySensorValueTest, getVbtValue) {
+  supla_channel_binary_sensor_value value;
+
+  double vbt_value = 0;
+  EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_EQ(vbt_value, 0);
+
+  value.set_hi(true);
+  EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_EQ(vbt_value, 1);
+}
+
 }  // namespace testing

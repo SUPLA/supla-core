@@ -102,7 +102,8 @@ class supla_device_channels {
   void for_each(std::function<void(supla_device_channel *, bool *)> on_channel);
 
   bool get_channel_value(int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
-                         char *online, unsigned _supla_int_t *validity_time_sec,
+                         supla_channel_availability_status *status,
+                         unsigned _supla_int_t *validity_time_sec,
                          supla_channel_extended_value **extended_value,
                          int *function, bool for_client);
   bool get_channel_double_value(int channel_id, double *value);
@@ -113,8 +114,9 @@ class supla_device_channels {
   int get_channel_type(int channel_id);
   bool set_channel_value(int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
                          const unsigned _supla_int_t *validity_time_sec,
-                         bool *offline);
-  bool set_channel_offline(int channel_id, bool offline);
+                         supla_channel_availability_status *status);
+  bool set_channel_availability_status(
+      int channel_id, const supla_channel_availability_status &status);
   void set_channel_extendedvalue(int channel_id,
                                  TSuplaChannelExtendedValue *ev);
 
@@ -140,7 +142,8 @@ class supla_device_channels {
   std::list<int> get_all_ids(void);
   int get_channel_id(unsigned char channel_number);
   bool channel_exists(int channel_id);
-  bool is_channel_online(int channel_id);
+  supla_channel_availability_status get_channel_availability_status(
+      int channel_id);
 
   bool calcfg_request(const supla_caller &caller, int channel_id,
                       bool superuser_authorized,

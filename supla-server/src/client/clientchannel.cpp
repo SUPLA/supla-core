@@ -339,15 +339,16 @@ bool supla_client_channel::remote_update_is_possible(void) {
   return Type == SUPLA_CHANNELTYPE_BRIDGE && Func == 0;
 }
 
-void supla_client_channel::proto_get_value(TSuplaChannelValue_B *value,
-                                           char *online, supla_client *client) {
+void supla_client_channel::proto_get_value(
+    TSuplaChannelValue_B *value, supla_channel_availability_status *status,
+    supla_client *client) {
   bool result = false;
 
   if (client && client->get_user()) {
     unsigned _supla_int_t validity_time_sec = 0;
     result = client->get_user()->get_channel_value(
         DeviceId, get_id(), value->value, value->sub_value,
-        &value->sub_value_type, nullptr, nullptr, online, &validity_time_sec,
+        &value->sub_value_type, nullptr, nullptr, status, &validity_time_sec,
         true);
     if (result) {
       setValueValidityTimeSec(validity_time_sec);
@@ -355,20 +356,21 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue_B *value,
     }
   }
 
-  if ((!result || (online && !(*online))) && isValueValidityTimeSet() &&
-      getValueValidityTimeUSec() > 0) {
+  if ((!result || (status && !status->is_online())) &&
+      isValueValidityTimeSet() && getValueValidityTimeUSec() > 0) {
     result = true;
-    if (online) {
-      *online = true;
+    if (status) {
+      status->set_offline(false);
     }
     memcpy(value->value, this->value, SUPLA_CHANNELVALUE_SIZE);
   }
 }
 
-void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
-                                           char *online, supla_client *client) {
+void supla_client_channel::proto_get_value(
+    TSuplaChannelValue *value, supla_channel_availability_status *status,
+    supla_client *client) {
   TSuplaChannelValue_B value_b = {};
-  proto_get_value(&value_b, online, client);
+  proto_get_value(&value_b, status, client);
 
   memcpy(value->value, value_b.value, SUPLA_CHANNELVALUE_SIZE);
   memcpy(value->sub_value, value_b.sub_value, SUPLA_CHANNELVALUE_SIZE);
@@ -382,7 +384,10 @@ void supla_client_channel::proto_get(TSC_SuplaChannel *channel,
   channel->Func = Func;
   channel->LocationID = this->LocationId;
 
-  proto_get_value(&channel->value, &channel->online, client);
+  supla_channel_availability_status status(true);
+
+  proto_get_value(&channel->value, &status, client);
+  channel->online = status.get_proto_online();
   sproto_set_null_terminated_string(getCaption(), channel->Caption,
                                     &channel->CaptionSize,
                                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
@@ -399,7 +404,10 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
   channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags() & 0xFFFFFFFF;
 
-  proto_get_value(&channel->value, &channel->online, client);
+  supla_channel_availability_status status(true);
+
+  proto_get_value(&channel->value, &status, client);
+  channel->online = status.get_proto_online();
   sproto_set_null_terminated_string(getCaption(), channel->Caption,
                                     &channel->CaptionSize,
                                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
@@ -421,7 +429,10 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
   channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags() & 0xFFFFFFFF;
 
-  proto_get_value(&channel->value, &channel->online, client);
+  supla_channel_availability_status status(true);
+
+  proto_get_value(&channel->value, &status, client);
+  channel->online = status.get_proto_online();
   sproto_set_null_terminated_string(getCaption(), channel->Caption,
                                     &channel->CaptionSize,
                                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
@@ -443,7 +454,10 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
   channel->ProtocolVersion = this->DeviceProtocolVersion;
   channel->Flags = get_flags() & 0xFFFFFFFF;
 
-  proto_get_value(&channel->value, &channel->online, client);
+  supla_channel_availability_status status(true);
+
+  proto_get_value(&channel->value, &status, client);
+  channel->online = status.get_proto_online();
   sproto_set_null_terminated_string(getCaption(), channel->Caption,
                                     &channel->CaptionSize,
                                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
@@ -471,7 +485,10 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_E *channel,
   channel->DefaultConfigCRC32 = st_crc32_checksum(
       (const unsigned char *)config.Config, config.ConfigSize);
 
-  proto_get_value(&channel->value, &channel->online, client);
+  supla_channel_availability_status status(true);
+
+  proto_get_value(&channel->value, &status, client);
+  channel->online = status.get_proto_online();
   sproto_set_null_terminated_string(getCaption(), channel->Caption,
                                     &channel->CaptionSize,
                                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
@@ -481,14 +498,22 @@ void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,
                                      supla_client *client) {
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
   channel_value->Id = get_id();
-  proto_get_value(&channel_value->value, &channel_value->online, client);
+
+  supla_channel_availability_status status(true);
+
+  proto_get_value(&channel_value->value, &status, client);
+  channel_value->online = status.get_proto_online();
 }
 
 void supla_client_channel::proto_get(TSC_SuplaChannelValue_B *channel_value,
                                      supla_client *client) {
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue_B));
   channel_value->Id = get_id();
-  proto_get_value(&channel_value->value, &channel_value->online, client);
+
+  supla_channel_availability_status status(true);
+
+  proto_get_value(&channel_value->value, &status, client);
+  channel_value->online = status.get_proto_online();
 }
 
 bool supla_client_channel::get_cs_extended_value(

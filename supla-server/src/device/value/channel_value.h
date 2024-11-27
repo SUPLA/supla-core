@@ -25,9 +25,10 @@
 #include "device/extended_value/channel_extended_value.h"
 #include "jsonconfig/json_config.h"
 #include "proto.h"
+#include "vbt/vbt_value.h"
 
 class supla_channel_extended_value;
-class supla_channel_value {
+class supla_channel_value : public supla_vbt_value {
  protected:
   char raw_value[SUPLA_CHANNELVALUE_SIZE];
 

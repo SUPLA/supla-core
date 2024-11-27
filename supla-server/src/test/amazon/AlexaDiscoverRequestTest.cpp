@@ -114,9 +114,9 @@ TEST_F(AlexaDiscoverRequestTest, wrongFormat) {
   EXPECT_CALL(*curlAdapter, perform).Times(1).WillOnce(Return(true));
   EXPECT_CALL(*curlAdapter, get_response_code).Times(1).WillOnce(Return(200));
 
-  EXPECT_CALL(*curlAdapter, set_opt_write_data(NotNull()))
+  EXPECT_CALL(*curlAdapter, set_opt_write_data(Eq(0), NotNull()))
       .Times(1)
-      .WillOnce([](string *result) {
+      .WillOnce([](int instance_id, string *result) {
         *result =
             "{\"event\":{\"header\":{\"namespace\":\"Alexa.Discovery\","
             "\"name\":\"Discover.Respnse\",\"payloadVersion\":\"3\","
@@ -162,9 +162,9 @@ TEST_F(AlexaDiscoverRequestTest, obtaintWithSuccess) {
   {
     InSequence s;
 
-    EXPECT_CALL(*curlAdapter, set_opt_write_data(NotNull()))
+    EXPECT_CALL(*curlAdapter, set_opt_write_data(Eq(0), NotNull()))
         .Times(1)
-        .WillOnce([](string *result) {
+        .WillOnce([](int instance_id, string *result) {
           *result =
               "{\"event\":{\"header\":{\"namespace\":\"Alexa.Discovery\","
               "\"name\":\"Discover.Response\",\"payloadVersion\":\"3\","
@@ -172,48 +172,55 @@ TEST_F(AlexaDiscoverRequestTest, obtaintWithSuccess) {
               "\"payload\":{\"endpoints\":[]}}}";
         });
 
-    EXPECT_CALL(*curlAdapter, set_opt_write_data(NotNull()))
+    EXPECT_CALL(*curlAdapter, set_opt_write_data(Eq(0), NotNull()))
         .Times(1)
-        .WillOnce([](string *result) { *result = ""; });
+        .WillOnce([](int instance_id, string *result) { *result = ""; });
   }
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(2)
       .WillRepeatedly(Return(true));
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Authorization: Bearer ACCESS-TOKEN")))
+              append_header(Eq(0), StrEq("Authorization: Bearer ACCESS-TOKEN")))
       .Times(1)
       .WillOnce(Return(true));
 
   EXPECT_CALL(
       *curlAdapter,
-      set_opt_post_fields(StrEq(
-          "{\"directive\":{\"header\":{\"namespace\":\"Alexa.Discovery\","
-          "\"name\":\"Discover\",\"payloadVersion\":\"3\",\"messageId\":"
-          "\"0021d4c9-1052-c70e-a701-3f75fa4b7712\"},\"payload\":{\"scope\":{"
-          "\"type\":\"BearerToken\",\"token\":\"xyzabcd\"}}}}")))
-      .Times(1);
-
-  EXPECT_CALL(*curlAdapter,
-              set_opt_post_fields(StrEq(
-                  "{\"event\":{\"header\":{\"namespace\":\"Alexa.Discovery\","
-                  "\"name\":\"AddOrUpdateReport\",\"payloadVersion\":\"3\","
-                  "\"messageId\":\"0021d4c9-1052-c70e-a701-3f75fa4b7712\"},"
-                  "\"payload\":{\"endpoints\":[],\"scope\":{\"type\":"
-                  "\"BearerToken\",\"token\":\"ACCESS-TOKEN\"}}}}")))
+      set_opt_post_fields(
+          Eq(0),
+          StrEq("{\"directive\":{\"header\":{\"namespace\":\"Alexa.Discovery\","
+                "\"name\":\"Discover\",\"payloadVersion\":\"3\",\"messageId\":"
+                "\"0021d4c9-1052-c70e-a701-3f75fa4b7712\"},\"payload\":{"
+                "\"scope\":{"
+                "\"type\":\"BearerToken\",\"token\":\"xyzabcd\"}}}}")))
       .Times(1);
 
   EXPECT_CALL(
       *curlAdapter,
-      set_opt_url(StrEq(
-          "https://"
-          "kune6om4mlleevu2kh4vt2ic5i0otrmw.lambda-url.eu-west-1.on.aws")))
+      set_opt_post_fields(
+          Eq(0),
+          StrEq("{\"event\":{\"header\":{\"namespace\":\"Alexa.Discovery\","
+                "\"name\":\"AddOrUpdateReport\",\"payloadVersion\":\"3\","
+                "\"messageId\":\"0021d4c9-1052-c70e-a701-3f75fa4b7712\"},"
+                "\"payload\":{\"endpoints\":[],\"scope\":{\"type\":"
+                "\"BearerToken\",\"token\":\"ACCESS-TOKEN\"}}}}")))
       .Times(1);
 
-  EXPECT_CALL(*curlAdapter,
-              set_opt_url(StrEq("https://api.amazonalexa.com/v3/events")))
+  EXPECT_CALL(
+      *curlAdapter,
+      set_opt_url(
+          Eq(0),
+          StrEq(
+              "https://"
+              "kune6om4mlleevu2kh4vt2ic5i0otrmw.lambda-url.eu-west-1.on.aws")))
+      .Times(1);
+
+  EXPECT_CALL(
+      *curlAdapter,
+      set_opt_url(Eq(0), StrEq("https://api.amazonalexa.com/v3/events")))
       .Times(1);
 
   EXPECT_CALL(*dao, get_cloud_access_token)

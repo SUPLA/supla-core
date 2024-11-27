@@ -38,16 +38,16 @@ void supla_channel_hvac_value::clear(void) {
 
 void supla_channel_hvac_value::set_mode(unsigned char mode) {
   if (mode >= 0 && mode <= SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL) {
-    ((THVACValue*)raw_value)->Mode = mode;
+    ((THVACValue *)raw_value)->Mode = mode;
   }
 }
 
 unsigned char supla_channel_hvac_value::get_mode(void) {
-  return ((THVACValue*)raw_value)->Mode;
+  return ((THVACValue *)raw_value)->Mode;
 }
 
 short supla_channel_hvac_value::get_setpoint_temperature_heat(void) {
-  return ((THVACValue*)raw_value)->SetpointTemperatureHeat;
+  return ((THVACValue *)raw_value)->SetpointTemperatureHeat;
 }
 
 double supla_channel_hvac_value::get_setpoint_temperature_heat_dbl(void) {
@@ -61,7 +61,7 @@ std::string supla_channel_hvac_value::get_setpoint_temperature_heat_str(void) {
 }
 
 short supla_channel_hvac_value::get_setpoint_temperature_cool(void) {
-  return ((THVACValue*)raw_value)->SetpointTemperatureCool;
+  return ((THVACValue *)raw_value)->SetpointTemperatureCool;
 }
 
 double supla_channel_hvac_value::get_setpoint_temperature_cool_dbl(void) {
@@ -146,7 +146,7 @@ string supla_channel_hvac_value::get_alexa_mode(void) {
 }
 
 unsigned short supla_channel_hvac_value::get_flags(void) {
-  return ((THVACValue*)raw_value)->Flags;
+  return ((THVACValue *)raw_value)->Flags;
 }
 
 bool supla_channel_hvac_value::is_battery_cover_open(void) {
@@ -167,55 +167,55 @@ bool supla_channel_hvac_value::is_any_error_set(void) {
 
 void supla_channel_hvac_value::set_setpoint_temperature_heat(
     short temperature) {
-  ((THVACValue*)raw_value)->SetpointTemperatureHeat = temperature;
-  ((THVACValue*)raw_value)->Flags |=
+  ((THVACValue *)raw_value)->SetpointTemperatureHeat = temperature;
+  ((THVACValue *)raw_value)->Flags |=
       SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET;
 }
 
 void supla_channel_hvac_value::set_setpoint_temperature_cool(
     short temperature) {
-  ((THVACValue*)raw_value)->SetpointTemperatureCool = temperature;
-  ((THVACValue*)raw_value)->Flags |=
+  ((THVACValue *)raw_value)->SetpointTemperatureCool = temperature;
+  ((THVACValue *)raw_value)->Flags |=
       SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET;
 }
 
 void supla_channel_hvac_value::set_setpoint_temperature_heat_to_null(void) {
-  ((THVACValue*)raw_value)->SetpointTemperatureHeat = 0;
-  ((THVACValue*)raw_value)->Flags ^=
-      ((THVACValue*)raw_value)->Flags &
+  ((THVACValue *)raw_value)->SetpointTemperatureHeat = 0;
+  ((THVACValue *)raw_value)->Flags ^=
+      ((THVACValue *)raw_value)->Flags &
       SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET;
 }
 
 void supla_channel_hvac_value::set_setpoint_temperature_cool_to_null(void) {
-  ((THVACValue*)raw_value)->SetpointTemperatureCool = 0;
-  ((THVACValue*)raw_value)->Flags ^=
-      ((THVACValue*)raw_value)->Flags &
+  ((THVACValue *)raw_value)->SetpointTemperatureCool = 0;
+  ((THVACValue *)raw_value)->Flags ^=
+      ((THVACValue *)raw_value)->Flags &
       SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET;
 }
 
 void supla_channel_hvac_value::set_flags(unsigned short flags) {
-  ((THVACValue*)raw_value)->Flags = flags;
+  ((THVACValue *)raw_value)->Flags = flags;
 }
 
 void supla_channel_hvac_value::set_on(unsigned char on) {
-  ((THVACValue*)raw_value)->IsOn = on;
+  ((THVACValue *)raw_value)->IsOn = on;
 }
 
 unsigned char supla_channel_hvac_value::is_on(void) {
-  if (((THVACValue*)raw_value)->IsOn > 101) {
-    return 101;
+  if (((THVACValue *)raw_value)->IsOn > 102) {
+    return 102;
   }
-  return ((THVACValue*)raw_value)->IsOn;
+  return ((THVACValue *)raw_value)->IsOn;
 }
 
 bool supla_channel_hvac_value::is_heating(void) {
-  return ((THVACValue*)raw_value)->IsOn > 0 &&
-         (((THVACValue*)raw_value)->Flags & SUPLA_HVAC_VALUE_FLAG_HEATING);
+  return ((THVACValue *)raw_value)->IsOn > 0 &&
+         (((THVACValue *)raw_value)->Flags & SUPLA_HVAC_VALUE_FLAG_HEATING);
 }
 
 bool supla_channel_hvac_value::is_cooling(void) {
-  return ((THVACValue*)raw_value)->IsOn > 0 &&
-         (((THVACValue*)raw_value)->Flags & SUPLA_HVAC_VALUE_FLAG_COOLING);
+  return ((THVACValue *)raw_value)->IsOn > 0 &&
+         (((THVACValue *)raw_value)->Flags & SUPLA_HVAC_VALUE_FLAG_COOLING);
 }
 
 void supla_channel_hvac_value::turn_on(void) {
@@ -324,4 +324,38 @@ bool supla_channel_hvac_value::is_function_supported(int func) {
   }
 
   return false;
+}
+
+bool supla_channel_hvac_value::get_vbt_value(_vbt_var_name_e var_name,
+                                             double *value) {
+  switch (var_name) {
+    case var_name_heating:
+      *value = is_heating() ? 1 : 0;
+      break;
+    case var_name_cooling:
+      *value = is_cooling() ? 1 : 0;
+      break;
+    case var_name_heating_or_cooling:
+      *value = is_heating() || is_cooling() ? 1 : 0;
+      break;
+    case var_name_is_on:
+      *value = is_on() ? 1 : 0;
+      break;
+    case var_name_is_any_error_set:
+      *value = is_any_error_set() ? 1 : 0;
+      break;
+    case var_name_is_battery_cover_open:
+      *value = is_battery_cover_open() ? 1 : 0;
+      break;
+    case var_name_thermometer_error:
+      *value = thermometer_error() ? 1 : 0;
+      break;
+    case var_name_clock_error:
+      *value = clock_error() ? 1 : 0;
+      break;
+    default:
+      return false;
+  }
+
+  return true;
 }

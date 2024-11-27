@@ -50,7 +50,7 @@ void GoogleHomeStateReportRequestTest::SetUp(void) {
       .WillByDefault(Return(200));
 
   ON_CALL(*tokenProviderCurlAdapter, set_opt_write_data)
-      .WillByDefault([this](string *request_result) {
+      .WillByDefault([this](int instance_id, string *request_result) {
         *request_result =
             "{\"homegraph\":{\"0\":{\"token\":\"directTokenXyz\",\"expires_"
             "in\":3600}}}";
@@ -68,7 +68,7 @@ void GoogleHomeStateReportRequestTest::SetUp(void) {
       .WillRepeatedly(Return("qwerty"));
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -89,27 +89,28 @@ void GoogleHomeStateReportRequestTest::TearDown(void) {
 void GoogleHomeStateReportRequestTest::expectToken(bool direct) {
   if (direct) {
     EXPECT_CALL(*curlAdapter,
-                set_opt_url(StrEq("https://homegraph.googleapis.com/v1/"
-                                  "devices:reportStateAndNotification")))
+                set_opt_url(Eq(0), StrEq("https://homegraph.googleapis.com/v1/"
+                                         "devices:reportStateAndNotification")))
         .Times(1);
 
-    EXPECT_CALL(*curlAdapter,
-                append_header(StrEq("Authorization: Bearer directTokenXyz")))
+    EXPECT_CALL(
+        *curlAdapter,
+        append_header(Eq(0), StrEq("Authorization: Bearer directTokenXyz")))
         .Times(1)
         .WillOnce(Return(true));
   } else {
     EXPECT_CALL(credentials, get_access_token)
         .WillRepeatedly(Return("MyAccessTokenXYZ"));
 
-    EXPECT_CALL(
-        *curlAdapter,
-        set_opt_url(StrEq(
-            "https://"
-            "odokilkqoesh73zfznmiupey4a0uugaz.lambda-url.eu-west-1.on.aws/")))
+    EXPECT_CALL(*curlAdapter,
+                set_opt_url(Eq(0), StrEq("https://"
+                                         "odokilkqoesh73zfznmiupey4a0uugaz."
+                                         "lambda-url.eu-west-1.on.aws/")))
         .Times(1);
 
-    EXPECT_CALL(*curlAdapter,
-                append_header(StrEq("Authorization: Bearer MyAccessTokenXYZ")))
+    EXPECT_CALL(
+        *curlAdapter,
+        append_header(Eq(0), StrEq("Authorization: Bearer MyAccessTokenXYZ")))
         .Times(1)
         .WillOnce(Return(true));
   }
@@ -127,15 +128,16 @@ void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
       .Times(1)
       .WillOnce([func, online, value](
                     int user_id, int device_id, int channel_id,
-                    supla_channel_fragment *_fragment, bool *_connected) {
+                    supla_channel_fragment *_fragment,
+                    supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
-        *_connected = online;
+        _status->set_offline(!online);
 
         return value;
       });
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   if (direct) {
@@ -345,10 +347,11 @@ void GoogleHomeStateReportRequestTest::makeHvacThermostatTest(
       .Times(1)
       .WillOnce([func, online, hvacValue](
                     int user_id, int device_id, int channel_id,
-                    supla_channel_fragment *_fragment, bool *_connected) {
+                    supla_channel_fragment *_fragment,
+                    supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
-        *_connected = online;
+        _status->set_offline(!online);
 
         return hvacValue;
       });
@@ -377,7 +380,7 @@ void GoogleHomeStateReportRequestTest::makeHvacThermostatTest(
     }
   }
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   supla_google_home_state_report_request *request =
@@ -487,11 +490,12 @@ TEST_F(GoogleHomeStateReportRequestTest, x403) {
               _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int user_id, int device_id, int channel_id,
-                   supla_channel_fragment *_fragment, bool *_connected) {
+                   supla_channel_fragment *_fragment,
+                   supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0,
                                    SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
-        *_connected = false;
+        _status->set_offline(true);
 
         return nullptr;
       });
@@ -516,11 +520,12 @@ TEST_F(GoogleHomeStateReportRequestTest, x404) {
               _get_value(Eq(1), Eq(2), Eq(10), NotNull(), NotNull()))
       .Times(1)
       .WillOnce([](int user_id, int device_id, int channel_id,
-                   supla_channel_fragment *_fragment, bool *_connected) {
+                   supla_channel_fragment *_fragment,
+                   supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0,
                                    SUPLA_CHANNELFNC_LIGHTSWITCH, 0, false);
-        *_connected = false;
+        _status->set_offline(true);
 
         return nullptr;
       });

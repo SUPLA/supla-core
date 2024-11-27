@@ -28,21 +28,21 @@ class supla_channel_fragment {
   unsigned char channel_number;
   int type;
   int function;
-  unsigned int flags;
+  unsigned _supla_int64_t flags;
   bool _is_hidden;
 
  public:
   supla_channel_fragment();
   supla_channel_fragment(int device_id, int channel_id,
                          unsigned char channel_number, int type, int function,
-                         unsigned int flags, bool _is_hidden);
+                         unsigned _supla_int64_t flags, bool _is_hidden);
 
   int get_device_id(void);
   int get_channel_id(void);
   unsigned char get_channel_number(void);
   int get_type(void);
   int get_function(void);
-  unsigned int get_flags(void);
+  unsigned _supla_int64_t get_flags(void);
   void set_function(int function);
   bool is_hidden(void);
 

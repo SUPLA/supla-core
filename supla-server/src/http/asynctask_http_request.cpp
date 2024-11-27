@@ -85,32 +85,33 @@ supla_asynctask_http_request::get_property_getter(void) {
 }
 
 supla_channel_value *supla_asynctask_http_request::get_channel_value(
-    int *func, bool *online) {
+    int *func, supla_channel_availability_status *status) {
   if (func) {
     *func = 0;
   }
 
-  if (online) {
-    *online = false;
+  if (status) {
+    status->set_offline(true);
   }
 
   if (property_getter) {
     return property_getter->get_value(user_id, device_id, channel_id, func,
-                                      online);
+                                      status);
   }
 
   return nullptr;
 }
 
 supla_channel_value *supla_asynctask_http_request::get_channel_value(
-    supla_channel_fragment *fragment, bool *online) {
-  if (online) {
-    *online = false;
+    supla_channel_fragment *fragment,
+    supla_channel_availability_status *status) {
+  if (status) {
+    status->set_offline(true);
   }
 
   if (property_getter) {
     return property_getter->get_value(user_id, device_id, channel_id, fragment,
-                                      online);
+                                      status);
   }
 
   return nullptr;

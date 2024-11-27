@@ -44,11 +44,14 @@ class supla_dobjects {
   void access_object(int id,
                      std::function<void(supla_dobject *object)> on_access);
 
+ protected:
+  supla_abstract_dobject_remote_updater *get_updater(void);
+
  public:
   explicit supla_dobjects(supla_abstract_dobject_remote_updater *updater);
   virtual ~supla_dobjects();
   int count(void);
-  bool update_remote(void);
+  virtual bool update_remote(void);
   bool object_exists(int id);
 };
 

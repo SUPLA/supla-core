@@ -23,21 +23,6 @@
 #include <map>
 #include <string>
 
-#include "device/extended_value/channel_em_extended_value.h"
-#include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
-#include "device/extended_value/channel_ic_extended_value.h"
-#include "device/extended_value/channel_thermostat_extended_value.h"
-#include "device/value/channel_binary_sensor_value.h"
-#include "device/value/channel_fb_value.h"
-#include "device/value/channel_floating_point_sensor_value.h"
-#include "device/value/channel_general_purpose_base_value.h"
-#include "device/value/channel_hvac_value.h"
-#include "device/value/channel_onoff_value.h"
-#include "device/value/channel_rgbw_value.h"
-#include "device/value/channel_rs_value.h"
-#include "device/value/channel_temphum_value.h"
-#include "device/value/channel_valve_value.h"
-
 using std::map;
 using std::string;
 
@@ -135,6 +120,8 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_calibration_lost, "calibration_lost"},
         {var_name_motor_problem, "motor_problem"},
         {var_name_calibration_in_progress, "calibration_in_progress"},
+        {var_name_battery_level, "battery_level"},
+        {var_name_battery_powered, "battery_powered"},
         {var_name_is_battery_cover_open, "is_battery_cover_open"},
         {var_name_thermometer_error, "thermometer_error"},
         {var_name_clock_error, "clock_error"},
@@ -208,329 +195,6 @@ bool supla_vbt_on_change_condition::get_operator_and_value(cJSON *root,
   return true;
 }
 
-bool supla_vbt_on_change_condition::get_number(supla_channel_value *value,
-                                               double *result) {
-  if (dynamic_cast<supla_channel_binary_sensor_value *>(value)) {
-    *result = dynamic_cast<supla_channel_binary_sensor_value *>(value)->is_hi()
-                  ? 1.0
-                  : 0.0;
-    return true;
-  }
-
-  if (dynamic_cast<supla_channel_floating_point_sensor_value *>(value)) {
-    *result = dynamic_cast<supla_channel_floating_point_sensor_value *>(value)
-                  ->get_value();
-    return true;
-  }
-
-  if (dynamic_cast<supla_channel_onoff_value *>(value)) {
-    *result = dynamic_cast<supla_channel_onoff_value *>(value)->is_on() ? 1 : 0;
-    return true;
-  }
-
-  if (dynamic_cast<supla_channel_rgbw_value *>(value)) {
-    supla_channel_rgbw_value *rgbw =
-        dynamic_cast<supla_channel_rgbw_value *>(value);
-
-    switch (var_name) {
-      case var_name_color:
-        *result = rgbw->get_color();
-        break;
-      case var_name_color_brightness:
-        *result = rgbw->get_color_brightness();
-        break;
-      case var_name_brightness:
-        *result = rgbw->get_brightness();
-        break;
-      default:
-        return false;
-    }
-    return true;
-  }
-
-  if (dynamic_cast<supla_channel_rs_value *>(value)) {
-    supla_channel_rs_value *rs = dynamic_cast<supla_channel_rs_value *>(value);
-
-    switch (var_name) {
-      case var_name_calibration_failed:
-        *result = rs->get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_FAILED
-                      ? 1
-                      : 0;
-        break;
-      case var_name_calibration_lost:
-        *result =
-            rs->get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_LOST ? 1 : 0;
-        break;
-      case var_name_motor_problem:
-        *result =
-            rs->get_rs_value()->flags & RS_VALUE_FLAG_MOTOR_PROBLEM ? 1 : 0;
-        break;
-      case var_name_calibration_in_progress:
-        *result =
-            rs->get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS
-                ? 1
-                : 0;
-        break;
-      case var_name_is_any_error_set:
-        *result =
-            ((rs->get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_FAILED) ||
-             (rs->get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_LOST) ||
-             (rs->get_rs_value()->flags & RS_VALUE_FLAG_MOTOR_PROBLEM))
-                ? 1
-                : 0;
-        break;
-      default:
-        *result = rs->get_rs_value()->position;
-        break;
-    }
-
-    return true;
-  }
-
-  if (dynamic_cast<supla_channel_fb_value *>(value)) {
-    *result =
-        dynamic_cast<supla_channel_fb_value *>(value)->get_fb_value()->position;
-    return true;
-  }
-
-  if (dynamic_cast<supla_channel_temphum_value *>(value)) {
-    supla_channel_temphum_value *temphum =
-        dynamic_cast<supla_channel_temphum_value *>(value);
-
-    switch (var_name) {
-      case var_name_temperature: {
-        double temperature = temphum->get_temperature();
-        if (temperature >
-            supla_channel_temphum_value::incorrect_temperature()) {
-          *result = temperature;
-          return true;
-        }
-      } break;
-      case var_name_humidity:
-        if (temphum->is_humidity_available()) {
-          double humidity = temphum->get_humidity();
-          if (humidity > supla_channel_temphum_value::incorrect_humidity()) {
-            *result = temphum->get_humidity();
-            return true;
-          }
-        }
-        break;
-      default:
-        break;
-    }
-
-    return false;
-  }
-
-  if (dynamic_cast<supla_channel_valve_value *>(value)) {
-    supla_channel_valve_value *vv =
-        dynamic_cast<supla_channel_valve_value *>(value);
-
-    switch (var_name) {
-      case var_name_flooding:
-        *result =
-            (vv->get_valve_value()->flags & SUPLA_VALVE_FLAG_FLOODING) ? 1 : 0;
-        break;
-      case var_name_manually_closed:
-        *result =
-            (vv->get_valve_value()->flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED)
-                ? 1
-                : 0;
-        break;
-      default:
-        *result = vv->get_valve_value()->closed ? 1 : 0;
-    }
-
-    return true;
-  }
-
-  if (dynamic_cast<supla_channel_hvac_value *>(value)) {
-    supla_channel_hvac_value *hvac =
-        dynamic_cast<supla_channel_hvac_value *>(value);
-
-    switch (var_name) {
-      case var_name_heating:
-        *result = hvac->is_heating() ? 1 : 0;
-        break;
-      case var_name_cooling:
-        *result = hvac->is_cooling() ? 1 : 0;
-        break;
-      case var_name_heating_or_cooling:
-        *result = hvac->is_heating() || hvac->is_cooling() ? 1 : 0;
-        break;
-      case var_name_is_on:
-        *result = hvac->is_on() ? 1 : 0;
-        break;
-      case var_name_is_any_error_set:
-        *result = hvac->is_any_error_set() ? 1 : 0;
-        break;
-      case var_name_is_battery_cover_open:
-        *result = hvac->is_battery_cover_open() ? 1 : 0;
-        break;
-      case var_name_thermometer_error:
-        *result = hvac->thermometer_error() ? 1 : 0;
-        break;
-      case var_name_clock_error:
-        *result = hvac->clock_error() ? 1 : 0;
-        break;
-      default:
-        return false;
-    }
-
-    return true;
-  }
-
-  if (dynamic_cast<supla_channel_general_purpose_base_value *>(value)) {
-    *result = dynamic_cast<supla_channel_general_purpose_base_value *>(value)
-                  ->get_value();
-    return true;
-  }
-
-  return false;
-}
-
-bool supla_vbt_on_change_condition::get_number(
-    supla_channel_extended_value *value, double *result) {
-  if (dynamic_cast<supla_channel_em_extended_value *>(value)) {
-    supla_channel_em_extended_value *em =
-        dynamic_cast<supla_channel_em_extended_value *>(value);
-
-    switch (var_name) {
-      case var_name_voltage_avg:
-        *result = em->get_voltage_avg();
-        break;
-      case var_name_voltage1:
-        *result = em->get_voltage(1);
-        break;
-      case var_name_voltage2:
-        *result = em->get_voltage(2);
-        break;
-      case var_name_voltage3:
-        *result = em->get_voltage(3);
-        break;
-      case var_name_current_sum:
-        *result = em->get_current_sum();
-        break;
-      case var_name_current1:
-        *result = em->get_current(1);
-        break;
-      case var_name_current2:
-        *result = em->get_current(2);
-        break;
-      case var_name_current3:
-        *result = em->get_current(3);
-        break;
-      case var_name_power_active_sum:
-        *result = em->get_power_active_sum();
-        break;
-      case var_name_power_active1:
-        *result = em->get_power_active(1);
-        break;
-      case var_name_power_active2:
-        *result = em->get_power_active(2);
-        break;
-      case var_name_power_active3:
-        *result = em->get_power_active(3);
-        break;
-      case var_name_power_reactive_sum:
-        *result = em->get_power_reactive_sum();
-        break;
-      case var_name_power_reactive1:
-        *result = em->get_power_reactive(1);
-        break;
-      case var_name_power_reactive2:
-        *result = em->get_power_reactive(2);
-        break;
-      case var_name_power_reactive3:
-        *result = em->get_power_reactive(3);
-        break;
-      case var_name_power_apparent_sum:
-        *result = em->get_power_apparent_sum();
-        break;
-      case var_name_power_apparent1:
-        *result = em->get_power_apparent(1);
-        break;
-      case var_name_power_apparent2:
-        *result = em->get_power_apparent(2);
-        break;
-      case var_name_power_apparent3:
-        *result = em->get_power_apparent(3);
-        break;
-      case var_name_fae1:
-        *result = em->get_fae(1);
-        break;
-      case var_name_fae2:
-        *result = em->get_fae(2);
-        break;
-      case var_name_fae3:
-        *result = em->get_fae(3);
-        break;
-      case var_name_fae_sum:
-        *result = em->get_fae_sum();
-        break;
-      case var_name_fae_balanced:
-        *result = em->get_fae_balanced();
-        break;
-      case var_name_rae1:
-        *result = em->get_rae(1);
-        break;
-      case var_name_rae2:
-        *result = em->get_rae(2);
-        break;
-      case var_name_rae3:
-        *result = em->get_rae(3);
-        break;
-      case var_name_rae_sum:
-        *result = em->get_rae_sum();
-        break;
-      case var_name_rae_balanced:
-        *result = em->get_rae_balanced();
-        break;
-      default:
-        return false;
-    }
-
-    return true;
-  } else if (dynamic_cast<supla_channel_ic_extended_value *>(value)) {
-    supla_channel_ic_extended_value *ic =
-        dynamic_cast<supla_channel_ic_extended_value *>(value);
-
-    switch (var_name) {
-      case var_name_counter:
-        *result = ic->get_counter();
-        break;
-      case var_name_calculated_value:
-        *result = ic->get_calculated_value_dbl();
-        break;
-      default:
-        return false;
-    }
-
-    return true;
-  } else if (dynamic_cast<supla_channel_thermostat_extended_value *>(value)) {
-    supla_channel_thermostat_extended_value *thev =
-        dynamic_cast<supla_channel_thermostat_extended_value *>(value);
-
-    // Currently, only heatpol uses this, so we do not need to check the channel
-    // function.
-
-    supla_channel_hp_thermostat_ev_decorator decorator(thev);
-
-    switch (var_name) {
-      case var_name_heating:
-      case var_name_is_on:
-        *result = decorator.is_heating() ? 1 : 0;
-        break;
-      default:
-        return false;
-    }
-
-    return true;
-  }
-
-  return false;
-}
-
 bool supla_vbt_on_change_condition::is_condition_met(_vbt_operator_e op,
                                                      double old_value,
                                                      double new_value,
@@ -571,7 +235,7 @@ bool supla_vbt_on_change_condition::is_condition_met(double old_value,
 }
 
 bool supla_vbt_on_change_condition::is_condition_met(
-    supla_channel_value *old_value, supla_channel_value *new_value) {
+    supla_vbt_value *old_value, supla_vbt_value *new_value) {
   if (!on_change && op == op_unknown) {
     return false;
   }
@@ -579,32 +243,11 @@ bool supla_vbt_on_change_condition::is_condition_met(
   double oldv = 0;
   double newv = 0;
 
-  if (!get_number(old_value, &oldv)) {
+  if (!old_value || !old_value->get_vbt_value(var_name, &oldv)) {
     return false;
   }
 
-  if (!get_number(new_value, &newv)) {
-    return false;
-  }
-
-  return is_condition_met(oldv, newv);
-}
-
-bool supla_vbt_on_change_condition::is_condition_met(
-    supla_channel_extended_value *old_value,
-    supla_channel_extended_value *new_value) {
-  if (!on_change && op == op_unknown) {
-    return false;
-  }
-
-  double oldv = 0;
-  double newv = 0;
-
-  if (!get_number(old_value, &oldv)) {
-    return false;
-  }
-
-  if (!get_number(new_value, &newv)) {
+  if (!new_value || !new_value->get_vbt_value(var_name, &newv)) {
     return false;
   }
 

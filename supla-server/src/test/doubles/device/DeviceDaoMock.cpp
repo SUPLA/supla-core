@@ -36,7 +36,7 @@ int DeviceDaoMock::add_device(int location_id, const char guid[SUPLA_GUID_SIZE],
 
 int DeviceDaoMock::add_channel(int device_id, int channel_number, int type,
                                int func, int param1, int param2, int flist,
-                               _supla_int64_t flags, int alt_icon,
+                               unsigned _supla_int64_t flags, int alt_icon,
                                unsigned short sub_device_id, int user_id) {
   int result = add_channel_a(device_id, channel_number, type, func, param1,
                              param2, flist, flags, alt_icon, user_id);

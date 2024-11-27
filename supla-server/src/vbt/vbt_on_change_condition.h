@@ -21,63 +21,8 @@
 
 #include <string>
 
-#include "device/value/channel_value.h"
 #include "json/cJSON.h"
-
-enum _vbt_var_name_e {
-  var_name_none,
-  var_name_color,
-  var_name_color_brightness,
-  var_name_brightness,
-  var_name_temperature,
-  var_name_humidity,
-  var_name_flooding,
-  var_name_manually_closed,
-  var_name_voltage_avg,
-  var_name_voltage1,
-  var_name_voltage2,
-  var_name_voltage3,
-  var_name_current_sum,
-  var_name_current1,
-  var_name_current2,
-  var_name_current3,
-  var_name_power_active_sum,
-  var_name_power_active1,
-  var_name_power_active2,
-  var_name_power_active3,
-  var_name_power_reactive_sum,
-  var_name_power_reactive1,
-  var_name_power_reactive2,
-  var_name_power_reactive3,
-  var_name_power_apparent_sum,
-  var_name_power_apparent1,
-  var_name_power_apparent2,
-  var_name_power_apparent3,
-  var_name_fae1,
-  var_name_fae2,
-  var_name_fae3,
-  var_name_fae_sum,
-  var_name_fae_balanced,
-  var_name_rae1,
-  var_name_rae2,
-  var_name_rae3,
-  var_name_rae_sum,
-  var_name_rae_balanced,
-  var_name_counter,
-  var_name_calculated_value,
-  var_name_heating,
-  var_name_cooling,
-  var_name_heating_or_cooling,
-  var_name_is_on,
-  var_name_is_any_error_set,
-  var_name_calibration_failed,
-  var_name_calibration_lost,
-  var_name_motor_problem,
-  var_name_calibration_in_progress,
-  var_name_is_battery_cover_open,
-  var_name_thermometer_error,
-  var_name_clock_error,
-};
+#include "vbt/vbt_value.h"
 
 enum _vbt_operator_e { op_unknown, op_eq, op_ne, op_le, op_lt, op_gt, op_ge };
 
@@ -93,8 +38,6 @@ class supla_vbt_on_change_condition {
 
   bool get_operator_and_value(cJSON *root, _vbt_operator_e *op, double *value);
 
-  bool get_number(supla_channel_value *value, double *result);
-  bool get_number(supla_channel_extended_value *value, double *result);
   bool is_condition_met(_vbt_operator_e op, double old_value, double new_value,
                         double expected);
   bool is_condition_met(double old_value, double new_value);
@@ -112,11 +55,8 @@ class supla_vbt_on_change_condition {
   double get_resume_value(void) const;
   bool is_paused(void) const;
 
-  virtual bool is_condition_met(supla_channel_value *old_value,
-                                supla_channel_value *new_value);
-
-  virtual bool is_condition_met(supla_channel_extended_value *old_value,
-                                supla_channel_extended_value *new_value);
+  virtual bool is_condition_met(supla_vbt_value *old_value,
+                                supla_vbt_value *new_value);
 
   bool operator==(const supla_vbt_on_change_condition &cnd) const;
 };

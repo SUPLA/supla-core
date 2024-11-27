@@ -119,7 +119,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 25
+#define SUPLA_PROTO_VERSION 26
 #define SUPLA_PROTO_VERSION_MIN 1
 
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO) || defined(SUPLA_DEVICE)
@@ -179,6 +179,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 #define SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT 100  // ver. >= 21
 
+#define SUPLA_CHANNEL_STATE_PACK_MAXCOUNT 20  // ver. >= 26
+
 #define SUPLA_DCS_CALL_GETVERSION 10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT 20
 #define SUPLA_SDC_CALL_VERSIONERROR 30
@@ -236,6 +238,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400            // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B 401          // ver. >= 15
 #define SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE 405    // ver. >= 10
+#define SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE 408           // ver. >= 26
 #define SUPLA_CS_CALL_SET_VALUE 410                           // ver. >= 9
 #define SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST 420     // ver. >= 10
 #define SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT 425  // ver. >= 12
@@ -646,6 +649,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE 0x10000000           // ver. >= 21
 #define SUPLA_CHANNEL_FLAG_HAS_PARENT 0x20000000                // ver. >= 21
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESTART_SUBDEVICE 0x40000000  // ver. >= 25
+#define SUPLA_CHANNEL_FLAG_BATTERY_COVER_AVAILABLE 0x80000000   // ver. >= 25
 #pragma pack(push, 1)
 
 typedef struct {
@@ -892,7 +896,8 @@ typedef struct {
   _supla_int64_t Flags;
 
   unsigned char
-      Offline;  // If true, the ValidityTimeSec and value variables are ignored.
+      Offline;  // If 1, the ValidityTimeSec and value variables are ignored. 0
+                // - ONLINE, 1 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
   unsigned _supla_int_t ValueValidityTimeSec;
 
   union {
@@ -919,7 +924,8 @@ typedef struct {
   _supla_int64_t Flags;
 
   unsigned char
-      Offline;  // If true, the ValidityTimeSec and value variables are ignored.
+      Offline;  // If 1, the ValidityTimeSec and value variables are ignored. 0
+                // - ONLINE, 1 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
   unsigned _supla_int_t ValueValidityTimeSec;
 
   union {
@@ -1107,7 +1113,8 @@ typedef struct {
   // device -> server
 
   unsigned char ChannelNumber;
-  unsigned char Offline;  // If true, the value variable is ignored.
+  unsigned char Offline;  // If 1, the value variable is ignored. 0 - ONLINE, 1
+                          // - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TDS_SuplaDeviceChannelValue_B;  // v. >= 12
 
@@ -1116,7 +1123,8 @@ typedef struct {
 
   unsigned char ChannelNumber;
   unsigned char
-      Offline;  // If true, the ValidityTimeSec and value variables are ignored.
+      Offline;  // If 1, the ValidityTimeSec and value variables are ignored. 0
+                // - ONLINE, 1 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
   unsigned _supla_int_t ValidityTimeSec;
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TDS_SuplaDeviceChannelValue_C;  // v. >= 12
@@ -1165,7 +1173,7 @@ typedef struct {
 
   char EOL;  // End Of List
   _supla_int_t Id;
-  char online;
+  char online;  // 1 - ONLINE, 0 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
 
   TSuplaChannelValue value;
 } TSC_SuplaChannelValue;
@@ -1175,7 +1183,7 @@ typedef struct {
 
   char EOL;  // End Of List
   _supla_int_t Id;
-  char online;
+  char online;  // 1 - ONLINE, 0 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
 
   TSuplaChannelValue_B value;
 } TSC_SuplaChannelValue_B;  //  ver. >= 15
@@ -1225,7 +1233,7 @@ typedef struct {
   _supla_int_t Id;
   _supla_int_t LocationID;
   _supla_int_t Func;
-  char online;
+  char online;  // 1 - ONLINE, 0 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
 
   TSuplaChannelValue value;
 
@@ -1253,7 +1261,7 @@ typedef struct {
   _supla_int_t AltIcon;
   unsigned _supla_int_t Flags;
   unsigned char ProtocolVersion;
-  char online;
+  char online;  // 1 - ONLINE, 0 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
 
   TSuplaChannelValue value;
 
@@ -1287,7 +1295,7 @@ typedef struct {
 
   unsigned _supla_int_t Flags;
   unsigned char ProtocolVersion;
-  char online;
+  char online;  // 1 - ONLINE, 0 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
 
   TSuplaChannelValue value;
 
@@ -1312,7 +1320,7 @@ typedef struct {
 
   unsigned _supla_int_t Flags;
   unsigned char ProtocolVersion;
-  char online;
+  char online;  // 1 - ONLINE, 0 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
 
   TSuplaChannelValue_B value;
 
@@ -1338,7 +1346,7 @@ typedef struct {
 
   unsigned _supla_int64_t Flags;
   unsigned char ProtocolVersion;
-  char online;
+  char online;  // 1 - ONLINE, 0 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
 
   TSuplaChannelValue_B value;
 
@@ -2556,7 +2564,8 @@ typedef struct {
     _supla_int_t LightSourceOperatingTime;   // -3932100sec. - 3932100sec.
     unsigned _supla_int_t OperatingTime;     // time in seconds
   };
-  char EmptySpace[2];  // Empty space for future use
+  char EOL;            // End Of List // v. >= 26
+  char EmptySpace[1];  // Empty space for future use
 } TDSC_ChannelState;   // v. >= 12 Device -> Server -> Client
 
 #define TChannelState_ExtendedValue TDSC_ChannelState
@@ -3574,6 +3583,13 @@ typedef struct {
 typedef struct {
   _supla_int_t ResultCode;
 } TSC_RegisterPnClientTokenResult;
+
+typedef struct {
+  _supla_int_t count;
+  _supla_int_t total_left;
+  TDSC_ChannelState
+      items[SUPLA_CHANNEL_STATE_PACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelStatePack;
 
 #pragma pack(pop)
 

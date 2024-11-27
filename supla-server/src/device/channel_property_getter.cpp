@@ -29,7 +29,8 @@ supla_channel_property_getter::~supla_channel_property_getter(void) {}
 
 supla_channel_value *supla_channel_property_getter::_get_value(
     int user_id, int device_id, int channel_id,
-    supla_channel_fragment *fragment, bool *online) {
+    supla_channel_fragment *fragment,
+    supla_channel_availability_status *status) {
   supla_channel_value *result = nullptr;
 
   supla_user *user = supla_user::get_user(user_id);
@@ -45,15 +46,15 @@ supla_channel_value *supla_channel_property_getter::_get_value(
   }
 
   if (device == nullptr) {
-    if (online) {
-      *online = false;
+    if (status) {
+      status->set_offline(true);
     }
   } else {
     device->get_channels()->access_channel(
-        channel_id, [&result, &online](supla_device_channel *channel) -> void {
+        channel_id, [&result, &status](supla_device_channel *channel) -> void {
           result = channel->get_value<supla_channel_value>();
-          if (online) {
-            *online = !channel->is_offline();
+          if (status) {
+            *status = channel->get_availability_status();
           }
         });
   }

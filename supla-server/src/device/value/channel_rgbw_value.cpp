@@ -108,3 +108,21 @@ bool supla_channel_rgbw_value::is_function_supported(int func) {
 
   return false;
 }
+
+bool supla_channel_rgbw_value::get_vbt_value(_vbt_var_name_e var_name,
+                                             double *value) {
+  switch (var_name) {
+    case var_name_color:
+      *value = get_color();
+      break;
+    case var_name_color_brightness:
+      *value = get_color_brightness();
+      break;
+    case var_name_brightness:
+      *value = get_brightness();
+      break;
+    default:
+      return false;
+  }
+  return true;
+}

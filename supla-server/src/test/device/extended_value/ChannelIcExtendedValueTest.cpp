@@ -137,4 +137,25 @@ TEST_F(ChannelIcExtendedValueTest, copy) {
   delete copy;
 }
 
+TEST_F(ChannelIcExtendedValueTest, getVbtValue) {
+  TDS_ImpulseCounter_Value raw = {};
+  raw.counter = 150;
+
+  supla_json_config cfg;
+  cfg.set_user_config("{\"impulsesPerUnit\":10}");
+
+  supla_channel_ic_extended_value value(SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
+                                        &raw, &cfg);
+
+  double vbt_value = 0;
+
+  EXPECT_FALSE(value.get_vbt_value(var_name_none, &vbt_value));
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_counter, &vbt_value));
+  EXPECT_EQ(vbt_value, 150);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_calculated_value, &vbt_value));
+  EXPECT_EQ(vbt_value, 15.0);
+}
+
 }  // namespace testing

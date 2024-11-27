@@ -170,4 +170,17 @@ TEST_F(ChannelTempHumValueTest, replacementMap) {
   EXPECT_EQ(m["temperature"], "10.00");
 }
 
+TEST_F(ChannelTempHumValueTest, getVbtValue) {
+  supla_channel_temphum_value value(true, 22.331, 45.671);
+
+  double vbt_value = 0;
+  EXPECT_FALSE(value.get_vbt_value(var_name_none, &vbt_value));
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_temperature, &vbt_value));
+  EXPECT_EQ(vbt_value, 22.331);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_humidity, &vbt_value));
+  EXPECT_EQ(vbt_value, 45.671);
+}
+
 }  // namespace testing

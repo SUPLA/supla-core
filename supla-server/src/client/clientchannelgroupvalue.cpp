@@ -45,10 +45,14 @@ void supla_client_channelgroup_value::proto_get(
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
   channel_value->Id = get_id();
 
+  supla_channel_availability_status status(true);
+
   getContainer()->getClient()->get_user()->get_channel_value(
       DeviceId, get_id(), channel_value->value.value,
-      channel_value->value.sub_value, nullptr, nullptr, nullptr,
-      &channel_value->online, nullptr, true);
+      channel_value->value.sub_value, nullptr, nullptr, nullptr, &status,
+      nullptr, true);
+
+  channel_value->online = status.get_proto_online();
 }
 
 void supla_client_channelgroup_value::proto_get(
@@ -56,8 +60,12 @@ void supla_client_channelgroup_value::proto_get(
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue_B));
   channel_value->Id = get_id();
 
+  supla_channel_availability_status status(true);
+
   getContainer()->getClient()->get_user()->get_channel_value(
       DeviceId, get_id(), channel_value->value.value,
       channel_value->value.sub_value, &channel_value->value.sub_value_type,
-      nullptr, nullptr, &channel_value->online, nullptr, true);
+      nullptr, nullptr, &status, nullptr, true);
+
+  channel_value->online = status.get_proto_online();
 }

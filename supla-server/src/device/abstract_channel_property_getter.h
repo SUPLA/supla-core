@@ -32,10 +32,10 @@ class supla_abstract_channel_property_getter {
   int channel_id;
 
  protected:
-  virtual supla_channel_value* _get_value(int user_id, int device_id,
-                                          int channel_id,
-                                          supla_channel_fragment* fragment,
-                                          bool* online) = 0;
+  virtual supla_channel_value* _get_value(
+      int user_id, int device_id, int channel_id,
+      supla_channel_fragment* fragment,
+      supla_channel_availability_status* status) = 0;
 
   virtual int _get_func(int user_id, int device_id, int channel_id) = 0;
 
@@ -56,15 +56,17 @@ class supla_abstract_channel_property_getter {
   virtual ~supla_abstract_channel_property_getter();
 
   supla_channel_value* get_value(void);
-  supla_channel_value* get_value(int* func, bool* online);
+  supla_channel_value* get_value(int* func,
+                                 supla_channel_availability_status* status);
   supla_channel_value* get_value(supla_channel_fragment* fragment,
-                                 bool* online);
+                                 supla_channel_availability_status* status);
   supla_channel_value* get_value(int user_id, int device_id, int channel_id);
   supla_channel_value* get_value(int user_id, int device_id, int channel_id,
-                                 int* func, bool* online);
+                                 int* func,
+                                 supla_channel_availability_status* status);
   supla_channel_value* get_value(int user_id, int device_id, int channel_id,
                                  supla_channel_fragment* fragment,
-                                 bool* online);
+                                 supla_channel_availability_status* status);
   supla_channel_extended_value* get_extended_value(void);
   supla_channel_extended_value* get_extended_value(int user_id, int device_id,
                                                    int channel_id);

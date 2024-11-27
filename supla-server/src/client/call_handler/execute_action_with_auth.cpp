@@ -89,7 +89,9 @@ void supla_ch_execute_action_with_auth::handle_call(
         shared_ptr<supla_device> device =
             supla_user::get_device(regcli.get_user_id(), 0, channel_id);
         if (device != nullptr) {
-          return device->get_channels()->is_channel_online(channel_id);
+          return device->get_channels()
+              ->get_channel_availability_status(channel_id)
+              .is_online();
         }
         return false;
       });

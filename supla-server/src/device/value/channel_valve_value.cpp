@@ -69,3 +69,20 @@ bool supla_channel_valve_value::is_function_supported(int func) {
 
   return false;
 }
+
+bool supla_channel_valve_value::get_vbt_value(_vbt_var_name_e var_name,
+                                              double *value) {
+  switch (var_name) {
+    case var_name_flooding:
+      *value = (get_valve_value()->flags & SUPLA_VALVE_FLAG_FLOODING) ? 1 : 0;
+      break;
+    case var_name_manually_closed:
+      *value =
+          (get_valve_value()->flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED) ? 1 : 0;
+      break;
+    default:
+      *value = get_valve_value()->closed ? 1 : 0;
+  }
+
+  return true;
+}

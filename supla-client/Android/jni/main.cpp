@@ -79,21 +79,21 @@ D | double
     return JNI_FALSE;                                                 \
   }
 
-#define JNI_FUNCTION_IString(jni_function_suffix, supla_client_function)   \
-  extern "C" JNIEXPORT jboolean JNICALL                                    \
-      Java_org_supla_android_lib_SuplaClient_##jni_function_suffix(        \
-          JNIEnv *env, jobject thiz, jlong _asc, jint i1, jstring s1) {    \
-    jboolean result = JNI_FALSE;                                           \
-    const char *str = env->GetStringUTFChars(s1, 0);                       \
-    if (str) {                                                             \
-      void *supla_client = supla_client_ptr(_asc);                         \
-      if (supla_client) {                                                  \
-        result = supla_client_function(supla_client, i1, str) ? JNI_TRUE   \
-                                                              : JNI_FALSE; \
-      }                                                                    \
-      env->ReleaseStringUTFChars(s1, str);                                 \
-    }                                                                      \
-    return result;                                                         \
+#define JNI_FUNCTION_IString(jni_function_suffix, supla_client_function,       \
+                             string_max_size)                                  \
+  extern "C" JNIEXPORT jboolean JNICALL                                        \
+      Java_org_supla_android_lib_SuplaClient_##jni_function_suffix(            \
+          JNIEnv *env, jobject thiz, jlong _asc, jint i1, jstring s1) {        \
+    jboolean result = JNI_FALSE;                                               \
+    void *supla_client = supla_client_ptr(_asc);                               \
+    if (supla_client) {                                                        \
+      char str[string_max_size] = {};                                          \
+      supla_GetStringUtfChars(env, s1, str, sizeof(str));                      \
+      result =                                                                 \
+          supla_client_function(supla_client, i1, str) ? JNI_TRUE : JNI_FALSE; \
+    }                                                                          \
+                                                                               \
+    return result;                                                             \
   }
 
 #define JNI_CALLBACK_I(jni_function_cb)                                \
@@ -389,6 +389,27 @@ jobject supla_channelvalue_to_jobject(void *_suplaclient, void *user_data,
   return val;
 }
 
+jobject supla_online_to_joblect(JNIEnv *env, char online) {
+  char enum_name[30] = {};
+
+  switch (online) {
+    case 1:
+      snprintf(enum_name, sizeof(enum_name), "ONLINE");
+      break;
+    case 2:
+      snprintf(enum_name, sizeof(enum_name), "ONLINE_BUT_NOT_AVAILABLE");
+      break;
+    default:
+      snprintf(enum_name, sizeof(enum_name), "OFFLINE");
+      break;
+  }
+
+  return supla_NewEnum(env,
+                       "org.supla.android.data.source.remote.channel."
+                       "SuplaChannelAvailabilityStatus",
+                       enum_name);
+}
+
 void supla_cb_channel_update(void *_suplaclient, void *user_data,
                              TSC_SuplaChannel_E *channel) {
   // int a;
@@ -431,8 +452,10 @@ void supla_cb_channel_update(void *_suplaclient, void *user_data,
     fid = supla_client_GetFieldID(env, cch, "ProductID", "S");
     env->SetShortField(ch, fid, channel->ProductID);
 
-    fid = supla_client_GetFieldID(env, cch, "OnLine", "Z");
-    env->SetBooleanField(ch, fid, channel->online == 1 ? JNI_TRUE : JNI_FALSE);
+    fid = supla_client_GetFieldID(env, cch, "AvailabilityStatus",
+                                  "Lorg.supla.android.data.source.remote."
+                                  "channel.SuplaChannelAvailabilityStatus;");
+    env->SetObjectField(ch, fid, supla_online_to_joblect(env, channel->online));
 
     fid = supla_client_GetFieldID(env, cch, "Value",
                                   "Lorg/supla/android/lib/SuplaChannelValue;");
@@ -483,12 +506,15 @@ void supla_cb_channel_value_update(void *_suplaclient, void *user_data,
     fid = supla_client_GetFieldID(env, cval, "Id", "I");
     env->SetIntField(val, fid, channel_value->Id);
 
-    fid = supla_client_GetFieldID(env, cval, "OnLine", "Z");
-    env->SetBooleanField(val, fid,
-                         channel_value->online == 1 ? JNI_TRUE : JNI_FALSE);
+    fid = supla_client_GetFieldID(env, cval, "AvailabilityStatus",
+                                  "Lorg.supla.android.data.source.remote."
+                                  "channel.SuplaChannelAvailabilityStatus;");
+    env->SetObjectField(val, fid,
+                        supla_online_to_joblect(env, channel_value->online));
 
     fid = supla_client_GetFieldID(env, cval, "Value",
                                   "Lorg/supla/android/lib/SuplaChannelValue;");
+
     jobject chv = supla_channelvalue_to_jobject(_suplaclient, user_data,
                                                 &channel_value->value);
     env->SetObjectField(val, fid, chv);
@@ -1528,7 +1554,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
                            SUPLA_EMAIL_MAXSIZE);
 
     supla_stringobj2buffer(env, cfg, jcs, "Password", sclient_cfg.Password,
-                           SUPLA_EMAIL_MAXSIZE);
+                           SUPLA_PASSWORD_MAXSIZE);
 
     supla_stringobj2buffer(env, cfg, jcs, "Name", sclient_cfg.Name,
                            SUPLA_CLIENT_NAME_MAXSIZE);
@@ -2021,21 +2047,16 @@ Java_org_supla_android_lib_SuplaClient_scSuperUserAuthorizationRequest(
   void *supla_client = supla_client_ptr(_asc);
 
   if (supla_client) {
-    char *eml = (char *)env->GetStringUTFChars(email, 0);
-    char *pwd = (char *)env->GetStringUTFChars(password, 0);
+    char eml[SUPLA_EMAIL_MAXSIZE] = {};
+    char pwd[SUPLA_PASSWORD_MAXSIZE] = {};
+
+    supla_GetStringUtfChars(env, email, eml, sizeof(eml));
+    supla_GetStringUtfChars(env, password, pwd, sizeof(pwd));
 
     result = supla_client_superuser_authorization_request(supla_client, eml,
                                                           pwd) == 1
                  ? JNI_TRUE
                  : JNI_FALSE;
-
-    if (eml) {
-      env->ReleaseStringUTFChars(email, eml);
-    }
-
-    if (pwd) {
-      env->ReleaseStringUTFChars(password, pwd);
-    }
   }
 
   return result;
@@ -2050,14 +2071,18 @@ JNI_FUNCTION_I(scGetChannelBasicCfg, supla_client_get_channel_basic_cfg);
 
 JNI_FUNCTION_II(scSetChannelFunction, supla_client_set_channel_function);
 
-JNI_FUNCTION_IString(scSetChannelCaption, supla_client_set_channel_caption);
+JNI_FUNCTION_IString(scSetChannelCaption, supla_client_set_channel_caption,
+                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
 JNI_FUNCTION_IString(scSetChannelGroupCaption,
-                     supla_client_set_channel_group_caption);
+                     supla_client_set_channel_group_caption,
+                     SUPLA_CHANNEL_GROUP_CAPTION_MAXSIZE);
 
-JNI_FUNCTION_IString(scSetLocationCaption, supla_client_set_location_caption);
+JNI_FUNCTION_IString(scSetLocationCaption, supla_client_set_location_caption,
+                     SUPLA_LOCATION_CAPTION_MAXSIZE);
 
-JNI_FUNCTION_IString(scSetSceneCaption, supla_client_set_scene_caption);
+JNI_FUNCTION_IString(scSetSceneCaption, supla_client_set_scene_caption,
+                     SUPLA_SCENE_CAPTION_MAXSIZE);
 
 JNI_FUNCTION_V(scReconnectAllClients, supla_client_reconnect_all_clients);
 

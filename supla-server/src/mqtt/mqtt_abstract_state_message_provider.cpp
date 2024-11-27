@@ -45,7 +45,6 @@ supla_mqtt_abstract_state_message_provider::
   this->user_id = 0;
   this->device_id = 0;
   this->channel_id = 0;
-  this->channel_online = false;
   this->channel_function = 0;
   this->channel_flags = 0;
   this->channel_value = nullptr;
@@ -1076,6 +1075,25 @@ bool supla_mqtt_abstract_state_message_provider::
               : nullptr,
           false, "devices/%i/channels/%i/state/temperature_setpoint_heat",
           get_device_id(), get_channel_id());
+    case 6:
+      return create_message(
+          topic_prefix, user_suid, topic_name, message, message_size,
+          hvac_val ? (hvac_val->is_on() == 1 || hvac_val->is_on() > 2 ? "true"
+                                                                      : "false")
+                   : nullptr,
+          false, "devices/%i/channels/%i/state/is_on", get_device_id(),
+          get_channel_id());
+    case 7: {
+      char value[50] = {};
+      if (hvac_val && hvac_val->is_on() > 1) {
+        snprintf(value, sizeof(value), "%i", hvac_val->is_on() - 2);
+      }
+
+      return create_message(topic_prefix, user_suid, topic_name, message,
+                            message_size, value[0] ? value : nullptr, false,
+                            "devices/%i/channels/%i/state/percentage",
+                            get_device_id(), get_channel_id());
+    }
   }
 
   return false;
@@ -1107,9 +1125,10 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
 
   if (channel_value == nullptr) {
     supla_channel_fragment fragment;
-    channel_online = false;
+    channel_availability_status.set_offline(true);
     channel_value = _get_channel_property_getter()->get_value(
-        user_id, device_id, channel_id, &fragment, &channel_online);
+        user_id, device_id, channel_id, &fragment,
+        &channel_availability_status);
 
     if (fragment.get_channel_id()) {
       channel_function = fragment.get_function();
@@ -1118,13 +1137,18 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
   }
 
   if (index == 0) {
-    return create_message(topic_prefix, user_suid, topic_name, message,
-                          message_size, channel_online ? "true" : "false",
-                          false, "devices/%i/channels/%i/state/connected",
-                          get_device_id(), get_channel_id());
+    return create_message(
+        topic_prefix, user_suid, topic_name, message, message_size,
+        channel_availability_status.is_online()
+            ? "true"
+            : (channel_availability_status.is_online_but_not_available()
+                   ? "connected_but_not_available"
+                   : "false"),
+        false, "devices/%i/channels/%i/state/connected", get_device_id(),
+        get_channel_id());
   }
 
-  if (!channel_value || !channel_online) {
+  if (!channel_value || !channel_availability_status.is_online()) {
     message = nullptr;
 
     if (message_size) {

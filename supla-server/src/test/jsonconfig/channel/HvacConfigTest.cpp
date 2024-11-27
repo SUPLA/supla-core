@@ -41,6 +41,8 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   ds_hvac1.HeatOrColdSourceSwitchChannelNo = 5;
   ds_hvac1.PumpSwitchIsSet = 1;
   ds_hvac1.PumpSwitchChannelNo = 6;
+  ds_hvac1.TemperatureControlType =
+      SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_ROOM_TEMPERATURE;
   ds_hvac1.AuxThermometerType = SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_HEATER;
   ds_hvac1.AntiFreezeAndOverheatProtectionEnabled = true;
   ds_hvac1.AvailableAlgorithms = 0xFFFF;
@@ -73,9 +75,10 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
       "\"outputValueOnError\":55,\"subfunction\":\"COOL\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":true,"
       "\"masterThermostatChannelNo\":4,\"heatOrColdSourceSwitchChannelNo\":5,"
-      "\"pumpSwitchChannelNo\":6,\"temperatures\":{\"freezeProtection\":1,"
-      "\"eco\":2,\"comfort\":3,\"boost\":4,\"heatProtection\":5,\"histeresis\":"
-      "6,\"belowAlarm\":7,\"aboveAlarm\":8,\"auxMinSetpoint\":9,"
+      "\"pumpSwitchChannelNo\":6,\"temperatureControlType\":\"ROOM_"
+      "TEMPERATURE\",\"temperatures\":{\"freezeProtection\":1,\"eco\":2,"
+      "\"comfort\":3,\"boost\":4,\"heatProtection\":5,\"histeresis\":6,"
+      "\"belowAlarm\":7,\"aboveAlarm\":8,\"auxMinSetpoint\":9,"
       "\"auxMaxSetpoint\":10,\"auxHisteresis\":19}}");
 
   hvac_config config2;
@@ -174,8 +177,9 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
       "\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
       "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
-      "null,\"pumpSwitchChannelNo\":null,\"temperatures\":{"
-      "\"freezeProtection\":12345,\"eco\":0,\"auxMinSetpoint\":-723}}");
+      "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
+      "SUPPORTED\",\"temperatures\":{\"freezeProtection\":12345,\"eco\":0,"
+      "\"auxMinSetpoint\":-723}}");
 
   free(str);
 
@@ -238,7 +242,8 @@ TEST_F(HvacConfigTest, merge) {
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
       "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":false,"
       "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
-      "null,\"pumpSwitchChannelNo\":null}");
+      "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
+      "SUPPORTED\"}");
 
   free(str);
 

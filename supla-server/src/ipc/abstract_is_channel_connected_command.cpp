@@ -35,10 +35,17 @@ void supla_abstract_is_channel_connected_command::on_command_match(
   process_parameters(
       params, "DISCONNECTED:",
       [this](int user_id, int device_id, int channel_id) -> bool {
-        if (is_channel_online(user_id, device_id, channel_id)) {
+        supla_channel_availability_status status =
+            get_availability_status(user_id, device_id, channel_id);
+
+        if (status.is_online()) {
           send_result("CONNECTED:", channel_id);
           return true;
+        } else if (status.is_online_but_not_available()) {
+          send_result("CONNECTED_BUT_NOT_AVAILABLE:", channel_id);
+          return true;
         }
+
         return false;
       });
 }

@@ -30,6 +30,7 @@ class supla_channel_floating_point_sensor_value : public supla_channel_value {
   void set_value(double value);
   double get_value(void);
   static bool is_function_supported(int func);
+  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 
 #endif /*CHANNEL_FLOATING_POINT_SENSOR_VALUE_H_*/

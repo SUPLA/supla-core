@@ -58,16 +58,17 @@ void StateWebhookRequestTest::SetUp(void) {
       .WillOnce(Return(new supla_asynctask_http_thread_bucket(curlAdapter)));
 
   EXPECT_CALL(*curlAdapter,
-              set_opt_url(StrEq("https://webhook.test.io/endpoint")))
+              set_opt_url(Eq(0), StrEq("https://webhook.test.io/endpoint")))
       .Times(1);
 
   EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Content-Type: application/json")))
+              append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(*curlAdapter,
-              append_header(StrEq("Authorization: Bearer MyAccessTokenXYZ")))
+  EXPECT_CALL(
+      *curlAdapter,
+      append_header(Eq(0), StrEq("Authorization: Bearer MyAccessTokenXYZ")))
       .Times(1)
       .WillOnce(Return(true));
 
@@ -84,15 +85,16 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
       .Times(1)
       .WillOnce([func, online, value](
                     int user_id, int device_id, int channel_id,
-                    supla_channel_fragment *_fragment, bool *_connected) {
+                    supla_channel_fragment *_fragment,
+                    supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
-        *_connected = online;
+        _status->set_offline(!online);
 
         return value;
       });
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   supla_state_webhook_request *request = new supla_state_webhook_request(
@@ -115,15 +117,15 @@ void StateWebhookRequestTest::makeTest(
       .Times(1)
       .WillOnce([func, online](int user_id, int device_id, int channel_id,
                                supla_channel_fragment *_fragment,
-                               bool *_connected) {
+                               supla_channel_availability_status *_status) {
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
-        *_connected = online;
+        _status->set_offline(!online);
 
         return new supla_channel_value();
       });
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   supla_state_webhook_request *request = new supla_state_webhook_request(
@@ -1157,7 +1159,7 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_ToggleX1_PressX3) {
       "\"channelId\":567,\"channelFunction\":\"ACTION_TRIGGER\",\"timestamp\":"
       "1600097258,\"triggered_actions\":[\"TOGGLE_X1\",\"PRESS_X3\"]}";
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   supla_state_webhook_request *request = new supla_state_webhook_request(
@@ -1175,7 +1177,7 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_Hold) {
       "\"channelId\":567,\"channelFunction\":\"ACTION_TRIGGER\",\"timestamp\":"
       "1600097258,\"triggered_actions\":[\"HOLD\"]}";
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   supla_state_webhook_request *request = new supla_state_webhook_request(
@@ -1194,7 +1196,7 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_All) {
       "X1\",\"TOGGLE_X2\",\"TOGGLE_X3\",\"TOGGLE_X4\",\"TOGGLE_X5\",\"HOLD\","
       "\"PRESS_X1\",\"PRESS_X2\",\"PRESS_X3\",\"PRESS_X4\",\"PRESS_X5\"]}";
 
-  EXPECT_CALL(*curlAdapter, set_opt_post_fields(StrEq(expectedPayload)))
+  EXPECT_CALL(*curlAdapter, set_opt_post_fields(Eq(0), StrEq(expectedPayload)))
       .Times(1);
 
   supla_state_webhook_request *request = new supla_state_webhook_request(

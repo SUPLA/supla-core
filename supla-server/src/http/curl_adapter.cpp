@@ -18,148 +18,89 @@
 
 #include "http/curl_adapter.h"
 
-#include <assert.h>
-
-#include <regex>  // NOLINT
-
-#include "log.h"
-#include "svrcfg.h"
-
 using std::list;
-using std::regex;
-using std::regex_replace;
 using std::string;
+using std::vector;
 
 supla_curl_adapter::supla_curl_adapter(void) : supla_abstract_curl_adapter() {
-  write_data_ptr = nullptr;
-  header_data_ptr = nullptr;
-  header = nullptr;
-  curl = curl_easy_init();
-  assert(curl != nullptr);
+  last_instance = nullptr;
 }
 
 supla_curl_adapter::~supla_curl_adapter(void) {
-  if (header) {
-    curl_slist_free_all(header);
-    header = nullptr;
+  for (auto it = instances.cbegin(); it != instances.cend(); ++it) {
+    delete *it;
   }
-  curl_easy_cleanup(curl);
 }
 
-// static
-size_t supla_curl_adapter::write_callback(void *contents, size_t size,
-                                          size_t nmemb, void *userp) {
-  supla_curl_adapter *adapter = static_cast<supla_curl_adapter *>(userp);
-  if (adapter && adapter->write_data_ptr && size * nmemb > 0) {
-    adapter->write_data_ptr->append((char *)contents, size * nmemb);
+supla_curl_instance *supla_curl_adapter::get_instance(int instance_id) {
+  if (last_instance && last_instance->get_id() == instance_id) {
+    return last_instance;
   }
 
-  return size * nmemb;
-}
-
-// static
-size_t supla_curl_adapter::header_callback(void *contents, size_t size,
-                                           size_t nmemb, void *userp) {
-  supla_curl_adapter *adapter = static_cast<supla_curl_adapter *>(userp);
-
-  if (adapter && adapter->header_data_ptr && size * nmemb > 0) {
-    string item;
-    item.append((char *)contents, size * nmemb);
-    regex pattern(R"(\r\n$)");
-    item = regex_replace(item, pattern, "");
-    adapter->header_data_ptr->push_back(item);
+  for (auto it = instances.cbegin(); it != instances.cend(); ++it) {
+    if ((*it)->get_id() == instance_id) {
+      last_instance = *it;
+      return last_instance;
+    }
   }
 
-  return size * nmemb;
+  last_instance = new supla_curl_instance(instance_id);
+  instances.push_back(last_instance);
+  return last_instance;
 }
 
 void supla_curl_adapter::reset(void) {
-  curl_easy_reset(curl);
-  write_data_ptr = nullptr;
-  header_data_ptr = nullptr;
-
-  if (header) {
-    curl_slist_free_all(header);
-    header = nullptr;
+  for (auto it = instances.cbegin(); it != instances.cend(); ++it) {
+    (*it)->reset();
   }
 }
 
-void supla_curl_adapter::set_opt_url(const char *url) {
-  this->url = url;
-  curl_easy_setopt(curl, CURLOPT_URL, url);
+void supla_curl_adapter::set_opt_url(int instance_id, const char *url) {
+  get_instance(instance_id)->set_opt_url(url);
 }
 
-void supla_curl_adapter::set_opt_post_fields(const char *fields) {
-  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, fields);
+void supla_curl_adapter::set_opt_post_fields(int instance_id,
+                                             const char *fields) {
+  get_instance(instance_id)->set_opt_post_fields(fields);
 }
 
-void supla_curl_adapter::set_opt_write_data(std::string *data) {
-  write_data_ptr = data;
+void supla_curl_adapter::set_opt_write_data(int instance_id,
+                                            std::string *data) {
+  get_instance(instance_id)->set_opt_write_data(data);
 }
 
-void supla_curl_adapter::set_opt_header_data(list<string> *data) {
-  header_data_ptr = data;
+void supla_curl_adapter::set_opt_header_data(int instance_id,
+                                             list<string> *data) {
+  get_instance(instance_id)->set_opt_header_data(data);
 }
 
-void supla_curl_adapter::set_opt_verbose(bool on) {
-  curl_easy_setopt(curl, CURLOPT_VERBOSE, on ? 1L : 0L);
+void supla_curl_adapter::set_opt_verbose(int instance_id, bool on) {
+  get_instance(instance_id)->set_opt_verbose(on);
 }
 
-void supla_curl_adapter::set_opt_custom_request(const char *method) {
-  curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
+void supla_curl_adapter::set_opt_custom_request(int instance_id,
+                                                const char *method) {
+  get_instance(instance_id)->set_opt_custom_request(method);
 }
 
-string supla_curl_adapter::escape(const string &str) {
-  char *escaped = curl_easy_escape(curl, str.c_str(), str.size());
-  string result = escaped;
-  curl_free(escaped);
-  return result;
+string supla_curl_adapter::escape(int instance_id, const string &str) {
+  return get_instance(instance_id)->escape(str);
 }
 
-bool supla_curl_adapter::append_header(const char *string) {
-  struct curl_slist *new_header = curl_slist_append(header, string);
-
-  if (new_header == nullptr) {
-    return false;
-  } else {
-    header = new_header;
-    return true;
-  }
+bool supla_curl_adapter::append_header(int instance_id, const char *string) {
+  return get_instance(instance_id)->append_header(string);
 }
 
-bool supla_curl_adapter::perform(void) {
-  if (header) {
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header);
-  }
-
-  curl_easy_setopt(curl, CURLOPT_USERAGENT, "supla-server");
-  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT,
-                   scfg_int(CFG_HTTP_CONNECTION_TIMEOUT));
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT, scfg_int(CFG_HTTP_TIMEOUT));
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
-                   supla_curl_adapter::write_callback);
-  curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION,
-                   supla_curl_adapter::header_callback);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
-  curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
-
-  CURLcode result = curl_easy_perform(curl);
-
-  if (CURLE_OK != result) {
-    supla_log(LOG_ERR, "curl_easy_perform() failed: %s. %s",
-              curl_easy_strerror(result), url.c_str());
-    return false;
-  }
-
-  return true;
+bool supla_curl_adapter::perform(int instance_id) {
+  return get_instance(instance_id)->perform();
 }
 
-long supla_curl_adapter::get_response_code(void) {
-  long http_code = 0;
-  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-  return http_code;
+long supla_curl_adapter::get_response_code(int instance_id) {
+  return get_instance(instance_id)->get_response_code();
 }
 
 void supla_curl_adapter::cancel(void) {
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 1);
+  for (auto it = instances.cbegin(); it != instances.cend(); ++it) {
+    (*it)->cancel();
+  }
 }

@@ -445,4 +445,136 @@ TEST_F(ChannelEmExtendedValueTest, dependsOnProtocolVersion) {
   EXPECT_EQ(value.type, EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V3);
 }
 
+TEST_F(ChannelEmExtendedValueTest, getVbtValue) {
+  TElectricityMeter_ExtendedValue_V3 v3 = {};
+  v3.m_count = 1;
+
+  v3.m[0].voltage[0] = 23010;
+  v3.m[0].voltage[1] = 24020;
+  v3.m[0].voltage[2] = 25030;
+
+  v3.m[0].current[0] = 12345;
+  v3.m[0].current[1] = 58912;
+  v3.m[0].current[2] = 58766;
+
+  v3.m[0].power_active[0] = 1234578;
+  v3.m[0].power_active[1] = 5891298;
+  v3.m[0].power_active[2] = 5876630;
+
+  v3.m[0].power_reactive[0] = 1234579;
+  v3.m[0].power_reactive[1] = 5891299;
+  v3.m[0].power_reactive[2] = 5876639;
+
+  v3.m[0].power_apparent[0] = 2234578;
+  v3.m[0].power_apparent[1] = 6891298;
+  v3.m[0].power_apparent[2] = 7876630;
+
+  v3.total_forward_active_energy[0] = 122001;
+  v3.total_forward_active_energy[1] = 233002;
+  v3.total_forward_active_energy[2] = 344003;
+
+  v3.total_forward_active_energy_balanced = 123456;
+
+  v3.total_reverse_active_energy[0] = 222001;
+  v3.total_reverse_active_energy[1] = 333002;
+  v3.total_reverse_active_energy[2] = 444003;
+
+  v3.total_reverse_active_energy_balanced = 523456;
+
+  supla_channel_em_extended_value value(&v3, nullptr, 0);
+
+  double vbt_value = 0;
+  EXPECT_FALSE(value.get_vbt_value(var_name_none, &vbt_value));
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_voltage_avg, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 240.2);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_voltage1, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 230.1);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_voltage2, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 240.2);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_voltage3, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 250.3);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_current_sum, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 130.023);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_current1, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 12.345);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_current2, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 58.912);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_current3, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 58.766);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_power_active_sum, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 130.02506);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_power_active1, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 12.34578);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_power_active2, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 58.91298);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_power_active3, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 58.76630);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_power_reactive_sum, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 130.02517);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_power_reactive1, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 12.34579);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_power_reactive2, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 58.91299);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_power_reactive3, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 58.76639);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_power_apparent_sum, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 170.02506);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_power_apparent1, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 22.34578);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_power_apparent2, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 68.91298);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_power_apparent3, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 78.76630);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_fae1, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 1.22001);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_fae2, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 2.33002);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_fae3, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 3.44003);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_fae_sum, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 6.99006);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_fae_balanced, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 1.23456);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_rae1, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 2.22001);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_rae2, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 3.33002);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_rae3, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 4.44003);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_rae_sum, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 9.99006);
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_rae_balanced, &vbt_value));
+  EXPECT_DOUBLE_EQ(vbt_value, 5.23456);
+}
+
 }  // namespace testing

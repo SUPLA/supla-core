@@ -67,12 +67,8 @@ class supla_value_based_trigger {
   const supla_active_period &get_active_period(void);
 
   supla_vbt_condition_result are_conditions_met(int channel_id,
-                                                supla_channel_value *old_value,
-                                                supla_channel_value *new_value);
-
-  supla_vbt_condition_result are_conditions_met(
-      int channel_id, supla_channel_extended_value *old_value,
-      supla_channel_extended_value *new_value);
+                                                supla_vbt_value *old_value,
+                                                supla_vbt_value *new_value);
 
   bool is_now_active(const char *timezone, double latitude, double longitude);
 

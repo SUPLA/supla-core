@@ -543,3 +543,103 @@ bool supla_channel_em_extended_value::is_ev_type_supported(char type) {
          type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2 ||
          type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V3;
 }
+
+bool supla_channel_em_extended_value::get_vbt_value(_vbt_var_name_e var_name,
+                                                    double *value) {
+  switch (var_name) {
+    case var_name_voltage_avg:
+      *value = get_voltage_avg();
+      break;
+    case var_name_voltage1:
+      *value = get_voltage(1);
+      break;
+    case var_name_voltage2:
+      *value = get_voltage(2);
+      break;
+    case var_name_voltage3:
+      *value = get_voltage(3);
+      break;
+    case var_name_current_sum:
+      *value = get_current_sum();
+      break;
+    case var_name_current1:
+      *value = get_current(1);
+      break;
+    case var_name_current2:
+      *value = get_current(2);
+      break;
+    case var_name_current3:
+      *value = get_current(3);
+      break;
+    case var_name_power_active_sum:
+      *value = get_power_active_sum();
+      break;
+    case var_name_power_active1:
+      *value = get_power_active(1);
+      break;
+    case var_name_power_active2:
+      *value = get_power_active(2);
+      break;
+    case var_name_power_active3:
+      *value = get_power_active(3);
+      break;
+    case var_name_power_reactive_sum:
+      *value = get_power_reactive_sum();
+      break;
+    case var_name_power_reactive1:
+      *value = get_power_reactive(1);
+      break;
+    case var_name_power_reactive2:
+      *value = get_power_reactive(2);
+      break;
+    case var_name_power_reactive3:
+      *value = get_power_reactive(3);
+      break;
+    case var_name_power_apparent_sum:
+      *value = get_power_apparent_sum();
+      break;
+    case var_name_power_apparent1:
+      *value = get_power_apparent(1);
+      break;
+    case var_name_power_apparent2:
+      *value = get_power_apparent(2);
+      break;
+    case var_name_power_apparent3:
+      *value = get_power_apparent(3);
+      break;
+    case var_name_fae1:
+      *value = get_fae(1);
+      break;
+    case var_name_fae2:
+      *value = get_fae(2);
+      break;
+    case var_name_fae3:
+      *value = get_fae(3);
+      break;
+    case var_name_fae_sum:
+      *value = get_fae_sum();
+      break;
+    case var_name_fae_balanced:
+      *value = get_fae_balanced();
+      break;
+    case var_name_rae1:
+      *value = get_rae(1);
+      break;
+    case var_name_rae2:
+      *value = get_rae(2);
+      break;
+    case var_name_rae3:
+      *value = get_rae(3);
+      break;
+    case var_name_rae_sum:
+      *value = get_rae_sum();
+      break;
+    case var_name_rae_balanced:
+      *value = get_rae_balanced();
+      break;
+    default:
+      return false;
+  }
+
+  return true;
+}

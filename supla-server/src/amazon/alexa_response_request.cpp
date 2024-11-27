@@ -38,7 +38,7 @@ supla_alexa_response_request::supla_alexa_response_request(
                           pool, property_getter, credentials) {
   postponed = false;
   set_delay_usec(
-      5000000);  // 5 sec. - Try to send this request after ChangeReport.
+      3500000);  // 3.5 sec. - Try to send this request after ChangeReport.
   set_timeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
   this->correlation_token = correlation_token;
 }
@@ -82,11 +82,11 @@ bool supla_alexa_response_request::make_request(
   correlation_token = "";
 
   supla_channel_fragment fragment;
-  bool online = false;
 
-  supla_channel_value *value = get_channel_value(&fragment, &online);
+  supla_channel_availability_status status(true);
+  supla_channel_value *value = get_channel_value(&fragment, &status);
 
-  client.set_channel_connected(online);
+  client.set_channel_connected(status.is_online());
   client.set_channel_value(value);
   client.set_subchannel_id(subchannel_id);
   client.set_cause_type(get_caller());
@@ -119,7 +119,7 @@ bool supla_alexa_response_request::make_request(
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
-      if (online) {
+      if (status.is_online()) {
         supla_channel_hvac_value_with_temphum::expand(&value, &fragment,
                                                       get_property_getter());
         client.set_channel_value(value);

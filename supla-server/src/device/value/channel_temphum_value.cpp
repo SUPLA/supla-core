@@ -165,3 +165,29 @@ bool supla_channel_temphum_value::is_function_supported(int func) {
 
   return false;
 }
+
+bool supla_channel_temphum_value::get_vbt_value(_vbt_var_name_e var_name,
+                                                double *value) {
+  switch (var_name) {
+    case var_name_temperature: {
+      double temperature = get_temperature();
+      if (temperature > supla_channel_temphum_value::incorrect_temperature()) {
+        *value = temperature;
+        return true;
+      }
+    } break;
+    case var_name_humidity:
+      if (is_humidity_available()) {
+        double humidity = get_humidity();
+        if (humidity > supla_channel_temphum_value::incorrect_humidity()) {
+          *value = get_humidity();
+          return true;
+        }
+      }
+      break;
+    default:
+      break;
+  }
+
+  return false;
+}

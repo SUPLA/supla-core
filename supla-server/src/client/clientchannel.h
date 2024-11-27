@@ -24,6 +24,7 @@
 #include "clientchannels.h"
 #include "clientobjcontaineritem.h"
 #include "device/abstract_common_channel_properties.h"
+#include "device/channel_availability_status.h"
 #include "proto.h"
 
 class supla_client;
@@ -62,9 +63,11 @@ class supla_client_channel : public supla_client_objcontainer_item,
   _supla_int64_t get_calculated_value(_supla_int_t impulses_per_unit,
                                       unsigned _supla_int64_t counter);
 
-  void proto_get_value(TSuplaChannelValue_B *value, char *online,
+  void proto_get_value(TSuplaChannelValue_B *value,
+                       supla_channel_availability_status *status,
                        supla_client *client);
-  void proto_get_value(TSuplaChannelValue *value, char *online,
+  void proto_get_value(TSuplaChannelValue *value,
+                       supla_channel_availability_status *status,
                        supla_client *client);
   bool get_cs_extended_value(std::shared_ptr<supla_device> device,
                              int channel_id, TSC_SuplaChannelExtendedValue *cev,

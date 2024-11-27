@@ -768,7 +768,7 @@ bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
     unsigned long caption_size = 0;
     my_bool caption_is_null = true;
 
-    _supla_int64_t channel_flags = 0;
+    unsigned _supla_int64_t channel_flags = 0;
 
     rbind[0].buffer_type = MYSQL_TYPE_STRING;
     rbind[0].buffer = cfg->DeviceName;

@@ -309,7 +309,9 @@ INSERT INTO `migration_versions` VALUES
 ('SuplaBundle\\Migrations\\Migration\\Version20240802194013','2024-08-02 22:29:05',49),
 ('SuplaBundle\\Migrations\\Migration\\Version20240824185033','2024-08-25 12:12:05',49),
 ('SuplaBundle\\Migrations\\Migration\\Version20240825110557','2024-08-25 12:12:05',49),
-('SuplaBundle\\Migrations\\Migration\\Version20240906073433','2024-09-06 16:46:05',49);
+('SuplaBundle\\Migrations\\Migration\\Version20240906073433','2024-09-06 16:46:05',49),
+('SuplaBundle\\Migrations\\Migration\\Version20240924120951','2024-09-24 12:09:51',49),
+('SuplaBundle\\Migrations\\Migration\\Version20241118171339','2024-11-20 14:39:50',49);
 /*!40000 ALTER TABLE `migration_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3843,5 +3845,25 @@ VALUES (_id, _iodevice_id, UTC_TIMESTAMP(), NULLIF(_name, ''), NULLIF(_software_
     ON DUPLICATE KEY UPDATE name = NULLIF(_name, ''), software_version = NULLIF(_software_version, ''), product_code = NULLIF(_product_code, ''), serial_number = NULLIF(_serial_number, '');
 END;;
 
+CREATE TABLE supla_dev_channel_state (channel_id INT NOT NULL, user_id INT NOT NULL, update_time DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', state TEXT CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, INDEX IDX_A57D6ADBA76ED395 (user_id), PRIMARY KEY(channel_id)) DEFAULT CHARACTER SET utf8 COLLATE `utf8_unicode_ci` ENGINE = InnoDB;;
+
+DROP PROCEDURE IF EXISTS `supla_update_channel_state`;;
+
+CREATE PROCEDURE `supla_update_channel_state`(
+    IN `_id` INT,
+    IN `_user_id` INT,
+    IN `_state` TEXT CHARSET utf8mb4
+) NOT DETERMINISTIC NO SQL SQL SECURITY DEFINER
+BEGIN
+
+UPDATE `supla_dev_channel_state` SET `update_time` = UTC_TIMESTAMP(), `state` = _state
+         WHERE user_id = _user_id AND channel_id = _id;
+
+IF ROW_COUNT() = 0 THEN
+      INSERT INTO `supla_dev_channel_state` (`channel_id`, `user_id`, `update_time`, `state`)
+         VALUES(_id, _user_id, UTC_TIMESTAMP(), _state)
+      ON DUPLICATE KEY UPDATE `state` = _state, update_time = UTC_TIMESTAMP();
+END IF;
+END;;
 
 -- Dump completed on 2024-07-02 22:29:54

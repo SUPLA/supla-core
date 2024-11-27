@@ -34,7 +34,7 @@ class supla_dobject {
   virtual ~supla_dobject();
   void set_change_indicator(supla_dobject_change_indicator *change_indicator);
   const supla_dobject_change_indicator *get_change_indicator(void);
-  int get_id(void);
+  virtual int get_id(void);
 };
 
 #endif /* SUPLA_DISTRIBUTED_OBJECT_H_ */

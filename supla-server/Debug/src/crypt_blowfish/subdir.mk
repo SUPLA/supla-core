@@ -34,7 +34,7 @@ src/crypt_blowfish/%.o: ../src/crypt_blowfish/%.c src/crypt_blowfish/subdir.mk
 src/crypt_blowfish/x86.o: ../src/crypt_blowfish/x86.S src/crypt_blowfish/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Assembler'
-	gcc -c  -o "$@" "$<"
+	gcc -c -c -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

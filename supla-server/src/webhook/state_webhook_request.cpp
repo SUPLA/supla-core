@@ -68,11 +68,11 @@ bool supla_state_webhook_request::make_request(
   }
 
   int func = 0;
-  bool online = false;
-  supla_channel_value *value = get_channel_value(&func, &online);
+  supla_channel_availability_status status(true);
+  supla_channel_value *value = get_channel_value(&func, &status);
   supla_channel_extended_value *extended_value = get_channel_extended_value();
 
-  client.set_channel_connected(online);
+  client.set_channel_connected(status.is_online());
   client.set_channel_value(value);
   client.set_channel_extended_value(extended_value);
 

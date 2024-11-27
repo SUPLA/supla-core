@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include "device/extended_value/channel_state_extended_value.h"
 #include "jsonconfig/channel/hvac_config.h"
 
 using std::string;
@@ -215,8 +216,8 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
         "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
         "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":"
         "false,\"temperatures\":{},\"masterThermostatChannelNo\":null,"
-        "\"heatOrColdSourceSwitchChannelNo\":null,\"pumpSwitchChannelNo\":"
-        "null}");
+        "\"heatOrColdSourceSwitchChannelNo\":null,\"pumpSwitchChannelNo\":null,"
+        "\"temperatureControlType\":\"NOT_SUPPORTED\"}");
     free(str);
   }
 
@@ -479,6 +480,65 @@ TEST_F(DeviceDaoIntegrationTest, subDevice) {
   EXPECT_EQ(result,
             "name\tsoftware_version\tproduct_code\tserial_"
             "number\nNnaamme\tSV\tCoode\tSN\nNnaamme\t1.0\tCoode\tSN\n");
+}
+
+TEST_F(DeviceDaoIntegrationTest, getExtendedValue) {
+  runSqlScript("InsertExtendedValue.sql");
+
+  EXPECT_EQ(dao->get_channel_extended_value(1, 2), nullptr);
+  supla_channel_extended_value *value = dao->get_channel_extended_value(2, 140);
+
+  ASSERT_NE(value, nullptr);
+  EXPECT_NE(dynamic_cast<supla_channel_state_extended_value *>(value), nullptr);
+
+  delete value;
+}
+
+TEST_F(DeviceDaoIntegrationTest, setAndUpdateChannelState) {
+  string result = "";
+
+  sqlQuery("SELECT count(*) c FROM supla_dev_channel_state", &result);
+
+  EXPECT_EQ(result, "c\n0\n");
+
+  TDSC_ChannelState raw = {};
+  raw.defaultIconField = 1;
+  supla_channel_state state1(&raw);
+  dao->update_channel_state(140, 2, &state1);
+
+  raw.defaultIconField = 0;
+  supla_channel_state state2(&raw);
+  dao->update_channel_state(141, 2, &state2);
+
+  result = "";
+
+  sqlQuery(
+      "SELECT channel_id, user_id, state FROM supla_dev_channel_state WHERE "
+      "TIMESTAMPDIFF(SECOND, update_time, UTC_TIMESTAMP) >= 0 AND "
+      "TIMESTAMPDIFF(SECOND, update_time, UTC_TIMESTAMP) <= 1",
+      &result);
+
+  EXPECT_EQ(result,
+            "channel_id\tuser_id\tstate\n140\t2\t{\"defaultIconField\":1}"
+            "\n141\t2\t{\"defaultIconField\":0}\n");
+
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
+  raw.BatteryLevel = 5;
+
+  supla_channel_state state3(&raw);
+  dao->update_channel_state(140, 2, &state3);
+
+  result = "";
+
+  sqlQuery(
+      "SELECT channel_id, user_id, state FROM supla_dev_channel_state WHERE "
+      "TIMESTAMPDIFF(SECOND, update_time, UTC_TIMESTAMP) >= 0 AND "
+      "TIMESTAMPDIFF(SECOND, update_time, UTC_TIMESTAMP) <= 1",
+      &result);
+
+  EXPECT_EQ(result,
+            "channel_id\tuser_id\tstate\n140\t2\t{\"defaultIconField\":0,"
+            "\"batteryLevel\":5}\n141\t2\t{\"defaultIconField\":0}\n");
 }
 
 } /* namespace testing */

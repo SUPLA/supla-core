@@ -81,6 +81,7 @@ class supla_channel_em_extended_value : public supla_channel_extended_value,
   static bool is_ev_type_supported(char type);
   virtual supla_channel_extended_value *copy(void);  // NOLINT
   virtual std::map<std::string, std::string> get_replacement_map(void);
+  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 
 #endif /*CHANNEL_EM_EXTENDED_VALUE_H_*/

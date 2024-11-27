@@ -66,7 +66,7 @@ TEST_F(AccessTokenProviderTest, refreshThrottling) {
   EXPECT_CALL(*curlAdapter, reset).Times(2);
   EXPECT_CALL(*curlAdapter, set_opt_write_data)
       .Times(2)
-      .WillRepeatedly([&n](string *request_result) {
+      .WillRepeatedly([&n](int instance_id, string *request_result) {
         string token = "abcd" + std::to_string(n);
         n++;
         *request_result =
@@ -102,7 +102,7 @@ TEST_F(AccessTokenProviderTest, refreshByServiceWithShortExpirationPeriod) {
       .WillRepeatedly(Return(0));
 
   EXPECT_CALL(*curlAdapter, set_opt_write_data)
-      .WillRepeatedly([&n](string *request_result) {
+      .WillRepeatedly([&n](int instance_id, string *request_result) {
         string token = "abcd" + std::to_string(n);
         n++;
         *request_result =
@@ -125,7 +125,7 @@ TEST_F(AccessTokenProviderTest, refreshByServiceWithLongExpirationPeriod) {
       .WillRepeatedly(Return(0));
 
   EXPECT_CALL(*curlAdapter, set_opt_write_data)
-      .WillOnce([](string *request_result) {
+      .WillOnce([](int instance_id, string *request_result) {
         *request_result =
             "{\"push_android\":{\"0\":{\"token\":\"123\",\"url\":\"https://"
             "push.supla.org\",\"expires_in\":3600}}}";
@@ -146,7 +146,7 @@ TEST_F(AccessTokenProviderTest, nextRefreshFailed) {
       .WillRepeatedly(Return(0));
 
   EXPECT_CALL(*curlAdapter, set_opt_write_data)
-      .WillRepeatedly([&n](string *request_result) {
+      .WillRepeatedly([&n](int instance_id, string *request_result) {
         n++;
         if (n == 1) {
           *request_result =
@@ -174,7 +174,7 @@ TEST_F(AccessTokenProviderTest, timeMargin) {
   EXPECT_CALL(*provider, refresh_time_margin_secs).WillRepeatedly(Return(98));
 
   EXPECT_CALL(*curlAdapter, set_opt_write_data)
-      .WillRepeatedly([&n](string *request_result) {
+      .WillRepeatedly([&n](int instance_id, string *request_result) {
         string token = std::to_string(n);
         n++;
         *request_result =
@@ -199,7 +199,7 @@ TEST_F(AccessTokenProviderTest, multipleTokensAndOneSoonExpired) {
 
   EXPECT_CALL(*curlAdapter, set_opt_write_data)
       .Times(2)
-      .WillRepeatedly([&n](string *request_result) {
+      .WillRepeatedly([&n](int instance_id, string *request_result) {
         n++;
         if (n.load() == 1) {
           *request_result =
