@@ -217,6 +217,18 @@ bool supla_state_webhook_request::make_request(
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       result = client.impulse_counter_heat_measurement_report();
       break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+      result = client.hvac_report("HVAC_THERMOSTAT");
+      break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+      result = client.hvac_report("HVAC_THERMOSTAT_HEAT_COOL");
+      break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+      result = client.hvac_report("HVAC_THERMOSTAT_DIFFERENTIAL");
+      break;
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+      result = client.hvac_report("HVAC_DOMESTIC_HOT_WATER");
+      break;
   }
 
   return result;
@@ -289,6 +301,10 @@ bool supla_state_webhook_request::is_function_allowed(
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
         case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+        case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+        case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+        case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+        case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
           return true;
       }
     }
