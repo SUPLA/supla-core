@@ -1214,8 +1214,7 @@ TEST_F(StateWebhookRequestTest, hvacReport) {
       "\"channelId\":123,\"channelFunction\":\"HVAC_THERMOSTAT\",\"timestamp\":"
       "1600097258,\"state\":{\"is_on\":true,\"mode\":\"HEAT_COOL\",\"setpoint_"
       "temperature_heat\":22.1,\"setpoint_temperature_cool\":19.55,\"flags\":["
-      "\"SETPOINT_TEMP_HEAT_SET\",\"SETPOINT_TEMP_COOL_SET\",\"HEATING\"],"
-      "\"connected\":true}}";
+      "\"HEATING\",\"FORCED_OFF_BY_SENSOR\"],\"connected\":true}}";
 
   supla_channel_hvac_value *hvac_val = new supla_channel_hvac_value();
 
@@ -1224,7 +1223,8 @@ TEST_F(StateWebhookRequestTest, hvacReport) {
   hvac_val->set_setpoint_temperature_cool(1955);
   hvac_val->set_flags(SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET |
                       SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET |
-                      SUPLA_HVAC_VALUE_FLAG_HEATING);
+                      SUPLA_HVAC_VALUE_FLAG_HEATING |
+                      SUPLA_HVAC_VALUE_FLAG_FORCED_OFF_BY_SENSOR);
 
   makeTest(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true, hvac_val, expectedPayload);
 }

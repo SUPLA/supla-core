@@ -843,23 +843,22 @@ bool supla_state_webhook_client::hvac_report(const char *function) {
         }
 
         cJSON_AddStringToObject(state, "mode", mode.c_str());
-        cJSON_AddNumberToObject(state, "setpoint_temperature_heat",
-                                hvac_val->get_setpoint_temperature_heat_dbl());
-        cJSON_AddNumberToObject(state, "setpoint_temperature_cool",
-                                hvac_val->get_setpoint_temperature_cool_dbl());
 
-        cJSON *flags = cJSON_CreateArray();
         if (hvac_val->get_flags() &
             SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET) {
-          cJSON_AddItemToArray(flags,
-                               cJSON_CreateString("SETPOINT_TEMP_HEAT_SET"));
+          cJSON_AddNumberToObject(
+              state, "setpoint_temperature_heat",
+              hvac_val->get_setpoint_temperature_heat_dbl());
         }
 
         if (hvac_val->get_flags() &
             SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET) {
-          cJSON_AddItemToArray(flags,
-                               cJSON_CreateString("SETPOINT_TEMP_COOL_SET"));
+          cJSON_AddNumberToObject(
+              state, "setpoint_temperature_cool",
+              hvac_val->get_setpoint_temperature_cool_dbl());
         }
+
+        cJSON *flags = cJSON_CreateArray();
 
         if (hvac_val->get_flags() & SUPLA_HVAC_VALUE_FLAG_HEATING) {
           cJSON_AddItemToArray(flags, cJSON_CreateString("HEATING"));
