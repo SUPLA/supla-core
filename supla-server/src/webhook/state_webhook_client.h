@@ -92,6 +92,7 @@ class supla_state_webhook_client {
   bool impulse_counter_water_measurement_report(void);
   bool impulse_counter_heat_measurement_report(void);
   bool triggered_actions_report(unsigned int actions);
+  bool hvac_report(const char *function);
 };
 
 #endif /* WEBHOOK_STATE_WEBHOOK_CLIENT_H_ */

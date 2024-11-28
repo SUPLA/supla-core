@@ -29,6 +29,7 @@
 #include "device/value/channel_fb_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_gate_value.h"
+#include "device/value/channel_hvac_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
@@ -791,6 +792,128 @@ bool supla_state_webhook_client::triggered_actions_report(
       }
 
       cJSON_AddItemToObject(root, "triggered_actions", json_actions);
+      return send_report(root);
+    } else {
+      cJSON_Delete(root);
+    }
+  }
+
+  return false;
+}
+
+bool supla_state_webhook_client::hvac_report(const char *function) {
+  supla_channel_hvac_value *hvac_val =
+      dynamic_cast<supla_channel_hvac_value *>(channel_value);
+
+  cJSON *root = get_header(function);
+  if (root) {
+    cJSON *state = cJSON_CreateObject();
+    if (state) {
+      if (channel_connected && hvac_val != nullptr) {
+        if (hvac_val->is_on() < 2) {
+          cJSON_AddBoolToObject(state, "is_on",
+                                hvac_val->is_on() ? cJSON_True : cJSON_False);
+        } else {
+          cJSON_AddNumberToObject(state, "is_on", hvac_val->is_on() - 2);
+        }
+
+        string mode;
+        switch (hvac_val->get_mode()) {
+          case SUPLA_HVAC_MODE_NOT_SET:
+            mode = "NOT_SET";
+            break;
+          case SUPLA_HVAC_MODE_OFF:
+            mode = "OFF";
+            break;
+          case SUPLA_HVAC_MODE_HEAT:
+            mode = "HEAT";
+            break;
+          case SUPLA_HVAC_MODE_COOL:
+            mode = "COOL";
+            break;
+          case SUPLA_HVAC_MODE_HEAT_COOL:
+            mode = "HEAT_COOL";
+            break;
+          case SUPLA_HVAC_MODE_FAN_ONLY:
+            mode = "FAN_ONLY";
+            break;
+          case SUPLA_HVAC_MODE_DRY:
+            mode = "DRY";
+            break;
+        }
+
+        cJSON_AddStringToObject(state, "mode", mode.c_str());
+        cJSON_AddNumberToObject(state, "setpoint_temperature_heat",
+                                hvac_val->get_setpoint_temperature_heat_dbl());
+        cJSON_AddNumberToObject(state, "setpoint_temperature_cool",
+                                hvac_val->get_setpoint_temperature_cool_dbl());
+
+        cJSON *flags = cJSON_CreateArray();
+        if (hvac_val->get_flags() &
+            SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET) {
+          cJSON_AddItemToArray(flags,
+                               cJSON_CreateString("SETPOINT_TEMP_HEAT_SET"));
+        }
+
+        if (hvac_val->get_flags() &
+            SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET) {
+          cJSON_AddItemToArray(flags,
+                               cJSON_CreateString("SETPOINT_TEMP_COOL_SET"));
+        }
+
+        if (hvac_val->get_flags() & SUPLA_HVAC_VALUE_FLAG_HEATING) {
+          cJSON_AddItemToArray(flags, cJSON_CreateString("HEATING"));
+        }
+
+        if (hvac_val->get_flags() & SUPLA_HVAC_VALUE_FLAG_COOLING) {
+          cJSON_AddItemToArray(flags, cJSON_CreateString("COOLING"));
+        }
+
+        if (hvac_val->get_flags() & SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE) {
+          cJSON_AddItemToArray(flags, cJSON_CreateString("WEEKLY_SCHEDULE"));
+        }
+
+        if (hvac_val->get_flags() & SUPLA_HVAC_VALUE_FLAG_COUNTDOWN_TIMER) {
+          cJSON_AddItemToArray(flags, cJSON_CreateString("COUNTDOWN_TIMER"));
+        }
+
+        if (hvac_val->get_flags() & SUPLA_HVAC_VALUE_FLAG_FAN_ENABLED) {
+          cJSON_AddItemToArray(flags, cJSON_CreateString("FAN_ENABLED"));
+        }
+
+        if (hvac_val->get_flags() & SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR) {
+          cJSON_AddItemToArray(flags, cJSON_CreateString("THERMOMETER_ERROR"));
+        }
+
+        if (hvac_val->get_flags() & SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR) {
+          cJSON_AddItemToArray(flags, cJSON_CreateString("CLOCK_ERROR"));
+        }
+
+        if (hvac_val->get_flags() &
+            SUPLA_HVAC_VALUE_FLAG_FORCED_OFF_BY_SENSOR) {
+          cJSON_AddItemToArray(flags,
+                               cJSON_CreateString("FORCED_OFF_BY_SENSOR"));
+        }
+
+        if (hvac_val->get_flags() & SUPLA_HVAC_VALUE_FLAG_COOL) {
+          cJSON_AddItemToArray(flags, cJSON_CreateString("COOL"));
+        }
+
+        if (hvac_val->get_flags() &
+            SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE_TEMPORAL_OVERRIDE) {
+          cJSON_AddItemToArray(
+              flags, cJSON_CreateString("WEEKLY_SCHEDULE_TEMPORAL_OVERRIDE"));
+        }
+
+        if (hvac_val->get_flags() & SUPLA_HVAC_VALUE_FLAG_BATTERY_COVER_OPEN) {
+          cJSON_AddItemToArray(flags, cJSON_CreateString("BATTERY_COVER_OPEN"));
+        }
+
+        cJSON_AddItemToObject(state, "flags", flags);
+      }
+
+      cJSON_AddBoolToObject(state, "connected", channel_connected);
+      cJSON_AddItemToObject(root, "state", state);
       return send_report(root);
     } else {
       cJSON_Delete(root);

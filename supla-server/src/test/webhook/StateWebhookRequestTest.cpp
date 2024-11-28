@@ -24,6 +24,7 @@
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
+#include "device/value/channel_hvac_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
@@ -1205,6 +1206,27 @@ TEST_F(StateWebhookRequestTest, triggeredActionsReport_All) {
   request->set_timestamp(1600097258);
   std::shared_ptr<supla_abstract_asynctask> task = request->start();
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
+}
+
+TEST_F(StateWebhookRequestTest, hvacReport) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"HVAC_THERMOSTAT\",\"timestamp\":"
+      "1600097258,\"state\":{\"is_on\":true,\"mode\":\"HEAT_COOL\",\"setpoint_"
+      "temperature_heat\":22.1,\"setpoint_temperature_cool\":19.55,\"flags\":["
+      "\"SETPOINT_TEMP_HEAT_SET\",\"SETPOINT_TEMP_COOL_SET\",\"HEATING\"],"
+      "\"connected\":true}}";
+
+  supla_channel_hvac_value *hvac_val = new supla_channel_hvac_value();
+
+  hvac_val->set_mode(SUPLA_HVAC_MODE_HEAT_COOL);
+  hvac_val->set_setpoint_temperature_heat(2210);
+  hvac_val->set_setpoint_temperature_cool(1955);
+  hvac_val->set_flags(SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET |
+                      SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_COOL_SET |
+                      SUPLA_HVAC_VALUE_FLAG_HEATING);
+
+  makeTest(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true, hvac_val, expectedPayload);
 }
 
 }  // namespace testing
