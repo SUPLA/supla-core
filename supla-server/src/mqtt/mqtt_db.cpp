@@ -504,7 +504,7 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
     rbind[10].buffer = (char *)&query->row->channel_func;
     rbind[10].buffer_length = sizeof(query->row->channel_func);
 
-    rbind[11].buffer_type = MYSQL_TYPE_LONG;
+    rbind[11].buffer_type = MYSQL_TYPE_LONGLONG;
     rbind[11].buffer = (char *)&query->row->channel_flags;
     rbind[11].buffer_length = sizeof(query->row->channel_flags);
 

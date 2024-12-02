@@ -35,7 +35,7 @@ class supla_mqtt_abstract_state_message_provider
 
   supla_channel_availability_status channel_availability_status;
   int channel_function;
-  int channel_flags;
+  unsigned _supla_int64_t channel_flags;
 
   supla_channel_value *channel_value;
   supla_channel_extended_value *channel_extended_value;
@@ -168,7 +168,8 @@ class supla_mqtt_abstract_state_message_provider
                                     const char *topic_prefix, char **topic_name,
                                     void **message, size_t *message_size);
   void set_ids(int user_id, int device_id, int channel_id);
-  void set_channel_function_and_flags(int channel_function, int channel_flags);
+  void set_channel_function_and_flags(int channel_function,
+                                      unsigned _supla_int64_t channel_flags);
   void set_user_suid(char *user_suid);
   void set_user_suid(void);
 };

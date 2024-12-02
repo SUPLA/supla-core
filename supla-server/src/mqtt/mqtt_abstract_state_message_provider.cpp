@@ -94,7 +94,7 @@ void supla_mqtt_abstract_state_message_provider::set_ids(int user_id,
 }
 
 void supla_mqtt_abstract_state_message_provider::set_channel_function_and_flags(
-    int channel_function, int channel_flags) {
+    int channel_function, unsigned _supla_int64_t channel_flags) {
   this->channel_function = channel_function;
 
   this->channel_flags = channel_flags;

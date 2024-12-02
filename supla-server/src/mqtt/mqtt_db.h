@@ -61,7 +61,7 @@ typedef struct {
   int channel_number;
   int channel_type;
   int channel_func;
-  int channel_flags;
+  unsigned _supla_int64_t channel_flags;
   char channel_location[SUPLA_LOCATION_CAPTION_MAXSIZE];
   char channel_caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
   bool channel_hidden;
