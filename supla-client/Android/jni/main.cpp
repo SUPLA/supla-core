@@ -405,8 +405,7 @@ jobject supla_online_to_joblect(JNIEnv *env, char online) {
   }
 
   return supla_NewEnum(env,
-                       "org.supla.android.data.source.remote.channel."
-                       "SuplaChannelAvailabilityStatus",
+                       "org/supla/android/data/source/remote/channel/SuplaChannelAvailabilityStatus",
                        enum_name);
 }
 
@@ -453,8 +452,8 @@ void supla_cb_channel_update(void *_suplaclient, void *user_data,
     env->SetShortField(ch, fid, channel->ProductID);
 
     fid = supla_client_GetFieldID(env, cch, "AvailabilityStatus",
-                                  "Lorg.supla.android.data.source.remote."
-                                  "channel.SuplaChannelAvailabilityStatus;");
+                                  "Lorg/supla/android/data/source/remote/"
+                                  "channel/SuplaChannelAvailabilityStatus;");
     env->SetObjectField(ch, fid, supla_online_to_joblect(env, channel->online));
 
     fid = supla_client_GetFieldID(env, cch, "Value",
