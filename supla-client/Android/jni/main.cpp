@@ -405,7 +405,8 @@ jobject supla_online_to_joblect(JNIEnv *env, char online) {
   }
 
   return supla_NewEnum(env,
-                       "org/supla/android/data/source/remote/channel/SuplaChannelAvailabilityStatus",
+                       "org/supla/android/data/source/remote/channel/"
+                       "SuplaChannelAvailabilityStatus",
                        enum_name);
 }
 
