@@ -506,8 +506,8 @@ void supla_cb_channel_value_update(void *_suplaclient, void *user_data,
     env->SetIntField(val, fid, channel_value->Id);
 
     fid = supla_client_GetFieldID(env, cval, "AvailabilityStatus",
-                                  "Lorg.supla.android.data.source.remote."
-                                  "channel.SuplaChannelAvailabilityStatus;");
+                                  "Lorg/supla/android/data/source/remote/"
+                                  "channel/SuplaChannelAvailabilityStatus;");
     env->SetObjectField(val, fid,
                         supla_online_to_joblect(env, channel_value->online));
 
