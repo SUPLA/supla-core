@@ -498,7 +498,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_PUMPSWITCH 960                    // ver. >= 25
 #define SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH 970        // ver. >= 25
 #define SUPLA_CHANNELFNC_CONTAINER 980                     // ver. >= 26
-#define SUPLA_CHANNELFNC_CONTAINER_FILL_SENSOR 990         // ver. >= 26
+#define SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR 990        // ver. >= 26
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -3001,7 +3001,7 @@ typedef struct {
 } TChannelConfig_TemperatureAndHumidity;  // v. >= 21
 
 // ChannelConfig for all binary sensors (all functions valid for
-// SUPLA_CHANNELTYPE_BINARYSENSOR except Container Fill Sensor)
+// SUPLA_CHANNELTYPE_BINARYSENSOR except Container Level Sensor)
 // Device doesn't apply this inverted logic on communication towards server.
 // It is used only for interanal purposes and for other external interfaces
 // like MQTT
@@ -3027,7 +3027,7 @@ typedef struct {
     };
   };
   unsigned char Reserved[24];
-} TChannelConfig_ContainerFillSensor;  // v. >= 26
+} TChannelConfig_ContainerLevelSensor;  // v. >= 26
 
 // Not set is set when there is no thermometer for "AUX" available
 // at all.
@@ -3439,16 +3439,10 @@ typedef struct {
 } TChannelConfig_ImpulseCounter;  // v. >= 25
 
 typedef struct {
-  signed char WarningLevel;  // 0 - not set
-                             // 1 to 101 - warning when level is >= than
-                             //            configured level 0-100%
-                             // -1 to -101 - warning when level is <= than
-                             //              configured level 0-100%
-  signed char AlarmLevel;    // 0 - not set
-                             // 1 to 101 - alarm when level is >= than
-                             //            configured level 0-100%
-                             // -1 to -101 - alarm when level is <= than
-                             //              configured level 0-100%
+  unsigned char WarningAboveLevel;  // 0 - not set, 1-101 for 0-100%
+  unsigned char AlarmAboveLevel;    // 0 - not set, 1-101 for 0-100%
+  unsigned char WarningBelowLevel;  // 0 - not set, 1-101 for 0-100%
+  unsigned char AlarmBelowLevel;    // 0 - not set, 1-101 for 0-100%
 
   unsigned char VisualizationType;   // 0 - default, other values depends on
                                      // Cloud and App support,
@@ -3457,7 +3451,7 @@ typedef struct {
                                      // 3 - coal container (tbd)
                                      // 4 - salt container (tbd)
   unsigned char Reserved[32];
-} TChannelConfig_Container;  // v. >= 25
+} TChannelConfig_Container;  // v. >= 26
 
 #define SUPLA_OCR_AUTHKEY_SIZE 33
 
