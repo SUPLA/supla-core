@@ -14,7 +14,7 @@ docker network ls |grep supla-core-devel-net > /dev/null ||\
 docker start supla-core-devel-mariadb 2> /dev/null > /dev/null || \
 docker run -v "$DATADIR":/var/lib/mysql --rm --network supla-core-devel-net --ip 192.168.111.2\
  --name supla-core-devel-mariadb\
- -e MYSQL_ROOT_PASSWORD=root -d mariadb\
+ -e MYSQL_ROOT_PASSWORD=root -d mariadb:10.5\
  --character-set-server=utf8mb4\
  --collation-server=utf8mb4_unicode_ci
 
