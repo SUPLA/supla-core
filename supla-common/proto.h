@@ -855,7 +855,7 @@ typedef struct {
 #define SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL 10
 
 typedef struct {
-  unsigned char IsOn;  // DS: 0/1 (for on/off) or 2..102 (for 0-100%)
+  unsigned char IsOn;  // DS: 0/1 (for off/on) or 2..102 (for 0-100%)
   unsigned char Mode;  // SUPLA_HVAC_MODE_
   _supla_int16_t
       SetpointTemperatureHeat;  // * 0.01 Celcius degree - used for heating
@@ -2323,8 +2323,12 @@ typedef struct {
       active_bits;          // Specifies which bits of the mask are not skipped
 } TCSD_Digiglass_NewValue;  // v. >= 14
 
+#define CONTAINER_FLAG_WARNING_LEVEL (1 << 0)
+#define CONTAINER_FLAG_ALARM_LEVEL   (1 << 1)
+
 typedef struct {
   unsigned char level;      // 0 - unknown; 1-101 - container fill level 0-100%
+  unsigned _supla_int16_t flags;  // CONTAINER_FLAG_*
 } TContainerChannel_Value;  // v. >= 26
 
 typedef struct {
@@ -3002,7 +3006,7 @@ typedef struct {
 } TChannelConfig_TemperatureAndHumidity;  // v. >= 21
 
 // ChannelConfig for all binary sensors (all functions valid for
-// SUPLA_CHANNELTYPE_BINARYSENSOR except Container Level Sensor)
+// SUPLA_CHANNELTYPE_BINARYSENSOR)
 // Device doesn't apply this inverted logic on communication towards server.
 // It is used only for interanal purposes and for other external interfaces
 // like MQTT
@@ -3015,20 +3019,6 @@ typedef struct {
   unsigned _supla_int16_t FilteringTimeMs;  // 0 - not used, > 0 - time in ms
   unsigned char Reserved[29];
 } TChannelConfig_BinarySensor;  // v. >= 21
-
-typedef struct {
-  unsigned char InvertedLogic;              // 0 - not inverted, 1 - inverted
-  unsigned _supla_int16_t FilteringTimeMs;  // 0 - not used, > 0 - time in ms
-  unsigned char FillLevel;  // 0 - unknown, 1-101 - fill level in 0-100 %
-  union {
-    _supla_int_t ContainerChannelId;
-    struct {
-      unsigned char ContainerIsSet;  // 0 - no; 1 - yes
-      unsigned char ContainerChannelNo;
-    };
-  };
-  unsigned char Reserved[24];
-} TChannelConfig_ContainerLevelSensor;  // v. >= 26
 
 // Not set is set when there is no thermometer for "AUX" available
 // at all.
@@ -3440,6 +3430,18 @@ typedef struct {
 } TChannelConfig_ImpulseCounter;  // v. >= 25
 
 typedef struct {
+  unsigned char FillLevel;  // 0 - unknown, 1-101 - fill level in 0-100 %
+  union {
+    _supla_int_t ContainerChannelId;
+    struct {
+      unsigned char ContainerIsSet;  // 0 - no; 1 - yes
+      unsigned char ContainerChannelNo;
+    };
+  };
+} TContainer_SensorInfo;
+
+
+typedef struct {
   unsigned char WarningAboveLevel;  // 0 - not set, 1-101 for 0-100%
   unsigned char AlarmAboveLevel;    // 0 - not set, 1-101 for 0-100%
   unsigned char WarningBelowLevel;  // 0 - not set, 1-101 for 0-100%
@@ -3451,6 +3453,7 @@ typedef struct {
                                     // 2 - rainwater tank
                                     // 3 - coal container (tbd)
                                     // 4 - salt container (tbd)
+  TContainer_SensorInfo SensorInfo[10];
   unsigned char Reserved[32];
 } TChannelConfig_Container;  // v. >= 26
 
