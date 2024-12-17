@@ -16,17 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_IC_VALUE_TEST_H_
-#define CHANNEL_IC_VALUE_TEST_H_
+#ifndef CHANNEL_CONTAINER_VALUE_H_
+#define CHANNEL_CONTAINER_VALUE_H_
 
-#include "gtest/gtest.h"
+#include "device/value/channel_value.h"
+#include "proto.h"
 
-namespace testing {
-
-class ChannelIcValueTest : public Test {
+class supla_channel_container_value : public supla_channel_value {
  public:
+  supla_channel_container_value(void);
+  explicit supla_channel_container_value(
+      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_container_value(const TContainerChannel_Value *value);
+
+  bool get_level(unsigned char *level);
+  bool is_warning_flag_set(void);
+  bool is_alarm_flag_set(void);
+
+  static bool is_function_supported(int func);
 };
 
-}  // namespace testing
-
-#endif /*CHANNEL_IC_VALUE_TEST_H_*/
+#endif /*CHANNEL_CONTAINER_VALUE_H_*/

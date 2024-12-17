@@ -296,6 +296,14 @@ static_assert(sizeof(TChannelConfig_PowerSwitch) == 42);
 static_assert(sizeof(TChannelConfig_PowerSwitch) <=
               (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
+static_assert(sizeof(TContainerChannel_Value) == 3);
+static_assert(sizeof(TContainerChannel_Value) <=
+              (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+
+static_assert(sizeof(TChannelConfig_Container) == 87);
+static_assert(sizeof(TChannelConfig_Container) <=
+              (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
 static_assert(SUPLA_CHANNEL_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
 static_assert(SUPLA_LOCATION_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
 static_assert(SUPLA_SCENE_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
