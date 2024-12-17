@@ -43,25 +43,27 @@ void supla_abstract_electricity_logger::run(
           device->get_channels()->for_each([&vel, this](
                                                supla_device_channel *channel,
                                                bool *will_continue) -> void {
-            channel->access_data_analyzer(
-                [&vel, this](supla_abstract_data_analyzer *analyzer) -> void {
-                  supla_electricity_analyzer *el_analyzer =
-                      dynamic_cast<supla_electricity_analyzer *>(analyzer);
-                  if (el_analyzer &&
-                      is_any_data_for_logging_purposes(el_analyzer)) {
-                    supla_abstract_data_analyzer *copy = analyzer->copy();
-                    if (copy) {
-                      supla_electricity_analyzer *el_analyzer_copy =
-                          dynamic_cast<supla_electricity_analyzer *>(copy);
-                      if (el_analyzer_copy) {
-                        vel.push_back(el_analyzer_copy);
-                        reset(el_analyzer);
-                      } else {
-                        delete copy;
+            if (channel->get_availability_status().is_online()) {
+              channel->access_data_analyzer(
+                  [&vel, this](supla_abstract_data_analyzer *analyzer) -> void {
+                    supla_electricity_analyzer *el_analyzer =
+                        dynamic_cast<supla_electricity_analyzer *>(analyzer);
+                    if (el_analyzer &&
+                        is_any_data_for_logging_purposes(el_analyzer)) {
+                      supla_abstract_data_analyzer *copy = analyzer->copy();
+                      if (copy) {
+                        supla_electricity_analyzer *el_analyzer_copy =
+                            dynamic_cast<supla_electricity_analyzer *>(copy);
+                        if (el_analyzer_copy) {
+                          vel.push_back(el_analyzer_copy);
+                          reset(el_analyzer);
+                        } else {
+                          delete copy;
+                        }
                       }
                     }
-                  }
-                });
+                  });
+            }
           });
         });
   }

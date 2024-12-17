@@ -50,29 +50,32 @@ void supla_general_purpose_measurement_logger::run(
       device->get_channels()->for_each([&analyzers, this](
                                            supla_device_channel *channel,
                                            bool *will_continue) -> void {
-        channel->access_data_analyzer([&analyzers,
-                                       this](supla_abstract_data_analyzer
-                                                 *analyzer) -> void {
-          supla_general_purpose_measurement_analyzer *gpm_analyzer =
-              dynamic_cast<supla_general_purpose_measurement_analyzer *>(
-                  analyzer);
-          if (gpm_analyzer && gpm_analyzer->is_any_data_for_logging_purpose()) {
-            supla_abstract_data_analyzer *copy = analyzer->copy();
-            if (copy) {
-              supla_general_purpose_measurement_analyzer *gpm_analyzer_copy =
-                  dynamic_cast<supla_general_purpose_measurement_analyzer *>(
-                      copy);
-              if (gpm_analyzer_copy) {
-                analyzers.push_back(gpm_analyzer_copy);
-                double last = gpm_analyzer->get_any_last();
-                gpm_analyzer->reset();
-                gpm_analyzer->add_sample(last);
-              } else {
-                delete copy;
+        if (channel->get_availability_status().is_online()) {
+          channel->access_data_analyzer([&analyzers,
+                                         this](supla_abstract_data_analyzer
+                                                   *analyzer) -> void {
+            supla_general_purpose_measurement_analyzer *gpm_analyzer =
+                dynamic_cast<supla_general_purpose_measurement_analyzer *>(
+                    analyzer);
+            if (gpm_analyzer &&
+                gpm_analyzer->is_any_data_for_logging_purpose()) {
+              supla_abstract_data_analyzer *copy = analyzer->copy();
+              if (copy) {
+                supla_general_purpose_measurement_analyzer *gpm_analyzer_copy =
+                    dynamic_cast<supla_general_purpose_measurement_analyzer *>(
+                        copy);
+                if (gpm_analyzer_copy) {
+                  analyzers.push_back(gpm_analyzer_copy);
+                  double last = gpm_analyzer->get_any_last();
+                  gpm_analyzer->reset();
+                  gpm_analyzer->add_sample(last);
+                } else {
+                  delete copy;
+                }
               }
             }
-          }
-        });
+          });
+        }
       });
     });
   }
