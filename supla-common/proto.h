@@ -577,6 +577,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_SOMEF 17
 #define SUPLA_MFR_AURATON 18
 #define SUPLA_MFR_HPD 19
+#define SUPLA_MFR_LUKFUD 20
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
 #define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010          // ver. >= 17
@@ -3444,12 +3445,12 @@ typedef struct {
   unsigned char WarningBelowLevel;  // 0 - not set, 1-101 for 0-100%
   unsigned char AlarmBelowLevel;    // 0 - not set, 1-101 for 0-100%
 
-  unsigned char VisualizationType;   // 0 - default, other values depends on
-                                     // Cloud and App support,
-                                     // 1 - septic tank
-                                     // 2 - rainwater tank
-                                     // 3 - coal container (tbd)
-                                     // 4 - salt container (tbd)
+  unsigned char VisualizationType;  // 0 - default, other values depends on
+                                    // Cloud and App support,
+                                    // 1 - septic tank
+                                    // 2 - rainwater tank
+                                    // 3 - coal container (tbd)
+                                    // 4 - salt container (tbd)
   unsigned char Reserved[32];
 } TChannelConfig_Container;  // v. >= 26
 
