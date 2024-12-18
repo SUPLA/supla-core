@@ -2115,6 +2115,7 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_RESTART_DEVICE 9400              // v. >= 25
 #define SUPLA_CALCFG_CMD_RESTART_SUBDEVICE 9410           // v. >= 25
 #define SUPLA_CALCFG_CMD_TAKE_OCR_PHOTO 9420              // v. >= 25
+#define SUPLA_CALCFG_CMD_MUTE_ALARM_SOUND 9430            // v. >= 26
 
 #define SUPLA_CALCFG_DATATYPE_RS_SETTINGS 1000
 #define SUPLA_CALCFG_DATATYPE_FB_SETTINGS 1100  // v. >= 17
@@ -2328,6 +2329,7 @@ typedef struct {
 #define CONTAINER_FLAG_WARNING_LEVEL          (1 << 0)
 #define CONTAINER_FLAG_ALARM_LEVEL            (1 << 1)
 #define CONTAINER_FLAG_INVALID_SENSOR_STATE   (1 << 2)
+#define CONTAINER_FLAG_SOUND_ALARM_ON         (1 << 3)
 
 typedef struct {
   unsigned char level;      // 0 - unknown; 1-101 - container fill level 0-100%
@@ -3449,6 +3451,10 @@ typedef struct {
   unsigned char AlarmAboveLevel;    // 0 - not set, 1-101 for 0-100%
   unsigned char WarningBelowLevel;  // 0 - not set, 1-101 for 0-100%
   unsigned char AlarmBelowLevel;    // 0 - not set, 1-101 for 0-100%
+
+  unsigned char MuteAlarmSoundWithoutAdditionalAuth;  // 0 - admin login is
+                                                      // required, 1 - regular
+                                                      // user is allowed
 
   TContainer_SensorInfo SensorInfo[10];
   unsigned char Reserved[32];
