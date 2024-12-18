@@ -50,10 +50,22 @@ bool supla_channel_container_value::is_alarm_flag_set(void) {
          CONTAINER_FLAG_ALARM_LEVEL;
 }
 
+bool supla_channel_container_value::is_invalid_sensor_state_flag_set(void) {
+  return ((TContainerChannel_Value *)raw_value)->flags &
+         CONTAINER_FLAG_INVALID_SENSOR_STATE;
+}
+
+bool supla_channel_container_value::is_sound_alarm_on(void) {
+  return ((TContainerChannel_Value *)raw_value)->flags &
+         CONTAINER_FLAG_SOUND_ALARM_ON;
+}
+
 // static
 bool supla_channel_container_value::is_function_supported(int func) {
   switch (func) {
     case SUPLA_CHANNELFNC_CONTAINER:
+    case SUPLA_CHANNELFNC_SEPTIC_TANK:
+    case SUPLA_CHANNELFNC_WATER_TANK:
     case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
       return true;
   }

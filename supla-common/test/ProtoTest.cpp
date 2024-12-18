@@ -341,7 +341,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TContainerChannel_Value),
             static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
 
-  EXPECT_EQ(sizeof(TChannelConfig_Container), 87);
+  EXPECT_EQ(sizeof(TChannelConfig_Container), 86);
   EXPECT_LE(sizeof(TChannelConfig_Container),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 }

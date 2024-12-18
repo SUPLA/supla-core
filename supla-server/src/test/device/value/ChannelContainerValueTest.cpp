@@ -90,4 +90,38 @@ TEST_F(ChannelContainerValueTest, alarm) {
   }
 }
 
+TEST_F(ChannelContainerValueTest, invalidSensorState) {
+  TContainerChannel_Value raw = {};
+  raw.flags = CONTAINER_FLAG_WARNING_LEVEL;
+
+  {
+    supla_channel_container_value value(&raw);
+    EXPECT_FALSE(value.is_invalid_sensor_state_flag_set());
+  }
+
+  raw.flags |= CONTAINER_FLAG_INVALID_SENSOR_STATE;
+
+  {
+    supla_channel_container_value value(&raw);
+    EXPECT_TRUE(value.is_invalid_sensor_state_flag_set());
+  }
+}
+
+TEST_F(ChannelContainerValueTest, soundAlarm) {
+  TContainerChannel_Value raw = {};
+  raw.flags = CONTAINER_FLAG_WARNING_LEVEL;
+
+  {
+    supla_channel_container_value value(&raw);
+    EXPECT_FALSE(value.is_sound_alarm_on());
+  }
+
+  raw.flags |= CONTAINER_FLAG_SOUND_ALARM_ON;
+
+  {
+    supla_channel_container_value value(&raw);
+    EXPECT_TRUE(value.is_sound_alarm_on());
+  }
+}
+
 }  // namespace testing
