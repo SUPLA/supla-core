@@ -47,6 +47,11 @@ using std::string;
 #define FIELD_HIDDEN_TEMPERATURE_CONFIG_FIELDS 22
 #define FIELD_READONLY_TEMPERATURE_CONFIG_FIELDS 23
 
+#define FIELD_LOCAL_UI_LOCKING_CAPABILITIES 24
+#define FIELD_LOCAL_UI_LOCK 25
+#define FIELD_MIN_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI 26
+#define FIELD_MAX_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI 27
+
 const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_MAIN_THERMOMETER_CHANNEL_NO, "mainThermometerChannelNo"},
     {FIELD_AUX_THERMOMETER_CHANNEL_NO, "auxThermometerChannelNo"},
@@ -73,7 +78,13 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_READONLY_CONFIG_FIELDS, "readOnlyConfigFields"},
     {FIELD_HIDDEN_TEMPERATURE_CONFIG_FIELDS, "hiddenTemperatureConfigFields"},
     {FIELD_READONLY_TEMPERATURE_CONFIG_FIELDS,
-     "readOnlyTemperatureConfigFields"}};
+     "readOnlyTemperatureConfigFields"},
+    {FIELD_LOCAL_UI_LOCKING_CAPABILITIES, "localUILockingCapabilities"},
+    {FIELD_LOCAL_UI_LOCK, " localUILock"},
+    {FIELD_MIN_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI,
+     "minAllowedTemperatureSetpointFromLocalUI"},
+    {FIELD_MAX_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI,
+     "maxAllowedTemperatureSetpointFromLocalUI"}};
 
 const map<unsigned int, string> hvac_config::temperatures_map = {
     {TEMPERATURE_FREEZE_PROTECTION, "freezeProtection"},
@@ -331,6 +342,61 @@ bool hvac_config::get_temperatures(TChannelConfig_HVAC *config, cJSON *root,
   return result;
 }
 
+string hvac_config::locking_cap_to_string(unsigned char cap) {
+  switch (cap) {
+    case LOCAL_UI_LOCK_FULL:
+      return "FULL";
+    case LOCAL_UI_LOCK_TEMPERATURE:
+      return "TEMPERATURE";
+  }
+
+  return "";
+}
+
+void hvac_config::add_locking_cap_to_array(cJSON *arr, unsigned char caps,
+                                           unsigned char cap) {
+  if (caps & cap) {
+    cJSON_AddItemToArray(
+        arr, cJSON_CreateString(locking_cap_to_string(cap).c_str()));
+  }
+}
+
+cJSON *hvac_config::create_locking_cap_arr(unsigned char caps) {
+  cJSON *caps_json = cJSON_CreateArray();
+
+  add_locking_cap_to_array(caps_json, caps, LOCAL_UI_LOCK_FULL);
+  add_locking_cap_to_array(caps_json, caps, LOCAL_UI_LOCK_TEMPERATURE);
+
+  return caps_json;
+}
+
+unsigned char hvac_config::string_to_locking_cap(const string &str) {
+  if (str == "FULL") {
+    return LOCAL_UI_LOCK_FULL;
+  } else if (str == "TEMPERATURE") {
+    return LOCAL_UI_LOCK_TEMPERATURE;
+  }
+
+  return 0;
+}
+
+unsigned char hvac_config::json_array_to_locking_caps(
+    unsigned _supla_int16_t field, cJSON *root) {
+  cJSON *caps = cJSON_GetObjectItem(root, field_map.at(field).c_str());
+  unsigned char result = 0;
+
+  if (caps && cJSON_IsArray(caps)) {
+    for (int a = 0; a < cJSON_GetArraySize(caps); a++) {
+      cJSON *item = cJSON_GetArrayItem(caps, a);
+      if (item && cJSON_IsString(item)) {
+        result |= string_to_locking_cap(cJSON_GetStringValue(item));
+      }
+    }
+  }
+
+  return result;
+}
+
 void hvac_config::set_config(TChannelConfig_HVAC *config,
                              unsigned char channel_number) {
   if (!config) {
@@ -455,6 +521,37 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
   set_temperatures(config, user_root, 0xFFFFFFFF ^ readonly_temperatures);
 
   set_temperatures(config, properties_root, readonly_temperatures);
+
+  cJSON *local_ui_lock = create_locking_cap_arr(config->LocalUILock);
+
+  set_item_value(user_root, field_map.at(FIELD_LOCAL_UI_LOCK).c_str(),
+                 cJSON_Object, true, local_ui_lock, nullptr, 0);
+
+  if (config->LocalUILock & LOCAL_UI_LOCK_TEMPERATURE) {
+    set_item_value(
+        user_root,
+        field_map.at(FIELD_MIN_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI)
+            .c_str(),
+        cJSON_Number, true, nullptr, nullptr,
+        config->MinAllowedTemperatureSetpointFromLocalUI);
+
+    set_item_value(
+        user_root,
+        field_map.at(FIELD_MAX_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI)
+            .c_str(),
+        cJSON_Number, true, nullptr, nullptr,
+        config->MaxAllowedTemperatureSetpointFromLocalUI);
+  } else {
+    cJSON_DeleteItemFromObject(
+        user_root,
+        field_map.at(FIELD_MIN_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI)
+            .c_str());
+
+    cJSON_DeleteItemFromObject(
+        user_root,
+        field_map.at(FIELD_MAX_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI)
+            .c_str());
+  }
 
   cJSON *readonly = cJSON_CreateArray();
   cJSON *hidden = cJSON_CreateArray();
@@ -826,6 +923,13 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
   set_item_value(properties_root,
                  field_map.at(FIELD_HIDDEN_TEMPERATURE_CONFIG_FIELDS).c_str(),
                  cJSON_Object, true, temperature_hidden, nullptr, 0);
+
+  cJSON *locking_caps =
+      create_locking_cap_arr(config->LocalUILockingCapabilities);
+
+  set_item_value(properties_root,
+                 field_map.at(FIELD_LOCAL_UI_LOCKING_CAPABILITIES).c_str(),
+                 cJSON_Object, true, locking_caps, nullptr, 0);
 }
 
 bool hvac_config::get_config(TChannelConfig_HVAC *config,
@@ -990,6 +1094,27 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
                  &str_value)) {
     config->TemperatureControlType =
         string_to_temperature_control_type(str_value);
+    result = true;
+  }
+
+  config->LocalUILock =
+      json_array_to_locking_caps(FIELD_LOCAL_UI_LOCK, user_root);
+
+  if (get_double(
+          user_root,
+          field_map.at(FIELD_MIN_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI)
+              .c_str(),
+          &dbl_value)) {
+    config->MinAllowedTemperatureSetpointFromLocalUI = dbl_value;
+    result = true;
+  }
+
+  if (get_double(
+          user_root,
+          field_map.at(FIELD_MAX_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI)
+              .c_str(),
+          &dbl_value)) {
+    config->MaxAllowedTemperatureSetpointFromLocalUI = dbl_value;
     result = true;
   }
 
@@ -1296,6 +1421,9 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
       }
     }
   }
+
+  config->LocalUILockingCapabilities = json_array_to_locking_caps(
+      FIELD_LOCAL_UI_LOCKING_CAPABILITIES, properties_root);
 
   return result;
 }

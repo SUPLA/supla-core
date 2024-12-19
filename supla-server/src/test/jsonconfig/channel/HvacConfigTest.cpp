@@ -79,7 +79,7 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
       "TEMPERATURE\",\"temperatures\":{\"freezeProtection\":1,\"eco\":2,"
       "\"comfort\":3,\"boost\":4,\"heatProtection\":5,\"histeresis\":6,"
       "\"belowAlarm\":7,\"aboveAlarm\":8,\"auxMinSetpoint\":9,"
-      "\"auxMaxSetpoint\":10,\"auxHisteresis\":19}}");
+      "\"auxMaxSetpoint\":10,\"auxHisteresis\":19},\" localUILock\":[]}");
 
   hvac_config config2;
   config2.set_user_config(str);
@@ -87,15 +87,15 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
 
   str = config1.get_properties();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"availableAlgorithms\":[\"ON_OFF_SETPOINT_MIDDLE\",\"ON_OFF_"
-      "SETPOINT_AT_MOST\",\"PID\"],\"temperatures\":{\"roomMin\":11,"
-      "\"roomMax\":12,\"auxMin\":13,\"auxMax\":14,\"histeresisMin\":"
-      "15,\"histeresisMax\":16,\"heatCoolOffsetMin\":17,"
-      "\"heatCoolOffsetMax\":18},\"readOnlyConfigFields\":[],"
-      "\"hiddenConfigFields\":[],\"readOnlyTemperatureConfigFields\":[]"
-      ",\"hiddenTemperatureConfigFields\":[]}");
+  EXPECT_STREQ(str,
+               "{\"availableAlgorithms\":[\"ON_OFF_SETPOINT_MIDDLE\",\"ON_OFF_"
+               "SETPOINT_AT_MOST\",\"PID\"],\"temperatures\":{\"roomMin\":11,"
+               "\"roomMax\":12,\"auxMin\":13,\"auxMax\":14,\"histeresisMin\":"
+               "15,\"histeresisMax\":16,\"heatCoolOffsetMin\":17,"
+               "\"heatCoolOffsetMax\":18},\"readOnlyConfigFields\":[],"
+               "\"hiddenConfigFields\":[],\"readOnlyTemperatureConfigFields\":["
+               "],\"hiddenTemperatureConfigFields\":[],"
+               "\"localUILockingCapabilities\":[]}");
 
   config2.set_properties(str);
   free(str);
@@ -179,18 +179,18 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
       "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
       "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
       "SUPPORTED\",\"temperatures\":{\"freezeProtection\":12345,\"eco\":0,"
-      "\"auxMinSetpoint\":-723}}");
+      "\"auxMinSetpoint\":-723},\" localUILock\":[]}");
 
   free(str);
 
   str = config.get_properties();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"availableAlgorithms\":[],\"temperatures\":{"
-      "\"histeresisMax\":-28910},\"readOnlyConfigFields\":[],"
-      "\"hiddenConfigFields\":[],\"readOnlyTemperatureConfigFields\":[]"
-      ",\"hiddenTemperatureConfigFields\":[]}");
+  EXPECT_STREQ(str,
+               "{\"availableAlgorithms\":[],\"temperatures\":{"
+               "\"histeresisMax\":-28910},\"readOnlyConfigFields\":[],"
+               "\"hiddenConfigFields\":[],\"readOnlyTemperatureConfigFields\":["
+               "],\"hiddenTemperatureConfigFields\":[],"
+               "\"localUILockingCapabilities\":[]}");
 
   free(str);
 }
@@ -243,7 +243,7 @@ TEST_F(HvacConfigTest, merge) {
       "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":false,"
       "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
       "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
-      "SUPPORTED\"}");
+      "SUPPORTED\",\" localUILock\":[]}");
 
   free(str);
 
@@ -255,7 +255,8 @@ TEST_F(HvacConfigTest, merge) {
       "\"heatCoolOffsetMin\":0,\"heatCoolOffsetMax\":19},"
       "\"hiddenConfigFields\":[\"antiFreezeAndOverheatProtectionEnabled\"],"
       "\"readOnlyConfigFields\":[],\"hiddenTemperatureConfigFields\":[],"
-      "\"readOnlyTemperatureConfigFields\":[]}");
+      "\"readOnlyTemperatureConfigFields\":[],\"localUILockingCapabilities\":[]"
+      "}");
 
   free(str);
 }
@@ -381,9 +382,122 @@ TEST_F(HvacConfigTest, allParameterFlagsSet) {
       "\"auxMaxSetpoint\"],\"hiddenTemperatureConfigFields\":["
       "\"freezeProtection\",\"eco\",\"comfort\",\"boost\",\"heatProtection\","
       "\"histeresis\",\"auxHisteresis\",\"belowAlarm\",\"aboveAlarm\","
-      "\"auxMinSetpoint\",\"auxMaxSetpoint\"]}");
+      "\"auxMinSetpoint\",\"auxMaxSetpoint\"],\"localUILockingCapabilities\":[]"
+      "}");
 
   free(str);
+}
+
+TEST_F(HvacConfigTest, uiLock_FULL) {
+  TChannelConfig_HVAC ds_hvac1 = {};
+  ds_hvac1.LocalUILockingCapabilities =
+      LOCAL_UI_LOCK_FULL | LOCAL_UI_LOCK_TEMPERATURE;
+  ds_hvac1.LocalUILock = LOCAL_UI_LOCK_FULL;
+
+  hvac_config config1;
+  config1.set_config(&ds_hvac1, 0);
+
+  char *str = config1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"mainThermometerChannelNo\":null,\"auxThermometerChannelNo\":null,"
+      "\"auxThermometerType\":\"NOT_SET\",\"auxMinMaxSetpointEnabled\":false,"
+      "\"useSeparateHeatCoolOutputs\":false,\"binarySensorChannelNo\":null,"
+      "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":\"\","
+      "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
+      "\"subfunction\":\"NOT_SET\","
+      "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
+      "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
+      "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
+      "SUPPORTED\",\"temperatures\":{},\" localUILock\":[\"FULL\"]}");
+
+  hvac_config config2;
+  config2.set_user_config(str);
+  free(str);
+
+  str = config1.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"availableAlgorithms\":[],\"temperatures\":{},"
+               "\"readOnlyConfigFields\":[],\"hiddenConfigFields\":[],"
+               "\"readOnlyTemperatureConfigFields\":[],"
+               "\"hiddenTemperatureConfigFields\":[],"
+               "\"localUILockingCapabilities\":[\"FULL\",\"TEMPERATURE\"]}");
+
+  config2.set_properties(str);
+  free(str);
+
+  TChannelConfig_HVAC ds_hvac2 = {};
+  config2.get_config(&ds_hvac2, 0);
+
+  EXPECT_EQ(ds_hvac1.LocalUILockingCapabilities,
+            ds_hvac2.LocalUILockingCapabilities);
+  EXPECT_EQ(ds_hvac1.LocalUILock, ds_hvac2.LocalUILock);
+
+  EXPECT_EQ(ds_hvac1.MinAllowedTemperatureSetpointFromLocalUI,
+            ds_hvac2.MinAllowedTemperatureSetpointFromLocalUI);
+
+  EXPECT_EQ(ds_hvac1.MaxAllowedTemperatureSetpointFromLocalUI,
+            ds_hvac2.MaxAllowedTemperatureSetpointFromLocalUI);
+}
+
+TEST_F(HvacConfigTest, uiLock_TEMPERATURE) {
+  TChannelConfig_HVAC ds_hvac1 = {};
+  ds_hvac1.LocalUILockingCapabilities = LOCAL_UI_LOCK_TEMPERATURE;
+  ds_hvac1.LocalUILock = LOCAL_UI_LOCK_TEMPERATURE;
+  ds_hvac1.MinAllowedTemperatureSetpointFromLocalUI = 20;
+  ds_hvac1.MaxAllowedTemperatureSetpointFromLocalUI = 22;
+
+  hvac_config config1;
+  config1.set_config(&ds_hvac1, 0);
+
+  char *str = config1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"mainThermometerChannelNo\":null,\"auxThermometerChannelNo\":null,"
+      "\"auxThermometerType\":\"NOT_SET\",\"auxMinMaxSetpointEnabled\":false,"
+      "\"useSeparateHeatCoolOutputs\":false,\"binarySensorChannelNo\":null,"
+      "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":\"\","
+      "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
+      "\"subfunction\":\"NOT_SET\","
+      "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
+      "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
+      "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
+      "SUPPORTED\",\"temperatures\":{},\" "
+      "localUILock\":[\"TEMPERATURE\"],"
+      "\"minAllowedTemperatureSetpointFromLocalUI\":20,"
+      "\"maxAllowedTemperatureSetpointFromLocalUI\":22}");
+
+  hvac_config config2;
+  config2.set_user_config(str);
+  free(str);
+
+  str = config1.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"availableAlgorithms\":[],\"temperatures\":{},"
+               "\"readOnlyConfigFields\":[],\"hiddenConfigFields\":[],"
+               "\"readOnlyTemperatureConfigFields\":[],"
+               "\"hiddenTemperatureConfigFields\":[],"
+               "\"localUILockingCapabilities\":[\"TEMPERATURE\"]}");
+
+  config2.set_properties(str);
+  free(str);
+
+  TChannelConfig_HVAC ds_hvac2 = {};
+  config2.get_config(&ds_hvac2, 0);
+
+  EXPECT_EQ(ds_hvac1.LocalUILockingCapabilities,
+            ds_hvac2.LocalUILockingCapabilities);
+  EXPECT_EQ(ds_hvac1.LocalUILock, ds_hvac2.LocalUILock);
+
+  EXPECT_EQ(ds_hvac1.MinAllowedTemperatureSetpointFromLocalUI,
+            ds_hvac2.MinAllowedTemperatureSetpointFromLocalUI);
+
+  EXPECT_EQ(ds_hvac1.MaxAllowedTemperatureSetpointFromLocalUI,
+            ds_hvac2.MaxAllowedTemperatureSetpointFromLocalUI);
 }
 
 } /* namespace testing */

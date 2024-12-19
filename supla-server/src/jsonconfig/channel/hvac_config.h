@@ -53,6 +53,14 @@ class hvac_config : public supla_json_config {
   bool get_temperatures(TChannelConfig_HVAC *config, cJSON *root,
                         unsigned int filter);
 
+  std::string locking_cap_to_string(unsigned char cap);
+  unsigned char string_to_locking_cap(const std::string &str);
+  void add_locking_cap_to_array(cJSON *arr, unsigned char caps,
+                                unsigned char cap);
+  cJSON *create_locking_cap_arr(unsigned char caps);
+  unsigned char json_array_to_locking_caps(unsigned _supla_int16_t field,
+                                           cJSON *root);
+
  public:
   explicit hvac_config(supla_json_config *root);
   hvac_config(void);

@@ -2326,15 +2326,15 @@ typedef struct {
       active_bits;          // Specifies which bits of the mask are not skipped
 } TCSD_Digiglass_NewValue;  // v. >= 14
 
-#define CONTAINER_FLAG_WARNING_LEVEL          (1 << 0)
-#define CONTAINER_FLAG_ALARM_LEVEL            (1 << 1)
-#define CONTAINER_FLAG_INVALID_SENSOR_STATE   (1 << 2)
-#define CONTAINER_FLAG_SOUND_ALARM_ON         (1 << 3)
+#define CONTAINER_FLAG_WARNING_LEVEL (1 << 0)
+#define CONTAINER_FLAG_ALARM_LEVEL (1 << 1)
+#define CONTAINER_FLAG_INVALID_SENSOR_STATE (1 << 2)
+#define CONTAINER_FLAG_SOUND_ALARM_ON (1 << 3)
 
 typedef struct {
-  unsigned char level;      // 0 - unknown; 1-101 - container fill level 0-100%
+  unsigned char level;  // 0 - unknown; 1-101 - container fill level 0-100%
   unsigned _supla_int16_t flags;  // CONTAINER_FLAG_*
-} TContainerChannel_Value;  // v. >= 26
+} TContainerChannel_Value;        // v. >= 26
 
 typedef struct {
   unsigned char sec;        // 0-59
@@ -3128,6 +3128,9 @@ typedef struct {
 #define SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_ROOM_TEMPERATURE 1
 #define SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_AUX_HEATER_COOLER_TEMPERATURE 2
 
+#define LOCAL_UI_LOCK_FULL 0x1
+#define LOCAL_UI_LOCK_TEMPERATURE 0x2
+
 typedef struct {
   unsigned _supla_int_t MainThermometerChannelNoReadonly : 1;
   unsigned _supla_int_t MainThermometerChannelNoHidden : 1;
@@ -3266,11 +3269,11 @@ typedef struct {
   // If set to 0, then it is not supported.
   unsigned char TemperatureControlType;  // SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_
 
-  unsigned char FullLocalUIBlock;  // 0 not supported, 1 not blocked, 2 blocked
-  unsigned char TemperatureLocalUIBlock;  // 0 not supported, 1 not blocked, 2
-                                          // blocked
+  unsigned char LocalUILockingCapabilities;  // LOCAL_UI_LOCK_*
+  unsigned char LocalUILock;                 // LOCAL_UI_LOCK_*
 
-  // min/max allowed parameters are used only with TemperatureLocalUIBlock = 2
+  // min/max allowed parameters are used only with LocalUILock &
+  // LOCAL_UI_LOCK_TEMPERATURE
   _supla_int16_t MinAllowedTemperatureSetpointFromLocalUI;
   _supla_int16_t MaxAllowedTemperatureSetpointFromLocalUI;
   unsigned char Reserved[48 - sizeof(HvacParameterFlags) -
@@ -3453,7 +3456,6 @@ typedef struct {
     };
   };
 } TContainer_SensorInfo;
-
 
 typedef struct {
   unsigned char WarningAboveLevel;  // 0 - not set, 1-101 for 0-100%
