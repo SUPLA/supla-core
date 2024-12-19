@@ -54,7 +54,7 @@ supla_channel_value *supla_channel_value_factory::new_value(
   }
 
   if (supla_channel_container_value::is_function_supported(func)) {
-    new supla_channel_container_value(value);
+    return new supla_channel_container_value(value);
   }
 
   if (supla_channel_fb_value::is_function_supported(func)) {
