@@ -3266,9 +3266,18 @@ typedef struct {
   // If set to 0, then it is not supported.
   unsigned char TemperatureControlType;  // SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_
 
+  unsigned char FullLocalUIBlock;  // 0 not supported, 1 not blocked, 2 blocked
+  unsigned char TemperatureLocalUIBlock;  // 0 not supported, 1 not blocked, 2
+                                          // blocked
+
+  // min/max allowed parameters are used only with TemperatureLocalUIBlock = 2
+  _supla_int16_t MinAllowedTemperatureSetpointFromLocalUI;
+  _supla_int16_t MaxAllowedTemperatureSetpointFromLocalUI;
   unsigned char Reserved[48 - sizeof(HvacParameterFlags) -
                          sizeof(_supla_int_t) - sizeof(_supla_int_t) -
-                         sizeof(_supla_int_t) - sizeof(unsigned char)];
+                         sizeof(_supla_int_t) - sizeof(unsigned char) -
+                         sizeof(unsigned char) - sizeof(unsigned char) -
+                         sizeof(_supla_int16_t) - sizeof(_supla_int16_t)];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
 
