@@ -3449,10 +3449,10 @@ typedef struct {
 typedef struct {
   unsigned char FillLevel;  // 0 - unknown, 1-101 - fill level in 0-100 %
   union {
-    _supla_int_t ContainerChannelId;
+    _supla_int_t ChannelId;
     struct {
-      unsigned char ContainerIsSet;  // 0 - no; 1 - yes
-      unsigned char ContainerChannelNo;
+      unsigned char IsSet;  // 0 - no; 1 - yes
+      unsigned char ChannelNo;
     };
   };
 } TContainer_SensorInfo;

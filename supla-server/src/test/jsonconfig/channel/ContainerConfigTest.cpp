@@ -27,6 +27,43 @@ ContainerConfigTest::ContainerConfigTest(void) {}
 
 ContainerConfigTest::~ContainerConfigTest(void) {}
 
-TEST_F(ContainerConfigTest, empty) {}
+TEST_F(ContainerConfigTest, setAndGetConfig) {
+  TChannelConfig_Container raw1 = {};
+  raw1.WarningAboveLevel = 20;
+  raw1.AlarmAboveLevel = 30;
+  raw1.WarningBelowLevel = 50;
+  raw1.AlarmBelowLevel = 40;
+
+  for (size_t a = 0;
+       a < sizeof(raw1.SensorInfo) / sizeof(TContainer_SensorInfo); a++) {
+    raw1.SensorInfo[a].FillLevel = 11 + a;
+    raw1.SensorInfo[a].ChannelNo = a;
+    raw1.SensorInfo[a].IsSet = 1;
+  }
+
+  container_config config1;
+  config1.set_config(&raw1);
+
+  char *str = config1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"warningAboveLevel\":19,\"alarmAboveLevel\":29,\"warningBelowLevel\":"
+      "49,\"alarmBelowLevel\":39,\"muteAlarmSoundWithoutAdditionalAuth\":false,"
+      "\"sensors\":{\"0\":{\"fillLevel\":10},\"1\":{\"fillLevel\":11},\"2\":{"
+      "\"fillLevel\":12},\"3\":{\"fillLevel\":13},\"4\":{\"fillLevel\":14},"
+      "\"5\":{\"fillLevel\":15},\"6\":{\"fillLevel\":16},\"7\":{\"fillLevel\":"
+      "17},\"8\":{\"fillLevel\":18},\"9\":{\"fillLevel\":19}}}");
+
+  container_config config2;
+  config2.set_user_config(str);
+  free(str);
+
+  TChannelConfig_Container raw2 = {};
+  EXPECT_TRUE(config2.get_config(&raw2));
+
+  EXPECT_EQ(0, memcmp(&raw1, &raw2, sizeof(raw1)));
+}
+
 
 } /* namespace testing */
