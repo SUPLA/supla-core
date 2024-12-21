@@ -107,10 +107,12 @@ void container_config::set_config(TChannelConfig_Container *config) {
 
       cJSON *sensor = cJSON_CreateObject();
 
-      set_item_value(sensor,
-                     sensor_field_map.at(SENSOR_FIELD_FILL_LEVEL).c_str(),
-                     cJSON_Number, true, nullptr, nullptr,
-                     config->SensorInfo[a].FillLevel - 1);
+      unsigned char fill_level = config->SensorInfo[a].FillLevel;
+
+      set_item_value(
+          sensor, sensor_field_map.at(SENSOR_FIELD_FILL_LEVEL).c_str(),
+          fill_level > 0 && fill_level <= 101 ? cJSON_Number : cJSON_NULL, true,
+          nullptr, nullptr, fill_level - 1);
 
       cJSON_AddItemToObject(sensors, channel_no, sensor);
     }
@@ -148,8 +150,23 @@ bool container_config::get_config(TChannelConfig_Container *config) {
     result = true;
   }
 
+  if (get_level(user_root, FIELD_MUTE_ALARM_SOUND_WITHOUT_ADDITIONAL_AUTH,
+                &config->MuteAlarmSoundWithoutAdditionalAuth)) {
+    result = true;
+  }
+
+  bool bool_value = false;
+
+  if (get_bool(
+          user_root,
+          field_map.at(FIELD_MUTE_ALARM_SOUND_WITHOUT_ADDITIONAL_AUTH).c_str(),
+          &bool_value)) {
+    config->MuteAlarmSoundWithoutAdditionalAuth = bool_value ? 1 : 0;
+    result = true;
+  }
+
   double dbl_value = 0;
-  size_t n = 0;
+  size_t m = 0;
 
   cJSON *sensors =
       cJSON_GetObjectItem(user_root, field_map.at(FIELD_SENSORS).c_str());
@@ -165,6 +182,20 @@ bool container_config::get_config(TChannelConfig_Container *config) {
         }
 
         if (channel_no >= 0) {
+          bool duplicate = false;
+          size_t n = m;
+
+          for (size_t b = 0;
+               b < sizeof(config->SensorInfo) / sizeof(TContainer_SensorInfo);
+               b++) {
+            if (config->SensorInfo[b].IsSet &&
+                config->SensorInfo[b].ChannelNo == channel_no) {
+              duplicate = true;
+              n = b;
+              break;
+            }
+          }
+
           if (get_double(item,
                          sensor_field_map.at(SENSOR_FIELD_FILL_LEVEL).c_str(),
                          &dbl_value) &&
@@ -174,10 +205,14 @@ bool container_config::get_config(TChannelConfig_Container *config) {
 
           config->SensorInfo[n].ChannelNo = channel_no;
           config->SensorInfo[n].IsSet = 1;
-          n++;
+          result = true;
 
-          if (n >= sizeof(config->SensorInfo) / sizeof(TContainer_SensorInfo)) {
-            break;
+          if (!duplicate) {
+            m++;
+            if (m >=
+                sizeof(config->SensorInfo) / sizeof(TContainer_SensorInfo)) {
+              break;
+            }
           }
         }
       }

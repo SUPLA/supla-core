@@ -65,5 +65,148 @@ TEST_F(ContainerConfigTest, setAndGetConfig) {
   EXPECT_EQ(0, memcmp(&raw1, &raw2, sizeof(raw1)));
 }
 
+TEST_F(ContainerConfigTest, null) {
+  TChannelConfig_Container raw1 = {};
+  raw1.SensorInfo[0].IsSet = 1;
+
+  container_config config1;
+  config1.set_config(&raw1);
+
+  char *str = config1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"warningAboveLevel\":null,\"alarmAboveLevel\":null,"
+               "\"warningBelowLevel\":null,\"alarmBelowLevel\":null,"
+               "\"muteAlarmSoundWithoutAdditionalAuth\":false,\"sensors\":{"
+               "\"0\":{\"fillLevel\":null}}}");
+
+  container_config config2;
+  config2.set_user_config(str);
+  free(str);
+
+  TChannelConfig_Container raw2 = {};
+  EXPECT_TRUE(config2.get_config(&raw2));
+
+  EXPECT_EQ(0, memcmp(&raw1, &raw2, sizeof(raw1)));
+}
+
+TEST_F(ContainerConfigTest, oversize) {
+  const char cfg[] =
+      "{\"sensors\":{\"0\":{\"fillLevel\":10},\"1\":{\"fillLevel\":11},\"2\":{"
+      "\"fillLevel\":12},\"3\":{\"fillLevel\":13},\"4\":{\"fillLevel\":14},"
+      "\"5\":{\"fillLevel\":15},\"6\":{\"fillLevel\":16},\"7\":{\"fillLevel\":"
+      "17},\"8\":{\"fillLevel\":18},\"9\":{\"fillLevel\":19},\"10\":{"
+      "\"fillLevel\":20}}}";
+
+  container_config config;
+  config.set_user_config(cfg);
+
+  TChannelConfig_Container raw = {};
+  EXPECT_TRUE(config.get_config(&raw));
+
+  for (size_t a = 0; a < sizeof(raw.SensorInfo) / sizeof(TContainer_SensorInfo);
+       a++) {
+    EXPECT_EQ(raw.SensorInfo[a].FillLevel, 11 + a);
+    EXPECT_EQ(raw.SensorInfo[a].ChannelNo, a);
+    EXPECT_EQ(raw.SensorInfo[a].IsSet, 1);
+  }
+}
+
+TEST_F(ContainerConfigTest, duplicateJson) {
+  const char cfg[] =
+      "{\"sensors\":{\"1\":{\"fillLevel\":10},\"1\":{\"fillLevel\":11}}}";
+
+  container_config config;
+  config.set_user_config(cfg);
+
+  TChannelConfig_Container raw = {};
+  EXPECT_TRUE(config.get_config(&raw));
+
+  for (size_t a = 0; a < sizeof(raw.SensorInfo) / sizeof(TContainer_SensorInfo);
+       a++) {
+    if (a == 0) {
+      EXPECT_EQ(raw.SensorInfo[a].FillLevel, 12);
+      EXPECT_EQ(raw.SensorInfo[a].ChannelNo, 1);
+      EXPECT_EQ(raw.SensorInfo[a].IsSet, 1);
+    } else {
+      EXPECT_EQ(raw.SensorInfo[a].FillLevel, 0);
+      EXPECT_EQ(raw.SensorInfo[a].ChannelNo, 0);
+      EXPECT_EQ(raw.SensorInfo[a].IsSet, 0);
+    }
+  }
+}
+
+TEST_F(ContainerConfigTest, duplicateRaw) {
+  TChannelConfig_Container raw = {};
+
+  raw.SensorInfo[1].FillLevel = 11;
+  raw.SensorInfo[1].ChannelNo = 10;
+  raw.SensorInfo[1].IsSet = 1;
+
+  raw.SensorInfo[2].FillLevel = 11;
+  raw.SensorInfo[2].ChannelNo = 5;
+  raw.SensorInfo[2].IsSet = 1;
+
+  raw.SensorInfo[3].FillLevel = 8;
+  raw.SensorInfo[3].ChannelNo = 15;
+  raw.SensorInfo[3].IsSet = 1;
+
+  raw.SensorInfo[5].FillLevel = 21;
+  raw.SensorInfo[5].ChannelNo = 5;
+  raw.SensorInfo[5].IsSet = 1;
+
+  container_config config;
+  config.set_config(&raw);
+
+  char *str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"warningAboveLevel\":null,\"alarmAboveLevel\":null,"
+      "\"warningBelowLevel\":null,\"alarmBelowLevel\":null,"
+      "\"muteAlarmSoundWithoutAdditionalAuth\":false,\"sensors\":{\"10\":{"
+      "\"fillLevel\":10},\"15\":{\"fillLevel\":7},\"5\":{\"fillLevel\":20}}}");
+
+  free(str);
+}
+
+TEST_F(ContainerConfigTest, mute) {
+  TChannelConfig_Container raw1 = {};
+  raw1.MuteAlarmSoundWithoutAdditionalAuth = 1;
+
+  container_config config1;
+  config1.set_config(&raw1);
+
+  char *str = config1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"warningAboveLevel\":null,\"alarmAboveLevel\":null,"
+               "\"warningBelowLevel\":null,\"alarmBelowLevel\":null,"
+               "\"muteAlarmSoundWithoutAdditionalAuth\":true,\"sensors\":{}}");
+
+  container_config config2;
+  config2.set_user_config(str);
+  free(str);
+
+  TChannelConfig_Container raw2 = {};
+  EXPECT_TRUE(config2.get_config(&raw2));
+
+  EXPECT_EQ(0, memcmp(&raw1, &raw2, sizeof(raw1)));
+}
+
+TEST_F(ContainerConfigTest, merge) {
+  container_config cfg1, cfg2;
+
+  cfg1.set_user_config("{\"yxyz\":123,\"abcd\":567,\"warningAboveLevel\":85}");
+
+  cfg2.set_user_config("{\"warningAboveLevel\":10}");
+
+  cfg2.merge(&cfg1);
+
+  char *str = cfg1.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+  EXPECT_STREQ(str, "{\"yxyz\":123,\"abcd\":567,\"warningAboveLevel\":10}");
+  free(str);
+}
 
 } /* namespace testing */
