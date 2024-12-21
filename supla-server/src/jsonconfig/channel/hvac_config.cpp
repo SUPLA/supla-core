@@ -80,7 +80,7 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_READONLY_TEMPERATURE_CONFIG_FIELDS,
      "readOnlyTemperatureConfigFields"},
     {FIELD_LOCAL_UI_LOCKING_CAPABILITIES, "localUILockingCapabilities"},
-    {FIELD_LOCAL_UI_LOCK, " localUILock"},
+    {FIELD_LOCAL_UI_LOCK, "localUILock"},
     {FIELD_MIN_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI,
      "minAllowedTemperatureSetpointFromLocalUI"},
     {FIELD_MAX_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI,
