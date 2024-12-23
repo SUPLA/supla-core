@@ -30,11 +30,13 @@ class supla_channel_container_value : public supla_channel_value {
   explicit supla_channel_container_value(const TContainerChannel_Value *value);
 
   bool get_level(unsigned char *level);
+  bool is_invalid(void);
   bool is_warning_flag_set(void);
   bool is_alarm_flag_set(void);
   bool is_invalid_sensor_state_flag_set(void);
   bool is_sound_alarm_on(void);
 
+  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
   static bool is_function_supported(int func);
 };
 

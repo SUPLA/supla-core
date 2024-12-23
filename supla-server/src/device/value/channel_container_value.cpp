@@ -40,6 +40,11 @@ bool supla_channel_container_value::get_level(unsigned char *level) {
   return false;
 }
 
+bool supla_channel_container_value::is_invalid(void) {
+  return ((TContainerChannel_Value *)raw_value)->level < 1 ||
+         ((TContainerChannel_Value *)raw_value)->level > 101;
+}
+
 bool supla_channel_container_value::is_warning_flag_set(void) {
   return ((TContainerChannel_Value *)raw_value)->flags &
          CONTAINER_FLAG_WARNING_LEVEL;
@@ -58,6 +63,37 @@ bool supla_channel_container_value::is_invalid_sensor_state_flag_set(void) {
 bool supla_channel_container_value::is_sound_alarm_on(void) {
   return ((TContainerChannel_Value *)raw_value)->flags &
          CONTAINER_FLAG_SOUND_ALARM_ON;
+}
+
+bool supla_channel_container_value::get_vbt_value(_vbt_var_name_e var_name,
+                                                  double *value) {
+  switch (var_name) {
+    case var_name_invalid_value:
+      *value = is_invalid() ? 1 : 0;
+      return true;
+    case var_name_alarm:
+      *value = is_alarm_flag_set() ? 1 : 0;
+      return true;
+    case var_name_sound_alarm_on:
+      *value = is_sound_alarm_on() ? 1 : 0;
+      return true;
+    case var_name_warning:
+      *value = is_warning_flag_set() ? 1 : 0;
+      return true;
+    case var_name_invalid_sensor_state:
+      *value = is_invalid_sensor_state_flag_set() ? 1 : 0;
+      return true;
+    default: {
+      unsigned char level = 0;
+      if (get_level(&level)) {
+        *value = level;
+        return true;
+      }
+    }
+
+    break;
+  }
+  return false;
 }
 
 // static

@@ -29,6 +29,7 @@ TEST_F(ChannelContainerValueTest, getLevel) {
   {
     supla_channel_container_value value(&raw);
     EXPECT_FALSE(value.get_level(&level));
+    EXPECT_TRUE(value.is_invalid());
   }
 
   raw.level = 102;
@@ -36,6 +37,7 @@ TEST_F(ChannelContainerValueTest, getLevel) {
   {
     supla_channel_container_value value(&raw);
     EXPECT_FALSE(value.get_level(&level));
+    EXPECT_TRUE(value.is_invalid());
   }
 
   raw.level = 101;
@@ -45,6 +47,7 @@ TEST_F(ChannelContainerValueTest, getLevel) {
     EXPECT_FALSE(value.get_level(nullptr));
     EXPECT_TRUE(value.get_level(&level));
     EXPECT_EQ(level, 100);
+    EXPECT_FALSE(value.is_invalid());
   }
 
   raw.level = 1;
@@ -53,6 +56,7 @@ TEST_F(ChannelContainerValueTest, getLevel) {
     supla_channel_container_value value(&raw);
     EXPECT_TRUE(value.get_level(&level));
     EXPECT_EQ(level, 0);
+    EXPECT_FALSE(value.is_invalid());
   }
 }
 
