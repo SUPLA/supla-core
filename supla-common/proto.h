@@ -3447,7 +3447,7 @@ typedef struct {
 } TChannelConfig_ImpulseCounter;  // v. >= 25
 
 typedef struct {
-  unsigned char FillLevel;  // 0 - unknown, 1-101 - fill level in 0-100 %
+  unsigned char FillLevel;  // Fill level in 0-100 %
   union {
     _supla_int_t ChannelId;
     struct {

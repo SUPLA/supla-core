@@ -111,8 +111,8 @@ void container_config::set_config(TChannelConfig_Container *config) {
 
       set_item_value(
           sensor, sensor_field_map.at(SENSOR_FIELD_FILL_LEVEL).c_str(),
-          fill_level > 0 && fill_level <= 101 ? cJSON_Number : cJSON_NULL, true,
-          nullptr, nullptr, fill_level - 1);
+          fill_level >= 0 && fill_level <= 100 ? cJSON_Number : cJSON_NULL,
+          true, nullptr, nullptr, fill_level);
 
       cJSON_AddItemToObject(sensors, channel_no, sensor);
     }
@@ -200,7 +200,7 @@ bool container_config::get_config(TChannelConfig_Container *config) {
                          sensor_field_map.at(SENSOR_FIELD_FILL_LEVEL).c_str(),
                          &dbl_value) &&
               dbl_value >= 0 && dbl_value <= 100) {
-            config->SensorInfo[n].FillLevel = dbl_value + 1;
+            config->SensorInfo[n].FillLevel = dbl_value;
           }
 
           config->SensorInfo[n].ChannelNo = channel_no;
