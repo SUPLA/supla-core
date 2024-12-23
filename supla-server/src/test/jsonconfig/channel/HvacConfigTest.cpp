@@ -465,8 +465,7 @@ TEST_F(HvacConfigTest, uiLock_TEMPERATURE) {
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
       "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
       "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
-      "SUPPORTED\",\"temperatures\":{},\" "
-      "localUILock\":[\"TEMPERATURE\"],"
+      "SUPPORTED\",\"temperatures\":{},\"localUILock\":[\"TEMPERATURE\"],"
       "\"minAllowedTemperatureSetpointFromLocalUI\":20,"
       "\"maxAllowedTemperatureSetpointFromLocalUI\":22}");
 
