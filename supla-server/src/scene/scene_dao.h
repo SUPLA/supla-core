@@ -30,7 +30,8 @@ class supla_scene_dao : public supla_abstract_scene_dao {
   explicit supla_scene_dao(supla_abstract_db_access_provider *dba);
   virtual ~supla_scene_dao();
 
-  virtual unsigned int get_estimated_execution_time(int scene_id);
+  virtual unsigned int get_estimated_execution_time_and_active_period(
+      int scene_id, supla_active_period *active_period);
 };
 
 #endif /*SUPLA_SCENE_DAO_H_ */

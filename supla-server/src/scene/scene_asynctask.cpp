@@ -30,6 +30,8 @@
 #include "scene/scene_operations_dao.h"
 #include "scene/scene_search_condition.h"
 
+using std::string;
+
 supla_scene_asynctask::supla_scene_asynctask(
     const supla_caller &caller, int user_id, int scene_id,
     unsigned int estimated_execution_time, supla_asynctask_queue *queue,
@@ -198,13 +200,33 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
   if (!interrupt_before_execute && queue->task_exists(&cnd)) {
     return serIsDuringExecution;
   } else {
+    supla_db_access_provider dba;
+    supla_scene_dao scene_dao(&dba);
+
+    unsigned int estimated_execution_time = 0;
+
+    {
+      supla_active_period active_period;
+
+      estimated_execution_time =
+          scene_dao.get_estimated_execution_time_and_active_period(
+              scene_id, &active_period);
+
+      double latitude = 0;
+      double longitude = 0;
+      string timezone =
+          supla_user::find(user_id, true)->get_timezone(&latitude, &longitude);
+
+      if (!active_period.is_now_active(timezone.c_str(), latitude, longitude)) {
+        return serInactivePeriod;
+      }
+    }
+
     if (interrupt_before_execute) {
       interrupt(queue, user_id, scene_id);
       usleep(10000);
     }
 
-    supla_db_access_provider dba;
-    supla_scene_dao scene_dao(&dba);
     supla_scene_operations_dao op_dao(&dba);
     supla_scene_operations *operations = op_dao.get_scene_operations(scene_id);
 
@@ -221,8 +243,7 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
           new supla_channel_property_getter();
 
       supla_scene_asynctask *scene = new supla_scene_asynctask(
-          caller, user_id, scene_id,
-          scene_dao.get_estimated_execution_time(scene_id), queue, pool,
+          caller, user_id, scene_id, estimated_execution_time, queue, pool,
           action_executor, property_getter, operations);
       scene->start();
       return serOK;

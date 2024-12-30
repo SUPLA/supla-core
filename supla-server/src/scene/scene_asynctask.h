@@ -26,7 +26,12 @@
 #include "caller.h"
 #include "scene/scene_state.h"
 
-enum _sceneExecutionResult_e { serNotExists, serOK, serIsDuringExecution };
+enum _sceneExecutionResult_e {
+  serNotExists,
+  serOK,
+  serIsDuringExecution,
+  serInactivePeriod
+};
 
 class supla_scene_asynctask : public supla_abstract_asynctask {
  private:

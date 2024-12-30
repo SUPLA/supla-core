@@ -3866,4 +3866,6 @@ IF ROW_COUNT() = 0 THEN
 END IF;
 END;;
 
+ALTER TABLE supla_scene ADD active_from DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', ADD active_to DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', ADD active_hours VARCHAR(768) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD activity_conditions VARCHAR(1024) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`;;
+
 -- Dump completed on 2024-07-02 22:29:54
