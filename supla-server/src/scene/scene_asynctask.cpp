@@ -21,6 +21,8 @@
 #include <assert.h>
 #include <unistd.h>
 
+#include <string>
+
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
 #include "db/db_access_provider.h"
