@@ -87,9 +87,7 @@ supla_client_channel::supla_client_channel(
 
   this->Flags ^= this->Flags & SUPLA_CHANNEL_FLAG_HAS_PARENT;
 
-  if (DeviceFlags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) {
-    setValueValidityTimeSec(validity_time_sec);
-  }
+  setValueValidityTimeSec(validity_time_sec);
 
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 }
