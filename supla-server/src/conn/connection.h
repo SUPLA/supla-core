@@ -91,6 +91,7 @@ class supla_connection {
   void set_activity_timeout(unsigned char timeout);
   unsigned char get_activity_timeout(void);
   unsigned char get_protocol_version(void);
+  bool is_active(void);
 };
 
 #endif /* CONNECTION_H_ */

@@ -330,6 +330,10 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
   }
 }
 
+bool supla_connection::is_active(void) {
+  return object && get_activity_timeout() - object->get_activity_delay() > 0;
+}
+
 void supla_connection::execute(void *sthread) {
   this->sthread = sthread;
 
