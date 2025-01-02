@@ -527,31 +527,19 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
   set_item_value(user_root, field_map.at(FIELD_LOCAL_UI_LOCK).c_str(),
                  cJSON_Object, true, local_ui_lock, nullptr, 0);
 
-  if (config->LocalUILock & LOCAL_UI_LOCK_TEMPERATURE) {
-    set_item_value(
-        user_root,
-        field_map.at(FIELD_MIN_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI)
-            .c_str(),
-        cJSON_Number, true, nullptr, nullptr,
-        config->MinAllowedTemperatureSetpointFromLocalUI);
+  set_item_value(
+      user_root,
+      field_map.at(FIELD_MIN_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI)
+          .c_str(),
+      cJSON_Number, true, nullptr, nullptr,
+      config->MinAllowedTemperatureSetpointFromLocalUI);
 
-    set_item_value(
-        user_root,
-        field_map.at(FIELD_MAX_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI)
-            .c_str(),
-        cJSON_Number, true, nullptr, nullptr,
-        config->MaxAllowedTemperatureSetpointFromLocalUI);
-  } else {
-    cJSON_DeleteItemFromObject(
-        user_root,
-        field_map.at(FIELD_MIN_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI)
-            .c_str());
-
-    cJSON_DeleteItemFromObject(
-        user_root,
-        field_map.at(FIELD_MAX_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI)
-            .c_str());
-  }
+  set_item_value(
+      user_root,
+      field_map.at(FIELD_MAX_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI)
+          .c_str(),
+      cJSON_Number, true, nullptr, nullptr,
+      config->MaxAllowedTemperatureSetpointFromLocalUI);
 
   cJSON *readonly = cJSON_CreateArray();
   cJSON *hidden = cJSON_CreateArray();
