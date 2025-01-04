@@ -28,7 +28,7 @@ class supla_ch_abstract_device_channel_value_changed
  protected:
   void on_channel_value_changed(std::shared_ptr<supla_device> device,
                                 unsigned char channel_number, char *value,
-                                bool offline,
+                                unsigned char offline,
                                 unsigned _supla_int_t *validity_time_sec);
 
  public:

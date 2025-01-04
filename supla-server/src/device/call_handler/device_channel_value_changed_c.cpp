@@ -43,7 +43,7 @@ void supla_ch_device_channel_value_changed_c::handle_call(
     on_channel_value_changed(
         device, rd->data.ds_device_channel_value_c->ChannelNumber,
         rd->data.ds_device_channel_value_c->value,
-        rd->data.ds_device_channel_value_c->Offline > 0,
+        rd->data.ds_device_channel_value_c->Offline,
         &rd->data.ds_device_channel_value_c->ValidityTimeSec);
   }
 }
