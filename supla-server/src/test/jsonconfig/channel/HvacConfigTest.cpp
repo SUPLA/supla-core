@@ -79,7 +79,9 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
       "TEMPERATURE\",\"temperatures\":{\"freezeProtection\":1,\"eco\":2,"
       "\"comfort\":3,\"boost\":4,\"heatProtection\":5,\"histeresis\":6,"
       "\"belowAlarm\":7,\"aboveAlarm\":8,\"auxMinSetpoint\":9,"
-      "\"auxMaxSetpoint\":10,\"auxHisteresis\":19},\"localUILock\":[]}");
+      "\"auxMaxSetpoint\":10,\"auxHisteresis\":19},\"localUILock\":[],"
+      "\"minAllowedTemperatureSetpointFromLocalUI\":0,"
+      "\"maxAllowedTemperatureSetpointFromLocalUI\":0}");
 
   hvac_config config2;
   config2.set_user_config(str);
@@ -179,7 +181,9 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
       "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
       "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
       "SUPPORTED\",\"temperatures\":{\"freezeProtection\":12345,\"eco\":0,"
-      "\"auxMinSetpoint\":-723},\"localUILock\":[]}");
+      "\"auxMinSetpoint\":-723},\"localUILock\":[],"
+      "\"minAllowedTemperatureSetpointFromLocalUI\":0,"
+      "\"maxAllowedTemperatureSetpointFromLocalUI\":0}");
 
   free(str);
 
@@ -243,7 +247,9 @@ TEST_F(HvacConfigTest, merge) {
       "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":false,"
       "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
       "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
-      "SUPPORTED\",\"localUILock\":[]}");
+      "SUPPORTED\",\"localUILock\":[],"
+      "\"minAllowedTemperatureSetpointFromLocalUI\":0,"
+      "\"maxAllowedTemperatureSetpointFromLocalUI\":0}");
 
   free(str);
 
@@ -410,7 +416,9 @@ TEST_F(HvacConfigTest, uiLock_FULL) {
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
       "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
       "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
-      "SUPPORTED\",\"temperatures\":{},\"localUILock\":[\"FULL\"]}");
+      "SUPPORTED\",\"temperatures\":{},\"localUILock\":[\"FULL\"],"
+      "\"minAllowedTemperatureSetpointFromLocalUI\":0,"
+      "\"maxAllowedTemperatureSetpointFromLocalUI\":0}");
 
   hvac_config config2;
   config2.set_user_config(str);
