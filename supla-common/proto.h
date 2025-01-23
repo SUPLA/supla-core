@@ -618,18 +618,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004     // ver. >= 12
-// Free bit for future use: 0x0008
-#define SUPLA_CHANNEL_FLAG_CHART_TYPE_BAR \
-  0x0010  // ver. >= 12
-          // DEPRECATED
-#define SUPLA_CHANNEL_FLAG_CHART_DS_TYPE_DIFFERENTAL \
-  0x0020  // ver. >= 12
-          // DEPRECATED
-#define SUPLA_CHANNEL_FLAG_CHART_INTERPOLATE_MEASUREMENTS \
-  0x0040                                                   // ver. >= 12
-                                                           // DEPRECATED
+#define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002     // ver. >= 12 DEPRECATED
+#define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004     // ver. >= 12 DEPRECATED
+#define SUPLA_CHANNEL_FLAG_OCR 0x0008           // ver. >= 26
+// Free bits for future use: 0x0010, 0x0020, 0x0040
 #define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080  // ver. >= 17
 #define SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED 0x0100  // ver. >= 21
 // Free bits for future use:  0x0200, 0x0400, 0x0800
@@ -648,8 +640,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_COUNTDOWN_TIMER_SUPPORTED 0x01000000    // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_LIGHTSOURCELIFESPAN_SETTABLE \
   0x02000000  // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE_deprecated \
-  0x04000000  // ver. >= 12  DEPRECATED
+// Free bits for future use: 0x04000000
 #define SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE \
   0x08000000                                                    // ver. >= 21
 #define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE 0x10000000           // ver. >= 21
