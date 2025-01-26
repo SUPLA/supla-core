@@ -1737,6 +1737,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv *env, jobject thiz,
 
     supla_channel_config_init(env, oclass, _asc, &sclient_cfg);
     supla_device_config_init(env, oclass, _asc, &sclient_cfg);
+    supla_actions_init(env, oclass, _asc, &sclient_cfg);
 
     _asc->_supla_client = supla_client_init(&sclient_cfg);
 

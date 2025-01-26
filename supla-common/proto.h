@@ -346,7 +346,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE 29  // ver. >= 12
 #define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_ACTION_TRIGGER \
   30                                              // ver. >= 16
-#define SUPLA_RESULTCODE_ACCESSID_INACTIVE 31     // ver. >= 17
+#define SUPLA_RESULTCODE_INACTIVE 31              // ver. >= 17
 #define SUPLA_RESULTCODE_CFG_MODE_REQUESTED 32    // ver. >= 18
 #define SUPLA_RESULTCODE_ACTION_UNSUPPORTED 33    // ver. >= 19
 #define SUPLA_RESULTCODE_SUBJECT_NOT_FOUND 34     // ver. >= 19

@@ -578,7 +578,7 @@ TEST_F(RegisterClientEssentialTest,
   EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
       .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
-        EXPECT_EQ(SUPLA_RESULTCODE_ACCESSID_INACTIVE, result->result_code);
+        EXPECT_EQ(SUPLA_RESULTCODE_INACTIVE, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
         EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
@@ -1206,7 +1206,7 @@ TEST_F(RegisterClientEssentialTest, clientExistsAndAccessIdIsInActive) {
   EXPECT_CALL(srpcAdapter, sc_async_registerclient_result_d(_))
       .Times(1)
       .WillOnce([](TSC_SuplaRegisterClientResult_D *result) {
-        EXPECT_EQ(SUPLA_RESULTCODE_ACCESSID_INACTIVE, result->result_code);
+        EXPECT_EQ(SUPLA_RESULTCODE_INACTIVE, result->result_code);
         EXPECT_EQ(20, result->activity_timeout);
         EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
         EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);

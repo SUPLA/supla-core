@@ -24,6 +24,7 @@
 #include "actions/action_executor.h"
 #include "asynctask/abstract_asynctask.h"
 #include "caller.h"
+#include "scene/scene_dao.h"
 #include "scene/scene_state.h"
 
 enum _sceneExecutionResult_e {
@@ -45,6 +46,8 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
   unsigned int op_get_delay_ms(void);
   supla_scene_operation *op_pop(void);
   int op_count(void);
+  static bool is_scene_active(int user_id, int scene_id, supla_scene_dao *dao,
+                              unsigned int *estimated_execution_time);
 
  protected:
   bool _execute(bool *execute_again, supla_asynctask_thread_bucket *bucket);
@@ -78,6 +81,7 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
       bool interrupt_before_execute);
   static void interrupt(supla_asynctask_queue *queue, int user_id,
                         int scene_id);
+  static bool is_scene_active(int user_id, int scene_id);
 };
 
 #endif /* SUPLA_SCENE_ASYNCTASK_H_ */
