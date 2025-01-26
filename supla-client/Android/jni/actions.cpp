@@ -147,7 +147,8 @@ void supla_cb_on_action_execution_result(void *_suplaclient, void *user_data,
       supla_subject_type_to_jobject(env, result->SubjectType);
 
   env->CallVoidMethod(asc->j_obj, asc->j_mid_on_action_execution_result,
-                      jaction_id, jsubject_type, (jint)result->SubjectId);
+                      jaction_id, jsubject_type, (jint)result->SubjectId,
+                      (jint)result->ResultCode);
 
   env->DeleteLocalRef(jaction_id);
   env->DeleteLocalRef(jsubject_type);
@@ -158,7 +159,7 @@ void supla_actions_init(JNIEnv *env, jclass oclass, TAndroidSuplaClient *asc,
   asc->j_mid_on_action_execution_result =
       env->GetMethodID(oclass, "onActionExecutionResult",
                        "(Lorg/supla/android/lib/actions/ActionId;Lorg/supla/"
-                       "android/lib/actions/SubjectType;I)V");
+                       "android/lib/actions/SubjectType;II)V");
 
   sclient_cfg->cb_on_action_execution_result =
       supla_cb_on_action_execution_result;
