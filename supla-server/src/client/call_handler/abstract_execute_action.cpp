@@ -106,7 +106,8 @@ void supla_ch_abstract_execute_action::execute_action(
   } else if (action->SubjectType == ACTION_SUBJECT_TYPE_CHANNEL &&
              !is_channel_online(action->SubjectId)) {
     send_result(action, srpc_adapter, SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE);
-  } else if (action->SubjectType == ACTION_SUBJECT_TYPE_SCENE &&
+  } else if (action->ActionId == ACTION_EXECUTE &&
+             action->SubjectType == ACTION_SUBJECT_TYPE_SCENE &&
              !supla_scene_asynctask::is_scene_active(user_id,
                                                      action->SubjectId)) {
     send_result(action, srpc_adapter, SUPLA_RESULTCODE_INACTIVE);
