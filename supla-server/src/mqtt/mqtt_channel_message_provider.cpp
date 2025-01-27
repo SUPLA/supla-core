@@ -1127,7 +1127,7 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
         result =
             ha_sensor(icv->get_currency().c_str(), 2, 1, true,
                       "state/total_cost", NULL, "Total cost", NULL, "monetary",
-                      false, topic_prefix, topic_name, message, message_size);
+                      true, topic_prefix, topic_name, message, message_size);
         break;
     }
 
@@ -1212,13 +1212,13 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
         case 0:
           result = ha_sensor(bil.get_currency(row->channel_text_param1).c_str(),
                              2, index, true, "state/total_cost", NULL,
-                             "Total cost", NULL, "monetary", false,
-                             topic_prefix, topic_name, message, message_size);
+                             "Total cost", NULL, "monetary", true, topic_prefix,
+                             topic_name, message, message_size);
           break;
         case 1:
           result = ha_sensor(bil.get_currency(row->channel_text_param1).c_str(),
                              2, index, true, "state/total_cost_balanced", NULL,
-                             "Total cost - balanced", NULL, "monetary", false,
+                             "Total cost - balanced", NULL, "monetary", true,
                              topic_prefix, topic_name, message, message_size);
           break;
       }

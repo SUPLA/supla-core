@@ -800,7 +800,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "cost)\",\"uniq_id\":\"supla_9203_1\",\"qos\":0,\"unit_of_meas\":\"PLN\","
       "\"stat_t\":\"~/state/total_cost\",\"val_tpl\":\"{{ value | "
       "round(2,default=None) "
-      "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"measurement\"}",
+      "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"total_increasing\"}",
       "supla/61b2f9bdb22d3bd6336bb235bcb1b77e/devices/6688/channels/9203/state/"
       "connected",
       "false",
@@ -1099,7 +1099,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "cost)\",\"uniq_id\":\"supla_966_0\",\"qos\":0,\"unit_of_meas\":\"PLN\","
       "\"stat_t\":\"~/state/total_cost\",\"val_tpl\":\"{{ value | "
       "round(2,default=None) "
-      "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"measurement\"}",
+      "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_1/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1112,7 +1112,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "balanced)\",\"uniq_id\":\"supla_966_1\",\"qos\":0,\"unit_of_meas\":"
       "\"PLN\",\"stat_t\":\"~/state/total_cost_balanced\",\"val_tpl\":\"{{ "
       "value | round(2,default=None) "
-      "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"measurement\"}",
+      "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_2/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -2211,7 +2211,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "cost)\",\"uniq_id\":\"supla_16166_1\",\"qos\":0,\"unit_of_meas\":"
       "\"PLN\",\"stat_t\":\"~/state/total_cost\",\"val_tpl\":\"{{ value | "
       "round(2,default=None) "
-      "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"measurement\"}",
+      "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"total_increasing\"}",
       "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
       "state/connected",
       "false",
