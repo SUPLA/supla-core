@@ -62,7 +62,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {
   waitForConnection();
-  waitForPublications(753);
+  waitForPublications(763);
   // print_expected();
 
   const char *expectedData[] = {
@@ -926,6 +926,13 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "\"\",\"pl_cls\":\"CLOSE\",\"state_topic\":\"~/state/"
       "hi\",\"state_open\":\"false\",\"state_closed\":\"true\",\"avty_t\":\"~/"
       "state/connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\"}",
+      "homeassistant/button/0c6beb47b1c2b14191e2bbb49e9d41c2/286/config",
+      "{\"~\":\"supla/0c6beb47b1c2b14191e2bbb49e9d41c2/devices/157/channels/"
+      "286\",\"device\":{\"ids\":\"supla-iodevice-157\",\"mf\":\"Zamel\","
+      "\"name\":\"ZAMEL "
+      "SBW-01\",\"sw\":\"2.7.0\"},\"name\":\"Gate\",\"uniq_id\":\"supla_286\","
+      "\"qos\":0,\"ret\":false,\"opt\":false,\"cmd_t\":\"~/"
+      "execute_action\",\"pl_prs\":\"OPEN_CLOSE\",\"name\":\"SBS\"}",
       "supla/0c6beb47b1c2b14191e2bbb49e9d41c2/devices/157/channels/286/state/"
       "connected",
       "false",
@@ -955,6 +962,13 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "\"\",\"pl_cls\":\"OPEN\",\"state_topic\":\"~/state/"
       "hi\",\"state_open\":\"false\",\"state_closed\":\"true\",\"avty_t\":\"~/"
       "state/connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\"}",
+      "homeassistant/button/4d3e49b9f3b202b1092fbfdc48d8d04f/1835/config",
+      "{\"~\":\"supla/4d3e49b9f3b202b1092fbfdc48d8d04f/devices/983/channels/"
+      "1835\",\"device\":{\"ids\":\"supla-iodevice-983\",\"mf\":\"\",\"name\":"
+      "\"*Yunshan\",\"sw\":\"2.7.2\"},\"name\":\"Door lock "
+      "operation\",\"uniq_id\":\"supla_1835\",\"qos\":0,\"ret\":false,\"opt\":"
+      "false,\"cmd_t\":\"~/"
+      "execute_action\",\"pl_prs\":\"OPEN_CLOSE\",\"name\":\"Open\"}",
       "supla/4d3e49b9f3b202b1092fbfdc48d8d04f/devices/983/channels/1835/state/"
       "connected",
       "false",
@@ -1036,6 +1050,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "stop\":\"\",\"pl_cls\":\"CLOSE\",\"state_topic\":\"~/state/"
       "hi\",\"state_open\":\"false\",\"state_closed\":\"true\",\"avty_t\":\"~/"
       "state/connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\"}",
+      "homeassistant/button/3281677315ff159f91471b34828f603b/1055/config",
+      "{\"~\":\"supla/3281677315ff159f91471b34828f603b/devices/563/channels/"
+      "1055\",\"device\":{\"ids\":\"supla-iodevice-563\",\"mf\":\"Zamel\","
+      "\"name\":\"ZAMEL SBW-01\",\"sw\":\"2.7.0\"},\"name\":\"Long caption "
+      "test "
+      "ABCDEGFH\",\"uniq_id\":\"supla_1055\",\"qos\":0,\"ret\":false,\"opt\":"
+      "false,\"cmd_t\":\"~/"
+      "execute_action\",\"pl_prs\":\"OPEN_CLOSE\",\"name\":\"SBS\"}",
       "supla/3281677315ff159f91471b34828f603b/devices/563/channels/1055/state/"
       "connected",
       "false",
@@ -2102,6 +2124,13 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "supla/113fb17f5b300bfbbfb667eb6d4d1ef8/devices/1068/channels/2009/"
       "hidden",
       "false",
+      "homeassistant/button/113fb17f5b300bfbbfb667eb6d4d1ef8/2009/config",
+      "{\"~\":\"supla/113fb17f5b300bfbbfb667eb6d4d1ef8/devices/1068/channels/"
+      "2009\",\"device\":{\"ids\":\"supla-iodevice-1068\",\"mf\":\"\",\"name\":"
+      "\"SUPLA-GATE-MODULE\",\"sw\":\"2.5.5\"},\"name\":\"Gateway "
+      "II\",\"uniq_id\":\"supla_2009\",\"qos\":0,\"ret\":false,\"opt\":false,"
+      "\"cmd_t\":\"~/"
+      "execute_action\",\"pl_prs\":\"OPEN_CLOSE\",\"name\":\"Open\"}",
       "supla/113fb17f5b300bfbbfb667eb6d4d1ef8/devices/1068/channels/2009/state/"
       "connected",
       "false",
@@ -2309,6 +2338,23 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "connected",
       "false",
       "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/channels/5177/state/"
+      "hi",
+      NULL,
+      "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/channels/5178/type",
+      "RELAY",
+      "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/channels/5178/"
+      "function",
+      "CONTROLLINGTHEGATEWAYLOCK",
+      "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/channels/5178/"
+      "caption",
+      NULL,
+      "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/channels/5178/"
+      "hidden",
+      "false",
+      "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/channels/5178/state/"
+      "connected",
+      "false",
+      "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/channels/5178/state/"
       "hi",
       NULL,
       "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10286/channels/18023/"
@@ -2926,7 +2972,7 @@ TEST_F(MqttPublisherIntegrationTest, actionTrigger) {
   }
 
   waitForConnection();
-  waitForPublications(753);
+  waitForPublications(763);
   getLibAdapter()->published_clear();
 
   dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())

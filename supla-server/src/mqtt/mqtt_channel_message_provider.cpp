@@ -1028,6 +1028,27 @@ bool supla_mqtt_channel_message_provider::ha_door(const char *topic_prefix,
                         message_size);
 }
 
+bool supla_mqtt_channel_message_provider::ha_button(const char *topic_prefix,
+                                                    char **topic_name,
+                                                    void **message,
+                                                    size_t *message_size,
+                                                    const char *btn_name) {
+  cJSON *root = ha_json_create_root(topic_prefix, NULL, NULL, false);
+  if (!root) {
+    return false;
+  }
+
+  ha_json_set_retain(root);
+  ha_json_set_optimistic(root);
+
+  ha_json_set_short_topic(root, "cmd_t", "execute_action");
+  ha_json_set_string_param(root, "pl_prs", "OPEN_CLOSE");
+  ha_json_set_string_param(root, "name", btn_name);
+
+  return ha_get_message(root, "button", 0, false, topic_name, message,
+                        message_size);
+}
+
 bool supla_mqtt_channel_message_provider::ha_cover(const char *topic_prefix,
                                                    char **topic_name,
                                                    void **message,
@@ -1746,6 +1767,13 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
         return false;
       }
       break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      if (index > 1) {
+        return false;
+      }
+      break;
     default:
       if (index != 0) {
         return false;
@@ -1754,11 +1782,30 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
 
   switch (row->channel_func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-      return ha_gate(topic_prefix, topic_name, message, message_size, "gate");
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-      return ha_gate(topic_prefix, topic_name, message, message_size, "garage");
+      switch (index) {
+        case 0:
+          return ha_gate(
+              topic_prefix, topic_name, message, message_size,
+              row->channel_func == SUPLA_CHANNELFNC_CONTROLLINGTHEGATE
+                  ? "gate"
+                  : "garage");
+        case 1:
+          return ha_button(topic_prefix, topic_name, message, message_size,
+                           "SBS");
+      }
+      break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-      return ha_door(topic_prefix, topic_name, message, message_size);
+      switch (index) {
+        case 0:
+          return ha_door(topic_prefix, topic_name, message, message_size);
+        case 1:
+          return ha_button(topic_prefix, topic_name, message, message_size,
+                           "Open");
+      }
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      return ha_button(topic_prefix, topic_name, message, message_size, "Open");
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
