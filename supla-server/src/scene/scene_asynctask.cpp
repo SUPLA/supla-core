@@ -21,14 +21,17 @@
 #include <assert.h>
 #include <unistd.h>
 
+#include <string>
+
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
 #include "db/db_access_provider.h"
 #include "device/channel_property_getter.h"
 #include "log.h"
-#include "scene/scene_dao.h"
 #include "scene/scene_operations_dao.h"
 #include "scene/scene_search_condition.h"
+
+using std::string;
 
 supla_scene_asynctask::supla_scene_asynctask(
     const supla_caller &caller, int user_id, int scene_id,
@@ -190,6 +193,37 @@ supla_abstract_asynctask_thread_pool *supla_scene_asynctask::get_pool(void) {
 }
 
 // static
+bool supla_scene_asynctask::is_scene_active(
+    int user_id, int scene_id, supla_scene_dao *dao,
+    unsigned int *estimated_execution_time) {
+  supla_active_period active_period;
+
+  *estimated_execution_time =
+      dao->get_estimated_execution_time_and_active_period(scene_id,
+                                                          &active_period);
+
+  double latitude = 0;
+  double longitude = 0;
+  string timezone =
+      supla_user::find(user_id, true)->get_timezone(&latitude, &longitude);
+
+  if (!active_period.is_now_active(timezone.c_str(), latitude, longitude)) {
+    return false;
+  }
+
+  return true;
+}
+
+// static
+bool supla_scene_asynctask::is_scene_active(int user_id, int scene_id) {
+  supla_db_access_provider dba;
+  supla_scene_dao dao(&dba);
+
+  unsigned int estimated_execution_time = 0;
+  return is_scene_active(user_id, scene_id, &dao, &estimated_execution_time);
+}
+
+// static
 _sceneExecutionResult_e supla_scene_asynctask::execute(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     const supla_caller &caller, int user_id, int scene_id,
@@ -198,13 +232,20 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
   if (!interrupt_before_execute && queue->task_exists(&cnd)) {
     return serIsDuringExecution;
   } else {
+    supla_db_access_provider dba;
+    supla_scene_dao scene_dao(&dba);
+
+    unsigned int estimated_execution_time = 0;
+    if (!is_scene_active(user_id, scene_id, &scene_dao,
+                         &estimated_execution_time)) {
+      return serInactivePeriod;
+    }
+
     if (interrupt_before_execute) {
       interrupt(queue, user_id, scene_id);
       usleep(10000);
     }
 
-    supla_db_access_provider dba;
-    supla_scene_dao scene_dao(&dba);
     supla_scene_operations_dao op_dao(&dba);
     supla_scene_operations *operations = op_dao.get_scene_operations(scene_id);
 
@@ -221,8 +262,7 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
           new supla_channel_property_getter();
 
       supla_scene_asynctask *scene = new supla_scene_asynctask(
-          caller, user_id, scene_id,
-          scene_dao.get_estimated_execution_time(scene_id), queue, pool,
+          caller, user_id, scene_id, estimated_execution_time, queue, pool,
           action_executor, property_getter, operations);
       scene->start();
       return serOK;

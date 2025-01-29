@@ -217,7 +217,9 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
         "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":"
         "false,\"temperatures\":{},\"masterThermostatChannelNo\":null,"
         "\"heatOrColdSourceSwitchChannelNo\":null,\"pumpSwitchChannelNo\":null,"
-        "\"temperatureControlType\":\"NOT_SUPPORTED\"}");
+        "\"temperatureControlType\":\"NOT_SUPPORTED\",\"localUILock\":[],"
+        "\"minAllowedTemperatureSetpointFromLocalUI\":0,"
+        "\"maxAllowedTemperatureSetpointFromLocalUI\":0}");
     free(str);
   }
 
@@ -228,7 +230,8 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
                  "{\"availableAlgorithms\":[],\"temperatures\":{},"
                  "\"hiddenConfigFields\":[],\"readOnlyConfigFields\":[],"
                  "\"hiddenTemperatureConfigFields\":[],"
-                 "\"readOnlyTemperatureConfigFields\":[]}");
+                 "\"readOnlyTemperatureConfigFields\":[],"
+                 "\"localUILockingCapabilities\":[]}");
     free(str);
   }
 

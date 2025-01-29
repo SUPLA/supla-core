@@ -146,6 +146,12 @@ void supla_mqtt_message_provider::get_mfr_name(int mfr_id, char *buf,
     case SUPLA_MFR_AURATON:
       snprintf(buf, buf_size, "Auraton");
       break;
+    case SUPLA_MFR_HPD:
+      snprintf(buf, buf_size, "HPD");
+      break;
+    case SUPLA_MFR_LUKFUD:
+      snprintf(buf, buf_size, "@lukfud");
+      break;
     default:
       buf[0] = 0;
       break;

@@ -49,6 +49,11 @@ TEST_F(ExecuteSceneCommandTest, isDuringExecution) {
   commandProcessingTest("EXECUTE-SCENE:10,20\n", "IS-DURING-EXECUTION:20\n");
 }
 
+TEST_F(ExecuteSceneCommandTest, inactivePeriod) {
+  EXPECT_CALL(*cmd, execute).WillOnce(Return(serInactivePeriod));
+  commandProcessingTest("EXECUTE-SCENE:10,20\n", "INACTIVE-PERIOD:20\n");
+}
+
 TEST_F(ExecuteSceneCommandTest, notExists) {
   EXPECT_CALL(*cmd, execute).WillOnce(Return(serNotExists));
   commandProcessingTest("EXECUTE-SCENE:10,20\n", "UNKNOWN:20\n");

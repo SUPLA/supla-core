@@ -77,6 +77,11 @@ enum _vbt_var_name_e {
   var_name_is_battery_cover_open,
   var_name_thermometer_error,
   var_name_clock_error,
+  var_name_invalid_value,
+  var_name_alarm,
+  var_name_sound_alarm_on,
+  var_name_warning,
+  var_name_invalid_sensor_state,
 };
 
 class supla_vbt_value {

@@ -16,17 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_IC_VALUE_TEST_H_
-#define CHANNEL_IC_VALUE_TEST_H_
+#ifndef CHANNEL_CONTAINER_VALUE_TEST_H_
+#define CHANNEL_CONTAINER_VALUE_TEST_H_
 
 #include "gtest/gtest.h"
 
 namespace testing {
 
-class ChannelIcValueTest : public Test {
+class ChannelContainerValueTest : public Test {
  public:
 };
 
 }  // namespace testing
 
-#endif /*CHANNEL_IC_VALUE_TEST_H_*/
+#endif /*CHANNEL_CONTAINER_VALUE_TEST_H_*/

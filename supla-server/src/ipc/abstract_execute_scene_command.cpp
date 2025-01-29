@@ -44,6 +44,9 @@ void supla_abstract_execute_scene_command::on_command_match(
       } else if (exec_result == serIsDuringExecution) {
         send_result("IS-DURING-EXECUTION:", scene_id);
         return;
+      } else if (exec_result == serInactivePeriod) {
+        send_result("INACTIVE-PERIOD:", scene_id);
+        return;
       }
     }
   }

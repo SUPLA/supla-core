@@ -346,7 +346,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE 29  // ver. >= 12
 #define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_ACTION_TRIGGER \
   30                                              // ver. >= 16
-#define SUPLA_RESULTCODE_ACCESSID_INACTIVE 31     // ver. >= 17
+#define SUPLA_RESULTCODE_INACTIVE 31              // ver. >= 17
 #define SUPLA_RESULTCODE_CFG_MODE_REQUESTED 32    // ver. >= 18
 #define SUPLA_RESULTCODE_ACTION_UNSUPPORTED 33    // ver. >= 19
 #define SUPLA_RESULTCODE_SUBJECT_NOT_FOUND 34     // ver. >= 19
@@ -406,6 +406,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_RAINSENSOR 3048             // ver. >= 8
 #define SUPLA_CHANNELTYPE_WEIGHTSENSOR 3050           // ver. >= 8
 #define SUPLA_CHANNELTYPE_WEATHER_STATION 3100        // ver. >= 8
+#define SUPLA_CHANNELTYPE_CONTAINER 3200              // ver. >= 26
 
 #define SUPLA_CHANNELTYPE_DIMMER 4000            // ver. >= 4
 #define SUPLA_CHANNELTYPE_RGBLEDCONTROLLER 4010  // ver. >= 4
@@ -496,6 +497,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR 950            // ver. >= 24
 #define SUPLA_CHANNELFNC_PUMPSWITCH 960                    // ver. >= 25
 #define SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH 970        // ver. >= 25
+#define SUPLA_CHANNELFNC_CONTAINER 980                     // ver. >= 26
+#define SUPLA_CHANNELFNC_SEPTIC_TANK 981                   // ver. >= 26
+#define SUPLA_CHANNELFNC_WATER_TANK 982                    // ver. >= 26
+#define SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR 990        // ver. >= 26
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -574,6 +579,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_SOMEF 17
 #define SUPLA_MFR_AURATON 18
 #define SUPLA_MFR_HPD 19
+#define SUPLA_MFR_LUKFUD 20
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
 #define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010          // ver. >= 17
@@ -851,7 +857,7 @@ typedef struct {
 #define SUPLA_HVAC_MODE_CMD_SWITCH_TO_MANUAL 10
 
 typedef struct {
-  unsigned char IsOn;  // DS: 0/1 (for on/off) or 2..102 (for 0-100%)
+  unsigned char IsOn;  // DS: 0/1 (for off/on) or 2..102 (for 0-100%)
   unsigned char Mode;  // SUPLA_HVAC_MODE_
   _supla_int16_t
       SetpointTemperatureHeat;  // * 0.01 Celcius degree - used for heating
@@ -2109,6 +2115,7 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_RESTART_DEVICE 9400              // v. >= 25
 #define SUPLA_CALCFG_CMD_RESTART_SUBDEVICE 9410           // v. >= 25
 #define SUPLA_CALCFG_CMD_TAKE_OCR_PHOTO 9420              // v. >= 25
+#define SUPLA_CALCFG_CMD_MUTE_ALARM_SOUND 9430            // v. >= 26
 
 #define SUPLA_CALCFG_DATATYPE_RS_SETTINGS 1000
 #define SUPLA_CALCFG_DATATYPE_FB_SETTINGS 1100  // v. >= 17
@@ -2318,6 +2325,16 @@ typedef struct {
   unsigned _supla_int16_t
       active_bits;          // Specifies which bits of the mask are not skipped
 } TCSD_Digiglass_NewValue;  // v. >= 14
+
+#define CONTAINER_FLAG_WARNING_LEVEL (1 << 0)
+#define CONTAINER_FLAG_ALARM_LEVEL (1 << 1)
+#define CONTAINER_FLAG_INVALID_SENSOR_STATE (1 << 2)
+#define CONTAINER_FLAG_SOUND_ALARM_ON (1 << 3)
+
+typedef struct {
+  unsigned char level;  // 0 - unknown; 1-101 - container fill level 0-100%
+  unsigned _supla_int16_t flags;  // CONTAINER_FLAG_*
+} TContainerChannel_Value;        // v. >= 26
 
 typedef struct {
   unsigned char sec;        // 0-59
@@ -3111,6 +3128,9 @@ typedef struct {
 #define SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_ROOM_TEMPERATURE 1
 #define SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_AUX_HEATER_COOLER_TEMPERATURE 2
 
+#define LOCAL_UI_LOCK_FULL 0x1
+#define LOCAL_UI_LOCK_TEMPERATURE 0x2
+
 typedef struct {
   unsigned _supla_int_t MainThermometerChannelNoReadonly : 1;
   unsigned _supla_int_t MainThermometerChannelNoHidden : 1;
@@ -3249,9 +3269,18 @@ typedef struct {
   // If set to 0, then it is not supported.
   unsigned char TemperatureControlType;  // SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_
 
+  unsigned char LocalUILockingCapabilities;  // LOCAL_UI_LOCK_*
+  unsigned char LocalUILock;                 // LOCAL_UI_LOCK_*
+
+  // min/max allowed parameters are used only with LocalUILock &
+  // LOCAL_UI_LOCK_TEMPERATURE
+  _supla_int16_t MinAllowedTemperatureSetpointFromLocalUI;
+  _supla_int16_t MaxAllowedTemperatureSetpointFromLocalUI;
   unsigned char Reserved[48 - sizeof(HvacParameterFlags) -
                          sizeof(_supla_int_t) - sizeof(_supla_int_t) -
-                         sizeof(_supla_int_t) - sizeof(unsigned char)];
+                         sizeof(_supla_int_t) - sizeof(unsigned char) -
+                         sizeof(unsigned char) - sizeof(unsigned char) -
+                         sizeof(_supla_int16_t) - sizeof(_supla_int16_t)];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
 
@@ -3416,6 +3445,31 @@ typedef struct {
 
   unsigned char Reserved[32];
 } TChannelConfig_ImpulseCounter;  // v. >= 25
+
+typedef struct {
+  unsigned char FillLevel;  // Fill level in 0-100 %
+  union {
+    _supla_int_t ChannelId;
+    struct {
+      unsigned char IsSet;  // 0 - no; 1 - yes
+      unsigned char ChannelNo;
+    };
+  };
+} TContainer_SensorInfo;
+
+typedef struct {
+  unsigned char WarningAboveLevel;  // 0 - not set, 1-101 for 0-100%
+  unsigned char AlarmAboveLevel;    // 0 - not set, 1-101 for 0-100%
+  unsigned char WarningBelowLevel;  // 0 - not set, 1-101 for 0-100%
+  unsigned char AlarmBelowLevel;    // 0 - not set, 1-101 for 0-100%
+
+  unsigned char MuteAlarmSoundWithoutAdditionalAuth;  // 0 - admin login is
+                                                      // required, 1 - regular
+                                                      // user is allowed
+
+  TContainer_SensorInfo SensorInfo[10];
+  unsigned char Reserved[32];
+} TChannelConfig_Container;  // v. >= 26
 
 #define SUPLA_OCR_AUTHKEY_SIZE 33
 

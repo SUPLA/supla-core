@@ -51,9 +51,16 @@ void SceneDaoIntegrationTest::TearDown() {
   Test::TearDown();
 }
 
-TEST_F(SceneDaoIntegrationTest, getEstimatedExecutionTime) {
-  runSqlScript("SetSceneEstimatedExecutionTime.sql");
-  EXPECT_EQ(123456, dao->get_estimated_execution_time(3));
+TEST_F(SceneDaoIntegrationTest, getEstimatedExecutionTimeAndPeriod) {
+  runSqlScript("SetSceneEstimatedExecutionTimeAndPeriod.sql");
+
+  supla_active_period active_period;
+  EXPECT_EQ(123456, dao->get_estimated_execution_time_and_active_period(
+                        3, &active_period));
+
+  supla_active_period p(1692551804, 1692626454, ",14,",
+                        "[[{\"afterSunset\": 15}]]");
+  EXPECT_TRUE(p == active_period);
 }
 
 } /* namespace testing */

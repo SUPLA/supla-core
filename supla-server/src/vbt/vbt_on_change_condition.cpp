@@ -125,6 +125,11 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_is_battery_cover_open, "is_battery_cover_open"},
         {var_name_thermometer_error, "thermometer_error"},
         {var_name_clock_error, "clock_error"},
+        {var_name_invalid_value, "invalid_value"},
+        {var_name_alarm, "alarm"},
+        {var_name_warning, "warning"},
+        {var_name_invalid_sensor_state, "invalid_sensor_state"},
+        {var_name_sound_alarm_on, "sound_alarm_on"},
     };
 
     for (auto it = names.begin(); it != names.end(); ++it) {

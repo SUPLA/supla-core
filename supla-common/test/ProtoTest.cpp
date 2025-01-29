@@ -336,6 +336,14 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ(sizeof(TChannelConfig_PowerSwitch), 42);
   EXPECT_LE(sizeof(TChannelConfig_PowerSwitch),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TContainerChannel_Value), 3);
+  EXPECT_LE(sizeof(TContainerChannel_Value),
+            static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+
+  EXPECT_EQ(sizeof(TChannelConfig_Container), 87);
+  EXPECT_LE(sizeof(TChannelConfig_Container),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 }
 
 TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {

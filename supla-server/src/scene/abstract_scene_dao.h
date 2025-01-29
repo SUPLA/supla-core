@@ -19,13 +19,16 @@
 #ifndef SUPLA_ABSTRACT_SCENE_DAO_H_
 #define SUPLA_ABSTRACT_SCENE_DAO_H_
 
+#include "active_period.h"
+
 class supla_abstract_scene_dao {
  private:
  public:
   supla_abstract_scene_dao();
   virtual ~supla_abstract_scene_dao();
 
-  virtual unsigned int get_estimated_execution_time(int scene_id) = 0;
+  virtual unsigned int get_estimated_execution_time_and_active_period(
+      int scene_id, supla_active_period *active_period) = 0;
 };
 
 #endif /*SUPLA_ABSTRACT_SCENE_DAO_H_ */

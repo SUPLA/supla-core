@@ -413,7 +413,7 @@ void supla_abstract_register_client::register_client(
   }
 
   if (!accessid_active) {
-    send_result(SUPLA_RESULTCODE_ACCESSID_INACTIVE);
+    send_result(SUPLA_RESULTCODE_INACTIVE);
     return;
   }
 

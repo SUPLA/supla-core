@@ -16,24 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CH_ABSTRACT_DEVICE_CHANNEL_VALUE_CHANED_H_
-#define SUPLA_CH_ABSTRACT_DEVICE_CHANNEL_VALUE_CHANED_H_
+#ifndef CONTAINER_CONFIG_TEST_H_
+#define CONTAINER_CONFIG_TEST_H_
 
-#include <memory>
+#include "gtest/gtest.h"  // NOLINT
 
-#include "device/call_handler/abstract_device_srpc_call_handler.h"
+namespace testing {
 
-class supla_ch_abstract_device_channel_value_changed
-    : public supla_abstract_device_srpc_call_handler {
+class ContainerConfigTest : public Test {
  protected:
-  void on_channel_value_changed(std::shared_ptr<supla_device> device,
-                                unsigned char channel_number, char *value,
-                                unsigned char offline,
-                                unsigned _supla_int_t *validity_time_sec);
-
  public:
-  supla_ch_abstract_device_channel_value_changed(void);
-  virtual ~supla_ch_abstract_device_channel_value_changed();
+  ContainerConfigTest(void);
+  virtual ~ContainerConfigTest(void);
 };
 
-#endif /* SUPLA_CH_ABSTRACT_DEVICE_CHANNEL_VALUE_CHANED_H_*/
+} /* namespace testing */
+
+#endif /* CONTAINER_CONFIG_TEST_H_ */

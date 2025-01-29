@@ -26,6 +26,7 @@
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
+#include "device/value/channel_container_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
@@ -449,6 +450,39 @@ TEST_F(OnChangeConditionTest, onChangeTo_allPredictedVarNames) {
   cJSON_Delete(json);
 
   EXPECT_EQ(c.get_var_name(), var_name_clock_error);
+
+  json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"invalid_value\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_invalid_value);
+
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"alarm\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_alarm);
+
+  json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"sound_alarm_on\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_sound_alarm_on);
+
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"name\":\"warning\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_warning);
+
+  json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":1,\"name\":\"invalid_sensor_state\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_invalid_sensor_state);
 }
 
 TEST_F(OnChangeConditionTest, onChange_allPredictedVarNames) {
@@ -765,6 +799,36 @@ TEST_F(OnChangeConditionTest, onChange_allPredictedVarNames) {
   cJSON_Delete(json);
 
   EXPECT_EQ(c.get_var_name(), var_name_clock_error);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"invalid_value\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_invalid_value);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"alarm\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_alarm);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"sound_alarm_on\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_sound_alarm_on);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"warning\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_warning);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"invalid_sensor_state\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_invalid_sensor_state);
 }
 
 TEST_F(OnChangeConditionTest, boolValues) {
@@ -2179,6 +2243,269 @@ TEST_F(OnChangeConditionTest, batteryPoweredStateChanged) {
   news = supla_channel_state(&raw);
 
   EXPECT_TRUE(c.is_condition_met(&olds, &news));
+}
+
+TEST_F(OnChangeConditionTest, containerValueChanged) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  TContainerChannel_Value raw = {};
+
+  {
+    raw.level = 5;
+    supla_channel_container_value oldv(&raw), newv(&raw);
+
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.level = 5;
+    supla_channel_container_value oldv(&raw);
+
+    raw.level = 6;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.level = 6;
+    supla_channel_container_value oldv(&raw);
+
+    raw.level = 5;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
+}
+
+TEST_F(OnChangeConditionTest, containerInvalidValue) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{\"name\":\"invalid_value\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  TContainerChannel_Value raw = {};
+
+  {
+    supla_channel_container_value oldv(&raw), newv(&raw);
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.level = 1;
+    supla_channel_container_value oldv(&raw);
+
+    raw.level = 5;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.level = 0;
+    supla_channel_container_value oldv(&raw);
+
+    raw.level = 5;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.level = 5;
+    supla_channel_container_value oldv(&raw);
+
+    raw.level = 0;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
+}
+
+TEST_F(OnChangeConditionTest, containerWithAlarm) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{\"name\":\"alarm\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  TContainerChannel_Value raw = {};
+
+  {
+    supla_channel_container_value oldv(&raw), newv(&raw);
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.level = 1;
+    supla_channel_container_value oldv(&raw);
+
+    raw.level = 2;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.flags = CONTAINER_FLAG_ALARM_LEVEL;
+    supla_channel_container_value oldv(&raw);
+
+    raw.flags = 0;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.flags = 0;
+    supla_channel_container_value oldv(&raw);
+
+    raw.flags = CONTAINER_FLAG_ALARM_LEVEL;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
+}
+
+TEST_F(OnChangeConditionTest, containerWithSoundAlarmOn) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{\"name\":\"sound_alarm_on\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  TContainerChannel_Value raw = {};
+
+  {
+    supla_channel_container_value oldv(&raw), newv(&raw);
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.level = 1;
+    supla_channel_container_value oldv(&raw);
+
+    raw.level = 2;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.flags = CONTAINER_FLAG_SOUND_ALARM_ON;
+    supla_channel_container_value oldv(&raw);
+
+    raw.flags = 0;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.flags = 0;
+    supla_channel_container_value oldv(&raw);
+
+    raw.flags = CONTAINER_FLAG_SOUND_ALARM_ON;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
+}
+
+TEST_F(OnChangeConditionTest, containerWithWarning) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{\"name\":\"warning\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  TContainerChannel_Value raw = {};
+
+  {
+    supla_channel_container_value oldv(&raw), newv(&raw);
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.level = 1;
+    supla_channel_container_value oldv(&raw);
+
+    raw.level = 2;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.flags = CONTAINER_FLAG_WARNING_LEVEL;
+    supla_channel_container_value oldv(&raw);
+
+    raw.flags = 0;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.flags = 0;
+    supla_channel_container_value oldv(&raw);
+
+    raw.flags = CONTAINER_FLAG_WARNING_LEVEL;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
+}
+
+TEST_F(OnChangeConditionTest, containerWithInvalidSensorState) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change\":{\"name\":\"invalid_sensor_state\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  TContainerChannel_Value raw = {};
+
+  {
+    supla_channel_container_value oldv(&raw), newv(&raw);
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.level = 1;
+    supla_channel_container_value oldv(&raw);
+
+    raw.level = 2;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.flags = CONTAINER_FLAG_INVALID_SENSOR_STATE;
+    supla_channel_container_value oldv(&raw);
+
+    raw.flags = 0;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
+
+  {
+    raw.flags = 0;
+    supla_channel_container_value oldv(&raw);
+
+    raw.flags = CONTAINER_FLAG_INVALID_SENSOR_STATE;
+    supla_channel_container_value newv(&raw);
+
+    EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
+  }
 }
 
 }  // namespace testing

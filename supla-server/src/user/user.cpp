@@ -493,6 +493,8 @@ void supla_user::reset_timezone(int user_id) {
     user->longitude = 0;
     lck_unlock(user->lck);
   }
+
+  supla_mqtt_client_suite::globalInstance()->onUserDataChanged(user_id);
 }
 
 // static

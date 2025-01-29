@@ -23,6 +23,7 @@
 #include "actions/action_rgbw_parameters.h"
 #include "actions/action_shading_system_parameters.h"
 #include "log.h"
+#include "scene/scene_asynctask.h"
 
 using std::function;
 
@@ -105,6 +106,11 @@ void supla_ch_abstract_execute_action::execute_action(
   } else if (action->SubjectType == ACTION_SUBJECT_TYPE_CHANNEL &&
              !is_channel_online(action->SubjectId)) {
     send_result(action, srpc_adapter, SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE);
+  } else if (action->ActionId == ACTION_EXECUTE &&
+             action->SubjectType == ACTION_SUBJECT_TYPE_SCENE &&
+             !supla_scene_asynctask::is_scene_active(user_id,
+                                                     action->SubjectId)) {
+    send_result(action, srpc_adapter, SUPLA_RESULTCODE_INACTIVE);
   } else {
     aexec->execute_action(supla_caller(ctClient, client_id, client_name),
                           user_id, action->ActionId, subject_type,

@@ -64,10 +64,13 @@ void supla_active_period::set_active_hours(string hours) {
 
   std::string item;
   while (getline(ss, item, ',')) {
-    unsigned char day_of_week = std::stoi(item.substr(0, 1));
-    unsigned char hour = std::stoi(item.substr(1, item.length() - 1));
-    if (day_of_week >= 1 && day_of_week <= 7 && hour >= 0 && hour <= 23) {
-      active_hours[day_of_week].push_back(hour);
+    try {
+      unsigned char day_of_week = std::stoi(item.substr(0, 1));
+      unsigned char hour = std::stoi(item.substr(1, item.length() - 1));
+      if (day_of_week >= 1 && day_of_week <= 7 && hour >= 0 && hour <= 23) {
+        active_hours[day_of_week].push_back(hour);
+      }
+    } catch (...) {
     }
   }
 }

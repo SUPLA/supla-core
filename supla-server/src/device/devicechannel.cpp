@@ -379,9 +379,10 @@ supla_channel_extended_value *supla_device_channel::_get_extended_value(
   lock();
 
   if (for_data_logger_purposes) {
-    result = logger_purpose_extended_value
-                 ? logger_purpose_extended_value->copy()
-                 : nullptr;
+    result =
+        get_availability_status().is_online() && logger_purpose_extended_value
+            ? logger_purpose_extended_value->copy()
+            : nullptr;
   } else {
     result = extended_value ? extended_value->copy() : nullptr;
   }

@@ -25,6 +25,7 @@
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/alt_weekly_schedule_config.h"
 #include "jsonconfig/channel/binary_sensor_config.h"
+#include "jsonconfig/channel/container_config.h"
 #include "jsonconfig/channel/electricity_meter_config.h"
 #include "jsonconfig/channel/facade_blind_config.h"
 #include "jsonconfig/channel/general_purpose_measurement_config.h"
@@ -495,6 +496,10 @@ void supla_abstract_common_channel_properties::get_config(
     JSON_TO_CONFIG(impulse_counter_config, TChannelConfig_ImpulseCounter,
                    config, config_size);
     return;
+  } else if (get_type() == SUPLA_CHANNELTYPE_CONTAINER) {
+    JSON_TO_CONFIG(container_config, TChannelConfig_Container, config,
+                   config_size);
+    return;
   }
 
   switch (get_func()) {
@@ -648,6 +653,10 @@ int supla_abstract_common_channel_properties::set_user_config(
     json_config = new power_switch_config();
     static_cast<power_switch_config *>(json_config)
         ->set_config((TChannelConfig_PowerSwitch *)config, this);
+  } else if (type == SUPLA_CHANNELTYPE_CONTAINER) {
+    json_config = new container_config(nullptr);
+    static_cast<container_config *>(json_config)
+        ->set_config((TChannelConfig_Container *)config);
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }

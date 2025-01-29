@@ -46,8 +46,9 @@ void supla_hp_thermostat_logger::run(const vector<supla_user *> *users,
           &env,
           [](supla_device_channel *channel,
              supla_channel_value *value) -> bool {
-            return dynamic_cast<supla_channel_hp_thermostat_value *>(value) !=
-                   nullptr;
+            return channel->get_availability_status().is_online() &&
+                   dynamic_cast<supla_channel_hp_thermostat_value *>(value) !=
+                       nullptr;
           });
     });
   }

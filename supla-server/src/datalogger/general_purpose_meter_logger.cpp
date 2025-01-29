@@ -54,7 +54,8 @@ void supla_general_purpose_meter_logger::run(
                  supla_channel_value *value) -> bool {
                 bool keep_history = false;
 
-                if (dynamic_cast<supla_channel_general_purpose_meter_value *>(
+                if (channel->get_availability_status().is_online() &&
+                    dynamic_cast<supla_channel_general_purpose_meter_value *>(
                         value)) {
                   supla_json_config *config = channel->get_json_config();
                   if (config) {

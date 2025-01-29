@@ -156,7 +156,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
         "cost)\",\"uniq_id\":\"supla_754_0\",\"qos\":0,\"unit_of_meas\":\"\","
         "\"stat_t\":\"~/state/total_cost\",\"val_tpl\":\"{{ value | "
         "round(2,default=None) "
-        "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"measurement\"}";
+        "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"total\"}";
 
     ASSERT_TRUE(fetchAndCompare(
         provider, NULL, haConfig, false,
@@ -175,7 +175,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
         "balanced)\",\"uniq_id\":\"supla_754_1\",\"qos\":0,\"unit_of_meas\":"
         "\"\",\"stat_t\":\"~/state/total_cost_balanced\",\"val_tpl\":\"{{ "
         "value | round(2,default=None) "
-        "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"measurement\"}";
+        "}}\",\"dev_cla\":\"monetary\",\"state_class\":\"total\"}";
 
     ASSERT_TRUE(fetchAndCompare(
         provider, NULL, haConfig, false,

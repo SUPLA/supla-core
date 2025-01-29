@@ -25,6 +25,12 @@
 #include "mqtt_db.h"
 #include "mqtt_message_provider.h"
 
+enum ha_state_class_e {
+  state_cls_total,
+  state_cls_total_increasing,
+  state_cls_measurement
+};
+
 class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
  private:
   _mqtt_db_data_row_channel_t *row;
@@ -78,7 +84,7 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   bool ha_sensor(const char *unit, int precision, int sub_id, bool set_sub_id,
                  const char *state_topic, const char *name_if_empty,
                  const char *name_second_segment, const char *value_tmpl,
-                 const char *device_class, bool total_increasing,
+                 const char *device_class, ha_state_class_e state_class,
                  const char *topic_prefix, char **topic_name, void **message,
                  size_t *message_size);
   bool ha_sensor_temperature(int sub_id, bool set_sub_id,
@@ -87,19 +93,21 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   bool ha_sensor_humidity(int sub_id, bool set_sub_id, const char *topic_prefix,
                           char **topic_name, void **message,
                           size_t *message_size);
+  bool ha_button(const char *topic_prefix, char **topic_name, void **message,
+                 size_t *message_size, const char *btn_name);
   bool ha_gate(const char *topic_prefix, char **topic_name, void **message,
                size_t *message_size, const char *device_class);
   bool ha_door(const char *topic_prefix, char **topic_name, void **message,
                size_t *message_size);
-  bool ha_cover(const char *topic_prefix, char **topic_name,
-                         void **message, size_t *message_size, bool tilting);
+  bool ha_cover(const char *topic_prefix, char **topic_name, void **message,
+                size_t *message_size, bool tilting);
   bool ha_impulse_counter(unsigned short index, const char *topic_prefix,
                           char **topic_name, void **message,
                           size_t *message_size, int func);
   bool ha_phase_sensor(unsigned short index, unsigned short phase,
                        const char *unit, int precision, const char *state_topic,
                        const char *name_second_segment, const char *value_tmpl,
-                       const char *device_class, bool total_increasing,
+                       const char *device_class, ha_state_class_e state_class,
                        const char *topic_prefix, char **topic_name,
                        void **message, size_t *message_size);
   bool ha_electricity_meter(unsigned short index, const char *topic_prefix,
