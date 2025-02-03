@@ -24,6 +24,147 @@
 #include "supla-client.h"
 #include "supla.h"
 
+jobject supla_action_id_to_jobject(JNIEnv *env, int action_id) {
+  jclass result_cls = env->FindClass("org/supla/android/lib/actions/ActionId");
+
+  jmethodID result_init = env->GetStaticMethodID(
+      result_cls, "valueOf",
+      "(Ljava/lang/String;)Lorg/supla/android/lib/actions/ActionId;");
+
+  char enum_name[30] = {};
+
+  switch (action_id) {
+    case ACTION_OPEN:
+      snprintf(enum_name, sizeof(enum_name), "OPEN");
+      break;
+    case ACTION_CLOSE:
+      snprintf(enum_name, sizeof(enum_name), "CLOSE");
+      break;
+    case ACTION_SHUT:
+      snprintf(enum_name, sizeof(enum_name), "SHUT");
+      break;
+    case ACTION_REVEAL:
+      snprintf(enum_name, sizeof(enum_name), "REVEAL");
+      break;
+    case ACTION_REVEAL_PARTIALLY:
+      snprintf(enum_name, sizeof(enum_name), "REVEAL_PARTIALLY");
+      break;
+    case ACTION_SHUT_PARTIALLY:
+      snprintf(enum_name, sizeof(enum_name), "SHUT_PARTIALLY");
+      break;
+    case ACTION_TURN_ON:
+      snprintf(enum_name, sizeof(enum_name), "TURN_ON");
+      break;
+    case ACTION_TURN_OFF:
+      snprintf(enum_name, sizeof(enum_name), "TURN_OFF");
+      break;
+    case ACTION_SET_RGBW_PARAMETERS:
+      snprintf(enum_name, sizeof(enum_name), "SET_RGBW_PARAMETERS");
+      break;
+    case ACTION_OPEN_CLOSE:
+      snprintf(enum_name, sizeof(enum_name), "OPEN_CLOSE");
+      break;
+    case ACTION_STOP:
+      snprintf(enum_name, sizeof(enum_name), "STOP");
+      break;
+    case ACTION_TOGGLE:
+      snprintf(enum_name, sizeof(enum_name), "TOGGLE");
+      break;
+    case ACTION_UP_OR_STOP:
+      snprintf(enum_name, sizeof(enum_name), "UP_OR_STOP");
+      break;
+    case ACTION_DOWN_OR_STOP:
+      snprintf(enum_name, sizeof(enum_name), "DOWN_OR_STOP");
+      break;
+    case ACTION_STEP_BY_STEP:
+      snprintf(enum_name, sizeof(enum_name), "STEP_BY_STEP");
+      break;
+    case ACTION_UP:
+      snprintf(enum_name, sizeof(enum_name), "UP");
+      break;
+    case ACTION_DOWN:
+      snprintf(enum_name, sizeof(enum_name), "DOWN");
+      break;
+    case ACTION_HVAC_SET_PARAMETERS:
+      snprintf(enum_name, sizeof(enum_name), "SET_HVAC_PARAMETERS");
+      break;
+    case ACTION_EXECUTE:
+      snprintf(enum_name, sizeof(enum_name), "EXECUTE");
+      break;
+    case ACTION_INTERRUPT:
+      snprintf(enum_name, sizeof(enum_name), "INTERRUPT");
+      break;
+    case ACTION_INTERRUPT_AND_EXECUTE:
+      snprintf(enum_name, sizeof(enum_name), "INTERRUPT_AND_EXECUTE");
+      break;
+  }
+
+  return enum_name[0] == 0
+             ? env->NewGlobalRef(nullptr)
+             : env->CallStaticObjectMethod(result_cls, result_init,
+                                           env->NewStringUTF(enum_name));
+}
+
+jobject supla_subject_type_to_jobject(JNIEnv *env, int subject_type) {
+  jclass result_cls =
+      env->FindClass("org/supla/android/lib/actions/SubjectType");
+
+  jmethodID result_init = env->GetStaticMethodID(
+      result_cls, "valueOf",
+      "(Ljava/lang/String;)Lorg/supla/android/lib/actions/SubjectType;");
+
+  char enum_name[30] = {};
+
+  switch (subject_type) {
+    case ACTION_SUBJECT_TYPE_CHANNEL:
+      snprintf(enum_name, sizeof(enum_name), "CHANNEL");
+      break;
+    case ACTION_SUBJECT_TYPE_CHANNEL_GROUP:
+      snprintf(enum_name, sizeof(enum_name), "GROUP");
+      break;
+    case ACTION_SUBJECT_TYPE_SCENE:
+      snprintf(enum_name, sizeof(enum_name), "SCENE");
+      break;
+  }
+
+  return enum_name[0] == 0
+             ? env->NewGlobalRef(nullptr)
+             : env->CallStaticObjectMethod(result_cls, result_init,
+                                           env->NewStringUTF(enum_name));
+}
+
+void supla_cb_on_action_execution_result(void *_suplaclient, void *user_data,
+                                         TSC_ActionExecutionResult *result) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_action_execution_result == nullptr || result == nullptr) {
+    return;
+  }
+
+  jobject jaction_id = supla_action_id_to_jobject(env, result->ActionId);
+  jobject jsubject_type =
+      supla_subject_type_to_jobject(env, result->SubjectType);
+
+  env->CallVoidMethod(asc->j_obj, asc->j_mid_on_action_execution_result,
+                      jaction_id, jsubject_type, (jint)result->SubjectId,
+                      (jint)result->ResultCode);
+
+  env->DeleteLocalRef(jaction_id);
+  env->DeleteLocalRef(jsubject_type);
+}
+
+void supla_actions_init(JNIEnv *env, jclass oclass, TAndroidSuplaClient *asc,
+                        TSuplaClientCfg *sclient_cfg) {
+  asc->j_mid_on_action_execution_result =
+      env->GetMethodID(oclass, "onActionExecutionResult",
+                       "(Lorg/supla/android/lib/actions/ActionId;Lorg/supla/"
+                       "android/lib/actions/SubjectType;II)V");
+
+  sclient_cfg->cb_on_action_execution_result =
+      supla_cb_on_action_execution_result;
+}
+
 void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
                                   int *action_id, void **param,
                                   unsigned _supla_int16_t *param_size,

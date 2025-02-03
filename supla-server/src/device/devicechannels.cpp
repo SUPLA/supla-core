@@ -1150,6 +1150,8 @@ bool supla_device_channels::action_open_close(const supla_caller &caller,
       switch (channel->get_func()) {
         case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
           result = set_device_channel_char_value(caller, channel, group_id, eol,
                                                  1, cancel_tasks);
           break;

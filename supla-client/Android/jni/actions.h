@@ -22,10 +22,15 @@
 #include <jni.h>
 
 #include "proto.h"
+#include "supla-client.h"
+#include "supla.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+void supla_actions_init(JNIEnv *env, jclass oclass, TAndroidSuplaClient *asc,
+                        TSuplaClientCfg *sclient_cfg);
 
 void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
                                   int *action_id, void **param,

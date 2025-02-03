@@ -466,12 +466,12 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
                  cJSON_String, true, nullptr,
                  alg_to_string(config->UsedAlgorithm).c_str(), 0);
 
-  if (config->MinOffTimeS >= 0 && config->MinOffTimeS <= 600) {
+  if (config->MinOffTimeS >= 0 && config->MinOffTimeS <= 3600) {
     set_item_value(user_root, field_map.at(FIELD_MIN_OFF_TIME_S).c_str(),
                    cJSON_Number, true, nullptr, nullptr, config->MinOffTimeS);
   }
 
-  if (config->MinOnTimeS >= 0 && config->MinOnTimeS <= 600) {
+  if (config->MinOnTimeS >= 0 && config->MinOnTimeS <= 3600) {
     set_item_value(user_root, field_map.at(FIELD_MIN_ON_TIME_S).c_str(),
                    cJSON_Number, true, nullptr, nullptr, config->MinOnTimeS);
   }
@@ -1012,14 +1012,14 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
 
   if (get_double(user_root, field_map.at(FIELD_MIN_OFF_TIME_S).c_str(),
                  &dbl_value) &&
-      dbl_value >= 0 && dbl_value <= 600) {
+      dbl_value >= 0 && dbl_value <= 3600) {
     config->MinOffTimeS = dbl_value;
     result = true;
   }
 
   if (get_double(user_root, field_map.at(FIELD_MIN_ON_TIME_S).c_str(),
                  &dbl_value) &&
-      dbl_value >= 0 && dbl_value <= 600) {
+      dbl_value >= 0 && dbl_value <= 3600) {
     config->MinOnTimeS = dbl_value;
     result = true;
   }
