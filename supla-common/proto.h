@@ -640,7 +640,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_COUNTDOWN_TIMER_SUPPORTED 0x01000000    // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_LIGHTSOURCELIFESPAN_SETTABLE \
   0x02000000  // ver. >= 12
-// Free bits for future use: 0x04000000
+#define SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE_deprecated \
+  0x04000000  // ver. >= 12  DEPRECATED
 #define SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE \
   0x08000000                                                    // ver. >= 21
 #define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE 0x10000000           // ver. >= 21
