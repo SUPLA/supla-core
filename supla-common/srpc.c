@@ -416,43 +416,44 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
 char SRPC_ICACHE_FLASH srpc_iterate_device(void *_srpc) {
   Tsrpc *srpc = (Tsrpc *)_srpc;
   char data_buffer[SRPC_BUFFER_SIZE];
-  char result;
+  char result = SUPLA_RESULT_TRUE;
 
   lck_lock(srpc->lck);
-  _supla_int_t data_size = srpc->params.data_read(data_buffer, SRPC_BUFFER_SIZE,
-                                                  srpc->params.user_params);
+  _supla_int_t data_size = 0;
 
-  if (data_size == 0) {
-    return lck_unlock_r(srpc->lck, SUPLA_RESULT_FALSE);
-  }
+  while ((data_size = srpc->params.data_read(
+              data_buffer, SRPC_BUFFER_SIZE, srpc->params.user_params)) > 0) {
+    if (SUPLA_RESULT_TRUE != (result = sproto_in_buffer_append(
+                                  srpc->proto, data_buffer, data_size))) {
+      supla_log(LOG_DEBUG,
+                "sproto_in_buffer_append: %i, datasize: %i",
+                result,
+                data_size);
+      return lck_unlock_r(srpc->lck, SUPLA_RESULT_FALSE);
+    }
 
-  if (data_size > 0 &&
-      SUPLA_RESULT_TRUE != (result = sproto_in_buffer_append(
-                                srpc->proto, data_buffer, data_size))) {
-    supla_log(LOG_DEBUG, "sproto_in_buffer_append: %i, datasize: %i", result,
-              data_size);
-    return lck_unlock_r(srpc->lck, SUPLA_RESULT_FALSE);
-  }
-
-  while (1) {
-    // repeat while there are messages in the input buffer
-    result = sproto_pop_in_sdp(srpc->proto, &srpc->sdp);
-    if (result == SUPLA_RESULT_TRUE) {
+    while ((result = sproto_pop_in_sdp(srpc->proto, &srpc->sdp)) ==
+           SUPLA_RESULT_TRUE) {
+      // repeat while there are messages in the input buffer
       if (srpc->params.on_remote_call_received) {
         lck_unlock(srpc->lck);
-        srpc->params.on_remote_call_received(
-            srpc, srpc->sdp.rr_id, srpc->sdp.call_id, srpc->params.user_params,
-            srpc->sdp.version);
+        srpc->params.on_remote_call_received(srpc,
+                                             srpc->sdp.rr_id,
+                                             srpc->sdp.call_id,
+                                             srpc->params.user_params,
+                                             srpc->sdp.version);
         lck_lock(srpc->lck);
       }
-    } else if (result != SUPLA_RESULT_FALSE) {
+    }
+
+    if (result != SUPLA_RESULT_FALSE) {
       if (result == (char)SUPLA_RESULT_VERSION_ERROR) {
         if (srpc->params.on_version_error) {
           unsigned char version = srpc->sdp.version;
           lck_unlock(srpc->lck);
 
-          srpc->params.on_version_error(srpc, version,
-                                        srpc->params.user_params);
+          srpc->params.on_version_error(
+              srpc, version, srpc->params.user_params);
           return SUPLA_RESULT_FALSE;
         }
       } else {
@@ -463,6 +464,10 @@ char SRPC_ICACHE_FLASH srpc_iterate_device(void *_srpc) {
       // no more messages in the input buffer
       break;
     }
+  }
+
+  if (data_size == 0) {
+    return lck_unlock_r(srpc->lck, SUPLA_RESULT_FALSE);
   }
 
   return lck_unlock_r(srpc->lck, SUPLA_RESULT_TRUE);
