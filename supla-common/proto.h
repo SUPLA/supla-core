@@ -119,7 +119,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 26
+#define SUPLA_PROTO_VERSION 27
 #define SUPLA_PROTO_VERSION_MIN 1
 
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO) || defined(SUPLA_DEVICE)
@@ -501,6 +501,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_SEPTIC_TANK 981                   // ver. >= 26
 #define SUPLA_CHANNELFNC_WATER_TANK 982                    // ver. >= 26
 #define SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR 990        // ver. >= 26
+#define SUPLA_CHANNELFNC_FLOOD_SENSOR 1000                 // ver. >= 27
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -621,7 +622,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002     // ver. >= 12 DEPRECATED
 #define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004     // ver. >= 12 DEPRECATED
 #define SUPLA_CHANNEL_FLAG_OCR 0x0008           // ver. >= 26
-// Free bits for future use: 0x0010, 0x0020, 0x0040
+#define SUPLA_CHANNEL_FLAG_FLOOD_SENSORS_SUPPORTED 0x0010  // ver. >= 27
+// Free bits for future use: 0x0020, 0x0040
 #define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080  // ver. >= 17
 #define SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED 0x0100  // ver. >= 21
 // Free bits for future use:  0x0200, 0x0400, 0x0800
@@ -3463,6 +3465,23 @@ typedef struct {
   unsigned char Reserved[32];
 } TChannelConfig_Container;  // v. >= 26
 
+typedef struct {
+  union {
+    _supla_int_t ChannelId;
+    struct {
+      unsigned char IsSet;  // 0 - no; 1 - yes
+      unsigned char ChannelNo;
+    };
+  };
+} TValve_SensorInfo;  // v. >= 27
+
+typedef struct {
+  TValve_SensorInfo
+      SensorInfo[20];  // Flood sensors can be attached only if
+                       // SUPLA_CHANNEL_FLAG_FLOOD_SENSORS_SUPPORTED is set
+  unsigned char Reserved[32];
+} TChannelConfig_Valve;  // v. >= 27
+
 #define SUPLA_OCR_AUTHKEY_SIZE 33
 
 #define OCR_LIGHTING_MODE_OFF (1ULL << 0)
@@ -3533,14 +3552,24 @@ typedef struct {
 #define SUPLA_VALVE_FLAG_FLOODING 0x1
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2
 
+// Valve channel value
+// Device -> Server -> Client
 typedef struct {
   union {
-    unsigned char closed;
+    unsigned char closed;  // 0 - open, 1 - closed
     unsigned char closed_percent;
   };
 
-  unsigned char flags;
+  unsigned char flags;  // see SUPLA_VALVE_FLAG_
 } TValve_Value;
+
+// Valve channel value payload
+// Client -> Server -> Device
+typedef struct {
+  unsigned char command;  // 0 - close
+                          // 1 - open
+  char reserved[7];
+} TCSD_Valve;
 
 typedef struct {
   unsigned char ChannelNumber;
