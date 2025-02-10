@@ -50,10 +50,12 @@ TEST_F(ContainerConfigTest, setAndGetConfig) {
       str,
       "{\"warningAboveLevel\":19,\"alarmAboveLevel\":29,\"warningBelowLevel\":"
       "49,\"alarmBelowLevel\":39,\"muteAlarmSoundWithoutAdditionalAuth\":false,"
-      "\"sensors\":{\"0\":{\"fillLevel\":11},\"1\":{\"fillLevel\":12},\"2\":{"
-      "\"fillLevel\":13},\"3\":{\"fillLevel\":14},\"4\":{\"fillLevel\":15},"
-      "\"5\":{\"fillLevel\":16},\"6\":{\"fillLevel\":17},\"7\":{\"fillLevel\":"
-      "18},\"8\":{\"fillLevel\":19},\"9\":{\"fillLevel\":20}}}");
+      "\"sensors\":[{\"channelNo\":0,\"fillLevel\":11},{\"channelNo\":1,"
+      "\"fillLevel\":12},{\"channelNo\":2,\"fillLevel\":13},{\"channelNo\":3,"
+      "\"fillLevel\":14},{\"channelNo\":4,\"fillLevel\":15},{\"channelNo\":5,"
+      "\"fillLevel\":16},{\"channelNo\":6,\"fillLevel\":17},{\"channelNo\":7,"
+      "\"fillLevel\":18},{\"channelNo\":8,\"fillLevel\":19},{\"channelNo\":9,"
+      "\"fillLevel\":20}]}");
 
   container_config config2;
   config2.set_user_config(str);
@@ -76,7 +78,7 @@ TEST_F(ContainerConfigTest, null) {
   EXPECT_STREQ(str,
                "{\"warningAboveLevel\":null,\"alarmAboveLevel\":null,"
                "\"warningBelowLevel\":null,\"alarmBelowLevel\":null,"
-               "\"muteAlarmSoundWithoutAdditionalAuth\":false,\"sensors\":{}}");
+               "\"muteAlarmSoundWithoutAdditionalAuth\":false,\"sensors\":[]}");
 
   container_config config2;
   config2.set_user_config(str);
@@ -90,11 +92,12 @@ TEST_F(ContainerConfigTest, null) {
 
 TEST_F(ContainerConfigTest, oversize) {
   const char cfg[] =
-      "{\"sensors\":{\"0\":{\"fillLevel\":11},\"1\":{\"fillLevel\":12},\"2\":{"
-      "\"fillLevel\":13},\"3\":{\"fillLevel\":14},\"4\":{\"fillLevel\":15},"
-      "\"5\":{\"fillLevel\":16},\"6\":{\"fillLevel\":17},\"7\":{\"fillLevel\":"
-      "18},\"8\":{\"fillLevel\":19},\"9\":{\"fillLevel\":20},\"10\":{"
-      "\"fillLevel\":20}}}";
+      "{\"sensors\":[{\"channelNo\":0,\"fillLevel\":11},{\"channelNo\":1,"
+      "\"fillLevel\":12},{\"channelNo\":2,\"fillLevel\":13},{\"channelNo\":3,"
+      "\"fillLevel\":14},{\"channelNo\":4,\"fillLevel\":15},{\"channelNo\":5,"
+      "\"fillLevel\":16},{\"channelNo\":6,\"fillLevel\":17},{\"channelNo\":7,"
+      "\"fillLevel\":18},{\"channelNo\":8,\"fillLevel\":19},{\"channelNo\":9,"
+      "\"fillLevel\":20},{\"channelNo\":10,\"fillLevel\":20}]}";
 
   container_config config;
   config.set_user_config(cfg);
@@ -112,7 +115,8 @@ TEST_F(ContainerConfigTest, oversize) {
 
 TEST_F(ContainerConfigTest, duplicateJson) {
   const char cfg[] =
-      "{\"sensors\":{\"1\":{\"fillLevel\":11},\"1\":{\"fillLevel\":12}}}";
+      "{\"sensors\":[{\"channelNo\":1,\"fillLevel\":11},{\"channelNo\":1,"
+      "\"fillLevel\":12}]}";
 
   container_config config;
   config.set_user_config(cfg);
@@ -158,12 +162,12 @@ TEST_F(ContainerConfigTest, duplicateRaw) {
 
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"warningAboveLevel\":null,\"alarmAboveLevel\":null,"
-      "\"warningBelowLevel\":null,\"alarmBelowLevel\":null,"
-      "\"muteAlarmSoundWithoutAdditionalAuth\":false,\"sensors\":{\"10\":{"
-      "\"fillLevel\":11},\"15\":{\"fillLevel\":8},\"5\":{\"fillLevel\":21}}}");
+  EXPECT_STREQ(str,
+               "{\"warningAboveLevel\":null,\"alarmAboveLevel\":null,"
+               "\"warningBelowLevel\":null,\"alarmBelowLevel\":null,"
+               "\"muteAlarmSoundWithoutAdditionalAuth\":false,\"sensors\":[{"
+               "\"channelNo\":10,\"fillLevel\":11},{\"channelNo\":15,"
+               "\"fillLevel\":8},{\"channelNo\":5,\"fillLevel\":21}]}");
 
   free(str);
 }
@@ -180,7 +184,7 @@ TEST_F(ContainerConfigTest, mute) {
   EXPECT_STREQ(str,
                "{\"warningAboveLevel\":null,\"alarmAboveLevel\":null,"
                "\"warningBelowLevel\":null,\"alarmBelowLevel\":null,"
-               "\"muteAlarmSoundWithoutAdditionalAuth\":true,\"sensors\":{}}");
+               "\"muteAlarmSoundWithoutAdditionalAuth\":true,\"sensors\":[]}");
 
   container_config config2;
   config2.set_user_config(str);

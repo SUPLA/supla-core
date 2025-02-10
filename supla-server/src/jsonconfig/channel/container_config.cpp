@@ -30,7 +30,8 @@ using std::string;
 #define FIELD_MUTE_ALARM_SOUND_WITHOUT_ADDITIONAL_AUTH 5
 #define FIELD_SENSORS 6
 
-#define SENSOR_FIELD_FILL_LEVEL 1
+#define SENSOR_FIELD_CHANNEL_NO 1
+#define SENSOR_FIELD_FILL_LEVEL 2
 
 const map<unsigned _supla_int16_t, string> container_config::field_map = {
     {FIELD_WARNING_ABOVE_LEVEL, "warningAboveLevel"},
@@ -44,6 +45,7 @@ const map<unsigned _supla_int16_t, string> container_config::field_map = {
 
 const std::map<unsigned _supla_int16_t, std::string>
     container_config::sensor_field_map = {
+        {SENSOR_FIELD_CHANNEL_NO, "channelNo"},
         {SENSOR_FIELD_FILL_LEVEL, "fillLevel"},
 };
 
@@ -96,25 +98,38 @@ void container_config::set_config(TChannelConfig_Container *config) {
       config->MuteAlarmSoundWithoutAdditionalAuth ? cJSON_True : cJSON_False,
       true, nullptr, nullptr, 0);
 
-  cJSON *sensors = cJSON_CreateObject();
+  cJSON *sensors = cJSON_CreateArray();
 
   for (size_t a = 0;
        a < sizeof(config->SensorInfo) / sizeof(TContainer_SensorInfo); a++) {
     if (config->SensorInfo[a].IsSet) {
-      const char *channel_no =
-          std::to_string(config->SensorInfo[a].ChannelNo).c_str();
-      cJSON_DeleteItemFromObject(sensors, channel_no);
+      for (int b = 0; b < cJSON_GetArraySize(sensors); b++) {
+        cJSON *item = cJSON_GetArrayItem(sensors, b);
+        double channel_no = -1;
+        if (get_double(item,
+                       sensor_field_map.at(SENSOR_FIELD_CHANNEL_NO).c_str(),
+                       &channel_no) &&
+            channel_no == config->SensorInfo[a].ChannelNo) {
+          cJSON_Delete(cJSON_DetachItemViaPointer(sensors, item));
+          break;
+        }
+      }
 
       cJSON *sensor = cJSON_CreateObject();
 
       unsigned char fill_level = config->SensorInfo[a].FillLevel;
+
+      set_item_value(sensor,
+                     sensor_field_map.at(SENSOR_FIELD_CHANNEL_NO).c_str(),
+                     cJSON_Number, true, nullptr, nullptr,
+                     config->SensorInfo[a].ChannelNo);
 
       set_item_value(
           sensor, sensor_field_map.at(SENSOR_FIELD_FILL_LEVEL).c_str(),
           fill_level >= 0 && fill_level <= 100 ? cJSON_Number : cJSON_NULL,
           true, nullptr, nullptr, fill_level);
 
-      cJSON_AddItemToObject(sensors, channel_no, sensor);
+      cJSON_AddItemToArray(sensors, sensor);
     }
   }
 
@@ -174,14 +189,11 @@ bool container_config::get_config(TChannelConfig_Container *config) {
     for (int a = 0; a < cJSON_GetArraySize(sensors); a++) {
       cJSON *item = cJSON_GetArrayItem(sensors, a);
       if (item && cJSON_IsObject(item)) {
-        int channel_no = 0;
-        try {
-          channel_no = std::stoi(item->string);
-        } catch (...) {
-          channel_no = -1;
-        }
-
-        if (channel_no >= 0) {
+        double channel_no = -1;
+        if (get_double(item,
+                       sensor_field_map.at(SENSOR_FIELD_CHANNEL_NO).c_str(),
+                       &channel_no) &&
+            channel_no >= 0) {
           bool duplicate = false;
           size_t n = m;
 
