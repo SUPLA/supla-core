@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <string>
+
 #include "device/channel_fragment.h"
 #include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_ic_extended_value.h"
@@ -38,6 +40,8 @@
 #include "device/value/channel_temphum_value.h"
 #include "device/value/channel_valve_value.h"
 #include "log.h"
+
+using std::string;
 
 supla_mqtt_abstract_state_message_provider::
     supla_mqtt_abstract_state_message_provider(void)
@@ -1137,15 +1141,19 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
   }
 
   if (index == 0) {
-    return create_message(
-        topic_prefix, user_suid, topic_name, message, message_size,
-        channel_availability_status.is_online()
-            ? "true"
-            : (channel_availability_status.is_online_but_not_available()
-                   ? "connected_but_not_available"
-                   : "false"),
-        false, "devices/%i/channels/%i/state/connected", get_device_id(),
-        get_channel_id());
+    string status = "false";
+    if (channel_availability_status.is_online()) {
+      status = "true";
+    } else if (channel_availability_status.is_online_but_not_available()) {
+      status = "connected_but_not_available";
+    } else if (channel_availability_status
+                   .is_offline_remote_wakeup_not_supported()) {
+      status = "offline_remote_wakeup_not_supported";
+    }
+    return create_message(topic_prefix, user_suid, topic_name, message,
+                          message_size, status.c_str(), false,
+                          "devices/%i/channels/%i/state/connected",
+                          get_device_id(), get_channel_id());
   }
 
   if (!channel_value || !channel_availability_status.is_online()) {
