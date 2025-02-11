@@ -344,12 +344,6 @@ bool supla_client_channel::remote_update_is_possible(void) {
       case SUPLA_CHANNELFNC_SEPTIC_TANK:
       case SUPLA_CHANNELFNC_WATER_TANK:
       case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
-        return true;
-    }
-  }
-
-  if (protocol_version >= 27) {
-    switch (Func) {
       case SUPLA_CHANNELFNC_FLOOD_SENSOR:
         return true;
     }
