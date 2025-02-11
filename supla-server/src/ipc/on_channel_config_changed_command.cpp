@@ -54,7 +54,6 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
     case SUPLA_CHANNELTYPE_HVAC:
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
-    case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
       break;
     case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
       scope =
