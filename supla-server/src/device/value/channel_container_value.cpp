@@ -31,13 +31,23 @@ supla_channel_container_value::supla_channel_container_value(
 }
 
 bool supla_channel_container_value::get_level(unsigned char *level) {
-  if (level && ((TContainerChannel_Value *)raw_value)->level >= 1 &&
-      ((TContainerChannel_Value *)raw_value)->level <= 101) {
-    *level = ((TContainerChannel_Value *)raw_value)->level - 1;
-    return true;
+  if (level) {
+    *level = get_raw_level();
+    if (*level) {
+      (*level)--;
+      return true;
+    }
   }
 
   return false;
+}
+
+unsigned char supla_channel_container_value::get_raw_level(void) {
+  if (((TContainerChannel_Value *)raw_value)->level >= 1 &&
+      ((TContainerChannel_Value *)raw_value)->level <= 101) {
+    return ((TContainerChannel_Value *)raw_value)->level;
+  }
+  return 0;
 }
 
 bool supla_channel_container_value::is_invalid(void) {

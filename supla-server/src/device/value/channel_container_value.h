@@ -30,6 +30,7 @@ class supla_channel_container_value : public supla_channel_value {
   explicit supla_channel_container_value(const TContainerChannel_Value *value);
 
   bool get_level(unsigned char *level);
+  unsigned char get_raw_level(void);
   bool is_invalid(void);
   bool is_warning_flag_set(void);
   bool is_alarm_flag_set(void);
