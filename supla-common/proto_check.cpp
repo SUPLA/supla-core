@@ -300,6 +300,8 @@ static_assert(sizeof(TContainerChannel_Value) == 3);
 static_assert(sizeof(TContainerChannel_Value) <=
               (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
+static_assert(sizeof(TContainer_SensorInfo) == 5);
+
 static_assert(sizeof(TChannelConfig_Container) == 87);
 static_assert(sizeof(TChannelConfig_Container) <=
               (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
