@@ -205,6 +205,37 @@ void supla_abstract_common_channel_properties::get_channel_relations(
               }
             });
       } break;
+      case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+        if (protocol_version >= 27) {
+          supla_json_config *json_config = get_json_config();
+          if (json_config) {
+            valve_config config(json_config);
+            TChannelConfig_Valve valve_cfg = {};
+            if (config.get_config(&valve_cfg)) {
+              for (size_t a = 0;
+                   a < sizeof(valve_cfg.SensorInfo) / sizeof(TValve_SensorInfo);
+                   a++) {
+                if (valve_cfg.SensorInfo[a].IsSet) {
+                  for_each(false,
+                           [&](supla_abstract_common_channel_properties *props,
+                               bool *will_continue) -> void {
+                             if (valve_cfg.SensorInfo[a].ChannelNo ==
+                                     props->get_channel_number() &&
+                                 props->get_func() ==
+                                     SUPLA_CHANNELFNC_FLOOD_SENSOR) {
+                               add_relation(relations, props->get_id(),
+                                            get_id(),
+                                            CHANNEL_RELATION_TYPE_DEFAULT);
+                               *will_continue = false;
+                             }
+                           });
+                }
+              }
+            }
+            delete json_config;
+          }
+        }
+        break;
     }
   }
 
@@ -366,6 +397,35 @@ void supla_abstract_common_channel_properties::get_channel_relations(
                 break;
             }
           });
+    }
+
+    if (protocol_version >= 27 && func == SUPLA_CHANNELFNC_FLOOD_SENSOR) {
+      for_each(false,
+               [&](supla_abstract_common_channel_properties *props,
+                   bool *will_continue) -> void {
+                 if (props->get_func() == SUPLA_CHANNELFNC_VALVE_OPENCLOSE) {
+                   supla_json_config *json_config = props->get_json_config();
+                   if (json_config) {
+                     valve_config config(json_config);
+                     TChannelConfig_Valve valve_cfg = {};
+                     if (config.get_config(&valve_cfg)) {
+                       for (size_t a = 0; a < sizeof(valve_cfg.SensorInfo) /
+                                                  sizeof(TValve_SensorInfo);
+                            a++) {
+                         if (valve_cfg.SensorInfo[a].IsSet &&
+                             valve_cfg.SensorInfo[a].ChannelNo ==
+                                 get_channel_number()) {
+                           add_relation(relations, get_id(), props->get_id(),
+                                        CHANNEL_RELATION_TYPE_DEFAULT);
+                           *will_continue = false;
+                           break;
+                         }
+                       }
+                     }
+                     delete json_config;
+                   }
+                 }
+               });
     }
   }
 }
