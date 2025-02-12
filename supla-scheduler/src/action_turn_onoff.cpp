@@ -52,10 +52,40 @@ int s_worker_action_turn_onoff::waiting_time_to_retry(void) { return 30; }
 int s_worker_action_turn_onoff::waiting_time_to_check(void) { return 5; }
 
 bool s_worker_action_turn_onoff::result_success(int *fail_result_code) {
-  char value = 0;
-  worker->ipcc_get_char_value(&value);
+  bool result = false;
 
-  return (value == 1) == setOn;
+  switch (worker->get_channel_func()) {
+    case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
+      int color = 0;
+      char color_brightness = 0;
+      char brightness = 0;
+
+      if (worker->ipcc_get_rgbw_value(&color, &color_brightness, &brightness)) {
+        switch (worker->get_channel_func()) {
+          case SUPLA_CHANNELFNC_DIMMER:
+            result = (brightness > 0) == setOn;
+            break;
+          case SUPLA_CHANNELFNC_RGBLIGHTING:
+            result = (color_brightness > 0) == setOn;
+            break;
+          case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+            result = (brightness > 0 && color_brightness > 0) == setOn;
+            break;
+        }
+      }
+    } break;
+    default: {
+      char value = 0;
+      if (worker->ipcc_get_char_value(&value)) {
+        result = (value == 1) == setOn;
+      }
+      break;
+    }
+  }
+
+  return result;
 }
 
 bool s_worker_action_turn_onoff::do_action() {
