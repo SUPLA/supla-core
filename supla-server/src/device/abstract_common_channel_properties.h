@@ -35,6 +35,11 @@ class supla_abstract_common_channel_properties {
  private:
   void add_relation(std::vector<supla_channel_relation> *relations,
                     int channel_id, int parent_id, short relation_type);
+  template <typename config_class_T, typename raw_config_T,
+            typename sensor_class_T>
+  void get_flood_sensor_relations(
+      std::vector<supla_channel_relation> *relations, e_relation_kind kind,
+      unsigned char protocol_version, int func, int parent_channel_func);
 
  protected:
   virtual unsigned char get_protocol_version(void) = 0;

@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "doubles/device/CommonChannelPropertiesMock.h"
+#include "jsonconfig/channel/container_config.h"
 #include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/power_switch_config.h"
 #include "jsonconfig/channel/valve_config.h"
@@ -1032,7 +1033,9 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_BinarySensor) {
   }
 }
 
-TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_FloodSensor) {
+template <typename config_classT, typename raw_config_T>
+void CommonChannelPropertiesTest::relationWithSubchannel_FloodSensor(
+    int parnet_channel_func) {
   for (char x = 0; x < 2; x++) {
     CommonChannelPropertiesMock mock;
 
@@ -1040,17 +1043,16 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_FloodSensor) {
 
     EXPECT_CALL(mock, get_channel_number).WillRepeatedly(Return(10));
     EXPECT_CALL(mock, get_id()).WillRepeatedly(Return(1000));
-    EXPECT_CALL(mock, get_func())
-        .WillRepeatedly(Return(SUPLA_CHANNELFNC_VALVE_OPENCLOSE));
+    EXPECT_CALL(mock, get_func()).WillRepeatedly(Return(parnet_channel_func));
 
     EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
-      valve_config *config = new valve_config();
-      TChannelConfig_Valve valve_cfg = {};
-      valve_cfg.SensorInfo[1].IsSet = 1;
-      valve_cfg.SensorInfo[1].ChannelNo = 5;
-      valve_cfg.SensorInfo[5].IsSet = 1;
-      valve_cfg.SensorInfo[5].ChannelNo = 15;
-      config->set_config(&valve_cfg);
+      config_classT *config = new config_classT();
+      raw_config_T raw_cfg = {};
+      raw_cfg.SensorInfo[1].IsSet = 1;
+      raw_cfg.SensorInfo[1].ChannelNo = 5;
+      raw_cfg.SensorInfo[5].IsSet = 1;
+      raw_cfg.SensorInfo[5].ChannelNo = 15;
+      config->set_config(&raw_cfg);
       return config;
     });
 
@@ -1099,7 +1101,18 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_FloodSensor) {
   }
 }
 
-TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_FloodSensor) {
+TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_FloodSensor) {
+  relationWithSubchannel_FloodSensor<valve_config, TChannelConfig_Valve>(
+      SUPLA_CHANNELFNC_VALVE_OPENCLOSE);
+
+  relationWithSubchannel_FloodSensor<container_config,
+                                     TChannelConfig_Container>(
+      SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR);
+}
+
+template <typename config_classT, typename raw_config_T>
+void CommonChannelPropertiesTest::relationWithParentChannel_FloodSensor(
+    int parnet_channel_func) {
   for (char x = 0; x < 2; x++) {
     CommonChannelPropertiesMock mock;
 
@@ -1125,15 +1138,15 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_FloodSensor) {
                   .WillRepeatedly(Return(1000));
 
               EXPECT_CALL(related_props_mock, get_func)
-                  .WillRepeatedly(Return(SUPLA_CHANNELFNC_VALVE_OPENCLOSE));
+                  .WillRepeatedly(Return(parnet_channel_func));
 
               EXPECT_CALL(related_props_mock, get_json_config)
                   .WillRepeatedly([]() {
-                    valve_config *config = new valve_config();
-                    TChannelConfig_Valve valve_cfg = {};
-                    valve_cfg.SensorInfo[5].IsSet = 1;
-                    valve_cfg.SensorInfo[5].ChannelNo = 15;
-                    config->set_config(&valve_cfg);
+                    config_classT *config = new config_classT();
+                    raw_config_T raw_cfg = {};
+                    raw_cfg.SensorInfo[5].IsSet = 1;
+                    raw_cfg.SensorInfo[5].ChannelNo = 15;
+                    config->set_config(&raw_cfg);
                     return config;
                   });
 
@@ -1153,6 +1166,15 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_FloodSensor) {
       EXPECT_EQ(rel.at(0).get_relation_type(), CHANNEL_RELATION_TYPE_DEFAULT);
     }
   }
+}
+
+TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_FloodSensor) {
+  relationWithParentChannel_FloodSensor<valve_config, TChannelConfig_Valve>(
+      SUPLA_CHANNELFNC_VALVE_OPENCLOSE);
+
+  relationWithParentChannel_FloodSensor<container_config,
+                                        TChannelConfig_Container>(
+      SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR);
 }
 
 } /* namespace testing */

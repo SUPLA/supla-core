@@ -25,6 +25,11 @@ namespace testing {
 
 class CommonChannelPropertiesTest : public Test {
  public:
+  template <typename config_classT, typename raw_config_T>
+  void relationWithParentChannel_FloodSensor(int parnet_channel_func);
+
+  template <typename config_classT, typename raw_config_T>
+  void relationWithSubchannel_FloodSensor(int parnet_channel_func);
 };
 
 } /* namespace testing */
