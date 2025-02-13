@@ -1587,7 +1587,6 @@ bool supla_mqtt_channel_message_provider::ha_valve(const char *topic_prefix,
   ha_json_set_optimistic(root);
 
   ha_json_set_short_topic(root, "cmd_t", "execute_action");
-  ha_json_set_string_param(root, "pos", "true");
   ha_json_set_short_topic(root, "stat_t", "state/closed");
   ha_json_set_string_param(root, "stat_open", "false");
   ha_json_set_string_param(root, "stat_clsd", "true");
