@@ -680,6 +680,11 @@ void supla_mqtt_channel_message_provider::ha_json_set_int_param(
   cJSON_AddNumberToObject(root, param_name, value);
 }
 
+void supla_mqtt_channel_message_provider::ha_json_set_null_param(
+    cJSON *root, const char *param_name) {
+  cJSON_AddNullToObject(root, param_name);
+}
+
 void supla_mqtt_channel_message_provider::ha_json_set_availability(
     cJSON *root, const char *topic_prefix, const char *avil,
     const char *notavil) {
@@ -983,7 +988,7 @@ bool supla_mqtt_channel_message_provider::ha_gate(const char *topic_prefix,
   ha_json_set_short_topic(root, "cmd_t", "execute_action");
   ha_json_set_string_param(root, "dev_cla", device_class);
   ha_json_set_string_param(root, "pl_open", "OPEN");
-  ha_json_set_string_param(root, "pl_stop", "");
+  ha_json_set_null_param(root, "pl_stop");
   ha_json_set_string_param(root, "pl_cls", "CLOSE");
 
   ha_json_set_short_topic(root, "state_topic", "state/hi");
@@ -1013,8 +1018,8 @@ bool supla_mqtt_channel_message_provider::ha_door(const char *topic_prefix,
   ha_json_set_short_topic(root, "cmd_t", "execute_action");
   ha_json_set_string_param(root, "dev_cla", "door");
   ha_json_set_string_param(root, "pl_open", "OPEN");
-  ha_json_set_string_param(root, "pl_stop", "");
-  ha_json_set_string_param(root, "pl_cls", "OPEN");
+  ha_json_set_null_param(root, "pl_stop");
+  ha_json_set_null_param(root, "pl_cls");
 
   ha_json_set_short_topic(root, "state_topic", "state/hi");
   ha_json_set_string_param(root, "state_open", "false");
@@ -1044,6 +1049,10 @@ bool supla_mqtt_channel_message_provider::ha_button(const char *topic_prefix,
   ha_json_set_short_topic(root, "cmd_t", "execute_action");
   ha_json_set_string_param(root, "pl_prs", "OPEN_CLOSE");
   ha_json_set_string_param(root, "name", btn_name);
+
+  ha_json_set_short_topic(root, "avty_t", "state/connected");
+  ha_json_set_string_param(root, "pl_avail", "true");
+  ha_json_set_string_param(root, "pl_not_avail", "false");
 
   return ha_get_message(root, "button", 0, false, topic_name, message,
                         message_size);
@@ -1565,6 +1574,32 @@ bool supla_mqtt_channel_message_provider::ha_action_trigger(
                            message_size, cap);
 }
 
+bool supla_mqtt_channel_message_provider::ha_valve(const char *topic_prefix,
+                                                   char **topic_name,
+                                                   void **message,
+                                                   size_t *message_size) {
+  cJSON *root = ha_json_create_root(topic_prefix, NULL, NULL, false);
+  if (!root) {
+    return false;
+  }
+
+  ha_json_set_retain(root);
+  ha_json_set_optimistic(root);
+
+  ha_json_set_short_topic(root, "cmd_t", "execute_action");
+  ha_json_set_string_param(root, "pos", "true");
+  ha_json_set_short_topic(root, "stat_t", "state/closed");
+  ha_json_set_string_param(root, "stat_open", "false");
+  ha_json_set_string_param(root, "stat_clsd", "true");
+
+  ha_json_set_short_topic(root, "avty_t", "state/connected");
+  ha_json_set_string_param(root, "pl_avail", "true");
+  ha_json_set_string_param(root, "pl_not_avail", "false");
+
+  return ha_get_message(root, "valve", 0, false, topic_name, message,
+                        message_size);
+}
+
 supla_channel_fragment
 supla_mqtt_channel_message_provider::get_channel_fragment(int device_id,
                                                           int channel_number) {
@@ -1920,6 +1955,8 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
     case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
       return ha_gpm(index, topic_prefix, topic_name, message, message_size);
+    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+      return ha_valve(topic_prefix, topic_name, message, message_size);
   }
   return false;
 }
