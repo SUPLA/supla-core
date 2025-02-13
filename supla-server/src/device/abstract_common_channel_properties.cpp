@@ -36,6 +36,7 @@
 #include "jsonconfig/channel/power_switch_config.h"
 #include "jsonconfig/channel/roller_shutter_config.h"
 #include "jsonconfig/channel/temp_hum_config.h"
+#include "jsonconfig/channel/valve_config.h"
 #include "log.h"
 #include "proto.h"
 using std::vector;
@@ -65,6 +66,75 @@ void supla_abstract_common_channel_properties::add_relation(
       supla_channel_relation(channel_id, parent_id, relation_type));
 }
 
+template <typename config_class_T, typename raw_config_T,
+          typename sensor_class_T>
+void supla_abstract_common_channel_properties::get_flood_sensor_relations(
+    vector<supla_channel_relation> *relations, e_relation_kind kind,
+    unsigned char protocol_version, int func, int parent_channel_func) {
+  if (protocol_version < 27) {
+    return;
+  }
+
+  if ((func == parent_channel_func) &&
+      (kind == relation_any || kind == relation_with_sub_channel)) {
+    supla_json_config *json_config = get_json_config();
+    if (json_config) {
+      config_class_T config(json_config);
+      raw_config_T raw_cfg = {};
+      if (config.get_config(&raw_cfg)) {
+        for (size_t a = 0;
+             a < sizeof(raw_cfg.SensorInfo) / sizeof(sensor_class_T); a++) {
+          if (raw_cfg.SensorInfo[a].IsSet) {
+            for_each(false,
+                     [&](supla_abstract_common_channel_properties *props,
+                         bool *will_continue) -> void {
+                       if (raw_cfg.SensorInfo[a].ChannelNo ==
+                               props->get_channel_number() &&
+                           props->get_func() == SUPLA_CHANNELFNC_FLOOD_SENSOR) {
+                         add_relation(relations, props->get_id(), get_id(),
+                                      CHANNEL_RELATION_TYPE_DEFAULT);
+                         *will_continue = false;
+                       }
+                     });
+          }
+        }
+      }
+      delete json_config;
+    }
+  }
+
+  if (func == SUPLA_CHANNELFNC_FLOOD_SENSOR &&
+      (kind == relation_any || kind == relation_with_parent_channel)) {
+    for_each(
+        false,
+        [&](supla_abstract_common_channel_properties *props,
+            bool *will_continue) -> void {
+          int props_func = props->get_func();
+          if (props_func == parent_channel_func) {
+            supla_json_config *json_config = props->get_json_config();
+            if (json_config) {
+              config_class_T config(json_config);
+              raw_config_T raw_cfg = {};
+              if (config.get_config(&raw_cfg)) {
+                for (size_t a = 0;
+                     a < sizeof(raw_cfg.SensorInfo) / sizeof(sensor_class_T);
+                     a++) {
+                  if (raw_cfg.SensorInfo[a].IsSet &&
+                      raw_cfg.SensorInfo[a].ChannelNo == get_channel_number()) {
+                    add_relation(relations, get_id(), props->get_id(),
+                                 CHANNEL_RELATION_TYPE_DEFAULT);
+                    *will_continue = false;
+                    break;
+                  }
+                }
+              }
+              delete json_config;
+            }
+          }
+        });
+  }
+}
+
 void supla_abstract_common_channel_properties::get_channel_relations(
     vector<supla_channel_relation> *relations, e_relation_kind kind) {
   if (!relations) {
@@ -72,9 +142,20 @@ void supla_abstract_common_channel_properties::get_channel_relations(
   }
 
   unsigned char protocol_version = get_protocol_version();
+  int func = get_func();
+
+  get_flood_sensor_relations<valve_config, TChannelConfig_Valve,
+                             TValve_SensorInfo>(
+      relations, kind, protocol_version, func,
+      SUPLA_CHANNELFNC_VALVE_OPENCLOSE);
+
+  get_flood_sensor_relations<container_config, TChannelConfig_Container,
+                             TContainer_SensorInfo>(
+      relations, kind, protocol_version, func,
+      SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR);
 
   if (kind == relation_any || kind == relation_with_sub_channel) {
-    switch (get_func()) {
+    switch (func) {
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
@@ -208,7 +289,6 @@ void supla_abstract_common_channel_properties::get_channel_relations(
   }
 
   if (kind == relation_any || kind == relation_with_parent_channel) {
-    int func = get_func();
     int type = get_type();
 
     switch (func) {
@@ -500,6 +580,9 @@ void supla_abstract_common_channel_properties::get_config(
     JSON_TO_CONFIG(container_config, TChannelConfig_Container, config,
                    config_size);
     return;
+  } else if (get_type() == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE) {
+    JSON_TO_CONFIG(valve_config, TChannelConfig_Valve, config, config_size);
+    return;
   }
 
   switch (get_func()) {
@@ -657,6 +740,10 @@ int supla_abstract_common_channel_properties::set_user_config(
     json_config = new container_config(nullptr);
     static_cast<container_config *>(json_config)
         ->set_config((TChannelConfig_Container *)config);
+  } else if (type == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE) {
+    json_config = new valve_config(nullptr);
+    static_cast<valve_config *>(json_config)
+        ->set_config((TChannelConfig_Valve *)config);
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }

@@ -16,22 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef COMMON_CHANNEL_PROPERTIES_TEST_H_
-#define COMMON_CHANNEL_PROPERTIES_TEST_H_
+#ifndef GETCONTAINERVALUECOMMANDTEST_H_
+#define GETCONTAINERVALUECOMMANDTEST_H_
 
-#include "gtest/gtest.h"  // NOLINT
+#include "doubles/ipc/GetContainerValueCommandMock.h"
+#include "ipc/IpcCommandTest.h"
 
 namespace testing {
 
-class CommonChannelPropertiesTest : public Test {
- public:
-  template <typename config_classT, typename raw_config_T>
-  void relationWithParentChannel_FloodSensor(int parnet_channel_func);
+class GetContainerValueCommandTest : public IpcCommandTest {
+ protected:
+  GetContainerValueCommandMock *cmd;
+  virtual supla_abstract_ipc_command *getCommand(void);
 
-  template <typename config_classT, typename raw_config_T>
-  void relationWithSubchannel_FloodSensor(int parnet_channel_func);
+ public:
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
 } /* namespace testing */
 
-#endif /* COMMON_CHANNEL_PROPERTIES_TEST_H_ */
+#endif /* GETCONTAINERVALUECOMMANDTEST_H_ */

@@ -16,22 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef COMMON_CHANNEL_PROPERTIES_TEST_H_
-#define COMMON_CHANNEL_PROPERTIES_TEST_H_
+#ifndef VALVE_CONFIG_H_
+#define VALVE_CONFIG_H_
 
-#include "gtest/gtest.h"  // NOLINT
+#include <map>
+#include <string>
 
-namespace testing {
+#include "jsonconfig/json_config.h"
+#include "proto.h"
 
-class CommonChannelPropertiesTest : public Test {
+class valve_config : public supla_json_config {
+ private:
+  static const std::map<unsigned _supla_int16_t, std::string> field_map;
+
+ protected:
  public:
-  template <typename config_classT, typename raw_config_T>
-  void relationWithParentChannel_FloodSensor(int parnet_channel_func);
-
-  template <typename config_classT, typename raw_config_T>
-  void relationWithSubchannel_FloodSensor(int parnet_channel_func);
+  explicit valve_config(supla_json_config *root);
+  valve_config(void);
+  virtual void merge(supla_json_config *dst);
+  void set_config(TChannelConfig_Valve *config);
+  bool get_config(TChannelConfig_Valve *config);
 };
 
-} /* namespace testing */
-
-#endif /* COMMON_CHANNEL_PROPERTIES_TEST_H_ */
+#endif /* VALVE_CONFIG_H_ */

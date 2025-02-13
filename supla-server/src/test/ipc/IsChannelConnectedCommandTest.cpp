@@ -52,6 +52,14 @@ TEST_F(IsChannelConnectedCommandTest, connected_but_not_available) {
                         "CONNECTED_BUT_NOT_AVAILABLE:30\n");
 }
 
+TEST_F(IsChannelConnectedCommandTest, offline_remote_wakeup_not_supported) {
+  EXPECT_CALL(*cmd, get_availability_status(10, 20, 30))
+      .WillOnce(Return(supla_channel_availability_status(
+          supla_channel_availability_status(3, true))));
+  commandProcessingTest("IS-CHANNEL-CONNECTED:10,20,30\n",
+                        "OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED:30\n");
+}
+
 TEST_F(IsChannelConnectedCommandTest, disconnected) {
   EXPECT_CALL(*cmd, get_availability_status(10, 20, 30))
       .WillOnce(Return(supla_channel_availability_status(true)));

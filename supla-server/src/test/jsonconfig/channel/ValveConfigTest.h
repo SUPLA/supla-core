@@ -16,22 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef COMMON_CHANNEL_PROPERTIES_TEST_H_
-#define COMMON_CHANNEL_PROPERTIES_TEST_H_
+#ifndef VALVE_CONFIG_TEST_H_
+#define VALVE_CONFIG_TEST_H_
 
 #include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
 
-class CommonChannelPropertiesTest : public Test {
+class ValveConfigTest : public Test {
+ protected:
  public:
-  template <typename config_classT, typename raw_config_T>
-  void relationWithParentChannel_FloodSensor(int parnet_channel_func);
-
-  template <typename config_classT, typename raw_config_T>
-  void relationWithSubchannel_FloodSensor(int parnet_channel_func);
+  ValveConfigTest(void);
+  virtual ~ValveConfigTest(void);
 };
 
 } /* namespace testing */
 
-#endif /* COMMON_CHANNEL_PROPERTIES_TEST_H_ */
+#endif /* VALVE_CONFIG_TEST_H_ */

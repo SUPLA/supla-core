@@ -21,7 +21,9 @@
 
 class supla_channel_availability_status {
  private:
-  char proto_offline;  // 0 - ONLINE, 1 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE
+  char proto_offline;  // 0 - ONLINE, 1 - OFFLINE - 2 ONLINE BUT NOT AVAILABLE,
+                       // 3 - Device doesn't support remote wakeup, so we wait
+                       // for it to initiate the communication.
  public:
   supla_channel_availability_status(void);
   supla_channel_availability_status(char status, bool proto_offline);
@@ -31,6 +33,7 @@ class supla_channel_availability_status {
   bool is_online(void) const;
   bool is_offline(void) const;
   bool is_online_but_not_available(void) const;
+  bool is_offline_remote_wakeup_not_supported(void) const;
 
   char get_proto_online(void) const;
   char get_proto_offline(void) const;

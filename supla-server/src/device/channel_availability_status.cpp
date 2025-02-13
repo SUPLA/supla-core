@@ -18,13 +18,16 @@
 
 #include "channel_availability_status.h"
 
+#include "proto.h"
+
 supla_channel_availability_status::supla_channel_availability_status(void) {
-  proto_offline = 0;
+  proto_offline = SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE;
 }
 
 supla_channel_availability_status::supla_channel_availability_status(
     bool offline) {
-  proto_offline = offline ? 1 : 0;
+  proto_offline = offline ? SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE
+                          : SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE;
 }
 
 supla_channel_availability_status::supla_channel_availability_status(
@@ -40,20 +43,28 @@ supla_channel_availability_status::supla_channel_availability_status(
 supla_channel_availability_status::~supla_channel_availability_status(void) {}
 
 bool supla_channel_availability_status::is_online(void) const {
-  return proto_offline == 0;
+  return proto_offline == SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE;
 }
 
 bool supla_channel_availability_status::is_offline(void) const {
-  return proto_offline == 1;
+  return proto_offline == SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
 }
 
 bool supla_channel_availability_status::is_online_but_not_available(
     void) const {
-  return proto_offline == 2;
+  return proto_offline == SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE;
+}
+
+bool supla_channel_availability_status::is_offline_remote_wakeup_not_supported(
+    void) const {
+  return proto_offline ==
+         SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED;
 }
 
 char supla_channel_availability_status::get_proto_online(void) const {
-  if (proto_offline == 2) {
+  if (proto_offline == SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE ||
+      proto_offline ==
+          SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED) {
     return proto_offline;
   }
 
@@ -65,23 +76,28 @@ char supla_channel_availability_status::get_proto_offline(void) const {
 }
 
 void supla_channel_availability_status::set_proto_online(char online) {
-  if (online == 2) {
-    proto_offline = 2;
+  if (online == SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE ||
+      online ==
+          SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED) {
+    proto_offline = online;
   } else {
     proto_offline = !online;
   }
 }
 
 void supla_channel_availability_status::set_proto_offline(char offline) {
-  if (offline == 2) {
-    proto_offline = 2;
+  if (offline == SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE ||
+      offline ==
+          SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED) {
+    proto_offline = offline;
   } else {
     proto_offline = !!offline;
   }
 }
 
 void supla_channel_availability_status::set_offline(bool offline) {
-  proto_offline = offline ? 1 : 0;
+  proto_offline = offline ? SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE
+                          : SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE;
 }
 
 bool supla_channel_availability_status::operator==(

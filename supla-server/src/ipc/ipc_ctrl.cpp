@@ -30,6 +30,7 @@
 #include "ipc/enter_cfg_mode_command.h"
 #include "ipc/execute_scene_command.h"
 #include "ipc/get_char_command.h"
+#include "ipc/get_container_value_command.h"
 #include "ipc/get_digiglass_value_command.h"
 #include "ipc/get_double_command.h"
 #include "ipc/get_em_value_command.h"
@@ -94,6 +95,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_get_temperature_command(socket_adapter));
   add_command(new supla_get_humidity_command(socket_adapter));
   add_command(new supla_get_char_command(socket_adapter));
+  add_command(new supla_get_container_value_command(socket_adapter));
   add_command(new supla_get_rgbw_command(socket_adapter));
   add_command(new supla_get_em_value_command(socket_adapter));
   add_command(new supla_get_ic_value_command(socket_adapter));

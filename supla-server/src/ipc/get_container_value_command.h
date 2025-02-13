@@ -16,22 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef COMMON_CHANNEL_PROPERTIES_TEST_H_
-#define COMMON_CHANNEL_PROPERTIES_TEST_H_
+#ifndef SUPLA_GET_CONTAINER_VALUE_COMMAND_H_
+#define SUPLA_GET_CONTAINER_VALUE_COMMAND_H_
 
-#include "gtest/gtest.h"  // NOLINT
+#include <string>
 
-namespace testing {
+#include "ipc/abstract_get_container_value_command.h"
+#include "proto.h"
 
-class CommonChannelPropertiesTest : public Test {
+class supla_get_container_value_command
+    : public supla_abstract_get_container_value_command {
+ protected:
+  virtual supla_channel_container_value *get_value(int user_id, int device_id,
+                                                   int channel_id);
+
  public:
-  template <typename config_classT, typename raw_config_T>
-  void relationWithParentChannel_FloodSensor(int parnet_channel_func);
-
-  template <typename config_classT, typename raw_config_T>
-  void relationWithSubchannel_FloodSensor(int parnet_channel_func);
+  explicit supla_get_container_value_command(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
 };
 
-} /* namespace testing */
-
-#endif /* COMMON_CHANNEL_PROPERTIES_TEST_H_ */
+#endif /* SUPLA_GET_CONTAINER_VALUE_COMMAND_H_ */

@@ -341,9 +341,19 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TContainerChannel_Value),
             static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
 
+  EXPECT_EQ(sizeof(TContainer_SensorInfo), 5);
+
   EXPECT_EQ(sizeof(TChannelConfig_Container), 87);
   EXPECT_LE(sizeof(TChannelConfig_Container),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(sizeof(TValve_SensorInfo), 4);
+
+  EXPECT_EQ(sizeof(TChannelConfig_Valve), 112);
+  EXPECT_LE(sizeof(TChannelConfig_Valve),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_LE(sizeof(TValve_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 }
 
 TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {

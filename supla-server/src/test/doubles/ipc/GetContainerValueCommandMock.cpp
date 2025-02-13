@@ -16,22 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef COMMON_CHANNEL_PROPERTIES_TEST_H_
-#define COMMON_CHANNEL_PROPERTIES_TEST_H_
-
-#include "gtest/gtest.h"  // NOLINT
+#include "doubles/ipc/GetContainerValueCommandMock.h"
 
 namespace testing {
 
-class CommonChannelPropertiesTest : public Test {
- public:
-  template <typename config_classT, typename raw_config_T>
-  void relationWithParentChannel_FloodSensor(int parnet_channel_func);
+GetContainerValueCommandMock::GetContainerValueCommandMock(
+    supla_abstract_ipc_socket_adapter *socket_adapter)
+    : supla_abstract_get_container_value_command(socket_adapter) {}
 
-  template <typename config_classT, typename raw_config_T>
-  void relationWithSubchannel_FloodSensor(int parnet_channel_func);
-};
-
-} /* namespace testing */
-
-#endif /* COMMON_CHANNEL_PROPERTIES_TEST_H_ */
+}  // namespace testing

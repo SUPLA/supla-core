@@ -44,6 +44,9 @@ void supla_abstract_is_channel_connected_command::on_command_match(
         } else if (status.is_online_but_not_available()) {
           send_result("CONNECTED_BUT_NOT_AVAILABLE:", channel_id);
           return true;
+        } else if (status.is_offline_remote_wakeup_not_supported()) {
+          send_result("OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED:", channel_id);
+          return true;
         }
 
         return false;

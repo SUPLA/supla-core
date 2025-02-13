@@ -56,6 +56,7 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOffline) {
   EXPECT_TRUE(status1.is_online());
   EXPECT_FALSE(status1.is_offline());
   EXPECT_FALSE(status1.is_online_but_not_available());
+  EXPECT_FALSE(status1.is_offline_remote_wakeup_not_supported());
 
   EXPECT_EQ(status1.get_proto_online(), 1);
   EXPECT_EQ(status1.get_proto_offline(), 0);
@@ -64,6 +65,7 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOffline) {
   EXPECT_FALSE(status2.is_online());
   EXPECT_TRUE(status2.is_offline());
   EXPECT_FALSE(status2.is_online_but_not_available());
+  EXPECT_FALSE(status2.is_offline_remote_wakeup_not_supported());
 
   EXPECT_EQ(status2.get_proto_online(), 0);
   EXPECT_EQ(status2.get_proto_offline(), 1);
@@ -72,17 +74,28 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOffline) {
   EXPECT_FALSE(status3.is_online());
   EXPECT_FALSE(status3.is_offline());
   EXPECT_TRUE(status3.is_online_but_not_available());
+  EXPECT_FALSE(status3.is_offline_remote_wakeup_not_supported());
 
   EXPECT_EQ(status3.get_proto_online(), 2);
   EXPECT_EQ(status3.get_proto_offline(), 2);
 
   supla_channel_availability_status status4(3, true);
   EXPECT_FALSE(status4.is_online());
-  EXPECT_TRUE(status4.is_offline());
+  EXPECT_FALSE(status4.is_offline());
   EXPECT_FALSE(status4.is_online_but_not_available());
+  EXPECT_TRUE(status4.is_offline_remote_wakeup_not_supported());
 
-  EXPECT_EQ(status2.get_proto_online(), 0);
-  EXPECT_EQ(status2.get_proto_offline(), 1);
+  EXPECT_EQ(status4.get_proto_online(), 3);
+  EXPECT_EQ(status4.get_proto_offline(), 3);
+
+  supla_channel_availability_status status5(4, true);
+  EXPECT_FALSE(status5.is_online());
+  EXPECT_TRUE(status5.is_offline());
+  EXPECT_FALSE(status5.is_online_but_not_available());
+  EXPECT_FALSE(status5.is_offline_remote_wakeup_not_supported());
+
+  EXPECT_EQ(status5.get_proto_online(), 0);
+  EXPECT_EQ(status5.get_proto_offline(), 1);
 }
 
 TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOnline) {
@@ -90,6 +103,7 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOnline) {
   EXPECT_TRUE(status1.is_online());
   EXPECT_FALSE(status1.is_offline());
   EXPECT_FALSE(status1.is_online_but_not_available());
+  EXPECT_FALSE(status1.is_offline_remote_wakeup_not_supported());
 
   EXPECT_EQ(status1.get_proto_online(), 1);
   EXPECT_EQ(status1.get_proto_offline(), 0);
@@ -98,6 +112,7 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOnline) {
   EXPECT_FALSE(status2.is_online());
   EXPECT_TRUE(status2.is_offline());
   EXPECT_FALSE(status2.is_online_but_not_available());
+  EXPECT_FALSE(status2.is_offline_remote_wakeup_not_supported());
 
   EXPECT_EQ(status2.get_proto_online(), 0);
   EXPECT_EQ(status2.get_proto_offline(), 1);
@@ -106,17 +121,27 @@ TEST_F(ChannelAvailabilityStatusTest, constructorWithProtoOnline) {
   EXPECT_FALSE(status3.is_online());
   EXPECT_FALSE(status3.is_offline());
   EXPECT_TRUE(status3.is_online_but_not_available());
+  EXPECT_FALSE(status3.is_offline_remote_wakeup_not_supported());
 
   EXPECT_EQ(status3.get_proto_online(), 2);
   EXPECT_EQ(status3.get_proto_offline(), 2);
 
   supla_channel_availability_status status4(3, false);
-  EXPECT_TRUE(status4.is_online());
+  EXPECT_FALSE(status4.is_online());
   EXPECT_FALSE(status4.is_offline());
   EXPECT_FALSE(status4.is_online_but_not_available());
+  EXPECT_TRUE(status4.is_offline_remote_wakeup_not_supported());
 
-  EXPECT_EQ(status4.get_proto_online(), 1);
-  EXPECT_EQ(status4.get_proto_offline(), 0);
+  EXPECT_EQ(status4.get_proto_online(), 3);
+  EXPECT_EQ(status4.get_proto_offline(), 3);
+
+  supla_channel_availability_status status5(4, false);
+  EXPECT_TRUE(status5.is_online());
+  EXPECT_FALSE(status5.is_offline());
+  EXPECT_FALSE(status5.is_online_but_not_available());
+
+  EXPECT_EQ(status5.get_proto_online(), 1);
+  EXPECT_EQ(status5.get_proto_offline(), 0);
 }
 
 TEST_F(ChannelAvailabilityStatusTest, set_proto_offline) {
@@ -147,6 +172,15 @@ TEST_F(ChannelAvailabilityStatusTest, set_proto_offline) {
   EXPECT_EQ(status.get_proto_offline(), 2);
 
   status.set_proto_offline(3);
+  EXPECT_FALSE(status.is_online());
+  EXPECT_FALSE(status.is_offline());
+  EXPECT_FALSE(status.is_online_but_not_available());
+  EXPECT_TRUE(status.is_offline_remote_wakeup_not_supported());
+
+  EXPECT_EQ(status.get_proto_online(), 3);
+  EXPECT_EQ(status.get_proto_offline(), 3);
+
+  status.set_proto_offline(4);
   EXPECT_FALSE(status.is_online());
   EXPECT_TRUE(status.is_offline());
   EXPECT_FALSE(status.is_online_but_not_available());
@@ -183,6 +217,15 @@ TEST_F(ChannelAvailabilityStatusTest, set_proto_online) {
   EXPECT_EQ(status.get_proto_offline(), 2);
 
   status.set_proto_online(3);
+  EXPECT_FALSE(status.is_online());
+  EXPECT_FALSE(status.is_offline());
+  EXPECT_FALSE(status.is_online_but_not_available());
+  EXPECT_TRUE(status.is_offline_remote_wakeup_not_supported());
+
+  EXPECT_EQ(status.get_proto_online(), 3);
+  EXPECT_EQ(status.get_proto_offline(), 3);
+
+  status.set_proto_online(4);
   EXPECT_TRUE(status.is_online());
   EXPECT_FALSE(status.is_offline());
   EXPECT_FALSE(status.is_online_but_not_available());

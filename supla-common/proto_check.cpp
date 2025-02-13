@@ -300,9 +300,19 @@ static_assert(sizeof(TContainerChannel_Value) == 3);
 static_assert(sizeof(TContainerChannel_Value) <=
               (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
+static_assert(sizeof(TContainer_SensorInfo) == 5);
+
 static_assert(sizeof(TChannelConfig_Container) == 87);
 static_assert(sizeof(TChannelConfig_Container) <=
               (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+static_assert(sizeof(TValve_SensorInfo) == 4);
+static_assert(sizeof(TChannelConfig_Valve) == 112);
+static_assert(sizeof(TChannelConfig_Container) <=
+              (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+static_assert(sizeof(TValve_Value) <= SUPLA_CHANNELVALUE_SIZE);
+static_assert(sizeof(TCSD_Valve) <= SUPLA_CHANNELVALUE_SIZE);
 
 static_assert(SUPLA_CHANNEL_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
 static_assert(SUPLA_LOCATION_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
