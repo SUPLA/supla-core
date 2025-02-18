@@ -824,6 +824,7 @@ typedef struct {
 #define SUPLA_HVAC_VALUE_FLAG_COOL (1ULL << 10)
 #define SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE_TEMPORAL_OVERRIDE (1ULL << 11)
 #define SUPLA_HVAC_VALUE_FLAG_BATTERY_COVER_OPEN (1ULL << 12)
+#define SUPLA_HVAC_VALUE_FLAG_CALIBRATION_ERROR (1ULL << 13)
 
 // HVAC modes are used in channel value (as a command from server or
 // as a status response from device to server) and in weekly schedules
