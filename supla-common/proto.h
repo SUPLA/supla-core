@@ -3564,6 +3564,7 @@ typedef struct {
 
 #define SUPLA_VALVE_FLAG_FLOODING 0x1
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2
+#define SUPLA_VALVE_FLAG_MOTOR_PROBLEM 0x4
 
 // Valve channel value
 // Device -> Server -> Client
