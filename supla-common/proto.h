@@ -3021,7 +3021,14 @@ typedef struct {
   _supla_int16_t HumidityAdjustment;        // * 0.01
   unsigned char AdjustmentAppliedByDevice;  // 1/true - by device
                                             // 0/false - by server
-  unsigned char Reserved[27];
+  // Min/Max allowed adjustment values that channel supports. If set to 0, then
+  // field is not supported by device and Cloud should use default -10..10 range
+  // for correction. Otherwise, Cloud should use these values.
+  _supla_int16_t MinTemperatureAdjustment;  // * 0.01
+  _supla_int16_t MaxTemperatureAdjustment;  // * 0.01
+  _supla_int16_t MinHumidityAdjustment;     // * 0.01
+  _supla_int16_t MaxHumidityAdjustment;      // * 0.01
+  unsigned char Reserved[27 - 4 * sizeof(_supla_int16_t)];
 } TChannelConfig_TemperatureAndHumidity;  // v. >= 21
 
 // ChannelConfig for all binary sensors (all functions valid for
