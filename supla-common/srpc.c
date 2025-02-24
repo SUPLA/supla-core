@@ -2398,13 +2398,13 @@ srpc_ds_async_channel_value_changed_b(void *_srpc, unsigned char channel_number,
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed_c(
     void *_srpc, unsigned char channel_number, char *value,
-    unsigned char offline, unsigned _supla_int_t validity_time_sec) {
+    unsigned char state, unsigned _supla_int_t validity_time_sec) {
   TDS_SuplaDeviceChannelValue_C ncsc;
   ncsc.ChannelNumber = channel_number;
-  if (offline > 3) {
-    offline = 1;
+  if (state > SUPLA_CHANNEL_STATE_FLAG_MAX) {
+    state = SUPLA_CHANNEL_STATE_FLAG_OFFLINE;
   }
-  ncsc.Offline = offline;
+  ncsc.State = state;
   ncsc.ValidityTimeSec = validity_time_sec;
   memcpy(ncsc.value, value, SUPLA_CHANNELVALUE_SIZE);
 

@@ -296,7 +296,7 @@ srpc_ds_async_channel_value_changed_b(void *_srpc, unsigned char channel_number,
                                       char *value, unsigned char offline);
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed_c(
     void *_srpc, unsigned char channel_number, char *value,
-    unsigned char offline, unsigned _supla_int_t validity_time_sec);
+    unsigned char state, unsigned _supla_int_t validity_time_sec);
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_extendedvalue_changed(
     void *_srpc, unsigned char channel_number,
     TSuplaChannelExtendedValue *value);
