@@ -390,7 +390,7 @@ jobject supla_channelvalue_to_jobject(void *_suplaclient, void *user_data,
 }
 
 jobject supla_online_to_joblect(JNIEnv *env, char online) {
-  char enum_name[30] = {};
+  char enum_name[40] = {};
 
   switch (online) {
     case SUPLA_CHANNEL_ONLINE_FLAG_ONLINE:
