@@ -950,7 +950,11 @@ typedef struct {
   _supla_int_t Default;
   _supla_int64_t Flags;
 
-  unsigned char State;  // see SUPLA_CHANNEL_STATE_FLAG_
+  union {
+    unsigned char Offline;  // deprecated - use State name, for allowed values
+                            // see State
+    unsigned char State;  // see SUPLA_CHANNEL_STATE_FLAG_
+  };
   unsigned _supla_int_t ValueValidityTimeSec;
 
   union {
@@ -1146,7 +1150,11 @@ typedef struct {
   // device -> server
 
   unsigned char ChannelNumber;
-  unsigned char State;  // see SUPLA_CHANNEL_STATE_FLAG_
+  union {
+    unsigned char Offline;  // deprecated - use State name, for allowed values
+                            // see State
+    unsigned char State;  // see SUPLA_CHANNEL_STATE_FLAG_
+  };
   unsigned _supla_int_t ValidityTimeSec;
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TDS_SuplaDeviceChannelValue_C;  // v. >= 12
