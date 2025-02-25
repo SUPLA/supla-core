@@ -421,13 +421,11 @@ char SRPC_ICACHE_FLASH srpc_iterate_device(void *_srpc) {
   lck_lock(srpc->lck);
   _supla_int_t data_size = 0;
 
-  while ((data_size = srpc->params.data_read(
-              data_buffer, SRPC_BUFFER_SIZE, srpc->params.user_params)) > 0) {
+  while ((data_size = srpc->params.data_read(data_buffer, SRPC_BUFFER_SIZE,
+                                             srpc->params.user_params)) > 0) {
     if (SUPLA_RESULT_TRUE != (result = sproto_in_buffer_append(
                                   srpc->proto, data_buffer, data_size))) {
-      supla_log(LOG_DEBUG,
-                "sproto_in_buffer_append: %i, datasize: %i",
-                result,
+      supla_log(LOG_DEBUG, "sproto_in_buffer_append: %i, datasize: %i", result,
                 data_size);
       return lck_unlock_r(srpc->lck, SUPLA_RESULT_FALSE);
     }
@@ -437,11 +435,9 @@ char SRPC_ICACHE_FLASH srpc_iterate_device(void *_srpc) {
       // repeat while there are messages in the input buffer
       if (srpc->params.on_remote_call_received) {
         lck_unlock(srpc->lck);
-        srpc->params.on_remote_call_received(srpc,
-                                             srpc->sdp.rr_id,
-                                             srpc->sdp.call_id,
-                                             srpc->params.user_params,
-                                             srpc->sdp.version);
+        srpc->params.on_remote_call_received(
+            srpc, srpc->sdp.rr_id, srpc->sdp.call_id, srpc->params.user_params,
+            srpc->sdp.version);
         lck_lock(srpc->lck);
       }
     }
@@ -452,8 +448,8 @@ char SRPC_ICACHE_FLASH srpc_iterate_device(void *_srpc) {
           unsigned char version = srpc->sdp.version;
           lck_unlock(srpc->lck);
 
-          srpc->params.on_version_error(
-              srpc, version, srpc->params.user_params);
+          srpc->params.on_version_error(srpc, version,
+                                        srpc->params.user_params);
           return SUPLA_RESULT_FALSE;
         }
       } else {
@@ -2398,13 +2394,13 @@ srpc_ds_async_channel_value_changed_b(void *_srpc, unsigned char channel_number,
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed_c(
     void *_srpc, unsigned char channel_number, char *value,
-    unsigned char state, unsigned _supla_int_t validity_time_sec) {
+    unsigned char offline, unsigned _supla_int_t validity_time_sec) {
   TDS_SuplaDeviceChannelValue_C ncsc;
   ncsc.ChannelNumber = channel_number;
-  if (state > SUPLA_CHANNEL_STATE_FLAG_MAX) {
-    state = SUPLA_CHANNEL_STATE_FLAG_OFFLINE;
+  if (offline > SUPLA_CHANNEL_OFFLINE_FLAG_MAX) {
+    offline = SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
   }
-  ncsc.State = state;
+  ncsc.Offline = offline;
   ncsc.ValidityTimeSec = validity_time_sec;
   memcpy(ncsc.value, value, SUPLA_CHANNELVALUE_SIZE);
 
