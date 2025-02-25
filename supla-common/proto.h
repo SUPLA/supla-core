@@ -885,15 +885,15 @@ typedef struct {
 } TDS_SuplaDeviceChannel_C;  // ver. >= 10
 
 // Channel state flag values:
-#define SUPLA_CHANNEL_STATE_FLAG_ONLINE 0
-#define SUPLA_CHANNEL_STATE_FLAG_OFFLINE 1
-#define SUPLA_CHANNEL_STATE_FLAG_ONLINE_BUT_NOT_AVAILABLE 2
-#define SUPLA_CHANNEL_STATE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED 3
-#define SUPLA_CHANNEL_STATE_FLAG_FIRMWARE_UPDATE_ONGOING 4
+#define SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE 0
+#define SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE 1
+#define SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE 2
+#define SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED 3
+#define SUPLA_CHANNEL_OFFLINE_FLAG_FIRMWARE_UPDATE_ONGOING 4
 
 // Update below MAX value when new state is added to the list
-#define SUPLA_CHANNEL_STATE_FLAG_MAX                                           \
-  SUPLA_CHANNEL_STATE_FLAG_FIRMWARE_UPDATE_ONGOING
+#define SUPLA_CHANNEL_OFFLINE_FLAG_MAX \
+  SUPLA_CHANNEL_OFFLINE_FLAG_FIRMWARE_UPDATE_ONGOING
 
 // Only in ONLINE state, ValidityTimeSec and value variables are used.
 // OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED - device doesn't support remote wakeup,
@@ -903,12 +903,12 @@ typedef struct {
 // compared to state flag values):
 #define SUPLA_CHANNEL_ONLINE_FLAG_ONLINE 1
 #define SUPLA_CHANNEL_ONLINE_FLAG_OFFLINE 0
-#define SUPLA_CHANNEL_ONLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE                     \
-  SUPLA_CHANNEL_STATE_FLAG_ONLINE_BUT_NOT_AVAILABLE
-#define SUPLA_CHANNEL_ONLINE_FLAG_STATE_REMOTE_WAKEUP_NOT_SUPPORTED          \
-  SUPLA_CHANNEL_STATE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED
-#define SUPLA_CHANNEL_ONLINE_FLAG_FIRMWARE_UPDATE_ONGOING                      \
-  SUPLA_CHANNEL_STATE_FLAG_FIRMWARE_UPDATE_ONGOING
+#define SUPLA_CHANNEL_ONLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE \
+  SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE
+#define SUPLA_CHANNEL_ONLINE_FLAG_STATE_REMOTE_WAKEUP_NOT_SUPPORTED \
+  SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED
+#define SUPLA_CHANNEL_ONLINE_FLAG_FIRMWARE_UPDATE_ONGOING \
+  SUPLA_CHANNEL_OFFLINE_FLAG_FIRMWARE_UPDATE_ONGOING
 
 typedef struct {
   // device -> server
@@ -950,11 +950,8 @@ typedef struct {
   _supla_int_t Default;
   _supla_int64_t Flags;
 
-  union {
-    unsigned char Offline;  // deprecated - use State name, for allowed values
-                            // see State
-    unsigned char State;  // see SUPLA_CHANNEL_STATE_FLAG_
-  };
+  unsigned char Offline;  // see SUPLA_CHANNEL_OFFLINE_FLAG_
+
   unsigned _supla_int_t ValueValidityTimeSec;
 
   union {
@@ -1150,11 +1147,8 @@ typedef struct {
   // device -> server
 
   unsigned char ChannelNumber;
-  union {
-    unsigned char Offline;  // deprecated - use State name, for allowed values
-                            // see State
-    unsigned char State;  // see SUPLA_CHANNEL_STATE_FLAG_
-  };
+  unsigned char Offline;  // see SUPLA_CHANNEL_OFFLINE_FLAG_
+
   unsigned _supla_int_t ValidityTimeSec;
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TDS_SuplaDeviceChannelValue_C;  // v. >= 12
@@ -3037,7 +3031,7 @@ typedef struct {
   _supla_int16_t MinTemperatureAdjustment;  // * 0.01
   _supla_int16_t MaxTemperatureAdjustment;  // * 0.01
   _supla_int16_t MinHumidityAdjustment;     // * 0.01
-  _supla_int16_t MaxHumidityAdjustment;      // * 0.01
+  _supla_int16_t MaxHumidityAdjustment;     // * 0.01
   unsigned char Reserved[27 - 4 * sizeof(_supla_int16_t)];
 } TChannelConfig_TemperatureAndHumidity;  // v. >= 21
 
