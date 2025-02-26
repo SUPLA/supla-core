@@ -403,6 +403,9 @@ jobject supla_online_to_joblect(JNIEnv *env, char online) {
       snprintf(enum_name, sizeof(enum_name),
                "OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED");
       break;
+    case SUPLA_CHANNEL_ONLINE_FLAG_FIRMWARE_UPDATE_ONGOING:
+      snprintf(enum_name, sizeof(enum_name), "FIRMWARE_UPDATE_ONGOING");
+      break;
     default:
       snprintf(enum_name, sizeof(enum_name), "OFFLINE");
       break;
