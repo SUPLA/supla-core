@@ -85,6 +85,31 @@ bool supla_channel_fb_value::is_function_supported(int func) {
 
 bool supla_channel_fb_value::get_vbt_value(_vbt_var_name_e var_name,
                                            double *value) {
-  *value = get_fb_value()->position;
+  switch (var_name) {
+    case var_name_calibration_failed:
+      *value = get_fb_value()->flags & RS_VALUE_FLAG_CALIBRATION_FAILED ? 1 : 0;
+      break;
+    case var_name_calibration_lost:
+      *value = get_fb_value()->flags & RS_VALUE_FLAG_CALIBRATION_LOST ? 1 : 0;
+      break;
+    case var_name_motor_problem:
+      *value = get_fb_value()->flags & RS_VALUE_FLAG_MOTOR_PROBLEM ? 1 : 0;
+      break;
+    case var_name_calibration_in_progress:
+      *value =
+          get_fb_value()->flags & RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS ? 1 : 0;
+      break;
+    case var_name_is_any_error_set:
+      *value = ((get_fb_value()->flags & RS_VALUE_FLAG_CALIBRATION_FAILED) ||
+                (get_fb_value()->flags & RS_VALUE_FLAG_CALIBRATION_LOST) ||
+                (get_fb_value()->flags & RS_VALUE_FLAG_MOTOR_PROBLEM))
+                   ? 1
+                   : 0;
+      break;
+    default:
+      *value = get_fb_value()->position;
+      break;
+  }
+
   return true;
 }
