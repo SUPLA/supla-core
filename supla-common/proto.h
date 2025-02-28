@@ -594,6 +594,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION 0x1000  // ver. >= 25
 #define SUPLA_DEVICE_FLAG_BLOCK_ADDING_CHANNELS_AFTER_DELETION \
   0x2000  // ver. >= 25
+#define SUPLA_DEVICE_FLAG_ALWAYS_ALLOW_SUBDEVICE_CHANNEL_DELETION \
+  0x4000  // ver. >= 27
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
