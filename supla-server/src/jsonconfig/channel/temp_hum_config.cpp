@@ -24,11 +24,19 @@ using std::string;
 #define FIELD_TEMPERATURE_ADJUSTMENT 1
 #define FIELD_HUMIDITY_ADJUSTMENT 2
 #define FIELD_ADJUSTMENT_APPLIED_BY_DEVICE 3
+#define FIELD_MIN_TEMPERATURE_ADJUSTMENT 4
+#define FIELD_MAX_TEMPERATURE_ADJUSTMENT 5
+#define FIELD_MIN_HUMIDITY_ADJUSTMENT 6
+#define FIELD_MAX_HUMIDITY_ADJUSTMENT 7
 
 const map<unsigned _supla_int16_t, string> temp_hum_config::field_map = {
     {FIELD_TEMPERATURE_ADJUSTMENT, "temperatureAdjustment"},
     {FIELD_HUMIDITY_ADJUSTMENT, "humidityAdjustment"},
-    {FIELD_ADJUSTMENT_APPLIED_BY_DEVICE, "adjustmentAppliedByDevice"}};
+    {FIELD_ADJUSTMENT_APPLIED_BY_DEVICE, "adjustmentAppliedByDevice"},
+    {FIELD_MIN_TEMPERATURE_ADJUSTMENT, "minTemperatureAdjustment"},
+    {FIELD_MAX_TEMPERATURE_ADJUSTMENT, "maxTemperatureAdjustment"},
+    {FIELD_MIN_HUMIDITY_ADJUSTMENT, "minHumidityAdjustment"},
+    {FIELD_MAX_HUMIDITY_ADJUSTMENT, "maxHumidityAdjustment"}};
 
 temp_hum_config::temp_hum_config(void) : supla_json_config() {}
 
@@ -39,6 +47,19 @@ void temp_hum_config::merge(supla_json_config *_dst) {
   temp_hum_config dst(_dst);
   supla_json_config::merge(get_user_root(), dst.get_user_root(), field_map,
                            false);
+
+  supla_json_config::merge(get_properties_root(), dst.get_properties_root(),
+                           field_map, true);
+}
+
+void temp_hum_config::set_adjustment(cJSON *root, int field_id,
+                                     _supla_int16_t value) {
+  if (value) {
+    set_item_value(root, field_map.at(field_id).c_str(), cJSON_Number, true,
+                   nullptr, nullptr, value);
+  } else {
+    cJSON_DeleteItemFromObject(root, field_map.at(field_id).c_str());
+  }
 }
 
 void temp_hum_config::set_config(
@@ -63,6 +84,23 @@ void temp_hum_config::set_config(
   set_item_value(root, field_map.at(FIELD_ADJUSTMENT_APPLIED_BY_DEVICE).c_str(),
                  config->AdjustmentAppliedByDevice ? cJSON_True : cJSON_False,
                  true, nullptr, nullptr, 0);
+
+  cJSON *properties_root = get_properties_root();
+  if (!properties_root) {
+    return;
+  }
+
+  set_adjustment(properties_root, FIELD_MIN_TEMPERATURE_ADJUSTMENT,
+                 config->MinTemperatureAdjustment);
+
+  set_adjustment(properties_root, FIELD_MAX_TEMPERATURE_ADJUSTMENT,
+                 config->MaxTemperatureAdjustment);
+
+  set_adjustment(properties_root, FIELD_MIN_HUMIDITY_ADJUSTMENT,
+                 config->MinHumidityAdjustment);
+
+  set_adjustment(properties_root, FIELD_MAX_HUMIDITY_ADJUSTMENT,
+                 config->MaxHumidityAdjustment);
 }
 
 bool temp_hum_config::get_config(
@@ -97,6 +135,39 @@ bool temp_hum_config::get_config(
   if (get_bool(root, field_map.at(FIELD_ADJUSTMENT_APPLIED_BY_DEVICE).c_str(),
                &bool_value)) {
     config->AdjustmentAppliedByDevice = bool_value ? 1 : 0;
+    result = true;
+  }
+
+  cJSON *properties_root = get_properties_root();
+  if (!properties_root) {
+    return result;
+  }
+
+  if (get_double(properties_root,
+                 field_map.at(FIELD_MIN_TEMPERATURE_ADJUSTMENT).c_str(),
+                 &dbl_value)) {
+    config->MinTemperatureAdjustment = dbl_value;
+    result = true;
+  }
+
+  if (get_double(properties_root,
+                 field_map.at(FIELD_MAX_TEMPERATURE_ADJUSTMENT).c_str(),
+                 &dbl_value)) {
+    config->MaxTemperatureAdjustment = dbl_value;
+    result = true;
+  }
+
+  if (get_double(properties_root,
+                 field_map.at(FIELD_MIN_HUMIDITY_ADJUSTMENT).c_str(),
+                 &dbl_value)) {
+    config->MinHumidityAdjustment = dbl_value;
+    result = true;
+  }
+
+  if (get_double(properties_root,
+                 field_map.at(FIELD_MAX_HUMIDITY_ADJUSTMENT).c_str(),
+                 &dbl_value)) {
+    config->MaxHumidityAdjustment = dbl_value;
     result = true;
   }
 
