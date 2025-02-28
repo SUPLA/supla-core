@@ -618,6 +618,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED (1ULL << 8)  // v. >= 25
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
+// BIT map definition for TDS_SuplaDeviceChannel_D::Flags (64 bit)
+// BIT map definition for TDS_SuplaDeviceChannel_E::Flags (64 bit)
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002     // ver. >= 12 DEPRECATED
 #define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004     // ver. >= 12 DEPRECATED
@@ -625,7 +627,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_FLOOD_SENSORS_SUPPORTED 0x0010  // ver. >= 27
 #define SUPLA_CHANNEL_FLAG_FILL_LEVEL_REPORTING_IN_FULL_RANGE \
   0x0020  // ver. >= 27
-// Free bits for future use: 0x0040
+#define SUPLA_CHANNEL_FLAG_VALVE_MOTOR_ALARM_SUPPORTED 0x0040  // ver. >= 27
 #define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080  // ver. >= 17
 #define SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED 0x0100  // ver. >= 21
 // Free bits for future use:  0x0200, 0x0400, 0x0800
