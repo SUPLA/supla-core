@@ -53,6 +53,9 @@ class supla_abstract_common_channel_properties {
   void json_to_config(char *config, unsigned _supla_int16_t *config_size,
                       std::function<bool(jsonT *, sdT *)> get_config);
 
+  template <typename configT, typename sensorT>
+  void resolve_sensor_identifiers(configT *config);
+
   void get_config(char *config, unsigned _supla_int16_t *config_size,
                   unsigned char config_type, unsigned _supla_int_t flags,
                   bool resolve_channel_identifiers);

@@ -484,6 +484,24 @@ void supla_abstract_common_channel_properties::json_to_config(
                                return json_config->get_config(ws_cfg);     \
                              });
 
+template <typename configT, typename sensorT>
+void supla_abstract_common_channel_properties::resolve_sensor_identifiers(
+    configT *config) {
+  for (size_t a = 0; a < sizeof(config->SensorInfo) / sizeof(sensorT); a++) {
+    if (config->SensorInfo[a].IsSet) {
+      for_each(false,
+               [&](supla_abstract_common_channel_properties *props,
+                   bool *will_continue) -> void {
+                 if (config->SensorInfo[a].ChannelNo ==
+                     props->get_channel_number()) {
+                   config->SensorInfo[a].ChannelId = props->get_id();
+                   *will_continue = false;
+                 }
+               });
+    }
+  }
+}
+
 void supla_abstract_common_channel_properties::get_config(
     char *config, unsigned _supla_int16_t *config_size,
     unsigned char config_type, unsigned _supla_int_t flags,
@@ -579,9 +597,22 @@ void supla_abstract_common_channel_properties::get_config(
   } else if (get_type() == SUPLA_CHANNELTYPE_CONTAINER) {
     JSON_TO_CONFIG(container_config, TChannelConfig_Container, config,
                    config_size);
+
+    if (resolve_channel_identifiers) {
+      resolve_sensor_identifiers<TChannelConfig_Container,
+                                 TContainer_SensorInfo>(
+          (TChannelConfig_Container *)config);
+    }
+
     return;
   } else if (get_type() == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE) {
     JSON_TO_CONFIG(valve_config, TChannelConfig_Valve, config, config_size);
+
+    if (resolve_channel_identifiers) {
+      resolve_sensor_identifiers<TChannelConfig_Valve, TValve_SensorInfo>(
+          (TChannelConfig_Valve *)config);
+    }
+
     return;
   }
 
