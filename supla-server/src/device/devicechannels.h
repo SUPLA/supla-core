@@ -226,6 +226,7 @@ class supla_device_channels {
       const supla_action_hvac_setpoint_temperatures *temperatures);
   bool reset_counters(int channel_id);
   bool take_ocr_photo(int channel_id);
+  bool mute_alarm_sound(int channel_id);
   bool restart_subdevice(int channel_id);
   bool identify_subdevice(int channel_id);
   bool recalibrate(int channel_id, const supla_caller &caller,

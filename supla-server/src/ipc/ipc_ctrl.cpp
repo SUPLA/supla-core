@@ -54,6 +54,7 @@
 #include "ipc/is_channel_connected_command.h"
 #include "ipc/is_client_connected_command.h"
 #include "ipc/is_device_connected_command.h"
+#include "ipc/mute_alarm_sound_command.h"
 #include "ipc/on_channel_config_changed_command.h"
 #include "ipc/on_channel_deleted_command.h"
 #include "ipc/on_device_config_changed_command.h"
@@ -184,6 +185,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_device_set_time_command(socket_adapter));
   add_command(new supla_send_push_command(socket_adapter));
   add_command(new supla_take_ocr_photo_command(socket_adapter));
+  add_command(new supla_mute_alarm_sound_command(socket_adapter));
   add_command(new supla_identify_device_command(socket_adapter));
   add_command(new supla_identify_subdevice_command(socket_adapter));
   add_command(new supla_restart_device_command(socket_adapter));
