@@ -20,12 +20,16 @@
 
 supla_channel_general_purpose_meter_value::
     supla_channel_general_purpose_meter_value()
-    : supla_channel_general_purpose_base_value() {}
+    : supla_channel_general_purpose_base_value() {
+  original_value = 0;
+}
 
 supla_channel_general_purpose_meter_value::
     supla_channel_general_purpose_meter_value(
         const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_general_purpose_base_value(raw_value) {}
+    : supla_channel_general_purpose_base_value(raw_value) {
+  original_value = 0;
+}
 
 // static
 bool supla_channel_general_purpose_meter_value::is_function_supported(
