@@ -41,13 +41,14 @@ TEST_F(GetContainerValueCommandTest, noData) {
 TEST_F(GetContainerValueCommandTest, getContainerValueWithSuccess) {
   TContainerChannel_Value raw_value = {};
   raw_value.level = 10;
+  raw_value.flags = 123;
 
   supla_channel_container_value *value =
       new supla_channel_container_value(&raw_value);
 
   EXPECT_CALL(*cmd, get_value(10, 20, 30)).WillOnce(Return(value));
 
-  commandProcessingTest("GET-CONTAINER-VALUE:10,20,30\n", "VALUE:10\n");
+  commandProcessingTest("GET-CONTAINER-VALUE:10,20,30\n", "VALUE:10,123\n");
 }
 
 TEST_F(GetContainerValueCommandTest, getContainerValueWithFilure) {

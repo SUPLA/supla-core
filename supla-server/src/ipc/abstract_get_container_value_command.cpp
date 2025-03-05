@@ -41,7 +41,8 @@ void supla_abstract_get_container_value_command::on_command_match(
         }
 
         char buffer[100] = {};
-        snprintf(buffer, sizeof(buffer), "VALUE:%i", value->get_raw_level());
+        snprintf(buffer, sizeof(buffer), "VALUE:%i,%u", value->get_raw_level(),
+                 value->get_raw_flags());
         send_result(buffer);
 
         delete value;

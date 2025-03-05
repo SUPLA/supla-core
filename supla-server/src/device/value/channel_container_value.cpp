@@ -75,6 +75,10 @@ bool supla_channel_container_value::is_sound_alarm_on(void) {
          CONTAINER_FLAG_SOUND_ALARM_ON;
 }
 
+unsigned _supla_int16_t supla_channel_container_value::get_raw_flags(void) {
+  return ((TContainerChannel_Value *)raw_value)->flags;
+}
+
 bool supla_channel_container_value::get_vbt_value(_vbt_var_name_e var_name,
                                                   double *value) {
   switch (var_name) {
