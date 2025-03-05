@@ -80,6 +80,10 @@ bool supla_channel_valve_value::get_vbt_value(_vbt_var_name_e var_name,
       *value =
           (get_valve_value()->flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED) ? 1 : 0;
       break;
+    case var_name_motor_problem:
+      *value =
+          (get_valve_value()->flags & SUPLA_VALVE_FLAG_MOTOR_PROBLEM) ? 1 : 0;
+      break;
     default:
       *value = get_valve_value()->closed ? 1 : 0;
   }
