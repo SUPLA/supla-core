@@ -41,27 +41,27 @@ TEST_F(MuteAlarmSoundCommandTest, noData) {
 TEST_F(MuteAlarmSoundCommandTest, TakeOcrPhotoWithSuccess) {
   EXPECT_CALL(*cmd, mute_alarm_sound(10, 20, 30)).WillOnce(Return(true));
 
-  commandProcessingTest("MUTE-ALARM:10,20,30\n", "OK:30\n");
+  commandProcessingTest("MUTE-ALARM-SOUND:10,20,30\n", "OK:30\n");
 }
 
 TEST_F(MuteAlarmSoundCommandTest, TakeOcrPhotoWithFilure) {
   EXPECT_CALL(*cmd, mute_alarm_sound).WillOnce(Return(false));
-  commandProcessingTest("MUTE-ALARM:10,20,30\n", "UNKNOWN:30\n");
+  commandProcessingTest("MUTE-ALARM-SOUND:10,20,30\n", "UNKNOWN:30\n");
 }
 
 TEST_F(MuteAlarmSoundCommandTest, noParams) {
   EXPECT_CALL(*cmd, mute_alarm_sound).Times(0);
-  commandProcessingTest("MUTE-ALARM:\n", "UNKNOWN:0\n");
+  commandProcessingTest("MUTE-ALARM-SOUND:\n", "UNKNOWN:0\n");
 }
 
 TEST_F(MuteAlarmSoundCommandTest, paramsWithZeros) {
   EXPECT_CALL(*cmd, mute_alarm_sound).Times(0);
-  commandProcessingTest("MUTE-ALARM:0,0,0\n", "UNKNOWN:0\n");
+  commandProcessingTest("MUTE-ALARM-SOUND:0,0,0\n", "UNKNOWN:0\n");
 }
 
 TEST_F(MuteAlarmSoundCommandTest, badParams) {
   EXPECT_CALL(*cmd, mute_alarm_sound).Times(0);
-  commandProcessingTest("MUTE-ALARM:a,10,c\n", "UNKNOWN:0\n");
+  commandProcessingTest("MUTE-ALARM-SOUND:a,10,c\n", "UNKNOWN:0\n");
 }
 
 } /* namespace testing */

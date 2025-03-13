@@ -26,7 +26,7 @@ supla_abstract_mute_alarm_sound_command::
     : supla_abstract_ipc_command(socket_adapter) {}
 
 const string supla_abstract_mute_alarm_sound_command::get_command_name(void) {
-  return "MUTE-ALARM:";
+  return "MUTE-ALARM-SOUND:";
 }
 
 void supla_abstract_mute_alarm_sound_command::on_command_match(
