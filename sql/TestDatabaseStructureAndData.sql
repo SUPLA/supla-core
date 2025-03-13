@@ -3144,9 +3144,17 @@ ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
 DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_set_channel_caption`(IN `_user_id` INT, IN `_channel_id` INT, IN `_caption` VARCHAR(100) CHARSET utf8mb4, IN `_only_when_not_null` BIT)
-    NO SQL
-UPDATE supla_dev_channel SET caption = _caption WHERE id = _channel_id AND user_id = _user_id AND (caption IS NULL OR _only_when_not_null = 0) ;;
+CREATE PROCEDURE `supla_set_channel_caption`(IN `_user_id` INT, IN `_channel_id` INT, IN `_caption` VARCHAR(100) CHARSET utf8mb4,
+                                             IN `_only_when_not_null` BIT)
+    NOT DETERMINISTIC MODIFIES SQL DATA SQL SECURITY DEFINER
+BEGIN
+UPDATE supla_dev_channel
+SET caption = _caption
+WHERE id = _channel_id
+  AND user_id = _user_id
+  AND (caption IS NULL OR _only_when_not_null = 0);
+SELECT ROW_COUNT();
+END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3183,9 +3191,20 @@ ALTER DATABASE `supla_test` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
 DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_set_channel_group_caption`(IN `_user_id` INT, IN `_channel_group_id` INT, IN `_caption` VARCHAR(255) CHARSET utf8mb4)
-    NO SQL
-UPDATE supla_dev_channel_group SET caption = _caption WHERE id = _channel_group_id AND user_id = _user_id ;;
+CREATE PROCEDURE `supla_set_channel_group_caption`(
+    IN `_user_id` INT,
+    IN `_channel_group_id` INT,
+    IN `_caption` VARCHAR(255) CHARSET utf8mb4
+) NOT DETERMINISTIC MODIFIES SQL DATA SQL SECURITY DEFINER
+BEGIN
+UPDATE
+    supla_dev_channel_group
+SET
+    caption = _caption
+WHERE
+    id = _channel_group_id AND user_id = _user_id;
+SELECT ROW_COUNT();
+END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3261,9 +3280,20 @@ ALTER DATABASE `supla_test` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
 DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_set_location_caption`(IN `_user_id` INT, IN `_location_id` INT, IN `_caption` VARCHAR(100) CHARSET utf8mb4)
-    NO SQL
-UPDATE supla_location SET caption = _caption WHERE id = _location_id AND user_id = _user_id ;;
+CREATE PROCEDURE `supla_set_location_caption`(
+    IN `_user_id` INT,
+    IN `_location_id` INT,
+    IN `_caption` VARCHAR(100) CHARSET utf8mb4
+) NOT DETERMINISTIC MODIFIES SQL DATA SQL SECURITY DEFINER
+BEGIN
+UPDATE
+    supla_location
+SET
+    caption = _caption
+WHERE
+    id = _location_id AND user_id = _user_id;
+SELECT ROW_COUNT();
+END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3301,9 +3331,20 @@ ALTER DATABASE `supla_test` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
 DELIMITER ;;
-CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_set_scene_caption`(IN `_user_id` INT, IN `_scene_id` INT, IN `_caption` VARCHAR(255) CHARSET utf8mb4)
-    NO SQL
-UPDATE supla_scene SET caption = _caption WHERE id = _scene_id AND user_id = _user_id ;;
+CREATE PROCEDURE `supla_set_scene_caption`(
+    IN `_user_id` INT,
+    IN `_scene_id` INT,
+    IN `_caption` VARCHAR(255) CHARSET utf8mb4
+) NOT DETERMINISTIC MODIFIES SQL DATA SQL SECURITY DEFINER
+BEGIN
+UPDATE
+    supla_scene
+SET
+    caption = _caption
+WHERE
+    id = _scene_id AND user_id = _user_id;
+SELECT ROW_COUNT();
+END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;

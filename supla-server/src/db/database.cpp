@@ -963,7 +963,17 @@ bool database::set_caption(int UserID, int ID, char *Caption, int call_id,
   if (sql && stmt_execute((void **)&stmt, sql, pbind,
                           call_id == SUPLA_DCS_CALL_SET_CHANNEL_CAPTION ? 4 : 3,
                           true)) {
-    result = mysql_stmt_affected_rows(stmt) == 1;
+    MYSQL_BIND bind_result = {};
+    int affected_row_count = 0;
+
+    bind_result.buffer_type = MYSQL_TYPE_LONG;
+    bind_result.buffer = (char *)&affected_row_count;
+
+    mysql_stmt_bind_result(stmt, &bind_result);
+
+    if (mysql_stmt_fetch(stmt) == 0) {
+      result = affected_row_count == 1;
+    }
   }
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
