@@ -50,16 +50,20 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
   supla_mqtt_client_suite::globalInstance()->onDeviceSettingsChanged(user_id,
                                                                      device_id);
 
+  bool force_device_reconnect = false;
+
   switch (type) {
     case SUPLA_CHANNELTYPE_HVAC:
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
+    case SUPLA_CHANNELTYPE_CONTAINER:
+      break;
     case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
+    case SUPLA_CHANNELTYPE_SENSORNO:
     case SUPLA_CHANNELTYPE_THERMOMETER:
     case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
     case SUPLA_CHANNELTYPE_HUMIDITYSENSOR:
-    case SUPLA_CHANNELTYPE_SENSORNO:
-    case SUPLA_CHANNELTYPE_CONTAINER:
+      force_device_reconnect = true;
       break;
     case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
       scope =
@@ -84,7 +88,7 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
   shared_ptr<supla_device> device = user->get_devices()->get(device_id);
 
   if (device) {
-    if (scope & CONFIG_CHANGE_SCOPE_FUNCTION) {
+    if ((scope & CONFIG_CHANGE_SCOPE_FUNCTION) || force_device_reconnect) {
       device->reconnect();
     } else if (json_config &&
                ((scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) ||
