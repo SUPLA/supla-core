@@ -18,7 +18,6 @@
 
 #include "on_channel_config_changed_command.h"
 
-#include <list>
 #include <memory>
 
 #include "amazon/alexa_delete_request.h"
@@ -27,7 +26,6 @@
 #include "mqtt/mqtt_client_suite.h"
 #include "user.h"
 
-using std::list;
 using std::shared_ptr;
 
 supla_on_channel_config_changed_command::
@@ -135,12 +133,6 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
       user->get_clients()->update_json_config(
           channel_id, SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, json_config);
     }
-
-    list<channel_address> ca_list;
-    ca_list.push_back(channel_address(device_id, channel_id));
-
-    user->get_clients()->on_channel_value_changed(ca_list, false);
-    user->get_clients()->on_channel_value_changed(ca_list, true);
   }
 
   if (json_config) {
