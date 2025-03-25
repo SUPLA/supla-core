@@ -37,9 +37,11 @@ class supla_abstract_common_channel_properties {
                     int channel_id, int parent_id, short relation_type);
   template <typename config_class_T, typename raw_config_T,
             typename sensor_class_T>
-  void get_flood_sensor_relations(
-      std::vector<supla_channel_relation> *relations, e_relation_kind kind,
-      unsigned char protocol_version, int func, int parent_channel_func);
+  void get_sensor_relations(std::vector<supla_channel_relation> *relations,
+                            e_relation_kind kind,
+                            unsigned char protocol_version, int type,
+                            int parent_channel_type, int func,
+                            int parent_channel_func, int related_channel_func);
 
  protected:
   virtual unsigned char get_protocol_version(void) = 0;
@@ -52,6 +54,9 @@ class supla_abstract_common_channel_properties {
   template <typename jsonT, typename sdT>
   void json_to_config(char *config, unsigned _supla_int16_t *config_size,
                       std::function<bool(jsonT *, sdT *)> get_config);
+
+  template <typename configT, typename sensorT>
+  void resolve_sensor_identifiers(configT *config);
 
   void get_config(char *config, unsigned _supla_int16_t *config_size,
                   unsigned char config_type, unsigned _supla_int_t flags,

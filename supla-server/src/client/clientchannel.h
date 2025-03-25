@@ -51,7 +51,6 @@ class supla_client_channel : public supla_client_objcontainer_item,
   short ProductID;
   unsigned char DeviceProtocolVersion;
   unsigned _supla_int64_t Flags;
-  int DeviceFlags;
   supla_json_config *json_config;
 
   // during offline
@@ -91,7 +90,7 @@ class supla_client_channel : public supla_client_objcontainer_item,
                        char *TextParam2, char *TextParam3, const char *Caption,
                        int AltIcon, int UserIcon, short ManufacturerID,
                        short ProductID, unsigned char ProtocolVersion,
-                       unsigned _supla_int64_t Flags, int DeviceFlags,
+                       unsigned _supla_int64_t Flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
                        unsigned _supla_int_t validity_time_sec,
                        const char *user_config, const char *properties);

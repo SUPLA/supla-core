@@ -61,11 +61,16 @@ bool supla_channel_availability_status::is_offline_remote_wakeup_not_supported(
          SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED;
 }
 
+bool supla_channel_availability_status::is_firmware_update_ongoing(void) const {
+  return proto_offline == SUPLA_CHANNEL_OFFLINE_FLAG_FIRMWARE_UPDATE_ONGOING;
+}
+
 char supla_channel_availability_status::get_proto_online(void) const {
-  if (proto_offline == SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE ||
-      proto_offline ==
-          SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED) {
-    return proto_offline;
+  switch (proto_offline) {
+    case SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE:
+    case SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED:
+    case SUPLA_CHANNEL_OFFLINE_FLAG_FIRMWARE_UPDATE_ONGOING:
+      return proto_offline;
   }
 
   return !proto_offline;
@@ -76,22 +81,28 @@ char supla_channel_availability_status::get_proto_offline(void) const {
 }
 
 void supla_channel_availability_status::set_proto_online(char online) {
-  if (online == SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE ||
-      online ==
-          SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED) {
-    proto_offline = online;
-  } else {
-    proto_offline = !online;
+  switch (online) {
+    case SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE:
+    case SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED:
+    case SUPLA_CHANNEL_OFFLINE_FLAG_FIRMWARE_UPDATE_ONGOING:
+      proto_offline = online;
+      break;
+    default:
+      proto_offline = !online;
+      break;
   }
 }
 
 void supla_channel_availability_status::set_proto_offline(char offline) {
-  if (offline == SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE ||
-      offline ==
-          SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED) {
-    proto_offline = offline;
-  } else {
-    proto_offline = !!offline;
+  switch (offline) {
+    case SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE:
+    case SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED:
+    case SUPLA_CHANNEL_OFFLINE_FLAG_FIRMWARE_UPDATE_ONGOING:
+      proto_offline = offline;
+      break;
+    default:
+      proto_offline = !!offline;
+      break;
   }
 }
 

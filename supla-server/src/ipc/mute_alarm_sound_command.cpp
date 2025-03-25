@@ -16,23 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "channel_general_purpose_meter_value.h"
+#include "mute_alarm_sound_command.h"
 
-supla_channel_general_purpose_meter_value::
-    supla_channel_general_purpose_meter_value()
-    : supla_channel_general_purpose_base_value() {
-  original_value = 0;
-}
+#include <memory>
 
-supla_channel_general_purpose_meter_value::
-    supla_channel_general_purpose_meter_value(
-        const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_general_purpose_base_value(raw_value) {
-  original_value = 0;
-}
+#include "device.h"
+#include "user.h"
 
-// static
-bool supla_channel_general_purpose_meter_value::is_function_supported(
-    int func) {
-  return func == SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER;
+using std::shared_ptr;
+
+supla_mute_alarm_sound_command::supla_mute_alarm_sound_command(
+    supla_abstract_ipc_socket_adapter *socket_adapter)
+    : supla_abstract_mute_alarm_sound_command(socket_adapter) {}
+
+bool supla_mute_alarm_sound_command::mute_alarm_sound(int user_id,
+                                                      int device_id,
+                                                      int channel_id) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->mute_alarm_sound(channel_id);
+  }
+  return false;
 }

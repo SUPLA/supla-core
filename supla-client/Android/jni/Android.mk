@@ -33,6 +33,7 @@ LOCAL_SRC_FILES := supla.cpp \
     channel_config_general_purpose_meter.cpp \
     channel_config_roller_shutter.cpp \
     channel_config_facade_blind.cpp \
+    channel_config_container.cpp \
     device_config.cpp \
     ../../src/cfg.c \
     ../../src/eh.c \

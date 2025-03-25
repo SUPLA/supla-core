@@ -28,6 +28,7 @@
 class temp_hum_config : public supla_json_config {
  private:
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
+  void set_adjustment(cJSON *root, int field_id, _supla_int16_t value);
 
  public:
   explicit temp_hum_config(supla_json_config *root);

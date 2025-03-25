@@ -16,23 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "channel_general_purpose_meter_value.h"
+#include "doubles/ipc/MuteAlarmSoundCommandMock.h"
 
-supla_channel_general_purpose_meter_value::
-    supla_channel_general_purpose_meter_value()
-    : supla_channel_general_purpose_base_value() {
-  original_value = 0;
-}
+namespace testing {
 
-supla_channel_general_purpose_meter_value::
-    supla_channel_general_purpose_meter_value(
-        const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_general_purpose_base_value(raw_value) {
-  original_value = 0;
-}
+MuteAlarmSoundCommandMock::MuteAlarmSoundCommandMock(
+    supla_abstract_ipc_socket_adapter *socket_adapter)
+    : supla_abstract_mute_alarm_sound_command(socket_adapter) {}
 
-// static
-bool supla_channel_general_purpose_meter_value::is_function_supported(
-    int func) {
-  return func == SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER;
-}
+}  // namespace testing

@@ -16,26 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef COMMON_CHANNEL_PROPERTIES_TEST_H_
-#define COMMON_CHANNEL_PROPERTIES_TEST_H_
+#ifndef MUTEALARMSOUNDCOMMANDTEST_H_
+#define MUTEALARMSOUNDCOMMANDTEST_H_
 
-#include "gtest/gtest.h"  // NOLINT
+#include "doubles/ipc/MuteAlarmSoundCommandMock.h"
+#include "ipc/IpcCommandTest.h"
 
 namespace testing {
 
-class CommonChannelPropertiesTest : public Test {
- public:
-  template <typename config_classT, typename raw_config_T>
-  void relationWithParentChannel_Sensor(int parnet_channel_func,
-                                        int parnet_channel_type,
-                                        int related_channel_func);
+class MuteAlarmSoundCommandTest : public IpcCommandTest {
+ protected:
+  MuteAlarmSoundCommandMock *cmd;
+  virtual supla_abstract_ipc_command *getCommand(void);
 
-  template <typename config_classT, typename raw_config_T>
-  void relationWithSubchannel_Sensor(int parnet_channel_func,
-                                     int parnet_channel_type,
-                                     int related_channel_func);
+ public:
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
 } /* namespace testing */
 
-#endif /* COMMON_CHANNEL_PROPERTIES_TEST_H_ */
+#endif /* MUTEALARMSOUNDCOMMANDTEST_H_ */

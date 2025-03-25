@@ -390,7 +390,7 @@ jobject supla_channelvalue_to_jobject(void *_suplaclient, void *user_data,
 }
 
 jobject supla_online_to_joblect(JNIEnv *env, char online) {
-  char enum_name[30] = {};
+  char enum_name[40] = {};
 
   switch (online) {
     case SUPLA_CHANNEL_ONLINE_FLAG_ONLINE:
@@ -399,9 +399,12 @@ jobject supla_online_to_joblect(JNIEnv *env, char online) {
     case SUPLA_CHANNEL_ONLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE:
       snprintf(enum_name, sizeof(enum_name), "ONLINE_BUT_NOT_AVAILABLE");
       break;
-    case SUPLA_CHANNEL_ONLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED:
+    case SUPLA_CHANNEL_ONLINE_FLAG_STATE_REMOTE_WAKEUP_NOT_SUPPORTED:
       snprintf(enum_name, sizeof(enum_name),
                "OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED");
+      break;
+    case SUPLA_CHANNEL_ONLINE_FLAG_FIRMWARE_UPDATE_ONGOING:
+      snprintf(enum_name, sizeof(enum_name), "FIRMWARE_UPDATE_ONGOING");
       break;
     default:
       snprintf(enum_name, sizeof(enum_name), "OFFLINE");

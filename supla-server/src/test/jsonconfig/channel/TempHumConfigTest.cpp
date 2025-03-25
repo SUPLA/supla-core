@@ -68,6 +68,43 @@ TEST_F(TempHumConfigTest, setGetRawConfig) {
                "\"adjustmentAppliedByDevice\":true}");
   free(str);
 
+  str = config.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{}");
+  free(str);
+
+  TChannelConfig_TemperatureAndHumidity raw2 = {};
+  config.get_config(&raw2);
+
+  EXPECT_EQ(memcmp(&raw1, &raw2, sizeof(TChannelConfig_TemperatureAndHumidity)),
+            0);
+}
+
+TEST_F(TempHumConfigTest, setGetRawProperties) {
+  temp_hum_config config;
+
+  TChannelConfig_TemperatureAndHumidity raw1 = {};
+  config.set_config(&raw1);
+
+  char *str = config.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{}");
+  free(str);
+
+  raw1.MinTemperatureAdjustment = 10;
+  raw1.MaxTemperatureAdjustment = 20;
+  raw1.MinHumidityAdjustment = 30;
+  raw1.MaxHumidityAdjustment = 40;
+
+  config.set_config(&raw1);
+
+  str = config.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"minTemperatureAdjustment\":10,\"maxTemperatureAdjustment\":"
+               "20,\"minHumidityAdjustment\":30,\"maxHumidityAdjustment\":40}");
+  free(str);
+
   TChannelConfig_TemperatureAndHumidity raw2 = {};
   config.get_config(&raw2);
 
@@ -78,10 +115,17 @@ TEST_F(TempHumConfigTest, setGetRawConfig) {
 TEST_F(TempHumConfigTest, merge) {
   temp_hum_config config1;
   config1.set_user_config("{\"a\":\"b\"}");
+  config1.set_properties(
+      "{\"x\":\"y\",\"minHumidityAdjustment\":30,\"maxHumidityAdjustment\":5}");
 
   TChannelConfig_TemperatureAndHumidity raw = {};
   raw.HumidityAdjustment = 1357;
   raw.TemperatureAdjustment = 2468;
+
+  raw.MinTemperatureAdjustment = 10;
+  raw.MaxTemperatureAdjustment = 20;
+  raw.MinHumidityAdjustment = 0;
+  raw.MaxHumidityAdjustment = 40;
 
   temp_hum_config config2;
   config2.set_config(&raw);
@@ -93,6 +137,15 @@ TEST_F(TempHumConfigTest, merge) {
       str,
       "{\"a\":\"b\",\"temperatureAdjustment\":2468,\"humidityAdjustment\":1357,"
       "\"adjustmentAppliedByDevice\":false}");
+
+  free(str);
+
+  str = config1.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"x\":\"y\",\"maxHumidityAdjustment\":40,\"minTemperatureAdjustment\":"
+      "10,\"maxTemperatureAdjustment\":20}");
 
   free(str);
 }

@@ -308,6 +308,10 @@ bool supla_device_channels::take_ocr_photo(int channel_id) {
   return calcfg_cmd(channel_id, 0, true, SUPLA_CALCFG_CMD_TAKE_OCR_PHOTO);
 }
 
+bool supla_device_channels::mute_alarm_sound(int channel_id) {
+  return calcfg_cmd(channel_id, 0, true, SUPLA_CALCFG_CMD_MUTE_ALARM_SOUND);
+}
+
 bool supla_device_channels::restart_subdevice(int channel_id) {
   return calcfg_cmd(channel_id, SUPLA_CHANNEL_FLAG_CALCFG_RESTART_SUBDEVICE,
                     true, SUPLA_CALCFG_CMD_RESTART_SUBDEVICE);

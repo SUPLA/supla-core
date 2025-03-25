@@ -16,23 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "channel_general_purpose_meter_value.h"
+#ifndef CHANNEL_CONFIG_CONTAINER_H_
+#define CHANNEL_CONFIG_CONTAINER_H_
 
-supla_channel_general_purpose_meter_value::
-    supla_channel_general_purpose_meter_value()
-    : supla_channel_general_purpose_base_value() {
-  original_value = 0;
-}
+#include <jni.h>
 
-supla_channel_general_purpose_meter_value::
-    supla_channel_general_purpose_meter_value(
-        const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_general_purpose_base_value(raw_value) {
-  original_value = 0;
-}
+#include "proto.h"
 
-// static
-bool supla_channel_general_purpose_meter_value::is_function_supported(
-    int func) {
-  return func == SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+jobject supla_cc_container_to_jobject(JNIEnv *env, _supla_int_t channel_id,
+                                      _supla_int_t func, jlong crc32,
+                                      TChannelConfig_Container *container);
+
+#ifdef __cplusplus
 }
+#endif
+#endif /*CHANNEL_CONFIG_CONTAINER_H_*/

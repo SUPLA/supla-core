@@ -1034,8 +1034,9 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_BinarySensor) {
 }
 
 template <typename config_classT, typename raw_config_T>
-void CommonChannelPropertiesTest::relationWithSubchannel_FloodSensor(
-    int parnet_channel_func) {
+void CommonChannelPropertiesTest::relationWithSubchannel_Sensor(
+    int parnet_channel_func, int parnet_channel_type,
+    int related_channel_func) {
   for (char x = 0; x < 2; x++) {
     CommonChannelPropertiesMock mock;
 
@@ -1043,7 +1044,14 @@ void CommonChannelPropertiesTest::relationWithSubchannel_FloodSensor(
 
     EXPECT_CALL(mock, get_channel_number).WillRepeatedly(Return(10));
     EXPECT_CALL(mock, get_id()).WillRepeatedly(Return(1000));
-    EXPECT_CALL(mock, get_func()).WillRepeatedly(Return(parnet_channel_func));
+
+    if (parnet_channel_func) {
+      EXPECT_CALL(mock, get_func()).WillRepeatedly(Return(parnet_channel_func));
+    }
+
+    if (parnet_channel_type) {
+      EXPECT_CALL(mock, get_type()).WillRepeatedly(Return(parnet_channel_type));
+    }
 
     EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
       config_classT *config = new config_classT();
@@ -1071,7 +1079,7 @@ void CommonChannelPropertiesTest::relationWithSubchannel_FloodSensor(
                 EXPECT_CALL(related_props_mock, get_channel_number)
                     .WillRepeatedly(Return(channel_number));
                 EXPECT_CALL(related_props_mock, get_func)
-                    .WillRepeatedly(Return(SUPLA_CHANNELFNC_FLOOD_SENSOR));
+                    .WillRepeatedly(Return(related_channel_func));
                 EXPECT_CALL(related_props_mock, get_id())
                     .WillRepeatedly(Return(50 + channel_number));
 
@@ -1101,25 +1109,24 @@ void CommonChannelPropertiesTest::relationWithSubchannel_FloodSensor(
   }
 }
 
-TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_FloodSensor) {
-  relationWithSubchannel_FloodSensor<valve_config, TChannelConfig_Valve>(
-      SUPLA_CHANNELFNC_VALVE_OPENCLOSE);
+TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_Sensor) {
+  relationWithSubchannel_Sensor<valve_config, TChannelConfig_Valve>(
+      SUPLA_CHANNELFNC_VALVE_OPENCLOSE, 0, SUPLA_CHANNELFNC_FLOOD_SENSOR);
 
-  relationWithSubchannel_FloodSensor<container_config,
-                                     TChannelConfig_Container>(
-      SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR);
+  relationWithSubchannel_Sensor<container_config, TChannelConfig_Container>(
+      0, SUPLA_CHANNELTYPE_CONTAINER, SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR);
 }
 
 template <typename config_classT, typename raw_config_T>
-void CommonChannelPropertiesTest::relationWithParentChannel_FloodSensor(
-    int parnet_channel_func) {
-  for (char x = 0; x < 2; x++) {
+void CommonChannelPropertiesTest::relationWithParentChannel_Sensor(
+    int parnet_channel_func, int parnet_channel_type,
+    int related_channel_func) {
+  for (char x = 1; x < 2; x++) {
     CommonChannelPropertiesMock mock;
 
     EXPECT_CALL(mock, get_protocol_version).WillRepeatedly(Return(26 + x));
 
-    EXPECT_CALL(mock, get_func())
-        .WillRepeatedly(Return(SUPLA_CHANNELFNC_FLOOD_SENSOR));
+    EXPECT_CALL(mock, get_func()).WillRepeatedly(Return(related_channel_func));
     EXPECT_CALL(mock, get_channel_number).WillRepeatedly(Return(15));
 
     EXPECT_CALL(mock, get_id()).WillRepeatedly(Return(65));
@@ -1137,8 +1144,15 @@ void CommonChannelPropertiesTest::relationWithParentChannel_FloodSensor(
               EXPECT_CALL(related_props_mock, get_id())
                   .WillRepeatedly(Return(1000));
 
-              EXPECT_CALL(related_props_mock, get_func)
-                  .WillRepeatedly(Return(parnet_channel_func));
+              if (parnet_channel_func) {
+                EXPECT_CALL(related_props_mock, get_func)
+                    .WillRepeatedly(Return(parnet_channel_func));
+              }
+
+              if (parnet_channel_type) {
+                EXPECT_CALL(related_props_mock, get_type)
+                    .WillRepeatedly(Return(parnet_channel_type));
+              }
 
               EXPECT_CALL(related_props_mock, get_json_config)
                   .WillRepeatedly([]() {
@@ -1168,13 +1182,12 @@ void CommonChannelPropertiesTest::relationWithParentChannel_FloodSensor(
   }
 }
 
-TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_FloodSensor) {
-  relationWithParentChannel_FloodSensor<valve_config, TChannelConfig_Valve>(
-      SUPLA_CHANNELFNC_VALVE_OPENCLOSE);
+TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_Sensor) {
+  relationWithParentChannel_Sensor<valve_config, TChannelConfig_Valve>(
+      SUPLA_CHANNELFNC_VALVE_OPENCLOSE, 0, SUPLA_CHANNELFNC_FLOOD_SENSOR);
 
-  relationWithParentChannel_FloodSensor<container_config,
-                                        TChannelConfig_Container>(
-      SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR);
+  relationWithParentChannel_Sensor<container_config, TChannelConfig_Container>(
+      0, SUPLA_CHANNELTYPE_CONTAINER, SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR);
 }
 
 } /* namespace testing */

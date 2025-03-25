@@ -16,23 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "channel_general_purpose_meter_value.h"
+#ifndef SUPLA_ABSTRACT_MUTE_ALARM_SOUND_COMMAND_H_
+#define SUPLA_ABSTRACT_MUTE_ALARM_SOUND_COMMAND_H_
 
-supla_channel_general_purpose_meter_value::
-    supla_channel_general_purpose_meter_value()
-    : supla_channel_general_purpose_base_value() {
-  original_value = 0;
-}
+#include <string>
 
-supla_channel_general_purpose_meter_value::
-    supla_channel_general_purpose_meter_value(
-        const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_general_purpose_base_value(raw_value) {
-  original_value = 0;
-}
+#include "ipc/abstract_ipc_command.h"
 
-// static
-bool supla_channel_general_purpose_meter_value::is_function_supported(
-    int func) {
-  return func == SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER;
-}
+class supla_abstract_mute_alarm_sound_command
+    : public supla_abstract_ipc_command {
+ protected:
+  virtual void on_command_match(const char *params);
+  virtual const std::string get_command_name(void);
+  virtual bool mute_alarm_sound(int user_id, int device_id, int channel_id) = 0;
+
+ public:
+  explicit supla_abstract_mute_alarm_sound_command(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
+};
+
+#endif /* SUPLA_ABSTRACT_MUTE_ALARM_SOUND_COMMAND_H_ */

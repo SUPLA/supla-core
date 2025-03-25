@@ -16,26 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef COMMON_CHANNEL_PROPERTIES_TEST_H_
-#define COMMON_CHANNEL_PROPERTIES_TEST_H_
+#ifndef MUTE_ALARM_SOUND_COMMMAND_MOCK_H_
+#define MUTE_ALARM_SOUND_COMMMAND_MOCK_H_
 
-#include "gtest/gtest.h"  // NOLINT
+#include <gmock/gmock.h>
+
+#include "ipc/abstract_mute_alarm_sound_command.h"
 
 namespace testing {
 
-class CommonChannelPropertiesTest : public Test {
+class MuteAlarmSoundCommandMock
+    : public supla_abstract_mute_alarm_sound_command {
  public:
-  template <typename config_classT, typename raw_config_T>
-  void relationWithParentChannel_Sensor(int parnet_channel_func,
-                                        int parnet_channel_type,
-                                        int related_channel_func);
+  explicit MuteAlarmSoundCommandMock(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  template <typename config_classT, typename raw_config_T>
-  void relationWithSubchannel_Sensor(int parnet_channel_func,
-                                     int parnet_channel_type,
-                                     int related_channel_func);
+  MOCK_METHOD3(mute_alarm_sound,
+               bool(int user_id, int device_id, int channel_id));
 };
 
 } /* namespace testing */
 
-#endif /* COMMON_CHANNEL_PROPERTIES_TEST_H_ */
+#endif /* MUTE_ALARM_SOUND_COMMMAND_MOCK_H_ */

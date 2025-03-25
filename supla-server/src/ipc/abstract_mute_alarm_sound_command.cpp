@@ -16,36 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/abstract_get_container_value_command.h"
+#include "ipc/abstract_mute_alarm_sound_command.h"
 
 using std::string;
 
-supla_abstract_get_container_value_command::
-    supla_abstract_get_container_value_command(
+supla_abstract_mute_alarm_sound_command::
+    supla_abstract_mute_alarm_sound_command(
         supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_ipc_command(socket_adapter) {}
 
-const string supla_abstract_get_container_value_command::get_command_name(
-    void) {
-  return "GET-CONTAINER-VALUE:";
+const string supla_abstract_mute_alarm_sound_command::get_command_name(void) {
+  return "MUTE-ALARM-SOUND:";
 }
 
-void supla_abstract_get_container_value_command::on_command_match(
+void supla_abstract_mute_alarm_sound_command::on_command_match(
     const char *params) {
   process_parameters(
       params, [this](int user_id, int device_id, int channel_id) -> bool {
-        supla_channel_container_value *value =
-            get_value(user_id, device_id, channel_id);
-        if (!value) {
-          return false;
+        if (mute_alarm_sound(user_id, device_id, channel_id)) {
+          send_result("OK:", channel_id);
+          return true;
         }
 
-        char buffer[100] = {};
-        snprintf(buffer, sizeof(buffer), "VALUE:%i,%u", value->get_raw_level(),
-                 value->get_raw_flags());
-        send_result(buffer);
-
-        delete value;
-        return true;
+        return false;
       });
 }

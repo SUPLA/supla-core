@@ -1149,6 +1149,8 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     } else if (channel_availability_status
                    .is_offline_remote_wakeup_not_supported()) {
       status = "offline_remote_wakeup_not_supported";
+    } else if (channel_availability_status.is_firmware_update_ongoing()) {
+      status = "is_firmware_update_ongoing";
     }
     return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size, status.c_str(), false,

@@ -27,6 +27,7 @@
 #include "channel_config_hvac.h"
 #include "channel_config_roller_shutter.h"
 #include "channel_config_weekly_schedule.h"
+#include "channel_config_container.h"
 
 jobject supla_config_result_to_jobject(JNIEnv *env, int result) {
   jclass result_cls = env->FindClass(
@@ -125,6 +126,16 @@ jobject supla_channel_config_to_jobject(JNIEnv *env, TSCS_ChannelConfig *config,
           return supla_cc_fb_to_jobject(
               env, config->ChannelId, config->Func, crc32,
               (TChannelConfig_FacadeBlind *)config->Config);
+        }
+        break;
+      case SUPLA_CHANNELFNC_CONTAINER:
+      case SUPLA_CHANNELFNC_SEPTIC_TANK:
+      case SUPLA_CHANNELFNC_WATER_TANK:
+        if (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
+            sizeof(TChannelConfig_Container) == config->ConfigSize) {
+          return supla_cc_container_to_jobject(
+              env, config->ChannelId, config->Func, crc32,
+              (TChannelConfig_Container *)config->Config);
         }
         break;
     }

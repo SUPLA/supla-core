@@ -618,15 +618,20 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED (1ULL << 8)  // v. >= 25
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
+// BIT map definition for TDS_SuplaDeviceChannel_D::Flags (64 bit)
+// BIT map definition for TDS_SuplaDeviceChannel_E::Flags (64 bit)
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002     // ver. >= 12 DEPRECATED
 #define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004     // ver. >= 12 DEPRECATED
 #define SUPLA_CHANNEL_FLAG_OCR 0x0008           // ver. >= 26
 #define SUPLA_CHANNEL_FLAG_FLOOD_SENSORS_SUPPORTED 0x0010  // ver. >= 27
-// Free bits for future use: 0x0020, 0x0040
+#define SUPLA_CHANNEL_FLAG_FILL_LEVEL_REPORTING_IN_FULL_RANGE \
+  0x0020  // ver. >= 27
+#define SUPLA_CHANNEL_FLAG_VALVE_MOTOR_ALARM_SUPPORTED 0x0040  // ver. >= 27
 #define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080  // ver. >= 17
 #define SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED 0x0100  // ver. >= 21
-// Free bits for future use:  0x0200, 0x0400, 0x0800
+#define SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION  0x0200   // ver. >= 27
+// Free bits for future use: 0x0400, 0x0800
 #define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000              // ver. >= 15
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000            // ver. >= 15
 #define SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE 0x4000               // ver. >= 15
@@ -824,6 +829,7 @@ typedef struct {
 #define SUPLA_HVAC_VALUE_FLAG_COOL (1ULL << 10)
 #define SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE_TEMPORAL_OVERRIDE (1ULL << 11)
 #define SUPLA_HVAC_VALUE_FLAG_BATTERY_COVER_OPEN (1ULL << 12)
+#define SUPLA_HVAC_VALUE_FLAG_CALIBRATION_ERROR (1ULL << 13)
 
 // HVAC modes are used in channel value (as a command from server or
 // as a status response from device to server) and in weekly schedules
@@ -881,24 +887,31 @@ typedef struct {
   };
 } TDS_SuplaDeviceChannel_C;  // ver. >= 10
 
-// Channel offline flag values:
+// Channel state flag values:
 #define SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE 0
 #define SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE 1
 #define SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE 2
 #define SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED 3
+#define SUPLA_CHANNEL_OFFLINE_FLAG_FIRMWARE_UPDATE_ONGOING 4
+
+// Update below MAX value when new state is added to the list
+#define SUPLA_CHANNEL_OFFLINE_FLAG_MAX \
+  SUPLA_CHANNEL_OFFLINE_FLAG_FIRMWARE_UPDATE_ONGOING
 
 // Only in ONLINE state, ValidityTimeSec and value variables are used.
 // OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED - device doesn't support remote wakeup,
 //   so we wait for it to initiate the communication.
 
 // Channel online flag values (only online/offline 0/1 values are exchanged,
-// compared to offline flag values):
+// compared to state flag values):
 #define SUPLA_CHANNEL_ONLINE_FLAG_ONLINE 1
 #define SUPLA_CHANNEL_ONLINE_FLAG_OFFLINE 0
-#define SUPLA_CHANNEL_ONLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE                     \
+#define SUPLA_CHANNEL_ONLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE \
   SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE
-#define SUPLA_CHANNEL_ONLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED          \
+#define SUPLA_CHANNEL_ONLINE_FLAG_STATE_REMOTE_WAKEUP_NOT_SUPPORTED \
   SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE_REMOTE_WAKEUP_NOT_SUPPORTED
+#define SUPLA_CHANNEL_ONLINE_FLAG_FIRMWARE_UPDATE_ONGOING \
+  SUPLA_CHANNEL_OFFLINE_FLAG_FIRMWARE_UPDATE_ONGOING
 
 typedef struct {
   // device -> server
@@ -914,7 +927,7 @@ typedef struct {
   _supla_int_t Default;
   _supla_int64_t Flags;
 
-  unsigned char Offline;  // see SUPLA_CHANNEL_OFFLINE_FLAG_
+  unsigned char Offline;
   unsigned _supla_int_t ValueValidityTimeSec;
 
   union {
@@ -941,6 +954,7 @@ typedef struct {
   _supla_int64_t Flags;
 
   unsigned char Offline;  // see SUPLA_CHANNEL_OFFLINE_FLAG_
+
   unsigned _supla_int_t ValueValidityTimeSec;
 
   union {
@@ -1128,7 +1142,7 @@ typedef struct {
   // device -> server
 
   unsigned char ChannelNumber;
-  unsigned char Offline;  // see SUPLA_CHANNEL_OFFLINE_FLAG_
+  unsigned char Offline;
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TDS_SuplaDeviceChannelValue_B;  // v. >= 12
 
@@ -1137,6 +1151,7 @@ typedef struct {
 
   unsigned char ChannelNumber;
   unsigned char Offline;  // see SUPLA_CHANNEL_OFFLINE_FLAG_
+
   unsigned _supla_int_t ValidityTimeSec;
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TDS_SuplaDeviceChannelValue_C;  // v. >= 12
@@ -3013,7 +3028,14 @@ typedef struct {
   _supla_int16_t HumidityAdjustment;        // * 0.01
   unsigned char AdjustmentAppliedByDevice;  // 1/true - by device
                                             // 0/false - by server
-  unsigned char Reserved[27];
+  // Min/Max allowed adjustment values that channel supports. If set to 0, then
+  // field is not supported by device and Cloud should use default -10..10 range
+  // for correction. Otherwise, Cloud should use these values.
+  _supla_int16_t MinTemperatureAdjustment;  // * 0.01
+  _supla_int16_t MaxTemperatureAdjustment;  // * 0.01
+  _supla_int16_t MinHumidityAdjustment;     // * 0.01
+  _supla_int16_t MaxHumidityAdjustment;     // * 0.01
+  unsigned char Reserved[27 - 4 * sizeof(_supla_int16_t)];
 } TChannelConfig_TemperatureAndHumidity;  // v. >= 21
 
 // ChannelConfig for all binary sensors (all functions valid for
@@ -3563,6 +3585,7 @@ typedef struct {
 
 #define SUPLA_VALVE_FLAG_FLOODING 0x1
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2
+#define SUPLA_VALVE_FLAG_MOTOR_PROBLEM 0x4
 
 // Valve channel value
 // Device -> Server -> Client
