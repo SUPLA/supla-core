@@ -2743,6 +2743,7 @@ typedef struct {
 // cooling subfuction, while standard weelkly schedule is used for heating
 #define SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE 3
 #define SUPLA_CONFIG_TYPE_OCR 4
+#define SUPLA_CONFIG_TYPE_DEFAULT_EXT 5
 
 /********************************************
  * DEVICE CONFIG STRUCTURES
@@ -3557,6 +3558,9 @@ typedef struct {
 } TChannelConfig_PowerSwitch;  // v. >= 25
 
 typedef TChannelConfig_PowerSwitch TChannelConfig_LightSwitch;
+
+// Staircase timer ext use SUPLA_CONFIG_TYPE_DEFAULT_EXT
+typedef TChannelConfig_PowerSwitch TChannelConfig_StaircaseTimer_Ext;
 
 typedef struct {
   _supla_int_t ChannelID;
