@@ -3511,11 +3511,17 @@ typedef struct {
   };
 } TValve_SensorInfo;  // v. >= 27
 
+
+#define SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_NONE 0
+#define SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ALWAYS 1
+#define SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ON_CHANGE 2
+
 typedef struct {
   TValve_SensorInfo
       SensorInfo[20];  // Flood sensors can be attached only if
                        // SUPLA_CHANNEL_FLAG_FLOOD_SENSORS_SUPPORTED is set
-  unsigned char Reserved[32];
+  unsigned char CloseValveOnFloodType;  // SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_*
+  unsigned char Reserved[31];
 } TChannelConfig_Valve;  // v. >= 27
 
 #define SUPLA_OCR_AUTHKEY_SIZE 33
