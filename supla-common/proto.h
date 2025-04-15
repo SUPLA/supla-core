@@ -2743,7 +2743,7 @@ typedef struct {
 // cooling subfuction, while standard weelkly schedule is used for heating
 #define SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE 3
 #define SUPLA_CONFIG_TYPE_OCR 4
-#define SUPLA_CONFIG_TYPE_DEFAULT_EXT 5
+#define SUPLA_CONFIG_TYPE_EXTENDED 5
 
 /********************************************
  * DEVICE CONFIG STRUCTURES
