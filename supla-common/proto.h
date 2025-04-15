@@ -830,6 +830,7 @@ typedef struct {
 #define SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE_TEMPORAL_OVERRIDE (1ULL << 11)
 #define SUPLA_HVAC_VALUE_FLAG_BATTERY_COVER_OPEN (1ULL << 12)
 #define SUPLA_HVAC_VALUE_FLAG_CALIBRATION_ERROR (1ULL << 13)
+#define SUPLA_HVAC_VALUE_FLAG_ANTIFREEZE_OVERHEAT_ACTIVE (1ULL << 14)
 
 // HVAC modes are used in channel value (as a command from server or
 // as a status response from device to server) and in weekly schedules
@@ -2742,6 +2743,7 @@ typedef struct {
 // cooling subfuction, while standard weelkly schedule is used for heating
 #define SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE 3
 #define SUPLA_CONFIG_TYPE_OCR 4
+#define SUPLA_CONFIG_TYPE_EXTENDED 5
 
 /********************************************
  * DEVICE CONFIG STRUCTURES
@@ -3509,11 +3511,17 @@ typedef struct {
   };
 } TValve_SensorInfo;  // v. >= 27
 
+
+#define SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_NONE 0
+#define SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ALWAYS 1
+#define SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ON_CHANGE 2
+
 typedef struct {
   TValve_SensorInfo
       SensorInfo[20];  // Flood sensors can be attached only if
                        // SUPLA_CHANNEL_FLAG_FLOOD_SENSORS_SUPPORTED is set
-  unsigned char Reserved[32];
+  unsigned char CloseValveOnFloodType;  // SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_*
+  unsigned char Reserved[31];
 } TChannelConfig_Valve;  // v. >= 27
 
 #define SUPLA_OCR_AUTHKEY_SIZE 33
@@ -3556,6 +3564,9 @@ typedef struct {
 } TChannelConfig_PowerSwitch;  // v. >= 25
 
 typedef TChannelConfig_PowerSwitch TChannelConfig_LightSwitch;
+
+// Staircase timer ext use SUPLA_CONFIG_TYPE_DEFAULT_EXT
+typedef TChannelConfig_PowerSwitch TChannelConfig_StaircaseTimer_Ext;
 
 typedef struct {
   _supla_int_t ChannelID;
