@@ -6,8 +6,8 @@
 set -e
 
 # Defaults
-SDK="17.4"
-OPENSSL="3.0.13"
+SDK="18.4"
+OPENSSL="3.0.16"
 THREADS=4
 
 temp_clean() {
@@ -124,31 +124,20 @@ fi
 
 build "x86_64" "iPhoneSimulator"
 build "arm64" "iPhoneSimulator"
-build "armv7" "iPhoneOS"
 build "arm64" "iPhoneOS"
 
 echo "[INFO] Merging static libraries"
-lipo \
-  /tmp/${OPENSSL_VERSION}-iPhoneOS-arm64/lib/libcrypto.a \
-  /tmp/${OPENSSL_VERSION}-iPhoneOS-armv7/lib/libcrypto.a \
-  -create -output libcrypto-iphoneos.a
-  
 lipo \
   /tmp/${OPENSSL_VERSION}-iPhoneSimulator-arm64/lib/libcrypto.a \
   /tmp/${OPENSSL_VERSION}-iPhoneSimulator-x86_64/lib/libcrypto.a \
   -create -output libcrypto-iphonesimulator.a
 
 lipo \
-  /tmp/${OPENSSL_VERSION}-iPhoneOS-arm64/lib/libssl.a \
-  /tmp/${OPENSSL_VERSION}-iPhoneOS-armv7/lib/libssl.a \
-  -create -output libssl-iphoneos.a
-  
-lipo \
   /tmp/${OPENSSL_VERSION}-iPhoneSimulator-arm64/lib/libssl.a \
   /tmp/${OPENSSL_VERSION}-iPhoneSimulator-x86_64/lib/libssl.a \
   -create -output libssl-iphonesimulator.a
 
-libtool -static -no_warning_for_no_symbols -o libssl-os.a libcrypto-iphoneos.a libssl-iphoneos.a
+libtool -static -no_warning_for_no_symbols -o libssl-os.a /tmp/${OPENSSL_VERSION}-iPhoneOS-arm64/lib/libcrypto.a /tmp/${OPENSSL_VERSION}-iPhoneOS-arm64/lib/libssl.a
 libtool -static -no_warning_for_no_symbols -o libssl-sim.a libcrypto-iphonesimulator.a libssl-iphonesimulator.a
 
 echo "[INFO] Creating XCFramework"
