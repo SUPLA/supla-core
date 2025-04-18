@@ -616,6 +616,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   (1ULL << 7)  // v. >= 24
 // type: TDeviceConfig_PowerStatusLed
 #define SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED (1ULL << 8)  // v. >= 25
+// type: TDeviceConfig_Modbus
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS (1ULL << 9)  // v. >= 27
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 // BIT map definition for TDS_SuplaDeviceChannel_D::Flags (64 bit)
@@ -2860,6 +2862,78 @@ typedef struct {
   unsigned _supla_int64_t
       HomeScreenContent;            // SUPLA_DEVCFG_HOME_SCREEN_CONTENT_
 } TDeviceConfig_HomeScreenContent;  // v. >= 21
+
+// type: TDeviceConfig_Modbus
+#define MODBUS_SERIAL_MODE_DISABLED 0
+#define MODBUS_SERIAL_MODE_RTU 1
+#define MODBUS_SERIAL_MODE_ASCII 2
+
+#define MODBUS_SERIAL_STOP_BITS_ONE 0
+#define MODBUS_SERIAL_STOP_BITS_ONE_AND_HALF 1
+#define MODBUS_SERIAL_STOP_BITS_TWO 2
+
+struct ModbusSerialConfig {
+  unsigned char mode;  // MODBUS_SERIAL_MODE_*
+  _supla_int_t baudrate;  // 19200 (default and mandatory by modbus)
+  unsigned char stopBits;  // MODBUS_SERIAL_STOP_BITS_*
+  unsigned char Reserved[20];
+};
+
+#define MODBUS_NETWORK_MODE_DISABLED 0
+#define MODBUS_NETWORK_MODE_TCP 1
+#define MODBUS_NETWORK_MODE_UDP 2
+
+struct ModbusNetworkConfig {
+  unsigned char mode;  // MODBUS_NETWORK_MODE_*
+  unsigned int port;  // Default: 502
+  unsigned char Reserved[20];
+};
+
+// Readonly Modbus properties, which tells which functions/modes are
+// available
+struct ModbusConfigProperties {
+  struct {
+    unsigned char master: 1;
+    unsigned char slave: 1;
+    unsigned char rtu: 1;
+    unsigned char ascii: 1;
+    unsigned char tcp: 1;
+    unsigned char udp: 1;
+    unsigned char reserved: 2;
+    unsigned char reserved2: 8;
+  } protocol;
+  struct {
+    unsigned char b4800: 1;
+    unsigned char b9600: 1;  // modbus mandatory
+    unsigned char b19200: 1;  // modbus mandatory
+    unsigned char b38400: 1;
+    unsigned char b57600: 1;
+    unsigned char b115200: 1;
+    unsigned char reserved: 2;
+    unsigned char reserved2: 8;
+  } baudrate;
+  struct {
+    unsigned char one: 1;
+    unsigned char oneAndHalf: 1;
+    unsigned char two: 1;
+    unsigned char reserved: 5;
+  } stopBits;
+  unsigned char Reserved[20];
+};
+
+#define MODBUS_ROLE_NOT_SET 0
+#define MODBUS_ROLE_MASTER 1
+#define MODBUS_ROLE_SLAVE 2
+
+typedef struct {
+  unsigned char role;  // MODBUS_ROLE_*
+  unsigned char modbusAddress;  // only for slave
+  unsigned _supla_int_t slaveTimeoutMs;  // only for master
+  ModbusSerialConfig serial;
+  ModbusNetworkConfig network;
+  ModbusConfigProperties properties;
+  unsigned char Reserved[20];
+} TDeviceConfig_Modbus;
 
 /********************************************
  * CHANNEL CONFIG STRUCTURES
