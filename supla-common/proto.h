@@ -2872,26 +2872,26 @@ typedef struct {
 #define MODBUS_SERIAL_STOP_BITS_ONE_AND_HALF 1
 #define MODBUS_SERIAL_STOP_BITS_TWO 2
 
-struct ModbusSerialConfig {
+typedef struct {
   unsigned char Mode;  // MODBUS_SERIAL_MODE_*
   _supla_int_t Baudrate;  // 19200 (default and mandatory by modbus)
   unsigned char StopBits;  // MODBUS_SERIAL_STOP_BITS_*
   unsigned char Reserved[20];
-};
+} ModbusSerialConfig;
 
 #define MODBUS_NETWORK_MODE_DISABLED 0
 #define MODBUS_NETWORK_MODE_TCP 1
 #define MODBUS_NETWORK_MODE_UDP 2
 
-struct ModbusNetworkConfig {
+typedef struct {
   unsigned char Mode;  // MODBUS_NETWORK_MODE_*
   unsigned int Port;  // Default: 502
   unsigned char Reserved[20];
-};
+} ModbusNetworkConfig;
 
 // Readonly Modbus properties, which tells which functions/modes are
 // available
-struct ModbusConfigProperties {
+typedef struct {
   struct {
     unsigned char Master: 1;
     unsigned char Slave: 1;
@@ -2919,7 +2919,7 @@ struct ModbusConfigProperties {
     unsigned char Reserved: 5;
   } StopBits;
   unsigned char Reserved[20];
-};
+} ModbusConfigProperties;
 
 #define MODBUS_ROLE_NOT_SET 0
 #define MODBUS_ROLE_MASTER 1
