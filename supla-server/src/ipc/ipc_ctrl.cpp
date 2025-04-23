@@ -42,6 +42,7 @@
 #include "ipc/get_pn_limit_command.h"
 #include "ipc/get_relay_value_command.h"
 #include "ipc/get_rgbw_command.h"
+#include "ipc/get_roller_shutter_value_command.h"
 #include "ipc/get_scene_summary_command.h"
 #include "ipc/get_status_command.h"
 #include "ipc/get_temperature_command.h"
@@ -105,6 +106,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_get_hvac_value_command(socket_adapter));
   add_command(new supla_get_gpm_value_command(socket_adapter));
   add_command(new supla_get_facade_blind_value_command(socket_adapter));
+  add_command(new supla_get_roller_shutter_value_command(socket_adapter));
   add_command(new supla_set_char_command(socket_adapter));
   add_command(new supla_set_cg_char_command(socket_adapter));
   add_command(new supla_set_rgbw_command(socket_adapter, true));
