@@ -235,6 +235,36 @@ TEST_F(ActivePeriodTest, beforeSunrise) {
   ASSERT_FALSE(p.is_now_active(tz, lat, lng));
 }
 
+TEST_F(ActivePeriodTest, beforeSunrise_0) {
+  // Sunrise = 06:00:57
+
+  // 1692144000 - 00:00:00
+  // 1692166856 - 06:20:56
+  // 1692166857 - 06:00:57 *
+  // 1692166858 - 06:20:58
+  // 1692230399 - 23:59:59
+
+  std::time_t timestamp[] = {1692144000, 1692165656, 1692165657, 1692166858,
+                             1692230399};
+
+  size_t n = 0;
+
+  EXPECT_CALL(p, get_current_point_in_time).WillRepeatedly([&]() {
+    auto result = std::chrono::time_point<std::chrono::system_clock>(
+        std::chrono::seconds(timestamp[n]));
+    n++;
+    return result;
+  });
+
+  p.set_astro_conditions("[[{\"beforeSunrise\":0}]]");
+
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
+}
+
 TEST_F(ActivePeriodTest, afterSunrise) {
   // Sunrise + 20 = 06:20:57
 
