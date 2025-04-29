@@ -18,6 +18,8 @@
 
 #include "device_json_config.h"
 
+#include <string.h>
+
 #include "log.h"
 
 using std::map;
@@ -32,7 +34,8 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY, "offDelay"},
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT, "content"},
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE, "offDelayType"},
-    {SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED, "powerStatusLed"}};
+    {SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED, "powerStatusLed"},
+    {SUPLA_DEVICE_CONFIG_FIELD_MODBUS, "modbus"}};
 
 const map<unsigned _supla_int16_t, string>
     device_json_config::home_screen_content_map = {
@@ -47,6 +50,37 @@ const map<unsigned _supla_int16_t, string>
          "MAIN_AND_AUX_TEMPERATURE"},
         {SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MODE_OR_TEMPERATURE,
          "MODE_OR_TEMPERATURE"}};
+
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS_ROLE 1
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS_ADDRESS 2
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS_SLAVE_TIMEOUT_MS 3
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS_SERIAL_CONFIG 4
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS_NETWORK_CONFIG 5
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS_MODE 6
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS_BAUDRATE 7
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS_STOP_BITS 8
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS_PORT 9
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS_AVAILABLE_PROTOCOLS 10
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS_AVAILABLE_BAUDRATES 11
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS_AVAILABLE_STOP_BITS 12
+
+const map<unsigned _supla_int16_t, string>
+    device_json_config::modbus_field_map = {
+        {SUPLA_DEVICE_CONFIG_FIELD_MODBUS_ROLE, "role"},
+        {SUPLA_DEVICE_CONFIG_FIELD_MODBUS_ADDRESS, "modbusAddress"},
+        {SUPLA_DEVICE_CONFIG_FIELD_MODBUS_SLAVE_TIMEOUT_MS, "slaveTimeoutMs"},
+        {SUPLA_DEVICE_CONFIG_FIELD_MODBUS_SERIAL_CONFIG, "serialConfig"},
+        {SUPLA_DEVICE_CONFIG_FIELD_MODBUS_NETWORK_CONFIG, "networkConfig"},
+        {SUPLA_DEVICE_CONFIG_FIELD_MODBUS_MODE, "mode"},
+        {SUPLA_DEVICE_CONFIG_FIELD_MODBUS_BAUDRATE, "baudRate"},
+        {SUPLA_DEVICE_CONFIG_FIELD_MODBUS_STOP_BITS, "stopBits"},
+        {SUPLA_DEVICE_CONFIG_FIELD_MODBUS_PORT, "port"},
+        {SUPLA_DEVICE_CONFIG_FIELD_MODBUS_AVAILABLE_PROTOCOLS,
+         "availableProtocols"},
+        {SUPLA_DEVICE_CONFIG_FIELD_MODBUS_AVAILABLE_BAUDRATES,
+         "availableBaudrates"},
+        {SUPLA_DEVICE_CONFIG_FIELD_MODBUS_AVAILABLE_STOP_BITS,
+         "availableStopbits"}};
 
 const char device_json_config::content_available[] =
     "homeScreenContentAvailable";
@@ -80,8 +114,7 @@ string device_json_config::status_led_to_string(unsigned char status) {
   return "ON_WHEN_CONNECTED";
 }
 
-unsigned char device_json_config::string_to_status_led(
-    const std::string &status) {
+unsigned char device_json_config::string_to_status_led(const string &status) {
   if (status == "OFF_WHEN_CONNECTED") {
     return SUPLA_DEVCFG_STATUS_LED_OFF_WHEN_CONNECTED;
   } else if (status == "ALWAYS_OFF") {
@@ -96,7 +129,7 @@ string device_json_config::power_status_led_to_string(unsigned char status) {
 }
 
 unsigned char device_json_config::string_to_power_status_led(
-    const std::string &status) {
+    const string &status) {
   return status == "DISABLED" ? 1 : 0;
 }
 
@@ -113,7 +146,7 @@ string device_json_config::home_screen_content_to_string(
 }
 
 unsigned char device_json_config::string_to_home_screen_content(
-    const std::string &content) {
+    const string &content) {
   for (auto it = home_screen_content_map.cbegin();
        it != home_screen_content_map.cend(); ++it) {
     if (it->second == content) {
@@ -214,9 +247,472 @@ void device_json_config::set_automatic_time_sync(
   }
 }
 
-cJSON *device_json_config::get_root(bool create,
+string device_json_config::modbus_role_to_string(unsigned char role) {
+  switch (role) {
+    case MODBUS_ROLE_MASTER:
+      return "MASTER";
+    case MODBUS_ROLE_SLAVE:
+      return "SLAVE";
+  }
+  return "NOT_SET";
+}
+
+unsigned char device_json_config::string_to_modbus_role(const string &role) {
+  if (role == "MASTER") {
+    return MODBUS_ROLE_MASTER;
+  } else if (role == "SLAVE") {
+    return MODBUS_ROLE_SLAVE;
+  }
+
+  return MODBUS_ROLE_NOT_SET;
+}
+
+string device_json_config::modbus_serial_mode_to_string(unsigned char mode) {
+  switch (mode) {
+    case MODBUS_SERIAL_MODE_RTU:
+      return "RTU";
+    case MODBUS_SERIAL_MODE_ASCII:
+      return "ASCII";
+  }
+  return "DISABLED";
+}
+
+unsigned char device_json_config::string_to_modbus_serial_mode(
+    const string &mode) {
+  if (mode == "RTU") {
+    return MODBUS_SERIAL_MODE_RTU;
+  } else if (mode == "ASCII") {
+    return MODBUS_SERIAL_MODE_ASCII;
+  }
+
+  return MODBUS_SERIAL_MODE_DISABLED;
+}
+
+string device_json_config::modbus_network_mode_to_string(unsigned char mode) {
+  switch (mode) {
+    case MODBUS_NETWORK_MODE_TCP:
+      return "TCP";
+    case MODBUS_NETWORK_MODE_UDP:
+      return "UDP";
+  }
+  return "DISABLED";
+}
+
+unsigned char device_json_config::string_to_modbus_network_mode(
+    const string &mode) {
+  if (mode == "TCP") {
+    return MODBUS_NETWORK_MODE_TCP;
+  } else if (mode == "UDP") {
+    return MODBUS_NETWORK_MODE_UDP;
+  }
+
+  return MODBUS_NETWORK_MODE_DISABLED;
+}
+
+string device_json_config::modbus_stop_bits_to_string(unsigned char stop_bits) {
+  switch (stop_bits) {
+    case MODBUS_SERIAL_STOP_BITS_ONE_AND_HALF:
+      return "ONE_AND_HALF";
+    case MODBUS_SERIAL_STOP_BITS_TWO:
+      return "TWO";
+  }
+  return "ONE";
+}
+
+unsigned char device_json_config::string_to_modbus_stop_bits(
+    const string &stop_bits) {
+  if (stop_bits == "ONE_AND_HALF") {
+    return MODBUS_SERIAL_STOP_BITS_ONE_AND_HALF;
+  } else if (stop_bits == "TWO") {
+    return MODBUS_SERIAL_STOP_BITS_TWO;
+  }
+
+  return MODBUS_SERIAL_STOP_BITS_ONE;
+}
+
+cJSON *device_json_config::modbus_serial_config_to_json(
+    ModbusSerialConfig *cfg) {
+  cJSON *object = cJSON_CreateObject();
+
+  set_item_value(object,
+                 modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_MODE),
+                 cJSON_String, true, nullptr,
+                 modbus_serial_mode_to_string(cfg->Mode).c_str(), 0);
+
+  set_item_value(object,
+                 modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_BAUDRATE),
+                 cJSON_Number, true, nullptr, nullptr, cfg->Baudrate);
+
+  set_item_value(
+      object, modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_STOP_BITS),
+      cJSON_String, true, nullptr,
+      modbus_stop_bits_to_string(cfg->Mode).c_str(), 0);
+
+  return object;
+}
+
+bool device_json_config::modbus_json_to_serial_config(cJSON *json,
+                                                      ModbusSerialConfig *cfg) {
+  bool result = false;
+
+  if (!json || !cfg) {
+    return result;
+  }
+
+  string str_value;
+
+  if (get_string(
+          json,
+          modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_MODE).c_str(),
+          &str_value)) {
+    cfg->Mode = string_to_modbus_serial_mode(str_value);
+    result = true;
+  }
+
+  double dbl_value = 0;
+
+  if (get_double(json,
+                 modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_BAUDRATE)
+                     .c_str(),
+                 &dbl_value)) {
+    cfg->Baudrate = dbl_value;
+  }
+
+  if (get_string(json,
+                 modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_STOP_BITS)
+                     .c_str(),
+                 &str_value)) {
+    cfg->StopBits = string_to_modbus_stop_bits(str_value);
+    result = true;
+  }
+
+  return result;
+}
+
+cJSON *device_json_config::modbus_available_protocols_to_json(
+    ModbusConfigProperties *props) {
+  cJSON *available_protocols = cJSON_CreateArray();
+
+  if (props->Protocol.Master) {
+    cJSON_AddItemToArray(
+        available_protocols,
+        cJSON_CreateString(modbus_role_to_string(MODBUS_ROLE_MASTER).c_str()));
+  }
+
+  if (props->Protocol.Slave) {
+    cJSON_AddItemToArray(
+        available_protocols,
+        cJSON_CreateString(modbus_role_to_string(MODBUS_ROLE_SLAVE).c_str()));
+  }
+
+  if (props->Protocol.Rtu) {
+    cJSON_AddItemToArray(
+        available_protocols,
+        cJSON_CreateString(
+            modbus_serial_mode_to_string(MODBUS_SERIAL_MODE_RTU).c_str()));
+  }
+
+  if (props->Protocol.Ascii) {
+    cJSON_AddItemToArray(
+        available_protocols,
+        cJSON_CreateString(
+            modbus_serial_mode_to_string(MODBUS_SERIAL_MODE_ASCII).c_str()));
+  }
+
+  if (props->Protocol.Tcp) {
+    cJSON_AddItemToArray(
+        available_protocols,
+        cJSON_CreateString(
+            modbus_network_mode_to_string(MODBUS_NETWORK_MODE_TCP).c_str()));
+  }
+
+  if (props->Protocol.Udp) {
+    cJSON_AddItemToArray(
+        available_protocols,
+        cJSON_CreateString(
+            modbus_network_mode_to_string(MODBUS_NETWORK_MODE_UDP).c_str()));
+  }
+
+  return available_protocols;
+}
+
+bool device_json_config::modbus_json_to_available_protocols(
+    cJSON *json, ModbusConfigProperties *props) {
+  memset(&props->Protocol, 0, sizeof(props->Protocol));
+
+  cJSON *available_protocols = cJSON_GetObjectItem(
+      json,
+      modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_AVAILABLE_PROTOCOLS)
+          .c_str());
+
+  if (!available_protocols) {
+    return false;
+  }
+
+  for (int a = 0; a < cJSON_GetArraySize(available_protocols); a++) {
+    cJSON *item = cJSON_GetArrayItem(available_protocols, a);
+    if (item && cJSON_IsString(item)) {
+      const char *value = cJSON_GetStringValue(item);
+      if (modbus_field_map.at(MODBUS_ROLE_MASTER) == value) {
+        props->Protocol.Master = 1;
+      } else if (modbus_field_map.at(MODBUS_ROLE_SLAVE) == value) {
+        props->Protocol.Slave = 1;
+      } else if (modbus_field_map.at(MODBUS_SERIAL_MODE_RTU) == value) {
+        props->Protocol.Rtu = 1;
+      } else if (modbus_field_map.at(MODBUS_SERIAL_MODE_ASCII) == value) {
+        props->Protocol.Ascii = 1;
+      } else if (modbus_field_map.at(MODBUS_NETWORK_MODE_TCP) == value) {
+        props->Protocol.Tcp = 1;
+      } else if (modbus_field_map.at(MODBUS_NETWORK_MODE_UDP) == value) {
+        props->Protocol.Udp = 1;
+      }
+    }
+  }
+
+  return true;
+}
+
+cJSON *device_json_config::modbus_available_baudrates_to_json(
+    ModbusConfigProperties *props) {
+  cJSON *available_baudrates = cJSON_CreateArray();
+
+  if (props->Baudrate.B4800) {
+    cJSON_AddItemToArray(available_baudrates, cJSON_CreateNumber(4800));
+  }
+
+  if (props->Baudrate.B9600) {
+    cJSON_AddItemToArray(available_baudrates, cJSON_CreateNumber(9600));
+  }
+
+  if (props->Baudrate.B19200) {
+    cJSON_AddItemToArray(available_baudrates, cJSON_CreateNumber(19200));
+  }
+
+  if (props->Baudrate.B38400) {
+    cJSON_AddItemToArray(available_baudrates, cJSON_CreateNumber(38400));
+  }
+
+  if (props->Baudrate.B57600) {
+    cJSON_AddItemToArray(available_baudrates, cJSON_CreateNumber(57600));
+  }
+
+  if (props->Baudrate.B115200) {
+    cJSON_AddItemToArray(available_baudrates, cJSON_CreateNumber(115200));
+  }
+
+  return available_baudrates;
+}
+
+bool device_json_config::modbus_json_to_available_baudrates(
+    cJSON *json, ModbusConfigProperties *props) {
+  memset(&props->Baudrate, 0, sizeof(props->Baudrate));
+
+  cJSON *available_baudrates = cJSON_GetObjectItem(
+      json,
+      modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_AVAILABLE_BAUDRATES)
+          .c_str());
+
+  if (!available_baudrates) {
+    return false;
+  }
+
+  for (int a = 0; a < cJSON_GetArraySize(available_baudrates); a++) {
+    cJSON *item = cJSON_GetArrayItem(available_baudrates, a);
+    if (item && cJSON_IsNumber(item)) {
+      int value = cJSON_GetNumberValue(item);
+      switch (value) {
+        case 4800:
+          props->Baudrate.B4800 = 1;
+          break;
+        case 9600:
+          props->Baudrate.B9600 = 1;
+          break;
+        case 19200:
+          props->Baudrate.B19200 = 1;
+          break;
+        case 38400:
+          props->Baudrate.B38400 = 1;
+          break;
+        case 57600:
+          props->Baudrate.B57600 = 1;
+          break;
+        case 115200:
+          props->Baudrate.B115200 = 1;
+          break;
+      }
+    }
+  }
+
+  return true;
+}
+
+cJSON *device_json_config::modbus_available_stop_bits_to_json(
+    ModbusConfigProperties *props) {
+  cJSON *available_stopbits = cJSON_CreateArray();
+  if (props->StopBits.One) {
+    cJSON_AddItemToArray(
+        available_stopbits,
+        cJSON_CreateString(
+            modbus_stop_bits_to_string(MODBUS_SERIAL_STOP_BITS_ONE).c_str()));
+  }
+
+  if (props->StopBits.Two) {
+    cJSON_AddItemToArray(
+        available_stopbits,
+        cJSON_CreateString(
+            modbus_stop_bits_to_string(MODBUS_SERIAL_STOP_BITS_TWO).c_str()));
+  }
+
+  if (props->StopBits.OneAndHalf) {
+    cJSON_AddItemToArray(
+        available_stopbits,
+        cJSON_CreateString(
+            modbus_stop_bits_to_string(MODBUS_SERIAL_STOP_BITS_ONE_AND_HALF)
+                .c_str()));
+  }
+  return available_stopbits;
+}
+
+bool device_json_config::modbus_json_to_available_stop_bits(
+    cJSON *json, ModbusConfigProperties *props) {
+  memset(&props->StopBits, 0, sizeof(props->StopBits));
+
+  cJSON *available_stop_bits = cJSON_GetObjectItem(
+      json,
+      modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_AVAILABLE_STOP_BITS)
+          .c_str());
+
+  if (!available_stop_bits) {
+    return false;
+  }
+
+  for (int a = 0; a < cJSON_GetArraySize(available_stop_bits); a++) {
+    cJSON *item = cJSON_GetArrayItem(available_stop_bits, a);
+    if (item && cJSON_IsString(item)) {
+      const char *value = cJSON_GetStringValue(item);
+      if (modbus_stop_bits_to_string(MODBUS_SERIAL_STOP_BITS_ONE) == value) {
+        props->StopBits.One = 1;
+      } else if (modbus_stop_bits_to_string(MODBUS_SERIAL_STOP_BITS_TWO) ==
+                 value) {
+        props->StopBits.Two = 1;
+      } else if (modbus_stop_bits_to_string(
+                     MODBUS_SERIAL_STOP_BITS_ONE_AND_HALF) == value) {
+        props->StopBits.OneAndHalf = 1;
+      }
+    }
+  }
+
+  return true;
+}
+
+cJSON *device_json_config::modbus_network_config_to_json(
+    ModbusNetworkConfig *cfg) {
+  cJSON *object = cJSON_CreateObject();
+
+  set_item_value(object,
+                 modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_MODE),
+                 cJSON_String, true, nullptr,
+                 modbus_network_mode_to_string(cfg->Mode).c_str(), 0);
+
+  set_item_value(object,
+                 modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_PORT),
+                 cJSON_Number, true, nullptr, nullptr, cfg->Port);
+
+  return object;
+}
+
+bool device_json_config::modbus_json_to_network_config(
+    cJSON *json, ModbusNetworkConfig *cfg) {
+  bool result = false;
+
+  if (!json || !cfg) {
+    return result;
+  }
+
+  string str_value;
+
+  if (get_string(
+          json,
+          modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_MODE).c_str(),
+          &str_value)) {
+    cfg->Mode = string_to_modbus_network_mode(str_value);
+    result = true;
+  }
+
+  double dbl_value = 0;
+
+  if (get_double(
+          json,
+          modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_PORT).c_str(),
+          &dbl_value)) {
+    cfg->Port = dbl_value;
+  }
+
+  return result;
+}
+
+void device_json_config::set_modbus_config(TDeviceConfig_Modbus *cfg) {
+  if (!cfg) {
+    return;
+  }
+
+  cJSON *user_root = get_modbus_root(true, true);
+  if (!user_root) {
+    return;
+  }
+
+  set_item_value(
+      user_root, modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_ROLE),
+      cJSON_String, true, nullptr, modbus_role_to_string(cfg->Role).c_str(), 0);
+
+  set_item_value(user_root,
+                 modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_ADDRESS),
+                 cJSON_Number, true, nullptr, nullptr, cfg->ModbusAddress);
+
+  set_item_value(
+      user_root,
+      modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_SLAVE_TIMEOUT_MS),
+      cJSON_Number, true, nullptr, nullptr, cfg->SlaveTimeoutMs);
+
+  set_item_value(
+      user_root,
+      modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_SERIAL_CONFIG),
+      cJSON_Object, true, modbus_serial_config_to_json(&cfg->Serial), nullptr,
+      0);
+
+  set_item_value(
+      user_root,
+      modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_NETWORK_CONFIG),
+      cJSON_Object, true, modbus_network_config_to_json(&cfg->Network), nullptr,
+      0);
+
+  cJSON *properties_root = get_modbus_root(true, false);
+  if (!properties_root) {
+    return;
+  }
+
+  set_item_value(
+      properties_root,
+      modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_AVAILABLE_PROTOCOLS),
+      cJSON_Object, true, modbus_available_protocols_to_json(&cfg->Properties),
+      nullptr, 0);
+
+  set_item_value(
+      properties_root,
+      modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_AVAILABLE_BAUDRATES),
+      cJSON_Object, true, modbus_available_baudrates_to_json(&cfg->Properties),
+      nullptr, 0);
+
+  set_item_value(
+      properties_root,
+      modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_AVAILABLE_STOP_BITS),
+      cJSON_Object, true, modbus_available_stop_bits_to_json(&cfg->Properties),
+      nullptr, 0);
+}
+
+cJSON *device_json_config::get_root(bool create, bool user,
                                     unsigned _supla_int64_t field) {
-  cJSON *root = get_user_root();
+  cJSON *root = user ? get_user_root() : get_properties_root();
 
   if (field != SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY &&
       field != SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT &&
@@ -226,6 +722,7 @@ cJSON *device_json_config::get_root(bool create,
 
   if (root) {
     const char name[] = "homeScreen";
+
     cJSON *result = cJSON_GetObjectItem(root, name);
     if (!result && create) {
       result = cJSON_AddObjectToObject(root, name);
@@ -240,7 +737,7 @@ void device_json_config::set_home_screen_off_delay(
     TDeviceConfig_HomeScreenOffDelay *delay) {
   if (delay) {
     set_item_value(
-        get_root(true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY),
+        get_root(true, true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY),
         field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY),
         cJSON_Number, true, nullptr, nullptr, delay->HomeScreenOffDelayS);
   }
@@ -250,7 +747,8 @@ void device_json_config::set_home_screen_off_delay_type(
     TDeviceConfig_HomeScreenOffDelayType *type) {
   if (type) {
     set_item_value(
-        get_root(true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE),
+        get_root(true, true,
+                 SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE),
         field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE),
         cJSON_String, true, nullptr,
         type->HomeScreenOffDelayType ==
@@ -263,7 +761,8 @@ void device_json_config::set_home_screen_off_delay_type(
 
 void device_json_config::set_home_screen_content(
     TDeviceConfig_HomeScreenContent *content) {
-  cJSON *root = get_root(true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT);
+  cJSON *root =
+      get_root(true, true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT);
   string content_str =
       home_screen_content_to_string(content->HomeScreenContent);
   if (!content_str.empty()) {
@@ -376,6 +875,11 @@ void device_json_config::set_config(TSDS_SetDeviceConfig *config) {
                 static_cast<TDeviceConfig_PowerStatusLed *>(ptr));
           }
           break;
+        case SUPLA_DEVICE_CONFIG_FIELD_MODBUS:
+          if (left >= (size = sizeof(TDeviceConfig_Modbus))) {
+            set_modbus_config(static_cast<TDeviceConfig_Modbus *>(ptr));
+          }
+          break;
       }
 
       offset += size;
@@ -384,7 +888,7 @@ void device_json_config::set_config(TSDS_SetDeviceConfig *config) {
 }
 
 bool device_json_config::get_status_led(TDeviceConfig_StatusLed *status_led) {
-  std::string str_value;
+  string str_value;
   if (status_led &&
       get_string(get_user_root(),
                  field_map.at(SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED).c_str(),
@@ -397,7 +901,7 @@ bool device_json_config::get_status_led(TDeviceConfig_StatusLed *status_led) {
 
 bool device_json_config::get_power_status_led(
     TDeviceConfig_PowerStatusLed *status_led) {
-  std::string str_value;
+  string str_value;
   if (status_led &&
       get_string(
           get_user_root(),
@@ -427,7 +931,7 @@ bool device_json_config::get_screen_brightness(
       return true;
     }
 
-    std::string str_value;
+    string str_value;
     if (get_string(parent, level_str, &str_value) && str_value == "auto") {
       brightness->Automatic = 1;
       brightness->ScreenBrightness = 0;
@@ -509,7 +1013,8 @@ bool device_json_config::get_home_screen_off_delay(
   double value = 0;
   if (delay &&
       get_double(
-          get_root(false, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY),
+          get_root(false, true,
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY),
           field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY).c_str(),
           &value)) {
     delay->HomeScreenOffDelayS = value;
@@ -525,7 +1030,7 @@ bool device_json_config::get_home_screen_off_delay_type(
     string str_value;
 
     if (get_string(
-            get_root(false,
+            get_root(false, true,
                      SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE),
             field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE)
                 .c_str(),
@@ -544,12 +1049,12 @@ bool device_json_config::get_home_screen_off_delay_type(
 
 bool device_json_config::get_home_screen_content(
     TDeviceConfig_HomeScreenContent *content) {
-  std::string str_value;
+  string str_value;
   bool result = false;
 
   if (content) {
     cJSON *root =
-        get_root(false, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY);
+        get_root(false, true, SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY);
     if (get_string(
             root,
             field_map.at(SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT).c_str(),
@@ -580,11 +1085,106 @@ bool device_json_config::get_home_screen_content(
 unsigned _supla_int64_t device_json_config::get_available_fields(void) {
   unsigned _supla_int64_t result = 0;
   for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
-    cJSON *root = get_root(false, it->first);
+    cJSON *root = get_root(false, true, it->first);
     if (root && cJSON_GetObjectItem(root, it->second.c_str())) {
       result |= it->first;
     }
   }
+  return result;
+}
+
+cJSON *device_json_config::get_modbus_root(bool create, bool user) {
+  cJSON *root = user ? get_user_root() : get_properties_root();
+  cJSON *result = nullptr;
+  if (root) {
+    const char *name = field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS).c_str();
+
+    result = cJSON_GetObjectItem(root, name);
+
+    if (!result && create) {
+      result = cJSON_AddObjectToObject(root, name);
+    }
+  }
+  return result;
+}
+
+bool device_json_config::get_modbus_config(TDeviceConfig_Modbus *cfg) {
+  bool result = false;
+
+  if (!cfg) {
+    return result;
+  }
+
+  cJSON *user_root = get_modbus_root(false, true);
+  if (!user_root) {
+    return result;
+  }
+
+  string str_value;
+
+  if (get_string(
+          user_root,
+          modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_ROLE).c_str(),
+          &str_value)) {
+    cfg->Role = string_to_modbus_role(str_value);
+    result = true;
+  }
+
+  double dbl_value = 0;
+
+  if (get_double(
+          user_root,
+          modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_ADDRESS).c_str(),
+          &dbl_value)) {
+    cfg->ModbusAddress = dbl_value;
+    result = true;
+  }
+
+  if (get_double(
+          user_root,
+          modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_SLAVE_TIMEOUT_MS)
+              .c_str(),
+          &dbl_value)) {
+    cfg->SlaveTimeoutMs = dbl_value;
+    result = true;
+  }
+
+  if (modbus_json_to_serial_config(
+          cJSON_GetObjectItem(
+              user_root, modbus_field_map
+                             .at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_SERIAL_CONFIG)
+                             .c_str()),
+          &cfg->Serial)) {
+    result = true;
+  }
+
+  if (modbus_json_to_network_config(
+          cJSON_GetObjectItem(
+              user_root,
+              modbus_field_map
+                  .at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_NETWORK_CONFIG)
+                  .c_str()),
+          &cfg->Network)) {
+    result = true;
+  }
+
+  cJSON *properties_root = get_modbus_root(false, false);
+  if (!properties_root) {
+    return result;
+  }
+
+  if (modbus_json_to_available_protocols(properties_root, &cfg->Properties)) {
+    result = true;
+  }
+
+  if (modbus_json_to_available_baudrates(properties_root, &cfg->Properties)) {
+    result = true;
+  }
+
+  if (modbus_json_to_available_stop_bits(properties_root, &cfg->Properties)) {
+    result = true;
+  }
+
   return result;
 }
 
@@ -669,6 +1269,11 @@ void device_json_config::get_config(TSDS_SetDeviceConfig *config,
                       get_power_status_led(
                           static_cast<TDeviceConfig_PowerStatusLed *>(ptr));
           break;
+        case SUPLA_DEVICE_CONFIG_FIELD_MODBUS:
+          field_set =
+              left >= (size = sizeof(TDeviceConfig_Modbus)) &&
+              get_modbus_config(static_cast<TDeviceConfig_Modbus *>(ptr));
+          break;
       }
 
       if (field_set) {
@@ -697,7 +1302,7 @@ void device_json_config::get_config(TSDS_SetDeviceConfig *config,
 void device_json_config::remove_empty_sub_roots() {
   cJSON *root = get_user_root();
   for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
-    cJSON *item = get_root(false, it->first);
+    cJSON *item = get_root(false, true, it->first);
     if (item && root != item && !item->child) {
       cJSON_DetachItemViaPointer(root, item);
       cJSON_Delete(item);
@@ -709,7 +1314,7 @@ void device_json_config::leave_only_thise_fields(
     unsigned _supla_int64_t fields) {
   for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
     if (!(fields & it->first)) {
-      cJSON *root = get_root(false, it->first);
+      cJSON *root = get_root(false, true, it->first);
       if (root) {
         cJSON *item = cJSON_GetObjectItem(root, it->second.c_str());
         if (item) {
@@ -734,7 +1339,7 @@ void device_json_config::leave_only_thise_fields(
 void device_json_config::remove_fields(unsigned _supla_int64_t fields) {
   for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
     if (fields & it->first) {
-      cJSON *root = get_root(false, it->first);
+      cJSON *root = get_root(false, true, it->first);
       if (root) {
         cJSON *item = cJSON_GetObjectItem(root, it->second.c_str());
         if (item) {
@@ -755,7 +1360,7 @@ void device_json_config::merge(supla_json_config *_dst) {
   map<cJSON *, map<unsigned _supla_int16_t, string>> map;
 
   for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
-    cJSON *root = get_root(false, it->first);
+    cJSON *root = get_root(false, true, it->first);
     if (root) {
       map[root][it->first] = it->second;
     }
@@ -763,7 +1368,7 @@ void device_json_config::merge(supla_json_config *_dst) {
 
   for (auto rit = map.cbegin(); rit != map.cend(); ++rit) {
     for (auto fit = rit->second.cbegin(); fit != rit->second.cend(); ++fit) {
-      supla_json_config::merge(rit->first, dst.get_root(true, fit->first),
+      supla_json_config::merge(rit->first, dst.get_root(true, true, fit->first),
                                rit->second, false);
     }
   }
