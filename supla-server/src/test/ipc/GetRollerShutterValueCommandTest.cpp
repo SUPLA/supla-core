@@ -48,28 +48,28 @@ TEST_F(GetRollerShutterValueCommandTest, getRollerShutterValueWithSuccess) {
 
   EXPECT_CALL(*cmd, get_channel_value(10, 20, 30)).WillOnce(Return(value));
 
-  commandProcessingTest("GET-ROLLER-SHUTTER-VALUE:10,20,30\n", "VALUE:70,40\n");
+  commandProcessingTest("GET-ROLLERSHUTTER-VALUE:10,20,30\n", "VALUE:70,40\n");
 }
 
 TEST_F(GetRollerShutterValueCommandTest, getRollerShutterValueWithFilure) {
   EXPECT_CALL(*cmd, get_channel_value)
       .WillOnce(Return((supla_channel_rs_value *)nullptr));
-  commandProcessingTest("GET-ROLLER-SHUTTER-VALUE:10,20,30\n", "UNKNOWN:30\n");
+  commandProcessingTest("GET-ROLLERSHUTTER-VALUE:10,20,30\n", "UNKNOWN:30\n");
 }
 
 TEST_F(GetRollerShutterValueCommandTest, noParams) {
   EXPECT_CALL(*cmd, get_channel_value).Times(0);
-  commandProcessingTest("GET-ROLLER-SHUTTER-VALUE:\n", "UNKNOWN:0\n");
+  commandProcessingTest("GET-ROLLERSHUTTER-VALUE:\n", "UNKNOWN:0\n");
 }
 
 TEST_F(GetRollerShutterValueCommandTest, paramsWithZeros) {
   EXPECT_CALL(*cmd, get_channel_value).Times(0);
-  commandProcessingTest("GET-ROLLER-SHUTTER-VALUE:0,0,0\n", "UNKNOWN:0\n");
+  commandProcessingTest("GET-ROLLERSHUTTER-VALUE:0,0,0\n", "UNKNOWN:0\n");
 }
 
 TEST_F(GetRollerShutterValueCommandTest, badParams) {
   EXPECT_CALL(*cmd, get_channel_value).Times(0);
-  commandProcessingTest("GET-ROLLER-SHUTTER-VALUE:a,10,c\n", "UNKNOWN:0\n");
+  commandProcessingTest("GET-ROLLERSHUTTER-VALUE:a,10,c\n", "UNKNOWN:0\n");
 }
 
 } /* namespace testing */

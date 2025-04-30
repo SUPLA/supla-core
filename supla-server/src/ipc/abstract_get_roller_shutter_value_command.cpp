@@ -27,7 +27,7 @@ supla_abstract_get_roller_shutter_value_command::
 
 const string supla_abstract_get_roller_shutter_value_command::get_command_name(
     void) {
-  return "GET-ROLLER-SHUTTER-VALUE:";
+  return "GET-ROLLERSHUTTER-VALUE:";
 }
 
 void supla_abstract_get_roller_shutter_value_command::on_command_match(
