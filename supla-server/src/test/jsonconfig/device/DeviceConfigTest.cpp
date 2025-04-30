@@ -811,4 +811,23 @@ TEST_F(DeviceConfigTest, modbus_2) {
   EXPECT_EQ(memcmp(sds_cfg1.Config, sds_cfg2.Config, sds_cfg1.ConfigSize), 0);
 }
 
+TEST_F(DeviceConfigTest, modbus_readSampleUserConfig) {
+  const char user_config[] =
+      "{\"modbus\":{\"role\":\"SLAVE\",\"modbusAddress\":3,\"slaveTimeoutMs\":"
+      "0,\"serialConfig\":{\"mode\":\"DISABLED\",\"baudRate\":19200,"
+      "\"stopBits\":\"ONE\"},\"networkConfig\":{\"mode\":\"DISABLED\",\"port\":"
+      "502}}}";
+  device_json_config cfg;
+  cfg.set_user_config(user_config);
+
+  TSDS_SetDeviceConfig sds_cfg = {};
+  cfg.get_config(&sds_cfg, nullptr);
+
+  EXPECT_EQ(sds_cfg.Fields, SUPLA_DEVICE_CONFIG_FIELD_MODBUS);
+  EXPECT_EQ(sds_cfg.ConfigSize, sizeof(TDeviceConfig_Modbus));
+  EXPECT_EQ(((TDeviceConfig_Modbus *)sds_cfg.Config)->Serial.Baudrate, 19200);
+  EXPECT_EQ(((TDeviceConfig_Modbus *)sds_cfg.Config)->ModbusAddress, 3);
+  EXPECT_EQ(((TDeviceConfig_Modbus *)sds_cfg.Config)->Network.Port, 502);
+}
+
 } /* namespace testing */
