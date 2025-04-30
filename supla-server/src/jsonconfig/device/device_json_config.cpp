@@ -346,7 +346,7 @@ cJSON *device_json_config::modbus_serial_config_to_json(
   set_item_value(
       object, modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_STOP_BITS),
       cJSON_String, true, nullptr,
-      modbus_stop_bits_to_string(cfg->Mode).c_str(), 0);
+      modbus_stop_bits_to_string(cfg->StopBits).c_str(), 0);
 
   return object;
 }
@@ -453,17 +453,21 @@ bool device_json_config::modbus_json_to_available_protocols(
     cJSON *item = cJSON_GetArrayItem(available_protocols, a);
     if (item && cJSON_IsString(item)) {
       const char *value = cJSON_GetStringValue(item);
-      if (modbus_field_map.at(MODBUS_ROLE_MASTER) == value) {
+      if (modbus_role_to_string(MODBUS_ROLE_MASTER) == value) {
         props->Protocol.Master = 1;
-      } else if (modbus_field_map.at(MODBUS_ROLE_SLAVE) == value) {
+      } else if (modbus_role_to_string(MODBUS_ROLE_SLAVE) == value) {
         props->Protocol.Slave = 1;
-      } else if (modbus_field_map.at(MODBUS_SERIAL_MODE_RTU) == value) {
+      } else if (modbus_serial_mode_to_string(MODBUS_SERIAL_MODE_RTU) ==
+                 value) {
         props->Protocol.Rtu = 1;
-      } else if (modbus_field_map.at(MODBUS_SERIAL_MODE_ASCII) == value) {
+      } else if (modbus_serial_mode_to_string(MODBUS_SERIAL_MODE_ASCII) ==
+                 value) {
         props->Protocol.Ascii = 1;
-      } else if (modbus_field_map.at(MODBUS_NETWORK_MODE_TCP) == value) {
+      } else if (modbus_network_mode_to_string(MODBUS_NETWORK_MODE_TCP) ==
+                 value) {
         props->Protocol.Tcp = 1;
-      } else if (modbus_field_map.at(MODBUS_NETWORK_MODE_UDP) == value) {
+      } else if (modbus_network_mode_to_string(MODBUS_NETWORK_MODE_UDP) ==
+                 value) {
         props->Protocol.Udp = 1;
       }
     }
