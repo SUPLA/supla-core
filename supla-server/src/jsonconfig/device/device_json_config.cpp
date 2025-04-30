@@ -1360,7 +1360,10 @@ void device_json_config::remove_fields(unsigned _supla_int64_t fields) {
 void device_json_config::merge(supla_json_config *_dst) {
   device_json_config dst(_dst);
 
-  map<unsigned _supla_int16_t, string> props_fields = {{1, content_available}};
+  map<unsigned _supla_int16_t, string> props_fields = {
+      {1, content_available},
+      {2, field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS)}};
+
   map<cJSON *, map<unsigned _supla_int16_t, string>> map;
 
   for (auto it = field_map.cbegin(); it != field_map.cend(); ++it) {
