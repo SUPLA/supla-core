@@ -24,14 +24,37 @@ using std::map;
 using std::string;
 
 #define FIELD_SENSORS 1
+#define FIELD_CLOSE_ON_FLOOD_TYPE 2
 
 const map<unsigned _supla_int16_t, string> valve_config::field_map = {
     {FIELD_SENSORS, "sensorChannelNumbers"},
-};
+    {FIELD_CLOSE_ON_FLOOD_TYPE, "closeValveOnFloodType"}};
 
 valve_config::valve_config(supla_json_config *root) : supla_json_config(root) {}
 
 valve_config::valve_config(void) : supla_json_config() {}
+
+string valve_config::close_on_flood_type_to_string(unsigned char type) {
+  switch (type) {
+    case SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ALWAYS:
+      return "ALWAYS";
+    case SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ON_CHANGE:
+      return "ON_CHANGE";
+  }
+
+  return "NONE";
+}
+
+unsigned char valve_config::string_to_close_on_flood_type(std::string &type) {
+  if (type == "ALWAYS") {
+    return SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ALWAYS;
+  }
+  if (type == "ON_CHANGE") {
+    return SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ON_CHANGE;
+  }
+
+  return SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_NONE;
+}
 
 void valve_config::set_config(TChannelConfig_Valve *config) {
   if (!config) {
@@ -68,6 +91,17 @@ void valve_config::set_config(TChannelConfig_Valve *config) {
 
   set_item_value(user_root, field_map.at(FIELD_SENSORS).c_str(), cJSON_Object,
                  true, sensors, nullptr, 0);
+
+  if (config->CloseValveOnFloodType == SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_NONE) {
+    cJSON_DeleteItemFromObject(user_root,
+                               field_map.at(FIELD_CLOSE_ON_FLOOD_TYPE).c_str());
+  } else {
+    set_item_value(
+        user_root, field_map.at(FIELD_CLOSE_ON_FLOOD_TYPE).c_str(),
+        cJSON_String, true, nullptr,
+        close_on_flood_type_to_string(config->CloseValveOnFloodType).c_str(),
+        0);
+  }
 }
 
 bool valve_config::get_config(TChannelConfig_Valve *config) {
@@ -113,6 +147,15 @@ bool valve_config::get_config(TChannelConfig_Valve *config) {
       }
     }
   }
+
+  string str_value;
+
+  if (get_string(user_root, field_map.at(FIELD_CLOSE_ON_FLOOD_TYPE).c_str(),
+                 &str_value)) {
+    result = true;
+  }
+
+  config->CloseValveOnFloodType = string_to_close_on_flood_type(str_value);
 
   return result;
 }

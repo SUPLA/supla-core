@@ -28,6 +28,8 @@
 class valve_config : public supla_json_config {
  private:
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
+  std::string close_on_flood_type_to_string(unsigned char type);
+  unsigned char string_to_close_on_flood_type(std::string &type);
 
  protected:
  public:
