@@ -146,11 +146,11 @@ TEST_F(DeviceConfigTest, allFields) {
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   modbus->ModbusAddress = 123;
-  modbus->Network.Mode = MODBUS_NETWORK_MODE_TCP;
-  modbus->Network.Port = 88;
-  modbus->Serial.Baudrate = 9600;
-  modbus->Serial.Mode = MODBUS_SERIAL_MODE_RTU;
-  modbus->Serial.StopBits = MODBUS_SERIAL_STOP_BITS_ONE;
+  modbus->NetworkConfig.Mode = MODBUS_NETWORK_MODE_TCP;
+  modbus->NetworkConfig.Port = 88;
+  modbus->SerialConfig.Baudrate = 9600;
+  modbus->SerialConfig.Mode = MODBUS_SERIAL_MODE_RTU;
+  modbus->SerialConfig.StopBits = MODBUS_SERIAL_STOP_BITS_ONE;
   modbus->Role = MODBUS_ROLE_SLAVE;
 
   memset(&modbus->Properties, 0xFF, sizeof(modbus->Properties));
@@ -702,10 +702,10 @@ TEST_F(DeviceConfigTest, modbus_1) {
   modbus->ModbusAddress = 253;
   modbus->Role = MODBUS_ROLE_SLAVE;
   modbus->SlaveTimeoutMs = 543;
-  modbus->Network.Mode = MODBUS_NETWORK_MODE_TCP;
-  modbus->Network.Port = 23;
-  modbus->Serial.Mode = MODBUS_SERIAL_MODE_ASCII;
-  modbus->Serial.Baudrate = 115200;
+  modbus->NetworkConfig.Mode = MODBUS_NETWORK_MODE_TCP;
+  modbus->NetworkConfig.Port = 23;
+  modbus->SerialConfig.Mode = MODBUS_SERIAL_MODE_ASCII;
+  modbus->SerialConfig.Baudrate = 115200;
 
   modbus->Properties.Baudrate.B9600 = 1;
   modbus->Properties.Baudrate.B38400 = 1;
@@ -761,11 +761,11 @@ TEST_F(DeviceConfigTest, modbus_2) {
   modbus->ModbusAddress = 253;
   modbus->Role = MODBUS_ROLE_MASTER;
   modbus->SlaveTimeoutMs = 543;
-  modbus->Network.Mode = MODBUS_NETWORK_MODE_UDP;
-  modbus->Network.Port = 23;
-  modbus->Serial.Mode = MODBUS_SERIAL_MODE_RTU;
-  modbus->Serial.Baudrate = 115200;
-  modbus->Serial.StopBits = MODBUS_SERIAL_STOP_BITS_TWO;
+  modbus->NetworkConfig.Mode = MODBUS_NETWORK_MODE_UDP;
+  modbus->NetworkConfig.Port = 23;
+  modbus->SerialConfig.Mode = MODBUS_SERIAL_MODE_RTU;
+  modbus->SerialConfig.Baudrate = 115200;
+  modbus->SerialConfig.StopBits = MODBUS_SERIAL_STOP_BITS_TWO;
 
   modbus->Properties.Baudrate.B4800 = 1;
   modbus->Properties.Baudrate.B19200 = 1;
@@ -825,9 +825,10 @@ TEST_F(DeviceConfigTest, modbus_readSampleUserConfig) {
 
   EXPECT_EQ(sds_cfg.Fields, SUPLA_DEVICE_CONFIG_FIELD_MODBUS);
   EXPECT_EQ(sds_cfg.ConfigSize, sizeof(TDeviceConfig_Modbus));
-  EXPECT_EQ(((TDeviceConfig_Modbus *)sds_cfg.Config)->Serial.Baudrate, 19200);
+  EXPECT_EQ(((TDeviceConfig_Modbus *)sds_cfg.Config)->SerialConfig.Baudrate,
+            19200);
   EXPECT_EQ(((TDeviceConfig_Modbus *)sds_cfg.Config)->ModbusAddress, 3);
-  EXPECT_EQ(((TDeviceConfig_Modbus *)sds_cfg.Config)->Network.Port, 502);
+  EXPECT_EQ(((TDeviceConfig_Modbus *)sds_cfg.Config)->NetworkConfig.Port, 502);
 }
 
 } /* namespace testing */

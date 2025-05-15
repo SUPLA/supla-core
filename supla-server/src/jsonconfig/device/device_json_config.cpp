@@ -681,14 +681,14 @@ void device_json_config::set_modbus_config(TDeviceConfig_Modbus *cfg) {
   set_item_value(
       user_root,
       modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_SERIAL_CONFIG),
-      cJSON_Object, true, modbus_serial_config_to_json(&cfg->Serial), nullptr,
-      0);
+      cJSON_Object, true, modbus_serial_config_to_json(&cfg->SerialConfig),
+      nullptr, 0);
 
   set_item_value(
       user_root,
       modbus_field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_NETWORK_CONFIG),
-      cJSON_Object, true, modbus_network_config_to_json(&cfg->Network), nullptr,
-      0);
+      cJSON_Object, true, modbus_network_config_to_json(&cfg->NetworkConfig),
+      nullptr, 0);
 
   cJSON *properties_root = get_modbus_root(true, false);
   if (!properties_root) {
@@ -1158,7 +1158,7 @@ bool device_json_config::get_modbus_config(TDeviceConfig_Modbus *cfg) {
               user_root, modbus_field_map
                              .at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_SERIAL_CONFIG)
                              .c_str()),
-          &cfg->Serial)) {
+          &cfg->SerialConfig)) {
     result = true;
   }
 
@@ -1168,7 +1168,7 @@ bool device_json_config::get_modbus_config(TDeviceConfig_Modbus *cfg) {
               modbus_field_map
                   .at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS_NETWORK_CONFIG)
                   .c_str()),
-          &cfg->Network)) {
+          &cfg->NetworkConfig)) {
     result = true;
   }
 
