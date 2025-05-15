@@ -45,7 +45,8 @@ string valve_config::close_on_flood_type_to_string(unsigned char type) {
   return "NONE";
 }
 
-unsigned char valve_config::string_to_close_on_flood_type(std::string &type) {
+unsigned char valve_config::string_to_close_on_flood_type(
+    const std::string &type) {
   if (type == "ALWAYS") {
     return SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ALWAYS;
   }
