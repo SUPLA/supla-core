@@ -72,7 +72,17 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
                                     // we only react to changes in the OCR area.
       break;
     default:
-      return;
+      switch (func) {
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+        case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        case SUPLA_CHANNELFNC_STAIRCASETIMER:
+          if (!(scope & CONFIG_CHANGE_SCOPE_FUNCTION)) {
+            return;
+          }
+          break;
+        default:
+          return;
+      }
   }
 
   supla_db_access_provider dba;
