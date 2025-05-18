@@ -44,12 +44,13 @@ TEST_F(GetFacadeBlindValueCommandTest, getFbValueWithoutConfigAndWithSuccess) {
   TDSC_FacadeBlindValue raw_value = {};
   raw_value.position = 70;
   raw_value.tilt = 40;
+  raw_value.flags = 0;
   supla_channel_fb_value *value = new supla_channel_fb_value(&raw_value);
 
   EXPECT_CALL(*cmd, get_channel_value(10, 20, 30)).WillOnce(Return(value));
 
   commandProcessingTest("GET-FACADE-BLIND-VALUE:10,20,30\n",
-                        "VALUE:70,40,72.000000\n");
+                        "VALUE:70,40,72.000000,0\n");
 }
 
 TEST_F(GetFacadeBlindValueCommandTest, getFbValueWithConfigAndWithSuccess) {
@@ -65,7 +66,20 @@ TEST_F(GetFacadeBlindValueCommandTest, getFbValueWithConfigAndWithSuccess) {
   EXPECT_CALL(*cmd, get_channel_config(10, 20, 30)).WillOnce(Return(config));
 
   commandProcessingTest("GET-FACADE-BLIND-VALUE:10,20,30\n",
-                        "VALUE:70,40,26.000000\n");
+                        "VALUE:70,40,26.000000,0\n");
+}
+
+TEST_F(GetFacadeBlindValueCommandTest, calibrationLost) {
+  TDSC_FacadeBlindValue raw_value = {};
+  raw_value.position = -1;
+  raw_value.tilt = -1;
+  raw_value.flags = RS_VALUE_FLAG_CALIBRATION_LOST;
+  supla_channel_fb_value *value = new supla_channel_fb_value(&raw_value);
+
+  EXPECT_CALL(*cmd, get_channel_value(10, 20, 30)).WillOnce(Return(value));
+
+  commandProcessingTest("GET-FACADE-BLIND-VALUE:10,20,30\n",
+                        "VALUE:-1,-1,-1.800000,4\n");
 }
 
 TEST_F(GetFacadeBlindValueCommandTest, getFbValueWithFilure) {

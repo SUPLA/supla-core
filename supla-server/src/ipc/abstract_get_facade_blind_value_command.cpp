@@ -43,9 +43,9 @@ void supla_abstract_get_facade_blind_value_command::on_command_match(
               get_channel_config(user_id, device_id, channel_id);
 
           char result[100] = {};
-          snprintf(result, sizeof(result), "VALUE:%i,%i,%f",
+          snprintf(result, sizeof(result), "VALUE:%i,%i,%f,%i",
                    value->get_position(), value->get_tilt(),
-                   value->get_tilt_angle(config));
+                   value->get_tilt_angle(config), value->get_fb_value()->flags);
 
           delete value;
 
