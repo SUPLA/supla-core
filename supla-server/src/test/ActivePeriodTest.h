@@ -28,6 +28,7 @@ class ActivePeriodTest : public Test {
  protected:
   ActivePeriodMock p;
   static const char tz[];
+  static const char tz_warsaw[];
   double lat;
   double lng;
 

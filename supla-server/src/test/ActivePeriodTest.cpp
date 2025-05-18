@@ -22,7 +22,8 @@
 
 namespace testing {
 
-const char ActivePeriodTest::tz[] = "Europe/Warsaw";
+const char ActivePeriodTest::tz[] = "Etc/UTC";
+const char ActivePeriodTest::tz_warsaw[] = "Europe/Warsaw";
 
 ActivePeriodTest::ActivePeriodTest(void) {
   lat = 0;
@@ -110,21 +111,33 @@ TEST_F(ActivePeriodTest, selectedActiveHours) {
       "619,620,621,622,623,70,71,72,73,74,75,76,77,78,79,710,711,712,713,714,"
       "715,716,717,718,719,720,721,722,723,");
 
-  std::time_t timestamp = 1691964000;
+  for (char a = 0; a < 2; a++) {
+    std::time_t timestamp;
 
-  EXPECT_CALL(p, get_current_point_in_time).WillRepeatedly([&]() {
-    auto result = std::chrono::time_point<std::chrono::system_clock>(
-        std::chrono::seconds(timestamp));
-    timestamp += 3600;
-    return result;
-  });
+    if (a) {
+      lat = 52.25;
+      lng = 21.00;
+      timestamp = 1691964000;
+    } else {
+      lat = 0;
+      lng = 0;
+      timestamp = 1691971200;
+    }
 
-  for (int d = 1; d <= 7; d++) {
-    for (int h = 0; h < 24; h++) {
-      if (h >= 6 && h <= 18 && d >= 3 && d <= 5) {
-        ASSERT_FALSE(p.is_now_active(tz, lat, lng));
-      } else {
-        ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+    EXPECT_CALL(p, get_current_point_in_time).WillRepeatedly([&]() {
+      auto result = std::chrono::time_point<std::chrono::system_clock>(
+          std::chrono::seconds(timestamp));
+      timestamp += 3600;
+      return result;
+    });
+
+    for (int d = 1; d <= 7; d++) {
+      for (int h = 0; h < 24; h++) {
+        if (h >= 6 && h <= 18 && d >= 3 && d <= 5) {
+          ASSERT_FALSE(p.is_now_active(a ? tz_warsaw : tz, lat, lng));
+        } else {
+          ASSERT_TRUE(p.is_now_active(a ? tz_warsaw : tz, lat, lng));
+        }
       }
     }
   }
@@ -363,25 +376,25 @@ TEST_F(ActivePeriodTest, afterSunset) {
   ASSERT_TRUE(p.is_now_active(tz, lat, lng));
 }
 
-TEST_F(ActivePeriodTest, afterSunset_WarsawCoordinates) {
+TEST_F(ActivePeriodTest, afterSunset_minus_10_WarsawCoordinates) {
   lat = 52.25;
   lng = 21.00;
 
-  // Sunset - 10 = 17:51:20
-  // Sunset - 10 = 17:49:18
-  // Sunset - 10 = 17:57:55
+  // Sunset - 10 = 1692121880 = 15 August 2023 17:51:20 UTC
+  // Sunset - 10 = 1692208158 = 16 August 2023 17:49:18 UTC
+  // Sunset - 10 = 1692294434 = 17 August 2023 17:47:14 UTC
 
-  // 1692122585 - 17:53:05 (day before)
-  // 1692144000 - 00:00:00
-  // 1692208138 - 17:48:58
-  // 1692208158 - 17:49:18 *
-  // 1692208160 - 17:49:20
-  // 1692230399 - 23:59:59
-  // 1692294434 - 17:47:14 * (next day)
-  // 1692294440 - 17:47:20 (next day)
+  // 1692122585 - 15 August 2023 18:03:05 UTC
+  // 1692144000 - 16 August 2023 02:00:00 GMT+02:00
+  // 1692208138 - 16 August 2023 17:48:58 UTC
+  // 1692208158 - 16 August 2023 17:49:18 UTC
+  // 1692208160 - 16 August 2023 17:49:20 UTC
+  // 1692223199 - 16 August 2023 23:59:59 GMT+02:00
+  // 1692294434 - 17 August 2023 17:47:14 UTC
+  // 1692294440 - 17 August 2023 17:47:20 UTC
 
   std::time_t timestamp[] = {1692122585, 1692144000, 1692208138, 1692208158,
-                             1692208160, 1692230399, 1692294434, 1692294440};
+                             1692208160, 1692223199, 1692294434, 1692294440};
 
   size_t n = 0;
 
@@ -394,14 +407,202 @@ TEST_F(ActivePeriodTest, afterSunset_WarsawCoordinates) {
 
   p.set_astro_conditions("[[{\"afterSunset\": -10}]]");
 
-  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
-  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
-  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
-  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
-  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
-  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
-  ASSERT_FALSE(p.is_now_active(tz, lat, lng));
-  ASSERT_TRUE(p.is_now_active(tz, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  ASSERT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  ASSERT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+}
+
+TEST_F(ActivePeriodTest, afterSunset_WarsawCoordinates) {
+  lat = 52.25;
+  lng = 21.00;
+
+  // Sunset - 1747592963 = 18 May 2025 18:29:23 UTC
+  // Sunset - 1747679453 = 19 May 2025 18:30:53 UTC
+
+  // 1747592963 - 18 May 2025 18:29:23 UTC
+  // 1747592964 - 18 May 2025 18:29:24 UTC *
+  // 1747593023 - 18 May 2025 18:30:23 UTC
+  // 1747605599 - 18 May 2025 23:59:59 GTM+02:00 *
+  // 1747605601 - 19 May 2025 00:00:01 GTM+02:00
+
+  // 1747679453 - 19 May 2025 18:30:53 UTC
+  // 1747679454 - 19 May 2025 18:30:54 UTC *
+  // 1747679514 - 19 May 2025 18:31:54 UTC
+  // 1747691999 - 19 May 2025 23:59:59 GTM+02:00 *
+  // 1747692001 - 20 May 2025 00:00:01 GTM+02:00
+
+  std::time_t timestamp[] = {1747592963, 1747592964, 1747593023, 1747605599,
+                             1747605601, 1747679453, 1747679454, 1747679514,
+                             1747691999, 1747692001};
+
+  size_t n = 0;
+
+  EXPECT_CALL(p, get_current_point_in_time).WillRepeatedly([&]() {
+    auto result = std::chrono::time_point<std::chrono::system_clock>(
+        std::chrono::seconds(timestamp[n]));
+    n++;
+    return result;
+  });
+
+  p.set_astro_conditions("[[{\"afterSunset\": 0}]]");
+
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+}
+
+TEST_F(ActivePeriodTest, beforeSunset_WarsawCoordinates) {
+  lat = 52.25;
+  lng = 21.00;
+
+  // Sunset - 1747592963 = 18 May 2025 18:29:23 UTC
+  // Sunset - 1747679453 = 19 May 2025 18:30:53 UTC
+
+  // 1747592962 - 18 May 2025 18:29:22 UTC
+  // 1747592963 - 18 May 2025 18:29:23 UTC *
+  // 1747593023 - 18 May 2025 18:30:23 UTC
+  // 1747605599 - 18 May 2025 23:59:59 GTM+02:00 *
+  // 1747605601 - 19 May 2025 00:00:01 GTM+02:00
+
+  // 1747679452 - 19 May 2025 18:30:52 UTC
+  // 1747679453 - 19 May 2025 18:30:53 UTC *
+  // 1747679514 - 19 May 2025 18:31:54 UTC
+  // 1747691999 - 19 May 2025 23:59:59 GTM+02:00 *
+  // 1747692001 - 20 May 2025 00:00:01 GTM+02:00
+
+  std::time_t timestamp[] = {1747592962, 1747592963, 1747593023, 1747605599,
+                             1747605601, 1747679452, 1747679453, 1747679514,
+                             1747691999, 1747692001};
+
+  size_t n = 0;
+
+  EXPECT_CALL(p, get_current_point_in_time).WillRepeatedly([&]() {
+    auto result = std::chrono::time_point<std::chrono::system_clock>(
+        std::chrono::seconds(timestamp[n]));
+    n++;
+    return result;
+  });
+
+  p.set_astro_conditions("[[{\"beforeSunset\": 0}]]");
+
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+}
+
+TEST_F(ActivePeriodTest, afterSunrise_WarsawCoordinates) {
+  lat = 52.25;
+  lng = 21.00;
+
+  // Sunrise - 1747535788 = 18 May 2025 02:36:28 UTC
+  // Sunrise - 1747622104 = 19 May 2025 02:35:04 UTC
+
+  // 1747535788 - 18 May 2025 02:36:28 UTC
+  // 1747535789 - 18 May 2025 02:36:29 UTC *
+  // 1747593023 - 18 May 2025 18:30:23 UTC
+  // 1747605599 - 18 May 2025 23:59:59 GTM+02:00 *
+  // 1747605601 - 19 May 2025 00:00:01 GTM+02:00
+
+  // 1747622104 - 19 May 2025 02:35:04 UTC
+  // 1747622105 - 19 May 2025 02:35:05 UTC *
+  // 1747679514 - 19 May 2025 18:31:54 UTC
+  // 1747691999 - 19 May 2025 23:59:59 GTM+02:00 *
+  // 1747692001 - 20 May 2025 00:00:01 GTM+02:00
+
+  std::time_t timestamp[] = {1747535788, 1747535789, 1747593023, 1747605599,
+                             1747605601, 1747622104, 1747622105, 1747679514,
+                             1747691999, 1747692001};
+
+  size_t n = 0;
+
+  EXPECT_CALL(p, get_current_point_in_time).WillRepeatedly([&]() {
+    auto result = std::chrono::time_point<std::chrono::system_clock>(
+        std::chrono::seconds(timestamp[n]));
+    n++;
+    return result;
+  });
+
+  p.set_astro_conditions("[[{\"afterSunrise\": 0}]]");
+
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+}
+
+TEST_F(ActivePeriodTest, beforeSunrise_WarsawCoordinates) {
+  lat = 52.25;
+  lng = 21.00;
+
+  // Sunrise - 1747535788 = 18 May 2025 02:36:28 UTC
+  // Sunrise - 1747622104 = 19 May 2025 02:35:04 UTC
+
+  // 1747535787 - 18 May 2025 02:36:27 UTC
+  // 1747535788 - 18 May 2025 02:36:28 UTC *
+  // 1747593023 - 18 May 2025 18:30:23 UTC
+  // 1747605599 - 18 May 2025 23:59:59 GTM+02:00 *
+  // 1747605601 - 19 May 2025 00:00:01 GTM+02:00
+
+  // 1747622103 - 19 May 2025 02:35:03 UTC
+  // 1747622104 - 19 May 2025 02:35:04 UTC *
+  // 1747679514 - 19 May 2025 18:31:54 UTC
+  // 1747691999 - 19 May 2025 23:59:59 GTM+02:00 *
+  // 1747692001 - 20 May 2025 00:00:01 GTM+02:00
+
+  std::time_t timestamp[] = {1747535787, 1747535788, 1747593023, 1747605599,
+                             1747605601, 1747622103, 1747622104, 1747679514,
+                             1747691999, 1747692001};
+
+  size_t n = 0;
+
+  EXPECT_CALL(p, get_current_point_in_time).WillRepeatedly([&]() {
+    auto result = std::chrono::time_point<std::chrono::system_clock>(
+        std::chrono::seconds(timestamp[n]));
+    n++;
+    return result;
+  });
+
+  p.set_astro_conditions("[[{\"beforeSunrise\": 0}]]");
+
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_FALSE(p.is_now_active(tz_warsaw, lat, lng));
+  EXPECT_TRUE(p.is_now_active(tz_warsaw, lat, lng));
 }
 
 TEST_F(ActivePeriodTest, compare) {
