@@ -34,6 +34,7 @@ time_t supla_abstract_db_access_provider::mytime_to_time_t(MYSQL_TIME *time) {
   timeinfo.tm_hour = time->hour;
   timeinfo.tm_min = time->minute;
   timeinfo.tm_sec = time->second;
+  timeinfo.tm_isdst = -1;
 
-  return mktime(&timeinfo);
+  return timegm(&timeinfo);
 }
