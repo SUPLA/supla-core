@@ -616,6 +616,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   (1ULL << 7)  // v. >= 24
 // type: TDeviceConfig_PowerStatusLed
 #define SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED (1ULL << 8)  // v. >= 25
+// type: TDeviceConfig_Modbus
+#define SUPLA_DEVICE_CONFIG_FIELD_MODBUS (1ULL << 9)  // v. >= 27
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 // BIT map definition for TDS_SuplaDeviceChannel_D::Flags (64 bit)
@@ -830,6 +832,7 @@ typedef struct {
 #define SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE_TEMPORAL_OVERRIDE (1ULL << 11)
 #define SUPLA_HVAC_VALUE_FLAG_BATTERY_COVER_OPEN (1ULL << 12)
 #define SUPLA_HVAC_VALUE_FLAG_CALIBRATION_ERROR (1ULL << 13)
+#define SUPLA_HVAC_VALUE_FLAG_ANTIFREEZE_OVERHEAT_ACTIVE (1ULL << 14)
 
 // HVAC modes are used in channel value (as a command from server or
 // as a status response from device to server) and in weekly schedules
@@ -2742,6 +2745,7 @@ typedef struct {
 // cooling subfuction, while standard weelkly schedule is used for heating
 #define SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE 3
 #define SUPLA_CONFIG_TYPE_OCR 4
+#define SUPLA_CONFIG_TYPE_EXTENDED 5
 
 /********************************************
  * DEVICE CONFIG STRUCTURES
@@ -2858,6 +2862,78 @@ typedef struct {
   unsigned _supla_int64_t
       HomeScreenContent;            // SUPLA_DEVCFG_HOME_SCREEN_CONTENT_
 } TDeviceConfig_HomeScreenContent;  // v. >= 21
+
+// type: TDeviceConfig_Modbus
+#define MODBUS_SERIAL_MODE_DISABLED 0
+#define MODBUS_SERIAL_MODE_RTU 1
+#define MODBUS_SERIAL_MODE_ASCII 2
+
+#define MODBUS_SERIAL_STOP_BITS_ONE 0
+#define MODBUS_SERIAL_STOP_BITS_ONE_AND_HALF 1
+#define MODBUS_SERIAL_STOP_BITS_TWO 2
+
+typedef struct {
+  unsigned char Mode;  // MODBUS_SERIAL_MODE_*
+  _supla_int_t Baudrate;  // 19200 (default and mandatory by modbus)
+  unsigned char StopBits;  // MODBUS_SERIAL_STOP_BITS_*
+  unsigned char Reserved[20];
+} ModbusSerialConfig;
+
+#define MODBUS_NETWORK_MODE_DISABLED 0
+#define MODBUS_NETWORK_MODE_TCP 1
+#define MODBUS_NETWORK_MODE_UDP 2
+
+typedef struct {
+  unsigned char Mode;  // MODBUS_NETWORK_MODE_*
+  unsigned int Port;  // Default: 502
+  unsigned char Reserved[20];
+} ModbusNetworkConfig;
+
+// Readonly Modbus properties, which tells which functions/modes are
+// available
+typedef struct {
+  struct {
+    unsigned char Master: 1;
+    unsigned char Slave: 1;
+    unsigned char Rtu: 1;
+    unsigned char Ascii: 1;
+    unsigned char Tcp: 1;
+    unsigned char Udp: 1;
+    unsigned char Reserved: 2;
+    unsigned char Reserved2: 8;
+  } Protocol;
+  struct {
+    unsigned char B4800: 1;
+    unsigned char B9600: 1;  // modbus mandatory
+    unsigned char B19200: 1;  // modbus mandatory
+    unsigned char B38400: 1;
+    unsigned char B57600: 1;
+    unsigned char B115200: 1;
+    unsigned char Reserved: 2;
+    unsigned char Reserved2: 8;
+  } Baudrate;
+  struct {
+    unsigned char One: 1;
+    unsigned char OneAndHalf: 1;
+    unsigned char Two: 1;
+    unsigned char Reserved: 5;
+  } StopBits;
+  unsigned char Reserved[20];
+} ModbusConfigProperties;
+
+#define MODBUS_ROLE_NOT_SET 0
+#define MODBUS_ROLE_MASTER 1
+#define MODBUS_ROLE_SLAVE 2
+
+typedef struct {
+  unsigned char Role;  // MODBUS_ROLE_*
+  unsigned char ModbusAddress;  // only for slave
+  unsigned _supla_int_t SlaveTimeoutMs;  // only for master
+  ModbusSerialConfig SerialConfig;
+  ModbusNetworkConfig NetworkConfig;
+  ModbusConfigProperties Properties;
+  unsigned char Reserved[20];
+} TDeviceConfig_Modbus;
 
 /********************************************
  * CHANNEL CONFIG STRUCTURES
@@ -3509,11 +3585,17 @@ typedef struct {
   };
 } TValve_SensorInfo;  // v. >= 27
 
+
+#define SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_NONE 0
+#define SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ALWAYS 1
+#define SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ON_CHANGE 2
+
 typedef struct {
   TValve_SensorInfo
       SensorInfo[20];  // Flood sensors can be attached only if
                        // SUPLA_CHANNEL_FLAG_FLOOD_SENSORS_SUPPORTED is set
-  unsigned char Reserved[32];
+  unsigned char CloseValveOnFloodType;  // SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_*
+  unsigned char Reserved[31];
 } TChannelConfig_Valve;  // v. >= 27
 
 #define SUPLA_OCR_AUTHKEY_SIZE 33
@@ -3556,6 +3638,9 @@ typedef struct {
 } TChannelConfig_PowerSwitch;  // v. >= 25
 
 typedef TChannelConfig_PowerSwitch TChannelConfig_LightSwitch;
+
+// Staircase timer ext use SUPLA_CONFIG_TYPE_EXTENDED
+typedef TChannelConfig_PowerSwitch TChannelConfig_StaircaseTimer_Ext;
 
 typedef struct {
   _supla_int_t ChannelID;

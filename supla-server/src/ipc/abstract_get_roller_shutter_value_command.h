@@ -16,28 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VALVE_CONFIG_H_
-#define VALVE_CONFIG_H_
+#ifndef SUPLA_ABSTRACT_GET_ROLLER_SHUTTER_VALUE_COMMAND_H_
+#define SUPLA_ABSTRACT_GET_ROLLER_SHUTTER_VALUE_COMMAND_H_
 
-#include <map>
 #include <string>
 
+#include "device/value/channel_rs_value.h"
+#include "ipc/abstract_ipc_command.h"
 #include "jsonconfig/json_config.h"
-#include "proto.h"
 
-class valve_config : public supla_json_config {
- private:
-  static const std::map<unsigned _supla_int16_t, std::string> field_map;
-  std::string close_on_flood_type_to_string(unsigned char type);
-  unsigned char string_to_close_on_flood_type(const std::string &type);
-
+class supla_abstract_get_roller_shutter_value_command
+    : public supla_abstract_ipc_command {
  protected:
+  virtual void on_command_match(const char *params);
+  virtual supla_channel_rs_value *get_channel_value(int user_id, int device_id,
+                                                    int channel_id) = 0;
+
  public:
-  explicit valve_config(supla_json_config *root);
-  valve_config(void);
-  virtual void merge(supla_json_config *dst);
-  void set_config(TChannelConfig_Valve *config);
-  bool get_config(TChannelConfig_Valve *config);
+  explicit supla_abstract_get_roller_shutter_value_command(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
+  virtual const std::string get_command_name(void);
 };
 
-#endif /* VALVE_CONFIG_H_ */
+#endif /* SUPLA_ABSTRACT_GET_ROLLER_SHUTTER_VALUE_COMMAND_H_ */

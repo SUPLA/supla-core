@@ -178,14 +178,19 @@ bool supla_active_period::_is_now_active(const char *timezone, double latitude,
     double sunrise = 0.0;
     double sunset = 0.0;
 
-    auto midnight_time_point_utc = date::floor<date::days>(now.get_sys_time());
+    auto midnight_time_point_local =
+        date::floor<date::days>(now.get_local_time());
 
-    unsigned long midnight_utc =
+    unsigned long midnight_local =
         std::chrono::duration_cast<std::chrono::seconds>(
-            midnight_time_point_utc.time_since_epoch())
+            midnight_time_point_local.time_since_epoch())
             .count();
 
-    calcSunriseSunset(now_utc, latitude, longitude, transit, sunrise, sunset,
+    unsigned long now_local = std::chrono::duration_cast<std::chrono::seconds>(
+                                  now.get_local_time().time_since_epoch())
+                                  .count();
+
+    calcSunriseSunset(now_local, latitude, longitude, transit, sunrise, sunset,
                       SUNRISESET_STD_ALTITUDE, 1);
 
     sunset *= 3600;
@@ -196,7 +201,7 @@ bool supla_active_period::_is_now_active(const char *timezone, double latitude,
       bool all_contitions_met = true;
 
       for (auto it2 = it1->begin(); it2 != it1->end(); ++it2) {
-        unsigned long timestamp = midnight_utc;
+        unsigned long timestamp = midnight_local;
         timestamp +=
             it2->cnd_type == afterSunrise || it2->cnd_type == beforeSunrise
                 ? sunrise

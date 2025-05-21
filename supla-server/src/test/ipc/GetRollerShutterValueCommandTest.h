@@ -16,28 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VALVE_CONFIG_H_
-#define VALVE_CONFIG_H_
+#ifndef GETROLLERSHUTTERVALUECOMMANDTEST_H_
+#define GETROLLERSHUTTERVALUECOMMANDTEST_H_
 
-#include <map>
-#include <string>
+#include "doubles/ipc/GetRollerShutterValueCommandMock.h"
+#include "ipc/IpcCommandTest.h"
 
-#include "jsonconfig/json_config.h"
-#include "proto.h"
+namespace testing {
 
-class valve_config : public supla_json_config {
- private:
-  static const std::map<unsigned _supla_int16_t, std::string> field_map;
-  std::string close_on_flood_type_to_string(unsigned char type);
-  unsigned char string_to_close_on_flood_type(const std::string &type);
-
+class GetRollerShutterValueCommandTest : public IpcCommandTest {
  protected:
+  GetRollerShutterValueCommandMock *cmd;
+  virtual supla_abstract_ipc_command *getCommand(void);
+
  public:
-  explicit valve_config(supla_json_config *root);
-  valve_config(void);
-  virtual void merge(supla_json_config *dst);
-  void set_config(TChannelConfig_Valve *config);
-  bool get_config(TChannelConfig_Valve *config);
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
-#endif /* VALVE_CONFIG_H_ */
+} /* namespace testing */
+
+#endif /* GETROLLERSHUTTERVALUECOMMANDTEST_H_ */

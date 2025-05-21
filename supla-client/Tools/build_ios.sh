@@ -16,7 +16,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
-SDK="17.4"
+SDK="18.4"
 OPENSSL=""
 BUILD_CFG="Release"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -67,11 +67,7 @@ build()
   
   echo "[INFO] Building '${PLATFORM}' for architecture '${ARCH}'"
 
-  if [[ "${ARCH}" == "armv7" || "${ARCH}" == "armv7s" ]]; then
-     TARGET_CPU="ARM"
-  else
-     TARGET_CPU=`echo -n ${ARCH} | awk '{ print toupper($0) }'`
-  fi
+  TARGET_CPU=`echo -n ${ARCH} | awk '{ print toupper($0) }'`
   
   if [[ "${PLATFORM}" == "iPhoneSimulator" ]]; then
     PARAMS="-DTARGET_OS_SIMULATOR=1 -DTARGET_CPU_${TARGET_CPU} -mios-simulator-version-min=8.2  "
@@ -99,18 +95,12 @@ build()
   mv libsupla-client.a "${PLATFORM}_${ARCH}/"
 }
 
-build "armv7" "iPhoneOS"
-build "armv7s" "iPhoneOS"
 build "arm64" "iPhoneOS"
 build "arm64" "iPhoneSimulator"
 build "x86_64" "iPhoneSimulator"
 
 echo "[INFO] Linking libraries"
-lipo \
-  "${BUILD_DIR}/iPhoneOS_armv7/libsupla-client.a" \
-  "${BUILD_DIR}/iPhoneOS_armv7s/libsupla-client.a" \
-  "${BUILD_DIR}/iPhoneOS_arm64/libsupla-client.a" \
-  -create -output "${BUILD_DIR}/libsupla-client-iphoneos.a"
+cp "${BUILD_DIR}/iPhoneOS_arm64/libsupla-client.a" "${BUILD_DIR}/libsupla-client-iphoneos.a"
   
 lipo \
   "${BUILD_DIR}/iPhoneSimulator_arm64/libsupla-client.a" \
@@ -135,9 +125,7 @@ then
   echo "[INFO] XCFramework created: ${BUILD_DIR}/LibSuplaClient.xcframework"
 fi
 
-rm -rf "${BUILD_DIR}/iPhoneOS_armv7" \
-  "${BUILD_DIR}/iPhoneOS_armv7s" \
-  "${BUILD_DIR}/iPhoneOS_arm64" \
+rm -rf "${BUILD_DIR}/iPhoneOS_arm64" \
   "${BUILD_DIR}/iPhoneSimulator_arm64" \
   "${BUILD_DIR}/iPhoneSimulator_x86_64" \
   "${BUILD_DIR}/libsupla-client-iphoneos.a" \

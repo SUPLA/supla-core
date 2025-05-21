@@ -98,11 +98,35 @@ TEST_F(ValveConfigTest, duplicateRaw) {
   free(str);
 }
 
+TEST_F(ValveConfigTest, closeOnFlootType_setAndGet) {
+  TChannelConfig_Valve raw1 = {};
+  raw1.CloseValveOnFloodType = SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ALWAYS;
+
+  valve_config config1;
+  config1.set_config(&raw1);
+
+  char *str = config1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"sensorChannelNumbers\":[],\"closeValveOnFloodType\":\"ALWAYS\"}");
+
+  valve_config config2;
+  config2.set_user_config(str);
+  free(str);
+
+  TChannelConfig_Valve raw2 = {};
+  EXPECT_TRUE(config2.get_config(&raw2));
+
+  EXPECT_EQ(0, memcmp(&raw1, &raw2, sizeof(raw1)));
+}
+
 TEST_F(ValveConfigTest, merge) {
   valve_config cfg1, cfg2;
 
   cfg1.set_user_config(
-      "{\"yxyz\":123,\"abcd\":567,\"sensorChannelNumbers\":[10,5,15]}");
+      "{\"yxyz\":123,\"abcd\":567,\"sensorChannelNumbers\":[10,5,15],"
+      "\"closeValveOnFloodType\":\"ALWAYS\"}");
 
   cfg2.set_user_config("{\"sensorChannelNumbers\":[3]}");
 

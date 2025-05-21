@@ -955,6 +955,8 @@ void supla_device_channel::send_config_to_device(void) {
   } else if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
              get_device()->get_protocol_version() >= 25) {
     send_config_to_device(SUPLA_CONFIG_TYPE_OCR);
+  } else if (get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER) {
+    send_config_to_device(SUPLA_CONFIG_TYPE_EXTENDED);
   }
 
   TSD_ChannelConfigFinished fin = {};

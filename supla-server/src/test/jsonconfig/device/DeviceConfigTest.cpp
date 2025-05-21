@@ -18,7 +18,11 @@
 
 #include "DeviceConfigTest.h"
 
+#include <string.h>
+
+#include "TestHelper.h"
 #include "jsonconfig/device/device_json_config.h"
+#include "log.h"
 #include "proto.h"
 
 namespace testing {
@@ -88,7 +92,8 @@ TEST_F(DeviceConfigTest, allFields) {
                    SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY |
                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT |
-                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE;
+                   SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE |
+                   SUPLA_DEVICE_CONFIG_FIELD_MODBUS;
 
   ((TDeviceConfig_StatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
       ->StatusLedType = SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF;
@@ -118,6 +123,8 @@ TEST_F(DeviceConfigTest, allFields) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_HomeScreenOffDelay);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
+  size_t home_screen_content_offset = sds_cfg.ConfigSize;
+
   ((TDeviceConfig_HomeScreenContent *)&sds_cfg.Config[sds_cfg.ConfigSize])
       ->HomeScreenContent = SUPLA_DEVCFG_HOME_SCREEN_CONTENT_TIME_DATE;
   ((TDeviceConfig_HomeScreenContent *)&sds_cfg.Config[sds_cfg.ConfigSize])
@@ -133,6 +140,27 @@ TEST_F(DeviceConfigTest, allFields) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_PowerStatusLed);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
+  TDeviceConfig_Modbus *modbus =
+      (TDeviceConfig_Modbus *)&sds_cfg.Config[sds_cfg.ConfigSize];
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_Modbus);
+  ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
+
+  modbus->ModbusAddress = 123;
+  modbus->NetworkConfig.Mode = MODBUS_NETWORK_MODE_TCP;
+  modbus->NetworkConfig.Port = 88;
+  modbus->SerialConfig.Baudrate = 9600;
+  modbus->SerialConfig.Mode = MODBUS_SERIAL_MODE_RTU;
+  modbus->SerialConfig.StopBits = MODBUS_SERIAL_STOP_BITS_ONE;
+  modbus->Role = MODBUS_ROLE_SLAVE;
+
+  memset(&modbus->Properties, 0xFF, sizeof(modbus->Properties));
+  memset(&modbus->Properties.Reserved, 0, sizeof(modbus->Properties.Reserved));
+  modbus->Properties.Baudrate.Reserved = 0;
+  modbus->Properties.Baudrate.Reserved2 = 0;
+  modbus->Properties.Protocol.Reserved = 0;
+  modbus->Properties.Protocol.Reserved2 = 0;
+  modbus->Properties.StopBits.Reserved = 0;
+
   device_json_config cfg;
   cfg.set_config(&sds_cfg);
   char *str = cfg.get_user_config();
@@ -142,7 +170,14 @@ TEST_F(DeviceConfigTest, allFields) {
                "24},\"buttonVolume\":100,\"userInterface\":{\"disabled\":false}"
                ",\"automaticTimeSync\":true,\"homeScreen\":{\"offDelay\":123,"
                "\"content\":\"TIME_DATE\",\"offDelayType\":\"ALWAYS_ENABLED\"},"
-               "\"powerStatusLed\":\"ENABLED\"}");
+               "\"powerStatusLed\":\"ENABLED\",\"modbus\":{\"role\":\"SLAVE\","
+               "\"modbusAddress\":123,\"slaveTimeoutMs\":0,\"serialConfig\":{"
+               "\"mode\":\"RTU\",\"baudRate\":9600,\"stopBits\":\"ONE\"},"
+               "\"networkConfig\":{\"mode\":\"TCP\",\"port\":88}}}");
+
+  device_json_config cfg2;
+  cfg2.set_user_config(str);
+
   free(str);
 
   str = cfg.get_properties();
@@ -151,8 +186,30 @@ TEST_F(DeviceConfigTest, allFields) {
       str,
       "{\"homeScreenContentAvailable\":[\"NONE\",\"TEMPERATURE\",\"TEMPERATURE_"
       "AND_HUMIDITY\",\"TIME\",\"TIME_DATE\",\"TEMPERATURE_TIME\",\"MAIN_AND_"
-      "AUX_TEMPERATURE\",\"MODE_OR_TEMPERATURE\"]}");
+      "AUX_TEMPERATURE\",\"MODE_OR_TEMPERATURE\"],\"modbus\":{"
+      "\"availableProtocols\":[\"MASTER\",\"SLAVE\",\"RTU\",\"ASCII\",\"TCP\","
+      "\"UDP\"],\"availableBaudrates\":[4800,9600,19200,38400,57600,115200],"
+      "\"availableStopbits\":[\"ONE\",\"TWO\",\"ONE_AND_HALF\"]}}");
+
+  cfg2.set_properties(str);
+
   free(str);
+
+  TSDS_SetDeviceConfig sds_cfg2 = {};
+  cfg2.get_config(&sds_cfg2, nullptr);
+
+  EXPECT_EQ(((TDeviceConfig_HomeScreenContent *)&sds_cfg2
+                 .Config[home_screen_content_offset])
+                ->ContentAvailable,
+            SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MODE_OR_TEMPERATURE |
+                (SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MODE_OR_TEMPERATURE - 1));
+
+  ((TDeviceConfig_HomeScreenContent *)&sds_cfg2
+       .Config[home_screen_content_offset])
+      ->ContentAvailable = 0xFFFFFFFFFFFFFFFF;
+
+  EXPECT_EQ(sds_cfg.Fields, sds_cfg2.Fields);
+  EXPECT_EQ(memcmp(sds_cfg.Config, sds_cfg2.Config, sds_cfg.ConfigSize), 0);
 }
 
 TEST_F(DeviceConfigTest, twoFieldsSlightlyApart) {
@@ -632,6 +689,146 @@ TEST_F(DeviceConfigTest, availableFields) {
                 SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
                 SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY |
                 SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT);
+}
+
+TEST_F(DeviceConfigTest, modbus_1) {
+  TSDS_SetDeviceConfig sds_cfg1 = {};
+  TSDS_SetDeviceConfig sds_cfg2 = {};
+  sds_cfg1.Fields = SUPLA_DEVICE_CONFIG_FIELD_MODBUS;
+  sds_cfg1.ConfigSize = sizeof(TDeviceConfig_Modbus);
+
+  TDeviceConfig_Modbus *modbus = (TDeviceConfig_Modbus *)sds_cfg1.Config;
+
+  modbus->ModbusAddress = 253;
+  modbus->Role = MODBUS_ROLE_SLAVE;
+  modbus->SlaveTimeoutMs = 543;
+  modbus->NetworkConfig.Mode = MODBUS_NETWORK_MODE_TCP;
+  modbus->NetworkConfig.Port = 23;
+  modbus->SerialConfig.Mode = MODBUS_SERIAL_MODE_ASCII;
+  modbus->SerialConfig.Baudrate = 115200;
+
+  modbus->Properties.Baudrate.B9600 = 1;
+  modbus->Properties.Baudrate.B38400 = 1;
+  modbus->Properties.Baudrate.B115200 = 1;
+
+  modbus->Properties.Protocol.Master = 1;
+  modbus->Properties.Protocol.Rtu = 1;
+  modbus->Properties.Protocol.Tcp = 1;
+
+  modbus->Properties.StopBits.OneAndHalf = 1;
+
+  device_json_config cfg1, cfg2;
+  cfg1.set_config(&sds_cfg1);
+  char *str = cfg1.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+
+  cfg2.set_user_config(str);
+
+  EXPECT_STREQ(str,
+               "{\"modbus\":{\"role\":\"SLAVE\",\"modbusAddress\":253,"
+               "\"slaveTimeoutMs\":543,\"serialConfig\":{\"mode\":\"ASCII\","
+               "\"baudRate\":115200,\"stopBits\":\"ONE\"},\"networkConfig\":{"
+               "\"mode\":\"TCP\",\"port\":23}}}");
+
+  free(str);
+  str = cfg1.get_properties();
+
+  ASSERT_TRUE(str != nullptr);
+
+  cfg2.set_properties(str);
+
+  EXPECT_STREQ(str,
+               "{\"modbus\":{\"availableProtocols\":[\"MASTER\",\"RTU\","
+               "\"TCP\"],\"availableBaudrates\":[9600,38400,115200],"
+               "\"availableStopbits\":[\"ONE_AND_HALF\"]}}");
+
+  cfg2.get_config(&sds_cfg2, nullptr);
+
+  free(str);
+
+  EXPECT_EQ(sds_cfg1.Fields, sds_cfg2.Fields);
+  EXPECT_EQ(memcmp(sds_cfg1.Config, sds_cfg2.Config, sds_cfg1.ConfigSize), 0);
+}
+
+TEST_F(DeviceConfigTest, modbus_2) {
+  TSDS_SetDeviceConfig sds_cfg1 = {};
+  TSDS_SetDeviceConfig sds_cfg2 = {};
+  sds_cfg1.Fields = SUPLA_DEVICE_CONFIG_FIELD_MODBUS;
+  sds_cfg1.ConfigSize = sizeof(TDeviceConfig_Modbus);
+
+  TDeviceConfig_Modbus *modbus = (TDeviceConfig_Modbus *)sds_cfg1.Config;
+
+  modbus->ModbusAddress = 253;
+  modbus->Role = MODBUS_ROLE_MASTER;
+  modbus->SlaveTimeoutMs = 543;
+  modbus->NetworkConfig.Mode = MODBUS_NETWORK_MODE_UDP;
+  modbus->NetworkConfig.Port = 23;
+  modbus->SerialConfig.Mode = MODBUS_SERIAL_MODE_RTU;
+  modbus->SerialConfig.Baudrate = 115200;
+  modbus->SerialConfig.StopBits = MODBUS_SERIAL_STOP_BITS_TWO;
+
+  modbus->Properties.Baudrate.B4800 = 1;
+  modbus->Properties.Baudrate.B19200 = 1;
+  modbus->Properties.Baudrate.B57600 = 1;
+
+  modbus->Properties.Protocol.Slave = 1;
+  modbus->Properties.Protocol.Ascii = 1;
+  modbus->Properties.Protocol.Udp = 1;
+
+  modbus->Properties.StopBits.One = 1;
+  modbus->Properties.StopBits.Two = 1;
+
+  device_json_config cfg1, cfg2;
+  cfg1.set_config(&sds_cfg1);
+  char *str = cfg1.get_user_config();
+  ASSERT_TRUE(str != nullptr);
+
+  cfg2.set_user_config(str);
+
+  EXPECT_STREQ(str,
+               "{\"modbus\":{\"role\":\"MASTER\",\"modbusAddress\":253,"
+               "\"slaveTimeoutMs\":543,\"serialConfig\":{\"mode\":\"RTU\","
+               "\"baudRate\":115200,\"stopBits\":\"TWO\"},\"networkConfig\":{"
+               "\"mode\":\"UDP\",\"port\":23}}}");
+
+  free(str);
+  str = cfg1.get_properties();
+
+  ASSERT_TRUE(str != nullptr);
+
+  cfg2.set_properties(str);
+
+  EXPECT_STREQ(str,
+               "{\"modbus\":{\"availableProtocols\":[\"SLAVE\",\"ASCII\","
+               "\"UDP\"],\"availableBaudrates\":[4800,19200,57600],"
+               "\"availableStopbits\":[\"ONE\",\"TWO\"]}}");
+
+  cfg2.get_config(&sds_cfg2, nullptr);
+
+  free(str);
+
+  EXPECT_EQ(sds_cfg1.Fields, sds_cfg2.Fields);
+  EXPECT_EQ(memcmp(sds_cfg1.Config, sds_cfg2.Config, sds_cfg1.ConfigSize), 0);
+}
+
+TEST_F(DeviceConfigTest, modbus_readSampleUserConfig) {
+  const char user_config[] =
+      "{\"modbus\":{\"role\":\"SLAVE\",\"modbusAddress\":3,\"slaveTimeoutMs\":"
+      "0,\"serialConfig\":{\"mode\":\"DISABLED\",\"baudRate\":19200,"
+      "\"stopBits\":\"ONE\"},\"networkConfig\":{\"mode\":\"DISABLED\",\"port\":"
+      "502}}}";
+  device_json_config cfg;
+  cfg.set_user_config(user_config);
+
+  TSDS_SetDeviceConfig sds_cfg = {};
+  cfg.get_config(&sds_cfg, nullptr);
+
+  EXPECT_EQ(sds_cfg.Fields, SUPLA_DEVICE_CONFIG_FIELD_MODBUS);
+  EXPECT_EQ(sds_cfg.ConfigSize, sizeof(TDeviceConfig_Modbus));
+  EXPECT_EQ(((TDeviceConfig_Modbus *)sds_cfg.Config)->SerialConfig.Baudrate,
+            19200);
+  EXPECT_EQ(((TDeviceConfig_Modbus *)sds_cfg.Config)->ModbusAddress, 3);
+  EXPECT_EQ(((TDeviceConfig_Modbus *)sds_cfg.Config)->NetworkConfig.Port, 502);
 }
 
 } /* namespace testing */

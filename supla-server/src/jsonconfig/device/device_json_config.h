@@ -30,6 +30,7 @@ class device_json_config : public supla_json_config {
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
   static const std::map<unsigned _supla_int16_t, std::string>
       home_screen_content_map;
+  static const std::map<unsigned _supla_int16_t, std::string> modbus_field_map;
   static const char content_available[];
   static const char disabled_str[];
   static const char min_allowed_temperature[];
@@ -43,6 +44,31 @@ class device_json_config : public supla_json_config {
   unsigned char string_to_power_status_led(const std::string &status);
   std::string home_screen_content_to_string(unsigned char status);
   unsigned char string_to_home_screen_content(const std::string &status);
+  std::string modbus_role_to_string(unsigned char role);
+  unsigned char string_to_modbus_role(const std::string &role);
+  std::string modbus_serial_mode_to_string(unsigned char mode);
+  unsigned char string_to_modbus_serial_mode(const std::string &mode);
+
+  std::string modbus_network_mode_to_string(unsigned char mode);
+  unsigned char string_to_modbus_network_mode(const std::string &mode);
+
+  std::string modbus_stop_bits_to_string(unsigned char stop_bits);
+  unsigned char string_to_modbus_stop_bits(const std::string &stop_bits);
+
+  cJSON *modbus_serial_config_to_json(ModbusSerialConfig *cfg);
+  bool modbus_json_to_serial_config(cJSON *json, ModbusSerialConfig *cfg);
+  cJSON *modbus_network_config_to_json(ModbusNetworkConfig *cfg);
+  bool modbus_json_to_network_config(cJSON *json, ModbusNetworkConfig *cfg);
+
+  cJSON *modbus_available_protocols_to_json(ModbusConfigProperties *props);
+  bool modbus_json_to_available_protocols(cJSON *json,
+                                          ModbusConfigProperties *props);
+  cJSON *modbus_available_baudrates_to_json(ModbusConfigProperties *props);
+  bool modbus_json_to_available_baudrates(cJSON *json,
+                                          ModbusConfigProperties *props);
+  cJSON *modbus_available_stop_bits_to_json(ModbusConfigProperties *props);
+  bool modbus_json_to_available_stop_bits(cJSON *json,
+                                          ModbusConfigProperties *props);
 
   void set_status_led(TDeviceConfig_StatusLed *status_led);
   void set_power_status_led(TDeviceConfig_PowerStatusLed *status_led);
@@ -51,11 +77,13 @@ class device_json_config : public supla_json_config {
   void set_user_interface_disabled(
       TDeviceConfig_DisableUserInterface *disabled);
   void set_automatic_time_sync(TDeviceConfig_AutomaticTimeSync *time_sync);
-  cJSON *get_root(bool create, unsigned _supla_int64_t field);
+  cJSON *get_root(bool create, bool user, unsigned _supla_int64_t field);
+  cJSON *get_modbus_root(bool create, bool user);
   void set_home_screen_off_delay(TDeviceConfig_HomeScreenOffDelay *delay);
   void set_home_screen_off_delay_type(
       TDeviceConfig_HomeScreenOffDelayType *type);
   void set_home_screen_content(TDeviceConfig_HomeScreenContent *content);
+  void set_modbus_config(TDeviceConfig_Modbus *cfg);
   void remove_empty_sub_roots();
 
  public:
@@ -82,6 +110,7 @@ class device_json_config : public supla_json_config {
   bool get_home_screen_content(TDeviceConfig_HomeScreenContent *content);
   bool get_home_screen_off_delay_type(
       TDeviceConfig_HomeScreenOffDelayType *type);
+  bool get_modbus_config(TDeviceConfig_Modbus *cfg);
 };
 
 #endif /* DEVICE_JSON_CONFIG_H_ */

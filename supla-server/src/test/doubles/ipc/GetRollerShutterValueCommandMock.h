@@ -16,28 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VALVE_CONFIG_H_
-#define VALVE_CONFIG_H_
+#ifndef GET_ROLLER_SHUTTER_VALUE_COMMMAND_MOCK_H_
+#define GET_ROLLER_SHUTTER_VALUE_COMMMAND_MOCK_H_
 
-#include <map>
-#include <string>
+#include <gmock/gmock.h>
 
-#include "jsonconfig/json_config.h"
-#include "proto.h"
+#include "ipc/abstract_get_roller_shutter_value_command.h"
 
-class valve_config : public supla_json_config {
- private:
-  static const std::map<unsigned _supla_int16_t, std::string> field_map;
-  std::string close_on_flood_type_to_string(unsigned char type);
-  unsigned char string_to_close_on_flood_type(const std::string &type);
+namespace testing {
 
- protected:
+class GetRollerShutterValueCommandMock
+    : public supla_abstract_get_roller_shutter_value_command {
  public:
-  explicit valve_config(supla_json_config *root);
-  valve_config(void);
-  virtual void merge(supla_json_config *dst);
-  void set_config(TChannelConfig_Valve *config);
-  bool get_config(TChannelConfig_Valve *config);
+  explicit GetRollerShutterValueCommandMock(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
+
+  MOCK_METHOD3(get_channel_value,
+               supla_channel_rs_value *(int user_id, int device_id,
+                                        int channel_id));
 };
 
-#endif /* VALVE_CONFIG_H_ */
+} /* namespace testing */
+
+#endif /* GET_ROLLER_SHUTTER_VALUE_COMMMAND_MOCK_H_*/

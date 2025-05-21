@@ -531,6 +531,12 @@ void supla_abstract_common_channel_properties::get_config(
   } else if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
              config_type == SUPLA_CONFIG_TYPE_OCR) {
     JSON_TO_CONFIG(ocr_config, TChannelConfig_OCR, config, config_size);
+  } else if (config_type == SUPLA_CONFIG_TYPE_EXTENDED &&
+             get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER) {
+    JSON_TO_CONFIG(power_switch_config, TChannelConfig_PowerSwitch, config,
+                   config_size);
+
+    return;
   }
 
   if (config_type != SUPLA_CONFIG_TYPE_DEFAULT) {
@@ -765,6 +771,12 @@ int supla_abstract_common_channel_properties::set_user_config(
               func == SUPLA_CHANNELFNC_LIGHTSWITCH ||
               func == SUPLA_CHANNELFNC_STAIRCASETIMER) &&
              config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
+             config_size == sizeof(TChannelConfig_PowerSwitch)) {
+    json_config = new power_switch_config();
+    static_cast<power_switch_config *>(json_config)
+        ->set_config((TChannelConfig_PowerSwitch *)config, this);
+  } else if (func == SUPLA_CHANNELFNC_STAIRCASETIMER &&
+             config_type == SUPLA_CONFIG_TYPE_EXTENDED &&
              config_size == sizeof(TChannelConfig_PowerSwitch)) {
     json_config = new power_switch_config();
     static_cast<power_switch_config *>(json_config)
