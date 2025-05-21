@@ -111,7 +111,6 @@ echo "[INFO] Creating XCFramework"
 rm -rf "${BUILD_DIR}/LibSuplaClient.xcframework"
 mkdir -p ${BUILD_DIR}/include
 cp ${BUILD_DIR}/../src/supla-client.h ${BUILD_DIR}/include/
-cp ${BUILD_DIR}/../src/suplasinglecall.h ${BUILD_DIR}/include/
 cp ${BUILD_DIR}/../../supla-common/proto.h ${BUILD_DIR}/include/
 xcodebuild -create-xcframework \
   -library "${BUILD_DIR}/libsupla-client-iphoneos.a" \
