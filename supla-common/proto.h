@@ -428,6 +428,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 16
 #define SUPLA_CHANNELTYPE_DIGIGLASS 12000                   // ver. >= 12
 
+#define SUPLA_CHANNELTYPE_VIRTUAL 13000  // ver. >= 21
+
 #define SUPLA_CHANNELDRIVER_MCP23008 2
 
 #define SUPLA_CHANNELFNC_NONE 0
@@ -628,11 +630,11 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_OCR 0x0008           // ver. >= 26
 #define SUPLA_CHANNEL_FLAG_FLOOD_SENSORS_SUPPORTED 0x0010  // ver. >= 27
 #define SUPLA_CHANNEL_FLAG_FILL_LEVEL_REPORTING_IN_FULL_RANGE \
-  0x0020  // ver. >= 27
-#define SUPLA_CHANNEL_FLAG_VALVE_MOTOR_ALARM_SUPPORTED 0x0040  // ver. >= 27
-#define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080  // ver. >= 17
-#define SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED 0x0100  // ver. >= 21
-#define SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION  0x0200   // ver. >= 27
+  0x0020                                                         // ver. >= 27
+#define SUPLA_CHANNEL_FLAG_VALVE_MOTOR_ALARM_SUPPORTED 0x0040    // ver. >= 27
+#define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080        // ver. >= 17
+#define SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED 0x0100        // ver. >= 21
+#define SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION 0x0200  // ver. >= 27
 // Free bits for future use: 0x0400, 0x0800
 #define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000              // ver. >= 15
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000            // ver. >= 15
@@ -2873,8 +2875,8 @@ typedef struct {
 #define MODBUS_SERIAL_STOP_BITS_TWO 2
 
 typedef struct {
-  unsigned char Mode;  // MODBUS_SERIAL_MODE_*
-  _supla_int_t Baudrate;  // 19200 (default and mandatory by modbus)
+  unsigned char Mode;      // MODBUS_SERIAL_MODE_*
+  _supla_int_t Baudrate;   // 19200 (default and mandatory by modbus)
   unsigned char StopBits;  // MODBUS_SERIAL_STOP_BITS_*
   unsigned char Reserved[20];
 } ModbusSerialConfig;
@@ -2885,7 +2887,7 @@ typedef struct {
 
 typedef struct {
   unsigned char Mode;  // MODBUS_NETWORK_MODE_*
-  unsigned int Port;  // Default: 502
+  unsigned int Port;   // Default: 502
   unsigned char Reserved[20];
 } ModbusNetworkConfig;
 
@@ -2893,30 +2895,30 @@ typedef struct {
 // available
 typedef struct {
   struct {
-    unsigned char Master: 1;
-    unsigned char Slave: 1;
-    unsigned char Rtu: 1;
-    unsigned char Ascii: 1;
-    unsigned char Tcp: 1;
-    unsigned char Udp: 1;
-    unsigned char Reserved: 2;
-    unsigned char Reserved2: 8;
+    unsigned char Master : 1;
+    unsigned char Slave : 1;
+    unsigned char Rtu : 1;
+    unsigned char Ascii : 1;
+    unsigned char Tcp : 1;
+    unsigned char Udp : 1;
+    unsigned char Reserved : 2;
+    unsigned char Reserved2 : 8;
   } Protocol;
   struct {
-    unsigned char B4800: 1;
-    unsigned char B9600: 1;  // modbus mandatory
-    unsigned char B19200: 1;  // modbus mandatory
-    unsigned char B38400: 1;
-    unsigned char B57600: 1;
-    unsigned char B115200: 1;
-    unsigned char Reserved: 2;
-    unsigned char Reserved2: 8;
+    unsigned char B4800 : 1;
+    unsigned char B9600 : 1;   // modbus mandatory
+    unsigned char B19200 : 1;  // modbus mandatory
+    unsigned char B38400 : 1;
+    unsigned char B57600 : 1;
+    unsigned char B115200 : 1;
+    unsigned char Reserved : 2;
+    unsigned char Reserved2 : 8;
   } Baudrate;
   struct {
-    unsigned char One: 1;
-    unsigned char OneAndHalf: 1;
-    unsigned char Two: 1;
-    unsigned char Reserved: 5;
+    unsigned char One : 1;
+    unsigned char OneAndHalf : 1;
+    unsigned char Two : 1;
+    unsigned char Reserved : 5;
   } StopBits;
   unsigned char Reserved[20];
 } ModbusConfigProperties;
@@ -2926,8 +2928,8 @@ typedef struct {
 #define MODBUS_ROLE_SLAVE 2
 
 typedef struct {
-  unsigned char Role;  // MODBUS_ROLE_*
-  unsigned char ModbusAddress;  // only for slave
+  unsigned char Role;                    // MODBUS_ROLE_*
+  unsigned char ModbusAddress;           // only for slave
   unsigned _supla_int_t SlaveTimeoutMs;  // only for master
   ModbusSerialConfig SerialConfig;
   ModbusNetworkConfig NetworkConfig;
@@ -3584,7 +3586,6 @@ typedef struct {
     };
   };
 } TValve_SensorInfo;  // v. >= 27
-
 
 #define SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_NONE 0
 #define SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ALWAYS 1
