@@ -26,7 +26,7 @@ supla_channel_hp_thermostat_value::supla_channel_hp_thermostat_value(void)
     : supla_channel_value() {}
 
 supla_channel_hp_thermostat_value::supla_channel_hp_thermostat_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {}
 
 bool supla_channel_hp_thermostat_value::is_on(void) {

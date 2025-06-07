@@ -29,7 +29,7 @@ supla_channel_hvac_value::supla_channel_hvac_value(void)
     : supla_channel_value() {}
 
 supla_channel_hvac_value::supla_channel_hvac_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {}
 
 void supla_channel_hvac_value::clear(void) {

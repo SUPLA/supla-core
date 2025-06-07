@@ -46,9 +46,19 @@ supla_channel_value *supla_channel_property_getter::_get_value(
   }
 
   if (device == nullptr) {
-    if (status) {
+    supla_virtual_channel vc =
+        user->get_devices()->get_virtual_channel(channel_id);
+    if (vc.get_channel_id()) {
+      if (status) {
+        *status = vc.get_availability_status();
+      }
+
+      result = vc.get_value_copy();
+
+    } else if (status) {
       status->set_offline(true);
     }
+
   } else {
     device->get_channels()->access_channel(
         channel_id, [&result, &status](supla_device_channel *channel) -> void {
@@ -57,6 +67,34 @@ supla_channel_value *supla_channel_property_getter::_get_value(
             *status = channel->get_availability_status();
           }
         });
+  }
+
+  return result;
+}
+
+supla_channel_availability_status
+supla_channel_property_getter::get_channel_availability_status(int user_id,
+                                                               int device_id,
+                                                               int channel_id) {
+  supla_channel_availability_status result(true);
+  supla_user *user = supla_user::get_user(user_id);
+  if (!user) {
+    return result;
+  }
+
+  shared_ptr<supla_device> device =
+      user->get_devices()->get(device_id, channel_id);
+
+  if (device) {
+    result =
+        device->get_channels()->get_channel_availability_status(channel_id);
+  } else {
+    supla_virtual_channel vc =
+        user->get_devices()->get_virtual_channel(channel_id);
+    if (vc.get_channel_id()) {
+      result = vc.get_availability_status();
+      vc.get_value_copy();
+    }
   }
 
   return result;
@@ -103,6 +141,11 @@ int supla_channel_property_getter::_get_func(int user_id, int device_id,
     supla_channel_fragment f =
         user->get_devices()->get_channel_fragment(channel_id);
     result = f.get_function();
+
+    if (!result) {
+      result = user->get_devices()->get_virtual_channel(channel_id).get_func();
+    }
+
   } else {
     device->get_channels()->access_channel(
         channel_id, [&result](supla_device_channel *channel) -> void {

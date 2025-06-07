@@ -26,7 +26,7 @@ supla_channel_floating_point_sensor_value::
 
 supla_channel_floating_point_sensor_value::
     supla_channel_floating_point_sensor_value(
-        char raw_value[SUPLA_CHANNELVALUE_SIZE])
+        const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {}
 
 supla_channel_floating_point_sensor_value::

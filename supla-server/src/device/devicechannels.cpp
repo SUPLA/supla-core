@@ -242,25 +242,6 @@ bool supla_device_channels::get_channel_char_value(int channel_id,
   return false;
 }
 
-bool supla_device_channels::get_dgf_transparency(int channel_id,
-                                                 unsigned short *mask) {
-  if (mask) {
-    supla_device_channel *channel = find_channel(channel_id);
-
-    if (channel &&
-        (channel->get_func() == SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL ||
-         channel->get_func() == SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL)) {
-      char value[SUPLA_CHANNELVALUE_SIZE];
-      channel->get_value(value);
-      TDigiglass_Value *dgf_val = (TDigiglass_Value *)value;
-      *mask = dgf_val->mask;
-      return true;
-    }
-  }
-
-  return false;
-}
-
 bool supla_device_channels::get_relay_value(int channel_id,
                                             TRelayChannel_Value *relay_value) {
   if (relay_value) {

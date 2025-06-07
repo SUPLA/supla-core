@@ -38,7 +38,7 @@ supla_channel_temphum_value::supla_channel_temphum_value(void)
 }
 
 supla_channel_temphum_value::supla_channel_temphum_value(
-    int channel_type, int func, char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    int channel_type, int func, const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {
   this->with_humidity =
       !((channel_type == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||

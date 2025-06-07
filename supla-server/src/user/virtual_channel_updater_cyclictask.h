@@ -16,24 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_HP_THERMOSTAT_VALUE_H_
-#define CHANNEL_HP_THERMOSTAT_VALUE_H_
+#ifndef VIRTUAL_CHANNEL_UPDATER_CYCLICTASK_H_
+#define VIRTUAL_CHANNEL_UPDATER_CYCLICTASK_H_
 
-#include <string>
+#include <map>
+#include <vector>
 
-#include "device/value/channel_value.h"
+#include "cyclictasks/abstract_cyclictask.h"
 
-class supla_channel_hp_thermostat_value : public supla_channel_value {
+class supla_virtual_channel_updater_cyclictask
+    : public supla_abstract_cyclictask {
+ private:
+ protected:
+  virtual unsigned int task_interval_sec(void);
+  virtual void run(const std::vector<supla_user *> *users,
+                   supla_abstract_db_access_provider *dba);
+  virtual bool user_access_needed(void);
+
  public:
-  supla_channel_hp_thermostat_value(void);
-  explicit supla_channel_hp_thermostat_value(
-      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  bool is_on(void);
-  double get_measured_temperature(void);
-  double get_preset_temperature(void);
-  std::string get_measured_temperature_str(void);
-  std::string get_preset_temperature_str(void);
-  static bool is_function_supported(int func);
+  supla_virtual_channel_updater_cyclictask();
+  virtual ~supla_virtual_channel_updater_cyclictask();
 };
 
-#endif /*CHANNEL_HP_THERMOSTAT_VALUE_H_*/
+#endif /* VIRTUAL_CHANNEL_UPDATER_CYCLICTASK_H_ */

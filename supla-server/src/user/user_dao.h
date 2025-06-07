@@ -16,24 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_HP_THERMOSTAT_VALUE_H_
-#define CHANNEL_HP_THERMOSTAT_VALUE_H_
+#ifndef SUPLA_USER_DAO_H_
+#define SUPLA_USER_DAO_H_
 
-#include <string>
+#include <vector>
 
-#include "device/value/channel_value.h"
+#include "db/abstract_db_access_provider.h"
+#include "user/abstract_user_dao.h"
 
-class supla_channel_hp_thermostat_value : public supla_channel_value {
+class supla_user_dao : public supla_abstract_user_dao {
+ private:
+  supla_abstract_db_access_provider *dba;
+
  public:
-  supla_channel_hp_thermostat_value(void);
-  explicit supla_channel_hp_thermostat_value(
-      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  bool is_on(void);
-  double get_measured_temperature(void);
-  double get_preset_temperature(void);
-  std::string get_measured_temperature_str(void);
-  std::string get_preset_temperature_str(void);
-  static bool is_function_supported(int func);
+  explicit supla_user_dao(supla_abstract_db_access_provider *dba);
+  virtual ~supla_user_dao();
+
+  virtual std::vector<supla_virtual_channel> get_virtual_channels(
+      supla_user *user, long long int since_the_value_update_timestamp);
+  virtual std::vector<int> get_users_with_virtual_channels_online(void);
 };
 
-#endif /*CHANNEL_HP_THERMOSTAT_VALUE_H_*/
+#endif /* SUPLA_USER_DAO_H_*/

@@ -71,7 +71,9 @@ void supla_user::user_init(int UserID, const char *short_unique_id,
                            const char *long_unique_id) {
   this->UserID = UserID;
 
-  this->devices = new supla_user_devices();
+  this->latitude = 0;
+  this->longitude = 0;
+  this->devices = new supla_user_devices(this);
   this->clients = new supla_user_clients();
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa_credentials = new supla_amazon_alexa_credentials(this);

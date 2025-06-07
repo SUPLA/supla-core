@@ -41,8 +41,8 @@ supla_channel_value_factory::supla_channel_value_factory(void) {}
 
 // static
 supla_channel_value *supla_channel_value_factory::new_value(
-    char value[SUPLA_CHANNELVALUE_SIZE], int type, int func, supla_user *user,
-    int param2, int param3) {
+    const char value[SUPLA_CHANNELVALUE_SIZE], int type, int func,
+    supla_user *user, int param2, int param3) {
   if (!func) {
     return new supla_channel_value(value);
   }

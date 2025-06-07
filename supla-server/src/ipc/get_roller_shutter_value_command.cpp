@@ -29,13 +29,6 @@ supla_get_roller_shutter_value_command::get_channel_value(int user_id,
                                                           int device_id,
                                                           int channel_id) {
   supla_channel_property_getter getter;
-  supla_channel_value *value = getter.get_value(user_id, device_id, channel_id);
-  supla_channel_rs_value *result =
-      dynamic_cast<supla_channel_rs_value *>(value);
-  if (!result) {
-    delete value;
-    value = nullptr;
-  }
-
-  return result;
+  return getter.get_value_as<supla_channel_rs_value>(user_id, device_id,
+                                                     channel_id);
 }

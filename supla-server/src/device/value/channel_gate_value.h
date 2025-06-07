@@ -32,7 +32,8 @@ class supla_channel_gate_value : public supla_channel_value {
 
  public:
   supla_channel_gate_value(void);
-  explicit supla_channel_gate_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_gate_value(
+      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_gate_value(
       _gate_sensor_level_enum opening_sensor_level,
       _gate_sensor_level_enum partial_opening_sensor_level);

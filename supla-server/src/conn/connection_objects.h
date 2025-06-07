@@ -49,7 +49,7 @@ class supla_connection_objects {
   int count(void);
   bool reconnect_all(void);
   bool terminate(int id);
-  bool is_online(int id);
+  virtual bool is_online(int id);
 };
 
 #endif /* CONNECTION_OBJECTS_H_ */

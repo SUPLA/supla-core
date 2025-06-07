@@ -83,6 +83,22 @@ class supla_abstract_channel_property_getter {
   int get_user_id(void);
   int get_device_id(void);
   int get_channel_id(void);
+
+  virtual supla_channel_availability_status get_channel_availability_status(
+      int user_id, int device_id, int channel_id) = 0;
+
+  template <typename T>
+  T* get_value_as(int user_id, int device_id, int channel_id) {
+    supla_channel_value* value = get_value(user_id, device_id, channel_id);
+    if (value) {
+      T* expected = dynamic_cast<T*>(value);
+      if (!expected) {
+        delete value;
+      }
+      return expected;
+    }
+    return nullptr;
+  }
 };
 
 #endif /* ABSTRACT_PROPERTY_GETTER_H_ */

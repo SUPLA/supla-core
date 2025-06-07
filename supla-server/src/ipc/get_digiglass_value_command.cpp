@@ -18,12 +18,8 @@
 
 #include "ipc/get_digiglass_value_command.h"
 
-#include <memory>
-
-#include "device.h"
-#include "user.h"
-
-using std::shared_ptr;
+#include "device/channel_property_getter.h"
+#include "device/value/channel_dgf_value.h"
 
 supla_get_digiglass_value_command::supla_get_digiglass_value_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
@@ -31,10 +27,13 @@ supla_get_digiglass_value_command::supla_get_digiglass_value_command(
 
 bool supla_get_digiglass_value_command::get_digiglass_value(
     int user_id, int device_id, int channel_id, unsigned short *value) {
-  shared_ptr<supla_device> device =
-      supla_user::get_device(user_id, device_id, channel_id);
-  if (device != nullptr) {
-    return device->get_channels()->get_dgf_transparency(channel_id, value);
+  supla_channel_property_getter getter;
+  supla_channel_dgf_value *dgfv = getter.get_value_as<supla_channel_dgf_value>(
+      user_id, device_id, channel_id);
+  if (dgfv) {
+    *value = dgfv->get_dgf_value()->mask;
+    delete dgfv;
+    return true;
   }
 
   return false;

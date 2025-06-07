@@ -27,7 +27,8 @@
 class supla_channel_hvac_value : public supla_channel_value {
  public:
   supla_channel_hvac_value(void);
-  explicit supla_channel_hvac_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_hvac_value(
+      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   static bool is_function_supported(int func);
 
   void clear(void);

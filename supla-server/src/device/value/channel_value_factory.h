@@ -25,9 +25,9 @@
 class supla_channel_value_factory {
  public:
   supla_channel_value_factory(void);
-  static supla_channel_value *new_value(char value[SUPLA_CHANNELVALUE_SIZE],
-                                        int type, int func, supla_user *user,
-                                        int param2, int param3);
+  static supla_channel_value *new_value(
+      const char value[SUPLA_CHANNELVALUE_SIZE], int type, int func,
+      supla_user *user, int param2, int param3);
 };
 
 #endif /*CHANNEL_VALUE_FACTORY_H_*/

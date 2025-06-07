@@ -27,15 +27,8 @@ supla_get_facade_blind_value_command::supla_get_facade_blind_value_command(
 supla_channel_fb_value *supla_get_facade_blind_value_command::get_channel_value(
     int user_id, int device_id, int channel_id) {
   supla_channel_property_getter getter;
-  supla_channel_value *value = getter.get_value(user_id, device_id, channel_id);
-  supla_channel_fb_value *result =
-      dynamic_cast<supla_channel_fb_value *>(value);
-  if (!result) {
-    delete value;
-    value = nullptr;
-  }
-
-  return result;
+  return getter.get_value_as<supla_channel_fb_value>(user_id, device_id,
+                                                     channel_id);
 }
 
 supla_json_config *supla_get_facade_blind_value_command::get_channel_config(

@@ -33,7 +33,7 @@ supla_channel_gate_value::supla_channel_gate_value(void)
 }
 
 supla_channel_gate_value::supla_channel_gate_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(raw_value) {
   opening_sensor_level = gsl_unknown;
   partial_opening_sensor_level = gsl_unknown;

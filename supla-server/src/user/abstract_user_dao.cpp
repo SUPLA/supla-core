@@ -16,24 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_HP_THERMOSTAT_VALUE_H_
-#define CHANNEL_HP_THERMOSTAT_VALUE_H_
+#include "abstract_user_dao.h"
 
-#include <string>
+supla_abstract_user_dao::supla_abstract_user_dao(void) {}
 
-#include "device/value/channel_value.h"
-
-class supla_channel_hp_thermostat_value : public supla_channel_value {
- public:
-  supla_channel_hp_thermostat_value(void);
-  explicit supla_channel_hp_thermostat_value(
-      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  bool is_on(void);
-  double get_measured_temperature(void);
-  double get_preset_temperature(void);
-  std::string get_measured_temperature_str(void);
-  std::string get_preset_temperature_str(void);
-  static bool is_function_supported(int func);
-};
-
-#endif /*CHANNEL_HP_THERMOSTAT_VALUE_H_*/
+supla_abstract_user_dao::~supla_abstract_user_dao() {}
