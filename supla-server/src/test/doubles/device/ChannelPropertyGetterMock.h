@@ -47,6 +47,10 @@ class ChannelPropertyGetterMock
 
   MOCK_METHOD3(_get_channel_id,
                int(int user_id, int device_id, unsigned char channel_number));
+
+  MOCK_METHOD3(get_channel_availability_status,
+               supla_channel_availability_status(int user_id, int device_id,
+                                                 int channel_id));
 };
 
 } /* namespace testing */
