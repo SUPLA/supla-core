@@ -42,7 +42,7 @@ class supla_user_devices : public supla_connection_objects {
   void update_virtual_channels_if_never_updated(void);
 
  public:
-  supla_user_devices(supla_user *user);
+  explicit supla_user_devices(supla_user *user);
   virtual ~supla_user_devices();
   bool add(std::shared_ptr<supla_device> device);
 
