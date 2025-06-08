@@ -1,0 +1,60 @@
+/*
+ Copyright (C) AC SOFTWARE SP. Z O.O.
+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+#ifndef ABSTRACT_CHANNEL_EXTENDED_VALUE_H_
+#define ABSTRACT_CHANNEL_EXTENDED_VALUE_H_
+
+#include <stddef.h>
+
+#include <map>
+#include <string>
+
+#include "proto.h"
+#include "vbt/vbt_value.h"
+
+class supla_abstract_channel_extended_value : public supla_vbt_value {
+ private:
+  size_t real_size = 0;
+  TSuplaChannelExtendedValue
+      *value;  // Attention! This variable may be allocated a smaller size than
+               // specified by sizeof.
+
+ protected:
+  TSuplaChannelExtendedValue *_realloc(size_t required_data_size);
+  TSuplaChannelExtendedValue *get_value_ptr(void);
+  virtual void set_raw_value(const TSuplaChannelExtendedValue *value);
+
+ public:
+  supla_abstract_channel_extended_value(void);
+  explicit supla_abstract_channel_extended_value(
+      const TSuplaChannelExtendedValue *value);
+  explicit supla_abstract_channel_extended_value(
+      const supla_abstract_channel_extended_value *value);
+  virtual ~supla_abstract_channel_extended_value(void);
+  char get_type();
+  virtual supla_abstract_channel_extended_value *copy(void) = 0;  // NOLINT
+  virtual size_t get_real_size(void);
+  virtual size_t get_value_size(void);
+  virtual bool is_differ(supla_abstract_channel_extended_value *value);
+  virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
+  virtual bool get_raw_value(TSuplaChannelExtendedValue *value,
+                             unsigned char protocol_version);
+  virtual void get_value(char *buffer);
+};
+
+#endif /*ABSTRACT_CHANNEL_EXTENDED_VALUE_H_*/

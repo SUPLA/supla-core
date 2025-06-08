@@ -71,8 +71,9 @@ class supla_electricity_analyzer : public supla_abstract_data_analyzer {
 
   virtual void add_sample(supla_abstract_channel_value *value,
                           supla_json_config *config);
-  virtual void add_sample(int channel_flags, supla_json_config *config,
-                          supla_channel_extended_value *extended_value);
+  virtual void add_sample(
+      int channel_flags, supla_json_config *config,
+      supla_abstract_channel_extended_value *extended_value);
 
   virtual void reset_aberrations(void);
   virtual void reset_voltage(void);

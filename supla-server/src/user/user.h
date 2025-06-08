@@ -136,7 +136,7 @@ class supla_user {
   bool get_channel_value(
       int device_id, int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
       char sub_value[SUPLA_CHANNELVALUE_SIZE], char *sub_value_type,
-      supla_channel_extended_value **extended_value, int *function,
+      supla_abstract_channel_extended_value **extended_value, int *function,
       supla_channel_availability_status *status,
       unsigned _supla_int_t *validity_time_sec, bool for_client);
 

@@ -101,7 +101,7 @@ supla_channel_property_getter::get_channel_availability_status(int user_id,
   return result;
 }
 
-supla_channel_extended_value *
+supla_abstract_channel_extended_value *
 supla_channel_property_getter::_get_extended_value(int user_id, int device_id,
                                                    int channel_id) {
   supla_user *user = supla_user::get_user(user_id);
@@ -110,7 +110,7 @@ supla_channel_property_getter::_get_extended_value(int user_id, int device_id,
     return nullptr;
   }
 
-  supla_channel_extended_value *result = nullptr;
+  supla_abstract_channel_extended_value *result = nullptr;
 
   shared_ptr<supla_device> device =
       user->get_devices()->get(device_id, channel_id);
@@ -119,7 +119,9 @@ supla_channel_property_getter::_get_extended_value(int user_id, int device_id,
     device->get_channels()->access_channel(
         channel_id, [&result](supla_device_channel *channel) -> void {
           result =
-              channel->get_extended_value<supla_channel_extended_value>(false);
+              channel
+                  ->get_extended_value<supla_abstract_channel_extended_value>(
+                      false);
         });
   }
 

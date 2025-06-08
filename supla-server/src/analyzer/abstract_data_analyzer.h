@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "device/extended_value/channel_extended_value.h"
+#include "device/extended_value/abstract_channel_extended_value.h"
 #include "device/value/abstract_channel_value.h"
 #include "jsonconfig/json_config.h"
 
@@ -36,8 +36,9 @@ class supla_abstract_data_analyzer {
 
   virtual void add_sample(supla_abstract_channel_value *value,
                           supla_json_config *config) = 0;
-  virtual void add_sample(int channel_flags, supla_json_config *config,
-                          supla_channel_extended_value *extended_value) = 0;
+  virtual void add_sample(
+      int channel_flags, supla_json_config *config,
+      supla_abstract_channel_extended_value *extended_value) = 0;
 
   virtual void reset(void) = 0;
   virtual bool is_any_data_for_logging_purpose(void) = 0;

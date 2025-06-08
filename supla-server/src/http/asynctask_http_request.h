@@ -44,7 +44,7 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
   supla_abstract_channel_value *get_channel_value(
       supla_channel_fragment *fragment,
       supla_channel_availability_status *status);
-  supla_channel_extended_value *get_channel_extended_value(void);
+  supla_abstract_channel_extended_value *get_channel_extended_value(void);
 
   virtual bool _execute(bool *execute_again,
                         supla_asynctask_thread_bucket *bucket);

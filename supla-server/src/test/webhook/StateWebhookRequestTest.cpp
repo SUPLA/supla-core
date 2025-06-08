@@ -108,7 +108,8 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
 }
 
 void StateWebhookRequestTest::makeTest(
-    int func, bool online, supla_channel_extended_value *extended_value,
+    int func, bool online,
+    supla_abstract_channel_extended_value *extended_value,
     const char *expectedPayload) {
   EXPECT_CALL(*propertyGetter, _get_extended_value(Eq(1), Eq(2), Eq(123)))
       .Times(1)

@@ -1033,12 +1033,12 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
             validity_time_sec = 0;
           }
 
-          supla_channel_extended_value *extended_value = nullptr;
+          supla_abstract_channel_extended_value *extended_value = nullptr;
 
           if (ev_value_size) {
             ev.size = ev_value_size;
             extended_value =
-                supla_channel_extended_value_factory::new_value(&ev);
+                supla_abstract_channel_extended_value_factory::new_value(&ev);
           }
 
           ev = {};
@@ -1385,7 +1385,7 @@ void supla_device_dao::update_channel_value(
 }
 
 void supla_device_dao::update_channel_extended_value(
-    int channel_id, int user_id, supla_channel_extended_value *ev) {
+    int channel_id, int user_id, supla_abstract_channel_extended_value *ev) {
   if (!ev) {
     return;
   }
@@ -1686,9 +1686,9 @@ void supla_device_dao::set_subdevice_details(int device_id,
   }
 }
 
-supla_channel_extended_value *supla_device_dao::get_channel_extended_value(
-    int user_id, int channel_id) {
-  supla_channel_extended_value *result = nullptr;
+supla_abstract_channel_extended_value *
+supla_device_dao::get_channel_extended_value(int user_id, int channel_id) {
+  supla_abstract_channel_extended_value *result = nullptr;
 
   bool already_connected = dba->is_connected();
 
@@ -1736,7 +1736,8 @@ supla_channel_extended_value *supla_device_dao::get_channel_extended_value(
       } else if (mysql_stmt_fetch(stmt) == 0) {
         if (!ev_value_is_null && ev_value_size > 0) {
           ev.size = ev_value_size;
-          result = supla_channel_extended_value_factory::new_value(&ev);
+          result =
+              supla_abstract_channel_extended_value_factory::new_value(&ev);
         }
       }
     }

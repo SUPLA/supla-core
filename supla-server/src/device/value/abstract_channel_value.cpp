@@ -65,8 +65,9 @@ map<string, string> supla_abstract_channel_value::get_replacement_map(void) {
   return result;
 }
 
-supla_channel_extended_value *supla_abstract_channel_value::convert2extended(
+supla_abstract_channel_extended_value *
+supla_abstract_channel_value::convert2extended(
     supla_json_config *json_config, int func,
-    supla_channel_extended_value **data_logger_purpose) {
+    supla_abstract_channel_extended_value **data_logger_purpose) {
   return nullptr;
 }

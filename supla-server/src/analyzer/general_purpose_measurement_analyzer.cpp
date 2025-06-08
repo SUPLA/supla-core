@@ -101,7 +101,7 @@ double supla_general_purpose_measurement_analyzer::get_any_last(void) {
 
 void supla_general_purpose_measurement_analyzer::add_sample(
     int channel_flags, supla_json_config *config,
-    supla_channel_extended_value *extended_value) {}
+    supla_abstract_channel_extended_value *extended_value) {}
 
 bool supla_general_purpose_measurement_analyzer::
     is_any_data_for_logging_purpose(void) {

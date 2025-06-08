@@ -499,7 +499,8 @@ TEST_F(AlexaChangeReportRequestTest, brightnessAndColor_Unreachable) {
 void AlexaChangeReportRequestTest::hvacThermostatTest(
     int func, bool online, supla_abstract_channel_value *hvacValue,
     supla_abstract_channel_value *tempHumValue,
-    supla_channel_extended_value *extendedValue, const char *expectedPayload) {
+    supla_abstract_channel_extended_value *extendedValue,
+    const char *expectedPayload) {
   EXPECT_CALL(*curlAdapter,
               append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1)

@@ -48,7 +48,7 @@ class AlexaChangeReportRequestTest : public AsyncTaskTest {
   void hvacThermostatTest(int func, bool online,
                           supla_abstract_channel_value *hvacValue,
                           supla_abstract_channel_value *tempHumValue,
-                          supla_channel_extended_value *extendedValue,
+                          supla_abstract_channel_extended_value *extendedValue,
                           const char *expectedPayload);
 };
 

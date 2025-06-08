@@ -336,8 +336,8 @@ TEST_F(GoogleHomeStateReportRequestTest, facadeblind_Connected) {
 void GoogleHomeStateReportRequestTest::makeHvacThermostatTest(
     int func, bool online, supla_abstract_channel_value *hvacValue,
     supla_abstract_channel_value *tempHumValue,
-    supla_channel_extended_value *extendedValue, const char *expectedPayload,
-    const string &request_id, bool direct) {
+    supla_abstract_channel_extended_value *extendedValue,
+    const char *expectedPayload, const string &request_id, bool direct) {
   expectToken(direct);
 
   EXPECT_CALL(*propertyGetter,

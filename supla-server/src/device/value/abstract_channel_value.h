@@ -22,12 +22,12 @@
 #include <map>
 #include <string>
 
-#include "device/extended_value/channel_extended_value.h"
+#include "device/extended_value/abstract_channel_extended_value.h"
 #include "jsonconfig/json_config.h"
 #include "proto.h"
 #include "vbt/vbt_value.h"
 
-class supla_channel_extended_value;
+class supla_abstract_channel_extended_value;
 class supla_abstract_channel_value : public supla_vbt_value {
  protected:
   char raw_value[SUPLA_CHANNELVALUE_SIZE];
@@ -49,9 +49,9 @@ class supla_abstract_channel_value : public supla_vbt_value {
                                         int param4,
                                         supla_json_config *json_config);
   virtual std::map<std::string, std::string> get_replacement_map(void);
-  virtual supla_channel_extended_value *convert2extended(
+  virtual supla_abstract_channel_extended_value *convert2extended(
       supla_json_config *json_config, int func,
-      supla_channel_extended_value **data_logger_purpose);
+      supla_abstract_channel_extended_value **data_logger_purpose);
 };
 
 #endif /*ABSTRACT_CHANNEL_VALUE_H_*/

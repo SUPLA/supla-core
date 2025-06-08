@@ -30,7 +30,7 @@
 #include "channel_availability_status.h"
 #include "device/abstract_common_channel_properties.h"
 #include "device/channel_state.h"
-#include "device/extended_value/channel_extended_value.h"
+#include "device/extended_value/abstract_channel_extended_value.h"
 #include "device/value/abstract_channel_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "proto.h"
@@ -60,9 +60,9 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   supla_channel_state *state;
   char value[SUPLA_CHANNELVALUE_SIZE];
   struct timeval value_valid_to;  // during offline
-  supla_channel_extended_value *extended_value;
+  supla_abstract_channel_extended_value *extended_value;
   supla_json_config *json_config;
-  supla_channel_extended_value *logger_purpose_extended_value;
+  supla_abstract_channel_extended_value *logger_purpose_extended_value;
   supla_abstract_data_analyzer *data_analyzer;
 
   void db_set_properties(supla_json_config *config);
@@ -72,13 +72,14 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   void on_value_changed(supla_abstract_channel_value *old_value,
                         supla_abstract_channel_value *new_value,
                         bool significant_change, bool convertible2extended);
-  void on_extended_value_changed(supla_channel_extended_value *old_value,
-                                 supla_channel_extended_value *new_value);
-  supla_channel_extended_value *_get_extended_value(
+  void on_extended_value_changed(
+      supla_abstract_channel_extended_value *old_value,
+      supla_abstract_channel_extended_value *new_value);
+  supla_abstract_channel_extended_value *_get_extended_value(
       bool for_data_logger_purposes);
 
   void set_extended_value(TSuplaChannelExtendedValue *ev,
-                          supla_channel_extended_value *new_value);
+                          supla_abstract_channel_extended_value *new_value);
   virtual void for_each(
       bool any_device,
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
@@ -95,7 +96,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
                        unsigned _supla_int64_t flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
                        unsigned _supla_int_t validity_time_sec,
-                       supla_channel_extended_value *extended_value,
+                       supla_abstract_channel_extended_value *extended_value,
                        const char *user_config, const char *properties,
                        supla_channel_state *state);
   virtual ~supla_device_channel();
@@ -181,7 +182,7 @@ T *supla_device_channel::get_value(void) {
 
 template <typename T>
 T *supla_device_channel::get_extended_value(bool for_data_logger_purposes) {
-  supla_channel_extended_value *value =
+  supla_abstract_channel_extended_value *value =
       _get_extended_value(for_data_logger_purposes);
   if (value) {
     T *expected = dynamic_cast<T *>(value);

@@ -26,11 +26,12 @@
 #include "device/extended_value/channel_thermostat_extended_value.h"
 #include "device/extended_value/timer_state_extended_value.h"
 
-supla_channel_extended_value_factory::supla_channel_extended_value_factory(
-    void) {}
+supla_abstract_channel_extended_value_factory::
+    supla_abstract_channel_extended_value_factory(void) {}
 
 // static
-supla_channel_extended_value *supla_channel_extended_value_factory::new_value(
+supla_abstract_channel_extended_value *
+supla_abstract_channel_extended_value_factory::new_value(
     TSuplaChannelExtendedValue *ev, const char *text_param1, int param2,
     supla_user *user) {
   if (supla_channel_em_extended_value::is_ev_type_supported(ev->type)) {
@@ -55,7 +56,8 @@ supla_channel_extended_value *supla_channel_extended_value_factory::new_value(
 }
 
 // static
-supla_channel_extended_value *supla_channel_extended_value_factory::new_value(
+supla_abstract_channel_extended_value *
+supla_abstract_channel_extended_value_factory::new_value(
     TSuplaChannelExtendedValue *ev) {
   if (supla_channel_em_extended_value::is_ev_type_supported(ev->type)) {
     return new supla_channel_em_extended_value(ev);

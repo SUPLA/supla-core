@@ -123,12 +123,12 @@ int supla_abstract_channel_property_getter::get_channel_id(
   return get_channel_id(user_id, device_id, channel_number);
 }
 
-supla_channel_extended_value*
+supla_abstract_channel_extended_value*
 supla_abstract_channel_property_getter::get_extended_value(void) {
   return _get_extended_value(user_id, device_id, channel_id);
 }
 
-supla_channel_extended_value*
+supla_abstract_channel_extended_value*
 supla_abstract_channel_property_getter::get_extended_value(int user_id,
                                                            int device_id,
                                                            int channel_id) {

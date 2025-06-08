@@ -23,11 +23,17 @@
 
 supla_channel_multi_extended_value::supla_channel_multi_extended_value(
     const TSuplaChannelExtendedValue *value)
-    : supla_channel_extended_value() {
+    : supla_abstract_channel_extended_value() {
   set_raw_value(value);
 }
 
 supla_channel_multi_extended_value::~supla_channel_multi_extended_value(void) {}
+
+supla_abstract_channel_extended_value *
+supla_channel_multi_extended_value::copy(  // NOLINT
+    void) {                                // NOLINT
+  return new supla_channel_multi_extended_value(get_value_ptr());
+}
 
 // static
 bool supla_channel_multi_extended_value::is_ev_type_supported(char type) {
@@ -37,6 +43,6 @@ bool supla_channel_multi_extended_value::is_ev_type_supported(char type) {
 void supla_channel_multi_extended_value::set_raw_value(
     const TSuplaChannelExtendedValue *value) {
   if (value && is_ev_type_supported(value->type)) {
-    supla_channel_extended_value::set_raw_value(value);
+    supla_abstract_channel_extended_value::set_raw_value(value);
   }
 }

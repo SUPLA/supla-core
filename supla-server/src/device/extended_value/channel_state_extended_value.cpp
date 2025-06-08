@@ -22,15 +22,15 @@
 
 supla_channel_state_extended_value::supla_channel_state_extended_value(
     const TSuplaChannelExtendedValue *value)
-    : supla_channel_extended_value() {
-  // Don't use supla_channel_extended_value(value) here because we want to
-  // overwrite the set_raw_value method
+    : supla_abstract_channel_extended_value() {
+  // Don't use supla_abstract_channel_extended_value(value) here because we want
+  // to overwrite the set_raw_value method
 
   set_raw_value(value);
 }
 
 supla_channel_state_extended_value::supla_channel_state_extended_value(void)
-    : supla_channel_extended_value() {}
+    : supla_abstract_channel_extended_value() {}
 
 supla_channel_state_extended_value::~supla_channel_state_extended_value(void) {}
 
@@ -38,9 +38,9 @@ void supla_channel_state_extended_value::set_raw_value(
     const TSuplaChannelExtendedValue *value) {
   if (value && is_ev_type_supported(value->type) &&
       value->size == sizeof(TChannelState_ExtendedValue)) {
-    supla_channel_extended_value::set_raw_value(value);
+    supla_abstract_channel_extended_value::set_raw_value(value);
   } else {
-    supla_channel_extended_value::set_raw_value(nullptr);
+    supla_abstract_channel_extended_value::set_raw_value(nullptr);
   }
 }
 
@@ -55,7 +55,7 @@ void supla_channel_state_extended_value::set_raw_value(
       memcpy(ev->value, value, ev->size);
     }
   } else {
-    supla_channel_extended_value::set_raw_value(nullptr);
+    supla_abstract_channel_extended_value::set_raw_value(nullptr);
   }
 }
 
@@ -75,7 +75,7 @@ bool supla_channel_state_extended_value::get_raw_value(
 
 bool supla_channel_state_extended_value::get_raw_value(
     TSuplaChannelExtendedValue *value) {
-  return supla_channel_extended_value::get_raw_value(value);
+  return supla_abstract_channel_extended_value::get_raw_value(value);
 }
 
 // static
@@ -83,7 +83,7 @@ bool supla_channel_state_extended_value::is_ev_type_supported(char type) {
   return type == EV_TYPE_CHANNEL_STATE_V1;
 }
 
-supla_channel_extended_value *
+supla_abstract_channel_extended_value *
 supla_channel_state_extended_value::copy(  // NOLINT
     void) {                                // NOLINT
   return new supla_channel_state_extended_value(get_value_ptr());

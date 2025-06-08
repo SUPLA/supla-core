@@ -33,7 +33,7 @@ class supla_state_webhook_client {
   supla_abstract_curl_adapter *curl_adapter;
   supla_state_webhook_credentials *credentials;
   supla_abstract_channel_value *channel_value;
-  supla_channel_extended_value *channel_extended_value;
+  supla_abstract_channel_extended_value *channel_extended_value;
 
   cJSON *get_header(const char *function);
   void refresh_token(void);
@@ -58,7 +58,7 @@ class supla_state_webhook_client {
   void set_channel_connected(bool connected);
   void set_channel_value(supla_abstract_channel_value *channel_value);
   void set_channel_extended_value(
-      supla_channel_extended_value *channel_extended_value);
+      supla_abstract_channel_extended_value *channel_extended_value);
 
   bool power_switch_report(void);
   bool light_switch_report(void);

@@ -47,7 +47,7 @@ class supla_channel_and_timer_state_extended_value
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
   virtual void get_value(char *buffer);
   static bool is_ev_type_supported(char type);
-  virtual supla_channel_extended_value *copy(void);  // NOLINT
+  virtual supla_abstract_channel_extended_value *copy(void);  // NOLINT
 };
 
 #endif /*CHANNEL_AND_TIMER_STATE_EXTENDED_VALUE_H_*/

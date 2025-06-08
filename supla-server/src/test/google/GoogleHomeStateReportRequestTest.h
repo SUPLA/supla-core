@@ -22,7 +22,7 @@
 #include <string>
 
 #include "asynctask/AsyncTaskTest.h"
-#include "device/extended_value/channel_extended_value.h"
+#include "device/extended_value/abstract_channel_extended_value.h"
 #include "device/value/abstract_channel_value.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "doubles/google/GoogleHomeCredentialsMock.h"
@@ -48,12 +48,11 @@ class GoogleHomeStateReportRequestTest : public AsyncTaskTest {
                 bool direct);
   void makeTest(int func, bool online, supla_abstract_channel_value *value,
                 const char *expectedPayload);
-  void makeHvacThermostatTest(int func, bool online,
-                              supla_abstract_channel_value *hvacValue,
-                              supla_abstract_channel_value *tempHumValue,
-                              supla_channel_extended_value *extendedValue,
-                              const char *expectedPayload,
-                              const std::string &request_id, bool direct);
+  void makeHvacThermostatTest(
+      int func, bool online, supla_abstract_channel_value *hvacValue,
+      supla_abstract_channel_value *tempHumValue,
+      supla_abstract_channel_extended_value *extendedValue,
+      const char *expectedPayload, const std::string &request_id, bool direct);
 };
 
 } /* namespace testing */

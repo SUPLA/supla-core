@@ -330,8 +330,8 @@ TEST_F(AlexaResponseRequestTest, percentage_Unreachable) {
 void AlexaResponseRequestTest::hvacThermostatTest(
     int func, bool online, supla_abstract_channel_value *hvacValue,
     supla_abstract_channel_value *tempHumValue,
-    supla_channel_extended_value *extendedValue, const char *expectedPayload,
-    const string &correlation_token) {
+    supla_abstract_channel_extended_value *extendedValue,
+    const char *expectedPayload, const string &correlation_token) {
   EXPECT_CALL(*curlAdapter,
               append_header(Eq(0), StrEq("Content-Type: application/json")))
       .Times(1)

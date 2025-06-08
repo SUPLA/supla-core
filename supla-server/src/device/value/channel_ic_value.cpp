@@ -65,9 +65,9 @@ void supla_channel_ic_value::apply_channel_properties(
       &reinterpret_cast<TDS_ImpulseCounter_Value *>(raw_value)->counter);
 }
 
-supla_channel_extended_value *supla_channel_ic_value::convert2extended(
+supla_abstract_channel_extended_value *supla_channel_ic_value::convert2extended(
     supla_json_config *json_config, int func,
-    supla_channel_extended_value **data_logger_purpose) {
+    supla_abstract_channel_extended_value **data_logger_purpose) {
   impulse_counter_config config(json_config);
 
   TDS_ImpulseCounter_Value ic_value = {};

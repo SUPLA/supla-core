@@ -24,7 +24,7 @@
 
 #include "device/channel_fragment.h"
 #include "device/channel_state.h"
-#include "device/extended_value/channel_extended_value.h"
+#include "device/extended_value/abstract_channel_extended_value.h"
 #include "jsonconfig/device/device_json_config.h"
 #include "jsonconfig/json_config.h"
 #include "proto.h"
@@ -114,7 +114,8 @@ class supla_abstract_device_dao {
       unsigned _supla_int_t validity_time_sec) = 0;
 
   virtual void update_channel_extended_value(
-      int channel_id, int user_id, supla_channel_extended_value *ev) = 0;
+      int channel_id, int user_id,
+      supla_abstract_channel_extended_value *ev) = 0;
 
   virtual void update_channel_functions(int channel_id, int user_id,
                                         int flist) = 0;
@@ -139,7 +140,7 @@ class supla_abstract_device_dao {
   virtual void set_subdevice_details(int device_id,
                                      TDS_SubdeviceDetails *details) = 0;
 
-  virtual supla_channel_extended_value *get_channel_extended_value(
+  virtual supla_abstract_channel_extended_value *get_channel_extended_value(
       int user_id, int channel_id) = 0;
 
   virtual void update_channel_state(int channel_id, int user_id,

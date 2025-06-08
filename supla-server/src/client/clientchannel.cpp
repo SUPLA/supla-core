@@ -536,11 +536,12 @@ void supla_client_channel::proto_get(TSC_SuplaChannelValue_B *channel_value,
 bool supla_client_channel::get_cs_extended_value(
     shared_ptr<supla_device> device, int channel_id,
     TSC_SuplaChannelExtendedValue *cev, unsigned char protocol_version) {
-  supla_channel_extended_value *extended_value = nullptr;
+  supla_abstract_channel_extended_value *extended_value = nullptr;
   device->get_channels()->access_channel(
       channel_id, [&extended_value](supla_device_channel *channel) -> void {
         extended_value =
-            channel->get_extended_value<supla_channel_extended_value>(false);
+            channel->get_extended_value<supla_abstract_channel_extended_value>(
+                false);
       });
   if (extended_value) {
     cev->Id = channel_id;

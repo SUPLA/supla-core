@@ -18,24 +18,25 @@
 
 #include "channel_extended_value_envelope.h"
 
-supla_channel_extended_value_envelope::supla_channel_extended_value_envelope(
-    int channel_id, supla_channel_extended_value *extended_value) {
+supla_abstract_channel_extended_value_envelope::
+    supla_abstract_channel_extended_value_envelope(
+        int channel_id, supla_abstract_channel_extended_value *extended_value) {
   this->channel_id = channel_id;
   this->extended_value = extended_value;
 }
 
-supla_channel_extended_value_envelope::~supla_channel_extended_value_envelope(
-    void) {
+supla_abstract_channel_extended_value_envelope::
+    ~supla_abstract_channel_extended_value_envelope(void) {
   if (extended_value) {
     delete extended_value;
   }
 }
 
-int supla_channel_extended_value_envelope::get_channel_id(void) {
+int supla_abstract_channel_extended_value_envelope::get_channel_id(void) {
   return channel_id;
 }
 
-supla_channel_extended_value *
-supla_channel_extended_value_envelope::get_extended_value(void) {
+supla_abstract_channel_extended_value *
+supla_abstract_channel_extended_value_envelope::get_extended_value(void) {
   return extended_value;
 }

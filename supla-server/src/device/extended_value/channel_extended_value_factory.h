@@ -19,17 +19,17 @@
 #ifndef CHANNEL_EXTENDED_VALUE_FACTORY_H_
 #define CHANNEL_EXTENDED_VALUE_FACTORY_H_
 
-#include "device/extended_value/channel_extended_value.h"
+#include "device/extended_value/abstract_channel_extended_value.h"
 #include "user/user.h"
 
-class supla_channel_extended_value_factory {
+class supla_abstract_channel_extended_value_factory {
  public:
-  supla_channel_extended_value_factory(void);
-  static supla_channel_extended_value *new_value(TSuplaChannelExtendedValue *ev,
-                                                 const char *text_param1,
-                                                 int param2, supla_user *user);
+  supla_abstract_channel_extended_value_factory(void);
+  static supla_abstract_channel_extended_value *new_value(
+      TSuplaChannelExtendedValue *ev, const char *text_param1, int param2,
+      supla_user *user);
 
-  static supla_channel_extended_value *new_value(
+  static supla_abstract_channel_extended_value *new_value(
       TSuplaChannelExtendedValue *ev);
 };
 

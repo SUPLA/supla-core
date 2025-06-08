@@ -135,7 +135,7 @@ class DeviceDaoMock : public supla_abstract_device_dao {
 
   MOCK_METHOD3(update_channel_extended_value,
                void(int channel_id, int user_id,
-                    supla_channel_extended_value *ev));
+                    supla_abstract_channel_extended_value *ev));
 
   MOCK_METHOD3(update_channel_functions,
                void(int channel_id, int user_id, int flist));
@@ -156,7 +156,8 @@ class DeviceDaoMock : public supla_abstract_device_dao {
                void(int device_id, TDS_SubdeviceDetails *details));
 
   MOCK_METHOD2(get_channel_extended_value,
-               supla_channel_extended_value *(int user_id, int channel_id));
+               supla_abstract_channel_extended_value *(int user_id,
+                                                       int channel_id));
 
   MOCK_METHOD3(update_channel_state,
                void(int channel_id, int user_id, supla_channel_state *state));

@@ -21,7 +21,7 @@
 
 #include "device/value/abstract_channel_value.h"
 
-class supla_channel_value : public supla_abstract_channel_value {
+class supla_channel_value final : public supla_abstract_channel_value {
  protected:
  public:
   supla_channel_value(void);

@@ -147,7 +147,7 @@ void supla_channel_hvac_value_with_temphum::expand(
                                           100);
     result->set_temperature(hp_value->get_measured_temperature() * 100);
 
-    supla_channel_extended_value *ext_val = getter->get_extended_value(
+    supla_abstract_channel_extended_value *ext_val = getter->get_extended_value(
         getter->get_user_id(), fragment->get_device_id(),
         fragment->get_channel_id());
 

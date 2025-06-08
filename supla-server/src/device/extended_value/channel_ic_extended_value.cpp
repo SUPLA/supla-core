@@ -28,14 +28,14 @@ using std::string;
 
 supla_channel_ic_extended_value::supla_channel_ic_extended_value(
     const TSuplaChannelExtendedValue *value)
-    : supla_channel_extended_value(), supla_channel_billing_value() {
+    : supla_abstract_channel_extended_value(), supla_channel_billing_value() {
   set_raw_value(value);
 }
 
 supla_channel_ic_extended_value::supla_channel_ic_extended_value(
     int func, const TDS_ImpulseCounter_Value *ic_val,
     supla_json_config *json_config)
-    : supla_channel_extended_value(), supla_channel_billing_value() {
+    : supla_abstract_channel_extended_value(), supla_channel_billing_value() {
   TSC_ImpulseCounter_ExtendedValue ic_ev = {};
 
   if (!srpc_evtool_v1_extended2icextended(get_value_ptr(), &ic_ev)) {
@@ -77,7 +77,7 @@ void supla_channel_ic_extended_value::set_raw_value(
     const TSuplaChannelExtendedValue *value) {
   if (value && is_ev_type_supported(value->type) &&
       value->size == sizeof(TSC_ImpulseCounter_ExtendedValue)) {
-    supla_channel_extended_value::set_raw_value(value);
+    supla_abstract_channel_extended_value::set_raw_value(value);
   }
 }
 
@@ -151,7 +151,7 @@ double supla_channel_ic_extended_value::get_calculated_value_dbl(void) {
   return get_calculated_value() * 0.001;
 }
 
-supla_channel_extended_value *supla_channel_ic_extended_value::
+supla_abstract_channel_extended_value *supla_channel_ic_extended_value::
     supla_channel_ic_extended_value::copy(  // NOLINT
         void) {                             // NOLINT
   supla_channel_ic_extended_value *result =

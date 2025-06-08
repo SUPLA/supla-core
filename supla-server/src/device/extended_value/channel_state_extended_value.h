@@ -19,9 +19,10 @@
 #ifndef CHANNEL_STATE_EXTENDED_VALUE_H_
 #define CHANNEL_STATE_EXTENDED_VALUE_H_
 
-#include "device/extended_value/channel_extended_value.h"
+#include "device/extended_value/abstract_channel_extended_value.h"
 
-class supla_channel_state_extended_value : public supla_channel_extended_value {
+class supla_channel_state_extended_value
+    : public supla_abstract_channel_extended_value {
  public:
   supla_channel_state_extended_value(void);
   explicit supla_channel_state_extended_value(
@@ -33,7 +34,7 @@ class supla_channel_state_extended_value : public supla_channel_extended_value {
   virtual bool get_raw_value(TChannelState_ExtendedValue *value);
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
   static bool is_ev_type_supported(char type);
-  virtual supla_channel_extended_value *copy(void);  // NOLINT
+  virtual supla_abstract_channel_extended_value *copy(void);  // NOLINT
 };
 
 #endif /*CHANNEL_STATE_EXTENDED_VALUE_H_*/

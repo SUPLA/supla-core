@@ -167,7 +167,7 @@ bool supla_device_channels::get_channel_value(
     int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
     supla_channel_availability_status *status,
     unsigned _supla_int_t *validity_time_sec,
-    supla_channel_extended_value **extended_value, int *function,
+    supla_abstract_channel_extended_value **extended_value, int *function,
     bool for_client) {
   supla_device_channel *channel = find_channel(channel_id);
 
@@ -187,7 +187,8 @@ bool supla_device_channels::get_channel_value(
 
     if (extended_value) {
       *extended_value =
-          channel->get_extended_value<supla_channel_extended_value>(false);
+          channel->get_extended_value<supla_abstract_channel_extended_value>(
+              false);
     }
 
     if (for_client) {
@@ -627,17 +628,17 @@ void supla_device_channels::get_channel_values(
 }
 
 void supla_device_channels::get_channel_extended_values(
-    vector<supla_channel_extended_value_envelope *> *result,
-    function<bool(supla_channel_extended_value *)> filter,
+    vector<supla_abstract_channel_extended_value_envelope *> *result,
+    function<bool(supla_abstract_channel_extended_value *)> filter,
     bool for_data_logger_purposes) {
   for (auto it = channels.begin(); it != channels.end(); ++it) {
-    supla_channel_extended_value *value =
-        (*it)->get_extended_value<supla_channel_extended_value>(
+    supla_abstract_channel_extended_value *value =
+        (*it)->get_extended_value<supla_abstract_channel_extended_value>(
             for_data_logger_purposes);
     if (value) {
       if (filter(value)) {
-        result->push_back(
-            new supla_channel_extended_value_envelope((*it)->get_id(), value));
+        result->push_back(new supla_abstract_channel_extended_value_envelope(
+            (*it)->get_id(), value));
       } else {
         delete value;
       }
