@@ -93,7 +93,6 @@ supla_channel_property_getter::get_channel_availability_status(int user_id,
         user->get_devices()->get_virtual_channel(channel_id);
     if (vc.get_channel_id()) {
       result = vc.get_availability_status();
-      vc.get_value_copy();
     }
   }
 
