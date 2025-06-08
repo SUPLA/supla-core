@@ -172,6 +172,8 @@ void supla_user_devices::for_each(
 }
 
 supla_virtual_channel supla_user_devices::get_virtual_channel(int channel_id) {
+  update_virtual_channels_if_never_updated();
+
   supla_virtual_channel result;
 
   lock();
@@ -265,6 +267,8 @@ supla_user_devices::get_channel_availability_status(int device_id,
 }
 
 bool supla_user_devices::is_online(int id) {
+  update_virtual_channels_if_never_updated();
+
   bool result = supla_connection_objects::is_online(id);
   if (!result) {
     lock();
