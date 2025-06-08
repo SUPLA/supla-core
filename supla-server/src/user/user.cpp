@@ -474,7 +474,7 @@ void supla_user::on_channel_deleted(int user_id, int device_id, int channel_id,
   supla_user *user = supla_user::find(user_id, false);
 
   if (user) {
-    user->get_devices()->terminate(device_id);
+    user->get_devices()->on_channel_deleted(device_id, channel_id);
 
     supla_http_event_hub::on_channel_deleted(user, device_id, channel_id,
                                              caller);

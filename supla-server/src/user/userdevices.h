@@ -64,6 +64,7 @@ class supla_user_devices : public supla_connection_objects {
       int device_id, int channel_id);
 
   virtual bool is_online(int id);
+  void on_channel_deleted(int device_id, int channel_id);
 };
 
 #endif /* USERDEVICES_H_ */

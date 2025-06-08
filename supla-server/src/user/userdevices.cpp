@@ -207,23 +207,6 @@ void supla_user_devices::update_virtual_channels(void) {
   std::vector<supla_virtual_channel> virtual_channels =
       dao.get_virtual_channels(user, virtual_channels_update_time.tv_sec);
 
-  for (auto tit = this->virtual_channels.begin();
-       tit != this->virtual_channels.end(); ++tit) {
-    bool exists = false;
-    for (auto it = virtual_channels.begin(); it != virtual_channels.end();
-         ++it) {
-      if (it->get_channel_id() == tit->get_channel_id()) {
-        exists = true;
-        break;
-      }
-    }
-
-    if (!exists) {
-      tit = this->virtual_channels.erase(tit);
-      --tit;
-    }
-  }
-
   for (auto it = virtual_channels.begin(); it != virtual_channels.end(); ++it) {
     for (auto tit = this->virtual_channels.begin();
          tit != this->virtual_channels.end(); ++tit) {
@@ -284,4 +267,17 @@ bool supla_user_devices::is_online(int id) {
   }
 
   return result;
+}
+
+void supla_user_devices::on_channel_deleted(int device_id, int channel_id) {
+  terminate(device_id);
+
+  lock();
+  for (auto it = virtual_channels.begin(); it != virtual_channels.end(); ++it) {
+    if (it->get_channel_id() == channel_id) {
+      virtual_channels.erase(it);
+      break;
+    }
+  }
+  unlock();
 }
