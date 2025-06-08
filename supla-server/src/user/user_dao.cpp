@@ -48,8 +48,8 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
       "`v`.`valid_to` >= utc_timestamp() then "
       "time_to_sec(timediff(`v`.`valid_to`,utc_timestamp())) else NULL end AS "
       "`validity_time_sec` FROM `supla_dev_channel` c, "
-      "`supla_dev_channel_value` v WHERE c.type = ? AND v.channel_id = c.id, "
-      "c.user_id = ? AND UNIX_TIMESTAMP(update_time) > ?";
+      "`supla_dev_channel_value` v WHERE c.type = ? AND v.channel_id = c.id "
+      "AND c.user_id = ? AND UNIX_TIMESTAMP(update_time) > ?";
 
   MYSQL_STMT *stmt = nullptr;
   MYSQL_BIND pbind[3] = {};
