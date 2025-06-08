@@ -43,8 +43,8 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
   }
 
   const char sql[] =
-      "SELECT c.id, c.iodevice_id, c.func, c.param1, c.param2, c.param3, "
-      "c.param4, c.user_config, c.properties, v.value, v.valid_to, case when "
+      "SELECT c.iodevice_id, c.id, c.func, c.param1, c.param2, c.param3, "
+      "c.param4, c.user_config, c.properties, v.value, case when "
       "`v`.`valid_to` >= utc_timestamp() then "
       "time_to_sec(timediff(`v`.`valid_to`,utc_timestamp())) else NULL end AS "
       "`validity_time_sec` FROM `supla_dev_channel` c, "
