@@ -30,6 +30,7 @@ class supla_channel_general_purpose_meter_value
   supla_channel_general_purpose_meter_value();
   explicit supla_channel_general_purpose_meter_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   static bool is_function_supported(int func);
 };
 

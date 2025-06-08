@@ -23,11 +23,17 @@
 using std::string;
 
 supla_channel_hp_thermostat_value::supla_channel_hp_thermostat_value(void)
-    : supla_channel_value() {}
+    : supla_abstract_channel_value() {}
 
 supla_channel_hp_thermostat_value::supla_channel_hp_thermostat_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    : supla_abstract_channel_value(raw_value) {}
+
+supla_abstract_channel_value *
+supla_channel_hp_thermostat_value::copy(  // NOLINT
+    void) const {                         // NOLINT
+  return new supla_channel_hp_thermostat_value(raw_value);
+}
 
 bool supla_channel_hp_thermostat_value::is_on(void) {
   return ((TThermostat_Value *)raw_value)->IsOn > 0;

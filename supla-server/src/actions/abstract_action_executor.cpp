@@ -408,7 +408,7 @@ void supla_abstract_action_executor::copy(
     supla_abstract_channel_property_getter *property_getter,
     int source_device_id, int source_channel_id) {
   if (property_getter) {
-    supla_channel_value *value = NULL;
+    supla_abstract_channel_value *value = NULL;
     if ((value = property_getter->get_value(get_user_id(), source_device_id,
                                             source_channel_id))) {
       any_value_to_action_converter *converter =

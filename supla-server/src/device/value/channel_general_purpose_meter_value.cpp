@@ -31,6 +31,15 @@ supla_channel_general_purpose_meter_value::
   original_value = 0;
 }
 
+supla_abstract_channel_value *
+supla_channel_general_purpose_meter_value::copy(  // NOLINT
+    void) const {                                 // NOLINT
+  supla_channel_general_purpose_meter_value *result =
+      new supla_channel_general_purpose_meter_value(raw_value);
+  result->original_value = original_value;
+  return result;
+}
+
 // static
 bool supla_channel_general_purpose_meter_value::is_function_supported(
     int func) {

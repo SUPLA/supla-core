@@ -19,14 +19,15 @@
 #ifndef CHANNEL_EM_VALUE_H_
 #define CHANNEL_EM_VALUE_H_
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 #include "proto.h"
 
-class supla_channel_em_value : public supla_channel_value {
+class supla_channel_em_value : public supla_abstract_channel_value {
  public:
   explicit supla_channel_em_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_em_value(const TElectricityMeter_Value *value);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
 
   const TElectricityMeter_Value *get_em_value(void);
   virtual void apply_channel_properties(int type,

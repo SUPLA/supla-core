@@ -22,14 +22,15 @@
 #include <map>
 #include <string>
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 
-class supla_channel_valve_value : public supla_channel_value {
+class supla_channel_valve_value : public supla_abstract_channel_value {
  public:
   supla_channel_valve_value();
   explicit supla_channel_valve_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_valve_value(const TValve_Value *value);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   const TValve_Value *get_valve_value(void);
   void get_valve_value(TValve_Value *value);
   void set_valve_value(TValve_Value *value);

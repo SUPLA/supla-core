@@ -39,9 +39,9 @@ class supla_asynctask_http_request : public supla_abstract_asynctask {
  protected:
   const supla_caller &get_caller(void);
   supla_abstract_channel_property_getter *get_property_getter(void);
-  supla_channel_value *get_channel_value(
+  supla_abstract_channel_value *get_channel_value(
       int *func, supla_channel_availability_status *status);
-  supla_channel_value *get_channel_value(
+  supla_abstract_channel_value *get_channel_value(
       supla_channel_fragment *fragment,
       supla_channel_availability_status *status);
   supla_channel_extended_value *get_channel_extended_value(void);

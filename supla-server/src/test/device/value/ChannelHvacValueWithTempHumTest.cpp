@@ -68,7 +68,7 @@ TEST_F(ChannelHvacValueWithTempHumTest, expandHpThermostatToHvac) {
         return new supla_channel_thermostat_extended_value(&native_ev);
       });
 
-  supla_channel_value *hp_val =
+  supla_abstract_channel_value *hp_val =
       new supla_channel_hp_thermostat_value(raw_value);
   supla_channel_hvac_value_with_temphum::expand(&hp_val, &fragment, &getter);
 
@@ -114,7 +114,7 @@ TEST_F(ChannelHvacValueWithTempHumTest, expandHvacToHavacWithTempHum) {
   EXPECT_CALL(getter, _get_value(Eq(5), Eq(10), Eq(789), IsNull(), IsNull()))
       .WillOnce(Return(new supla_channel_temphum_value(true, 22.33, 35.36)));
 
-  supla_channel_value *value = hvac_value;
+  supla_abstract_channel_value *value = hvac_value;
   hvac_value = nullptr;
 
   supla_channel_hvac_value_with_temphum::expand(&value, &fragment, &getter);

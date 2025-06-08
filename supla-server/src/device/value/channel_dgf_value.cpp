@@ -22,11 +22,16 @@
 
 supla_channel_dgf_value::supla_channel_dgf_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    : supla_abstract_channel_value(raw_value) {}
 
 supla_channel_dgf_value::supla_channel_dgf_value(const TDigiglass_Value *value)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   memcpy(raw_value, value, sizeof(TDigiglass_Value));
+}
+
+supla_abstract_channel_value *supla_channel_dgf_value::copy(  // NOLINT
+    void) const {                                             // NOLINT
+  return new supla_channel_dgf_value(raw_value);
 }
 
 const TDigiglass_Value *supla_channel_dgf_value::get_dgf_value(void) {

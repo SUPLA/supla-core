@@ -24,15 +24,20 @@ using std::map;
 using std::string;
 
 supla_channel_valve_value::supla_channel_valve_value()
-    : supla_channel_value() {}
+    : supla_abstract_channel_value() {}
 
 supla_channel_valve_value::supla_channel_valve_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    : supla_abstract_channel_value(raw_value) {}
 
 supla_channel_valve_value::supla_channel_valve_value(
     const TValve_Value *value) {
   memcpy(raw_value, value, sizeof(TValve_Value));
+}
+
+supla_abstract_channel_value *supla_channel_valve_value::copy(  // NOLINT
+    void) const {                                               // NOLINT
+  return new supla_channel_valve_value(raw_value);
 }
 
 void supla_channel_valve_value::get_valve_value(TValve_Value *value) {
@@ -49,7 +54,8 @@ void supla_channel_valve_value::set_valve_value(TValve_Value *value) {
 }
 
 map<string, string> supla_channel_valve_value::get_replacement_map(void) {
-  map<string, string> result = supla_channel_value::get_replacement_map();
+  map<string, string> result =
+      supla_abstract_channel_value::get_replacement_map();
   result["is_closed_manually"] =
       get_valve_value()->closed &&
               (get_valve_value()->flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED)

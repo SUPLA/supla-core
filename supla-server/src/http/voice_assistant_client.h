@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 #include "http/abstract_curl_adapter.h"
 #include "http/oauth_credentials.h"
 
@@ -30,14 +30,14 @@ class supla_voice_assistant_client {
   int channel_id;
   short subchannel_id;
   bool channel_connected;
-  supla_channel_value *channel_value;
+  supla_abstract_channel_value *channel_value;
   supla_abstract_curl_adapter *curl_adapter;
   supla_http_oauth_credentials *credentials;
 
  protected:
   int get_channel_id(void);
   short get_subchannel_id(void);
-  supla_channel_value *get_channel_value(void);
+  supla_abstract_channel_value *get_channel_value(void);
   supla_abstract_curl_adapter *get_curl_adapter(void);
   supla_http_oauth_credentials *get_credentials(void);
   bool is_channel_connected(void);
@@ -52,7 +52,7 @@ class supla_voice_assistant_client {
 
   void set_subchannel_id(short subchannel_id);
   void set_channel_connected(bool connected);
-  void set_channel_value(supla_channel_value *channel_value);
+  void set_channel_value(supla_abstract_channel_value *channel_value);
 };
 
 #endif /* VOICE_ASSISTANT_CLIENT_H_ */

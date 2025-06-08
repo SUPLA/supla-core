@@ -32,14 +32,14 @@ int supla_channel_temphum_value::incorrect_temperature(void) { return -273; }
 int supla_channel_temphum_value::incorrect_humidity(void) { return -1; }
 
 supla_channel_temphum_value::supla_channel_temphum_value(void)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   this->with_humidity = false;
   set_temperature(incorrect_temperature());
 }
 
 supla_channel_temphum_value::supla_channel_temphum_value(
     int channel_type, int func, const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {
+    : supla_abstract_channel_value(raw_value) {
   this->with_humidity =
       !((channel_type == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
          channel_type == SUPLA_CHANNELTYPE_THERMOMETER) &&
@@ -47,18 +47,23 @@ supla_channel_temphum_value::supla_channel_temphum_value(
 }
 
 supla_channel_temphum_value::supla_channel_temphum_value(
-    bool with_humidity, char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {
+    bool with_humidity, const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_abstract_channel_value(raw_value) {
   this->with_humidity = with_humidity;
 }
 
 supla_channel_temphum_value::supla_channel_temphum_value(bool with_humidity,
                                                          double temperature,
                                                          double humidity)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   this->with_humidity = with_humidity;
   set_temperature(temperature);
   set_humidity(humidity);
+}
+
+supla_abstract_channel_value *supla_channel_temphum_value::copy(  // NOLINT
+    void) const {                                                 // NOLINT
+  return new supla_channel_temphum_value(with_humidity, raw_value);
 }
 
 bool supla_channel_temphum_value::is_humidity_available(void) {
@@ -110,9 +115,10 @@ void supla_channel_temphum_value::set_humidity(double humidity) {
   }
 }
 
-bool supla_channel_temphum_value::is_differ(supla_channel_value *value,
+bool supla_channel_temphum_value::is_differ(supla_abstract_channel_value *value,
                                             bool *significant_change) {
-  bool result = supla_channel_value::is_differ(value, significant_change);
+  bool result =
+      supla_abstract_channel_value::is_differ(value, significant_change);
   if (result && significant_change) {
     supla_channel_temphum_value *temphum_val =
         dynamic_cast<supla_channel_temphum_value *>(value);
@@ -141,7 +147,8 @@ void supla_channel_temphum_value::apply_channel_properties(
 }
 
 map<string, string> supla_channel_temphum_value::get_replacement_map(void) {
-  map<string, string> result = supla_channel_value::get_replacement_map();
+  map<string, string> result =
+      supla_abstract_channel_value::get_replacement_map();
 
   char buffer[50] = {};
   snprintf(buffer, sizeof(buffer), "%.2f", get_temperature());

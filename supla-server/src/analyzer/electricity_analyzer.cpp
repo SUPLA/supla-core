@@ -280,7 +280,7 @@ void supla_electricity_analyzer::add_sample(
   }
 }
 
-void supla_electricity_analyzer::add_sample(supla_channel_value *value,
+void supla_electricity_analyzer::add_sample(supla_abstract_channel_value *value,
                                             supla_json_config *config) {}
 
 bool supla_electricity_analyzer::is_any_aberration_for_logging_purpose(void) {

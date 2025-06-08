@@ -31,8 +31,8 @@
 #include "device/abstract_common_channel_properties.h"
 #include "device/channel_state.h"
 #include "device/extended_value/channel_extended_value.h"
+#include "device/value/abstract_channel_value.h"
 #include "device/value/channel_temphum_value.h"
-#include "device/value/channel_value.h"
 #include "proto.h"
 
 class supla_user;
@@ -67,11 +67,11 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
 
   void db_set_properties(supla_json_config *config);
   void db_set_params(int param1, int param2, int param3, int param4);
-  supla_channel_value *_get_value(void);
+  supla_abstract_channel_value *_get_value(void);
 
-  void on_value_changed(supla_channel_value *old_value,
-                        supla_channel_value *new_value, bool significant_change,
-                        bool convertible2extended);
+  void on_value_changed(supla_abstract_channel_value *old_value,
+                        supla_abstract_channel_value *new_value,
+                        bool significant_change, bool convertible2extended);
   void on_extended_value_changed(supla_channel_extended_value *old_value,
                                  supla_channel_extended_value *new_value);
   supla_channel_extended_value *_get_extended_value(
@@ -168,7 +168,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
 
 template <typename T>
 T *supla_device_channel::get_value(void) {
-  supla_channel_value *value = _get_value();
+  supla_abstract_channel_value *value = _get_value();
   if (value) {
     T *expected = dynamic_cast<T *>(value);
     if (!expected) {

@@ -44,7 +44,7 @@ class supla_caller {
   const supla_caller *get_first(void) const;
 
  public:
-  supla_caller(const supla_caller &caller);  // NO LINT
+  supla_caller(const supla_caller &caller);  // NOLINT
   supla_caller(void);
   explicit supla_caller(_callerType_e type);
   supla_caller(_callerType_e type, int id);

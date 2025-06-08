@@ -22,13 +22,14 @@
 #include <map>
 #include <string>
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 
-class supla_channel_hvac_value : public supla_channel_value {
+class supla_channel_hvac_value : public supla_abstract_channel_value {
  public:
   supla_channel_hvac_value(void);
   explicit supla_channel_hvac_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   static bool is_function_supported(int func);
 
   void clear(void);

@@ -608,15 +608,17 @@ bool supla_device_channels::set_device_channel_rgbw_value(
 }
 
 void supla_device_channels::get_channel_values(
-    vector<supla_channel_value_envelope *> *result,
-    function<bool(supla_device_channel *channel, supla_channel_value *)>
+    vector<supla_abstract_channel_value_envelope *> *result,
+    function<bool(supla_device_channel *channel,
+                  supla_abstract_channel_value *)>
         filter) {
   for (auto it = channels.begin(); it != channels.end(); ++it) {
-    supla_channel_value *value = (*it)->get_value<supla_channel_value>();
+    supla_abstract_channel_value *value =
+        (*it)->get_value<supla_abstract_channel_value>();
     if (value) {
       if (filter(*it, value)) {
         result->push_back(
-            new supla_channel_value_envelope((*it)->get_id(), value));
+            new supla_abstract_channel_value_envelope((*it)->get_id(), value));
       } else {
         delete value;
       }

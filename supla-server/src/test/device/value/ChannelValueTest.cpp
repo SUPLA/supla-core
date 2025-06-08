@@ -82,6 +82,11 @@ TEST_F(ChannelValueTest, diff) {
   EXPECT_FALSE(v1.is_differ(&v2, &significant_change));
   EXPECT_FALSE(significant_change);
 
+  supla_abstract_channel_value *v3 = v1.copy();
+  EXPECT_FALSE(v1.is_differ(v3, &significant_change));
+  EXPECT_FALSE(significant_change);
+  delete v3;
+
   raw[4] = 1;
   v1.set_raw_value(raw);
 

@@ -16,33 +16,42 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_IC_VALUE_H_
-#define CHANNEL_IC_VALUE_H_
+#ifndef ABSTRACT_CHANNEL_VALUE_H_
+#define ABSTRACT_CHANNEL_VALUE_H_
 
-#include "device/value/abstract_channel_value.h"
+#include <map>
+#include <string>
+
+#include "device/extended_value/channel_extended_value.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
+#include "vbt/vbt_value.h"
 
-class supla_channel_ic_value : public supla_abstract_channel_value {
- private:
-  char original_raw_value[SUPLA_CHANNELVALUE_SIZE];
+class supla_channel_extended_value;
+class supla_abstract_channel_value : public supla_vbt_value {
+ protected:
+  char raw_value[SUPLA_CHANNELVALUE_SIZE];
 
  public:
-  supla_channel_ic_value(void);
-  explicit supla_channel_ic_value(
+  supla_abstract_channel_value(void);
+  explicit supla_abstract_channel_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
-  explicit supla_channel_ic_value(const TDS_ImpulseCounter_Value *value);
+  virtual ~supla_abstract_channel_value(void);
+  virtual supla_abstract_channel_value *copy(void) const = 0;  // NOLINT
+
+  void get_raw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   virtual void set_raw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  const TDS_ImpulseCounter_Value *get_ic_value(void);
+  virtual bool is_differ(supla_abstract_channel_value *value,
+                         bool *significant_change);
   virtual void apply_channel_properties(int type,
                                         unsigned char protocol_version,
                                         int param1, int param2, int param3,
                                         int param4,
                                         supla_json_config *json_config);
-  supla_channel_extended_value *convert2extended(
+  virtual std::map<std::string, std::string> get_replacement_map(void);
+  virtual supla_channel_extended_value *convert2extended(
       supla_json_config *json_config, int func,
-      supla_channel_extended_value **data_logger_purpose) override;
-  static bool is_function_supported(int func);
+      supla_channel_extended_value **data_logger_purpose);
 };
 
-#endif /*CHANNEL_IC_VALUE_H_*/
+#endif /*ABSTRACT_CHANNEL_VALUE_H_*/

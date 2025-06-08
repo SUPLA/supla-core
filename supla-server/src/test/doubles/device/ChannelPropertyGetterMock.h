@@ -33,7 +33,7 @@ class ChannelPropertyGetterMock
   ChannelPropertyGetterMock(int user_id, int device_id, int channel_id);
   virtual ~ChannelPropertyGetterMock(void);
 
-  MOCK_METHOD5(_get_value, supla_channel_value *(
+  MOCK_METHOD5(_get_value, supla_abstract_channel_value *(
                                int user_id, int device_id, int channel_id,
                                supla_channel_fragment *fragment,
                                supla_channel_availability_status *status));

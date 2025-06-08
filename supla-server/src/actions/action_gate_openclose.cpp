@@ -108,7 +108,7 @@ bool supla_action_gate_openclose::get_closing_state(bool *is_closed) {
 
   _gate_sensor_level_enum opening_sensor_level = gsl_unknown;
 
-  supla_channel_value *value = property_getter->get_value(
+  supla_abstract_channel_value *value = property_getter->get_value(
       get_user_id(), get_device_id(), get_channel_id());
   if (value) {
     supla_channel_gate_value *gate_value =

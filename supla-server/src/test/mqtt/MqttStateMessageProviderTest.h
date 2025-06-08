@@ -33,7 +33,8 @@ class MqttStateMessageProviderTest : public MqttMessageProviderTest {
   std::string short_unique_id;
   MqttStateMessageProviderMock provider;
   ChannelPropertyGetterMock propertyGetter;
-  void SetResultValue(int func, bool connected, supla_channel_value *value);
+  void SetResultValue(int func, bool connected,
+                      supla_abstract_channel_value *value);
   void SetIcMeasurementResult(void);
   void SetElectricityMeasurementResult(int measured_values, int m_count);
 

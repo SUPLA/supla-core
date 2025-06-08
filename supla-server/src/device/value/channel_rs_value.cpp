@@ -28,15 +28,22 @@ using std::shared_ptr;
 
 supla_channel_rs_value::supla_channel_rs_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {
+    : supla_abstract_channel_value(raw_value) {
   opening_sensor_level = rsl_unknown;
 }
 
 supla_channel_rs_value::supla_channel_rs_value(
     const TDSC_RollerShutterValue *value)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   memcpy(raw_value, value, sizeof(TDSC_RollerShutterValue));
   opening_sensor_level = rsl_unknown;
+}
+
+supla_abstract_channel_value *supla_channel_rs_value::copy(  // NOLINT
+    void) const {                                            // NOLINT
+  supla_channel_rs_value *result = new supla_channel_rs_value(raw_value);
+  result->opening_sensor_level = opening_sensor_level;
+  return result;
 }
 
 const TDSC_RollerShutterValue *supla_channel_rs_value::get_rs_value(void) {

@@ -60,7 +60,7 @@ bool supla_alexa_change_report_request::make_request(
   supla_channel_fragment fragment;
 
   supla_channel_availability_status status(true);
-  supla_channel_value *value = get_channel_value(&fragment, &status);
+  supla_abstract_channel_value *value = get_channel_value(&fragment, &status);
 
   client.set_channel_connected(status.is_online());
   client.set_channel_value(value);

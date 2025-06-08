@@ -32,7 +32,7 @@ supla_channel_hvac_value_with_temphum::supla_channel_hvac_value_with_temphum(
 }
 
 supla_channel_hvac_value_with_temphum::supla_channel_hvac_value_with_temphum(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_hvac_value(raw_value) {
   temperature = supla_channel_temphum_value::incorrect_temperature() * 100.0;
   humidity = supla_channel_temphum_value::incorrect_humidity() * 100.0;
@@ -46,6 +46,17 @@ supla_channel_hvac_value_with_temphum::supla_channel_hvac_value_with_temphum(
   }
   temperature = supla_channel_temphum_value::incorrect_temperature() * 100.0;
   humidity = supla_channel_temphum_value::incorrect_humidity() * 100.0;
+}
+
+supla_abstract_channel_value *
+supla_channel_hvac_value_with_temphum::copy(  // NOLINT
+    void) const {                             // NOLINT
+  supla_channel_hvac_value_with_temphum *result =
+      new supla_channel_hvac_value_with_temphum(raw_value);
+  result->temperature = this->temperature;
+  result->humidity = this->humidity;
+
+  return result;
 }
 
 void supla_channel_hvac_value_with_temphum::set_temperature(short temperature) {
@@ -74,7 +85,7 @@ double supla_channel_hvac_value_with_temphum::get_humidity_dbl(void) {
 
 // static
 void supla_channel_hvac_value_with_temphum::expand(
-    supla_channel_value **value, supla_channel_fragment *fragment,
+    supla_abstract_channel_value **value, supla_channel_fragment *fragment,
     supla_abstract_channel_property_getter *getter) {
   if (!value || !*value || !getter || !getter->get_user_id() || !fragment) {
     return;
@@ -103,7 +114,7 @@ void supla_channel_hvac_value_with_temphum::expand(
             native_config.MainThermometerChannelNo);
 
         if (main_thermometer_channel_id) {
-          supla_channel_value *th_value = getter->get_value(
+          supla_abstract_channel_value *th_value = getter->get_value(
               getter->get_user_id(), fragment->get_device_id(),
               main_thermometer_channel_id);
           if (th_value) {

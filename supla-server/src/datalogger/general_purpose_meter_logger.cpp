@@ -41,7 +41,7 @@ unsigned int supla_general_purpose_meter_logger::task_interval_sec(void) {
 
 void supla_general_purpose_meter_logger::run(
     const vector<supla_user *> *users, supla_abstract_db_access_provider *dba) {
-  std::vector<supla_channel_value_envelope *> env;
+  std::vector<supla_abstract_channel_value_envelope *> env;
 
   supla_general_purpose_meter_logger_dao dao(dba);
 
@@ -51,7 +51,7 @@ void supla_general_purpose_meter_logger::run(
           device->get_channels()->get_channel_values(
               &env,
               [](supla_device_channel *channel,
-                 supla_channel_value *value) -> bool {
+                 supla_abstract_channel_value *value) -> bool {
                 bool keep_history = false;
 
                 if (channel->get_availability_status().is_online() &&

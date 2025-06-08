@@ -69,7 +69,7 @@ class supla_electricity_analyzer : public supla_abstract_data_analyzer {
   supla_simple_statiscics *get_power_active_phase2(void);
   supla_simple_statiscics *get_power_active_phase3(void);
 
-  virtual void add_sample(supla_channel_value *value,
+  virtual void add_sample(supla_abstract_channel_value *value,
                           supla_json_config *config);
   virtual void add_sample(int channel_flags, supla_json_config *config,
                           supla_channel_extended_value *extended_value);

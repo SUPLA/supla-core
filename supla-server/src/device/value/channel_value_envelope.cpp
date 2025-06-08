@@ -18,20 +18,24 @@
 
 #include "channel_value_envelope.h"
 
-supla_channel_value_envelope::supla_channel_value_envelope(
-    int channel_id, supla_channel_value *value) {
+supla_abstract_channel_value_envelope::supla_abstract_channel_value_envelope(
+    int channel_id, supla_abstract_channel_value *value) {
   this->channel_id = channel_id;
   this->value = value;
 }
 
-supla_channel_value_envelope::~supla_channel_value_envelope(void) {
+supla_abstract_channel_value_envelope::~supla_abstract_channel_value_envelope(
+    void) {
   if (value) {
     delete value;
   }
 }
 
-int supla_channel_value_envelope::get_channel_id(void) { return channel_id; }
+int supla_abstract_channel_value_envelope::get_channel_id(void) {
+  return channel_id;
+}
 
-supla_channel_value *supla_channel_value_envelope::get_value(void) {
+supla_abstract_channel_value *supla_abstract_channel_value_envelope::get_value(
+    void) {
   return value;
 }

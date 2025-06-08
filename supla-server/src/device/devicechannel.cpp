@@ -551,9 +551,9 @@ bool supla_device_channel::set_value(
     value_valid_to.tv_usec = 0;
   }
 
-  supla_channel_value *old_value = _get_value();
+  supla_abstract_channel_value *old_value = _get_value();
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
-  supla_channel_value *new_value = _get_value();
+  supla_abstract_channel_value *new_value = _get_value();
 
   new_value->apply_channel_properties(
       type, get_device()->get_connection()->get_protocol_version(), param1,
@@ -612,10 +612,10 @@ bool supla_device_channel::set_value(
   return differ;
 }
 
-void supla_device_channel::on_value_changed(supla_channel_value *old_value,
-                                            supla_channel_value *new_value,
-                                            bool significant_change,
-                                            bool convertible2extended) {
+void supla_device_channel::on_value_changed(
+    supla_abstract_channel_value *old_value,
+    supla_abstract_channel_value *new_value, bool significant_change,
+    bool convertible2extended) {
   switch (get_func()) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
@@ -1041,14 +1041,15 @@ void supla_device_channel::access_data_analyzer(
   unlock();
 }
 
-supla_channel_value *supla_device_channel::_get_value(void) {
+supla_abstract_channel_value *supla_device_channel::_get_value(void) {
   char value[SUPLA_CHANNELVALUE_SIZE] = {};
   get_value(value);
   int func = get_func();
 
   lock();
-  supla_channel_value *result = supla_channel_value_factory::new_value(
-      value, type, func, get_user(), param2, param3);
+  supla_abstract_channel_value *result =
+      supla_abstract_channel_value_factory::new_value(
+          value, type, func, get_user(), param2, param3);
   unlock();
 
   return result;

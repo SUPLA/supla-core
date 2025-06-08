@@ -23,21 +23,27 @@
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "jsonconfig/channel/impulse_counter_config.h"
 
-supla_channel_ic_value::supla_channel_ic_value(void) : supla_channel_value() {
+supla_channel_ic_value::supla_channel_ic_value(void)
+    : supla_abstract_channel_value() {
   memset(original_raw_value, 0, SUPLA_CHANNELVALUE_SIZE);
 }
 
 supla_channel_ic_value::supla_channel_ic_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {
+    : supla_abstract_channel_value(raw_value) {
   memcpy(original_raw_value, raw_value, SUPLA_CHANNELVALUE_SIZE);
 }
 
 supla_channel_ic_value::supla_channel_ic_value(
     const TDS_ImpulseCounter_Value *value)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   memcpy(raw_value, value, sizeof(TDS_ImpulseCounter_Value));
   memcpy(original_raw_value, raw_value, SUPLA_CHANNELVALUE_SIZE);
+}
+
+supla_abstract_channel_value *supla_channel_ic_value::copy(  // NOLINT
+    void) const {                                            // NOLINT
+  return new supla_channel_ic_value(raw_value);
 }
 
 const TDS_ImpulseCounter_Value *supla_channel_ic_value::get_ic_value(void) {
@@ -46,7 +52,7 @@ const TDS_ImpulseCounter_Value *supla_channel_ic_value::get_ic_value(void) {
 
 void supla_channel_ic_value::set_raw_value(
     char raw_value[SUPLA_CHANNELVALUE_SIZE]) {
-  supla_channel_value::set_raw_value(raw_value);
+  supla_abstract_channel_value::set_raw_value(raw_value);
   memcpy(original_raw_value, raw_value, SUPLA_CHANNELVALUE_SIZE);
 }
 

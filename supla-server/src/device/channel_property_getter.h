@@ -24,7 +24,7 @@
 class supla_channel_property_getter
     : public supla_abstract_channel_property_getter {
  protected:
-  virtual supla_channel_value *_get_value(
+  virtual supla_abstract_channel_value *_get_value(
       int user_id, int device_id, int channel_id,
       supla_channel_fragment *fragment,
       supla_channel_availability_status *status);

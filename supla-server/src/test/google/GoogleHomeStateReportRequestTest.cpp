@@ -116,11 +116,9 @@ void GoogleHomeStateReportRequestTest::expectToken(bool direct) {
   }
 }
 
-void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
-                                                supla_channel_value *value,
-                                                const char *expectedPayload,
-                                                const string &request_id,
-                                                bool direct) {
+void GoogleHomeStateReportRequestTest::makeTest(
+    int func, bool online, supla_abstract_channel_value *value,
+    const char *expectedPayload, const string &request_id, bool direct) {
   expectToken(direct);
 
   EXPECT_CALL(*propertyGetter,
@@ -153,9 +151,9 @@ void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
   WaitForState(task, supla_asynctask_state::SUCCESS, 10000);
 }
 
-void GoogleHomeStateReportRequestTest::makeTest(int func, bool online,
-                                                supla_channel_value *value,
-                                                const char *expectedPayload) {
+void GoogleHomeStateReportRequestTest::makeTest(
+    int func, bool online, supla_abstract_channel_value *value,
+    const char *expectedPayload) {
   makeTest(func, online, value, expectedPayload,
            "e2de5bc6-65a8-48e5-b919-8a48e86ad64a", false);
 }
@@ -336,8 +334,8 @@ TEST_F(GoogleHomeStateReportRequestTest, facadeblind_Connected) {
 }
 
 void GoogleHomeStateReportRequestTest::makeHvacThermostatTest(
-    int func, bool online, supla_channel_value *hvacValue,
-    supla_channel_value *tempHumValue,
+    int func, bool online, supla_abstract_channel_value *hvacValue,
+    supla_abstract_channel_value *tempHumValue,
     supla_channel_extended_value *extendedValue, const char *expectedPayload,
     const string &request_id, bool direct) {
   expectToken(direct);

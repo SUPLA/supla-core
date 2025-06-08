@@ -21,7 +21,7 @@
 #include "proto.h"
 
 bool rgbw_value_to_action_converter::convert(
-    supla_channel_value *value,
+    supla_abstract_channel_value *value,
     supla_abstract_action_executor *action_executor) {
   supla_channel_rgbw_value *rgbw =
       dynamic_cast<supla_channel_rgbw_value *>(value);

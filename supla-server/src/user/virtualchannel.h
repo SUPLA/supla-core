@@ -22,14 +22,14 @@
 #include "device/channel_availability_status.h"
 #include "proto.h"
 
-class supla_channel_value;
+class supla_abstract_channel_value;
 class supla_user;
 class supla_virtual_channel {
  private:
   int device_id;
   int channel_id;
   int func;
-  supla_channel_value *value;
+  supla_abstract_channel_value *value;
   struct timeval value_valid_to;
 
  public:
@@ -46,8 +46,7 @@ class supla_virtual_channel {
   int get_channel_id(void);
   int get_func(void);
   int get_type(void);
-  const supla_channel_value *get_value(void);
-  supla_channel_value *get_value_copy(void);
+  const supla_abstract_channel_value *get_value(void);
   supla_channel_availability_status get_availability_status(void);
   void apply_changes(supla_user *user, const supla_virtual_channel *channel);
   supla_virtual_channel &operator=(const supla_virtual_channel &channel);

@@ -22,17 +22,23 @@
 
 supla_channel_floating_point_sensor_value::
     supla_channel_floating_point_sensor_value(void)
-    : supla_channel_value() {}
+    : supla_abstract_channel_value() {}
 
 supla_channel_floating_point_sensor_value::
     supla_channel_floating_point_sensor_value(
         const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    : supla_abstract_channel_value(raw_value) {}
 
 supla_channel_floating_point_sensor_value::
     supla_channel_floating_point_sensor_value(double value)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   set_value(value);
+}
+
+supla_abstract_channel_value *
+supla_channel_floating_point_sensor_value::copy(  // NOLINT
+    void) const {                                 // NOLINT
+  return new supla_channel_floating_point_sensor_value(raw_value);
 }
 
 void supla_channel_floating_point_sensor_value::set_value(double value) {

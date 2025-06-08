@@ -19,14 +19,15 @@
 #ifndef CHANNEL_OPENCLOSED_VALUE_H_
 #define CHANNEL_OPENCLOSED_VALUE_H_
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 
-class supla_channel_openclosed_value : public supla_channel_value {
+class supla_channel_openclosed_value : public supla_abstract_channel_value {
  public:
   supla_channel_openclosed_value(void);
   explicit supla_channel_openclosed_value(
       char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_openclosed_value(bool closed);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   void set_closed(bool closed);
   bool is_closed(void);
   static bool is_function_supported(int func);

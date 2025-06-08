@@ -23,7 +23,7 @@
 
 #include "asynctask/AsyncTaskTest.h"
 #include "caller.h"
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 #include "doubles/amazon/AlexaCredentialsMock.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "doubles/http/CurlAdapterMock.h"

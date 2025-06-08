@@ -55,7 +55,7 @@ void AlexaChangeReportRequestTest::SetUp(void) {
 }
 
 void AlexaChangeReportRequestTest::makeTest(int func, bool online,
-                                            supla_channel_value *value,
+                                            supla_abstract_channel_value *value,
                                             const char *expectedPayload,
                                             const supla_caller &caller,
                                             const std::string &region) {
@@ -110,7 +110,7 @@ void AlexaChangeReportRequestTest::makeTest(int func, bool online,
 }
 
 void AlexaChangeReportRequestTest::makeTest(int func, bool online,
-                                            supla_channel_value *value,
+                                            supla_abstract_channel_value *value,
                                             const char *expectedPayload1,
                                             const char *expectedPayload2) {
   EXPECT_CALL(*curlAdapter, reset).Times(2);
@@ -497,8 +497,8 @@ TEST_F(AlexaChangeReportRequestTest, brightnessAndColor_Unreachable) {
 }
 
 void AlexaChangeReportRequestTest::hvacThermostatTest(
-    int func, bool online, supla_channel_value *hvacValue,
-    supla_channel_value *tempHumValue,
+    int func, bool online, supla_abstract_channel_value *hvacValue,
+    supla_abstract_channel_value *tempHumValue,
     supla_channel_extended_value *extendedValue, const char *expectedPayload) {
   EXPECT_CALL(*curlAdapter,
               append_header(Eq(0), StrEq("Content-Type: application/json")))

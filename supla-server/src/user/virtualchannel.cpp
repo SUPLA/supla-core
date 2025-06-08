@@ -52,7 +52,7 @@ supla_virtual_channel::supla_virtual_channel(
   this->func = func;
   value_valid_to = {};
 
-  value = supla_channel_value_factory::new_value(
+  value = supla_abstract_channel_value_factory::new_value(
       raw_value, SUPLA_CHANNELTYPE_VIRTUAL, func, user, param2, param3);
 
   if (value) {
@@ -84,16 +84,8 @@ int supla_virtual_channel::get_func(void) { return func; }
 
 int supla_virtual_channel::get_type(void) { return SUPLA_CHANNELTYPE_VIRTUAL; }
 
-const supla_channel_value *supla_virtual_channel::get_value(void) {
+const supla_abstract_channel_value *supla_virtual_channel::get_value(void) {
   return value;
-}
-
-supla_channel_value *supla_virtual_channel::get_value_copy(void) {
-  if (value) {
-    return new supla_channel_value(*value);
-  }
-
-  return nullptr;
 }
 
 supla_channel_availability_status
@@ -121,6 +113,10 @@ void supla_virtual_channel::apply_changes(
   bool significant_change = false;
   if (user && func == channel->func && value && channel->value &&
       value->is_differ(channel->value, &significant_change)) {
+    user->on_channel_value_changed(supla_caller(ctChannel, channel_id),
+                                   device_id, channel_id, false,
+                                   significant_change);
+
     user->get_value_based_triggers()->on_value_changed(
         supla_caller(ctChannel, channel_id), channel_id, value, channel->value);
   }
@@ -134,7 +130,7 @@ void supla_virtual_channel::apply_changes(
   }
 
   if (channel->value) {
-    value = new supla_channel_value(*channel->value);
+    value = channel->value->copy();
   }
 }
 

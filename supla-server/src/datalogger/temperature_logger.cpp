@@ -39,7 +39,7 @@ unsigned int supla_temperature_logger::task_interval_sec(void) { return 600; }
 
 void supla_temperature_logger::run(const vector<supla_user *> *users,
                                    supla_abstract_db_access_provider *dba) {
-  std::vector<supla_channel_value_envelope *> env;
+  std::vector<supla_abstract_channel_value_envelope *> env;
 
   supla_temperature_logger_dao dao(dba);
 
@@ -49,7 +49,7 @@ void supla_temperature_logger::run(const vector<supla_user *> *users,
           device->get_channels()->get_channel_values(
               &env,
               [](supla_device_channel *channel,
-                 supla_channel_value *value) -> bool {
+                 supla_abstract_channel_value *value) -> bool {
                 return channel->get_availability_status().is_online() &&
                        dynamic_cast<supla_channel_temphum_value *>(value) !=
                            nullptr;

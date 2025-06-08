@@ -237,8 +237,9 @@ class supla_device_channels {
                                        bool is_open);
 
   void get_channel_values(
-      std::vector<supla_channel_value_envelope *> *result,
-      std::function<bool(supla_device_channel *channel, supla_channel_value *)>
+      std::vector<supla_abstract_channel_value_envelope *> *result,
+      std::function<bool(supla_device_channel *channel,
+                         supla_abstract_channel_value *)>
           filter);
 
   void send_configs_to_device(void);

@@ -19,14 +19,16 @@
 #ifndef CHANNEL_FB_VALUE_H_
 #define CHANNEL_FB_VALUE_H_
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 #include "user/user.h"
 
-class supla_channel_fb_value : public supla_channel_value {
+class supla_channel_fb_value : public supla_abstract_channel_value {
  public:
   explicit supla_channel_fb_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_fb_value(const TDSC_FacadeBlindValue *value);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
+
   const TDSC_FacadeBlindValue *get_fb_value(void);
   void set_fb_value(TDSC_FacadeBlindValue *value);
   virtual void apply_channel_properties(int type,

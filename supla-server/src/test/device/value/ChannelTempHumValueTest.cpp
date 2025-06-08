@@ -107,6 +107,11 @@ TEST_F(ChannelTempHumValueTest, diff) {
   EXPECT_FALSE(v1.is_differ(&v2, &significant_change));
   EXPECT_FALSE(significant_change);
 
+  supla_abstract_channel_value *v3 = v1.copy();
+  EXPECT_FALSE(v1.is_differ(v3, &significant_change));
+  EXPECT_FALSE(significant_change);
+  delete v3;
+
   EXPECT_TRUE(v1.is_differ(nullptr, &significant_change));
   EXPECT_TRUE(significant_change);
 

@@ -35,7 +35,7 @@ class supla_action_config : public abstract_action_config {
  public:
   supla_action_config(void);
   explicit supla_action_config(supla_action_config *src);
-  supla_action_config(const supla_action_config &src);  // NO LINT
+  supla_action_config(const supla_action_config &src);  // NOLINT
   virtual ~supla_action_config(void);
 
   virtual int get_action_id(void);

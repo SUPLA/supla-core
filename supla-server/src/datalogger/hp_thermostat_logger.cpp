@@ -38,14 +38,14 @@ unsigned int supla_hp_thermostat_logger::task_interval_sec(void) { return 600; }
 
 void supla_hp_thermostat_logger::run(const vector<supla_user *> *users,
                                      supla_abstract_db_access_provider *dba) {
-  std::vector<supla_channel_value_envelope *> env;
+  std::vector<supla_abstract_channel_value_envelope *> env;
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
     (*uit)->get_devices()->for_each([&env](shared_ptr<supla_device> device,
                                            bool *will_continue) -> void {
       device->get_channels()->get_channel_values(
           &env,
           [](supla_device_channel *channel,
-             supla_channel_value *value) -> bool {
+             supla_abstract_channel_value *value) -> bool {
             return channel->get_availability_status().is_online() &&
                    dynamic_cast<supla_channel_hp_thermostat_value *>(value) !=
                        nullptr;

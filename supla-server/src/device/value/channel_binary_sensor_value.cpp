@@ -23,15 +23,21 @@
 #include "jsonconfig/channel/binary_sensor_config.h"
 
 supla_channel_binary_sensor_value::supla_channel_binary_sensor_value(void)
-    : supla_channel_value() {}
+    : supla_abstract_channel_value() {}
 
 supla_channel_binary_sensor_value::supla_channel_binary_sensor_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_abstract_channel_value(raw_value) {}
 
 supla_channel_binary_sensor_value::supla_channel_binary_sensor_value(bool hi)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   set_hi(hi);
+}
+
+supla_abstract_channel_value *
+supla_channel_binary_sensor_value::copy(  // NOLINT
+    void) const {                         // NOLINT
+  return new supla_channel_binary_sensor_value(raw_value);
 }
 
 void supla_channel_binary_sensor_value::set_hi(bool hi) {

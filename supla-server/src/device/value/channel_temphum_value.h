@@ -22,9 +22,9 @@
 #include <map>
 #include <string>
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 
-class supla_channel_temphum_value : public supla_channel_value {
+class supla_channel_temphum_value : public supla_abstract_channel_value {
  private:
   bool with_humidity;
 
@@ -33,16 +33,18 @@ class supla_channel_temphum_value : public supla_channel_value {
   supla_channel_temphum_value(int channel_type, int func,
                               const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   supla_channel_temphum_value(bool with_humidity,
-                              char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+                              const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   supla_channel_temphum_value(bool with_humidity, double temperature,
                               double humidity);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
 
   bool is_humidity_available(void);
   double get_temperature(void);
   double get_humidity(void);
   void set_temperature(double temperature);
   void set_humidity(double humidity);
-  virtual bool is_differ(supla_channel_value *value, bool *significant_change);
+  virtual bool is_differ(supla_abstract_channel_value *value,
+                         bool *significant_change);
   virtual void apply_channel_properties(int type,
                                         unsigned char protocol_version,
                                         int param1, int param2, int param3,

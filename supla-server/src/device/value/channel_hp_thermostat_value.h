@@ -21,13 +21,14 @@
 
 #include <string>
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 
-class supla_channel_hp_thermostat_value : public supla_channel_value {
+class supla_channel_hp_thermostat_value : public supla_abstract_channel_value {
  public:
   supla_channel_hp_thermostat_value(void);
   explicit supla_channel_hp_thermostat_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   bool is_on(void);
   double get_measured_temperature(void);
   double get_preset_temperature(void);

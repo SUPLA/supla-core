@@ -26,7 +26,7 @@ class any_value_to_action_converter {
  public:
   any_value_to_action_converter();
   virtual ~any_value_to_action_converter();
-  virtual bool convert(supla_channel_value *value,
+  virtual bool convert(supla_abstract_channel_value *value,
                        supla_abstract_action_executor *action_executor);
 };
 

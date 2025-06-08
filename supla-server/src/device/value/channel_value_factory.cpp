@@ -35,12 +35,14 @@
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
 #include "device/value/channel_temphum_value.h"
+#include "device/value/channel_value.h"
 #include "device/value/channel_valve_value.h"
 
-supla_channel_value_factory::supla_channel_value_factory(void) {}
+supla_abstract_channel_value_factory::supla_abstract_channel_value_factory(
+    void) {}
 
 // static
-supla_channel_value *supla_channel_value_factory::new_value(
+supla_abstract_channel_value *supla_abstract_channel_value_factory::new_value(
     const char value[SUPLA_CHANNELVALUE_SIZE], int type, int func,
     supla_user *user, int param2, int param3) {
   if (!func) {

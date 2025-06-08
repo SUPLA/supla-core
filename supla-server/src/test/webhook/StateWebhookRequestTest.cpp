@@ -29,6 +29,7 @@
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
 #include "device/value/channel_temphum_value.h"
+#include "device/value/channel_value.h"
 #include "http/asynctask_http_thread_bucket.h"
 #include "webhook/state_webhook_request.h"
 
@@ -79,7 +80,7 @@ void StateWebhookRequestTest::SetUp(void) {
 }
 
 void StateWebhookRequestTest::makeTest(int func, bool online,
-                                       supla_channel_value *value,
+                                       supla_abstract_channel_value *value,
                                        const char *expectedPayload) {
   EXPECT_CALL(*propertyGetter,
               _get_value(Eq(1), Eq(2), Eq(123), NotNull(), NotNull()))
@@ -153,8 +154,8 @@ TEST_F(StateWebhookRequestTest, sendLightSwitchReport_Disconnected) {
       "\"channelId\":123,\"channelFunction\":\"LIGHTSWITCH\",\"timestamp\":"
       "1600097258,\"state\":{\"on\":false,\"connected\":false}}";
 
-  makeTest(SUPLA_CHANNELFNC_LIGHTSWITCH, false, (supla_channel_value *)nullptr,
-           expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_LIGHTSWITCH, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest,
@@ -166,8 +167,8 @@ TEST_F(StateWebhookRequestTest,
 
   EXPECT_CALL(*curlAdapter, get_response_code).WillRepeatedly(Return(202));
 
-  makeTest(SUPLA_CHANNELFNC_LIGHTSWITCH, false, (supla_channel_value *)nullptr,
-           expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_LIGHTSWITCH, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendPowerSwitchReport_Connected) {
@@ -186,8 +187,8 @@ TEST_F(StateWebhookRequestTest, sendPowerSwitchReport_Disconnected) {
       "\"channelId\":123,\"channelFunction\":\"POWERSWITCH\",\"timestamp\":"
       "1600097258,\"state\":{\"on\":false,\"connected\":false}}";
 
-  makeTest(SUPLA_CHANNELFNC_POWERSWITCH, false, (supla_channel_value *)nullptr,
-           expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_POWERSWITCH, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendTemperatureReport_Connected) {
@@ -206,8 +207,8 @@ TEST_F(StateWebhookRequestTest, sendTemperatureReport_Disconnected) {
       "\"channelId\":123,\"channelFunction\":\"THERMOMETER\",\"timestamp\":"
       "1600097258,\"state\":{\"temperature\":-273,\"connected\":false}}";
 
-  makeTest(SUPLA_CHANNELFNC_THERMOMETER, false, (supla_channel_value *)nullptr,
-           expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_THERMOMETER, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendHumidityReport_Connected) {
@@ -226,8 +227,8 @@ TEST_F(StateWebhookRequestTest, sendHumidityReport_Disconnected) {
       "\"channelId\":123,\"channelFunction\":\"HUMIDITY\",\"timestamp\":"
       "1600097258,\"state\":{\"humidity\":-1,\"connected\":false}}";
 
-  makeTest(SUPLA_CHANNELFNC_HUMIDITY, false, (supla_channel_value *)nullptr,
-           expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_HUMIDITY, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendTemperatureAndHumidityReport_Connected) {
@@ -250,7 +251,7 @@ TEST_F(StateWebhookRequestTest, sendTemperatureAndHumidityReport_Disconnected) {
       "1,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendGatewayOpeningSensorReport_Connected) {
@@ -270,7 +271,7 @@ TEST_F(StateWebhookRequestTest, sendGatewayOpeningSensorReport_Disconnected) {
       "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendGatewOpeningSensorReport_Connected) {
@@ -290,7 +291,7 @@ TEST_F(StateWebhookRequestTest, sendGateOpeningSensorReport_Disconnected) {
       "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_GATE, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendGarageDoorOpeningSensorReport_Connected) {
@@ -311,7 +312,7 @@ TEST_F(StateWebhookRequestTest,
       "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendNoLiquidSensorReport_Connected) {
@@ -331,7 +332,7 @@ TEST_F(StateWebhookRequestTest, sendNoLiquidSensorReport_Disconnected) {
       "1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_NOLIQUIDSENSOR, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendDoorOpeningSensorReport_Connected) {
@@ -351,7 +352,7 @@ TEST_F(StateWebhookRequestTest, sendDoorOpeningSensorReport_Disconnected) {
       "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest,
@@ -373,7 +374,7 @@ TEST_F(StateWebhookRequestTest,
       "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendRoofWindowOpeningSensorReport_Connected) {
@@ -394,7 +395,7 @@ TEST_F(StateWebhookRequestTest,
       "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendWindowOpeningSensorReport_Connected) {
@@ -414,7 +415,7 @@ TEST_F(StateWebhookRequestTest, sendWindowOpeningSensorReport_Disconnected) {
       "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendHotelCardSensorReport_Connected) {
@@ -434,7 +435,7 @@ TEST_F(StateWebhookRequestTest, sendHotelCardSensorReport_Disconnected) {
       "\"timestamp\":1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_HOTELCARDSENSOR, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendMailSensorReport_Connected) {
@@ -453,8 +454,8 @@ TEST_F(StateWebhookRequestTest, sendMailSensorReport_Disconnected) {
       "\"channelId\":123,\"channelFunction\":\"MAILSENSOR\",\"timestamp\":"
       "1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
 
-  makeTest(SUPLA_CHANNELFNC_MAILSENSOR, false, (supla_channel_value *)nullptr,
-           expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_MAILSENSOR, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendRollerShutterReport_Calibration) {
@@ -493,7 +494,7 @@ TEST_F(StateWebhookRequestTest, sendRollerShutterReport_Disconnected) {
       "\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendRoofWindowReport_Calibration) {
@@ -532,7 +533,7 @@ TEST_F(StateWebhookRequestTest, sendRoofWindowReport_Disconnected) {
       "\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendWindSensorReport_Connected) {
@@ -552,8 +553,8 @@ TEST_F(StateWebhookRequestTest, sendWindSensorReport_Disconnected) {
       "\"channelId\":123,\"channelFunction\":\"WINDSENSOR\",\"timestamp\":"
       "1600097258,\"state\":{\"value\":0,\"connected\":false}}";
 
-  makeTest(SUPLA_CHANNELFNC_WINDSENSOR, false, (supla_channel_value *)nullptr,
-           expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_WINDSENSOR, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendPressureSensorReport_Connected) {
@@ -574,7 +575,7 @@ TEST_F(StateWebhookRequestTest, sendPressureSensorReport_Disconnected) {
       "1600097258,\"state\":{\"value\":0,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_PRESSURESENSOR, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendRainSensorReport_Connected) {
@@ -594,8 +595,8 @@ TEST_F(StateWebhookRequestTest, sendRainSensorReport_Disconnected) {
       "\"channelId\":123,\"channelFunction\":\"RAINSENSOR\",\"timestamp\":"
       "1600097258,\"state\":{\"value\":0,\"connected\":false}}";
 
-  makeTest(SUPLA_CHANNELFNC_RAINSENSOR, false, (supla_channel_value *)nullptr,
-           expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_RAINSENSOR, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendWeightSensorReport_Connected) {
@@ -615,8 +616,8 @@ TEST_F(StateWebhookRequestTest, sendWeightSensorReport_Disconnected) {
       "\"channelId\":123,\"channelFunction\":\"WEIGHTSENSOR\",\"timestamp\":"
       "1600097258,\"state\":{\"value\":0,\"connected\":false}}";
 
-  makeTest(SUPLA_CHANNELFNC_WEIGHTSENSOR, false, (supla_channel_value *)nullptr,
-           expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_WEIGHTSENSOR, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendDistanceSensorReport_Connected) {
@@ -637,7 +638,7 @@ TEST_F(StateWebhookRequestTest, sendDistanceSensorReport_Disconnected) {
       "1600097258,\"state\":{\"distance\":0,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_DISTANCESENSOR, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendDepthSensorReport_Connected) {
@@ -657,8 +658,8 @@ TEST_F(StateWebhookRequestTest, sendDepthSensorReport_Disconnected) {
       "\"channelId\":123,\"channelFunction\":\"DEPTHSENSOR\",\"timestamp\":"
       "1600097258,\"state\":{\"depth\":0,\"connected\":false}}";
 
-  makeTest(SUPLA_CHANNELFNC_DEPTHSENSOR, false, (supla_channel_value *)nullptr,
-           expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_DEPTHSENSOR, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendDimmerReport_On) {
@@ -695,8 +696,8 @@ TEST_F(StateWebhookRequestTest, sendDimmerReport_Disconnected) {
       "1600097258,\"state\":{\"brightness\":0,\"on\":false,\"connected\":false}"
       "}";
 
-  makeTest(SUPLA_CHANNELFNC_DIMMER, true, (supla_channel_value *)nullptr,
-           expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_DIMMER, true,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendRgbReport_On) {
@@ -740,8 +741,8 @@ TEST_F(StateWebhookRequestTest, sendRgbReport_Disconnected) {
       "1600097258,\"state\":{\"color\":\"0x000000\",\"color_brightness\":0,"
       "\"on\":false,\"connected\":false}}";
 
-  makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, false, (supla_channel_value *)nullptr,
-           expectedPayload);
+  makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest, sendDimmerAndRgbReport_On) {
@@ -786,7 +787,7 @@ TEST_F(StateWebhookRequestTest, sendDimmerAndRgbReport_Disconnected) {
       "brightness\":0,\"brightness\":0,\"on\":false,\"connected\":false}}";
 
   makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, false,
-           (supla_channel_value *)nullptr, expectedPayload);
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
 TEST_F(StateWebhookRequestTest,
