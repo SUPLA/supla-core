@@ -24,7 +24,7 @@ supla_channel_onoff_value::supla_channel_onoff_value(void)
     : supla_abstract_channel_value() {}
 
 supla_channel_onoff_value::supla_channel_onoff_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_abstract_channel_value(raw_value) {}
 
 supla_channel_onoff_value::supla_channel_onoff_value(bool on)

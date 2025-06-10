@@ -24,7 +24,7 @@ supla_channel_openclosed_value::supla_channel_openclosed_value(void)
     : supla_abstract_channel_value() {}
 
 supla_channel_openclosed_value::supla_channel_openclosed_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_abstract_channel_value(raw_value) {}
 
 supla_channel_openclosed_value::supla_channel_openclosed_value(bool closed)

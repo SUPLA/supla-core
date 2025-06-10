@@ -24,7 +24,8 @@
 class supla_channel_onoff_value : public supla_abstract_channel_value {
  public:
   supla_channel_onoff_value(void);
-  explicit supla_channel_onoff_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_onoff_value(
+      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_onoff_value(bool on);
   virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   void set_on(bool on);

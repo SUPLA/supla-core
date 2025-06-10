@@ -25,7 +25,7 @@ class supla_channel_openclosed_value : public supla_abstract_channel_value {
  public:
   supla_channel_openclosed_value(void);
   explicit supla_channel_openclosed_value(
-      char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_openclosed_value(bool closed);
   virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   void set_closed(bool closed);
