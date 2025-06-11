@@ -360,6 +360,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_RESTART_REQUESTED 42                     // ver. >= 25
 #define SUPLA_RESULTCODE_IDENTIFY_REQUESTED 43                    // ver. >= 25
 #define SUPLA_RESULTCODE_MALFORMED_EMAIL 44                       // ver. >= ?
+#define SUPLA_RESULTCODE_RESET_TO_FACTORY_SETTINGS 45             // ver. >= 28
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0         // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1       // ver. >= 10
@@ -596,6 +597,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION 0x1000  // ver. >= 25
 #define SUPLA_DEVICE_FLAG_BLOCK_ADDING_CHANNELS_AFTER_DELETION \
   0x2000  // ver. >= 25
+#define SUPLA_DEVICE_FLAG_CALCFG_FACTORY_RESET_SUPPORTED 0x4000   // ver. >= 25
+#define SUPLA_DEVICE_FLAG_CALCFG_CHECK_FIRMWARE_UPDATE_SUPPORTED \
+  0x8000  // ver. >= 25
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
@@ -620,6 +624,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED (1ULL << 8)  // v. >= 25
 // type: TDeviceConfig_Modbus
 #define SUPLA_DEVICE_CONFIG_FIELD_MODBUS (1ULL << 9)  // v. >= 27
+// type: TDeviceConfig_FirmwareUpdate
+#define SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE (1ULL << 10)  // v. >= 28
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 // BIT map definition for TDS_SuplaDeviceChannel_D::Flags (64 bit)
@@ -2134,6 +2140,10 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_RESET_COUNTERS 7000              // v. >= 15
 #define SUPLA_CALCFG_CMD_RECALIBRATE 8000                 // v. >= 15
 #define SUPLA_CALCFG_CMD_ENTER_CFG_MODE 9000              // v. >= 17
+#define SUPLA_CALCFG_CMD_RESET_TO_FACTORY_SETTINGS 9010   // v. >= 28
+#define SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE 9020       // v. >= 28
+#define SUPLA_CALCFG_CMD_START_FIRMWARE_UPDATE 9030       // v. >= 28
+#define SUPLA_CALCFG_CMD_START_SECURITY_UPDATE 9040       // v. >= 28
 #define SUPLA_CALCFG_CMD_SET_TIME 9100                    // v. >= 21
 #define SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING 9200     // v. >= 25
 #define SUPLA_CALCFG_CMD_IDENTIFY_DEVICE 9300             // v. >= 25
@@ -2271,6 +2281,16 @@ typedef struct {
   _supla_int_t FullOpeningTimeMS;
   _supla_int_t FullClosingTimeMS;
 } TCalCfg_RollerShutterSettings;
+
+#define SUPLA_FIRMWARE_CHECK_RESULT_UPDATE_NOT_AVAILABLE 0
+#define SUPLA_FIRMWARE_CHECK_RESULT_UPDATE_AVAILABLE 1
+#define SUPLA_FIRMWARE_CHECK_RESULT_ERROR 2
+
+typedef struct {
+  unsigned char Result;   // SUPLA_FIRMWARE_CHECK_RESULT_
+  char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+} TCalCfg_FirmwareCheckResult;            // v. >= 28
+
 
 #define RGBW_BRIGHTNESS_ONOFF 0x1
 #define RGBW_COLOR_ONOFF 0x2
@@ -2936,6 +2956,22 @@ typedef struct {
   ModbusConfigProperties Properties;
   unsigned char Reserved[20];
 } TDeviceConfig_Modbus;
+
+// type: TDeviceConfig_FirmwareUpdate
+// Forced off - firmware update is disabled by user on device (via local web
+// interface) and can't be changed remotely
+// Disabled - firmware update is disabled by user and can be changed remotely
+// Security only - firmware update is enabled only for security updates
+// All enabled - firmware update is enabled for all updates
+#define SUPLA_FIRMWARE_UPDATE_MODE_FORCED_OFF 0
+#define SUPLA_FIRMWARE_UPDATE_MODE_DISABLED 1
+#define SUPLA_FIRMWARE_UPDATE_MODE_SECURITY_ONLY 2  // default
+#define SUPLA_FIRMWARE_UPDATE_MODE_ALL_ENABLED 3
+
+typedef struct {
+  unsigned char Mode;  // SUPLA_FIRMWARE_UPDATE_MODE_
+  unsigned char Reserved[20];
+} TDeviceConfig_FirmwareUpdate;
 
 /********************************************
  * CHANNEL CONFIG STRUCTURES
