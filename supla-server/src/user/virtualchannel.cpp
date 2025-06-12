@@ -158,9 +158,10 @@ bool supla_virtual_channel::get_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]) {
 
 supla_virtual_channel &supla_virtual_channel::operator=(
     const supla_virtual_channel &channel) {
+  device_id = channel.device_id;
   channel_id = channel.channel_id;
-  func = channel.func;
   type = channel.type;
+  func = channel.func;
   value_valid_to = channel.value_valid_to;
 
   if (value) {
