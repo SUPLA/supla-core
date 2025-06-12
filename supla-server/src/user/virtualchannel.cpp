@@ -158,12 +158,20 @@ unsigned supla_virtual_channel::get_value_validity_time_sec(void) {
 bool supla_virtual_channel::get_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]) {
   if (value) {
     value->get_raw_value(raw_value);
+    return true;
   }
+
+  return false;
 }
 
 supla_virtual_channel &supla_virtual_channel::operator=(
     const supla_virtual_channel &channel) {
   channel_id = channel.channel_id;
-  apply_changes(nullptr, &channel);
+  func = channel.func;
+  value_valid_to = channel.value_valid_to;
+
+  if (channel.value) {
+    value = channel.value->copy();
+  }
   return *this;
 }
