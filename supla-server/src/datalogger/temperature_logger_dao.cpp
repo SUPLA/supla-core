@@ -101,10 +101,9 @@ void supla_temperature_logger_dao::load(
   MYSQL_STMT *stmt = nullptr;
   const char sql[] =
       "SELECT c.id, c.type, c.func, v.value FROM `supla_dev_channel` c, "
-      "`supla_iodevice` d, `supla_dev_channel_value` v WHERE d.is_virtual = 0 "
-      "AND d.id = c.iodevice_id AND c.user_id = ? AND c.id = v.channel_id AND "
-      "v.valid_to >= UTC_TIMESTAMP() AND (c.func = ? OR c.func = ? OR c.func = "
-      "?) AND c.type != ? GROUP BY c.id";
+      "`supla_dev_channel_value` v WHERE c.is_virtual = 0 AND c.user_id = ? "
+      "AND c.id = v.channel_id AND v.valid_to >= UTC_TIMESTAMP() AND (c.func = "
+      "? OR c.func = ? OR c.func = ?) AND c.type != ? GROUP BY c.id";
 
   int func1 = SUPLA_CHANNELFNC_THERMOMETER;
   int func2 = SUPLA_CHANNELFNC_HUMIDITY;

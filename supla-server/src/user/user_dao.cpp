@@ -47,10 +47,9 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
       "c.param3, c.param4, c.user_config, c.properties, v.value, case when "
       "`v`.`valid_to` >= utc_timestamp() then "
       "time_to_sec(timediff(`v`.`valid_to`,utc_timestamp())) else NULL end AS "
-      "`validity_time_sec` FROM `supla_dev_channel` c, `supla_iodevice` d, "
-      "`supla_dev_channel_value` v WHERE d.is_virtual = 1 AND d.id = "
-      "c.iodevice_id AND v.channel_id = c.id AND c.user_id = ? AND "
-      "UNIX_TIMESTAMP(update_time) > ?";
+      "`validity_time_sec` FROM `supla_dev_channel` c, "
+      "`supla_dev_channel_value` v WHERE c.is_virtual = 1 AND v.channel_id = "
+      "c.id AND c.user_id = ? AND UNIX_TIMESTAMP(update_time) > ?";
 
   MYSQL_STMT *stmt = nullptr;
   MYSQL_BIND pbind[2] = {};
@@ -191,9 +190,8 @@ vector<int> supla_user_dao::get_users_with_virtual_channels_online(void) {
 
   MYSQL_STMT *stmt = NULL;
   const char sql[] =
-      "SELECT v.user_id FROM `supla_dev_channel` c, `supla_iodevice` d, "
-      "`supla_dev_channel_value` v WHERE d.is_virtual = 1 AND d.id = "
-      "c.iodevice_id AND v.channel_id = c.id AND v.`valid_to` >=  "
+      "SELECT v.user_id FROM `supla_dev_channel` c, `supla_dev_channel_value` "
+      "v WHERE c.is_virtual = 1 AND v.channel_id = c.id AND v.`valid_to` >=  "
       "utc_timestamp() GROUP BY user_id";
 
   if (dba->stmt_execute((void **)&stmt, sql, nullptr, 0, true)) {
