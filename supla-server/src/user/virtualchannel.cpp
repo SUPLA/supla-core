@@ -123,18 +123,7 @@ void supla_virtual_channel::apply_changes(
         supla_caller(ctChannel, channel_id), channel_id, value, channel->value);
   }
 
-  func = channel->func;
-  type = channel->type;
-  value_valid_to = channel->value_valid_to;
-
-  if (value) {
-    delete value;
-    value = nullptr;
-  }
-
-  if (channel->value) {
-    value = channel->value->copy();
-  }
+  *this = *channel;
 }
 
 // static
@@ -174,8 +163,13 @@ supla_virtual_channel &supla_virtual_channel::operator=(
   type = channel.type;
   value_valid_to = channel.value_valid_to;
 
+  if (value) {
+    delete value;
+  }
+
   if (channel.value) {
     value = channel.value->copy();
   }
+
   return *this;
 }
