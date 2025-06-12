@@ -28,6 +28,7 @@ class supla_virtual_channel {
  private:
   int device_id;
   int channel_id;
+  int type;
   int func;
   supla_abstract_channel_value *value;
   struct timeval value_valid_to;
@@ -37,9 +38,10 @@ class supla_virtual_channel {
   supla_virtual_channel(const supla_virtual_channel &channel);
   supla_virtual_channel(supla_user *user, int device_id, int channe_id,
                         const char raw_value[SUPLA_CHANNELVALUE_SIZE],
-                        const unsigned _supla_int_t validity_time_sec, int func,
-                        int param1, int param2, int param3, int param4,
-                        const char *user_config, const char *properties);
+                        const unsigned _supla_int_t validity_time_sec, int type,
+                        int func, int param1, int param2, int param3,
+                        int param4, const char *user_config,
+                        const char *properties);
   virtual ~supla_virtual_channel();
   static unsigned get_value_validity_time_sec(
       const struct timeval &value_valid_to);

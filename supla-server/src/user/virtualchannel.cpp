@@ -25,6 +25,7 @@
 supla_virtual_channel::supla_virtual_channel(void) {
   this->device_id = 0;
   this->channel_id = 0;
+  this->type = 0;
   this->func = 0;
   value_valid_to = {};
   value = nullptr;
@@ -34,6 +35,7 @@ supla_virtual_channel::supla_virtual_channel(
     const supla_virtual_channel &channel) {
   this->device_id = 0;
   this->channel_id = 0;
+  this->type = 0;
   this->func = 0;
   value_valid_to = {};
   value = nullptr;
@@ -44,16 +46,17 @@ supla_virtual_channel::supla_virtual_channel(
 supla_virtual_channel::supla_virtual_channel(
     supla_user *user, int device_id, int channel_id,
     const char raw_value[SUPLA_CHANNELVALUE_SIZE],
-    const unsigned _supla_int_t validity_time_sec, int func, int param1,
-    int param2, int param3, int param4, const char *user_config,
+    const unsigned _supla_int_t validity_time_sec, int type, int func,
+    int param1, int param2, int param3, int param4, const char *user_config,
     const char *properties) {
   this->device_id = device_id;
   this->channel_id = channel_id;
+  this->type = type;
   this->func = func;
   value_valid_to = {};
 
-  value = supla_abstract_channel_value_factory::new_value(
-      raw_value, SUPLA_CHANNELTYPE_VIRTUAL, func, user, param2, param3);
+  value = supla_abstract_channel_value_factory::new_value(raw_value, type, func,
+                                                          user, param2, param3);
 
   if (value) {
     supla_json_config json_config(nullptr);
@@ -61,9 +64,8 @@ supla_virtual_channel::supla_virtual_channel(
     json_config.set_properties(properties);
     json_config.set_user_config(user_config);
 
-    value->apply_channel_properties(SUPLA_CHANNELTYPE_VIRTUAL,
-                                    SUPLA_PROTO_VERSION, param1, param2, param3,
-                                    param4, &json_config);
+    value->apply_channel_properties(type, SUPLA_PROTO_VERSION, param1, param2,
+                                    param3, param4, &json_config);
   }
 
   gettimeofday(&value_valid_to, nullptr);
@@ -82,7 +84,7 @@ int supla_virtual_channel::get_channel_id(void) { return channel_id; }
 
 int supla_virtual_channel::get_func(void) { return func; }
 
-int supla_virtual_channel::get_type(void) { return SUPLA_CHANNELTYPE_VIRTUAL; }
+int supla_virtual_channel::get_type(void) { return type; }
 
 const supla_abstract_channel_value *supla_virtual_channel::get_value(void) {
   return value;
@@ -122,6 +124,7 @@ void supla_virtual_channel::apply_changes(
   }
 
   func = channel->func;
+  type = channel->type;
   value_valid_to = channel->value_valid_to;
 
   if (value) {
@@ -168,6 +171,7 @@ supla_virtual_channel &supla_virtual_channel::operator=(
     const supla_virtual_channel &channel) {
   channel_id = channel.channel_id;
   func = channel.func;
+  type = channel.type;
   value_valid_to = channel.value_valid_to;
 
   if (channel.value) {

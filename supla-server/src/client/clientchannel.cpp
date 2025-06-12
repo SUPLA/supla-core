@@ -46,7 +46,7 @@ supla_client_channel::supla_client_channel(
     short ManufacturerID, short ProductID, unsigned char DeviceProtocolVersion,
     unsigned _supla_int64_t Flags, const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec, const char *user_config,
-    const char *properties)
+    const char *properties, bool is_virtual)
     : supla_client_objcontainer_item(Container, Id, Caption),
       supla_abstract_common_channel_properties() {
   this->channel_number = channel_number;
@@ -68,6 +68,7 @@ supla_client_channel::supla_client_channel(
   this->DeviceProtocolVersion = DeviceProtocolVersion;
   this->Flags = Flags;
   this->json_config = nullptr;
+  this->is_virtual = is_virtual;
 
   supla_json_config *json_config = new supla_json_config();
   json_config->set_user_config(user_config);
@@ -375,7 +376,7 @@ void supla_client_channel::proto_get_value(
 
   if ((!result || (status && !status->is_online())) &&
       isValueValidityTimeSet() && getValueValidityTimeUSec() > 0 &&
-      get_type() != SUPLA_CHANNELTYPE_VIRTUAL) {
+      !is_virtual) {
     result = true;
     if (status) {
       status->set_offline(false);

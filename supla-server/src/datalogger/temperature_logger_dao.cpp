@@ -101,16 +101,16 @@ void supla_temperature_logger_dao::load(
   MYSQL_STMT *stmt = nullptr;
   const char sql[] =
       "SELECT c.id, c.type, c.func, v.value FROM `supla_dev_channel` c, "
-      "`supla_dev_channel_value` v WHERE c.user_id = ? AND c.id = v.channel_id "
-      "AND v.valid_to >= UTC_TIMESTAMP() AND (c.func = ? OR c.func = ? OR "
-      "c.func = ?) AND c.type != ? GROUP BY c.id";
+      "`supla_iodevice` d, `supla_dev_channel_value` v WHERE d.is_virtual = 0 "
+      "AND d.id = c.iodevice_id AND c.user_id = ? AND c.id = v.channel_id AND "
+      "v.valid_to >= UTC_TIMESTAMP() AND (c.func = ? OR c.func = ? OR c.func = "
+      "?) AND c.type != ? GROUP BY c.id";
 
   int func1 = SUPLA_CHANNELFNC_THERMOMETER;
   int func2 = SUPLA_CHANNELFNC_HUMIDITY;
   int func3 = SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE;
-  int type = SUPLA_CHANNELTYPE_VIRTUAL;
 
-  MYSQL_BIND pbind[5] = {};
+  MYSQL_BIND pbind[4] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&user_id;
@@ -123,9 +123,6 @@ void supla_temperature_logger_dao::load(
 
   pbind[3].buffer_type = MYSQL_TYPE_LONG;
   pbind[3].buffer = (char *)&func3;
-
-  pbind[4].buffer_type = MYSQL_TYPE_LONG;
-  pbind[4].buffer = (char *)&type;
 
   if (dba->stmt_execute((void **)&stmt, sql, pbind, 5, true)) {
     MYSQL_BIND rbind[4] = {};

@@ -282,7 +282,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
       "`param3`, `param4`, `text_param1`, `text_param2`, `text_param3`, "
       "`iodevice_id`, `location_id`, `caption`, `alt_icon`, `user_icon_id`, "
       "`manufacturer_id`, `product_id`, `protocol_version`, `flags`, `value`, "
-      "`validity_time_sec` + 2, `user_config`, `properties` FROM "
+      "`validity_time_sec` + 2, `user_config`, `properties`, `is_virtual` FROM "
       "`supla_v_client_channel` WHERE `client_id` = ? ORDER BY `iodevice_id`, "
       "`channel_number`";
   const char sql2[] =
@@ -290,7 +290,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
       "`param3`, `param4`, `text_param1`, `text_param2`, `text_param3`, "
       "`iodevice_id`, `location_id`, `caption`, `alt_icon`, `user_icon_id`, "
       "`manufacturer_id`, `product_id`, `protocol_version`, `flags`, `value`, "
-      "`validity_time_sec` + 2, `user_config`, `properties` FROM "
+      "`validity_time_sec` + 2, `user_config`, `properties`, `is_virtual` FROM "
       "`supla_v_client_channel` WHERE `client_id` = ? AND `iodevice_id` = ? "
       "ORDER BY `channel_number`";
 
@@ -305,7 +305,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
   if (stmt_execute((void **)&stmt, DeviceID ? sql2 : sql1, pbind,
                    DeviceID ? 2 : 1, true)) {
-    MYSQL_BIND rbind[24] = {};
+    MYSQL_BIND rbind[25] = {};
 
     int id = 0, channel_number = 0, type = 0, func = 0, param1 = 0, param2 = 0,
         param3 = 0, param4 = 0, iodevice_id = 0, location_id = 0, alt_icon = 0,
@@ -344,6 +344,8 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
     unsigned _supla_int_t validity_time_sec = 0;
     my_bool validity_time_is_null = true;
+
+    char is_virtual = 0;
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&id;
@@ -439,6 +441,9 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     rbind[23].buffer_length = sizeof(properties) - 1;
     rbind[23].length = &properties_size;
 
+    rbind[24].buffer_type = MYSQL_TYPE_TINY;
+    rbind[24].buffer = (char *)&is_virtual;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -473,7 +478,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
               caption_is_null ? nullptr : caption, alt_icon, user_icon,
               manufacturer_id, product_id, protocol_version, flags, value,
               validity_time_sec, user_config_is_null ? nullptr : user_config,
-              properties_are_null ? nullptr : properties);
+              properties_are_null ? nullptr : properties, is_virtual);
 
           if (!channels->add(channel)) {
             delete channel;

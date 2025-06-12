@@ -43,31 +43,30 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
   }
 
   const char sql[] =
-      "SELECT c.iodevice_id, c.id, c.func, c.param1, c.param2, c.param3, "
-      "c.param4, c.user_config, c.properties, v.value, case when "
+      "SELECT c.iodevice_id, c.id, c.type, c.func, c.param1, c.param2, "
+      "c.param3, c.param4, c.user_config, c.properties, v.value, case when "
       "`v`.`valid_to` >= utc_timestamp() then "
       "time_to_sec(timediff(`v`.`valid_to`,utc_timestamp())) else NULL end AS "
-      "`validity_time_sec` FROM `supla_dev_channel` c, "
-      "`supla_dev_channel_value` v WHERE c.type = ? AND v.channel_id = c.id "
-      "AND c.user_id = ? AND UNIX_TIMESTAMP(update_time) > ?";
+      "`validity_time_sec` FROM `supla_dev_channel` c, `supla_iodevice` d, "
+      "`supla_dev_channel_value` v WHERE d.is_virtual = 1 AND d.id = "
+      "c.iodevice_id AND v.channel_id = c.id AND c.user_id = ? AND "
+      "UNIX_TIMESTAMP(update_time) > ?";
 
   MYSQL_STMT *stmt = nullptr;
-  MYSQL_BIND pbind[3] = {};
-  int channel_type = SUPLA_CHANNELTYPE_VIRTUAL;
+  MYSQL_BIND pbind[2] = {};
+
   int user_id = user->getUserID();
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&channel_type;
+  pbind[0].buffer = (char *)&user_id;
 
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&user_id;
-
-  pbind[2].buffer_type = MYSQL_TYPE_LONGLONG;
-  pbind[2].buffer = (char *)&since_the_value_update_timestamp;
+  pbind[1].buffer_type = MYSQL_TYPE_LONGLONG;
+  pbind[1].buffer = (char *)&since_the_value_update_timestamp;
 
   if (dba->stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
     int device_id = 0;
     int channel_id = 0;
+    int type = 0;
     int func = 0;
     int param1 = 0;
     int param2 = 0;
@@ -96,6 +95,9 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
 
     rbind[1].buffer_type = MYSQL_TYPE_LONG;
     rbind[1].buffer = (char *)&channel_id;
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&type;
 
     rbind[2].buffer_type = MYSQL_TYPE_LONG;
     rbind[2].buffer = (char *)&func;
@@ -162,7 +164,7 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
           properties[properties_size] = 0;
 
           result.push_back(supla_virtual_channel(
-              user, device_id, channel_id, value, validity_time_sec, func,
+              user, device_id, channel_id, value, validity_time_sec, type, func,
               param1, param2, param3, param4, user_config, properties));
         }
       }
@@ -189,7 +191,9 @@ vector<int> supla_user_dao::get_users_with_virtual_channels_online(void) {
 
   MYSQL_STMT *stmt = NULL;
   const char sql[] =
-      "SELECT user_id FROM `supla_dev_channel_value` WHERE `valid_to` >= "
+      "SELECT v.user_id FROM `supla_dev_channel` c, `supla_iodevice` d, "
+      "`supla_dev_channel_value` v WHERE d.is_virtual = 1 AND d.id = "
+      "c.iodevice_id AND v.channel_id = c.id AND v.`valid_to` >=  "
       "utc_timestamp() GROUP BY user_id";
 
   if (dba->stmt_execute((void **)&stmt, sql, nullptr, 0, true)) {
