@@ -134,6 +134,33 @@ void supla_virtual_channel::apply_changes(
   }
 }
 
+// static
+unsigned _supla_int_t supla_virtual_channel::get_value_validity_time_sec(
+    const struct timeval &value_valid_to) {
+  unsigned _supla_int_t result = 0;
+
+  if (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec) {
+    struct timeval now;
+    gettimeofday(&now, nullptr);
+
+    if (now.tv_sec < value_valid_to.tv_sec) {
+      result = value_valid_to.tv_sec - now.tv_sec;
+    }
+  }
+
+  return result;
+}
+
+unsigned supla_virtual_channel::get_value_validity_time_sec(void) {
+  return get_value_validity_time_sec(value_valid_to);
+}
+
+bool supla_virtual_channel::get_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]) {
+  if (value) {
+    value->get_raw_value(raw_value);
+  }
+}
+
 supla_virtual_channel &supla_virtual_channel::operator=(
     const supla_virtual_channel &channel) {
   channel_id = channel.channel_id;

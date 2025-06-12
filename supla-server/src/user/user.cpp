@@ -336,6 +336,27 @@ bool supla_user::get_channel_value(
 
   shared_ptr<supla_device> device = devices->get(device_id);
   if (!device) {
+    supla_virtual_channel vc = get_devices()->get_virtual_channel(channel_id);
+    if (vc.get_channel_id()) {
+      if (value) {
+        vc.get_value(value);
+      }
+
+      if (function) {
+        *function = vc.get_func();
+      }
+
+      if (status) {
+        *status = vc.get_availability_status();
+      }
+
+      if (validity_time_sec) {
+        *validity_time_sec = vc.get_value_validity_time_sec();
+      }
+
+      return true;
+    }
+
     return false;
   }
 

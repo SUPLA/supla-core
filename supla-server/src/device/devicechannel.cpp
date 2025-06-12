@@ -39,6 +39,7 @@
 #include "jsonconfig/device/device_json_config.h"
 #include "lck.h"
 #include "user/user.h"
+#include "user/virtualchannel.h"
 #include "value/channel_openclosed_value.h"
 #include "vbt/value_based_triggers.h"
 
@@ -361,14 +362,7 @@ void supla_device_channel::get_value(char value[SUPLA_CHANNELVALUE_SIZE]) {
 unsigned _supla_int_t supla_device_channel::get_value_validity_time_sec(void) {
   unsigned _supla_int_t result = 0;
   lock();
-  if (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec) {
-    struct timeval now;
-    gettimeofday(&now, nullptr);
-
-    if (now.tv_sec < value_valid_to.tv_sec) {
-      result = value_valid_to.tv_sec - now.tv_sec;
-    }
-  }
+  result = supla_virtual_channel::get_value_validity_time_sec(value_valid_to);
   unlock();
   return result;
 }
