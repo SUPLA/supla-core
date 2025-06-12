@@ -240,6 +240,8 @@ supla_user_devices::get_channel_availability_status(int device_id,
     result =
         device->get_channels()->get_channel_availability_status(channel_id);
   } else {
+    update_virtual_channels_if_never_updated();
+
     supla_virtual_channel vchannel = get_virtual_channel(channel_id);
     if (vchannel.get_channel_id()) {
       result = vchannel.get_availability_status();
