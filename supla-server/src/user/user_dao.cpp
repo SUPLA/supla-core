@@ -88,7 +88,7 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
     unsigned _supla_int_t validity_time_sec = 0;
     my_bool validity_time_is_null = true;
 
-    MYSQL_BIND rbind[11] = {};
+    MYSQL_BIND rbind[12] = {};
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&device_id;
@@ -99,42 +99,42 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
     rbind[2].buffer_type = MYSQL_TYPE_LONG;
     rbind[2].buffer = (char *)&type;
 
-    rbind[2].buffer_type = MYSQL_TYPE_LONG;
-    rbind[2].buffer = (char *)&func;
-
     rbind[3].buffer_type = MYSQL_TYPE_LONG;
-    rbind[3].buffer = (char *)&param1;
+    rbind[3].buffer = (char *)&func;
 
     rbind[4].buffer_type = MYSQL_TYPE_LONG;
-    rbind[4].buffer = (char *)&param2;
+    rbind[4].buffer = (char *)&param1;
 
     rbind[5].buffer_type = MYSQL_TYPE_LONG;
-    rbind[5].buffer = (char *)&param3;
+    rbind[5].buffer = (char *)&param2;
 
     rbind[6].buffer_type = MYSQL_TYPE_LONG;
-    rbind[6].buffer = (char *)&param4;
+    rbind[6].buffer = (char *)&param3;
 
-    rbind[7].buffer_type = MYSQL_TYPE_STRING;
-    rbind[7].buffer = user_config;
-    rbind[7].is_null = &user_config_is_null;
-    rbind[7].buffer_length = sizeof(user_config);
-    rbind[7].length = &user_config_size;
+    rbind[7].buffer_type = MYSQL_TYPE_LONG;
+    rbind[7].buffer = (char *)&param4;
 
     rbind[8].buffer_type = MYSQL_TYPE_STRING;
-    rbind[8].buffer = properties;
-    rbind[8].is_null = &properties_are_null;
-    rbind[8].buffer_length = sizeof(properties);
-    rbind[8].length = &properties_size;
+    rbind[8].buffer = user_config;
+    rbind[8].is_null = &user_config_is_null;
+    rbind[8].buffer_length = sizeof(user_config);
+    rbind[8].length = &user_config_size;
 
-    rbind[9].buffer_type = MYSQL_TYPE_BLOB;
-    rbind[9].buffer = value;
-    rbind[9].buffer_length = SUPLA_CHANNELVALUE_SIZE;
-    rbind[9].is_null = &value_is_null;
+    rbind[9].buffer_type = MYSQL_TYPE_STRING;
+    rbind[9].buffer = properties;
+    rbind[9].is_null = &properties_are_null;
+    rbind[9].buffer_length = sizeof(properties);
+    rbind[9].length = &properties_size;
 
-    rbind[10].buffer_type = MYSQL_TYPE_LONG;
-    rbind[10].buffer = (char *)&validity_time_sec;
-    rbind[10].buffer_length = sizeof(unsigned _supla_int_t);
-    rbind[10].is_null = &validity_time_is_null;
+    rbind[10].buffer_type = MYSQL_TYPE_BLOB;
+    rbind[10].buffer = value;
+    rbind[10].buffer_length = SUPLA_CHANNELVALUE_SIZE;
+    rbind[10].is_null = &value_is_null;
+
+    rbind[11].buffer_type = MYSQL_TYPE_LONG;
+    rbind[11].buffer = (char *)&validity_time_sec;
+    rbind[11].buffer_length = sizeof(unsigned _supla_int_t);
+    rbind[11].is_null = &validity_time_is_null;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",

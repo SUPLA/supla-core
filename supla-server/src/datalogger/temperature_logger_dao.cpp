@@ -124,7 +124,7 @@ void supla_temperature_logger_dao::load(
   pbind[3].buffer_type = MYSQL_TYPE_LONG;
   pbind[3].buffer = (char *)&func3;
 
-  if (dba->stmt_execute((void **)&stmt, sql, pbind, 5, true)) {
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
     MYSQL_BIND rbind[4] = {};
     char value[SUPLA_CHANNELVALUE_SIZE] = {};
     int channel_id = 0;
