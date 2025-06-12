@@ -374,7 +374,8 @@ void supla_client_channel::proto_get_value(
   }
 
   if ((!result || (status && !status->is_online())) &&
-      isValueValidityTimeSet() && getValueValidityTimeUSec() > 0) {
+      isValueValidityTimeSet() && getValueValidityTimeUSec() > 0 &&
+      get_type() != SUPLA_CHANNELTYPE_VIRTUAL) {
     result = true;
     if (status) {
       status->set_offline(false);
