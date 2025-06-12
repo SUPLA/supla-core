@@ -63,7 +63,7 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
   pbind[1].buffer_type = MYSQL_TYPE_LONGLONG;
   pbind[1].buffer = (char *)&since_the_value_update_timestamp;
 
-  if (dba->stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
     int device_id = 0;
     int channel_id = 0;
     int type = 0;
