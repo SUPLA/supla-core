@@ -3912,6 +3912,7 @@ END IF;
 END;;
 
 ALTER TABLE supla_scene ADD active_from DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', ADD active_to DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', ADD active_hours VARCHAR(768) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD activity_conditions VARCHAR(1024) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`;;
+ALTER TABLE supla_iodevice ADD is_virtual TINYINT(1) DEFAULT 0 NOT NULL;;
 
 DROP VIEW IF EXISTS `supla_v_client_channel`;;
 CREATE ALGORITHM = UNDEFINED SQL SECURITY DEFINER VIEW `supla_v_client_channel` AS
@@ -3945,7 +3946,8 @@ select `c`.`id`                         AS `id`,
            WHEN `v`.`valid_to` >= utc_timestamp() THEN time_to_sec(timediff(`v`.`valid_to`, utc_timestamp()))
            ELSE NULL END                AS `validity_time_sec`,
        `c`.`user_config`                AS `user_config`,
-       `c`.`properties`                 AS `properties`
+       `c`.`properties`                 AS `properties`,
+       `d`.`is_virtual`                 AS `is_virtual`
 from (((((((`supla_dev_channel` `c` join `supla_iodevice` `d` on (`d`.`id` = `c`.`iodevice_id`)) join `supla_location` `l` on (`l`.`id` =
                                                                                                                                case ifnull(`c`.`location_id`, 0)
                                                                                                                                    when 0
