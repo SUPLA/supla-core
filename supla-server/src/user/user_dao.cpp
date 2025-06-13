@@ -179,7 +179,7 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
   return result;
 }
 
-vector<int> supla_user_dao::get_users_with_virtual_channels_online(void) {
+vector<int> supla_user_dao::get_users_with_virtual_channels(void) {
   vector<int> result;
 
   bool already_connected = dba->is_connected();
@@ -190,9 +190,8 @@ vector<int> supla_user_dao::get_users_with_virtual_channels_online(void) {
 
   MYSQL_STMT *stmt = NULL;
   const char sql[] =
-      "SELECT v.user_id FROM `supla_dev_channel` c, `supla_dev_channel_value` "
-      "v WHERE c.is_virtual = 1 AND v.channel_id = c.id AND v.`valid_to` >=  "
-      "utc_timestamp() GROUP BY user_id";
+      "SELECT user_id FROM `supla_dev_channel` WHERE is_virtual = 1 GROUP BY "
+      "user_id";
 
   if (dba->stmt_execute((void **)&stmt, sql, nullptr, 0, true)) {
     MYSQL_BIND rbind = {};

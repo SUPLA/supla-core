@@ -43,17 +43,11 @@ bool supla_virtual_channel_updater_cyclictask::user_access_needed(void) {
 
 void supla_virtual_channel_updater_cyclictask::run(
     const vector<supla_user *> *users, supla_abstract_db_access_provider *dba) {
-  for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-    (*uit)->get_devices()->update_virtual_channels();
-  }
-
   supla_user_dao dao(dba);
 
   // Load all users with virtual channels online
-  vector<int> users_with_vc = dao.get_users_with_virtual_channels_online();
+  vector<int> users_with_vc = dao.get_users_with_virtual_channels();
   for (auto it = users_with_vc.cbegin(); it != users_with_vc.cend(); ++it) {
-    if (!supla_user::find(*it, false)) {
-      supla_user::find(*it, true);  // It is enough that the user is created
-    }
+    supla_user::find(*it, true)->get_devices()->update_virtual_channels();
   }
 }

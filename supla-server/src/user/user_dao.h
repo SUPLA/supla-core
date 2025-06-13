@@ -34,7 +34,7 @@ class supla_user_dao : public supla_abstract_user_dao {
 
   virtual std::vector<supla_virtual_channel> get_virtual_channels(
       supla_user *user, long long int since_the_value_update_timestamp);
-  virtual std::vector<int> get_users_with_virtual_channels_online(void);
+  virtual std::vector<int> get_users_with_virtual_channels(void);
 };
 
 #endif /* SUPLA_USER_DAO_H_*/
