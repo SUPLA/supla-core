@@ -271,6 +271,12 @@ bool supla_user_devices::is_online(int id) {
   return result;
 }
 
+void supla_user_devices::on_channel_added(int device_id, int channel_id) {
+  lock();
+  virtual_channels_update_time = {};
+  unlock();
+}
+
 void supla_user_devices::on_channel_deleted(int device_id, int channel_id) {
   terminate(device_id);
 

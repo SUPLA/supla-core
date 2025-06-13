@@ -112,6 +112,8 @@ class supla_user {
   static void on_mqtt_settings_changed(int UserID);
   static void before_channel_function_change(int UserID, int ChannelID,
                                              const supla_caller &caller);
+  static void on_channel_added(int user_id, int device_id, int channel_id,
+                               const supla_caller &caller);
   static void before_device_delete(int UserID, int DeviceID,
                                    const supla_caller &caller);
   static void on_device_deleted(int UserID, int DeviceID,

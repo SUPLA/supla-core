@@ -464,6 +464,14 @@ void supla_user::before_channel_function_change(int UserID, int ChannelID,
 }
 
 // static
+void supla_user::on_channel_added(int user_id, int device_id, int channel_id,
+                                  const supla_caller &caller) {
+  supla_user::find(user_id, true)
+      ->get_devices()
+      ->on_channel_added(device_id, channel_id);
+}
+
+// static
 void supla_user::before_device_delete(int UserID, int DeviceID,
                                       const supla_caller &caller) {
   supla_mqtt_client_suite::globalInstance()->beforeDeviceDelete(UserID,
