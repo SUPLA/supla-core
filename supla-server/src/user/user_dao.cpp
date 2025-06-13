@@ -49,7 +49,8 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
       "time_to_sec(timediff(`v`.`valid_to`,utc_timestamp())) else NULL end AS "
       "`validity_time_sec` FROM `supla_dev_channel` c, "
       "`supla_dev_channel_value` v WHERE c.is_virtual = 1 AND v.channel_id = "
-      "c.id AND c.user_id = ? AND UNIX_TIMESTAMP(update_time) > ?";
+      "c.id AND c.user_id = ? AND UNIX_TIMESTAMP(CONVERT_TZ(update_time, "
+      "'UTC', @@session.time_zone)) > ?";
 
   MYSQL_STMT *stmt = nullptr;
   MYSQL_BIND pbind[2] = {};
