@@ -38,7 +38,7 @@ unsigned int supla_virtual_channel_updater_cyclictask::task_interval_sec(void) {
   return 60;
 }
 bool supla_virtual_channel_updater_cyclictask::user_access_needed(void) {
-  return true;
+  return false;
 }
 
 void supla_virtual_channel_updater_cyclictask::run(
