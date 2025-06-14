@@ -124,3 +124,17 @@ void supla_user_clients::update_json_config(int channel_id,
         client->update_json_config(channel_id, config_type, json_config);
       });
 }
+
+void supla_user_clients::on_channel_deleted(int channel_id) {
+  for_each([channel_id](std::shared_ptr<supla_client> client,
+                        bool *will_continue) -> void {
+    client->on_channel_deleted(channel_id);
+  });
+}
+
+void supla_user_clients::on_device_deleted(int device_id) {
+  for_each([device_id](std::shared_ptr<supla_client> client,
+                       bool *will_continue) -> void {
+    client->on_device_deleted(device_id);
+  });
+}

@@ -489,7 +489,8 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
   supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
-    user->get_devices()->terminate(DeviceID);
+    user->get_devices()->on_device_deleted(DeviceID);
+    user->get_clients()->on_device_deleted(DeviceID);
 
     supla_http_event_hub::on_device_deleted(user, DeviceID, caller);
 
@@ -504,6 +505,7 @@ void supla_user::on_channel_deleted(int user_id, int device_id, int channel_id,
 
   if (user) {
     user->get_devices()->on_channel_deleted(device_id, channel_id);
+    user->get_clients()->on_channel_deleted(channel_id);
 
     supla_http_event_hub::on_channel_deleted(user, device_id, channel_id,
                                              caller);

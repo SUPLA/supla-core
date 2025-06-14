@@ -289,3 +289,7 @@ void supla_user_devices::on_channel_deleted(int device_id, int channel_id) {
   }
   unlock();
 }
+
+void supla_user_devices::on_device_deleted(int device_id) {
+  terminate(device_id);
+}

@@ -407,3 +407,15 @@ void supla_client::update_json_config(int channel_id, unsigned char config_type,
     remote_update_lists();
   }
 }
+
+void supla_client::on_device_deleted(int device_id) {
+  if (get_channels()->get_any_channel_id_with_deviceid(device_id)) {
+    terminate();
+  }
+}
+
+void supla_client::on_channel_deleted(int channel_id) {
+  if (get_channels()->channel_exists(channel_id)) {
+    terminate();
+  }
+}
