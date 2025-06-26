@@ -118,6 +118,7 @@ class supla_client : public supla_abstract_connection_object {
                           supla_json_config *json_config);
   void on_device_deleted(int channel_id);
   void on_channel_deleted(int channel_id);
+  void on_channel_added(int channel_id);
   virtual ~supla_client();
 };
 

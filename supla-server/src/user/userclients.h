@@ -42,6 +42,7 @@ class supla_user_clients : public supla_connection_objects {
   void on_channel_value_changed(std::list<channel_address> addr_list,
                                 bool extended);
   void on_device_deleted(int device_id);
+  void on_channel_added(int channel_id);
   void on_channel_deleted(int channel_id);
   void call_event(TSC_SuplaEvent *event);
   void set_channel_caption(int channel_id, char *caption);

@@ -132,6 +132,13 @@ void supla_user_clients::on_channel_deleted(int channel_id) {
   });
 }
 
+void supla_user_clients::on_channel_added(int channel_id) {
+  for_each([channel_id](std::shared_ptr<supla_client> client,
+                        bool *will_continue) -> void {
+    client->on_channel_added(channel_id);
+  });
+}
+
 void supla_user_clients::on_device_deleted(int device_id) {
   for_each([device_id](std::shared_ptr<supla_client> client,
                        bool *will_continue) -> void {

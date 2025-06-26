@@ -466,9 +466,10 @@ void supla_user::before_channel_function_change(int UserID, int ChannelID,
 // static
 void supla_user::on_channel_added(int user_id, int device_id, int channel_id,
                                   const supla_caller &caller) {
-  supla_user::find(user_id, true)
-      ->get_devices()
-      ->on_channel_added(device_id, channel_id);
+  supla_user *user = supla_user::find(user_id, true);
+
+  user->get_devices()->on_channel_added(device_id, channel_id);
+  user->get_clients()->on_channel_added(channel_id);
 }
 
 // static
