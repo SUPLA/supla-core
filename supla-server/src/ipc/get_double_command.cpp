@@ -20,7 +20,8 @@
 
 #include <memory>
 
-#include "user.h"
+#include "device/channel_property_getter.h"
+#include "device/value/channel_floating_point_sensor_value.h"
 
 using std::shared_ptr;
 
@@ -32,10 +33,16 @@ bool supla_get_double_command::get_channel_double_value(int user_id,
                                                         int device_id,
                                                         int channel_id,
                                                         double *value) {
-  shared_ptr<supla_device> device =
-      supla_user::get_device(user_id, device_id, channel_id);
-  if (device != nullptr) {
-    return device->get_channels()->get_channel_double_value(channel_id, value);
+  supla_channel_property_getter getter;
+  supla_channel_floating_point_sensor_value *fpv =
+      getter.get_value_as<supla_channel_floating_point_sensor_value>(
+          user_id, device_id, channel_id);
+
+  if (fpv) {
+    *value = fpv->get_value();
+    delete fpv;
+    return true;
   }
+
   return false;
 }
