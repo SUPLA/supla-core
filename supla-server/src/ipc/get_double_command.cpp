@@ -18,12 +18,8 @@
 
 #include "ipc/get_double_command.h"
 
-#include <memory>
-
 #include "device/channel_property_getter.h"
 #include "device/value/channel_floating_point_sensor_value.h"
-
-using std::shared_ptr;
 
 supla_get_double_command::supla_get_double_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
