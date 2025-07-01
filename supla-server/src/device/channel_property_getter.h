@@ -24,14 +24,13 @@
 class supla_channel_property_getter
     : public supla_abstract_channel_property_getter {
  protected:
-  virtual supla_channel_value *_get_value(
+  virtual supla_abstract_channel_value *_get_value(
       int user_id, int device_id, int channel_id,
       supla_channel_fragment *fragment,
       supla_channel_availability_status *status);
   virtual int _get_func(int user_id, int device_id, int channel_id);
-  virtual supla_channel_extended_value *_get_extended_value(int user_id,
-                                                            int device_id,
-                                                            int channel_id);
+  virtual supla_abstract_channel_extended_value *_get_extended_value(
+      int user_id, int device_id, int channel_id);
   virtual supla_json_config *_get_detached_json_config(int user_id,
                                                        int device_id,
                                                        int channel_id);
@@ -41,6 +40,9 @@ class supla_channel_property_getter
 
  public:
   virtual ~supla_channel_property_getter(void);
+
+  virtual supla_channel_availability_status get_channel_availability_status(
+      int user_id, int device_id, int channel_id);
 };
 
 #endif /*PROPERTY_GETTER_H_*/

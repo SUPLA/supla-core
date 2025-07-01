@@ -27,11 +27,11 @@ using std::shared_ptr;
 
 supla_channel_property_getter::~supla_channel_property_getter(void) {}
 
-supla_channel_value *supla_channel_property_getter::_get_value(
+supla_abstract_channel_value *supla_channel_property_getter::_get_value(
     int user_id, int device_id, int channel_id,
     supla_channel_fragment *fragment,
     supla_channel_availability_status *status) {
-  supla_channel_value *result = nullptr;
+  supla_abstract_channel_value *result = nullptr;
 
   supla_user *user = supla_user::get_user(user_id);
   if (!user) {
@@ -46,13 +46,25 @@ supla_channel_value *supla_channel_property_getter::_get_value(
   }
 
   if (device == nullptr) {
-    if (status) {
+    supla_virtual_channel vc =
+        user->get_devices()->get_virtual_channel(channel_id);
+    if (vc.get_channel_id()) {
+      if (status) {
+        *status = vc.get_availability_status();
+      }
+
+      if (vc.get_value()) {
+        result = vc.get_value()->copy();
+      }
+
+    } else if (status) {
       status->set_offline(true);
     }
+
   } else {
     device->get_channels()->access_channel(
         channel_id, [&result, &status](supla_device_channel *channel) -> void {
-          result = channel->get_value<supla_channel_value>();
+          result = channel->get_value<supla_abstract_channel_value>();
           if (status) {
             *status = channel->get_availability_status();
           }
@@ -62,7 +74,34 @@ supla_channel_value *supla_channel_property_getter::_get_value(
   return result;
 }
 
-supla_channel_extended_value *
+supla_channel_availability_status
+supla_channel_property_getter::get_channel_availability_status(int user_id,
+                                                               int device_id,
+                                                               int channel_id) {
+  supla_channel_availability_status result(true);
+  supla_user *user = supla_user::get_user(user_id);
+  if (!user) {
+    return result;
+  }
+
+  shared_ptr<supla_device> device =
+      user->get_devices()->get(device_id, channel_id);
+
+  if (device) {
+    result =
+        device->get_channels()->get_channel_availability_status(channel_id);
+  } else {
+    supla_virtual_channel vc =
+        user->get_devices()->get_virtual_channel(channel_id);
+    if (vc.get_channel_id()) {
+      result = vc.get_availability_status();
+    }
+  }
+
+  return result;
+}
+
+supla_abstract_channel_extended_value *
 supla_channel_property_getter::_get_extended_value(int user_id, int device_id,
                                                    int channel_id) {
   supla_user *user = supla_user::get_user(user_id);
@@ -71,7 +110,7 @@ supla_channel_property_getter::_get_extended_value(int user_id, int device_id,
     return nullptr;
   }
 
-  supla_channel_extended_value *result = nullptr;
+  supla_abstract_channel_extended_value *result = nullptr;
 
   shared_ptr<supla_device> device =
       user->get_devices()->get(device_id, channel_id);
@@ -80,7 +119,9 @@ supla_channel_property_getter::_get_extended_value(int user_id, int device_id,
     device->get_channels()->access_channel(
         channel_id, [&result](supla_device_channel *channel) -> void {
           result =
-              channel->get_extended_value<supla_channel_extended_value>(false);
+              channel
+                  ->get_extended_value<supla_abstract_channel_extended_value>(
+                      false);
         });
   }
 
@@ -103,6 +144,11 @@ int supla_channel_property_getter::_get_func(int user_id, int device_id,
     supla_channel_fragment f =
         user->get_devices()->get_channel_fragment(channel_id);
     result = f.get_function();
+
+    if (!result) {
+      result = user->get_devices()->get_virtual_channel(channel_id).get_func();
+    }
+
   } else {
     device->get_channels()->access_channel(
         channel_id, [&result](supla_device_channel *channel) -> void {

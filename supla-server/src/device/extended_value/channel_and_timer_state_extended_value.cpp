@@ -125,7 +125,7 @@ bool supla_channel_and_timer_state_extended_value::is_ev_type_supported(
   return type == EV_TYPE_CHANNEL_AND_TIMER_STATE_V1;
 }
 
-supla_channel_extended_value *
+supla_abstract_channel_extended_value *
 supla_channel_and_timer_state_extended_value::copy(  // NOLINT
     void) {                                          // NOLINT
 

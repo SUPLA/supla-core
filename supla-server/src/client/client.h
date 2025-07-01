@@ -116,7 +116,9 @@ class supla_client : public supla_abstract_connection_object {
   void set_scene_caption(int scene_id, char *caption);
   void update_json_config(int channel_id, unsigned char config_type,
                           supla_json_config *json_config);
-
+  void on_device_deleted(int channel_id);
+  void on_channel_deleted(int channel_id);
+  void on_channel_added(int channel_id);
   virtual ~supla_client();
 };
 

@@ -32,6 +32,7 @@
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
 #include "device/value/channel_temphum_value.h"
+#include "device/value/channel_value.h"
 #include "device/value/channel_valve_value.h"
 
 namespace testing {
@@ -48,8 +49,8 @@ void MqttStateMessageProviderTest::SetUp() {
   provider.set_user_suid();
 }
 
-void MqttStateMessageProviderTest::SetResultValue(int func, bool connected,
-                                                  supla_channel_value *value) {
+void MqttStateMessageProviderTest::SetResultValue(
+    int func, bool connected, supla_abstract_channel_value *value) {
   EXPECT_CALL(propertyGetter,
               _get_value(Eq(123), Eq(456), Eq(789), NotNull(), NotNull()))
       .Times(1)

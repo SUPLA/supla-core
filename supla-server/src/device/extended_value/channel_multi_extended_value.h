@@ -19,13 +19,15 @@
 #ifndef CHANNEL_MULTI_EXTENDED_VALUE_H_
 #define CHANNEL_MULTI_EXTENDED_VALUE_H_
 
-#include "device/extended_value/channel_extended_value.h"
+#include "device/extended_value/abstract_channel_extended_value.h"
 
-class supla_channel_multi_extended_value : public supla_channel_extended_value {
+class supla_channel_multi_extended_value
+    : public supla_abstract_channel_extended_value {
  public:
   explicit supla_channel_multi_extended_value(
       const TSuplaChannelExtendedValue *value);
   virtual ~supla_channel_multi_extended_value(void);
+  virtual supla_abstract_channel_extended_value *copy(void);  // NOLINT
   virtual void set_raw_value(const TSuplaChannelExtendedValue *value);
   static bool is_ev_type_supported(char type);
 };

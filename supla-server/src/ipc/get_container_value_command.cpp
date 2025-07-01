@@ -33,19 +33,7 @@ supla_get_container_value_command::supla_get_container_value_command(
 
 supla_channel_container_value *supla_get_container_value_command::get_value(
     int user_id, int device_id, int channel_id) {
-  supla_channel_fragment fragment;
   supla_channel_property_getter getter;
-  supla_channel_value *result =
-      getter.get_value(user_id, device_id, channel_id, &fragment, nullptr);
-
-  if (result) {
-    supla_channel_container_value *value =
-        dynamic_cast<supla_channel_container_value *>(result);
-    if (!value) {
-      delete result;
-    }
-    return value;
-  }
-
-  return nullptr;
+  return getter.get_value_as<supla_channel_container_value>(user_id, device_id,
+                                                            channel_id);
 }

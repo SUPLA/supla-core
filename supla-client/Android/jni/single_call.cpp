@@ -25,6 +25,7 @@
 #include "push.h"
 #include "supla.h"
 #include "suplasinglecall.h"
+#include "srpc.h"
 
 void throwException(JNIEnv *env, const char *class_path, int result) {
   jclass cls = env->FindClass(class_path);
@@ -191,6 +192,44 @@ jobject getDoubleValueObject(JNIEnv *env, jdouble value) {
   return env->NewObject(cls, methodID, value);
 }
 
+jobject getElectricityMeterValues(JNIEnv *env,
+		TSC_GetChannelValueResult channelValueResult) {
+	if (channelValueResult.ExtendedValue.type
+			!= EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2
+			&& channelValueResult.ExtendedValue.type
+					!= EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V3) {
+		return getChannelValueObject(env);
+	}
+
+	TElectricityMeter_ExtendedValue_V3 em_ev = { };
+	if (!srpc_evtool_extended2emextended_latest(
+			&channelValueResult.ExtendedValue, &em_ev)) {
+		return getChannelValueObject(env);
+	}
+
+	jclass cls = env->FindClass(
+			"org/supla/android/lib/singlecall/ElectricityMeterValue");
+	jmethodID methodID = env->GetMethodID(cls, "<init>", "(JJI)V");
+
+	jlong total_fae_balanced = em_ev.total_forward_active_energy_balanced;
+	jlong total_rae_balanced = em_ev.total_reverse_active_energy_balanced;
+
+	jobject result = env->NewObject(cls, methodID, total_fae_balanced,
+			total_rae_balanced, em_ev.measured_values);
+
+	methodID = env->GetMethodID(cls, "addPhaseValue", "(JJJJ)V");
+	for (int i = 0; i < 3; i++) {
+		jlong fae = em_ev.total_forward_active_energy[i];
+		jlong rae = em_ev.total_reverse_active_energy[i];
+		jlong fre = em_ev.total_forward_reactive_energy[i];
+		jlong rre = em_ev.total_reverse_reactive_energy[i];
+
+		env->CallVoidMethod(result, methodID, fae, rae, fre, rre);
+	}
+
+	return result;
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
     JNIEnv *env, jobject thiz, jobject context, jobject auth_info,
@@ -271,13 +310,14 @@ Java_org_supla_android_lib_singlecall_SingleCall_getChannelValue(
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
       return getTemperatureAndHumidityObject(env, vresult.Function,
                                              vresult.Value.value);
-      break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       return getRollerShutterPositionObject(env, vresult.Value.value[0]);
     case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
     case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
       return getDoubleValueObject(env, *(double *)vresult.Value.value);
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+    	return getElectricityMeterValues(env, vresult);
   }
 
   return getChannelValueObject(env);

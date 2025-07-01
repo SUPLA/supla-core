@@ -37,8 +37,8 @@ class supla_mqtt_abstract_state_message_provider
   int channel_function;
   unsigned _supla_int64_t channel_flags;
 
-  supla_channel_value *channel_value;
-  supla_channel_extended_value *channel_extended_value;
+  supla_abstract_channel_value *channel_value;
+  supla_abstract_channel_extended_value *channel_extended_value;
 
  protected:
   int get_user_id(void);

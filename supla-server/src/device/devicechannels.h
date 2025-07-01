@@ -104,7 +104,7 @@ class supla_device_channels {
   bool get_channel_value(int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
                          supla_channel_availability_status *status,
                          unsigned _supla_int_t *validity_time_sec,
-                         supla_channel_extended_value **extended_value,
+                         supla_abstract_channel_extended_value **extended_value,
                          int *function, bool for_client);
   bool get_channel_double_value(int channel_id, double *value);
   bool get_channel_char_value(int channel_id, char *value);
@@ -134,8 +134,6 @@ class supla_device_channels {
                                      int group_id, unsigned char eol, int color,
                                      char color_brightness, char brightness,
                                      char on_off);
-
-  bool get_dgf_transparency(int channel_id, unsigned short *mask);
 
   std::vector<supla_channel_relation> get_channel_relations(
       int channel_id, e_relation_kind kind);
@@ -239,15 +237,16 @@ class supla_device_channels {
                                        bool is_open);
 
   void get_channel_values(
-      std::vector<supla_channel_value_envelope *> *result,
-      std::function<bool(supla_device_channel *channel, supla_channel_value *)>
+      std::vector<supla_abstract_channel_value_envelope *> *result,
+      std::function<bool(supla_device_channel *channel,
+                         supla_abstract_channel_value *)>
           filter);
 
   void send_configs_to_device(void);
 
   void get_channel_extended_values(
-      std::vector<supla_channel_extended_value_envelope *> *result,
-      std::function<bool(supla_channel_extended_value *)> filter,
+      std::vector<supla_abstract_channel_extended_value_envelope *> *result,
+      std::function<bool(supla_abstract_channel_extended_value *)> filter,
       bool for_data_logger_purposes);
 
   std::vector<supla_channel_fragment> get_fragments(void);

@@ -19,14 +19,15 @@
 #ifndef CHANNEL_DGF_VALUE_H_
 #define CHANNEL_DGF_VALUE_H_
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 #include "proto.h"
 
-class supla_channel_dgf_value : public supla_channel_value {
+class supla_channel_dgf_value : public supla_abstract_channel_value {
  public:
   explicit supla_channel_dgf_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_dgf_value(const TDigiglass_Value *value);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   const TDigiglass_Value *get_dgf_value(void);
   virtual void apply_channel_properties(int type,
                                         unsigned char protocol_version,

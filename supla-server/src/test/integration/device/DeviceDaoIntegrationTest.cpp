@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include "device/extended_value/channel_extended_value.h"
 #include "device/extended_value/channel_state_extended_value.h"
 #include "jsonconfig/channel/hvac_config.h"
 
@@ -489,7 +490,8 @@ TEST_F(DeviceDaoIntegrationTest, getExtendedValue) {
   runSqlScript("InsertExtendedValue.sql");
 
   EXPECT_EQ(dao->get_channel_extended_value(1, 2), nullptr);
-  supla_channel_extended_value *value = dao->get_channel_extended_value(2, 140);
+  supla_abstract_channel_extended_value *value =
+      dao->get_channel_extended_value(2, 140);
 
   ASSERT_NE(value, nullptr);
   EXPECT_NE(dynamic_cast<supla_channel_state_extended_value *>(value), nullptr);

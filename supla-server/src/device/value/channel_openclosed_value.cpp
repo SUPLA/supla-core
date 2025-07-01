@@ -21,15 +21,20 @@
 #include <string.h>
 
 supla_channel_openclosed_value::supla_channel_openclosed_value(void)
-    : supla_channel_value() {}
+    : supla_abstract_channel_value() {}
 
 supla_channel_openclosed_value::supla_channel_openclosed_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_abstract_channel_value(raw_value) {}
 
 supla_channel_openclosed_value::supla_channel_openclosed_value(bool closed)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   set_closed(closed);
+}
+
+supla_abstract_channel_value *supla_channel_openclosed_value::copy(  // NOLINT
+    void) const {                                                    // NOLINT
+  return new supla_channel_openclosed_value(raw_value);
 }
 
 void supla_channel_openclosed_value::set_closed(bool closed) {

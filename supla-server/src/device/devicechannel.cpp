@@ -39,6 +39,7 @@
 #include "jsonconfig/device/device_json_config.h"
 #include "lck.h"
 #include "user/user.h"
+#include "user/virtualchannel.h"
 #include "value/channel_openclosed_value.h"
 #include "vbt/value_based_triggers.h"
 
@@ -53,8 +54,8 @@ supla_device_channel::supla_device_channel(
     bool hidden, unsigned _supla_int64_t flags,
     const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec,
-    supla_channel_extended_value *extended_value, const char *user_config,
-    const char *properties, supla_channel_state *state)
+    supla_abstract_channel_extended_value *extended_value,
+    const char *user_config, const char *properties, supla_channel_state *state)
     : supla_abstract_common_channel_properties(),
       id(id),
       channel_number(channel_number),
@@ -361,21 +362,14 @@ void supla_device_channel::get_value(char value[SUPLA_CHANNELVALUE_SIZE]) {
 unsigned _supla_int_t supla_device_channel::get_value_validity_time_sec(void) {
   unsigned _supla_int_t result = 0;
   lock();
-  if (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec) {
-    struct timeval now;
-    gettimeofday(&now, nullptr);
-
-    if (now.tv_sec < value_valid_to.tv_sec) {
-      result = value_valid_to.tv_sec - now.tv_sec;
-    }
-  }
+  result = supla_virtual_channel::get_value_validity_time_sec(value_valid_to);
   unlock();
   return result;
 }
 
-supla_channel_extended_value *supla_device_channel::_get_extended_value(
-    bool for_data_logger_purposes) {
-  supla_channel_extended_value *result = nullptr;
+supla_abstract_channel_extended_value *
+supla_device_channel::_get_extended_value(bool for_data_logger_purposes) {
+  supla_abstract_channel_extended_value *result = nullptr;
   lock();
 
   if (for_data_logger_purposes) {
@@ -551,9 +545,9 @@ bool supla_device_channel::set_value(
     value_valid_to.tv_usec = 0;
   }
 
-  supla_channel_value *old_value = _get_value();
+  supla_abstract_channel_value *old_value = _get_value();
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
-  supla_channel_value *new_value = _get_value();
+  supla_abstract_channel_value *new_value = _get_value();
 
   new_value->apply_channel_properties(
       type, get_device()->get_connection()->get_protocol_version(), param1,
@@ -590,7 +584,7 @@ bool supla_device_channel::set_value(
                              validity_time_sec ? *validity_time_sec : 0);
   }
 
-  supla_channel_extended_value *eval = new_value->convert2extended(
+  supla_abstract_channel_extended_value *eval = new_value->convert2extended(
       json_config, func, &logger_purpose_extended_value);
 
   if (eval) {
@@ -612,10 +606,10 @@ bool supla_device_channel::set_value(
   return differ;
 }
 
-void supla_device_channel::on_value_changed(supla_channel_value *old_value,
-                                            supla_channel_value *new_value,
-                                            bool significant_change,
-                                            bool convertible2extended) {
+void supla_device_channel::on_value_changed(
+    supla_abstract_channel_value *old_value,
+    supla_abstract_channel_value *new_value, bool significant_change,
+    bool convertible2extended) {
   switch (get_func()) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
@@ -648,20 +642,21 @@ void supla_device_channel::on_value_changed(supla_channel_value *old_value,
 }
 
 void supla_device_channel::on_extended_value_changed(
-    supla_channel_extended_value *old_value,
-    supla_channel_extended_value *new_value) {
+    supla_abstract_channel_extended_value *old_value,
+    supla_abstract_channel_extended_value *new_value) {
   get_device()->get_user()->get_value_based_triggers()->on_value_changed(
       supla_caller(ctChannel, get_id()), get_id(), old_value, new_value);
 }
 
 void supla_device_channel::set_extended_value(
-    TSuplaChannelExtendedValue *ev, supla_channel_extended_value *new_value) {
+    TSuplaChannelExtendedValue *ev,
+    supla_abstract_channel_extended_value *new_value) {
   lock();
 
-  supla_channel_extended_value *old_value = extended_value;
+  supla_abstract_channel_extended_value *old_value = extended_value;
 
   if (ev) {
-    new_value = supla_channel_extended_value_factory::new_value(
+    new_value = supla_abstract_channel_extended_value_factory::new_value(
         ev, text_param1, param2, get_user());
     supla_channel_em_extended_value *em =
         dynamic_cast<supla_channel_em_extended_value *>(new_value);
@@ -1041,14 +1036,15 @@ void supla_device_channel::access_data_analyzer(
   unlock();
 }
 
-supla_channel_value *supla_device_channel::_get_value(void) {
+supla_abstract_channel_value *supla_device_channel::_get_value(void) {
   char value[SUPLA_CHANNELVALUE_SIZE] = {};
   get_value(value);
   int func = get_func();
 
   lock();
-  supla_channel_value *result = supla_channel_value_factory::new_value(
-      value, type, func, get_user(), param2, param3);
+  supla_abstract_channel_value *result =
+      supla_abstract_channel_value_factory::new_value(
+          value, type, func, get_user(), param2, param3);
   unlock();
 
   return result;

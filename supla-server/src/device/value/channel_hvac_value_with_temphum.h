@@ -32,7 +32,8 @@ class supla_channel_hvac_value_with_temphum : public supla_channel_hvac_value {
   explicit supla_channel_hvac_value_with_temphum(
       supla_channel_hvac_value *value);
   explicit supla_channel_hvac_value_with_temphum(
-      char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
 
   // !These methods do not affect raw_value!
   void set_temperature(short temperature);
@@ -43,7 +44,7 @@ class supla_channel_hvac_value_with_temphum : public supla_channel_hvac_value {
   double get_humidity_dbl(void);
   // ---------------------------------------
 
-  static void expand(supla_channel_value **value,
+  static void expand(supla_abstract_channel_value **value,
                      supla_channel_fragment *fragment,
                      supla_abstract_channel_property_getter *getter);
 };

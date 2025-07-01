@@ -84,7 +84,7 @@ supla_asynctask_http_request::get_property_getter(void) {
   return property_getter;
 }
 
-supla_channel_value *supla_asynctask_http_request::get_channel_value(
+supla_abstract_channel_value *supla_asynctask_http_request::get_channel_value(
     int *func, supla_channel_availability_status *status) {
   if (func) {
     *func = 0;
@@ -102,7 +102,7 @@ supla_channel_value *supla_asynctask_http_request::get_channel_value(
   return nullptr;
 }
 
-supla_channel_value *supla_asynctask_http_request::get_channel_value(
+supla_abstract_channel_value *supla_asynctask_http_request::get_channel_value(
     supla_channel_fragment *fragment,
     supla_channel_availability_status *status) {
   if (status) {
@@ -117,7 +117,7 @@ supla_channel_value *supla_asynctask_http_request::get_channel_value(
   return nullptr;
 }
 
-supla_channel_extended_value *
+supla_abstract_channel_extended_value *
 supla_asynctask_http_request::get_channel_extended_value(void) {
   if (property_getter) {
     return property_getter->get_extended_value(user_id, device_id, channel_id);

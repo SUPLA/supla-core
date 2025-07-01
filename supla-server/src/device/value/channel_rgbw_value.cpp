@@ -21,15 +21,20 @@
 #include <string.h>
 
 supla_channel_rgbw_value::supla_channel_rgbw_value(void)
-    : supla_channel_value() {}
+    : supla_abstract_channel_value() {}
 
 supla_channel_rgbw_value::supla_channel_rgbw_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_abstract_channel_value(raw_value) {}
 
 supla_channel_rgbw_value::supla_channel_rgbw_value(TRGBW_Value *rgbw)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   set_rgbw(rgbw);
+}
+
+supla_abstract_channel_value *supla_channel_rgbw_value::copy(  // NOLINT
+    void) const {                                              // NOLINT
+  return new supla_channel_rgbw_value(raw_value);
 }
 
 void supla_channel_rgbw_value::set_rgbw(TRGBW_Value *rgbw) {

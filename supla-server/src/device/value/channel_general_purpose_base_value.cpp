@@ -26,12 +26,18 @@ using std::string;
 
 supla_channel_general_purpose_base_value::
     supla_channel_general_purpose_base_value()
-    : supla_channel_value() {}
+    : supla_abstract_channel_value() {}
 
 supla_channel_general_purpose_base_value::
     supla_channel_general_purpose_base_value(
         const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    : supla_abstract_channel_value(raw_value) {}
+
+supla_abstract_channel_value *
+supla_channel_general_purpose_base_value::copy(  // NOLINT
+    void) const {                                // NOLINT
+  return new supla_channel_general_purpose_base_value(raw_value);
+}
 
 double supla_channel_general_purpose_base_value::get_value(void) {
   return *(double *)raw_value;

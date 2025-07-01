@@ -36,20 +36,15 @@ bool supla_get_gpm_value_command::get_gpm_value(int user_id, int device_id,
   bool result = false;
 
   supla_channel_property_getter getter;
-  supla_channel_value *channel_value =
-      getter.get_value(user_id, device_id, channel_id,
-                       (supla_channel_fragment *)nullptr, nullptr);
 
-  if (channel_value) {
-    supla_channel_general_purpose_base_value *gpm_val =
-        dynamic_cast<supla_channel_general_purpose_base_value *>(channel_value);
+  supla_channel_general_purpose_base_value *gpm_val =
+      getter.get_value_as<supla_channel_general_purpose_base_value>(
+          user_id, device_id, channel_id);
 
-    if (gpm_val) {
-      *value = gpm_val->get_value();
-      result = true;
-    }
-
-    delete channel_value;
+  if (gpm_val) {
+    *value = gpm_val->get_value();
+    result = true;
+    delete gpm_val;
   }
 
   return result;

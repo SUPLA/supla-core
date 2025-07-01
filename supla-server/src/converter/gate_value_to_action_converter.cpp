@@ -20,7 +20,7 @@
 #include "device/value/channel_gate_value.h"
 
 bool gate_value_to_action_converter::convert(
-    supla_channel_value *value,
+    supla_abstract_channel_value *value,
     supla_abstract_action_executor *action_executor) {
   supla_channel_gate_value *gval =
       dynamic_cast<supla_channel_gate_value *>(value);

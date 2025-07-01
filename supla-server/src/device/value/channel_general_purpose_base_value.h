@@ -21,9 +21,10 @@
 
 #include <string>
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 
-class supla_channel_general_purpose_base_value : public supla_channel_value {
+class supla_channel_general_purpose_base_value
+    : public supla_abstract_channel_value {
  private:
   std::string value_to_str(double value, std::string *nan);
 
@@ -31,6 +32,7 @@ class supla_channel_general_purpose_base_value : public supla_channel_value {
   supla_channel_general_purpose_base_value();
   explicit supla_channel_general_purpose_base_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
 
   virtual void apply_channel_properties(int type,
                                         unsigned char protocol_version,

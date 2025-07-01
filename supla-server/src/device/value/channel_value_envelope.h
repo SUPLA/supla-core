@@ -19,18 +19,19 @@
 #ifndef CHANNEL_VALUE_ENVELOPE_H_
 #define CHANNEL_VALUE_ENVELOPE_H_
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 
-class supla_channel_value_envelope {
+class supla_abstract_channel_value_envelope {
  private:
   int channel_id;
-  supla_channel_value *value;
+  supla_abstract_channel_value *value;
 
  public:
-  supla_channel_value_envelope(int channel_id, supla_channel_value *value);
-  virtual ~supla_channel_value_envelope(void);
+  supla_abstract_channel_value_envelope(int channel_id,
+                                        supla_abstract_channel_value *value);
+  virtual ~supla_abstract_channel_value_envelope(void);
   int get_channel_id(void);
-  supla_channel_value *get_value(void);
+  supla_abstract_channel_value *get_value(void);
 };
 
 #endif /*CHANNEL_VALUE_ENVELOPE_H_*/

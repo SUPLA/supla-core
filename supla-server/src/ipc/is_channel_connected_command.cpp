@@ -20,7 +20,7 @@
 
 #include <memory>
 
-#include "user.h"
+#include "device/channel_property_getter.h"
 
 using std::shared_ptr;
 
@@ -32,13 +32,6 @@ supla_channel_availability_status
 supla_is_channel_connected_command::get_availability_status(int user_id,
                                                             int device_id,
                                                             int channel_id) {
-  supla_channel_availability_status result(true);
-
-  shared_ptr<supla_device> device =
-      supla_user::get_device(user_id, device_id, channel_id);
-  if (device != nullptr) {
-    result =
-        device->get_channels()->get_channel_availability_status(channel_id);
-  }
-  return result;
+  supla_channel_property_getter getter;
+  return getter.get_channel_availability_status(user_id, device_id, channel_id);
 }

@@ -26,14 +26,19 @@ using std::map;
 using std::string;
 
 supla_channel_hvac_value::supla_channel_hvac_value(void)
-    : supla_channel_value() {}
+    : supla_abstract_channel_value() {}
 
 supla_channel_hvac_value::supla_channel_hvac_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_abstract_channel_value(raw_value) {}
 
 void supla_channel_hvac_value::clear(void) {
   memset(raw_value, 0, SUPLA_CHANNELVALUE_SIZE);
+}
+
+supla_abstract_channel_value *supla_channel_hvac_value::copy(  // NOLINT
+    void) const {                                              // NOLINT
+  return new supla_channel_hvac_value(raw_value);
 }
 
 void supla_channel_hvac_value::set_mode(unsigned char mode) {
@@ -279,7 +284,8 @@ string supla_channel_hvac_value::mode_to_string(void) {
 }
 
 map<string, string> supla_channel_hvac_value::get_replacement_map(void) {
-  map<string, string> result = supla_channel_value::get_replacement_map();
+  map<string, string> result =
+      supla_abstract_channel_value::get_replacement_map();
 
   result["mode"] = mode_to_string();
   result["setpoint_temperature_heat"] = get_setpoint_temperature_heat_str();

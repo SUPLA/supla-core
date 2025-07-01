@@ -36,14 +36,14 @@ unsigned int supla_impulse_logger::task_interval_sec(void) { return 600; }
 
 void supla_impulse_logger::run(const vector<supla_user *> *users,
                                supla_abstract_db_access_provider *dba) {
-  std::vector<supla_channel_extended_value_envelope *> env;
+  std::vector<supla_abstract_channel_extended_value_envelope *> env;
 
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
     (*uit)->get_devices()->for_each(
         [&env](shared_ptr<supla_device> device, bool *will_continue) -> void {
           device->get_channels()->get_channel_extended_values(
               &env,
-              [](supla_channel_extended_value *value) -> bool {
+              [](supla_abstract_channel_extended_value *value) -> bool {
                 return dynamic_cast<supla_channel_ic_extended_value *>(value) !=
                        nullptr;
               },

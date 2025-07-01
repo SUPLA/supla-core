@@ -19,13 +19,15 @@
 #ifndef CHANNEL_FLOATING_POINT_SENSOR_VALUE_H_
 #define CHANNEL_FLOATING_POINT_SENSOR_VALUE_H_
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 
-class supla_channel_floating_point_sensor_value : public supla_channel_value {
+class supla_channel_floating_point_sensor_value
+    : public supla_abstract_channel_value {
  public:
   supla_channel_floating_point_sensor_value(void);
   explicit supla_channel_floating_point_sensor_value(
-      char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   explicit supla_channel_floating_point_sensor_value(double value);
   void set_value(double value);
   double get_value(void);

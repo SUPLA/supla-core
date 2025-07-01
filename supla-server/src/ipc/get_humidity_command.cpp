@@ -18,11 +18,7 @@
 
 #include "ipc/get_humidity_command.h"
 
-#include <memory>
-
-#include "user.h"
-
-using std::shared_ptr;
+#include "device/channel_property_getter.h"
 
 supla_get_humidity_command::supla_get_humidity_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
@@ -33,20 +29,20 @@ bool supla_get_humidity_command::get_channel_humidity_value(int user_id,
                                                             int channel_id,
                                                             double *value) {
   bool result = false;
-  shared_ptr<supla_device> device =
-      supla_user::get_device(user_id, device_id, channel_id);
-  if (device != nullptr) {
-    supla_channel_temphum_value *temphum =
-        device->get_channels()->get_channel_value<supla_channel_temphum_value>(
-            channel_id);
-    if (temphum) {
-      if (temphum->is_humidity_available()) {
-        *value = temphum->get_humidity();
-        result = true;
-      }
 
-      delete temphum;
+  supla_channel_property_getter getter;
+  supla_channel_temphum_value *temphum =
+      getter.get_value_as<supla_channel_temphum_value>(user_id, device_id,
+                                                       channel_id);
+
+  if (temphum) {
+    if (temphum->is_humidity_available()) {
+      *value = temphum->get_humidity();
+      result = true;
     }
+
+    delete temphum;
   }
+
   return result;
 }

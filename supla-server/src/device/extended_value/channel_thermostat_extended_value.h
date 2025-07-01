@@ -19,19 +19,19 @@
 #ifndef CHANNEL_THERMOSTAT_EXTENDED_VALUE_H_
 #define CHANNEL_THERMOSTAT_EXTENDED_VALUE_H_
 
-#include "device/extended_value/channel_extended_value.h"
+#include "device/extended_value/abstract_channel_extended_value.h"
 
 class supla_channel_thermostat_extended_value
-    : public supla_channel_extended_value {
+    : public supla_abstract_channel_extended_value {
  public:
   explicit supla_channel_thermostat_extended_value(
       const TSuplaChannelExtendedValue *value);
   explicit supla_channel_thermostat_extended_value(
-      const supla_channel_extended_value *value);
+      const supla_abstract_channel_extended_value *value);
   virtual ~supla_channel_thermostat_extended_value(void);
   short get_flags(unsigned char idx);
   static bool is_ev_type_supported(char type);
-  virtual supla_channel_extended_value *copy(void);  // NOLINT
+  virtual supla_abstract_channel_extended_value *copy(void);  // NOLINT
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 

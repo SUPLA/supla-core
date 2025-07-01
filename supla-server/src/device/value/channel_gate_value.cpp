@@ -27,14 +27,14 @@
 using std::shared_ptr;
 
 supla_channel_gate_value::supla_channel_gate_value(void)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   opening_sensor_level = gsl_unknown;
   partial_opening_sensor_level = gsl_unknown;
 }
 
 supla_channel_gate_value::supla_channel_gate_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_abstract_channel_value(raw_value) {
   opening_sensor_level = gsl_unknown;
   partial_opening_sensor_level = gsl_unknown;
 }
@@ -42,9 +42,18 @@ supla_channel_gate_value::supla_channel_gate_value(
 supla_channel_gate_value::supla_channel_gate_value(
     _gate_sensor_level_enum opening_sensor_level,
     _gate_sensor_level_enum partial_opening_sensor_level)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   this->opening_sensor_level = opening_sensor_level;
   this->partial_opening_sensor_level = partial_opening_sensor_level;
+}
+
+supla_abstract_channel_value *supla_channel_gate_value::copy(  // NOLINT
+    void) const {                                              // NOLINT
+  supla_channel_gate_value *result = new supla_channel_gate_value(raw_value);
+  result->opening_sensor_level = opening_sensor_level;
+  result->partial_opening_sensor_level = partial_opening_sensor_level;
+
+  return result;
 }
 
 _gate_sensor_level_enum supla_channel_gate_value::get_opening_sensor_level(

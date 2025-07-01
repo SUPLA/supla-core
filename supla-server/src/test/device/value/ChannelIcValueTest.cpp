@@ -76,8 +76,8 @@ TEST_F(ChannelIcValueTest, convertToExtended) {
       "{\"impulsesPerUnit\":10,\"initialValue\":50000,\"addToHistory\":false,"
       "\"unit\":\"Unit\",\"currency\":\"PLN\",\"pricePerUnit\":45000}");
 
-  supla_channel_extended_value *data_logger_purpose = nullptr;
-  supla_channel_extended_value *ev = v1.convert2extended(
+  supla_abstract_channel_extended_value *data_logger_purpose = nullptr;
+  supla_abstract_channel_extended_value *ev = v1.convert2extended(
       &config2, SUPLA_CHANNELFNC_IC_ELECTRICITY_METER, &data_logger_purpose);
 
   EXPECT_TRUE(data_logger_purpose != nullptr);

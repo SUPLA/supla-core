@@ -19,13 +19,15 @@
 #ifndef CHANNEL_RGBW_VALUE_H_
 #define CHANNEL_RGBW_VALUE_H_
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 
-class supla_channel_rgbw_value : public supla_channel_value {
+class supla_channel_rgbw_value : public supla_abstract_channel_value {
  public:
   supla_channel_rgbw_value(void);
-  explicit supla_channel_rgbw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_rgbw_value(
+      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_rgbw_value(TRGBW_Value *rgbw);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   void set_rgbw(TRGBW_Value *rgbw);
   void get_rgbw(TRGBW_Value *rgbw);
   void get_rgbw(int *color, char *color_brightness, char *brightness);

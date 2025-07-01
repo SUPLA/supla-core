@@ -27,6 +27,11 @@ supla_channel_general_purpose_measurement_value::
         const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_general_purpose_base_value(raw_value) {}
 
+supla_abstract_channel_value*
+supla_channel_general_purpose_measurement_value::copy(void) const {  // NOLINT
+  return new supla_channel_general_purpose_measurement_value(raw_value);
+}
+
 // static
 bool supla_channel_general_purpose_measurement_value::is_function_supported(
     int func) {

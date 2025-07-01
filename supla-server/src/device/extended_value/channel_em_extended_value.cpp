@@ -30,14 +30,14 @@ using std::string;
 
 supla_channel_em_extended_value::supla_channel_em_extended_value(
     const TSuplaChannelExtendedValue *value)
-    : supla_channel_extended_value(), supla_channel_billing_value() {
+    : supla_abstract_channel_extended_value(), supla_channel_billing_value() {
   set_raw_value(value, nullptr, nullptr);
 }
 
 supla_channel_em_extended_value::supla_channel_em_extended_value(
     const TSuplaChannelExtendedValue *value, const char *text_param1,
     int param2)
-    : supla_channel_extended_value(), supla_channel_billing_value() {
+    : supla_abstract_channel_extended_value(), supla_channel_billing_value() {
   set_raw_value(value, text_param1, &param2);
 }
 
@@ -119,7 +119,7 @@ void supla_channel_em_extended_value::set_raw_value(
     }
   }
 
-  supla_channel_extended_value::set_raw_value(&new_value);
+  supla_abstract_channel_extended_value::set_raw_value(&new_value);
 }
 
 supla_channel_em_extended_value::~supla_channel_em_extended_value(void) {}
@@ -386,7 +386,7 @@ double supla_channel_em_extended_value::get_rae_balanced(void) {
 bool supla_channel_em_extended_value::get_raw_value(
     TSuplaChannelExtendedValue *value) {
   return is_ev_type_supported(get_type()) &&
-         supla_channel_extended_value::get_raw_value(value);
+         supla_abstract_channel_extended_value::get_raw_value(value);
 }
 
 bool supla_channel_em_extended_value::get_raw_value(
@@ -425,7 +425,7 @@ bool supla_channel_em_extended_value::get_raw_value(
   return false;
 }
 
-supla_channel_extended_value *supla_channel_em_extended_value::
+supla_abstract_channel_extended_value *supla_channel_em_extended_value::
     supla_channel_em_extended_value::copy(  // NOLINT
         void) {                             // NOLINT
   supla_channel_em_extended_value *result = new supla_channel_em_extended_value(

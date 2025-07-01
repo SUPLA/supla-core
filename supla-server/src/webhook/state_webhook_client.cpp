@@ -71,7 +71,7 @@ void supla_state_webhook_client::set_channel_connected(bool connected) {
 }
 
 void supla_state_webhook_client::set_channel_value(
-    supla_channel_value *channel_value) {
+    supla_abstract_channel_value *channel_value) {
   if (this->channel_value) {
     delete channel_value;
   }
@@ -80,7 +80,7 @@ void supla_state_webhook_client::set_channel_value(
 }
 
 void supla_state_webhook_client::set_channel_extended_value(
-    supla_channel_extended_value *channel_extended_value) {
+    supla_abstract_channel_extended_value *channel_extended_value) {
   if (this->channel_extended_value) {
     delete channel_extended_value;
   }

@@ -25,12 +25,17 @@ using std::shared_ptr;
 
 supla_channel_fb_value::supla_channel_fb_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    : supla_abstract_channel_value(raw_value) {}
 
 supla_channel_fb_value::supla_channel_fb_value(
     const TDSC_FacadeBlindValue *value)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   memcpy(raw_value, value, sizeof(TDSC_FacadeBlindValue));
+}
+
+supla_abstract_channel_value *supla_channel_fb_value::copy(  // NOLINT
+    void) const {                                            // NOLINT
+  return new supla_channel_fb_value(raw_value);
 }
 
 const TDSC_FacadeBlindValue *supla_channel_fb_value::get_fb_value(void) {

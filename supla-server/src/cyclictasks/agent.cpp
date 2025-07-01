@@ -34,6 +34,7 @@
 #include "datalogger/voltage_logger.h"
 #include "db/db_access_provider.h"
 #include "sthread.h"
+#include "user/virtual_channel_updater_cyclictask.h"
 
 using std::vector;
 
@@ -49,6 +50,7 @@ supla_cyclictasks_agent::supla_cyclictasks_agent() {
   add(new supla_auto_gate_closing());
   add(new supla_general_purpose_measurement_logger());
   add(new supla_general_purpose_meter_logger());
+  add(new supla_virtual_channel_updater_cyclictask());
 
   // Refreshing tokens at the end
   add(new supla_alexa_access_token_refresh_cyclictask());

@@ -21,10 +21,11 @@
 
 #include <string>
 
-#include "device/extended_value/channel_extended_value.h"
+#include "device/extended_value/abstract_channel_extended_value.h"
 
 class supla_user;
-class supla_timer_state_extended_value : public supla_channel_extended_value {
+class supla_timer_state_extended_value
+    : public supla_abstract_channel_extended_value {
  protected:
   virtual std::string get_sender_name(supla_user *user, int client_id);
   void update_sender_name(supla_user *user);
@@ -45,7 +46,7 @@ class supla_timer_state_extended_value : public supla_channel_extended_value {
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
   static bool is_ev_type_supported(char type);
   static bool valid_size(size_t size);
-  virtual supla_channel_extended_value *copy(void);  // NOLINT
+  virtual supla_abstract_channel_extended_value *copy(void);  // NOLINT
 };
 
 #endif /*TIMER_STATE_EXTENDED_VALUE_H_*/

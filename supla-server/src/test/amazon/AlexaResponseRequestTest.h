@@ -23,8 +23,8 @@
 
 #include "asynctask/AsyncTaskTest.h"
 #include "caller.h"
-#include "device/extended_value/channel_extended_value.h"
-#include "device/value/channel_value.h"
+#include "device/extended_value/abstract_channel_extended_value.h"
+#include "device/value/abstract_channel_value.h"
 #include "doubles/amazon/AlexaCredentialsMock.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "doubles/http/CurlAdapterMock.h"
@@ -39,16 +39,17 @@ class AlexaResponseRequestTest : public AsyncTaskTest {
 
  public:
   virtual void SetUp(void);
-  void makeTest(int func, bool online, supla_channel_value *value,
+  void makeTest(int func, bool online, supla_abstract_channel_value *value,
                 const char *expectedPayload,
                 const std::string &correlation_token);
 
-  void makeTest(int func, bool online, supla_channel_value *value,
+  void makeTest(int func, bool online, supla_abstract_channel_value *value,
                 const char *expectedPayload);
 
-  void hvacThermostatTest(int func, bool online, supla_channel_value *hvacValue,
-                          supla_channel_value *tempHumValue,
-                          supla_channel_extended_value *extendedValue,
+  void hvacThermostatTest(int func, bool online,
+                          supla_abstract_channel_value *hvacValue,
+                          supla_abstract_channel_value *tempHumValue,
+                          supla_abstract_channel_extended_value *extendedValue,
                           const char *expectedPayload,
                           const std::string &correlation_token);
 };

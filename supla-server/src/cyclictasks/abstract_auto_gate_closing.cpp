@@ -43,7 +43,7 @@ supla_abstract_auto_gate_closing::get_opening_sensor_level(
   supla_abstract_channel_property_getter *property_getter =
       get_property_getter();
 
-  supla_channel_value *value = property_getter->get_value(
+  supla_abstract_channel_value *value = property_getter->get_value(
       item->user_id, item->device_id, item->channel_id);
 
   release_property_getter(property_getter);

@@ -20,7 +20,7 @@
 #define WEBHOOK_STATE_WEBHOOK_CLIENT_H_
 
 #include "device/extended_value/channel_ic_extended_value.h"
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 #include "http/abstract_curl_adapter.h"
 #include "json/cJSON.h"
 #include "webhook/state_webhook_credentials.h"
@@ -32,8 +32,8 @@ class supla_state_webhook_client {
   __time_t timestamp;
   supla_abstract_curl_adapter *curl_adapter;
   supla_state_webhook_credentials *credentials;
-  supla_channel_value *channel_value;
-  supla_channel_extended_value *channel_extended_value;
+  supla_abstract_channel_value *channel_value;
+  supla_abstract_channel_extended_value *channel_extended_value;
 
   cJSON *get_header(const char *function);
   void refresh_token(void);
@@ -56,9 +56,9 @@ class supla_state_webhook_client {
   ~supla_state_webhook_client(void);
 
   void set_channel_connected(bool connected);
-  void set_channel_value(supla_channel_value *channel_value);
+  void set_channel_value(supla_abstract_channel_value *channel_value);
   void set_channel_extended_value(
-      supla_channel_extended_value *channel_extended_value);
+      supla_abstract_channel_extended_value *channel_extended_value);
 
   bool power_switch_report(void);
   bool light_switch_report(void);

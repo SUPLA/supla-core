@@ -20,7 +20,7 @@
 #include "device/value/channel_rs_value.h"
 
 bool rs_value_to_action_converter::convert(
-    supla_channel_value *value,
+    supla_abstract_channel_value *value,
     supla_abstract_action_executor *action_executor) {
   supla_channel_rs_value *rs_value =
       dynamic_cast<supla_channel_rs_value *>(value);

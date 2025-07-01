@@ -34,7 +34,7 @@ supla_timer_state_extended_value::supla_timer_state_extended_value(
 
 supla_timer_state_extended_value::supla_timer_state_extended_value(
     const TSuplaChannelExtendedValue *value, supla_user *user)
-    : supla_channel_extended_value() {
+    : supla_abstract_channel_extended_value() {
   set_raw_value_with_update(value, user);
 }
 
@@ -140,7 +140,7 @@ void supla_timer_state_extended_value::set_raw_value(
       memcpy(ev->value, value, size);
     }
   } else {
-    supla_channel_extended_value::set_raw_value(nullptr);
+    supla_abstract_channel_extended_value::set_raw_value(nullptr);
   }
 }
 
@@ -151,7 +151,7 @@ void supla_timer_state_extended_value::set_raw_value(
           SUPLA_SENDER_NAME_MAXSIZE) {
     set_raw_value((TTimerState_ExtendedValue *)value->value, value->type);
   } else {
-    supla_channel_extended_value::set_raw_value(nullptr);
+    supla_abstract_channel_extended_value::set_raw_value(nullptr);
   }
 }
 
@@ -174,14 +174,14 @@ bool supla_timer_state_extended_value::get_raw_value(
 
 bool supla_timer_state_extended_value::get_raw_value(
     TSuplaChannelExtendedValue *value) {
-  return supla_channel_extended_value::get_raw_value(value);
+  return supla_abstract_channel_extended_value::get_raw_value(value);
 }
 
-supla_channel_extended_value *supla_timer_state_extended_value::copy(  // NOLINT
+supla_abstract_channel_extended_value *supla_timer_state_extended_value::copy(  // NOLINT
     void) {                                                            // NOLINT
   supla_timer_state_extended_value *result =
       new supla_timer_state_extended_value(nullptr, nullptr);
-  result->supla_channel_extended_value::set_raw_value(get_value_ptr());
+  result->supla_abstract_channel_extended_value::set_raw_value(get_value_ptr());
 
   return result;
 }

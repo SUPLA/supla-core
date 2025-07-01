@@ -26,7 +26,7 @@ class abstract_value_to_action_converter {
  public:
   abstract_value_to_action_converter(void);
 
-  virtual bool convert(supla_channel_value *value,
+  virtual bool convert(supla_abstract_channel_value *value,
                        supla_abstract_action_executor *action_executor) = 0;
   virtual ~abstract_value_to_action_converter();
 };

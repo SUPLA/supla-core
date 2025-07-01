@@ -22,12 +22,17 @@
 
 supla_channel_container_value::supla_channel_container_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    : supla_abstract_channel_value(raw_value) {}
 
 supla_channel_container_value::supla_channel_container_value(
     const TContainerChannel_Value *value)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   memcpy(raw_value, value, sizeof(TContainerChannel_Value));
+}
+
+supla_abstract_channel_value *supla_channel_container_value::copy(  // NOLINT
+    void) const {                                                   // NOLINT
+  return new supla_channel_container_value(raw_value);
 }
 
 bool supla_channel_container_value::get_level(unsigned char *level) {

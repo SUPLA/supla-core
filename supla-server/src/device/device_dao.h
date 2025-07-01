@@ -109,8 +109,8 @@ class supla_device_dao : public supla_abstract_device_dao {
                                     const char value[SUPLA_CHANNELVALUE_SIZE],
                                     unsigned _supla_int_t validity_time_sec);
 
-  virtual void update_channel_extended_value(int channel_id, int user_id,
-                                             supla_channel_extended_value *ev);
+  virtual void update_channel_extended_value(
+      int channel_id, int user_id, supla_abstract_channel_extended_value *ev);
 
   virtual void update_channel_functions(int channel_id, int user_id, int flist);
 
@@ -134,7 +134,7 @@ class supla_device_dao : public supla_abstract_device_dao {
   virtual void set_subdevice_details(int device_id,
                                      TDS_SubdeviceDetails *details);
 
-  virtual supla_channel_extended_value *get_channel_extended_value(
+  virtual supla_abstract_channel_extended_value *get_channel_extended_value(
       int user_id, int channel_id);
 
   virtual void update_channel_state(int channel_id, int user_id,

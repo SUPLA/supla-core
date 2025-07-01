@@ -112,6 +112,8 @@ class supla_user {
   static void on_mqtt_settings_changed(int UserID);
   static void before_channel_function_change(int UserID, int ChannelID,
                                              const supla_caller &caller);
+  static void on_channel_added(int user_id, int device_id, int channel_id,
+                               const supla_caller &caller);
   static void before_device_delete(int UserID, int DeviceID,
                                    const supla_caller &caller);
   static void on_device_deleted(int UserID, int DeviceID,
@@ -136,7 +138,7 @@ class supla_user {
   bool get_channel_value(
       int device_id, int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
       char sub_value[SUPLA_CHANNELVALUE_SIZE], char *sub_value_type,
-      supla_channel_extended_value **extended_value, int *function,
+      supla_abstract_channel_extended_value **extended_value, int *function,
       supla_channel_availability_status *status,
       unsigned _supla_int_t *validity_time_sec, bool for_client);
 

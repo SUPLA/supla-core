@@ -21,15 +21,20 @@
 #include <string.h>
 
 supla_channel_onoff_value::supla_channel_onoff_value(void)
-    : supla_channel_value() {}
+    : supla_abstract_channel_value() {}
 
 supla_channel_onoff_value::supla_channel_onoff_value(
-    char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_abstract_channel_value(raw_value) {}
 
 supla_channel_onoff_value::supla_channel_onoff_value(bool on)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   set_on(on);
+}
+
+supla_abstract_channel_value *supla_channel_onoff_value::copy(  // NOLINT
+    void) const {                                               // NOLINT
+  return new supla_channel_onoff_value(raw_value);
 }
 
 void supla_channel_onoff_value::set_on(bool on) {

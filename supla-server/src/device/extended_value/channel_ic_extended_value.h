@@ -21,12 +21,13 @@
 
 #include <string>
 
+#include "device/extended_value/abstract_channel_extended_value.h"
 #include "device/extended_value/channel_billing_value.h"
-#include "device/extended_value/channel_extended_value.h"
 #include "jsonconfig/json_config.h"
 
-class supla_channel_ic_extended_value : public supla_channel_extended_value,
-                                        private supla_channel_billing_value {
+class supla_channel_ic_extended_value
+    : public supla_abstract_channel_extended_value,
+      private supla_channel_billing_value {
  public:
   explicit supla_channel_ic_extended_value(
       const TSuplaChannelExtendedValue *value);
@@ -45,7 +46,7 @@ class supla_channel_ic_extended_value : public supla_channel_extended_value,
   double get_calculated_value_dbl(void);
   static bool is_function_supported(int func);
   static bool is_ev_type_supported(char type);
-  virtual supla_channel_extended_value *copy(void);  // NOLINT
+  virtual supla_abstract_channel_extended_value *copy(void);  // NOLINT
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 

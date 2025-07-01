@@ -45,7 +45,7 @@ supla_general_purpose_measurement_analyzer::
     ~supla_general_purpose_measurement_analyzer(void) {}
 
 void supla_general_purpose_measurement_analyzer::add_sample(
-    supla_channel_value *value, supla_json_config *config) {
+    supla_abstract_channel_value *value, supla_json_config *config) {
   supla_channel_general_purpose_measurement_value *gpm_val =
       dynamic_cast<supla_channel_general_purpose_measurement_value *>(value);
   if (gpm_val) {
@@ -101,7 +101,7 @@ double supla_general_purpose_measurement_analyzer::get_any_last(void) {
 
 void supla_general_purpose_measurement_analyzer::add_sample(
     int channel_flags, supla_json_config *config,
-    supla_channel_extended_value *extended_value) {}
+    supla_abstract_channel_extended_value *extended_value) {}
 
 bool supla_general_purpose_measurement_analyzer::
     is_any_data_for_logging_purpose(void) {

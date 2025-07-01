@@ -19,19 +19,19 @@
 #ifndef CHANNEL_EXTENDED_VALUE_ENVELOPE_H_
 #define CHANNEL_EXTENDED_VALUE_ENVELOPE_H_
 
-#include "device/extended_value/channel_extended_value.h"
+#include "device/extended_value/abstract_channel_extended_value.h"
 
-class supla_channel_extended_value_envelope {
+class supla_abstract_channel_extended_value_envelope {
  private:
   int channel_id;
-  supla_channel_extended_value *extended_value;
+  supla_abstract_channel_extended_value *extended_value;
 
  public:
-  supla_channel_extended_value_envelope(
-      int channel_id, supla_channel_extended_value *extended_value);
-  virtual ~supla_channel_extended_value_envelope(void);
+  supla_abstract_channel_extended_value_envelope(
+      int channel_id, supla_abstract_channel_extended_value *extended_value);
+  virtual ~supla_abstract_channel_extended_value_envelope(void);
   int get_channel_id(void);
-  supla_channel_extended_value *get_extended_value(void);
+  supla_abstract_channel_extended_value *get_extended_value(void);
 };
 
 #endif /*CHANNEL_EXTENDED_VALUE_ENVELOPE_H_*/

@@ -32,7 +32,7 @@ any_value_to_action_converter::any_value_to_action_converter() {}
 any_value_to_action_converter::~any_value_to_action_converter() {}
 
 bool any_value_to_action_converter::convert(
-    supla_channel_value *value,
+    supla_abstract_channel_value *value,
     supla_abstract_action_executor *action_executor) {
   if (!value || !action_executor) {
     return false;

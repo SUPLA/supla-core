@@ -33,20 +33,25 @@ class ChannelPropertyGetterMock
   ChannelPropertyGetterMock(int user_id, int device_id, int channel_id);
   virtual ~ChannelPropertyGetterMock(void);
 
-  MOCK_METHOD5(_get_value, supla_channel_value *(
+  MOCK_METHOD5(_get_value, supla_abstract_channel_value *(
                                int user_id, int device_id, int channel_id,
                                supla_channel_fragment *fragment,
                                supla_channel_availability_status *status));
   MOCK_METHOD3(_get_func, int(int user_id, int device_id, int channel_id));
 
   MOCK_METHOD3(_get_extended_value,
-               supla_channel_extended_value *(int user_id, int device_id,
-                                              int channel_id));
+               supla_abstract_channel_extended_value *(int user_id,
+                                                       int device_id,
+                                                       int channel_id));
   MOCK_METHOD3(_get_detached_json_config,
                supla_json_config *(int user_id, int device_id, int channel_id));
 
   MOCK_METHOD3(_get_channel_id,
                int(int user_id, int device_id, unsigned char channel_number));
+
+  MOCK_METHOD3(get_channel_availability_status,
+               supla_channel_availability_status(int user_id, int device_id,
+                                                 int channel_id));
 };
 
 } /* namespace testing */

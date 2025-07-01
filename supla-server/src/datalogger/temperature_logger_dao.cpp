@@ -91,19 +91,19 @@ void supla_temperature_logger_dao::add_temperature_and_humidity(
 }
 
 void supla_temperature_logger_dao::load(
-    int user_id, std::vector<supla_channel_value_envelope *> *result) {
+    int user_id, std::vector<supla_abstract_channel_value_envelope *> *result) {
   if (result == nullptr || user_id == 0) {
     return;
   }
 
-  vector<supla_channel_value_envelope *> unique;
+  vector<supla_abstract_channel_value_envelope *> unique;
 
   MYSQL_STMT *stmt = nullptr;
   const char sql[] =
       "SELECT c.id, c.type, c.func, v.value FROM `supla_dev_channel` c, "
-      "`supla_dev_channel_value` v WHERE c.user_id = ? AND c.id = v.channel_id "
-      "AND v.valid_to >= UTC_TIMESTAMP() AND (c.func = ? OR c.func = ? OR "
-      "c.func = ?) GROUP BY c.id";
+      "`supla_dev_channel_value` v WHERE c.is_virtual = 0 AND c.user_id = ? "
+      "AND c.id = v.channel_id AND v.valid_to >= UTC_TIMESTAMP() AND (c.func = "
+      "? OR c.func = ? OR c.func = ?) GROUP BY c.id";
 
   int func1 = SUPLA_CHANNELFNC_THERMOMETER;
   int func2 = SUPLA_CHANNELFNC_HUMIDITY;
@@ -153,7 +153,7 @@ void supla_temperature_logger_dao::load(
 
       if (mysql_stmt_num_rows(stmt) > 0) {
         while (!mysql_stmt_fetch(stmt)) {
-          supla_channel_value_envelope *env = nullptr;
+          supla_abstract_channel_value_envelope *env = nullptr;
 
           for (auto it = result->cbegin(); it != result->cend(); ++it) {
             env = *it;
@@ -166,7 +166,7 @@ void supla_temperature_logger_dao::load(
           }
 
           if (env == nullptr) {
-            env = new supla_channel_value_envelope(
+            env = new supla_abstract_channel_value_envelope(
                 channel_id,
                 new supla_channel_temphum_value(type, func1, value));
             unique.push_back(env);

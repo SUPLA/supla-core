@@ -71,7 +71,9 @@ void supla_user::user_init(int UserID, const char *short_unique_id,
                            const char *long_unique_id) {
   this->UserID = UserID;
 
-  this->devices = new supla_user_devices();
+  this->latitude = 0;
+  this->longitude = 0;
+  this->devices = new supla_user_devices(this);
   this->clients = new supla_user_clients();
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa_credentials = new supla_amazon_alexa_credentials(this);
@@ -323,7 +325,7 @@ std::shared_ptr<supla_client> supla_user::get_client(int user_id,
 bool supla_user::get_channel_value(
     int device_id, int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
     char sub_value[SUPLA_CHANNELVALUE_SIZE], char *sub_value_type,
-    supla_channel_extended_value **extended_value, int *function,
+    supla_abstract_channel_extended_value **extended_value, int *function,
     supla_channel_availability_status *status,
     unsigned _supla_int_t *validity_time_sec, bool for_client) {
   memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
@@ -334,6 +336,27 @@ bool supla_user::get_channel_value(
 
   shared_ptr<supla_device> device = devices->get(device_id);
   if (!device) {
+    supla_virtual_channel vc = get_devices()->get_virtual_channel(channel_id);
+    if (vc.get_channel_id()) {
+      if (value) {
+        vc.get_value(value);
+      }
+
+      if (function) {
+        *function = vc.get_func();
+      }
+
+      if (status) {
+        *status = vc.get_availability_status();
+      }
+
+      if (validity_time_sec) {
+        *validity_time_sec = vc.get_value_validity_time_sec();
+      }
+
+      return true;
+    }
+
     return false;
   }
 
@@ -441,6 +464,15 @@ void supla_user::before_channel_function_change(int UserID, int ChannelID,
 }
 
 // static
+void supla_user::on_channel_added(int user_id, int device_id, int channel_id,
+                                  const supla_caller &caller) {
+  supla_user *user = supla_user::find(user_id, true);
+
+  user->get_devices()->on_channel_added(device_id, channel_id);
+  user->get_clients()->on_channel_added(channel_id);
+}
+
+// static
 void supla_user::before_device_delete(int UserID, int DeviceID,
                                       const supla_caller &caller) {
   supla_mqtt_client_suite::globalInstance()->beforeDeviceDelete(UserID,
@@ -458,7 +490,8 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
   supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
-    user->get_devices()->terminate(DeviceID);
+    user->get_devices()->on_device_deleted(DeviceID);
+    user->get_clients()->on_device_deleted(DeviceID);
 
     supla_http_event_hub::on_device_deleted(user, DeviceID, caller);
 
@@ -472,7 +505,8 @@ void supla_user::on_channel_deleted(int user_id, int device_id, int channel_id,
   supla_user *user = supla_user::find(user_id, false);
 
   if (user) {
-    user->get_devices()->terminate(device_id);
+    user->get_devices()->on_channel_deleted(device_id, channel_id);
+    user->get_clients()->on_channel_deleted(channel_id);
 
     supla_http_event_hub::on_channel_deleted(user, device_id, channel_id,
                                              caller);

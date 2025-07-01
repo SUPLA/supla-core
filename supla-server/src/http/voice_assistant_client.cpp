@@ -43,7 +43,8 @@ short supla_voice_assistant_client::get_subchannel_id(void) {
   return subchannel_id;
 }
 
-supla_channel_value *supla_voice_assistant_client::get_channel_value(void) {
+supla_abstract_channel_value *supla_voice_assistant_client::get_channel_value(
+    void) {
   return channel_value;
 }
 
@@ -98,6 +99,6 @@ void supla_voice_assistant_client::set_channel_connected(bool connected) {
 }
 
 void supla_voice_assistant_client::set_channel_value(
-    supla_channel_value *channel_value) {
+    supla_abstract_channel_value *channel_value) {
   this->channel_value = channel_value;
 }

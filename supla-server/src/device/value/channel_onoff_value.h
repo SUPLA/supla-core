@@ -19,13 +19,15 @@
 #ifndef CHANNEL_ONOFF_VALUE_H_
 #define CHANNEL_ONOFF_VALUE_H_
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 
-class supla_channel_onoff_value : public supla_channel_value {
+class supla_channel_onoff_value : public supla_abstract_channel_value {
  public:
   supla_channel_onoff_value(void);
-  explicit supla_channel_onoff_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_onoff_value(
+      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   explicit supla_channel_onoff_value(bool on);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   void set_on(bool on);
   void set_overcurrent_relay_off(bool active);
   bool is_on(void);

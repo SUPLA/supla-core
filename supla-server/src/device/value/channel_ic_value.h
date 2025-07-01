@@ -19,10 +19,10 @@
 #ifndef CHANNEL_IC_VALUE_H_
 #define CHANNEL_IC_VALUE_H_
 
-#include "device/value/channel_value.h"
+#include "device/value/abstract_channel_value.h"
 #include "proto.h"
 
-class supla_channel_ic_value : public supla_channel_value {
+class supla_channel_ic_value : public supla_abstract_channel_value {
  private:
   char original_raw_value[SUPLA_CHANNELVALUE_SIZE];
 
@@ -30,6 +30,7 @@ class supla_channel_ic_value : public supla_channel_value {
   supla_channel_ic_value(void);
   explicit supla_channel_ic_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   explicit supla_channel_ic_value(const TDS_ImpulseCounter_Value *value);
   virtual void set_raw_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   const TDS_ImpulseCounter_Value *get_ic_value(void);
@@ -38,9 +39,9 @@ class supla_channel_ic_value : public supla_channel_value {
                                         int param1, int param2, int param3,
                                         int param4,
                                         supla_json_config *json_config);
-  supla_channel_extended_value *convert2extended(
+  supla_abstract_channel_extended_value *convert2extended(
       supla_json_config *json_config, int func,
-      supla_channel_extended_value **data_logger_purpose) override;
+      supla_abstract_channel_extended_value **data_logger_purpose) override;
   static bool is_function_supported(int func);
 };
 

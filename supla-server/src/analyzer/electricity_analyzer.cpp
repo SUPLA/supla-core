@@ -191,7 +191,7 @@ void supla_electricity_analyzer::add_sample(bool logger_enabled, double sample,
 
 void supla_electricity_analyzer::add_sample(
     int channel_flags, supla_json_config *config,
-    supla_channel_extended_value *extended_value) {
+    supla_abstract_channel_extended_value *extended_value) {
   double lower_voltage_threshold = 0;
   double upper_voltage_threshold = 0;
   supla_channel_em_extended_value *em_ev = nullptr;
@@ -280,7 +280,7 @@ void supla_electricity_analyzer::add_sample(
   }
 }
 
-void supla_electricity_analyzer::add_sample(supla_channel_value *value,
+void supla_electricity_analyzer::add_sample(supla_abstract_channel_value *value,
                                             supla_json_config *config) {}
 
 bool supla_electricity_analyzer::is_any_aberration_for_logging_purpose(void) {

@@ -313,7 +313,11 @@ INSERT INTO `migration_versions` VALUES
 ('SuplaBundle\\Migrations\\Migration\\Version20240924120951','2024-09-24 12:09:51',49),
 ('SuplaBundle\\Migrations\\Migration\\Version20241118171339','2024-11-20 14:39:50',49),
 ('SuplaBundle\\Migrations\\Migration\\Version20241227212817','2024-12-30 14:39:50',49),
-('SuplaBundle\\Migrations\\Migration\\Version20250104154701','2025-01-07 12:53:10',49);
+('SuplaBundle\\Migrations\\Migration\\Version20250104154701','2025-01-07 12:53:10',49),
+('SuplaBundle\\Migrations\\Migration\\Version20250512172316','2025-05-26 13:21:21',39),
+('SuplaBundle\\Migrations\\Migration\\Version20250611123728','2025-06-12 14:33:04',16),
+('SuplaBundle\\Migrations\\Migration\\Version20250612212427','2025-06-13 00:23:54',17),
+('SuplaBundle\\Migrations\\Migration\\Version20250625101351','2025-06-25 20:17:25',34);
 /*!40000 ALTER TABLE `migration_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3910,6 +3914,8 @@ END IF;
 END;;
 
 ALTER TABLE supla_scene ADD active_from DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', ADD active_to DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', ADD active_hours VARCHAR(768) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, ADD activity_conditions VARCHAR(1024) CHARACTER SET utf8mb4 DEFAULT NULL COLLATE `utf8mb4_unicode_ci`;;
+ALTER TABLE supla_iodevice ADD is_virtual TINYINT(1) DEFAULT 0 NOT NULL;;
+ALTER TABLE supla_dev_channel ADD is_virtual TINYINT(1) DEFAULT 0 NOT NULL;;
 
 DROP VIEW IF EXISTS `supla_v_client_channel`;;
 CREATE ALGORITHM = UNDEFINED SQL SECURITY DEFINER VIEW `supla_v_client_channel` AS
@@ -3943,7 +3949,8 @@ select `c`.`id`                         AS `id`,
            WHEN `v`.`valid_to` >= utc_timestamp() THEN time_to_sec(timediff(`v`.`valid_to`, utc_timestamp()))
            ELSE NULL END                AS `validity_time_sec`,
        `c`.`user_config`                AS `user_config`,
-       `c`.`properties`                 AS `properties`
+       `c`.`properties`                 AS `properties`,
+       `c`.`is_virtual`                 AS `is_virtual`
 from (((((((`supla_dev_channel` `c` join `supla_iodevice` `d` on (`d`.`id` = `c`.`iodevice_id`)) join `supla_location` `l` on (`l`.`id` =
                                                                                                                                case ifnull(`c`.`location_id`, 0)
                                                                                                                                    when 0

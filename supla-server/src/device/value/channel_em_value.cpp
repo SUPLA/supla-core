@@ -24,12 +24,17 @@
 
 supla_channel_em_value::supla_channel_em_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_channel_value(raw_value) {}
+    : supla_abstract_channel_value(raw_value) {}
 
 supla_channel_em_value::supla_channel_em_value(
     const TElectricityMeter_Value *value)
-    : supla_channel_value() {
+    : supla_abstract_channel_value() {
   memcpy(raw_value, value, sizeof(TElectricityMeter_Value));
+}
+
+supla_abstract_channel_value *supla_channel_em_value::copy(  // NOLINT
+    void) const {                                            // NOLINT
+  return new supla_channel_em_value(raw_value);
 }
 
 const TElectricityMeter_Value *supla_channel_em_value::get_em_value(void) {
