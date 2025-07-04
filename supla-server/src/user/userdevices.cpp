@@ -236,7 +236,7 @@ void supla_user_devices::update_virtual_channels(void) {
 
   unlock();
 
-  // Trigger an event outside of the lock.
+  // Raise events outside of the lock.
   for (auto it = changed_virtual_channels_new.begin();
        it != changed_virtual_channels_new.end(); ++it) {
     for (auto tit = changed_virtual_channels_old.begin();
