@@ -207,11 +207,18 @@ void supla_user_devices::update_virtual_channels(void) {
   std::vector<supla_virtual_channel> virtual_channels =
       dao.get_virtual_channels(user, virtual_channels_update_time.tv_sec);
 
+  std::vector<supla_virtual_channel> changed_virtual_channels_old;
+  std::vector<supla_virtual_channel> changed_virtual_channels_new;
+
   for (auto it = virtual_channels.begin(); it != virtual_channels.end(); ++it) {
     for (auto tit = this->virtual_channels.begin();
          tit != this->virtual_channels.end(); ++tit) {
       if (it->get_channel_id() == tit->get_channel_id()) {
-        tit->apply_changes(user, &(*it));
+        if (tit->is_value_differ(user, &(*it), false)) {
+          changed_virtual_channels_old.push_back(*tit);
+          changed_virtual_channels_new.push_back(*it);
+          *tit = *it;
+        }
 
         it = virtual_channels.erase(it);
         --it;
@@ -228,6 +235,18 @@ void supla_user_devices::update_virtual_channels(void) {
   gettimeofday(&virtual_channels_update_time, nullptr);
 
   unlock();
+
+  // Raise events outside of the lock.
+  for (auto it = changed_virtual_channels_new.begin();
+       it != changed_virtual_channels_new.end(); ++it) {
+    for (auto tit = changed_virtual_channels_old.begin();
+         tit != changed_virtual_channels_old.end(); ++tit) {
+      if (it->get_channel_id() == tit->get_channel_id()) {
+        tit->is_value_differ(user, &(*it), true);
+        break;
+      }
+    }
+  }
 }
 
 supla_channel_availability_status
