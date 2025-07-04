@@ -236,7 +236,7 @@ void supla_user_devices::update_virtual_channels(void) {
 
   unlock();
 
-  // Call the apply_changes method with the user variable only outside of lock.
+  // Trigger an event outside of the lock.
   for (auto it = changed_virtual_channels_new.begin();
        it != changed_virtual_channels_new.end(); ++it) {
     for (auto tit = changed_virtual_channels_old.begin();
