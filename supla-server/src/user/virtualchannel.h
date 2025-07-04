@@ -53,7 +53,7 @@ class supla_virtual_channel {
   const supla_abstract_channel_value *get_value(void);
   bool get_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   supla_channel_availability_status get_availability_status(void);
-  void apply_changes(supla_user *user, const supla_virtual_channel *channel);
+  bool apply_changes(supla_user *user, const supla_virtual_channel *channel);
   supla_virtual_channel &operator=(const supla_virtual_channel &channel);
 };
 

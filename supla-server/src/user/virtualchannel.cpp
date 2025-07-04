@@ -106,24 +106,31 @@ supla_virtual_channel::get_availability_status(void) {
   return result;
 }
 
-void supla_virtual_channel::apply_changes(
+bool supla_virtual_channel::apply_changes(
     supla_user *user, const supla_virtual_channel *channel) {
+  bool result = false;
+
   if (channel->channel_id != channel_id || !channel) {
-    return;
+    return result;
   }
 
   bool significant_change = false;
-  if (user && func == channel->func && value && channel->value &&
+  if (func == channel->func && value && channel->value &&
       value->is_differ(channel->value, &significant_change)) {
-    user->on_channel_value_changed(supla_caller(ctChannel, channel_id),
-                                   device_id, channel_id, false,
-                                   significant_change);
+    if (user) {
+      user->on_channel_value_changed(supla_caller(ctChannel, channel_id),
+                                     device_id, channel_id, false,
+                                     significant_change);
 
-    user->get_value_based_triggers()->on_value_changed(
-        supla_caller(ctChannel, channel_id), channel_id, value, channel->value);
+      user->get_value_based_triggers()->on_value_changed(
+          supla_caller(ctChannel, channel_id), channel_id, value,
+          channel->value);
+    }
+    result = true;
   }
 
   *this = *channel;
+  return result;
 }
 
 // static
