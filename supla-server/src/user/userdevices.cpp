@@ -214,9 +214,10 @@ void supla_user_devices::update_virtual_channels(void) {
     for (auto tit = this->virtual_channels.begin();
          tit != this->virtual_channels.end(); ++tit) {
       if (it->get_channel_id() == tit->get_channel_id()) {
-        if (tit->apply_changes(nullptr, &(*it))) {
+        if (tit->is_value_differ(user, &(*it), false)) {
           changed_virtual_channels_old.push_back(*tit);
           changed_virtual_channels_new.push_back(*it);
+          *tit = *it;
         }
 
         it = virtual_channels.erase(it);
@@ -241,7 +242,7 @@ void supla_user_devices::update_virtual_channels(void) {
     for (auto tit = changed_virtual_channels_old.begin();
          tit != changed_virtual_channels_old.end(); ++tit) {
       if (it->get_channel_id() == tit->get_channel_id()) {
-        tit->apply_changes(user, &(*it));
+        tit->is_value_differ(user, &(*it), true);
         break;
       }
     }

@@ -106,8 +106,8 @@ supla_virtual_channel::get_availability_status(void) {
   return result;
 }
 
-bool supla_virtual_channel::apply_changes(
-    supla_user *user, const supla_virtual_channel *channel) {
+bool supla_virtual_channel::is_value_differ(
+    supla_user *user, const supla_virtual_channel *channel, bool raise_events) {
   bool result = false;
 
   if (channel->channel_id != channel_id || !channel) {
@@ -117,7 +117,7 @@ bool supla_virtual_channel::apply_changes(
   bool significant_change = false;
   if (func == channel->func && value && channel->value &&
       value->is_differ(channel->value, &significant_change)) {
-    if (user) {
+    if (user && raise_events) {
       user->on_channel_value_changed(supla_caller(ctChannel, channel_id),
                                      device_id, channel_id, false,
                                      significant_change);
@@ -129,7 +129,6 @@ bool supla_virtual_channel::apply_changes(
     result = true;
   }
 
-  *this = *channel;
   return result;
 }
 
