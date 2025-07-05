@@ -217,9 +217,9 @@ void supla_user_devices::update_virtual_channels(void) {
         if (tit->is_value_differ(user, &(*it), false)) {
           changed_virtual_channels_old.push_back(*tit);
           changed_virtual_channels_new.push_back(*it);
-          *tit = *it;
         }
 
+        *tit = *it;
         it = virtual_channels.erase(it);
         --it;
 
