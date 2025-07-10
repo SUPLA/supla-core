@@ -334,7 +334,7 @@ bool supla_user::get_channel_value(
     status->set_offline(true);
   }
 
-  shared_ptr<supla_device> device = devices->get(device_id);
+  shared_ptr<supla_device> device = devices->get(device_id, channel_id);
   if (!device) {
     supla_virtual_channel vc = get_devices()->get_virtual_channel(channel_id);
     if (vc.get_channel_id()) {
