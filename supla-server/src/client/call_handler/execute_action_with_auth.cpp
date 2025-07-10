@@ -25,6 +25,7 @@
 #include "client/client_dao.h"
 #include "conn/authkey_cache.h"
 #include "conn/connection_dao.h"
+#include "device/channel_property_getter.h"
 
 using std::shared_ptr;
 using std::string;
@@ -86,14 +87,11 @@ void supla_ch_execute_action_with_auth::handle_call(
         return false;
       },
       [&regcli](int channel_id) -> bool {
-        shared_ptr<supla_device> device =
-            supla_user::get_device(regcli.get_user_id(), 0, channel_id);
-        if (device != nullptr) {
-          return device->get_channels()
-              ->get_channel_availability_status(channel_id)
-              .is_online();
-        }
-        return false;
+        supla_channel_property_getter getter;
+        return getter
+            .get_channel_availability_status(regcli.get_user_id(), 0,
+                                             channel_id)
+            .is_online();
       });
 }
 
