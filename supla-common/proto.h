@@ -2287,6 +2287,7 @@ typedef struct {
 typedef struct {
   unsigned char Result;   // SUPLA_FIRMWARE_CHECK_RESULT_
   char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+  char ChangelogUrl[SUPLA_URL_PATH_MAXSIZE];
 } TCalCfg_FirmwareCheckResult;            // v. >= 28
 
 
