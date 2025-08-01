@@ -2144,6 +2144,7 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE 9020       // v. >= 28
 #define SUPLA_CALCFG_CMD_START_FIRMWARE_UPDATE 9030       // v. >= 28
 #define SUPLA_CALCFG_CMD_START_SECURITY_UPDATE 9040       // v. >= 28
+#define SUPLA_CALCFG_CMD_SET_CFG_MODE_PASSWORD 9050       // v. >= 28
 #define SUPLA_CALCFG_CMD_SET_TIME 9100                    // v. >= 21
 #define SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING 9200     // v. >= 25
 #define SUPLA_CALCFG_CMD_IDENTIFY_DEVICE 9300             // v. >= 25
