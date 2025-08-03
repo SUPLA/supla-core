@@ -29,6 +29,7 @@
 #include "device/device_dao.h"
 #include "http/http_event_hub.h"
 #include "jsonconfig/device/device_json_config.h"
+#include "jsonconfig/device/device_json_ota_updates.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
@@ -246,4 +247,23 @@ bool supla_device::calcfg_identify(void) {
 bool supla_device::calcfg_restart(void) {
   return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_RESTART_DEVICE,
                     SUPLA_CALCFG_CMD_RESTART_DEVICE, true);
+}
+
+bool supla_device::check_updates(void) {
+  if (calcfg_cmd(SUPLA_DEVICE_FLAG_AUTOMATIC_FIRMWARE_UPDATE_SUPPORTED,
+                 SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE, true)) {
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+    device_json_ota_updates json;
+    json.set_checking();
+    dao.set_device_config(get_user_id(), get_id(), &json, false, 0);
+    return true;
+  }
+
+  return false;
+}
+
+bool supla_device::start_update(void) {
+  return calcfg_cmd(SUPLA_DEVICE_FLAG_AUTOMATIC_FIRMWARE_UPDATE_SUPPORTED,
+                    SUPLA_CALCFG_CMD_START_FIRMWARE_UPDATE, true);
 }

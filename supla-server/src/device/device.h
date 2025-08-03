@@ -68,6 +68,8 @@ class supla_device : public supla_abstract_connection_object {
   bool pair_subdevice(const supla_caller &caller, bool superuser_authorized);
   bool calcfg_identify(void);
   bool calcfg_restart(void);
+  bool check_updates(void);
+  bool start_update(void);
 };
 
 #endif /* DEVICE_H_ */

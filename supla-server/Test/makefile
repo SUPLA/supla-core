@@ -41,6 +41,7 @@ RM := rm -rf
 -include src/test/doubles/scene/subdir.mk
 -include src/test/doubles/push/subdir.mk
 -include src/test/doubles/mqtt/subdir.mk
+-include src/test/doubles/jsonconfig/device/subdir.mk
 -include src/test/doubles/jsonconfig/channel/subdir.mk
 -include src/test/doubles/jsonconfig/subdir.mk
 -include src/test/doubles/ipc/subdir.mk

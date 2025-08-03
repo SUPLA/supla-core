@@ -100,13 +100,13 @@ TEST_F(DeviceDaoIntegrationTest, setDeviceConfig) {
   cfg1.set_properties("{\"homeScreenContentAvailable\":[\"NONE\"]}");
 
   EXPECT_TRUE(dao->set_device_config(
-      2, 73, &cfg1,
+      2, 73, &cfg1, true,
       SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
           SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
           SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT));
 
   EXPECT_TRUE(dao->set_device_config(
-      2, 73, &cfg1,
+      2, 73, &cfg1, true,
       SUPLA_DEVICE_CONFIG_FIELD_SCREEN_BRIGHTNESS |
           SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME |
           SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT));
@@ -134,7 +134,7 @@ TEST_F(DeviceDaoIntegrationTest, setDeviceConfig) {
 
   delete cfg2;
 
-  EXPECT_TRUE(dao->set_device_config(2, 73, &cfg1,
+  EXPECT_TRUE(dao->set_device_config(2, 73, &cfg1, true,
                                      SUPLA_DEVICE_CONFIG_FIELD_BUTTON_VOLUME));
 
   cfg2 = dao->get_device_config(73, nullptr, nullptr);

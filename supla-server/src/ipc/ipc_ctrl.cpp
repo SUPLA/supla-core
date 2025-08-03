@@ -56,8 +56,8 @@
 #include "ipc/is_client_connected_command.h"
 #include "ipc/is_device_connected_command.h"
 #include "ipc/mute_alarm_sound_command.h"
-#include "ipc/on_channel_config_changed_command.h"
 #include "ipc/on_channel_added_command.h"
+#include "ipc/on_channel_config_changed_command.h"
 #include "ipc/on_channel_deleted_command.h"
 #include "ipc/on_device_config_changed_command.h"
 #include "ipc/on_device_deleted_command.h"
@@ -68,6 +68,8 @@
 #include "ipc/on_state_webhook_changed_command.h"
 #include "ipc/on_user_settings_changed_command.h"
 #include "ipc/on_vbt_changed_command.h"
+#include "ipc/ota_check_updates_command.h"
+#include "ipc/ota_perform_update_command.h"
 #include "ipc/pair_subdevice_command.h"
 #include "ipc/recalibrate_command.h"
 #include "ipc/reset_counters_command.h"
@@ -195,6 +197,8 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_restart_device_command(socket_adapter));
   add_command(new supla_restart_subdevice_command(socket_adapter));
   add_command(new supla_update_channel_state_command(socket_adapter));
+  add_command(new supla_ota_check_updates_command(socket_adapter));
+  add_command(new supla_ota_perform_update_command(socket_adapter));
 }
 
 supla_ipc_ctrl::~supla_ipc_ctrl() {}

@@ -87,7 +87,8 @@ class supla_device_dao : public supla_abstract_device_dao {
   virtual bool on_channel_added(int device_id, int channel_id);
 
   virtual bool set_device_config(int user_id, int device_id,
-                                 device_json_config *config,
+                                 supla_json_config *config,
+                                 bool leave_only_available_fields,
                                  unsigned _supla_int16_t available_fields);
 
   virtual device_json_config *get_device_config(int device_id,

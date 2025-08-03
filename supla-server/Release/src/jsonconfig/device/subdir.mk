@@ -4,13 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/jsonconfig/device/device_json_config.cpp 
+../src/jsonconfig/device/device_json_config.cpp \
+../src/jsonconfig/device/device_json_ota_updates.cpp 
 
 CPP_DEPS += \
-./src/jsonconfig/device/device_json_config.d 
+./src/jsonconfig/device/device_json_config.d \
+./src/jsonconfig/device/device_json_ota_updates.d 
 
 OBJS += \
-./src/jsonconfig/device/device_json_config.o 
+./src/jsonconfig/device/device_json_config.o \
+./src/jsonconfig/device/device_json_ota_updates.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -25,7 +28,7 @@ src/jsonconfig/device/%.o: ../src/jsonconfig/device/%.cpp src/jsonconfig/device/
 clean: clean-src-2f-jsonconfig-2f-device
 
 clean-src-2f-jsonconfig-2f-device:
-	-$(RM) ./src/jsonconfig/device/device_json_config.d ./src/jsonconfig/device/device_json_config.o
+	-$(RM) ./src/jsonconfig/device/device_json_config.d ./src/jsonconfig/device/device_json_config.o ./src/jsonconfig/device/device_json_ota_updates.d ./src/jsonconfig/device/device_json_ota_updates.o
 
 .PHONY: clean-src-2f-jsonconfig-2f-device
 

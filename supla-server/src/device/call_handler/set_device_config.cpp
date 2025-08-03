@@ -58,7 +58,7 @@ void supla_ch_set_device_config::handle_multipart_call(
     if (config.EndOfDataFlag) {
       json_config.leave_only_thise_fields(fields);
       if (dao.set_device_config(device->get_user_id(), device->get_id(),
-                                &json_config, available_fields)) {
+                                &json_config, true, available_fields)) {
         result.Result = SUPLA_CONFIG_RESULT_TRUE;
       }
       break;
