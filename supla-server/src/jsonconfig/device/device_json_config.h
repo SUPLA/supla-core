@@ -48,6 +48,7 @@ class device_json_config : public supla_json_config {
   unsigned char string_to_modbus_role(const std::string &role);
   std::string modbus_serial_mode_to_string(unsigned char mode);
   unsigned char string_to_modbus_serial_mode(const std::string &mode);
+  unsigned char string_to_fw_update_policy(const std::string &policy);
 
   std::string modbus_network_mode_to_string(unsigned char mode);
   unsigned char string_to_modbus_network_mode(const std::string &mode);
@@ -69,6 +70,7 @@ class device_json_config : public supla_json_config {
   cJSON *modbus_available_stop_bits_to_json(ModbusConfigProperties *props);
   bool modbus_json_to_available_stop_bits(cJSON *json,
                                           ModbusConfigProperties *props);
+  std::string fw_update_policy_to_string(unsigned char policy);
 
   void set_status_led(TDeviceConfig_StatusLed *status_led);
   void set_power_status_led(TDeviceConfig_PowerStatusLed *status_led);
@@ -84,6 +86,7 @@ class device_json_config : public supla_json_config {
       TDeviceConfig_HomeScreenOffDelayType *type);
   void set_home_screen_content(TDeviceConfig_HomeScreenContent *content);
   void set_modbus_config(TDeviceConfig_Modbus *cfg);
+  void set_firmware_update_config(TDeviceConfig_FirmwareUpdate *cfg);
   void remove_empty_sub_roots();
 
  public:
@@ -111,6 +114,7 @@ class device_json_config : public supla_json_config {
   bool get_home_screen_off_delay_type(
       TDeviceConfig_HomeScreenOffDelayType *type);
   bool get_modbus_config(TDeviceConfig_Modbus *cfg);
+  bool get_firmware_update_config(TDeviceConfig_FirmwareUpdate *cfg);
 };
 
 #endif /* DEVICE_JSON_CONFIG_H_ */
