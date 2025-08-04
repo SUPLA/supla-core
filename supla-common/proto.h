@@ -2977,13 +2977,13 @@ typedef struct {
 // Disabled - firmware update is disabled by user and can be changed remotely
 // Security only - firmware update is enabled only for security updates
 // All enabled - firmware update is enabled for all updates
-#define SUPLA_FIRMWARE_UPDATE_MODE_FORCED_OFF 0
-#define SUPLA_FIRMWARE_UPDATE_MODE_DISABLED 1
-#define SUPLA_FIRMWARE_UPDATE_MODE_SECURITY_ONLY 2  // default
-#define SUPLA_FIRMWARE_UPDATE_MODE_ALL_ENABLED 3
+#define SUPLA_FIRMWARE_UPDATE_POLICY_FORCED_OFF 0
+#define SUPLA_FIRMWARE_UPDATE_POLICY_DISABLED 1
+#define SUPLA_FIRMWARE_UPDATE_POLICY_SECURITY_ONLY 2  // default
+#define SUPLA_FIRMWARE_UPDATE_POLICY_ALL_ENABLED 3
 
 typedef struct {
-  unsigned char Mode;  // SUPLA_FIRMWARE_UPDATE_MODE_
+  unsigned char Policy;  // SUPLA_FIRMWARE_UPDATE_POLICY_
   unsigned char Reserved[20];
 } TDeviceConfig_FirmwareUpdate;
 
