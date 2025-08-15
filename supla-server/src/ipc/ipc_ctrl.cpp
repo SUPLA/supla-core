@@ -29,6 +29,7 @@
 #include "ipc/device_set_time_command.h"
 #include "ipc/enter_cfg_mode_command.h"
 #include "ipc/execute_scene_command.h"
+#include "ipc/factory_reset_command.h"
 #include "ipc/get_char_command.h"
 #include "ipc/get_container_value_command.h"
 #include "ipc/get_digiglass_value_command.h"
@@ -76,6 +77,7 @@
 #include "ipc/restart_device_command.h"
 #include "ipc/restart_subdevice_command.h"
 #include "ipc/send_push_command.h"
+#include "ipc/set_cfg_mode_password_command.h"
 #include "ipc/set_cg_char_command.h"
 #include "ipc/set_cg_rgbw_command.h"
 #include "ipc/set_char_command.h"
@@ -199,6 +201,8 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_update_channel_state_command(socket_adapter));
   add_command(new supla_ota_check_updates_command(socket_adapter));
   add_command(new supla_ota_perform_update_command(socket_adapter));
+  add_command(new supla_factory_reset_command(socket_adapter));
+  add_command(new supla_set_cfg_mode_password_command(socket_adapter));
 }
 
 supla_ipc_ctrl::~supla_ipc_ctrl() {}

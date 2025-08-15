@@ -36,7 +36,9 @@ class supla_device : public supla_abstract_connection_object {
   static supla_device_call_handler_collection call_handler_collection;
   supla_device_channels *channels;
   bool calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd,
-                  bool important_for_sleepers);
+                  unsigned _supla_int_t data_size,
+                  char data[SUPLA_CALCFG_DATA_MAXSIZE],
+                  bool importat_for_sleepers);
 
  protected:
   friend class supla_register_device;
@@ -70,6 +72,8 @@ class supla_device : public supla_abstract_connection_object {
   bool calcfg_restart(void);
   bool check_updates(void);
   bool start_update(void);
+  bool factory_reset(void);
+  bool set_cfg_mode_password(const char *password);
 };
 
 #endif /* DEVICE_H_ */
