@@ -75,6 +75,7 @@ bool supla_channel_binary_sensor_value::is_function_supported(int func) {
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
     case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
     case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
+    case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
     case SUPLA_CHANNELFNC_FLOOD_SENSOR:
       return true;
   }
