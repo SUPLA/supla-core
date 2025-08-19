@@ -38,7 +38,7 @@ supla_alexa_response_request::supla_alexa_response_request(
                           pool, property_getter, credentials) {
   postponed = false;
   set_delay_usec(
-      3500000);  // 3.5 sec. - Try to send this request after ChangeReport.
+      2500000);  // 2.5 sec. - Try to send this request after ChangeReport.
   set_timeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
   this->correlation_token = correlation_token;
 }
