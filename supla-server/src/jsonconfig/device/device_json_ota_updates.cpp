@@ -48,16 +48,16 @@ device_json_ota_updates::get_field_map(void) {
 }
 
 void device_json_ota_updates::set_checking(void) {
-  apply_on_properties_root(create_status_object("checking"));
+  apply_on_properties_root(create_status_object("CHECKING"));
 }
 
 void device_json_ota_updates::set_not_available(void) {
-  apply_on_properties_root(create_status_object("notAvailable"));
+  apply_on_properties_root(create_status_object("NOT_AVAILABLE"));
 }
 
 void device_json_ota_updates::set_available(string soft_ver,
                                             string changelog_url) {
-  cJSON *ota = create_status_object("available");
+  cJSON *ota = create_status_object("AVAILABLE");
   if (ota) {
     cJSON_AddStringToObject(ota, "version", soft_ver.c_str());
     cJSON_AddStringToObject(ota, "url", changelog_url.c_str());
@@ -66,7 +66,7 @@ void device_json_ota_updates::set_available(string soft_ver,
 }
 
 void device_json_ota_updates::set_error(void) {
-  apply_on_properties_root(create_status_object("error"));
+  apply_on_properties_root(create_status_object("ERROR"));
 }
 
 bool device_json_ota_updates::set_calcfg_result(

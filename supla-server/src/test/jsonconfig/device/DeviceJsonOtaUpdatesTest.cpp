@@ -52,7 +52,7 @@ TEST_F(DeviceJsonOtaUpdatesTest, setAllVariantsAndVerifyReplacing) {
   str = ota.get_properties();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
-      str, "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"error\"}}");
+      str, "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"ERROR\"}}");
   free(str);
 
   ota.set_checking();
@@ -60,15 +60,15 @@ TEST_F(DeviceJsonOtaUpdatesTest, setAllVariantsAndVerifyReplacing) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
-      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"checking\"}}");
+      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"CHECKING\"}}");
   free(str);
 
   ota.set_not_available();
   str = ota.get_properties();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"notAvailable\"}}");
+  EXPECT_STREQ(str,
+               "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"NOT_"
+               "AVAILABLE\"}}");
   free(str);
 
   ota.set_available("25.08", "https://moon.update.com");
@@ -76,7 +76,7 @@ TEST_F(DeviceJsonOtaUpdatesTest, setAllVariantsAndVerifyReplacing) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
-      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"available\","
+      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"AVAILABLE\","
       "\"version\":\"25.08\",\"url\":\"https://moon.update.com\"}}");
   free(str);
 }
@@ -93,7 +93,7 @@ TEST_F(DeviceJsonOtaUpdatesTest, setCalCfgResultWithFailure) {
   char *str = json_result.get_properties();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
-      str, "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"error\"}}");
+      str, "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"ERROR\"}}");
   free(str);
 
   result.DataSize = sizeof(TCalCfg_FirmwareCheckResult);
@@ -101,9 +101,9 @@ TEST_F(DeviceJsonOtaUpdatesTest, setCalCfgResultWithFailure) {
 
   str = json_result.get_properties();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"notAvailable\"}}");
+  EXPECT_STREQ(str,
+               "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"NOT_"
+               "AVAILABLE\"}}");
   free(str);
 
   ((TCalCfg_FirmwareCheckResult *)result.Data)->Result =
@@ -112,9 +112,9 @@ TEST_F(DeviceJsonOtaUpdatesTest, setCalCfgResultWithFailure) {
 
   str = json_result.get_properties();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"notAvailable\"}}");
+  EXPECT_STREQ(str,
+               "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"NOT_"
+               "AVAILABLE\"}}");
   free(str);
 
   ((TCalCfg_FirmwareCheckResult *)result.Data)->Result =
@@ -124,7 +124,7 @@ TEST_F(DeviceJsonOtaUpdatesTest, setCalCfgResultWithFailure) {
   str = json_result.get_properties();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
-      str, "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"error\"}}");
+      str, "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"ERROR\"}}");
   free(str);
 }
 
@@ -148,7 +148,7 @@ TEST_F(DeviceJsonOtaUpdatesTest, setCalCfgResultWithSuccess) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
-      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"available\","
+      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"AVAILABLE\","
       "\"version\":\"1.1\",\"url\":\"https://supla.org/changelog.html\"}}");
   free(str);
 }
@@ -173,7 +173,7 @@ TEST_F(DeviceJsonOtaUpdatesTest, stringOverflow) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
-      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"available\","
+      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"AVAILABLE\","
       "\"version\":\"11111111111111111111\",\"url\":"
       "\"2222222222222222222222222222222222222222222222222222222222222222222222"
       "222222222222222222222222222222\"}}");
@@ -187,12 +187,13 @@ TEST_F(DeviceJsonOtaUpdatesTest, merge) {
 
   result1.set_properties(
       "{\"a\":\"b\",\"otaUpdate\":{\"timestamp\":1754227503,\"status\":"
-      "\"checking\"}}");
+      "\"CHECKING\"}}");
 
   DeviceJsonOtaUpdatesMock config2;
   config2.set_user_config("{\"c\":\"v\"}");
   config2.set_properties(
-      "{\"otaUpdate\":{\"timestamp\":1754227600,\"status\":\"notAvailable\"}}");
+      "{\"otaUpdate\":{\"timestamp\":1754227600,\"status\":\"NOT_AVAILABLE\"}"
+      "}");
   config2.merge(&result1);
 
   char *str = result1.get_user_config();
@@ -205,7 +206,7 @@ TEST_F(DeviceJsonOtaUpdatesTest, merge) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"a\":\"b\",\"otaUpdate\":{\"timestamp\":1754227600,"
-               "\"status\":\"notAvailable\"}}");
+               "\"status\":\"NOT_AVAILABLE\"}}");
 
   free(str);
 }
