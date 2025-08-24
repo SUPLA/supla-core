@@ -26,9 +26,6 @@
 #include "proto.h"
 
 class device_json_async_result : public supla_json_config {
- private:
-  static const std::string status_key_str;
-
  protected:
   cJSON *create_timestamp_object(void);
   cJSON *create_status_object(std::string status);

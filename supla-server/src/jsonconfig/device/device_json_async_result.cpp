@@ -25,8 +25,6 @@
 using std::map;
 using std::string;
 
-const string device_json_async_result::status_key_str = "status";
-
 device_json_async_result::device_json_async_result(void)
     : supla_json_config() {}
 
@@ -54,7 +52,7 @@ cJSON *device_json_async_result::create_timestamp_object(void) {
 cJSON *device_json_async_result::create_status_object(string status) {
   cJSON *obj = create_timestamp_object();
   if (obj) {
-    cJSON_AddStringToObject(obj, status_key_str.c_str(), status.c_str());
+    cJSON_AddStringToObject(obj, "status" status.c_str());
   }
 
   return obj;
