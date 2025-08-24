@@ -16,34 +16,35 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DEVICE_JSON_OTA_UPDATES_H_
-#define DEVICE_JSON_OTA_UPDATES_H_
+#ifndef DEVICE_JSON_ASYNC_RESULT_H_
+#define DEVICE_JSON_ASYNC_RESULT_H_
 
 #include <map>
 #include <string>
 
-#include "jsonconfig/device/device_json_async_result.h"
+#include "jsonconfig/json_config.h"
 #include "proto.h"
 
-class device_json_ota_updates : public device_json_async_result {
+class device_json_async_result : public supla_json_config {
  private:
-  static const std::map<unsigned _supla_int16_t, std::string> field_map;
+  static const std::string status_key_str;
 
  protected:
+  cJSON *create_timestamp_object(void);
+  cJSON *create_status_object(std::string status);
+  void apply_on_properties_root(cJSON *ota);
+  virtual __time_t get_timestamp(void);
   virtual const std::map<unsigned _supla_int16_t, std::string> &get_field_map(
-      void);
-  virtual std::string get_status_root_key(void);
+      void) = 0;
+  virtual std::string get_status_root_key(void) = 0;
 
  public:
-  device_json_ota_updates(void);
-  explicit device_json_ota_updates(supla_json_config *root);
-  virtual ~device_json_ota_updates(void);
+  device_json_async_result(void);
+  explicit device_json_async_result(supla_json_config *root);
+  virtual ~device_json_async_result(void);
 
-  void set_checking(void);
-  void set_not_available(void);
-  void set_available(std::string soft_ver, std::string changelog_url);
-  void set_error(void);
-  virtual bool set_calcfg_result(TDS_DeviceCalCfgResult *result);
+  virtual void merge(supla_json_config *dst);
+  virtual bool set_calcfg_result(TDS_DeviceCalCfgResult *result) = 0;
 };
 
-#endif /* DEVICE_JSON_OTA_UPDATES_H_ */
+#endif /* DEVICE_JSON_ASYNC_RESULT_H_ */

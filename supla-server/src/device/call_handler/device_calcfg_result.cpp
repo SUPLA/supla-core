@@ -25,6 +25,7 @@
 #include "device.h"
 #include "device/device_dao.h"
 #include "json/cJSON.h"
+#include "jsonconfig/device/device_json_cfg_mode_password.h"
 #include "jsonconfig/device/device_json_ota_updates.h"
 #include "user.h"
 
@@ -63,33 +64,34 @@ void supla_ch_device_calcfg_result::handle_call(
     device->last_calcfg_command_importatnt_for_sleepers = 0;
   }
 
-  if (rd->data.ds_device_calcfg_result->Command ==
-      SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE) {
-    device_json_ota_updates json;
-    json.set_error();
+  switch (rd->data.ds_device_calcfg_result->Command) {
+    case SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE:
+    case SUPLA_CALCFG_CMD_SET_CFG_MODE_PASSWORD: {
+      device_json_async_result* json = nullptr;
 
-    if (sizeof(TCalCfg_FirmwareCheckResult) ==
-        rd->data.ds_device_calcfg_result->DataSize) {
-      TCalCfg_FirmwareCheckResult* result =
-          (TCalCfg_FirmwareCheckResult*)rd->data.ds_device_calcfg_result->Data;
+      switch (rd->data.ds_device_calcfg_result->Command) {
+        case SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE:
+          json = new device_json_ota_updates();
+          break;
+        case SUPLA_CALCFG_CMD_SET_CFG_MODE_PASSWORD:
+          json = new device_json_cfg_mode_password();
+          break;
+      }
 
-      if (result->Result == SUPLA_FIRMWARE_CHECK_RESULT_UPDATE_NOT_AVAILABLE) {
-        json.set_not_available();
-      } else if (result->Result ==
-                 SUPLA_FIRMWARE_CHECK_RESULT_UPDATE_AVAILABLE) {
-        result->SoftVer[sizeof(result->SoftVer) - 1] = 0;
-        result->ChangelogUrl[sizeof(result->ChangelogUrl) - 1] = 0;
-        json.set_available(result->SoftVer, result->ChangelogUrl);
+      if (json && !json->set_calcfg_result(rd->data.ds_device_calcfg_result)) {
+        delete json;
+        json = nullptr;
+      }
+
+      if (json) {
+        supla_db_access_provider dba;
+        supla_device_dao dao(&dba);
+
+        dao.set_device_config(device->get_user_id(), device->get_id(), json,
+                              false, 0);
       }
     }
-
-    supla_db_access_provider dba;
-    supla_device_dao dao(&dba);
-
-    dao.set_device_config(device->get_user_id(), device->get_id(), &json, false,
-                          0);
-
-    return;
+      return;
   }
 
   if (rd->data.ds_device_calcfg_result->Command ==

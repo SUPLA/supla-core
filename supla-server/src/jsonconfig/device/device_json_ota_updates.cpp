@@ -30,38 +30,21 @@ using std::string;
 const map<unsigned _supla_int16_t, string> device_json_ota_updates::field_map =
     {{FIELD_OTA_UPDATE, "otaUpdate"}};
 
-device_json_ota_updates::device_json_ota_updates(void) : supla_json_config() {}
+device_json_ota_updates::device_json_ota_updates(void)
+    : device_json_async_result() {}
 
 device_json_ota_updates::device_json_ota_updates(supla_json_config *root)
-    : supla_json_config(root) {}
+    : device_json_async_result(root) {}
 
 device_json_ota_updates::~device_json_ota_updates(void) {}
 
-__time_t device_json_ota_updates::get_timestamp(void) {
-  struct timeval now = {};
-  gettimeofday(&now, NULL);
-
-  return now.tv_sec;
+string device_json_ota_updates::get_status_root_key(void) {
+  return field_map.at(FIELD_OTA_UPDATE);
 }
 
-cJSON *device_json_ota_updates::create_status_object(string status) {
-  cJSON *ota = cJSON_CreateObject();
-  if (ota) {
-    cJSON_AddNumberToObject(ota, "timestamp", get_timestamp());
-    cJSON_AddStringToObject(ota, "status", status.c_str());
-  }
-
-  return ota;
-}
-
-void device_json_ota_updates::apply_on_properties_root(cJSON *ota) {
-  if (ota) {
-    cJSON *properties_root = get_properties_root();
-    if (properties_root) {
-      set_item_value(properties_root, field_map.at(FIELD_OTA_UPDATE),
-                     cJSON_Object, true, ota, nullptr, 0);
-    }
-  }
+const map<unsigned _supla_int16_t, string> &
+device_json_ota_updates::get_field_map(void) {
+  return field_map;
 }
 
 void device_json_ota_updates::set_checking(void) {
@@ -86,9 +69,33 @@ void device_json_ota_updates::set_error(void) {
   apply_on_properties_root(create_status_object("error"));
 }
 
-void device_json_ota_updates::merge(supla_json_config *_dst) {
-  device_json_ota_updates dst(_dst);
+bool device_json_ota_updates::set_calcfg_result(
+    TDS_DeviceCalCfgResult *result) {
+  if (!result || result->Command != SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE) {
+    return false;
+  }
 
-  supla_json_config::merge(get_properties_root(), dst.get_properties_root(),
-                           field_map, false);
+  set_error();
+
+  if (sizeof(TCalCfg_FirmwareCheckResult) == result->DataSize) {
+    TCalCfg_FirmwareCheckResult *fw_check_result =
+        (TCalCfg_FirmwareCheckResult *)result->Data;
+
+    if (fw_check_result->Result ==
+        SUPLA_FIRMWARE_CHECK_RESULT_UPDATE_NOT_AVAILABLE) {
+      set_not_available();
+    } else if (fw_check_result->Result ==
+               SUPLA_FIRMWARE_CHECK_RESULT_UPDATE_AVAILABLE) {
+      string soft_ver(fw_check_result->SoftVer,
+                      sizeof(fw_check_result->SoftVer) - 1);
+      string changelog_url(fw_check_result->ChangelogUrl,
+                           sizeof(fw_check_result->ChangelogUrl) - 1);
+
+      set_available(soft_ver, changelog_url);
+    }
+
+    return true;
+  }
+
+  return false;
 }

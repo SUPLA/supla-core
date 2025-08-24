@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DEVICE_JSON_OTA_UPDATES_H_
-#define DEVICE_JSON_OTA_UPDATES_H_
+#ifndef DEVICE_JSON_CFG_MODE_PASSWORD_H_
+#define DEVICE_JSON_CFG_MODE_PASSWORD_H_
 
 #include <map>
 #include <string>
@@ -25,7 +25,7 @@
 #include "jsonconfig/device/device_json_async_result.h"
 #include "proto.h"
 
-class device_json_ota_updates : public device_json_async_result {
+class device_json_cfg_mode_password : public device_json_async_result {
  private:
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
 
@@ -35,15 +35,16 @@ class device_json_ota_updates : public device_json_async_result {
   virtual std::string get_status_root_key(void);
 
  public:
-  device_json_ota_updates(void);
-  explicit device_json_ota_updates(supla_json_config *root);
-  virtual ~device_json_ota_updates(void);
+  device_json_cfg_mode_password(void);
+  explicit device_json_cfg_mode_password(supla_json_config *root);
+  virtual ~device_json_cfg_mode_password(void);
 
-  void set_checking(void);
-  void set_not_available(void);
-  void set_available(std::string soft_ver, std::string changelog_url);
-  void set_error(void);
+  void set_true(void);
+  void set_false(void);
+  void set_waiting(void);
+  void set_unauthorized(void);
+  void set_not_supported(void);
   virtual bool set_calcfg_result(TDS_DeviceCalCfgResult *result);
 };
 
-#endif /* DEVICE_JSON_OTA_UPDATES_H_ */
+#endif /* DEVICE_JSON_CFG_MODE_PASSWORD_H_ */

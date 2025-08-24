@@ -81,12 +81,111 @@ TEST_F(DeviceJsonOtaUpdatesTest, setAllVariantsAndVerifyReplacing) {
   free(str);
 }
 
+TEST_F(DeviceJsonOtaUpdatesTest, setCalCfgResultWithFailure) {
+  TDS_DeviceCalCfgResult result = {};
+  result.Command = SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE;
+
+  DeviceJsonOtaUpdatesMock json_result;
+  EXPECT_CALL(json_result, get_timestamp).WillRepeatedly(Return(1754227503));
+
+  EXPECT_FALSE(json_result.set_calcfg_result(&result));
+
+  char *str = json_result.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str, "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"error\"}}");
+  free(str);
+
+  result.DataSize = sizeof(TCalCfg_FirmwareCheckResult);
+  EXPECT_TRUE(json_result.set_calcfg_result(&result));
+
+  str = json_result.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"notAvailable\"}}");
+  free(str);
+
+  ((TCalCfg_FirmwareCheckResult *)result.Data)->Result =
+      SUPLA_FIRMWARE_CHECK_RESULT_UPDATE_NOT_AVAILABLE;
+  EXPECT_TRUE(json_result.set_calcfg_result(&result));
+
+  str = json_result.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"notAvailable\"}}");
+  free(str);
+
+  ((TCalCfg_FirmwareCheckResult *)result.Data)->Result =
+      SUPLA_FIRMWARE_CHECK_RESULT_ERROR;
+  EXPECT_TRUE(json_result.set_calcfg_result(&result));
+
+  str = json_result.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str, "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"error\"}}");
+  free(str);
+}
+
+TEST_F(DeviceJsonOtaUpdatesTest, setCalCfgResultWithSuccess) {
+  TDS_DeviceCalCfgResult result = {};
+  result.Command = SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE;
+
+  DeviceJsonOtaUpdatesMock json_result;
+  EXPECT_CALL(json_result, get_timestamp).WillRepeatedly(Return(1754227503));
+
+  result.DataSize = sizeof(TCalCfg_FirmwareCheckResult);
+  TCalCfg_FirmwareCheckResult *fw_result =
+      (TCalCfg_FirmwareCheckResult *)result.Data;
+  fw_result->Result = SUPLA_FIRMWARE_CHECK_RESULT_UPDATE_AVAILABLE;
+  snprintf(fw_result->SoftVer, sizeof(fw_result->SoftVer), "%s", "1.1");
+  snprintf(fw_result->ChangelogUrl, sizeof(fw_result->ChangelogUrl), "%s",
+           "https://supla.org/changelog.html");
+  EXPECT_TRUE(json_result.set_calcfg_result(&result));
+
+  char *str = json_result.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"available\","
+      "\"version\":\"1.1\",\"url\":\"https://supla.org/changelog.html\"}}");
+  free(str);
+}
+
+TEST_F(DeviceJsonOtaUpdatesTest, stringOverflow) {
+  TDS_DeviceCalCfgResult result = {};
+  result.Command = SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE;
+
+  DeviceJsonOtaUpdatesMock json_result;
+  EXPECT_CALL(json_result, get_timestamp).WillRepeatedly(Return(1754227503));
+
+  result.DataSize = sizeof(TCalCfg_FirmwareCheckResult);
+  TCalCfg_FirmwareCheckResult *fw_result =
+      (TCalCfg_FirmwareCheckResult *)result.Data;
+  fw_result->Result = SUPLA_FIRMWARE_CHECK_RESULT_UPDATE_AVAILABLE;
+  memset(fw_result->SoftVer, '1', sizeof(fw_result->SoftVer));
+  memset(fw_result->ChangelogUrl, '2', sizeof(fw_result->ChangelogUrl));
+
+  EXPECT_TRUE(json_result.set_calcfg_result(&result));
+
+  char *str = json_result.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"available\","
+      "\"version\":\"11111111111111111111\",\"url\":"
+      "\"2222222222222222222222222222222222222222222222222222222222222222222222"
+      "222222222222222222222222222222\"}}");
+  free(str);
+}
+
 TEST_F(DeviceJsonOtaUpdatesTest, merge) {
-  DeviceJsonOtaUpdatesMock config1;
+  DeviceJsonOtaUpdatesMock result1;
 
-  config1.set_user_config("{\"x\":\"y\"}");
+  result1.set_user_config("{\"x\":\"y\"}");
 
-  config1.set_properties(
+  result1.set_properties(
       "{\"a\":\"b\",\"otaUpdate\":{\"timestamp\":1754227503,\"status\":"
       "\"checking\"}}");
 
@@ -94,15 +193,15 @@ TEST_F(DeviceJsonOtaUpdatesTest, merge) {
   config2.set_user_config("{\"c\":\"v\"}");
   config2.set_properties(
       "{\"otaUpdate\":{\"timestamp\":1754227600,\"status\":\"notAvailable\"}}");
-  config2.merge(&config1);
+  config2.merge(&result1);
 
-  char *str = config1.get_user_config();
+  char *str = result1.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str, "{\"x\":\"y\"}");
 
   free(str);
 
-  str = config1.get_properties();
+  str = result1.get_properties();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"a\":\"b\",\"otaUpdate\":{\"timestamp\":1754227600,"

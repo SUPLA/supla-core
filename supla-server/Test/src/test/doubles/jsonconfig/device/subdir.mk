@@ -4,12 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/doubles/jsonconfig/device/DeviceJsonCfgModePasswordMock.cpp \
 ../src/test/doubles/jsonconfig/device/DeviceJsonOtaUpdatesMock.cpp 
 
 CPP_DEPS += \
+./src/test/doubles/jsonconfig/device/DeviceJsonCfgModePasswordMock.d \
 ./src/test/doubles/jsonconfig/device/DeviceJsonOtaUpdatesMock.d 
 
 OBJS += \
+./src/test/doubles/jsonconfig/device/DeviceJsonCfgModePasswordMock.o \
 ./src/test/doubles/jsonconfig/device/DeviceJsonOtaUpdatesMock.o 
 
 
@@ -25,7 +28,7 @@ src/test/doubles/jsonconfig/device/%.o: ../src/test/doubles/jsonconfig/device/%.
 clean: clean-src-2f-test-2f-doubles-2f-jsonconfig-2f-device
 
 clean-src-2f-test-2f-doubles-2f-jsonconfig-2f-device:
-	-$(RM) ./src/test/doubles/jsonconfig/device/DeviceJsonOtaUpdatesMock.d ./src/test/doubles/jsonconfig/device/DeviceJsonOtaUpdatesMock.o
+	-$(RM) ./src/test/doubles/jsonconfig/device/DeviceJsonCfgModePasswordMock.d ./src/test/doubles/jsonconfig/device/DeviceJsonCfgModePasswordMock.o ./src/test/doubles/jsonconfig/device/DeviceJsonOtaUpdatesMock.d ./src/test/doubles/jsonconfig/device/DeviceJsonOtaUpdatesMock.o
 
 .PHONY: clean-src-2f-test-2f-doubles-2f-jsonconfig-2f-device
 

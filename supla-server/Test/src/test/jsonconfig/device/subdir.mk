@@ -5,14 +5,17 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/jsonconfig/device/DeviceConfigTest.cpp \
+../src/test/jsonconfig/device/DeviceJsonCfgModePasswordTest.cpp \
 ../src/test/jsonconfig/device/DeviceJsonOtaUpdatesTest.cpp 
 
 CPP_DEPS += \
 ./src/test/jsonconfig/device/DeviceConfigTest.d \
+./src/test/jsonconfig/device/DeviceJsonCfgModePasswordTest.d \
 ./src/test/jsonconfig/device/DeviceJsonOtaUpdatesTest.d 
 
 OBJS += \
 ./src/test/jsonconfig/device/DeviceConfigTest.o \
+./src/test/jsonconfig/device/DeviceJsonCfgModePasswordTest.o \
 ./src/test/jsonconfig/device/DeviceJsonOtaUpdatesTest.o 
 
 
@@ -28,7 +31,7 @@ src/test/jsonconfig/device/%.o: ../src/test/jsonconfig/device/%.cpp src/test/jso
 clean: clean-src-2f-test-2f-jsonconfig-2f-device
 
 clean-src-2f-test-2f-jsonconfig-2f-device:
-	-$(RM) ./src/test/jsonconfig/device/DeviceConfigTest.d ./src/test/jsonconfig/device/DeviceConfigTest.o ./src/test/jsonconfig/device/DeviceJsonOtaUpdatesTest.d ./src/test/jsonconfig/device/DeviceJsonOtaUpdatesTest.o
+	-$(RM) ./src/test/jsonconfig/device/DeviceConfigTest.d ./src/test/jsonconfig/device/DeviceConfigTest.o ./src/test/jsonconfig/device/DeviceJsonCfgModePasswordTest.d ./src/test/jsonconfig/device/DeviceJsonCfgModePasswordTest.o ./src/test/jsonconfig/device/DeviceJsonOtaUpdatesTest.d ./src/test/jsonconfig/device/DeviceJsonOtaUpdatesTest.o
 
 .PHONY: clean-src-2f-test-2f-jsonconfig-2f-device
 
