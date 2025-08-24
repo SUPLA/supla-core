@@ -52,7 +52,7 @@ cJSON *device_json_async_result::create_timestamp_object(void) {
 cJSON *device_json_async_result::create_status_object(string status) {
   cJSON *obj = create_timestamp_object();
   if (obj) {
-    cJSON_AddStringToObject(obj, "status" status.c_str());
+    cJSON_AddStringToObject(obj, "status", status.c_str());
   }
 
   return obj;
