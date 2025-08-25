@@ -16,25 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CH_DEVICE_CALCFG_RESULT_H_
-#define SUPLA_CH_DEVICE_CALCFG_RESULT_H_
+#ifndef DEVICE_JSON_PAIRING_RESULT_MOCK_H_
+#define DEVICE_JSON_PAIRING_RESULT_MOCK_H_
 
-#include <memory>
+#include <gmock/gmock.h>
 
-#include "device/call_handler/abstract_device_srpc_call_handler.h"
+#include "jsonconfig/device/device_json_pairing_result.h"
 
-class supla_ch_device_calcfg_result
-    : public supla_abstract_device_srpc_call_handler {
- protected:
-  virtual void handle_call(std::shared_ptr<supla_device> device,
-                           supla_abstract_srpc_adapter* srpc_adapter,
-                           TsrpcReceivedData* rd, unsigned int call_id,
-                           unsigned char proto_version);
+namespace testing {
 
+class DeviceJsonPairingResultMock : public device_json_pairing_result {
  public:
-  supla_ch_device_calcfg_result(void);
-  virtual ~supla_ch_device_calcfg_result();
-  virtual bool can_handle_call(unsigned int call_id);
+  DeviceJsonPairingResultMock();
+  virtual ~DeviceJsonPairingResultMock();
+
+  MOCK_METHOD0(get_time, std::time_t(void));
 };
 
-#endif /* SUPLA_CH_DEVICE_CALCFG_RESULT_H_*/
+} /* namespace testing */
+
+#endif /* DEVICE_JSON_PAIRING_RESULT_MOCK_H_ */

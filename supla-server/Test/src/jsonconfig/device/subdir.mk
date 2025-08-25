@@ -7,19 +7,22 @@ CPP_SRCS += \
 ../src/jsonconfig/device/device_json_async_result.cpp \
 ../src/jsonconfig/device/device_json_cfg_mode_password.cpp \
 ../src/jsonconfig/device/device_json_config.cpp \
-../src/jsonconfig/device/device_json_ota_updates.cpp 
+../src/jsonconfig/device/device_json_ota_updates.cpp \
+../src/jsonconfig/device/device_json_pairing_result.cpp 
 
 CPP_DEPS += \
 ./src/jsonconfig/device/device_json_async_result.d \
 ./src/jsonconfig/device/device_json_cfg_mode_password.d \
 ./src/jsonconfig/device/device_json_config.d \
-./src/jsonconfig/device/device_json_ota_updates.d 
+./src/jsonconfig/device/device_json_ota_updates.d \
+./src/jsonconfig/device/device_json_pairing_result.d 
 
 OBJS += \
 ./src/jsonconfig/device/device_json_async_result.o \
 ./src/jsonconfig/device/device_json_cfg_mode_password.o \
 ./src/jsonconfig/device/device_json_config.o \
-./src/jsonconfig/device/device_json_ota_updates.o 
+./src/jsonconfig/device/device_json_ota_updates.o \
+./src/jsonconfig/device/device_json_pairing_result.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -34,7 +37,7 @@ src/jsonconfig/device/%.o: ../src/jsonconfig/device/%.cpp src/jsonconfig/device/
 clean: clean-src-2f-jsonconfig-2f-device
 
 clean-src-2f-jsonconfig-2f-device:
-	-$(RM) ./src/jsonconfig/device/device_json_async_result.d ./src/jsonconfig/device/device_json_async_result.o ./src/jsonconfig/device/device_json_cfg_mode_password.d ./src/jsonconfig/device/device_json_cfg_mode_password.o ./src/jsonconfig/device/device_json_config.d ./src/jsonconfig/device/device_json_config.o ./src/jsonconfig/device/device_json_ota_updates.d ./src/jsonconfig/device/device_json_ota_updates.o
+	-$(RM) ./src/jsonconfig/device/device_json_async_result.d ./src/jsonconfig/device/device_json_async_result.o ./src/jsonconfig/device/device_json_cfg_mode_password.d ./src/jsonconfig/device/device_json_cfg_mode_password.o ./src/jsonconfig/device/device_json_config.d ./src/jsonconfig/device/device_json_config.o ./src/jsonconfig/device/device_json_ota_updates.d ./src/jsonconfig/device/device_json_ota_updates.o ./src/jsonconfig/device/device_json_pairing_result.d ./src/jsonconfig/device/device_json_pairing_result.o
 
 .PHONY: clean-src-2f-jsonconfig-2f-device
 

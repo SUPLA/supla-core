@@ -16,25 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CH_DEVICE_CALCFG_RESULT_H_
-#define SUPLA_CH_DEVICE_CALCFG_RESULT_H_
+#ifndef DEVICE_JSON_PAIRING_RESULT_TEST_H_
+#define DEVICE_JSON_PAIRING_RESULT_TEST_H_
 
-#include <memory>
+#include "doubles/jsonconfig/device/DeviceJsonPairingResultMock.h"
+#include "gtest/gtest.h"  // NOLINT
 
-#include "device/call_handler/abstract_device_srpc_call_handler.h"
+namespace testing {
 
-class supla_ch_device_calcfg_result
-    : public supla_abstract_device_srpc_call_handler {
+class DeviceJsonPairingResultTest : public Test {
  protected:
-  virtual void handle_call(std::shared_ptr<supla_device> device,
-                           supla_abstract_srpc_adapter* srpc_adapter,
-                           TsrpcReceivedData* rd, unsigned int call_id,
-                           unsigned char proto_version);
+  DeviceJsonPairingResultMock result;
+  void set_pairing_result(TDS_DeviceCalCfgResult *calcafg_result,
+                          unsigned char pairing_result_code);
 
  public:
-  supla_ch_device_calcfg_result(void);
-  virtual ~supla_ch_device_calcfg_result();
-  virtual bool can_handle_call(unsigned int call_id);
+  DeviceJsonPairingResultTest(void);
+  virtual ~DeviceJsonPairingResultTest(void);
+  virtual void SetUp();
 };
 
-#endif /* SUPLA_CH_DEVICE_CALCFG_RESULT_H_*/
+} /* namespace testing */
+
+#endif /* DEVICE_JSON_PAIRING_RESULT_TEST_H_ */

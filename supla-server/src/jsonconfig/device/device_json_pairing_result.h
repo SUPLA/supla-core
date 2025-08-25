@@ -16,25 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CH_DEVICE_CALCFG_RESULT_H_
-#define SUPLA_CH_DEVICE_CALCFG_RESULT_H_
+#ifndef DEVICE_JSON_PAIRING_RESULT_H_
+#define DEVICE_JSON_PAIRING_RESULT_H_
 
-#include <memory>
+#include <sys/types.h>
 
-#include "device/call_handler/abstract_device_srpc_call_handler.h"
+#include <ctime>
 
-class supla_ch_device_calcfg_result
-    : public supla_abstract_device_srpc_call_handler {
+#include "proto.h"
+
+class device_json_pairing_result {
+ private:
+  void get_time_string(char *buffer, size_t buffer_size, int inc_seconds);
+
  protected:
-  virtual void handle_call(std::shared_ptr<supla_device> device,
-                           supla_abstract_srpc_adapter* srpc_adapter,
-                           TsrpcReceivedData* rd, unsigned int call_id,
-                           unsigned char proto_version);
+  virtual std::time_t get_time(void);
 
  public:
-  supla_ch_device_calcfg_result(void);
-  virtual ~supla_ch_device_calcfg_result();
-  virtual bool can_handle_call(unsigned int call_id);
+  device_json_pairing_result(void);
+  virtual ~device_json_pairing_result(void);
+  char *calcfg_result_to_json(TDS_DeviceCalCfgResult *result);
 };
 
-#endif /* SUPLA_CH_DEVICE_CALCFG_RESULT_H_*/
+#endif /* DEVICE_JSON_PAIRING_RESULT_H_ */
