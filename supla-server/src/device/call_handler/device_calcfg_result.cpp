@@ -68,18 +68,15 @@ void supla_ch_device_calcfg_result::handle_call(
           break;
       }
 
-      if (json && !json->set_calcfg_result(rd->data.ds_device_calcfg_result)) {
-        delete json;
-        json = nullptr;
-      }
-
-      if (json) {
+      if (json && json->set_calcfg_result(rd->data.ds_device_calcfg_result)) {
         supla_db_access_provider dba;
         supla_device_dao dao(&dba);
 
         dao.set_device_config(device->get_user_id(), device->get_id(), json,
                               false, 0);
       }
+
+      delete json;
     }
       return;
   }
