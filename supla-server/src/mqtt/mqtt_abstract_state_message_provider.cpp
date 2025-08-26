@@ -902,8 +902,8 @@ bool supla_mqtt_abstract_state_message_provider::
     case 17:
     case 29:
     case 41:
-      verify_flag(&emv, em_ev.measured_values, EM_VAR_POWER_ACTIVE, 0, message,
-                  message_size);
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_POWER_ACTIVE,
+                  EM_VAR_POWER_ACTIVE_KW, message, message_size);
       {
         double power = emv ? (em_ev.m[0].power_active[phase] * 0.00001) : 0;
         if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KW) {
@@ -918,8 +918,8 @@ bool supla_mqtt_abstract_state_message_provider::
     case 18:
     case 30:
     case 42:
-      verify_flag(&emv, em_ev.measured_values, EM_VAR_POWER_REACTIVE, 0,
-                  message, message_size);
+      verify_flag(&emv, em_ev.measured_values, EM_VAR_POWER_REACTIVE,
+                  EM_VAR_POWER_REACTIVE_KVAR, message, message_size);
       {
         double power = emv ? (em_ev.m[0].power_reactive[phase] * 0.00001) : 0;
         if (em_ev.measured_values & EM_VAR_POWER_REACTIVE_KVAR) {
