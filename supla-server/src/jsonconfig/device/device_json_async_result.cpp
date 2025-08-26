@@ -69,6 +69,7 @@ void device_json_async_result::apply_on_properties_root(cJSON *ota) {
     }
   }
 }
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
 
