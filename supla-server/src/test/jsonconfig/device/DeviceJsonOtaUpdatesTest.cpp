@@ -92,8 +92,7 @@ TEST_F(DeviceJsonOtaUpdatesTest, setCalCfgResultWithFailure) {
 
   char *str = json_result.get_properties();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str, "{\"otaUpdate\":{\"timestamp\":1754227503,\"status\":\"ERROR\"}}");
+  EXPECT_STREQ(str, "{}");
   free(str);
 
   result.DataSize = sizeof(TCalCfg_FirmwareCheckResult);

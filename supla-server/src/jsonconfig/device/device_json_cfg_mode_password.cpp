@@ -75,9 +75,9 @@ bool device_json_cfg_mode_password::set_calcfg_result(
     return false;
   }
 
-  set_false();
-
   if (result->DataSize == 0) {
+    set_false();
+
     switch (result->Result) {
       case SUPLA_CALCFG_RESULT_TRUE:
         set_true();

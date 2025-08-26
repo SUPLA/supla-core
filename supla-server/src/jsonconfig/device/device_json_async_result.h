@@ -32,8 +32,11 @@ class device_json_async_result : public supla_json_config {
   void apply_on_properties_root(cJSON *ota);
   virtual __time_t get_timestamp(void);
   virtual const std::map<unsigned _supla_int16_t, std::string> &get_field_map(
-      void) = 0;
-  virtual std::string get_status_root_key(void) = 0;
+      void);  // Due to the implementation of the merge method, a pure
+  // virtual method cannot be used, so throw
+  // std::bad_function_call(); will be used.
+
+  virtual std::string get_status_root_key(void);
 
  public:
   device_json_async_result(void);
@@ -41,7 +44,7 @@ class device_json_async_result : public supla_json_config {
   virtual ~device_json_async_result(void);
 
   virtual void merge(supla_json_config *dst);
-  virtual bool set_calcfg_result(TDS_DeviceCalCfgResult *result) = 0;
+  virtual bool set_calcfg_result(TDS_DeviceCalCfgResult *result);
 };
 
 #endif /* DEVICE_JSON_ASYNC_RESULT_H_ */

@@ -75,9 +75,9 @@ bool device_json_ota_updates::set_calcfg_result(
     return false;
   }
 
-  set_error();
-
   if (sizeof(TCalCfg_FirmwareCheckResult) == result->DataSize) {
+    set_error();
+
     TCalCfg_FirmwareCheckResult *fw_check_result =
         (TCalCfg_FirmwareCheckResult *)result->Data;
 

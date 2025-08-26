@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include <functional>
+
 #include "log.h"
 
 using std::map;
@@ -67,12 +69,32 @@ void device_json_async_result::apply_on_properties_root(cJSON *ota) {
     }
   }
 }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
+
+const map<unsigned _supla_int16_t, string> &
+device_json_async_result::get_field_map(void) {
+  // Due to the implementation of the merge method, a pure
+  // virtual method cannot be used, so throw
+  // std::bad_function_call(); will be used.
+
+  std::bad_function_call();
+}
+
+string device_json_async_result::get_status_root_key(void) {
+  std::bad_function_call();
+}
+
+bool device_json_async_result::set_calcfg_result(
+    TDS_DeviceCalCfgResult *result) {
+  std::bad_function_call();
+}
+
+#pragma GCC diagnostic pop
 
 void device_json_async_result::merge(supla_json_config *_dst) {
-  if (dynamic_cast<device_json_async_result *>(_dst)) {
-    supla_json_config::merge(
-        get_properties_root(),
-        dynamic_cast<device_json_async_result *>(_dst)->get_properties_root(),
-        get_field_map(), false);
-  }
+  device_json_async_result dst(_dst);
+
+  supla_json_config::merge(get_properties_root(), dst.get_properties_root(),
+                           get_field_map(), false);
 }

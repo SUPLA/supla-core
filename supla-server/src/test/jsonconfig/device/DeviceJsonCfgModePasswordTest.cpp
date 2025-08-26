@@ -101,9 +101,7 @@ TEST_F(DeviceJsonCfgModePasswordTest, setCalCfgResult) {
 
   char *str = json_result.get_properties();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"setCfgModePassword\":{\"timestamp\":1754227503,\"status\":"
-               "\"FALSE\"}}");
+  EXPECT_STREQ(str, "{}");
   free(str);
 
   result.DataSize = 0;
