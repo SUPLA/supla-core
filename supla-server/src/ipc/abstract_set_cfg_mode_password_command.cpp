@@ -39,7 +39,7 @@ void supla_abstract_set_cfg_mode_password_command::on_command_match(
     const char *params) {
   int user_id = 0;
   int device_id = 0;
-  char password_base64[100] =
+  char password_base64[101] =
       {};  // 4 * ((SUPLA_PASSWORD_MAXSIZE + 2) / 3) == 88
 
   bool result = false;
