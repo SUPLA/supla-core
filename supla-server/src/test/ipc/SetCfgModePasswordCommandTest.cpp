@@ -96,4 +96,19 @@ TEST_F(SetCfgModePasswordCommandTest, emptyPassword) {
   commandProcessingTest("SET-CFG-MODE-PASSWORD:1,10,\n", "UNKNOWN:10\n");
 }
 
+TEST_F(SetCfgModePasswordCommandTest, longLongPassword) {
+  EXPECT_CALL(*cmd, set_cfg_mode_password).Times(0);
+  commandProcessingTest(
+      "SET-CFG-MODE-PASSWORD:34,27775,"
+      "VG8gamVzdCBoYXPFgm8sIGt0w7NyZSB6b3N0YcWCbyBza29uZmlndXJvd2FuZSBwb2RjemFz"
+      "IHBpZXJ3c3plaiBrb25maWd1cmFjamkgdXJ6xIVkemVuaWEuIFBvendhbGEgb25vIG5hIGRv"
+      "c3TEmXAgZG8gc3Ryb255IGtvbmZpZ3VyYWN5am5laiB1cnrEhWR6ZW5pYSwgZ2R5IGplc3Rl"
+      "xZsgcG/"
+      "FgsSFY3pvbnkgeiBqZWdvIFdpLUZpVG8gamVzdCBoYXPFgm8sIGt0w7NyZSB6b3N0YcWCbyB"
+      "za29uZmlndXJvd2FuZSBwb2RjemFzIHBpZXJ3c3plaiBrb25maWd1cmFjamkgdXJ6xIVkemV"
+      "uaWEuIFBvendhbGEgb25vIG5hIGRvc3TEmXAgZG8gc3Ryb255IGtvbmZpZ3VyYWN5am5laiB"
+      "1cnrEhWR6ZW5pYSwgZ2R5IGplc3RlxZsgcG/FgsSFY3pvbnkgeiBqZWdvIFdpLUZp\n",
+      "UNKNOWN:27775\n");
+}
+
 } /* namespace testing */

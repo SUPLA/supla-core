@@ -39,24 +39,26 @@ void supla_abstract_set_cfg_mode_password_command::on_command_match(
     const char *params) {
   int user_id = 0;
   int device_id = 0;
-  char password_base64[4 * ((SUPLA_PASSWORD_MAXSIZE + 10) / 3)] = {};
+  char password_base64[100] =
+      {};  // 4 * ((SUPLA_PASSWORD_MAXSIZE + 2) / 3) == 88
 
   bool result = false;
   char *password = nullptr;
 
   if (params) {
-    sscanf(params, "%i,%i,%s", &user_id, &device_id, password_base64);
+    sscanf(params, "%i,%i,%100s", &user_id, &device_id, password_base64);
     password_base64[sizeof(password_base64) - 1] = 0;
     int len = 0;
 
-    password = st_openssl_base64_decode(
-        password_base64, strnlen(password_base64, sizeof(password_base64)),
-        &len);
+    if (user_id && device_id) {
+      password = st_openssl_base64_decode(
+          password_base64, strnlen(password_base64, sizeof(password_base64)),
+          &len);
 
-    if (user_id && device_id && password && len &&
-        len < SUPLA_PASSWORD_MAXSIZE &&
-        set_cfg_mode_password(user_id, device_id, password)) {
-      result = true;
+      if (password && len && len < SUPLA_PASSWORD_MAXSIZE &&
+          set_cfg_mode_password(user_id, device_id, password)) {
+        result = true;
+      }
     }
   }
 
