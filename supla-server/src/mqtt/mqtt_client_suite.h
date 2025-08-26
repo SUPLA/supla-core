@@ -65,6 +65,7 @@ class supla_mqtt_client_suite {
   void onChannelDeleted(int UserID, int DeviceID, int ChannelId);
   void onActionsTriggered(int UserID, int DeviceID, int ChannelID,
                           unsigned int Actions);
+  void onChannelAdded(int UserID, int DeviceID, int ChannelId);
 };
 
 #endif /*MQTT_CLIENT_SUITE_H_*/

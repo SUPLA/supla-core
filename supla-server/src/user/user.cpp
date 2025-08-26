@@ -470,6 +470,8 @@ void supla_user::on_channel_added(int user_id, int device_id, int channel_id,
 
   user->get_devices()->on_channel_added(device_id, channel_id);
   user->get_clients()->on_channel_added(channel_id);
+  supla_mqtt_client_suite::globalInstance()->onChannelAdded(user_id, device_id,
+                                                            channel_id);
 }
 
 // static
