@@ -317,7 +317,8 @@ INSERT INTO `migration_versions` VALUES
 ('SuplaBundle\\Migrations\\Migration\\Version20250512172316','2025-05-26 13:21:21',39),
 ('SuplaBundle\\Migrations\\Migration\\Version20250611123728','2025-06-12 14:33:04',16),
 ('SuplaBundle\\Migrations\\Migration\\Version20250612212427','2025-06-13 00:23:54',17),
-('SuplaBundle\\Migrations\\Migration\\Version20250625101351','2025-06-25 20:17:25',34);
+('SuplaBundle\\Migrations\\Migration\\Version20250625101351','2025-06-25 20:17:25',34),
+('SuplaBundle\\Migrations\\Migration\\Version20250815113624','2025-08-28 12:17:45',76);
 /*!40000 ALTER TABLE `migration_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
