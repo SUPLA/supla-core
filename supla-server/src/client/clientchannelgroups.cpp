@@ -227,19 +227,16 @@ int supla_client_channelgroups::available_data_types_for_remote(
   return OI_REMOTEUPDATE_DATATYPE1;
 }
 
-void supla_client_channelgroups::on_channel_value_changed(void *srpc,
-                                                          int DeviceId,
+void supla_client_channelgroups::on_channel_value_changed(int DeviceId,
                                                           int ChannelId) {
-  on_value_changed(srpc, ChannelId, DeviceId, detail2,
-                   OI_REMOTEUPDATE_DATATYPE1);
+  on_value_changed(ChannelId, DeviceId, detail2, OI_REMOTEUPDATE_DATATYPE1);
 }
 
-void supla_client_channelgroups::set_caption(void *srpc, int id,
-                                             char *caption) {
+void supla_client_channelgroups::set_caption(int id, char *caption) {
   supla_client_channelgroup *group = findGroup(id);
 
   if (group != NULL) {
     group->setCaption(caption);
-    remote_update(srpc);
+    getClient()->remote_update_lists();
   }
 }

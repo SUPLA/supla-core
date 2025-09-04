@@ -90,18 +90,7 @@ bool supla_client_objcontainer::remote_update(void *srpc) {
   return false;
 }
 
-void supla_client_objcontainer::on_value_changed(
-    void *srpc, supla_client_objcontainer_item *obj, int data_type) {
-  if (obj == NULL || srpc == NULL) {
-    return;
-  }
-
-  obj->mark_for_remote_update(data_type);
-  remote_update(srpc);
-}
-
-void supla_client_objcontainer::on_value_changed(void *srpc, int Id,
-                                                 int ExtraId,
+void supla_client_objcontainer::on_value_changed(int Id, int ExtraId,
                                                  e_objc_scope scope,
                                                  int data_type) {
   supla_client_objcontainer_item *obj;
@@ -122,7 +111,7 @@ void supla_client_objcontainer::on_value_changed(void *srpc, int Id,
 
   safe_array_unlock(arr);
 
-  if (srpc && r) {
-    remote_update(srpc);
+  if (r) {
+    getClient()->remote_update_lists();
   }
 }

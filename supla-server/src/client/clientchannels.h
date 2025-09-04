@@ -51,14 +51,14 @@ class supla_client_channels : public supla_client_objcontainer {
   explicit supla_client_channels(supla_client *client);
   void update_device_channels(int DeviceId);
   void on_channel_value_changed(
-      void *srpc, int DeviceId, int ChannelId = 0,
+      int DeviceId, int ChannelId = 0,
       bool Extended = false);  // ChannelId == 0 - All channels
   bool channel_exists(int ChannelID);
 
-  void set_channel_function(void *srpc, int ChannelId, int Func);
-  void set_channel_caption(void *srpc, int ChannelId, char *Caption);
+  void set_channel_function(int ChannelId, int Func);
+  void set_channel_caption(int ChannelId, char *Caption);
   unsigned _supla_int64_t value_validity_time_usec(void);
-  void update_expired(void *srpc);
+  void update_expired(void);
 
   void channel_access(int channel_id,
                       std::function<void(supla_client_channel *)> on_channel);

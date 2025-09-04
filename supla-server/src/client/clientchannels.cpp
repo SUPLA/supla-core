@@ -285,30 +285,28 @@ int supla_client_channels::available_data_types_for_remote(e_objc_scope scope) {
   return OI_REMOTEUPDATE_DATA1 | OI_REMOTEUPDATE_DATA2 | OI_REMOTEUPDATE_DATA3;
 }
 
-void supla_client_channels::on_channel_value_changed(void *srpc, int DeviceId,
+void supla_client_channels::on_channel_value_changed(int DeviceId,
                                                      int ChannelId,
                                                      bool Extended) {
-  on_value_changed(srpc, ChannelId, DeviceId, master,
+  on_value_changed(ChannelId, DeviceId, master,
                    Extended ? OI_REMOTEUPDATE_DATA3 : OI_REMOTEUPDATE_DATA2);
 }
 
-void supla_client_channels::set_channel_function(void *srpc, int ChannelId,
-                                                 int Func) {
+void supla_client_channels::set_channel_function(int ChannelId, int Func) {
   supla_client_channel *channel = find_channel(ChannelId);
 
   if (channel != nullptr) {
     channel->set_func(Func);
-    remote_update(srpc);
+    getClient()->remote_update_lists();
   }
 }
 
-void supla_client_channels::set_channel_caption(void *srpc, int ChannelId,
-                                                char *Caption) {
+void supla_client_channels::set_channel_caption(int ChannelId, char *Caption) {
   supla_client_channel *channel = find_channel(ChannelId);
 
   if (channel != nullptr) {
     channel->setCaption(Caption);
-    remote_update(srpc);
+    getClient()->remote_update_lists();
   }
 }
 
@@ -333,9 +331,11 @@ unsigned _supla_int64_t supla_client_channels::value_validity_time_usec(void) {
   return result;
 }
 
-void supla_client_channels::update_expired(void *srpc) {
+void supla_client_channels::update_expired(void) {
   void *arr = getArr();
   supla_client_channel *channel = nullptr;
+
+  bool remote_update = false;
 
   safe_array_lock(arr);
   for (int a = 0; a < safe_array_count(arr); a++) {
@@ -344,12 +344,16 @@ void supla_client_channels::update_expired(void *srpc) {
       if (channel->isValueValidityTimeSet() &&
           channel->getValueValidityTimeUSec() == 0) {
         channel->resetValueValidityTime();
-
-        on_value_changed(srpc, channel, OI_REMOTEUPDATE_DATA2);
+        channel->mark_for_remote_update(OI_REMOTEUPDATE_DATA2);
+        remote_update = true;
       }
     }
   }
   safe_array_unlock(arr);
+
+  if (remote_update) {
+    getClient()->remote_update_lists();
+  }
 }
 
 void supla_client_channels::for_each(

@@ -48,8 +48,8 @@ class supla_client_channelgroups : public supla_client_objcontainer {
   virtual bool add(supla_client_objcontainer_item *obj, e_objc_scope scope);
   supla_client_channelgroup *findGroup(int Id);
   bool groupExists(int Id);
-  void on_channel_value_changed(void *srpc, int DeviceId, int ChannelId);
-  void set_caption(void *srpc, int id, char *caption);
+  void on_channel_value_changed(int DeviceId, int ChannelId);
+  void set_caption(int id, char *caption);
 };
 
 #endif /* CLIENTCHANNELGROUPS_H_ */
