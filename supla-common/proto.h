@@ -596,8 +596,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_FLAG_CALCFG_RESTART_DEVICE 0x0800          // ver. >= 25
 #define SUPLA_DEVICE_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION 0x1000  // ver. >= 25
 #define SUPLA_DEVICE_FLAG_BLOCK_ADDING_CHANNELS_AFTER_DELETION \
-  0x2000  // ver. >= 25
-#define SUPLA_DEVICE_FLAG_CALCFG_FACTORY_RESET_SUPPORTED 0x4000   // ver. >= 28
+  0x2000                                                         // ver. >= 25
+#define SUPLA_DEVICE_FLAG_CALCFG_FACTORY_RESET_SUPPORTED 0x4000  // ver. >= 28
 #define SUPLA_DEVICE_FLAG_AUTOMATIC_FIRMWARE_UPDATE_SUPPORTED \
   0x8000  // ver. >= 28
 #define SUPLA_DEVICE_FLAG_CALCFG_SET_CFG_MODE_PASSWORD_SUPPORTED \
@@ -2290,10 +2290,10 @@ typedef struct {
 #define SUPLA_FIRMWARE_CHECK_RESULT_ERROR 2
 
 typedef struct {
-  unsigned char Result;   // SUPLA_FIRMWARE_CHECK_RESULT_
+  unsigned char Result;  // SUPLA_FIRMWARE_CHECK_RESULT_
   char SoftVer[SUPLA_SOFTVER_MAXSIZE];
   char ChangelogUrl[SUPLA_URL_PATH_MAXSIZE];
-} TCalCfg_FirmwareCheckResult;            // v. >= 28
+} TCalCfg_FirmwareCheckResult;  // v. >= 28
 
 // SetCfgModePassword result is send in TDS_DeviceCalCfgResult. Possible values:
 // SUPLA_CALCFG_RESULT_TRUE - password successfully changed
@@ -2306,7 +2306,7 @@ typedef struct {
   // New password should be at least 8 characters long, at least one uppercase
   // letter, one lowercase letter and one number
   char NewPassword[SUPLA_PASSWORD_MAXSIZE];
-} TCalCfg_SetCfgModePassword;             // v. >= 28
+} TCalCfg_SetCfgModePassword;  // v. >= 28
 
 #define RGBW_BRIGHTNESS_ONOFF 0x1
 #define RGBW_COLOR_ONOFF 0x2
@@ -2606,6 +2606,7 @@ typedef struct {
 // SWITCHCYCLECOUNT and defualtIconField are is mutually exclusive. Use only one
 // of them.
 #define SUPLA_CHANNELSTATE_FIELD_SWITCHCYCLECOUNT 0x8000
+#define SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL 0x10000
 
 #define SUPLA_LASTCONNECTIONRESETCAUSE_UNKNOWN 0
 #define SUPLA_LASTCONNECTIONRESETCAUSE_ACTIVITY_TIMEOUT 1
@@ -3191,7 +3192,7 @@ typedef struct {
   unsigned char InvertedLogic;              // 0 - not inverted, 1 - inverted
   unsigned _supla_int16_t FilteringTimeMs;  // 0 - not used, > 0 - time in ms
   unsigned _supla_int16_t
-      Timeout;  // 0 - not used, > 0 - time in 0.1 s, max 36000
+      Timeout;                // 0 - not used, > 0 - time in 0.1 s, max 36000
   unsigned char Sensitivity;  // 0 - not used, 1..101 - sensitivity 0..100 %
                               // value 1 (0 %) means "OFF"
   unsigned char

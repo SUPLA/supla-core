@@ -44,6 +44,7 @@ using std::string;
 #define JSON_FIELD_LIGHT_SOURCE_LIFESPAN_LEFT 16
 #define JSON_FIELD_LIGHT_SOURCE_OPERATING_TIME 17
 #define JSON_FIELD_OPERATING_TIME 18
+#define JSON_FIELD_DEVICE_BATTERY_LEVEL 19
 
 const map<unsigned _supla_int16_t, string> supla_channel_state::field_map = {
     {JSON_FIELD_DEFAULT_ICON_FIELD, "defaultIconField"},
@@ -64,6 +65,7 @@ const map<unsigned _supla_int16_t, string> supla_channel_state::field_map = {
     {JSON_FIELD_LIGHT_SOURCE_LIFESPAN_LEFT, "lightSourceLifespanLeft"},
     {JSON_FIELD_LIGHT_SOURCE_OPERATING_TIME, "lightSourceOperatingTime"},
     {JSON_FIELD_OPERATING_TIME, "operatingTime"},
+    {JSON_FIELD_DEVICE_BATTERY_LEVEL, "deviceBatteryLevel"},
 };
 
 supla_channel_state::supla_channel_state(void)
@@ -275,6 +277,12 @@ void supla_channel_state::apply_json(const char *json) {
     state.OperatingTime = dbl_val;
   }
 
+  if (get_bool(root, field_map.at(JSON_FIELD_DEVICE_BATTERY_LEVEL).c_str(),
+               &bool_val)) {
+    state.Fields |= SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL;
+    state.OperatingTime = dbl_val;
+  }
+
   cJSON_Delete(root);
 }
 
@@ -406,6 +414,14 @@ char *supla_channel_state::get_json(void) {
       (state.Fields & SUPLA_CHANNELSTATE_FIELD_OPERATINGTIME)) {
     set_item_value(root, field_map.at(JSON_FIELD_OPERATING_TIME).c_str(),
                    cJSON_Number, true, nullptr, nullptr, state.OperatingTime);
+  }
+
+  if (state.Fields & SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL) {
+    set_item_value(root, field_map.at(JSON_FIELD_DEVICE_BATTERY_LEVEL).c_str(),
+                   cJSON_True, true, nullptr, nullptr, 0);
+  } else {
+    cJSON_DeleteItemFromObject(
+        root, field_map.at(JSON_FIELD_DEVICE_BATTERY_LEVEL).c_str());
   }
 
   char *result = cJSON_PrintUnformatted(root);
