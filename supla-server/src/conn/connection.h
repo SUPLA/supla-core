@@ -82,6 +82,7 @@ class supla_connection {
 
   void execute(void *sthread);
   void terminate(void);
+  void raise_event(void);
   void on_object_registration_done(void);
   virtual ~supla_connection();
 

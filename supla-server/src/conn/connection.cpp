@@ -466,3 +466,5 @@ unsigned char supla_connection::get_activity_timeout(void) {
 unsigned char supla_connection::get_protocol_version(void) {
   return srpc_get_proto_version(_srpc);
 }
+
+void supla_connection::raise_event(void) { eh_raise_event(eh); }

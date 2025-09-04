@@ -59,6 +59,7 @@ class supla_client : public supla_abstract_connection_object {
   supla_client_channel_relation_remote_updater *channel_relation_remote_updater;
   supla_client_channels_state *channels_state;
   supla_client_channel_state_remote_updater *channel_state_remote_updater;
+  bool remote_lists_need_to_be_updated;
 
  protected:
   friend class supla_register_client;

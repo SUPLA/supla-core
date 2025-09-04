@@ -46,6 +46,8 @@ supla_client_call_handler_collection supla_client::call_handler_collection;
 
 supla_client::supla_client(supla_connection *connection)
     : supla_abstract_connection_object(connection) {
+  remote_lists_need_to_be_updated = false;
+
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);
   this->cgroups = new supla_client_channelgroups(this);
@@ -173,21 +175,11 @@ void supla_client::on_channel_value_changed(int DeviceId, int ChannelId,
 }
 
 void supla_client::remote_update_lists(void) {
-  if (locations->remote_update(
-          get_connection()->get_srpc_adapter()->get_srpc()))
-    return;
+  lock();
+  remote_lists_need_to_be_updated = true;
+  unlock();
 
-  if (channels->remote_update(get_connection()->get_srpc_adapter()->get_srpc()))
-    return;
-
-  if (cgroups->remote_update(get_connection()->get_srpc_adapter()->get_srpc()))
-    return;
-
-  if (scenes->update_remote()) return;
-
-  if (channel_relations->update_remote()) return;
-
-  if (channels_state->update_remote()) return;
+  get_connection()->raise_event();
 }
 
 void supla_client::load_config(void) {
@@ -353,6 +345,31 @@ void supla_client::set_scene_caption(int scene_id, char *caption) {
 void supla_client::iterate() {
   supla_abstract_connection_object::iterate();
   channels->update_expired(get_connection()->get_srpc_adapter()->get_srpc());
+
+  lock();
+  if (remote_lists_need_to_be_updated) {
+    remote_lists_need_to_be_updated = false;
+    unlock();
+  } else {
+    unlock();
+    return;
+  }
+
+  if (locations->remote_update(
+          get_connection()->get_srpc_adapter()->get_srpc()))
+    return;
+
+  if (channels->remote_update(get_connection()->get_srpc_adapter()->get_srpc()))
+    return;
+
+  if (cgroups->remote_update(get_connection()->get_srpc_adapter()->get_srpc()))
+    return;
+
+  if (scenes->update_remote()) return;
+
+  if (channel_relations->update_remote()) return;
+
+  if (channels_state->update_remote()) return;
 }
 
 void supla_client::connection_will_close(void) {
