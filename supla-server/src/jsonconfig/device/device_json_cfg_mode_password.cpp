@@ -80,6 +80,7 @@ bool device_json_cfg_mode_password::set_calcfg_result(
 
     switch (result->Result) {
       case SUPLA_CALCFG_RESULT_TRUE:
+      case SUPLA_CALCFG_RESULT_DONE:
         set_true();
         break;
       case SUPLA_CALCFG_RESULT_UNAUTHORIZED:

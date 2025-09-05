@@ -124,6 +124,16 @@ TEST_F(DeviceJsonCfgModePasswordTest, setCalCfgResult) {
                "\"TRUE\"}}");
   free(str);
 
+  result.Result = SUPLA_CALCFG_RESULT_DONE;
+  EXPECT_TRUE(json_result.set_calcfg_result(&result));
+
+  str = json_result.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"setCfgModePassword\":{\"timestamp\":1754227503,\"status\":"
+               "\"TRUE\"}}");
+  free(str);
+
   result.Result = SUPLA_CALCFG_RESULT_UNAUTHORIZED;
   EXPECT_TRUE(json_result.set_calcfg_result(&result));
 
