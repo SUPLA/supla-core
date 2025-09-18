@@ -16,7 +16,7 @@
 
 set -e 
 
-[ -z "$NDK_ROOT" ] && NDK_ROOT=$(echo ~/Library/Android/ndk-r23b)
+[ -z "$NDK_ROOT" ] && NDK_ROOT=$(echo ~/Library/Android/ndk-r27d)
 [ -z "$SUPLA_ANDROID" ] && SUPLA_ANDROID=$(echo ~/StudioProjects/supla-android)
 [ -z "$OPENSSL_ANDROID" ] && export OPENSSL_ANDROID=$(echo ~/CProjects/openssl/OpenSSL-for-Android)
 
