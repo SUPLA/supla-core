@@ -194,6 +194,12 @@ static_assert(sizeof(TCalCfg_ZWave_WakeupSettingsReport) <=
 static_assert((unsigned int)3 == sizeof(TCalCfg_ZWave_WakeUpTime));
 static_assert(sizeof(TCalCfg_ZWave_WakeUpTime) <=
               (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+static_assert((unsigned int)123 == sizeof(TCalCfg_FirmwareCheckResult));
+static_assert(sizeof(TCalCfg_FirmwareCheckResult) <=
+              (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+static_assert((unsigned int)64 == sizeof(TCalCfg_SetCfgModePassword));
+static_assert(sizeof(TCalCfg_SetCfgModePassword) <=
+              (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 static_assert((unsigned int)13 == sizeof(TSD_ChannelIntParams));
 static_assert((unsigned int)1 == sizeof(TDS_GetChannelIntParamsRequest));
 static_assert((unsigned int)3 == sizeof(TRelayChannel_Value));

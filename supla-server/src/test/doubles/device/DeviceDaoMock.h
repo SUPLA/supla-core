@@ -103,8 +103,9 @@ class DeviceDaoMock : public supla_abstract_device_dao {
 
   MOCK_METHOD2(on_channel_added, bool(int device_id, int channel_id));
 
-  MOCK_METHOD4(set_device_config,
-               bool(int user_id, int device_id, device_json_config *config,
+  MOCK_METHOD5(set_device_config,
+               bool(int user_id, int device_id, supla_json_config *config,
+                    bool leave_only_available_fields,
                     unsigned _supla_int16_t available_fields));
 
   MOCK_METHOD3(get_device_config,

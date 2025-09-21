@@ -503,6 +503,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_WATER_TANK 982                    // ver. >= 26
 #define SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR 990        // ver. >= 26
 #define SUPLA_CHANNELFNC_FLOOD_SENSOR 1000                 // ver. >= 27
+#define SUPLA_CHANNELFNC_MOTION_SENSOR 1010                // ver. >= 27
+#define SUPLA_CHANNELFNC_BINARY_SENSOR 1020                // ver. >= 27
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -594,10 +596,12 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_FLAG_CALCFG_RESTART_DEVICE 0x0800          // ver. >= 25
 #define SUPLA_DEVICE_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION 0x1000  // ver. >= 25
 #define SUPLA_DEVICE_FLAG_BLOCK_ADDING_CHANNELS_AFTER_DELETION \
-  0x2000  // ver. >= 25
-#define SUPLA_DEVICE_FLAG_CALCFG_FACTORY_RESET_SUPPORTED 0x4000   // ver. >= 28
+  0x2000                                                         // ver. >= 25
+#define SUPLA_DEVICE_FLAG_CALCFG_FACTORY_RESET_SUPPORTED 0x4000  // ver. >= 28
 #define SUPLA_DEVICE_FLAG_AUTOMATIC_FIRMWARE_UPDATE_SUPPORTED \
   0x8000  // ver. >= 28
+#define SUPLA_DEVICE_FLAG_CALCFG_SET_CFG_MODE_PASSWORD_SUPPORTED \
+  0x10000  // ver. >= 28
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
@@ -1855,12 +1859,12 @@ typedef struct {
   unsigned _supla_int16_t freq;        // * 0.01 Hz
   unsigned _supla_int16_t voltage[3];  // * 0.01 V
   unsigned _supla_int16_t
-      current[3];  // * 0.001A (0.01A WHEN EM_VAR_CURRENT_OVER_65A)
+      current[3];  // * 0.001 A (0.01 A WHEN EM_VAR_CURRENT_OVER_65A)
   _supla_int_t
-      power_active[3];  // * 0.00001W (0.01kW WHEN EM_VAR_POWER_ACTIVE_KW)
-  _supla_int_t power_reactive[3];  // * 0.00001var (0.01kvar WHEN
+      power_active[3];  // * 0.00001 W (0.00001 kW WHEN EM_VAR_POWER_ACTIVE_KW)
+  _supla_int_t power_reactive[3];  // * 0.00001 var (0.00001 kvar WHEN
                                    // EM_VAR_POWER_REACTIVE_KVAR)
-  _supla_int_t power_apparent[3];  // * 0.00001VA (0.01kVA WHEN
+  _supla_int_t power_apparent[3];  // * 0.00001 VA (0.00001 kVA WHEN
                                    // EM_VAR_POWER_APPARENT_KVA)
   _supla_int16_t power_factor[3];  // * 0.001
   _supla_int16_t phase_angle[3];   // * 0.1 degree
@@ -2142,6 +2146,7 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE 9020       // v. >= 28
 #define SUPLA_CALCFG_CMD_START_FIRMWARE_UPDATE 9030       // v. >= 28
 #define SUPLA_CALCFG_CMD_START_SECURITY_UPDATE 9040       // v. >= 28
+#define SUPLA_CALCFG_CMD_SET_CFG_MODE_PASSWORD 9050       // v. >= 28
 #define SUPLA_CALCFG_CMD_SET_TIME 9100                    // v. >= 21
 #define SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING 9200     // v. >= 25
 #define SUPLA_CALCFG_CMD_IDENTIFY_DEVICE 9300             // v. >= 25
@@ -2285,10 +2290,23 @@ typedef struct {
 #define SUPLA_FIRMWARE_CHECK_RESULT_ERROR 2
 
 typedef struct {
-  unsigned char Result;   // SUPLA_FIRMWARE_CHECK_RESULT_
+  unsigned char Result;  // SUPLA_FIRMWARE_CHECK_RESULT_
   char SoftVer[SUPLA_SOFTVER_MAXSIZE];
-} TCalCfg_FirmwareCheckResult;            // v. >= 28
+  char ChangelogUrl[SUPLA_URL_PATH_MAXSIZE];
+} TCalCfg_FirmwareCheckResult;  // v. >= 28
 
+// SetCfgModePassword result is send in TDS_DeviceCalCfgResult. Possible values:
+// SUPLA_CALCFG_RESULT_TRUE - password successfully changed
+// SUPLA_CALCFG_RESULT_UNAUTHORIZED - unauthorized
+// SUPLA_CALCFG_RESULT_NOT_SUPPORTED - not supported
+// SUPLA_CALCFG_RESULT_FALSE - password change failed (i.e. don't meet security
+// requirements)
+
+typedef struct {
+  // New password should be at least 8 characters long, at least one uppercase
+  // letter, one lowercase letter and one number
+  char NewPassword[SUPLA_PASSWORD_MAXSIZE];
+} TCalCfg_SetCfgModePassword;  // v. >= 28
 
 #define RGBW_BRIGHTNESS_ONOFF 0x1
 #define RGBW_COLOR_ONOFF 0x2
@@ -2588,6 +2606,7 @@ typedef struct {
 // SWITCHCYCLECOUNT and defualtIconField are is mutually exclusive. Use only one
 // of them.
 #define SUPLA_CHANNELSTATE_FIELD_SWITCHCYCLECOUNT 0x8000
+#define SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL 0x10000
 
 #define SUPLA_LASTCONNECTIONRESETCAUSE_UNKNOWN 0
 #define SUPLA_LASTCONNECTIONRESETCAUSE_ACTIVITY_TIMEOUT 1
@@ -2961,13 +2980,13 @@ typedef struct {
 // Disabled - firmware update is disabled by user and can be changed remotely
 // Security only - firmware update is enabled only for security updates
 // All enabled - firmware update is enabled for all updates
-#define SUPLA_FIRMWARE_UPDATE_MODE_FORCED_OFF 0
-#define SUPLA_FIRMWARE_UPDATE_MODE_DISABLED 1
-#define SUPLA_FIRMWARE_UPDATE_MODE_SECURITY_ONLY 2  // default
-#define SUPLA_FIRMWARE_UPDATE_MODE_ALL_ENABLED 3
+#define SUPLA_FIRMWARE_UPDATE_POLICY_FORCED_OFF 0
+#define SUPLA_FIRMWARE_UPDATE_POLICY_DISABLED 1
+#define SUPLA_FIRMWARE_UPDATE_POLICY_SECURITY_ONLY 2  // default
+#define SUPLA_FIRMWARE_UPDATE_POLICY_ALL_ENABLED 3
 
 typedef struct {
-  unsigned char Mode;  // SUPLA_FIRMWARE_UPDATE_MODE_
+  unsigned char Policy;  // SUPLA_FIRMWARE_UPDATE_POLICY_
   unsigned char Reserved[20];
 } TDeviceConfig_FirmwareUpdate;
 
@@ -3155,14 +3174,29 @@ typedef struct {
 // Device doesn't apply this inverted logic on communication towards server.
 // It is used only for interanal purposes and for other external interfaces
 // like MQTT
+//
 // FilteringTimeMs is used to configure how long device should wait for stable
 // input signal before changing it's state. If value is set to 0, then field
 // is not used by device and server should ignore it. Device may impose minimum
 // and maximum values for this field.
+//
+// Timeout is used to configure how long device should wait since last "1"
+// detection before it sets "0". If value is set to 0, then field is not used
+//
+// Sensitivity is used to configure how sensitive device should be.
+// Sensitivity 1 % (value == 2) is the lowest possible sensitivity.
+// Sensitivity 100 % (value == 101) is the highest possible sensitivity.
+// If value is set to 0, then field is not used
+// Value 1 (0 %) means "OFF"
 typedef struct {
   unsigned char InvertedLogic;              // 0 - not inverted, 1 - inverted
   unsigned _supla_int16_t FilteringTimeMs;  // 0 - not used, > 0 - time in ms
-  unsigned char Reserved[29];
+  unsigned _supla_int16_t
+      Timeout;                // 0 - not used, > 0 - time in 0.1 s, max 36000
+  unsigned char Sensitivity;  // 0 - not used, 1..101 - sensitivity 0..100 %
+                              // value 1 (0 %) means "OFF"
+  unsigned char
+      Reserved[29 - sizeof(unsigned char) - sizeof(unsigned _supla_int16_t)];
 } TChannelConfig_BinarySensor;  // v. >= 21
 
 // Not set is set when there is no thermometer for "AUX" available

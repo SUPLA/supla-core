@@ -35,7 +35,8 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT, "content"},
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE, "offDelayType"},
     {SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED, "powerStatusLed"},
-    {SUPLA_DEVICE_CONFIG_FIELD_MODBUS, "modbus"}};
+    {SUPLA_DEVICE_CONFIG_FIELD_MODBUS, "modbus"},
+    {SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE, "firmwareUpdatePolicy"}};
 
 const map<unsigned _supla_int16_t, string>
     device_json_config::home_screen_content_map = {
@@ -714,6 +715,29 @@ void device_json_config::set_modbus_config(TDeviceConfig_Modbus *cfg) {
       nullptr, 0);
 }
 
+string device_json_config::fw_update_policy_to_string(unsigned char policy) {
+  switch (policy) {
+    case SUPLA_FIRMWARE_UPDATE_POLICY_FORCED_OFF:
+      return "FORCED_OFF";
+    case SUPLA_FIRMWARE_UPDATE_POLICY_DISABLED:
+      return "DISABLED";
+    case SUPLA_FIRMWARE_UPDATE_POLICY_ALL_ENABLED:
+      return "ALL_ENABLED";
+  }
+
+  return "SECURITY_ONLY";
+}
+
+void device_json_config::set_firmware_update_config(
+    TDeviceConfig_FirmwareUpdate *cfg) {
+  if (cfg) {
+    set_item_value(get_user_root(),
+                   field_map.at(SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE),
+                   cJSON_String, true, nullptr,
+                   fw_update_policy_to_string(cfg->Policy).c_str(), 0);
+  }
+}
+
 cJSON *device_json_config::get_root(bool create, bool user,
                                     unsigned _supla_int64_t field) {
   cJSON *root = user ? get_user_root() : get_properties_root();
@@ -882,6 +906,12 @@ void device_json_config::set_config(TSDS_SetDeviceConfig *config) {
         case SUPLA_DEVICE_CONFIG_FIELD_MODBUS:
           if (left >= (size = sizeof(TDeviceConfig_Modbus))) {
             set_modbus_config(static_cast<TDeviceConfig_Modbus *>(ptr));
+          }
+          break;
+        case SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE:
+          if (left >= (size = sizeof(TDeviceConfig_FirmwareUpdate))) {
+            set_firmware_update_config(
+                static_cast<TDeviceConfig_FirmwareUpdate *>(ptr));
           }
           break;
       }
@@ -1192,6 +1222,33 @@ bool device_json_config::get_modbus_config(TDeviceConfig_Modbus *cfg) {
   return result;
 }
 
+unsigned char device_json_config::string_to_fw_update_policy(
+    const std::string &policy) {
+  if (policy == "FORCED_OFF") {
+    return SUPLA_FIRMWARE_UPDATE_POLICY_FORCED_OFF;
+  } else if (policy == "DISABLED") {
+    return SUPLA_FIRMWARE_UPDATE_POLICY_DISABLED;
+  } else if (policy == "ALL_ENABLED") {
+    return SUPLA_FIRMWARE_UPDATE_POLICY_ALL_ENABLED;
+  }
+
+  return SUPLA_FIRMWARE_UPDATE_POLICY_SECURITY_ONLY;
+}
+
+bool device_json_config::get_firmware_update_config(
+    TDeviceConfig_FirmwareUpdate *cfg) {
+  string str_value;
+  if (cfg &&
+      get_string(
+          get_user_root(),
+          field_map.at(SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE).c_str(),
+          &str_value)) {
+    cfg->Policy = string_to_fw_update_policy(str_value);
+    return true;
+  }
+  return false;
+}
+
 void device_json_config::get_config(TSDS_SetDeviceConfig *config,
                                     unsigned _supla_int64_t fields,
                                     unsigned _supla_int64_t *fields_left) {
@@ -1277,6 +1334,11 @@ void device_json_config::get_config(TSDS_SetDeviceConfig *config,
           field_set =
               left >= (size = sizeof(TDeviceConfig_Modbus)) &&
               get_modbus_config(static_cast<TDeviceConfig_Modbus *>(ptr));
+          break;
+        case SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE:
+          field_set = left >= (size = sizeof(TDeviceConfig_FirmwareUpdate)) &&
+                      get_firmware_update_config(
+                          static_cast<TDeviceConfig_FirmwareUpdate *>(ptr));
           break;
       }
 

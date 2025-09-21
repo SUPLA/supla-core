@@ -46,6 +46,8 @@ supla_client_call_handler_collection supla_client::call_handler_collection;
 
 supla_client::supla_client(supla_connection *connection)
     : supla_abstract_connection_object(connection) {
+  remote_lists_need_to_be_updated = false;
+
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);
   this->cgroups = new supla_client_channelgroups(this);
@@ -163,31 +165,18 @@ void supla_client::update_device_channels(int LocationID, int DeviceID,
 
 void supla_client::on_channel_value_changed(int DeviceId, int ChannelId,
                                             bool Extended) {
-  channels->on_channel_value_changed(
-      get_connection()->get_srpc_adapter()->get_srpc(), DeviceId, ChannelId,
-      Extended);
+  channels->on_channel_value_changed(DeviceId, ChannelId, Extended);
   if (!Extended) {
-    cgroups->on_channel_value_changed(
-        get_connection()->get_srpc_adapter()->get_srpc(), DeviceId, ChannelId);
+    cgroups->on_channel_value_changed(DeviceId, ChannelId);
   }
 }
 
 void supla_client::remote_update_lists(void) {
-  if (locations->remote_update(
-          get_connection()->get_srpc_adapter()->get_srpc()))
-    return;
+  lock();
+  remote_lists_need_to_be_updated = true;
+  unlock();
 
-  if (channels->remote_update(get_connection()->get_srpc_adapter()->get_srpc()))
-    return;
-
-  if (cgroups->remote_update(get_connection()->get_srpc_adapter()->get_srpc()))
-    return;
-
-  if (scenes->update_remote()) return;
-
-  if (channel_relations->update_remote()) return;
-
-  if (channels_state->update_remote()) return;
+  get_connection()->raise_event();
 }
 
 void supla_client::load_config(void) {
@@ -316,8 +305,7 @@ unsigned char supla_client::send_device_config(int device_id,
 }
 
 void supla_client::set_channel_function(int ChannelId, int Func) {
-  channels->set_channel_function(
-      get_connection()->get_srpc_adapter()->get_srpc(), ChannelId, Func);
+  channels->set_channel_function(ChannelId, Func);
 }
 
 void supla_client::set_channel_function_result(
@@ -330,14 +318,12 @@ void supla_client::set_channel_function_result(
 }
 
 void supla_client::set_channel_caption(int ChannelId, char *Caption) {
-  channels->set_channel_caption(
-      get_connection()->get_srpc_adapter()->get_srpc(), ChannelId, Caption);
+  channels->set_channel_caption(ChannelId, Caption);
 }
 
 void supla_client::set_channel_group_caption(int ChannelGroupId,
                                              char *Caption) {
-  cgroups->set_caption(get_connection()->get_srpc_adapter()->get_srpc(),
-                       ChannelGroupId, Caption);
+  cgroups->set_caption(ChannelGroupId, Caption);
 }
 
 void supla_client::set_location_caption(int LocationId, char *Caption) {
@@ -352,7 +338,32 @@ void supla_client::set_scene_caption(int scene_id, char *caption) {
 
 void supla_client::iterate() {
   supla_abstract_connection_object::iterate();
-  channels->update_expired(get_connection()->get_srpc_adapter()->get_srpc());
+  channels->update_expired();
+
+  lock();
+  if (remote_lists_need_to_be_updated) {
+    remote_lists_need_to_be_updated = false;
+    unlock();
+  } else {
+    unlock();
+    return;
+  }
+
+  if (locations->remote_update(
+          get_connection()->get_srpc_adapter()->get_srpc()))
+    return;
+
+  if (channels->remote_update(get_connection()->get_srpc_adapter()->get_srpc()))
+    return;
+
+  if (cgroups->remote_update(get_connection()->get_srpc_adapter()->get_srpc()))
+    return;
+
+  if (scenes->update_remote()) return;
+
+  if (channel_relations->update_remote()) return;
+
+  if (channels_state->update_remote()) return;
 }
 
 void supla_client::connection_will_close(void) {

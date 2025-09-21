@@ -48,13 +48,14 @@ TEST_F(ChannelStateTest, ffffffff_rawToJsonAndBack) {
   char *json = state.get_json();
   ASSERT_NE(json, nullptr);
 
-  EXPECT_STREQ(json,
-               "{\"switchCycleCount\":1,\"ipv4\":\"192.168.10.20\",\"mac\":"
-               "\"FA:FB:FC:FD:FE:FF\",\"batteryLevel\":4,\"batteryPowered\":"
-               "true,\"wifiRSSI\":6,\"wifiSignalStrength\":7,"
-               "\"bridgeNodeOnline\":true,\"bridgeNodeSignalStrength\":9,"
-               "\"uptime\":10,\"connectionUptime\":11,\"batteryHealth\":12,"
-               "\"lastConnectionResetCause\":13,\"lightSourceLifespan\":14}");
+  EXPECT_STREQ(
+      json,
+      "{\"switchCycleCount\":1,\"ipv4\":\"192.168.10.20\",\"mac\":\"FA:FB:FC:"
+      "FD:FE:FF\",\"batteryLevel\":4,\"batteryPowered\":true,\"wifiRSSI\":6,"
+      "\"wifiSignalStrength\":7,\"bridgeNodeOnline\":true,"
+      "\"bridgeNodeSignalStrength\":9,\"uptime\":10,\"connectionUptime\":11,"
+      "\"batteryHealth\":12,\"lastConnectionResetCause\":13,"
+      "\"lightSourceLifespan\":14,\"deviceBatteryLevel\":true}");
 
   raw.Fields = SUPLA_CHANNELSTATE_FIELD_IPV4 | SUPLA_CHANNELSTATE_FIELD_MAC |
                SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL |
@@ -68,7 +69,8 @@ TEST_F(ChannelStateTest, ffffffff_rawToJsonAndBack) {
                SUPLA_CHANNELSTATE_FIELD_BRIDGENODEONLINE |
                SUPLA_CHANNELSTATE_FIELD_LASTCONNECTIONRESETCAUSE |
                SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCELIFESPAN |
-               SUPLA_CHANNELSTATE_FIELD_SWITCHCYCLECOUNT;
+               SUPLA_CHANNELSTATE_FIELD_SWITCHCYCLECOUNT |
+               SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL;
 
   raw.BatteryPowered = 1;
   raw.BridgeNodeOnline = 1;
@@ -435,6 +437,29 @@ TEST_F(ChannelStateTest, getVbtValue) {
 
   EXPECT_TRUE(state.get_vbt_value(var_name_battery_powered, &value));
   EXPECT_EQ(value, 1);
+}
+
+TEST_F(ChannelStateTest, getJSON_deviceBatteryLevel_notSet) {
+  TDSC_ChannelState raw = {};
+  supla_channel_state state(&raw);
+  char *json = state.get_json();
+  ASSERT_NE(json, nullptr);
+
+  EXPECT_STREQ(json, "{\"defaultIconField\":0}");
+
+  free(json);
+}
+
+TEST_F(ChannelStateTest, getJSON_deviceBatteryLevel_set) {
+  TDSC_ChannelState raw = {};
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL;
+  supla_channel_state state(&raw);
+  char *json = state.get_json();
+  ASSERT_NE(json, nullptr);
+
+  EXPECT_STREQ(json, "{\"defaultIconField\":0,\"deviceBatteryLevel\":true}");
+
+  free(json);
 }
 
 } /* namespace testing */

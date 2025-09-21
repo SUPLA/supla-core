@@ -59,6 +59,7 @@ class supla_client : public supla_abstract_connection_object {
   supla_client_channel_relation_remote_updater *channel_relation_remote_updater;
   supla_client_channels_state *channels_state;
   supla_client_channel_state_remote_updater *channel_state_remote_updater;
+  bool remote_lists_need_to_be_updated;
 
  protected:
   friend class supla_register_client;
@@ -66,7 +67,6 @@ class supla_client : public supla_abstract_connection_object {
   void loadIODevices(void);
   void load_config(void);
 
-  void remote_update_lists(void);
   void set_name(const char *name);
   void set_access_id(int access_id);
   void update_channel_relations(void);
@@ -84,6 +84,7 @@ class supla_client : public supla_abstract_connection_object {
   virtual unsigned int get_time_to_wakeup_msec(void);
 
   virtual void iterate();
+  void remote_update_lists(void);
   virtual void connection_will_close(void);
   unsigned _supla_int64_t wait_time_usec();
 

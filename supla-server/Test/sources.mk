@@ -94,6 +94,7 @@ src/test/doubles/integration/mqtt \
 src/test/doubles/ipc \
 src/test/doubles/jsonconfig \
 src/test/doubles/jsonconfig/channel \
+src/test/doubles/jsonconfig/device \
 src/test/doubles/mqtt \
 src/test/doubles/push \
 src/test/doubles/scene \

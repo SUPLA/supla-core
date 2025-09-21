@@ -25,9 +25,6 @@
 
 class supla_ch_device_calcfg_result
     : public supla_abstract_device_srpc_call_handler {
- private:
-  void get_time_string(char* buffer, size_t buffer_size, int inc_seconds);
-
  protected:
   virtual void handle_call(std::shared_ptr<supla_device> device,
                            supla_abstract_srpc_adapter* srpc_adapter,

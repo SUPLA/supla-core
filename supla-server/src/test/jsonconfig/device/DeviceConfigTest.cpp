@@ -93,7 +93,8 @@ TEST_F(DeviceConfigTest, allFields) {
                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY |
                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT |
                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE |
-                   SUPLA_DEVICE_CONFIG_FIELD_MODBUS;
+                   SUPLA_DEVICE_CONFIG_FIELD_MODBUS |
+                   SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE;
 
   ((TDeviceConfig_StatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
       ->StatusLedType = SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF;
@@ -161,19 +162,25 @@ TEST_F(DeviceConfigTest, allFields) {
   modbus->Properties.Protocol.Reserved2 = 0;
   modbus->Properties.StopBits.Reserved = 0;
 
+  ((TDeviceConfig_FirmwareUpdate *)&sds_cfg.Config[sds_cfg.ConfigSize])
+      ->Policy = SUPLA_FIRMWARE_UPDATE_POLICY_ALL_ENABLED;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_FirmwareUpdate);
+  ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
+
   device_json_config cfg;
   cfg.set_config(&sds_cfg);
   char *str = cfg.get_user_config();
   ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str,
-               "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":{\"level\":"
-               "24},\"buttonVolume\":100,\"userInterface\":{\"disabled\":false}"
-               ",\"automaticTimeSync\":true,\"homeScreen\":{\"offDelay\":123,"
-               "\"content\":\"TIME_DATE\",\"offDelayType\":\"ALWAYS_ENABLED\"},"
-               "\"powerStatusLed\":\"ENABLED\",\"modbus\":{\"role\":\"SLAVE\","
-               "\"modbusAddress\":123,\"slaveTimeoutMs\":0,\"serialConfig\":{"
-               "\"mode\":\"RTU\",\"baudRate\":9600,\"stopBits\":\"ONE\"},"
-               "\"networkConfig\":{\"mode\":\"TCP\",\"port\":88}}}");
+  EXPECT_STREQ(
+      str,
+      "{\"statusLed\":\"ALWAYS_OFF\",\"screenBrightness\":{\"level\":24},"
+      "\"buttonVolume\":100,\"userInterface\":{\"disabled\":false},"
+      "\"automaticTimeSync\":true,\"homeScreen\":{\"offDelay\":123,\"content\":"
+      "\"TIME_DATE\",\"offDelayType\":\"ALWAYS_ENABLED\"},\"powerStatusLed\":"
+      "\"ENABLED\",\"modbus\":{\"role\":\"SLAVE\",\"modbusAddress\":123,"
+      "\"slaveTimeoutMs\":0,\"serialConfig\":{\"mode\":\"RTU\",\"baudRate\":"
+      "9600,\"stopBits\":\"ONE\"},\"networkConfig\":{\"mode\":\"TCP\",\"port\":"
+      "88}},\"firmwareUpdatePolicy\":\"ALL_ENABLED\"}");
 
   device_json_config cfg2;
   cfg2.set_user_config(str);

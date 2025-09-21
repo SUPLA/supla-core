@@ -29,6 +29,7 @@
 #include "device/device_dao.h"
 #include "http/http_event_hub.h"
 #include "jsonconfig/device/device_json_config.h"
+#include "jsonconfig/device/device_json_ota_updates.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
@@ -216,6 +217,8 @@ bool supla_device::pair_subdevice(const supla_caller &caller,
 }
 
 bool supla_device::calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd,
+                              unsigned _supla_int_t data_size,
+                              char data[SUPLA_CALCFG_DATA_MAXSIZE],
                               bool importat_for_sleepers) {
   if (get_flags() & flag) {
     TSD_DeviceCalCfgRequest request = {};
@@ -224,6 +227,10 @@ bool supla_device::calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd,
     request.Command = cmd;
     request.SenderID = 0;
     request.SuperUserAuthorized = 1;
+    if (data_size <= SUPLA_CALCFG_DATA_MAXSIZE) {
+      memcpy(request.Data, data, data_size);
+      request.DataSize = data_size;
+    }
 
     get_connection()->get_srpc_adapter()->sd_async_device_calcfg_request(
         &request);
@@ -240,10 +247,53 @@ bool supla_device::calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd,
 
 bool supla_device::calcfg_identify(void) {
   return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_IDENTIFY_DEVICE,
-                    SUPLA_CALCFG_CMD_IDENTIFY_DEVICE, true);
+                    SUPLA_CALCFG_CMD_IDENTIFY_DEVICE, 0, nullptr, true);
 }
 
 bool supla_device::calcfg_restart(void) {
   return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_RESTART_DEVICE,
-                    SUPLA_CALCFG_CMD_RESTART_DEVICE, true);
+                    SUPLA_CALCFG_CMD_RESTART_DEVICE, 0, nullptr, true);
+}
+
+bool supla_device::check_updates(void) {
+  if (calcfg_cmd(SUPLA_DEVICE_FLAG_AUTOMATIC_FIRMWARE_UPDATE_SUPPORTED,
+                 SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE, 0, nullptr, false)) {
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
+    device_json_ota_updates json;
+    json.set_checking();
+    dao.set_device_config(get_user_id(), get_id(), &json, false, 0);
+    return true;
+  }
+
+  return false;
+}
+
+bool supla_device::start_update(void) {
+  return calcfg_cmd(SUPLA_DEVICE_FLAG_AUTOMATIC_FIRMWARE_UPDATE_SUPPORTED,
+                    SUPLA_CALCFG_CMD_START_FIRMWARE_UPDATE, 0, nullptr, false);
+}
+
+bool supla_device::factory_reset(void) {
+  return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_FACTORY_RESET_SUPPORTED,
+                    SUPLA_CALCFG_CMD_RESET_TO_FACTORY_SETTINGS, 0, nullptr,
+                    false);
+}
+
+bool supla_device::set_cfg_mode_password(const char *password) {
+  if (password) {
+    size_t len = strnlen(password, SUPLA_PASSWORD_MAXSIZE);
+    if (len > 0 && len < SUPLA_PASSWORD_MAXSIZE) {
+      TCalCfg_SetCfgModePassword data = {};
+      strncpy(data.NewPassword, password, SUPLA_PASSWORD_MAXSIZE);
+      data.NewPassword[SUPLA_PASSWORD_MAXSIZE - 1] = 0;
+
+      return calcfg_cmd(
+          SUPLA_DEVICE_FLAG_CALCFG_SET_CFG_MODE_PASSWORD_SUPPORTED,
+          SUPLA_CALCFG_CMD_SET_CFG_MODE_PASSWORD, sizeof(data), (char *)&data,
+          false);
+    }
+  }
+
+  return false;
 }

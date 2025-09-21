@@ -29,6 +29,7 @@
 #include "ipc/device_set_time_command.h"
 #include "ipc/enter_cfg_mode_command.h"
 #include "ipc/execute_scene_command.h"
+#include "ipc/factory_reset_command.h"
 #include "ipc/get_char_command.h"
 #include "ipc/get_container_value_command.h"
 #include "ipc/get_digiglass_value_command.h"
@@ -56,8 +57,8 @@
 #include "ipc/is_client_connected_command.h"
 #include "ipc/is_device_connected_command.h"
 #include "ipc/mute_alarm_sound_command.h"
-#include "ipc/on_channel_config_changed_command.h"
 #include "ipc/on_channel_added_command.h"
+#include "ipc/on_channel_config_changed_command.h"
 #include "ipc/on_channel_deleted_command.h"
 #include "ipc/on_device_config_changed_command.h"
 #include "ipc/on_device_deleted_command.h"
@@ -68,12 +69,15 @@
 #include "ipc/on_state_webhook_changed_command.h"
 #include "ipc/on_user_settings_changed_command.h"
 #include "ipc/on_vbt_changed_command.h"
+#include "ipc/ota_check_updates_command.h"
+#include "ipc/ota_perform_update_command.h"
 #include "ipc/pair_subdevice_command.h"
 #include "ipc/recalibrate_command.h"
 #include "ipc/reset_counters_command.h"
 #include "ipc/restart_device_command.h"
 #include "ipc/restart_subdevice_command.h"
 #include "ipc/send_push_command.h"
+#include "ipc/set_cfg_mode_password_command.h"
 #include "ipc/set_cg_char_command.h"
 #include "ipc/set_cg_rgbw_command.h"
 #include "ipc/set_char_command.h"
@@ -195,6 +199,10 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_restart_device_command(socket_adapter));
   add_command(new supla_restart_subdevice_command(socket_adapter));
   add_command(new supla_update_channel_state_command(socket_adapter));
+  add_command(new supla_ota_check_updates_command(socket_adapter));
+  add_command(new supla_ota_perform_update_command(socket_adapter));
+  add_command(new supla_factory_reset_command(socket_adapter));
+  add_command(new supla_set_cfg_mode_password_command(socket_adapter));
 }
 
 supla_ipc_ctrl::~supla_ipc_ctrl() {}
