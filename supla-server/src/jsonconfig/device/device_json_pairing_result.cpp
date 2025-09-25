@@ -20,8 +20,6 @@
 
 #include <string>
 
-#include "json/json_helper.h"
-
 using std::string;
 
 device_json_pairing_result::device_json_pairing_result(void) {}
@@ -32,15 +30,29 @@ std::time_t device_json_pairing_result::get_time(void) {
   return std::time(nullptr);
 }
 
-void device_json_pairing_result::get_time_string(char* buffer,
-                                                 size_t buffer_size,
+void device_json_pairing_result::add_time_object(cJSON* root, const char* key,
                                                  int inc_seconds) {
+  char buffer[25] = {};
+
   std::time_t now = get_time();
   now += inc_seconds;
   std::tm utc_time;
   gmtime_r(&now, &utc_time);
-  std::strftime(buffer, buffer_size, "%Y-%m-%dT%H:%M:%SZ",
+  std::strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%SZ",
                 &utc_time);  // ISO 8601 UTC
+
+  cJSON_AddStringToObject(root, key ? key : "time", buffer);
+}
+
+char* device_json_pairing_result::pairing_request_sent(void) {
+  cJSON* json = cJSON_CreateObject();
+  add_time_object(json, nullptr, 0);
+  cJSON_AddStringToObject(json, "result", "REQUEST_SENT");
+
+  char* json_str = cJSON_PrintUnformatted(json);
+  cJSON_Delete(json);
+
+  return json_str;
 }
 
 char* device_json_pairing_result::calcfg_result_to_json(
@@ -51,10 +63,8 @@ char* device_json_pairing_result::calcfg_result_to_json(
 
   string result_string;
   cJSON* json = cJSON_CreateObject();
-  char buffer[25] = {};
 
-  get_time_string(buffer, sizeof(buffer), 0);
-  cJSON_AddStringToObject(json, "time", buffer);
+  add_time_object(json, nullptr, 0);
 
   switch (result->Result) {
     case SUPLA_CALCFG_RESULT_NOT_SUPPORTED:
@@ -91,15 +101,10 @@ char* device_json_pairing_result::calcfg_result_to_json(
 
     cJSON_AddStringToObject(json, "name", name.c_str());
 
-    get_time_string(buffer, sizeof(buffer),
-                    pairing_result->ElapsedTimeSec * -1);
-    cJSON_AddStringToObject(json, "startedAt", buffer);
-
-    get_time_string(
-        buffer, sizeof(buffer),
+    add_time_object(json, "startedAt", pairing_result->ElapsedTimeSec * -1);
+    add_time_object(
+        json, "timeoutAt",
         pairing_result->MaximumDurationSec - pairing_result->ElapsedTimeSec);
-
-    cJSON_AddStringToObject(json, "timeoutAt", buffer);
 
     switch (pairing_result->PairingResult) {
       case SUPLA_CALCFG_PAIRINGRESULT_PROCEDURE_STARTED:

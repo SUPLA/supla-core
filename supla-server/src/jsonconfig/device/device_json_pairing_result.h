@@ -23,11 +23,12 @@
 
 #include <ctime>
 
+#include "json/json_helper.h"
 #include "proto.h"
 
 class device_json_pairing_result {
  private:
-  void get_time_string(char *buffer, size_t buffer_size, int inc_seconds);
+  void add_time_object(cJSON *root, const char *key, int inc_seconds);
 
  protected:
   virtual std::time_t get_time(void);
@@ -36,6 +37,7 @@ class device_json_pairing_result {
   device_json_pairing_result(void);
   virtual ~device_json_pairing_result(void);
   char *calcfg_result_to_json(TDS_DeviceCalCfgResult *result);
+  char *pairing_request_sent(void);
 };
 
 #endif /* DEVICE_JSON_PAIRING_RESULT_H_ */

@@ -30,6 +30,7 @@
 #include "http/http_event_hub.h"
 #include "jsonconfig/device/device_json_config.h"
 #include "jsonconfig/device/device_json_ota_updates.h"
+#include "jsonconfig/device/device_json_pairing_result.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
@@ -201,7 +202,14 @@ bool supla_device::pair_subdevice(const supla_caller &caller,
 
     supla_db_access_provider dba;
     supla_device_dao dao(&dba);
-    dao.update_device_pairing_result(get_id(), nullptr);
+
+    char *json = device_json_pairing_result().pairing_request_sent();
+
+    dao.update_device_pairing_result(get_id(), json);
+
+    if (json) {
+      free(json);
+    }
 
     request.ChannelNumber = -1;
     request.Command = SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING;
