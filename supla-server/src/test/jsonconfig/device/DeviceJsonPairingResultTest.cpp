@@ -48,6 +48,14 @@ TEST_F(DeviceJsonPairingResultTest, null) {
   EXPECT_EQ(result.calcfg_result_to_json(&calcafg_result), nullptr);
 }
 
+TEST_F(DeviceJsonPairingResultTest, requestSent) {
+  char* str = result.pairing_request_sent();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str, "{\"time\":\"2025-08-25T18:48:00Z\",\"result\":\"REQUEST_SENT\"}");
+  free(str);
+}
+
 TEST_F(DeviceJsonPairingResultTest, result0) {
   TDS_DeviceCalCfgResult calcafg_result = {};
   calcafg_result.Command = SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING;
