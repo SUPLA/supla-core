@@ -185,6 +185,15 @@ jobject getRollerShutterPositionObject(JNIEnv *env, jint position) {
   return env->NewObject(cls, methodID, nullptr, true);
 }
 
+jobject getContainerLevelObject(JNIEnv *env, jint position) {
+  jclass cls =
+      env->FindClass("org/supla/android/lib/singlecall/ContainerLevel");
+  jmethodID methodID =
+      env->GetMethodID(cls, "<init>", "(I)V");
+
+  return env->NewObject(cls, methodID, position);
+}
+
 jobject getDoubleValueObject(JNIEnv *env, jdouble value) {
   jclass cls = env->FindClass("org/supla/android/lib/singlecall/DoubleValue");
   jmethodID methodID = env->GetMethodID(cls, "<init>", "(D)V");
@@ -318,6 +327,10 @@ Java_org_supla_android_lib_singlecall_SingleCall_getChannelValue(
       return getDoubleValueObject(env, *(double *)vresult.Value.value);
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
     	return getElectricityMeterValues(env, vresult);
+    case SUPLA_CHANNELFNC_CONTAINER:
+    case SUPLA_CHANNELFNC_SEPTIC_TANK:
+    case SUPLA_CHANNELFNC_WATER_TANK:
+      return getContainerLevelObject(env, vresult.Value.value[0]);
   }
 
   return getChannelValueObject(env);
