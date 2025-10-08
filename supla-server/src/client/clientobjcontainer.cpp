@@ -39,7 +39,12 @@ bool supla_client_objcontainer::do_remote_update(void *srpc, int data_type,
   void *data = NULL;
   supla_client_objcontainer_item *obj = NULL;
 
-  safe_array_lock(getArr(scope));
+  // safe_array_lock(getArr(scope));
+  //
+  // Locking the array here can generate deadlocks in certain cases. After
+  // analyzing the code, it turns out that there should be no instance of
+  // elements being removed from the array during this method's execution, so
+  // the lock can be omitted.
 
   bool check_more = false;
   bool result = false;
@@ -59,7 +64,7 @@ bool supla_client_objcontainer::do_remote_update(void *srpc, int data_type,
     }
   }
 
-  safe_array_unlock(getArr(scope));
+  //  safe_array_unlock(getArr(scope));
 
   if (data) {
     send_data_to_remote_and_free(srpc, data, data_type, scope);
