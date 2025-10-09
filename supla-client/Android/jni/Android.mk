@@ -1,4 +1,5 @@
 LOCAL_PATH := $(call my-dir)
+APP_STL := c++_static
 
 include $(CLEAR_VARS)
 

@@ -30,6 +30,7 @@ class supla_client_objcontainer : public supla_objcontainer {
   bool do_remote_update(void *srpc, int data_type, e_objc_scope scope);
 
  protected:
+  friend class supla_client;
   virtual bool get_data_for_remote(supla_client_objcontainer_item *obj,
                                    void **data, int data_type, bool *check_more,
                                    e_objc_scope scope) = 0;
@@ -38,13 +39,13 @@ class supla_client_objcontainer : public supla_objcontainer {
                                             e_objc_scope scope) = 0;
 
   void on_value_changed(int Id, int ExtraId, e_objc_scope scope, int data_type);
+  bool remote_update(void *srpc);
 
  public:
   explicit supla_client_objcontainer(supla_client *client);
   virtual ~supla_client_objcontainer(void);
 
   supla_client *getClient();
-  bool remote_update(void *srpc);
 };
 
 #endif /* CLIENTOBJCONTAINER_H_ */
