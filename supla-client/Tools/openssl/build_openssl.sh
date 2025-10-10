@@ -7,7 +7,7 @@ set -e
 
 # Defaults
 SDK="18.4"
-OPENSSL="3.0.16"
+OPENSSL="3.6.0"
 THREADS=4
 
 temp_clean() {
@@ -78,6 +78,14 @@ build() {
     echo "[ERROR] Configure failed with rc=${RC}, please check logs ${LOG_FILE}"
     return
   fi
+  
+# SSL must be compilied for multi threading. If this check fails verify
+# if multi threading is still properly configured.
+  CONF_FILE="include/openssl/configuration.h"
+  if ! grep -q "OPENSSL_THREADS" "$CONF_FILE"; then
+    echo "[ERROR] Configuration did not define OPENSSL_THREADS makro"
+    exit 1
+  fi
 
   make -j${THREADS} >> ${LOG_FILE} 2>&1
   RC=$?
@@ -106,7 +114,7 @@ clean
 if [ ! -e ${OPENSSL_VERSION}.tar.gz ]
 then
   echo "[INFO] Downloading ${OPENSSL_VERSION}.tar.gz"
-  curl -O https://www.openssl.org/source/${OPENSSL_VERSION}.tar.gz
+  curl -LO https://github.com/openssl/openssl/releases/download/${OPENSSL_VERSION}/${OPENSSL_VERSION}.tar.gz
 else
   echo "[INFO] Using ${OPENSSL_VERSION}.tar.gz"
 fi
