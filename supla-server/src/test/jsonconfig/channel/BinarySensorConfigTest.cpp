@@ -64,6 +64,8 @@ TEST_F(BinarySensorConfigTest, setGetRawConfig) {
   TChannelConfig_BinarySensor raw = {};
   raw.InvertedLogic = 1;
   raw.FilteringTimeMs = 22;
+  raw.Timeout = 5;
+  raw.Sensitivity = 10;
   config.set_config(&raw);
 
   EXPECT_TRUE(config.is_logic_inverted());
@@ -73,10 +75,14 @@ TEST_F(BinarySensorConfigTest, setGetRawConfig) {
   config.get_config(&raw);
   EXPECT_EQ(raw.InvertedLogic, 1);
   EXPECT_EQ(raw.FilteringTimeMs, 22);
+  EXPECT_EQ(raw.Timeout, 5);
+  EXPECT_EQ(raw.Sensitivity, 10);
 
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str, "{\"invertedLogic\":true,\"filteringTimeMs\":22}");
+  EXPECT_STREQ(str,
+               "{\"invertedLogic\":true,\"filteringTimeMs\":22,\"timeout\":5,"
+               "\"sensitivity\":10}");
   free(str);
 }
 
@@ -96,7 +102,8 @@ TEST_F(BinarySensorConfigTest, merge) {
   char *str = config1.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
-               "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":5}");
+               "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":5,"
+               "\"timeout\":0,\"sensitivity\":0}");
 
   free(str);
 }
