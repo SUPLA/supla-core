@@ -6,7 +6,7 @@
 set -e
 
 # Defaults
-SDK="18.4"
+SDK="18.5"
 OPENSSL="3.6.0"
 THREADS=4
 
@@ -64,7 +64,6 @@ build() {
   cd "${OPENSSL_VERSION}"
   
   export CC="${DEVELOPER}/usr/bin/gcc -arch ${ARCH}"
-  
   if [[ "${PLATFORM}" == "iPhoneSimulator" ]]
   then 
     ./Configure iossimulator-xcrun -mios-simulator-version-min=8.2 "--prefix=${INSTALL_PATH}" "-arch ${ARCH}" "-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDK_VERSION}.sdk" &> ${LOG_FILE}
