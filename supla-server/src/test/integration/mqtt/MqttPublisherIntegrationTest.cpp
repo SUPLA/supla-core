@@ -62,7 +62,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {
   waitForConnection();
-  waitForPublications(764);
+  waitForPublications(778);
   // print_expected();
 
   const char *expectedData[] = {
@@ -724,7 +724,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "\"name\":\"SONOFF-DS18B20\",\"sw\":\"2.5.3\"},\"name\":\"Temperature\","
       "\"uniq_id\":\"supla_23\",\"qos\":0,\"unit_of_meas\":\"°C\",\"stat_t\":"
       "\"~/state/temperature\",\"val_tpl\":\"{{ value | round(1,default=None) "
-      "}}\",\"state_class\":\"measurement\"}",
+      "}}\",\"dev_cla\":\"temperature\",\"state_class\":\"measurement\"}",
       "supla/61b2f9bdb22d3bd6336bb235bcb1b77e/devices/14/channels/23/state/"
       "connected",
       "false",
@@ -1866,6 +1866,63 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12048/"
       "state/value",
       NULL,
+      "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12049/type",
+      "BINARYSENSOR",
+      "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12049/"
+      "function",
+      "MOTION_SENSO",
+      "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12049/"
+      "caption",
+      NULL,
+      "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12049/"
+      "hidden",
+      "false",
+      "homeassistant/binary_sensor/8588fb099c7f6f32d0b5dc43cbc3318b/12049/"
+      "config",
+      "{\"avty\":{\"topic\":\"supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/"
+      "7878/channels/12049/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/"
+      "channels/"
+      "12049\",\"device\":{\"ids\":\"supla-iodevice-7878\",\"mf\":\"\","
+      "\"name\":\"BME280\",\"sw\":\"2.0.0\"},\"name\":\"Motion "
+      "sensor\",\"uniq_id\":\"supla_12049\",\"qos\":0,\"stat_t\":\"~/state/"
+      "hi\",\"pl_on\":\"true\",\"pl_off\":\"false\",\"device_class\":"
+      "\"motion\"}",
+      "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12049/"
+      "state/connected",
+      "false",
+      "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12049/"
+      "state/hi",
+      NULL,
+      "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12050/type",
+      "BINARYSENSOR",
+      "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12050/"
+      "function",
+      "BINARY_SENSOR",
+      "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12050/"
+      "caption",
+      NULL,
+      "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12050/"
+      "hidden",
+      "false",
+      "homeassistant/binary_sensor/8588fb099c7f6f32d0b5dc43cbc3318b/12050/"
+      "config",
+      "{\"avty\":{\"topic\":\"supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/"
+      "7878/channels/12050/state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/"
+      "channels/"
+      "12050\",\"device\":{\"ids\":\"supla-iodevice-7878\",\"mf\":\"\","
+      "\"name\":\"BME280\",\"sw\":\"2.0.0\"},\"name\":\"Binary "
+      "sensor\",\"uniq_id\":\"supla_12050\",\"qos\":0,\"stat_t\":\"~/state/"
+      "hi\",\"pl_on\":\"true\",\"pl_off\":\"false\"}",
+      "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12050/"
+      "state/connected",
+      "false",
+      "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12050/"
+      "state/hi",
+      NULL,
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/type",
       "THERMOSTATHEATPOLHOMEPLUS",
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/channels/16708/"
@@ -2003,7 +2060,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "GKW-01\",\"sw\":\"23.11.01\"},\"name\":\"Temperature\",\"uniq_id\":"
       "\"supla_73229_1\",\"qos\":0,\"unit_of_meas\":\"°C\",\"stat_t\":\"~/"
       "state/temperature\",\"val_tpl\":\"{{ value | round(1,default=None) "
-      "}}\",\"state_class\":\"measurement\"}",
+      "}}\",\"dev_cla\":\"temperature\",\"state_class\":\"measurement\"}",
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73229/"
       "state/connected",
       "false",
@@ -2036,7 +2093,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "GKW-01\",\"sw\":\"23.11.01\"},\"name\":\"Temperature\",\"uniq_id\":"
       "\"supla_73230\",\"qos\":0,\"unit_of_meas\":\"°C\",\"stat_t\":\"~/state/"
       "temperature\",\"val_tpl\":\"{{ value | round(1,default=None) "
-      "}}\",\"state_class\":\"measurement\"}",
+      "}}\",\"dev_cla\":\"temperature\",\"state_class\":\"measurement\"}",
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/channels/73230/"
       "state/connected",
       "false",
@@ -2175,7 +2232,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "by@Zybi\",\"sw\":\"2.0\"},\"name\":\"Temperature\",\"uniq_id\":\"supla_"
       "3068_1\",\"qos\":0,\"unit_of_meas\":\"°C\",\"stat_t\":\"~/state/"
       "temperature\",\"val_tpl\":\"{{ value | round(1,default=None) "
-      "}}\",\"state_class\":\"measurement\"}",
+      "}}\",\"dev_cla\":\"temperature\",\"state_class\":\"measurement\"}",
       "supla/1d43b8d35e31f1508c70b9b77e03e293/devices/3195/channels/3068/state/"
       "connected",
       "false",
@@ -2985,7 +3042,7 @@ TEST_F(MqttPublisherIntegrationTest, actionTrigger) {
   }
 
   waitForConnection();
-  waitForPublications(764);
+  waitForPublications(778);
   getLibAdapter()->published_clear();
 
   dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())

@@ -398,6 +398,14 @@ bool supla_state_webhook_client::mail_sensor_report() {
   return hi_report("MAILSENSOR");
 }
 
+bool supla_state_webhook_client::binary_sensor_report() {
+  return hi_report("BINARY_SENSOR");
+}
+
+bool supla_state_webhook_client::motion_sensor_report() {
+  return hi_report("MOTION_SENSOR");
+}
+
 bool supla_state_webhook_client::shut_report(const char *function) {
   supla_channel_rs_value *rs_val =
       dynamic_cast<supla_channel_rs_value *>(channel_value);

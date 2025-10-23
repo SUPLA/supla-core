@@ -314,6 +314,8 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
+    case SUPLA_CHANNELFNC_MOTION_SENSOR:
+    case SUPLA_CHANNELFNC_BINARY_SENSOR:
       return true;
   }
 
