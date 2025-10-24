@@ -57,11 +57,15 @@ TEST_F(BinarySensorConfigTest, filteringTimeMs) {
 
   config.set_user_config("{\"filteringTimeMs\":0}");
 
+  EXPECT_EQ(config.get_filtering_time_ms(), 0);
+
+  config.set_user_config("{\"filteringTimeMs\":1}");
+
   EXPECT_EQ(config.get_filtering_time_ms(), 1);
 
   config.set_user_config("{\"filteringTimeMs\":1000}");
 
-  EXPECT_EQ(config.get_filtering_time_ms(), 1001);
+  EXPECT_EQ(config.get_filtering_time_ms(), 1000);
 
   TChannelConfig_BinarySensor raw_config = {};
   config.set_config(&raw_config);
@@ -80,7 +84,7 @@ TEST_F(BinarySensorConfigTest, filteringTimeMs) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"timeout\":null,\"sensitivity\":null,"
-               "\"filteringTimeMs\":0}");
+               "\"filteringTimeMs\":1}");
   free(str);
 }
 
@@ -251,7 +255,7 @@ TEST_F(BinarySensorConfigTest, setGetRawConfig) {
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
-               "{\"invertedLogic\":true,\"filteringTimeMs\":21,\"timeout\":5,"
+               "{\"invertedLogic\":true,\"filteringTimeMs\":22,\"timeout\":5,"
                "\"sensitivity\":9}");
   free(str);
 }
@@ -259,7 +263,7 @@ TEST_F(BinarySensorConfigTest, setGetRawConfig) {
 TEST_F(BinarySensorConfigTest, merge) {
   binary_sensor_config config1;
   config1.set_user_config(
-      "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":4,\"timeout\":"
+      "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":5,\"timeout\":"
       "null,\"sensitivity\":null}");
 
   TChannelConfig_BinarySensor raw_bin = {};
@@ -273,7 +277,7 @@ TEST_F(BinarySensorConfigTest, merge) {
   char *str = config1.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
-               "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":4,"
+               "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":5,"
                "\"timeout\":null,\"sensitivity\":null}");
 
   free(str);

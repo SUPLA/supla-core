@@ -59,8 +59,13 @@ void binary_sensor_config::set_config(TChannelConfig_BinarySensor *config) {
                  config->InvertedLogic ? cJSON_True : cJSON_False, true,
                  nullptr, nullptr, 0);
 
-  set_level(field_map, root, FIELD_FILTERING_TIME_MS, config->FilteringTimeMs,
-            std::numeric_limits<unsigned _supla_int16_t>::max());
+  set_item_value(root, field_map.at(FIELD_FILTERING_TIME_MS).c_str(),
+                 config->FilteringTimeMs > 0 &&
+                         config->FilteringTimeMs <=
+                             std::numeric_limits<unsigned _supla_int16_t>::max()
+                     ? cJSON_Number
+                     : cJSON_NULL,
+                 true, nullptr, nullptr, config->FilteringTimeMs);
 
   set_item_value(root, field_map.at(FIELD_TIMEOUT).c_str(),
                  config->Timeout > 0 && config->Timeout <= 36000 ? cJSON_Number
@@ -91,14 +96,17 @@ bool binary_sensor_config::get_config(TChannelConfig_BinarySensor *config) {
   }
 
   int level = 0;
-
-  if (get_level(field_map, root, FIELD_FILTERING_TIME_MS, &level,
-                std::numeric_limits<unsigned _supla_int16_t>::max())) {
-    config->FilteringTimeMs = level;
-    result = true;
-  }
-
   double dbl_value = 0;
+
+  if (get_double(root, field_map.at(FIELD_FILTERING_TIME_MS).c_str(),
+                 &dbl_value) &&
+      dbl_value >= 0 &&
+      dbl_value <= std::numeric_limits<unsigned _supla_int16_t>::max()) {
+    config->FilteringTimeMs = dbl_value;
+    result = true;
+  } else {
+    config->FilteringTimeMs = 0;
+  }
 
   if (get_double(root, field_map.at(FIELD_TIMEOUT).c_str(), &dbl_value) &&
       dbl_value >= 0 && dbl_value <= 36000) {
