@@ -38,6 +38,8 @@ class binary_sensor_config : public supla_json_config {
 
   bool is_logic_inverted(void);
   int get_filtering_time_ms(void);
+  int get_timeout(void);
+  int get_sensitivity(void);
 };
 
 #endif /* BINARY_SENSOR_CONFIG_H_ */

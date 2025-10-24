@@ -54,26 +54,6 @@ container_config::container_config(supla_json_config *root)
 
 container_config::container_config(void) : supla_json_config() {}
 
-void container_config::set_level(cJSON *parent, int field,
-                                 unsigned char level) {
-  set_item_value(parent, field_map.at(field).c_str(),
-                 level > 0 && level <= 101 ? cJSON_Number : cJSON_NULL, true,
-                 nullptr, nullptr, level - 1);
-}
-
-bool container_config::get_level(cJSON *parent, int field,
-                                 unsigned char *level) {
-  *level = 0;
-  double dbl_value = 0;
-  if (get_double(parent, field_map.at(field).c_str(), &dbl_value)) {
-    if (dbl_value >= 0 && dbl_value <= 100) {
-      *level = dbl_value + 1;
-    }
-    return true;
-  }
-  return false;
-}
-
 void container_config::set_config(TChannelConfig_Container *config) {
   if (!config) {
     return;
@@ -84,13 +64,17 @@ void container_config::set_config(TChannelConfig_Container *config) {
     return;
   }
 
-  set_level(user_root, FIELD_WARNING_ABOVE_LEVEL, config->WarningAboveLevel);
+  set_level(field_map, user_root, FIELD_WARNING_ABOVE_LEVEL,
+            config->WarningAboveLevel, 100);
 
-  set_level(user_root, FIELD_ALARM_ABOVE_LEVEL, config->AlarmAboveLevel);
+  set_level(field_map, user_root, FIELD_ALARM_ABOVE_LEVEL,
+            config->AlarmAboveLevel, 100);
 
-  set_level(user_root, FIELD_WARNING_BELOW_LEVEL, config->WarningBelowLevel);
+  set_level(field_map, user_root, FIELD_WARNING_BELOW_LEVEL,
+            config->WarningBelowLevel, 100);
 
-  set_level(user_root, FIELD_ALARM_BELOW_LEVEL, config->AlarmBelowLevel);
+  set_level(field_map, user_root, FIELD_ALARM_BELOW_LEVEL,
+            config->AlarmBelowLevel, 100);
 
   set_item_value(
       user_root,
@@ -147,26 +131,25 @@ bool container_config::get_config(TChannelConfig_Container *config) {
     return result;
   }
 
-  if (get_level(user_root, FIELD_WARNING_ABOVE_LEVEL,
-                &config->WarningAboveLevel)) {
+  int level = 0;
+
+  if (get_level(field_map, user_root, FIELD_WARNING_ABOVE_LEVEL, &level, 100)) {
+    config->WarningAboveLevel = level;
     result = true;
   }
 
-  if (get_level(user_root, FIELD_ALARM_ABOVE_LEVEL, &config->AlarmAboveLevel)) {
+  if (get_level(field_map, user_root, FIELD_ALARM_ABOVE_LEVEL, &level, 100)) {
+    config->AlarmAboveLevel = level;
     result = true;
   }
 
-  if (get_level(user_root, FIELD_WARNING_BELOW_LEVEL,
-                &config->WarningBelowLevel)) {
+  if (get_level(field_map, user_root, FIELD_WARNING_BELOW_LEVEL, &level, 100)) {
+    config->WarningBelowLevel = level;
     result = true;
   }
 
-  if (get_level(user_root, FIELD_ALARM_BELOW_LEVEL, &config->AlarmBelowLevel)) {
-    result = true;
-  }
-
-  if (get_level(user_root, FIELD_MUTE_ALARM_SOUND_WITHOUT_ADDITIONAL_AUTH,
-                &config->MuteAlarmSoundWithoutAdditionalAuth)) {
+  if (get_level(field_map, user_root, FIELD_ALARM_BELOW_LEVEL, &level, 100)) {
+    config->AlarmBelowLevel = level;
     result = true;
   }
 

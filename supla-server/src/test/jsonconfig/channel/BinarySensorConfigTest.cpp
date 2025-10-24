@@ -45,15 +45,175 @@ TEST_F(BinarySensorConfigTest, isInvertedLogic) {
 TEST_F(BinarySensorConfigTest, filteringTimeMs) {
   binary_sensor_config config;
 
-  EXPECT_FALSE(config.is_logic_inverted());
+  EXPECT_EQ(config.get_filtering_time_ms(), 0);
 
-  config.set_user_config("{\"filteringTimeMs\":0}");
+  config.set_user_config("{\"filteringTimeMs\":NULL}");
 
   EXPECT_EQ(config.get_filtering_time_ms(), 0);
 
-  config.set_user_config("{\"filteringTimeMs\":123}");
+  config.set_user_config("{\"filteringTimeMs\":-1}");
 
-  EXPECT_EQ(config.get_filtering_time_ms(), 123);
+  EXPECT_EQ(config.get_filtering_time_ms(), 0);
+
+  config.set_user_config("{\"filteringTimeMs\":0}");
+
+  EXPECT_EQ(config.get_filtering_time_ms(), 1);
+
+  config.set_user_config("{\"filteringTimeMs\":1000}");
+
+  EXPECT_EQ(config.get_filtering_time_ms(), 1001);
+
+  TChannelConfig_BinarySensor raw_config = {};
+  config.set_config(&raw_config);
+
+  char *str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
+               "null,\"sensitivity\":null}");
+  free(str);
+
+  raw_config.FilteringTimeMs = 1;
+  config.set_config(&raw_config);
+
+  str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"invertedLogic\":false,\"timeout\":null,\"sensitivity\":null,"
+               "\"filteringTimeMs\":0}");
+  free(str);
+}
+
+TEST_F(BinarySensorConfigTest, timeout) {
+  binary_sensor_config config;
+
+  EXPECT_EQ(config.get_timeout(), 0);
+
+  config.set_user_config("{\"timeout\":NULL}");
+
+  EXPECT_EQ(config.get_timeout(), 0);
+
+  config.set_user_config("{\"timeout\":-1}");
+
+  EXPECT_EQ(config.get_timeout(), 0);
+
+  config.set_user_config("{\"timeout\":0}");
+
+  EXPECT_EQ(config.get_timeout(), 1);
+
+  config.set_user_config("{\"timeout\":36000}");
+
+  EXPECT_EQ(config.get_timeout(), 36001);
+
+  config.set_user_config("{\"timeout\":36001}");
+
+  EXPECT_EQ(config.get_timeout(), 0);
+
+  TChannelConfig_BinarySensor raw_config = {};
+  config.set_config(&raw_config);
+
+  char *str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
+               "null,\"sensitivity\":null}");
+  free(str);
+
+  raw_config.Timeout = 1;
+  config.set_config(&raw_config);
+
+  str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"invertedLogic\":false,\"filteringTimeMs\":null,"
+               "\"sensitivity\":null,\"timeout\":0}");
+  free(str);
+
+  raw_config.Timeout = 36001;
+  config.set_config(&raw_config);
+
+  str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"invertedLogic\":false,\"filteringTimeMs\":null,"
+               "\"sensitivity\":null,\"timeout\":36000}");
+  free(str);
+
+  raw_config.Timeout = 36002;
+  config.set_config(&raw_config);
+
+  str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"invertedLogic\":false,\"filteringTimeMs\":null,"
+               "\"sensitivity\":null,\"timeout\":null}");
+  free(str);
+}
+
+TEST_F(BinarySensorConfigTest, sensitivity) {
+  binary_sensor_config config;
+
+  EXPECT_EQ(config.get_sensitivity(), 0);
+
+  config.set_user_config("{\"sensitivity\":NULL}");
+
+  EXPECT_EQ(config.get_sensitivity(), 0);
+
+  config.set_user_config("{\"sensitivity\":-1}");
+
+  EXPECT_EQ(config.get_sensitivity(), 0);
+
+  config.set_user_config("{\"sensitivity\":0}");
+
+  EXPECT_EQ(config.get_sensitivity(), 1);
+
+  config.set_user_config("{\"sensitivity\":100}");
+
+  EXPECT_EQ(config.get_sensitivity(), 101);
+
+  config.set_user_config("{\"sensitivity\":101}");
+
+  EXPECT_EQ(config.get_sensitivity(), 0);
+
+  TChannelConfig_BinarySensor raw_config = {};
+  config.set_config(&raw_config);
+
+  char *str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
+               "null,\"sensitivity\":null}");
+  free(str);
+
+  raw_config.Sensitivity = 1;
+  config.set_config(&raw_config);
+
+  str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
+               "null,\"sensitivity\":0}");
+  free(str);
+
+  raw_config.Sensitivity = 101;
+  config.set_config(&raw_config);
+
+  str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
+               "null,\"sensitivity\":100}");
+  free(str);
+
+  raw_config.Sensitivity = 102;
+  config.set_config(&raw_config);
+
+  str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
+               "null,\"sensitivity\":null}");
+  free(str);
 }
 
 TEST_F(BinarySensorConfigTest, setGetRawConfig) {
@@ -81,15 +241,16 @@ TEST_F(BinarySensorConfigTest, setGetRawConfig) {
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
-               "{\"invertedLogic\":true,\"filteringTimeMs\":22,\"timeout\":5,"
-               "\"sensitivity\":10}");
+               "{\"invertedLogic\":true,\"filteringTimeMs\":21,\"timeout\":4,"
+               "\"sensitivity\":9}");
   free(str);
 }
 
 TEST_F(BinarySensorConfigTest, merge) {
   binary_sensor_config config1;
   config1.set_user_config(
-      "{\"a\":\"b\", \"invertedLogic\": false,\"filteringTimeMs\":0}");
+      "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":4,\"timeout\":"
+      "null,\"sensitivity\":null}");
 
   TChannelConfig_BinarySensor raw_bin = {};
   raw_bin.InvertedLogic = 1;
@@ -102,8 +263,8 @@ TEST_F(BinarySensorConfigTest, merge) {
   char *str = config1.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
-               "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":5,"
-               "\"timeout\":0,\"sensitivity\":0}");
+               "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":4,"
+               "\"timeout\":null,\"sensitivity\":null}");
 
   free(str);
 }
