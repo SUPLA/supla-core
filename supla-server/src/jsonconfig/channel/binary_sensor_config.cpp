@@ -62,7 +62,10 @@ void binary_sensor_config::set_config(TChannelConfig_BinarySensor *config) {
   set_level(field_map, root, FIELD_FILTERING_TIME_MS, config->FilteringTimeMs,
             std::numeric_limits<unsigned _supla_int16_t>::max());
 
-  set_level(field_map, root, FIELD_TIMEOUT, config->Timeout, 36000);
+  set_item_value(root, field_map.at(FIELD_TIMEOUT).c_str(),
+                 config->Timeout > 0 && config->Timeout <= 36000 ? cJSON_Number
+                                                                 : cJSON_NULL,
+                 true, nullptr, nullptr, config->Timeout);
 
   set_level(field_map, root, FIELD_SENSITIVITY, config->Sensitivity, 100);
 }
@@ -95,9 +98,14 @@ bool binary_sensor_config::get_config(TChannelConfig_BinarySensor *config) {
     result = true;
   }
 
-  if (get_level(field_map, root, FIELD_TIMEOUT, &level, 36000)) {
-    config->Timeout = level;
+  double dbl_value = 0;
+
+  if (get_double(root, field_map.at(FIELD_TIMEOUT).c_str(), &dbl_value) &&
+      dbl_value >= 0 && dbl_value <= 36000) {
+    config->Timeout = dbl_value;
     result = true;
+  } else {
+    config->Timeout = 0;
   }
 
   if (get_level(field_map, root, FIELD_SENSITIVITY, &level, 100)) {

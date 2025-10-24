@@ -99,11 +99,11 @@ TEST_F(BinarySensorConfigTest, timeout) {
 
   config.set_user_config("{\"timeout\":0}");
 
-  EXPECT_EQ(config.get_timeout(), 1);
+  EXPECT_EQ(config.get_timeout(), 0);
 
   config.set_user_config("{\"timeout\":36000}");
 
-  EXPECT_EQ(config.get_timeout(), 36001);
+  EXPECT_EQ(config.get_timeout(), 36000);
 
   config.set_user_config("{\"timeout\":36001}");
 
@@ -119,6 +119,16 @@ TEST_F(BinarySensorConfigTest, timeout) {
                "null,\"sensitivity\":null}");
   free(str);
 
+  raw_config.Timeout = 0;
+  config.set_config(&raw_config);
+
+  str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
+               "null,\"sensitivity\":null}");
+  free(str);
+
   raw_config.Timeout = 1;
   config.set_config(&raw_config);
 
@@ -126,10 +136,10 @@ TEST_F(BinarySensorConfigTest, timeout) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"filteringTimeMs\":null,"
-               "\"sensitivity\":null,\"timeout\":0}");
+               "\"sensitivity\":null,\"timeout\":1}");
   free(str);
 
-  raw_config.Timeout = 36001;
+  raw_config.Timeout = 36000;
   config.set_config(&raw_config);
 
   str = config.get_user_config();
@@ -139,7 +149,7 @@ TEST_F(BinarySensorConfigTest, timeout) {
                "\"sensitivity\":null,\"timeout\":36000}");
   free(str);
 
-  raw_config.Timeout = 36002;
+  raw_config.Timeout = 36001;
   config.set_config(&raw_config);
 
   str = config.get_user_config();
@@ -241,7 +251,7 @@ TEST_F(BinarySensorConfigTest, setGetRawConfig) {
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
-               "{\"invertedLogic\":true,\"filteringTimeMs\":21,\"timeout\":4,"
+               "{\"invertedLogic\":true,\"filteringTimeMs\":21,\"timeout\":5,"
                "\"sensitivity\":9}");
   free(str);
 }
