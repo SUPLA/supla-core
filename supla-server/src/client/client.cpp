@@ -432,3 +432,7 @@ void supla_client::on_channel_deleted(int channel_id) {
 }
 
 void supla_client::on_channel_added(int channel_id) { terminate(); }
+
+supla_channel_state supla_client::get_state(int channel_id) {
+  return channels_state->get_state(channel_id);
+}

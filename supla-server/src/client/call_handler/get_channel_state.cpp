@@ -55,6 +55,13 @@ void supla_ch_get_channel_state::handle_call(
             device->get_channels()->get_channel_state_async(
                 supla_caller(ctClient, client->get_id()), request);
           }
+        } else {
+          supla_channel_state state = client->get_state(request->ChannelID);
+          if (state.get_id()) {
+            TDSC_ChannelState raw_state = *state.get_state();
+            client->on_device_channel_state_result(request->ChannelID,
+                                                   &raw_state);
+          }
         }
       }
     }

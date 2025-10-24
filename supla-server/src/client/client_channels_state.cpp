@@ -61,3 +61,13 @@ bool supla_client_channels_state::update_remote(void) {
 
   return result;
 }
+
+supla_channel_state supla_client_channels_state::get_state(int channel_id) {
+  supla_channel_state result;
+
+  access_object(channel_id, [&result](supla_dobject *object) -> void {
+    result = *dynamic_cast<supla_channel_state *>(object);
+  });
+
+  return result;
+}
