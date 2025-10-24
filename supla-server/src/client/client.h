@@ -120,7 +120,6 @@ class supla_client : public supla_abstract_connection_object {
   void on_device_deleted(int channel_id);
   void on_channel_deleted(int channel_id);
   void on_channel_added(int channel_id);
-  supla_channel_state get_state(int channel_id);
   virtual ~supla_client();
 };
 

@@ -35,7 +35,6 @@ class supla_client_channels_state : public supla_dobjects {
   virtual ~supla_client_channels_state();
   void load(int client_protocol_version, int user_id, int client_id);
   virtual bool update_remote(void);
-  supla_channel_state get_state(int channel_id);
 };
 
 #endif /* SUPLA_CLIENT_CHANNELS_STATE_H_ */
