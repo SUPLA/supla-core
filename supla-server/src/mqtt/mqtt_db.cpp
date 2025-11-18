@@ -277,7 +277,7 @@ void *supla_mqtt_db::open_devicequery(int UserID, int DeviceID,
   const char sql[] =
       "SELECT u.`short_unique_id`, d.`id`, d.`enabled`, l.`caption`, "
       "DATE_FORMAT(d.`last_connected`, '%Y-%m-%dT%TZ'), "
-      "INET_NTOA(d.`last_ipv4`), d.`manufacturer_id`, d.`name`, "
+      "INET_NTOA(d.`last_ipv4`), IFNULL(d.`manufacturer_id`,0), d.`name`, "
       "d.`protocol_version`, d.`software_version` FROM `supla_iodevice` d LEFT "
       "JOIN `supla_user` u ON u.id = d.`user_id` LEFT JOIN `supla_location` l "
       "ON l.id = d.`location_id` WHERE u.`mqtt_broker_enabled` = 1 AND (? = 0 "
@@ -417,7 +417,7 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
 
   const char sql[] =
       "SELECT u.`id`, u.`short_unique_id`, d.`id`, d.`enabled`, "
-      "d.`manufacturer_id`, d.`name`, d.`software_version`, c.`id`, "
+      "IFNULL(d.`manufacturer_id`,0), d.`name`, d.`software_version`, c.`id`, "
       "c.`channel_number`, c.`type`, c.`func`, c.`flags`, IFNULL(l.`caption`, "
       "dl.`caption`), c.`caption`, c.`hidden`, c.`param1`, c.`param2`, "
       "c.`param3`, c.`text_param1`, c.`text_param2`, c.`text_param3`, "
