@@ -140,11 +140,30 @@ TEST_F(PowerSwitchConfigTest, setAndGet) {
   free(str);
 }
 
+TEST_F(PowerSwitchConfigTest, Staircase_setAndGet) {
+  power_switch_config config;
+  TChannelConfig_StaircaseTimer raw = {};
+
+  raw.TimeMS = 5000;
+  config.set_config(&raw, nullptr);
+
+  raw = {};
+  config.get_config(&raw);
+
+  EXPECT_EQ(raw.TimeMS, 5000);
+
+  char *str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{\"relayTime\":50}");
+  free(str);
+}
+
 TEST_F(PowerSwitchConfigTest, merge) {
   power_switch_config config1;
 
   config1.set_user_config(
-      "{\"a\":\"b\",\"overcurrentThreshold\":0,\"relatedMeterChannelId\":123}");
+      "{\"a\":\"b\",\"overcurrentThreshold\":0,\"relatedMeterChannelId\":123,"
+      "\"relayTime\":50}");
 
   config1.set_properties(
       "{\"a\":\"b\",\"overcurrentMaxAllowed\":15,"
@@ -164,7 +183,7 @@ TEST_F(PowerSwitchConfigTest, merge) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"a\":\"b\",\"overcurrentThreshold\":15,"
-               "\"relatedMeterChannelId\":123}");
+               "\"relatedMeterChannelId\":123,\"relayTime\":50}");
 
   free(str);
 
@@ -201,6 +220,30 @@ TEST_F(PowerSwitchConfigTest, merge) {
                "\"relatedMeterChannelId\":200}");
 
   free(str);
+
+  config1.set_user_config(
+      "{\"a\":\"b\",\"overcurrentThreshold\":15,\"relatedMeterChannelId\":123,"
+      "\"relayTime\":25}");
+
+  config2.set_user_config("{\"relayTime\":150}");
+
+  config2.merge(&config1);
+
+  str = config1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"a\":\"b\",\"overcurrentThreshold\":15,"
+               "\"relatedMeterChannelId\":123,\"relayTime\":150}");
+
+  free(str);
+
+  str = config1.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str,
+               "{\"a\":\"b\",\"overcurrentMaxAllowed\":10,"
+               "\"defaultRelatedMeterChannelNo\":30}");
+
+  free(str);
 }
 
 TEST_F(PowerSwitchConfigTest, getRelatedMeterChannelId) {
@@ -212,6 +255,23 @@ TEST_F(PowerSwitchConfigTest, getRelatedMeterChannelId) {
 
   config.set_user_config("{\"relatedMeterChannelId\":12345}");
   EXPECT_EQ(config.get_related_meter_channel_id(), 12345);
+}
+
+TEST_F(PowerSwitchConfigTest, relayTime) {
+  power_switch_config config;
+  TChannelConfig_StaircaseTimer raw = {};
+
+  config.get_config(&raw);
+
+  EXPECT_EQ(config.get_relay_time_ms(), 0);
+  EXPECT_EQ(raw.TimeMS, 0);
+
+  config.set_user_config("{\"relayTime\":50}");
+
+  config.get_config(&raw);
+
+  EXPECT_EQ(config.get_relay_time_ms(), 5000);
+  EXPECT_EQ(raw.TimeMS, 5000);
 }
 
 } /* namespace testing */

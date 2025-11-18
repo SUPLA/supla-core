@@ -34,6 +34,7 @@
 #include "jsonconfig/channel/electricity_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/impulse_counter_config.h"
+#include "jsonconfig/channel/power_switch_config.h"
 #include "jsonconfig/channel/roller_shutter_config.h"
 #include "jsonconfig/channel/weekly_schedule_config.h"
 #include "jsonconfig/device/device_json_config.h"
@@ -878,8 +879,16 @@ unsigned int supla_device_channel::get_value_duration(void) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
       return get_param1();
 
-    case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      return get_param1() * 100;
+    case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+      int result = 0;
+
+      lock();
+      power_switch_config config(json_config);
+      result = config.get_relay_time_ms();
+      unlock();
+
+      return result;
+    }
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
