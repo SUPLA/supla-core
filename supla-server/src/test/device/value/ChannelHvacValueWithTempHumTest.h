@@ -20,11 +20,13 @@
 #define CHANNEL_HVAC_VALUE_WITH_TEMPHUM_TEST_H_
 
 #include "gtest/gtest.h"
+#include "jsonconfig/channel/hvac_config.h"
 
 namespace testing {
 
 class ChannelHvacValueWithTempHumTest : public Test {
  public:
+  void _ExpandHvacToHavacWithTempHum(TChannelConfig_HVAC native_config);
 };
 
 }  // namespace testing

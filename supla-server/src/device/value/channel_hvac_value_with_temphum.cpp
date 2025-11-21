@@ -107,27 +107,36 @@ void supla_channel_hvac_value_with_temphum::expand(
       json_hvac.get_config(&native_config, fragment->get_channel_number());
       delete json_config;
 
-      if (native_config.MainThermometerChannelNo !=
-          fragment->get_channel_number()) {
-        int main_thermometer_channel_id = getter->get_channel_id(
+      int main_thermometer_channel_id = 0;
+
+      if (native_config.AuxThermometerChannelNo !=
+              fragment->get_channel_number() &&
+          native_config.TemperatureControlType ==
+              SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_AUX_HEATER_COOLER_TEMPERATURE) {
+        main_thermometer_channel_id = getter->get_channel_id(
+            getter->get_user_id(), fragment->get_device_id(),
+            native_config.AuxThermometerChannelNo);
+      } else if (native_config.MainThermometerChannelNo !=
+                 fragment->get_channel_number()) {
+        main_thermometer_channel_id = getter->get_channel_id(
             getter->get_user_id(), fragment->get_device_id(),
             native_config.MainThermometerChannelNo);
+      }
 
-        if (main_thermometer_channel_id) {
-          supla_abstract_channel_value *th_value = getter->get_value(
-              getter->get_user_id(), fragment->get_device_id(),
-              main_thermometer_channel_id);
-          if (th_value) {
-            supla_channel_temphum_value *temphum =
-                dynamic_cast<supla_channel_temphum_value *>(th_value);
-            if (temphum) {
-              result->set_temperature(temphum->get_temperature() * 100.0);
-              if (temphum->is_humidity_available()) {
-                result->set_humidity(temphum->get_humidity() * 100.0);
-              }
+      if (main_thermometer_channel_id) {
+        supla_abstract_channel_value *th_value =
+            getter->get_value(getter->get_user_id(), fragment->get_device_id(),
+                              main_thermometer_channel_id);
+        if (th_value) {
+          supla_channel_temphum_value *temphum =
+              dynamic_cast<supla_channel_temphum_value *>(th_value);
+          if (temphum) {
+            result->set_temperature(temphum->get_temperature() * 100.0);
+            if (temphum->is_humidity_available()) {
+              result->set_humidity(temphum->get_humidity() * 100.0);
             }
-            delete th_value;
           }
+          delete th_value;
         }
       }
     }
