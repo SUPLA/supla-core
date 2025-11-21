@@ -62,6 +62,8 @@ const char cmd_execute_scene[] = "EXECUTE-SCENE";
 const char cmd_interrupt_scene[] = "INTERRUPT-SCENE";
 const char cmd_interrupt_and_execute_scene[] = "INTERRUPT-AND-EXECUTE-SCENE";
 
+const char cmd_get_hvac_value[] = "GET-HVAC-VALUE";
+
 const char ipc_result_value[] = "VALUE:";
 const char ipc_result_ok[] = "OK:";
 const char ipc_result_is_during_execution[] = "IS-DURING-EXECUTION:";
@@ -278,6 +280,43 @@ bool ipc_client::get_digiglass_value(int user_id, int device_id, int channel_id,
   return true;
 }
 
+bool ipc_client::get_hvac_value(int user_id, int device_id, int channel_id,
+                                THVACValue *value, int *temperature,
+                                int *humidity) {
+  int _is_on = 0;
+  int _mode = 0;
+  int _setpoint_temperature_heat = 0;
+  int _setpoint_temperature_cool = 0;
+  int _flags = 0;
+  int _temperature = 0;
+  int _humidity = 0;
+
+  if ((!value && !temperature && !humidity) ||
+      !get_value(cmd_get_hvac_value, user_id, device_id, channel_id) ||
+      sscanf(&buffer[strnlen(ipc_result_value, 255)], "%i,%i,%i,%i,%i,%i,%i",
+             &_is_on, &_mode, &_setpoint_temperature_heat,
+             &_setpoint_temperature_cool, &_flags, &_temperature,
+             &_humidity) != 7)
+    return false;
+
+  if (value) {
+    value->IsOn = _is_on > 0;
+    value->Mode = _mode;
+    value->SetpointTemperatureCool = _setpoint_temperature_cool;
+    value->SetpointTemperatureHeat = _setpoint_temperature_heat;
+  }
+
+  if (temperature) {
+    *temperature = _temperature;
+  }
+
+  if (humidity) {
+    *humidity = _humidity;
+  }
+
+  return true;
+}
+
 bool ipc_client::check_set_result(void) {
   if (read() &&
       memcmp(buffer, ipc_result_ok, strnlen(ipc_result_ok, 255)) == 0) {
@@ -378,6 +417,16 @@ bool ipc_client::action_shut_partially(int user_id, int device_id,
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
 
   return check_set_result();
+}
+
+bool ipc_client::action_hvac_switch_to_program_mode(int user_id, int device_id,
+                                                    int channel_id) {
+  return false;
+}
+
+bool ipc_client::action_hvac_switch_to_manual_mode(int user_id, int device_id,
+                                                   int channel_id) {
+  return false;
 }
 
 bool ipc_client::execute_scene(int user_id, int scene_id) {
