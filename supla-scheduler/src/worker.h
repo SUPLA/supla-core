@@ -54,6 +54,8 @@ class s_worker : public s_abstract_worker {
   virtual bool ipcc_action_hvac_switch_to_manual_mode(void);
   virtual bool ipcc_get_hvac_value(THVACValue *value, int *temperature,
                                    int *humidity);
+  virtual bool ipcc_action_turn_on(void);
+  virtual bool ipcc_action_turn_off(void);
   virtual bool ipcc_execute_scene(void);
   virtual bool ipcc_interrupt_scene(void);
   virtual bool ipcc_interrupt_and_execute_scene(void);

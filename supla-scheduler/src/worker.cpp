@@ -162,6 +162,18 @@ bool s_worker::ipcc_action_hvac_switch_to_manual_mode(void) {
       get_params()->channel_id);
 }
 
+bool s_worker::ipcc_action_turn_on(void) {
+  return get_ipcc()->action_turn_on(get_params()->user_id,
+                                    get_params()->iodevice_id,
+                                    get_params()->channel_id);
+}
+
+bool s_worker::ipcc_action_turn_off(void) {
+  return get_ipcc()->action_turn_off(get_params()->user_id,
+                                     get_params()->iodevice_id,
+                                     get_params()->channel_id);
+}
+
 bool s_worker::ipcc_get_hvac_value(THVACValue *value, int *temperature,
                                    int *humidity) {
   return get_ipcc()->get_hvac_value(

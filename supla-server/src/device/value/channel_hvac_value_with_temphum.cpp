@@ -112,7 +112,7 @@ void supla_channel_hvac_value_with_temphum::expand(
       if (native_config.AuxThermometerChannelNo !=
               fragment->get_channel_number() &&
           native_config.TemperatureControlType ==
-              SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_AUX_HEATER_COOLER_TEMPERATURE) {
+              SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_AUX_HEATER_COOLER_TEMPERATURE) {  // NOLINT
         main_thermometer_channel_id = getter->get_channel_id(
             getter->get_user_id(), fragment->get_device_id(),
             native_config.AuxThermometerChannelNo);
