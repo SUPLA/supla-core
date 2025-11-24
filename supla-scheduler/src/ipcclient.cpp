@@ -68,8 +68,8 @@ const char cmd_get_hvac_switch_to_program_mode[] =
 const char cmd_get_hvac_switch_to_manual_mode[] =
     "ACTION-HVAC-SWITCH-TO-MANUAL-MODE";
 
-const char cmd_turn_off[] = "ACTION-TURN-ON";
-const char cmd_turn_on[] = "ACTION-TURN-OFF";
+const char cmd_turn_off[] = "ACTION-TURN-OFF";
+const char cmd_turn_on[] = "ACTION-TURN-ON";
 
 const char ipc_result_value[] = "VALUE:";
 const char ipc_result_ok[] = "OK:";
