@@ -311,6 +311,7 @@ bool ipc_client::get_hvac_value(int user_id, int device_id, int channel_id,
     value->Mode = _mode;
     value->SetpointTemperatureCool = _setpoint_temperature_cool;
     value->SetpointTemperatureHeat = _setpoint_temperature_heat;
+    value->Flags = _flags;
   }
 
   if (temperature) {
