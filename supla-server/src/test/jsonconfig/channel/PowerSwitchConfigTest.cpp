@@ -154,7 +154,7 @@ TEST_F(PowerSwitchConfigTest, Staircase_setAndGet) {
 
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str, "{\"relayTime\":50}");
+  EXPECT_STREQ(str, "{\"relayTimeMs\":5000}");
   free(str);
 }
 
@@ -163,7 +163,7 @@ TEST_F(PowerSwitchConfigTest, merge) {
 
   config1.set_user_config(
       "{\"a\":\"b\",\"overcurrentThreshold\":0,\"relatedMeterChannelId\":123,"
-      "\"relayTime\":50}");
+      "\"relayTimeMs\":5000}");
 
   config1.set_properties(
       "{\"a\":\"b\",\"overcurrentMaxAllowed\":15,"
@@ -183,7 +183,7 @@ TEST_F(PowerSwitchConfigTest, merge) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"a\":\"b\",\"overcurrentThreshold\":15,"
-               "\"relatedMeterChannelId\":123,\"relayTime\":50}");
+               "\"relatedMeterChannelId\":123,\"relayTimeMs\":5000}");
 
   free(str);
 
@@ -223,9 +223,9 @@ TEST_F(PowerSwitchConfigTest, merge) {
 
   config1.set_user_config(
       "{\"a\":\"b\",\"overcurrentThreshold\":15,\"relatedMeterChannelId\":123,"
-      "\"relayTime\":25}");
+      "\"relayTimeMs\":2500}");
 
-  config2.set_user_config("{\"relayTime\":150}");
+  config2.set_user_config("{\"relayTimeMs\":15000}");
 
   config2.merge(&config1);
 
@@ -233,7 +233,7 @@ TEST_F(PowerSwitchConfigTest, merge) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"a\":\"b\",\"overcurrentThreshold\":15,"
-               "\"relatedMeterChannelId\":123,\"relayTime\":150}");
+               "\"relatedMeterChannelId\":123,\"relayTimeMs\":15000}");
 
   free(str);
 
@@ -266,7 +266,7 @@ TEST_F(PowerSwitchConfigTest, relayTime) {
   EXPECT_EQ(config.get_relay_time_ms(), 0);
   EXPECT_EQ(raw.TimeMS, 0);
 
-  config.set_user_config("{\"relayTime\":50}");
+  config.set_user_config("{\"relayTimeMs\":5000}");
 
   config.get_config(&raw);
 

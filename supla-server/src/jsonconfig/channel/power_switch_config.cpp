@@ -26,13 +26,13 @@ using std::string;
 #define FIELD_OVERCURRENT_THRESHOLD 1
 #define FIELD_OVERCURRENT_MAX_ALLOWED 2
 #define FIELD_DEFAULT_RELATED_MASTER_CHANNEL_NO 3
-#define FIELD_RELAY_TIME 4
+#define FIELD_RELAY_TIME_MS 4
 
 const map<unsigned _supla_int16_t, string> power_switch_config::field_map = {
     {FIELD_OVERCURRENT_THRESHOLD, "overcurrentThreshold"},
     {FIELD_OVERCURRENT_MAX_ALLOWED, "overcurrentMaxAllowed"},
     {FIELD_DEFAULT_RELATED_MASTER_CHANNEL_NO, "defaultRelatedMeterChannelNo"},
-    {FIELD_RELAY_TIME, "relayTime"}};
+    {FIELD_RELAY_TIME_MS, "relayTimeMs"}};
 
 const char power_switch_config::related_meter_channel_id_field[] =
     "relatedMeterChannelId";
@@ -99,8 +99,8 @@ void power_switch_config::set_config(
     return;
   }
 
-  set_item_value(user_root, field_map.at(FIELD_RELAY_TIME).c_str(),
-                 cJSON_Number, true, nullptr, nullptr, config->TimeMS / 100);
+  set_item_value(user_root, field_map.at(FIELD_RELAY_TIME_MS).c_str(),
+                 cJSON_Number, true, nullptr, nullptr, config->TimeMS);
 }
 
 bool power_switch_config::get_config(TChannelConfig_PowerSwitch *config) {
@@ -167,9 +167,9 @@ bool power_switch_config::get_config(TChannelConfig_StaircaseTimer *config) {
 
   double dbl_value = 0;
 
-  if (get_double(user_root, field_map.at(FIELD_RELAY_TIME).c_str(),
+  if (get_double(user_root, field_map.at(FIELD_RELAY_TIME_MS).c_str(),
                  &dbl_value)) {
-    config->TimeMS = dbl_value * 100;
+    config->TimeMS = dbl_value;
     result = true;
   } else {
     config->TimeMS = 0;
@@ -211,9 +211,9 @@ int power_switch_config::get_relay_time_ms(void) {
   cJSON *user_root = get_user_root();
   if (user_root) {
     double dbl_value = 0;
-    if (get_double(user_root, field_map.at(FIELD_RELAY_TIME).c_str(),
+    if (get_double(user_root, field_map.at(FIELD_RELAY_TIME_MS).c_str(),
                    &dbl_value)) {
-      return dbl_value * 100;
+      return dbl_value;
     }
   }
 
