@@ -54,6 +54,8 @@ class WorkerMock : public s_abstract_worker {
   MOCK_METHOD0(ipcc_action_hvac_switch_to_manual_mode, bool(void));
   MOCK_METHOD3(ipcc_get_hvac_value,
                bool(THVACValue *value, int *temperature, int *humidity));
+  MOCK_METHOD0(ipcc_action_turn_on, bool(void));
+  MOCK_METHOD0(ipcc_action_turn_off, bool(void));
   MOCK_METHOD0(ipcc_execute_scene, bool(void));
   MOCK_METHOD0(ipcc_interrupt_scene, bool(void));
   MOCK_METHOD0(ipcc_interrupt_and_execute_scene, bool(void));
