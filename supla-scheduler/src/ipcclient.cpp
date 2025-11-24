@@ -337,8 +337,8 @@ bool ipc_client::do_action(const char *cmd, int user_id, int device_id,
                            int channel_id) {
   if (!ipc_connect()) return false;
 
-  snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i\n", cmd_set_char_value,
-           user_id, device_id, channel_id);
+  snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i\n", cmd, user_id, device_id,
+           channel_id);
 
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
 
