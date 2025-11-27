@@ -36,7 +36,8 @@ class ipc_client {
 
   bool get_value(const char *cmd, int user_id, int device_id, int channel_id);
   bool check_set_result(void);
-  bool do_action(const char *cmd, int user_id, int device_id, int channel_id);
+  bool do_action(const char *cmd, const char *cmd_group, int user_id,
+                 int device_id, int channel_id);
 
  public:
   ipc_client();

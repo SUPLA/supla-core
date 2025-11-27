@@ -63,13 +63,19 @@ const char cmd_interrupt_scene[] = "INTERRUPT-SCENE";
 const char cmd_interrupt_and_execute_scene[] = "INTERRUPT-AND-EXECUTE-SCENE";
 
 const char cmd_get_hvac_value[] = "GET-HVAC-VALUE";
-const char cmd_get_hvac_switch_to_program_mode[] =
+const char cmd_hvac_switch_to_program_mode[] =
     "ACTION-HVAC-SWITCH-TO-PROGRAM-MODE";
-const char cmd_get_hvac_switch_to_manual_mode[] =
+const char cmd_hvac_switch_to_manual_mode[] =
     "ACTION-HVAC-SWITCH-TO-MANUAL-MODE";
+const char cmd_cg_hvac_switch_to_program_mode[] =
+    "ACTION-CG-HVAC-SWITCH-TO-MANUAL-MODE";
+const char cmd_cg_hvac_switch_to_manual_mode[] =
+    "ACTION-CG-HVAC-SWITCH-TO-PROGRAM-MODE";
 
 const char cmd_turn_off[] = "ACTION-TURN-OFF";
 const char cmd_turn_on[] = "ACTION-TURN-ON";
+const char cmd_cg_turn_off[] = "ACTION-CG-TURN-OFF";
+const char cmd_cg_turn_on[] = "ACTION-CG-TURN-ON";
 
 const char ipc_result_value[] = "VALUE:";
 const char ipc_result_ok[] = "OK:";
@@ -334,12 +340,19 @@ bool ipc_client::check_set_result(void) {
   return false;
 }
 
-bool ipc_client::do_action(const char *cmd, int user_id, int device_id,
-                           int channel_id) {
+bool ipc_client::do_action(const char *cmd, const char *cmd_group, int user_id,
+                           int device_id, int channel_id) {
   if (!ipc_connect()) return false;
 
-  snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i\n", cmd, user_id, device_id,
-           channel_id);
+  if (channel_group_id) {
+    if (!cmd_group) {
+      return false;
+    }
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i\n", cmd_group, user_id, group_);
+  } else {
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i\n", cmd, user_id, device_id,
+             channel_id);
+  }
 
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
 
@@ -441,22 +454,25 @@ bool ipc_client::action_shut_partially(int user_id, int device_id,
 
 bool ipc_client::action_hvac_switch_to_program_mode(int user_id, int device_id,
                                                     int channel_id) {
-  return do_action(cmd_get_hvac_switch_to_program_mode, user_id, device_id,
+  return do_action(cmd_hvac_switch_to_program_mode,
+                   cmd_cg_hvac_switch_to_program_mode.user_id, device_id,
                    channel_id);
 }
 
 bool ipc_client::action_hvac_switch_to_manual_mode(int user_id, int device_id,
                                                    int channel_id) {
-  return do_action(cmd_get_hvac_switch_to_manual_mode, user_id, device_id,
+  return do_action(cmd_hvac_switch_to_manual_mode,
+                   cmd_cg_hvac_switch_to_manual_mode, user_id, device_id,
                    channel_id);
 }
 
 bool ipc_client::action_turn_on(int user_id, int device_id, int channel_id) {
-  return do_action(cmd_turn_on, user_id, device_id, channel_id);
+  return do_action(cmd_turn_on, cmd_cg_turn_on, user_id, device_id, channel_id);
 }
 
 bool ipc_client::action_turn_off(int user_id, int device_id, int channel_id) {
-  return do_action(cmd_turn_off, user_id, device_id, channel_id);
+  return do_action(cmd_turn_off, cmd_cg_turn_of, user_id, device_id,
+                   channel_id);
 }
 
 bool ipc_client::execute_scene(int user_id, int scene_id) {
