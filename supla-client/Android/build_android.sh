@@ -23,10 +23,10 @@ set -e
 $NDK_ROOT/ndk-build clean
 $NDK_ROOT/ndk-build V=1 -C ./ NDK_DEBUG=1 APP_PLATFORM=android-24 APP_ABI="armeabi-v7a arm64-v8a x86 x86_64"
 
-cp  libs/armeabi-v7a/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/armeabi-v7a/
-cp  libs/arm64-v8a/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/arm64-v8a/
-cp  libs/x86/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/x86/
-cp  libs/x86_64/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/x86_64/
+cp  libs/armeabi-v7a/*.so $SUPLA_ANDROID/app/src/main/libs/armeabi-v7a/
+cp  libs/arm64-v8a/*.so $SUPLA_ANDROID/app/src/main/libs/arm64-v8a/
+cp  libs/x86/*.so $SUPLA_ANDROID/app/src/main/libs/x86/
+cp  libs/x86_64/*.so $SUPLA_ANDROID/app/src/main/libs/x86_64/
 
 cd obj/local
 rm -rf ../../symbols*

@@ -625,12 +625,10 @@ void supla_abstract_common_channel_properties::get_config(
   }
 
   switch (get_func()) {
-    case SUPLA_CHANNELFNC_STAIRCASETIMER: {
-      *config_size = sizeof(TChannelConfig_StaircaseTimer);
-      TChannelConfig_StaircaseTimer *cfg =
-          (TChannelConfig_StaircaseTimer *)config;
-      cfg->TimeMS = get_param1() * 100;
-    } break;
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      JSON_TO_CONFIG(power_switch_config, TChannelConfig_StaircaseTimer, config,
+                     config_size);
+      break;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
@@ -772,9 +770,19 @@ int supla_abstract_common_channel_properties::set_user_config(
               func == SUPLA_CHANNELFNC_STAIRCASETIMER) &&
              config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
              config_size == sizeof(TChannelConfig_PowerSwitch)) {
+    // Probably, SUPLA_CHANNELFNC_STAIRCASETIMER cannot come at all with
+    // config_type == SUPLA_CONFIG_TYPE_DEFAULT and config_size ==
+    // sizeof(TChannelConfig_PowerSwitch) and it is some old bug but it does not
+    // harm anything so I leave it just in case.
     json_config = new power_switch_config();
     static_cast<power_switch_config *>(json_config)
         ->set_config((TChannelConfig_PowerSwitch *)config, this);
+  } else if (func == SUPLA_CHANNELFNC_STAIRCASETIMER &&
+             config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
+             config_size == sizeof(TChannelConfig_StaircaseTimer)) {
+    json_config = new power_switch_config();
+    static_cast<power_switch_config *>(json_config)
+        ->set_config((TChannelConfig_StaircaseTimer *)config, this);
   } else if (func == SUPLA_CHANNELFNC_STAIRCASETIMER &&
              config_type == SUPLA_CONFIG_TYPE_EXTENDED &&
              config_size == sizeof(TChannelConfig_PowerSwitch)) {

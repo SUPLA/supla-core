@@ -67,6 +67,8 @@ int supla_state_webhook_throttling::get_default_delay_time(int func) {
     case SUPLA_CHANNELFNC_CURTAIN:
     case SUPLA_CHANNELFNC_VERTICAL_BLIND:
     case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR:
+    case SUPLA_CHANNELFNC_BINARY_SENSOR:
+    case SUPLA_CHANNELFNC_MOTION_SENSOR:
       return 250000;
     case SUPLA_CHANNELFNC_ACTIONTRIGGER:
       return 100000;

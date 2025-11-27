@@ -353,6 +353,12 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
       snprintf(buf, buf_size, "HVAC_DOMESTIC_HOT_WATER");
       break;
+    case SUPLA_CHANNELFNC_MOTION_SENSOR:
+      snprintf(buf, buf_size, "MOTION_SENSO");
+      break;
+    case SUPLA_CHANNELFNC_BINARY_SENSOR:
+      snprintf(buf, buf_size, "BINARY_SENSOR");
+      break;
     default:
       buf[0] = 0;
       break;
@@ -564,6 +570,12 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
     case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Thermostat");
+      break;
+    case SUPLA_CHANNELFNC_MOTION_SENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Motion sensor");
+      break;
+    case SUPLA_CHANNELFNC_BINARY_SENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Binary sensor");
       break;
     default:
       caption_out[0] = 0;
@@ -960,8 +972,9 @@ bool supla_mqtt_channel_message_provider::ha_sensor_temperature(
     int sub_id, bool set_sub_id, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   return ha_sensor("°C", 1, sub_id, set_sub_id, "state/temperature",
-                   "Temperature", NULL, NULL, NULL, state_cls_measurement,
-                   topic_prefix, topic_name, message, message_size);
+                   "Temperature", NULL, NULL, "temperature",
+                   state_cls_measurement, topic_prefix, topic_name, message,
+                   message_size);
 }
 
 bool supla_mqtt_channel_message_provider::ha_sensor_humidity(
@@ -1868,7 +1881,11 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_MAILSENSOR:
     case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
     case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
+    case SUPLA_CHANNELFNC_BINARY_SENSOR:
       return ha_binary_sensor(NULL, topic_prefix, topic_name, message,
+                              message_size, true);
+    case SUPLA_CHANNELFNC_MOTION_SENSOR:
+      return ha_binary_sensor("motion", topic_prefix, topic_name, message,
                               message_size, true);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:

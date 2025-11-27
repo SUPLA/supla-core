@@ -121,7 +121,6 @@ bool supla_channel_container_value::is_function_supported(int func) {
     case SUPLA_CHANNELFNC_CONTAINER:
     case SUPLA_CHANNELFNC_SEPTIC_TANK:
     case SUPLA_CHANNELFNC_WATER_TANK:
-    case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
       return true;
   }
   return false;

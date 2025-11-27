@@ -230,6 +230,12 @@ bool supla_state_webhook_request::make_request(
     case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
       result = client.hvac_report("HVAC_DOMESTIC_HOT_WATER");
       break;
+    case SUPLA_CHANNELFNC_BINARY_SENSOR:
+      result = client.binary_sensor_report();
+      break;
+    case SUPLA_CHANNELFNC_MOTION_SENSOR:
+      result = client.motion_sensor_report();
+      break;
   }
 
   return result;

@@ -1231,4 +1231,44 @@ TEST_F(StateWebhookRequestTest, hvacReport) {
   makeTest(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true, hvac_val, expectedPayload);
 }
 
+TEST_F(StateWebhookRequestTest, sendBinarySensorReport_Connected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"BINARY_SENSOR\",\"timestamp\":"
+      "1600097258,\"state\":{\"hi\":true,\"connected\":true}}";
+
+  makeTest(SUPLA_CHANNELFNC_BINARY_SENSOR, true,
+           new supla_channel_binary_sensor_value(true), expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest, sendBinarySensorReport_Disconnected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"BINARY_SENSOR\",\"timestamp\":"
+      "1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
+
+  makeTest(SUPLA_CHANNELFNC_BINARY_SENSOR, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest, sendBMotionSensorReport_Connected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"MOTION_SENSOR\",\"timestamp\":"
+      "1600097258,\"state\":{\"hi\":true,\"connected\":true}}";
+
+  makeTest(SUPLA_CHANNELFNC_MOTION_SENSOR, true,
+           new supla_channel_binary_sensor_value(true), expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest, sendMotionSensorReport_Disconnected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"MOTION_SENSOR\",\"timestamp\":"
+      "1600097258,\"state\":{\"hi\":false,\"connected\":false}}";
+
+  makeTest(SUPLA_CHANNELFNC_MOTION_SENSOR, false,
+           (supla_abstract_channel_value *)nullptr, expectedPayload);
+}
+
 }  // namespace testing

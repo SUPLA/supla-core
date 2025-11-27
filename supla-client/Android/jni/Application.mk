@@ -1,3 +1,4 @@
 APP_PLATFORM := ${APP_PLATFORM}
 APP_ABI  := ${APP_ABI}
 APP_CPPFLAGS := -Wall 
+APP_STL := c++_shared

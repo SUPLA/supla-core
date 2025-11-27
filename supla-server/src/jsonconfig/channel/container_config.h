@@ -29,8 +29,6 @@ class container_config : public supla_json_config {
  private:
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
   static const std::map<unsigned _supla_int16_t, std::string> sensor_field_map;
-  void set_level(cJSON *parent, int field, unsigned char level);
-  bool get_level(cJSON *parent, int field, unsigned char *level);
 
  protected:
  public:

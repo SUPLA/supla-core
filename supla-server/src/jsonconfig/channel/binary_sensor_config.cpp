@@ -18,15 +18,21 @@
 
 #include "binary_sensor_config.h"
 
+#include <limits>
+
 using std::map;
 using std::string;
 
 #define FIELD_INVERTED_LOGIC 1
 #define FIELD_FILTERING_TIME_MS 2
+#define FIELD_TIMEOUT 3
+#define FIELD_SENSITIVITY 4
 
 const map<unsigned _supla_int16_t, string> binary_sensor_config::field_map = {
     {FIELD_INVERTED_LOGIC, "invertedLogic"},
-    {FIELD_FILTERING_TIME_MS, "filteringTimeMs"}};
+    {FIELD_FILTERING_TIME_MS, "filteringTimeMs"},
+    {FIELD_TIMEOUT, "timeout"},
+    {FIELD_SENSITIVITY, "sensitivity"}};
 
 binary_sensor_config::binary_sensor_config(void) : supla_json_config() {}
 
@@ -54,7 +60,19 @@ void binary_sensor_config::set_config(TChannelConfig_BinarySensor *config) {
                  nullptr, nullptr, 0);
 
   set_item_value(root, field_map.at(FIELD_FILTERING_TIME_MS).c_str(),
-                 cJSON_Number, true, nullptr, nullptr, config->FilteringTimeMs);
+                 config->FilteringTimeMs > 0 &&
+                         config->FilteringTimeMs <=
+                             std::numeric_limits<unsigned _supla_int16_t>::max()
+                     ? cJSON_Number
+                     : cJSON_NULL,
+                 true, nullptr, nullptr, config->FilteringTimeMs);
+
+  set_item_value(root, field_map.at(FIELD_TIMEOUT).c_str(),
+                 config->Timeout > 0 && config->Timeout <= 36000 ? cJSON_Number
+                                                                 : cJSON_NULL,
+                 true, nullptr, nullptr, config->Timeout);
+
+  set_level(field_map, root, FIELD_SENSITIVITY, config->Sensitivity, 100);
 }
 
 bool binary_sensor_config::get_config(TChannelConfig_BinarySensor *config) {
@@ -77,13 +95,30 @@ bool binary_sensor_config::get_config(TChannelConfig_BinarySensor *config) {
     result = true;
   }
 
+  int level = 0;
   double dbl_value = 0;
+
   if (get_double(root, field_map.at(FIELD_FILTERING_TIME_MS).c_str(),
-                 &dbl_value)) {
+                 &dbl_value) &&
+      dbl_value >= 0 &&
+      dbl_value <= std::numeric_limits<unsigned _supla_int16_t>::max()) {
     config->FilteringTimeMs = dbl_value;
     result = true;
   } else {
     config->FilteringTimeMs = 0;
+  }
+
+  if (get_double(root, field_map.at(FIELD_TIMEOUT).c_str(), &dbl_value) &&
+      dbl_value >= 0 && dbl_value <= 36000) {
+    config->Timeout = dbl_value;
+    result = true;
+  } else {
+    config->Timeout = 0;
+  }
+
+  if (get_level(field_map, root, FIELD_SENSITIVITY, &level, 100)) {
+    config->Sensitivity = level;
+    result = true;
   }
 
   return result;
@@ -101,6 +136,22 @@ int binary_sensor_config::get_filtering_time_ms(void) {
   TChannelConfig_BinarySensor config = {};
   if (get_config(&config)) {
     return config.FilteringTimeMs;
+  }
+  return 0;
+}
+
+int binary_sensor_config::get_timeout(void) {
+  TChannelConfig_BinarySensor config = {};
+  if (get_config(&config)) {
+    return config.Timeout;
+  }
+  return 0;
+}
+
+int binary_sensor_config::get_sensitivity(void) {
+  TChannelConfig_BinarySensor config = {};
+  if (get_config(&config)) {
+    return config.Sensitivity;
   }
   return 0;
 }

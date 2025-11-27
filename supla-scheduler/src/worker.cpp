@@ -150,6 +150,37 @@ bool s_worker::ipcc_action_shut_partially(char percentage,
       percentage_as_delta, tilt, tilt_as_delta);
 }
 
+bool s_worker::ipcc_action_hvac_switch_to_program_mode(void) {
+  return get_ipcc()->action_hvac_switch_to_program_mode(
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, get_params()->channel_group_id);
+}
+
+bool s_worker::ipcc_action_hvac_switch_to_manual_mode(void) {
+  return get_ipcc()->action_hvac_switch_to_manual_mode(
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, get_params()->channel_group_id);
+}
+
+bool s_worker::ipcc_action_turn_on(void) {
+  return get_ipcc()->action_turn_on(
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, get_params()->channel_group_id);
+}
+
+bool s_worker::ipcc_action_turn_off(void) {
+  return get_ipcc()->action_turn_off(
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, get_params()->channel_group_id);
+}
+
+bool s_worker::ipcc_get_hvac_value(THVACValue *value, int *temperature,
+                                   int *humidity) {
+  return get_ipcc()->get_hvac_value(
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, value, temperature, humidity);
+}
+
 bool s_worker::ipcc_execute_scene(void) {
   return get_ipcc()->execute_scene(get_params()->user_id,
                                    get_params()->scene_id);

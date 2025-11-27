@@ -1,28 +1,24 @@
 LOCAL_PATH := $(call my-dir)
-APP_STL := c++_static
 
 include $(CLEAR_VARS)
-
-LOCAL_MODULE := crypto
-LOCAL_SRC_FILES := $(OPENSSL_ANDROID)/libs/$(TARGET_ARCH_ABI)/libcrypto.a 
-include $(PREBUILT_STATIC_LIBRARY)
-
 LOCAL_MODULE := ssl
-LOCAL_SRC_FILES := $(OPENSSL_ANDROID)/libs/$(TARGET_ARCH_ABI)/libssl.a
-include $(PREBUILT_STATIC_LIBRARY)
+LOCAL_SRC_FILES := $(OPENSSL_ANDROID)/libs/$(TARGET_ARCH_ABI)/libssl.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := crypto
+LOCAL_SRC_FILES := $(OPENSSL_ANDROID)/libs/$(TARGET_ARCH_ABI)/libcrypto.so
+include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 
-LOCAL_C_INCLUDES := $(OPENSSL_ANDROID)/include \
-         ../src
+_16K_ABIS := arm64-v8a x86_64
 
-LOCAL_MODULE    := libsuplaclient
-LOCAL_STATIC_LIBRARIES := cpufeatures 
-LOCAL_LDLIBS := -llog -landroid
-LOCAL_SHARED_LIBRARIES = ssl crypto
-LOCAL_CFLAGS += -DNOMYSQL -DSRPC_WITHOUT_IN_QUEUE -DSRPC_WITHOUT_OUT_QUEUE -DSPROTO_WITHOUT_OUT_BUFFER -DUSE_DEPRECATED_EMEV_V1 -DUSE_DEPRECATED_EMEV_V2 -fPIC -g
-LOCAL_LDFLAGS += "-Wl,-z,max-page-size=16384"
+ifneq (,$(filter $(_16K_ABIS),$(TARGET_ARCH_ABI)))
+    LOCAL_LDFLAGS += -Wl,-z,max-page-size=0x4000
+endif
 
+LOCAL_MODULE := libsuplaclient
 LOCAL_SRC_FILES := supla.cpp \
     main.cpp \
     actions.cpp \
@@ -49,7 +45,20 @@ LOCAL_SRC_FILES := supla.cpp \
     ../../src/supla-client.c \
     ../../src/suplasinglecall.cpp \
     ../../src/supla-socket.c \
-    ../../src/tools.c \
+    ../../src/tools.c
+
+LOCAL_C_INCLUDES := $(OPENSSL_ANDROID)/include \
+                    ../src
+
+LOCAL_LDLIBS := -llog -landroid
+
+LOCAL_SHARED_LIBRARIES := ssl crypto
+
+LOCAL_STATIC_LIBRARIES := cpufeatures
+LOCAL_CFLAGS += -DNOMYSQL -DSRPC_WITHOUT_IN_QUEUE -DSRPC_WITHOUT_OUT_QUEUE \
+                -DSPROTO_WITHOUT_OUT_BUFFER -DUSE_DEPRECATED_EMEV_V1 \
+                -DUSE_DEPRECATED_EMEV_V2 -fPIC -g
 
 include $(BUILD_SHARED_LIBRARY)
+
 $(call import-module,android/cpufeatures)

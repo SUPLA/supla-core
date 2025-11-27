@@ -78,6 +78,8 @@ bool supla_channel_onoff_value::is_function_supported(int func) {
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
+    case SUPLA_CHANNELFNC_PUMPSWITCH:
+    case SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH:
       return true;
   }
 

@@ -45,6 +45,13 @@ class supla_json_config : public supla_json_helper {
   double get_double(const char *key);
   bool get_double(cJSON *parent, const char *key, double *value);
 
+  void set_level(
+      const std::map<unsigned _supla_int16_t, std::string> &field_map,
+      cJSON *parent, int field, int level, int max);
+  bool get_level(
+      const std::map<unsigned _supla_int16_t, std::string> &field_map,
+      cJSON *parent, int field, int *level, int max);
+
   bool merge(cJSON *src_parent, cJSON *dst_parent,
              const std::map<unsigned _supla_int16_t, std::string> &m,
              bool delete_nonexistent);

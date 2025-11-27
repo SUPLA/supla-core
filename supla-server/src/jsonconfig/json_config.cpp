@@ -200,6 +200,29 @@ bool supla_json_config::get_bool(cJSON *parent, const char *key, bool *value) {
   return supla_json_helper::get_bool(parent, key, value);
 }
 
+void supla_json_config::set_level(
+    const map<unsigned _supla_int16_t, string> &field_map, cJSON *parent,
+    int field, int level, int max) {
+  set_item_value(
+      parent, field_map.at(field).c_str(),
+      level > 0 && (max == 0 || level - 1 <= max) ? cJSON_Number : cJSON_NULL,
+      true, nullptr, nullptr, level - 1);
+}
+
+bool supla_json_config::get_level(
+    const map<unsigned _supla_int16_t, string> &field_map, cJSON *parent,
+    int field, int *level, int max) {
+  *level = 0;
+  double dbl_value = 0;
+  if (get_double(parent, field_map.at(field).c_str(), &dbl_value)) {
+    if (dbl_value >= 0 && (max == 0 || dbl_value <= max)) {
+      *level = dbl_value + 1;
+    }
+    return true;
+  }
+  return false;
+}
+
 supla_json_config &supla_json_config::operator=(
     const supla_json_config &json_config) {
   json_clear();
