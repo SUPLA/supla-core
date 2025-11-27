@@ -37,7 +37,7 @@ class ipc_client {
   bool get_value(const char *cmd, int user_id, int device_id, int channel_id);
   bool check_set_result(void);
   bool do_action(const char *cmd, const char *cmd_group, int user_id,
-                 int device_id, int channel_id);
+                 int device_id, int channel_id, int channel_group_id);
 
  public:
   ipc_client();
@@ -77,11 +77,13 @@ class ipc_client {
                              bool percentage_as_delta, char tilt,
                              bool tilt_as_delta);
   bool action_hvac_switch_to_program_mode(int user_id, int device_id,
-                                          int channel_id);
+                                          int channel_id, int channel_group_id);
   bool action_hvac_switch_to_manual_mode(int user_id, int device_id,
-                                         int channel_id);
-  bool action_turn_on(int user_id, int device_id, int channel_id);
-  bool action_turn_off(int user_id, int device_id, int channel_id);
+                                         int channel_id, int channel_group_id);
+  bool action_turn_on(int user_id, int device_id, int channel_id,
+                      int channel_group_id);
+  bool action_turn_off(int user_id, int device_id, int channel_id,
+                       int channel_group_id);
   bool execute_scene(int user_id, int scene_id);
   bool interrupt_scene(int user_id, int scene_id);
   bool interrupt_and_execute_scene(int user_id, int scene_id);
