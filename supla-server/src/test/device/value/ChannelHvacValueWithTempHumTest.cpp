@@ -26,7 +26,6 @@
 #include "device/value/channel_hvac_value_with_temphum.h"
 #include "device/value/channel_temphum_value.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
-#include "jsonconfig/channel/hvac_config.h"
 #include "srpc/srpc.h"
 
 namespace testing {
@@ -89,7 +88,8 @@ TEST_F(ChannelHvacValueWithTempHumTest, expandHpThermostatToHvac) {
   delete hp_val;
 }
 
-TEST_F(ChannelHvacValueWithTempHumTest, expandHvacToHavacWithTempHum) {
+void ChannelHvacValueWithTempHumTest::_ExpandHvacToHavacWithTempHum(
+    TChannelConfig_HVAC native_config) {
   supla_channel_hvac_value *hvac_value = new supla_channel_hvac_value();
   hvac_value->set_setpoint_temperature_heat(1234);
   hvac_value->set_mode(SUPLA_HVAC_MODE_HEAT);
@@ -100,9 +100,7 @@ TEST_F(ChannelHvacValueWithTempHumTest, expandHvacToHavacWithTempHum) {
   ChannelPropertyGetterMock getter(5, 0, 0);
 
   EXPECT_CALL(getter, _get_detached_json_config(Eq(5), Eq(10), Eq(20)))
-      .WillOnce([](int user_id, int device_id, int channel_id) {
-        TChannelConfig_HVAC native_config = {};
-        native_config.MainThermometerChannelNo = 3;
+      .WillOnce([&native_config](int user_id, int device_id, int channel_id) {
         hvac_config *cfg = new hvac_config();
         cfg->set_config(&native_config, 1);
         return cfg;
@@ -130,6 +128,22 @@ TEST_F(ChannelHvacValueWithTempHumTest, expandHvacToHavacWithTempHum) {
     EXPECT_EQ(hvac_th->get_mode(), SUPLA_HVAC_MODE_HEAT);
   }
   delete value;
+}
+
+TEST_F(ChannelHvacValueWithTempHumTest, expandHvacToHavacWithTempHum) {
+  TChannelConfig_HVAC native_config = {};
+  native_config.MainThermometerChannelNo = 3;
+  _ExpandHvacToHavacWithTempHum(native_config);
+}
+
+TEST_F(ChannelHvacValueWithTempHumTest,
+       AuxGenericHeater_ExpandHvacToHavacWithTempHum) {
+  TChannelConfig_HVAC native_config = {};
+  native_config.AuxThermometerChannelNo = 3;
+  native_config.TemperatureControlType =
+      SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_AUX_HEATER_COOLER_TEMPERATURE;
+
+  _ExpandHvacToHavacWithTempHum(native_config);
 }
 
 }  // namespace testing

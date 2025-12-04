@@ -39,6 +39,9 @@ bool s_worker_action_turn_onoff::is_action_allowed(void) {
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
       return true;
   }
 
@@ -76,6 +79,18 @@ bool s_worker_action_turn_onoff::result_success(int *fail_result_code) {
         }
       }
     } break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL: {
+      THVACValue value = {};
+      if (worker->ipcc_get_hvac_value(&value, nullptr, nullptr)) {
+        result = (setOn && value.Mode != SUPLA_HVAC_MODE_NOT_SET &&
+                  value.Mode != SUPLA_HVAC_MODE_OFF) ||
+                 (setOn && value.Mode == SUPLA_HVAC_MODE_OFF &&
+                  (value.Flags & SUPLA_HVAC_VALUE_FLAG_WEEKLY_SCHEDULE)) ||
+                 (!setOn && value.Mode == SUPLA_HVAC_MODE_OFF);
+      }
+    } break;
     default: {
       char value = 0;
       if (worker->ipcc_get_char_value(&value)) {
@@ -89,7 +104,7 @@ bool s_worker_action_turn_onoff::result_success(int *fail_result_code) {
 }
 
 bool s_worker_action_turn_onoff::do_action() {
-  return worker->ipcc_set_char_value(setOn ? 1 : 0);
+  return setOn ? worker->ipcc_action_turn_on() : worker->ipcc_action_turn_off();
 }
 
 REGISTER_ACTION(s_worker_action_turn_on, ACTION_TURN_ON);

@@ -16,19 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_HVAC_VALUE_WITH_TEMPHUM_TEST_H_
-#define CHANNEL_HVAC_VALUE_WITH_TEMPHUM_TEST_H_
+#include "action_hvac_switch_to_program_mode.h"
 
-#include "gtest/gtest.h"
-#include "jsonconfig/channel/hvac_config.h"
+s_worker_action_switch_to_program_mode::s_worker_action_switch_to_program_mode(
+    s_abstract_worker *worker)
+    : s_worker_action_switch_to(worker) {}
 
-namespace testing {
+bool s_worker_action_switch_to_program_mode::to_program_mode(void) {
+  return true;
+}
 
-class ChannelHvacValueWithTempHumTest : public Test {
- public:
-  void _ExpandHvacToHavacWithTempHum(TChannelConfig_HVAC native_config);
-};
-
-}  // namespace testing
-
-#endif /*CHANNEL_HVAC_VALUE_WITH_TEMPHUM_TEST_H_*/
+REGISTER_ACTION(s_worker_action_switch_to_program_mode,
+                ACTION_HVAC_SWITCH_TO_PROGRAM_MODE);

@@ -36,9 +36,13 @@ class power_switch_config : public supla_json_config {
   virtual ~power_switch_config(void);
   void set_config(TChannelConfig_PowerSwitch *config,
                   supla_abstract_common_channel_properties *props);
+  void set_config(TChannelConfig_StaircaseTimer *config,
+                  supla_abstract_common_channel_properties *props);
   bool get_config(TChannelConfig_PowerSwitch *config);
+  bool get_config(TChannelConfig_StaircaseTimer *config);
   virtual void merge(supla_json_config *dst);
   int get_related_meter_channel_id(void);
+  int get_relay_time_ms(void);
 };
 
 #endif /* POWER_SWITCH_CONFIG_H_ */

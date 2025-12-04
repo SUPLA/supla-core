@@ -158,8 +158,10 @@ bool supla_apns_client::_send(supla_remote_gateway_access_token *token,
         }
       }
 
-      if (reason == "BadDeviceToken" || get_curl_adapter()->get_response_code(
-                                            recipient->get_app_id()) == 410) {
+      if (reason == "BadDeviceToken" || reason == "ExpiredToken" ||
+          reason == "DeviceTokenNotForTopic" ||
+          get_curl_adapter()->get_response_code(recipient->get_app_id()) ==
+              410) {
         recipient->set_exists(false);
       } else {
         supla_log(
