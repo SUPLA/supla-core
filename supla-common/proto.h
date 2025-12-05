@@ -119,7 +119,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 27
+#define SUPLA_PROTO_VERSION 28
 #define SUPLA_PROTO_VERSION_MIN 1
 
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO) || defined(SUPLA_DEVICE)
@@ -409,13 +409,13 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_WEATHER_STATION 3100        // ver. >= 8
 #define SUPLA_CHANNELTYPE_CONTAINER 3200              // ver. >= 26
 
+// Since ver. >= 28 channel types DIMMER, RGBLIGHTING, DIMMERANDRGBLIGHTING
+// support all RGBW/dimmer related functions, when their RGBW_FuncList is != 0.
+// List of supported functions should be determined based on the RGBW_FuncList
+// bitmap value.
 #define SUPLA_CHANNELTYPE_DIMMER 4000            // ver. >= 4
 #define SUPLA_CHANNELTYPE_RGBLEDCONTROLLER 4010  // ver. >= 4
 #define SUPLA_CHANNELTYPE_DIMMERANDRGBLED 4020   // ver. >= 4
-// RGBW_CCT channel type can work with DIMMER, DIMMER_CCT, RGBLIGHTING,
-// DIMMERANDRGBLIGHTING, DIMMER_CCT_AND_RGB_LIGHTING functions.
-// Actual list of supported functions is provided in RGBW_CCT_FuncList bitfield.
-#define SUPLA_CHANNELTYPE_RGBW_CCT 4030          // ver. >= 27
 
 #define SUPLA_CHANNELTYPE_ELECTRICITY_METER 5000  // ver. >= 10
 #define SUPLA_CHANNELTYPE_IMPULSE_COUNTER 5010    // ver. >= 10
@@ -458,10 +458,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_ALARM 160
 #define SUPLA_CHANNELFNC_NOTIFICATION 170
 #define SUPLA_CHANNELFNC_DIMMER 180
-#define SUPLA_CHANNELFNC_DIMMER_CCT 185                    // ver. >= 27
+#define SUPLA_CHANNELFNC_DIMMER_CCT 185                    // ver. >= 28
 #define SUPLA_CHANNELFNC_RGBLIGHTING 190
 #define SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING 200
-#define SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB_LIGHTING 205   // ver. >= 27
+#define SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB_LIGHTING 205   // ver. >= 28
 #define SUPLA_CHANNELFNC_DEPTHSENSOR 210                   // ver. >= 5
 #define SUPLA_CHANNELFNC_DISTANCESENSOR 220                // ver. >= 5
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW 230          // ver. >= 8
@@ -542,12 +542,13 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_BIT_FUNC_PUMPSWITCH 0x04000000                    // ver. >= 25
 #define SUPLA_BIT_FUNC_HEATORCOLDSOURCESWITCH 0x08000000        // ver. >= 25
 
-// Channel's RGBW_CCT_FuncList bit values (only for SUPLA_CHANNELTYPE_RGBW_CCT):
-#define SUPLA_BIT_FUNC_DIMMER 0x00000001
-#define SUPLA_BIT_FUNC_RGB_LIGHTING 0x00000002
-#define SUPLA_BIT_FUNC_DIMMER_AND_RGBLIGHTING 0x00000004
-#define SUPLA_BIT_FUNC_DIMMER_CCT 0x00000008
-#define SUPLA_BIT_FUNC_DIMMER_CCT_AND_RGB_LIGHTING 0x00000010
+// Channel's RGBW_FuncList bit values (only for SUPLA_CHANNELTYPE_DIMMER,
+// SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, SUPLA_CHANNELTYPE_DIMMERANDRGBLED):
+#define SUPLA_BIT_FUNC_DIMMER 0x00000001                        // ver. >= 28
+#define SUPLA_BIT_FUNC_RGB_LIGHTING 0x00000002                  // ver. >= 28
+#define SUPLA_BIT_FUNC_DIMMER_AND_RGBLIGHTING 0x00000004        // ver. >= 28
+#define SUPLA_BIT_FUNC_DIMMER_CCT 0x00000008                    // ver. >= 28
+#define SUPLA_BIT_FUNC_DIMMER_CCT_AND_RGB_LIGHTING 0x00000010   // ver. >= 28
 
 
 #define SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK 10
@@ -978,7 +979,9 @@ typedef struct {
     unsigned _supla_int_t ActionTriggerCaps;  // ver. >= 16 only for
                                               // SUPLA_CHANNELTYPE_ACTIONTRIGGER
     unsigned _supla_int_t
-        RGBW_CCT_FuncList;  // ver. >= 27 only for SUPLA_CHANNELTYPE_RGBW_CCT
+        RGBW_FuncList; // ver. >= 28 only for SUPLA_CHANNELTYPE_DIMMER,
+                       // SUPLA_CHANNELTYPE_RGBLEDCONTROLLER,
+                       // SUPLA_CHANNELTYPE_DIMMERANDRGBLED
   };
 
   _supla_int_t Default;
