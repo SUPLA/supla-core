@@ -24,9 +24,8 @@
 
 supla_general_purpose_measurement_logger_dao::
     supla_general_purpose_measurement_logger_dao(
-        supla_abstract_db_access_provider *dba) {
-  this->dba = dba;
-}
+        supla_abstract_db_access_provider *dba)
+    : supla_abstract_cyclictask_dao(dba) {}
 
 void supla_general_purpose_measurement_logger_dao::add(
     supla_general_purpose_measurement_analyzer *analyzer) {
@@ -64,7 +63,7 @@ void supla_general_purpose_measurement_logger_dao::add(
   const char sql[] = "CALL `supla_add_gp_measurement_log_item`(?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 6, true);
+  get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 6, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }

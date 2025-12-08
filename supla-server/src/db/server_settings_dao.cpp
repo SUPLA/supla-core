@@ -25,7 +25,7 @@
 using std::string;
 
 supla_server_settins_dao::supla_server_settins_dao(
-    supla_abstract_db_access_provider *dba) {
+    supla_mariadb_access_provider *dba) {
   this->dba = dba;
 }
 

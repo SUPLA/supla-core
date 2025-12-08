@@ -43,7 +43,7 @@ bool supla_virtual_channel_updater_cyclictask::user_access_needed(void) {
 
 void supla_virtual_channel_updater_cyclictask::run(
     const vector<supla_user *> *users, supla_abstract_db_access_provider *dba) {
-  supla_user_dao dao(dba);
+  supla_user_dao dao(dynamic_cast<supla_mariadb_access_provider *>(dba));
 
   // Load all users with virtual channels online
   vector<int> users_with_vc = dao.get_users_with_virtual_channels();

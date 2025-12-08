@@ -25,17 +25,11 @@
 using std::string;
 
 supla_abstract_electricity_logger_dao::supla_abstract_electricity_logger_dao(
-    supla_abstract_db_access_provider *dba) {
-  this->dba = dba;
-}
+    supla_abstract_db_access_provider *dba)
+    : supla_abstract_cyclictask_dao(dba) {}
 
 supla_abstract_electricity_logger_dao::
     ~supla_abstract_electricity_logger_dao() {}
-
-supla_abstract_db_access_provider *
-supla_abstract_electricity_logger_dao::get_dba(void) {
-  return dba;
-}
 
 bool supla_abstract_electricity_logger_dao::get_utc_timestamp(
     MYSQL_TIME *time) {
@@ -43,8 +37,8 @@ bool supla_abstract_electricity_logger_dao::get_utc_timestamp(
 
   bool result = false;
 
-  if (get_dba()->stmt_execute((void **)&stmt, "SELECT UTC_TIMESTAMP()", nullptr,
-                              0, true)) {
+  if (get_mdba()->stmt_execute((void **)&stmt, "SELECT UTC_TIMESTAMP()",
+                               nullptr, 0, true)) {
     MYSQL_BIND rbind = {};
 
     rbind.buffer_type = MYSQL_TYPE_DATETIME;
@@ -117,7 +111,7 @@ void supla_abstract_electricity_logger_dao::add(MYSQL_TIME *time,
   sql.append("`(?,?,?,?,?,?)");
 
   MYSQL_STMT *stmt = nullptr;
-  get_dba()->stmt_execute((void **)&stmt, sql.c_str(), pbind, 6, true);
+  get_mdba()->stmt_execute((void **)&stmt, sql.c_str(), pbind, 6, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }

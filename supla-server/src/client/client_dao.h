@@ -23,18 +23,18 @@
 #include <string>
 
 #include "client/abstract_client_dao.h"
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 
 class supla_client_dao : public supla_abstract_client_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
 
   int oauth_add_client_id(void);
   int oauth_get_client_id(bool create);
   bool exists(int client_id, int id, const char *query);
 
  public:
-  explicit supla_client_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_client_dao(supla_mariadb_access_provider *dba);
   virtual ~supla_client_dao();
 
   virtual bool access_id_auth(int access_id, char *access_id_pwd, int *user_id,

@@ -19,7 +19,7 @@
 #ifndef PnRecipientDaoTest_H_
 #define PnRecipientDaoTest_H_
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "integration/IntegrationTest.h"
 #include "push/pn_recipient_dao.h"
 
@@ -27,7 +27,7 @@ namespace testing {
 
 class PnRecipientDaoIntegrationTest : public IntegrationTest, public Test {
  protected:
-  supla_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
   supla_pn_recipient_dao *dao;
 
  public:

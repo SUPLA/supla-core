@@ -20,12 +20,10 @@
 #define GENERAL_PURPOSE_MEASUREMENT_LOGGER_DAO_H_
 
 #include "analyzer/general_purpose_measurement_analyzer.h"
-#include "db/abstract_db_access_provider.h"
+#include "cyclictasks/abstract_cyclictask_dao.h"
 
-class supla_general_purpose_measurement_logger_dao {
- private:
-  supla_abstract_db_access_provider *dba;
-
+class supla_general_purpose_measurement_logger_dao
+    : public supla_abstract_cyclictask_dao {
  public:
   explicit supla_general_purpose_measurement_logger_dao(
       supla_abstract_db_access_provider *dba);

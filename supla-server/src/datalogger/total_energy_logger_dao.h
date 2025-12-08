@@ -19,12 +19,11 @@
 #ifndef TOTAL_ENERGY_LOGGER_DAO_H_
 #define TOTAL_ENERGY_LOGGER_DAO_H_
 
-#include "db/abstract_db_access_provider.h"
+#include "cyclictasks/abstract_cyclictask_dao.h"
 #include "proto.h"
 
-class supla_total_energy_logger_dao {
+class supla_total_energy_logger_dao : public supla_abstract_cyclictask_dao {
  private:
-  supla_abstract_db_access_provider *dba;
   void set_longlong(unsigned _supla_int64_t *v, void *pbind,
                     bool *not_null_flag);
 

@@ -7,6 +7,7 @@ CPP_SRCS += \
 ../src/cyclictasks/abstract_auto_gate_closing.cpp \
 ../src/cyclictasks/abstract_auto_gate_closing_dao.cpp \
 ../src/cyclictasks/abstract_cyclictask.cpp \
+../src/cyclictasks/abstract_cyclictask_dao.cpp \
 ../src/cyclictasks/agent.cpp \
 ../src/cyclictasks/auto_gate_closing.cpp \
 ../src/cyclictasks/auto_gate_closing_dao.cpp 
@@ -15,6 +16,7 @@ CPP_DEPS += \
 ./src/cyclictasks/abstract_auto_gate_closing.d \
 ./src/cyclictasks/abstract_auto_gate_closing_dao.d \
 ./src/cyclictasks/abstract_cyclictask.d \
+./src/cyclictasks/abstract_cyclictask_dao.d \
 ./src/cyclictasks/agent.d \
 ./src/cyclictasks/auto_gate_closing.d \
 ./src/cyclictasks/auto_gate_closing_dao.d 
@@ -23,6 +25,7 @@ OBJS += \
 ./src/cyclictasks/abstract_auto_gate_closing.o \
 ./src/cyclictasks/abstract_auto_gate_closing_dao.o \
 ./src/cyclictasks/abstract_cyclictask.o \
+./src/cyclictasks/abstract_cyclictask_dao.o \
 ./src/cyclictasks/agent.o \
 ./src/cyclictasks/auto_gate_closing.o \
 ./src/cyclictasks/auto_gate_closing_dao.o 
@@ -40,7 +43,7 @@ src/cyclictasks/%.o: ../src/cyclictasks/%.cpp src/cyclictasks/subdir.mk
 clean: clean-src-2f-cyclictasks
 
 clean-src-2f-cyclictasks:
-	-$(RM) ./src/cyclictasks/abstract_auto_gate_closing.d ./src/cyclictasks/abstract_auto_gate_closing.o ./src/cyclictasks/abstract_auto_gate_closing_dao.d ./src/cyclictasks/abstract_auto_gate_closing_dao.o ./src/cyclictasks/abstract_cyclictask.d ./src/cyclictasks/abstract_cyclictask.o ./src/cyclictasks/agent.d ./src/cyclictasks/agent.o ./src/cyclictasks/auto_gate_closing.d ./src/cyclictasks/auto_gate_closing.o ./src/cyclictasks/auto_gate_closing_dao.d ./src/cyclictasks/auto_gate_closing_dao.o
+	-$(RM) ./src/cyclictasks/abstract_auto_gate_closing.d ./src/cyclictasks/abstract_auto_gate_closing.o ./src/cyclictasks/abstract_auto_gate_closing_dao.d ./src/cyclictasks/abstract_auto_gate_closing_dao.o ./src/cyclictasks/abstract_cyclictask.d ./src/cyclictasks/abstract_cyclictask.o ./src/cyclictasks/abstract_cyclictask_dao.d ./src/cyclictasks/abstract_cyclictask_dao.o ./src/cyclictasks/agent.d ./src/cyclictasks/agent.o ./src/cyclictasks/auto_gate_closing.d ./src/cyclictasks/auto_gate_closing.o ./src/cyclictasks/auto_gate_closing_dao.d ./src/cyclictasks/auto_gate_closing_dao.o
 
 .PHONY: clean-src-2f-cyclictasks
 

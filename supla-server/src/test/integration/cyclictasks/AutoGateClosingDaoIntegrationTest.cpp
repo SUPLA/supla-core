@@ -37,7 +37,7 @@ AutoGateClosingDaoIntegrationTest::AutoGateClosingDaoIntegrationTest()
 AutoGateClosingDaoIntegrationTest::~AutoGateClosingDaoIntegrationTest() {}
 
 void AutoGateClosingDaoIntegrationTest::SetUp() {
-  dba = new supla_db_access_provider();
+  dba = new supla_mariadb_access_provider();
   ASSERT_TRUE(dba != nullptr);
   dao = new supla_auto_gate_closing_dao(dba);
   ASSERT_TRUE(dao != nullptr);

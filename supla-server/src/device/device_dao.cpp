@@ -30,7 +30,7 @@
 using std::string;
 using std::vector;
 
-supla_device_dao::supla_device_dao(supla_abstract_db_access_provider *dba)
+supla_device_dao::supla_device_dao(supla_mariadb_access_provider *dba)
     : supla_abstract_device_dao() {
   this->dba = dba;
 }

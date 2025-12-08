@@ -459,7 +459,7 @@ void supla_device_channel::set_json_config(supla_json_config *json_config) {
 
 void supla_device_channel::db_set_properties(supla_json_config *config) {
   if (config) {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     dao.set_channel_properties(get_user_id(), get_id(), config);
   }
@@ -579,7 +579,7 @@ bool supla_device_channel::set_value(
     char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
     new_value->get_raw_value(current_value);
 
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     dao.update_channel_value(get_id(), get_user_id(), current_value,
                              validity_time_sec ? *validity_time_sec : 0);
@@ -722,7 +722,7 @@ void supla_device_channel::set_extended_value(
   unlock();
 
   if (new_value) {  // That means there are differences
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     dao.update_channel_extended_value(get_id(), get_user_id(), new_value);
 
@@ -1013,7 +1013,7 @@ void supla_device_channel::set_state(TDSC_ChannelState *state) {
   unlock();
 
   if (differ) {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     dao.update_channel_state(get_id(), get_user_id(), &new_state);
 

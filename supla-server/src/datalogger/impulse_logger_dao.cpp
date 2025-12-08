@@ -21,9 +21,8 @@
 #include <mysql.h>
 
 supla_impulse_logger_dao::supla_impulse_logger_dao(
-    supla_abstract_db_access_provider *dba) {
-  this->dba = dba;
-}
+    supla_abstract_db_access_provider *dba)
+    : supla_abstract_cyclictask_dao(dba) {}
 
 void supla_impulse_logger_dao::add(int channel_id,
                                    supla_channel_ic_extended_value *icv) {
@@ -46,7 +45,7 @@ void supla_impulse_logger_dao::add(int channel_id,
   const char sql[] = "CALL `supla_add_ic_log_item`(?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 3, true);
+  get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 3, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }

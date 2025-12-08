@@ -21,9 +21,8 @@
 #include <mysql.h>
 
 supla_total_energy_logger_dao::supla_total_energy_logger_dao(
-    supla_abstract_db_access_provider *dba) {
-  this->dba = dba;
-}
+    supla_abstract_db_access_provider *dba)
+    : supla_abstract_cyclictask_dao(dba) {}
 
 void supla_total_energy_logger_dao::set_longlong(unsigned _supla_int64_t *v,
                                                  void *pbind,
@@ -78,7 +77,7 @@ void supla_total_energy_logger_dao::add(
       "CALL `supla_add_em_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 15, true);
+  get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 15, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }

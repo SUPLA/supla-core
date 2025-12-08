@@ -20,14 +20,14 @@
 #define AutoGateClosingDaoTest_H_
 
 #include "cyclictasks/auto_gate_closing_dao.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "integration/IntegrationTest.h"
 
 namespace testing {
 
 class AutoGateClosingDaoIntegrationTest : public IntegrationTest, public Test {
  protected:
-  supla_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
   supla_auto_gate_closing_dao *dao;
 
  public:

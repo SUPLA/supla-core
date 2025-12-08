@@ -24,7 +24,7 @@
 #include <memory>
 
 #include "conn/connection_dao.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device/device_dao.h"
 #include "log.h"
 #include "proto.h"

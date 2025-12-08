@@ -19,7 +19,7 @@
 #include "alexa_credentials.h"
 
 #include "amazon/alexa_credentials_dao.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 
 using std::string;
 
@@ -37,7 +37,7 @@ void supla_amazon_alexa_credentials::remove(void) {
   region = "";
   data_unlock();
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_amazon_alexa_credentials_dao dao(&dba);
   dao.remove(get_user_id());
 }
@@ -50,7 +50,7 @@ string supla_amazon_alexa_credentials::get_region(void) {
 }
 
 void supla_amazon_alexa_credentials::load(void) {
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_amazon_alexa_credentials_dao dao(&dba);
 
   string access_token, refresh_token, region;
@@ -70,7 +70,7 @@ void supla_amazon_alexa_credentials::update(const string &access_token,
                                             int expires_in) {
   supla_http_oauth_credentials::update(access_token, refresh_token, expires_in);
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_amazon_alexa_credentials_dao dao(&dba);
   dao.set(get_user_id(), access_token, refresh_token, expires_in);
 }

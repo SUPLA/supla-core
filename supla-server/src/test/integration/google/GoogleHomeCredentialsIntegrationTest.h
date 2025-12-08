@@ -19,7 +19,7 @@
 #ifndef GoogleHomeCredentialsIntegrationTest_H_
 #define GoogleHomeCredentialsIntegrationTest_H_
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "integration/IntegrationTest.h"
 
 namespace testing {
@@ -27,7 +27,7 @@ namespace testing {
 class GoogleHomeCredentialsIntegrationTest : public IntegrationTest,
                                              public Test {
  protected:
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
 
  public:
 };

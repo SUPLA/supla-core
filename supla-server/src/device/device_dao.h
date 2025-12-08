@@ -22,17 +22,17 @@
 #include <string>
 #include <vector>
 
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device/abstract_device_dao.h"
 
 class supla_device_dao : public supla_abstract_device_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
   virtual std::vector<supla_channel_fragment> get_channel_fragments(
       int device_id, int channel_number);
 
  public:
-  explicit supla_device_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_device_dao(supla_mariadb_access_provider *dba);
   virtual ~supla_device_dao();
 
   virtual bool get_device_firmware_update_url(

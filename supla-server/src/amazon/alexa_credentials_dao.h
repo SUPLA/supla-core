@@ -22,17 +22,17 @@
 #include <string>
 #include <vector>
 
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 
 class supla_amazon_alexa_credentials_dao {
  private:
   bool release_dba;
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
 
  public:
   explicit supla_amazon_alexa_credentials_dao(
-      supla_abstract_db_access_provider *dba);
-  supla_amazon_alexa_credentials_dao(supla_abstract_db_access_provider *dba,
+      supla_mariadb_access_provider *dba);
+  supla_amazon_alexa_credentials_dao(supla_mariadb_access_provider *dba,
                                      bool release_dba);
 
   virtual ~supla_amazon_alexa_credentials_dao();

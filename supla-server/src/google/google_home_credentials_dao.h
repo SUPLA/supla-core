@@ -21,15 +21,15 @@
 
 #include <string>
 
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 
 class supla_google_home_credentials_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
 
  public:
   explicit supla_google_home_credentials_dao(
-      supla_abstract_db_access_provider *dba);
+      supla_mariadb_access_provider *dba);
   virtual ~supla_google_home_credentials_dao(void);
 
   virtual std::string get_access_token(int user_id);

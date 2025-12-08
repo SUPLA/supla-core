@@ -23,8 +23,7 @@
 
 #include "log.h"
 
-supla_connection_dao::supla_connection_dao(
-    supla_abstract_db_access_provider *dba)
+supla_connection_dao::supla_connection_dao(supla_mariadb_access_provider *dba)
     : supla_abstract_connection_dao() {
   this->dba = dba;
 }

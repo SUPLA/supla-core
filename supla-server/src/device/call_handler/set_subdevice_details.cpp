@@ -20,7 +20,7 @@
 
 #include <memory>
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device/device.h"
 #include "device/device_dao.h"
 
@@ -48,7 +48,7 @@ void supla_ch_set_subdevice_details::handle_call(
   details->SerialNumber[sizeof(details->SerialNumber) - 1] = 0;
   details->SoftVer[sizeof(details->SoftVer) - 1] = 0;
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_device_dao dao(&dba);
 
   dao.set_subdevice_details(device->get_id(), details);

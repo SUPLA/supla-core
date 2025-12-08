@@ -16,26 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CONNECTION_DAO_H_
-#define SUPLA_CONNECTION_DAO_H_
+#include "abstract_cyclictask_dao.h"
 
-#include "conn/abstract_connection_dao.h"
-#include "db/mariadb_access_provider.h"
+supla_abstract_cyclictask_dao::supla_abstract_cyclictask_dao(
+    supla_abstract_db_access_provider *dba) {
+  this->dba = dba;
+}
 
-class supla_connection_dao : public supla_abstract_connection_dao {
- private:
-  supla_mariadb_access_provider *dba;
+supla_abstract_cyclictask_dao::~supla_abstract_cyclictask_dao() {}
 
- public:
-  explicit supla_connection_dao(supla_mariadb_access_provider *dba);
-  virtual ~supla_connection_dao();
+supla_abstract_db_access_provider *supla_abstract_cyclictask_dao::get_dba(
+    void) {
+  return dba;
+}
 
-  virtual int get_user_id_by_email(const char email[SUPLA_EMAIL_MAXSIZE]);
-
-  virtual bool get_reg_enabled(int user_id, unsigned int *client,
-                               unsigned int *iodevice);
-
-  virtual bool get_user_localtime(int user_id, TSDC_UserLocalTimeResult *time);
-};
-
-#endif /* SUPLA_CONNECTION_DAO_H_ */
+supla_mariadb_access_provider *supla_abstract_cyclictask_dao::get_mdba(void) {
+  return dynamic_cast<supla_mariadb_access_provider *>(dba);
+}

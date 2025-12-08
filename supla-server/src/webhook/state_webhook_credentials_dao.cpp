@@ -29,7 +29,7 @@ using std::string;
 #define WEBHOOK_FUNCTIONS_IDS_MAXSIZE 255
 
 supla_state_webhook_credentials_dao::supla_state_webhook_credentials_dao(
-    supla_abstract_db_access_provider *dba) {
+    supla_mariadb_access_provider *dba) {
   this->dba = dba;
 }
 

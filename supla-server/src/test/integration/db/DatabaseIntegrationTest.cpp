@@ -107,7 +107,7 @@ TEST_F(DatabaseIntegrationTest, setDeviceChannelCaptionOnlyWhenNull) {
 }
 
 TEST_F(DatabaseIntegrationTest, ayz) {
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_connection_dao dao(&dba);
 
   char email[] = "test@supla.org...";

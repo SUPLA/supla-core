@@ -105,7 +105,7 @@ void supla_voltage_aberration_logger_dao::add(
       "`supla_add_em_voltage_aberration_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  get_dba()->stmt_execute((void **)&stmt, sql, pbind, 14, true);
+  get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 14, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }

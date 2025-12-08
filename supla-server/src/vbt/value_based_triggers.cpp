@@ -21,7 +21,7 @@
 #include <string>
 
 #include "actions/action_executor.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device/channel_property_getter.h"
 #include "lck.h"
 #include "vbt/value_based_trigger_dao.h"
@@ -37,7 +37,7 @@ supla_value_based_triggers::supla_value_based_triggers(supla_user *user) {
 supla_value_based_triggers::~supla_value_based_triggers(void) { lck_free(lck); }
 
 void supla_value_based_triggers::load(void) {
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_value_based_trigger_dao dao(&dba);
 
   std::vector<supla_value_based_trigger *> triggers =

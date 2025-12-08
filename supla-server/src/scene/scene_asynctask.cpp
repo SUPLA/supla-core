@@ -25,7 +25,7 @@
 
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device/channel_property_getter.h"
 #include "log.h"
 #include "scene/scene_operations_dao.h"
@@ -216,7 +216,7 @@ bool supla_scene_asynctask::is_scene_active(
 
 // static
 bool supla_scene_asynctask::is_scene_active(int user_id, int scene_id) {
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_scene_dao dao(&dba);
 
   unsigned int estimated_execution_time = 0;
@@ -232,7 +232,7 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
   if (!interrupt_before_execute && queue->task_exists(&cnd)) {
     return serIsDuringExecution;
   } else {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_scene_dao scene_dao(&dba);
 
     unsigned int estimated_execution_time = 0;

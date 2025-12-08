@@ -23,7 +23,7 @@
 
 #include "log.h"
 
-supla_scene_dao::supla_scene_dao(supla_abstract_db_access_provider *dba)
+supla_scene_dao::supla_scene_dao(supla_mariadb_access_provider *dba)
     : supla_abstract_scene_dao() {
   this->dba = dba;
 }

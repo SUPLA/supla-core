@@ -21,7 +21,7 @@
 #include <memory>
 
 #include "client/client.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device.h"
 #include "device/device_dao.h"
 #include "jsonconfig/device/device_json_config.h"
@@ -40,7 +40,7 @@ bool supla_ch_set_device_config::can_handle_call(unsigned int call_id) {
 
 void supla_ch_set_device_config::handle_multipart_call(
     shared_ptr<supla_device> device, supla_set_device_multipart_call* mp_call) {
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_device_dao dao(&dba);
 
   TSDS_SetDeviceConfigResult result = {};

@@ -26,7 +26,7 @@
 using std::string;
 
 supla_pn_recipient_dao::supla_pn_recipient_dao(
-    supla_abstract_db_access_provider *dba) {
+    supla_mariadb_access_provider *dba) {
   this->dba = dba;
 }
 

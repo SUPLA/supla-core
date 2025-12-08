@@ -27,7 +27,7 @@
 #include "client/client.h"
 #include "client/client_dao.h"
 #include "conn/connection_dao.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "log.h"
 
 using std::shared_ptr;
@@ -50,7 +50,7 @@ void supla_ch_register_pn_client_token::handle_call(
 
   if (rd->data.cs_register_pn_client_token) {
     TCS_RegisterPnClientToken* reg = rd->data.cs_register_pn_client_token;
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_client_dao client_dao(&dba);
 
     int user_id = client->get_user_id();

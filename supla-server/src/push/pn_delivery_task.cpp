@@ -73,7 +73,7 @@ string supla_pn_delivery_task::get_name(void) { return "Push delivery task"; }
 
 void supla_pn_delivery_task::load_content(void) {
   if (!dba) {
-    dba = new supla_db_access_provider();
+    dba = new supla_mariadb_access_provider();
   }
 
   dba->connect();  // Connect to the database beforehand so that inside the
@@ -149,7 +149,7 @@ bool supla_pn_delivery_task::make_request(
     supla_pn_recipient *recipient = push->get_recipients().get(a);
     if (!recipient->is_exists()) {
       if (!dba) {
-        dba = new supla_db_access_provider();
+        dba = new supla_mariadb_access_provider();
       }
       if (!recipient_dao) {
         recipient_dao = new supla_pn_recipient_dao(dba);

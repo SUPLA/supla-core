@@ -19,13 +19,11 @@
 #ifndef GENERAL_PURPOSE_METER_LOGGER_DAO_H_
 #define GENERAL_PURPOSE_METER_LOGGER_DAO_H_
 
-#include "db/abstract_db_access_provider.h"
+#include "cyclictasks/abstract_cyclictask_dao.h"
 #include "device/value/channel_general_purpose_meter_value.h"
 
-class supla_general_purpose_meter_logger_dao {
- private:
-  supla_abstract_db_access_provider *dba;
-
+class supla_general_purpose_meter_logger_dao
+    : public supla_abstract_cyclictask_dao {
  public:
   explicit supla_general_purpose_meter_logger_dao(
       supla_abstract_db_access_provider *dba);

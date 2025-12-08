@@ -269,7 +269,7 @@ unsigned char supla_client::send_device_config(int device_id,
 
   unsigned char result_code = SUPLA_CONFIG_RESULT_FALSE;
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_device_dao dao(&dba);
 
   device_json_config *config =

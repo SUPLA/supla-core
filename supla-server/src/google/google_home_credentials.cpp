@@ -18,7 +18,7 @@
 
 #include "google_home_credentials.h"
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "google/google_home_credentials_dao.h"
 #include "http/http_event_hub.h"
 #include "log.h"
@@ -34,7 +34,7 @@ supla_google_home_credentials::supla_google_home_credentials(supla_user *user)
 supla_google_home_credentials::~supla_google_home_credentials(void) {}
 
 void supla_google_home_credentials::load() {
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_google_home_credentials_dao dao(&dba);
 
   set(dao.get_access_token(get_user_id()), "", 60 * 60 * 24 * 365);

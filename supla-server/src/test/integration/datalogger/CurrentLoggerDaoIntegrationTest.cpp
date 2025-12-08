@@ -38,7 +38,7 @@ CurrentLoggerDaoIntegrationTest::CurrentLoggerDaoIntegrationTest()
 CurrentLoggerDaoIntegrationTest::~CurrentLoggerDaoIntegrationTest() {}
 
 void CurrentLoggerDaoIntegrationTest::SetUp() {
-  dba = new supla_db_access_provider();
+  dba = new supla_mariadb_access_provider();
   ASSERT_TRUE(dba != nullptr);
   dao = new supla_current_logger_dao(dba);
   ASSERT_TRUE(dao != nullptr);

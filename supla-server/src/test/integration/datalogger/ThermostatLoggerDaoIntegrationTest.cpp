@@ -35,7 +35,7 @@ ThermostatLoggerDaoIntegrationTest::ThermostatLoggerDaoIntegrationTest()
 ThermostatLoggerDaoIntegrationTest::~ThermostatLoggerDaoIntegrationTest() {}
 
 void ThermostatLoggerDaoIntegrationTest::SetUp() {
-  dba = new supla_db_access_provider();
+  dba = new supla_mariadb_access_provider();
   ASSERT_TRUE(dba != nullptr);
   dao = new supla_hp_thermostat_logger_dao(dba);
   ASSERT_TRUE(dao != nullptr);

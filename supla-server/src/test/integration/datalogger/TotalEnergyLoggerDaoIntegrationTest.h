@@ -20,7 +20,7 @@
 #define TotalEnergyLoggerDaoTest_H_
 
 #include "datalogger/total_energy_logger_dao.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "integration/IntegrationTest.h"
 
 namespace testing {
@@ -28,7 +28,7 @@ namespace testing {
 class TotalEnergyLoggerDaoIntegrationTest : public IntegrationTest,
                                             public Test {
  protected:
-  supla_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
   supla_total_energy_logger_dao *dao;
 
  public:

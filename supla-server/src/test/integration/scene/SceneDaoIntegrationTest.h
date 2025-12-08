@@ -19,7 +19,7 @@
 #ifndef SceneDaoTest_H_
 #define SceneDaoTest_H_
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "integration/IntegrationTest.h"
 #include "scene/scene_dao.h"
 
@@ -27,7 +27,7 @@ namespace testing {
 
 class SceneDaoIntegrationTest : public IntegrationTest, public Test {
  protected:
-  supla_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
   supla_scene_dao *dao;
 
  public:

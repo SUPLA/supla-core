@@ -37,7 +37,7 @@ supla_alexa_access_token_refresh_cyclictask::
   // the server is restarted, there is a risk that the token will not refresh in
   // time.
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_amazon_alexa_credentials_dao dao(&dba);
 
   vector<int> users = dao.get_users_with_credentials();

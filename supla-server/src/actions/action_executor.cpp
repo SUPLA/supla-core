@@ -156,13 +156,13 @@ void supla_action_executor::interrupt_and_execute(void) {
 }
 
 void supla_action_executor::enable(void) {
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_schedule_dao dao(&dba);
   dao.enable(get_user_id(), get_schedule_id(), true);
 }
 
 void supla_action_executor::disable(void) {
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_schedule_dao dao(&dba);
   dao.enable(get_user_id(), get_schedule_id(), false);
 }

@@ -20,7 +20,7 @@
 
 #include <memory>
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device/device_dao.h"
 
 using std::shared_ptr;
@@ -39,7 +39,7 @@ void supla_ch_get_firmware_update_url::handle_call(
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (rd->data.ds_firmware_update_params != nullptr) {
     TSD_FirmwareUpdate_UrlResult result = {};
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
 
     if (dao.get_device_firmware_update_url(

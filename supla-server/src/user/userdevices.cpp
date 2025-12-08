@@ -18,7 +18,7 @@
 #include <sys/time.h>
 #include <userdevices.h>
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device/device.h"
 #include "device/device_dao.h"
 #include "user/user.h"
@@ -106,7 +106,7 @@ supla_channel_fragment supla_user_devices::get_channel_fragment_with_number(
   unlock();
 
   if (result.get_channel_id() == 0 && load_from_database_if_necessary) {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     result = dao.get_channel_fragment(device_id, channel_number);
 
@@ -201,7 +201,7 @@ void supla_user_devices::update_virtual_channels_if_never_updated(void) {
 void supla_user_devices::update_virtual_channels(void) {
   lock();
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_user_dao dao(&dba);
 
   std::vector<supla_virtual_channel> virtual_channels =

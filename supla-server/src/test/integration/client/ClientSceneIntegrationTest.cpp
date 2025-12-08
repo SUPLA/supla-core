@@ -21,7 +21,7 @@
 #include "client/client_scene_dao.h"
 #include "client/client_scene_remote_updater.h"
 #include "client/client_scenes.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "doubles/SrpcAdapterMock.h"
 
 namespace testing {
@@ -51,7 +51,7 @@ TEST_F(ClientSceneIntegrationTest, loadAndUpdateRemote) {
 
   supla_client_scene_remote_updater remoteUpdater(&srpcAdapter);
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_client_scene_dao dao(&dba);
   supla_client_scenes scenes(&remoteUpdater, &dao, NULL);
 

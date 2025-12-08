@@ -21,14 +21,11 @@
 
 #include <vector>
 
-#include "db/abstract_db_access_provider.h"
+#include "cyclictasks/abstract_cyclictask_dao.h"
 #include "device/value/channel_value_envelope.h"
 #include "proto.h"
 
-class supla_temperature_logger_dao {
- private:
-  supla_abstract_db_access_provider *dba;
-
+class supla_temperature_logger_dao : public supla_abstract_cyclictask_dao {
  public:
   explicit supla_temperature_logger_dao(supla_abstract_db_access_provider *dba);
   void add_temperature(int channel_id, double temperature);

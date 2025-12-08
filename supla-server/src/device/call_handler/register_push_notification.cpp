@@ -21,7 +21,7 @@
 #include <memory>
 #include <string>
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device.h"
 #include "push/pn_dao.h"
 #include "push/pn_delivery_task.h"
@@ -48,7 +48,7 @@ void supla_ch_register_push_notification::handle_call(
 
   TDS_RegisterPushNotification* reg = rd->data.ds_register_push_notification;
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_pn_dao dao(&dba);
 
   int channel_id = reg->Context >= 0

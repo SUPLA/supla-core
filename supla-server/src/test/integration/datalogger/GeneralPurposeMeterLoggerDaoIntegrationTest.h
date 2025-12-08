@@ -20,7 +20,7 @@
 #define GeneralPurposeMeterLoggerDaoIntegrationTest_H_
 
 #include "datalogger/general_purpose_meter_logger_dao.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "integration/IntegrationTest.h"
 
 namespace testing {
@@ -28,7 +28,7 @@ namespace testing {
 class GeneralPurposeMeterLoggerDaoIntegrationTest : public IntegrationTest,
                                                     public Test {
  protected:
-  supla_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
   supla_general_purpose_meter_logger_dao *dao;
 
  public:

@@ -21,11 +21,11 @@
 namespace testing {
 
 AlexaCredentialsDaoMock::AlexaCredentialsDaoMock(
-    supla_abstract_db_access_provider *dba)
+    supla_mariadb_access_provider *dba)
     : supla_amazon_alexa_credentials_dao(dba) {}
 
 AlexaCredentialsDaoMock::AlexaCredentialsDaoMock(
-    supla_abstract_db_access_provider *dba, bool release_dba)
+    supla_mariadb_access_provider *dba, bool release_dba)
     : supla_amazon_alexa_credentials_dao(dba, release_dba) {}
 
 AlexaCredentialsDaoMock::~AlexaCredentialsDaoMock(void) {}

@@ -28,9 +28,8 @@
 using std::vector;
 
 supla_temperature_logger_dao::supla_temperature_logger_dao(
-    supla_abstract_db_access_provider *dba) {
-  this->dba = dba;
-}
+    supla_abstract_db_access_provider *dba)
+    : supla_abstract_cyclictask_dao(dba) {}
 
 void supla_temperature_logger_dao::add_temperature(int channel_id,
                                                    double temperature) {
@@ -53,7 +52,7 @@ void supla_temperature_logger_dao::add_temperature(int channel_id,
   const char sql[] = "CALL `supla_add_temperature_log_item`(?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 2, true);
+  get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 2, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }
@@ -85,7 +84,7 @@ void supla_temperature_logger_dao::add_temperature_and_humidity(
   const char sql[] = "CALL `supla_add_temphumidity_log_item`(?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 3, true);
+  get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 3, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }
@@ -123,7 +122,7 @@ void supla_temperature_logger_dao::load(
   pbind[3].buffer_type = MYSQL_TYPE_LONG;
   pbind[3].buffer = (char *)&func3;
 
-  if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
+  if (get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
     MYSQL_BIND rbind[4] = {};
     char value[SUPLA_CHANNELVALUE_SIZE] = {};
     int channel_id = 0;

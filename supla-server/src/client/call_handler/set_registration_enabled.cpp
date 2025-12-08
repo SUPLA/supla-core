@@ -24,7 +24,7 @@
 
 #include "client/client.h"
 #include "client/client_dao.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -45,7 +45,7 @@ void supla_ch_set_registration_enabled::handle_call(
     TSC_SetRegistrationEnabledResult result = {};
 
     if (client->is_superuser_authorized()) {
-      supla_db_access_provider dba;
+      supla_mariadb_access_provider dba;
       supla_client_dao dao(&dba);
 
       bool success = dao.set_reg_enabled(

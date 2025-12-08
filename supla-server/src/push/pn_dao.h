@@ -19,15 +19,15 @@
 #ifndef PUSH_NOTIFICATION_DAO_H_
 #define PUSH_NOTIFICATION_DAO_H_
 
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "push/push_notification.h"
 
 class supla_pn_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
 
  public:
-  explicit supla_pn_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_pn_dao(supla_mariadb_access_provider *dba);
   virtual ~supla_pn_dao(void);
   bool get(int user_id, supla_push_notification *push);
   bool get_date_time(int user_id, supla_push_notification *push);

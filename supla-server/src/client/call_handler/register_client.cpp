@@ -135,7 +135,7 @@ void supla_register_client::register_client(
     }
   }
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_connection_dao conn_dao(&dba);
   supla_client_dao client_dao(&dba);
 

@@ -23,18 +23,18 @@
 
 #include <vector>
 
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "push/pn_recipient.h"
 #include "push/pn_recipients.h"
 
 class supla_pn_recipient_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
   void get_recipients(const char *sql, MYSQL_BIND *pbind, int pbind_size,
                       supla_pn_recipients *recipients);
 
  public:
-  explicit supla_pn_recipient_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_pn_recipient_dao(supla_mariadb_access_provider *dba);
   virtual ~supla_pn_recipient_dao(void);
   void remove(int user_id, supla_pn_recipient *recipient);
   void get_recipients(int user_id, int push_notification_id,

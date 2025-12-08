@@ -32,7 +32,7 @@
 #include "datalogger/total_energy_logger.h"
 #include "datalogger/voltage_aberration_logger.h"
 #include "datalogger/voltage_logger.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "sthread.h"
 #include "user/virtual_channel_updater_cyclictask.h"
 
@@ -98,7 +98,7 @@ void supla_cyclictasks_agent::loop(void *sthread) {
 
     if (is_it_time) {
       vector<supla_user *> users;
-      supla_db_access_provider dba;
+      supla_mariadb_access_provider dba;
 
       for (auto it = tasks.cbegin(); it != tasks.cend(); ++it) {
         if (sthread_isterminated(sthread)) {

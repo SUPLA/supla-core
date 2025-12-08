@@ -52,7 +52,7 @@ void supla_ch_execute_action_with_auth::handle_call(
   auth->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
   auth->AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE - 1] = 0;
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_client_dao client_dao(&dba);
   supla_connection_dao conn_dao(&dba);
 

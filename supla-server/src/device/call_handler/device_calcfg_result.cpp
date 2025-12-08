@@ -69,7 +69,7 @@ void supla_ch_device_calcfg_result::handle_call(
       }
 
       if (json && json->set_calcfg_result(rd->data.ds_device_calcfg_result)) {
-        supla_db_access_provider dba;
+        supla_mariadb_access_provider dba;
         supla_device_dao dao(&dba);
 
         dao.set_device_config(device->get_user_id(), device->get_id(), json,
@@ -83,7 +83,7 @@ void supla_ch_device_calcfg_result::handle_call(
 
   if (rd->data.ds_device_calcfg_result->Command ==
       SUPLA_CALCFG_CMD_START_SUBDEVICE_PAIRING) {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     char* result_json = device_json_pairing_result().calcfg_result_to_json(
         rd->data.ds_device_calcfg_result);

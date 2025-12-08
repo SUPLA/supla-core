@@ -21,17 +21,13 @@
 
 #include <vector>
 
-#include "db/abstract_db_access_provider.h"
+#include "cyclictasks/abstract_cyclictask_dao.h"
 
 #define ATTEMPT_RETRY_TIME_SEC 900
 
-class supla_abstract_auto_gate_closing_dao {
- private:
-  supla_abstract_db_access_provider *dba;
-
+class supla_abstract_auto_gate_closing_dao
+    : public supla_abstract_cyclictask_dao {
  protected:
-  supla_abstract_db_access_provider *get_dba(void);
-
  public:
   typedef struct {
     int user_id;

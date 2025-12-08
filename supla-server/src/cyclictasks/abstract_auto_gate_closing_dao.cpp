@@ -23,13 +23,7 @@
 using std::vector;
 
 supla_abstract_auto_gate_closing_dao::supla_abstract_auto_gate_closing_dao(
-    supla_abstract_db_access_provider *dba) {
-  this->dba = dba;
-}
+    supla_abstract_db_access_provider *dba)
+    : supla_abstract_cyclictask_dao(dba) {}
 
 supla_abstract_auto_gate_closing_dao::~supla_abstract_auto_gate_closing_dao() {}
-
-supla_abstract_db_access_provider *
-supla_abstract_auto_gate_closing_dao::get_dba(void) {
-  return dba;
-}

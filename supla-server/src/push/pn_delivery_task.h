@@ -22,7 +22,7 @@
 #include <map>
 #include <string>
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "http/asynctask_http_request.h"
 #include "http/remote_gateway_access_token_provider.h"
 #include "push/pn_recipient_dao.h"
@@ -33,7 +33,7 @@ class supla_pn_delivery_task : public supla_asynctask_http_request {
  private:
   supla_push_notification *push;
   supla_remote_gateway_access_token_provider *token_provider;
-  supla_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
   supla_pn_recipient_dao *recipient_dao;
   supla_pn_throttling *throttling;
   void load_content(void);

@@ -19,7 +19,7 @@
 #ifndef PushNotificationIntegrationTest_H_
 #define PushNotificationIntegrationTest_H_
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "integration/IntegrationTest.h"
 
 namespace testing {
