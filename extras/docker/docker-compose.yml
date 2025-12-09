@@ -1,0 +1,79 @@
+
+services:
+  mariadb:
+    image: mariadb:10.5
+    container_name: supla-core-devel-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    command:
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    networks:
+      supla-core-devel-net:
+        aliases: 
+          - db
+          - mariadb
+    restart: unless-stopped
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    container_name: supla-core-devel-timescaledb
+    environment:
+      POSTGRES_USER: supla
+      POSTGRES_PASSWORD: supla
+      POSTGRES_DB: tsdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgresql:/var/lib/postgresql/data
+      - ./certs:/certs:ro
+      - ./pgconf/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    networks:
+      supla-core-devel-net:
+        aliases:
+          - timescaledb
+          - tsdb
+    restart: unless-stopped
+    command:
+      [
+        "postgres",
+        "-c", "ssl=on",
+        "-c", "ssl_cert_file=/certs/server.crt",
+        "-c", "ssl_key_file=/certs/server.key",
+        "-c", "hba_file=/etc/postgresql/pg_hba.conf"
+      ]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tsdb_user -d tsdb || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  supla-core:
+    image: devel/supla-core:latest
+    container_name: supla-core-devel-supla-core
+    depends_on:
+      - mariadb
+    ports:
+      - "2015:2015/tcp"
+      - "2016:2016/tcp"
+    volumes:
+      - ${HOME}/CProjects:/CProjects
+      - ./supla.cfg:/etc/supla-server/supla.cfg
+      - ./supla-test.cfg:/etc/supla-server/supla-test.cfg
+      - ./certs/server.key:/etc/supla-server/server.key
+      - ./certs/server.crt:/etc/supla-server/server.crt
+      - ./pgpass:/root/.pgpass
+    networks:
+      supla-core-devel-net:
+    extra_hosts:
+      # odpowiednik: --add-host=db:192.168.111.2
+      - "db:192.168.111.2"
+    stdin_open: true    # odpowiednik -it
+    tty: true           # odpowiednik -it
+    command: ["/bin/bash"]
+
+networks:
+  supla-core-devel-net:
+    driver: bridge
