@@ -19,10 +19,6 @@
 #ifndef ABSTRACT_DBACCESS_PROVIDER_H_
 #define ABSTRACT_DBACCESS_PROVIDER_H_
 
-#include <mysql.h>
-
-#include <ctime>
-
 class supla_abstract_db_access_provider {
  public:
   supla_abstract_db_access_provider(void);
@@ -31,10 +27,6 @@ class supla_abstract_db_access_provider {
   virtual bool connect(void) = 0;
   virtual bool is_connected(void) = 0;
   virtual void disconnect(void) = 0;
-
-  virtual void start_transaction(void) = 0;
-  virtual void commit(void) = 0;
-  virtual void rollback(void) = 0;
 };
 
 #endif /* ABSTRACT_DBACCESS_PROVIDER_H_ */

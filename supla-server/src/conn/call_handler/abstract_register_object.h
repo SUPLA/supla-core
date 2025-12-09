@@ -22,7 +22,7 @@
 #include "conn/abstract_connection_dao.h"
 #include "conn/authkey_cache.h"
 #include "conn/call_handler/abstract_register_object.h"
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "proto.h"
 #include "srpc/abstract_srpc_adapter.h"
 #include "tools.h"
@@ -42,7 +42,7 @@ class supla_abstract_register_object {
   bool should_rollback;
 
   supla_abstract_srpc_adapter *srpc_adapter;
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
   supla_abstract_connection_dao *conn_dao;
 
   __useconds_t hold_time_on_failure_usec;
@@ -85,8 +85,8 @@ class supla_abstract_register_object {
 
   void set_srpc_adapter(supla_abstract_srpc_adapter *srpc_adapter);
   supla_abstract_srpc_adapter *get_srpc_adapter(void);
-  void set_dba(supla_abstract_db_access_provider *dba);
-  supla_abstract_db_access_provider *get_dba(void);
+  void set_dba(supla_mariadb_access_provider *dba);
+  supla_mariadb_access_provider *get_dba(void);
   void set_conn_dao(supla_abstract_connection_dao *conn_dao);
   supla_abstract_connection_dao *get_conn_dao(void);
 

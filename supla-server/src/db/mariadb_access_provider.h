@@ -19,6 +19,10 @@
 #ifndef MARIADB_ACCESS_PROVIDER_H_
 #define MARIADB_ACCESS_PROVIDER_H_
 
+#include <mysql.h>
+
+#include <ctime>
+
 #include "db/abstract_db_access_provider.h"
 #include "db/svrdb.h"
 

@@ -287,8 +287,7 @@ void supla_abstract_register_client::register_client(
     weak_ptr<supla_client> client, TCS_SuplaRegisterClient_B *register_client_b,
     TCS_SuplaRegisterClient_D *register_client_d,
     supla_abstract_srpc_adapter *srpc_adapter,
-    supla_abstract_db_access_provider *dba,
-    supla_abstract_connection_dao *conn_dao,
+    supla_mariadb_access_provider *dba, supla_abstract_connection_dao *conn_dao,
     supla_abstract_client_dao *client_dao, int client_sd, int client_ipv4,
     unsigned char activity_timeout, string *previous_client_name) {
   this->client = client;
@@ -427,8 +426,7 @@ void supla_abstract_register_client::register_client(
 void supla_abstract_register_client::authenticate(
     weak_ptr<supla_client> client, TCS_ClientAuthorizationDetails *auth,
     supla_abstract_srpc_adapter *srpc_adapter,
-    supla_abstract_db_access_provider *dba,
-    supla_abstract_connection_dao *conn_dao,
+    supla_mariadb_access_provider *dba, supla_abstract_connection_dao *conn_dao,
     supla_abstract_client_dao *client_dao, bool stay_connected,
     string *previous_client_name) {
   this->stay_connected = stay_connected;

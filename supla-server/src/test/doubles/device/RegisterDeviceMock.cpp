@@ -30,9 +30,8 @@ void RegisterDeviceMock::register_device(
     TDS_SuplaRegisterDevice_C *register_device_c,
     TDS_SuplaRegisterDevice_G *register_device_g,
     supla_abstract_srpc_adapter *srpc_adapter,
-    supla_abstract_db_access_provider *dba,
-    supla_abstract_device_dao *device_dao, int client_sd, int client_ipv4,
-    unsigned char activity_timeout) {
+    supla_mariadb_access_provider *dba, supla_abstract_device_dao *device_dao,
+    int client_sd, int client_ipv4, unsigned char activity_timeout) {
   std::weak_ptr<supla_device> device;
   supla_abstract_register_device::register_device(
       device, register_device_c, register_device_g, srpc_adapter, dba, nullptr,

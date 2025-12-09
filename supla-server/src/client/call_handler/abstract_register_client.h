@@ -88,7 +88,7 @@ class supla_abstract_register_client
                        TCS_SuplaRegisterClient_B *register_client_b,
                        TCS_SuplaRegisterClient_D *register_client_d,
                        supla_abstract_srpc_adapter *srpc_adapter,
-                       supla_abstract_db_access_provider *dba,
+                       supla_mariadb_access_provider *dba,
                        supla_abstract_connection_dao *conn_dao,
                        supla_abstract_client_dao *client_dao, int client_sd,
                        int client_ipv4, unsigned char activity_timeout,
@@ -97,7 +97,7 @@ class supla_abstract_register_client
   void authenticate(std::weak_ptr<supla_client> client,
                     TCS_ClientAuthorizationDetails *auth,
                     supla_abstract_srpc_adapter *srpc_adapter,
-                    supla_abstract_db_access_provider *dba,
+                    supla_mariadb_access_provider *dba,
                     supla_abstract_connection_dao *conn_dao,
                     supla_abstract_client_dao *client_dao, bool stay_connected,
                     std::string *previous_client_name);
