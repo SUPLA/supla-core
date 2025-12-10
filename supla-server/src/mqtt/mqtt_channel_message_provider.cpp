@@ -1173,7 +1173,12 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
           device_class = water;
         }
 
-        result = ha_sensor(icv->get_custom_unit().c_str(), 3, 0, true,
+        string custom_unit = icv->get_custom_unit();
+        if (custom_unit == "m3") {
+          custom_unit = "m³";
+        }
+
+        result = ha_sensor(custom_unit.c_str(), 3, 0, true,
                            "state/calculated_value", NULL, "Value", NULL,
                            device_class, state_cls_total_increasing,
                            topic_prefix, topic_name, message, message_size);
