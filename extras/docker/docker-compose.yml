@@ -68,10 +68,9 @@ services:
     networks:
       supla-core-devel-net:
     extra_hosts:
-      # odpowiednik: --add-host=db:192.168.111.2
       - "db:192.168.111.2"
-    stdin_open: true    # odpowiednik -it
-    tty: true           # odpowiednik -it
+    stdin_open: true    
+    tty: true          
     command: ["/bin/bash"]
 
 networks:
