@@ -63,7 +63,8 @@ class supla_mariadb_access_provider : public supla_abstract_db_access_provider,
 
   int add_by_proc_call(const char *stmt_str, void *bind, int bind_size);
 
-  time_t mytime_to_time_t(MYSQL_TIME *time);
+  time_t mytime_to_time_t(const MYSQL_TIME *time);
+  MYSQL_TIME time_t_to_mytime(const time_t *time);
 };
 
 #endif /* MARIADB_ACCESS_PROVIDER_H_ */

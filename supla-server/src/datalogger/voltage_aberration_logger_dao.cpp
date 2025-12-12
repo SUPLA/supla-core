@@ -26,13 +26,9 @@ supla_voltage_aberration_logger_dao::supla_voltage_aberration_logger_dao(
     supla_abstract_db_access_provider *dba)
     : supla_abstract_electricity_logger_dao(dba) {}
 
-void supla_voltage_aberration_logger_dao::add(
-    MYSQL_TIME *time, int channel_id, char phase,
+void supla_voltage_aberration_logger_dao::mariadb_add(
+    const time_t &time, int channel_id, char phase,
     supla_voltage_aberration_analyzer *va) {
-  if (!va || (va->get_below_count() == 0 && va->get_above_count() == 0)) {
-    return;
-  }
-
   MYSQL_BIND pbind[14] = {};
 
   int count_total = va->get_sample_count();
@@ -55,8 +51,10 @@ void supla_voltage_aberration_logger_dao::add(
 
   int measurement_time_sec = va->get_total_time_msec() / 1000;
 
+  MYSQL_TIME mytime = get_mdba()->time_t_to_mytime(&time);
+
   pbind[0].buffer_type = MYSQL_TYPE_DATETIME;
-  pbind[0].buffer = (char *)time;
+  pbind[0].buffer = (char *)&mytime;
 
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&channel_id;
@@ -110,16 +108,32 @@ void supla_voltage_aberration_logger_dao::add(
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }
 
+void supla_voltage_aberration_logger_dao::tsdb_add(
+    const time_t &time, int channel_id, char phase,
+    supla_voltage_aberration_analyzer *va) {}
+
+void supla_voltage_aberration_logger_dao::add(
+    const time_t &time, int channel_id, char phase,
+    supla_voltage_aberration_analyzer *va) {
+  if (!va || (va->get_below_count() == 0 && va->get_above_count() == 0)) {
+    return;
+  }
+
+  if (get_mdba()) {
+    mariadb_add(time, channel_id, phase, va);
+  } else if (get_tsdba()) {
+    tsdb_add(time, channel_id, phase, va);
+  }
+}
+
 void supla_voltage_aberration_logger_dao::add(supla_electricity_analyzer *vas) {
   if (!vas) {
     return;
   }
 
-  MYSQL_TIME time = {};
+  time_t now = std::time(nullptr);
 
-  if (get_utc_timestamp(&time)) {
-    add(&time, vas->get_channel_id(), 1, vas->get_aberration_phase1());
-    add(&time, vas->get_channel_id(), 2, vas->get_aberration_phase2());
-    add(&time, vas->get_channel_id(), 3, vas->get_aberration_phase3());
-  }
+  add(now, vas->get_channel_id(), 1, vas->get_aberration_phase1());
+  add(now, vas->get_channel_id(), 2, vas->get_aberration_phase2());
+  add(now, vas->get_channel_id(), 3, vas->get_aberration_phase3());
 }

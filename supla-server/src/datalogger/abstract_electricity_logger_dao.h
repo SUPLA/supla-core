@@ -19,8 +19,7 @@
 #ifndef ABSTRACT_ELECTRICITY_LOGGER_DAO_H_
 #define ABSTRACT_ELECTRICITY_LOGGER_DAO_H_
 
-#include <mysql.h>
-
+#include <ctime>
 #include <string>
 
 #include "analyzer/electricity_analyzer.h"
@@ -29,10 +28,9 @@
 class supla_abstract_electricity_logger_dao
     : public supla_abstract_cyclictask_dao {
  protected:
-  bool get_utc_timestamp(MYSQL_TIME *time);
-  void add(MYSQL_TIME *time, int channel_id, char phase,
-           supla_simple_statiscics *stat, const std::string &procedure,
-           unsigned char precision);
+  virtual void add(const std::time_t &time, int channel_id, char phase,
+                   supla_simple_statiscics *stat, const std::string &procedure,
+                   unsigned char precision);
 
  public:
   explicit supla_abstract_electricity_logger_dao(

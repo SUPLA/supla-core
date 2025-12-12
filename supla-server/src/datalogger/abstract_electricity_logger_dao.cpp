@@ -18,6 +18,7 @@
 
 #include "abstract_electricity_logger_dao.h"
 
+#include <mysql.h>
 #include <string.h>
 
 #include "log.h"
@@ -31,38 +32,7 @@ supla_abstract_electricity_logger_dao::supla_abstract_electricity_logger_dao(
 supla_abstract_electricity_logger_dao::
     ~supla_abstract_electricity_logger_dao() {}
 
-bool supla_abstract_electricity_logger_dao::get_utc_timestamp(
-    MYSQL_TIME *time) {
-  MYSQL_STMT *stmt = NULL;
-
-  bool result = false;
-
-  if (get_mdba()->stmt_execute((void **)&stmt, "SELECT UTC_TIMESTAMP()",
-                               nullptr, 0, true)) {
-    MYSQL_BIND rbind = {};
-
-    rbind.buffer_type = MYSQL_TYPE_DATETIME;
-    rbind.buffer = time;
-    rbind.buffer_length = sizeof(MYSQL_TIME);
-
-    if (mysql_stmt_bind_result(stmt, &rbind)) {
-      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                mysql_stmt_error(stmt));
-    } else {
-      mysql_stmt_store_result(stmt);
-
-      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
-        result = true;
-      }
-    }
-
-    mysql_stmt_close(stmt);
-  }
-
-  return result;
-}
-
-void supla_abstract_electricity_logger_dao::add(MYSQL_TIME *time,
+void supla_abstract_electricity_logger_dao::add(const time_t &time,
                                                 int channel_id, char phase,
                                                 supla_simple_statiscics *stat,
                                                 const string &procedure,
@@ -85,8 +55,10 @@ void supla_abstract_electricity_logger_dao::add(MYSQL_TIME *time,
   char avg[20] = {};
   snprintf(avg, sizeof(avg), format, stat->get_avg());
 
+  MYSQL_TIME mytime = get_mdba()->time_t_to_mytime(&time);
+
   pbind[0].buffer_type = MYSQL_TYPE_DATETIME;
-  pbind[0].buffer = (char *)time;
+  pbind[0].buffer = (char *)&mytime;
 
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&channel_id;

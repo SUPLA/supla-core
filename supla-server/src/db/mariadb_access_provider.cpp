@@ -18,7 +18,8 @@
 
 #include "mariadb_access_provider.h"
 
-supla_mariadb_access_provider::supla_mariadb_access_provider(void) : svrdb() {}
+supla_mariadb_access_provider::supla_mariadb_access_provider(void)
+    : supla_abstract_db_access_provider(), svrdb() {}
 
 supla_mariadb_access_provider::~supla_mariadb_access_provider(void) {}
 
@@ -87,7 +88,7 @@ int supla_mariadb_access_provider::add_by_proc_call(const char *stmt_str,
   return svrdb::add_by_proc_call(stmt_str, bind, bind_size);
 }
 
-time_t supla_mariadb_access_provider::mytime_to_time_t(MYSQL_TIME *time) {
+time_t supla_mariadb_access_provider::mytime_to_time_t(const MYSQL_TIME *time) {
   if (!time) {
     return 0;
   }
@@ -102,4 +103,23 @@ time_t supla_mariadb_access_provider::mytime_to_time_t(MYSQL_TIME *time) {
   timeinfo.tm_isdst = -1;
 
   return timegm(&timeinfo);
+}
+
+MYSQL_TIME supla_mariadb_access_provider::time_t_to_mytime(const time_t *time) {
+  std::tm tm_utc{};
+  gmtime_r(time, &tm_utc);
+
+  MYSQL_TIME mt{};
+  mt.year = tm_utc.tm_year + 1900;
+  mt.month = tm_utc.tm_mon + 1;
+  mt.day = tm_utc.tm_mday;
+  mt.hour = tm_utc.tm_hour;
+  mt.minute = tm_utc.tm_min;
+  mt.second = tm_utc.tm_sec;
+
+  mt.second_part = 0;  // microseconds
+  mt.neg = false;
+  mt.time_type = MYSQL_TIMESTAMP_DATETIME;
+
+  return mt;
 }
