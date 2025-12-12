@@ -14,7 +14,6 @@ services:
       supla-core-devel-net:
         aliases: 
           - db
-          - mariadb
     restart: unless-stopped
 
   timescaledb:
@@ -33,7 +32,6 @@ services:
     networks:
       supla-core-devel-net:
         aliases:
-          - timescaledb
           - tsdb
     restart: unless-stopped
     command:
@@ -60,11 +58,6 @@ services:
       - "2016:2016/tcp"
     volumes:
       - ${HOME}/CProjects:/CProjects
-      - ./supla.cfg:/etc/supla-server/supla.cfg
-      - ./supla-test.cfg:/etc/supla-server/supla-test.cfg
-      - ./certs/server.key:/etc/supla-server/server.key
-      - ./certs/server.crt:/etc/supla-server/server.crt
-      - ./pgpass:/root/.pgpass
     networks:
       supla-core-devel-net:
     extra_hosts:

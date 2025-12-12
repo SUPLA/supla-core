@@ -18,3 +18,8 @@ RUN echo 'export PATH="/usr/lib/postgresql/13/bin:$PATH"' >> /root/.bashrc
 
 WORKDIR /CProjects/supla-core/supla-server
 
+COPY supla.cfg /etc/supla-server/
+COPY supla-test.cfg /etc/supla-server/
+COPY certs/server.key /etc/supla-server/
+COPY certs/server.crt /etc/supla-server/
+COPY .pgpass /root/
