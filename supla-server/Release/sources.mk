@@ -63,6 +63,7 @@ src/push \
 src/scene \
 src/schedule \
 src/srpc \
+src/tsdb \
 src/user \
 src/vbt \
 src/webhook \

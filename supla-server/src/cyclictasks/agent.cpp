@@ -34,6 +34,7 @@
 #include "datalogger/voltage_logger.h"
 #include "db/mariadb_access_provider.h"
 #include "sthread.h"
+#include "tsdb/tsdb_access_provider.h"
 #include "user/virtual_channel_updater_cyclictask.h"
 
 using std::vector;
@@ -98,17 +99,28 @@ void supla_cyclictasks_agent::loop(void *sthread) {
 
     if (is_it_time) {
       vector<supla_user *> users;
-      supla_mariadb_access_provider dba;
+      supla_mariadb_access_provider mdba;
+      supla_tsdb_access_provider tsdba;
 
       for (auto it = tasks.cbegin(); it != tasks.cend(); ++it) {
         if (sthread_isterminated(sthread)) {
           break;
         }
 
-        if (!(*it)->is_it_time(&now) ||
-            ((*it)->db_access_needed() && !dba.is_connected() &&
-             !dba.connect())) {
+        if (!(*it)->is_it_time(&now)) {
           continue;
+        }
+
+        if ((*it)->db_access_needed()) {
+          supla_abstract_db_access_provider *dba = &mdba;
+
+          if ((*it)->is_tsdb_preffered() && tsdba.is_config_present()) {
+            dba = &tsdba;
+          };
+
+          if (!dba->is_connected() && !dba->connect()) {
+            continue;
+          }
         }
 
         if ((*it)->user_access_needed() && users.size() == 0) {
@@ -119,7 +131,7 @@ void supla_cyclictasks_agent::loop(void *sthread) {
         }
 
         (*it)->run(&now, (*it)->user_access_needed() ? &users : nullptr,
-                   (*it)->db_access_needed() ? &dba : nullptr);
+                   (*it)->db_access_needed() ? &mdba : nullptr);
       }
     }
   }

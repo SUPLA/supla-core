@@ -33,7 +33,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
 
   char *s_mqtt = "MQTT-BROKER";
-  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 49)
+  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 50)
   // This ensures that realloc will only be called once
   scfg_add_int_param(CFG_MQTT_KEEP_ALIVE_SEC, s_mqtt, "CFG_MQTT_KEEP_ALIVE_SEC",
                      30);
@@ -64,10 +64,17 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
 
   char *s_mysql = "MySQL";
   scfg_add_str_param(CFG_MYSQL_HOST, s_mysql, "host", NULL);
-  scfg_add_int_param(CFG_MYSQL_PORT, s_mysql, "port", 0);
+  scfg_add_int_param(CFG_MYSQL_PORT, s_mysql, "port", 3306);
   scfg_add_str_param(CFG_MYSQL_DB, s_mysql, "database", "supla");
   scfg_add_str_param(CFG_MYSQL_USER, s_mysql, "user", NULL);
   scfg_add_str_param(CFG_MYSQL_PASSWORD, s_mysql, "password", NULL);
+
+  char *s_tsdb = "TimescaleDB";
+  scfg_add_str_param(CFG_TSDB_HOST, s_tsdb, "host", NULL);
+  scfg_add_int_param(CFG_TSDB_PORT, s_tsdb, "port", 5432);
+  scfg_add_str_param(CFG_TSDB_DB, s_tsdb, "database", "");
+  scfg_add_str_param(CFG_TSDB_USER, s_tsdb, "user", NULL);
+  scfg_add_str_param(CFG_TSDB_PASSWORD, s_tsdb, "password", NULL);
 
   char *s_ipc = "IPC";
   scfg_add_str_param(CFG_IPC_SOCKET_PATH, s_ipc, "socket_path",

@@ -33,3 +33,7 @@ supla_abstract_db_access_provider *supla_abstract_cyclictask_dao::get_dba(
 supla_mariadb_access_provider *supla_abstract_cyclictask_dao::get_mdba(void) {
   return dynamic_cast<supla_mariadb_access_provider *>(dba);
 }
+
+supla_tsdb_access_provider *supla_abstract_cyclictask_dao::get_tsdba(void) {
+  return dynamic_cast<supla_tsdb_access_provider *>(dba);
+}

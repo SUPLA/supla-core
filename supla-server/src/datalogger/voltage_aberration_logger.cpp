@@ -25,6 +25,8 @@ supla_voltage_aberration_logger::supla_voltage_aberration_logger()
 
 supla_voltage_aberration_logger::~supla_voltage_aberration_logger() {}
 
+bool supla_voltage_aberration_logger::is_tsdb_preffered(void) { return true; }
+
 unsigned int supla_voltage_aberration_logger::task_interval_sec(void) {
   return 600;
 }

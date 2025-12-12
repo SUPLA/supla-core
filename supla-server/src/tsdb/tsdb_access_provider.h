@@ -16,32 +16,31 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_CYCLICTASK_H_
-#define ABSTRACT_CYCLICTASK_H_
+#ifndef TSDB_ACCESS_PROVIDER_H_
+#define TSDB_ACCESS_PROVIDER_H_
 
-#include <vector>
+#include <pqxx/pqxx>
+#include <string>
 
 #include "db/abstract_db_access_provider.h"
-#include "user/user.h"
 
-class supla_abstract_cyclictask {
+class supla_tsdb_access_provider : public supla_abstract_db_access_provider {
  private:
-  struct timeval last_run_time;
-
- protected:
-  virtual unsigned int task_interval_sec(void) = 0;
-  virtual void run(const std::vector<supla_user *> *users,
-                   supla_abstract_db_access_provider *dba) = 0;
+  pqxx::connection* conn = nullptr;
+  void append_conninfo_string(std::string& conninfo,
+                              const std::string& parameter, const char* value);
+  void append_conninfo_string(std::string& conninfo,
+                              const std::string& parameter, int value);
 
  public:
-  supla_abstract_cyclictask();
-  virtual ~supla_abstract_cyclictask();
-  virtual bool db_access_needed(void);
-  virtual bool is_tsdb_preffered(void);
-  virtual bool user_access_needed(void);
-  bool is_it_time(const struct timeval *now);
-  void run(const struct timeval *now, const std::vector<supla_user *> *users,
-           supla_abstract_db_access_provider *dba);
+  supla_tsdb_access_provider(void);
+  virtual ~supla_tsdb_access_provider(void);
+  void log_exception(const std::exception& e);
+
+  virtual bool is_config_present(void);
+  virtual bool connect(void);
+  virtual bool is_connected(void);
+  virtual void disconnect(void);
 };
 
-#endif /* ABSTRACT_CYCLICTASK_H_ */
+#endif /* TSDB_ACCESS_PROVIDER_H_ */

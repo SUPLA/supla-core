@@ -125,6 +125,7 @@ src/test/scene \
 src/test/srpc \
 src/test/vbt \
 src/test/webhook \
+src/tsdb \
 src/user \
 src/vbt \
 src/webhook \

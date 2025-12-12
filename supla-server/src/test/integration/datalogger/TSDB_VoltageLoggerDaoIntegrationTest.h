@@ -16,25 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_CYCLICTASK_DAO_H_
-#define ABSTRACT_CYCLICTASK_DAO_H_
+#ifndef TSDB_VoltageLoggerDaoTest_H_
+#define TSDB_VoltageLoggerDaoTest_H_
 
-#include "db/mariadb_access_provider.h"
-#include "tsdb/tsdb_access_provider.h"
+#include "integration/datalogger/TSDB_LoggerDaoIntegrationTest.h"
 
-class supla_abstract_cyclictask_dao {
- private:
-  supla_abstract_db_access_provider *dba;
+namespace testing {
 
- protected:
-  virtual supla_abstract_db_access_provider *get_dba(void);
-  virtual supla_mariadb_access_provider *get_mdba(void);
-  virtual supla_tsdb_access_provider *get_tsdba(void);
-
+class TSDB_VoltageLoggerDaoIntegrationTest
+    : public TSDB_LoggerDaoIntegrationTest {
  public:
-  explicit supla_abstract_cyclictask_dao(
-      supla_abstract_db_access_provider *dba);
-  virtual ~supla_abstract_cyclictask_dao();
+  TSDB_VoltageLoggerDaoIntegrationTest();
+  virtual ~TSDB_VoltageLoggerDaoIntegrationTest();
 };
 
-#endif /* ABSTRACT_CYCLICTASK_DAO_H_ */
+} /* namespace testing */
+
+#endif /* TSDB_VoltageLoggerDaoTest_H_ */

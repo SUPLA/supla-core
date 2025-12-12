@@ -16,25 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_CYCLICTASK_DAO_H_
-#define ABSTRACT_CYCLICTASK_DAO_H_
+#include "TSDB_LoggerDaoIntegrationTest.h"
 
-#include "db/mariadb_access_provider.h"
-#include "tsdb/tsdb_access_provider.h"
+namespace testing {
 
-class supla_abstract_cyclictask_dao {
- private:
-  supla_abstract_db_access_provider *dba;
+TSDB_LoggerDaoIntegrationTest::TSDB_LoggerDaoIntegrationTest()
+    : IntegrationTest(), Test() {}
 
- protected:
-  virtual supla_abstract_db_access_provider *get_dba(void);
-  virtual supla_mariadb_access_provider *get_mdba(void);
-  virtual supla_tsdb_access_provider *get_tsdba(void);
+TSDB_LoggerDaoIntegrationTest::~TSDB_LoggerDaoIntegrationTest() {}
 
- public:
-  explicit supla_abstract_cyclictask_dao(
-      supla_abstract_db_access_provider *dba);
-  virtual ~supla_abstract_cyclictask_dao();
-};
+void TSDB_LoggerDaoIntegrationTest::SetUp() {
+  // TSDB_initTestDatabase();
+  Test::SetUp();
+}
 
-#endif /* ABSTRACT_CYCLICTASK_DAO_H_ */
+} /* namespace testing */
