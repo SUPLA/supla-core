@@ -35,7 +35,9 @@ TSDB_VoltageLoggerDaoIntegrationTest::TSDB_VoltageLoggerDaoIntegrationTest()
 TSDB_VoltageLoggerDaoIntegrationTest::~TSDB_VoltageLoggerDaoIntegrationTest() {}
 
 TEST_F(TSDB_VoltageLoggerDaoIntegrationTest, add) {
-  ASSERT_TRUE(dba.connect());
+  ASSERT_TRUE(dba->connect());
+  dba->disconnect();
+
   /*
     string result;
     sqlQuery("SELECT count(*) as count FROM supla_em_voltage_log", &result);

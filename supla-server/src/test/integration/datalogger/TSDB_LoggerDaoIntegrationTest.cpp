@@ -21,13 +21,28 @@
 namespace testing {
 
 TSDB_LoggerDaoIntegrationTest::TSDB_LoggerDaoIntegrationTest()
-    : IntegrationTest(), Test() {}
+    : IntegrationTest(), Test() {
+  dba = nullptr;
+}
 
 TSDB_LoggerDaoIntegrationTest::~TSDB_LoggerDaoIntegrationTest() {}
 
 void TSDB_LoggerDaoIntegrationTest::SetUp() {
+  dba = new supla_tsdb_access_provider(
+      "gssencmode=disable sslmode=disable");  // When connecting to SSL,
+                                              // Valgrind warns after the
+                                              // program exits that 259 bytes
+                                              // are still available. This
+                                              // doesn't appear to be a leak.
+                                              // Therefore, let's disable SSL
+                                              // and gssencmode for testing.
   // TSDB_initTestDatabase();
   Test::SetUp();
+}
+
+void TSDB_LoggerDaoIntegrationTest::TearDown() {
+  delete dba;
+  Test::TearDown();
 }
 
 } /* namespace testing */

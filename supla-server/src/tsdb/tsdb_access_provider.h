@@ -26,6 +26,7 @@
 
 class supla_tsdb_access_provider : public supla_abstract_db_access_provider {
  private:
+  std::string extra_conn_args;
   pqxx::connection* conn = nullptr;
   void append_conninfo_string(std::string& conninfo,
                               const std::string& parameter, const char* value);
@@ -34,6 +35,7 @@ class supla_tsdb_access_provider : public supla_abstract_db_access_provider {
 
  public:
   supla_tsdb_access_provider(void);
+  supla_tsdb_access_provider(const std::string& extra_conn_args);
   virtual ~supla_tsdb_access_provider(void);
   void log_exception(const std::exception& e);
 

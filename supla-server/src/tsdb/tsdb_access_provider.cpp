@@ -30,6 +30,11 @@ supla_tsdb_access_provider::supla_tsdb_access_provider(void)
   conn = nullptr;
 }
 
+supla_tsdb_access_provider::supla_tsdb_access_provider(
+    const std::string& extra_conn_args) {
+  this->extra_conn_args = extra_conn_args;
+}
+
 supla_tsdb_access_provider::~supla_tsdb_access_provider(void) { disconnect(); }
 
 void supla_tsdb_access_provider::append_conninfo_string(string& conninfo,
@@ -85,8 +90,9 @@ bool supla_tsdb_access_provider::connect(void) {
   append_conninfo_string(conninfo, "user", scfg_string(CFG_TSDB_USER));
   append_conninfo_string(conninfo, "password", scfg_string(CFG_TSDB_PASSWORD));
 
-  if (conn) {
-    delete conn;
+  if (extra_conn_args.length()) {
+    conninfo.append(" ");
+    conninfo.append(extra_conn_args);
   }
 
   disconnect();
@@ -94,12 +100,8 @@ bool supla_tsdb_access_provider::connect(void) {
   try {
     conn = new pqxx::connection(conninfo);
   } catch (const std::exception& e) {
-    if (conn) {
-      delete conn;
-      conn = nullptr;
-    }
-
     log_exception(e);
+    disconnect();
   }
 
   return is_connected();

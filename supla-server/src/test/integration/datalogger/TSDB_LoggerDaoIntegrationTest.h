@@ -26,12 +26,13 @@ namespace testing {
 
 class TSDB_LoggerDaoIntegrationTest : public IntegrationTest, public Test {
  protected:
-  supla_tsdb_access_provider dba;
+  supla_tsdb_access_provider *dba;
 
  public:
   TSDB_LoggerDaoIntegrationTest();
   virtual ~TSDB_LoggerDaoIntegrationTest();
   virtual void SetUp();
+  virtual void TearDown();
 };
 
 } /* namespace testing */
