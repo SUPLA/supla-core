@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ThermostatLoggerDaoIntegrationTest.h"
+#include "HpThermostatLoggerDaoIntegrationTest.h"
 
 #include <string>
 
@@ -26,15 +26,15 @@ using std::string;
 
 namespace testing {
 
-ThermostatLoggerDaoIntegrationTest::ThermostatLoggerDaoIntegrationTest()
+HpThermostatLoggerDaoIntegrationTest::HpThermostatLoggerDaoIntegrationTest()
     : IntegrationTest(), Test() {
   dba = nullptr;
   dao = nullptr;
 }
 
-ThermostatLoggerDaoIntegrationTest::~ThermostatLoggerDaoIntegrationTest() {}
+HpThermostatLoggerDaoIntegrationTest::~HpThermostatLoggerDaoIntegrationTest() {}
 
-void ThermostatLoggerDaoIntegrationTest::SetUp() {
+void HpThermostatLoggerDaoIntegrationTest::SetUp() {
   dba = new supla_mariadb_access_provider();
   ASSERT_TRUE(dba != nullptr);
   dao = new supla_hp_thermostat_logger_dao(dba);
@@ -44,7 +44,7 @@ void ThermostatLoggerDaoIntegrationTest::SetUp() {
   Test::SetUp();
 }
 
-void ThermostatLoggerDaoIntegrationTest::TearDown() {
+void HpThermostatLoggerDaoIntegrationTest::TearDown() {
   if (dao) {
     delete dao;
     dao = nullptr;
@@ -58,7 +58,7 @@ void ThermostatLoggerDaoIntegrationTest::TearDown() {
   Test::TearDown();
 }
 
-TEST_F(ThermostatLoggerDaoIntegrationTest, add) {
+TEST_F(HpThermostatLoggerDaoIntegrationTest, add) {
   ASSERT_TRUE(dba->connect());
 
   string result;

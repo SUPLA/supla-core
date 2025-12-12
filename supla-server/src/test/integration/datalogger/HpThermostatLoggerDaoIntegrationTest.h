@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ThermostatLoggerDaoTest_H_
-#define ThermostatLoggerDaoTest_H_
+#ifndef HpThermostatLoggerDaoTest_H_
+#define HpThermostatLoggerDaoTest_H_
 
 #include "datalogger/hp_thermostat_logger_dao.h"
 #include "db/mariadb_access_provider.h"
@@ -25,14 +25,15 @@
 
 namespace testing {
 
-class ThermostatLoggerDaoIntegrationTest : public IntegrationTest, public Test {
+class HpThermostatLoggerDaoIntegrationTest : public IntegrationTest,
+                                             public Test {
  protected:
   supla_mariadb_access_provider *dba;
   supla_hp_thermostat_logger_dao *dao;
 
  public:
-  ThermostatLoggerDaoIntegrationTest();
-  virtual ~ThermostatLoggerDaoIntegrationTest();
+  HpThermostatLoggerDaoIntegrationTest();
+  virtual ~HpThermostatLoggerDaoIntegrationTest();
   virtual void SetUp();
   virtual void TearDown();
 };
