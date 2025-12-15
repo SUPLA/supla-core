@@ -38,6 +38,7 @@ class supla_abstract_electricity_logger : public supla_abstract_cyclictask {
  public:
   supla_abstract_electricity_logger();
   virtual ~supla_abstract_electricity_logger();
+  virtual bool is_tsdb_preffered(void);
 };
 
 #endif /* ABSTRACT_ELECTRICITY_LOGGER_H_ */

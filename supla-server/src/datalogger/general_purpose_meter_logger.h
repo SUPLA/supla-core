@@ -32,6 +32,7 @@ class supla_general_purpose_meter_logger : public supla_abstract_cyclictask {
  public:
   supla_general_purpose_meter_logger();
   virtual ~supla_general_purpose_meter_logger();
+  virtual bool is_tsdb_preffered(void);
 };
 
 #endif /* GENERAL_PURPOSE_METER_LOGGER_H_ */

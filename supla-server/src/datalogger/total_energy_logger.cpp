@@ -35,6 +35,8 @@ supla_total_energy_logger::supla_total_energy_logger()
 
 supla_total_energy_logger::~supla_total_energy_logger() {}
 
+bool supla_total_energy_logger::is_tsdb_preffered(void) { return true; }
+
 unsigned int supla_total_energy_logger::task_interval_sec(void) { return 600; }
 
 void supla_total_energy_logger::run(const vector<supla_user *> *users,

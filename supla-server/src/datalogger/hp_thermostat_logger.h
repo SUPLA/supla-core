@@ -32,6 +32,7 @@ class supla_hp_thermostat_logger : public supla_abstract_cyclictask {
  public:
   supla_hp_thermostat_logger();
   virtual ~supla_hp_thermostat_logger();
+  virtual bool is_tsdb_preffered(void);
 };
 
 #endif /* THERMOSTAT_LOGGER_H_ */

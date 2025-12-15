@@ -21,26 +21,23 @@
 #include <mysql.h>
 #include <string.h>
 
+#include <pqxx/pqxx>
+
 #include "log.h"
 
 supla_general_purpose_meter_logger_dao::supla_general_purpose_meter_logger_dao(
     supla_abstract_db_access_provider *dba)
     : supla_abstract_cyclictask_dao(dba) {}
 
-void supla_general_purpose_meter_logger_dao::add(
-    int channel_id, supla_channel_general_purpose_meter_value *value) {
-  if (!value) {
-    return;
-  }
-
+void supla_general_purpose_meter_logger_dao::mariadb_add(int channel_id,
+                                                         double value) {
   MYSQL_BIND pbind[2] = {};
-  double dbl_value = value->get_value();
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
 
   pbind[1].buffer_type = MYSQL_TYPE_DOUBLE;
-  pbind[1].buffer = (char *)&dbl_value;
+  pbind[1].buffer = (char *)&value;
 
   const char sql[] = "CALL `supla_add_gp_meter_log_item`(?,?)";
 
@@ -48,4 +45,25 @@ void supla_general_purpose_meter_logger_dao::add(
   get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 2, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
+}
+
+void supla_general_purpose_meter_logger_dao::tsdb_add(int channel_id,
+                                                      double value) {
+  pqxx::nontransaction ntx(*get_tsdba()->get_conn());
+
+  ntx.exec_params("SELECT supla_add_gp_meter_log_item($1,$2)", channel_id,
+                  value);
+}
+
+void supla_general_purpose_meter_logger_dao::add(
+    int channel_id, supla_channel_general_purpose_meter_value *value) {
+  if (!value) {
+    return;
+  }
+
+  if (get_mdba()) {
+    mariadb_add(channel_id, value->get_value());
+  } else if (get_tsdba()) {
+    tsdb_add(channel_id, value->get_value());
+  }
 }

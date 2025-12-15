@@ -204,3 +204,163 @@ VALUES (
        );
 END;
 $$;
+
+CREATE OR REPLACE FUNCTION supla_add_gp_meter_log_item(
+    _channel_id integer,
+    _value double precision
+)
+RETURNS void
+LANGUAGE plpgsql
+SET search_path = public
+SECURITY DEFINER
+AS $$
+BEGIN
+INSERT INTO supla_gp_meter_log (
+    channel_id,
+    "date",
+    value
+)
+VALUES (
+           _channel_id,
+           now() AT TIME ZONE 'UTC',
+           _value
+       );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION supla_add_thermostat_log_item(
+    _channel_id integer,
+    _measured_temperature numeric(5,2),
+    _preset_temperature numeric(5,2),
+    _on BOOLEAN
+)
+RETURNS void
+LANGUAGE plpgsql
+SET search_path = public
+SECURITY DEFINER
+AS $$
+BEGIN
+INSERT INTO supla_thermostat_log (
+    channel_id,
+    "date",
+    measured_temperature,
+    preset_temperature,
+    "on"
+)
+VALUES (
+           _channel_id,
+           now() AT TIME ZONE 'UTC',
+           _measured_temperature,
+           _preset_temperature,
+           _on
+       );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION supla_add_ic_log_item(
+    _channel_id INTEGER,
+    _counter BIGINT,
+    _calculated_value BIGINT
+)
+RETURNS void
+LANGUAGE plpgsql
+SET search_path = public
+SECURITY DEFINER
+AS $$
+BEGIN
+INSERT INTO supla_ic_log (
+    channel_id,
+    date,
+    counter,
+    calculated_value
+)
+VALUES (
+           _channel_id,
+           timezone('UTC', now()),
+           _counter,
+           _calculated_value
+       );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION supla_add_em_power_active_log_item(
+    _date timestamp,
+    _channel_id integer,
+    _phase_no smallint,
+    _min numeric(11,5),
+    _max numeric(11,5),
+    _avg numeric(11,5)
+)
+RETURNS void
+LANGUAGE plpgsql
+SET search_path = public
+SECURITY DEFINER
+AS $$
+BEGIN
+INSERT INTO supla_em_power_active_log (
+    "date",
+    channel_id,
+    phase_no,
+    min,
+    max,
+    avg
+)
+VALUES (
+           _date,
+           _channel_id,
+           _phase_no,
+           _min,
+           _max,
+           _avg
+       );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION supla_add_temperature_log_item(
+    _channel_id INTEGER,
+    _temperature NUMERIC(8,4)
+)
+RETURNS void
+LANGUAGE plpgsql
+SET search_path = public
+SECURITY DEFINER
+AS $$
+BEGIN
+INSERT INTO supla_temperature_log (
+    channel_id,
+    date,
+    temperature
+)
+VALUES (
+           _channel_id,
+           timezone('UTC', now()),
+           _temperature
+       );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION supla_add_temphumidity_log_item(
+    _channel_id INTEGER,
+    _temperature NUMERIC(8,4),
+    _humidity NUMERIC(8,4)
+)
+RETURNS void
+LANGUAGE plpgsql
+SET search_path = public
+SECURITY DEFINER
+AS $$
+BEGIN
+INSERT INTO supla_temphumidity_log (
+    channel_id,
+    date,
+    temperature,
+    humidity
+)
+VALUES (
+           _channel_id,
+           timezone('UTC', now()),
+           _temperature,
+           _humidity
+       );
+END;
+$$;

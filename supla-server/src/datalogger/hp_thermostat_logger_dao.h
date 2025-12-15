@@ -23,6 +23,12 @@
 #include "device/value/channel_hp_thermostat_value.h"
 
 class supla_hp_thermostat_logger_dao : public supla_abstract_cyclictask_dao {
+ private:
+  void mariadb_add(int channel_id, char *measured_temperature,
+                   char *preset_temperature, char on);
+  void tsdb_add(int channel_id, char *measured_temperature,
+                char *preset_temperature, bool on);
+
  public:
   explicit supla_hp_thermostat_logger_dao(
       supla_abstract_db_access_provider *dba);

@@ -35,6 +35,8 @@ supla_temperature_logger::supla_temperature_logger()
 
 supla_temperature_logger::~supla_temperature_logger() {}
 
+bool supla_temperature_logger::is_tsdb_preffered(void) { return true; }
+
 unsigned int supla_temperature_logger::task_interval_sec(void) { return 600; }
 
 void supla_temperature_logger::run(const vector<supla_user *> *users,

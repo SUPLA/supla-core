@@ -16,23 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef TOTAL_ENERGY_LOGGER_H_
-#define TOTAL_ENERGY_LOGGER_H_
+#ifndef TSDB_PowerActiveLoggerDaoTest_H_
+#define TSDB_PowerActiveLoggerDaoTest_H_
 
-#include <vector>
+#include "datalogger/power_active_logger_dao.h"
+#include "integration/datalogger/TSDB_LoggerDaoIntegrationTest.h"
 
-#include "cyclictasks/abstract_cyclictask.h"
+namespace testing {
 
-class supla_total_energy_logger : public supla_abstract_cyclictask {
+class TSDB_PowerActiveLoggerDaoIntegrationTest
+    : public TSDB_LoggerDaoIntegrationTest {
  protected:
-  virtual unsigned int task_interval_sec(void);
-  virtual void run(const std::vector<supla_user *> *users,
-                   supla_abstract_db_access_provider *dba);
+  supla_power_active_logger_dao *dao;
 
  public:
-  supla_total_energy_logger();
-  virtual ~supla_total_energy_logger();
-  virtual bool is_tsdb_preffered(void);
+  TSDB_PowerActiveLoggerDaoIntegrationTest();
+  virtual ~TSDB_PowerActiveLoggerDaoIntegrationTest();
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
-#endif /* TOTAL_ENERGY_LOGGER_H_ */
+} /* namespace testing */
+
+#endif /* TSDB_PowerActiveLoggerDaoTest_H_ */

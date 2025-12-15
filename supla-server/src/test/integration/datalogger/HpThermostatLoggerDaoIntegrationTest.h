@@ -40,4 +40,4 @@ class HpThermostatLoggerDaoIntegrationTest : public IntegrationTest,
 
 } /* namespace testing */
 
-#endif /* ThermostatLoggerDaoTest_H_ */
+#endif /* HpThermostatLoggerDaoTest_H_ */

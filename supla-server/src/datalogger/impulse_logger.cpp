@@ -32,6 +32,8 @@ supla_impulse_logger::supla_impulse_logger() : supla_abstract_cyclictask() {}
 
 supla_impulse_logger::~supla_impulse_logger() {}
 
+bool supla_impulse_logger::is_tsdb_preffered(void) { return true; }
+
 unsigned int supla_impulse_logger::task_interval_sec(void) { return 600; }
 
 void supla_impulse_logger::run(const vector<supla_user *> *users,

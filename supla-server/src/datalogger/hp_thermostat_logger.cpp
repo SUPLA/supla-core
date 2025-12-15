@@ -34,6 +34,8 @@ supla_hp_thermostat_logger::supla_hp_thermostat_logger()
 
 supla_hp_thermostat_logger::~supla_hp_thermostat_logger() {}
 
+bool supla_hp_thermostat_logger::is_tsdb_preffered(void) { return true; }
+
 unsigned int supla_hp_thermostat_logger::task_interval_sec(void) { return 600; }
 
 void supla_hp_thermostat_logger::run(const vector<supla_user *> *users,

@@ -35,6 +35,10 @@ supla_general_purpose_meter_logger::supla_general_purpose_meter_logger()
 
 supla_general_purpose_meter_logger::~supla_general_purpose_meter_logger() {}
 
+bool supla_general_purpose_meter_logger::is_tsdb_preffered(void) {
+  return true;
+}
+
 unsigned int supla_general_purpose_meter_logger::task_interval_sec(void) {
   return 600;
 }

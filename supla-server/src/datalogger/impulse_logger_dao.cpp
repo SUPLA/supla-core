@@ -24,16 +24,10 @@ supla_impulse_logger_dao::supla_impulse_logger_dao(
     supla_abstract_db_access_provider *dba)
     : supla_abstract_cyclictask_dao(dba) {}
 
-void supla_impulse_logger_dao::add(int channel_id,
-                                   supla_channel_ic_extended_value *icv) {
-  if (!icv) {
-    return;
-  }
-
+void supla_impulse_logger_dao::mariadb_add(
+    int channel_id, unsigned _supla_int64_t counter,
+    unsigned _supla_int64_t calculated_value) {
   MYSQL_BIND pbind[3] = {};
-
-  unsigned _supla_int64_t counter = icv->get_counter();
-  unsigned _supla_int64_t calculated_value = icv->get_calculated_value();
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
@@ -48,4 +42,26 @@ void supla_impulse_logger_dao::add(int channel_id,
   get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 3, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
+}
+
+void supla_impulse_logger_dao::tsdb_add(
+    int channel_id, unsigned _supla_int64_t counter,
+    unsigned _supla_int64_t calculated_value) {
+  pqxx::nontransaction ntx(*get_tsdba()->get_conn());
+
+  ntx.exec_params("SELECT supla_add_ic_log_item($1,$2,$3)", channel_id, counter,
+                  calculated_value);
+}
+
+void supla_impulse_logger_dao::add(int channel_id,
+                                   supla_channel_ic_extended_value *icv) {
+  if (!icv) {
+    return;
+  }
+
+  if (get_mdba()) {
+    mariadb_add(channel_id, icv->get_counter(), icv->get_calculated_value());
+  } else if (get_tsdba()) {
+    tsdb_add(channel_id, icv->get_counter(), icv->get_calculated_value());
+  }
 }
