@@ -16,25 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef TSDB_LoggerDaoTest_H_
-#define TSDB_LoggerDaoTest_H_
+#ifndef TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest_H_
+#define TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest_H_
 
-#include "integration/TSDB_IntegrationTest.h"
-#include "tsdb/tsdb_access_provider.h"
+#include "datalogger/general_purpose_measurement_logger_dao.h"
+#include "integration/datalogger/TSDB_LoggerDaoIntegrationTest.h"
 
 namespace testing {
 
-class TSDB_LoggerDaoIntegrationTest : public TSDB_IntegrationTest, public Test {
+class TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest
+    : public TSDB_LoggerDaoIntegrationTest {
  protected:
-  supla_tsdb_access_provider *dba;
+  supla_general_purpose_measurement_logger_dao *dao;
 
  public:
-  TSDB_LoggerDaoIntegrationTest();
-  virtual ~TSDB_LoggerDaoIntegrationTest();
+  TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest();
+  virtual ~TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest();
   virtual void SetUp();
   virtual void TearDown();
 };
 
 } /* namespace testing */
 
-#endif /* TSDB_LoggerDaoTest_H_ */
+#endif /* TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest_H_ */

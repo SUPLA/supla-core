@@ -16,32 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MYSQLSHELL_H_
-#define MYSQLSHELL_H_
+#ifndef TSDB_INTEGRATIONTEST_H_
+#define TSDB_INTEGRATIONTEST_H_
 
 #include <string>
 
-#include "test/integration/SqlShell.h"
+#include "gtest/gtest.h"
 
 namespace testing {
 
-class MySqlShell : public SqlShell {
+class TSDB_IntegrationTest {
  private:
-  static const char *program;
-  static const char *user_switch;
+ protected:
+  void runSqlScript(const char *script);
+  void sqlQuery(const char *query, std::string *result);
+  void initTestDatabase();
 
  public:
-  static void runSqlScript(const char *sql_dir, const char *db_host,
-                           const char *db_user, const char *db_name,
-                           const char *script);
-  static void sqlQuery(const char *sql_dir, const char *db_host,
-                       const char *db_user, const char *db_name,
-                       const char *query, std::string *result);
-
-  static void initTestDatabase(const char *sql_dir, const char *db_host,
-                               const char *db_user, const char *db_name);
+  TSDB_IntegrationTest();
+  virtual ~TSDB_IntegrationTest();
 };
 
-}  // namespace testing
+} /* namespace testing */
 
-#endif /*MYSQLSHELL_*/
+#endif /* TSDB_INTEGRATIONTEST_H_ */

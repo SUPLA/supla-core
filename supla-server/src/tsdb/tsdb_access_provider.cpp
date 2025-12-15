@@ -20,6 +20,10 @@
 
 #include <string.h>
 
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+
 #include "log.h"
 #include "svrcfg.h"
 
@@ -122,4 +126,15 @@ bool supla_tsdb_access_provider::is_config_present(void) {
   return strnlen(scfg_string(CFG_TSDB_HOST), 3) > 0 &&
          strnlen(scfg_string(CFG_TSDB_DB), 3) > 0 &&
          strnlen(scfg_string(CFG_TSDB_USER), 3) > 0;
+}
+
+pqxx::connection* supla_tsdb_access_provider::get_conn(void) { return conn; }
+
+string supla_tsdb_access_provider::time_to_timestamp_string(const time_t& t) {
+  std::tm tm{};
+  gmtime_r(&t, &tm);
+
+  std::ostringstream oss;
+  oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+  return oss.str();
 }

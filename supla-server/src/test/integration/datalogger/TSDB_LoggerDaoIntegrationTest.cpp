@@ -21,7 +21,7 @@
 namespace testing {
 
 TSDB_LoggerDaoIntegrationTest::TSDB_LoggerDaoIntegrationTest()
-    : IntegrationTest(), Test() {
+    : TSDB_IntegrationTest(), Test() {
   dba = nullptr;
 }
 
@@ -36,7 +36,7 @@ void TSDB_LoggerDaoIntegrationTest::SetUp() {
                                               // doesn't appear to be a leak.
                                               // Therefore, let's disable SSL
                                               // and gssencmode for testing.
-  // TSDB_initTestDatabase();
+  initTestDatabase();
   Test::SetUp();
 }
 

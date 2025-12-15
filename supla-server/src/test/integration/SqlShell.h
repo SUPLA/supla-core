@@ -16,32 +16,33 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MYSQLSHELL_H_
-#define MYSQLSHELL_H_
+#ifndef SQLSHELL_H_
+#define SQLSHELL_H_
 
 #include <string>
 
-#include "test/integration/SqlShell.h"
-
 namespace testing {
 
-class MySqlShell : public SqlShell {
- private:
-  static const char *program;
-  static const char *user_switch;
-
- public:
-  static void runSqlScript(const char *sql_dir, const char *db_host,
+class SqlShell {
+ protected:
+  static void runSqlScript(const char *sql_dir, const char *program,
+                           const char *db_host, const char *user_switch,
                            const char *db_user, const char *db_name,
                            const char *script);
-  static void sqlQuery(const char *sql_dir, const char *db_host,
+  static void sqlQuery(const char *sql_dir, const char *program,
+                       const char *db_host, const char *user_switch,
                        const char *db_user, const char *db_name,
                        const char *query, std::string *result);
 
-  static void initTestDatabase(const char *sql_dir, const char *db_host,
-                               const char *db_user, const char *db_name);
+  static void initTestDatabase(const char *sql_dir, const char *program,
+                               const char *db_host, const char *user_switch,
+                               const char *db_user, const char *db_name,
+                               const char *recreate_script,
+                               const char *structure_script);
+
+ public:
 };
 
 }  // namespace testing
 
-#endif /*MYSQLSHELL_*/
+#endif /*SQLSHELL_*/

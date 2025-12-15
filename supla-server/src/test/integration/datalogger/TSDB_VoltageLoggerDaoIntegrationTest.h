@@ -19,15 +19,20 @@
 #ifndef TSDB_VoltageLoggerDaoTest_H_
 #define TSDB_VoltageLoggerDaoTest_H_
 
+#include "datalogger/voltage_logger_dao.h"
 #include "integration/datalogger/TSDB_LoggerDaoIntegrationTest.h"
 
 namespace testing {
-
 class TSDB_VoltageLoggerDaoIntegrationTest
     : public TSDB_LoggerDaoIntegrationTest {
+ protected:
+  supla_voltage_logger_dao *dao;
+
  public:
   TSDB_VoltageLoggerDaoIntegrationTest();
   virtual ~TSDB_VoltageLoggerDaoIntegrationTest();
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
 } /* namespace testing */

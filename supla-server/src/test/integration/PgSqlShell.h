@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MYSQLSHELL_H_
-#define MYSQLSHELL_H_
+#ifndef PGSQLSHELL_H_
+#define PGSQLSHELL_H_
 
 #include <string>
 
@@ -25,7 +25,7 @@
 
 namespace testing {
 
-class MySqlShell : public SqlShell {
+class PgSqlShell : public SqlShell {
  private:
   static const char *program;
   static const char *user_switch;
@@ -34,6 +34,7 @@ class MySqlShell : public SqlShell {
   static void runSqlScript(const char *sql_dir, const char *db_host,
                            const char *db_user, const char *db_name,
                            const char *script);
+
   static void sqlQuery(const char *sql_dir, const char *db_host,
                        const char *db_user, const char *db_name,
                        const char *query, std::string *result);

@@ -24,6 +24,12 @@
 
 class supla_general_purpose_measurement_logger_dao
     : public supla_abstract_cyclictask_dao {
+ private:
+  void mariadb_add(int channel_id, double first, double last, double avg,
+                   double min, double max);
+  void tsdb_add(int channel_id, double first, double last, double avg,
+                double min, double max);
+
  public:
   explicit supla_general_purpose_measurement_logger_dao(
       supla_abstract_db_access_provider *dba);

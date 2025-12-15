@@ -42,3 +42,165 @@ COMMENT ON COLUMN supla_energy_price_log.date_to IS '(DC2Type:stringdatetime)';
 SELECT create_hypertable('supla_energy_price_log', 'date_from');
 ALTER TABLE supla_energy_price_log ADD pdgsz SMALLINT DEFAULT NULL;
 COMMENT ON COLUMN supla_energy_price_log.pdgsz IS '(DC2Type:tinyint)';
+
+CREATE OR REPLACE FUNCTION supla_add_em_log_item(
+    _channel_id INT,
+    _phase1_fae BIGINT,
+    _phase1_rae BIGINT,
+    _phase1_fre BIGINT,
+    _phase1_rre BIGINT,
+    _phase2_fae BIGINT,
+    _phase2_rae BIGINT,
+    _phase2_fre BIGINT,
+    _phase2_rre BIGINT,
+    _phase3_fae BIGINT,
+    _phase3_rae BIGINT,
+    _phase3_fre BIGINT,
+    _phase3_rre BIGINT,
+    _fae_balanced BIGINT,
+    _rae_balanced BIGINT
+)
+RETURNS void
+LANGUAGE plpgsql
+SET search_path = public
+SECURITY DEFINER
+AS $$
+BEGIN
+INSERT INTO supla_em_log (
+    channel_id,
+    date,
+    phase1_fae,
+    phase1_rae,
+    phase1_fre,
+    phase1_rre,
+    phase2_fae,
+    phase2_rae,
+    phase2_fre,
+    phase2_rre,
+    phase3_fae,
+    phase3_rae,
+    phase3_fre,
+    phase3_rre,
+    fae_balanced,
+    rae_balanced
+)
+VALUES (
+           _channel_id,
+           now() AT TIME ZONE 'UTC',
+           _phase1_fae,
+           _phase1_rae,
+           _phase1_fre,
+           _phase1_rre,
+           _phase2_fae,
+           _phase2_rae,
+           _phase2_fre,
+           _phase2_rre,
+           _phase3_fae,
+           _phase3_rae,
+           _phase3_fre,
+           _phase3_rre,
+           _fae_balanced,
+           _rae_balanced
+       );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION supla_add_em_voltage_log_item(
+    _date TIMESTAMP,
+    _channel_id INTEGER,
+    _phase_no SMALLINT,
+    _min NUMERIC(5,2),
+    _max NUMERIC(5,2),
+    _avg NUMERIC(5,2)
+)
+RETURNS void
+LANGUAGE plpgsql
+SET search_path = public
+SECURITY DEFINER
+AS $$
+BEGIN
+INSERT INTO supla_em_voltage_log (
+    date,
+    channel_id,
+    phase_no,
+    min,
+    max,
+    avg
+)
+VALUES (
+           _date,
+           _channel_id,
+           _phase_no,
+           _min,
+           _max,
+           _avg
+       );
+END;
+$$;
+CREATE OR REPLACE FUNCTION supla_add_em_current_log_item(
+    _date timestamp,
+    _channel_id integer,
+    _phase_no smallint,
+    _min numeric(6,3),
+    _max numeric(6,3),
+    _avg numeric(6,3)
+)
+RETURNS void
+LANGUAGE plpgsql
+SET search_path = public
+SECURITY DEFINER
+AS $$
+BEGIN
+INSERT INTO supla_em_current_log (
+    "date",
+    channel_id,
+    phase_no,
+    min,
+    max,
+    avg
+)
+VALUES (
+           _date,
+           _channel_id,
+           _phase_no,
+           _min,
+           _max,
+           _avg
+       );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION supla_add_gp_measurement_log_item(
+    _channel_id integer,
+    _open_value double precision,
+    _close_value double precision,
+    _avg_value double precision,
+    _max_value double precision,
+    _min_value double precision
+)
+RETURNS void
+LANGUAGE plpgsql
+SET search_path = public
+SECURITY DEFINER
+AS $$
+BEGIN
+INSERT INTO supla_gp_measurement_log (
+    channel_id,
+    "date",
+    open_value,
+    close_value,
+    avg_value,
+    max_value,
+    min_value
+)
+VALUES (
+           _channel_id,
+           now() AT TIME ZONE 'UTC',
+           _open_value,
+           _close_value,
+           _avg_value,
+           _max_value,
+           _min_value
+       );
+END;
+$$;

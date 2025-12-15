@@ -5,15 +5,24 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/integration/IntegrationTest.cpp \
-../src/test/integration/MySqlShell.cpp 
+../src/test/integration/MySqlShell.cpp \
+../src/test/integration/PgSqlShell.cpp \
+../src/test/integration/SqlShell.cpp \
+../src/test/integration/TSDB_IntegrationTest.cpp 
 
 CPP_DEPS += \
 ./src/test/integration/IntegrationTest.d \
-./src/test/integration/MySqlShell.d 
+./src/test/integration/MySqlShell.d \
+./src/test/integration/PgSqlShell.d \
+./src/test/integration/SqlShell.d \
+./src/test/integration/TSDB_IntegrationTest.d 
 
 OBJS += \
 ./src/test/integration/IntegrationTest.o \
-./src/test/integration/MySqlShell.o 
+./src/test/integration/MySqlShell.o \
+./src/test/integration/PgSqlShell.o \
+./src/test/integration/SqlShell.o \
+./src/test/integration/TSDB_IntegrationTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -28,7 +37,7 @@ src/test/integration/%.o: ../src/test/integration/%.cpp src/test/integration/sub
 clean: clean-src-2f-test-2f-integration
 
 clean-src-2f-test-2f-integration:
-	-$(RM) ./src/test/integration/IntegrationTest.d ./src/test/integration/IntegrationTest.o ./src/test/integration/MySqlShell.d ./src/test/integration/MySqlShell.o
+	-$(RM) ./src/test/integration/IntegrationTest.d ./src/test/integration/IntegrationTest.o ./src/test/integration/MySqlShell.d ./src/test/integration/MySqlShell.o ./src/test/integration/PgSqlShell.d ./src/test/integration/PgSqlShell.o ./src/test/integration/SqlShell.d ./src/test/integration/SqlShell.o ./src/test/integration/TSDB_IntegrationTest.d ./src/test/integration/TSDB_IntegrationTest.o
 
 .PHONY: clean-src-2f-test-2f-integration
 

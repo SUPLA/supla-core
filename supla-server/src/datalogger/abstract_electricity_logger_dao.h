@@ -27,6 +27,13 @@
 
 class supla_abstract_electricity_logger_dao
     : public supla_abstract_cyclictask_dao {
+ private:
+  void mariadb_add(const time_t &time, int channel_id, char phase,
+                   const std::string &procedure, char *min, char *max,
+                   char *avg);
+  void tsdb_add(const time_t &time, int channel_id, short phase,
+                const std::string &procedure, char *min, char *max, char *avg);
+
  protected:
   virtual void add(const std::time_t &time, int channel_id, char phase,
                    supla_simple_statiscics *stat, const std::string &procedure,

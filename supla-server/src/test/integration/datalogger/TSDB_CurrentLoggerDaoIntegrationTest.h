@@ -16,25 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef TSDB_LoggerDaoTest_H_
-#define TSDB_LoggerDaoTest_H_
+#ifndef TSDB_CurrentLoggerDaoTest_H_
+#define TSDB_CurrentLoggerDaoTest_H_
 
-#include "integration/TSDB_IntegrationTest.h"
-#include "tsdb/tsdb_access_provider.h"
+#include "datalogger/current_logger_dao.h"
+#include "integration/datalogger/TSDB_LoggerDaoIntegrationTest.h"
 
 namespace testing {
 
-class TSDB_LoggerDaoIntegrationTest : public TSDB_IntegrationTest, public Test {
+class TSDB_CurrentLoggerDaoIntegrationTest
+    : public TSDB_LoggerDaoIntegrationTest {
  protected:
-  supla_tsdb_access_provider *dba;
+  supla_current_logger_dao *dao;
 
  public:
-  TSDB_LoggerDaoIntegrationTest();
-  virtual ~TSDB_LoggerDaoIntegrationTest();
+  TSDB_CurrentLoggerDaoIntegrationTest();
+  virtual ~TSDB_CurrentLoggerDaoIntegrationTest();
   virtual void SetUp();
   virtual void TearDown();
 };
 
 } /* namespace testing */
 
-#endif /* TSDB_LoggerDaoTest_H_ */
+#endif /* TSDB_CurrentLoggerDaoTest_H_ */

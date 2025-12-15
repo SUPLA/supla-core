@@ -37,12 +37,14 @@ class supla_tsdb_access_provider : public supla_abstract_db_access_provider {
   supla_tsdb_access_provider(void);
   supla_tsdb_access_provider(const std::string& extra_conn_args);
   virtual ~supla_tsdb_access_provider(void);
-  void log_exception(const std::exception& e);
 
-  virtual bool is_config_present(void);
   virtual bool connect(void);
   virtual bool is_connected(void);
   virtual void disconnect(void);
+  virtual bool is_config_present(void);
+  pqxx::connection* get_conn(void);
+  void log_exception(const std::exception& e);
+  std::string time_to_timestamp_string(const time_t& t);
 };
 
 #endif /* TSDB_ACCESS_PROVIDER_H_ */

@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "MySqlShell.h"
+#include "PgSqlShell.h"
 
 #include <gtest/gtest.h>  // NOLINT
 
@@ -27,11 +27,11 @@ namespace testing {
 
 using std::string;
 
-const char *MySqlShell::program = "mysql";
-const char *MySqlShell::user_switch = "-u";
+const char *PgSqlShell::program = "psql -q";
+const char *PgSqlShell::user_switch = "-U";
 
 // static
-void MySqlShell::runSqlScript(const char *sql_dir, const char *db_host,
+void PgSqlShell::runSqlScript(const char *sql_dir, const char *db_host,
                               const char *db_user, const char *db_name,
                               const char *script) {
   SqlShell::runSqlScript(sql_dir, program, db_host, user_switch, db_user,
@@ -39,7 +39,7 @@ void MySqlShell::runSqlScript(const char *sql_dir, const char *db_host,
 }
 
 // static
-void MySqlShell::sqlQuery(const char *sql_dir, const char *db_host,
+void PgSqlShell::sqlQuery(const char *sql_dir, const char *db_host,
                           const char *db_user, const char *db_name,
                           const char *query, string *result) {
   SqlShell::sqlQuery(sql_dir, program, db_host, user_switch, db_user, db_name,
@@ -47,12 +47,12 @@ void MySqlShell::sqlQuery(const char *sql_dir, const char *db_host,
 }
 
 // static
-void MySqlShell::initTestDatabase(const char *sql_dir, const char *db_host,
+void PgSqlShell::initTestDatabase(const char *sql_dir, const char *db_host,
                                   const char *db_user, const char *db_name) {
   SqlShell::runSqlScript(sql_dir, program, db_host, user_switch, db_user,
-                         db_name, "RecreateTestDatabase.sql");
+                         "postgres", "TSDB_RecreateTestDatabase.sql");
   SqlShell::runSqlScript(sql_dir, program, db_host, user_switch, db_user,
-                         db_name, "TestDatabaseStructureAndData.sql");
+                         db_name, "TSDB_TestDatabaseStructureAndData.sql");
 }
 
 }  // namespace testing
