@@ -2375,10 +2375,6 @@ typedef struct {
 #define RGBW_COMMAND_STOP_ITERATE_ALL 18
 // Store dimmer CCT value and ignores all other bytes
 #define RGBW_COMMAND_SET_DIMMER_CCT_WITHOUT_TURN_ON 19
-// Start dimmer CCT iteration
-#define RGBW_COMMAND_START_ITERATE_DIMMER_CCT 20
-// Stop dimmer CCT iteration
-#define RGBW_COMMAND_STOP_ITERATE_DIMMER_CCT 21
 
 typedef struct {
   char brightness;       // 0..100
