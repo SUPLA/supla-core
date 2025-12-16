@@ -16,23 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef TOTAL_ENERGY_LOGGER_DAO_H_
-#define TOTAL_ENERGY_LOGGER_DAO_H_
+#ifndef TSDB_VoltageAberrationLoggerDaoTest_H_
+#define TSDB_VoltageAberrationLoggerDaoTest_H_
 
-#include "cyclictasks/abstract_cyclictask_dao.h"
-#include "proto.h"
+#include "datalogger/voltage_aberration_logger_dao.h"
+#include "integration/datalogger/TSDB_LoggerDaoIntegrationTest.h"
 
-class supla_total_energy_logger_dao : public supla_abstract_cyclictask_dao {
- private:
-  void set_longlong(unsigned _supla_int64_t *v, void *pbind,
-                    bool *not_null_flag);
-  void mariadb_add(int channel_id, TElectricityMeter_ExtendedValue_V3 *em_ev);
-  void tsdb_add(int channel_id, TElectricityMeter_ExtendedValue_V3 *em_ev);
+namespace testing {
+
+class TSDB_VoltageAberrationLoggerDaoIntegrationTest
+    : public TSDB_LoggerDaoIntegrationTest {
+ protected:
+  supla_voltage_aberration_logger_dao *dao;
 
  public:
-  explicit supla_total_energy_logger_dao(
-      supla_abstract_db_access_provider *dba);
-  void add(int channel_id, TElectricityMeter_ExtendedValue_V3 *em_ev);
+  TSDB_VoltageAberrationLoggerDaoIntegrationTest();
+  virtual ~TSDB_VoltageAberrationLoggerDaoIntegrationTest();
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
-#endif /* TOTAL_ENERGY_LOGGER_DAO_H_ */
+} /* namespace testing */
+
+#endif /* TSDB_VoltageAberrationLoggerDaoTest_H_ */

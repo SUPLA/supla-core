@@ -112,6 +112,10 @@ void supla_abstract_electricity_logger_dao::add(const time_t &time,
   if (get_mdba()) {
     mariadb_add(time, channel_id, phase, procedure, min, max, avg);
   } else if (get_tsdba()) {
-    tsdb_add(time, channel_id, phase, procedure, min, max, avg);
+    try {
+      tsdb_add(time, channel_id, phase, procedure, min, max, avg);
+    } catch (const std::exception &e) {
+      get_tsdba()->log_exception(e);
+    }
   }
 }

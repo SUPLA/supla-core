@@ -27,7 +27,6 @@ namespace testing {
 TSDB_TemperatureLoggerDaoIntegrationTest::
     TSDB_TemperatureLoggerDaoIntegrationTest()
     : TSDB_LoggerDaoIntegrationTest() {
-  dba = nullptr;
   dao = nullptr;
 }
 
@@ -62,7 +61,11 @@ TEST_F(TSDB_TemperatureLoggerDaoIntegrationTest, addTemperature) {
       "TIME ZONE 'UTC') + INTERVAL '2 seconds'",
       &result);
 
-  EXPECT_EQ(result, "channel_id\ttemperature\n15\t22.3567\n");
+  EXPECT_EQ(result,
+            " channel_id | temperature \n"
+            "------------+-------------\n"
+            "         15 |     22.3567\n"
+            "(1 row)\n\n");
 }
 
 TEST_F(TSDB_TemperatureLoggerDaoIntegrationTest, addTemperatureAndHumidity) {
@@ -78,12 +81,15 @@ TEST_F(TSDB_TemperatureLoggerDaoIntegrationTest, addTemperatureAndHumidity) {
 
   sqlQuery(
       "SELECT channel_id, temperature, humidity FROM supla_temphumidity_log "
-      "WHERE  date >= (now() AT TIME ZONE 'UTC') - INTERVAL '2 seconds' AND "
+      "WHERE date >= (now() AT TIME ZONE 'UTC') - INTERVAL '2 seconds' AND "
       "date <= (now() AT TIME ZONE 'UTC') + INTERVAL '2 seconds'",
       &result);
 
   EXPECT_EQ(result,
-            "channel_id\ttemperature\thumidity\n17\t36.2341\t80.5671\n");
+            " channel_id | temperature | humidity \n"
+            "------------+-------------+----------\n"
+            "         17 |     36.2341 |  80.5671\n"
+            "(1 row)\n\n");
 }
 
 } /* namespace testing */

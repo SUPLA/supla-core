@@ -62,6 +62,10 @@ void supla_impulse_logger_dao::add(int channel_id,
   if (get_mdba()) {
     mariadb_add(channel_id, icv->get_counter(), icv->get_calculated_value());
   } else if (get_tsdba()) {
-    tsdb_add(channel_id, icv->get_counter(), icv->get_calculated_value());
+    try {
+      tsdb_add(channel_id, icv->get_counter(), icv->get_calculated_value());
+    } catch (const std::exception &e) {
+      get_tsdba()->log_exception(e);
+    }
   }
 }

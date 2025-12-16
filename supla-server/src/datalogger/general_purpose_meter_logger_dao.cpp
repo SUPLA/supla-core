@@ -64,6 +64,10 @@ void supla_general_purpose_meter_logger_dao::add(
   if (get_mdba()) {
     mariadb_add(channel_id, value->get_value());
   } else if (get_tsdba()) {
-    tsdb_add(channel_id, value->get_value());
+    try {
+      tsdb_add(channel_id, value->get_value());
+    } catch (const std::exception &e) {
+      get_tsdba()->log_exception(e);
+    }
   }
 }

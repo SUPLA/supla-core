@@ -81,8 +81,12 @@ void supla_general_purpose_measurement_logger_dao::add(
                 analyzer->get_last(), analyzer->get_time_weighted_avg(),
                 analyzer->get_min(), analyzer->get_max());
   } else if (get_tsdba()) {
-    tsdb_add(analyzer->get_channel_id(), analyzer->get_first(),
-             analyzer->get_last(), analyzer->get_time_weighted_avg(),
-             analyzer->get_min(), analyzer->get_max());
+    try {
+      tsdb_add(analyzer->get_channel_id(), analyzer->get_first(),
+               analyzer->get_last(), analyzer->get_time_weighted_avg(),
+               analyzer->get_min(), analyzer->get_max());
+    } catch (const std::exception &e) {
+      get_tsdba()->log_exception(e);
+    }
   }
 }
