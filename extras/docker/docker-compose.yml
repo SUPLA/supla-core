@@ -60,8 +60,6 @@ services:
       - ${HOME}/CProjects:/CProjects
     networks:
       supla-core-devel-net:
-    extra_hosts:
-      - "db:192.168.111.2"
     stdin_open: true    
     tty: true          
     command: ["/bin/bash"]
