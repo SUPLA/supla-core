@@ -5,3 +5,5 @@ CREATE DATABASE "supla_test"
   LC_COLLATE 'C.UTF-8'
   LC_CTYPE 'C.UTF-8'
   TEMPLATE template0;
+
+ALTER DATABASE "supla_test" SET timezone TO 'UTC';

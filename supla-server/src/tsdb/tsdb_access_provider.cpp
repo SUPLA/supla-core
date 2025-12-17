@@ -22,6 +22,7 @@
 
 #include <ctime>
 #include <iomanip>
+#include <pqxx/pqxx>
 #include <sstream>
 #include <string>
 
@@ -104,6 +105,10 @@ bool supla_tsdb_access_provider::connect(void) {
 
   try {
     conn = new pqxx::connection(conninfo);
+
+    pqxx::nontransaction ntx(*conn);
+    ntx.exec("SET TIME ZONE 'UTC'");
+
   } catch (const std::exception& e) {
     log_exception(e);
     disconnect();
