@@ -13,7 +13,12 @@ services:
      POSTGRES_USER: supla
      POSTGRES_PASSWORD: supla
      POSTGRES_DB: tsdb
-     POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+     command:
+      [
+        "bash",
+        "-lc",
+        "echo \"password_encryption = 'scram-sha-256'\" >> /var/lib/postgresql/data/postgresql.auto.conf; exec docker-entrypoint.sh postgres"
+      ]
 
 steps:
 - name: supla-server-test
