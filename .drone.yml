@@ -13,6 +13,7 @@ services:
      POSTGRES_USER: supla
      POSTGRES_PASSWORD: supla
      POSTGRES_DB: tsdb
+     PGDATA: /var/lib/postgresql/data/pgdata
   command:
     [
       "bash",
