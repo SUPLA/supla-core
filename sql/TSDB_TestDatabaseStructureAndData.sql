@@ -36,12 +36,6 @@ SELECT create_hypertable('supla_temphumidity_log', 'date');
 CREATE TABLE supla_thermostat_log (channel_id INT NOT NULL, date TIMESTAMPTZ(0) NOT NULL, "on" BOOLEAN NOT NULL, measured_temperature NUMERIC(5, 2) NOT NULL, preset_temperature NUMERIC(5, 2) NOT NULL, PRIMARY KEY(channel_id, date)); 
 COMMENT ON COLUMN supla_thermostat_log.date IS '(DC2Type:stringdatetime)'; 
 SELECT create_hypertable('supla_thermostat_log', 'date');
-CREATE TABLE supla_energy_price_log (date_from TIMESTAMPTZ(0) NOT NULL, date_to TIMESTAMPTZ(0) NOT NULL, rce NUMERIC(8, 4) DEFAULT NULL, fixing1 NUMERIC(8, 4) DEFAULT NULL, fixing2 NUMERIC(8, 4) DEFAULT NULL, PRIMARY KEY(date_from));
-COMMENT ON COLUMN supla_energy_price_log.date_from IS '(DC2Type:stringdatetime)';
-COMMENT ON COLUMN supla_energy_price_log.date_to IS '(DC2Type:stringdatetime)';
-SELECT create_hypertable('supla_energy_price_log', 'date_from');
-ALTER TABLE supla_energy_price_log ADD pdgsz SMALLINT DEFAULT NULL;
-COMMENT ON COLUMN supla_energy_price_log.pdgsz IS '(DC2Type:tinyint)';
 
 CREATE OR REPLACE FUNCTION supla_add_em_log_item(
     _channel_id INT,
