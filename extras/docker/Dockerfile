@@ -23,3 +23,4 @@ COPY supla-test.cfg /etc/supla-server/
 COPY certs/server.key /etc/supla-server/
 COPY certs/server.crt /etc/supla-server/
 COPY .pgpass /root/
+RUN chown root:root /root/.pgpass && chmod 600 /root/.pgpass
