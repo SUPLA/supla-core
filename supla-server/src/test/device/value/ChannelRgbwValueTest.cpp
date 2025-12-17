@@ -105,9 +105,9 @@ TEST_F(ChannelRgbwValueTest, gettersAndSetters) {
   EXPECT_EQ(v.get_color_brightness(), 20);
   EXPECT_EQ(v.get_color(), 0xAABBCC);
 
-  EXPECT_EQ(rgbw2.R, (char)0xAA);
-  EXPECT_EQ(rgbw2.G, (char)0xBB);
-  EXPECT_EQ(rgbw2.B, (char)0xCC);
+  EXPECT_EQ(rgbw2.R, 0xAA);
+  EXPECT_EQ(rgbw2.G, 0xBB);
+  EXPECT_EQ(rgbw2.B, 0xCC);
   EXPECT_EQ(rgbw2.brightness, 10);
   EXPECT_EQ(rgbw2.colorBrightness, 20);
   EXPECT_EQ(rgbw2.onOff, 1);
