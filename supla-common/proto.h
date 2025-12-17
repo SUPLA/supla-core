@@ -119,7 +119,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 27
+#define SUPLA_PROTO_VERSION 28
 #define SUPLA_PROTO_VERSION_MIN 1
 
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO) || defined(SUPLA_DEVICE)
@@ -409,6 +409,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_WEATHER_STATION 3100        // ver. >= 8
 #define SUPLA_CHANNELTYPE_CONTAINER 3200              // ver. >= 26
 
+// Since ver. >= 28 channel types DIMMER, RGBLIGHTING, DIMMERANDRGBLIGHTING
+// support all RGBW/dimmer related functions, when their RGBW_FuncList is != 0.
+// List of supported functions should be determined based on the RGBW_FuncList
+// bitmap value.
 #define SUPLA_CHANNELTYPE_DIMMER 4000            // ver. >= 4
 #define SUPLA_CHANNELTYPE_RGBLEDCONTROLLER 4010  // ver. >= 4
 #define SUPLA_CHANNELTYPE_DIMMERANDRGBLED 4020   // ver. >= 4
@@ -454,8 +458,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_ALARM 160
 #define SUPLA_CHANNELFNC_NOTIFICATION 170
 #define SUPLA_CHANNELFNC_DIMMER 180
+#define SUPLA_CHANNELFNC_DIMMER_CCT 185                    // ver. >= 28
 #define SUPLA_CHANNELFNC_RGBLIGHTING 190
 #define SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING 200
+#define SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB 205            // ver. >= 28
 #define SUPLA_CHANNELFNC_DEPTHSENSOR 210                   // ver. >= 5
 #define SUPLA_CHANNELFNC_DISTANCESENSOR 220                // ver. >= 5
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW 230          // ver. >= 8
@@ -506,6 +512,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_MOTION_SENSOR 1010                // ver. >= 27
 #define SUPLA_CHANNELFNC_BINARY_SENSOR 1020                // ver. >= 27
 
+// Channel's FuncList bit values:
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGARAGEDOOR 0x00000004
@@ -534,6 +541,14 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_BIT_FUNC_ROLLER_GARAGE_DOOR 0x02000000            // ver. >= 24
 #define SUPLA_BIT_FUNC_PUMPSWITCH 0x04000000                    // ver. >= 25
 #define SUPLA_BIT_FUNC_HEATORCOLDSOURCESWITCH 0x08000000        // ver. >= 25
+
+// Channel's RGBW_FuncList bit values (only for SUPLA_CHANNELTYPE_DIMMER,
+// SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, SUPLA_CHANNELTYPE_DIMMERANDRGBLED):
+#define SUPLA_RGBW_BIT_FUNC_DIMMER 0x00000001                   // ver. >= 28
+#define SUPLA_RGBW_BIT_FUNC_RGB_LIGHTING 0x00000002             // ver. >= 28
+#define SUPLA_RGBW_BIT_FUNC_DIMMER_AND_RGB_LIGHTING 0x00000004  // ver. >= 28
+#define SUPLA_RGBW_BIT_FUNC_DIMMER_CCT 0x00000008               // ver. >= 28
+#define SUPLA_RGBW_BIT_FUNC_DIMMER_CCT_AND_RGB 0x00000010       // ver. >= 28
 
 #define SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK 10
 #define SUPLA_EVENT_CONTROLLINGTHEGATE 20
@@ -960,7 +975,12 @@ typedef struct {
 
   union {
     _supla_int_t FuncList;
-    unsigned _supla_int_t ActionTriggerCaps;  // ver. >= 16
+    unsigned _supla_int_t ActionTriggerCaps;  // ver. >= 16 only for
+                                              // SUPLA_CHANNELTYPE_ACTIONTRIGGER
+    unsigned _supla_int_t
+        RGBW_FuncList; // ver. >= 28 only for SUPLA_CHANNELTYPE_DIMMER,
+                       // SUPLA_CHANNELTYPE_RGBLEDCONTROLLER,
+                       // SUPLA_CHANNELTYPE_DIMMERANDRGBLED
   };
 
   _supla_int_t Default;
@@ -2353,16 +2373,19 @@ typedef struct {
 #define RGBW_COMMAND_STOP_ITERATE_RGB 17
 // Stop dimmer and rgb brightness iteration
 #define RGBW_COMMAND_STOP_ITERATE_ALL 18
+// Store dimmer CCT value and ignores all other bytes
+#define RGBW_COMMAND_SET_DIMMER_CCT_WITHOUT_TURN_ON 19
 
 typedef struct {
-  char brightness;
-  char colorBrightness;
-  char B;
-  char G;
-  char R;
+  char brightness;       // 0..100
+  char colorBrightness;  // 0..100
+  unsigned char B;       // 0..255
+  unsigned char G;       // 0..255
+  unsigned char R;       // 0..255
   char onOff;
   char command;  // RGBW_COMMAND_, requires
                  // SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED v. >= 21
+  char dimmerCct;  // v. >= 25, 0..100 (0 warm, 50 neutral, 100 cold)
 } TRGBW_Value;   // v. >= 10
 
 #define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1
@@ -3742,6 +3765,10 @@ typedef struct {
 #define SUPLA_ACTION_CAP_SHORT_PRESS_x3 (1 << 13)
 #define SUPLA_ACTION_CAP_SHORT_PRESS_x4 (1 << 14)
 #define SUPLA_ACTION_CAP_SHORT_PRESS_x5 (1 << 15)
+
+// Other Action Trigger events
+#define SUPLA_ACTION_CAP_ROTATE_RIGHT (1 << 7)
+#define SUPLA_ACTION_CAP_ROTATE_LEFT (1 << 8)
 
 #define SUPLA_VALVE_FLAG_FLOODING 0x1
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2
