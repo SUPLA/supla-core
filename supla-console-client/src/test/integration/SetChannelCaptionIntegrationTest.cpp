@@ -18,6 +18,8 @@
 
 #include "SetChannelCaptionIntegrationTest.h"
 
+#include <cstdio>
+
 #include "log.h"
 
 namespace testing {

@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_set_cg_rgbw_command.h"
 
+#include <cstdio>
+#include <string>
+
 #include "ipc/abstract_set_rgbw_command.h"
 
 using std::string;

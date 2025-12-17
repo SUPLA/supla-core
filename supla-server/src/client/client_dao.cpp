@@ -24,6 +24,9 @@
 #include <string.h>
 #include <time.h>
 
+#include <list>
+#include <string>
+
 #include "log.h"
 #include "proto.h"
 #include "svrcfg.h"

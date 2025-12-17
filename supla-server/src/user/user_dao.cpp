@@ -18,6 +18,8 @@
 
 #include "user_dao.h"
 
+#include <vector>
+
 #include "log.h"
 #include "user/user.h"
 

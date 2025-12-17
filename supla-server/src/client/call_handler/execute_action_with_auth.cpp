@@ -18,6 +18,7 @@
 
 #include "call_handler/execute_action_with_auth.h"
 
+#include <memory>
 #include <string>
 
 #include "actions/action_executor.h"

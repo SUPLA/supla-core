@@ -20,6 +20,8 @@
 
 #include <stdarg.h>
 
+#include <cstdio>
+
 namespace testing {
 
 MqttMessageProviderTest::MqttMessageProviderTest(void) {}

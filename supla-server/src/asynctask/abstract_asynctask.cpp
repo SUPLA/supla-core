@@ -20,6 +20,8 @@
 
 #include <assert.h>
 
+#include <memory>
+
 #include "abstract_asynctask_thread_pool.h"
 #include "asynctask_queue.h"
 #include "lck.h"

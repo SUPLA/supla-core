@@ -21,7 +21,9 @@
 #include <math.h>
 #include <string.h>
 
+#include <list>
 #include <memory>
+#include <vector>
 
 #include "actions/action_gate_openclose.h"
 #include "actions/action_trigger.h"

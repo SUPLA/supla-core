@@ -18,6 +18,8 @@
 
 #include "pn_delivery_task.h"
 
+#include <string>
+
 #include "asynctask/asynctask_queue.h"
 #include "log.h"
 #include "push/apns_client.h"

@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <cstdio>
 #include <string>
 
 #include "device/channel_fragment.h"

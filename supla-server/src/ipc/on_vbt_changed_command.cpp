@@ -18,6 +18,8 @@
 
 #include "on_vbt_changed_command.h"
 
+#include <string>
+
 #include "user/user.h"
 #include "vbt/value_based_triggers.h"
 

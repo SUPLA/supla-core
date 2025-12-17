@@ -20,6 +20,8 @@
 
 #include <gtest/gtest.h>  // NOLINT
 
+#include <string>
+
 #include "log.h"
 #include "tools.h"
 

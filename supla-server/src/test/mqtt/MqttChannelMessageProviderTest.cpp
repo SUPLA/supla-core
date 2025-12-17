@@ -18,6 +18,8 @@
 
 #include "MqttChannelMessageProviderTest.h"
 
+#include <cstdio>
+
 #include "gmock/gmock.h"
 #include "jsonconfig/channel/general_purpose_measurement_config.h"
 #include "jsonconfig/channel/general_purpose_meter_config.h"

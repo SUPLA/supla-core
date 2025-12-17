@@ -30,13 +30,13 @@ using std::string;
 namespace testing {
 
 TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest::
-    TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest()
-    : TSDB_LoggerDaoIntegrationTest() {
+TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest()
+: TSDB_LoggerDaoIntegrationTest() {
   dao = nullptr;
 }
 
 TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest::
-    ~TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest() {}
+~TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest() {}
 
 void TSDB_GeneralPurposeMeasurementLoggerDaoIntegrationTest::SetUp() {
   TSDB_LoggerDaoIntegrationTest::SetUp();

@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "user/user.h"
 #include "user/user_dao.h"

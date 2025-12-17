@@ -30,13 +30,13 @@ using std::string;
 namespace testing {
 
 TSDB_VoltageAberrationLoggerDaoIntegrationTest::
-    TSDB_VoltageAberrationLoggerDaoIntegrationTest()
-    : TSDB_LoggerDaoIntegrationTest() {
+TSDB_VoltageAberrationLoggerDaoIntegrationTest()
+: TSDB_LoggerDaoIntegrationTest() {
   dao = nullptr;
 }
 
 TSDB_VoltageAberrationLoggerDaoIntegrationTest::
-    ~TSDB_VoltageAberrationLoggerDaoIntegrationTest() {}
+~TSDB_VoltageAberrationLoggerDaoIntegrationTest() {}
 
 void TSDB_VoltageAberrationLoggerDaoIntegrationTest::SetUp() {
   TSDB_LoggerDaoIntegrationTest::SetUp();
@@ -101,11 +101,11 @@ TEST_F(TSDB_VoltageAberrationLoggerDaoIntegrationTest, add) {
       &result);
 
   EXPECT_EQ(result,
-  " channel_id | phase_no | count_total | count_above | count_below | sec_above | sec_below | max_sec_above | max_sec_below | min_voltage | max_voltage | avg_voltage | measurement_time_sec \n" // NO LINT
-  "------------+----------+-------------+-------------+-------------+-----------+-----------+---------------+---------------+-------------+-------------+-------------+----------------------\n" // NO LINT
-  "        234 |        1 |           4 |           1 |           1 |         2 |         1 |             2 |             1 |       10.51 |      310.55 |      160.53 |                    3\n"  // NO LINT
-  "        234 |        2 |           4 |           1 |           1 |         2 |         1 |             2 |             1 |       15.52 |      315.55 |      165.53 |                    3\n"  // NO LINT
-  "        234 |        3 |           4 |           1 |           1 |         2 |         1 |             2 |             1 |       20.53 |      320.55 |      170.54 |                    3\n"  // NO LINT
+  " channel_id | phase_no | count_total | count_above | count_below | sec_above | sec_below | max_sec_above | max_sec_below | min_voltage | max_voltage | avg_voltage | measurement_time_sec \n" // NOLINT
+  "------------+----------+-------------+-------------+-------------+-----------+-----------+---------------+---------------+-------------+-------------+-------------+----------------------\n" // NOLINT
+  "        234 |        1 |           4 |           1 |           1 |         2 |         1 |             2 |             1 |       10.51 |      310.55 |      160.53 |                    3\n"  // NOLINT
+  "        234 |        2 |           4 |           1 |           1 |         2 |         1 |             2 |             1 |       15.52 |      315.55 |      165.53 |                    3\n"  // NOLINT
+  "        234 |        3 |           4 |           1 |           1 |         2 |         1 |             2 |             1 |       20.53 |      320.55 |      170.54 |                    3\n"  // NOLINT
   "(3 rows)\n\n");
 }
 

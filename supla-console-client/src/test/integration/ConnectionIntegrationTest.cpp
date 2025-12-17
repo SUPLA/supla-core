@@ -18,6 +18,8 @@
 
 #include "ConnectionIntegrationTest.h"
 
+#include <cstdio>
+
 namespace testing {
 
 ConnectionIntegrationTest::ConnectionIntegrationTest() {

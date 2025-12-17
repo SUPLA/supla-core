@@ -18,6 +18,7 @@
 
 #include "userchannelgroups.h"
 
+#include <list>
 #include <memory>
 
 #include "db/database.h"

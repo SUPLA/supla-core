@@ -19,6 +19,8 @@
 #include <mqtt_publisher_datasource.h>
 #include <string.h>
 
+#include <list>
+
 #include "log.h"
 #include "mqtt_channelandstate_message_provider.h"
 #include "mqtt_device_message_provider.h"

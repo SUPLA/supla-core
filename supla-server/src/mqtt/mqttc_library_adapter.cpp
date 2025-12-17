@@ -29,6 +29,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <cstdio>
+
 #include "log.h"
 #include "mqtt_client.h"
 #include "supla-socket.h"

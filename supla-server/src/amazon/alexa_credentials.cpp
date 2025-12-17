@@ -18,6 +18,8 @@
 
 #include "alexa_credentials.h"
 
+#include <string>
+
 #include "amazon/alexa_credentials_dao.h"
 #include "db/mariadb_access_provider.h"
 

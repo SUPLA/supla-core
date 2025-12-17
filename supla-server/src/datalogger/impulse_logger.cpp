@@ -19,6 +19,7 @@
 #include "datalogger/impulse_logger.h"
 
 #include <memory>
+#include <vector>
 
 #include "datalogger/impulse_logger_dao.h"
 #include "device/device.h"

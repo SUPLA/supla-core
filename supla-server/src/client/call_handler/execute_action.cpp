@@ -18,6 +18,8 @@
 
 #include "client/call_handler/execute_action.h"
 
+#include <memory>
+
 #include "actions/action_executor.h"
 #include "client/client.h"
 #include "client/clientchannelgroups.h"

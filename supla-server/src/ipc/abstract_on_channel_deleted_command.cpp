@@ -18,6 +18,8 @@
 
 #include "abstract_on_channel_deleted_command.h"
 
+#include <string>
+
 using std::string;
 
 supla_abstract_on_channel_deleted_command::

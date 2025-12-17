@@ -21,6 +21,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <memory>
+#include <string>
+
 #include "client/client.h"
 #include "log.h"
 

@@ -19,6 +19,7 @@
 #include "pn_recipient_dao.h"
 
 #include <string>
+#include <vector>
 
 #include "log.h"
 #include "proto.h"

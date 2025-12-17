@@ -18,6 +18,9 @@
 
 #include "call_handler/register_client.h"
 
+#include <memory>
+#include <string>
+
 #include "client/client.h"
 #include "client/client_dao.h"
 #include "conn/authkey_cache.h"

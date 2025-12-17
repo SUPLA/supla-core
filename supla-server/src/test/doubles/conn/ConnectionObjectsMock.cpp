@@ -18,6 +18,9 @@
 
 #include "test/doubles/conn/ConnectionObjectsMock.h"
 
+#include <memory>
+#include <vector>
+
 #include "log.h"
 
 using std::function;

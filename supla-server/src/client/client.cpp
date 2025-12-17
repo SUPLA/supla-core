@@ -22,6 +22,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <cstdio>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "client/call_handler/call_handler_collection.h"

@@ -18,6 +18,9 @@
 
 #include "abstract_get_roller_shutter_value_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_get_roller_shutter_value_command::

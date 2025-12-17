@@ -18,6 +18,7 @@
 
 #include "device/RegisterDeviceEssentialTest.h"
 
+#include <cstdio>
 #include <vector>
 
 namespace testing {

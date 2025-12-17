@@ -18,6 +18,7 @@
 
 #include "device_set_time_command.h"
 
+#include <cstdio>
 #include <memory>
 
 #include "device.h"

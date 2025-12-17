@@ -20,6 +20,8 @@
 
 #include <mysql.h>
 
+#include <vector>
+
 using std::vector;
 
 supla_abstract_auto_gate_closing_dao::supla_abstract_auto_gate_closing_dao(

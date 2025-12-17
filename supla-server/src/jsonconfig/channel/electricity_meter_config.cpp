@@ -20,6 +20,8 @@
 
 #include <limits.h>
 
+#include <cstdio>
+#include <string>
 #include <vector>
 
 #include "device/extended_value/channel_em_extended_value.h"

@@ -18,6 +18,8 @@
 
 #include <mqtt/MqttClientTest.h>
 
+#include <cstdio>
+
 #include "log.h"  // NOLINT
 
 namespace testing {

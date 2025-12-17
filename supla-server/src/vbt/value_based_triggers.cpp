@@ -18,7 +18,9 @@
 
 #include "value_based_triggers.h"
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "actions/action_executor.h"
 #include "db/mariadb_access_provider.h"

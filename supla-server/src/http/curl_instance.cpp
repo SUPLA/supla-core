@@ -20,7 +20,9 @@
 
 #include <assert.h>
 
+#include <list>
 #include <regex>  // NOLINT
+#include <string>
 
 #include "log.h"
 #include "svrcfg.h"

@@ -18,6 +18,9 @@
 
 #include "abstract_restart_device_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_restart_device_command::supla_abstract_restart_device_command(

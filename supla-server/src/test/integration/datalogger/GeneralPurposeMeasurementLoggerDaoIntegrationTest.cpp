@@ -30,14 +30,14 @@ using std::string;
 namespace testing {
 
 GeneralPurposeMeasurementLoggerDaoIntegrationTest::
-    GeneralPurposeMeasurementLoggerDaoIntegrationTest()
-    : IntegrationTest(), Test() {
+GeneralPurposeMeasurementLoggerDaoIntegrationTest()
+: IntegrationTest(), Test() {
   dba = nullptr;
   dao = nullptr;
 }
 
 GeneralPurposeMeasurementLoggerDaoIntegrationTest::
-    ~GeneralPurposeMeasurementLoggerDaoIntegrationTest() {}
+~GeneralPurposeMeasurementLoggerDaoIntegrationTest() {}
 
 void GeneralPurposeMeasurementLoggerDaoIntegrationTest::SetUp() {
   dba = new supla_mariadb_access_provider();

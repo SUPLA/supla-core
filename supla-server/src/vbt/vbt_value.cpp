@@ -18,6 +18,8 @@
 
 #include "vbt_value.h"
 
+#include <string>
+
 using std::map;
 using std::string;
 

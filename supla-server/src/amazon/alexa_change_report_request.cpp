@@ -18,6 +18,8 @@
 
 #include "alexa_change_report_request.h"
 
+#include <string>
+
 #include "amazon/alexa_change_report_search_condition.h"
 #include "amazon/alexa_change_report_throttling.h"
 #include "amazon/alexa_client.h"

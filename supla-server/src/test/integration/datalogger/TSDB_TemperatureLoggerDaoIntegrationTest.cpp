@@ -25,13 +25,13 @@ using std::string;
 namespace testing {
 
 TSDB_TemperatureLoggerDaoIntegrationTest::
-    TSDB_TemperatureLoggerDaoIntegrationTest()
-    : TSDB_LoggerDaoIntegrationTest() {
+TSDB_TemperatureLoggerDaoIntegrationTest()
+: TSDB_LoggerDaoIntegrationTest() {
   dao = nullptr;
 }
 
 TSDB_TemperatureLoggerDaoIntegrationTest::
-    ~TSDB_TemperatureLoggerDaoIntegrationTest() {}
+~TSDB_TemperatureLoggerDaoIntegrationTest() {}
 
 void TSDB_TemperatureLoggerDaoIntegrationTest::SetUp() {
   TSDB_LoggerDaoIntegrationTest::SetUp();

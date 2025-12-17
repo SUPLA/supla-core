@@ -18,6 +18,8 @@
 
 #include "voice_assistant_client.h"
 
+#include <string>
+
 using std::string;
 
 supla_voice_assistant_client::supla_voice_assistant_client(

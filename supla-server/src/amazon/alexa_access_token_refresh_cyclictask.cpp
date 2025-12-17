@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "alexa_client.h"
 #include "alexa_credentials_dao.h"

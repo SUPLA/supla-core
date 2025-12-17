@@ -18,6 +18,8 @@
 
 #include "alexa_response_request.h"
 
+#include <string>
+
 #include "amazon/alexa_client.h"
 #include "device/channel_property_getter.h"
 #include "device/value/channel_hvac_value_with_temphum.h"

@@ -18,6 +18,8 @@
 
 #include <integration/client/ClientSceneIntegrationTest.h>
 
+#include <cstdio>
+
 #include "client/client_scene_dao.h"
 #include "client/client_scene_remote_updater.h"
 #include "client/client_scenes.h"

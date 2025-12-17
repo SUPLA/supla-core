@@ -21,7 +21,10 @@
 #include <mysql.h>
 #include <string.h>
 
+#include <cstdio>
 #include <pqxx/pqxx>
+#include <string>
+#include <vector>
 
 #include "log.h"
 

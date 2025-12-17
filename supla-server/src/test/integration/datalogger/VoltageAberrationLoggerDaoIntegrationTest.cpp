@@ -30,14 +30,14 @@ using std::string;
 namespace testing {
 
 VoltageAberrationLoggerDaoIntegrationTest::
-    VoltageAberrationLoggerDaoIntegrationTest()
-    : IntegrationTest(), Test() {
+VoltageAberrationLoggerDaoIntegrationTest()
+: IntegrationTest(), Test() {
   dba = nullptr;
   dao = nullptr;
 }
 
 VoltageAberrationLoggerDaoIntegrationTest::
-    ~VoltageAberrationLoggerDaoIntegrationTest() {}
+~VoltageAberrationLoggerDaoIntegrationTest() {}
 
 void VoltageAberrationLoggerDaoIntegrationTest::SetUp() {
   dba = new supla_mariadb_access_provider();

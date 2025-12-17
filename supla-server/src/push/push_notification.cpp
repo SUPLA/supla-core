@@ -18,6 +18,9 @@
 
 #include "push_notification.h"
 
+#include <string>
+#include <vector>
+
 using std::map;
 using std::string;
 using std::vector;

@@ -18,6 +18,8 @@
 
 #include "ipc/abstract_get_humidity_command.h"
 
+#include <string>
+
 using std::string;
 
 supla_abstract_get_humidity_command::supla_abstract_get_humidity_command(

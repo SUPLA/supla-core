@@ -19,6 +19,7 @@
 #include "actions/action_executor.h"
 
 #include <memory>
+#include <string>
 
 #include "http/http_event_hub.h"
 #include "mqtt/mqtt_client_suite.h"

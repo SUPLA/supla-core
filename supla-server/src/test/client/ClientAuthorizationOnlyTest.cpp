@@ -18,6 +18,7 @@
 
 #include "client/ClientAuthorizationOnlyTest.h"
 
+#include <cstdio>
 #include <memory>
 #include <string>
 

@@ -23,6 +23,7 @@
 #include <ctime>
 #include <iomanip>
 #include <sstream>
+#include <string>
 
 #include "log.h"
 #include "svrcfg.h"

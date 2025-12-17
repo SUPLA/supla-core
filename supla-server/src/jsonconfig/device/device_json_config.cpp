@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include <string>
+
 #include "log.h"
 
 using std::map;

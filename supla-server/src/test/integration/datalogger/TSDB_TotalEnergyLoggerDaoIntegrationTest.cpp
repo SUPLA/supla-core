@@ -25,13 +25,13 @@ using std::string;
 namespace testing {
 
 TSDB_TotalEnergyLoggerDaoIntegrationTest::
-    TSDB_TotalEnergyLoggerDaoIntegrationTest()
-    : TSDB_LoggerDaoIntegrationTest() {
+TSDB_TotalEnergyLoggerDaoIntegrationTest()
+: TSDB_LoggerDaoIntegrationTest() {
   dao = nullptr;
 }
 
 TSDB_TotalEnergyLoggerDaoIntegrationTest::
-    ~TSDB_TotalEnergyLoggerDaoIntegrationTest() {}
+~TSDB_TotalEnergyLoggerDaoIntegrationTest() {}
 
 void TSDB_TotalEnergyLoggerDaoIntegrationTest::SetUp() {
   TSDB_LoggerDaoIntegrationTest::SetUp();
@@ -82,10 +82,10 @@ TEST_F(TSDB_TotalEnergyLoggerDaoIntegrationTest, add) {
       &result);
 
   EXPECT_EQ(result,
-            " channel_id | phase1_fae | phase1_rae | phase1_fre | phase1_rre | phase2_fae | phase2_rae | phase2_fre | phase2_rre | phase3_fae | phase3_rae | phase3_fre | phase3_rre | fae_balanced | rae_balanced \n" // NO LINT
-            "------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+--------------+--------------\n" // NO LINT
-            "         10 |          1 |          2 |          3 |          4 |          5 |          6 |          7 |          8 |          9 |         10 |         11 |         12 |           13 |           14\n"  // NO LINT
-            "(1 row)\n\n"); // NO LINT
+            " channel_id | phase1_fae | phase1_rae | phase1_fre | phase1_rre | phase2_fae | phase2_rae | phase2_fre | phase2_rre | phase3_fae | phase3_rae | phase3_fre | phase3_rre | fae_balanced | rae_balanced \n" // NOLINT
+            "------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+--------------+--------------\n" // NOLINT
+            "         10 |          1 |          2 |          3 |          4 |          5 |          6 |          7 |          8 |          9 |         10 |         11 |         12 |           13 |           14\n"  // NOLINT
+            "(1 row)\n\n"); // NOLINT
 }
 
 } /* namespace testing */

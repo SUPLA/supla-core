@@ -21,6 +21,9 @@
 #include <string.h>
 #include <sys/time.h>
 
+#include <string>
+#include <vector>
+
 #include "log.h"
 
 using std::string;

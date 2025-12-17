@@ -18,6 +18,9 @@
 
 #include "http/curl_adapter.h"
 
+#include <list>
+#include <string>
+
 using std::list;
 using std::string;
 using std::vector;

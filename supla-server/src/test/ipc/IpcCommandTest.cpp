@@ -18,6 +18,7 @@
 
 #include "IpcCommandTest.h"
 
+#include <cstdio>
 #include <string>
 
 namespace testing {

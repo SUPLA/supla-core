@@ -19,6 +19,8 @@
 #include <conn/abstract_connection_object.h>
 #include <string.h>
 
+#include <memory>
+
 #include "lck.h"
 #include "svrcfg.h"
 #include "user.h"

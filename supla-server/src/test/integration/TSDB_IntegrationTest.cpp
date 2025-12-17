@@ -18,6 +18,8 @@
 
 #include "TSDB_IntegrationTest.h"
 
+#include <string>
+
 #include "PgSqlShell.h"
 #include "log.h"  // NOLINT
 #include "svrcfg.h"

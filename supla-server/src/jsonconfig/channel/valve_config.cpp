@@ -18,6 +18,8 @@
 
 #include "valve_config.h"
 
+#include <string>
+
 #include "log.h"
 
 using std::map;

@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include <memory>
+#include <vector>
 
 #include "datalogger/temperature_logger_dao.h"
 #include "device/device.h"

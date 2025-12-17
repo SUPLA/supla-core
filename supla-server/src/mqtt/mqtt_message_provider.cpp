@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <cstdio>
+
 supla_mqtt_message_provider::supla_mqtt_message_provider(void) {
   this->index = 0;
 }

@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include <list>
+
 #include "client.h"
 #include "log.h"
 #include "proto.h"

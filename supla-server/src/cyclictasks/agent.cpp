@@ -20,6 +20,8 @@
 
 #include <unistd.h>
 
+#include <vector>
+
 #include "amazon/alexa_access_token_refresh_cyclictask.h"
 #include "cyclictasks/auto_gate_closing.h"
 #include "datalogger/current_logger.h"
@@ -116,7 +118,7 @@ void supla_cyclictasks_agent::loop(void *sthread) {
 
           if ((*it)->is_tsdb_preffered() && tsdba.is_config_present()) {
             dba = &tsdba;
-          };
+          }
 
           if (!dba->is_connected() && !dba->connect()) {
             continue;

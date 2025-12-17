@@ -20,6 +20,9 @@
 
 #include <unistd.h>
 
+#include <string>
+#include <vector>
+
 #include "db/database.h"
 #include "db/mariadb_access_provider.h"
 #include "db/server_settings_dao.h"

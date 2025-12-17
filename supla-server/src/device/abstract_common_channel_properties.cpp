@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include <vector>
+
 #include "db/mariadb_access_provider.h"
 #include "device/device_dao.h"
 #include "jsonconfig/channel/action_trigger_config.h"

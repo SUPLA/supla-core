@@ -18,6 +18,8 @@
 
 #include "JSONConfigStub.h"
 
+#include <string>
+
 namespace testing {
 
 using std::map;

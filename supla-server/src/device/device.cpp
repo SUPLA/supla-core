@@ -24,6 +24,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <list>
+#include <memory>
+
 #include "db/database.h"
 #include "device/call_handler/call_handler_collection.h"
 #include "device/device_dao.h"

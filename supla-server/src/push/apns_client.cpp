@@ -19,6 +19,7 @@
 #include "apns_client.h"
 
 #include <list>
+#include <string>
 
 #include "json/cJSON.h"
 #include "log.h"

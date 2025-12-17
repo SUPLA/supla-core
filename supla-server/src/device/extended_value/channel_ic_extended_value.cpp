@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <string>
+
 #include "jsonconfig/channel/impulse_counter_config.h"
 #include "srpc/srpc.h"
 

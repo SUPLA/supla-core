@@ -18,6 +18,9 @@
 
 #include "state_webhook_credentials.h"
 
+#include <string>
+#include <vector>
+
 #include "db/mariadb_access_provider.h"
 #include "webhook/state_webhook_credentials_dao.h"
 

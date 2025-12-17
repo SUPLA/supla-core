@@ -18,6 +18,7 @@
 
 #include "DeviceDaoIntegrationTest.h"
 
+#include <cstdio>
 #include <string>
 
 #include "device/extended_value/channel_extended_value.h"

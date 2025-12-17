@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_get_relay_value_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_get_relay_value_command::supla_abstract_get_relay_value_command(

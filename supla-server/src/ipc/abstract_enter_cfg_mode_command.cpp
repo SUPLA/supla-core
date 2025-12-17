@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_enter_cfg_mode_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_enter_cfg_mode_command::supla_abstract_enter_cfg_mode_command(

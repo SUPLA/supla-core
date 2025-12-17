@@ -18,6 +18,8 @@
 
 #include "DeviceJsonPairingResultTest.h"
 
+#include <cstdio>
+
 #include "doubles/jsonconfig/device/DeviceJsonOtaUpdatesMock.h"
 
 namespace testing {

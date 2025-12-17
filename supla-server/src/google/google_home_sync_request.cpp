@@ -18,6 +18,8 @@
 
 #include "google_home_sync_request.h"
 
+#include <string>
+
 #include "asynctask/voice_assistant_sync_thread_pool.h"
 #include "google/google_home_client.h"
 #include "google/google_home_sync_search_condition.h"

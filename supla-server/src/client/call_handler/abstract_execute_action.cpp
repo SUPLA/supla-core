@@ -18,6 +18,8 @@
 
 #include "abstract_execute_action.h"
 
+#include <string>
+
 #include "actions/action_executor.h"
 #include "actions/action_hvac_parameters.h"
 #include "actions/action_rgbw_parameters.h"

@@ -18,6 +18,8 @@
 
 #include "cyclictasks/abstract_cyclictask.h"
 
+#include <vector>
+
 using std::vector;
 
 supla_abstract_cyclictask::supla_abstract_cyclictask() {

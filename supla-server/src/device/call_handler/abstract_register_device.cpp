@@ -23,6 +23,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#include <memory>
 #include <vector>
 
 #include "conn/authkey_cache.h"

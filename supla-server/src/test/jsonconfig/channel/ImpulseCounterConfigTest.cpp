@@ -20,6 +20,8 @@
 
 #include <limits.h>
 
+#include <cstdio>
+
 #include "TestHelper.h"
 #include "jsonconfig/channel/impulse_counter_config.h"
 #include "proto.h"

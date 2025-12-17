@@ -18,6 +18,7 @@
 
 #include "state_webhook_request.h"
 
+#include <string>
 #include <vector>
 
 #include "device/channel_property_getter.h"

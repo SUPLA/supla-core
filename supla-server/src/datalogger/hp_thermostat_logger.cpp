@@ -19,6 +19,7 @@
 #include "hp_thermostat_logger.h"
 
 #include <memory>
+#include <vector>
 
 #include "datalogger/hp_thermostat_logger_dao.h"
 #include "device/device.h"

@@ -18,6 +18,8 @@
 
 #include "pn_recipient.h"
 
+#include <string>
+
 using std::string;
 
 supla_pn_recipient::supla_pn_recipient(int client_id, int app_id,

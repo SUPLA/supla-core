@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_set_digiglass_value_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_set_digiglass_value_command::

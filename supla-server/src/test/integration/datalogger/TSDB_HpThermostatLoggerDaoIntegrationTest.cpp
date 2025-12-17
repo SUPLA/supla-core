@@ -27,13 +27,13 @@ using std::string;
 namespace testing {
 
 TSDB_HpThermostatLoggerDaoIntegrationTest::
-    TSDB_HpThermostatLoggerDaoIntegrationTest()
-    : TSDB_LoggerDaoIntegrationTest() {
+TSDB_HpThermostatLoggerDaoIntegrationTest()
+: TSDB_LoggerDaoIntegrationTest() {
   dao = nullptr;
 }
 
 TSDB_HpThermostatLoggerDaoIntegrationTest::
-    ~TSDB_HpThermostatLoggerDaoIntegrationTest() {}
+~TSDB_HpThermostatLoggerDaoIntegrationTest() {}
 
 void TSDB_HpThermostatLoggerDaoIntegrationTest::SetUp() {
   TSDB_LoggerDaoIntegrationTest::SetUp();

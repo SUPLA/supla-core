@@ -20,6 +20,8 @@
 
 #include <mysql.h>
 
+#include <string>
+
 #include "log.h"
 
 using std::string;

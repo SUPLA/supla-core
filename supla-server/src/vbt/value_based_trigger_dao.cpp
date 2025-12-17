@@ -20,6 +20,8 @@
 
 #include <mysql.h>
 
+#include <vector>
+
 #include "log.h"
 
 using std::vector;

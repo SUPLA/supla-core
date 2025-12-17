@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include <string>
+
 using std::string;
 
 supla_channel_billing_value::supla_channel_billing_value() {}

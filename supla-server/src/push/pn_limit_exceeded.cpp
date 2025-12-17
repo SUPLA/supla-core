@@ -18,6 +18,9 @@
 
 #include "pn_limit_exceeded.h"
 
+#include <string>
+#include <vector>
+
 using std::map;
 using std::string;
 using std::vector;

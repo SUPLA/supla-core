@@ -18,6 +18,9 @@
 #include <sys/time.h>
 #include <userdevices.h>
 
+#include <memory>
+#include <vector>
+
 #include "db/mariadb_access_provider.h"
 #include "device/device.h"
 #include "device/device_dao.h"

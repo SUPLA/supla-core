@@ -19,6 +19,7 @@
 #include "abstract_electricity_logger.h"
 
 #include <memory>
+#include <vector>
 
 #include "device/devicechannel.h"
 #include "user/user.h"

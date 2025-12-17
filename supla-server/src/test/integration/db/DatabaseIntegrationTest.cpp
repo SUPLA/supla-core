@@ -18,6 +18,7 @@
 
 #include "DatabaseIntegrationTest.h"
 
+#include <cstdio>
 #include <string>
 
 #include "conn/connection_dao.h"

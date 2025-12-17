@@ -18,6 +18,9 @@
 
 #include "abstract_action_executor.h"
 
+#include <memory>
+#include <string>
+
 #include "actions/action_rgbw_parameters.h"
 #include "actions/action_shading_system_parameters.h"
 #include "converter/any_value_to_action_converter.h"

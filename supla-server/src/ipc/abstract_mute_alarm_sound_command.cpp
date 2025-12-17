@@ -18,6 +18,8 @@
 
 #include "ipc/abstract_mute_alarm_sound_command.h"
 
+#include <string>
+
 using std::string;
 
 supla_abstract_mute_alarm_sound_command::

@@ -21,6 +21,8 @@
 #include <mysql.h>
 #include <stdio.h>
 
+#include <vector>
+
 #include "log.h"
 
 using std::vector;

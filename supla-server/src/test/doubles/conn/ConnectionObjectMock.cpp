@@ -18,6 +18,9 @@
 
 #include "doubles/conn/ConnectionObjectMock.h"  // NOLINT
 
+#include <memory>
+#include <vector>
+
 #include "gtest/gtest.h"  // NOLINT
 
 ConnectionObjectMock::ConnectionObjectMock(supla_connection *connection)

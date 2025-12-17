@@ -18,6 +18,9 @@
 
 #include "http/abstract_curl_adapter.h"
 
+#include <list>
+#include <string>
+
 supla_abstract_curl_adapter::supla_abstract_curl_adapter(void) {}
 
 supla_abstract_curl_adapter::~supla_abstract_curl_adapter(void) {}

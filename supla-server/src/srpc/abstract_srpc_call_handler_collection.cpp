@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <memory>
+
 #include "srpc/abstract_srpc_call_hanlder_collection.h"
 
 using std::shared_ptr;

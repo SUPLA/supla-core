@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <cstdio>
+
 #include "db/database.h"
 #include "lck.h"
 #include "log.h"

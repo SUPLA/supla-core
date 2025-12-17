@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_is_device_connected_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_is_device_connected_command::

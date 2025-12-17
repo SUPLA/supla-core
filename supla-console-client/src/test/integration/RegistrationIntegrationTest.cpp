@@ -18,6 +18,8 @@
 
 #include "RegistrationIntegrationTest.h"
 
+#include <cstdio>
+
 #include "log.h"
 
 namespace testing {

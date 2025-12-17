@@ -18,6 +18,8 @@
 
 #include "alexa_discover_request.h"
 
+#include <string>
+
 #include "amazon/alexa_client.h"
 #include "amazon/alexa_discover_payload_obtainer.h"
 #include "amazon/alexa_discover_request_search_condition.h"

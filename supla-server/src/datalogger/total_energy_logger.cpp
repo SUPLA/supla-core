@@ -19,6 +19,7 @@
 #include "total_energy_logger.h"
 
 #include <memory>
+#include <vector>
 
 #include "datalogger/total_energy_logger_dao.h"
 #include "device/device.h"

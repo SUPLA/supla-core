@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include <pqxx/pqxx>
+#include <vector>
 
 #include "device/value/channel_temphum_value.h"
 #include "log.h"

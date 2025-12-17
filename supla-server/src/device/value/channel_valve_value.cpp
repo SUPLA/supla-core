@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include <string>
+
 using std::map;
 using std::string;
 

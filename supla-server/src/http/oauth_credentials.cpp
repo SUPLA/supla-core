@@ -18,6 +18,8 @@
 
 #include "http/oauth_credentials.h"
 
+#include <string>
+
 #include "lck.h"
 #include "user/user.h"
 

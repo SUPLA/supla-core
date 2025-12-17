@@ -20,6 +20,9 @@
 
 #include <string.h>
 
+#include <cstdio>
+#include <string>
+
 #include "proto.h"
 #include "tools.h"
 

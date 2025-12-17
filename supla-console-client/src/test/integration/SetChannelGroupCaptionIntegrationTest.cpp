@@ -18,6 +18,9 @@
 
 #include "SetChannelGroupCaptionIntegrationTest.h"
 
+#include <cstdio>
+#include <string>
+
 #include "log.h"
 
 using std::string;
@@ -32,7 +35,7 @@ SetChannelGroupCaptionIntegrationTest::SetChannelGroupCaptionIntegrationTest() {
 }
 
 SetChannelGroupCaptionIntegrationTest::
-    ~SetChannelGroupCaptionIntegrationTest() {}
+~SetChannelGroupCaptionIntegrationTest() {}
 
 void SetChannelGroupCaptionIntegrationTest::channelGroupMatch(
     TSCD_SetCaptionResult *result, TSC_SuplaChannelGroup_B *channel_group) {

@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include <memory>
+#include <vector>
 
 #include "datalogger/general_purpose_meter_logger_dao.h"
 #include "device/device.h"

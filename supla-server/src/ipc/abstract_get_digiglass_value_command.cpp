@@ -18,6 +18,8 @@
 
 #include "ipc/abstract_get_digiglass_value_command.h"
 
+#include <string>
+
 using std::string;
 
 supla_abstract_get_digiglass_value_command::

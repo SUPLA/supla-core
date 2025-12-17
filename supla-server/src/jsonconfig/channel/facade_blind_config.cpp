@@ -18,6 +18,8 @@
 
 #include "facade_blind_config.h"
 
+#include <string>
+
 using std::map;
 using std::string;
 

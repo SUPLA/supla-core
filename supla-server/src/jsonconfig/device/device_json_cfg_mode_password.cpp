@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include <string>
+
 #include "log.h"
 
 #define FIELD_SET_CFG_MODE_PASSWORD 1

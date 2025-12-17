@@ -18,6 +18,8 @@
 
 #include "doubles/cyclictasks/AutoGateClosingMock.h"
 
+#include <vector>
+
 namespace testing {
 
 using std::vector;

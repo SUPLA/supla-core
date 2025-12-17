@@ -18,6 +18,9 @@
 
 #include "alexa_delete_request.h"
 
+#include <string>
+#include <vector>
+
 #include "amazon/alexa_client.h"
 #include "amazon/alexa_delete_request_search_condition.h"
 #include "amazon/alexa_discover_request.h"

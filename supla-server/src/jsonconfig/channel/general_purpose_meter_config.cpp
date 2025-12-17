@@ -18,6 +18,9 @@
 
 #include "general_purpose_meter_config.h"
 
+#include <cstdio>
+#include <string>
+
 using std::map;
 using std::string;
 

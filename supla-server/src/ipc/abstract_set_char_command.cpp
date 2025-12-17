@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_set_char_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_set_char_command::supla_abstract_set_char_command(

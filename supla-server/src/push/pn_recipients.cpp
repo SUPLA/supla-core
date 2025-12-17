@@ -18,6 +18,8 @@
 
 #include "pn_recipients.h"
 
+#include <vector>
+
 #include "db/mariadb_access_provider.h"
 #include "log.h"
 #include "push/pn_recipient_dao.h"

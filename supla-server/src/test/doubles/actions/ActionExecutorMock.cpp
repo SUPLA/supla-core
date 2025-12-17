@@ -20,6 +20,11 @@
 
 #include <sys/time.h>
 
+#include <list>
+#include <map>
+#include <memory>
+#include <string>
+
 namespace testing {
 
 using std::function;

@@ -18,6 +18,9 @@
 
 #include "conn/connection_objects.h"
 
+#include <memory>
+#include <vector>
+
 using std::function;
 using std::shared_ptr;
 using std::vector;

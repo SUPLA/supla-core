@@ -26,6 +26,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <memory>
+
 #include "client/client.h"
 #include "db/database.h"
 #include "device/device.h"

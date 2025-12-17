@@ -19,6 +19,7 @@
 #include <mqtt_removed_topics_provider.h>
 #include <stdlib.h>
 
+#include <list>
 #include <string>
 
 #include "user.h"

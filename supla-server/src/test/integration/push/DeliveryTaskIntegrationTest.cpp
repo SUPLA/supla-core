@@ -19,6 +19,7 @@
 #include "integration/push/DeliveryTaskIntegrationTest.h"
 
 #include <memory>
+#include <string>
 
 #include "doubles/push/PnThrottlingMock.h"
 #include "gmock/gmock.h"

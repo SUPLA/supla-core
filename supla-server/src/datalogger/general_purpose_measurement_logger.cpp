@@ -19,6 +19,7 @@
 #include "datalogger/general_purpose_measurement_logger.h"
 
 #include <memory>
+#include <vector>
 
 #include "datalogger/general_purpose_measurement_logger_dao.h"
 #include "device/devicechannel.h"

@@ -20,6 +20,9 @@
 
 #include <string.h>
 
+#include <cstdio>
+#include <string>
+
 #include "jsonconfig/channel/temp_hum_config.h"
 
 using std::map;

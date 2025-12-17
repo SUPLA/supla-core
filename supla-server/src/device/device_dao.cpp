@@ -22,6 +22,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <string>
+#include <vector>
+
 #include "device/device.h"
 #include "device/extended_value/channel_extended_value_factory.h"
 #include "log.h"

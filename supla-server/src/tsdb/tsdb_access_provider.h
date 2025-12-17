@@ -35,7 +35,7 @@ class supla_tsdb_access_provider : public supla_abstract_db_access_provider {
 
  public:
   supla_tsdb_access_provider(void);
-  supla_tsdb_access_provider(const std::string& extra_conn_args);
+  explicit supla_tsdb_access_provider(const std::string& extra_conn_args);
   virtual ~supla_tsdb_access_provider(void);
 
   virtual bool connect(void);

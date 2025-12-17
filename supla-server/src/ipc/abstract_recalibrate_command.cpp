@@ -18,6 +18,8 @@
 
 #include "ipc/abstract_recalibrate_command.h"
 
+#include <string>
+
 using std::string;
 
 supla_abstract_recalibrate_command::supla_abstract_recalibrate_command(

@@ -18,6 +18,9 @@
 
 #include <ipc/abstract_before_device_delete_command.h>
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_before_device_delete_command::

@@ -18,6 +18,8 @@
 
 #include "IntegrationTest.h"
 
+#include <string>
+
 #include "MySqlShell.h"
 #include "log.h"  // NOLINT
 #include "svrcfg.h"

@@ -20,6 +20,8 @@
 
 #include <sys/socket.h>
 
+#include <string>
+
 using std::string;
 
 supla_ipc_socket_adapter::supla_ipc_socket_adapter(int sfd)

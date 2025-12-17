@@ -19,6 +19,7 @@
 #include "AlexaResponseRequestTest.h"
 
 #include <memory>
+#include <string>
 
 #include "amazon/alexa_response_request.h"
 #include "device/extended_value/channel_hp_thermostat_ev_decorator.h"

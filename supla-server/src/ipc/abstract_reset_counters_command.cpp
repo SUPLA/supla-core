@@ -18,6 +18,8 @@
 
 #include "ipc/abstract_reset_counters_command.h"
 
+#include <string>
+
 using std::string;
 
 supla_abstract_reset_counters_command::supla_abstract_reset_counters_command(

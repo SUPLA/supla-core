@@ -18,6 +18,8 @@
 
 #include "ipc/abstract_update_channel_state_command.h"
 
+#include <string>
+
 using std::string;
 
 supla_abstract_update_channel_state_command::

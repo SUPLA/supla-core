@@ -18,6 +18,7 @@
 
 #include "ActionExecutorTest.h"
 
+#include <memory>
 #include <vector>
 
 #include "actions/action_config.h"

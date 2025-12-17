@@ -20,7 +20,9 @@
 
 #include <string.h>
 
+#include <cstdio>
 #include <pqxx/pqxx>
+#include <string>
 
 #include "log.h"
 

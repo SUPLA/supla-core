@@ -18,6 +18,8 @@
 
 #include "ipc/abstract_get_status_command.h"
 
+#include <string>
+
 #include "ipc/abstract_ipc_ctrl.h"
 
 using std::string;
