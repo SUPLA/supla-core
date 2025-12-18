@@ -72,7 +72,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char *s_tsdb = "TimescaleDB";
   scfg_add_str_param(CFG_TSDB_HOST, s_tsdb, "host", NULL);
   scfg_add_int_param(CFG_TSDB_PORT, s_tsdb, "port", 5432);
-  scfg_add_str_param(CFG_TSDB_DB, s_tsdb, "database", "");
+  scfg_add_str_param(CFG_TSDB_DB, s_tsdb, "database", NULL);
   scfg_add_str_param(CFG_TSDB_USER, s_tsdb, "user", NULL);
   scfg_add_str_param(CFG_TSDB_PASSWORD, s_tsdb, "password", NULL);
 

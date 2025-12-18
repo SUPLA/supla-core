@@ -128,9 +128,12 @@ void supla_tsdb_access_provider::disconnect(void) {
 }
 
 bool supla_tsdb_access_provider::is_config_present(void) {
-  return strnlen(scfg_string(CFG_TSDB_HOST), 3) > 0 &&
-         strnlen(scfg_string(CFG_TSDB_DB), 3) > 0 &&
-         strnlen(scfg_string(CFG_TSDB_USER), 3) > 0;
+  const char* host = scfg_string(CFG_TSDB_HOST);
+  const char* db = scfg_string(CFG_TSDB_DB);
+  const char* user = scfg_string(CFG_TSDB_USER);
+
+  return host && db && user && strnlen(host, 3) > 0 && strnlen(db, 3) > 0 &&
+         strnlen(user, 3) > 0;
 }
 
 pqxx::connection* supla_tsdb_access_provider::get_conn(void) { return conn; }
