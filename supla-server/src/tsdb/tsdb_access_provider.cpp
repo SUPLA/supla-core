@@ -189,7 +189,6 @@ bool supla_tsdb_access_provider::check_db_version(void) {
     if (!r.empty() && !r[0][0].is_null()) {
       found = r[0][0].as<string>();
     }
-
   } catch (const std::exception& e) {
     log_exception(e);
   }
