@@ -56,26 +56,28 @@ void supla_temperature_logger::run(const vector<supla_user *> *users,
       }
     }
 
-    supla_temperature_logger_dao dao(mdba);
+    {
+      supla_temperature_logger_dao dao(mdba);
 
-    for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-      (*uit)->get_devices()->for_each(
-          [&env](shared_ptr<supla_device> device, bool *will_continue) -> void {
-            device->get_channels()->get_channel_values(
-                &env,
-                [](supla_device_channel *channel,
-                   supla_abstract_channel_value *value) -> bool {
-                  return channel->get_availability_status().is_online() &&
-                         dynamic_cast<supla_channel_temphum_value *>(value) !=
-                             nullptr;
-                });
-          });
+      for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
+        (*uit)->get_devices()->for_each([&env](shared_ptr<supla_device> device,
+                                               bool *will_continue) -> void {
+          device->get_channels()->get_channel_values(
+              &env,
+              [](supla_device_channel *channel,
+                 supla_abstract_channel_value *value) -> bool {
+                return channel->get_availability_status().is_online() &&
+                       dynamic_cast<supla_channel_temphum_value *>(value) !=
+                           nullptr;
+              });
+        });
 
-      dao.load((*uit)->getUserID(), &env);
-
-      if (mdba != dba) {
-        delete mdba;
+        dao.load((*uit)->getUserID(), &env);
       }
+    }
+
+    if (mdba != dba) {
+      delete mdba;
     }
   }
 
