@@ -113,11 +113,13 @@ void supla_cyclictasks_agent::loop(void *sthread) {
           continue;
         }
 
-        if ((*it)->db_access_needed()) {
-          supla_abstract_db_access_provider *dba = &mdba;
+        supla_abstract_db_access_provider *dba = nullptr;
 
+        if ((*it)->db_access_needed()) {
           if ((*it)->is_tsdb_preffered() && tsdba.is_config_present()) {
             dba = &tsdba;
+          } else {
+            dba = &mdba;
           }
 
           if (!dba->is_connected() && !dba->connect()) {
@@ -132,8 +134,7 @@ void supla_cyclictasks_agent::loop(void *sthread) {
           }
         }
 
-        (*it)->run(&now, (*it)->user_access_needed() ? &users : nullptr,
-                   (*it)->db_access_needed() ? &mdba : nullptr);
+        (*it)->run(&now, (*it)->user_access_needed() ? &users : nullptr, dba);
       }
     }
   }
