@@ -22,6 +22,7 @@
 
 #include <ctime>
 #include <iomanip>
+#include <iostream>
 #include <pqxx/pqxx>
 #include <sstream>
 #include <string>
@@ -29,6 +30,9 @@
 #include "log.h"
 #include "svrcfg.h"
 
+using pqxx::connection;
+using pqxx::nontransaction;
+using pqxx::result;
 using std::string;
 
 supla_tsdb_access_provider::supla_tsdb_access_provider(void)
@@ -104,9 +108,9 @@ bool supla_tsdb_access_provider::connect(void) {
   disconnect();
 
   try {
-    conn = new pqxx::connection(conninfo);
+    conn = new connection(conninfo);
 
-    pqxx::nontransaction ntx(*conn);
+    nontransaction ntx(*conn);
     ntx.exec("SET TIME ZONE 'UTC'");
   } catch (const std::exception& e) {
     log_exception(e);
@@ -136,7 +140,7 @@ bool supla_tsdb_access_provider::is_config_present(void) {
          strnlen(user, 3) > 0;
 }
 
-pqxx::connection* supla_tsdb_access_provider::get_conn(void) { return conn; }
+connection* supla_tsdb_access_provider::get_conn(void) { return conn; }
 
 string supla_tsdb_access_provider::time_to_timestamp_string(const time_t& t) {
   std::tm tm{};
@@ -145,4 +149,46 @@ string supla_tsdb_access_provider::time_to_timestamp_string(const time_t& t) {
   std::ostringstream oss;
   oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
   return oss.str();
+}
+
+bool supla_tsdb_access_provider::check_db_version(void) {
+  string found;
+  string expected = "20250625101351";
+
+  bool _is_connected = is_connected();
+  if (!_is_connected && !connect()) {
+    return false;
+  }
+
+  try {
+    nontransaction ntx(*conn);
+
+    result r = ntx.exec(
+        "SELECT MAX(SUBSTRING(version FROM POSITION('Version' IN version) + "
+        "7)) FROM doctrine_migration_versions");
+
+    if (!r.empty() && !r[0][0].is_null()) {
+      found = r[0][0].as<string>();
+    }
+
+  } catch (const std::exception& e) {
+    log_exception(e);
+  }
+
+  if (!_is_connected) {
+    disconnect();
+  }
+
+  if (found.empty()) {
+    supla_log(LOG_ERR,
+              "The version of the Timescale database can not be determined!");
+  } else if (found != expected) {
+    supla_log(LOG_ERR,
+              "Incorrect Timescale database version! Expected: %s, Found: %s",
+              expected.c_str(), found.c_str());
+  } else {
+    return true;
+  }
+
+  return false;
 }

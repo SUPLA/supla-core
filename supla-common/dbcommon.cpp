@@ -435,8 +435,8 @@ bool dbcommon::check_db_version(const char *expected_version,
     return false;
   }
 
-  char version[15];
-  if (!get_db_version(version, 15)) {
+  char version[50] = {};
+  if (!get_db_version(version, sizeof(version))) {
     disconnect();
     supla_log(LOG_ERR, "The version of the database can not be determined!");
   } else {
@@ -444,8 +444,8 @@ bool dbcommon::check_db_version(const char *expected_version,
     if (strncmp(version, expected_version, 14) == 0) {
       return true;
     } else {
-      supla_log(LOG_ERR, "Incorrect database version! Expected: %s",
-                expected_version);
+      supla_log(LOG_ERR, "Incorrect database version! Expected: %s, Found: %s",
+                expected_version, version);
     }
   }
 

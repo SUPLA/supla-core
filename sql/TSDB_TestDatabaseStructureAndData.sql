@@ -456,3 +456,18 @@ VALUES (
        );
 END;
 $$;
+
+CREATE TABLE doctrine_migration_versions (
+               version character varying(191) NOT NULL,
+               executed_at timestamp(0) without time zone DEFAULT NULL::timestamp without time zone,
+               execution_time integer
+);
+
+COPY public.doctrine_migration_versions (version, executed_at, execution_time) FROM stdin;
+SuplaBundle\\Migrations\\TsDbMigration\\Version20250529192110	2025-12-18 12:54:24	61
+SuplaBundle\\Migrations\\TsDbMigration\\Version20250611074734	2025-12-18 12:54:24	3
+SuplaBundle\\Migrations\\TsDbMigration\\Version20250625101351	2025-12-18 12:54:24	1
+\.
+
+ALTER TABLE ONLY public.doctrine_migration_versions
+    ADD CONSTRAINT doctrine_migration_versions_pkey PRIMARY KEY (version);

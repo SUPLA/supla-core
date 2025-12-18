@@ -44,6 +44,7 @@
 #include "supla-socket.h"
 #include "svrcfg.h"
 #include "tools.h"
+#include "tsdb/tsdb_access_provider.h"
 #include "user.h"
 
 int main(int argc, char *argv[]) {
@@ -90,13 +91,13 @@ int main(int argc, char *argv[]) {
   }
 
   {
-    database *db = new database();
-    if (!db->check_db_version(DB_VERSION, 60)) {
-      delete db;
+    database db;
+    supla_tsdb_access_provider tsdb;
+
+    if (!db.check_db_version(DB_VERSION, 60) ||
+        (tsdb.is_config_present() && !tsdb.check_db_version())) {
       database::mainthread_end();
       goto exit_fail;
-    } else {
-      delete db;
     }
   }
 
