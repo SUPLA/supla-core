@@ -49,24 +49,33 @@ supla_tsdb_access_provider::~supla_tsdb_access_provider(void) { disconnect(); }
 
 void supla_tsdb_access_provider::append_conninfo_string(string& conninfo,
                                                         const string& parameter,
-                                                        const char* value) {
+                                                        const char* value,
+                                                        bool add_apostrophes) {
   if (value) {
     size_t len = strnlen(value, 1000);
 
     conninfo.append(parameter);
-    conninfo.append("=\'");
+    conninfo.append("=");
 
-    string esc;
-    for (size_t n = 0; n < len; n++) {
-      if (value[n] == '\'' || value[n] == '\\') {
-        esc.push_back('\\');
+    if (add_apostrophes) {
+      conninfo.append("\'");
+
+      string esc;
+      for (size_t n = 0; n < len; n++) {
+        if (value[n] == '\'' || value[n] == '\\') {
+          esc.push_back('\\');
+        }
+        esc.push_back(value[n]);
       }
-      esc.push_back(value[n]);
+
+      conninfo.append(esc);
+
+      conninfo.append("\'");
+    } else {
+      conninfo.append(value);
     }
 
-    conninfo.append(esc);
-
-    conninfo.append("\' ");
+    conninfo.append(" ");
   }
 }
 
@@ -94,11 +103,21 @@ bool supla_tsdb_access_provider::connect(void) {
 
   string conninfo;
 
-  append_conninfo_string(conninfo, "host", scfg_string(CFG_TSDB_HOST));
+  append_conninfo_string(conninfo, "host", scfg_string(CFG_TSDB_HOST), true);
   append_conninfo_string(conninfo, "port", scfg_int(CFG_TSDB_PORT));
-  append_conninfo_string(conninfo, "dbname", scfg_string(CFG_TSDB_DB));
-  append_conninfo_string(conninfo, "user", scfg_string(CFG_TSDB_USER));
-  append_conninfo_string(conninfo, "password", scfg_string(CFG_TSDB_PASSWORD));
+  append_conninfo_string(conninfo, "dbname", scfg_string(CFG_TSDB_DB), true);
+  append_conninfo_string(conninfo, "user", scfg_string(CFG_TSDB_USER), true);
+  append_conninfo_string(conninfo, "password", scfg_string(CFG_TSDB_PASSWORD),
+                         true);
+
+  append_conninfo_string(conninfo, "sslmode", scfg_string(CFG_TSDB_SSLMODE),
+                         false);
+  append_conninfo_string(conninfo, "sslrootcert",
+                         scfg_string(CFG_TSDB_SSLROOTCERT), false);
+  append_conninfo_string(conninfo, "sslcert", scfg_string(CFG_TSDB_SSLCERT),
+                         false);
+  append_conninfo_string(conninfo, "sslkey", scfg_string(CFG_TSDB_SSLKEY),
+                         false);
 
   if (extra_conn_args.length()) {
     conninfo.append(" ");
