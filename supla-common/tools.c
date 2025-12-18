@@ -197,9 +197,14 @@ char st_try_fork(void) {
   return 1;
 }
 
-char st_set_ug_id(int uid, int gid) {
+char st_set_ug_id(const char *username, int uid, int gid) {
   if (setgid(gid) != 0) {
     supla_log(LOG_ERR, "Can't change group");
+    return 0;
+  }
+
+  if (username && initgroups(username, gid) != 0) {
+    supla_log(LOG_ERR, "Can't initialize groups for user %s", username);
     return 0;
   }
 

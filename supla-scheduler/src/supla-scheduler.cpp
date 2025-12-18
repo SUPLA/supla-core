@@ -67,7 +67,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (0 == st_set_ug_id(scfg_getuid(CFG_UID), scfg_getgid(CFG_GID))) {
+  if (0 == st_set_ug_id(scfg_string(CFG_UID), scfg_getuid(CFG_UID),
+                        scfg_getgid(CFG_GID))) {
     goto exit_fail;
   }
 
