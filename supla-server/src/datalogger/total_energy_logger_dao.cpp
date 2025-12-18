@@ -84,6 +84,22 @@ void supla_total_energy_logger_dao::tsdb_add(
     int channel_id, TElectricityMeter_ExtendedValue_V3 *em_ev) {
   pqxx::nontransaction ntx(*get_tsdba()->get_conn());
 
+  bool not_zero = false;
+
+  for (int a = 0; a < 3; a++) {
+    if (em_ev->total_reverse_active_energy[a] ||
+        em_ev->total_forward_reactive_energy[a] ||
+        em_ev->total_reverse_reactive_energy[a]) {
+      not_zero = true;
+      break;
+    }
+  }
+
+  if (!not_zero && !em_ev->total_forward_active_energy_balanced &&
+      !em_ev->total_reverse_active_energy_balanced) {
+    return;
+  }
+
   ntx.exec_params(
       "SELECT "
       "supla_add_em_log_item($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$"
