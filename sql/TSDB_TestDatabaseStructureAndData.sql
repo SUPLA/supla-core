@@ -392,10 +392,10 @@ INSERT INTO supla_em_log (
 VALUES (
            _channel_id,
            (now() AT TIME ZONE 'UTC'),
-           _phase1_fae, _phase1_rae, _phase1_fre, _phase1_rre,
-           _phase2_fae, _phase2_rae, _phase2_fre, _phase2_rre,
-           _phase3_fae, _phase3_rae, _phase3_fre, _phase3_rre,
-           _fae_balanced, _rae_balanced
+           NULLIF(_phase1_fae, 0), NULLIF(_phase1_rae, 0), NULLIF(_phase1_fre, 0), NULLIF(_phase1_rre, 0),
+           NULLIF(_phase2_fae, 0), NULLIF(_phase2_rae, 0), NULLIF(_phase2_fre, 0), NULLIF(_phase2_rre, 0),
+           NULLIF(_phase3_fae, 0), NULLIF(_phase3_rae, 0), NULLIF(_phase3_fre, 0), NULLIF(_phase3_rre, 0),
+           NULLIF(_fae_balanced, 0), NULLIF(_rae_balanced, 0)
        );
 END;
 $$;
