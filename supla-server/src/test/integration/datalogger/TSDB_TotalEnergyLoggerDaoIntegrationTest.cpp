@@ -88,4 +88,72 @@ TEST_F(TSDB_TotalEnergyLoggerDaoIntegrationTest, add) {
             "(1 row)\n\n"); // NOLINT
 }
 
+TEST_F(TSDB_TotalEnergyLoggerDaoIntegrationTest, nullIfZero) {
+  ASSERT_TRUE(dba->connect());
+
+  string result;
+  sqlQuery("SELECT count(*) as count FROM supla_em_log", &result);
+
+  EXPECT_EQ(result, " count \n-------\n     0\n(1 row)\n\n");
+
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
+
+  em_ev.total_reverse_active_energy[0] = 2;
+  em_ev.total_reverse_reactive_energy[0] = 4;
+  em_ev.total_reverse_active_energy[1] = 6;
+  em_ev.total_reverse_reactive_energy[1] = 8;
+  em_ev.total_reverse_active_energy[2] = 10;
+  em_ev.total_reverse_reactive_energy[2] = 12;
+  em_ev.total_reverse_active_energy_balanced = 14;
+
+  dao->add(10, &em_ev);
+
+  em_ev = {};
+
+  em_ev.total_forward_active_energy[0] = 1;
+  em_ev.total_forward_reactive_energy[0] = 3;
+  em_ev.total_forward_active_energy[1] = 5;
+  em_ev.total_forward_reactive_energy[1] = 7;
+  em_ev.total_forward_active_energy[2] = 9;
+  em_ev.total_forward_reactive_energy[2] = 11;
+  em_ev.total_forward_active_energy_balanced = 13;
+
+  dao->add(11, &em_ev);
+
+  result = "";
+
+  sqlQuery(
+      "SELECT channel_id, phase1_fae, phase1_rae, phase1_fre, phase1_rre, "
+      "phase2_fae, phase2_rae, phase2_fre, phase2_rre, phase3_fae, phase3_rae, "
+      "phase3_fre, phase3_rre, fae_balanced, rae_balanced FROM supla_em_log "
+      "WHERE date >= (now() AT TIME ZONE 'UTC') - INTERVAL '2 seconds' AND "
+      "date <= (now() AT TIME ZONE 'UTC') + INTERVAL '2 seconds'",
+      &result);
+
+  EXPECT_EQ(result,
+		  " channel_id | phase1_fae | phase1_rae | phase1_fre | phase1_rre | phase2_fae | phase2_rae | phase2_fre | phase2_rre | phase3_fae | phase3_rae | phase3_fre | phase3_rre | fae_balanced | rae_balanced \n" // NOLINT
+		  "------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+--------------+--------------\n" // NOLINT
+		  "         10 |            |          2 |            |          4 |            |          6 |            |          8 |            |         10 |            |         12 |              |           14\n"  // NOLINT
+		  "         11 |          1 |            |          3 |            |          5 |            |          7 |            |          9 |            |         11 |            |           13 |             \n"  // NOLINT
+		  "(2 rows)\n\n"); // NOLINT
+}
+
+TEST_F(TSDB_TotalEnergyLoggerDaoIntegrationTest, AllZeros) {
+  ASSERT_TRUE(dba->connect());
+
+  string result;
+  sqlQuery("SELECT count(*) as count FROM supla_em_log", &result);
+
+  EXPECT_EQ(result, " count \n-------\n     0\n(1 row)\n\n");
+
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
+  dao->add(10, &em_ev);
+
+  result = "";
+
+  sqlQuery("SELECT count(*) as count FROM supla_em_log", &result);
+
+  EXPECT_EQ(result, " count \n-------\n     0\n(1 row)\n\n");
+}
+
 } /* namespace testing */
