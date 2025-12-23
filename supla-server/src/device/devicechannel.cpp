@@ -778,10 +778,11 @@ unsigned char supla_device_channel::get_protocol_version(void) {
 
 void supla_device_channel::assign_rgbw_value(
     char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness,
-    char brightness, char on_off) {
+    char brightness, char on_off, char dimmer_cct) {
   int func = get_func();
 
-  if (func == SUPLA_CHANNELFNC_DIMMER ||
+  if (func == SUPLA_CHANNELFNC_DIMMER || func == SUPLA_CHANNELFNC_DIMMER_CCT ||
+      func == SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB ||
       func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (brightness < 0 || brightness > 100) brightness = 0;
 
@@ -796,6 +797,11 @@ void supla_device_channel::assign_rgbw_value(
     value[2] = (char)((color & 0x000000FF));
     value[3] = (char)((color & 0x0000FF00) >> 8);
     value[4] = (char)((color & 0x00FF0000) >> 16);
+  }
+
+  if (func == SUPLA_CHANNELFNC_DIMMER_CCT ||
+      func == SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB) {
+    value[7] = dimmer_cct;
   }
 
   value[5] = on_off;
@@ -820,6 +826,8 @@ bool supla_device_channel::is_value_writable(void) {
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
     case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
@@ -863,6 +871,8 @@ bool supla_device_channel::is_rgbw_value_writable(void) {
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
       return 1;
 
       break;

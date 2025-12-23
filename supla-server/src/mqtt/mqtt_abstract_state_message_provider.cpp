@@ -484,6 +484,25 @@ bool supla_mqtt_abstract_state_message_provider::get_brightness_message(
                         get_device_id(), get_channel_id());
 }
 
+bool supla_mqtt_abstract_state_message_provider::get_dimmer_cct_message(
+    const char *topic_prefix, char **topic_name, void **message,
+    size_t *message_size) {
+  char value[50];
+  value[0] = 0;
+
+  supla_channel_rgbw_value *rgbw_val =
+      dynamic_cast<supla_channel_rgbw_value *>(channel_value);
+
+  if (rgbw_val) {
+    snprintf(value, sizeof(value), "%i", rgbw_val->get_dimmer_cct());
+  }
+
+  return create_message(topic_prefix, user_suid, topic_name, message,
+                        message_size, value, false,
+                        "devices/%i/channels/%i/state/dimmer_cct",
+                        get_device_id(), get_channel_id());
+}
+
 bool supla_mqtt_abstract_state_message_provider::get_color_brightness_message(
     const char *topic_prefix, char **topic_name, void **message,
     size_t *message_size) {
@@ -1258,6 +1277,7 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
       }
       break;
     case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
       switch (index) {
         case 1: {
           supla_channel_rgbw_value *rgbw_val =
@@ -1271,9 +1291,18 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
         case 2:
           return get_brightness_message(topic_prefix, topic_name, message,
                                         message_size);
+
+        case 3:
+          if (channel_function == SUPLA_CHANNELFNC_DIMMER_CCT) {
+            return get_dimmer_cct_message(topic_prefix, topic_name, message,
+                                          message_size);
+          } else {
+            break;
+          }
       }
       break;
     case SUPLA_CHANNELFNC_RGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
       switch (index) {
         case 1: {
           supla_channel_rgbw_value *rgbw_val =
@@ -1295,6 +1324,13 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
         case 4:
           return get_color_brightness_message(topic_prefix, topic_name, message,
                                               message_size);
+        case 5:
+          if (channel_function == SUPLA_CHANNELFNC_DIMMER_CCT) {
+            return get_dimmer_cct_message(topic_prefix, topic_name, message,
+                                          message_size);
+          } else {
+            break;
+          }
       }
       break;
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:

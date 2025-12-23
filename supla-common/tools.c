@@ -23,6 +23,7 @@
 #ifndef __ANDROID_API__
 #include <execinfo.h>
 #endif /*__ANDROID_API__*/
+#include <grp.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>

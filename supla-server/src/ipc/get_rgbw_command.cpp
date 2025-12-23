@@ -37,7 +37,7 @@ bool supla_get_rgbw_command::get_channel_rgbw_value(int user_id, int device_id,
       getter.get_value_as<supla_channel_rgbw_value>(user_id, device_id,
                                                     channel_id);
   if (value) {
-    value->get_rgbw(color, color_brightness, brightness);
+    value->get_rgbw(color, color_brightness, brightness, nullptr);
     if (on_off) {
       *on_off = 0;
     }

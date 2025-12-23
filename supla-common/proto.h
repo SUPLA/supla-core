@@ -458,7 +458,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_ALARM 160
 #define SUPLA_CHANNELFNC_NOTIFICATION 170
 #define SUPLA_CHANNELFNC_DIMMER 180
-#define SUPLA_CHANNELFNC_DIMMER_CCT 185                    // ver. >= 28
+#define SUPLA_CHANNELFNC_DIMMER_CCT 185  // ver. >= 28
 #define SUPLA_CHANNELFNC_RGBLIGHTING 190
 #define SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING 200
 #define SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB 205            // ver. >= 28
@@ -978,9 +978,9 @@ typedef struct {
     unsigned _supla_int_t ActionTriggerCaps;  // ver. >= 16 only for
                                               // SUPLA_CHANNELTYPE_ACTIONTRIGGER
     unsigned _supla_int_t
-        RGBW_FuncList; // ver. >= 28 only for SUPLA_CHANNELTYPE_DIMMER,
-                       // SUPLA_CHANNELTYPE_RGBLEDCONTROLLER,
-                       // SUPLA_CHANNELTYPE_DIMMERANDRGBLED
+        RGBW_FuncList;  // ver. >= 28 only for SUPLA_CHANNELTYPE_DIMMER,
+                        // SUPLA_CHANNELTYPE_RGBLEDCONTROLLER,
+                        // SUPLA_CHANNELTYPE_DIMMERANDRGBLED
   };
 
   _supla_int_t Default;
@@ -1639,7 +1639,8 @@ typedef struct {
   unsigned _supla_int_t Color;  // 0 == Ignore
   char ColorRandom;
   char OnOff;
-  char Reserved[8];
+  char DimmerCct;  // ver. >= 28
+  char Reserved[7];
 } TAction_RGBW_Parameters;  // ver. >= 19
 
 typedef struct {
@@ -2383,10 +2384,10 @@ typedef struct {
   unsigned char G;       // 0..255
   unsigned char R;       // 0..255
   char onOff;
-  char command;  // RGBW_COMMAND_, requires
-                 // SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED v. >= 21
+  char command;    // RGBW_COMMAND_, requires
+                   // SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED v. >= 21
   char dimmerCct;  // v. >= 25, 0..100 (0 warm, 50 neutral, 100 cold)
-} TRGBW_Value;   // v. >= 10
+} TRGBW_Value;     // v. >= 10
 
 #define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1
 
@@ -2671,7 +2672,7 @@ typedef struct {
                                              // -32767 = -327.67%
     _supla_int_t LightSourceOperatingTime;   // -3932100sec. - 3932100sec.
     // OperatingTime is not implemented in apps
-    unsigned _supla_int_t OperatingTime;     // time in seconds
+    unsigned _supla_int_t OperatingTime;  // time in seconds
   };
   char EOL;            // End Of List // v. >= 26
   char EmptySpace[1];  // Empty space for future use

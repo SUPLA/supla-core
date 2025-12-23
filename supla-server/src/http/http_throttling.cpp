@@ -40,6 +40,8 @@ int supla_http_throttling::get_reset_time_us(int func) {
 unsigned int supla_http_throttling::get_counter_threadshold(int func) {
   switch (func) {
     case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
       return 20;

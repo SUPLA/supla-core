@@ -65,6 +65,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   char brightness;
   char color_brightness;
   char rgbw_on_off;
+  char dimmer_cct;
   std::list<struct timeval> times;
   std::map<std::string, std::string> replacement_map;
   void addTime(void);
@@ -83,7 +84,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
-                        char *brightness, char *on_off);
+                        char *brightness, char *on_off, char *dimmer_cct);
   virtual void toggle(void);
   virtual void shut(const supla_action_shading_system_parameters *params);
   virtual void reveal(void);
@@ -118,6 +119,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int getOffCounter(void);
   int getColorCounter(void);
   int getBrightnessCounter(void);
+  int getDimmerCctCounter(void);
   int getColorBrightnessCounter(void);
   int getRGBWCounter(void);
   int getToggleCounter(void);
@@ -148,6 +150,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   const supla_action_shading_system_parameters *getShadingSystemParams(void);
   unsigned int getColor(void);
   char getBrightness(void);
+  char getDimmerCct(void);
   char getColorBrightness(void);
   char getRGBWOnOff(void);
   std::list<struct timeval> getTimes(void);

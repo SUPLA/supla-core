@@ -88,20 +88,24 @@ TEST_F(ChannelRgbwValueTest, gettersAndSetters) {
   rgbw1.brightness = 10;
   rgbw1.colorBrightness = 20;
   rgbw1.onOff = 1;
+  rgbw1.dimmerCct = 5;
   supla_channel_rgbw_value v(&rgbw1);
 
   int color = 0;
   char color_brightness = 0;
   char brightness = 0;
+  char dimmer_cct = 0;
 
-  v.get_rgbw(&color, &color_brightness, &brightness);
+  v.get_rgbw(&color, &color_brightness, &brightness, &dimmer_cct);
   v.get_rgbw(&rgbw2);
 
   EXPECT_EQ(brightness, 10);
+  EXPECT_EQ(dimmer_cct, 5);
   EXPECT_EQ(color_brightness, 20);
   EXPECT_EQ(color, 0xAABBCC);
 
   EXPECT_EQ(v.get_brightness(), 10);
+  EXPECT_EQ(v.get_dimmer_cct(), 5);
   EXPECT_EQ(v.get_color_brightness(), 20);
   EXPECT_EQ(v.get_color(), 0xAABBCC);
 
@@ -113,17 +117,20 @@ TEST_F(ChannelRgbwValueTest, gettersAndSetters) {
   EXPECT_EQ(rgbw2.onOff, 1);
 
   v.set_brightness(40);
+  v.set_dimmer_cct(15);
   v.set_color_brightness(60);
   v.set_color(0x112233);
 
-  v.get_rgbw(&color, &color_brightness, &brightness);
+  v.get_rgbw(&color, &color_brightness, &brightness, &dimmer_cct);
   v.get_rgbw(&rgbw2);
 
   EXPECT_EQ(brightness, 40);
+  EXPECT_EQ(dimmer_cct, 15);
   EXPECT_EQ(color_brightness, 60);
   EXPECT_EQ(color, 0x112233);
 
   EXPECT_EQ(v.get_brightness(), 40);
+  EXPECT_EQ(v.get_dimmer_cct(), 15);
   EXPECT_EQ(v.get_color_brightness(), 60);
   EXPECT_EQ(v.get_color(), 0x112233);
 
@@ -131,6 +138,7 @@ TEST_F(ChannelRgbwValueTest, gettersAndSetters) {
   EXPECT_EQ(rgbw2.G, (char)0x22);
   EXPECT_EQ(rgbw2.B, (char)0x33);
   EXPECT_EQ(rgbw2.brightness, 40);
+  EXPECT_EQ(rgbw2.dimmerCct, 15);
   EXPECT_EQ(rgbw2.colorBrightness, 60);
   EXPECT_EQ(rgbw2.onOff, 1);
 

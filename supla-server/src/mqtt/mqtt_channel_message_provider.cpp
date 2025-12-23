@@ -260,6 +260,12 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_DIMMER:
       snprintf(buf, buf_size, "DIMMER");
       break;
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+      snprintf(buf, buf_size, "DIMMER_CCT");
+      break;
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+      snprintf(buf, buf_size, "DIMMER_CCT_AND_RGB");
+      break;
     case SUPLA_CHANNELFNC_RGBLIGHTING:
       snprintf(buf, buf_size, "RGBLIGHTING");
       break;
@@ -483,6 +489,13 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
       break;
     case SUPLA_CHANNELFNC_DIMMER:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Dimmer");
+      break;
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Dimmer CCT");
+      break;
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Dimmer CCT and RGB lighting");
       break;
     case SUPLA_CHANNELFNC_RGBLIGHTING:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "RGB lighting");

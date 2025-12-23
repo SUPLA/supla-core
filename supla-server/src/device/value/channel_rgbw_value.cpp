@@ -50,7 +50,7 @@ void supla_channel_rgbw_value::get_rgbw(TRGBW_Value *rgbw) {
 }
 
 void supla_channel_rgbw_value::get_rgbw(int *color, char *color_brightness,
-                                        char *brightness) {
+                                        char *brightness, char *dimmer_cct) {
   if (color) {
     *color = get_color();
   }
@@ -61,6 +61,10 @@ void supla_channel_rgbw_value::get_rgbw(int *color, char *color_brightness,
 
   if (brightness) {
     *brightness = get_brightness();
+  }
+
+  if (dimmer_cct) {
+    *dimmer_cct = get_dimmer_cct();
   }
 }
 
@@ -102,12 +106,24 @@ void supla_channel_rgbw_value::set_color_brightness(char brightness) {
   rgbw->colorBrightness = brightness;
 }
 
+char supla_channel_rgbw_value::get_dimmer_cct(void) {
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
+  return rgbw->dimmerCct;
+}
+
+void supla_channel_rgbw_value::set_dimmer_cct(char cct) {
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
+  rgbw->dimmerCct = cct;
+}
+
 // static
 bool supla_channel_rgbw_value::is_function_supported(int func) {
   switch (func) {
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
       return true;
   }
 
