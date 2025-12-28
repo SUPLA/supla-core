@@ -53,15 +53,27 @@ services:
     container_name: supla-core-devel-supla-core
     depends_on:
       - mariadb
-    ports:
-      - "2015:2015/tcp"
-      - "2016:2016/tcp"
+      - timescaledb
     volumes:
       - ${HOME}/CProjects:/CProjects
     networks:
       supla-core-devel-net:
     stdin_open: true    
     tty: true          
+    command: ["/bin/bash"]
+
+  supla-core-debian13:
+    image: devel/supla-core-debian13:latest
+    container_name: supla-core-devel-supla-core-debian13
+    depends_on:
+      - mariadb
+      - timescaledb
+    volumes:
+      - ${HOME}/CProjects:/CProjects
+    networks:
+      supla-core-devel-net:
+    stdin_open: true   
+    tty: true
     command: ["/bin/bash"]
 
 networks:
