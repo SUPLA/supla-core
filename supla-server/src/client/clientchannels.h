@@ -49,6 +49,7 @@ class supla_client_channels : public supla_client_objcontainer {
 
  public:
   explicit supla_client_channels(supla_client *client);
+  bool add(supla_client_channel *channel);
   void update_device_channels(int DeviceId);
   void on_channel_value_changed(
       int DeviceId, int ChannelId = 0,

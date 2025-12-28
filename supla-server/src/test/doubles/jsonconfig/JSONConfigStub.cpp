@@ -48,4 +48,8 @@ bool JSONConfigStub::merge(cJSON *src_parent, cJSON *dst_parent,
                                   delete_nonexistent);
 }
 
+void JSONConfigStub::merge(supla_json_config *dst) {
+  supla_json_config::merge(dst);
+}
+
 }  // namespace testing

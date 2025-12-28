@@ -110,7 +110,8 @@ void supla_objcontainer::load(e_objc_scope scope) {
 
 void supla_objcontainer::load(void) { load(master); }
 
-bool supla_objcontainer::add(supla_objcontainer_item *obj, e_objc_scope scope) {
+bool supla_objcontainer::add_object(supla_objcontainer_item *obj,
+                                    e_objc_scope scope) {
   bool result = false;
   if (obj == NULL) {
     return false;
@@ -137,6 +138,6 @@ bool supla_objcontainer::add(supla_objcontainer_item *obj, e_objc_scope scope) {
   return result;
 }
 
-bool supla_objcontainer::add(supla_objcontainer_item *obj) {
-  return add(obj, master);
+bool supla_objcontainer::add_object(supla_objcontainer_item *obj) {
+  return add_object(obj, master);
 }

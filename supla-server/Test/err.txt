@@ -1,0 +1,193 @@
+../src/mqtt/mqttc_library_adapter.cpp: In member function 'virtual void supla_mqttc_library_adapter::client_connect(supla_mqtt_client*)':
+../src/mqtt/mqttc_library_adapter.cpp:151:25: warning: 'int ERR_load_BIO_strings()' is deprecated: Since OpenSSL 3.0 [-Wdeprecated-declarations]
+  151 |     ERR_load_BIO_strings();
+      |     ~~~~~~~~~~~~~~~~~~~~^~
+In file included from /usr/include/openssl/cryptoerr.h:17,
+                 from /usr/include/openssl/crypto.h:38,
+                 from /usr/include/openssl/bio.h:30,
+                 from ../src/mqtt/mqttc_library_adapter.cpp:23:
+/usr/include/openssl/cryptoerr_legacy.h:31:27: note: declared here
+   31 | OSSL_DEPRECATEDIN_3_0 int ERR_load_BIO_strings(void);
+      |                           ^~~~~~~~~~~~~~~~~~~~
+../src/datalogger/abstract_electricity_logger_dao.cpp: In member function 'void supla_abstract_electricity_logger_dao::tsdb_add(const time_t&, int, short int, const std::string&, char*, char*, char*)':
+../src/datalogger/abstract_electricity_logger_dao.cpp:91:18: warning: 'pqxx::result pqxx::transaction_base::exec_params(std::string_view, Args&& ...) [with Args = {std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, int&, short int&, char*&, char*&, char*&}; std::string_view = std::basic_string_view<char>]' is deprecated: Use exec(zview, params) instead. [-Wdeprecated-declarations]
+   91 |   ntx.exec_params(sql, time_str, channel_id, phase, min, max, avg);
+      |   ~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/pqxx/dbtransaction.hxx:20,
+                 from /usr/include/pqxx/blob.hxx:36,
+                 from /usr/include/pqxx/pqxx:6,
+                 from ../src/tsdb/tsdb_access_provider.h:22,
+                 from ../src/cyclictasks/abstract_cyclictask_dao.h:23,
+                 from ../src/datalogger/abstract_electricity_logger_dao.h:26,
+                 from ../src/datalogger/abstract_electricity_logger_dao.cpp:19:
+/usr/include/pqxx/transaction_base.hxx:728:10: note: declared here
+  728 |   result exec_params(std::string_view query, Args &&...args)
+      |          ^~~~~~~~~~~
+../src/datalogger/general_purpose_measurement_logger_dao.cpp: In member function 'void supla_general_purpose_measurement_logger_dao::tsdb_add(int, double, double, double, double, double)':
+../src/datalogger/general_purpose_measurement_logger_dao.cpp:68:18: warning: 'pqxx::result pqxx::transaction_base::exec_params(std::string_view, Args&& ...) [with Args = {int&, double&, double&, double&, double&, double&}; std::string_view = std::basic_string_view<char>]' is deprecated: Use exec(zview, params) instead. [-Wdeprecated-declarations]
+   68 |   ntx.exec_params(
+      |   ~~~~~~~~~~~~~~~^
+   69 |       "SELECT supla_add_gp_measurement_log_item ($1,$2,$3,$4,$5,$6)",
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   70 |       channel_id, first, last, avg, max, min);
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/pqxx/dbtransaction.hxx:20,
+                 from /usr/include/pqxx/blob.hxx:36,
+                 from /usr/include/pqxx/pqxx:6,
+                 from ../src/tsdb/tsdb_access_provider.h:22,
+                 from ../src/cyclictasks/abstract_cyclictask_dao.h:23,
+                 from ../src/datalogger/general_purpose_measurement_logger_dao.h:23,
+                 from ../src/datalogger/general_purpose_measurement_logger_dao.cpp:19:
+/usr/include/pqxx/transaction_base.hxx:728:10: note: declared here
+  728 |   result exec_params(std::string_view query, Args &&...args)
+      |          ^~~~~~~~~~~
+../src/datalogger/general_purpose_meter_logger_dao.cpp: In member function 'void supla_general_purpose_meter_logger_dao::tsdb_add(int, double)':
+../src/datalogger/general_purpose_meter_logger_dao.cpp:54:18: warning: 'pqxx::result pqxx::transaction_base::exec_params(std::string_view, Args&& ...) [with Args = {int&, double&}; std::string_view = std::basic_string_view<char>]' is deprecated: Use exec(zview, params) instead. [-Wdeprecated-declarations]
+   54 |   ntx.exec_params("SELECT supla_add_gp_meter_log_item($1,$2)", channel_id,
+      |   ~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   55 |                   value);
+      |                   ~~~~~~
+In file included from /usr/include/pqxx/dbtransaction.hxx:20,
+                 from /usr/include/pqxx/blob.hxx:36,
+                 from /usr/include/pqxx/pqxx:6,
+                 from ../src/tsdb/tsdb_access_provider.h:22,
+                 from ../src/cyclictasks/abstract_cyclictask_dao.h:23,
+                 from ../src/datalogger/general_purpose_meter_logger_dao.h:22,
+                 from ../src/datalogger/general_purpose_meter_logger_dao.cpp:19:
+/usr/include/pqxx/transaction_base.hxx:728:10: note: declared here
+  728 |   result exec_params(std::string_view query, Args &&...args)
+      |          ^~~~~~~~~~~
+../src/datalogger/hp_thermostat_logger_dao.cpp: In member function 'void supla_hp_thermostat_logger_dao::tsdb_add(int, char*, char*, bool)':
+../src/datalogger/hp_thermostat_logger_dao.cpp:65:18: warning: 'pqxx::result pqxx::transaction_base::exec_params(std::string_view, Args&& ...) [with Args = {int&, char*&, char*&, bool&}; std::string_view = std::basic_string_view<char>]' is deprecated: Use exec(zview, params) instead. [-Wdeprecated-declarations]
+   65 |   ntx.exec_params("SELECT supla_add_thermostat_log_item($1,$2,$3,$4)",
+      |   ~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   66 |                   channel_id, measured_temperature, preset_temperature, on);
+      |                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/pqxx/dbtransaction.hxx:20,
+                 from /usr/include/pqxx/blob.hxx:36,
+                 from /usr/include/pqxx/pqxx:6,
+                 from ../src/tsdb/tsdb_access_provider.h:22,
+                 from ../src/cyclictasks/abstract_cyclictask_dao.h:23,
+                 from ../src/datalogger/hp_thermostat_logger_dao.h:22,
+                 from ../src/datalogger/hp_thermostat_logger_dao.cpp:19:
+/usr/include/pqxx/transaction_base.hxx:728:10: note: declared here
+  728 |   result exec_params(std::string_view query, Args &&...args)
+      |          ^~~~~~~~~~~
+../src/datalogger/impulse_logger_dao.cpp: In member function 'void supla_impulse_logger_dao::tsdb_add(int, long long unsigned int, long long unsigned int)':
+../src/datalogger/impulse_logger_dao.cpp:52:18: warning: 'pqxx::result pqxx::transaction_base::exec_params(std::string_view, Args&& ...) [with Args = {int&, long long unsigned int&, long long unsigned int&}; std::string_view = std::basic_string_view<char>]' is deprecated: Use exec(zview, params) instead. [-Wdeprecated-declarations]
+   52 |   ntx.exec_params("SELECT supla_add_ic_log_item($1,$2,$3)", channel_id, counter,
+      |   ~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   53 |                   calculated_value);
+      |                   ~~~~~~~~~~~~~~~~~
+In file included from /usr/include/pqxx/dbtransaction.hxx:20,
+                 from /usr/include/pqxx/blob.hxx:36,
+                 from /usr/include/pqxx/pqxx:6,
+                 from ../src/tsdb/tsdb_access_provider.h:22,
+                 from ../src/cyclictasks/abstract_cyclictask_dao.h:23,
+                 from ../src/datalogger/impulse_logger_dao.h:22,
+                 from ../src/datalogger/impulse_logger_dao.cpp:19:
+/usr/include/pqxx/transaction_base.hxx:728:10: note: declared here
+  728 |   result exec_params(std::string_view query, Args &&...args)
+      |          ^~~~~~~~~~~
+../src/datalogger/temperature_logger_dao.cpp: In member function 'void supla_temperature_logger_dao::tsdb_add_temperature(int, char*)':
+../src/datalogger/temperature_logger_dao.cpp:62:18: warning: 'pqxx::result pqxx::transaction_base::exec_params(std::string_view, Args&& ...) [with Args = {int&, char*&}; std::string_view = std::basic_string_view<char>]' is deprecated: Use exec(zview, params) instead. [-Wdeprecated-declarations]
+   62 |   ntx.exec_params("SELECT supla_add_temperature_log_item($1,$2)", channel_id,
+      |   ~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   63 |                   temperature);
+      |                   ~~~~~~~~~~~~
+In file included from /usr/include/pqxx/dbtransaction.hxx:20,
+                 from /usr/include/pqxx/blob.hxx:36,
+                 from /usr/include/pqxx/pqxx:6,
+                 from ../src/tsdb/tsdb_access_provider.h:22,
+                 from ../src/cyclictasks/abstract_cyclictask_dao.h:23,
+                 from ../src/datalogger/temperature_logger_dao.h:24,
+                 from ../src/datalogger/temperature_logger_dao.cpp:19:
+/usr/include/pqxx/transaction_base.hxx:728:10: note: declared here
+  728 |   result exec_params(std::string_view query, Args &&...args)
+      |          ^~~~~~~~~~~
+../src/datalogger/temperature_logger_dao.cpp: In member function 'void supla_temperature_logger_dao::tsdb_add_temperature_and_humidity(int, char*, char*)':
+../src/datalogger/temperature_logger_dao.cpp:113:18: warning: 'pqxx::result pqxx::transaction_base::exec_params(std::string_view, Args&& ...) [with Args = {int&, char*&, char*&}; std::string_view = std::basic_string_view<char>]' is deprecated: Use exec(zview, params) instead. [-Wdeprecated-declarations]
+  113 |   ntx.exec_params("SELECT supla_add_temphumidity_log_item($1,$2,$3)",
+      |   ~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  114 |                   channel_id, temperature, humidity);
+      |                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/pqxx/transaction_base.hxx:728:10: note: declared here
+  728 |   result exec_params(std::string_view query, Args &&...args)
+      |          ^~~~~~~~~~~
+../src/datalogger/total_energy_logger_dao.cpp: In member function 'void supla_total_energy_logger_dao::tsdb_add(int, TElectricityMeter_ExtendedValue_V3*)':
+../src/datalogger/total_energy_logger_dao.cpp:103:18: warning: 'pqxx::result pqxx::transaction_base::exec_params(std::string_view, Args&& ...) [with Args = {int&, long long unsigned int&, long long unsigned int&, long long unsigned int&, long long unsigned int&, long long unsigned int&, long long unsigned int&, long long unsigned int&, long long unsigned int&, long long unsigned int&, long long unsigned int&, long long unsigned int&, long long unsigned int&, long long unsigned int&, long long unsigned int&}; std::string_view = std::basic_string_view<char>]' is deprecated: Use exec(zview, params) instead. [-Wdeprecated-declarations]
+  103 |   ntx.exec_params(
+      |   ~~~~~~~~~~~~~~~^
+  104 |       "SELECT "
+      |       ~~~~~~~~~   
+  105 |       "supla_add_em_log_item($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$"
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  106 |       "15)",
+      |       ~~~~~~      
+  107 |       channel_id, em_ev->total_forward_active_energy[0],
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  108 |       em_ev->total_reverse_active_energy[0],
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  109 |       em_ev->total_forward_reactive_energy[0],
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  110 |       em_ev->total_reverse_reactive_energy[0],
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  111 |       em_ev->total_forward_active_energy[1],
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  112 |       em_ev->total_reverse_active_energy[1],
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  113 |       em_ev->total_forward_reactive_energy[1],
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  114 |       em_ev->total_reverse_reactive_energy[1],
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  115 |       em_ev->total_forward_active_energy[2],
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  116 |       em_ev->total_reverse_active_energy[2],
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  117 |       em_ev->total_forward_reactive_energy[2],
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  118 |       em_ev->total_reverse_reactive_energy[2],
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  119 |       em_ev->total_forward_active_energy_balanced,
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  120 |       em_ev->total_reverse_active_energy_balanced);
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/pqxx/dbtransaction.hxx:20,
+                 from /usr/include/pqxx/blob.hxx:36,
+                 from /usr/include/pqxx/pqxx:6,
+                 from ../src/tsdb/tsdb_access_provider.h:22,
+                 from ../src/cyclictasks/abstract_cyclictask_dao.h:23,
+                 from ../src/datalogger/total_energy_logger_dao.h:22,
+                 from ../src/datalogger/total_energy_logger_dao.cpp:19:
+/usr/include/pqxx/transaction_base.hxx:728:10: note: declared here
+  728 |   result exec_params(std::string_view query, Args &&...args)
+      |          ^~~~~~~~~~~
+../src/datalogger/voltage_aberration_logger_dao.cpp: In member function 'void supla_voltage_aberration_logger_dao::tsdb_add(const time_t&, int, short int, int, int, int, int, int, int, int, std::string, std::string, std::string, int)':
+../src/datalogger/voltage_aberration_logger_dao.cpp:116:18: warning: 'pqxx::result pqxx::transaction_base::exec_params(std::string_view, Args&& ...) [with Args = {std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, int&, short int&, int&, int&, int&, int&, int&, int&, int&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, int&}; std::string_view = std::basic_string_view<char>]' is deprecated: Use exec(zview, params) instead. [-Wdeprecated-declarations]
+  116 |   ntx.exec_params(
+      |   ~~~~~~~~~~~~~~~^
+  117 |       "SELECT "
+      |       ~~~~~~~~~   
+  118 |       "supla_add_em_voltage_aberration_log_item($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,"
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  119 |       "$11,$12,$13,$14)",
+      |       ~~~~~~~~~~~~~~~~~~~
+  120 |       get_tsdba()->time_to_timestamp_string(time), channel_id, phase,
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  121 |       count_total, count_above, count_below, sec_above, sec_below,
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  122 |       max_sec_above, max_sec_below, min_voltage, max_voltage, avg_voltage,
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  123 |       measurement_time_sec);
+      |       ~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/pqxx/dbtransaction.hxx:20,
+                 from /usr/include/pqxx/blob.hxx:36,
+                 from /usr/include/pqxx/pqxx:6,
+                 from ../src/tsdb/tsdb_access_provider.h:22,
+                 from ../src/cyclictasks/abstract_cyclictask_dao.h:23,
+                 from ../src/datalogger/abstract_electricity_logger_dao.h:26,
+                 from ../src/datalogger/voltage_aberration_logger_dao.h:25,
+                 from ../src/datalogger/voltage_aberration_logger_dao.cpp:19:
+/usr/include/pqxx/transaction_base.hxx:728:10: note: declared here
+  728 |   result exec_params(std::string_view query, Args &&...args)
+      |          ^~~~~~~~~~~

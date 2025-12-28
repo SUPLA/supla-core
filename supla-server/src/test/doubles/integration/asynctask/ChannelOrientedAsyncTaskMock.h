@@ -27,6 +27,7 @@ class ChannelOrientedAsyncTaskMock : public AsyncTaskMock {
 
  protected:
   virtual bool _execute(bool *execute_again);
+  using AsyncTaskMock::_execute;
 
  public:
   ChannelOrientedAsyncTaskMock(supla_asynctask_queue *queue,

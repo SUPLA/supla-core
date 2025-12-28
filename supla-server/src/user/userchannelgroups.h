@@ -30,6 +30,7 @@
 #include "userchannelgroup.h"
 
 class supla_user;
+class supla_user_channelgroup;
 class supla_user_channelgroups : public supla_objcontainer {
  private:
   supla_user *user;
@@ -45,6 +46,8 @@ class supla_user_channelgroups : public supla_objcontainer {
 
  public:
   explicit supla_user_channelgroups(supla_user *user);
+  bool add(supla_user_channelgroup *group, e_objc_scope scope);
+
   bool set_new_value(const supla_caller &caller, TCS_SuplaNewValue *new_value);
   bool set_char_value(const supla_caller &caller, int GroupID,
                       const char value);

@@ -34,6 +34,15 @@ supla_voltage_aberration_logger_dao::supla_voltage_aberration_logger_dao(
     supla_abstract_db_access_provider *dba)
     : supla_abstract_electricity_logger_dao(dba) {}
 
+void supla_voltage_aberration_logger_dao::add(const std::time_t &time,
+                                              int channel_id, char phase,
+                                              supla_simple_statiscics *stat,
+                                              const std::string &procedure,
+                                              unsigned char precision) {
+  supla_abstract_electricity_logger_dao::add(time, channel_id, phase, stat,
+                                             procedure, precision);
+}
+
 void supla_voltage_aberration_logger_dao::mariadb_add(
     const time_t &time, int channel_id, char phase, int count_total,
     int count_above, int count_below, int sec_above, int sec_below,

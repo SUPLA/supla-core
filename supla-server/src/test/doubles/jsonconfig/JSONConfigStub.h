@@ -38,6 +38,7 @@ class JSONConfigStub : public supla_json_config {
   bool merge(cJSON *src_parent, cJSON *dst_parent,
              const std::map<unsigned _supla_int16_t, std::string> &m,
              bool delete_nonexistent);
+  virtual void merge(supla_json_config *dst);
 };
 
 } /* namespace testing */

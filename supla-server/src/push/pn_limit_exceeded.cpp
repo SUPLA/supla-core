@@ -54,4 +54,4 @@ void supla_pn_limit_exceeded::set_localized_body_args(
 void supla_pn_limit_exceeded::set_sound(int sound) {}
 
 void supla_pn_limit_exceeded::set_replacement_map(
-    const map<string, string> &replacement_map) {}
+    map<string, string> *replacement_map) {}

@@ -17,7 +17,11 @@
  */
 
 #ifndef ARDUINO
+
+#define _DEFAULT_SOURCE
+
 #include "eh.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -31,6 +35,7 @@
 #include <fcntl.h>
 
 #ifdef __linux__
+
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 #endif

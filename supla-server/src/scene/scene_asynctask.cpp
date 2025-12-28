@@ -176,10 +176,13 @@ bool supla_scene_asynctask::_execute(bool *execute_again,
 }
 
 void supla_scene_asynctask::on_timeout(unsigned long long timeout_usec,
-                                       unsigned long long usec_after_timeout) {
-  supla_log(LOG_WARNING,
-            "Scene execution timeout. Id: %i, TimeoutUSec: %llu+%llu",
-            get_scene_id(), timeout_usec, usec_after_timeout);
+                                       unsigned long long usec_after_timeout,
+                                       bool log_allowed) {
+  if (log_allowed) {
+    supla_log(LOG_WARNING,
+              "Scene execution timeout. Id: %i, TimeoutUSec: %llu+%llu",
+              get_scene_id(), timeout_usec, usec_after_timeout);
+  }
 }
 
 // static

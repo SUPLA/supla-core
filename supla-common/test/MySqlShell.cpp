@@ -28,7 +28,7 @@ namespace testing {
 using std::string;
 
 const char *MySqlShell::program = "mysql";
-const char *MySqlShell::user_switch = "-u";
+const char *MySqlShell::user_switch = "--ssl=0 -u";
 
 // static
 void MySqlShell::runSqlScript(const char *sql_dir, const char *db_host,

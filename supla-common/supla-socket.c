@@ -35,6 +35,8 @@
 
 #else
 
+#define _POSIX_C_SOURCE 200809L
+
 #include <arpa/inet.h>
 #include <assert.h>
 #include <fcntl.h>
@@ -224,7 +226,7 @@ char ssocket_openlistener(void *_ssd) {
   setsockopt(sd, SOL_SOCKET, SO_NOSIGPIPE, (const char *)&sflag, sizeof(sflag));
 #endif /*ifdef __APPLE__*/
 
-  bzero(&addr, sizeof(addr));
+  memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
   addr.sin_port = htons(ssd->port);
   addr.sin_addr.s_addr = INADDR_ANY;

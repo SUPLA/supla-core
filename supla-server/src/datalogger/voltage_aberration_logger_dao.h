@@ -42,6 +42,11 @@ class supla_voltage_aberration_logger_dao
   void add(const time_t &time, int channel_id, char phase,
            supla_voltage_aberration_analyzer *va);
 
+ protected:
+  virtual void add(const std::time_t &time, int channel_id, char phase,
+                   supla_simple_statiscics *stat, const std::string &procedure,
+                   unsigned char precision);
+
  public:
   explicit supla_voltage_aberration_logger_dao(
       supla_abstract_db_access_provider *dba);

@@ -152,11 +152,14 @@ bool supla_action_gate_openclose::_execute(
 }
 
 void supla_action_gate_openclose::on_timeout(
-    unsigned long long timeout_usec, unsigned long long usec_after_timeout) {
-  supla_log(LOG_WARNING,
-            "Gate open/close - aciton execution timeout. ChannelId: %i, "
-            "TimeoutUSec: %llu+%llu",
-            get_channel_id(), timeout_usec, usec_after_timeout);
+    unsigned long long timeout_usec, unsigned long long usec_after_timeout,
+    bool log_allowed) {
+  if (log_allowed) {
+    supla_log(LOG_WARNING,
+              "Gate open/close - aciton execution timeout. ChannelId: %i, "
+              "TimeoutUSec: %llu+%llu",
+              get_channel_id(), timeout_usec, usec_after_timeout);
+  }
 }
 
 // static

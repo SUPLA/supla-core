@@ -18,6 +18,8 @@
 
 #ifndef ARDUINO
 
+#define _DEFAULT_SOURCE
+
 #include "tools.h"
 
 #ifndef __ANDROID_API__

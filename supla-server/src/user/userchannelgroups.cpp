@@ -35,6 +35,11 @@ supla_user_channelgroups::supla_user_channelgroups(supla_user *user) {
   load();
 }
 
+bool supla_user_channelgroups::add(supla_user_channelgroup *group,
+                                   e_objc_scope scope) {
+  return add_object(group, scope);
+}
+
 void supla_user_channelgroups::_load(database *db, e_objc_scope scope) {
   db->get_user_channel_groups(user->getUserID(), this);
 }
