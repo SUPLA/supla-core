@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_client_reconnect_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_client_reconnect_command::

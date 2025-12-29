@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_factory_reset_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_factory_reset_command::supla_abstract_factory_reset_command(

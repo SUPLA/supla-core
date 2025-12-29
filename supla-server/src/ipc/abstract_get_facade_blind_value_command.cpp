@@ -18,6 +18,9 @@
 
 #include "abstract_get_facade_blind_value_command.h"
 
+#include <cstdio>
+#include <string>
+
 #include "jsonconfig/channel/facade_blind_config.h"
 
 using std::string;

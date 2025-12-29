@@ -18,6 +18,7 @@
 
 #include "ActionGateOpenCloseTest.h"
 
+#include <cstdio>
 #include <memory>
 
 #include "actions/action_gate_openclose.h"

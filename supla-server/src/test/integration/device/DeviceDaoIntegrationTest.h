@@ -19,7 +19,7 @@
 #ifndef DeviceDaoIntegrationTest_H_
 #define DeviceDaoIntegrationTest_H_
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device/device_dao.h"
 #include "integration/IntegrationTest.h"
 
@@ -27,7 +27,7 @@ namespace testing {
 
 class DeviceDaoIntegrationTest : public IntegrationTest, public Test {
  protected:
-  supla_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
   supla_device_dao *dao;
 
  public:

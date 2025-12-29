@@ -19,12 +19,15 @@
 #ifndef THERMOSTAT_LOGGER_DAO_H_
 #define THERMOSTAT_LOGGER_DAO_H_
 
-#include "db/abstract_db_access_provider.h"
+#include "cyclictasks/abstract_cyclictask_dao.h"
 #include "device/value/channel_hp_thermostat_value.h"
 
-class supla_hp_thermostat_logger_dao {
+class supla_hp_thermostat_logger_dao : public supla_abstract_cyclictask_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  void mariadb_add(int channel_id, char *measured_temperature,
+                   char *preset_temperature, char on);
+  void tsdb_add(int channel_id, char *measured_temperature,
+                char *preset_temperature, bool on);
 
  public:
   explicit supla_hp_thermostat_logger_dao(

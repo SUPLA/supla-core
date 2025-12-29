@@ -26,6 +26,9 @@
 #include <userdevices.h>
 
 #include <list>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "client.h"
 #include "db/database.h"

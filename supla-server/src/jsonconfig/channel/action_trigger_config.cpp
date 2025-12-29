@@ -18,6 +18,8 @@
 
 #include "action_trigger_config.h"
 
+#include <string>
+
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
 #include "actions/action_rgbw_parameters.h"

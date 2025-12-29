@@ -18,6 +18,8 @@
 
 #include "client/RegisterClientWithAccessIdAuthTest.h"
 
+#include <cstdio>
+
 namespace testing {
 
 RegisterClientWithAccessIdAuthTest::RegisterClientWithAccessIdAuthTest()

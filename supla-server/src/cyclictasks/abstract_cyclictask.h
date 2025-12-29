@@ -37,6 +37,7 @@ class supla_abstract_cyclictask {
   supla_abstract_cyclictask();
   virtual ~supla_abstract_cyclictask();
   virtual bool db_access_needed(void);
+  virtual bool is_tsdb_preffered(void);
   virtual bool user_access_needed(void);
   bool is_it_time(const struct timeval *now);
   void run(const struct timeval *now, const std::vector<supla_user *> *users,

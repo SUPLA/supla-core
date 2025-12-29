@@ -18,7 +18,9 @@
 
 #include "pn_recipients.h"
 
-#include "db/db_access_provider.h"
+#include <vector>
+
+#include "db/mariadb_access_provider.h"
 #include "log.h"
 #include "push/pn_recipient_dao.h"
 
@@ -138,7 +140,7 @@ bool supla_pn_recipients::apply_json(int user_id, cJSON* json) {
     return false;
   }
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_pn_recipient_dao dao(&dba);
 
   dao.get_recipients(user_id, aids, cids, this);

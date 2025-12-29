@@ -18,6 +18,9 @@
 
 #include <ipc/abstract_on_device_deleted_command.h>
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_on_device_deleted_command::

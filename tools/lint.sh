@@ -18,11 +18,12 @@ find ./supla-server/src -type f \
 ! -path "./supla-server/src/date/tz_private.h" \
 ! -path "./supla-server/src/astro/SolarCalculator.cpp" \
 ! -path "./supla-server/src/astro/SolarCalculator.h" \
+-not -name ".DS_Store" \
 -exec cpplint {} +
 
-find ./supla-scheduler/src -type f -exec cpplint {} +
-find ./supla-dev/src -type f -exec cpplint {} +
-find ./supla-console-client/src -type f -exec cpplint {} +
-find ./supla-afl/src -type f -exec cpplint {} +
+find ./supla-scheduler/src -type f -not -name ".DS_Store" -exec cpplint {} +
+find ./supla-dev/src -type f -not -name ".DS_Store" -exec cpplint {} +
+find ./supla-console-client/src -type f -not -name ".DS_Store" -exec cpplint {} +
+find ./supla-afl/src -type f -not -name ".DS_Store" -exec cpplint {} +
 
 echo OK

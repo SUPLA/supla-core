@@ -19,6 +19,7 @@
 #include "AlexaDeleteRequestTest.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "amazon/alexa_delete_request.h"

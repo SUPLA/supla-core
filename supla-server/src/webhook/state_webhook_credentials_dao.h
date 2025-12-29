@@ -21,15 +21,15 @@
 
 #include <string>
 
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 
 class supla_state_webhook_credentials_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
 
  public:
   explicit supla_state_webhook_credentials_dao(
-      supla_abstract_db_access_provider *dba);
+      supla_mariadb_access_provider *dba);
   virtual ~supla_state_webhook_credentials_dao(void);
 
   virtual void get(int user_id, std::string *access_token,

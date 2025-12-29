@@ -18,6 +18,9 @@
 
 #include "value_based_trigger.h"
 
+#include <map>
+#include <string>
+
 #include "log.h"
 #include "vbt/vbt_on_change_condition.h"
 

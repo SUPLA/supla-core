@@ -18,6 +18,8 @@
 
 #include <dcpair.h>
 
+#include <list>
+
 using std::list;
 
 dcpair::dcpair(int DeviceId, int ChannelId) {

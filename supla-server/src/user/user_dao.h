@@ -21,15 +21,15 @@
 
 #include <vector>
 
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "user/abstract_user_dao.h"
 
 class supla_user_dao : public supla_abstract_user_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
 
  public:
-  explicit supla_user_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_user_dao(supla_mariadb_access_provider *dba);
   virtual ~supla_user_dao();
 
   virtual std::vector<supla_virtual_channel> get_virtual_channels(

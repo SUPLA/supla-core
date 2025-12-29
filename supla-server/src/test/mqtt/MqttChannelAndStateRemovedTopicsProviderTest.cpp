@@ -18,17 +18,19 @@
 
 #include "MqttChannelAndStateRemovedTopicsProviderTest.h"
 
+#include <cstdio>
+
 #include "mqtt_db.h"
 
 namespace testing {
 
 MqttChannelAndStateRemovedTopicsProviderTest::
-    MqttChannelAndStateRemovedTopicsProviderTest(void)
-    : MqttMessageProviderTest() {
+MqttChannelAndStateRemovedTopicsProviderTest(void)
+: MqttMessageProviderTest() {
   removed_topics_provider = NULL;
 }
 MqttChannelAndStateRemovedTopicsProviderTest::
-    ~MqttChannelAndStateRemovedTopicsProviderTest(void) {}
+~MqttChannelAndStateRemovedTopicsProviderTest(void) {}
 
 void MqttChannelAndStateRemovedTopicsProviderTest::SetUp() {
   removed_topics_provider =

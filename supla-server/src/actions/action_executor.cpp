@@ -19,6 +19,7 @@
 #include "actions/action_executor.h"
 
 #include <memory>
+#include <string>
 
 #include "http/http_event_hub.h"
 #include "mqtt/mqtt_client_suite.h"
@@ -84,16 +85,17 @@ void supla_action_executor::set_color_brightness(char color_brightness) {
 
 void supla_action_executor::set_rgbw(unsigned int *color,
                                      char *color_brightness, char *brightness,
-                                     char *on_off) {
-  execute_action([this, color, color_brightness, brightness, on_off](
-                     supla_user_channelgroups *channel_groups,
-                     supla_device_channels *channels) -> void {
+                                     char *on_off, char *dimmer_cct) {
+  execute_action([this, color, color_brightness, brightness, on_off,
+                  dimmer_cct](supla_user_channelgroups *channel_groups,
+                              supla_device_channels *channels) -> void {
     if (channel_groups) {
       channel_groups->set_rgbw_value(get_caller(), get_group_id(), color,
-                                     color_brightness, brightness, on_off);
+                                     color_brightness, brightness, on_off,
+                                     dimmer_cct);
     } else {
       channels->set_rgbw(get_caller(), get_channel_id(), 0, 0, color,
-                         color_brightness, brightness, on_off);
+                         color_brightness, brightness, on_off, dimmer_cct);
     }
   });
 }
@@ -156,13 +158,13 @@ void supla_action_executor::interrupt_and_execute(void) {
 }
 
 void supla_action_executor::enable(void) {
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_schedule_dao dao(&dba);
   dao.enable(get_user_id(), get_schedule_id(), true);
 }
 
 void supla_action_executor::disable(void) {
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_schedule_dao dao(&dba);
   dao.enable(get_user_id(), get_schedule_id(), false);
 }

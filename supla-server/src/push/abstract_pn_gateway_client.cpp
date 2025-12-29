@@ -18,6 +18,9 @@
 
 #include "abstract_pn_gateway_client.h"
 
+#include <string>
+#include <vector>
+
 using std::string;
 using std::vector;
 

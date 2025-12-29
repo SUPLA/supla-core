@@ -35,7 +35,7 @@
 #include "client/clientchannelgroups.h"
 #include "client/clientchannels.h"
 #include "client/clientlocation.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 
 class supla_client_call_handler_collection;
 class supla_user;
@@ -47,7 +47,7 @@ class supla_client : public supla_abstract_connection_object {
   bool superuser_authorized;
   int access_id;
   static supla_client_call_handler_collection call_handler_collection;
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_client_dao *client_dao;
   supla_client_locations *locations;
   supla_client_channels *channels;

@@ -38,6 +38,10 @@ using std::shared_ptr;
 supla_client_channels::supla_client_channels(supla_client *client)
     : supla_client_objcontainer(client) {}
 
+bool supla_client_channels::add(supla_client_channel *channel) {
+  return add_object(channel);
+}
+
 supla_client_channel *supla_client_channels::find_channel(int Id) {
   return static_cast<supla_client_channel *>(find(Id, master));
 }

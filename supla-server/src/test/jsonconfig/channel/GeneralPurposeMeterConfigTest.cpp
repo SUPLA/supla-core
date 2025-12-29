@@ -18,6 +18,8 @@
 
 #include "GeneralPurposeMeterConfigTest.h"
 
+#include <cstdio>
+
 #include "TestHelper.h"
 #include "json/cJSON.h"
 #include "jsonconfig/channel/general_purpose_meter_config.h"

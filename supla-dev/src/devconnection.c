@@ -21,6 +21,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <cstdio>
+
 #include "channel-io.h"
 #include "devcfg.h"
 #include "log.h"

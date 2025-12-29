@@ -36,7 +36,7 @@ ClientSceneDaoIntegrationTest::ClientSceneDaoIntegrationTest()
 ClientSceneDaoIntegrationTest::~ClientSceneDaoIntegrationTest() {}
 
 void ClientSceneDaoIntegrationTest::SetUp() {
-  dba = new supla_db_access_provider();
+  dba = new supla_mariadb_access_provider();
   dao = new supla_client_scene_dao(dba);
   ASSERT_TRUE(dao != nullptr);
 

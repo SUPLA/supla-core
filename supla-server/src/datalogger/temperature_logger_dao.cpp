@@ -22,14 +22,45 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <pqxx/pqxx>
+#include <vector>
+
 #include "device/value/channel_temphum_value.h"
 #include "log.h"
 
 using std::vector;
 
+#define BUFF_SIZE 20
+
 supla_temperature_logger_dao::supla_temperature_logger_dao(
-    supla_abstract_db_access_provider *dba) {
-  this->dba = dba;
+    supla_abstract_db_access_provider *dba)
+    : supla_abstract_cyclictask_dao(dba) {}
+
+void supla_temperature_logger_dao::mariadb_add_temperature(int channel_id,
+                                                           char *temperature) {
+  MYSQL_BIND pbind[2] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_DECIMAL;
+  pbind[1].buffer = temperature;
+  pbind[1].buffer_length = strnlen(temperature, BUFF_SIZE);
+
+  const char sql[] = "CALL `supla_add_temperature_log_item`(?,?)";
+
+  MYSQL_STMT *stmt = nullptr;
+  get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 2, true);
+
+  if (stmt != nullptr) mysql_stmt_close(stmt);
+}
+
+void supla_temperature_logger_dao::tsdb_add_temperature(int channel_id,
+                                                        char *temperature) {
+  pqxx::nontransaction ntx(*get_tsdba()->get_conn());
+
+  ntx.exec_params("SELECT supla_add_temperature_log_item($1,$2)", channel_id,
+                  temperature);
 }
 
 void supla_temperature_logger_dao::add_temperature(int channel_id,
@@ -38,24 +69,49 @@ void supla_temperature_logger_dao::add_temperature(int channel_id,
     return;
   }
 
-  char buff[20] = {};
-  MYSQL_BIND pbind[2] = {};
+  char temperature_str[BUFF_SIZE] = {};
+  snprintf(temperature_str, sizeof(temperature_str), "%04.4f", temperature);
 
-  snprintf(buff, sizeof(buff), "%04.4f", temperature);
+  if (get_mdba()) {
+    mariadb_add_temperature(channel_id, temperature_str);
+  } else if (get_tsdba()) {
+    try {
+      tsdb_add_temperature(channel_id, temperature_str);
+    } catch (const std::exception &e) {
+      get_tsdba()->log_exception(e);
+    }
+  }
+}
+
+void supla_temperature_logger_dao::mariadb_add_temperature_and_humidity(
+    int channel_id, char *temperature, char *humidity) {
+  MYSQL_BIND pbind[3] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
 
   pbind[1].buffer_type = MYSQL_TYPE_DECIMAL;
-  pbind[1].buffer = (char *)buff;
-  pbind[1].buffer_length = strnlen(buff, 20);
+  pbind[1].buffer = temperature;
+  pbind[1].buffer_length = strnlen(temperature, BUFF_SIZE);
 
-  const char sql[] = "CALL `supla_add_temperature_log_item`(?,?)";
+  pbind[2].buffer_type = MYSQL_TYPE_DECIMAL;
+  pbind[2].buffer = humidity;
+  pbind[2].buffer_length = strnlen(humidity, BUFF_SIZE);
+
+  const char sql[] = "CALL `supla_add_temphumidity_log_item`(?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 2, true);
+  get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 3, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
+}
+
+void supla_temperature_logger_dao::tsdb_add_temperature_and_humidity(
+    int channel_id, char *temperature, char *humidity) {
+  pqxx::nontransaction ntx(*get_tsdba()->get_conn());
+
+  ntx.exec_params("SELECT supla_add_temphumidity_log_item($1,$2,$3)",
+                  channel_id, temperature, humidity);
 }
 
 void supla_temperature_logger_dao::add_temperature_and_humidity(
@@ -64,30 +120,22 @@ void supla_temperature_logger_dao::add_temperature_and_humidity(
     return;
   }
 
-  char buff1[20] = {};
-  char buff2[20] = {};
-  MYSQL_BIND pbind[3] = {};
+  char temperature_str[BUFF_SIZE] = {};
+  char humidity_str[BUFF_SIZE] = {};
+  snprintf(temperature_str, sizeof(temperature_str), "%04.4f", temperature);
+  snprintf(humidity_str, sizeof(humidity_str), "%04.4f", humidity);
 
-  snprintf(buff1, sizeof(buff1), "%04.4f", temperature);
-  snprintf(buff2, sizeof(buff2), "%04.4f", humidity);
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&channel_id;
-
-  pbind[1].buffer_type = MYSQL_TYPE_DECIMAL;
-  pbind[1].buffer = (char *)buff1;
-  pbind[1].buffer_length = strnlen(buff1, 20);
-
-  pbind[2].buffer_type = MYSQL_TYPE_DECIMAL;
-  pbind[2].buffer = (char *)buff2;
-  pbind[2].buffer_length = strnlen(buff2, 20);
-
-  const char sql[] = "CALL `supla_add_temphumidity_log_item`(?,?,?)";
-
-  MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 3, true);
-
-  if (stmt != nullptr) mysql_stmt_close(stmt);
+  if (get_mdba()) {
+    mariadb_add_temperature_and_humidity(channel_id, temperature_str,
+                                         humidity_str);
+  } else if (get_tsdba()) {
+    try {
+      tsdb_add_temperature_and_humidity(channel_id, temperature_str,
+                                        humidity_str);
+    } catch (const std::exception &e) {
+      get_tsdba()->log_exception(e);
+    }
+  }
 }
 
 void supla_temperature_logger_dao::load(
@@ -123,7 +171,7 @@ void supla_temperature_logger_dao::load(
   pbind[3].buffer_type = MYSQL_TYPE_LONG;
   pbind[3].buffer = (char *)&func3;
 
-  if (dba->stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
+  if (get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
     MYSQL_BIND rbind[4] = {};
     char value[SUPLA_CHANNELVALUE_SIZE] = {};
     int channel_id = 0;

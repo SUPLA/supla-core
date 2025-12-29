@@ -18,9 +18,15 @@
 
 #include "MqttDataSourceTest.h"
 
+#include <cstdio>
+
 namespace testing {
 
-MqttDataSourceTest::MqttDataSourceTest(void) {}
+MqttDataSourceTest::MqttDataSourceTest(void) {
+  iniSettings = nullptr;
+  ds = nullptr;
+}
+
 MqttDataSourceTest::~MqttDataSourceTest(void) {}
 
 void MqttDataSourceTest::SetUp() {

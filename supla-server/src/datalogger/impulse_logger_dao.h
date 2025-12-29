@@ -19,12 +19,15 @@
 #ifndef IMPULSE_LOGGER_DAO_H_
 #define IMPULSE_LOGGER_DAO_H_
 
-#include "db/abstract_db_access_provider.h"
+#include "cyclictasks/abstract_cyclictask_dao.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 
-class supla_impulse_logger_dao {
- private:
-  supla_abstract_db_access_provider *dba;
+class supla_impulse_logger_dao : public supla_abstract_cyclictask_dao {
+ protected:
+  void mariadb_add(int channel_id, unsigned _supla_int64_t counter,
+                   unsigned _supla_int64_t calculated_value);
+  void tsdb_add(int channel_id, unsigned _supla_int64_t counter,
+                unsigned _supla_int64_t calculated_value);
 
  public:
   explicit supla_impulse_logger_dao(supla_abstract_db_access_provider *dba);

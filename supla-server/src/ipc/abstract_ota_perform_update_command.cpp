@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_ota_perform_update_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_ota_perform_update_command::

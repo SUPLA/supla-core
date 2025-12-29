@@ -20,28 +20,19 @@
 
 #include <string.h>
 
+#include <pqxx/pqxx>
+
 #include "log.h"
 
 supla_general_purpose_measurement_logger_dao::
     supla_general_purpose_measurement_logger_dao(
-        supla_abstract_db_access_provider *dba) {
-  this->dba = dba;
-}
+        supla_abstract_db_access_provider *dba)
+    : supla_abstract_cyclictask_dao(dba) {}
 
-void supla_general_purpose_measurement_logger_dao::add(
-    supla_general_purpose_measurement_analyzer *analyzer) {
-  if (!analyzer) {
-    return;
-  }
-
+void supla_general_purpose_measurement_logger_dao::mariadb_add(
+    int channel_id, double first, double last, double avg, double min,
+    double max) {
   MYSQL_BIND pbind[6] = {};
-
-  int channel_id = analyzer->get_channel_id();
-  double first = analyzer->get_first();
-  double last = analyzer->get_last();
-  double avg = analyzer->get_time_weighted_avg();
-  double min = analyzer->get_min();
-  double max = analyzer->get_max();
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
@@ -64,7 +55,38 @@ void supla_general_purpose_measurement_logger_dao::add(
   const char sql[] = "CALL `supla_add_gp_measurement_log_item`(?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 6, true);
+  get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 6, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
+}
+
+void supla_general_purpose_measurement_logger_dao::tsdb_add(
+    int channel_id, double first, double last, double avg, double min,
+    double max) {
+  pqxx::nontransaction ntx(*get_tsdba()->get_conn());
+
+  ntx.exec_params(
+      "SELECT supla_add_gp_measurement_log_item ($1,$2,$3,$4,$5,$6)",
+      channel_id, first, last, avg, max, min);
+}
+
+void supla_general_purpose_measurement_logger_dao::add(
+    supla_general_purpose_measurement_analyzer *analyzer) {
+  if (!analyzer) {
+    return;
+  }
+
+  if (get_mdba()) {
+    mariadb_add(analyzer->get_channel_id(), analyzer->get_first(),
+                analyzer->get_last(), analyzer->get_time_weighted_avg(),
+                analyzer->get_min(), analyzer->get_max());
+  } else if (get_tsdba()) {
+    try {
+      tsdb_add(analyzer->get_channel_id(), analyzer->get_first(),
+               analyzer->get_last(), analyzer->get_time_weighted_avg(),
+               analyzer->get_min(), analyzer->get_max());
+    } catch (const std::exception &e) {
+      get_tsdba()->log_exception(e);
+    }
+  }
 }

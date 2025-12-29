@@ -18,6 +18,8 @@
 
 #include "client/call_handler/abstract_client_srpc_call_handler.h"
 
+#include <memory>
+
 using std::dynamic_pointer_cast;
 using std::shared_ptr;
 

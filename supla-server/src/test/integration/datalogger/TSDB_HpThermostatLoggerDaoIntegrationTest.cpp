@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ThermostatLoggerDaoIntegrationTest.h"
+#include "TSDB_HpThermostatLoggerDaoIntegrationTest.h"
 
 #include <string>
 
@@ -26,45 +26,33 @@ using std::string;
 
 namespace testing {
 
-ThermostatLoggerDaoIntegrationTest::ThermostatLoggerDaoIntegrationTest()
-    : IntegrationTest(), Test() {
-  dba = nullptr;
+TSDB_HpThermostatLoggerDaoIntegrationTest::
+TSDB_HpThermostatLoggerDaoIntegrationTest()
+: TSDB_LoggerDaoIntegrationTest() {
   dao = nullptr;
 }
 
-ThermostatLoggerDaoIntegrationTest::~ThermostatLoggerDaoIntegrationTest() {}
+TSDB_HpThermostatLoggerDaoIntegrationTest::
+~TSDB_HpThermostatLoggerDaoIntegrationTest() {}
 
-void ThermostatLoggerDaoIntegrationTest::SetUp() {
-  dba = new supla_db_access_provider();
-  ASSERT_TRUE(dba != nullptr);
+void TSDB_HpThermostatLoggerDaoIntegrationTest::SetUp() {
+  TSDB_LoggerDaoIntegrationTest::SetUp();
   dao = new supla_hp_thermostat_logger_dao(dba);
-  ASSERT_TRUE(dao != nullptr);
-
-  initTestDatabase();
-  Test::SetUp();
 }
 
-void ThermostatLoggerDaoIntegrationTest::TearDown() {
-  if (dao) {
-    delete dao;
-    dao = nullptr;
-  }
+void TSDB_HpThermostatLoggerDaoIntegrationTest::TearDown() {
+  delete dao;
 
-  if (dba) {
-    delete dba;
-    dba = nullptr;
-  }
-
-  Test::TearDown();
+  TSDB_LoggerDaoIntegrationTest::TearDown();
 }
 
-TEST_F(ThermostatLoggerDaoIntegrationTest, add) {
+TEST_F(TSDB_HpThermostatLoggerDaoIntegrationTest, add) {
   ASSERT_TRUE(dba->connect());
 
   string result;
   sqlQuery("SELECT count(*) as count FROM supla_thermostat_log", &result);
 
-  EXPECT_EQ(result, "count\n0\n");
+  EXPECT_EQ(result, " count \n-------\n     0\n(1 row)\n\n");
 
   char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
   ((TThermostat_Value *)raw_value)->IsOn = 1;
@@ -78,15 +66,17 @@ TEST_F(ThermostatLoggerDaoIntegrationTest, add) {
   result = "";
 
   sqlQuery(
-      "SELECT channel_id, \\`on\\`, measured_temperature, preset_temperature "
-      "FROM "
-      "supla_thermostat_log WHERE date >= DATE_ADD(UTC_TIMESTAMP(), INTERVAL "
-      "-2 SECOND) AND date <= DATE_ADD(UTC_TIMESTAMP(), INTERVAL 2 SECOND)",
+      "SELECT channel_id, \\\"on\\\", measured_temperature, preset_temperature "
+      "FROM supla_thermostat_log WHERE  date >= (now() AT TIME ZONE 'UTC') - "
+      "INTERVAL '2 seconds' AND date <= (now() AT TIME ZONE 'UTC') + INTERVAL "
+      "'2 seconds'",
       &result);
 
   EXPECT_EQ(result,
-            "channel_id\ton\tmeasured_temperature\tpreset_"
-            "temperature\n25\t1\t21.34\t22.34\n");
+            " channel_id | on | measured_temperature | preset_temperature \n"
+            "------------+----+----------------------+--------------------\n"
+            "         25 | t  |                21.34 |              22.34\n"
+            "(1 row)\n\n");
 }
 
 } /* namespace testing */

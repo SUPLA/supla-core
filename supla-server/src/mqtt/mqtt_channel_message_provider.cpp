@@ -21,6 +21,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <cstdio>
+#include <string>
+
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "jsonconfig/channel/action_trigger_config.h"
@@ -257,6 +260,12 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_DIMMER:
       snprintf(buf, buf_size, "DIMMER");
       break;
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+      snprintf(buf, buf_size, "DIMMER_CCT");
+      break;
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+      snprintf(buf, buf_size, "DIMMER_CCT_AND_RGB");
+      break;
     case SUPLA_CHANNELFNC_RGBLIGHTING:
       snprintf(buf, buf_size, "RGBLIGHTING");
       break;
@@ -480,6 +489,13 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
       break;
     case SUPLA_CHANNELFNC_DIMMER:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Dimmer");
+      break;
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Dimmer CCT");
+      break;
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Dimmer CCT and RGB lighting");
       break;
     case SUPLA_CHANNELFNC_RGBLIGHTING:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "RGB lighting");
@@ -1173,7 +1189,12 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
           device_class = water;
         }
 
-        result = ha_sensor(icv->get_custom_unit().c_str(), 3, 0, true,
+        string custom_unit = icv->get_custom_unit();
+        if (custom_unit == "m3") {
+          custom_unit = "m³";
+        }
+
+        result = ha_sensor(custom_unit.c_str(), 3, 0, true,
                            "state/calculated_value", NULL, "Value", NULL,
                            device_class, state_cls_total_increasing,
                            topic_prefix, topic_name, message, message_size);

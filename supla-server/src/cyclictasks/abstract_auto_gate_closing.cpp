@@ -20,6 +20,8 @@
 
 #include <assert.h>
 
+#include <vector>
+
 using std::vector;
 
 supla_abstract_auto_gate_closing::supla_abstract_auto_gate_closing()

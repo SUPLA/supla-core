@@ -18,6 +18,9 @@
 
 #include "container_config.h"
 
+#include <map>
+#include <string>
+
 #include "log.h"
 
 using std::map;

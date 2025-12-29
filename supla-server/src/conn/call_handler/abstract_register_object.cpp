@@ -99,9 +99,7 @@ bool supla_abstract_register_object::is_valid_authkey(void) {
   return memcmp(_authkey, authkey, SUPLA_AUTHKEY_SIZE) != 0;
 }
 
-void supla_abstract_register_object::set_guid(char *guid) {
-  this->guid = guid;
-}
+void supla_abstract_register_object::set_guid(char *guid) { this->guid = guid; }
 
 char *supla_abstract_register_object::get_guid(void) { return guid; }
 
@@ -111,9 +109,7 @@ void supla_abstract_register_object::set_authkey(char *authkey) {
 
 char *supla_abstract_register_object::get_authkey(void) { return authkey; }
 
-void supla_abstract_register_object::set_name(char *name) {
-  this->name = name;
-}
+void supla_abstract_register_object::set_name(char *name) { this->name = name; }
 
 char *supla_abstract_register_object::get_name(void) { return name; }
 
@@ -154,8 +150,7 @@ int supla_abstract_register_object::get_user_id() { return user_id; }
 
 int *supla_abstract_register_object::get_user_id_ptr() { return &user_id; }
 
-void supla_abstract_register_object::set_should_rollback(
-    bool should_rollback) {
+void supla_abstract_register_object::set_should_rollback(bool should_rollback) {
   this->should_rollback = should_rollback;
 }
 
@@ -168,18 +163,17 @@ void supla_abstract_register_object::set_srpc_adapter(
   this->srpc_adapter = srpc_adapter;
 }
 
-supla_abstract_srpc_adapter *
-supla_abstract_register_object::get_srpc_adapter(void) {
+supla_abstract_srpc_adapter *supla_abstract_register_object::get_srpc_adapter(
+    void) {
   return srpc_adapter;
 }
 
 void supla_abstract_register_object::set_dba(
-    supla_abstract_db_access_provider *dba) {
+    supla_mariadb_access_provider *dba) {
   this->dba = dba;
 }
 
-supla_abstract_db_access_provider *supla_abstract_register_object::get_dba(
-    void) {
+supla_mariadb_access_provider *supla_abstract_register_object::get_dba(void) {
   return dba;
 }
 

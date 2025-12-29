@@ -24,7 +24,7 @@
 #include "amazon/alexa_credentials.h"
 #include "amazon/alexa_discover_payload_obtainer.h"
 #include "amazon/alexa_request.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 
 class supla_alexa_discover_request : public supla_alexa_request {
  private:

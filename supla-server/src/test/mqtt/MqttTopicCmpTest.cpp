@@ -18,6 +18,7 @@
 
 #include "MqttTopicCmpTest.h"
 
+#include <cstdio>
 #include <list>
 #include <string>
 

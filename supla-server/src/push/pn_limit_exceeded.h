@@ -38,7 +38,7 @@ class supla_pn_limit_exceeded : public supla_push_notification {
   virtual void set_localized_body_args(const std::vector<std::string> &args);
   virtual void set_sound(int sound);
   virtual void set_replacement_map(
-      const std::map<std::string, std::string> &replacement_map);
+      std::map<std::string, std::string> *replacement_map);
 };
 
 #endif /* PUSH_NOTIFICATION_LIMIT_EXCEEDED_H_ */

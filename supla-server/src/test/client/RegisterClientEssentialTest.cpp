@@ -18,6 +18,7 @@
 
 #include "client/RegisterClientEssentialTest.h"
 
+#include <cstdio>
 #include <string>
 
 namespace testing {

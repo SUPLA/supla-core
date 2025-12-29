@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include <string>
+
 #include "ipc/abstract_ipc_ctrl.h"
 
 using std::string;

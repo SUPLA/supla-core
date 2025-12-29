@@ -31,9 +31,8 @@ class AlexaCredentialsDaoMock : public supla_amazon_alexa_credentials_dao {
  private:
  protected:
  public:
-  explicit AlexaCredentialsDaoMock(supla_abstract_db_access_provider *dba);
-  AlexaCredentialsDaoMock(supla_abstract_db_access_provider *dba,
-                          bool release_dba);
+  explicit AlexaCredentialsDaoMock(supla_mariadb_access_provider *dba);
+  AlexaCredentialsDaoMock(supla_mariadb_access_provider *dba, bool release_dba);
 
   virtual ~AlexaCredentialsDaoMock(void);
 

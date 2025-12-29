@@ -459,7 +459,7 @@ void supla_device_channel::set_json_config(supla_json_config *json_config) {
 
 void supla_device_channel::db_set_properties(supla_json_config *config) {
   if (config) {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     dao.set_channel_properties(get_user_id(), get_id(), config);
   }
@@ -579,7 +579,7 @@ bool supla_device_channel::set_value(
     char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
     new_value->get_raw_value(current_value);
 
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     dao.update_channel_value(get_id(), get_user_id(), current_value,
                              validity_time_sec ? *validity_time_sec : 0);
@@ -722,7 +722,7 @@ void supla_device_channel::set_extended_value(
   unlock();
 
   if (new_value) {  // That means there are differences
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     dao.update_channel_extended_value(get_id(), get_user_id(), new_value);
 
@@ -778,10 +778,11 @@ unsigned char supla_device_channel::get_protocol_version(void) {
 
 void supla_device_channel::assign_rgbw_value(
     char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness,
-    char brightness, char on_off) {
+    char brightness, char on_off, char dimmer_cct) {
   int func = get_func();
 
-  if (func == SUPLA_CHANNELFNC_DIMMER ||
+  if (func == SUPLA_CHANNELFNC_DIMMER || func == SUPLA_CHANNELFNC_DIMMER_CCT ||
+      func == SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB ||
       func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (brightness < 0 || brightness > 100) brightness = 0;
 
@@ -796,6 +797,11 @@ void supla_device_channel::assign_rgbw_value(
     value[2] = (char)((color & 0x000000FF));
     value[3] = (char)((color & 0x0000FF00) >> 8);
     value[4] = (char)((color & 0x00FF0000) >> 16);
+  }
+
+  if (func == SUPLA_CHANNELFNC_DIMMER_CCT ||
+      func == SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB) {
+    value[7] = dimmer_cct;
   }
 
   value[5] = on_off;
@@ -820,6 +826,8 @@ bool supla_device_channel::is_value_writable(void) {
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
     case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
@@ -863,6 +871,8 @@ bool supla_device_channel::is_rgbw_value_writable(void) {
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
       return 1;
 
       break;
@@ -1013,7 +1023,7 @@ void supla_device_channel::set_state(TDSC_ChannelState *state) {
   unlock();
 
   if (differ) {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     dao.update_channel_state(get_id(), get_user_id(), &new_state);
 

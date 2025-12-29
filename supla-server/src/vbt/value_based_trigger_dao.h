@@ -21,16 +21,15 @@
 
 #include <vector>
 
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "vbt/value_based_trigger.h"
 
 class supla_value_based_trigger_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
 
  public:
-  explicit supla_value_based_trigger_dao(
-      supla_abstract_db_access_provider *dba);
+  explicit supla_value_based_trigger_dao(supla_mariadb_access_provider *dba);
   virtual ~supla_value_based_trigger_dao(void);
 
   virtual std::vector<supla_value_based_trigger *> get_triggers(int user_id);

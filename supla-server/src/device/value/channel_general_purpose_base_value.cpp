@@ -20,6 +20,8 @@
 
 #include <math.h>
 
+#include <string>
+
 #include "jsonconfig/channel/general_purpose_base_config.h"
 
 using std::string;

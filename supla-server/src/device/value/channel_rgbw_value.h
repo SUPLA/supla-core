@@ -30,13 +30,16 @@ class supla_channel_rgbw_value : public supla_abstract_channel_value {
   virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   void set_rgbw(TRGBW_Value *rgbw);
   void get_rgbw(TRGBW_Value *rgbw);
-  void get_rgbw(int *color, char *color_brightness, char *brightness);
+  void get_rgbw(int *color, char *color_brightness, char *brightness,
+                char *dimmer_cct);
   unsigned int get_color(void);
   void set_color(unsigned int color);
   char get_brightness(void);
   void set_brightness(char brightness);
   char get_color_brightness(void);
   void set_color_brightness(char brightness);
+  char get_dimmer_cct(void);
+  void set_dimmer_cct(char cct);
   static bool is_function_supported(int func);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };

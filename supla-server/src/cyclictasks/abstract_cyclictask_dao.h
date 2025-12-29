@@ -16,27 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ThermostatLoggerDaoTest_H_
-#define ThermostatLoggerDaoTest_H_
+#ifndef ABSTRACT_CYCLICTASK_DAO_H_
+#define ABSTRACT_CYCLICTASK_DAO_H_
 
-#include "datalogger/hp_thermostat_logger_dao.h"
-#include "db/db_access_provider.h"
-#include "integration/IntegrationTest.h"
+#include "db/mariadb_access_provider.h"
+#include "tsdb/tsdb_access_provider.h"
 
-namespace testing {
+class supla_abstract_cyclictask_dao {
+ private:
+  supla_abstract_db_access_provider *dba;
 
-class ThermostatLoggerDaoIntegrationTest : public IntegrationTest, public Test {
  protected:
-  supla_db_access_provider *dba;
-  supla_hp_thermostat_logger_dao *dao;
+  virtual supla_abstract_db_access_provider *get_dba(void);
+  virtual supla_mariadb_access_provider *get_mdba(void);
+  virtual supla_tsdb_access_provider *get_tsdba(void);
 
  public:
-  ThermostatLoggerDaoIntegrationTest();
-  virtual ~ThermostatLoggerDaoIntegrationTest();
-  virtual void SetUp();
-  virtual void TearDown();
+  explicit supla_abstract_cyclictask_dao(
+      supla_abstract_db_access_provider *dba);
+  virtual ~supla_abstract_cyclictask_dao();
 };
 
-} /* namespace testing */
-
-#endif /* ThermostatLoggerDaoTest_H_ */
+#endif /* ABSTRACT_CYCLICTASK_DAO_H_ */

@@ -45,7 +45,7 @@ bool supla_set_rgbw_command::set_channel_rgbw_value(
 
     return device->get_channels()->set_device_channel_rgbw_value(
         get_caller(), channel_id, 0, false, color, color_brightness, brightness,
-        on_off);
+        on_off, 0);
   }
 
   return false;

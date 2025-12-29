@@ -20,6 +20,9 @@
 
 #include <string.h>
 
+#include <cstdio>
+#include <string>
+
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_fb_value.h"
 #include "device/value/channel_hvac_value_with_temphum.h"

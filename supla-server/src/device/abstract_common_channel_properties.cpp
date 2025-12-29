@@ -20,7 +20,9 @@
 
 #include <string.h>
 
-#include "db/db_access_provider.h"
+#include <vector>
+
+#include "db/mariadb_access_provider.h"
 #include "device/device_dao.h"
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/alt_weekly_schedule_config.h"
@@ -690,7 +692,7 @@ int supla_abstract_common_channel_properties::set_user_config(
 
   int result = SUPLA_CONFIG_RESULT_FALSE;
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_device_dao dao(&dba);
 
   supla_json_config *json_config = nullptr;

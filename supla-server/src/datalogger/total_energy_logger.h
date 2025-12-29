@@ -32,6 +32,7 @@ class supla_total_energy_logger : public supla_abstract_cyclictask {
  public:
   supla_total_energy_logger();
   virtual ~supla_total_energy_logger();
+  virtual bool is_tsdb_preffered(void);
 };
 
 #endif /* TOTAL_ENERGY_LOGGER_H_ */

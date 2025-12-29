@@ -18,6 +18,9 @@
 
 #include "vbt_condition_result.h"
 
+#include <memory>
+#include <string>
+
 #include "vbt/value_based_trigger.h"
 
 using std::map;
@@ -30,8 +33,8 @@ supla_vbt_condition_result::supla_vbt_condition_result(bool cnd_met) {
 
 supla_vbt_condition_result::~supla_vbt_condition_result(void) {}
 
-const shared_ptr<supla_value_based_trigger>
-    &supla_vbt_condition_result::get_trigger(void) {
+const shared_ptr<supla_value_based_trigger> &
+supla_vbt_condition_result::get_trigger(void) {
   return trigger;
 }
 

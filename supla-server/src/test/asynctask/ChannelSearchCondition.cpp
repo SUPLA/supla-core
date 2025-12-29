@@ -18,6 +18,8 @@
 
 #include "ChannelSearchCondition.h"
 
+#include <vector>
+
 #include "doubles/integration/asynctask/ChannelOrientedAsyncTaskMock.h"
 
 namespace testing {

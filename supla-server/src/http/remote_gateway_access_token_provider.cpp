@@ -20,8 +20,11 @@
 
 #include <unistd.h>
 
+#include <string>
+#include <vector>
+
 #include "db/database.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "db/server_settings_dao.h"
 #include "http/curl_adapter.h"
 #include "lck.h"
@@ -218,7 +221,7 @@ void supla_remote_gateway_access_token_provider::get_new_tokens(
 
   string auth = "Authorization: Bearer ";
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_server_settins_dao dao(&dba);
   auth.append(dao.get_target_token());
 

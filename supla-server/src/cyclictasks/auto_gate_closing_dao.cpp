@@ -21,6 +21,8 @@
 #include <mysql.h>
 #include <stdio.h>
 
+#include <vector>
+
 #include "log.h"
 
 using std::vector;
@@ -50,7 +52,7 @@ supla_auto_gate_closing_dao::get_all_active(void) {
   pbind.buffer_type = MYSQL_TYPE_LONG;
   pbind.buffer = (char *)&attempt_retry_time_sec;
 
-  if (get_dba()->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
+  if (get_mdba()->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
     supla_abstract_auto_gate_closing_dao::item_t i = {};
 
     MYSQL_BIND rbind[5] = {};
@@ -99,14 +101,14 @@ supla_auto_gate_closing_dao::get_all_active(void) {
 int supla_auto_gate_closing_dao::mark_gate_open(int channel_id) {
   const char sql[] = "CALL `supla_mark_gate_open`(?)";
 
-  return get_dba()->get_int(channel_id, 0, sql);
+  return get_mdba()->get_int(channel_id, 0, sql);
 }
 
 void supla_auto_gate_closing_dao::mark_gate_closed(int channel_id) {
   char sql[51];
   snprintf(sql, sizeof(sql), "CALL `supla_mark_gate_closed`(%i)", channel_id);
 
-  get_dba()->query(sql, true);
+  get_mdba()->query(sql, true);
 }
 
 void supla_auto_gate_closing_dao::set_closing_attempt(int channel_id) {
@@ -114,5 +116,5 @@ void supla_auto_gate_closing_dao::set_closing_attempt(int channel_id) {
   snprintf(sql, sizeof(sql), "CALL `supla_set_closing_attempt`(%i)",
            channel_id);
 
-  get_dba()->query(sql, true);
+  get_mdba()->query(sql, true);
 }

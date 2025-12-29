@@ -20,6 +20,8 @@
 
 #include <unistd.h>
 
+#include <vector>
+
 #include "amazon/alexa_access_token_refresh_cyclictask.h"
 #include "cyclictasks/auto_gate_closing.h"
 #include "datalogger/current_logger.h"
@@ -32,8 +34,9 @@
 #include "datalogger/total_energy_logger.h"
 #include "datalogger/voltage_aberration_logger.h"
 #include "datalogger/voltage_logger.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "sthread.h"
+#include "tsdb/tsdb_access_provider.h"
 #include "user/virtual_channel_updater_cyclictask.h"
 
 using std::vector;
@@ -98,17 +101,30 @@ void supla_cyclictasks_agent::loop(void *sthread) {
 
     if (is_it_time) {
       vector<supla_user *> users;
-      supla_db_access_provider dba;
+      supla_mariadb_access_provider mdba;
+      supla_tsdb_access_provider tsdba;
 
       for (auto it = tasks.cbegin(); it != tasks.cend(); ++it) {
         if (sthread_isterminated(sthread)) {
           break;
         }
 
-        if (!(*it)->is_it_time(&now) ||
-            ((*it)->db_access_needed() && !dba.is_connected() &&
-             !dba.connect())) {
+        if (!(*it)->is_it_time(&now)) {
           continue;
+        }
+
+        supla_abstract_db_access_provider *dba = nullptr;
+
+        if ((*it)->db_access_needed()) {
+          if ((*it)->is_tsdb_preffered() && tsdba.is_config_present()) {
+            dba = &tsdba;
+          } else {
+            dba = &mdba;
+          }
+
+          if (!dba->is_connected() && !dba->connect()) {
+            continue;
+          }
         }
 
         if ((*it)->user_access_needed() && users.size() == 0) {
@@ -118,8 +134,7 @@ void supla_cyclictasks_agent::loop(void *sthread) {
           }
         }
 
-        (*it)->run(&now, (*it)->user_access_needed() ? &users : nullptr,
-                   (*it)->db_access_needed() ? &dba : nullptr);
+        (*it)->run(&now, (*it)->user_access_needed() ? &users : nullptr, dba);
       }
     }
   }

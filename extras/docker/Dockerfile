@@ -2,7 +2,7 @@ FROM debian:11.9
 
 RUN apt-get update 
 RUN apt-get upgrade -y
-RUN apt-get -y install git vim wget procps build-essential libssl-dev libmariadb-dev-compat mariadb-client net-tools valgrind cppcheck cmake clang-format python3-pip rsyslog libgtest-dev libgmock-dev screen libcurl4-openssl-dev
+RUN apt-get -y install git vim wget procps build-essential libssl-dev libmariadb-dev-compat mariadb-client net-tools valgrind cppcheck cmake clang-format python3-pip rsyslog libgtest-dev libgmock-dev screen libcurl4-openssl-dev libpqxx-dev libpq-dev postgresql-client iputils-ping
 RUN pip install cpplint  
 RUN mkdir -p /etc/supla-server
 RUN cd /usr/src/ && \
@@ -14,9 +14,13 @@ RUN cd /usr/src/ && \
     make all && \
     make install  
 
+RUN echo 'export PATH="/usr/lib/postgresql/13/bin:$PATH"' >> /root/.bashrc
+
 WORKDIR /CProjects/supla-core/supla-server
 
 COPY supla.cfg /etc/supla-server/
 COPY supla-test.cfg /etc/supla-server/
-COPY private.key /etc/supla-server/
-COPY cert.crt /etc/supla-server/
+COPY certs/server.key /etc/supla-server/
+COPY certs/server.crt /etc/supla-server/
+COPY .pgpass /root/
+RUN chown root:root /root/.pgpass && chmod 600 /root/.pgpass

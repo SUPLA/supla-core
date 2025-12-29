@@ -18,11 +18,14 @@
 
 #include "alexa_delete_request.h"
 
+#include <string>
+#include <vector>
+
 #include "amazon/alexa_client.h"
 #include "amazon/alexa_delete_request_search_condition.h"
 #include "amazon/alexa_discover_request.h"
 #include "asynctask/voice_assistant_sync_thread_pool.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device/device_dao.h"
 #include "jsonconfig/channel/alexa_config.h"
 #include "svrcfg.h"
@@ -160,7 +163,7 @@ void supla_alexa_delete_request::new_request(supla_user *user, int channel_id,
   }
 
   if (func) {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
 
     supla_json_config *cfg =
@@ -196,7 +199,7 @@ void supla_alexa_delete_request::new_request(supla_user *user,
   if (scene) {
     ids.push_back(device_or_scene_id);
   } else {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
 
     vector<supla_channel_fragment> fragments =

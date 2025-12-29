@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include <list>
+
 #include "client.h"
 #include "log.h"
 #include "proto.h"
@@ -92,6 +94,8 @@ bool supla_client_channelgroup::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:

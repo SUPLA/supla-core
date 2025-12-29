@@ -21,11 +21,11 @@
 
 #include <gmock/gmock.h>
 
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 
 namespace testing {
 
-class DbAccessProviderMock : public supla_abstract_db_access_provider {
+class DbAccessProviderMock : public supla_mariadb_access_provider {
  public:
   DbAccessProviderMock(void);
   virtual ~DbAccessProviderMock(void);

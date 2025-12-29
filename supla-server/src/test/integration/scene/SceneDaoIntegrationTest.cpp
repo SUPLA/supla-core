@@ -30,7 +30,7 @@ SceneDaoIntegrationTest::SceneDaoIntegrationTest() : IntegrationTest(), Test() {
 SceneDaoIntegrationTest::~SceneDaoIntegrationTest() {}
 
 void SceneDaoIntegrationTest::SetUp() {
-  dba = new supla_db_access_provider();
+  dba = new supla_mariadb_access_provider();
   dao = new supla_scene_dao(dba);
   ASSERT_TRUE(dao != NULL);
 

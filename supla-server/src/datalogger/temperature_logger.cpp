@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include <memory>
+#include <vector>
 
 #include "datalogger/temperature_logger_dao.h"
 #include "device/device.h"
@@ -35,17 +36,32 @@ supla_temperature_logger::supla_temperature_logger()
 
 supla_temperature_logger::~supla_temperature_logger() {}
 
+bool supla_temperature_logger::is_tsdb_preffered(void) { return true; }
+
 unsigned int supla_temperature_logger::task_interval_sec(void) { return 600; }
 
 void supla_temperature_logger::run(const vector<supla_user *> *users,
                                    supla_abstract_db_access_provider *dba) {
   std::vector<supla_abstract_channel_value_envelope *> env;
 
-  supla_temperature_logger_dao dao(dba);
+  {
+    supla_mariadb_access_provider *mdba =
+        dynamic_cast<supla_mariadb_access_provider *>(dba);
 
-  for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
-    (*uit)->get_devices()->for_each(
-        [&env](shared_ptr<supla_device> device, bool *will_continue) -> void {
+    if (!mdba) {
+      mdba = new supla_mariadb_access_provider();
+      if (!mdba->connect()) {
+        delete mdba;
+        return;
+      }
+    }
+
+    {
+      supla_temperature_logger_dao dao(mdba);
+
+      for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
+        (*uit)->get_devices()->for_each([&env](shared_ptr<supla_device> device,
+                                               bool *will_continue) -> void {
           device->get_channels()->get_channel_values(
               &env,
               [](supla_device_channel *channel,
@@ -56,8 +72,16 @@ void supla_temperature_logger::run(const vector<supla_user *> *users,
               });
         });
 
-    dao.load((*uit)->getUserID(), &env);
+        dao.load((*uit)->getUserID(), &env);
+      }
+    }
+
+    if (mdba != dba) {
+      delete mdba;
+    }
   }
+
+  supla_temperature_logger_dao dao(dba);
 
   for (auto it = env.cbegin(); it != env.cend(); ++it) {
     supla_channel_temphum_value *th =

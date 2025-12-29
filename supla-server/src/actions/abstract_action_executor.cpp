@@ -18,6 +18,9 @@
 
 #include "abstract_action_executor.h"
 
+#include <memory>
+#include <string>
+
 #include "actions/action_rgbw_parameters.h"
 #include "actions/action_shading_system_parameters.h"
 #include "converter/any_value_to_action_converter.h"
@@ -223,12 +226,13 @@ void supla_abstract_action_executor::execute_action(
           TAction_RGBW_Parameters rgbw_p = rgbw->get_rgbw();
 
           if (rgbw && (rgbw_p.Brightness > -1 || rgbw_p.ColorBrightness > -1 ||
-                       rgbw_p.Color)) {
+                       rgbw_p.Color || rgbw_p.DimmerCct > -1)) {
             set_rgbw(
                 rgbw_p.Color ? &rgbw_p.Color : nullptr,
                 rgbw_p.ColorBrightness > -1 ? &rgbw_p.ColorBrightness : nullptr,
                 rgbw_p.Brightness > -1 ? &rgbw_p.Brightness : nullptr,
-                rgbw_p.OnOff > -1 ? &rgbw_p.OnOff : nullptr);
+                rgbw_p.OnOff > -1 ? &rgbw_p.OnOff : nullptr,
+                rgbw_p.DimmerCct > -1 ? &rgbw_p.DimmerCct : nullptr);
           }
         }
       }

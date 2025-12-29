@@ -20,10 +20,11 @@
 
 #include <mysql.h>
 
+#include <pqxx/pqxx>
+
 supla_total_energy_logger_dao::supla_total_energy_logger_dao(
-    supla_abstract_db_access_provider *dba) {
-  this->dba = dba;
-}
+    supla_abstract_db_access_provider *dba)
+    : supla_abstract_cyclictask_dao(dba) {}
 
 void supla_total_energy_logger_dao::set_longlong(unsigned _supla_int64_t *v,
                                                  void *pbind,
@@ -39,12 +40,8 @@ void supla_total_energy_logger_dao::set_longlong(unsigned _supla_int64_t *v,
   }
 }
 
-void supla_total_energy_logger_dao::add(
+void supla_total_energy_logger_dao::mariadb_add(
     int channel_id, TElectricityMeter_ExtendedValue_V3 *em_ev) {
-  if (!em_ev) {
-    return;
-  }
-
   MYSQL_BIND pbind[15] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -78,7 +75,64 @@ void supla_total_energy_logger_dao::add(
       "CALL `supla_add_em_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 15, true);
+  get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 15, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
+}
+
+void supla_total_energy_logger_dao::tsdb_add(
+    int channel_id, TElectricityMeter_ExtendedValue_V3 *em_ev) {
+  pqxx::nontransaction ntx(*get_tsdba()->get_conn());
+
+  bool not_zero = false;
+
+  for (int a = 0; a < 3; a++) {
+    if (em_ev->total_reverse_active_energy[a] ||
+        em_ev->total_forward_reactive_energy[a] ||
+        em_ev->total_reverse_reactive_energy[a]) {
+      not_zero = true;
+      break;
+    }
+  }
+
+  if (!not_zero && !em_ev->total_forward_active_energy_balanced &&
+      !em_ev->total_reverse_active_energy_balanced) {
+    return;
+  }
+
+  ntx.exec_params(
+      "SELECT "
+      "supla_add_em_log_item($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$"
+      "15)",
+      channel_id, em_ev->total_forward_active_energy[0],
+      em_ev->total_reverse_active_energy[0],
+      em_ev->total_forward_reactive_energy[0],
+      em_ev->total_reverse_reactive_energy[0],
+      em_ev->total_forward_active_energy[1],
+      em_ev->total_reverse_active_energy[1],
+      em_ev->total_forward_reactive_energy[1],
+      em_ev->total_reverse_reactive_energy[1],
+      em_ev->total_forward_active_energy[2],
+      em_ev->total_reverse_active_energy[2],
+      em_ev->total_forward_reactive_energy[2],
+      em_ev->total_reverse_reactive_energy[2],
+      em_ev->total_forward_active_energy_balanced,
+      em_ev->total_reverse_active_energy_balanced);
+}
+
+void supla_total_energy_logger_dao::add(
+    int channel_id, TElectricityMeter_ExtendedValue_V3 *em_ev) {
+  if (!em_ev) {
+    return;
+  }
+
+  if (get_mdba()) {
+    mariadb_add(channel_id, em_ev);
+  } else if (get_tsdba()) {
+    try {
+      tsdb_add(channel_id, em_ev);
+    } catch (const std::exception &e) {
+      get_tsdba()->log_exception(e);
+    }
+  }
 }

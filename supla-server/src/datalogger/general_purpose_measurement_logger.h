@@ -33,6 +33,7 @@ class supla_general_purpose_measurement_logger
  public:
   supla_general_purpose_measurement_logger();
   virtual ~supla_general_purpose_measurement_logger();
+  virtual bool is_tsdb_preffered(void);
 };
 
 #endif /* GENERAL_PURPOSE_MEASUREMENT_LOGGER_H_ */

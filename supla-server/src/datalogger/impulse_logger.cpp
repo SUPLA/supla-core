@@ -19,6 +19,7 @@
 #include "datalogger/impulse_logger.h"
 
 #include <memory>
+#include <vector>
 
 #include "datalogger/impulse_logger_dao.h"
 #include "device/device.h"
@@ -31,6 +32,8 @@ using std::weak_ptr;
 supla_impulse_logger::supla_impulse_logger() : supla_abstract_cyclictask() {}
 
 supla_impulse_logger::~supla_impulse_logger() {}
+
+bool supla_impulse_logger::is_tsdb_preffered(void) { return true; }
 
 unsigned int supla_impulse_logger::task_interval_sec(void) { return 600; }
 

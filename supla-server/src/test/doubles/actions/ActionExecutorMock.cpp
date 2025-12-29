@@ -20,6 +20,11 @@
 
 #include <sys/time.h>
 
+#include <list>
+#include <map>
+#include <memory>
+#include <string>
+
 namespace testing {
 
 using std::function;
@@ -72,6 +77,7 @@ void ActionExecutorMock::clear(void) {
   this->open_close_wct_counter = 0;
   this->color = 0x01FFFFFF;
   this->brightness = -1;
+  this->dimmer_cct = -1;
   this->color_brightness = -1;
   this->rgbw_counter = 0;
   this->forward_outside_counter = 0;
@@ -132,7 +138,8 @@ void ActionExecutorMock::set_color_brightness(char brightness) {
 }
 
 void ActionExecutorMock::set_rgbw(unsigned int *color, char *color_brightness,
-                                  char *brightness, char *on_off) {
+                                  char *brightness, char *on_off,
+                                  char *dimmer_cct) {
   addTime();
   rgbw_counter++;
   if (color) {
@@ -149,6 +156,10 @@ void ActionExecutorMock::set_rgbw(unsigned int *color, char *color_brightness,
 
   if (on_off) {
     this->rgbw_on_off = *on_off;
+  }
+
+  if (dimmer_cct) {
+    this->dimmer_cct = *dimmer_cct;
   }
 }
 
@@ -411,6 +422,8 @@ ActionExecutorMock::getShadingSystemParams(void) {
 unsigned int ActionExecutorMock::getColor(void) { return color; }
 
 char ActionExecutorMock::getBrightness(void) { return brightness; }
+
+char ActionExecutorMock::getDimmerCct(void) { return dimmer_cct; }
 
 char ActionExecutorMock::getColorBrightness(void) { return color_brightness; }
 

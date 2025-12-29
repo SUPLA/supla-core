@@ -21,7 +21,7 @@
 #include <memory>
 #include <string>
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device.h"
 #include "push/pn_dao.h"
 #include "push/pn_delivery_task.h"
@@ -57,7 +57,7 @@ void supla_ch_send_push_notification::handle_call(
     body.append((char*)&pn->TitleAndBody[pn->TitleSize], pn->BodySize - 1);
   }
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_pn_dao dao(&dba);
 
   int channel_id = pn->Context >= 0

@@ -17,8 +17,11 @@
  */
 
 #include "mqtt_unpublisher_user_topic_provider.h"
+
 #include <stdlib.h>
 #include <string.h>
+
+#include <cstdio>
 
 supla_mqtt_unpublisher_user_topic_provider::
     supla_mqtt_unpublisher_user_topic_provider(void)

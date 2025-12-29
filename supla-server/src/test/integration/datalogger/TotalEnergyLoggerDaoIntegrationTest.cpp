@@ -33,7 +33,7 @@ TotalEnergyLoggerDaoIntegrationTest::TotalEnergyLoggerDaoIntegrationTest()
 TotalEnergyLoggerDaoIntegrationTest::~TotalEnergyLoggerDaoIntegrationTest() {}
 
 void TotalEnergyLoggerDaoIntegrationTest::SetUp() {
-  dba = new supla_db_access_provider();
+  dba = new supla_mariadb_access_provider();
   ASSERT_TRUE(dba != nullptr);
   dao = new supla_total_energy_logger_dao(dba);
   ASSERT_TRUE(dao != nullptr);
@@ -99,6 +99,75 @@ TEST_F(TotalEnergyLoggerDaoIntegrationTest, add) {
             "rre\tphase2_fae\tphase2_rae\tphase2_fre\tphase2_rre\tphase3_"
             "fae\tphase3_rae\tphase3_fre\tphase3_rre\tfae_balanced\trae_"
             "balanced\n10\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\n");
+}
+
+TEST_F(TotalEnergyLoggerDaoIntegrationTest, nullIfZero) {
+  ASSERT_TRUE(dba->connect());
+
+  string result;
+  sqlQuery("SELECT count(*) as count FROM supla_em_log", &result);
+
+  EXPECT_EQ(result, "count\n0\n");
+
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
+
+  em_ev.total_reverse_active_energy[0] = 2;
+  em_ev.total_reverse_reactive_energy[0] = 4;
+  em_ev.total_reverse_active_energy[1] = 6;
+  em_ev.total_reverse_reactive_energy[1] = 8;
+  em_ev.total_reverse_active_energy[2] = 10;
+  em_ev.total_reverse_reactive_energy[2] = 12;
+  em_ev.total_reverse_active_energy_balanced = 14;
+
+  dao->add(10, &em_ev);
+
+  em_ev = {};
+
+  em_ev.total_forward_active_energy[0] = 1;
+  em_ev.total_forward_reactive_energy[0] = 3;
+  em_ev.total_forward_active_energy[1] = 5;
+  em_ev.total_forward_reactive_energy[1] = 7;
+  em_ev.total_forward_active_energy[2] = 9;
+  em_ev.total_forward_reactive_energy[2] = 11;
+  em_ev.total_forward_active_energy_balanced = 13;
+
+  dao->add(11, &em_ev);
+
+  result = "";
+
+  sqlQuery(
+      "SELECT channel_id, phase1_fae, phase1_rae, phase1_fre, phase1_rre, "
+      "phase2_fae, phase2_rae, phase2_fre, phase2_rre, phase3_fae, phase3_rae, "
+      "phase3_fre, phase3_rre, fae_balanced, rae_balanced FROM supla_em_log "
+      "WHERE date >= DATE_ADD(UTC_TIMESTAMP(), INTERVAL -2 SECOND) AND date <= "
+      "DATE_ADD(UTC_TIMESTAMP(), INTERVAL 2 SECOND)",
+      &result);
+
+  EXPECT_EQ(result,
+            "channel_id\tphase1_fae\tphase1_rae\tphase1_fre\tphase1_"
+            "rre\tphase2_fae\tphase2_rae\tphase2_fre\tphase2_rre\tphase3_"
+            "fae\tphase3_rae\tphase3_fre\tphase3_rre\tfae_balanced\trae_"
+            "balanced\n10\tNULL\t2\tNULL\t4\tNULL\t6\tNULL\t8\tNULL\t10\tNULL\t"
+            "12\tNULL\t14\n11\t1\tNULL\t3\tNULL\t5\tNULL\t7\tNULL\t9\tNULL\t11"
+            "\tNULL\t13\tNULL\n");
+}
+
+TEST_F(TotalEnergyLoggerDaoIntegrationTest, AllZeros) {
+  ASSERT_TRUE(dba->connect());
+
+  string result;
+  sqlQuery("SELECT count(*) as count FROM supla_em_log", &result);
+
+  EXPECT_EQ(result, "count\n0\n");
+
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
+  dao->add(10, &em_ev);
+
+  result = "";
+
+  sqlQuery("SELECT count(*) as count FROM supla_em_log", &result);
+
+  EXPECT_EQ(result, "count\n0\n");
 }
 
 } /* namespace testing */

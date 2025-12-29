@@ -19,6 +19,7 @@
 #include "AlexaChangeReportRequestTest.h"
 
 #include <memory>
+#include <string>
 
 #include "amazon/alexa_change_report_request.h"
 #include "device/extended_value/channel_hp_thermostat_ev_decorator.h"

@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <cstdio>
+
 #include "conn/connection.h"
 #include "lck.h"
 #include "supla-socket.h"

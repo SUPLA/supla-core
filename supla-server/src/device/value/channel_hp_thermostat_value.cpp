@@ -20,6 +20,9 @@
 
 #include <string.h>
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_channel_hp_thermostat_value::supla_channel_hp_thermostat_value(void)

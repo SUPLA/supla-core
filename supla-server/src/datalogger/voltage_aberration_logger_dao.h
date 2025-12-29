@@ -19,13 +19,33 @@
 #ifndef VOLTAGE_ABERRATION_LOGGER_DAO_H_
 #define VOLTAGE_ABERRATION_LOGGER_DAO_H_
 
+#include <ctime>
+#include <string>
+
 #include "datalogger/abstract_electricity_logger_dao.h"
 
 class supla_voltage_aberration_logger_dao
     : public supla_abstract_electricity_logger_dao {
  private:
-  void add(MYSQL_TIME *time, int channel_id, char phase,
+  void mariadb_add(const time_t &time, int channel_id, char phase,
+                   int count_total, int count_above, int count_below,
+                   int sec_above, int sec_below, int max_sec_above,
+                   int max_sec_below, char *min_voltage, char *max_voltage,
+                   char *avg_voltage, int measurement_time_sec);
+  void tsdb_add(const time_t &time, int channel_id, short phase,
+                int count_total, int count_above, int count_below,
+                int sec_above, int sec_below, int max_sec_above,
+                int max_sec_below, std::string min_voltage,
+                std::string max_voltage, std::string avg_voltage,
+                int measurement_time_sec);
+
+  void add(const time_t &time, int channel_id, char phase,
            supla_voltage_aberration_analyzer *va);
+
+ protected:
+  virtual void add(const std::time_t &time, int channel_id, char phase,
+                   supla_simple_statiscics *stat, const std::string &procedure,
+                   unsigned char precision);
 
  public:
   explicit supla_voltage_aberration_logger_dao(

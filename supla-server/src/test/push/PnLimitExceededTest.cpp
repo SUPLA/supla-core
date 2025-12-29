@@ -85,7 +85,7 @@ TEST_F(PnLimitExceededTest, immutable) {
   push.set_sound(15);
   push.get_recipients().add(new supla_pn_recipient(10, 0, false, "ancd", "", 0),
                             platform_push_android);
-  push.set_replacement_map(replacement_map);
+  push.set_replacement_map(&replacement_map);
 
   args = push.get_localized_body_args();
 

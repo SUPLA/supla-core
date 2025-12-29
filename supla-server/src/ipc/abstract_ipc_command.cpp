@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <string>
+
 #include "ipc/abstract_ipc_ctrl.h"
 #include "log.h"
 #include "tools.h"

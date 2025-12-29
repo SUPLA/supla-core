@@ -19,6 +19,7 @@
 #include "AlexaTokenRefreshTest.h"
 
 #include <memory>
+#include <string>
 
 #include "amazon/alexa_change_report_request.h"
 #include "amazon/alexa_client.h"

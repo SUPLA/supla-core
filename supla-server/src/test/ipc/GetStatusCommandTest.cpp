@@ -18,6 +18,8 @@
 
 #include "ipc/GetStatusCommandTest.h"
 
+#include <cstdio>
+
 namespace testing {
 
 void GetStatusCommandTest::SetUp() {

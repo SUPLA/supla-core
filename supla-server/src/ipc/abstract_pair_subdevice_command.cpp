@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_pair_subdevice_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_pair_subdevice_command::supla_abstract_pair_subdevice_command(

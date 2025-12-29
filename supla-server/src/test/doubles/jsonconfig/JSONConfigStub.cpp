@@ -18,6 +18,8 @@
 
 #include "JSONConfigStub.h"
 
+#include <string>
+
 namespace testing {
 
 using std::map;
@@ -44,6 +46,10 @@ bool JSONConfigStub::merge(cJSON *src_parent, cJSON *dst_parent,
                            bool delete_nonexistent) {
   return supla_json_config::merge(src_parent, dst_parent, m,
                                   delete_nonexistent);
+}
+
+void JSONConfigStub::merge(supla_json_config *dst) {
+  supla_json_config::merge(dst);
 }
 
 }  // namespace testing

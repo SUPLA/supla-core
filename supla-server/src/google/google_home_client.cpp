@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include <string>
+
 #include "device/value/channel_fb_value.h"
 #include "device/value/channel_gate_value.h"
 #include "device/value/channel_hvac_value_with_temphum.h"

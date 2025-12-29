@@ -26,6 +26,7 @@
 class supla_voltage_aberration_logger
     : public supla_abstract_electricity_logger {
  protected:
+  virtual bool is_tsdb_preffered(void);
   virtual unsigned int task_interval_sec(void);
   virtual bool is_any_data_for_logging_purposes(
       supla_electricity_analyzer *analyzer);

@@ -18,6 +18,8 @@
 
 #include "mqtt_abstract_action_message_provider.h"
 
+#include <cstdio>
+
 #include "log.h"
 
 supla_mqtt_abstract_action_message_provider::

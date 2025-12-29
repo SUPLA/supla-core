@@ -24,6 +24,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <list>
+#include <memory>
+
 #include "db/database.h"
 #include "device/call_handler/call_handler_collection.h"
 #include "device/device_dao.h"
@@ -171,7 +174,7 @@ bool supla_device::enter_cfg_mode(void) {
 void supla_device::send_config_to_device(void) {
   if (get_protocol_version() >= 21 &&
       (get_flags() & SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED)) {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
 
     device_json_config *config =
@@ -200,7 +203,7 @@ bool supla_device::pair_subdevice(const supla_caller &caller,
       (get_flags() & SUPLA_DEVICE_FLAG_CALCFG_SUBDEVICE_PAIRING)) {
     TSD_DeviceCalCfgRequest request = {};
 
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
 
     char *json = device_json_pairing_result().pairing_request_sent();
@@ -266,7 +269,7 @@ bool supla_device::calcfg_restart(void) {
 bool supla_device::check_updates(void) {
   if (calcfg_cmd(SUPLA_DEVICE_FLAG_AUTOMATIC_FIRMWARE_UPDATE_SUPPORTED,
                  SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE, 0, nullptr, false)) {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     device_json_ota_updates json;
     json.set_checking();

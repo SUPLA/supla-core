@@ -53,6 +53,9 @@ class supla_objcontainer {
   virtual void _load(database *db, e_objc_scope scope) = 0;
   virtual int available_data_types_for_remote(e_objc_scope scope) = 0;
 
+  virtual bool add_object(supla_objcontainer_item *obj, e_objc_scope scope);
+  virtual bool add_object(supla_objcontainer_item *obj);
+
  public:
   supla_objcontainer(void);
   virtual ~supla_objcontainer();
@@ -61,8 +64,6 @@ class supla_objcontainer {
   int count(void);
   void load(e_objc_scope scope);
   virtual void load(void);
-  virtual bool add(supla_objcontainer_item *obj, e_objc_scope scope);
-  virtual bool add(supla_objcontainer_item *obj);
 };
 
 #endif /* OBJCONTAINER_H_ */

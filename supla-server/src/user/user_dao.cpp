@@ -18,12 +18,14 @@
 
 #include "user_dao.h"
 
+#include <vector>
+
 #include "log.h"
 #include "user/user.h"
 
 using std::vector;
 
-supla_user_dao::supla_user_dao(supla_abstract_db_access_provider *dba) {
+supla_user_dao::supla_user_dao(supla_mariadb_access_provider *dba) {
   this->dba = dba;
 }
 supla_user_dao::~supla_user_dao() {}

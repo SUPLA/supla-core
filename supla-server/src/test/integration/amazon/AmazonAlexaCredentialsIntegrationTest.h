@@ -19,7 +19,7 @@
 #ifndef AmazonAlexaCredentialsIntegrationTest_H_
 #define AmazonAlexaCredentialsIntegrationTest_H_
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "integration/IntegrationTest.h"
 
 namespace testing {
@@ -27,7 +27,7 @@ namespace testing {
 class AmazonAlexaCredentialsIntegrationTest : public IntegrationTest,
                                               public Test {
  protected:
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
 
  public:
 };

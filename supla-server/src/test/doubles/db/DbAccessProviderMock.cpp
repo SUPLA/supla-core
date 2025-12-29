@@ -20,7 +20,7 @@
 
 namespace testing {
 DbAccessProviderMock::DbAccessProviderMock(void)
-    : supla_abstract_db_access_provider() {}
+    : supla_mariadb_access_provider() {}
 
 DbAccessProviderMock::~DbAccessProviderMock(void) {}
 

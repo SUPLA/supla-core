@@ -18,6 +18,8 @@
 
 #include "ocr_config.h"
 
+#include <cstdio>
+#include <string>
 #include <vector>
 
 #include "svrcfg.h"

@@ -18,6 +18,8 @@
 
 #include "ipc/abstract_is_channel_connected_command.h"
 
+#include <string>
+
 using std::string;
 
 supla_abstract_is_channel_connected_command::

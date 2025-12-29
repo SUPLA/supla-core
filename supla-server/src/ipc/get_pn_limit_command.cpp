@@ -18,6 +18,8 @@
 
 #include "get_pn_limit_command.h"
 
+#include <string>
+
 #include "push/pn_throttling.h"
 
 using std::string;
@@ -26,7 +28,6 @@ supla_get_pn_limit_command::supla_get_pn_limit_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_get_pn_limit_command(socket_adapter) {}
 
-unsigned int supla_get_pn_limit_command::get_pn_limit(int user_id,
-                                                       long *left) {
+unsigned int supla_get_pn_limit_command::get_pn_limit(int user_id, long *left) {
   return supla_pn_throttling::get_instance()->get_limit(user_id, left);
 }

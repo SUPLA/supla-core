@@ -19,6 +19,7 @@
 #include "total_energy_logger.h"
 
 #include <memory>
+#include <vector>
 
 #include "datalogger/total_energy_logger_dao.h"
 #include "device/device.h"
@@ -34,6 +35,8 @@ supla_total_energy_logger::supla_total_energy_logger()
     : supla_abstract_cyclictask() {}
 
 supla_total_energy_logger::~supla_total_energy_logger() {}
+
+bool supla_total_energy_logger::is_tsdb_preffered(void) { return true; }
 
 unsigned int supla_total_energy_logger::task_interval_sec(void) { return 600; }
 

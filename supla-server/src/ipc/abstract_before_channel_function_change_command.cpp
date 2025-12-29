@@ -18,6 +18,9 @@
 
 #include <ipc/abstract_before_channel_function_change_command.h>
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_before_channel_function_change_command::

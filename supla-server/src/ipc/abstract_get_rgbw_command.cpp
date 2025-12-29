@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_get_rgbw_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_get_rgbw_command::supla_abstract_get_rgbw_command(

@@ -18,6 +18,9 @@
 
 #include "conn/call_handler/get_version.h"
 
+#include <cstdio>
+#include <memory>
+
 #include "svrcfg.h"
 
 using std::shared_ptr;

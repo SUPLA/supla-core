@@ -19,6 +19,7 @@
 #include "datalogger/general_purpose_measurement_logger.h"
 
 #include <memory>
+#include <vector>
 
 #include "datalogger/general_purpose_measurement_logger_dao.h"
 #include "device/devicechannel.h"
@@ -34,6 +35,10 @@ supla_general_purpose_measurement_logger::
 
 supla_general_purpose_measurement_logger::
     ~supla_general_purpose_measurement_logger() {}
+
+bool supla_general_purpose_measurement_logger::is_tsdb_preffered(void) {
+  return true;
+}
 
 unsigned int supla_general_purpose_measurement_logger::task_interval_sec(void) {
   return 600;

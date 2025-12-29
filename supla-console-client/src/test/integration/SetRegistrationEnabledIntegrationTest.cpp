@@ -27,7 +27,7 @@ SetRegistrationEnabledIntegrationTest::SetRegistrationEnabledIntegrationTest() {
 }
 
 SetRegistrationEnabledIntegrationTest::
-    ~SetRegistrationEnabledIntegrationTest() {}
+~SetRegistrationEnabledIntegrationTest() {}
 
 void SetRegistrationEnabledIntegrationTest::onRegistrationEnabled(
     TSDC_RegistrationEnabled *reg_enabled) {

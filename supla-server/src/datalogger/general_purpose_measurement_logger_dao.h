@@ -20,11 +20,15 @@
 #define GENERAL_PURPOSE_MEASUREMENT_LOGGER_DAO_H_
 
 #include "analyzer/general_purpose_measurement_analyzer.h"
-#include "db/abstract_db_access_provider.h"
+#include "cyclictasks/abstract_cyclictask_dao.h"
 
-class supla_general_purpose_measurement_logger_dao {
+class supla_general_purpose_measurement_logger_dao
+    : public supla_abstract_cyclictask_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  void mariadb_add(int channel_id, double first, double last, double avg,
+                   double min, double max);
+  void tsdb_add(int channel_id, double first, double last, double avg,
+                double min, double max);
 
  public:
   explicit supla_general_purpose_measurement_logger_dao(

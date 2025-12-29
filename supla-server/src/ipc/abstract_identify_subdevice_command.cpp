@@ -18,6 +18,8 @@
 
 #include "ipc/abstract_identify_subdevice_command.h"
 
+#include <string>
+
 using std::string;
 
 supla_abstract_identify_subdevice_command::

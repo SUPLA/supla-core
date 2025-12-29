@@ -24,7 +24,7 @@
 #include <memory>
 
 #include "conn/connection_dao.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "log.h"
 #include "proto.h"
 
@@ -45,7 +45,7 @@ void supla_ch_get_registration_enabled::handle_call(
     unsigned int call_id, unsigned char proto_version) {
   TSDC_RegistrationEnabled reg_en = {};
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_connection_dao dao(&dba);
   if (!dao.get_reg_enabled(object->get_user_id(), &reg_en.client_timestamp,
                            &reg_en.iodevice_timestamp)) {

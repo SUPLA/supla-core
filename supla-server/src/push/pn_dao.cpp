@@ -22,7 +22,7 @@
 
 #include "log.h"
 
-supla_pn_dao::supla_pn_dao(supla_abstract_db_access_provider *dba) {
+supla_pn_dao::supla_pn_dao(supla_mariadb_access_provider *dba) {
   this->dba = dba;
 }
 

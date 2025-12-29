@@ -18,6 +18,8 @@
 
 #include <conn/AuthkeyCacheTest.h>
 
+#include <cstdio>
+
 #include "doubles/conn/AuthkeyCacheStub.h"
 
 namespace testing {

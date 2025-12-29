@@ -32,6 +32,7 @@ class supla_temperature_logger : public supla_abstract_cyclictask {
  public:
   supla_temperature_logger();
   virtual ~supla_temperature_logger();
+  virtual bool is_tsdb_preffered(void);
 };
 
 #endif /* TEMPERATURE_LOGGER_H_ */

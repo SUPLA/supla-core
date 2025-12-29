@@ -18,6 +18,8 @@
 
 #include "alexa_discover_request.h"
 
+#include <string>
+
 #include "amazon/alexa_client.h"
 #include "amazon/alexa_discover_payload_obtainer.h"
 #include "amazon/alexa_discover_request_search_condition.h"
@@ -77,7 +79,7 @@ void supla_alexa_discover_request::new_request(supla_user *user) {
       [&exists](supla_abstract_asynctask *task) -> void { exists = true; });
 
   if (!exists) {
-    supla_db_access_provider *dba = new supla_db_access_provider();
+    supla_mariadb_access_provider *dba = new supla_mariadb_access_provider();
     supla_amazon_alexa_credentials_dao *dao =
         new supla_amazon_alexa_credentials_dao(dba, true);
 

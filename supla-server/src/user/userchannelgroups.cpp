@@ -18,6 +18,7 @@
 
 #include "userchannelgroups.h"
 
+#include <list>
 #include <memory>
 
 #include "db/database.h"
@@ -32,6 +33,11 @@ supla_user_channelgroups::supla_user_channelgroups(supla_user *user) {
   this->user = user;
   id_cmp_use_both[master] = true;
   load();
+}
+
+bool supla_user_channelgroups::add(supla_user_channelgroup *group,
+                                   e_objc_scope scope) {
+  return add_object(group, scope);
 }
 
 void supla_user_channelgroups::_load(database *db, e_objc_scope scope) {
@@ -133,45 +139,48 @@ bool supla_user_channelgroups::set_on(const supla_caller &caller, int GroupID,
 
 bool supla_user_channelgroups::set_color(const supla_caller &caller,
                                          int GroupID, unsigned int color) {
-  return set_rgbw_value(caller, GroupID, &color, NULL, NULL, NULL);
+  return set_rgbw_value(caller, GroupID, &color, NULL, NULL, NULL, NULL);
 }
 
 bool supla_user_channelgroups::set_color_brightness(const supla_caller &caller,
                                                     int GroupID,
                                                     char color_brightness) {
-  return set_rgbw_value(caller, GroupID, NULL, &color_brightness, NULL, NULL);
+  return set_rgbw_value(caller, GroupID, NULL, &color_brightness, NULL, NULL,
+                        NULL);
 }
 
 bool supla_user_channelgroups::set_brightness(const supla_caller &caller,
                                               int GroupID, char brightness) {
-  return set_rgbw_value(caller, GroupID, NULL, NULL, &brightness, NULL);
+  return set_rgbw_value(caller, GroupID, NULL, NULL, &brightness, NULL, NULL);
 }
 
 bool supla_user_channelgroups::set_rgbw_value(const supla_caller &caller,
                                               int GroupID, unsigned int *color,
                                               char *color_brightness,
-                                              char *brightness, char *on_off) {
+                                              char *brightness, char *on_off,
+                                              char *dimmer_cct) {
   return for_each_channel(
       GroupID,
-      [caller, GroupID, color, color_brightness, brightness, on_off](
-          supla_device *device, int channelId, char EOL) -> bool {
+      [caller, GroupID, color, color_brightness, brightness, on_off,
+       dimmer_cct](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->set_rgbw(caller, channelId, GroupID, EOL,
                                                 color, color_brightness,
-                                                brightness, on_off);
+                                                brightness, on_off, dimmer_cct);
       });
 }
 
 bool supla_user_channelgroups::set_rgbw_value(const supla_caller &caller,
                                               int GroupID, int color,
                                               char color_brightness,
-                                              char brightness, char on_off) {
+                                              char brightness, char on_off,
+                                              char dimmer_cct) {
   return for_each_channel(
       GroupID,
-      [caller, GroupID, color, color_brightness, brightness, on_off](
-          supla_device *device, int channelId, char EOL) -> bool {
+      [caller, GroupID, color, color_brightness, brightness, on_off,
+       dimmer_cct](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->set_device_channel_rgbw_value(
             caller, channelId, GroupID, EOL, color, color_brightness,
-            brightness, on_off);
+            brightness, on_off, dimmer_cct);
       });
 }
 

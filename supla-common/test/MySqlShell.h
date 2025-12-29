@@ -21,9 +21,15 @@
 
 #include <string>
 
+#include "test/integration/SqlShell.h"
+
 namespace testing {
 
-class MySqlShell {
+class MySqlShell : public SqlShell {
+ private:
+  static const char *program;
+  static const char *user_switch;
+
  public:
   static void runSqlScript(const char *sql_dir, const char *db_host,
                            const char *db_user, const char *db_name,

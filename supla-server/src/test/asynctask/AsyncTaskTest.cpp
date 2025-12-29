@@ -18,6 +18,7 @@
 
 #include <asynctask/AsyncTaskTest.h>
 
+#include <memory>
 #include <string>
 
 #include "log.h"

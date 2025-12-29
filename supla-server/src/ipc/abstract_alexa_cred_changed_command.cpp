@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_alexa_cred_changed_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_alexa_cred_changed_command::

@@ -19,6 +19,7 @@
 #include "abstract_electricity_logger.h"
 
 #include <memory>
+#include <vector>
 
 #include "device/devicechannel.h"
 #include "user/user.h"
@@ -31,6 +32,8 @@ supla_abstract_electricity_logger::supla_abstract_electricity_logger()
     : supla_abstract_cyclictask() {}
 
 supla_abstract_electricity_logger::~supla_abstract_electricity_logger() {}
+
+bool supla_abstract_electricity_logger::is_tsdb_preffered(void) { return true; }
 
 void supla_abstract_electricity_logger::run(
     const vector<supla_user *> *users, supla_abstract_db_access_provider *dba) {

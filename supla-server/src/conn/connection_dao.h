@@ -20,14 +20,14 @@
 #define SUPLA_CONNECTION_DAO_H_
 
 #include "conn/abstract_connection_dao.h"
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 
 class supla_connection_dao : public supla_abstract_connection_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
 
  public:
-  explicit supla_connection_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_connection_dao(supla_mariadb_access_provider *dba);
   virtual ~supla_connection_dao();
 
   virtual int get_user_id_by_email(const char email[SUPLA_EMAIL_MAXSIZE]);

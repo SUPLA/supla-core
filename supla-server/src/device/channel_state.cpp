@@ -21,6 +21,9 @@
 #include <arpa/inet.h>
 #include <string.h>
 
+#include <cstdio>
+#include <string>
+
 #include "json/cJSON.h"
 
 using std::map;

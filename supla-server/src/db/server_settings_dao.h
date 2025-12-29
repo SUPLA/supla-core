@@ -21,14 +21,14 @@
 
 #include <string>
 
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 
 class supla_server_settins_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
 
  public:
-  explicit supla_server_settins_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_server_settins_dao(supla_mariadb_access_provider *dba);
   virtual ~supla_server_settins_dao(void);
   std::string get_target_token(void);
 };

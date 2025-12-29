@@ -20,7 +20,9 @@
 
 #include <string.h>
 
+#include <cstdio>
 #include <memory>
+#include <string>
 
 #include "user/user.h"
 
@@ -177,8 +179,9 @@ bool supla_timer_state_extended_value::get_raw_value(
   return supla_abstract_channel_extended_value::get_raw_value(value);
 }
 
-supla_abstract_channel_extended_value *supla_timer_state_extended_value::copy(  // NOLINT
-    void) {                                                            // NOLINT
+supla_abstract_channel_extended_value *
+supla_timer_state_extended_value::copy(  // NOLINT
+    void) {                              // NOLINT
   supla_timer_state_extended_value *result =
       new supla_timer_state_extended_value(nullptr, nullptr);
   result->supla_abstract_channel_extended_value::set_raw_value(get_value_ptr());

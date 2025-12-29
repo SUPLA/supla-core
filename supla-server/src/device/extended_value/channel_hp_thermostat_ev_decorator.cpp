@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <string>
+
 using std::string;
 
 supla_channel_hp_thermostat_ev_decorator::

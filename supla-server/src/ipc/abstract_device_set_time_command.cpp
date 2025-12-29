@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_device_set_time_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_device_set_time_command::supla_abstract_device_set_time_command(

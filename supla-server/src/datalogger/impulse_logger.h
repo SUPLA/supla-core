@@ -32,6 +32,7 @@ class supla_impulse_logger : public supla_abstract_cyclictask {
  public:
   supla_impulse_logger();
   virtual ~supla_impulse_logger();
+  virtual bool is_tsdb_preffered(void);
 };
 
 #endif /* IMPULSE_LOGGER_H_ */

@@ -19,10 +19,6 @@
 #ifndef ABSTRACT_DBACCESS_PROVIDER_H_
 #define ABSTRACT_DBACCESS_PROVIDER_H_
 
-#include <ctime>
-
-#include <mysql.h>
-
 class supla_abstract_db_access_provider {
  public:
   supla_abstract_db_access_provider(void);
@@ -31,36 +27,6 @@ class supla_abstract_db_access_provider {
   virtual bool connect(void) = 0;
   virtual bool is_connected(void) = 0;
   virtual void disconnect(void) = 0;
-
-  virtual void start_transaction(void) = 0;
-  virtual void commit(void) = 0;
-  virtual void rollback(void) = 0;
-
-  virtual void set_terminating_byte(char *result_str, int buffer_size,
-                                    int data_size, bool is_null) = 0;
-
-  virtual int query(const char *stmt_str, bool log_err = false) = 0;
-
-  virtual bool stmt_execute(void **_stmt, const char *stmt_str, void *bind,
-                            int bind_size, bool exec_errors = false) = 0;
-
-  virtual bool stmt_get_int(void **_stmt, int *value1, int *value2, int *value3,
-                            int *value4, const char *stmt_str, void *bind,
-                            int bind_size, bool exec_errors = false) = 0;
-
-  virtual void stmt_close(void *_stmt) = 0;
-
-  virtual bool get_string(int id, char *buffer, unsigned int buffer_size,
-                          bool *is_null, const char *sql) = 0;
-
-  virtual int get_int(int ID, int default_value, const char *sql) = 0;
-
-  virtual int get_count(int ID, const char *sql) = 0;
-
-  virtual int add_by_proc_call(const char *stmt_str, void *bind,
-                               int bind_size) = 0;
-
-  time_t mytime_to_time_t(MYSQL_TIME *time);
 };
 
 #endif /* ABSTRACT_DBACCESS_PROVIDER_H_ */

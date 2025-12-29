@@ -19,14 +19,14 @@
 #ifndef SUPLA_SCHEDULE_DAO_H_
 #define SUPLA_SCHEDULE_DAO_H_
 
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 
 class supla_schedule_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
 
  public:
-  explicit supla_schedule_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_schedule_dao(supla_mariadb_access_provider *dba);
   virtual ~supla_schedule_dao();
 
   virtual void enable(int user_id, int schedule_id, bool enable);

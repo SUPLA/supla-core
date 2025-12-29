@@ -19,7 +19,7 @@
 #ifndef ScheduleDaoTest_H_
 #define ScheduleDaoTest_H_
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "integration/IntegrationTest.h"
 #include "schedule/schedule_dao.h"
 
@@ -27,7 +27,7 @@ namespace testing {
 
 class ScheduleDaoIntegrationTest : public IntegrationTest, public Test {
  protected:
-  supla_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
   supla_schedule_dao *dao;
 
  public:

@@ -24,6 +24,9 @@
 #include <string.h>
 #include <time.h>
 
+#include <list>
+#include <string>
+
 #include "log.h"
 #include "proto.h"
 #include "svrcfg.h"
@@ -32,7 +35,7 @@
 using std::list;
 using std::string;
 
-supla_client_dao::supla_client_dao(supla_abstract_db_access_provider *dba)
+supla_client_dao::supla_client_dao(supla_mariadb_access_provider *dba)
     : supla_abstract_client_dao() {
   this->dba = dba;
 }

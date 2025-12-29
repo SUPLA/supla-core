@@ -18,6 +18,8 @@
 
 #include "google_home_state_report_request.h"
 
+#include <string>
+
 #include "device/channel_property_getter.h"
 #include "device/value/channel_hvac_value_with_temphum.h"
 #include "google/google_home_client.h"

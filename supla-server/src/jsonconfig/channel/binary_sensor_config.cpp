@@ -19,6 +19,7 @@
 #include "binary_sensor_config.h"
 
 #include <limits>
+#include <string>
 
 using std::map;
 using std::string;

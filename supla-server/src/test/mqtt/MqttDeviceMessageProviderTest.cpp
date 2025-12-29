@@ -18,10 +18,15 @@
 
 #include "MqttDeviceMessageProviderTest.h"
 
+#include <cstdio>
+
 namespace testing {
 
 MqttDeviceMessageProviderTest::MqttDeviceMessageProviderTest(void)
-    : MqttMessageProviderTest() {}
+    : MqttMessageProviderTest() {
+  provider = nullptr;
+}
+
 MqttDeviceMessageProviderTest::~MqttDeviceMessageProviderTest(void) {}
 
 void MqttDeviceMessageProviderTest::SetUp() {

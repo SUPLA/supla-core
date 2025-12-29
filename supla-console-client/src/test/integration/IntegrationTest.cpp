@@ -18,6 +18,9 @@
 
 #include "IntegrationTest.h"
 
+#include <cstdio>
+#include <string>
+
 #include "MySqlShell.h"
 #include "log.h"
 #include "tools.h"

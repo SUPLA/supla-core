@@ -22,36 +22,27 @@
 #include <stdio.h>
 #include <string.h>
 
+#define BUFF_SIZE 20
+
 supla_hp_thermostat_logger_dao::supla_hp_thermostat_logger_dao(
-    supla_abstract_db_access_provider *dba) {
-  this->dba = dba;
-}
+    supla_abstract_db_access_provider *dba)
+    : supla_abstract_cyclictask_dao(dba) {}
 
-void supla_hp_thermostat_logger_dao::add(
-    int channel_id, supla_channel_hp_thermostat_value *th) {
-  if (!th || !channel_id) {
-    return;
-  }
-
-  char buff1[20] = {};
-  char buff2[20] = {};
+void supla_hp_thermostat_logger_dao::mariadb_add(int channel_id,
+                                                 char *measured_temperature,
+                                                 char *preset_temperature,
+                                                 char on) {
   MYSQL_BIND pbind[4] = {};
-
-  snprintf(buff1, sizeof(buff1), "%05.2f", th->get_measured_temperature());
-  snprintf(buff2, sizeof(buff2), "%05.2f", th->get_preset_temperature());
-
-  char on = th->is_on() ? 1 : 0;
-
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
 
   pbind[1].buffer_type = MYSQL_TYPE_DECIMAL;
-  pbind[1].buffer = (char *)buff1;
-  pbind[1].buffer_length = strnlen(buff1, 20);
+  pbind[1].buffer = (char *)measured_temperature;
+  pbind[1].buffer_length = strnlen(measured_temperature, BUFF_SIZE);
 
   pbind[2].buffer_type = MYSQL_TYPE_DECIMAL;
-  pbind[2].buffer = (char *)buff2;
-  pbind[2].buffer_length = strnlen(buff2, 20);
+  pbind[2].buffer = (char *)preset_temperature;
+  pbind[2].buffer_length = strnlen(preset_temperature, BUFF_SIZE);
 
   pbind[3].buffer_type = MYSQL_TYPE_TINY;
   pbind[3].buffer = (char *)&on;
@@ -60,7 +51,44 @@ void supla_hp_thermostat_logger_dao::add(
   const char sql[] = "CALL `supla_add_thermostat_log_item`(?,?,?,?)";
 
   MYSQL_STMT *stmt = nullptr;
-  dba->stmt_execute((void **)&stmt, sql, pbind, 4, true);
+  get_mdba()->stmt_execute((void **)&stmt, sql, pbind, 4, true);
 
   if (stmt != nullptr) mysql_stmt_close(stmt);
+}
+
+void supla_hp_thermostat_logger_dao::tsdb_add(int channel_id,
+                                              char *measured_temperature,
+                                              char *preset_temperature,
+                                              bool on) {
+  pqxx::nontransaction ntx(*get_tsdba()->get_conn());
+
+  ntx.exec_params("SELECT supla_add_thermostat_log_item($1,$2,$3,$4)",
+                  channel_id, measured_temperature, preset_temperature, on);
+}
+
+void supla_hp_thermostat_logger_dao::add(
+    int channel_id, supla_channel_hp_thermostat_value *th) {
+  if (!th || !channel_id) {
+    return;
+  }
+
+  char measured_temperature[BUFF_SIZE] = {};
+  char preset_temperature[BUFF_SIZE] = {};
+
+  snprintf(measured_temperature, BUFF_SIZE, "%05.2f",
+           th->get_measured_temperature());
+  snprintf(preset_temperature, BUFF_SIZE, "%05.2f",
+           th->get_preset_temperature());
+
+  if (get_mdba()) {
+    mariadb_add(channel_id, measured_temperature, preset_temperature,
+                th->is_on() ? 1 : 0);
+  } else if (get_tsdba()) {
+    try {
+      tsdb_add(channel_id, measured_temperature, preset_temperature,
+               th->is_on());
+    } catch (const std::exception &e) {
+      get_tsdba()->log_exception(e);
+    }
+  }
 }

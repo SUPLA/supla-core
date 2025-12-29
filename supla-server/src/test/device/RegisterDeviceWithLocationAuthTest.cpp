@@ -18,6 +18,8 @@
 
 #include "device/RegisterDeviceWithLocationAuthTest.h"
 
+#include <cstdio>
+
 namespace testing {
 
 RegisterDeviceWithLocationAuthTest::RegisterDeviceWithLocationAuthTest()

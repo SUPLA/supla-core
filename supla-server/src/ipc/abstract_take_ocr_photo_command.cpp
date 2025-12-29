@@ -18,6 +18,8 @@
 
 #include "ipc/abstract_take_ocr_photo_command.h"
 
+#include <string>
+
 using std::string;
 
 supla_abstract_take_ocr_photo_command::supla_abstract_take_ocr_photo_command(

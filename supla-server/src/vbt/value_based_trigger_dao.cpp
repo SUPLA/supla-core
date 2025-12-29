@@ -20,12 +20,14 @@
 
 #include <mysql.h>
 
+#include <vector>
+
 #include "log.h"
 
 using std::vector;
 
 supla_value_based_trigger_dao::supla_value_based_trigger_dao(
-    supla_abstract_db_access_provider *dba) {
+    supla_mariadb_access_provider *dba) {
   this->dba = dba;
 }
 

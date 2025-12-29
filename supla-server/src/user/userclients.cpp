@@ -18,6 +18,8 @@
 
 #include <userclients.h>
 
+#include <list>
+#include <memory>
 #include <vector>
 
 #include "client/client.h"

@@ -18,7 +18,10 @@
 
 #include "state_webhook_credentials.h"
 
-#include "db/db_access_provider.h"
+#include <string>
+#include <vector>
+
+#include "db/mariadb_access_provider.h"
 #include "webhook/state_webhook_credentials_dao.h"
 
 using std::string;
@@ -54,7 +57,7 @@ void supla_state_webhook_credentials::update(const string &access_token,
                                              int expires_in) {
   supla_http_oauth_credentials::update(access_token, refresh_token, expires_in);
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_state_webhook_credentials_dao dao(&dba);
   dao.set(get_user_id(), access_token, refresh_token, expires_in);
 }
@@ -66,13 +69,13 @@ void supla_state_webhook_credentials::remove(void) {
   function_ids.clear();
   data_unlock();
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_state_webhook_credentials_dao dao(&dba);
   dao.remove(get_user_id());
 }
 
 void supla_state_webhook_credentials::load(void) {
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_state_webhook_credentials_dao dao(&dba);
 
   string access_token, refresh_token, url, functions;

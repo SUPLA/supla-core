@@ -18,6 +18,8 @@
 
 #include "alexa_request.h"
 
+#include <string>
+
 using std::string;
 
 supla_alexa_request::supla_alexa_request(

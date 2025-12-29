@@ -25,7 +25,7 @@
 
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device/channel_property_getter.h"
 #include "log.h"
 #include "scene/scene_operations_dao.h"
@@ -176,10 +176,13 @@ bool supla_scene_asynctask::_execute(bool *execute_again,
 }
 
 void supla_scene_asynctask::on_timeout(unsigned long long timeout_usec,
-                                       unsigned long long usec_after_timeout) {
-  supla_log(LOG_WARNING,
-            "Scene execution timeout. Id: %i, TimeoutUSec: %llu+%llu",
-            get_scene_id(), timeout_usec, usec_after_timeout);
+                                       unsigned long long usec_after_timeout,
+                                       bool log_allowed) {
+  if (log_allowed) {
+    supla_log(LOG_WARNING,
+              "Scene execution timeout. Id: %i, TimeoutUSec: %llu+%llu",
+              get_scene_id(), timeout_usec, usec_after_timeout);
+  }
 }
 
 // static
@@ -216,7 +219,7 @@ bool supla_scene_asynctask::is_scene_active(
 
 // static
 bool supla_scene_asynctask::is_scene_active(int user_id, int scene_id) {
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_scene_dao dao(&dba);
 
   unsigned int estimated_execution_time = 0;
@@ -232,7 +235,7 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
   if (!interrupt_before_execute && queue->task_exists(&cnd)) {
     return serIsDuringExecution;
   } else {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_scene_dao scene_dao(&dba);
 
     unsigned int estimated_execution_time = 0;

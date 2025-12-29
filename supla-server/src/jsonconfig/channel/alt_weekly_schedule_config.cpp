@@ -18,6 +18,8 @@
 
 #include "alt_weekly_schedule_config.h"
 
+#include <string>
+
 #include "assert.h"
 #include "log.h"
 

@@ -26,7 +26,7 @@ SuperuserAuthorizationIntegrationTest::SuperuserAuthorizationIntegrationTest() {
 }
 
 SuperuserAuthorizationIntegrationTest::
-    ~SuperuserAuthorizationIntegrationTest() {}
+~SuperuserAuthorizationIntegrationTest() {}
 
 void SuperuserAuthorizationIntegrationTest::onSuperuserAuthorizationResult(
     bool authorized, int code) {

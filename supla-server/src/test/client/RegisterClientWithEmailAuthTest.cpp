@@ -18,6 +18,8 @@
 
 #include "client/RegisterClientWithEmailAuthTest.h"
 
+#include <cstdio>
+
 namespace testing {
 
 RegisterClientWithEmailAuthTest::RegisterClientWithEmailAuthTest()

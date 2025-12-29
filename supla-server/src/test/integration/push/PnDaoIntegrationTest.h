@@ -19,7 +19,7 @@
 #ifndef PnDaoTest_H_
 #define PnDaoTest_H_
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "integration/IntegrationTest.h"
 #include "push/pn_dao.h"
 
@@ -27,7 +27,7 @@ namespace testing {
 
 class PnDaoIntegrationTest : public IntegrationTest, public Test {
  protected:
-  supla_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
   supla_pn_dao *dao;
 
  public:

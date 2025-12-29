@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include <functional>
+#include <string>
 
 #include "log.h"
 

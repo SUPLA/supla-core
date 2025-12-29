@@ -22,7 +22,7 @@
 
 #include "conn/authkey_cache.h"
 #include "conn/connection_dao.h"
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "device/device.h"
 #include "device/device_dao.h"
 #include "user/user.h"
@@ -119,7 +119,7 @@ void supla_register_device::register_device(
     }
   }
 
-  supla_db_access_provider dba;
+  supla_mariadb_access_provider dba;
   supla_connection_dao conn_dao(&dba);
   supla_device_dao device_dao(&dba);
 

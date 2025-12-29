@@ -18,7 +18,7 @@
 
 #include "pn_throttling.h"
 
-#include "db/db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "lck.h"
 #include "push/pn_dao.h"
 
@@ -86,7 +86,7 @@ bool supla_pn_throttling::is_delivery_possible(int user_id,
     it->first_time = now;
     it->counter = 0;
 
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_pn_dao dao(&dba);
 
     // Get / Refresh limit.
@@ -155,7 +155,7 @@ unsigned int supla_pn_throttling::get_limit(int user_id, long* left) {
   lck_unlock(lck);
 
   if (!result) {
-    supla_db_access_provider dba;
+    supla_mariadb_access_provider dba;
     supla_pn_dao dao(&dba);
     result = dao.get_limit(user_id);
     if (left) {

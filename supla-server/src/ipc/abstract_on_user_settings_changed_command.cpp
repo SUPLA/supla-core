@@ -18,6 +18,9 @@
 
 #include "abstract_on_user_settings_changed_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_on_user_settings_changed_command::

@@ -20,6 +20,8 @@
 
 #include <scene/scene_asynctask.h>
 
+#include <memory>
+
 #include "actions/action_gate_openclose.h"
 #include "log.h"
 

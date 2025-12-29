@@ -18,6 +18,8 @@
 
 #include "cyclictasks/abstract_cyclictask.h"
 
+#include <vector>
+
 using std::vector;
 
 supla_abstract_cyclictask::supla_abstract_cyclictask() {
@@ -39,5 +41,7 @@ void supla_abstract_cyclictask::run(const struct timeval *now,
 }
 
 bool supla_abstract_cyclictask::db_access_needed(void) { return true; }
+
+bool supla_abstract_cyclictask::is_tsdb_preffered(void) { return false; }
 
 bool supla_abstract_cyclictask::user_access_needed(void) { return true; }

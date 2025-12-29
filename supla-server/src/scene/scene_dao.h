@@ -19,15 +19,15 @@
 #ifndef SUPLA_SCENE_DAO_H_
 #define SUPLA_SCENE_DAO_H_
 
-#include "db/abstract_db_access_provider.h"
+#include "db/mariadb_access_provider.h"
 #include "scene/abstract_scene_dao.h"
 
 class supla_scene_dao : public supla_abstract_scene_dao {
  private:
-  supla_abstract_db_access_provider *dba;
+  supla_mariadb_access_provider *dba;
 
  public:
-  explicit supla_scene_dao(supla_abstract_db_access_provider *dba);
+  explicit supla_scene_dao(supla_mariadb_access_provider *dba);
   virtual ~supla_scene_dao();
 
   virtual unsigned int get_estimated_execution_time_and_active_period(

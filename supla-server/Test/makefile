@@ -11,6 +11,7 @@ RM := rm -rf
 -include src/webhook/subdir.mk
 -include src/vbt/subdir.mk
 -include src/user/subdir.mk
+-include src/tsdb/subdir.mk
 -include src/test/webhook/subdir.mk
 -include src/test/vbt/subdir.mk
 -include src/test/srpc/subdir.mk
@@ -161,7 +162,7 @@ main-build: supla-server
 supla-server: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++ -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS) -lssl -lcurl -lgtest -lgmock -l$(LIBMYSQL) -lcrypto
+	g++ -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS) -lssl -lpqxx -lcurl -lgtest -lgmock -l$(LIBMYSQL) -lcrypto
 	@echo 'Finished building target: $@'
 	@echo ' '
 

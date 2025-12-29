@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <string>
+
 #include "srpc/srpc.h"
 
 #define INITIAL_VALUE_MIN -100000000

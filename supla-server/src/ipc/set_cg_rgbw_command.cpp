@@ -31,5 +31,5 @@ bool supla_set_cg_rgbw_command::set_cg_rgbw_value(supla_user *user,
                                                   char brightness,
                                                   char on_off) {
   return user->get_channel_groups()->set_rgbw_value(
-      get_caller(), group_id, color, color_brightness, brightness, on_off);
+      get_caller(), group_id, color, color_brightness, brightness, on_off, 0);
 }

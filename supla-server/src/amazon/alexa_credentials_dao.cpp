@@ -20,6 +20,9 @@
 
 #include <mysql.h>
 
+#include <string>
+#include <vector>
+
 #include "log.h"
 
 using std::string;
@@ -30,13 +33,13 @@ using std::vector;
 #define ALEXA_REGION_MAXSIZE 5
 
 supla_amazon_alexa_credentials_dao::supla_amazon_alexa_credentials_dao(
-    supla_abstract_db_access_provider *dba) {
+    supla_mariadb_access_provider *dba) {
   this->dba = dba;
   this->release_dba = false;
 }
 
 supla_amazon_alexa_credentials_dao::supla_amazon_alexa_credentials_dao(
-    supla_abstract_db_access_provider *dba, bool release_dba) {
+    supla_mariadb_access_provider *dba, bool release_dba) {
   this->dba = dba;
   this->release_dba = release_dba;
 }

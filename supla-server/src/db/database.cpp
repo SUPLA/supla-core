@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#include <string>
+
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "safearray.h"
 

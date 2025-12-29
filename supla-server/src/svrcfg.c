@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#define _POSIX_C_SOURCE 200809L
+
 #include "svrcfg.h"
 
 #include <stdio.h>
@@ -33,7 +35,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
 
   char *s_mqtt = "MQTT-BROKER";
-  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 49)
+  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 59)
   // This ensures that realloc will only be called once
   scfg_add_int_param(CFG_MQTT_KEEP_ALIVE_SEC, s_mqtt, "CFG_MQTT_KEEP_ALIVE_SEC",
                      30);
@@ -64,10 +66,22 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
 
   char *s_mysql = "MySQL";
   scfg_add_str_param(CFG_MYSQL_HOST, s_mysql, "host", NULL);
-  scfg_add_int_param(CFG_MYSQL_PORT, s_mysql, "port", 0);
+  scfg_add_int_param(CFG_MYSQL_PORT, s_mysql, "port", 3306);
   scfg_add_str_param(CFG_MYSQL_DB, s_mysql, "database", "supla");
   scfg_add_str_param(CFG_MYSQL_USER, s_mysql, "user", NULL);
   scfg_add_str_param(CFG_MYSQL_PASSWORD, s_mysql, "password", NULL);
+
+  char *s_tsdb = "TimescaleDB";
+  scfg_add_str_param(CFG_TSDB_HOST, s_tsdb, "host", NULL);
+  scfg_add_int_param(CFG_TSDB_PORT, s_tsdb, "port", 5432);
+  scfg_add_str_param(CFG_TSDB_DB, s_tsdb, "database", NULL);
+  scfg_add_str_param(CFG_TSDB_USER, s_tsdb, "user", NULL);
+  scfg_add_str_param(CFG_TSDB_PASSWORD, s_tsdb, "password", NULL);
+
+  scfg_add_str_param(CFG_TSDB_SSLMODE, s_tsdb, "sslmode", NULL);
+  scfg_add_str_param(CFG_TSDB_SSLROOTCERT, s_tsdb, "sslrootcert", NULL);
+  scfg_add_str_param(CFG_TSDB_SSLCERT, s_tsdb, "sslcert", NULL);
+  scfg_add_str_param(CFG_TSDB_SSLKEY, s_tsdb, "sslkey", NULL);
 
   char *s_ipc = "IPC";
   scfg_add_str_param(CFG_IPC_SOCKET_PATH, s_ipc, "socket_path",

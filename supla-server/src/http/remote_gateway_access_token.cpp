@@ -20,6 +20,8 @@
 
 #include <sys/time.h>
 
+#include <string>
+
 using std::string;
 
 supla_remote_gateway_access_token::supla_remote_gateway_access_token(void) {

@@ -38,7 +38,7 @@ typedef struct {
 } _supla_scene_row_t;
 
 supla_client_scene_dao::supla_client_scene_dao(
-    supla_abstract_db_access_provider *dba)
+    supla_mariadb_access_provider *dba)
     : supla_abstract_client_scene_dao() {
   this->dba = dba;
 }

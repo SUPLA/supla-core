@@ -20,6 +20,8 @@
 
 #include <mysql.h>
 
+#include <string>
+
 #include "log.h"
 
 using std::string;
@@ -27,7 +29,7 @@ using std::string;
 #define GH_TOKEN_MAXSIZE 255
 
 supla_google_home_credentials_dao::supla_google_home_credentials_dao(
-    supla_abstract_db_access_provider *dba) {
+    supla_mariadb_access_provider *dba) {
   this->dba = dba;
 }
 

@@ -18,6 +18,8 @@
 
 #include "hvac_config.h"
 
+#include <string>
+
 using std::map;
 using std::string;
 

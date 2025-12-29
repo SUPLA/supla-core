@@ -18,6 +18,9 @@
 
 #include "SetLocationCaptionIntegrationTest.h"
 
+#include <cstdio>
+#include <string>
+
 #include "log.h"
 
 namespace testing {

@@ -21,6 +21,9 @@
 #include <assert.h>
 #include <unistd.h>
 
+#include <memory>
+#include <vector>
+
 #include "abstract_asynctask_thread_pool.h"
 #include "lck.h"
 #include "log.h"

@@ -16,12 +16,16 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#define _POSIX_C_SOURCE 200809L
+
 #include "ipcsocket.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/socket.h>
@@ -30,6 +34,7 @@
 #include <sys/un.h>
 #include <time.h>
 #include <unistd.h>
+
 #include "log.h"
 #include "tools.h"
 

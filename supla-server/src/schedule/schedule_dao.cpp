@@ -20,7 +20,7 @@
 
 #include <mysql.h>
 
-supla_schedule_dao::supla_schedule_dao(supla_abstract_db_access_provider *dba) {
+supla_schedule_dao::supla_schedule_dao(supla_mariadb_access_provider *dba) {
   this->dba = dba;
 }
 

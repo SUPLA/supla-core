@@ -19,6 +19,7 @@
 #include "hp_thermostat_logger.h"
 
 #include <memory>
+#include <vector>
 
 #include "datalogger/hp_thermostat_logger_dao.h"
 #include "device/device.h"
@@ -33,6 +34,8 @@ supla_hp_thermostat_logger::supla_hp_thermostat_logger()
     : supla_abstract_cyclictask() {}
 
 supla_hp_thermostat_logger::~supla_hp_thermostat_logger() {}
+
+bool supla_hp_thermostat_logger::is_tsdb_preffered(void) { return true; }
 
 unsigned int supla_hp_thermostat_logger::task_interval_sec(void) { return 600; }
 

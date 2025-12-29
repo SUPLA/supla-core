@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_interrupt_scene_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_interrupt_scene_command::supla_abstract_interrupt_scene_command(

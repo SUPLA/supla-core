@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>  // NOLINT
 #include <unistd.h>
 
+#include <string>
+
 #include "lck.h"
 #include "log.h"
 #include "mqtt_message_provider.h"
@@ -30,6 +32,7 @@ using std::string;
 MqttClientLibraryAdapterMock::MqttClientLibraryAdapterMock(
     supla_mqtt_client_settings *settings)
     : supla_mqtt_client_library_adapter(settings) {
+  this->supla_client_instance = nullptr;
   this->lck = lck_init();
   this->connected = false;
 }

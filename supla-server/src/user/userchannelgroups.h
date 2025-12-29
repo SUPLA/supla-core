@@ -30,6 +30,7 @@
 #include "userchannelgroup.h"
 
 class supla_user;
+class supla_user_channelgroup;
 class supla_user_channelgroups : public supla_objcontainer {
  private:
   supla_user *user;
@@ -45,6 +46,8 @@ class supla_user_channelgroups : public supla_objcontainer {
 
  public:
   explicit supla_user_channelgroups(supla_user *user);
+  bool add(supla_user_channelgroup *group, e_objc_scope scope);
+
   bool set_new_value(const supla_caller &caller, TCS_SuplaNewValue *new_value);
   bool set_char_value(const supla_caller &caller, int GroupID,
                       const char value);
@@ -55,9 +58,10 @@ class supla_user_channelgroups : public supla_objcontainer {
   bool set_brightness(const supla_caller &caller, int GroupID, char brightness);
   bool set_rgbw_value(const supla_caller &caller, int GroupID,
                       unsigned int *color, char *color_brightness,
-                      char *brightness, char *on_off);
+                      char *brightness, char *on_off, char *dimmer_cct);
   bool set_rgbw_value(const supla_caller &caller, int GroupID, int color,
-                      char color_brightness, char brightness, char on_off);
+                      char color_brightness, char brightness, char on_off,
+                      char dimmer_cct);
   bool calcfg_request(const supla_caller &caller,
                       TCS_DeviceCalCfgRequest_B *request);
   bool action_toggle(const supla_caller &caller, int GroupID);

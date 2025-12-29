@@ -43,7 +43,8 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
   virtual bool _execute(bool *execute_again,
                         supla_asynctask_thread_bucket *bucket);
   virtual void on_timeout(unsigned long long timeout_usec,
-                          unsigned long long usec_after_timeout);
+                          unsigned long long usec_after_timeout,
+                          bool log_allowed);
 
  public:
   supla_action_gate_openclose(

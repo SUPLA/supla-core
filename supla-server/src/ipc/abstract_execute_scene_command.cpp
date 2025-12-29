@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_execute_scene_command.h"
 
+#include <cstdio>
+#include <string>
+
 using std::string;
 
 supla_abstract_execute_scene_command::supla_abstract_execute_scene_command(

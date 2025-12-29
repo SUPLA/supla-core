@@ -18,6 +18,8 @@
 
 #include <device/RegisterDeviceWithEmailAuthTest.h>
 
+#include <cstdio>
+
 namespace testing {
 
 RegisterDeviceWithEmailAuthTest::RegisterDeviceWithEmailAuthTest()

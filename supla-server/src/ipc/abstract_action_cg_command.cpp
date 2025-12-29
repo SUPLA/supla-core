@@ -18,6 +18,9 @@
 
 #include "ipc/abstract_action_cg_command.h"
 
+#include <cstdio>
+#include <string>
+
 #include "actions/abstract_action_config.h"
 #include "proto.h"
 

@@ -27,17 +27,17 @@ using std::string;
 namespace testing {
 
 GeneralPurposeMeterLoggerDaoIntegrationTest::
-    GeneralPurposeMeterLoggerDaoIntegrationTest()
-    : IntegrationTest(), Test() {
+GeneralPurposeMeterLoggerDaoIntegrationTest()
+: IntegrationTest(), Test() {
   dba = nullptr;
   dao = nullptr;
 }
 
 GeneralPurposeMeterLoggerDaoIntegrationTest::
-    ~GeneralPurposeMeterLoggerDaoIntegrationTest() {}
+~GeneralPurposeMeterLoggerDaoIntegrationTest() {}
 
 void GeneralPurposeMeterLoggerDaoIntegrationTest::SetUp() {
-  dba = new supla_db_access_provider();
+  dba = new supla_mariadb_access_provider();
   ASSERT_TRUE(dba != nullptr);
   dao = new supla_general_purpose_meter_logger_dao(dba);
   ASSERT_TRUE(dao != nullptr);
