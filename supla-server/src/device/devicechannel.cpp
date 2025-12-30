@@ -190,17 +190,21 @@ void supla_device_channel::trim_alt_icon_index(int func,
     case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
     case SUPLA_CHANNELFNC_CONTAINER:
     case SUPLA_CHANNELFNC_WATER_TANK:
-    case SUPLA_CHANNELFNC_MOTION_SENSOR:
       max = 3;
       break;
+    case SUPLA_CHANNELFNC_MOTION_SENSOR:
+      max = 4;
+      break;
     case SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH:
-    case SUPLA_CHANNELFNC_BINARY_SENSOR:
       max = 5;
       break;
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_THERMOMETER:
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
       max = 7;
+      break;
+    case SUPLA_CHANNELFNC_BINARY_SENSOR:
+      max = 9;
       break;
     case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
       max = 14;
