@@ -99,6 +99,7 @@ pthread_t main_thread;
 TEventHandler *st_eh = NULL;
 
 void st_signal_handler(int sig) {
+  (void)(sig);
   if (pthread_self() == main_thread) {
     st_app_terminate = 1;
   }
@@ -117,7 +118,7 @@ void st_critical_signal_handler(int sig) {
   count = backtrace(array, 20);
   char **symbols = backtrace_symbols(array, count);
 
-  for (int i = 0; i < count; i++) {
+  for (size_t i = 0; i < count; i++) {
     supla_log(LOG_CRIT, "%s", symbols[i]);
   }
 
@@ -248,7 +249,7 @@ void st_mainloop_free(void) { eh_free(st_eh); }
 void st_mainloop_wait(int usec) { eh_wait(st_eh, usec); }
 
 char *st_bin2hex(char *buffer, const char *src, size_t len) {
-  int a, b;
+  size_t a, b;
 
   if (src == 0 || buffer == 0) return buffer;
 
@@ -384,7 +385,7 @@ char *st_get_datetime_str(char buffer[64]) {
 
   time_t t = time(NULL);
   struct tm *tm = localtime(&t);  // NOLINT
-  strftime(buffer, 64, "%c", tm);
+  strftime(buffer, 64, "%Y-%m-%d %H:%M:%S", tm);
 
   return buffer;
 }
