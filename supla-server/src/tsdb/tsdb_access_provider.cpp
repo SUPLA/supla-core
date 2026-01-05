@@ -20,6 +20,7 @@
 
 #include <string.h>
 
+#include <atomic>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -33,6 +34,7 @@
 using pqxx::connection;
 using pqxx::nontransaction;
 using pqxx::result;
+using std::atomic;
 using std::string;
 
 supla_tsdb_access_provider::supla_tsdb_access_provider(void)
@@ -136,7 +138,17 @@ bool supla_tsdb_access_provider::connect(void) {
     disconnect();
   }
 
-  return is_connected();
+  if (is_connected()) {
+    if (version_ok.load(std::memory_order_acquire)) {
+      return true;
+    } else if (check_db_version()) {
+      version_ok.store(true, std::memory_order_release);
+    } else {
+      disconnect();
+    }
+  }
+
+  return false;
 }
 
 bool supla_tsdb_access_provider::is_connected(void) {
