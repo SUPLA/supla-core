@@ -143,6 +143,7 @@ bool supla_tsdb_access_provider::connect(void) {
       return true;
     } else if (check_db_version()) {
       version_ok.store(true, std::memory_order_release);
+      return true;
     } else {
       disconnect();
     }
