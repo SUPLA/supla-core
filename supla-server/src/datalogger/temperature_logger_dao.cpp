@@ -27,6 +27,7 @@
 
 #include "device/value/channel_temphum_value.h"
 #include "log.h"
+#include "tools.h"
 
 using std::vector;
 
@@ -70,7 +71,10 @@ void supla_temperature_logger_dao::add_temperature(int channel_id,
   }
 
   char temperature_str[BUFF_SIZE] = {};
-  snprintf(temperature_str, sizeof(temperature_str), "%04.4f", temperature);
+  if (0 != format_decimal_trunc(temperature, 8, 4, temperature_str,
+                                sizeof(temperature_str))) {
+    return;
+  }
 
   if (get_mdba()) {
     mariadb_add_temperature(channel_id, temperature_str);
@@ -122,8 +126,16 @@ void supla_temperature_logger_dao::add_temperature_and_humidity(
 
   char temperature_str[BUFF_SIZE] = {};
   char humidity_str[BUFF_SIZE] = {};
-  snprintf(temperature_str, sizeof(temperature_str), "%04.4f", temperature);
-  snprintf(humidity_str, sizeof(humidity_str), "%04.4f", humidity);
+
+  if (0 != format_decimal_trunc(temperature, 8, 4, temperature_str,
+                                sizeof(temperature_str))) {
+    return;
+  }
+
+  if (0 != format_decimal_trunc(humidity, 8, 4, humidity_str,
+                                sizeof(humidity_str))) {
+    return;
+  }
 
   if (get_mdba()) {
     mariadb_add_temperature_and_humidity(channel_id, temperature_str,
