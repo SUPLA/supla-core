@@ -19,6 +19,7 @@
 #ifndef TSDB_ACCESS_PROVIDER_H_
 #define TSDB_ACCESS_PROVIDER_H_
 
+#include <atomic>
 #include <pqxx/pqxx>
 #include <string>
 
@@ -26,6 +27,7 @@
 
 class supla_tsdb_access_provider : public supla_abstract_db_access_provider {
  private:
+  inline static std::atomic<bool> version_ok{false};
   std::string extra_conn_args;
   pqxx::connection* conn = nullptr;
   void append_conninfo_string(std::string* conninfo,

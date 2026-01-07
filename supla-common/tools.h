@@ -82,7 +82,8 @@ char st_bcrypt_hash(const char *str, const char *salt, char *hash,
 char st_bcrypt_crypt(char *str, char *hash, int hash_buffer_size, char rounds);
 char st_bcrypt_check(const char *str, char *hash, int hash_len);
 char *st_get_authkey_hash_hex(const char AuthKey[SUPLA_AUTHKEY_SIZE]);
-
+int format_decimal_trunc(double x, int precision, int scale, char *out,
+                         size_t outsz);
 #endif
 
 unsigned _supla_int_t st_crc32_checksum(const unsigned char *data,

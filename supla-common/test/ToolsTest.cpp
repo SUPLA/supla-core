@@ -18,6 +18,8 @@
 
 #include "ToolsTest.h"
 
+#include <cmath>
+
 #include "gtest/gtest.h"  // NOLINT
 #include "tools.h"        // NOLINT
 
@@ -271,6 +273,23 @@ TEST_F(ToolsTest, st_crc32) {
   char str[] = "1234";
   EXPECT_EQ(st_crc32_checksum((const uint8_t *)str, 4), 2615402659);
   EXPECT_EQ(st_crc32_checksum((const uint8_t *)str, 0), 0);
+}
+
+TEST_F(ToolsTest, formatDecimal84Truncate) {
+  // Convert to DECIMAL(8,4)
+  char buff[50] = {};
+  EXPECT_EQ(-1, format_decimal_trunc(NAN, 8, 4, buff, sizeof(buff)));
+  EXPECT_EQ(-2, format_decimal_trunc(10000.0, 8, 4, buff, sizeof(buff)));
+  EXPECT_EQ(-2, format_decimal_trunc(-10000.0, 8, 4, buff, sizeof(buff)));
+
+  EXPECT_EQ(0, format_decimal_trunc(9999.9999, 8, 4, buff, sizeof(buff)));
+  EXPECT_STREQ("9999.9999", buff);
+
+  EXPECT_EQ(0, format_decimal_trunc(-9999.9999, 8, 4, buff, sizeof(buff)));
+  EXPECT_STREQ("-9999.9999", buff);
+
+  EXPECT_EQ(0, format_decimal_trunc(1.12356789, 8, 4, buff, sizeof(buff)));
+  EXPECT_STREQ("1.1235", buff);
 }
 
 }  // namespace
