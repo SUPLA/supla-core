@@ -67,22 +67,7 @@ void supla_total_energy_logger::run(const vector<supla_user *> *users,
     TElectricityMeter_ExtendedValue_V3 em_ev = {};
     emv->get_raw_value(&em_ev);
 
-    bool ne_zero = false;
-
-    for (int a = 0; a < 3; a++) {
-      if (em_ev.total_forward_active_energy[a] ||
-          em_ev.total_reverse_active_energy[a] ||
-          em_ev.total_forward_reactive_energy[a] ||
-          em_ev.total_reverse_reactive_energy[a]) {
-        ne_zero = true;
-        break;
-      }
-    }
-
-    if (ne_zero || em_ev.total_forward_active_energy_balanced ||
-        em_ev.total_reverse_active_energy_balanced) {
-      dao.add((*it)->get_channel_id(), &em_ev);
-    }
+    dao.add((*it)->get_channel_id(), &em_ev);
 
     delete *it;
   }
