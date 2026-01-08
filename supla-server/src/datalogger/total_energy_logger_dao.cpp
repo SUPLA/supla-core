@@ -87,7 +87,8 @@ void supla_total_energy_logger_dao::tsdb_add(
   bool not_zero = false;
 
   for (int a = 0; a < 3; a++) {
-    if (em_ev->total_reverse_active_energy[a] ||
+    if (em_ev->total_forward_active_energy[a] ||
+        em_ev->total_reverse_active_energy[a] ||
         em_ev->total_forward_reactive_energy[a] ||
         em_ev->total_reverse_reactive_energy[a]) {
       not_zero = true;
