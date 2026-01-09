@@ -133,7 +133,7 @@ void supla_total_energy_logger_dao::add(
     try {
       tsdb_add(channel_id, em_ev);
     } catch (const std::exception &e) {
-      get_tsdba()->log_exception(e);
+      get_tsdba()->log_exception(e, channel_id);
     }
   }
 }

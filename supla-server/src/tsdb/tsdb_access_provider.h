@@ -47,7 +47,7 @@ class supla_tsdb_access_provider : public supla_abstract_db_access_provider {
   virtual bool is_config_present(void);
   bool check_db_version(void);
   pqxx::connection* get_conn(void);
-  void log_exception(const std::exception& e);
+  void log_exception(const std::exception& e, int channel_id = 0);
   std::string time_to_timestamp_string(const time_t& t);
 };
 
