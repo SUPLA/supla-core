@@ -794,7 +794,6 @@ void supla_device_channel::assign_rgbw_value(
   int func = get_func();
 
   if (func == SUPLA_CHANNELFNC_DIMMER || func == SUPLA_CHANNELFNC_DIMMER_CCT ||
-      func == SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB ||
       func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (brightness < 0 || brightness > 100) brightness = 0;
 
@@ -802,7 +801,8 @@ void supla_device_channel::assign_rgbw_value(
   }
 
   if (func == SUPLA_CHANNELFNC_RGBLIGHTING ||
-      func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
+      func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING ||
+      func == SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB) {
     if (color_brightness < 0 || color_brightness > 100) color_brightness = 0;
 
     value[1] = color_brightness;
