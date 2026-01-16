@@ -91,7 +91,7 @@ void supla_tsdb_access_provider::append_conninfo_string(string* conninfo,
 }
 
 void supla_tsdb_access_provider::log_exception(const std::exception& e,
-                                               int channel_id = 0) {
+                                               int channel_id) {
   if (channel_id) {
     supla_log(LOG_ERR, "TSDB (channel_id %i): %s", channel_id, e.what());
   } else {
