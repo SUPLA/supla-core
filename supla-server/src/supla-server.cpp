@@ -94,8 +94,7 @@ int main(int argc, char *argv[]) {
     database db;
     supla_tsdb_access_provider tsdb;
 
-    if (!db.check_db_version(DB_VERSION, 60) ||
-        (tsdb.is_config_present() && !tsdb.check_db_version())) {
+    if (!db.check_db_version(DB_VERSION, 60)) {
       database::mainthread_end();
       goto exit_fail;
     }

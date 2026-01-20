@@ -29,7 +29,7 @@ supla_total_energy_logger_dao::supla_total_energy_logger_dao(
 void supla_total_energy_logger_dao::set_longlong(unsigned _supla_int64_t *v,
                                                  void *pbind,
                                                  bool *not_null_flag) {
-  if (*v == 0) {
+  if (*v == 0 || *v > INT64_MAX) {
     ((MYSQL_BIND *)pbind)->buffer_type = MYSQL_TYPE_NULL;
   } else {
     ((MYSQL_BIND *)pbind)->buffer_type = MYSQL_TYPE_LONGLONG;
@@ -80,6 +80,14 @@ void supla_total_energy_logger_dao::mariadb_add(
   if (stmt != nullptr) mysql_stmt_close(stmt);
 }
 
+_supla_int64_t supla_total_energy_logger_dao::to_unsigned(
+    unsigned _supla_int64_t v) {
+  // The TSDB database does not have an UNSIGNED BIGINT type, and using
+  // NUMERIC(20,0) will negatively impact performance. Therefore, we only allow
+  // this in MYSQL for values ​​<= INT64_MAX (signed).
+  return v <= INT64_MAX ? v : 0;
+}
+
 void supla_total_energy_logger_dao::tsdb_add(
     int channel_id, TElectricityMeter_ExtendedValue_V3 *em_ev) {
   pqxx::nontransaction ntx(*get_tsdba()->get_conn());
@@ -87,16 +95,17 @@ void supla_total_energy_logger_dao::tsdb_add(
   bool not_zero = false;
 
   for (int a = 0; a < 3; a++) {
-    if (em_ev->total_reverse_active_energy[a] ||
-        em_ev->total_forward_reactive_energy[a] ||
-        em_ev->total_reverse_reactive_energy[a]) {
+    if (to_unsigned(em_ev->total_forward_active_energy[a]) ||
+        to_unsigned(em_ev->total_reverse_active_energy[a]) ||
+        to_unsigned(em_ev->total_forward_reactive_energy[a]) ||
+        to_unsigned(em_ev->total_reverse_reactive_energy[a])) {
       not_zero = true;
       break;
     }
   }
 
-  if (!not_zero && !em_ev->total_forward_active_energy_balanced &&
-      !em_ev->total_reverse_active_energy_balanced) {
+  if (!not_zero && !to_unsigned(em_ev->total_forward_active_energy_balanced) &&
+      !to_unsigned(em_ev->total_reverse_active_energy_balanced)) {
     return;
   }
 
@@ -104,20 +113,20 @@ void supla_total_energy_logger_dao::tsdb_add(
       "SELECT "
       "supla_add_em_log_item($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$"
       "15)",
-      channel_id, em_ev->total_forward_active_energy[0],
-      em_ev->total_reverse_active_energy[0],
-      em_ev->total_forward_reactive_energy[0],
-      em_ev->total_reverse_reactive_energy[0],
-      em_ev->total_forward_active_energy[1],
-      em_ev->total_reverse_active_energy[1],
-      em_ev->total_forward_reactive_energy[1],
-      em_ev->total_reverse_reactive_energy[1],
-      em_ev->total_forward_active_energy[2],
-      em_ev->total_reverse_active_energy[2],
-      em_ev->total_forward_reactive_energy[2],
-      em_ev->total_reverse_reactive_energy[2],
-      em_ev->total_forward_active_energy_balanced,
-      em_ev->total_reverse_active_energy_balanced);
+      channel_id, to_unsigned(em_ev->total_forward_active_energy[0]),
+      to_unsigned(em_ev->total_reverse_active_energy[0]),
+      to_unsigned(em_ev->total_forward_reactive_energy[0]),
+      to_unsigned(em_ev->total_reverse_reactive_energy[0]),
+      to_unsigned(em_ev->total_forward_active_energy[1]),
+      to_unsigned(em_ev->total_reverse_active_energy[1]),
+      to_unsigned(em_ev->total_forward_reactive_energy[1]),
+      to_unsigned(em_ev->total_reverse_reactive_energy[1]),
+      to_unsigned(em_ev->total_forward_active_energy[2]),
+      to_unsigned(em_ev->total_reverse_active_energy[2]),
+      to_unsigned(em_ev->total_forward_reactive_energy[2]),
+      to_unsigned(em_ev->total_reverse_reactive_energy[2]),
+      to_unsigned(em_ev->total_forward_active_energy_balanced),
+      to_unsigned(em_ev->total_reverse_active_energy_balanced));
 }
 
 void supla_total_energy_logger_dao::add(
@@ -132,7 +141,7 @@ void supla_total_energy_logger_dao::add(
     try {
       tsdb_add(channel_id, em_ev);
     } catch (const std::exception &e) {
-      get_tsdba()->log_exception(e);
+      get_tsdba()->log_exception(e, channel_id);
     }
   }
 }

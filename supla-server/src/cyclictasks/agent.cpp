@@ -116,7 +116,10 @@ void supla_cyclictasks_agent::loop(void *sthread) {
         supla_abstract_db_access_provider *dba = nullptr;
 
         if ((*it)->db_access_needed()) {
-          if ((*it)->is_tsdb_preffered() && tsdba.is_config_present()) {
+          if ((*it)->is_tsdb_preffered() && tsdba.is_config_present() &&
+              (tsdba.is_connected() || tsdba.connect())) {
+            // Use TSDB if the configuration is present and a connection to the
+            // database can be established.
             dba = &tsdba;
           } else {
             dba = &mdba;

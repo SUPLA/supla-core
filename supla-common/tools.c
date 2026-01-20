@@ -26,6 +26,9 @@
 #include <execinfo.h>
 #endif /*__ANDROID_API__*/
 #include <grp.h>
+#include <inttypes.h>
+#include <limits.h>
+#include <math.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -47,6 +50,10 @@
 #include "crypt_blowfish/ow-crypt.h"
 #define BCRYPT_RABD_SIZE 16
 #endif
+
+#define DEC84_SCALE 10000LL
+#define DEC84_MAX_SCALED 99999999LL   //  9999.9999 * 10000
+#define DEC84_MIN_SCALED -99999999LL  // -9999.9999 * 10000
 
 const unsigned _supla_int_t st_crc32_tab[] = {
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
@@ -658,6 +665,43 @@ char *st_get_authkey_hash_hex(const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
   }
 
   return NULL;
+}
+
+static int64_t pow10_i64(int n) {
+  int64_t p = 1;
+  for (int i = 0; i < n; ++i) p *= 10;
+  return p;
+}
+
+int format_decimal_trunc(double x, int precision, int scale, char *out,
+                         size_t outsz) {
+  if (!out || outsz == 0) return -3;
+  if (!isfinite(x)) return -1;
+
+  if (precision <= 0 || scale < 0 || scale > precision) return -4;
+  if (precision > 18) return -4;
+
+  int64_t SCALE = pow10_i64(scale);
+  int64_t MAX_SCALED = pow10_i64(precision) - 1;
+
+  double scaled_d = trunc(x * (double)SCALE);
+
+  if (scaled_d > (double)MAX_SCALED || scaled_d < -(double)MAX_SCALED)
+    return -2;
+
+  int64_t scaled = (int64_t)scaled_d;
+
+  int negative = (scaled < 0);
+  int64_t abs_scaled = llabs(scaled);
+
+  int64_t ipart = abs_scaled / SCALE;
+  int64_t frac = abs_scaled % SCALE;
+
+  int n = snprintf(out, outsz, "%s%" PRId64 ".%0*" PRId64, negative ? "-" : "",
+                   ipart, scale, frac);
+
+  if (n < 0 || (size_t)n >= outsz) return -3;
+  return 0;
 }
 
 #endif /* __BCRYPT*/

@@ -118,7 +118,7 @@ void supla_abstract_electricity_logger_dao::add(const time_t &time,
     try {
       tsdb_add(time, channel_id, phase, procedure, min, max, avg);
     } catch (const std::exception &e) {
-      get_tsdba()->log_exception(e);
+      get_tsdba()->log_exception(e, channel_id);
     }
   }
 }
