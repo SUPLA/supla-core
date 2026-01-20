@@ -1639,7 +1639,7 @@ typedef struct {
   unsigned _supla_int_t Color;  // 0 == Ignore
   char ColorRandom;
   char OnOff;
-  char DimmerCct;  // ver. >= 28
+  char WhiteTemperature;  // ver. >= 28
   char Reserved[7];
 } TAction_RGBW_Parameters;  // ver. >= 19
 
@@ -2386,7 +2386,7 @@ typedef struct {
   char onOff;
   char command;    // RGBW_COMMAND_, requires
                    // SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED v. >= 21
-  char dimmerCct;  // v. >= 25, 0..100 (0 warm, 50 neutral, 100 cold)
+  char whiteTemperature;  // v. >= 25, 0..100 (0 warm, 50 neutral, 100 cold)
 } TRGBW_Value;     // v. >= 10
 
 #define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1
