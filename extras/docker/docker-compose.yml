@@ -62,9 +62,9 @@ services:
     tty: true          
     command: ["/bin/bash"]
 
-  supla-core-debian13:
-    image: devel/supla-core-debian13:latest
-    container_name: supla-core-devel-supla-core-debian13
+  supla-core-debian11:
+    image: devel/supla-core-debian11:latest
+    container_name: supla-core-devel-supla-core-debian11
     depends_on:
       - mariadb
       - timescaledb

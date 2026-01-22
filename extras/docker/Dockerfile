@@ -1,9 +1,8 @@
-FROM debian:11.9
+FROM debian:13.2
 
 RUN apt-get update 
 RUN apt-get upgrade -y
-RUN apt-get -y install git vim wget procps build-essential libssl-dev libmariadb-dev-compat mariadb-client net-tools valgrind cppcheck cmake clang-format python3-pip rsyslog libgtest-dev libgmock-dev screen libcurl4-openssl-dev libpqxx-dev libpq-dev postgresql-client iputils-ping
-RUN pip install cpplint  
+RUN apt-get -y install git vim wget procps build-essential libssl-dev libmariadb-dev-compat mariadb-client net-tools valgrind cppcheck cmake clang-format cpplint rsyslog libgtest-dev libgmock-dev screen libcurl4-openssl-dev libpqxx-dev libpq-dev postgresql-client iputils-ping
 RUN mkdir -p /etc/supla-server
 RUN cd /usr/src/ && \
     wget https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-3.5.4.tar.gz && \
