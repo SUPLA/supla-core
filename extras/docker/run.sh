@@ -6,8 +6,8 @@ mkdir -p data/postgresql
 
 docker compose up -d 
 
-if [ "$1" == "debian13" ]; then
-  docker exec -it supla-core-devel-supla-core-debian13 /bin/bash
+if [ "$1" == "debian11" ]; then
+  docker exec -it supla-core-devel-supla-core-debian11 /bin/bash
 else
   docker exec -it supla-core-devel-supla-core /bin/bash
 fi
