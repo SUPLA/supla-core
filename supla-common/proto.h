@@ -2362,19 +2362,19 @@ typedef struct {
 // Stores color value (R, G, B) and ignores all other bytes.
 // If RGB is off, it stays off
 #define RGBW_COMMAND_SET_RGB_WITHOUT_TURN_ON 12
-// Start brightness dimmer iteration
-#define RGBW_COMMAND_START_ITERATE_DIMMER 13
-// Start color brightness iteration
-#define RGBW_COMMAND_START_ITERATE_RGB 14
-// Start dimmer and rgb brightness iteration
-#define RGBW_COMMAND_START_ITERATE_ALL 15
-// Stop brightness dimmer iteration
-#define RGBW_COMMAND_STOP_ITERATE_DIMMER 16
-// Stop color brightness iteration
-#define RGBW_COMMAND_STOP_ITERATE_RGB 17
-// Stop dimmer and rgb brightness iteration
-#define RGBW_COMMAND_STOP_ITERATE_ALL 18
-// Store dimmer CCT value and ignores all other bytes
+// Start brightness dimmer adjustment (0..100..0 etc)
+#define RGBW_COMMAND_BRIGHTNESS_ADJUSTMENT_DIMMER_START 13
+// Start color brightness adjustment
+#define RGBW_COMMAND_BRIGHTNESS_ADJUSTMENT_COLOR_START 14
+// Start dimmer and rgb brightness adjustment
+#define RGBW_COMMAND_BRIGHTNESS_ADJUSTMENT_ALL_START 15
+// Stop brightness dimmer adjustment
+#define RGBW_COMMAND_BRIGHTNESS_ADJUSTMENT_DIMMER_STOP 16
+// Stop color brightness adjustment
+#define RGBW_COMMAND_BRIGHTNESS_ADJUSTMENT_COLOR_STOP 17
+// Stop dimmer and rgb brightness adjustment
+#define RGBW_COMMAND_BRIGHTNESS_ADJUSTMENT_ALL_STOP 18
+// Store dimmer white temperature value and ignores all other bytes
 #define RGBW_COMMAND_SET_WHITE_TEMPERATURE_WITHOUT_TURN_ON 19
 
 typedef struct {
