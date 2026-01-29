@@ -535,7 +535,6 @@ bool supla_device_channels::set_device_channel_char_value(
       int color = 0;
       char color_brightness = 0;
       char brightness = 0;
-      char on_off = 0;
       char dimmer_cct = 0;
 
       supla_channel_rgbw_value *rgbw_value =
@@ -553,11 +552,10 @@ bool supla_device_channels::set_device_channel_char_value(
           brightness = 0;
         }
 
-        on_off = RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF;
-
         result = set_device_channel_rgbw_value(
             caller, channel->get_id(), group_id, eol, color, color_brightness,
-            brightness, on_off, dimmer_cct);
+            brightness, RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF, 0,
+            dimmer_cct);
       }
 
     } else if (channel->is_char_value_writable()) {
@@ -584,7 +582,7 @@ bool supla_device_channels::set_device_channel_char_value(
 bool supla_device_channels::set_device_channel_rgbw_value(
     const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
     int color, char color_brightness, char brightness, char on_off,
-    char dimmer_cct) {
+    char command, char dimmer_cct) {
   supla_device_channel *channel = find_channel(channel_id);
 
   if (channel && channel->is_rgbw_value_writable()) {
@@ -607,7 +605,7 @@ bool supla_device_channels::set_device_channel_rgbw_value(
     }
 
     channel->assign_rgbw_value(v, color, color_brightness, brightness, on_off,
-                               dimmer_cct);
+                               command, dimmer_cct);
 
     async_set_channel_value(channel, caller, group_id, eol, v);
     return true;
@@ -859,7 +857,6 @@ bool supla_device_channels::set_on(const supla_caller &caller, int channel_id,
         int color = 0;
         char color_brightness = 0;
         char brightness = 0;
-        char on_off = 0;
         char dimmer_cct = 0;
 
         supla_channel_rgbw_value *rgbw_value =
@@ -882,11 +879,10 @@ bool supla_device_channels::set_on(const supla_caller &caller, int channel_id,
             brightness = on ? 100 : 0;
           }
 
-          on_off = RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF;
-
           result = set_device_channel_rgbw_value(
               caller, channel->get_id(), group_id, eol, color, color_brightness,
-              brightness, on_off, dimmer_cct);
+              brightness, RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF, 0,
+              dimmer_cct);
         }
         break;
       }
@@ -972,7 +968,8 @@ bool supla_device_channels::set_rgbw(const supla_caller &caller, int channel_id,
                                      int group_id, unsigned char eol,
                                      unsigned int *color,
                                      char *color_brightness, char *brightness,
-                                     char *on_off, char *dimmer_cct) {
+                                     char *on_off, char *command,
+                                     char *dimmer_cct) {
   supla_device_channel *channel = find_channel(channel_id);
   if (channel && channel->is_rgbw_value_writable()) {
     int _color = 0;
@@ -990,7 +987,7 @@ bool supla_device_channels::set_rgbw(const supla_caller &caller, int channel_id,
           caller, channel_id, group_id, eol, color ? *color : _color,
           color_brightness ? *color_brightness : _color_brightness,
           brightness ? *brightness : _brightness, on_off ? *on_off : 0,
-          dimmer_cct ? *dimmer_cct : _dimmer_cct);
+          command ? *command : 0, dimmer_cct ? *dimmer_cct : _dimmer_cct);
     }
   }
 
@@ -1001,7 +998,7 @@ bool supla_device_channels::set_color(const supla_caller &caller,
                                       int channel_id, int group_id,
                                       unsigned char eol, unsigned int color) {
   return set_rgbw(caller, channel_id, group_id, eol, &color, nullptr, nullptr,
-                  nullptr, nullptr);
+                  nullptr, nullptr, nullptr);
 }
 
 bool supla_device_channels::set_color_brightness(const supla_caller &caller,
@@ -1009,14 +1006,14 @@ bool supla_device_channels::set_color_brightness(const supla_caller &caller,
                                                  unsigned char eol,
                                                  char brightness) {
   return set_rgbw(caller, channel_id, group_id, eol, nullptr, &brightness,
-                  nullptr, nullptr, nullptr);
+                  nullptr, nullptr, nullptr, nullptr);
 }
 
 bool supla_device_channels::set_brightness(const supla_caller &caller,
                                            int channel_id, int group_id,
                                            unsigned char eol, char brightness) {
   return set_rgbw(caller, channel_id, group_id, eol, nullptr, nullptr,
-                  &brightness, nullptr, nullptr);
+                  &brightness, nullptr, nullptr, nullptr);
 }
 
 bool supla_device_channels::set_dgf_transparency(const supla_caller &caller,

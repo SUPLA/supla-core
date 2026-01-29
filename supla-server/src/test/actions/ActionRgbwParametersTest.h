@@ -16,22 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_SET_CG_RGBW_COMMAND_H_
-#define SUPLA_SET_CG_RGBW_COMMAND_H_
+#ifndef ACTION_RGBW_PARAMETERS_TEST_H_
+#define ACTION_RGBW_PARAMETERS_TEST_H_
 
-#include <string>
+#include "gtest/gtest.h"  // NOLINT
 
-#include "ipc/abstract_set_cg_rgbw_command.h"
+namespace testing {
 
-class supla_set_cg_rgbw_command : public supla_abstract_set_cg_rgbw_command {
- protected:
-  virtual bool set_cg_rgbw_value(supla_user *user, int group_id, int color,
-                                 char color_brightness, char brightness,
-                                 char on_off);
-
+class ActionRgbwParametersTest : public Test {
  public:
-  explicit supla_set_cg_rgbw_command(
-      supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color);
+  ActionRgbwParametersTest(void);
+  virtual ~ActionRgbwParametersTest(void);
 };
 
-#endif /* SUPLA_SET_CG_RGBW_COMMAND_H_ */
+} /* namespace testing */
+
+#endif /* ACTION_RGBW_PARAMETERS_TEST_H_ */

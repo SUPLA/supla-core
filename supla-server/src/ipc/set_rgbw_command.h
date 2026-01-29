@@ -21,20 +21,25 @@
 
 #include <string>
 
-#include "ipc/abstract_set_rgbw_command.h"
+#include "actions/abstract_action_executor.h"
+#include "ipc/abstract_ipc_command.h"
 
-class supla_set_rgbw_command : public supla_abstract_set_rgbw_command {
+class supla_set_rgbw_command : public supla_abstract_ipc_command {
+ private:
+  bool color_random;
+  bool group;
+  supla_abstract_action_executor *action_executor;
+
  protected:
-  virtual bool set_channel_rgbw_value(supla_user *user, int device_id,
-                                      int channel_id, int color,
-                                      char color_brightness, char brightness,
-                                      char on_off,
-                                      const char *alexa_correlation_token,
-                                      const char *google_request_id);
+  virtual void on_command_match(const char *params);
+  virtual const std::string get_command_name(void);
+  int get_random_color(void);
 
  public:
   explicit supla_set_rgbw_command(
-      supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color);
+      supla_abstract_ipc_socket_adapter *socket_adapter,
+      supla_abstract_action_executor *action_executor, bool random_color,
+      bool group);
 };
 
 #endif /* SUPLA_SET_RGBW_COMMAND_H_ */

@@ -20,7 +20,6 @@
 #define ABSTRACTACTIONCONFIG_H_
 
 #include "actions/abstract_action_parameters.h"
-#include "proto.h"
 
 enum _subjectType_e {
   stUnknown,

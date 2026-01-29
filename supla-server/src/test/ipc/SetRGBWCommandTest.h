@@ -19,16 +19,22 @@
 #ifndef SETRGBWCOMMANDTEST_H_
 #define SETRGBWCOMMANDTEST_H_
 
-#include "doubles/ipc/SetRGBWCommandMock.h"
+#include "doubles/actions/ActionExecutorGmock.h"
 #include "ipc/IpcCommandTest.h"
+#include "ipc/set_rgbw_command.h"
 
 namespace testing {
 
 class SetRGBWCommandTest : public IpcCommandTest {
  protected:
-  supla_user *user;
-  SetRGBWCommandMock *cmd;
-  virtual supla_abstract_ipc_command *getCommand(void);
+  ActionExecutorGmock actionExecutor;
+  supla_abstract_ipc_command *cmd;
+  supla_set_rgbw_command *setCmd;
+  supla_set_rgbw_command *setRandCmd;
+  supla_set_rgbw_command *cgSetCmd;
+  supla_set_rgbw_command *cgSetRandCmd;
+
+  supla_abstract_ipc_command *getCommand(void);
 
  public:
   virtual void SetUp();

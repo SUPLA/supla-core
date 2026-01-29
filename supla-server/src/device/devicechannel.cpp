@@ -790,7 +790,7 @@ unsigned char supla_device_channel::get_protocol_version(void) {
 
 void supla_device_channel::assign_rgbw_value(
     char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness,
-    char brightness, char on_off, char dimmer_cct) {
+    char brightness, char on_off, char command, char dimmer_cct) {
   int func = get_func();
 
   if (func == SUPLA_CHANNELFNC_DIMMER || func == SUPLA_CHANNELFNC_DIMMER_CCT ||
@@ -811,12 +811,13 @@ void supla_device_channel::assign_rgbw_value(
     value[4] = (char)((color & 0x00FF0000) >> 16);
   }
 
+  value[5] = on_off;
+  value[6] = command;
+
   if (func == SUPLA_CHANNELFNC_DIMMER_CCT ||
       func == SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB) {
     value[7] = dimmer_cct;
   }
-
-  value[5] = on_off;
 }
 
 bool supla_device_channel::is_value_writable(void) {

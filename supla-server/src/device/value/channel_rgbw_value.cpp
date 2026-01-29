@@ -106,6 +106,16 @@ void supla_channel_rgbw_value::set_color_brightness(char brightness) {
   rgbw->colorBrightness = brightness;
 }
 
+char supla_channel_rgbw_value::get_command(void) {
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
+  return rgbw->command;
+}
+
+void supla_channel_rgbw_value::set_command(char command) {
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
+  rgbw->command = command;
+}
+
 char supla_channel_rgbw_value::get_dimmer_cct(void) {
   TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
   return rgbw->dimmerCct;

@@ -39,6 +39,8 @@ class supla_action_rgbw_parameters : public supla_abstract_action_parameters {
   void set_color_brightness(char brightness);
   void set_color(unsigned int color);
   void set_random_color(bool random);
+  bool set_params(int color, bool color_random, int color_brightness,
+                  int brightness, int turn_onoff, int command, int dimmer_cct);
 };
 
 #endif /* ACTION_RGBW_PARAMETERS_H_ */

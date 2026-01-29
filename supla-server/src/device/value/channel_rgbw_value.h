@@ -38,6 +38,8 @@ class supla_channel_rgbw_value : public supla_abstract_channel_value {
   void set_brightness(char brightness);
   char get_color_brightness(void);
   void set_color_brightness(char brightness);
+  char get_command(void);
+  void set_command(char command);
   char get_dimmer_cct(void);
   void set_dimmer_cct(char cct);
   static bool is_function_supported(int func);
