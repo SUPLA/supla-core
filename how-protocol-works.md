@@ -1,182 +1,183 @@
 # Introduction
 
-Supla protocol is based on sending C structs between (S)erver, (C)lient (i.e. Android device) and (D)evice (micro controllers). 
-Every struct is described in [proto.h](https://github.com/magx2/supla-core/blob/master/supla-common/proto.h). In names of these structs
-we can find common prefixes ```DCS```, ```SDC```, ```DS```, ```SD```, ```CS```, ```SC``` - each of them describes which direction, struct should be send:
+The SUPLA protocol is based on exchanging C structures between three parties: the **Server (S)**, **Client (C)** (e.g. Android or iOS apps), and **Device (D)** (microcontrollers).
 
-* DCS = Device/Client -> Server
-* SDC = Server -> Device/Client
-* DS = Device -> Server
-* SD = Server -> Device
-* CS = Client -> Server
-* SC = Server -> Client
+All protocol structures are defined in `proto.h`:
+[https://github.com/magx2/supla-core/blob/master/supla-common/proto.h](https://github.com/magx2/supla-core/blob/master/supla-common/proto.h)
 
-# Packet sending
+Structure names use fixed prefixes that indicate the direction of communication:
 
-Only struct that is send directly is [TSuplaDataPacket](https://github.com/magx2/supla-core/blob/master/supla-common/proto.h#L228) all others are serialized into ```TSuplaDataPacket.data``` field.
+* **DCS** – Device / Client → Server
+* **SDC** – Server → Device / Client
+* **DS** – Device → Server
+* **SD** – Server → Device
+* **CS** – Client → Server
+* **SC** – Server → Client
 
-```C
+This convention is used consistently across the entire protocol.
+
+# Packet format
+
+The only structure sent directly over the wire is `TSuplaDataPacket`. All other protocol structures are serialized into its `data` field.
+
+```
 typedef struct {
-
   char tag[SUPLA_TAG_SIZE];
   unsigned char version;
-  unsigned _supla_int_t rr_id; // Request/Response ID
+  unsigned _supla_int_t rr_id;      // Request / Response ID
   unsigned _supla_int_t call_type;
   unsigned _supla_int_t data_size;
-  char data[SUPLA_MAX_DATA_SIZE]; // Last variable in struct!
-
-}TSuplaDataPacket;
+  char data[SUPLA_MAX_DATA_SIZE];   // Must be the last field
+} TSuplaDataPacket;
 ```
 
-Each packet start with ```tag``` that is always equal to ```S``` ```U``` ```P``` ```L``` ```A``` letters in ASCII coding (```83```, ```85```, ```80```, ```76```, ```65```).
+Each packet starts with a fixed ASCII tag: `SUPLA` (bytes `83 85 80 76 65`). This allows fast protocol identification on the receiving side.
 
-To deserialize sent struct (that is in filed ```data```) you need to do switch on ```call_type``` field, i.e. if ```call_type``` is equal to
-```67``` ([SUPLA_DS_CALL_REGISTER_DEVICE_C](https://github.com/magx2/supla-core/blob/master/supla-common/proto.h#L91)) that means that packet contains [TDS_SuplaRegisterDevice_C](https://github.com/magx2/supla-core/blob/master/supla-common/proto.h#L368) struct.
+The payload format is determined by the `call_type` field. For example, if `call_type == 67` (`SUPLA_DS_CALL_REGISTER_DEVICE_C`), the `data` field contains a serialized `TDS_SuplaRegisterDevice_C` structure.
 
-## How to deserialize?
+# Deserialization
 
-Deserializing is simply just changing array of bytes into respective C type, i.e. int is just 4 bytes written in little endian.
+Deserialization consists of interpreting the raw byte array as C data types. All multi-byte values are encoded in **little-endian** format.
 
-Below I put some examples:
+Examples:
 
-| Bytes in binary                     | Bytes in decimal | type                 | value          | Note           |
-| ----------------------------------- | ---------------- | -------------------- | -------------- | -------------- |
-| 01100101                            | 101              | byte                 | 101            |                |
-| 11001100                            | -52              | byte                 | -52            |                |
-| 10011010                            | 154              | char                 | 154            |                |
-| 01101101 01110101 11100101 01011010 | 109  117 -27  90 | signed int           | 1 524 987 245  | Little endian! |
-| 01111101 10001001 00011010 10100101 | 125 -119  26 -91 | signed int           | -1 524 987 523 | Little endian! |
-| 11000010 11101001 10100111 11000010 | -62  -23 -89 -62 | unsigned int  / uint | 3 265 784 258  | Little endian! |
+| Binary                              | Decimal         | Type                | Value          | Notes         |
+| ----------------------------------- | --------------- | ------------------- | -------------- | ------------- |
+| 01100101                            | 101             | byte                | 101            | signed        |
+| 11001100                            | -52             | byte                | -52            | signed        |
+| 10011010                            | 154             | char                | 154            | unsigned      |
+| 01101101 01110101 11100101 01011010 | 109 117 -27 90  | signed int          | 1 524 987 245  | little-endian |
+| 01111101 10001001 00011010 10100101 | 125 -119 26 -91 | signed int          | -1 524 987 523 | little-endian |
+| 11000010 11101001 10100111 11000010 | -62 -23 -89 -62 | unsigned int (uint) | 3 265 784 258  | little-endian |
 
-Data types that I use above:
+Supported data types:
 
-| Name | Short name | Min value | Max value | signed? |
-| ---- | ---------- | --------- | --------- | ------- |
-| byte | byte | -128 | 127 | yes |
-| char | char | 0 | 255 | no |
-| signed int | int | –2 147 483 648 | 2 147 483 647 | yes |
-| unsigned int | uint | 0 | 4 294 967 295 | no
+| Name         | Short | Min value      | Max value     | Signed |
+| ------------ | ----- | -------------- | ------------- | ------ |
+| byte         | byte  | -128           | 127           | yes    |
+| char         | char  | 0              | 255           | no     |
+| signed int   | int   | -2 147 483 648 | 2 147 483 647 | yes    |
+| unsigned int | uint  | 0              | 4 294 967 295 | no     |
 
-Some structs has array of chars, but they are not encoded neither in ASCII nor in UTF-8. As an example I can show ```GUID``` field in 
-[TDS_SuplaRegisterDevice](https://github.com/magx2/supla-core/blob/master/supla-common/proto.h#L330). To parse this into String you need to read 
-byte by byte and change each of them into two digit Hex number. Let's say we got this bytes: 
+Some structures contain raw byte arrays that are neither ASCII nor UTF-8 encoded. A common example is the `GUID` field in `TDS_SuplaRegisterDevice`.
 
-| Numeral system     | Byte 1   | Byte 2   | Byte 3   | Byte 4   |
-| --------------     | ------   | ------   | ------   | ------   |
-| **BIN**            | 11011010 | 00001010 | 01010010 | 11111111 | 
-| **DEC**            | 218      | 10       | 82       | 255      |
-| **HEX**            | DA       | 0A       | 52       | FF       |
+To convert such fields into a string representation, each byte should be converted into a two-digit hexadecimal value.
 
-So in our case ```GUID``` value is equals to ```DA0A52ff```. 
+Example:
 
-## Communication wire
+| System | Byte 1   | Byte 2   | Byte 3   | Byte 4   |
+| ------ | -------- | -------- | -------- | -------- |
+| BIN    | 11011010 | 00001010 | 01010010 | 11111111 |
+| DEC    | 218      | 10       | 82       | 255      |
+| HEX    | DA       | 0A       | 52       | FF       |
 
-All communication that was described before is done via **TCP/IP** on port either **2016** or **2015**. Port 2016 is used for HTTPs communication. 
+Resulting GUID fragment: `DA0A52FF`.
 
-# Examples of communication
+# Transport layer
 
-## Device registers
+All communication described above uses **TCP/IP**.
 
-First thing each device does after turning on is an attempt to register to server. To do this device sends ```TDS_SuplaRegisterDevice```, ```TDS_SuplaDeviceChannel_B``` or
- ```TDS_SuplaRegisterDevice_C``` depending which version of Supla it has. As a response server sends ```TSD_SuplaRegisterDeviceResult```.
+* Port **2015** – plain TCP
+* Port **2016** – TLS (encrypted connection)
 
-Life example:
+# Example: device registration
 
-Device wants to register, to do it it sends this bytes:
+After startup, each device attempts to register itself on the server. Depending on protocol version, it sends one of:
 
-```
-[
-  83 85, 80, 76, 65, // SUPLA tag 
-  5, // version = 5
-  1, 0, 0, 0, // rr_id = 1 
-  65, 0, 0, 0, // call_type = 65
-  41, 1, 0, 0, // dataSize = 297
-  -32, 4, 0, 0, 113, 97, 122, 119, 115, 120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -33, 22, -81, 125, -64, 116, -19, 2, 101, 103, -127, 16, -6, -66, 96, 60, 90, 65, 77, 69, 76, 32, 82, 79, 87, 45, 48, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 46, 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 84, 11, 0, 0, 96, 0, 0, 0, -116, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
-]
-```
+* `TDS_SuplaRegisterDevice`
+* `TDS_SuplaRegisterDevice_B`
+* `TDS_SuplaRegisterDevice_C`
+* or newer
 
-Server finds ```SUPLA``` tag and decode rest to this ```TSuplaDataPacket``` struct:
+The server responds with `TSD_SuplaRegisterDeviceResult` or `TSD_SuplaRegisterDeviceResult_B`.
 
-``` 
-TSuplaDataPacket{
-  version=5, 
-  rrId=1, 
-  callType=65, 
-  dataSize=297, 
-  data=[-32, 4, 0, 0, 113, 97, 122, 119, 115, 120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -33, 22, -81, 125, -64, 116, -19, 2, 101, 103, -127, 16, -6, -66, 96, 60, 90, 65, 77, 69, 76, 32, 82, 79, 87, 45, 48, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 46, 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 84, 11, 0, 0, 96, 0, 0, 0, -116, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
-}
-```
- 
-Server finds that ```call_type``` is equal to ```65``` [SUPLA_ACCESSID_PWDHEX_MAXSIZE](https://github.com/magx2/supla-core/blob/master/supla-common/proto.h#L90) what means in ```data``` field there is ```TDS_SuplaRegisterDevice_B``` struct
- 
-Server parses ```data``` field into ```TDS_SuplaRegisterDevice_B```
-
-``` 
-TDS_SuplaRegisterDevice_B{
-  locationId=1248, 
-  locationPwd=[113, 97, 122, 119, 115, 120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  guid=[-33, 22, -81, 125, -64, 116, -19, 2, 101, 103, -127, 16, -6, -66, 96, 60],
-  name=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 46, 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  softVer=[90, 65, 77, 69, 76, 32, 82, 79, 87, 45, 48, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  channelCount=1,
-  channels=[...]
-} 
-```
-
-**Here comes your logic!** From this struct you can build your own objects. What you gonna do from this point is up to you.
-Just for this example, let's say that we gonna parse it to more friendly object (with Strings instead of arrays of chars) and we will send back 
-response that confirms register.
+Below is a real-world example of a device registration request sent as raw bytes:
 
 ```
-DeviceRegisterRequest{
-  locationId=1248, 
-  locationPassword='qazwsx', 
-  guid='DF16AF7DC074ED0265678110FABE603C', 
-  name='ZAMEL ROW-01', 
-  softVersion='2.0', 
-  channels=[...]
+[83, 85, 80, 76, 65, 5, 1, 0, 0, 0, 65, 0, 0, 0, 41, 1, 0, 0, ...]
+```
+
+The server detects the `SUPLA` tag and decodes the payload into a `TSuplaDataPacket`:
+
+```
+TSuplaDataPacket {
+  version = 5,
+  rrId = 1,
+  callType = 65,
+  dataSize = 297,
+  data = [...]
 }
 ```
 
-As a response let's send ```70``` [SUPLA_SD_CALL_REGISTER_DEVICE_RESULT](https://github.com/magx2/supla-core/blob/master/supla-common/proto.h#L92):
+`callType == 65` indicates that the payload contains a `TDS_SuplaRegisterDevice_B` structure, which is then parsed:
 
 ```
-TSD_SuplaRegisterDeviceResult{
-  resultCode=70, 
-  activityTimeout=100, 
-  version=2, 
-  versionMin=2
+TDS_SuplaRegisterDevice_B {
+  locationId = 1248,
+  locationPwd = [...],
+  guid = [...],
+  name = [...],
+  softVer = [...],
+  channelCount = 1,
+  channels = [...]
 }
 ```
 
-Let's encode it into ```data``` field in ```TSuplaDataPacket```
+At this point, server-side logic takes over. Typically, the raw structure is mapped into a more convenient representation:
 
 ```
-TSuplaDataPacket{
-  version=2, 
-  rrId=1, // this is just number that server increments each time it sends a message 
-  callType=90, 
-  dataSize=7, 
-  data=[70, 0, 0, 0, 100, 2, 2] // here is encoded out TSD_SuplaRegisterDeviceResult
+DeviceRegisterRequest {
+  locationId = 1248,
+  locationPassword = "qazwsx",
+  guid = "DF16AF7DC074ED0265678110FABE603C",
+  name = "ZAMEL ROW-01",
+  softVersion = "2.0",
+  channels = [...]
 }
 ```
 
-Change ```TSuplaDataPacket``` into bytes and attach at the beginning ```SUPLA``` tag
+# Registration response
+
+The server confirms successful registration by sending `SUPLA_SD_CALL_REGISTER_DEVICE_RESULT`:
 
 ```
-[83 85, 80, 76, 65, 2, 1, 0, 0, 0, 90, 0, 0, 0, 7, 0, 0, 0, 70, 0, 0, 0, 100, 2, 2]
+TSD_SuplaRegisterDeviceResult {
+  resultCode = 70,
+  activityTimeout = 100,
+  version = 2,
+  versionMin = 2
+}
 ```
 
-## Channel value changes
+Encoded into `TSuplaDataPacket`:
 
-### Device notifies about channel value change
+```
+TSuplaDataPacket {
+  version = 2,
+  rrId = 1,
+  callType = 90,
+  dataSize = 7,
+  data = [70, 0, 0, 0, 100, 2, 2]
+}
+```
 
-> User pressed light switch and devices sent notification to server that his channel status changed from OFF to ON.
+Serialized to bytes:
 
-TODO @przemyslawzygmunt
+```
+[83, 85, 80, 76, 65, 2, 1, 0, 0, 0, 90, 0, 0, 0, 7, 0, 0, 0, 70, 0, 0, 0, 100, 2, 2]
+```
 
-### Server wants device to change channel value
+# Channel value changes
 
-> User click button to turn off light channel, so server is sending notification to device that it should change channel value from ON to OFF.
+## Device → server
 
-TODO @przemyslawzygmunt
+A device notifies the server when a channel value changes, e.g. a physical light switch toggles from OFF to ON.
+
+*(to be documented)*
+
+## Server → device
+
+The server requests a channel value change, e.g. when a user taps a button in the mobile app.
+
+*(to be documented)*
+
