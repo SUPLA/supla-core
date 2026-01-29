@@ -78,7 +78,7 @@ void ActionExecutorMock::clear(void) {
   this->color = 0x01FFFFFF;
   this->brightness = -1;
   this->command = -1;
-  this->dimmer_cct = -1;
+  this->white_temperature = -1;
   this->color_brightness = -1;
   this->rgbw_counter = 0;
   this->forward_outside_counter = 0;
@@ -140,7 +140,7 @@ void ActionExecutorMock::set_color_brightness(char brightness) {
 
 void ActionExecutorMock::set_rgbw(unsigned int *color, char *color_brightness,
                                   char *brightness, char *on_off, char *command,
-                                  char *dimmer_cct) {
+                                  char *white_temperature) {
   addTime();
   rgbw_counter++;
   if (color) {
@@ -163,8 +163,8 @@ void ActionExecutorMock::set_rgbw(unsigned int *color, char *color_brightness,
     this->command = *command;
   }
 
-  if (dimmer_cct) {
-    this->dimmer_cct = *dimmer_cct;
+  if (white_temperature) {
+    this->white_temperature = *white_temperature;
   }
 }
 
@@ -430,7 +430,7 @@ char ActionExecutorMock::getBrightness(void) { return brightness; }
 
 char ActionExecutorMock::getCommand(void) { return command; }
 
-char ActionExecutorMock::getDimmerCct(void) { return dimmer_cct; }
+char ActionExecutorMock::getWhiteTemperature(void) { return white_temperature; }
 
 char ActionExecutorMock::getColorBrightness(void) { return color_brightness; }
 

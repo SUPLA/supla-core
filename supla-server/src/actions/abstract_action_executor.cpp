@@ -248,14 +248,15 @@ void supla_abstract_action_executor::execute_action(
 
           if (rgbw && (!rgbw_p.Color || rgbw_p.Brightness > -1 ||
                        rgbw_p.ColorBrightness > -1 || rgbw_p.Color ||
-                       rgbw_p.Command > -1 || rgbw_p.DimmerCct > -1)) {
+                       rgbw_p.Command > -1 || rgbw_p.WhiteTemperature > -1)) {
             set_rgbw(
                 rgbw_p.Color ? &rgbw_p.Color : nullptr,
                 rgbw_p.ColorBrightness > -1 ? &rgbw_p.ColorBrightness : nullptr,
                 rgbw_p.Brightness > -1 ? &rgbw_p.Brightness : nullptr,
                 rgbw_p.OnOff > -1 ? &rgbw_p.OnOff : nullptr,
                 rgbw_p.Command > -1 ? &rgbw_p.Command : nullptr,
-                rgbw_p.DimmerCct > -1 ? &rgbw_p.DimmerCct : nullptr);
+                rgbw_p.WhiteTemperature > -1 ? &rgbw_p.WhiteTemperature
+                                             : nullptr);
           }
         }
       }

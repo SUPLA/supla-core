@@ -134,7 +134,7 @@ class supla_device_channels {
                                      int group_id, unsigned char eol, int color,
                                      char color_brightness, char brightness,
                                      char on_off, char command,
-                                     char dimmer_cct);
+                                     char white_temperature);
 
   std::vector<supla_channel_relation> get_channel_relations(
       int channel_id, e_relation_kind kind);
@@ -168,7 +168,7 @@ class supla_device_channels {
   bool set_rgbw(const supla_caller &caller, int channel_id, int group_id,
                 unsigned char eol, unsigned int *color, char *color_brightness,
                 char *brightness, char *on_off, char *command,
-                char *dimmer_cct);
+                char *white_temperature);
   bool set_color(const supla_caller &caller, int channel_id, int group_id,
                  unsigned char eol, unsigned int color);
   bool set_color_brightness(const supla_caller &caller, int channel_id,

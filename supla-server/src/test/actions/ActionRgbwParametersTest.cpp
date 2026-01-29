@@ -35,7 +35,7 @@ TEST_F(ActionRgbwParametersTest, setParams) {
   EXPECT_EQ(params.get_rgbw().Brightness, 10);
   EXPECT_EQ(params.get_rgbw().OnOff, 2);
   EXPECT_EQ(params.get_rgbw().Command, 3);
-  EXPECT_EQ(params.get_rgbw().DimmerCct, 4);
+  EXPECT_EQ(params.get_rgbw().WhiteTemperature, 4);
 
   EXPECT_TRUE(params.set_params(0xAABBCC, true, 0, 0, 0, 0, 0));
   EXPECT_EQ(params.get_rgbw().ColorRandom, 1);
@@ -47,7 +47,7 @@ TEST_F(ActionRgbwParametersTest, setParams) {
   EXPECT_EQ(params.get_rgbw().Brightness, 0);
   EXPECT_EQ(params.get_rgbw().OnOff, 0);
   EXPECT_EQ(params.get_rgbw().Command, 0);
-  EXPECT_EQ(params.get_rgbw().DimmerCct, 0);
+  EXPECT_EQ(params.get_rgbw().WhiteTemperature, 0);
 
   EXPECT_FALSE(params.set_params(0, false, -2, 0, 0, 0, 0));
   EXPECT_FALSE(params.set_params(0, false, 101, 0, 0, 0, 0));
@@ -56,7 +56,8 @@ TEST_F(ActionRgbwParametersTest, setParams) {
   EXPECT_FALSE(params.set_params(0, false, 0, 0, 4, 0, 0));
   EXPECT_FALSE(params.set_params(0, false, 0, 0, 0, -2, 0));
   EXPECT_FALSE(params.set_params(
-      0, false, 0, 0, 0, RGBW_COMMAND_SET_DIMMER_CCT_WITHOUT_TURN_ON + 1, 0));
+      0, false, 0, 0, 0, RGBW_COMMAND_SET_WHITE_TEMPERATURE_WITHOUT_TURN_ON + 1,
+      0));
   EXPECT_FALSE(params.set_params(0, false, 0, 0, 0, 0, -2));
   EXPECT_FALSE(params.set_params(0, false, 0, 0, 0, 0, 101));
 }

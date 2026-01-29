@@ -160,29 +160,30 @@ bool supla_user_channelgroups::set_rgbw_value(const supla_caller &caller,
                                               int GroupID, unsigned int *color,
                                               char *color_brightness,
                                               char *brightness, char *on_off,
-                                              char *command, char *dimmer_cct) {
+                                              char *command,
+                                              char *white_temperature) {
   return for_each_channel(
       GroupID,
       [caller, GroupID, color, color_brightness, brightness, on_off, command,
-       dimmer_cct](supla_device *device, int channelId, char EOL) -> bool {
+       white_temperature](supla_device *device, int channelId,
+                          char EOL) -> bool {
         return device->get_channels()->set_rgbw(
             caller, channelId, GroupID, EOL, color, color_brightness,
-            brightness, on_off, command, dimmer_cct);
+            brightness, on_off, command, white_temperature);
       });
 }
 
-bool supla_user_channelgroups::set_rgbw_value(const supla_caller &caller,
-                                              int GroupID, int color,
-                                              char color_brightness,
-                                              char brightness, char on_off,
-                                              char command, char dimmer_cct) {
+bool supla_user_channelgroups::set_rgbw_value(
+    const supla_caller &caller, int GroupID, int color, char color_brightness,
+    char brightness, char on_off, char command, char white_temperature) {
   return for_each_channel(
       GroupID,
       [caller, GroupID, color, color_brightness, brightness, on_off, command,
-       dimmer_cct](supla_device *device, int channelId, char EOL) -> bool {
+       white_temperature](supla_device *device, int channelId,
+                          char EOL) -> bool {
         return device->get_channels()->set_device_channel_rgbw_value(
             caller, channelId, GroupID, EOL, color, color_brightness,
-            brightness, on_off, command, dimmer_cct);
+            brightness, on_off, command, white_temperature);
       });
 }
 

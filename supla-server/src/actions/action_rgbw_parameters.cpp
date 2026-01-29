@@ -91,11 +91,12 @@ void supla_action_rgbw_parameters::set_random_color(bool random) {
 bool supla_action_rgbw_parameters::set_params(int color, bool color_random,
                                               int color_brightness,
                                               int brightness, int turn_onoff,
-                                              int command, int dimmer_cct) {
+                                              int command,
+                                              int white_temperature) {
   if (color_brightness < -1 || color_brightness > 100 || brightness < -1 ||
       brightness > 100 || turn_onoff < -1 || turn_onoff > 3 || command < -1 ||
-      command > RGBW_COMMAND_SET_DIMMER_CCT_WITHOUT_TURN_ON ||
-      dimmer_cct < -1 || dimmer_cct > 100) {
+      command > RGBW_COMMAND_SET_WHITE_TEMPERATURE_WITHOUT_TURN_ON ||
+      white_temperature < -1 || white_temperature > 100) {
     return false;
   }
 
@@ -109,7 +110,7 @@ bool supla_action_rgbw_parameters::set_params(int color, bool color_random,
   rgbw.ColorRandom = color_random;
   rgbw.OnOff = turn_onoff;
   rgbw.Command = command;
-  rgbw.DimmerCct = dimmer_cct;
+  rgbw.WhiteTemperature = white_temperature;
 
   return true;
 }

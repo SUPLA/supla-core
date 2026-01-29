@@ -50,7 +50,8 @@ void supla_channel_rgbw_value::get_rgbw(TRGBW_Value *rgbw) {
 }
 
 void supla_channel_rgbw_value::get_rgbw(int *color, char *color_brightness,
-                                        char *brightness, char *dimmer_cct) {
+                                        char *brightness,
+                                        char *white_temperature) {
   if (color) {
     *color = get_color();
   }
@@ -63,8 +64,8 @@ void supla_channel_rgbw_value::get_rgbw(int *color, char *color_brightness,
     *brightness = get_brightness();
   }
 
-  if (dimmer_cct) {
-    *dimmer_cct = get_dimmer_cct();
+  if (white_temperature) {
+    *white_temperature = get_white_temperature();
   }
 }
 
@@ -116,14 +117,14 @@ void supla_channel_rgbw_value::set_command(char command) {
   rgbw->command = command;
 }
 
-char supla_channel_rgbw_value::get_dimmer_cct(void) {
+char supla_channel_rgbw_value::get_white_temperature(void) {
   TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
-  return rgbw->dimmerCct;
+  return rgbw->whiteTemperature;
 }
 
-void supla_channel_rgbw_value::set_dimmer_cct(char cct) {
+void supla_channel_rgbw_value::set_white_temperature(char wt) {
   TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
-  rgbw->dimmerCct = cct;
+  rgbw->whiteTemperature = wt;
 }
 
 // static

@@ -121,8 +121,9 @@ class supla_mqtt_abstract_state_message_provider
   bool get_brightness_message(const char *topic_prefix, char **topic_name,
                               void **message, size_t *message_size);
 
-  bool get_dimmer_cct_message(const char *topic_prefix, char **topic_name,
-                              void **message, size_t *message_size);
+  bool get_white_temperature_message(const char *topic_prefix,
+                                     char **topic_name, void **message,
+                                     size_t *message_size);
 
   bool get_color_brightness_message(const char *topic_prefix, char **topic_name,
                                     void **message, size_t *message_size);

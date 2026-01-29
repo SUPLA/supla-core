@@ -45,7 +45,7 @@ class ActionExecutorGmock : public supla_abstract_action_executor {
   MOCK_METHOD1(set_color_brightness, void(char brightness));
   MOCK_METHOD6(set_rgbw, void(unsigned int *color, char *color_brightness,
                               char *brightness, char *on_off, char *command,
-                              char *dimmer_cct));
+                              char *white_temperature));
   MOCK_METHOD0(toggle, void(void));
   MOCK_METHOD1(shut,
                void(const supla_action_shading_system_parameters *params));

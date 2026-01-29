@@ -258,7 +258,7 @@ TEST_F(SetRGBWCommandTest, cgOnlyCommand) {
   EXPECT_EQ(actionExecutor.get_group_id(), 30);
 }
 
-TEST_F(SetRGBWCommandTest, onlyDimmerCct) {
+TEST_F(SetRGBWCommandTest, onlyWhiteTemperature) {
   EXPECT_CALL(actionExecutor, set_rgbw(IsNull(), IsNull(), IsNull(), IsNull(),
                                        IsNull(), Pointee(Eq(25))))
       .Times(1);
@@ -270,7 +270,7 @@ TEST_F(SetRGBWCommandTest, onlyDimmerCct) {
   EXPECT_EQ(actionExecutor.get_channel_id(), 30);
 }
 
-TEST_F(SetRGBWCommandTest, cgOnlyDimmerCct) {
+TEST_F(SetRGBWCommandTest, cgOnlyWhiteTemperature) {
   EXPECT_CALL(actionExecutor, set_rgbw(IsNull(), IsNull(), IsNull(), IsNull(),
                                        IsNull(), Pointee(Eq(12))))
       .Times(1);
@@ -341,7 +341,7 @@ TEST_F(SetRGBWCommandTest, commandOutOfRange) {
                         "VALUE OUT OF RANGE\n");
 }
 
-TEST_F(SetRGBWCommandTest, dimmerCctOutOfRange) {
+TEST_F(SetRGBWCommandTest, whiteTemperatureOutOfRange) {
   EXPECT_CALL(actionExecutor, set_rgbw).Times(0);
   cmd = setCmd;
   commandProcessingTest("SET-RGBW-VALUE:10,0,30,-1,-1,-1,-1,-1,-2\n",

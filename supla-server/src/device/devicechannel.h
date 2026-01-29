@@ -141,7 +141,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   void set_extended_value(TSuplaChannelExtendedValue *ev);
   void assign_rgbw_value(char value[SUPLA_CHANNELVALUE_SIZE], int color,
                          char color_brightness, char brightness, char on_off,
-                         char command, char dimmer_cct);
+                         char command, char white_temperature);
   void get_double(double *value);
   void get_char(char *value);
   void get_config(TSD_ChannelConfig *config, unsigned char config_type,

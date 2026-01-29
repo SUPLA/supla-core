@@ -59,10 +59,10 @@ class supla_user_channelgroups : public supla_objcontainer {
   bool set_rgbw_value(const supla_caller &caller, int GroupID,
                       unsigned int *color, char *color_brightness,
                       char *brightness, char *on_off, char *command,
-                      char *dimmer_cct);
+                      char *white_temperature);
   bool set_rgbw_value(const supla_caller &caller, int GroupID, int color,
                       char color_brightness, char brightness, char on_off,
-                      char command, char dimmer_cct);
+                      char command, char white_temperature);
   bool calcfg_request(const supla_caller &caller,
                       TCS_DeviceCalCfgRequest_B *request);
   bool action_toggle(const supla_caller &caller, int GroupID);

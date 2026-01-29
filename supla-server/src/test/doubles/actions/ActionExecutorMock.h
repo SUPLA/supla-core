@@ -68,7 +68,7 @@ class ActionExecutorMock
   char color_brightness;
   char rgbw_on_off;
   char command;
-  char dimmer_cct;
+  char white_temperature;
   std::list<struct timeval> times;
   std::map<std::string, std::string> replacement_map;
   void addTime(void);
@@ -88,7 +88,7 @@ class ActionExecutorMock
   virtual void set_color_brightness(char brightness);
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
                         char *brightness, char *on_off, char *command,
-                        char *dimmer_cct);
+                        char *white_temperature);
   virtual void toggle(void);
   virtual void shut(const supla_action_shading_system_parameters *params);
   virtual void reveal(void);
@@ -154,7 +154,7 @@ class ActionExecutorMock
   unsigned int getColor(void);
   char getBrightness(void);
   char getCommand(void);
-  char getDimmerCct(void);
+  char getWhiteTemperature(void);
   char getColorBrightness(void);
   char getRGBWOnOff(void);
   std::list<struct timeval> getTimes(void);

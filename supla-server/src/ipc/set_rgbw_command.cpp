@@ -69,7 +69,7 @@ void supla_set_rgbw_command::on_command_match(const char *params) {
   int brightness = 0;
   int turn_onoff = 0;
   int command = 0;
-  int dimmer_cct = 0;
+  int white_temperature = 0;
 
   int ret = 0;
   int expected = 8;
@@ -79,22 +79,22 @@ void supla_set_rgbw_command::on_command_match(const char *params) {
       if (color_random) {
         ret = sscanf(params, "%i,%i,%i,%i,%i,%i,%i", &user_id,
                      &channel_or_group_id, &color_brightness, &brightness,
-                     &turn_onoff, &command, &dimmer_cct);
+                     &turn_onoff, &command, &white_temperature);
         expected--;
       } else {
         ret = sscanf(params, "%i,%i,%i,%i,%i,%i,%i,%i", &user_id,
                      &channel_or_group_id, &color, &color_brightness,
-                     &brightness, &turn_onoff, &command, &dimmer_cct);
+                     &brightness, &turn_onoff, &command, &white_temperature);
       }
     } else {
       if (color_random) {
         ret = sscanf(params, "%i,%i,%i,%i,%i,%i,%i,%i", &user_id, &device_id,
                      &channel_or_group_id, &color_brightness, &brightness,
-                     &turn_onoff, &command, &dimmer_cct);
+                     &turn_onoff, &command, &white_temperature);
       } else {
         ret = sscanf(params, "%i,%i,%i,%i,%i,%i,%i,%i,%i", &user_id, &device_id,
                      &channel_or_group_id, &color, &color_brightness,
-                     &brightness, &turn_onoff, &command, &dimmer_cct);
+                     &brightness, &turn_onoff, &command, &white_temperature);
         expected++;
       }
     }
@@ -107,7 +107,7 @@ void supla_set_rgbw_command::on_command_match(const char *params) {
     if (user_id && channel_or_group_id) {
       supla_action_rgbw_parameters params;
       if (!params.set_params(color, color_random, color_brightness, brightness,
-                             turn_onoff, command, dimmer_cct)) {
+                             turn_onoff, command, white_temperature)) {
         send_result("VALUE OUT OF RANGE");
         return;
       }
