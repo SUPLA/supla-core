@@ -137,6 +137,16 @@ bool supla_device::funclist_contains_function(int funcList, int func) {
       return (funcList & SUPLA_BIT_FUNC_RAINSENSOR) > 0;
     case SUPLA_CHANNELFNC_WEIGHTSENSOR:
       return (funcList & SUPLA_BIT_FUNC_WEIGHTSENSOR) > 0;
+    case SUPLA_CHANNELFNC_DIMMER:
+      return (funcList & SUPLA_RGBW_BIT_FUNC_DIMMER) > 0;
+    case SUPLA_RGBW_BIT_FUNC_RGB_LIGHTING:
+      return (funcList & SUPLA_RGBW_BIT_FUNC_RGB_LIGHTING) > 0;
+    case SUPLA_RGBW_BIT_FUNC_DIMMER_AND_RGB_LIGHTING:
+      return (funcList & SUPLA_RGBW_BIT_FUNC_DIMMER_AND_RGB_LIGHTING) > 0;
+    case SUPLA_RGBW_BIT_FUNC_DIMMER_CCT:
+      return (funcList & SUPLA_RGBW_BIT_FUNC_DIMMER_CCT) > 0;
+    case SUPLA_RGBW_BIT_FUNC_DIMMER_CCT_AND_RGB:
+      return (funcList & SUPLA_RGBW_BIT_FUNC_DIMMER_CCT_AND_RGB) > 0;
   }
 
   return false;

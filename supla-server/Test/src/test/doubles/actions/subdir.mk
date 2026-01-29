@@ -4,12 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/doubles/actions/ActionExecutorGmock.cpp \
 ../src/test/doubles/actions/ActionExecutorMock.cpp 
 
 CPP_DEPS += \
+./src/test/doubles/actions/ActionExecutorGmock.d \
 ./src/test/doubles/actions/ActionExecutorMock.d 
 
 OBJS += \
+./src/test/doubles/actions/ActionExecutorGmock.o \
 ./src/test/doubles/actions/ActionExecutorMock.o 
 
 
@@ -25,7 +28,7 @@ src/test/doubles/actions/%.o: ../src/test/doubles/actions/%.cpp src/test/doubles
 clean: clean-src-2f-test-2f-doubles-2f-actions
 
 clean-src-2f-test-2f-doubles-2f-actions:
-	-$(RM) ./src/test/doubles/actions/ActionExecutorMock.d ./src/test/doubles/actions/ActionExecutorMock.o
+	-$(RM) ./src/test/doubles/actions/ActionExecutorGmock.d ./src/test/doubles/actions/ActionExecutorGmock.o ./src/test/doubles/actions/ActionExecutorMock.d ./src/test/doubles/actions/ActionExecutorMock.o
 
 .PHONY: clean-src-2f-test-2f-doubles-2f-actions
 

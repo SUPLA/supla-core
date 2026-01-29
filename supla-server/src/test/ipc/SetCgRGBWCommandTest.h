@@ -19,7 +19,6 @@
 #ifndef SETCGRGBWCOMMANDTEST_H_
 #define SETCGRGBWCOMMANDTEST_H_
 
-#include "doubles/ipc/SetCgRGBWCommandMock.h"
 #include "ipc/IpcCommandTest.h"
 
 namespace testing {
@@ -27,7 +26,6 @@ namespace testing {
 class SetCgRGBWCommandTest : public IpcCommandTest {
  protected:
   supla_user *user;
-  SetCgRGBWCommandMock *cmd;
   virtual supla_abstract_ipc_command *getCommand(void);
 
  public:

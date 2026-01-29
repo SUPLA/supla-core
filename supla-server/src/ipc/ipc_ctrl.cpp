@@ -20,6 +20,7 @@
 
 // TODO(anyone): For setters, use the supla_action_executor class
 
+#include "actions/action_executor.h"
 #include "ipc/action_cg_command.h"
 #include "ipc/action_command.h"
 #include "ipc/alexa_cred_changed_command.h"
@@ -79,7 +80,6 @@
 #include "ipc/send_push_command.h"
 #include "ipc/set_cfg_mode_password_command.h"
 #include "ipc/set_cg_char_command.h"
-#include "ipc/set_cg_rgbw_command.h"
 #include "ipc/set_char_command.h"
 #include "ipc/set_digiglass_value_command.h"
 #include "ipc/set_rgbw_command.h"
@@ -92,6 +92,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_ipc_ctrl(socket_adapter) {
   sthread = NULL;
+  action_executor = new supla_action_executor();
 
   add_command(new supla_is_client_connected_command(socket_adapter));
   add_command(new supla_is_device_connected_command(socket_adapter));
@@ -114,10 +115,14 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_get_roller_shutter_value_command(socket_adapter));
   add_command(new supla_set_char_command(socket_adapter));
   add_command(new supla_set_cg_char_command(socket_adapter));
-  add_command(new supla_set_rgbw_command(socket_adapter, true));
-  add_command(new supla_set_rgbw_command(socket_adapter, false));
-  add_command(new supla_set_cg_rgbw_command(socket_adapter, true));
-  add_command(new supla_set_cg_rgbw_command(socket_adapter, false));
+  add_command(
+      new supla_set_rgbw_command(socket_adapter, action_executor, true, false));
+  add_command(new supla_set_rgbw_command(socket_adapter, action_executor, false,
+                                         false));
+  add_command(
+      new supla_set_rgbw_command(socket_adapter, action_executor, true, true));
+  add_command(
+      new supla_set_rgbw_command(socket_adapter, action_executor, false, true));
   add_command(new supla_set_digiglass_value_command(socket_adapter));
   add_command(new supla_get_digiglass_value_command(socket_adapter));
   add_command(new supla_action_cg_command(socket_adapter, ACTION_OPEN));
@@ -205,7 +210,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_set_cfg_mode_password_command(socket_adapter));
 }
 
-supla_ipc_ctrl::~supla_ipc_ctrl() {}
+supla_ipc_ctrl::~supla_ipc_ctrl() { delete action_executor; }
 
 void supla_ipc_ctrl::execute(void *sthread) {
   this->sthread = sthread;

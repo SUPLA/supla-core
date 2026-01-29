@@ -34,7 +34,8 @@ class supla_action_executor : public supla_abstract_action_executor {
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
-                        char *brightness, char *on_off, char *dimmer_cct);
+                        char *brightness, char *on_off, char *command,
+                        char *dimmer_cct);
   virtual void toggle(void);
   virtual void shut(const supla_action_shading_system_parameters *params);
   virtual void reveal(void);

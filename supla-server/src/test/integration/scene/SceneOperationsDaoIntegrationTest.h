@@ -21,6 +21,7 @@
 
 #include "db/mariadb_access_provider.h"
 #include "integration/IntegrationTest.h"
+#include "proto.h"
 #include "scene/scene_operations_dao.h"
 
 namespace testing {

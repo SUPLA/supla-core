@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "doubles/ipc/SetCgRGBWCommandMock.h"
+#include "ActionExecutorGmock.h"
 
 namespace testing {
 
-SetCgRGBWCommandMock::SetCgRGBWCommandMock(
-    supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color)
-    : supla_abstract_set_cg_rgbw_command(socket_adapter, random_color) {}
+ActionExecutorGmock::ActionExecutorGmock() : supla_abstract_action_executor() {}
+
+ActionExecutorGmock::~ActionExecutorGmock() {}
 
 }  // namespace testing

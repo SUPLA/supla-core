@@ -19,11 +19,13 @@
 #ifndef IPCCTRL_H_
 #define IPCCTRL_H_
 
+#include "actions/abstract_action_executor.h"
 #include "ipc/abstract_ipc_ctrl.h"
 
 class supla_ipc_ctrl : public supla_abstract_ipc_ctrl {
  private:
   void *sthread;
+  supla_abstract_action_executor *action_executor;
 
  protected:
   virtual bool is_terminated(void);
