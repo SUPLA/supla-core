@@ -514,7 +514,9 @@ TEST_F(ActionParamTest, parseRgb) {
 
   string action_param;
 
-  action_param = "{\"brightness\":33,\"hue\":0,\"color_brightness\":28}";
+  action_param =
+      "{\"brightness\":33,\"hue\":0,\"color_brightness\":28,\"rgbw_command\":5,"
+      "\"white_temperature\":10}";
   EXPECT_CALL(*worker, get_action_param)
       .WillRepeatedly(Return(action_param.c_str()));
 
@@ -522,14 +524,18 @@ TEST_F(ActionParamTest, parseRgb) {
   char color_brightness = -1;
   char brightness = -1;
   bool random = false;
+  char command = 0;
+  char white_temperature = -1;
 
   EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
-                                        &random));
+                                        &random, &command, &white_temperature));
 
   EXPECT_EQ(color, 0xFF0000);
   EXPECT_EQ(color_brightness, 28);
   EXPECT_EQ(brightness, 33);
   EXPECT_FALSE(random);
+  EXPECT_EQ(command, 5);
+  EXPECT_EQ(white_temperature, 10);
 
   action_param = "{\"brightness\":15,\"hue\":244,\"color_brightness\":48}";
   EXPECT_CALL(*worker, get_action_param)
@@ -541,7 +547,7 @@ TEST_F(ActionParamTest, parseRgb) {
   random = false;
 
   EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
-                                        &random));
+                                        &random, &command, &white_temperature));
 
   EXPECT_EQ(color, 0x1000FF);
   EXPECT_EQ(color_brightness, 48);
@@ -559,8 +565,9 @@ TEST_F(ActionParamTest, parseRgb) {
   random = false;
 
   EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
-                                        &random));
+                                        &random, &command, &white_temperature));
 
+  EXPECT_EQ(color, 0);
   EXPECT_EQ(color_brightness, 21);
   EXPECT_EQ(brightness, 31);
   EXPECT_TRUE(random);
@@ -576,7 +583,7 @@ TEST_F(ActionParamTest, parseRgb) {
   random = false;
 
   EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
-                                        &random));
+                                        &random, &command, &white_temperature));
 
   EXPECT_EQ(color, 0xFFFFFF);
   EXPECT_EQ(color_brightness, 22);
@@ -593,10 +600,10 @@ TEST_F(ActionParamTest, parseRgb) {
   random = false;
 
   EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
-                                        &random));
+                                        &random, &command, &white_temperature));
 
   EXPECT_EQ(color, 0);
-  EXPECT_EQ(color_brightness, 0);
+  EXPECT_EQ(color_brightness, -1);
   EXPECT_EQ(brightness, 32);
   EXPECT_FALSE(random);
 
@@ -610,11 +617,11 @@ TEST_F(ActionParamTest, parseRgb) {
   random = false;
 
   EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
-                                        &random));
+                                        &random, &command, &white_temperature));
 
   EXPECT_EQ(color, 0);
   EXPECT_EQ(color_brightness, 32);
-  EXPECT_EQ(brightness, 0);
+  EXPECT_EQ(brightness, -1);
   EXPECT_FALSE(random);
 
   action_param = "{\"hue\":\"white\"}";
@@ -627,11 +634,35 @@ TEST_F(ActionParamTest, parseRgb) {
   random = false;
 
   EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
-                                        &random));
+                                        &random, &command, &white_temperature));
 
   EXPECT_EQ(color, 0xFFFFFF);
-  EXPECT_EQ(color_brightness, 0);
-  EXPECT_EQ(brightness, 0);
+  EXPECT_EQ(color_brightness, -1);
+  EXPECT_EQ(brightness, -1);
+  EXPECT_FALSE(random);
+
+  action_param = "{\"color\":\"random\"}";
+  EXPECT_CALL(*worker, get_action_param)
+      .WillRepeatedly(Return(action_param.c_str()));
+
+  color = -1;
+  random = false;
+
+  EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
+                                        &random, &command, &white_temperature));
+  EXPECT_EQ(color, 0);
+  EXPECT_TRUE(random);
+
+  action_param = "{\"color\":\"#AABBCC\"}";
+  EXPECT_CALL(*worker, get_action_param)
+      .WillRepeatedly(Return(action_param.c_str()));
+
+  color = -1;
+  random = false;
+
+  EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
+                                        &random, &command, &white_temperature));
+  EXPECT_EQ(color, 0xAABBCC);
   EXPECT_FALSE(random);
 
   if (action) {

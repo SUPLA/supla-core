@@ -40,9 +40,10 @@ class s_worker : public s_abstract_worker {
   virtual bool ipcc_get_fb_value(char *position, char *tilt);
   virtual bool ipcc_get_char_value(char *value);
   virtual bool ipcc_get_rgbw_value(int *color, char *color_brightness,
-                                   char *brightness);
+                                   char *brightness, char *white_temperature);
   virtual bool ipcc_set_rgbw_value(int color, char color_brightness,
-                                   char brightness);
+                                   char brightness, bool color_random,
+                                   char command, char white_temperature);
   virtual bool ipcc_get_valve_value(TValve_Value *value);
   virtual bool ipcc_set_digiglass_value(int active_bits, int mask);
   virtual bool ipcc_get_digiglass_value(int *mask);

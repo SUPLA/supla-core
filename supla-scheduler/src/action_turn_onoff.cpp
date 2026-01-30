@@ -18,6 +18,8 @@
 
 #include "action_turn_onoff.h"
 
+#include "proto.h"
+
 s_worker_action_turn_onoff::s_worker_action_turn_onoff(
     s_abstract_worker *worker, bool setOn)
     : s_worker_action(worker) {
@@ -35,6 +37,8 @@ bool s_worker_action_turn_onoff::is_action_allowed(void) {
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
@@ -60,13 +64,18 @@ bool s_worker_action_turn_onoff::result_success(int *fail_result_code) {
   switch (worker->get_channel_func()) {
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
-    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB: {
       int color = 0;
       char color_brightness = 0;
       char brightness = 0;
+      char white_temperature = 0;
 
-      if (worker->ipcc_get_rgbw_value(&color, &color_brightness, &brightness)) {
+      if (worker->ipcc_get_rgbw_value(&color, &color_brightness, &brightness,
+                                      &white_temperature)) {
         switch (worker->get_channel_func()) {
+          case SUPLA_CHANNELFNC_DIMMER_CCT:
           case SUPLA_CHANNELFNC_DIMMER:
             result = (brightness > 0) == setOn;
             break;
@@ -74,6 +83,7 @@ bool s_worker_action_turn_onoff::result_success(int *fail_result_code) {
             result = (color_brightness > 0) == setOn;
             break;
           case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+          case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
             result = (brightness > 0 && color_brightness > 0) == setOn;
             break;
         }

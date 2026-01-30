@@ -48,9 +48,11 @@ const char cmd_get_fb_value[] = "GET-FACADE-BLIND-VALUE";
 
 const char cmd_set_char_value[] = "SET-CHAR-VALUE";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE";
+const char cmd_set_rand_rgbw_value[] = "SET-RAND-RGBW-VALUE";
 
 const char cmd_set_cg_char_value[] = "SET-CG-CHAR-VALUE";
 const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE";
+const char cmd_set_cg_rand_rgbw_value[] = "SET-CG-RAND-RGBW-VALUE";
 const char cmd_set_digiglass_value[] = "SET-DIGIGLASS-VALUE";
 const char cmd_action_shut_partially[] = "ACTION-SHUT-PARTIALLY";
 const char cmd_action_cg_shut_partially[] = "ACTION-CG-SHUT-PARTIALLY";
@@ -248,22 +250,24 @@ bool ipc_client::get_fb_value(int user_id, int device_id, int channel_id,
 
 bool ipc_client::get_rgbw_value(int user_id, int device_id, int channel_id,
                                 int *color, char *color_brightness,
-                                char *brightness) {
+                                char *brightness, char *white_temperature) {
   int _color_brightness = 0;
   int _brightness = 0;
+  int _white_temperature = 0;
 
   if (color == NULL || color_brightness == NULL || brightness == NULL ||
       !get_value(cmd_get_rgbw_value, user_id, device_id, channel_id) ||
-      sscanf(&buffer[strnlen(ipc_result_value, 255)], "%i,%i,%i", color,
-             &_color_brightness, &_brightness) != 3)
+      sscanf(&buffer[strnlen(ipc_result_value, 255)], "%i,%i,%i,%i", color,
+             &_color_brightness, &_brightness, &_white_temperature) != 4)
     return false;
 
   if (_color_brightness < 0 || _color_brightness > 100 || _brightness < 0 ||
-      _brightness > 100)
+      _brightness > 100 || _white_temperature < 0 || _white_temperature > 100)
     return false;
 
   *color_brightness = _color_brightness;
   *brightness = _brightness;
+  *white_temperature = _white_temperature;
 
   return true;
 }
@@ -381,17 +385,32 @@ bool ipc_client::set_char_value(int user_id, int device_id, int channel_id,
 
 bool ipc_client::set_rgbw_value(int user_id, int device_id, int channel_id,
                                 int channel_group_id, int color,
-                                char color_brightness, char brightness) {
+                                char color_brightness, char brightness,
+                                bool color_random, char command,
+                                char white_temperature) {
   if (!ipc_connect()) return false;
 
   if (channel_group_id) {
-    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,0\n",
-             cmd_set_cg_rgbw_value, user_id, channel_group_id, color,
-             color_brightness, brightness);
+    if (color_random) {
+      snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,0,%i,%i\n",
+               cmd_set_cg_rand_rgbw_value, user_id, channel_group_id,
+               color_brightness, brightness, command, white_temperature);
+    } else {
+      snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,0,%i,%i\n",
+               cmd_set_cg_rgbw_value, user_id, channel_group_id, color,
+               color_brightness, brightness, command, white_temperature);
+    }
+
   } else {
-    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,%i,0\n",
-             cmd_set_rgbw_value, user_id, device_id, channel_id, color,
-             color_brightness, brightness);
+    if (color_random) {
+      snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,0,%i,%i\n",
+               cmd_set_rand_rgbw_value, user_id, device_id, channel_id,
+               color_brightness, brightness, command, white_temperature);
+    } else {
+      snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,%i,0,%i,%i\n",
+               cmd_set_rgbw_value, user_id, device_id, channel_id, color,
+               color_brightness, brightness, command, white_temperature);
+    }
   }
 
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);

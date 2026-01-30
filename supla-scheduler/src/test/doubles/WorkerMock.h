@@ -38,10 +38,12 @@ class WorkerMock : public s_abstract_worker {
   MOCK_METHOD0(ipcc_get_opening_sensor_value, char(void));
   MOCK_METHOD1(ipcc_set_char_value, bool(char value));
   MOCK_METHOD1(ipcc_get_char_value, bool(char *value));
-  MOCK_METHOD3(ipcc_get_rgbw_value,
-               bool(int *color, char *color_brightness, char *brightness));
-  MOCK_METHOD3(ipcc_set_rgbw_value,
-               bool(int color, char color_brightness, char brightness));
+  MOCK_METHOD4(ipcc_get_rgbw_value,
+               bool(int *color, char *color_brightness, char *brightness,
+                    char *white_temperature));
+  MOCK_METHOD6(ipcc_set_rgbw_value,
+               bool(int color, char color_brightness, char brightness,
+                    bool color_random, char command, char white_temperature));
   MOCK_METHOD1(ipcc_get_valve_value, bool(TValve_Value *value));
   MOCK_METHOD2(ipcc_set_digiglass_value, bool(int active_bits, int mask));
   MOCK_METHOD1(ipcc_get_digiglass_value, bool(int *mask));
