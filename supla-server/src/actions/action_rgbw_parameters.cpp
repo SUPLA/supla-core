@@ -99,7 +99,6 @@ void supla_action_rgbw_parameters::set_white_temperature(char wt) {
 void supla_action_rgbw_parameters::set_color_brightness(char brightness) {
   rgbw.ColorBrightness =
       brightness < -1 ? -1 : (brightness > 100 ? 100 : brightness);
-  ;
 }
 
 void supla_action_rgbw_parameters::set_color(unsigned int color) {
