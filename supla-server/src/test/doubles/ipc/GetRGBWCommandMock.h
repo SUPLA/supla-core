@@ -32,7 +32,8 @@ class GetRGBWCommandMock : public supla_abstract_get_rgbw_command {
 
   MOCK_METHOD7(get_channel_rgbw_value,
                bool(int user_id, int device_id, int channel_id, int *color,
-                    char *color_brightness, char *brightness, char *on_of));
+                    char *color_brightness, char *brightness,
+                    char *white_temperature));
 };
 
 } /* namespace testing */

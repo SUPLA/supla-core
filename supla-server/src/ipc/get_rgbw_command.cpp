@@ -29,7 +29,7 @@ bool supla_get_rgbw_command::get_channel_rgbw_value(int user_id, int device_id,
                                                     int channel_id, int *color,
                                                     char *color_brightness,
                                                     char *brightness,
-                                                    char *on_off) {
+                                                    char *white_temperature) {
   bool result = false;
 
   supla_channel_property_getter getter;
@@ -37,10 +37,7 @@ bool supla_get_rgbw_command::get_channel_rgbw_value(int user_id, int device_id,
       getter.get_value_as<supla_channel_rgbw_value>(user_id, device_id,
                                                     channel_id);
   if (value) {
-    value->get_rgbw(color, color_brightness, brightness, nullptr);
-    if (on_off) {
-      *on_off = 0;
-    }
+    value->get_rgbw(color, color_brightness, brightness, white_temperature);
     delete value;
     result = true;
   }

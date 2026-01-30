@@ -39,14 +39,17 @@ TEST_F(GetRGBWCommandTest, noData) {
 TEST_F(GetRGBWCommandTest, getRGBWWithSuccess) {
   EXPECT_CALL(*cmd, get_channel_rgbw_value(10, 20, 30, _, _, _, _))
       .WillOnce([](int user_id, int device_id, int channel_id, int *color,
-                   char *color_brightness, char *brightness, char *on_of) {
+                   char *color_brightness, char *brightness,
+                   char *white_temperature) {
         *color = 16448250;
         *color_brightness = 54;
         *brightness = 25;
+        *white_temperature = 30;
         return true;
       });
 
-  commandProcessingTest("GET-RGBW-VALUE:10,20,30\n", "VALUE:16448250,54,25\n");
+  commandProcessingTest("GET-RGBW-VALUE:10,20,30\n",
+                        "VALUE:16448250,54,25,30\n");
 }
 
 TEST_F(GetRGBWCommandTest, getRGBWWithFilure) {
