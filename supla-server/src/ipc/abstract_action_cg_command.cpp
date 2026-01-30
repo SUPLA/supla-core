@@ -21,7 +21,6 @@
 #include <cstdio>
 #include <string>
 
-#include "actions/abstract_action_config.h"
 #include "proto.h"
 
 using std::string;

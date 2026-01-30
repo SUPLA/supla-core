@@ -18,35 +18,108 @@
 
 #include "ipc/set_rgbw_command.h"
 
-#include <memory>
+#include <grp.h>
 
+#include <cstdio>
+#include <memory>
+#include <string>
+
+#include "actions/action_rgbw_parameters.h"
+#include "caller.h"
 #include "device.h"
-#include "http/http_event_hub.h"
+#include "log.h"
+#include "proto.h"
 #include "user.h"
 
 using std::shared_ptr;
+using std::string;
 
 supla_set_rgbw_command::supla_set_rgbw_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color)
-    : supla_abstract_set_rgbw_command(socket_adapter, random_color) {}
+    supla_abstract_ipc_socket_adapter *socket_adapter,
+    supla_abstract_action_executor *action_executor, bool color_random,
+    bool group)
+    : supla_abstract_ipc_command(socket_adapter) {
+  this->color_random = color_random;
+  this->group = group;
+  this->action_executor = action_executor;
+}
 
-bool supla_set_rgbw_command::set_channel_rgbw_value(
-    supla_user *user, int device_id, int channel_id, int color,
-    char color_brightness, char brightness, char on_off,
-    const char *alexa_correlation_token, const char *google_request_id) {
-  shared_ptr<supla_device> device =
-      user->get_devices()->get(device_id, channel_id);
-  if (device != nullptr) {
-    // set_device_channel_char_value for the potential report to contain
-    // AlexaCorrelationToken / GoogleRequestId
-    supla_http_event_hub::on_channel_value_change(
-        user, device_id, channel_id, get_caller(), alexa_correlation_token,
-        google_request_id);
+const string supla_set_rgbw_command::get_command_name(void) {
+  string name = "SET-";
 
-    return device->get_channels()->set_device_channel_rgbw_value(
-        get_caller(), channel_id, 0, false, color, color_brightness, brightness,
-        on_off, 0);
+  if (group) {
+    name.append("CG-");
   }
 
-  return false;
+  if (color_random) {
+    name.append("RAND-");
+  }
+
+  name.append("RGBW-VALUE:");
+
+  return name;
+}
+
+void supla_set_rgbw_command::on_command_match(const char *params) {
+  int user_id = 0;
+  int device_id = 0;  // DEPRECATED
+  int channel_or_group_id = 0;
+  int color = 0;
+  int color_brightness = 0;
+  int brightness = 0;
+  int turn_onoff = 0;
+  int command = 0;
+  int white_temperature = 0;
+
+  int ret = 0;
+  int expected = 8;
+
+  if (params) {
+    if (group) {
+      if (color_random) {
+        ret = sscanf(params, "%i,%i,%i,%i,%i,%i,%i", &user_id,
+                     &channel_or_group_id, &color_brightness, &brightness,
+                     &turn_onoff, &command, &white_temperature);
+        expected--;
+      } else {
+        ret = sscanf(params, "%i,%i,%i,%i,%i,%i,%i,%i", &user_id,
+                     &channel_or_group_id, &color, &color_brightness,
+                     &brightness, &turn_onoff, &command, &white_temperature);
+      }
+    } else {
+      if (color_random) {
+        ret = sscanf(params, "%i,%i,%i,%i,%i,%i,%i,%i", &user_id, &device_id,
+                     &channel_or_group_id, &color_brightness, &brightness,
+                     &turn_onoff, &command, &white_temperature);
+      } else {
+        ret = sscanf(params, "%i,%i,%i,%i,%i,%i,%i,%i,%i", &user_id, &device_id,
+                     &channel_or_group_id, &color, &color_brightness,
+                     &brightness, &turn_onoff, &command, &white_temperature);
+        expected++;
+      }
+    }
+
+    if (ret != expected) {
+      send_result("INCORRECT NUMBERS OF PARAMETERS");
+      return;
+    }
+
+    if (user_id && channel_or_group_id) {
+      supla_action_rgbw_parameters params;
+      if (!params.set_params(color, color_random, color_brightness, brightness,
+                             turn_onoff, command, white_temperature)) {
+        send_result("VALUE OUT OF RANGE");
+        return;
+      }
+
+      action_executor->execute_action(
+          supla_caller(), user_id, ACTION_SET_RGBW_PARAMETERS,
+          group ? stChannelGroup : stChannel, channel_or_group_id, nullptr,
+          &params, 0, 0, 0, nullptr, get_alexa_correlation_token(),
+          get_google_request_id());
+      send_result("OK:", channel_or_group_id);
+      return;
+    }
+  }
+  send_result("UNKNOWN:", channel_or_group_id);
 }

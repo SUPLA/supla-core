@@ -10,6 +10,7 @@ tmp/
 local.properties
 .settings/
 .loadpath
+.cache
 
 # External tool builders
 .externalToolBuilders/
@@ -48,6 +49,10 @@ local.properties
 
 # acs
 /ESP8266_IOT/include/board/acs_*
+
+# clangd
+compile_commands.json
+.clangd
 
 # Valgring cfg
 valgrind-suppressions.cfg

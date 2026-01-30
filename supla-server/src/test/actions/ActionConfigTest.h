@@ -21,6 +21,7 @@
 
 #include "actions/action_config.h"
 #include "gtest/gtest.h"  // NOLINT
+#include "proto.h"
 
 namespace testing {
 

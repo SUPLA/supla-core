@@ -1639,8 +1639,10 @@ typedef struct {
   unsigned _supla_int_t Color;  // 0 == Ignore
   char ColorRandom;
   char OnOff;
+  char Command;    // RGBW_COMMAND_, requires
+                   // SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED v. >= 21
   char WhiteTemperature;  // ver. >= 28
-  char Reserved[7];
+  char Reserved[6];
 } TAction_RGBW_Parameters;  // ver. >= 19
 
 typedef struct {

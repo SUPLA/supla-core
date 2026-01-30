@@ -32,7 +32,8 @@ bool rgbw_value_to_action_converter::convert(
     unsigned int color = rgbw->get_color();
     char brightness = rgbw->get_brightness();
     char color_brightness = rgbw->get_color_brightness();
-    char dimmer_cct = rgbw->get_dimmer_cct();
+    char white_temperature = rgbw->get_white_temperature();
+    char command = rgbw->get_command();
 
     if (brightness == 0) {
       on_off = RGBW_BRIGHTNESS_ONOFF;
@@ -43,7 +44,7 @@ bool rgbw_value_to_action_converter::convert(
     }
 
     action_executor->set_rgbw(&color, &color_brightness, &brightness, &on_off,
-                              &dimmer_cct);
+                              &command, &white_temperature);
     return true;
   }
 
