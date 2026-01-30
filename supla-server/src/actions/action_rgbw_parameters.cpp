@@ -78,7 +78,7 @@ bool supla_action_rgbw_parameters::set_command(char command) {
   if (command >= -1 &&
       command <= RGBW_COMMAND_SET_WHITE_TEMPERATURE_WITHOUT_TURN_ON) {
     if (command == -1) {
-      command = 0
+      command = 0;
     }
 
     rgbw.Command = command;
