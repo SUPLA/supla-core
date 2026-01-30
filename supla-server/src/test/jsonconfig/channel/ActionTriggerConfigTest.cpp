@@ -706,8 +706,8 @@ TEST_F(ActionTriggerConfigTest, actionSetRGBW_colorRandom) {
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X5\":{\"subjectId\":1551,\"subjectType\":"
-      "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":350,\"color\":\"#"
-      "random\"}}}}}");
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":350,\"color\":"
+      "\"random\"}}}}}");
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x5);
   config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x5);
