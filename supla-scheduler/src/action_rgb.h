@@ -20,9 +20,11 @@
 #define ACTION_RGB_H_
 
 #include "action.h"
+#include "json/cJSON.h"
 
 class s_worker_action_rgb : public s_worker_action {
  protected:
+  bool get_char_value(cJSON *root, const char *key_name, char *value);
   virtual bool is_action_allowed(void);
   virtual int waiting_time_to_retry(void);
   virtual int waiting_time_to_check(void);
@@ -32,7 +34,7 @@ class s_worker_action_rgb : public s_worker_action {
  public:
   explicit s_worker_action_rgb(s_abstract_worker *worker);
   char parse_rgbw_params(int *color, char *color_brightness, char *brightness,
-                         bool *random);
+                         bool *random, char *command, char *white_temperature);
   virtual int try_limit(void);
 };
 

@@ -402,35 +402,46 @@ supla_abstract_action_parameters *action_trigger_config::get_rgbw(void) {
       [&](cJSON *param) -> supla_abstract_action_parameters * {
         supla_action_rgbw_parameters *result =
             new supla_action_rgbw_parameters();
+        result->set_white_temperature(-1);
         result->set_brightness(-1);
         result->set_color_brightness(-1);
+        result->set_command(-1);
 
         bool any_set = false;
 
         cJSON *item = cJSON_GetObjectItem(param, "brightness");
-        if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
-            item->valueint <= 100) {
+        if (item && cJSON_IsNumber(item)) {
           result->set_brightness(item->valueint);
           any_set = true;
         }
 
+        item = cJSON_GetObjectItem(param, "rgbw_command");
+        if (item && cJSON_IsNumber(item) &&
+            result->set_command(item->valueint)) {
+          any_set = true;
+        }
+
         item = cJSON_GetObjectItem(param, "color_brightness");
-        if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
-            item->valueint <= 100) {
+        if (item && cJSON_IsNumber(item)) {
           result->set_color_brightness(item->valueint);
           any_set = true;
         }
 
-        item = cJSON_GetObjectItem(param, "hue");
+        item = cJSON_GetObjectItem(param, "white_temperature");
+        if (item && cJSON_IsNumber(item)) {
+          result->set_white_temperature(item->valueint);
+          any_set = true;
+        }
+
+        item = cJSON_GetObjectItem(param, "color");
         if (item) {
-          if (cJSON_IsNumber(item)) {
-            result->set_color(st_hue2rgb(item->valuedouble));
+          if (result->set_color_from_string(cJSON_GetStringValue(item))) {
             any_set = true;
-          } else if (equal_ci(item, "white")) {
-            result->set_color(0xFFFFFF);
-            any_set = true;
-          } else if (equal_ci(item, "random")) {
-            result->set_random_color(true);
+          }
+        } else {
+          item = cJSON_GetObjectItem(param, "hue");
+          if (item && result->set_color_from_hsv(item->valuedouble,
+                                                 cJSON_GetStringValue(item))) {
             any_set = true;
           }
         }

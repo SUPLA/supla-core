@@ -18,7 +18,9 @@
 
 #include "action_rgbw_parameters.h"
 
+#include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "tools.h"
 
@@ -72,16 +74,75 @@ const TAction_RGBW_Parameters supla_action_rgbw_parameters::get_rgbw(void) {
   return result;
 }
 
+bool supla_action_rgbw_parameters::set_command(char command) {
+  if (command >= -1 &&
+      command <= RGBW_COMMAND_SET_WHITE_TEMPERATURE_WITHOUT_TURN_ON) {
+    if (command == -1) {
+      command = 0
+    }
+
+    rgbw.Command = command;
+    return true;
+  }
+  return false;
+}
+
 void supla_action_rgbw_parameters::set_brightness(char brightness) {
-  rgbw.Brightness = brightness;
+  rgbw.Brightness =
+      brightness < -1 ? -1 : (brightness > 100 ? 100 : brightness);
+}
+
+void supla_action_rgbw_parameters::set_white_temperature(char wt) {
+  rgbw.WhiteTemperature = wt < -1 ? -1 : (wt > 100 ? 100 : wt);
 }
 
 void supla_action_rgbw_parameters::set_color_brightness(char brightness) {
-  rgbw.ColorBrightness = brightness;
+  rgbw.ColorBrightness =
+      brightness < -1 ? -1 : (brightness > 100 ? 100 : brightness);
+  ;
 }
 
 void supla_action_rgbw_parameters::set_color(unsigned int color) {
   rgbw.Color = color;
+}
+
+bool supla_action_rgbw_parameters::set_color_from_string(const char *color) {
+  if (color) {
+    if (strnlen(color, 8) == 7 && color[0] == '#') {
+      color++;
+      char *end = nullptr;
+      errno = 0;
+      long lcolor = strtol(color, &end, 16);
+      if (lcolor != 0 && end && *end == '\0') {
+        set_color(lcolor);
+        set_random_color(false);
+        return true;
+      }
+    } else if (strncasecmp(color, "random", 10) == 0) {
+      set_random_color(true);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool supla_action_rgbw_parameters::set_color_from_hsv(double hue,
+                                                      const char *str) {
+  if (str) {
+    if (strncasecmp(str, "random", 10) == 0) {
+      set_random_color(true);
+      return true;
+    } else if (strncasecmp(str, "white", 10) == 0) {
+      set_color(0xFFFFFF);
+      set_random_color(false);
+      return true;
+    }
+  } else if (hue) {
+    set_color(st_hue2rgb(hue));
+    return true;
+  }
+
+  return false;
 }
 
 void supla_action_rgbw_parameters::set_random_color(bool random) {
