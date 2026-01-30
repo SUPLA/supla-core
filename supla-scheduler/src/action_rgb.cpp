@@ -172,10 +172,10 @@ bool s_worker_action_rgb::result_success(int *fail_result_code) {
   switch (worker->get_channel_func()) {
     case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
       return (color_random || color == expected_color || !expected_color) &&
-                 (color_brightness == expected_color_brightness ||
-                  expected_color_brightness == -1) &&
-                 (white_temperature == expected_white_temperature ||
-                  expected_white_temperature == -1) ||
+             (color_brightness == expected_color_brightness ||
+              expected_color_brightness == -1) &&
+             (white_temperature == expected_white_temperature ||
+              expected_white_temperature == -1) &&
              (brightness == expected_brightness || expected_brightness == -1);
     case SUPLA_CHANNELFNC_DIMMER_CCT:
       return (white_temperature == expected_white_temperature ||
