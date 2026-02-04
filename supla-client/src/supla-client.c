@@ -1579,19 +1579,19 @@ char supla_client_open(void *_suplaclient, int ID, char group, char open) {
 
 void _supla_client_set_rgbw_value(char *value, int color, char color_brightness,
                                   char brightness, char turn_onoff,
-                                  char dimmer_cct) {
+                                  char white_temperature) {
   value[0] = brightness;
   value[1] = color_brightness;
   value[2] = (char)((color & 0x000000FF));        // BLUE
   value[3] = (char)((color & 0x0000FF00) >> 8);   // GREEN
   value[4] = (char)((color & 0x00FF0000) >> 16);  // RED
   value[5] = turn_onoff > 0 ? 1 : 0;
-  value[7] = dimmer_cct;
+  value[7] = white_temperature;
 }
 
 char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
                            char color_brightness, char brightness,
-                           char turn_onoff, char dimmer_cct) {
+                           char turn_onoff, char white_temperature) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
   char result = 0;
 
@@ -1601,7 +1601,7 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
       TCS_SuplaNewValue value;
       memset(&value, 0, sizeof(TCS_SuplaNewValue));
       _supla_client_set_rgbw_value(value.value, color, color_brightness,
-                                   brightness, turn_onoff, dimmer_cct);
+                                   brightness, turn_onoff, white_temperature);
       value.Id = ID;
       value.Target = group > 0 ? SUPLA_TARGET_GROUP : SUPLA_TARGET_CHANNEL;
       result = srpc_cs_async_set_value(suplaclient->srpc, &value) ==
@@ -1612,7 +1612,7 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
       TCS_SuplaChannelNewValue_B value;
       memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
       _supla_client_set_rgbw_value(value.value, color, color_brightness,
-                                   brightness, turn_onoff, dimmer_cct);
+                                   brightness, turn_onoff, white_temperature);
       value.ChannelId = ID;
 
       result = srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value) ==

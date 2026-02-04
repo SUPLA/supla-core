@@ -227,8 +227,8 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
     rgbw_param->OnOff =
         supla_CallBooleanMethod(env, cls, action_params, "getOnOff") ? 1 : 0;
 
-    rgbw_param->DimmerCct =
-        supla_CallShortMethod(env, cls, action_params, "getDimmerCct");
+    rgbw_param->WhiteTemperature =
+        supla_CallShortMethod(env, cls, action_params, "getWhiteTemperature");
 
     *param = rgbw_param;
     *param_size = sizeof(TAction_RGBW_Parameters);
