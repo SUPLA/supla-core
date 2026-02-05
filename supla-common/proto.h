@@ -599,6 +599,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_AURATON 18
 #define SUPLA_MFR_HPD 19
 #define SUPLA_MFR_LUKFUD 20
+#define SUPLA_MFR_WALA 21
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
 #define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010          // ver. >= 17
