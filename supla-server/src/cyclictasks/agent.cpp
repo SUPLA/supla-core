@@ -123,7 +123,7 @@ void supla_cyclictasks_agent::loop(void *sthread) {
               tsdba.connect();
             }
 
-            if (!tsdba.is_connected()) {
+            if (tsdba.is_connected()) {
               // Use TSDB if the configuration is present and a connection to
               // the database can be established.
               dba = &tsdba;
