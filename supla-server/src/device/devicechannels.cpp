@@ -554,7 +554,7 @@ bool supla_device_channels::set_device_channel_char_value(
 
         result = set_device_channel_rgbw_value(
             caller, channel->get_id(), group_id, eol, color, color_brightness,
-            brightness, RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF, 0,
+            brightness, 1, 0,
             white_temperature);
       }
 
@@ -588,21 +588,6 @@ bool supla_device_channels::set_device_channel_rgbw_value(
   if (channel && channel->is_rgbw_value_writable()) {
     char v[SUPLA_CHANNELVALUE_SIZE];
     memset(v, 0, SUPLA_CHANNELVALUE_SIZE);
-
-    if (on_off) {
-      char mask = 0;
-      if (channel->get_func() == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING ||
-          channel->get_func() == SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB) {
-        mask = RGBW_COLOR_ONOFF | RGBW_BRIGHTNESS_ONOFF;
-      } else if (channel->get_func() == SUPLA_CHANNELFNC_DIMMER ||
-                 channel->get_func() == SUPLA_CHANNELFNC_DIMMER_CCT) {
-        mask = RGBW_BRIGHTNESS_ONOFF;
-      } else if (channel->get_func() == SUPLA_CHANNELFNC_RGBLIGHTING) {
-        mask = RGBW_COLOR_ONOFF;
-      }
-
-      on_off = mask & on_off;
-    }
 
     channel->assign_rgbw_value(v, color, color_brightness, brightness, on_off,
                                command, white_temperature);

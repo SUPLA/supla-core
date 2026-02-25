@@ -812,6 +812,21 @@ void supla_device_channel::assign_rgbw_value(
     value[4] = (char)((color & 0x00FF0000) >> 16);
   }
 
+  if (on_off) {
+    switch (get_func()) {
+      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+        on_off = RGBW_COLOR_ONOFF | RGBW_BRIGHTNESS_ONOFF;
+        break;
+      case SUPLA_CHANNELFNC_RGBLIGHTING:
+        on_off = RGBW_COLOR_ONOFF;
+        break;
+      default:
+        on_off = RGBW_BRIGHTNESS_ONOFF;
+        break;
+    }
+  }
+
   value[5] = on_off;
   value[6] = command;
 
