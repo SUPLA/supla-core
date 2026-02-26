@@ -1585,7 +1585,7 @@ void _supla_client_set_rgbw_value(char *value, int color, char color_brightness,
   value[2] = (char)((color & 0x000000FF));        // BLUE
   value[3] = (char)((color & 0x0000FF00) >> 8);   // GREEN
   value[4] = (char)((color & 0x00FF0000) >> 16);  // RED
-  value[5] = turn_onoff > 0 ? 3 : 0;
+  value[5] = turn_onoff > 0 ? 1 : 0;
   value[7] = white_temperature;
 }
 
