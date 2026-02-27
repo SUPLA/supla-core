@@ -22,7 +22,9 @@ find ./supla-server/src -type f \
 -not -name ".DS_Store" \
 -exec cpplint {} +
 
-find ./supla-scheduler/src -type f -not -name ".DS_Store" -exec cpplint {} +
+find ./supla-scheduler/src -type f \
+! -path "./supla-scheduler/src/external/*" -not -name ".DS_Store" -exec cpplint {} +
+
 find ./supla-dev/src -type f -not -name ".DS_Store" -exec cpplint {} +
 find ./supla-console-client/src -type f -not -name ".DS_Store" -exec cpplint {} +
 find ./supla-afl/src -type f -not -name ".DS_Store" -exec cpplint {} +

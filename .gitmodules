@@ -1,6 +1,6 @@
-[submodule "cJSON"]
-	path = supla-server/src/external/cJSON
-	url = https://github.com/DaveGamble/cJSON
 [submodule "inja"]
         path = supla-server/src/external/inja
         url = https://github.com/pantor/inja.git
+[submodule "supla-common/external/cJSON"]
+	path = supla-common/external/cJSON
+	url = https://github.com/DaveGamble/cJSON.git

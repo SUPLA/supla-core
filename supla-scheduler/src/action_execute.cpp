@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "log.h"
 
 s_worker_action_execute::s_worker_action_execute(s_abstract_worker *worker)

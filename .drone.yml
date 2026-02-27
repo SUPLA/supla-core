@@ -38,7 +38,7 @@ steps:
 - name: supla-console-client-test
   image: devel/supla-core
   pull: never
-  depends_on: [supla-server-test]
+  depends_on: [db, supla-server-test]
   when:
     status: [success, failure]
   commands:

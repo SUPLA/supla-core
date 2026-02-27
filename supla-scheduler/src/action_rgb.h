@@ -20,7 +20,7 @@
 #define ACTION_RGB_H_
 
 #include "action.h"
-#include "json/cJSON.h"
+#include "cJSON.h"
 
 class s_worker_action_rgb : public s_worker_action {
  protected:

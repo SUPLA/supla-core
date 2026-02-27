@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "log.h"
 
 s_abstract_action_shut_partially::s_abstract_action_shut_partially(
