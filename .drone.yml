@@ -30,7 +30,7 @@ steps:
 - name: supla-server-test
   image: devel/supla-core
   pull: never
-  depends_on: [db, tsdb, submoules]
+  depends_on: [db, tsdb, submodules]
   commands:
     #    - sleep 10
     - test/supla-server-test.sh
