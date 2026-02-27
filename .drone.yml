@@ -22,13 +22,18 @@ services:
     ]
 
 steps:
+- name: sub-modules
+  image: devel/supla-core
+  pull: never
+  commands:
+    - git submodule update --init --recursive
+
 - name: supla-server-test
   image: devel/supla-core
   pull: never
-  depends_on: [db, tsdb]
+  depends_on: [sub-modules, db, tsdb]
   commands:
     #    - sleep 10
-    - git submodule update --init --recursive
     - test/supla-server-test.sh
 
 - name: supla-console-client-test
@@ -44,8 +49,8 @@ steps:
 - name: supla-scheduler-test
   image: devel/supla-core
   pull: never
+  depends_on: [sub-modules]
   commands:
-    - git submodule update --init --recursive
     - ./test/supla-scheduler-test.sh
 
 - name: supla-dev-compilation-check
@@ -57,15 +62,15 @@ steps:
 - name: supla-server-compilation-check
   image: devel/supla-core
   pull: never
+  depends_on: [sub-modules]
   commands:
-    - git submodule update --init --recursive
     - ./test/supla-server-compilation-check.sh
 
 - name: supla-scheduler-compilation-check
   image: devel/supla-core
   pull: never
+  depends_on: [sub-modules]
   commands:
-    - git submodule update --init --recursive
     - ./test/supla-scheduler-compilation-check.sh
 
 - name: supla-console-client-compilation-check
