@@ -47,6 +47,7 @@ steps:
 
 - name: supla-scheduler-test
   image: devel/supla-core
+  depends_on: [submodules]
   pull: never
   commands:
     - ./test/supla-scheduler-test.sh
