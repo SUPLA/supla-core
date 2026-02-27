@@ -25,12 +25,12 @@ steps:
 - name: submodules
   image: alpine/git
   commands:
-  - git submodule update --init --recursive
+    - git submodule update --init --recursive
 
 - name: supla-server-test
   image: devel/supla-core
   pull: never
-  depends_on: [submodules, db, tsdb]
+  depends_on: [db, tsdb, submoules]
   commands:
     #    - sleep 10
     - test/supla-server-test.sh
@@ -38,7 +38,7 @@ steps:
 - name: supla-console-client-test
   image: devel/supla-core
   pull: never
-  depends_on: [db, supla-server-test]
+  depends_on: [supla-server-test]
   when:
     status: [success, failure]
   commands:
