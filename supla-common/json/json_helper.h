@@ -22,7 +22,7 @@
 #include <map>
 #include <string>
 
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "proto.h"
 
 class supla_json_helper {

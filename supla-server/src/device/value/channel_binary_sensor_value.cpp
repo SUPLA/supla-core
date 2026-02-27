@@ -18,9 +18,10 @@
 
 #include "channel_binary_sensor_value.h"
 
-#include <string.h>
-
 #include "jsonconfig/channel/binary_sensor_config.h"
+
+using std::map;
+using std::string;
 
 supla_channel_binary_sensor_value::supla_channel_binary_sensor_value(void)
     : supla_abstract_channel_value() {}
@@ -59,6 +60,16 @@ void supla_channel_binary_sensor_value::apply_channel_properties(
       set_hi(!is_hi());
     }
   }
+}
+
+map<string, string> supla_channel_binary_sensor_value::get_replacement_map(
+    void) {
+  map<string, string> result =
+      supla_abstract_channel_value::get_replacement_map();
+
+  result["state"] = is_hi() ? "1" : "0";
+
+  return result;
 }
 
 // static

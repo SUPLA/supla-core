@@ -25,7 +25,7 @@
 #include "caller.h"
 #include "http/abstract_curl_adapter.h"
 #include "http/remote_gateway_access_token_provider.h"
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "push/push_notification.h"
 
 class supla_abstract_pn_gateway_client {

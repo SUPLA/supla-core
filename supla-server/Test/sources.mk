@@ -51,10 +51,11 @@ src/device/call_handler \
 src/device/extended_value \
 src/device/value \
 src/distributedobjects \
+src/external/cJSON \
 src/google \
+src/helper \
 src/http \
 src/ipc \
-src/json \
 src/jsonconfig \
 src/jsonconfig/channel \
 src/jsonconfig/device \

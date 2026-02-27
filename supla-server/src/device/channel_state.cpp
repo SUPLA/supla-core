@@ -24,7 +24,7 @@
 #include <cstdio>
 #include <string>
 
-#include "json/cJSON.h"
+#include "cJSON.h"
 
 using std::map;
 using std::string;

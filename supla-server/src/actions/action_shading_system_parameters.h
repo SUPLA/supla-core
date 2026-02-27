@@ -20,7 +20,7 @@
 #define ACTION_RS_PARAMETERS_H_
 
 #include "actions/abstract_action_parameters.h"
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "proto.h"
 
 class supla_action_shading_system_parameters

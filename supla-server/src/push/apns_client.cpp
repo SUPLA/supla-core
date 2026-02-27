@@ -21,7 +21,7 @@
 #include <list>
 #include <string>
 
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "log.h"
 
 using std::list;

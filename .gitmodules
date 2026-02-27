@@ -1,0 +1,3 @@
+[submodule "supla-server/src/external/cJSON"]
+	path = supla-server/src/external/cJSON
+	url = https://github.com/DaveGamble/cJSON

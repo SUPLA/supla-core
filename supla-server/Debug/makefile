@@ -20,10 +20,11 @@ RM := rm -rf
 -include src/jsonconfig/device/subdir.mk
 -include src/jsonconfig/channel/subdir.mk
 -include src/jsonconfig/subdir.mk
--include src/json/subdir.mk
 -include src/ipc/subdir.mk
 -include src/http/subdir.mk
+-include src/helper/subdir.mk
 -include src/google/subdir.mk
+-include src/external/cJSON/subdir.mk
 -include src/distributedobjects/subdir.mk
 -include src/device/value/subdir.mk
 -include src/device/extended_value/subdir.mk

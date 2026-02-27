@@ -19,6 +19,9 @@
 #ifndef CHANNEL_BINARY_SENSOR_VALUE_H_
 #define CHANNEL_BINARY_SENSOR_VALUE_H_
 
+#include <map>
+#include <string>
+
 #include "device/value/abstract_channel_value.h"
 
 class supla_channel_binary_sensor_value : public supla_abstract_channel_value {
@@ -37,6 +40,7 @@ class supla_channel_binary_sensor_value : public supla_abstract_channel_value {
                                         int param4,
                                         supla_json_config *json_config);
   static bool is_function_supported(int func);
+  virtual std::map<std::string, std::string> get_replacement_map(void);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 

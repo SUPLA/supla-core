@@ -21,7 +21,7 @@
 #include <cstdio>
 
 #include "TestHelper.h"
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "jsonconfig/channel/general_purpose_meter_config.h"
 #include "log.h"
 #include "proto.h"

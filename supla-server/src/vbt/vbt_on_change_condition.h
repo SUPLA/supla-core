@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "vbt/vbt_value.h"
 
 enum _vbt_operator_e { op_unknown, op_eq, op_ne, op_le, op_lt, op_gt, op_ge };

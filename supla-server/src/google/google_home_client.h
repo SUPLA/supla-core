@@ -21,10 +21,10 @@
 
 #include <string>
 
+#include "cJSON.h"
 #include "google/google_home_credentials.h"
 #include "http/remote_gateway_access_token_provider.h"
 #include "http/voice_assistant_client.h"
-#include "json/cJSON.h"
 
 class supla_google_home_client : public supla_voice_assistant_client {
  private:

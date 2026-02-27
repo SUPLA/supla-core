@@ -19,7 +19,7 @@
 #include "HvacConfigTest.h"
 
 #include "TestHelper.h"
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "jsonconfig/channel/hvac_config.h"
 #include "log.h"
 #include "proto.h"

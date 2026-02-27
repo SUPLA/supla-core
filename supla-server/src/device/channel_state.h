@@ -19,11 +19,11 @@
 #ifndef CHANNEL_STATE_H_
 #define CHANNEL_STATE_H_
 
+#include <helper/json_helper.h>
 #include <map>
 #include <string>
 
 #include "distributedobjects/dobject.h"
-#include "json/json_helper.h"
 #include "vbt/vbt_value.h"
 
 class supla_channel_state : supla_json_helper,

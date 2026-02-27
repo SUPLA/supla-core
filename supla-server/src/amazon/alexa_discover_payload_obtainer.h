@@ -23,8 +23,8 @@
 
 #include "amazon/alexa_credentials.h"
 #include "amazon/alexa_credentials_dao.h"
+#include "cJSON.h"
 #include "http/abstract_curl_adapter.h"
-#include "json/cJSON.h"
 
 class supla_alexa_discover_payload_obtainer {
  private:

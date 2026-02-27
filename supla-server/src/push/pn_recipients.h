@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "http/remote_gateway_access_token.h"
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "push/pn_recipient.h"
 
 class supla_pn_recipients {

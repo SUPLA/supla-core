@@ -24,6 +24,8 @@ services:
 steps:
 - name: supla-server-test
   image: devel/supla-core
+  clone:
+    submodules: true
   pull: never
   depends_on: [db, tsdb]
   commands:
@@ -54,6 +56,8 @@ steps:
 
 - name: supla-server-compilation-check
   image: devel/supla-core
+  clone:
+    submodules: true
   pull: never
   commands:
     - ./test/supla-server-compilation-check.sh

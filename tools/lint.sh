@@ -11,6 +11,7 @@ fi
 find ./supla-server/src -type f \
 ! -path ./supla-server/src/mqtt/mqtt.c \
 ! -path ./supla-server/src/mqtt/mqtt.h \
+! -path "./supla-server/src/external/*" \
 ! -path "./supla-server/src/crypt_blowfish/*" \
 ! -path "./supla-server/src/date/date.h" \
 ! -path "./supla-server/src/date/tz.cpp" \

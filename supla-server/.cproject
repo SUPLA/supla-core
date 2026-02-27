@@ -25,6 +25,7 @@
 								<option id="gnu.c.compiler.option.debugging.level.872388052" name="Debug level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.1034719321" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
+									<listOptionValue builtIn="false" value="../src/external/cJSON"/>
 									<listOptionValue builtIn="false" value="../src/mqtt"/>
 									<listOptionValue builtIn="false" value="../src/user"/>
 									<listOptionValue builtIn="false" value="../src/device"/>
@@ -56,6 +57,7 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.406314809" name="Debug level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.5018346" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(INCMYSQL)"/>
+									<listOptionValue builtIn="false" value="../src/external/cJSON"/>
 									<listOptionValue builtIn="false" value="../src/mqtt"/>
 									<listOptionValue builtIn="false" value="../src/device"/>
 									<listOptionValue builtIn="false" value="../src/user"/>
@@ -113,7 +115,7 @@
 						</tool>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="test|crypt_blowfish/Makefile|bcrypt|t" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="external/inja|test|crypt_blowfish/Makefile|bcrypt|external/cJSON/test.c|t|external/cJSON/tests|external/cJSON/fuzzing|external/cJSON/library_config" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -146,6 +148,7 @@
 								<option id="gnu.c.compiler.option.debugging.level.1827163415" name="Debug level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.106907262" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
+									<listOptionValue builtIn="false" value="../src/external/cJSON"/>
 									<listOptionValue builtIn="false" value="../src/mqtt"/>
 									<listOptionValue builtIn="false" value="../src"/>
 									<listOptionValue builtIn="false" value="../src/user"/>
@@ -172,6 +175,7 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.2066481019" name="Debug level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.1208656589" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(INCMYSQL)"/>
+									<listOptionValue builtIn="false" value="../src/external/cJSON"/>
 									<listOptionValue builtIn="false" value="../src/mqtt"/>
 									<listOptionValue builtIn="false" value="../src/client"/>
 									<listOptionValue builtIn="false" value="../src/user"/>
@@ -225,7 +229,7 @@
 						</tool>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="test|crypt_blowfish/Makefile|bcrypt|t" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="external/inja|test|crypt_blowfish/Makefile|bcrypt|external/cJSON/test.c|t|external/cJSON/tests|external/cJSON/fuzzing|external/cJSON/library_config" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -258,6 +262,7 @@
 								<option id="gnu.c.compiler.option.debugging.level.740365011" name="Debug level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.1809027190" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
+									<listOptionValue builtIn="false" value="../src/external/cJSON"/>
 									<listOptionValue builtIn="false" value="../src/asynctask"/>
 									<listOptionValue builtIn="false" value="../src/mqtt"/>
 									<listOptionValue builtIn="false" value="../src/client"/>
@@ -284,6 +289,7 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.27162558" name="Debug level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.1974356639" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../src"/>
+									<listOptionValue builtIn="false" value="../src/external/cJSON"/>
 									<listOptionValue builtIn="false" value="../src/asynctask"/>
 									<listOptionValue builtIn="false" value="../src/mqtt"/>
 									<listOptionValue builtIn="false" value="$(INCMYSQL)"/>
@@ -341,7 +347,7 @@
 						</tool>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="crypt_blowfish/Makefile|bcrypt|test/gtest|t|supla-server.cpp|gtest" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="external/inja|crypt_blowfish/Makefile|bcrypt|test/gtest|external/cJSON/test.c|t|external/cJSON/tests|external/cJSON/fuzzing|external/cJSON/library_config|supla-server.cpp|gtest" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

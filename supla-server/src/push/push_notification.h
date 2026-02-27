@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "push/pn_recipients.h"
 
 class supla_push_notification {

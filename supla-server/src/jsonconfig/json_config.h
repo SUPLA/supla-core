@@ -19,10 +19,10 @@
 #ifndef JSON_CONFIG_H_
 #define JSON_CONFIG_H_
 
+#include <helper/json_helper.h>
 #include <map>
 #include <string>
 
-#include "json/json_helper.h"
 
 class supla_json_config : public supla_json_helper {
  private:

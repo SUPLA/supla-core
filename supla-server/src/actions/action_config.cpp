@@ -28,7 +28,7 @@
 #include "actions/action_hvac_setpoint_temperatures.h"
 #include "actions/action_rgbw_parameters.h"
 #include "actions/action_shading_system_parameters.h"
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "tools.h"
 
 supla_action_config::supla_action_config(void) : abstract_action_config() {
