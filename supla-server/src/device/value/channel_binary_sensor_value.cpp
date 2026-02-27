@@ -18,6 +18,8 @@
 
 #include "channel_binary_sensor_value.h"
 
+#include <string>
+
 #include "jsonconfig/channel/binary_sensor_config.h"
 
 using std::map;
