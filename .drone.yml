@@ -1,10 +1,6 @@
 kind: pipeline
 name: default
 
-clone:
-    git:
-      submodules: true
-
 services:
 - name: db
   image: mariadb:10.7.3
@@ -26,10 +22,15 @@ services:
     ]
 
 steps:
+- name: submodules
+  image: alpine/git
+  commands:
+  - git submodule update --init --recursive
+
 - name: supla-server-test
   image: devel/supla-core
   pull: never
-  depends_on: [db, tsdb]
+  depends_on: [submodules, db, tsdb]
   commands:
     #    - sleep 10
     - test/supla-server-test.sh
@@ -59,6 +60,7 @@ steps:
 - name: supla-server-compilation-check
   image: devel/supla-core
   pull: never
+  depends_on: [submodules]
   commands:
     - ./test/supla-server-compilation-check.sh
 
