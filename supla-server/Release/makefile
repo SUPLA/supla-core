@@ -25,6 +25,7 @@ RM := rm -rf
 -include src/helper/subdir.mk
 -include src/google/subdir.mk
 -include src/external/cJSON/subdir.mk
+-include src/external/MQTT-C/src/subdir.mk
 -include src/distributedobjects/subdir.mk
 -include src/device/value/subdir.mk
 -include src/device/extended_value/subdir.mk
