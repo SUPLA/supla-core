@@ -40,7 +40,6 @@ class supla_push_notification {
   supla_pn_recipients recipients;
   std::map<std::string, std::string> replacement_map;
   std::string apply_replacement_map(std::string str);
-  void apply_replacement_map(void);
 
  public:
   supla_push_notification(void);
@@ -50,14 +49,14 @@ class supla_push_notification {
   supla_pn_recipients &get_recipients(void);
 
   virtual void set_title(const std::string &title);
-  virtual const std::string &get_title(void);
+  virtual std::string get_title(void);
   virtual void set_body(const std::string &body);
-  virtual const std::string &get_body(void);
+  virtual std::string get_body(void);
 
   virtual void set_localized_title(const std::string &title);
-  virtual const std::string &get_localized_title();
+  virtual std::string get_localized_title();
   virtual void set_localized_body(const std::string &body);
-  virtual const std::string &get_localized_body();
+  virtual std::string get_localized_body();
 
   virtual void set_localized_title_args(const std::vector<std::string> &args);
   virtual const std::vector<std::string> &get_localized_title_args();

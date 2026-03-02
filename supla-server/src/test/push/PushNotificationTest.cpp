@@ -216,4 +216,71 @@ TEST_F(PushNotificationTest, dateTime) {
   }
 }
 
+TEST_F(PushNotificationTest, titleWithInja) {
+  supla_push_notification n;
+  map<string, string> m;
+  m["state"] = "1";
+
+  string tmpl =
+      "{{ state }}: {% if state == \"1\" %}ONE{% else %}NOT ONE{% endif %}";
+
+  n.set_title(tmpl);
+  n.set_replacement_map(&m);
+  EXPECT_EQ(n.get_title(), "1: ONE");
+
+  m["state"] = "2";
+  n.set_replacement_map(&m);
+  EXPECT_EQ(n.get_title(), "2: NOT ONE");
+}
+
+TEST_F(PushNotificationTest, bodyWithInja) {
+  supla_push_notification n;
+  map<string, string> m;
+  m["str"] = "abcd";
+
+  n.set_body("Length: {{ length(str) }}");
+  n.set_replacement_map(&m);
+  EXPECT_EQ(n.get_body(), "Length: 4");
+}
+
+TEST_F(PushNotificationTest, localizedTitleWithInja) {
+  supla_push_notification n;
+  map<string, string> m;
+  m["str"] = "abcd";
+
+  n.set_localized_title("{{ capitalize(str) }}");
+  n.set_replacement_map(&m);
+  EXPECT_EQ(n.get_localized_title(), "Abcd");
+}
+
+TEST_F(PushNotificationTest, localizedBodyWithInja) {
+  supla_push_notification n;
+  map<string, string> m;
+  m["str"] = "abcd";
+
+  n.set_localized_body("{{ upper(str) }}|{{date}}|{{time}}|{{date_time}}");
+  n.set_date_time("2023-08-13 13:53:14");
+  n.set_replacement_map(&m);
+  EXPECT_EQ(n.get_localized_body(),
+            "ABCD|2023-08-13|13:53:14|2023-08-13 13:53:14");
+}
+
+TEST_F(PushNotificationTest, injaAndNativeReplacement) {
+  supla_push_notification n;
+  map<string, string> m;
+  m["str"] = "abcd";
+
+  n.set_localized_body("{{ str }}|{str}");
+  n.set_replacement_map(&m);
+  EXPECT_EQ(n.get_localized_body(), "abcd|abcd");
+}
+
+TEST_F(PushNotificationTest, injaException) {
+  supla_push_notification n;
+  n.set_body("{% non_existent_func }}");
+  EXPECT_EQ(n.get_body(),
+            "[inja.exception.parser_error] (at 1:4) expected statement, got "
+            "'non_existent_func'");
+}
+
 } /* namespace testing */

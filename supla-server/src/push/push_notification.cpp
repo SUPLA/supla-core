@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+#include "helper/inja_helper.h"
+
 using std::map;
 using std::string;
 using std::vector;
@@ -45,34 +47,34 @@ supla_pn_recipients &supla_push_notification::get_recipients(void) {
 
 void supla_push_notification::set_title(const string &title) {
   this->title = title.substr(0, 100);  // Same limit as in the database
-  apply_replacement_map();
 }
 
-const string &supla_push_notification::get_title(void) { return title; }
+string supla_push_notification::get_title(void) {
+  return apply_replacement_map(title);
+}
 
 void supla_push_notification::set_body(const string &body) {
   this->body = body.substr(0, 255);  // Same limit as in the database
-  apply_replacement_map();
 }
 
-const string &supla_push_notification::get_body(void) { return body; }
+string supla_push_notification::get_body(void) {
+  return apply_replacement_map(body);
+}
 
 void supla_push_notification::set_localized_title(const string &title) {
   localized_title = title;
-  apply_replacement_map();
 }
 
-const string &supla_push_notification::get_localized_title(void) {
-  return localized_title;
+string supla_push_notification::get_localized_title(void) {
+  return apply_replacement_map(localized_title);
 }
 
 void supla_push_notification::set_localized_body(const string &body) {
   localized_body = body;
-  apply_replacement_map();
 }
 
-const string &supla_push_notification::get_localized_body(void) {
-  return localized_body;
+string supla_push_notification::get_localized_body(void) {
+  return apply_replacement_map(localized_body);
 }
 
 void supla_push_notification::set_localized_title_args(
@@ -98,6 +100,13 @@ void supla_push_notification::set_sound(int sound) { this->sound = sound; }
 int supla_push_notification::get_sound(void) { return sound; }
 
 string supla_push_notification::apply_replacement_map(string str) {
+  try {
+    supla_inja_helper inja;
+    str = inja.validate_and_render(str, &replacement_map);
+  } catch (const std::exception &e) {
+    str = e.what();
+  }
+
   for (auto it = replacement_map.begin(); it != replacement_map.end(); ++it) {
     string pattern = "{";
     pattern.append(it->first);
@@ -114,15 +123,6 @@ string supla_push_notification::apply_replacement_map(string str) {
   return str;
 }
 
-void supla_push_notification::apply_replacement_map(void) {
-  if (replacement_map.size()) {
-    title = apply_replacement_map(title);
-    body = apply_replacement_map(body);
-    localized_title = apply_replacement_map(localized_title);
-    localized_body = apply_replacement_map(localized_body);
-  }
-}
-
 void supla_push_notification::set_replacement_map(
     map<string, string> *replacement_map) {
   if (replacement_map) {
@@ -131,7 +131,7 @@ void supla_push_notification::set_replacement_map(
     this->replacement_map.clear();
   }
 
-  set_date_time(date_time);  // apply_replacement_map is called at set_date_time
+  set_date_time(date_time);
 }
 
 void supla_push_notification::set_date_time(const std::string date_time) {
@@ -141,7 +141,6 @@ void supla_push_notification::set_date_time(const std::string date_time) {
     replacement_map["time"] = date_time.substr(11, 8);
     replacement_map["date_time"] = date_time;
   }
-  apply_replacement_map();
 }
 
 std::string supla_push_notification::get_date_time(void) { return date_time; }
