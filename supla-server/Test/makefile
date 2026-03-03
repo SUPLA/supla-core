@@ -37,6 +37,7 @@ RM := rm -rf
 -include src/test/integration/amazon/subdir.mk
 -include src/test/integration/subdir.mk
 -include src/test/http/subdir.mk
+-include src/test/helper/subdir.mk
 -include src/test/google/subdir.mk
 -include src/test/doubles/webhook/subdir.mk
 -include src/test/doubles/scene/subdir.mk

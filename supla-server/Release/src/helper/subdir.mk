@@ -4,15 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/helper/inja_helper.cpp \
+../src/helper/inja_sandbox.cpp \
 ../src/helper/json_helper.cpp 
 
 CPP_DEPS += \
-./src/helper/inja_helper.d \
+./src/helper/inja_sandbox.d \
 ./src/helper/json_helper.d 
 
 OBJS += \
-./src/helper/inja_helper.o \
+./src/helper/inja_sandbox.o \
 ./src/helper/json_helper.o 
 
 
@@ -28,7 +28,7 @@ src/helper/%.o: ../src/helper/%.cpp src/helper/subdir.mk
 clean: clean-src-2f-helper
 
 clean-src-2f-helper:
-	-$(RM) ./src/helper/inja_helper.d ./src/helper/inja_helper.o ./src/helper/json_helper.d ./src/helper/json_helper.o
+	-$(RM) ./src/helper/inja_sandbox.d ./src/helper/inja_sandbox.o ./src/helper/json_helper.d ./src/helper/json_helper.o
 
 .PHONY: clean-src-2f-helper
 

@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-#include "helper/inja_helper.h"
+#include "helper/inja_sandbox.h"
 
 using std::map;
 using std::string;
@@ -101,7 +101,7 @@ int supla_push_notification::get_sound(void) { return sound; }
 
 string supla_push_notification::apply_replacement_map(string str) {
   try {
-    supla_inja_helper inja;
+    supla_inja_sandbox inja;
     str = inja.validate_and_render(str, &replacement_map);
   } catch (const std::exception &e) {
     str = e.what();

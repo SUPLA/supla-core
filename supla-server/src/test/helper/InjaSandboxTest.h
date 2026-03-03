@@ -16,30 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef INJA_HELPER_H_
-#define INJA_HELPER_H_
+#ifndef INJA_SANDBOX_TEST_H_
+#define INJA_SANDBOX_TEST_H_
 
-#include <inja/inja.hpp>
-#include <nlohmann/json.hpp>
-#include <string>
+#include "gtest/gtest.h"  // NOLINT
+#include "helper/inja_sandbox.h"
 
-class supla_inja_helper {
- private:
-  inja::Environment env;
-  int max_blocks;
-  int max_ifs;
-  bool allow_for;
-  size_t max_output_bytes;
-  static int count_occ(const std::string& s, const std::string& needle);
+namespace testing {
 
+class InjaSandboxTest : public Test {
  protected:
+  supla_inja_sandbox sandbox;
+
  public:
-  supla_inja_helper(void);
-  virtual ~supla_inja_helper(void);
-  std::string validate_and_render(const std::string& tpl,
-                                  const nlohmann::json& data);
-  std::string validate_and_render(const std::string& tpl,
-                                  std::map<std::string, std::string>* data);
+  InjaSandboxTest(void);
+  virtual ~InjaSandboxTest(void);
 };
 
-#endif /* INJA_HELPER_H_*/
+} /* namespace testing */
+
+#endif /* INJA_SANDBOX_TEST_H_ */

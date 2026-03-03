@@ -16,8 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "helper/inja_helper.h"
-
+#include "inja_sandbox.h"
 #include <regex>
 #include <stdexcept>
 
@@ -27,17 +26,17 @@ using std::regex_search;
 using std::runtime_error;
 using std::string;
 
-supla_inja_helper::supla_inja_helper(void) {
+supla_inja_sandbox::supla_inja_sandbox(void) {
   max_blocks = 20;
-  max_ifs = 20;
+  max_ifs = 15;
   allow_for = false;
   max_output_bytes = 1024;
 }
 
-supla_inja_helper::~supla_inja_helper(void) {}
+supla_inja_sandbox::~supla_inja_sandbox(void) {}
 
 // static
-int supla_inja_helper::count_occ(const string& s, const string& needle) {
+int supla_inja_sandbox::count_occ(const string& s, const string& needle) {
   int c = 0;
   size_t p = 0;
   while ((p = s.find(needle, p)) != string::npos) {
@@ -47,7 +46,7 @@ int supla_inja_helper::count_occ(const string& s, const string& needle) {
   return c;
 }
 
-string supla_inja_helper::validate_and_render(const string& tpl,
+string supla_inja_sandbox::validate_and_render(const string& tpl,
                                               const nlohmann::json& data) {
   env.set_search_included_templates_in_files(false);
 
@@ -89,7 +88,7 @@ string supla_inja_helper::validate_and_render(const string& tpl,
   return out;
 }
 
-string supla_inja_helper::validate_and_render(
+string supla_inja_sandbox::validate_and_render(
     const std::string& tpl, std::map<std::string, std::string>* data) {
   nlohmann::json jdata;
   for (auto it = data->begin(); it != data->end(); ++it) {

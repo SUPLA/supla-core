@@ -102,6 +102,7 @@ src/test/doubles/push \
 src/test/doubles/scene \
 src/test/doubles/webhook \
 src/test/google \
+src/test/helper \
 src/test/http \
 src/test/integration \
 src/test/integration/amazon \
