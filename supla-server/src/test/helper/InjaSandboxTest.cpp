@@ -99,7 +99,7 @@ TEST_F(InjaSandboxTest, exceededOutputSize) {
   std::uniform_int_distribution<> dis(0, 9);
 
   for (std::size_t i = 0; i < 1025; ++i) {
-   text += static_cast<char>('0' + dis(gen));
+    text += static_cast<char>('0' + dis(gen));
   }
 
   data["text"] = text;
