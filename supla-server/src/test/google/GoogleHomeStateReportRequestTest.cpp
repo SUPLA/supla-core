@@ -186,7 +186,8 @@ TEST_F(GoogleHomeStateReportRequestTest, brightness_Disconnected) {
       "\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{\"qwerty-10\":{"
       "\"online\":false,\"on\":false,\"brightness\":0}}}}}";
 
-  makeTest(SUPLA_CHANNELFNC_DIMMER, false, new supla_channel_rgbw_value(),
+  makeTest(SUPLA_CHANNELFNC_DIMMER, false,
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMER),
            expectedPayload);
 }
 
@@ -199,7 +200,8 @@ TEST_F(GoogleHomeStateReportRequestTest, brightness_Connected) {
   TRGBW_Value rgbw = {};
   rgbw.brightness = 55;
 
-  makeTest(SUPLA_CHANNELFNC_DIMMER, true, new supla_channel_rgbw_value(&rgbw),
+  makeTest(SUPLA_CHANNELFNC_DIMMER, true,
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMER, &rgbw),
            expectedPayload, "REQID", false);
 }
 
@@ -212,7 +214,8 @@ TEST_F(GoogleHomeStateReportRequestTest, colorAndBrightness_Disconnected) {
       "\"brightness\":0}}}}}";
 
   makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, false,
-           new supla_channel_rgbw_value(), expectedPayload);
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING),
+           expectedPayload);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, colorAndBrightness_Connected) {
@@ -230,8 +233,9 @@ TEST_F(GoogleHomeStateReportRequestTest, colorAndBrightness_Connected) {
   rgbw.B = 0xCC;
 
   makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, true,
-           new supla_channel_rgbw_value(&rgbw), expectedPayload, "REQID",
-           false);
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING,
+                                        &rgbw),
+           expectedPayload, "REQID", false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, color_Disconnected) {
@@ -247,7 +251,8 @@ TEST_F(GoogleHomeStateReportRequestTest, color_Disconnected) {
   rgbw.B = 0xBB;
 
   makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, false,
-           new supla_channel_rgbw_value(&rgbw), expectedPayload);
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_RGBLIGHTING, &rgbw),
+           expectedPayload);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, color_Connected) {
@@ -263,8 +268,8 @@ TEST_F(GoogleHomeStateReportRequestTest, color_Connected) {
   rgbw.B = 0x22;
 
   makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, true,
-           new supla_channel_rgbw_value(&rgbw), expectedPayload, "REQID",
-           false);
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_RGBLIGHTING, &rgbw),
+           expectedPayload, "REQID", false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, rollershutter_Disconnected) {
@@ -405,10 +410,13 @@ TEST_F(GoogleHomeStateReportRequestTest, thermostat) {
   hvac.set_setpoint_temperature_heat(2233);
   hvac.get_raw_value(raw_value);
 
-  makeHvacThermostatTest(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
-                         new supla_channel_hvac_value(raw_value),
-                         new supla_channel_temphum_value(true, 22.30, 45),
-                         nullptr, expectedPayload, "REQID", false);
+  makeHvacThermostatTest(
+      SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
+      new supla_channel_hvac_value(raw_value),
+      new supla_channel_temphum_value(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                      SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
+                                      22.30, 45),
+      nullptr, expectedPayload, "REQID", false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, thermostat_Disconnected) {
@@ -442,10 +450,13 @@ TEST_F(GoogleHomeStateReportRequestTest, thermostatHeatCool) {
   hvac.set_setpoint_temperature_cool(2555);
   hvac.get_raw_value(raw_value);
 
-  makeHvacThermostatTest(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
-                         new supla_channel_hvac_value(raw_value),
-                         new supla_channel_temphum_value(true, 22.30, 45),
-                         nullptr, expectedPayload, "REQID", false);
+  makeHvacThermostatTest(
+      SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
+      new supla_channel_hvac_value(raw_value),
+      new supla_channel_temphum_value(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                      SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
+                                      22.30, 45),
+      nullptr, expectedPayload, "REQID", false);
 }
 
 TEST_F(GoogleHomeStateReportRequestTest, thermostatHeatPol) {

@@ -44,6 +44,7 @@ class supla_channel_general_purpose_base_value
   virtual void set_value(double value);
   std::string get_value_str();
   std::string get_value_str(std::string nan);
+  nlohmann::json get_template_data(void);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 

@@ -211,7 +211,7 @@ TEST_F(ChannelHvacValueTest, getAlexaMode) {
   EXPECT_EQ(value.get_alexa_mode(), "AUTO");
 }
 
-TEST_F(ChannelHvacValueTest, replacementMap) {
+TEST_F(ChannelHvacValueTest, templateData) {
   supla_channel_hvac_value value;
 
   char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
@@ -222,13 +222,15 @@ TEST_F(ChannelHvacValueTest, replacementMap) {
   value.set_flags(SUPLA_HVAC_VALUE_FLAG_THERMOMETER_ERROR |
                   SUPLA_HVAC_VALUE_FLAG_CLOCK_ERROR);
 
-  map<string, string> m = value.get_replacement_map();
-  EXPECT_EQ(m.size(), 5);
-  EXPECT_EQ(m["mode"], "HEAT");
-  EXPECT_EQ(m["setpoint_temperature_cool"], "12.34");
-  EXPECT_EQ(m["setpoint_temperature_heat"], "56.78");
-  EXPECT_EQ(m["heating_or_cooling"], "IDLE");
-  EXPECT_EQ(m["errors"], "THERMOMETER_ERROR, CLOCK_ERROR");
+  auto m = value.get_template_data();
+  EXPECT_EQ(m.size(), 7);
+  EXPECT_EQ(m["mode"].get<std::string>(), "HEAT");
+  EXPECT_EQ(m["setpoint_temperature_cool"].get<double>(), 12.34);
+  EXPECT_EQ(m["setpoint_temperature_heat"].get<double>(), 56.78);
+  EXPECT_EQ(m["heating_or_cooling"].get<std::string>(), "IDLE");
+  EXPECT_FALSE(m["cooling"].get<bool>());
+  EXPECT_FALSE(m["heating"].get<bool>());
+  EXPECT_EQ(m["errors"].get<std::string>(), "THERMOMETER_ERROR, CLOCK_ERROR");
 }
 
 TEST_F(ChannelHvacValueTest, getVbtValue) {

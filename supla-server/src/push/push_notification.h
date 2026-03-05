@@ -20,6 +20,7 @@
 #define PUSH_NOTIFICATION_H_
 
 #include <map>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 
@@ -38,8 +39,8 @@ class supla_push_notification {
   std::vector<std::string> localized_body_args;
   int sound;
   supla_pn_recipients recipients;
-  std::map<std::string, std::string> replacement_map;
-  std::string apply_replacement_map(std::string str);
+  nlohmann::json template_data;
+  std::string apply_template_data(std::string str);
 
  public:
   supla_push_notification(void);
@@ -67,8 +68,7 @@ class supla_push_notification {
   virtual int get_sound(void);
   virtual void set_date_time(const std::string date_time);
   std::string get_date_time(void);
-  virtual void set_replacement_map(
-      std::map<std::string, std::string> *replacement_map);
+  virtual void set_template_data(nlohmann::json *template_data);
   virtual bool apply_json(int user_id, cJSON *json);
   virtual bool apply_json(int user_id, const char *json);
 };

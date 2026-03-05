@@ -103,92 +103,92 @@ TEST_F(PushNotificationTest, soundSetterAndGetter) {
   EXPECT_EQ(n.get_sound(), 123);
 }
 
-TEST_F(PushNotificationTest, replacementMapLoopPrevention) {
+TEST_F(PushNotificationTest, templateDataMapLoopPrevention) {
   supla_push_notification n;
-  map<string, string> m;
-  m["A"] = "{A}";
+  nlohmann::json d;
+  d["A"] = "{A}";
 
   n.set_body("{A}{A}{A}");
-  n.set_replacement_map(&m);
+  n.set_template_data(&d);
   EXPECT_EQ(n.get_body(), "{A}{A}{A}");
 }
 
-TEST_F(PushNotificationTest, replacementMapWithBody) {
+TEST_F(PushNotificationTest, templateDataWithBody) {
   supla_push_notification n;
-  map<string, string> m;
-  m["HUMIDITY"] = "45.50";
-  m["TEMPERATURE"] = "25.5";
+  nlohmann::json d;
+  d["HUMIDITY"] = "45.50";
+  d["TEMPERATURE"] = "25.5";
 
   n.set_body(
       "The air humidity is {HUMIDITY}% and the temperature is {TEMPERATURE} "
       "degrees Celsius.");
-  n.set_replacement_map(&m);
+  n.set_template_data(&d);
 
   EXPECT_EQ(n.get_body(),
             "The air humidity is 45.50% and the temperature is 25.5 degrees "
             "Celsius.");
 
-  m["ABCD"] = "123456";
-  n.set_replacement_map(&m);
+  d["ABCD"] = "123456";
+  n.set_template_data(&d);
 
   n.set_body("{ABCD}{ABCD} {ABCD}");
 
   EXPECT_EQ(n.get_body(), "123456123456 123456");
 }
 
-TEST_F(PushNotificationTest, replacementMapWithTtile) {
+TEST_F(PushNotificationTest, templateDatatMapWithTtile) {
   supla_push_notification n;
-  map<string, string> m;
-  m["XYZ"] = "1";
+  nlohmann::json d;
+  d["XYZ"] = "1";
 
   n.set_title("{XYZ}{XYZ}");
-  n.set_replacement_map(&m);
+  n.set_template_data(&d);
   EXPECT_EQ(n.get_title(), "11");
 
-  m["A"] = "B";
-  n.set_replacement_map(&m);
+  d["A"] = "B";
+  n.set_template_data(&d);
   n.set_title("{A}");
   EXPECT_EQ(n.get_title(), "B");
 }
 
-TEST_F(PushNotificationTest, replacementMapWithLocalizedTtile) {
+TEST_F(PushNotificationTest, templateDataWithLocalizedTtile) {
   supla_push_notification n;
-  map<string, string> m;
-  m["XY"] = "1";
+  nlohmann::json d;
+  d["XY"] = "1";
 
   n.set_localized_title("{XY}{XY}");
-  n.set_replacement_map(&m);
+  n.set_template_data(&d);
   EXPECT_EQ(n.get_localized_title(), "11");
 
-  m["A"] = "B";
-  n.set_replacement_map(&m);
+  d["A"] = "B";
+  n.set_template_data(&d);
   n.set_localized_title("{A}");
   EXPECT_EQ(n.get_localized_title(), "B");
 }
 
-TEST_F(PushNotificationTest, replacementMapWithLocalizedBody) {
+TEST_F(PushNotificationTest, templateMapWithLocalizedBody) {
   supla_push_notification n;
-  map<string, string> m;
-  m["XM"] = "1";
+  nlohmann::json d;
+  d["XM"] = "1";
 
   n.set_localized_body("{XM}{XM}");
-  n.set_replacement_map(&m);
+  n.set_template_data(&d);
   EXPECT_EQ(n.get_localized_body(), "11");
 
-  m["U"] = "B";
-  n.set_replacement_map(&m);
+  d["U"] = "B";
+  n.set_template_data(&d);
   n.set_localized_body("{U}");
   EXPECT_EQ(n.get_localized_body(), "B");
 }
 
 TEST_F(PushNotificationTest, dateTime) {
-  map<string, string> m;
-  m["XY"] = "11";
+  nlohmann::json d;
+  d["XY"] = "11";
 
   {
     supla_push_notification n;
     n.set_title("{XY}|{date}|{time}|{date_time}");
-    n.set_replacement_map(&m);
+    n.set_template_data(&d);
     EXPECT_EQ(n.get_title(), "11|{date}|{time}|{date_time}");
     n.set_date_time("2023-08-13 13:53:14");
     EXPECT_EQ(n.get_title(), "11|2023-08-13|13:53:14|2023-08-13 13:53:14");
@@ -201,7 +201,7 @@ TEST_F(PushNotificationTest, dateTime) {
 
     EXPECT_EQ(n.get_title(), "{XY}|2023-08-13|13:53:14|2023-08-13 13:53:14");
 
-    n.set_replacement_map(&m);
+    n.set_template_data(&d);
     EXPECT_EQ(n.get_title(), "11|2023-08-13|13:53:14|2023-08-13 13:53:14");
   }
 
@@ -209,7 +209,7 @@ TEST_F(PushNotificationTest, dateTime) {
     supla_push_notification n;
 
     n.set_date_time("2023-08-13 13:53:14");
-    n.set_replacement_map(&m);
+    n.set_template_data(&d);
 
     n.set_title("{XY}|{date}|{time}|{date_time}");
     EXPECT_EQ(n.get_title(), "11|2023-08-13|13:53:14|2023-08-13 13:53:14");
@@ -218,60 +218,60 @@ TEST_F(PushNotificationTest, dateTime) {
 
 TEST_F(PushNotificationTest, titleWithInja) {
   supla_push_notification n;
-  map<string, string> m;
-  m["state"] = "1";
+  nlohmann::json d;
+  d["state"] = "1";
 
   string tmpl =
       "{{ state }}: {% if state == \"1\" %}ONE{% else %}NOT ONE{% endif %}";
 
   n.set_title(tmpl);
-  n.set_replacement_map(&m);
+  n.set_template_data(&d);
   EXPECT_EQ(n.get_title(), "1: ONE");
 
-  m["state"] = "2";
-  n.set_replacement_map(&m);
+  d["state"] = "2";
+  n.set_template_data(&d);
   EXPECT_EQ(n.get_title(), "2: NOT ONE");
 }
 
 TEST_F(PushNotificationTest, bodyWithInja) {
   supla_push_notification n;
-  map<string, string> m;
-  m["str"] = "abcd";
+  nlohmann::json d;
+  d["str"] = "abcd";
 
   n.set_body("Length: {{ length(str) }}");
-  n.set_replacement_map(&m);
+  n.set_template_data(&d);
   EXPECT_EQ(n.get_body(), "Length: 4");
 }
 
 TEST_F(PushNotificationTest, localizedTitleWithInja) {
   supla_push_notification n;
-  map<string, string> m;
-  m["str"] = "abcd";
+  nlohmann::json d;
+  d["str"] = "abcd";
 
   n.set_localized_title("{{ capitalize(str) }}");
-  n.set_replacement_map(&m);
+  n.set_template_data(&d);
   EXPECT_EQ(n.get_localized_title(), "Abcd");
 }
 
 TEST_F(PushNotificationTest, localizedBodyWithInja) {
   supla_push_notification n;
-  map<string, string> m;
-  m["str"] = "abcd";
+  nlohmann::json d;
+  d["str"] = "abcd";
 
   n.set_localized_body("{{ upper(str) }}|{{date}}|{{time}}|{{date_time}}");
   n.set_date_time("2023-08-13 13:53:14");
-  n.set_replacement_map(&m);
+  n.set_template_data(&d);
   EXPECT_EQ(n.get_localized_body(),
             "ABCD|2023-08-13|13:53:14|2023-08-13 13:53:14");
 }
 
 TEST_F(PushNotificationTest, injaAndNativeReplacement) {
   supla_push_notification n;
-  map<string, string> m;
-  m["str"] = "abcd";
+  nlohmann::json d;
+  d["str"] = "abcd";
 
   n.set_localized_body("{{ str }}|{str}");
-  n.set_replacement_map(&m);
+  n.set_template_data(&d);
   EXPECT_EQ(n.get_localized_body(), "abcd|abcd");
 }
 

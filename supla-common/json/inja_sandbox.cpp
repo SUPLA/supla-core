@@ -17,6 +17,7 @@
  */
 
 #include "inja_sandbox.h"
+
 #include <regex>
 #include <stdexcept>
 
@@ -47,7 +48,7 @@ int supla_inja_sandbox::count_occ(const string& s, const string& needle) {
 }
 
 string supla_inja_sandbox::validate_and_render(const string& tpl,
-                                              const nlohmann::json& data) {
+                                               const nlohmann::json& data) {
   env.set_search_included_templates_in_files(false);
 
   static const regex re_include(R"(\{\%\s*include\b)");
@@ -86,14 +87,4 @@ string supla_inja_sandbox::validate_and_render(const string& tpl,
   }
 
   return out;
-}
-
-string supla_inja_sandbox::validate_and_render(
-    const std::string& tpl, std::map<std::string, std::string>* data) {
-  nlohmann::json jdata;
-  for (auto it = data->begin(); it != data->end(); ++it) {
-    jdata[it->first] = it->second;
-  }
-
-  return validate_and_render(tpl, jdata);
 }

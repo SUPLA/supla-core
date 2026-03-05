@@ -75,7 +75,7 @@ class supla_value_based_trigger {
   void fire(const supla_caller &caller, int user_id,
             supla_abstract_action_executor *action_executor,
             supla_abstract_channel_property_getter *property_getter,
-            std::map<std::string, std::string> *replacement_map);
+            nlohmann::json *template_data);
 
   bool equal(const supla_value_based_trigger &trigger) const;
 

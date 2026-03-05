@@ -43,14 +43,13 @@ void supla_vbt_condition_result::set_trigger(
   this->trigger = trigger;
 }
 
-const map<string, string> &supla_vbt_condition_result::get_replacement_map(
-    void) {
-  return replacement_map;
+const nlohmann::json &supla_vbt_condition_result::get_template_data(void) {
+  return template_data;
 }
 
-void supla_vbt_condition_result::set_replacement_map(
-    const map<string, string> &replacement_map) {
-  this->replacement_map = replacement_map;
+void supla_vbt_condition_result::set_template_data(
+    const nlohmann::json &template_data) {
+  this->template_data = template_data;
 }
 
 bool supla_vbt_condition_result::are_conditions_met(void) { return cnd_met; }

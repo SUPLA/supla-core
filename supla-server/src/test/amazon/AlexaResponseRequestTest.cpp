@@ -157,7 +157,8 @@ TEST_F(AlexaResponseRequestTest, brightness_Reachable) {
   TRGBW_Value rgbw = {};
   rgbw.brightness = 10;
 
-  makeTest(SUPLA_CHANNELFNC_DIMMER, true, new supla_channel_rgbw_value(&rgbw),
+  makeTest(SUPLA_CHANNELFNC_DIMMER, true,
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMER, &rgbw),
            expectedPayload);
 }
 
@@ -171,7 +172,8 @@ TEST_F(AlexaResponseRequestTest, brightness_Unreachable) {
       "\"Unable to reach channel ID15 because it appears to be "
       "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
 
-  makeTest(SUPLA_CHANNELFNC_DIMMER, false, new supla_channel_rgbw_value(),
+  makeTest(SUPLA_CHANNELFNC_DIMMER, false,
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMER),
            expectedPayload);
 }
 
@@ -199,7 +201,8 @@ TEST_F(AlexaResponseRequestTest, color_Reachable) {
   rgbw.colorBrightness = 10;
 
   makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, true,
-           new supla_channel_rgbw_value(&rgbw), expectedPayload);
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_RGBLIGHTING, &rgbw),
+           expectedPayload);
 }
 
 TEST_F(AlexaResponseRequestTest, color_Unreachable) {
@@ -212,7 +215,8 @@ TEST_F(AlexaResponseRequestTest, color_Unreachable) {
       "\"Unable to reach channel ID15 because it appears to be "
       "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
 
-  makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, false, new supla_channel_rgbw_value(),
+  makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, false,
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_RGBLIGHTING),
            expectedPayload);
 }
 
@@ -238,8 +242,9 @@ TEST_F(AlexaResponseRequestTest, brightnessAndColor_ColorReachable) {
   rgbw.G = 0xFF;
 
   makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, true,
-           new supla_channel_rgbw_value(&rgbw), expectedPayload,
-           "correlationToken::SUB=1");
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING,
+                                        &rgbw),
+           expectedPayload, "correlationToken::SUB=1");
 }
 
 TEST_F(AlexaResponseRequestTest, brightnessAndColor_BrightnessReachable) {
@@ -260,8 +265,9 @@ TEST_F(AlexaResponseRequestTest, brightnessAndColor_BrightnessReachable) {
   rgbw.brightness = 100;
 
   makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, true,
-           new supla_channel_rgbw_value(&rgbw), expectedPayload,
-           "correlationToken::SUB=2");
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING,
+                                        &rgbw),
+           expectedPayload, "correlationToken::SUB=2");
 }
 
 TEST_F(AlexaResponseRequestTest, brightnessAndColor_ColorUnreachable) {
@@ -275,8 +281,8 @@ TEST_F(AlexaResponseRequestTest, brightnessAndColor_ColorUnreachable) {
       "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
 
   makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, false,
-           new supla_channel_rgbw_value(), expectedPayload1,
-           "correlationToken::SUB=1");
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING),
+           expectedPayload1, "correlationToken::SUB=1");
 }
 
 TEST_F(AlexaResponseRequestTest, brightnessAndColor_BrightnessUnreachable) {
@@ -290,8 +296,8 @@ TEST_F(AlexaResponseRequestTest, brightnessAndColor_BrightnessUnreachable) {
       "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
 
   makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, false,
-           new supla_channel_rgbw_value(), expectedPayload,
-           "correlationToken::SUB=2");
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING),
+           expectedPayload, "correlationToken::SUB=2");
 }
 
 TEST_F(AlexaResponseRequestTest, percentage_Reachable) {
@@ -428,8 +434,10 @@ TEST_F(AlexaResponseRequestTest, thermostat) {
 
   hvacThermostatTest(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
                      new supla_channel_hvac_value(raw_value),
-                     new supla_channel_temphum_value(true, 22.30, 45), nullptr,
-                     expectedPayload, "correlationToken123");
+                     new supla_channel_temphum_value(
+                         SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                         SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 22.30, 45),
+                     nullptr, expectedPayload, "correlationToken123");
 }
 
 TEST_F(AlexaResponseRequestTest, thermostat_Unreachable) {
@@ -475,8 +483,10 @@ TEST_F(AlexaResponseRequestTest, thermostat_HeatCool) {
 
   hvacThermostatTest(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
                      new supla_channel_hvac_value(raw_value),
-                     new supla_channel_temphum_value(true, 22.30, 45), nullptr,
-                     expectedPayload, "correlationToken123");
+                     new supla_channel_temphum_value(
+                         SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                         SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 22.30, 45),
+                     nullptr, expectedPayload, "correlationToken123");
 }
 
 TEST_F(AlexaResponseRequestTest, thermostat_HeatPol) {

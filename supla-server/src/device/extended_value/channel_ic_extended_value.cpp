@@ -180,6 +180,16 @@ bool supla_channel_ic_extended_value::is_ev_type_supported(char type) {
   return type == EV_TYPE_IMPULSE_COUNTER_DETAILS_V1;
 }
 
+nlohmann::json supla_channel_ic_extended_value::get_template_data(void) {
+  nlohmann::json result =
+      supla_abstract_channel_extended_value::get_template_data();
+
+  result["counter"] = get_counter();
+  result["calculated_value"] = get_calculated_value_dbl();
+
+  return result;
+}
+
 bool supla_channel_ic_extended_value::get_vbt_value(_vbt_var_name_e var_name,
                                                     double *value) {
   switch (var_name) {

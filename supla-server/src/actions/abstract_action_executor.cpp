@@ -157,7 +157,7 @@ void supla_abstract_action_executor::execute_action(
     _subjectType_e subject_type, int subject_id,
     supla_abstract_channel_property_getter *property_getter,
     supla_abstract_action_parameters *params, int source_device_id,
-    int source_channel_id, int cap, map<string, string> *replacement_map,
+    int source_channel_id, int cap, nlohmann::json *template_data,
     const char *alexa_correlation_token, const char *google_request_id) {
   if (action_id == 0 || subject_id == 0) {
     return;
@@ -274,7 +274,7 @@ void supla_abstract_action_executor::execute_action(
       disable();
       break;
     case ACTION_SEND:
-      send(caller, replacement_map);
+      send(caller, template_data);
       break;
     case ACTION_INTERRUPT:
       interrupt();
@@ -340,16 +340,16 @@ void supla_abstract_action_executor::execute_action(
     _subjectType_e subject_type, int subject_id,
     supla_abstract_channel_property_getter *property_getter,
     supla_abstract_action_parameters *params, int source_device_id,
-    int source_channel_id, int cap, map<string, string> *replacement_map) {
+    int source_channel_id, int cap, nlohmann::json *template_data) {
   execute_action(caller, user_id, action_id, subject_type, subject_id,
                  property_getter, params, source_device_id, source_channel_id,
-                 cap, replacement_map, nullptr, nullptr);
+                 cap, template_data, nullptr, nullptr);
 }
 
 void supla_abstract_action_executor::execute_action(
     const supla_caller &caller, int user_id, abstract_action_config *config,
     supla_abstract_channel_property_getter *property_getter,
-    map<string, string> *replacement_map) {
+    nlohmann::json *template_data) {
   int action_id = 0;
   int subject_id = 0;
 
@@ -376,7 +376,7 @@ void supla_abstract_action_executor::execute_action(
 
   execute_action(caller, user_id, action_id, config->get_subject_type(),
                  subject_id, property_getter, params, source_device_id,
-                 source_channel_id, cap, replacement_map);
+                 source_channel_id, cap, template_data);
 
   if (params) {
     delete params;

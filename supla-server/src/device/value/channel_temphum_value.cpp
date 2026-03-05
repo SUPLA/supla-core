@@ -34,47 +34,44 @@ int supla_channel_temphum_value::incorrect_temperature(void) { return -273; }
 // static
 int supla_channel_temphum_value::incorrect_humidity(void) { return -1; }
 
-supla_channel_temphum_value::supla_channel_temphum_value(void)
+supla_channel_temphum_value::supla_channel_temphum_value(int type, int func)
     : supla_abstract_channel_value() {
-  this->with_humidity = false;
+  this->type = type;
+  this->func = func;
   set_temperature(incorrect_temperature());
 }
 
 supla_channel_temphum_value::supla_channel_temphum_value(
-    int channel_type, int func, const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    int type, int func, const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_abstract_channel_value(raw_value) {
-  this->with_humidity =
-      !((channel_type == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
-         channel_type == SUPLA_CHANNELTYPE_THERMOMETER) &&
-        func == SUPLA_CHANNELFNC_THERMOMETER);
+  this->type = type;
+  this->func = func;
 }
 
-supla_channel_temphum_value::supla_channel_temphum_value(
-    bool with_humidity, const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_abstract_channel_value(raw_value) {
-  this->with_humidity = with_humidity;
-}
-
-supla_channel_temphum_value::supla_channel_temphum_value(bool with_humidity,
+supla_channel_temphum_value::supla_channel_temphum_value(int type, int func,
                                                          double temperature,
                                                          double humidity)
     : supla_abstract_channel_value() {
-  this->with_humidity = with_humidity;
+  this->type = type;
+  this->func = func;
+
   set_temperature(temperature);
   set_humidity(humidity);
 }
 
 supla_abstract_channel_value *supla_channel_temphum_value::copy(  // NOLINT
     void) const {                                                 // NOLINT
-  return new supla_channel_temphum_value(with_humidity, raw_value);
+  return new supla_channel_temphum_value(type, func, raw_value);
 }
 
 bool supla_channel_temphum_value::is_humidity_available(void) {
-  return with_humidity;
+  return !((type == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
+            type == SUPLA_CHANNELTYPE_THERMOMETER) &&
+           func == SUPLA_CHANNELFNC_THERMOMETER);
 }
 
 double supla_channel_temphum_value::get_temperature(void) {
-  if (!with_humidity) {
+  if (!is_humidity_available()) {
     double result = 0;
     memcpy(&result, raw_value, sizeof(double));
     return result;
@@ -86,7 +83,7 @@ double supla_channel_temphum_value::get_temperature(void) {
 }
 
 double supla_channel_temphum_value::get_humidity(void) {
-  if (!with_humidity) {
+  if (!is_humidity_available()) {
     return incorrect_humidity();
   }
   int n = 0;
@@ -99,7 +96,7 @@ void supla_channel_temphum_value::set_temperature(double temperature) {
     temperature = incorrect_temperature();
   }
 
-  if (with_humidity) {
+  if (is_humidity_available()) {
     int n = temperature * 1000;
     memcpy(raw_value, &n, 4);
   } else {
@@ -108,7 +105,7 @@ void supla_channel_temphum_value::set_temperature(double temperature) {
 }
 
 void supla_channel_temphum_value::set_humidity(double humidity) {
-  if (with_humidity) {
+  if (is_humidity_available()) {
     if (humidity < incorrect_humidity()) {
       humidity = incorrect_humidity();
     }
@@ -149,21 +146,6 @@ void supla_channel_temphum_value::apply_channel_properties(
   }
 }
 
-map<string, string> supla_channel_temphum_value::get_replacement_map(void) {
-  map<string, string> result =
-      supla_abstract_channel_value::get_replacement_map();
-
-  char buffer[50] = {};
-  snprintf(buffer, sizeof(buffer), "%.2f", get_temperature());
-
-  result["temperature"] = buffer;
-  if (is_humidity_available()) {
-    snprintf(buffer, sizeof(buffer), "%.2f", get_humidity());
-    result["humidity"] = buffer;
-  }
-  return result;
-}
-
 // static
 bool supla_channel_temphum_value::is_function_supported(int func) {
   switch (func) {
@@ -174,6 +156,22 @@ bool supla_channel_temphum_value::is_function_supported(int func) {
   }
 
   return false;
+}
+
+nlohmann::json supla_channel_temphum_value::get_template_data(void) {
+  nlohmann::json result = supla_abstract_channel_value::get_template_data();
+
+  if (func == SUPLA_CHANNELFNC_THERMOMETER ||
+      func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE) {
+    result["temperature"] = get_temperature();
+  }
+
+  if (func == SUPLA_CHANNELFNC_HUMIDITY ||
+      func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE) {
+    result["humidity"] = get_humidity();
+  }
+
+  return result;
 }
 
 bool supla_channel_temphum_value::get_vbt_value(_vbt_var_name_e var_name,

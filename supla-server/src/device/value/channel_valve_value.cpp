@@ -25,21 +25,26 @@
 using std::map;
 using std::string;
 
-supla_channel_valve_value::supla_channel_valve_value()
-    : supla_abstract_channel_value() {}
+supla_channel_valve_value::supla_channel_valve_value(int func)
+    : supla_abstract_channel_value() {
+  this->func = func;
+}
 
 supla_channel_valve_value::supla_channel_valve_value(
-    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_abstract_channel_value(raw_value) {}
+    int func, const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_abstract_channel_value(raw_value) {
+  this->func = func;
+}
 
 supla_channel_valve_value::supla_channel_valve_value(
-    const TValve_Value *value) {
+    int func, const TValve_Value *value) {
+  this->func = func;
   memcpy(raw_value, value, sizeof(TValve_Value));
 }
 
 supla_abstract_channel_value *supla_channel_valve_value::copy(  // NOLINT
     void) const {                                               // NOLINT
-  return new supla_channel_valve_value(raw_value);
+  return new supla_channel_valve_value(func, raw_value);
 }
 
 void supla_channel_valve_value::get_valve_value(TValve_Value *value) {
@@ -55,18 +60,6 @@ void supla_channel_valve_value::set_valve_value(TValve_Value *value) {
   memcpy(raw_value, value, sizeof(TValve_Value));
 }
 
-map<string, string> supla_channel_valve_value::get_replacement_map(void) {
-  map<string, string> result =
-      supla_abstract_channel_value::get_replacement_map();
-  result["is_closed_manually"] =
-      get_valve_value()->closed &&
-              (get_valve_value()->flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED)
-          ? "Yes"
-          : "No";
-
-  return result;
-}
-
 // static
 bool supla_channel_valve_value::is_function_supported(int func) {
   switch (func) {
@@ -78,22 +71,63 @@ bool supla_channel_valve_value::is_function_supported(int func) {
   return false;
 }
 
+bool supla_channel_valve_value::is_flooding(void) {
+  return get_valve_value()->flags & SUPLA_VALVE_FLAG_FLOODING;
+}
+
+bool supla_channel_valve_value::is_manually_closed(void) {
+  return get_valve_value()->flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED;
+}
+
+bool supla_channel_valve_value::is_motor_problem(void) {
+  return get_valve_value()->flags & SUPLA_VALVE_FLAG_MOTOR_PROBLEM;
+}
+
+bool supla_channel_valve_value::is_closed(void) {
+  return func == SUPLA_CHANNELFNC_VALVE_OPENCLOSE
+             ? get_valve_value()->closed
+             : get_valve_value()->closed_percent == 100;
+}
+
+nlohmann::json supla_channel_valve_value::get_template_data(void) {
+  nlohmann::json result = supla_abstract_channel_value::get_template_data();
+  result["flooding"] = is_flooding();
+  result["manually_closed"] = is_manually_closed();
+  result["motor_problem"] = is_motor_problem();
+  result["closed"] = is_closed();
+  result["open"] = !is_closed();
+
+  if (func == SUPLA_CHANNELFNC_VALVE_PERCENTAGE) {
+    int v = get_valve_value()->closed_percent;
+    result["value"] = v;
+  } else {
+    result["value"] = is_closed();
+  }
+
+  // For backward compatibility
+  result["is_closed_manually"] =
+      get_valve_value()->closed &&
+              (get_valve_value()->flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED)
+          ? "Yes"
+          : "No";
+
+  return result;
+}
+
 bool supla_channel_valve_value::get_vbt_value(_vbt_var_name_e var_name,
                                               double *value) {
   switch (var_name) {
     case var_name_flooding:
-      *value = (get_valve_value()->flags & SUPLA_VALVE_FLAG_FLOODING) ? 1 : 0;
+      *value = is_flooding() ? 1 : 0;
       break;
     case var_name_manually_closed:
-      *value =
-          (get_valve_value()->flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED) ? 1 : 0;
+      *value = is_manually_closed() ? 1 : 0;
       break;
     case var_name_motor_problem:
-      *value =
-          (get_valve_value()->flags & SUPLA_VALVE_FLAG_MOTOR_PROBLEM) ? 1 : 0;
+      *value = is_motor_problem() ? 1 : 0;
       break;
     default:
-      *value = get_valve_value()->closed ? 1 : 0;
+      *value = is_closed() ? 1 : 0;
   }
 
   return true;

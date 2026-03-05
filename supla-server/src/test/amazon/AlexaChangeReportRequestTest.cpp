@@ -276,7 +276,8 @@ TEST_F(AlexaChangeReportRequestTest, brightness_Reachable) {
   TRGBW_Value rgbw = {};
   rgbw.brightness = 10;
 
-  makeTest(SUPLA_CHANNELFNC_DIMMER, true, new supla_channel_rgbw_value(&rgbw),
+  makeTest(SUPLA_CHANNELFNC_DIMMER, true,
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMER, &rgbw),
            expectedPayload, supla_caller(ctAmazonAlexa), "");
 }
 
@@ -292,7 +293,8 @@ TEST_F(AlexaChangeReportRequestTest, brightness_Unreachable) {
       "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
       "50}]}}}}";
 
-  makeTest(SUPLA_CHANNELFNC_DIMMER, false, new supla_channel_rgbw_value(),
+  makeTest(SUPLA_CHANNELFNC_DIMMER, false,
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMER),
            expectedPayload, supla_caller(ctAmazonAlexa), "");
 }
 
@@ -334,8 +336,8 @@ TEST_F(AlexaChangeReportRequestTest, color_Reachable) {
   rgbw.colorBrightness = 10;
 
   makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, true,
-           new supla_channel_rgbw_value(&rgbw), expectedPayload,
-           supla_caller(ctAmazonAlexa), "");
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_RGBLIGHTING, &rgbw),
+           expectedPayload, supla_caller(ctAmazonAlexa), "");
 }
 
 TEST_F(AlexaChangeReportRequestTest, color_Unreachable) {
@@ -350,7 +352,8 @@ TEST_F(AlexaChangeReportRequestTest, color_Unreachable) {
       "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
       "50}]}}}}";
 
-  makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, false, new supla_channel_rgbw_value(),
+  makeTest(SUPLA_CHANNELFNC_RGBLIGHTING, false,
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_RGBLIGHTING),
            expectedPayload, supla_caller(ctAmazonAlexa), "");
 }
 
@@ -466,8 +469,9 @@ TEST_F(AlexaChangeReportRequestTest, brightnessAndColor_Reachable) {
   rgbw.G = 0xFF;
 
   makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, true,
-           new supla_channel_rgbw_value(&rgbw), expectedPayload1,
-           expectedPayload2);
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING,
+                                        &rgbw),
+           expectedPayload1, expectedPayload2);
 }
 
 TEST_F(AlexaChangeReportRequestTest, brightnessAndColor_Unreachable) {
@@ -494,7 +498,8 @@ TEST_F(AlexaChangeReportRequestTest, brightnessAndColor_Unreachable) {
       "50}]}}}}";
 
   makeTest(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, false,
-           new supla_channel_rgbw_value(), expectedPayload1, expectedPayload2);
+           new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING),
+           expectedPayload1, expectedPayload2);
 }
 
 void AlexaChangeReportRequestTest::hvacThermostatTest(
@@ -613,8 +618,10 @@ TEST_F(AlexaChangeReportRequestTest, thermostat) {
 
   hvacThermostatTest(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
                      new supla_channel_hvac_value(raw_value),
-                     new supla_channel_temphum_value(true, 22.30, 45), nullptr,
-                     expectedPayload);
+                     new supla_channel_temphum_value(
+                         SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                         SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 22.30, 45),
+                     nullptr, expectedPayload);
 }
 
 TEST_F(AlexaChangeReportRequestTest, thermostat_Unrechable) {
@@ -680,8 +687,10 @@ TEST_F(AlexaChangeReportRequestTest, thermostat_HeatCool) {
 
   hvacThermostatTest(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true,
                      new supla_channel_hvac_value(raw_value),
-                     new supla_channel_temphum_value(true, 22.30, 45), nullptr,
-                     expectedPayload);
+                     new supla_channel_temphum_value(
+                         SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                         SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 22.30, 45),
+                     nullptr, expectedPayload);
 }
 
 TEST_F(AlexaChangeReportRequestTest, thermostat_HeatPol) {

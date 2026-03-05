@@ -18,8 +18,11 @@
 
 #include "device/value/ChannelRgbwValueTest.h"
 
+#include <string>
+
 #include "device/value/channel_rgbw_value.h"
 #include "devicechannel.h"  // NOLINT
+#include "proto.h"
 
 namespace testing {
 
@@ -29,7 +32,7 @@ TEST_F(ChannelRgbwValueTest, voidConstructor) {
   TRGBW_Value rgbw1 = {};
   TRGBW_Value rgbw2 = {};
 
-  supla_channel_rgbw_value v;
+  supla_channel_rgbw_value v(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING);
   v.get_raw_value(raw_value1);
   EXPECT_EQ(memcmp(raw_value1, raw_value2, SUPLA_CHANNELVALUE_SIZE), 0);
 
@@ -50,7 +53,7 @@ TEST_F(ChannelRgbwValueTest, nonVoidConstructors) {
   rgbw1.brightness = 10;
   rgbw1.colorBrightness = 20;
   rgbw1.onOff = 1;
-  supla_channel_rgbw_value v1(&rgbw1);
+  supla_channel_rgbw_value v1(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, &rgbw1);
   v1.get_rgbw(&rgbw2);
   v1.get_raw_value(raw_value2);
 
@@ -60,7 +63,8 @@ TEST_F(ChannelRgbwValueTest, nonVoidConstructors) {
   memset(&rgbw1, 0, sizeof(TRGBW_Value));
   memset(raw_value1, 0, sizeof(raw_value1));
 
-  supla_channel_rgbw_value v2(raw_value2);
+  supla_channel_rgbw_value v2(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING,
+                              raw_value2);
   v2.get_rgbw(&rgbw1);
   v2.get_raw_value(raw_value1);
 
@@ -70,7 +74,7 @@ TEST_F(ChannelRgbwValueTest, nonVoidConstructors) {
   memset(&rgbw2, 0, sizeof(TRGBW_Value));
   memset(raw_value2, 0, sizeof(raw_value2));
 
-  supla_channel_rgbw_value v3(&rgbw1);
+  supla_channel_rgbw_value v3(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, &rgbw1);
   v2.get_rgbw(&rgbw2);
   v2.get_raw_value(raw_value2);
 
@@ -89,7 +93,7 @@ TEST_F(ChannelRgbwValueTest, gettersAndSetters) {
   rgbw1.colorBrightness = 20;
   rgbw1.onOff = 1;
   rgbw1.whiteTemperature = 5;
-  supla_channel_rgbw_value v(&rgbw1);
+  supla_channel_rgbw_value v(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, &rgbw1);
 
   int color = 0;
   char color_brightness = 0;
@@ -145,14 +149,14 @@ TEST_F(ChannelRgbwValueTest, gettersAndSetters) {
   char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
   v.get_raw_value(raw_value);
 
-  supla_channel_rgbw_value v2(raw_value);
+  supla_channel_rgbw_value v2(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, raw_value);
   EXPECT_EQ(v2.get_brightness(), 40);
   EXPECT_EQ(v2.get_color_brightness(), 60);
   EXPECT_EQ(v2.get_color(), 0x112233);
 }
 
 TEST_F(ChannelRgbwValueTest, getVbtValue) {
-  supla_channel_rgbw_value value;
+  supla_channel_rgbw_value value(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING);
 
   double vbt_value = 0;
   EXPECT_FALSE(value.get_vbt_value(var_name_none, &vbt_value));
@@ -169,6 +173,61 @@ TEST_F(ChannelRgbwValueTest, getVbtValue) {
 
   EXPECT_TRUE(value.get_vbt_value(var_name_color_brightness, &vbt_value));
   EXPECT_EQ(vbt_value, 35);
+}
+TEST_F(ChannelRgbwValueTest, templateData) {
+  supla_channel_rgbw_value value(SUPLA_CHANNELFNC_RGBLIGHTING);
+  value.set_color(0xAABBCC);
+  value.set_color_brightness(25);
+
+  auto m = value.get_template_data();
+  EXPECT_EQ(m.size(), 3);
+  EXPECT_EQ(m["color"].get<std::string>(), "0xAABBCC");
+  EXPECT_EQ(m["color_brightness"].get<int>(), 25);
+  EXPECT_TRUE(m["on"].get<bool>());
+
+  value = supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMER);
+  value.set_brightness(17);
+
+  m = value.get_template_data();
+  EXPECT_EQ(m.size(), 2);
+  EXPECT_EQ(m["brightness"].get<int>(), 17);
+  EXPECT_TRUE(m["on"].get<bool>());
+
+  value = supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMER_CCT);
+  value.set_brightness(17);
+  value.set_white_temperature(20);
+
+  m = value.get_template_data();
+  EXPECT_EQ(m.size(), 3);
+  EXPECT_EQ(m["brightness"].get<int>(), 17);
+  EXPECT_EQ(m["white_temperature"].get<int>(), 20);
+  EXPECT_TRUE(m["on"].get<bool>());
+
+  value = supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING);
+  value.set_color(0xBBAACC);
+  value.set_color_brightness(50);
+  value.set_brightness(100);
+
+  m = value.get_template_data();
+  EXPECT_EQ(m.size(), 4);
+  EXPECT_EQ(m["brightness"].get<int>(), 100);
+  EXPECT_EQ(m["color"].get<std::string>(), "0xBBAACC");
+  EXPECT_EQ(m["color_brightness"].get<int>(), 50);
+  EXPECT_TRUE(m["on"].get<bool>());
+
+  value = supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB);
+  value.set_color(0xBBAACC);
+  value.set_color_brightness(50);
+  value.set_brightness(100);
+  value.set_white_temperature(90);
+
+  m = value.get_template_data();
+  EXPECT_EQ(m.size(), 5);
+  EXPECT_EQ(m["brightness"].get<int>(), 100);
+  EXPECT_EQ(m["color"].get<std::string>(), "0xBBAACC");
+  EXPECT_EQ(m["color_brightness"].get<int>(), 50);
+  EXPECT_EQ(m["white_temperature"].get<int>(), 90);
+  EXPECT_TRUE(m["on"].get<bool>());
 }
 
 }  // namespace testing

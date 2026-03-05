@@ -22,20 +22,17 @@
 
 #include "device/value/channel_temphum_value.h"
 #include "jsonconfig/channel/temp_hum_config.h"
+#include "proto.h"
 
 namespace testing {
 
 using std::map;
 using std::string;
 
-TEST_F(ChannelTempHumValueTest, voidConstructor) {
-  supla_channel_temphum_value tempHum;
-  EXPECT_EQ(-273, tempHum.get_temperature());
-  EXPECT_EQ(-1, tempHum.get_humidity());
-}
-
 TEST_F(ChannelTempHumValueTest, temperatureAndHumidity) {
-  supla_channel_temphum_value tempHum(true, 36.6, 88);
+  supla_channel_temphum_value tempHum(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                      SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
+                                      36.6, 88);
 
   EXPECT_EQ(36.6, tempHum.get_temperature());
   EXPECT_EQ(88, tempHum.get_humidity());
@@ -43,7 +40,8 @@ TEST_F(ChannelTempHumValueTest, temperatureAndHumidity) {
 }
 
 TEST_F(ChannelTempHumValueTest, withoutHumidity) {
-  supla_channel_temphum_value tempHum(false, 36.6, 88);
+  supla_channel_temphum_value tempHum(SUPLA_CHANNELTYPE_THERMOMETER,
+                                      SUPLA_CHANNELFNC_THERMOMETER, 36.6, 88);
 
   EXPECT_EQ(36.6, tempHum.get_temperature());
   EXPECT_EQ(-1, tempHum.get_humidity());
@@ -51,7 +49,9 @@ TEST_F(ChannelTempHumValueTest, withoutHumidity) {
 }
 
 TEST_F(ChannelTempHumValueTest, outOfRange) {
-  supla_channel_temphum_value tempHum1(true, -300, -10);
+  supla_channel_temphum_value tempHum1(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                       SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
+                                       -300, -10);
 
   EXPECT_EQ(-273, tempHum1.get_temperature());
   EXPECT_EQ(-1, tempHum1.get_humidity());
@@ -73,7 +73,9 @@ TEST_F(ChannelTempHumValueTest, nativeValue) {
   n = 88800;
   memcpy(&value1[4], &n, 4);
 
-  supla_channel_temphum_value tempHum1(true, value1);
+  supla_channel_temphum_value tempHum1(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                       SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
+                                       value1);
 
   EXPECT_EQ(36.6, tempHum1.get_temperature());
   EXPECT_EQ(88.8, tempHum1.get_humidity());
@@ -89,7 +91,8 @@ TEST_F(ChannelTempHumValueTest, nativeValue) {
 
   memcpy(value1, &temp, sizeof(double));
 
-  supla_channel_temphum_value tempHum2(false, value1);
+  supla_channel_temphum_value tempHum2(SUPLA_CHANNELTYPE_THERMOMETER,
+                                       SUPLA_CHANNELFNC_THERMOMETER, value1);
 
   EXPECT_EQ(36.6, tempHum2.get_temperature());
   EXPECT_EQ(-1, tempHum2.get_humidity());
@@ -100,8 +103,12 @@ TEST_F(ChannelTempHumValueTest, nativeValue) {
 }
 
 TEST_F(ChannelTempHumValueTest, diff) {
-  supla_channel_temphum_value v1(true, 22.3345, 45.6789);
-  supla_channel_temphum_value v2(true, 22.3345, 45.6789);
+  supla_channel_temphum_value v1(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                 SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
+                                 22.3345, 45.6789);
+  supla_channel_temphum_value v2(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                 SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
+                                 22.3345, 45.6789);
 
   bool significant_change = false;
   EXPECT_FALSE(v1.is_differ(&v2, &significant_change));
@@ -135,7 +142,9 @@ TEST_F(ChannelTempHumValueTest, diff) {
 }
 
 TEST_F(ChannelTempHumValueTest, applyChannelProperties) {
-  supla_channel_temphum_value v(true, 22.331, 45.678);
+  supla_channel_temphum_value v(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 22.331,
+                                45.678);
 
   EXPECT_EQ(v.get_temperature(), 22.331);
   EXPECT_EQ(v.get_humidity(), 45.678);
@@ -162,21 +171,26 @@ TEST_F(ChannelTempHumValueTest, applyChannelProperties) {
   EXPECT_EQ(v.get_humidity(), 56.788);
 }
 
-TEST_F(ChannelTempHumValueTest, replacementMap) {
-  supla_channel_temphum_value v(true, 22.331, 45.671);
-  map<string, string> m = v.get_replacement_map();
-  EXPECT_EQ(m.size(), 2);
-  EXPECT_EQ(m["temperature"], "22.33");
-  EXPECT_EQ(m["humidity"], "45.67");
+TEST_F(ChannelTempHumValueTest, templateData) {
+  supla_channel_temphum_value v(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 22.331,
+                                45.671);
+  auto d = v.get_template_data();
+  EXPECT_EQ(d.size(), 2);
+  EXPECT_EQ(d["temperature"].get<double>(), 22.331);
+  EXPECT_EQ(d["humidity"].get<double>(), 45.671);
 
-  supla_channel_temphum_value v2(false, 10.0, 0.0);
-  m = v2.get_replacement_map();
-  EXPECT_EQ(m.size(), 1);
-  EXPECT_EQ(m["temperature"], "10.00");
+  supla_channel_temphum_value v2(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                 SUPLA_CHANNELFNC_THERMOMETER, 10.0, 0.0);
+  d = v2.get_template_data();
+  EXPECT_EQ(d.size(), 1);
+  EXPECT_EQ(d["temperature"].get<double>(), 10.00);
 }
 
 TEST_F(ChannelTempHumValueTest, getVbtValue) {
-  supla_channel_temphum_value value(true, 22.331, 45.671);
+  supla_channel_temphum_value value(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                    SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
+                                    22.331, 45.671);
 
   double vbt_value = 0;
   EXPECT_FALSE(value.get_vbt_value(var_name_none, &vbt_value));

@@ -399,7 +399,8 @@ TEST_F(MqttStateMessageProviderTest, wightSensor) {
 
 TEST_F(MqttStateMessageProviderTest, garageDoorSensor) {
   SetResultValue(SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR, true,
-                 new supla_channel_binary_sensor_value(true));
+                 new supla_channel_binary_sensor_value(
+                     SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR, true));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -415,8 +416,10 @@ TEST_F(MqttStateMessageProviderTest, garageDoorSensor) {
 }
 
 TEST_F(MqttStateMessageProviderTest, thermometer) {
-  SetResultValue(SUPLA_CHANNELFNC_THERMOMETER, true,
-                 new supla_channel_temphum_value(false, 33.0, 0.0));
+  SetResultValue(
+      SUPLA_CHANNELFNC_THERMOMETER, true,
+      new supla_channel_temphum_value(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                      SUPLA_CHANNELFNC_THERMOMETER, 33.0, 0.0));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -432,8 +435,10 @@ TEST_F(MqttStateMessageProviderTest, thermometer) {
 }
 
 TEST_F(MqttStateMessageProviderTest, humidity) {
-  SetResultValue(SUPLA_CHANNELFNC_HUMIDITY, true,
-                 new supla_channel_temphum_value(true, 0.0, 85));
+  SetResultValue(
+      SUPLA_CHANNELFNC_HUMIDITY, true,
+      new supla_channel_temphum_value(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                      SUPLA_CHANNELFNC_HUMIDITY, 0.0, 85));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -450,7 +455,9 @@ TEST_F(MqttStateMessageProviderTest, humidity) {
 
 TEST_F(MqttStateMessageProviderTest, temperatureAndHumidity) {
   SetResultValue(SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, true,
-                 new supla_channel_temphum_value(true, 21.0, 83.0));
+                 new supla_channel_temphum_value(
+                     SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                     SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 21.0, 83.0));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -475,7 +482,7 @@ TEST_F(MqttStateMessageProviderTest, dimmerOn) {
   rgbw.brightness = 99;
 
   SetResultValue(SUPLA_CHANNELFNC_DIMMER, true,
-                 new supla_channel_rgbw_value(&rgbw));
+                 new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMER, &rgbw));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -499,7 +506,7 @@ TEST_F(MqttStateMessageProviderTest, dimmerOff) {
   TRGBW_Value rgbw = {};
 
   SetResultValue(SUPLA_CHANNELFNC_DIMMER, true,
-                 new supla_channel_rgbw_value(&rgbw));
+                 new supla_channel_rgbw_value(SUPLA_CHANNELFNC_DIMMER, &rgbw));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -526,8 +533,9 @@ TEST_F(MqttStateMessageProviderTest, rgb) {
   rgbw.G = 0xBB;
   rgbw.B = 0xCC;
 
-  SetResultValue(SUPLA_CHANNELFNC_RGBLIGHTING, true,
-                 new supla_channel_rgbw_value(&rgbw));
+  SetResultValue(
+      SUPLA_CHANNELFNC_RGBLIGHTING, true,
+      new supla_channel_rgbw_value(SUPLA_CHANNELFNC_RGBLIGHTING, &rgbw));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -566,7 +574,8 @@ TEST_F(MqttStateMessageProviderTest, dimmerAndRgb) {
   rgbw.B = 0xDD;
 
   SetResultValue(SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, true,
-                 new supla_channel_rgbw_value(&rgbw));
+                 new supla_channel_rgbw_value(
+                     SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, &rgbw));
 
   ASSERT_TRUE(fetchAndCompare(&provider, "suffix", "true", false,
                               "suffix/supla/9920767494dd87196e1896c7cbab707c/"
@@ -602,8 +611,9 @@ TEST_F(MqttStateMessageProviderTest, valveOpenClose) {
   vv.closed = true;
   vv.flags = SUPLA_VALVE_FLAG_MANUALLY_CLOSED | SUPLA_VALVE_FLAG_FLOODING;
 
-  SetResultValue(SUPLA_CHANNELFNC_VALVE_OPENCLOSE, true,
-                 new supla_channel_valve_value(&vv));
+  SetResultValue(
+      SUPLA_CHANNELFNC_VALVE_OPENCLOSE, true,
+      new supla_channel_valve_value(SUPLA_CHANNELFNC_VALVE_OPENCLOSE, &vv));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -632,8 +642,9 @@ TEST_F(MqttStateMessageProviderTest, valvePercentage) {
   TValve_Value vv = {};
   vv.closed = 81;
 
-  SetResultValue(SUPLA_CHANNELFNC_VALVE_PERCENTAGE, true,
-                 new supla_channel_valve_value(&vv));
+  SetResultValue(
+      SUPLA_CHANNELFNC_VALVE_PERCENTAGE, true,
+      new supla_channel_valve_value(SUPLA_CHANNELFNC_VALVE_PERCENTAGE, &vv));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"

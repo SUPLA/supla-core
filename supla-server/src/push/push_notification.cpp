@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "helper/inja_sandbox.h"
+#include "jsonconfig/channel/temp_hum_config.h"
 
 using std::map;
 using std::string;
@@ -50,7 +51,7 @@ void supla_push_notification::set_title(const string &title) {
 }
 
 string supla_push_notification::get_title(void) {
-  return apply_replacement_map(title);
+  return apply_template_data(title);
 }
 
 void supla_push_notification::set_body(const string &body) {
@@ -58,7 +59,7 @@ void supla_push_notification::set_body(const string &body) {
 }
 
 string supla_push_notification::get_body(void) {
-  return apply_replacement_map(body);
+  return apply_template_data(body);
 }
 
 void supla_push_notification::set_localized_title(const string &title) {
@@ -66,7 +67,7 @@ void supla_push_notification::set_localized_title(const string &title) {
 }
 
 string supla_push_notification::get_localized_title(void) {
-  return apply_replacement_map(localized_title);
+  return apply_template_data(localized_title);
 }
 
 void supla_push_notification::set_localized_body(const string &body) {
@@ -74,7 +75,7 @@ void supla_push_notification::set_localized_body(const string &body) {
 }
 
 string supla_push_notification::get_localized_body(void) {
-  return apply_replacement_map(localized_body);
+  return apply_template_data(localized_body);
 }
 
 void supla_push_notification::set_localized_title_args(
@@ -99,36 +100,36 @@ void supla_push_notification::set_sound(int sound) { this->sound = sound; }
 
 int supla_push_notification::get_sound(void) { return sound; }
 
-string supla_push_notification::apply_replacement_map(string str) {
+string supla_push_notification::apply_template_data(string str) {
   try {
     supla_inja_sandbox inja;
-    str = inja.validate_and_render(str, &replacement_map);
+    str = inja.validate_and_render(str, template_data);
   } catch (const std::exception &e) {
     str = e.what();
   }
 
-  for (auto it = replacement_map.begin(); it != replacement_map.end(); ++it) {
+  for (auto &[key, value] : template_data.items()) {
     string pattern = "{";
-    pattern.append(it->first);
+    pattern.append(key);
     pattern.append("}");
 
     size_t pos = 0;
+    string v = supla_json_helper::to_string(value);
 
     while ((pos = str.find(pattern, pos)) != string::npos) {
-      str.replace(pos, pattern.length(), it->second);
-      pos += it->second.length();
+      str.replace(pos, pattern.length(), v);
+      pos += v.length();
     }
   }
 
   return str;
 }
 
-void supla_push_notification::set_replacement_map(
-    map<string, string> *replacement_map) {
-  if (replacement_map) {
-    this->replacement_map = *replacement_map;
+void supla_push_notification::set_template_data(nlohmann::json *template_data) {
+  if (template_data) {
+    this->template_data = *template_data;
   } else {
-    this->replacement_map.clear();
+    this->template_data.clear();
   }
 
   set_date_time(date_time);
@@ -137,9 +138,9 @@ void supla_push_notification::set_replacement_map(
 void supla_push_notification::set_date_time(const std::string date_time) {
   this->date_time = date_time;
   if (this->date_time.length() == 19) {
-    replacement_map["date"] = date_time.substr(0, 10);
-    replacement_map["time"] = date_time.substr(11, 8);
-    replacement_map["date_time"] = date_time;
+    template_data["date"] = date_time.substr(0, 10);
+    template_data["time"] = date_time.substr(11, 8);
+    template_data["date_time"] = date_time;
   }
 }
 

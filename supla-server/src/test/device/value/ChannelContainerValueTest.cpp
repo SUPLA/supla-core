@@ -128,4 +128,44 @@ TEST_F(ChannelContainerValueTest, soundAlarm) {
   }
 }
 
+TEST_F(ChannelContainerValueTest, templateData) {
+  TContainerChannel_Value raw = {};
+  raw.level = 10;
+  supla_channel_container_value value(&raw);
+
+  auto m = value.get_template_data();
+  EXPECT_EQ(m.size(), 7);
+  EXPECT_FALSE(m["invalid_value"].get<bool>());
+  EXPECT_FALSE(m["alarm"].get<bool>());
+  EXPECT_FALSE(m["sound_alarm_on"].get<bool>());
+  EXPECT_FALSE(m["warning"].get<bool>());
+  EXPECT_FALSE(m["invalid_sensor_state"].get<bool>());
+  EXPECT_EQ(m["level"].get<int>(), 9);
+  EXPECT_EQ(m["value"].get<int>(), 9);
+
+  raw.level = 0;
+  raw.flags =
+      CONTAINER_FLAG_SOUND_ALARM_ON | CONTAINER_FLAG_INVALID_SENSOR_STATE;
+  value = supla_channel_container_value(&raw);
+  m = value.get_template_data();
+
+  EXPECT_EQ(m.size(), 5);
+  EXPECT_TRUE(m["invalid_value"].get<bool>());
+  EXPECT_FALSE(m["alarm"].get<bool>());
+  EXPECT_TRUE(m["sound_alarm_on"].get<bool>());
+  EXPECT_FALSE(m["warning"].get<bool>());
+  EXPECT_TRUE(m["invalid_sensor_state"].get<bool>());
+
+  raw.flags = CONTAINER_FLAG_ALARM_LEVEL | CONTAINER_FLAG_WARNING_LEVEL;
+  value = supla_channel_container_value(&raw);
+  m = value.get_template_data();
+
+  EXPECT_EQ(m.size(), 5);
+  EXPECT_TRUE(m["invalid_value"].get<bool>());
+  EXPECT_TRUE(m["alarm"].get<bool>());
+  EXPECT_FALSE(m["sound_alarm_on"].get<bool>());
+  EXPECT_TRUE(m["warning"].get<bool>());
+  EXPECT_FALSE(m["invalid_sensor_state"].get<bool>());
+}
+
 }  // namespace testing

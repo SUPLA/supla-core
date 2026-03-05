@@ -38,8 +38,6 @@ class supla_inja_sandbox {
   virtual ~supla_inja_sandbox(void);
   std::string validate_and_render(const std::string& tpl,
                                   const nlohmann::json& data);
-  std::string validate_and_render(const std::string& tpl,
-                                  std::map<std::string, std::string>* data);
 };
 
 #endif /* INJA_HELPER_H_*/

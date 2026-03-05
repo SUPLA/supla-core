@@ -21,6 +21,7 @@
 
 #include <map>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <string>
 
 class supla_value_based_trigger;
@@ -28,7 +29,7 @@ class supla_vbt_condition_result {
  private:
   bool cnd_met;
   std::shared_ptr<supla_value_based_trigger> trigger;
-  std::map<std::string, std::string> replacement_map;
+  nlohmann::json template_data;
 
  public:
   explicit supla_vbt_condition_result(bool cnd_met);
@@ -37,9 +38,8 @@ class supla_vbt_condition_result {
   const std::shared_ptr<supla_value_based_trigger> &get_trigger(void);
   void set_trigger(const std::shared_ptr<supla_value_based_trigger> &trigger);
 
-  const std::map<std::string, std::string> &get_replacement_map(void);
-  void set_replacement_map(
-      const std::map<std::string, std::string> &replacement_map);
+  const nlohmann::json &get_template_data(void);
+  void set_template_data(const nlohmann::json &template_data);
 
   bool are_conditions_met(void);
 };

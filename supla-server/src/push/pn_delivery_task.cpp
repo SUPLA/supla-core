@@ -188,15 +188,16 @@ void supla_pn_delivery_task::start_delivering(const supla_caller &caller,
 }
 
 // static
-void supla_pn_delivery_task::start_delivering(
-    const supla_caller &caller, int user_id, int push_notification_id,
-    map<string, string> *replacement_map) {
+void supla_pn_delivery_task::start_delivering(const supla_caller &caller,
+                                              int user_id,
+                                              int push_notification_id,
+                                              nlohmann::json *template_data) {
   if (!push_notification_id) {
     return;
   }
   supla_push_notification *push =
       new supla_push_notification(push_notification_id);
-  push->set_replacement_map(replacement_map);
+  push->set_template_data(template_data);
 
   start_delivering(caller, user_id, push);
 }

@@ -32,6 +32,7 @@ class supla_channel_floating_point_sensor_value
   void set_value(double value);
   double get_value(void);
   static bool is_function_supported(int func);
+  virtual nlohmann::json get_template_data(void);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 

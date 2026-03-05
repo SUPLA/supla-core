@@ -48,7 +48,6 @@ class supla_abstract_channel_value : public supla_vbt_value {
                                         int param1, int param2, int param3,
                                         int param4,
                                         supla_json_config *json_config);
-  virtual std::map<std::string, std::string> get_replacement_map(void);
   virtual supla_abstract_channel_extended_value *convert2extended(
       supla_json_config *json_config, int func,
       supla_abstract_channel_extended_value **data_logger_purpose);

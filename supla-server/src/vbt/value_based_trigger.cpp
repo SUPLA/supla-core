@@ -57,7 +57,7 @@ supla_vbt_condition_result supla_value_based_trigger::are_conditions_met(
   bool cnd_met = channel_id == this->channel_id &&
                  on_change_cnd.is_condition_met(old_value, new_value);
   supla_vbt_condition_result result(cnd_met);
-  result.set_replacement_map(new_value->get_replacement_map());
+  result.set_template_data(new_value->get_template_data());
   return result;
 }
 
@@ -65,7 +65,7 @@ void supla_value_based_trigger::fire(
     const supla_caller &caller, int user_id,
     supla_abstract_action_executor *action_executor,
     supla_abstract_channel_property_getter *property_getter,
-    std::map<std::string, std::string> *replacement_map) {
+    nlohmann::json *template_data) {
   struct timeval now = {};
   gettimeofday(&now, nullptr);
 
@@ -110,7 +110,7 @@ void supla_value_based_trigger::fire(
   }
 
   action_executor->execute_action(caller, user_id, &action_config,
-                                  property_getter, replacement_map);
+                                  property_getter, template_data);
 }
 
 int supla_value_based_trigger::get_id(void) { return id; }

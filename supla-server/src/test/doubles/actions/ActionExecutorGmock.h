@@ -57,8 +57,8 @@ class ActionExecutorGmock : public supla_abstract_action_executor {
   MOCK_METHOD0(step_by_step, void(void));
   MOCK_METHOD0(enable, void(void));
   MOCK_METHOD0(disable, void(void));
-  MOCK_METHOD2(send, void(const supla_caller &caller,
-                          std::map<std::string, std::string> *replacement_map));
+  MOCK_METHOD2(send,
+               void(const supla_caller &caller, nlohmann::json *template_data));
   MOCK_METHOD0(execute, void(void));
   MOCK_METHOD0(interrupt, void(void));
   MOCK_METHOD0(interrupt_and_execute, void(void));

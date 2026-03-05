@@ -86,6 +86,15 @@ bool supla_channel_onoff_value::is_function_supported(int func) {
   return false;
 }
 
+nlohmann::json supla_channel_onoff_value::get_template_data(void) {
+  nlohmann::json result = supla_abstract_channel_value::get_template_data();
+
+  result["value"] = is_on();
+  result["on"] = is_on();
+
+  return result;
+}
+
 bool supla_channel_onoff_value::get_vbt_value(_vbt_var_name_e var_name,
                                               double *value) {
   *value = is_on() ? 1 : 0;

@@ -22,6 +22,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "actions/abstract_action_executor.h"
@@ -70,7 +71,7 @@ class ActionExecutorMock
   char command;
   char white_temperature;
   std::list<struct timeval> times;
-  std::map<std::string, std::string> replacement_map;
+  nlohmann::json template_data;
   void addTime(void);
   supla_action_hvac_setpoint_temperature *temperature;
   supla_action_hvac_setpoint_temperatures *temperatures;
@@ -80,7 +81,7 @@ class ActionExecutorMock
   ActionExecutorMock();
   virtual ~ActionExecutorMock();
   std::shared_ptr<supla_device> get_device(void);
-  std::map<std::string, std::string> get_replacement_map(void);
+  nlohmann::json get_template_data(void);
 
   virtual void set_on(bool on, unsigned long long duration_ms);
   virtual void set_color(unsigned int color);
@@ -99,8 +100,7 @@ class ActionExecutorMock
   virtual void step_by_step(void);
   virtual void enable(void);
   virtual void disable(void);
-  virtual void send(const supla_caller &caller,
-                    std::map<std::string, std::string> *replacement_map);
+  virtual void send(const supla_caller &caller, nlohmann::json *template_data);
   virtual void execute(void);
   virtual void interrupt(void);
   virtual void interrupt_and_execute(void);

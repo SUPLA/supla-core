@@ -34,6 +34,7 @@
 #include "device/value/channel_temphum_value.h"
 #include "device/value/channel_valve_value.h"
 #include "jsonconfig/json_config.h"
+#include "proto.h"
 #include "vbt/vbt_on_change_condition.h"
 
 using std::map;
@@ -1116,7 +1117,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Le) {
 }
 
 TEST_F(OnChangeConditionTest, binarySensor) {
-  supla_channel_binary_sensor_value oldv, newv;
+  supla_channel_binary_sensor_value oldv(SUPLA_CHANNELFNC_BINARY_SENSOR),
+      newv(SUPLA_CHANNELFNC_BINARY_SENSOR);
   oldv.set_hi(false);
   newv.set_hi(true);
 
@@ -1144,7 +1146,8 @@ TEST_F(OnChangeConditionTest, onoffValue) {
 }
 
 TEST_F(OnChangeConditionTest, color) {
-  supla_channel_rgbw_value oldv, newv;
+  supla_channel_rgbw_value oldv(SUPLA_CHANNELFNC_RGBLIGHTING),
+      newv(SUPLA_CHANNELFNC_RGBLIGHTING);
   newv.set_color(1234);
 
   supla_vbt_on_change_condition c;
@@ -1158,7 +1161,8 @@ TEST_F(OnChangeConditionTest, color) {
 }
 
 TEST_F(OnChangeConditionTest, colorBrightness) {
-  supla_channel_rgbw_value oldv, newv;
+  supla_channel_rgbw_value oldv(SUPLA_CHANNELFNC_RGBLIGHTING),
+      newv(SUPLA_CHANNELFNC_RGBLIGHTING);
   newv.set_color_brightness(78);
 
   supla_vbt_on_change_condition c;
@@ -1172,7 +1176,8 @@ TEST_F(OnChangeConditionTest, colorBrightness) {
 }
 
 TEST_F(OnChangeConditionTest, brightness) {
-  supla_channel_rgbw_value oldv, newv;
+  supla_channel_rgbw_value oldv(SUPLA_CHANNELFNC_DIMMER),
+      newv(SUPLA_CHANNELFNC_DIMMER);
   newv.set_brightness(5);
 
   supla_vbt_on_change_condition c;
@@ -1186,7 +1191,10 @@ TEST_F(OnChangeConditionTest, brightness) {
 }
 
 TEST_F(OnChangeConditionTest, temperature) {
-  supla_channel_temphum_value oldv, newv;
+  supla_channel_temphum_value oldv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                   SUPLA_CHANNELFNC_THERMOMETER),
+      newv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+           SUPLA_CHANNELFNC_THERMOMETER);
   oldv.set_temperature(22.0);
   newv.set_temperature(22.5);
 
@@ -1201,8 +1209,10 @@ TEST_F(OnChangeConditionTest, temperature) {
 }
 
 TEST_F(OnChangeConditionTest, humidity) {
-  supla_channel_temphum_value oldv(true, 0.0, 0.0);
-  supla_channel_temphum_value newv(true, 0.0, 45.0);
+  supla_channel_temphum_value oldv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                   SUPLA_CHANNELFNC_HUMIDITY, 0.0, 0.0);
+  supla_channel_temphum_value newv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                   SUPLA_CHANNELFNC_HUMIDITY, 0.0, 45.0);
 
   supla_vbt_on_change_condition c;
 
@@ -1845,7 +1855,10 @@ TEST_F(OnChangeConditionTest, icCalculatedValue) {
 }
 
 TEST_F(OnChangeConditionTest, withoutPausing) {
-  supla_channel_temphum_value oldv, newv;
+  supla_channel_temphum_value oldv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                   SUPLA_CHANNELFNC_THERMOMETER),
+      newv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+           SUPLA_CHANNELFNC_THERMOMETER);
   supla_vbt_on_change_condition c;
 
   cJSON *json =
@@ -1863,7 +1876,10 @@ TEST_F(OnChangeConditionTest, withoutPausing) {
 }
 
 TEST_F(OnChangeConditionTest, resume) {
-  supla_channel_temphum_value oldv, newv;
+  supla_channel_temphum_value oldv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                   SUPLA_CHANNELFNC_THERMOMETER),
+      newv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+           SUPLA_CHANNELFNC_THERMOMETER);
   supla_vbt_on_change_condition c;
 
   cJSON *json = cJSON_Parse(
@@ -1889,7 +1905,10 @@ TEST_F(OnChangeConditionTest, resume) {
 }
 
 TEST_F(OnChangeConditionTest, resume_AnotherCase) {
-  supla_channel_temphum_value oldv, newv;
+  supla_channel_temphum_value oldv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                   SUPLA_CHANNELFNC_THERMOMETER),
+      newv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+           SUPLA_CHANNELFNC_THERMOMETER);
   supla_vbt_on_change_condition c;
 
   cJSON *json = cJSON_Parse(
@@ -1941,7 +1960,10 @@ TEST_F(OnChangeConditionTest, floatingPointValueChanged) {
 }
 
 TEST_F(OnChangeConditionTest, temperatureChanged) {
-  supla_channel_temphum_value oldv, newv;
+  supla_channel_temphum_value oldv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                   SUPLA_CHANNELFNC_THERMOMETER),
+      newv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+           SUPLA_CHANNELFNC_THERMOMETER);
   oldv.set_temperature(22.5);
   newv.set_temperature(22.5);
 

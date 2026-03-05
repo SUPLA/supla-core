@@ -172,11 +172,11 @@ void supla_action_executor::disable(void) {
 }
 
 void supla_action_executor::send(const supla_caller &caller,
-                                 map<string, string> *replacement_map) {
+                                 nlohmann::json *template_data) {
   if (get_user()) {
     supla_pn_delivery_task::start_delivering(caller, get_user()->getUserID(),
                                              get_push_notification_id(),
-                                             replacement_map);
+                                             template_data);
   }
 }
 

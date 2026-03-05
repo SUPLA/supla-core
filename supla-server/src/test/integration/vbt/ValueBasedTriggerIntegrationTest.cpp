@@ -26,6 +26,7 @@
 #include "device/value/channel_temphum_value.h"
 #include "doubles/actions/ActionExecutorMock.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
+#include "proto.h"
 #include "vbt/value_based_triggers.h"
 
 using std::map;
@@ -363,7 +364,11 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel158) {
   supla_value_based_triggers triggers(user);
   triggers.load();
 
-  supla_channel_temphum_value oldv(true, 25.15, 49), newv(true, 25.15, 50);
+  supla_channel_temphum_value oldv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                                   SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
+                                   25.15, 49),
+      newv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+           SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 25.15, 50);
 
   ActionExecutorMock actionExecutor;
   ChannelPropertyGetterMock propertyGetter;
@@ -374,10 +379,10 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel158) {
   EXPECT_EQ(actionExecutor.get_push_notification_id(), 500);
   EXPECT_EQ(actionExecutor.getSentCounter(), 1);
 
-  map<string, string> m = actionExecutor.get_replacement_map();
+  auto m = actionExecutor.get_template_data();
   EXPECT_EQ(m.size(), 2);
-  EXPECT_EQ(m["temperature"], "25.15");
-  EXPECT_EQ(m["humidity"], "50.00");
+  EXPECT_EQ(m["temperature"].get<double>(), 25.15);
+  EXPECT_EQ(m["humidity"].get<double>(), 50.00);
 }
 
 } /* namespace testing */

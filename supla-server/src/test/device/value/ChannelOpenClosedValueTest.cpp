@@ -55,4 +55,25 @@ TEST_F(ChannelOpenClosedValueTest, setterAndGetter) {
   EXPECT_EQ(raw_value[0], 1);
 }
 
+TEST_F(ChannelOpenClosedValueTest, templateData) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  supla_channel_openclosed_value value;
+  value.get_raw_value(raw_value);
+
+  auto m = value.get_template_data();
+  EXPECT_EQ(m.size(), 3);
+  EXPECT_FALSE(m["value"].get<bool>());
+  EXPECT_TRUE(m["open"].get<bool>());
+  EXPECT_FALSE(m["closed"].get<bool>());
+
+  value.set_closed(true);
+  value.get_raw_value(raw_value);
+
+  m = value.get_template_data();
+  EXPECT_EQ(m.size(), 3);
+  EXPECT_TRUE(m["value"].get<bool>());
+  EXPECT_FALSE(m["open"].get<bool>());
+  EXPECT_TRUE(m["closed"].get<bool>());
+}
+
 }  // namespace testing

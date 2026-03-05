@@ -45,6 +45,16 @@ bool supla_channel_openclosed_value::is_closed(void) {
   return raw_value[0] > 0;
 }
 
+nlohmann::json supla_channel_openclosed_value::get_template_data(void) {
+  nlohmann::json result = supla_abstract_channel_value::get_template_data();
+
+  result["value"] = is_closed();
+  result["open"] = !is_closed();
+  result["closed"] = is_closed();
+
+  return result;
+}
+
 bool supla_channel_openclosed_value::is_function_supported(int func) {
   switch (func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:

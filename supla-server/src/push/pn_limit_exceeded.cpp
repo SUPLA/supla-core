@@ -53,5 +53,5 @@ void supla_pn_limit_exceeded::set_localized_body_args(
 
 void supla_pn_limit_exceeded::set_sound(int sound) {}
 
-void supla_pn_limit_exceeded::set_replacement_map(
-    map<string, string> *replacement_map) {}
+void supla_pn_limit_exceeded::set_template_data(nlohmann::json *template_data) {
+}

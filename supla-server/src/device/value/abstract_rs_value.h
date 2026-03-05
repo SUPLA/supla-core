@@ -16,22 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_OPENCLOSED_VALUE_H_
-#define CHANNEL_OPENCLOSED_VALUE_H_
+#ifndef ABSTRACT_RS_VALUE_H_
+#define ABSTRACT_RS_VALUE_H_
 
 #include "device/value/abstract_channel_value.h"
+#include "user/user.h"
 
-class supla_channel_openclosed_value : public supla_abstract_channel_value {
+class supla_abstract_rs_value : public supla_abstract_channel_value {
  public:
-  supla_channel_openclosed_value(void);
-  explicit supla_channel_openclosed_value(
+  supla_abstract_rs_value(void);
+  explicit supla_abstract_rs_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  explicit supla_channel_openclosed_value(bool closed);
-  virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
-  void set_closed(bool closed);
-  bool is_closed(void);
-  static bool is_function_supported(int func);
+
+  bool is_calibration_failed(void);
+  bool is_calibration_lost(void);
+  bool is_motor_problem(void);
+  bool is_calibration_in_progress(void);
+  bool is_any_error_set(void);
+  virtual char get_position(void) = 0;
+  virtual _supla_int16_t get_flags(void) = 0;
+  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
   virtual nlohmann::json get_template_data(void);
 };
 
-#endif /*CHANNEL_OPENCLOSED_VALUE_H_*/
+#endif /*ABSTRACT_RS_VALUE_H_*/

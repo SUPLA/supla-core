@@ -19,17 +19,16 @@
 #include "channel_fb_value.h"
 
 #include "jsonconfig/channel/facade_blind_config.h"
-#include "log.h"
 
 using std::shared_ptr;
 
 supla_channel_fb_value::supla_channel_fb_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_abstract_channel_value(raw_value) {}
+    : supla_abstract_rs_value(raw_value) {}
 
 supla_channel_fb_value::supla_channel_fb_value(
     const TDSC_FacadeBlindValue *value)
-    : supla_abstract_channel_value() {
+    : supla_abstract_rs_value() {
   memcpy(raw_value, value, sizeof(TDSC_FacadeBlindValue));
 }
 
@@ -53,6 +52,10 @@ char supla_channel_fb_value::get_position(void) {
 
 char supla_channel_fb_value::get_tilt(void) {
   return ((TDSC_FacadeBlindValue *)raw_value)->tilt;
+}
+
+_supla_int16_t supla_channel_fb_value::get_flags(void) {
+  return ((TDSC_FacadeBlindValue *)raw_value)->flags;
 }
 
 double supla_channel_fb_value::get_tilt_angle(supla_json_config *config) {
@@ -88,33 +91,13 @@ bool supla_channel_fb_value::is_function_supported(int func) {
   return false;
 }
 
-bool supla_channel_fb_value::get_vbt_value(_vbt_var_name_e var_name,
-                                           double *value) {
-  switch (var_name) {
-    case var_name_calibration_failed:
-      *value = get_fb_value()->flags & RS_VALUE_FLAG_CALIBRATION_FAILED ? 1 : 0;
-      break;
-    case var_name_calibration_lost:
-      *value = get_fb_value()->flags & RS_VALUE_FLAG_CALIBRATION_LOST ? 1 : 0;
-      break;
-    case var_name_motor_problem:
-      *value = get_fb_value()->flags & RS_VALUE_FLAG_MOTOR_PROBLEM ? 1 : 0;
-      break;
-    case var_name_calibration_in_progress:
-      *value =
-          get_fb_value()->flags & RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS ? 1 : 0;
-      break;
-    case var_name_is_any_error_set:
-      *value = ((get_fb_value()->flags & RS_VALUE_FLAG_CALIBRATION_FAILED) ||
-                (get_fb_value()->flags & RS_VALUE_FLAG_CALIBRATION_LOST) ||
-                (get_fb_value()->flags & RS_VALUE_FLAG_MOTOR_PROBLEM))
-                   ? 1
-                   : 0;
-      break;
-    default:
-      *value = get_fb_value()->position;
-      break;
+nlohmann::json supla_channel_fb_value::get_template_data(void) {
+  nlohmann::json result = supla_abstract_rs_value::get_template_data();
+
+  int i = get_tilt();
+  if (i >= 0 && i <= 100) {
+    result["tilt"] = i;
   }
 
-  return true;
+  return result;
 }

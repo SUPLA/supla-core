@@ -21,6 +21,7 @@
 
 #include <map>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "abstract_action_config.h"
@@ -85,22 +86,21 @@ class supla_abstract_action_executor {
   void execute_action(const supla_caller &caller, int user_id,
                       abstract_action_config *config,
                       supla_abstract_channel_property_getter *property_getter,
-                      std::map<std::string, std::string> *replacement_map);
+                      nlohmann::json *template_data);
 
   void execute_action(const supla_caller &caller, int user_id, int action_id,
                       _subjectType_e subject_type, int subject_id,
                       supla_abstract_channel_property_getter *property_getter,
                       supla_abstract_action_parameters *params,
                       int source_device_id, int source_channel_id, int cap,
-                      std::map<std::string, std::string> *replacement_map);
+                      nlohmann::json *template_data);
 
   void execute_action(const supla_caller &caller, int user_id, int action_id,
                       _subjectType_e subject_type, int subject_id,
                       supla_abstract_channel_property_getter *property_getter,
                       supla_abstract_action_parameters *params,
                       int source_device_id, int source_channel_id, int cap,
-                      std::map<std::string, std::string> *replacement_map,
-                      const char *alexa_correlation_token,
+                      nlohmann::json *vars, const char *alexa_correlation_token,
                       const char *google_request_id);
 
   virtual void set_on(bool on, unsigned long long duration_ms) = 0;
@@ -121,7 +121,7 @@ class supla_abstract_action_executor {
   virtual void enable(void) = 0;
   virtual void disable(void) = 0;
   virtual void send(const supla_caller &caller,
-                    std::map<std::string, std::string> *replacement_map) = 0;
+                    nlohmann::json *template_data) = 0;
   virtual void execute(void) = 0;
   virtual void interrupt(void) = 0;
   virtual void interrupt_and_execute(void) = 0;

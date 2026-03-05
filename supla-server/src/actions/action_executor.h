@@ -21,6 +21,7 @@
 
 #include <functional>
 #include <map>
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "actions/abstract_action_executor.h"
@@ -45,7 +46,7 @@ class supla_action_executor : public supla_abstract_action_executor {
   virtual void enable(void);
   virtual void disable(void);
   virtual void send(const supla_caller &caller,
-                    std::map<std::string, std::string> *replacement_map);
+                    nlohmann::json *template_fields);
   virtual void stop(void);
   virtual void up(void);
   virtual void down(void);

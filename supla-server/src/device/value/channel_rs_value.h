@@ -19,12 +19,12 @@
 #ifndef CHANNEL_RS_VALUE_H_
 #define CHANNEL_RS_VALUE_H_
 
-#include "device/value/abstract_channel_value.h"
+#include "device/value/abstract_rs_value.h"
 #include "user/user.h"
 
 enum _rs_sensor_level_enum { rsl_unknown, rsl_closed, rsl_open };
 
-class supla_channel_rs_value : public supla_abstract_channel_value {
+class supla_channel_rs_value : public supla_abstract_rs_value {
  private:
   _rs_sensor_level_enum opening_sensor_level;
 
@@ -43,8 +43,9 @@ class supla_channel_rs_value : public supla_abstract_channel_value {
                                         int param1, int param2, int param3,
                                         int param4,
                                         supla_json_config *json_config);
+  virtual char get_position(void);
+  virtual _supla_int16_t get_flags(void);
   static bool is_function_supported(int func);
-  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 
 #endif /*CHANNEL_RS_VALUE_H_*/

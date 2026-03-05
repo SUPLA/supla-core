@@ -146,4 +146,49 @@ TEST_F(ChannelFbValueTest, getVbtValue) {
   EXPECT_EQ(vbt_value, 0);
 }
 
+TEST_F(ChannelFbValueTest, templateData) {
+  TDSC_FacadeBlindValue raw = {};
+  raw.position = 55;
+  raw.tilt = 17;
+
+  supla_channel_fb_value value(&raw);
+
+  auto m = value.get_template_data();
+  EXPECT_EQ(m.size(), 9);
+  EXPECT_FALSE(m["calibration_failed"].get<bool>());
+  EXPECT_FALSE(m["calibration_lost"].get<bool>());
+  EXPECT_FALSE(m["motor_problem"].get<bool>());
+  EXPECT_FALSE(m["calibration_in_progress"].get<bool>());
+  EXPECT_FALSE(m["any_error_set"].get<bool>());
+  EXPECT_TRUE(m["open"].get<bool>());
+  EXPECT_FALSE(m["closed"].get<bool>());
+  EXPECT_EQ(m["shut"].get<int>(), 55);
+  EXPECT_EQ(m["tilt"].get<int>(), 17);
+
+  raw.position = -1;
+  raw.flags = RS_VALUE_FLAG_CALIBRATION_FAILED | RS_VALUE_FLAG_MOTOR_PROBLEM;
+  value = supla_channel_fb_value(&raw);
+
+  m = value.get_template_data();
+  EXPECT_EQ(m.size(), 6);
+  EXPECT_TRUE(m["calibration_failed"].get<bool>());
+  EXPECT_FALSE(m["calibration_lost"].get<bool>());
+  EXPECT_TRUE(m["motor_problem"].get<bool>());
+  EXPECT_FALSE(m["calibration_in_progress"].get<bool>());
+  EXPECT_TRUE(m["any_error_set"].get<bool>());
+
+  raw.tilt = -1;
+  raw.flags =
+      RS_VALUE_FLAG_CALIBRATION_LOST | RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS;
+  value = supla_channel_fb_value(&raw);
+
+  m = value.get_template_data();
+  EXPECT_EQ(m.size(), 5);
+  EXPECT_FALSE(m["calibration_failed"].get<bool>());
+  EXPECT_TRUE(m["calibration_lost"].get<bool>());
+  EXPECT_FALSE(m["motor_problem"].get<bool>());
+  EXPECT_TRUE(m["calibration_in_progress"].get<bool>());
+  EXPECT_TRUE(m["any_error_set"].get<bool>());
+}
+
 }  // namespace testing

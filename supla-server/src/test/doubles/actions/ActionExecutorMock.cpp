@@ -46,8 +46,8 @@ shared_ptr<supla_device> ActionExecutorMock::get_device(void) {
   return supla_abstract_action_executor::get_device();
 }
 
-map<string, string> ActionExecutorMock::get_replacement_map(void) {
-  return replacement_map;
+nlohmann::json ActionExecutorMock::get_template_data(void) {
+  return template_data;
 }
 
 void ActionExecutorMock::clear(void) {
@@ -239,13 +239,12 @@ void ActionExecutorMock::disable(void) {
   disable_counter++;
 }
 
-void ActionExecutorMock::send(
-    const supla_caller &caller,
-    std::map<std::string, std::string> *replacement_map) {
+void ActionExecutorMock::send(const supla_caller &caller,
+                              nlohmann::json *template_data) {
   addTime();
   sent_counter++;
-  if (replacement_map) {
-    this->replacement_map = *replacement_map;
+  if (template_data) {
+    this->template_data = *template_data;
   }
 }
 

@@ -67,6 +67,13 @@ bool supla_channel_floating_point_sensor_value::is_function_supported(
   return false;
 }
 
+nlohmann::json supla_channel_floating_point_sensor_value::get_template_data(
+    void) {
+  nlohmann::json result = supla_abstract_channel_value::get_template_data();
+  result["value"] = get_value();
+  return result;
+}
+
 bool supla_channel_floating_point_sensor_value::get_vbt_value(
     _vbt_var_name_e var_name, double *value) {
   *value = get_value();
