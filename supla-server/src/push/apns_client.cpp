@@ -22,6 +22,7 @@
 #include <string>
 
 #include "cJSON.h"
+#include "exception/abort_exception.h"
 #include "log.h"
 
 using std::list;
@@ -39,24 +40,28 @@ supla_apns_client::~supla_apns_client(void) {}
 _platform_e supla_apns_client::get_platform(void) { return platform_push_ios; }
 
 char *supla_apns_client::get_payload(supla_pn_recipient *recipient) {
+  // This block may raise an abort_exception exception.
+  string title = get_push_notification()->get_title();
+  string body = get_push_notification()->get_body();
+  string localized_title = get_push_notification()->get_localized_title();
+  string localized_body = get_push_notification()->get_localized_body();
+  validate_body(body, localized_body);
+  // -----------
+
   cJSON *payload = cJSON_CreateObject();
   cJSON *aps = cJSON_CreateObject();
   cJSON *alert = cJSON_CreateObject();
 
-  if (!get_push_notification()->get_title().empty()) {
-    cJSON_AddStringToObject(alert, "title",
-                            get_push_notification()->get_title().c_str());
+  if (!title.empty()) {
+    cJSON_AddStringToObject(alert, "title", title.c_str());
   }
 
-  if (!get_push_notification()->get_body().empty()) {
-    cJSON_AddStringToObject(alert, "body",
-                            get_push_notification()->get_body().c_str());
+  if (!body.empty()) {
+    cJSON_AddStringToObject(alert, "body", body.c_str());
   }
 
-  if (!get_push_notification()->get_localized_title().empty()) {
-    cJSON_AddStringToObject(
-        alert, "title-loc-key",
-        get_push_notification()->get_localized_title().c_str());
+  if (!localized_title.empty()) {
+    cJSON_AddStringToObject(alert, "title-loc-key", localized_title.c_str());
   }
 
   if (get_push_notification()->get_localized_title_args().size()) {
@@ -64,10 +69,8 @@ char *supla_apns_client::get_payload(supla_pn_recipient *recipient) {
              "title-loc-args", alert, false);
   }
 
-  if (!get_push_notification()->get_localized_body().empty()) {
-    cJSON_AddStringToObject(
-        alert, "loc-key",
-        get_push_notification()->get_localized_body().c_str());
+  if (!localized_body.empty()) {
+    cJSON_AddStringToObject(alert, "loc-key", localized_body.c_str());
   }
 
   if (get_push_notification()->get_localized_body_args().size()) {

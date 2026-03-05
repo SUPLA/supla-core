@@ -21,6 +21,8 @@
 #include <regex>
 #include <stdexcept>
 
+#include "exception/abort_exception.h"
+
 using std::move;
 using std::regex;
 using std::regex_search;
@@ -87,4 +89,10 @@ string supla_inja_sandbox::validate_and_render(const string& tpl,
   }
 
   return out;
+}
+
+void supla_inja_sandbox::add_abort_function(void) {
+  env.add_callback("abort", 0, [](inja::Arguments& args) -> inja::json {
+    throw abort_exception("Render aborted.");
+  });
 }

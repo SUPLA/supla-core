@@ -22,6 +22,7 @@
 #include <string>
 
 #include "cJSON.h"
+#include "exception/abort_exception.h"
 #include "log.h"
 #include "svrcfg.h"
 
@@ -43,6 +44,19 @@ _platform_e supla_fcm_client::get_platform(void) {
 }
 
 char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
+  // This block may raise an abort_exception exception.
+  string title = get_push_notification()->get_title();
+  string body = get_push_notification()->get_body();
+  string localized_title = get_push_notification()->get_localized_title();
+  string localized_body = get_push_notification()->get_localized_body();
+
+  validate_body(body, localized_body);
+  // -----------
+
+  if (body.empty() && localized_body.empty()) {
+    throw abort_exception("Message body is empty.");
+  }
+
   cJSON *root = cJSON_CreateObject();
   cJSON *message = cJSON_CreateObject();
   cJSON_AddItemToObject(root, "message", message);
@@ -79,20 +93,17 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
     cJSON_AddItemToObject(android, "notification", notification);
   }
 
-  if (!get_push_notification()->get_title().empty()) {
-    cJSON_AddStringToObject(notification, "title",
-                            get_push_notification()->get_title().c_str());
+  if (!title.empty()) {
+    cJSON_AddStringToObject(notification, "title", title.c_str());
   }
 
-  if (!get_push_notification()->get_body().empty()) {
-    cJSON_AddStringToObject(notification, "body",
-                            get_push_notification()->get_body().c_str());
+  if (!body.empty()) {
+    cJSON_AddStringToObject(notification, "body", body.c_str());
   }
 
-  if (!get_push_notification()->get_localized_title().empty()) {
-    cJSON_AddStringToObject(
-        notification, "title_loc_key",
-        get_push_notification()->get_localized_title().c_str());
+  if (!localized_title.empty()) {
+    cJSON_AddStringToObject(notification, "title_loc_key",
+                            localized_title.c_str());
   }
 
   if (get_push_notification()->get_localized_title_args().size()) {
@@ -100,10 +111,9 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
              ge23 ? "title_loc_arg" : "title_loc_args", notification, ge23);
   }
 
-  if (!get_push_notification()->get_localized_body().empty()) {
-    cJSON_AddStringToObject(
-        notification, "body_loc_key",
-        get_push_notification()->get_localized_body().c_str());
+  if (!localized_body.empty()) {
+    cJSON_AddStringToObject(notification, "body_loc_key",
+                            localized_body.c_str());
   }
 
   if (get_push_notification()->get_localized_body_args().size()) {

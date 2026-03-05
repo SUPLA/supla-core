@@ -22,10 +22,10 @@
 #include <string>
 #include <vector>
 
+#include "cJSON.h"
 #include "caller.h"
 #include "http/abstract_curl_adapter.h"
 #include "http/remote_gateway_access_token_provider.h"
-#include "cJSON.h"
 #include "push/push_notification.h"
 
 class supla_abstract_pn_gateway_client {
@@ -46,6 +46,9 @@ class supla_abstract_pn_gateway_client {
   virtual bool _send(supla_remote_gateway_access_token *token,
                      supla_pn_recipient *recipient) = 0;
   const supla_caller &get_caller(void);
+  void validate_body(
+      const std::string &body,
+      const std::string &localized_body);  // throws abort_exception
 
  public:
   supla_abstract_pn_gateway_client(

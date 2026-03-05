@@ -24,6 +24,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "exception/abort_exception.h"
+
 namespace testing {
 
 using std::runtime_error;
@@ -109,6 +111,29 @@ TEST_F(InjaSandboxTest, exceededOutputSize) {
   } catch (const std::runtime_error& e) {
     EXPECT_EQ(std::string("Template execution exceeded allowed output size."),
               e.what());
+  }
+}
+
+TEST_F(InjaSandboxTest, abortFunction) {
+  nlohmann::json data;
+  std::string tmpl = "{{ abort() }}";
+
+  try {
+    sandbox.validate_and_render(tmpl, data);
+    FAIL() << "Expected exception";
+  } catch (const std::exception& e) {
+    EXPECT_EQ(
+        std::string(
+            "[inja.exception.parser_error] (at 1:10) unknown function abort"),
+        e.what());
+  }
+
+  try {
+    sandbox.add_abort_function();
+    sandbox.validate_and_render(tmpl, data);
+    FAIL() << "Expected abort_exception";
+  } catch (const abort_exception& e) {
+    EXPECT_EQ(std::string("Render aborted."), e.what());
   }
 }
 

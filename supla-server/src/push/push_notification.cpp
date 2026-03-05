@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "exception/abort_exception.h"
 #include "helper/inja_sandbox.h"
 #include "jsonconfig/channel/temp_hum_config.h"
 
@@ -103,8 +104,12 @@ int supla_push_notification::get_sound(void) { return sound; }
 string supla_push_notification::apply_template_data(string str) {
   try {
     supla_inja_sandbox inja;
+    inja.add_abort_function();
     str = inja.validate_and_render(str, template_data);
   } catch (const std::exception &e) {
+    if (dynamic_cast<const abort_exception *>(&e)) {
+      throw;
+    }
     str = e.what();
   }
 
