@@ -46,6 +46,8 @@ class supla_channel_availability_status : public supla_vbt_value {
 
   void set_offline(bool offline);
 
+  nlohmann::json get_template_data(void);
+
   bool operator==(const supla_channel_availability_status &status) const;
   bool operator!=(const supla_channel_availability_status &status) const;
 };

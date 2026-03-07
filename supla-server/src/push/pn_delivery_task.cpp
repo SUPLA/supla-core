@@ -21,6 +21,7 @@
 #include <string>
 
 #include "asynctask/asynctask_queue.h"
+#include "device/channel_property_getter.h"
 #include "log.h"
 #include "push/apns_client.h"
 #include "push/fcm_client.h"
@@ -41,6 +42,9 @@ supla_pn_delivery_task::supla_pn_delivery_task(
     : supla_asynctask_http_request(caller, user_id, 0, 0, queue, pool,
                                    nullptr) {
   this->push = push;
+  if (!push->is_getter_set()) {
+    push->set_getter(new supla_channel_property_getter(user_id, 0, 0));
+  }
   this->token_provider = token_provider;
   this->throttling = throttling;
   dba = nullptr;

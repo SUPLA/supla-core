@@ -32,14 +32,20 @@ using std::vector;
 supla_push_notification::supla_push_notification(void) {
   id = 0;
   sound = 0;
+  getter = nullptr;
 }
 
 supla_push_notification::supla_push_notification(int id) {
   this->id = id;
   sound = 0;
+  getter = nullptr;
 }
 
-supla_push_notification::~supla_push_notification(void) {}
+supla_push_notification::~supla_push_notification(void) {
+  if (getter) {
+    delete getter;
+  }
+}
 
 int supla_push_notification::get_id(void) { return id; }
 
@@ -104,7 +110,11 @@ int supla_push_notification::get_sound(void) { return sound; }
 string supla_push_notification::apply_template_data(string str) {
   try {
     supla_inja_sandbox inja;
-    inja.add_abort_function();
+    inja.register_abort_function();
+    if (getter) {
+      inja.register_get_channel_function(getter);
+    }
+
     str = inja.validate_and_render(str, template_data);
   } catch (const std::exception &e) {
     if (dynamic_cast<const abort_exception *>(&e)) {
@@ -210,3 +220,14 @@ bool supla_push_notification::apply_json(int user_id, const char *json) {
 
   return result;
 }
+
+void supla_push_notification::set_getter(
+    supla_abstract_channel_property_getter *getter) {
+  if (this->getter) {
+    delete this->getter;
+  }
+
+  this->getter = getter;
+}
+
+bool supla_push_notification::is_getter_set(void) { return getter; }

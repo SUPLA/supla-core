@@ -23,8 +23,11 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
+#include "device/abstract_channel_property_getter.h"
+
 class supla_inja_sandbox {
  private:
+  supla_abstract_channel_property_getter* getter;
   inja::Environment env;
   int max_blocks;
   int max_ifs;
@@ -36,7 +39,9 @@ class supla_inja_sandbox {
  public:
   supla_inja_sandbox(void);
   virtual ~supla_inja_sandbox(void);
-  void add_abort_function(void);
+  void register_abort_function(void);
+  void register_get_channel_function(
+      supla_abstract_channel_property_getter* getter);
   std::string validate_and_render(const std::string& tpl,
                                   const nlohmann::json& data);
 };

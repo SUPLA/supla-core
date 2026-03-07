@@ -25,6 +25,14 @@
 
 using std::shared_ptr;
 
+supla_channel_property_getter::supla_channel_property_getter()
+    : supla_abstract_channel_property_getter() {}
+
+supla_channel_property_getter::supla_channel_property_getter(int user_id,
+                                                             int device_id,
+                                                             int channel_id)
+    : supla_abstract_channel_property_getter(user_id, device_id, channel_id) {}
+
 supla_channel_property_getter::~supla_channel_property_getter(void) {}
 
 supla_abstract_channel_value *supla_channel_property_getter::_get_value(

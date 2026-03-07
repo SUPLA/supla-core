@@ -39,6 +39,8 @@ class supla_channel_property_getter
                               unsigned char channel_number);
 
  public:
+  supla_channel_property_getter();
+  supla_channel_property_getter(int user_id, int device_id, int channel_id);
   virtual ~supla_channel_property_getter(void);
 
   virtual supla_channel_availability_status get_channel_availability_status(

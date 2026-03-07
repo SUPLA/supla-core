@@ -21,6 +21,8 @@
 #include <regex>
 #include <stdexcept>
 
+#include "device/extended_value/channel_em_extended_value.h"
+#include "device/extended_value/channel_ic_extended_value.h"
 #include "exception/abort_exception.h"
 
 using std::move;
@@ -30,6 +32,7 @@ using std::runtime_error;
 using std::string;
 
 supla_inja_sandbox::supla_inja_sandbox(void) {
+  getter = nullptr;
   max_blocks = 20;
   max_ifs = 15;
   allow_for = false;
@@ -91,8 +94,45 @@ string supla_inja_sandbox::validate_and_render(const string& tpl,
   return out;
 }
 
-void supla_inja_sandbox::add_abort_function(void) {
+void supla_inja_sandbox::register_abort_function(void) {
   env.add_callback("abort", 0, [](inja::Arguments& args) -> inja::json {
     throw abort_exception("Render aborted.");
   });
+}
+
+void supla_inja_sandbox::register_get_channel_function(
+    supla_abstract_channel_property_getter* getter) {
+  this->getter = getter;
+
+  env.add_callback(
+      "getChannel", 1, [this](inja::Arguments& args) -> inja::json {
+        int channel_id = args.at(0)->get<int>();
+        supla_channel_availability_status status;
+        int func = 0;
+        supla_abstract_channel_value* value = this->getter->get_value(
+            this->getter->get_user_id(), 0, channel_id, &func, &status);
+
+        nlohmann::json result;
+        result = status.get_template_data();
+
+        if (value) {
+          if (supla_channel_ic_extended_value::is_function_supported(func) ||
+              supla_channel_em_extended_value::is_function_supported(func)) {
+            delete value;
+            supla_abstract_channel_extended_value* extended_value =
+                this->getter->get_extended_value(this->getter->get_user_id(), 0,
+                                                 channel_id);
+
+            if (extended_value) {
+              result.update(extended_value->get_template_data());
+              delete extended_value;
+            }
+          } else {
+            result.update(value->get_template_data());
+            delete value;
+          }
+        }
+
+        return result;
+      });
 }

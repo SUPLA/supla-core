@@ -106,6 +106,13 @@ void supla_channel_availability_status::set_proto_offline(char offline) {
   }
 }
 
+nlohmann::json supla_channel_availability_status::get_template_data(void) {
+  nlohmann::json result;
+  result["connected"] = is_online() || is_online_but_not_available() ||
+                        is_firmware_update_ongoing();
+  return result;
+}
+
 void supla_channel_availability_status::set_offline(bool offline) {
   proto_offline = offline ? SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE
                           : SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE;

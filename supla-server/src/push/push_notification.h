@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "cJSON.h"
+#include "device/abstract_channel_property_getter.h"
 #include "push/pn_recipients.h"
 
 class supla_push_notification {
@@ -39,6 +40,7 @@ class supla_push_notification {
   std::vector<std::string> localized_body_args;
   int sound;
   supla_pn_recipients recipients;
+  supla_abstract_channel_property_getter *getter;
   nlohmann::json template_data;
   std::string apply_template_data(std::string str);
 
@@ -71,6 +73,8 @@ class supla_push_notification {
   virtual void set_template_data(nlohmann::json *template_data);
   virtual bool apply_json(int user_id, cJSON *json);
   virtual bool apply_json(int user_id, const char *json);
+  void set_getter(supla_abstract_channel_property_getter *getter);
+  bool is_getter_set(void);
 };
 
 #endif /* PUSH_NOTIFICATION_H_ */
