@@ -2,15 +2,8 @@
 
 vg_verify() {
    valgrind --version
-   valgrind --tool=memcheck --leak-check=full --track-origins=no $1 2> vg-test.log 
-   cat ./vg-test.log
-   if ! grep "All heap blocks were freed -- no leaks are possible" ./vg-test.log; then
-     rm ./vg-test.log
-     echo "Memory leak error!"
-     exit 1
-   fi
-   
-   rm -f ./vg-test.log
+   valgrind --tool=memcheck --leak-check=full --track-origins=no --errors-for-leak-kinds=definite,indirect,possible --error-exitcode=1 "$@"
+   return $?
 }
 
 db_init() {
