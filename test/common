@@ -2,13 +2,14 @@
 
 vg_verify() {
    valgrind --version
-   valgrind --tool=memcheck --leak-check=full --track-origins=no --errors-for-leak-kinds=definite,indirect,possible --error-exitcode=1 "$@"
+   valgrind --tool=memcheck --leak-check=full --track-origins=no --errors-for-leak-kinds=definite,indirect,possible --error-exitcode=1 $1
    return $?
 }
 
 db_init() {
-   if ! (echo "" | mysql -u supla -h $DBHOST) 2> /dev/null; then
-      if ! mysql -u root -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
+   PARAMS="--ssl=0 -u supla -h $DBHOST"
+   if ! (echo "" | mysql $PARAMS) 2> /dev/null; then
+      if ! mysql $PARAMS < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
          if ! mysql -u root -proot -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
          echo "Enter mariadb root password.";
          mysql -u root -h $DBHOST -p < sql/CreateSqlUsersForTestPurposes.sql
@@ -16,6 +17,6 @@ db_init() {
       fi
    fi
 
-   mysql -u supla -h $DBHOST < sql/RecreateTestDatabase.sql
-   mysql -u supla -h $DBHOST supla_test < sql/TestDatabaseStructureAndData.sql
+   mysql $PARAMS < sql/RecreateTestDatabase.sql
+   mysql $PARAMS supla_test < sql/TestDatabaseStructureAndData.sql
 }
