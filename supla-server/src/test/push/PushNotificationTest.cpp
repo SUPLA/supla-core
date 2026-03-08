@@ -285,16 +285,16 @@ TEST_F(PushNotificationTest, injaException) {
 
 TEST_F(PushNotificationTest, trim) {
   supla_push_notification n;
-  n.set_title(" 	t 	");
+  n.set_title(" 	t 	");  // NOLINT
   EXPECT_EQ(n.get_title(), "t");
 
-  n.set_body(" 	b 	");
+  n.set_body(" 	b 	");  // NOLINT
   EXPECT_EQ(n.get_body(), "b");
 
-  n.set_localized_title(" 	l t 	");
+  n.set_localized_title(" 	l t 	");  // NOLINT
   EXPECT_EQ(n.get_localized_title(), "l t");
 
-  n.set_localized_body(" 	l b 	");
+  n.set_localized_body(" 	l b 	");  // NOLINT
   EXPECT_EQ(n.get_localized_body(), "l b");
 }
 
