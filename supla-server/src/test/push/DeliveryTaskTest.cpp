@@ -683,4 +683,32 @@ TEST_F(DeliveryTaskTest, apnsGetChannelWithMockedGetter) {
   WaitForState(task, supla_asynctask_state::SUCCESS, 1000000);
 }
 
+TEST_F(DeliveryTaskTest, oneNotSent) {
+  supla_push_notification *push = new supla_push_notification();
+  push->set_title("T");
+  push->set_body("B");
+
+  supla_pn_recipient *r1 =
+      new supla_pn_recipient(1, 0, false, "0956469", "", 0);
+  supla_pn_recipient *r2 =
+      new supla_pn_recipient(1, 5, false, "2568548549", "ABCD", 0);
+
+  push->get_recipients().add(r1, platform_push_android);
+  push->get_recipients().add(r2, platform_push_ios);
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter, get_response_code(5))
+      .WillRepeatedly(Return(404));
+
+  EXPECT_CALL(*deliveryTaskCurlAdapter, get_response_code(0))
+      .WillRepeatedly(Return(200));
+
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
+
+  shared_ptr<supla_abstract_asynctask> task =
+      (new supla_pn_delivery_task(supla_caller(ctIPC), 1, queue, pool, push,
+                                  provider, &throttling))
+          ->start();
+
+  WaitForState(task, supla_asynctask_state::FAILURE, 1000000);
+}
 } /* namespace testing */
