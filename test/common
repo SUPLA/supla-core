@@ -7,10 +7,11 @@ vg_verify() {
 }
 
 db_init() {
-   PARAMS="--ssl=0 -u supla -h $DBHOST"
+   DISABLE_SSL="--ssl=0"
+   PARAMS="$DISABLE_SSL -u supla -h $DBHOST"
    if ! (echo "" | mysql $PARAMS) 2> /dev/null; then
       if ! mysql $PARAMS < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
-         if ! mysql -u root -proot -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
+         if ! mysql $DISABLE_SSL -u root -proot -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
          echo "Enter mariadb root password.";
          mysql -u root -h $DBHOST -p < sql/CreateSqlUsersForTestPurposes.sql
          fi
