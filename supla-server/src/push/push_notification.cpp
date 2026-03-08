@@ -137,7 +137,10 @@ string supla_push_notification::apply_template_data(string str) {
     }
   }
 
-  return str;
+  // trim
+  auto start = std::find_if_not(str.begin(), str.end(), ::isspace);
+  auto end = std::find_if_not(str.rbegin(), str.rend(), ::isspace).base();
+  return (start < end) ? std::string(start, end) : "";
 }
 
 void supla_push_notification::set_template_data(nlohmann::json *template_data) {

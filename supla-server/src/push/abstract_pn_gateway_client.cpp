@@ -80,8 +80,8 @@ void supla_abstract_pn_gateway_client::validate_body(
   }
 }
 
-bool supla_abstract_pn_gateway_client::send(void) {
-  bool any_sent = false;
+bool supla_abstract_pn_gateway_client::send(bool *any_sent) {
+  *any_sent = false;
   bool any_error = false;
 
   for (size_t a = 0; a < push->get_recipients().count(get_platform()); a++) {
@@ -101,7 +101,7 @@ bool supla_abstract_pn_gateway_client::send(void) {
       if (!token.is_valid() || !_send(&token, recipient)) {
         any_error = true;
       } else {
-        any_sent = true;
+        *any_sent = true;
       }
     } catch (const abort_exception &e) {
       any_error = true;
@@ -109,5 +109,5 @@ bool supla_abstract_pn_gateway_client::send(void) {
     }
   }
 
-  return any_sent && !any_error;
+  return *any_sent && !any_error;
 }

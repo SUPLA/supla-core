@@ -137,18 +137,24 @@ bool supla_pn_delivery_task::make_request(
     }
   }
 
+  bool any_sent = false;
+
   if (push->get_recipients().count(platform_push_android) > 0) {
     supla_fcm_client client(get_caller(), curl_adapter, token_provider, push);
 
     fcm_recipients = true;
-    fcm_result = client.send();
+    fcm_result = client.send(&any_sent);
   }
 
   if (push->get_recipients().count(platform_push_ios) > 0) {
     supla_apns_client client(get_caller(), curl_adapter, token_provider, push);
 
     apns_recipients = true;
-    apns_result = client.send();
+    apns_result = client.send(&any_sent);
+  }
+
+  if (!any_sent) {
+    throttling->on_message_not_sent(get_user_id());
   }
 
   for (size_t a = 0; a < push->get_recipients().total_count(); a++) {

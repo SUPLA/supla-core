@@ -87,6 +87,7 @@ void DeliveryTaskTest::SetUp(void) {
           [](int instance_id, const std::string &str) { return str; });
 
   ON_CALL(throttling, is_delivery_possible).WillByDefault(Return(true));
+  EXPECT_CALL(throttling, on_message_not_sent).Times(0);
 }
 
 void DeliveryTaskTest::TearDown(void) {
@@ -335,6 +336,8 @@ TEST_F(DeliveryTaskTest, fcmRecipientDoesNotExist) {
   EXPECT_CALL(*deliveryTaskCurlAdapter, get_response_code)
       .WillRepeatedly(Return(404));
 
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
+
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctIPC), 1, queue, pool, push,
                                   provider, &throttling))
@@ -362,6 +365,8 @@ TEST_F(DeliveryTaskTest, apnsRecipientDoesNotExist) {
         *request_result = "{\"reason\":\"BadDeviceToken\"}";
       });
 
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
+
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctIPC), 1, queue, pool, push,
                                   provider, &throttling))
@@ -381,6 +386,8 @@ TEST_F(DeliveryTaskTest, apnsEmptyBody) {
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_post_fields).Times(0);
 
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
+
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctIPC), 1, queue, pool, push,
                                   provider, &throttling))
@@ -397,6 +404,8 @@ TEST_F(DeliveryTaskTest, fcmEmptyBody) {
   push->get_recipients().add(r, platform_push_android);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_post_fields).Times(0);
+
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
 
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctDevice, 567), 1, queue, pool,
@@ -416,6 +425,8 @@ TEST_F(DeliveryTaskTest, apnsAbortInTitle) {
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_post_fields).Times(0);
 
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
+
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctIPC), 1, queue, pool, push,
                                   provider, &throttling))
@@ -433,6 +444,8 @@ TEST_F(DeliveryTaskTest, fcmAbortInTitle) {
   push->get_recipients().add(r, platform_push_android);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_post_fields).Times(0);
+
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
 
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctDevice, 567), 1, queue, pool,
@@ -452,6 +465,8 @@ TEST_F(DeliveryTaskTest, apnsAbortInLocalizedTitle) {
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_post_fields).Times(0);
 
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
+
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctIPC), 1, queue, pool, push,
                                   provider, &throttling))
@@ -469,6 +484,8 @@ TEST_F(DeliveryTaskTest, fcmAbortInLocalizedTitle) {
   push->get_recipients().add(r, platform_push_android);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_post_fields).Times(0);
+
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
 
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctDevice, 567), 1, queue, pool,
@@ -488,6 +505,8 @@ TEST_F(DeliveryTaskTest, apnsAbortInBody) {
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_post_fields).Times(0);
 
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
+
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctIPC), 1, queue, pool, push,
                                   provider, &throttling))
@@ -505,6 +524,8 @@ TEST_F(DeliveryTaskTest, fcmAbortInBody) {
   push->get_recipients().add(r, platform_push_android);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_post_fields).Times(0);
+
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
 
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctDevice, 567), 1, queue, pool,
@@ -524,6 +545,8 @@ TEST_F(DeliveryTaskTest, apnsAbortInLocalizedBody) {
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_post_fields).Times(0);
 
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
+
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctIPC), 1, queue, pool, push,
                                   provider, &throttling))
@@ -541,6 +564,8 @@ TEST_F(DeliveryTaskTest, fcmAbortInLocalizedBody) {
   push->get_recipients().add(r, platform_push_android);
 
   EXPECT_CALL(*deliveryTaskCurlAdapter, set_opt_post_fields).Times(0);
+
+  EXPECT_CALL(throttling, on_message_not_sent).Times(1);
 
   shared_ptr<supla_abstract_asynctask> task =
       (new supla_pn_delivery_task(supla_caller(ctDevice, 567), 1, queue, pool,

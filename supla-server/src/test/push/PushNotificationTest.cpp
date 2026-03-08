@@ -283,4 +283,19 @@ TEST_F(PushNotificationTest, injaException) {
             "'non_existent_func'");
 }
 
+TEST_F(PushNotificationTest, trim) {
+  supla_push_notification n;
+  n.set_title(" 	t 	");
+  EXPECT_EQ(n.get_title(), "t");
+
+  n.set_body(" 	b 	");
+  EXPECT_EQ(n.get_body(), "b");
+
+  n.set_localized_title(" 	l t 	");
+  EXPECT_EQ(n.get_localized_title(), "l t");
+
+  n.set_localized_body(" 	l b 	");
+  EXPECT_EQ(n.get_localized_body(), "l b");
+}
+
 } /* namespace testing */

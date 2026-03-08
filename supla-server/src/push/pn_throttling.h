@@ -47,6 +47,7 @@ class supla_pn_throttling {
 
   virtual bool is_delivery_possible(int user_id, bool *first_time_exceeded,
                                     unsigned int *limit);
+  virtual void on_message_not_sent(int user_id);
   size_t get_user_count(void);
   unsigned int get_count(int user_id);
   unsigned int get_limit(int user_id, long *left);

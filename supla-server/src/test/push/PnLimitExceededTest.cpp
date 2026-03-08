@@ -97,4 +97,6 @@ TEST_F(PnLimitExceededTest, immutable) {
   EXPECT_EQ(args.at(0), "30");
 }
 
+TEST_F(PnLimitExceededTest, messageNotSent) { ASSERT_TRUE(false); }
+
 } /* namespace testing */

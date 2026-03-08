@@ -56,7 +56,7 @@ class supla_abstract_pn_gateway_client {
       supla_remote_gateway_access_token_provider *token_provider,
       supla_push_notification *push);
   virtual ~supla_abstract_pn_gateway_client(void);
-  bool send(void);
+  bool send(bool *any_sent);
 };
 
 #endif /* ABSTRACT_PUSH_NOTIFICATION_GATEWAY_CLIENT_H_ */
