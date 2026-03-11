@@ -21,24 +21,29 @@
 #include <string.h>
 
 supla_channel_floating_point_sensor_value::
-    supla_channel_floating_point_sensor_value(void)
-    : supla_abstract_channel_value() {}
+    supla_channel_floating_point_sensor_value(int func)
+    : supla_abstract_channel_value() {
+  this->func = func;
+}
 
 supla_channel_floating_point_sensor_value::
     supla_channel_floating_point_sensor_value(
-        const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_abstract_channel_value(raw_value) {}
+        int func, const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_abstract_channel_value(raw_value) {
+  this->func = func;
+}
 
 supla_channel_floating_point_sensor_value::
-    supla_channel_floating_point_sensor_value(double value)
+    supla_channel_floating_point_sensor_value(int func, double value)
     : supla_abstract_channel_value() {
+  this->func = func;
   set_value(value);
 }
 
 supla_abstract_channel_value *
 supla_channel_floating_point_sensor_value::copy(  // NOLINT
     void) const {                                 // NOLINT
-  return new supla_channel_floating_point_sensor_value(raw_value);
+  return new supla_channel_floating_point_sensor_value(func, raw_value);
 }
 
 void supla_channel_floating_point_sensor_value::set_value(double value) {
@@ -77,5 +82,5 @@ nlohmann::json supla_channel_floating_point_sensor_value::get_template_data(
 bool supla_channel_floating_point_sensor_value::get_vbt_value(
     _vbt_var_name_e var_name, double *value) {
   *value = get_value();
-  return true;
+  return *value >= 0 || func != SUPLA_CHANNELFNC_DISTANCESENSOR;
 }

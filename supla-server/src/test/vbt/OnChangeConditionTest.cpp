@@ -981,7 +981,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Eq) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(123.456);
   newv.set_value(123.456);
 
@@ -1001,7 +1002,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Ne) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(56);
   newv.set_value(56);
 
@@ -1021,7 +1023,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Gt) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(101);
   newv.set_value(101);
 
@@ -1041,7 +1044,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Ge) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(100);
   newv.set_value(100);
 
@@ -1072,7 +1076,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Lt) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(99);
   newv.set_value(99);
 
@@ -1092,7 +1097,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Le) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(100);
   newv.set_value(100);
 
@@ -1946,7 +1952,8 @@ TEST_F(OnChangeConditionTest, floatingPointValueChanged) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(56);
   newv.set_value(56);
 
