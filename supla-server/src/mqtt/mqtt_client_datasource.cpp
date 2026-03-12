@@ -220,18 +220,20 @@ void supla_mqtt_client_datasource::on_userdata_changed(int user_id) {
   if (!all_data_expected && !is_user_queued(user_id)) {
     user_queue.push_back(user_id);
 
-    for (auto it = device_queue.begin(); it != device_queue.end(); ++it) {
+    for (auto it = device_queue.begin(); it != device_queue.end();) {
       if ((*it).user_id == user_id) {
         it = device_queue.erase(it);
-        --it;
+        continue;
       }
+      ++it;
     }
 
-    for (auto it = channel_queue.begin(); it != channel_queue.end(); ++it) {
+    for (auto it = channel_queue.begin(); it != channel_queue.end();) {
       if ((*it).user_id == user_id) {
         it = channel_queue.erase(it);
-        --it;
+        continue;
       }
+      ++it;
     }
   }
   lck_unlock(lck);
@@ -251,11 +253,12 @@ void supla_mqtt_client_datasource::on_devicedata_changed(int user_id,
     _mqtt_ds_device_id_t id = {.user_id = user_id, .device_id = device_id};
     device_queue.push_back(id);
 
-    for (auto it = channel_queue.begin(); it != channel_queue.end(); ++it) {
+    for (auto it = channel_queue.begin(); it != channel_queue.end();) {
       if ((*it).user_id == user_id && (*it).device_id == device_id) {
         it = channel_queue.erase(it);
-        --it;
+        continue;
       }
+      ++it;
     }
   }
   lck_unlock(lck);

@@ -50,12 +50,12 @@ bool supla_user_devices::add(shared_ptr<supla_device> device) {
   int device_id = device->get_id();
 
   lock();
-  for (auto it = channel_fragments.begin(); it != channel_fragments.end();
-       ++it) {
+  for (auto it = channel_fragments.begin(); it != channel_fragments.end();) {
     if (it->get_device_id() == device_id) {
       it = channel_fragments.erase(it);
-      --it;
+      continue;
     }
+    ++it;
   }
 
   for (auto it = fragments.begin(); it != fragments.end(); ++it) {
@@ -118,7 +118,7 @@ supla_channel_fragment supla_user_devices::get_channel_fragment_with_number(
       for (auto it = channel_fragments.begin(); it != channel_fragments.end();
            ++it) {
         if (it->get_channel_id() == result.get_channel_id()) {
-          it = channel_fragments.erase(it);
+          channel_fragments.erase(it);
           break;
         }
       }
@@ -213,7 +213,9 @@ void supla_user_devices::update_virtual_channels(void) {
   std::vector<supla_virtual_channel> changed_virtual_channels_old;
   std::vector<supla_virtual_channel> changed_virtual_channels_new;
 
-  for (auto it = virtual_channels.begin(); it != virtual_channels.end(); ++it) {
+  for (auto it = virtual_channels.begin(); it != virtual_channels.end();) {
+    bool found = false;
+
     for (auto tit = this->virtual_channels.begin();
          tit != this->virtual_channels.end(); ++tit) {
       if (it->get_channel_id() == tit->get_channel_id()) {
@@ -224,10 +226,13 @@ void supla_user_devices::update_virtual_channels(void) {
 
         *tit = *it;
         it = virtual_channels.erase(it);
-        --it;
-
+        found = true;
         break;
       }
+    }
+
+    if (!found) {
+      ++it;
     }
   }
 
