@@ -348,7 +348,8 @@ TEST_F(MqttStateMessageProviderTest, overcurrentRelayOff) {
 
 TEST_F(MqttStateMessageProviderTest, depth) {
   SetResultValue(SUPLA_CHANNELFNC_DEPTHSENSOR, true,
-                 new supla_channel_floating_point_sensor_value(345));
+                 new supla_channel_floating_point_sensor_value(
+                     SUPLA_CHANNELFNC_DEPTHSENSOR, 345));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -365,7 +366,8 @@ TEST_F(MqttStateMessageProviderTest, depth) {
 
 TEST_F(MqttStateMessageProviderTest, distance) {
   SetResultValue(SUPLA_CHANNELFNC_DISTANCESENSOR, true,
-                 new supla_channel_floating_point_sensor_value(1345));
+                 new supla_channel_floating_point_sensor_value(
+                     SUPLA_CHANNELFNC_DISTANCESENSOR, 1345));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"
@@ -382,7 +384,8 @@ TEST_F(MqttStateMessageProviderTest, distance) {
 
 TEST_F(MqttStateMessageProviderTest, wightSensor) {
   SetResultValue(SUPLA_CHANNELFNC_WEIGHTSENSOR, true,
-                 new supla_channel_floating_point_sensor_value(85));
+                 new supla_channel_floating_point_sensor_value(
+                     SUPLA_CHANNELFNC_WEIGHTSENSOR, 85));
 
   ASSERT_TRUE(fetchAndCompare(&provider, NULL, "true", false,
                               "supla/9920767494dd87196e1896c7cbab707c/devices/"

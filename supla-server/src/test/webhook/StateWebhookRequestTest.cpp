@@ -31,8 +31,8 @@
 #include "device/value/channel_temphum_value.h"
 #include "device/value/channel_value.h"
 #include "http/asynctask_http_thread_bucket.h"
+#include "log.h"
 #include "webhook/state_webhook_request.h"
-
 namespace testing {
 
 void StateWebhookRequestTest::SetUp(void) {
@@ -92,7 +92,6 @@ void StateWebhookRequestTest::makeTest(int func, bool online,
         *_fragment =
             supla_channel_fragment(device_id, channel_id, 0, 0, func, 0, false);
         _status->set_offline(!online);
-
         return value;
       });
 
@@ -572,7 +571,8 @@ TEST_F(StateWebhookRequestTest, sendWindSensorReport_Connected) {
       "1600097258,\"state\":{\"value\":55.55,\"connected\":true}}";
 
   makeTest(SUPLA_CHANNELFNC_WINDSENSOR, true,
-           new supla_channel_floating_point_sensor_value(55.55),
+           new supla_channel_floating_point_sensor_value(
+               SUPLA_CHANNELFNC_WINDSENSOR, 55.55),
            expectedPayload);
 }
 
@@ -593,7 +593,8 @@ TEST_F(StateWebhookRequestTest, sendPressureSensorReport_Connected) {
       "1600097258,\"state\":{\"value\":55.55,\"connected\":true}}";
 
   makeTest(SUPLA_CHANNELFNC_PRESSURESENSOR, true,
-           new supla_channel_floating_point_sensor_value(55.55),
+           new supla_channel_floating_point_sensor_value(
+               SUPLA_CHANNELFNC_PRESSURESENSOR, 55.55),
            expectedPayload);
 }
 
@@ -614,7 +615,8 @@ TEST_F(StateWebhookRequestTest, sendRainSensorReport_Connected) {
       "1600097258,\"state\":{\"value\":55.55,\"connected\":true}}";
 
   makeTest(SUPLA_CHANNELFNC_RAINSENSOR, true,
-           new supla_channel_floating_point_sensor_value(55.55),
+           new supla_channel_floating_point_sensor_value(
+               SUPLA_CHANNELFNC_RAINSENSOR, 55.55),
            expectedPayload);
 }
 
@@ -635,7 +637,8 @@ TEST_F(StateWebhookRequestTest, sendWeightSensorReport_Connected) {
       "1600097258,\"state\":{\"value\":55.55,\"connected\":true}}";
 
   makeTest(SUPLA_CHANNELFNC_WEIGHTSENSOR, true,
-           new supla_channel_floating_point_sensor_value(55.55),
+           new supla_channel_floating_point_sensor_value(
+               SUPLA_CHANNELFNC_WEIGHTSENSOR, 55.55),
            expectedPayload);
 }
 
@@ -656,7 +659,8 @@ TEST_F(StateWebhookRequestTest, sendDistanceSensorReport_Connected) {
       "1600097258,\"state\":{\"distance\":55.55,\"connected\":true}}";
 
   makeTest(SUPLA_CHANNELFNC_DISTANCESENSOR, true,
-           new supla_channel_floating_point_sensor_value(55.55),
+           new supla_channel_floating_point_sensor_value(
+               SUPLA_CHANNELFNC_DISTANCESENSOR, 55.55),
            expectedPayload);
 }
 
@@ -677,7 +681,8 @@ TEST_F(StateWebhookRequestTest, sendDepthSensorReport_Connected) {
       "1600097258,\"state\":{\"depth\":55.55,\"connected\":true}}";
 
   makeTest(SUPLA_CHANNELFNC_DEPTHSENSOR, true,
-           new supla_channel_floating_point_sensor_value(55.55),
+           new supla_channel_floating_point_sensor_value(
+               SUPLA_CHANNELFNC_DEPTHSENSOR, 55.55),
            expectedPayload);
 }
 

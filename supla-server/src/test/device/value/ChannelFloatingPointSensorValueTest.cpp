@@ -79,16 +79,16 @@ TEST_F(ChannelFloatingPointSensorValueTest, getVbtValue_Disatnce) {
       SUPLA_CHANNELFNC_DISTANCESENSOR);
   value.set_value(-1);
 
-  double vbt_value = 0;
+  double vbt_value = 5;
 
   EXPECT_FALSE(value.get_vbt_value(var_name_none, &vbt_value));
-  EXPECT_EQ(vbt_value, 11.22);
+  EXPECT_EQ(vbt_value, 5);
 
   value.set_value(100);
 
   vbt_value = 100;
 
-  EXPECT_FALSE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
   EXPECT_EQ(vbt_value, 100);
 }
 

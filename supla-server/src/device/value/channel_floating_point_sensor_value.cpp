@@ -81,6 +81,10 @@ nlohmann::json supla_channel_floating_point_sensor_value::get_template_data(
 
 bool supla_channel_floating_point_sensor_value::get_vbt_value(
     _vbt_var_name_e var_name, double *value) {
-  *value = get_value();
-  return *value >= 0 || func != SUPLA_CHANNELFNC_DISTANCESENSOR;
+  double v = get_value();
+  if (v >= 0 || func != SUPLA_CHANNELFNC_DISTANCESENSOR) {
+    *value = v;
+    return true;
+  }
+  return false;
 }
