@@ -88,7 +88,6 @@ TEST_F(InjaSandboxTest, tooManyControlBlocksInTemplate) {
   }
 }
 
-
 TEST_F(InjaSandboxTest, exceededOutputSize) {
   nlohmann::json data;
 
@@ -108,8 +107,9 @@ TEST_F(InjaSandboxTest, exceededOutputSize) {
     sandbox.validate_and_render("{{ text }}", data);
     FAIL() << "Expected std::runtime_error";
   } catch (const std::runtime_error& e) {
-    EXPECT_EQ(std::string("Template execution exceeded allowed output size (1024)."),
-              e.what());
+    EXPECT_EQ(
+        std::string("Template execution exceeded allowed output size (1024)."),
+        e.what());
   }
 }
 
