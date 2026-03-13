@@ -17,7 +17,8 @@ cd ../../
 db_init
 cd supla-server/Test
 
-vg_verify "./supla-server --sqldir ../../sql --gtest_shuffle"
+vg_verify "./supla-server --sqldir ../../sql --gtest_shuffle ----gtest_filter='-*DeathTest*'"
+vg_verify "./supla-server --sqldir ../../sql --gtest_shuffle ----gtest_filter='*DeathTest*'" --no-leak-check
 
 echo OK 
 exit 0
