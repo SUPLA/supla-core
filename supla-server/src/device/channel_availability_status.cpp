@@ -106,10 +106,24 @@ void supla_channel_availability_status::set_proto_offline(char offline) {
   }
 }
 
+bool supla_channel_availability_status::get_vbt_value(_vbt_var_name_e var_name,
+                                                      double *value) {
+  if (var_name == var_name_connected) {
+    *value = is_connected();
+    return true;
+  }
+
+  return false;
+}
+
+bool supla_channel_availability_status::is_connected(void) {
+  return is_online() || is_online_but_not_available() ||
+         is_firmware_update_ongoing();
+}
+
 nlohmann::json supla_channel_availability_status::get_template_data(void) {
   nlohmann::json result;
-  result["connected"] = is_online() || is_online_but_not_available() ||
-                        is_firmware_update_ongoing();
+  result["connected"] = is_connected();
   return result;
 }
 

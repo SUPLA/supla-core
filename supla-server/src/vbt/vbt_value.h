@@ -83,6 +83,8 @@ enum _vbt_var_name_e {
   var_name_sound_alarm_on,
   var_name_warning,
   var_name_invalid_sensor_state,
+  var_name_connected,
+  var_name_white_temperature,
 };
 
 class supla_vbt_value {

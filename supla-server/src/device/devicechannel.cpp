@@ -100,6 +100,13 @@ supla_device_channel::supla_device_channel(
   }
 
   data_analyzer = supla_data_analyzer_factory::new_analyzer(id, func);
+
+  supla_channel_availability_status offline(true);
+  if (offline != availability_status) {
+    get_user()->get_value_based_triggers()->on_value_changed(
+        supla_caller(ctChannel, get_id()), get_id(), &offline,
+        &availability_status);
+  }
 }
 
 supla_device_channel::~supla_device_channel() {
@@ -350,17 +357,23 @@ supla_channel_availability_status supla_device_channel::get_availability_status(
 }
 
 bool supla_device_channel::set_availability_status(
-    const supla_channel_availability_status &status, bool raise_change_event) {
+    supla_channel_availability_status status, bool raise_change_event) {
   bool result = false;
   lock();
+  supla_channel_availability_status old = availability_status;
   if (availability_status != status) {
     availability_status = status;
     result = true;
   }
   unlock();
 
-  if (result && raise_change_event) {
-    on_value_changed(nullptr, nullptr, true, false);
+  if (result) {
+    if (raise_change_event) {
+      on_value_changed(nullptr, nullptr, true, false);
+    }
+
+    get_user()->get_value_based_triggers()->on_value_changed(
+        supla_caller(ctChannel, get_id()), get_id(), &old, &status);
   }
 
   return result;

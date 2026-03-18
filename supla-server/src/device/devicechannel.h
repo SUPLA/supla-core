@@ -127,7 +127,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   virtual unsigned _supla_int64_t get_flags();
   void add_init_flags(unsigned _supla_int64_t flags);
   supla_channel_availability_status get_availability_status(void);
-  bool set_availability_status(const supla_channel_availability_status &status,
+  bool set_availability_status(supla_channel_availability_status status,
                                bool raise_change_event);
   bool is_value_writable(void);
   bool is_char_value_writable(void);

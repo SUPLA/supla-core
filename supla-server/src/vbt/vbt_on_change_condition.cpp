@@ -142,6 +142,8 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_warning, "warning"},
         {var_name_invalid_sensor_state, "invalid_sensor_state"},
         {var_name_sound_alarm_on, "sound_alarm_on"},
+        {var_name_connected, "connected"},
+        {var_name_white_temperature, "white_temperature"},
     };
 
     for (auto it = names.begin(); it != names.end(); ++it) {

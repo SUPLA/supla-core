@@ -831,6 +831,18 @@ TEST_F(OnChangeConditionTest, onChange_allPredictedVarNames) {
   cJSON_Delete(json);
 
   EXPECT_EQ(c.get_var_name(), var_name_invalid_sensor_state);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"connected\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_connected);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"white_temperature\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_white_temperature);
 }
 
 TEST_F(OnChangeConditionTest, boolValues) {
