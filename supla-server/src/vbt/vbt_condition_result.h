@@ -24,24 +24,39 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
+#include "caller.h"
+#include "proto.h"
+#include "user.h"
+
 class supla_value_based_trigger;
 class supla_vbt_condition_result {
  private:
   bool cnd_met;
+  _supla_int64_t milliseconds_left;
   std::shared_ptr<supla_value_based_trigger> trigger;
   nlohmann::json template_data;
+  supla_caller caller;
+  supla_user *user;
 
  public:
-  explicit supla_vbt_condition_result(bool cnd_met);
+  explicit supla_vbt_condition_result(bool cnd_met,
+                                      _supla_int64_t milliseconds_left);
   virtual ~supla_vbt_condition_result(void);
 
-  const std::shared_ptr<supla_value_based_trigger> &get_trigger(void);
+  const std::shared_ptr<supla_value_based_trigger> &get_trigger(void) const;
   void set_trigger(const std::shared_ptr<supla_value_based_trigger> &trigger);
 
-  const nlohmann::json &get_template_data(void);
+  const nlohmann::json &get_template_data(void) const;
   void set_template_data(const nlohmann::json &template_data);
 
-  bool are_conditions_met(void);
+  void set_caller(const supla_caller &caller);
+  supla_caller get_caller(void) const;
+
+  void set_user(supla_user *user);
+  supla_user *get_user(void) const;
+
+  bool is_condition_met(void);
+  bool is_condition_met(_supla_int64_t *milliseconds_left);
 };
 
 #endif /* VALUE_BASED_TRIGGER_CONDITION_RESULT_H_ */

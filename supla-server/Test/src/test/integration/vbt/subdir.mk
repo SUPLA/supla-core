@@ -4,12 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/integration/vbt/DelayedValueBasedTriggerIntegrationTest.cpp \
 ../src/test/integration/vbt/ValueBasedTriggerIntegrationTest.cpp 
 
 CPP_DEPS += \
+./src/test/integration/vbt/DelayedValueBasedTriggerIntegrationTest.d \
 ./src/test/integration/vbt/ValueBasedTriggerIntegrationTest.d 
 
 OBJS += \
+./src/test/integration/vbt/DelayedValueBasedTriggerIntegrationTest.o \
 ./src/test/integration/vbt/ValueBasedTriggerIntegrationTest.o 
 
 
@@ -25,7 +28,7 @@ src/test/integration/vbt/%.o: ../src/test/integration/vbt/%.cpp src/test/integra
 clean: clean-src-2f-test-2f-integration-2f-vbt
 
 clean-src-2f-test-2f-integration-2f-vbt:
-	-$(RM) ./src/test/integration/vbt/ValueBasedTriggerIntegrationTest.d ./src/test/integration/vbt/ValueBasedTriggerIntegrationTest.o
+	-$(RM) ./src/test/integration/vbt/DelayedValueBasedTriggerIntegrationTest.d ./src/test/integration/vbt/DelayedValueBasedTriggerIntegrationTest.o ./src/test/integration/vbt/ValueBasedTriggerIntegrationTest.d ./src/test/integration/vbt/ValueBasedTriggerIntegrationTest.o
 
 .PHONY: clean-src-2f-test-2f-integration-2f-vbt
 

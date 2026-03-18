@@ -16,28 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ValueBasedTriggerIntegrationTest_H_
-#define ValueBasedTriggerIntegrationTest_H_
+#ifndef VALUE_BASED_TRIGGERS_MOCK_H_
+#define VALUE_BASED_TRIGGERS_MOCK_H_
 
-#include "doubles/vbt/ValueBasedTriggersMock.h"
-#include "integration/IntegrationTest.h"
+#include <gmock/gmock.h>
+
 #include "user/user.h"
+#include "vbt/value_based_triggers.h"
 
 namespace testing {
 
-class ValueBasedTriggerIntegrationTest : public IntegrationTest, public Test {
- protected:
-  supla_user *user;
-  ValueBasedTriggersMock *triggers;
-  supla_vbt_scheduler *scheduler;
-
+class ValueBasedTriggersMock : public supla_value_based_triggers {
  public:
-  ValueBasedTriggerIntegrationTest();
-  virtual ~ValueBasedTriggerIntegrationTest();
-  virtual void SetUp(void);
-  virtual void TearDown(void);
+  explicit ValueBasedTriggersMock(supla_user *user);
+  virtual ~ValueBasedTriggersMock();
+
+  MOCK_METHOD0(get_scheduler, supla_vbt_scheduler *(void));
 };
 
 } /* namespace testing */
 
-#endif /* ValueBasedTriggerIntegrationTest_H_ */
+#endif /* VALUE_BASED_TRIGGERS_MOCK_H_ */

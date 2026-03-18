@@ -61,8 +61,8 @@ TEST_F(OnChangeConditionTest, assignAllParams) {
   supla_vbt_on_change_condition c;
 
   cJSON *json = cJSON_Parse(
-      "{\"on_change_to\":{\"eq\":123,\"name\":\"color\",\"resume\":{\"ne\":1}}"
-      "}");
+      "{\"on_change_to\":{\"eq\":123,\"name\":\"color\",\"resume\":{\"ne\":1},"
+      "\"duration_sec\":60}}");
   c.apply_json_config(json);
   cJSON_Delete(json);
 
@@ -71,6 +71,7 @@ TEST_F(OnChangeConditionTest, assignAllParams) {
   EXPECT_EQ(c.get_op(), op_eq);
   EXPECT_EQ(c.get_resume_op(), op_ne);
   EXPECT_EQ(c.get_resume_value(), 1);
+  EXPECT_EQ(c.get_duration_sec(), 60);
 }
 
 TEST_F(OnChangeConditionTest, allPredictedOperators) {
