@@ -66,11 +66,6 @@ string supla_inja_sandbox::validate_and_render(const string &tpl,
     throw runtime_error("Extends statements are not allowed.");
   }
 
-  static const regex re_for(R"(\{\%\s*for\b)");
-  if (!allow_for && regex_search(tpl, re_for)) {
-    throw runtime_error("For loops are not allowed.");
-  }
-
   static const regex re_range_call(R"(\brange\s*\()");
   if (!allow_for && regex_search(tpl, re_range_call)) {
     throw runtime_error("The range() function is not allowed.");
