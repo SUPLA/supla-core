@@ -463,7 +463,8 @@ void supla_device_channels::on_device_registered(
                                      bool *will_continue) -> void {
     supla_channel_availability_status previous(true);
 
-    if (auto it = previous_statuses->find(10); it != previous_statuses->end()) {
+    if (auto it = previous_statuses->find(channel->get_id());
+        it != previous_statuses->end()) {
       previous = it->second;
     }
     auto current = channel->get_availability_status();
