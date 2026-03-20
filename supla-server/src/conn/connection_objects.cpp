@@ -62,7 +62,9 @@ supla_connection_objects::get_all(void) {
 }
 
 bool supla_connection_objects::add(
-    shared_ptr<supla_abstract_connection_object> obj) {
+    shared_ptr<supla_abstract_connection_object> obj,
+    std::function<void(std::shared_ptr<supla_abstract_connection_object> obj)>
+        on_previous) {
   bool result = false;
   lock();
 
@@ -86,6 +88,10 @@ bool supla_connection_objects::add(
       ptr_exists = true;
     } else if (_obj->get_id() == id || _obj->guid_equal(guid)) {
       previous = _obj;
+      if (on_previous) {
+        on_previous(previous);
+      }
+
       // remove from list (will be terminated)
       it = objects.erase(it);
       continue;

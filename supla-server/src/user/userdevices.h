@@ -44,7 +44,8 @@ class supla_user_devices : public supla_connection_objects {
  public:
   explicit supla_user_devices(supla_user *user);
   virtual ~supla_user_devices();
-  bool add(std::shared_ptr<supla_device> device);
+  bool add(std::shared_ptr<supla_device> device,
+           std::map<int, supla_channel_availability_status> *previous_statuses);
 
   std::shared_ptr<supla_device> get(int device_id);
   std::shared_ptr<supla_device> get(int device_id,

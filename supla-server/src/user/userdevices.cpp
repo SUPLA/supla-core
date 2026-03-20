@@ -41,8 +41,17 @@ supla_user_devices::supla_user_devices(supla_user *user)
 
 supla_user_devices::~supla_user_devices() {}
 
-bool supla_user_devices::add(shared_ptr<supla_device> device) {
-  bool result = supla_connection_objects::add(device);
+bool supla_user_devices::add(
+    shared_ptr<supla_device> device,
+    std::map<int, supla_channel_availability_status> *previous_statuses) {
+  bool result = supla_connection_objects::add(
+      device,
+      [&previous_statuses](
+          std::shared_ptr<supla_abstract_connection_object> obj) -> void {
+        *previous_statuses = dynamic_pointer_cast<supla_device>(obj)
+                                 ->get_channels()
+                                 ->get_all_statuses();
+      });
 
   vector<supla_channel_fragment> fragments =
       device->get_channels()->get_fragments();

@@ -100,13 +100,6 @@ supla_device_channel::supla_device_channel(
   }
 
   data_analyzer = supla_data_analyzer_factory::new_analyzer(id, func);
-
-  supla_channel_availability_status offline(true);
-  if (offline != availability_status) {
-    get_user()->get_value_based_triggers()->on_value_changed(
-        supla_caller(ctChannel, get_id()), get_id(), &offline,
-        &availability_status);
-  }
 }
 
 supla_device_channel::~supla_device_channel() {

@@ -59,26 +59,25 @@ supla_device::supla_device(supla_connection *connection)
 supla_device::~supla_device() {
   if (get_user()) {  // 1st line!
     supla_channel_availability_status offline(true);
-    supla_channel_availability_status online(false);
 
-    list<int> ids = channels->get_all_ids();
+    auto statuses = channels->get_all_statuses();
 
     std::shared_ptr<supla_device> device =
         get_user()->get_devices()->get(get_id());
     bool there_is_no_other = !device || device.get() == this;
 
-    for (auto it = ids.begin(); it != ids.end(); it++) {
+    for (auto &[id, status] : statuses) {
       get_user()->on_channel_value_changed(supla_caller(ctDevice, get_id()),
-                                           get_id(), *it);
+                                           get_id(), id);
 
       if (there_is_no_other) {
         get_user()->get_value_based_triggers()->on_value_changed(
-            supla_caller(ctChannel, *it), *it, &online, &offline);
+            supla_caller(ctChannel, id), id, &status, &offline);
       }
     }
-  }
 
-  delete channels;
+    delete channels;
+  }
 }
 
 supla_abstract_srpc_call_handler_collection *

@@ -257,14 +257,15 @@ supla_user_devices *supla_user::get_devices() { return devices; }
 
 supla_user_clients *supla_user::get_clients() { return clients; }
 
-supla_user *supla_user::add_device(shared_ptr<supla_device> device,
-                                   int user_id) {
+supla_user *supla_user::add_device(
+    shared_ptr<supla_device> device, int user_id,
+    std::map<int, supla_channel_availability_status> *previous_statuses) {
   assert(device != nullptr);
   assert(device->get_id() != 0);
 
   supla_user *user = find(user_id, true);
 
-  if (user->devices->add(device)) {
+  if (user->devices->add(device, previous_statuses)) {
     safe_array_lock(supla_user::user_arr);
     device_add_metric++;
     safe_array_unlock(supla_user::user_arr);

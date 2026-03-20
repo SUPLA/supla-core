@@ -20,18 +20,21 @@
 
 #include "proto.h"
 
-supla_channel_availability_status::supla_channel_availability_status(void) {
+supla_channel_availability_status::supla_channel_availability_status(void)
+    : supla_vbt_value() {
   proto_offline = SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE;
 }
 
 supla_channel_availability_status::supla_channel_availability_status(
-    bool offline) {
+    bool offline)
+    : supla_vbt_value() {
   proto_offline = offline ? SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE
                           : SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE;
 }
 
 supla_channel_availability_status::supla_channel_availability_status(
-    char status, bool proto_offline) {
+    char status, bool proto_offline)
+    : supla_vbt_value() {
   this->proto_offline = 0;
   if (proto_offline) {
     set_proto_offline(status);
