@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include <list>
+#include <map>
 #include <memory>
 #include <vector>
 

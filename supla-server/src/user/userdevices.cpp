@@ -18,6 +18,7 @@
 #include <sys/time.h>
 #include <userdevices.h>
 
+#include <map>
 #include <memory>
 #include <vector>
 

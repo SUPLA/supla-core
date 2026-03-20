@@ -26,6 +26,7 @@
 #include <userdevices.h>
 
 #include <list>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>

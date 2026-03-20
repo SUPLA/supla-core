@@ -18,6 +18,7 @@
 
 #include "device/call_handler/register_device.h"
 
+#include <map>
 #include <memory>
 
 #include "conn/authkey_cache.h"
