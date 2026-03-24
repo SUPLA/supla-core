@@ -85,17 +85,19 @@ void supla_action_executor::set_color_brightness(char color_brightness) {
 
 void supla_action_executor::set_rgbw(unsigned int *color,
                                      char *color_brightness, char *brightness,
-                                     char *on_off, char *dimmer_cct) {
-  execute_action([this, color, color_brightness, brightness, on_off,
-                  dimmer_cct](supla_user_channelgroups *channel_groups,
-                              supla_device_channels *channels) -> void {
+                                     char *on_off, char *command,
+                                     char *white_temperature) {
+  execute_action([this, color, color_brightness, brightness, on_off, command,
+                  white_temperature](supla_user_channelgroups *channel_groups,
+                                     supla_device_channels *channels) -> void {
     if (channel_groups) {
       channel_groups->set_rgbw_value(get_caller(), get_group_id(), color,
                                      color_brightness, brightness, on_off,
-                                     dimmer_cct);
+                                     command, white_temperature);
     } else {
       channels->set_rgbw(get_caller(), get_channel_id(), 0, 0, color,
-                         color_brightness, brightness, on_off, dimmer_cct);
+                         color_brightness, brightness, on_off, command,
+                         white_temperature);
     }
   });
 }
@@ -170,11 +172,11 @@ void supla_action_executor::disable(void) {
 }
 
 void supla_action_executor::send(const supla_caller &caller,
-                                 map<string, string> *replacement_map) {
+                                 nlohmann::json *template_data) {
   if (get_user()) {
     supla_pn_delivery_task::start_delivering(caller, get_user()->getUserID(),
                                              get_push_notification_id(),
-                                             replacement_map);
+                                             template_data);
   }
 }
 

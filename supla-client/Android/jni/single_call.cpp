@@ -165,7 +165,7 @@ jobject getTemperatureAndHumidityObject(JNIEnv *env, int function,
     temp = supla_NewDouble(env, dtemp);
   }
 
-  if (dhum >= 0 && dhum <= 100) {
+  if (dhum >= 0) {
     hum = supla_NewDouble(env, dhum);
   }
 

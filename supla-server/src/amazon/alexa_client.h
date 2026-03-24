@@ -58,9 +58,9 @@
 #include <string>
 
 #include "amazon/alexa_credentials.h"
+#include "cJSON.h"
 #include "caller.h"
 #include "http/voice_assistant_client.h"
-#include "json/cJSON.h"
 
 class supla_alexa_client : public supla_voice_assistant_client {
  private:

@@ -111,6 +111,23 @@ bool supla_pn_throttling::is_delivery_possible(int user_id,
   return result;
 }
 
+void supla_pn_throttling::on_message_not_sent(int user_id) {
+  lck_lock(lck);
+  auto it = items.begin();
+
+  while (it != items.end()) {
+    if (it->user_id == user_id) {
+      if (it->counter > 0) {
+        it->counter--;
+      }
+      break;
+    }
+    ++it;
+  }
+
+  lck_unlock(lck);
+}
+
 size_t supla_pn_throttling::get_user_count(void) {
   lck_lock(lck);
   size_t result = items.size();

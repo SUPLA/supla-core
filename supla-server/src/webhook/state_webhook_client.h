@@ -22,7 +22,7 @@
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/abstract_channel_value.h"
 #include "http/abstract_curl_adapter.h"
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "webhook/state_webhook_credentials.h"
 
 class supla_state_webhook_client {

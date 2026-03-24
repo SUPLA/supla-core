@@ -15,7 +15,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.debug.1772324400" name="Debug" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.enablement=true,org.eclipse.cdt.docker.launcher.containerbuild.property.dockerdpath=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=/Users/przemek/CProjects:HOST_FILE_SYSTEM:/Users/przemek/CProjects:false:true,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=/Users/przemek/CProjects:HOST_FILE_SYSTEM:/Users/przemek/CProjects:false:true,org.eclipse.cdt.docker.launcher.containerbuild.property.image=devel/supla-core:latest,org.eclipse.cdt.docker.launcher.containerbuild.property.connection=unix:///Users/przemek/.docker/run/docker.sock" parent="cdt.managedbuild.config.gnu.cross.exe.debug">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.debug.1772324400" name="Debug" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.enablement=false,org.eclipse.cdt.docker.launcher.containerbuild.property.dockerdpath=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.image=devel/supla-core:latest,org.eclipse.cdt.docker.launcher.containerbuild.property.connection=unix:///Users/przemek/.docker/run/docker.sock" parent="cdt.managedbuild.config.gnu.cross.exe.debug">
 					<folderInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.1772324400." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.exe.debug.1442703427" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.exe.debug">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1200039106" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
@@ -25,6 +25,9 @@
 								<option id="gnu.c.compiler.option.debugging.level.872388052" name="Debug level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.1034719321" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
+									<listOptionValue builtIn="false" value="../src/external/inja/include"/>
+									<listOptionValue builtIn="false" value="../src/external/MQTT-C/include"/>
+									<listOptionValue builtIn="false" value="../src/external/cJSON"/>
 									<listOptionValue builtIn="false" value="../src/mqtt"/>
 									<listOptionValue builtIn="false" value="../src/user"/>
 									<listOptionValue builtIn="false" value="../src/device"/>
@@ -34,6 +37,7 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.2062866975" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
+									<listOptionValue builtIn="false" value="MQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h"/>
 									<listOptionValue builtIn="false" value="USE_OS_TZDB=1"/>
 									<listOptionValue builtIn="false" value="__SUPLA_SERVER=1"/>
 									<listOptionValue builtIn="false" value="SPROTO_WITHOUT_OUT_BUFFER"/>
@@ -56,6 +60,9 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.406314809" name="Debug level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.5018346" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(INCMYSQL)"/>
+									<listOptionValue builtIn="false" value="../src/external/inja/include"/>
+									<listOptionValue builtIn="false" value="../src/external/MQTT-C/include"/>
+									<listOptionValue builtIn="false" value="../src/external/cJSON"/>
 									<listOptionValue builtIn="false" value="../src/mqtt"/>
 									<listOptionValue builtIn="false" value="../src/device"/>
 									<listOptionValue builtIn="false" value="../src/user"/>
@@ -65,6 +72,7 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1525833655" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
+									<listOptionValue builtIn="false" value="MQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h"/>
 									<listOptionValue builtIn="false" value="USE_OS_TZDB=1"/>
 									<listOptionValue builtIn="false" value="__SUPLA_SERVER=1"/>
 									<listOptionValue builtIn="false" value="SPROTO_WITHOUT_OUT_BUFFER"/>
@@ -113,7 +121,7 @@
 						</tool>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="test|crypt_blowfish/Makefile|bcrypt|t" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="external/MQTT-C/src/mqtt_pal.c|external/MQTT-C/tests.c|external/MQTT-C/include|external/MQTT-C/examples|external/MQTT-C/docs|external/MQTT-C/cmake|external/inja|test|crypt_blowfish/Makefile|bcrypt|external/cJSON/test.c|t|external/cJSON/tests|external/cJSON/fuzzing|external/cJSON/library_config" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -136,7 +144,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.release.44564803" name="Release" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.enablement=true,org.eclipse.cdt.docker.launcher.containerbuild.property.dockerdpath=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=/Users/przemek/CProjects:HOST_FILE_SYSTEM:/Users/przemek/CProjects:false:true,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=/Users/przemek/CProjects:HOST_FILE_SYSTEM:/Users/przemek/CProjects:false:true,org.eclipse.cdt.docker.launcher.containerbuild.property.image=devel/supla-core:latest,org.eclipse.cdt.docker.launcher.containerbuild.property.connection=unix:///Users/przemek/.docker/run/docker.sock" parent="cdt.managedbuild.config.gnu.cross.exe.release">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.release.44564803" name="Release" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.enablement=false,org.eclipse.cdt.docker.launcher.containerbuild.property.dockerdpath=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.image=devel/supla-core:latest,org.eclipse.cdt.docker.launcher.containerbuild.property.connection=unix:///Users/przemek/.docker/run/docker.sock" parent="cdt.managedbuild.config.gnu.cross.exe.release">
 					<folderInfo id="cdt.managedbuild.config.gnu.cross.exe.release.44564803." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.exe.release.1807590568" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.exe.release">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.987737208" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
@@ -146,6 +154,9 @@
 								<option id="gnu.c.compiler.option.debugging.level.1827163415" name="Debug level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.106907262" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
+									<listOptionValue builtIn="false" value="../src/external/inja/include"/>
+									<listOptionValue builtIn="false" value="../src/external/MQTT-C/include"/>
+									<listOptionValue builtIn="false" value="../src/external/cJSON"/>
 									<listOptionValue builtIn="false" value="../src/mqtt"/>
 									<listOptionValue builtIn="false" value="../src"/>
 									<listOptionValue builtIn="false" value="../src/user"/>
@@ -155,6 +166,7 @@
 								<option id="gnu.c.compiler.option.misc.other.2147088608" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-fsigned-char -c -fmessage-length=0 -fstack-protector-all" valueType="string"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.439526132" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
+									<listOptionValue builtIn="false" value="MQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h"/>
 									<listOptionValue builtIn="false" value="USE_OS_TZDB=1"/>
 									<listOptionValue builtIn="false" value="__SUPLA_SERVER=1"/>
 									<listOptionValue builtIn="false" value="SPROTO_WITHOUT_OUT_BUFFER"/>
@@ -172,6 +184,9 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.2066481019" name="Debug level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.1208656589" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(INCMYSQL)"/>
+									<listOptionValue builtIn="false" value="../src/external/inja/include"/>
+									<listOptionValue builtIn="false" value="../src/external/MQTT-C/include"/>
+									<listOptionValue builtIn="false" value="../src/external/cJSON"/>
 									<listOptionValue builtIn="false" value="../src/mqtt"/>
 									<listOptionValue builtIn="false" value="../src/client"/>
 									<listOptionValue builtIn="false" value="../src/user"/>
@@ -181,6 +196,7 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.584360873" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
+									<listOptionValue builtIn="false" value="MQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h"/>
 									<listOptionValue builtIn="false" value="USE_OS_TZDB=1"/>
 									<listOptionValue builtIn="false" value="__SUPLA_SERVER=1"/>
 									<listOptionValue builtIn="false" value="SPROTO_WITHOUT_OUT_BUFFER"/>
@@ -225,7 +241,7 @@
 						</tool>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="test|crypt_blowfish/Makefile|bcrypt|t" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="external/MQTT-C/src/mqtt_pal.c|external/MQTT-C/tests.c|external/MQTT-C/include|external/MQTT-C/examples|external/MQTT-C/docs|external/MQTT-C/cmake|external/inja|test|crypt_blowfish/Makefile|bcrypt|external/cJSON/test.c|t|external/cJSON/tests|external/cJSON/fuzzing|external/cJSON/library_config" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -248,7 +264,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.debug.1772324400.1420843306" name="Test" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.enablement=true,org.eclipse.cdt.docker.launcher.containerbuild.property.dockerdpath=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=/Users/przemek/CProjects:HOST_FILE_SYSTEM:/Users/przemek/CProjects:false:true,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=/Users/przemek/CProjects:HOST_FILE_SYSTEM:/Users/przemek/CProjects:false:true,org.eclipse.cdt.docker.launcher.containerbuild.property.image=devel/supla-core:latest,org.eclipse.cdt.docker.launcher.containerbuild.property.connection=unix:///Users/przemek/.docker/run/docker.sock" parent="cdt.managedbuild.config.gnu.cross.exe.debug">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.debug.1772324400.1420843306" name="Test" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.enablement=false,org.eclipse.cdt.docker.launcher.containerbuild.property.dockerdpath=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.image=devel/supla-core:latest,org.eclipse.cdt.docker.launcher.containerbuild.property.connection=unix:///Users/przemek/.docker/run/docker.sock" parent="cdt.managedbuild.config.gnu.cross.exe.debug">
 					<folderInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.1772324400.1420843306." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.exe.debug.507486059" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.exe.debug">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.893342434" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
@@ -258,6 +274,9 @@
 								<option id="gnu.c.compiler.option.debugging.level.740365011" name="Debug level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.1809027190" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
+									<listOptionValue builtIn="false" value="../src/external/cJSON"/>
+									<listOptionValue builtIn="false" value="../src/external/MQTT-C/include"/>
+									<listOptionValue builtIn="false" value="../src/external/inja/include"/>
 									<listOptionValue builtIn="false" value="../src/asynctask"/>
 									<listOptionValue builtIn="false" value="../src/mqtt"/>
 									<listOptionValue builtIn="false" value="../src/client"/>
@@ -267,6 +286,7 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.332366282" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
+									<listOptionValue builtIn="false" value="MQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h"/>
 									<listOptionValue builtIn="false" value="USE_OS_TZDB=1"/>
 									<listOptionValue builtIn="false" value="__SUPLA_SERVER=1"/>
 									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V1"/>
@@ -284,6 +304,9 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.27162558" name="Debug level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.1974356639" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../src"/>
+									<listOptionValue builtIn="false" value="../src/external/inja/include"/>
+									<listOptionValue builtIn="false" value="../src/external/cJSON"/>
+									<listOptionValue builtIn="false" value="../src/external/MQTT-C/include"/>
 									<listOptionValue builtIn="false" value="../src/asynctask"/>
 									<listOptionValue builtIn="false" value="../src/mqtt"/>
 									<listOptionValue builtIn="false" value="$(INCMYSQL)"/>
@@ -295,6 +318,7 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1785983890" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
+									<listOptionValue builtIn="false" value="MQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h"/>
 									<listOptionValue builtIn="false" value="USE_OS_TZDB=1"/>
 									<listOptionValue builtIn="false" value="__SUPLA_SERVER=1"/>
 									<listOptionValue builtIn="false" value="USE_DEPRECATED_EMEV_V1"/>
@@ -341,7 +365,7 @@
 						</tool>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="crypt_blowfish/Makefile|bcrypt|test/gtest|t|supla-server.cpp|gtest" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="external/MQTT-C/src/mqtt_pal.c|external/MQTT-C/tests.c|external/MQTT-C/include|external/MQTT-C/examples|external/MQTT-C/docs|external/MQTT-C/cmake|external/inja|crypt_blowfish/Makefile|bcrypt|test/gtest|external/cJSON/test.c|t|external/cJSON/tests|external/cJSON/fuzzing|external/cJSON/library_config|supla-server.cpp|gtest" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

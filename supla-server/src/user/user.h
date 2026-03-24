@@ -24,6 +24,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -88,8 +89,9 @@ class supla_user {
   supla_user_devices *get_devices();
   supla_user_clients *get_clients();
 
-  static supla_user *add_device(std::shared_ptr<supla_device> device,
-                                int user_id);
+  static supla_user *add_device(
+      std::shared_ptr<supla_device> device, int user_id,
+      std::map<int, supla_channel_availability_status> *previous_statuses);
   static supla_user *add_client(std::shared_ptr<supla_client> client,
                                 int user_id);
 

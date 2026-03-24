@@ -20,6 +20,7 @@
 #define PUSH_NOTIFICATION_LIMIT_EXCEEDED_H_
 
 #include <map>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 
@@ -37,8 +38,7 @@ class supla_pn_limit_exceeded : public supla_push_notification {
   virtual void set_localized_title_args(const std::vector<std::string> &args);
   virtual void set_localized_body_args(const std::vector<std::string> &args);
   virtual void set_sound(int sound);
-  virtual void set_replacement_map(
-      std::map<std::string, std::string> *replacement_map);
+  virtual void set_template_data(nlohmann::json *template_data);
 };
 
 #endif /* PUSH_NOTIFICATION_LIMIT_EXCEEDED_H_ */

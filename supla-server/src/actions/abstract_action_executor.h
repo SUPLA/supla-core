@@ -21,6 +21,7 @@
 
 #include <map>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "abstract_action_config.h"
@@ -50,6 +51,8 @@ class supla_abstract_action_executor {
   supla_user *get_user(void);
   supla_user_channelgroups *get_channel_groups(void);
   void set_unknown_subject_type(void);
+  virtual void on_correlation_token(const char *alexa_correlation_token,
+                                    const char *google_request_id);
 
  public:
   supla_abstract_action_executor(void);
@@ -83,21 +86,30 @@ class supla_abstract_action_executor {
   void execute_action(const supla_caller &caller, int user_id,
                       abstract_action_config *config,
                       supla_abstract_channel_property_getter *property_getter,
-                      std::map<std::string, std::string> *replacement_map);
+                      nlohmann::json *template_data);
 
   void execute_action(const supla_caller &caller, int user_id, int action_id,
                       _subjectType_e subject_type, int subject_id,
                       supla_abstract_channel_property_getter *property_getter,
                       supla_abstract_action_parameters *params,
                       int source_device_id, int source_channel_id, int cap,
-                      std::map<std::string, std::string> *replacement_map);
+                      nlohmann::json *template_data);
+
+  void execute_action(const supla_caller &caller, int user_id, int action_id,
+                      _subjectType_e subject_type, int subject_id,
+                      supla_abstract_channel_property_getter *property_getter,
+                      supla_abstract_action_parameters *params,
+                      int source_device_id, int source_channel_id, int cap,
+                      nlohmann::json *vars, const char *alexa_correlation_token,
+                      const char *google_request_id);
 
   virtual void set_on(bool on, unsigned long long duration_ms) = 0;
   virtual void set_color(unsigned int color) = 0;
   virtual void set_brightness(char brightness) = 0;
   virtual void set_color_brightness(char brightness) = 0;
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
-                        char *brightness, char *on_off, char *dimmer_cct) = 0;
+                        char *brightness, char *on_off, char *command,
+                        char *white_temperature) = 0;
   virtual void toggle(void) = 0;
   virtual void shut(const supla_action_shading_system_parameters *params) = 0;
   virtual void reveal(void) = 0;
@@ -109,7 +121,7 @@ class supla_abstract_action_executor {
   virtual void enable(void) = 0;
   virtual void disable(void) = 0;
   virtual void send(const supla_caller &caller,
-                    std::map<std::string, std::string> *replacement_map) = 0;
+                    nlohmann::json *template_data) = 0;
   virtual void execute(void) = 0;
   virtual void interrupt(void) = 0;
   virtual void interrupt_and_execute(void) = 0;

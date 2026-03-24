@@ -20,6 +20,7 @@
 #define ABSTRACT_VALUE_BASED_TRIGGER_VALUE_H_
 
 #include <map>
+#include <nlohmann/json.hpp>
 #include <string>
 
 enum _vbt_var_name_e {
@@ -82,6 +83,8 @@ enum _vbt_var_name_e {
   var_name_sound_alarm_on,
   var_name_warning,
   var_name_invalid_sensor_state,
+  var_name_connected,
+  var_name_white_temperature,
 };
 
 class supla_vbt_value {
@@ -89,7 +92,7 @@ class supla_vbt_value {
   supla_vbt_value(void);
   virtual ~supla_vbt_value(void);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
-  virtual std::map<std::string, std::string> get_replacement_map(void);
+  virtual nlohmann::json get_template_data(void);
 };
 
 #endif /* ABSTRACT_VALUE_BASED_TRIGGER_VALUE_H_ */

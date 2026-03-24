@@ -37,13 +37,14 @@ void supla_abstract_get_rgbw_command::on_command_match(const char *params) {
         int color = 0;
         char color_brightness = 0;
         char brightness = 0;
-        char on_off = 0;
+        char white_temperature = 0;
 
         if (get_channel_rgbw_value(user_id, device_id, channel_id, &color,
-                                   &color_brightness, &brightness, &on_off)) {
+                                   &color_brightness, &brightness,
+                                   &white_temperature)) {
           char result[100] = {};
-          snprintf(result, sizeof(result), "VALUE:%i,%i,%i", color,
-                   color_brightness, brightness);
+          snprintf(result, sizeof(result), "VALUE:%i,%i,%i,%i", color,
+                   color_brightness, brightness, white_temperature);
 
           send_result(result);
           return true;

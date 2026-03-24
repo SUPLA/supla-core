@@ -20,11 +20,12 @@
 
 #include "device/value/channel_floating_point_sensor_value.h"
 #include "devicechannel.h"  // NOLINT
+#include "proto.h"
 
 namespace testing {
 
 TEST_F(ChannelFloatingPointSensorValueTest, voidConstructor) {
-  supla_channel_floating_point_sensor_value v;
+  supla_channel_floating_point_sensor_value v(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   EXPECT_EQ(v.get_value(), 0.0);
 
   char raw_value1[SUPLA_CHANNELVALUE_SIZE] = {};
@@ -36,37 +37,68 @@ TEST_F(ChannelFloatingPointSensorValueTest, voidConstructor) {
 
 TEST_F(ChannelFloatingPointSensorValueTest, rawDataConstructor) {
   char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
-  supla_channel_floating_point_sensor_value v1(raw_value);
+  supla_channel_floating_point_sensor_value v1(SUPLA_CHANNELFNC_DEPTHSENSOR,
+                                               raw_value);
   EXPECT_EQ(v1.get_value(), 0.0);
 }
 
 TEST_F(ChannelFloatingPointSensorValueTest, constructorWithFloatingPointValue) {
-  supla_channel_floating_point_sensor_value v1(33.44);
+  supla_channel_floating_point_sensor_value v1(SUPLA_CHANNELFNC_DISTANCESENSOR,
+                                               33.44);
   EXPECT_EQ(v1.get_value(), 33.44);
 }
 
 TEST_F(ChannelFloatingPointSensorValueTest, setterAndGetter) {
   char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
-  supla_channel_floating_point_sensor_value v1;
+  supla_channel_floating_point_sensor_value v1(SUPLA_CHANNELFNC_WINDSENSOR);
   v1.get_raw_value(raw_value);
 
   v1.set_value(11.22);
   EXPECT_EQ(v1.get_value(), 11.22);
   v1.get_raw_value(raw_value);
 
-  supla_channel_floating_point_sensor_value v2(raw_value);
+  supla_channel_floating_point_sensor_value v2(SUPLA_CHANNELFNC_WINDSENSOR,
+                                               raw_value);
   v1.set_value(22.22);
   EXPECT_EQ(v2.get_value(), 11.22);
 }
 
 TEST_F(ChannelFloatingPointSensorValueTest, getVbtValue) {
-  supla_channel_floating_point_sensor_value value;
+  supla_channel_floating_point_sensor_value value(
+      SUPLA_CHANNELFNC_PRESSURESENSOR);
   value.set_value(11.22);
 
   double vbt_value = 0;
 
   EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
   EXPECT_EQ(vbt_value, 11.22);
+}
+
+TEST_F(ChannelFloatingPointSensorValueTest, getVbtValue_Disatnce) {
+  supla_channel_floating_point_sensor_value value(
+      SUPLA_CHANNELFNC_DISTANCESENSOR);
+  value.set_value(-1);
+
+  double vbt_value = 5;
+
+  EXPECT_FALSE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_EQ(vbt_value, 5);
+
+  value.set_value(100);
+
+  vbt_value = 100;
+
+  EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
+  EXPECT_EQ(vbt_value, 100);
+}
+
+TEST_F(ChannelFloatingPointSensorValueTest, templateData) {
+  supla_channel_floating_point_sensor_value value(SUPLA_CHANNELFNC_RAINSENSOR);
+  value.set_value(11.22);
+
+  auto m = value.get_template_data();
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_EQ(m["value"].get<double>(), 11.22);
 }
 
 }  // namespace testing

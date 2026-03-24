@@ -437,100 +437,40 @@ supla_abstract_channel_extended_value *supla_channel_em_extended_value::
   return result;
 }
 
-map<string, string> supla_channel_em_extended_value::get_replacement_map(void) {
-  map<string, string> result;
+nlohmann::json supla_channel_em_extended_value::get_template_data(void) {
+  nlohmann::json result =
+      supla_abstract_channel_extended_value::get_template_data();
 
-  char buffer[100] = {};
-
-  snprintf(buffer, sizeof(buffer), "%.2f", get_voltage_avg());
-  result["voltage_avg"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.2f", get_voltage(1));
-  result["voltage1"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.2f", get_voltage(2));
-  result["voltage2"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.2f", get_voltage(3));
-  result["voltage3"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.2f", get_current_sum());
-  result["current_sum"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.2f", get_current(1));
-  result["current1"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.2f", get_current(2));
-  result["current2"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.2f", get_current(3));
-  result["current3"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_power_active_sum());
-  result["power_active_sum"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_power_active(1));
-  result["power_active1"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_power_active(2));
-  result["power_active2"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_power_active(3));
-  result["power_active3"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_power_reactive_sum());
-  result["power_reactive_sum"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_power_reactive(1));
-  result["power_reactive1"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_power_reactive(2));
-  result["power_reactive2"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_power_reactive(3));
-  result["power_reactive3"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_power_apparent_sum());
-  result["power_apparent_sum"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_power_apparent(1));
-  result["power_apparent1"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_power_apparent(2));
-  result["power_apparent2"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_power_apparent(3));
-  result["power_apparent3"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_fae(1));
-  result["fae1"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_fae(2));
-  result["fae2"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_fae(3));
-  result["fae3"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_fae_sum());
-  result["fae_sum"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_fae_balanced());
-  result["fae_balanced"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_rae(1));
-  result["rae1"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_rae(2));
-  result["rae2"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_rae(3));
-  result["rae3"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_rae_sum());
-  result["rae_sum"] = buffer;
-
-  snprintf(buffer, sizeof(buffer), "%.5f", get_rae_balanced());
-  result["rae_balanced"] = buffer;
+  result["voltage_avg"] = get_voltage_avg();
+  result["voltage1"] = get_voltage(1);
+  result["voltage2"] = get_voltage(2);
+  result["voltage3"] = get_voltage(3);
+  result["current_sum"] = get_current_sum();
+  result["current1"] = get_current(1);
+  result["current2"] = get_current(2);
+  result["current3"] = get_current(3);
+  result["power_active_sum"] = get_power_active_sum();
+  result["power_active1"] = get_power_active(1);
+  result["power_active2"] = get_power_active(2);
+  result["power_active3"] = get_power_active(3);
+  result["power_reactive_sum"] = get_power_reactive_sum();
+  result["power_reactive1"] = get_power_reactive(1);
+  result["power_reactive2"] = get_power_reactive(2);
+  result["power_reactive3"] = get_power_reactive(3);
+  result["power_apparent_sum"] = get_power_apparent_sum();
+  result["power_apparent1"] = get_power_apparent(1);
+  result["power_apparent2"] = get_power_apparent(2);
+  result["power_apparent3"] = get_power_apparent(3);
+  result["fae1"] = get_fae(1);
+  result["fae2"] = get_fae(2);
+  result["fae3"] = get_fae(3);
+  result["fae_sum"] = get_fae_sum();
+  result["fae_balanced"] = get_fae_balanced();
+  result["rae1"] = get_rae(1);
+  result["rae2"] = get_rae(2);
+  result["rae3"] = get_rae(3);
+  result["rae_sum"] = get_rae_sum();
+  result["rae_balanced"] = get_rae_balanced();
 
   return result;
 }

@@ -28,7 +28,7 @@ class supla_get_rgbw_command : public supla_abstract_get_rgbw_command {
   virtual bool get_channel_rgbw_value(int user_id, int device_id,
                                       int channel_id, int *color,
                                       char *color_brightness, char *brightness,
-                                      char *on_off);
+                                      char *white_temperature);
 
  public:
   explicit supla_get_rgbw_command(

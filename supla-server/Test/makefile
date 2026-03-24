@@ -37,8 +37,10 @@ RM := rm -rf
 -include src/test/integration/amazon/subdir.mk
 -include src/test/integration/subdir.mk
 -include src/test/http/subdir.mk
+-include src/test/helper/subdir.mk
 -include src/test/google/subdir.mk
 -include src/test/doubles/webhook/subdir.mk
+-include src/test/doubles/vbt/subdir.mk
 -include src/test/doubles/scene/subdir.mk
 -include src/test/doubles/push/subdir.mk
 -include src/test/doubles/mqtt/subdir.mk
@@ -82,10 +84,12 @@ RM := rm -rf
 -include src/jsonconfig/device/subdir.mk
 -include src/jsonconfig/channel/subdir.mk
 -include src/jsonconfig/subdir.mk
--include src/json/subdir.mk
 -include src/ipc/subdir.mk
 -include src/http/subdir.mk
+-include src/helper/subdir.mk
 -include src/google/subdir.mk
+-include src/external/cJSON/subdir.mk
+-include src/external/MQTT-C/src/subdir.mk
 -include src/distributedobjects/subdir.mk
 -include src/device/value/subdir.mk
 -include src/device/extended_value/subdir.mk

@@ -31,6 +31,7 @@ class supla_channel_openclosed_value : public supla_abstract_channel_value {
   void set_closed(bool closed);
   bool is_closed(void);
   static bool is_function_supported(int func);
+  virtual nlohmann::json get_template_data(void);
 };
 
 #endif /*CHANNEL_OPENCLOSED_VALUE_H_*/

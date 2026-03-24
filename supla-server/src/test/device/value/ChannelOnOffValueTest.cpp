@@ -108,4 +108,20 @@ TEST_F(ChannelOnOffValueTest, getVbtValue) {
   EXPECT_EQ(vbt_value, 1);
 }
 
+TEST_F(ChannelOnOffValueTest, templateData) {
+  supla_channel_onoff_value value;
+
+  auto m = value.get_template_data();
+  EXPECT_EQ(m.size(), 2);
+  EXPECT_FALSE(m["on"].get<bool>());
+  EXPECT_FALSE(m["value"].get<bool>());
+
+  value.set_on(true);
+
+  m = value.get_template_data();
+  EXPECT_EQ(m.size(), 2);
+  EXPECT_TRUE(m["on"].get<bool>());
+  EXPECT_TRUE(m["value"].get<bool>());
+}
+
 }  // namespace testing

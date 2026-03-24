@@ -25,7 +25,7 @@
 namespace testing {
 
 TEST_F(ChannelBinarySensorValueTest, voidConstructor) {
-  supla_channel_binary_sensor_value v;
+  supla_channel_binary_sensor_value v(SUPLA_CHANNELFNC_BINARY_SENSOR);
   EXPECT_FALSE(v.is_hi());
 
   char raw_value1[SUPLA_CHANNELVALUE_SIZE] = {};
@@ -37,17 +37,19 @@ TEST_F(ChannelBinarySensorValueTest, voidConstructor) {
 
 TEST_F(ChannelBinarySensorValueTest, rawDataConstructor) {
   char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
-  supla_channel_binary_sensor_value v1(raw_value);
+  supla_channel_binary_sensor_value v1(SUPLA_CHANNELFNC_BINARY_SENSOR,
+                                       raw_value);
   EXPECT_FALSE(v1.is_hi());
 
   raw_value[0] = 1;
-  supla_channel_binary_sensor_value v2(raw_value);
+  supla_channel_binary_sensor_value v2(SUPLA_CHANNELFNC_BINARY_SENSOR,
+                                       raw_value);
   EXPECT_TRUE(v2.is_hi());
 }
 
 TEST_F(ChannelBinarySensorValueTest, setterAndGetter) {
   char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
-  supla_channel_binary_sensor_value v;
+  supla_channel_binary_sensor_value v(SUPLA_CHANNELFNC_BINARY_SENSOR);
   v.get_raw_value(raw_value);
   EXPECT_EQ(raw_value[0], 0);
   EXPECT_FALSE(v.is_hi());
@@ -57,7 +59,7 @@ TEST_F(ChannelBinarySensorValueTest, setterAndGetter) {
 }
 
 TEST_F(ChannelBinarySensorValueTest, applyChannelProperties) {
-  supla_channel_binary_sensor_value v;
+  supla_channel_binary_sensor_value v(SUPLA_CHANNELFNC_BINARY_SENSOR);
   v.set_hi(true);
   v.apply_channel_properties(SUPLA_CHANNELTYPE_SENSORNC, 0, 0, 0, 0, 0,
                              nullptr);
@@ -79,7 +81,7 @@ TEST_F(ChannelBinarySensorValueTest, applyChannelProperties) {
 }
 
 TEST_F(ChannelBinarySensorValueTest, getVbtValue) {
-  supla_channel_binary_sensor_value value;
+  supla_channel_binary_sensor_value value(SUPLA_CHANNELFNC_BINARY_SENSOR);
 
   double vbt_value = 0;
   EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
@@ -88,6 +90,28 @@ TEST_F(ChannelBinarySensorValueTest, getVbtValue) {
   value.set_hi(true);
   EXPECT_TRUE(value.get_vbt_value(var_name_none, &vbt_value));
   EXPECT_EQ(vbt_value, 1);
+}
+
+TEST_F(ChannelBinarySensorValueTest, templateData) {
+  supla_channel_binary_sensor_value value(SUPLA_CHANNELFNC_BINARY_SENSOR);
+
+  auto m = value.get_template_data();
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_FALSE(m["value"].get<bool>());
+
+  value.set_hi(true);
+
+  m = value.get_template_data();
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_TRUE(m["value"].get<bool>());
+
+  value =
+      supla_channel_binary_sensor_value(SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY);
+  m = value.get_template_data();
+  EXPECT_EQ(m.size(), 3);
+  EXPECT_FALSE(m["value"].get<bool>());
+  EXPECT_TRUE(m["open"].get<bool>());
+  EXPECT_FALSE(m["closed"].get<bool>());
 }
 
 }  // namespace testing

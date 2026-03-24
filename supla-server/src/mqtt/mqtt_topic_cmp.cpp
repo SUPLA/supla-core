@@ -56,13 +56,19 @@ list<string> supla_mqtt_topic_cmp::topics_removed(
   load(topic_prefix, &topics_before, before);
   load(topic_prefix, &topics_after, after);
 
-  for (auto itb = topics_before.begin(); itb != topics_before.end(); ++itb) {
+  for (auto itb = topics_before.begin(); itb != topics_before.end();) {
+    bool erased = false;
+
     for (auto ita = topics_after.begin(); ita != topics_after.end(); ++ita) {
       if (itb->compare(*ita) == 0) {
         itb = topics_before.erase(itb);
-        --itb;
+        erased = true;
         break;
       }
+    }
+
+    if (!erased) {
+      ++itb;
     }
   }
 

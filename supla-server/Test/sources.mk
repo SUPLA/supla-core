@@ -51,10 +51,12 @@ src/device/call_handler \
 src/device/extended_value \
 src/device/value \
 src/distributedobjects \
+src/external/MQTT-C/src \
+src/external/cJSON \
 src/google \
+src/helper \
 src/http \
 src/ipc \
-src/json \
 src/jsonconfig \
 src/jsonconfig/channel \
 src/jsonconfig/device \
@@ -98,8 +100,10 @@ src/test/doubles/jsonconfig/device \
 src/test/doubles/mqtt \
 src/test/doubles/push \
 src/test/doubles/scene \
+src/test/doubles/vbt \
 src/test/doubles/webhook \
 src/test/google \
+src/test/helper \
 src/test/http \
 src/test/integration \
 src/test/integration/amazon \

@@ -23,15 +23,19 @@
 
 class supla_channel_floating_point_sensor_value
     : public supla_abstract_channel_value {
+ private:
+  int func;
+
  public:
-  supla_channel_floating_point_sensor_value(void);
-  explicit supla_channel_floating_point_sensor_value(
-      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  explicit supla_channel_floating_point_sensor_value(int func);
+  supla_channel_floating_point_sensor_value(
+      int func, const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
   virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
-  explicit supla_channel_floating_point_sensor_value(double value);
+  supla_channel_floating_point_sensor_value(int func, double value);
   void set_value(double value);
   double get_value(void);
   static bool is_function_supported(int func);
+  virtual nlohmann::json get_template_data(void);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 

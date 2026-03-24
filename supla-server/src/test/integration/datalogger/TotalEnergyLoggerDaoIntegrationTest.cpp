@@ -170,4 +170,28 @@ TEST_F(TotalEnergyLoggerDaoIntegrationTest, AllZeros) {
   EXPECT_EQ(result, "count\n0\n");
 }
 
+TEST_F(TotalEnergyLoggerDaoIntegrationTest, maxIntPlus1) {
+  ASSERT_TRUE(dba->connect());
+
+  string result;
+  sqlQuery("SELECT count(*) as count FROM supla_em_log", &result);
+
+  EXPECT_EQ(result, "count\n0\n");
+
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverflow"
+  em_ev.total_forward_active_energy[0] = INT64_MAX + 1;
+#pragma GCC diagnostic pop
+
+  dao->add(10, &em_ev);
+
+  result = "";
+
+  sqlQuery("SELECT count(*) as count FROM supla_em_log", &result);
+
+  EXPECT_EQ(result, "count\n0\n");
+}
+
 } /* namespace testing */

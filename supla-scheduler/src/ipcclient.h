@@ -53,7 +53,8 @@ class ipc_client {
   bool get_fb_value(int user_id, int device_id, int channel_id, char *position,
                     char *tilt);
   bool get_rgbw_value(int user_id, int device_id, int channel_id, int *color,
-                      char *color_brightness, char *brightness);
+                      char *color_brightness, char *brightness,
+                      char *white_temperature);
   bool get_valve_value(int user_id, int device_id, int channel_id,
                        TValve_Value *value);
   bool get_digiglass_value(int user_id, int device_id, int channel_id,
@@ -66,7 +67,8 @@ class ipc_client {
                       int channel_group_id, char value);
   bool set_rgbw_value(int user_id, int device_id, int channel_id,
                       int channel_group_id, int color, char color_brightness,
-                      char brightness);
+                      char brightness, bool color_random, char command,
+                      char white_temperature);
   bool set_digiglass_value(int user_id, int device_id, int channel_id,
                            int active_bits, int mask);
   bool action_copy(int user_id, int device_id, int channel_id,

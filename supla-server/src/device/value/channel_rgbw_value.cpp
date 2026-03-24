@@ -20,21 +20,31 @@
 
 #include <string.h>
 
-supla_channel_rgbw_value::supla_channel_rgbw_value(void)
-    : supla_abstract_channel_value() {}
+#include <cstdio>
+#include <string>
+
+using std::string;
+
+supla_channel_rgbw_value::supla_channel_rgbw_value(int func)
+    : supla_abstract_channel_value() {
+  this->func = func;
+}
 
 supla_channel_rgbw_value::supla_channel_rgbw_value(
-    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_abstract_channel_value(raw_value) {}
+    int func, const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_abstract_channel_value(raw_value) {
+  this->func = func;
+}
 
-supla_channel_rgbw_value::supla_channel_rgbw_value(TRGBW_Value *rgbw)
+supla_channel_rgbw_value::supla_channel_rgbw_value(int func, TRGBW_Value *rgbw)
     : supla_abstract_channel_value() {
+  this->func = func;
   set_rgbw(rgbw);
 }
 
 supla_abstract_channel_value *supla_channel_rgbw_value::copy(  // NOLINT
     void) const {                                              // NOLINT
-  return new supla_channel_rgbw_value(raw_value);
+  return new supla_channel_rgbw_value(func, raw_value);
 }
 
 void supla_channel_rgbw_value::set_rgbw(TRGBW_Value *rgbw) {
@@ -50,7 +60,8 @@ void supla_channel_rgbw_value::get_rgbw(TRGBW_Value *rgbw) {
 }
 
 void supla_channel_rgbw_value::get_rgbw(int *color, char *color_brightness,
-                                        char *brightness, char *dimmer_cct) {
+                                        char *brightness,
+                                        char *white_temperature) {
   if (color) {
     *color = get_color();
   }
@@ -63,8 +74,8 @@ void supla_channel_rgbw_value::get_rgbw(int *color, char *color_brightness,
     *brightness = get_brightness();
   }
 
-  if (dimmer_cct) {
-    *dimmer_cct = get_dimmer_cct();
+  if (white_temperature) {
+    *white_temperature = get_white_temperature();
   }
 }
 
@@ -75,6 +86,15 @@ unsigned int supla_channel_rgbw_value::get_color(void) {
   color |= ((unsigned int)rgbw->G << 8) & 0x0000FF00;
   color |= ((unsigned int)rgbw->B) & 0x000000FF;
   return color;
+}
+
+string supla_channel_rgbw_value::get_color_hex(void) {
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
+  char color_hex[9] = {};
+  snprintf(color_hex, sizeof(color_hex), "0x%02X%02X%02X", rgbw->R, rgbw->G,
+           rgbw->B);
+
+  return color_hex;
 }
 
 void supla_channel_rgbw_value::set_color(unsigned int color) {
@@ -106,14 +126,24 @@ void supla_channel_rgbw_value::set_color_brightness(char brightness) {
   rgbw->colorBrightness = brightness;
 }
 
-char supla_channel_rgbw_value::get_dimmer_cct(void) {
+char supla_channel_rgbw_value::get_command(void) {
   TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
-  return rgbw->dimmerCct;
+  return rgbw->command;
 }
 
-void supla_channel_rgbw_value::set_dimmer_cct(char cct) {
+void supla_channel_rgbw_value::set_command(char command) {
   TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
-  rgbw->dimmerCct = cct;
+  rgbw->command = command;
+}
+
+char supla_channel_rgbw_value::get_white_temperature(void) {
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
+  return rgbw->whiteTemperature;
+}
+
+void supla_channel_rgbw_value::set_white_temperature(char wt) {
+  TRGBW_Value *rgbw = (TRGBW_Value *)raw_value;
+  rgbw->whiteTemperature = wt;
 }
 
 // static
@@ -128,6 +158,59 @@ bool supla_channel_rgbw_value::is_function_supported(int func) {
   }
 
   return false;
+}
+
+bool supla_channel_rgbw_value::is_on(void) {
+  bool result = false;
+
+  switch (func) {
+    case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+      result = get_brightness() > 0;
+      break;
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+      result = get_color_brightness() > 0;
+      break;
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+      result = get_brightness() > 0 || get_color_brightness() > 0;
+      break;
+  }
+
+  return result;
+}
+
+nlohmann::json supla_channel_rgbw_value::get_template_data(void) {
+  nlohmann::json result = supla_abstract_channel_value::get_template_data();
+
+  switch (func) {
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+      result["color"] = get_color_hex();
+      result["color_brightness"] = get_color_brightness();
+      break;
+  }
+
+  switch (func) {
+    case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+      result["brightness"] = get_brightness();
+      break;
+  }
+
+  switch (func) {
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+      result["white_temperature"] = get_white_temperature();
+      break;
+  }
+
+  result["on"] = is_on();
+
+  return result;
 }
 
 bool supla_channel_rgbw_value::get_vbt_value(_vbt_var_name_e var_name,

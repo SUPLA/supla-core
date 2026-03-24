@@ -18,26 +18,35 @@
 
 #include "channel_binary_sensor_value.h"
 
-#include <string.h>
+#include <string>
 
 #include "jsonconfig/channel/binary_sensor_config.h"
 
-supla_channel_binary_sensor_value::supla_channel_binary_sensor_value(void)
-    : supla_abstract_channel_value() {}
+using std::map;
+using std::string;
+
+supla_channel_binary_sensor_value::supla_channel_binary_sensor_value(int func)
+    : supla_abstract_channel_value() {
+  this->func = func;
+}
 
 supla_channel_binary_sensor_value::supla_channel_binary_sensor_value(
-    const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_abstract_channel_value(raw_value) {}
+    int func, const char raw_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_abstract_channel_value(raw_value) {
+  this->func = func;
+}
 
-supla_channel_binary_sensor_value::supla_channel_binary_sensor_value(bool hi)
+supla_channel_binary_sensor_value::supla_channel_binary_sensor_value(int func,
+                                                                     bool hi)
     : supla_abstract_channel_value() {
+  this->func = func;
   set_hi(hi);
 }
 
 supla_abstract_channel_value *
 supla_channel_binary_sensor_value::copy(  // NOLINT
     void) const {                         // NOLINT
-  return new supla_channel_binary_sensor_value(raw_value);
+  return new supla_channel_binary_sensor_value(func, raw_value);
 }
 
 void supla_channel_binary_sensor_value::set_hi(bool hi) {
@@ -59,6 +68,26 @@ void supla_channel_binary_sensor_value::apply_channel_properties(
       set_hi(!is_hi());
     }
   }
+}
+
+nlohmann::json supla_channel_binary_sensor_value::get_template_data(void) {
+  nlohmann::json result = supla_abstract_channel_value::get_template_data();
+  result["value"] = is_hi() ? true : false;
+
+  switch (func) {
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+      result["closed"] = is_hi() ? true : false;
+      result["open"] = is_hi() ? false : true;
+      break;
+  }
+
+  return result;
 }
 
 // static

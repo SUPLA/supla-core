@@ -25,17 +25,24 @@
 #include "device/value/abstract_channel_value.h"
 
 class supla_channel_valve_value : public supla_abstract_channel_value {
+ private:
+  int func;
+
  public:
-  supla_channel_valve_value();
-  explicit supla_channel_valve_value(
-      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  explicit supla_channel_valve_value(const TValve_Value *value);
+  explicit supla_channel_valve_value(int func);
+  supla_channel_valve_value(int func,
+                            const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  supla_channel_valve_value(int func, const TValve_Value *value);
   virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
   const TValve_Value *get_valve_value(void);
   void get_valve_value(TValve_Value *value);
   void set_valve_value(TValve_Value *value);
-  virtual std::map<std::string, std::string> get_replacement_map(void);
   static bool is_function_supported(int func);
+  virtual nlohmann::json get_template_data(void);
+  bool is_flooding(void);
+  bool is_manually_closed(void);
+  bool is_motor_problem(void);
+  bool is_closed(void);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 

@@ -484,7 +484,7 @@ bool supla_mqtt_abstract_state_message_provider::get_brightness_message(
                         get_device_id(), get_channel_id());
 }
 
-bool supla_mqtt_abstract_state_message_provider::get_dimmer_cct_message(
+bool supla_mqtt_abstract_state_message_provider::get_white_temperature_message(
     const char *topic_prefix, char **topic_name, void **message,
     size_t *message_size) {
   char value[50];
@@ -494,12 +494,12 @@ bool supla_mqtt_abstract_state_message_provider::get_dimmer_cct_message(
       dynamic_cast<supla_channel_rgbw_value *>(channel_value);
 
   if (rgbw_val) {
-    snprintf(value, sizeof(value), "%i", rgbw_val->get_dimmer_cct());
+    snprintf(value, sizeof(value), "%i", rgbw_val->get_white_temperature());
   }
 
   return create_message(topic_prefix, user_suid, topic_name, message,
                         message_size, value, false,
-                        "devices/%i/channels/%i/state/dimmer_cct",
+                        "devices/%i/channels/%i/state/white_temperature",
                         get_device_id(), get_channel_id());
 }
 
@@ -1255,6 +1255,8 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
     case SUPLA_CHANNELFNC_MOTION_SENSOR:
     case SUPLA_CHANNELFNC_BINARY_SENSOR:
+    case SUPLA_CHANNELFNC_FLOOD_SENSOR:
+    case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
       return get_sensor_message_at_index(index, topic_prefix, topic_name,
                                          message, message_size);
 
@@ -1294,8 +1296,8 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
 
         case 3:
           if (channel_function == SUPLA_CHANNELFNC_DIMMER_CCT) {
-            return get_dimmer_cct_message(topic_prefix, topic_name, message,
-                                          message_size);
+            return get_white_temperature_message(topic_prefix, topic_name,
+                                                 message, message_size);
           } else {
             break;
           }
@@ -1326,8 +1328,8 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
                                               message_size);
         case 5:
           if (channel_function == SUPLA_CHANNELFNC_DIMMER_CCT) {
-            return get_dimmer_cct_message(topic_prefix, topic_name, message,
-                                          message_size);
+            return get_white_temperature_message(topic_prefix, topic_name,
+                                                 message, message_size);
           } else {
             break;
           }

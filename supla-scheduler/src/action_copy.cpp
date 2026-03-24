@@ -20,8 +20,9 @@
 
 #include <string.h>
 
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "log.h"
+#include "proto.h"
 
 s_worker_action_copy::s_worker_action_copy(s_abstract_worker *worker)
     : s_worker_action(worker) {}
@@ -36,6 +37,8 @@ bool s_worker_action_copy::is_action_allowed(void) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
       return true;

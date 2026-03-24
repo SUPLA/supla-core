@@ -28,13 +28,13 @@ using std::shared_ptr;
 
 supla_channel_rs_value::supla_channel_rs_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
-    : supla_abstract_channel_value(raw_value) {
+    : supla_abstract_rs_value(raw_value) {
   opening_sensor_level = rsl_unknown;
 }
 
 supla_channel_rs_value::supla_channel_rs_value(
     const TDSC_RollerShutterValue *value)
-    : supla_abstract_channel_value() {
+    : supla_abstract_rs_value() {
   memcpy(raw_value, value, sizeof(TDSC_RollerShutterValue));
   opening_sensor_level = rsl_unknown;
 }
@@ -93,6 +93,14 @@ void supla_channel_rs_value::update_sensor(supla_user *user,
   }
 }
 
+char supla_channel_rs_value::get_position(void) {
+  return get_rs_value()->position;
+}
+
+_supla_int16_t supla_channel_rs_value::get_flags(void) {
+  return get_rs_value()->flags;
+}
+
 void supla_channel_rs_value::apply_channel_properties(
     int type, unsigned char protocol_version, int param1, int param2,
     int param3, int param4, supla_json_config *json_config) {
@@ -112,35 +120,4 @@ bool supla_channel_rs_value::is_function_supported(int func) {
   }
 
   return false;
-}
-
-bool supla_channel_rs_value::get_vbt_value(_vbt_var_name_e var_name,
-                                           double *value) {
-  switch (var_name) {
-    case var_name_calibration_failed:
-      *value = get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_FAILED ? 1 : 0;
-      break;
-    case var_name_calibration_lost:
-      *value = get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_LOST ? 1 : 0;
-      break;
-    case var_name_motor_problem:
-      *value = get_rs_value()->flags & RS_VALUE_FLAG_MOTOR_PROBLEM ? 1 : 0;
-      break;
-    case var_name_calibration_in_progress:
-      *value =
-          get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS ? 1 : 0;
-      break;
-    case var_name_is_any_error_set:
-      *value = ((get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_FAILED) ||
-                (get_rs_value()->flags & RS_VALUE_FLAG_CALIBRATION_LOST) ||
-                (get_rs_value()->flags & RS_VALUE_FLAG_MOTOR_PROBLEM))
-                   ? 1
-                   : 0;
-      break;
-    default:
-      *value = get_rs_value()->position;
-      break;
-  }
-
-  return true;
 }

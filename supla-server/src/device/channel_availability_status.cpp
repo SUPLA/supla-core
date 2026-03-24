@@ -20,18 +20,21 @@
 
 #include "proto.h"
 
-supla_channel_availability_status::supla_channel_availability_status(void) {
+supla_channel_availability_status::supla_channel_availability_status(void)
+    : supla_vbt_value() {
   proto_offline = SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE;
 }
 
 supla_channel_availability_status::supla_channel_availability_status(
-    bool offline) {
+    bool offline)
+    : supla_vbt_value() {
   proto_offline = offline ? SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE
                           : SUPLA_CHANNEL_OFFLINE_FLAG_ONLINE;
 }
 
 supla_channel_availability_status::supla_channel_availability_status(
-    char status, bool proto_offline) {
+    char status, bool proto_offline)
+    : supla_vbt_value() {
   this->proto_offline = 0;
   if (proto_offline) {
     set_proto_offline(status);
@@ -104,6 +107,27 @@ void supla_channel_availability_status::set_proto_offline(char offline) {
       proto_offline = !!offline;
       break;
   }
+}
+
+bool supla_channel_availability_status::get_vbt_value(_vbt_var_name_e var_name,
+                                                      double *value) {
+  if (var_name == var_name_connected) {
+    *value = is_connected();
+    return true;
+  }
+
+  return false;
+}
+
+bool supla_channel_availability_status::is_connected(void) {
+  return is_online() || is_online_but_not_available() ||
+         is_firmware_update_ongoing();
+}
+
+nlohmann::json supla_channel_availability_status::get_template_data(void) {
+  nlohmann::json result;
+  result["connected"] = is_connected();
+  return result;
 }
 
 void supla_channel_availability_status::set_offline(bool offline) {

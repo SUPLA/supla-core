@@ -103,6 +103,7 @@ void supla_cyclictasks_agent::loop(void *sthread) {
       vector<supla_user *> users;
       supla_mariadb_access_provider mdba;
       supla_tsdb_access_provider tsdba;
+      int tsdb_conn_attempt = 0;
 
       for (auto it = tasks.cbegin(); it != tasks.cend(); ++it) {
         if (sthread_isterminated(sthread)) {
@@ -113,13 +114,22 @@ void supla_cyclictasks_agent::loop(void *sthread) {
           continue;
         }
 
-        supla_abstract_db_access_provider *dba = nullptr;
+        supla_abstract_db_access_provider *dba = &mdba;
 
         if ((*it)->db_access_needed()) {
-          if ((*it)->is_tsdb_preffered() && tsdba.is_config_present()) {
-            dba = &tsdba;
-          } else {
-            dba = &mdba;
+          if (tsdb_conn_attempt < 3 && (*it)->is_tsdb_preffered() &&
+              tsdba.is_config_present()) {
+            if (!tsdba.is_connected()) {
+              tsdba.connect();
+            }
+
+            if (tsdba.is_connected()) {
+              // Use TSDB if the configuration is present and a connection to
+              // the database can be established.
+              dba = &tsdba;
+            } else {
+              tsdb_conn_attempt++;
+            }
           }
 
           if (!dba->is_connected() && !dba->connect()) {

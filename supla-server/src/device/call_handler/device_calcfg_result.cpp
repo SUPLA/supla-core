@@ -21,10 +21,10 @@
 #include <memory>
 #include <string>
 
+#include "cJSON.h"
 #include "client.h"
 #include "device.h"
 #include "device/device_dao.h"
-#include "json/cJSON.h"
 #include "jsonconfig/device/device_json_cfg_mode_password.h"
 #include "jsonconfig/device/device_json_ota_updates.h"
 #include "jsonconfig/device/device_json_pairing_result.h"

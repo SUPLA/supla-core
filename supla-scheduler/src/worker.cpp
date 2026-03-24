@@ -102,18 +102,20 @@ bool s_worker::ipcc_get_fb_value(char *position, char *tilt) {
 }
 
 bool s_worker::ipcc_get_rgbw_value(int *color, char *color_brightness,
-                                   char *brightness) {
+                                   char *brightness, char *white_temperature) {
   return get_ipcc()->get_rgbw_value(
       get_params()->user_id, get_params()->iodevice_id,
-      get_params()->channel_id, color, color_brightness, brightness);
+      get_params()->channel_id, color, color_brightness, brightness,
+      white_temperature);
 }
 
 bool s_worker::ipcc_set_rgbw_value(int color, char color_brightness,
-                                   char brightness) {
+                                   char brightness, bool color_random,
+                                   char command, char white_temperature) {
   return get_ipcc()->set_rgbw_value(
       get_params()->user_id, get_params()->iodevice_id,
       get_params()->channel_id, get_params()->channel_group_id, color,
-      color_brightness, brightness);
+      color_brightness, brightness, color_random, command, white_temperature);
 }
 
 bool s_worker::ipcc_get_valve_value(TValve_Value *value) {

@@ -84,6 +84,24 @@ unsigned _supla_int16_t supla_channel_container_value::get_raw_flags(void) {
   return ((TContainerChannel_Value *)raw_value)->flags;
 }
 
+nlohmann::json supla_channel_container_value::get_template_data(void) {
+  nlohmann::json result = supla_abstract_channel_value::get_template_data();
+  result["invalid_value"] = is_invalid();
+  result["alarm"] = is_alarm_flag_set();
+  result["sound_alarm_on"] = is_sound_alarm_on();
+  result["warning"] = is_warning_flag_set();
+  result["invalid_sensor_state"] = is_invalid_sensor_state_flag_set();
+
+  unsigned char level = 0;
+  if (get_level(&level)) {
+    int _level = level;
+    result["level"] = _level;
+    result["value"] = _level;
+  }
+
+  return result;
+}
+
 bool supla_channel_container_value::get_vbt_value(_vbt_var_name_e var_name,
                                                   double *value) {
   switch (var_name) {

@@ -27,6 +27,7 @@
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
 #include "actions/action_shading_system_parameters.h"
+#include "channel_availability_status.h"
 #include "device/abstract_device_dao.h"
 #include "device/channel_fragment.h"
 #include "device/devicechannel.h"
@@ -120,9 +121,10 @@ class supla_device_channels {
   void set_channel_extendedvalue(int channel_id,
                                  TSuplaChannelExtendedValue *ev);
 
-  void on_device_registered(supla_user *user, int device_id,
-                            TDS_SuplaDeviceChannel_B *schannel_b,
-                            TDS_SuplaDeviceChannel_E *schannel_e, int count);
+  void on_device_registered(
+      supla_user *user, int device_id, TDS_SuplaDeviceChannel_B *schannel_b,
+      TDS_SuplaDeviceChannel_E *schannel_e, int count,
+      std::map<int, supla_channel_availability_status> *previous_statuses);
 
   void set_device_channel_value(const supla_caller &caller, int channel_id,
                                 int group_id, unsigned char eol,
@@ -133,11 +135,12 @@ class supla_device_channels {
   bool set_device_channel_rgbw_value(const supla_caller &caller, int channel_id,
                                      int group_id, unsigned char eol, int color,
                                      char color_brightness, char brightness,
-                                     char on_off, char dimmer_cct);
+                                     char on_off, char command,
+                                     char white_temperature);
 
   std::vector<supla_channel_relation> get_channel_relations(
       int channel_id, e_relation_kind kind);
-  std::list<int> get_all_ids(void);
+  std::map<int, supla_channel_availability_status> get_all_statuses(void);
   int get_channel_id(unsigned char channel_number);
   bool channel_exists(int channel_id);
   supla_channel_availability_status get_channel_availability_status(
@@ -166,7 +169,8 @@ class supla_device_channels {
   bool is_on(int channel_id);
   bool set_rgbw(const supla_caller &caller, int channel_id, int group_id,
                 unsigned char eol, unsigned int *color, char *color_brightness,
-                char *brightness, char *on_off, char *dimmer_cct);
+                char *brightness, char *on_off, char *command,
+                char *white_temperature);
   bool set_color(const supla_caller &caller, int channel_id, int group_id,
                  unsigned char eol, unsigned int color);
   bool set_color_brightness(const supla_caller &caller, int channel_id,

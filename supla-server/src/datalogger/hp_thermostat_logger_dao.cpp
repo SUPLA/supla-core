@@ -88,7 +88,7 @@ void supla_hp_thermostat_logger_dao::add(
       tsdb_add(channel_id, measured_temperature, preset_temperature,
                th->is_on());
     } catch (const std::exception &e) {
-      get_tsdba()->log_exception(e);
+      get_tsdba()->log_exception(e, channel_id);
     }
   }
 }

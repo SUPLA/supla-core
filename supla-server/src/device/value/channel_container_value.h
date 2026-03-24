@@ -19,6 +19,8 @@
 #ifndef CHANNEL_CONTAINER_VALUE_H_
 #define CHANNEL_CONTAINER_VALUE_H_
 
+#include <nlohmann/json.hpp>
+
 #include "device/value/abstract_channel_value.h"
 #include "proto.h"
 
@@ -39,6 +41,7 @@ class supla_channel_container_value : public supla_abstract_channel_value {
   bool is_sound_alarm_on(void);
   unsigned _supla_int16_t get_raw_flags(void);
 
+  virtual nlohmann::json get_template_data(void);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
   static bool is_function_supported(int func);
 };

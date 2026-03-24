@@ -82,7 +82,7 @@ void supla_temperature_logger_dao::add_temperature(int channel_id,
     try {
       tsdb_add_temperature(channel_id, temperature_str);
     } catch (const std::exception &e) {
-      get_tsdba()->log_exception(e);
+      get_tsdba()->log_exception(e, channel_id);
     }
   }
 }
@@ -145,7 +145,7 @@ void supla_temperature_logger_dao::add_temperature_and_humidity(
       tsdb_add_temperature_and_humidity(channel_id, temperature_str,
                                         humidity_str);
     } catch (const std::exception &e) {
-      get_tsdba()->log_exception(e);
+      get_tsdba()->log_exception(e, channel_id);
     }
   }
 }

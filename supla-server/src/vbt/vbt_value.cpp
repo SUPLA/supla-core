@@ -31,7 +31,7 @@ bool supla_vbt_value::get_vbt_value(_vbt_var_name_e var_name, double *value) {
   return false;
 }
 
-map<string, string> supla_vbt_value::get_replacement_map(void) {
-  map<string, string> result;
+nlohmann::json supla_vbt_value::get_template_data(void) {
+  nlohmann::json result;
   return result;
 }

@@ -19,6 +19,7 @@
 #ifndef ValueBasedTriggerIntegrationTest_H_
 #define ValueBasedTriggerIntegrationTest_H_
 
+#include "doubles/vbt/ValueBasedTriggersMock.h"
 #include "integration/IntegrationTest.h"
 #include "user/user.h"
 
@@ -27,6 +28,8 @@ namespace testing {
 class ValueBasedTriggerIntegrationTest : public IntegrationTest, public Test {
  protected:
   supla_user *user;
+  ValueBasedTriggersMock *triggers;
+  supla_vbt_scheduler *scheduler;
 
  public:
   ValueBasedTriggerIntegrationTest();

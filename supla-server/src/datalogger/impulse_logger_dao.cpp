@@ -65,7 +65,7 @@ void supla_impulse_logger_dao::add(int channel_id,
     try {
       tsdb_add(channel_id, icv->get_counter(), icv->get_calculated_value());
     } catch (const std::exception &e) {
-      get_tsdba()->log_exception(e);
+      get_tsdba()->log_exception(e, channel_id);
     }
   }
 }

@@ -21,9 +21,11 @@
 #include <memory>
 #include <string>
 
+#include "actions/abstract_action_config.h"
 #include "actions/action_rgbw_parameters.h"
 #include "actions/action_shading_system_parameters.h"
 #include "converter/any_value_to_action_converter.h"
+#include "http/http_event_hub.h"
 
 using std::function;
 using std::map;
@@ -137,12 +139,26 @@ shared_ptr<supla_device> supla_abstract_action_executor::get_device(void) {
   return nullptr;
 }
 
+void supla_abstract_action_executor::on_correlation_token(
+    const char *alexa_correlation_token, const char *google_request_id) {
+  if (user) {
+    shared_ptr<supla_device> device =
+        user->get_devices()->get(get_device_id(), get_channel_id());
+    if (device != nullptr) {
+      supla_http_event_hub::on_channel_value_change(
+          user, device_id, get_channel_id(), get_caller(),
+          alexa_correlation_token, google_request_id);
+    }
+  }
+}
+
 void supla_abstract_action_executor::execute_action(
     const supla_caller &caller, int user_id, int action_id,
     _subjectType_e subject_type, int subject_id,
     supla_abstract_channel_property_getter *property_getter,
     supla_abstract_action_parameters *params, int source_device_id,
-    int source_channel_id, int cap, map<string, string> *replacement_map) {
+    int source_channel_id, int cap, nlohmann::json *template_data,
+    const char *alexa_correlation_token, const char *google_request_id) {
   if (action_id == 0 || subject_id == 0) {
     return;
   }
@@ -168,6 +184,11 @@ void supla_abstract_action_executor::execute_action(
     default:
       set_unknown_subject_type();
       break;
+  }
+
+  if (subject_type == stChannel &&
+      (alexa_correlation_token || google_request_id)) {
+    on_correlation_token(alexa_correlation_token, google_request_id);
   }
 
   switch (action_id) {
@@ -225,14 +246,17 @@ void supla_abstract_action_executor::execute_action(
         if (rgbw) {
           TAction_RGBW_Parameters rgbw_p = rgbw->get_rgbw();
 
-          if (rgbw && (rgbw_p.Brightness > -1 || rgbw_p.ColorBrightness > -1 ||
-                       rgbw_p.Color || rgbw_p.DimmerCct > -1)) {
+          if (rgbw && (!rgbw_p.Color || rgbw_p.Brightness > -1 ||
+                       rgbw_p.ColorBrightness > -1 || rgbw_p.Color ||
+                       rgbw_p.Command > -1 || rgbw_p.WhiteTemperature > -1)) {
             set_rgbw(
                 rgbw_p.Color ? &rgbw_p.Color : nullptr,
                 rgbw_p.ColorBrightness > -1 ? &rgbw_p.ColorBrightness : nullptr,
                 rgbw_p.Brightness > -1 ? &rgbw_p.Brightness : nullptr,
                 rgbw_p.OnOff > -1 ? &rgbw_p.OnOff : nullptr,
-                rgbw_p.DimmerCct > -1 ? &rgbw_p.DimmerCct : nullptr);
+                rgbw_p.Command > -1 ? &rgbw_p.Command : nullptr,
+                rgbw_p.WhiteTemperature > -1 ? &rgbw_p.WhiteTemperature
+                                             : nullptr);
           }
         }
       }
@@ -250,7 +274,7 @@ void supla_abstract_action_executor::execute_action(
       disable();
       break;
     case ACTION_SEND:
-      send(caller, replacement_map);
+      send(caller, template_data);
       break;
     case ACTION_INTERRUPT:
       interrupt();
@@ -312,9 +336,20 @@ void supla_abstract_action_executor::execute_action(
 }
 
 void supla_abstract_action_executor::execute_action(
+    const supla_caller &caller, int user_id, int action_id,
+    _subjectType_e subject_type, int subject_id,
+    supla_abstract_channel_property_getter *property_getter,
+    supla_abstract_action_parameters *params, int source_device_id,
+    int source_channel_id, int cap, nlohmann::json *template_data) {
+  execute_action(caller, user_id, action_id, subject_type, subject_id,
+                 property_getter, params, source_device_id, source_channel_id,
+                 cap, template_data, nullptr, nullptr);
+}
+
+void supla_abstract_action_executor::execute_action(
     const supla_caller &caller, int user_id, abstract_action_config *config,
     supla_abstract_channel_property_getter *property_getter,
-    map<string, string> *replacement_map) {
+    nlohmann::json *template_data) {
   int action_id = 0;
   int subject_id = 0;
 
@@ -341,7 +376,7 @@ void supla_abstract_action_executor::execute_action(
 
   execute_action(caller, user_id, action_id, config->get_subject_type(),
                  subject_id, property_getter, params, source_device_id,
-                 source_channel_id, cap, replacement_map);
+                 source_channel_id, cap, template_data);
 
   if (params) {
     delete params;

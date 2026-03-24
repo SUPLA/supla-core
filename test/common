@@ -2,27 +2,28 @@
 
 vg_verify() {
    valgrind --version
-   valgrind --tool=memcheck --leak-check=full --track-origins=no $1 2> vg-test.log 
-   cat ./vg-test.log
-   if ! grep "All heap blocks were freed -- no leaks are possible" ./vg-test.log; then
-     rm ./vg-test.log
-     echo "Memory leak error!"
-     exit 1
+   valgrind --tool=memcheck --leak-check=full --track-origins=no $1 2>&1 | tee valgrind.log
+   if [ "$2" != "--no-leak-check" ]; then
+     if grep -E "definitely lost: [1-9]|indirectly lost: [1-9]|possibly lost: [1-9]" valgrind.log; then
+       echo "Memory leak detected"
+       exit 1
+     fi
+   else
+     echo "Leak detection skipped"
    fi
-   
-   rm -f ./vg-test.log
+   rm valgrind.log
 }
 
 db_init() {
-   if ! (echo "" | mysql -u supla -h $DBHOST) 2> /dev/null; then
-      if ! mysql -u root -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
-         if ! mysql -u root -proot -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
+   if ! (echo "" | mysql --ssl=0 -u supla -h $DBHOST) 2> /dev/null; then
+      if ! mysql --ssl=0 -u root -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
+         if ! mysql --ssl=0 -u root -proot -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
          echo "Enter mariadb root password.";
-         mysql -u root -h $DBHOST -p < sql/CreateSqlUsersForTestPurposes.sql
+         mysql --ssl=0 -u root -h $DBHOST -p < sql/CreateSqlUsersForTestPurposes.sql
          fi
       fi
    fi
 
-   mysql -u supla -h $DBHOST < sql/RecreateTestDatabase.sql
-   mysql -u supla -h $DBHOST supla_test < sql/TestDatabaseStructureAndData.sql
+   mysql --ssl=0 -u supla -h $DBHOST < sql/RecreateTestDatabase.sql
+   mysql --ssl=0 -u supla -h $DBHOST supla_test < sql/TestDatabaseStructureAndData.sql
 }

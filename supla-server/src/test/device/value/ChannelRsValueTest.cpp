@@ -19,6 +19,7 @@
 #include "ChannelRsValueTest.h"
 
 #include "device/value/channel_rs_value.h"
+#include "proto.h"
 
 namespace testing {
 
@@ -121,6 +122,48 @@ TEST_F(ChannelRsValueTest, getVbtValue) {
   EXPECT_EQ(vbt_value, 1);
   EXPECT_TRUE(value.get_vbt_value(var_name_is_any_error_set, &vbt_value));
   EXPECT_EQ(vbt_value, 0);
+}
+
+TEST_F(ChannelRsValueTest, templateData) {
+  TDSC_RollerShutterValue raw = {};
+  raw.position = 55;
+
+  supla_channel_rs_value value(&raw);
+
+  auto m = value.get_template_data();
+  EXPECT_EQ(m.size(), 8);
+  EXPECT_FALSE(m["calibration_failed"].get<bool>());
+  EXPECT_FALSE(m["calibration_lost"].get<bool>());
+  EXPECT_FALSE(m["motor_problem"].get<bool>());
+  EXPECT_FALSE(m["calibration_in_progress"].get<bool>());
+  EXPECT_FALSE(m["any_error_set"].get<bool>());
+  EXPECT_TRUE(m["open"].get<bool>());
+  EXPECT_FALSE(m["closed"].get<bool>());
+  EXPECT_EQ(m["shut"].get<int>(), 55);
+
+  raw.position = -1;
+  raw.flags = RS_VALUE_FLAG_CALIBRATION_FAILED | RS_VALUE_FLAG_MOTOR_PROBLEM;
+  value = supla_channel_rs_value(&raw);
+
+  m = value.get_template_data();
+  EXPECT_EQ(m.size(), 5);
+  EXPECT_TRUE(m["calibration_failed"].get<bool>());
+  EXPECT_FALSE(m["calibration_lost"].get<bool>());
+  EXPECT_TRUE(m["motor_problem"].get<bool>());
+  EXPECT_FALSE(m["calibration_in_progress"].get<bool>());
+  EXPECT_TRUE(m["any_error_set"].get<bool>());
+
+  raw.flags =
+      RS_VALUE_FLAG_CALIBRATION_LOST | RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS;
+  value = supla_channel_rs_value(&raw);
+
+  m = value.get_template_data();
+  EXPECT_EQ(m.size(), 5);
+  EXPECT_FALSE(m["calibration_failed"].get<bool>());
+  EXPECT_TRUE(m["calibration_lost"].get<bool>());
+  EXPECT_FALSE(m["motor_problem"].get<bool>());
+  EXPECT_TRUE(m["calibration_in_progress"].get<bool>());
+  EXPECT_TRUE(m["any_error_set"].get<bool>());
 }
 
 }  // namespace testing

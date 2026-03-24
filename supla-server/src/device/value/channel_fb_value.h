@@ -19,10 +19,10 @@
 #ifndef CHANNEL_FB_VALUE_H_
 #define CHANNEL_FB_VALUE_H_
 
-#include "device/value/abstract_channel_value.h"
+#include "device/value/abstract_rs_value.h"
 #include "user/user.h"
 
-class supla_channel_fb_value : public supla_abstract_channel_value {
+class supla_channel_fb_value : public supla_abstract_rs_value {
  public:
   explicit supla_channel_fb_value(
       const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
@@ -37,10 +37,11 @@ class supla_channel_fb_value : public supla_abstract_channel_value {
                                         int param4,
                                         supla_json_config *json_config);
   static bool is_function_supported(int func);
-  char get_position(void);
+  virtual char get_position(void);
+  virtual _supla_int16_t get_flags(void);
   char get_tilt(void);
   double get_tilt_angle(supla_json_config *config);
-  virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
+  virtual nlohmann::json get_template_data(void);
 };
 
 #endif /*CHANNEL_FB_VALUE_H_*/

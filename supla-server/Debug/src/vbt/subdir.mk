@@ -9,6 +9,7 @@ CPP_SRCS += \
 ../src/vbt/value_based_triggers.cpp \
 ../src/vbt/vbt_condition_result.cpp \
 ../src/vbt/vbt_on_change_condition.cpp \
+../src/vbt/vbt_scheduler.cpp \
 ../src/vbt/vbt_value.cpp 
 
 CPP_DEPS += \
@@ -17,6 +18,7 @@ CPP_DEPS += \
 ./src/vbt/value_based_triggers.d \
 ./src/vbt/vbt_condition_result.d \
 ./src/vbt/vbt_on_change_condition.d \
+./src/vbt/vbt_scheduler.d \
 ./src/vbt/vbt_value.d 
 
 OBJS += \
@@ -25,6 +27,7 @@ OBJS += \
 ./src/vbt/value_based_triggers.o \
 ./src/vbt/vbt_condition_result.o \
 ./src/vbt/vbt_on_change_condition.o \
+./src/vbt/vbt_scheduler.o \
 ./src/vbt/vbt_value.o 
 
 
@@ -32,7 +35,7 @@ OBJS += \
 src/vbt/%.o: ../src/vbt/%.cpp src/vbt/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	$(CXX) -std=c++17 -D__DEBUG=1 -DUSE_OS_TZDB=1 -D__SUPLA_SERVER=1 -DSPROTO_WITHOUT_OUT_BUFFER -DSRPC_WITHOUT_OUT_QUEUE -DUSE_DEPRECATED_EMEV_V1 -DUSE_DEPRECATED_EMEV_V2 -D__OPENSSL_TOOLS=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -D__BCRYPT=1 -I$(INCMYSQL) -I../src/mqtt -I../src/device -I../src/user -I../src -I$(SSLDIR)/include -I../src/client -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIE -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	$(CXX) -std=c++17 -D__DEBUG=1 -DMQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h -DUSE_OS_TZDB=1 -D__SUPLA_SERVER=1 -DSPROTO_WITHOUT_OUT_BUFFER -DSRPC_WITHOUT_OUT_QUEUE -DUSE_DEPRECATED_EMEV_V1 -DUSE_DEPRECATED_EMEV_V2 -D__OPENSSL_TOOLS=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -D__BCRYPT=1 -I$(INCMYSQL) -I../src/external/inja/include -I../src/external/MQTT-C/include -I../src/external/cJSON -I../src/mqtt -I../src/device -I../src/user -I../src -I$(SSLDIR)/include -I../src/client -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIE -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
@@ -40,7 +43,7 @@ src/vbt/%.o: ../src/vbt/%.cpp src/vbt/subdir.mk
 clean: clean-src-2f-vbt
 
 clean-src-2f-vbt:
-	-$(RM) ./src/vbt/value_based_trigger.d ./src/vbt/value_based_trigger.o ./src/vbt/value_based_trigger_dao.d ./src/vbt/value_based_trigger_dao.o ./src/vbt/value_based_triggers.d ./src/vbt/value_based_triggers.o ./src/vbt/vbt_condition_result.d ./src/vbt/vbt_condition_result.o ./src/vbt/vbt_on_change_condition.d ./src/vbt/vbt_on_change_condition.o ./src/vbt/vbt_value.d ./src/vbt/vbt_value.o
+	-$(RM) ./src/vbt/value_based_trigger.d ./src/vbt/value_based_trigger.o ./src/vbt/value_based_trigger_dao.d ./src/vbt/value_based_trigger_dao.o ./src/vbt/value_based_triggers.d ./src/vbt/value_based_triggers.o ./src/vbt/vbt_condition_result.d ./src/vbt/vbt_condition_result.o ./src/vbt/vbt_on_change_condition.d ./src/vbt/vbt_on_change_condition.o ./src/vbt/vbt_scheduler.d ./src/vbt/vbt_scheduler.o ./src/vbt/vbt_value.d ./src/vbt/vbt_value.o
 
 .PHONY: clean-src-2f-vbt
 

@@ -1882,7 +1882,7 @@ Java_org_supla_android_lib_SuplaClient_scTimerArm(JNIEnv *env, jobject thiz,
 extern "C" JNIEXPORT jboolean JNICALL
 Java_org_supla_android_lib_SuplaClient_scSetRGBW(
     JNIEnv *env, jobject thiz, jlong _asc, jint id, jint group, jint color,
-    int color_brightness, int brightness, jint turn_onoff, jint dimmer_cct) {
+    int color_brightness, int brightness, jint turn_onoff, jint white_temperature) {
   void *supla_client = supla_client_ptr(_asc);
 
   if (supla_client) {
@@ -1892,7 +1892,7 @@ Java_org_supla_android_lib_SuplaClient_scSetRGBW(
 
     return supla_client_set_rgbw(supla_client, id, group > 0 ? 1 : 0, color,
                                  color_brightness, brightness, turn_onoff,
-                                 dimmer_cct) == 1
+                                 white_temperature) == 1
                ? JNI_TRUE
                : JNI_FALSE;
   }

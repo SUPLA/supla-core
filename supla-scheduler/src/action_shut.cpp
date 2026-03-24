@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "log.h"
 
 s_worker_action_shut::s_worker_action_shut(s_abstract_worker *worker)

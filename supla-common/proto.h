@@ -599,6 +599,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_AURATON 18
 #define SUPLA_MFR_HPD 19
 #define SUPLA_MFR_LUKFUD 20
+#define SUPLA_MFR_WALA 21
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
 #define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010          // ver. >= 17
@@ -1639,8 +1640,10 @@ typedef struct {
   unsigned _supla_int_t Color;  // 0 == Ignore
   char ColorRandom;
   char OnOff;
-  char DimmerCct;  // ver. >= 28
-  char Reserved[7];
+  char Command;    // RGBW_COMMAND_, requires
+                   // SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED v. >= 21
+  char WhiteTemperature;  // ver. >= 28
+  char Reserved[6];
 } TAction_RGBW_Parameters;  // ver. >= 19
 
 typedef struct {
@@ -2362,20 +2365,20 @@ typedef struct {
 // Stores color value (R, G, B) and ignores all other bytes.
 // If RGB is off, it stays off
 #define RGBW_COMMAND_SET_RGB_WITHOUT_TURN_ON 12
-// Start brightness dimmer iteration
-#define RGBW_COMMAND_START_ITERATE_DIMMER 13
-// Start color brightness iteration
-#define RGBW_COMMAND_START_ITERATE_RGB 14
-// Start dimmer and rgb brightness iteration
-#define RGBW_COMMAND_START_ITERATE_ALL 15
-// Stop brightness dimmer iteration
-#define RGBW_COMMAND_STOP_ITERATE_DIMMER 16
-// Stop color brightness iteration
-#define RGBW_COMMAND_STOP_ITERATE_RGB 17
-// Stop dimmer and rgb brightness iteration
-#define RGBW_COMMAND_STOP_ITERATE_ALL 18
-// Store dimmer CCT value and ignores all other bytes
-#define RGBW_COMMAND_SET_DIMMER_CCT_WITHOUT_TURN_ON 19
+// Start brightness dimmer adjustment (0..100..0 etc)
+#define RGBW_COMMAND_BRIGHTNESS_ADJUSTMENT_DIMMER_START 13
+// Start color brightness adjustment
+#define RGBW_COMMAND_BRIGHTNESS_ADJUSTMENT_COLOR_START 14
+// Start dimmer and rgb brightness adjustment
+#define RGBW_COMMAND_BRIGHTNESS_ADJUSTMENT_ALL_START 15
+// Stop brightness dimmer adjustment
+#define RGBW_COMMAND_BRIGHTNESS_ADJUSTMENT_DIMMER_STOP 16
+// Stop color brightness adjustment
+#define RGBW_COMMAND_BRIGHTNESS_ADJUSTMENT_COLOR_STOP 17
+// Stop dimmer and rgb brightness adjustment
+#define RGBW_COMMAND_BRIGHTNESS_ADJUSTMENT_ALL_STOP 18
+// Store dimmer white temperature value and ignores all other bytes
+#define RGBW_COMMAND_SET_WHITE_TEMPERATURE_WITHOUT_TURN_ON 19
 
 typedef struct {
   char brightness;       // 0..100
@@ -2386,7 +2389,7 @@ typedef struct {
   char onOff;
   char command;    // RGBW_COMMAND_, requires
                    // SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED v. >= 21
-  char dimmerCct;  // v. >= 25, 0..100 (0 warm, 50 neutral, 100 cold)
+  char whiteTemperature;  // v. >= 25, 0..100 (0 warm, 50 neutral, 100 cold)
 } TRGBW_Value;     // v. >= 10
 
 #define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1

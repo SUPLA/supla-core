@@ -110,7 +110,9 @@ void ChannelHvacValueWithTempHumTest::_ExpandHvacToHavacWithTempHum(
       .WillOnce(Return(789));
 
   EXPECT_CALL(getter, _get_value(Eq(5), Eq(10), Eq(789), IsNull(), IsNull()))
-      .WillOnce(Return(new supla_channel_temphum_value(true, 22.33, 35.36)));
+      .WillOnce(Return(new supla_channel_temphum_value(
+          SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+          SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 22.33, 35.36)));
 
   supla_abstract_channel_value *value = hvac_value;
   hvac_value = nullptr;

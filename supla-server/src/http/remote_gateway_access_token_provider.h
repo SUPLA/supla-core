@@ -24,7 +24,7 @@
 
 #include "http/curl_adapter.h"
 #include "http/remote_gateway_access_token.h"
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "push/pn_recipients.h"
 
 class supla_remote_gateway_access_token_provider {

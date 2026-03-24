@@ -20,21 +20,21 @@
 #define CHANNEL_TEMPHUM_VALUE_H_
 
 #include <map>
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "device/value/abstract_channel_value.h"
 
 class supla_channel_temphum_value : public supla_abstract_channel_value {
  private:
-  bool with_humidity;
+  int func;
+  int type;
 
  public:
-  supla_channel_temphum_value(void);
-  supla_channel_temphum_value(int channel_type, int func,
+  supla_channel_temphum_value(int type, int func);
+  supla_channel_temphum_value(int type, int func,
                               const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  supla_channel_temphum_value(bool with_humidity,
-                              const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  supla_channel_temphum_value(bool with_humidity, double temperature,
+  supla_channel_temphum_value(int type, int func, double temperature,
                               double humidity);
   virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
 
@@ -50,10 +50,10 @@ class supla_channel_temphum_value : public supla_abstract_channel_value {
                                         int param1, int param2, int param3,
                                         int param4,
                                         supla_json_config *json_config);
-  virtual std::map<std::string, std::string> get_replacement_map(void);
   static int incorrect_temperature(void);
   static int incorrect_humidity(void);
   static bool is_function_supported(int func);
+  virtual nlohmann::json get_template_data(void);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 

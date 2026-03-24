@@ -33,6 +33,7 @@ class PnThrottlingMock : public supla_pn_throttling {
   MOCK_METHOD3(is_delivery_possible,
                bool(int user_id, bool *first_time_exceeded,
                     unsigned int *limit));
+  MOCK_METHOD1(on_message_not_sent, void(int user_id));
 };
 
 } /* namespace testing */

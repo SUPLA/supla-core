@@ -549,7 +549,7 @@ TEST_F(ActionTriggerConfigTest, getBrightness) {
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightness\":110}}}}}");
 
-  EXPECT_NO_PARAMS(config);
+  EXPECT_EQ(get_rgbw_params(config).Brightness, 100);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
@@ -587,7 +587,7 @@ TEST_F(ActionTriggerConfigTest, getColorBrightness) {
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":110}}}"
       "}}");
 
-  EXPECT_NO_PARAMS(config);
+  EXPECT_EQ(get_rgbw_params(config).ColorBrightness, 100);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
@@ -656,7 +656,7 @@ TEST_F(ActionTriggerConfigTest, actionSetRGBW) {
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X5\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":350,\"color_"
-      "brightness\":44}}}}}");
+      "brightness\":44,\"white_temperature\":15,\"rgbw_command\":9}}}}}");
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x5);
 
@@ -672,7 +672,58 @@ TEST_F(ActionTriggerConfigTest, actionSetRGBW) {
   EXPECT_EQ(rgbw.Brightness, (char)-1);
   EXPECT_EQ(rgbw.ColorBrightness, (char)44);
   EXPECT_EQ(rgbw.Color, (unsigned int)0xFF002A);
+  EXPECT_EQ(rgbw.WhiteTemperature, (char)15);
+  EXPECT_EQ(rgbw.Command, (char)RGBW_COMMAND_TOGGLE_ALL);
   EXPECT_FALSE(rgbw.ColorRandom);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, actionSetRGBW_colorOrder) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X5\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":350,\"color\":\"#"
+      "FFAAFF\"}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x5);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x5);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_SET_RGBW_PARAMETERS);
+
+  TAction_RGBW_Parameters rgbw = get_rgbw_params(config);
+  EXPECT_EQ(rgbw.Color, (unsigned int)0xFFAAFF);
+  EXPECT_FALSE(rgbw.ColorRandom);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, actionSetRGBW_colorRandom) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X5\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":350,\"color\":"
+      "\"random\"}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x5);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x5);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_SET_RGBW_PARAMETERS);
+
+  unsigned int color = get_rgbw_params(config).Color;
+  int a = 0;
+  for (a = 0; a < 10; a++) {
+    if (color != get_rgbw_params(config).Color) {
+      break;
+    }
+  }
+  EXPECT_NE(a, 10);
+
+  EXPECT_TRUE(get_rgbw_params(config).ColorRandom);
 
   delete config;
 }

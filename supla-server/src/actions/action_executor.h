@@ -21,6 +21,7 @@
 
 #include <functional>
 #include <map>
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "actions/abstract_action_executor.h"
@@ -34,7 +35,8 @@ class supla_action_executor : public supla_abstract_action_executor {
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
-                        char *brightness, char *on_off, char *dimmer_cct);
+                        char *brightness, char *on_off, char *command,
+                        char *white_temperature);
   virtual void toggle(void);
   virtual void shut(const supla_action_shading_system_parameters *params);
   virtual void reveal(void);
@@ -44,7 +46,7 @@ class supla_action_executor : public supla_abstract_action_executor {
   virtual void enable(void);
   virtual void disable(void);
   virtual void send(const supla_caller &caller,
-                    std::map<std::string, std::string> *replacement_map);
+                    nlohmann::json *template_fields);
   virtual void stop(void);
   virtual void up(void);
   virtual void down(void);

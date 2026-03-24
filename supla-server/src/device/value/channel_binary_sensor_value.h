@@ -19,14 +19,21 @@
 #ifndef CHANNEL_BINARY_SENSOR_VALUE_H_
 #define CHANNEL_BINARY_SENSOR_VALUE_H_
 
+#include <map>
+#include <nlohmann/json.hpp>
+#include <string>
+
 #include "device/value/abstract_channel_value.h"
 
 class supla_channel_binary_sensor_value : public supla_abstract_channel_value {
+ private:
+  int func;
+
  public:
-  supla_channel_binary_sensor_value(void);
-  explicit supla_channel_binary_sensor_value(
-      const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
-  explicit supla_channel_binary_sensor_value(bool hi);
+  explicit supla_channel_binary_sensor_value(int func);
+  supla_channel_binary_sensor_value(
+      int func, const char raw_value[SUPLA_CHANNELVALUE_SIZE]);
+  supla_channel_binary_sensor_value(int func, bool hi);
   virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
 
   void set_hi(bool hi);
@@ -37,6 +44,7 @@ class supla_channel_binary_sensor_value : public supla_abstract_channel_value {
                                         int param4,
                                         supla_json_config *json_config);
   static bool is_function_supported(int func);
+  virtual nlohmann::json get_template_data(void);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 

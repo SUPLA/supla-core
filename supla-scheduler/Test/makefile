@@ -10,7 +10,8 @@ RM := rm -rf
 -include sources.mk
 -include src/test/doubles/subdir.mk
 -include src/test/subdir.mk
--include src/json/subdir.mk
+-include src/helper/subdir.mk
+-include src/external/cJSON/subdir.mk
 -include src/subdir.mk
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C++M_DEPS)),)

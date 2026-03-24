@@ -19,11 +19,11 @@
 #ifndef DEVICE_JSON_PAIRING_RESULT_H_
 #define DEVICE_JSON_PAIRING_RESULT_H_
 
+#include <helper/json_helper.h>
 #include <sys/types.h>
 
 #include <ctime>
 
-#include "json/json_helper.h"
 #include "proto.h"
 
 class device_json_pairing_result {

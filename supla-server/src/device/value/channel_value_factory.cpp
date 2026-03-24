@@ -75,11 +75,11 @@ supla_abstract_channel_value *supla_abstract_channel_value_factory::new_value(
   }
 
   if (supla_channel_rgbw_value::is_function_supported(func)) {
-    return new supla_channel_rgbw_value(value);
+    return new supla_channel_rgbw_value(func, value);
   }
 
   if (supla_channel_valve_value::is_function_supported(func)) {
-    return new supla_channel_valve_value(value);
+    return new supla_channel_valve_value(func, value);
   }
 
   if (supla_channel_temphum_value::is_function_supported(func)) {
@@ -87,11 +87,11 @@ supla_abstract_channel_value *supla_abstract_channel_value_factory::new_value(
   }
 
   if (supla_channel_binary_sensor_value::is_function_supported(func)) {
-    return new supla_channel_binary_sensor_value(value);
+    return new supla_channel_binary_sensor_value(func, value);
   }
 
   if (supla_channel_floating_point_sensor_value::is_function_supported(func)) {
-    return new supla_channel_floating_point_sensor_value(value);
+    return new supla_channel_floating_point_sensor_value(func, value);
   }
 
   if (supla_channel_openclosed_value::is_function_supported(func)) {

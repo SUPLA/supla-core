@@ -38,6 +38,7 @@ class supla_channel_onoff_value : public supla_abstract_channel_value {
                                         int param4,
                                         supla_json_config *json_config);
   static bool is_function_supported(int func);
+  virtual nlohmann::json get_template_data(void);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
 };
 

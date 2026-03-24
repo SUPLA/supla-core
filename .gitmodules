@@ -1,0 +1,12 @@
+[submodule "inja"]
+        path = supla-server/src/external/inja
+        url = https://github.com/pantor/inja.git
+[submodule "supla-common/external/cJSON"]
+	path = supla-common/external/cJSON
+	url = https://github.com/DaveGamble/cJSON.git
+[submodule "supla-server/external/MQTT-C"]
+	path = supla-server/external/MQTT-C
+	url = https://github.com/LiamBindle/MQTT-C
+[submodule "supla-server/src/external/MQTT-C"]
+	path = supla-server/src/external/MQTT-C
+	url = https://github.com/LiamBindle/MQTT-C

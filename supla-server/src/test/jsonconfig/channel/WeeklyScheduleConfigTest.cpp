@@ -19,7 +19,7 @@
 #include "WeeklyScheduleConfigTest.h"
 
 #include "TestHelper.h"
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "jsonconfig/channel/weekly_schedule_config.h"
 #include "proto.h"
 

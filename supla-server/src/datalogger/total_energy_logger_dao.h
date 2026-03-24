@@ -28,6 +28,7 @@ class supla_total_energy_logger_dao : public supla_abstract_cyclictask_dao {
                     bool *not_null_flag);
   void mariadb_add(int channel_id, TElectricityMeter_ExtendedValue_V3 *em_ev);
   void tsdb_add(int channel_id, TElectricityMeter_ExtendedValue_V3 *em_ev);
+  _supla_int64_t to_unsigned(unsigned _supla_int64_t v);
 
  public:
   explicit supla_total_energy_logger_dao(

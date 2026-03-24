@@ -232,12 +232,15 @@ TEST_F(ActionConfigTest, jsonRGBW) {
   EXPECT_EQ(memcmp(&rgbw1, &rgbw2, sizeof(TAction_RGBW_Parameters)), 0);
 
   config.apply_json_params(
-      "{\"brightness\":32,\"hue\":244,\"color_brightness\":22}");
+      "{\"brightness\":32,\"hue\":244,\"color_brightness\":22,"
+      "\"white_temperature\":55,\"rgbw_command\":8}");
 
   rgbw2 = get_rgbw();
   EXPECT_EQ(rgbw2.Brightness, 32);
   EXPECT_EQ(rgbw2.Color, (unsigned int)0x1000FF);
   EXPECT_EQ(rgbw2.ColorBrightness, 22);
+  EXPECT_EQ(rgbw2.WhiteTemperature, 55);
+  EXPECT_EQ(rgbw2.Command, RGBW_COMMAND_TURN_OFF_ALL);
   EXPECT_FALSE(rgbw2.ColorRandom);
 }
 
@@ -282,6 +285,39 @@ TEST_F(ActionConfigTest, jsonRGBW_random) {
       rgbw2 = get_rgbw();
       usleep(1000);
       if (rgbw2.Color != color) {
+        break;
+      }
+    }
+
+    EXPECT_LT(a, 10);
+  }
+}
+
+TEST_F(ActionConfigTest, jsonRGBW_colorOrder) {
+  TAction_RGBW_Parameters rgbw = {};
+
+  config.apply_json_params("{\"hue\":\"white\",\"color\":\"#AABBCC\"}");
+
+  rgbw = get_rgbw();
+  EXPECT_EQ(rgbw.Color, (unsigned int)0xAABBCC);
+  EXPECT_FALSE(rgbw.ColorRandom);
+}
+
+TEST_F(ActionConfigTest, jsonRGBW_colorRandom) {
+  TAction_RGBW_Parameters rgbw = {};
+
+  config.apply_json_params("{\"color\":\"random\"}");
+
+  unsigned int color = 0;
+
+  for (short n = 0; n < 10; n++) {
+    color = rgbw.Color;
+
+    short a = 0;
+    for (a = 0; a < 10; a++) {
+      rgbw = get_rgbw();
+      usleep(1000);
+      if (rgbw.Color != color) {
         break;
       }
     }

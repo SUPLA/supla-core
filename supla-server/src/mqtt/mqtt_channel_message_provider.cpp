@@ -368,6 +368,12 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_BINARY_SENSOR:
       snprintf(buf, buf_size, "BINARY_SENSOR");
       break;
+    case SUPLA_CHANNELFNC_FLOOD_SENSOR:
+      snprintf(buf, buf_size, "FLOOD_SENSOR");
+      break;
+    case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
+      snprintf(buf, buf_size, "CONTAINER_LEVEL_SENSOR");
+      break;
     default:
       buf[0] = 0;
       break;
@@ -592,6 +598,13 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
       break;
     case SUPLA_CHANNELFNC_BINARY_SENSOR:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Binary sensor");
+      break;
+    case SUPLA_CHANNELFNC_FLOOD_SENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Flood sensor");
+      break;
+    case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Container level sensor");
       break;
     default:
       caption_out[0] = 0;
@@ -1903,6 +1916,8 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
     case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
     case SUPLA_CHANNELFNC_BINARY_SENSOR:
+    case SUPLA_CHANNELFNC_FLOOD_SENSOR:
+    case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
       return ha_binary_sensor(NULL, topic_prefix, topic_name, message,
                               message_size, true);
     case SUPLA_CHANNELFNC_MOTION_SENSOR:

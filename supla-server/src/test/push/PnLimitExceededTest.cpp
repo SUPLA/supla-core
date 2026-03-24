@@ -36,19 +36,17 @@ PnLimitExceededTest::~PnLimitExceededTest(void) {}
 TEST_F(PnLimitExceededTest, initializationWithTheSourceMessage) {
   supla_push_notification *src = new supla_push_notification(20);
   src->set_title("title");
-  src->set_body("body {a}");
+  src->set_body("body...");
   src->set_localized_title("ltitle");
   src->set_localized_body("lbody");
 
   vector<string> args{"n", "m"};
-  map<string, string> replacement_map{{"a", "b"}};
 
   src->set_localized_title_args(args);
   src->set_localized_body_args(args);
   src->set_sound(15);
   src->get_recipients().add(new supla_pn_recipient(10, 0, false, "ancd", "", 0),
                             platform_push_android);
-  src->set_replacement_map(&replacement_map);
 
   supla_pn_limit_exceeded push(src, 150);
   args = push.get_localized_body_args();
@@ -73,19 +71,17 @@ TEST_F(PnLimitExceededTest, immutable) {
   supla_pn_limit_exceeded push(new supla_push_notification(20), 30);
 
   push.set_title("title");
-  push.set_body("body {a}");
+  push.set_body("body...");
   push.set_localized_title("ltitle");
   push.set_localized_body("lbody");
 
   vector<string> args{"n", "m"};
-  map<string, string> replacement_map{{"a", "b"}};
 
   push.set_localized_title_args(args);
   push.set_localized_body_args(args);
   push.set_sound(15);
   push.get_recipients().add(new supla_pn_recipient(10, 0, false, "ancd", "", 0),
                             platform_push_android);
-  push.set_replacement_map(&replacement_map);
 
   args = push.get_localized_body_args();
 

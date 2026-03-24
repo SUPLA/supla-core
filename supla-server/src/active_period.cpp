@@ -23,8 +23,8 @@
 #include <vector>
 
 #include "astro/SolarCalculator.h"
+#include "cJSON.h"
 #include "date/tz.h"
-#include "json/cJSON.h"
 #include "log.h"
 
 using std::string;

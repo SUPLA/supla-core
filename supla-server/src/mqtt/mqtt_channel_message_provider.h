@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include "json/cJSON.h"
+#include "cJSON.h"
 #include "mqtt_db.h"
 #include "mqtt_message_provider.h"
 

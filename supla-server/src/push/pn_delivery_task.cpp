@@ -21,6 +21,7 @@
 #include <string>
 
 #include "asynctask/asynctask_queue.h"
+#include "device/channel_property_getter.h"
 #include "log.h"
 #include "push/apns_client.h"
 #include "push/fcm_client.h"
@@ -41,6 +42,9 @@ supla_pn_delivery_task::supla_pn_delivery_task(
     : supla_asynctask_http_request(caller, user_id, 0, 0, queue, pool,
                                    nullptr) {
   this->push = push;
+  if (!push->is_getter_set()) {
+    push->set_getter(new supla_channel_property_getter(user_id, 0, 0));
+  }
   this->token_provider = token_provider;
   this->throttling = throttling;
   dba = nullptr;
@@ -133,18 +137,24 @@ bool supla_pn_delivery_task::make_request(
     }
   }
 
+  bool any_sent = false;
+
   if (push->get_recipients().count(platform_push_android) > 0) {
     supla_fcm_client client(get_caller(), curl_adapter, token_provider, push);
 
     fcm_recipients = true;
-    fcm_result = client.send();
+    fcm_result = client.send(&any_sent);
   }
 
   if (push->get_recipients().count(platform_push_ios) > 0) {
     supla_apns_client client(get_caller(), curl_adapter, token_provider, push);
 
     apns_recipients = true;
-    apns_result = client.send();
+    apns_result = client.send(&any_sent);
+  }
+
+  if (!any_sent) {
+    throttling->on_message_not_sent(get_user_id());
   }
 
   for (size_t a = 0; a < push->get_recipients().total_count(); a++) {
@@ -188,15 +198,16 @@ void supla_pn_delivery_task::start_delivering(const supla_caller &caller,
 }
 
 // static
-void supla_pn_delivery_task::start_delivering(
-    const supla_caller &caller, int user_id, int push_notification_id,
-    map<string, string> *replacement_map) {
+void supla_pn_delivery_task::start_delivering(const supla_caller &caller,
+                                              int user_id,
+                                              int push_notification_id,
+                                              nlohmann::json *template_data) {
   if (!push_notification_id) {
     return;
   }
   supla_push_notification *push =
       new supla_push_notification(push_notification_id);
-  push->set_replacement_map(replacement_map);
+  push->set_template_data(template_data);
 
   start_delivering(caller, user_id, push);
 }

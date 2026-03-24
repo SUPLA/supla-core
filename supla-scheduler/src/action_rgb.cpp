@@ -24,8 +24,8 @@
 
 #include <ctime>
 
-#include "json/cJSON.h"
 #include "log.h"
+#include "proto.h"
 #include "tools.h"
 
 s_worker_action_rgb::s_worker_action_rgb(s_abstract_worker *worker)
@@ -36,6 +36,8 @@ bool s_worker_action_rgb::is_action_allowed(void) {
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
       return true;
   }
 
@@ -48,15 +50,31 @@ int s_worker_action_rgb::waiting_time_to_retry(void) { return 30; }
 
 int s_worker_action_rgb::waiting_time_to_check(void) { return 5; }
 
+bool s_worker_action_rgb::get_char_value(cJSON *root, const char *key_name,
+                                         char *value) {
+  cJSON *item = cJSON_GetObjectItem(root, key_name);
+  if (item && cJSON_IsNumber(item)) {
+    *value = item->valuedouble;
+    return true;
+  }
+  return false;
+}
+
 char s_worker_action_rgb::parse_rgbw_params(int *color, char *color_brightness,
-                                            char *brightness, bool *random) {
+                                            char *brightness,
+                                            bool *color_random, char *command,
+                                            char *white_temperature) {
   int result = 0;
 
   if (color) *color = 0;
 
-  if (color_brightness) *color_brightness = 0;
+  if (color_brightness) *color_brightness = -1;
 
-  if (brightness) *brightness = 0;
+  if (brightness) *brightness = -1;
+
+  if (command) *command = -1;
+
+  if (white_temperature) *white_temperature = -1;
 
   if (worker->get_action_param() == NULL) {
     return 0;
@@ -66,40 +84,61 @@ char s_worker_action_rgb::parse_rgbw_params(int *color, char *color_brightness,
   if (root) {
     cJSON *item = NULL;
 
-    if (brightness) {
-      item = cJSON_GetObjectItem(root, "brightness");
-      if (item && cJSON_IsNumber(item) && item->valuedouble >= 0 &&
-          item->valuedouble <= 100) {
-        *brightness = item->valuedouble;
-        result++;
-      }
+    if (brightness && get_char_value(root, "brightness", brightness)) {
+      result++;
     }
 
-    if (color_brightness) {
-      item = cJSON_GetObjectItem(root, "color_brightness");
-      if (item && cJSON_IsNumber(item) && item->valuedouble >= 0 &&
-          item->valuedouble <= 100) {
-        *color_brightness = item->valuedouble;
-        result++;
-      }
+    if (color_brightness &&
+        get_char_value(root, "color_brightness", color_brightness)) {
+      result++;
     }
+
+    if (white_temperature &&
+        get_char_value(root, "white_temperature", white_temperature)) {
+      result++;
+    }
+
+    if (command && get_char_value(root, "rgbw_command", command)) {
+      result++;
+    }
+
     if (color) {
-      item = cJSON_GetObjectItem(root, "hue");
+      item = cJSON_GetObjectItem(root, "color");
       if (item) {
-        if (cJSON_IsNumber(item)) {
-          *color = st_hue2rgb(item->valuedouble);
-        } else if (cJSON_IsString(item)) {
-          if (strncasecmp(cJSON_GetStringValue(item), "random", 255) == 0) {
-            unsigned int seed = time(NULL);
-            *color = st_hue2rgb(rand_r(&seed) % 360);
-            if (random) {
-              *random = true;
+        char *value = cJSON_GetStringValue(item);
+        if (value) {
+          if (strnlen(value, 8) == 7 && value[0] == '#') {
+            value++;
+            char *end = nullptr;
+            errno = 0;
+            long lcolor = strtol(value, &end, 16);
+            if (lcolor != 0 && end && *end == '\0') {
+              *color = lcolor;
+              if (color_random) *color_random = false;
+              result++;
             }
+          } else if (strncasecmp(value, "random", 10) == 0) {
+            if (color_random) *color_random = true;
             result++;
-          } else if (strncasecmp(cJSON_GetStringValue(item), "white", 255) ==
-                     0) {
-            *color = 0xFFFFFF;
-            result++;
+          }
+        }
+
+      } else {
+        item = cJSON_GetObjectItem(root, "hue");
+        if (item) {
+          if (cJSON_IsNumber(item)) {
+            *color = st_hue2rgb(item->valuedouble);
+          } else if (cJSON_IsString(item)) {
+            if (strncasecmp(cJSON_GetStringValue(item), "random", 255) == 0) {
+              if (color_random) {
+                *color_random = true;
+              }
+              result++;
+            } else if (strncasecmp(cJSON_GetStringValue(item), "white", 255) ==
+                       0) {
+              *color = 0xFFFFFF;
+              result++;
+            }
           }
         }
       }
@@ -115,27 +154,44 @@ bool s_worker_action_rgb::result_success(int *fail_result_code) {
   int color, expected_color = 0;
   char color_brightness, expected_color_brightness = 0;
   char brightness, expected_brightness = 0;
-  bool random = false;
+  char white_temperature, expected_white_temperature = 0;
+  char command = 0;
+  bool color_random = false;
 
   if (parse_rgbw_params(&expected_color, &expected_color_brightness,
-                        &expected_brightness, &random) == 0) {
+                        &expected_brightness, &color_random, &command,
+                        &expected_white_temperature) == 0) {
     return false;
   }
 
-  if (!worker->ipcc_get_rgbw_value(&color, &color_brightness, &brightness)) {
+  if (!worker->ipcc_get_rgbw_value(&color, &color_brightness, &brightness,
+                                   &white_temperature)) {
     return false;
   }
 
   switch (worker->get_channel_func()) {
+    case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+      return (color_random || color == expected_color || !expected_color) &&
+             (color_brightness == expected_color_brightness ||
+              expected_color_brightness == -1) &&
+             (white_temperature == expected_white_temperature ||
+              expected_white_temperature == -1) &&
+             (brightness == expected_brightness || expected_brightness == -1);
+    case SUPLA_CHANNELFNC_DIMMER_CCT:
+      return (white_temperature == expected_white_temperature ||
+              expected_white_temperature == -1) ||
+             (brightness == expected_brightness || expected_brightness == -1);
     case SUPLA_CHANNELFNC_DIMMER:
-      return brightness == expected_brightness;
+      return brightness == expected_brightness || expected_brightness == -1;
     case SUPLA_CHANNELFNC_RGBLIGHTING:
-      return (random || color == expected_color) &&
-             color_brightness == expected_color_brightness;
+      return (color_random || color == expected_color || !expected_color) &&
+             (color_brightness == expected_color_brightness ||
+              expected_color_brightness == -1);
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-      return (random || color == expected_color) &&
-             color_brightness == expected_color_brightness &&
-             brightness == expected_brightness;
+      return (color_random || color == expected_color || !expected_color) &&
+             (color_brightness == expected_color_brightness ||
+              expected_color_brightness == -1) &&
+             (brightness == expected_brightness || expected_brightness == -1);
       break;
   }
 
@@ -144,11 +200,16 @@ bool s_worker_action_rgb::result_success(int *fail_result_code) {
 
 bool s_worker_action_rgb::do_action() {
   int color = 0;
-  char color_brightness = 0;
-  char brightness = 0;
+  char color_brightness = -1;
+  char brightness = -1;
+  char command = 0;
+  char white_temperature = -1;
+  bool random;
 
-  if (parse_rgbw_params(&color, &color_brightness, &brightness, NULL) > 0) {
-    return worker->ipcc_set_rgbw_value(color, color_brightness, brightness);
+  if (parse_rgbw_params(&color, &color_brightness, &brightness, &random,
+                        &command, &white_temperature) > 0) {
+    return worker->ipcc_set_rgbw_value(color, color_brightness, brightness,
+                                       random, command, white_temperature);
   }
   return false;
 }

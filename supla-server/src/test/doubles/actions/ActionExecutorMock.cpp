@@ -46,8 +46,8 @@ shared_ptr<supla_device> ActionExecutorMock::get_device(void) {
   return supla_abstract_action_executor::get_device();
 }
 
-map<string, string> ActionExecutorMock::get_replacement_map(void) {
-  return replacement_map;
+nlohmann::json ActionExecutorMock::get_template_data(void) {
+  return template_data;
 }
 
 void ActionExecutorMock::clear(void) {
@@ -77,7 +77,8 @@ void ActionExecutorMock::clear(void) {
   this->open_close_wct_counter = 0;
   this->color = 0x01FFFFFF;
   this->brightness = -1;
-  this->dimmer_cct = -1;
+  this->command = -1;
+  this->white_temperature = -1;
   this->color_brightness = -1;
   this->rgbw_counter = 0;
   this->forward_outside_counter = 0;
@@ -138,8 +139,8 @@ void ActionExecutorMock::set_color_brightness(char brightness) {
 }
 
 void ActionExecutorMock::set_rgbw(unsigned int *color, char *color_brightness,
-                                  char *brightness, char *on_off,
-                                  char *dimmer_cct) {
+                                  char *brightness, char *on_off, char *command,
+                                  char *white_temperature) {
   addTime();
   rgbw_counter++;
   if (color) {
@@ -158,8 +159,12 @@ void ActionExecutorMock::set_rgbw(unsigned int *color, char *color_brightness,
     this->rgbw_on_off = *on_off;
   }
 
-  if (dimmer_cct) {
-    this->dimmer_cct = *dimmer_cct;
+  if (command) {
+    this->command = *command;
+  }
+
+  if (white_temperature) {
+    this->white_temperature = *white_temperature;
   }
 }
 
@@ -234,13 +239,12 @@ void ActionExecutorMock::disable(void) {
   disable_counter++;
 }
 
-void ActionExecutorMock::send(
-    const supla_caller &caller,
-    std::map<std::string, std::string> *replacement_map) {
+void ActionExecutorMock::send(const supla_caller &caller,
+                              nlohmann::json *template_data) {
   addTime();
   sent_counter++;
-  if (replacement_map) {
-    this->replacement_map = *replacement_map;
+  if (template_data) {
+    this->template_data = *template_data;
   }
 }
 
@@ -423,7 +427,9 @@ unsigned int ActionExecutorMock::getColor(void) { return color; }
 
 char ActionExecutorMock::getBrightness(void) { return brightness; }
 
-char ActionExecutorMock::getDimmerCct(void) { return dimmer_cct; }
+char ActionExecutorMock::getCommand(void) { return command; }
+
+char ActionExecutorMock::getWhiteTemperature(void) { return white_temperature; }
 
 char ActionExecutorMock::getColorBrightness(void) { return color_brightness; }
 

@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+#include "exception/abort_exception.h"
+
 using std::string;
 using std::vector;
 
@@ -71,8 +73,15 @@ const supla_caller &supla_abstract_pn_gateway_client::get_caller(void) {
   return caller;
 }
 
-bool supla_abstract_pn_gateway_client::send(void) {
-  bool any_sent = false;
+void supla_abstract_pn_gateway_client::validate_body(
+    const std::string &body, const std::string &localized_body) {
+  if (body.empty() && localized_body.empty()) {
+    throw abort_exception("Message body is empty.");
+  }
+}
+
+bool supla_abstract_pn_gateway_client::send(bool *any_sent) {
+  *any_sent = false;
   bool any_error = false;
 
   for (size_t a = 0; a < push->get_recipients().count(get_platform()); a++) {
@@ -88,12 +97,17 @@ bool supla_abstract_pn_gateway_client::send(void) {
 
     curl_adapter->reset();
 
-    if (!token.is_valid() || !_send(&token, recipient)) {
+    try {
+      if (!token.is_valid() || !_send(&token, recipient)) {
+        any_error = true;
+      } else {
+        *any_sent = true;
+      }
+    } catch (const abort_exception &e) {
       any_error = true;
-    } else {
-      any_sent = true;
+      break;
     }
   }
 
-  return any_sent && !any_error;
+  return *any_sent && !any_error;
 }

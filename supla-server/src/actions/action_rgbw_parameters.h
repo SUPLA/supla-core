@@ -37,8 +37,15 @@ class supla_action_rgbw_parameters : public supla_abstract_action_parameters {
   const TAction_RGBW_Parameters get_rgbw(void);
   void set_brightness(char brightness);
   void set_color_brightness(char brightness);
+  void set_white_temperature(char wt);
   void set_color(unsigned int color);
+  bool set_color_from_string(const char *color);
+  bool set_color_from_hsv(double hue, const char *str);
+  bool set_command(char command);
   void set_random_color(bool random);
+  bool set_params(int color, bool color_random, int color_brightness,
+                  int brightness, int turn_onoff, int command,
+                  int white_temperature);
 };
 
 #endif /* ACTION_RGBW_PARAMETERS_H_ */

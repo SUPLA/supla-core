@@ -26,10 +26,10 @@
 #include <memory>
 #include <vector>
 
+#include "cJSON.h"
 #include "conn/authkey_cache.h"
 #include "device/device.h"
 #include "device/devicechannel.h"
-#include "json/cJSON.h"
 #include "log.h"
 
 using std::shared_ptr;

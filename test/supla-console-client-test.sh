@@ -25,7 +25,7 @@ database=supla_test
 user=supla
 ENDOFCFG
 
-/etc/init.d/rsyslog start
+pgrep rsyslogd >/dev/null || rsyslogd
 
 if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
   cd ./supla-server/Debug

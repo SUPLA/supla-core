@@ -189,7 +189,8 @@ TEST_F(ActionTriggerCopyTest, rgbw) {
       .WillRepeatedly([&rgbw](int user_id, int device_id, int channel_id,
                               supla_channel_fragment *_fragment,
                               supla_channel_availability_status *status) {
-        return new supla_channel_rgbw_value(&rgbw);
+        return new supla_channel_rgbw_value(
+            SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING, &rgbw);
       });
 
   at->execute_actions(1, 1, SUPLA_ACTION_CAP_TOGGLE_x1);

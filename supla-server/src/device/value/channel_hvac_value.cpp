@@ -286,13 +286,12 @@ string supla_channel_hvac_value::mode_to_string(void) {
   return mode;
 }
 
-map<string, string> supla_channel_hvac_value::get_replacement_map(void) {
-  map<string, string> result =
-      supla_abstract_channel_value::get_replacement_map();
+nlohmann::json supla_channel_hvac_value::get_template_data(void) {
+  nlohmann::json result = supla_abstract_channel_value::get_template_data();
 
   result["mode"] = mode_to_string();
-  result["setpoint_temperature_heat"] = get_setpoint_temperature_heat_str();
-  result["setpoint_temperature_cool"] = get_setpoint_temperature_cool_str();
+  result["setpoint_temperature_heat"] = get_setpoint_temperature_heat_dbl();
+  result["setpoint_temperature_cool"] = get_setpoint_temperature_cool_dbl();
 
   string heating_or_cooling = "IDLE";
   if (is_heating()) {
@@ -301,6 +300,8 @@ map<string, string> supla_channel_hvac_value::get_replacement_map(void) {
     heating_or_cooling = "COOLING";
   }
 
+  result["heating"] = is_heating();
+  result["cooling"] = is_cooling();
   result["heating_or_cooling"] = heating_or_cooling;
 
   std::string errors;

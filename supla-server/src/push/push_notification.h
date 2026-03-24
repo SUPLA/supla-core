@@ -20,10 +20,12 @@
 #define PUSH_NOTIFICATION_H_
 
 #include <map>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 
-#include "json/cJSON.h"
+#include "cJSON.h"
+#include "device/abstract_channel_property_getter.h"
 #include "push/pn_recipients.h"
 
 class supla_push_notification {
@@ -38,9 +40,9 @@ class supla_push_notification {
   std::vector<std::string> localized_body_args;
   int sound;
   supla_pn_recipients recipients;
-  std::map<std::string, std::string> replacement_map;
-  std::string apply_replacement_map(std::string str);
-  void apply_replacement_map(void);
+  supla_abstract_channel_property_getter *getter;
+  nlohmann::json template_data;
+  std::string apply_template_data(std::string str);
 
  public:
   supla_push_notification(void);
@@ -50,14 +52,14 @@ class supla_push_notification {
   supla_pn_recipients &get_recipients(void);
 
   virtual void set_title(const std::string &title);
-  virtual const std::string &get_title(void);
+  virtual std::string get_title(void);
   virtual void set_body(const std::string &body);
-  virtual const std::string &get_body(void);
+  virtual std::string get_body(void);
 
   virtual void set_localized_title(const std::string &title);
-  virtual const std::string &get_localized_title();
+  virtual std::string get_localized_title();
   virtual void set_localized_body(const std::string &body);
-  virtual const std::string &get_localized_body();
+  virtual std::string get_localized_body();
 
   virtual void set_localized_title_args(const std::vector<std::string> &args);
   virtual const std::vector<std::string> &get_localized_title_args();
@@ -68,10 +70,11 @@ class supla_push_notification {
   virtual int get_sound(void);
   virtual void set_date_time(const std::string date_time);
   std::string get_date_time(void);
-  virtual void set_replacement_map(
-      std::map<std::string, std::string> *replacement_map);
+  virtual void set_template_data(nlohmann::json *template_data);
   virtual bool apply_json(int user_id, cJSON *json);
   virtual bool apply_json(int user_id, const char *json);
+  void set_getter(supla_abstract_channel_property_getter *getter);
+  bool is_getter_set(void);
 };
 
 #endif /* PUSH_NOTIFICATION_H_ */

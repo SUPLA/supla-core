@@ -46,6 +46,7 @@
 #include "tools.h"
 #include "tsdb/tsdb_access_provider.h"
 #include "user.h"
+#include "vbt/vbt_scheduler.h"
 
 int main(int argc, char *argv[]) {
 #if __DEBUG
@@ -60,6 +61,7 @@ int main(int argc, char *argv[]) {
   void *ssl_accept_loop_thread = nullptr;
   void *ipc_accept_loop_thread = nullptr;
   supla_cyclictasks_agent *cyclictasks_agent = nullptr;
+  supla_vbt_scheduler *vbt_scheduler = nullptr;
 
   SSL_library_init();
   SSL_load_error_strings();
@@ -146,6 +148,8 @@ int main(int argc, char *argv[]) {
   st_mainloop_init();
   st_hook_signals();
 
+  vbt_scheduler = supla_vbt_scheduler::global_instance();
+
   ipc = ipcsocket_init(scfg_string(CFG_IPC_SOCKET_PATH));
 
   // INI ACCEPT LOOP
@@ -199,6 +203,7 @@ int main(int argc, char *argv[]) {
   }
 
   delete cyclictasks_agent;
+  delete vbt_scheduler;
 
   supla_asynctask_queue::global_instance_release();  // before
                                                      // serverconnection_free()
