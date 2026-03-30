@@ -54,7 +54,7 @@ supla_pn_recipients &supla_push_notification::get_recipients(void) {
 }
 
 void supla_push_notification::set_title(const string &title) {
-  this->title = title.substr(0, 255);  // Same limit as in the database
+  this->title = title.substr(0, 5120);  // Same limit as in the database
 }
 
 string supla_push_notification::get_title(void) {
@@ -62,7 +62,7 @@ string supla_push_notification::get_title(void) {
 }
 
 void supla_push_notification::set_body(const string &body) {
-  this->body = body.substr(0, 1024);  // Same limit as in the database
+  this->body = body.substr(0, 5120);  // Same limit as in the database
 }
 
 string supla_push_notification::get_body(void) {

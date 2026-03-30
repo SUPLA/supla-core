@@ -36,7 +36,7 @@ supla_inja_sandbox::supla_inja_sandbox(void) {
   max_blocks = 20;
   max_ifs = 15;
   allow_for = false;
-  max_output_bytes = 1024;
+  max_output_bytes = 5120;
 }
 
 supla_inja_sandbox::~supla_inja_sandbox(void) {}
@@ -80,7 +80,7 @@ string supla_inja_sandbox::validate_and_render(const string &tpl,
   string out = env.render(tpl, data);
 
   if (out.size() > max_output_bytes) {
-    throw runtime_error("Template execution exceeded allowed output size (1024).");
+    throw runtime_error("Template execution exceeded allowed output size (5120).");
   }
 
   return out;
