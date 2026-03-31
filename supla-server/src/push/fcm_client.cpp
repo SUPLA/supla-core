@@ -52,6 +52,9 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
 
   validate_body(body, localized_body);
   // -----------
+  
+
+  trim(&title, &body);
 
   if (body.empty() && localized_body.empty()) {
     throw abort_exception("Message body is empty.");
