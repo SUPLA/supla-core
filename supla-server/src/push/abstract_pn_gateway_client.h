@@ -49,6 +49,7 @@ class supla_abstract_pn_gateway_client {
   void validate_body(
       const std::string &body,
       const std::string &localized_body);  // throws abort_exception
+  void trim(std::string *title, std::string *body);
 
  public:
   supla_abstract_pn_gateway_client(

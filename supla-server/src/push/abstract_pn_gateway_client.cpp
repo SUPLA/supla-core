@@ -80,6 +80,25 @@ void supla_abstract_pn_gateway_client::validate_body(
   }
 }
 
+void supla_abstract_pn_gateway_client::trim(std::string *title,
+                                            std::string *body) {
+  string dots = "...";
+  size_t size = title->size() + body->size();
+  if (size > 3000) {
+    string *str_to_crop = title->size() > body->size() ? title : body;
+    size -= 3000;
+    size += dots.size();
+
+    if (str_to_crop->size() >= size) {
+      str_to_crop->resize(str_to_crop->size() - size);
+      str_to_crop->append(dots);
+    } else {
+      *str_to_crop = dots;
+      trim(title, body);
+    }
+  }
+}
+
 bool supla_abstract_pn_gateway_client::send(bool *any_sent) {
   *any_sent = false;
   bool any_error = false;
