@@ -23,6 +23,8 @@
 #include <cstdio>
 #include <string>
 
+#include "vbt/vbt_value.h"
+
 using std::string;
 
 supla_channel_rgbw_value::supla_channel_rgbw_value(int func)
@@ -224,6 +226,9 @@ bool supla_channel_rgbw_value::get_vbt_value(_vbt_var_name_e var_name,
       break;
     case var_name_brightness:
       *value = get_brightness();
+      break;
+    case var_name_white_temperature:
+      *value = get_white_temperature();
       break;
     default:
       return false;

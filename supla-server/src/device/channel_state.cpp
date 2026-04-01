@@ -464,7 +464,7 @@ bool supla_channel_state::get_vbt_value(_vbt_var_name_e var_name,
       }
       break;
     default:
-      return false;
+      break;
   }
 
   return false;

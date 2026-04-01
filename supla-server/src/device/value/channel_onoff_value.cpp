@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "vbt/vbt_value.h"
+
 supla_channel_onoff_value::supla_channel_onoff_value(void)
     : supla_abstract_channel_value() {}
 
@@ -97,6 +99,9 @@ nlohmann::json supla_channel_onoff_value::get_template_data(void) {
 
 bool supla_channel_onoff_value::get_vbt_value(_vbt_var_name_e var_name,
                                               double *value) {
-  *value = is_on() ? 1 : 0;
-  return true;
+  if (var_name == var_name_none) {
+    *value = is_on() ? 1 : 0;
+    return true;
+  }
+  return false;
 }

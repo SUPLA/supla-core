@@ -22,6 +22,8 @@
 
 #include <string>
 
+#include "vbt/vbt_value.h"
+
 using std::map;
 using std::string;
 
@@ -126,8 +128,11 @@ bool supla_channel_valve_value::get_vbt_value(_vbt_var_name_e var_name,
     case var_name_motor_problem:
       *value = is_motor_problem() ? 1 : 0;
       break;
-    default:
+    case var_name_none:
       *value = is_closed() ? 1 : 0;
+      break;
+    default:
+      return false;
   }
 
   return true;
