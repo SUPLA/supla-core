@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "vbt/vbt_value.h"
+
 supla_channel_floating_point_sensor_value::
     supla_channel_floating_point_sensor_value(int func)
     : supla_abstract_channel_value() {
@@ -81,10 +83,13 @@ nlohmann::json supla_channel_floating_point_sensor_value::get_template_data(
 
 bool supla_channel_floating_point_sensor_value::get_vbt_value(
     _vbt_var_name_e var_name, double *value) {
-  double v = get_value();
-  if (v >= 0 || func != SUPLA_CHANNELFNC_DISTANCESENSOR) {
-    *value = v;
-    return true;
+  if (var_name == var_name_none) {
+    double v = get_value();
+    if (v >= 0 || func != SUPLA_CHANNELFNC_DISTANCESENSOR) {
+      *value = v;
+      return true;
+    }
   }
+
   return false;
 }

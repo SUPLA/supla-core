@@ -21,6 +21,7 @@
 #include <string>
 
 #include "jsonconfig/channel/binary_sensor_config.h"
+#include "vbt/vbt_value.h"
 
 using std::map;
 using std::string;
@@ -116,6 +117,10 @@ bool supla_channel_binary_sensor_value::is_function_supported(int func) {
 
 bool supla_channel_binary_sensor_value::get_vbt_value(_vbt_var_name_e var_name,
                                                       double *value) {
-  *value = is_hi() ? 1.0 : 0.0;
-  return true;
+  if (var_name == var_name_none) {
+    *value = is_hi() ? 1.0 : 0.0;
+    return true;
+  }
+
+  return false;
 }

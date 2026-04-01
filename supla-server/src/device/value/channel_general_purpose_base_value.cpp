@@ -23,6 +23,7 @@
 #include <string>
 
 #include "jsonconfig/channel/general_purpose_base_config.h"
+#include "vbt/vbt_value.h"
 
 using std::string;
 
@@ -98,6 +99,9 @@ nlohmann::json supla_channel_general_purpose_base_value::get_template_data(
 
 bool supla_channel_general_purpose_base_value::get_vbt_value(
     _vbt_var_name_e var_name, double *value) {
-  *value = get_value();
-  return true;
+  if (var_name == var_name_none) {
+    *value = get_value();
+    return true;
+  }
+  return false;
 }

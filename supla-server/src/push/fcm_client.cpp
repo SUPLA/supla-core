@@ -52,7 +52,6 @@ char *supla_fcm_client::get_payload(supla_pn_recipient *recipient) {
 
   validate_body(body, localized_body);
   // -----------
-  
 
   trim(&title, &body);
 
