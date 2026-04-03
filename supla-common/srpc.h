@@ -497,16 +497,6 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_config_update_or_result(
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS
 
-#ifdef USE_DEPRECATED_EMEV_V2
-
-_supla_int_t SRPC_ICACHE_FLASH
-srpc_evtool_emev_v2to3(const TElectricityMeter_ExtendedValue_V2 *v2,
-                       TElectricityMeter_ExtendedValue_V3 *v3);
-
-_supla_int_t SRPC_ICACHE_FLASH
-srpc_evtool_emev_v3to2(const TElectricityMeter_ExtendedValue_V3 *v3,
-                       TElectricityMeter_ExtendedValue_V2 *v2);
-
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v3_emextended2extended(
     const TElectricityMeter_ExtendedValue_V3 *em_ev,
     TSuplaChannelExtendedValue *ev);
@@ -518,6 +508,16 @@ srpc_evtool_v3_extended2emextended(const TSuplaChannelExtendedValue *ev,
 _supla_int_t srpc_evtool_extended2emextended_latest(
     const TSuplaChannelExtendedValue *ev,
     TElectricityMeter_ExtendedValue_V3 *em_ev);
+
+#ifdef USE_DEPRECATED_EMEV_V2
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_emev_v2to3(const TElectricityMeter_ExtendedValue_V2 *v2,
+                       TElectricityMeter_ExtendedValue_V3 *v3);
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_emev_v3to2(const TElectricityMeter_ExtendedValue_V3 *v3,
+                       TElectricityMeter_ExtendedValue_V2 *v2);
 
 #ifdef USE_DEPRECATED_EMEV_V1
 _supla_int_t SRPC_ICACHE_FLASH
