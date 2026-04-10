@@ -32,9 +32,11 @@ typedef struct {
 
 void *safe_array_init(void) {
   TSafeArray *sa = malloc(sizeof(TSafeArray));
-  sa->lck = lck_init();
-  sa->count = 0;
-  sa->arr = NULL;
+  if (sa) {
+    sa->lck = lck_init();
+    sa->count = 0;
+    sa->arr = NULL;
+  }
 
   return sa;
 }
