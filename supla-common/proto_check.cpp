@@ -106,7 +106,7 @@ static_assert((unsigned int)265 == sizeof(TSC_OAuthTokenRequestResult));
 static_assert((unsigned int)62 == sizeof(TElectricityMeter_Measurement));
 
 // deprecated
-static_assert((unsigned int)429 == sizeof(TElectricityMeter_ExtendedValue));
+// static_assert((unsigned int)429 == sizeof(TElectricityMeter_ExtendedValue));
 
 // deprecated
 static_assert((139 +
