@@ -808,10 +808,11 @@ void SRPC_ICACHE_FLASH srpc_getlocationpack(Tsrpc *srpc,
       &srpc_locationpack_get_item_caption_size);
 }
 
-#define VALID_SIZE(MIAN_TYPE, ITEM_TYPE, SIZE_VAR, MAX)                   \
-  srpc->sdp.data_size >= (sizeof(MIAN_TYPE) - sizeof(ITEM_TYPE) * MAX) && \
-      srpc->sdp.data_size <= sizeof(MIAN_TYPE) &&                         \
-      (((MIAN_TYPE *)srpc->sdp.data)->SIZE_VAR) * sizeof(ITEM_TYPE) ==    \
+#define VALID_SIZE(MIAN_TYPE, ITEM_TYPE, SIZE_VAR, MAX)                       \
+  (SIZE_VAR) <= (MAX) &&                                                      \
+      srpc->sdp.data_size >= (sizeof(MIAN_TYPE) - sizeof(ITEM_TYPE) * MAX) && \
+      srpc->sdp.data_size <= sizeof(MIAN_TYPE) &&                             \
+      (((MIAN_TYPE *)srpc->sdp.data)->SIZE_VAR) * sizeof(ITEM_TYPE) ==        \
           srpc->sdp.data_size - (sizeof(MIAN_TYPE) - sizeof(ITEM_TYPE) * MAX)
 
 char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
