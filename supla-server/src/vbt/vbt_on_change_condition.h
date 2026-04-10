@@ -22,6 +22,7 @@
 #include <string>
 
 #include "cJSON.h"
+#include "proto.h"
 #include "vbt/vbt_value.h"
 
 enum _vbt_operator_e { op_unknown, op_eq, op_ne, op_le, op_lt, op_gt, op_ge };
@@ -32,6 +33,9 @@ class supla_vbt_on_change_condition {
   _vbt_var_name_e var_name;
   _vbt_operator_e op;
   _vbt_operator_e resume_op;
+  int duration_sec;
+  double saved_old_value;
+  struct timeval condition_met_at;
   double resume_value;
   bool paused;
   bool on_change;
@@ -40,7 +44,9 @@ class supla_vbt_on_change_condition {
 
   bool is_condition_met(_vbt_operator_e op, double old_value, double new_value,
                         double expected);
-  bool is_condition_met(double old_value, double new_value);
+  bool is_condition_met(double old_value, double new_value,
+                        _supla_int64_t *milliseconds_left);
+  _supla_int64_t ms_left(const struct timeval &now);
 
  public:
   supla_vbt_on_change_condition(void);
@@ -52,11 +58,16 @@ class supla_vbt_on_change_condition {
   _vbt_var_name_e get_var_name(void) const;
   _vbt_operator_e get_op(void) const;
   _vbt_operator_e get_resume_op(void) const;
+  int get_duration_sec(void) const;
   double get_resume_value(void) const;
   bool is_paused(void) const;
 
   virtual bool is_condition_met(supla_vbt_value *old_value,
+                                supla_vbt_value *new_value,
+                                _supla_int64_t *milliseconds_left);
+  virtual bool is_condition_met(supla_vbt_value *old_value,
                                 supla_vbt_value *new_value);
+  virtual bool is_condition_met(_supla_int64_t *milliseconds_left);
 
   bool operator==(const supla_vbt_on_change_condition &cnd) const;
 };

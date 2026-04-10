@@ -18,6 +18,7 @@
 
 #include "device/call_handler/register_device.h"
 
+#include <map>
 #include <memory>
 
 #include "conn/authkey_cache.h"
@@ -81,13 +82,15 @@ void supla_register_device::on_registration_success(void) {
 
   device->set_registered(true);
 
-  supla_user::add_device(device, get_user_id());
+  std::map<int, supla_channel_availability_status> previous_statuses;
+
+  supla_user::add_device(device, get_user_id(), &previous_statuses);
   device->get_user()->get_clients()->update_device_channels(
       get_location_id(), get_device_id(), is_new_device());
 
   device->get_channels()->on_device_registered(
       device->get_user(), get_device_id(), get_channels_b(), get_channels_e(),
-      get_channel_count());
+      get_channel_count(), &previous_statuses);
 
   if (is_channel_added()) {
     device->get_user()->on_channels_added(

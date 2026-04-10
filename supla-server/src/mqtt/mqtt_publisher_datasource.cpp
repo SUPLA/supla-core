@@ -532,7 +532,7 @@ void supla_mqtt_publisher_datasource::context_close(
     } else if (context->get_user_id()) {
       for (auto it = users_enabled.begin(); it != users_enabled.end(); ++it) {
         if (*it == context->get_user_id()) {
-          it = users_enabled.erase(it);
+          users_enabled.erase(it);
           break;
         }
       }

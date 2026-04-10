@@ -61,8 +61,8 @@ bool supla_pn_dao::get(int user_id, supla_push_notification *push) {
   if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
     MYSQL_BIND rbind[4] = {};
 
-    char title[100] = {};
-    char body[256] = {};
+    char title[5121] = {};
+    char body[5121] = {};
     char date_time[20] = {};
 
     unsigned long title_len = 0;

@@ -27,6 +27,7 @@
 #include <list>
 #include <memory>
 
+#include "channel_availability_status.h"
 #include "db/database.h"
 #include "device/call_handler/call_handler_collection.h"
 #include "device/device_dao.h"
@@ -39,6 +40,7 @@
 #include "safearray.h"
 #include "srpc/srpc.h"
 #include "user.h"
+#include "vbt/value_based_triggers.h"
 
 using std::dynamic_pointer_cast;
 using std::list;
@@ -56,14 +58,26 @@ supla_device::supla_device(supla_connection *connection)
 
 supla_device::~supla_device() {
   if (get_user()) {  // 1st line!
-    list<int> ids = channels->get_all_ids();
-    for (auto it = ids.begin(); it != ids.end(); it++) {
-      get_user()->on_channel_value_changed(supla_caller(ctDevice, get_id()),
-                                           get_id(), *it);
-    }
-  }
+    supla_channel_availability_status offline(true);
 
-  delete channels;
+    auto statuses = channels->get_all_statuses();
+
+    std::shared_ptr<supla_device> device =
+        get_user()->get_devices()->get(get_id());
+    bool there_is_no_other = !device || device.get() == this;
+
+    for (auto &[id, status] : statuses) {
+      get_user()->on_channel_value_changed(supla_caller(ctDevice, get_id()),
+                                           get_id(), id);
+
+      if (there_is_no_other) {
+        get_user()->get_value_based_triggers()->on_value_changed(
+            supla_caller(ctChannel, id), id, &status, &offline);
+      }
+    }
+
+    delete channels;
+  }
 }
 
 supla_abstract_srpc_call_handler_collection *

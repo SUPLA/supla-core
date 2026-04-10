@@ -46,7 +46,7 @@ ConnectionObjectsMock::get_all(void) {
 
 bool ConnectionObjectsMock::add(
     std::shared_ptr<supla_abstract_connection_object> obj) {
-  return supla_connection_objects::add(obj);
+  return supla_connection_objects::add(obj, nullptr);
 }
 
 std::shared_ptr<supla_abstract_connection_object> ConnectionObjectsMock::get(

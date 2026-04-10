@@ -135,19 +135,20 @@ void supla_mqtt_unpublisher_datasource::remove_expired(void) {
   gettimeofday(&now, NULL);
 
   lock();
-  for (auto it = deleted_devices.begin(); it != deleted_devices.end(); ++it) {
+  for (auto it = deleted_devices.begin(); it != deleted_devices.end();) {
     if (it->event_time.tv_sec + EXPIRE_TIME_SEC < now.tv_sec) {
       it = deleted_devices.erase(it);
-      --it;
+      continue;
     }
+    ++it;
   }
 
-  for (auto it = modified_channels.begin(); it != modified_channels.end();
-       ++it) {
+  for (auto it = modified_channels.begin(); it != modified_channels.end();) {
     if (it->event_time.tv_sec + EXPIRE_TIME_SEC < now.tv_sec) {
       it = modified_channels.erase(it);
-      --it;
+      continue;
     }
+    ++it;
   }
   unlock();
 }

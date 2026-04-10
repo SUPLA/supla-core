@@ -84,9 +84,11 @@ bool supla_abstract_rs_value::get_vbt_value(_vbt_var_name_e var_name,
     case var_name_is_any_error_set:
       *value = is_any_error_set() ? 1 : 0;
       break;
-    default:
+    case var_name_none:
       *value = get_position();
       break;
+    default:
+      return false;
   }
 
   return true;

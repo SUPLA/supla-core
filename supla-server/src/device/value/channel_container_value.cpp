@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "vbt/vbt_value.h"
+
 supla_channel_container_value::supla_channel_container_value(
     const char raw_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_abstract_channel_value(raw_value) {}
@@ -107,30 +109,32 @@ bool supla_channel_container_value::get_vbt_value(_vbt_var_name_e var_name,
   switch (var_name) {
     case var_name_invalid_value:
       *value = is_invalid() ? 1 : 0;
-      return true;
+      break;
     case var_name_alarm:
       *value = is_alarm_flag_set() ? 1 : 0;
-      return true;
+      break;
     case var_name_sound_alarm_on:
       *value = is_sound_alarm_on() ? 1 : 0;
-      return true;
+      break;
     case var_name_warning:
       *value = is_warning_flag_set() ? 1 : 0;
-      return true;
+      break;
     case var_name_invalid_sensor_state:
       *value = is_invalid_sensor_state_flag_set() ? 1 : 0;
-      return true;
-    default: {
+      break;
+    case var_name_none: {
       unsigned char level = 0;
       if (get_level(&level)) {
         *value = level;
         return true;
       }
+      return false;
     }
-
-    break;
+    default:
+      return false;
   }
-  return false;
+
+  return true;
 }
 
 // static

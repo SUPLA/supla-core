@@ -36,13 +36,13 @@ supla_inja_sandbox::supla_inja_sandbox(void) {
   max_blocks = 20;
   max_ifs = 15;
   allow_for = false;
-  max_output_bytes = 1024;
+  max_output_bytes = 5120;
 }
 
 supla_inja_sandbox::~supla_inja_sandbox(void) {}
 
 // static
-int supla_inja_sandbox::count_occ(const string& s, const string& needle) {
+int supla_inja_sandbox::count_occ(const string &s, const string &needle) {
   int c = 0;
   size_t p = 0;
   while ((p = s.find(needle, p)) != string::npos) {
@@ -52,8 +52,8 @@ int supla_inja_sandbox::count_occ(const string& s, const string& needle) {
   return c;
 }
 
-string supla_inja_sandbox::validate_and_render(const string& tpl,
-                                               const nlohmann::json& data) {
+string supla_inja_sandbox::validate_and_render(const string &tpl,
+                                               const nlohmann::json &data) {
   env.set_search_included_templates_in_files(false);
 
   static const regex re_include(R"(\{\%\s*include\b)");
@@ -66,11 +66,6 @@ string supla_inja_sandbox::validate_and_render(const string& tpl,
     throw runtime_error("Extends statements are not allowed.");
   }
 
-  static const regex re_for(R"(\{\%\s*for\b)");
-  if (!allow_for && regex_search(tpl, re_for)) {
-    throw runtime_error("For loops are not allowed.");
-  }
-
   static const regex re_range_call(R"(\brange\s*\()");
   if (!allow_for && regex_search(tpl, re_range_call)) {
     throw runtime_error("The range() function is not allowed.");
@@ -79,37 +74,34 @@ string supla_inja_sandbox::validate_and_render(const string& tpl,
   if (count_occ(tpl, "{%") > max_blocks) {
     throw runtime_error("Too many control blocks in template.");
   }
-  if (count_occ(tpl, "{% if") > max_ifs) {
-    throw runtime_error("Too many if statements in template.");
-  }
 
   env.parse(tpl);
 
   string out = env.render(tpl, data);
 
   if (out.size() > max_output_bytes) {
-    throw runtime_error("Template execution exceeded allowed output size.");
+    throw runtime_error("Template execution exceeded allowed output size (5120).");
   }
 
   return out;
 }
 
 void supla_inja_sandbox::register_abort_function(void) {
-  env.add_callback("abort", 0, [](inja::Arguments& args) -> inja::json {
+  env.add_callback("abort", 0, [](inja::Arguments &args) -> inja::json {
     throw abort_exception("Render aborted.");
   });
 }
 
 void supla_inja_sandbox::register_get_channel_function(
-    supla_abstract_channel_property_getter* getter) {
+    supla_abstract_channel_property_getter *getter) {
   this->getter = getter;
 
   env.add_callback(
-      "getChannel", 1, [this](inja::Arguments& args) -> inja::json {
+      "getChannel", 1, [this](inja::Arguments &args) -> inja::json {
         int channel_id = args.at(0)->get<int>();
         supla_channel_availability_status status;
         int func = 0;
-        supla_abstract_channel_value* value = this->getter->get_value(
+        supla_abstract_channel_value *value = this->getter->get_value(
             this->getter->get_user_id(), 0, channel_id, &func, &status);
 
         nlohmann::json result;
@@ -119,7 +111,7 @@ void supla_inja_sandbox::register_get_channel_function(
           if (supla_channel_ic_extended_value::is_function_supported(func) ||
               supla_channel_em_extended_value::is_function_supported(func)) {
             delete value;
-            supla_abstract_channel_extended_value* extended_value =
+            supla_abstract_channel_extended_value *extended_value =
                 this->getter->get_extended_value(this->getter->get_user_id(), 0,
                                                  channel_id);
 

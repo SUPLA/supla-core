@@ -48,6 +48,8 @@ char *supla_apns_client::get_payload(supla_pn_recipient *recipient) {
   validate_body(body, localized_body);
   // -----------
 
+  trim(&title, &body);
+
   cJSON *payload = cJSON_CreateObject();
   cJSON *aps = cJSON_CreateObject();
   cJSON *alert = cJSON_CreateObject();

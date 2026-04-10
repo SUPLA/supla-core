@@ -26,7 +26,7 @@ namespace testing {
 AsyncTaskThreadPoolTest::AsyncTaskThreadPoolTest(void) {}
 AsyncTaskThreadPoolTest::~AsyncTaskThreadPoolTest(void) {}
 
-TEST_F(AsyncTaskThreadPoolTest, initWithNulls) {
+TEST_F(AsyncTaskThreadPoolTest, DeathTest_initWithNulls) {
   ASSERT_DEATH(new AsyncTaskThreadPoolMock(NULL), "Assertion `queue' failed");
 
   supla_asynctask_queue *queue = new supla_asynctask_queue();

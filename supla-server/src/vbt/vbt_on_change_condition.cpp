@@ -34,6 +34,9 @@ supla_vbt_on_change_condition::supla_vbt_on_change_condition(void) {
   resume_value = 0;
   paused = false;
   on_change = false;
+  duration_sec = 0;
+  saved_old_value = 0;
+  condition_met_at = {};
 }
 
 supla_vbt_on_change_condition::~supla_vbt_on_change_condition(void) {}
@@ -54,6 +57,10 @@ double supla_vbt_on_change_condition::get_resume_value(void) const {
   return resume_value;
 }
 
+int supla_vbt_on_change_condition::get_duration_sec(void) const {
+  return duration_sec;
+}
+
 bool supla_vbt_on_change_condition::is_paused(void) const { return paused; }
 
 void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
@@ -69,8 +76,13 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
     }
   }
 
+  cJSON *duration_json = cJSON_GetObjectItem(root, "duration_sec");
+  if (cJSON_IsNumber(duration_json)) {
+    duration_sec = cJSON_GetNumberValue(duration_json);
+  }
+
   cJSON *name_json = cJSON_GetObjectItem(root, "name");
-  if (name_json && cJSON_IsString(name_json)) {
+  if (cJSON_IsString(name_json)) {
     map<_vbt_var_name_e, string> names{
         {var_name_color, "color"},
         {var_name_color_brightness, "color_brightness"},
@@ -130,6 +142,8 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
         {var_name_warning, "warning"},
         {var_name_invalid_sensor_state, "invalid_sensor_state"},
         {var_name_sound_alarm_on, "sound_alarm_on"},
+        {var_name_connected, "connected"},
+        {var_name_white_temperature, "white_temperature"},
     };
 
     for (auto it = names.begin(); it != names.end(); ++it) {
@@ -216,8 +230,12 @@ bool supla_vbt_on_change_condition::is_condition_met(_vbt_operator_e op,
          (op == op_le && new_value <= expected && old_value > expected);
 }
 
-bool supla_vbt_on_change_condition::is_condition_met(double old_value,
-                                                     double new_value) {
+bool supla_vbt_on_change_condition::is_condition_met(
+    double old_value, double new_value, _supla_int64_t *milliseconds_left) {
+  if (milliseconds_left) {
+    *milliseconds_left = 0;
+  }
+
   if (on_change) {
     return fabs(new_value - old_value) > 0.000001;
   }
@@ -226,21 +244,36 @@ bool supla_vbt_on_change_condition::is_condition_met(double old_value,
     if (is_condition_met(resume_op, old_value, new_value, resume_value)) {
       paused = false;
     }
-  } else {
-    bool result = is_condition_met(op, old_value, new_value, value);
+  } else if (is_condition_met(
+                 op, condition_met_at.tv_sec ? saved_old_value : old_value,
+                 new_value, value)) {
+    struct timeval now;
+    gettimeofday(&now, nullptr);
 
-    if (result && resume_op != op_unknown) {
+    if (duration_sec > 0) {
+      if (!condition_met_at.tv_sec) {
+        saved_old_value = old_value;
+        condition_met_at = now;
+        condition_met_at.tv_sec += duration_sec;
+      }
+
+      if (milliseconds_left) {
+        *milliseconds_left = ms_left(now);
+      }
+    } else if (resume_op != op_unknown) {
       paused = true;
     }
 
-    return result;
+    return true;
   }
 
+  condition_met_at = {};
   return false;
 }
 
 bool supla_vbt_on_change_condition::is_condition_met(
-    supla_vbt_value *old_value, supla_vbt_value *new_value) {
+    supla_vbt_value *old_value, supla_vbt_value *new_value,
+    _supla_int64_t *milliseconds_left) {
   if (!on_change && op == op_unknown) {
     return false;
   }
@@ -256,7 +289,42 @@ bool supla_vbt_on_change_condition::is_condition_met(
     return false;
   }
 
-  return is_condition_met(oldv, newv);
+  return is_condition_met(oldv, newv, milliseconds_left);
+}
+
+bool supla_vbt_on_change_condition::is_condition_met(
+    supla_vbt_value *old_value, supla_vbt_value *new_value) {
+  return is_condition_met(old_value, new_value, nullptr);
+}
+
+_supla_int64_t supla_vbt_on_change_condition::ms_left(
+    const struct timeval &now) {
+  return ((condition_met_at.tv_sec * 1000000LL + condition_met_at.tv_usec) -
+          (now.tv_sec * 1000000LL + now.tv_usec)) /
+         1000;
+}
+
+bool supla_vbt_on_change_condition::is_condition_met(
+    _supla_int64_t *milliseconds_left) {
+  if (condition_met_at.tv_sec) {
+    struct timeval now;
+    gettimeofday(&now, nullptr);
+
+    *milliseconds_left = ms_left(now);
+
+    if (*milliseconds_left <= 0) {
+      if (resume_op != op_unknown) {
+        paused = true;
+      }
+
+      condition_met_at = {};
+      return true;
+    }
+  } else {
+    *milliseconds_left = 0;
+  }
+
+  return false;
 }
 
 bool supla_vbt_on_change_condition::operator==(

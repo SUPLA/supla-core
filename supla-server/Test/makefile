@@ -40,6 +40,7 @@ RM := rm -rf
 -include src/test/helper/subdir.mk
 -include src/test/google/subdir.mk
 -include src/test/doubles/webhook/subdir.mk
+-include src/test/doubles/vbt/subdir.mk
 -include src/test/doubles/scene/subdir.mk
 -include src/test/doubles/push/subdir.mk
 -include src/test/doubles/mqtt/subdir.mk

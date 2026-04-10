@@ -24,6 +24,7 @@
 
 #include "user/user.h"
 #include "vbt/value_based_trigger.h"
+#include "vbt/vbt_scheduler.h"
 #include "vbt/vbt_value.h"
 
 class supla_value_based_triggers {
@@ -31,6 +32,9 @@ class supla_value_based_triggers {
   supla_user *user;
   void *lck;
   std::vector<std::shared_ptr<supla_value_based_trigger>> triggers;
+
+ protected:
+  virtual supla_vbt_scheduler *get_scheduler(void);
 
  public:
   explicit supla_value_based_triggers(supla_user *user);

@@ -88,30 +88,17 @@ TEST_F(InjaSandboxTest, tooManyControlBlocksInTemplate) {
   }
 }
 
-TEST_F(InjaSandboxTest, tooManyIfStatementsInTemplate) {
-  nlohmann::json data;
-  try {
-    sandbox.validate_and_render(
-        "{% if {% if {% if {% if {% if {% if {% if {% if {% if {% if {% if {% "
-        "if {% if {% if {% if {% if ",
-        data);
-    FAIL() << "Expected std::runtime_error";
-  } catch (const std::runtime_error& e) {
-    EXPECT_EQ(std::string("Too many if statements in template."), e.what());
-  }
-}
-
 TEST_F(InjaSandboxTest, exceededOutputSize) {
   nlohmann::json data;
 
   std::string text;
-  text.reserve(1025);
+  text.reserve(5121);
 
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> dis(0, 9);
 
-  for (std::size_t i = 0; i < 1025; ++i) {
+  for (std::size_t i = 0; i < 5121; ++i) {
     text += static_cast<char>('0' + dis(gen));
   }
 
@@ -120,8 +107,9 @@ TEST_F(InjaSandboxTest, exceededOutputSize) {
     sandbox.validate_and_render("{{ text }}", data);
     FAIL() << "Expected std::runtime_error";
   } catch (const std::runtime_error& e) {
-    EXPECT_EQ(std::string("Template execution exceeded allowed output size."),
-              e.what());
+    EXPECT_EQ(
+        std::string("Template execution exceeded allowed output size (5120)."),
+        e.what());
   }
 }
 

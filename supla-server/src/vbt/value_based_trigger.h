@@ -32,11 +32,12 @@
 
 class supla_value_based_trigger {
  private:
-  int id;
-  int channel_id;
-  supla_vbt_on_change_condition on_change_cnd;
+  const int id;
+  const int channel_id;
+  const supla_active_period active_period;
   supla_action_config action_config;
-  supla_active_period active_period;
+
+  supla_vbt_on_change_condition on_change_cnd;
 
   struct timeval first_fire_time;
   struct timeval last_fire_try_time;
@@ -44,6 +45,7 @@ class supla_value_based_trigger {
   unsigned int fire_counter;
   unsigned int fire_count_limit;
   int time_window_sec;
+  void *lck;
 
  public:
   explicit supla_value_based_trigger(int id, int channel_id,
@@ -63,12 +65,14 @@ class supla_value_based_trigger {
   void set_min_time_between_firing_usec(long long min_time_between_firing_usec);
 
   supla_action_config get_action_config(void);
-  const supla_vbt_on_change_condition &get_on_change_cnd(void);
+  supla_vbt_on_change_condition get_on_change_cnd(void);
   const supla_active_period &get_active_period(void);
 
-  supla_vbt_condition_result are_conditions_met(int channel_id,
-                                                supla_vbt_value *old_value,
-                                                supla_vbt_value *new_value);
+  supla_vbt_condition_result is_condition_met(int channel_id,
+                                              supla_vbt_value *old_value,
+                                              supla_vbt_value *new_value);
+
+  bool is_condition_met(_supla_int64_t *milliseconds_left);
 
   bool is_now_active(const char *timezone, double latitude, double longitude);
 

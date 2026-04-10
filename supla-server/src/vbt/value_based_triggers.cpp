@@ -26,6 +26,7 @@
 #include "db/mariadb_access_provider.h"
 #include "device/channel_property_getter.h"
 #include "lck.h"
+#include "proto.h"
 #include "vbt/value_based_trigger_dao.h"
 
 using std::shared_ptr;
@@ -47,7 +48,7 @@ void supla_value_based_triggers::load(void) {
 
   lck_lock(lck);
 
-  for (auto it = this->triggers.begin(); it != this->triggers.end(); ++it) {
+  for (auto it = this->triggers.begin(); it != this->triggers.end();) {
     auto nit = triggers.begin();
     while (nit != triggers.end()) {
       if ((*it)->get_id() == (*nit)->get_id()) {
@@ -61,9 +62,12 @@ void supla_value_based_triggers::load(void) {
 
     // Remove if it doesn't exist or has changed
     if (nit == triggers.end()) {
+      get_scheduler()->erase(*it);
       it = this->triggers.erase(it);
-      --it;
+      continue;
     }
+
+    ++it;
   }
 
   for (auto nit = triggers.begin(); nit != triggers.end(); ++nit) {
@@ -115,6 +119,7 @@ void supla_value_based_triggers::on_value_changed(
     supla_vbt_value *new_value, supla_abstract_action_executor *action_executor,
     supla_abstract_channel_property_getter *property_getter) {
   vector<supla_vbt_condition_result> matches;
+  vector<supla_vbt_condition_result> delayed;
 
   double latitude = 0;
   double longitude = 0;
@@ -123,17 +128,26 @@ void supla_value_based_triggers::on_value_changed(
   lck_lock(lck);
   for (auto it = triggers.begin(); it != triggers.end(); ++it) {
     supla_vbt_condition_result m =
-        (*it)->are_conditions_met(channel_id, old_value, new_value);
+        (*it)->is_condition_met(channel_id, old_value, new_value);
+    m.set_trigger(*it);
+    _supla_int64_t milliseconds_left = 0;
 
-    if (m.are_conditions_met()) {
-      if ((*it)->get_active_period().is_now_active(timezone.c_str(), latitude,
-                                                   longitude)) {
-        m.set_trigger(*it);
+    if (m.is_condition_met(&milliseconds_left)) {
+      if (milliseconds_left > 0) {
+        m.set_caller(caller);
+        m.set_user(user);
+        delayed.push_back(m);
+      } else if ((*it)->get_active_period().is_now_active(
+                     timezone.c_str(), latitude, longitude)) {
         matches.push_back(m);
       }
     }
   }
   lck_unlock(lck);
+
+  if (!delayed.empty()) {
+    get_scheduler()->add_delayed(delayed);
+  }
 
   // We fire triggers only after leaving the lock.
   for (auto it = matches.begin(); it != matches.end(); ++it) {
@@ -152,4 +166,8 @@ void supla_value_based_triggers::on_value_changed(const supla_caller &caller,
 
   on_value_changed(caller, channel_id, old_value, new_value, &exec,
                    &property_getter);
+}
+
+supla_vbt_scheduler *supla_value_based_triggers::get_scheduler(void) {
+  return supla_vbt_scheduler::global_instance();
 }

@@ -363,7 +363,7 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
       snprintf(buf, buf_size, "HVAC_DOMESTIC_HOT_WATER");
       break;
     case SUPLA_CHANNELFNC_MOTION_SENSOR:
-      snprintf(buf, buf_size, "MOTION_SENSO");
+      snprintf(buf, buf_size, "MOTION_SENSOR");
       break;
     case SUPLA_CHANNELFNC_BINARY_SENSOR:
       snprintf(buf, buf_size, "BINARY_SENSOR");

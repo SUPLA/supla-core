@@ -19,21 +19,26 @@
 #ifndef ValueBasedTriggerIntegrationTest_H_
 #define ValueBasedTriggerIntegrationTest_H_
 
+#include "doubles/actions/ActionExecutorGmock.h"
+#include "doubles/device/ChannelPropertyGetterMock.h"
 #include "doubles/vbt/ValueBasedTriggersMock.h"
 #include "integration/IntegrationTest.h"
 #include "user/user.h"
 
 namespace testing {
 
-class ValueBasedTriggerIntegrationTest : public IntegrationTest, public Test {
+class DelayedValueBasedTriggerIntegrationTest : public IntegrationTest,
+                                                public Test {
  protected:
   supla_user *user;
   ValueBasedTriggersMock *triggers;
+  ActionExecutorGmock *actionExecutor;
+  ChannelPropertyGetterMock *propertyGetter;
   supla_vbt_scheduler *scheduler;
 
  public:
-  ValueBasedTriggerIntegrationTest();
-  virtual ~ValueBasedTriggerIntegrationTest();
+  DelayedValueBasedTriggerIntegrationTest();
+  virtual ~DelayedValueBasedTriggerIntegrationTest();
   virtual void SetUp(void);
   virtual void TearDown(void);
 };

@@ -3,9 +3,13 @@
 vg_verify() {
    valgrind --version
    valgrind --tool=memcheck --leak-check=full --track-origins=no $1 2>&1 | tee valgrind.log
-   if grep -E "definitely lost: [1-9]|indirectly lost: [1-9]|possibly lost: [1-9]" valgrind.log; then
-     echo "Memory leak detected"
-     exit 1
+   if [ "$2" != "--no-leak-check" ]; then
+     if grep -E "definitely lost: [1-9]|indirectly lost: [1-9]|possibly lost: [1-9]" valgrind.log; then
+       echo "Memory leak detected"
+       exit 1
+     fi
+   else
+     echo "Leak detection skipped"
    fi
    rm valgrind.log
 }

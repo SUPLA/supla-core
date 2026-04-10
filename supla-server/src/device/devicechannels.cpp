@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include <list>
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -39,6 +40,7 @@
 #include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/roller_shutter_config.h"
 #include "log.h"
+#include "vbt/value_based_triggers.h"
 
 using std::function;
 using std::list;
@@ -442,7 +444,8 @@ supla_device_channels::get_channel_availability_status(int channel_id) {
 
 void supla_device_channels::on_device_registered(
     supla_user *user, int device_id, TDS_SuplaDeviceChannel_B *schannel_b,
-    TDS_SuplaDeviceChannel_E *schannel_e, int count) {
+    TDS_SuplaDeviceChannel_E *schannel_e, int count,
+    std::map<int, supla_channel_availability_status> *previous_statuses) {
   int channel_id = 0;
 
   for (int a = 0; a < count; a++) {
@@ -452,10 +455,26 @@ void supla_device_channels::on_device_registered(
       channel_id = get_channel_id(schannel_e[a].Number);
     }
 
-    if (channel_id > 0) {
+    if (channel_id) {
       user->on_channel_become_online(device_id, channel_id);
     }
   }
+
+  for_each([previous_statuses, user](supla_device_channel *channel,
+                                     bool *will_continue) -> void {
+    supla_channel_availability_status previous(true);
+
+    if (auto it = previous_statuses->find(channel->get_id());
+        it != previous_statuses->end()) {
+      previous = it->second;
+    }
+    auto current = channel->get_availability_status();
+    if (previous != current) {
+      user->get_value_based_triggers()->on_value_changed(
+          supla_caller(ctChannel, channel->get_id()), channel->get_id(),
+          &previous, &current);
+    }
+  });
 }
 
 int supla_device_channels::get_channel_id(unsigned char channel_number) {
@@ -554,8 +573,7 @@ bool supla_device_channels::set_device_channel_char_value(
 
         result = set_device_channel_rgbw_value(
             caller, channel->get_id(), group_id, eol, color, color_brightness,
-            brightness, 1, 0,
-            white_temperature);
+            brightness, 1, 0, white_temperature);
       }
 
     } else if (channel->is_char_value_writable()) {
@@ -713,11 +731,12 @@ bool supla_device_channels::get_channel_state_async(
   return false;
 }
 
-list<int> supla_device_channels::get_all_ids(void) {
-  list<int> result;
+std::map<int, supla_channel_availability_status>
+supla_device_channels::get_all_statuses(void) {
+  std::map<int, supla_channel_availability_status> result;
 
   for (auto it = channels.begin(); it != channels.end(); ++it) {
-    result.push_back((*it)->get_id());
+    result[(*it)->get_id()] = (*it)->get_availability_status();
   }
 
   return result;

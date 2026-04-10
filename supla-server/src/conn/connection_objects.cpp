@@ -62,7 +62,9 @@ supla_connection_objects::get_all(void) {
 }
 
 bool supla_connection_objects::add(
-    shared_ptr<supla_abstract_connection_object> obj) {
+    shared_ptr<supla_abstract_connection_object> obj,
+    std::function<void(std::shared_ptr<supla_abstract_connection_object> obj)>
+        on_previous) {
   bool result = false;
   lock();
 
@@ -76,24 +78,30 @@ bool supla_connection_objects::add(
 
   dont_release.reserve(objects.size());
 
-  for (auto it = objects.begin(); it != objects.end(); ++it) {
-    shared_ptr<supla_abstract_connection_object> _obj = (*it).lock();
+  for (auto it = objects.begin(); it != objects.end();) {
+    shared_ptr<supla_abstract_connection_object> _obj = it->lock();
     if (_obj == nullptr) {
       // cleanup
       it = objects.erase(it);
-      --it;
+      continue;
     } else if (_obj == obj) {
       ptr_exists = true;
     } else if (_obj->get_id() == id || _obj->guid_equal(guid)) {
       previous = _obj;
+      if (on_previous) {
+        on_previous(previous);
+      }
+
       // remove from list (will be terminated)
       it = objects.erase(it);
-      --it;
+      continue;
     } else {
       // We don't want the object to accidentally get freed between lock() and
       // unlock()
       dont_release.push_back(_obj);
     }
+
+    ++it;
   }
 
   if (!ptr_exists) {

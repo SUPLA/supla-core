@@ -65,7 +65,7 @@ void ActionExecutorTest::SetUp() {
 
   device->set_channels(channels);
 
-  supla_user::add_device(device, user->getUserID());
+  supla_user::add_device(device, user->getUserID(), nullptr);
   aexec = new ActionExecutorMock();
 }
 

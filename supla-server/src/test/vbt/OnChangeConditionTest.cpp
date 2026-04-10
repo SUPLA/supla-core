@@ -61,8 +61,8 @@ TEST_F(OnChangeConditionTest, assignAllParams) {
   supla_vbt_on_change_condition c;
 
   cJSON *json = cJSON_Parse(
-      "{\"on_change_to\":{\"eq\":123,\"name\":\"color\",\"resume\":{\"ne\":1}}"
-      "}");
+      "{\"on_change_to\":{\"eq\":123,\"name\":\"color\",\"resume\":{\"ne\":1},"
+      "\"duration_sec\":60}}");
   c.apply_json_config(json);
   cJSON_Delete(json);
 
@@ -71,6 +71,7 @@ TEST_F(OnChangeConditionTest, assignAllParams) {
   EXPECT_EQ(c.get_op(), op_eq);
   EXPECT_EQ(c.get_resume_op(), op_ne);
   EXPECT_EQ(c.get_resume_value(), 1);
+  EXPECT_EQ(c.get_duration_sec(), 60);
 }
 
 TEST_F(OnChangeConditionTest, allPredictedOperators) {
@@ -830,6 +831,18 @@ TEST_F(OnChangeConditionTest, onChange_allPredictedVarNames) {
   cJSON_Delete(json);
 
   EXPECT_EQ(c.get_var_name(), var_name_invalid_sensor_state);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"connected\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_connected);
+
+  json = cJSON_Parse("{\"on_change\":{\"name\":\"white_temperature\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_var_name(), var_name_white_temperature);
 }
 
 TEST_F(OnChangeConditionTest, boolValues) {
@@ -981,7 +994,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Eq) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(123.456);
   newv.set_value(123.456);
 
@@ -1001,7 +1015,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Ne) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(56);
   newv.set_value(56);
 
@@ -1021,7 +1036,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Gt) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(101);
   newv.set_value(101);
 
@@ -1041,7 +1057,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Ge) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(100);
   newv.set_value(100);
 
@@ -1072,7 +1089,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Lt) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(99);
   newv.set_value(99);
 
@@ -1092,7 +1110,8 @@ TEST_F(OnChangeConditionTest, valueComparsion_Le) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(100);
   newv.set_value(100);
 
@@ -1946,7 +1965,8 @@ TEST_F(OnChangeConditionTest, floatingPointValueChanged) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value oldv, newv;
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
   oldv.set_value(56);
   newv.set_value(56);
 

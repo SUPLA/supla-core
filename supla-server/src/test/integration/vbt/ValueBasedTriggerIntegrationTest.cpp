@@ -28,6 +28,7 @@
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "proto.h"
 #include "vbt/value_based_triggers.h"
+#include "vbt/vbt_scheduler.h"
 
 using std::map;
 using std::shared_ptr;
@@ -46,38 +47,43 @@ void ValueBasedTriggerIntegrationTest::SetUp() {
   user = supla_user::find(2, true);
   initTestDatabase();
   runSqlScript("AddValueBasedTriggers.sql");
+  scheduler = new supla_vbt_scheduler(nullptr, nullptr);
+  triggers = new ValueBasedTriggersMock(user);
+  ON_CALL(*triggers, get_scheduler).WillByDefault(Return(scheduler));
   Test::SetUp();
 }
 
 void ValueBasedTriggerIntegrationTest::TearDown() {
   Test::TearDown();
+  delete triggers;
+  delete scheduler;
   delete user;
 }
 
 TEST_F(ValueBasedTriggerIntegrationTest, loadFromUserWhoHasNoTriggers) {
   supla_user *user = supla_user::find(12345, true);
 
-  supla_value_based_triggers triggers(user);
-  triggers.load();
+  delete triggers;
+  triggers = new ValueBasedTriggersMock(user);
+  triggers->load();
 
-  EXPECT_EQ(triggers.count(), 0);
+  EXPECT_EQ(triggers->count(), 0);
 
   delete user;
 }
 
 TEST_F(ValueBasedTriggerIntegrationTest, loadThenDisableThenEnableThenModify) {
-  supla_value_based_triggers triggers(user);
-  triggers.load();
+  triggers->load();
 
-  EXPECT_EQ(triggers.count(), 7);
+  EXPECT_EQ(triggers->count(), 7);
 
-  shared_ptr<supla_value_based_trigger> t20 = triggers.get(20);
-  shared_ptr<supla_value_based_trigger> t21 = triggers.get(21);
-  shared_ptr<supla_value_based_trigger> t22 = triggers.get(22);
-  shared_ptr<supla_value_based_trigger> t30 = triggers.get(30);
-  shared_ptr<supla_value_based_trigger> t31 = triggers.get(31);
-  shared_ptr<supla_value_based_trigger> t32 = triggers.get(32);
-  shared_ptr<supla_value_based_trigger> t33 = triggers.get(33);
+  shared_ptr<supla_value_based_trigger> t20 = triggers->get(20);
+  shared_ptr<supla_value_based_trigger> t21 = triggers->get(21);
+  shared_ptr<supla_value_based_trigger> t22 = triggers->get(22);
+  shared_ptr<supla_value_based_trigger> t30 = triggers->get(30);
+  shared_ptr<supla_value_based_trigger> t31 = triggers->get(31);
+  shared_ptr<supla_value_based_trigger> t32 = triggers->get(32);
+  shared_ptr<supla_value_based_trigger> t33 = triggers->get(33);
 
   EXPECT_TRUE(t20 != nullptr);
   EXPECT_TRUE(t21 != nullptr);
@@ -88,66 +94,65 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadThenDisableThenEnableThenModify) {
   EXPECT_TRUE(t33 != nullptr);
 
   runSqlScript("DisableTwoValueBasedTriggers.sql");
-  triggers.load();
+  triggers->load();
 
-  EXPECT_EQ(triggers.count(), 5);
+  EXPECT_EQ(triggers->count(), 5);
 
   // They shouldn't be relocated
-  EXPECT_TRUE(triggers.get(20) == t20);
-  EXPECT_TRUE(triggers.get(21) == t21);
-  EXPECT_TRUE(triggers.get(30) == t30);
-  EXPECT_TRUE(triggers.get(32) == t32);
-  EXPECT_TRUE(triggers.get(33) == t33);
+  EXPECT_TRUE(triggers->get(20) == t20);
+  EXPECT_TRUE(triggers->get(21) == t21);
+  EXPECT_TRUE(triggers->get(30) == t30);
+  EXPECT_TRUE(triggers->get(32) == t32);
+  EXPECT_TRUE(triggers->get(33) == t33);
 
   runSqlScript("EnableTwoValueBasedTriggers.sql");
-  triggers.load();
+  triggers->load();
 
-  EXPECT_EQ(triggers.count(), 7);
+  EXPECT_EQ(triggers->count(), 7);
 
   // They shouldn't be relocated
-  EXPECT_TRUE(triggers.get(20) == t20);
-  EXPECT_TRUE(triggers.get(21) == t21);
-  EXPECT_TRUE(triggers.get(30) == t30);
-  EXPECT_TRUE(triggers.get(32) == t32);
-  EXPECT_TRUE(triggers.get(33) == t33);
+  EXPECT_TRUE(triggers->get(20) == t20);
+  EXPECT_TRUE(triggers->get(21) == t21);
+  EXPECT_TRUE(triggers->get(30) == t30);
+  EXPECT_TRUE(triggers->get(32) == t32);
+  EXPECT_TRUE(triggers->get(33) == t33);
 
   // These should be re-created
   EXPECT_TRUE(t22 != nullptr);
   EXPECT_TRUE(t31 != nullptr);
-  EXPECT_TRUE(triggers.get(22) != t22);
-  EXPECT_TRUE(triggers.get(31) != t31);
-  t22 = triggers.get(22);
-  t31 = triggers.get(31);
+  EXPECT_TRUE(triggers->get(22) != t22);
+  EXPECT_TRUE(triggers->get(31) != t31);
+  t22 = triggers->get(22);
+  t31 = triggers->get(31);
 
   // We re-create only those that have been modified. Otherwise, you can remove
   // the "paused" flag, which we don't want.
   runSqlScript("ModifyValueBasedTrigger.sql");
-  triggers.load();
+  triggers->load();
 
-  EXPECT_EQ(triggers.count(), 7);
+  EXPECT_EQ(triggers->count(), 7);
 
   // They shouldn't be relocated
-  EXPECT_TRUE(triggers.get(20) == t20);
-  EXPECT_TRUE(triggers.get(22) == t22);
-  EXPECT_TRUE(triggers.get(30) == t30);
-  EXPECT_TRUE(triggers.get(31) == t31);
-  EXPECT_TRUE(triggers.get(32) == t32);
-  EXPECT_TRUE(triggers.get(33) == t33);
+  EXPECT_TRUE(triggers->get(20) == t20);
+  EXPECT_TRUE(triggers->get(22) == t22);
+  EXPECT_TRUE(triggers->get(30) == t30);
+  EXPECT_TRUE(triggers->get(31) == t31);
+  EXPECT_TRUE(triggers->get(32) == t32);
+  EXPECT_TRUE(triggers->get(33) == t33);
 
   // Thes should be re-created
   EXPECT_TRUE(t21 != nullptr);
-  EXPECT_TRUE(triggers.get(21) != t21);
+  EXPECT_TRUE(triggers->get(21) != t21);
 }
 
 TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
   runSqlScript("SetVbtActivityConditions.sql");
 
-  supla_value_based_triggers triggers(user);
-  triggers.load();
+  triggers->load();
   //
-  EXPECT_EQ(triggers.count(), 7);
+  EXPECT_EQ(triggers->count(), 7);
 
-  shared_ptr<supla_value_based_trigger> t = triggers.get(20);
+  shared_ptr<supla_value_based_trigger> t = triggers->get(20);
   EXPECT_TRUE(t != nullptr);
   if (t) {
     EXPECT_EQ(t->get_id(), 20);
@@ -163,7 +168,7 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
     EXPECT_TRUE(p == t->get_active_period());
   }
 
-  t = triggers.get(21);
+  t = triggers->get(21);
   EXPECT_TRUE(t != nullptr);
   if (t) {
     EXPECT_EQ(t->get_id(), 21);
@@ -186,7 +191,7 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
     EXPECT_EQ(t->get_on_change_cnd().get_value(), 1);
   }
 
-  t = triggers.get(22);
+  t = triggers->get(22);
   EXPECT_TRUE(t != nullptr);
   if (t) {
     EXPECT_EQ(t->get_id(), 22);
@@ -198,7 +203,7 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
     EXPECT_EQ(t->get_on_change_cnd().get_value(), 1);
   }
 
-  t = triggers.get(30);
+  t = triggers->get(30);
   EXPECT_TRUE(t != nullptr);
   if (t) {
     EXPECT_EQ(t->get_id(), 30);
@@ -210,7 +215,7 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
     EXPECT_EQ(t->get_on_change_cnd().get_value(), 0);
   }
 
-  t = triggers.get(31);
+  t = triggers->get(31);
   EXPECT_TRUE(t != nullptr);
   if (t) {
     EXPECT_EQ(t->get_id(), 31);
@@ -222,7 +227,7 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
     EXPECT_EQ(t->get_on_change_cnd().get_value(), 1);
   }
 
-  t = triggers.get(32);
+  t = triggers->get(32);
   EXPECT_TRUE(t != nullptr);
   if (t) {
     EXPECT_EQ(t->get_id(), 32);
@@ -234,7 +239,7 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
     EXPECT_EQ(t->get_on_change_cnd().get_value(), 1);
   }
 
-  t = triggers.get(33);
+  t = triggers->get(33);
   EXPECT_TRUE(t != nullptr);
   if (t) {
     EXPECT_EQ(t->get_id(), 33);
@@ -249,82 +254,77 @@ TEST_F(ValueBasedTriggerIntegrationTest, loadAll) {
 }
 
 TEST_F(ValueBasedTriggerIntegrationTest, deleteFirst) {
-  supla_value_based_triggers triggers(user);
-  triggers.load();
+  triggers->load();
 
-  EXPECT_EQ(triggers.count(), 7);
+  EXPECT_EQ(triggers->count(), 7);
 
-  auto t = triggers.get(20);
+  auto t = triggers->get(20);
   EXPECT_TRUE(t != nullptr);
 
   runSqlScript("DeleteVbtFirst.sql");
 
-  triggers.load();
-  EXPECT_EQ(triggers.count(), 6);
-  t = triggers.get(20);
+  triggers->load();
+  EXPECT_EQ(triggers->count(), 6);
+  t = triggers->get(20);
   EXPECT_TRUE(t == nullptr);
 }
 
 TEST_F(ValueBasedTriggerIntegrationTest, deleteVbt22) {
-  supla_value_based_triggers triggers(user);
-  triggers.load();
+  triggers->load();
 
-  EXPECT_EQ(triggers.count(), 7);
+  EXPECT_EQ(triggers->count(), 7);
 
-  auto t = triggers.get(22);
+  auto t = triggers->get(22);
   EXPECT_TRUE(t != nullptr);
 
   runSqlScript("DeleteVbt22.sql");
 
-  triggers.load();
-  EXPECT_EQ(triggers.count(), 6);
+  triggers->load();
+  EXPECT_EQ(triggers->count(), 6);
 
-  t = triggers.get(22);
+  t = triggers->get(22);
   EXPECT_TRUE(t == nullptr);
 }
 
 TEST_F(ValueBasedTriggerIntegrationTest, deleteLast) {
-  supla_value_based_triggers triggers(user);
-  triggers.load();
+  triggers->load();
 
-  EXPECT_EQ(triggers.count(), 7);
+  EXPECT_EQ(triggers->count(), 7);
 
-  auto t = triggers.get(33);
+  auto t = triggers->get(33);
   EXPECT_TRUE(t != nullptr);
 
   runSqlScript("DeleteVbtLast.sql");
 
-  triggers.load();
-  EXPECT_EQ(triggers.count(), 6);
+  triggers->load();
+  EXPECT_EQ(triggers->count(), 6);
 
-  t = triggers.get(33);
+  t = triggers->get(33);
   EXPECT_TRUE(t == nullptr);
 }
 
 TEST_F(ValueBasedTriggerIntegrationTest, delete31and32) {
-  supla_value_based_triggers triggers(user);
-  triggers.load();
-  EXPECT_EQ(triggers.count(), 7);
+  triggers->load();
+  EXPECT_EQ(triggers->count(), 7);
 
-  auto t = triggers.get(31);
+  auto t = triggers->get(31);
   EXPECT_TRUE(t != nullptr);
-  t = triggers.get(32);
+  t = triggers->get(32);
   EXPECT_TRUE(t != nullptr);
 
   runSqlScript("DeleteVbt31and32.sql");
 
-  triggers.load();
-  EXPECT_EQ(triggers.count(), 5);
+  triggers->load();
+  EXPECT_EQ(triggers->count(), 5);
 
-  t = triggers.get(31);
+  t = triggers->get(31);
   EXPECT_TRUE(t == nullptr);
-  t = triggers.get(32);
+  t = triggers->get(32);
   EXPECT_TRUE(t == nullptr);
 }
 
 TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel140) {
-  supla_value_based_triggers triggers(user);
-  triggers.load();
+  triggers->load();
 
   supla_channel_onoff_value oldv, newv;
   newv.set_on(true);
@@ -332,8 +332,8 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel140) {
   ActionExecutorMock actionExecutor;
   ChannelPropertyGetterMock propertyGetter;
 
-  triggers.on_value_changed(supla_caller(ctIPC), 140, &oldv, &newv,
-                            &actionExecutor, &propertyGetter);
+  triggers->on_value_changed(supla_caller(ctIPC), 140, &oldv, &newv,
+                             &actionExecutor, &propertyGetter);
 
   EXPECT_EQ(actionExecutor.counterSetCount(), 3);
   EXPECT_EQ(actionExecutor.getOnCounter(), 1);
@@ -341,9 +341,9 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel140) {
   EXPECT_EQ(actionExecutor.getShutCounter(), 1);
 }
 
-TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel141) {
-  supla_value_based_triggers triggers(user);
-  triggers.load();
+TEST_F(ValueBasedTriggerIntegrationTest, inactive) {
+  runSqlScript("SetValueBasedTriggerInactive.sql");
+  triggers->load();
 
   supla_channel_onoff_value oldv, newv;
   newv.set_on(true);
@@ -351,8 +351,26 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel141) {
   ActionExecutorMock actionExecutor;
   ChannelPropertyGetterMock propertyGetter;
 
-  triggers.on_value_changed(supla_caller(ctIPC), 141, &oldv, &newv,
-                            &actionExecutor, &propertyGetter);
+  triggers->on_value_changed(supla_caller(ctIPC), 140, &oldv, &newv,
+                             &actionExecutor, &propertyGetter);
+
+  EXPECT_EQ(actionExecutor.counterSetCount(), 2);
+  EXPECT_EQ(actionExecutor.getOnCounter(), 0);
+  EXPECT_EQ(actionExecutor.getOffCounter(), 1);
+  EXPECT_EQ(actionExecutor.getShutCounter(), 1);
+}
+
+TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel141) {
+  triggers->load();
+
+  supla_channel_onoff_value oldv, newv;
+  newv.set_on(true);
+
+  ActionExecutorMock actionExecutor;
+  ChannelPropertyGetterMock propertyGetter;
+
+  triggers->on_value_changed(supla_caller(ctIPC), 141, &oldv, &newv,
+                             &actionExecutor, &propertyGetter);
 
   EXPECT_EQ(actionExecutor.counterSetCount(), 3);
   EXPECT_EQ(actionExecutor.getExecuteCounter(), 1);
@@ -361,8 +379,7 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel141) {
 }
 
 TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel158) {
-  supla_value_based_triggers triggers(user);
-  triggers.load();
+  triggers->load();
 
   supla_channel_temphum_value oldv(SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
                                    SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
@@ -373,8 +390,8 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel158) {
   ActionExecutorMock actionExecutor;
   ChannelPropertyGetterMock propertyGetter;
 
-  triggers.on_value_changed(supla_caller(ctIPC), 158, &oldv, &newv,
-                            &actionExecutor, &propertyGetter);
+  triggers->on_value_changed(supla_caller(ctIPC), 158, &oldv, &newv,
+                             &actionExecutor, &propertyGetter);
 
   EXPECT_EQ(actionExecutor.get_push_notification_id(), 500);
   EXPECT_EQ(actionExecutor.getSentCounter(), 1);
