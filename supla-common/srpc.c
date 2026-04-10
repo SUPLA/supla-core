@@ -861,7 +861,8 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               (TDCS_SuplaPingServer *)calloc(1, sizeof(TDCS_SuplaPingServer));
 
 #ifndef __AVR__
-          if (srpc->sdp.data_size == sizeof(TDCS_SuplaPingServer_COMPAT)) {
+          if (rd->data.dcs_ping &&
+              srpc->sdp.data_size == sizeof(TDCS_SuplaPingServer_COMPAT)) {
             TDCS_SuplaPingServer_COMPAT *compat =
                 (TDCS_SuplaPingServer_COMPAT *)srpc->sdp.data;
 
