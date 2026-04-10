@@ -809,7 +809,7 @@ void SRPC_ICACHE_FLASH srpc_getlocationpack(Tsrpc *srpc,
 }
 
 #define VALID_SIZE(MIAN_TYPE, ITEM_TYPE, SIZE_VAR, MAX)                       \
-  (SIZE_VAR) <= (MAX) &&                                                      \
+  (((MIAN_TYPE *)srpc->sdp.data)->SIZE_VAR) <= MAX &&                         \
       srpc->sdp.data_size >= (sizeof(MIAN_TYPE) - sizeof(ITEM_TYPE) * MAX) && \
       srpc->sdp.data_size <= sizeof(MIAN_TYPE) &&                             \
       (((MIAN_TYPE *)srpc->sdp.data)->SIZE_VAR) * sizeof(ITEM_TYPE) ==        \
