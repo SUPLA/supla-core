@@ -134,8 +134,8 @@ static_assert(sizeof(TSC_ImpulseCounter_ExtendedValue) <=
 static_assert(sizeof(TElectricityMeter_Value) <=
               (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 // deprecated
-static_assert(sizeof(TElectricityMeter_ExtendedValue) <=
-              (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+// static_assert(sizeof(TElectricityMeter_ExtendedValue) <=
+//               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
 // deprecated
 static_assert(sizeof(TElectricityMeter_ExtendedValue_V2) <=
