@@ -129,7 +129,6 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // SUPLA_MAX_DATA_SIZE should be bigger then calcfg, device config, channel
 // config MAXSIZE. Otherwise sending will fail
 #define SUPLA_MAX_DATA_SIZE 600  // Registration header without channels
-#define USE_DEPRECATED_EMEV_V2   // Temporary. It will be removed.
 #elif defined(ESP8266)
 #define USE_DEPRECATED_EMEV_V2  // Temporary. It will be removed.
 // supla-espressif-esp compilations
