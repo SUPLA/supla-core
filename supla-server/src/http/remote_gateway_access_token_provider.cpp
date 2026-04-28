@@ -41,6 +41,7 @@ supla_remote_gateway_access_token_provider
 
 supla_remote_gateway_access_token_provider::
     supla_remote_gateway_access_token_provider(void) {
+  this->min_secs_between_refresh = 60;
   this->curl_adapter = nullptr;
   this->refresh_lck = lck_init();
   this->data_lck = lck_init();
@@ -132,7 +133,7 @@ int supla_remote_gateway_access_token_provider::refresh_time_margin_secs(void) {
 
 int supla_remote_gateway_access_token_provider::
     min_secs_between_refresh_attempts(void) {
-  return 60;
+  return min_secs_between_refresh;
 }
 
 void supla_remote_gateway_access_token_provider::process_result(
@@ -243,7 +244,12 @@ void supla_remote_gateway_access_token_provider::get_new_tokens(
               "An attempt to obtain remote gateway token from the AD server "
               "failed. Result code: %i",
               curl_adapter->get_response_code());
+    if (curl_adapter->get_response_code() == 403) {
+      min_secs_between_refresh = 3600;
+    }
     return;
+  } else {
+    min_secs_between_refresh = 60;
   }
 
   cJSON *root = cJSON_Parse(request_result.c_str());
