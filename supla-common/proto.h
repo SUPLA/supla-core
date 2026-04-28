@@ -3271,8 +3271,11 @@ typedef struct {
       Timeout;                // 0 - not used, > 0 - time in 0.1 s, max 36000
   unsigned char Sensitivity;  // 0 - not used, 1..101 - sensitivity 0..100 %
                               // value 1 (0 %) means "OFF"
+  unsigned char AlarmMuted;  // 0 - not used, 1 - alarm is muted, 2 - alarm is
+                             // not muted
   unsigned char
-      Reserved[29 - sizeof(unsigned char) - sizeof(unsigned _supla_int16_t)];
+      Reserved[29 - sizeof(unsigned char) - sizeof(unsigned _supla_int16_t) -
+               sizeof(unsigned char)];
 } TChannelConfig_BinarySensor;  // v. >= 21
 
 // Not set is set when there is no thermometer for "AUX" available
