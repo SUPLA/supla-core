@@ -204,7 +204,7 @@ static_assert(sizeof(TCalCfg_SetCfgModePassword) <=
               (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 static_assert((unsigned int)13 == sizeof(TSD_ChannelIntParams));
 static_assert((unsigned int)1 == sizeof(TDS_GetChannelIntParamsRequest));
-static_assert((unsigned int)3 == sizeof(TRelayChannel_Value));
+static_assert((unsigned int)4 == sizeof(TRelayChannel_Value));
 static_assert(sizeof(TRelayChannel_Value) <=
               (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 static_assert((unsigned int)6 == sizeof(TDS_GetChannelConfigRequest));
