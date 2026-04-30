@@ -28,12 +28,14 @@ using std::string;
 #define FIELD_FILTERING_TIME_MS 2
 #define FIELD_TIMEOUT 3
 #define FIELD_SENSITIVITY 4
+#define FIELD_ALARM_MUTED 5
 
 const map<unsigned _supla_int16_t, string> binary_sensor_config::field_map = {
     {FIELD_INVERTED_LOGIC, "invertedLogic"},
     {FIELD_FILTERING_TIME_MS, "filteringTimeMs"},
     {FIELD_TIMEOUT, "timeout"},
-    {FIELD_SENSITIVITY, "sensitivity"}};
+    {FIELD_SENSITIVITY, "sensitivity"},
+    {FIELD_ALARM_MUTED, "alarmMuted"}};
 
 binary_sensor_config::binary_sensor_config(void) : supla_json_config() {}
 
@@ -74,6 +76,12 @@ void binary_sensor_config::set_config(TChannelConfig_BinarySensor *config) {
                  true, nullptr, nullptr, config->Timeout);
 
   set_level(field_map, root, FIELD_SENSITIVITY, config->Sensitivity, 100);
+
+  set_item_value(root, field_map.at(FIELD_ALARM_MUTED).c_str(),
+                 config->AlarmMuted > 0
+                     ? (config->AlarmMuted == 1 ? cJSON_True : cJSON_False)
+                     : cJSON_NULL,
+                 true, nullptr, nullptr, 0);
 }
 
 bool binary_sensor_config::get_config(TChannelConfig_BinarySensor *config) {
@@ -122,6 +130,11 @@ bool binary_sensor_config::get_config(TChannelConfig_BinarySensor *config) {
     result = true;
   }
 
+  if (get_bool(root, field_map.at(FIELD_ALARM_MUTED).c_str(), &bool_value)) {
+    config->AlarmMuted = bool_value ? 1 : 2;
+    result = true;
+  }
+
   return result;
 }
 
@@ -153,6 +166,14 @@ int binary_sensor_config::get_sensitivity(void) {
   TChannelConfig_BinarySensor config = {};
   if (get_config(&config)) {
     return config.Sensitivity;
+  }
+  return 0;
+}
+
+unsigned char binary_sensor_config::get_alarm_muted(void) {
+  TChannelConfig_BinarySensor config = {};
+  if (get_config(&config)) {
+    return config.AlarmMuted;
   }
   return 0;
 }
