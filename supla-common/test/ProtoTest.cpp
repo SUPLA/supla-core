@@ -203,7 +203,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   EXPECT_EQ((unsigned int)13, sizeof(TSD_ChannelIntParams));
   EXPECT_EQ((unsigned int)1, sizeof(TDS_GetChannelIntParamsRequest));
-  EXPECT_EQ((unsigned int)3, sizeof(TRelayChannel_Value));
+  EXPECT_EQ((unsigned int)4, sizeof(TRelayChannel_Value));
   EXPECT_LE(sizeof(TRelayChannel_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
   EXPECT_EQ((unsigned int)6, sizeof(TDS_GetChannelConfigRequest));

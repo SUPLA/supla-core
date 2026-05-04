@@ -129,7 +129,6 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // SUPLA_MAX_DATA_SIZE should be bigger then calcfg, device config, channel
 // config MAXSIZE. Otherwise sending will fail
 #define SUPLA_MAX_DATA_SIZE 600  // Registration header without channels
-#define USE_DEPRECATED_EMEV_V2   // Temporary. It will be removed.
 #elif defined(ESP8266)
 #define USE_DEPRECATED_EMEV_V2  // Temporary. It will be removed.
 // supla-espressif-esp compilations
@@ -678,11 +677,17 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE_deprecated \
   0x04000000  // ver. >= 12  DEPRECATED
 #define SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE \
-  0x08000000                                                    // ver. >= 21
-#define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE 0x10000000           // ver. >= 21
-#define SUPLA_CHANNEL_FLAG_HAS_PARENT 0x20000000                // ver. >= 21
-#define SUPLA_CHANNEL_FLAG_CALCFG_RESTART_SUBDEVICE 0x40000000  // ver. >= 25
-#define SUPLA_CHANNEL_FLAG_BATTERY_COVER_AVAILABLE 0x80000000   // ver. >= 25
+  0x08000000                                                       // ver. >= 21
+#define SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE 0x10000000              // ver. >= 21
+#define SUPLA_CHANNEL_FLAG_HAS_PARENT 0x20000000                   // ver. >= 21
+#define SUPLA_CHANNEL_FLAG_CALCFG_RESTART_SUBDEVICE 0x40000000     // ver. >= 25
+#define SUPLA_CHANNEL_FLAG_BATTERY_COVER_AVAILABLE 0x80000000      // ver. >= 25
+#define SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED 0x100000000       // ver. >= 28
+#define SUPLA_CHANNEL_FLAG_RELAY_MODE_ONCE_SUPPORTED 0x200000000   // ver. >= 28
+#define SUPLA_CHANNEL_FLAG_RELAY_MODE_FORCED_SUPPORTED \
+  0x400000000  // ver. >= 28
+#define SUPLA_CHANNEL_FLAG_RELAY_MODE_AUTOMATIC_SUPPORTED \
+  0x800000000  // ver. >= 28
 #pragma pack(push, 1)
 
 typedef struct {
@@ -831,9 +836,28 @@ typedef struct {
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TDS_SuplaDeviceChannel_B;  // ver. >= 2
 
+// Button lock mode definitions (for AT channel):
+#define SUPLA_BUTTON_MODE_NOT_SET 0        // default, all unlocked
+#define SUPLA_BUTTON_MODE_LOCKED 1         // all locked
+// #define SUPLA_BUTTON_MODE_REMOTE_LOCKED 2  // only remote locked, local
+//                                            // actions are allowed
+// #define SUPLA_BUTTON_MODE_LOCAL_LOCKED 3   // only local locked, remote
+//                                            // actions are allowed
+#define SUPLA_BUTTON_MODE_CMD_WEEKLY_SCHEDULE 4  // Command to switch to
+                                                 // weekly schedule
+#define SUPLA_BUTTON_MODE_CMD_SWITCH_TO_MANUAL 5  // Command to switch to
+                                                  // manual mode
+
+// Action Trigger Flags definitions (bit positions):
+#define SUPLA_ACTION_TRIGGER_FLAG_WEEKLY_SCHEDULE_ENABLED (1 << 0)
+
 typedef struct {
   unsigned char relatedChannelNumber;  // ChannelNumber + 1.
   unsigned _supla_int_t disablesLocalOperation;
+  unsigned char ButtonMode;  // see SUPLA_BUTTON_MODE_, v. >= 28,
+                             // only if channel Flag:
+                             // SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED is set.
+  unsigned char Flags;  // SUPLA_ACTION_TRIGGER_FLAG_
 } TActionTriggerProperties;
 
 #define SUPLA_HVAC_VALUE_FLAG_SETPOINT_TEMP_HEAT_SET (1ULL << 0)
@@ -2392,11 +2416,28 @@ typedef struct {
   char whiteTemperature;  // v. >= 25, 0..100 (0 warm, 50 neutral, 100 cold)
 } TRGBW_Value;     // v. >= 10
 
-#define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1
+// Relay flags definitions (bit positions):
+#define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF (1 << 0)
+#define SUPLA_RELAY_FLAG_WEEKLY_SCHEDULE_ENABLED (1 << 1)
+
+// Relay modes and commands
+#define SUPLA_RELAY_MODE_NOT_SET 0
+#define SUPLA_RELAY_MODE_ON_ONCE 1
+#define SUPLA_RELAY_MODE_OFF_ONCE 2
+#define SUPLA_RELAY_MODE_FORCED_ON 3
+#define SUPLA_RELAY_MODE_FORCED_OFF 4
+#define SUPLA_RELAY_MODE_AUTOMATIC 5
+#define SUPLA_RELAY_MODE_CMD_WEEKLY_SCHEDULE 6   // Command to switch to
+                                                 // weekly schedule mode
+#define SUPLA_RELAY_MODE_CMD_SWITCH_TO_MANUAL 7  // Command to switch to
+                                                 // manual mode
 
 typedef struct {
   char hi;  // actual state of relay  - 0 turned off, >= 1 - turned on
   unsigned _supla_int16_t flags;  // SUPLA_RELAY_FLAG_*
+  unsigned char RelayMode;  // see SUPLA_RELAY_MODE_, v. >= 28,
+                            // only if channel Flags:
+                            // SUPLA_CHANNEL_FLAG_RELAY_MODE_* are set.
 } TRelayChannel_Value;            // v. >= 15
 
 #define DIGIGLASS_TOO_LONG_OPERATION_WARNING 0x1
@@ -3148,9 +3189,11 @@ typedef struct {
   unsigned _supla_int_t ActiveActions;
 } TChannelConfig_ActionTrigger;  // v. >= 16
 
-// Weekly schedule definition for HVAC channel
+// Weekly schedule definition for HVAC, Relay, AT channels
 typedef struct {
   unsigned char Mode;  // for HVAC: SUPLA_HVAC_MODE_
+                       // for AT: SUPLA_BUTTON_MODE_
+                       // for Relay: SUPLA_RELAY_MODE_
   union {
     _supla_int16_t SetpointTemperatureHeat;  // * 0.01 - used for heating
     _supla_int16_t Value1;
@@ -3228,8 +3271,11 @@ typedef struct {
       Timeout;                // 0 - not used, > 0 - time in 0.1 s, max 36000
   unsigned char Sensitivity;  // 0 - not used, 1..101 - sensitivity 0..100 %
                               // value 1 (0 %) means "OFF"
+  unsigned char AlarmMuted;  // 0 - not used, 1 - alarm is muted, 2 - alarm is
+                             // not muted
   unsigned char
-      Reserved[29 - sizeof(unsigned char) - sizeof(unsigned _supla_int16_t)];
+      Reserved[29 - sizeof(unsigned char) - sizeof(unsigned _supla_int16_t) -
+               sizeof(unsigned char)];
 } TChannelConfig_BinarySensor;  // v. >= 21
 
 // Not set is set when there is no thermometer for "AUX" available

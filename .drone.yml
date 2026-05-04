@@ -1,3 +1,19 @@
+---
+kind: secret
+name: rocket_url
+data: fJa6saiMxhrHsR/FoyEKquO2B0mWCWkrhDidhwgvbL7q3g5tlk5OnWFOrZCnXev5jxjwgQ==
+
+---
+kind: secret
+name: rocket_user
+data: 8Stt1R6BWyAfJHdcyX4YjxXjqlQoFCGRm0AqB/u+6F+nqSINHS5+mxB1oWhd
+
+---
+kind: secret
+name: rocket_token
+data: yy4lygZ9LfhNG8V4ilPcJBzHpiBiapOsmQDvshYtIJ2aKwVWdjdeKFdxhcq7h9gCRSSXcx2SzgtbvkJTI6PhHL3IsKpr0/s=
+
+---
 kind: pipeline
 name: default
 
@@ -31,7 +47,7 @@ steps:
 - name: supla-server-test
   image: devel/supla-core
   pull: never
-  depends_on: [sub-modules, db, tsdb]
+  depends_on: [sub-modules]
   commands:
     #    - sleep 10
     - test/supla-server-test.sh
