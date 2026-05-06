@@ -22,13 +22,14 @@
 #include <string>
 #include <vector>
 
+#include "cJSON.h"
 #include "http/curl_adapter.h"
 #include "http/remote_gateway_access_token.h"
-#include "cJSON.h"
 #include "push/pn_recipients.h"
 
 class supla_remote_gateway_access_token_provider {
  private:
+  int min_secs_between_refresh;
   void *data_lck;
   void *refresh_lck;
   struct timeval last_refresh_attpemt_time;

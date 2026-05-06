@@ -76,6 +76,20 @@ services:
     tty: true
     command: ["/bin/bash"]
 
+  supla-core-debian12:
+    image: devel/supla-core-debian12:latest
+    container_name: supla-core-devel-supla-core-debian12
+    depends_on:
+      - mariadb
+      - timescaledb
+    volumes:
+      - ${HOME}/CProjects:/CProjects
+    networks:
+      supla-core-devel-net:
+    stdin_open: true
+    tty: true
+    command: ["/bin/bash"]
+
 networks:
   supla-core-devel-net:
     driver: bridge

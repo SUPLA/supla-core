@@ -808,10 +808,11 @@ void SRPC_ICACHE_FLASH srpc_getlocationpack(Tsrpc *srpc,
       &srpc_locationpack_get_item_caption_size);
 }
 
-#define VALID_SIZE(MIAN_TYPE, ITEM_TYPE, SIZE_VAR, MAX)                   \
-  srpc->sdp.data_size >= (sizeof(MIAN_TYPE) - sizeof(ITEM_TYPE) * MAX) && \
-      srpc->sdp.data_size <= sizeof(MIAN_TYPE) &&                         \
-      (((MIAN_TYPE *)srpc->sdp.data)->SIZE_VAR) * sizeof(ITEM_TYPE) ==    \
+#define VALID_SIZE(MIAN_TYPE, ITEM_TYPE, SIZE_VAR, MAX)                       \
+  (((MIAN_TYPE *)srpc->sdp.data)->SIZE_VAR) <= MAX &&                         \
+      srpc->sdp.data_size >= (sizeof(MIAN_TYPE) - sizeof(ITEM_TYPE) * MAX) && \
+      srpc->sdp.data_size <= sizeof(MIAN_TYPE) &&                             \
+      (((MIAN_TYPE *)srpc->sdp.data)->SIZE_VAR) * sizeof(ITEM_TYPE) ==        \
           srpc->sdp.data_size - (sizeof(MIAN_TYPE) - sizeof(ITEM_TYPE) * MAX)
 
 char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
@@ -860,7 +861,8 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               (TDCS_SuplaPingServer *)calloc(1, sizeof(TDCS_SuplaPingServer));
 
 #ifndef __AVR__
-          if (srpc->sdp.data_size == sizeof(TDCS_SuplaPingServer_COMPAT)) {
+          if (rd->data.dcs_ping &&
+              srpc->sdp.data_size == sizeof(TDCS_SuplaPingServer_COMPAT)) {
             TDCS_SuplaPingServer_COMPAT *compat =
                 (TDCS_SuplaPingServer_COMPAT *)srpc->sdp.data;
 

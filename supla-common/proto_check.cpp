@@ -108,6 +108,7 @@ static_assert((unsigned int)62 == sizeof(TElectricityMeter_Measurement));
 // deprecated
 // static_assert((unsigned int)429 == sizeof(TElectricityMeter_ExtendedValue));
 
+// deprecated
 static_assert((139 +
                sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT) ==
               sizeof(TElectricityMeter_ExtendedValue_V2));
@@ -133,9 +134,10 @@ static_assert(sizeof(TSC_ImpulseCounter_ExtendedValue) <=
 static_assert(sizeof(TElectricityMeter_Value) <=
               (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 // deprecated
-// static_assert(sizeof(TElectricityMeter_ExtendedValue) <= (unsigned
-// int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+// static_assert(sizeof(TElectricityMeter_ExtendedValue) <=
+//               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
+// deprecated
 static_assert(sizeof(TElectricityMeter_ExtendedValue_V2) <=
               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 static_assert(sizeof(TElectricityMeter_ExtendedValue_V3) <=
@@ -202,7 +204,7 @@ static_assert(sizeof(TCalCfg_SetCfgModePassword) <=
               (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 static_assert((unsigned int)13 == sizeof(TSD_ChannelIntParams));
 static_assert((unsigned int)1 == sizeof(TDS_GetChannelIntParamsRequest));
-static_assert((unsigned int)3 == sizeof(TRelayChannel_Value));
+static_assert((unsigned int)4 == sizeof(TRelayChannel_Value));
 static_assert(sizeof(TRelayChannel_Value) <=
               (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 static_assert((unsigned int)6 == sizeof(TDS_GetChannelConfigRequest));
