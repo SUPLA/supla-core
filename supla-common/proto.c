@@ -301,25 +301,28 @@ char PROTO_ICACHE_FLASH sproto_pop_in_sdp(void *spd_ptr,
         return SUPLA_RESULT_VERSION_ERROR;
       }
 
-      if ((header_size + _sdp->data_size) > sizeof(TSuplaDataPacket)) {
+      if (_sdp->data_size > sizeof(TSuplaDataPacket) - header_size) {
         sproto_shrink_in_buffer(&spd->in, spd->in.data_size);
         return SUPLA_RESULT_DATA_ERROR;
       }
 
-      if ((header_size + _sdp->data_size + SUPLA_TAG_SIZE) > spd->in.data_size)
+      size_t packet_size = header_size + (size_t)_sdp->data_size;
+
+      if (packet_size + SUPLA_TAG_SIZE > spd->in.data_size) {
         return SUPLA_RESULT_FALSE;
+      }
 
-      if (header_size + _sdp->data_size >= spd->in.size ||
-          memcmp(&spd->in.buffer[header_size + _sdp->data_size], sproto_tag,
-                 SUPLA_TAG_SIZE) != 0) {
+      if (packet_size >= spd->in.size ||
+          memcmp(&spd->in.buffer[packet_size], sproto_tag, SUPLA_TAG_SIZE) !=
+              0) {
         sproto_shrink_in_buffer(&spd->in, spd->in.data_size);
 
         return SUPLA_RESULT_DATA_ERROR;
       }
 
-      memcpy(sdp, spd->in.buffer, header_size + _sdp->data_size);
+      memcpy(sdp, spd->in.buffer, packet_size);
       sproto_shrink_in_buffer(&spd->in,
-                              header_size + _sdp->data_size + SUPLA_TAG_SIZE);
+                              packet_size + SUPLA_TAG_SIZE);
 
       return (SUPLA_RESULT_TRUE);
     }
