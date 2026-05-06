@@ -8,6 +8,8 @@ docker compose up -d
 
 if [ "$1" == "debian11" ]; then
   docker exec -it supla-core-devel-supla-core-debian11 /bin/bash
+elif [ "$1" == "debian12" ]; then
+  docker exec -it supla-core-devel-supla-core-debian12 /bin/bash
 else
   docker exec -it supla-core-devel-supla-core /bin/bash
 fi
