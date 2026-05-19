@@ -2663,6 +2663,7 @@ typedef struct {
 #define SUPLA_CHANNELSTATE_FIELD_BRIDGENODESIGNALSTRENGTH 0x0040
 #define SUPLA_CHANNELSTATE_FIELD_UPTIME 0x0080
 #define SUPLA_CHANNELSTATE_FIELD_CONNECTIONUPTIME 0x0100
+// Use exclusively with SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE
 #define SUPLA_CHANNELSTATE_FIELD_BATTERYHEALTH 0x0200
 #define SUPLA_CHANNELSTATE_FIELD_BRIDGENODEONLINE 0x0400
 #define SUPLA_CHANNELSTATE_FIELD_LASTCONNECTIONRESETCAUSE 0x0800
@@ -2678,12 +2679,22 @@ typedef struct {
 // SWITCHCYCLECOUNT and defualtIconField are mutually exclusive. Use only one
 // of them.
 #define SUPLA_CHANNELSTATE_FIELD_SWITCHCYCLECOUNT 0x8000
+// Device battery level is used to inform server that channel's battery level
+// should be applied to whole device
 #define SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL 0x10000
+// Use exclusively with SUPLA_CHANNELSTATE_FIELD_BATTERYHEALTH
+#define SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE 0x20000
+// Device battery state is used to inform server that channel's battery state
+// should be applied to whole device
+#define SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERY_STATE 0x40000
 
 #define SUPLA_LASTCONNECTIONRESETCAUSE_UNKNOWN 0
 #define SUPLA_LASTCONNECTIONRESETCAUSE_ACTIVITY_TIMEOUT 1
 #define SUPLA_LASTCONNECTIONRESETCAUSE_WIFI_CONNECTION_LOST 2
 #define SUPLA_LASTCONNECTIONRESETCAUSE_SERVER_CONNECTION_LOST 3
+
+#define SUPLA_BATTERY_STATE_OK 0
+#define SUPLA_BATTERY_STATE_LOW 1
 
 typedef struct {
   _supla_int_t ReceiverID;  // Not used in extended values
@@ -2707,7 +2718,10 @@ typedef struct {
   unsigned char BridgeNodeSignalStrength;  // 0 - 100%
   unsigned _supla_int_t Uptime;            // sec.
   unsigned _supla_int_t ConnectionUptime;  // sec.
-  unsigned char BatteryHealth;
+  union {
+    unsigned char BatteryHealth;  // 0 - 100%
+    unsigned char BatteryState;   // SUPLA_BATTERY_STATE_*
+  };
   unsigned char LastConnectionResetCause;  // SUPLA_LASTCONNECTIONRESETCAUSE_*
   unsigned _supla_int16_t LightSourceLifespan;  // 0 - 65535 hours
   union {
