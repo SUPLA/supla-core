@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 
+#include "device/value/channel_general_purpose_text_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "log.h"
 
@@ -275,6 +276,130 @@ TEST_F(DelayedValueBasedTriggerIntegrationTest, multipleActions) {
                 .count();
   EXPECT_GT(ms, 1000);
   EXPECT_LT(ms, 1400);
+}
+
+TEST_F(DelayedValueBasedTriggerIntegrationTest,
+       generalPurposeTextPushNotificationAfterDuration) {
+  runSqlScript("AddDelayedGeneralPurposeTextValueBasedTrigger.sql");
+  triggers->load();
+
+  auto gpt_trigger = triggers->get(34);
+  ASSERT_TRUE(gpt_trigger != nullptr);
+  EXPECT_EQ(gpt_trigger->get_channel_id(), 320);
+  EXPECT_EQ(gpt_trigger->get_action_config().get_subject_type(),
+            stPushNotification);
+  EXPECT_EQ(gpt_trigger->get_action_config().get_subject_id(), 500);
+  EXPECT_EQ(gpt_trigger->get_action_config().get_action_id(), ACTION_SEND);
+  EXPECT_EQ(gpt_trigger->get_on_change_cnd().get_op(), op_eq);
+  EXPECT_EQ(gpt_trigger->get_on_change_cnd().get_duration_sec(), 1);
+  double latitude = 0;
+  double longitude = 0;
+  std::string timezone = user->get_timezone(&latitude, &longitude);
+  EXPECT_TRUE(gpt_trigger->get_active_period().is_now_active(
+      timezone.c_str(), latitude, longitude));
+
+  char old_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(old_raw, "before", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value oldv(old_raw);
+
+  char match_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(match_raw, "match", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value matchv(match_raw);
+
+  auto direct_match = gpt_trigger->is_condition_met(320, &oldv, &matchv);
+  _supla_int64_t direct_ms_left = 0;
+  EXPECT_TRUE(direct_match.is_condition_met(&direct_ms_left));
+  EXPECT_GT(direct_ms_left, 0);
+
+  auto start = std::chrono::steady_clock::now();
+  std::chrono::steady_clock::time_point fire;
+
+  EXPECT_CALL(*actionExecutor, send(_, _))
+      .WillOnce([&](const supla_caller &caller, nlohmann::json *template_data) {
+        fire = std::chrono::steady_clock::now();
+        EXPECT_EQ(actionExecutor->get_push_notification_id(), 500);
+        ASSERT_NE(template_data, nullptr);
+        EXPECT_EQ((*template_data)["value"].get<std::string>(), "match");
+      });
+
+  triggers->on_value_changed(supla_caller(ctIPC), 320, &oldv, &matchv,
+                             actionExecutor, propertyGetter);
+
+  usleep(1500000);
+
+  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(fire - start)
+                .count();
+  EXPECT_GT(ms, 1000);
+  EXPECT_LT(ms, 1500);
+}
+
+TEST_F(DelayedValueBasedTriggerIntegrationTest,
+       generalPurposeTextPushNotificationResetsWhenValueChangesAway) {
+  runSqlScript("AddDelayedGeneralPurposeTextValueBasedTrigger.sql");
+  triggers->load();
+
+  auto gpt_trigger = triggers->get(34);
+  ASSERT_TRUE(gpt_trigger != nullptr);
+  EXPECT_EQ(gpt_trigger->get_channel_id(), 320);
+  EXPECT_EQ(gpt_trigger->get_action_config().get_subject_type(),
+            stPushNotification);
+  EXPECT_EQ(gpt_trigger->get_action_config().get_subject_id(), 500);
+  EXPECT_EQ(gpt_trigger->get_action_config().get_action_id(), ACTION_SEND);
+  EXPECT_EQ(gpt_trigger->get_on_change_cnd().get_op(), op_eq);
+  EXPECT_EQ(gpt_trigger->get_on_change_cnd().get_duration_sec(), 1);
+  double latitude = 0;
+  double longitude = 0;
+  std::string timezone = user->get_timezone(&latitude, &longitude);
+  EXPECT_TRUE(gpt_trigger->get_active_period().is_now_active(
+      timezone.c_str(), latitude, longitude));
+
+  char old_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(old_raw, "before", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value oldv(old_raw);
+
+  char match_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(match_raw, "match", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value matchv(match_raw);
+
+  char other_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(other_raw, "other", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value otherv(other_raw);
+
+  auto direct_match = gpt_trigger->is_condition_met(320, &oldv, &matchv);
+  _supla_int64_t direct_ms_left = 0;
+  EXPECT_TRUE(direct_match.is_condition_met(&direct_ms_left));
+  EXPECT_GT(direct_ms_left, 0);
+
+  auto start = std::chrono::steady_clock::now();
+  std::chrono::steady_clock::time_point fire;
+
+  EXPECT_CALL(*actionExecutor, send(_, _))
+      .WillOnce([&](const supla_caller &caller, nlohmann::json *template_data) {
+        fire = std::chrono::steady_clock::now();
+        EXPECT_EQ(actionExecutor->get_push_notification_id(), 500);
+        ASSERT_NE(template_data, nullptr);
+        EXPECT_EQ((*template_data)["value"].get<std::string>(), "match");
+      });
+
+  triggers->on_value_changed(supla_caller(ctIPC), 320, &oldv, &matchv,
+                             actionExecutor, propertyGetter);
+
+  usleep(500000);
+
+  triggers->on_value_changed(supla_caller(ctIPC), 320, &matchv, &otherv,
+                             actionExecutor, propertyGetter);
+
+  usleep(700000);
+
+  triggers->on_value_changed(supla_caller(ctIPC), 320, &otherv, &matchv,
+                             actionExecutor, propertyGetter);
+
+  usleep(1100000);
+
+  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(fire - start)
+                .count();
+  EXPECT_GT(ms, 2100);
+  EXPECT_LT(ms, 2600);
 }
 
 } /* namespace testing */

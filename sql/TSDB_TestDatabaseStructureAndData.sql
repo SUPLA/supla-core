@@ -36,6 +36,9 @@ SELECT create_hypertable('supla_temphumidity_log', 'date');
 CREATE TABLE supla_thermostat_log (channel_id INT NOT NULL, date TIMESTAMPTZ(0) NOT NULL, "on" BOOLEAN NOT NULL, measured_temperature NUMERIC(5, 2) NOT NULL, preset_temperature NUMERIC(5, 2) NOT NULL, PRIMARY KEY(channel_id, date)); 
 COMMENT ON COLUMN supla_thermostat_log.date IS '(DC2Type:stringdatetime)'; 
 SELECT create_hypertable('supla_thermostat_log', 'date');
+CREATE TABLE supla_gp_text_log (channel_id INT NOT NULL, date TIMESTAMPTZ(0) NOT NULL, value VARCHAR(255) NOT NULL, PRIMARY KEY(channel_id, date)); 
+COMMENT ON COLUMN supla_gp_text_log.date IS '(DC2Type:stringdatetime)'; 
+SELECT create_hypertable('supla_gp_text_log', 'date'); 
 
 CREATE OR REPLACE FUNCTION supla_add_em_log_item(
     _channel_id INT,

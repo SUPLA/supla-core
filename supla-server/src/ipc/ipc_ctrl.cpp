@@ -38,6 +38,7 @@
 #include "ipc/get_em_value_command.h"
 #include "ipc/get_facade_blind_value_command.h"
 #include "ipc/get_gpm_value_command.h"
+#include "ipc/get_gpt_value_command.h"
 #include "ipc/get_humidity_command.h"
 #include "ipc/get_hvac_value_command.h"
 #include "ipc/get_ic_value_command.h"
@@ -111,6 +112,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_get_relay_value_command(socket_adapter));
   add_command(new supla_get_hvac_value_command(socket_adapter));
   add_command(new supla_get_gpm_value_command(socket_adapter));
+  add_command(new supla_get_gpt_value_command(socket_adapter));
   add_command(new supla_get_facade_blind_value_command(socket_adapter));
   add_command(new supla_get_roller_shutter_value_command(socket_adapter));
   add_command(new supla_set_char_command(socket_adapter));

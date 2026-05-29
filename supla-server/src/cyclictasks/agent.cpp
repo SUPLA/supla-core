@@ -27,6 +27,7 @@
 #include "datalogger/current_logger.h"
 #include "datalogger/general_purpose_measurement_logger.h"
 #include "datalogger/general_purpose_meter_logger.h"
+#include "datalogger/general_purpose_text_logger.h"
 #include "datalogger/hp_thermostat_logger.h"
 #include "datalogger/impulse_logger.h"
 #include "datalogger/power_active_logger.h"
@@ -53,6 +54,7 @@ supla_cyclictasks_agent::supla_cyclictasks_agent() {
   add(new supla_auto_gate_closing());
   add(new supla_general_purpose_measurement_logger());
   add(new supla_general_purpose_meter_logger());
+  add(new supla_general_purpose_text_logger());
   add(new supla_virtual_channel_updater_cyclictask());
 
   // Refreshing tokens at the end

@@ -29,6 +29,7 @@
 #include "device/device_dao.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_extended_value_factory.h"
+#include "device/extended_value/channel_general_purpose_text_extended_value.h"
 #include "device/value/channel_value_factory.h"
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/electricity_meter_config.h"
@@ -654,7 +655,8 @@ void supla_device_channel::on_value_changed(
         true);
   }
 
-  if (old_value && new_value) {
+  // GPT should be evaluated on extended values to preserve full text payload.
+  if (old_value && new_value && get_func() != SUPLA_CHANNELFNC_GENERAL_PURPOSE_TEXT) {
     get_device()->get_user()->get_value_based_triggers()->on_value_changed(
         supla_caller(ctChannel, get_id()), get_id(), old_value, new_value);
   }
@@ -716,6 +718,16 @@ void supla_device_channel::set_extended_value(
       }
 
       delete config;
+    }
+
+    supla_channel_general_purpose_text_extended_value *gpt =
+        dynamic_cast<supla_channel_general_purpose_text_extended_value *>(
+            new_value);
+    if (gpt) {
+      if (logger_purpose_extended_value) {
+        delete logger_purpose_extended_value;
+      }
+      logger_purpose_extended_value = gpt->copy();
     }
   }
 

@@ -17,6 +17,7 @@ CPP_SRCS += \
 ../src/jsonconfig/channel/general_purpose_base_config.cpp \
 ../src/jsonconfig/channel/general_purpose_measurement_config.cpp \
 ../src/jsonconfig/channel/general_purpose_meter_config.cpp \
+../src/jsonconfig/channel/general_purpose_text_config.cpp \
 ../src/jsonconfig/channel/google_home_config.cpp \
 ../src/jsonconfig/channel/hvac_config.cpp \
 ../src/jsonconfig/channel/impulse_counter_config.cpp \
@@ -42,6 +43,7 @@ CPP_DEPS += \
 ./src/jsonconfig/channel/general_purpose_base_config.d \
 ./src/jsonconfig/channel/general_purpose_measurement_config.d \
 ./src/jsonconfig/channel/general_purpose_meter_config.d \
+./src/jsonconfig/channel/general_purpose_text_config.d \
 ./src/jsonconfig/channel/google_home_config.d \
 ./src/jsonconfig/channel/hvac_config.d \
 ./src/jsonconfig/channel/impulse_counter_config.d \
@@ -67,6 +69,7 @@ OBJS += \
 ./src/jsonconfig/channel/general_purpose_base_config.o \
 ./src/jsonconfig/channel/general_purpose_measurement_config.o \
 ./src/jsonconfig/channel/general_purpose_meter_config.o \
+./src/jsonconfig/channel/general_purpose_text_config.o \
 ./src/jsonconfig/channel/google_home_config.o \
 ./src/jsonconfig/channel/hvac_config.o \
 ./src/jsonconfig/channel/impulse_counter_config.o \
