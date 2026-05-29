@@ -92,6 +92,8 @@ class supla_vbt_value {
   supla_vbt_value(void);
   virtual ~supla_vbt_value(void);
   virtual bool get_vbt_value(_vbt_var_name_e var_name, double *value);
+  virtual bool get_vbt_text_value(_vbt_var_name_e var_name,
+                                  std::string *value);
   virtual nlohmann::json get_template_data(void);
 };
 

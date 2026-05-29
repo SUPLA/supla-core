@@ -12,6 +12,8 @@ CPP_SRCS += \
 ../src/datalogger/general_purpose_measurement_logger_dao.cpp \
 ../src/datalogger/general_purpose_meter_logger.cpp \
 ../src/datalogger/general_purpose_meter_logger_dao.cpp \
+../src/datalogger/general_purpose_text_logger.cpp \
+../src/datalogger/general_purpose_text_logger_dao.cpp \
 ../src/datalogger/hp_thermostat_logger.cpp \
 ../src/datalogger/hp_thermostat_logger_dao.cpp \
 ../src/datalogger/impulse_logger.cpp \
@@ -36,6 +38,8 @@ CPP_DEPS += \
 ./src/datalogger/general_purpose_measurement_logger_dao.d \
 ./src/datalogger/general_purpose_meter_logger.d \
 ./src/datalogger/general_purpose_meter_logger_dao.d \
+./src/datalogger/general_purpose_text_logger.d \
+./src/datalogger/general_purpose_text_logger_dao.d \
 ./src/datalogger/hp_thermostat_logger.d \
 ./src/datalogger/hp_thermostat_logger_dao.d \
 ./src/datalogger/impulse_logger.d \
@@ -60,6 +64,8 @@ OBJS += \
 ./src/datalogger/general_purpose_measurement_logger_dao.o \
 ./src/datalogger/general_purpose_meter_logger.o \
 ./src/datalogger/general_purpose_meter_logger_dao.o \
+./src/datalogger/general_purpose_text_logger.o \
+./src/datalogger/general_purpose_text_logger_dao.o \
 ./src/datalogger/hp_thermostat_logger.o \
 ./src/datalogger/hp_thermostat_logger_dao.o \
 ./src/datalogger/impulse_logger.o \

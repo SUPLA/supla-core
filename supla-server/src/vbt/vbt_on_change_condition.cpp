@@ -28,14 +28,17 @@ using std::string;
 
 supla_vbt_on_change_condition::supla_vbt_on_change_condition(void) {
   value = 0;
+  text_value.clear();
   var_name = var_name_none;
   op = op_unknown;
   resume_op = op_unknown;
   resume_value = 0;
   paused = false;
   on_change = false;
+  text_comparison = false;
   duration_sec = 0;
   saved_old_value = 0;
+  saved_old_text.clear();
   condition_met_at = {};
 }
 
@@ -65,6 +68,9 @@ bool supla_vbt_on_change_condition::is_paused(void) const { return paused; }
 
 void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
   op = op_unknown;
+  text_value.clear();
+  text_comparison = false;
+  saved_old_text.clear();
 
   cJSON *root = cJSON_GetObjectItem(json, "on_change");
   on_change = root != nullptr;
@@ -158,14 +164,24 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
     return;
   }
 
-  if (!get_operator_and_value(root, &op, &value)) {
+  if (!get_operator_and_value(root, &op, &value, &text_value,
+                              &text_comparison)) {
     op = op_unknown;
     return;
   }
 
   cJSON *resume_json = cJSON_GetObjectItem(root, "resume");
+  std::string resume_text_value;
+  bool resume_text_comparison = false;
   if (resume_json &&
-      !get_operator_and_value(resume_json, &resume_op, &resume_value)) {
+      !get_operator_and_value(resume_json, &resume_op, &resume_value,
+                              &resume_text_value,
+                              &resume_text_comparison)) {
+    op = op_unknown;
+    return;
+  }
+
+  if (resume_text_comparison) {
     op = op_unknown;
     return;
   }
@@ -173,7 +189,9 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
 
 bool supla_vbt_on_change_condition::get_operator_and_value(cJSON *root,
                                                            _vbt_operator_e *op,
-                                                           double *value) {
+                                                           double *value,
+                                                           std::string *text_value,
+                                                           bool *text_comparison) {
   map<_vbt_operator_e, string> ops{{op_eq, "eq"}, {op_ne, "ne"}, {op_gt, "gt"},
                                    {op_ge, "ge"}, {op_lt, "lt"}, {op_le, "le"}};
 
@@ -193,8 +211,10 @@ bool supla_vbt_on_change_condition::get_operator_and_value(cJSON *root,
 
   if (cJSON_IsNumber(op_json)) {
     *value = op_json->valuedouble;
+    *text_comparison = false;
   } else if (cJSON_IsBool(op_json)) {
     *value = cJSON_IsTrue(op_json) ? 1 : 0;
+    *text_comparison = false;
   } else if (cJSON_IsString(op_json)) {
     if (*op != op_eq && *op != op_ne) {
       return false;
@@ -203,12 +223,17 @@ bool supla_vbt_on_change_condition::get_operator_and_value(cJSON *root,
     string value_str = cJSON_GetStringValue(op_json);
     if (value_str == "hi" || value_str == "closed" || value_str == "on") {
       *value = 1;
+      *text_comparison = false;
     } else if (value_str == "lo" || value_str == "low" || value_str == "open" ||
                value_str == "off") {
       *value = 0;
+      *text_comparison = false;
     } else {
-      return false;
+      *text_value = value_str;
+      *text_comparison = true;
     }
+  } else {
+    return false;
   }
 
   return true;
@@ -231,13 +256,43 @@ bool supla_vbt_on_change_condition::is_condition_met(_vbt_operator_e op,
 }
 
 bool supla_vbt_on_change_condition::is_condition_met(
+    _vbt_operator_e op, const std::string &old_value,
+    const std::string &new_value, const std::string &expected) {
+  if (old_value == new_value) {
+    return false;
+  }
+
+  return (op == op_eq && new_value == expected) ||
+         (op == op_ne && new_value != expected);
+}
+
+bool supla_vbt_on_change_condition::is_condition_met(
     double old_value, double new_value, _supla_int64_t *milliseconds_left) {
   if (milliseconds_left) {
     *milliseconds_left = 0;
   }
 
   if (on_change) {
-    return fabs(new_value - old_value) > 0.000001;
+    if (fabs(new_value - old_value) > 0.000001) {
+      if (duration_sec > 0) {
+        struct timeval now;
+        gettimeofday(&now, nullptr);
+        condition_met_at = now;
+        condition_met_at.tv_sec += duration_sec;
+
+        if (milliseconds_left) {
+          *milliseconds_left = ms_left(now);
+        }
+
+        return true;
+      }
+
+      condition_met_at = {};
+      return true;
+    }
+
+    condition_met_at = {};
+    return false;
   }
 
   if (paused) {
@@ -272,21 +327,87 @@ bool supla_vbt_on_change_condition::is_condition_met(
 }
 
 bool supla_vbt_on_change_condition::is_condition_met(
+    const std::string &old_value, const std::string &new_value,
+    _supla_int64_t *milliseconds_left) {
+  if (milliseconds_left) {
+    *milliseconds_left = 0;
+  }
+
+  if (on_change) {
+    if (old_value != new_value) {
+      if (duration_sec > 0) {
+        struct timeval now;
+        gettimeofday(&now, nullptr);
+        condition_met_at = now;
+        condition_met_at.tv_sec += duration_sec;
+
+        if (milliseconds_left) {
+          *milliseconds_left = ms_left(now);
+        }
+
+        return true;
+      }
+
+      condition_met_at = {};
+      return true;
+    }
+
+    condition_met_at = {};
+    return false;
+  }
+
+  if (paused) {
+    return false;
+  } else if (is_condition_met(op, condition_met_at.tv_sec ? saved_old_text : old_value,
+                              new_value, text_value)) {
+    struct timeval now;
+    gettimeofday(&now, nullptr);
+
+    if (duration_sec > 0) {
+      if (!condition_met_at.tv_sec) {
+        saved_old_text = old_value;
+        condition_met_at = now;
+        condition_met_at.tv_sec += duration_sec;
+      }
+
+      if (milliseconds_left) {
+        *milliseconds_left = ms_left(now);
+      }
+    }
+
+    return true;
+  }
+
+  condition_met_at = {};
+  return false;
+}
+
+bool supla_vbt_on_change_condition::is_condition_met(
     supla_vbt_value *old_value, supla_vbt_value *new_value,
     _supla_int64_t *milliseconds_left) {
   if (!on_change && op == op_unknown) {
     return false;
   }
 
-  double oldv = 0;
-  double newv = 0;
-
-  if (!old_value || !old_value->get_vbt_value(var_name, &oldv)) {
+  if (!old_value || !new_value) {
     return false;
   }
 
-  if (!new_value || !new_value->get_vbt_value(var_name, &newv)) {
-    return false;
+  double oldv = 0;
+  double newv = 0;
+
+  bool old_numeric = old_value->get_vbt_value(var_name, &oldv);
+  bool new_numeric = new_value->get_vbt_value(var_name, &newv);
+
+  if (!old_numeric || !new_numeric) {
+    std::string old_text;
+    std::string new_text;
+    if (!old_value->get_vbt_text_value(var_name, &old_text) ||
+        !new_value->get_vbt_text_value(var_name, &new_text)) {
+      return false;
+    }
+
+    return is_condition_met(old_text, new_text, milliseconds_left);
   }
 
   return is_condition_met(oldv, newv, milliseconds_left);
@@ -330,5 +451,7 @@ bool supla_vbt_on_change_condition::is_condition_met(
 bool supla_vbt_on_change_condition::operator==(
     const supla_vbt_on_change_condition &cnd) const {
   return value == cnd.value && var_name == cnd.var_name && op == cnd.op &&
-         resume_op == cnd.resume_op && resume_value == cnd.resume_value;
+         resume_op == cnd.resume_op && resume_value == cnd.resume_value &&
+         text_comparison == cnd.text_comparison && text_value == cnd.text_value &&
+         duration_sec == cnd.duration_sec && on_change == cnd.on_change;
 }

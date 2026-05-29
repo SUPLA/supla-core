@@ -20,14 +20,17 @@
 
 #include <map>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 #include "device/channel_state.h"
 #include "device/extended_value/channel_em_extended_value.h"
+#include "device/extended_value/channel_general_purpose_text_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/value/channel_binary_sensor_value.h"
 #include "device/value/channel_container_value.h"
 #include "device/value/channel_floating_point_sensor_value.h"
+#include "device/value/channel_general_purpose_text_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_rgbw_value.h"
 #include "device/value/channel_rs_value.h"
@@ -112,6 +115,170 @@ TEST_F(OnChangeConditionTest, allPredictedOperators) {
   cJSON_Delete(json);
 
   EXPECT_EQ(c.get_op(), op_gt);
+}
+
+TEST_F(OnChangeConditionTest, generalPurposeTextEqualCondition) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change_to\":{\"eq\":\"match\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  char old_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(old_raw, "before", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value old_value(old_raw);
+
+  char new_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(new_raw, "match", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value new_value(new_raw);
+
+  EXPECT_TRUE(c.is_condition_met(&old_value, &new_value));
+}
+
+TEST_F(OnChangeConditionTest, generalPurposeTextOnChangeCondition) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  TSuplaChannelExtendedValue old_ev = {};
+  old_ev.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
+  old_ev.size = 3;
+  strncpy(old_ev.value, "old", sizeof(old_ev.value) - 1);
+  supla_channel_general_purpose_text_extended_value old_value(&old_ev);
+
+  TSuplaChannelExtendedValue new_ev = {};
+  new_ev.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
+  new_ev.size = 3;
+  strncpy(new_ev.value, "new", sizeof(new_ev.value) - 1);
+  supla_channel_general_purpose_text_extended_value new_value(&new_ev);
+
+  EXPECT_TRUE(c.is_condition_met(&old_value, &new_value));
+}
+
+TEST_F(OnChangeConditionTest, generalPurposeTextOnChangeDelayedCondition) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{\"duration_sec\":1}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  TSuplaChannelExtendedValue old_ev = {};
+  old_ev.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
+  old_ev.size = 3;
+  strncpy(old_ev.value, "old", sizeof(old_ev.value) - 1);
+  supla_channel_general_purpose_text_extended_value old_value(&old_ev);
+
+  TSuplaChannelExtendedValue new_ev = {};
+  new_ev.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
+  new_ev.size = 3;
+  strncpy(new_ev.value, "new", sizeof(new_ev.value) - 1);
+  supla_channel_general_purpose_text_extended_value new_value(&new_ev);
+
+  _supla_int64_t milliseconds_left = 0;
+  EXPECT_TRUE(c.is_condition_met(&old_value, &new_value, &milliseconds_left));
+  EXPECT_GT(milliseconds_left, 0);
+
+  usleep(1100000);
+
+  milliseconds_left = 0;
+  EXPECT_TRUE(c.is_condition_met(&milliseconds_left));
+  EXPECT_LE(milliseconds_left, 0);
+  EXPECT_FALSE(c.is_condition_met(&milliseconds_left));
+}
+
+TEST_F(OnChangeConditionTest,
+       generalPurposeTextOnChangeDelayedConditionRespectsTimeAfterNextChange) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{\"duration_sec\":1}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  char old_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(old_raw, "A", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value old_value(old_raw);
+
+  char new_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(new_raw, "B", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value new_value(new_raw);
+
+  _supla_int64_t milliseconds_left = 0;
+  EXPECT_TRUE(c.is_condition_met(&old_value, &new_value, &milliseconds_left));
+  EXPECT_GT(milliseconds_left, 0);
+
+  usleep(600000);
+
+  char newer_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(newer_raw, "C", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value newer_value(newer_raw);
+
+  milliseconds_left = 0;
+  EXPECT_TRUE(c.is_condition_met(&new_value, &newer_value, &milliseconds_left));
+  EXPECT_GT(milliseconds_left, 0);
+
+  usleep(600000);
+  milliseconds_left = 0;
+  EXPECT_FALSE(c.is_condition_met(&milliseconds_left));
+  EXPECT_GT(milliseconds_left, 0);
+
+  usleep(500000);
+  milliseconds_left = 0;
+  EXPECT_TRUE(c.is_condition_met(&milliseconds_left));
+  EXPECT_LE(milliseconds_left, 0);
+}
+
+TEST_F(OnChangeConditionTest,
+       generalPurposeTextEqualDelayedConditionRespectsValueAndTime) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":\"match\",\"duration_sec\":1}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  char old_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(old_raw, "before", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value old_value(old_raw);
+
+  char wrong_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(wrong_raw, "wrong", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value wrong_value(wrong_raw);
+
+  _supla_int64_t milliseconds_left = 0;
+  EXPECT_FALSE(c.is_condition_met(&old_value, &wrong_value, &milliseconds_left));
+
+  char match_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(match_raw, "match", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value match_value(match_raw);
+
+  milliseconds_left = 0;
+  EXPECT_TRUE(c.is_condition_met(&old_value, &match_value, &milliseconds_left));
+  EXPECT_GT(milliseconds_left, 0);
+
+  usleep(500000);
+
+  char other_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  strncpy(other_raw, "other", SUPLA_CHANNELVALUE_SIZE - 1);
+  supla_channel_general_purpose_text_value other_value(other_raw);
+
+  milliseconds_left = 0;
+  EXPECT_FALSE(
+      c.is_condition_met(&match_value, &other_value, &milliseconds_left));
+
+  usleep(700000);
+  milliseconds_left = 0;
+  EXPECT_FALSE(c.is_condition_met(&milliseconds_left));
+
+  milliseconds_left = 0;
+  EXPECT_TRUE(c.is_condition_met(&other_value, &match_value, &milliseconds_left));
+  EXPECT_GT(milliseconds_left, 0);
+
+  usleep(1100000);
+  milliseconds_left = 0;
+  EXPECT_TRUE(c.is_condition_met(&milliseconds_left));
+  EXPECT_LE(milliseconds_left, 0);
 }
 
 TEST_F(OnChangeConditionTest, onChangeTo_allPredictedVarNames) {
@@ -2548,6 +2715,114 @@ TEST_F(OnChangeConditionTest, containerWithInvalidSensorState) {
 
     EXPECT_TRUE(c.is_condition_met(&oldv, &newv));
   }
+}
+
+TEST_F(OnChangeConditionTest, boolValues_closedAndOpenAliases) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change_to\":{\"eq\":\"closed\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_op(), op_eq);
+  EXPECT_EQ(c.get_value(), 1);
+
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":\"open\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_op(), op_eq);
+  EXPECT_EQ(c.get_value(), 0);
+}
+
+TEST_F(OnChangeConditionTest, invalidStringOperatorResetsCondition) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change_to\":{\"gt\":\"match\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_op(), op_unknown);
+
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
+  oldv.set_value(1);
+  newv.set_value(2);
+
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, invalidResumeConfigResetsCondition) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json =
+      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"resume\":{\"eq\":\"match\"}}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_op(), op_unknown);
+
+  json = cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"resume\":{}}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  EXPECT_EQ(c.get_op(), op_unknown);
+}
+
+TEST_F(OnChangeConditionTest, missingConditionConfigReturnsFalse) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
+  oldv.set_value(1);
+  newv.set_value(2);
+
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv));
+}
+
+TEST_F(OnChangeConditionTest, nullValuesReturnFalse) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  supla_channel_floating_point_sensor_value value(SUPLA_CHANNELFNC_WEIGHTSENSOR);
+  value.set_value(1);
+
+  EXPECT_FALSE(c.is_condition_met(nullptr, &value));
+  EXPECT_FALSE(c.is_condition_met(&value, nullptr));
+  EXPECT_FALSE(c.is_condition_met(nullptr, nullptr));
+}
+
+TEST_F(OnChangeConditionTest, delayedOnChangeIsCanceledWhenValueStopsChanging) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change\":{\"duration_sec\":1}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  supla_channel_floating_point_sensor_value oldv(SUPLA_CHANNELFNC_WEIGHTSENSOR),
+      newv(SUPLA_CHANNELFNC_WEIGHTSENSOR);
+  oldv.set_value(1);
+  newv.set_value(2);
+
+  _supla_int64_t milliseconds_left = 0;
+  EXPECT_TRUE(c.is_condition_met(&oldv, &newv, &milliseconds_left));
+  EXPECT_GT(milliseconds_left, 0);
+
+  oldv.set_value(2);
+  newv.set_value(2);
+  EXPECT_FALSE(c.is_condition_met(&oldv, &newv, &milliseconds_left));
+  EXPECT_EQ(milliseconds_left, 0);
+
+  milliseconds_left = -1;
+  EXPECT_FALSE(c.is_condition_met(&milliseconds_left));
+  EXPECT_EQ(milliseconds_left, 0);
 }
 
 }  // namespace testing
