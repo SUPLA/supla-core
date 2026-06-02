@@ -56,7 +56,7 @@ void getDecryptedByteArrayField(JNIEnv *env, jobject context, jclass cls,
 void getAuthDetails(JNIEnv *env, jobject context, jobject auth_info,
                     TCS_ClientAuthorizationDetails *details,
                     int *protocol_version) {
-  jclass cls = env->FindClass("org/supla/android/profile/AuthInfo");
+  jclass cls = env->FindClass("org/supla/android/lib/dto/AuthDataDto");
 
   getDecryptedByteArrayField(env, context, cls, auth_info, "getDecryptedGuid",
                              details->GUID, sizeof(details->GUID));
@@ -80,15 +80,15 @@ void getAuthDetails(JNIEnv *env, jobject context, jobject auth_info,
     supla_GetStringUtfChars(env, email, details->Email, sizeof(details->Email));
   } else {
     server = (jstring)supla_CallObjectMethod(
-        env, cls, auth_info, "getServerForAccessID", "()Ljava/lang/String;");
+        env, cls, auth_info, "getServerForAccessId", "()Ljava/lang/String;");
 
     jstring pass = (jstring)supla_CallObjectMethod(
-        env, cls, auth_info, "getAccessIDpwd", "()Ljava/lang/String;");
+        env, cls, auth_info, "getAccessIdPassword", "()Ljava/lang/String;");
 
     supla_GetStringUtfChars(env, pass, details->AccessIDpwd,
                             sizeof(details->AccessIDpwd));
 
-    details->AccessID = supla_CallIntMethod(env, cls, auth_info, "getAccessID");
+    details->AccessID = supla_CallIntMethod(env, cls, auth_info, "getAccessId");
   }
 
   supla_GetStringUtfChars(env, server, details->ServerName,
