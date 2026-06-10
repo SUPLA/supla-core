@@ -438,8 +438,8 @@ void supla_mqtt_abstract_value_setter::set_value(char *topic_name,
                                                  size_t message_size) {
   suid_free();
 
-  if (topic_name == NULL || topic_name_size == 0 || message == NULL ||
-      message_size == 0) {
+  if (settings == NULL || topic_name == NULL || topic_name_size == 0 ||
+      message == NULL || message_size == 0) {
     return;
   }
 
@@ -466,7 +466,7 @@ void supla_mqtt_abstract_value_setter::set_value(char *topic_name,
     topic_name_size--;
   }
 
-  if (memcmp(topic_name, "supla/", 6) != 0) {
+  if (topic_name_size < 6 || memcmp(topic_name, "supla/", 6) != 0) {
     return;
   }
 
@@ -478,12 +478,21 @@ void supla_mqtt_abstract_value_setter::set_value(char *topic_name,
 
   size_t a = 0;
 
+  bool suid_end_found = false;
+
   for (a = 0; a < topic_name_size; a++) {
     if (topic_name[a] == '/') {
       suid_len = a;
       suid_ptr = (char *)topic_name;
+      suid_end_found = true;
       break;
     }
+  }
+
+  if (!suid_end_found || suid_len == 0 || topic_name_size <= suid_len + 1) {
+    suid_len = 0;
+    suid_ptr = NULL;
+    return;
   }
 
   topic_name += suid_len + 1;
