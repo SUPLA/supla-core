@@ -35,7 +35,9 @@
 
 #else
 
+#ifndef __APPLE__
 #define _POSIX_C_SOURCE 200809L
+#endif
 
 #include <arpa/inet.h>
 #include <assert.h>
