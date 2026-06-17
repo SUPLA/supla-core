@@ -361,7 +361,9 @@ bool supla_client_channel::remote_update_is_possible(void) {
   if (protocol_version >= 28) {
 #if SUPLA_PROTO_VERSION >= 29
 #error \
-    "After officially switching to protocol >= 29, change protocol_version == 28 to 29"
+    "After officially switching to protocol >= 29, \
+	change protocol_version == 28 to 29"
+
 #endif
     switch (Func) {
       case SUPLA_CHANNELFNC_HVAC_HRV:
