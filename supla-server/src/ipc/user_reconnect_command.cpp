@@ -25,5 +25,5 @@ supla_user_reconnect_command::supla_user_reconnect_command(
     : supla_abstract_user_reconnect_command(socket_adapter) {}
 
 bool supla_user_reconnect_command::reconnect(int user_id) {
-  return supla_user::reconnect(user_id, supla_caller(ctIPC));
+  return supla_user::reconnect(user_id, get_caller());
 }

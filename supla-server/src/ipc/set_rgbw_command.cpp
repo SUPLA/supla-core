@@ -113,7 +113,7 @@ void supla_set_rgbw_command::on_command_match(const char *params) {
       }
 
       action_executor->execute_action(
-          supla_caller(), user_id, ACTION_SET_RGBW_PARAMETERS,
+          get_caller(), user_id, ACTION_SET_RGBW_PARAMETERS,
           group ? stChannelGroup : stChannel, channel_or_group_id, nullptr,
           &params, 0, 0, 0, nullptr, get_alexa_correlation_token(),
           get_google_request_id());
