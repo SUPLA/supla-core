@@ -135,7 +135,7 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
       (scope & CONFIG_CHANGE_SCOPE_VISIBILITY) ||
       (scope & CONFIG_CHANGE_SCOPE_RELATIONS) ||
       (scope & CONFIG_CHANGE_SCOPE_ICON)) {
-    user->reconnect(supla_caller(ctIPC), false, true);
+    user->reconnect(get_caller(), false, true);
   } else {
     if (scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) {
       user->get_clients()->update_json_config(
