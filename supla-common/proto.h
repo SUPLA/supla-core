@@ -2847,7 +2847,6 @@ typedef struct {
   \
   X(0x0300, OUTPUT_ERROR) \
   X(0x0301, OUTPUT_MOTOR_PROBLEM) \
-  X(0x0302, OUTPUT_ERROR) \
   \
   X(0x0400, CALIBRATION_LOST) \
   X(0x0401, CALIBRATION_FAILED) \
@@ -2950,6 +2949,9 @@ typedef struct {
 typedef struct {
   TSuplaObjectAddress Object;
 
+  unsigned char AlertSurfaceChannelNumber;
+  unsigned char Reserved0;
+
   unsigned _supla_int16_t SnapshotId;
   unsigned _supla_int16_t TotalCount;
   unsigned _supla_int16_t Offset;
@@ -2957,7 +2959,7 @@ typedef struct {
   unsigned char Count;
   unsigned char EndOfDataFlag;    // 1 - last message; 0 - more messages follow
   unsigned char Flags;            // SUPLA_OBJECT_ALERTS_FLAG_*
-  unsigned char Reserved[3];
+  unsigned char Reserved[1];
 
   TSuplaAlertStateItem Items[SUPLA_OBJECT_ALERT_STATE_PACK_MAXCOUNT];
 } TDS_ObjectAlerts;
