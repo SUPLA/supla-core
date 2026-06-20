@@ -37,7 +37,7 @@ bool supla_update_channel_state_command::update_state(int user_id,
   if (device != nullptr) {
     TCSD_ChannelStateRequest request = {};
     request.ChannelID = channel_id;
-    return device->get_channels()->get_channel_state_async(supla_caller(ctIPC),
+    return device->get_channels()->get_channel_state_async(get_caller(),
                                                            &request);
   }
   return false;

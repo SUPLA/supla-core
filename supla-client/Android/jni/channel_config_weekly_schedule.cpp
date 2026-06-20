@@ -24,7 +24,7 @@
 #include "supla.h"
 
 jobject supla_cc_hvac_mode_to_jobject(JNIEnv *env, unsigned char mode) {
-  char enum_name[20] = {};
+  char enum_name[30] = {};
 
   switch (mode) {
     case SUPLA_HVAC_MODE_OFF:

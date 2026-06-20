@@ -18,6 +18,8 @@
 
 #include "mqtt_subscriber.h"
 
+#include "mqtt_message_provider.h"
+
 supla_mqtt_subscriber::supla_mqtt_subscriber(
     supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,
@@ -55,6 +57,13 @@ bool supla_mqtt_subscriber::on_iterate(void) {
 
 void supla_mqtt_subscriber::on_message_received(
     const _received_mqtt_message_t *msg) {
+  if (setter == NULL || msg == NULL || msg->topic_name == NULL ||
+      msg->topic_name_size == 0 ||
+      msg->topic_name_size > MQTT_MAX_TOPIC_NAME_SIZE || msg->message == NULL ||
+      msg->message_size == 0 || msg->message_size > MQTT_MAX_MESSAGE_SIZE) {
+    return;
+  }
+
   setter->set_value((char *)msg->topic_name, msg->topic_name_size,
                     (char *)msg->message, msg->message_size);
 }

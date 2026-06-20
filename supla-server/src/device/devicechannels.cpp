@@ -721,6 +721,7 @@ bool supla_device_channels::get_channel_state_async(
     memcpy(&drequest, request, sizeof(TCSD_ChannelStateRequest));
 
     drequest.SenderID = caller.convert_to_sender_id();
+    drequest.ChannelID = 0;  // Clear ChannelId before assigning Channel number.
     drequest.ChannelNumber = channel->get_channel_number();
 
     srpc_csd_async_get_channel_state(get_srpc(), &drequest);
