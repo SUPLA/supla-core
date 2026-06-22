@@ -3,24 +3,41 @@
 vg_verify() {
    ulimit -n 1024
 
+   no_leak_check=0
+   args=""
+
+   for arg in "$@"; do
+      if [ "$arg" = "--no-leak-check" ]; then
+         no_leak_check=1
+      else
+         args="$args \"$arg\""
+      fi
+   done
+
    valgrind --version
-   valgrind --tool=memcheck --leak-check=full --track-origins=no $1 2>&1 | tee valgrind.log
+
+   eval valgrind \
+      --tool=memcheck \
+      --leak-check=full \
+      --track-origins=no \
+      "$args" 2>&1 | tee valgrind.log
+
    vg_status=${PIPESTATUS[0]}
 
    if [ "$vg_status" -ne 0 ]; then
-     echo "Valgrind failed"
-     rm -f valgrind.log
-     exit "$vg_status"
+      echo "Valgrind failed (exit code: $vg_status)"
+      rm -f valgrind.log
+      exit "$vg_status"
    fi
 
-   if [ "$2" != "--no-leak-check" ]; then
-     if grep -E "definitely lost: [1-9]|indirectly lost: [1-9]|possibly lost: [1-9]" valgrind.log; then
-       echo "Memory leak detected"
-       rm -f valgrind.log
-       exit 1
-     fi
+   if [ "$no_leak_check" -eq 0 ]; then
+      if grep -E "definitely lost: [1-9]|indirectly lost: [1-9]|possibly lost: [1-9]" valgrind.log; then
+         echo "Memory leak detected"
+         rm -f valgrind.log
+         exit 1
+      fi
    else
-     echo "Leak detection skipped"
+      echo "Leak detection skipped"
    fi
 
    rm -f valgrind.log
