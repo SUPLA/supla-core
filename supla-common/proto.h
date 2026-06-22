@@ -541,6 +541,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_BIT_FUNC_ROLLER_GARAGE_DOOR 0x02000000            // ver. >= 24
 #define SUPLA_BIT_FUNC_PUMPSWITCH 0x04000000                    // ver. >= 25
 #define SUPLA_BIT_FUNC_HEATORCOLDSOURCESWITCH 0x08000000        // ver. >= 25
+#define SUPLA_BIT_FUNC_HVAC_HRV 0x10000000                      // ver. >= 29
 
 // Channel's RGBW_FuncList bit values (only for SUPLA_CHANNELTYPE_DIMMER,
 // SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, SUPLA_CHANNELTYPE_DIMMERANDRGBLED):
@@ -922,6 +923,43 @@ typedef struct {
   unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
 } THVACValue;
 
+#define SUPLA_HRV_MODE_NOT_SET 0
+#define SUPLA_HRV_MODE_OFF 1
+#define SUPLA_HRV_MODE_MANUAL 2
+#define SUPLA_HRV_MODE_AUTO 3
+
+#define SUPLA_HRV_CMD_TURN_OFF 0x80
+#define SUPLA_HRV_CMD_SWITCH_TO_MANUAL 0x81
+#define SUPLA_HRV_CMD_SWITCH_TO_AUTO 0x82
+#define SUPLA_HRV_CMD_SWITCH_TO_WEEKLY_SCHEDULE 0x83
+#define SUPLA_HRV_CMD_START_BOOST 0x84
+#define SUPLA_HRV_CMD_STOP_BOOST 0x85
+
+#define SUPLA_HRV_VENTILATION_TYPE_NOT_SET 0
+#define SUPLA_HRV_VENTILATION_TYPE_FULL 1
+#define SUPLA_HRV_VENTILATION_TYPE_EXHAUST_ONLY 2
+#define SUPLA_HRV_VENTILATION_TYPE_SUPPLY_ONLY 3
+
+#define SUPLA_HRV_VALUE_FLAG_SETPOINT_SET (1 << 0)
+#define SUPLA_HRV_VALUE_FLAG_VENTILATION_TYPE_SET (1 << 1)
+#define SUPLA_HRV_VALUE_FLAG_WEEKLY_SCHEDULE_ACTIVE (1 << 2)
+#define SUPLA_HRV_VALUE_FLAG_COUNTDOWN_TIMER_ACTIVE (1 << 3)
+#define SUPLA_HRV_VALUE_FLAG_TEMPORARY_OVERRIDE_ACTIVE (1 << 4)
+#define SUPLA_HRV_VALUE_FLAG_BOOST_ACTIVE (1 << 5)
+#define SUPLA_HRV_VALUE_FLAG_AIR_QUALITY_CONTROL_ACTIVE (1 << 6)
+
+#define SUPLA_HRV_SETPOINT_NOT_SET 0xFFFF
+#define SUPLA_HRV_PERCENTAGE_NOT_AVAILABLE 255
+
+typedef struct {
+  unsigned char Mode;             // SUPLA_HRV_MODE_* or SUPLA_HRV_CMD_*
+  unsigned char VentilationType;  // SUPLA_HRV_VENTILATION_TYPE_*
+  unsigned _supla_int16_t Setpoint;
+  unsigned char SupplyPercent;   // 0..200, or 255 if unavailable
+  unsigned char ExhaustPercent;  // 0..200, or 255 if unavailable
+  unsigned _supla_int16_t Flags;  // SUPLA_HRV_VALUE_FLAG_*
+} THRVValue;
+
 typedef struct {
   // device -> server
 
@@ -940,6 +978,7 @@ typedef struct {
     char value[SUPLA_CHANNELVALUE_SIZE];
     TActionTriggerProperties actionTriggerProperties;  // ver. >= 16
     THVACValue hvacValue;
+    THRVValue hrvValue;
   };
 } TDS_SuplaDeviceChannel_C;  // ver. >= 10
 
@@ -990,6 +1029,7 @@ typedef struct {
     char value[SUPLA_CHANNELVALUE_SIZE];
     TActionTriggerProperties actionTriggerProperties;  // ver. >= 16
     THVACValue hvacValue;
+    THRVValue hrvValue;
   };
 
   unsigned char DefaultIcon;
@@ -1022,6 +1062,7 @@ typedef struct {
     char value[SUPLA_CHANNELVALUE_SIZE];
     TActionTriggerProperties actionTriggerProperties;  // ver. >= 16
     THVACValue hvacValue;
+    THRVValue hrvValue;
   };
 
   unsigned char DefaultIcon;
@@ -3556,6 +3597,96 @@ typedef struct {
                          sizeof(_supla_int16_t) - sizeof(_supla_int16_t)];
   THVACTemperatureCfg Temperatures;
 } TChannelConfig_HVAC;  // v. >= 21
+
+#define SUPLA_HRV_CONTROL_TYPE_LEVEL 0
+#define SUPLA_HRV_CONTROL_TYPE_PERCENTAGE 1
+#define SUPLA_HRV_CONTROL_TYPE_FLOW_M3H 2
+#define SUPLA_HRV_CONTROL_TYPE_PRESSURE 3
+
+#define SUPLA_HRV_CONTROL_TYPE_BIT_LEVEL (1 << 0)
+#define SUPLA_HRV_CONTROL_TYPE_BIT_PERCENTAGE (1 << 1)
+#define SUPLA_HRV_CONTROL_TYPE_BIT_FLOW_M3H (1 << 2)
+#define SUPLA_HRV_CONTROL_TYPE_BIT_PRESSURE (1 << 3)
+
+#define SUPLA_HRV_RELATED_CHANNEL_MAXCOUNT 24
+
+#define SUPLA_HRV_RELATED_CHANNEL_FLAG_READONLY (1 << 0)
+
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_NOT_SET 0
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_SUPPLY_AIR_TEMPERATURE 1
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_EXTRACT_AIR_TEMPERATURE 2
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_INTAKE_AIR_TEMPERATURE 3
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_EXHAUST_AIR_TEMPERATURE 4
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_OUTDOOR_TEMPERATURE 5
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_GENERIC_TEMPERATURE 6
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_HUMIDITY 10
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_CO2 11
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_VOC 12
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_PM 13
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_BYPASS 20
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_GHE 21
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_PREHEATER 22
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_HEATER 23
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_COOLER 24
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_AIR_PURIFIER 25
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_RECIRCULATION 26
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_HOOD 30
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_FIREPLACE 31
+#define SUPLA_HRV_RELATED_CHANNEL_ROLE_ZONE 32
+
+typedef struct {
+  unsigned char Role;   // SUPLA_HRV_RELATED_CHANNEL_ROLE_*
+  unsigned char Index;  // instance number, 0 = first/default
+  unsigned char Flags;  // SUPLA_HRV_RELATED_CHANNEL_FLAG_*
+  unsigned char Reserved;
+
+  union {
+    _supla_int_t ChannelId;
+
+    struct {
+      unsigned char ChannelIsSet;
+      unsigned char ChannelNo;  // device-side local channel number, 0 is valid
+      unsigned char ChannelRefReserved[2];
+    };
+  };
+} THRVRelatedChannel;
+
+#define SUPLA_HRV_CONFIG_FIELD_CONTROL_TYPE (1ULL << 0)
+#define SUPLA_HRV_CONFIG_FIELD_SETPOINT_RANGE (1ULL << 1)
+#define SUPLA_HRV_CONFIG_FIELD_VENTILATION_TYPE (1ULL << 2)
+#define SUPLA_HRV_CONFIG_FIELD_BOOST_DURATION (1ULL << 3)
+#define SUPLA_HRV_CONFIG_FIELD_AIR_QUALITY_CONTROL (1ULL << 4)
+#define SUPLA_HRV_CONFIG_FIELD_RELATED_CHANNELS (1ULL << 5)
+
+#define SUPLA_HRV_AIR_QUALITY_CONTROL_CO2 (1 << 0)
+#define SUPLA_HRV_AIR_QUALITY_CONTROL_HUMIDITY (1 << 1)
+#define SUPLA_HRV_AIR_QUALITY_CONTROL_VOC (1 << 2)
+#define SUPLA_HRV_AIR_QUALITY_CONTROL_PM (1 << 3)
+
+typedef struct {
+  unsigned _supla_int64_t AvailableFields;  // SUPLA_HRV_CONFIG_FIELD_*
+  unsigned _supla_int64_t ReadonlyFields;   // scalar config fields only
+
+  unsigned char SupportedControlTypes;  // SUPLA_HRV_CONTROL_TYPE_BIT_*
+  unsigned char UsedControlType;        // SUPLA_HRV_CONTROL_TYPE_*
+
+  unsigned _supla_int16_t MinSetpoint;
+  unsigned _supla_int16_t MaxSetpoint;
+  unsigned _supla_int16_t DefaultSetpoint;
+
+  unsigned char SupportedVentilationTypes;  // bit mask for ventilation types
+  unsigned char DefaultVentilationType;     // SUPLA_HRV_VENTILATION_TYPE_*
+
+  unsigned char DefaultBoostDurationMin;
+  unsigned char AirQualityControlFlags;  // SUPLA_HRV_AIR_QUALITY_CONTROL_*
+
+  unsigned char RelatedChannelCount;
+  unsigned char Reserved0[3];
+
+  THRVRelatedChannel RelatedChannels[SUPLA_HRV_RELATED_CHANNEL_MAXCOUNT];
+
+  unsigned char Reserved[32];
+} TChannelConfig_HRV;  // v. >= 29
 
 #define SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_LINEAR 0
 #define SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_BAR 1
