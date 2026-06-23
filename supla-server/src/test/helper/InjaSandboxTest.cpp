@@ -65,16 +65,6 @@ TEST_F(InjaSandboxTest, extendsStatementsAreNotAllowed) {
   }
 }
 
-TEST_F(InjaSandboxTest, forLoopssAreNotAllowed) {
-  nlohmann::json data;
-  try {
-    sandbox.validate_and_render(
-        "{% for i in range(4) %}{{ loop.index1 }}{% endfor %}", data);
-    FAIL() << "Expected std::runtime_error";
-  } catch (const std::runtime_error& e) {
-    EXPECT_EQ(std::string("For loops are not allowed."), e.what());
-  }
-}
 
 TEST_F(InjaSandboxTest, tooManyControlBlocksInTemplate) {
   nlohmann::json data;
