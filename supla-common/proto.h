@@ -928,6 +928,10 @@ typedef struct {
 #define SUPLA_HRV_MODE_MANUAL 2
 #define SUPLA_HRV_MODE_AUTO 3
 
+#define SUPLA_HRV_MODE_BIT_OFF (1 << 0)
+#define SUPLA_HRV_MODE_BIT_MANUAL (1 << 1)
+#define SUPLA_HRV_MODE_BIT_AUTO (1 << 2)
+
 #define SUPLA_HRV_CMD_TURN_ON 0x80
 #define SUPLA_HRV_CMD_TURN_OFF 0x81
 
@@ -3678,6 +3682,7 @@ typedef struct {
 #define SUPLA_HRV_CONFIG_FIELD_RELATED_CHANNELS (1ULL << 5)
 #define SUPLA_HRV_CONFIG_FIELD_FEATURES (1ULL << 6)
 #define SUPLA_HRV_CONFIG_FIELD_SEASON_MODE (1ULL << 7)
+#define SUPLA_HRV_CONFIG_FIELD_MODES (1ULL << 8)
 
 #define SUPLA_HRV_AIR_QUALITY_CONTROL_CO2 (1 << 0)
 #define SUPLA_HRV_AIR_QUALITY_CONTROL_HUMIDITY (1 << 1)
@@ -3728,6 +3733,9 @@ typedef struct {
 
   unsigned char SupportedSeasonModes;  // SUPLA_HRV_SEASON_MODE_BIT_*
   unsigned char SeasonMode;            // SUPLA_HRV_SEASON_MODE_*
+
+  unsigned char SupportedModes;     // SUPLA_HRV_MODE_BIT_*
+  unsigned char ControllableModes;  // SUPLA_HRV_MODE_BIT_*
 
   unsigned char RelatedChannelCount;
   unsigned char Reserved0;
