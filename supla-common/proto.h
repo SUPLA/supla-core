@@ -928,50 +928,53 @@ typedef struct {
 #define SUPLA_HRV_MODE_MANUAL 2
 #define SUPLA_HRV_MODE_AUTO 3
 
-#define SUPLA_HRV_CMD_TURN_OFF 0x80
-#define SUPLA_HRV_CMD_SWITCH_TO_MANUAL 0x81
-#define SUPLA_HRV_CMD_SWITCH_TO_AUTO 0x82
-#define SUPLA_HRV_CMD_SWITCH_TO_WEEKLY_SCHEDULE 0x83
-#define SUPLA_HRV_CMD_START_BOOST 0x84
-#define SUPLA_HRV_CMD_STOP_BOOST 0x85
-#define SUPLA_HRV_CMD_START_AWAY_MODE 0x86
-#define SUPLA_HRV_CMD_STOP_AWAY_MODE 0x87
-#define SUPLA_HRV_CMD_START_HOOD_MODE 0x88
-#define SUPLA_HRV_CMD_STOP_HOOD_MODE 0x89
-#define SUPLA_HRV_CMD_START_FIREPLACE_MODE 0x8A
-#define SUPLA_HRV_CMD_STOP_FIREPLACE_MODE 0x8B
-#define SUPLA_HRV_CMD_START_OPEN_WINDOW 0x8C
-#define SUPLA_HRV_CMD_STOP_OPEN_WINDOW 0x8D
+#define SUPLA_HRV_CMD_TURN_ON 0x80
+#define SUPLA_HRV_CMD_TURN_OFF 0x81
+
+#define SUPLA_HRV_CMD_SWITCH_TO_MANUAL 0x82
+#define SUPLA_HRV_CMD_SWITCH_TO_AUTO 0x83
+#define SUPLA_HRV_CMD_SWITCH_TO_WEEKLY_SCHEDULE 0x84
+#define SUPLA_HRV_CMD_START_BOOST 0x85
+#define SUPLA_HRV_CMD_STOP_BOOST 0x86
+#define SUPLA_HRV_CMD_START_AWAY 0x87
+#define SUPLA_HRV_CMD_STOP_AWAY 0x88
+#define SUPLA_HRV_CMD_START_HOOD 0x89
+#define SUPLA_HRV_CMD_STOP_HOOD 0x8A
+#define SUPLA_HRV_CMD_START_FIREPLACE 0x8B
+#define SUPLA_HRV_CMD_STOP_FIREPLACE 0x8C
+#define SUPLA_HRV_CMD_START_OPEN_WINDOW 0x8D
+#define SUPLA_HRV_CMD_STOP_OPEN_WINDOW 0x8E
 
 #define SUPLA_HRV_VENTILATION_TYPE_NOT_SET 0
 #define SUPLA_HRV_VENTILATION_TYPE_FULL 1
 #define SUPLA_HRV_VENTILATION_TYPE_EXHAUST_ONLY 2
 #define SUPLA_HRV_VENTILATION_TYPE_SUPPLY_ONLY 3
 
-#define SUPLA_HRV_VALUE_FLAG_SETPOINT_SET (1 << 0)
-#define SUPLA_HRV_VALUE_FLAG_VENTILATION_TYPE_SET (1 << 1)
-#define SUPLA_HRV_VALUE_FLAG_WEEKLY_SCHEDULE_ACTIVE (1 << 2)
-#define SUPLA_HRV_VALUE_FLAG_COUNTDOWN_TIMER_ACTIVE (1 << 3)
-#define SUPLA_HRV_VALUE_FLAG_TEMPORARY_OVERRIDE_ACTIVE (1 << 4)
-#define SUPLA_HRV_VALUE_FLAG_BOOST_ACTIVE (1 << 5)
-#define SUPLA_HRV_VALUE_FLAG_AIR_QUALITY_CONTROL_ACTIVE (1 << 6)
-#define SUPLA_HRV_VALUE_FLAG_AWAY_MODE_ACTIVE (1 << 7)
-#define SUPLA_HRV_VALUE_FLAG_DEFROST_ACTIVE (1 << 8)
-#define SUPLA_HRV_VALUE_FLAG_FREE_COOLING_ACTIVE (1 << 9)
-#define SUPLA_HRV_VALUE_FLAG_OPEN_WINDOW_ACTIVE (1 << 10)
-#define SUPLA_HRV_VALUE_FLAG_HOOD_MODE_ACTIVE (1 << 11)
-#define SUPLA_HRV_VALUE_FLAG_FIREPLACE_MODE_ACTIVE (1 << 12)
+#define SUPLA_HRV_ACTIVE_FLAG_WEEKLY_SCHEDULE (1 << 0)
+#define SUPLA_HRV_ACTIVE_FLAG_TEMPORARY_OVERRIDE (1 << 1)
+#define SUPLA_HRV_ACTIVE_FLAG_BOOST (1 << 2)
+#define SUPLA_HRV_ACTIVE_FLAG_AWAY (1 << 3)
+#define SUPLA_HRV_ACTIVE_FLAG_AIR_QUALITY_CONTROL (1 << 4)
+#define SUPLA_HRV_ACTIVE_FLAG_DEFROST (1 << 5)
+#define SUPLA_HRV_ACTIVE_FLAG_FREE_COOLING (1 << 6)
+#define SUPLA_HRV_ACTIVE_FLAG_OPEN_WINDOW (1 << 7)
+#define SUPLA_HRV_ACTIVE_FLAG_HOOD (1 << 8)
+#define SUPLA_HRV_ACTIVE_FLAG_FIREPLACE (1 << 9)
+#define SUPLA_HRV_ACTIVE_FLAG_WINTER_SEASON (1 << 10)
+#define SUPLA_HRV_ACTIVE_FLAG_SUMMER_SEASON (1 << 11)
 
 #define SUPLA_HRV_SETPOINT_NOT_SET 0xFFFF
 #define SUPLA_HRV_PERCENTAGE_NOT_AVAILABLE 255
 
+// HRV channel value. Mode is the base operating mode; ActiveFlags report
+// optional features that are currently active.
 typedef struct {
   unsigned char Mode;             // SUPLA_HRV_MODE_* or SUPLA_HRV_CMD_*
   unsigned char VentilationType;  // SUPLA_HRV_VENTILATION_TYPE_*
   unsigned _supla_int16_t Setpoint;
   unsigned char SupplyPercent;   // 0..200, or 255 if unavailable
-  unsigned char ExhaustPercent;  // 0..200, or 255 if unavailable
-  unsigned _supla_int16_t Flags;  // SUPLA_HRV_VALUE_FLAG_*
+  unsigned char ExhaustPercent;       // 0..200, or 255 if unavailable
+  unsigned _supla_int16_t ActiveFlags;  // SUPLA_HRV_ACTIVE_FLAG_*
 } THRVValue;
 
 typedef struct {
@@ -3649,6 +3652,7 @@ typedef struct {
 #define SUPLA_HRV_RELATED_CHANNEL_ROLE_ZONE 32
 #define SUPLA_HRV_RELATED_CHANNEL_ROLE_OPEN_WINDOW 33
 
+// Link to a separate SUPLA channel and describe its role in the HRV system.
 typedef struct {
   unsigned char Role;   // SUPLA_HRV_RELATED_CHANNEL_ROLE_*
   unsigned char Index;  // instance number, 0 = first/default
@@ -3672,7 +3676,8 @@ typedef struct {
 #define SUPLA_HRV_CONFIG_FIELD_BOOST_DURATION (1ULL << 3)
 #define SUPLA_HRV_CONFIG_FIELD_AIR_QUALITY_CONTROL (1ULL << 4)
 #define SUPLA_HRV_CONFIG_FIELD_RELATED_CHANNELS (1ULL << 5)
-#define SUPLA_HRV_CONFIG_FIELD_FUNCTIONS (1ULL << 6)
+#define SUPLA_HRV_CONFIG_FIELD_FEATURES (1ULL << 6)
+#define SUPLA_HRV_CONFIG_FIELD_SEASON_MODE (1ULL << 7)
 
 #define SUPLA_HRV_AIR_QUALITY_CONTROL_CO2 (1 << 0)
 #define SUPLA_HRV_AIR_QUALITY_CONTROL_HUMIDITY (1 << 1)
@@ -3681,14 +3686,26 @@ typedef struct {
 
 #define SUPLA_HRV_BOOST_DURATION_NOT_SET 0
 
-#define SUPLA_HRV_FUNCTION_BOOST (1 << 0)
-#define SUPLA_HRV_FUNCTION_AWAY_MODE (1 << 1)
-#define SUPLA_HRV_FUNCTION_FREE_COOLING (1 << 2)
-#define SUPLA_HRV_FUNCTION_OPEN_WINDOW (1 << 3)
-#define SUPLA_HRV_FUNCTION_HOOD_MODE (1 << 4)
-#define SUPLA_HRV_FUNCTION_FIREPLACE_MODE (1 << 5)
-#define SUPLA_HRV_FUNCTION_DEFROST (1 << 6)
+#define SUPLA_HRV_FEATURE_BOOST (1 << 0)
+#define SUPLA_HRV_FEATURE_AWAY (1 << 1)
+#define SUPLA_HRV_FEATURE_HOOD (1 << 2)
+#define SUPLA_HRV_FEATURE_FIREPLACE (1 << 3)
+#define SUPLA_HRV_FEATURE_OPEN_WINDOW (1 << 4)
+#define SUPLA_HRV_FEATURE_FREE_COOLING (1 << 5)
+#define SUPLA_HRV_FEATURE_AIR_QUALITY_CONTROL (1 << 6)
+#define SUPLA_HRV_FEATURE_DEFROST (1 << 7)
 
+#define SUPLA_HRV_SEASON_MODE_NOT_SET 0
+#define SUPLA_HRV_SEASON_MODE_WINTER 1
+#define SUPLA_HRV_SEASON_MODE_SUMMER 2
+#define SUPLA_HRV_SEASON_MODE_AUTO 3
+
+#define SUPLA_HRV_SEASON_MODE_BIT_WINTER (1 << 0)
+#define SUPLA_HRV_SEASON_MODE_BIT_SUMMER (1 << 1)
+#define SUPLA_HRV_SEASON_MODE_BIT_AUTO (1 << 2)
+
+// HRV configuration. Features describe optional HRV behavior, while related
+// channels describe linked SUPLA channels and their HRV role.
 typedef struct {
   unsigned _supla_int64_t AvailableFields;  // SUPLA_HRV_CONFIG_FIELD_*
   unsigned _supla_int64_t ReadonlyFields;   // scalar config fields only
@@ -3706,11 +3723,14 @@ typedef struct {
   unsigned char DefaultBoostDurationMin;
   unsigned char AirQualityControlFlags;  // SUPLA_HRV_AIR_QUALITY_CONTROL_*
 
-  unsigned _supla_int16_t SupportedFunctions;     // SUPLA_HRV_FUNCTION_*
-  unsigned _supla_int16_t ControllableFunctions;  // SUPLA_HRV_FUNCTION_*
+  unsigned _supla_int16_t SupportedFeatures;     // SUPLA_HRV_FEATURE_*
+  unsigned _supla_int16_t ControllableFeatures;  // SUPLA_HRV_FEATURE_*
+
+  unsigned char SupportedSeasonModes;  // SUPLA_HRV_SEASON_MODE_BIT_*
+  unsigned char SeasonMode;            // SUPLA_HRV_SEASON_MODE_*
 
   unsigned char RelatedChannelCount;
-  unsigned char Reserved0[3];
+  unsigned char Reserved0;
 
   THRVRelatedChannel RelatedChannels[SUPLA_HRV_RELATED_CHANNEL_MAXCOUNT];
 
