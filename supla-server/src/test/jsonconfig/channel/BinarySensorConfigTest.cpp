@@ -74,7 +74,7 @@ TEST_F(BinarySensorConfigTest, filteringTimeMs) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
-               "null,\"sensitivity\":null,\"alarmMuted\":null}");
+               "null,\"sensitivity\":null,\"localAlarmIndication\":null}");
   free(str);
 
   raw_config.FilteringTimeMs = 1;
@@ -84,7 +84,7 @@ TEST_F(BinarySensorConfigTest, filteringTimeMs) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"timeout\":null,\"sensitivity\":null,"
-               "\"alarmMuted\":null,\"filteringTimeMs\":1}");
+               "\"localAlarmIndication\":null,\"filteringTimeMs\":1}");
   free(str);
 }
 
@@ -120,7 +120,7 @@ TEST_F(BinarySensorConfigTest, timeout) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
-               "null,\"sensitivity\":null,\"alarmMuted\":null}");
+               "null,\"sensitivity\":null,\"localAlarmIndication\":null}");
   free(str);
 
   raw_config.Timeout = 0;
@@ -130,7 +130,7 @@ TEST_F(BinarySensorConfigTest, timeout) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
-               "null,\"sensitivity\":null,\"alarmMuted\":null}");
+               "null,\"sensitivity\":null,\"localAlarmIndication\":null}");
   free(str);
 
   raw_config.Timeout = 1;
@@ -138,9 +138,10 @@ TEST_F(BinarySensorConfigTest, timeout) {
 
   str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"invertedLogic\":false,\"filteringTimeMs\":null,"
-               "\"sensitivity\":null,\"alarmMuted\":null,\"timeout\":1}");
+  EXPECT_STREQ(
+      str,
+      "{\"invertedLogic\":false,\"filteringTimeMs\":null,"
+      "\"sensitivity\":null,\"localAlarmIndication\":null,\"timeout\":1}");
   free(str);
 
   raw_config.Timeout = 36000;
@@ -148,9 +149,10 @@ TEST_F(BinarySensorConfigTest, timeout) {
 
   str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"invertedLogic\":false,\"filteringTimeMs\":null,"
-               "\"sensitivity\":null,\"alarmMuted\":null,\"timeout\":36000}");
+  EXPECT_STREQ(
+      str,
+      "{\"invertedLogic\":false,\"filteringTimeMs\":null,"
+      "\"sensitivity\":null,\"localAlarmIndication\":null,\"timeout\":36000}");
   free(str);
 
   raw_config.Timeout = 36001;
@@ -158,9 +160,10 @@ TEST_F(BinarySensorConfigTest, timeout) {
 
   str = config.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"invertedLogic\":false,\"filteringTimeMs\":null,"
-               "\"sensitivity\":null,\"alarmMuted\":null,\"timeout\":null}");
+  EXPECT_STREQ(
+      str,
+      "{\"invertedLogic\":false,\"filteringTimeMs\":null,"
+      "\"sensitivity\":null,\"localAlarmIndication\":null,\"timeout\":null}");
   free(str);
 }
 
@@ -196,7 +199,7 @@ TEST_F(BinarySensorConfigTest, sensitivity) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
-               "null,\"sensitivity\":null,\"alarmMuted\":null}");
+               "null,\"sensitivity\":null,\"localAlarmIndication\":null}");
   free(str);
 
   raw_config.Sensitivity = 1;
@@ -206,7 +209,7 @@ TEST_F(BinarySensorConfigTest, sensitivity) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
-               "null,\"alarmMuted\":null,\"sensitivity\":0}");
+               "null,\"localAlarmIndication\":null,\"sensitivity\":0}");
   free(str);
 
   raw_config.Sensitivity = 101;
@@ -216,7 +219,7 @@ TEST_F(BinarySensorConfigTest, sensitivity) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
-               "null,\"alarmMuted\":null,\"sensitivity\":100}");
+               "null,\"localAlarmIndication\":null,\"sensitivity\":100}");
   free(str);
 
   raw_config.Sensitivity = 102;
@@ -226,30 +229,30 @@ TEST_F(BinarySensorConfigTest, sensitivity) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
-               "null,\"alarmMuted\":null,\"sensitivity\":null}");
+               "null,\"localAlarmIndication\":null,\"sensitivity\":null}");
   free(str);
 }
 
-TEST_F(BinarySensorConfigTest, salarmMuted) {
+TEST_F(BinarySensorConfigTest, localAlarmIndication) {
   binary_sensor_config config;
 
-  EXPECT_EQ(config.get_alarm_muted(), 0);
+  EXPECT_EQ(config.get_local_alarm_indication(), 0);
 
-  config.set_user_config("{\"alarmMuted\":NULL}");
+  config.set_user_config("{\"localAlarmIndication\":NULL}");
 
-  EXPECT_EQ(config.get_alarm_muted(), 0);
+  EXPECT_EQ(config.get_local_alarm_indication(), 0);
 
-  config.set_user_config("{\"alarmMuted\":0}");
+  config.set_user_config("{\"localAlarmIndication\":0}");
 
-  EXPECT_EQ(config.get_alarm_muted(), 0);
+  EXPECT_EQ(config.get_local_alarm_indication(), 0);
 
-  config.set_user_config("{\"alarmMuted\":true}");
+  config.set_user_config("{\"localAlarmIndication\":true}");
 
-  EXPECT_EQ(config.get_alarm_muted(), 1);
+  EXPECT_EQ(config.get_local_alarm_indication(), 2);
 
-  config.set_user_config("{\"alarmMuted\":false}");
+  config.set_user_config("{\"localAlarmIndication\":false}");
 
-  EXPECT_EQ(config.get_alarm_muted(), 2);
+  EXPECT_EQ(config.get_local_alarm_indication(), 1);
 
   TChannelConfig_BinarySensor raw_config = {};
   config.set_config(&raw_config);
@@ -258,37 +261,37 @@ TEST_F(BinarySensorConfigTest, salarmMuted) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
-               "null,\"sensitivity\":null,\"alarmMuted\":null}");
+               "null,\"sensitivity\":null,\"localAlarmIndication\":null}");
   free(str);
 
-  raw_config.AlarmMuted = 1;
+  raw_config.LocalAlarmIndication = 2;
   config.set_config(&raw_config);
 
   str = config.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
-               "null,\"sensitivity\":null,\"alarmMuted\":true}");
+               "null,\"sensitivity\":null,\"localAlarmIndication\":true}");
   free(str);
 
-  raw_config.AlarmMuted = 2;
+  raw_config.LocalAlarmIndication = 1;
   config.set_config(&raw_config);
 
   str = config.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
-               "null,\"sensitivity\":null,\"alarmMuted\":false}");
+               "null,\"sensitivity\":null,\"localAlarmIndication\":false}");
   free(str);
 
-  raw_config.AlarmMuted = 0;
+  raw_config.LocalAlarmIndication = 0;
   config.set_config(&raw_config);
 
   str = config.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":false,\"filteringTimeMs\":null,\"timeout\":"
-               "null,\"sensitivity\":null,\"alarmMuted\":null}");
+               "null,\"sensitivity\":null,\"localAlarmIndication\":null}");
   free(str);
 }
 
@@ -318,7 +321,7 @@ TEST_F(BinarySensorConfigTest, setGetRawConfig) {
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(str,
                "{\"invertedLogic\":true,\"filteringTimeMs\":22,\"timeout\":5,"
-               "\"sensitivity\":9,\"alarmMuted\":null}");
+               "\"sensitivity\":9,\"localAlarmIndication\":null}");
   free(str);
 }
 
@@ -326,7 +329,7 @@ TEST_F(BinarySensorConfigTest, merge) {
   binary_sensor_config config1;
   config1.set_user_config(
       "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":5,\"timeout\":"
-      "null,\"sensitivity\":null,\"alarmMuted\":null}");
+      "null,\"sensitivity\":null,\"localAlarmIndication\":null}");
 
   TChannelConfig_BinarySensor raw_bin = {};
   raw_bin.InvertedLogic = 1;
@@ -338,9 +341,10 @@ TEST_F(BinarySensorConfigTest, merge) {
 
   char *str = config1.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":5,"
-               "\"timeout\":null,\"sensitivity\":null,\"alarmMuted\":null}");
+  EXPECT_STREQ(
+      str,
+      "{\"a\":\"b\",\"invertedLogic\":true,\"filteringTimeMs\":5,"
+      "\"timeout\":null,\"sensitivity\":null,\"localAlarmIndication\":null}");
 
   free(str);
 }
