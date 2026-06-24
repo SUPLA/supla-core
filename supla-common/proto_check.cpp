@@ -326,17 +326,15 @@ static_assert(sizeof(TChannelConfig_Container) <=
 static_assert(sizeof(TValve_Value) <= SUPLA_CHANNELVALUE_SIZE);
 static_assert(sizeof(TCSD_Valve) <= SUPLA_CHANNELVALUE_SIZE);
 
-static_assert(sizeof(TSuplaObjectAddress) == 4);
-static_assert(sizeof(TSuplaAlertCapabilityItem) == 8);
+static_assert(sizeof(TSuplaTargetAddress) == 8);
 static_assert(sizeof(TSuplaAlertStateItem) == 8);
 
-static_assert(sizeof(TSD_GetObjectAlertCapabilitiesRequest) == 12);
-static_assert(sizeof(TDS_ObjectAlertCapabilitiesResult) == 496);
+static_assert(sizeof(TDS_ObjectAlerts) == 504);
+static_assert(sizeof(TDS_ObjectAlerts) <= SUPLA_MAX_DATA_SIZE);
 
-static_assert(sizeof(TSD_GetObjectAlertsRequest) == 12);
-static_assert(sizeof(TDS_ObjectAlerts) == 496);
-
-static_assert(sizeof(TCalCfg_ObjectAlertReset) == 12);
+static_assert(sizeof(TCalCfg_ObjectAlertReset) == 16);
+static_assert(sizeof(TCS_ClearObjectAlertLatch) == 12);
+static_assert(sizeof(TSC_ClearObjectAlertLatchResult) == 12);
 
 static_assert(SUPLA_CHANNEL_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
 static_assert(SUPLA_LOCATION_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
@@ -354,19 +352,15 @@ constexpr unsigned _supla_int16_t suplaAlertCodes[] = {
 constexpr unsigned int suplaAlertCodesCount =
     sizeof(suplaAlertCodes) / sizeof(suplaAlertCodes[0]);
 
-constexpr bool areSuplaAlertCodesStrictlyIncreasing() {
-  for (unsigned int i = 1; i < suplaAlertCodesCount; i++) {
-    if (suplaAlertCodes[i] <= suplaAlertCodes[i - 1]) {
-      return false;
-    }
-  }
-
-  return true;
+constexpr bool areSuplaAlertCodesStrictlyIncreasing(unsigned int i) {
+  return i >= suplaAlertCodesCount ||
+         (suplaAlertCodes[i] > suplaAlertCodes[i - 1] &&
+          areSuplaAlertCodesStrictlyIncreasing(i + 1));
 }
 
 }  // namespace
 
-static_assert(areSuplaAlertCodesStrictlyIncreasing(),
+static_assert(areSuplaAlertCodesStrictlyIncreasing(1),
               "SUPLA_ALERT_CODE_MAP must contain unique and strictly "
               "increasing alert code IDs");
 // Plaform specific checks
