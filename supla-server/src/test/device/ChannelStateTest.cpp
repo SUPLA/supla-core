@@ -20,6 +20,7 @@
 
 #include "TestHelper.h"
 #include "device/channel_state.h"
+#include "proto.h"
 
 namespace testing {
 
@@ -300,6 +301,65 @@ TEST_F(ChannelStateTest, lastConnectionResetCauseIntToJsonAndBack) {
             raw.LastConnectionResetCause);
 }
 
+TEST_F(ChannelStateTest, batteryStateLowStringToJsonAndBack) {
+  TDSC_ChannelState raw = {};
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE;
+  raw.BatteryState = SUPLA_BATTERY_STATE_LOW;
+
+  supla_channel_state state(&raw);
+  char *json = state.get_json();
+  ASSERT_NE(json, nullptr);
+
+  EXPECT_STREQ(json,
+               "{\"defaultIconField\":0,\"batteryState\":"
+               "\"LOW\"}");
+
+  supla_channel_state state2(json);
+
+  free(json);
+
+  EXPECT_EQ(state2.get_state()->Fields, raw.Fields);
+  EXPECT_EQ(state2.get_state()->BatteryState, raw.BatteryState);
+}
+
+TEST_F(ChannelStateTest, batteryStateOkStringToJsonAndBack) {
+  TDSC_ChannelState raw = {};
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE;
+  raw.BatteryState = SUPLA_BATTERY_STATE_OK;
+
+  supla_channel_state state(&raw);
+  char *json = state.get_json();
+  ASSERT_NE(json, nullptr);
+
+  EXPECT_STREQ(json,
+               "{\"defaultIconField\":0,\"batteryState\":"
+               "\"OK\"}");
+
+  supla_channel_state state2(json);
+
+  free(json);
+
+  EXPECT_EQ(state2.get_state()->Fields, raw.Fields);
+  EXPECT_EQ(state2.get_state()->BatteryState, raw.BatteryState);
+}
+
+TEST_F(ChannelStateTest, deviceBatteryStateStringToJsonAndBack) {
+  TDSC_ChannelState raw = {};
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERY_STATE;
+
+  supla_channel_state state(&raw);
+  char *json = state.get_json();
+  ASSERT_NE(json, nullptr);
+
+  EXPECT_STREQ(json, "{\"defaultIconField\":0,\"deviceBatteryState\":true}");
+
+  supla_channel_state state2(json);
+
+  free(json);
+
+  EXPECT_EQ(state2.get_state()->Fields, raw.Fields);
+}
+
 TEST_F(ChannelStateTest, mergeIfNeeded_batteryLevel) {
   TDSC_ChannelState raw = {};
   TDSC_ChannelState old_raw = {};
@@ -381,6 +441,49 @@ TEST_F(ChannelStateTest, mergeIfNeeded_batteryPowered) {
       state.get_state()->Fields,
       SUPLA_CHANNELSTATE_FIELD_MAC | SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED);
   EXPECT_EQ(state.get_state()->BatteryPowered, 0);
+}
+
+TEST_F(ChannelStateTest, mergeIfNeeded_batteryState) {
+  TDSC_ChannelState raw = {};
+  TDSC_ChannelState old_raw = {};
+
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE;
+  raw.BatteryState = SUPLA_BATTERY_STATE_LOW;
+
+  supla_channel_state state(&raw);
+
+  {
+    supla_channel_state old_state(&old_raw);
+    state.merge_old_if_needed(&old_state);
+  }
+
+  EXPECT_EQ(state.get_state()->Fields, SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE);
+  EXPECT_EQ(state.get_state()->BatteryState, SUPLA_BATTERY_STATE_LOW);
+
+  old_raw.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE |
+                   SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERY_STATE;
+
+  {
+    supla_channel_state old_state(&old_raw);
+    state.merge_old_if_needed(&old_state);
+  }
+
+  EXPECT_EQ(state.get_state()->Fields, SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE);
+  EXPECT_EQ(state.get_state()->BatteryState, SUPLA_BATTERY_STATE_LOW);
+
+  raw.Fields = SUPLA_CHANNELSTATE_FIELD_MAC;
+
+  {
+    state = supla_channel_state(&raw);
+    supla_channel_state old_state(&old_raw);
+    state.merge_old_if_needed(&old_state);
+  }
+
+  EXPECT_EQ(state.get_state()->Fields,
+            SUPLA_CHANNELSTATE_FIELD_MAC |
+                SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE |
+                SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERY_STATE);
+  EXPECT_EQ(state.get_state()->BatteryState, SUPLA_BATTERY_STATE_OK);
 }
 
 TEST_F(ChannelStateTest, equalFields) {
