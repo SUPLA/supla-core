@@ -119,7 +119,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 28
+#define SUPLA_PROTO_VERSION 29
 #define SUPLA_PROTO_VERSION_MIN 1
 
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO) || defined(SUPLA_DEVICE)
@@ -179,6 +179,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_RELATION_PACK_MAXCOUNT 100  // ver. >= 21
 
 #define SUPLA_CHANNEL_STATE_PACK_MAXCOUNT 20  // ver. >= 26
+
+#define SUPLA_OBJECT_ALERT_STATE_PACK_MAXCOUNT 60       // ver. >= 29
 
 #define SUPLA_DCS_CALL_GETVERSION 10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT 20
@@ -301,6 +303,11 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CS_CALL_GET_DEVICE_CONFIG 1240                  // ver. >= 21
 #define SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT 1250     // ver. >= 21
 #define SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS 1260              // ver. >= 25
+
+#define SUPLA_DS_CALL_OBJECT_ALERTS_REPORT 1270               // ver. >= 29
+#define SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED 1271              // ver. >= 29
+#define SUPLA_CS_CALL_CLEAR_OBJECT_ALERT_LATCH 1272           // ver. >= 29
+#define SUPLA_SC_CALL_CLEAR_OBJECT_ALERT_LATCH_RESULT 1273    // ver. >= 29
 
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
@@ -577,6 +584,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_TARGET_CHANNEL 0
 #define SUPLA_TARGET_GROUP 1
 #define SUPLA_TARGET_IODEVICE 2
+#define SUPLA_TARGET_SUBDEVICE 3
 
 #define SUPLA_MFR_UNKNOWN 0
 #define SUPLA_MFR_ACSOFTWARE 1
@@ -618,6 +626,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   0x8000  // ver. >= 28
 #define SUPLA_DEVICE_FLAG_CALCFG_SET_CFG_MODE_PASSWORD_SUPPORTED \
   0x10000  // ver. >= 28
+#define SUPLA_DEVICE_FLAG_OBJECT_ALERTS_SUPPORTED 0x20000        // ver. >= 29
+
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
@@ -2191,6 +2201,7 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_PROGRESS_REPORT 5001             // v. >= 12
 #define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000    // v. >= 12
 #define SUPLA_CALCFG_CMD_RESET_COUNTERS 7000              // v. >= 15
+#define SUPLA_CALCFG_CMD_OBJECT_ALERT_RESET 7010          // v. >= 29
 #define SUPLA_CALCFG_CMD_RECALIBRATE 8000                 // v. >= 15
 #define SUPLA_CALCFG_CMD_ENTER_CFG_MODE 9000              // v. >= 17
 #define SUPLA_CALCFG_CMD_RESET_TO_FACTORY_SETTINGS 9010   // v. >= 28
@@ -2742,6 +2753,192 @@ typedef struct {
 } TDSC_ChannelState;   // v. >= 12 Device -> Server -> Client
 
 #define TChannelState_ExtendedValue TDSC_ChannelState
+
+/********************************************
+ * OBJECT ALERTS
+ *
+ * They describe alert-capabilities and current alert states of:
+ * - whole IO device,
+ * - subdevice behind a gateway/bridge,
+ * - single channel.
+ *
+ * Device <-> Server uses local numbers:
+ * - IODEVICE:  Number = 0
+ * - SUBDEVICE: Number = TDS_SuplaDeviceChannel_E::SubDeviceId
+ * - CHANNEL:   Number = channel number from registration message
+ *
+ * Server <-> Client uses server-side identifiers:
+ * - Id = server-side id for the target type.
+ ********************************************/
+
+typedef struct {
+  union {
+    unsigned char Number;  // Device <-> Server
+    _supla_int_t Id;       // Server <-> Client
+  };
+  unsigned char Target;  // SUPLA_TARGET_*
+  unsigned char Reserved[3];
+} TSuplaTargetAddress;
+
+#define SUPLA_ALERT_SEVERITY_NONE 0
+#define SUPLA_ALERT_SEVERITY_INFO 1
+#define SUPLA_ALERT_SEVERITY_WARNING 2
+#define SUPLA_ALERT_SEVERITY_ALARM 3
+#define SUPLA_ALERT_SEVERITY_CRITICAL 4
+
+// Alert capability flags. These flags describe what kind of events/actions
+// Cloud can expose for a given alert.
+// STATEFUL and OCCURRENCE are mutually exclusive
+#define SUPLA_ALERT_CAP_STATEFUL (1 << 0)
+#define SUPLA_ALERT_CAP_OCCURRENCE (1 << 1)
+#define SUPLA_ALERT_CAP_LATCHABLE (1 << 2)
+#define SUPLA_ALERT_CAP_RESET_SUPPORTED (1 << 3)
+#define SUPLA_ALERT_CAP_RESET_AUTH_REQUIRED (1 << 4)
+#define SUPLA_ALERT_CAP_CLEAR_LATCH_AUTH_REQUIRED (1 << 5)
+
+// Current alert state flags.
+#define SUPLA_ALERT_STATE_ACTIVE (1 << 0)      // only for stateful alerts
+#define SUPLA_ALERT_STATE_OCCURRENCE (1 << 1)  // only for events
+
+// Alert codes
+#define SUPLA_ALERT_GROUP_CORE 0x00
+#define SUPLA_ALERT_GROUP_SYSTEM 0x01
+#define SUPLA_ALERT_GROUP_SENSOR 0x02
+#define SUPLA_ALERT_GROUP_OUTPUT 0x03
+#define SUPLA_ALERT_GROUP_CALIBRATION 0x04
+#define SUPLA_ALERT_GROUP_MAINTENANCE 0x05
+#define SUPLA_ALERT_GROUP_PROCESS 0x06
+#define SUPLA_ALERT_GROUP_ENVIRONMENT 0x07
+#define SUPLA_ALERT_GROUP_SAFETY 0x08
+#define SUPLA_ALERT_GROUP_POWER 0x09
+#define SUPLA_ALERT_GROUP_PROTECTION 0x0A
+#define SUPLA_ALERT_GROUP_DEVICE 0x0B
+
+#define SUPLA_ALERT_CODE_VENDOR_SPECIFIC_MIN 0x8000
+
+#define SUPLA_ALERT_CODE_MAP(X) \
+  X(0x0000, NONE) \
+  \
+  X(0x0100, SYSTEM_CLOCK_NOT_SET) \
+  X(0x0101, SYSTEM_CLOCK_ERROR) \
+  X(0x0102, SYSTEM_CLOCK_BATTERY_LOW) \
+  X(0x0103, SYSTEM_CLOCK_BATTERY_REPLACE) \
+  X(0x0104, SYSTEM_CONFIGURATION_ERROR) \
+  X(0x0105, SYSTEM_COMMUNICATION_LOST) \
+  X(0x0106, SYSTEM_COMMUNICATION_ERROR) \
+  \
+  X(0x0200, SENSOR_ERROR) \
+  X(0x0201, SENSOR_TEMPERATURE_ERROR) \
+  X(0x0202, SENSOR_HUMIDITY_ERROR) \
+  X(0x0203, SENSOR_AIR_QUALITY_ERROR) \
+  X(0x0204, SENSOR_CO2_ERROR) \
+  X(0x0205, SENSOR_PM_ERROR) \
+  \
+  X(0x0300, OUTPUT_ERROR) \
+  X(0x0301, OUTPUT_MOTOR_PROBLEM) \
+  \
+  X(0x0400, CALIBRATION_LOST) \
+  X(0x0401, CALIBRATION_FAILED) \
+  X(0x0402, CALIBRATION_ERROR) \
+  \
+  X(0x0500, MAINTENANCE_REQUIRED) \
+  X(0x0501, MAINTENANCE_FILTER_REPLACE_SOON) \
+  X(0x0502, MAINTENANCE_FILTER_REPLACE_NOW) \
+  X(0x0503, MAINTENANCE_SUPPLY_FILTER_REPLACE_NOW) \
+  X(0x0504, MAINTENANCE_EXHAUST_FILTER_REPLACE_NOW) \
+  X(0x0505, MAINTENANCE_GHE_FILTER_REPLACE_NOW) \
+  \
+  X(0x0600, PROCESS_NO_FLOW) \
+  X(0x0601, PROCESS_SUPPLY_NO_FLOW) \
+  X(0x0602, PROCESS_EXHAUST_NO_FLOW) \
+  X(0x0603, PROCESS_FLOW_RESTRICTED) \
+  X(0x0604, PROCESS_MAX_PRESSURE_EXCEEDED) \
+  \
+  X(0x0700, ENVIRONMENT_DEFROST_TIMEOUT) \
+  X(0x0701, ENVIRONMENT_FROST_PROTECTION_ACTIVE) \
+  X(0x0702, ENVIRONMENT_FREEZE_RISK) \
+  \
+  X(0x0800, SAFETY_EMERGENCY_STOP) \
+  X(0x0801, SAFETY_FIRE_ALARM) \
+  X(0x0802, SAFETY_CO_ALARM) \
+  X(0x0803, SAFETY_INPUT_ACTIVE) \
+  X(0x0804, SAFETY_FORCED_OFF_BY_SENSOR) \
+  \
+  X(0x0900, POWER_BATTERY_LOW) \
+  X(0x0901, POWER_BATTERY_HEALTH_LOW) \
+  X(0x0902, POWER_BATTERY_COVER_OPEN) \
+  X(0x0903, POWER_SUPPLY_ERROR) \
+  \
+  X(0x0A00, PROTECTION_ANTIFREEZE_ACTIVE) \
+  X(0x0A01, PROTECTION_OVERHEAT_ACTIVE) \
+  \
+  X(0x0B00, DEVICE_COVER_OPEN) \
+  X(0x0B01, DEVICE_LIGHT_SOURCE_LIFESPAN_LOW) \
+  X(0x0B02, DEVICE_LIGHT_SOURCE_LIFESPAN_END)
+
+typedef enum {
+#define X(id, name) SUPLA_ALERT_CODE_##name = id,
+  SUPLA_ALERT_CODE_MAP(X)
+#undef X
+} TSuplaAlertCode;
+#define SUPLA_ALERT_CODE_VENDOR_SPECIFIC_MIN 0x8000
+
+typedef struct {
+  unsigned _supla_int16_t Code;        // SUPLA_ALERT_CODE_*
+  unsigned _supla_int16_t VendorCode;  // raw vendor code, 0 if unused
+
+  unsigned char Capabilities;  // SUPLA_ALERT_CAP_*
+  unsigned char Severity;      // SUPLA_ALERT_SEVERITY_*
+  unsigned char StateFlags;    // SUPLA_ALERT_STATE_*
+  unsigned char Reserved0;
+} TSuplaAlertStateItem;
+
+// SUPLA_DS_CALL_OBJECT_ALERTS_REPORT
+// SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED
+typedef struct {
+  TSuplaTargetAddress Target;
+
+  union {
+    unsigned char AlertSurfaceChannelNumber;  // Device <-> Server
+    _supla_int_t AlertSurfaceChannelId;       // Server <-> Client
+  };
+
+  unsigned _supla_int16_t TotalCount;
+  unsigned _supla_int16_t Offset;
+
+  unsigned char Count;
+  unsigned char EndOfDataFlag;    // 1 - last message; 0 - more messages follow
+  unsigned char Reserved[6];
+
+  TSuplaAlertStateItem Items[SUPLA_OBJECT_ALERT_STATE_PACK_MAXCOUNT];
+} TDS_ObjectAlerts;
+
+typedef struct {
+  TSuplaTargetAddress Target;
+
+  unsigned _supla_int16_t Code;
+  unsigned _supla_int16_t VendorCode;
+
+  unsigned char Reserved[4];
+} TCalCfg_ObjectAlertReset;
+
+typedef struct {
+  _supla_int_t Id;
+  char Target;  // SUPLA_TARGET_*
+  unsigned char Reserved0;
+  unsigned _supla_int16_t Code;
+  unsigned _supla_int16_t VendorCode;
+  unsigned char Reserved[2];
+} TCS_ClearObjectAlertLatch;
+
+typedef struct {
+  unsigned char ResultCode;  // SUPLA_RESULTCODE_*
+  char Target;               // SUPLA_TARGET_*
+  unsigned char Reserved0[2];
+  _supla_int_t Id;
+  unsigned _supla_int16_t Code;
+  unsigned _supla_int16_t VendorCode;
+} TSC_ClearObjectAlertLatchResult;
 
 typedef struct {
   _supla_int_t ChannelID;

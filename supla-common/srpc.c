@@ -1217,6 +1217,13 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               (TDS_SubdeviceDetails *)malloc(sizeof(TDS_SubdeviceDetails));
         }
         break;
+      case SUPLA_DS_CALL_OBJECT_ALERTS_REPORT:
+      case SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED:
+        if (srpc->sdp.data_size == sizeof(TDS_ObjectAlerts)) {
+          rd->data.ds_object_alerts =
+              (TDS_ObjectAlerts *)calloc(1, sizeof(TDS_ObjectAlerts));
+        }
+        break;
 #endif /*#ifndef SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT
@@ -1482,6 +1489,20 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                        SUPLA_CALCFG_DATA_MAXSIZE)) {
           rd->data.sc_device_calcfg_result = (TSC_DeviceCalCfgResult *)calloc(
               1, sizeof(TSC_DeviceCalCfgResult));
+        }
+        break;
+      case SUPLA_CS_CALL_CLEAR_OBJECT_ALERT_LATCH:
+        if (srpc->sdp.data_size == sizeof(TCS_ClearObjectAlertLatch)) {
+          rd->data.cs_clear_object_alert_latch =
+              (TCS_ClearObjectAlertLatch *)calloc(
+                  1, sizeof(TCS_ClearObjectAlertLatch));
+        }
+        break;
+      case SUPLA_SC_CALL_CLEAR_OBJECT_ALERT_LATCH_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_ClearObjectAlertLatchResult)) {
+          rd->data.sc_clear_object_alert_latch_result =
+              (TSC_ClearObjectAlertLatchResult *)calloc(
+                  1, sizeof(TSC_ClearObjectAlertLatchResult));
         }
         break;
 
@@ -1858,6 +1879,11 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
       return 25;
     case SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE:
       return 26;
+    case SUPLA_DS_CALL_OBJECT_ALERTS_REPORT:
+    case SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED:
+    case SUPLA_CS_CALL_CLEAR_OBJECT_ALERT_LATCH:
+    case SUPLA_SC_CALL_CLEAR_OBJECT_ALERT_LATCH_RESULT:
+      return 29;
   }
 
   return 255;
@@ -2636,6 +2662,26 @@ srpc_ds_async_set_subdevice_details(void *_srpc, TDS_SubdeviceDetails *reg) {
 
   return srpc_async_call(_srpc, SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS,
                          (char *)reg, sizeof(TDS_SubdeviceDetails));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_object_alerts_report(void *_srpc, TDS_ObjectAlerts *alerts) {
+  if (!alerts) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_OBJECT_ALERTS_REPORT,
+                         (char *)alerts, sizeof(TDS_ObjectAlerts));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_object_alerts_changed(void *_srpc, TDS_ObjectAlerts *alerts) {
+  if (!alerts) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED,
+                         (char *)alerts, sizeof(TDS_ObjectAlerts));
 }
 
 #endif /*SRPC_EXCLUDE_DEVICE*/
@@ -3448,6 +3494,27 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_config_update_or_result(
       _srpc, SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT, (char *)config,
       sizeof(TSC_DeviceConfigUpdateOrResult) - SUPLA_DEVICE_CONFIG_MAXSIZE +
           config->Config.ConfigSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_clear_object_alert_latch(
+    void *_srpc, TCS_ClearObjectAlertLatch *request) {
+  if (request == NULL) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_CLEAR_OBJECT_ALERT_LATCH,
+                         (char *)request, sizeof(TCS_ClearObjectAlertLatch));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_clear_object_alert_latch_result(
+    void *_srpc, TSC_ClearObjectAlertLatchResult *result) {
+  if (result == NULL) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_CLEAR_OBJECT_ALERT_LATCH_RESULT,
+                         (char *)result,
+                         sizeof(TSC_ClearObjectAlertLatchResult));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

@@ -109,6 +109,7 @@ static_assert((unsigned int)62 == sizeof(TElectricityMeter_Measurement));
 // static_assert((unsigned int)429 == sizeof(TElectricityMeter_ExtendedValue));
 
 // deprecated
+#ifdef USE_DEPRECATED_EMEV_V2
 static_assert((139 +
                sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT) ==
               sizeof(TElectricityMeter_ExtendedValue_V2));
@@ -116,6 +117,7 @@ static_assert((139 +
 static_assert((144 +
                sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT) ==
               sizeof(TElectricityMeter_ExtendedValue_V3));
+#endif  // USE_DEPRECATED_EMEV_V2
 
 static_assert((unsigned int)5 == sizeof(TElectricityMeter_Value));
 static_assert((unsigned int)40 == sizeof(TSC_ImpulseCounter_ExtendedValue));
@@ -138,8 +140,10 @@ static_assert(sizeof(TElectricityMeter_Value) <=
 //               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
 // deprecated
+#ifdef USE_DEPRECATED_EMEV_V2
 static_assert(sizeof(TElectricityMeter_ExtendedValue_V2) <=
               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+#endif  // USE_DEPRECATED_EMEV_V2
 static_assert(sizeof(TElectricityMeter_ExtendedValue_V3) <=
               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 static_assert((unsigned int)4 == sizeof(TThermostat_Time));
@@ -322,10 +326,43 @@ static_assert(sizeof(TChannelConfig_Container) <=
 static_assert(sizeof(TValve_Value) <= SUPLA_CHANNELVALUE_SIZE);
 static_assert(sizeof(TCSD_Valve) <= SUPLA_CHANNELVALUE_SIZE);
 
+static_assert(sizeof(TSuplaTargetAddress) == 8);
+static_assert(sizeof(TSuplaAlertStateItem) == 8);
+
+static_assert(sizeof(TDS_ObjectAlerts) == 504);
+static_assert(sizeof(TDS_ObjectAlerts) <= SUPLA_MAX_DATA_SIZE);
+
+static_assert(sizeof(TCalCfg_ObjectAlertReset) == 16);
+static_assert(sizeof(TCS_ClearObjectAlertLatch) == 12);
+static_assert(sizeof(TSC_ClearObjectAlertLatchResult) == 12);
+
 static_assert(SUPLA_CHANNEL_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
 static_assert(SUPLA_LOCATION_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
 static_assert(SUPLA_SCENE_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
 
+// Check if alarms enum contain uniq values
+namespace {
+
+constexpr unsigned _supla_int16_t suplaAlertCodes[] = {
+#define X(id, name) id,
+    SUPLA_ALERT_CODE_MAP(X)
+#undef X
+};
+
+constexpr unsigned int suplaAlertCodesCount =
+    sizeof(suplaAlertCodes) / sizeof(suplaAlertCodes[0]);
+
+constexpr bool areSuplaAlertCodesStrictlyIncreasing(unsigned int i) {
+  return i >= suplaAlertCodesCount ||
+         (suplaAlertCodes[i] > suplaAlertCodes[i - 1] &&
+          areSuplaAlertCodesStrictlyIncreasing(i + 1));
+}
+
+}  // namespace
+
+static_assert(areSuplaAlertCodesStrictlyIncreasing(1),
+              "SUPLA_ALERT_CODE_MAP must contain unique and strictly "
+              "increasing alert code IDs");
 // Plaform specific checks
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO) || defined(SUPLA_DEVICE)
 static_assert(SUPLA_MAX_DATA_SIZE == 600);
