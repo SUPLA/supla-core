@@ -512,6 +512,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_FLOOD_SENSOR 1000                 // ver. >= 27
 #define SUPLA_CHANNELFNC_MOTION_SENSOR 1010                // ver. >= 27
 #define SUPLA_CHANNELFNC_BINARY_SENSOR 1020                // ver. >= 27
+#define SUPLA_CHANNELFNC_SMOKE_SENSOR 1030                 // ver. >= 29
+#define SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR 1040       // ver. >= 29
+#define SUPLA_CHANNELFNC_GAS_SENSOR 1050                   // ver. >= 29
 
 // Channel's FuncList bit values:
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001

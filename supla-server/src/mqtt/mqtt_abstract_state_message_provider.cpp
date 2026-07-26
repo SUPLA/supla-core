@@ -1257,6 +1257,9 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     case SUPLA_CHANNELFNC_BINARY_SENSOR:
     case SUPLA_CHANNELFNC_FLOOD_SENSOR:
     case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
+    case SUPLA_CHANNELFNC_SMOKE_SENSOR:
+    case SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR:
+    case SUPLA_CHANNELFNC_GAS_SENSOR:
       return get_sensor_message_at_index(index, topic_prefix, topic_name,
                                          message, message_size);
 

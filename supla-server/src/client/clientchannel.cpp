@@ -358,13 +358,12 @@ bool supla_client_channel::remote_update_is_possible(void) {
     }
   }
 
-  if (protocol_version >= 28) {
-#if SUPLA_PROTO_VERSION >= 29
-#error \
-    "After officially switching to p >= 29, change protocol_version >= 28 to 29"
-#endif
+  if (protocol_version >= 29) {
     switch (Func) {
       case SUPLA_CHANNELFNC_HVAC_HRV:
+      case SUPLA_CHANNELFNC_SMOKE_SENSOR:
+      case SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR:
+      case SUPLA_CHANNELFNC_GAS_SENSOR:
         return true;
     }
   }
