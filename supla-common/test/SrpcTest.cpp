@@ -549,6 +549,8 @@ vector<int> SrpcTest::get_call_ids(int version) {
 
     case 26:
       return {SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE};
+    case 29:
+      return {SUPLA_SD_CALL_DEVICE_SYNC_DONE};
   }
 
   return {};
@@ -605,6 +607,8 @@ TEST_F(SrpcTest, call_allowed_v23) { srpcCallAllowed(23, get_call_ids(23)); }
 TEST_F(SrpcTest, call_allowed_v25) { srpcCallAllowed(25, get_call_ids(25)); }
 
 TEST_F(SrpcTest, call_allowed_v26) { srpcCallAllowed(26, get_call_ids(26)); }
+
+TEST_F(SrpcTest, call_allowed_v29) { srpcCallAllowed(29, get_call_ids(29)); }
 
 TEST_F(SrpcTest, call_not_allowed) {
   vector<int> all_calls;
@@ -4036,6 +4040,9 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_functions_result,
                                      24, 536, sd_channel_functions,
                                      SUPLA_CHANNELMAXCOUNT, Functions,
                                      ChannelCount);
+
+SRPC_CALL_WITH_NO_DATA(srpc_sd_async_device_sync_done,
+                       SUPLA_SD_CALL_DEVICE_SYNC_DONE);
 
 //---------------------------------------------------------
 // GET CHANNEL CONFIG

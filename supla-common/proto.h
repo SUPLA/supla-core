@@ -119,7 +119,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 28
+#define SUPLA_PROTO_VERSION 29
 #define SUPLA_PROTO_VERSION_MIN 1
 
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO) || defined(SUPLA_DEVICE)
@@ -301,6 +301,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CS_CALL_GET_DEVICE_CONFIG 1240                  // ver. >= 21
 #define SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT 1250     // ver. >= 21
 #define SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS 1260              // ver. >= 25
+#define SUPLA_SD_CALL_DEVICE_SYNC_DONE 1270                   // ver. >= 29
 
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
@@ -511,6 +512,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_FLOOD_SENSOR 1000                 // ver. >= 27
 #define SUPLA_CHANNELFNC_MOTION_SENSOR 1010                // ver. >= 27
 #define SUPLA_CHANNELFNC_BINARY_SENSOR 1020                // ver. >= 27
+#define SUPLA_CHANNELFNC_SMOKE_SENSOR 1030                 // ver. >= 29
+#define SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR 1040       // ver. >= 29
+#define SUPLA_CHANNELFNC_GAS_SENSOR 1050                   // ver. >= 29
 
 // Channel's FuncList bit values:
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
@@ -618,6 +622,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   0x8000  // ver. >= 28
 #define SUPLA_DEVICE_FLAG_CALCFG_SET_CFG_MODE_PASSWORD_SUPPORTED \
   0x10000  // ver. >= 28
+#define SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED 0x20000           // ver. >= 29
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
