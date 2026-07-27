@@ -68,6 +68,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   void db_set_properties(supla_json_config *config);
   void db_set_params(int param1, int param2, int param3, int param4);
   supla_abstract_channel_value *_get_value(void);
+  bool prepare_config_for_device(unsigned char config_type,
+                                 TSDS_SetChannelConfig *config);
 
   void on_value_changed(supla_abstract_channel_value *old_value,
                         supla_abstract_channel_value *new_value,
@@ -158,8 +160,12 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   void access_data_analyzer(
       std::function<void(supla_abstract_data_analyzer *analyzer)>
           on_data_analyzer);
-  void send_config_to_device(unsigned char config_type);
-  void send_config_to_device(void);
+  bool send_config_to_device(unsigned char config_type);
+  // Contains only SetChannelConfig requests. ChannelConfigFinished is sent
+  // separately and is not counted as an expected result.
+  bool prepare_config_for_device(std::vector<TSDS_SetChannelConfig> *configs);
+  void send_config_to_device(std::vector<TSDS_SetChannelConfig> *configs);
+  unsigned int send_config_to_device(void);
 
   template <typename T>
   T *get_value(void);

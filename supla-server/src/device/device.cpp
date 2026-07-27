@@ -104,6 +104,28 @@ bool supla_device::can_reconnect(void) {
          supla_abstract_connection_object::can_reconnect();
 }
 
+void supla_device::iterate(void) {
+  if (channels) {
+    channels->iterate();
+  }
+}
+
+unsigned _supla_int64_t supla_device::wait_time_usec(void) {
+  unsigned _supla_int64_t result =
+      supla_abstract_connection_object::wait_time_usec();
+
+  if (channels) {
+    unsigned _supla_int64_t config_batch_time_left =
+        channels->channel_config_batch_time_left_usec();
+
+    if (config_batch_time_left > 0 && config_batch_time_left < result) {
+      result = config_batch_time_left;
+    }
+  }
+
+  return result;
+}
+
 // static
 bool supla_device::funclist_contains_function(int funcList, int func) {
   switch (func) {
@@ -218,6 +240,13 @@ void supla_device::send_config_to_device(void) {
 
       delete config;
     }
+  }
+}
+
+void supla_device::send_sync_done_to_device(void) {
+  if (get_protocol_version() >= 29 &&
+      (get_flags() & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED)) {
+    get_connection()->get_srpc_adapter()->sd_async_device_sync_done();
   }
 }
 

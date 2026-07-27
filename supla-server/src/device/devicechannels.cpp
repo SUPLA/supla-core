@@ -1638,7 +1638,21 @@ vector<supla_channel_fragment> supla_device_channels::get_fragments(void) {
 }
 
 void supla_device_channels::send_configs_to_device(void) {
-  for_each([](supla_device_channel *channel, bool *will_continue) -> void {
-    channel->send_config_to_device();
+  channel_config_sync_coordinator.start(&channels, [this](void) -> void {
+    device->send_sync_done_to_device();
   });
+}
+
+void supla_device_channels::on_set_channel_config_result(
+    TSDS_SetChannelConfigResult *result) {
+  channel_config_sync_coordinator.on_set_channel_config_result(result);
+}
+
+void supla_device_channels::iterate(void) {
+  channel_config_sync_coordinator.iterate();
+}
+
+unsigned _supla_int64_t
+supla_device_channels::channel_config_batch_time_left_usec(void) {
+  return channel_config_sync_coordinator.time_left_usec();
 }

@@ -105,6 +105,12 @@ void supla_register_device::after_registration_success(void) {
   shared_ptr<supla_device> device = get_device().lock();
 
   device->send_config_to_device();
+
+  // Sending the configuration ends with sending the
+  // SUPLA_SD_CALL_DEVICE_SYNC_DONE message. If you add something here that
+  // sends something to the device, remember to include
+  // SUPLA_SD_CALL_DEVICE_SYNC_DONE. The channel configuration is sent in
+  // fragments, so it's best to have it done on the end.
   device->get_channels()->send_configs_to_device();
 }
 

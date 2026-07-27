@@ -47,6 +47,7 @@
 using std::function;
 using std::list;
 using std::shared_ptr;
+using std::vector;
 
 supla_device_channel::supla_device_channel(
     supla_device *device, int id, unsigned char channel_number, int type,
@@ -969,43 +970,97 @@ supla_json_config *supla_device_channel::get_json_config(void) {
   return result;
 }
 
-void supla_device_channel::send_config_to_device(unsigned char config_type) {
+bool supla_device_channel::prepare_config_for_device(
+    unsigned char config_type, TSDS_SetChannelConfig *config) {
+  if (!config) {
+    return false;
+  }
+
   if ((get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) &&
       get_device()->get_protocol_version() >= 21) {
-    TSDS_SetChannelConfig config = {};
+    *config = {};
 
-    get_config(&config, config_type, 0);
+    get_config(config, config_type, 0);
 
-    if (config.ConfigSize > 0 || config_type == SUPLA_CONFIG_TYPE_DEFAULT) {
-      get_device()
-          ->get_connection()
-          ->get_srpc_adapter()
-          ->sd_async_set_channel_config_request(
-              (TSDS_SetChannelConfig *)&config);
+    if (config->ConfigSize > 0 || config_type == SUPLA_CONFIG_TYPE_DEFAULT) {
+      return true;
     }
   }
+
+  return false;
 }
 
-void supla_device_channel::send_config_to_device(void) {
-  if (!(get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) ||
-      get_device()->get_protocol_version() < 21) {
-    return;
+bool supla_device_channel::prepare_config_for_device(
+    vector<TSDS_SetChannelConfig> *configs) {
+  if (!configs) {
+    return false;
   }
 
-  send_config_to_device(SUPLA_CONFIG_TYPE_DEFAULT);
+  configs->clear();
+
+  if (!(get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) ||
+      get_device()->get_protocol_version() < 21) {
+    return false;
+  }
+
+  TSDS_SetChannelConfig config = {};
+
+  if (prepare_config_for_device(SUPLA_CONFIG_TYPE_DEFAULT, &config)) {
+    configs->push_back(config);
+  }
 
   if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
       (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
-    send_config_to_device(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE);
+    if (prepare_config_for_device(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, &config)) {
+      configs->push_back(config);
+    }
 
     if (get_func() == SUPLA_CHANNELFNC_HVAC_THERMOSTAT) {
-      send_config_to_device(SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE);
+      if (prepare_config_for_device(SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE,
+                                   &config)) {
+        configs->push_back(config);
+      }
     }
   } else if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
              get_device()->get_protocol_version() >= 25) {
-    send_config_to_device(SUPLA_CONFIG_TYPE_OCR);
+    if (prepare_config_for_device(SUPLA_CONFIG_TYPE_OCR, &config)) {
+      configs->push_back(config);
+    }
   } else if (get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER) {
-    send_config_to_device(SUPLA_CONFIG_TYPE_EXTENDED);
+    if (prepare_config_for_device(SUPLA_CONFIG_TYPE_EXTENDED, &config)) {
+      configs->push_back(config);
+    }
+  }
+
+  return true;
+}
+
+bool supla_device_channel::send_config_to_device(unsigned char config_type) {
+  TSDS_SetChannelConfig config = {};
+
+  if (!prepare_config_for_device(config_type, &config)) {
+    return false;
+  }
+
+  get_device()
+      ->get_connection()
+      ->get_srpc_adapter()
+      ->sd_async_set_channel_config_request(&config);
+
+  return true;
+}
+
+void supla_device_channel::send_config_to_device(
+    vector<TSDS_SetChannelConfig> *configs) {
+  if (!configs) {
+    return;
+  }
+
+  for (auto it = configs->begin(); it != configs->end(); ++it) {
+    get_device()
+        ->get_connection()
+        ->get_srpc_adapter()
+        ->sd_async_set_channel_config_request(&(*it));
   }
 
   TSD_ChannelConfigFinished fin = {};
@@ -1015,6 +1070,18 @@ void supla_device_channel::send_config_to_device(void) {
       ->get_connection()
       ->get_srpc_adapter()
       ->sd_async_channel_config_finished(&fin);
+}
+
+unsigned int supla_device_channel::send_config_to_device(void) {
+  vector<TSDS_SetChannelConfig> configs;
+
+  if (!prepare_config_for_device(&configs)) {
+    return 0;
+  }
+
+  send_config_to_device(&configs);
+
+  return configs.size();
 }
 
 unsigned int supla_device_channel::get_value_validity_time_left_msec(void) {

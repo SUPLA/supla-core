@@ -58,6 +58,8 @@ class supla_device : public supla_abstract_connection_object {
   std::shared_ptr<supla_device> get_shared_ptr(void);
   virtual bool is_sleeping_object(void);
   virtual unsigned int get_time_to_wakeup_msec(void);
+  virtual void iterate(void);
+  virtual unsigned _supla_int64_t wait_time_usec(void);
   virtual supla_abstract_srpc_call_handler_collection *
   get_srpc_call_handler_collection(void);
   static bool funclist_contains_function(int funcList, int func);
@@ -67,6 +69,7 @@ class supla_device : public supla_abstract_connection_object {
 
   bool enter_cfg_mode(void);
   void send_config_to_device(void);
+  void send_sync_done_to_device(void);
   bool pair_subdevice(const supla_caller &caller, bool superuser_authorized);
   bool calcfg_identify(void);
   bool calcfg_restart(void);

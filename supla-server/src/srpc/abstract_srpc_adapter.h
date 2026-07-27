@@ -140,6 +140,8 @@ class supla_abstract_srpc_adapter {
   virtual _supla_int_t sd_async_channel_config_finished(
       TSD_ChannelConfigFinished *fin) = 0;  // ver. >= 21
 
+  virtual _supla_int_t sd_async_device_sync_done(void) = 0;  // ver. >= 29
+
   virtual _supla_int_t sc_async_device_config_update_or_result(
       TSC_DeviceConfigUpdateOrResult *config) = 0;  // ver. >= 21
 

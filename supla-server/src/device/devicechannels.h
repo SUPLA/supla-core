@@ -29,6 +29,7 @@
 #include "actions/action_shading_system_parameters.h"
 #include "channel_availability_status.h"
 #include "device/abstract_device_dao.h"
+#include "device/channel_config_sync_coordinator.h"
 #include "device/channel_fragment.h"
 #include "device/devicechannel.h"
 #include "device/extended_value/channel_extended_value_envelope.h"
@@ -39,6 +40,7 @@ class supla_device_channels {
  private:
   std::vector<supla_device_channel *> channels;
   supla_device *device;
+  supla_channel_config_sync_coordinator channel_config_sync_coordinator;
 
   void *get_srpc(void);
 
@@ -247,6 +249,9 @@ class supla_device_channels {
           filter);
 
   void send_configs_to_device(void);
+  void on_set_channel_config_result(TSDS_SetChannelConfigResult *result);
+  void iterate(void);
+  unsigned _supla_int64_t channel_config_batch_time_left_usec(void);
 
   void get_channel_extended_values(
       std::vector<supla_abstract_channel_extended_value_envelope *> *result,
