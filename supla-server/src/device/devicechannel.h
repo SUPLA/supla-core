@@ -164,7 +164,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   // Contains only SetChannelConfig requests. ChannelConfigFinished is sent
   // separately and is not counted as an expected result.
   bool prepare_config_for_device(std::vector<TSDS_SetChannelConfig> *configs);
-  void send_config_to_device(std::vector<TSDS_SetChannelConfig> *configs);
+  void send_configs_to_device(std::vector<TSDS_SetChannelConfig> *configs);
   unsigned int send_config_to_device(void);
 
   template <typename T>

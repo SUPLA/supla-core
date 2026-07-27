@@ -1050,7 +1050,7 @@ bool supla_device_channel::send_config_to_device(unsigned char config_type) {
   return true;
 }
 
-void supla_device_channel::send_config_to_device(
+void supla_device_channel::send_configs_to_device(
     vector<TSDS_SetChannelConfig> *configs) {
   if (!configs) {
     return;
@@ -1079,7 +1079,7 @@ unsigned int supla_device_channel::send_config_to_device(void) {
     return 0;
   }
 
-  send_config_to_device(&configs);
+  send_configs_to_device(&configs);
 
   return configs.size();
 }

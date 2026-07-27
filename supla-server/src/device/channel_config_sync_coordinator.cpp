@@ -141,7 +141,7 @@ void supla_channel_config_sync_coordinator::execute_step(
     sync_step step) {
   while (step.channel || step.on_finished) {
     if (step.channel) {
-      step.channel->send_config_to_device(&step.configs);
+      step.channel->send_configs_to_device(&step.configs);
     }
 
     if (step.on_finished) {
