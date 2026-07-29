@@ -236,6 +236,9 @@ static_assert(sizeof(TDeviceConfig_HomeScreenOffDelay) <=
               (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 static_assert(sizeof(TDeviceConfig_HomeScreenContent) <=
               (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+static_assert((unsigned int)16 == sizeof(TDeviceConfig_ThermalProtection));
+static_assert(sizeof(TDeviceConfig_ThermalProtection) <=
+              (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 static_assert((unsigned int)8 == sizeof(TCalCfg_RollerShutterSettings));
 static_assert(sizeof(TCalCfg_RollerShutterSettings) <=
               (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
