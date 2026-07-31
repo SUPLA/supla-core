@@ -44,11 +44,11 @@ using std::vector;
 namespace {
 const unsigned int MIN_INTERVAL_SEC = 60;
 
-void add_directional_power(double value, double *forward, double *reverse) {
+void add_directional_power(double value, long *forward, long *reverse) {
   if (value < 0) {
-    *reverse += std::abs(value);
+    *reverse += std::lround(std::abs(value));
   } else if (value > 0) {
-    *forward += value;
+    *forward += std::lround(value);
   }
 }
 }
@@ -174,9 +174,9 @@ supla_abstract_autodiscover_statistics::collect_statistics(
 
                 if (em_extended_value) {
                   add_directional_power(
-                      em_extended_value->get_power_active_kw_sum(),
-                      &result.power_active_forward_kw,
-                      &result.power_active_reverse_kw);
+                      em_extended_value->get_power_active_sum(),
+                      &result.power_active_forward_w,
+                      &result.power_active_reverse_w);
 
                   delete em_extended_value;
                 }
@@ -199,8 +199,8 @@ string supla_abstract_autodiscover_statistics::get_payload(
       {"generatedAt", get_generated_at()},
       {"statistics",
        {{"electricityMeters",
-         {{"powerActiveForwardKW", statistics->power_active_forward_kw},
-          {"powerActiveReverseKW", statistics->power_active_reverse_kw},
+         {{"powerActiveForwardW", statistics->power_active_forward_w},
+          {"powerActiveReverseW", statistics->power_active_reverse_w},
           {"channelCount", statistics->channel_count}}}}}};
 
   return payload.dump();

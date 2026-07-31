@@ -41,16 +41,22 @@ using std::vector;
 namespace testing {
 namespace {
 
-supla_channel_em_extended_value *em_value(double power_active) {
+supla_channel_em_extended_value *em_value(double power_active1,
+                                          double power_active2 = 0,
+                                          double power_active3 = 0) {
   TElectricityMeter_ExtendedValue_V3 value = {};
   value.m_count = 1;
-  value.m[0].power_active[0] = static_cast<int>(power_active * 100000);
+  value.m[0].power_active[0] = static_cast<int>(power_active1 * 100000);
+  value.m[0].power_active[1] = static_cast<int>(power_active2 * 100000);
+  value.m[0].power_active[2] = static_cast<int>(power_active3 * 100000);
 
   return new supla_channel_em_extended_value(&value, nullptr, 0);
 }
 
 supla_device_channel *channel(supla_device *device, int id, int func,
-                              bool offline, double power_active = 0) {
+                              bool offline, double power_active1 = 0,
+                              double power_active2 = 0,
+                              double power_active3 = 0) {
   char value[SUPLA_CHANNELVALUE_SIZE] = {};
   unsigned _supla_int64_t flags =
       offline ? SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION : 0;
@@ -59,7 +65,8 @@ supla_device_channel *channel(supla_device *device, int id, int func,
       device, id, static_cast<unsigned char>(id % 255),
       SUPLA_CHANNELTYPE_ELECTRICITY_METER, func, 0, 0, 0, 0, nullptr, nullptr,
       nullptr, false, flags, value, 0,
-      em_value(power_active), nullptr, nullptr, nullptr);
+      em_value(power_active1, power_active2, power_active3), nullptr, nullptr,
+      nullptr);
 }
 
 void attach_channels(supla_user *user, shared_ptr<DeviceStub> device,
@@ -131,8 +138,8 @@ TEST_F(AutodiscoverStatisticsTest, payload) {
       {};
 
   stats.channel_count = 10;
-  stats.power_active_forward_kw = 100.25;
-  stats.power_active_reverse_kw = 12.5;
+  stats.power_active_forward_w = 100;
+  stats.power_active_reverse_w = 13;
 
   EXPECT_CALL(task, get_generated_at)
       .Times(1)
@@ -141,19 +148,13 @@ TEST_F(AutodiscoverStatisticsTest, payload) {
   nlohmann::json payload = nlohmann::json::parse(task.get_payload(&stats));
   EXPECT_EQ(payload["generatedAt"], "2020-01-01T00:00:00.000Z");
 
-  nlohmann::json electricity_meters =
+  const nlohmann::json electricity_meters =
       payload["statistics"]["electricityMeters"];
 
-  EXPECT_EQ(electricity_meters["channelCount"], 10);
-  EXPECT_DOUBLE_EQ(electricity_meters["powerActiveForwardKW"].get<double>(),
-                   100.25);
-  EXPECT_DOUBLE_EQ(electricity_meters["powerActiveReverseKW"].get<double>(),
-                   12.5);
-  EXPECT_EQ(electricity_meters.count("powerActive"), 0U);
-  EXPECT_EQ(electricity_meters.count("powerActiveForward"), 0U);
-  EXPECT_EQ(electricity_meters.count("powerReactive"), 0U);
-  EXPECT_EQ(electricity_meters.count("powerReactiveForwardKVar"), 0U);
-  EXPECT_EQ(electricity_meters.count("powerApparent"), 0U);
+  EXPECT_EQ(electricity_meters.size(), 3U);
+  EXPECT_EQ(electricity_meters.at("channelCount"), 10);
+  EXPECT_EQ(electricity_meters.at("powerActiveForwardW").get<long>(), 100);
+  EXPECT_EQ(electricity_meters.at("powerActiveReverseW").get<long>(), 13);
 }
 
 TEST_F(AutodiscoverStatisticsTest, collectStatisticsFromOnlineChannels) {
@@ -170,13 +171,17 @@ TEST_F(AutodiscoverStatisticsTest, collectStatisticsFromOnlineChannels) {
   devices.back()->set_manufacturer_id(123);
   attach_channels(user, devices.back(),
                   {channel(devices.back().get(), 1001,
-                           SUPLA_CHANNELFNC_ELECTRICITY_METER, false, 10),
+                           SUPLA_CHANNELFNC_ELECTRICITY_METER, false, 10, 20,
+                           30),
                    channel(devices.back().get(), 1002,
-                           SUPLA_CHANNELFNC_ELECTRICITY_METER, false, -1),
+                           SUPLA_CHANNELFNC_ELECTRICITY_METER, false, -1, -2,
+                           -3),
                    channel(devices.back().get(), 1003,
-                           SUPLA_CHANNELFNC_ELECTRICITY_METER, true, 100),
+                           SUPLA_CHANNELFNC_ELECTRICITY_METER, true, 100, 200,
+                           300),
                    channel(devices.back().get(), 1004,
-                           SUPLA_CHANNELFNC_POWERSWITCH, false, 1000)});
+                           SUPLA_CHANNELFNC_POWERSWITCH, false, 1000, 2000,
+                           3000)});
 
   devices.push_back(make_shared<DeviceStub>(nullptr));
   devices.back()->set_id(102);
@@ -185,14 +190,15 @@ TEST_F(AutodiscoverStatisticsTest, collectStatisticsFromOnlineChannels) {
   devices.back()->set_manufacturer_id(0);
   attach_channels(user, devices.back(),
                   {channel(devices.back().get(), 2001,
-                           SUPLA_CHANNELFNC_ELECTRICITY_METER, false, 100)});
+                           SUPLA_CHANNELFNC_ELECTRICITY_METER, false, 100, 200,
+                           300)});
 
   supla_abstract_autodiscover_statistics::electricity_meter_statistics_t stats =
       task.collect_statistics(&users);
 
   EXPECT_EQ(stats.channel_count, 2);
-  EXPECT_DOUBLE_EQ(stats.power_active_forward_kw, 0.010);
-  EXPECT_DOUBLE_EQ(stats.power_active_reverse_kw, 0.001);
+  EXPECT_EQ(stats.power_active_forward_w, 60);
+  EXPECT_EQ(stats.power_active_reverse_w, 6);
 }
 
 TEST_F(AutodiscoverStatisticsTest, postStatistics) {
@@ -200,8 +206,8 @@ TEST_F(AutodiscoverStatisticsTest, postStatistics) {
       {};
 
   stats.channel_count = 10;
-  stats.power_active_forward_kw = 100;
-  stats.power_active_reverse_kw = 50;
+  stats.power_active_forward_w = 100;
+  stats.power_active_reverse_w = 50;
 
   EXPECT_CALL(task, get_generated_at)
       .Times(1)
@@ -226,14 +232,14 @@ TEST_F(AutodiscoverStatisticsTest, postStatistics) {
         nlohmann::json payload = nlohmann::json::parse(fields);
         EXPECT_EQ(payload["generatedAt"], "2020-01-01T00:00:00.000Z");
 
-        nlohmann::json electricity_meters =
+        const nlohmann::json electricity_meters =
             payload["statistics"]["electricityMeters"];
 
-        EXPECT_EQ(electricity_meters["channelCount"], 10);
-        EXPECT_DOUBLE_EQ(
-            electricity_meters["powerActiveForwardKW"].get<double>(), 100);
-        EXPECT_DOUBLE_EQ(
-            electricity_meters["powerActiveReverseKW"].get<double>(), 50);
+        EXPECT_EQ(electricity_meters.size(), 3U);
+        EXPECT_EQ(electricity_meters.at("channelCount"), 10);
+        EXPECT_EQ(electricity_meters.at("powerActiveForwardW").get<long>(),
+                  100);
+        EXPECT_EQ(electricity_meters.at("powerActiveReverseW").get<long>(), 50);
       });
   EXPECT_CALL(curlAdapter, set_opt_write_data(Eq(0), NotNull())).Times(1);
   EXPECT_CALL(curlAdapter, perform(Eq(0))).Times(1).WillOnce(Return(true));
@@ -277,14 +283,13 @@ TEST_F(AutodiscoverStatisticsTest, runWithNoOnlineChannels) {
         nlohmann::json payload = nlohmann::json::parse(fields);
         EXPECT_EQ(payload["generatedAt"], "2020-01-01T00:00:00.000Z");
 
-        nlohmann::json electricity_meters =
+        const nlohmann::json electricity_meters =
             payload["statistics"]["electricityMeters"];
 
-        EXPECT_EQ(electricity_meters["channelCount"], 0);
-        EXPECT_DOUBLE_EQ(
-            electricity_meters["powerActiveForwardKW"].get<double>(), 0);
-        EXPECT_DOUBLE_EQ(
-            electricity_meters["powerActiveReverseKW"].get<double>(), 0);
+        EXPECT_EQ(electricity_meters.size(), 3U);
+        EXPECT_EQ(electricity_meters.at("channelCount"), 0);
+        EXPECT_EQ(electricity_meters.at("powerActiveForwardW").get<long>(), 0);
+        EXPECT_EQ(electricity_meters.at("powerActiveReverseW").get<long>(), 0);
       });
   EXPECT_CALL(curlAdapter, set_opt_write_data(Eq(0), NotNull())).Times(1);
   EXPECT_CALL(curlAdapter, perform(Eq(0))).Times(1).WillOnce(Return(true));
