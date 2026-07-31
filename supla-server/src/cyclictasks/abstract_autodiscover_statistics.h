@@ -31,6 +31,12 @@ class supla_abstract_curl_adapter;
 
 class supla_abstract_autodiscover_statistics
     : public supla_abstract_cyclictask {
+ private:
+  bool first_run;
+  bool initial_delay_initialized;
+  unsigned int initial_delay_interval_sec;
+  unsigned int initial_delay_sec;
+
  public:
   typedef struct {
     int channel_count;
@@ -46,6 +52,7 @@ class supla_abstract_autodiscover_statistics
   virtual bool user_access_needed(void);
 
   virtual unsigned int get_cfg_interval_sec(void);
+  virtual unsigned int get_initial_delay_sec(unsigned int interval_sec);
   virtual const char *get_statistics_endpoint_url(void);
   virtual std::string get_generated_at(void);
   virtual std::string get_target_token(

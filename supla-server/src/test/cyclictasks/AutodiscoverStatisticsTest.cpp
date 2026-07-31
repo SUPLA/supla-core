@@ -89,9 +89,46 @@ void AutodiscoverStatisticsTest::TearDown() {
   supla_mqtt_client_suite::globalInstanceRelease();
 }
 
-TEST_F(AutodiscoverStatisticsTest, intervalFromConfig) {
-  EXPECT_CALL(task, get_cfg_interval_sec).Times(1).WillOnce(Return(123));
+TEST_F(AutodiscoverStatisticsTest, initialIntervalIsRandomized) {
+  EXPECT_CALL(task, get_cfg_interval_sec)
+      .Times(2)
+      .WillRepeatedly(Return(123));
+  EXPECT_CALL(task, get_initial_delay_sec(Eq(123)))
+      .Times(1)
+      .WillOnce(Return(42));
+
+  EXPECT_EQ(task.task_interval_sec(), 42);
+  EXPECT_EQ(task.task_interval_sec(), 42);
+}
+
+TEST_F(AutodiscoverStatisticsTest, intervalFromConfigAfterFirstRun) {
+  EXPECT_CALL(task, get_cfg_interval_sec)
+      .Times(2)
+      .WillOnce(Return(300))
+      .WillOnce(Return(123));
+  EXPECT_CALL(task, get_target_token(IsNull())).Times(1).WillOnce(Return(""));
+
+  task.run(nullptr, nullptr);
+
   EXPECT_EQ(task.task_interval_sec(), 123);
+}
+
+TEST_F(AutodiscoverStatisticsTest, zeroIntervalDisablesStatistics) {
+  EXPECT_CALL(task, get_cfg_interval_sec)
+      .Times(2)
+      .WillRepeatedly(Return(0));
+  EXPECT_CALL(task, get_initial_delay_sec(_)).Times(0);
+
+  EXPECT_EQ(task.task_interval_sec(), 60);
+  EXPECT_EQ(task.task_interval_sec(), 60);
+}
+
+TEST_F(AutodiscoverStatisticsTest, runIsDisabledForZeroInterval) {
+  EXPECT_CALL(task, get_cfg_interval_sec).Times(1).WillOnce(Return(0));
+  EXPECT_CALL(task, get_target_token(_)).Times(0);
+  EXPECT_CALL(task, get_curl_adapter).Times(0);
+
+  task.run(nullptr, nullptr);
 }
 
 TEST_F(AutodiscoverStatisticsTest, payload) {
@@ -215,6 +252,7 @@ TEST_F(AutodiscoverStatisticsTest, postStatistics) {
 }
 
 TEST_F(AutodiscoverStatisticsTest, noToken) {
+  EXPECT_CALL(task, get_cfg_interval_sec).Times(1).WillOnce(Return(300));
   EXPECT_CALL(task, get_target_token(IsNull())).Times(1).WillOnce(Return(""));
   EXPECT_CALL(task, get_curl_adapter).Times(0);
 
@@ -222,6 +260,7 @@ TEST_F(AutodiscoverStatisticsTest, noToken) {
 }
 
 TEST_F(AutodiscoverStatisticsTest, runWithNoOnlineChannels) {
+  EXPECT_CALL(task, get_cfg_interval_sec).Times(1).WillOnce(Return(300));
   EXPECT_CALL(task, get_target_token(IsNull()))
       .Times(1)
       .WillOnce(Return("token-x"));

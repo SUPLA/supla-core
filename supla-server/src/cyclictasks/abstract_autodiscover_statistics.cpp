@@ -21,6 +21,7 @@
 #include <time.h>
 
 #include <memory>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -39,9 +40,17 @@ using std::shared_ptr;
 using std::string;
 using std::vector;
 
+namespace {
+const unsigned int MIN_INTERVAL_SEC = 60;
+}
+
 supla_abstract_autodiscover_statistics::
     supla_abstract_autodiscover_statistics()
-    : supla_abstract_cyclictask() {}
+    : supla_abstract_cyclictask(),
+      first_run(true),
+      initial_delay_initialized(false),
+      initial_delay_interval_sec(0),
+      initial_delay_sec(0) {}
 
 supla_abstract_autodiscover_statistics::
     ~supla_abstract_autodiscover_statistics() {}
@@ -52,7 +61,30 @@ bool supla_abstract_autodiscover_statistics::user_access_needed(void) {
 
 unsigned int supla_abstract_autodiscover_statistics::get_cfg_interval_sec(
     void) {
-  return scfg_int(CFG_AUTODISCOVER_STATISTICS_EXPORT_INTERVAL_SEC);
+  int interval_sec = scfg_int(CFG_AUTODISCOVER_STATISTICS_EXPORT_INTERVAL_SEC);
+
+  if (interval_sec <= 0) {
+    return 0;
+  }
+
+  if (interval_sec < static_cast<int>(MIN_INTERVAL_SEC)) {
+    return MIN_INTERVAL_SEC;
+  }
+
+  return static_cast<unsigned int>(interval_sec);
+}
+
+unsigned int supla_abstract_autodiscover_statistics::get_initial_delay_sec(
+    unsigned int interval_sec) {
+  if (interval_sec < 2) {
+    return 0;
+  }
+
+  std::random_device rd;
+  std::mt19937 generator(rd());
+  std::uniform_int_distribution<unsigned int> distribution(0, interval_sec - 1);
+
+  return distribution(generator);
 }
 
 const char *
@@ -76,7 +108,30 @@ string supla_abstract_autodiscover_statistics::get_generated_at(void) {
 }
 
 unsigned int supla_abstract_autodiscover_statistics::task_interval_sec(void) {
-  return get_cfg_interval_sec();
+  unsigned int interval_sec = get_cfg_interval_sec();
+
+  if (interval_sec == 0) {
+    if (first_run) {
+      initial_delay_initialized = false;
+      initial_delay_interval_sec = 0;
+      initial_delay_sec = 0;
+    }
+
+    return MIN_INTERVAL_SEC;
+  }
+
+  if (first_run) {
+    if (!initial_delay_initialized ||
+        initial_delay_interval_sec != interval_sec) {
+      initial_delay_sec = get_initial_delay_sec(interval_sec);
+      initial_delay_interval_sec = interval_sec;
+      initial_delay_initialized = true;
+    }
+
+    return initial_delay_sec;
+  }
+
+  return interval_sec;
 }
 
 supla_abstract_autodiscover_statistics::electricity_meter_statistics_t
@@ -193,6 +248,12 @@ bool supla_abstract_autodiscover_statistics::post_statistics(
 
 void supla_abstract_autodiscover_statistics::run(
     const vector<supla_user *> *users, supla_abstract_db_access_provider *dba) {
+  if (get_cfg_interval_sec() == 0) {
+    return;
+  }
+
+  first_run = false;
+
   string target_token = get_target_token(dba);
   if (target_token.empty()) {
     return;

@@ -40,6 +40,7 @@ class AutodiscoverStatisticsMock
   MOCK_METHOD1(release_curl_adapter,
                void(supla_abstract_curl_adapter *adapter));
   MOCK_METHOD0(get_cfg_interval_sec, unsigned int(void));
+  MOCK_METHOD1(get_initial_delay_sec, unsigned int(unsigned int interval_sec));
   MOCK_METHOD0(get_generated_at, std::string(void));
 
   void run(const std::vector<supla_user *> *users,
