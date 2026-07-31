@@ -117,10 +117,12 @@ TEST_F(AutodiscoverStatisticsTest, zeroIntervalDisablesStatistics) {
   EXPECT_CALL(task, get_cfg_interval_sec)
       .Times(2)
       .WillRepeatedly(Return(0));
-  EXPECT_CALL(task, get_initial_delay_sec(_)).Times(0);
+  EXPECT_CALL(task, get_initial_delay_sec(Eq(60)))
+      .Times(1)
+      .WillOnce(Return(17));
 
-  EXPECT_EQ(task.task_interval_sec(), 60);
-  EXPECT_EQ(task.task_interval_sec(), 60);
+  EXPECT_EQ(task.task_interval_sec(), 17);
+  EXPECT_EQ(task.task_interval_sec(), 17);
 }
 
 TEST_F(AutodiscoverStatisticsTest, runIsDisabledForZeroInterval) {

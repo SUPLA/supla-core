@@ -111,13 +111,7 @@ unsigned int supla_abstract_autodiscover_statistics::task_interval_sec(void) {
   unsigned int interval_sec = get_cfg_interval_sec();
 
   if (interval_sec == 0) {
-    if (first_run) {
-      initial_delay_initialized = false;
-      initial_delay_interval_sec = 0;
-      initial_delay_sec = 0;
-    }
-
-    return MIN_INTERVAL_SEC;
+    interval_sec = MIN_INTERVAL_SEC;
   }
 
   if (first_run) {
@@ -248,11 +242,11 @@ bool supla_abstract_autodiscover_statistics::post_statistics(
 
 void supla_abstract_autodiscover_statistics::run(
     const vector<supla_user *> *users, supla_abstract_db_access_provider *dba) {
+  first_run = false;
+
   if (get_cfg_interval_sec() == 0) {
     return;
   }
-
-  first_run = false;
 
   string target_token = get_target_token(dba);
   if (target_token.empty()) {
