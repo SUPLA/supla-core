@@ -20,6 +20,7 @@
 
 #include <time.h>
 
+#include <cmath>
 #include <memory>
 #include <random>
 #include <string>
@@ -42,6 +43,14 @@ using std::vector;
 
 namespace {
 const unsigned int MIN_INTERVAL_SEC = 60;
+
+void add_directional_power(double value, double *forward, double *reverse) {
+  if (value < 0) {
+    *reverse += std::abs(value);
+  } else if (value > 0) {
+    *forward += value;
+  }
+}
 }
 
 supla_abstract_autodiscover_statistics::
@@ -164,12 +173,10 @@ supla_abstract_autodiscover_statistics::collect_statistics(
                 result.channel_count++;
 
                 if (em_extended_value) {
-                  result.power_active +=
-                      em_extended_value->get_power_active_kw_sum();
-                  result.power_reactive +=
-                      em_extended_value->get_power_reactive_kvar_sum();
-                  result.power_apparent +=
-                      em_extended_value->get_power_apparent_kva_sum();
+                  add_directional_power(
+                      em_extended_value->get_power_active_kw_sum(),
+                      &result.power_active_forward_kw,
+                      &result.power_active_reverse_kw);
 
                   delete em_extended_value;
                 }
@@ -192,9 +199,8 @@ string supla_abstract_autodiscover_statistics::get_payload(
       {"generatedAt", get_generated_at()},
       {"statistics",
        {{"electricityMeters",
-         {{"powerActive", statistics->power_active},
-          {"powerReactive", statistics->power_reactive},
-          {"powerApparent", statistics->power_apparent},
+         {{"powerActiveForwardKW", statistics->power_active_forward_kw},
+          {"powerActiveReverseKW", statistics->power_active_reverse_kw},
           {"channelCount", statistics->channel_count}}}}}};
 
   return payload.dump();

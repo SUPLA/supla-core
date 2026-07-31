@@ -40,9 +40,8 @@ class supla_abstract_autodiscover_statistics
  public:
   typedef struct {
     int channel_count;
-    double power_active;
-    double power_reactive;
-    double power_apparent;
+    double power_active_forward_kw;
+    double power_active_reverse_kw;
   } electricity_meter_statistics_t;
 
  protected:
