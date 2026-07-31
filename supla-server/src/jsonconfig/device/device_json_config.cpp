@@ -38,7 +38,8 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
     {SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE, "offDelayType"},
     {SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED, "powerStatusLed"},
     {SUPLA_DEVICE_CONFIG_FIELD_MODBUS, "modbus"},
-    {SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE, "firmwareUpdatePolicy"}};
+    {SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE, "firmwareUpdatePolicy"},
+    {SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION, "inputActivation"}};
 
 const map<unsigned _supla_int16_t, string>
     device_json_config::home_screen_content_map = {
@@ -95,6 +96,9 @@ const char device_json_config::min_allowed_temperature[] =
 
 const char device_json_config::max_allowed_temperature[] =
     "maxAllowedTemperatureSetpointFromLocalUI";
+
+const char device_json_config::input_activation_available[] =
+    "inputActivationAvailable";
 
 const char device_json_config::level_str[] = "level";
 const char device_json_config::adjustment_str[] = "adjustment";
@@ -158,6 +162,102 @@ unsigned char device_json_config::string_to_home_screen_content(
   }
 
   return SUPLA_DEVCFG_HOME_SCREEN_CONTENT_NONE;
+}
+
+string device_json_config::input_activation_mode_to_string(unsigned char mode) {
+  switch (mode) {
+    case SUPLA_DEVCFG_INPUT_ACTIVATION_GND:
+      return "GND";
+    case SUPLA_DEVCFG_INPUT_ACTIVATION_VCC:
+      return "VCC";
+  }
+
+  return "";
+}
+
+bool device_json_config::string_to_input_activation_mode(
+    const string &mode, unsigned char *value) {
+  if (!value) {
+    return false;
+  }
+
+  if (mode == "GND") {
+    *value = SUPLA_DEVCFG_INPUT_ACTIVATION_GND;
+    return true;
+  }
+
+  if (mode == "VCC") {
+    *value = SUPLA_DEVCFG_INPUT_ACTIVATION_VCC;
+    return true;
+  }
+
+  return false;
+}
+
+cJSON *device_json_config::input_activation_available_modes_to_json(
+    unsigned char modes) {
+  cJSON *result = cJSON_CreateArray();
+  if (!result) {
+    return nullptr;
+  }
+
+  if (modes & SUPLA_DEVCFG_INPUT_ACTIVATION_GND) {
+    cJSON *mode = cJSON_CreateString("GND");
+    if (!mode) {
+      cJSON_Delete(result);
+      return nullptr;
+    }
+    cJSON_AddItemToArray(result, mode);
+  }
+
+  if (modes & SUPLA_DEVCFG_INPUT_ACTIVATION_VCC) {
+    cJSON *mode = cJSON_CreateString("VCC");
+    if (!mode) {
+      cJSON_Delete(result);
+      return nullptr;
+    }
+    cJSON_AddItemToArray(result, mode);
+  }
+
+  return result;
+}
+
+bool device_json_config::input_activation_json_to_available_modes(
+    cJSON *json, unsigned char *modes) {
+  if (!json || !modes || !cJSON_IsArray(json)) {
+    return false;
+  }
+
+  unsigned char result = 0;
+  for (int a = 0; a < cJSON_GetArraySize(json); a++) {
+    cJSON *item = cJSON_GetArrayItem(json, a);
+    if (item && cJSON_IsString(item)) {
+      const char *value = cJSON_GetStringValue(item);
+      unsigned char mode = 0;
+      if (value && string_to_input_activation_mode(value, &mode)) {
+        result |= mode;
+      }
+    }
+  }
+
+  *modes = result;
+  return result != 0;
+}
+
+bool device_json_config::input_activation_config_is_valid(
+    const TDeviceConfig_InputActivation *cfg) {
+  if (!cfg || !(cfg->AvailableModes &
+                (SUPLA_DEVCFG_INPUT_ACTIVATION_GND |
+                 SUPLA_DEVCFG_INPUT_ACTIVATION_VCC))) {
+    return false;
+  }
+
+  if (cfg->Mode != SUPLA_DEVCFG_INPUT_ACTIVATION_GND &&
+      cfg->Mode != SUPLA_DEVCFG_INPUT_ACTIVATION_VCC) {
+    return false;
+  }
+
+  return (cfg->AvailableModes & cfg->Mode) != 0;
 }
 
 void device_json_config::set_status_led(TDeviceConfig_StatusLed *status_led) {
@@ -740,6 +840,44 @@ void device_json_config::set_firmware_update_config(
   }
 }
 
+void device_json_config::set_input_activation_config(
+    TDeviceConfig_InputActivation *cfg) {
+  if (!input_activation_config_is_valid(cfg)) {
+    return;
+  }
+
+  string mode = input_activation_mode_to_string(cfg->Mode);
+  cJSON *available_modes =
+      input_activation_available_modes_to_json(cfg->AvailableModes);
+  if (mode.empty() || !available_modes) {
+    cJSON_Delete(available_modes);
+    return;
+  }
+
+  cJSON *properties_root = get_properties_root();
+  if (!properties_root) {
+    cJSON_Delete(available_modes);
+    return;
+  }
+
+  cJSON *old_available_modes =
+      cJSON_GetObjectItem(properties_root, input_activation_available);
+  if (old_available_modes) {
+    cJSON_Delete(
+        cJSON_DetachItemViaPointer(properties_root, old_available_modes));
+  }
+
+  if (!cJSON_AddItemToObject(properties_root, input_activation_available,
+                             available_modes)) {
+    cJSON_Delete(available_modes);
+    return;
+  }
+
+  set_item_value(get_user_root(),
+                 field_map.at(SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION),
+                 cJSON_String, true, nullptr, mode.c_str(), 0);
+}
+
 cJSON *device_json_config::get_root(bool create, bool user,
                                     unsigned _supla_int64_t field) {
   cJSON *root = user ? get_user_root() : get_properties_root();
@@ -914,6 +1052,12 @@ void device_json_config::set_config(TSDS_SetDeviceConfig *config) {
           if (left >= (size = sizeof(TDeviceConfig_FirmwareUpdate))) {
             set_firmware_update_config(
                 static_cast<TDeviceConfig_FirmwareUpdate *>(ptr));
+          }
+          break;
+        case SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION:
+          if (left >= (size = sizeof(TDeviceConfig_InputActivation))) {
+            set_input_activation_config(
+                static_cast<TDeviceConfig_InputActivation *>(ptr));
           }
           break;
       }
@@ -1251,6 +1395,34 @@ bool device_json_config::get_firmware_update_config(
   return false;
 }
 
+bool device_json_config::get_input_activation_config(
+    TDeviceConfig_InputActivation *cfg) {
+  if (!cfg) {
+    return false;
+  }
+
+  string mode_string;
+  unsigned char mode = 0;
+  unsigned char available_modes = 0;
+
+  if (!get_string(
+          get_user_root(),
+          field_map.at(SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION).c_str(),
+          &mode_string) ||
+      !string_to_input_activation_mode(mode_string, &mode) ||
+      !input_activation_json_to_available_modes(
+          cJSON_GetObjectItem(get_properties_root(), input_activation_available),
+          &available_modes) ||
+      !(available_modes & mode)) {
+    return false;
+  }
+
+  cfg->AvailableModes = available_modes;
+  cfg->Mode = mode;
+  memset(cfg->Reserved, 0, sizeof(cfg->Reserved));
+  return true;
+}
+
 void device_json_config::get_config(TSDS_SetDeviceConfig *config,
                                     unsigned _supla_int64_t fields,
                                     unsigned _supla_int64_t *fields_left) {
@@ -1342,6 +1514,12 @@ void device_json_config::get_config(TSDS_SetDeviceConfig *config,
                       get_firmware_update_config(
                           static_cast<TDeviceConfig_FirmwareUpdate *>(ptr));
           break;
+        case SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION:
+          field_set =
+              left >= (size = sizeof(TDeviceConfig_InputActivation)) &&
+              get_input_activation_config(
+                  static_cast<TDeviceConfig_InputActivation *>(ptr));
+          break;
       }
 
       if (field_set) {
@@ -1401,6 +1579,15 @@ void device_json_config::leave_only_thise_fields(
     }
   }
 
+  if (!(fields & SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION)) {
+    cJSON *item =
+        cJSON_GetObjectItem(get_properties_root(), input_activation_available);
+    if (item) {
+      cJSON_DetachItemViaPointer(get_properties_root(), item);
+      cJSON_Delete(item);
+    }
+  }
+
   remove_empty_sub_roots();
 }
 
@@ -1418,6 +1605,15 @@ void device_json_config::remove_fields(unsigned _supla_int64_t fields) {
     }
   }
 
+  if (fields & SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION) {
+    cJSON *item =
+        cJSON_GetObjectItem(get_properties_root(), input_activation_available);
+    if (item) {
+      cJSON_DetachItemViaPointer(get_properties_root(), item);
+      cJSON_Delete(item);
+    }
+  }
+
   remove_empty_sub_roots();
 }
 
@@ -1426,7 +1622,8 @@ void device_json_config::merge(supla_json_config *_dst) {
 
   map<unsigned _supla_int16_t, string> props_fields = {
       {1, content_available},
-      {2, field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS)}};
+      {2, field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS)},
+      {4, input_activation_available}};
 
   map<cJSON *, map<unsigned _supla_int16_t, string>> map;
 

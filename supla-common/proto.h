@@ -649,6 +649,12 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_CONFIG_FIELD_MODBUS (1ULL << 9)  // v. >= 27
 // type: TDeviceConfig_FirmwareUpdate
 #define SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE (1ULL << 10)  // v. >= 28
+// type: TDeviceConfig_InputActivation
+#define SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION \
+  (1ULL << 12)  // v. >= 30
+
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_GND (1U << 0)
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_VCC (1U << 1)
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 // BIT map definition for TDS_SuplaDeviceChannel_D::Flags (64 bit)
@@ -3087,6 +3093,18 @@ typedef struct {
   unsigned char Policy;  // SUPLA_FIRMWARE_UPDATE_POLICY_
   unsigned char Reserved[20];
 } TDeviceConfig_FirmwareUpdate;
+
+// type: TDeviceConfig_InputActivation
+typedef struct {
+  // Bitmask of SUPLA_DEVCFG_INPUT_ACTIVATION_* values supported by the device.
+  // Read-only for clients.
+  unsigned char AvailableModes;
+
+  // One selected SUPLA_DEVCFG_INPUT_ACTIVATION_* value.
+  unsigned char Mode;
+
+  unsigned char Reserved[6];
+} TDeviceConfig_InputActivation;
 
 /********************************************
  * CHANNEL CONFIG STRUCTURES

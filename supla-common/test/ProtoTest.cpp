@@ -239,6 +239,9 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
   EXPECT_LE(sizeof(TDeviceConfig_HomeScreenContent),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_EQ((unsigned int)8, sizeof(TDeviceConfig_InputActivation));
+  EXPECT_LE(sizeof(TDeviceConfig_InputActivation),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   EXPECT_EQ((unsigned int)8, sizeof(TCalCfg_RollerShutterSettings));
   EXPECT_LE(sizeof(TCalCfg_RollerShutterSettings),
