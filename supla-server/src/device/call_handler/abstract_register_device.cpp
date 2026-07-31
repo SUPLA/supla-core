@@ -78,6 +78,10 @@ int supla_abstract_register_device::get_device_flags(void) {
   return device_flags;
 }
 
+short supla_abstract_register_device::get_manufacturer_id(void) {
+  return manufacturer_id;
+}
+
 int supla_abstract_register_device::get_location_id() { return location_id; }
 
 int supla_abstract_register_device::get_channel_count() {

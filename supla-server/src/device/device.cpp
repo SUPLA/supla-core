@@ -54,6 +54,7 @@ supla_device::supla_device(supla_connection *connection)
   this->last_calcfg_command_importatnt_for_sleepers = 0;
   this->channels = nullptr;
   this->flags = 0;
+  this->manufacturer_id = 0;
 }
 
 supla_device::~supla_device() {
@@ -191,6 +192,12 @@ bool supla_device::funclist_contains_function(int funcList, int func) {
 void supla_device::set_flags(int flags) { this->flags = flags; }
 
 int supla_device::get_flags(void) { return flags; }
+
+void supla_device::set_manufacturer_id(short manufacturer_id) {
+  this->manufacturer_id = manufacturer_id;
+}
+
+short supla_device::get_manufacturer_id(void) { return manufacturer_id; }
 
 void supla_device::set_channels(supla_device_channels *channels) {
   this->channels = channels;

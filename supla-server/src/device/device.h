@@ -33,6 +33,7 @@ class supla_ch_device_calcfg_result;
 class supla_device : public supla_abstract_connection_object {
  private:
   int flags;
+  short manufacturer_id;
   static supla_device_call_handler_collection call_handler_collection;
   supla_device_channels *channels;
   bool calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd,
@@ -47,6 +48,7 @@ class supla_device : public supla_abstract_connection_object {
   int last_calcfg_command_importatnt_for_sleepers;
 
   void set_flags(int flags);
+  void set_manufacturer_id(short manufacturer_id);
   void set_channels(supla_device_channels *channels);
 
   virtual bool can_reconnect(void);
@@ -66,6 +68,7 @@ class supla_device : public supla_abstract_connection_object {
 
   supla_device_channels *get_channels(void);
   int get_flags(void);
+  short get_manufacturer_id(void);
 
   bool enter_cfg_mode(void);
   void send_config_to_device(void);

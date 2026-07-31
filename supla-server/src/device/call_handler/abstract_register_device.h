@@ -80,6 +80,7 @@ class supla_abstract_register_device
   bool is_new_device(void);
   int get_device_id(void);
   int get_device_flags(void);
+  short get_manufacturer_id(void);
   int get_location_id(void);
   int get_channel_count(void);
   TDS_SuplaDeviceChannel_B *get_channels_b(void);

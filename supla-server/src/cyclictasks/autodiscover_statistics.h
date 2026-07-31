@@ -16,24 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DEVICE_STUB_H_
-#define DEVICE_STUB_H_
+#ifndef AUTODISCOVER_STATISTICS_H_
+#define AUTODISCOVER_STATISTICS_H_
 
-#include "device/device.h"
+#include <string>
 
-namespace testing {
+#include "cyclictasks/abstract_autodiscover_statistics.h"
 
-class DeviceStub : public supla_device {
+class supla_autodiscover_statistics
+    : public supla_abstract_autodiscover_statistics {
  protected:
+  virtual std::string get_target_token(
+      supla_abstract_db_access_provider *dba);
+  virtual supla_abstract_curl_adapter *get_curl_adapter(void);
+  virtual void release_curl_adapter(supla_abstract_curl_adapter *adapter);
+
  public:
-  explicit DeviceStub(supla_connection *connection);
-  void set_id(int id);
-  void set_guid(const char guid[SUPLA_GUID_SIZE]);
-  void set_user(supla_user *user);
-  void set_channels(supla_device_channels *channels);
-  void set_manufacturer_id(short manufacturer_id);
+  supla_autodiscover_statistics(void);
+  virtual ~supla_autodiscover_statistics();
 };
 
-} /* namespace testing */
-
-#endif /*  DEVICE_STUB_H_ */
+#endif /* AUTODISCOVER_STATISTICS_H_ */

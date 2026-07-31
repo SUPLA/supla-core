@@ -128,11 +128,17 @@ void safe_array_delete(void *_arr, int idx) {
   if (idx < arr->count) {
     if (idx < arr->count - 1) arr->arr[idx] = arr->arr[arr->count - 1];
 
-    void **new_arr = realloc(arr->arr, sizeof(void *) * (arr->count - 1));
+    if (arr->count == 1) {
+      free(arr->arr);
+      arr->arr = NULL;
+      arr->count = 0;
+    } else {
+      void **new_arr = realloc(arr->arr, sizeof(void *) * (arr->count - 1));
 
-    if (new_arr != NULL || arr->count == 1) {
-      arr->arr = new_arr;
-      arr->count--;
+      if (new_arr != NULL) {
+        arr->arr = new_arr;
+        arr->count--;
+      }
     }
   }
 

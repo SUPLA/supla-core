@@ -27,10 +27,18 @@ DeviceStub::DeviceStub(supla_connection *connection)
 
 void DeviceStub::set_id(int id) { supla_device::set_id(id); }
 
+void DeviceStub::set_guid(const char guid[SUPLA_GUID_SIZE]) {
+  supla_device::set_guid(guid);
+}
+
 void DeviceStub::set_user(supla_user *user) { supla_device::set_user(user); }
 
 void DeviceStub::set_channels(supla_device_channels *channels) {
   supla_device::set_channels(channels);
+}
+
+void DeviceStub::set_manufacturer_id(short manufacturer_id) {
+  supla_device::set_manufacturer_id(manufacturer_id);
 }
 
 }  // namespace testing

@@ -6,29 +6,35 @@
 CPP_SRCS += \
 ../src/cyclictasks/abstract_auto_gate_closing.cpp \
 ../src/cyclictasks/abstract_auto_gate_closing_dao.cpp \
+../src/cyclictasks/abstract_autodiscover_statistics.cpp \
 ../src/cyclictasks/abstract_cyclictask.cpp \
 ../src/cyclictasks/abstract_cyclictask_dao.cpp \
 ../src/cyclictasks/agent.cpp \
 ../src/cyclictasks/auto_gate_closing.cpp \
-../src/cyclictasks/auto_gate_closing_dao.cpp 
+../src/cyclictasks/auto_gate_closing_dao.cpp \
+../src/cyclictasks/autodiscover_statistics.cpp
 
 CPP_DEPS += \
 ./src/cyclictasks/abstract_auto_gate_closing.d \
 ./src/cyclictasks/abstract_auto_gate_closing_dao.d \
+./src/cyclictasks/abstract_autodiscover_statistics.d \
 ./src/cyclictasks/abstract_cyclictask.d \
 ./src/cyclictasks/abstract_cyclictask_dao.d \
 ./src/cyclictasks/agent.d \
 ./src/cyclictasks/auto_gate_closing.d \
-./src/cyclictasks/auto_gate_closing_dao.d 
+./src/cyclictasks/auto_gate_closing_dao.d \
+./src/cyclictasks/autodiscover_statistics.d
 
 OBJS += \
 ./src/cyclictasks/abstract_auto_gate_closing.o \
 ./src/cyclictasks/abstract_auto_gate_closing_dao.o \
+./src/cyclictasks/abstract_autodiscover_statistics.o \
 ./src/cyclictasks/abstract_cyclictask.o \
 ./src/cyclictasks/abstract_cyclictask_dao.o \
 ./src/cyclictasks/agent.o \
 ./src/cyclictasks/auto_gate_closing.o \
-./src/cyclictasks/auto_gate_closing_dao.o 
+./src/cyclictasks/auto_gate_closing_dao.o \
+./src/cyclictasks/autodiscover_statistics.o
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -43,7 +49,6 @@ src/cyclictasks/%.o: ../src/cyclictasks/%.cpp src/cyclictasks/subdir.mk
 clean: clean-src-2f-cyclictasks
 
 clean-src-2f-cyclictasks:
-	-$(RM) ./src/cyclictasks/abstract_auto_gate_closing.d ./src/cyclictasks/abstract_auto_gate_closing.o ./src/cyclictasks/abstract_auto_gate_closing_dao.d ./src/cyclictasks/abstract_auto_gate_closing_dao.o ./src/cyclictasks/abstract_cyclictask.d ./src/cyclictasks/abstract_cyclictask.o ./src/cyclictasks/abstract_cyclictask_dao.d ./src/cyclictasks/abstract_cyclictask_dao.o ./src/cyclictasks/agent.d ./src/cyclictasks/agent.o ./src/cyclictasks/auto_gate_closing.d ./src/cyclictasks/auto_gate_closing.o ./src/cyclictasks/auto_gate_closing_dao.d ./src/cyclictasks/auto_gate_closing_dao.o
+	-$(RM) ./src/cyclictasks/abstract_auto_gate_closing.d ./src/cyclictasks/abstract_auto_gate_closing.o ./src/cyclictasks/abstract_auto_gate_closing_dao.d ./src/cyclictasks/abstract_auto_gate_closing_dao.o ./src/cyclictasks/abstract_autodiscover_statistics.d ./src/cyclictasks/abstract_autodiscover_statistics.o ./src/cyclictasks/abstract_cyclictask.d ./src/cyclictasks/abstract_cyclictask.o ./src/cyclictasks/abstract_cyclictask_dao.d ./src/cyclictasks/abstract_cyclictask_dao.o ./src/cyclictasks/agent.d ./src/cyclictasks/agent.o ./src/cyclictasks/auto_gate_closing.d ./src/cyclictasks/auto_gate_closing.o ./src/cyclictasks/auto_gate_closing_dao.d ./src/cyclictasks/auto_gate_closing_dao.o ./src/cyclictasks/autodiscover_statistics.d ./src/cyclictasks/autodiscover_statistics.o
 
 .PHONY: clean-src-2f-cyclictasks
-

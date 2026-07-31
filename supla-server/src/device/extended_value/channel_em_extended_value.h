@@ -58,10 +58,13 @@ class supla_channel_em_extended_value
   double get_current_sum(void);
   double get_power_active(int phase);
   double get_power_active_sum(void);
+  double get_power_active_kw_sum(void);
   double get_power_reactive(int phase);
   double get_power_reactive_sum(void);
+  double get_power_reactive_kvar_sum(void);
   double get_power_apparent(int phase);
   double get_power_apparent_sum(void);
+  double get_power_apparent_kva_sum(void);
 
   double get_fae(int phase);
   double get_fae_sum(void);

@@ -74,6 +74,7 @@ void supla_register_device::on_registration_success(void) {
   device->set_authkey(get_authkey());
   device->set_user(supla_user::find(get_user_id(), true));
   device->set_flags(get_device_flags());
+  device->set_manufacturer_id(get_manufacturer_id());
 
   supla_device_channels *channels = new supla_device_channels(
       get_device_dao(), device.get(), get_channels_b(), get_channels_e(),

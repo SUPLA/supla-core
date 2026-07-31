@@ -5,15 +5,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/doubles/cyclictasks/AutoGateClosingDaoMock.cpp \
-../src/test/doubles/cyclictasks/AutoGateClosingMock.cpp 
+../src/test/doubles/cyclictasks/AutoGateClosingMock.cpp \
+../src/test/doubles/cyclictasks/AutodiscoverStatisticsMock.cpp
 
 CPP_DEPS += \
 ./src/test/doubles/cyclictasks/AutoGateClosingDaoMock.d \
-./src/test/doubles/cyclictasks/AutoGateClosingMock.d 
+./src/test/doubles/cyclictasks/AutoGateClosingMock.d \
+./src/test/doubles/cyclictasks/AutodiscoverStatisticsMock.d
 
 OBJS += \
 ./src/test/doubles/cyclictasks/AutoGateClosingDaoMock.o \
-./src/test/doubles/cyclictasks/AutoGateClosingMock.o 
+./src/test/doubles/cyclictasks/AutoGateClosingMock.o \
+./src/test/doubles/cyclictasks/AutodiscoverStatisticsMock.o
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -28,7 +31,6 @@ src/test/doubles/cyclictasks/%.o: ../src/test/doubles/cyclictasks/%.cpp src/test
 clean: clean-src-2f-test-2f-doubles-2f-cyclictasks
 
 clean-src-2f-test-2f-doubles-2f-cyclictasks:
-	-$(RM) ./src/test/doubles/cyclictasks/AutoGateClosingDaoMock.d ./src/test/doubles/cyclictasks/AutoGateClosingDaoMock.o ./src/test/doubles/cyclictasks/AutoGateClosingMock.d ./src/test/doubles/cyclictasks/AutoGateClosingMock.o
+	-$(RM) ./src/test/doubles/cyclictasks/AutoGateClosingDaoMock.d ./src/test/doubles/cyclictasks/AutoGateClosingDaoMock.o ./src/test/doubles/cyclictasks/AutoGateClosingMock.d ./src/test/doubles/cyclictasks/AutoGateClosingMock.o ./src/test/doubles/cyclictasks/AutodiscoverStatisticsMock.d ./src/test/doubles/cyclictasks/AutodiscoverStatisticsMock.o
 
 .PHONY: clean-src-2f-test-2f-doubles-2f-cyclictasks
-

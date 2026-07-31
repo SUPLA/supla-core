@@ -16,24 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DEVICE_STUB_H_
-#define DEVICE_STUB_H_
+#ifndef AUTODISCOVER_STATISTICS_TEST_H_
+#define AUTODISCOVER_STATISTICS_TEST_H_
 
-#include "device/device.h"
+#include "doubles/cyclictasks/AutodiscoverStatisticsMock.h"
+#include "doubles/http/CurlAdapterMock.h"
+#include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
 
-class DeviceStub : public supla_device {
+class AutodiscoverStatisticsTest : public Test {
  protected:
+  CurlAdapterMock curlAdapter;
+  AutodiscoverStatisticsMock task;
+
  public:
-  explicit DeviceStub(supla_connection *connection);
-  void set_id(int id);
-  void set_guid(const char guid[SUPLA_GUID_SIZE]);
-  void set_user(supla_user *user);
-  void set_channels(supla_device_channels *channels);
-  void set_manufacturer_id(short manufacturer_id);
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
-} /* namespace testing */
+}  // namespace testing
 
-#endif /*  DEVICE_STUB_H_ */
+#endif /* AUTODISCOVER_STATISTICS_TEST_H_ */
