@@ -173,7 +173,8 @@ TEST_F(DeviceConfigTest, allFields) {
       (TDeviceConfig_InputActivation *)&sds_cfg.Config[sds_cfg.ConfigSize];
   input_activation->AvailableModes =
       SUPLA_DEVCFG_INPUT_ACTIVATION_GND |
-      SUPLA_DEVCFG_INPUT_ACTIVATION_VCC;
+      SUPLA_DEVCFG_INPUT_ACTIVATION_VCC |
+      SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC;
   input_activation->Mode = SUPLA_DEVCFG_INPUT_ACTIVATION_VCC;
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_InputActivation);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
@@ -221,7 +222,7 @@ TEST_F(DeviceConfigTest, allFields) {
       "\"availableProtocols\":[\"MASTER\",\"SLAVE\",\"RTU\",\"ASCII\",\"TCP\","
       "\"UDP\"],\"availableBaudrates\":[4800,9600,19200,38400,57600,115200],"
       "\"availableStopbits\":[\"ONE\",\"TWO\",\"ONE_AND_HALF\"]},"
-      "\"inputActivationAvailable\":[\"GND\",\"VCC\"]}");
+      "\"inputActivationAvailable\":[\"GND\",\"VCC\",\"GND_OR_VCC\"]}");
 
   cfg2.set_properties(str);
 
@@ -240,7 +241,8 @@ TEST_F(DeviceConfigTest, allFields) {
                  .Config[input_activation_offset])
                 ->AvailableModes,
             SUPLA_DEVCFG_INPUT_ACTIVATION_GND |
-                SUPLA_DEVCFG_INPUT_ACTIVATION_VCC);
+                SUPLA_DEVCFG_INPUT_ACTIVATION_VCC |
+                SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC);
   EXPECT_EQ(((TDeviceConfig_InputActivation *)&sds_cfg2
                  .Config[input_activation_offset])
                 ->Mode,
@@ -257,8 +259,9 @@ TEST_F(DeviceConfigTest, allFields) {
 TEST_F(DeviceConfigTest, inputActivation) {
   TDeviceConfig_InputActivation input = {};
   input.AvailableModes = SUPLA_DEVCFG_INPUT_ACTIVATION_GND |
-                         SUPLA_DEVCFG_INPUT_ACTIVATION_VCC | (1U << 7);
-  input.Mode = SUPLA_DEVCFG_INPUT_ACTIVATION_VCC;
+                         SUPLA_DEVCFG_INPUT_ACTIVATION_VCC |
+                         SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC | (1U << 7);
+  input.Mode = SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC;
 
   TSDS_SetDeviceConfig sds_cfg = {};
   sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION;
@@ -270,16 +273,18 @@ TEST_F(DeviceConfigTest, inputActivation) {
 
   char *str = cfg1.get_user_config();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str, "{\"inputActivation\":\"VCC\"}");
+  EXPECT_STREQ(str, "{\"inputActivation\":\"GND_OR_VCC\"}");
   free(str);
 
   str = cfg1.get_properties();
   ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str, "{\"inputActivationAvailable\":[\"GND\",\"VCC\"]}");
+  EXPECT_STREQ(
+      str,
+      "{\"inputActivationAvailable\":[\"GND\",\"VCC\",\"GND_OR_VCC\"]}");
   cfg2.set_properties(str);
   free(str);
 
-  cfg2.set_user_config("{\"inputActivation\":\"VCC\"}");
+  cfg2.set_user_config("{\"inputActivation\":\"GND_OR_VCC\"}");
   TSDS_SetDeviceConfig sds_cfg2 = {};
   unsigned _supla_int64_t fields_left = 0xFFFFFFFFFFFFFFFF;
   cfg2.get_config(&sds_cfg2, &fields_left);
@@ -289,9 +294,10 @@ TEST_F(DeviceConfigTest, inputActivation) {
   EXPECT_EQ(sds_cfg2.ConfigSize, sizeof(TDeviceConfig_InputActivation));
   EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg2.Config)->AvailableModes,
             SUPLA_DEVCFG_INPUT_ACTIVATION_GND |
-                SUPLA_DEVCFG_INPUT_ACTIVATION_VCC);
+                SUPLA_DEVCFG_INPUT_ACTIVATION_VCC |
+                SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC);
   EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg2.Config)->Mode,
-            SUPLA_DEVCFG_INPUT_ACTIVATION_VCC);
+            SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC);
   EXPECT_EQ(memcmp(((TDeviceConfig_InputActivation *)sds_cfg2.Config)->Reserved,
                    input.Reserved, sizeof(input.Reserved)),
             0);
@@ -336,6 +342,18 @@ TEST_F(DeviceConfigTest, inputActivation) {
             SUPLA_DEVCFG_INPUT_ACTIVATION_VCC);
   EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg.Config)->Mode,
             SUPLA_DEVCFG_INPUT_ACTIVATION_VCC);
+
+  json_config.set_user_config("{\"inputActivation\":\"GND_OR_VCC\"}");
+  json_config.set_properties(
+      "{\"inputActivationAvailable\":[\"GND_OR_VCC\"]}");
+  sds_cfg = {};
+  json_config.get_config(&sds_cfg, nullptr);
+  EXPECT_EQ(sds_cfg.Fields, SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION);
+  EXPECT_EQ(sds_cfg.ConfigSize, sizeof(TDeviceConfig_InputActivation));
+  EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg.Config)->AvailableModes,
+            SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC);
+  EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg.Config)->Mode,
+            SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC);
 }
 
 TEST_F(DeviceConfigTest, inputActivationRejectsInvalidValues) {

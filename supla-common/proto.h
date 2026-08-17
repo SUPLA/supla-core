@@ -653,8 +653,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION \
   (1ULL << 12)  // v. >= 30
 
-#define SUPLA_DEVCFG_INPUT_ACTIVATION_GND (1U << 0)
-#define SUPLA_DEVCFG_INPUT_ACTIVATION_VCC (1U << 1)
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_GND        (1U << 0)
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_VCC        (1U << 1)
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC (1U << 2)
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 // BIT map definition for TDS_SuplaDeviceChannel_D::Flags (64 bit)

@@ -170,6 +170,8 @@ string device_json_config::input_activation_mode_to_string(unsigned char mode) {
       return "GND";
     case SUPLA_DEVCFG_INPUT_ACTIVATION_VCC:
       return "VCC";
+    case SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC:
+      return "GND_OR_VCC";
   }
 
   return "";
@@ -188,6 +190,11 @@ bool device_json_config::string_to_input_activation_mode(
 
   if (mode == "VCC") {
     *value = SUPLA_DEVCFG_INPUT_ACTIVATION_VCC;
+    return true;
+  }
+
+  if (mode == "GND_OR_VCC") {
+    *value = SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC;
     return true;
   }
 
@@ -212,6 +219,15 @@ cJSON *device_json_config::input_activation_available_modes_to_json(
 
   if (modes & SUPLA_DEVCFG_INPUT_ACTIVATION_VCC) {
     cJSON *mode = cJSON_CreateString("VCC");
+    if (!mode) {
+      cJSON_Delete(result);
+      return nullptr;
+    }
+    cJSON_AddItemToArray(result, mode);
+  }
+
+  if (modes & SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC) {
+    cJSON *mode = cJSON_CreateString("GND_OR_VCC");
     if (!mode) {
       cJSON_Delete(result);
       return nullptr;
@@ -248,12 +264,14 @@ bool device_json_config::input_activation_config_is_valid(
     const TDeviceConfig_InputActivation *cfg) {
   if (!cfg || !(cfg->AvailableModes &
                 (SUPLA_DEVCFG_INPUT_ACTIVATION_GND |
-                 SUPLA_DEVCFG_INPUT_ACTIVATION_VCC))) {
+                 SUPLA_DEVCFG_INPUT_ACTIVATION_VCC |
+                 SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC))) {
     return false;
   }
 
   if (cfg->Mode != SUPLA_DEVCFG_INPUT_ACTIVATION_GND &&
-      cfg->Mode != SUPLA_DEVCFG_INPUT_ACTIVATION_VCC) {
+      cfg->Mode != SUPLA_DEVCFG_INPUT_ACTIVATION_VCC &&
+      cfg->Mode != SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC) {
     return false;
   }
 
