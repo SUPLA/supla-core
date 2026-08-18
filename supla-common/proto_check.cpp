@@ -236,6 +236,9 @@ static_assert(sizeof(TDeviceConfig_HomeScreenOffDelay) <=
               (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 static_assert(sizeof(TDeviceConfig_HomeScreenContent) <=
               (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+static_assert((unsigned int)16 == sizeof(TDeviceConfig_ThermalProtection));
+static_assert(sizeof(TDeviceConfig_ThermalProtection) <=
+              (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 static_assert(sizeof(TDeviceConfig_InputActivation) == 8);
 static_assert(sizeof(TDeviceConfig_InputActivation) <=
               (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);

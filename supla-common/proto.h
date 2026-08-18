@@ -649,6 +649,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_CONFIG_FIELD_MODBUS (1ULL << 9)  // v. >= 27
 // type: TDeviceConfig_FirmwareUpdate
 #define SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE (1ULL << 10)  // v. >= 28
+// type: TDeviceConfig_ThermalProtection
+#define SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION (1ULL << 11)  // v. >= 29
 // type: TDeviceConfig_InputActivation
 #define SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION \
   (1ULL << 12)  // v. >= 30
@@ -3094,6 +3096,17 @@ typedef struct {
   unsigned char Policy;  // SUPLA_FIRMWARE_UPDATE_POLICY_
   unsigned char Reserved[20];
 } TDeviceConfig_FirmwareUpdate;
+
+typedef struct {
+  _supla_int16_t Threshold;     // 0.1°C
+  _supla_int16_t MinThreshold;  // 0.1°C, readonly
+  _supla_int16_t MaxThreshold;  // 0.1°C, readonly
+
+  unsigned char Enabled;         // 0 - disabled, 1 - enabled
+  unsigned char DisableAllowed;  // readonly
+
+  unsigned char Reserved[8];
+} TDeviceConfig_ThermalProtection;  // v. >= 29
 
 // type: TDeviceConfig_InputActivation
 typedef struct {

@@ -82,6 +82,86 @@ TEST_F(DeviceConfigTest, screenBrightness) {
   free(str);
 }
 
+TEST_F(DeviceConfigTest, thermalProtection) {
+  TSDS_SetDeviceConfig sds_cfg = {};
+  sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION;
+  sds_cfg.ConfigSize = sizeof(TDeviceConfig_ThermalProtection);
+
+  TDeviceConfig_ThermalProtection *thermal =
+      (TDeviceConfig_ThermalProtection *)sds_cfg.Config;
+  thermal->Threshold = 210;
+  thermal->MinThreshold = 50;
+  thermal->MaxThreshold = 300;
+  thermal->Enabled = 1;
+  thermal->DisableAllowed = 1;
+
+  device_json_config cfg;
+  cfg.set_config(&sds_cfg);
+
+  char *user_config = cfg.get_user_config();
+  ASSERT_TRUE(user_config != nullptr);
+  EXPECT_STREQ(user_config,
+               "{\"thermalProtection\":{\"threshold\":210,\"enabled\":true}}");
+  free(user_config);
+
+  char *properties = cfg.get_properties();
+  ASSERT_TRUE(properties != nullptr);
+  EXPECT_STREQ(
+      properties,
+      "{\"thermalProtection\":{\"minThreshold\":50,\"maxThreshold\":300,"
+      "\"disableAllowed\":true}}");
+  free(properties);
+
+  TSDS_SetDeviceConfig sds_cfg2 = {};
+  cfg.get_config(&sds_cfg2, nullptr);
+
+  ASSERT_EQ(sds_cfg2.Fields, sds_cfg.Fields);
+  ASSERT_EQ(sds_cfg2.ConfigSize, sds_cfg.ConfigSize);
+  EXPECT_EQ(memcmp(sds_cfg2.Config, sds_cfg.Config, sds_cfg.ConfigSize), 0);
+}
+
+TEST_F(DeviceConfigTest, thermalProtectionMergeAndCleanup) {
+  const char user_config[] =
+      "{\"thermalProtection\":{\"threshold\":210,\"enabled\":true}}";
+  const char properties[] =
+      "{\"thermalProtection\":{\"minThreshold\":50,\"maxThreshold\":300,"
+      "\"disableAllowed\":true}}";
+
+  device_json_config incoming;
+  incoming.set_user_config(user_config);
+  incoming.set_properties(properties);
+
+  device_json_config persisted;
+  incoming.merge(&persisted);
+
+  char *str = persisted.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, user_config);
+  free(str);
+
+  str = persisted.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, properties);
+  free(str);
+
+  persisted.leave_only_thise_fields(0);
+  str = persisted.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{}");
+  free(str);
+
+  incoming.remove_fields(SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION);
+  str = incoming.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{}");
+  free(str);
+
+  TSDS_SetDeviceConfig sds_cfg = {};
+  incoming.get_config(&sds_cfg, nullptr);
+  EXPECT_EQ(sds_cfg.Fields, 0);
+  EXPECT_EQ(sds_cfg.ConfigSize, 0);
+}
+
 TEST_F(DeviceConfigTest, allFields) {
   TSDS_SetDeviceConfig sds_cfg = {};
   sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
@@ -95,6 +175,7 @@ TEST_F(DeviceConfigTest, allFields) {
                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE |
                    SUPLA_DEVICE_CONFIG_FIELD_MODBUS |
                    SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE |
+                   SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION |
                    SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION;
 
   ((TDeviceConfig_StatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
@@ -168,6 +249,17 @@ TEST_F(DeviceConfigTest, allFields) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_FirmwareUpdate);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
+  size_t thermal_protection_offset = sds_cfg.ConfigSize;
+  TDeviceConfig_ThermalProtection *thermal =
+      (TDeviceConfig_ThermalProtection *)&sds_cfg.Config[sds_cfg.ConfigSize];
+  thermal->Threshold = 210;
+  thermal->MinThreshold = 50;
+  thermal->MaxThreshold = 300;
+  thermal->Enabled = 1;
+  thermal->DisableAllowed = 1;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_ThermalProtection);
+  ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
+
   size_t input_activation_offset = sds_cfg.ConfigSize;
   TDeviceConfig_InputActivation *input_activation =
       (TDeviceConfig_InputActivation *)&sds_cfg.Config[sds_cfg.ConfigSize];
@@ -190,6 +282,7 @@ TEST_F(DeviceConfigTest, allFields) {
           sizeof(TDeviceConfig_HomeScreenOffDelayType) +
           sizeof(TDeviceConfig_PowerStatusLed) + sizeof(TDeviceConfig_Modbus) +
           sizeof(TDeviceConfig_FirmwareUpdate) +
+          sizeof(TDeviceConfig_ThermalProtection) +
           sizeof(TDeviceConfig_InputActivation));
 
   device_json_config cfg;
@@ -205,7 +298,8 @@ TEST_F(DeviceConfigTest, allFields) {
       "\"ENABLED\",\"modbus\":{\"role\":\"SLAVE\",\"modbusAddress\":123,"
       "\"slaveTimeoutMs\":0,\"serialConfig\":{\"mode\":\"RTU\",\"baudRate\":"
       "9600,\"stopBits\":\"ONE\"},\"networkConfig\":{\"mode\":\"TCP\",\"port\":"
-      "88}},\"firmwareUpdatePolicy\":\"ALL_ENABLED\",\"inputActivation\":\"VCC\"}");
+      "88}},\"firmwareUpdatePolicy\":\"ALL_ENABLED\",\"thermalProtection\":"
+      "{\"threshold\":210,\"enabled\":true},\"inputActivation\":\"VCC\"}");
 
   device_json_config cfg2;
   cfg2.set_user_config(str);
@@ -222,6 +316,8 @@ TEST_F(DeviceConfigTest, allFields) {
       "\"availableProtocols\":[\"MASTER\",\"SLAVE\",\"RTU\",\"ASCII\",\"TCP\","
       "\"UDP\"],\"availableBaudrates\":[4800,9600,19200,38400,57600,115200],"
       "\"availableStopbits\":[\"ONE\",\"TWO\",\"ONE_AND_HALF\"]},"
+      "\"thermalProtection\":{\"minThreshold\":50,\"maxThreshold\":300,"
+      "\"disableAllowed\":true},"
       "\"inputActivationAvailable\":[\"GND\",\"VCC\",\"GND_OR_VCC\"]}");
 
   cfg2.set_properties(str);
@@ -236,6 +332,27 @@ TEST_F(DeviceConfigTest, allFields) {
                 ->ContentAvailable,
             SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MODE_OR_TEMPERATURE |
                 (SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MODE_OR_TEMPERATURE - 1));
+
+  EXPECT_EQ(((TDeviceConfig_ThermalProtection *)&sds_cfg2
+                 .Config[thermal_protection_offset])
+                ->Threshold,
+            210);
+  EXPECT_EQ(((TDeviceConfig_ThermalProtection *)&sds_cfg2
+                 .Config[thermal_protection_offset])
+                ->MinThreshold,
+            50);
+  EXPECT_EQ(((TDeviceConfig_ThermalProtection *)&sds_cfg2
+                 .Config[thermal_protection_offset])
+                ->MaxThreshold,
+            300);
+  EXPECT_EQ(((TDeviceConfig_ThermalProtection *)&sds_cfg2
+                 .Config[thermal_protection_offset])
+                ->Enabled,
+            1);
+  EXPECT_EQ(((TDeviceConfig_ThermalProtection *)&sds_cfg2
+                 .Config[thermal_protection_offset])
+                ->DisableAllowed,
+            1);
 
   EXPECT_EQ(((TDeviceConfig_InputActivation *)&sds_cfg2
                  .Config[input_activation_offset])
@@ -932,7 +1049,8 @@ TEST_F(DeviceConfigTest, availableFields) {
       "{\"statusLed\":2,\"screenBrightness\":{\"level\":24},\"buttonVolume\":"
       "100,\"userInterface\":{\"disabled\":false},\"automaticTimeSync\":true,"
       "\"homeScreen\": {\"offDelay\":123,\"content\": "
-      "\"TEMPERATURE_AND_HUMIDITY\"},\"inputActivation\":\"VCC\"}");
+      "\"TEMPERATURE_AND_HUMIDITY\"},\"thermalProtection\":{\"threshold\":210,"
+      "\"enabled\":true},\"inputActivation\":\"VCC\"}");
 
   EXPECT_EQ(cfg.get_available_fields(),
             SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
@@ -942,6 +1060,7 @@ TEST_F(DeviceConfigTest, availableFields) {
                 SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
                 SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY |
                 SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT |
+                SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION |
                 SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION);
 }
 

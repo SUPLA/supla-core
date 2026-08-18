@@ -39,6 +39,7 @@ const map<unsigned _supla_int16_t, string> device_json_config::field_map = {
     {SUPLA_DEVICE_CONFIG_FIELD_POWER_STATUS_LED, "powerStatusLed"},
     {SUPLA_DEVICE_CONFIG_FIELD_MODBUS, "modbus"},
     {SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE, "firmwareUpdatePolicy"},
+    {SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION, "thermalProtection"},
     {SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION, "inputActivation"}};
 
 const map<unsigned _supla_int16_t, string>
@@ -858,6 +859,40 @@ void device_json_config::set_firmware_update_config(
   }
 }
 
+void device_json_config::set_thermal_protection(
+    TDeviceConfig_ThermalProtection *cfg) {
+  if (!cfg) {
+    return;
+  }
+
+  cJSON *user_config = cJSON_CreateObject();
+  if (user_config) {
+    set_item_value(user_config, "threshold", cJSON_Number, true, nullptr,
+                   nullptr, cfg->Threshold);
+    set_item_value(user_config, "enabled",
+                   cfg->Enabled ? cJSON_True : cJSON_False, true, nullptr,
+                   nullptr, 0);
+    set_item_value(get_user_root(),
+                   field_map.at(SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION),
+                   cJSON_Object, true, user_config, nullptr, 0);
+  }
+
+  cJSON *properties = cJSON_CreateObject();
+  if (properties) {
+    set_item_value(properties, "minThreshold", cJSON_Number, true, nullptr,
+                   nullptr, cfg->MinThreshold);
+    set_item_value(properties, "maxThreshold", cJSON_Number, true, nullptr,
+                   nullptr, cfg->MaxThreshold);
+    set_item_value(properties, "disableAllowed",
+                   cfg->DisableAllowed ? cJSON_True : cJSON_False, true,
+                   nullptr, nullptr, 0);
+    set_item_value(
+        get_properties_root(),
+        field_map.at(SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION),
+        cJSON_Object, true, properties, nullptr, 0);
+  }
+}
+
 void device_json_config::set_input_activation_config(
     TDeviceConfig_InputActivation *cfg) {
   if (!input_activation_config_is_valid(cfg)) {
@@ -1070,6 +1105,12 @@ void device_json_config::set_config(TSDS_SetDeviceConfig *config) {
           if (left >= (size = sizeof(TDeviceConfig_FirmwareUpdate))) {
             set_firmware_update_config(
                 static_cast<TDeviceConfig_FirmwareUpdate *>(ptr));
+          }
+          break;
+        case SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION:
+          if (left >= (size = sizeof(TDeviceConfig_ThermalProtection))) {
+            set_thermal_protection(
+                static_cast<TDeviceConfig_ThermalProtection *>(ptr));
           }
           break;
         case SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION:
@@ -1413,6 +1454,56 @@ bool device_json_config::get_firmware_update_config(
   return false;
 }
 
+bool device_json_config::get_thermal_protection(
+    TDeviceConfig_ThermalProtection *cfg) {
+  if (!cfg) {
+    return false;
+  }
+
+  *cfg = {};
+  bool result = false;
+  double value = 0;
+
+  cJSON *user_config = cJSON_GetObjectItem(
+      get_user_root(),
+      field_map.at(SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION).c_str());
+  if (user_config) {
+    if (get_double(user_config, "threshold", &value)) {
+      cfg->Threshold = value;
+      result = true;
+    }
+
+    bool enabled = false;
+    if (get_bool(user_config, "enabled", &enabled)) {
+      cfg->Enabled = enabled ? 1 : 0;
+      result = true;
+    }
+  }
+
+  cJSON *properties = cJSON_GetObjectItem(
+      get_properties_root(),
+      field_map.at(SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION).c_str());
+  if (properties) {
+    if (get_double(properties, "minThreshold", &value)) {
+      cfg->MinThreshold = value;
+      result = true;
+    }
+
+    if (get_double(properties, "maxThreshold", &value)) {
+      cfg->MaxThreshold = value;
+      result = true;
+    }
+
+    bool disable_allowed = false;
+    if (get_bool(properties, "disableAllowed", &disable_allowed)) {
+      cfg->DisableAllowed = disable_allowed ? 1 : 0;
+      result = true;
+    }
+  }
+
+  return result;
+}
+
 bool device_json_config::get_input_activation_config(
     TDeviceConfig_InputActivation *cfg) {
   if (!cfg) {
@@ -1532,6 +1623,12 @@ void device_json_config::get_config(TSDS_SetDeviceConfig *config,
                       get_firmware_update_config(
                           static_cast<TDeviceConfig_FirmwareUpdate *>(ptr));
           break;
+        case SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION:
+          field_set =
+              left >= (size = sizeof(TDeviceConfig_ThermalProtection)) &&
+              get_thermal_protection(
+                  static_cast<TDeviceConfig_ThermalProtection *>(ptr));
+          break;
         case SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION:
           field_set =
               left >= (size = sizeof(TDeviceConfig_InputActivation)) &&
@@ -1597,6 +1694,17 @@ void device_json_config::leave_only_thise_fields(
     }
   }
 
+  if (!(fields & SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION)) {
+    cJSON *root = get_properties_root();
+    cJSON *item = cJSON_GetObjectItem(
+        root,
+        field_map.at(SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION).c_str());
+    if (item) {
+      cJSON_DetachItemViaPointer(root, item);
+      cJSON_Delete(item);
+    }
+  }
+
   if (!(fields & SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION)) {
     cJSON *item =
         cJSON_GetObjectItem(get_properties_root(), input_activation_available);
@@ -1623,6 +1731,17 @@ void device_json_config::remove_fields(unsigned _supla_int64_t fields) {
     }
   }
 
+  if (fields & SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION) {
+    cJSON *root = get_properties_root();
+    cJSON *item = cJSON_GetObjectItem(
+        root,
+        field_map.at(SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION).c_str());
+    if (item) {
+      cJSON_DetachItemViaPointer(root, item);
+      cJSON_Delete(item);
+    }
+  }
+
   if (fields & SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION) {
     cJSON *item =
         cJSON_GetObjectItem(get_properties_root(), input_activation_available);
@@ -1641,6 +1760,7 @@ void device_json_config::merge(supla_json_config *_dst) {
   map<unsigned _supla_int16_t, string> props_fields = {
       {1, content_available},
       {2, field_map.at(SUPLA_DEVICE_CONFIG_FIELD_MODBUS)},
+      {3, field_map.at(SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION)},
       {4, input_activation_available}};
 
   map<cJSON *, map<unsigned _supla_int16_t, string>> map;
