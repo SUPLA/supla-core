@@ -87,6 +87,7 @@ class device_json_config : public supla_json_config {
   void set_home_screen_content(TDeviceConfig_HomeScreenContent *content);
   void set_modbus_config(TDeviceConfig_Modbus *cfg);
   void set_firmware_update_config(TDeviceConfig_FirmwareUpdate *cfg);
+  void set_thermal_protection(TDeviceConfig_ThermalProtection *cfg);
   void remove_empty_sub_roots();
 
  public:
@@ -115,6 +116,7 @@ class device_json_config : public supla_json_config {
       TDeviceConfig_HomeScreenOffDelayType *type);
   bool get_modbus_config(TDeviceConfig_Modbus *cfg);
   bool get_firmware_update_config(TDeviceConfig_FirmwareUpdate *cfg);
+  bool get_thermal_protection(TDeviceConfig_ThermalProtection *cfg);
 };
 
 #endif /* DEVICE_JSON_CONFIG_H_ */
