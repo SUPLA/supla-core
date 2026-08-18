@@ -653,7 +653,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION (1ULL << 11)  // v. >= 29
 // type: TDeviceConfig_InputActivation
 #define SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION \
-  (1ULL << 12)  // v. >= 30
+  (1ULL << 12)  // v. >= 29
 
 #define SUPLA_DEVCFG_INPUT_ACTIVATION_GND        (1U << 0)
 #define SUPLA_DEVCFG_INPUT_ACTIVATION_VCC        (1U << 1)
