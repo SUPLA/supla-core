@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
 // SPDX-License-Identifier: GPL-2.0-or-later
+
 #ifndef EH_H_
 #define EH_H_
 
