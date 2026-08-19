@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include <memory>
+#include <vector>
 
 #include "analyzer/data_analyzer_factory.h"
 #include "db/database.h"

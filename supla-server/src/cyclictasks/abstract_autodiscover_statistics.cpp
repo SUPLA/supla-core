@@ -51,7 +51,7 @@ void add_directional_power(double value, long *forward, long *reverse) {
     *forward += std::lround(value);
   }
 }
-}
+}  // namespace
 
 supla_abstract_autodiscover_statistics::
     supla_abstract_autodiscover_statistics()

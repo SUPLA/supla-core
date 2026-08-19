@@ -1520,7 +1520,8 @@ bool device_json_config::get_input_activation_config(
           &mode_string) ||
       !string_to_input_activation_mode(mode_string, &mode) ||
       !input_activation_json_to_available_modes(
-          cJSON_GetObjectItem(get_properties_root(), input_activation_available),
+          cJSON_GetObjectItem(get_properties_root(),
+                              input_activation_available),
           &available_modes) ||
       !(available_modes & mode)) {
     return false;
