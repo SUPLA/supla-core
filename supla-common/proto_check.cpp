@@ -1,20 +1,5 @@
-/*
-   Copyright (C) AC SOFTWARE SP. Z O.O
-
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-   */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "proto.h"
 
@@ -109,9 +94,11 @@ static_assert((unsigned int)62 == sizeof(TElectricityMeter_Measurement));
 // static_assert((unsigned int)429 == sizeof(TElectricityMeter_ExtendedValue));
 
 // deprecated
+#ifdef USE_DEPRECATED_EMEV_V2
 static_assert((139 +
                sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT) ==
               sizeof(TElectricityMeter_ExtendedValue_V2));
+#endif
 
 static_assert((144 +
                sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT) ==
@@ -138,8 +125,10 @@ static_assert(sizeof(TElectricityMeter_Value) <=
 //               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
 // deprecated
+#ifdef USE_DEPRECATED_EMEV_V2
 static_assert(sizeof(TElectricityMeter_ExtendedValue_V2) <=
               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+#endif
 static_assert(sizeof(TElectricityMeter_ExtendedValue_V3) <=
               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 static_assert((unsigned int)4 == sizeof(TThermostat_Time));
@@ -238,6 +227,9 @@ static_assert(sizeof(TDeviceConfig_HomeScreenContent) <=
               (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 static_assert((unsigned int)16 == sizeof(TDeviceConfig_ThermalProtection));
 static_assert(sizeof(TDeviceConfig_ThermalProtection) <=
+              (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+static_assert(sizeof(TDeviceConfig_InputActivation) == 8);
+static_assert(sizeof(TDeviceConfig_InputActivation) <=
               (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 static_assert((unsigned int)8 == sizeof(TCalCfg_RollerShutterSettings));
 static_assert(sizeof(TCalCfg_RollerShutterSettings) <=

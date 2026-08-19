@@ -175,7 +175,8 @@ TEST_F(DeviceConfigTest, allFields) {
                    SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY_TYPE |
                    SUPLA_DEVICE_CONFIG_FIELD_MODBUS |
                    SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE |
-                   SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION;
+                   SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION |
+                   SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION;
 
   ((TDeviceConfig_StatusLed *)&sds_cfg.Config[sds_cfg.ConfigSize])
       ->StatusLedType = SUPLA_DEVCFG_STATUS_LED_ALWAYS_OFF;
@@ -248,6 +249,7 @@ TEST_F(DeviceConfigTest, allFields) {
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_FirmwareUpdate);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
 
+  size_t thermal_protection_offset = sds_cfg.ConfigSize;
   TDeviceConfig_ThermalProtection *thermal =
       (TDeviceConfig_ThermalProtection *)&sds_cfg.Config[sds_cfg.ConfigSize];
   thermal->Threshold = 210;
@@ -257,6 +259,31 @@ TEST_F(DeviceConfigTest, allFields) {
   thermal->DisableAllowed = 1;
   sds_cfg.ConfigSize += sizeof(TDeviceConfig_ThermalProtection);
   ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
+
+  size_t input_activation_offset = sds_cfg.ConfigSize;
+  TDeviceConfig_InputActivation *input_activation =
+      (TDeviceConfig_InputActivation *)&sds_cfg.Config[sds_cfg.ConfigSize];
+  input_activation->AvailableModes =
+      SUPLA_DEVCFG_INPUT_ACTIVATION_GND |
+      SUPLA_DEVCFG_INPUT_ACTIVATION_VCC |
+      SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC;
+  input_activation->Mode = SUPLA_DEVCFG_INPUT_ACTIVATION_VCC;
+  sds_cfg.ConfigSize += sizeof(TDeviceConfig_InputActivation);
+  ASSERT_LE(sds_cfg.ConfigSize, SUPLA_DEVICE_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(
+      sds_cfg.ConfigSize,
+      sizeof(TDeviceConfig_StatusLed) + sizeof(TDeviceConfig_ScreenBrightness) +
+          sizeof(TDeviceConfig_ButtonVolume) +
+          sizeof(TDeviceConfig_DisableUserInterface) +
+          sizeof(TDeviceConfig_AutomaticTimeSync) +
+          sizeof(TDeviceConfig_HomeScreenOffDelay) +
+          sizeof(TDeviceConfig_HomeScreenContent) +
+          sizeof(TDeviceConfig_HomeScreenOffDelayType) +
+          sizeof(TDeviceConfig_PowerStatusLed) + sizeof(TDeviceConfig_Modbus) +
+          sizeof(TDeviceConfig_FirmwareUpdate) +
+          sizeof(TDeviceConfig_ThermalProtection) +
+          sizeof(TDeviceConfig_InputActivation));
 
   device_json_config cfg;
   cfg.set_config(&sds_cfg);
@@ -272,7 +299,7 @@ TEST_F(DeviceConfigTest, allFields) {
       "\"slaveTimeoutMs\":0,\"serialConfig\":{\"mode\":\"RTU\",\"baudRate\":"
       "9600,\"stopBits\":\"ONE\"},\"networkConfig\":{\"mode\":\"TCP\",\"port\":"
       "88}},\"firmwareUpdatePolicy\":\"ALL_ENABLED\",\"thermalProtection\":"
-      "{\"threshold\":210,\"enabled\":true}}");
+      "{\"threshold\":210,\"enabled\":true},\"inputActivation\":\"VCC\"}");
 
   device_json_config cfg2;
   cfg2.set_user_config(str);
@@ -290,7 +317,8 @@ TEST_F(DeviceConfigTest, allFields) {
       "\"UDP\"],\"availableBaudrates\":[4800,9600,19200,38400,57600,115200],"
       "\"availableStopbits\":[\"ONE\",\"TWO\",\"ONE_AND_HALF\"]},"
       "\"thermalProtection\":{\"minThreshold\":50,\"maxThreshold\":300,"
-      "\"disableAllowed\":true}}");
+      "\"disableAllowed\":true},"
+      "\"inputActivationAvailable\":[\"GND\",\"VCC\",\"GND_OR_VCC\"]}");
 
   cfg2.set_properties(str);
 
@@ -305,12 +333,253 @@ TEST_F(DeviceConfigTest, allFields) {
             SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MODE_OR_TEMPERATURE |
                 (SUPLA_DEVCFG_HOME_SCREEN_CONTENT_MODE_OR_TEMPERATURE - 1));
 
+  EXPECT_EQ(((TDeviceConfig_ThermalProtection *)&sds_cfg2
+                 .Config[thermal_protection_offset])
+                ->Threshold,
+            210);
+  EXPECT_EQ(((TDeviceConfig_ThermalProtection *)&sds_cfg2
+                 .Config[thermal_protection_offset])
+                ->MinThreshold,
+            50);
+  EXPECT_EQ(((TDeviceConfig_ThermalProtection *)&sds_cfg2
+                 .Config[thermal_protection_offset])
+                ->MaxThreshold,
+            300);
+  EXPECT_EQ(((TDeviceConfig_ThermalProtection *)&sds_cfg2
+                 .Config[thermal_protection_offset])
+                ->Enabled,
+            1);
+  EXPECT_EQ(((TDeviceConfig_ThermalProtection *)&sds_cfg2
+                 .Config[thermal_protection_offset])
+                ->DisableAllowed,
+            1);
+
+  EXPECT_EQ(((TDeviceConfig_InputActivation *)&sds_cfg2
+                 .Config[input_activation_offset])
+                ->AvailableModes,
+            SUPLA_DEVCFG_INPUT_ACTIVATION_GND |
+                SUPLA_DEVCFG_INPUT_ACTIVATION_VCC |
+                SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC);
+  EXPECT_EQ(((TDeviceConfig_InputActivation *)&sds_cfg2
+                 .Config[input_activation_offset])
+                ->Mode,
+            SUPLA_DEVCFG_INPUT_ACTIVATION_VCC);
+
   ((TDeviceConfig_HomeScreenContent *)&sds_cfg2
        .Config[home_screen_content_offset])
       ->ContentAvailable = 0xFFFFFFFFFFFFFFFF;
 
   EXPECT_EQ(sds_cfg.Fields, sds_cfg2.Fields);
   EXPECT_EQ(memcmp(sds_cfg.Config, sds_cfg2.Config, sds_cfg.ConfigSize), 0);
+}
+
+TEST_F(DeviceConfigTest, inputActivation) {
+  TDeviceConfig_InputActivation input = {};
+  input.AvailableModes = SUPLA_DEVCFG_INPUT_ACTIVATION_GND |
+                         SUPLA_DEVCFG_INPUT_ACTIVATION_VCC |
+                         SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC | (1U << 7);
+  input.Mode = SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC;
+
+  TSDS_SetDeviceConfig sds_cfg = {};
+  sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION;
+  sds_cfg.ConfigSize = sizeof(input);
+  memcpy(sds_cfg.Config, &input, sizeof(input));
+
+  device_json_config cfg1, cfg2;
+  cfg1.set_config(&sds_cfg);
+
+  char *str = cfg1.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{\"inputActivation\":\"GND_OR_VCC\"}");
+  free(str);
+
+  str = cfg1.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(
+      str,
+      "{\"inputActivationAvailable\":[\"GND\",\"VCC\",\"GND_OR_VCC\"]}");
+  cfg2.set_properties(str);
+  free(str);
+
+  cfg2.set_user_config("{\"inputActivation\":\"GND_OR_VCC\"}");
+  TSDS_SetDeviceConfig sds_cfg2 = {};
+  unsigned _supla_int64_t fields_left = 0xFFFFFFFFFFFFFFFF;
+  cfg2.get_config(&sds_cfg2, &fields_left);
+
+  EXPECT_EQ(fields_left, 0);
+  EXPECT_EQ(sds_cfg2.Fields, SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION);
+  EXPECT_EQ(sds_cfg2.ConfigSize, sizeof(TDeviceConfig_InputActivation));
+  EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg2.Config)->AvailableModes,
+            SUPLA_DEVCFG_INPUT_ACTIVATION_GND |
+                SUPLA_DEVCFG_INPUT_ACTIVATION_VCC |
+                SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC);
+  EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg2.Config)->Mode,
+            SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC);
+  EXPECT_EQ(memcmp(((TDeviceConfig_InputActivation *)sds_cfg2.Config)->Reserved,
+                   input.Reserved, sizeof(input.Reserved)),
+            0);
+
+  input.AvailableModes = SUPLA_DEVCFG_INPUT_ACTIVATION_GND;
+  input.Mode = SUPLA_DEVCFG_INPUT_ACTIVATION_GND;
+  sds_cfg = {};
+  sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION;
+  sds_cfg.ConfigSize = sizeof(input);
+  memcpy(sds_cfg.Config, &input, sizeof(input));
+  device_json_config gnd_config;
+  gnd_config.set_config(&sds_cfg);
+
+  str = gnd_config.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{\"inputActivation\":\"GND\"}");
+  free(str);
+  str = gnd_config.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{\"inputActivationAvailable\":[\"GND\"]}");
+  free(str);
+
+  device_json_config json_config;
+  json_config.set_user_config("{\"inputActivation\":\"GND\"}");
+  json_config.set_properties("{\"inputActivationAvailable\":[\"GND\"]}");
+  sds_cfg = {};
+  json_config.get_config(&sds_cfg, nullptr);
+  EXPECT_EQ(sds_cfg.Fields, SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION);
+  EXPECT_EQ(sds_cfg.ConfigSize, sizeof(TDeviceConfig_InputActivation));
+  EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg.Config)->AvailableModes,
+            SUPLA_DEVCFG_INPUT_ACTIVATION_GND);
+  EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg.Config)->Mode,
+            SUPLA_DEVCFG_INPUT_ACTIVATION_GND);
+
+  json_config.set_user_config("{\"inputActivation\":\"VCC\"}");
+  json_config.set_properties("{\"inputActivationAvailable\":[\"VCC\"]}");
+  sds_cfg = {};
+  json_config.get_config(&sds_cfg, nullptr);
+  EXPECT_EQ(sds_cfg.Fields, SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION);
+  EXPECT_EQ(sds_cfg.ConfigSize, sizeof(TDeviceConfig_InputActivation));
+  EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg.Config)->AvailableModes,
+            SUPLA_DEVCFG_INPUT_ACTIVATION_VCC);
+  EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg.Config)->Mode,
+            SUPLA_DEVCFG_INPUT_ACTIVATION_VCC);
+
+  json_config.set_user_config("{\"inputActivation\":\"GND_OR_VCC\"}");
+  json_config.set_properties(
+      "{\"inputActivationAvailable\":[\"GND_OR_VCC\"]}");
+  sds_cfg = {};
+  json_config.get_config(&sds_cfg, nullptr);
+  EXPECT_EQ(sds_cfg.Fields, SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION);
+  EXPECT_EQ(sds_cfg.ConfigSize, sizeof(TDeviceConfig_InputActivation));
+  EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg.Config)->AvailableModes,
+            SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC);
+  EXPECT_EQ(((TDeviceConfig_InputActivation *)sds_cfg.Config)->Mode,
+            SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC);
+}
+
+TEST_F(DeviceConfigTest, inputActivationRejectsInvalidValues) {
+  device_json_config cfg;
+  cfg.set_user_config("{\"inputActivation\":\"GND\"}");
+  cfg.set_properties("{\"inputActivationAvailable\":[\"GND\"]}");
+
+  char *before_user = cfg.get_user_config();
+  char *before_properties = cfg.get_properties();
+  ASSERT_NE(before_user, nullptr);
+  ASSERT_NE(before_properties, nullptr);
+
+  TDeviceConfig_InputActivation input = {};
+  input.AvailableModes = SUPLA_DEVCFG_INPUT_ACTIVATION_GND |
+                         SUPLA_DEVCFG_INPUT_ACTIVATION_VCC;
+  input.Mode = SUPLA_DEVCFG_INPUT_ACTIVATION_GND |
+               SUPLA_DEVCFG_INPUT_ACTIVATION_VCC;
+
+  TSDS_SetDeviceConfig sds_cfg = {};
+  sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION;
+  sds_cfg.ConfigSize = sizeof(input);
+  memcpy(sds_cfg.Config, &input, sizeof(input));
+  cfg.set_config(&sds_cfg);
+
+  char *after_user = cfg.get_user_config();
+  char *after_properties = cfg.get_properties();
+  ASSERT_NE(after_user, nullptr);
+  ASSERT_NE(after_properties, nullptr);
+  EXPECT_STREQ(after_user, before_user);
+  EXPECT_STREQ(after_properties, before_properties);
+  free(before_user);
+  free(before_properties);
+  free(after_user);
+  free(after_properties);
+
+  input.AvailableModes = SUPLA_DEVCFG_INPUT_ACTIVATION_GND;
+  input.Mode = SUPLA_DEVCFG_INPUT_ACTIVATION_VCC;
+  sds_cfg = {};
+  sds_cfg.Fields = SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION;
+  sds_cfg.ConfigSize = sizeof(input);
+  memcpy(sds_cfg.Config, &input, sizeof(input));
+  cfg.set_config(&sds_cfg);
+
+  TDeviceConfig_InputActivation restored = {};
+  EXPECT_TRUE(cfg.get_input_activation_config(&restored));
+  EXPECT_EQ(restored.AvailableModes, SUPLA_DEVCFG_INPUT_ACTIVATION_GND);
+  EXPECT_EQ(restored.Mode, SUPLA_DEVCFG_INPUT_ACTIVATION_GND);
+
+  cfg.set_user_config("{\"inputActivation\":\"INVALID\"}");
+  cfg.set_properties("{\"inputActivationAvailable\":[\"GND\"]}");
+  restored.AvailableModes = 0xA5;
+  restored.Mode = 0xA5;
+  memset(restored.Reserved, 0xA5, sizeof(restored.Reserved));
+  EXPECT_FALSE(cfg.get_input_activation_config(&restored));
+  EXPECT_EQ(restored.AvailableModes, 0xA5);
+  EXPECT_EQ(restored.Mode, 0xA5);
+
+  cfg.set_user_config("{\"inputActivation\":\"VCC\"}");
+  cfg.set_properties("{\"inputActivationAvailable\":[\"GND\"]}");
+  EXPECT_FALSE(cfg.get_input_activation_config(&restored));
+
+  sds_cfg = {};
+  unsigned _supla_int64_t fields_left = 0;
+  cfg.get_config(&sds_cfg, SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION,
+                 &fields_left);
+  EXPECT_EQ(sds_cfg.Fields, 0);
+  EXPECT_EQ(sds_cfg.ConfigSize, 0);
+  EXPECT_EQ(fields_left, 0);
+}
+
+TEST_F(DeviceConfigTest, inputActivationPropertiesLifecycle) {
+  device_json_config source, destination;
+  source.set_user_config("{\"inputActivation\":\"VCC\"}");
+  source.set_properties("{\"inputActivationAvailable\":[\"GND\",\"VCC\"]}");
+  destination.set_user_config("{\"inputActivation\":\"GND\"}");
+  destination.set_properties("{\"inputActivationAvailable\":[\"GND\"]}");
+
+  source.merge(&destination);
+
+  char *str = destination.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{\"inputActivation\":\"VCC\"}");
+  free(str);
+  str = destination.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{\"inputActivationAvailable\":[\"GND\",\"VCC\"]}");
+  free(str);
+
+  destination.remove_fields(SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION);
+  str = destination.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{}");
+  free(str);
+  str = destination.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{}");
+  free(str);
+
+  source.set_user_config("{\"inputActivation\":\"GND\"}");
+  source.set_properties("{\"inputActivationAvailable\":[\"GND\"]}");
+  source.leave_only_thise_fields(0);
+  str = source.get_user_config();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{}");
+  free(str);
+  str = source.get_properties();
+  ASSERT_NE(str, nullptr);
+  EXPECT_STREQ(str, "{}");
+  free(str);
 }
 
 TEST_F(DeviceConfigTest, twoFieldsSlightlyApart) {
@@ -781,7 +1050,7 @@ TEST_F(DeviceConfigTest, availableFields) {
       "100,\"userInterface\":{\"disabled\":false},\"automaticTimeSync\":true,"
       "\"homeScreen\": {\"offDelay\":123,\"content\": "
       "\"TEMPERATURE_AND_HUMIDITY\"},\"thermalProtection\":{\"threshold\":210,"
-      "\"enabled\":true}}");
+      "\"enabled\":true},\"inputActivation\":\"VCC\"}");
 
   EXPECT_EQ(cfg.get_available_fields(),
             SUPLA_DEVICE_CONFIG_FIELD_STATUS_LED |
@@ -791,7 +1060,8 @@ TEST_F(DeviceConfigTest, availableFields) {
                 SUPLA_DEVICE_CONFIG_FIELD_AUTOMATIC_TIME_SYNC |
                 SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_OFF_DELAY |
                 SUPLA_DEVICE_CONFIG_FIELD_HOME_SCREEN_CONTENT |
-                SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION);
+                SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION |
+                SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION);
 }
 
 TEST_F(DeviceConfigTest, modbus_1) {

@@ -1,20 +1,5 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #define _POSIX_C_SOURCE 200809L
 
@@ -66,6 +51,20 @@ static const char *SUPLA_TAG = "SUPLA";
 #ifdef __ANDROID__
 #include <android/log.h>
 #endif /*__ANDROID__*/
+
+static int __supla_log_level = LOG_VERBOSE;
+
+void LOG_ICACHE_FLASH supla_log_set_level(int level) {
+  __supla_log_level = level;
+}
+
+int LOG_ICACHE_FLASH supla_log_get_level(void) {
+  return __supla_log_level;
+}
+
+char LOG_ICACHE_FLASH supla_log_is_enabled(int level) {
+  return level <= __supla_log_level;
+}
 
 #ifdef __LOG_CALLBACK
 _supla_log_callback __supla_log_callback = NULL;
@@ -137,7 +136,7 @@ void supla_vlog(int __pri, const char *message) {
   serialPrintLn(message);
 }
 #elif defined(ESP_PLATFORM)
-// variant for ESP8266 RTOS and ESP-IDF
+// variant for ESP-IDF
 void supla_vlog(int __pri, const char *message) {
   switch (__pri) {
     case LOG_VERBOSE:
@@ -272,9 +271,10 @@ void LOG_ICACHE_FLASH supla_log(int __pri, const char *__fmt, ...) {
 
 #if defined(ESP8266) || defined(ARDUINO) || defined(_WIN32) || \
     defined(SUPLA_DEVICE)
-  if (__fmt == NULL) return;
+  if (__fmt == NULL || !supla_log_is_enabled(__pri)) return;
 #else
-  if (__fmt == NULL || (debug_mode == 0 && __pri == LOG_DEBUG)) return;
+  if (__fmt == NULL || !supla_log_is_enabled(__pri) ||
+      (debug_mode == 0 && __pri == LOG_DEBUG)) return;
 #endif
 
   while (1) {

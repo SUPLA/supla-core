@@ -1,20 +1,5 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #ifndef supla_proto_H_
 #define supla_proto_H_
@@ -46,7 +31,7 @@ struct _supla_timeval {
 
 #elif defined(ESP8266) || defined(ESP32) || defined(ESP_PLATFORM)
 // *** Espressif NONOS SDK for ESP8266 OR ARDUINO WITH ESP8266 or ESP32 ***
-// *** ESP-IDF, ESP8266 RTOS SDK ***
+// *** ESP-IDF ***
 #ifndef ESP_PLATFORM
 #ifndef ARDUINO
 #include <mem.h>
@@ -604,6 +589,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_HPD 19
 #define SUPLA_MFR_LUKFUD 20
 #define SUPLA_MFR_WALA 21
+#define SUPLA_MFR_PROVENT 22
+#define SUPLA_MFR_SMARTBOB 23
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
 #define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010          // ver. >= 17
@@ -651,6 +638,13 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE (1ULL << 10)  // v. >= 28
 // type: TDeviceConfig_ThermalProtection
 #define SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION (1ULL << 11)  // v. >= 29
+// type: TDeviceConfig_InputActivation
+#define SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION \
+  (1ULL << 12)  // v. >= 29
+
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_GND        (1U << 0)
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_VCC        (1U << 1)
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC (1U << 2)
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 // BIT map definition for TDS_SuplaDeviceChannel_D::Flags (64 bit)
@@ -3100,6 +3094,18 @@ typedef struct {
 
   unsigned char Reserved[8];
 } TDeviceConfig_ThermalProtection;  // v. >= 29
+
+// type: TDeviceConfig_InputActivation
+typedef struct {
+  // Bitmask of SUPLA_DEVCFG_INPUT_ACTIVATION_* values supported by the device.
+  // Read-only for clients.
+  unsigned char AvailableModes;
+
+  // One selected SUPLA_DEVCFG_INPUT_ACTIVATION_* value.
+  unsigned char Mode;
+
+  unsigned char Reserved[6];
+} TDeviceConfig_InputActivation;
 
 /********************************************
  * CHANNEL CONFIG STRUCTURES

@@ -35,6 +35,7 @@ class device_json_config : public supla_json_config {
   static const char disabled_str[];
   static const char min_allowed_temperature[];
   static const char max_allowed_temperature[];
+  static const char input_activation_available[];
   static const char level_str[];
   static const char adjustment_str[];
 
@@ -44,6 +45,14 @@ class device_json_config : public supla_json_config {
   unsigned char string_to_power_status_led(const std::string &status);
   std::string home_screen_content_to_string(unsigned char status);
   unsigned char string_to_home_screen_content(const std::string &status);
+  std::string input_activation_mode_to_string(unsigned char mode);
+  bool string_to_input_activation_mode(const std::string &mode,
+                                       unsigned char *value);
+  cJSON *input_activation_available_modes_to_json(unsigned char modes);
+  bool input_activation_json_to_available_modes(cJSON *json,
+                                                unsigned char *modes);
+  bool input_activation_config_is_valid(
+      const TDeviceConfig_InputActivation *cfg);
   std::string modbus_role_to_string(unsigned char role);
   unsigned char string_to_modbus_role(const std::string &role);
   std::string modbus_serial_mode_to_string(unsigned char mode);
@@ -88,6 +97,7 @@ class device_json_config : public supla_json_config {
   void set_modbus_config(TDeviceConfig_Modbus *cfg);
   void set_firmware_update_config(TDeviceConfig_FirmwareUpdate *cfg);
   void set_thermal_protection(TDeviceConfig_ThermalProtection *cfg);
+  void set_input_activation_config(TDeviceConfig_InputActivation *cfg);
   void remove_empty_sub_roots();
 
  public:
@@ -117,6 +127,7 @@ class device_json_config : public supla_json_config {
   bool get_modbus_config(TDeviceConfig_Modbus *cfg);
   bool get_firmware_update_config(TDeviceConfig_FirmwareUpdate *cfg);
   bool get_thermal_protection(TDeviceConfig_ThermalProtection *cfg);
+  bool get_input_activation_config(TDeviceConfig_InputActivation *cfg);
 };
 
 #endif /* DEVICE_JSON_CONFIG_H_ */
