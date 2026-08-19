@@ -31,7 +31,7 @@ struct _supla_timeval {
 
 #elif defined(ESP8266) || defined(ESP32) || defined(ESP_PLATFORM)
 // *** Espressif NONOS SDK for ESP8266 OR ARDUINO WITH ESP8266 or ESP32 ***
-// *** ESP-IDF, ESP8266 RTOS SDK ***
+// *** ESP-IDF ***
 #ifndef ESP_PLATFORM
 #ifndef ARDUINO
 #include <mem.h>
@@ -589,6 +589,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_HPD 19
 #define SUPLA_MFR_LUKFUD 20
 #define SUPLA_MFR_WALA 21
+#define SUPLA_MFR_PROVENT 22
+#define SUPLA_MFR_SMARTBOB 23
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
 #define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010          // ver. >= 17
