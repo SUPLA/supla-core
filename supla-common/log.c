@@ -52,6 +52,20 @@ static const char *SUPLA_TAG = "SUPLA";
 #include <android/log.h>
 #endif /*__ANDROID__*/
 
+static int __supla_log_level = LOG_VERBOSE;
+
+void LOG_ICACHE_FLASH supla_log_set_level(int level) {
+  __supla_log_level = level;
+}
+
+int LOG_ICACHE_FLASH supla_log_get_level(void) {
+  return __supla_log_level;
+}
+
+char LOG_ICACHE_FLASH supla_log_is_enabled(int level) {
+  return level <= __supla_log_level;
+}
+
 #ifdef __LOG_CALLBACK
 _supla_log_callback __supla_log_callback = NULL;
 
@@ -122,7 +136,7 @@ void supla_vlog(int __pri, const char *message) {
   serialPrintLn(message);
 }
 #elif defined(ESP_PLATFORM)
-// variant for ESP8266 RTOS and ESP-IDF
+// variant for ESP-IDF
 void supla_vlog(int __pri, const char *message) {
   switch (__pri) {
     case LOG_VERBOSE:
@@ -257,9 +271,10 @@ void LOG_ICACHE_FLASH supla_log(int __pri, const char *__fmt, ...) {
 
 #if defined(ESP8266) || defined(ARDUINO) || defined(_WIN32) || \
     defined(SUPLA_DEVICE)
-  if (__fmt == NULL) return;
+  if (__fmt == NULL || !supla_log_is_enabled(__pri)) return;
 #else
-  if (__fmt == NULL || (debug_mode == 0 && __pri == LOG_DEBUG)) return;
+  if (__fmt == NULL || !supla_log_is_enabled(__pri) ||
+      (debug_mode == 0 && __pri == LOG_DEBUG)) return;
 #endif
 
   while (1) {

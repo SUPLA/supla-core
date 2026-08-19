@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
 // SPDX-License-Identifier: GPL-2.0-or-later
+
 #ifndef supladex_H_
 #define supladex_H_
 
@@ -46,6 +47,12 @@
 extern "C" {
 #endif
 
+#if defined(SUPLA_DEVICE) || defined(ESP8266) || defined(ESP32) || \
+    defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266) || \
+    defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_AVR)
+#define SRPC_WITH_PACKET_LOG_HOOKS
+#endif
+
 typedef _supla_int_t (*_func_srpc_DataRW)(void *buf, _supla_int_t count,
                                           void *user_params);
 typedef void (*_func_srpc_event_OnRemoteCallReceived)(
@@ -54,6 +61,20 @@ typedef void (*_func_srpc_event_OnRemoteCallReceived)(
 typedef void (*_func_srpc_event_BeforeCall)(void *_srpc,
                                             unsigned _supla_int_t call_id,
                                             void *user_params);
+#ifdef SRPC_WITH_PACKET_LOG_HOOKS
+typedef void (*_func_srpc_event_OnPacketSent)(
+    void *_srpc,
+    unsigned _supla_int_t call_id,
+    void *data,
+    unsigned _supla_int_t data_size,
+    void *user_params);
+typedef void (*_func_srpc_event_OnPacketReceived)(
+    void *_srpc,
+    unsigned _supla_int_t call_id,
+    void *data,
+    unsigned _supla_int_t data_size,
+    void *user_params);
+#endif
 typedef void (*_func_srpc_event_OnVersionError)(void *_srpc,
                                                 unsigned char remote_version,
                                                 void *user_params);
@@ -67,6 +88,10 @@ typedef struct {
   _func_srpc_event_OnRemoteCallReceived on_remote_call_received;
   _func_srpc_event_OnVersionError on_version_error;
   _func_srpc_event_BeforeCall before_async_call;
+#ifdef SRPC_WITH_PACKET_LOG_HOOKS
+  _func_srpc_event_OnPacketSent on_packet_sent;
+  _func_srpc_event_OnPacketReceived on_packet_received;
+#endif
   _func_srpc_event_OnMinVersionRequired on_min_version_required;
 
   TEventHandler *eh;

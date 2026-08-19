@@ -47,6 +47,9 @@ typedef int (*_supla_log_callback)(int __pri, const char *message);
 void LOG_ICACHE_FLASH supla_log_set_callback(_supla_log_callback callback);
 #endif /*__LOG_CALLBACK*/
 
+void LOG_ICACHE_FLASH supla_log_set_level(int level);
+int LOG_ICACHE_FLASH supla_log_get_level(void);
+char LOG_ICACHE_FLASH supla_log_is_enabled(int level);
 void LOG_ICACHE_FLASH supla_log(int __pri, const char *__fmt, ...);
 void LOG_ICACHE_FLASH supla_write_state_file(const char *file, int __pri,
                                              const char *__fmt, ...);
