@@ -78,6 +78,10 @@ supla_device_channels::supla_device_channels(
       at_orops = schannel_e[a].actionTriggerProperties;
       flags = schannel_e[a].Flags;
       status.set_proto_offline(schannel_e[a].Offline);
+
+      if (flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION) {
+        status.set_offline(true);
+      }
     }
 
     int channel_id = get_channel_id(number);
