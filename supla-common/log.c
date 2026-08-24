@@ -52,7 +52,11 @@ static const char *SUPLA_TAG = "SUPLA";
 #include <android/log.h>
 #endif /*__ANDROID__*/
 
+#if defined(LOG_VERBOSE)
 static int __supla_log_level = LOG_VERBOSE;
+#else
+static int __supla_log_level = LOG_DEBUG;
+#endif
 
 void LOG_ICACHE_FLASH supla_log_set_level(int level) {
   __supla_log_level = level;
