@@ -22,6 +22,7 @@
 #include <ifaddrs.h>
 #include <linux/if_link.h>
 #include <serverstatus.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -225,6 +226,9 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
   this->supla_socket = supla_socket;
   this->activity_timeout = ACTIVITY_TIMEOUT;
   this->unhandled_call_counter = 0;
+  this->bytes_received = 0;
+  this->remote_call_received = false;
+  this->security_event_logged = false;
 
   eh = eh_init();
   eh_add_fd(eh, ssocket_supla_socket_getsfd(supla_socket));
@@ -263,7 +267,13 @@ std::shared_ptr<supla_abstract_connection_object> supla_connection::get_object(
 }
 
 int supla_connection::socket_read(void *buf, size_t count) {
-  return ssocket_read(ssd, supla_socket, buf, count);
+  int result = ssocket_read(ssd, supla_socket, buf, count);
+
+  if (result > 0) {
+    bytes_received += result;
+  }
+
+  return result;
 }
 
 int supla_connection::socket_write(const void *buf, size_t count) {
@@ -272,6 +282,11 @@ int supla_connection::socket_write(const void *buf, size_t count) {
 
 void supla_connection::catch_unhandled_call(unsigned int call_id) {
   unhandled_call_counter++;
+  if (object == nullptr || !object->is_registered()) {
+    log_security_event_with_uint(LOG_WARNING, "unexpected_call_before_register",
+                                 1, "call_id", call_id);
+  }
+
   supla_log(LOG_ERR,
             "Unhandled call %i/%i. NonNullObj: %s Registered: %s. Id: %i. "
             "Device: %s Terminated: %s",
@@ -293,6 +308,8 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
   TsrpcReceivedData rd;
 
   if (srpc_getdata(_srpc, &rd, rr_id) == SUPLA_RESULT_TRUE) {
+    remote_call_received = true;
+
     if (object != nullptr) {
       if (object->get_srpc_call_handler_collection()->handle_call(
               object, srpc_adapter, &rd, call_id, proto_version)) {
@@ -329,7 +346,69 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
     }
 
     srpc_rd_free(&rd);
+  } else if (object == nullptr || !object->is_registered()) {
+    log_security_event_with_uint(LOG_WARNING, "invalid_call_payload", 1,
+                                 "call_id", call_id);
   }
+}
+
+void supla_connection::client_ip_as_string(char *buffer, size_t buffer_size) {
+  if (buffer_size == 0) {
+    return;
+  }
+
+  buffer[0] = 0;
+
+  struct in_addr addr;
+  addr.s_addr = htonl(client_ipv4);
+
+  if (inet_ntop(AF_INET, &addr, buffer, buffer_size) == nullptr) {
+    snprintf(buffer, buffer_size, "0.0.0.0");
+  }
+}
+
+int supla_connection::get_server_port(void) {
+  return ssocket_is_secure(ssd) ? scfg_int(CFG_SSL_PORT)
+                                : scfg_int(CFG_TCP_PORT);
+}
+
+void supla_connection::log_security_event(int level, const char *reason,
+                                          int ban) {
+  if (security_event_logged) {
+    return;
+  }
+
+  security_event_logged = true;
+
+  char client_ip[INET_ADDRSTRLEN];
+  client_ip_as_string(client_ip, sizeof(client_ip));
+
+  supla_log(level,
+            "SECURITY: supla-port-abuse ban=%i reason=%s ip=%s port=%i "
+            "secure=%i bytes_received=%llu client_sd=%i thread=%p",
+            ban, reason, client_ip, get_server_port(), ssocket_is_secure(ssd),
+            bytes_received, get_client_sd(), sthread);
+}
+
+void supla_connection::log_security_event_with_uint(int level,
+                                                    const char *reason,
+                                                    int ban,
+                                                    const char *value_name,
+                                                    unsigned int value) {
+  if (security_event_logged) {
+    return;
+  }
+
+  security_event_logged = true;
+
+  char client_ip[INET_ADDRSTRLEN];
+  client_ip_as_string(client_ip, sizeof(client_ip));
+
+  supla_log(level,
+            "SECURITY: supla-port-abuse ban=%i reason=%s ip=%s port=%i "
+            "secure=%i bytes_received=%llu client_sd=%i thread=%p %s=%u",
+            ban, reason, client_ip, get_server_port(), ssocket_is_secure(ssd),
+            bytes_received, get_client_sd(), sthread, value_name, value);
 }
 
 void supla_connection::execute(void *sthread) {
@@ -349,7 +428,35 @@ void supla_connection::execute(void *sthread) {
     eh_wait(eh, wait_usec);
 
     if (srpc_iterate(_srpc) == SUPLA_RESULT_FALSE) {
-      // supla_log(LOG_DEBUG, "srpc_iterate(_srpc) == SUPLA_RESULT_FALSE");
+      if (object == nullptr || !object->is_registered()) {
+        TsrpcIterateReason srpc_reason = srpc_get_last_iterate_reason(_srpc);
+
+        switch (srpc_reason) {
+          case SRPC_ITERATE_REASON_PROTOCOL_ERROR:
+            log_security_event(LOG_WARNING, "invalid_protocol_data", 1);
+            break;
+          case SRPC_ITERATE_REASON_INPUT_BUFFER_OVERFLOW:
+            log_security_event(LOG_WARNING, "input_buffer_overflow", 1);
+            break;
+          case SRPC_ITERATE_REASON_VERSION_ERROR:
+            break;
+          case SRPC_ITERATE_REASON_SOCKET_CLOSED:
+            if (bytes_received == 0) {
+              log_security_event(LOG_NOTICE,
+                                 "connection_closed_without_communication", 1);
+            } else if (!remote_call_received) {
+              log_security_event(
+                  LOG_NOTICE, "connection_closed_after_incomplete_communication",
+                  0);
+            } else if (object == nullptr) {
+              log_security_event(LOG_NOTICE,
+                                 "connection_closed_before_registration", 0);
+            }
+            break;
+          default:
+            break;
+        }
+      }
       break;
     }
 
@@ -360,7 +467,19 @@ void supla_connection::execute(void *sthread) {
 
       if (now.tv_sec - init_time.tv_sec >= REGISTER_WAIT_TIMEOUT) {
         terminate();
-        supla_log(LOG_DEBUG, "Reg timeout %i", sthread);
+        if (bytes_received == 0) {
+          log_security_event(LOG_NOTICE, "registration_timeout_no_communication",
+                             1);
+        } else if (!remote_call_received) {
+          log_security_event(LOG_NOTICE,
+                             "registration_timeout_incomplete_communication",
+                             0);
+        } else if (object == nullptr) {
+          log_security_event(LOG_NOTICE,
+                             "registration_timeout_before_registration", 0);
+        } else {
+          log_security_event(LOG_NOTICE, "registration_timeout", 0);
+        }
         break;
       }
 

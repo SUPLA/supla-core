@@ -82,6 +82,17 @@ typedef void (*_func_srpc_event_OnMinVersionRequired)(
     void *_srpc, unsigned _supla_int_t call_id, unsigned char min_version,
     void *user_params);
 
+typedef enum {
+  SRPC_ITERATE_REASON_NONE = 0,
+  SRPC_ITERATE_REASON_SOCKET_CLOSED,
+  SRPC_ITERATE_REASON_INPUT_BUFFER_ERROR,
+  SRPC_ITERATE_REASON_INPUT_BUFFER_OVERFLOW,
+  SRPC_ITERATE_REASON_PROTOCOL_ERROR,
+  SRPC_ITERATE_REASON_VERSION_ERROR,
+  SRPC_ITERATE_REASON_INPUT_QUEUE_ERROR,
+  SRPC_ITERATE_REASON_OUTPUT_BUFFER_ERROR
+} TsrpcIterateReason;
+
 typedef struct {
   _func_srpc_DataRW data_read;
   _func_srpc_DataRW data_write;
@@ -226,6 +237,8 @@ unsigned char SRPC_ICACHE_FLASH srpc_out_queue_item_count(void *srpc);
 
 char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc);
 char SRPC_ICACHE_FLASH srpc_iterate_device(void *_srpc);
+TsrpcIterateReason SRPC_ICACHE_FLASH
+srpc_get_last_iterate_reason(void *_srpc);
 
 char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                                     unsigned _supla_int_t rr_id);

@@ -670,7 +670,10 @@ TEST_F(SrpcTest, iterate_read_error_when_zero) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
+  ASSERT_EQ(SRPC_ITERATE_REASON_NONE, srpc_get_last_iterate_reason(srpc));
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_SOCKET_CLOSED,
+            srpc_get_last_iterate_reason(srpc));
 
   srpc_free(srpc);
   srpc = NULL;
@@ -692,6 +695,8 @@ TEST_F(SrpcTest, iterate_incorrect_data) {
 
   ASSERT_EQ(0, remote_version);
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_PROTOCOL_ERROR,
+            srpc_get_last_iterate_reason(srpc));
   ASSERT_EQ(0, remote_version);
 
   srpc_free(srpc);
@@ -715,6 +720,8 @@ TEST_F(SrpcTest, iterate_incorrect_version) {
 
   ASSERT_EQ(0, remote_version);
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_VERSION_ERROR,
+            srpc_get_last_iterate_reason(srpc));
   ASSERT_EQ(SUPLA_PROTO_VERSION + 1, remote_version);
 
   srpc_free(srpc);
@@ -767,6 +774,8 @@ TEST_F(SrpcTest, iterate_buffer_overflow) {
   data_read = NULL;
 
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_INPUT_BUFFER_OVERFLOW,
+            srpc_get_last_iterate_reason(srpc));
 
   srpc_free(srpc);
   srpc = NULL;
@@ -788,6 +797,7 @@ TEST_F(SrpcTest, iterate_no_data) {
   ASSERT_FALSE(srpc == NULL);
 
   ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_NONE, srpc_get_last_iterate_reason(srpc));
 
   srpc_free(srpc);
   srpc = NULL;

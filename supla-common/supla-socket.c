@@ -5,6 +5,7 @@
 
 #include <WinSock2.h>
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
@@ -26,6 +27,7 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <openssl/err.h>
@@ -56,6 +58,9 @@ typedef struct {
 #ifndef NOSSL
   SSL *ssl;
 #endif /*ifndef NOSSL*/
+
+  char client_ip[64];
+  int client_port;
 } TSuplaSocket;
 
 typedef struct {
@@ -348,6 +353,9 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
       } else {
         memset(supla_socket, 0, sizeof(TSuplaSocket));
         supla_socket->sfd = -1;
+        strncpy(supla_socket->client_ip, client_ip,
+                sizeof(supla_socket->client_ip) - 1);
+        supla_socket->client_port = ntohs(addr.sin_port);
 
         *ipv4 = htonl(addr.sin_addr.s_addr);
 
@@ -405,7 +413,38 @@ char ssocket_accept_ssl(void *_ssd, void *_supla_socket) {
       SSL_set_fd(supla_socket->ssl, supla_socket->sfd);
     }
 
-    if (n == -1 || SSL_accept(supla_socket->ssl) < 1) {
+    errno = 0;
+    int ssl_accept_result = n == -1 ? 0 : SSL_accept(supla_socket->ssl);
+
+    if (n == -1 || ssl_accept_result < 1) {
+      int ssl_error = n == -1 ? 0 : SSL_get_error(supla_socket->ssl,
+                                                  ssl_accept_result);
+      int saved_errno = errno;
+
+      const char *reason = "tls_handshake_failed";
+      int level = LOG_WARNING;
+      int ban = 1;
+
+      if (n == -1) {
+        reason = "tls_socket_setup_failed";
+        level = LOG_NOTICE;
+        ban = 0;
+      } else if (ssl_error == SSL_ERROR_WANT_READ ||
+                 ssl_error == SSL_ERROR_WANT_WRITE ||
+                 (ssl_error == SSL_ERROR_SYSCALL &&
+                  (saved_errno == 0 || saved_errno == EAGAIN ||
+                   saved_errno == EWOULDBLOCK || saved_errno == ETIMEDOUT))) {
+        reason = "tls_no_communication";
+        level = LOG_NOTICE;
+      }
+
+      supla_log(level,
+                "SECURITY: supla-port-abuse ban=%i reason=%s ip=%s port=%i "
+                "secure=1 client_port=%i client_sd=%i ssl_error=%i errno=%i",
+                ban, reason, supla_socket->client_ip, ssd->port,
+                supla_socket->client_port, supla_socket->sfd, ssl_error,
+                saved_errno);
+
       ssocket_supla_socket_close(supla_socket);
 
       if (n != -1) ssocket_ssl_error_log();
