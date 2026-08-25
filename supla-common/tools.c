@@ -31,6 +31,11 @@
 #include <openssl/evp.h>
 #endif /*__OPENSSL_TOOLS*/
 
+#ifndef __ANDROID__
+#include <errno.h>
+#include <sys/random.h>
+#endif /* _ANDROID__ */
+
 #ifdef __BCRYPT
 #include "crypt_blowfish/ow-crypt.h"
 #define BCRYPT_RABD_SIZE 16
@@ -502,31 +507,64 @@ int st_hue2rgb(double hue) {
   return st_hsv2rgb(hsv);
 }
 
-void st_random_alpha_string(char *buffer, int buffer_size) {
-  int a;
-
-  const char charset[] =
-      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-  char max = sizeof(charset) - 1;
-
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-
+static char st_get_random_bytes(unsigned char *buffer, size_t size) {
 #ifdef __ANDROID__
-  srand(tv.tv_usec);
-  gettimeofday(&tv, NULL);
 
-  for (a = 0; a < buffer_size - 1; a++) {
-    buffer[a] = charset[(rand() + tv.tv_usec) % max];  // NOLINT
-  }
+  arc4random_buf(buffer, size);
+  return true;
+
 #else
-  unsigned int seed = tv.tv_sec + tv.tv_usec;
-  for (a = 0; a < buffer_size - 1; a++) {
-    buffer[a] = charset[rand_r(&seed) % max];
-  }
-#endif
 
-  buffer[buffer_size - 1] = 0;
+  size_t pos = 0;
+
+  while (pos < size) {
+    ssize_t result = getrandom(buffer + pos, size - pos, 0);
+
+    if (result < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
+
+      return 0;
+    }
+
+    pos += result;
+  }
+
+  return 1;
+
+#endif
+}
+
+char st_random_alpha_string(char *buffer, size_t buffer_size) {
+  static const char charset[] =
+      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+  if (buffer == NULL || buffer_size == 0) {
+    return 0;
+  }
+
+  size_t pos = 0;
+
+  while (pos < buffer_size - 1) {
+    unsigned char random_buf[128];
+
+    if (!st_get_random_bytes(random_buf, sizeof(random_buf))) {
+      return 0;
+    }
+
+    for (size_t i = 0; i < sizeof(random_buf) && pos < buffer_size - 1; i++) {
+      // 248 = largest multiple of 62 less than 256.
+      // Rejecting 248..255 removes the modulo bias.
+      if (random_buf[i] < 248) {
+        buffer[pos++] = charset[random_buf[i] % 62];
+      }
+    }
+  }
+
+  buffer[pos] = '\0';
+
+  return 1;
 }
 
 void st_uuid_v4(char buffer[37]) {

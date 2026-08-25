@@ -56,7 +56,7 @@ _color_hsv_t st_rgb2hsv(int rgb);
 int st_hsv2rgb(_color_hsv_t in);
 int st_hue2rgb(double hue);
 
-void st_random_alpha_string(char *buffer, int buffer_size);
+char st_random_alpha_string(char *buffer, size_t buffer_size);
 void st_uuid_v4(char buffer[37]);
 
 #ifdef __BCRYPT
