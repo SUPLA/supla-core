@@ -700,12 +700,16 @@ TEST_F(RegisterDeviceEssentialTest, cantUdateDevice) {
 }
 
 void RegisterDeviceEssentialTest::CalcfgForSleepersTest(
-    int command, int expected_result_code) {
+    int command, int expected_result_code, bool sync_done_supported) {
   TDS_SuplaRegisterDevice_G register_device_g = {};
 
   register_device_g.GUID[0] = 1;
   register_device_g.AuthKey[0] = 2;
   register_device_g.Flags = SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED;
+
+  if (sync_done_supported) {
+    register_device_g.Flags |= SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED;
+  }
 
   snprintf(register_device_g.Email, SUPLA_EMAIL_MAXSIZE, "%s",
            "cheops@giza.com");
@@ -750,9 +754,13 @@ void RegisterDeviceEssentialTest::CalcfgForSleepersTest(
 
   EXPECT_CALL(dao, update_device).Times(1).WillOnce(Return(true));
 
-  EXPECT_CALL(rd, get_last_calcfg_command_importatnt_for_sleepers)
-      .Times(1)
-      .WillOnce(Return(command));
+  if (sync_done_supported) {
+    EXPECT_CALL(rd, get_last_calcfg_command_importatnt_for_sleepers).Times(0);
+  } else {
+    EXPECT_CALL(rd, get_last_calcfg_command_importatnt_for_sleepers)
+        .Times(1)
+        .WillOnce(Return(command));
+  }
   EXPECT_CALL(rd, on_registration_success).Times(1);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
@@ -778,14 +786,29 @@ TEST_F(RegisterDeviceEssentialTest, cfgModeRequested) {
                         SUPLA_RESULTCODE_CFG_MODE_REQUESTED);
 }
 
+TEST_F(RegisterDeviceEssentialTest, cfgModeRequestedWithSyncDoneSupported) {
+  CalcfgForSleepersTest(SUPLA_CALCFG_CMD_ENTER_CFG_MODE, SUPLA_RESULTCODE_TRUE,
+                        true);
+}
+
 TEST_F(RegisterDeviceEssentialTest, restartRequested) {
   CalcfgForSleepersTest(SUPLA_CALCFG_CMD_RESTART_DEVICE,
                         SUPLA_RESULTCODE_RESTART_REQUESTED);
 }
 
+TEST_F(RegisterDeviceEssentialTest, restartRequestedWithSyncDoneSupported) {
+  CalcfgForSleepersTest(SUPLA_CALCFG_CMD_RESTART_DEVICE, SUPLA_RESULTCODE_TRUE,
+                        true);
+}
+
 TEST_F(RegisterDeviceEssentialTest, identifyRequested) {
   CalcfgForSleepersTest(SUPLA_CALCFG_CMD_IDENTIFY_DEVICE,
                         SUPLA_RESULTCODE_IDENTIFY_REQUESTED);
+}
+
+TEST_F(RegisterDeviceEssentialTest, identifyRequestedWithSyncDoneSupported) {
+  CalcfgForSleepersTest(SUPLA_CALCFG_CMD_IDENTIFY_DEVICE, SUPLA_RESULTCODE_TRUE,
+                        true);
 }
 
 TEST_F(RegisterDeviceEssentialTest,

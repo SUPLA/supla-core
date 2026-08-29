@@ -546,7 +546,8 @@ void supla_abstract_register_device::register_device(
 
   int resultcode = SUPLA_RESULTCODE_TRUE;
 
-  if ((device_flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED)) {
+  if ((device_flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
+      !(device_flags & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED)) {
     switch (get_last_calcfg_command_importatnt_for_sleepers()) {
       case SUPLA_CALCFG_CMD_ENTER_CFG_MODE:
         resultcode = SUPLA_RESULTCODE_CFG_MODE_REQUESTED;
