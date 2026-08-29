@@ -391,8 +391,7 @@ void supla_connection::log_security_event(int level, const char *reason,
 }
 
 void supla_connection::log_security_event_with_uint(int level,
-                                                    const char *reason,
-                                                    int ban,
+                                                    const char *reason, int ban,
                                                     const char *value_name,
                                                     unsigned int value) {
   if (security_event_logged) {
@@ -446,8 +445,8 @@ void supla_connection::execute(void *sthread) {
                                  "connection_closed_without_communication", 1);
             } else if (!remote_call_received) {
               log_security_event(
-                  LOG_NOTICE, "connection_closed_after_incomplete_communication",
-                  0);
+                  LOG_NOTICE,
+                  "connection_closed_after_incomplete_communication", 0);
             } else if (object == nullptr) {
               log_security_event(LOG_NOTICE,
                                  "connection_closed_before_registration", 0);
@@ -468,12 +467,11 @@ void supla_connection::execute(void *sthread) {
       if (now.tv_sec - init_time.tv_sec >= REGISTER_WAIT_TIMEOUT) {
         terminate();
         if (bytes_received == 0) {
-          log_security_event(LOG_NOTICE, "registration_timeout_no_communication",
-                             1);
-        } else if (!remote_call_received) {
           log_security_event(LOG_NOTICE,
-                             "registration_timeout_incomplete_communication",
-                             0);
+                             "registration_timeout_no_communication", 1);
+        } else if (!remote_call_received) {
+          log_security_event(
+              LOG_NOTICE, "registration_timeout_incomplete_communication", 0);
         } else if (object == nullptr) {
           log_security_event(LOG_NOTICE,
                              "registration_timeout_before_registration", 0);
