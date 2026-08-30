@@ -16,6 +16,7 @@ CPP_SRCS += \
 ../src/device/value/channel_general_purpose_base_value.cpp \
 ../src/device/value/channel_general_purpose_measurement_value.cpp \
 ../src/device/value/channel_general_purpose_meter_value.cpp \
+../src/device/value/channel_general_purpose_text_value.cpp \
 ../src/device/value/channel_hp_thermostat_value.cpp \
 ../src/device/value/channel_hvac_value.cpp \
 ../src/device/value/channel_hvac_value_with_temphum.cpp \
@@ -43,6 +44,7 @@ CPP_DEPS += \
 ./src/device/value/channel_general_purpose_base_value.d \
 ./src/device/value/channel_general_purpose_measurement_value.d \
 ./src/device/value/channel_general_purpose_meter_value.d \
+./src/device/value/channel_general_purpose_text_value.d \
 ./src/device/value/channel_hp_thermostat_value.d \
 ./src/device/value/channel_hvac_value.d \
 ./src/device/value/channel_hvac_value_with_temphum.d \
@@ -70,6 +72,7 @@ OBJS += \
 ./src/device/value/channel_general_purpose_base_value.o \
 ./src/device/value/channel_general_purpose_measurement_value.o \
 ./src/device/value/channel_general_purpose_meter_value.o \
+./src/device/value/channel_general_purpose_text_value.o \
 ./src/device/value/channel_hp_thermostat_value.o \
 ./src/device/value/channel_hvac_value.o \
 ./src/device/value/channel_hvac_value_with_temphum.o \

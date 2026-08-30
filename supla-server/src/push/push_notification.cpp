@@ -129,7 +129,8 @@ string supla_push_notification::apply_template_data(string str) {
     pattern.append("}");
 
     size_t pos = 0;
-    string v = supla_json_helper::to_string(value);
+    string v = value.is_string() ? value.get<string>()
+                                 : supla_json_helper::to_string(value);
 
     while ((pos = str.find(pattern, pos)) != string::npos) {
       str.replace(pos, pattern.length(), v);

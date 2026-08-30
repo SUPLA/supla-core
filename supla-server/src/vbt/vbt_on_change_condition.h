@@ -30,21 +30,32 @@ enum _vbt_operator_e { op_unknown, op_eq, op_ne, op_le, op_lt, op_gt, op_ge };
 class supla_vbt_on_change_condition {
  private:
   double value;
+  std::string text_value;
   _vbt_var_name_e var_name;
   _vbt_operator_e op;
   _vbt_operator_e resume_op;
   int duration_sec;
   double saved_old_value;
+  std::string saved_old_text;
   struct timeval condition_met_at;
   double resume_value;
   bool paused;
   bool on_change;
+  bool text_comparison;
 
-  bool get_operator_and_value(cJSON *root, _vbt_operator_e *op, double *value);
+  bool get_operator_and_value(cJSON *root, _vbt_operator_e *op, double *value,
+                              std::string *text_value,
+                              bool *text_comparison);
 
   bool is_condition_met(_vbt_operator_e op, double old_value, double new_value,
                         double expected);
+  bool is_condition_met(_vbt_operator_e op, const std::string &old_value,
+                        const std::string &new_value,
+                        const std::string &expected);
   bool is_condition_met(double old_value, double new_value,
+                        _supla_int64_t *milliseconds_left);
+  bool is_condition_met(const std::string &old_value,
+                        const std::string &new_value,
                         _supla_int64_t *milliseconds_left);
   _supla_int64_t ms_left(const struct timeval &now);
 

@@ -13,6 +13,7 @@ CPP_SRCS += \
 ../src/device/extended_value/channel_extended_value_factory.cpp \
 ../src/device/extended_value/channel_hp_thermostat_ev_decorator.cpp \
 ../src/device/extended_value/channel_ic_extended_value.cpp \
+../src/device/extended_value/channel_general_purpose_text_extended_value.cpp \
 ../src/device/extended_value/channel_multi_extended_value.cpp \
 ../src/device/extended_value/channel_state_extended_value.cpp \
 ../src/device/extended_value/channel_thermostat_extended_value.cpp \
@@ -28,6 +29,7 @@ CPP_DEPS += \
 ./src/device/extended_value/channel_extended_value_factory.d \
 ./src/device/extended_value/channel_hp_thermostat_ev_decorator.d \
 ./src/device/extended_value/channel_ic_extended_value.d \
+./src/device/extended_value/channel_general_purpose_text_extended_value.d \
 ./src/device/extended_value/channel_multi_extended_value.d \
 ./src/device/extended_value/channel_state_extended_value.d \
 ./src/device/extended_value/channel_thermostat_extended_value.d \
@@ -43,6 +45,7 @@ OBJS += \
 ./src/device/extended_value/channel_extended_value_factory.o \
 ./src/device/extended_value/channel_hp_thermostat_ev_decorator.o \
 ./src/device/extended_value/channel_ic_extended_value.o \
+./src/device/extended_value/channel_general_purpose_text_extended_value.o \
 ./src/device/extended_value/channel_multi_extended_value.o \
 ./src/device/extended_value/channel_state_extended_value.o \
 ./src/device/extended_value/channel_thermostat_extended_value.o \

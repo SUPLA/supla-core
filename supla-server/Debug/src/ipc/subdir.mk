@@ -21,6 +21,7 @@ CPP_SRCS += \
 ../src/ipc/abstract_get_em_value_command.cpp \
 ../src/ipc/abstract_get_facade_blind_value_command.cpp \
 ../src/ipc/abstract_get_gpm_value_command.cpp \
+../src/ipc/abstract_get_gpt_value_command.cpp \
 ../src/ipc/abstract_get_humidity_command.cpp \
 ../src/ipc/abstract_get_hvac_value_command.cpp \
 ../src/ipc/abstract_get_ic_value_command.cpp \
@@ -88,6 +89,7 @@ CPP_SRCS += \
 ../src/ipc/get_em_value_command.cpp \
 ../src/ipc/get_facade_blind_value_command.cpp \
 ../src/ipc/get_gpm_value_command.cpp \
+../src/ipc/get_gpt_value_command.cpp \
 ../src/ipc/get_humidity_command.cpp \
 ../src/ipc/get_hvac_value_command.cpp \
 ../src/ipc/get_ic_value_command.cpp \
@@ -160,6 +162,7 @@ CPP_DEPS += \
 ./src/ipc/abstract_get_em_value_command.d \
 ./src/ipc/abstract_get_facade_blind_value_command.d \
 ./src/ipc/abstract_get_gpm_value_command.d \
+./src/ipc/abstract_get_gpt_value_command.d \
 ./src/ipc/abstract_get_humidity_command.d \
 ./src/ipc/abstract_get_hvac_value_command.d \
 ./src/ipc/abstract_get_ic_value_command.d \
@@ -227,6 +230,7 @@ CPP_DEPS += \
 ./src/ipc/get_em_value_command.d \
 ./src/ipc/get_facade_blind_value_command.d \
 ./src/ipc/get_gpm_value_command.d \
+./src/ipc/get_gpt_value_command.d \
 ./src/ipc/get_humidity_command.d \
 ./src/ipc/get_hvac_value_command.d \
 ./src/ipc/get_ic_value_command.d \
@@ -299,6 +303,7 @@ OBJS += \
 ./src/ipc/abstract_get_em_value_command.o \
 ./src/ipc/abstract_get_facade_blind_value_command.o \
 ./src/ipc/abstract_get_gpm_value_command.o \
+./src/ipc/abstract_get_gpt_value_command.o \
 ./src/ipc/abstract_get_humidity_command.o \
 ./src/ipc/abstract_get_hvac_value_command.o \
 ./src/ipc/abstract_get_ic_value_command.o \
@@ -366,6 +371,7 @@ OBJS += \
 ./src/ipc/get_em_value_command.o \
 ./src/ipc/get_facade_blind_value_command.o \
 ./src/ipc/get_gpm_value_command.o \
+./src/ipc/get_gpt_value_command.o \
 ./src/ipc/get_humidity_command.o \
 ./src/ipc/get_hvac_value_command.o \
 ./src/ipc/get_ic_value_command.o \

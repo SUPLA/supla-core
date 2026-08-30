@@ -190,7 +190,7 @@ string supla_tsdb_access_provider::time_to_timestamp_string(const time_t& t) {
 
 bool supla_tsdb_access_provider::check_db_version(void) {
   string found;
-  string expected = "20250625101351";
+  string expected = "20260101000000";
 
   bool _is_connected = is_connected();
   if (!_is_connected && !connect()) {
