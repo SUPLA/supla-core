@@ -31,7 +31,9 @@ class IdentifyDeviceCommandMock
   explicit IdentifyDeviceCommandMock(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  MOCK_METHOD2(identify_device, bool(int user_id, int device_id));
+  MOCK_METHOD4(identify_device, bool(int user_id, int device_id,
+                                     unsigned _supla_int64_t *queued_at,
+                                     bool *waiting_for_result));
 };
 
 } /* namespace testing */

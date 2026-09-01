@@ -21,12 +21,15 @@
 
 #include <string>
 
-#include "ipc/abstract_ipc_command.h"
+#include "ipc/abstract_calcfg_ipc_command.h"
 
-class supla_abstract_factory_reset_command : public supla_abstract_ipc_command {
+class supla_abstract_factory_reset_command
+    : public supla_abstract_calcfg_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual bool factory_reset(int user_id, int device_id) = 0;
+  virtual bool factory_reset(int user_id, int device_id,
+                             unsigned _supla_int64_t *queued_at,
+                             bool *waiting_for_result) = 0;
 
  public:
   explicit supla_abstract_factory_reset_command(

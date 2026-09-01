@@ -755,9 +755,9 @@ void RegisterDeviceEssentialTest::CalcfgForSleepersTest(
   EXPECT_CALL(dao, update_device).Times(1).WillOnce(Return(true));
 
   if (sync_done_supported) {
-    EXPECT_CALL(rd, get_last_calcfg_command_importatnt_for_sleepers).Times(0);
+    EXPECT_CALL(rd, take_latest_calcfg_command_for_sleepers).Times(0);
   } else {
-    EXPECT_CALL(rd, get_last_calcfg_command_importatnt_for_sleepers)
+    EXPECT_CALL(rd, take_latest_calcfg_command_for_sleepers)
         .Times(1)
         .WillOnce(Return(command));
   }
@@ -896,7 +896,7 @@ TEST_F(RegisterDeviceEssentialTest,
   EXPECT_CALL(dao, update_channel_functions(1, 25, 0x1 | 0x2)).Times(1);
 
   EXPECT_CALL(rd, on_registration_success).Times(1);
-  EXPECT_CALL(rd, get_last_calcfg_command_importatnt_for_sleepers).Times(0);
+  EXPECT_CALL(rd, take_latest_calcfg_command_for_sleepers).Times(0);
 
   EXPECT_CALL(srpcAdapter, sd_async_registerdevice_result(_))
       .Times(1)

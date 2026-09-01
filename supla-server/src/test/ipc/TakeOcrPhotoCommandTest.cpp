@@ -39,7 +39,7 @@ TEST_F(TakeOcrPhotoCommandTest, noData) {
 }
 
 TEST_F(TakeOcrPhotoCommandTest, TakeOcrPhotoWithSuccess) {
-  EXPECT_CALL(*cmd, take_ocr_photo(10, 20, 30)).WillOnce(Return(true));
+  EXPECT_CALL(*cmd, take_ocr_photo(10, 20, 30, _, _)).WillOnce(Return(true));
 
   commandProcessingTest("TAKE-OCR-PHOTO:10,20,30\n", "OK:30\n");
 }

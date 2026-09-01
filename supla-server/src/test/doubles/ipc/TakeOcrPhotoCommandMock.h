@@ -30,8 +30,9 @@ class TakeOcrPhotoCommandMock : public supla_abstract_take_ocr_photo_command {
   explicit TakeOcrPhotoCommandMock(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  MOCK_METHOD3(take_ocr_photo,
-               bool(int user_id, int device_id, int channel_id));
+  MOCK_METHOD5(take_ocr_photo, bool(int user_id, int device_id, int channel_id,
+                                    unsigned _supla_int64_t *queued_at,
+                                    bool *waiting_for_result));
 };
 
 } /* namespace testing */

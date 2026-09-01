@@ -55,13 +55,11 @@ bool supla_register_device::get_authkey_hash(
   return get_device_dao()->get_authkey_hash(id, authkey_hash, is_null);
 }
 
-int supla_register_device::get_last_calcfg_command_importatnt_for_sleepers(
-    void) {
+int supla_register_device::take_latest_calcfg_command_for_sleepers(void) {
   supla_user *user = supla_user::find(get_user_id(), true);
   if (user) {
     shared_ptr<supla_device> prev = user->get_devices()->get(get_device_id());
-    return prev != nullptr ? prev->last_calcfg_command_importatnt_for_sleepers
-                           : 0;
+    return prev != nullptr ? prev->take_latest_calcfg_command() : 0;
   }
   return 0;
 }
@@ -107,12 +105,13 @@ void supla_register_device::after_registration_success(void) {
 
   device->send_config_to_device();
 
-  // Sending the configuration ends with sending the
-  // SUPLA_SD_CALL_DEVICE_SYNC_DONE message. If you add something here that
-  // sends something to the device, remember to include
-  // SUPLA_SD_CALL_DEVICE_SYNC_DONE. The channel configuration is sent in
-  // fragments, so it's best to have it done on the end.
-  device->get_channels()->send_configs_to_device();
+  // The channel configuration is sent in fragments. Any new message sent to
+  // the device during registration must be added here, after channel config
+  // sending is finished and before SUPLA_SD_CALL_DEVICE_SYNC_DONE.
+  device->get_channels()->send_configs_to_device([device](void) -> void {
+    device->send_queued_calcfg_requests();
+    device->send_sync_done_to_device();
+  });
 }
 
 void supla_register_device::register_device(

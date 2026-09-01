@@ -30,11 +30,13 @@ supla_restart_device_command::supla_restart_device_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_restart_device_command(socket_adapter) {}
 
-bool supla_restart_device_command::restart_device(int user_id, int device_id) {
+bool supla_restart_device_command::restart_device(
+    int user_id, int device_id, unsigned _supla_int64_t *queued_at,
+    bool *waiting_for_result) {
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, 0);
   if (device != nullptr) {
-    return device->calcfg_restart();
+    return device->calcfg_restart(queued_at, waiting_for_result);
   }
   return false;
 }

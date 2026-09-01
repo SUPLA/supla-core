@@ -26,7 +26,9 @@
 class supla_identify_device_command
     : public supla_abstract_identify_device_command {
  protected:
-  virtual bool identify_device(int user_id, int device_id);
+  virtual bool identify_device(int user_id, int device_id,
+                               unsigned _supla_int64_t *queued_at,
+                               bool *waiting_for_result);
 
  public:
   explicit supla_identify_device_command(

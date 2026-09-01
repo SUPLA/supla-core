@@ -16,23 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_TAKE_OCR_PHOTO_COMMAND_H_
-#define SUPLA_TAKE_OCR_PHOTO_COMMAND_H_
+#include "ipc/abstract_calcfg_ipc_command.h"
 
-#include <string>
+supla_abstract_calcfg_ipc_command::supla_abstract_calcfg_ipc_command(
+    supla_abstract_ipc_socket_adapter *socket_adapter)
+    : supla_abstract_ipc_command(socket_adapter) {}
 
-#include "ipc/abstract_take_ocr_photo_command.h"
-
-class supla_take_ocr_photo_command
-    : public supla_abstract_take_ocr_photo_command {
- protected:
-  virtual bool take_ocr_photo(int user_id, int device_id, int channel_id,
-                              unsigned _supla_int64_t *queued_at,
-                              bool *waiting_for_result);
-
- public:
-  explicit supla_take_ocr_photo_command(
-      supla_abstract_ipc_socket_adapter *socket_adapter);
-};
-
-#endif /* SUPLA_TAKE_OCR_PHOTO_COMMAND_H_ */
+void supla_abstract_calcfg_ipc_command::send_calcfg_result(
+    const char *ok_result, int ok_id, int queued_id,
+    unsigned _supla_int64_t since, bool waiting_for_result) {
+  if (since) {
+    send_result(waiting_for_result ? "WAITING_FOR_RESULT:" : "QUEUED:",
+                queued_id, since);
+  } else {
+    send_result(ok_result, ok_id);
+  }
+}

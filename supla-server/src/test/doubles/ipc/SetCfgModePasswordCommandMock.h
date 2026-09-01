@@ -31,8 +31,10 @@ class SetCfgModePasswordCommandMock
   explicit SetCfgModePasswordCommandMock(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  MOCK_METHOD3(set_cfg_mode_password,
-               bool(int user_id, int device_id, const char *password));
+  MOCK_METHOD5(set_cfg_mode_password,
+               bool(int user_id, int device_id, const char *password,
+                    unsigned _supla_int64_t *queued_at,
+                    bool *waiting_for_result));
 };
 
 } /* namespace testing */

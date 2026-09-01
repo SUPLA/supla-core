@@ -19,6 +19,7 @@
 #ifndef DEVICECHANNELS_H_
 #define DEVICECHANNELS_H_
 
+#include <functional>
 #include <list>
 #include <map>
 #include <vector>
@@ -89,7 +90,9 @@ class supla_device_channels {
           on_calcfg);
 
   bool calcfg_cmd(int channel_id, unsigned _supla_int64_t flag,
-                  bool superuser_authorized, _supla_int_t cmd);
+                  bool superuser_authorized, _supla_int_t cmd,
+                  unsigned _supla_int64_t *queued_at = nullptr,
+                  bool *waiting_for_result = nullptr);
 
  public:
   explicit supla_device_channels(supla_abstract_device_dao *dao,
@@ -228,13 +231,25 @@ class supla_device_channels {
       const supla_caller &caller, int channel_id, int group_id,
       unsigned char eol,
       const supla_action_hvac_setpoint_temperatures *temperatures);
-  bool reset_counters(int channel_id);
-  bool take_ocr_photo(int channel_id);
-  bool mute_alarm_sound(int channel_id);
-  bool restart_subdevice(int channel_id);
-  bool identify_subdevice(int channel_id);
+  bool reset_counters(int channel_id,
+                      unsigned _supla_int64_t *queued_at = nullptr,
+                      bool *waiting_for_result = nullptr);
+  bool take_ocr_photo(int channel_id,
+                      unsigned _supla_int64_t *queued_at = nullptr,
+                      bool *waiting_for_result = nullptr);
+  bool mute_alarm_sound(int channel_id,
+                        unsigned _supla_int64_t *queued_at = nullptr,
+                        bool *waiting_for_result = nullptr);
+  bool restart_subdevice(int channel_id,
+                         unsigned _supla_int64_t *queued_at = nullptr,
+                         bool *waiting_for_result = nullptr);
+  bool identify_subdevice(int channel_id,
+                          unsigned _supla_int64_t *queued_at = nullptr,
+                          bool *waiting_for_result = nullptr);
   bool recalibrate(int channel_id, const supla_caller &caller,
-                   bool superuser_authorized);
+                   bool superuser_authorized,
+                   unsigned _supla_int64_t *queued_at = nullptr,
+                   bool *waiting_for_result = nullptr);
   void timer_arm(const supla_caller &caller, int channel_id, int group_id,
                  unsigned char eol, unsigned char On, unsigned int duration_ms);
   supla_json_config *get_json_config(int channel_id);
@@ -248,7 +263,7 @@ class supla_device_channels {
                          supla_abstract_channel_value *)>
           filter);
 
-  void send_configs_to_device(void);
+  void send_configs_to_device(std::function<void(void)> on_finished);
   void on_set_channel_config_result(TSDS_SetChannelConfigResult *result);
   void iterate(void);
   unsigned _supla_int64_t channel_config_batch_time_left_usec(void);

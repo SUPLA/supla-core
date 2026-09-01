@@ -34,7 +34,7 @@ class supla_register_device : public supla_abstract_register_device {
   virtual bool get_authkey_hash(int id, char authkey_hash[BCRYPT_HASH_MAXSIZE],
                                 bool *is_null);
 
-  virtual int get_last_calcfg_command_importatnt_for_sleepers(void);
+  virtual int take_latest_calcfg_command_for_sleepers(void);
   virtual void on_registration_success(void);
   virtual void after_registration_success(void);
 

@@ -39,13 +39,13 @@ TEST_F(FactoryResetCommandTest, noData) {
 }
 
 TEST_F(FactoryResetCommandTest, factoryResetWithFailure) {
-  EXPECT_CALL(*cmd, factory_reset(10, 20)).WillOnce(Return(false));
+  EXPECT_CALL(*cmd, factory_reset(10, 20, _, _)).WillOnce(Return(false));
 
   commandProcessingTest("FACTORY-RESET:10,20\n", "UNKNOWN:20\n");
 }
 
 TEST_F(FactoryResetCommandTest, factoryResetWithSuccess) {
-  EXPECT_CALL(*cmd, factory_reset(10, 20)).WillOnce(Return(true));
+  EXPECT_CALL(*cmd, factory_reset(10, 20, _, _)).WillOnce(Return(true));
 
   commandProcessingTest("FACTORY-RESET:10,20\n", "OK:20\n");
 }

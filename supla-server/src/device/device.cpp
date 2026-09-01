@@ -51,7 +51,6 @@ supla_device_call_handler_collection supla_device::call_handler_collection;
 
 supla_device::supla_device(supla_connection *connection)
     : supla_abstract_connection_object(connection) {
-  this->last_calcfg_command_importatnt_for_sleepers = 0;
   this->channels = nullptr;
   this->flags = 0;
   this->manufacturer_id = 0;
@@ -189,7 +188,10 @@ bool supla_device::funclist_contains_function(int funcList, int func) {
   return false;
 }
 
-void supla_device::set_flags(int flags) { this->flags = flags; }
+void supla_device::set_flags(int flags) {
+  this->flags = flags;
+  calcfg_queue.set_device_flags(flags);
+}
 
 int supla_device::get_flags(void) { return flags; }
 
@@ -205,7 +207,8 @@ void supla_device::set_channels(supla_device_channels *channels) {
 
 supla_device_channels *supla_device::get_channels(void) { return channels; }
 
-bool supla_device::enter_cfg_mode(void) {
+bool supla_device::enter_cfg_mode(unsigned _supla_int64_t *queued_at,
+                                  bool *waiting_for_result) {
   if (flags & SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE) {
     TSD_DeviceCalCfgRequest request = {};
 
@@ -213,12 +216,7 @@ bool supla_device::enter_cfg_mode(void) {
     request.Command = SUPLA_CALCFG_CMD_ENTER_CFG_MODE;
     request.SuperUserAuthorized = true;
 
-    srpc_sd_async_device_calcfg_request(
-        get_connection()->get_srpc_adapter()->get_srpc(), &request);
-
-    last_calcfg_command_importatnt_for_sleepers = request.Command;
-
-    return true;
+    return send_calcfg_request(&request, queued_at, waiting_for_result);
   }
 
   return false;
@@ -257,8 +255,62 @@ void supla_device::send_sync_done_to_device(void) {
   }
 }
 
+bool supla_device::send_calcfg_request(TSD_DeviceCalCfgRequest *request,
+                                       unsigned _supla_int64_t *queued_at,
+                                       bool *waiting_for_result) {
+  return calcfg_queue.send_calcfg_request(
+      request,
+      [this](TSD_DeviceCalCfgRequest *request) -> bool {
+        if (!request || !get_connection() ||
+            !get_connection()->get_srpc_adapter()) {
+          return false;
+        }
+
+        get_connection()->get_srpc_adapter()->sd_async_device_calcfg_request(
+            request);
+        return true;
+      },
+      queued_at, waiting_for_result);
+}
+
+void supla_device::send_queued_calcfg_requests(void) {
+  calcfg_queue.send_queued_calcfg_requests(
+      [this](TSD_DeviceCalCfgRequest *request) -> bool {
+        if (!request || !get_connection() ||
+            !get_connection()->get_srpc_adapter()) {
+          return false;
+        }
+
+        get_connection()->get_srpc_adapter()->sd_async_device_calcfg_request(
+            request);
+        return true;
+      });
+}
+
+void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
+  calcfg_queue.on_calcfg_result(result);
+}
+
+void supla_device::take_calcfg_queue_from(supla_device *device) {
+  if (!device || device == this) {
+    return;
+  }
+
+  calcfg_queue.take_calcfg_queue_from(&device->calcfg_queue);
+}
+
+int supla_device::take_latest_calcfg_command(void) {
+  return calcfg_queue.take_latest_calcfg_command();
+}
+
+size_t supla_device::get_calcfg_queue_size(void) {
+  return calcfg_queue.get_calcfg_queue_size();
+}
+
 bool supla_device::pair_subdevice(const supla_caller &caller,
-                                  bool superuser_authorized) {
+                                  bool superuser_authorized,
+                                  unsigned _supla_int64_t *queued_at,
+                                  bool *waiting_for_result) {
   if (get_connection() &&
       (get_flags() & SUPLA_DEVICE_FLAG_CALCFG_SUBDEVICE_PAIRING)) {
     TSD_DeviceCalCfgRequest request = {};
@@ -279,9 +331,7 @@ bool supla_device::pair_subdevice(const supla_caller &caller,
     request.SenderID = caller.convert_to_sender_id();
     request.SuperUserAuthorized = superuser_authorized ? 1 : 0;
 
-    get_connection()->get_srpc_adapter()->sd_async_device_calcfg_request(
-        &request);
-    return true;
+    return send_calcfg_request(&request, queued_at, waiting_for_result);
   }
 
   return false;
@@ -290,7 +340,8 @@ bool supla_device::pair_subdevice(const supla_caller &caller,
 bool supla_device::calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd,
                               unsigned _supla_int_t data_size,
                               char data[SUPLA_CALCFG_DATA_MAXSIZE],
-                              bool importat_for_sleepers) {
+                              unsigned _supla_int64_t *queued_at,
+                              bool *waiting_for_result) {
   if (get_flags() & flag) {
     TSD_DeviceCalCfgRequest request = {};
 
@@ -303,32 +354,31 @@ bool supla_device::calcfg_cmd(unsigned _supla_int64_t flag, _supla_int_t cmd,
       request.DataSize = data_size;
     }
 
-    get_connection()->get_srpc_adapter()->sd_async_device_calcfg_request(
-        &request);
-
-    if (importat_for_sleepers) {
-      last_calcfg_command_importatnt_for_sleepers = cmd;
-    }
-
-    return true;
+    return send_calcfg_request(&request, queued_at, waiting_for_result);
   }
 
   return false;
 }
 
-bool supla_device::calcfg_identify(void) {
+bool supla_device::calcfg_identify(unsigned _supla_int64_t *queued_at,
+                                   bool *waiting_for_result) {
   return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_IDENTIFY_DEVICE,
-                    SUPLA_CALCFG_CMD_IDENTIFY_DEVICE, 0, nullptr, true);
+                    SUPLA_CALCFG_CMD_IDENTIFY_DEVICE, 0, nullptr, queued_at,
+                    waiting_for_result);
 }
 
-bool supla_device::calcfg_restart(void) {
+bool supla_device::calcfg_restart(unsigned _supla_int64_t *queued_at,
+                                  bool *waiting_for_result) {
   return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_RESTART_DEVICE,
-                    SUPLA_CALCFG_CMD_RESTART_DEVICE, 0, nullptr, true);
+                    SUPLA_CALCFG_CMD_RESTART_DEVICE, 0, nullptr, queued_at,
+                    waiting_for_result);
 }
 
-bool supla_device::check_updates(void) {
+bool supla_device::check_updates(unsigned _supla_int64_t *queued_at,
+                                 bool *waiting_for_result) {
   if (calcfg_cmd(SUPLA_DEVICE_FLAG_AUTOMATIC_FIRMWARE_UPDATE_SUPPORTED,
-                 SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE, 0, nullptr, false)) {
+                 SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE, 0, nullptr, queued_at,
+                 waiting_for_result)) {
     supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     device_json_ota_updates json;
@@ -340,18 +390,23 @@ bool supla_device::check_updates(void) {
   return false;
 }
 
-bool supla_device::start_update(void) {
+bool supla_device::start_update(unsigned _supla_int64_t *queued_at,
+                                bool *waiting_for_result) {
   return calcfg_cmd(SUPLA_DEVICE_FLAG_AUTOMATIC_FIRMWARE_UPDATE_SUPPORTED,
-                    SUPLA_CALCFG_CMD_START_FIRMWARE_UPDATE, 0, nullptr, false);
+                    SUPLA_CALCFG_CMD_START_FIRMWARE_UPDATE, 0, nullptr,
+                    queued_at, waiting_for_result);
 }
 
-bool supla_device::factory_reset(void) {
+bool supla_device::factory_reset(unsigned _supla_int64_t *queued_at,
+                                 bool *waiting_for_result) {
   return calcfg_cmd(SUPLA_DEVICE_FLAG_CALCFG_FACTORY_RESET_SUPPORTED,
                     SUPLA_CALCFG_CMD_RESET_TO_FACTORY_SETTINGS, 0, nullptr,
-                    false);
+                    queued_at, waiting_for_result);
 }
 
-bool supla_device::set_cfg_mode_password(const char *password) {
+bool supla_device::set_cfg_mode_password(const char *password,
+                                         unsigned _supla_int64_t *queued_at,
+                                         bool *waiting_for_result) {
   if (password) {
     size_t len = strnlen(password, SUPLA_PASSWORD_MAXSIZE);
     if (len > 0 && len < SUPLA_PASSWORD_MAXSIZE) {
@@ -362,7 +417,7 @@ bool supla_device::set_cfg_mode_password(const char *password) {
       return calcfg_cmd(
           SUPLA_DEVICE_FLAG_CALCFG_SET_CFG_MODE_PASSWORD_SUPPORTED,
           SUPLA_CALCFG_CMD_SET_CFG_MODE_PASSWORD, sizeof(data), (char *)&data,
-          false);
+          queued_at, waiting_for_result);
     }
   }
 

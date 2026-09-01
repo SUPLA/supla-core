@@ -30,12 +30,14 @@ supla_set_cfg_mode_password_command::supla_set_cfg_mode_password_command(
     : supla_abstract_set_cfg_mode_password_command(socket_adapter) {}
 
 bool supla_set_cfg_mode_password_command::set_cfg_mode_password(
-    int user_id, int device_id, const char *password) {
+    int user_id, int device_id, const char *password,
+    unsigned _supla_int64_t *queued_at, bool *waiting_for_result) {
   supla_user *user = supla_user::get_user(user_id);
   if (user) {
     shared_ptr<supla_device> device = user->get_devices()->get(device_id);
     if (device) {
-      return device->set_cfg_mode_password(password);
+      return device->set_cfg_mode_password(password, queued_at,
+                                           waiting_for_result);
     }
   }
 

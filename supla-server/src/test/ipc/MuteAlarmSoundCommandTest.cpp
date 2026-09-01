@@ -39,7 +39,7 @@ TEST_F(MuteAlarmSoundCommandTest, noData) {
 }
 
 TEST_F(MuteAlarmSoundCommandTest, TakeOcrPhotoWithSuccess) {
-  EXPECT_CALL(*cmd, mute_alarm_sound(10, 20, 30)).WillOnce(Return(true));
+  EXPECT_CALL(*cmd, mute_alarm_sound(10, 20, 30, _, _)).WillOnce(Return(true));
 
   commandProcessingTest("MUTE-ALARM-SOUND:10,20,30\n", "OK:30\n");
 }

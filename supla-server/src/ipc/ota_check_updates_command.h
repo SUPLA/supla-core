@@ -26,7 +26,9 @@
 class supla_ota_check_updates_command
     : public supla_abstract_ota_check_updates_command {
  protected:
-  virtual bool check_updates(int user_id, int device_id);
+  virtual bool check_updates(int user_id, int device_id,
+                             unsigned _supla_int64_t *queued_at,
+                             bool *waiting_for_result);
 
  public:
   explicit supla_ota_check_updates_command(
