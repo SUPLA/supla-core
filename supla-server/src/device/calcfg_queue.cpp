@@ -18,11 +18,17 @@
 
 #include "device/calcfg_queue.h"
 
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 #include <algorithm>
+#include <vector>
 
+#include "cJSON.h"
+#include "device.h"
+#include "device/device_dao.h"
+#include "helper/json_helper.h"
 #include "lck.h"
 
 unsigned _supla_int64_t supla_device_calcfg_queue::current_time(void) {
@@ -32,6 +38,48 @@ unsigned _supla_int64_t supla_device_calcfg_queue::current_time(void) {
 void supla_device_calcfg_queue::lock(void) const { lck_lock(lck); }
 
 void supla_device_calcfg_queue::unlock(void) const { lck_unlock(lck); }
+
+bool supla_device_calcfg_queue::persist(void) {
+  int user_id = get_user_id();
+  int device_id = get_device_id();
+
+  if (!user_id || !device_id) {
+    return false;
+  }
+
+  char *json = to_json();
+  if (!json) {
+    return false;
+  }
+
+  bool result = save_snapshot(user_id, device_id, json);
+  free(json);
+
+  return result;
+}
+
+int supla_device_calcfg_queue::get_user_id(void) const {
+  return device ? device->get_user_id() : 0;
+}
+
+int supla_device_calcfg_queue::get_device_id(void) const {
+  return device ? device->get_id() : 0;
+}
+
+int supla_device_calcfg_queue::get_device_flags(void) const {
+  return device ? device->get_flags() : 0;
+}
+
+bool supla_device_calcfg_queue::save_snapshot(int user_id, int device_id,
+                                              const char *queue_json) {
+  if (!queue_json || !user_id || !device_id) {
+    return false;
+  }
+
+  supla_mariadb_access_provider dba;
+  supla_device_dao dao(&dba);
+  return dao.set_calcfg_queue(user_id, device_id, queue_json);
+}
 
 bool supla_device_calcfg_queue::same_slot(const TSD_DeviceCalCfgRequest &a,
                                           const TSD_DeviceCalCfgRequest &b) {
@@ -43,8 +91,7 @@ bool supla_device_calcfg_queue::same_request(const TSD_DeviceCalCfgRequest &a,
                                              const TSD_DeviceCalCfgRequest &b) {
   if (a.SenderID != b.SenderID || a.ChannelNumber != b.ChannelNumber ||
       a.Command != b.Command || a.DataType != b.DataType ||
-      a.DataSize != b.DataSize ||
-      a.DataSize > SUPLA_CALCFG_DATA_MAXSIZE) {
+      a.DataSize != b.DataSize || a.DataSize > SUPLA_CALCFG_DATA_MAXSIZE) {
     return false;
   }
 
@@ -66,6 +113,58 @@ bool supla_device_calcfg_queue::send_calcfg_request_now(
   }
 
   return send_now(request);
+}
+
+const char *supla_device_calcfg_queue::command_to_string(_supla_int_t command) {
+  switch (command) {
+    case SUPLA_CALCFG_CMD_ENTER_CFG_MODE:
+      return "ENTER_CFG_MODE";
+    case SUPLA_CALCFG_CMD_RESET_TO_FACTORY_SETTINGS:
+      return "RESET_TO_FACTORY_SETTINGS";
+    case SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE:
+      return "CHECK_FIRMWARE_UPDATE";
+    case SUPLA_CALCFG_CMD_START_FIRMWARE_UPDATE:
+      return "START_FIRMWARE_UPDATE";
+    case SUPLA_CALCFG_CMD_START_SECURITY_UPDATE:
+      return "START_SECURITY_UPDATE";
+    case SUPLA_CALCFG_CMD_SET_CFG_MODE_PASSWORD:
+      return "SET_CFG_MODE_PASSWORD";
+    case SUPLA_CALCFG_CMD_IDENTIFY_DEVICE:
+      return "IDENTIFY_DEVICE";
+    case SUPLA_CALCFG_CMD_RESTART_DEVICE:
+      return "RESTART_DEVICE";
+    case SUPLA_CALCFG_CMD_TAKE_OCR_PHOTO:
+      return "TAKE_OCR_PHOTO";
+    case SUPLA_CALCFG_CMD_MUTE_ALARM_SOUND:
+      return "MUTE_ALARM_SOUND";
+  }
+
+  return "UNKNOWN";
+}
+
+const char *supla_device_calcfg_queue::data_type_to_string(
+    _supla_int_t data_type) {
+  switch (data_type) {
+    case 0:
+      return "NONE";
+    case SUPLA_CALCFG_DATATYPE_RS_SETTINGS:
+      return "RS_SETTINGS";
+    case SUPLA_CALCFG_DATATYPE_FB_SETTINGS:
+      return "FB_SETTINGS";
+  }
+
+  return "UNKNOWN";
+}
+
+const char *supla_device_calcfg_queue::item_state_to_string(item_state state) {
+  switch (state) {
+    case item_state_waiting_to_send:
+      return "WAITING_TO_SEND";
+    case item_state_waiting_for_result:
+      return "WAITING_FOR_RESULT";
+  }
+
+  return "UNKNOWN";
 }
 
 std::vector<supla_device_calcfg_queue::item>::iterator
@@ -94,9 +193,9 @@ supla_device_calcfg_queue::item supla_device_calcfg_queue::make_item(
   return result;
 }
 
-supla_device_calcfg_queue::supla_device_calcfg_queue(void) {
+supla_device_calcfg_queue::supla_device_calcfg_queue(supla_device *device) {
   lck = lck_init();
-  device_flags = 0;
+  this->device = device;
 }
 
 supla_device_calcfg_queue::~supla_device_calcfg_queue(void) { lck_free(lck); }
@@ -146,21 +245,13 @@ bool supla_device_calcfg_queue::requires_response(
   return false;
 }
 
-void supla_device_calcfg_queue::set_device_flags(int device_flags) {
-  lock();
-  this->device_flags = device_flags;
-  unlock();
-}
-
 bool supla_device_calcfg_queue::should_queue_calcfg(
     TSD_DeviceCalCfgRequest *request) const {
   if (!request || !is_queueable_command(request->Command)) {
     return false;
   }
 
-  lock();
-  int flags = device_flags;
-  unlock();
+  int flags = get_device_flags();
 
   if (!(flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED)) {
     return false;
@@ -174,20 +265,13 @@ bool supla_device_calcfg_queue::should_queue_calcfg(
 }
 
 bool supla_device_calcfg_queue::single_item_queue(void) const {
-  lock();
-  bool result = (device_flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
-                !(device_flags & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED);
-  unlock();
-
-  return result;
+  int flags = get_device_flags();
+  return (flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
+         !(flags & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED);
 }
 
 bool supla_device_calcfg_queue::sync_done_supported(void) const {
-  lock();
-  bool result = device_flags & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED;
-  unlock();
-
-  return result;
+  return get_device_flags() & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED;
 }
 
 bool supla_device_calcfg_queue::empty(void) const {
@@ -225,6 +309,7 @@ supla_device_calcfg_queue::enqueue_result supla_device_calcfg_queue::enqueue(
     items.clear();
     items.push_back(new_item);
     unlock();
+    persist();
     return result;
   }
 
@@ -242,6 +327,7 @@ supla_device_calcfg_queue::enqueue_result supla_device_calcfg_queue::enqueue(
     result.status = enqueue_status_overwritten;
     result.queued_at = new_item.queued_at;
     unlock();
+    persist();
     return result;
   }
 
@@ -250,19 +336,25 @@ supla_device_calcfg_queue::enqueue_result supla_device_calcfg_queue::enqueue(
   result.queued_at = new_item.queued_at;
 
   unlock();
+  persist();
 
   return result;
 }
 
 bool supla_device_calcfg_queue::send_calcfg_request(
     TSD_DeviceCalCfgRequest *request, const send_callback &send_now,
-    unsigned _supla_int64_t *queued_at, bool *waiting_for_result) {
+    unsigned _supla_int64_t *queued_at, bool *waiting_for_result,
+    enqueue_status *queue_status) {
   if (queued_at) {
     *queued_at = 0;
   }
 
   if (waiting_for_result) {
     *waiting_for_result = false;
+  }
+
+  if (queue_status) {
+    *queue_status = enqueue_status_rejected;
   }
 
   if (!request) {
@@ -272,6 +364,9 @@ bool supla_device_calcfg_queue::send_calcfg_request(
   if (should_queue_calcfg(request)) {
     supla_device_calcfg_queue::enqueue_result result =
         enqueue(*request, single_item_queue());
+    if (queue_status) {
+      *queue_status = result.status;
+    }
 
     switch (result.status) {
       case enqueue_status_queued:
@@ -303,39 +398,53 @@ bool supla_device_calcfg_queue::send_calcfg_request(
   return send_calcfg_request_now(request, send_now);
 }
 
-void supla_device_calcfg_queue::send_queued_calcfg_requests(
+bool supla_device_calcfg_queue::send_queued_calcfg_requests(
     const send_callback &send_now) {
   if (!sync_done_supported()) {
-    return;
+    return false;
   }
 
   std::vector<supla_device_calcfg_queue::item> items = get_items_to_send();
+  bool result = false;
 
   for (auto it = items.begin(); it != items.end(); ++it) {
     if (!send_calcfg_request_now(&it->request, send_now)) {
-      return;
+      if (result) {
+        persist();
+      }
+      return result;
     }
 
-    on_item_sent(*it, current_time());
+    if (on_item_sent(*it, current_time())) {
+      result = true;
+    }
   }
+
+  if (result) {
+    persist();
+  }
+
+  return result;
 }
 
-void supla_device_calcfg_queue::on_calcfg_result(
+bool supla_device_calcfg_queue::on_calcfg_result(
     TDS_DeviceCalCfgResult *result) {
   if (result) {
-    on_result(*result);
+    return on_result(*result);
   }
+
+  return false;
 }
 
-void supla_device_calcfg_queue::take_calcfg_queue_from(
+bool supla_device_calcfg_queue::take_calcfg_queue_from(
     supla_device_calcfg_queue *queue) {
   if (!queue || queue == this) {
-    return;
+    return false;
   }
 
   std::vector<supla_device_calcfg_queue::item> source_items = queue->take_all();
   if (source_items.empty()) {
-    return;
+    return false;
   }
 
   bool use_single_item_queue = single_item_queue();
@@ -350,6 +459,8 @@ void supla_device_calcfg_queue::take_calcfg_queue_from(
     }
   }
   unlock();
+
+  return true;
 }
 
 int supla_device_calcfg_queue::take_latest_calcfg_command(void) {
@@ -362,6 +473,7 @@ int supla_device_calcfg_queue::take_latest_calcfg_command(void) {
   int result = items.back().request.Command;
   items.clear();
   unlock();
+  persist();
 
   return result;
 }
@@ -387,10 +499,11 @@ supla_device_calcfg_queue::get_items_to_send(void) const {
   return result;
 }
 
-void supla_device_calcfg_queue::on_item_sent(
+bool supla_device_calcfg_queue::on_item_sent(
     const supla_device_calcfg_queue::item &sent_item,
     unsigned _supla_int64_t sent_at) {
   lock();
+  bool result = false;
 
   for (auto it = items.begin(); it != items.end(); ++it) {
     if (it->state != item_state_waiting_to_send ||
@@ -406,20 +519,27 @@ void supla_device_calcfg_queue::on_item_sent(
       items.erase(it);
     }
 
+    result = true;
     break;
   }
 
   unlock();
+  return result;
 }
 
-void supla_device_calcfg_queue::on_result(
+bool supla_device_calcfg_queue::on_result(
     const TDS_DeviceCalCfgResult &result) {
   lock();
   std::vector<item>::iterator it = find_result(result);
   if (it != items.end()) {
     items.erase(it);
+    unlock();
+    persist();
+    return true;
   }
   unlock();
+
+  return false;
 }
 
 int supla_device_calcfg_queue::take_latest_command(void) {
@@ -432,6 +552,7 @@ int supla_device_calcfg_queue::take_latest_command(void) {
   int result = items.back().request.Command;
   items.clear();
   unlock();
+  persist();
   return result;
 }
 
@@ -460,4 +581,49 @@ void supla_device_calcfg_queue::append(const std::vector<item> &items) {
     this->items.push_back(*it);
   }
   unlock();
+}
+
+char *supla_device_calcfg_queue::to_json(void) const {
+  cJSON *root = cJSON_CreateArray();
+  if (!root) {
+    return nullptr;
+  }
+
+  std::vector<item> snapshot = get_all();
+
+  for (auto it = snapshot.begin(); it != snapshot.end(); ++it) {
+    cJSON *json_item = cJSON_CreateObject();
+    if (!json_item) {
+      cJSON_Delete(root);
+      return nullptr;
+    }
+
+    cJSON_AddNumberToObject(json_item, "sender_id", it->request.SenderID);
+    cJSON_AddNumberToObject(json_item, "channel_number",
+                            it->request.ChannelNumber);
+    cJSON_AddStringToObject(json_item, "command",
+                            command_to_string(it->request.Command));
+    cJSON_AddNumberToObject(json_item, "command_code", it->request.Command);
+    cJSON_AddBoolToObject(json_item, "super_user_authorized",
+                          it->request.SuperUserAuthorized != 0);
+    cJSON_AddStringToObject(json_item, "data_type",
+                            data_type_to_string(it->request.DataType));
+    cJSON_AddNumberToObject(json_item, "data_type_code", it->request.DataType);
+    cJSON_AddNumberToObject(json_item, "data_size", it->request.DataSize);
+    cJSON_AddStringToObject(json_item, "enqueue_status",
+                            item_state_to_string(it->state));
+    supla_json_helper::add_zulu_time_to_object(json_item, "queued_at",
+                                               (time_t)it->queued_at);
+    supla_json_helper::add_zulu_time_to_object(json_item, "sent_at",
+                                               (time_t)it->sent_at);
+    cJSON_AddBoolToObject(json_item, "requires_response",
+                          requires_response(it->request));
+
+    cJSON_AddItemToArray(root, json_item);
+  }
+
+  char *result = cJSON_PrintUnformatted(root);
+  cJSON_Delete(root);
+
+  return result;
 }

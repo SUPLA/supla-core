@@ -50,7 +50,7 @@ using std::shared_ptr;
 supla_device_call_handler_collection supla_device::call_handler_collection;
 
 supla_device::supla_device(supla_connection *connection)
-    : supla_abstract_connection_object(connection) {
+    : supla_abstract_connection_object(connection), calcfg_queue(this) {
   this->channels = nullptr;
   this->flags = 0;
   this->manufacturer_id = 0;
@@ -190,7 +190,6 @@ bool supla_device::funclist_contains_function(int funcList, int func) {
 
 void supla_device::set_flags(int flags) {
   this->flags = flags;
-  calcfg_queue.set_device_flags(flags);
 }
 
 int supla_device::get_flags(void) { return flags; }

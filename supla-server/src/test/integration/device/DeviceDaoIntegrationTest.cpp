@@ -436,6 +436,61 @@ TEST_F(DeviceDaoIntegrationTest, updateDevicePairingResult) {
   EXPECT_EQ(result, "c\n0\n");
 }
 
+TEST_F(DeviceDaoIntegrationTest, setAndClearCalCfgQueue) {
+  string result = "";
+  char queue_json[] =
+      "[{\"sender_id\":123,\"channel_number\":-1,"
+      "\"command\":\"IDENTIFY_DEVICE\",\"command_code\":9300,"
+      "\"super_user_authorized\":true,\"data_type\":\"NONE\","
+      "\"data_type_code\":0,\"data_size\":0,"
+      "\"enqueue_status\":\"WAITING_TO_SEND\","
+      "\"queued_at\":\"1970-01-01T00:01:40Z\","
+      "\"sent_at\":null,\"requires_response\":false}]";
+
+  EXPECT_TRUE(dao->set_calcfg_queue(2, 146, queue_json));
+
+  sqlQuery(
+      "SELECT queue FROM supla_calcfg_queue WHERE user_id = 2 AND "
+      "iodevice_id = 146",
+      &result);
+
+  EXPECT_EQ(result, string("queue\n") + queue_json + "\n");
+
+  char updated_queue_json[] =
+      "[{\"sender_id\":123,\"channel_number\":-1,"
+      "\"command\":\"SET_CFG_MODE_PASSWORD\",\"command_code\":9050,"
+      "\"super_user_authorized\":true,\"data_type\":\"NONE\","
+      "\"data_type_code\":0,\"data_size\":32,"
+      "\"enqueue_status\":\"WAITING_FOR_RESULT\","
+      "\"queued_at\":\"1970-01-01T00:01:40Z\","
+      "\"sent_at\":\"1970-01-01T00:03:20Z\","
+      "\"requires_response\":true},"
+      "{\"sender_id\":456,\"channel_number\":3,"
+      "\"command\":\"IDENTIFY_DEVICE\",\"command_code\":9300,"
+      "\"super_user_authorized\":false,\"data_type\":\"NONE\","
+      "\"data_type_code\":0,\"data_size\":0,"
+      "\"enqueue_status\":\"WAITING_TO_SEND\","
+      "\"queued_at\":\"1970-01-01T00:05:00Z\","
+      "\"sent_at\":null,\"requires_response\":false}]";
+
+  EXPECT_TRUE(dao->set_calcfg_queue(2, 146, updated_queue_json));
+
+  result = "";
+  sqlQuery(
+      "SELECT queue FROM supla_calcfg_queue WHERE user_id = 2 AND "
+      "iodevice_id = 146",
+      &result);
+
+  EXPECT_EQ(result, string("queue\n") + updated_queue_json + "\n");
+
+  EXPECT_TRUE(dao->set_calcfg_queue(2, 146, "[]"));
+
+  result = "";
+  sqlQuery("SELECT COUNT(*) c FROM supla_calcfg_queue", &result);
+
+  EXPECT_EQ(result, "c\n0\n");
+}
+
 TEST_F(DeviceDaoIntegrationTest, subDevice) {
   string result = "";
   sqlQuery("SELECT COUNT(*) c FROM supla_subdevice", &result);

@@ -6,17 +6,32 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <stdexcept>
+#include "tools.h"
 
 #define MAX_STR_LEN 100
 
 using std::map;
 using std::string;
-using std::stringstream;
 
 supla_json_helper::supla_json_helper(void) {}
 
 supla_json_helper::~supla_json_helper(void) {}
+
+// static
+cJSON *supla_json_helper::add_zulu_time_to_object(cJSON *parent,
+                                                  const char *name,
+                                                  time_t timestamp) {
+  if (!parent || !name) {
+    return nullptr;
+  }
+
+  char buffer[64] = {};
+  if (timestamp && st_timestamp_to_zulu_time(buffer, timestamp) && buffer[0]) {
+    return cJSON_AddStringToObject(parent, name, buffer);
+  }
+
+  return cJSON_AddNullToObject(parent, name);
+}
 
 bool supla_json_helper::equal_ci(const char *str1, const char *str2) {
   if (!str1 || !str2) {
@@ -193,29 +208,4 @@ bool supla_json_helper::merge(cJSON *src_parent, cJSON *dst_parent,
   }
 
   return dst_changed;
-}
-
-// static
-string supla_json_helper::to_string(const nlohmann::json &j) {
-  string result;
-
-  try {
-    if (j.is_string()) {
-      result = j.get<std::string>();
-
-    } else if (j.is_number_integer()) {
-      result = std::to_string(j.get<int>());
-
-    } else if (j.is_number_float()) {
-      result = std::to_string(j.get<double>());
-
-    } else if (j.is_boolean()) {
-      result = j.get<bool>() ? "true" : "false";
-    } else {
-      result = j.dump();
-    }
-  } catch (const std::exception &e) {
-  }
-
-  return result;
 }

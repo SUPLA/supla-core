@@ -19,6 +19,14 @@ TEST_F(ToolsTest, st_file_exists) {
   ASSERT_EQ(0, st_file_exists(NULL));
 }
 
+TEST_F(ToolsTest, st_timestamp_to_zulu_time) {
+  char buffer[64];
+
+  ASSERT_STREQ("1970-01-01T00:01:40Z",
+               st_timestamp_to_zulu_time(buffer, 100));
+  ASSERT_EQ(NULL, st_timestamp_to_zulu_time(NULL, 100));
+}
+
 TEST_F(ToolsTest, pid_file) {
   char file[] = "/tmp/QDZgKvbTrNh8.pid";
 

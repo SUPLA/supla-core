@@ -27,6 +27,8 @@ DeviceStub::DeviceStub(supla_connection *connection)
 
 void DeviceStub::set_id(int id) { supla_device::set_id(id); }
 
+void DeviceStub::set_flags(int flags) { supla_device::set_flags(flags); }
+
 void DeviceStub::set_guid(const char guid[SUPLA_GUID_SIZE]) {
   supla_device::set_guid(guid);
 }

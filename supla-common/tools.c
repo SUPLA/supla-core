@@ -368,11 +368,22 @@ time_t st_get_utc_time(void) {
 }
 
 char *st_get_zulu_time(char buffer[64]) {
+  return st_timestamp_to_zulu_time(buffer, time(0));
+}
+
+char *st_timestamp_to_zulu_time(char buffer[64], time_t timestamp) {
+  if (!buffer) {
+    return NULL;
+  }
+
   memset(buffer, 0, 64);
 
-  time_t now = time(0);
-  struct tm *tm = gmtime(&now);  // NOLINT
-  strftime(buffer, 64, "%Y-%m-%dT%H:%M:%SZ", tm);
+  struct tm tm_utc = {0};
+  if (!gmtime_r(&timestamp, &tm_utc)) {
+    return buffer;
+  }
+
+  strftime(buffer, 64, "%Y-%m-%dT%H:%M:%SZ", &tm_utc);
 
   return buffer;
 }

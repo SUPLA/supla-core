@@ -322,7 +322,8 @@ INSERT INTO `migration_versions` VALUES
 ('SuplaBundle\\Migrations\\Migration\\Version20251102210217','2025-11-03 11:13:00',20),
 ('SuplaBundle\\Migrations\\Migration\\Version20251112105645','2025-11-14 18:43:41',27),
 ('SuplaBundle\\Migrations\\Migration\\Version20260310222704','2026-03-13 14:11:27',40),
-('SuplaBundle\\Migrations\\Migration\\Version20260330150252','2026-03-20 17:08:27',40);
+('SuplaBundle\\Migrations\\Migration\\Version20260330150252','2026-03-20 17:08:27',40),
+('SuplaBundle\\Migrations\\Migration\\Version20260901155422','2026-09-01 15:54:22',40);
 
 /*!40000 ALTER TABLE `migration_versions` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -494,6 +495,34 @@ CREATE TABLE `supla_auto_gate_closing` (
 LOCK TABLES `supla_auto_gate_closing` WRITE;
 /*!40000 ALTER TABLE `supla_auto_gate_closing` DISABLE KEYS */;
 /*!40000 ALTER TABLE `supla_auto_gate_closing` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `supla_calcfg_queue`
+--
+
+DROP TABLE IF EXISTS `supla_calcfg_queue`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `supla_calcfg_queue` (
+  `iodevice_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `queue` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `updated_at` datetime NOT NULL COMMENT '(DC2Type:utcdatetime)',
+  PRIMARY KEY (`iodevice_id`),
+  KEY `IDX_CALCFG_QUEUE_USER` (`user_id`),
+  CONSTRAINT `FK_CALCFG_QUEUE_DEVICE` FOREIGN KEY (`iodevice_id`) REFERENCES `supla_iodevice` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_CALCFG_QUEUE_USER` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `supla_calcfg_queue`
+--
+
+LOCK TABLES `supla_calcfg_queue` WRITE;
+/*!40000 ALTER TABLE `supla_calcfg_queue` DISABLE KEYS */;
+/*!40000 ALTER TABLE `supla_calcfg_queue` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --

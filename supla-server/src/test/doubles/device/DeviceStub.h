@@ -28,6 +28,7 @@ class DeviceStub : public supla_device {
  public:
   explicit DeviceStub(supla_connection *connection);
   void set_id(int id);
+  void set_flags(int flags);
   void set_guid(const char guid[SUPLA_GUID_SIZE]);
   void set_user(supla_user *user);
   void set_channels(supla_device_channels *channels);

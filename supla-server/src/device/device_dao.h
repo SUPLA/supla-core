@@ -132,6 +132,9 @@ class supla_device_dao : public supla_abstract_device_dao {
   virtual void update_device_pairing_result(int device_id,
                                             char *pairing_result);
 
+  virtual bool set_calcfg_queue(int user_id, int device_id,
+                                const char *queue_json);
+
   virtual void set_subdevice_details(int device_id,
                                      TDS_SubdeviceDetails *details);
 

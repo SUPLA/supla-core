@@ -7,6 +7,7 @@
 #define suplatools_H_
 
 #include <stdlib.h>
+#include <time.h>
 
 #include "proto.h"
 
@@ -49,6 +50,7 @@ char st_read_authkey_from_file(char *file, char *AuthKey, char create);
 
 time_t st_get_utc_time(void);
 
+char *st_timestamp_to_zulu_time(char buffer[64], time_t timestamp);
 char *st_get_zulu_time(char buffer[64]);
 char *st_get_datetime_str(char buffer[64]);
 

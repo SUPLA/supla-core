@@ -26,6 +26,8 @@
 
 #include "proto.h"
 
+class supla_device;
+
 class supla_device_calcfg_queue {
  public:
   typedef std::function<bool(TSD_DeviceCalCfgRequest *request)> send_callback;
@@ -55,10 +57,15 @@ class supla_device_calcfg_queue {
  private:
   std::vector<item> items;
   mutable void *lck;
-  int device_flags;
+  supla_device *device;
 
   void lock(void) const;
   void unlock(void) const;
+  bool persist(void);
+  int get_user_id(void) const;
+  int get_device_id(void) const;
+  int get_device_flags(void) const;
+  bool save_snapshot(int user_id, int device_id, const char *queue_json);
   static unsigned _supla_int64_t current_time(void);
   static bool same_slot(const TSD_DeviceCalCfgRequest &a,
                         const TSD_DeviceCalCfgRequest &b);
@@ -68,7 +75,10 @@ class supla_device_calcfg_queue {
                                const TDS_DeviceCalCfgResult &result);
   static bool send_calcfg_request_now(TSD_DeviceCalCfgRequest *request,
                                       const send_callback &send_now);
-  void on_item_sent(const item &sent_item, unsigned _supla_int64_t sent_at);
+  static const char *command_to_string(_supla_int_t command);
+  static const char *data_type_to_string(_supla_int_t data_type);
+  static const char *item_state_to_string(item_state state);
+  bool on_item_sent(const item &sent_item, unsigned _supla_int64_t sent_at);
   bool sync_done_supported(void) const;
 
   std::vector<item>::iterator find_same_slot(
@@ -80,13 +90,12 @@ class supla_device_calcfg_queue {
   supla_device_calcfg_queue &operator=(const supla_device_calcfg_queue &queue);
 
  public:
-  supla_device_calcfg_queue(void);
+  explicit supla_device_calcfg_queue(supla_device *device = nullptr);
   virtual ~supla_device_calcfg_queue(void);
 
   static bool is_queueable_command(_supla_int_t command);
   static bool is_important_for_sleepers(const TSD_DeviceCalCfgRequest &request);
   static bool requires_response(const TSD_DeviceCalCfgRequest &request);
-  void set_device_flags(int device_flags);
   bool should_queue_calcfg(TSD_DeviceCalCfgRequest *request) const;
   bool single_item_queue(void) const;
 
@@ -97,17 +106,19 @@ class supla_device_calcfg_queue {
   bool send_calcfg_request(TSD_DeviceCalCfgRequest *request,
                            const send_callback &send_now,
                            unsigned _supla_int64_t *queued_at = nullptr,
-                           bool *waiting_for_result = nullptr);
-  void send_queued_calcfg_requests(const send_callback &send_now);
-  void on_calcfg_result(TDS_DeviceCalCfgResult *result);
-  void take_calcfg_queue_from(supla_device_calcfg_queue *queue);
+                           bool *waiting_for_result = nullptr,
+                           enqueue_status *queue_status = nullptr);
+  bool send_queued_calcfg_requests(const send_callback &send_now);
+  bool on_calcfg_result(TDS_DeviceCalCfgResult *result);
+  bool take_calcfg_queue_from(supla_device_calcfg_queue *queue);
   int take_latest_calcfg_command(void);
   size_t get_calcfg_queue_size(void) const;
-  void on_result(const TDS_DeviceCalCfgResult &result);
+  bool on_result(const TDS_DeviceCalCfgResult &result);
   int take_latest_command(void);
   std::vector<item> get_all(void) const;
   std::vector<item> take_all(void);
   void append(const std::vector<item> &items);
+  char *to_json(void) const;
 };
 
 #endif /* DEVICE_CALCFG_QUEUE_H_ */

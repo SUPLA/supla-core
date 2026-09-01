@@ -5,8 +5,8 @@
 #define JSON_HELPER_H_
 
 #include <map>
-#include <nlohmann/json.hpp>
 #include <string>
+#include <time.h>
 
 #include "cJSON.h"
 #include "proto.h"
@@ -30,7 +30,8 @@ class supla_json_helper {
  public:
   supla_json_helper(void);
   virtual ~supla_json_helper(void);
-  static std::string to_string(const nlohmann::json &j);
+  static cJSON *add_zulu_time_to_object(cJSON *parent, const char *name,
+                                        time_t timestamp);
 };
 
 #endif /* JSON_CONFIG_H_ */

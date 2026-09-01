@@ -1641,6 +1641,70 @@ void supla_device_dao::update_device_pairing_result(int device_id,
   }
 }
 
+bool supla_device_dao::set_calcfg_queue(int user_id, int device_id,
+                                        const char *queue_json) {
+  if (!user_id || !device_id) {
+    return false;
+  }
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return false;
+  }
+
+  bool result = false;
+  MYSQL_STMT *stmt = nullptr;
+
+  if (!queue_json || queue_json[0] == 0 ||
+      strncmp(queue_json, "[]", 3) == 0) {
+    MYSQL_BIND pbind[2] = {};
+
+    pbind[0].buffer_type = MYSQL_TYPE_LONG;
+    pbind[0].buffer = (char *)&user_id;
+
+    pbind[1].buffer_type = MYSQL_TYPE_LONG;
+    pbind[1].buffer = (char *)&device_id;
+
+    const char sql[] =
+        "DELETE FROM `supla_calcfg_queue` WHERE `user_id` = ? "
+        "AND `iodevice_id` = ?";
+
+    result = dba->stmt_execute((void **)&stmt, sql, pbind, 2, true);
+  } else {
+    MYSQL_BIND pbind[3] = {};
+
+    pbind[0].buffer_type = MYSQL_TYPE_LONG;
+    pbind[0].buffer = (char *)&user_id;
+
+    pbind[1].buffer_type = MYSQL_TYPE_LONG;
+    pbind[1].buffer = (char *)&device_id;
+
+    pbind[2].buffer_type = MYSQL_TYPE_STRING;
+    pbind[2].buffer = (char *)queue_json;
+    pbind[2].buffer_length = strnlen(queue_json, 65535);
+
+    const char sql[] =
+        "INSERT INTO `supla_calcfg_queue` "
+        "(`user_id`, `iodevice_id`, `queue`, `updated_at`) "
+        "VALUES (?, ?, ?, UTC_TIMESTAMP()) "
+        "ON DUPLICATE KEY UPDATE `user_id` = VALUES(`user_id`), "
+        "`queue` = VALUES(`queue`), `updated_at` = UTC_TIMESTAMP()";
+
+    result = dba->stmt_execute((void **)&stmt, sql, pbind, 3, true);
+  }
+
+  if (stmt != nullptr) {
+    mysql_stmt_close(stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
+}
+
 void supla_device_dao::set_subdevice_details(int device_id,
                                              TDS_SubdeviceDetails *details) {
   if (!device_id || !details) {
