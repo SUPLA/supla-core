@@ -3720,6 +3720,12 @@ ALTER DATABASE `supla_test` CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci ;
 ALTER TABLE `supla_iodevice` ADD `pairing_result` VARCHAR(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `channel_addition_blocked`;
 DROP PROCEDURE IF EXISTS `supla_update_device_pairing_result`;
 CREATE PROCEDURE `supla_update_device_pairing_result`(IN `_iodevice_id` INT, IN `_pairing_result` VARCHAR(512) CHARSET utf8mb4) NOT DETERMINISTIC CONTAINS SQL SQL SECURITY DEFINER UPDATE `supla_iodevice` SET `pairing_result` = _pairing_result WHERE `id` = _iodevice_id;
+DROP PROCEDURE IF EXISTS `supla_delete_calcfg_queue`;
+CREATE PROCEDURE `supla_delete_calcfg_queue`(IN `_user_id` INT, IN `_iodevice_id` INT)
+    NOT DETERMINISTIC MODIFIES SQL DATA SQL SECURITY DEFINER
+DELETE FROM `supla_calcfg_queue`
+WHERE `user_id` = _user_id
+  AND `iodevice_id` = _iodevice_id;
 
 --
 -- Final view structure for view `supla_v_accessid_active`

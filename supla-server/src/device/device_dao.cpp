@@ -1666,9 +1666,7 @@ bool supla_device_dao::set_calcfg_queue(int user_id, int device_id,
     pbind[1].buffer_type = MYSQL_TYPE_LONG;
     pbind[1].buffer = (char *)&device_id;
 
-    const char sql[] =
-        "DELETE FROM `supla_calcfg_queue` WHERE `user_id` = ? "
-        "AND `iodevice_id` = ?";
+    const char sql[] = "CALL `supla_delete_calcfg_queue`(?, ?)";
 
     result = dba->stmt_execute((void **)&stmt, sql, pbind, 2, true);
   } else {
