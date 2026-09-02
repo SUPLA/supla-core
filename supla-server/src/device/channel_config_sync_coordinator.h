@@ -26,6 +26,7 @@
 
 #include "proto.h"
 
+class supla_device;
 class supla_device_channel;
 class supla_channel_config_sync_coordinator {
  private:
@@ -40,9 +41,10 @@ class supla_channel_config_sync_coordinator {
     supla_device_channel *channel;
     std::vector<TSDS_SetChannelConfig> configs;
     bool wait_for_result;
-    std::function<void(void)> on_finished;
+    std::function<void(supla_device *)> on_finished;
   };
 
+  supla_device *device;
   std::vector<supla_device_channel *> *channels;
   sync_state state;
   size_t batch_pos;
@@ -50,7 +52,7 @@ class supla_channel_config_sync_coordinator {
   int current_channel_number;
   unsigned _supla_int64_t batch_started_at_usec;
   unsigned _supla_int64_t batch_timeout_usec;
-  std::function<void(void)> on_finished;
+  std::function<void(supla_device *)> on_finished;
   void *lck;
 
   unsigned _supla_int64_t now_usec(void);
@@ -65,10 +67,14 @@ class supla_channel_config_sync_coordinator {
   explicit supla_channel_config_sync_coordinator(
       unsigned _supla_int64_t batch_timeout_usec =
           DEFAULT_BATCH_TIMEOUT_USEC);
+  supla_channel_config_sync_coordinator(
+      supla_device *device,
+      unsigned _supla_int64_t batch_timeout_usec =
+          DEFAULT_BATCH_TIMEOUT_USEC);
   virtual ~supla_channel_config_sync_coordinator(void);
 
   void start(std::vector<supla_device_channel *> *channels,
-             std::function<void(void)> on_finished);
+             std::function<void(supla_device *)> on_finished);
   void on_set_channel_config_result(TSDS_SetChannelConfigResult *result);
   void iterate(void);
   unsigned _supla_int64_t time_left_usec(void);

@@ -108,10 +108,11 @@ void supla_register_device::after_registration_success(void) {
   // The channel configuration is sent in fragments. Any new message sent to
   // the device during registration must be added here, after channel config
   // sending is finished and before SUPLA_SD_CALL_DEVICE_SYNC_DONE.
-  device->get_channels()->send_configs_to_device([device](void) -> void {
-    device->send_queued_calcfg_requests();
-    device->send_sync_done_to_device();
-  });
+  device->get_channels()->send_configs_to_device(
+      [](supla_device *device) -> void {
+        device->send_queued_calcfg_requests();
+        device->send_sync_done_to_device();
+      });
 }
 
 void supla_register_device::register_device(

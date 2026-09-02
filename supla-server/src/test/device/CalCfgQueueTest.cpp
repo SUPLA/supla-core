@@ -19,10 +19,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "device/calcfg_queue.h"
+#include "device/channel_config_sync_coordinator.h"
 #include "gtest/gtest.h"
 #include "doubles/device/DeviceStub.h"
 
@@ -630,6 +632,36 @@ TEST(CalCfgQueueTest, calcfgResultsCanArriveOutOfOrder) {
 
   queue.on_result(result_for(items.at(0)));
   EXPECT_TRUE(queue.empty());
+}
+
+TEST(ChannelConfigSyncCoordinatorTest, releasesFinishedCallback) {
+  supla_channel_config_sync_coordinator coordinator;
+  std::shared_ptr<int> retained = std::make_shared<int>(1);
+  std::weak_ptr<int> weak_retained = retained;
+  bool called = false;
+
+  coordinator.start(nullptr, [retained, &called](supla_device *device) -> void {
+    EXPECT_EQ(nullptr, device);
+    called = true;
+  });
+
+  EXPECT_TRUE(called);
+  EXPECT_EQ(1, retained.use_count());
+
+  retained.reset();
+  EXPECT_TRUE(weak_retained.expired());
+}
+
+TEST(ChannelConfigSyncCoordinatorTest, passesDeviceToFinishedCallback) {
+  DeviceStub device(nullptr);
+  supla_channel_config_sync_coordinator coordinator(&device);
+  supla_device *finished_device = nullptr;
+
+  coordinator.start(nullptr, [&finished_device](supla_device *device) -> void {
+    finished_device = device;
+  });
+
+  EXPECT_EQ(&device, finished_device);
 }
 
 }  // namespace testing

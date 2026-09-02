@@ -263,7 +263,7 @@ class supla_device_channels {
                          supla_abstract_channel_value *)>
           filter);
 
-  void send_configs_to_device(std::function<void(void)> on_finished);
+  void send_configs_to_device(std::function<void(supla_device *)> on_finished);
   void on_set_channel_config_result(TSDS_SetChannelConfigResult *result);
   void iterate(void);
   unsigned _supla_int64_t channel_config_batch_time_left_usec(void);

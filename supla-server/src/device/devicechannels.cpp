@@ -51,9 +51,8 @@ using std::vector;
 supla_device_channels::supla_device_channels(
     supla_abstract_device_dao *dao, supla_device *device,
     TDS_SuplaDeviceChannel_B *schannel_b, TDS_SuplaDeviceChannel_E *schannel_e,
-    int channel_count) {
-  this->device = device;
-
+    int channel_count)
+    : device(device), channel_config_sync_coordinator(device) {
   channels = dao->get_channels(device);
 
   for (int a = 0; a < channel_count; a++) {
@@ -1650,7 +1649,7 @@ vector<supla_channel_fragment> supla_device_channels::get_fragments(void) {
 }
 
 void supla_device_channels::send_configs_to_device(
-    std::function<void(void)> on_finished) {
+    std::function<void(supla_device *)> on_finished) {
   channel_config_sync_coordinator.start(&channels, on_finished);
 }
 

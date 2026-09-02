@@ -28,7 +28,12 @@
 using std::vector;
 
 supla_channel_config_sync_coordinator::supla_channel_config_sync_coordinator(
-    unsigned _supla_int64_t batch_timeout_usec) {
+    unsigned _supla_int64_t batch_timeout_usec)
+    : supla_channel_config_sync_coordinator(nullptr, batch_timeout_usec) {}
+
+supla_channel_config_sync_coordinator::supla_channel_config_sync_coordinator(
+    supla_device *device, unsigned _supla_int64_t batch_timeout_usec) {
+  this->device = device;
   channels = nullptr;
   state = sync_state_not_started;
   batch_pos = 0;
@@ -75,14 +80,16 @@ supla_channel_config_sync_coordinator::finish(void) {
 
   state = sync_state_finished;
   reset_batch();
+  channels = nullptr;
   step.on_finished = on_finished;
+  on_finished = nullptr;
 
   return step;
 }
 
 void supla_channel_config_sync_coordinator::start(
     vector<supla_device_channel *> *channels,
-    std::function<void(void)> on_finished) {
+    std::function<void(supla_device *)> on_finished) {
   sync_step step = {};
 
   lck_lock(lck);
@@ -146,7 +153,7 @@ void supla_channel_config_sync_coordinator::execute_step(
     }
 
     if (step.on_finished) {
-      step.on_finished();
+      step.on_finished(device);
       return;
     }
 
