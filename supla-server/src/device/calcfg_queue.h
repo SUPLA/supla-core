@@ -32,7 +32,11 @@ class supla_device_calcfg_queue {
  public:
   typedef std::function<bool(TSD_DeviceCalCfgRequest *request)> send_callback;
 
-  enum item_state { item_state_waiting_to_send, item_state_waiting_for_result };
+  enum item_state {
+    item_state_waiting_to_send,
+    item_state_sending,
+    item_state_waiting_for_result
+  };
 
   enum enqueue_status {
     enqueue_status_rejected,
@@ -48,6 +52,7 @@ class supla_device_calcfg_queue {
   };
 
   struct item {
+    unsigned _supla_int64_t id;
     TSD_DeviceCalCfgRequest request;
     item_state state;
     unsigned _supla_int64_t queued_at;
@@ -55,13 +60,23 @@ class supla_device_calcfg_queue {
   };
 
  private:
+  struct queue_snapshot {
+    std::vector<item> items;
+    unsigned _supla_int64_t revision;
+  };
+
   std::vector<item> items;
   mutable void *lck;
+  mutable void *persist_lck;
   supla_device *device;
+  unsigned _supla_int64_t next_item_id;
+  unsigned _supla_int64_t revision;
+  unsigned _supla_int64_t persisted_revision;
 
   void lock(void) const;
   void unlock(void) const;
   bool persist(void);
+  bool persist(const queue_snapshot &snapshot);
   int get_user_id(void) const;
   int get_device_id(void) const;
   int get_device_flags(void) const;
@@ -78,14 +93,18 @@ class supla_device_calcfg_queue {
   static const char *command_to_string(_supla_int_t command);
   static const char *data_type_to_string(_supla_int_t data_type);
   static const char *item_state_to_string(item_state state);
+  bool take_next_item_to_send(item *result);
   bool on_item_sent(const item &sent_item, unsigned _supla_int64_t sent_at);
+  bool on_item_send_failed(const item &sent_item);
   bool sync_done_supported(void) const;
 
   std::vector<item>::iterator find_same_slot(
       const TSD_DeviceCalCfgRequest &request);
   std::vector<item>::iterator find_result(const TDS_DeviceCalCfgResult &result);
-  std::vector<item> get_items_to_send(void) const;
-  item make_item(const TSD_DeviceCalCfgRequest &request);
+  queue_snapshot get_snapshot(void) const;
+  item make_item(const TSD_DeviceCalCfgRequest &request,
+                 unsigned _supla_int64_t id);
+  char *to_json(const std::vector<item> &items) const;
   supla_device_calcfg_queue(const supla_device_calcfg_queue &queue);
   supla_device_calcfg_queue &operator=(const supla_device_calcfg_queue &queue);
 

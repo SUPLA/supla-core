@@ -461,6 +461,79 @@ TEST(CalCfgQueueTest, commandWithResponseWaitsUntilResult) {
   EXPECT_TRUE(queue.empty());
 }
 
+TEST(CalCfgQueueTest, replacingCommandDuringSendDoesNotCompleteReplacement) {
+  DeviceStub device(nullptr);
+  supla_device_calcfg_queue queue(&device);
+  TSD_DeviceCalCfgRequest old_request = password_request("old");
+  TSD_DeviceCalCfgRequest new_request = password_request("new");
+  bool replacement_enqueued = false;
+  std::vector<std::string> sent_passwords;
+
+  device.set_flags(SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED |
+                   SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED);
+  queue.enqueue(old_request, false);
+
+  queue.send_queued_calcfg_requests(
+      [&queue, &new_request, &replacement_enqueued,
+       &sent_passwords](TSD_DeviceCalCfgRequest *request) -> bool {
+        EXPECT_NE(nullptr, request);
+        sent_passwords.push_back(std::string(
+            reinterpret_cast<const char *>(request->Data), request->DataSize));
+
+        if (!replacement_enqueued) {
+          replacement_enqueued = true;
+          std::vector<supla_device_calcfg_queue::item> items = queue.get_all();
+          EXPECT_EQ(1U, items.size());
+          if (items.size() == 1) {
+            EXPECT_EQ(supla_device_calcfg_queue::item_state_sending,
+                      items.at(0).state);
+          }
+          EXPECT_EQ(supla_device_calcfg_queue::enqueue_status_overwritten,
+                    queue.enqueue(new_request, false).status);
+        }
+
+        return true;
+      });
+
+  ASSERT_EQ(2U, sent_passwords.size());
+  EXPECT_EQ("old", sent_passwords.at(0));
+  EXPECT_EQ("new", sent_passwords.at(1));
+
+  std::vector<supla_device_calcfg_queue::item> items = queue.get_all();
+  ASSERT_EQ(1U, items.size());
+  EXPECT_EQ(supla_device_calcfg_queue::item_state_waiting_for_result,
+            items.at(0).state);
+  EXPECT_EQ(0, memcmp(items.at(0).request.Data, "new", 3));
+}
+
+TEST(CalCfgQueueTest, waitingForResultReportsOriginalQueuedAt) {
+  DeviceStub device(nullptr);
+  supla_device_calcfg_queue queue(&device);
+  TSD_DeviceCalCfgRequest old_request = password_request("old");
+  TSD_DeviceCalCfgRequest new_request = password_request("new");
+  unsigned _supla_int64_t queued_at = 0;
+  bool waiting_for_result = false;
+
+  device.set_flags(SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED |
+                   SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED);
+  supla_device_calcfg_queue::enqueue_result enqueued =
+      queue.enqueue(old_request, false);
+  queue.send_queued_calcfg_requests(
+      [](TSD_DeviceCalCfgRequest *request) -> bool {
+        return request != nullptr;
+      });
+
+  EXPECT_TRUE(queue.send_calcfg_request(
+      &new_request,
+      [](TSD_DeviceCalCfgRequest *request) -> bool {
+        return request != nullptr;
+      },
+      &queued_at, &waiting_for_result));
+
+  EXPECT_EQ(enqueued.queued_at, queued_at);
+  EXPECT_TRUE(waiting_for_result);
+}
+
 TEST(CalCfgQueueTest, waitingForResultCommandIsNotOverwritten) {
   DeviceStub device(nullptr);
   supla_device_calcfg_queue queue(&device);

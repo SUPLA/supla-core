@@ -40,6 +40,11 @@ void supla_device_calcfg_queue::lock(void) const { lck_lock(lck); }
 void supla_device_calcfg_queue::unlock(void) const { lck_unlock(lck); }
 
 bool supla_device_calcfg_queue::persist(void) {
+  return persist(get_snapshot());
+}
+
+bool supla_device_calcfg_queue::persist(
+    const supla_device_calcfg_queue::queue_snapshot &snapshot) {
   int user_id = get_user_id();
   int device_id = get_device_id();
 
@@ -47,12 +52,22 @@ bool supla_device_calcfg_queue::persist(void) {
     return false;
   }
 
-  char *json = to_json();
+  char *json = to_json(snapshot.items);
   if (!json) {
     return false;
   }
 
-  bool result = save_snapshot(user_id, device_id, json);
+  lck_lock(persist_lck);
+
+  bool result = true;
+  if (snapshot.revision > persisted_revision) {
+    result = save_snapshot(user_id, device_id, json);
+    if (result) {
+      persisted_revision = snapshot.revision;
+    }
+  }
+
+  lck_unlock(persist_lck);
   free(json);
 
   return result;
@@ -160,6 +175,8 @@ const char *supla_device_calcfg_queue::item_state_to_string(item_state state) {
   switch (state) {
     case item_state_waiting_to_send:
       return "WAITING_TO_SEND";
+    case item_state_sending:
+      return "WAITING_TO_SEND";
     case item_state_waiting_for_result:
       return "WAITING_FOR_RESULT";
   }
@@ -184,9 +201,18 @@ supla_device_calcfg_queue::find_result(const TDS_DeviceCalCfgResult &result) {
                       });
 }
 
+supla_device_calcfg_queue::queue_snapshot
+supla_device_calcfg_queue::get_snapshot(void) const {
+  lock();
+  queue_snapshot result = {items, revision};
+  unlock();
+  return result;
+}
+
 supla_device_calcfg_queue::item supla_device_calcfg_queue::make_item(
-    const TSD_DeviceCalCfgRequest &request) {
+    const TSD_DeviceCalCfgRequest &request, unsigned _supla_int64_t id) {
   item result = {};
+  result.id = id;
   result.request = request;
   result.state = item_state_waiting_to_send;
   result.queued_at = current_time();
@@ -195,10 +221,17 @@ supla_device_calcfg_queue::item supla_device_calcfg_queue::make_item(
 
 supla_device_calcfg_queue::supla_device_calcfg_queue(supla_device *device) {
   lck = lck_init();
+  persist_lck = lck_init();
   this->device = device;
+  next_item_id = 0;
+  revision = 0;
+  persisted_revision = 0;
 }
 
-supla_device_calcfg_queue::~supla_device_calcfg_queue(void) { lck_free(lck); }
+supla_device_calcfg_queue::~supla_device_calcfg_queue(void) {
+  lck_free(persist_lck);
+  lck_free(lck);
+}
 
 bool supla_device_calcfg_queue::is_queueable_command(_supla_int_t command) {
   switch (command) {
@@ -298,9 +331,8 @@ supla_device_calcfg_queue::enqueue_result supla_device_calcfg_queue::enqueue(
     return result;
   }
 
-  item new_item = make_item(request);
-
   lock();
+  item new_item = make_item(request, ++next_item_id);
 
   if (single_item_queue) {
     result.status =
@@ -308,6 +340,7 @@ supla_device_calcfg_queue::enqueue_result supla_device_calcfg_queue::enqueue(
     result.queued_at = new_item.queued_at;
     items.clear();
     items.push_back(new_item);
+    ++revision;
     unlock();
     persist();
     return result;
@@ -326,6 +359,7 @@ supla_device_calcfg_queue::enqueue_result supla_device_calcfg_queue::enqueue(
     *same_slot_it = new_item;
     result.status = enqueue_status_overwritten;
     result.queued_at = new_item.queued_at;
+    ++revision;
     unlock();
     persist();
     return result;
@@ -334,6 +368,7 @@ supla_device_calcfg_queue::enqueue_result supla_device_calcfg_queue::enqueue(
   items.push_back(new_item);
   result.status = enqueue_status_queued;
   result.queued_at = new_item.queued_at;
+  ++revision;
 
   unlock();
   persist();
@@ -379,7 +414,7 @@ bool supla_device_calcfg_queue::send_calcfg_request(
 
       case enqueue_status_waiting_for_result:
         if (queued_at) {
-          *queued_at = result.sent_at ? result.sent_at : result.queued_at;
+          *queued_at = result.queued_at;
         }
 
         if (waiting_for_result) {
@@ -404,23 +439,24 @@ bool supla_device_calcfg_queue::send_queued_calcfg_requests(
     return false;
   }
 
-  std::vector<supla_device_calcfg_queue::item> items = get_items_to_send();
   bool result = false;
+  bool changed = false;
+  item item_to_send = {};
 
-  for (auto it = items.begin(); it != items.end(); ++it) {
-    if (!send_calcfg_request_now(&it->request, send_now)) {
-      if (result) {
+  while (take_next_item_to_send(&item_to_send)) {
+    if (!send_calcfg_request_now(&item_to_send.request, send_now)) {
+      on_item_send_failed(item_to_send);
+      if (changed) {
         persist();
       }
       return result;
     }
 
-    if (on_item_sent(*it, current_time())) {
-      result = true;
-    }
+    result = true;
+    changed = on_item_sent(item_to_send, current_time()) || changed;
   }
 
-  if (result) {
+  if (changed) {
     persist();
   }
 
@@ -452,12 +488,17 @@ bool supla_device_calcfg_queue::take_calcfg_queue_from(
   lock();
   if (use_single_item_queue) {
     items.clear();
-    items.push_back(source_items.back());
+    item latest = source_items.back();
+    latest.id = ++next_item_id;
+    items.push_back(latest);
   } else {
     for (auto it = source_items.begin(); it != source_items.end(); ++it) {
-      items.push_back(*it);
+      item transferred = *it;
+      transferred.id = ++next_item_id;
+      items.push_back(transferred);
     }
   }
+  ++revision;
   unlock();
 
   return true;
@@ -472,6 +513,7 @@ int supla_device_calcfg_queue::take_latest_calcfg_command(void) {
 
   int result = items.back().request.Command;
   items.clear();
+  ++revision;
   unlock();
   persist();
 
@@ -482,21 +524,24 @@ size_t supla_device_calcfg_queue::get_calcfg_queue_size(void) const {
   return size();
 }
 
-std::vector<supla_device_calcfg_queue::item>
-supla_device_calcfg_queue::get_items_to_send(void) const {
-  std::vector<item> result;
+bool supla_device_calcfg_queue::take_next_item_to_send(item *result) {
+  if (!result) {
+    return false;
+  }
 
   lock();
 
   for (auto it = items.begin(); it != items.end(); ++it) {
     if (it->state == item_state_waiting_to_send) {
-      result.push_back(*it);
+      it->state = item_state_sending;
+      *result = *it;
+      unlock();
+      return true;
     }
   }
 
   unlock();
-
-  return result;
+  return false;
 }
 
 bool supla_device_calcfg_queue::on_item_sent(
@@ -506,9 +551,7 @@ bool supla_device_calcfg_queue::on_item_sent(
   bool result = false;
 
   for (auto it = items.begin(); it != items.end(); ++it) {
-    if (it->state != item_state_waiting_to_send ||
-        it->queued_at != sent_item.queued_at ||
-        !same_request(it->request, sent_item.request)) {
+    if (it->state != item_state_sending || it->id != sent_item.id) {
       continue;
     }
 
@@ -519,6 +562,7 @@ bool supla_device_calcfg_queue::on_item_sent(
       items.erase(it);
     }
 
+    ++revision;
     result = true;
     break;
   }
@@ -527,12 +571,28 @@ bool supla_device_calcfg_queue::on_item_sent(
   return result;
 }
 
+bool supla_device_calcfg_queue::on_item_send_failed(const item &sent_item) {
+  lock();
+
+  for (auto it = items.begin(); it != items.end(); ++it) {
+    if (it->state == item_state_sending && it->id == sent_item.id) {
+      it->state = item_state_waiting_to_send;
+      unlock();
+      return true;
+    }
+  }
+
+  unlock();
+  return false;
+}
+
 bool supla_device_calcfg_queue::on_result(
     const TDS_DeviceCalCfgResult &result) {
   lock();
   std::vector<item>::iterator it = find_result(result);
   if (it != items.end()) {
     items.erase(it);
+    ++revision;
     unlock();
     persist();
     return true;
@@ -551,6 +611,7 @@ int supla_device_calcfg_queue::take_latest_command(void) {
 
   int result = items.back().request.Command;
   items.clear();
+  ++revision;
   unlock();
   persist();
   return result;
@@ -569,7 +630,10 @@ std::vector<supla_device_calcfg_queue::item>
 supla_device_calcfg_queue::take_all(void) {
   lock();
   std::vector<item> result = items;
-  items.clear();
+  if (!items.empty()) {
+    items.clear();
+    ++revision;
+  }
   unlock();
 
   return result;
@@ -578,18 +642,26 @@ supla_device_calcfg_queue::take_all(void) {
 void supla_device_calcfg_queue::append(const std::vector<item> &items) {
   lock();
   for (auto it = items.begin(); it != items.end(); ++it) {
-    this->items.push_back(*it);
+    item appended = *it;
+    appended.id = ++next_item_id;
+    this->items.push_back(appended);
+  }
+  if (!items.empty()) {
+    ++revision;
   }
   unlock();
 }
 
 char *supla_device_calcfg_queue::to_json(void) const {
+  return to_json(get_snapshot().items);
+}
+
+char *supla_device_calcfg_queue::to_json(
+    const std::vector<supla_device_calcfg_queue::item> &snapshot) const {
   cJSON *root = cJSON_CreateArray();
   if (!root) {
     return nullptr;
   }
-
-  std::vector<item> snapshot = get_all();
 
   for (auto it = snapshot.begin(); it != snapshot.end(); ++it) {
     cJSON *json_item = cJSON_CreateObject();
