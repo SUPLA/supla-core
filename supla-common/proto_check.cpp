@@ -264,8 +264,11 @@ static_assert(sizeof(TSC_RegisterPnClientTokenResult) == 4);
 static_assert(sizeof(TDS_SubdeviceDetails) == 325);
 static_assert(sizeof(THVACValue) == 8);
 static_assert(sizeof(THVACValue) <= SUPLA_CHANNELVALUE_SIZE);
+static_assert(sizeof(THRVValue) == SUPLA_CHANNELVALUE_SIZE);
 static_assert(sizeof(TChannelConfig_HVAC) == 127);
 static_assert(sizeof(TChannelConfig_HVAC) <= SUPLA_CHANNEL_CONFIG_MAXSIZE);
+static_assert(sizeof(THRVRelatedChannel) == 8);
+static_assert(sizeof(TChannelConfig_HRV) <= SUPLA_CHANNEL_CONFIG_MAXSIZE);
 static_assert(sizeof(TChannelConfig_WeeklySchedule) == 356);
 static_assert(sizeof(TChannelConfig_WeeklySchedule) <=
               SUPLA_CHANNEL_CONFIG_MAXSIZE);
