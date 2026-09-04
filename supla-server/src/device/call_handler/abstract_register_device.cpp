@@ -544,6 +544,14 @@ void supla_abstract_register_device::register_device(
 
   set_should_rollback(false);
 
+  if ((device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED) &&
+      (new_device || (_device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED))) {
+    send_result(SUPLA_RESULTCODE_DEVICE_LOCKED);
+    return;
+  }
+
+  on_registration_success();
+
   int resultcode = SUPLA_RESULTCODE_TRUE;
 
   if ((device_flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
@@ -560,14 +568,6 @@ void supla_abstract_register_device::register_device(
         break;
     }
   }
-
-  if ((device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED) &&
-      (new_device || (_device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED))) {
-    send_result(SUPLA_RESULTCODE_DEVICE_LOCKED);
-    return;
-  }
-
-  on_registration_success();
 
   send_result(resultcode);
 

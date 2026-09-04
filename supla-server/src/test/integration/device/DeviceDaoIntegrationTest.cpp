@@ -438,6 +438,7 @@ TEST_F(DeviceDaoIntegrationTest, updateDevicePairingResult) {
 
 TEST_F(DeviceDaoIntegrationTest, setAndClearCalCfgQueue) {
   string result = "";
+  time_t valid_until = 1893456000;
   char queue_json[] =
       "[{\"sender_id\":123,\"channel_number\":-1,"
       "\"command\":\"IDENTIFY_DEVICE\",\"command_code\":9300,"
@@ -447,7 +448,7 @@ TEST_F(DeviceDaoIntegrationTest, setAndClearCalCfgQueue) {
       "\"queued_at\":\"1970-01-01T00:01:40Z\","
       "\"sent_at\":null,\"requires_response\":false}]";
 
-  EXPECT_TRUE(dao->set_calcfg_queue(2, 146, queue_json));
+  EXPECT_TRUE(dao->set_calcfg_queue(2, 146, queue_json, valid_until));
 
   sqlQuery(
       "SELECT queue FROM supla_calcfg_queue WHERE user_id = 2 AND "
@@ -461,6 +462,7 @@ TEST_F(DeviceDaoIntegrationTest, setAndClearCalCfgQueue) {
       "\"command\":\"SET_CFG_MODE_PASSWORD\",\"command_code\":9050,"
       "\"super_user_authorized\":true,\"data_type\":\"NONE\","
       "\"data_type_code\":0,\"data_size\":32,"
+      "\"data\":\"0000000000000000000000000000000000000000000000000000000000000000\","
       "\"enqueue_status\":\"WAITING_FOR_RESULT\","
       "\"queued_at\":\"1970-01-01T00:01:40Z\","
       "\"sent_at\":\"1970-01-01T00:03:20Z\","
@@ -473,7 +475,7 @@ TEST_F(DeviceDaoIntegrationTest, setAndClearCalCfgQueue) {
       "\"queued_at\":\"1970-01-01T00:05:00Z\","
       "\"sent_at\":null,\"requires_response\":false}]";
 
-  EXPECT_TRUE(dao->set_calcfg_queue(2, 146, updated_queue_json));
+  EXPECT_TRUE(dao->set_calcfg_queue(2, 146, updated_queue_json, valid_until));
 
   result = "";
   sqlQuery(
@@ -482,6 +484,13 @@ TEST_F(DeviceDaoIntegrationTest, setAndClearCalCfgQueue) {
       &result);
 
   EXPECT_EQ(result, string("queue\n") + updated_queue_json + "\n");
+
+  string loaded_queue;
+  time_t loaded_valid_until = 0;
+  EXPECT_TRUE(
+      dao->get_calcfg_queue(2, 146, &loaded_queue, &loaded_valid_until));
+  EXPECT_EQ(loaded_queue, updated_queue_json);
+  EXPECT_EQ(loaded_valid_until, valid_until);
 
   EXPECT_TRUE(dao->set_calcfg_queue(2, 146, "[]"));
 

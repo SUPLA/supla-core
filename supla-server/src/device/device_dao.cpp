@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -1642,7 +1643,8 @@ void supla_device_dao::update_device_pairing_result(int device_id,
 }
 
 bool supla_device_dao::set_calcfg_queue(int user_id, int device_id,
-                                        const char *queue_json) {
+                                        const char *queue_json,
+                                        time_t valid_until) {
   if (!user_id || !device_id) {
     return false;
   }
@@ -1656,8 +1658,7 @@ bool supla_device_dao::set_calcfg_queue(int user_id, int device_id,
   bool result = false;
   MYSQL_STMT *stmt = nullptr;
 
-  if (!queue_json || queue_json[0] == 0 ||
-      strncmp(queue_json, "[]", 3) == 0) {
+  if (!queue_json || queue_json[0] == 0 || strncmp(queue_json, "[]", 3) == 0) {
     MYSQL_BIND pbind[2] = {};
 
     pbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -1670,7 +1671,7 @@ bool supla_device_dao::set_calcfg_queue(int user_id, int device_id,
 
     result = dba->stmt_execute((void **)&stmt, sql, pbind, 2, true);
   } else {
-    MYSQL_BIND pbind[3] = {};
+    MYSQL_BIND pbind[4] = {};
 
     pbind[0].buffer_type = MYSQL_TYPE_LONG;
     pbind[0].buffer = (char *)&user_id;
@@ -1682,17 +1683,109 @@ bool supla_device_dao::set_calcfg_queue(int user_id, int device_id,
     pbind[2].buffer = (char *)queue_json;
     pbind[2].buffer_length = strnlen(queue_json, 65535);
 
+    MYSQL_TIME valid_until_mysql = {};
+    my_bool valid_until_is_null = valid_until == 0;
+    pbind[3].buffer_type = MYSQL_TYPE_DATETIME;
+    pbind[3].is_null = &valid_until_is_null;
+    pbind[3].buffer = (char *)&valid_until_mysql;
+    pbind[3].buffer_length = sizeof(valid_until_mysql);
+    if (!valid_until_is_null) {
+      valid_until_mysql = dba->time_t_to_mytime(&valid_until);
+    }
+
     const char sql[] =
         "INSERT INTO `supla_calcfg_queue` "
-        "(`user_id`, `iodevice_id`, `queue`, `updated_at`) "
-        "VALUES (?, ?, ?, UTC_TIMESTAMP()) "
+        "(`user_id`, `iodevice_id`, `queue`, `valid_until`, `updated_at`) "
+        "VALUES (?, ?, ?, ?, UTC_TIMESTAMP()) "
         "ON DUPLICATE KEY UPDATE `user_id` = VALUES(`user_id`), "
-        "`queue` = VALUES(`queue`), `updated_at` = UTC_TIMESTAMP()";
+        "`queue` = VALUES(`queue`), `valid_until` = VALUES(`valid_until`), "
+        "`updated_at` = UTC_TIMESTAMP()";
 
-    result = dba->stmt_execute((void **)&stmt, sql, pbind, 3, true);
+    result = dba->stmt_execute((void **)&stmt, sql, pbind, 4, true);
   }
 
   if (stmt != nullptr) {
+    mysql_stmt_close(stmt);
+  }
+
+  if (!already_connected) {
+    dba->disconnect();
+  }
+
+  return result;
+}
+
+bool supla_device_dao::get_calcfg_queue(int user_id, int device_id,
+                                        std::string *queue_json,
+                                        time_t *valid_until) {
+  if (!user_id || !device_id || !queue_json || !valid_until) {
+    return false;
+  }
+
+  *queue_json = "";
+  *valid_until = 0;
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
+    return false;
+  }
+
+  char queue[65536] = {};
+  unsigned long queue_length = 0;
+  my_bool queue_is_null = true;
+  MYSQL_TIME valid_until_mysql = {};
+  my_bool valid_until_is_null = true;
+  MYSQL_STMT *stmt = nullptr;
+  MYSQL_BIND pbind[2] = {};
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&user_id;
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&device_id;
+
+  const char sql[] =
+      "SELECT `queue`, `valid_until` FROM `supla_calcfg_queue` "
+      "WHERE `user_id` = ? AND `iodevice_id` = ?";
+
+  bool result = false;
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+    result = true;
+    MYSQL_BIND rbind[2] = {};
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = queue;
+    rbind[0].buffer_length = sizeof(queue) - 1;
+    rbind[0].length = &queue_length;
+    rbind[0].is_null = &queue_is_null;
+
+    rbind[1].buffer_type = MYSQL_TYPE_DATETIME;
+    rbind[1].buffer = (char *)&valid_until_mysql;
+    rbind[1].buffer_length = sizeof(valid_until_mysql);
+    rbind[1].is_null = &valid_until_is_null;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+      result = false;
+    } else {
+      mysql_stmt_store_result(stmt);
+      if (mysql_stmt_num_rows(stmt) == 1 && mysql_stmt_fetch(stmt) == 0) {
+        if (!queue_is_null && queue_length > 0) {
+          queue_length = std::min(queue_length, sizeof(queue) - 1);
+          queue[queue_length] = 0;
+          *queue_json = std::string(queue, queue_length);
+        }
+
+        if (!valid_until_is_null) {
+          *valid_until = dba->mytime_to_time_t(&valid_until_mysql);
+        }
+
+        result = true;
+      }
+    }
+
+    mysql_stmt_free_result(stmt);
     mysql_stmt_close(stmt);
   }
 

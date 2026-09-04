@@ -25,8 +25,8 @@
 
 #include "device/calcfg_queue.h"
 #include "device/channel_config_sync_coordinator.h"
-#include "gtest/gtest.h"
 #include "doubles/device/DeviceStub.h"
+#include "gtest/gtest.h"
 
 namespace testing {
 
@@ -208,7 +208,7 @@ TEST(CalCfgQueueTest, responseRequirementDoesNotDependOnSenderId) {
       request(SUPLA_CALCFG_CMD_SET_CFG_MODE_PASSWORD)));
 }
 
-TEST(CalCfgQueueTest, toJsonExportsInspectableQueueStateWithoutData) {
+TEST(CalCfgQueueTest, toJsonExportsInspectableQueueStateWithData) {
   supla_device_calcfg_queue queue;
   TSD_DeviceCalCfgRequest password = password_request("secret-password");
   password.SenderID = 321;
@@ -231,8 +231,9 @@ TEST(CalCfgQueueTest, toJsonExportsInspectableQueueStateWithoutData) {
   EXPECT_NE(std::string::npos, snapshot.find("\"command_code\":9050"));
   EXPECT_NE(std::string::npos,
             snapshot.find("\"super_user_authorized\":false"));
+  EXPECT_NE(std::string::npos, snapshot.find("\"data_type\":\"RS_SETTINGS\""));
   EXPECT_NE(std::string::npos,
-            snapshot.find("\"data_type\":\"RS_SETTINGS\""));
+            snapshot.find("\"data\":\"7365637265742D70617373776F7264\""));
   EXPECT_NE(std::string::npos, snapshot.find("\"data_type_code\":1000"));
   EXPECT_NE(std::string::npos, snapshot.find("\"data_size\":15"));
   EXPECT_NE(std::string::npos,
@@ -316,28 +317,6 @@ TEST(CalCfgQueueTest, takeLatestCalCfgCommandUsesNewestCommand) {
   EXPECT_EQ(SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE,
             queue.take_latest_calcfg_command());
   EXPECT_TRUE(queue.empty());
-}
-
-TEST(CalCfgQueueTest, transferToSingleItemQueueKeepsLatestCommand) {
-  supla_device_calcfg_queue previous;
-  DeviceStub current_device(nullptr);
-  supla_device_calcfg_queue current(&current_device);
-
-  current_device.set_flags(SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED);
-
-  previous.enqueue(request(SUPLA_CALCFG_CMD_IDENTIFY_DEVICE), false);
-  previous.enqueue(password_request("new"), false);
-  previous.enqueue(request(SUPLA_CALCFG_CMD_RESTART_DEVICE), false);
-  previous.enqueue(request(SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE), false);
-
-  current.take_calcfg_queue_from(&previous);
-
-  EXPECT_TRUE(previous.empty());
-
-  std::vector<supla_device_calcfg_queue::item> items = current.get_all();
-  ASSERT_EQ(1U, items.size());
-  EXPECT_EQ(SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE,
-            items.at(0).request.Command);
 }
 
 TEST(CalCfgQueueTest, commandWithoutResponseIsRemovedAfterSuccessfulSend) {
@@ -561,8 +540,7 @@ TEST(CalCfgQueueTest, waitingForResultAppliesOnlyToTheSameCommandSlot) {
   DeviceStub device(nullptr);
   supla_device_calcfg_queue queue(&device);
   TSD_DeviceCalCfgRequest password = password_request("old");
-  TSD_DeviceCalCfgRequest identify =
-      request(SUPLA_CALCFG_CMD_IDENTIFY_DEVICE);
+  TSD_DeviceCalCfgRequest identify = request(SUPLA_CALCFG_CMD_IDENTIFY_DEVICE);
   bool send_called = false;
   unsigned _supla_int64_t queued_at = 0;
   bool waiting_for_result = false;
@@ -621,32 +599,6 @@ TEST(CalCfgQueueTest, singleItemQueueOverwritesCommandWaitingForResult) {
   EXPECT_EQ(SUPLA_CALCFG_CMD_RESTART_DEVICE, items.at(0).request.Command);
   EXPECT_EQ(supla_device_calcfg_queue::item_state_waiting_to_send,
             items.at(0).state);
-}
-
-TEST(CalCfgQueueTest, takeAllAndAppendPreservesItemState) {
-  DeviceStub previous_device(nullptr);
-  supla_device_calcfg_queue previous(&previous_device);
-  supla_device_calcfg_queue current;
-
-  previous_device.set_flags(SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED |
-                            SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED);
-  previous.enqueue(password_request("new"), false);
-  previous.send_queued_calcfg_requests(
-      [](TSD_DeviceCalCfgRequest *request) -> bool {
-        return request != nullptr;
-      });
-
-  current.append(previous.take_all());
-
-  EXPECT_TRUE(previous.empty());
-
-  std::vector<supla_device_calcfg_queue::item> items = current.get_all();
-  ASSERT_EQ(1U, items.size());
-  EXPECT_EQ(SUPLA_CALCFG_CMD_SET_CFG_MODE_PASSWORD,
-            items.at(0).request.Command);
-  EXPECT_EQ(supla_device_calcfg_queue::item_state_waiting_for_result,
-            items.at(0).state);
-  EXPECT_NE(0U, items.at(0).sent_at);
 }
 
 TEST(CalCfgQueueTest, calcfgResultMatchesByChannelAndCommand) {

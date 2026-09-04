@@ -4,6 +4,7 @@
 #include "ToolsTest.h"
 
 #include <cmath>
+#include <cstring>
 
 #include "gtest/gtest.h"  // NOLINT
 #include "tools.h"        // NOLINT
@@ -64,6 +65,24 @@ TEST_F(ToolsTest, st_bin2hex) {
 
   ASSERT_STREQ("FFFF", st_bin2hex(dest, src, 2));
   ASSERT_EQ(NULL, st_bin2hex(NULL, NULL, 0));
+}
+
+TEST_F(ToolsTest, st_hex2bin) {
+  const char source[] = "00aB7F";
+  const char expected[] = {0x00, (char)0xAB, 0x7F};
+  char result[sizeof(expected)] = {};
+
+  ASSERT_EQ(3, st_hex2bin(result, source, strlen(source)));
+  ASSERT_EQ(0, memcmp(expected, result, sizeof(expected)));
+}
+
+TEST_F(ToolsTest, st_hex2bin_rejects_invalid_input) {
+  char result[2] = {};
+
+  EXPECT_EQ(-1, st_hex2bin(result, "0", 1));
+  EXPECT_EQ(-1, st_hex2bin(result, "00XZ", 4));
+  EXPECT_EQ(-1, st_hex2bin(NULL, "00", 2));
+  EXPECT_EQ(-1, st_hex2bin(result, NULL, 2));
 }
 
 TEST_F(ToolsTest, st_guid2hex) {

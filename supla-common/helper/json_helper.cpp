@@ -33,6 +33,21 @@ cJSON *supla_json_helper::add_zulu_time_to_object(cJSON *parent,
   return cJSON_AddNullToObject(parent, name);
 }
 
+bool supla_json_helper::get_int(cJSON *parent, const char *key, int *value) {
+  if (!parent || !key || !value) {
+    return false;
+  }
+
+  cJSON *json_value = cJSON_GetObjectItem(parent, key);
+  if (json_value && cJSON_IsNumber(json_value)) {
+    *value = json_value->valueint;
+    return true;
+  }
+
+  *value = 0;
+  return false;
+}
+
 bool supla_json_helper::equal_ci(const char *str1, const char *str2) {
   if (!str1 || !str2) {
     return false;
@@ -102,6 +117,51 @@ bool supla_json_helper::get_string(cJSON *parent, const char *key,
   }
 
   return false;
+}
+
+bool supla_json_helper::get_zulu_time_from_object(cJSON *parent,
+                                                  const char *name,
+                                                  time_t *timestamp,
+                                                  bool allow_null) {
+  if (!parent || !name || !timestamp) {
+    return false;
+  }
+
+  cJSON *json_value = cJSON_GetObjectItem(parent, name);
+  if (!json_value) {
+    return false;
+  }
+
+  if (cJSON_IsNull(json_value) && allow_null) {
+    *timestamp = 0;
+    return true;
+  }
+
+  const char *value = cJSON_GetStringValue(json_value);
+  if (!value) {
+    return false;
+  }
+
+  struct tm timeinfo = {};
+  char *end = strptime(value, "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
+  if (!end || *end != 0) {
+    return false;
+  }
+
+  timeinfo.tm_isdst = 0;
+  time_t parsed = timegm(&timeinfo);
+  if (parsed < 0) {
+    return false;
+  }
+
+  char normalized[64] = {};
+  if (!st_timestamp_to_zulu_time(normalized, parsed) ||
+      strcmp(normalized, value) != 0) {
+    return false;
+  }
+
+  *timestamp = parsed;
+  return true;
 }
 
 cJSON *supla_json_helper::set_item_value(cJSON *parent, const std::string &name,

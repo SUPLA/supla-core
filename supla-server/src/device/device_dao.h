@@ -19,6 +19,8 @@
 #ifndef SUPLA_DEVICE_DAO_H_
 #define SUPLA_DEVICE_DAO_H_
 
+#include <time.h>
+
 #include <string>
 #include <vector>
 
@@ -133,7 +135,10 @@ class supla_device_dao : public supla_abstract_device_dao {
                                             char *pairing_result);
 
   virtual bool set_calcfg_queue(int user_id, int device_id,
-                                const char *queue_json);
+                                const char *queue_json, time_t valid_until = 0);
+
+  virtual bool get_calcfg_queue(int user_id, int device_id,
+                                std::string *queue_json, time_t *valid_until);
 
   virtual void set_subdevice_details(int device_id,
                                      TDS_SubdeviceDetails *details);

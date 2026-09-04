@@ -262,6 +262,45 @@ char *st_bin2hex(char *buffer, const char *src, size_t len) {
   return buffer;
 }
 
+int st_hex2bin(char *buffer, const char *src, size_t len) {
+  size_t index;
+
+  if (buffer == 0 || src == 0 || len % 2 != 0) {
+    return -1;
+  }
+
+  for (index = 0; index < len / 2; index++) {
+    unsigned char high;
+    unsigned char low;
+    char high_char = src[index * 2];
+    char low_char = src[index * 2 + 1];
+
+    if (high_char >= '0' && high_char <= '9') {
+      high = high_char - '0';
+    } else if (high_char >= 'A' && high_char <= 'F') {
+      high = high_char - 'A' + 10;
+    } else if (high_char >= 'a' && high_char <= 'f') {
+      high = high_char - 'a' + 10;
+    } else {
+      return -1;
+    }
+
+    if (low_char >= '0' && low_char <= '9') {
+      low = low_char - '0';
+    } else if (low_char >= 'A' && low_char <= 'F') {
+      low = low_char - 'A' + 10;
+    } else if (low_char >= 'a' && low_char <= 'f') {
+      low = low_char - 'a' + 10;
+    } else {
+      return -1;
+    }
+
+    buffer[index] = (char)((high << 4) | low);
+  }
+
+  return (int)(len / 2);
+}
+
 void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE],
                  const char GUID[SUPLA_GUID_SIZE]) {
   st_bin2hex(GUIDHEX, GUID, SUPLA_GUID_SIZE);

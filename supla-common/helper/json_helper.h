@@ -15,9 +15,6 @@ class supla_json_helper {
  protected:
   bool equal_ci(const char *str1, const char *str2);
   bool equal_ci(cJSON *item, const char *str);
-  bool get_bool(cJSON *parent, const char *key, bool *value);
-  bool get_double(cJSON *parent, const char *key, double *value);
-  bool get_string(cJSON *parent, const char *key, std::string *value);
 
   cJSON *set_item_value(cJSON *parent, const std::string &name, int type,
                         bool force, cJSON *obj, const char *string_value,
@@ -30,6 +27,13 @@ class supla_json_helper {
  public:
   supla_json_helper(void);
   virtual ~supla_json_helper(void);
+  static bool get_int(cJSON *parent, const char *key, int *value);
+  static bool get_bool(cJSON *parent, const char *key, bool *value);
+  static bool get_double(cJSON *parent, const char *key, double *value);
+  static bool get_string(cJSON *parent, const char *key, std::string *value);
+  static bool get_zulu_time_from_object(cJSON *parent, const char *name,
+                                        time_t *timestamp,
+                                        bool allow_null = false);
   static cJSON *add_zulu_time_to_object(cJSON *parent, const char *name,
                                         time_t timestamp);
 };

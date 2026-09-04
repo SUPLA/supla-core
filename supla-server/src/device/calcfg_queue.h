@@ -27,6 +27,7 @@
 #include "proto.h"
 
 class supla_device;
+struct cJSON;
 
 class supla_device_calcfg_queue {
  public:
@@ -62,6 +63,7 @@ class supla_device_calcfg_queue {
  private:
   struct queue_snapshot {
     std::vector<item> items;
+    unsigned _supla_int64_t valid_until;
     unsigned _supla_int64_t revision;
   };
 
@@ -70,6 +72,7 @@ class supla_device_calcfg_queue {
   mutable void *persist_lck;
   supla_device *device;
   unsigned _supla_int64_t next_item_id;
+  unsigned _supla_int64_t valid_until;
   unsigned _supla_int64_t revision;
   unsigned _supla_int64_t persisted_revision;
 
@@ -80,7 +83,9 @@ class supla_device_calcfg_queue {
   int get_user_id(void) const;
   int get_device_id(void) const;
   int get_device_flags(void) const;
-  bool save_snapshot(int user_id, int device_id, const char *queue_json);
+  unsigned _supla_int64_t get_current_valid_until(void) const;
+  bool save_snapshot(int user_id, int device_id, const char *queue_json,
+                     unsigned _supla_int64_t valid_until);
   static unsigned _supla_int64_t current_time(void);
   static bool same_slot(const TSD_DeviceCalCfgRequest &a,
                         const TSD_DeviceCalCfgRequest &b);
@@ -93,6 +98,8 @@ class supla_device_calcfg_queue {
   static const char *command_to_string(_supla_int_t command);
   static const char *data_type_to_string(_supla_int_t data_type);
   static const char *item_state_to_string(item_state state);
+  static bool parse_item(struct cJSON *json_item, item *result,
+                         unsigned _supla_int64_t id);
   bool take_next_item_to_send(item *result);
   bool on_item_sent(const item &sent_item, unsigned _supla_int64_t sent_at);
   bool on_item_send_failed(const item &sent_item);
@@ -129,14 +136,13 @@ class supla_device_calcfg_queue {
                            enqueue_status *queue_status = nullptr);
   bool send_queued_calcfg_requests(const send_callback &send_now);
   bool on_calcfg_result(TDS_DeviceCalCfgResult *result);
-  bool take_calcfg_queue_from(supla_device_calcfg_queue *queue);
+  bool load(void);
+  bool refresh_valid_until(void);
   int take_latest_calcfg_command(void);
   size_t get_calcfg_queue_size(void) const;
   bool on_result(const TDS_DeviceCalCfgResult &result);
   int take_latest_command(void);
   std::vector<item> get_all(void) const;
-  std::vector<item> take_all(void);
-  void append(const std::vector<item> &items);
   char *to_json(void) const;
 };
 

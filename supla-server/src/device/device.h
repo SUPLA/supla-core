@@ -78,7 +78,6 @@ class supla_device : public supla_abstract_connection_object {
                            bool *waiting_for_result = nullptr);
   void send_queued_calcfg_requests(void);
   void on_calcfg_result(TDS_DeviceCalCfgResult *result);
-  void take_calcfg_queue_from(supla_device *device);
   int take_latest_calcfg_command(void);
   size_t get_calcfg_queue_size(void);
   bool pair_subdevice(const supla_caller &caller, bool superuser_authorized,

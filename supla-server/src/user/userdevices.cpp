@@ -47,8 +47,8 @@ bool supla_user_devices::add(
     std::map<int, supla_channel_availability_status> *previous_statuses) {
   bool result = supla_connection_objects::add(
       device,
-      [&previous_statuses,
-       device](std::shared_ptr<supla_abstract_connection_object> obj) -> void {
+      [&previous_statuses](
+          std::shared_ptr<supla_abstract_connection_object> obj) -> void {
         shared_ptr<supla_device> previous =
             dynamic_pointer_cast<supla_device>(obj);
 
@@ -59,8 +59,6 @@ bool supla_user_devices::add(
         if (previous_statuses) {
           *previous_statuses = previous->get_channels()->get_all_statuses();
         }
-
-        device->take_calcfg_queue_from(previous.get());
       });
 
   vector<supla_channel_fragment> fragments =

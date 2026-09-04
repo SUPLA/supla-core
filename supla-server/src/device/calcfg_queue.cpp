@@ -23,6 +23,7 @@
 #include <time.h>
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "cJSON.h"
@@ -30,6 +31,95 @@
 #include "device/device_dao.h"
 #include "helper/json_helper.h"
 #include "lck.h"
+#include "tools.h"
+
+bool supla_device_calcfg_queue::parse_item(
+    cJSON *json_item, supla_device_calcfg_queue::item *result,
+    unsigned _supla_int64_t id) {
+  if (!json_item || !result) {
+    return false;
+  }
+
+  TSD_DeviceCalCfgRequest request = {};
+  int value = 0;
+  bool authorized = false;
+
+  if (!supla_json_helper::get_int(json_item, "sender_id", &value)) {
+    return false;
+  }
+  request.SenderID = value;
+
+  if (!supla_json_helper::get_int(json_item, "channel_number", &value)) {
+    return false;
+  }
+  request.ChannelNumber = value;
+
+  if (!supla_json_helper::get_int(json_item, "command_code", &value) ||
+      !supla_device_calcfg_queue::is_queueable_command(value)) {
+    return false;
+  }
+  request.Command = value;
+
+  if (!supla_json_helper::get_bool(json_item, "super_user_authorized",
+                                   &authorized)) {
+    return false;
+  }
+  request.SuperUserAuthorized = authorized ? 1 : 0;
+
+  if (!supla_json_helper::get_int(json_item, "data_type_code", &value)) {
+    return false;
+  }
+  request.DataType = value;
+
+  if (!supla_json_helper::get_int(json_item, "data_size", &value) ||
+      value < 0 || value > SUPLA_CALCFG_DATA_MAXSIZE) {
+    return false;
+  }
+  request.DataSize = (unsigned _supla_int_t)value;
+
+  cJSON *data_json = cJSON_GetObjectItem(json_item, "data");
+  if (request.DataSize > 0) {
+    const char *hex = cJSON_GetStringValue(data_json);
+    size_t hex_size = hex ? strnlen(hex, request.DataSize * 2 + 1) : 0;
+    if (!hex || hex_size != request.DataSize * 2 ||
+        st_hex2bin(request.Data, hex, hex_size) != request.DataSize) {
+      return false;
+    }
+  }
+
+  std::string state;
+  if (!supla_json_helper::get_string(json_item, "enqueue_status", &state)) {
+    return false;
+  }
+
+  supla_device_calcfg_queue::item_state item_state =
+      supla_device_calcfg_queue::item_state_waiting_to_send;
+  if (state == "WAITING_FOR_RESULT") {
+    item_state = supla_device_calcfg_queue::item_state_waiting_for_result;
+  } else if (state != "WAITING_TO_SEND") {
+    return false;
+  }
+
+  unsigned _supla_int64_t queued_at = 0;
+  unsigned _supla_int64_t sent_at = 0;
+  time_t queued_timestamp = 0;
+  time_t sent_timestamp = 0;
+  if (!supla_json_helper::get_zulu_time_from_object(json_item, "queued_at",
+                                                    &queued_timestamp) ||
+      !supla_json_helper::get_zulu_time_from_object(json_item, "sent_at",
+                                                    &sent_timestamp, true)) {
+    return false;
+  }
+  queued_at = (unsigned _supla_int64_t)queued_timestamp;
+  sent_at = (unsigned _supla_int64_t)sent_timestamp;
+
+  result->id = id;
+  result->request = request;
+  result->state = item_state;
+  result->queued_at = queued_at;
+  result->sent_at = sent_at;
+  return true;
+}
 
 unsigned _supla_int64_t supla_device_calcfg_queue::current_time(void) {
   return (unsigned _supla_int64_t)time(nullptr);
@@ -61,7 +151,7 @@ bool supla_device_calcfg_queue::persist(
 
   bool result = true;
   if (snapshot.revision > persisted_revision) {
-    result = save_snapshot(user_id, device_id, json);
+    result = save_snapshot(user_id, device_id, json, snapshot.valid_until);
     if (result) {
       persisted_revision = snapshot.revision;
     }
@@ -85,15 +175,32 @@ int supla_device_calcfg_queue::get_device_flags(void) const {
   return device ? device->get_flags() : 0;
 }
 
-bool supla_device_calcfg_queue::save_snapshot(int user_id, int device_id,
-                                              const char *queue_json) {
+unsigned _supla_int64_t
+supla_device_calcfg_queue::get_current_valid_until(void) const {
+  if (!device || !device->get_connection()) {
+    return 0;
+  }
+
+  unsigned char activity_timeout =
+      device->get_connection()->get_activity_timeout();
+  if (activity_timeout == 0) {
+    return 0;
+  }
+
+  return current_time() + activity_timeout;
+}
+
+bool supla_device_calcfg_queue::save_snapshot(
+    int user_id, int device_id, const char *queue_json,
+    unsigned _supla_int64_t valid_until) {
   if (!queue_json || !user_id || !device_id) {
     return false;
   }
 
   supla_mariadb_access_provider dba;
   supla_device_dao dao(&dba);
-  return dao.set_calcfg_queue(user_id, device_id, queue_json);
+  return dao.set_calcfg_queue(user_id, device_id, queue_json,
+                              (time_t)valid_until);
 }
 
 bool supla_device_calcfg_queue::same_slot(const TSD_DeviceCalCfgRequest &a,
@@ -204,7 +311,7 @@ supla_device_calcfg_queue::find_result(const TDS_DeviceCalCfgResult &result) {
 supla_device_calcfg_queue::queue_snapshot
 supla_device_calcfg_queue::get_snapshot(void) const {
   lock();
-  queue_snapshot result = {items, revision};
+  queue_snapshot result = {items, valid_until, revision};
   unlock();
   return result;
 }
@@ -224,6 +331,7 @@ supla_device_calcfg_queue::supla_device_calcfg_queue(supla_device *device) {
   persist_lck = lck_init();
   this->device = device;
   next_item_id = 0;
+  valid_until = 0;
   revision = 0;
   persisted_revision = 0;
 }
@@ -327,12 +435,17 @@ supla_device_calcfg_queue::enqueue_result supla_device_calcfg_queue::enqueue(
     const TSD_DeviceCalCfgRequest &request, bool single_item_queue) {
   enqueue_result result = {enqueue_status_rejected, 0, 0};
 
-  if (!is_queueable_command(request.Command)) {
+  if (!is_queueable_command(request.Command) ||
+      request.DataSize > SUPLA_CALCFG_DATA_MAXSIZE) {
     return result;
   }
 
   lock();
   item new_item = make_item(request, ++next_item_id);
+  unsigned _supla_int64_t new_valid_until = get_current_valid_until();
+  if (new_valid_until != 0) {
+    valid_until = new_valid_until;
+  }
 
   if (single_item_queue) {
     result.status =
@@ -472,36 +585,89 @@ bool supla_device_calcfg_queue::on_calcfg_result(
   return false;
 }
 
-bool supla_device_calcfg_queue::take_calcfg_queue_from(
-    supla_device_calcfg_queue *queue) {
-  if (!queue || queue == this) {
+bool supla_device_calcfg_queue::load(void) {
+  int user_id = get_user_id();
+  int device_id = get_device_id();
+  if (!user_id || !device_id) {
     return false;
   }
 
-  std::vector<supla_device_calcfg_queue::item> source_items = queue->take_all();
-  if (source_items.empty()) {
+  supla_mariadb_access_provider dba;
+  supla_device_dao dao(&dba);
+  std::string queue_json;
+  time_t stored_valid_until = 0;
+
+  if (!dao.get_calcfg_queue(user_id, device_id, &queue_json,
+                            &stored_valid_until)) {
     return false;
   }
 
-  bool use_single_item_queue = single_item_queue();
+  if (queue_json.empty()) {
+    return true;
+  }
+
+  if (stored_valid_until <= (time_t)current_time()) {
+    lock();
+    items.clear();
+    valid_until = 0;
+    ++revision;
+    unlock();
+    persist();
+    return true;
+  }
+
+  cJSON *root = cJSON_Parse(queue_json.c_str());
+  if (!root || !cJSON_IsArray(root)) {
+    cJSON_Delete(root);
+    return false;
+  }
+
+  std::vector<item> loaded_items;
+  bool valid = true;
+  unsigned _supla_int64_t item_id = 0;
+  int item_count = cJSON_GetArraySize(root);
+  for (int index = 0; index < item_count; ++index) {
+    item loaded_item = {};
+    if (!parse_item(cJSON_GetArrayItem(root, index), &loaded_item, ++item_id)) {
+      valid = false;
+      break;
+    }
+    loaded_items.push_back(loaded_item);
+  }
+  cJSON_Delete(root);
+
+  if (!valid) {
+    return false;
+  }
 
   lock();
-  if (use_single_item_queue) {
-    items.clear();
-    item latest = source_items.back();
-    latest.id = ++next_item_id;
-    items.push_back(latest);
-  } else {
-    for (auto it = source_items.begin(); it != source_items.end(); ++it) {
-      item transferred = *it;
-      transferred.id = ++next_item_id;
-      items.push_back(transferred);
-    }
-  }
+  items = loaded_items;
+  next_item_id = item_id;
+  valid_until = (unsigned _supla_int64_t)stored_valid_until;
   ++revision;
+  persisted_revision = revision;
   unlock();
 
   return true;
+}
+
+bool supla_device_calcfg_queue::refresh_valid_until(void) {
+  unsigned _supla_int64_t new_valid_until = get_current_valid_until();
+  if (new_valid_until == 0) {
+    return false;
+  }
+
+  lock();
+  if (items.empty()) {
+    unlock();
+    return true;
+  }
+
+  valid_until = new_valid_until;
+  ++revision;
+  unlock();
+
+  return persist();
 }
 
 int supla_device_calcfg_queue::take_latest_calcfg_command(void) {
@@ -513,6 +679,7 @@ int supla_device_calcfg_queue::take_latest_calcfg_command(void) {
 
   int result = items.back().request.Command;
   items.clear();
+  valid_until = 0;
   ++revision;
   unlock();
   persist();
@@ -560,6 +727,9 @@ bool supla_device_calcfg_queue::on_item_sent(
       it->sent_at = sent_at;
     } else {
       items.erase(it);
+      if (items.empty()) {
+        valid_until = 0;
+      }
     }
 
     ++revision;
@@ -592,6 +762,9 @@ bool supla_device_calcfg_queue::on_result(
   std::vector<item>::iterator it = find_result(result);
   if (it != items.end()) {
     items.erase(it);
+    if (items.empty()) {
+      valid_until = 0;
+    }
     ++revision;
     unlock();
     persist();
@@ -611,6 +784,7 @@ int supla_device_calcfg_queue::take_latest_command(void) {
 
   int result = items.back().request.Command;
   items.clear();
+  valid_until = 0;
   ++revision;
   unlock();
   persist();
@@ -624,32 +798,6 @@ std::vector<supla_device_calcfg_queue::item> supla_device_calcfg_queue::get_all(
   unlock();
 
   return result;
-}
-
-std::vector<supla_device_calcfg_queue::item>
-supla_device_calcfg_queue::take_all(void) {
-  lock();
-  std::vector<item> result = items;
-  if (!items.empty()) {
-    items.clear();
-    ++revision;
-  }
-  unlock();
-
-  return result;
-}
-
-void supla_device_calcfg_queue::append(const std::vector<item> &items) {
-  lock();
-  for (auto it = items.begin(); it != items.end(); ++it) {
-    item appended = *it;
-    appended.id = ++next_item_id;
-    this->items.push_back(appended);
-  }
-  if (!items.empty()) {
-    ++revision;
-  }
-  unlock();
 }
 
 char *supla_device_calcfg_queue::to_json(void) const {
@@ -682,6 +830,11 @@ char *supla_device_calcfg_queue::to_json(
                             data_type_to_string(it->request.DataType));
     cJSON_AddNumberToObject(json_item, "data_type_code", it->request.DataType);
     cJSON_AddNumberToObject(json_item, "data_size", it->request.DataSize);
+    if (it->request.DataSize > 0) {
+      char data_hex[SUPLA_CALCFG_DATA_MAXSIZE * 2 + 1] = {};
+      st_bin2hex(data_hex, it->request.Data, it->request.DataSize);
+      cJSON_AddStringToObject(json_item, "data", data_hex);
+    }
     cJSON_AddStringToObject(json_item, "enqueue_status",
                             item_state_to_string(it->state));
     supla_json_helper::add_zulu_time_to_object(json_item, "queued_at",

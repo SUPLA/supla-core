@@ -508,6 +508,7 @@ CREATE TABLE `supla_calcfg_queue` (
   `iodevice_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `queue` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `valid_until` datetime DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
   `updated_at` datetime NOT NULL COMMENT '(DC2Type:utcdatetime)',
   PRIMARY KEY (`iodevice_id`),
   KEY `IDX_CALCFG_QUEUE_USER` (`user_id`),

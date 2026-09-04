@@ -290,14 +290,6 @@ void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
   calcfg_queue.on_calcfg_result(result);
 }
 
-void supla_device::take_calcfg_queue_from(supla_device *device) {
-  if (!device || device == this) {
-    return;
-  }
-
-  calcfg_queue.take_calcfg_queue_from(&device->calcfg_queue);
-}
-
 int supla_device::take_latest_calcfg_command(void) {
   return calcfg_queue.take_latest_calcfg_command();
 }

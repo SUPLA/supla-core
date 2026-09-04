@@ -26,6 +26,7 @@
 #include "db/mariadb_access_provider.h"
 #include "device/device.h"
 #include "device/device_dao.h"
+#include "log.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -56,12 +57,8 @@ bool supla_register_device::get_authkey_hash(
 }
 
 int supla_register_device::take_latest_calcfg_command_for_sleepers(void) {
-  supla_user *user = supla_user::find(get_user_id(), true);
-  if (user) {
-    shared_ptr<supla_device> prev = user->get_devices()->get(get_device_id());
-    return prev != nullptr ? prev->take_latest_calcfg_command() : 0;
-  }
-  return 0;
+  shared_ptr<supla_device> device = get_device().lock();
+  return device ? device->take_latest_calcfg_command() : 0;
 }
 
 void supla_register_device::on_registration_success(void) {
@@ -73,6 +70,16 @@ void supla_register_device::on_registration_success(void) {
   device->set_user(supla_user::find(get_user_id(), true));
   device->set_flags(get_device_flags());
   device->set_manufacturer_id(get_manufacturer_id());
+
+  if (!device->calcfg_queue.load()) {
+    supla_log(LOG_WARNING, "Unable to load CALCFG queue for device %i",
+              device->get_id());
+  } else if (device->get_flags() & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED) {
+    if (!device->calcfg_queue.refresh_valid_until()) {
+      supla_log(LOG_WARNING, "Unable to refresh CALCFG queue for device %i",
+                device->get_id());
+    }
+  }
 
   supla_device_channels *channels = new supla_device_channels(
       get_device_dao(), device.get(), get_channels_b(), get_channels_e(),
