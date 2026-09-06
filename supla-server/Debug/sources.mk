@@ -52,7 +52,6 @@ src/device/extended_value \
 src/device/value \
 src/distributedobjects \
 src/external/MQTT-C/src \
-src/external/cJSON \
 src/google \
 src/helper \
 src/http \

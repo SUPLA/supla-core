@@ -7,10 +7,10 @@ CPP_SRCS += \
 ../src/device/abstract_channel_property_getter.cpp \
 ../src/device/abstract_common_channel_properties.cpp \
 ../src/device/abstract_device_dao.cpp \
+../src/device/calcfg_queue.cpp \
 ../src/device/channel_address.cpp \
 ../src/device/channel_availability_status.cpp \
 ../src/device/channel_config_sync_coordinator.cpp \
-../src/device/calcfg_queue.cpp \
 ../src/device/channel_fragment.cpp \
 ../src/device/channel_property_getter.cpp \
 ../src/device/channel_relation.cpp \
@@ -24,10 +24,10 @@ CPP_DEPS += \
 ./src/device/abstract_channel_property_getter.d \
 ./src/device/abstract_common_channel_properties.d \
 ./src/device/abstract_device_dao.d \
+./src/device/calcfg_queue.d \
 ./src/device/channel_address.d \
 ./src/device/channel_availability_status.d \
 ./src/device/channel_config_sync_coordinator.d \
-./src/device/calcfg_queue.d \
 ./src/device/channel_fragment.d \
 ./src/device/channel_property_getter.d \
 ./src/device/channel_relation.d \
@@ -41,10 +41,10 @@ OBJS += \
 ./src/device/abstract_channel_property_getter.o \
 ./src/device/abstract_common_channel_properties.o \
 ./src/device/abstract_device_dao.o \
+./src/device/calcfg_queue.o \
 ./src/device/channel_address.o \
 ./src/device/channel_availability_status.o \
 ./src/device/channel_config_sync_coordinator.o \
-./src/device/calcfg_queue.o \
 ./src/device/channel_fragment.o \
 ./src/device/channel_property_getter.o \
 ./src/device/channel_relation.o \
@@ -59,7 +59,7 @@ OBJS += \
 src/device/%.o: ../src/device/%.cpp src/device/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	$(CXX) -std=c++17 -D__DEBUG=1 -DMQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h -DUSE_OS_TZDB=1 -D__SUPLA_SERVER=1 -DSPROTO_WITHOUT_OUT_BUFFER -DSRPC_WITHOUT_OUT_QUEUE -DUSE_DEPRECATED_EMEV_V1 -DUSE_DEPRECATED_EMEV_V2 -D__OPENSSL_TOOLS=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -D__BCRYPT=1 -I$(INCMYSQL) -I../src/external/inja/include -I../src/external/MQTT-C/include -I../src/external/cJSON -I../src/mqtt -I../src/device -I../src/user -I../src -I$(SSLDIR)/include -I../src/client -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIE -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	$(CXX) -std=c++17 -D__DEBUG=1 -DMQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h -DUSE_OS_TZDB=1 -D__SUPLA_SERVER=1 -DSPROTO_WITHOUT_OUT_BUFFER -DSRPC_WITHOUT_OUT_QUEUE -DUSE_DEPRECATED_EMEV_V1 -DUSE_DEPRECATED_EMEV_V2 -D__OPENSSL_TOOLS=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -D__BCRYPT=1 -I$(INCMYSQL) -I../src/external/inja/include -I../src/external/MQTT-C/include -I../src/mqtt -I../src/device -I../src/user -I../src -I$(SSLDIR)/include -I../src/client -I/usr/include/cjson -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -fPIE -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
@@ -67,6 +67,7 @@ src/device/%.o: ../src/device/%.cpp src/device/subdir.mk
 clean: clean-src-2f-device
 
 clean-src-2f-device:
-	-$(RM) ./src/device/abstract_channel_property_getter.d ./src/device/abstract_channel_property_getter.o ./src/device/abstract_common_channel_properties.d ./src/device/abstract_common_channel_properties.o ./src/device/abstract_device_dao.d ./src/device/abstract_device_dao.o ./src/device/channel_address.d ./src/device/channel_address.o ./src/device/channel_availability_status.d ./src/device/channel_availability_status.o ./src/device/channel_config_sync_coordinator.d ./src/device/channel_config_sync_coordinator.o ./src/device/calcfg_queue.d ./src/device/calcfg_queue.o ./src/device/channel_fragment.d ./src/device/channel_fragment.o ./src/device/channel_property_getter.d ./src/device/channel_property_getter.o ./src/device/channel_relation.d ./src/device/channel_relation.o ./src/device/channel_state.d ./src/device/channel_state.o ./src/device/device.d ./src/device/device.o ./src/device/device_dao.d ./src/device/device_dao.o ./src/device/devicechannel.d ./src/device/devicechannel.o ./src/device/devicechannels.d ./src/device/devicechannels.o
+	-$(RM) ./src/device/abstract_channel_property_getter.d ./src/device/abstract_channel_property_getter.o ./src/device/abstract_common_channel_properties.d ./src/device/abstract_common_channel_properties.o ./src/device/abstract_device_dao.d ./src/device/abstract_device_dao.o ./src/device/calcfg_queue.d ./src/device/calcfg_queue.o ./src/device/channel_address.d ./src/device/channel_address.o ./src/device/channel_availability_status.d ./src/device/channel_availability_status.o ./src/device/channel_config_sync_coordinator.d ./src/device/channel_config_sync_coordinator.o ./src/device/channel_fragment.d ./src/device/channel_fragment.o ./src/device/channel_property_getter.d ./src/device/channel_property_getter.o ./src/device/channel_relation.d ./src/device/channel_relation.o ./src/device/channel_state.d ./src/device/channel_state.o ./src/device/device.d ./src/device/device.o ./src/device/device_dao.d ./src/device/device_dao.o ./src/device/devicechannel.d ./src/device/devicechannel.o ./src/device/devicechannels.d ./src/device/devicechannels.o
 
 .PHONY: clean-src-2f-device
+

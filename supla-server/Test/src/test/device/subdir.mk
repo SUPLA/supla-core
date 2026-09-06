@@ -47,7 +47,7 @@ OBJS += \
 src/test/device/%.o: ../src/test/device/%.cpp src/test/device/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -std=c++17 -D__DEBUG=1 -DMQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h -DUSE_OS_TZDB=1 -D__SUPLA_SERVER=1 -DUSE_DEPRECATED_EMEV_V1 -DUSE_DEPRECATED_EMEV_V2 -D__TEST=1 -D__OPENSSL_TOOLS=1 -D__BCRYPT=1 -I../src -I../src/external/inja/include -I../src/external/cJSON -I../src/external/MQTT-C/include -I../src/asynctask -I../src/mqtt -I$(INCMYSQL) -I../src/user -I../src/device -I../src/client -I$(SSLDIR)/include -I../src/test -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	g++ -std=c++17 -D__DEBUG=1 -DMQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h -DUSE_OS_TZDB=1 -D__SUPLA_SERVER=1 -DUSE_DEPRECATED_EMEV_V1 -DUSE_DEPRECATED_EMEV_V2 -D__TEST=1 -D__OPENSSL_TOOLS=1 -D__BCRYPT=1 -I../src -I../src/external/inja/include -I../src/external/MQTT-C/include -I../src/asynctask -I../src/mqtt -I$(INCMYSQL) -I../src/user -I../src/device -I../src/client -I$(SSLDIR)/include -I../src/test -I/usr/include/cjson -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
@@ -58,3 +58,4 @@ clean-src-2f-test-2f-device:
 	-$(RM) ./src/test/device/CalCfgQueueTest.d ./src/test/device/CalCfgQueueTest.o ./src/test/device/ChannelAvailabilityStatusTest.d ./src/test/device/ChannelAvailabilityStatusTest.o ./src/test/device/ChannelFragmentTest.d ./src/test/device/ChannelFragmentTest.o ./src/test/device/ChannelPropertyGetterTest.d ./src/test/device/ChannelPropertyGetterTest.o ./src/test/device/ChannelRelationTest.d ./src/test/device/ChannelRelationTest.o ./src/test/device/ChannelStateTest.d ./src/test/device/ChannelStateTest.o ./src/test/device/CommonChannelPropertiesTest.d ./src/test/device/CommonChannelPropertiesTest.o ./src/test/device/RegisterDeviceEssentialTest.d ./src/test/device/RegisterDeviceEssentialTest.o ./src/test/device/RegisterDeviceTest.d ./src/test/device/RegisterDeviceTest.o ./src/test/device/RegisterDeviceWithEmailAuthTest.d ./src/test/device/RegisterDeviceWithEmailAuthTest.o ./src/test/device/RegisterDeviceWithLocationAuthTest.d ./src/test/device/RegisterDeviceWithLocationAuthTest.o
 
 .PHONY: clean-src-2f-test-2f-device
+

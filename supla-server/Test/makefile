@@ -88,7 +88,6 @@ RM := rm -rf
 -include src/http/subdir.mk
 -include src/helper/subdir.mk
 -include src/google/subdir.mk
--include src/external/cJSON/subdir.mk
 -include src/external/MQTT-C/src/subdir.mk
 -include src/distributedobjects/subdir.mk
 -include src/device/value/subdir.mk
@@ -166,7 +165,7 @@ main-build: supla-server
 supla-server: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++ -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS) -lssl -lpqxx -lcurl -lgtest -lgmock -l$(LIBMYSQL) -lcrypto
+	g++ -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS) -lssl -lcjson -lpqxx -lcurl -lgtest -lgmock -l$(LIBMYSQL) -lcrypto
 	@echo 'Finished building target: $@'
 	@echo ' '
 
