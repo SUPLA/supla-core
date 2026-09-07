@@ -690,6 +690,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   0x400000000  // ver. >= 28
 #define SUPLA_CHANNEL_FLAG_RELAY_MODE_AUTOMATIC_SUPPORTED \
   0x800000000  // ver. >= 28
+#define SUPLA_CHANNEL_FLAG_EXTENDED_WEEKLY_SCHEDULE \
+  0x1000000000ULL  // ver. >= 29
 #pragma pack(push, 1)
 
 typedef struct {
@@ -2879,6 +2881,7 @@ typedef struct {
 #define SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE 3
 #define SUPLA_CONFIG_TYPE_OCR 4
 #define SUPLA_CONFIG_TYPE_EXTENDED 5
+#define SUPLA_CONFIG_TYPE_EXTENDED_WEEKLY_SCHEDULE 6
 
 /********************************************
  * DEVICE CONFIG STRUCTURES
@@ -3264,6 +3267,33 @@ typedef struct {
   // Days of week are numbered: 0 - Sunday, 1 - Monday, etc.
   unsigned char Quarters[SUPLA_WEEKLY_SCHEDULE_VALUES_SIZE / 2];  // 336 B
 } TChannelConfig_WeeklySchedule;                                  // v. >= 21
+
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_MODEL_UNSPECIFIED 0
+// The channel supports switching between manual and weekly schedule modes,
+// but weekly schedule configuration is not available through SUPLA.
+// PayloadVersion and PayloadSize have to be 0 for this model.
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_MODEL_MODE_ONLY 1
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_MODEL_PROVENT 2
+
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_ENVELOPE_VERSION 1
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE 16
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_PAYLOAD_MAXSIZE \
+  (SUPLA_CHANNEL_CONFIG_MAXSIZE - SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE)
+
+// ConfigSize has to equal HeaderSize + PayloadSize. HeaderSize has to be at
+// least SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE and cannot exceed
+// ConfigSize.
+typedef struct {
+  unsigned char Version;  // SUPLA_EXTENDED_WEEKLY_SCHEDULE_ENVELOPE_VERSION
+  unsigned char HeaderSize;
+  unsigned _supla_int16_t Model;  // SUPLA_EXTENDED_WEEKLY_SCHEDULE_MODEL_
+  unsigned _supla_int16_t PayloadVersion;
+  unsigned _supla_int16_t PayloadSize;
+  unsigned char Reserved[8];  // Set to 0 when sending; ignore when receiving.
+  // For HeaderSize greater than SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE,
+  // payload starts at ((unsigned char *)config) + HeaderSize.
+  unsigned char Payload[SUPLA_EXTENDED_WEEKLY_SCHEDULE_PAYLOAD_MAXSIZE];
+} TChannelConfig_ExtendedWeeklySchedule;  // v. >= 29
 
 // Config used for thermometers, humidity sensors, and thermometers with
 // humidity channels.

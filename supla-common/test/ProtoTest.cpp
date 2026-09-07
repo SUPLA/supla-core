@@ -3,6 +3,9 @@
 
 #include "ProtoTest.h"
 
+#include <cstddef>
+#include <cstdio>
+
 #include "gtest/gtest.h"  // NOLINT
 #include "proto.h"
 
@@ -284,6 +287,12 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ(sizeof(TChannelConfig_WeeklySchedule), 356);
   EXPECT_LE(sizeof(TChannelConfig_WeeklySchedule),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+
+  EXPECT_EQ(sizeof(TChannelConfig_ExtendedWeeklySchedule),
+            static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+  EXPECT_EQ(offsetof(TChannelConfig_ExtendedWeeklySchedule, Payload),
+            static_cast<size_t>(SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE));
+  EXPECT_EQ(SUPLA_EXTENDED_WEEKLY_SCHEDULE_PAYLOAD_MAXSIZE, 496);
 
   EXPECT_EQ((unsigned int)544, sizeof(TSC_DeviceConfigUpdateOrResult));
   EXPECT_EQ((unsigned int)20, sizeof(TCS_GetDeviceConfigRequest));
