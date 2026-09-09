@@ -684,14 +684,14 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_HAS_PARENT 0x20000000                  // ver. >= 21
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESTART_SUBDEVICE 0x40000000    // ver. >= 25
 #define SUPLA_CHANNEL_FLAG_BATTERY_COVER_AVAILABLE 0x80000000     // ver. >= 25
-#define SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED 0x100000000      // ver. >= 28
-#define SUPLA_CHANNEL_FLAG_RELAY_MODE_ONCE_SUPPORTED 0x200000000  // ver. >= 28
+#define SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED 0x100000000      // ver. >= 29
+#define SUPLA_CHANNEL_FLAG_RELAY_MODE_START_SUPPORTED 0x200000000  // ver. >= 29
 #define SUPLA_CHANNEL_FLAG_RELAY_MODE_FORCED_SUPPORTED \
-  0x400000000  // ver. >= 28
+  0x400000000  // ver. >= 29
 #define SUPLA_CHANNEL_FLAG_RELAY_MODE_AUTOMATIC_SUPPORTED \
-  0x800000000  // ver. >= 28
-#define SUPLA_CHANNEL_FLAG_EXTENDED_WEEKLY_SCHEDULE \
-  0x1000000000ULL  // ver. >= 29
+  0x800000000  // ver. >= 29
+#define SUPLA_CHANNEL_FLAG_RELAY_MODE_NOT_SET_SUPPORTED \
+  0x1000000000  // ver. >= 29; weekly schedule no-op program
 #pragma pack(push, 1)
 
 typedef struct {
@@ -2428,8 +2428,9 @@ typedef struct {
 
 // Relay modes and commands
 #define SUPLA_RELAY_MODE_NOT_SET 0
-#define SUPLA_RELAY_MODE_ON_ONCE 1
-#define SUPLA_RELAY_MODE_OFF_ONCE 2
+// Initial state on entering a program block (not a continuously forced state).
+#define SUPLA_RELAY_MODE_START_ON 1
+#define SUPLA_RELAY_MODE_START_OFF 2
 #define SUPLA_RELAY_MODE_FORCED_ON 3
 #define SUPLA_RELAY_MODE_FORCED_OFF 4
 #define SUPLA_RELAY_MODE_AUTOMATIC 5
@@ -2443,7 +2444,7 @@ typedef struct {
 typedef struct {
   char hi;  // actual state of relay  - 0 turned off, >= 1 - turned on
   unsigned _supla_int16_t flags;  // SUPLA_RELAY_FLAG_*
-  unsigned char RelayMode;        // see SUPLA_RELAY_MODE_, v. >= 28,
+  unsigned char RelayMode;        // see SUPLA_RELAY_MODE_, v. >= 29,
                                   // only if channel Flags:
                                   // SUPLA_CHANNEL_FLAG_RELAY_MODE_* are set.
 } TRelayChannel_Value;            // v. >= 15
@@ -3243,10 +3244,16 @@ typedef struct {
   union {
     _supla_int16_t SetpointTemperatureHeat;  // * 0.01 - used for heating
     _supla_int16_t Value1;
+    // Relay: duration of the state selected by START_ON/START_OFF, in seconds.
+    // Zero in both duration fields preserves the untimed program behavior.
+    unsigned _supla_int16_t RelayModeDurationS;
   };
   union {
     _supla_int16_t SetpointTemperatureCool;  // * 0.01 - used for cooling
     _supla_int16_t Value2;
+    // Relay: opposite-state duration, in seconds. Nonzero enables repetition
+    // and requires RelayModeDurationS > 0. Other modes require both times zero.
+    unsigned _supla_int16_t RelayOppositeModeDurationS;
   };
 } TWeeklyScheduleProgram;
 
