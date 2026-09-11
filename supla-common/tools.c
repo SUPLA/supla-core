@@ -561,7 +561,7 @@ static char st_get_random_bytes(unsigned char *buffer, size_t size) {
 #ifdef __ANDROID__
 
   arc4random_buf(buffer, size);
-  return true;
+  return 1;
 
 #else
 
