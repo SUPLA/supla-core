@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <cstddef>
+
 #include "proto.h"
 
 static_assert(sizeof(_supla_int16_t) == 2);
@@ -269,6 +271,11 @@ static_assert(sizeof(TChannelConfig_HVAC) <= SUPLA_CHANNEL_CONFIG_MAXSIZE);
 static_assert(sizeof(TChannelConfig_WeeklySchedule) == 356);
 static_assert(sizeof(TChannelConfig_WeeklySchedule) <=
               SUPLA_CHANNEL_CONFIG_MAXSIZE);
+static_assert(sizeof(TChannelConfig_ExtendedWeeklySchedule) ==
+              SUPLA_CHANNEL_CONFIG_MAXSIZE);
+static_assert(offsetof(TChannelConfig_ExtendedWeeklySchedule, Payload) ==
+              SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE);
+static_assert(SUPLA_EXTENDED_WEEKLY_SCHEDULE_PAYLOAD_MAXSIZE == 496);
 static_assert((unsigned int)544 == sizeof(TSC_DeviceConfigUpdateOrResult));
 static_assert((unsigned int)20 == sizeof(TCS_GetDeviceConfigRequest));
 static_assert((unsigned int)9 == sizeof(TCS_GetChannelConfigRequest));
