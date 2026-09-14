@@ -398,8 +398,8 @@ bool supla_state_webhook_client::mail_sensor_report() {
   return hi_report("MAILSENSOR");
 }
 
-bool supla_state_webhook_client::binary_sensor_report() {
-  return hi_report("BINARY_SENSOR");
+bool supla_state_webhook_client::binary_sensor_report(const char *function) {
+  return hi_report(function);
 }
 
 bool supla_state_webhook_client::motion_sensor_report() {

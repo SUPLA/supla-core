@@ -1,27 +1,12 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #ifndef JSON_HELPER_H_
 #define JSON_HELPER_H_
 
 #include <map>
-#include <nlohmann/json.hpp>
 #include <string>
+#include <time.h>
 
 #include "cJSON.h"
 #include "proto.h"
@@ -30,9 +15,6 @@ class supla_json_helper {
  protected:
   bool equal_ci(const char *str1, const char *str2);
   bool equal_ci(cJSON *item, const char *str);
-  bool get_bool(cJSON *parent, const char *key, bool *value);
-  bool get_double(cJSON *parent, const char *key, double *value);
-  bool get_string(cJSON *parent, const char *key, std::string *value);
 
   cJSON *set_item_value(cJSON *parent, const std::string &name, int type,
                         bool force, cJSON *obj, const char *string_value,
@@ -45,7 +27,15 @@ class supla_json_helper {
  public:
   supla_json_helper(void);
   virtual ~supla_json_helper(void);
-  static std::string to_string(const nlohmann::json &j);
+  static bool get_int(cJSON *parent, const char *key, int *value);
+  static bool get_bool(cJSON *parent, const char *key, bool *value);
+  static bool get_double(cJSON *parent, const char *key, double *value);
+  static bool get_string(cJSON *parent, const char *key, std::string *value);
+  static bool get_zulu_time_from_object(cJSON *parent, const char *name,
+                                        time_t *timestamp,
+                                        bool allow_null = false);
+  static cJSON *add_zulu_time_to_object(cJSON *parent, const char *name,
+                                        time_t timestamp);
 };
 
 #endif /* JSON_CONFIG_H_ */

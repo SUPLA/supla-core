@@ -21,14 +21,16 @@
 
 #include <string>
 
-#include "ipc/abstract_ipc_command.h"
+#include "ipc/abstract_calcfg_ipc_command.h"
 
 class supla_abstract_ota_check_updates_command
-    : public supla_abstract_ipc_command {
+    : public supla_abstract_calcfg_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
   virtual const std::string get_command_name(void);
-  virtual bool check_updates(int user_id, int device_id) = 0;
+  virtual bool check_updates(int user_id, int device_id,
+                             unsigned _supla_int64_t *queued_at,
+                             bool *waiting_for_result) = 0;
 
  public:
   explicit supla_abstract_ota_check_updates_command(

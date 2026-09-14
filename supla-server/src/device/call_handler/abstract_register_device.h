@@ -70,7 +70,7 @@ class supla_abstract_register_device
                        supla_abstract_device_dao *device_dao, int client_sd,
                        int client_ipv4, unsigned char activity_timeout);
 
-  virtual int get_last_calcfg_command_importatnt_for_sleepers(void) = 0;
+  virtual int take_latest_calcfg_command_for_sleepers(void) = 0;
   virtual void on_registration_success(void) = 0;
   virtual void after_registration_success(void) = 0;
 
@@ -80,6 +80,7 @@ class supla_abstract_register_device
   bool is_new_device(void);
   int get_device_id(void);
   int get_device_flags(void);
+  short get_manufacturer_id(void);
   int get_location_id(void);
   int get_channel_count(void);
   TDS_SuplaDeviceChannel_B *get_channels_b(void);

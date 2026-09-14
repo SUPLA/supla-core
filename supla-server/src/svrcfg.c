@@ -34,9 +34,14 @@ int svrcfg_oauth_url_base64_len = 0;
 unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
 
-  char *s_mqtt = "MQTT-BROKER";
-  // Start with the highest index (FG_MQTT_KEEP_ALIVE_SEC == 59)
+  char *s_autodiscover = "AUTODISCOVER";
+  // Start with the highest index
   // This ensures that realloc will only be called once
+  scfg_add_int_param(CFG_AUTODISCOVER_STATISTICS_EXPORT_INTERVAL_SEC,
+                     s_autodiscover, "statistics_export_interval_sec", 300);
+  // -----
+
+  char *s_mqtt = "MQTT-BROKER";
   scfg_add_int_param(CFG_MQTT_KEEP_ALIVE_SEC, s_mqtt, "CFG_MQTT_KEEP_ALIVE_SEC",
                      30);
   // -----

@@ -1,20 +1,5 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #ifndef supla_proto_H_
 #define supla_proto_H_
@@ -46,7 +31,7 @@ struct _supla_timeval {
 
 #elif defined(ESP8266) || defined(ESP32) || defined(ESP_PLATFORM)
 // *** Espressif NONOS SDK for ESP8266 OR ARDUINO WITH ESP8266 or ESP32 ***
-// *** ESP-IDF, ESP8266 RTOS SDK ***
+// *** ESP-IDF ***
 #ifndef ESP_PLATFORM
 #ifndef ARDUINO
 #include <mem.h>
@@ -180,8 +165,6 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 #define SUPLA_CHANNEL_STATE_PACK_MAXCOUNT 20  // ver. >= 26
 
-#define SUPLA_OBJECT_ALERT_STATE_PACK_MAXCOUNT 60       // ver. >= 29
-
 #define SUPLA_DCS_CALL_GETVERSION 10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT 20
 #define SUPLA_SDC_CALL_VERSIONERROR 30
@@ -303,11 +286,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CS_CALL_GET_DEVICE_CONFIG 1240                  // ver. >= 21
 #define SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT 1250     // ver. >= 21
 #define SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS 1260              // ver. >= 25
-
-#define SUPLA_DS_CALL_OBJECT_ALERTS_REPORT 1270               // ver. >= 29
-#define SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED 1271              // ver. >= 29
-#define SUPLA_CS_CALL_CLEAR_OBJECT_ALERT_LATCH 1272           // ver. >= 29
-#define SUPLA_SC_CALL_CLEAR_OBJECT_ALERT_LATCH_RESULT 1273    // ver. >= 29
+#define SUPLA_SD_CALL_DEVICE_SYNC_DONE 1270                   // ver. >= 29
+#define SUPLA_DS_CALL_OBJECT_ALERTS_REPORT 1280                // ver. >= 29
+#define SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED 1281              // ver. >= 29
 
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
@@ -518,6 +499,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_FLOOD_SENSOR 1000                 // ver. >= 27
 #define SUPLA_CHANNELFNC_MOTION_SENSOR 1010                // ver. >= 27
 #define SUPLA_CHANNELFNC_BINARY_SENSOR 1020                // ver. >= 27
+#define SUPLA_CHANNELFNC_SMOKE_SENSOR 1030                 // ver. >= 29
+#define SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR 1040       // ver. >= 29
+#define SUPLA_CHANNELFNC_GAS_SENSOR 1050                   // ver. >= 29
 
 // Channel's FuncList bit values:
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
@@ -608,6 +592,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_HPD 19
 #define SUPLA_MFR_LUKFUD 20
 #define SUPLA_MFR_WALA 21
+#define SUPLA_MFR_PROVENT 22
+#define SUPLA_MFR_SMARTBOB 23
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
 #define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010          // ver. >= 17
@@ -626,8 +612,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   0x8000  // ver. >= 28
 #define SUPLA_DEVICE_FLAG_CALCFG_SET_CFG_MODE_PASSWORD_SUPPORTED \
   0x10000  // ver. >= 28
-#define SUPLA_DEVICE_FLAG_OBJECT_ALERTS_SUPPORTED 0x20000        // ver. >= 29
-
+#define SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED 0x20000           // ver. >= 29
+#define SUPLA_DEVICE_FLAG_OBJECT_ALERTS_SUPPORTED 0x40000       // ver. >= 29
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
@@ -654,6 +640,15 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_CONFIG_FIELD_MODBUS (1ULL << 9)  // v. >= 27
 // type: TDeviceConfig_FirmwareUpdate
 #define SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE (1ULL << 10)  // v. >= 28
+// type: TDeviceConfig_ThermalProtection
+#define SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION (1ULL << 11)  // v. >= 29
+// type: TDeviceConfig_InputActivation
+#define SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION \
+  (1ULL << 12)  // v. >= 29
+
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_GND        (1U << 0)
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_VCC        (1U << 1)
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC (1U << 2)
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 // BIT map definition for TDS_SuplaDeviceChannel_D::Flags (64 bit)
@@ -693,12 +688,14 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_HAS_PARENT 0x20000000                  // ver. >= 21
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESTART_SUBDEVICE 0x40000000    // ver. >= 25
 #define SUPLA_CHANNEL_FLAG_BATTERY_COVER_AVAILABLE 0x80000000     // ver. >= 25
-#define SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED 0x100000000      // ver. >= 28
-#define SUPLA_CHANNEL_FLAG_RELAY_MODE_ONCE_SUPPORTED 0x200000000  // ver. >= 28
+#define SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED 0x100000000      // ver. >= 29
+#define SUPLA_CHANNEL_FLAG_RELAY_MODE_START_SUPPORTED 0x200000000  // ver. >= 29
 #define SUPLA_CHANNEL_FLAG_RELAY_MODE_FORCED_SUPPORTED \
-  0x400000000  // ver. >= 28
+  0x400000000  // ver. >= 29
 #define SUPLA_CHANNEL_FLAG_RELAY_MODE_AUTOMATIC_SUPPORTED \
-  0x800000000  // ver. >= 28
+  0x800000000  // ver. >= 29
+#define SUPLA_CHANNEL_FLAG_RELAY_MODE_NOT_SET_SUPPORTED \
+  0x1000000000  // ver. >= 29; weekly schedule no-op program
 #pragma pack(push, 1)
 
 typedef struct {
@@ -2201,7 +2198,6 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_PROGRESS_REPORT 5001             // v. >= 12
 #define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000    // v. >= 12
 #define SUPLA_CALCFG_CMD_RESET_COUNTERS 7000              // v. >= 15
-#define SUPLA_CALCFG_CMD_OBJECT_ALERT_RESET 7010          // v. >= 29
 #define SUPLA_CALCFG_CMD_RECALIBRATE 8000                 // v. >= 15
 #define SUPLA_CALCFG_CMD_ENTER_CFG_MODE 9000              // v. >= 17
 #define SUPLA_CALCFG_CMD_RESET_TO_FACTORY_SETTINGS 9010   // v. >= 28
@@ -2436,8 +2432,9 @@ typedef struct {
 
 // Relay modes and commands
 #define SUPLA_RELAY_MODE_NOT_SET 0
-#define SUPLA_RELAY_MODE_ON_ONCE 1
-#define SUPLA_RELAY_MODE_OFF_ONCE 2
+// Initial state on entering a program block (not a continuously forced state).
+#define SUPLA_RELAY_MODE_START_ON 1
+#define SUPLA_RELAY_MODE_START_OFF 2
 #define SUPLA_RELAY_MODE_FORCED_ON 3
 #define SUPLA_RELAY_MODE_FORCED_OFF 4
 #define SUPLA_RELAY_MODE_AUTOMATIC 5
@@ -2451,7 +2448,7 @@ typedef struct {
 typedef struct {
   char hi;  // actual state of relay  - 0 turned off, >= 1 - turned on
   unsigned _supla_int16_t flags;  // SUPLA_RELAY_FLAG_*
-  unsigned char RelayMode;        // see SUPLA_RELAY_MODE_, v. >= 28,
+  unsigned char RelayMode;        // see SUPLA_RELAY_MODE_, v. >= 29,
                                   // only if channel Flags:
                                   // SUPLA_CHANNEL_FLAG_RELAY_MODE_* are set.
 } TRelayChannel_Value;            // v. >= 15
@@ -2757,28 +2754,13 @@ typedef struct {
 /********************************************
  * OBJECT ALERTS
  *
- * They describe alert-capabilities and current alert states of:
- * - whole IO device,
- * - subdevice behind a gateway/bridge,
- * - single channel.
- *
- * Device <-> Server uses local numbers:
- * - IODEVICE:  Number = 0
- * - SUBDEVICE: Number = TDS_SuplaDeviceChannel_E::SubDeviceId
- * - CHANNEL:   Number = channel number from registration message
- *
- * Server <-> Client uses server-side identifiers:
- * - Id = server-side id for the target type.
+ * Object Alerts are an additional reporting mechanism. Existing
+ * ChannelValue, ChannelState and availability semantics remain unchanged.
+ * A target is the whole IO device, a subdevice, or a channel. Device to
+ * Server messages use the target's local Number. IODEVICE uses Number zero;
+ * SUBDEVICE uses TDS_SuplaDeviceChannel_E::SubDeviceId; CHANNEL uses the
+ * channel number from the registration message.
  ********************************************/
-
-typedef struct {
-  union {
-    unsigned char Number;  // Device <-> Server
-    _supla_int_t Id;       // Server <-> Client
-  };
-  unsigned char Target;  // SUPLA_TARGET_*
-  unsigned char Reserved[3];
-} TSuplaTargetAddress;
 
 #define SUPLA_ALERT_SEVERITY_NONE 0
 #define SUPLA_ALERT_SEVERITY_INFO 1
@@ -2786,21 +2768,10 @@ typedef struct {
 #define SUPLA_ALERT_SEVERITY_ALARM 3
 #define SUPLA_ALERT_SEVERITY_CRITICAL 4
 
-// Alert capability flags. These flags describe what kind of events/actions
-// Cloud can expose for a given alert.
-// STATEFUL and OCCURRENCE are mutually exclusive
-#define SUPLA_ALERT_CAP_STATEFUL (1 << 0)
-#define SUPLA_ALERT_CAP_OCCURRENCE (1 << 1)
-#define SUPLA_ALERT_CAP_LATCHABLE (1 << 2)
-#define SUPLA_ALERT_CAP_RESET_SUPPORTED (1 << 3)
-#define SUPLA_ALERT_CAP_RESET_AUTH_REQUIRED (1 << 4)
-#define SUPLA_ALERT_CAP_CLEAR_LATCH_AUTH_REQUIRED (1 << 5)
+#define SUPLA_ALERT_TYPE_STATEFUL 0
+#define SUPLA_ALERT_TYPE_OCCURRENCE 1
 
-// Current alert state flags.
-#define SUPLA_ALERT_STATE_ACTIVE (1 << 0)      // only for stateful alerts
-#define SUPLA_ALERT_STATE_OCCURRENCE (1 << 1)  // only for events
-
-// Alert codes
+// Alert code groups.
 #define SUPLA_ALERT_GROUP_CORE 0x00
 #define SUPLA_ALERT_GROUP_SYSTEM 0x01
 #define SUPLA_ALERT_GROUP_SENSOR 0x02
@@ -2814,131 +2785,257 @@ typedef struct {
 #define SUPLA_ALERT_GROUP_PROTECTION 0x0A
 #define SUPLA_ALERT_GROUP_DEVICE 0x0B
 
-#define SUPLA_ALERT_CODE_VENDOR_SPECIFIC_MIN 0x8000
-
+// SUPLA_ALERT_CODE_MAP columns are: code, name, group, default severity,
+// type, translation key and precise semantic description.
 #define SUPLA_ALERT_CODE_MAP(X) \
-  X(0x0000, NONE) \
-  \
-  X(0x0100, SYSTEM_CLOCK_NOT_SET) \
-  X(0x0101, SYSTEM_CLOCK_ERROR) \
-  X(0x0102, SYSTEM_CLOCK_BATTERY_LOW) \
-  X(0x0103, SYSTEM_CLOCK_BATTERY_REPLACE) \
-  X(0x0104, SYSTEM_CONFIGURATION_ERROR) \
-  X(0x0105, SYSTEM_COMMUNICATION_LOST) \
-  X(0x0106, SYSTEM_COMMUNICATION_ERROR) \
-  \
-  X(0x0200, SENSOR_ERROR) \
-  X(0x0201, SENSOR_TEMPERATURE_ERROR) \
-  X(0x0202, SENSOR_HUMIDITY_ERROR) \
-  X(0x0203, SENSOR_AIR_QUALITY_ERROR) \
-  X(0x0204, SENSOR_CO2_ERROR) \
-  X(0x0205, SENSOR_PM_ERROR) \
-  \
-  X(0x0300, OUTPUT_ERROR) \
-  X(0x0301, OUTPUT_MOTOR_PROBLEM) \
-  \
-  X(0x0400, CALIBRATION_LOST) \
-  X(0x0401, CALIBRATION_FAILED) \
-  X(0x0402, CALIBRATION_ERROR) \
-  \
-  X(0x0500, MAINTENANCE_REQUIRED) \
-  X(0x0501, MAINTENANCE_FILTER_REPLACE_SOON) \
-  X(0x0502, MAINTENANCE_FILTER_REPLACE_NOW) \
-  X(0x0503, MAINTENANCE_SUPPLY_FILTER_REPLACE_NOW) \
-  X(0x0504, MAINTENANCE_EXHAUST_FILTER_REPLACE_NOW) \
-  X(0x0505, MAINTENANCE_GHE_FILTER_REPLACE_NOW) \
-  \
-  X(0x0600, PROCESS_NO_FLOW) \
-  X(0x0601, PROCESS_SUPPLY_NO_FLOW) \
-  X(0x0602, PROCESS_EXHAUST_NO_FLOW) \
-  X(0x0603, PROCESS_FLOW_RESTRICTED) \
-  X(0x0604, PROCESS_MAX_PRESSURE_EXCEEDED) \
-  \
-  X(0x0700, ENVIRONMENT_DEFROST_TIMEOUT) \
-  X(0x0701, ENVIRONMENT_FROST_PROTECTION_ACTIVE) \
-  X(0x0702, ENVIRONMENT_FREEZE_RISK) \
-  \
-  X(0x0800, SAFETY_EMERGENCY_STOP) \
-  X(0x0801, SAFETY_FIRE_ALARM) \
-  X(0x0802, SAFETY_CO_ALARM) \
-  X(0x0803, SAFETY_INPUT_ACTIVE) \
-  X(0x0804, SAFETY_FORCED_OFF_BY_SENSOR) \
-  \
-  X(0x0900, POWER_BATTERY_LOW) \
-  X(0x0901, POWER_BATTERY_HEALTH_LOW) \
-  X(0x0902, POWER_BATTERY_COVER_OPEN) \
-  X(0x0903, POWER_SUPPLY_ERROR) \
-  \
-  X(0x0A00, PROTECTION_ANTIFREEZE_ACTIVE) \
-  X(0x0A01, PROTECTION_OVERHEAT_ACTIVE) \
-  \
-  X(0x0B00, DEVICE_COVER_OPEN) \
-  X(0x0B01, DEVICE_LIGHT_SOURCE_LIFESPAN_LOW) \
-  X(0x0B02, DEVICE_LIGHT_SOURCE_LIFESPAN_END)
+  X(0x0000, NONE, SUPLA_ALERT_GROUP_CORE, SUPLA_ALERT_SEVERITY_NONE, SUPLA_ALERT_TYPE_STATEFUL, "alert.none", \
+    "No Object Alert is reported.") \
+  X(0x0100, SYSTEM_CLOCK_NOT_SET, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.clock_not_set", \
+    "The source reports that the device clock is not set.") \
+  X(0x0101, SYSTEM_CLOCK_ERROR, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.clock_error", \
+    "The source reports that the device clock cannot provide valid time.") \
+  X(0x0102, SYSTEM_CLOCK_BATTERY_LOW, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.clock_battery_low", \
+    "The source reports that the backup supply for its clock is low.") \
+  X(0x0103, SYSTEM_CLOCK_BATTERY_REPLACE, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.clock_battery_replace", \
+    "The source reports that the clock backup supply requires replacement.") \
+  X(0x0104, SYSTEM_CONFIGURATION_ERROR, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.configuration_error", \
+    "The source reports an invalid configuration affecting its function.") \
+  X(0x0105, SYSTEM_COMMUNICATION_LOST, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.communication_lost", \
+    "A required system communication path has been unavailable beyond the source policy.") \
+  X(0x0106, SYSTEM_COMMUNICATION_ERROR, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.communication_error", \
+    "The source reports a system communication error affecting its function.") \
+  X(0x0107, SYSTEM_CLOCK_UNRELIABLE, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.clock_unreliable", \
+    "The source reports that device time is unreliable for its function.") \
+  X(0x0108, SYSTEM_STORAGE_ERROR, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.storage_error", \
+    "The source reports a storage error affecting its function.") \
+  X(0x0109, SYSTEM_RESOURCE_EXHAUSTION, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.resource_exhaustion", \
+    "The source reports exhausted resources affecting its function.") \
+  X(0x010A, SYSTEM_CONFIGURATION_SAVE_FAILED, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.configuration_save_failed", \
+    "The source could not save a required configuration change.") \
+  X(0x010B, SYSTEM_REQUIRED_DEPENDENCY_UNAVAILABLE, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.required_dependency_unavailable", \
+    "A required dependency is unavailable beyond the source policy.") \
+  X(0x0200, SENSOR_ERROR, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.error", \
+    "The source reports a sensor error affecting measurement or function.") \
+  X(0x0201, SENSOR_TEMPERATURE_ERROR, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.temperature_error", \
+    "The source reports an error from a temperature sensor.") \
+  X(0x0202, SENSOR_HUMIDITY_ERROR, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.humidity_error", \
+    "The source reports an error from a humidity sensor.") \
+  X(0x0203, SENSOR_AIR_QUALITY_ERROR, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.air_quality_error", \
+    "The source reports an error from an air quality sensor.") \
+  X(0x0204, SENSOR_CO2_ERROR, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.co2_error", \
+    "The source reports an error from a CO2 sensor.") \
+  X(0x0205, SENSOR_PM_ERROR, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.pm_error", \
+    "The source reports an error from a particulate matter sensor.") \
+  X(0x0206, SENSOR_NOT_DETECTED, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.not_detected", \
+    "The expected sensor is not detected by the source.") \
+  X(0x0207, SENSOR_OPEN_CIRCUIT, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.open_circuit", \
+    "The source detects an open circuit in the sensor connection.") \
+  X(0x0208, SENSOR_SHORT_CIRCUIT, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.short_circuit", \
+    "The source detects a short circuit in the sensor connection.") \
+  X(0x0209, SENSOR_OUT_OF_VALID_RANGE, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.out_of_valid_range", \
+    "The sensor measurement is outside its valid measurement range.") \
+  X(0x020A, SENSOR_INCONSISTENT_STATE, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.inconsistent_state", \
+    "The source detects an inconsistent sensor state.") \
+  X(0x0300, OUTPUT_ERROR, SUPLA_ALERT_GROUP_OUTPUT, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.output.error", \
+    "The source reports an output error affecting its function.") \
+  X(0x0301, OUTPUT_MOTOR_PROBLEM, SUPLA_ALERT_GROUP_OUTPUT, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.output.motor_problem", \
+    "The source reports that an output motor cannot perform its function.") \
+  X(0x0302, OUTPUT_STATE_MISMATCH, SUPLA_ALERT_GROUP_OUTPUT, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.output.state_mismatch", \
+    "The confirmed output state does not match the requested state after the allowed time.") \
+  X(0x0303, OUTPUT_TRAVEL_TIMEOUT, SUPLA_ALERT_GROUP_OUTPUT, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.output.travel_timeout", \
+    "The output did not complete its allowed travel time.") \
+  X(0x0304, OUTPUT_OBSTRUCTION_DETECTED, SUPLA_ALERT_GROUP_OUTPUT, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.output.obstruction_detected", \
+    "The source detected an obstruction while operating the output.") \
+  X(0x0305, OUTPUT_POSITION_UNKNOWN, SUPLA_ALERT_GROUP_OUTPUT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.output.position_unknown", \
+    "The source cannot determine the current output position.") \
+  X(0x0400, CALIBRATION_LOST, SUPLA_ALERT_GROUP_CALIBRATION, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.calibration.lost", \
+    "The source no longer has a valid calibration for its function.") \
+  X(0x0401, CALIBRATION_FAILED, SUPLA_ALERT_GROUP_CALIBRATION, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.calibration.failed", \
+    "The most recent calibration attempt failed.") \
+  X(0x0402, CALIBRATION_ERROR, SUPLA_ALERT_GROUP_CALIBRATION, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.calibration.error", \
+    "The source reports a calibration error affecting its function.") \
+  X(0x0403, CALIBRATION_REQUIRED, SUPLA_ALERT_GROUP_CALIBRATION, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.calibration.required", \
+    "The source requires a valid calibration before its function can be used.") \
+  X(0x0500, MAINTENANCE_REQUIRED, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.required", \
+    "The source reports that maintenance is required for its function.") \
+  X(0x0501, MAINTENANCE_FILTER_REPLACE_SOON, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.filter_replace_soon", \
+    "The source reports that a filter will soon require replacement.") \
+  X(0x0502, MAINTENANCE_FILTER_REPLACE_NOW, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.filter_replace_now", \
+    "The source reports that a filter requires replacement now.") \
+  X(0x0503, MAINTENANCE_SUPPLY_FILTER_REPLACE_NOW, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.supply_filter_replace_now", \
+    "The source reports that a supply filter requires replacement now.") \
+  X(0x0504, MAINTENANCE_EXHAUST_FILTER_REPLACE_NOW, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.exhaust_filter_replace_now", \
+    "The source reports that an exhaust filter requires replacement now.") \
+  X(0x0505, MAINTENANCE_GHE_FILTER_REPLACE_NOW, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.ghe_filter_replace_now", \
+    "The source reports that a heat recovery filter requires replacement now.") \
+  X(0x0506, MAINTENANCE_SERVICE_DUE, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.service_due", \
+    "The source reports that a scheduled service is due.") \
+  X(0x0507, MAINTENANCE_CALIBRATION_DUE, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.calibration_due", \
+    "The source reports that scheduled calibration is due.") \
+  X(0x0508, MAINTENANCE_SENSOR_END_OF_LIFE, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.sensor_end_of_life", \
+    "The source reports that a sensor has reached its service life.") \
+  X(0x0509, MAINTENANCE_LIGHT_SOURCE_LIFESPAN_LOW, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.light_source_lifespan_low", \
+    "The source reports that light source lifespan is low.") \
+  X(0x050A, MAINTENANCE_LIGHT_SOURCE_LIFESPAN_END, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.light_source_lifespan_end", \
+    "The source reports that the light source has reached its service life.") \
+  X(0x0600, PROCESS_NO_FLOW, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.no_flow", \
+    "The source reports no flow where flow is required by its function.") \
+  X(0x0601, PROCESS_SUPPLY_NO_FLOW, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.supply_no_flow", \
+    "The source reports no required supply flow.") \
+  X(0x0602, PROCESS_EXHAUST_NO_FLOW, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.exhaust_no_flow", \
+    "The source reports no required exhaust flow.") \
+  X(0x0603, PROCESS_FLOW_RESTRICTED, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.flow_restricted", \
+    "The source reports flow restricted below its configured acceptable policy.") \
+  X(0x0604, PROCESS_MAX_PRESSURE_EXCEEDED, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.max_pressure_exceeded", \
+    "The monitored process pressure exceeds its configured acceptable high level.") \
+  X(0x0605, PROCESS_PRESSURE_LOW, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.pressure_low", \
+    "The monitored process pressure is below its configured acceptable low level.") \
+  X(0x0606, PROCESS_LEVEL_HIGH, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.level_high", \
+    "The monitored process level exceeds its configured acceptable high level.") \
+  X(0x0607, PROCESS_LEVEL_LOW, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.level_low", \
+    "The monitored process level is below its configured acceptable low level.") \
+  X(0x0608, PROCESS_UNEXPECTED_FLOW, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.unexpected_flow", \
+    "The source reports flow when its configured process state does not allow it.") \
+  X(0x0609, PROCESS_CONTINUOUS_OPERATION_LIMIT_EXCEEDED, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.continuous_operation_limit_exceeded", \
+    "The source reports that its configured continuous operation limit was exceeded.") \
+  X(0x0700, ENVIRONMENT_DEFROST_TIMEOUT, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.defrost_timeout", \
+    "The source reports that defrost did not complete within the allowed time.") \
+  X(0x0701, ENVIRONMENT_FROST_PROTECTION_ACTIVE, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_INFO, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.frost_protection_active", \
+    "The source reports that frost protection is currently active.") \
+  X(0x0702, ENVIRONMENT_FREEZE_RISK, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.freeze_risk", \
+    "The source reports a configured risk of freezing conditions.") \
+  X(0x0703, ENVIRONMENT_HIGH_TEMPERATURE, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.high_temperature", \
+    "The monitored environment temperature exceeds its configured acceptable level.") \
+  X(0x0704, ENVIRONMENT_LOW_TEMPERATURE, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.low_temperature", \
+    "The monitored environment temperature is below its configured acceptable level.") \
+  X(0x0705, ENVIRONMENT_HIGH_HUMIDITY, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.high_humidity", \
+    "The monitored environment humidity exceeds its configured acceptable level.") \
+  X(0x0706, ENVIRONMENT_HIGH_CO2, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.high_co2", \
+    "The monitored environment CO2 level exceeds its configured acceptable level.") \
+  X(0x0707, ENVIRONMENT_HIGH_WIND, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.high_wind", \
+    "The monitored wind exceeds its configured acceptable level.") \
+  X(0x0800, SAFETY_EMERGENCY_STOP, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.emergency_stop", \
+    "The source reports that an emergency stop condition is active.") \
+  X(0x0801, SAFETY_FIRE_ALARM, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.fire_alarm", \
+    "The source reports a fire alarm condition.") \
+  X(0x0802, SAFETY_CO_ALARM, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.co_alarm", \
+    "The source reports a carbon monoxide alarm condition.") \
+  X(0x0803, SAFETY_INPUT_ACTIVE, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.input_active", \
+    "The source reports that a configured safety input is active.") \
+  X(0x0804, SAFETY_FORCED_OFF_BY_SENSOR, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.forced_off_by_sensor", \
+    "The source reports that a safety sensor forced the function off.") \
+  X(0x0805, SAFETY_SMOKE_ALARM, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.smoke_alarm", \
+    "The source reports a smoke alarm condition.") \
+  X(0x0806, SAFETY_COMBUSTIBLE_GAS_ALARM, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.combustible_gas_alarm", \
+    "The source reports a combustible gas alarm condition.") \
+  X(0x0807, SAFETY_WATER_LEAK, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.water_leak", \
+    "The source reports detected water leakage.") \
+  X(0x0808, SAFETY_PROTECTIVE_DEVICE_FAULT, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.protective_device_fault", \
+    "The source reports a fault in a protective device.") \
+  X(0x0900, POWER_BATTERY_LOW, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.battery_low", \
+    "The source reports that battery charge is below its configured acceptable level.") \
+  X(0x0901, POWER_BATTERY_HEALTH_LOW, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.battery_health_low", \
+    "The source reports that battery health is below its configured acceptable level.") \
+  X(0x0902, POWER_BATTERY_COVER_OPEN, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.battery_cover_open", \
+    "The source reports that the battery cover is open.") \
+  X(0x0903, POWER_SUPPLY_ERROR, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.supply_error", \
+    "The source reports a power supply error affecting its function.") \
+  X(0x0904, POWER_MAINS_LOST, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.mains_lost", \
+    "The source reports that required mains power is unavailable.") \
+  X(0x0905, POWER_UNDERVOLTAGE, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.undervoltage", \
+    "The source reports supply voltage below its configured acceptable level.") \
+  X(0x0906, POWER_OVERVOLTAGE, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.overvoltage", \
+    "The source reports supply voltage above its configured acceptable level.") \
+  X(0x0907, POWER_PHASE_LOSS, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.phase_loss", \
+    "The source reports a required power phase is unavailable.") \
+  X(0x0908, POWER_CHARGING_FAILURE, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.charging_failure", \
+    "The source reports that battery charging failed.") \
+  X(0x0A00, PROTECTION_ANTIFREEZE_ACTIVE, SUPLA_ALERT_GROUP_PROTECTION, SUPLA_ALERT_SEVERITY_INFO, SUPLA_ALERT_TYPE_STATEFUL, "alert.protection.antifreeze_active", \
+    "The source reports that antifreeze protection is currently active.") \
+  X(0x0A01, PROTECTION_OVERHEAT_ACTIVE, SUPLA_ALERT_GROUP_PROTECTION, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.protection.overheat_active", \
+    "The source reports that overheat protection is currently active.") \
+  X(0x0A02, PROTECTION_OVERCURRENT_TRIPPED, SUPLA_ALERT_GROUP_PROTECTION, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.protection.overcurrent_tripped", \
+    "The source reports that overcurrent protection tripped and may keep an output blocked.") \
+  X(0x0A03, PROTECTION_SHORT_CIRCUIT_ACTIVE, SUPLA_ALERT_GROUP_PROTECTION, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.protection.short_circuit_active", \
+    "The source reports that short circuit protection is currently active.") \
+  X(0x0A04, PROTECTION_DRY_RUN_ACTIVE, SUPLA_ALERT_GROUP_PROTECTION, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.protection.dry_run_active", \
+    "The source reports that dry run protection is currently active.") \
+  X(0x0B00, DEVICE_COVER_OPEN, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.device.cover_open", \
+    "The source reports that a device cover is open.") \
+  X(0x0B01, DEVICE_LIGHT_SOURCE_LIFESPAN_LOW, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.device.light_source_lifespan_low", \
+    "The source reports that light source lifespan is low.") \
+  X(0x0B02, DEVICE_LIGHT_SOURCE_LIFESPAN_END, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.device.light_source_lifespan_end", \
+    "The source reports that the light source has reached its service life.") \
+  X(0x0B03, DEVICE_SELF_TEST_FAILED, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_OCCURRENCE, "alert.device.self_test_failed", \
+    "The source reports that a self-test failed.") \
+  X(0x0B04, DEVICE_SELF_TEST_COMPLETED, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_INFO, SUPLA_ALERT_TYPE_OCCURRENCE, "alert.device.self_test_completed", \
+    "The source reports that a self-test completed.") \
+  X(0x0B05, DEVICE_WATCHDOG_RESET, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_OCCURRENCE, "alert.device.watchdog_reset", \
+    "The source reports that a watchdog reset occurred.") \
+  X(0x0B06, DEVICE_BROWNOUT_RESET, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_OCCURRENCE, "alert.device.brownout_reset", \
+    "The source reports that a brownout reset occurred.") \
+  X(0x0B07, DEVICE_FIRMWARE_UPDATE_FAILED, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_OCCURRENCE, "alert.device.firmware_update_failed", \
+    "The source reports that a firmware update failed.") \
+  X(0x0B08, DEVICE_SECURITY_UPDATE_FAILED, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_OCCURRENCE, "alert.device.security_update_failed", \
+    "The source reports that a security update failed.")
 
 typedef enum {
-#define X(id, name) SUPLA_ALERT_CODE_##name = id,
+#define X(id, name, group, severity, type, key, description) \
+  SUPLA_ALERT_CODE_##name = id,
   SUPLA_ALERT_CODE_MAP(X)
 #undef X
 } TSuplaAlertCode;
-#define SUPLA_ALERT_CODE_VENDOR_SPECIFIC_MIN 0x8000
+
+// Preferred generic names retain the stable draft code numbers above.
+#define SUPLA_ALERT_CODE_PROCESS_RESTRICTED_FLOW \
+  SUPLA_ALERT_CODE_PROCESS_FLOW_RESTRICTED
+#define SUPLA_ALERT_CODE_PROCESS_PRESSURE_HIGH \
+  SUPLA_ALERT_CODE_PROCESS_MAX_PRESSURE_EXCEEDED
+#define SUPLA_ALERT_CODE_MAINTENANCE_LIGHT_SOURCE_LIFESPAN_LOW \
+  SUPLA_ALERT_CODE_DEVICE_LIGHT_SOURCE_LIFESPAN_LOW
+#define SUPLA_ALERT_CODE_MAINTENANCE_LIGHT_SOURCE_LIFESPAN_END \
+  SUPLA_ALERT_CODE_DEVICE_LIGHT_SOURCE_LIFESPAN_END
+
+// The small wire record deliberately carries only effective severity and
+// current state. There is no latch, authentication or vendor instance field.
+#define SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE (1 << 0)
+#define SUPLA_OBJECT_ALERT_FLAG_ACTIVE (1 << 1)
+#define SUPLA_OBJECT_ALERT_FLAGS_MASK \
+  (SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE | SUPLA_OBJECT_ALERT_FLAG_ACTIVE)
+
+// Compatibility names for existing code that refers to state flags.
+#define SUPLA_ALERT_STATE_OCCURRENCE SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE
+#define SUPLA_ALERT_STATE_ACTIVE SUPLA_OBJECT_ALERT_FLAG_ACTIVE
 
 typedef struct {
-  unsigned _supla_int16_t Code;        // SUPLA_ALERT_CODE_*
-  unsigned _supla_int16_t VendorCode;  // raw vendor code, 0 if unused
+  unsigned _supla_int16_t Code;  // known or unknown future alert code
+  unsigned char Severity;        // SUPLA_ALERT_SEVERITY_*
+  unsigned char Flags;           // SUPLA_OBJECT_ALERT_FLAG_*
+} TSuplaObjectAlert;
 
-  unsigned char Capabilities;  // SUPLA_ALERT_CAP_*
-  unsigned char Severity;      // SUPLA_ALERT_SEVERITY_*
-  unsigned char StateFlags;    // SUPLA_ALERT_STATE_*
-  unsigned char Reserved0;
-} TSuplaAlertStateItem;
+#define SUPLA_OBJECT_ALERT_SURFACE_NONE 0xFF
+#define SUPLA_OBJECT_ALERT_MAXCOUNT 60
+#define SUPLA_OBJECT_ALERT_STATE_PACK_MAXCOUNT SUPLA_OBJECT_ALERT_MAXCOUNT
 
-// SUPLA_DS_CALL_OBJECT_ALERTS_REPORT
-// SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED
+// SUPLA_DS_CALL_OBJECT_ALERTS_REPORT and _CHANGED. The packet is a variable
+// length structure: offsetof(TDS_ObjectAlerts, Items) + Count * sizeof(item).
 typedef struct {
-  TSuplaTargetAddress Target;
-
-  union {
-    unsigned char AlertSurfaceChannelNumber;  // Device <-> Server
-    _supla_int_t AlertSurfaceChannelId;       // Server <-> Client
-  };
-
-  unsigned _supla_int16_t TotalCount;
-  unsigned _supla_int16_t Offset;
-
+  unsigned char Target;  // SUPLA_TARGET_CHANNEL/IODEVICE/SUBDEVICE
+  unsigned char Number;  // local number; IODEVICE uses zero
+  unsigned char AlertSurfaceChannelNumber;  // or SUPLA_OBJECT_ALERT_SURFACE_NONE
   unsigned char Count;
-  unsigned char EndOfDataFlag;    // 1 - last message; 0 - more messages follow
-  unsigned char Reserved[6];
-
-  TSuplaAlertStateItem Items[SUPLA_OBJECT_ALERT_STATE_PACK_MAXCOUNT];
+  TSuplaObjectAlert Items[SUPLA_OBJECT_ALERT_MAXCOUNT];  // variable length
 } TDS_ObjectAlerts;
 
-typedef struct {
-  TSuplaTargetAddress Target;
-
-  unsigned _supla_int16_t Code;
-  unsigned _supla_int16_t VendorCode;
-
-  unsigned char Reserved[4];
-} TCalCfg_ObjectAlertReset;
-
-typedef struct {
-  _supla_int_t Id;
-  char Target;  // SUPLA_TARGET_*
-  unsigned char Reserved0;
-  unsigned _supla_int16_t Code;
-  unsigned _supla_int16_t VendorCode;
-  unsigned char Reserved[2];
-} TCS_ClearObjectAlertLatch;
-
-typedef struct {
-  unsigned char ResultCode;  // SUPLA_RESULTCODE_*
-  char Target;               // SUPLA_TARGET_*
-  unsigned char Reserved0[2];
-  _supla_int_t Id;
-  unsigned _supla_int16_t Code;
-  unsigned _supla_int16_t VendorCode;
-} TSC_ClearObjectAlertLatchResult;
+// OBJECT_ALERTS_REPORT contains the complete set of Object Alerts currently
+// supported by Target together with current effective state and severity.
+// After successful processing, the received set replaces the previously known
+// capability/state set for Target. A zero Count means that Target currently
+// exposes no Object Alerts through this mechanism. Supported stateful alerts
+// are included even when inactive; occurrence capabilities use OCCURRENCE.
+// OBJECT_ALERTS_CHANGED contains incremental changes to declared stateful
+// alerts and/or occurrence events. An occurrence is best effort and is not
+// later reconstructed as an inactive state.
 
 typedef struct {
   _supla_int_t ChannelID;
@@ -3075,6 +3172,7 @@ typedef struct {
 #define SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE 3
 #define SUPLA_CONFIG_TYPE_OCR 4
 #define SUPLA_CONFIG_TYPE_EXTENDED 5
+#define SUPLA_CONFIG_TYPE_EXTENDED_WEEKLY_SCHEDULE 6
 
 /********************************************
  * DEVICE CONFIG STRUCTURES
@@ -3280,6 +3378,29 @@ typedef struct {
   unsigned char Reserved[20];
 } TDeviceConfig_FirmwareUpdate;
 
+typedef struct {
+  _supla_int16_t Threshold;     // 0.1°C
+  _supla_int16_t MinThreshold;  // 0.1°C, readonly
+  _supla_int16_t MaxThreshold;  // 0.1°C, readonly
+
+  unsigned char Enabled;         // 0 - disabled, 1 - enabled
+  unsigned char DisableAllowed;  // readonly
+
+  unsigned char Reserved[8];
+} TDeviceConfig_ThermalProtection;  // v. >= 29
+
+// type: TDeviceConfig_InputActivation
+typedef struct {
+  // Bitmask of SUPLA_DEVCFG_INPUT_ACTIVATION_* values supported by the device.
+  // Read-only for clients.
+  unsigned char AvailableModes;
+
+  // One selected SUPLA_DEVCFG_INPUT_ACTIVATION_* value.
+  unsigned char Mode;
+
+  unsigned char Reserved[6];
+} TDeviceConfig_InputActivation;
+
 /********************************************
  * CHANNEL CONFIG STRUCTURES
  ********************************************/
@@ -3413,10 +3534,16 @@ typedef struct {
   union {
     _supla_int16_t SetpointTemperatureHeat;  // * 0.01 - used for heating
     _supla_int16_t Value1;
+    // Relay: duration of the state selected by START_ON/START_OFF, in seconds.
+    // Zero in both duration fields preserves the untimed program behavior.
+    unsigned _supla_int16_t RelayModeDurationS;
   };
   union {
     _supla_int16_t SetpointTemperatureCool;  // * 0.01 - used for cooling
     _supla_int16_t Value2;
+    // Relay: opposite-state duration, in seconds. Nonzero enables repetition
+    // and requires RelayModeDurationS > 0. Other modes require both times zero.
+    unsigned _supla_int16_t RelayOppositeModeDurationS;
   };
 } TWeeklyScheduleProgram;
 
@@ -3437,6 +3564,33 @@ typedef struct {
   // Days of week are numbered: 0 - Sunday, 1 - Monday, etc.
   unsigned char Quarters[SUPLA_WEEKLY_SCHEDULE_VALUES_SIZE / 2];  // 336 B
 } TChannelConfig_WeeklySchedule;                                  // v. >= 21
+
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_MODEL_UNSPECIFIED 0
+// The channel supports switching between manual and weekly schedule modes,
+// but weekly schedule configuration is not available through SUPLA.
+// PayloadVersion and PayloadSize have to be 0 for this model.
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_MODEL_MODE_ONLY 1
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_MODEL_PROVENT 2
+
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_ENVELOPE_VERSION 1
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE 16
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_PAYLOAD_MAXSIZE \
+  (SUPLA_CHANNEL_CONFIG_MAXSIZE - SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE)
+
+// ConfigSize has to equal HeaderSize + PayloadSize. HeaderSize has to be at
+// least SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE and cannot exceed
+// ConfigSize.
+typedef struct {
+  unsigned char Version;  // SUPLA_EXTENDED_WEEKLY_SCHEDULE_ENVELOPE_VERSION
+  unsigned char HeaderSize;
+  unsigned _supla_int16_t Model;  // SUPLA_EXTENDED_WEEKLY_SCHEDULE_MODEL_
+  unsigned _supla_int16_t PayloadVersion;
+  unsigned _supla_int16_t PayloadSize;
+  unsigned char Reserved[8];  // Set to 0 when sending; ignore when receiving.
+  // For HeaderSize greater than SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE,
+  // payload starts at ((unsigned char *)config) + HeaderSize.
+  unsigned char Payload[SUPLA_EXTENDED_WEEKLY_SCHEDULE_PAYLOAD_MAXSIZE];
+} TChannelConfig_ExtendedWeeklySchedule;  // v. >= 29
 
 // Config used for thermometers, humidity sensors, and thermometers with
 // humidity channels.

@@ -39,7 +39,7 @@ TEST_F(IdentifyDeviceCommandTest, noData) {
 }
 
 TEST_F(IdentifyDeviceCommandTest, IdentifyWithSuccess) {
-  EXPECT_CALL(*cmd, identify_device(10, 20)).WillOnce(Return(true));
+  EXPECT_CALL(*cmd, identify_device(10, 20, _, _)).WillOnce(Return(true));
 
   commandProcessingTest("IDENTIFY-DEVICE:10,20\n", "OK:20\n");
 }

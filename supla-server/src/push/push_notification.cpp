@@ -18,11 +18,13 @@
 
 #include "push_notification.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
 #include "exception/abort_exception.h"
 #include "helper/inja_sandbox.h"
+#include "helper/nlohmann_helper.h"
 #include "jsonconfig/channel/temp_hum_config.h"
 
 using std::map;
@@ -129,7 +131,7 @@ string supla_push_notification::apply_template_data(string str) {
     pattern.append("}");
 
     size_t pos = 0;
-    string v = supla_json_helper::to_string(value);
+    string v = supla_nlohmann_helper::to_string(value);
 
     while ((pos = str.find(pattern, pos)) != string::npos) {
       str.replace(pos, pattern.length(), v);

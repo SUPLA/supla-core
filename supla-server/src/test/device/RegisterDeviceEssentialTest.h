@@ -28,7 +28,8 @@ class RegisterDeviceEssentialTest : public RegisterDeviceTest {
   RegisterDeviceEssentialTest();
   virtual ~RegisterDeviceEssentialTest();
   virtual void SetUp();
-  void CalcfgForSleepersTest(int command, int expected_result_code);
+  void CalcfgForSleepersTest(int command, int expected_result_code,
+                             bool sync_done_supported = false);
 };
 
 } /* namespace testing */

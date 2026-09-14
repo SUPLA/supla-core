@@ -418,6 +418,32 @@ TEST_F(MqttStateMessageProviderTest, garageDoorSensor) {
   ASSERT_FALSE(dataExists(&provider));
 }
 
+TEST_F(MqttStateMessageProviderTest, specializedBinarySensors) {
+  const int functions[] = {SUPLA_CHANNELFNC_SMOKE_SENSOR,
+                           SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR,
+                           SUPLA_CHANNELFNC_GAS_SENSOR};
+
+  for (int function : functions) {
+    SetResultValue(
+        function, true,
+        new supla_channel_binary_sensor_value(function, true));
+
+    ASSERT_TRUE(fetchAndCompare(
+        &provider, NULL, "true", false,
+        "supla/9920767494dd87196e1896c7cbab707c/devices/"
+        "456/channels/%i/state/connected",
+        789));
+    ASSERT_TRUE(fetchAndCompare(
+        &provider, NULL, "true", false,
+        "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/"
+        "state/hi",
+        789));
+    ASSERT_FALSE(dataExists(&provider));
+    provider.set_ids(123, 456, 789);
+    provider.reset_index();
+  }
+}
+
 TEST_F(MqttStateMessageProviderTest, thermometer) {
   SetResultValue(
       SUPLA_CHANNELFNC_THERMOMETER, true,

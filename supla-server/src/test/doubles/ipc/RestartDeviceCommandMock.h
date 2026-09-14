@@ -30,7 +30,9 @@ class RestartDeviceCommandMock : public supla_abstract_restart_device_command {
   explicit RestartDeviceCommandMock(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  MOCK_METHOD2(restart_device, bool(int user_id, int device_id));
+  MOCK_METHOD4(restart_device, bool(int user_id, int device_id,
+                                    unsigned _supla_int64_t *queued_at,
+                                    bool *waiting_for_result));
 };
 
 } /* namespace testing */

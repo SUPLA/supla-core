@@ -109,6 +109,9 @@ bool supla_channel_binary_sensor_value::is_function_supported(int func) {
     case SUPLA_CHANNELFNC_FLOOD_SENSOR:
     case SUPLA_CHANNELFNC_MOTION_SENSOR:
     case SUPLA_CHANNELFNC_BINARY_SENSOR:
+    case SUPLA_CHANNELFNC_SMOKE_SENSOR:
+    case SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR:
+    case SUPLA_CHANNELFNC_GAS_SENSOR:
       return true;
   }
 

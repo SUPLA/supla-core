@@ -26,6 +26,7 @@
 #include "db/mariadb_access_provider.h"
 #include "device/device.h"
 #include "device/device_dao.h"
+#include "log.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -55,15 +56,9 @@ bool supla_register_device::get_authkey_hash(
   return get_device_dao()->get_authkey_hash(id, authkey_hash, is_null);
 }
 
-int supla_register_device::get_last_calcfg_command_importatnt_for_sleepers(
-    void) {
-  supla_user *user = supla_user::find(get_user_id(), true);
-  if (user) {
-    shared_ptr<supla_device> prev = user->get_devices()->get(get_device_id());
-    return prev != nullptr ? prev->last_calcfg_command_importatnt_for_sleepers
-                           : 0;
-  }
-  return 0;
+int supla_register_device::take_latest_calcfg_command_for_sleepers(void) {
+  shared_ptr<supla_device> device = get_device().lock();
+  return device ? device->take_latest_calcfg_command() : 0;
 }
 
 void supla_register_device::on_registration_success(void) {
@@ -74,6 +69,17 @@ void supla_register_device::on_registration_success(void) {
   device->set_authkey(get_authkey());
   device->set_user(supla_user::find(get_user_id(), true));
   device->set_flags(get_device_flags());
+  device->set_manufacturer_id(get_manufacturer_id());
+
+  if (!device->calcfg_queue.load()) {
+    supla_log(LOG_WARNING, "Unable to load CALCFG queue for device %i",
+              device->get_id());
+  } else if (device->get_flags() & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED) {
+    if (!device->calcfg_queue.refresh_valid_until()) {
+      supla_log(LOG_WARNING, "Unable to refresh CALCFG queue for device %i",
+                device->get_id());
+    }
+  }
 
   supla_device_channels *channels = new supla_device_channels(
       get_device_dao(), device.get(), get_channels_b(), get_channels_e(),
@@ -105,7 +111,15 @@ void supla_register_device::after_registration_success(void) {
   shared_ptr<supla_device> device = get_device().lock();
 
   device->send_config_to_device();
-  device->get_channels()->send_configs_to_device();
+
+  // The channel configuration is sent in fragments. Any new message sent to
+  // the device during registration must be added here, after channel config
+  // sending is finished and before SUPLA_SD_CALL_DEVICE_SYNC_DONE.
+  device->get_channels()->send_configs_to_device(
+      [](supla_device *device) -> void {
+        device->send_queued_calcfg_requests();
+        device->send_sync_done_to_device();
+      });
 }
 
 void supla_register_device::register_device(

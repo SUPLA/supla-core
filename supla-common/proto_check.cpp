@@ -1,20 +1,7 @@
-/*
-   Copyright (C) AC SOFTWARE SP. Z O.O
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-   */
+#include <stddef.h>
 
 #include "proto.h"
 
@@ -113,11 +100,11 @@ static_assert((unsigned int)62 == sizeof(TElectricityMeter_Measurement));
 static_assert((139 +
                sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT) ==
               sizeof(TElectricityMeter_ExtendedValue_V2));
+#endif
 
 static_assert((144 +
                sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT) ==
               sizeof(TElectricityMeter_ExtendedValue_V3));
-#endif  // USE_DEPRECATED_EMEV_V2
 
 static_assert((unsigned int)5 == sizeof(TElectricityMeter_Value));
 static_assert((unsigned int)40 == sizeof(TSC_ImpulseCounter_ExtendedValue));
@@ -143,7 +130,7 @@ static_assert(sizeof(TElectricityMeter_Value) <=
 #ifdef USE_DEPRECATED_EMEV_V2
 static_assert(sizeof(TElectricityMeter_ExtendedValue_V2) <=
               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
-#endif  // USE_DEPRECATED_EMEV_V2
+#endif
 static_assert(sizeof(TElectricityMeter_ExtendedValue_V3) <=
               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 static_assert((unsigned int)4 == sizeof(TThermostat_Time));
@@ -240,6 +227,12 @@ static_assert(sizeof(TDeviceConfig_HomeScreenOffDelay) <=
               (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 static_assert(sizeof(TDeviceConfig_HomeScreenContent) <=
               (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+static_assert((unsigned int)16 == sizeof(TDeviceConfig_ThermalProtection));
+static_assert(sizeof(TDeviceConfig_ThermalProtection) <=
+              (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+static_assert(sizeof(TDeviceConfig_InputActivation) == 8);
+static_assert(sizeof(TDeviceConfig_InputActivation) <=
+              (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 static_assert((unsigned int)8 == sizeof(TCalCfg_RollerShutterSettings));
 static_assert(sizeof(TCalCfg_RollerShutterSettings) <=
               (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
@@ -278,6 +271,11 @@ static_assert(sizeof(TChannelConfig_HVAC) <= SUPLA_CHANNEL_CONFIG_MAXSIZE);
 static_assert(sizeof(TChannelConfig_WeeklySchedule) == 356);
 static_assert(sizeof(TChannelConfig_WeeklySchedule) <=
               SUPLA_CHANNEL_CONFIG_MAXSIZE);
+static_assert(sizeof(TChannelConfig_ExtendedWeeklySchedule) ==
+              SUPLA_CHANNEL_CONFIG_MAXSIZE);
+static_assert(offsetof(TChannelConfig_ExtendedWeeklySchedule, Payload) ==
+              SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE);
+static_assert(SUPLA_EXTENDED_WEEKLY_SCHEDULE_PAYLOAD_MAXSIZE == 496);
 static_assert((unsigned int)544 == sizeof(TSC_DeviceConfigUpdateOrResult));
 static_assert((unsigned int)20 == sizeof(TCS_GetDeviceConfigRequest));
 static_assert((unsigned int)9 == sizeof(TCS_GetChannelConfigRequest));
@@ -326,43 +324,41 @@ static_assert(sizeof(TChannelConfig_Container) <=
 static_assert(sizeof(TValve_Value) <= SUPLA_CHANNELVALUE_SIZE);
 static_assert(sizeof(TCSD_Valve) <= SUPLA_CHANNELVALUE_SIZE);
 
-static_assert(sizeof(TSuplaTargetAddress) == 8);
-static_assert(sizeof(TSuplaAlertStateItem) == 8);
-
-static_assert(sizeof(TDS_ObjectAlerts) == 504);
+static_assert(sizeof(TSuplaObjectAlert) == 4);
+static_assert(offsetof(TDS_ObjectAlerts, Items) == 4);
+static_assert(sizeof(TDS_ObjectAlerts) ==
+              4 + SUPLA_OBJECT_ALERT_MAXCOUNT * sizeof(TSuplaObjectAlert));
 static_assert(sizeof(TDS_ObjectAlerts) <= SUPLA_MAX_DATA_SIZE);
+static_assert(SUPLA_DS_CALL_OBJECT_ALERTS_REPORT !=
+              SUPLA_SD_CALL_DEVICE_SYNC_DONE);
+static_assert(SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED !=
+              SUPLA_SD_CALL_DEVICE_SYNC_DONE);
+static_assert((SUPLA_DEVICE_FLAG_OBJECT_ALERTS_SUPPORTED &
+               SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED) == 0);
 
-static_assert(sizeof(TCalCfg_ObjectAlertReset) == 16);
-static_assert(sizeof(TCS_ClearObjectAlertLatch) == 12);
-static_assert(sizeof(TSC_ClearObjectAlertLatchResult) == 12);
-
-static_assert(SUPLA_CHANNEL_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
-static_assert(SUPLA_LOCATION_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
-static_assert(SUPLA_SCENE_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
-
-// Check if alarms enum contain uniq values
-namespace {
-
-constexpr unsigned _supla_int16_t suplaAlertCodes[] = {
-#define X(id, name) id,
+static constexpr unsigned int suplaAlertCodes[] = {
+#define X(id, name, group, severity, type, key, description) id,
     SUPLA_ALERT_CODE_MAP(X)
 #undef X
 };
 
-constexpr unsigned int suplaAlertCodesCount =
+static constexpr unsigned int suplaAlertCodesCount =
     sizeof(suplaAlertCodes) / sizeof(suplaAlertCodes[0]);
 
-constexpr bool areSuplaAlertCodesStrictlyIncreasing(unsigned int i) {
+static constexpr bool areSuplaAlertCodesStrictlyIncreasing(unsigned int i) {
   return i >= suplaAlertCodesCount ||
          (suplaAlertCodes[i] > suplaAlertCodes[i - 1] &&
           areSuplaAlertCodesStrictlyIncreasing(i + 1));
 }
 
-}  // namespace
-
 static_assert(areSuplaAlertCodesStrictlyIncreasing(1),
               "SUPLA_ALERT_CODE_MAP must contain unique and strictly "
               "increasing alert code IDs");
+
+static_assert(SUPLA_CHANNEL_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
+static_assert(SUPLA_LOCATION_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
+static_assert(SUPLA_SCENE_CAPTION_MAXSIZE == SUPLA_CAPTION_MAXSIZE);
+
 // Plaform specific checks
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO) || defined(SUPLA_DEVICE)
 static_assert(SUPLA_MAX_DATA_SIZE == 600);

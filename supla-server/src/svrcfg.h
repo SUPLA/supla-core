@@ -102,6 +102,7 @@ extern "C" {
 #define CFG_MQTT_SSL 57
 #define CFG_MQTT_CLIENTID 58
 #define CFG_MQTT_KEEP_ALIVE_SEC 59
+#define CFG_AUTODISCOVER_STATISTICS_EXPORT_INTERVAL_SEC 60
 
 extern char* svrcfg_oauth_url_base64;
 extern int svrcfg_oauth_url_base64_len;

@@ -39,9 +39,27 @@ TEST_F(EnterCfgModeCommandTest, noData) {
 }
 
 TEST_F(EnterCfgModeCommandTest, ResetCountersWithSuccess) {
-  EXPECT_CALL(*cmd, enter_cfg_mode(10, 30)).WillOnce(Return(true));
+  EXPECT_CALL(*cmd, enter_cfg_mode(10, 30, _, _)).WillOnce(Return(true));
 
   commandProcessingTest("ENTER-CONFIGURATION-MODE:10,30\n", "OK:30\n");
+}
+
+TEST_F(EnterCfgModeCommandTest, enterCfgModeQueued) {
+  EXPECT_CALL(*cmd, enter_cfg_mode(10, 30, _, _))
+      .WillOnce(DoAll(SetArgPointee<2>((unsigned _supla_int64_t)1234),
+                      SetArgPointee<3>(false), Return(true)));
+
+  commandProcessingTest("ENTER-CONFIGURATION-MODE:10,30\n",
+                        "QUEUED:30,1234\n");
+}
+
+TEST_F(EnterCfgModeCommandTest, enterCfgModeWaitingForResult) {
+  EXPECT_CALL(*cmd, enter_cfg_mode(10, 30, _, _))
+      .WillOnce(DoAll(SetArgPointee<2>((unsigned _supla_int64_t)1234),
+                      SetArgPointee<3>(true), Return(true)));
+
+  commandProcessingTest("ENTER-CONFIGURATION-MODE:10,30\n",
+                        "WAITING_FOR_RESULT:30,1234\n");
 }
 
 TEST_F(EnterCfgModeCommandTest, ResetCountersWithFilure) {

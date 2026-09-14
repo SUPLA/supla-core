@@ -51,9 +51,8 @@ using std::vector;
 supla_device_channels::supla_device_channels(
     supla_abstract_device_dao *dao, supla_device *device,
     TDS_SuplaDeviceChannel_B *schannel_b, TDS_SuplaDeviceChannel_E *schannel_e,
-    int channel_count) {
-  this->device = device;
-
+    int channel_count)
+    : device(device), channel_config_sync_coordinator(device) {
   channels = dao->get_channels(device);
 
   for (int a = 0; a < channel_count; a++) {
@@ -78,6 +77,10 @@ supla_device_channels::supla_device_channels(
       at_orops = schannel_e[a].actionTriggerProperties;
       flags = schannel_e[a].Flags;
       status.set_proto_offline(schannel_e[a].Offline);
+
+      if (flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION) {
+        status.set_offline(true);
+      }
     }
 
     int channel_id = get_channel_id(number);
@@ -268,7 +271,9 @@ bool supla_device_channels::get_relay_value(int channel_id,
 bool supla_device_channels::calcfg_cmd(int channel_id,
                                        unsigned _supla_int64_t flag,
                                        bool superuser_authorized,
-                                       _supla_int_t cmd) {
+                                       _supla_int_t cmd,
+                                       unsigned _supla_int64_t *queued_at,
+                                       bool *waiting_for_result) {
   supla_device_channel *channel = find_channel(channel_id);
 
   if (channel && ((!flag || (channel->get_flags() & flag)))) {
@@ -278,39 +283,55 @@ bool supla_device_channels::calcfg_cmd(int channel_id,
     request.Command = cmd;
     request.SuperUserAuthorized = superuser_authorized;
 
-    srpc_sd_async_device_calcfg_request(get_srpc(), &request);
-    return true;
+    return device->send_calcfg_request(&request, queued_at, waiting_for_result);
   }
 
   return false;
 }
 
-bool supla_device_channels::reset_counters(int channel_id) {
+bool supla_device_channels::reset_counters(int channel_id,
+                                           unsigned _supla_int64_t *queued_at,
+                                           bool *waiting_for_result) {
   return calcfg_cmd(channel_id, SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS, true,
-                    SUPLA_CALCFG_CMD_RESET_COUNTERS);
+                    SUPLA_CALCFG_CMD_RESET_COUNTERS, queued_at,
+                    waiting_for_result);
 }
 
-bool supla_device_channels::take_ocr_photo(int channel_id) {
-  return calcfg_cmd(channel_id, 0, true, SUPLA_CALCFG_CMD_TAKE_OCR_PHOTO);
+bool supla_device_channels::take_ocr_photo(int channel_id,
+                                           unsigned _supla_int64_t *queued_at,
+                                           bool *waiting_for_result) {
+  return calcfg_cmd(channel_id, 0, true, SUPLA_CALCFG_CMD_TAKE_OCR_PHOTO,
+                    queued_at, waiting_for_result);
 }
 
-bool supla_device_channels::mute_alarm_sound(int channel_id) {
-  return calcfg_cmd(channel_id, 0, true, SUPLA_CALCFG_CMD_MUTE_ALARM_SOUND);
+bool supla_device_channels::mute_alarm_sound(int channel_id,
+                                             unsigned _supla_int64_t *queued_at,
+                                             bool *waiting_for_result) {
+  return calcfg_cmd(channel_id, 0, true, SUPLA_CALCFG_CMD_MUTE_ALARM_SOUND,
+                    queued_at, waiting_for_result);
 }
 
-bool supla_device_channels::restart_subdevice(int channel_id) {
+bool supla_device_channels::restart_subdevice(
+    int channel_id, unsigned _supla_int64_t *queued_at,
+    bool *waiting_for_result) {
   return calcfg_cmd(channel_id, SUPLA_CHANNEL_FLAG_CALCFG_RESTART_SUBDEVICE,
-                    true, SUPLA_CALCFG_CMD_RESTART_SUBDEVICE);
+                    true, SUPLA_CALCFG_CMD_RESTART_SUBDEVICE, queued_at,
+                    waiting_for_result);
 }
 
-bool supla_device_channels::identify_subdevice(int channel_id) {
+bool supla_device_channels::identify_subdevice(
+    int channel_id, unsigned _supla_int64_t *queued_at,
+    bool *waiting_for_result) {
   return calcfg_cmd(channel_id, SUPLA_CHANNEL_FLAG_CALCFG_IDENTIFY_SUBDEVICE,
-                    true, SUPLA_CALCFG_CMD_IDENTIFY_SUBDEVICE);
+                    true, SUPLA_CALCFG_CMD_IDENTIFY_SUBDEVICE, queued_at,
+                    waiting_for_result);
 }
 
 bool supla_device_channels::recalibrate(int channel_id,
                                         const supla_caller &caller,
-                                        bool superuser_authorized) {
+                                        bool superuser_authorized,
+                                        unsigned _supla_int64_t *queued_at,
+                                        bool *waiting_for_result) {
   supla_device_channel *channel = find_channel(channel_id);
 
   if (channel &&
@@ -347,8 +368,7 @@ bool supla_device_channels::recalibrate(int channel_id,
       }
     }
 
-    srpc_sd_async_device_calcfg_request(get_srpc(), &request);
-    return true;
+    return device->send_calcfg_request(&request, queued_at, waiting_for_result);
   }
 
   return false;
@@ -683,8 +703,7 @@ bool supla_device_channels::calcfg_request(const supla_caller &caller,
                             : request->DataSize;
     memcpy(drequest.Data, request->Data, SUPLA_CALCFG_DATA_MAXSIZE);
 
-    srpc_sd_async_device_calcfg_request(get_srpc(), &drequest);
-    return true;
+    return device->send_calcfg_request(&drequest);
   }
 
   return false;
@@ -1297,10 +1316,8 @@ bool supla_device_channels::action_hvac_set_parameters(
             }
           }
 
-          if (req->Command && device && device->get_connection()) {
-            device->get_connection()
-                ->get_srpc_adapter()
-                ->sd_async_device_calcfg_request(req);
+          if (req->Command && device) {
+            device->send_calcfg_request(req);
           }
 
           req->Command = SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE;
@@ -1347,11 +1364,8 @@ bool supla_device_channels::hp_action(
                      TSD_DeviceCalCfgRequest req = {};
                      req.ChannelNumber = channel->get_channel_number();
 
-                     if (device && device->get_connection() &&
-                         on_calcfg(channel, &req) &&
-                         device->get_connection()
-                             ->get_srpc_adapter()
-                             ->sd_async_device_calcfg_request(&req)) {
+                     if (device && on_calcfg(channel, &req) &&
+                         device->send_calcfg_request(&req)) {
                        result = true;
                      }
                    }
@@ -1440,10 +1454,7 @@ bool supla_device_channels::action_hvac_set_temperature(
           supla_channel_hp_thermostat_ev_decorator decorator(th);
           if (decorator.get_state_flags() & HP_STATUS_PROGRAMMODE) {
             // When setting the temperature, force switching to manual mode.
-            if (device && device->get_connection() &&
-                device->get_connection()
-                    ->get_srpc_adapter()
-                    ->sd_async_device_calcfg_request(req)) {
+            if (device && device->send_calcfg_request(req)) {
               req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
               req->Data[0] = 0;  // Do not force the power on
               req->DataSize = 1;
@@ -1637,8 +1648,21 @@ vector<supla_channel_fragment> supla_device_channels::get_fragments(void) {
   return result;
 }
 
-void supla_device_channels::send_configs_to_device(void) {
-  for_each([](supla_device_channel *channel, bool *will_continue) -> void {
-    channel->send_config_to_device();
-  });
+void supla_device_channels::send_configs_to_device(
+    std::function<void(supla_device *)> on_finished) {
+  channel_config_sync_coordinator.start(&channels, on_finished);
+}
+
+void supla_device_channels::on_set_channel_config_result(
+    TSDS_SetChannelConfigResult *result) {
+  channel_config_sync_coordinator.on_set_channel_config_result(result);
+}
+
+void supla_device_channels::iterate(void) {
+  channel_config_sync_coordinator.iterate();
+}
+
+unsigned _supla_int64_t
+supla_device_channels::channel_config_batch_time_left_usec(void) {
+  return channel_config_sync_coordinator.time_left_usec();
 }

@@ -1,20 +1,5 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #ifndef ARDUINO
 
@@ -45,6 +30,11 @@
 #include <openssl/buffer.h>
 #include <openssl/evp.h>
 #endif /*__OPENSSL_TOOLS*/
+
+#ifndef __ANDROID__
+#include <errno.h>
+#include <sys/random.h>
+#endif /* _ANDROID__ */
 
 #ifdef __BCRYPT
 #include "crypt_blowfish/ow-crypt.h"
@@ -272,6 +262,45 @@ char *st_bin2hex(char *buffer, const char *src, size_t len) {
   return buffer;
 }
 
+int st_hex2bin(char *buffer, const char *src, size_t len) {
+  size_t index;
+
+  if (buffer == 0 || src == 0 || len % 2 != 0) {
+    return -1;
+  }
+
+  for (index = 0; index < len / 2; index++) {
+    unsigned char high;
+    unsigned char low;
+    char high_char = src[index * 2];
+    char low_char = src[index * 2 + 1];
+
+    if (high_char >= '0' && high_char <= '9') {
+      high = high_char - '0';
+    } else if (high_char >= 'A' && high_char <= 'F') {
+      high = high_char - 'A' + 10;
+    } else if (high_char >= 'a' && high_char <= 'f') {
+      high = high_char - 'a' + 10;
+    } else {
+      return -1;
+    }
+
+    if (low_char >= '0' && low_char <= '9') {
+      low = low_char - '0';
+    } else if (low_char >= 'A' && low_char <= 'F') {
+      low = low_char - 'A' + 10;
+    } else if (low_char >= 'a' && low_char <= 'f') {
+      low = low_char - 'a' + 10;
+    } else {
+      return -1;
+    }
+
+    buffer[index] = (char)((high << 4) | low);
+  }
+
+  return (int)(len / 2);
+}
+
 void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE],
                  const char GUID[SUPLA_GUID_SIZE]) {
   st_bin2hex(GUIDHEX, GUID, SUPLA_GUID_SIZE);
@@ -378,11 +407,22 @@ time_t st_get_utc_time(void) {
 }
 
 char *st_get_zulu_time(char buffer[64]) {
+  return st_timestamp_to_zulu_time(buffer, time(0));
+}
+
+char *st_timestamp_to_zulu_time(char buffer[64], time_t timestamp) {
+  if (!buffer) {
+    return NULL;
+  }
+
   memset(buffer, 0, 64);
 
-  time_t now = time(0);
-  struct tm *tm = gmtime(&now);  // NOLINT
-  strftime(buffer, 64, "%Y-%m-%dT%H:%M:%SZ", tm);
+  struct tm tm_utc = {0};
+  if (!gmtime_r(&timestamp, &tm_utc)) {
+    return buffer;
+  }
+
+  strftime(buffer, 64, "%Y-%m-%dT%H:%M:%SZ", &tm_utc);
 
   return buffer;
 }
@@ -517,31 +557,64 @@ int st_hue2rgb(double hue) {
   return st_hsv2rgb(hsv);
 }
 
-void st_random_alpha_string(char *buffer, int buffer_size) {
-  int a;
-
-  const char charset[] =
-      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-  char max = sizeof(charset) - 1;
-
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-
+static char st_get_random_bytes(unsigned char *buffer, size_t size) {
 #ifdef __ANDROID__
-  srand(tv.tv_usec);
-  gettimeofday(&tv, NULL);
 
-  for (a = 0; a < buffer_size - 1; a++) {
-    buffer[a] = charset[(rand() + tv.tv_usec) % max];  // NOLINT
-  }
+  arc4random_buf(buffer, size);
+  return 1;
+
 #else
-  unsigned int seed = tv.tv_sec + tv.tv_usec;
-  for (a = 0; a < buffer_size - 1; a++) {
-    buffer[a] = charset[rand_r(&seed) % max];
-  }
-#endif
 
-  buffer[buffer_size - 1] = 0;
+  size_t pos = 0;
+
+  while (pos < size) {
+    ssize_t result = getrandom(buffer + pos, size - pos, 0);
+
+    if (result < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
+
+      return 0;
+    }
+
+    pos += result;
+  }
+
+  return 1;
+
+#endif
+}
+
+char st_random_alpha_string(char *buffer, size_t buffer_size) {
+  static const char charset[] =
+      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+  if (buffer == NULL || buffer_size == 0) {
+    return 0;
+  }
+
+  size_t pos = 0;
+
+  while (pos < buffer_size - 1) {
+    unsigned char random_buf[128];
+
+    if (!st_get_random_bytes(random_buf, sizeof(random_buf))) {
+      return 0;
+    }
+
+    for (size_t i = 0; i < sizeof(random_buf) && pos < buffer_size - 1; i++) {
+      // 248 = largest multiple of 62 less than 256.
+      // Rejecting 248..255 removes the modulo bias.
+      if (random_buf[i] < 248) {
+        buffer[pos++] = charset[random_buf[i] % 62];
+      }
+    }
+  }
+
+  buffer[pos] = '\0';
+
+  return 1;
 }
 
 void st_uuid_v4(char buffer[37]) {

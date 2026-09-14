@@ -25,6 +25,7 @@
 #include <string>
 
 #include "cJSON.h"
+#include "proto.h"
 
 using std::map;
 using std::string;
@@ -48,6 +49,8 @@ using std::string;
 #define JSON_FIELD_LIGHT_SOURCE_OPERATING_TIME 17
 #define JSON_FIELD_OPERATING_TIME 18
 #define JSON_FIELD_DEVICE_BATTERY_LEVEL 19
+#define JSON_FIELD_BATTERY_STATE 20
+#define JSON_FIELD_DEVICE_BATTERY_STATE 21
 
 const map<unsigned _supla_int16_t, string> supla_channel_state::field_map = {
     {JSON_FIELD_DEFAULT_ICON_FIELD, "defaultIconField"},
@@ -69,6 +72,8 @@ const map<unsigned _supla_int16_t, string> supla_channel_state::field_map = {
     {JSON_FIELD_LIGHT_SOURCE_OPERATING_TIME, "lightSourceOperatingTime"},
     {JSON_FIELD_OPERATING_TIME, "operatingTime"},
     {JSON_FIELD_DEVICE_BATTERY_LEVEL, "deviceBatteryLevel"},
+    {JSON_FIELD_BATTERY_STATE, "batteryState"},
+    {JSON_FIELD_DEVICE_BATTERY_STATE, "deviceBatteryState"},
 };
 
 supla_channel_state::supla_channel_state(void)
@@ -189,6 +194,13 @@ void supla_channel_state::apply_json(const char *json) {
     }
   }
 
+  if (get_string(root, field_map.at(JSON_FIELD_BATTERY_STATE).c_str(),
+                 &str_val)) {
+    state.BatteryState =
+        str_val == "OK" ? SUPLA_BATTERY_STATE_OK : SUPLA_BATTERY_STATE_LOW;
+    state.Fields |= SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE;
+  }
+
   if (get_double(root, field_map.at(JSON_FIELD_BATTERY_LEVEL).c_str(),
                  &dbl_val)) {
     state.Fields |= SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
@@ -286,6 +298,12 @@ void supla_channel_state::apply_json(const char *json) {
     state.OperatingTime = dbl_val;
   }
 
+  if (get_bool(root, field_map.at(JSON_FIELD_DEVICE_BATTERY_STATE).c_str(),
+               &bool_val) &&
+      bool_val) {
+    state.Fields |= SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERY_STATE;
+  }
+
   cJSON_Delete(root);
 }
 
@@ -337,6 +355,14 @@ char *supla_channel_state::get_json(void) {
     set_item_value(root, field_map.at(JSON_FIELD_BATTERY_POWERED).c_str(),
                    state.BatteryPowered ? cJSON_True : cJSON_False, true,
                    nullptr, nullptr, 0);
+  }
+
+  if ((state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE) &&
+      !(state.Fields & SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL)) {
+    set_item_value(root, field_map.at(JSON_FIELD_BATTERY_STATE).c_str(),
+                   cJSON_String, true, nullptr,
+                   state.BatteryState == SUPLA_BATTERY_STATE_OK ? "OK" : "LOW",
+                   0);
   }
 
   if (state.Fields & SUPLA_CHANNELSTATE_FIELD_WIFIRSSI) {
@@ -427,6 +453,15 @@ char *supla_channel_state::get_json(void) {
         root, field_map.at(JSON_FIELD_DEVICE_BATTERY_LEVEL).c_str());
   }
 
+  if ((state.Fields & SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERY_STATE) &&
+      !(state.Fields & SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL)) {
+    set_item_value(root, field_map.at(JSON_FIELD_DEVICE_BATTERY_STATE).c_str(),
+                   cJSON_True, true, nullptr, nullptr, 0);
+  } else {
+    cJSON_DeleteItemFromObject(
+        root, field_map.at(JSON_FIELD_DEVICE_BATTERY_STATE).c_str());
+  }
+
   char *result = cJSON_PrintUnformatted(root);
   cJSON_Delete(root);
   return result;
@@ -445,6 +480,16 @@ void supla_channel_state::merge_old_if_needed(supla_channel_state *old) {
       (old->state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED)) {
     state.Fields |= SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED;
     state.BatteryPowered = old->state.BatteryPowered;
+  }
+
+  if (!(state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE) &&
+      !(state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL) &&
+      (old->state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE) &&
+      !(old->state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL)) {
+    state.Fields |=
+        SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE |
+        (old->state.Fields & SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERY_STATE);
+    state.BatteryState = old->state.BatteryState;
   }
 }
 

@@ -62,8 +62,9 @@ void supla_hp_thermostat_logger_dao::tsdb_add(int channel_id,
                                               bool on) {
   pqxx::nontransaction ntx(*get_tsdba()->get_conn());
 
-  ntx.exec_params("SELECT supla_add_thermostat_log_item($1,$2,$3,$4)",
-                  channel_id, measured_temperature, preset_temperature, on);
+  ntx.exec(
+      "SELECT supla_add_thermostat_log_item($1,$2,$3,$4)",
+      pqxx::params{channel_id, measured_temperature, preset_temperature, on});
 }
 
 void supla_hp_thermostat_logger_dao::add(

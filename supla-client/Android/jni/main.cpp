@@ -718,7 +718,7 @@ jobject supla_thermostatvalue_to_jobject(TAndroidSuplaClient *asc, JNIEnv *env,
 jobject supla_channelstate_to_jobject(TAndroidSuplaClient *asc, JNIEnv *env,
                                       TDSC_ChannelState *state) {
   jclass cls = env->FindClass("org/supla/android/lib/SuplaChannelState");
-  jmethodID methodID = env->GetMethodID(cls, "<init>", "(IIII[BBBBBBBIIBBII)V");
+  jmethodID methodID = env->GetMethodID(cls, "<init>", "(IIII[BBBBBBBBIIBBII)V");
 
   jbyteArray mac = env->NewByteArray(6);
   env->SetByteArrayRegion(mac, 0, 6, (const jbyte *)state->MAC);
@@ -727,11 +727,11 @@ jobject supla_channelstate_to_jobject(TAndroidSuplaClient *asc, JNIEnv *env,
       cls, methodID, (jint)state->ChannelID, (jint)state->Fields,
       (jint)state->defaultIconField, (jint)state->IPv4, mac,
       (jbyte)state->BatteryLevel, (jbyte)state->BatteryPowered,
-      (jbyte)state->WiFiRSSI, (jbyte)state->WiFiSignalStrength,
-      (jbyte)state->BridgeNodeOnline, (jbyte)state->BridgeNodeSignalStrength,
-      (jint)state->Uptime, (jint)state->ConnectionUptime,
-      (jbyte)state->BatteryHealth, (jbyte)state->LastConnectionResetCause,
-      (jint)state->LightSourceLifespan,
+      (jbyte)state->BatteryState, (jbyte)state->WiFiRSSI,
+      (jbyte)state->WiFiSignalStrength, (jbyte)state->BridgeNodeOnline, 
+      (jbyte)state->BridgeNodeSignalStrength, (jint)state->Uptime, 
+      (jint)state->ConnectionUptime, (jbyte)state->BatteryHealth, 
+      (jbyte)state->LastConnectionResetCause, (jint)state->LightSourceLifespan,
       state->Fields & SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCEOPERATINGTIME
           ? (jint)state->LightSourceOperatingTime
           : (jshort)state->LightSourceLifespanLeft);

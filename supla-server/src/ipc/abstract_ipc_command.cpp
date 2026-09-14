@@ -62,6 +62,17 @@ void supla_abstract_ipc_command::send_result(const char *result, int i) {
   send_result<int>(result, "%s%i\n", i);
 }
 
+void supla_abstract_ipc_command::send_result(const char *result, int i,
+                                             unsigned _supla_int64_t ull) {
+  unsigned int size = strnlen(result, IPC_BUFFER_MAX_SIZE) + 50;
+  char *buffer = (char *)malloc(size);
+  if (buffer) {
+    snprintf(buffer, size, "%s%i,%llu\n", result, i, (unsigned long long)ull);
+    socket_adapter->send_data(buffer);
+    free(buffer);
+  }
+}
+
 void supla_abstract_ipc_command::send_result(const char *result, double d) {
   send_result<double>(result, "%s%f\n", d);
 }

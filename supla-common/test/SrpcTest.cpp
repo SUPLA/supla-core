@@ -1,22 +1,9 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "SrpcTest.h"
+
+#include <stddef.h>
 
 #include <vector>
 
@@ -549,6 +536,10 @@ vector<int> SrpcTest::get_call_ids(int version) {
 
     case 26:
       return {SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE};
+    case 29:
+      return {SUPLA_SD_CALL_DEVICE_SYNC_DONE,
+              SUPLA_DS_CALL_OBJECT_ALERTS_REPORT,
+              SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED};
   }
 
   return {};
@@ -605,6 +596,8 @@ TEST_F(SrpcTest, call_allowed_v23) { srpcCallAllowed(23, get_call_ids(23)); }
 TEST_F(SrpcTest, call_allowed_v25) { srpcCallAllowed(25, get_call_ids(25)); }
 
 TEST_F(SrpcTest, call_allowed_v26) { srpcCallAllowed(26, get_call_ids(26)); }
+
+TEST_F(SrpcTest, call_allowed_v29) { srpcCallAllowed(29, get_call_ids(29)); }
 
 TEST_F(SrpcTest, call_not_allowed) {
   vector<int> all_calls;
@@ -681,7 +674,10 @@ TEST_F(SrpcTest, iterate_read_error_when_zero) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
+  ASSERT_EQ(SRPC_ITERATE_REASON_NONE, srpc_get_last_iterate_reason(srpc));
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_SOCKET_CLOSED,
+            srpc_get_last_iterate_reason(srpc));
 
   srpc_free(srpc);
   srpc = NULL;
@@ -703,6 +699,8 @@ TEST_F(SrpcTest, iterate_incorrect_data) {
 
   ASSERT_EQ(0, remote_version);
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_PROTOCOL_ERROR,
+            srpc_get_last_iterate_reason(srpc));
   ASSERT_EQ(0, remote_version);
 
   srpc_free(srpc);
@@ -726,6 +724,8 @@ TEST_F(SrpcTest, iterate_incorrect_version) {
 
   ASSERT_EQ(0, remote_version);
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_VERSION_ERROR,
+            srpc_get_last_iterate_reason(srpc));
   ASSERT_EQ(SUPLA_PROTO_VERSION + 1, remote_version);
 
   srpc_free(srpc);
@@ -778,6 +778,8 @@ TEST_F(SrpcTest, iterate_buffer_overflow) {
   data_read = NULL;
 
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_INPUT_BUFFER_OVERFLOW,
+            srpc_get_last_iterate_reason(srpc));
 
   srpc_free(srpc);
   srpc = NULL;
@@ -799,6 +801,7 @@ TEST_F(SrpcTest, iterate_no_data) {
   ASSERT_FALSE(srpc == NULL);
 
   ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_NONE, srpc_get_last_iterate_reason(srpc));
 
   srpc_free(srpc);
   srpc = NULL;
@@ -4037,6 +4040,9 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_functions_result,
                                      SUPLA_CHANNELMAXCOUNT, Functions,
                                      ChannelCount);
 
+SRPC_CALL_WITH_NO_DATA(srpc_sd_async_device_sync_done,
+                       SUPLA_SD_CALL_DEVICE_SYNC_DONE);
+
 //---------------------------------------------------------
 // GET CHANNEL CONFIG
 //---------------------------------------------------------
@@ -4484,5 +4490,153 @@ SRPC_CALL_BASIC_TEST(srpc_ds_async_set_subdevice_details, TDS_SubdeviceDetails,
                      ds_subdevice_details);
 
 #endif /*SUPLA_PROTO_VERSION >= 25*/
+
+//---------------------------------------------------------
+// OBJECT ALERTS
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, object_alerts_report_uses_variable_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_ObjectAlerts alerts = {};
+  alerts.Target = SUPLA_TARGET_IODEVICE;
+  alerts.AlertSurfaceChannelNumber = SUPLA_OBJECT_ALERT_SURFACE_NONE;
+  alerts.Count = 1;
+  alerts.Items[0].Code = SUPLA_ALERT_CODE_OUTPUT_MOTOR_PROBLEM;
+  alerts.Items[0].Severity = SUPLA_ALERT_SEVERITY_WARNING;
+  alerts.Items[0].Flags = SUPLA_OBJECT_ALERT_FLAG_ACTIVE;
+
+  ASSERT_GT(srpc_ds_async_object_alerts_report(srpc, &alerts), 0);
+  SendAndReceive(SUPLA_DS_CALL_OBJECT_ALERTS_REPORT, 27);
+  ASSERT_FALSE(cr_rd.data.ds_object_alerts == NULL);
+  ASSERT_EQ(1, cr_rd.data.ds_object_alerts->Count);
+  ASSERT_EQ(alerts.Items[0].Code, cr_rd.data.ds_object_alerts->Items[0].Code);
+  ASSERT_EQ(alerts.Items[0].Flags,
+            cr_rd.data.ds_object_alerts->Items[0].Flags);
+  free(cr_rd.data.ds_object_alerts);
+  cr_rd.data.ds_object_alerts = NULL;
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, object_alerts_changed_supports_empty_report_and_max_count) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_ObjectAlerts alerts = {};
+  alerts.Target = SUPLA_TARGET_CHANNEL;
+  alerts.Number = 1;
+  alerts.AlertSurfaceChannelNumber = SUPLA_OBJECT_ALERT_SURFACE_NONE;
+  ASSERT_GT(srpc_ds_async_object_alerts_changed(srpc, &alerts), 0);
+  SendAndReceive(SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED, 27);
+  ASSERT_FALSE(cr_rd.data.ds_object_alerts == NULL);
+  ASSERT_EQ(0, cr_rd.data.ds_object_alerts->Count);
+  free(cr_rd.data.ds_object_alerts);
+  cr_rd.data.ds_object_alerts = NULL;
+  srpc_free(srpc);
+  srpc = NULL;
+
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+  alerts.Count = SUPLA_OBJECT_ALERT_MAXCOUNT;
+  for (unsigned char i = 0; i < alerts.Count; i++) {
+    alerts.Items[i].Code = (unsigned _supla_int16_t)(0x7000 + i);
+    alerts.Items[i].Severity = SUPLA_ALERT_SEVERITY_INFO;
+  }
+  ASSERT_GT(srpc_ds_async_object_alerts_changed(srpc, &alerts), 0);
+  SendAndReceive(SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED,
+                 23 + 4 + 4 * SUPLA_OBJECT_ALERT_MAXCOUNT);
+  ASSERT_FALSE(cr_rd.data.ds_object_alerts == NULL);
+  ASSERT_EQ(SUPLA_OBJECT_ALERT_MAXCOUNT,
+            cr_rd.data.ds_object_alerts->Count);
+  free(cr_rd.data.ds_object_alerts);
+  cr_rd.data.ds_object_alerts = NULL;
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, object_alerts_reject_invalid_fields) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_ObjectAlerts alerts = {};
+  alerts.Target = SUPLA_TARGET_GROUP;
+  alerts.AlertSurfaceChannelNumber = SUPLA_OBJECT_ALERT_SURFACE_NONE;
+  ASSERT_EQ(0, srpc_ds_async_object_alerts_report(srpc, &alerts));
+
+  alerts.Target = SUPLA_TARGET_IODEVICE;
+  alerts.Number = 1;
+  ASSERT_EQ(0, srpc_ds_async_object_alerts_report(srpc, &alerts));
+
+  alerts.Number = 0;
+  alerts.Count = 1;
+  alerts.Items[0].Flags = SUPLA_OBJECT_ALERT_FLAG_ACTIVE |
+                          SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE;
+  ASSERT_EQ(0, srpc_ds_async_object_alerts_report(srpc, &alerts));
+
+  alerts.Items[0].Flags = 0;
+  alerts.Count = SUPLA_OBJECT_ALERT_MAXCOUNT + 1;
+  ASSERT_EQ(0, srpc_ds_async_object_alerts_report(srpc, &alerts));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, object_alerts_accept_unknown_code_and_reject_bad_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_ObjectAlerts alerts = {};
+  alerts.Target = SUPLA_TARGET_IODEVICE;
+  alerts.AlertSurfaceChannelNumber = SUPLA_OBJECT_ALERT_SURFACE_NONE;
+  alerts.Count = 1;
+  alerts.Items[0].Code = 0x7FFF;
+  alerts.Items[0].Severity = SUPLA_ALERT_SEVERITY_INFO;
+  ASSERT_GT(srpc_ds_async_object_alerts_report(srpc, &alerts), 0);
+  SendAndReceive(SUPLA_DS_CALL_OBJECT_ALERTS_REPORT, 27);
+  ASSERT_FALSE(cr_rd.data.ds_object_alerts == NULL);
+  ASSERT_EQ(0x7FFF, cr_rd.data.ds_object_alerts->Items[0].Code);
+  free(cr_rd.data.ds_object_alerts);
+  cr_rd.data.ds_object_alerts = NULL;
+  srpc_free(srpc);
+  srpc = NULL;
+
+  const unsigned _supla_int_t packet_header_size =
+      (unsigned _supla_int_t)offsetof(TSuplaDataPacket, data);
+  const unsigned _supla_int_t malformed_sizes[] = {
+      (unsigned _supla_int_t)offsetof(TDS_ObjectAlerts, Items) - 1,
+      (unsigned _supla_int_t)sizeof(TDS_ObjectAlerts) + 1};
+
+  data_read_result = 0;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+  for (unsigned _supla_int_t malformed_size : malformed_sizes) {
+    data_read = (char *)calloc(
+        1, packet_header_size + malformed_size + SUPLA_TAG_SIZE);
+    ASSERT_FALSE(data_read == NULL);
+    TSuplaDataPacket *packet = (TSuplaDataPacket *)data_read;
+    memcpy(packet->tag, sproto_tag, SUPLA_TAG_SIZE);
+    packet->version = SUPLA_PROTO_VERSION;
+    packet->rr_id = 1;
+    packet->call_id = SUPLA_DS_CALL_OBJECT_ALERTS_REPORT;
+    packet->data_size = malformed_size;
+    memcpy(&packet->data[malformed_size], sproto_tag, SUPLA_TAG_SIZE);
+    data_read_result = packet_header_size + malformed_size + SUPLA_TAG_SIZE;
+
+    ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+    ASSERT_EQ(SUPLA_RESULT_DATA_ERROR, srpc_getdata(srpc, &cr_rd, 1));
+    free(data_read);
+    data_read = NULL;
+  }
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
 
 }  // namespace

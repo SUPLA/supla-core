@@ -1,22 +1,10 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "ProtoTest.h"
+
+#include <cstddef>
+#include <cstdio>
 
 #include "gtest/gtest.h"  // NOLINT
 #include "proto.h"
@@ -239,6 +227,9 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
   EXPECT_LE(sizeof(TDeviceConfig_HomeScreenContent),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_EQ((unsigned int)8, sizeof(TDeviceConfig_InputActivation));
+  EXPECT_LE(sizeof(TDeviceConfig_InputActivation),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   EXPECT_EQ((unsigned int)8, sizeof(TCalCfg_RollerShutterSettings));
   EXPECT_LE(sizeof(TCalCfg_RollerShutterSettings),
@@ -296,6 +287,12 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ(sizeof(TChannelConfig_WeeklySchedule), 356);
   EXPECT_LE(sizeof(TChannelConfig_WeeklySchedule),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+
+  EXPECT_EQ(sizeof(TChannelConfig_ExtendedWeeklySchedule),
+            static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+  EXPECT_EQ(offsetof(TChannelConfig_ExtendedWeeklySchedule, Payload),
+            static_cast<size_t>(SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE));
+  EXPECT_EQ(SUPLA_EXTENDED_WEEKLY_SCHEDULE_PAYLOAD_MAXSIZE, 496);
 
   EXPECT_EQ((unsigned int)544, sizeof(TSC_DeviceConfigUpdateOrResult));
   EXPECT_EQ((unsigned int)20, sizeof(TCS_GetDeviceConfigRequest));

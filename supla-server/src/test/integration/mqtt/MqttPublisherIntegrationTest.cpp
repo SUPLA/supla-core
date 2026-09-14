@@ -1870,7 +1870,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "BINARYSENSOR",
       "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12049/"
       "function",
-      "MOTION_SENSO",
+      "MOTION_SENSOR",
       "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/channels/12049/"
       "caption",
       NULL,

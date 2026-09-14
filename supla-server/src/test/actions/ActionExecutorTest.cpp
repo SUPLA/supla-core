@@ -44,6 +44,7 @@ void ActionExecutorTest::SetUp() {
   supla_user *user = supla_user::find(12345, true);
   device = make_shared<DeviceStub>(nullptr);
   device->set_id(567);
+  device->set_user(user);
 
   DeviceDaoMock dao;
 

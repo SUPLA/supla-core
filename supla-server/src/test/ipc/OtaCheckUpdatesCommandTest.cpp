@@ -39,13 +39,13 @@ TEST_F(OtaCheckUpdatesCommandTest, noData) {
 }
 
 TEST_F(OtaCheckUpdatesCommandTest, checkUpdatesWithFailure) {
-  EXPECT_CALL(*cmd, check_updates(10, 20)).WillOnce(Return(false));
+  EXPECT_CALL(*cmd, check_updates(10, 20, _, _)).WillOnce(Return(false));
 
   commandProcessingTest("OTA-CHECK-UPDATES:10,20\n", "UNKNOWN:10\n");
 }
 
 TEST_F(OtaCheckUpdatesCommandTest, checkUpdatesWithSuccess) {
-  EXPECT_CALL(*cmd, check_updates(10, 20)).WillOnce(Return(true));
+  EXPECT_CALL(*cmd, check_updates(10, 20, _, _)).WillOnce(Return(true));
 
   commandProcessingTest("OTA-CHECK-UPDATES:10,20\n", "OK:10\n");
 }

@@ -49,10 +49,15 @@ bool supla_user_devices::add(
       device,
       [&previous_statuses](
           std::shared_ptr<supla_abstract_connection_object> obj) -> void {
+        shared_ptr<supla_device> previous =
+            dynamic_pointer_cast<supla_device>(obj);
+
+        if (!previous) {
+          return;
+        }
+
         if (previous_statuses) {
-          *previous_statuses = dynamic_pointer_cast<supla_device>(obj)
-                                   ->get_channels()
-                                   ->get_all_statuses();
+          *previous_statuses = previous->get_channels()->get_all_statuses();
         }
       });
 
