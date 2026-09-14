@@ -2198,6 +2198,7 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_PROGRESS_REPORT 5001             // v. >= 12
 #define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000    // v. >= 12
 #define SUPLA_CALCFG_CMD_RESET_COUNTERS 7000              // v. >= 15
+#define SUPLA_CALCFG_CMD_OBJECT_ALERT_RESET 7010           // v. >= 29
 #define SUPLA_CALCFG_CMD_RECALIBRATE 8000                 // v. >= 15
 #define SUPLA_CALCFG_CMD_ENTER_CFG_MODE 9000              // v. >= 17
 #define SUPLA_CALCFG_CMD_RESET_TO_FACTORY_SETTINGS 9010   // v. >= 28
@@ -2754,12 +2755,11 @@ typedef struct {
 /********************************************
  * OBJECT ALERTS
  *
- * Object Alerts are an additional reporting mechanism. Existing
- * ChannelValue, ChannelState and availability semantics remain unchanged.
- * A target is the whole IO device, a subdevice, or a channel. Device to
- * Server messages use the target's local Number. IODEVICE uses Number zero;
- * SUBDEVICE uses TDS_SuplaDeviceChannel_E::SubDeviceId; CHANNEL uses the
- * channel number from the registration message.
+ * Object Alerts describe alarms, warnings, faults, service information and
+ * diagnostic events associated with a protocol Target. A Target is the whole
+ * IO device, a subdevice or a channel. Device-to-Server messages identify the
+ * Target with its local Number: IODEVICE uses zero, SUBDEVICE uses
+ * TDS_SuplaDeviceChannel_E::SubDeviceId and CHANNEL uses the channel number.
  ********************************************/
 
 #define SUPLA_ALERT_SEVERITY_NONE 0
@@ -2768,9 +2768,9 @@ typedef struct {
 #define SUPLA_ALERT_SEVERITY_ALARM 3
 #define SUPLA_ALERT_SEVERITY_CRITICAL 4
 
-// SUPLA_ALERT_CODE_MAP columns are: numeric code and symbolic name. Full
-// catalogue metadata is kept in object_alert_catalog.json and is not part of
-// the firmware wire header.
+// The catalogue metadata for each code is defined in
+// object_alert_catalog.json. This map provides the numeric identifiers and
+// symbolic names used by the protocol and source code.
 #define SUPLA_ALERT_CODE_MAP(X) \
   X(0x0000, NONE) \
   X(0x0100, SYSTEM_CLOCK_NOT_SET) \
@@ -2820,8 +2820,8 @@ typedef struct {
   X(0x0600, PROCESS_NO_FLOW) \
   X(0x0601, PROCESS_SUPPLY_NO_FLOW) \
   X(0x0602, PROCESS_EXHAUST_NO_FLOW) \
-  X(0x0603, PROCESS_FLOW_RESTRICTED) \
-  X(0x0604, PROCESS_MAX_PRESSURE_EXCEEDED) \
+  X(0x0603, PROCESS_RESTRICTED_FLOW) \
+  X(0x0604, PROCESS_PRESSURE_HIGH) \
   X(0x0605, PROCESS_PRESSURE_LOW) \
   X(0x0606, PROCESS_LEVEL_HIGH) \
   X(0x0607, PROCESS_LEVEL_LOW) \
@@ -2859,8 +2859,6 @@ typedef struct {
   X(0x0A03, PROTECTION_SHORT_CIRCUIT_ACTIVE) \
   X(0x0A04, PROTECTION_DRY_RUN_ACTIVE) \
   X(0x0B00, DEVICE_COVER_OPEN) \
-  X(0x0B01, DEVICE_LIGHT_SOURCE_LIFESPAN_LOW) \
-  X(0x0B02, DEVICE_LIGHT_SOURCE_LIFESPAN_END) \
   X(0x0B03, DEVICE_SELF_TEST_FAILED) \
   X(0x0B04, DEVICE_SELF_TEST_COMPLETED) \
   X(0x0B05, DEVICE_WATCHDOG_RESET) \
@@ -2868,6 +2866,7 @@ typedef struct {
   X(0x0B07, DEVICE_FIRMWARE_UPDATE_FAILED) \
   X(0x0B08, DEVICE_SECURITY_UPDATE_FAILED) \
   X(0x0B09, DEVICE_SELF_TEST_ACTIVE)
+
 typedef enum {
 #define X(id, name) \
   SUPLA_ALERT_CODE_##name = id,
@@ -2875,22 +2874,15 @@ typedef enum {
 #undef X
 } TSuplaAlertCode;
 
-// Preferred generic names retain the stable draft code numbers above.
-#define SUPLA_ALERT_CODE_PROCESS_RESTRICTED_FLOW \
-  SUPLA_ALERT_CODE_PROCESS_FLOW_RESTRICTED
-#define SUPLA_ALERT_CODE_PROCESS_PRESSURE_HIGH \
-  SUPLA_ALERT_CODE_PROCESS_MAX_PRESSURE_EXCEEDED
-#define SUPLA_ALERT_CODE_MAINTENANCE_LIGHT_SOURCE_LIFESPAN_LOW \
-  SUPLA_ALERT_CODE_DEVICE_LIGHT_SOURCE_LIFESPAN_LOW
-#define SUPLA_ALERT_CODE_MAINTENANCE_LIGHT_SOURCE_LIFESPAN_END \
-  SUPLA_ALERT_CODE_DEVICE_LIGHT_SOURCE_LIFESPAN_END
-
-// The small wire record deliberately carries only effective severity and
-// current state. There is no latch, authentication or vendor instance field.
+// OCCURRENCE identifies an occurrence capability or event. ACTIVE identifies
+// the current active state of a stateful alert. RESET_SUPPORTED identifies a
+// stateful alert for which the Target accepts a reset operation.
 #define SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE (1 << 0)
 #define SUPLA_OBJECT_ALERT_FLAG_ACTIVE (1 << 1)
+#define SUPLA_OBJECT_ALERT_FLAG_RESET_SUPPORTED (1 << 2)
 #define SUPLA_OBJECT_ALERT_FLAGS_MASK \
-  (SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE | SUPLA_OBJECT_ALERT_FLAG_ACTIVE)
+  (SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE | SUPLA_OBJECT_ALERT_FLAG_ACTIVE | \
+   SUPLA_OBJECT_ALERT_FLAG_RESET_SUPPORTED)
 
 typedef struct {
   unsigned _supla_int16_t Code;  // known or unknown future alert code
@@ -2898,11 +2890,19 @@ typedef struct {
   unsigned char Flags;           // SUPLA_OBJECT_ALERT_FLAG_*
 } TSuplaObjectAlert;
 
+// Data payload for SUPLA_CALCFG_CMD_OBJECT_ALERT_RESET. The Target and its
+// local number are carried by the CALCFG request envelope.
+typedef struct {
+  unsigned _supla_int16_t Code;
+} TCalCfg_ObjectAlertReset;  // v. >= 29
+
 #define SUPLA_OBJECT_ALERT_SURFACE_NONE 0xFF
 #define SUPLA_OBJECT_ALERT_MAXCOUNT 60
 
-// SUPLA_DS_CALL_OBJECT_ALERTS_REPORT and _CHANGED. The packet is a variable
-// length structure: offsetof(TDS_ObjectAlerts, Items) + Count * sizeof(item).
+// REPORT contains the complete supported alert set and its current state.
+// CHANGED contains incremental state changes or occurrence events. The packet
+// is variable length: offsetof(TDS_ObjectAlerts, Items) +
+// Count * sizeof(TSuplaObjectAlert).
 typedef struct {
   unsigned char Target;  // SUPLA_TARGET_CHANNEL/IODEVICE/SUBDEVICE
   unsigned char Number;  // local number; IODEVICE uses zero

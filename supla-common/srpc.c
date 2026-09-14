@@ -850,8 +850,12 @@ static unsigned char srpc_object_alerts_valid(
   const unsigned _supla_int_t header_size =
       (unsigned _supla_int_t)offsetof(TDS_ObjectAlerts, Items);
 
-  if (alerts == NULL || alerts->Count > SUPLA_OBJECT_ALERT_MAXCOUNT ||
-      data_size < header_size || data_size > sizeof(TDS_ObjectAlerts) ||
+  if (alerts == NULL || data_size < header_size ||
+      data_size > sizeof(TDS_ObjectAlerts)) {
+    return 0;
+  }
+
+  if (alerts->Count > SUPLA_OBJECT_ALERT_MAXCOUNT ||
       data_size != header_size +
                        (unsigned _supla_int_t)alerts->Count *
                            sizeof(TSuplaObjectAlert)) {
@@ -888,7 +892,8 @@ static unsigned char srpc_object_alerts_valid(
     if (item->Severity > SUPLA_ALERT_SEVERITY_CRITICAL ||
         (item->Flags & ~SUPLA_OBJECT_ALERT_FLAGS_MASK) != 0 ||
         ((item->Flags & SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE) != 0 &&
-         (item->Flags & SUPLA_OBJECT_ALERT_FLAG_ACTIVE) != 0)) {
+         (item->Flags & (SUPLA_OBJECT_ALERT_FLAG_ACTIVE |
+                         SUPLA_OBJECT_ALERT_FLAG_RESET_SUPPORTED)) != 0)) {
       return 0;
     }
 
@@ -2803,7 +2808,7 @@ srpc_ds_async_set_subdevice_details(void *_srpc, TDS_SubdeviceDetails *reg) {
 
 static _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_object_alerts(
     void *_srpc, TDS_ObjectAlerts *alerts, unsigned _supla_int_t call_id) {
-  if (alerts == NULL) {
+  if (alerts == NULL || alerts->Count > SUPLA_OBJECT_ALERT_MAXCOUNT) {
     return 0;
   }
 

@@ -325,6 +325,7 @@ static_assert(sizeof(TValve_Value) <= SUPLA_CHANNELVALUE_SIZE);
 static_assert(sizeof(TCSD_Valve) <= SUPLA_CHANNELVALUE_SIZE);
 
 static_assert(sizeof(TSuplaObjectAlert) == 4);
+static_assert(sizeof(TCalCfg_ObjectAlertReset) == 2);
 static_assert(offsetof(TDS_ObjectAlerts, Items) == 4);
 static_assert(sizeof(TDS_ObjectAlerts) ==
               4 + SUPLA_OBJECT_ALERT_MAXCOUNT * sizeof(TSuplaObjectAlert));

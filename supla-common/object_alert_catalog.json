@@ -436,27 +436,21 @@
     },
     {
       "code": "0x0603",
-      "name": "PROCESS_FLOW_RESTRICTED",
+      "name": "PROCESS_RESTRICTED_FLOW",
       "group": "PROCESS",
       "default_severity": "WARNING",
       "type": "STATEFUL",
-      "translation_key": "alert.process.flow_restricted",
-      "description": "The source reports flow restricted below its configured acceptable policy.",
-      "aliases": [
-        "PROCESS_RESTRICTED_FLOW"
-      ]
+      "translation_key": "alert.process.restricted_flow",
+      "description": "The source reports flow restricted below its configured acceptable policy."
     },
     {
       "code": "0x0604",
-      "name": "PROCESS_MAX_PRESSURE_EXCEEDED",
+      "name": "PROCESS_PRESSURE_HIGH",
       "group": "PROCESS",
       "default_severity": "WARNING",
       "type": "STATEFUL",
-      "translation_key": "alert.process.max_pressure_exceeded",
-      "description": "The monitored process pressure exceeds its configured acceptable high level.",
-      "aliases": [
-        "PROCESS_PRESSURE_HIGH"
-      ]
+      "translation_key": "alert.process.pressure_high",
+      "description": "The monitored process pressure exceeds its configured acceptable high level."
     },
     {
       "code": "0x0605",
@@ -790,30 +784,6 @@
       "type": "STATEFUL",
       "translation_key": "alert.device.cover_open",
       "description": "The source reports that a device cover is open."
-    },
-    {
-      "code": "0x0B01",
-      "name": "DEVICE_LIGHT_SOURCE_LIFESPAN_LOW",
-      "group": "DEVICE",
-      "default_severity": "WARNING",
-      "type": "STATEFUL",
-      "translation_key": "alert.device.light_source_lifespan_low",
-      "description": "The source reports that light source lifespan is low.",
-      "aliases": [
-        "MAINTENANCE_LIGHT_SOURCE_LIFESPAN_LOW"
-      ]
-    },
-    {
-      "code": "0x0B02",
-      "name": "DEVICE_LIGHT_SOURCE_LIFESPAN_END",
-      "group": "DEVICE",
-      "default_severity": "ALARM",
-      "type": "STATEFUL",
-      "translation_key": "alert.device.light_source_lifespan_end",
-      "description": "The source reports that the light source has reached its service life.",
-      "aliases": [
-        "MAINTENANCE_LIGHT_SOURCE_LIFESPAN_END"
-      ]
     },
     {
       "code": "0x0B03",
