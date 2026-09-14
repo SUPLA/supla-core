@@ -1,0 +1,882 @@
+{
+  "format": "supla-object-alert-catalog-v1",
+  "version": 1,
+  "entries": [
+    {
+      "code": "0x0000",
+      "name": "NONE",
+      "group": "CORE",
+      "default_severity": "NONE",
+      "type": "STATEFUL",
+      "translation_key": "alert.none",
+      "description": "No Object Alert is reported."
+    },
+    {
+      "code": "0x0100",
+      "name": "SYSTEM_CLOCK_NOT_SET",
+      "group": "SYSTEM",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.system.clock_not_set",
+      "description": "The source reports that the device clock is not set."
+    },
+    {
+      "code": "0x0101",
+      "name": "SYSTEM_CLOCK_ERROR",
+      "group": "SYSTEM",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.system.clock_error",
+      "description": "The source reports that the device clock cannot provide valid time."
+    },
+    {
+      "code": "0x0102",
+      "name": "SYSTEM_CLOCK_BATTERY_LOW",
+      "group": "SYSTEM",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.system.clock_battery_low",
+      "description": "The source reports that the backup supply for its clock is low."
+    },
+    {
+      "code": "0x0103",
+      "name": "SYSTEM_CLOCK_BATTERY_REPLACE",
+      "group": "SYSTEM",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.system.clock_battery_replace",
+      "description": "The source reports that the clock backup supply requires replacement."
+    },
+    {
+      "code": "0x0104",
+      "name": "SYSTEM_CONFIGURATION_ERROR",
+      "group": "SYSTEM",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.system.configuration_error",
+      "description": "The source reports an invalid configuration affecting its function."
+    },
+    {
+      "code": "0x0105",
+      "name": "SYSTEM_COMMUNICATION_LOST",
+      "group": "SYSTEM",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.system.communication_lost",
+      "description": "A required system communication path has been unavailable beyond the source policy."
+    },
+    {
+      "code": "0x0106",
+      "name": "SYSTEM_COMMUNICATION_ERROR",
+      "group": "SYSTEM",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.system.communication_error",
+      "description": "The source reports a system communication error affecting its function."
+    },
+    {
+      "code": "0x0107",
+      "name": "SYSTEM_CLOCK_UNRELIABLE",
+      "group": "SYSTEM",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.system.clock_unreliable",
+      "description": "The source reports that device time is unreliable for its function."
+    },
+    {
+      "code": "0x0108",
+      "name": "SYSTEM_STORAGE_ERROR",
+      "group": "SYSTEM",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.system.storage_error",
+      "description": "The source reports a storage error affecting its function."
+    },
+    {
+      "code": "0x0109",
+      "name": "SYSTEM_RESOURCE_EXHAUSTION",
+      "group": "SYSTEM",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.system.resource_exhaustion",
+      "description": "The source reports exhausted resources affecting its function."
+    },
+    {
+      "code": "0x010A",
+      "name": "SYSTEM_CONFIGURATION_SAVE_FAILED",
+      "group": "SYSTEM",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.system.configuration_save_failed",
+      "description": "The source could not save a required configuration change."
+    },
+    {
+      "code": "0x010B",
+      "name": "SYSTEM_REQUIRED_DEPENDENCY_UNAVAILABLE",
+      "group": "SYSTEM",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.system.required_dependency_unavailable",
+      "description": "A required dependency is unavailable beyond the source policy."
+    },
+    {
+      "code": "0x0200",
+      "name": "SENSOR_ERROR",
+      "group": "SENSOR",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.sensor.error",
+      "description": "The source reports a sensor error affecting measurement or function."
+    },
+    {
+      "code": "0x0201",
+      "name": "SENSOR_TEMPERATURE_ERROR",
+      "group": "SENSOR",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.sensor.temperature_error",
+      "description": "The source reports an error from a temperature sensor."
+    },
+    {
+      "code": "0x0202",
+      "name": "SENSOR_HUMIDITY_ERROR",
+      "group": "SENSOR",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.sensor.humidity_error",
+      "description": "The source reports an error from a humidity sensor."
+    },
+    {
+      "code": "0x0203",
+      "name": "SENSOR_AIR_QUALITY_ERROR",
+      "group": "SENSOR",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.sensor.air_quality_error",
+      "description": "The source reports an error from an air quality sensor."
+    },
+    {
+      "code": "0x0204",
+      "name": "SENSOR_CO2_ERROR",
+      "group": "SENSOR",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.sensor.co2_error",
+      "description": "The source reports an error from a CO2 sensor."
+    },
+    {
+      "code": "0x0205",
+      "name": "SENSOR_PM_ERROR",
+      "group": "SENSOR",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.sensor.pm_error",
+      "description": "The source reports an error from a particulate matter sensor."
+    },
+    {
+      "code": "0x0206",
+      "name": "SENSOR_NOT_DETECTED",
+      "group": "SENSOR",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.sensor.not_detected",
+      "description": "The expected sensor is not detected by the source."
+    },
+    {
+      "code": "0x0207",
+      "name": "SENSOR_OPEN_CIRCUIT",
+      "group": "SENSOR",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.sensor.open_circuit",
+      "description": "The source detects an open circuit in the sensor connection."
+    },
+    {
+      "code": "0x0208",
+      "name": "SENSOR_SHORT_CIRCUIT",
+      "group": "SENSOR",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.sensor.short_circuit",
+      "description": "The source detects a short circuit in the sensor connection."
+    },
+    {
+      "code": "0x0209",
+      "name": "SENSOR_OUT_OF_VALID_RANGE",
+      "group": "SENSOR",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.sensor.out_of_valid_range",
+      "description": "The sensor measurement is outside its valid measurement range."
+    },
+    {
+      "code": "0x020A",
+      "name": "SENSOR_INCONSISTENT_STATE",
+      "group": "SENSOR",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.sensor.inconsistent_state",
+      "description": "The source detects an inconsistent sensor state."
+    },
+    {
+      "code": "0x0300",
+      "name": "OUTPUT_ERROR",
+      "group": "OUTPUT",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.output.error",
+      "description": "The source reports an output error affecting its function."
+    },
+    {
+      "code": "0x0301",
+      "name": "OUTPUT_MOTOR_PROBLEM",
+      "group": "OUTPUT",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.output.motor_problem",
+      "description": "The source reports that an output motor cannot perform its function."
+    },
+    {
+      "code": "0x0302",
+      "name": "OUTPUT_STATE_MISMATCH",
+      "group": "OUTPUT",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.output.state_mismatch",
+      "description": "The confirmed output state does not match the requested state after the allowed time."
+    },
+    {
+      "code": "0x0303",
+      "name": "OUTPUT_TRAVEL_TIMEOUT",
+      "group": "OUTPUT",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.output.travel_timeout",
+      "description": "The output did not complete its allowed travel time."
+    },
+    {
+      "code": "0x0304",
+      "name": "OUTPUT_OBSTRUCTION_DETECTED",
+      "group": "OUTPUT",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.output.obstruction_detected",
+      "description": "The source detected an obstruction while operating the output."
+    },
+    {
+      "code": "0x0305",
+      "name": "OUTPUT_POSITION_UNKNOWN",
+      "group": "OUTPUT",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.output.position_unknown",
+      "description": "The source cannot determine the current output position."
+    },
+    {
+      "code": "0x0400",
+      "name": "CALIBRATION_LOST",
+      "group": "CALIBRATION",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.calibration.lost",
+      "description": "The source no longer has a valid calibration for its function."
+    },
+    {
+      "code": "0x0401",
+      "name": "CALIBRATION_FAILED",
+      "group": "CALIBRATION",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.calibration.failed",
+      "description": "The most recent calibration attempt failed."
+    },
+    {
+      "code": "0x0402",
+      "name": "CALIBRATION_ERROR",
+      "group": "CALIBRATION",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.calibration.error",
+      "description": "The source reports a calibration error affecting its function."
+    },
+    {
+      "code": "0x0403",
+      "name": "CALIBRATION_REQUIRED",
+      "group": "CALIBRATION",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.calibration.required",
+      "description": "The source requires a valid calibration before its function can be used."
+    },
+    {
+      "code": "0x0500",
+      "name": "MAINTENANCE_REQUIRED",
+      "group": "MAINTENANCE",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.maintenance.required",
+      "description": "The source reports that maintenance is required for its function."
+    },
+    {
+      "code": "0x0501",
+      "name": "MAINTENANCE_FILTER_REPLACE_SOON",
+      "group": "MAINTENANCE",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.maintenance.filter_replace_soon",
+      "description": "The source reports that a filter will soon require replacement."
+    },
+    {
+      "code": "0x0502",
+      "name": "MAINTENANCE_FILTER_REPLACE_NOW",
+      "group": "MAINTENANCE",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.maintenance.filter_replace_now",
+      "description": "The source reports that a filter requires replacement now."
+    },
+    {
+      "code": "0x0503",
+      "name": "MAINTENANCE_SUPPLY_FILTER_REPLACE_NOW",
+      "group": "MAINTENANCE",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.maintenance.supply_filter_replace_now",
+      "description": "The source reports that a supply filter requires replacement now."
+    },
+    {
+      "code": "0x0504",
+      "name": "MAINTENANCE_EXHAUST_FILTER_REPLACE_NOW",
+      "group": "MAINTENANCE",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.maintenance.exhaust_filter_replace_now",
+      "description": "The source reports that an exhaust filter requires replacement now."
+    },
+    {
+      "code": "0x0505",
+      "name": "MAINTENANCE_GHE_FILTER_REPLACE_NOW",
+      "group": "MAINTENANCE",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.maintenance.ghe_filter_replace_now",
+      "description": "The source reports that a heat recovery filter requires replacement now."
+    },
+    {
+      "code": "0x0506",
+      "name": "MAINTENANCE_SERVICE_DUE",
+      "group": "MAINTENANCE",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.maintenance.service_due",
+      "description": "The source reports that a scheduled service is due."
+    },
+    {
+      "code": "0x0507",
+      "name": "MAINTENANCE_CALIBRATION_DUE",
+      "group": "MAINTENANCE",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.maintenance.calibration_due",
+      "description": "The source reports that scheduled calibration is due."
+    },
+    {
+      "code": "0x0508",
+      "name": "MAINTENANCE_SENSOR_END_OF_LIFE",
+      "group": "MAINTENANCE",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.maintenance.sensor_end_of_life",
+      "description": "The source reports that a sensor has reached its service life."
+    },
+    {
+      "code": "0x0509",
+      "name": "MAINTENANCE_LIGHT_SOURCE_LIFESPAN_LOW",
+      "group": "MAINTENANCE",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.maintenance.light_source_lifespan_low",
+      "description": "The source reports that light source lifespan is low."
+    },
+    {
+      "code": "0x050A",
+      "name": "MAINTENANCE_LIGHT_SOURCE_LIFESPAN_END",
+      "group": "MAINTENANCE",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.maintenance.light_source_lifespan_end",
+      "description": "The source reports that the light source has reached its service life."
+    },
+    {
+      "code": "0x0600",
+      "name": "PROCESS_NO_FLOW",
+      "group": "PROCESS",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.process.no_flow",
+      "description": "The source reports no flow where flow is required by its function."
+    },
+    {
+      "code": "0x0601",
+      "name": "PROCESS_SUPPLY_NO_FLOW",
+      "group": "PROCESS",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.process.supply_no_flow",
+      "description": "The source reports no required supply flow."
+    },
+    {
+      "code": "0x0602",
+      "name": "PROCESS_EXHAUST_NO_FLOW",
+      "group": "PROCESS",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.process.exhaust_no_flow",
+      "description": "The source reports no required exhaust flow."
+    },
+    {
+      "code": "0x0603",
+      "name": "PROCESS_FLOW_RESTRICTED",
+      "group": "PROCESS",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.process.flow_restricted",
+      "description": "The source reports flow restricted below its configured acceptable policy.",
+      "aliases": [
+        "PROCESS_RESTRICTED_FLOW"
+      ]
+    },
+    {
+      "code": "0x0604",
+      "name": "PROCESS_MAX_PRESSURE_EXCEEDED",
+      "group": "PROCESS",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.process.max_pressure_exceeded",
+      "description": "The monitored process pressure exceeds its configured acceptable high level.",
+      "aliases": [
+        "PROCESS_PRESSURE_HIGH"
+      ]
+    },
+    {
+      "code": "0x0605",
+      "name": "PROCESS_PRESSURE_LOW",
+      "group": "PROCESS",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.process.pressure_low",
+      "description": "The monitored process pressure is below its configured acceptable low level."
+    },
+    {
+      "code": "0x0606",
+      "name": "PROCESS_LEVEL_HIGH",
+      "group": "PROCESS",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.process.level_high",
+      "description": "The monitored process level exceeds its configured acceptable high level."
+    },
+    {
+      "code": "0x0607",
+      "name": "PROCESS_LEVEL_LOW",
+      "group": "PROCESS",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.process.level_low",
+      "description": "The monitored process level is below its configured acceptable low level."
+    },
+    {
+      "code": "0x0608",
+      "name": "PROCESS_UNEXPECTED_FLOW",
+      "group": "PROCESS",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.process.unexpected_flow",
+      "description": "The source reports flow when its configured process state does not allow it."
+    },
+    {
+      "code": "0x0609",
+      "name": "PROCESS_CONTINUOUS_OPERATION_LIMIT_EXCEEDED",
+      "group": "PROCESS",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.process.continuous_operation_limit_exceeded",
+      "description": "The source reports that its configured continuous operation limit was exceeded."
+    },
+    {
+      "code": "0x0700",
+      "name": "ENVIRONMENT_DEFROST_TIMEOUT",
+      "group": "ENVIRONMENT",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.environment.defrost_timeout",
+      "description": "The source reports that defrost did not complete within the allowed time."
+    },
+    {
+      "code": "0x0701",
+      "name": "ENVIRONMENT_FROST_PROTECTION_ACTIVE",
+      "group": "ENVIRONMENT",
+      "default_severity": "INFO",
+      "type": "STATEFUL",
+      "translation_key": "alert.environment.frost_protection_active",
+      "description": "The source reports that frost protection is currently active."
+    },
+    {
+      "code": "0x0702",
+      "name": "ENVIRONMENT_FREEZE_RISK",
+      "group": "ENVIRONMENT",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.environment.freeze_risk",
+      "description": "The source reports a configured risk of freezing conditions."
+    },
+    {
+      "code": "0x0703",
+      "name": "ENVIRONMENT_HIGH_TEMPERATURE",
+      "group": "ENVIRONMENT",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.environment.high_temperature",
+      "description": "The monitored environment temperature exceeds its configured acceptable level."
+    },
+    {
+      "code": "0x0704",
+      "name": "ENVIRONMENT_LOW_TEMPERATURE",
+      "group": "ENVIRONMENT",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.environment.low_temperature",
+      "description": "The monitored environment temperature is below its configured acceptable level."
+    },
+    {
+      "code": "0x0705",
+      "name": "ENVIRONMENT_HIGH_HUMIDITY",
+      "group": "ENVIRONMENT",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.environment.high_humidity",
+      "description": "The monitored environment humidity exceeds its configured acceptable level."
+    },
+    {
+      "code": "0x0706",
+      "name": "ENVIRONMENT_HIGH_CO2",
+      "group": "ENVIRONMENT",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.environment.high_co2",
+      "description": "The monitored environment CO2 level exceeds its configured acceptable level."
+    },
+    {
+      "code": "0x0707",
+      "name": "ENVIRONMENT_HIGH_WIND",
+      "group": "ENVIRONMENT",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.environment.high_wind",
+      "description": "The monitored wind exceeds its configured acceptable level."
+    },
+    {
+      "code": "0x0800",
+      "name": "SAFETY_EMERGENCY_STOP",
+      "group": "SAFETY",
+      "default_severity": "CRITICAL",
+      "type": "STATEFUL",
+      "translation_key": "alert.safety.emergency_stop",
+      "description": "The source reports that an emergency stop condition is active."
+    },
+    {
+      "code": "0x0801",
+      "name": "SAFETY_FIRE_ALARM",
+      "group": "SAFETY",
+      "default_severity": "CRITICAL",
+      "type": "STATEFUL",
+      "translation_key": "alert.safety.fire_alarm",
+      "description": "The source reports a fire alarm condition."
+    },
+    {
+      "code": "0x0802",
+      "name": "SAFETY_CO_ALARM",
+      "group": "SAFETY",
+      "default_severity": "CRITICAL",
+      "type": "STATEFUL",
+      "translation_key": "alert.safety.co_alarm",
+      "description": "The source reports a carbon monoxide alarm condition."
+    },
+    {
+      "code": "0x0803",
+      "name": "SAFETY_INPUT_ACTIVE",
+      "group": "SAFETY",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.safety.input_active",
+      "description": "The source reports that a configured safety input is active."
+    },
+    {
+      "code": "0x0804",
+      "name": "SAFETY_FORCED_OFF_BY_SENSOR",
+      "group": "SAFETY",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.safety.forced_off_by_sensor",
+      "description": "The source reports that a safety sensor forced the function off."
+    },
+    {
+      "code": "0x0805",
+      "name": "SAFETY_SMOKE_ALARM",
+      "group": "SAFETY",
+      "default_severity": "CRITICAL",
+      "type": "STATEFUL",
+      "translation_key": "alert.safety.smoke_alarm",
+      "description": "The source reports a smoke alarm condition."
+    },
+    {
+      "code": "0x0806",
+      "name": "SAFETY_COMBUSTIBLE_GAS_ALARM",
+      "group": "SAFETY",
+      "default_severity": "CRITICAL",
+      "type": "STATEFUL",
+      "translation_key": "alert.safety.combustible_gas_alarm",
+      "description": "The source reports a combustible gas alarm condition."
+    },
+    {
+      "code": "0x0807",
+      "name": "SAFETY_WATER_LEAK",
+      "group": "SAFETY",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.safety.water_leak",
+      "description": "The source reports detected water leakage."
+    },
+    {
+      "code": "0x0808",
+      "name": "SAFETY_PROTECTIVE_DEVICE_FAULT",
+      "group": "SAFETY",
+      "default_severity": "CRITICAL",
+      "type": "STATEFUL",
+      "translation_key": "alert.safety.protective_device_fault",
+      "description": "The source reports a fault in a protective device."
+    },
+    {
+      "code": "0x0900",
+      "name": "POWER_BATTERY_LOW",
+      "group": "POWER",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.power.battery_low",
+      "description": "The source reports that battery charge is below its configured acceptable level."
+    },
+    {
+      "code": "0x0901",
+      "name": "POWER_BATTERY_HEALTH_LOW",
+      "group": "POWER",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.power.battery_health_low",
+      "description": "The source reports that battery health is below its configured acceptable level."
+    },
+    {
+      "code": "0x0902",
+      "name": "POWER_BATTERY_COVER_OPEN",
+      "group": "POWER",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.power.battery_cover_open",
+      "description": "The source reports that the battery cover is open."
+    },
+    {
+      "code": "0x0903",
+      "name": "POWER_SUPPLY_ERROR",
+      "group": "POWER",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.power.supply_error",
+      "description": "The source reports a power supply error affecting its function."
+    },
+    {
+      "code": "0x0904",
+      "name": "POWER_MAINS_LOST",
+      "group": "POWER",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.power.mains_lost",
+      "description": "The source reports that required mains power is unavailable."
+    },
+    {
+      "code": "0x0905",
+      "name": "POWER_UNDERVOLTAGE",
+      "group": "POWER",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.power.undervoltage",
+      "description": "The source reports supply voltage below its configured acceptable level."
+    },
+    {
+      "code": "0x0906",
+      "name": "POWER_OVERVOLTAGE",
+      "group": "POWER",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.power.overvoltage",
+      "description": "The source reports supply voltage above its configured acceptable level."
+    },
+    {
+      "code": "0x0907",
+      "name": "POWER_PHASE_LOSS",
+      "group": "POWER",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.power.phase_loss",
+      "description": "The source reports a required power phase is unavailable."
+    },
+    {
+      "code": "0x0908",
+      "name": "POWER_CHARGING_FAILURE",
+      "group": "POWER",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.power.charging_failure",
+      "description": "The source reports that battery charging failed."
+    },
+    {
+      "code": "0x0A00",
+      "name": "PROTECTION_ANTIFREEZE_ACTIVE",
+      "group": "PROTECTION",
+      "default_severity": "INFO",
+      "type": "STATEFUL",
+      "translation_key": "alert.protection.antifreeze_active",
+      "description": "The source reports that antifreeze protection is currently active."
+    },
+    {
+      "code": "0x0A01",
+      "name": "PROTECTION_OVERHEAT_ACTIVE",
+      "group": "PROTECTION",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.protection.overheat_active",
+      "description": "The source reports that overheat protection is currently active."
+    },
+    {
+      "code": "0x0A02",
+      "name": "PROTECTION_OVERCURRENT_TRIPPED",
+      "group": "PROTECTION",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.protection.overcurrent_tripped",
+      "description": "The source reports that overcurrent protection tripped and may keep an output blocked."
+    },
+    {
+      "code": "0x0A03",
+      "name": "PROTECTION_SHORT_CIRCUIT_ACTIVE",
+      "group": "PROTECTION",
+      "default_severity": "CRITICAL",
+      "type": "STATEFUL",
+      "translation_key": "alert.protection.short_circuit_active",
+      "description": "The source reports that short circuit protection is currently active."
+    },
+    {
+      "code": "0x0A04",
+      "name": "PROTECTION_DRY_RUN_ACTIVE",
+      "group": "PROTECTION",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.protection.dry_run_active",
+      "description": "The source reports that dry run protection is currently active."
+    },
+    {
+      "code": "0x0B00",
+      "name": "DEVICE_COVER_OPEN",
+      "group": "DEVICE",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.device.cover_open",
+      "description": "The source reports that a device cover is open."
+    },
+    {
+      "code": "0x0B01",
+      "name": "DEVICE_LIGHT_SOURCE_LIFESPAN_LOW",
+      "group": "DEVICE",
+      "default_severity": "WARNING",
+      "type": "STATEFUL",
+      "translation_key": "alert.device.light_source_lifespan_low",
+      "description": "The source reports that light source lifespan is low.",
+      "aliases": [
+        "MAINTENANCE_LIGHT_SOURCE_LIFESPAN_LOW"
+      ]
+    },
+    {
+      "code": "0x0B02",
+      "name": "DEVICE_LIGHT_SOURCE_LIFESPAN_END",
+      "group": "DEVICE",
+      "default_severity": "ALARM",
+      "type": "STATEFUL",
+      "translation_key": "alert.device.light_source_lifespan_end",
+      "description": "The source reports that the light source has reached its service life.",
+      "aliases": [
+        "MAINTENANCE_LIGHT_SOURCE_LIFESPAN_END"
+      ]
+    },
+    {
+      "code": "0x0B03",
+      "name": "DEVICE_SELF_TEST_FAILED",
+      "group": "DEVICE",
+      "default_severity": "ALARM",
+      "type": "OCCURRENCE",
+      "translation_key": "alert.device.self_test_failed",
+      "description": "The source reports that a self-test failed."
+    },
+    {
+      "code": "0x0B04",
+      "name": "DEVICE_SELF_TEST_COMPLETED",
+      "group": "DEVICE",
+      "default_severity": "INFO",
+      "type": "OCCURRENCE",
+      "translation_key": "alert.device.self_test_completed",
+      "description": "The source reports that a self-test completed."
+    },
+    {
+      "code": "0x0B05",
+      "name": "DEVICE_WATCHDOG_RESET",
+      "group": "DEVICE",
+      "default_severity": "WARNING",
+      "type": "OCCURRENCE",
+      "translation_key": "alert.device.watchdog_reset",
+      "description": "The source reports that a watchdog reset occurred."
+    },
+    {
+      "code": "0x0B06",
+      "name": "DEVICE_BROWNOUT_RESET",
+      "group": "DEVICE",
+      "default_severity": "WARNING",
+      "type": "OCCURRENCE",
+      "translation_key": "alert.device.brownout_reset",
+      "description": "The source reports that a brownout reset occurred."
+    },
+    {
+      "code": "0x0B07",
+      "name": "DEVICE_FIRMWARE_UPDATE_FAILED",
+      "group": "DEVICE",
+      "default_severity": "ALARM",
+      "type": "OCCURRENCE",
+      "translation_key": "alert.device.firmware_update_failed",
+      "description": "The source reports that a firmware update failed."
+    },
+    {
+      "code": "0x0B08",
+      "name": "DEVICE_SECURITY_UPDATE_FAILED",
+      "group": "DEVICE",
+      "default_severity": "CRITICAL",
+      "type": "OCCURRENCE",
+      "translation_key": "alert.device.security_update_failed",
+      "description": "The source reports that a security update failed."
+    },
+    {
+      "code": "0x0B09",
+      "name": "DEVICE_SELF_TEST_ACTIVE",
+      "group": "DEVICE",
+      "default_severity": "INFO",
+      "type": "STATEFUL",
+      "translation_key": "alert.device.self_test_active",
+      "description": "The source reports that a local self-test is currently in progress."
+    }
+  ]
+}

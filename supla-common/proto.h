@@ -2768,219 +2768,108 @@ typedef struct {
 #define SUPLA_ALERT_SEVERITY_ALARM 3
 #define SUPLA_ALERT_SEVERITY_CRITICAL 4
 
-#define SUPLA_ALERT_TYPE_STATEFUL 0
-#define SUPLA_ALERT_TYPE_OCCURRENCE 1
-
-// Alert code groups.
-#define SUPLA_ALERT_GROUP_CORE 0x00
-#define SUPLA_ALERT_GROUP_SYSTEM 0x01
-#define SUPLA_ALERT_GROUP_SENSOR 0x02
-#define SUPLA_ALERT_GROUP_OUTPUT 0x03
-#define SUPLA_ALERT_GROUP_CALIBRATION 0x04
-#define SUPLA_ALERT_GROUP_MAINTENANCE 0x05
-#define SUPLA_ALERT_GROUP_PROCESS 0x06
-#define SUPLA_ALERT_GROUP_ENVIRONMENT 0x07
-#define SUPLA_ALERT_GROUP_SAFETY 0x08
-#define SUPLA_ALERT_GROUP_POWER 0x09
-#define SUPLA_ALERT_GROUP_PROTECTION 0x0A
-#define SUPLA_ALERT_GROUP_DEVICE 0x0B
-
-// SUPLA_ALERT_CODE_MAP columns are: code, name, group, default severity,
-// type, translation key and precise semantic description.
+// SUPLA_ALERT_CODE_MAP columns are: numeric code and symbolic name. Full
+// catalogue metadata is kept in object_alert_catalog.json and is not part of
+// the firmware wire header.
 #define SUPLA_ALERT_CODE_MAP(X) \
-  X(0x0000, NONE, SUPLA_ALERT_GROUP_CORE, SUPLA_ALERT_SEVERITY_NONE, SUPLA_ALERT_TYPE_STATEFUL, "alert.none", \
-    "No Object Alert is reported.") \
-  X(0x0100, SYSTEM_CLOCK_NOT_SET, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.clock_not_set", \
-    "The source reports that the device clock is not set.") \
-  X(0x0101, SYSTEM_CLOCK_ERROR, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.clock_error", \
-    "The source reports that the device clock cannot provide valid time.") \
-  X(0x0102, SYSTEM_CLOCK_BATTERY_LOW, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.clock_battery_low", \
-    "The source reports that the backup supply for its clock is low.") \
-  X(0x0103, SYSTEM_CLOCK_BATTERY_REPLACE, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.clock_battery_replace", \
-    "The source reports that the clock backup supply requires replacement.") \
-  X(0x0104, SYSTEM_CONFIGURATION_ERROR, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.configuration_error", \
-    "The source reports an invalid configuration affecting its function.") \
-  X(0x0105, SYSTEM_COMMUNICATION_LOST, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.communication_lost", \
-    "A required system communication path has been unavailable beyond the source policy.") \
-  X(0x0106, SYSTEM_COMMUNICATION_ERROR, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.communication_error", \
-    "The source reports a system communication error affecting its function.") \
-  X(0x0107, SYSTEM_CLOCK_UNRELIABLE, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.clock_unreliable", \
-    "The source reports that device time is unreliable for its function.") \
-  X(0x0108, SYSTEM_STORAGE_ERROR, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.storage_error", \
-    "The source reports a storage error affecting its function.") \
-  X(0x0109, SYSTEM_RESOURCE_EXHAUSTION, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.resource_exhaustion", \
-    "The source reports exhausted resources affecting its function.") \
-  X(0x010A, SYSTEM_CONFIGURATION_SAVE_FAILED, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.configuration_save_failed", \
-    "The source could not save a required configuration change.") \
-  X(0x010B, SYSTEM_REQUIRED_DEPENDENCY_UNAVAILABLE, SUPLA_ALERT_GROUP_SYSTEM, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.system.required_dependency_unavailable", \
-    "A required dependency is unavailable beyond the source policy.") \
-  X(0x0200, SENSOR_ERROR, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.error", \
-    "The source reports a sensor error affecting measurement or function.") \
-  X(0x0201, SENSOR_TEMPERATURE_ERROR, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.temperature_error", \
-    "The source reports an error from a temperature sensor.") \
-  X(0x0202, SENSOR_HUMIDITY_ERROR, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.humidity_error", \
-    "The source reports an error from a humidity sensor.") \
-  X(0x0203, SENSOR_AIR_QUALITY_ERROR, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.air_quality_error", \
-    "The source reports an error from an air quality sensor.") \
-  X(0x0204, SENSOR_CO2_ERROR, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.co2_error", \
-    "The source reports an error from a CO2 sensor.") \
-  X(0x0205, SENSOR_PM_ERROR, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.pm_error", \
-    "The source reports an error from a particulate matter sensor.") \
-  X(0x0206, SENSOR_NOT_DETECTED, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.not_detected", \
-    "The expected sensor is not detected by the source.") \
-  X(0x0207, SENSOR_OPEN_CIRCUIT, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.open_circuit", \
-    "The source detects an open circuit in the sensor connection.") \
-  X(0x0208, SENSOR_SHORT_CIRCUIT, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.short_circuit", \
-    "The source detects a short circuit in the sensor connection.") \
-  X(0x0209, SENSOR_OUT_OF_VALID_RANGE, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.out_of_valid_range", \
-    "The sensor measurement is outside its valid measurement range.") \
-  X(0x020A, SENSOR_INCONSISTENT_STATE, SUPLA_ALERT_GROUP_SENSOR, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.sensor.inconsistent_state", \
-    "The source detects an inconsistent sensor state.") \
-  X(0x0300, OUTPUT_ERROR, SUPLA_ALERT_GROUP_OUTPUT, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.output.error", \
-    "The source reports an output error affecting its function.") \
-  X(0x0301, OUTPUT_MOTOR_PROBLEM, SUPLA_ALERT_GROUP_OUTPUT, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.output.motor_problem", \
-    "The source reports that an output motor cannot perform its function.") \
-  X(0x0302, OUTPUT_STATE_MISMATCH, SUPLA_ALERT_GROUP_OUTPUT, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.output.state_mismatch", \
-    "The confirmed output state does not match the requested state after the allowed time.") \
-  X(0x0303, OUTPUT_TRAVEL_TIMEOUT, SUPLA_ALERT_GROUP_OUTPUT, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.output.travel_timeout", \
-    "The output did not complete its allowed travel time.") \
-  X(0x0304, OUTPUT_OBSTRUCTION_DETECTED, SUPLA_ALERT_GROUP_OUTPUT, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.output.obstruction_detected", \
-    "The source detected an obstruction while operating the output.") \
-  X(0x0305, OUTPUT_POSITION_UNKNOWN, SUPLA_ALERT_GROUP_OUTPUT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.output.position_unknown", \
-    "The source cannot determine the current output position.") \
-  X(0x0400, CALIBRATION_LOST, SUPLA_ALERT_GROUP_CALIBRATION, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.calibration.lost", \
-    "The source no longer has a valid calibration for its function.") \
-  X(0x0401, CALIBRATION_FAILED, SUPLA_ALERT_GROUP_CALIBRATION, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.calibration.failed", \
-    "The most recent calibration attempt failed.") \
-  X(0x0402, CALIBRATION_ERROR, SUPLA_ALERT_GROUP_CALIBRATION, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.calibration.error", \
-    "The source reports a calibration error affecting its function.") \
-  X(0x0403, CALIBRATION_REQUIRED, SUPLA_ALERT_GROUP_CALIBRATION, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.calibration.required", \
-    "The source requires a valid calibration before its function can be used.") \
-  X(0x0500, MAINTENANCE_REQUIRED, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.required", \
-    "The source reports that maintenance is required for its function.") \
-  X(0x0501, MAINTENANCE_FILTER_REPLACE_SOON, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.filter_replace_soon", \
-    "The source reports that a filter will soon require replacement.") \
-  X(0x0502, MAINTENANCE_FILTER_REPLACE_NOW, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.filter_replace_now", \
-    "The source reports that a filter requires replacement now.") \
-  X(0x0503, MAINTENANCE_SUPPLY_FILTER_REPLACE_NOW, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.supply_filter_replace_now", \
-    "The source reports that a supply filter requires replacement now.") \
-  X(0x0504, MAINTENANCE_EXHAUST_FILTER_REPLACE_NOW, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.exhaust_filter_replace_now", \
-    "The source reports that an exhaust filter requires replacement now.") \
-  X(0x0505, MAINTENANCE_GHE_FILTER_REPLACE_NOW, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.ghe_filter_replace_now", \
-    "The source reports that a heat recovery filter requires replacement now.") \
-  X(0x0506, MAINTENANCE_SERVICE_DUE, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.service_due", \
-    "The source reports that a scheduled service is due.") \
-  X(0x0507, MAINTENANCE_CALIBRATION_DUE, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.calibration_due", \
-    "The source reports that scheduled calibration is due.") \
-  X(0x0508, MAINTENANCE_SENSOR_END_OF_LIFE, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.sensor_end_of_life", \
-    "The source reports that a sensor has reached its service life.") \
-  X(0x0509, MAINTENANCE_LIGHT_SOURCE_LIFESPAN_LOW, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.light_source_lifespan_low", \
-    "The source reports that light source lifespan is low.") \
-  X(0x050A, MAINTENANCE_LIGHT_SOURCE_LIFESPAN_END, SUPLA_ALERT_GROUP_MAINTENANCE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.maintenance.light_source_lifespan_end", \
-    "The source reports that the light source has reached its service life.") \
-  X(0x0600, PROCESS_NO_FLOW, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.no_flow", \
-    "The source reports no flow where flow is required by its function.") \
-  X(0x0601, PROCESS_SUPPLY_NO_FLOW, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.supply_no_flow", \
-    "The source reports no required supply flow.") \
-  X(0x0602, PROCESS_EXHAUST_NO_FLOW, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.exhaust_no_flow", \
-    "The source reports no required exhaust flow.") \
-  X(0x0603, PROCESS_FLOW_RESTRICTED, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.flow_restricted", \
-    "The source reports flow restricted below its configured acceptable policy.") \
-  X(0x0604, PROCESS_MAX_PRESSURE_EXCEEDED, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.max_pressure_exceeded", \
-    "The monitored process pressure exceeds its configured acceptable high level.") \
-  X(0x0605, PROCESS_PRESSURE_LOW, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.pressure_low", \
-    "The monitored process pressure is below its configured acceptable low level.") \
-  X(0x0606, PROCESS_LEVEL_HIGH, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.level_high", \
-    "The monitored process level exceeds its configured acceptable high level.") \
-  X(0x0607, PROCESS_LEVEL_LOW, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.level_low", \
-    "The monitored process level is below its configured acceptable low level.") \
-  X(0x0608, PROCESS_UNEXPECTED_FLOW, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.unexpected_flow", \
-    "The source reports flow when its configured process state does not allow it.") \
-  X(0x0609, PROCESS_CONTINUOUS_OPERATION_LIMIT_EXCEEDED, SUPLA_ALERT_GROUP_PROCESS, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.process.continuous_operation_limit_exceeded", \
-    "The source reports that its configured continuous operation limit was exceeded.") \
-  X(0x0700, ENVIRONMENT_DEFROST_TIMEOUT, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.defrost_timeout", \
-    "The source reports that defrost did not complete within the allowed time.") \
-  X(0x0701, ENVIRONMENT_FROST_PROTECTION_ACTIVE, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_INFO, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.frost_protection_active", \
-    "The source reports that frost protection is currently active.") \
-  X(0x0702, ENVIRONMENT_FREEZE_RISK, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.freeze_risk", \
-    "The source reports a configured risk of freezing conditions.") \
-  X(0x0703, ENVIRONMENT_HIGH_TEMPERATURE, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.high_temperature", \
-    "The monitored environment temperature exceeds its configured acceptable level.") \
-  X(0x0704, ENVIRONMENT_LOW_TEMPERATURE, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.low_temperature", \
-    "The monitored environment temperature is below its configured acceptable level.") \
-  X(0x0705, ENVIRONMENT_HIGH_HUMIDITY, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.high_humidity", \
-    "The monitored environment humidity exceeds its configured acceptable level.") \
-  X(0x0706, ENVIRONMENT_HIGH_CO2, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.high_co2", \
-    "The monitored environment CO2 level exceeds its configured acceptable level.") \
-  X(0x0707, ENVIRONMENT_HIGH_WIND, SUPLA_ALERT_GROUP_ENVIRONMENT, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.environment.high_wind", \
-    "The monitored wind exceeds its configured acceptable level.") \
-  X(0x0800, SAFETY_EMERGENCY_STOP, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.emergency_stop", \
-    "The source reports that an emergency stop condition is active.") \
-  X(0x0801, SAFETY_FIRE_ALARM, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.fire_alarm", \
-    "The source reports a fire alarm condition.") \
-  X(0x0802, SAFETY_CO_ALARM, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.co_alarm", \
-    "The source reports a carbon monoxide alarm condition.") \
-  X(0x0803, SAFETY_INPUT_ACTIVE, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.input_active", \
-    "The source reports that a configured safety input is active.") \
-  X(0x0804, SAFETY_FORCED_OFF_BY_SENSOR, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.forced_off_by_sensor", \
-    "The source reports that a safety sensor forced the function off.") \
-  X(0x0805, SAFETY_SMOKE_ALARM, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.smoke_alarm", \
-    "The source reports a smoke alarm condition.") \
-  X(0x0806, SAFETY_COMBUSTIBLE_GAS_ALARM, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.combustible_gas_alarm", \
-    "The source reports a combustible gas alarm condition.") \
-  X(0x0807, SAFETY_WATER_LEAK, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.water_leak", \
-    "The source reports detected water leakage.") \
-  X(0x0808, SAFETY_PROTECTIVE_DEVICE_FAULT, SUPLA_ALERT_GROUP_SAFETY, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.safety.protective_device_fault", \
-    "The source reports a fault in a protective device.") \
-  X(0x0900, POWER_BATTERY_LOW, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.battery_low", \
-    "The source reports that battery charge is below its configured acceptable level.") \
-  X(0x0901, POWER_BATTERY_HEALTH_LOW, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.battery_health_low", \
-    "The source reports that battery health is below its configured acceptable level.") \
-  X(0x0902, POWER_BATTERY_COVER_OPEN, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.battery_cover_open", \
-    "The source reports that the battery cover is open.") \
-  X(0x0903, POWER_SUPPLY_ERROR, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.supply_error", \
-    "The source reports a power supply error affecting its function.") \
-  X(0x0904, POWER_MAINS_LOST, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.mains_lost", \
-    "The source reports that required mains power is unavailable.") \
-  X(0x0905, POWER_UNDERVOLTAGE, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.undervoltage", \
-    "The source reports supply voltage below its configured acceptable level.") \
-  X(0x0906, POWER_OVERVOLTAGE, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.overvoltage", \
-    "The source reports supply voltage above its configured acceptable level.") \
-  X(0x0907, POWER_PHASE_LOSS, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.phase_loss", \
-    "The source reports a required power phase is unavailable.") \
-  X(0x0908, POWER_CHARGING_FAILURE, SUPLA_ALERT_GROUP_POWER, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.power.charging_failure", \
-    "The source reports that battery charging failed.") \
-  X(0x0A00, PROTECTION_ANTIFREEZE_ACTIVE, SUPLA_ALERT_GROUP_PROTECTION, SUPLA_ALERT_SEVERITY_INFO, SUPLA_ALERT_TYPE_STATEFUL, "alert.protection.antifreeze_active", \
-    "The source reports that antifreeze protection is currently active.") \
-  X(0x0A01, PROTECTION_OVERHEAT_ACTIVE, SUPLA_ALERT_GROUP_PROTECTION, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.protection.overheat_active", \
-    "The source reports that overheat protection is currently active.") \
-  X(0x0A02, PROTECTION_OVERCURRENT_TRIPPED, SUPLA_ALERT_GROUP_PROTECTION, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.protection.overcurrent_tripped", \
-    "The source reports that overcurrent protection tripped and may keep an output blocked.") \
-  X(0x0A03, PROTECTION_SHORT_CIRCUIT_ACTIVE, SUPLA_ALERT_GROUP_PROTECTION, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_STATEFUL, "alert.protection.short_circuit_active", \
-    "The source reports that short circuit protection is currently active.") \
-  X(0x0A04, PROTECTION_DRY_RUN_ACTIVE, SUPLA_ALERT_GROUP_PROTECTION, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.protection.dry_run_active", \
-    "The source reports that dry run protection is currently active.") \
-  X(0x0B00, DEVICE_COVER_OPEN, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.device.cover_open", \
-    "The source reports that a device cover is open.") \
-  X(0x0B01, DEVICE_LIGHT_SOURCE_LIFESPAN_LOW, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_STATEFUL, "alert.device.light_source_lifespan_low", \
-    "The source reports that light source lifespan is low.") \
-  X(0x0B02, DEVICE_LIGHT_SOURCE_LIFESPAN_END, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_STATEFUL, "alert.device.light_source_lifespan_end", \
-    "The source reports that the light source has reached its service life.") \
-  X(0x0B03, DEVICE_SELF_TEST_FAILED, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_OCCURRENCE, "alert.device.self_test_failed", \
-    "The source reports that a self-test failed.") \
-  X(0x0B04, DEVICE_SELF_TEST_COMPLETED, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_INFO, SUPLA_ALERT_TYPE_OCCURRENCE, "alert.device.self_test_completed", \
-    "The source reports that a self-test completed.") \
-  X(0x0B05, DEVICE_WATCHDOG_RESET, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_OCCURRENCE, "alert.device.watchdog_reset", \
-    "The source reports that a watchdog reset occurred.") \
-  X(0x0B06, DEVICE_BROWNOUT_RESET, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_WARNING, SUPLA_ALERT_TYPE_OCCURRENCE, "alert.device.brownout_reset", \
-    "The source reports that a brownout reset occurred.") \
-  X(0x0B07, DEVICE_FIRMWARE_UPDATE_FAILED, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_ALARM, SUPLA_ALERT_TYPE_OCCURRENCE, "alert.device.firmware_update_failed", \
-    "The source reports that a firmware update failed.") \
-  X(0x0B08, DEVICE_SECURITY_UPDATE_FAILED, SUPLA_ALERT_GROUP_DEVICE, SUPLA_ALERT_SEVERITY_CRITICAL, SUPLA_ALERT_TYPE_OCCURRENCE, "alert.device.security_update_failed", \
-    "The source reports that a security update failed.")
-
+  X(0x0000, NONE) \
+  X(0x0100, SYSTEM_CLOCK_NOT_SET) \
+  X(0x0101, SYSTEM_CLOCK_ERROR) \
+  X(0x0102, SYSTEM_CLOCK_BATTERY_LOW) \
+  X(0x0103, SYSTEM_CLOCK_BATTERY_REPLACE) \
+  X(0x0104, SYSTEM_CONFIGURATION_ERROR) \
+  X(0x0105, SYSTEM_COMMUNICATION_LOST) \
+  X(0x0106, SYSTEM_COMMUNICATION_ERROR) \
+  X(0x0107, SYSTEM_CLOCK_UNRELIABLE) \
+  X(0x0108, SYSTEM_STORAGE_ERROR) \
+  X(0x0109, SYSTEM_RESOURCE_EXHAUSTION) \
+  X(0x010A, SYSTEM_CONFIGURATION_SAVE_FAILED) \
+  X(0x010B, SYSTEM_REQUIRED_DEPENDENCY_UNAVAILABLE) \
+  X(0x0200, SENSOR_ERROR) \
+  X(0x0201, SENSOR_TEMPERATURE_ERROR) \
+  X(0x0202, SENSOR_HUMIDITY_ERROR) \
+  X(0x0203, SENSOR_AIR_QUALITY_ERROR) \
+  X(0x0204, SENSOR_CO2_ERROR) \
+  X(0x0205, SENSOR_PM_ERROR) \
+  X(0x0206, SENSOR_NOT_DETECTED) \
+  X(0x0207, SENSOR_OPEN_CIRCUIT) \
+  X(0x0208, SENSOR_SHORT_CIRCUIT) \
+  X(0x0209, SENSOR_OUT_OF_VALID_RANGE) \
+  X(0x020A, SENSOR_INCONSISTENT_STATE) \
+  X(0x0300, OUTPUT_ERROR) \
+  X(0x0301, OUTPUT_MOTOR_PROBLEM) \
+  X(0x0302, OUTPUT_STATE_MISMATCH) \
+  X(0x0303, OUTPUT_TRAVEL_TIMEOUT) \
+  X(0x0304, OUTPUT_OBSTRUCTION_DETECTED) \
+  X(0x0305, OUTPUT_POSITION_UNKNOWN) \
+  X(0x0400, CALIBRATION_LOST) \
+  X(0x0401, CALIBRATION_FAILED) \
+  X(0x0402, CALIBRATION_ERROR) \
+  X(0x0403, CALIBRATION_REQUIRED) \
+  X(0x0500, MAINTENANCE_REQUIRED) \
+  X(0x0501, MAINTENANCE_FILTER_REPLACE_SOON) \
+  X(0x0502, MAINTENANCE_FILTER_REPLACE_NOW) \
+  X(0x0503, MAINTENANCE_SUPPLY_FILTER_REPLACE_NOW) \
+  X(0x0504, MAINTENANCE_EXHAUST_FILTER_REPLACE_NOW) \
+  X(0x0505, MAINTENANCE_GHE_FILTER_REPLACE_NOW) \
+  X(0x0506, MAINTENANCE_SERVICE_DUE) \
+  X(0x0507, MAINTENANCE_CALIBRATION_DUE) \
+  X(0x0508, MAINTENANCE_SENSOR_END_OF_LIFE) \
+  X(0x0509, MAINTENANCE_LIGHT_SOURCE_LIFESPAN_LOW) \
+  X(0x050A, MAINTENANCE_LIGHT_SOURCE_LIFESPAN_END) \
+  X(0x0600, PROCESS_NO_FLOW) \
+  X(0x0601, PROCESS_SUPPLY_NO_FLOW) \
+  X(0x0602, PROCESS_EXHAUST_NO_FLOW) \
+  X(0x0603, PROCESS_FLOW_RESTRICTED) \
+  X(0x0604, PROCESS_MAX_PRESSURE_EXCEEDED) \
+  X(0x0605, PROCESS_PRESSURE_LOW) \
+  X(0x0606, PROCESS_LEVEL_HIGH) \
+  X(0x0607, PROCESS_LEVEL_LOW) \
+  X(0x0608, PROCESS_UNEXPECTED_FLOW) \
+  X(0x0609, PROCESS_CONTINUOUS_OPERATION_LIMIT_EXCEEDED) \
+  X(0x0700, ENVIRONMENT_DEFROST_TIMEOUT) \
+  X(0x0701, ENVIRONMENT_FROST_PROTECTION_ACTIVE) \
+  X(0x0702, ENVIRONMENT_FREEZE_RISK) \
+  X(0x0703, ENVIRONMENT_HIGH_TEMPERATURE) \
+  X(0x0704, ENVIRONMENT_LOW_TEMPERATURE) \
+  X(0x0705, ENVIRONMENT_HIGH_HUMIDITY) \
+  X(0x0706, ENVIRONMENT_HIGH_CO2) \
+  X(0x0707, ENVIRONMENT_HIGH_WIND) \
+  X(0x0800, SAFETY_EMERGENCY_STOP) \
+  X(0x0801, SAFETY_FIRE_ALARM) \
+  X(0x0802, SAFETY_CO_ALARM) \
+  X(0x0803, SAFETY_INPUT_ACTIVE) \
+  X(0x0804, SAFETY_FORCED_OFF_BY_SENSOR) \
+  X(0x0805, SAFETY_SMOKE_ALARM) \
+  X(0x0806, SAFETY_COMBUSTIBLE_GAS_ALARM) \
+  X(0x0807, SAFETY_WATER_LEAK) \
+  X(0x0808, SAFETY_PROTECTIVE_DEVICE_FAULT) \
+  X(0x0900, POWER_BATTERY_LOW) \
+  X(0x0901, POWER_BATTERY_HEALTH_LOW) \
+  X(0x0902, POWER_BATTERY_COVER_OPEN) \
+  X(0x0903, POWER_SUPPLY_ERROR) \
+  X(0x0904, POWER_MAINS_LOST) \
+  X(0x0905, POWER_UNDERVOLTAGE) \
+  X(0x0906, POWER_OVERVOLTAGE) \
+  X(0x0907, POWER_PHASE_LOSS) \
+  X(0x0908, POWER_CHARGING_FAILURE) \
+  X(0x0A00, PROTECTION_ANTIFREEZE_ACTIVE) \
+  X(0x0A01, PROTECTION_OVERHEAT_ACTIVE) \
+  X(0x0A02, PROTECTION_OVERCURRENT_TRIPPED) \
+  X(0x0A03, PROTECTION_SHORT_CIRCUIT_ACTIVE) \
+  X(0x0A04, PROTECTION_DRY_RUN_ACTIVE) \
+  X(0x0B00, DEVICE_COVER_OPEN) \
+  X(0x0B01, DEVICE_LIGHT_SOURCE_LIFESPAN_LOW) \
+  X(0x0B02, DEVICE_LIGHT_SOURCE_LIFESPAN_END) \
+  X(0x0B03, DEVICE_SELF_TEST_FAILED) \
+  X(0x0B04, DEVICE_SELF_TEST_COMPLETED) \
+  X(0x0B05, DEVICE_WATCHDOG_RESET) \
+  X(0x0B06, DEVICE_BROWNOUT_RESET) \
+  X(0x0B07, DEVICE_FIRMWARE_UPDATE_FAILED) \
+  X(0x0B08, DEVICE_SECURITY_UPDATE_FAILED) \
+  X(0x0B09, DEVICE_SELF_TEST_ACTIVE)
 typedef enum {
-#define X(id, name, group, severity, type, key, description) \
+#define X(id, name) \
   SUPLA_ALERT_CODE_##name = id,
   SUPLA_ALERT_CODE_MAP(X)
 #undef X
@@ -3003,10 +2892,6 @@ typedef enum {
 #define SUPLA_OBJECT_ALERT_FLAGS_MASK \
   (SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE | SUPLA_OBJECT_ALERT_FLAG_ACTIVE)
 
-// Compatibility names for existing code that refers to state flags.
-#define SUPLA_ALERT_STATE_OCCURRENCE SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE
-#define SUPLA_ALERT_STATE_ACTIVE SUPLA_OBJECT_ALERT_FLAG_ACTIVE
-
 typedef struct {
   unsigned _supla_int16_t Code;  // known or unknown future alert code
   unsigned char Severity;        // SUPLA_ALERT_SEVERITY_*
@@ -3015,7 +2900,6 @@ typedef struct {
 
 #define SUPLA_OBJECT_ALERT_SURFACE_NONE 0xFF
 #define SUPLA_OBJECT_ALERT_MAXCOUNT 60
-#define SUPLA_OBJECT_ALERT_STATE_PACK_MAXCOUNT SUPLA_OBJECT_ALERT_MAXCOUNT
 
 // SUPLA_DS_CALL_OBJECT_ALERTS_REPORT and _CHANGED. The packet is a variable
 // length structure: offsetof(TDS_ObjectAlerts, Items) + Count * sizeof(item).

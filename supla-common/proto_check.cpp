@@ -337,7 +337,7 @@ static_assert((SUPLA_DEVICE_FLAG_OBJECT_ALERTS_SUPPORTED &
                SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED) == 0);
 
 static constexpr unsigned int suplaAlertCodes[] = {
-#define X(id, name, group, severity, type, key, description) id,
+#define X(id, name) id,
     SUPLA_ALERT_CODE_MAP(X)
 #undef X
 };
