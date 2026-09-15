@@ -31,10 +31,10 @@
 #include <openssl/evp.h>
 #endif /*__OPENSSL_TOOLS*/
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__APPLE__)
 #include <errno.h>
 #include <sys/random.h>
-#endif /* _ANDROID__ */
+#endif /* !__ANDROID__ && !__APPLE__ */
 
 #ifdef __BCRYPT
 #include "crypt_blowfish/ow-crypt.h"
@@ -558,7 +558,7 @@ int st_hue2rgb(double hue) {
 }
 
 static char st_get_random_bytes(unsigned char *buffer, size_t size) {
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__APPLE__)
 
   arc4random_buf(buffer, size);
   return 1;
