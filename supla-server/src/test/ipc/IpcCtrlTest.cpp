@@ -264,6 +264,27 @@ TEST_F(IpcCtrlTest, unknownCommand) {
   EXPECT_FALSE(ipc_ctrl->is_timeout());
 }
 
+TEST_F(IpcCtrlTest, rejectsCommandThatFillsTheBuffer) {
+  string recv_buffer(IPC_BUFFER_MAX_SIZE - 1, 'A');
+  recv_buffer += '\n';
+  socket_adapter->set_recv_buffer(&recv_buffer[0], recv_buffer.size());
+
+  unsigned int is_error_calls = 0;
+
+  EXPECT_CALL(*ipc_ctrl, is_terminated()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*socket_adapter, send_data(string("SUPLA SERVER CTRL\n")));
+  EXPECT_CALL(*socket_adapter, is_error()).WillRepeatedly(Invoke([&]() {
+    return is_error_calls++ >= IPC_BUFFER_MAX_SIZE;
+  }));
+  EXPECT_CALL(*socket_adapter, send_data(string("COMMAND_TOO_LONG\n")));
+  EXPECT_CALL(*ipc_ctrl, terminate()).Times(2);
+
+  ipc_ctrl->execute();
+
+  EXPECT_EQ(is_error_calls, IPC_BUFFER_MAX_SIZE + 1);
+  EXPECT_FALSE(ipc_ctrl->is_timeout());
+}
+
 TEST_F(IpcCtrlTest, thereShouldBeNoDuplicates) {
   supla_ipc_ctrl ipc(new IpcSocketAdapterMock(-1));
 

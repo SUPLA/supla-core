@@ -6,16 +6,19 @@
 CPP_SRCS += \
 ../src/test/http/AccessTokenProviderTest.cpp \
 ../src/test/http/AccessTokenTest.cpp \
+../src/test/http/CurlInstanceTest.cpp \
 ../src/test/http/HttpThrottlingTest.cpp 
 
 CPP_DEPS += \
 ./src/test/http/AccessTokenProviderTest.d \
 ./src/test/http/AccessTokenTest.d \
+./src/test/http/CurlInstanceTest.d \
 ./src/test/http/HttpThrottlingTest.d 
 
 OBJS += \
 ./src/test/http/AccessTokenProviderTest.o \
 ./src/test/http/AccessTokenTest.o \
+./src/test/http/CurlInstanceTest.o \
 ./src/test/http/HttpThrottlingTest.o 
 
 
@@ -31,7 +34,6 @@ src/test/http/%.o: ../src/test/http/%.cpp src/test/http/subdir.mk
 clean: clean-src-2f-test-2f-http
 
 clean-src-2f-test-2f-http:
-	-$(RM) ./src/test/http/AccessTokenProviderTest.d ./src/test/http/AccessTokenProviderTest.o ./src/test/http/AccessTokenTest.d ./src/test/http/AccessTokenTest.o ./src/test/http/HttpThrottlingTest.d ./src/test/http/HttpThrottlingTest.o
+	-$(RM) ./src/test/http/AccessTokenProviderTest.d ./src/test/http/AccessTokenProviderTest.o ./src/test/http/AccessTokenTest.d ./src/test/http/AccessTokenTest.o ./src/test/http/CurlInstanceTest.d ./src/test/http/CurlInstanceTest.o ./src/test/http/HttpThrottlingTest.d ./src/test/http/HttpThrottlingTest.o
 
 .PHONY: clean-src-2f-test-2f-http
-

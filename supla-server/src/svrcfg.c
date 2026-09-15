@@ -34,9 +34,12 @@ int svrcfg_oauth_url_base64_len = 0;
 unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
 
+  char *s_http = "HTTP";
   char *s_autodiscover = "AUTODISCOVER";
   // Start with the highest index
   // This ensures that realloc will only be called once
+  scfg_add_int_param(CFG_HTTP_MAX_RESPONSE_BODY_SIZE, s_http,
+                     "max_response_body_size", 16 * 1024 * 1024);
   scfg_add_int_param(CFG_AUTODISCOVER_STATISTICS_EXPORT_INTERVAL_SEC,
                      s_autodiscover, "statistics_export_interval_sec", 300);
   // -----
@@ -104,8 +107,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(CFG_OAUTH_TOKEN_LIFETIME, s_oauth, "access_token_lifetime",
                      300);
 
-  char *s_http =
-      "HTTP";  // Does not apply to supla_google_home_sync_thread_pool
+  // Does not apply to supla_google_home_sync_thread_pool
   scfg_add_int_param(CFG_HTTP_THREAD_COUNT_LIMIT, s_http, "thread_count_limit",
                      50);
   scfg_add_int_param(CFG_HTTP_REQUESTS_PER_THREAD, s_http,

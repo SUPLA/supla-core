@@ -41,7 +41,7 @@ string supla_state_webhook_credentials::get_url(void) {
   string result = url;
   data_unlock();
 
-  return url;
+  return result;
 }
 
 vector<int> supla_state_webhook_credentials::get_function_ids(void) {

@@ -21,6 +21,7 @@
 #include <assert.h>
 
 #include <list>
+#include <limits>
 #include <regex>  // NOLINT
 #include <string>
 
@@ -37,6 +38,11 @@ supla_curl_instance::supla_curl_instance(int id) {
   write_data_ptr = nullptr;
   header_data_ptr = nullptr;
   header = nullptr;
+  int configured_max_response_body_size =
+      scfg_int(CFG_HTTP_MAX_RESPONSE_BODY_SIZE);
+  max_response_body_size = configured_max_response_body_size > 0
+                               ? configured_max_response_body_size
+                               : default_max_response_body_size;
   curl = curl_easy_init();
   assert(curl != nullptr);
 }
@@ -53,11 +59,24 @@ supla_curl_instance::~supla_curl_instance(void) {
 size_t supla_curl_instance::write_callback(void *contents, size_t size,
                                            size_t nmemb, void *userp) {
   supla_curl_instance *adapter = static_cast<supla_curl_instance *>(userp);
-  if (adapter && adapter->write_data_ptr && size * nmemb > 0) {
-    adapter->write_data_ptr->append((char *)contents, size * nmemb);
+  if (size != 0 && nmemb > std::numeric_limits<size_t>::max() / size) {
+    return 0;
   }
 
-  return size * nmemb;
+  size_t bytes = size * nmemb;
+  if (adapter && adapter->write_data_ptr && bytes > 0) {
+    size_t current_size = adapter->write_data_ptr->size();
+    if (current_size > adapter->max_response_body_size ||
+        bytes > adapter->max_response_body_size - current_size) {
+      supla_log(LOG_WARNING, "HTTP response body exceeds %zu bytes",
+                adapter->max_response_body_size);
+      return 0;
+    }
+
+    adapter->write_data_ptr->append(static_cast<char *>(contents), bytes);
+  }
+
+  return bytes;
 }
 
 // static
@@ -147,6 +166,14 @@ bool supla_curl_instance::perform(void) {
                    supla_curl_instance::header_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
   curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
+
+  if (write_data_ptr) {
+    curl_easy_setopt(curl, CURLOPT_MAXFILESIZE_LARGE,
+                     static_cast<curl_off_t>(max_response_body_size));
+  } else {
+    curl_easy_setopt(curl, CURLOPT_MAXFILESIZE_LARGE,
+                     static_cast<curl_off_t>(-1));
+  }
 
   CURLcode result = curl_easy_perform(curl);
 
